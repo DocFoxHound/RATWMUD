@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "Roleplaying",
+  "Description": "Runs Against the World: a text-first, spatial wolf roleplaying world.",
+  "DisableEnginePluginsByDefault": true,
+  "Modules": [{"Name": "RATWMUD", "Type": "Runtime", "LoadingPhase": "Default"}],
+  "Plugins": [
+    {"Name": "SQLiteCore", "Enabled": true},
+    {"Name": "OnlineSubsystem", "Enabled": true},
+    {"Name": "OnlineSubsystemUtils", "Enabled": true}
+  ]
+}

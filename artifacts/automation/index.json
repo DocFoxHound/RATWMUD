@@ -1,0 +1,179 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "fedora",
+			"instance": "01A0C269A30277C083F32328046431F1",
+			"instanceName": "fedora-261885",
+			"platform": "LinuxEditor",
+			"oSVersion": "Fedora Linux 43 (KDE Plasma Desktop Edition) 6.19.9-200.fc43.x86_64",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 4070 Laptop GPU (NVIDIA UNIX Open Kernel Module for x86_64  580.142  Release Build  (dvs-builder@U22-I3-AD05-51-5)  Tue Mar  3 19:14:46 UTC 2026)",
+			"cPUModel": "13th Gen Intel(R) Core(TM) i9-13900H",
+			"rAMInGB": 63,
+			"renderMode": "SM5",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.09.21-05.22.08",
+	"succeeded": 10,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 8.6230087280273438,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "AuthoredFallback",
+			"fullTestPath": "RATW.Dialogue.AuthoredFallback",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0083019919693470001,
+			"dateTime": "2026.09.21-05.21.59",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "LocalHttpContract",
+			"fullTestPath": "RATW.Dialogue.LocalHttpContract",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 8.5258684158325195,
+			"dateTime": "2026.09.21-05.21.59",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SensoryPrivacy",
+			"fullTestPath": "RATW.Narrative.SensoryPrivacy",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0082900393754243851,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "BoundedSnapshotCodec",
+			"fullTestPath": "RATW.Network.BoundedSnapshotCodec",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0083527937531471252,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "InactivityDeadline",
+			"fullTestPath": "RATW.NPC.InactivityDeadline",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0084042493253946304,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SQLiteRestart",
+			"fullTestPath": "RATW.Persistence.SQLiteRestart",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.025139762088656425,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "AdjustablePaneBalance",
+			"fullTestPath": "RATW.UI.AdjustablePaneBalance",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0079291919246315956,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "InputAndDraftRecovery",
+			"fullTestPath": "RATW.UI.InputAndDraftRecovery",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0095014609396457672,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SequentialRoleplayReveal",
+			"fullTestPath": "RATW.UI.SequentialRoleplayReveal",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.0080702276900410652,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "EngineIntegration",
+			"fullTestPath": "RATW.World.EngineIntegration",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C269A30277C083F32328046431F1"
+			],
+			"duration": 0.013150859624147415,
+			"dateTime": "2026.09.21-05.22.08",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

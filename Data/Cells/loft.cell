@@ -1,0 +1,21 @@
+id: loft
+name: The Quiet Loft
+description: Below the sloped roof, dry herbs and old paper scent a quiet resting place above the common room.
+world: 0 0 1
+outdoors: false
+weather: clear
+grid:
+####################
+#..................#
+#..................#
+#..................#
+#...TTT............#
+#..................#
+#..................#
+#...........TTT....#
+#...........TTT....#
+#..................#
+#..^...............#
+#..................#
+#..................#
+####################
