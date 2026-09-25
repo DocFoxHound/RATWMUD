@@ -1,6 +1,28 @@
 #include "Runtime/RatwPersistence.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
+#if PLATFORM_LINUX
+#include <cerrno>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
+namespace
+{
+bool PrivateFile(const FString& Path, bool MayBeAbsent)
+{
+#if PLATFORM_LINUX
+    struct stat Info;
+    const FTCHARToUTF8 Utf8(*Path);
+    if (lstat(Utf8.Get(), &Info) != 0) return MayBeAbsent && errno == ENOENT;
+    if (!S_ISREG(Info.st_mode) || Info.st_uid != geteuid()) return false;
+    return chmod(Utf8.Get(), S_IRUSR | S_IWUSR) == 0;
+#else
+    // Other platforms retain their OS ACL; public deployment is not supported.
+    return true;
+#endif
+}
+}
 
 FRatwPersistence::~FRatwPersistence()
 {
@@ -10,13 +32,27 @@ FRatwPersistence::~FRatwPersistence()
 
 bool FRatwPersistence::Open(const FString& Path)
 {
+    DatabasePath = Path;
     IFileManager::Get().MakeDirectory(*FPaths::GetPath(Path), true);
+    if (!PrivateFile(Path, true) || !PrivateFile(Path + TEXT("-wal"), true) || !PrivateFile(Path + TEXT("-shm"), true))
+    {
+        SecurityError = TEXT("Checkpoint must be a regular file owned by this OS user; symlinks are not supported.");
+        return false;
+    }
     if (!Database.Open(*Path))
         return false;
-    return Database.Execute(TEXT("PRAGMA journal_mode=WAL;")) && Database.Execute(TEXT("PRAGMA synchronous=FULL;")) &&
+    return SecureFiles() && Database.Execute(TEXT("PRAGMA journal_mode=WAL;")) && Database.Execute(TEXT("PRAGMA synchronous=FULL;")) &&
            Database.Execute(
                TEXT("CREATE TABLE IF NOT EXISTS world_state (id INTEGER PRIMARY KEY CHECK(id=1), schema_version "
-                    "INTEGER NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL);"));
+                    "INTEGER NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL);")) && SecureFiles();
+}
+
+bool FRatwPersistence::SecureFiles()
+{
+    if (PrivateFile(DatabasePath, false) && PrivateFile(DatabasePath + TEXT("-wal"), true) &&
+        PrivateFile(DatabasePath + TEXT("-shm"), true)) return true;
+    SecurityError = TEXT("Unable to protect checkpoint credential verifiers with owner-only file permissions.");
+    return false;
 }
 
 FString FRatwPersistence::Load()
@@ -42,7 +78,7 @@ FString FRatwPersistence::Load()
 
 bool FRatwPersistence::Save(const FString& Payload, uint64 Revision)
 {
-    if (!Database.IsValid() || !Database.Execute(TEXT("BEGIN IMMEDIATE;")))
+    if (!Database.IsValid() || !SecureFiles() || !Database.Execute(TEXT("BEGIN IMMEDIATE;")))
         return false;
     auto Statement = Database.PrepareStatement(
         TEXT("INSERT INTO world_state(id,schema_version,revision,payload) VALUES(1,1,?,?) ON CONFLICT(id) DO UPDATE "
@@ -57,5 +93,5 @@ bool FRatwPersistence::Save(const FString& Payload, uint64 Revision)
 
 FString FRatwPersistence::Error() const
 {
-    return Database.GetLastError();
+    return SecurityError.IsEmpty() ? Database.GetLastError() : SecurityError;
 }

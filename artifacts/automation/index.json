@@ -2,8 +2,8 @@
 	"devices": [
 		{
 			"deviceName": "fedora",
-			"instance": "01A0C269A30277C083F32328046431F1",
-			"instanceName": "fedora-261885",
+			"instance": "01A0C4491C0674EE96558A87337C51E9",
+			"instanceName": "fedora-428462",
 			"platform": "LinuxEditor",
 			"oSVersion": "Fedora Linux 43 (KDE Plasma Desktop Edition) 6.19.9-200.fc43.x86_64",
 			"model": "Default",
@@ -15,26 +15,146 @@
 			"appInstanceLog": ""
 		}
 	],
-	"reportCreatedOn": "2026.09.21-05.22.08",
-	"succeeded": 10,
+	"reportCreatedOn": "2026.09.21-14.05.50",
+	"succeeded": 36,
 	"succeededWithWarnings": 0,
 	"failed": 0,
 	"notRun": 0,
 	"inProcess": 0,
-	"totalDuration": 8.6230087280273438,
+	"totalDuration": 10.947744369506836,
 	"comparisonExported": false,
 	"comparisonExportDirectory": "",
 	"tests": [
+		{
+			"testDisplayName": "AtomicCheckpointAndStrictRestore",
+			"fullTestPath": "RATW.Accounts.AtomicCheckpointAndStrictRestore",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.46603509783744812,
+			"dateTime": "2026.09.21-14.05.39",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "BoundedRateLimit",
+			"fullTestPath": "RATW.Accounts.BoundedRateLimit",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0085098957642912865,
+			"dateTime": "2026.09.21-14.05.39",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "LocalInputBoundary",
+			"fullTestPath": "RATW.Accounts.LocalInputBoundary",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0086273076012730598,
+			"dateTime": "2026.09.21-14.05.39",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SaltedVerifierAndOwnership",
+			"fullTestPath": "RATW.Accounts.SaltedVerifierAndOwnership",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 1.1044766902923584,
+			"dateTime": "2026.09.21-14.05.39",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "LegacyAtomicPersistence",
+			"fullTestPath": "RATW.Appearance.LegacyAtomicPersistence",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0078973732888698578,
+			"dateTime": "2026.09.21-14.05.41",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SharedPortraitAssets",
+			"fullTestPath": "RATW.Appearance.SharedPortraitAssets",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.29763883352279663,
+			"dateTime": "2026.09.21-14.05.41",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SightFilteredPortraits",
+			"fullTestPath": "RATW.Appearance.SightFilteredPortraits",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.014464930631220341,
+			"dateTime": "2026.09.21-14.05.41",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "StrictWire",
+			"fullTestPath": "RATW.Appearance.StrictWire",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0076616448350250721,
+			"dateTime": "2026.09.21-14.05.41",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
 		{
 			"testDisplayName": "AuthoredFallback",
 			"fullTestPath": "RATW.Dialogue.AuthoredFallback",
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0083019919693470001,
-			"dateTime": "2026.09.21-05.21.59",
+			"duration": 0.0083150696009397507,
+			"dateTime": "2026.09.21-14.05.41",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -46,10 +166,100 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 8.5258684158325195,
-			"dateTime": "2026.09.21-05.21.59",
+			"duration": 8.5333185195922852,
+			"dateTime": "2026.09.21-14.05.41",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PrivateOperatorContract",
+			"fullTestPath": "RATW.Director.PrivateOperatorContract",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0076118838042020798,
+			"dateTime": "2026.09.21-14.05.49",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ClockWeatherAndWire",
+			"fullTestPath": "RATW.Environment.ClockWeatherAndWire",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.007653895765542984,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "IndoorLightingWire",
+			"fullTestPath": "RATW.Environment.IndoorLightingWire",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0081358850002288818,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "BufferedFrameInterpolation",
+			"fullTestPath": "RATW.Movement.BufferedFrameInterpolation",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0081690065562725067,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PacePersistenceAndWire",
+			"fullTestPath": "RATW.Movement.PacePersistenceAndWire",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0081054093316197395,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PostureSkillsPersistence",
+			"fullTestPath": "RATW.Movement.PostureSkillsPersistence",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0079978900030255318,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -61,10 +271,10 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0082900393754243851,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.0084794275462627411,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -76,10 +286,25 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0083527937531471252,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.0082876961678266525,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "MotionPerceptionPrivacy",
+			"fullTestPath": "RATW.Network.MotionPerceptionPrivacy",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0080699790269136429,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -91,10 +316,25 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0084042493253946304,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.0081069217994809151,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ScentWindWirePrivacy",
+			"fullTestPath": "RATW.Perception.ScentWindWirePrivacy",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.015638727694749832,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -106,10 +346,25 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.025139762088656425,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.036668721586465836,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CalendarEconomyPersistence",
+			"fullTestPath": "RATW.Society.CalendarEconomyPersistence",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.0076899901032447815,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -121,10 +376,70 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0079291919246315956,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.071086540818214417,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CalendarAndEconomy",
+			"fullTestPath": "RATW.UI.CalendarAndEconomy",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.024385949596762657,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CellAtmosphere",
+			"fullTestPath": "RATW.UI.CellAtmosphere",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.012603813782334328,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "EnvironmentalPresentation",
+			"fullTestPath": "RATW.UI.EnvironmentalPresentation",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.013627033680677414,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "FrontDoorAccountAndCreation",
+			"fullTestPath": "RATW.UI.FrontDoorAccountAndCreation",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.12206676602363586,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -136,10 +451,70 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0095014609396457672,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.018175829201936722,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "MotionVisibilityAndTransitions",
+			"fullTestPath": "RATW.UI.MotionVisibilityAndTransitions",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.013078467920422554,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "OwnAndInspectedPortraits",
+			"fullTestPath": "RATW.UI.OwnAndInspectedPortraits",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.012609729543328285,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PaceAndKnownTravel",
+			"fullTestPath": "RATW.UI.PaceAndKnownTravel",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.015865819528698921,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ScentAwareness",
+			"fullTestPath": "RATW.UI.ScentAwareness",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.013389822095632553,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -151,10 +526,25 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.0080702276900410652,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.012734746560454369,
+			"dateTime": "2026.09.21-14.05.50",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "StationaryFacingPreview",
+			"fullTestPath": "RATW.UI.StationaryFacingPreview",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A0C4491C0674EE96558A87337C51E9"
+			],
+			"duration": 0.012323345988988876,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,
@@ -166,10 +556,10 @@
 			"tags": [],
 			"state": "Success",
 			"deviceInstance": [
-				"01A0C269A30277C083F32328046431F1"
+				"01A0C4491C0674EE96558A87337C51E9"
 			],
-			"duration": 0.013150859624147415,
-			"dateTime": "2026.09.21-05.22.08",
+			"duration": 0.008234657347202301,
+			"dateTime": "2026.09.21-14.05.50",
 			"entries": [],
 			"warnings": 0,
 			"errors": 0,

@@ -1,7 +1,9 @@
 # Dialogue provider and authored fallback
 
-Status: working offline dialogue; optional local HTTP adapter. No external model
-service or paid account was used for this build.
+Status: working offline dialogue and optional local HTTP adapter. A follow-up
+authorized test now connects RATW Game's existing OpenAI `gpt-5.6-luna` provider
+through a bounded server-side bridge. See [setup and live evidence](../LIVE_NPC_TEST_REPORT.md).
+Ordinary launches still make no remote model calls.
 
 ## Provider contract
 
@@ -22,7 +24,7 @@ An explicitly configured loopback endpoint can enable generation:
 -RatwDialogueEndpoint=http://127.0.0.1:8080/dialogue
 ```
 
-The adapter sends a JSON POST with `npc`, `description`, `activity`, `heard`,
+The adapter sends a JSON POST with `npc`, `player`, `description`, `activity`, `heard`,
 `memory`, `scene` and `instruction`. A compatible local service returns:
 
 ```json
@@ -37,8 +39,11 @@ The installed Unreal HTTP transport automatically follows redirects and exposes
 no supported per-request redirect veto, so this adapter cannot guarantee that a
 misbehaving local provider will keep subsequent requests on the machine. Replacing
 or restricting that transport is a deployment gate before allowing untrusted
-providers. No remote provider or redirect was used in this build; it does not
-select/download a model or add credentials.
+providers. The supplied `tools/npc_bridge.py` never redirects a local request,
+and its outbound credential-bearing HTTPS request has a fixed host and cannot
+follow redirects. It reads the user-authorized existing config without placing
+credentials in Unreal, source, logs or the package. This is an explicit testing
+option, not an automatic provider selection or startup service.
 There is an eight-second timeout, a 16-KB response bound, a 2,048-character reply
 bound, empty/malformed-result fallback and a single-completion guard. A failed
 provider returns the authored response without stalling movement or other players.
@@ -52,9 +57,11 @@ to do so. Production quality needs evaluation for unsupported narrative claims,
 but the deterministic state boundary already prevents a claim from becoming a
 gameplay grant.
 
-The provider label distinguishes authored and configured local generation. The
-player is never told that a scripted response is model-generated. NPC reply and
-memory persistence are server operations regardless of provider choice.
+The provider label distinguishes authored mode from a configured dialogue bridge
+with authored fallback. It is not a per-message provenance indicator, and does
+not imply that configured generation runs on-device. The `player` field contains
+only the identity visible to the NPC (or "traveler"); no account ID is sent. NPC
+reply and memory persistence remain server operations regardless of provider.
 
 ## Validation and future work
 
@@ -62,10 +69,12 @@ Offline authored responses are exercised by the native NPC interaction scenario.
 The adapter compiles with Unreal HTTP support. Native automation includes a
 loopback fixture for success, HTTP failure, malformed/empty/oversized responses,
 and an eight-second timeout fallback, plus URL-validation regressions. The fixture
-never redirects or contacts another service. A real local model must be chosen
-and evaluated before claims about generative quality can be made; consult the
-root test report for the executed automation results.
+never redirects or contacts another service. Separate live tests verify generated
+delivery by matching response hashes and recall across restarts/consolidation.
+The bridge has 35 offline tests for credential boundaries, protocol validation,
+request budgets, concurrency and failures. The real-model sample is deliberately
+small; broader quality/adversarial evaluation is still needed.
 
-Open: preferred local or hosted model, operating cost ceiling, response latency,
+Open: production hosting/model policy, operating cost ceiling, response latency,
 memory-context limits, prose constraints and evaluation set, NPC voice authoring,
 and whether generated dialogue should visibly carry a provider indicator.

@@ -1,0 +1,696 @@
+#include "RatwSociety.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
+namespace ratw
+{
+namespace
+{
+constexpr std::int64_t MoneyLimit = 1000000000;
+constexpr int StockLimit = 10000;
+bool playerAccountId(const std::string& id)
+{
+    if (id.rfind("player-", 0) == 0) return id.size() <= 80; // Existing development saves.
+    if (id.rfind("wolf-", 0) != 0 || id.size() != 37) return false;
+    return std::all_of(id.begin() + 5, id.end(), [](char c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+    });
+}
+bool itemValid(const std::string& item)
+{
+    return item == "herbs" || item == "meal";
+}
+bool near(const LifeBody& body, const std::string& cell, double x, double y)
+{
+    return body.cell == cell && std::hypot(body.x - x, body.y - y) <= 1.2;
+}
+bool validNumber(double value, double low, double high)
+{
+    return std::isfinite(value) && value >= low && value <= high;
+}
+void defaultHome(const std::string& id, ResidentLife& life)
+{
+    if (!life.homeCell.empty()) return;
+    life.homeCell = id == "npc_scribe" ? "loft" : "tavern";
+    life.homeX = id == "npc_scribe" ? 8.5 : id == "npc_cook" ? 25.5 : id == "npc_keeper" ? 9.5 : 19.5;
+    life.homeY = id == "npc_scribe" ? 6.5 : id == "npc_porter" ? 19.5 : id == "npc_scout" ? 15.5 : 12.5;
+}
+} // namespace
+Society::Society(bool demo)
+{
+    reset(demo);
+}
+void Society::reset(bool demo)
+{
+    state_ = {};
+    state_.enabled = demo;
+    state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
+    state_.minted = 1000;
+    if (!demo)
+        return;
+    const std::pair<const char*, const char*> jobs[] = {{"npc_keeper", "merchant"}, {"npc_cook", "cook"},
+                                                        {"npc_porter", "forager"},  {"npc_scout", "resident"},
+                                                        {"npc_smith", "resident"},  {"npc_scribe", "resident"}};
+    for (const auto& job : jobs)
+    {
+        state_.accounts[job.first] = {80, {{"meal", 2}}};
+        ResidentLife life;
+        life.role = job.second;
+        defaultHome(job.first, life);
+        state_.residents[job.first] = life;
+        state_.minted += 80;
+    }
+    state_.accounts["npc_keeper"].stock = {{"herbs", 8}, {"meal", 12}};
+    state_.accounts["npc_cook"].stock = {{"herbs", 12}, {"meal", 4}};
+    state_.accounts["npc_porter"].stock = {{"herbs", 10}, {"meal", 2}};
+    record("initial funding", "outside", "settlement", "", 0, state_.minted);
+}
+int Society::stock(const EconomyAccount& account, const std::string& item)
+{
+    const auto it = account.stock.find(item);
+    return it == account.stock.end() ? 0 : it->second;
+}
+const EconomyAccount* Society::account(const std::string& id) const
+{
+    const auto it = state_.accounts.find(id);
+    return it == state_.accounts.end() ? nullptr : &it->second;
+}
+const ResidentLife* Society::resident(const std::string& id) const
+{
+    const auto it = state_.residents.find(id);
+    return it == state_.residents.end() ? nullptr : &it->second;
+}
+bool Society::relocate(const std::string& npc, const std::string& cell, double x, double y)
+{
+    auto found = state_.residents.find(npc);
+    if (found == state_.residents.end() || found->second.role != "resident" ||
+        !found->second.relocationCell.empty() || cell.empty() || cell.size() > 80 ||
+        !validNumber(x, 0, 256) || !validNumber(y, 0, 256)) return false;
+    auto& life = found->second;
+    life.relocationCell = cell; life.relocationX = x; life.relocationY = y;
+    life.progress = 0; life.task = "relocate";
+    return true;
+}
+EconomyResult Society::operatorTransfer(const std::string& from, const std::string& to,
+                                      const std::string& item, int quantity, std::int64_t coins)
+{
+    const auto a = state_.accounts.find(from), b = state_.accounts.find(to);
+    if (a == state_.accounts.end() || b == state_.accounts.end() || from == to ||
+        coins < 0 || coins > 1000000 || quantity < 0 || quantity > 99 ||
+        (item.empty() ? quantity != 0 : !itemValid(item) || quantity == 0) ||
+        (coins == 0 && quantity == 0)) return {false, "Invalid finite operator transfer."};
+    if (a->second.cash < coins || b->second.cash > MoneyLimit - coins ||
+        (!item.empty() && (stock(a->second, item) < quantity || stock(b->second, item) > StockLimit - quantity)))
+        return {false, "Transfer exceeds real funds, goods or recipient capacity."};
+    a->second.cash -= coins; b->second.cash += coins;
+    if (!item.empty()) { a->second.stock[item] -= quantity; b->second.stock[item] += quantity; }
+    record("operator transfer", from, to, item, quantity, coins);
+    return {true, "Existing money and goods transferred; no currency or stock created."};
+}
+bool Society::merchant(const std::string& id)
+{
+    return id == "npc_keeper";
+}
+const char* Society::itemName(const std::string& id)
+{
+    return id == "herbs" ? "Cooking herbs" : id == "meal" ? "Prepared meal" : "Unknown goods";
+}
+void Society::record(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
+                     int quantity, std::int64_t coins)
+{
+    state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
+    if (state_.ledger.size() > 128)
+        state_.ledger.erase(state_.ledger.begin());
+}
+std::int64_t Society::moneySupply() const
+{
+    std::int64_t result = 0;
+    for (const auto& pair : state_.accounts)
+        result += pair.second.cash;
+    return result;
+}
+bool Society::conserved() const
+{
+    return moneySupply() == state_.minted - state_.sunk;
+}
+void Society::addPlayer(const std::string& id)
+{
+    if (!playerAccountId(id) || state_.accounts.count(id) || state_.accounts.size() >= 4096)
+        return;
+    auto& reserve = state_.accounts.at("treasury");
+    EconomyAccount created;
+    created.cash = std::min<std::int64_t>(20, reserve.cash);
+    reserve.cash -= created.cash;
+    for (const auto& item : {"herbs", "meal"})
+    {
+        created.stock[item] = std::min(item == std::string("herbs") ? 2 : 1, stock(reserve, item));
+        reserve.stock[item] -= created.stock[item];
+    }
+    state_.accounts[id] = created;
+    record("settlement welcome grant", "treasury", id, "", 0, created.cash);
+}
+bool Society::transfer(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
+                       std::int64_t price, const std::string& kind)
+{
+    if (seller == buyer || quantity < 1 || quantity > 99 || !itemValid(item) || price < 1 || price > 1000)
+        return false;
+    const auto* from = account(seller);
+    const auto* to = account(buyer);
+    const auto total = price * quantity;
+    if (!from || !to || stock(*from, item) < quantity || to->cash < total || from->cash > MoneyLimit - total ||
+        stock(*to, item) > StockLimit - quantity)
+        return false;
+    auto& s = state_.accounts.at(seller);
+    auto& b = state_.accounts.at(buyer);
+    s.stock[item] -= quantity;
+    b.stock[item] += quantity;
+    b.cash -= total;
+    s.cash += total;
+    record(kind, buyer, seller, item, quantity, total);
+    return true;
+}
+EconomyResult Society::quote(const std::string& player, const std::string& seller, const std::string& item,
+                             int quantity, bool buy) const
+{
+    if (!state_.enabled || !merchant(seller) || !playerAccountId(player) || !account(player) || !account(seller))
+        return {false, "This trader is unavailable."};
+    if (quantity < 1 || quantity > 99)
+        return {false, "Choose a whole quantity from 1 to 99."};
+    if (!itemValid(item))
+        return {false, "This trader has no use for those goods."};
+    const auto& m = *account(seller);
+    const auto& p = *account(player);
+    const int held = stock(m, item), cap = item == "meal" ? 24 : 20;
+    const int base = item == "meal" ? 6 : 2;
+    const double demand = held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.;
+    const std::int64_t price = buy ? std::int64_t(std::ceil(base * demand))
+                                   : std::max<std::int64_t>(1, std::int64_t(std::floor(base * demand * .55)));
+    const std::int64_t total = price * quantity;
+    if (!buy && held + quantity > cap)
+        return {false, "The trader already has enough of those goods.", price, total};
+    if (stock(buy ? m : p, item) < quantity)
+        return {false, "There is not enough stock.", price, total};
+    if ((buy ? p : m).cash < total)
+        return {false, buy ? "You cannot afford that purchase." : "The trader cannot afford that purchase.", price,
+                total};
+    if ((buy ? m : p).cash > MoneyLimit - total || stock(buy ? p : m, item) > StockLimit - quantity)
+        return {false, "That trade exceeds safe account capacity.", price, total};
+    return {true, "Available", price, total};
+}
+EconomyResult Society::trade(const std::string& player, const std::string& trader, const std::string& item,
+                             int quantity, bool buy)
+{
+    auto result = quote(player, trader, item, quantity, buy);
+    if (!result.ok)
+        return result;
+    result.ok = transfer(buy ? trader : player, buy ? player : trader, item, quantity, result.unitPrice, "local trade");
+    result.message = result.ok ? std::string(buy ? "Bought " : "Sold ") + std::to_string(quantity) + " " +
+                                     itemName(item) + " for " + std::to_string(result.total) + " silver pennies."
+                               : "The trade could not be completed.";
+    return result;
+}
+EconomyResult Society::gather(const std::string& player)
+{
+    if (!state_.enabled || !playerAccountId(player) || !account(player))
+        return {false, "No gathering opportunity here."};
+    if (state_.herbPatch < 1)
+        return {false, "This patch needs time to recover."};
+    auto& a = state_.accounts.at(player);
+    if (stock(a, "herbs") >= StockLimit)
+        return {false, "You cannot carry more herbs."};
+    --state_.herbPatch;
+    ++a.stock["herbs"];
+    record("gather", "herb patch", player, "herbs", 1, 0);
+    return {true, "You gather one bundle of cooking herbs. The patch has finite supplies."};
+}
+EconomyResult Society::eat(const std::string& player)
+{
+    if (!playerAccountId(player) || !account(player) || stock(*account(player), "meal") < 1)
+        return {false, "You have no prepared meal."};
+    --state_.accounts.at(player).stock["meal"];
+    record("eat", player, "consumed", "meal", 1, 0);
+    return {true, "You eat a prepared meal and recover a little stamina."};
+}
+void Society::tick(double seconds, double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
+{
+    if (!state_.enabled || !validNumber(seconds, 0, 60) || !validNumber(absoluteDay, 0, 365000000) || season < 0 ||
+        season > 3)
+        return;
+    state_.decisionRemainder += seconds;
+    while (state_.decisionRemainder + 1e-8 >= 1.)
+    {
+        state_.decisionRemainder -= 1.;
+        state_.decisionRemainder = std::max(0., state_.decisionRemainder);
+        decide(absoluteDay, season, bodies);
+    }
+}
+void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
+{
+    const auto day = std::int64_t(std::floor(absoluteDay));
+    if (day > state_.budgetDay)
+    {
+        // Missed days do not accumulate unbounded grants, orders or harvests.
+        state_.budgetDay = day;
+        state_.exportsRemaining = 8;
+        state_.importsRemaining = 4;
+        for (auto& resident : state_.residents)
+            resident.second.wagesToday = 0;
+        const int recovery[] = {20, 30, 12, 4};
+        state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
+    }
+    const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
+    const bool night = hour < 6 || hour >= 22;
+    const auto available = [&](const std::string& id) {
+        const auto it = bodies.find(id);
+        return it != bodies.end() && !it->second.companion && !it->second.cell.empty() &&
+               it->second.cell.size() <= 80 && validNumber(it->second.x, 0, 256) && validNumber(it->second.y, 0, 256);
+    };
+    const auto hungryCustomer = [&]() {
+        for (const auto& buyer : state_.residents)
+            if (buyer.first != "npc_cook" && buyer.first != "npc_keeper" && available(buyer.first) &&
+                buyer.second.hunger >= 55 && stock(*account(buyer.first), "meal") == 0 &&
+                account(buyer.first)->cash >= 6)
+                return true;
+        return false;
+    };
+    // Exclusive benches/beds are reserved deterministically in stable actor-ID order.
+    std::map<std::string, std::string> reservations;
+    for (auto& pair : state_.residents)
+    {
+        const auto bodyIt = bodies.find(pair.first);
+        if (bodyIt == bodies.end())
+            continue;
+        const auto& body = bodyIt->second;
+        if (body.cell.empty() || body.cell.size() > 80 || !validNumber(body.x, 0, 256) || !validNumber(body.y, 0, 256))
+            continue;
+        auto& life = pair.second;
+        auto& wallet = state_.accounts.at(pair.first);
+        life.hunger = std::min(100., life.hunger + .0035);
+        life.fatigue = std::min(100., life.fatigue + .0025);
+        if (body.companion)
+        {
+            life.task = "companion";
+            life.reason = "Ordinary work is suspended while recruited.";
+            life.progress = 0;
+            life.goalCell.clear();
+            continue;
+        }
+        std::string task, goal = "tavern", reason;
+        double x = 14.5, y = 13.5;
+        if (!life.relocationCell.empty())
+        {
+            task = "relocate"; goal = life.relocationCell; x = life.relocationX; y = life.relocationY;
+            reason = "Travelling to an operator-approved new home; arrival is not instantaneous.";
+            if (body.cell == goal && std::hypot(body.x - x, body.y - y) <= .35)
+            {
+                life.homeCell = goal; life.homeX = x; life.homeY = y;
+                life.relocationCell.clear(); life.relocationX = life.relocationY = 0;
+                reason = "Arrived at the new home. Existing work and food routes remain in use.";
+            }
+        }
+        else if (life.hunger >= 60 && stock(wallet, "meal") > 0)
+        {
+            task = "eat";
+            goal = body.cell;
+            // A gentle crowd bump must not restart an eight-second meal every
+            // decision. Anchor on entry; a real interruption still resets it.
+            const bool continuing = life.task == "eat" && life.goalCell == body.cell;
+            x = continuing ? life.goalX : body.x;
+            y = continuing ? life.goalY : body.y;
+            reason = "Hungry; a carried meal is available.";
+        }
+        else if (life.fatigue >= 80 || (life.task == "sleep" && life.fatigue > 15) || (night && life.hunger < 80))
+        {
+            task = "sleep";
+            reason = "Resting on the shared daily schedule.";
+            goal = life.homeCell; x = life.homeX; y = life.homeY;
+        }
+        else if (life.hunger >= 55 && stock(wallet, "meal") == 0 && pair.first != "npc_keeper" && wallet.cash >= 6 &&
+                 available("npc_keeper") &&
+                 (stock(*account("npc_keeper"), "meal") > 0 ||
+                  (pair.first != "npc_cook" && available("npc_cook") && stock(*account("npc_cook"), "meal") > 0)))
+        {
+            task = "buy food";
+            x = 10.5;
+            y = 6.5;
+            reason = "Seeking available food from tavern stock or the cook's delivery.";
+        }
+        else if (life.role == "forager")
+        {
+            if (stock(wallet, "herbs") >= 6 || (stock(wallet, "herbs") > 0 && state_.herbPatch == 0) ||
+                (stock(wallet, "herbs") >= 2 && stock(*account("npc_cook"), "herbs") < 2))
+            {
+                task = "deliver herbs";
+                x = 25.5;
+                y = 6.5;
+                reason = "Delivering finite harvested ingredients to the cook.";
+            }
+            else
+            {
+                task = "gather";
+                goal = "exterior";
+                x = 17.5;
+                y = 7.5;
+                reason = "Collecting ingredients from the regenerating patch.";
+            }
+        }
+        else if (life.role == "cook")
+        {
+            if (stock(wallet, "meal") > 0 &&
+                (stock(wallet, "meal") >= 6 || stock(*account("npc_keeper"), "meal") < 2 || wallet.cash < 2) &&
+                stock(*account("npc_keeper"), "meal") < 20 &&
+                (account("npc_keeper")->cash >= 5 || hungryCustomer() ||
+                 (state_.exportsRemaining > 0 && stock(wallet, "meal") + stock(*account("npc_keeper"), "meal") > 8)))
+            {
+                task = "deliver meals";
+                x = 10.5;
+                y = 6.5;
+                reason = "Bringing meals to funded tavern orders or hungry customers.";
+            }
+            else if (stock(wallet, "herbs") < 2 && available("npc_porter") && wallet.cash >= 1 &&
+                     (stock(*account("npc_porter"), "herbs") > 0 || state_.herbPatch > 0))
+            {
+                task = "receive herbs";
+                x = 25.5;
+                y = 6.5;
+                reason = "Meeting the forager at the kitchen for affordable ingredients.";
+            }
+            else if (stock(wallet, "herbs") < 2)
+            {
+                task = "buy ingredients";
+                x = 10.5;
+                y = 6.5;
+                reason = "Buying ingredients, including supplies sold by travelers.";
+            }
+            else
+            {
+                task = "cook";
+                x = 26.5;
+                y = 6.5;
+                reason = "Two herb bundles become one prepared meal.";
+            }
+        }
+        else if (life.role == "merchant")
+        {
+            task = "trade";
+            x = 9.5;
+            y = 6.5;
+            reason = "Serving customers and limited outside orders.";
+        }
+        else if (hour >= 8 && hour < 18 && life.wagesToday < 3)
+        {
+            task = "paid work";
+            reason = "Completing a bounded service contract paid from the keeper's real purse.";
+            if (pair.first == "npc_scribe")
+            {
+                goal = "loft";
+                x = 8.5;
+                y = 6.5;
+            }
+            else
+            {
+                goal = "exterior";
+                x = pair.first == "npc_smith" ? 11.5 : 18.5;
+                y = 14.5;
+            }
+        }
+        else
+        {
+            task = "socialize";
+            reason = "Fed and rested; spending time in the common room.";
+            x = pair.first == "npc_scout" ? 19.5 : pair.first == "npc_smith" ? 20.5 : 14.5;
+            ResidentLife original;
+            defaultHome(pair.first, original);
+            if (life.homeCell != original.homeCell || life.homeX != original.homeX || life.homeY != original.homeY)
+            { goal = life.homeCell; x = life.homeX; y = life.homeY; reason = "Spending free time at the new home."; }
+        }
+        if (task != life.task || goal != life.goalCell || x != life.goalX || y != life.goalY)
+            life.progress = 0;
+        life.task = task;
+        life.reason = reason;
+        life.goalCell = goal;
+        life.goalX = x;
+        life.goalY = y;
+        if (!near(body, goal, x, y))
+        {
+            life.progress = 0;
+            continue;
+        }
+        const std::string station = goal + ":" + std::to_string(x) + ":" + std::to_string(y);
+        const bool exclusive = task == "sleep" || task == "cook" || task == "paid work";
+        if (exclusive && reservations.count(station))
+        {
+            life.reason = "Waiting for an occupied work or rest place.";
+            continue;
+        }
+        if (exclusive)
+            reservations[station] = pair.first;
+        if (task == "sleep")
+        {
+            life.fatigue = std::max(0., life.fatigue - .012);
+            continue;
+        }
+        life.progress += 1.;
+        const double duration = task == "paid work" ? 1200.
+                                : task == "gather"  ? 30.
+                                : task == "cook"    ? 45.
+                                : task == "eat"     ? 8.
+                                                    : 12.;
+        if (life.progress < duration)
+            continue;
+        life.progress = 0;
+        if (task == "eat")
+        {
+            --wallet.stock["meal"];
+            life.hunger = std::max(0., life.hunger - 55.);
+            record("eat", pair.first, "consumed", "meal", 1, 0);
+        }
+        else if (task == "gather")
+        {
+            if (state_.herbPatch > 0 && stock(wallet, "herbs") < StockLimit)
+            {
+                --state_.herbPatch;
+                ++wallet.stock["herbs"];
+                record("gather", "herb patch", pair.first, "herbs", 1, 0);
+            }
+            else
+                life.reason = "The depleted patch must recover before more can be gathered.";
+        }
+        else if (task == "cook")
+        {
+            if (stock(wallet, "herbs") >= 2 && stock(wallet, "meal") < StockLimit)
+            {
+                wallet.stock["herbs"] -= 2;
+                ++wallet.stock["meal"];
+                record("cook", pair.first, pair.first, "meal", 1, 0);
+            }
+            else
+                life.reason = "Waiting for ingredient deliveries; cannot create meals from nothing.";
+        }
+        else if (task == "deliver herbs")
+        {
+            const auto target = bodies.find("npc_cook");
+            if (available("npc_cook") && target != bodies.end() && near(target->second, body.cell, body.x, body.y) &&
+                stock(*account("npc_cook"), "herbs") < 20)
+            {
+                const auto& buyer = *account("npc_cook");
+                const int quantity = std::min({4, stock(wallet, "herbs"), 20 - stock(buyer, "herbs"),
+                                               int(std::min<std::int64_t>(4, buyer.cash))});
+                if (!transfer(pair.first, "npc_cook", "herbs", quantity, 1, "ingredient delivery"))
+                    life.reason = "The cook cannot afford even one available ingredient bundle.";
+            }
+            else
+                life.reason = "Waiting for the cook and real ingredient demand.";
+        }
+        else if (task == "deliver meals")
+        {
+            const auto target = bodies.find("npc_keeper");
+            if (available("npc_keeper") && target != bodies.end() && near(target->second, body.cell, body.x, body.y) &&
+                stock(*account("npc_keeper"), "meal") < 20)
+            {
+                const auto& buyer = *account("npc_keeper");
+                const int quantity = std::min({3, stock(wallet, "meal"), 20 - stock(buyer, "meal"),
+                                               int(std::min<std::int64_t>(3, buyer.cash / 5))});
+                if (!transfer(pair.first, "npc_keeper", "meal", quantity, 5, "meal delivery"))
+                    life.reason = "The keeper cannot afford even one prepared meal.";
+            }
+            else
+                life.reason = "Waiting for the keeper and space on the shelves.";
+        }
+        else if (task == "buy food")
+        {
+            const auto target = bodies.find("npc_keeper");
+            if (pair.first != "npc_keeper" && target != bodies.end() && near(target->second, body.cell, body.x, body.y))
+            {
+                if (stock(*account("npc_keeper"), "meal") > 0)
+                {
+                    if (!transfer("npc_keeper", pair.first, "meal", 1, 6, "resident food purchase"))
+                        life.reason = "Cannot buy food: stock or money is unavailable.";
+                }
+                else
+                {
+                    // NPC-only consignment bridges the keeper's working-capital
+                    // shortage without debt, free inventory, or altered prices.
+                    // A buyer pays the same six pennies: five to the cook, one
+                    // to the keeper. All three bodies and both capacity checks
+                    // are required before the one-meal transaction can commit.
+                    const auto cook = bodies.find("npc_cook");
+                    auto& producer = state_.accounts.at("npc_cook");
+                    auto& keeper = state_.accounts.at("npc_keeper");
+                    if (pair.first != "npc_cook" && available("npc_cook") && available("npc_keeper") &&
+                        cook != bodies.end() && near(cook->second, body.cell, body.x, body.y) &&
+                        near(cook->second, target->second.cell, target->second.x, target->second.y) &&
+                        wallet.cash >= 6 && keeper.cash < MoneyLimit && producer.cash <= MoneyLimit - 5 &&
+                        stock(wallet, "meal") < StockLimit && stock(producer, "meal") > 0 &&
+                        transfer("npc_cook", pair.first, "meal", 1, 5, "consigned meal sale"))
+                    {
+                        --wallet.cash;
+                        ++keeper.cash;
+                        record("market commission", pair.first, "npc_keeper", "", 0, 1);
+                    }
+                    else
+                        life.reason =
+                            "Waiting for the cook's actual meal, buyer funds, and all three market participants.";
+                }
+            }
+            else
+                life.reason = "Waiting for the food seller.";
+        }
+        else if (task == "buy ingredients")
+        {
+            const auto target = bodies.find("npc_keeper");
+            if (target != bodies.end() && near(target->second, body.cell, body.x, body.y))
+            {
+                const int quantity = std::min(
+                    {4, stock(*account("npc_keeper"), "herbs"), int(std::min<std::int64_t>(4, wallet.cash / 2))});
+                if (!transfer("npc_keeper", pair.first, "herbs", quantity, 2, "ingredient purchase"))
+                    life.reason = "Ingredient purchase blocked by stock or cash.";
+            }
+            else
+                life.reason = "Waiting for the ingredient merchant.";
+        }
+        else if (task == "paid work")
+        {
+            auto& employer = state_.accounts.at("npc_keeper");
+            if (employer.cash >= 2 && wallet.cash <= MoneyLimit - 2 && life.wagesToday < 3)
+            {
+                employer.cash -= 2;
+                wallet.cash += 2;
+                ++life.wagesToday;
+                record("service wages", "npc_keeper", pair.first, "", 0, 2);
+            }
+            else
+                life.reason = "Work completed, but the employer cannot afford another contract.";
+        }
+        else if (task == "trade")
+        {
+            if (state_.exportsRemaining > 0 && stock(wallet, "meal") > 8 && wallet.cash <= MoneyLimit - 7 &&
+                state_.minted <= MoneyLimit - 7)
+            {
+                --wallet.stock["meal"];
+                --state_.exportsRemaining;
+                wallet.cash += 7;
+                state_.minted += 7;
+                record("outside export order", "outside", pair.first, "meal", 1, 7);
+            }
+            else if (state_.exportsRemaining > 0 && wallet.cash < 5 && available("npc_cook"))
+            {
+                // The same outside order may buy a cook-owned surplus meal at
+                // the counter. Its seven pennies are split 5/2, not minted in
+                // addition to the existing order allowance. Eight real meals
+                // remain across the co-located seller and shop as a reserve.
+                const auto& producerBody = bodies.at("npc_cook");
+                auto& producer = state_.accounts.at("npc_cook");
+                if (near(producerBody, "tavern", 10.5, 6.5) && near(producerBody, body.cell, body.x, body.y) &&
+                    stock(producer, "meal") > 0 && stock(producer, "meal") + stock(wallet, "meal") > 8 &&
+                    producer.cash <= MoneyLimit - 5 && wallet.cash <= MoneyLimit - 2 && state_.minted <= MoneyLimit - 7)
+                {
+                    --producer.stock["meal"];
+                    --state_.exportsRemaining;
+                    producer.cash += 5;
+                    wallet.cash += 2;
+                    state_.minted += 7;
+                    record("outside consigned sale", "outside", "npc_cook", "meal", 1, 5);
+                    record("export commission", "outside", pair.first, "", 0, 2);
+                }
+            }
+            // Expensive, capped import fallback is a true money sink, not a free restock.
+            const bool localIngredients =
+                (available("npc_cook") && stock(*account("npc_cook"), "herbs") >= 2) ||
+                (available("npc_porter") && (stock(*account("npc_porter"), "herbs") >= 2 || state_.herbPatch >= 2));
+            if (stock(wallet, "herbs") < 2 && !localIngredients && state_.importsRemaining > 0 && wallet.cash >= 4)
+            {
+                ++wallet.stock["herbs"];
+                --state_.importsRemaining;
+                wallet.cash -= 4;
+                state_.sunk += 4;
+                record("outside import", pair.first, "outside", "herbs", 1, 4);
+            }
+        }
+    }
+}
+bool Society::restore(const SocietyState& s)
+{
+    if (s.accounts.empty() || s.accounts.size() > 4096 || !s.accounts.count("treasury") || s.residents.size() > 128 ||
+        s.ledger.size() > 128 || s.minted < 0 || s.minted > MoneyLimit || s.sunk < 0 || s.sunk > s.minted ||
+        s.nextEntry < 1 || s.nextEntry > 1000000000000LL || s.budgetDay < 0 || s.budgetDay > 365000000 ||
+        s.exportsRemaining < 0 || s.exportsRemaining > 8 || s.importsRemaining < 0 || s.importsRemaining > 4 ||
+        s.herbPatch < 0 || s.herbPatch > 60 || !validNumber(s.decisionRemainder, 0, 1))
+        return false;
+    std::int64_t sum = 0;
+    for (const auto& a : s.accounts)
+    {
+        if (a.first.empty() || a.first.size() > 80 || a.second.cash < 0 || a.second.cash > MoneyLimit ||
+            a.second.stock.size() > 2)
+            return false;
+        if (a.first != "treasury" && !playerAccountId(a.first) && a.first != "npc_keeper" &&
+            a.first != "npc_cook" && a.first != "npc_porter" && a.first != "npc_scout" && a.first != "npc_smith" &&
+            a.first != "npc_scribe")
+            return false;
+        sum += a.second.cash;
+        for (const auto& item : a.second.stock)
+            if (!itemValid(item.first) || item.second < 0 || item.second > StockLimit)
+                return false;
+    }
+    if (sum != s.minted - s.sunk)
+        return false;
+    for (const auto& l : s.residents)
+        if (!s.accounts.count(l.first) || l.first.rfind("npc_", 0) != 0 ||
+            (l.second.role != "merchant" && l.second.role != "cook" && l.second.role != "forager" &&
+             l.second.role != "resident") ||
+            !validNumber(l.second.hunger, 0, 100) || !validNumber(l.second.fatigue, 0, 100) ||
+            !validNumber(l.second.progress, 0, 1200) || l.second.wagesToday < 0 || l.second.wagesToday > 3 ||
+            !validNumber(l.second.goalX, 0, 256) || !validNumber(l.second.goalY, 0, 256) || l.second.task.size() > 40 ||
+            l.second.reason.size() > 256 || l.second.goalCell.size() > 80 ||
+            l.second.homeCell.size() > 80 || l.second.relocationCell.size() > 80 ||
+            !validNumber(l.second.homeX, 0, 256) || !validNumber(l.second.homeY, 0, 256) ||
+            !validNumber(l.second.relocationX, 0, 256) || !validNumber(l.second.relocationY, 0, 256) ||
+            (!l.second.relocationCell.empty() && l.second.role != "resident"))
+            return false;
+    std::int64_t previous = 0;
+    for (const auto& e : s.ledger)
+    {
+        if (e.sequence <= previous || e.sequence >= s.nextEntry || e.day < 0 || e.day > s.budgetDay || e.coins < 0 ||
+            e.coins > MoneyLimit || e.quantity < 0 || e.quantity > 99 || e.kind.size() > 80 || e.from.size() > 80 ||
+            e.to.size() > 80 || (!e.item.empty() && !itemValid(e.item)))
+            return false;
+        previous = e.sequence;
+    }
+    if (s.residents.size() != (s.enabled ? 6u : 0u))
+        return false;
+    if (s.enabled)
+        for (const auto& id : {"npc_keeper", "npc_cook", "npc_porter", "npc_scout", "npc_smith", "npc_scribe"})
+        {
+            const std::string expected = std::string(id) == "npc_keeper"   ? "merchant"
+                                         : std::string(id) == "npc_cook"   ? "cook"
+                                         : std::string(id) == "npc_porter" ? "forager"
+                                                                           : "resident";
+            if (!s.accounts.count(id) || !s.residents.count(id) || s.residents.at(id).role != expected)
+                return false;
+        }
+    state_ = s;
+    for (auto& life : state_.residents) defaultHome(life.first, life.second);
+    return true;
+}
+} // namespace ratw

@@ -82,7 +82,11 @@ void continuousMovement()
     w.tick(.3);
     expect(near(p.position.x, stopped.x), "Stop prevents continued movement");
     expect(w.face("p", p.position.x, p.position.y - 5).ok, "Idle facing is accepted");
-    expect(near(p.facing, -std::acos(-1.0) / 2), "Idle facing points toward cursor");
+    expect(near(p.facing, 0), "Facing request does not instantly rotate the wolf");
+    w.tick(.1);
+    expect(p.facing < 0 && p.facing > -std::acos(-1.0) / 2, "Idle facing turns gradually toward cursor");
+    advance(w, .6);
+    expect(near(p.facing, -std::acos(-1.0) / 2), "Idle facing eventually reaches cursor direction");
     const auto facing = p.facing;
     w.tick(.2);
     expect(near(p.facing, facing), "Idle facing persists");
@@ -105,6 +109,106 @@ void continuousMovement()
     w.tick(-1);
     w.tick(std::numeric_limits<double>::infinity());
     expect(w.time() == before, "Invalid time cannot corrupt world clock");
+}
+void gradualFacing()
+{
+    World w;
+    auto& p = player(w);
+    const double pi = std::acos(-1.0);
+    p.facing = pi - .1;
+    const double target = -pi + .1;
+    const Vec2 origin = p.position;
+    expect(w.face("p", origin.x + std::cos(target), origin.y + std::sin(target)).ok,
+           "Facing accepts a target across the angular wrap boundary");
+    const double before = p.facing;
+    w.tick(.02);
+    const double step = std::remainder(p.facing - before, 2 * pi);
+    expect(step > 0 && step < .2, "Wrapped facing takes the short arc, not nearly a full revolution");
+    advance(w, .2);
+    expect(near(std::remainder(p.facing - target, 2 * pi), 0), "Wrapped turn lands on exact requested heading");
+    expect(near(p.position.x, origin.x) && near(p.position.y, origin.y), "Stationary turning never translates actor");
+    expect(!p.turning, "Completed manual turn releases its turning flag");
+    expect(w.face("p", origin.x, origin.y - 5).ok, "A second stationary turn may be requested");
+    w.move("p", 1, 0);
+    w.tick(.1);
+    expect(near(p.facing, 0) && !p.turning, "Actual movement cancels a pending manual turn and owns facing");
+    w.stop("p");
+    const double movementFacing = p.facing;
+    advance(w, .5);
+    expect(near(p.facing, movementFacing), "Canceled turn does not resume when movement stops");
+    expect(!w.face("p", std::numeric_limits<double>::quiet_NaN(), 4).ok, "Nonfinite manual facing target is rejected");
+    expect(!w.face("absent", 1, 1).ok, "Unknown actor cannot turn");
+}
+
+void postureMovement()
+{
+    World w;
+    auto& p = player(w);
+    p.position = {16.5, 12.5};
+    const Vec2 origin = p.position;
+    expect(w.setPosture("p", "sitting").ok && p.posture == "sitting", "Sitting is an explicit actor posture");
+    for (int i = 0; i < 4; ++i)
+    {
+        expect(w.move("p", 1, 0).ok, "Held movement is accepted during standing preparation");
+        w.tick(.1);
+        expect(near(p.position.x, origin.x), "Sitting wolf cannot translate during initial rise");
+    }
+    advance(w, .8);
+    expect(p.posture == "standing" && p.position.x > origin.x + .4,
+           "Repeated held input does not restart rise and eventually walks standing");
+    w.stop("p");
+    w.setPosture("p", "sitting");
+    const Vec2 stopped = p.position;
+    w.move("p", 1, 0);
+    w.tick(.1);
+    w.stop("p");
+    advance(w, 1.2);
+    expect(near(p.position.x, stopped.x) && near(p.position.y, stopped.y),
+           "Releasing movement during rising prevents delayed ghost movement");
+    expect(p.path.empty() && near(p.input.x, 0) && near(p.input.y, 0), "Release clears all queued travel intent");
+
+    p.position = origin;
+    w.setPosture("p", "lying");
+    expect(p.posture == "lying", "Lying is an explicit actor posture");
+    w.move("p", 1, 0);
+    w.tick(.1);
+    expect(near(p.position.x, origin.x), "Lying wolf does not instantly enter moving crouch");
+    advance(w, .6);
+    expect(p.posture == "crouching" && p.position.x > origin.x,
+           "Moving out of lying enters crouch-walk rather than full-speed standing");
+    const double crouchStart = p.position.x;
+    advance(w, .5);
+    const double crouchDistance = p.position.x - crouchStart;
+    expect(crouchDistance > .1 && crouchDistance < .65, "Crouch-walk is substantially slower than ordinary walk");
+    w.stop("p");
+    expect(p.posture == "crouching", "Stopping crouch-walk preserves low posture");
+    expect(w.setPosture("p", "standing").ok, "Crouching wolf can explicitly stand");
+    w.tick(.1);
+    expect(p.posture != "standing", "Explicit stand from crouching has a short preparation time");
+    advance(w, .8);
+    expect(p.posture == "standing", "Explicit stand eventually finishes");
+    const double walkStart = p.position.x;
+    w.move("p", 1, 0);
+    advance(w, .5);
+    expect(p.position.x - walkStart > crouchDistance * 2, "Standing restores normal walking speed");
+    w.stop("p");
+
+    p.position = origin;
+    w.setPosture("p", "sitting");
+    expect(w.moveTo("p", 21.5, 12.5).ok, "Click path may be queued from sitting");
+    w.tick(.1);
+    expect(near(p.position.x, origin.x) && !p.path.empty(), "Click path waits through standing preparation");
+    advance(w, 4);
+    expect(near(p.position.x, 21.5, .08) && p.path.empty(), "Queued click path resumes and completes after rising");
+    p.position = origin;
+    w.setPosture("p", "lying");
+    w.setPosture("p", "standing");
+    advance(w, .5);
+    expect(p.posture != "standing", "Standing fully from lying takes longer than a quick crouch transition");
+    advance(w, .8);
+    expect(p.posture == "standing", "Lying wolf can finish explicit full stand");
+    expect(!w.setPosture("p", "teleporting").ok, "Unrecognized posture is rejected");
+    expect(!w.setPosture("absent", "sitting").ok, "Unknown actor cannot change posture");
 }
 void clickPathing()
 {
@@ -243,6 +347,111 @@ void sensesAndWeather()
     a.cellId = "tavern";
     a.position = {16.5, 20.5};
     expect(w.hearingClarity("a", "b", Voice::Yell) >= muffled, "Open portal improves transmission");
+}
+void stealthPerception()
+{
+    World w;
+    auto& observer = player(w, "observer");
+    auto& source = player(w, "source");
+    observer.position = {16.5, 12.5};
+    source.position = {26.5, 12.5};
+    expect(w.visionClarity("observer", "source") > 0, "Standing wolf is visible along unobstructed room sightline");
+    expect(w.setPosture("source", "lying").ok, "Stealth fixture can lie down");
+    w.move("source", -1, 0);
+    advance(w, .7);
+    w.stop("source");
+    source.position = {26.5, 12.5};
+    expect(source.posture == "crouching", "Lying-to-movement produces persistent stealth posture");
+    expect(w.visionClarity("observer", "source") == 0, "Crouching wolf is entirely invisible from afar");
+    expect(!hasEntity(w.snapshot("observer"), "source"), "Distant sneaker is removed from observer snapshot");
+    expect(w.actions("observer", "source").empty(), "Hidden sneaker has no discoverable target actions");
+    expect(!w.interact("observer", "source", "inspect").ok,
+           "Forged inspect of hidden sneaker cannot reveal identity or state");
+    expect(!w.interact("observer", "source", "speak").ok, "Forged target interaction cannot identify hidden sneaker");
+    expect(w.hearingClarity("observer", "source") > 0 && !w.perceive("observer", "source").identifiable,
+           "Speaking while hidden may be heard without exposing speaker identity");
+    source.position = {22.5, 12.5};
+    source.sneakSkill = 0;
+    expect(w.visionClarity("observer", "source") > 0, "Novice sneaker becomes visible within close detection range");
+    source.sneakSkill = 100;
+    expect(w.visionClarity("observer", "source") == 0, "Higher sneak skill shrinks visual detection range");
+    source.position = {18.5, 12.5};
+    expect(w.visionClarity("observer", "source") > 0 && hasEntity(w.snapshot("observer"), "source"),
+           "Even expert sneakers are visible at sufficiently close range");
+    const double crouchSpeech = w.hearingClarity("observer", "source", Voice::Speak);
+    const double crouchWhisper = w.hearingClarity("observer", "source", Voice::Whisper);
+    source.posture = "standing";
+    expect(near(w.hearingClarity("observer", "source", Voice::Speak), crouchSpeech) &&
+               near(w.hearingClarity("observer", "source", Voice::Whisper), crouchWhisper),
+           "Sneak posture does not secretly change deliberate speech or whisper volume");
+    observer.position = {22.5, 6.5};
+    source.position = {24.5, 6.5};
+    source.posture = "crouching";
+    expect(w.visionClarity("observer", "source") == 0, "Nearby sneaker remains hidden behind opaque closed door");
+    expect(!hasEntity(w.snapshot("observer"), "source"), "Close detection cannot bypass line of sight");
+
+    observer.position = {16.5, 12.5};
+    source.position = {19.5, 12.5};
+    source.posture = "standing";
+    source.sneakSkill = 0;
+    w.move("source", 1, 0);
+    w.tick(.1);
+    const double walking = w.movementAudibility("observer", "source");
+    expect(walking > 0, "Nearby moving wolf produces audible movement");
+    source.posture = "crouching";
+    const double sneaking = w.movementAudibility("observer", "source");
+    expect(sneaking < walking, "Crouch movement is quieter than standing movement at same distance");
+    source.sneakSkill = 100;
+    expect(w.movementAudibility("observer", "source") < sneaking, "Sneak skill further reduces movement audibility");
+    source.sneakSkill = 0;
+    source.position = {19.5, 12.5};
+    observer.hearingSkill = 0;
+    const double noviceHearing = w.movementAudibility("observer", "source");
+    observer.hearingSkill = 100;
+    expect(w.movementAudibility("observer", "source") > noviceHearing,
+           "Trained hearing improves detection of quiet moving wolves");
+    observer.earHealth = .1;
+    expect(w.movementAudibility("observer", "source") < noviceHearing,
+           "Ear injury can outweigh trained movement hearing");
+    observer.earHealth = 0;
+    source.position = {16.7, 12.5};
+    expect(w.movementAudibility("observer", "source") == 0, "Total deafness prevents hearing even nearby sneaking");
+    observer.earHealth = 1;
+    w.stop("source");
+    expect(w.movementAudibility("observer", "source") == 0, "Stationary actor does not generate phantom footsteps");
+    w.move("source", 1, 0);
+    w.tick(.1);
+    source.cellId = "exterior";
+    expect(w.movementAudibility("observer", "source") == 0, "Movement sounds do not leak across unrelated cells");
+    expect(w.movementAudibility("absent", "source") == 0 && w.movementAudibility("observer", "absent") == 0,
+           "Unknown listeners and movement sources have no audibility");
+}
+
+void posturePortalTransitions()
+{
+    World w;
+    auto& p = player(w);
+    p.position = {16.5, 22.5};
+    w.setPosture("p", "sitting");
+    expect(w.interact("p", "door_main", "open").ok, "Seated wolf can request opening and entering portal");
+    expect(w.door("door_main")->open && p.cellId == "tavern", "Portal opens but cannot bypass standing delay");
+    w.tick(.1);
+    expect(p.cellId == "tavern", "Crossing remains queued during the initial stand");
+    advance(w, .9);
+    expect(p.cellId == "exterior" && p.posture == "standing", "Queued portal completes once standing is ready");
+    expect(near(p.position.x, 16.5) && near(p.position.y, 1.5) && p.path.empty(),
+           "Delayed portal preserves arrival anchor and stops");
+    w.setPosture("p", "lying");
+    expect(w.interact("p", "door_yard", "enter").ok, "Lying wolf may request entering an already open portal");
+    w.tick(.1);
+    expect(p.cellId == "exterior", "Open portal cannot bypass lying-to-crouch delay");
+    advance(w, .7);
+    expect(p.cellId == "tavern" && p.posture == "crouching", "Lying portal crossing preserves resulting sneak posture");
+    w.setPosture("p", "sitting");
+    w.interact("p", "door_main", "enter");
+    w.stop("p");
+    advance(w, 1);
+    expect(p.cellId == "tavern", "Stop cancels queued portal crossing as well as ordinary movement");
 }
 void mapMemory()
 {
@@ -384,6 +593,8 @@ void persistedRoundtripAndPrivacy()
     p.earHealth = .7;
     p.vision = 1.1;
     p.eyeHealth = .9;
+    p.sneakSkill = 72;
+    p.hearingSkill = 38;
     p.speakingColor = 17;
     original.entity("npc_scout")->leaderId = "p";
     original.entity("npc_scout")->activity = "resting beside the hearth";
@@ -404,6 +615,8 @@ void persistedRoundtripAndPrivacy()
     expect(near(returned->hearing, .8) && near(returned->earHealth, .7) && near(returned->vision, 1.1) &&
                near(returned->eyeHealth, .9) && returned->speakingColor == 17,
            "Sense modifiers, injuries and selected color survive reload");
+    expect(near(returned->sneakSkill, 72) && near(returned->hearingSkill, 38),
+           "Sneak and hearing training survive restart independently of sense health");
     expect(restored.entity("npc_scout")->leaderId == "p" &&
                restored.entity("npc_scout")->activity == "resting beside the hearth",
            "Resident relationship and activity survive reload");
@@ -495,6 +708,40 @@ void malformedPersistence()
     bad.players[0].eyeHealth = 1.5;
     reject(bad, "Reject invalid saved injury fraction");
     bad = saved;
+    bad.players[0].sneakSkill = std::numeric_limits<double>::quiet_NaN();
+    reject(bad, "Reject nonfinite saved sneak skill");
+    bad = saved;
+    bad.players[0].sneakSkill = -1;
+    reject(bad, "Reject negative saved sneak skill");
+    bad = saved;
+    bad.players[0].sneakSkill = 101;
+    reject(bad, "Reject saved sneak skill above supported range");
+    bad = saved;
+    bad.players[0].hearingSkill = std::numeric_limits<double>::infinity();
+    reject(bad, "Reject nonfinite saved hearing skill");
+    bad = saved;
+    bad.players[0].hearingSkill = -1;
+    reject(bad, "Reject negative saved hearing skill");
+    bad = saved;
+    bad.players[0].hearingSkill = 101;
+    reject(bad, "Reject saved hearing skill above supported range");
+    bad = saved;
+    bad.players[0].turnTarget = std::numeric_limits<double>::quiet_NaN();
+    reject(bad, "Reject nonfinite saved turn target");
+    bad = saved;
+    bad.players[0].postureRemaining = std::numeric_limits<double>::infinity();
+    reject(bad, "Reject nonfinite saved posture timer");
+    bad = saved;
+    bad.players[0].posture = "rising";
+    bad.players[0].postureRemaining = .4;
+    reject(bad, "Reject transitional posture without a valid final target");
+    bad = saved;
+    bad.players[0].postureTarget = "standing";
+    reject(bad, "Reject stable posture carrying a stale transition target");
+    bad = saved;
+    bad.players[0].posture = "invisible";
+    reject(bad, "Reject unsupported saved posture");
+    bad = saved;
     bad.players.push_back(bad.players.front());
     reject(bad, "Reject duplicate player identity");
     bad = saved;
@@ -504,6 +751,356 @@ void malformedPersistence()
     bad.weather["exterior"] = static_cast<Weather>(33);
     reject(bad, "Reject invalid saved weather enum");
 }
+void movementPersistence()
+{
+    World w;
+    auto& p = player(w);
+    expect(p.sneakSkill == 0 && p.hearingSkill == 0, "New or legacy-default actors start with untrained skills");
+    p.sneakSkill = 100;
+    p.hearingSkill = 100;
+    w.face("p", p.position.x, p.position.y - 4);
+    w.tick(.1);
+    expect(p.turning, "Persistence fixture contains a pending gradual turn");
+    auto saved = w.save();
+    expect(!saved.players[0].turning, "Manual turning intent is not persisted");
+    World fresh;
+    expect(fresh.restore(saved).ok, "Maximum supported skills survive a valid restore");
+    const double restoredFacing = fresh.entity("p")->facing;
+    advance(fresh, 1);
+    expect(near(fresh.entity("p")->facing, restoredFacing), "Restart cannot resume an old unfinished manual turn");
+    w.setPosture("p", "lying");
+    w.move("p", 1, 0);
+    w.tick(.1);
+    expect(p.posture == "rising", "Persistence fixture contains an in-progress posture transition");
+    saved = w.save();
+    expect(saved.players[0].posture == "crouching" && saved.players[0].postureRemaining == 0 &&
+               saved.players[0].postureTarget.empty(),
+           "Save resolves rising to stable target posture without persisting a timer");
+    expect(fresh.restore(saved).ok, "Normalized crouch state restores safely");
+    const Vec2 position = fresh.entity("p")->position;
+    advance(fresh, 1);
+    expect(fresh.entity("p")->posture == "crouching" && near(fresh.entity("p")->position.x, position.x) &&
+               near(fresh.entity("p")->position.y, position.y),
+           "Restarted crouch has no queued travel or half-finished transition");
+}
+
+// Scent tests isolate authored residents so anonymous aggregate cues can be
+// asserted without accidentally relying on a demo NPC's position or routine.
+void isolateScentResidents(World& w)
+{
+    quiet(w);
+    for (const auto& entry : w.entities())
+        if (entry.second.npc)
+        {
+            auto* resident = w.entity(entry.first);
+            resident->cellId = "loft";
+            resident->position = {8.5, 6.5};
+        }
+}
+void scentWindAndWeather()
+{
+    World w;
+    auto& observer = player(w, "observer");
+    auto& source = player(w, "source");
+    isolateScentResidents(w);
+    observer.cellId = source.cellId = "exterior";
+    observer.position = {22.5, 12.5};
+    source.position = {14.5, 12.5};
+    w.setWeather("exterior", Weather::Clear);
+    const double pi = std::acos(-1.0);
+    expect(w.setWind("exterior", 0, .5).ok, "Outdoor wind accepts eastward air flow");
+    const double downwind = w.scentClarity("observer", "source");
+    expect(downwind > 0, "Downwind observer detects an upwind wolf beyond calm scent range");
+    expect(w.scentClarity("source", "observer") < downwind,
+           "Scent transport follows wind direction instead of symmetric distance alone");
+    expect(w.setWind("exterior", pi, .5).ok, "Wind direction can reverse");
+    expect(w.scentClarity("source", "observer") > w.scentClarity("observer", "source"),
+           "Reversing wind reverses which wolf has the scent advantage");
+    w.setWind("exterior", pi / 2, .5);
+    expect(w.scentClarity("observer", "source") < downwind,
+           "Crosswind carries less useful scent than direct downwind flow");
+    w.setWind("exterior", 0, 0);
+    expect(w.scentClarity("observer", "source") == 0, "Calm air does not grant long-distance smell");
+    source.position = {21.0, 12.5};
+    expect(w.scentClarity("observer", "source") > 0, "Nearby wolves remain scentable in still air");
+    const auto calm = w.scentCues("observer");
+    observer.eyeHealth = 0;
+    const auto blindCalm = w.scentCues("observer");
+    expect(!blindCalm.empty() && !blindCalm.front().windborne, "Calm proximity cue is not labeled windborne");
+    expect(calm.empty(), "A clearly visible source does not duplicate itself as an unknown scent cue");
+    source.position = {14.5, 12.5};
+    w.setWind("exterior", 0, .5);
+    w.setWeather("exterior", Weather::Rain);
+    const double rain = w.scentClarity("observer", "source");
+    expect(rain < downwind, "Rain attenuates airborne scent compared with clear weather");
+    w.setWeather("exterior", Weather::Snow);
+    expect(w.scentClarity("observer", "source") < downwind,
+           "Snow attenuates airborne scent compared with clear weather");
+    w.setWeather("exterior", Weather::Clear);
+    observer.scentSkill = 100;
+    const double trained = w.scentClarity("observer", "source");
+    expect(trained > downwind, "Scent training improves a marginal downwind detection");
+    observer.noseHealth = .1;
+    expect(w.scentClarity("observer", "source") < downwind, "Nose injury can outweigh trained scent ability");
+    observer.noseHealth = 0;
+    source.position = {22.6, 12.5};
+    expect(w.scentClarity("observer", "source") == 0 && w.scentCues("observer").empty(),
+           "Complete loss of smell suppresses even adjacent body scent");
+    observer.noseHealth = 1;
+    observer.smell = 0;
+    expect(w.scentClarity("observer", "source") == 0, "Zero smell sensitivity disables scent perception");
+    observer.smell = 1;
+    expect(w.scentClarity("observer", "observer") == 0, "A wolf never receives a cue for its own scent");
+    expect(w.scentClarity("absent", "source") == 0 && w.scentClarity("observer", "absent") == 0,
+           "Unknown scent observers and sources produce no detection");
+    source.position = {1e300, 12.5};
+    expect(w.scentClarity("observer", "source") == 0,
+           "Huge finite scent coordinates are rejected before air-grid conversion");
+    source.position = {std::numeric_limits<double>::quiet_NaN(), 12.5};
+    expect(w.scentClarity("observer", "source") == 0, "Nonfinite scent coordinates cannot corrupt perception");
+    source.cellId = "tavern";
+    expect(w.scentClarity("observer", "source") == 0, "Live body scent stays inside its stored local cell");
+}
+void scentAirPathsAndPrivacy()
+{
+    World w;
+    auto& observer = player(w, "observer");
+    auto& source = player(w, "source");
+    isolateScentResidents(w);
+    observer.position = {22.5, 6.5};
+    source.position = {24.5, 6.5};
+    expect(w.scentClarity("observer", "source") == 0, "Closed sealed pantry prevents airborne body scent");
+    expect(w.scentCues("observer").empty(), "Sealed air barrier cannot leak a scent direction cue");
+    expect(w.interact("observer", "door_pantry", "open").ok, "Scent fixture opens the actual air barrier");
+    expect(w.scentClarity("observer", "source") > 0, "Opening an air barrier admits nearby body scent");
+    w.interact("observer", "door_pantry", "close");
+    expect(w.scentClarity("observer", "source") == 0, "Closing an air barrier immediately cuts its live scent route");
+
+    observer.position = {16.5, 12.5};
+    source.position = {18.5, 12.5};
+    observer.smell = 2;
+    auto* wall = w.cell("tavern")->tile(17, 12);
+    wall->glyph = '#';
+    wall->terrain = Terrain::Wall;
+    wall->solid = wall->opaque = true;
+    expect(!w.lineOfSight("tavern", observer.position, source.position), "Corner fixture blocks direct visual sight");
+    expect(w.scentClarity("observer", "source") > 0, "Scent travels around an obstacle through a connected air path");
+    expect(!hasEntity(w.snapshot("observer"), "source"), "Scent around an obstacle never supplies a visual wolf token");
+    expect(w.actions("observer", "source").empty() && !w.interact("observer", "source", "inspect").ok,
+           "Knowing an anonymous scent direction never unlocks target identity or inspection");
+    expect(!w.perceive("observer", "source").identifiable,
+           "Scent detection cannot upgrade an unseen speaker to an identified character");
+    const double standingScent = w.scentClarity("observer", "source");
+    source.posture = "crouching";
+    source.sneakSkill = 100;
+    expect(near(w.scentClarity("observer", "source"), standingScent),
+           "An expert sneak remains equally scentable; stealth does not erase body odor");
+
+    observer.eyeHealth = 0;
+    observer.earHealth = 0;
+    const auto knowledgeBefore = w.memories("observer");
+    const auto blind = w.snapshot("observer");
+    expect(!blind.scentCues.empty() && !blind.movementHeard,
+           "A blind deaf wolf can receive scent without visual or movement-sound detection");
+    expect(!hasEntity(blind, "source") && blind.entities.size() == 1,
+           "Scent-only snapshot includes the observer but no hidden character record");
+    bool unchanged = w.memories("observer").size() == knowledgeBefore.size();
+    for (const auto& entry : knowledgeBefore)
+    {
+        const auto& after = w.memories("observer").at(entry.first);
+        unchanged = unchanged && after.knowledge == entry.second.knowledge && after.glyphs == entry.second.glyphs &&
+                    after.observed == entry.second.observed;
+    }
+    expect(unchanged, "Receiving scent alone cannot promote cells or terrain into visual map memory");
+    source.position = {16.5, 13.5};
+    source.velocity = {.2, 0};
+    source.posture = "standing";
+    observer.noseHealth = 0;
+    observer.earHealth = 1;
+    expect(w.snapshot("observer").movementHeard && w.snapshot("observer").scentCues.empty(),
+           "An anosmic blind wolf can still hear nearby movement independently of scent");
+    source.velocity = {};
+    expect(!w.snapshot("observer").movementHeard, "Stationary wolves do not leave stale movement-heard flags");
+
+    World sealed;
+    auto& outside = player(sealed, "outside");
+    auto& inside = player(sealed, "inside");
+    isolateScentResidents(sealed);
+    outside.position = {16.5, 11.5};
+    inside.position = {18.5, 12.5};
+    outside.smell = 2;
+    for (int y = 11; y <= 13; ++y)
+        for (int x = 17; x <= 19; ++x)
+            if ((x != 18 || y != 12) && (x != 17 || y != 11))
+            {
+                auto* barrier = sealed.cell("tavern")->tile(x, y);
+                barrier->terrain = Terrain::Wall;
+                barrier->solid = barrier->opaque = true;
+            }
+    expect(sealed.scentClarity("outside", "inside") == 0,
+           "Air cannot leak diagonally through the touching corners of a sealed enclosure");
+    auto* opening = sealed.cell("tavern")->tile(17, 12);
+    *opening = Tile{};
+    expect(sealed.scentClarity("outside", "inside") > 0,
+           "Opening a real cardinal air connection restores scent into an enclosure");
+    const double indoorScent = sealed.scentClarity("outside", "inside");
+    sealed.setWeather("tavern", Weather::Rain);
+    expect(near(sealed.scentClarity("outside", "inside"), indoorScent),
+           "Outdoor rain attenuation does not reduce scent inside a sheltered room");
+}
+void anonymousScentSectors()
+{
+    World w;
+    auto& observer = player(w, "observer");
+    auto& source = player(w, "source");
+    isolateScentResidents(w);
+    observer.cellId = source.cellId = "exterior";
+    observer.position = {22.5, 12.5};
+    source.position = {14.5, 12.5};
+    observer.eyeHealth = 0;
+    w.setWeather("exterior", Weather::Clear);
+    w.setWind("exterior", 0, .5);
+    auto cues = w.scentCues("observer");
+    expect(cues.size() == 1 && cues[0].sector == 4 && cues[0].windborne,
+           "Eastward air flow reveals a broad west/upwind source sector, not the air-flow heading");
+    expect(cues[0].strength >= 1 && cues[0].strength <= 3, "Scent intensity is quantized to three coarse levels");
+    auto& another = player(w, "another");
+    another.cellId = "exterior";
+    another.position = {13.5, 12.5};
+    cues = w.scentCues("observer");
+    expect(cues.size() == 1 && cues[0].sector == 4,
+           "Multiple hidden wolves in one direction aggregate into one cue without an exact count");
+    expect(w.snapshot("observer").scentCues.size() == 1,
+           "Observer snapshot uses the same anonymous aggregated scent projection");
+    w.removePlayer("another");
+    w.setWind("exterior", 0, 0);
+    const double pi = std::acos(-1.0);
+    for (int sector = 0; sector < 8; ++sector)
+    {
+        const double angle = sector * pi / 4;
+        source.position = {observer.position.x + 1.4 * std::cos(angle), observer.position.y + 1.4 * std::sin(angle)};
+        cues = w.scentCues("observer");
+        expect(cues.size() == 1 && cues[0].sector == sector,
+               "Eight coarse scent sectors preserve east-zero, clockwise screen-space compass convention");
+    }
+    observer.eyeHealth = 1;
+    expect(w.scentCues("observer").empty(), "A source stops being an unknown scent marker once visually perceived");
+    w.removePlayer("source");
+    expect(w.scentCues("observer").empty(),
+           "Removing a wolf removes its body scent without inventing persistent tracks");
+    expect(w.scentCues("absent").empty(), "Unknown observers receive no scent projection");
+}
+void windAndScentPersistence()
+{
+    World w;
+    auto& p = player(w);
+    p.smell = .8;
+    p.noseHealth = .7;
+    p.scentSkill = 64;
+    const double pi = std::acos(-1.0);
+    expect(w.setWind("exterior", pi / 3, .6, true).ok, "Outdoor variable wind has an explicit persistent base");
+    expect(!w.setWind("tavern", 0, .5).ok, "Sheltered indoor cell rejects nonzero authored wind");
+    expect(w.setWind("tavern", 0, 0).ok && w.windAt("tavern").strength == 0,
+           "Sheltered indoor wind remains calm even when the outdoor weather blows");
+    const auto previous = w.windAt("exterior");
+    w.tick(.01);
+    const auto next = w.windAt("exterior");
+    expect(std::abs(std::remainder(next.direction - previous.direction, 2 * pi)) < .02 &&
+               std::abs(next.strength - previous.strength) < .02,
+           "Weather-clock wind gusts evolve smoothly instead of jumping at frame boundaries");
+    advance(w, 3.7);
+    const auto effective = w.windAt("exterior");
+    const auto saved = w.save();
+    expect(saved.winds.count("exterior") && near(saved.winds.at("exterior").direction, pi / 3) &&
+               near(saved.winds.at("exterior").strength, .6) && saved.winds.at("exterior").variable,
+           "Persistence stores authored base wind, not a transient gust sample");
+    World restored;
+    expect(restored.restore(saved).ok, "Wind and scent senses restore alongside existing state");
+    const auto* returned = restored.entity("p");
+    expect(near(returned->smell, .8) && near(returned->noseHealth, .7) && near(returned->scentSkill, 64),
+           "Smell sensitivity, nose health, and scent training survive restart independently");
+    const auto restartedWind = restored.windAt("exterior");
+    expect(near(restartedWind.direction, effective.direction, 1e-10) &&
+               near(restartedWind.strength, effective.strength, 1e-10),
+           "Saved simulation clock restores the same live gust phase");
+    auto legacy = saved;
+    legacy.winds.clear();
+    legacy.players[0].smell = 1;
+    legacy.players[0].noseHealth = 1;
+    legacy.players[0].scentSkill = 0;
+    expect(restored.restore(legacy).ok, "Legacy save without wind entries remains accepted");
+    expect(near(restored.entity("p")->smell, 1) && near(restored.entity("p")->noseHealth, 1) &&
+               restored.entity("p")->scentSkill == 0,
+           "Legacy-default actors retain healthy smell and untrained scent skill");
+
+    expect(restored.restore(saved).ok, "Validation fixture returns to authored wind and scent state");
+    auto reject = [&](PersistedWorld bad, const std::string& reason) {
+        expect(!restored.restore(bad).ok, reason);
+        const auto still = restored.windAt("exterior");
+        expect(near(still.direction, effective.direction, 1e-10) && near(still.strength, effective.strength, 1e-10) &&
+                   restored.entity("p")->scentSkill == 64 && restored.time() == saved.time,
+               "Rejected wind or scent restore is atomic for actor state, base wind, and gust clock");
+    };
+    auto bad = saved;
+    bad.winds["exterior"].direction = std::numeric_limits<double>::quiet_NaN();
+    reject(bad, "Reject nonfinite persisted wind heading");
+    bad = saved;
+    bad.winds["exterior"].strength = std::numeric_limits<double>::infinity();
+    reject(bad, "Reject nonfinite persisted wind strength");
+    bad = saved;
+    bad.winds["exterior"].strength = -1;
+    reject(bad, "Reject negative persisted wind strength");
+    bad = saved;
+    bad.winds["exterior"].strength = 1.1;
+    reject(bad, "Reject persisted wind above its normalized range");
+    bad = saved;
+    bad.winds["tavern"].strength = .5;
+    reject(bad, "Reject outdoor-strength wind injected into a sheltered room");
+    bad = saved;
+    bad.winds["nonexistent"] = {};
+    reject(bad, "Reject wind records for unknown cells");
+    bad = saved;
+    bad.players[0].smell = -1;
+    reject(bad, "Reject negative persisted smell sensitivity");
+    bad = saved;
+    bad.players[0].smell = std::numeric_limits<double>::quiet_NaN();
+    reject(bad, "Reject nonfinite persisted smell sensitivity");
+    bad = saved;
+    bad.players[0].noseHealth = 1.1;
+    reject(bad, "Reject persisted nose health outside the injury fraction range");
+    bad = saved;
+    bad.players[0].noseHealth = -1;
+    reject(bad, "Reject negative persisted nose health");
+    bad = saved;
+    bad.players[0].noseHealth = std::numeric_limits<double>::quiet_NaN();
+    reject(bad, "Reject nonfinite persisted nose health");
+    bad = saved;
+    bad.players[0].scentSkill = std::numeric_limits<double>::infinity();
+    reject(bad, "Reject nonfinite persisted scent training");
+    bad = saved;
+    bad.players[0].scentSkill = -1;
+    reject(bad, "Reject negative persisted scent skill");
+    bad = saved;
+    bad.players[0].scentSkill = 101;
+    reject(bad, "Reject persisted scent skill above the supported range");
+    expect(!w.setWind("absent", 0, .5).ok, "Unknown cell cannot receive wind edits");
+    expect(!w.setWind("exterior", std::numeric_limits<double>::quiet_NaN(), .5).ok,
+           "Nonfinite live wind heading is rejected");
+    expect(!w.setWind("exterior", 0, std::numeric_limits<double>::infinity()).ok,
+           "Nonfinite live wind strength is rejected");
+    expect(!w.setWind("exterior", 0, -.1).ok && !w.setWind("exterior", 0, 1.1).ok,
+           "Live wind strengths outside normalized range are rejected");
+    expect(near(w.cell("exterior")->wind.direction, pi / 3) && near(w.cell("exterior")->wind.strength, .6),
+           "Rejected live wind edits preserve the valid authored wind");
+    expect(w.windAt("absent").strength == 0, "Unknown cells return no measurable wind");
+    expect(w.setWind("exterior", pi * 6 + .4, 1).ok && near(w.windAt("exterior").direction, .4),
+           "Finite wind headings normalize around the compass without changing direction");
+    const auto constant = w.windAt("exterior");
+    advance(w, 1);
+    expect(near(w.windAt("exterior").direction, constant.direction, 1e-10) &&
+               near(w.windAt("exterior").strength, constant.strength, 1e-10),
+           "Nonvariable wind does not acquire unintended weather-clock gusts");
+}
 void schedules()
 {
     World w;
@@ -512,7 +1109,10 @@ void schedules()
     const auto* scout = w.entity("npc_scout");
     expect(scout->cellId == "exterior" || scout->position.y > start.y + 1,
            "Scheduled resident walks toward next routine");
-    expect(scout->activity == "checking the road", "Schedule exposes current activity");
+    const auto* life = w.society().resident("npc_scout");
+    expect(life && life->task == "paid work" && life->goalCell == "exterior" &&
+               scout->activity == life->task + " — " + life->reason,
+           "The authoritative daytime work task and its reason are exposed as current activity");
     World party;
     party.entity("npc_scout")->leaderId = "p";
     const auto held = party.entity("npc_scout")->position;
@@ -527,16 +1127,25 @@ int main()
     {
         authoredWorld();
         continuousMovement();
+        gradualFacing();
+        postureMovement();
         clickPathing();
         transitions();
         gentleCollision();
         sensesAndWeather();
+        stealthPerception();
+        posturePortalTransitions();
         mapMemory();
         elevationAndPersistence();
         schedules();
         cellFiles();
         persistedRoundtripAndPrivacy();
         malformedPersistence();
+        movementPersistence();
+        scentWindAndWeather();
+        scentAirPathsAndPrivacy();
+        anonymousScentSectors();
+        windAndScentPersistence();
         std::cout << "Passed " << checks << " world behavior assertions.\n";
         return 0;
     }

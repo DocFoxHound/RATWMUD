@@ -15,4 +15,7 @@ class FRatwPersistence
 
   private:
     FSQLiteDatabase Database;
+    FString DatabasePath;
+    FString SecurityError;
+    bool SecureFiles();
 };

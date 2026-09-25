@@ -4,6 +4,7 @@
 /DerivedDataCache/
 /build*/
 /artifacts/logs/
+/artifacts/live-npc/
 /artifacts/package/
 /artifacts/screenshots/*.json
 /artifacts/packaged-evidence/*.json

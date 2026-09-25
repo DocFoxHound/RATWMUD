@@ -1,7 +1,7 @@
 # Runs Against the World — Product Vision
 
 **Status:** Working vision, not an implementation plan  
-**Date:** 2026-09-20  
+**Date:** 2026-09-21  
 **Purpose:** Record the experience we are trying to create before choosing detailed systems, milestones, or production scope.
 
 ## Vision in One Sentence
@@ -92,13 +92,21 @@ The previously established split-window concept remains the working direction an
 
 The interface should support both pointing and typing. Every visual action should have a keyboard-accessible equivalent, and experienced players should be able to use a command palette or textual commands without hunting through menus.
 
-During ordinary play the client is in **navigation mode**. `WASD` moves the wolf directly, while clicking a reachable point requests intelligently pathed movement to that location. Pressing `Enter` opens or resumes **type mode**, preventing movement keys from firing while the player writes. In type mode, unmodified `Enter` sends the post and returns to navigation, while `Shift`-`Enter` inserts a newline. `Escape` returns to navigation without sending and preserves the unfinished draft for the next time type mode opens. The composer is designed for substantial roleplay posts rather than short chat alone. Facing follows accepted movement; while stationary, `Ctrl`-click turns the wolf toward the selected world point without moving.
+During ordinary play the client is in **navigation mode**. `WASD` moves the wolf directly, while clicking a reachable point requests intelligently pathed movement to that location. Pressing `Enter` opens or resumes **type mode**, preventing movement keys from firing while the player writes. In type mode, unmodified `Enter` sends the post and returns to navigation, while `Shift`-`Enter` inserts a newline. `Escape` returns to navigation without sending and preserves the unfinished draft for the next time type mode opens. The composer is designed for substantial roleplay posts rather than short chat alone. Facing follows accepted movement. While stationary, holding `Alt` and moving the mouse previews a faded `>` toward that point; clicking commits a gradual turn without movement. `Ctrl`-click remains a compatibility shortcut to the same deliberate turn.
 
 Intelligent pathing never substitutes for an interaction decision. If a route reaches a closed door or another operable barrier, the wolf may approach it but stops there and identifies the obstruction. The player must explicitly choose **Open** through the contextual menu or an equivalent command before movement can continue.
 
-After opening a door that connects two areas inside the same cell, the previous path remains cancelled and the player issues a new movement command. If the opened door is itself a portal into another stored cell, the explicit **Open** action completes that transition. An unobstructed boundary exit at the edge of the local map transitions automatically when the player runs or click-paths across it.
+During ordinary local navigation, opening a door that connects two areas inside the same cell leaves the previous path cancelled and the player issues a new movement command. An explicitly selected world journey may instead resume after that Open action. If the opened door is itself a portal into another stored cell, the explicit **Open** action completes that transition after any required standing/crouching preparation. A seated or lying wolf cannot bypass the physical delay by opening a portal. An unobstructed boundary exit at the edge of the local map transitions automatically when the player runs or click-paths across it.
 
-Every cell transition places the wolf at the authored arrival anchor corresponding to that connection and stops there. Velocity, click-path state, and carried movement intent are cleared; continuing into the new cell requires fresh movement input. On oversized cells, the local viewport recenters on the arrival point.
+Every cell transition places the wolf at the authored arrival anchor corresponding to that connection and stops there. Velocity, local click-path state, and carried held input are cleared. Ordinary navigation requires fresh movement input; an explicitly selected world journey may issue the next local leg after a brief 0.25-second pause. On oversized cells, the local viewport recenters on the arrival point.
+
+Pace should be a deliberate travel choice. Wheel over the local map or Page Up /
+Page Down raises or lowers it from walking toward sprinting, with dexterity
+determining top speed. A readable gait/stamina strip distinguishes sprint,
+recovery, drain, and physical limitations. Recovery continues even while moving,
+so a wolf can find a sustainable trot instead of repeatedly sprinting and stopping.
+Shift-wheel and Ctrl-wheel retain vertical/horizontal map panning; writing and
+modal panels suppress pace changes.
 
 An in-character post may interleave quoted speech, narration, and slash actions. For example:
 
@@ -108,7 +116,7 @@ An in-character post may interleave quoted speech, narration, and slash actions.
 
 The client parses this into an ordered roleplay flow rather than printing raw commands. Speech, the narrated bridge, the sigh, and the final speech remain attached to one speaker-owned entry while the text is progressively revealed. Only one roleplay post reveals at a time. If another player sends while an entry is still unfolding, the later post waits in server order and begins only after the active entry finishes. Reveal speed is a local accessibility preference, including an instant option; it never changes authoritative event order or delays server-side consequences. A separate local OOC channel reaches only the current cell and does not produce in-world speaking cues or roleplay rewards.
 
-In-character speech is spatial. Each speech segment has a voice level—initially **whisper**, **speak**, or **yell**—and each listener has a hearing sensitivity affected by innate ability, age, temporary conditions, and injuries such as ear damage. With normal speech, ordinary hearing, and no obstruction, words should remain clear for roughly half the fixed acoustic span established by the standard reference cell. Beyond that range, comprehension declines progressively and unheard words appear as `...` in that listener's narrative flow. A whisper requires close proximity. A yell carries farther and may propagate through exits into neighboring cells, losing clarity through distance, walls, doors, weather, and other acoustic conditions.
+In-character speech is spatial. Each speech segment has a voice level—initially **whisper**, **speak**, or **yell**—and each listener has a hearing sensitivity affected by innate ability, hearing skill, age, temporary conditions, and injuries such as ear damage. With normal speech, ordinary hearing, and no obstruction, words should remain clear for roughly half the fixed acoustic span established by the standard reference cell. Beyond that range, comprehension declines progressively and unheard words appear as `...` in that listener's narrative flow. A whisper requires close proximity. A yell carries farther and may propagate through exits into neighboring cells, losing clarity through distance, walls, doors, weather, and other acoustic conditions.
 
 The server creates the perceived version separately for each listener. A client never receives words that its character failed to hear, and moving closer afterward does not retroactively restore them. Word loss is stable for that listener and post rather than changing on refresh. Local OOC is interface communication, not diegetic sound, and therefore does not use the hearing simulation.
 
@@ -161,7 +169,7 @@ conceptual cardinal snapshots
 
 In the graphical client, the source mark remains the `>` character: its small glyph-sprite is rotated graphically and moved around an invisible token-space ring. It does not occupy a world tile or overwrite the terrain glyph beneath the wolf. A plain-text compatibility view may substitute `^`, `>`, `v`, and `<` at cardinal facings.
 
-While a wolf moves, the marker follows the direction of accepted travel. When movement stops, it retains the last facing. A stationary player can deliberately change facing with `Ctrl`-click without changing position.
+While a wolf moves, the marker follows the direction of accepted travel. When movement stops, it retains the last facing. Holding `Alt` while stationary shows a faded candidate marker toward the mouse without changing actual facing. Alt-click commits the target; the actual marker turns smoothly along the shortest arc, initially at 180 degrees/second. Ctrl-click remains supported. New movement cancels the manual turn. Previewing a turn is local UI information, not a change other players see.
 
 The controlled character, other player characters, and NPCs use three separate semantic color roles. Selection, hostility, party membership, injury, and other temporary states should use additional outlines or marks rather than replacing identity color. Accessibility modes must provide a non-color distinction as well.
 
@@ -170,6 +178,12 @@ Each player character also selects a speaking color from a curated palette of ap
 The glyph should not flap its mouth when a player speaks or pantomime prose. While a player is actively entering text in the in-character composer, observers see a small speech bubble containing `...` above the wolf; the mark clears after typing inactivity, mode exit, send, or disconnect. As soon as the server accepts a post containing speech, a speaking marker appears above the wolf for roughly three to five seconds and fades, regardless of where that post currently sits in a viewer's reveal queue. Both indicators use the character's selected speaking color. Full text never appears over the map; the actual prose and its progressive reveal exist only in the narrative side of the interface.
 
 Whitelisted posture and state commands such as `/sit`, `/lay`, `/stand`, and `/me …` can change a character's current declared state. The controlled player sees that state in their own UI, and other players can see it when inspecting the character. Inline actions such as `/sigh`, `/action …`, and `/pose …` become ordered action segments in the roleplay flow; they do not require a literal character animation.
+
+Physical posture also affects traversal. A sitting wolf briefly stands before moving; a lying wolf instead prepares a crouch and then travels in a slow sneak. Initial timings are 0.65 seconds from sitting to standing and 0.45 seconds from lying to crouching, followed by 30% normal movement speed while crouched. `/stand` takes 1 second from lying or 0.5 seconds from crouching. Held input and click paths wait for preparation without restarting it; stopping cancels travel, not the body's completion of its rise. Crouching persists until deliberately changed. Stable posture and skills survive restart, but travel intentions, pending portal crossings, and manual turn targets do not.
+
+A sneaking wolf should be absent from afar and appear only once close enough for that observer to detect. Sneak skill narrows the detection distance; vision, injury, obstacles, and weather still matter. The server omits hidden actors rather than trusting a client to hide their graphics. Movement noise is also reduced by sneak skill and countered by the observer's hearing skill and ear health. Audible unseen movement may produce a restrained anonymous pawstep cue, never a name, exact position, or revealed token. Initial range formulas belong to the perception design document and remain adjustable.
+
+The current provisional interpretation is that sneaking quiets movement rather than automatically changing deliberately selected speech volume. Normal speech and yelling can still give an unseen speaker away acoustically without confirming their identity. Whether crouching should also attenuate speech remains a question for the user; it is not yet a settled design decision.
 
 ### Character Art and Sheets
 
@@ -224,6 +238,13 @@ Scrolling or panning changes only the viewport. It never reveals terrain, entiti
 
 The active world map is a perception-limited neighborhood view. It shows the current cell and directly adjacent cells. Adjacent cells that are presently visible and within the player's line of sight through doors, windows, boundaries, vertical openings, elevation, weather, and character abilities render normally. Direct visual observation is the only way to create spatial memory: an adjacent cell merely glimpsed from elsewhere later remains as a faint, coarse outline, while a cell the character has physically entered can retain a more detailed dim outline. Both are remembered and potentially stale topology, never live occupants or current state. An external map, directions, hearsay, or general lore does not reveal a cell in this interface. Completely unobserved adjacent cells do not appear, and the view does not expand into a remote omniscient atlas.
 
+That **Nearby** view remains unchanged. A separate **Known Routes** mode may show
+cached names, dimensions, and placement for all cells the character has visited,
+including non-adjacent places. It is a destination selector, not remote sight:
+no remote glyph detail, current doors/weather, or occupants are exposed. A
+glimpsed outline is not a travel destination, and unseen connecting shortcuts
+are not inferred simply because both places have been visited.
+
 The world map normally remains a top-down 2D composition. When a currently visible adjacent cell is spatially stacked directly above or below another visible cell, the view shifts into a restrained isometric presentation so the player can understand the Z relationship. Unreal may use true 3D positioning and a tilted camera for this view while continuing to render the world with glyph tiles. A merely remembered vertical outline does not trigger this shift; when no currently visible vertical stack exists, the world map returns to the simpler 2D presentation. A non-isometric accessibility representation must communicate the same layers with explicit above/below labels.
 
 ### Recommended Movement Compromise
@@ -234,6 +255,31 @@ The recommended middle ground is:
 - **discrete transitions through authored exits into separately stored cells**.
 
 This preserves the strong sense of place and manageable simulation boundaries of a MUD room without reducing a tavern, woodland clearing, or market to a single point. Terrain tiles provide broad surface, elevation, cover, and environmental data, but wolves have continuous local coordinates and are not restricted to tile centers. Collision, pathing, and line of sight may use finer continuous geometry than the visible terrain-glyph grid. Several wolves may occupy different continuous positions inside one terrain tile. Movement should be deliberate rather than twitch-based, and interaction should use forgiving physical ranges rather than pixel-perfect positioning. Hearing and vision use stable world distances derived from the standard reference scale, not a literal fraction of every differently sized cell.
+
+### Deliberate Overland Travel
+
+Selecting a visited cell in Known Routes asks the character to travel there on
+foot through remembered connections. Both ends of a connecting portal must have
+been observed. The server plans the cell sequence and navigates each local map
+under ordinary terrain, elevation, posture, stamina, and perception rules. Closed
+doors still require an explicit Open; a paused world journey may continue after
+that action. This is neither teleportation nor automatic exploration.
+
+An explicit world journey may continue while the player writes or views a
+character/inventory panel. Ordinary local-click movement still stops on entering
+chat. Manual WASD, a local destination, Stop/Wait, navigation-mode Escape, or a
+posture/facing command cancels the journey. Closing a panel or preserving a chat
+draft with Escape does not cancel it. Every crossing retains its authored anchor
+and brief stop before the next leg; the final destination currently means the
+cell's entry anchor, not a selected remote tile.
+
+Initial balance uses eleven notches, a 2.6-tile/s walk, dexterity-scaled sprint
+caps of 5.2–10.4 tiles/s, constant +5/s recovery, and quadratic movement effort.
+A full sprint lasts about ten seconds; exhaustion forces walking until 20 stamina,
+while crouching never accelerates into sprint. These are adjustable playtest
+values. Dexterity, pace, and stamina persist without offline recovery, but route
+intentions never restart themselves after reload. Full training and party-wide
+pace coordination remain separate work. See `Docs/Design/13-pace-and-world-travel.md`.
 
 ### Cell Structure
 
@@ -252,6 +298,26 @@ Each cell is independently stored and contains at least:
 
 Separating storage by cell supports persistence, streaming, moderation, authoring, and low-cost simulation. It does not require every cell to look like a rectangular room.
 
+### Two-Tier Authoring, Separate-Cell Play
+
+World creators should be able to draw the geography as a whole before refining its game-room boundaries. A river, road, or ridge should not require matching independently painted edges by hand. The authoring canvas is continuous; the playable world remains a set of separately stored cells.
+
+**Atlas Workshop** implements the first version of this distinction as a separate local-browser tool. Authors paint a shared terrain/elevation canvas, cut it into the standard 32×24 grid or custom rectangles, merge or split selected cells, and drill down into individual cells for detail. Detached interiors can be created outside that canvas and linked with reciprocal doors, passages, or stairs. Cuts change ownership boundaries, not the location of the underlying terrain or link/spawn anchors.
+
+This workflow is a creator convenience, not a new player experience. It does not stitch adjacent rooms into the local map, reveal unexplored cells, change the free-moving `W` token, or bypass explicit door actions and anchored transitions. Ordinary navigation still stops; only the separately selected world journey can issue another leg after its brief arrival pause. Player construction remains restricted to Chapters; an offline authoring tool does not grant players unrestricted world editing.
+
+The initial editor is deliberately bounded to rectangular canvases and cells, each at most 256×256 tiles, with at most 256 combined world cells and detached rooms. It does not yet author NPCs or items, import legacy `.cell` files, or solve production-scale region management. Those limits describe the current tool, not the intended final size of the world.
+
+Political geography belongs in a distinct authoring overlay: a cell has a region,
+may have several faction claims, and may host a Chapter site. Atlas now records
+these catalogs and associations without changing terrain or player visibility.
+A claim is an assertion, not proof of effective control; a Chapter site is not
+automatic permission to build. Overlapping claims are provisionally allowed so
+contested land need not be flattened into one owner. Rights, treaties and dispute
+resolution remain separate design work.
+
+Launch it with `python3 tools/map_editor.py serve`, preserve the editable source as JSON, and export independent cell files with a `world.ratw` manifest. Custom content is loaded explicitly through `-RatwWorld`. Exports are snapshots rather than live patches; the default custom save is keyed by the manifest path, so changed geometry needs a fresh export/save path. Safe content revision and save migration remain distinct responsibilities. See `Docs/Design/12-map-editor.md` for the implemented workflow.
+
 ### Visibility, Knowledge, and Fog of War
 
 The client receives only what the character is entitled to perceive. Visibility considers:
@@ -266,6 +332,18 @@ The client receives only what the character is entitled to perceive. Visibility 
 The map should visually distinguish these states instead of treating fog of war as a single black curtain.
 
 World-map memory has two earned levels. **Glimpsed** memory records only the coarse silhouette of a cell the character has directly seen into. **Visited** memory records a more detailed topological snapshot after the character physically enters that cell. Neither level is granted by possessing or reading a map, and neither provides continuing awareness after line of sight is lost. Once earned, both memory levels persist permanently for that character and do not decay with time. Their contents may become stale when the world changes and are refreshed only through new direct observation; entering a cell upgrades and refreshes its visited memory.
+
+### See, Hear, and Smell
+
+Wolves should orient through three independent senses, not a single "detected" flag. A character may scent someone without seeing or hearing them, hear movement without knowing its source, or see a wolf whose scent is being carried away. Injury and sensory skill affect the relevant channel. Sneaking reduces visual detection and movement noise; it does not magically remove body odor.
+
+When scent suggests a wolf that is not in view, the interface should offer a gentle directional clue while leaving uncertainty intact. The implemented first pass uses lavender arcs and `~~` marks on a fixed-radius compass around the player's `W`, with matching broad-direction text and a **Smell** action. The arc means "wolf scent roughly this way," not "a wolf occupies this point." Several wolves in the same broad sector blend into one cue. No name, precise range, source count, speaking color, or hidden actor token is disclosed.
+
+Wind makes that direction meaningful. A breeze flowing west to east can bring an unseen western wolf's scent to a player downwind; the clue points roughly west, toward its upwind origin. Wind labels describe airflow explicitly so that the player is not asked to infer whether an arrow means "from" or "toward." In calm air, scent is a much more local sense. Walls and shut doors can seal an air route, while connected air can carry scent around an obstacle without providing sight through it.
+
+Scent is evidence, not omniscience. It does not reveal otherwise unseen actions or unheard words, authorize inspection, confirm identity, or reveal/refresh map memory. Hearing and smell remain useful even when the map cannot place a visible token. Absence of a scent cue is not proof that the player is alone.
+
+The current implementation handles live body scent from player and NPC wolves in the same cell, scaled by nose health, scent skill, weather, and a bounded air-path approximation. Numeric reach and visual emphasis remain tunable. Lingering trails, personal scent recognition, deposited scent marks, indoor drafts, and cross-cell airflow are later design questions—not features silently assumed to exist because smell now works.
 
 ### Elevation
 
@@ -293,6 +371,10 @@ Rain, fog, snow, sun, wind, and storms can appear as restrained screen-space or 
 - fire, shelter, warmth, and exposure.
 
 Weather effects need reduced-motion, reduced-density, and high-contrast accessibility options. Atmospheric treatment must never make the text stream difficult to read.
+
+The present slice implements clear/rain/fog/snow conditions, per-cell outdoor airflow, and a shared accelerated daylight clock. Rain and snow affect movement, sight, hearing, and scent; fog strongly reduces sight. Day/night light stacks with weather in authoritative vision; darkness alone leaves hearing and smell intact. Wind drives precipitation and scent and masks quieter sounds. The map now has distinct day, dawn/dusk, night, layered rain, drifting snow, and fog treatments, while narrative text remains untouched and reduced motion retains static cues. Clock and base weather/wind survive restart. Indoor shelter keeps calm air but is not automatically bright. Persistent trails, evolving storm systems, exposure, individual lamps/shadows, and cross-cell air remain future work.
+
+Atmosphere belongs around the local **cell**, supporting imagination without illustrating the whole scene. Dark surroundings fade toward their edges. A warmly lit tavern remains clear at night with a soft warm glow; during a bright day, the glow can disappear. An unlit sealed room stays dark even at noon, while a window-lit room follows daylight. Rain, snow, fog and twilight add restrained edge moods. The effect follows each cell's actual bounds, including smaller interiors and larger scrolling maps, and never washes over roleplay text. This first implementation separates whole-cell artificial light, daylight access and color tone in the editor and save state; it does not yet simulate individual light sources or window geometry.
 
 ## World Identity
 
@@ -431,6 +513,49 @@ The restriction is purposeful:
 - world changes can pass through setting, land, safety, and moderation rules;
 - completed spaces carry visible provenance and memory.
 
+A successful Chapter should attract existing wolves for reasons the world can
+support: food, funded work, a home, relationships and active social life. Growth
+must move a finite population rather than silently generating residents. An
+arrival may benefit the destination while costing a source community labor or
+loyalty; that creates diplomacy and stories, not an automatic war declaration.
+
+The current administrative first slice is deliberately narrower. An operator
+can declare Chapter members, sites and planning capacities, inspect observed
+activity, preview eligible same-region residents and explicitly approve a move.
+The wolf travels physically; political loss is recorded only after arrival is
+confirmed. These declarations do not construct buildings, create real jobs, or
+enable autonomous migration. Existing residents retain their demo work/food
+commutes, and stored opinions do not yet control native NPC behavior. The fuller
+settlement system still needs player governance and funded provisioning.
+
+## Storykeeper and World Direction
+
+World direction deserves its own application rather than an omniscient player
+avatar. **Atlas Workshop builds places; Storykeeper directs stories in a running
+world.** Both stay separate from the player's sensory map and earned knowledge.
+The DM can inspect current or clearly labeled last-known state, keep campaigns
+and beats, consider faction/Chapter relationships, and approve bounded effects.
+
+Storytelling tools should distinguish intention from outcome. A planned raid is
+not an executed raid; an accepted relocation is not an arrival; a prose promise
+is not an inventory transfer. Every executable effect needs native validation,
+resource limits, completion evidence and an audit trail. The current supported
+effects are announcements, weather, eligible resident relocation and transfers
+of existing money/goods. Brigands, assassins, armies and faction collapse remain
+campaign plans until their physical and social systems exist.
+
+Chapter play-window suggestions should come from observed active presence, never
+invented history or copied private conversations. A DM chooses the event's fixed
+UTC time; it does not silently reschedule itself as activity changes. Public
+consent, absent-player impact and future postponement rules need explicit policy.
+
+The first Storykeeper is a trusted-local browser/service with a private opt-in
+native bridge, its own political/planning database and a temporary operator
+session—not player authentication or a public staff service. Stale authority
+makes it read-only. No ordinary player command can request omniscient state or
+invoke its effects. These implementation limits keep a useful first tool honest
+without mistaking it for finished live operations.
+
 ## Engine Direction
 
 ### Current Recommendation
@@ -488,6 +613,7 @@ Before full production planning, build one representative slice:
 - one NPC who recognizes a returning player and recalls a promise;
 - one recruited NPC who participates selectively in a group conversation;
 - local and world map views with sight, doors, remembered space, and fog of war;
+- independent sight, hearing, and live scent, including an anonymous upwind clue for a wolf outside visual detection;
 - one weather condition that changes presentation, visibility, scent, and movement;
 - contextual actions for a door, object, NPC, and general scene command;
 - persistence across server restart;
@@ -528,7 +654,14 @@ At this stage RATW is not trying to become:
 - Use contextual action menus over selected entities and a compact general-action menu.
 - Maintain separate local and world maps.
 - Store the world as separate persistent cells with traversable local space.
+- Let dexterity determine top movement speed, offer walking-to-sprinting pace control, and make continuous stamina recovery support sustainable overland travel.
+- Allow explicit on-foot journeys to visited cells through remembered connections, with a separate private Known Routes view rather than expanding live map visibility.
+- Author geography continuously in a separate two-tier editor, then partition, merge/split, drill down, and connect detached rooms without changing the separate-cell player experience.
+- Keep faction claims, Chapter sites, actual control and building rights distinct; current overlapping claims are provisional authoring metadata.
+- Use a separate Storykeeper for explicit operator plans and bounded native effects, with finite resident migration and verified arrivals rather than fabricated population growth.
 - Make sight, obstacles, doors, elevation, weather, skills, and fog of war materially affect perception.
+- Treat seeing, hearing, and smelling as independent senses; use anonymous broad scent clues without revealing hidden actors or creating visual memory.
+- Track airflow direction and strength so being downwind matters; keep exact ranges, weather effects, and scent presentation tunable.
 - Treat height as simulation data and offer restrained elevation cues plus an optional analytical overlay.
 - Make weather both an accessible visual treatment and a mechanical condition.
 - Give NPCs schedules, relationships, bounded knowledge, persistent memory, and grounded generated dialogue.
@@ -546,6 +679,36 @@ At this stage RATW is not trying to become:
 - What exact human moderation gates are required for Gifted and Quickened eligibility?
 - How do Chapters obtain land and construction authority in each political region?
 - Which parts of the earlier Unreal/Python social prototype should be ported, rewritten, or retained as tests?
+
+## Shared Time and a Living Economy
+
+The world uses a four-hour day: two hours from morning to evening and two from evening to morning. A 365-day year includes seasons that change weather tendencies and resource availability. Moon phase and cloud/weather conditions shape night brightness without overriding an interior's own lighting.
+
+Years matter to both player characters and NPCs. Annual milestones reward early physical development and later wisdom; older characters experience gradual sensory and dexterity changes from 65 onward. Players receive birthday notices. The moon follows **game days**, and player characters continue aging while logged out. Both choices are confirmed and match the existing calendar implementation; server downtime remains a separate policy.
+
+Natural death is a player-authored ending up to a mandatory lifespan: **100 years plus one randomly chosen interval of 0–20 game years**. The deadline must persist rather than reroll on reconnect. Gentle reminders should begin at an age still to be chosen. Prompt timing, offline final-scene handling, inheritance and NPC lifecycle integration need design before activation; natural death is not implemented yet. Age is still distinct from Social XP and magic eligibility. See [calendar and lifespan design](Docs/Design/14-calendar-aging.md).
+
+NPC daily behavior is deterministic and independent of generated chat. Residents travel to real work and rest locations, need food and sleep, earn and spend limited money, and consume finite ingredients. Merchants buy according to demand and budget, not merely because the player offers something. Player trades affect the same stock NPCs procure and use.
+
+Economic intervention must be visible and measurable. Outside trade, funded public contracts or Chapter-sponsored projects can introduce money through capped sources; imports and later appropriate service costs can remove it. Transfers within the settlement are not new money. Scarcity should create stories, with planned recovery levers instead of invisible purse refills.
+
+## Readable Combat Without a Scrolling Wall
+
+Battle information belongs in two coordinated places. On the local map, short,
+simple glyph effects between perceived combatants indicate attack, contact,
+defense or evasion while preserving the upright wolf tokens and imaginative
+space. Full action text never appears over the map.
+
+In the narrative pane, each encounter has one collapsed combat entry showing
+only its latest perceived action. New actions update that entry in place instead
+of pushing roleplay away. Expanding it reveals the entire permitted combat log;
+collapsing it returns to the latest-action summary. Long expanded logs scroll
+within the entry without stealing the reader's place or interrupting a pose.
+Hidden participants and unseen actions remain hidden in both representations.
+
+This is confirmed presentation direction, not an implemented combat engine or
+a decision about turn structure or attack speed. See
+[combat presentation design](Docs/Design/18-combat-presentation.md).
 
 ## Source Relationship
 

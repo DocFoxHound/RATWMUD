@@ -1,7 +1,7 @@
 # Runs Against the World — MVP Execution Plan
 
 **Status:** Finalized MVP baseline — implementation authorized; delivery evidence tracked in `Docs/IMPLEMENTATION_STATUS.md`  
-**Date:** 2026-09-20  
+**Date:** 2026-09-21  
 **Companion document:** `VISION.md`  
 **Planning principle:** Prove the distinctive experience in a narrow vertical slice before building world breadth.
 
@@ -22,7 +22,7 @@ This is an engine-decision MVP and a product-experience MVP. It is not a content
 
 ## 2. Confirmed and Provisional MVP Decisions
 
-The gameplay decisions below incorporate the completed clarification discussion. Remaining implementation choices use the documented defaults and are recorded for morning review in `Docs/MORNING_QUESTIONS.md`. They do not block this development slice. Milestone checkboxes represent verified implementation work, not design approval.
+The gameplay decisions below incorporate the completed clarification discussion. Remaining implementation choices use the documented defaults and are recorded for morning review in `Docs/MORNING_QUESTIONS.md`. They do not block this development slice. Milestone checkboxes represent verified implementation work, not design approval. This is an initial/current development checklist, not a production-readiness certification; newer follow-ups distinguish implementation from their integration evidence.
 
 ### 2.1 Engine Direction
 
@@ -123,6 +123,7 @@ Selected, targeted, hostile, injured, hidden, speaking, and party-member states 
 - An unknown adjacent cell is absent from the world map.
 - Doors, windows, boundaries, vertical openings, obstacles, elevation, weather, light, and character perception determine whether an adjacent cell is currently visible.
 - The active world map does not reveal a chain of cells beyond the first adjacency level.
+- A separate **Known Routes** destination mode may show cached names, bounds, and placement for all visited cells. It sends no remote glyph detail, live entities, doors, or weather, does not expose merely glimpsed/unvisited destinations, and never changes the Nearby view's first-degree rule.
 - The default projection is top-down 2D.
 - When a visible adjacent cell is directly above or below another visible cell, the world map places the glyph planes at their authored Z offsets and shifts to a restrained isometric camera.
 - A remembered vertical-cell outline by itself does not trigger isometric mode; the relevant vertical relationship must currently be visible.
@@ -140,18 +141,27 @@ Selected, targeted, hostile, injured, hidden, speaking, and party-member states 
 - Click-to-path never auto-opens, unlocks, forces, enters, or otherwise activates an interactable.
 - A route blocked by a closed door may approach the usable side, then stops and reports/highlights the blocking object.
 - The player must invoke **Open** through the contextual menu or equivalent command before a route can cross the doorway.
-- If the opened door connects areas within the same cell, the previous route stays cancelled and the player must issue a new movement command.
-- If the door is a transition portal into another stored cell, the explicit **Open** action also performs the validated cell transition.
+- If the opened door connects areas within the same cell, the ordinary local route stays cancelled and the player must issue a new movement command. An explicitly selected world journey may resume after Open, as specified in 2.13.
+- If the door is a transition portal into another stored cell, the explicit **Open** action also performs the validated cell transition after any required posture preparation. A new move, stop, or posture command cancels a pending crossing.
 - An already-open or unobstructed boundary exit automatically transitions cells when direct or click-path movement crosses the authored map edge.
 - A blocked transition portal never auto-opens merely because the player clicked or moved toward the edge.
 - Every portal defines an authored connection anchor and matching arrival anchor in the destination cell.
 - Transition places the wolf exactly at the destination arrival anchor, clears velocity and click-path state, and stops movement.
 - Movement held during the transition is latched off until released/reissued so it cannot carry the wolf away from the connection point.
+- Exception for an explicitly selected world journey: preserve the high-level destination, stop at the anchor for 0.25 seconds, then issue the next local leg. Ordinary WASD/local-click crossings still require new input.
 - The local viewport recenters on the arrival anchor after entering an oversized cell.
 - While moving, facing follows the accepted velocity or current accepted path segment.
 - When movement stops, the last facing is retained.
-- `Ctrl`-click submits a face-point command that turns the stationary wolf toward that world position without moving it.
+- Holding `Alt` while stationary shows a faded candidate `>` toward the mouse on the local map; preview alone never changes authoritative facing.
+- Alt-click commits the face-point command, turning through the shortest arc at an initial 180 degrees/second without translating the wolf. `Ctrl`-click remains a compatibility shortcut.
+- New movement cancels a manual turn; type mode suppresses the facing preview and navigation bindings.
+- Movement from sitting first requires a 0.65-second rise to standing. Movement from lying first requires a 0.45-second rise to crouching, then proceeds at 30% normal speed.
+- Crouching persists when stopped until deliberately changed. `/stand` takes 1 second from lying, 0.5 seconds from crouching, or 0.65 seconds from sitting. Sitting/lying down remain immediate in this slice.
+- Repeated held input does not restart preparation. Held input or a click path resumes after it; releasing/stopping cancels travel while the posture change may finish.
+- Explicit portal actions cannot bypass these delays. Stable posture and sneak/hearing skills persist, while queued movement, portal crossings, manual turns, and preparation timers do not resume after reload; an interrupted rise resolves to its target posture.
+- All rates and delays above are initial tuning values, not animation requirements or final balance.
 - In navigation mode, pressing `Enter` opens or resumes **type mode** and suppresses movement bindings while the player writes.
+- Entering type mode stops ordinary local-click movement, but an explicit world journey continues through writing and panels. Releasing held input or changing focus must not accidentally cancel that journey.
 - In type mode, unmodified `Enter` sends the current post and returns immediately to navigation mode.
 - `Shift`-`Enter` inserts a newline so the composer supports substantial multi-paragraph roleplay.
 - `Escape` exits type mode without sending, returns to navigation, and preserves the unfinished draft.
@@ -205,7 +215,7 @@ Selected, targeted, hostile, injured, hidden, speaking, and party-member states 
 - A yell has a larger clear radius and can propagate through acoustic portals into neighboring cells.
 - Each cell supplies acoustic scale, ambient noise, surface, and portal-transmission data.
 - Distance, walls, doors, elevation where relevant, weather, ambient noise, and portal attenuation modify transmission.
-- Each listener has hearing sensitivity modified by innate ability, age, conditions, and localized ear injury.
+- Each listener has hearing sensitivity modified by innate ability, hearing skill, age, conditions, and localized ear injury. Implemented skill tuning uses `hearing * earHealth * (1 + 0.75*hearingSkill/100)`, with skill in 0–100.
 - The server calculates a separate perceived post for each listener at the moment of speech.
 - Words that the listener fails to understand are replaced with `...` while preserving the post's speaker-owned flow and visible punctuation where practical.
 - Masking is deterministic for the post/listener pair so reconnect, replay, or UI speed cannot reroll comprehension.
@@ -229,12 +239,65 @@ Visual action rules:
 - Shorthand action definitions may declare additional sensory channels. For example, a sigh may have an audible cue even when its body movement is unseen.
 - The server resolves each segment independently, then assembles one listener-specific version of the original ordered post.
 
+Sneaking and movement-sound rules:
+
+- Crouching is the persistent stealth posture. Its initial close-visibility cutoff is `(7 - 4*sneakSkill/100) * (observerSightRange/27)` terrain units, with skill in 0–100. Existing line of sight, vision, eye health, and weather still apply.
+- Outside that cutoff, actor snapshots, map indicators, visual actions, inspection, and actor interaction discovery do not reveal the source. Hearing an actor does not grant visual access.
+- Movement sounds are calculated only for actual movement within the same cell. Initial clear radii are 6 units normally or `2.5 - 1.7*sneakSkill/100` while crouching, multiplied by the observer's effective hearing, weather, and occlusion factors. Clarity falls to zero at twice the resulting clear radius.
+- A heard-but-unseen moving player may cause an anonymous pawstep cue at most once every three seconds per listener, without source identity, position, or map token. The initial runtime does not emit routine NPC footstep cues.
+- Provisional pending user clarification: sneaking reduces movement noise but does not automatically attenuate intentionally selected whisper/speak/yell volume. Hearing skill affects both sound channels. A full skill-training progression system is not implemented by these stat hooks.
+
+Scent and wind rules, added to the implemented slice:
+
+- Sight, hearing, and smell are independent. Scent alone neither supplies otherwise hidden speech/actions nor changes whether an actor can be visually identified or inspected.
+- Current body scent comes from other player and NPC wolves in the same stored cell. Sneaking does not reduce body odor, and the observer never receives a cue for their own scent.
+- Observer scent sensitivity is `smell * noseHealth * (1 + 0.75*scentSkill/100)`, with nose health in 0–1 and scent skill in 0–100. These are persisted stat hooks, not a completed injury/training system.
+- Wind direction describes airflow: east is zero radians and south is `pi/2` in downward-positive map Y. West-to-east air can carry a western source's scent toward an observer to its east; the source cue then points roughly west/upwind.
+- Outdoor cells hold a normalized base strength from 0–1, base heading, and optional deterministic variation. Default outdoor wind flows east at base strength 0.5 with smooth gusts/shifts. Indoor air remains calm. Saved base wind and world time preserve the variation phase across restart.
+- A normal nose in clear weather has initial calm/cross/upwind full clarity through 1 terrain unit, fading to zero at 3. Directly downwind at strength 0.5, full clarity reaches 6 units and fades to zero at 18. Scent skill, nose health, rain, and snow scale reach; detailed formulas are in `Docs/Design/02-perception-maps.md`.
+- Scent follows bounded connected air paths, not visual line of sight. Opaque walls and closed doors block it, open routes can bend around obstacles, low furniture permits air, and diagonal sealed corners cannot leak. This is a gameplay approximation with a 64-unit search/range cap, not fluid simulation.
+- An unseen source contributes only a broad 45-degree sector, a 1–3 strength category, and whether wind carried it. Multiple sources in a sector aggregate. No source identity, exact position/distance, speaking color, count, or player/NPC category is transmitted.
+- The local map uses fixed-radius lavender arcs and `~~` around the observer, not markers on hidden source tiles. Text status and **Smell** provide the same broad directional information. A cue is not an actor click target and disappears when no longer justified or when its source is seen.
+- Scent never earns or refreshes visual map memory and never exposes adjacent cells. "No scent detected" is not a declaration that no other wolf is present.
+- Live body scent is implemented; lingering tracks, individual scent recognition, deposited marks, indoor drafts, and cross-cell airflow are explicitly deferred.
+- Clear/rain/fog/snow are implemented weather states. Shared environment factors drive sight, movement, hearing, scent and the on-screen conditions display. Rain/snow affect all four; fog strongly reduces sight and has a provisional 5% scent bonus. Wind drives precipitation/scent and masks sound, but does not push wolves. The saved four-hour calendar adds gradual dawn/dusk and lunar night light, provisionally 8% at new moon through 40% at clear full moon before weather modifiers; darkness alone leaves ears and nose intact. Reduced motion preserves static weather and airflow information. Interior shelter is independent of authored artificial light/daylight access: sealed unlit rooms are dark, lit taverns glow at night, and bright daylight suppresses unnecessary glow. Whole-cell lighting has a provisional 8% close-awareness floor; individual lamps/shadows remain deferred.
+
 ### 2.11 Authority and AI
 
 - Clients submit intentions; the server validates and applies them.
 - The server owns position, facing, perception, inventory, doors, NPC schedules, relationships, social rewards, and persistence.
 - The dialogue model may propose NPC prose only.
 - Generated text cannot directly grant items, complete quests, change relationships, move entities, spend money, award XP, create canon, or reveal facts outside the NPC's allowed knowledge.
+
+### 2.12 Separate Two-Tier Authoring
+
+- Use **Atlas Workshop**, a separate local-browser map editor launched with `python3 tools/map_editor.py serve`.
+- Paint the total world canvas continuously, including terrain and sparse elevation overrides, before or after deciding its cell boundaries.
+- Default cuts use the existing **32×24** reference size; custom rectangular cuts, filled-rectangle merges, and horizontal/vertical splits are supported.
+- Preserve global terrain and anchor positions through cuts. Existing links/spawn are reassigned to their new cells; conflicting metadata, slivers, blocked arrivals, and same-cell portal conversions fail without partial edits.
+- Drill down into a selected cell for detail work, or create an independent detached room and link it through reciprocal doors, passages, or stairs.
+- Authoring continuity does not alter player continuity: local maps remain current-cell-only, crossings retain anchored stops, and doors require the established action. Only the separately selected world-travel feature can continue after a brief arrival pause or show its cached Known Routes index; authoring itself grants no map knowledge.
+- Save portable authoring JSON and export validated content snapshots containing separate `.cell` files plus `world.ratw`. Load custom content explicitly through `-RatwWorld=/absolute/path/to/world.ratw`.
+- The first editor uses rectangular atlases/cells, each at most **256×256** tiles, with at most **256 combined world cells and detached rooms**. Larger-world tooling, NPC/item placement, and legacy `.cell` import are not implemented.
+- Custom-save identity is a hash of the manifest **path**, not its content. Topology revisions require a fresh export directory or a fresh explicit `-RatwSave` path; neither hot reload nor save migration is implied.
+- Political authoring adds faction/Chapter catalogs and each cell's region, overlapping faction claims, and optional Chapter site. Splits inherit these fields; incompatible merges/recuts fail atomically. Claims are provisional cell-granular metadata, not control, construction rights, or player map knowledge.
+
+See `Docs/Design/12-map-editor.md` and `Docs/EDITOR_CONTRACT.md` for the implemented workflow, validation contract, and limits.
+
+### 2.13 Pace, Stamina, and Remembered World Travel
+
+- Wheel over the local map or Page Up / Page Down adjusts an integer pace from 0 to 10; the segmented pace strip is also clickable. Chat/modal guards prevent accidental changes. Shift-wheel pans vertically and Ctrl-wheel horizontally; prose scrolling remains independent.
+- Dexterity is server-owned and bounded 0–100. Walk remains 2.6 tiles/s; sprint cap is `5.2 + .052*dexterity`, with linear intermediate notches. Labels are walk 0, trot 1–5, run 6–8, sprint 9–10.
+- Recovery runs continuously at +5 stamina/s up to 100. Actual movement has gross drain `15*(effectivePace/10)^2`, so a full sprint nets −10/s and a middle trot can recover while traveling. Count elapsed time once, not once per waypoint; blocked input, passive bumps, posture preparation, and portal teleport distance do not spend sprint effort.
+- At zero stamina, exhaustion limits movement to walking until 20, preserving the selected pace. Crouching always uses walking pace with the existing 0.30 multiplier. Terrain, weather, and rise delays remain authoritative. Values are playtest tuning, not final balance.
+- Show named gait, amber sprint emphasis, requested versus server-confirmed pace, posture/exhaustion limits, stamina percentage, and actual recovery/drain. Private stats are owner-only; no full skill-training system is implied.
+- Known Routes selects a destination **cell**, not a remote tile. All route cells must be visited and both reciprocal portal endpoints observed; maps/hearsay and unseen shortcuts cannot grant routes.
+- Plan remembered inter-cell connections, then rank local exits and use the existing precise local navigation. Do not consult unseen remote live door/weather/terrain state to advertise a route. Changed or blocked local conditions can pause/replan the journey.
+- Closed barriers require explicit Open; after that action the active world journey may resume, including through a same-cell barrier. Already-open stairs/passages can be entered as part of the explicit journey. Arrival still stops at the connection anchor, with a 0.25-second pause before an intermediate leg resumes.
+- World travel continues during chat and panels. Nonzero WASD, a local destination, Stop/Wait, navigation Escape, or posture/facing commands cancel it. Closing a modal or leaving chat with Escape does not cancel. Invalid replacement destinations preserve existing travel.
+- Persist dexterity, stamina, requested pace, and exhaustion with validated ranges; clear transient rates and all route intentions on restore, without offline recovery or offline travel.
+
+See `Docs/Design/13-pace-and-world-travel.md` for the implemented component contract.
 
 ## 3. MVP Scope
 
@@ -245,15 +308,15 @@ Visual action rules:
 | Desktop client | Packaged development client with adjustable split narrative/map layout |
 | Dedicated server | Headless authoritative server accepting at least two simultaneous clients |
 | Local map | Current cell only, with a tavern, exterior, and small upper cell rendered as layered ASCII tilemaps using the 32×24 reference |
-| World map | Current cell plus visible adjacent cells, coarse dim outlines of directly glimpsed cells, and detailed dim outlines of visited cells; normally 2D with an isometric currently-visible vertical-stack mode |
+| World map | Nearby current/adjacent view with established memory and visible vertical-stack rules; separate Known Routes selector containing cached visited-cell geometry without remote live state |
 | Wolf tokens | Centered `W`, orbiting/rotating `>` marker, three identity color roles |
-| Movement | WASD and click-to-path free movement over tiled terrain, deliberate stationary facing, collision, door use, and cell transition |
-| Perception | Line of sight, spatial hearing, open/closed door behavior, remembered tiles, and unseen state |
+| Movement | WASD/click paths, gradual Alt facing, timed rises/crouching, dexterity-scaled pace, continuous stamina recovery, sprint/exhaustion, collision, explicit doors, anchored transitions and remembered multi-cell journeys |
+| Perception | Independent sight/hearing/smell, skill-sensitive stealth and movement sounds, anonymous directional body-scent cues, open/closed air barriers, remembered tiles, and unseen state |
 | Elevation | At least two height levels, a ramp or step, and height-aware visibility/movement |
-| Weather | Rain that changes map presentation and at least visibility, movement, and scent |
+| Weather | Clear/rain/fog/snow, persistent wind and accelerated daylight clock, stronger map-only weather/day/night effects, shared sensory/movement factors, and protected indoor shelter |
 | Narrative | Long-form mixed roleplay posts, queued progressive flow, spatial whisper/speak/yell, local OOC, 32 speaking colors, typing presence, and a spoken marker |
 | Interaction | Clickable entities, anchored contextual verbs, and general actions such as Listen and Smell |
-| Character surface | Viewable sheet with a static wolf portrait slot and appearance text |
+| Character surface | Native login/owned-character selection/creator and shared configurable pixel-art wolf portraits on own sheet and visible-character inspection; map remains glyph-only |
 | Inventory | Small inventory/equipment panel using item icons plus text labels |
 | Multiplayer | Two players see validated movement, facing, speech, emotes, and relevant state |
 | NPC population | Six scheduled NPC records, with only nearby NPCs running active spatial behavior |
@@ -261,6 +324,8 @@ Visual action rules:
 | Party conversation | One recruitable NPC demonstrating address detection and selective interjection |
 | Social tracking | Thin server-validated roleplay session tracking and visible Social XP/level |
 | Persistence | Characters, cell state, NPC state, memories, and ledger events survive restart |
+| Authoring follow-up | Separate Atlas Workshop: continuous terrain/elevation painting, grid cuts, rectangular merge/split, drill-down editing, detached rooms, reciprocal links, JSON source and validated runtime exports |
+| Political/operator follow-up | Atlas claim/site metadata plus a separate trusted-local Storykeeper with campaigns, event approval, observed activity, political records and finite resident migration previews; see M15–M16 for boundaries |
 | Testing | Automated rule tests plus a repeatable two-client vertical-slice test |
 
 ### Explicitly Deferred
@@ -276,7 +341,10 @@ Visual action rules:
 - player-upload moderation for custom portraits;
 - animated map characters or equipment displayed on the map;
 - generated dialogue for every NPC;
-- production-scale administration and live-operations tooling.
+- lingering scent trails, unique scent recognition, deposited scent marks, and cross-cell airflow;
+- production-scale administration and live-operations tooling;
+- autonomous migration, physical Chapter construction/jobs, armies, brigands, assassinations, faction-collapse executors, and native gameplay consequences for stored opinions;
+- production-scale world editing, NPC/item authoring, legacy `.cell` import, and live topology/save migration; the bounded Atlas Workshop is implemented separately.
 
 Deferred systems still receive clean data seams where the MVP would otherwise create obvious rework. They do not receive speculative implementations.
 
@@ -294,12 +362,12 @@ The completed MVP should support this uninterrupted path:
 8. Posture/state commands update the player's state panel and become visible when another player inspects that character.
 9. A local OOC exchange remains visibly separate and produces no in-world speech marker or Social XP.
 10. The players test whisper, ordinary speech, and a yell. Distance and ear injury cause listener-specific `...` gaps, while the yell crosses the exterior portal with reduced clarity.
-11. They use **Smell** and receive information appropriate to rain, position, and character perception.
+11. In the exterior, one wolf sneaks beyond visual detection upwind of the other. The observer receives a broad anonymous scent arc and **Smell** result without a token or identity. Reversing the development wind changes detection; rain and nose/scent skill also affect reach. An indoor sealed door blocks a separate nearby-scent test.
 12. The tavern keeper responds in character, remembers a prior promise, and cannot fabricate a reward or state change.
 13. A recruited NPC joins the conversation, answers when addressed, sometimes interjects when appropriate, and otherwise remains quiet.
 14. The players open the line of sight to an upper loft; the world map shifts from top-down to isometric while the local map remains current-cell only.
 15. The players leave through the door into the adjoining exterior cell. The world map updates its adjacent visible set.
-16. After a server restart, characters, door state, NPC schedule/memory, and qualifying social events remain intact.
+16. After a server restart, characters, door state, NPC schedule/memory, qualifying social events, sensory stats, and base wind remain intact; saved world time preserves gust continuity while fresh cues are recomputed.
 
 ## 5. Technical Shape
 
@@ -312,7 +380,7 @@ Unreal clients
           | intentions / perceived events
           v
 Unreal dedicated server
-  commands · cells · movement · facing · LOS · weather
+  commands · cells · movement · facing · sight/hearing/scent · wind/weather
   chat audience · NPC schedules · relationships · social ledger
           |
           +---- persistence adapter ---- SQLite for MVP
@@ -321,6 +389,13 @@ Unreal dedicated server
 ```
 
 Only the server talks to persistence and the dialogue adapter. Clients never submit final state or direct database mutations.
+
+Storykeeper is a separate trusted-local operator surface, not a privileged player
+client. An opt-in `-RatwDMDirectory=/absolute/private/path` bridge exports bounded
+omniscient snapshots and accepts typed, expiring requests. The Python service
+owns a separate planning/political SQLite store and never opens the game save.
+Only native authority validates and applies world effects. See
+`Docs/DM_BRIDGE_CONTRACT.md` and `Docs/DM_SERVICE_CONTRACT.md`.
 
 ### 5.2 Simulation and Presentation Separation
 
@@ -361,7 +436,8 @@ Names may evolve, but the following boundaries should exist before UI work expan
 ```text
 cell_id, version, dimensions, world_origin, z_offset, tiles, portals,
 world_units_per_tile, ambient_light, weather_exposure,
-acoustic_reference, authored_description
+acoustic_reference, authored_description, base_wind_direction,
+base_wind_strength, wind_variable
 ```
 
 **Tile definition/state**
@@ -375,9 +451,13 @@ collision, cover, scent/sound modifiers, fixture_ref
 
 ```text
 entity_id, entity_kind, cell_id, local_position, velocity,
-soft_collision_radius, facing_angle, movement_state,
+soft_collision_radius, facing_angle, movement_state, posture,
+sneak_skill, hearing_skill, scent_skill, smell_sensitivity, nose_health,
+dexterity, stamina, requested_pace, exhausted,
 appearance_ref, interaction_ref
 ```
+
+Transient simulation state additionally includes a turn target, a turning flag, posture target/remaining preparation, input/path intent, a high-level world journey, pending portal crossing, and the last-step stamina rate. Intentions/rate are not resumed from persistence; the saved posture resolves an interrupted rise to its target, and no offline stamina refill is awarded. Only observer-authorized presentation fields cross the network, not another actor's private statistics, hidden route, or movement intention.
 
 **Character presentation**
 
@@ -414,7 +494,7 @@ voice_level, validated_arguments, resulting_state_ref
 character_id, base_sensitivity, age_modifier,
 left_ear_condition, right_ear_condition,
 vision_sensitivity, left_eye_condition, right_eye_condition,
-temporary_modifiers
+smell_sensitivity, nose_health, scent_skill, temporary_modifiers
 ```
 
 **Perceived roleplay post**
@@ -429,8 +509,11 @@ source_label, source_color_id, source_direction, server_sequence
 
 ```text
 observer_id, world_revision, visible_tiles,
-remembered_tiles, perceived_entities, sensory_cues
+remembered_tiles, perceived_entities, effective_cell_wind,
+movement_heard, scent_cues[{sector, strength_category, windborne}]
 ```
+
+Scent cues aggregate unseen wolves into eight broad directions, never source IDs or locations. Their fixed-radius presentation does not encode distance. Visual map knowledge remains independent. Persist the cell's base wind plus world clock, not a transient effective gust sample or stale cue.
 
 **Adjacent-cell knowledge**
 
@@ -557,14 +640,17 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - [x] Implement authoritative path calculation or validation and dynamic-path invalidation.
 - [x] Stop pathing at a closed operable barrier without automatically invoking its verbs.
 - [x] Keep same-cell routes cancelled after an explicit door-open action.
-- [x] Make an explicit transition-door **Open** action atomically transfer the actor to its connected cell.
+- [x] Make an explicit transition-door **Open** action transfer the actor to its connected cell after any required posture preparation, without restoring a canceled crossing.
 - [x] Automatically transition across an unobstructed authored boundary exit reached by WASD or click-path movement.
 - [x] Resolve every transition to its authored destination anchor and clear velocity, path, and held-input carryover.
 - [ ] Validate move, face, inspect, listen, smell, knock, open, wait, and rest commands.
 - [ ] Emit immutable authoritative events with stable IDs and world revisions.
 - [x] Add deterministic tests for invalid movement, collisions, elevation, doors, and transitions.
+- [x] Add shortest-arc stationary turns, non-restarting posture preparation, slow crouching, and cancellation of retained travel.
+- [x] Apply sneak/hearing skill to visual and movement-sound detection without leaking hidden actor state or automatically changing speech volume.
+- [x] Persist stable posture/skills while normalizing interrupted rises and clearing all transient travel/turn intentions on load.
 
-**Delivery evidence / remaining work:** The portable core has 176 behavioral assertions, including continuous movement, smoothed quarter-tile A*, crowd passage, door semantics, exact transition anchors, and atomic restore rejection. The native three-cell walkthrough also passes. Remaining work includes complete versioned content/wire schemas, abstract off-screen locations, authored lighting/acoustic fields, a full Rest/sensory command model, and durable immutable event storage; current acoustic values are prototype tuning.
+**Delivery evidence / remaining work:** Portable behavioral assertions cover continuous movement, smoothed quarter-tile A*, crowd passage, door semantics, exact transition anchors, and atomic restore rejection. Follow-up coverage includes gradual facing, sitting/lying preparation, retained/canceled input, delayed portal crossings, skill-sensitive stealth, movement sounds versus speech, and safe posture persistence. The native three-cell walkthrough also passes. Remaining work includes complete versioned content/wire schemas, abstract off-screen locations, authored lighting/acoustic fields, a full Rest/sensory command model, and durable immutable event storage; current acoustic values are prototype tuning. Current test counts and native evidence belong to the test report.
 
 **Exit gate:** A headless automated scenario moves an entity around the tavern, changes facing, rejects blocked moves, opens the door, and transfers into the exterior with an identical result on repeated runs.
 
@@ -615,7 +701,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - [ ] Bind normal terrain click to a move-to request with path feedback.
 - [ ] Surface the specific blocking door/object and its contextual verbs when a requested route stops there.
 - [x] Distinguish same-cell doors, transition doors, and open boundary exits in interaction feedback.
-- [x] Bind `Ctrl`-click to stationary face-point behavior.
+- [x] Bind Alt mouse movement to a stationary faded-marker preview and Alt-click to gradual face-point behavior, retaining Ctrl-click compatibility.
 - [x] Bind navigation-mode `Enter` to open or resume the composer and suppress navigation bindings while typing.
 - [x] Bind type-mode unmodified `Enter` to send and return immediately to navigation mode.
 - [x] Bind `Shift`-`Enter` to insert a newline without sending.
@@ -669,8 +755,13 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - [x] Propagate yelling into the connected exterior cell with attenuation.
 - [x] Keep room-local OOC exempt from acoustic degradation.
 - [x] Add rain presentation without obscuring the narrative pane.
-- [ ] Make rain reduce appropriate sight, movement, and scent behavior.
-- [x] Add a minimal scent result path for the Smell action.
+- [x] Make rain reduce appropriate sight, movement, and airborne scent reach; retain sheltered indoor behavior.
+- [x] Replace flavor-only Smell with authoritative live-body scent using wind, connected air paths, nose health, and scent skill.
+- [x] Track outdoor base wind direction/strength and deterministic gusts, while keeping indoor air calm.
+- [x] Aggregate unseen scents into broad anonymous directional cues without actor identity, exact locations, counts, inspection, or visual-memory access.
+- [x] Verify independent sight/hearing/smell, reversed/cross/calm wind, weather effects, sealed/open barriers, corner routes, and cue removal in portable tests.
+- [x] Verify native scent parsing, directional text, airflow labels, noninteractive cues and development wind controls; capture and inspect a real two-client scent viewport.
+- [ ] Human playtest of scent readability and wind-drifting precipitation across window sizes and reduced-motion settings.
 - [x] Add the three-cell world-map view with current visibility, direct-observation memory, and connection state.
 - [x] Restrict the active world-map neighborhood to the current cell and first-degree neighbors.
 - [x] Render presently visible adjacent cells normally, directly glimpsed cells as faint coarse outlines, visited cells as more detailed dim outlines, and unknown adjacent cells not at all.
@@ -682,7 +773,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - [x] Keep the world map in 2D when the only vertical relationship is a remembered outline rather than a currently visible stack.
 - [x] Add a labeled above/below accessibility presentation without perspective tilt.
 
-**Delivery evidence / remaining work:** Real two-client transport, movement and IC/OOC exchange pass; portable/engine tests verify hearing masks, hidden-source filtering, injuries, weather, permanent map memory and visible-only vertical projection. The three-cell walkthrough captures the loft, visible vertical overview and rainy exterior. Current rendering interpolates authority and projects overview planes in Slate. Dedicated light fields, age/condition systems, elevation-aware visibility, a raised-hearth implementation, quantitative scent simulation, and adversarial real-network perception tests remain open. Soft-collision smoothness still needs human observation under latency.
+**Delivery evidence / remaining work:** Real two-client transport, movement and IC/OOC exchange pass; portable/engine tests verify hearing masks, hidden-source filtering, injuries, weather, permanent map memory and visible-only vertical projection. The three-cell walkthrough captures the loft, visible vertical overview and rainy exterior. The 2026-09-21 scent extension passes portable checks for wind-sensitive air paths, separate senses, anonymous aggregation, privacy, and atomic persistence; the ordinary portable suite now includes 383 world assertions and 42 runtime checks. All fourteen native tests pass. The editor and rebuilt Linux package pass a two-client scent scenario, including wind reversal and indistinguishable hidden/nonexistent inspection denials. The actual viewport capture was visually inspected. Current rendering includes fixed-radius scent arcs and airflow status, interpolates authority, and projects overview planes in Slate. Dedicated light fields, age/condition systems, elevation-aware visibility, a raised-hearth implementation, lingering scent/recognition, cross-cell airflow, and broader adversarial real-network perception tests remain open. Soft-collision smoothness and sensory readability still need human observation under latency.
 
 **Exit gate:** Two clients can move, face, roleplay, operate the door, and cross cells while receiving different valid perception snapshots. Closing the door, changing height, and enabling rain produce tested changes rather than cosmetic-only effects.
 
@@ -695,6 +786,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - [x] Persist accounts/development identities and stable character IDs.
 - [ ] Persist character cell, local position, facing, inventory, and appearance references.
 - [x] Persist the current structured posture and declared state used by self UI and character inspection.
+- [x] Persist smell sensitivity, nose health, scent skill, and base cell wind; preserve deterministic gust phase through the saved world clock and validate malformed restores atomically.
 - [x] Persist the validated speaking-color palette ID while excluding ephemeral typing state.
 - [ ] Persist door/fixture state and relevant cell revisions.
 - [ ] Persist NPC schedule position, relationships, and memories.
@@ -704,7 +796,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - [x] Add safe save checkpoints and clean shutdown behavior.
 - [ ] Add backup/export suitable for development debugging.
 
-**Delivery evidence / remaining work:** SQLite reopen, actual server restart, active-memory restoration, aged-deadline consolidation, and full core save/reload/privacy regressions pass. NPC position/activity, companion ownership, weather and doors persist. Schema v1 exists without forward migrations; inventory/appearance are currently read-only prototype presentation, relationship state is limited, and per-cell revisioning/export tooling remain incomplete. Command receipts provide a bounded 256-command retry window, not the unlimited durable replay guarantee required by the full exit gate.
+**Delivery evidence / remaining work:** SQLite reopen, actual server restart, active-memory restoration, aged-deadline consolidation, and full core save/reload/privacy regressions pass. NPC position/activity, companion ownership, weather and doors persist. Schema v1 exists without forward migrations; inventory/appearance are currently read-only prototype presentation, relationship state is limited, and per-cell revisioning/live-save backup tooling remain incomplete. Atlas Workshop now exports authoring content snapshots, not game-save backups or topology migrations. Its custom save defaults are isolated by manifest path. Command receipts provide a bounded 256-command retry window, not the unlimited durable replay guarantee required by the full exit gate.
 
 **Exit gate:** The server can be stopped after meaningful play, restarted, and rejoined without losing state, repeating rewards, reopening a closed door, or duplicating an interaction consequence.
 
@@ -731,6 +823,8 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 **Delivery evidence / remaining work:** Six residents walk authored routines, active detail is bounded to 32 turns, and one-hour inactivity consolidation/retention is tested through restart. Recall uses recent matching context rather than relevance-ranked memory. The loopback dialogue adapter passes strict endpoint validation and six HTTP fixture cases: success, failure, malformed output, empty output, oversized output and timeout; offline fallback and callback-once behavior also pass. These fixtures verify the adapter contract, not production language-model quality. Companion invitation/following/cooldown/interjection logic exists, but complete end-to-end NPC acceptance, abstract off-screen simulation, full home/work/relationship/knowledge records, intentional NPC-to-NPC exchanges and structured promises/quest facts remain open.
 
 **Exit gate:** The tavern keeper follows a home/work routine, carries detailed context through an active interaction, consolidates it once into permanent long-term memory after the configured interval, recognizes a returning player after restart, recalls one promise accurately, refuses or avoids unknown information, and remains playable when the dialogue provider is unavailable. The recruited NPC participates selectively rather than answering every line.
+
+**Live-provider follow-up:** With explicit user authorization, RATW Game's existing OpenAI `gpt-5.6-luna` configuration now works through a bounded server-side bridge. Native speech matches actual generated responses, recall survives restart and permanent-memory consolidation, and a small unknown-information/state-invention sample was manually reviewed. This advances the conversational NPC gate but does not complete all of M6 or constitute production quality/security validation. See `Docs/LIVE_NPC_TEST_REPORT.md`; ordinary launches remain offline.
 
 ### M7 — Character, Inventory, and Thin Social Progression
 
@@ -772,6 +866,173 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 
 **Exit gate:** Every consolidated MVP acceptance criterion passes, known limitations are documented, and the engine decision is explicitly recorded. A failed engine decision triggers a like-for-like M1–M4 Godot spike using the same data contracts.
 
+### M9 — Atlas Workshop Authoring Follow-Up
+
+**Goal:** Make geographical continuity easy to author while preserving separate runtime cells. This user-requested follow-up does not declare the unfinished M0–M8 release gates complete.
+
+- [x] Provide a separate local-browser tool with a shared glyph canvas, sparse heights, zoom/pan, and portable JSON drafts.
+- [x] Cut standard/custom rectangular grids without changing terrain; reject cuts that leave cells narrower than four tiles.
+- [x] Split and merge cells safely, preserve global link/spawn anchors, and warn about retained/discarded names and descriptions.
+- [x] Drill into world cells or detached rooms for fine terrain/elevation and metadata editing.
+- [x] Create reciprocal doors, passages, or stairs with unique traversable endpoints and height-compatible arrivals.
+- [x] Export source JSON, separately stored cell files, and a versioned world manifest; generate compatible open seams without drawing new walls along cuts.
+- [x] Import custom content through `-RatwWorld`, validate before replacing runtime content, and isolate default custom saves by manifest path.
+- [x] Keep exports separate from running games and old export directories; document that geometry revisions require a fresh save/export path.
+- [ ] Add NPC/item placement, legacy `.cell` import, prefabs, larger-region authoring, or collaborative workflows only as separately scoped increments.
+
+**Delivery boundary:** Rectangular world and cell/room dimensions are 4–256 tiles per axis, with at most 256 combined cells/rooms and 262,144 authored tiles. The editor has no NPC/item authoring, no legacy cell-file importer, no hot reload, and no save-topology migration. It does not claim production-scale performance. See the current test report for executed model, exporter, runtime-import, and browser evidence rather than interpreting these feature checkboxes as a full release certification.
+
+**Exit gate:** A continuous authored map can be partitioned, refined, exported, and played as independent cells without terrain discontinuities introduced by the editor, broken reciprocal links, or changes to player perception and transition rules.
+
+### M10 — Pace and Remembered Travel Follow-Up
+
+**Goal:** Make sustained overland travel readable and convenient without fast travel, automatic door opening, or remote omniscience. Earlier uncompleted release gates remain open.
+
+- [x] Add validated server-owned, owner-scoped dexterity, requested pace, stamina, exhaustion, and safe save defaults.
+- [x] Integrate dexterity-scaled speed and continuous recovery/actual-movement drain without waypoint or collision accounting exploits.
+- [x] Provide guarded wheel/Page Up/Page Down controls and a legible gait/stamina strip.
+- [x] Offer a separate cached visited-cell destination index while retaining Nearby mapping.
+- [x] Build remembered reciprocal-connection routes and execute ordinary local movement through multiple cells with brief anchored pauses.
+- [x] Pause at closed barriers for explicit Open; support cancellation, rejected replacement requests, writing during travel, and no resumed route after reload.
+- [ ] Human-playtest gait/energy balance, party/companion pace, and longer overland journeys.
+- [ ] Profile hostile-load and production-scale route/navigation behavior before population expansion.
+
+**Delivery boundary:** Destinations are visited cells, not remote tiles. There is no teleportation, automatic unexplored scouting, offline travel, or full training/party-speed system. See `Docs/TEST_REPORT.md` for actual executed evidence and `Docs/Design/13-pace-and-world-travel.md` for the contract.
+
+### M11 — Visible Weather and Daylight Follow-Up
+
+**Goal:** Make the player experience the same environmental conditions that constrain the character, while keeping the narrative readable and perception authoritative.
+
+- [x] Centralize weather/illumination modifiers shared by terrain/actor vision, speech/pawstep hearing, scent and movement.
+- [x] Add a persisted accelerated shared daylight clock with smooth dawn/dusk, strict validation, and safe legacy defaults.
+- [x] Render distinct daylight/night tint, wind-driven rain/splashes, drifting snow and fog veils only over the local map.
+- [x] Preserve static effects and readable condition labels in reduced-motion mode; prevent effects from creating hidden actor targets.
+- [x] Protect indoor cells; limit weather/time mutation to development sessions and include local conditions in NPC dialogue context.
+- [x] Add portable, native UI/wire, graphical-weather and process-restart test fixtures. Executed outcomes are in `Docs/TEST_REPORT.md`.
+- [ ] Human-playtest readability, night sight and day length; settle individual lamps and storm-front priorities.
+
+**Delivery boundary:** M13 supersedes the initial fixed weather/short clock with seasonal forecasts and lunar light. Regional storm fronts, accumulation, exposure, individual lamps/shadows, sound playback and lingering tracks remain deferred. The accelerated calendar does not change real-time NPC memory inactivity.
+
+### M12 — Cell Atmosphere and Interior Lighting
+
+**Goal:** Convey the current room's shelter, light and weather around its map boundary while matching actual perception.
+
+- [x] Separate whole-cell artificial light, daylight access and warm/neutral/cool tone from shelter; validate and persist profiles with legacy defaults.
+- [x] Keep a lit tavern clear at night with warm glow, suppress glow in bright daylight, and make sealed unlit interiors dark even at noon.
+- [x] Anchor soft glow, darkness and weather fades to the real cell boundary; clip to the map pane and preserve reduced-motion and hidden-actor privacy rules.
+- [x] Add editor metadata fields, split/cut inheritance, conflict-safe merge/recut and runtime export/import.
+- [x] Add portable, native renderer/wire and isolated graphical/restart fixtures; executed outcomes are recorded in `Docs/LIGHTING_TEST_REPORT.md`.
+- [ ] Human-playtest halo strength and the 8% indoor close-awareness floor; decide whether personal lights or placed lamps should be next.
+
+**Delivery boundary:** Whole-cell ambient light, not per-tile light pools, switchable fixture lamps, window-shaped beams, shadow casting, fuel consumption or dark adaptation. Remembered terrain may remain faintly recognizable in darkness without revealing current occupants.
+
+### M13 — Calendar, Seasons, Moon and Aging
+
+- [x] Shared four-hour days with equal morning/evening halves and 365-day years.
+- [x] Seasonal deterministic forecasts, explicit manual override, and moon/weather-dependent night light.
+- [x] Persist character birthdays; award early physical/later wisdom growth and bounded age-65+ penalties without changing injury state or Social XP.
+- [x] Deliver birthday notices and show dates, moon and annual character statistics.
+- [x] Confirm lunar phases follow game days and player characters age while logged out; both match existing behavior.
+- [ ] Confirm exact growth bands and server-downtime policy before final balance.
+
+**Boundary:** Natural-death choice/prompts and the mandatory age-100–120 deadline are confirmed next requirements, not implemented in M13; see M17. No leap years, actual-date ephemeris, regional weather fronts or aging during server downtime. See `Docs/Design/14-calendar-aging.md` and the executed evidence in `Docs/SOCIETY_TEST_REPORT.md`.
+
+### M14 — Deterministic Resident Life and Finite Economy
+
+- [x] Six physically navigating residents with hunger/fatigue, food, rest, gathering, cooking, delivery, finite wages and trading.
+- [x] Integer-penny purses, real inventories, stock-sensitive buy/sell quotes, demand limits and refusal of unwanted goods.
+- [x] Bounded outside export orders as a recurring money source; imports as a sink; welcome grants as finite treasury transfers.
+- [x] Persistent needs, accounts, goods, production progress, budgets and audited money conservation; strict atomic save validation.
+- [x] Player merchant panel, consumable meals and visible gatherable patch, with authoritative range and state guards.
+- [x] Exercise 30 physical game days and recovery from a stalled food chain; preserve real inventories, original daily source caps and complete money conservation.
+- [ ] Balance a larger economy, author NPC jobs/resources in Atlas, choose additional source/sink levers and resolve companion needs.
+
+**Boundary:** A two-good, six-resident demonstration, not a universal economy. Deterministic priority selection is implemented; StateTree, Smart Objects and GOAP were researched but are not installed behavior frameworks. Dialogue describes state and cannot mint funds, authorize a trade or complete a job. See `Docs/Design/15-npc-society-economy.md`.
+
+### M15 — Atlas Political Authoring Follow-Up
+
+**Current implementation:** faction/Chapter catalogs; cell/room region, claim
+sets and Chapter sites; contested-claim overlays; inherited split metadata;
+conflict-safe partitioning; validated authoring/export/native import. None of
+these fields changes terrain, player perception or building rights. This is
+cell-granular metadata, not legal ownership or a completed diplomacy model.
+
+- [ ] Confirm overlapping-claim semantics, land rights and Chapter permission policy.
+- [ ] Author NPCs/jobs and actual housing before treating declared capacity as a settlement economy.
+- [ ] Human-review political overlays and continuity using representative authored regions.
+
+See `Docs/TERRITORY_AUTHORING_CONTRACT.md` and
+`Docs/Design/16-territory-chapters-migration.md` for the current contract;
+implementation descriptions here do not replace executed integration evidence.
+
+### M16 — Storykeeper Local Operator First Slice
+
+**Current implementation:** separate browser/service/operator session; campaigns,
+beats, Chapter profiles/members/sites, directed opinions, observed activity and
+routes, fixed-UTC event scheduling, audit and explicit migration previews.
+The local service has 36 passing isolated tests; native/browser end-to-end
+evidence is recorded separately, not inferred from that count.
+
+Supported native requests are announcements, weather, eligible resident
+relocation and finite money/goods transfers. Requests are world-bound,
+idempotent within documented retention limits and short-lived. Queued does not
+mean applied; migration waits for observed arrival before source-claim resentment.
+No claim means no invented faction loss. Failures never manufacture completion.
+
+The app is read-only after ten seconds without a valid fresh snapshot. It is
+loopback-only and trusted-local, with a private fragment bearer session and no
+player RPC or direct game-save access. Chapter overlays and housing/jobs are
+operator declarations, not buildings. The finite demo uses `demo_reach`; custom
+Atlas worlds lack NPC authoring. New homes affect rest/social time while existing
+jobs and food purchases remain demo commutes. Opinions currently inform the DM,
+not native hostility, access, taxes or dialogue.
+
+- [ ] Confirm provisional capacity, attraction, treaty and migration cooldown rules through playtests.
+- [ ] Build actual funded settlement provisioning before enabling autonomous migration.
+- [ ] Add combat/encounter/faction lifecycle components before enabling their story-beat executors.
+- [ ] Define public staff authentication, roles, consent, recovery and operational retention before remote/multi-admin use.
+
+See `Docs/Design/17-storykeeper-dm.md` and `Docs/DM_SERVICE_CONTRACT.md`. Armies,
+brigands, assassinations and faction collapse remain plans with blocked executors.
+These are initial development boundaries, not a production operations checklist.
+
+### M17 — Natural Lifespan and Character Legacy (Planned)
+
+**Confirmed:** lunar time uses game days; characters age while logged out. A
+player may choose natural death before a mandatory deadline at age 100 plus
+one random interval of 0–20 game years. Death prompts begin at a threshold still
+to be chosen. Existing age-65 capability modifiers do not themselves cause death.
+
+- [ ] Set reminder age/frequency, offline-deadline/final-scene policy and random interval/disclosure details.
+- [ ] Add persistent lifecycle state, one server-owned deadline, strict schema/legacy handling and idempotent voluntary confirmation.
+- [ ] Define account/history retention, possessions/inheritance, companions, Chapter membership and economic consequences before activating death.
+- [ ] Add non-disruptive coalesced reminders and a clear voluntary-death/legacy flow.
+- [ ] Enforce all dead-character action restrictions on the server; reconnect must not revive or reroll a character.
+- [ ] Test exact ages 100/120, fractional deadlines, multi-year catch-up, offline/reconnect, retries, restart and no duplicate effects.
+
+**Boundary:** no natural-death mechanic has been switched on in this update.
+NPC lifecycle/replacement and combat/injury death are separate adapters. The
+world calendar still pauses during server shutdown. See
+`Docs/Design/14-calendar-aging.md`.
+
+### M18 — Readable Combat Presentation (Planned)
+
+**Confirmed:** sparse battle effects on the local map plus a collapsed combat
+entry showing only the latest action; expanding reveals the entire perceived
+combat log. Recommended grouping is one entry per encounter, updated in place.
+
+- [ ] Define a minimal combat resolver, encounter lifecycle and structured observer-filtered event contract.
+- [ ] Render brief attack/contact/defense/evasion cues without full prose, illustrated wolf animation, new hit targets or hidden-attacker leakage.
+- [ ] Implement stable encounter rows, latest-action summaries, accessible expansion, complete permitted history via pagination and bounded UI caching.
+- [ ] Preserve drafts, the single-post roleplay reveal, keyboard focus, outer/inner scroll anchors and reduced-motion preferences.
+- [ ] Handle duplicates, out-of-order delivery, reconnect backfill, concurrent fights, cell changes and event/snapshot timing without replaying old effects.
+- [ ] Test and capture a real two-client encounter once the resolver exists; independently choose and playtest combat pacing.
+
+**Boundary:** design captured, not implemented battle mechanics or a working
+Storykeeper encounter executor. The collapsed display must not be simulated by
+discarding older combat messages. “Full” means all events the viewer was allowed
+to perceive, not omniscient history. See `Docs/Design/18-combat-presentation.md`.
+
 ## 7. Consolidated Acceptance Criteria
 
 ### Visual and Map
@@ -779,6 +1040,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - Terrain is a logical glyph tilemap, not a screenshot or monolithic text block.
 - `W` stays centered and upright throughout movement and turning.
 - The same `>` glyph rotates and orbits around `W` without consuming another tile.
+- Holding Alt previews a faded candidate marker only while stationary on the local map; clicking commits a smooth bounded turn rather than snapping or moving.
 - Self, other players, and NPCs are distinguishable in normal and high-contrast modes.
 - Typing and spoken indicators use the speaker's selected color without changing the wolf's identity color.
 - Zooming and resizing do not cause glyph, hit-target, or facing-marker drift.
@@ -792,8 +1054,20 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 
 - Invalid moves are rejected by the server.
 - Click-to-path cannot auto-operate a closed door; it stops at the barrier until the player explicitly invokes **Open**.
-- Opening a same-cell door does not resume an old path; opening a transition door changes cells; crossing an open boundary exit changes cells automatically.
-- Every transition stops at the connected arrival anchor and requires fresh movement input before travel resumes.
+- Opening a same-cell door does not resume an old path; opening a transition door changes cells after posture preparation; crossing an open boundary exit changes cells automatically.
+- Sitting-to-movement waits for standing; lying-to-movement waits for a crouch and then moves slowly. Repeated input does not restart preparation, and canceled travel never resumes by itself.
+- Sneak skill reduces crouching detection distance and movement noise; hearing skill and ear injury modify acoustic detection. Hidden actors cannot be recovered through inspection or actor-action queries.
+- Anonymous movement cues carry no source identity or position. Sneaking does not automatically change selected speech volume unless the user subsequently resolves that provisional rule differently.
+- A wolf can see, hear, or scent independently. Sneaking does not erase scent, and nose health/scent skill alter detection without granting sight.
+- Airflow direction and source-bearing cues are distinct: eastward wind can produce a west/upwind scent hint. Reversing wind changes which observer has the range advantage.
+- Scent requires a connected same-cell air path; shut doors and sealed wall corners block it, while open paths can bend around obstacles.
+- Anonymous scent cues aggregate sources into eight broad sectors, never hidden tokens, identities, counts, exact positions, actor interaction targets, or new visual map memory.
+- Base wind and sensory stats survive restart; live scent cues are recomputed and disappear when sources leave detection. Trails and unique scent recognition are not implied.
+- Stable posture and skills survive restart, but movement/turn intentions and pending portal crossings do not.
+- Every transition stops at the connected arrival anchor. Ordinary navigation requires fresh movement input; an explicit world journey waits 0.25 seconds before its next local leg.
+- Dexterity determines bounded top speed; eleven pace notches preserve weather/terrain/posture rules, and stamina recovery continues during real travel without per-waypoint duplication.
+- Sprint, drain/recovery, posture limits, and exhaustion are identifiable in the UI; stamina cannot be supplied or refilled by a client command.
+- Remembered journeys use visited cells and observed reciprocal connections, pause at closed doors for Open, preserve active travel on rejected replacements, and obey manual cancellation and safe reload rules.
 - Elevation, doors, obstacles, and rain affect gameplay calculations.
 - Whisper, speak, and yell produce different validated acoustic reach.
 - Ordinary speech is clear for approximately half the standard unobstructed reference span for a normal-hearing listener, then degrades progressively.
@@ -805,7 +1079,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - Missing visual action becomes `···`, distinct from missing speech, only when the mixed event is otherwise perceived.
 - Wholly unseen and unheard events produce no placeholder or identity leak.
 - The local map never stitches an adjacent cell into the current-cell view.
-- The active world map includes no non-adjacent cell; visible neighbors show current detail, glimpsed neighbors show faint coarse memory, visited neighbors show more detailed dim memory, and unknown neighbors are absent.
+- The Nearby world map includes no non-adjacent cell; visible neighbors show current detail, glimpsed neighbors show faint coarse memory, visited neighbors show more detailed dim memory, and unknown neighbors are absent. Only the separate Known Routes index may include non-adjacent visited cells, as cached destination geometry without remote live state.
 - Map items and secondhand information cannot establish or upgrade world-map memory.
 - Earned cell memories survive elapsed time, logout, and server restart without losing detail, while remaining stale until directly observed again.
 - A visible vertical neighbor produces an understandable isometric Z relationship; without one, the map remains 2D.
@@ -871,6 +1145,9 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - permanent non-decaying cell-memory persistence and direct-observation refresh rules;
 - acoustic pathing, volume curves, hearing modifiers, and deterministic word masking;
 - visual action gating, vision modifiers, deterministic `···` substitution, and non-leak behavior;
+- scent range under downwind/upwind/crosswind/calm conditions, nose health, scent skill, rain/snow, and independent blind/deaf/anosmic observers;
+- sealed/open air barriers, obstacle detours, diagonal corner sealing, eight-sector aggregation, no source metadata, cue removal, and unchanged visual map memory;
+- saved base wind, deterministic gust continuity, sensory persistence, legacy-default compatibility, and atomic rejection of invalid wind/sensory fields;
 - command authorization and idempotency;
 - mixed-post parsing, command allowlisting, literal-slash escaping, and atomic state changes;
 - social session qualification and anti-duplication;
@@ -887,6 +1164,9 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 - remembered vertical adjacency remaining in the 2D presentation;
 - two listeners receiving different versions of the same speech event due to position or ear damage;
 - a heard-but-unseen speaker remaining anonymous in payload and UI while retaining the expected speaking color;
+- a scented-but-unseen wolf producing only a broad fixed-radius cue and **Smell** description, with no source token, identity, count, exact position, or inspect target;
+- wind reversal and weather changes altering scent cues while airflow labels remain distinct from scent-bearing markers;
+- scent and movement-heard status remaining independently correct through local/world view switches, posture changes, source departure, and restart;
 - one mixed post producing heard speech plus `···` action for an observer without line of sight;
 - a wholly unseen and unheard action producing no client event;
 - yelling through an open versus closed inter-cell portal;
@@ -909,7 +1189,8 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 
 - full rotation of the orbiting marker;
 - movement prediction/interpolation without granting the client authoritative position;
-- direct WASD movement, click-to-path movement, path invalidation, and stationary `Ctrl`-click facing;
+- direct WASD movement, click-to-path movement, path invalidation, stationary Alt-preview/Alt-click facing, and Ctrl-click compatibility;
+- bounded shortest-arc turning, timed standing/crouching, canceled movement during preparation, and slow crouching;
 - path-to-door stopping and explicit interaction before traversal;
 - same-cell route cancellation, explicit transition-door travel, and automatic open-edge cell transition;
 - destination-anchor placement, stopped arrival, held-input latching, and post-transition viewport recentering;
@@ -960,7 +1241,7 @@ Work proceeds in order. A milestone is complete only when its exit gate passes; 
 | Glyph map becomes visually noisy | Limit the atlas, preserve layer hierarchy, add zoom, and test crowded scenes early |
 | Variable cell sizes make glyph scale inconsistent or maps hard to navigate | Fit the standard cell, preserve scale for large cells, center small cells, and provide recentering |
 | Identity depends too heavily on color | Add outline/mark alternatives and high-contrast testing in M2 |
-| Speaking colors become illegible or replace speaker identity | Use a curated theme-aware palette, always show names, and test all 32 swatches |
+| Speaking colors become illegible or replace speaker identity | Use a curated theme-aware palette, show names only when perception permits identification, and test all 32 swatches |
 | Typing presence leaks private behavior or creates pressure | Send only scoped boolean presence, expire quickly, never transmit drafts, and provide a future privacy toggle |
 | Progressive text creates a long backlog during active scenes | Serialize posts in server order, show backlog state, provide adjustable/instant reveal, and measure queue depth in playtests |
 | Inline slash text becomes an injection or authority path | Parse through a strict server allowlist and convert only validated commands into typed segments |
@@ -1012,7 +1293,7 @@ When implementation begins, the first bounded work package is:
 4. Load a tiny test room on the server.
 5. Render a grid of ASCII terrain glyphs in the client.
 6. Place one `W` on the grid with a literal `>` rotating and orbiting around it.
-7. Send WASD movement, move-to, and `Ctrl`-click face intentions to the server and render the accepted result.
+7. Send WASD movement, move-to, and Alt-click face intentions to the server; render the local faded preview, smooth authoritative turn, and Ctrl-click compatibility path.
 8. Add a first authoritative path around a static obstacle.
 9. Add automated tests for blocked movement, path invalidation, and facing normalization.
 10. Evaluate the renderer and build workflow before authoring the full tavern.
@@ -1028,8 +1309,23 @@ Only after the MVP gate passes should planning expand to:
 - Gifted eligibility and authored Quickened candidacy;
 - combat, training, injury, and supernatural Gift control;
 - broader economies, professions, settlements, and faction institutions;
-- world-authoring and moderation tools;
+- extensions to the implemented Atlas Workshop, including larger-region authoring, NPC/item placement, legacy content import, and separately designed moderation tools;
 - population scaling, multiple server processes, and live operations;
-- portrait customization/upload moderation;
-- additional weather, scent, tracking, and sound systems;
+- additional portrait equipment/scar layers and any future upload moderation (the limited natural-coat creator is implemented);
+- advanced weather, lingering scent/track persistence, individual scent recognition, cross-cell airflow, and richer sound systems;
 - a larger connected world built from independently persistent cells.
+
+## 14. Character front door and shared dolls follow-up
+
+The native launch flow is now login/register → owned-character roster → creator
+and review → select → world. See `Docs/Design/19-character-creation.md` for the
+strict appearance contract and trusted-local account boundary. Five original
+grayscale pixel-art species atlases supply four age frames each; runtime palette,
+gradient, markings and stature controls drive the same portrait used by the
+roster, sheet and sight-authorized inspection. Neither portraits nor gear appear
+on the map. Starting age grants no past birthday rewards or Social XP.
+
+This supersedes earlier prototype-only portrait notes in the original milestones.
+Production account services remain out of scope: authentication is local-only,
+world-save scoped, and remote credentials are blocked pending encrypted transport.
+Six slots, age bands and cosmetic editing/retirement rules remain review items.

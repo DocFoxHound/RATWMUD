@@ -10,8 +10,10 @@ public class RATWMUD : ModuleRules
         PublicIncludePaths.Add(ModuleDirectory);
         PublicDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore",
-            "Json", "JsonUtilities", "HTTP", "SQLiteCore", "OnlineSubsystemUtils"
+            "Json", "JsonUtilities", "HTTP", "SQLiteCore", "OnlineSubsystemUtils", "ImageWrapper"
         });
+        AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
         RuntimeDependencies.Add("$(ProjectDir)/Data/Cells/*.cell", StagedFileType.NonUFS);
+        RuntimeDependencies.Add("$(ProjectDir)/Data/Portraits/*.png", StagedFileType.NonUFS);
     }
 }

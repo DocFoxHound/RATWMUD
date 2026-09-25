@@ -4,6 +4,7 @@
 struct FRatwDialogueContext
 {
     FString NpcId, Name, Description, Activity, PlayerName, HeardText, Memory, Scene;
+    FString Environment; // Local authoritative conditions, not inferred from dialogue.
 };
 
 // Provider-neutral local endpoint protocol. A provider returns prose only;

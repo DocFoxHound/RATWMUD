@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <filesystem>
+#include <functional>
 #include <limits>
 #include <queue>
 #include <set>
@@ -13,9 +15,25 @@ namespace ratw
 namespace
 {
 constexpr double Radius = 0.065;
-constexpr double Speed = 2.6;
+constexpr double WalkSpeed = 2.6;
+constexpr double StaminaRecovery = 5.0;
+constexpr double SprintDrain = 15.0;
+constexpr double ExhaustionRecovery = 20.0;
+constexpr double DaySeconds = calendar::SecondsPerDay;
 constexpr int NavScale = 4;
 constexpr double Epsilon = 1e-7;
+constexpr double Pi = 3.14159265358979323846;
+constexpr double TurnSpeed = Pi; // Radians per second: 180 degrees.
+Weather worldWeather(calendar::Weather value)
+{
+    switch (value) { case calendar::Weather::Rain: return Weather::Rain; case calendar::Weather::Snow: return Weather::Snow;
+        case calendar::Weather::Fog: return Weather::Fog; default: return Weather::Clear; }
+}
+calendar::Weather skyWeather(Weather value)
+{
+    switch (value) { case Weather::Rain: return calendar::Weather::Rain; case Weather::Snow: return calendar::Weather::Snow;
+        case Weather::Fog: return calendar::Weather::Fog; default: return calendar::Weather::Clear; }
+}
 double length(Vec2 a)
 {
     return std::hypot(a.x, a.y);
@@ -37,11 +55,36 @@ double clamp01(double x)
 {
     return std::max(0.0, std::min(1.0, x));
 }
+bool validLighting(const Lighting& light)
+{
+    return std::isfinite(light.artificial) && light.artificial >= 0 && light.artificial <= 1 &&
+           std::isfinite(light.daylightAccess) && light.daylightAccess >= 0 && light.daylightAccess <= 1 &&
+           (light.tone == "warm" || light.tone == "neutral" || light.tone == "cool");
+}
 double clarity(double d, double clear)
 {
     if (clear <= Epsilon || d >= clear * 2.0)
         return 0.0;
     return d <= clear ? 1.0 : clamp01(2.0 - d / clear);
+}
+bool stablePosture(const std::string& posture)
+{
+    return posture == "standing" || posture == "sitting" || posture == "lying" || posture == "crouching";
+}
+void clearTransientMotion(Entity& e)
+{
+    e.path.clear();
+    e.input = {};
+    e.velocity = {};
+    e.turning = false;
+    e.turnTarget = e.facing;
+    // A reload can finish a physical posture change, never a travel intention.
+    if (e.posture == "rising")
+        e.posture = e.postureTarget;
+    e.postureRemaining = 0.0;
+    e.postureTarget.clear();
+    e.transitioned = false;
+    e.staminaRate = 0.0;
 }
 Tile fromGlyph(char g)
 {
@@ -99,6 +142,8 @@ Cell room(std::string id, std::string name, int w, int h, bool outside = false)
     c.width = w;
     c.height = h;
     c.outdoors = outside;
+    if (outside)
+        c.wind = {0.0, .5, true};
     c.tiles.resize(static_cast<std::size_t>(w * h), fromGlyph(outside ? ',' : '.'));
     fillRect(c, 0, 0, w - 1, 0, '#');
     fillRect(c, 0, h - 1, w - 1, h - 1, '#');
@@ -110,6 +155,149 @@ bool doorCovers(const Door& door, Vec2 p)
 {
     return int(std::floor(p.x)) == int(std::floor(door.position.x)) &&
            int(std::floor(p.y)) == int(std::floor(door.position.y));
+}
+
+constexpr double MaxScentDistance = 64.0;
+struct AirRoute
+{
+    double distance = -1.0;
+    Vec2 bearing;
+};
+
+// Air ignores low furniture, but cannot cross opaque walls or closed doors.
+// The route field is lazy and shared across all scents in one observer query.
+// It is a bounded air-path approximation, not a fluid/plume simulation.
+class AirRoutes
+{
+  public:
+    AirRoutes(const Cell& c, const std::map<std::string, Door>& doors, Vec2 origin)
+        : c_(c), origin_(origin), open_(c.tiles.size(), false)
+    {
+        for (std::size_t i = 0; i < c.tiles.size(); ++i)
+            open_[i] = !c.tiles[i].opaque && c.tiles[i].terrain != Terrain::Wall;
+        for (const auto& entry : doors)
+        {
+            const auto& d = entry.second;
+            if (d.cellId == c.id && !d.open && inside(d.position))
+                open_[index(int(d.position.x), int(d.position.y))] = false;
+        }
+    }
+
+    AirRoute route(Vec2 target)
+    {
+        if (!inside(origin_) || !inside(target) || distance(origin_, target) > MaxScentDistance ||
+            !open(int(origin_.x), int(origin_.y)) || !open(int(target.x), int(target.y)))
+            return {};
+        if (clear(target))
+            return {distance(origin_, target), {target.x - origin_.x, target.y - origin_.y}};
+        if (distances_.empty())
+            build();
+        const auto i = index(int(target.x), int(target.y));
+        const double last = distance({std::floor(target.x) + .5, std::floor(target.y) + .5}, target);
+        return std::isfinite(distances_[i]) && distances_[i] + last <= MaxScentDistance
+                   ? AirRoute{distances_[i] + last, bearings_[i]}
+                   : AirRoute{};
+    }
+
+  private:
+    const Cell& c_;
+    Vec2 origin_;
+    std::vector<bool> open_;
+    std::vector<double> distances_;
+    std::vector<Vec2> bearings_;
+
+    std::size_t index(int x, int y) const
+    {
+        return static_cast<std::size_t>(y * c_.width + x);
+    }
+    bool inside(Vec2 p) const
+    {
+        return finite(p) && p.x >= 0 && p.y >= 0 && p.x < c_.width && p.y < c_.height;
+    }
+    bool open(int x, int y) const
+    {
+        return x >= 0 && y >= 0 && x < c_.width && y < c_.height && index(x, y) < open_.size() && open_[index(x, y)];
+    }
+    bool clear(Vec2 target) const
+    {
+        const int samples = std::max(1, int(std::ceil(distance(origin_, target) / .12)));
+        int lastX = int(origin_.x), lastY = int(origin_.y);
+        for (int n = 1; n <= samples; ++n)
+        {
+            const double t = double(n) / samples;
+            const int x = int(origin_.x + (target.x - origin_.x) * t);
+            const int y = int(origin_.y + (target.y - origin_.y) * t);
+            if (!open(x, y) || (x != lastX && y != lastY && (!open(x, lastY) || !open(lastX, y))))
+                return false;
+            lastX = x;
+            lastY = y;
+        }
+        return true;
+    }
+    void build()
+    {
+        distances_.assign(c_.tiles.size(), std::numeric_limits<double>::infinity());
+        bearings_.resize(c_.tiles.size());
+        using Entry = std::pair<double, std::size_t>;
+        std::priority_queue<Entry, std::vector<Entry>, std::greater<Entry>> pending;
+        const auto start = index(int(origin_.x), int(origin_.y));
+        distances_[start] = distance(origin_, {std::floor(origin_.x) + .5, std::floor(origin_.y) + .5});
+        pending.push({distances_[start], start});
+        while (!pending.empty())
+        {
+            const auto current = pending.top();
+            pending.pop();
+            if (current.first > distances_[current.second])
+                continue;
+            const int x = int(current.second % static_cast<std::size_t>(c_.width));
+            const int y = int(current.second / static_cast<std::size_t>(c_.width));
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx)
+                {
+                    if ((!dx && !dy) || !open(x + dx, y + dy) || (dx && dy && (!open(x + dx, y) || !open(x, y + dy))))
+                        continue;
+                    const double nextDistance = current.first + (dx && dy ? std::sqrt(2.0) : 1.0);
+                    const auto next = index(x + dx, y + dy);
+                    if (nextDistance >= distances_[next] || nextDistance > MaxScentDistance)
+                        continue;
+                    distances_[next] = nextDistance;
+                    bearings_[next] = current.second == start ? Vec2{x + dx + .5 - origin_.x, y + dy + .5 - origin_.y}
+                                                              : bearings_[current.second];
+                    pending.push({nextDistance, next});
+                }
+        }
+    }
+};
+
+struct ScentDetection
+{
+    double clarity = 0;
+    Vec2 bearing;
+    bool windborne = false;
+};
+ScentDetection detectScent(const Entity& observer, const Entity& source, Wind wind, double scentFactor, AirRoutes& air)
+{
+    if (observer.id == source.id || observer.cellId != source.cellId || !std::isfinite(observer.smell) ||
+        !std::isfinite(observer.noseHealth) || !std::isfinite(observer.scentSkill))
+        return {};
+    const double sensitivity = std::max(0.0, observer.smell) * clamp01(observer.noseHealth) *
+                               (1.0 + .75 * clamp01(observer.scentSkill / 100.0));
+    if (sensitivity <= Epsilon)
+        return {};
+    const Vec2 sourceToObserver =
+        normalized({observer.position.x - source.position.x, observer.position.y - source.position.y});
+    const double alignment =
+        std::max(0.0, sourceToObserver.x * std::cos(wind.direction) + sourceToObserver.y * std::sin(wind.direction));
+    const double carry = wind.strength * alignment * alignment;
+    const double full = std::min(MaxScentDistance, (1.0 + 10.0 * carry) * sensitivity * scentFactor);
+    const double limit = std::min(MaxScentDistance, (3.0 + 30.0 * carry) * sensitivity * scentFactor);
+    if (distance(observer.position, source.position) >= limit)
+        return {};
+    const auto route = air.route(source.position);
+    if (route.distance < 0 || route.distance >= limit)
+        return {};
+    const double strength = route.distance <= full ? 1.0 : clamp01((limit - route.distance) / (limit - full));
+    return {strength, route.bearing, wind.strength > .05 && alignment > .35};
 }
 } // namespace
 
@@ -164,6 +352,33 @@ const char* voiceName(Voice v)
     }
 }
 
+const char* paceName(int pace)
+{
+    if (pace <= 0)
+        return "walk";
+    if (pace <= 5)
+        return "trot";
+    if (pace <= 8)
+        return "run";
+    return "sprint";
+}
+
+int effectivePace(const Entity& actor)
+{
+    // Lying movement first becomes a crouch. A requested sprint never
+    // overrides that posture, nor can it circumvent exhaustion recovery.
+    if (actor.posture != "standing" || actor.exhausted || actor.stamina <= 0.0)
+        return 0;
+    return std::clamp(actor.pace, 0, 10);
+}
+
+double paceSpeed(const Entity& actor)
+{
+    const double dexterity = clamp01(effectiveDexterity(actor) / 100.0);
+    const double sprintSpeed = WalkSpeed * (2.0 + 2.0 * dexterity);
+    return WalkSpeed + (sprintSpeed - WalkSpeed) * (effectivePace(actor) / 10.0);
+}
+
 World::World()
 {
     createDemo();
@@ -186,8 +401,7 @@ void World::createDemo()
     Cell exterior = room("exterior", "Juniper Yard", 40, 28, true);
     exterior.worldY = 24;
     exterior.weather = Weather::Rain;
-    exterior.description =
-        "Rain stipples the packed earth. A broad path winds between juniper thickets and a stone-lined spring.";
+    exterior.description = "A broad packed-earth path winds between juniper thickets and a stone-lined spring.";
     fillRect(exterior, 14, 1, 18, 26, '.');
     fillRect(exterior, 1, 12, 38, 15, '.');
     fillRect(exterior, 26, 15, 29, 18, '~');
@@ -206,6 +420,7 @@ void World::createDemo()
     cells_.emplace(tavern.id, tavern);
     cells_.emplace(exterior.id, exterior);
     cells_.emplace(loft.id, loft);
+    for (auto& entry : cells_) entry.second.region = "demo_reach";
     Door main;
     main.id = "door_main";
     main.name = "Yard door";
@@ -312,11 +527,42 @@ void World::createDemo()
         e.cellId = r.cell;
         e.position = r.p;
         e.npc = true;
+        e.age = std::string(r.id) == "npc_scribe" ? 71 : std::string(r.id) == "npc_smith" ? 57 : 32;
+        e.lastBirthdayDay = calendarDays_;
         e.description = r.description;
         e.activity = r.activity;
         e.speakingColor = r.color;
         entities_[e.id] = e;
     }
+    rebuildFixtureIndex();
+}
+
+void World::rebuildFixtureIndex()
+{
+    blockingFixtures_.clear();
+    for (const auto& entry : doors_)
+    {
+        const auto& d = entry.second;
+        if (!d.passage && d.id.rfind("stairs_", 0) != 0)
+            blockingFixtures_[d.cellId][{int(std::floor(d.position.x)), int(std::floor(d.position.y))}].push_back(d.id);
+    }
+}
+
+bool World::blockedByDoor(const std::string& cellId, Vec2 point) const
+{
+    const auto blockers = blockingFixtures_.find(cellId);
+    if (blockers == blockingFixtures_.end())
+        return false;
+    const auto tile = blockers->second.find({int(std::floor(point.x)), int(std::floor(point.y))});
+    if (tile == blockers->second.end())
+        return false;
+    for (const auto& id : tile->second)
+    {
+        const auto* d = door(id);
+        if (d && !d->open)
+            return true;
+    }
+    return false;
 }
 
 Entity& World::addPlayer(const std::string& id, const std::string& name)
@@ -327,9 +573,11 @@ Entity& World::addPlayer(const std::string& id, const std::string& name)
     Entity e;
     e.id = id;
     e.name = name;
-    e.cellId = "tavern";
-    e.position = {16.5, 12.5};
+    e.cellId = spawnCell_;
+    e.position = spawnPosition_;
     e.description = "A wolf whose story is still being written.";
+    e.lastBirthdayDay = calendarDays_;
+    society_.addPlayer(id);
     auto& stored = entities_.emplace(id, e).first->second;
     observe(id);
     return stored;
@@ -340,6 +588,11 @@ bool World::removePlayer(const std::string& id)
     if (it == entities_.end() || it->second.npc)
         return false;
     entities_.erase(it);
+    pendingPortals_.erase(id);
+    travels_.erase(id);
+    travelLegCells_.erase(id);
+    travelRetryAt_.erase(id);
+    travelProgress_.erase(id);
     return true;
 }
 Entity* World::entity(const std::string& id)
@@ -379,9 +632,8 @@ bool World::passable(const std::string& cellId, Vec2 p, double fromHeight) const
         const auto* t = c->tile(int(std::floor(s.x)), int(std::floor(s.y)));
         if (!t || t->solid || std::abs(t->height - fromHeight) > 0.75)
             return false;
-        for (const auto& entry : doors_)
-            if (entry.second.cellId == cellId && !entry.second.open && doorCovers(entry.second, s))
-                return false;
+        if (blockedByDoor(cellId, s))
+            return false;
     }
     return true;
 }
@@ -405,33 +657,15 @@ bool World::lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const
         const auto* t = c->tile(int(std::floor(p.x)), int(std::floor(p.y)));
         if (!t || t->opaque)
             return false;
-        for (const auto& entry : doors_)
-            if (entry.second.cellId == cellId && !entry.second.open && doorCovers(entry.second, p))
-                return false;
+        if (blockedByDoor(cellId, p))
+            return false;
     }
     return true;
 }
 
 double World::sightRange(const Entity& o) const
 {
-    const auto* c = cell(o.cellId);
-    double weather = 1.0;
-    if (c && c->outdoors)
-        switch (c->weather)
-        {
-        case Weather::Rain:
-            weather = .78;
-            break;
-        case Weather::Fog:
-            weather = .40;
-            break;
-        case Weather::Snow:
-            weather = .65;
-            break;
-        default:
-            break;
-        }
-    return 27.0 * std::max(0.0, o.vision) * clamp01(o.eyeHealth) * weather;
+    return 27.0 * std::max(0.0, o.vision) * ageVisionFactor(o) * clamp01(o.eyeHealth) * environmentAt(o.cellId).sight;
 }
 bool World::visiblePoint(const Entity& o, Vec2 p) const
 {
@@ -585,8 +819,20 @@ Result World::move(const std::string& id, double dx, double dy)
         return {false, "Unknown actor.", {}};
     if (!finite({dx, dy}))
         return {false, "Movement must be finite.", {}};
+    if (!issuingTravel_ && length({dx, dy}) > Epsilon)
+        cancelTravel(id);
+    else if (!issuingTravel_ && travelState(id).active)
+        return {true, "Travel continues.", {}};
     a->path.clear();
+    pendingPortals_.erase(id);
     a->input = length({dx, dy}) > 1.0 ? normalized({dx, dy}) : Vec2{dx, dy};
+    if (length(a->input) > Epsilon)
+    {
+        a->turning = false;
+        prepareMovement(*a);
+    }
+    else
+        a->velocity = {};
     a->transitioned = false;
     return {true, "Movement accepted.", {}};
 }
@@ -595,21 +841,68 @@ Result World::stop(const std::string& id)
     auto* a = entity(id);
     if (!a)
         return {false, "Unknown actor.", {}};
+    if (!issuingTravel_)
+        cancelTravel(id);
     a->path.clear();
     a->input = {};
     a->velocity = {};
+    pendingPortals_.erase(id);
     return {true, "Stopped.", {}};
+}
+Result World::setPace(const std::string& id, int pace)
+{
+    auto* a = entity(id);
+    if (!a)
+        return {false, "Unknown actor.", {}};
+    if (pace < 0 || pace > 10)
+        return {false, "Pace must be a notch from 0 to 10.", {}};
+    a->pace = pace;
+    return {true, std::string("Travel pace: ") + paceName(pace) + " (" + std::to_string(pace) + "/10).", {}};
 }
 Result World::face(const std::string& id, double x, double y)
 {
     auto* a = entity(id);
     if (!a || !finite({x, y}))
         return {false, "Invalid facing target.", {}};
-    if (length(a->input) > Epsilon || !a->path.empty() || length(a->velocity) > Epsilon)
+    if (length(a->input) > Epsilon || !a->path.empty() || length(a->velocity) > Epsilon || pendingPortals_.count(id))
         return {false, "Stop moving to face a point.", {}};
+    if (!issuingTravel_)
+        cancelTravel(id);
     if (distance(a->position, {x, y}) > Epsilon)
-        a->facing = std::atan2(y - a->position.y, x - a->position.x);
-    return {true, "Facing changed.", {}};
+    {
+        a->turnTarget = std::atan2(y - a->position.y, x - a->position.x);
+        a->turning = std::abs(std::remainder(a->turnTarget - a->facing, 2.0 * Pi)) > Epsilon;
+    }
+    return {true, "Turning toward that direction.", {}};
+}
+void World::prepareMovement(Entity& a)
+{
+    // Repeated held input must not restart an in-progress rise.
+    if (a.posture == "sitting" || a.posture == "lying")
+    {
+        a.postureRemaining = a.posture == "sitting" ? .65 : .45;
+        a.postureTarget = a.posture == "sitting" ? "standing" : "crouching";
+        a.posture = "rising";
+        a.velocity = {};
+    }
+}
+Result World::setPosture(const std::string& id, const std::string& posture)
+{
+    auto* a = entity(id);
+    if (!a || !stablePosture(posture))
+        return {false, "Invalid posture.", {}};
+    stop(id);
+    if ((a->posture == "rising" && a->postureTarget == posture) || a->posture == posture)
+        return {true, a->posture == "rising" ? "Already changing posture." : "Posture unchanged.", {}};
+    double duration = 0.0;
+    if (posture == "standing")
+        duration = a->posture == "lying" ? 1.0 : a->posture == "crouching" ? .5 : .65;
+    else if (posture == "crouching")
+        duration = a->posture == "lying" ? .45 : a->posture == "sitting" ? .65 : 0.0;
+    a->postureRemaining = duration;
+    a->postureTarget = duration > 0.0 ? posture : std::string{};
+    a->posture = duration > 0.0 ? "rising" : posture;
+    return {true, duration > 0.0 ? "Changing posture." : "Posture changed.", {}};
 }
 Result World::moveTo(const std::string& id, double x, double y)
 {
@@ -619,10 +912,14 @@ Result World::moveTo(const std::string& id, double x, double y)
     const auto* c = cell(a->cellId);
     if (!c)
         return {false, "Missing cell.", {}};
+    if (!issuingTravel_)
+        cancelTravel(id);
     a->input = {};
     a->path.clear();
     a->velocity = {};
     a->transitioned = false;
+    a->turning = false;
+    pendingPortals_.erase(id);
     Vec2 requested{x, y};
     Vec2 goal = requested;
     const Door* exit = nullptr;
@@ -632,10 +929,18 @@ Result World::moveTo(const std::string& id, double x, double y)
         const auto& d = entry.second;
         if (d.cellId != a->cellId || !d.boundary)
             continue;
-        const bool along = (d.position.y < 1 || d.position.y > c->height - 1) ? std::abs(x - d.position.x) < .48
-                                                                              : std::abs(y - d.position.y) < .48;
-        const bool edge = (d.position.y < 1 && y <= 1) || (d.position.y > c->height - 1 && y >= c->height - 1) ||
-                          (d.position.x < 1 && x <= 1) || (d.position.x > c->width - 1 && x >= c->width - 1);
+        const bool horizontal =
+            d.edge == 'N' || d.edge == 'S' || (d.edge == '-' && (d.position.y < 1 || d.position.y > c->height - 1));
+        const double lateral = horizontal ? x : y;
+        const double anchor = horizontal ? d.position.x : d.position.y;
+        const bool along = d.passage ? std::floor(lateral) == std::floor(anchor) : std::abs(lateral - anchor) < .48;
+        const bool edge = d.edge == 'N'   ? y <= 1
+                          : d.edge == 'S' ? y >= c->height - 1
+                          : d.edge == 'W' ? x <= 1
+                          : d.edge == 'E'
+                              ? x >= c->width - 1
+                              : (d.position.y < 1 && y <= 1) || (d.position.y > c->height - 1 && y >= c->height - 1) ||
+                                    (d.position.x < 1 && x <= 1) || (d.position.x > c->width - 1 && x >= c->width - 1);
         if (along && edge)
         {
             exit = &d;
@@ -657,6 +962,8 @@ Result World::moveTo(const std::string& id, double x, double y)
                         distance(entry.second.position, p) < 1.1)
                     {
                         a->path = path;
+                        if (!a->path.empty())
+                            prepareMovement(*a);
                         return {true, "Approaching the closed " + entry.second.name + ". Choose Open to continue.",
                                 entry.first};
                     }
@@ -669,17 +976,18 @@ Result World::moveTo(const std::string& id, double x, double y)
     if (exit && exit->open)
     {
         Vec2 beyond = exit->position;
-        if (exit->position.y < 1)
+        if (exit->edge == 'N' || (exit->edge == '-' && exit->position.y < 1))
             beyond.y = -.15;
-        else if (exit->position.y > c->height - 1)
+        else if (exit->edge == 'S' || (exit->edge == '-' && exit->position.y > c->height - 1))
             beyond.y = c->height + .15;
-        else if (exit->position.x < 1)
+        else if (exit->edge == 'W' || (exit->edge == '-' && exit->position.x < 1))
             beyond.x = -.15;
         else
             beyond.x = c->width + .15;
         path.push_back(beyond);
     }
     a->path = std::move(path);
+    prepareMovement(*a);
     return {true, "Following a route.", {}};
 }
 
@@ -688,11 +996,26 @@ void World::transition(Entity& a, const Door& d)
     const auto* destination = cell(d.targetCell);
     if (!destination)
         return;
+    Vec2 arrival = d.arrival;
+    if (d.passage && d.boundary && d.edge != '-')
+    {
+        // Retain the lateral crossing coordinate, not the center of each
+        // authoring tile. Never copy an unsafe offset into the destination.
+        if (d.edge == 'N' || d.edge == 'S')
+            arrival.x += a.position.x - d.position.x;
+        else
+            arrival.y += a.position.y - d.position.y;
+        const auto* anchor = destination->tile(int(d.arrival.x), int(d.arrival.y));
+        if (!anchor || !passable(d.targetCell, arrival, anchor->height))
+            arrival = d.arrival;
+    }
     a.cellId = d.targetCell;
-    a.position = d.arrival;
+    a.position = arrival;
     a.velocity = {};
     a.input = {};
     a.path.clear();
+    a.turning = false;
+    pendingPortals_.erase(a.id);
     a.transitioned = true;
     if (!a.npc)
         observe(a.id);
@@ -707,6 +1030,8 @@ Result World::interact(const std::string& id, const std::string& target, const s
     if (di != doors_.end())
     {
         auto& d = di->second;
+        if (d.passage && d.boundary)
+            return {false, "That seam is crossed by movement, not interaction.", target};
         if (d.cellId != a->cellId || !visiblePoint(*a, d.position))
             return {false, "You cannot see that here.", target};
         if (verb == "inspect")
@@ -726,17 +1051,35 @@ Result World::interact(const std::string& id, const std::string& target, const s
             d.open = true;
             if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
                 doors_.at(d.linkedDoor).open = true;
+            // Opening the barrier named by a journey is the requested manual
+            // intervention, not a replacement movement command. The ordinary
+            // local-click rule still stops and requires a new destination.
+            const auto travel = travels_.find(id);
+            const bool continueTravel =
+                travel != travels_.end() && travel->second.active && travel->second.nextDoor == target;
+            const bool wasIssuingTravel = issuingTravel_;
+            issuingTravel_ = issuingTravel_ || continueTravel;
             stop(id);
+            issuingTravel_ = wasIssuingTravel;
             if (d.portal)
             {
+                prepareMovement(*a);
+                if (a->postureRemaining > Epsilon)
+                {
+                    pendingPortals_[id] = target;
+                    return {true, "Changing posture before entering " + cells_.at(d.targetCell).name + ".", target};
+                }
                 transition(*a, d);
                 return {true, "You enter " + cells_.at(d.targetCell).name + ".", target};
             }
-            return {true, "You open " + d.name + ". Choose a new destination to continue.", target};
+            return {true,
+                    "You open " + d.name +
+                        (continueTravel ? ". Your journey can continue." : ". Choose a new destination to continue."),
+                    target};
         }
         if (verb == "close")
         {
-            if (d.id.find("stairs_") == 0)
+            if (d.passage || d.id.find("stairs_") == 0)
                 return {false, "The steps have no door to close.", target};
             for (const auto& e : entities_)
                 if (e.second.cellId == d.cellId && doorCovers(d, e.second.position))
@@ -757,7 +1100,7 @@ Result World::interact(const std::string& id, const std::string& target, const s
         return {false, "That action is unavailable.", target};
     }
     const auto* other = entity(target);
-    if (other && other->cellId == a->cellId && visiblePoint(*a, other->position))
+    if (other && visionClarity(id, target) > 0.0)
     {
         if (verb == "inspect")
             return {true,
@@ -776,13 +1119,13 @@ std::vector<std::string> World::actions(const std::string& id, const std::string
     if (!a)
         return {};
     const auto* d = door(target);
-    if (d && d->cellId == a->cellId && visiblePoint(*a, d->position))
+    if (d && !(d->passage && d->boundary) && d->cellId == a->cellId && visiblePoint(*a, d->position))
     {
         std::vector<std::string> out{"inspect"};
         if (distance(a->position, d->position) <= d->reach)
         {
             out.push_back("listen");
-            if (d->id.find("stairs_") != 0)
+            if (!d->passage && d->id.find("stairs_") != 0)
                 out.push_back("knock");
             if (!d->open)
                 out.push_back("open");
@@ -790,98 +1133,182 @@ std::vector<std::string> World::actions(const std::string& id, const std::string
             {
                 if (d->portal)
                     out.push_back("enter");
-                if (d->id.find("stairs_") != 0)
+                if (!d->passage && d->id.find("stairs_") != 0)
                     out.push_back("close");
             }
         }
         return out;
     }
     const auto* e = entity(target);
-    if (e && e->cellId == a->cellId && visiblePoint(*a, e->position))
+    if (e && visionClarity(id, target) > 0.0)
         return {"inspect", "speak"};
     return {};
 }
 
 void World::integrate(Entity& a, double dt)
 {
+    if (a.stamina <= Epsilon)
+        a.exhausted = true;
+    const double elapsed = dt;
+    double movedTime = 0.0;
+    const Vec2 origin = a.position;
+    const auto originCell = a.cellId;
     a.velocity = {};
-    const auto* c = cell(a.cellId);
-    if (!c)
-        return;
-    Vec2 direction = a.input;
-    while (!a.path.empty() && distance(a.position, a.path.front()) < Epsilon)
-        a.path.erase(a.path.begin());
-    if (!a.path.empty())
-        direction = normalized({a.path.front().x - a.position.x, a.path.front().y - a.position.y});
-    if (length(direction) < Epsilon)
-        return;
-    const auto* startTile = c->tile(int(a.position.x), int(a.position.y));
-    if (!startTile)
-        return;
-    double speed = Speed / std::max(.1, startTile->movementCost);
-    if (a.npc)
-        speed *= .57;
-    if (c->outdoors && (c->weather == Weather::Rain || c->weather == Weather::Snow))
-        speed *= c->weather == Weather::Rain ? .85 : .70;
-    double travel = speed * dt;
-    if (!a.path.empty())
-        travel = std::min(travel, distance(a.position, a.path.front()));
-    const Vec2 delta{direction.x * travel, direction.y * travel};
-    const Vec2 proposed{a.position.x + delta.x, a.position.y + delta.y};
-    for (const auto& entry : doors_)
-    {
-        const auto& d = entry.second;
-        if (d.cellId != a.cellId || !d.portal || !d.boundary || !d.open)
-            continue;
-        const bool crossed = (d.position.y < 1 && proposed.y < Radius) ||
-                             (d.position.y > c->height - 1 && proposed.y >= c->height - Radius) ||
-                             (d.position.x < 1 && proposed.x < Radius) ||
-                             (d.position.x > c->width - 1 && proposed.x >= c->width - Radius);
-        const bool aligned = (d.position.y < 1 || d.position.y > c->height - 1)
-                                 ? std::abs(proposed.x - d.position.x) < .43
-                                 : std::abs(proposed.y - d.position.y) < .43;
-        if (crossed && aligned)
+    // A navigation step can consume several short waypoints. Account for
+    // elapsed recovery exactly once, and charge only the time corresponding
+    // to accepted translation, not a blocked input or a portal teleport.
+    const auto advanceMotion = [&]() {
+        const auto* c = cell(a.cellId);
+        if (!c)
+            return;
+        if (a.turning)
         {
-            a.facing = std::atan2(direction.y, direction.x);
-            transition(a, d);
+            const double difference = std::remainder(a.turnTarget - a.facing, 2.0 * Pi);
+            const double turn = TurnSpeed * dt;
+            if (std::abs(difference) <= turn + Epsilon)
+            {
+                a.facing = a.turnTarget;
+                a.turning = false;
+            }
+            else
+                a.facing = std::remainder(a.facing + std::copysign(turn, difference), 2.0 * Pi);
+        }
+        // Transition time consumes simulation time before any movement is allowed.
+        if (a.postureRemaining > 0.0)
+        {
+            const double consumed = std::min(dt, a.postureRemaining);
+            a.postureRemaining -= consumed;
+            dt -= consumed;
+            if (a.postureRemaining <= Epsilon)
+            {
+                a.postureRemaining = 0.0;
+                a.posture = a.postureTarget;
+                a.postureTarget.clear();
+            }
+            if (a.postureRemaining > 0.0)
+                return;
+        }
+        const auto pending = pendingPortals_.find(a.id);
+        if (pending != pendingPortals_.end())
+        {
+            const auto* d = door(pending->second);
+            pendingPortals_.erase(pending);
+            if (d && d->portal && d->open && d->cellId == a.cellId && distance(a.position, d->position) <= d->reach)
+                transition(a, *d);
             return;
         }
-    }
-    Vec2 accepted = a.position;
-    if (passable(a.cellId, proposed, startTile->height))
-        accepted = proposed;
-    else
-    {
-        const Vec2 slideX{proposed.x, a.position.y};
-        const Vec2 slideY{a.position.x, proposed.y};
-        if (std::abs(delta.x) > Epsilon && passable(a.cellId, slideX, startTile->height))
-            accepted = slideX;
-        if (std::abs(delta.y) > Epsilon && passable(a.cellId, {accepted.x, slideY.y}, startTile->height))
-            accepted.y = slideY.y;
-        // A route invalidated by a newly closed door must not resume by itself.
-        if (!a.path.empty())
-            a.path.clear();
-    }
-    const Vec2 initial = a.position;
-    const Vec2 actual{accepted.x - a.position.x, accepted.y - a.position.y};
-    if (length(actual) > Epsilon)
-    {
-        a.facing = std::atan2(actual.y, actual.x);
-        a.velocity = {actual.x / dt, actual.y / dt};
-        a.position = accepted;
-    }
-    if (!a.path.empty() && distance(a.position, a.path.front()) < Epsilon)
-    {
-        a.path.erase(a.path.begin());
-        const double unused = dt - travel / speed;
-        if (!a.path.empty() && unused > Epsilon)
+        while (dt > Epsilon)
         {
-            const auto originalCell = a.cellId;
-            integrate(a, unused);
-            if (a.cellId == originalCell)
-                a.velocity = {(a.position.x - initial.x) / dt, (a.position.y - initial.y) / dt};
+            Vec2 direction = a.input;
+            while (!a.path.empty() && distance(a.position, a.path.front()) < Epsilon)
+                a.path.erase(a.path.begin());
+            if (!a.path.empty())
+                direction = normalized({a.path.front().x - a.position.x, a.path.front().y - a.position.y});
+            if (length(direction) < Epsilon)
+                return;
+            a.turning = false;
+            // Also cover authoritative scripts that assign an NPC path directly.
+            prepareMovement(a);
+            if (a.postureRemaining > 0.0)
+                return;
+            const auto* startTile = c->tile(int(a.position.x), int(a.position.y));
+            if (!startTile)
+                return;
+            double speed = paceSpeed(a) / std::max(.1, startTile->movementCost);
+            if (a.posture == "crouching")
+                speed *= .30;
+            if (a.npc)
+                speed *= .57;
+            speed *= environmentAt(c->id).movement;
+            double travel = speed * dt;
+            if (!a.path.empty())
+                travel = std::min(travel, distance(a.position, a.path.front()));
+            const Vec2 delta{direction.x * travel, direction.y * travel};
+            const Vec2 proposed{a.position.x + delta.x, a.position.y + delta.y};
+            for (const auto& entry : doors_)
+            {
+                const auto& d = entry.second;
+                if (d.cellId != a.cellId || !d.portal || !d.boundary || !d.open)
+                    continue;
+                const bool crossed = d.edge == 'N'   ? proposed.y < Radius
+                                     : d.edge == 'S' ? proposed.y >= c->height - Radius
+                                     : d.edge == 'W' ? proposed.x < Radius
+                                     : d.edge == 'E'
+                                         ? proposed.x >= c->width - Radius
+                                         : (d.position.y < 1 && proposed.y < Radius) ||
+                                               (d.position.y > c->height - 1 && proposed.y >= c->height - Radius) ||
+                                               (d.position.x < 1 && proposed.x < Radius) ||
+                                               (d.position.x > c->width - 1 && proposed.x >= c->width - Radius);
+                const bool horizontal = d.edge == 'N' || d.edge == 'S' ||
+                                        (d.edge == '-' && (d.position.y < 1 || d.position.y > c->height - 1));
+                const double lateral = horizontal ? proposed.x : proposed.y;
+                const double anchor = horizontal ? d.position.x : d.position.y;
+                const bool aligned =
+                    d.passage ? std::floor(lateral) == std::floor(anchor) : std::abs(lateral - anchor) < .43;
+                if (crossed && aligned)
+                {
+                    const double component = horizontal ? direction.y : direction.x;
+                    const double coordinate = horizontal ? a.position.y : a.position.x;
+                    const double limit = component < 0 ? Radius : (horizontal ? c->height : c->width) - Radius;
+                    if (std::abs(component) > Epsilon)
+                        movedTime += std::clamp((limit - coordinate) / component, 0.0, travel) / speed;
+                    a.facing = std::atan2(direction.y, direction.x);
+                    transition(a, d);
+                    return;
+                }
+            }
+            Vec2 accepted = a.position;
+            if (passable(a.cellId, proposed, startTile->height))
+                accepted = proposed;
+            else
+            {
+                const Vec2 slideX{proposed.x, a.position.y};
+                const Vec2 slideY{a.position.x, proposed.y};
+                if (std::abs(delta.x) > Epsilon && passable(a.cellId, slideX, startTile->height))
+                    accepted = slideX;
+                if (std::abs(delta.y) > Epsilon && passable(a.cellId, {accepted.x, slideY.y}, startTile->height))
+                    accepted.y = slideY.y;
+                // A route invalidated by a newly closed door must not resume by itself.
+                if (!a.path.empty())
+                    a.path.clear();
+            }
+            const Vec2 actual{accepted.x - a.position.x, accepted.y - a.position.y};
+            if (length(actual) > Epsilon)
+            {
+                a.facing = std::atan2(actual.y, actual.x);
+                a.position = accepted;
+                movedTime += length(actual) / speed;
+            }
+            if (a.path.empty() || distance(a.position, a.path.front()) >= Epsilon)
+                return;
+            a.path.erase(a.path.begin());
+            dt -= travel / speed;
+            if (a.path.empty())
+                return;
         }
+    };
+    advanceMotion();
+    if (a.cellId == originCell && elapsed > Epsilon)
+        a.velocity = {(a.position.x - origin.x) / elapsed, (a.position.y - origin.y) / elapsed};
+    updateStamina(a, elapsed, movedTime);
+}
+
+void World::updateStamina(Entity& a, double dt, double movedTime)
+{
+    if (dt <= 0.0)
+        return;
+    const double pace = effectivePace(a) / 10.0;
+    const double grossDrain = SprintDrain * pace * pace;
+    const double before = a.stamina;
+    a.stamina = std::clamp(before + StaminaRecovery * dt - grossDrain * std::clamp(movedTime, 0.0, dt), 0.0, 100.0);
+    a.staminaRate = (a.stamina - before) / dt;
+    if (a.stamina <= Epsilon)
+    {
+        a.stamina = 0.0;
+        a.exhausted = true;
     }
+    else if (a.exhausted && a.stamina >= ExhaustionRecovery - Epsilon)
+        a.exhausted = false;
 }
 
 void World::separate(double dt)
@@ -925,88 +1352,96 @@ void World::separate(double dt)
     }
 }
 
+Result World::relocateResident(const std::string& id, const std::string& destination, double x, double y)
+{
+    auto* actor = entity(id);
+    const auto* targetCell = cell(destination);
+    const auto* life = society_.resident(id);
+    if (!actor || !actor->npc || !life || life->role != "resident" || !actor->leaderId.empty() ||
+        actor->state == "following" || !targetCell || !std::isfinite(x) || !std::isfinite(y) ||
+        x < .5 || y < .5 || x > targetCell->width - .5 || y > targetCell->height - .5)
+        return {false, "Choose an existing, non-recruited resident and a traversable home; essential jobs are protected.", id};
+    const auto* tile = targetCell->tile(int(x), int(y));
+    if (!tile || !passable(destination, {x, y}, tile->height))
+        return {false, "The proposed home is blocked.", id};
+    std::queue<std::string> pending;
+    std::set<std::string> reached{actor->cellId}; pending.push(actor->cellId);
+    while (!pending.empty())
+    {
+        const auto current = pending.front(); pending.pop();
+        for (const auto& entry : doors_)
+            if (entry.second.portal && !entry.second.locked && entry.second.cellId == current &&
+                reached.insert(entry.second.targetCell).second) pending.push(entry.second.targetCell);
+    }
+    if (!reached.count(destination) || (actor->cellId == destination &&
+        distance(actor->position, {x, y}) > .35 && findPath(*actor, {x, y}, true).empty()))
+        return {false, "No authored route reaches the proposed home.", id};
+    if (!society_.relocate(id, destination, x, y)) return {false, "Resident already relocating or invalid home.", id};
+    stop(id);
+    return {true, "Relocation accepted; the resident must physically arrive before the home changes.", id};
+}
+
 void World::updateSchedules()
 {
-    struct Appointment
+    std::map<std::string, LifeBody> bodies;
+    for (auto& pair : entities_)
     {
-        const char* cell;
-        Vec2 pos;
-        const char* activity;
-    };
-    const std::map<std::string, std::vector<Appointment>> schedules{
-        {"npc_keeper",
-         {{"tavern", {9.5, 6.5}, "tending the hearth"},
-          {"tavern", {14.5, 13.5}, "checking on guests"},
-          {"exterior", {17.5, 4.5}, "gathering fresh herbs"},
-          {"tavern", {9.5, 6.5}, "preparing warm broth"}}},
-        {"npc_scout",
-         {{"tavern", {19.5, 12.5}, "watching the room"},
-          {"exterior", {18.5, 13.5}, "checking the road"},
-          {"exterior", {17.5, 20.5}, "reading tracks"},
-          {"tavern", {19.5, 12.5}, "resting near the hearth"}}},
-        {"npc_cook",
-         {{"tavern", {26.5, 6.5}, "sorting stores"},
-          {"tavern", {12.5, 6.5}, "preparing broth"},
-          {"tavern", {14.5, 15.5}, "bringing out a meal"},
-          {"tavern", {26.5, 6.5}, "counting provisions"}}},
-        {"npc_porter",
-         {{"exterior", {17.5, 7.5}, "checking the path"},
-          {"exterior", {20.5, 14.5}, "stretching after a journey"},
-          {"tavern", {19.5, 19.5}, "warming up indoors"},
-          {"exterior", {17.5, 7.5}, "watching arrivals"}}},
-        {"npc_smith",
-         {{"exterior", {11.5, 14.5}, "mending a harness clasp"},
-          {"exterior", {21.5, 14.5}, "visiting the spring"},
-          {"tavern", {20.5, 12.5}, "sharing the afternoon meal"},
-          {"exterior", {11.5, 14.5}, "sorting tools"}}},
-        {"npc_scribe",
-         {{"loft", {8.5, 6.5}, "studying old accounts"},
-          {"loft", {10.5, 10.5}, "stretching by the steps"},
-          {"tavern", {26.5, 6.5}, "asking after provisions"},
-          {"loft", {8.5, 6.5}, "writing the day's record"}}}};
-    for (auto& entry : entities_)
+        advanceAge(pair.second, calendarDays_);
+        const auto& e = pair.second;
+        bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following"};
+    }
+    society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
+    if (customWorld_) return;
+    for (auto& pair : entities_)
     {
-        auto& e = entry.second;
-        if (!e.npc || schedules.count(e.id) == 0 || e.state == "following" || !e.leaderId.empty())
-            continue;
-        const auto& list = schedules.at(e.id);
-        const auto& target = list[static_cast<std::size_t>(time_ / 60.0) % list.size()];
-        e.activity = target.activity;
-        if (!e.path.empty())
-            continue;
-        if (e.cellId == target.cell)
+        auto& e = pair.second;
+        const auto* life = society_.resident(pair.first);
+        if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
+        const std::string activity = life->task + " — " + life->reason;
+        if (e.activity != activity) { stop(e.id); e.activity = activity; }
+        const Vec2 target{life->goalX, life->goalY};
+        if (e.cellId == life->goalCell && distance(e.position, target) <= .35)
         {
-            if (distance(e.position, target.pos) < .3)
-                continue;
-            auto result = moveTo(e.id, target.pos.x, target.pos.y);
-            if (!result.targetId.empty())
-            {
-                const auto* d = door(result.targetId);
-                if (d && distance(e.position, d->position) <= d->reach)
-                    interact(e.id, d->id, "open");
-            }
+            if (life->task == "sleep" && e.posture != "lying") setPosture(e.id, "lying");
+            continue;
         }
+        if (e.posture == "lying" || e.posture == "sitting") setPosture(e.id, "standing");
+        if (!e.path.empty()) continue;
+        if (e.cellId == life->goalCell)
+        {
+            auto result = moveTo(e.id, target.x, target.y);
+            if (const auto* barrier = door(result.targetId))
+                if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
+                    interact(e.id, barrier->id, "open");
+            continue;
+        }
+        // Residents know their authored work/home routes, not player exploration.
+        std::queue<std::string> pending;
+        std::map<std::string, std::string> firstDoor;
+        pending.push(e.cellId);
+        firstDoor[e.cellId] = "";
+        while (!pending.empty() && !firstDoor.count(life->goalCell))
+        {
+            const auto current = pending.front(); pending.pop();
+            for (const auto& d : doors_)
+                if (d.second.portal && !d.second.locked && d.second.cellId == current &&
+                    !firstDoor.count(d.second.targetCell))
+                {
+                    firstDoor[d.second.targetCell] = current == e.cellId ? d.first : firstDoor[current];
+                    pending.push(d.second.targetCell);
+                }
+        }
+        if (!firstDoor.count(life->goalCell)) { e.activity = life->task + " — route unavailable"; continue; }
+        const auto* d = door(firstDoor[life->goalCell]);
+        if (!d) continue;
+        if (distance(e.position, d->position) <= d->reach)
+            interact(e.id, d->id, d->open ? "enter" : "open");
         else
         {
-            for (const auto& doorEntry : doors_)
-            {
-                const auto& d = doorEntry.second;
-                if (d.cellId != e.cellId || d.targetCell != target.cell)
-                    continue;
-                if (distance(e.position, d.position) <= d.reach)
-                    interact(e.id, d.id, "open");
-                else
-                {
-                    auto result = moveTo(e.id, d.position.x, d.position.y);
-                    if (!result.targetId.empty())
-                    {
-                        const auto* barrier = door(result.targetId);
-                        if (barrier && distance(e.position, barrier->position) <= barrier->reach)
-                            interact(e.id, barrier->id, "open");
-                    }
-                }
-                break;
-            }
+            auto result = moveTo(e.id, d->position.x, d->position.y);
+            if (const auto* barrier = door(result.targetId))
+                if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
+                    interact(e.id, barrier->id, "open");
         }
     }
 }
@@ -1022,14 +1457,26 @@ void World::tick(double dt)
     {
         const double step = std::min(dt, 1.0 / 30.0);
         time_ += step;
+        calendarDays_ = std::min(calendar::MaxGameDays, calendarDays_ + step / DaySeconds);
+        const auto slot = std::int64_t(std::floor(calendarDays_ * 4));
+        if (slot != climateSlot_)
+        {
+            climateSlot_ = slot;
+            for (auto& cellPair : cells_)
+                if (cellPair.second.outdoors && cellPair.second.seasonalWeather)
+                    cellPair.second.weather = worldWeather(calendar::forecastAt(0x52415457, cellPair.first, calendarDays_).weather);
+        }
         scheduleAccumulator_ += step;
-        if (scheduleAccumulator_ >= .5)
+        if (scheduleAccumulator_ + 1e-9 >= .5)
         {
             updateSchedules();
-            scheduleAccumulator_ = 0;
+            scheduleAccumulator_ = std::max(0., scheduleAccumulator_ - .5);
         }
         for (auto& entry : entities_)
+        {
+            updateTravel(entry.second);
             integrate(entry.second, step);
+        }
         separate(step);
         dt -= step;
     }
@@ -1048,6 +1495,12 @@ double World::visionClarity(const std::string& observerId, const std::string& so
         return 1;
     if (o->cellId != s->cellId || !visiblePoint(*o, s->position))
         return 0;
+    if (s->posture == "crouching")
+    {
+        const double detectionRange = (7.0 - 4.0 * clamp01(s->sneakSkill / 100.0)) * (sightRange(*o) / 27.0);
+        if (distance(o->position, s->position) >= detectionRange)
+            return 0;
+    }
     return clarity(distance(o->position, s->position), sightRange(*o) * .5);
 }
 double World::hearingClarity(const std::string& observerId, const std::string& sourceId, Voice voice) const
@@ -1058,7 +1511,8 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
         return 0;
     if (o->id == s->id)
         return 1;
-    const double sensitivity = std::max(0.0, o->hearing) * clamp01(o->earHealth);
+    const double sensitivity =
+        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0));
     if (sensitivity <= Epsilon)
         return 0;
     double range = (voice == Voice::Whisper ? 2.0 : voice == Voice::Yell ? 32.0 : 16.0) * sensitivity;
@@ -1066,10 +1520,7 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
     const auto* sc = cell(s->cellId);
     if (!oc || !sc)
         return 0;
-    auto weatherNoise = [](const Cell& c) {
-        return c.outdoors && c.weather == Weather::Rain ? .72 : c.outdoors && c.weather == Weather::Snow ? .85 : 1.0;
-    };
-    range *= weatherNoise(*oc);
+    range *= environmentAt(oc->id).hearing;
     if (o->cellId == s->cellId)
     {
         if (!lineOfSight(o->cellId, o->position, s->position))
@@ -1093,19 +1544,252 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
             transmission *= .45;
         if (!lineOfSight(o->cellId, d.arrival, o->position))
             transmission *= .45;
-        best = std::max(best, clarity(route, range * transmission * weatherNoise(*sc)));
+        best = std::max(best, clarity(route, range * transmission * environmentAt(sc->id).hearing));
     }
     return best;
+}
+double World::movementAudibility(const std::string& observerId, const std::string& sourceId) const
+{
+    const auto* o = entity(observerId);
+    const auto* s = entity(sourceId);
+    if (!o || !s || o->cellId != s->cellId || length(s->velocity) <= Epsilon)
+        return 0.0;
+    if (o->id == s->id)
+        return 1.0;
+    const auto* c = cell(o->cellId);
+    if (!c)
+        return 0.0;
+    const double sensitivity =
+        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0));
+    const double sourceRange = s->posture == "crouching" ? 2.5 - 1.7 * clamp01(s->sneakSkill / 100.0) : 6.0;
+    double range = sourceRange * sensitivity;
+    range *= environmentAt(c->id).hearing;
+    if (!lineOfSight(o->cellId, o->position, s->position))
+        range *= .38;
+    const auto* ot = c->tile(int(o->position.x), int(o->position.y));
+    const auto* st = c->tile(int(s->position.x), int(s->position.y));
+    const double separation = distance(o->position, s->position) + (ot && st ? std::abs(ot->height - st->height) : 0);
+    return clarity(separation, range);
 }
 SensoryResult World::perceive(const std::string& observer, const std::string& source, Voice voice) const
 {
     const double visual = visionClarity(observer, source);
-    return {hearingClarity(observer, source, voice), visual, visual > 0.0};
+    return {hearingClarity(observer, source, voice), visual, visual > 0.0, scentClarity(observer, source)};
+}
+Environment World::environmentAt(const std::string& cellId) const
+{
+    Environment out;
+    out.date = calendar::calendarAt(calendarDays_);
+    out.hour = out.date.hour;
+    out.daylight = out.date.daylight;
+    out.phase = out.date.period;
+    const auto* c = cell(cellId);
+    if (!c)
+        return out;
+    if (!c->outdoors)
+    {
+        // A roof blocks weather, not darkness. Daylight access represents
+        // windows/openings at whole-cell scale, rather than rays through doors.
+        out.artificialLight = c->lighting.artificial;
+        out.daylightAccess = c->lighting.daylightAccess;
+        out.lightingTone = c->lighting.tone;
+        const double natural = out.daylight * out.daylightAccess;
+        const double strongest = std::max(out.artificialLight, natural);
+        out.illumination = std::max(.08, strongest);
+        out.sight = out.illumination;
+        // A bright day-lit tavern needs no amber overlay. As daylight fades,
+        // its artificial light becomes atmospheric, without losing visibility.
+        out.glowStrength = out.artificialLight * (1.0 - natural);
+        out.lightSource = strongest <= Epsilon                                 ? "dark"
+                          : out.artificialLight > Epsilon && natural > Epsilon ? "mixed"
+                          : out.artificialLight > Epsilon                      ? "artificial"
+                                                                               : "daylight";
+        return out;
+    }
+
+    // These are legible game-balance factors, not a meteorological model.
+    // Darkness changes sight only: it does not damage hearing or smell and
+    // never secretly changes a selected gait or stamina recovery.
+    out.illumination = calendar::skyAt(calendarDays_, skyWeather(c->weather)).outdoorIllumination;
+    out.lightSource = out.daylight <= Epsilon ? "night sky" : "daylight";
+    out.sight = out.illumination;
+    switch (c->weather)
+    {
+    case Weather::Rain:
+        out.sight *= .78;
+        out.hearing = .72;
+        out.scent = .65;
+        out.movement = .85;
+        break;
+    case Weather::Snow:
+        out.sight *= .65;
+        out.hearing = .85;
+        out.scent = .80;
+        out.movement = .70;
+        break;
+    case Weather::Fog:
+        out.sight *= .40;
+        out.scent = 1.05; // Small humidity bonus; no automatic hearing penalty.
+        break;
+    default:
+        break;
+    }
+    out.hearing *= 1.0 - .25 * windAt(cellId).strength;
+    return out;
+}
+Result World::setTimeOfDay(double hour)
+{
+    if (!std::isfinite(hour) || hour < 0 || hour >= 24)
+        return {false, "Time of day requires a finite hour from zero up to, but not including, 24.", {}};
+    const double elapsedHours = std::fmod(time_, DaySeconds) * 24.0 / DaySeconds;
+    clockOffsetHours_ = std::fmod(hour - elapsedHours + 24.0, 24.0);
+    calendarDays_ = std::floor(calendarDays_) + hour / 24.;
+    climateSlot_ = -1;
+    for (auto& c : cells_) if (c.second.outdoors && c.second.seasonalWeather) useSeasonalWeather(c.first);
+    return {true, "Time of day updated.", {}};
+}
+Result World::advanceCalendar(double days)
+{
+    if (!std::isfinite(days) || days < 0 || days > 36500 || calendarDays_ + days > calendar::MaxGameDays)
+        return {false, "Calendar advance must be finite, forward and no more than 100 years.", {}};
+    calendarDays_ += days;
+    climateSlot_ = -1;
+    for (auto& e : entities_) advanceAge(e.second, calendarDays_);
+    for (auto& c : cells_) if (c.second.outdoors && c.second.seasonalWeather) useSeasonalWeather(c.first);
+    return {true, "Shared calendar advanced.", {}};
+}
+Result World::useSeasonalWeather(const std::string& id)
+{
+    auto* c = cell(id);
+    if (!c || !c->outdoors) return {false, "Seasonal weather requires an outdoor cell.", id};
+    c->seasonalWeather = true;
+    c->weather = worldWeather(calendar::forecastAt(0x52415457, id, calendarDays_).weather);
+    return {true, "Seasonal weather enabled.", id};
+}
+Result World::trade(const std::string& player, const std::string& trader, const std::string& item, int quantity, bool buy)
+{
+    const auto* p = entity(player);
+    const auto* m = entity(trader);
+    const auto* life = society_.resident(trader);
+    if (!p || p->npc || !m || !Society::merchant(trader) || p->cellId != m->cellId ||
+        distance(p->position, m->position) > 2. || visionClarity(player, trader) <= 0)
+        return {false, "No accessible trader is within reach.", {}};
+    if (m->posture == "lying" || (life && life->task == "sleep")) return {false, "The trader is sleeping.", trader};
+    auto result = society_.trade(player, trader, item, quantity, buy);
+    return {result.ok, result.message, trader};
+}
+Result World::gather(const std::string& player)
+{
+    const auto* p = entity(player);
+    if (!p || p->npc || p->cellId != "exterior" || distance(p->position, {17.5, 7.5}) > 1.7 ||
+        !visiblePoint(*p, {17.5, 7.5})) return {false, "Approach the visible herb patch in Juniper Yard to gather.", {}};
+    auto result = society_.gather(player);
+    return {result.ok, result.message, {}};
+}
+Result World::eat(const std::string& player)
+{
+    auto* p = entity(player);
+    if (!p || p->npc) return {false, "No controlled character.", {}};
+    auto result = society_.eat(player);
+    if (result.ok)
+    {
+        p->stamina = std::min(100., p->stamina + 10.);
+        if (p->stamina >= ExhaustionRecovery) p->exhausted = false;
+    }
+    return {result.ok, result.message, {}};
+}
+Result World::setLighting(const std::string& cellId, double artificial, double daylightAccess, const std::string& tone)
+{
+    auto* c = cell(cellId);
+    const Lighting light{artificial, daylightAccess, tone};
+    if (!c || !validLighting(light))
+        return {false, "Lighting requires a known cell, levels from zero to one, and a warm, neutral, or cool tone.",
+                cellId};
+    c->lighting = light;
+    return {true, "Cell lighting updated.", cellId};
+}
+Wind World::windAt(const std::string& cellId) const
+{
+    const auto* c = cell(cellId);
+    if (!c || !c->outdoors)
+        return {};
+    Wind wind = c->wind;
+    if (wind.variable && wind.strength > 0)
+    {
+        // A stable per-cell phase and the persisted clock avoid gust resets on
+        // restart. No random state or platform-specific string hash is used.
+        std::uint32_t hash = 2166136261u;
+        for (unsigned char ch : c->id)
+            hash = (hash ^ ch) * 16777619u;
+        const double phase = double(hash % 10000) * (2.0 * Pi / 10000.0);
+        wind.direction += .20 * std::sin(time_ / 43.0 + phase);
+        wind.strength = clamp01(wind.strength * (1.0 + .18 * std::sin(time_ / 11.0 + phase)));
+    }
+    wind.direction = std::remainder(wind.direction, 2.0 * Pi);
+    return wind;
+}
+Result World::setWind(const std::string& cellId, double direction, double strength, bool variable)
+{
+    auto* c = cell(cellId);
+    if (!c || !std::isfinite(direction) || !std::isfinite(strength) || strength < 0 || strength > 1)
+        return {false, "Wind requires a known cell, finite heading, and strength from zero to one.", cellId};
+    if (!c->outdoors && strength > 0)
+        return {false, "Indoor air is calm in this prototype.", cellId};
+    c->wind = c->outdoors ? Wind{std::remainder(direction, 2.0 * Pi), strength, variable} : Wind{};
+    return {true, "Wind updated.", cellId};
+}
+double World::scentClarity(const std::string& observerId, const std::string& sourceId) const
+{
+    const auto* observer = entity(observerId);
+    const auto* source = entity(sourceId);
+    if (!observer || !source || observer->cellId != source->cellId || observerId == sourceId)
+        return 0;
+    const auto* c = cell(observer->cellId);
+    if (!c)
+        return 0;
+    AirRoutes air(*c, doors_, observer->position);
+    return detectScent(*observer, *source, windAt(c->id), environmentAt(c->id).scent, air).clarity;
+}
+std::vector<ScentCue> World::scentCues(const std::string& observerId) const
+{
+    const auto* observer = entity(observerId);
+    if (!observer)
+        return {};
+    const auto* c = cell(observer->cellId);
+    if (!c)
+        return {};
+    AirRoutes air(*c, doors_, observer->position);
+    const auto wind = windAt(c->id);
+    const double scentFactor = environmentAt(c->id).scent;
+    std::map<int, ScentCue> sectors;
+    for (const auto& entry : entities_)
+    {
+        if (entry.first == observerId || entry.second.cellId != observer->cellId ||
+            visionClarity(observerId, entry.first) > 0)
+            continue;
+        const auto scent = detectScent(*observer, entry.second, wind, scentFactor, air);
+        if (scent.clarity <= 0)
+            continue;
+        const double angle = std::atan2(scent.bearing.y, scent.bearing.x);
+        const int sector = (int(std::floor((angle + Pi / 8.0) / (Pi / 4.0))) + 8) % 8;
+        auto& cue = sectors[sector];
+        cue.sector = sector;
+        cue.strength = std::max(cue.strength, scent.clarity > .66 ? 3 : scent.clarity > .33 ? 2 : 1);
+        cue.windborne = cue.windborne || scent.windborne;
+    }
+    std::vector<ScentCue> out;
+    for (const auto& entry : sectors)
+        out.push_back(entry.second);
+    return out;
 }
 void World::setWeather(const std::string& id, Weather weather)
 {
-    if (auto* c = cell(id))
-        c->weather = weather;
+    if (static_cast<int>(weather) >= 0 && static_cast<int>(weather) <= 3)
+        if (auto* c = cell(id))
+        {
+            c->weather = weather;
+            c->seasonalWeather = false;
+        }
 }
 
 void World::observe(const std::string& observerId)
@@ -1179,6 +1863,9 @@ Snapshot World::snapshot(const std::string& observerId)
     out.self.path.clear();
     out.self.input = {};
     out.cell = *c;
+    out.cell.wind = windAt(c->id);
+    out.environment = environmentAt(c->id);
+    out.scentCues = scentCues(observerId);
     out.visibleTiles.resize(c->tiles.size());
     out.rememberedTiles.resize(c->tiles.size());
     const auto& book = memories(observerId);
@@ -1199,6 +1886,10 @@ Snapshot World::snapshot(const std::string& observerId)
             }
         }
     for (const auto& entry : entities_)
+    {
+        if (entry.first != observerId && !entry.second.npc && entry.second.cellId == o->cellId &&
+            visionClarity(observerId, entry.first) <= 0 && movementAudibility(observerId, entry.first) > 0)
+            out.movementHeard = true;
         if (entry.first == observerId ||
             (entry.second.cellId == o->cellId && visionClarity(observerId, entry.first) > 0))
         {
@@ -1207,8 +1898,10 @@ Snapshot World::snapshot(const std::string& observerId)
             visible.input = {};
             out.entities.push_back(std::move(visible));
         }
+    }
     for (const auto& entry : doors_)
-        if (entry.second.cellId == o->cellId && visiblePoint(*o, entry.second.position))
+        if (!(entry.second.passage && entry.second.boundary) && entry.second.cellId == o->cellId &&
+            visiblePoint(*o, entry.second.position))
         {
             Door visible = entry.second;
             // Target anchors/paired fixture IDs are server topology, not UI data.
@@ -1266,13 +1959,15 @@ PersistedWorld World::save() const
 {
     PersistedWorld out;
     out.time = time_;
+    out.clockOffsetHours = clockOffsetHours_;
+    out.calendarDays = calendarDays_;
+    out.hasSociety = true;
+    out.society = society_.state();
     out.memories = memories_;
     for (const auto& entry : entities_)
     {
         Entity e = entry.second;
-        e.path.clear();
-        e.input = {};
-        e.velocity = {};
+        clearTransientMotion(e);
         e.typing = false;
         e.speakingUntil = 0;
         if (e.npc)
@@ -1283,7 +1978,12 @@ PersistedWorld World::save() const
     for (const auto& entry : doors_)
         out.doorStates[entry.first] = entry.second.open;
     for (const auto& entry : cells_)
+    {
         out.weather[entry.first] = entry.second.weather;
+        out.winds[entry.first] = entry.second.wind;
+        out.lighting[entry.first] = entry.second.lighting;
+        out.seasonalWeather[entry.first] = entry.second.seasonalWeather;
+    }
     return out;
 }
 Result World::restore(const PersistedWorld& state)
@@ -1292,6 +1992,37 @@ Result World::restore(const PersistedWorld& state)
     // time and conversion of schedule epochs can overflow an integer.
     if (!std::isfinite(state.time) || state.time < 0 || state.time > 1e12)
         return {false, "Invalid saved clock.", {}};
+    if (!std::isfinite(state.clockOffsetHours) || state.clockOffsetHours < 0 || state.clockOffsetHours >= 24)
+        return {false, "Invalid saved time-of-day offset.", {}};
+    if (!std::isfinite(state.calendarDays) || state.calendarDays < -1 || state.calendarDays > calendar::MaxGameDays ||
+        (state.calendarDays < 0 && state.calendarDays != -1)) return {false, "Invalid saved calendar.", {}};
+    const double restoredDays = state.calendarDays >= 0 ? state.calendarDays :
+        std::fmod(state.clockOffsetHours + std::fmod(state.time, 7200.) * 24. / 7200., 24.) / 24.;
+    Society restoredSociety(!customWorld_);
+    if (state.hasSociety && !restoredSociety.restore(state.society)) return {false, "Invalid saved society or money ledger.", {}};
+    if (state.hasSociety && state.society.enabled == customWorld_) return {false, "Society does not match authored world.", {}};
+    if (state.hasSociety && state.society.budgetDay > std::floor(restoredDays)) return {false, "Society budget is in the future.", {}};
+    for (const auto& resident : restoredSociety.state().residents)
+    {
+        const auto& life = resident.second;
+        const auto validHome = [&](const std::string& id, double x, double y) {
+            const auto* c = cell(id);
+            if (!c || !std::isfinite(x) || !std::isfinite(y) || x < .5 || y < .5 ||
+                x > c->width - .5 || y > c->height - .5) return false;
+            const auto* t = c->tile(int(x), int(y)); return t && !t->solid;
+        };
+        if (!validHome(life.homeCell, life.homeX, life.homeY) ||
+            (!life.relocationCell.empty() && !validHome(life.relocationCell, life.relocationX, life.relocationY)))
+            return {false, "Saved resident home or relocation is invalid.", resident.first};
+    }
+    for (const auto& e : state.players)
+    {
+        if (state.hasSociety && (e.id.rfind("player-", 0) == 0 || e.id.rfind("wolf-", 0) == 0) &&
+            !restoredSociety.account(e.id))
+            return {false, "Saved character has no economy account.", e.id};
+        if (!state.hasSociety) restoredSociety.addPlayer(e.id);
+    }
+    for (const auto& mode : state.seasonalWeather) if (!cell(mode.first)) return {false, "Unknown weather mode cell.", mode.first};
     std::map<std::string, bool> effectiveDoors;
     for (const auto& d : doors_)
         effectiveDoors[d.first] = d.second.open;
@@ -1307,16 +2038,34 @@ Result World::restore(const PersistedWorld& state)
         if (!d.linkedDoor.empty() && effectiveDoors.count(d.linkedDoor) &&
             effectiveDoors[d.id] != effectiveDoors[d.linkedDoor])
             return {false, "Linked door states disagree.", d.id};
-        if (d.id.find("stairs_") == 0 && !effectiveDoors[d.id])
+        if ((d.passage || d.id.find("stairs_") == 0) && !effectiveDoors[d.id])
             return {false, "Steps cannot be closed.", d.id};
     }
     auto validActor = [&](const Entity& e) {
         const auto* c = cell(e.cellId);
+        if (!validAppearance(e.appearance)) return false;
+        if (e.age < 0 || e.age > 10000 || !std::isfinite(e.lastBirthdayDay) || e.lastBirthdayDay < -1 ||
+            e.lastBirthdayDay > calendar::MaxGameDays || e.lastBirthdayDay > restoredDays + 1 || (e.lastBirthdayDay < 0 && e.lastBirthdayDay != -1) ||
+            !std::isfinite(e.strength) || e.strength < 0 || e.strength > 100 || !std::isfinite(e.wisdom) ||
+            e.wisdom < 0 || e.wisdom > 100 || e.ageNoticePending < 0 || e.ageNoticePending > 10000) return false;
         if (!c || !finite(e.position) || e.position.x < 0 || e.position.y < 0 || e.position.x >= c->width ||
             e.position.y >= c->height || !std::isfinite(e.facing) || !std::isfinite(e.hearing) ||
             !std::isfinite(e.vision) || !std::isfinite(e.earHealth) || !std::isfinite(e.eyeHealth) || e.hearing < 0 ||
             e.vision < 0 || e.earHealth < 0 || e.earHealth > 1 || e.eyeHealth < 0 || e.eyeHealth > 1 ||
-            e.speakingColor < 0 || e.speakingColor > 31)
+            !std::isfinite(e.turnTarget) || !std::isfinite(e.sneakSkill) || !std::isfinite(e.hearingSkill) ||
+            e.sneakSkill < 0 || e.sneakSkill > 100 || e.hearingSkill < 0 || e.hearingSkill > 100 ||
+            !std::isfinite(e.smell) || !std::isfinite(e.noseHealth) || !std::isfinite(e.scentSkill) || e.smell < 0 ||
+            e.noseHealth < 0 || e.noseHealth > 1 || e.scentSkill < 0 || e.scentSkill > 100 ||
+            !std::isfinite(e.dexterity) || e.dexterity < 0 || e.dexterity > 100 || !std::isfinite(e.stamina) ||
+            e.stamina < 0 || e.stamina > 100 || e.pace < 0 || e.pace > 10 || !std::isfinite(e.staminaRate) ||
+            e.staminaRate < -SprintDrain - Epsilon || e.staminaRate > StaminaRecovery + Epsilon ||
+            (e.exhausted && e.stamina > ExhaustionRecovery) || !std::isfinite(e.postureRemaining) ||
+            e.postureRemaining < 0 || e.postureRemaining > 1.0 ||
+            (e.posture != "rising" && !stablePosture(e.posture)) ||
+            (e.posture == "rising" &&
+             (e.postureRemaining <= 0 || (e.postureTarget != "standing" && e.postureTarget != "crouching"))) ||
+            (e.posture != "rising" && (e.postureRemaining != 0 || !e.postureTarget.empty())) || e.speakingColor < 0 ||
+            e.speakingColor > 31)
             return false;
         for (Vec2 p : {e.position, Vec2{e.position.x - Radius, e.position.y}, Vec2{e.position.x + Radius, e.position.y},
                        Vec2{e.position.x, e.position.y - Radius}, Vec2{e.position.x, e.position.y + Radius}})
@@ -1341,6 +2090,9 @@ Result World::restore(const PersistedWorld& state)
         if (!e.npc || !entity(e.id) || !entity(e.id)->npc || !ids.insert(e.id).second || !validActor(e))
             return {false, "Invalid saved NPC.", e.id};
     }
+    if (state.hasSociety)
+        for (const auto& life : state.society.residents)
+            if (!ids.count(life.first)) return {false, "Saved resident has no physical character record.", life.first};
     for (const auto& owner : state.memories)
         for (const auto& entry : owner.second)
         {
@@ -1360,6 +2112,13 @@ Result World::restore(const PersistedWorld& state)
     for (const auto& w : state.weather)
         if (!cell(w.first) || static_cast<int>(w.second) < 0 || static_cast<int>(w.second) > 3)
             return {false, "Invalid saved weather.", w.first};
+    for (const auto& w : state.winds)
+        if (!cell(w.first) || !std::isfinite(w.second.direction) || !std::isfinite(w.second.strength) ||
+            w.second.strength < 0 || w.second.strength > 1 || (!cell(w.first)->outdoors && w.second.strength != 0))
+            return {false, "Invalid saved wind.", w.first};
+    for (const auto& light : state.lighting)
+        if (!cell(light.first) || !validLighting(light.second))
+            return {false, "Invalid saved lighting.", light.first};
     for (auto it = entities_.begin(); it != entities_.end();)
         if (!it->second.npc)
             it = entities_.erase(it);
@@ -1367,22 +2126,18 @@ Result World::restore(const PersistedWorld& state)
             ++it;
     for (auto e : state.players)
     {
-        e.input = {};
-        e.path.clear();
-        e.velocity = {};
+        advanceAge(e, restoredDays);
+        clearTransientMotion(e);
         e.typing = false;
         e.speakingUntil = 0;
-        e.transitioned = false;
         entities_[e.id] = std::move(e);
     }
     for (auto e : state.npcs)
     {
-        e.input = {};
-        e.path.clear();
-        e.velocity = {};
+        advanceAge(e, restoredDays);
+        clearTransientMotion(e);
         e.typing = false;
         e.speakingUntil = 0;
-        e.transitioned = false;
         entities_[e.id] = std::move(e);
     }
     for (const auto& d : state.doorStates)
@@ -1390,30 +2145,60 @@ Result World::restore(const PersistedWorld& state)
             doors_[d.first].open = d.second;
     for (const auto& w : state.weather)
         if (cells_.count(w.first))
+        {
             cells_[w.first].weather = w.second;
+            cells_[w.first].seasonalWeather = false; // Safe legacy/manual mode.
+        }
+    for (const auto& mode : state.seasonalWeather) cells_[mode.first].seasonalWeather = mode.second;
+    for (const auto& w : state.winds)
+        cells_[w.first].wind = {std::remainder(w.second.direction, 2.0 * Pi), w.second.strength, w.second.variable};
+    for (const auto& light : state.lighting)
+        cells_[light.first].lighting = light.second;
     time_ = state.time;
+    clockOffsetHours_ = state.clockOffsetHours;
+    calendarDays_ = restoredDays;
+    society_ = std::move(restoredSociety);
+    climateSlot_ = std::int64_t(std::floor(calendarDays_ * 4));
     memories_ = state.memories;
     scheduleAccumulator_ = 0;
+    pendingPortals_.clear();
+    travels_.clear();
+    travelLegCells_.clear();
+    travelRetryAt_.clear();
+    travelProgress_.clear();
     return {true, "Saved world restored.", {}};
 }
 
 Result World::loadCellFile(const std::string& path)
 {
+    std::error_code error;
+    const auto bytes = std::filesystem::file_size(path, error);
+    if (error || bytes > 4 * 1024 * 1024)
+        return {false, "Missing or oversized cell file.", path};
     std::ifstream file(path);
     if (!file)
         return {false, "Cannot open cell file.", path};
     Cell candidate;
     std::string line;
     std::vector<std::string> rows;
+    std::set<std::string> headers;
+    std::map<std::pair<int, int>, double> heights;
     bool inGrid = false;
+    bool authoredWind = false;
     while (std::getline(file, line))
     {
+        if (line.size() > 32768)
+            return {false, "Cell line exceeds the supported length.", path};
         if (!line.empty() && line.back() == '\r')
             line.pop_back();
+        for (unsigned char ch : line)
+            if (ch < 32 || ch == 127)
+                return {false, "Control character in cell content.", path};
         if (inGrid)
         {
-            if (!line.empty())
-                rows.push_back(line);
+            if (line.empty() || line.size() > 512 || rows.size() >= 512)
+                return {false, "Invalid cell grid dimensions.", path};
+            rows.push_back(line);
             continue;
         }
         if (line == "grid:")
@@ -1423,34 +2208,95 @@ Result World::loadCellFile(const std::string& path)
         }
         const auto colon = line.find(':');
         if (colon == std::string::npos)
-            continue;
+            return {false, "Unknown cell header syntax.", path};
         const std::string key = line.substr(0, colon);
         std::string value = line.substr(colon + 1);
         if (!value.empty() && value.front() == ' ')
             value.erase(value.begin());
+        if (key != "height" && !headers.insert(key).second)
+            return {false, "Duplicate cell header.", path};
         if (key == "id")
             candidate.id = value;
         else if (key == "name")
+        {
+            if (value.empty() || value.size() > 512)
+                return {false, "Invalid cell name.", path};
             candidate.name = value;
+        }
         else if (key == "description")
+        {
+            if (value.size() > 16384)
+                return {false, "Cell description is too long.", path};
             candidate.description = value;
+        }
         else if (key == "outdoors")
+        {
+            if (value != "true" && value != "false")
+                return {false, "Invalid outdoors flag.", path};
             candidate.outdoors = value == "true";
+        }
         else if (key == "world")
         {
             std::istringstream numbers(value);
             numbers >> candidate.worldX >> candidate.worldY >> candidate.worldZ;
-            if (!numbers || !std::isfinite(candidate.worldX) || !std::isfinite(candidate.worldY) ||
-                !std::isfinite(candidate.worldZ))
+            if (!numbers || !(numbers >> std::ws).eof() || !std::isfinite(candidate.worldX) ||
+                !std::isfinite(candidate.worldY) || !std::isfinite(candidate.worldZ) ||
+                std::abs(candidate.worldX) > 1e6 || std::abs(candidate.worldY) > 1e6 ||
+                std::abs(candidate.worldZ) > 1e6)
                 return {false, "Invalid world position.", path};
         }
         else if (key == "weather")
+        {
+            if (value != "clear" && value != "rain" && value != "fog" && value != "snow")
+                return {false, "Unknown weather value.", path};
             candidate.weather = value == "rain"   ? Weather::Rain
                                 : value == "fog"  ? Weather::Fog
                                 : value == "snow" ? Weather::Snow
                                                   : Weather::Clear;
+        }
+        else if (key == "wind")
+        {
+            int variable = -1;
+            std::istringstream numbers(value);
+            numbers >> candidate.wind.direction >> candidate.wind.strength >> variable;
+            if (!numbers || !(numbers >> std::ws).eof() || !std::isfinite(candidate.wind.direction) ||
+                !std::isfinite(candidate.wind.strength) || candidate.wind.strength < 0 || candidate.wind.strength > 1 ||
+                (variable != 0 && variable != 1))
+                return {false, "Invalid cell wind.", path};
+            candidate.wind.direction = std::remainder(candidate.wind.direction, 2.0 * Pi);
+            candidate.wind.variable = variable == 1;
+            authoredWind = true;
+        }
+        else if (key == "lighting")
+        {
+            std::istringstream values(value);
+            values >> candidate.lighting.artificial >> candidate.lighting.daylightAccess >> candidate.lighting.tone;
+            if (!values || !(values >> std::ws).eof() || !validLighting(candidate.lighting))
+                return {false, "Invalid cell lighting.", path};
+        }
+        else if (key == "height")
+        {
+            int x = -1, y = -1;
+            double height = 0;
+            std::istringstream numbers(value);
+            numbers >> x >> y >> height;
+            if (!numbers || !(numbers >> std::ws).eof() || x < 0 || y < 0 || x >= 512 || y >= 512 ||
+                !std::isfinite(height) || height < -16 || height > 16 ||
+                std::abs(height * 4 - std::round(height * 4)) > 1e-8 ||
+                !heights.emplace(std::make_pair(x, y), height).second)
+                return {false, "Invalid or duplicate height override.", path};
+        }
+        else
+            return {false, "Unknown cell header.", path};
     }
-    if (candidate.id.empty() || rows.empty() || rows.size() > 512 || rows.front().empty() || rows.front().size() > 512)
+    const bool validId = !candidate.id.empty() && candidate.id.size() <= 48 && candidate.id.front() >= 'a' &&
+                         candidate.id.front() <= 'z' &&
+                         std::all_of(candidate.id.begin(), candidate.id.end(), [](char ch) {
+                             return (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-';
+                         });
+    if (!file.eof() || !validId || !headers.count("name") || !headers.count("world") || !headers.count("outdoors") ||
+        !headers.count("weather") || !inGrid || rows.empty() || rows.size() > 512 || rows.front().empty() ||
+        rows.front().size() > 512)
         return {false, "Invalid cell dimensions.", path};
     candidate.width = int(rows.front().size());
     candidate.height = int(rows.size());
@@ -1459,15 +2305,49 @@ Result World::loadCellFile(const std::string& path)
         if (row.size() != rows.front().size())
             return {false, "Cell rows have different widths.", path};
         for (char glyph : row)
+        {
+            if (std::string(".#,\"T=~:^+").find(glyph) == std::string::npos)
+                return {false, "Unknown terrain glyph.", path};
             candidate.tiles.push_back(fromGlyph(glyph));
+        }
     }
+    for (const auto& height : heights)
+    {
+        auto* tile = candidate.tile(height.first.first, height.first.second);
+        if (!tile)
+            return {false, "Height override is outside its cell.", path};
+        tile->height = height.second;
+    }
+    if (authoredWind && !candidate.outdoors && candidate.wind.strength != 0)
+        return {false, "Indoor cells cannot have outdoor wind.", path};
     for (const auto& entry : entities_)
         if (entry.second.cellId == candidate.id)
         {
-            const auto* tile = candidate.tile(int(entry.second.position.x), int(entry.second.position.y));
-            if (!tile || tile->solid)
-                return {false, "Cell replacement would strand an actor.", entry.first};
+            const auto p = entry.second.position;
+            for (const Vec2 sample : {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius},
+                                      Vec2{p.x, p.y + Radius}})
+            {
+                const auto* tile = candidate.tile(int(std::floor(sample.x)), int(std::floor(sample.y)));
+                if (!tile || tile->solid)
+                    return {false, "Cell replacement would strand an actor.", entry.first};
+            }
         }
+    for (const auto& entry : doors_)
+    {
+        const auto& d = entry.second;
+        for (const auto& anchor : {std::make_pair(d.cellId, d.position), std::make_pair(d.targetCell, d.arrival)})
+            if (anchor.first == candidate.id)
+            {
+                if (!finite(anchor.second) || anchor.second.x < 0 || anchor.second.y < 0 ||
+                    anchor.second.x >= candidate.width || anchor.second.y >= candidate.height)
+                    return {false, "Cell replacement would invalidate a portal anchor.", d.id};
+                const auto* tile = candidate.tile(int(anchor.second.x), int(anchor.second.y));
+                if (!tile || tile->solid)
+                    return {false, "Cell replacement would invalidate a portal anchor.", d.id};
+            }
+    }
+    if (candidate.outdoors && !authoredWind)
+        candidate.wind = {0.0, .5, true};
     cells_[candidate.id] = std::move(candidate);
     return {true, "Cell loaded.", path};
 }

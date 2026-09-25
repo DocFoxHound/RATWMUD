@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>RATW · Storykeeper</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.mjs"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">W<span>›</span></span><div><span class="eyebrow">RUNS AGAINST THE WORLD</span><h1>Storykeeper</h1></div></div>
+    <div class="operator-label"><span class="status-dot"></span>OPERATOR WORKSPACE<span class="muted">Separate from player accounts</span></div>
+    <div class="session-controls"><span id="connection-status" class="badge neutral">Disconnected</span><button id="refresh" type="button">Refresh</button><button id="connect" type="button">Connect session</button><button id="disconnect" type="button" hidden>Disconnect</button></div>
+  </header>
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="sidebar-label">THE WORLD BEHIND THE STORY</div>
+      <nav aria-label="Storykeeper sections">
+        <button type="button" class="nav-button active" data-page="world" aria-current="page"><span aria-hidden="true">⌗</span>World atlas</button>
+        <button type="button" class="nav-button" data-page="characters"><span aria-hidden="true">W</span>Characters</button>
+        <button type="button" class="nav-button" data-page="chapters"><span aria-hidden="true">⌂</span>Chapters</button>
+        <button type="button" class="nav-button" data-page="factions"><span aria-hidden="true">◇</span>Factions & standing</button>
+        <button type="button" class="nav-button" data-page="stories"><span aria-hidden="true">≋</span>Campaigns & beats</button>
+        <button type="button" class="nav-button" data-page="events"><span aria-hidden="true">◷</span>Event desk</button>
+        <button type="button" class="nav-button" data-page="migration"><span aria-hidden="true">↗</span>Migration</button>
+        <button type="button" class="nav-button" data-page="audit"><span aria-hidden="true">☷</span>Operator audit</button>
+      </nav>
+      <div class="sidebar-bottom"><span class="eyebrow">AUTHOR, THEN APPROVE</span><p>Drafting is not execution. World actions require an explicit approval and a fresh server connection.</p><div id="last-snapshot">No server snapshot</div></div>
+    </aside>
+    <main>
+      <div id="connection-banner" class="connection-banner"><strong>No operator session connected.</strong><span>Start the separate DM service, then open its authorized operator URL or connect with its session token. No live world has been loaded.</span></div>
+      <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+
+      <section class="page" id="page-world" aria-labelledby="world-title">
+        <div class="page-heading"><div><span class="eyebrow">A WIDER PERSPECTIVE</span><h2 id="world-title">World atlas</h2><p>All server cells. Local detail and active residents remain authoritative.</p></div><div class="heading-actions"><span id="world-summary" class="muted">Awaiting data</span><button id="fit-map" type="button">Fit world</button></div></div>
+        <div class="map-layout">
+          <article class="map-card">
+            <div class="map-toolbar"><div class="toggle-row"><label><input type="checkbox" id="layer-claims" checked>Claims</label><label><input type="checkbox" id="layer-chapters" checked>Chapters</label><label><input type="checkbox" id="layer-actors" checked>Residents</label></div><label class="inline-label">Level<select id="map-level"><option value="all">All elevations</option></select></label></div>
+            <div class="map-wrap"><canvas id="world-canvas" aria-label="Operator world map; use the adjacent cell list for keyboard selection" tabindex="0"></canvas><div id="map-empty" class="map-empty"><span class="empty-glyph" aria-hidden="true">⌗</span><h3>No world snapshot</h3><p>Connect Storykeeper to the running world.<br>The atlas will show actual cells and residents.</p></div><div class="map-key"><span><i class="key-self"></i>Player online</span><span><i class="key-npc"></i>NPC</span><span><i class="key-chapter"></i>Chapter</span></div></div>
+            <div class="map-footer"><span>Wheel to zoom · drag to pan · select a cell</span><span id="map-coordinate">No map data</span></div>
+          </article>
+          <aside class="card map-inspector"><div class="card-heading"><h3>Places</h3><span id="cell-count" class="count">0</span></div><label class="sr-only" for="cell-search">Filter cells</label><input type="search" id="cell-search" placeholder="Find a cell or room…"><div id="cell-list" class="cell-list"></div><div id="cell-detail" class="detail-panel"><p class="empty-copy">Select a cell to inspect its metadata, residents, and claims.</p></div></aside>
+        </div>
+        <div class="metrics" id="world-metrics"></div>
+      </section>
+
+      <section class="page" id="page-characters" aria-labelledby="characters-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">RESIDENTS, NOT MARKERS</span><h2 id="characters-title">Character register</h2><p>Online players, stored offline characters, and live NPCs reported by the server.</p></div></div>
+        <div class="filter-bar"><label class="grow">Search<input id="character-search" type="search" placeholder="Name, identity, or location"></label><label>Presence<select id="character-filter"><option value="all">Everyone</option><option value="online">Online players</option><option value="offline">Offline players</option><option value="npc">NPCs</option></select></label></div>
+        <article class="card table-card"><div class="table-scroll"><table><thead><tr><th scope="col">Character</th><th scope="col">Presence</th><th scope="col">Location</th><th scope="col">Faction / Chapter</th><th scope="col">Current activity</th></tr></thead><tbody id="character-rows"></tbody></table></div><p id="character-empty" class="empty-copy">No characters have been reported.</p></article>
+      </section>
+
+      <section class="page" id="page-chapters" aria-labelledby="chapters-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">THE PLACES WOLVES MAKE TOGETHER</span><h2 id="chapters-title">Chapters</h2><p>Membership, settlement capacity, observed activity, and standing.</p></div></div>
+        <div class="split-layout"><div><div id="chapter-list" class="selection-list"></div><article class="card" id="chapter-dashboard"><p class="empty-copy">Select a Chapter to inspect its activity and routes.</p></article></div><article class="card"><div class="card-heading"><h3 id="chapter-form-title">Create a Chapter record</h3><button id="chapter-reset" class="text-button" type="button">New record</button></div><form id="chapter-form" data-write-form><input type="hidden" name="id"><label>Name<input name="name" required maxlength="120"></label><label>Member character IDs<textarea name="memberIds" rows="3" placeholder="One ID per line"></textarea></label><label>Chapter site cell IDs<textarea name="cellIds" rows="3" placeholder="One ID per line"></textarea></label><div class="form-grid"><label>Housing capacity<input name="housing" type="number" min="0" max="10000" step="1" value="0" required></label><label>Job capacity<input name="jobCapacity" type="number" min="0" max="10000" step="1" value="0" required></label></div><label>Attraction<input name="attraction" type="number" min="0" max="100" step="1" value="0" required></label><p class="form-note">Operator metadata and capacity inform migration previews. No buildings or jobs are spawned by editing this record.</p><button class="primary" type="submit" data-write>Review Chapter changes</button></form></article></div>
+      </section>
+
+      <section class="page" id="page-factions" aria-labelledby="factions-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">RELATIONSHIPS WITH CONSEQUENCES</span><h2 id="factions-title">Factions & standing</h2><p>Operator-authored opinions, with an attributed reason and audit trail.</p></div></div>
+        <div class="split-layout"><div><article class="card"><div class="card-heading"><h3>Faction register</h3></div><div id="faction-list" class="record-list"></div><form id="faction-form" class="inline-form" data-write-form><label class="grow">New faction name<input name="name" required maxlength="120"></label><button type="submit" data-write>Add faction</button></form></article><article class="card"><h3>Recorded opinions</h3><div id="opinion-list" class="record-list"></div></article></div><article class="card"><h3>Set an opinion</h3><form id="opinion-form" data-write-form><label>Faction<select name="factionId" data-options="factions" required></select></label><label>About<select name="targetType"><option value="chapter">A Chapter</option><option value="player">A player character</option></select></label><label>Target<select name="targetId" id="opinion-target" required></select></label><label>Standing · −100 hostile to +100 trusted<input name="score" type="number" min="-100" max="100" step="1" value="0" required></label><label>Reason<textarea name="reason" rows="5" required maxlength="2000" placeholder="What happened, and why does this faction care?"></textarea></label><button type="submit" class="primary" data-write>Review opinion</button></form></article></div>
+      </section>
+
+      <section class="page" id="page-stories" aria-labelledby="stories-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">KEEP THE THREAD, LEAVE ROOM TO PLAY</span><h2 id="stories-title">Campaigns & story beats</h2><p>Private operator planning. A story record alone changes no world state.</p></div></div>
+        <div class="split-layout"><div><article class="card"><div class="card-heading"><h3>Campaigns</h3><span id="campaign-count" class="count">0</span></div><div id="campaign-list" class="record-list"></div></article><article class="card"><h3>Story beats</h3><div id="beat-list" class="record-list"></div></article></div><div><article class="card"><div class="card-heading"><h3 id="campaign-form-title">New campaign</h3><button id="campaign-reset" class="text-button" type="button">Clear</button></div><form id="campaign-form" data-write-form><input type="hidden" name="id"><label>Name<input name="name" required maxlength="120"></label><label>Description<textarea name="description" rows="4" maxlength="6000"></textarea></label><button class="primary" type="submit" data-write>Review campaign</button></form></article><article class="card"><div class="card-heading"><h3 id="beat-form-title">New story beat</h3><button id="beat-reset" class="text-button" type="button">Clear</button></div><form id="beat-form" data-write-form><input type="hidden" name="id"><label>Campaign<select name="campaignId" data-options="campaigns" required></select></label><label>Title<input name="title" required maxlength="160"></label><label>Kind<input name="kind" value="story" required maxlength="80"></label><label>Description<textarea name="description" rows="4" maxlength="6000"></textarea></label><button class="primary" type="submit" data-write>Review story beat</button></form></article></div></div>
+      </section>
+
+      <section class="page" id="page-events" aria-labelledby="events-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">A CONSCIOUS INTERVENTION</span><h2 id="events-title">Event desk</h2><p>Draft → approve → queue → server acknowledgement. Approval is always explicit.</p></div></div>
+        <div class="split-layout event-layout"><div><div id="event-summary" class="metrics compact"></div><article class="card"><div class="card-heading"><h3>Event queue</h3><label class="inline-label">Show<select id="event-filter"><option value="all">All states</option><option value="draft">Drafts</option><option value="queued">Queued / approved</option><option value="applied">Applied</option><option value="failed">Failed</option></select></label></div><div id="event-list" class="record-list"></div></article></div><article class="card"><h3>Compose an event</h3><form id="event-form" data-write-form><label>Title<input name="title" required maxlength="160"></label><label>Event type<select name="kind" id="event-kind"><option value="notice">Narrative notice</option><option value="weather">Weather change</option><option value="npc_relocate">Relocate an existing NPC</option><option value="economy_transfer">Finite economy transfer</option><option value="brigands">Brigands · planned only</option><option value="assassins">Assassination · planned only</option><option value="war">Army / war · planned only</option><option value="faction-collapse">Faction collapse · planned only</option></select></label><div id="event-executor-note" class="callout" hidden></div><div id="event-fields"></div><div class="form-grid"><label>Campaign<select name="campaignId" data-options="campaigns" data-optional><option value="">Unassigned</option></select></label><label>Story beat<select name="beatId" data-options="beats" data-optional><option value="">Unassigned</option></select></label></div><label>Related Chapter<select name="chapterId" data-options="chapters" data-optional><option value="">Unassigned</option></select></label><fieldset><legend>Timing · UTC</legend><label>Execution window<select name="timing" id="event-timing"><option value="immediate">As soon as explicitly approved</option><option value="fixed">Fixed UTC date and time</option><option value="peak">Suggested Chapter playtime</option></select></label><label id="event-time-label" hidden>Scheduled UTC time<input type="datetime-local" name="scheduledAt" id="event-time" step="60"></label><div id="peak-controls" hidden><button type="button" id="suggest-peak" data-write>Suggest a playtime window</button><p id="peak-result" class="form-note">Select a related Chapter first. A suggestion never schedules anything by itself.</p></div></fieldset><p class="form-note">Creating a draft does not approve it. The server can reject or fail an approved event if its preconditions no longer hold.</p><button type="submit" class="primary" data-write>Create event draft</button></form></article></div>
+      </section>
+
+      <section class="page" id="page-migration" aria-labelledby="migration-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">WOLVES NEED REASONS TO STAY</span><h2 id="migration-title">Migration review</h2><p>Preview candidates, settlement capacity, attraction, and source-faction consequences before approval.</p></div></div>
+        <article class="card"><form id="migration-form" class="inline-form" data-write-form><label class="grow">Destination Chapter<select name="chapterId" data-options="chapters" required></select></label><button type="submit" class="primary" data-write>Preview migration candidates</button></form><p class="form-note">Previewing moves nobody. Each candidate requires a separate approval, and capacity is checked again when applied.</p></article>
+        <div id="migration-results" class="migration-grid"><article class="card"><p class="empty-copy">No migration preview selected. Choose a Chapter to evaluate its current pull and available capacity.</p></article></div>
+      </section>
+
+      <section class="page" id="page-audit" aria-labelledby="audit-title" hidden>
+        <div class="page-heading"><div><span class="eyebrow">EVERY INTERVENTION HAS A RECORD</span><h2 id="audit-title">Operator audit</h2><p>Server-recorded actions and outcomes. A queued request is not an applied change.</p></div><label class="inline-label">Filter<input type="search" id="audit-search" placeholder="Action, status, or identifier"></label></div>
+        <article class="card table-card"><div class="table-scroll"><table><thead><tr><th scope="col">UTC</th><th scope="col">Action</th><th scope="col">Status</th><th scope="col">Details</th></tr></thead><tbody id="audit-rows"></tbody></table></div><p id="audit-empty" class="empty-copy">No operator audit has been received.</p></article>
+      </section>
+      <footer class="workspace-footer"><span>RATW · Storykeeper · Authorized operator view</span><span id="server-clock">Server UTC unavailable</span></footer>
+    </main>
+  </div>
+  <dialog id="session-dialog" aria-labelledby="session-title"><form id="session-form"><span class="eyebrow">AUTHORIZED OPERATOR SESSION</span><h2 id="session-title">Connect Storykeeper</h2><p>Open the authorized URL saved in your DM service's private state-directory <code>session.json</code>, or copy its bearer token here. The service never prints the token. This is not a player login; the token stays in this page's memory and is never stored as a browser preference.</p><label>Session bearer token<input type="password" id="session-token" name="token" autocomplete="off" spellcheck="false" required></label><p class="form-note">Use the private session file's full operator URL again after reloading this page. Restarting the DM service creates a new session.</p><div class="button-row"><button type="button" id="session-cancel">Cancel</button><button type="submit" class="primary">Connect</button></div></form></dialog>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title"><span class="eyebrow">REVIEW BEFORE COMMITTING</span><h2 id="confirm-title">Confirm operator action</h2><p id="confirm-copy"></p><pre id="confirm-payload"></pre><p class="form-note">This action will be attributed to the current operator session. World execution remains subject to authoritative validation.</p><div class="button-row"><button id="confirm-cancel" type="button">Go back</button><button id="confirm-accept" type="button" class="primary">Confirm</button></div></dialog>
+</body>
+</html>

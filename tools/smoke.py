@@ -15,7 +15,7 @@ import time
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=("network", "gallery", "walkthrough", "persistence"))
+    parser.add_argument("mode", choices=("network", "gallery", "walkthrough", "persistence", "movement", "scent"))
     parser.add_argument("--headless", action="store_true", help="Skip GPU screenshots for transport testing")
     parser.add_argument("--packaged", action="store_true", help="Run archived Linux binaries without the editor")
     args = parser.parse_args()
@@ -33,7 +33,7 @@ def main() -> int:
     handles = []
     common = ([str(root / "artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD")]
               if args.packaged else [str(editor), str(root / "RATWMUD.uproject")])
-    flags = ["-NoSplash", "-NoSound", "-Unattended", "-noscreenmessages", "-NoSteam", "-NoVSync", "-ForceRes", "-ForceLogFlush", "-RatwDevTools"]
+    flags = ["-NoSplash", "-NoSound", "-Unattended", "-noscreenmessages", "-NoSteam", "-NoVSync", "-ForceRes", "-ForceLogFlush", "-RatwDevTools", "-RatwDevIdentity"]
 
     def start(label: str, arguments: list[str]) -> subprocess.Popen:
         handle = (logs / f"{'packaged-' if args.packaged else ''}{label}.log").open("w")
@@ -44,7 +44,25 @@ def main() -> int:
         return child
 
     try:
-        if args.mode == "network":
+        if args.mode in ("network", "scent"):
+            if args.mode == "scent":
+                # Disposable two-player fixture: a hidden crouching source is
+                # twelve tiles upwind. Never changes the user's regular save.
+                payload = {
+                    "schema": 1, "revision": 0, "sequence": 1, "time": 0,
+                    "players": [
+                        {"id": "player-ash", "name": "Ash", "cell": "exterior",
+                         "x": 20.5, "y": 12.5, "posture": "standing", "color": 0},
+                        {"id": "player-bracken", "name": "Bracken", "cell": "exterior",
+                         "x": 8.5, "y": 12.5, "posture": "crouching", "color": 9},
+                    ],
+                    "weather": {"exterior": 0},
+                    "winds": {"exterior": {"direction": 0, "strength": 0.5, "variable": False}},
+                }
+                with sqlite3.connect(save) as database:
+                    database.execute("CREATE TABLE world_state (id INTEGER PRIMARY KEY CHECK(id=1), "
+                                     "schema_version INTEGER NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL)")
+                    database.execute("INSERT INTO world_state VALUES (1, 1, 0, ?)", (json.dumps(payload),))
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as reservation:
                 reservation.bind(("127.0.0.1", 0))
                 port = reservation.getsockname()[1]
@@ -70,14 +88,35 @@ def main() -> int:
             else:
                 raise RuntimeError("Timed out waiting for server to listen")
             clients = []
-            for identity, name in (("ash", "Ash"), ("bracken", "Bracken")):
-                graphics = ["-nullrhi"] if args.headless else ["-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen"]
-                clients.append(start(identity, [f"127.0.0.1:{port}", "-game", f"-RatwIdentity={identity}", f"-RatwName={name}", "-RatwScenario=network", f"-RatwCaptureDir={output}"] + graphics))
-            codes = [client.wait(timeout=150) for client in clients]
-            results = [json.loads((output / f"network-{identity}.json").read_text()) for identity in ("ash", "bracken")]
-            if any(codes) or not all(item["passed"] for item in results):
-                raise RuntimeError(f"Network scenario failed: exits={codes}, details={[item['detail'] for item in results]}")
-            print("PASS: two independent clients moved and received each other's IC and local OOC events.", flush=True)
+            identities = (("bracken", "Bracken"), ("ash", "Ash")) if args.mode == "scent" else (("ash", "Ash"), ("bracken", "Bracken"))
+            for identity, name in identities:
+                source = args.mode == "scent" and identity == "bracken"
+                graphics = ["-nullrhi"] if args.headless or source else ["-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen"]
+                scenario = "scent-source" if source else args.mode
+                capture = ["-RatwCaptureScent"] if args.mode == "scent" and not args.headless and not source else []
+                clients.append(start(identity, [f"127.0.0.1:{port}", "-game", f"-RatwIdentity={identity}", f"-RatwName={name}", f"-RatwScenario={scenario}", f"-RatwCaptureDir={output}"] + graphics + capture))
+            if args.mode == "scent":
+                code = clients[1].wait(timeout=150)
+                evidence = output / "scent-ash.json"
+                if not evidence.exists() or evidence.stat().st_mtime_ns < int(run_id):
+                    raise RuntimeError("No fresh scent scenario evidence from this run")
+                result = json.loads(evidence.read_text())
+                if code or not result["passed"] or clients[0].poll() is not None:
+                    raise RuntimeError(f"Scent scenario failed: exit={code}, detail={result['detail']}")
+                if not args.headless:
+                    screenshot = output / "12-upwind-scent.png"
+                    if not screenshot.exists() or screenshot.stat().st_size < 1024 or screenshot.stat().st_mtime_ns < int(run_id):
+                        raise RuntimeError("Scent scenario did not capture its viewport")
+                print(f"PASS: {result['detail']}", flush=True)
+            else:
+                codes = [client.wait(timeout=150) for client in clients]
+                evidence = [output / f"network-{identity}.json" for identity in ("ash", "bracken")]
+                if any(not path.exists() or path.stat().st_mtime_ns < int(run_id) for path in evidence):
+                    raise RuntimeError("No fresh two-client network evidence from this run")
+                results = [json.loads(path.read_text()) for path in evidence]
+                if any(codes) or not all(item["passed"] for item in results):
+                    raise RuntimeError(f"Network scenario failed: exits={codes}, details={[item['detail'] for item in results]}")
+                print("PASS: two independent clients moved and received each other's IC and local OOC events.", flush=True)
         elif args.mode == "persistence":
             for scenario in ("persist-write", "persist-read", "persist-aged"):
                 if scenario == "persist-aged":
@@ -96,6 +135,14 @@ def main() -> int:
                     raise RuntimeError(f"{scenario} failed: {result['detail']}")
                 print(f"PASS: {scenario}: {result['detail']}", flush=True)
             print("PASS: separate process restarts retained character, map memory and conversation; one hour inactive produced a permanent summary.", flush=True)
+        elif args.mode == "movement":
+            graphics = ["-nullrhi"] if args.headless else ["-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen", "-RatwCaptureMovement"]
+            child = start("movement", ["/Engine/Maps/Entry", "-game", "-RatwIdentity=ash", "-RatwName=Ash", "-RatwScenario=movement", f"-RatwSave={save}", f"-RatwCaptureDir={output}"] + graphics)
+            code = child.wait(timeout=150)
+            result = json.loads((output / "movement-ash.json").read_text())
+            if code or not result["passed"]:
+                raise RuntimeError(f"Movement failed: {result['detail']}")
+            print(f"PASS: {result['detail']}", flush=True)
         elif args.mode == "walkthrough":
             child = start("walkthrough", ["/Engine/Maps/Entry", "-game", "-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen", "-RatwIdentity=ash", "-RatwName=Ash", "-RatwScenario=walkthrough", f"-RatwSave={save}", f"-RatwCaptureDir={output}"])
             code = child.wait(timeout=240)

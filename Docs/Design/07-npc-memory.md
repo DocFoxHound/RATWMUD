@@ -9,7 +9,10 @@ The initial population is Rowan (keeper), Bracken (scout), Moss (cook), Flint
 data and advances home/work/social schedule destinations. Movement uses the same
 navigation and doors as players. NPCs continue their schedules independently of
 the local view. This slice has six residents rather than a production population
-LOD scheduler.
+LOD scheduler. The original short demonstration schedule is superseded by the
+deterministic needs/jobs/economy described in `15-npc-society-economy.md`.
+The LLM receives current activity, needs, purse/stock and authoritative age as
+context only. Its words cannot transfer goods or decide simulation actions.
 
 Bracken alone can be recruited in the slice. The invitation appears at close
 range and is validated by the server. Recruitment suspends his normal schedule;

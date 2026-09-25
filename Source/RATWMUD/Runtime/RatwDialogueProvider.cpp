@@ -37,8 +37,7 @@ void FRatwDialogueProvider::Configure(const FString& Endpoint)
 }
 FString FRatwDialogueProvider::Label() const
 {
-    return LocalEndpoint.IsEmpty() ? TEXT("Authored offline dialogue")
-                                   : TEXT("Local generated dialogue + authored fallback");
+    return LocalEndpoint.IsEmpty() ? TEXT("Authored offline dialogue") : TEXT("Dialogue bridge + authored fallback");
 }
 FString FRatwDialogueProvider::AuthoredReply(const FRatwDialogueContext& C)
 {
@@ -55,9 +54,10 @@ FString FRatwDialogueProvider::AuthoredReply(const FRatwDialogueContext& C)
         return FString::Printf(TEXT("I'll remember what you said, %s. Come back when you can; a promise deserves a "
                                     "conversation when the road is done."),
                                *C.PlayerName);
-    if (Lower.Contains(TEXT("weather")) || Lower.Contains(TEXT("rain")))
-        return TEXT("Rain carries the road's scents down into the yard. Take the dry boards slowly; the threshold can "
-                    "be slick.");
+    if (Lower.Contains(TEXT("weather")) || Lower.Contains(TEXT("rain")) || Lower.Contains(TEXT("snow")) ||
+        Lower.Contains(TEXT("fog")) || Lower.Contains(TEXT("night")))
+        return C.Environment.IsEmpty() ? TEXT("We should judge the conditions where we are before taking the road.")
+                                       : C.Environment;
     if (Lower.Contains(TEXT("chapter")))
         return TEXT("A Chapter is a commitment to other wolves. Speak with its members before you put your name beside "
                     "theirs.");
@@ -93,6 +93,7 @@ void FRatwDialogueProvider::Reply(const FRatwDialogueContext& C, TFunction<void(
     }
     auto Context = ratwjson::New();
     Context->SetStringField(TEXT("npc"), C.Name);
+    Context->SetStringField(TEXT("player"), C.PlayerName);
     Context->SetStringField(TEXT("description"), C.Description);
     Context->SetStringField(TEXT("activity"), C.Activity);
     Context->SetStringField(TEXT("heard"), C.HeardText.Left(12000));
