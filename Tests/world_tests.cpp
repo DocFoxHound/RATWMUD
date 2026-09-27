@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <random>
 #include <stdexcept>
 #include <string>
 
@@ -502,6 +503,118 @@ void mapMemory()
     after = restored.snapshot("p");
     expect(mapCell(after, "loft") == nullptr, "Previously visited nonadjacent cell is not displayed");
 }
+// Half-step heights, slopes, cliffs, and sight that follows the ground.
+void terrainElevation()
+{
+    World w;
+    auto& p = player(w);
+    auto* tavern = w.cell("tavern");
+    for (int x = 10; x <= 24; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('.');
+    auto walk = [&](double from) {
+        p.position = {from, 12.5};
+        w.move("p", 1, 0);
+        advance(w, 1);
+        w.stop("p");
+        return p.position.x;
+    };
+    tavern->tile(17, 12)->height = 1;
+    expect(walk(16.5) < 17, "A full step without a slope is a ledge");
+    tavern->tile(17, 12)->height = .5;
+    expect(walk(16.5) > 17, "A half step is walked freely");
+    *tavern->tile(17, 12) = tileFromGlyph(':');
+    tavern->tile(17, 12)->height = 1;
+    expect(walk(16.5) > 17, "A slope lets a full step be walked");
+    tavern->tile(18, 12)->height = 2;
+    expect(walk(17.5) > 18, "Leaving a slope climbs a further full step");
+    tavern->tile(18, 12)->height = 2.5;
+    expect(walk(17.5) < 18, "More than a full step is never walkable, even from a slope");
+    *tavern->tile(17, 12) = tileFromGlyph('%');
+    expect(walk(16.5) < 17, "A cliff face is never walkable, even when level");
+    expect(tileFromGlyph('%').terrain == Terrain::Cliff && !tileFromGlyph('%').opaque &&
+               tileFromGlyph(':').height == 0,
+           "Cliffs are solid but see-through; slopes have no height of their own");
+
+    for (int x = 10; x <= 24; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('.');
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "Level ground hides nothing");
+    tavern->tile(15, 12)->height = 1;
+    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A rise hides the ground behind it");
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {15.5, 12.5}), "The rise itself stays visible");
+    tavern->tile(12, 12)->height = 1.5;
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "Higher ground sees over the rise");
+    tavern->tile(12, 12)->height = 0;
+    tavern->tile(18, 12)->height = 2;
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A peak behind a lower rise shows above it");
+    tavern->tile(15, 12)->height = 0;
+    *tavern->tile(16, 12) = tileFromGlyph('%');
+    tavern->tile(18, 12)->height = 0;
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A cliff hides only by its height");
+    tavern->tile(16, 12)->height = 3;
+    for (int x = 17; x <= 20; ++x)
+        tavern->tile(x, 12)->height = 3;
+    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {19.5, 12.5}), "A plateau top is hidden from below its cliff");
+    expect(w.lineOfSight("tavern", {17.5, 12.5}, {10.5, 12.5}), "From a cliff's edge the lowland is in view");
+    expect(!w.lineOfSight("tavern", {19.5, 12.5}, {13.5, 12.5}), "Stepping back from the edge hides the ground below");
+
+    // Catalog tiles: what stands on the ground hides by its stature, not by raising the ground.
+    for (int x = 10; x <= 24; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('.');
+    *tavern->tile(15, 12) = tileFromGlyph('P');
+    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A pine hides what stands behind it");
+    expect(tavern->tile(15, 12)->height == 0 && tavern->tile(15, 12)->solid, "A pine is solid but keeps its ground");
+    *tavern->tile(15, 12) = tileFromGlyph('T');
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A table is too low to hide anything");
+    *tavern->tile(15, 12) = tileFromGlyph('.');
+    tavern->tile(15, 12)->height = 1;
+    *tavern->tile(18, 12) = tileFromGlyph('P');
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A treetop shows over a rise that hides its foot");
+    *tavern->tile(18, 12) = tileFromGlyph('.');
+    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "Without the tree the rise hides that ground");
+    tavern->tile(15, 12)->height = 0;
+    *tavern->tile(16, 12) = tileFromGlyph('b');
+    expect(walk(15.5) > 16, "A bed is walkable");
+    *tavern->tile(17, 12) = tileFromGlyph('k');
+    expect(walk(16.5) < 17, "A bookshelf is not");
+    for (const auto& info : terrainCatalog())
+        expect(terrainInfo(info.code) == &info && tileFromGlyph(info.code).glyph == info.code &&
+                   info.glyph != u'W' && (!info.opaque || info.solid),
+               "Every catalog tile is found by its code and is internally consistent");
+    expect(!terrainInfo('?') && !terrainInfo(' ') && !terrainInfo(char(0xC3)), "Unknown codes are not tiles");
+
+    // A goal walled off from the walker has no route, and the search says so without exploring everything.
+    for (int x = 10; x <= 24; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('.');
+    p.cellId = "tavern";
+    p.position = {12.5, 12.5};
+    for (int y = 10; y <= 14; ++y)
+        for (int x = 18; x <= 22; ++x)
+            if (y == 10 || y == 14 || x == 18 || x == 22)
+                *tavern->tile(x, y) = tileFromGlyph('#');
+    expect(!w.moveTo("p", 20.5, 12.5).ok && p.path.empty(), "A walled-off goal has no route");
+    expect(w.moveTo("p", 16.5, 12.5).ok && !p.path.empty(), "Open ground beside it still does");
+    tavern->tile(18, 12)->height = 0;
+    *tavern->tile(18, 12) = tileFromGlyph('.');
+    expect(w.moveTo("p", 20.5, 12.5).ok && !p.path.empty(), "Opening the wall opens the route (regions follow edits)");
+
+    Weather parsed = Weather::Clear;
+    expect(parseWeather("sandstorm", parsed) && parsed == Weather::Sandstorm &&
+               std::string(weatherName(Weather::Storm)) == "storm" && !parseWeather("hail", parsed) &&
+               parsed == Weather::Sandstorm,
+           "Weather names round-trip and unknown names are refused");
+    w.setWeather("exterior", Weather::Clear);
+    const double clearSight = w.environmentAt("exterior").sight;
+    w.setWeather("exterior", Weather::Storm);
+    const auto storm = w.environmentAt("exterior");
+    w.setWeather("exterior", Weather::Sandstorm);
+    const auto dust = w.environmentAt("exterior");
+    expect(storm.sight < clearSight && storm.hearing < 1 && dust.sight < storm.sight && dust.scent < storm.scent,
+           "Storms and sandstorms dull the senses, sand most of all");
+    World restarted;
+    expect(restarted.restore(w.save()).ok && restarted.cell("exterior")->weather == Weather::Sandstorm,
+           "New weather kinds survive a restart");
+}
+
 void elevationAndPersistence()
 {
     World w;
@@ -1121,10 +1234,229 @@ void schedules()
            "Recruitment suspends autonomous schedule");
 }
 } // namespace
+// Dungeon Master kill and resurrect: the dead lie still and cannot move until brought back.
+void deathAndResurrection()
+{
+    World w;
+    auto& p = player(w);
+    expect(w.move("p", 1, 0).ok, "Moving before death");
+    expect(w.setDead("p", true).ok, "Kill a character");
+    expect(p.dead && p.posture == "lying" && p.state == "dead", "The dead lie down");
+    const Vec2 fell = p.position;
+    w.tick(.5);
+    expect(near(p.position.x, fell.x) && near(p.position.y, fell.y), "The dead do not keep moving");
+    expect(!w.move("p", 1, 0).ok && !w.moveTo("p", fell.x + 2, fell.y).ok, "The dead cannot move");
+    expect(!w.setDead("p", true).ok, "Killing the dead is refused");
+    expect(w.setDead("p", false).ok && !p.dead && p.posture == "standing", "Resurrect");
+    expect(!w.setDead("p", false).ok, "Resurrecting the living is refused");
+    expect(w.move("p", 1, 0).ok, "The living move again");
+    expect(!w.setDead("nobody", true).ok, "Unknown characters are refused");
+}
+
+// lineOfSight() checks each tile a ray crosses once rather than every sample along it. This is the plain version, a
+// check at every sample, and the two must agree on every ray over rough ground with walls, trees and closed doors.
+bool sampledSight(const World& w, const Cell& c, Vec2 from, Vec2 to)
+{
+    constexpr double EyeHeight = 0.8, SightTarget = 0.5;   // As in RatwWorld.cpp.
+    const auto* fromTile = c.tile(int(std::floor(from.x)), int(std::floor(from.y)));
+    const auto* toTile = c.tile(int(std::floor(to.x)), int(std::floor(to.y)));
+    const double eye = (fromTile ? fromTile->height : 0.0) + EyeHeight;
+    const double target = toTile ? toTile->height + std::max(SightTarget, toTile->stature) : SightTarget;
+    const int count = std::max(1, int(std::ceil(std::hypot(to.x - from.x, to.y - from.y) / 0.12)));
+    for (int i = 1; i < count; ++i)
+    {
+        const double f = double(i) / count;
+        const Vec2 p{from.x + (to.x - from.x) * f, from.y + (to.y - from.y) * f};
+        const int x = int(std::floor(p.x)), y = int(std::floor(p.y));
+        if (x == int(std::floor(to.x)) && y == int(std::floor(to.y)))
+            continue;
+        const auto* t = c.tile(x, y);
+        if (!t || t->opaque)
+            return false;
+        if (t != fromTile && t->height + t->stature > eye + (target - eye) * f + 1e-6)
+            return false;
+        for (const auto& [id, d] : w.doors())
+            if (d.cellId == c.id && !d.passage && id.rfind("stairs_", 0) != 0 && !d.open &&
+                int(std::floor(d.position.x)) == x && int(std::floor(d.position.y)) == y)
+                return false;
+    }
+    return true;
+}
+void sightRaysMatchSampling()
+{
+    World w;
+    auto* tavern = w.cell("tavern");
+    std::mt19937 random(20260927);
+    std::uniform_real_distribution<double> unit(0, 1);
+    for (int y = 1; y < tavern->height - 1; ++y)
+        for (int x = 1; x < tavern->width - 1; ++x)
+        {
+            auto* t = tavern->tile(x, y);
+            if (t->opaque || t->solid)
+                continue;                           // Keep the tavern's walls and fixtures where they are.
+            const double roll = unit(random);
+            if (roll < .04)
+                *t = tileFromGlyph('P');
+            else if (roll < .07)
+                *t = tileFromGlyph('#');
+            else
+                t->height = std::floor(unit(random) * 7) * .5;
+        }
+    int agreed = 0, visible = 0;
+    for (int ray = 0; ray < 40000; ++ray)
+    {
+        // Tile centres (as views use), arbitrary points, and straight and diagonal lines.
+        const bool centres = ray % 3 == 0;
+        auto point = [&] {
+            const double x = unit(random) * tavern->width, y = unit(random) * tavern->height;
+            return centres ? Vec2{std::floor(x) + .5, std::floor(y) + .5} : Vec2{x, y};
+        };
+        const Vec2 from = point();
+        Vec2 to = point();
+        if (ray % 7 == 1)
+            to.y = from.y;
+        else if (ray % 7 == 2)
+            to.x = from.x;
+        else if (ray % 7 == 3)
+        {
+            const double run = std::min(tavern->width - from.x, tavern->height - from.y) * unit(random);
+            to = {from.x + run, from.y + run};
+        }
+        const bool fast = w.lineOfSight("tavern", from, to), plain = sampledSight(w, *tavern, from, to);
+        if (fast != plain)
+            throw std::runtime_error("Sight rays disagree from (" + std::to_string(from.x) + "," + std::to_string(from.y) +
+                                     ") to (" + std::to_string(to.x) + "," + std::to_string(to.y) + ")");
+        ++agreed;
+        visible += fast;
+    }
+    expect(agreed == 40000, "Every sight ray agrees with checking each sample");
+    expect(visible > 4000 && visible < 36000, "The rays tested both clear and blocked sight");
+}
+
+// Several players' sight worked out together (prepareViews, on several threads) is exactly what each would have seen.
+void preparedViewsMatch()
+{
+    const auto setUp = [](World& w) {
+        quiet(w);
+        const std::vector<std::pair<std::string, Vec2>> spots{{"a", {4.5, 4.5}}, {"b", {12.5, 12.5}}, {"c", {20.5, 8.5}},
+                                                               {"d", {27.5, 18.5}}, {"e", {6.5, 19.5}}};
+        for (const auto& [id, at] : spots)
+        {
+            w.addPlayer(id, id);
+            w.entity(id)->position = at;
+        }
+    };
+    World plain, prepared;
+    setUp(plain);
+    setUp(prepared);
+    for (int step = 0; step < 6; ++step)
+    {
+        for (auto* w : {&plain, &prepared})
+            for (const auto* id : {"a", "b", "c", "d", "e"})
+                w->entity(id)->position.x += .37;
+        prepared.prepareViews({"a", "b", "c", "d", "e", "nobody"});
+        for (const auto* id : {"a", "b", "c", "d", "e"})
+        {
+            const auto one = plain.snapshot(id), other = prepared.snapshot(id);
+            expect(one.visibleTiles == other.visibleTiles && one.rememberedTiles == other.rememberedTiles,
+                   std::string("Prepared sight is the same sight for ") + id);
+            expect(one.entities.size() == other.entities.size(), "and shows the same people");
+        }
+    }
+    for (const auto* id : {"a", "b", "c", "d", "e"})
+        for (const auto& [cell, memory] : plain.memories(id))
+            expect(prepared.memories(id).at(cell).observed == memory.observed, "and leaves the same map memory");
+}
+
+bool samePath(const std::vector<Vec2>& a, const std::vector<Vec2>& b)
+{
+    if (a.size() != b.size())
+        return false;
+    for (std::size_t i = 0; i < a.size(); ++i)
+        if (a[i].x != b[i].x || a[i].y != b[i].y)
+            return false;
+    return true;
+}
+// A route asked for again from the same place to the same place is the one found before; a change to the ground
+// is never answered from memory.
+void pathsAreRemembered()
+{
+    World w;
+    quiet(w);
+    w.addPlayer("p", "p");
+    const auto walkFromCorner = [&] {
+        w.stop("p");
+        w.entity("p")->position = {5.5, 5.5};
+        expect(w.moveTo("p", 20.5, 12.5).ok, "A route across the tavern");
+        return w.entity("p")->path;
+    };
+    const auto first = walkFromCorner();
+    const auto [hits, misses] = w.pathCacheStats();
+    const auto again = walkFromCorner();
+    expect(samePath(again, first), "The same route again");
+    expect(w.pathCacheStats().first > hits && w.pathCacheStats().second == misses, "found without searching");
+    auto* tavern = w.cell("tavern");
+    for (int y = 1; y < tavern->height - 1; ++y)
+        if (!tavern->tile(12, y)->solid && y != 12)
+            *tavern->tile(12, y) = tileFromGlyph('#');       // A wall across the room, leaving one gap.
+    const auto changed = walkFromCorner();
+    expect(w.pathCacheStats().second > misses, "New ground means a new search");
+    expect(!samePath(changed, first), "and a new route around the wall");
+}
+
+// The event log: what happened, who, to whom, where; economy entries alongside the world's own; taken once.
+void eventLog()
+{
+    World w;
+    quiet(w);
+    w.addPlayer("player-log", "Logger");
+    w.takeEvents();                                           // Whatever setting up the world recorded.
+    auto* customer = w.entity("player-log");
+    customer->cellId = "tavern";
+    customer->position = {9.5, 7.5};
+    w.entity("npc_keeper")->position = {9.5, 6.5};
+    expect(w.trade("player-log", "npc_keeper", "meal", 1, true).ok, "A purchase");
+    expect(w.setDead("npc_keeper", true).ok && w.setDead("npc_keeper", false).ok, "A death and a revival");
+    w.recordEvent({"arrival", "player-log", {}, {}, 0, 0, {}, 0, 0, "logged in"});
+    const auto events = w.takeEvents();
+    const auto find = [&](const std::string& kind) {
+        for (const auto& e : events)
+            if (e.kind == kind)
+                return &e;
+        return static_cast<const WorldEvent*>(nullptr);
+    };
+    const auto* sale = find("economy");
+    expect(sale && sale->item == "meal" && sale->quantity == 1 && sale->coins > 0 &&
+               (sale->actor == "npc_keeper" || sale->target == "npc_keeper"),
+           "The sale is logged with its goods and price");
+    const auto* death = find("death");
+    expect(death && death->actor == "npc_keeper" && death->cell == "tavern", "The death is logged where it happened");
+    expect(find("revival") && find("arrival") && find("arrival")->detail == "logged in", "and the rest");
+    expect(death->time == w.time() && death->day == w.calendarDays(), "with the time it happened");
+    expect(w.takeEvents().empty(), "Events are handed over once");
+    for (int i = 0; i < int(World::EventsKept) * 2; ++i)
+        w.recordEvent({"noise", "player-log", {}, {}, 0, 0, {}, 0, 0, {}});
+    const auto kept = w.takeEvents();
+    expect(kept.size() <= World::EventsKept + World::EventsKept / 4 && w.droppedEvents() > 0,
+           "Uncollected events are bounded, and the drops counted");
+    WorldEvent odd;
+    odd.actor = "wr\"en";
+    odd.detail = std::string("line\nbreak \xff") + std::string(500, 'z');
+    odd.cell = std::string(100, 'c');
+    const auto json = eventsJson({odd});
+    expect(json.find("\"kind\":\"event\"") != std::string::npos, "An event always has a kind");
+    expect(json.find("wr\\\"en") != std::string::npos && json.find("line\\u000abreak") != std::string::npos,
+           "Quotes and line breaks are escaped");
+    expect(json.find('\xff') == std::string::npos, "Bytes that aren't UTF-8 are left out");
+    expect(json.find(std::string(401, 'z')) == std::string::npos && json.find(std::string(81, 'c')) == std::string::npos,
+           "Text is cut to what the log holds");
+}
+
 int main()
 {
     try
     {
+        deathAndResurrection();
         authoredWorld();
         continuousMovement();
         gradualFacing();
@@ -1137,6 +1469,11 @@ int main()
         posturePortalTransitions();
         mapMemory();
         elevationAndPersistence();
+        terrainElevation();
+        sightRaysMatchSampling();
+        preparedViewsMatch();
+        pathsAreRemembered();
+        eventLog();
         schedules();
         cellFiles();
         persistedRoundtripAndPrivacy();

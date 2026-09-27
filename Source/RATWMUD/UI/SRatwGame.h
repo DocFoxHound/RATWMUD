@@ -4,6 +4,7 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Dom/JsonObject.h"
 #include "UI/RatwMotionBuffer.h"
+#include "UI/RatwWeatherArt.h"
 
 class SMultiLineEditableTextBox;
 
@@ -46,6 +47,8 @@ class SRatwGame : public SCompoundWidget
     friend class FRatwUIPaceTravelTest;
     friend class FRatwUIWeatherTest;
     friend class FRatwUIAtmosphereTest;
+    friend class FRatwUIElevationTest;
+    friend class FRatwUILargeCellTest;
     friend class FRatwUICalendarEconomyTest;
     friend class FRatwUIPortraitTest;
     friend class FRatwUIMotionTest;
@@ -103,10 +106,14 @@ class SRatwGame : public SCompoundWidget
         float Alpha = 0, Size = 0;
         bool bSnow = false, bSplash = false;
     };
-    struct FFogVeil
+    // One tiled sheet of weather art drawn across the cell: Scroll is in texture pixels along the
+    // sheet's own axes, Scale maps texture pixels to screen pixels, Angle rotates the sheet.
+    struct FWeatherLayer
     {
-        FVector2D Position, Size;
-        float Alpha = 0;
+        RatwWeatherArt::EArt Art = RatwWeatherArt::EArt::Mist;
+        FVector2D Scroll = FVector2D::ZeroVector;
+        double Scale = 1, Angle = 0;
+        FLinearColor Tint = FLinearColor::Transparent;
     };
 
     TFunction<void(const FString&)> Command;
@@ -139,7 +146,10 @@ class SRatwGame : public SCompoundWidget
     FVector2D ContextPoint;
     TArray<FString> ContextActions;
     TArray<FString> TileRows, VisibilityRows;
+    TArray<float> TileHeights; // Row-major, CellWidth x CellHeight; unknown tiles read as level ground.
+    mutable RatwWeatherArt::FSheets WeatherSheets;
     bool bChat = false, bWorldMap = false, bReducedMotion = false, bFlatWorld = false, bTypingSent = false;
+    bool bPlainGlyphs = false; // Draw each tile's plain-ASCII fallback instead of its Unicode glyph.
     bool bFacingPreview = false, bNavigationFocus = true, bMovementPending = false;
     bool bMovementHeard = false, bOutdoors = false, bWindVariable = false;
     double WindDirection = 0, WindStrength = 0;
@@ -191,7 +201,13 @@ class SRatwGame : public SCompoundWidget
     FSlateRect VisibleCellBounds() const;
     FCellAtmosphere CellAtmosphere() const;
     TArray<FWeatherMark> WeatherMarks() const;
-    TArray<FFogVeil> FogVeils() const;
+    TArray<FWeatherLayer> WeatherLayers() const;
+    double LightningFlash() const;
+    void DrawWeatherLayer(const FGeometry&, FSlateWindowElementList&, int32, const FSlateRect&,
+                          const FWeatherLayer&) const;
+    float HeightAt(int32 X, int32 Y) const;
+    float SelfHeight() const;
+    FString ElevationLabel() const;
     void DrawEnvironment(const FGeometry&, FSlateWindowElementList&, int32, bool Foreground) const;
     void DrawWorld(const FGeometry&, FSlateWindowElementList&, int32) const;
     void DrawTravelAtlas(const FGeometry&, FSlateWindowElementList&, int32) const;

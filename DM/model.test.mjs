@@ -72,3 +72,20 @@ test('planning saves have committed-record feedback, distinct from queued world 
   assert.match(commandMessage('event.approve',{status:'queued'}),/queued is not applied/);
   assert.match(commandMessage('migration.approve'),/verified arrival/);
 });
+test('terrain draws from the catalog: glyph, colours and plain ASCII; unknown codes draw as themselves', async () => {
+  const {terrainLookup, terrainDraw} = await import('./model.mjs');
+  const {TERRAIN} = await import('../Editor/src/model/terrain.generated.mjs');
+  const lookup = terrainLookup(TERRAIN);
+  assert.equal(lookup.size, TERRAIN.length);
+  for (const tile of TERRAIN) {
+    const drawn = terrainDraw(lookup, tile.code), plain = terrainDraw(lookup, tile.code, true);
+    assert.equal(drawn.text.replace('︎', ''), tile.glyph);
+    assert.equal(plain.text, tile.ascii);
+    assert.equal(drawn.fg, tile.fg); assert.equal(drawn.bg, tile.bg);
+  }
+  assert.equal(terrainDraw(lookup, 'h').text, '♨︎');            // Text presentation, never emoji.
+  assert.equal(terrainDraw(lookup, '?').text, '?');
+  assert.equal(terrainDraw(lookup, '?').name, 'Unknown terrain');
+  assert.equal(terrainDraw(new Map(), '#').text, '#');              // No catalog loaded: the stored code.
+  assert.equal(terrainLookup(null).size, 0);
+});

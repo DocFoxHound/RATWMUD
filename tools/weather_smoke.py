@@ -16,9 +16,9 @@ def prepare(root):
     tests.mkdir(parents=True, exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix='weather-', dir=tests))
     script = '''
-import * as m from './Editor/model.mjs';
+import * as m from './Editor/src/model/model.mjs';
 const p=m.createProject(32,24,'Juniper weather study');
-p.terrain=Array.from({length:24},(_,y)=>Array.from({length:32},(_,x)=>{
+p.cells[0].terrain=Array.from({length:24},(_,y)=>Array.from({length:32},(_,x)=>{
  if(x===0||y===0||x===31||y===23)return '#';
  if(x>23&&x<29&&y>4&&y<11)return '~';
  if((x<8&&y<8)||(x<7&&y>16)||(x>23&&y>16))return ((x+y)%3===0)?'"':',';

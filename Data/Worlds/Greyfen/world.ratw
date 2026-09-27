@@ -1,0 +1,47 @@
+RATW_WORLD 2
+cell "town" "cells/town.cell"
+territory "town" "greyfen" "-" 0
+cell "shop" "cells/shop.cell"
+territory "shop" "greyfen" "-" 0
+cell "wren_house" "cells/wren_house.cell"
+territory "wren_house" "greyfen" "-" 0
+cell "barracks" "cells/barracks.cell"
+territory "barracks" "greyfen" "-" 0
+cell "cottage" "cells/cottage.cell"
+territory "cottage" "greyfen" "-" 0
+cell "longhouse" "cells/longhouse.cell"
+territory "longhouse" "greyfen" "-" 0
+spawn "town" 27.5 21.5
+door "link_shop_door_a" "Tallow & Twine door" "town" 12.5 12.5 "shop" 10.5 10.5 "link_shop_door_b" 1 0 0 0 "-"
+door "link_shop_door_b" "Tallow & Twine door" "shop" 10.5 11.5 "town" 12.5 13.5 "link_shop_door_a" 1 0 0 0 "-"
+door "link_barracks_door_a" "Barracks door" "town" 50.5 12.5 "barracks" 13.5 12.5 "link_barracks_door_b" 1 0 0 0 "-"
+door "link_barracks_door_b" "Barracks door" "barracks" 13.5 13.5 "town" 50.5 13.5 "link_barracks_door_a" 1 0 0 0 "-"
+door "link_wren_door_a" "Wren's door" "town" 8.5 25.5 "wren_house" 7.5 1.5 "link_wren_door_b" 0 0 0 0 "-"
+door "link_wren_door_b" "Wren's door" "wren_house" 7.5 0.5 "town" 8.5 24.5 "link_wren_door_a" 0 0 0 0 "-"
+door "link_cottage_door_a" "Cottage door" "town" 18.5 26.5 "cottage" 6.5 1.5 "link_cottage_door_b" 0 0 0 0 "-"
+door "link_cottage_door_b" "Cottage door" "cottage" 6.5 0.5 "town" 18.5 25.5 "link_cottage_door_a" 0 0 0 0 "-"
+door "link_longhouse_door_a" "Long House door" "town" 50.5 25.5 "longhouse" 12.5 1.5 "link_longhouse_door_b" 0 0 0 0 "-"
+door "link_longhouse_door_b" "Long House door" "longhouse" 12.5 0.5 "town" 50.5 24.5 "link_longhouse_door_a" 0 0 0 0 "-"
+economy 1000 100 50 10 12
+herbs "town" 4.5 14.5
+route "town_watch" 9 "town" 30.5 37.5 "town" 22.5 19.5 "town" 13.5 14.5 "town" 13.5 21.5 "town" 31.5 3.5 "town" 51.5 14.5 "town" 51.5 22.5 "town" 41.5 18.5 "town" 33.5 37.5
+resident "wren" "Wren" "merchant" "keeping shop" "A quick-eyed rust-red wolf with a ledger cord braided into her harness, who remembers every debt and every kindness." "If it is rope, tallow, herbs or a hot meal, I have it or know who does. Tell me what you need and I will tell you what it costs." 44 "red" "female" "average" "saddle" 6 7 0 5 0 7 19 "-" 120 10 16 "wren_house" 10.5 6.5 "shop" 15.5 4.5 "wren_house" 6.5 4.5
+story "wren" "Shrewd, warm under a brisk surface, and allergic to waste. Keeps careful accounts of money and of favors." "Wren came to Greyfen as a peddler's apprentice and bought Tallow & Twine when its old owner's hips gave out. She extends credit to families she trusts and remembers exactly who repaid it."
+resident "harrow" "Harrow" "guard" "overseeing the square" "A heavy-shouldered charcoal wolf in a scuffed collar of office, grey at the muzzle and slow to raise his voice." "Speak plainly and I will listen plainly. Greyfen stays quiet because everyone knows the watch is listening." 51 "timber" "male" "average" "mantle" 5 2 1 14 1 6 18 "-" 30 0 1 "barracks" 22.5 2.5 "town" 29.5 16.5 "barracks" 22.5 2.5
+story "harrow" "Deliberate, fair and hard to rattle. Speaks little and listens a great deal; dislikes bravado." "Harrow served twenty years on a river-fort garrison before taking command of Greyfen's small watch. He runs it like a household: everyone fed, everyone accounted for."
+resident "sloe" "Sloe" "guard" "on patrol" "A rangy stone-grey guard with a brass whistle on her collar and a habit of counting exits." "Keep to the lit roads after dark. What do you need?" 26 "timber" "female" "average" "saddle" 3 1 5 17 1 6 18 "town_watch" 30 0 1 "barracks" 3.5 2.5 "town" 30.5 37.5 "barracks" 3.5 2.5
+story "sloe" "Alert, restless and exacting. Trusts routines more than promises." "Sloe grew up in the Long House and joined the watch at sixteen after a fire nobody else noticed in time."
+resident "birch" "Birch" "guard" "on night patrol" "A pale, deliberate night guard whose ears swivel toward every gate hinge and loose shutter." "Keep to the lit roads after dark. What do you need?" 30 "arctic" "male" "average" "solid" 0 1 2 19 1 18 6 "town_watch" 30 0 1 "barracks" 6.5 2.5 "town" 30.5 37.5 "barracks" 6.5 2.5
+story "birch" "Patient and quietly observant; prefers night because it is honest about being dark." "Birch came south from the snow country with a caravan and stayed when the caravan did not."
+resident "tamsin" "Tamsin" "guard" "on night patrol" "A long-legged rust guard in a quilted harness, patient on watch and sharp when questioned." "Keep to the lit roads after dark. What do you need?" 34 "maned" "female" "average" "mantle" 6 7 5 21 1 18 6 "town_watch" 30 0 1 "barracks" 9.5 2.5 "town" 30.5 37.5 "barracks" 9.5 2.5
+story "tamsin" "Even-tempered and sharp-witted; asks the question behind the question." "Tamsin once clerked for a magistrate and still writes down everything she is told on watch."
+resident "sorrel" "Sorrel" "civilian" "tending the herb garden" "A sable gardener with soil worked into her forepaws and seed twine looped over one shoulder." "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does." 38 "timber" "female" "average" "piebald" 4 3 0 8 1 8 17 "-" 30 0 1 "cottage" 2.5 7.5 "town" 7.5 14.5 "town" 29.5 17.5
+story "sorrel" "Gentle, stubborn and practical. Talks to plants more readily than to strangers." "Sorrel has kept the herb garden since her mother did; she and Linden share Birchwall Cottage."
+resident "linden" "Linden" "civilian" "drawing water at the fountain" "A broad ash-coated water carrier with a padded yoke and an easy, rolling laugh." "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does." 40 "timber" "male" "average" "saddle" 2 1 5 11 1 8 17 "-" 30 0 1 "cottage" 9.5 7.5 "town" 30.5 20.5 "town" 34.5 17.5
+story "linden" "Jovial, generous and a little nosy. Carries gossip the way he carries water." "Linden hauls water for half the square and knows everyone's business by noon."
+resident "fennel" "Fennel" "civilian" "minding a market stall" "A young rust wolf who talks faster than he walks and knows the price of everything on the square." "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does." 23 "red" "male" "average" "solid" 6 7 6 25 1 8 17 "-" 30 0 1 "longhouse" 2.5 9.5 "town" 25.5 15.5 "town" 29.5 21.5
+story "fennel" "Eager, quick-talking and ambitious; wants a shop of his own someday." "Fennel apprenticed under Wren for a season before taking his own stall on the square."
+resident "rook" "Rook" "civilian" "hauling crates on the high street" "A lean sand-and-rust carter with a scarred harness strap and a quiet, steady stride." "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does." 29 "ethiopian" "female" "average" "saddle" 7 6 0 27 1 8 17 "-" 30 0 1 "longhouse" 6.5 9.5 "town" 15.5 18.5 "town" 34.5 21.5
+story "rook" "Quiet, dependable and wary of fuss. Loyal once trust is earned." "Rook carts goods between the gate and the shops and once hauled the captain out of a flooded ditch."
+resident "maple" "Maple" "civilian" "telling stories by the fountain" "An old ivory wolf with clouded eyes and a warm voice, who knows every story the town tells about itself." "Sit a while. Every stone in this square has a story, and I have outlived most of the wolves who could tell them." 72 "arctic" "female" "average" "solid" 0 1 1 30 0 8 17 "-" 30 0 1 "longhouse" 17.5 9.5 "town" 33.5 20.5 "town" 33.5 20.5
+story "maple" "Warm, wry and unhurried. Remembers everything and forgives most of it." "Maple is the oldest wolf in Greyfen and the keeper of its stories, true and otherwise."

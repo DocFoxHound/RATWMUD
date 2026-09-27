@@ -15,7 +15,7 @@ import map_editor
 def prepare(root):
     run = Path(tempfile.mkdtemp(prefix='travel-', dir=root / 'Saved/Tests'))
     script = '''
-import * as m from './Editor/model.mjs';
+import * as m from './Editor/src/model/model.mjs';
 const p=m.createProject(72,12,'Travel testing reach');m.cutGrid(p,24,12);
 p.cells.forEach((c,i)=>{c.name=['West Meadow','Crossing Fields','Eastern Reach'][i];
 c.description='Open travel ground. The familiar route follows the old trail.';});

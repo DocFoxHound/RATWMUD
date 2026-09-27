@@ -348,8 +348,9 @@ bool Tick(float)
         const FString Phase = ratwjson::String(Env, TEXT("phase"));
         static int32 DayTiles = 0;
         int32 Visible = 0;
-        for (const auto& Tile : ratwjson::Items(Cell, TEXT("tiles")))
-            Visible += ratwjson::Bool(Tile->AsObject(), TEXT("visible")) ? 1 : 0;
+        for (const auto& Row : ratwjson::Items(Snapshot, TEXT("visibility")))
+            for (const TCHAR C : Row->AsString())
+                Visible += C == TEXT('2');
         const auto Shot = [&](const TCHAR* Name) {
             if (FParse::Param(FCommandLine::Get(), TEXT("RatwCaptureLighting")))
                 Capture(Name);
@@ -504,8 +505,9 @@ bool Tick(float)
         static int32 DayVisible = 0;
         static double DayHearing = 0;
         int32 Visible = 0;
-        for (const auto& Tile : ratwjson::Items(Cell, TEXT("tiles")))
-            Visible += ratwjson::Bool(Tile->AsObject(), TEXT("visible")) ? 1 : 0;
+        for (const auto& Row : ratwjson::Items(Snapshot, TEXT("visibility")))
+            for (const TCHAR C : Row->AsString())
+                Visible += C == TEXT('2');
         const auto Shot = [&](const TCHAR* Name) {
             if (FParse::Param(FCommandLine::Get(), TEXT("RatwCaptureWeather")))
                 Capture(Name);

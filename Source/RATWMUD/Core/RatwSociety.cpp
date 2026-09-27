@@ -5,10 +5,6 @@
 
 namespace ratw
 {
-namespace
-{
-constexpr std::int64_t MoneyLimit = 1000000000;
-constexpr int StockLimit = 10000;
 bool playerAccountId(const std::string& id)
 {
     if (id.rfind("player-", 0) == 0) return id.size() <= 80; // Existing development saves.
@@ -17,6 +13,11 @@ bool playerAccountId(const std::string& id)
         return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
     });
 }
+
+namespace
+{
+constexpr std::int64_t MoneyLimit = 1000000000;
+constexpr int StockLimit = 10000;
 bool itemValid(const std::string& item)
 {
     return item == "herbs" || item == "meal";
@@ -41,13 +42,24 @@ Society::Society(bool demo)
 {
     reset(demo);
 }
+Society::Society(Roster roster)
+{
+    reset(roster);
+}
 void Society::reset(bool demo)
 {
+    reset(demo ? Roster::Demo : Roster::None);
+}
+void Society::reset(Roster roster)
+{
+    roster_ = roster;
     state_ = {};
-    state_.enabled = demo;
+    state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
     state_.minted = 1000;
-    if (!demo)
+    if (roster == Roster::Authored)
+        return resetAuthored();
+    if (roster != Roster::Demo)
         return;
     const std::pair<const char*, const char*> jobs[] = {{"npc_keeper", "merchant"}, {"npc_cook", "cook"},
                                                         {"npc_porter", "forager"},  {"npc_scout", "resident"},
@@ -108,9 +120,35 @@ EconomyResult Society::operatorTransfer(const std::string& from, const std::stri
     record("operator transfer", from, to, item, quantity, coins);
     return {true, "Existing money and goods transferred; no currency or stock created."};
 }
-bool Society::merchant(const std::string& id)
+void Society::configure(const AuthoredRoster& roster)
 {
-    return id == "npc_keeper";
+    authored_ = roster;
+    forgetSpecs();
+    buildPositions();
+    reset(Roster::Authored);
+}
+const ResidentSpec* Society::spec(const std::string& id) const
+{
+    if (roster_ != Roster::Authored)
+        return nullptr;
+    if (!specsIndexed_ || specIndex_.size() > authored_.residents.size())
+    {
+        specIndex_.clear();
+        for (std::size_t i = 0; i < authored_.residents.size(); ++i)
+            specIndex_.emplace(authored_.residents[i].id, i);   // The first of a duplicated ID wins, as before.
+        specsIndexed_ = true;
+    }
+    const auto found = specIndex_.find(id);
+    if (found == specIndex_.end() || found->second >= authored_.residents.size())
+        return nullptr;
+    return &authored_.residents[found->second];
+}
+bool Society::merchant(const std::string& id) const
+{
+    if (roster_ == Roster::Demo)
+        return id == "npc_keeper";
+    const auto* r = spec(id);
+    return r && r->role == "merchant";
 }
 const char* Society::itemName(const std::string& id)
 {
@@ -122,6 +160,15 @@ void Society::record(const std::string& kind, const std::string& from, const std
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     if (state_.ledger.size() > 128)
         state_.ledger.erase(state_.ledger.begin());
+    journal_.push_back(state_.ledger.back());
+    if (journal_.size() > JournalKept + JournalKept / 4)
+        journal_.erase(journal_.begin(), journal_.begin() + std::ptrdiff_t(journal_.size() - JournalKept));
+}
+std::vector<EconomyEntry> Society::takeJournal()
+{
+    std::vector<EconomyEntry> out;
+    out.swap(journal_);
+    return out;
 }
 std::int64_t Society::moneySupply() const
 {
@@ -136,7 +183,7 @@ bool Society::conserved() const
 }
 void Society::addPlayer(const std::string& id)
 {
-    if (!playerAccountId(id) || state_.accounts.count(id) || state_.accounts.size() >= 4096)
+    if (!playerAccountId(id) || state_.accounts.count(id) || state_.accounts.size() >= MaxAccounts)
         return;
     auto& reserve = state_.accounts.at("treasury");
     EconomyAccount created;
@@ -258,7 +305,21 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             resident.second.wagesToday = 0;
         const int recovery[] = {20, 30, 12, 4};
         state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
+        if (roster_ == Roster::Authored)
+        {
+            // A daily carter refills the town stores with goods, never money,
+            // up to the authored starting store levels.
+            const auto& e = authored_.economy;
+            auto& stores = state_.accounts.at("treasury");
+            stores.stock["meal"] =
+                std::max(stock(stores, "meal"), std::min(e.storeMeals, stock(stores, "meal") + e.dailyMeals));
+            stores.stock["herbs"] =
+                std::max(stock(stores, "herbs"), std::min(e.storeHerbs, stock(stores, "herbs") + e.dailyHerbs));
+            record("carter delivery", "outside", "treasury", "", 0, 0);
+        }
     }
+    if (roster_ == Roster::Authored)
+        return decideAuthored(absoluteDay, bodies);
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
     const bool night = hour < 6 || hour >= 22;
     const auto available = [&](const std::string& id) {
@@ -630,9 +691,50 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         }
     }
 }
-bool Society::restore(const SocietyState& s)
+bool Society::restore(const SocietyState& saved)
 {
-    if (s.accounts.empty() || s.accounts.size() > 4096 || !s.accounts.count("treasury") || s.residents.size() > 128 ||
+    // A checkpoint names its own population; World rejects one for another world.
+    // A checkpoint is validated against this society's own population; a
+    // society without one (None) accepts the legacy demo population.
+    const Roster roster = !saved.enabled ? roster_ : roster_ == Roster::Authored ? Roster::Authored : Roster::Demo;
+    if (roster == Roster::Authored && authored_.residents.empty())
+        return false;
+    Society fresh(Roster::None);
+    fresh.authored_ = authored_;
+    fresh.forgetSpecs();
+    fresh.reset(roster);
+    SocietyState s = saved;
+    if (s.enabled && roster == Roster::Authored && s.accounts.count("treasury"))
+    {
+        auto& treasury = s.accounts.at("treasury");
+        const auto& now = fresh.state_.residents;
+        for (auto it = s.residents.begin(); it != s.residents.end();)
+            it = now.count(it->first) ? std::next(it) : s.residents.erase(it);
+        for (auto it = s.accounts.begin(); it != s.accounts.end();)
+            if (it->first != "treasury" && !playerAccountId(it->first) && !now.count(it->first))
+            {
+                treasury.cash += it->second.cash;           // A departed resident's coins go back to the town.
+                it = s.accounts.erase(it);
+            }
+            else
+                ++it;
+        for (const auto& life : now)
+        {
+            const auto was = s.residents.find(life.first);
+            if (was == s.residents.end() || !s.accounts.count(life.first))
+            {
+                s.residents[life.first] = life.second;      // A newcomer: a fresh life and the authored purse.
+                if (!s.accounts.count(life.first))
+                {
+                    s.accounts[life.first] = fresh.state_.accounts.at(life.first);
+                    s.minted += s.accounts[life.first].cash;
+                }
+            }
+            else if (was->second.role != life.second.role)
+                was->second = life.second;                  // Re-authored as something else: start that life fresh.
+        }
+    }
+    if (s.accounts.empty() || s.accounts.size() > MaxAccounts || !s.accounts.count("treasury") || s.residents.size() > MaxResidents ||
         s.ledger.size() > 128 || s.minted < 0 || s.minted > MoneyLimit || s.sunk < 0 || s.sunk > s.minted ||
         s.nextEntry < 1 || s.nextEntry > 1000000000000LL || s.budgetDay < 0 || s.budgetDay > 365000000 ||
         s.exportsRemaining < 0 || s.exportsRemaining > 8 || s.importsRemaining < 0 || s.importsRemaining > 4 ||
@@ -644,9 +746,7 @@ bool Society::restore(const SocietyState& s)
         if (a.first.empty() || a.first.size() > 80 || a.second.cash < 0 || a.second.cash > MoneyLimit ||
             a.second.stock.size() > 2)
             return false;
-        if (a.first != "treasury" && !playerAccountId(a.first) && a.first != "npc_keeper" &&
-            a.first != "npc_cook" && a.first != "npc_porter" && a.first != "npc_scout" && a.first != "npc_smith" &&
-            a.first != "npc_scribe")
+        if (a.first != "treasury" && !playerAccountId(a.first) && !fresh.state_.residents.count(a.first))
             return false;
         sum += a.second.cash;
         for (const auto& item : a.second.stock)
@@ -656,9 +756,8 @@ bool Society::restore(const SocietyState& s)
     if (sum != s.minted - s.sunk)
         return false;
     for (const auto& l : s.residents)
-        if (!s.accounts.count(l.first) || l.first.rfind("npc_", 0) != 0 ||
-            (l.second.role != "merchant" && l.second.role != "cook" && l.second.role != "forager" &&
-             l.second.role != "resident") ||
+        if (!s.accounts.count(l.first) ||
+            !fresh.state_.residents.count(l.first) || fresh.state_.residents.at(l.first).role != l.second.role ||
             !validNumber(l.second.hunger, 0, 100) || !validNumber(l.second.fatigue, 0, 100) ||
             !validNumber(l.second.progress, 0, 1200) || l.second.wagesToday < 0 || l.second.wagesToday > 3 ||
             !validNumber(l.second.goalX, 0, 256) || !validNumber(l.second.goalY, 0, 256) || l.second.task.size() > 40 ||
@@ -677,20 +776,37 @@ bool Society::restore(const SocietyState& s)
             return false;
         previous = e.sequence;
     }
-    if (s.residents.size() != (s.enabled ? 6u : 0u))
+    if (s.residents.size() != (s.enabled ? fresh.state_.residents.size() : 0u))
         return false;
     if (s.enabled)
-        for (const auto& id : {"npc_keeper", "npc_cook", "npc_porter", "npc_scout", "npc_smith", "npc_scribe"})
-        {
-            const std::string expected = std::string(id) == "npc_keeper"   ? "merchant"
-                                         : std::string(id) == "npc_cook"   ? "cook"
-                                         : std::string(id) == "npc_porter" ? "forager"
-                                                                           : "resident";
-            if (!s.accounts.count(id) || !s.residents.count(id) || s.residents.at(id).role != expected)
+        for (const auto& life : fresh.state_.residents)
+            if (!s.accounts.count(life.first) || !s.residents.count(life.first) ||
+                s.residents.at(life.first).role != life.second.role)
                 return false;
-        }
     state_ = s;
-    for (auto& life : state_.residents) defaultHome(life.first, life.second);
+    roster_ = roster;
+    for (auto& life : state_.residents)
+        if (roster_ == Roster::Demo) defaultHome(life.first, life.second);
+    if (roster_ == Roster::Authored)
+    {
+        if (state_.careers.positions.empty())
+            defaultCareers();                       // A save from before careers: everyone holds their own job.
+        else
+            reconcileCareers();
+    }
+    return true;
+}
+bool Society::rehome(const std::string& id)
+{
+    const auto* r = spec(id);
+    const auto life = state_.residents.find(id);
+    if (!r || life == state_.residents.end())
+        return false;
+    life->second.homeCell = r->home.cell;
+    life->second.homeX = r->home.x;
+    life->second.homeY = r->home.y;
+    life->second.relocationCell.clear();
+    life->second.relocationX = life->second.relocationY = 0;
     return true;
 }
 } // namespace ratw

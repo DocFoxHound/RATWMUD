@@ -1,0 +1,374 @@
+{
+  "format": "ratw-roster",
+  "version": 1,
+  "professions": [
+    {
+      "id": "guard",
+      "name": "Guard",
+      "behavior": "guard",
+      "workLabel": "on watch",
+      "description": "Keeps order on a patrol route or a fixed post.",
+      "hours": {
+        "start": 6,
+        "end": 18
+      },
+      "paid": true
+    },
+    {
+      "id": "night_guard",
+      "name": "Night watch",
+      "behavior": "guard",
+      "workLabel": "on night watch",
+      "description": "Guards the streets and gates after dark.",
+      "hours": {
+        "start": 18,
+        "end": 6
+      },
+      "paid": true
+    },
+    {
+      "id": "shopkeeper",
+      "name": "Shopkeeper",
+      "behavior": "merchant",
+      "workLabel": "keeping shop",
+      "description": "Runs a counter; players and residents trade with them.",
+      "hours": {
+        "start": 7,
+        "end": 19
+      },
+      "paid": false
+    },
+    {
+      "id": "innkeeper",
+      "name": "Innkeeper",
+      "behavior": "merchant",
+      "workLabel": "tending the common room",
+      "description": "Feeds and lodges travelers; a shop with a hearth.",
+      "hours": {
+        "start": 10,
+        "end": 23
+      },
+      "paid": false
+    },
+    {
+      "id": "smith",
+      "name": "Smith",
+      "behavior": "civilian",
+      "workLabel": "working the forge",
+      "description": "Shapes metal fittings, harness clasps and tools.",
+      "hours": {
+        "start": 7,
+        "end": 16
+      },
+      "paid": true
+    },
+    {
+      "id": "farmer",
+      "name": "Farmer",
+      "behavior": "civilian",
+      "workLabel": "working the fields",
+      "description": "Grows and gathers food outside the walls.",
+      "hours": {
+        "start": 6,
+        "end": 16
+      },
+      "paid": true
+    },
+    {
+      "id": "laborer",
+      "name": "Laborer",
+      "behavior": "civilian",
+      "workLabel": "hauling and building",
+      "description": "Carries loads, repairs roofs, digs ditches.",
+      "hours": {
+        "start": 8,
+        "end": 17
+      },
+      "paid": true
+    },
+    {
+      "id": "scribe",
+      "name": "Scribe",
+      "behavior": "civilian",
+      "workLabel": "copying accounts",
+      "description": "Reads, writes and keeps records for others.",
+      "hours": {
+        "start": 9,
+        "end": 17
+      },
+      "paid": true
+    },
+    {
+      "id": "healer",
+      "name": "Healer",
+      "behavior": "civilian",
+      "workLabel": "tending the sick",
+      "description": "Treats injuries and illness with herbs and patience.",
+      "hours": {
+        "start": 8,
+        "end": 18
+      },
+      "paid": true
+    },
+    {
+      "id": "bandit",
+      "name": "Bandit",
+      "behavior": "civilian",
+      "workLabel": "lurking by the road",
+      "description": "Preys on travelers. For now behaves like a worker at their hideout; raiding comes with combat.",
+      "hours": {
+        "start": 20,
+        "end": 4
+      },
+      "paid": false
+    }
+  ],
+  "characters": [
+    {
+      "id": "mara_reedmark",
+      "name": "Mara Reedmark",
+      "age": 38,
+      "appearance": {
+        "species": "timber",
+        "sex": "female",
+        "stature": "tall",
+        "pattern": "solid",
+        "baseColor": 2,
+        "gradientColor": 5,
+        "markingColor": 6
+      },
+      "voice": 0,
+      "description": "A tall ash-coated wolf with rust along her muzzle and shoulders. She wears a weathered patrol harness and stands as if every passing cart might need stopping.",
+      "personality": "Mara is patient, observant, and more compassionate than her stern voice suggests. She dislikes bullies and resents being praised for merely enduring difficult things.",
+      "traits": [
+        "steady",
+        "watchful",
+        "protective",
+        "dry humor"
+      ],
+      "backstory": "Mara was born above the east gate of Greyfen Crossing, the daughter of a gate clerk and a ferryman. She joined the town guard after her younger brother, Pell, was injured in a market riot; since then she has treated order as a form of mercy.\n\nHer partner, Oren, died during a winter flood while helping clear the ford. Mara still checks the river posts herself each morning, though the guard captain has offered her a safer assignment. She quietly sends part of her pay to Pell, who never recovered the use of one foreleg.",
+      "greeting": "Keep to the right of the ford, traveler, and we will have no trouble.",
+      "preferences": {
+        "guard": 3,
+        "night_guard": 2,
+        "shopkeeper": 0,
+        "innkeeper": 0,
+        "smith": 1,
+        "farmer": 1,
+        "laborer": 2,
+        "scribe": 1,
+        "healer": 1,
+        "bandit": 0
+      },
+      "status": "active",
+      "profession": "",
+      "assignment": null,
+      "origin": "llm"
+    },
+    {
+      "id": "vetch_underbough",
+      "name": "Vetch Underbough",
+      "age": 26,
+      "appearance": {
+        "species": "red",
+        "sex": "male",
+        "stature": "short",
+        "pattern": "solid",
+        "baseColor": 6,
+        "gradientColor": 4,
+        "markingColor": 1
+      },
+      "voice": 1,
+      "description": "A small red wolf with dark ears, bright eyes, and a patched night-watch cloak. He moves lightly and keeps his nose lifted toward every alley mouth.",
+      "personality": "Vetch is sociable when frightened and jokes whenever silence might reveal his worry. He wants to be brave more than he wants anyone to know he is afraid.",
+      "traits": [
+        "quick",
+        "nervous",
+        "gregarious",
+        "ambitious"
+      ],
+      "backstory": "Vetch grew up in the reed huts south of Greyfen, where his family trapped eels and repaired ferry ropes. He came to town after a band of thieves stole their winter stores, and he took night-watch work because the darkness felt like an enemy he could finally face.\n\nHe is fond of old Nella, a baker whose ovens warm the watch post, and secretly practices her habit of memorizing every customer. Vetch hopes to earn a proper silver whistle, though he has not yet admitted that loud noises make him flinch.",
+      "greeting": "Evening! Name, destination, and whether that sack is heavier than it looks, please.",
+      "preferences": {
+        "guard": 2,
+        "night_guard": 3,
+        "shopkeeper": 1,
+        "innkeeper": 1,
+        "smith": 1,
+        "farmer": 0,
+        "laborer": 1,
+        "scribe": 1,
+        "healer": 0,
+        "bandit": 0
+      },
+      "status": "active",
+      "profession": "",
+      "assignment": null,
+      "origin": "llm"
+    },
+    {
+      "id": "sella_bracken",
+      "name": "Sella Bracken",
+      "age": 51,
+      "appearance": {
+        "species": "maned",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "solid",
+        "baseColor": 4,
+        "gradientColor": 7,
+        "markingColor": 0
+      },
+      "voice": 2,
+      "description": "A broad-maned sable wolf with sand-colored legs and a scar across her left cheek. Her small provisions shop is arranged around low shelves, pull-cords, and a counter worn smooth by years of trade.",
+      "personality": "Sella is practical, shrewd, and generous only after she has decided generosity will not ruin her. She remembers every debt, including the ones she wishes she could forgive.",
+      "traits": [
+        "practical",
+        "sharp-eyed",
+        "loyal",
+        "calculating"
+      ],
+      "backstory": "Sella came to Greyfen Crossing from the upland hamlet of Barleyhook with two carts of dried beans and no intention of staying. She married Tovan, a cooper, and built Bracken Stores beside the western market square; Tovan died of a fever nine years ago.\n\nTheir daughter, Iri, now runs a barge office at the river docks and visits each seventh day. Sella keeps a locked ledger of families who cannot pay in bad seasons, pretending it is a business record rather than a list of promises she refuses to collect.",
+      "greeting": "If you need it, I stock it; if I do not stock it, I know who does.",
+      "preferences": {
+        "guard": 1,
+        "night_guard": 0,
+        "shopkeeper": 3,
+        "innkeeper": 2,
+        "smith": 1,
+        "farmer": 1,
+        "laborer": 1,
+        "scribe": 2,
+        "healer": 1,
+        "bandit": 0
+      },
+      "status": "active",
+      "profession": "",
+      "assignment": null,
+      "origin": "llm"
+    },
+    {
+      "id": "harl_fenwake",
+      "name": "Harl Fenwake",
+      "age": 43,
+      "appearance": {
+        "species": "arctic",
+        "sex": "male",
+        "stature": "tall",
+        "pattern": "solid",
+        "baseColor": 0,
+        "gradientColor": 2,
+        "markingColor": 5
+      },
+      "voice": 3,
+      "description": "A tall ivory wolf with charcoal paws and a soot-dark nose. His smithing apron hangs from a stout harness, and his forepaws are scarred from years of bracing hot iron against the anvil.",
+      "personality": "Harl is blunt, proud, and uncomfortable with thanks. He is tender toward apprentices and animals, but his temper flares when someone treats a poorly made clasp as good enough.",
+      "traits": [
+        "blunt",
+        "meticulous",
+        "proud",
+        "soft-hearted"
+      ],
+      "backstory": "Harl learned metalwork in the hill town of Coldmere under Master Vessa, who taught him to shape buckles by pressure, leverage, and patience. He came south after a guild dispute and found steady work repairing harness fittings for Greyfen's carters.\n\nHis apprentice, Juniper, left last spring after Harl refused to let her sell an unfinished river chain. Harl tells everyone she was foolish; privately, he fears she was right to seek a kinder teacher. He still keeps her first crooked horseshoe above the forge.",
+      "greeting": "Bring me the broken piece, not your story about how it broke.",
+      "preferences": {
+        "guard": 1,
+        "night_guard": 1,
+        "shopkeeper": 1,
+        "innkeeper": 0,
+        "smith": 3,
+        "farmer": 1,
+        "laborer": 2,
+        "scribe": 0,
+        "healer": 0,
+        "bandit": 0
+      },
+      "status": "active",
+      "profession": "",
+      "assignment": null,
+      "origin": "llm"
+    },
+    {
+      "id": "odo_claystep",
+      "name": "Odo Claystep",
+      "age": 67,
+      "appearance": {
+        "species": "ethiopian",
+        "sex": "male",
+        "stature": "short",
+        "pattern": "solid",
+        "baseColor": 3,
+        "gradientColor": 7,
+        "markingColor": 4
+      },
+      "voice": 4,
+      "description": "A short stone-colored wolf with sandy toes, a stooped back, and a patient, mud-stained coat. He carries seed pouches in a belly harness and walks with the careful rhythm of someone conserving his joints.",
+      "personality": "Odo is cheerful in company but privately terrified of becoming a burden. He gives advice freely, especially when nobody has asked for it, and measures wealth by how many mouths a harvest can spare.",
+      "traits": [
+        "patient",
+        "frugal",
+        "sociable",
+        "stubborn"
+      ],
+      "backstory": "Odo farms the low fields at Willowmere, just beyond Greyfen's south wall. His mate, Tessa, died during the red cough years ago, leaving him to raise their son Bram among barley, onions, and stubborn clay.\n\nBram now drives a grain cart for the merchants and wants Odo to sell the farm. Odo refuses, partly from love of the land and partly because he cannot imagine who he would be without a field waiting for him at dawn. He is known to leave baskets by the homes of struggling laborers.",
+      "greeting": "Mind the ditch, friend; the road is sound, but the ground beside it has opinions.",
+      "preferences": {
+        "guard": 0,
+        "night_guard": 0,
+        "shopkeeper": 1,
+        "innkeeper": 1,
+        "smith": 1,
+        "farmer": 3,
+        "laborer": 2,
+        "scribe": 0,
+        "healer": 1,
+        "bandit": 0
+      },
+      "status": "active",
+      "profession": "",
+      "assignment": null,
+      "origin": "llm"
+    },
+    {
+      "id": "rusk_nine_roads",
+      "name": "Rusk Nine-Roads",
+      "age": 31,
+      "appearance": {
+        "species": "timber",
+        "sex": "male",
+        "stature": "average",
+        "pattern": "solid",
+        "baseColor": 5,
+        "gradientColor": 6,
+        "markingColor": 7
+      },
+      "voice": 5,
+      "description": "An average-built charcoal wolf with rust along his back and a sand-colored throat. He works at a rough roadside camp as a cook and hauler, keeping his old travel harness polished despite its missing badge.",
+      "personality": "Rusk is courteous, capable, and always half a heartbeat from bolting. He wants the bandits around him to see a useful comrade, while secretly hoping to save enough coin to disappear before they ask for blood.",
+      "traits": [
+        "guarded",
+        "resourceful",
+        "guilt-ridden",
+        "observant"
+      ],
+      "backstory": "Rusk was once a porter on the river road between Greyfen and Darnel's Ferry. After a merchant blamed him for a stolen cargo, he lost his work and fell in with the Fenhook bandits, who offered food and a place beside their hidden camp in the alder ravine.\n\nHe has quietly joined their roadside operation under the name Nine-Roads, repairing packs and cooking stolen grain. He has not yet taken part in a raid, but he has warned travelers away from the worst stretches by leaving a white stone on the road. The bandit captain, Sorn, has begun to notice.",
+      "greeting": "Morning. Camp's closed to strangers, but a hot meal can sometimes change a wolf's luck.",
+      "preferences": {
+        "guard": 1,
+        "night_guard": 2,
+        "shopkeeper": 1,
+        "innkeeper": 2,
+        "smith": 1,
+        "farmer": 0,
+        "laborer": 2,
+        "scribe": 0,
+        "healer": 1,
+        "bandit": 3
+      },
+      "status": "active",
+      "profession": "",
+      "assignment": null,
+      "origin": "llm"
+    }
+  ]
+}

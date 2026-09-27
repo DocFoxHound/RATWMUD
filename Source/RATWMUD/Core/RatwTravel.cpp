@@ -70,6 +70,23 @@ Graph knownGraph(const std::map<std::string, CellMemory>& book, const std::map<s
     }
     return graph;
 }
+// A streamed world's seams between two visited cells: walking both sides of an open boundary is knowing it, even
+// while one side is not loaded (its seam fixtures are then not in memory to check).
+void addSeams(Graph& graph, const std::map<std::string, CellMemory>& book, const std::map<std::string, std::set<std::string>>& exits)
+{
+    for (const auto& [from, to] : exits)
+    {
+        const auto a = book.find(from);
+        if (a == book.end() || a->second.knowledge != Knowledge::Visited)
+            continue;
+        for (const auto& next : to)
+        {
+            const auto b = book.find(next);
+            if (b != book.end() && b->second.knowledge == Knowledge::Visited && !graph[from].count(next))
+                graph[from][next] = 1.0 + (a->second.width + a->second.height + b->second.width + b->second.height) / 8.0;
+        }
+    }
+}
 struct Routes
 {
     std::map<std::string, double> costs;
@@ -193,7 +210,8 @@ Result World::travelTo(const std::string& id, const std::string& destination)
     if (destination.empty() || destination.size() > 48 || target == book.end() ||
         target->second.knowledge != Knowledge::Visited)
         return {false, "Choose a place you have visited before.", {}};
-    const auto graph = knownGraph(book, doors_);
+    auto graph = knownGraph(book, doors_);
+    addSeams(graph, book, exits_);
     const auto routes = routesTo(graph, destination);
     const auto route = routeFrom(routes, actor->cellId, destination);
     if (route.empty())
@@ -331,7 +349,8 @@ void World::updateTravel(Entity& actor)
         return;
     }
     const auto& book = memories(actor.id);
-    const auto graph = knownGraph(book, doors_);
+    auto graph = knownGraph(book, doors_);
+    addSeams(graph, book, exits_);
     // Remaining routes cannot immediately double back through this cell.
     const auto routes = routesTo(graph, state.destination, actor.cellId);
     struct Candidate
@@ -341,10 +360,9 @@ void World::updateTravel(Entity& actor)
         double cost = Infinity;
     };
     std::vector<const Door*> exits;
-    for (const auto& entry : doors_)
-        if (entry.second.cellId == actor.cellId && knownConnection(entry.second, book, doors_) &&
-            routes.costs.count(entry.second.targetCell))
-            exits.push_back(&entry.second);
+    for (const Door* d : doorsIn(actor.cellId))
+        if (knownConnection(*d, book, doors_) && routes.costs.count(d->targetCell))
+            exits.push_back(d);
     if (exits.empty())
     {
         pause("Travel paused: no remembered onward connection is available. Choose a new destination.");
@@ -386,10 +404,10 @@ void World::updateTravel(Entity& actor)
                 if (nx < 0 || ny < 0 || nx >= width || ny >= height)
                     continue;
                 const Vec2 point{nx + .5, ny + .5};
-                if (!passable(actor.cellId, point, tile->height) ||
+                if (!passable(actor.cellId, point, tile) ||
                     (dx && dy &&
-                     (!passable(actor.cellId, {x + .5, ny + .5}, tile->height) ||
-                      !passable(actor.cellId, {nx + .5, y + .5}, tile->height))))
+                     (!passable(actor.cellId, {x + .5, ny + .5}, tile) ||
+                      !passable(actor.cellId, {nx + .5, y + .5}, tile))))
                     continue;
                 const auto* next = current->tile(nx, ny);
                 const double cost = item.first + (dx && dy ? std::sqrt(2.0) : 1.0) * next->movementCost +
@@ -417,7 +435,7 @@ void World::updateTravel(Entity& actor)
                     distance(point, exit->position) > exit->reach - .1)
                     continue;
                 const auto* tile = current->tile(int(point.x), int(point.y));
-                if (!tile || !passable(actor.cellId, point, tile->height))
+                if (!tile || !passable(actor.cellId, point, tile))
                     continue;
                 if (!exit->boundary && !lineOfSight(actor.cellId, point, exit->position))
                     continue;

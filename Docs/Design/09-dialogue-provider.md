@@ -71,10 +71,34 @@ loopback fixture for success, HTTP failure, malformed/empty/oversized responses,
 and an eight-second timeout fallback, plus URL-validation regressions. The fixture
 never redirects or contacts another service. Separate live tests verify generated
 delivery by matching response hashes and recall across restarts/consolidation.
-The bridge has 35 offline tests for credential boundaries, protocol validation,
-request budgets, concurrency and failures. The real-model sample is deliberately
+The bridge answers up to three conversations at once by default (`--concurrency`,
+1–4); beyond that a request is refused as busy and the game uses its authored reply.
+Its request budget and lifetime limits are unchanged. The bridge has 38 offline
+tests for credential boundaries, protocol validation, request budgets, concurrency
+and failures. The real-model sample is deliberately
 small; broader quality/adversarial evaluation is still needed.
 
 Open: production hosting/model policy, operating cost ceiling, response latency,
 memory-context limits, prose constraints and evaluation set, NPC voice authoring,
 and whether generated dialogue should visibly carry a provider indicator.
+
+## The NPC Mind (2026-09-27)
+
+`tools/npc_mind.py` is the conversation service for real play. The bridge above remains for provider tests. The Mind:
+- takes the same request plus the speaker's ID, the relationship and the NPC's mood
+- can read the pair's history from the event log
+- returns a structured reply: text, emotion, liking and trust nudges, a note, a promise
+- summarises finished conversations
+
+The game server applies all of it on bounded terms. See `26-living-npcs.md`, Phase 3.
+
+**Live by default (2026-09-27).** The launch scripts start the Mind themselves: `tools/server.sh`, `tools/play.sh`,
+`tools/live.sh` (through them) and `tools/run-packaged.sh`. The game then uses it (`tools/mind.sh`).
+- **Key and model** come from `Saved/Config/RATWNPCAI.local.json`: gitignored (also `*.local.json`) and readable only
+  by its owner. `RATW_AI_CONFIG` can point elsewhere.
+- **History.** A game on `-RatwDatabase=dev|prod` gives the Mind that database's event log for NPCs' history.
+- **Switches.** `RATW_AI=off` plays with authored lines; `RATW_AI=fixture` uses offline replies.
+- **Logging.** The Mind's log is `Saved/Logs/npc-mind.log`, with no dialogue in it.
+- **Automated tests** (engine tests and smokes) start the engine directly and stay offline and deterministic;
+  `tools/live_npc_smoke.py` is the one that uses the paid model.
+

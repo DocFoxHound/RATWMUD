@@ -24,3 +24,9 @@
 .env.*
 !.env.example
 __pycache__/
+
+# Local secrets (API keys): never committed.
+*.local.json
+/Database/dm-accounts.txt
+/artifacts/backups/
+/artifacts/mind-smoke/

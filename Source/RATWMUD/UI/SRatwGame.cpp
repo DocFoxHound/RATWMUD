@@ -1,5 +1,7 @@
 #include "UI/SRatwGame.h"
 #include "UI/SRatwWolfDoll.h"
+#include "Core/RatwWorld.h"
+#include "Runtime/RatwJson.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
@@ -120,12 +122,17 @@ FSlateFontInfo Font(int Size, bool Mono = false, bool Bold = false)
     static TMap<int32, TSharedPtr<const FCompositeFont>> Families;
     const int32 FamilyKey = Mono ? 2 : (Bold ? 1 : 0);
     if (!Families.Contains(FamilyKey))
-        Families.Add(FamilyKey, MakeShared<FCompositeFont>(
-                                    FName(TEXT("Regular")),
-                                    FPaths::EngineContentDir() / TEXT("Slate/Fonts/") /
-                                        (Mono ? TEXT("DroidSansMono.ttf")
-                                              : (Bold ? TEXT("Roboto-Medium.ttf") : TEXT("Roboto-Regular.ttf"))),
-                                    EFontHinting::Default, EFontLoadingPolicy::LazyLoad));
+    {
+        // Map glyphs are Unicode (box drawing, shades, symbols): the bundled DejaVu Sans Mono covers them all.
+        const FString Glyphs = FPaths::ProjectDir() / TEXT("Data/Fonts/DejaVuSansMono.ttf");
+        const FString Path = Mono && FPaths::FileExists(Glyphs)
+                                 ? Glyphs
+                                 : FPaths::EngineContentDir() / TEXT("Slate/Fonts/") /
+                                       (Mono ? TEXT("DroidSansMono.ttf")
+                                             : (Bold ? TEXT("Roboto-Medium.ttf") : TEXT("Roboto-Regular.ttf")));
+        Families.Add(FamilyKey, MakeShared<FCompositeFont>(FName(TEXT("Regular")), Path, EFontHinting::Default,
+                                                           EFontLoadingPolicy::LazyLoad));
+    }
     const FSlateFontInfo NewFont(Families[FamilyKey], Size, FName(TEXT("Regular")));
     Fonts.Add(Key, NewFont);
     return NewFont;
@@ -433,8 +440,9 @@ void SRatwGame::ApplySnapshot(const TSharedPtr<FJsonObject>& S)
     bOutdoors = Bool(Cell, TEXT("outdoors"));
     const auto Env = Obj(Cell, TEXT("environment"));
     Environment.Weather = Str(Cell, TEXT("weather"), TEXT("clear"));
-    if (Environment.Weather != TEXT("rain") && Environment.Weather != TEXT("snow") &&
-        Environment.Weather != TEXT("fog"))
+    static const TSet<FString> KnownWeather = {TEXT("overcast"), TEXT("rain"), TEXT("storm"),
+                                               TEXT("fog"),      TEXT("snow"), TEXT("sandstorm")};
+    if (!KnownWeather.Contains(Environment.Weather))
         Environment.Weather = TEXT("clear");
     Environment.Hour = EnvironmentNumber(Env, TEXT("hour"), 0, 24, 12);
     if (Environment.Hour >= 24)
@@ -515,6 +523,17 @@ void SRatwGame::ApplySnapshot(const TSharedPtr<FJsonObject>& S)
     for (auto& V : Arr(S, TEXT("visibility")))
         if (V->Type == EJson::String)
             VisibilityRows.Add(V->AsString());
+    TileHeights.Init(0.f, CellWidth * CellHeight);
+    int32 HeightRow = 0;
+    for (auto& V : Arr(Cell, TEXT("heights")))
+    {
+        if (V->Type != EJson::String || HeightRow >= CellHeight)
+            break;
+        const FString Row = V->AsString();
+        for (int32 X = 0; X < FMath::Min(Row.Len(), CellWidth); ++X)
+            TileHeights[HeightRow * CellWidth + X] = float(ratwjson::HeightFromChar(Row[X]));
+        ++HeightRow;
+    }
     if (TileRows.IsEmpty())
     {
         for (int32 Y = 0; Y < CellHeight; ++Y)
@@ -532,6 +551,8 @@ void SRatwGame::ApplySnapshot(const TSharedPtr<FJsonObject>& S)
                 continue;
             const FString Glyph = Str(T, TEXT("glyph"), TEXT(" "));
             TileRows[Y][X] = Glyph.IsEmpty() ? TEXT(' ') : Glyph[0];
+            // Presentation only: a malformed height draws level ground, never a false cliff.
+            TileHeights[Y * CellWidth + X] = float(EnvironmentNumber(T, TEXT("height"), -16, 16, 0));
             VisibilityRows[Y][X] =
                 Bool(T, TEXT("visible")) ? TEXT('2') : (Bool(T, TEXT("remembered")) ? TEXT('1') : TEXT('0'));
         }
@@ -849,6 +870,7 @@ void SRatwGame::SendMove()
     {
         bMovementPending = true;
         bFacingPreview = false;
+        MapPan = FVector2D::ZeroVector;     // Looking around ends when the wolf moves: the map follows it again.
     }
     auto O = MakeShared<FJsonObject>();
     O->SetStringField(TEXT("type"), TEXT("move"));
@@ -1272,6 +1294,8 @@ void SRatwGame::Activate(const FHit& H)
         bReducedMotion = !bReducedMotion;
     else if (H.Action == TEXT("projection"))
         bFlatWorld = !bFlatWorld;
+    else if (H.Action == TEXT("glyphs"))
+        bPlainGlyphs = !bPlainGlyphs;
     else if (H.Action == TEXT("split"))
     {
         StoryExtra = StoryExtra == 0 ? 150 : (StoryExtra == 150 ? 300 : (StoryExtra == 300 ? -100 : 0));
@@ -1661,7 +1685,7 @@ TSharedPtr<FJsonObject> SRatwGame::TradeItem(const FString& Id) const
     if (Id != TEXT("herbs") && Id != TEXT("meal"))
         return nullptr;
     const auto Merchant = Obj(Snapshot, TEXT("merchant"));
-    if (Str(Merchant, TEXT("id")) != TEXT("npc_keeper"))
+    if (Str(Merchant, TEXT("id")).IsEmpty())
         return nullptr;
     for (const auto& Value : Arr(Merchant, TEXT("items")))
     {
@@ -1708,9 +1732,9 @@ bool SRatwGame::CanGather() const
 void SRatwGame::OpenTrade(const FString& Target)
 {
     const auto Merchant = Obj(Snapshot, TEXT("merchant"));
-    if (Target != TEXT("npc_keeper") || Str(Merchant, TEXT("id")) != Target)
+    if (Target.IsEmpty() || Str(Merchant, TEXT("id")) != Target)
     {
-        ShowToast(TEXT("Trading requires the keeper to be awake, visible, and nearby."));
+        ShowToast(TEXT("Trading requires the trader to be awake, visible, and nearby."));
         return;
     }
     if (bChat)
@@ -1731,6 +1755,32 @@ FString SRatwGame::EnvironmentEffectsLabel() const
                            FMath::RoundToInt(Environment.Sight * 100.), FMath::RoundToInt(Environment.Hearing * 100.),
                            FMath::RoundToInt(Environment.Scent * 100.), FMath::RoundToInt(Environment.Movement * 100.),
                            bReducedMotion ? TEXT(" · STATIC WEATHER") : TEXT(""));
+}
+
+float SRatwGame::HeightAt(int32 X, int32 Y) const
+{
+    // Edges repeat their neighbour, so the rim of the cell never shades as a false slope.
+    X = FMath::Clamp(X, 0, CellWidth - 1);
+    Y = FMath::Clamp(Y, 0, CellHeight - 1);
+    const int32 Index = Y * CellWidth + X;
+    return TileHeights.IsValidIndex(Index) ? TileHeights[Index] : 0.f;
+}
+
+float SRatwGame::SelfHeight() const
+{
+    const auto* Self = EntityViews.Find(SelfId);
+    return Self ? HeightAt(FMath::FloorToInt(Self->Position.X), FMath::FloorToInt(Self->Position.Y)) : 0.f;
+}
+
+FString SRatwGame::ElevationLabel() const
+{
+    const float Height = SelfHeight();
+    const int32 Halves = FMath::RoundToInt(FMath::Abs(Height) * 2.f);
+    const FString Amount = Halves == 0       ? TEXT("0")
+                           : Halves == 1     ? TEXT("½")
+                           : Halves % 2 == 0 ? FString::FromInt(Halves / 2)
+                                             : FString::Printf(TEXT("%d½"), Halves / 2);
+    return FString::Printf(TEXT("GROUND %s%s"), Halves == 0 ? TEXT("") : (Height > 0 ? TEXT("+") : TEXT("−")), *Amount);
 }
 
 FSlateRect SRatwGame::CellBounds() const
@@ -1778,6 +1828,21 @@ SRatwGame::FCellAtmosphere SRatwGame::CellAtmosphere() const
             Result.WeatherColor = RGB(0xbbcfca);
             Result.WeatherStrength = .22;
         }
+        else if (Environment.Weather == TEXT("overcast"))
+        {
+            Result.WeatherColor = RGB(0x9aa3a8);
+            Result.WeatherStrength = .12;
+        }
+        else if (Environment.Weather == TEXT("storm"))
+        {
+            Result.WeatherColor = RGB(0x4e6275);
+            Result.WeatherStrength = .24;
+        }
+        else if (Environment.Weather == TEXT("sandstorm"))
+        {
+            Result.WeatherColor = RGB(0xc79a5c);
+            Result.WeatherStrength = .28;
+        }
         else if (Environment.Phase == TEXT("dawn") || Environment.Phase == TEXT("dusk"))
         {
             Result.WeatherColor = RGB(0xd59664);
@@ -1789,77 +1854,141 @@ SRatwGame::FCellAtmosphere SRatwGame::CellAtmosphere() const
 
 TArray<SRatwGame::FWeatherMark> SRatwGame::WeatherMarks() const
 {
+    // Falling rain and snow are texture layers (WeatherLayers); these are the ground cues under them.
     TArray<FWeatherMark> Marks;
-    if (!bOutdoors || bWorldMap || (Environment.Weather != TEXT("rain") && Environment.Weather != TEXT("snow")))
+    const bool Storm = Environment.Weather == TEXT("storm");
+    if (!bOutdoors || bWorldMap || (Environment.Weather != TEXT("rain") && !Storm))
         return Marks;
     const auto Area = VisibleCellBounds();
     const double Width = Area.Right - Area.Left, Height = Area.Bottom - Area.Top;
     if (Width < 80 || Height < 80)
         return Marks;
-    const bool Snow = Environment.Weather == TEXT("snow");
     const double Animation = bReducedMotion ? 0 : Clock;
-    const FVector2D Wind(FMath::Cos(WindDirection) * WindStrength, FMath::Sin(WindDirection) * WindStrength);
-    const int32 Count = FMath::Clamp(FMath::RoundToInt(Width * Height / (Snow ? 2700. : 3000.)), 60, 260);
-    Marks.Reserve(Count + (Snow ? 0 : 32));
+    const int32 Count = Storm ? 56 : 32;
     for (int32 I = 0; I < Count; ++I)
     {
-        const double Depth = .45 + (I % 7) * .105;
-        const FVector2D Drift = Wind * (Snow ? 72. : 120.) + FVector2D(0, Snow ? 22. : 190.);
-        const double Sway = Snow ? FMath::Sin(Animation * .65 + I * 1.71) * (7. + 7. * Depth) : 0;
+        const double Life = WrapWeatherCoordinate(Animation * (Storm ? 1.1 : .7) + I * .618, 1.);
+        if (Life > .62)
+            continue;
         FWeatherMark Mark;
-        Mark.bSnow = Snow;
-        Mark.Position = FVector2D(
-            Area.Left + 32. + WrapWeatherCoordinate(I * 79.37 + Animation * Drift.X * Depth + Sway, Width - 64.),
-            Area.Top + 32. + WrapWeatherCoordinate(I * 137.1 + Animation * Drift.Y * Depth, Height - 64.));
-        Mark.End = Mark.Position + Drift.GetSafeNormal() * (12. + 16. * Depth);
-        Mark.Size = Snow ? (I % 5 == 0 ? 2.8 : 1.4) : (Depth > .9 ? 1.3 : .8);
-        Mark.Alpha = Snow ? .25 + Depth * .35 : .13 + Depth * .24;
+        Mark.bSplash = true;
+        Mark.Position = FVector2D(Area.Left + 24. + WrapWeatherCoordinate(I * 157.3, Width - 48.),
+                                  Area.Top + 44. + WrapWeatherCoordinate(I * 91.7, Height - 68.));
+        Mark.End = Mark.Position;
+        Mark.Size = 1. + Life * 8.;
+        Mark.Alpha = (1. - Life / .62) * .32;
         Marks.Add(Mark);
     }
-    if (!Snow)
-        for (int32 I = 0; I < 32; ++I)
-        {
-            const double Life = WrapWeatherCoordinate(Animation * .7 + I * .618, 1.);
-            if (Life > .62)
-                continue;
-            FWeatherMark Mark;
-            Mark.bSplash = true;
-            Mark.Position = FVector2D(Area.Left + 24. + WrapWeatherCoordinate(I * 157.3, Width - 48.),
-                                      Area.Top + 44. + WrapWeatherCoordinate(I * 91.7, Height - 68.));
-            Mark.End = Mark.Position;
-            Mark.Size = 1. + Life * 8.;
-            Mark.Alpha = (1. - Life / .62) * .32;
-            Marks.Add(Mark);
-        }
     return Marks;
 }
 
-TArray<SRatwGame::FFogVeil> SRatwGame::FogVeils() const
+TArray<SRatwGame::FWeatherLayer> SRatwGame::WeatherLayers() const
 {
-    TArray<FFogVeil> Veils;
-    if (!bOutdoors || bWorldMap || Environment.Weather != TEXT("fog"))
-        return Veils;
-    const auto Area = VisibleCellBounds();
-    const double Width = Area.Right - Area.Left, Height = Area.Bottom - Area.Top;
-    if (Width <= 0 || Height <= 0)
-        return Veils;
-    const double Animation = bReducedMotion ? 0 : Clock;
-    for (int32 I = 0; I < 8; ++I)
+    using RatwWeatherArt::EArt;
+    TArray<FWeatherLayer> Layers;
+    if (!bOutdoors || bWorldMap)
+        return Layers;
+    const double T = bReducedMotion ? 0 : Clock;
+    const FVector2D Wind(FMath::Cos(WindDirection) * WindStrength, FMath::Sin(WindDirection) * WindStrength);
+    const FString& Weather = Environment.Weather;
+    // Drift is in screen pixels per second, Offset in screen pixels; a layer scrolls by them in its own
+    // texture pixels.
+    auto Add = [&](EArt Art, const FVector2D& Drift, double Scale, double Angle, const FLinearColor& Tint,
+                   const FVector2D& Offset = FVector2D::ZeroVector) {
+        FWeatherLayer Layer;
+        Layer.Art = Art;
+        Layer.Scroll = (Drift * T + Offset) / Scale;
+        Layer.Scale = Scale;
+        Layer.Angle = Angle;
+        Layer.Tint = Tint;
+        Layers.Add(Layer);
+    };
+    // Sunlight: the shadows of passing clouds cross the ground; they vanish with the sun.
+    if ((Weather == TEXT("clear") || Weather == TEXT("overcast")) && Environment.Daylight > .05)
     {
-        FFogVeil Veil;
-        // Side boundaries stay outside the map, while the vertical gradient feathers
-        // each moving veil to transparent. No rectangle edge may masquerade as fog.
-        Veil.Size = FVector2D(Width * 1.8, 84. + (I % 4) * 26.);
-        Veil.Position = FVector2D(
-            Area.Left - Width * .4 + FMath::Sin(Animation * .025 + I * 1.37) * Width * .13 +
-                FMath::Cos(WindDirection) * WindStrength * FMath::Sin(Animation * .018) * Width * .12,
-            Area.Top - 55. +
-                WrapWeatherCoordinate(I * 89.4 + Animation * (2. + FMath::Sin(WindDirection) * WindStrength * 5.),
-                                      Height + 100.));
-        Veil.Alpha = .04 + (I % 3) * .018;
-        Veils.Add(Veil);
+        const bool Overcast = Weather == TEXT("overcast");
+        const FVector2D Drift = Wind * 26. + FVector2D(7, 3);
+        Add(EArt::Cloud, Drift, 2.2, 0, RGB(0x08100c, float((Overcast ? .24 : .16) * Environment.Daylight)));
+        if (Overcast)
+            Add(EArt::Cloud, Drift * 1.4, 1.35, 0, RGB(0x0c1216, float(.14 * Environment.Daylight)));
     }
-    return Veils;
+    if (Weather == TEXT("rain") || Weather == TEXT("storm"))
+    {
+        const bool Storm = Weather == TEXT("storm");
+        // The sheets' streaks run along +Y; turn them to fall where the wind pushes.
+        const double Slant = Wind.X * (Storm ? .9 : .5);
+        const double Angle = FMath::Atan2(-Slant, 1.);
+        const double Boost = Storm ? 1.2 : 1.;
+        Add(EArt::Rain, FVector2D(0, 420), .9, Angle, RGB(0xa9c4d2, float(.26 * Boost)));
+        Add(EArt::Rain, FVector2D(0, 700), 1.35, Angle, RGB(0xb9d0dc, float(.36 * Boost)));
+        if (Storm)
+            Add(EArt::Rain, FVector2D(0, 980), 1.8, Angle, RGB(0xc7d9e2, .44f));
+    }
+    else if (Weather == TEXT("snow"))
+    {
+        const double Scales[] = {.8, 1.1, 1.5}, Fall[] = {20, 32, 48};
+        const float Alphas[] = {.45f, .62f, .8f};
+        for (int32 I = 0; I < 3; ++I)
+        {
+            // Each depth sways on its own phase, so the flakes never march in step.
+            Add(EArt::Snow, FVector2D(Wind.X * 60., Fall[I] + Wind.Y * 40.), Scales[I], 0, RGB(0xe6eff2, Alphas[I]),
+                FVector2D(FMath::Sin(T * .5 + I * 2.1) * 12., 0));
+        }
+    }
+    else if (Weather == TEXT("fog"))
+    {
+        Add(EArt::Mist, Wind * 8. + FVector2D(5, 1), 2.6, 0, RGB(0xc3d1cf, .30f));
+        Add(EArt::Mist, Wind * 14. + FVector2D(-4, 2), 1.7, 0, RGB(0xc8d6d3, .22f));
+    }
+    else if (Weather == TEXT("sandstorm"))
+    {
+        // Dust streaks run along the sheet's X axis, so the sheet turns to face the wind.
+        const double Speed = 60. + 220. * WindStrength;
+        Add(EArt::Mist, Wind * 30. + FVector2D(12, 0), 3., 0, RGB(0xb88f58, .28f));
+        Add(EArt::Dust, FVector2D(Speed, 0), 1.9, WindDirection, RGB(0xc9a26a, .42f));
+        Add(EArt::Dust, FVector2D(Speed * 1.6, 0), 1.2, WindDirection, RGB(0xdcb886, .30f));
+    }
+    return Layers;
+}
+
+double SRatwGame::LightningFlash() const
+{
+    // Brief, dim and never in reduced motion: a storm cue, not a strobe.
+    if (!bOutdoors || bWorldMap || bReducedMotion || Environment.Weather != TEXT("storm"))
+        return 0;
+    const double Period = 7.;
+    const double Slot = FMath::FloorToDouble(Clock / Period);
+    const double Start = FMath::Frac(FMath::Sin(Slot * 12.9898) * 43758.5453) * (Period - 1.);
+    const double Since = Clock - Slot * Period - Start;
+    if (Since < 0 || Since > .6)
+        return 0;
+    const double First = Since < .07 ? 1. : FMath::Exp(-(Since - .07) * 10.);
+    const double Second = Since > .18 && Since < .24 ? .7 : 0;
+    return .2 * FMath::Max(First, Second);
+}
+
+void SRatwGame::DrawWeatherLayer(const FGeometry& G, FSlateWindowElementList& D, int32 L, const FSlateRect& Area,
+                                 const FWeatherLayer& Layer) const
+{
+    const FSlateBrush* Brush = WeatherSheets.Brush(Layer.Art);
+    if (!Brush || Layer.Tint.A <= .001f || Layer.Scale <= 0)
+        return;
+    const double Sheet = RatwWeatherArt::Size, Tile = Sheet * Layer.Scale;
+    const FVector2D AreaSize(Area.Right - Area.Left, Area.Bottom - Area.Top);
+    // Large enough that the turned, shifted box still covers every corner of the area.
+    const double Extent = AreaSize.Size() + Tile * 3.;
+    const FVector2D Shift(WrapWeatherCoordinate(Layer.Scroll.X, Sheet) * Layer.Scale,
+                          WrapWeatherCoordinate(Layer.Scroll.Y, Sheet) * Layer.Scale);
+    const double C = FMath::Cos(Layer.Angle), S = FMath::Sin(Layer.Angle);
+    const FVector2D Center =
+        FVector2D(Area.Left, Area.Top) + AreaSize * .5 + FVector2D(C * Shift.X - S * Shift.Y, S * Shift.X + C * Shift.Y);
+    const FVector2D TopLeft = Center - FVector2D(Extent, Extent) * .5;
+    FSlateDrawElement::MakeBox(
+        D, L,
+        G.ToPaintGeometry(FVector2f(float(Extent / Layer.Scale), float(Extent / Layer.Scale)),
+                          FSlateLayoutTransform(float(Layer.Scale), FVector2f(TopLeft)),
+                          FSlateRenderTransform(FQuat2f(float(Layer.Angle))), FVector2f(.5f, .5f)),
+        Brush, ESlateDrawEffect::None, Layer.Tint);
 }
 
 void SRatwGame::DrawEnvironment(const FGeometry& G, FSlateWindowElementList& D, int32 L, bool Foreground) const
@@ -1901,6 +2030,16 @@ void SRatwGame::DrawEnvironment(const FGeometry& G, FSlateWindowElementList& D, 
                          Orient_Vertical);
             else if (Environment.Weather == TEXT("fog"))
                 Box(G, D, L + 1, Origin, Size, RGB(0x9fafac, .11));
+            else if (Environment.Weather == TEXT("overcast"))
+                Box(G, D, L + 1, Origin, Size, RGB(0x7d868c, .10));
+            else if (Environment.Weather == TEXT("storm"))
+                Gradient(G, D, L + 1, Origin, Size, RGB(0x3c4b5c, .18), RGB(0x223040, .14), RGB(0x1b2836, .2),
+                         Orient_Vertical);
+            else if (Environment.Weather == TEXT("sandstorm"))
+                Gradient(G, D, L + 1, Origin, Size, RGB(0xc09a62, .20), RGB(0xa57b45, .16), RGB(0x8c6a3e, .22),
+                         Orient_Horizontal);
+            else if (Environment.Phase == TEXT("day"))
+                Box(G, D, L + 1, Origin, Size, RGB(0xffd89a, float(.05 * Environment.Daylight)));
         }
         else if (Darkness > .01)
             Box(G, D, L, Origin, Size, RGB(0x020610, Darkness * .58));
@@ -1923,27 +2062,34 @@ void SRatwGame::DrawEnvironment(const FGeometry& G, FSlateWindowElementList& D, 
             EdgeFade(G, D, L + 1, Bounds, Atmosphere.Feather, WeatherEdge, Axis);
         }
         D.PushClip(FSlateClippingZone(G.MakeChild(Size, FSlateLayoutTransform(Origin)).GetLayoutBoundingRect()));
-        for (const auto& Veil : FogVeils())
-            Gradient(G, D, L + 1, Veil.Position, Veil.Size, RGB(0xc1d0cf, 0), RGB(0xc1d0cf, Veil.Alpha),
-                     RGB(0xc1d0cf, 0), Orient_Vertical);
+        for (const auto& Layer : WeatherLayers())
+            DrawWeatherLayer(G, D, L + 1, Bounds, Layer);
         for (const auto& Mark : WeatherMarks())
+            Lines(G, D, L + 1,
+                  {Mark.Position + FVector2D(-Mark.Size, -1), Mark.Position + FVector2D(0, Mark.Size * .35),
+                   Mark.Position + FVector2D(Mark.Size, -1)},
+                  RGB(0x9dbaca, Mark.Alpha), .8f);
+        // In the dark, the ground beyond a wolf's own sight sinks into night around it.
+        const auto* SelfView = EntityViews.Find(SelfId);
+        if (Darkness > .3f && SelfView)
         {
-            const auto Color = (Mark.bSnow ? RGB(0xd7e4e5) : RGB(0x9dbaca)).CopyWithNewOpacity(Mark.Alpha);
-            if (Mark.bSplash)
-                Lines(G, D, L + 1,
-                      {Mark.Position + FVector2D(-Mark.Size, -1), Mark.Position + FVector2D(0, Mark.Size * .35),
-                       Mark.Position + FVector2D(Mark.Size, -1)},
-                      Color, .8f);
-            else if (Mark.bSnow)
-            {
-                Lines(G, D, L + 1, {Mark.Position - FVector2D(Mark.Size, 0), Mark.Position + FVector2D(Mark.Size, 0)},
-                      Color, 1);
-                Lines(G, D, L + 1, {Mark.Position - FVector2D(0, Mark.Size), Mark.Position + FVector2D(0, Mark.Size)},
-                      Color, 1);
-            }
-            else
-                Lines(G, D, L + 1, {Mark.Position, Mark.End}, Color, Mark.Size);
+            const FLinearColor Night = RGB(0x02050c, (Darkness - .3f) / .7f * .6f);
+            const double Radius = FMath::Clamp(27. * Environment.Sight, 4., 30.) * TileSize;
+            const FVector2D Center = MapOrigin + SelfView->Position * TileSize;
+            const FVector2D Low = Center - FVector2D(Radius, Radius), High = Center + FVector2D(Radius, Radius);
+            if (const FSlateBrush* Pool = WeatherSheets.Brush(RatwWeatherArt::EArt::Pool))
+                FSlateDrawElement::MakeBox(D, L + 2, G.ToPaintGeometry(High - Low, FSlateLayoutTransform(Low)), Pool,
+                                           ESlateDrawEffect::None, Night);
+            Box(G, D, L + 2, Origin, FVector2D(Size.X, FMath::Max(0., Low.Y - Origin.Y)), Night);
+            Box(G, D, L + 2, FVector2D(Origin.X, High.Y), FVector2D(Size.X, FMath::Max(0., Bounds.Bottom - High.Y)),
+                Night);
+            Box(G, D, L + 2, FVector2D(Origin.X, Low.Y), FVector2D(FMath::Max(0., Low.X - Origin.X), High.Y - Low.Y),
+                Night);
+            Box(G, D, L + 2, FVector2D(High.X, Low.Y), FVector2D(FMath::Max(0., Bounds.Right - High.X), High.Y - Low.Y),
+                Night);
         }
+        if (const double Flash = LightningFlash(); Flash > 0)
+            Box(G, D, L + 3, Origin, Size, RGB(0xdfe8f5, float(Flash)));
         D.PopClip();
     }
     D.PopClip();
@@ -1979,13 +2125,29 @@ void SRatwGame::DrawLocal(const FGeometry& G, FSlateWindowElementList& D, int32 
 {
     TileSize = FMath::Min(
         28.0, FMath::Min((882.0 - StoryExtra) / FMath::Min(CellWidth, 32), 548.0 / FMath::Min(CellHeight, 24)));
-    MapOrigin = FVector2D(1064 + StoryExtra * .5 - TileSize * FMath::Min(CellWidth, 32) * .5,
-                          508 - TileSize * FMath::Min(CellHeight, 24) * .5) +
+    // A cell that fits is centred; a larger one follows the wolf, stopping at the cell's edges so no empty canvas
+    // shows. Shift/Ctrl + wheel still look around (MapPan) until the wolf next moves.
+    const FVector2D ViewCenter(1064 + StoryExtra * .5, 508);
+    const auto* Me = EntityViews.Find(SelfId);
+    const auto Axis = [&](double Center, double Low, double High, int32 Tiles, double Self) {
+        const double Span = Tiles * TileSize;
+        if (Span <= High - Low || !Me)
+            return Center - Span * .5;
+        return FMath::Clamp(Center - Self * TileSize, High - Span, Low);
+    };
+    MapOrigin = FVector2D(Axis(ViewCenter.X, MapRect.Left, MapRect.Right, CellWidth, Me ? Me->Position.X : 0),
+                          Axis(ViewCenter.Y, MapRect.Top, MapRect.Bottom, CellHeight, Me ? Me->Position.Y : 0)) +
                 MapPan;
     const auto Cell = Obj(Snapshot, TEXT("cell"));
     DrawEnvironment(G, D, L, false);
-    for (int Y = 0; Y < TileRows.Num(); ++Y)
-        for (int X = 0; X < TileRows[Y].Len(); ++X)
+    const float Ground = SelfHeight();
+    // Only the tiles on screen are drawn: a large cell has tens of thousands more.
+    const int32 FirstX = FMath::Max(0, FMath::FloorToInt((MapRect.Left - MapOrigin.X) / TileSize) - 1);
+    const int32 FirstY = FMath::Max(0, FMath::FloorToInt((MapRect.Top - MapOrigin.Y) / TileSize) - 1);
+    const int32 LastX = FMath::CeilToInt((MapRect.Right - MapOrigin.X) / TileSize) + 1;
+    const int32 LastY = FMath::Min(TileRows.Num() - 1, FMath::CeilToInt((MapRect.Bottom - MapOrigin.Y) / TileSize) + 1);
+    for (int Y = FirstY; Y <= LastY; ++Y)
+        for (int X = FirstX; X <= FMath::Min(LastX, TileRows[Y].Len() - 1); ++X)
         {
             const TCHAR C = TileRows[Y][X];
             const TCHAR Visibility =
@@ -1994,15 +2156,8 @@ void SRatwGame::DrawLocal(const FGeometry& G, FSlateWindowElementList& D, int32 
                 continue;
             const FVector2D P = MapOrigin + FVector2D(X, Y) * TileSize;
             const bool Known = Visibility == TEXT('1');
-            FLinearColor Color = C == TEXT('#') ? RGB(0x8c937b) : (C == TEXT('.') ? RGB(0x506258) : Sage);
-            if (C == TEXT('=') || C == TEXT('T') || C == TEXT('o') || C == TEXT('O'))
-                Color = RGB(0xb69462);
-            if (C == TEXT('~'))
-                Color = Blue.CopyWithNewOpacity(.7);
-            if (C == TEXT('*') || C == TEXT('!'))
-                Color = Amber;
-            if (C == TEXT('+') || C == TEXT('/'))
-                Color = Amber;
+            const auto* Info = ratw::terrainInfo(char(C < 128 ? C : 0));
+            FLinearColor Color = Info ? RGB(Info->fg) : Sage;
             if (Environment.Illumination < 1)
             {
                 const float Darkness = 1.f - Environment.Illumination;
@@ -2011,14 +2166,83 @@ void SRatwGame::DrawLocal(const FGeometry& G, FSlateWindowElementList& D, int32 
             }
             if (Known)
                 Color = Color.CopyWithNewOpacity(.22);
-            if (!Known && C != TEXT('#'))
-                Box(G, D, L, P, FVector2D(TileSize - 1, TileSize - 1), RGB(0x283126, .27));
-            const FString Glyph = FString::Chr(C);
-            const int FontSize = C == TEXT('.') ? 12 : 15;
-            const FVector2D Extent = Measure(Glyph, FontSize, true);
-            Text(G, D, L + 1, P + FVector2D((TileSize - Extent.X) * .5, (TileSize - Extent.Y) * .5), Glyph, FontSize,
-                 Color, true);
+            // Height reads relative to the wolf: ground above it is lit and warm, ground below sinks into
+            // shade, and slopes facing the north-west light are brighter than those turned away from it.
+            const float Rise = HeightAt(X, Y) - Ground;
+            if (!Known)
+            {
+                const float Facing = FMath::Clamp(
+                    (HeightAt(X + 1, Y) + HeightAt(X, Y + 1) - HeightAt(X - 1, Y) - HeightAt(X, Y - 1)) * .5f, -2.f, 2.f);
+                const FLinearColor Base = Info ? RGB(Info->bg) : RGB(0x283126);
+                FLinearColor Floor = Rise >= 0 ? FMath::Lerp(Base, RGB(0x6b6a4a), FMath::Min(Rise * .12f, .4f))
+                                               : FMath::Lerp(Base, RGB(0x0b1216), FMath::Min(-Rise * .14f, .5f));
+                Floor = (Floor * (1.f + Facing * .2f)).CopyWithNewOpacity(.27f + FMath::Min(FMath::Abs(Rise) * .03f, .12f));
+                Box(G, D, L, P, FVector2D(TileSize - 1, TileSize - 1), Floor);
+            }
+            const TCHAR Shape = !Info ? C : (bPlainGlyphs ? TCHAR(Info->ascii) : TCHAR(Info->glyph));
+            // Block and shade characters fill the whole tile, so stone walls and cliffs read as one mass
+            // instead of a row of narrow bars.
+            const float Fill = bPlainGlyphs ? 0.f
+                               : Shape == 0x2588 ? 1.f : Shape == 0x2593 ? .75f : Shape == 0x2592 ? .5f
+                               : Shape == 0x2591 ? .28f : 0.f;
+            const double Lift = FMath::Clamp(double(Rise), -2., 2.);
+            if (Fill > 0)
+                Box(G, D, L + 1, P - FVector2D(0, Lift), FVector2D(TileSize, TileSize),
+                    Color.CopyWithNewOpacity(Color.A * Fill));
+            else
+            {
+                const FString Glyph = FString::Chr(Shape);
+                const bool Small = Shape == TEXT('.') || Shape == 0x00b7 || Shape == 0x2219 || Shape == TEXT(',');
+                const int FontSize = Small ? 12 : 15;
+                const FVector2D Extent = Measure(Glyph, FontSize, true);
+                Text(G, D, L + 1, P + FVector2D((TileSize - Extent.X) * .5, (TileSize - Extent.Y) * .5 - Lift), Glyph,
+                     FontSize, Color, true);
+            }
         }
+    // Where the ground changes height, the edge is drawn by how it can be crossed: a faint contour for a
+    // half step, a warm line where a slope or stairs make a full step walkable, and a heavy rim with a
+    // cast shadow for a ledge or cliff that cannot be walked.
+    auto Seen = [&](int32 X, int32 Y) {
+        const auto* Info = TileRows.IsValidIndex(Y) && TileRows[Y].IsValidIndex(X) && TileRows[Y][X] < 128
+                               ? ratw::terrainInfo(char(TileRows[Y][X]))
+                               : nullptr;
+        return Info && Info->kind != ratw::Terrain::Wall && VisibilityRows.IsValidIndex(Y) && VisibilityRows[Y].IsValidIndex(X) &&
+               VisibilityRows[Y][X] != TEXT('0');
+    };
+    for (int32 Y = FirstY; Y <= LastY; ++Y)
+        for (int32 X = FirstX; X <= FMath::Min(LastX, TileRows[Y].Len() - 1); ++X)
+            for (const FIntPoint Step : {FIntPoint(1, 0), FIntPoint(0, 1)})
+            {
+                const int32 Nx = X + Step.X, Ny = Y + Step.Y;
+                if (!Seen(X, Y) || !Seen(Nx, Ny))
+                    continue;
+                const TCHAR A = TileRows[Y][X], B = TileRows[Ny][Nx];
+                const float Ha = HeightAt(X, Y), Hb = HeightAt(Nx, Ny), Drop = FMath::Abs(Ha - Hb);
+                const auto* InfoA = ratw::terrainInfo(char(A));
+                const auto* InfoB = ratw::terrainInfo(char(B));
+                const bool Cliff = InfoA->kind == ratw::Terrain::Cliff || InfoB->kind == ratw::Terrain::Cliff;
+                if (Drop < .01f && !Cliff)
+                    continue;
+                const bool Remembered = VisibilityRows[Y][X] == TEXT('1') || VisibilityRows[Ny][Nx] == TEXT('1');
+                const float Fade = Remembered ? .45f : 1.f;
+                const bool Ramp = InfoA->ramp || InfoB->ramp;
+                const FVector2D Corner = MapOrigin + FVector2D(Nx, Ny) * TileSize;
+                const FVector2D End = Corner + (Step.X ? FVector2D(0, TileSize) : FVector2D(TileSize, 0));
+                if (Drop <= .5f && !Cliff)
+                    Lines(G, D, L + 1, {Corner, End}, RGB(0xc9bf9a, .16f * Fade), 1.f);
+                else if (Drop <= 1.01f && Ramp && !Cliff)
+                    Lines(G, D, L + 1, {Corner, End}, RGB(0xd8b877, .34f * Fade), 1.3f);
+                else
+                {
+                    // The shadow falls onto the lower side; a level cliff edge shades its open side.
+                    const bool LowAfter = Hb < Ha || (Drop < .01f && InfoA->kind == ratw::Terrain::Cliff);
+                    const double Band = FMath::Min(6., TileSize * .28);
+                    const FVector2D Shadow = LowAfter ? Corner : Corner - FVector2D(Step) * Band;
+                    Box(G, D, L, Shadow, Step.X ? FVector2D(Band, TileSize) : FVector2D(TileSize, Band),
+                        RGB(0x04070a, .4f * Fade));
+                    Lines(G, D, L + 1, {Corner, End}, RGB(0xe9d2a0, .55f * Fade), 2.2f);
+                }
+            }
     // Context actions are based only on server-visible doors and entities.
     for (auto& V : Arr(Snapshot, TEXT("doors")))
     {
@@ -2092,6 +2316,7 @@ void SRatwGame::DrawLocal(const FGeometry& G, FSlateWindowElementList& D, int32 
     DrawEnvironment(G, D, L + 10, true);
     Text(G, D, L + 12, FVector2D(606 + StoryExtra, 218), TEXT("N ^"), 10, Muted, true);
     Text(G, D, L + 12, FVector2D(680 + StoryExtra, 218), WindLabel(), 9, Muted);
+    Text(G, D, L + 12, FVector2D(606 + StoryExtra, 236), ElevationLabel(), 8, Muted, true);
     Text(G, D, L + 12, FVector2D(1225, 218), TEXT("W YOU"), 8, Amber, true);
     Text(G, D, L + 12, FVector2D(1305, 218), TEXT("W PLAYER"), 8, Blue, true);
     Text(G, D, L + 12, FVector2D(1410, 218), TEXT("W RESIDENT"), 8, Sage, true);
@@ -2244,7 +2469,9 @@ void SRatwGame::DrawWorld(const FGeometry& G, FSlateWindowElementList& D, int32 
                     const TCHAR Ch = Glyphs[Index];
                     if (Ch == TEXT(' ') || Ch == TEXT('\n'))
                         continue;
-                    Text(G, D, L + 3, P + FVector2D(10 + TX * 11, 34 + TY * 14), FString::Chr(Ch), 9,
+                    const auto* Info = Ch < 128 ? ratw::terrainInfo(char(Ch)) : nullptr;
+                    const TCHAR Shape = !Info ? Ch : (bPlainGlyphs ? TCHAR(Info->ascii) : TCHAR(Info->glyph));
+                    Text(G, D, L + 3, P + FVector2D(10 + TX * 11, 34 + TY * 14), FString::Chr(Shape), 9,
                          Color.CopyWithNewOpacity(Visible || Current ? .4 : .17), true);
                 }
         }
@@ -2599,16 +2826,18 @@ void SRatwGame::DrawModal(const FGeometry& G, FSlateWindowElementList& D, int32 
                  WholeCount(Resource, TEXT("remaining")) > 0 ? TEXT("Approach the herb patch to gather.")
                                                              : TEXT("The visible herb patch is depleted."),
                  11, Muted);
-        if (Str(Obj(Snapshot, TEXT("merchant")), TEXT("id")) == TEXT("npc_keeper"))
-            Button(FVector2D(949, 765), FVector2D(285, 39), TEXT("TRADE WITH THE KEEPER"), TEXT("trade_open"),
-                   TEXT("npc_keeper"));
+        const FString MerchantId = Str(Obj(Snapshot, TEXT("merchant")), TEXT("id"));
+        if (!MerchantId.IsEmpty())
+            Button(FVector2D(949, 765), FVector2D(285, 39),
+                   MerchantId == TEXT("npc_keeper") ? TEXT("TRADE WITH THE KEEPER") : TEXT("TRADE WITH THE SHOPKEEPER"),
+                   TEXT("trade_open"), MerchantId);
         Text(G, D, L + 5, FVector2D(326, 823), TEXT("Equipment appears on your sheet. Your map presence remains W>."),
              12, Muted);
     }
     else if (Modal == TEXT("trade"))
     {
         const auto Merchant = Obj(Snapshot, TEXT("merchant"));
-        const bool Available = Str(Merchant, TEXT("id")) == TEXT("npc_keeper");
+        const bool Available = !Str(Merchant, TEXT("id")).IsEmpty();
         Text(G, D, L + 4, FVector2D(324, 185), TEXT("LOCAL TRADE / REAL GOODS & REAL PURSES"), 10, Amber, true);
         Text(G, D, L + 4, FVector2D(324, 221),
              Available ? Str(Merchant, TEXT("name"), TEXT("The keeper")).Left(38) : TEXT("The counter is unattended"),
@@ -2699,9 +2928,10 @@ void SRatwGame::DrawModal(const FGeometry& G, FSlateWindowElementList& D, int32 
         Button(FVector2D(886, 474), FVector2D(347, 45),
                bReducedMotion ? TEXT("Reduced motion: On · static weather") : TEXT("Reduced motion: Off"),
                TEXT("motion"));
-        Button(FVector2D(886, 535), FVector2D(347, 45),
-               bFlatWorld ? TEXT("World projection: Always flat") : TEXT("World projection: Automatic"),
+        Button(FVector2D(886, 535), FVector2D(170, 45), bFlatWorld ? TEXT("World: Always flat") : TEXT("World: Automatic"),
                TEXT("projection"));
+        Button(FVector2D(1063, 535), FVector2D(170, 45), bPlainGlyphs ? TEXT("Map: Plain ASCII") : TEXT("Map: Unicode"),
+               TEXT("glyphs"));
         const FString SplitName =
             StoryExtra < 0 ? TEXT("Compact narrative")
                            : (StoryExtra == 0 ? TEXT("Balanced")
@@ -2719,9 +2949,12 @@ void SRatwGame::DrawModal(const FGeometry& G, FSlateWindowElementList& D, int32 
             for (int I = 0; I < 4; ++I)
                 Button(FVector2D(326 + I * 122, 755), FVector2D(112, 34), Lighting[I], TEXT("lighting"), Lighting[I]);
             Text(G, D, L + 5, FVector2D(886, 663), TEXT("DEVELOPMENT WEATHER"), 9, Muted, true);
-            const FString Weathers[] = {TEXT("clear"), TEXT("rain"), TEXT("snow"), TEXT("fog")};
-            for (int I = 0; I < 4; ++I)
-                Button(FVector2D(886 + I * 88, 686), FVector2D(80, 39), Weathers[I], TEXT("weather"), Weathers[I]);
+            const FString Weathers[] = {TEXT("clear"), TEXT("overcast"), TEXT("rain"), TEXT("storm"),
+                                        TEXT("fog"),   TEXT("snow"),     TEXT("sandstorm")};
+            const FString Short[] = {TEXT("clear"), TEXT("cloud"), TEXT("rain"), TEXT("storm"),
+                                     TEXT("fog"),   TEXT("snow"),  TEXT("sand")};
+            for (int I = 0; I < 7; ++I)
+                Button(FVector2D(886 + I * 50, 686), FVector2D(47, 39), Short[I], TEXT("weather"), Weathers[I]);
             Text(G, D, L + 5, FVector2D(886, 737), TEXT("WIND FLOW · DEVELOPMENT ONLY"), 9, Muted, true);
             const FString Winds[] = {TEXT("east"), TEXT("west"), TEXT("north"), TEXT("calm"), TEXT("live")};
             for (int I = 0; I < 5; ++I)

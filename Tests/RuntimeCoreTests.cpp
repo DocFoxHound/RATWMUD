@@ -72,6 +72,48 @@ int main()
     auto Copy = M;
     Check(Copy.consolidate(999999) == 0 && Copy.summaries.size() == 2, "restored summaries never expire");
 
+    // What an NPC brings to a reply: both sides of the conversation, and the ends of earlier ones.
+    MemoryStore D;
+    D.record("moss", "fen", {1, 100, "Fen", "Do you still bake rye on market days?"});
+    D.record("moss", "fen", {2, 101, "moss", "Every market day, before dawn."});
+    D.record("moss", "fen", {3, 102, "Fen", "Save me a loaf. I will pay you back on Thursday."});
+    Check(D.consolidate(10000) == 1, "first conversation consolidates");
+    D.record("moss", "fen", {4, 20000, "Fen", "It is Thursday. Here is what I owe."});
+    D.record("moss", "fen", {5, 20001, "moss", "I kept the loaf by the oven."});
+    const auto Recalled = D.recallForDialogue("moss", "fen");
+    Check(Recalled.find("You: “I kept the loaf by the oven.”") != std::string::npos, "the NPC's own words are recalled");
+    Check(Recalled.find("Fen: “It is Thursday.") != std::string::npos, "the subject's words are recalled");
+    Check(Recalled.find("pay you back on Thursday") != std::string::npos, "the end of an earlier conversation is recalled");
+    Check(Recalled.find("Conversation record.") == std::string::npos, "summary boilerplate is left out");
+    Check(Recalled.find("An earlier conversation") < Recalled.find("This conversation so far"),
+          "earlier conversations come before the current one");
+    Check(D.recallForDialogue("ash", "fen").empty(), "another NPC recalls nothing of it");
+    MemoryStore Long;
+    for (std::uint64_t I = 0; I < 40; ++I)
+        Long.record("moss", "fen", {I + 1, 100 + double(I), I % 2 ? "moss" : "Fen", std::string(250, char('a' + I % 26))});
+    for (int Pass = 0; Pass < 5; ++Pass)
+    {
+        Long.consolidate(1e9);
+        for (std::uint64_t I = 0; I < 40; ++I)
+            Long.record("moss", "fen", {1000 * (Pass + 2) + I, 1e9 + Pass * 1e4 + double(I), I % 2 ? "moss" : "Fen",
+                                        std::string(250, char('a' + I % 26)) + " ünïcödé"});
+    }
+    MemoryStore S;
+    S.record("wren", "ash", {1, 100, "Ash", "I promise to bring flour on Thursday."});
+    Check(S.due(3699).empty() && S.due(3700).size() == 1 && S.due(3700)[0].turns.size() == 1,
+          "the conversations about to close are known beforehand");
+    const auto Closing = S.due(3700)[0].id;
+    Check(S.consolidate(3700) == 1 && S.rewrite(Closing, "Ash promised flour for Thursday."),
+          "a closed conversation's summary can be rewritten");
+    Check(!S.rewrite("memory-none", "x") && !S.rewrite(Closing, ""), "only a real summary, and not with nothing");
+    Check(S.summaries[0].sourceEvents.size() == 1, "rewriting keeps the sources");
+    const auto Better = S.recallForDialogue("wren", "ash");
+    Check(Better.find("Ash promised flour for Thursday.") != std::string::npos && Better.find("Summary.") == std::string::npos,
+          "the better summary is what is recalled");
+    const auto Bounded = Long.recallForDialogue("moss", "fen", 3600);
+    Check(Bounded.size() <= 3600, "dialogue recall stays within its budget");
+    Check(Bounded.find("Earlier in this conversation") != std::string::npos, "a long conversation notes what came before");
+
     SocialLedger L;
     Check(L.record({1, 1000, "a", "tavern", 20, false, 100}, {"a", "b"}) == 0, "speech earns no direct XP");
     L.record({2, 1003, "b", "tavern", 20, false, 101}, {"a", "b"});

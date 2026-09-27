@@ -1,9 +1,13 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
+#include "RatwAppearance.h"
 
 namespace ratw
 {
@@ -18,6 +22,13 @@ struct LifeBody
     double x = 0, y = 0;
     bool companion = false;
 };
+// The most residents a world may author: the world loader, the society and its saves all hold this many. With
+// simulation tiers (World::setTiered) a resident far from every player costs almost nothing per tick.
+constexpr std::size_t MaxResidents = 16384;
+// Economy accounts: every resident, the treasury, and up to this many player characters.
+constexpr std::size_t MaxPlayerAccounts = 8192;
+constexpr std::size_t MaxAccounts = MaxResidents + MaxPlayerAccounts + 1;
+
 struct ResidentLife
 {
     std::string role, task = "idle", reason;
@@ -34,6 +45,59 @@ struct EconomyEntry
     std::string kind, from, to, item;
     int quantity = 0;
 };
+// A player character's ID ("player-..." in development saves, "wolf-<32 hex>"), as opposed to a resident's.
+bool playerAccountId(const std::string& id);
+
+struct Spot
+{
+    std::string cell;
+    double x = 0, y = 0; // Tile-center coordinates.
+};
+// Careers (Docs/Design/26-living-npcs.md, Phase 4). A position is a job the town has, built from the authored
+// residents (the job each founding resident was written with); it outlives whoever holds it.
+struct Position
+{
+    std::string id;       // "job:" + the founding resident's ID.
+    std::string founder, title, role;
+    Spot work, serve;
+    double startHour = 8, endHour = 17;
+    std::string route;
+    bool paid = true;
+};
+// Who holds a position now, who is learning it, and since when it has stood empty (-1: it hasn't).
+struct PositionState
+{
+    std::string holder, apprentice, lastHolder;
+    double vacantSince = -1;
+};
+struct Mourning
+{
+    double until = 0;
+    std::string whom;     // Who is mourned (an ID).
+};
+struct CareerState
+{
+    std::map<std::string, PositionState> positions;   // By position ID.
+    std::map<std::string, double> skill;              // "resident|position" -> 0..100.
+    std::map<std::string, Mourning> mourning;         // By resident.
+    std::map<std::string, double> estates;            // The dead whose estates wait to be settled -> day of death.
+    std::int64_t day = -1;                            // The last day careers were tended.
+};
+// Something that happened to a career, for the world's event log.
+struct CareerNote
+{
+    std::string kind, actor, target, detail;
+};
+// What the society asks of the world when tending careers: who is alive, how old, how one regards another (0..100).
+struct CareerWorld
+{
+    std::function<bool(const std::string&)> alive;
+    std::function<int(const std::string&)> age;
+    std::function<double(const std::string& who, const std::string& ofWhom)> regard;
+    // Whether a home in one cell is within reach of work in another (the same town); null: anywhere is.
+    std::function<bool(const std::string& workCell, const std::string& homeCell)> near;
+};
+
 struct SocietyState
 {
     bool enabled = false;
@@ -43,12 +107,58 @@ struct SocietyState
     std::int64_t minted = 0, sunk = 0, nextEntry = 1, budgetDay = 0;
     int exportsRemaining = 8, importsRemaining = 4, herbPatch = 40;
     double decisionRemainder = 0;
+    CareerState careers;
 };
 struct EconomyResult
 {
     bool ok = false;
     std::string message;
     std::int64_t unitPrice = 0, total = 0;
+};
+
+// Which resident population a world runs: none, the hardcoded demo six, or
+// residents authored in a world file (Atlas Workshop exports, e.g. Greyfen).
+enum class Roster
+{
+    None,
+    Demo,
+    Authored
+};
+
+// One authored resident. Roles: "merchant" keeps shop during its hours,
+// "guard" is on watch during its hours (walking its route, or holding its
+// work post), "civilian" works during its hours and socializes after.
+struct ResidentSpec
+{
+    std::string id, name, role, workLabel, description, greeting;
+    std::string personality, backstory; // For the live-dialogue backend; never simulation state.
+    int age = 30, speakingColor = 0;
+    Appearance appearance;
+    Spot home, work, evening;
+    Spot serve; // Merchants only: where customers stand. Derived at load.
+    double startHour = 8, endHour = 17; // May wrap past midnight, e.g. 18 -> 6.
+    std::string route;                  // Guards only; empty holds the work post.
+    bool paid = true;
+    std::int64_t purse = 30;
+    int herbs = 0, meals = 1;
+    // A painted wander area (Dungeon Master): open tiles a civilian roams in work hours and evenings.
+    std::vector<Spot> wander;
+};
+struct PatrolRoute
+{
+    std::string id;
+    std::vector<Spot> posts;
+};
+struct EconomySpec
+{
+    std::int64_t treasury = 1000;
+    int storeHerbs = 100, storeMeals = 50, dailyHerbs = 10, dailyMeals = 12;
+};
+struct AuthoredRoster
+{
+    std::vector<ResidentSpec> residents;
+    std::map<std::string, PatrolRoute> routes;
+    EconomySpec economy;
 };
 
 // Deterministic needs + finite stock/cash. No dialogue model, wall clock, or
@@ -58,12 +168,46 @@ class Society
 {
   public:
     explicit Society(bool demo = true);
+    explicit Society(Roster roster);
     void reset(bool demo);
+    void reset(Roster roster);
+    // Installs an authored population and resets to it.
+    void configure(const AuthoredRoster& roster);
+    Roster roster() const { return roster_; }
+    const AuthoredRoster& authored() const { return authored_; }
+    const ResidentSpec* spec(const std::string& id) const;
+    // Careers (see Position): the town's positions, the one a resident holds (or null), and what holds each.
+    const std::vector<Position>& positions() const;
+    const Position* position(const std::string& id) const;
+    const Position* jobOf(const std::string& resident) const;
+    const Position* apprenticedTo(const std::string& resident) const;
+    double skill(const std::string& resident, const std::string& position) const;
+    // Work at a position makes one better at it, more slowly near mastery (rate: skill per call, before slowing).
+    void practise(const std::string& resident, const std::string& position, double rate);
+    // Family: the same household (home) and surname. Household: the same home.
+    bool family(const std::string& a, const std::string& b) const;
+    bool household(const std::string& a, const std::string& b) const;
+    const Mourning* mourning(const std::string& resident) const;
+    // A resident has died: their position stands empty and their estate waits a day to be settled.
+    std::vector<CareerNote> died(const std::string& resident, double day);
+    // Brought back: the estate is theirs still, and their position too if nobody has taken it.
+    std::vector<CareerNote> revived(const std::string& resident);
+    void mourn(const std::string& resident, const std::string& whom, double until);
+    // Once a game day: estates settled, empty positions filled (apprentice, then family, then anyone local out of
+    // work), apprentices taken on and finished, mourning ended. Returns what happened.
+    std::vector<CareerNote> tendCareers(double day, const CareerWorld& world);
+    // A player asks to learn a position's trade from its holder.
+    CareerNote apprentice(const std::string& player, const std::string& positionId, const CareerWorld& world, double day);
     void addPlayer(const std::string& id);
     const EconomyAccount* account(const std::string& id) const;
     const ResidentLife* resident(const std::string& id) const;
     const SocietyState& state() const { return state_; }
+    // Restores a checkpoint. The world may have gained or lost residents since it was written: those still here keep
+    // their saved lives and money, new ones start fresh with their authored purse (minted), and the coins of those
+    // who have gone return to the treasury, so the money supply stays conserved.
     bool restore(const SocietyState& candidate);
+    // Sends a resident home to their authored bed (their saved home no longer exists). False without such a resident.
+    bool rehome(const std::string& id);
     void tick(double seconds, double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies);
     EconomyResult quote(const std::string& player, const std::string& merchant, const std::string& item,
                         int quantity, bool buy) const;
@@ -75,18 +219,51 @@ class Society
     EconomyResult operatorTransfer(const std::string& from, const std::string& to,
                                   const std::string& item, int quantity, std::int64_t coins);
     bool relocate(const std::string& npc, const std::string& cell, double x, double y);
+    // Live changes (Dungeon Master): takes resident `id` as `from` (a validated candidate society) defines them.
+    // A new resident arrives with their authored purse; a changed one keeps purse and needs but re-plans; one
+    // `from` no longer has leaves, their purse and goods returning to the treasury. Routes follow `from`.
+    bool adoptResident(const Society& from, const std::string& id);
+    // Takes patrol routes and every resident's wander area from `from` (a validated candidate society).
+    void adoptLayers(const Society& from);
     static int stock(const EconomyAccount& account, const std::string& item);
-    static bool merchant(const std::string& id);
+    bool merchant(const std::string& id) const;
     static const char* itemName(const std::string& id);
     std::int64_t moneySupply() const;
     bool conserved() const;
+    // Every ledger entry recorded since the last call, oldest first (the saved ledger keeps only the latest 128).
+    // For the world's event log; never saved. Keeps at most JournalKept if nobody collects it.
+    static constexpr std::size_t JournalKept = 50000;
+    std::vector<EconomyEntry> takeJournal();
 
   private:
     SocietyState state_;
+    Roster roster_ = Roster::Demo;
+    AuthoredRoster authored_;
+    std::vector<EconomyEntry> journal_;
+    // spec() by resident ID, built on first use: every decision looks up every resident's spec. Anything that
+    // adds, removes or replaces authored_.residents must call forgetSpecs().
+    mutable std::unordered_map<std::string, std::size_t> specIndex_;
+    std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).
+    std::unordered_map<std::string, std::size_t> positionIndex_;
+    mutable std::unordered_map<std::string, std::string> heldBy_, learning_;   // resident -> position (cache).
+    mutable bool careersIndexed_ = false;
+    void buildPositions();
+    void indexCareers() const;
+    void forgetCareers() { careersIndexed_ = false; }
+    void defaultCareers();
+    void reconcileCareers();
+    bool bequeath(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins);
+    static constexpr std::int64_t MoneyCap = 1000000000;
+    static constexpr int StockCap = 10000;
+    mutable bool specsIndexed_ = false;
+    void forgetSpecs() { specsIndexed_ = false; }
     void record(const std::string& kind, const std::string& from, const std::string& to,
                 const std::string& item, int quantity, std::int64_t coins);
     bool transfer(const std::string& seller, const std::string& buyer, const std::string& item,
                   int quantity, std::int64_t price, const std::string& kind);
     void decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies);
+    // Authored-world routines, defined in RatwResidents.cpp.
+    void resetAuthored();
+    void decideAuthored(double absoluteDay, const std::map<std::string, LifeBody>& bodies);
 };
 } // namespace ratw

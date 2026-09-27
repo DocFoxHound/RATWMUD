@@ -124,3 +124,19 @@ export function commandMessage(action, result = {}) {
   if (action === 'event.approve') return result.status === 'scheduled' ? 'Event approved for its fixed UTC schedule. It has not been applied.' : 'Event approved and queued. Await authoritative confirmation; queued is not applied.';
   return string(result.message || result.detail) || 'Operator request recorded. Review its authoritative status.';
 }
+
+// Terrain: the one catalog (Data/Terrain/terrain.json, generated as terrain.generated.mjs). Cells store each tile as
+// its ASCII code; the map draws the catalog glyph (or its plain ASCII fallback) in the tile's colours.
+const TERRAIN_FALLBACK = Object.freeze({glyph:'?',ascii:'?',name:'Unknown terrain',fg:'#637c60',bg:''});
+/** The catalog's tiles by stored code (an empty lookup when no catalog could be loaded). */
+export function terrainLookup(tiles) {
+  return new Map(array(tiles).filter(t => t && typeof t.code === 'string' && t.code.length === 1).map(t => [t.code, t]));
+}
+/** What the map draws for a stored code: {text, fg, bg, name}. Unknown codes (or no catalog) draw the code itself. */
+export function terrainDraw(lookup, code, ascii = false) {
+  const tile = lookup instanceof Map ? lookup.get(code) : undefined;
+  if (!tile) return {text:string(code) || TERRAIN_FALLBACK.glyph, fg:TERRAIN_FALLBACK.fg, bg:TERRAIN_FALLBACK.bg, name:TERRAIN_FALLBACK.name};
+  const glyph = string(tile.glyph) || string(tile.ascii) || code;
+  // U+FE0E asks for text presentation, so symbols such as ♨ ⚒ never draw as emoji.
+  return {text:ascii ? string(tile.ascii) || code : (glyph.codePointAt(0) >= 0x2600 ? glyph + '︎' : glyph), fg:string(tile.fg) || TERRAIN_FALLBACK.fg, bg:string(tile.bg), name:string(tile.name)};
+}

@@ -202,7 +202,7 @@ void invalidManifests()
         fixture.manifest(text);
         expectReject(world, fixture, label);
     };
-    reject(replace(BaseManifest, "RATW_WORLD 1", "RATW_WORLD 2"), "Unknown format version");
+    reject(replace(BaseManifest, "RATW_WORLD 1", "RATW_WORLD 4"), "Unknown format version");
     reject("", "Empty manifest");
     reject(BaseManifest + "unknown 7\n", "Unknown record");
     reject(BaseManifest + "RATW_WORLD 1\n", "Duplicate format header");
@@ -281,10 +281,17 @@ void cellValidation()
     reject(replace(original, "name: west", "name: west\nname: duplicate"), "Duplicate cell header");
     reject(replace(original, "name: west", "future: unsupported"), "Unknown cell header");
     reject(replace(original, "........", "....?..."), "Unknown glyph");
+    reject(replace(original, "........", "....\xc3\xa9.."), "Unicode is drawn, never stored");
+    fixture.reset();
+    write(fixture.dir / "cells/west.cell", replace(original, "........", ".kbP_mS."));
+    World catalogWorld;
+    expect(catalogWorld.loadWorldFile(fixture.path()).ok && catalogWorld.cell("west")->tile(1, 0)->glyph == 'k',
+           "Catalog tiles load from a cell file");
     reject(replace(original, "........", "......."), "Ragged cell rows");
     reject(replace(original, "........", ""), "Empty grid row");
     reject(replace(original, "name: west", "name: bad\tname"), "Control character in name");
-    reject(cellText("west", 0, 0, false, "height: 1 1 .3\n"), "Non-quarter height");
+    reject(cellText("west", 0, 0, false, "height: 1 1 .3\n"), "Non-half height");
+    reject(cellText("west", 0, 0, false, "height: 1 1 .25\n"), "Quarter steps are retired");
     reject(cellText("west", 0, 0, false, "height: 1 1 17\n"), "Height out of range");
     reject(cellText("west", 0, 0, false, "height: 8 1 1\n"), "Height outside grid");
     reject(cellText("west", 0, 0, false, "height: 1 1 1\nheight: 1 1 1\n"), "Duplicate height");
@@ -300,9 +307,9 @@ void cellValidation()
     blocked[grid + 3 * 9 + 2] = '#';
     reject(blocked, "Blocked spawn");
     fixture.reset();
-    write(fixture.dir / "cells/west.cell", cellText("west", 0, 0, false, "height: 1 1 -1.25\nwind: 1 .25 0\n"));
+    write(fixture.dir / "cells/west.cell", cellText("west", 0, 0, false, "height: 1 1 -1.5\nwind: 1 .25 0\n"));
     expect(world.loadWorldFile(fixture.path()).ok, "Valid height and wind metadata import");
-    expect(near(world.cell("west")->tile(1, 1)->height, -1.25), "Height override survives import");
+    expect(near(world.cell("west")->tile(1, 1)->height, -1.5), "Height override survives import");
     expect(near(world.windAt("west").direction, 1) && near(world.windAt("west").strength, .25),
            "Wind override survives import");
     expect(near(world.windAt("room").strength, 0), "Indoor defaults remain calm");

@@ -8,6 +8,9 @@
 #include "Runtime/RatwDMBridge.h"
 #include "Runtime/RatwAccounts.h"
 #include "Runtime/RatwMotion.h"
+#include "Runtime/RatwCellPrefetch.h"
+#include "Core/RatwPg.h"
+#include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "Misc/CommandLine.h"
 #include "Misc/DateTime.h"
@@ -20,6 +23,8 @@
 #include "HAL/PlatformMisc.h"
 #include <algorithm>
 #include <cmath>
+#include <deque>
+#include <iomanip>
 #include <sstream>
 
 using namespace ratwjson;
@@ -42,11 +47,54 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
     std::map<std::string, double> LastMovementSound;
     std::map<std::string, std::string> CompanionOwner;
     std::set<std::string> PendingNpc;
+    // What was said to an NPC while it was still answering someone, answered in turn when it finishes (see Talk()).
+    struct FQueuedTalk
+    {
+        std::string PlayerId;
+        FString HeardText;
+        ratw::Voice Voice;
+        bool HasSense;
+        ratw::SensoryResult Sense;
+    };
+    static constexpr std::size_t MaxQueuedTalk = 4;
+    std::map<std::string, std::deque<FQueuedTalk>> QueuedTalk;
+    std::map<std::string, std::string> NpcMood;    // How each NPC felt after its last generated reply.
+    struct FNudgeBudget
+    {
+        int64 Hour = -1;
+        int32 Affinity = 0, Trust = 0;
+    };
+    std::map<std::string, FNudgeBudget> NudgeBudget;   // "npc|subject": what conversation has moved this game hour.
     std::map<std::string, std::vector<std::string>> CommandReceipts;
     std::map<std::string, std::map<std::string, FString>> ResponseReceipts;
     std::map<std::string, std::string> CurrentCommands;
     uint64 Sequence = 1, Revision = 0;
-    double SnapshotAccumulator = 0, SaveAccumulator = 0, AmbientAccumulator = 0;
+    double DmExpiryAccumulator = 60;
+    bool DmNotified = true;                       // Check once at start for actions queued while the server was down.
+    static constexpr uint32 SnapshotPhases = 4;     // 20 Hz ticks per client snapshot (five a second).
+    uint32 SnapshotPhase = 0;
+    // A change that should reach storage soon but needn't hold up the game (see SaveSoon()): seconds until it is.
+    double SaveSoonIn = -1;
+    double SnapshotAccumulator = 0, SaveAccumulator = 0, AmbientAccumulator = 0, ReleaseAccumulator = 0, DmAccumulator = 0,
+           SpawnAccumulator = 0;
+    // Spawn rules: when each spawned NPC was first seen dead, and rules backing off after a failure.
+    std::map<std::string, double> DeadSince, SpawnBackoff;
+    // -RatwDatabase: the world comes from the newest build in the world database, saves go to
+    // game.checkpoints, and a new release is picked up by a restart once the server is empty.
+    ratw::PgClient WorldDb;
+    FString DatabaseName;
+    int64 LoadedBuild = 0, PendingRelease = 0;
+    // The loaded build without its NPC records: NPCs come from the live tables (live.people_manifest).
+    std::map<std::string, std::string> WorldFiles;
+    std::string LiveWorldId;
+    // A streamed build (RATW_WORLD 3): every cell's header, read once; tiles are read from world.build_cells on demand.
+    bool StreamedBuild = false;
+    FRatwCellPrefetch CellPrefetch;                 // Streamed builds: the next cells' files, fetched ahead of need.
+    bool Prefetching = false;
+    double PrefetchAccumulator = 0;
+    std::map<std::string, std::string> CellHeaders;
+    double StreamLogAccumulator = 0;
+    bool ReleaseAnnounced = false;
     bool StorageReady = false, DevTools = false, DevIdentity = false;
 
     static double Now()
@@ -58,7 +106,39 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         FString Manifest;
         const bool HasManifest = FParse::Value(FCommandLine::Get(), TEXT("RatwWorld="), Manifest);
         const bool Custom = HasManifest || FParse::Param(FCommandLine::Get(), TEXT("RatwWorld"));
-        if (Custom)
+        const bool Town = FParse::Param(FCommandLine::Get(), TEXT("RatwTown"));
+        const bool Live = FParse::Value(FCommandLine::Get(), TEXT("RatwDatabase="), DatabaseName);
+        if (int(Custom) + int(Town) + int(Live) > 1)
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: choose one of -RatwDatabase, -RatwWorld or -RatwTown."));
+            FPlatformMisc::RequestExitWithStatus(false, 2);
+            return false;
+        }
+        FString ConnInfo, WorldId;
+        if (Live)
+        {
+            if (!LoadFromDatabase(ConnInfo, WorldId))
+            {
+                FPlatformMisc::RequestExitWithStatus(false, 2);
+                return false;
+            }
+        }
+        else if (Town)
+        {
+            // Greyfen Crossing is an Atlas Workshop world bundled with the project.
+            const auto Loaded =
+                World.loadWorldFile(S(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() / TEXT("Data/Worlds/Greyfen/world.ratw"))));
+            if (!Loaded.ok)
+            {
+                UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: %s"), *F(Loaded.message));
+                FPlatformMisc::RequestExitWithStatus(false, 2);
+                return false;
+            }
+            UE_LOG(LogTemp, Display, TEXT("RATW_TOWN_LOADED cells=%d residents=%d"),
+                   static_cast<int32>(World.cells().size()),
+                   static_cast<int32>(World.society().state().residents.size()));
+        }
+        else if (Custom)
         {
             if (Manifest.IsEmpty() || FPaths::IsRelative(Manifest))
             {
@@ -74,8 +154,9 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 FPlatformMisc::RequestExitWithStatus(false, 2);
                 return false;
             }
-            UE_LOG(LogTemp, Display, TEXT("RATW_WORLD_IMPORTED cells=%d fixtures=%d"),
-                   static_cast<int32>(World.cells().size()), static_cast<int32>(World.doors().size()));
+            UE_LOG(LogTemp, Display, TEXT("RATW_WORLD_IMPORTED cells=%d fixtures=%d residents=%d"),
+                   static_cast<int32>(World.cells().size()), static_cast<int32>(World.doors().size()),
+                   static_cast<int32>(World.society().state().residents.size()));
         }
         else
             for (const char* CellId : {"tavern", "exterior", "loft"})
@@ -91,16 +172,27 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             }
         FString Path = Custom ? FPaths::ProjectSavedDir() / TEXT("Atlas") / FMD5::HashAnsiString(*Manifest) /
                                     TEXT("ratw-world.sqlite")
+                       : Town ? FPaths::ProjectSavedDir() / TEXT("ratw-town.sqlite")
                               : FPaths::ProjectSavedDir() / TEXT("ratw-world.sqlite");
-        if (!Custom) for (const auto& Pair : World.cells()) World.cell(Pair.first)->region = "demo_reach";
+        if (!Custom && !Town && !Live) for (const auto& Pair : World.cells()) World.cell(Pair.first)->region = "demo_reach";
         DevTools = FParse::Param(FCommandLine::Get(), TEXT("RatwDevTools"));
         DevIdentity = FParse::Param(FCommandLine::Get(), TEXT("RatwDevIdentity"));
         FParse::Value(FCommandLine::Get(), TEXT("RatwSave="), Path);
-        StorageReady = Persistence.Open(FPaths::ConvertRelativePathToFull(Path));
+        StorageReady = Live ? Persistence.OpenDatabase(ConnInfo, WorldId) : Persistence.Open(FPaths::ConvertRelativePathToFull(Path));
+        if (Live)
+            Path = FString::Printf(TEXT("%s database, game.checkpoints[%s]"), *DatabaseName.ToUpper(), *WorldId);
         if (StorageReady)
             Load(Persistence.Load());
         else
             UE_LOG(LogTemp, Error, TEXT("RATW persistence open failed: %s"), *Persistence.Error());
+        if (Live && StorageReady)
+            ApplyExternalNpcStates();
+        if (Live && !StorageReady)
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: the world database save is unavailable: %s"), *Persistence.Error());
+            FPlatformMisc::RequestExitWithStatus(false, 2);
+            return false;
+        }
         if (Custom && !StorageReady)
         {
             UE_LOG(LogTemp, Error,
@@ -124,10 +216,502 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         FString Endpoint;
         FParse::Value(FCommandLine::Get(), TEXT("RatwDialogueEndpoint="), Endpoint);
         Dialogue.Configure(Endpoint);
-        Memories.consolidate(Now());
-        UE_LOG(LogTemp, Display, TEXT("RATW authoritative world ready; 20Hz; SQLite=%s; dialogue=%s"), *Path,
+        Consolidate();
+        UE_LOG(LogTemp, Display, TEXT("RATW authoritative world ready; 20Hz; save=%s; dialogue=%s"), *Path,
                *Dialogue.Label());
         return true;
+    }
+
+    /** -RatwDatabase=prod|dev: the newest build of the one world, from the database named by RATW_DATABASE_URL. */
+    bool LoadFromDatabase(FString& ConnInfo, FString& WorldId)
+    {
+        DatabaseName = DatabaseName.ToLower();
+        if (DatabaseName != TEXT("prod") && DatabaseName != TEXT("dev"))
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: -RatwDatabase must be prod or dev."));
+            return false;
+        }
+        ConnInfo = FPlatformMisc::GetEnvironmentVariable(TEXT("RATW_DATABASE_URL"));
+        if (ConnInfo.IsEmpty())
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: set RATW_DATABASE_URL (tools/live.sh does this from Database/.env)."));
+            return false;
+        }
+        std::string Problem;
+        if (!WorldDb.connect(TCHAR_TO_UTF8(*ConnInfo), Problem))
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: cannot reach the %s database: %s"), *DatabaseName.ToUpper(), *F(Problem));
+            return false;
+        }
+        const auto Build = WorldDb.exec(
+            "SELECT w.id, b.id, coalesce(b.release, 0), b.files::text FROM world.worlds w "
+            "JOIN world.builds b ON b.world_id = w.id ORDER BY b.id DESC LIMIT 1");
+        if (!Build.ok || Build.rows.empty() || !Build.rows[0][3])
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: the %s database has no world build yet%s%s"), *DatabaseName.ToUpper(),
+                   Build.ok ? TEXT(" (Push to live makes one for PROD; python3 tools/world_build.py dev for DEV)") : TEXT(": "),
+                   Build.ok ? TEXT("") : *F(Build.error));
+            return false;
+        }
+        const auto& Row = Build.rows[0];
+        TSharedPtr<FJsonObject> Files;
+        const auto Reader = TJsonReaderFactory<>::Create(FString(UTF8_TO_TCHAR(Row[3]->c_str())));
+        if (!FJsonSerializer::Deserialize(Reader, Files) || !Files.IsValid())
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: build %s is not readable."), *F(*Row[1]));
+            return false;
+        }
+        WorldFiles.clear();
+        for (const auto& Pair : Files->Values)
+        {
+            FString Text;
+            if (!Pair.Value.IsValid() || !Pair.Value->TryGetString(Text))
+            {
+                UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: build %s has a malformed file entry."), *F(*Row[1]));
+                return false;
+            }
+            WorldFiles[S(Pair.Key)] = S(Text);
+        }
+        WorldFiles["world.ratw"] = WithoutPeople(WorldFiles["world.ratw"]);
+        LiveWorldId = *Row[0];
+        LoadedBuild = FCString::Atoi64(*F(*Row[1]));
+        StreamedBuild = WorldFiles["world.ratw"].rfind("RATW_WORLD 3", 0) == 0;
+        CellHeaders.clear();
+        if (StreamedBuild)
+        {
+            const auto Headers = WorldDb.exec("SELECT cell_id, header FROM world.build_cells WHERE build_id = $1",
+                                              {std::to_string(LoadedBuild)});
+            if (!Headers.ok || Headers.rows.empty())
+            {
+                UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: build %lld has no cells: %s"), LoadedBuild, *F(Headers.error));
+                return false;
+            }
+            for (const auto& Cell : Headers.rows)
+                if (Cell[0] && Cell[1])
+                    CellHeaders[*Cell[0]] = *Cell[1];
+            std::string PrefetchProblem;
+            Prefetching = CellPrefetch.Start(TCHAR_TO_UTF8(*ConnInfo), std::to_string(LoadedBuild), PrefetchProblem);
+            if (!Prefetching)
+                UE_LOG(LogTemp, Warning, TEXT("RATW cells will not be fetched ahead (each loads when needed): %s"), *F(PrefetchProblem));
+        }
+        std::string Failure;
+        if (!LoadWithLivePeople(World, Failure))
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW_WORLD_REJECTED: %s"), *F(Failure));
+            return false;
+        }
+        WorldId = F(*Row[0]);
+        std::string ListenProblem;
+        if (!WorldDb.listen("ratw_release", ListenProblem))
+            UE_LOG(LogTemp, Warning, TEXT("RATW will not hear about new releases: %s"), *F(ListenProblem));
+        if (!WorldDb.listen("ratw_dm", ListenProblem))
+            UE_LOG(LogTemp, Warning, TEXT("RATW will check for Dungeon Master actions once a minute: %s"), *F(ListenProblem));
+        UE_LOG(LogTemp, Display, TEXT("RATW_DATABASE_WORLD_LOADED database=%s world=%s build=%lld release=%s cells=%d residents=%d streamed=%d loaded=%d"),
+               *DatabaseName, *WorldId, LoadedBuild, *F(*Row[2]), static_cast<int32>(World.cells().size()),
+               static_cast<int32>(World.society().state().residents.size()), StreamedBuild ? 1 : 0,
+               static_cast<int32>(World.loadedCells()));
+        return true;
+    }
+
+    /**
+     * Dungeon Master actions (dm.actions, written by tools/dungeon_master.py): applied in order, each exactly once,
+     * with the outcome written back. Actions nobody could apply within ten minutes expire rather than surprise later.
+     */
+    void ApplyDmActions(double Dt)
+    {
+        if (DatabaseName.IsEmpty() || (DmAccumulator += Dt) < 1)
+            return;
+        DmAccumulator = 0;
+        ReadNotifications();
+        // The database is asked only when the Dungeon Master has said there is something to do (NOTIFY ratw_dm), and
+        // once a minute in case a notice was missed. Every round trip after a quiet spell can take tens of
+        // milliseconds, and this runs on the game's own thread.
+        const bool Minute = (DmExpiryAccumulator += 1) >= 60;
+        if (!DmNotified && !Minute)
+            return;
+        DmNotified = false;
+        if (Minute)
+        {
+            DmExpiryAccumulator = 0;
+            WorldDb.exec("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now() "
+                         "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes'");
+        }
+        const auto Queued = WorldDb.exec("SELECT id, kind, target_id, requested_by FROM dm.actions WHERE status = 'queued' ORDER BY id LIMIT 50");
+        bool Changed = false;
+        for (const auto& Row : Queued.rows)
+        {
+            if (!Row[0] || !Row[1] || !Row[2])
+                continue;
+            const std::string Kind = *Row[1], Target = *Row[2];
+            ratw::Result Outcome{false, "Unknown action.", {}};
+            if (Kind == "layers.sync")
+            {
+                // Patrol routes or wander areas changed: take them from the world as the tables now read.
+                ratw::World Candidate;
+                std::string Problem;
+                if (LoadWithLivePeople(Candidate, Problem))
+                {
+                    World.adoptLayers(Candidate);
+                    Outcome = {true, "Routes and areas are updated.", {}};
+                }
+                else
+                    Outcome = {false, "The routes and areas could not be applied: " + Problem, {}};
+            }
+            else if (Kind == "factions.sync")
+            {
+                // Factions or territory claims changed.
+                ratw::World Candidate;
+                std::string Problem;
+                if (LoadWithLivePeople(Candidate, Problem))
+                {
+                    World.adoptFactions(Candidate);
+                    Outcome = {true, "Factions and territory are updated.", {}};
+                }
+                else
+                    Outcome = {false, "The factions could not be applied: " + Problem, {}};
+            }
+            else if (Kind == "npc.sync")
+            {
+                // The Dungeon Master changed this NPC's row: check the whole world as it now reads, then take them over.
+                ratw::World Candidate;
+                std::string Problem;
+                Outcome = LoadWithLivePeople(Candidate, Problem) ? World.adoptResident(Candidate, Target)
+                                                                  : ratw::Result{false, "The NPC could not be placed: " + Problem, {}};
+            }
+            else if (Kind == "npc.kill" || Kind == "npc.revive")
+            {
+                const auto* Npc = World.entity(Target);
+                Outcome = Npc && Npc->npc ? World.setDead(Target, Kind == "npc.kill") : ratw::Result{false, "No such NPC.", {}};
+            }
+            else if (Kind == "character.kill" || Kind == "character.resurrect")
+            {
+                const bool Kill = Kind == "character.kill";
+                if (auto* Online = World.entity(Target); Online && !Online->npc)
+                {
+                    Outcome = World.setDead(Target, Kill);
+                    for (const auto& C : Clients)
+                        if (C.IsValid() && S(C->EntityId) == Target && Outcome.ok)
+                            System(C.Get(), Kill ? TEXT("You have died.") : TEXT("You have been brought back to life."));
+                    if (Outcome.ok)
+                        Characters[Target] = *Online;
+                }
+                else if (auto Saved = Characters.find(Target); Saved != Characters.end())
+                {
+                    auto& E = Saved->second;
+                    if (E.dead == Kill)
+                        Outcome = {false, E.name + (Kill ? " is already dead." : " is not dead."), {}};
+                    else
+                    {
+                        E.dead = Kill;
+                        E.posture = Kill ? "lying" : "standing";
+                        E.state = E.activity = Kill ? "dead" : "";
+                        Outcome = {true, E.name + (Kill ? " is dead (offline)." : " lives again (offline)."), {}};
+                    }
+                }
+                else
+                    Outcome = {false, "No such character.", {}};
+            }
+            Changed |= Outcome.ok;
+            WorldDb.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                         {*Row[0], std::string(Outcome.ok ? "applied" : "refused"), Outcome.message});
+            UE_LOG(LogTemp, Display, TEXT("RATW_DM_ACTION %s %s by %s: %s"), *F(Kind), *F(Target), *F(Row[3] ? *Row[3] : ""),
+                   *F(Outcome.message));
+            LogEvent("operator", Row[3] ? *Row[3] : "", Target, Kind + (Outcome.ok ? ": applied" : ": refused"));
+        }
+        if (Changed)
+        {
+            ++Revision;
+            Save();
+        }
+    }
+
+    /**
+     * Spawn rules (live.spawns): keep `count` NPCs made from a template alive in the rule's area. A newcomer arrives on a
+     * random open tile of the area and roams it. A fallen spawned NPC is cleared once `respawn_minutes` have passed, and
+     * a new one takes their place. A rule that fails backs off for five minutes.
+     */
+    void RunSpawns(double Dt)
+    {
+        if (DatabaseName.IsEmpty() || (SpawnAccumulator += Dt) < 30)   // Respawn times are minutes: no need to ask often.
+            return;
+        SpawnAccumulator = 0;
+        const double Clock = FPlatformTime::Seconds();
+        const auto Rules = WorldDb.exec(
+            "SELECT s.id, s.name, s.template_id, s.count, s.respawn_minutes, a.id, a.area, a.tiles::text, "
+            "coalesce((SELECT string_agg(n.id, ',' ORDER BY n.id) FROM live.npcs n WHERE n.world_id = s.world_id AND n.spawn_id = s.id), '') "
+            "FROM live.spawns s JOIN live.npc_areas a ON a.world_id = s.world_id AND a.id = s.area_id "
+            "WHERE s.world_id = $1 AND s.enabled AND EXISTS (SELECT 1 FROM live.npcs t WHERE t.world_id = s.world_id AND t.id = s.template_id) "
+            "ORDER BY s.position",
+            {LiveWorldId});
+        bool Changed = false;
+        for (const auto& Row : Rules.rows)
+        {
+            const std::string Rule = *Row[0], Name = *Row[1], Template = *Row[2], WanderArea = *Row[5], Area = *Row[6];
+            const int Count = std::stoi(*Row[3]);
+            const double Respawn = std::stod(*Row[4]) * 60;
+            if (SpawnBackoff.count(Rule) && SpawnBackoff[Rule] > Clock)
+                continue;
+            std::vector<std::string> Alive, Dead;
+            std::stringstream Ids(*Row[8]);
+            for (std::string Id; std::getline(Ids, Id, ',');)
+                if (const auto* E = World.entity(Id))
+                {
+                    if (!E->dead) { Alive.push_back(Id); DeadSince.erase(Id); }
+                    else { Dead.push_back(Id); DeadSince.emplace(Id, Clock); }
+                }
+            if (int(Alive.size()) >= Count)
+                continue;
+            // The oldest fallen body whose respawn time has passed is cleared first.
+            std::string Cleared;
+            for (const auto& Id : Dead)
+                if (Clock - DeadSince[Id] >= Respawn)
+                {
+                    Cleared = Id;
+                    break;
+                }
+            if (!Dead.empty() && Cleared.empty() && int(Alive.size() + Dead.size()) >= Count)
+                continue;                         // Waiting out the respawn time.
+            if (!Cleared.empty())
+            {
+                WorldDb.exec("DELETE FROM live.npc_state WHERE world_id = $1 AND npc_id = $2", {LiveWorldId, Cleared});
+                WorldDb.exec("DELETE FROM live.npcs WHERE world_id = $1 AND id = $2", {LiveWorldId, Cleared});
+                ratw::World Candidate;
+                std::string Problem;
+                if (LoadWithLivePeople(Candidate, Problem))
+                    World.adoptResident(Candidate, Cleared);
+                DeadSince.erase(Cleared);
+                UE_LOG(LogTemp, Display, TEXT("RATW_SPAWN %s cleared the fallen %s"), *F(Rule), *F(Cleared));
+                LogEvent("cleared", Cleared, {}, "spawn rule " + Rule);
+                Changed = true;
+            }
+            const auto Spot = SpawnTile(Area, *Row[7]);
+            if (!Spot)
+            {
+                SpawnBackoff[Rule] = Clock + 300;
+                UE_LOG(LogTemp, Warning, TEXT("RATW_SPAWN %s: no open tile in its area; trying again in five minutes."), *F(Rule));
+                continue;
+            }
+            // A newcomer is someone new: their ID is never reused (memories and history hang on it), while the name takes
+            // the lowest free number among those the rule keeps now ("Rat catchers 2").
+            std::string Id;
+            for (int Attempt = 0; Id.empty(); ++Attempt)
+            {
+                std::string Suffix;
+                for (auto Stamp = uint64(FDateTime::UtcNow().ToUnixTimestamp()) + Attempt; Stamp; Stamp /= 36)
+                    Suffix.insert(Suffix.begin(), "0123456789abcdefghijklmnopqrstuvwxyz"[Stamp % 36]);
+                const auto Candidate = Rule + "_" + Suffix;
+                const auto Taken = WorldDb.exec("SELECT 1 FROM live.npcs WHERE world_id = $1 AND id = $2 UNION ALL "
+                                                "SELECT 1 FROM live.npc_state WHERE world_id = $1 AND npc_id = $2", {LiveWorldId, Candidate});
+                if (Taken.ok && Taken.rows.empty() && !World.entity(Candidate))
+                    Id = Candidate;
+                else if (!Taken.ok || Attempt > 50)
+                    break;
+            }
+            if (Id.empty())
+            {
+                SpawnBackoff[Rule] = Clock + 300;
+                continue;
+            }
+            const auto NameTaken = [&](int N) {
+                return std::any_of(Alive.begin(), Alive.end(), [&](const std::string& Other) {
+                    const auto* E = World.entity(Other);
+                    return E && E->name == Name + " " + std::to_string(N);
+                });
+            };
+            int Number = 1;
+            while (NameTaken(Number))
+                ++Number;
+            const auto X = std::to_string(Spot->first), Y = std::to_string(Spot->second);
+            const auto Made = WorldDb.exec(
+                "INSERT INTO live.npcs (world_id, id, position, name, role, description, greeting, personality, backstory, work_label, age, voice, "
+                "appearance, route_id, paid, purse, herbs, meals, hours_start, hours_end, home_area, home_x, home_y, work_area, work_x, work_y, "
+                "evening_area, evening_x, evening_y, origin, wander_area, spawn_id) "
+                "SELECT world_id, $2, (SELECT coalesce(max(position) + 1, 0) FROM live.npcs WHERE world_id = $1), $3, role, description, greeting, "
+                "personality, backstory, work_label, age, voice, appearance, route_id, paid, purse, herbs, meals, hours_start, hours_end, "
+                "$4, $5::integer, $6::integer, $4, $5::integer, $6::integer, $4, $5::integer, $6::integer, 'runtime', $7, $8 "
+                "FROM live.npcs WHERE world_id = $1 AND id = $9",
+                {LiveWorldId, Id, Name + " " + std::to_string(Number), Area, X, Y, WanderArea, Rule, Template});
+            ratw::World Candidate;
+            std::string Problem;
+            const bool Loaded = Made.ok && LoadWithLivePeople(Candidate, Problem);
+            const auto Outcome = Loaded ? World.adoptResident(Candidate, Id) : ratw::Result{false, Made.ok ? Problem : Made.error, {}};
+            if (!Outcome.ok)
+            {
+                WorldDb.exec("DELETE FROM live.npcs WHERE world_id = $1 AND id = $2", {LiveWorldId, Id});
+                SpawnBackoff[Rule] = Clock + 300;
+                UE_LOG(LogTemp, Warning, TEXT("RATW_SPAWN %s failed; trying again in five minutes: %s"), *F(Rule), *F(Outcome.message));
+                continue;
+            }
+            Changed = true;
+            UE_LOG(LogTemp, Display, TEXT("RATW_SPAWN %s: %s arrives in %s at %s, %s"), *F(Rule), *F(Id), *F(Area), *F(X), *F(Y));
+            LogEvent("spawn", Id, {}, "spawn rule " + Rule);
+        }
+        if (Changed)
+        {
+            ++Revision;
+            Save();
+        }
+    }
+
+    /** A random open tile of a spawn area ([[x, y], ...] in `Area`) with nobody standing on it. */
+    TOptional<std::pair<int, int>> SpawnTile(const std::string& Area, const std::string& TilesJson)
+    {
+        TArray<TSharedPtr<FJsonValue>> Tiles;
+        if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(F(TilesJson)), Tiles))
+            return {};
+        if (!World.ensureLoaded(Area).ok)
+            return {};
+        const auto* Cell = World.cell(Area);
+        if (!Cell)
+            return {};
+        std::vector<std::pair<int, int>> Open;
+        for (const auto& Value : Tiles)
+        {
+            const auto* Pair = Value.IsValid() ? &Value->AsArray() : nullptr;
+            if (!Pair || Pair->Num() != 2)
+                continue;
+            const int X = static_cast<int>((*Pair)[0]->AsNumber()), Y = static_cast<int>((*Pair)[1]->AsNumber());
+            const auto* Tile = Cell->tile(X, Y);
+            bool Taken = false;
+            for (const auto& E : World.entities())
+                Taken |= E.second.cellId == Area && std::abs(E.second.position.x - (X + .5)) < .8 && std::abs(E.second.position.y - (Y + .5)) < .8;
+            if (Tile && !Tile->solid && !Taken)
+                Open.emplace_back(X, Y);
+        }
+        if (Open.empty())
+            return {};
+        return Open[FMath::RandRange(0, int(Open.size()) - 1)];
+    }
+
+    /** The build's manifest without NPC records (economy, route, resident, story) and without factions and their claims:
+     *  those come from the live tables (live.people_manifest). Territory records keep their region and Chapter. */
+    static std::string WithoutPeople(const std::string& Manifest)
+    {
+        std::istringstream In(Manifest);
+        std::string Line, Out;
+        bool First = true;
+        while (std::getline(In, Line))
+        {
+            if (First)
+            {
+                First = false;
+                if (Line == "RATW_WORLD 1")
+                    Line = "RATW_WORLD 2";          // The version that allows NPC records, which are added next.
+            }
+            else if (Line.rfind("economy ", 0) == 0 || Line.rfind("route ", 0) == 0 || Line.rfind("resident ", 0) == 0 ||
+                     Line.rfind("story ", 0) == 0 || Line.rfind("faction ", 0) == 0)
+                continue;
+            else if (Line.rfind("territory ", 0) == 0)
+            {
+                std::istringstream Fields(Line.substr(10));
+                std::string Id, Region, Chapter;
+                if (Fields >> std::quoted(Id) >> std::quoted(Region) >> std::quoted(Chapter))
+                {
+                    std::ostringstream Kept;
+                    Kept << "territory " << std::quoted(Id) << ' ' << std::quoted(Region) << ' ' << std::quoted(Chapter) << " 0";
+                    Line = Kept.str();
+                }
+            }
+            Out += Line + "\n";
+        }
+        return Out;
+    }
+
+    /** Where a streamed build's cells come from: headers read at start, each cell's file and seams from the database
+     *  when someone comes near it. The build is fixed for the life of this server (a new release restarts it). */
+    ratw::World::CellSource CellSource()
+    {
+        ratw::World::CellSource Source;
+        Source.header = [this](const std::string& Id, std::string& Header) {
+            const auto Found = CellHeaders.find(Id);
+            if (Found == CellHeaders.end())
+                return std::string("The build has no cell ") + Id + ".";
+            Header = Found->second;
+            return std::string();
+        };
+        const auto Build = std::to_string(LoadedBuild);
+        Source.load = [this, Build](const std::string& Id, std::string& Body, std::string& Seams) {
+            if (Prefetching && CellPrefetch.Take(Id, Body, Seams))
+                return std::string();
+            const auto Cell = WorldDb.exec("SELECT body, seams FROM world.build_cells WHERE build_id = $1 AND cell_id = $2", {Build, Id});
+            if (!Cell.ok || Cell.rows.empty() || !Cell.rows[0][0])
+                return "Cannot read cell " + Id + " of build " + Build + ": " + (Cell.ok ? std::string("missing") : Cell.error);
+            Body = *Cell.rows[0][0];
+            Seams = Cell.rows[0][1] ? *Cell.rows[0][1] : "";
+            return std::string();
+        };
+        return Source;
+    }
+
+    /** Loads the world build plus the NPCs as the live tables define them now, through the validated loader. */
+    bool LoadWithLivePeople(ratw::World& Into, std::string& Problem)
+    {
+        const auto People = WorldDb.exec("SELECT live.people_manifest($1)", {LiveWorldId});
+        if (!People.ok || People.rows.empty() || !People.rows[0][0])
+        {
+            Problem = "Cannot read the NPCs from the live tables: " + People.error;
+            return false;
+        }
+        auto Files = WorldFiles;
+        Files["world.ratw"] += *People.rows[0][0] + "\n";
+        if (StreamedBuild)
+            Into.setCellSource(CellSource());
+        const auto Loaded = Into.loadWorldFiles(Files, "live world");
+        Problem = Loaded.message;
+        return Loaded.ok;
+    }
+
+    /** Notices from the database, read without a round trip: new releases and Dungeon Master actions. */
+    void ReadNotifications()
+    {
+        for (const auto& Note : WorldDb.notifications())
+        {
+            if (Note.first == "ratw_dm")
+            {
+                DmNotified = true;
+                continue;
+            }
+            TSharedPtr<FJsonObject> Payload;
+            const auto Reader = TJsonReaderFactory<>::Create(F(Note.second));
+            if (Note.first != "ratw_release" || !FJsonSerializer::Deserialize(Reader, Payload) || !Payload.IsValid())
+                continue;
+            const int64 Build = static_cast<int64>(Payload->GetNumberField(TEXT("build")));
+            if (Build > LoadedBuild)
+            {
+                PendingRelease = static_cast<int64>(Payload->GetNumberField(TEXT("release")));
+                ReleaseAnnounced = false;
+                UE_LOG(LogTemp, Display, TEXT("RATW_RELEASE_PUBLISHED release=%lld build=%lld"), PendingRelease, Build);
+            }
+        }
+    }
+
+    /**
+     * A new release arrived (NOTIFY ratw_release). The server tells anyone playing, and once nobody is connected
+     * it saves and exits with status 75; tools/live.sh restarts it, loading the new build and the saved state.
+     */
+    void WatchReleases(double Dt)
+    {
+        if (DatabaseName.IsEmpty() || (ReleaseAccumulator += Dt) < 2)
+            return;
+        ReleaseAccumulator = 0;
+        ReadNotifications();
+        if (!PendingRelease)
+            return;
+        Clients.RemoveAll([](const TWeakObjectPtr<ARatwPlayerController>& P) { return !P.IsValid(); });
+        if (Clients.Num() == 0)
+        {
+            Save();
+            UE_LOG(LogTemp, Display, TEXT("RATW_RELEASE_RESTART release=%lld; saved, exiting so the new world loads."), PendingRelease);
+            PendingRelease = 0;
+            FPlatformMisc::RequestExitWithStatus(false, 75);
+        }
+        else if (!ReleaseAnnounced)
+        {
+            ReleaseAnnounced = true;
+            for (const auto& C : Clients)
+                if (C.IsValid())
+                    System(C.Get(), FString::Printf(TEXT("A new version of the world (release %lld) has been published. It takes effect after a short restart once everyone has left."), PendingRelease));
+        }
     }
 
     void Send(ARatwPlayerController* C, const Object& E)
@@ -222,6 +806,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         ratw::advanceAge(Player, World.calendarDays());
         Characters[Actor] = Player;
         World.observe(Actor);
+        LogEvent("arrival", Actor);
         ++Revision;
         Save();
         if (!StorageReady)
@@ -255,6 +840,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         {
             E->typing = false; World.stop(E->id);
             Characters[E->id] = *E;
+            LogEvent("departure", Id);
             World.removePlayer(Id);
             ++Revision;
         }
@@ -398,6 +984,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             Player.speakingColor = static_cast<int>(Characters.size() * 9) % 32;
             Characters[Player.id] = Player;
             World.removePlayer(S(NewId));
+            LogEvent("character created", Player.id);
             ++Revision; Save();
             if (!StorageReady)
             {
@@ -505,27 +1092,56 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         {
             SnapshotAccumulator = 0;
             MovementSounds();
-            for (const auto& C : Clients)
-                if (C.IsValid() && !C->EntityId.IsEmpty())
-                {
-                    if (auto* E = World.entity(S(C->EntityId)); E && E->ageNoticePending > 0)
-                    {
-                        System(C.Get(), FString::Printf(TEXT("A birthday has passed. You are now %d years old (%d year%s gained). Your character sheet reflects annual growth and age-related changes."), E->age, E->ageNoticePending, E->ageNoticePending == 1 ? TEXT("") : TEXT("s")));
-                        E->ageNoticePending = 0;
-                    }
-                    Snapshot(C.Get());
-                }
-            for (const auto& C : Clients)
-                if (C.IsValid())
-                    if (auto* E = World.entity(S(C->EntityId)))
-                        E->transitioned = false;
         }
-        if (SaveAccumulator >= 5)
+        // Each client's full snapshot comes five times a second, a quarter of the clients in each 20 Hz tick
+        // (by a phase fixed per connection), so no one tick builds every client's view at once.
+        SnapshotPhase = (SnapshotPhase + 1) % SnapshotPhases;
+        {
+            std::vector<std::string> Due;             // Their sight is worked out together, on several threads.
+            for (const auto& C : Clients)
+                if (C.IsValid() && !C->EntityId.IsEmpty() && C->GetUniqueID() % SnapshotPhases == SnapshotPhase)
+                    Due.push_back(S(C->EntityId));
+            World.prepareViews(Due);
+        }
+        for (const auto& C : Clients)
+            if (C.IsValid() && !C->EntityId.IsEmpty() && C->GetUniqueID() % SnapshotPhases == SnapshotPhase)
+            {
+                auto* E = World.entity(S(C->EntityId));
+                if (E && E->ageNoticePending > 0)
+                {
+                    System(C.Get(), FString::Printf(TEXT("A birthday has passed. You are now %d years old (%d year%s gained). Your character sheet reflects annual growth and age-related changes."), E->age, E->ageNoticePending, E->ageNoticePending == 1 ? TEXT("") : TEXT("s")));
+                    E->ageNoticePending = 0;
+                }
+                Snapshot(C.Get());
+                if (E)
+                    E->transitioned = false;
+            }
+        WatchReleases(Dt);
+        ApplyDmActions(Dt);
+        RunSpawns(Dt);
+        if (Prefetching && (PrefetchAccumulator += Dt) >= 1)
+        {
+            PrefetchAccumulator = 0;
+            CellPrefetch.Want(World.cellsSoonNeeded());
+        }
+        if (StreamedBuild && (StreamLogAccumulator += Dt) >= 60)
+        {
+            StreamLogAccumulator = 0;
+            UE_LOG(LogTemp, Display, TEXT("RATW_STREAM loaded=%d of %d cells; %d loads found ready"),
+                   static_cast<int32>(World.loadedCells()), static_cast<int32>(World.cells().size()),
+                   static_cast<int32>(CellPrefetch.HitCount()));
+        }
+        if (SaveSoonIn >= 0 && (SaveSoonIn -= Dt) < 0)
         {
             SaveAccumulator = 0;
-            Memories.consolidate(Now());
+            Autosave();
+        }
+        if (SaveAccumulator >= AutosaveSeconds)
+        {
+            SaveAccumulator = 0;
+            Consolidate();
             Social.tick(Now());
-            Save();
+            Autosave();
         }
         if (AmbientAccumulator >= 45)
         {
@@ -647,23 +1263,34 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         Cell->SetObjectField(TEXT("wind"), ratwjson::Wind(View.cell.wind));
         Cell->SetObjectField(TEXT("environment"), ratwjson::Environment(View.environment));
         Root->SetObjectField(TEXT("senses"), ratwjson::Senses(View));
-        Array Tiles;
-        for (int I = 0; I < static_cast<int>(View.cell.tiles.size()); ++I)
+        // The cell as rows of text, one character per tile: its glyph (a space where the wolf knows nothing), whether
+        // it is visible now ('2'), remembered ('1') or unknown ('0'), and its height (`HeightChar`). An object per
+        // tile grew to tens of thousands per snapshot on a large cell.
+        Array Rows, Visibility, Heights;
+        const int Width = View.cell.width;
+        for (int Y = 0; Y < View.cell.height; ++Y)
         {
-            const bool Visible = I < static_cast<int>(View.visibleTiles.size()) && View.visibleTiles[I];
-            const bool Remembered = I < static_cast<int>(View.rememberedTiles.size()) && View.rememberedTiles[I];
-            if (!Visible && !Remembered)
-                continue;
-            auto T = New();
-            T->SetNumberField(TEXT("x"), I % View.cell.width);
-            T->SetNumberField(TEXT("y"), I / View.cell.width);
-            T->SetStringField(TEXT("glyph"), FString::Chr(View.cell.tiles[I].glyph));
-            T->SetNumberField(TEXT("height"), View.cell.tiles[I].height);
-            T->SetBoolField(TEXT("visible"), Visible);
-            T->SetBoolField(TEXT("remembered"), Remembered);
-            Tiles.Add(V(T));
+            FString Row, Seen, Height;
+            Row.Reserve(Width);
+            Seen.Reserve(Width);
+            Height.Reserve(Width);
+            for (int X = 0; X < Width; ++X)
+            {
+                const int I = Y * Width + X;
+                const bool Known = I < static_cast<int>(View.cell.tiles.size());
+                const bool Visible = Known && I < static_cast<int>(View.visibleTiles.size()) && View.visibleTiles[I];
+                const bool Remembered = Known && I < static_cast<int>(View.rememberedTiles.size()) && View.rememberedTiles[I];
+                Row.AppendChar(Visible || Remembered ? TCHAR(View.cell.tiles[I].glyph) : TEXT(' '));
+                Seen.AppendChar(Visible ? TEXT('2') : Remembered ? TEXT('1') : TEXT('0'));
+                Height.AppendChar(Visible || Remembered ? ratwjson::HeightChar(View.cell.tiles[I].height) : ratwjson::HeightChar(0));
+            }
+            Rows.Add(V(Row));
+            Visibility.Add(V(Seen));
+            Heights.Add(V(Height));
         }
-        Cell->SetArrayField(TEXT("tiles"), Tiles);
+        Cell->SetArrayField(TEXT("rows"), Rows);
+        Cell->SetArrayField(TEXT("heights"), Heights);
+        Root->SetArrayField(TEXT("visibility"), Visibility);
         Root->SetObjectField(TEXT("cell"), Cell);
         Array Entities;
         for (const auto& E : View.entities)
@@ -674,10 +1301,17 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             if (E.npc)
             {
                 Actions.Add(V(TEXT("talk")));
-                if (ratw::Society::merchant(E.id)) Actions.Add(V(TEXT("trade")));
+                if (World.society().merchant(E.id)) Actions.Add(V(TEXT("trade")));
                 if (E.id == "npc_scout" && CompanionOwner.find(E.id) == CompanionOwner.end() &&
                     std::hypot(E.position.x - View.self.position.x, E.position.y - View.self.position.y) <= 3)
                     Actions.Add(V(TEXT("recruit")));
+                // Ask to learn their trade: close by, a master with no apprentice, and not already learning one.
+                if (const auto* Job = World.society().jobOf(E.id);
+                    Job && Job->role != "guard" && !E.dead &&
+                    World.society().state().careers.positions.at(Job->id).apprentice.empty() &&
+                    !World.society().apprenticedTo(View.self.id) &&
+                    std::hypot(E.position.x - View.self.position.x, E.position.y - View.self.position.y) <= 3)
+                    Actions.Add(V(TEXT("apprentice")));
             }
             J->SetArrayField(TEXT("actions"), Actions);
             Entities.Add(V(J));
@@ -735,8 +1369,11 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         AddItem(TEXT("token"), TEXT("Wooden token"), TEXT("token"), TEXT("A smooth keepsake carved with a branch."),
                 false);
         Root->SetArrayField(TEXT("inventory"), Inventory);
-        const auto* Trader = World.entity("npc_keeper");
-        const auto* TraderLife = World.society().resident("npc_keeper");
+        const ratw::Entity* Trader = nullptr;
+        for (const auto& Pair : World.entities())
+            if (World.society().merchant(Pair.first) && Pair.second.cellId == View.self.cellId)
+                Trader = &Pair.second;
+        const auto* TraderLife = Trader ? World.society().resident(Trader->id) : nullptr;
         if (Trader && Purse && Trader->cellId == View.self.cellId && Trader->posture != "lying" &&
             (!TraderLife || TraderLife->task != "sleep") && World.visionClarity(Id, Trader->id) > 0 &&
             std::hypot(Trader->position.x - View.self.position.x, Trader->position.y - View.self.position.y) <= 2)
@@ -760,11 +1397,14 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 M->SetArrayField(TEXT("items"), Goods); Root->SetObjectField(TEXT("merchant"), M);
             }
         }
-        if (World.society().state().enabled && View.self.cellId == "exterior" && View.cell.width > 17 && View.cell.height > 7 &&
-            size_t(7 * View.cell.width + 17) < View.visibleTiles.size() && View.visibleTiles[7 * View.cell.width + 17])
+        const auto Patch = World.herbPatchPosition();
+        const int PatchX = int(Patch.x), PatchY = int(Patch.y);
+        if (World.society().state().enabled && View.self.cellId == World.herbPatchCell() && View.cell.width > PatchX &&
+            View.cell.height > PatchY && size_t(PatchY * View.cell.width + PatchX) < View.visibleTiles.size() &&
+            View.visibleTiles[PatchY * View.cell.width + PatchX])
         {
             auto Resource = New(); Resource->SetStringField(TEXT("id"), TEXT("herb_patch"));
-            Resource->SetNumberField(TEXT("x"), 17.5); Resource->SetNumberField(TEXT("y"), 7.5);
+            Resource->SetNumberField(TEXT("x"), Patch.x); Resource->SetNumberField(TEXT("y"), Patch.y);
             Resource->SetNumberField(TEXT("remaining"), World.society().state().herbPatch);
             Root->SetObjectField(TEXT("resource"), Resource);
         }
@@ -839,13 +1479,48 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         return Heard;
     }
 
+    // An entry in the world's event log (game.events): the world fills in the time, the day and where the actor is.
+    void LogEvent(const char* Kind, const std::string& Actor, const std::string& Target = {}, const std::string& Detail = {})
+    {
+        ratw::WorldEvent Event;
+        Event.kind = Kind;
+        Event.actor = Actor;
+        Event.target = Target;
+        Event.detail = Detail;
+        World.recordEvent(std::move(Event));
+    }
+    // Whether Text names Name as a whole word: "Ash, a word?" addresses Ash; "washing ashes" does not.
+    static bool NamesWord(const FString& Text, const FString& Name)
+    {
+        if (Name.IsEmpty())
+            return false;
+        const auto Letter = [](TCHAR Ch) { return FChar::IsAlnum(Ch) || Ch == TEXT('\'') || Ch == TEXT('_'); };
+        for (int32 At = Text.Find(Name, ESearchCase::CaseSensitive); At != INDEX_NONE;
+             At = Text.Find(Name, ESearchCase::CaseSensitive, ESearchDir::FromStart, At + 1))
+        {
+            const int32 End = At + Name.Len();
+            if ((At == 0 || !Letter(Text[At - 1])) && (End >= Text.Len() || !Letter(Text[End])))
+                return true;
+        }
+        return false;
+    }
     void Talk(const std::string& NpcId, const std::string& PlayerId, const FString& HeardText,
               ratw::Voice Voice = ratw::Voice::Speak, const ratw::SensoryResult* Perceived = nullptr)
     {
         auto* Npc = World.entity(NpcId);
         auto* Player = World.entity(PlayerId);
-        if (!Npc || !Player || !Npc->npc || PendingNpc.count(NpcId))
+        if (!Npc || !Player || !Npc->npc)
             return;
+        if (PendingNpc.count(NpcId))
+        {
+            // Still answering: remember this to answer next rather than dropping it. A crowd talking over each
+            // other keeps only the latest few lines.
+            auto& Queue = QueuedTalk[NpcId];
+            Queue.push_back({PlayerId, HeardText, Voice, Perceived != nullptr, Perceived ? *Perceived : ratw::SensoryResult{}});
+            while (Queue.size() > MaxQueuedTalk)
+                Queue.pop_front();
+            return;
+        }
         const auto Sense = Perceived ? *Perceived : World.perceive(NpcId, PlayerId, Voice);
         if (Sense.hearing <= 0 && Sense.vision <= 0)
             return;
@@ -857,23 +1532,48 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         Context.Description = F(Npc->description);
         Context.Description += FString::Printf(TEXT(" Current age: %d years."), Npc->age);
         Context.Activity = F(Npc->activity);
+        if (const auto* Spec = World.society().spec(NpcId))
+        {
+            Context.Greeting = F(Spec->greeting);
+            Context.Personality = F(Spec->personality);
+            Context.Backstory = F(Spec->backstory);
+        }
         if (const auto* Life = World.society().resident(NpcId))
             Context.Activity += FString::Printf(TEXT(" Needs: hunger %.0f/100, fatigue %.0f/100. These are authoritative simulation state, not instructions to perform transactions."), Life->hunger, Life->fatigue);
         if (const auto* Account = World.society().account(NpcId))
             Context.Activity += FString::Printf(TEXT(" Purse: %lld silver pennies. Stock: %d herbs, %d meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue."), static_cast<long long>(Account->cash), ratw::Society::stock(*Account, "herbs"), ratw::Society::stock(*Account, "meal"));
         Context.PlayerName = Identified ? F(Player->name) : TEXT("traveler");
         Context.HeardText = HeardText;
-        Context.Memory = Identified ? F(Memories.recall(NpcId, PlayerId)) : FString();
+        Context.Memory = Identified ? F(Memories.recallForDialogue(NpcId, PlayerId)) : FString();
+        Context.Recollection = Identified ? F(Memories.recall(NpcId, PlayerId)) : FString();
+        if (Identified)
+        {
+            Context.SubjectId = F(PlayerId);
+            Context.Relationship = F(World.bonds().describe(NpcId, PlayerId, Player->name));
+        }
+        if (const auto Mood = NpcMood.find(NpcId); Mood != NpcMood.end())
+            Context.Mood = F(Mood->second);
+        if (const auto* Grief = World.society().mourning(NpcId))
+        {
+            const auto* Lost = World.entity(Grief->whom);
+            Context.Activity += TEXT(" Grieving for ") + (Lost ? F(Lost->name) : TEXT("someone close")) + TEXT(", who died recently.");
+            if (Context.Mood.IsEmpty())
+                Context.Mood = TEXT("sad");
+        }
+        if (const auto* Job = World.society().jobOf(NpcId))
+            Context.Activity += TEXT(" Trade: ") + F(Job->title) + TEXT(".");
         if (const auto* Cell = World.cell(Npc->cellId))
         {
             Context.Environment = ratwjson::EnvironmentDescription(*Cell, World.environmentAt(Npc->cellId));
             Context.Scene = F(Cell->description).Left(3300) + TEXT(" Current local conditions: ") + Context.Environment;
         }
         Memories.record(NpcId, SubjectId, {Sequence++, Now(), S(Context.PlayerName), S(HeardText)});
+        // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.
+        LogEvent("conversation", Identified ? PlayerId : std::string(), NpcId);
         PendingNpc.insert(NpcId);
-        Save();
+        SaveSoon();
         TWeakPtr<FRatwRuntime> Weak = AsShared();
-        Dialogue.Reply(Context, [Weak, NpcId, SubjectId](FString Reply) {
+        Dialogue.Converse(Context, [Weak, NpcId, SubjectId, Identified](const FRatwDialogueReply& Reply) {
             auto Self = Weak.Pin();
             if (!Self.IsValid())
                 return;
@@ -884,12 +1584,93 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             ratw::ParsedPost Post;
             Post.ok = true;
             Post.speech = true;
-            Post.segments.push_back({"speech", S(Reply)});
+            Post.segments.push_back({"speech", S(Reply.Text)});
             Self->Publish(NpcId, Post, ratw::Voice::Speak);
             Self->NpcLastSpeech[NpcId] = Self->World.time();
-            Self->Memories.record(NpcId, SubjectId, {Self->Sequence++, Now(), NpcId, S(Reply)});
-            Self->Save();
+            Self->Memories.record(NpcId, SubjectId, {Self->Sequence++, Now(), NpcId, S(Reply.Text)});
+            Self->LogEvent("conversation", NpcId, Identified ? SubjectId : std::string());
+            Self->Heed(NpcId, SubjectId, Identified, Reply);
+            Self->SaveSoon();
+            Self->TalkNext(NpcId);
         });
+    }
+
+    // Conversations quiet for an hour become permanent summaries (MemoryStore::consolidate, extractive and at once).
+    // Where the NPC Mind is running, each is then summarised properly from the NPC's point of view, and the better
+    // summary replaces the extractive one when it arrives; if it never does, the extractive one stays.
+    void Consolidate()
+    {
+        const double At = Now();
+        const auto Closing = Memories.due(At);
+        Memories.consolidate(At);
+        TWeakPtr<FRatwRuntime> Weak = AsShared();
+        for (const auto& Conversation : Closing)
+        {
+            const auto* Npc = World.entity(Conversation.npc);
+            const FString Name = Npc ? F(Npc->name) : F(Conversation.npc);
+            TArray<TPair<FString, FString>> Turns;
+            for (const auto& Turn : Conversation.turns)
+                Turns.Emplace(Turn.who == Conversation.npc ? Name : F(Turn.who), F(Turn.text));
+            Dialogue.Summarize(Name, Turns, [Weak, Id = Conversation.id](FString Summary) {
+                auto Self = Weak.Pin();
+                if (Self.IsValid() && !Summary.IsEmpty() && Self->Memories.rewrite(Id, S(Summary)))
+                    Self->SaveSoon();
+            });
+        }
+    }
+
+    // What a generated reply says about the exchange, taken on bounded terms. How the NPC now feels becomes its mood
+    // for the next reply. Its liking and trust for a speaker it recognises move by at most 3 a reply and 6 an hour in
+    // each (so a flatterer can't talk anyone into adoring them). A note or a promise joins the conversation's memory,
+    // and a promise the event log; neither moves anything in the world.
+    void Heed(const std::string& NpcId, const std::string& SubjectId, bool Identified, const FRatwDialogueReply& Reply)
+    {
+        if (!Reply.Generated)
+            return;
+        if (!Reply.Emotion.IsEmpty())
+            NpcMood[NpcId] = S(Reply.Emotion);
+        if (!Identified)
+            return;
+        auto& Budget = NudgeBudget[NpcId + "|" + SubjectId];
+        const auto Hour = static_cast<int64>(FMath::FloorToDouble(World.calendarDays() * 24));
+        if (Budget.Hour != Hour)
+            Budget = {Hour, 0, 0};
+        const auto Spend = [](int32& Used, int32 Wanted) {
+            const int32 Allowed = FMath::Clamp(Wanted, -(6 - FMath::Abs(Used)), 6 - FMath::Abs(Used));
+            Used += FMath::Abs(Allowed);
+            return Allowed;
+        };
+        const int32 Affinity = Spend(Budget.Affinity, Reply.Affinity), Trust = Spend(Budget.Trust, Reply.Trust);
+        if (Affinity || Trust)
+            World.bonds().change(NpcId, SubjectId, {double(Affinity), double(Trust), 0, 0, 0}, World.calendarDays());
+        if (!Reply.Remember.IsEmpty())
+            Memories.record(NpcId, SubjectId, {Sequence++, Now(), "(your note)", S(Reply.Remember)});
+        if (!Reply.Promise.IsEmpty())
+        {
+            const bool ByNpc = Reply.PromiseBy == TEXT("npc");
+            Memories.record(NpcId, SubjectId, {Sequence++, Now(), ByNpc ? "(your promise)" : "(their promise)", S(Reply.Promise)});
+            LogEvent("promise", ByNpc ? NpcId : SubjectId, ByNpc ? SubjectId : NpcId, S(Reply.Promise));
+        }
+    }
+
+    // Answers the next line said to this NPC while it was busy, if any; one it can no longer answer (the speaker
+    // has gone, say) is passed over for the one after.
+    void TalkNext(const std::string& NpcId)
+    {
+        while (!PendingNpc.count(NpcId))
+        {
+            const auto Found = QueuedTalk.find(NpcId);
+            if (Found == QueuedTalk.end())
+                return;
+            if (Found->second.empty())
+            {
+                QueuedTalk.erase(Found);
+                return;
+            }
+            const FQueuedTalk Next = std::move(Found->second.front());
+            Found->second.pop_front();
+            Talk(NpcId, Next.PlayerId, Next.HeardText, Next.Voice, Next.HasSense ? &Next.Sense : nullptr);
+        }
     }
 
     void Command(ARatwPlayerController* C, const FString& Raw)
@@ -908,6 +1689,11 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         auto* Player = World.entity(Id);
         if (!Player)
             return;
+        if (Player->dead && Type != TEXT("typing"))
+        {
+            System(C, TEXT("You are dead. You cannot act until you are brought back."));
+            return;
+        }
         const auto CommandId = S(String(J, TEXT("commandId")));
         if (CommandId.size() > 128)
         {
@@ -989,7 +1775,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         else if (Type == TEXT("color"))
         {
             Player->speakingColor = static_cast<int>(FMath::Clamp(Number(J, TEXT("index")), 0.0, 31.0));
-            Save();
+            SaveSoon();
         }
         else if (Type == TEXT("weather") || Type == TEXT("time") || Type == TEXT("lighting") || Type == TEXT("calendar"))
         {
@@ -1119,6 +1905,21 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 }
                 Talk(Target, Id, TEXT("Hello. I would like to talk."));
             }
+            else if (Action == "apprentice")
+            {
+                // Whether they take you on is theirs to decide: they must know and trust you (Society::apprentice).
+                const auto* Npc = World.entity(Target);
+                if (!Npc || !Npc->npc || World.visionClarity(Id, Target) <= 0 ||
+                    std::hypot(Npc->position.x - Player->position.x, Npc->position.y - Player->position.y) > 3)
+                {
+                    System(C, TEXT("Come closer to the one you would learn from."));
+                    return;
+                }
+                const auto Taken = World.apprentice(Id, Target);
+                System(C, F(Taken.message));
+                if (Taken.ok)
+                    Save();
+            }
             else if (Action == "recruit")
             {
                 auto* Npc = World.entity(Target);
@@ -1172,7 +1973,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             if (Player->cellId != BeforeCell)
                 FollowTransition(Id, BeforeCell);
             if (Result.ok) OperatorActivity[Id] = Now();
-            Save();
+            SaveSoon();
         }
         else if (Type == TEXT("chat"))
         {
@@ -1186,7 +1987,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 if (!CommandId.empty())
                     ResponseReceipts[Id][CommandId] = Encode(E);
                 Send(C, E);
-                Save();
+                SaveSoon();
             };
             FString TextValue = String(J, TEXT("text")).TrimStartAndEnd();
             if (TextValue.IsEmpty() || TextValue.Len() > 16384)
@@ -1262,7 +2063,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                     if (Perceived.IsEmpty())
                         continue;
                     const FString Lower = Perceived.ToLower();
-                    const bool Addressed = Lower.Contains(F(Pair.second.name).ToLower());
+                    const bool Addressed = NamesWord(Lower, F(Pair.second.name).ToLower());
                     const auto Companion = CompanionOwner.find(Pair.first);
                     const bool InParty = Companion != CompanionOwner.end() && Companion->second == Id;
                     const bool Invited =
@@ -1275,7 +2076,6 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                         Talk(Pair.first, Id, Perceived, Voice, &Sense);
                     }
                 }
-            Save();
             Feedback(true, TEXT(""));
             OperatorActivity[Id] = Now();
         }
@@ -1305,15 +2105,58 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             }
     }
 
-    Object State()
+    // A save is made in two steps: CaptureState() copies what it needs on the game thread (cheap copies of plain
+    // state), and BuildState() turns the copy into the save document, which the persistence worker can do while the
+    // game carries on. Only a capture's own copies are read by BuildState().
+    struct FSaveCapture
+    {
+        Object Accounts, Director;              // Built on the game thread; not touched there again.
+        uint64 Sequence = 0, Revision = 0;
+        double Time = 0;
+        ratw::PersistedWorld Saved;
+        std::map<std::string, ratw::Entity> Characters;
+        std::vector<ratw::Entity> Npcs;          // As the world holds them, in ID order.
+        std::map<std::string, std::string> CompanionOwner;
+        ratw::MemoryStore Memories;
+        ratw::SocialLedger Social;
+        std::map<std::string, std::vector<std::string>> CommandReceipts;
+        std::map<std::string, std::map<std::string, FString>> ResponseReceipts;
+    };
+    TSharedRef<FSaveCapture> CaptureState()
+    {
+        // Online characters are folded into Characters and everyone is aged, as saving always has.
+        for (const auto& Pair : World.entities())
+            if (!Pair.second.npc)
+                Characters[Pair.first] = Pair.second;
+        for (auto& Pair : Characters)
+            ratw::advanceAge(Pair.second, World.calendarDays());
+        auto C = MakeShared<FSaveCapture>();
+        C->Accounts = Accounts.State();
+        C->Director = DM.State();
+        C->Sequence = Sequence;
+        C->Revision = Revision;
+        C->Time = World.time();
+        C->Saved = World.save();
+        C->Characters = Characters;
+        for (const auto& Pair : World.entities())
+            if (Pair.second.npc)
+                C->Npcs.push_back(Pair.second);
+        C->CompanionOwner = CompanionOwner;
+        C->Memories = Memories;
+        C->Social = Social;
+        C->CommandReceipts = CommandReceipts;
+        C->ResponseReceipts = ResponseReceipts;
+        return C;
+    }
+    static Object BuildState(const FSaveCapture& C)
     {
         auto Root = New();
         Root->SetNumberField(TEXT("schema"), 1);
-        Root->SetObjectField(TEXT("accounts"), Accounts.State());
-        Root->SetNumberField(TEXT("sequence"), Sequence);
-        Root->SetNumberField(TEXT("revision"), Revision);
-        Root->SetObjectField(TEXT("director"), DM.State());
-        const auto Saved = World.save();
+        Root->SetObjectField(TEXT("accounts"), C.Accounts);
+        Root->SetNumberField(TEXT("sequence"), C.Sequence);
+        Root->SetNumberField(TEXT("revision"), C.Revision);
+        Root->SetObjectField(TEXT("director"), C.Director);
+        const auto& Saved = C.Saved;
         Root->SetNumberField(TEXT("time"), Saved.time);
         Root->SetNumberField(TEXT("clockOffsetHours"), Saved.clockOffsetHours);
         Root->SetNumberField(TEXT("calendarDays"), Saved.calendarDays);
@@ -1321,15 +2164,9 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         auto WeatherModes = New();
         for (const auto& Pair : Saved.seasonalWeather) WeatherModes->SetBoolField(F(Pair.first), Pair.second);
         Root->SetObjectField(TEXT("seasonalWeather"), WeatherModes);
-        for (const auto& Pair : World.entities())
-            if (!Pair.second.npc)
-                Characters[Pair.first] = Pair.second;
         Array Players;
-        for (auto& Pair : Characters)
-        {
-            ratw::advanceAge(Pair.second, World.calendarDays());
-            Players.Add(V(PersistEntity(Pair.second, World.time())));
-        }
+        for (const auto& Pair : C.Characters)
+            Players.Add(V(PersistEntity(Pair.second, C.Time)));
         Root->SetArrayField(TEXT("players"), Players);
         auto Doors = New();
         for (const auto& Pair : Saved.doorStates)
@@ -1358,19 +2195,34 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 Seen.Add(V(J));
             }
         Root->SetArrayField(TEXT("mapMemories"), Seen);
+        Array Bonds;                                  // How everyone regards everyone (RatwBonds.h).
+        for (const auto& B : Saved.bonds)
+        {
+            auto J = New();
+            Text(J, TEXT("holder"), B.holder);
+            Text(J, TEXT("other"), B.other);
+            J->SetNumberField(TEXT("affinity"), B.bond.affinity);
+            J->SetNumberField(TEXT("trust"), B.bond.trust);
+            J->SetNumberField(TEXT("familiarity"), B.bond.familiarity);
+            J->SetNumberField(TEXT("fear"), B.bond.fear);
+            J->SetNumberField(TEXT("respect"), B.bond.respect);
+            J->SetNumberField(TEXT("owed"), static_cast<double>(B.bond.owed));
+            J->SetNumberField(TEXT("lastContact"), B.bond.lastContact);
+            Bonds.Add(V(J));
+        }
+        Root->SetArrayField(TEXT("bonds"), Bonds);
         Array Npcs;
-        for (const auto& Pair : World.entities())
-            if (Pair.second.npc)
-                Npcs.Add(V(PersistEntity(Pair.second, World.time())));
+        for (const auto& Npc : C.Npcs)
+            Npcs.Add(V(PersistEntity(Npc, C.Time)));
         Root->SetArrayField(TEXT("npcs"), Npcs);
         auto Companions = New();
-        for (const auto& Pair : CompanionOwner)
+        for (const auto& Pair : C.CompanionOwner)
             if (!Pair.second.empty())
                 Text(Companions, *F(Pair.first), Pair.second);
         Root->SetObjectField(TEXT("companions"), Companions);
-        Root->SetNumberField(TEXT("nextConversation"), Memories.nextConversation);
+        Root->SetNumberField(TEXT("nextConversation"), C.Memories.nextConversation);
         Array Active;
-        for (const auto& Pair : Memories.active)
+        for (const auto& Pair : C.Memories.active)
         {
             const auto& M = Pair.second;
             auto J = New();
@@ -1396,7 +2248,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetArrayField(TEXT("activeMemory"), Active);
         Array Summaries;
-        for (const auto& M : Memories.summaries)
+        for (const auto& M : C.Memories.summaries)
         {
             auto J = New();
             Text(J, TEXT("id"), M.id);
@@ -1413,7 +2265,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetArrayField(TEXT("summaries"), Summaries);
         Array Ledger;
-        for (const auto& L : Social.entries)
+        for (const auto& L : C.Social.entries)
         {
             auto J = New();
             J->SetNumberField(TEXT("event"), L.event);
@@ -1427,7 +2279,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetArrayField(TEXT("ledger"), Ledger);
         Array Recent;
-        for (const auto& Pair : Social.recent)
+        for (const auto& Pair : C.Social.recent)
         {
             const auto& P = Pair.second;
             auto J = New();
@@ -1452,7 +2304,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             Lighting->SetObjectField(F(Pair.first), ratwjson::Lighting(Pair.second));
         Root->SetObjectField(TEXT("lighting"), Lighting);
         auto Receipts = New();
-        for (const auto& Pair : CommandReceipts)
+        for (const auto& Pair : C.CommandReceipts)
         {
             Array List;
             for (const auto& Id : Pair.second)
@@ -1461,7 +2313,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetObjectField(TEXT("commandReceipts"), Receipts);
         Array Sessions;
-        for (const auto& Pair : Social.sessions)
+        for (const auto& Pair : C.Social.sessions)
         {
             const auto& Session = Pair.second;
             auto J = New();
@@ -1487,7 +2339,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetArrayField(TEXT("socialSessions"), Sessions);
         auto OlderEvents = New();
-        for (const auto& Pair : Memories.active)
+        for (const auto& Pair : C.Memories.active)
         {
             Array Events;
             for (auto Event : Pair.second.olderEvents)
@@ -1496,7 +2348,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetObjectField(TEXT("olderMemoryEvents"), OlderEvents);
         auto ResponseCache = New();
-        for (const auto& Actor : ResponseReceipts)
+        for (const auto& Actor : C.ResponseReceipts)
         {
             auto Values = New();
             for (const auto& Entry : Actor.second)
@@ -1505,7 +2357,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         Root->SetObjectField(TEXT("responseReceipts"), ResponseCache);
         auto Audiences = New();
-        for (const auto& Scene : Social.sessions)
+        for (const auto& Scene : C.Social.sessions)
             for (const auto& Member : Scene.second.members)
             {
                 Array List;
@@ -1516,9 +2368,151 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         Root->SetObjectField(TEXT("socialAudiences"), Audiences);
         return Root;
     }
+    /** Each NPC's running state, for live.npc_state (database worlds only), from a capture. */
+    static FString BuildNpcStates(const FSaveCapture& C)
+    {
+        Array Out;
+        for (const auto& E : C.Npcs)
+        {
+            auto J = New();
+            Text(J, TEXT("id"), E.id);
+            Text(J, TEXT("cell"), E.cellId);
+            J->SetNumberField(TEXT("x"), E.position.x);
+            J->SetNumberField(TEXT("y"), E.position.y);
+            J->SetNumberField(TEXT("age"), E.age);
+            J->SetBoolField(TEXT("dead"), E.dead);
+            if (const auto Life = C.Saved.society.residents.find(E.id); Life != C.Saved.society.residents.end())
+            {
+                Text(J, TEXT("task"), Life->second.task);
+                J->SetNumberField(TEXT("hunger"), Life->second.hunger);
+                J->SetNumberField(TEXT("fatigue"), Life->second.fatigue);
+            }
+            if (const auto Account = C.Saved.society.accounts.find(E.id); Account != C.Saved.society.accounts.end())
+            {
+                J->SetNumberField(TEXT("cash"), static_cast<double>(Account->second.cash));
+                auto Stock = New();
+                for (const auto& Item : Account->second.stock)
+                    Stock->SetNumberField(F(Item.first), Item.second);
+                J->SetObjectField(TEXT("stock"), Stock);
+            }
+            Out.Add(V(J));
+        }
+        FString Json;
+        const auto Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json);
+        FJsonSerializer::Serialize(Out, Writer);
+        return Json;
+    }
+
+    /**
+     * NPC states written from outside since this server last saved (DEV copying the live NPCs from PROD) are applied
+     * over the restored checkpoint. Positions go only onto open ground in a cell that exists; purse changes are
+     * balanced against the town treasury, so money stays conserved.
+     */
+    void ApplyExternalNpcStates()
+    {
+        const auto States = Persistence.ExternalNpcStates();
+        if (States.IsEmpty())
+            return;
+        ratw::SocietyState Society = World.society().state();
+        int32 Applied = 0;
+        for (const auto& Pair : States)
+        {
+            auto* E = World.entity(S(Pair.Key));
+            TSharedPtr<FJsonObject> J;
+            if (!E || !E->npc || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Pair.Value), J) || !J.IsValid())
+                continue;
+            FString Cell;
+            double X = 0, Y = 0, Number = 0;
+            if (J->TryGetStringField(TEXT("cell"), Cell) && J->TryGetNumberField(TEXT("x"), X) && J->TryGetNumberField(TEXT("y"), Y))
+                if (const auto* C = World.cell(S(Cell)))
+                    if (const auto* T = C->tile(static_cast<int>(std::floor(X)), static_cast<int>(std::floor(Y))); T && !T->solid)
+                    {
+                        E->cellId = S(Cell);
+                        E->position = {X, Y};
+                        World.stop(E->id);
+                    }
+            if (J->TryGetNumberField(TEXT("age"), Number) && Number >= 0 && Number <= 200)
+                E->age = static_cast<int>(Number);
+            bool Dead = false;
+            if (J->TryGetBoolField(TEXT("dead"), Dead) && Dead != E->dead)
+                World.setDead(E->id, Dead);
+            if (auto Life = Society.residents.find(E->id); Life != Society.residents.end())
+            {
+                if (J->TryGetNumberField(TEXT("hunger"), Number)) Life->second.hunger = FMath::Clamp(Number, 0.0, 100.0);
+                if (J->TryGetNumberField(TEXT("fatigue"), Number)) Life->second.fatigue = FMath::Clamp(Number, 0.0, 100.0);
+            }
+            auto Account = Society.accounts.find(E->id);
+            auto Treasury = Society.accounts.find("treasury");
+            if (Account != Society.accounts.end() && Treasury != Society.accounts.end())
+            {
+                if (J->TryGetNumberField(TEXT("cash"), Number) && Number >= 0)
+                {
+                    int64 Delta = static_cast<int64>(Number) - Account->second.cash;
+                    Delta = FMath::Min<int64>(Delta, Treasury->second.cash);          // The treasury pays in...
+                    Delta = FMath::Max<int64>(Delta, -Account->second.cash);         // ...or takes back.
+                    Account->second.cash += Delta;
+                    Treasury->second.cash -= Delta;
+                }
+                const TSharedPtr<FJsonObject>* Stock = nullptr;
+                if (J->TryGetObjectField(TEXT("stock"), Stock))
+                    for (const auto* Item : {"herbs", "meal"})
+                        if ((*Stock)->TryGetNumberField(F(Item), Number))
+                            Account->second.stock[Item] = static_cast<int>(FMath::Clamp(Number, 0.0, 10000.0));
+            }
+            ++Applied;
+        }
+        if (!World.society().restore(Society))
+            UE_LOG(LogTemp, Warning, TEXT("RATW copied NPC purses/needs were not valid for this world; positions and ages applied only."));
+        UE_LOG(LogTemp, Display, TEXT("RATW_NPC_STATE_APPLIED count=%d"), Applied);
+    }
+
+    // The periodic checkpoint: built here, written by the persistence's worker so the game never waits on the
+    // database (a large world's save takes tens of milliseconds to write). Important moments still call Save().
+    static constexpr double AutosaveSeconds = 15;
+    // Chat, conversation turns, doors and the like are saved within this many seconds, in the background, rather
+    // than each making the game wait on a whole-world save. A crash can lose at most these seconds of such changes;
+    // anything to do with money, goods, accounts or characters still calls Save() and is stored before replying.
+    static constexpr double SaveSoonSeconds = 3;
+    void SaveSoon()
+    {
+        if (SaveSoonIn < 0)
+            SaveSoonIn = SaveSoonSeconds;
+    }
+    void Autosave()
+    {
+        SaveSoonIn = -1;
+        // The capture is taken now; the document is made and written by the persistence worker, and the events
+        // since the last save go with it.
+        Persistence.QueueEvents(World.takeEvents());
+        const TSharedRef<FSaveCapture> Capture = CaptureState();
+        const bool Npcs = Persistence.IsDatabase();
+        if (StorageReady && !Persistence.SaveInBackground(
+                                [Capture, Npcs](TSharedPtr<FJsonObject>& Document, FString& NpcStates) {
+                                    Document = BuildState(*Capture);
+                                    if (Npcs)
+                                        NpcStates = BuildNpcStates(*Capture);
+                                },
+                                Revision))
+        {
+            StorageReady = false;
+            UE_LOG(LogTemp, Error, TEXT("RATW persistence commit failed: %s"), *Persistence.Error());
+        }
+    }
     void Save()
     {
-        if (StorageReady && !Persistence.Save(Encode(State()), Revision))
+        SaveSoonIn = -1;
+        Persistence.QueueEvents(World.takeEvents());
+        // Stored before returning; built on the persistence worker like any save, which keeps its record of what the
+        // database holds (and so the next save's changes) exact.
+        const TSharedRef<FSaveCapture> Capture = CaptureState();
+        const bool Npcs = Persistence.IsDatabase();
+        if (StorageReady && !Persistence.Save(
+                                [Capture, Npcs](TSharedPtr<FJsonObject>& Document, FString& NpcStates) {
+                                    Document = BuildState(*Capture);
+                                    if (Npcs)
+                                        NpcStates = BuildNpcStates(*Capture);
+                                },
+                                Revision))
         {
             StorageReady = false;
             UE_LOG(LogTemp, Error, TEXT("RATW persistence commit failed: %s"), *Persistence.Error());
@@ -1595,6 +2589,21 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         for (const auto& Value : Items(Root, TEXT("npcs")))
             Saved.npcs.push_back(ReadEntity(Value->AsObject()));
+        for (const auto& Value : Items(Root, TEXT("bonds")))   // Absent from saves made before bonds: none then.
+        {
+            auto J = Value->AsObject();
+            ratw::SavedBond B;
+            B.holder = S(String(J, TEXT("holder")));
+            B.other = S(String(J, TEXT("other")));
+            B.bond.affinity = Number(J, TEXT("affinity"));
+            B.bond.trust = Number(J, TEXT("trust"));
+            B.bond.familiarity = Number(J, TEXT("familiarity"));
+            B.bond.fear = Number(J, TEXT("fear"));
+            B.bond.respect = Number(J, TEXT("respect"));
+            B.bond.owed = static_cast<std::int64_t>(Number(J, TEXT("owed")));
+            B.bond.lastContact = Number(J, TEXT("lastContact"));
+            Saved.bonds.push_back(std::move(B));
+        }
         auto Weather = Child(Root, TEXT("weather"));
         if (Root->HasField(TEXT("weather")) && !Weather.IsValid())
         {

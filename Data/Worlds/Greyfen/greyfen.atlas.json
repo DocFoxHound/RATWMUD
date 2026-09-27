@@ -1,0 +1,862 @@
+{
+  "id": "greyfen",
+  "format": "ratw-atlas",
+  "version": 2,
+  "name": "Greyfen Crossing",
+  "width": 64,
+  "height": 40,
+  "terrain": [
+    "################################################################",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,##############,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,#######+######,,,,,,,,,,,....,,,,,,,,########+########,,,,#",
+    "#,\"\"\"\"\"\"\"\",,.,,,,,,,,,.....................................,,,,#",
+    "#,\"\"\"\"\"\"\"\",,.,,,,,,,,,..===..........===...............T.T.,,,,#",
+    "#,\"\"\"\"\"\"\"\",,.,,,,,,,,,.....................................,,,,#",
+    "#,,,,,,,,,,,.,,,,,,,,,....................,,,,,,,,.,,,,,,,,,,,,#",
+    "#..............................................................#",
+    "#..............................~~..............................#",
+    "#..............................~~..............................#",
+    "#..............................................................#",
+    "#,,,,,,,.,,,,,,,,,.,,,....................,,,,,,,,.,,,,,,,,,,,,#",
+    "#,,,,,,,.,,,,,,,,,.,,,....................,,,,,,,,.,,,,,,,,,##,#",
+    "#,,,,,,,.,,,,,,,,,.,,,..===..........===..,,,,,,,,.,,,,,,,,,##,#",
+    "#,,,,,,,.,,,,,,,,,.,,,....................,,,,,,,,.,,,,,,,,,,,,#",
+    "#,,,,###+####,,,,,.,,,,,,,,,,,....,,,,,,,,########+########,,,,#",
+    "#,,,,########,,###+####,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,########,,########,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,########,,########,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,########,,########,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,########,,########,,,##,,....,,,,,,,,#################,,,,#",
+    "#,,,,########,,########,,,##,,....,,,,,,,,#################,,,,#",
+    "#,,,,,,,,,,,,,,########,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,#################,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,##,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,##,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,....,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "################################################################"
+  ],
+  "heights": {},
+  "cells": [
+    {
+      "id": "town",
+      "name": "Greyfen Crossing",
+      "description": "A walled market town where two roads cross at a stone fountain. Shopfronts, a barracks and low family houses face the square.",
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 40,
+      "z": 0,
+      "outdoors": true,
+      "weather": "clear",
+      "territory": {
+        "region": "greyfen",
+        "claims": [],
+        "chapter": ""
+      }
+    }
+  ],
+  "rooms": [
+    {
+      "id": "shop",
+      "name": "Tallow & Twine",
+      "description": "Shelves of candles, rope, dried herbs and wrapped meals line a narrow general store. A long counter keeps the goods and the customers politely apart.",
+      "width": 20,
+      "height": 12,
+      "terrain": [
+        "####################",
+        "#..................#",
+        "#.====........====.#",
+        "#..................#",
+        "#......========....#",
+        "#..................#",
+        "#..................#",
+        "#..................#",
+        "#.TT...............#",
+        "#.TT...............#",
+        "#..................#",
+        "##########+#########"
+      ],
+      "heights": {},
+      "worldX": 0,
+      "worldY": -12,
+      "z": 0,
+      "outdoors": false,
+      "weather": "clear",
+      "lighting": {
+        "artificial": 1,
+        "daylightAccess": 0.6,
+        "tone": "warm"
+      },
+      "territory": {
+        "region": "greyfen",
+        "claims": [],
+        "chapter": ""
+      }
+    },
+    {
+      "id": "wren_house",
+      "name": "Wren's Cottage",
+      "description": "A tidy two-room cottage smelling of cedar and ink. Account tallies are pinned in rows above a worn sleeping mat.",
+      "width": 14,
+      "height": 10,
+      "terrain": [
+        "#######+######",
+        "#............#",
+        "#.===........#",
+        "#............#",
+        "#............#",
+        "#............#",
+        "#..TT........#",
+        "#..TT........#",
+        "#............#",
+        "##############"
+      ],
+      "heights": {},
+      "worldX": 0,
+      "worldY": 40,
+      "z": 0,
+      "outdoors": false,
+      "weather": "clear",
+      "lighting": {
+        "artificial": 0.8,
+        "daylightAccess": 0.5,
+        "tone": "warm"
+      },
+      "territory": {
+        "region": "greyfen",
+        "claims": [],
+        "chapter": ""
+      }
+    },
+    {
+      "id": "barracks",
+      "name": "Greyfen Barracks",
+      "description": "Bunk bays with straw ticks line the north wall. A rack of staves and a scarred mess table fill the hall; the captain keeps a partitioned room to the east.",
+      "width": 26,
+      "height": 14,
+      "terrain": [
+        "##########################",
+        "#....T..T..T..T...#......#",
+        "#....T..T..T..T...#......#",
+        "#....T..T..T..T...#......#",
+        "#........................#",
+        "#.................#..TTT.#",
+        "#.................#......#",
+        "#........................#",
+        "#........TTTTTT..........#",
+        "#........TTTTTT..........#",
+        "#.=====..................#",
+        "#........................#",
+        "#........................#",
+        "#############+############"
+      ],
+      "heights": {},
+      "worldX": 38,
+      "worldY": -14,
+      "z": 0,
+      "outdoors": false,
+      "weather": "clear",
+      "lighting": {
+        "artificial": 1,
+        "daylightAccess": 0.3,
+        "tone": "neutral"
+      },
+      "territory": {
+        "region": "greyfen",
+        "claims": [],
+        "chapter": ""
+      }
+    },
+    {
+      "id": "cottage",
+      "name": "Birchwall Cottage",
+      "description": "A low family cottage with a shared table in the middle and two sleeping nooks along the back wall.",
+      "width": 12,
+      "height": 10,
+      "terrain": [
+        "######+#####",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#....TT....#",
+        "#....TT....#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "############"
+      ],
+      "heights": {},
+      "worldX": 16,
+      "worldY": 40,
+      "z": 0,
+      "outdoors": false,
+      "weather": "clear",
+      "lighting": {
+        "artificial": 0.8,
+        "daylightAccess": 0.5,
+        "tone": "warm"
+      },
+      "territory": {
+        "region": "greyfen",
+        "claims": [],
+        "chapter": ""
+      }
+    },
+    {
+      "id": "longhouse",
+      "name": "The Long House",
+      "description": "A shared lodging hall for single workers and elders. Screened sleeping bays line the south wall behind a long communal table.",
+      "width": 24,
+      "height": 12,
+      "terrain": [
+        "############+###########",
+        "#......................#",
+        "#......................#",
+        "#......................#",
+        "#.......TTTTTTTT.......#",
+        "#.......TTTTTTTT.......#",
+        "#......................#",
+        "#......................#",
+        "#...T...T.......T...T..#",
+        "#...T...T.......T...T..#",
+        "#...T...T.......T...T..#",
+        "########################"
+      ],
+      "heights": {},
+      "worldX": 40,
+      "worldY": 40,
+      "z": 0,
+      "outdoors": false,
+      "weather": "clear",
+      "lighting": {
+        "artificial": 1,
+        "daylightAccess": 0.4,
+        "tone": "warm"
+      },
+      "territory": {
+        "region": "greyfen",
+        "claims": [],
+        "chapter": ""
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "shop_door",
+      "name": "Tallow & Twine door",
+      "kind": "door",
+      "open": true,
+      "a": {
+        "cell": "town",
+        "x": 12,
+        "y": 12
+      },
+      "b": {
+        "cell": "shop",
+        "x": 10,
+        "y": 11
+      }
+    },
+    {
+      "id": "barracks_door",
+      "name": "Barracks door",
+      "kind": "door",
+      "open": true,
+      "a": {
+        "cell": "town",
+        "x": 50,
+        "y": 12
+      },
+      "b": {
+        "cell": "barracks",
+        "x": 13,
+        "y": 13
+      }
+    },
+    {
+      "id": "wren_door",
+      "name": "Wren's door",
+      "kind": "door",
+      "open": false,
+      "a": {
+        "cell": "town",
+        "x": 8,
+        "y": 25
+      },
+      "b": {
+        "cell": "wren_house",
+        "x": 7,
+        "y": 0
+      }
+    },
+    {
+      "id": "cottage_door",
+      "name": "Cottage door",
+      "kind": "door",
+      "open": false,
+      "a": {
+        "cell": "town",
+        "x": 18,
+        "y": 26
+      },
+      "b": {
+        "cell": "cottage",
+        "x": 6,
+        "y": 0
+      }
+    },
+    {
+      "id": "longhouse_door",
+      "name": "Long House door",
+      "kind": "door",
+      "open": false,
+      "a": {
+        "cell": "town",
+        "x": 50,
+        "y": 25
+      },
+      "b": {
+        "cell": "longhouse",
+        "x": 12,
+        "y": 0
+      }
+    }
+  ],
+  "spawn": {
+    "cell": "town",
+    "x": 27,
+    "y": 21
+  },
+  "factions": [],
+  "chapters": [],
+  "people": [
+    {
+      "id": "wren",
+      "name": "Wren",
+      "role": "merchant",
+      "description": "A quick-eyed rust-red wolf with a ledger cord braided into her harness, who remembers every debt and every kindness.",
+      "greeting": "If it is rope, tallow, herbs or a hot meal, I have it or know who does. Tell me what you need and I will tell you what it costs.",
+      "workLabel": "keeping shop",
+      "age": 44,
+      "appearance": {
+        "species": "red",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "saddle",
+        "baseColor": 6,
+        "gradientColor": 7,
+        "markingColor": 0
+      },
+      "voice": 5,
+      "hours": {
+        "start": 7,
+        "end": 19
+      },
+      "route": "",
+      "paid": false,
+      "purse": 120,
+      "herbs": 10,
+      "meals": 16,
+      "home": {
+        "cell": "wren_house",
+        "x": 10,
+        "y": 6
+      },
+      "work": {
+        "cell": "shop",
+        "x": 15,
+        "y": 4
+      },
+      "evening": {
+        "cell": "wren_house",
+        "x": 6,
+        "y": 4
+      },
+      "personality": "Shrewd, warm under a brisk surface, and allergic to waste. Keeps careful accounts of money and of favors.",
+      "backstory": "Wren came to Greyfen as a peddler's apprentice and bought Tallow & Twine when its old owner's hips gave out. She extends credit to families she trusts and remembers exactly who repaid it."
+    },
+    {
+      "id": "harrow",
+      "name": "Harrow",
+      "role": "guard",
+      "description": "A heavy-shouldered charcoal wolf in a scuffed collar of office, grey at the muzzle and slow to raise his voice.",
+      "greeting": "Speak plainly and I will listen plainly. Greyfen stays quiet because everyone knows the watch is listening.",
+      "workLabel": "overseeing the square",
+      "age": 51,
+      "appearance": {
+        "species": "timber",
+        "sex": "male",
+        "stature": "average",
+        "pattern": "mantle",
+        "baseColor": 5,
+        "gradientColor": 2,
+        "markingColor": 1
+      },
+      "voice": 14,
+      "hours": {
+        "start": 6,
+        "end": 18
+      },
+      "route": "",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "barracks",
+        "x": 22,
+        "y": 2
+      },
+      "work": {
+        "cell": "town",
+        "x": 29,
+        "y": 16
+      },
+      "evening": {
+        "cell": "barracks",
+        "x": 22,
+        "y": 2
+      },
+      "personality": "Deliberate, fair and hard to rattle. Speaks little and listens a great deal; dislikes bravado.",
+      "backstory": "Harrow served twenty years on a river-fort garrison before taking command of Greyfen's small watch. He runs it like a household: everyone fed, everyone accounted for."
+    },
+    {
+      "id": "sloe",
+      "name": "Sloe",
+      "role": "guard",
+      "description": "A rangy stone-grey guard with a brass whistle on her collar and a habit of counting exits.",
+      "greeting": "Keep to the lit roads after dark. What do you need?",
+      "workLabel": "on patrol",
+      "age": 26,
+      "appearance": {
+        "species": "timber",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "saddle",
+        "baseColor": 3,
+        "gradientColor": 1,
+        "markingColor": 5
+      },
+      "voice": 17,
+      "hours": {
+        "start": 6,
+        "end": 18
+      },
+      "route": "town_watch",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "barracks",
+        "x": 3,
+        "y": 2
+      },
+      "work": {
+        "cell": "town",
+        "x": 30,
+        "y": 37
+      },
+      "evening": {
+        "cell": "barracks",
+        "x": 3,
+        "y": 2
+      },
+      "personality": "Alert, restless and exacting. Trusts routines more than promises.",
+      "backstory": "Sloe grew up in the Long House and joined the watch at sixteen after a fire nobody else noticed in time."
+    },
+    {
+      "id": "birch",
+      "name": "Birch",
+      "role": "guard",
+      "description": "A pale, deliberate night guard whose ears swivel toward every gate hinge and loose shutter.",
+      "greeting": "Keep to the lit roads after dark. What do you need?",
+      "workLabel": "on night patrol",
+      "age": 30,
+      "appearance": {
+        "species": "arctic",
+        "sex": "male",
+        "stature": "average",
+        "pattern": "solid",
+        "baseColor": 0,
+        "gradientColor": 1,
+        "markingColor": 2
+      },
+      "voice": 19,
+      "hours": {
+        "start": 18,
+        "end": 6
+      },
+      "route": "town_watch",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "barracks",
+        "x": 6,
+        "y": 2
+      },
+      "work": {
+        "cell": "town",
+        "x": 30,
+        "y": 37
+      },
+      "evening": {
+        "cell": "barracks",
+        "x": 6,
+        "y": 2
+      },
+      "personality": "Patient and quietly observant; prefers night because it is honest about being dark.",
+      "backstory": "Birch came south from the snow country with a caravan and stayed when the caravan did not."
+    },
+    {
+      "id": "tamsin",
+      "name": "Tamsin",
+      "role": "guard",
+      "description": "A long-legged rust guard in a quilted harness, patient on watch and sharp when questioned.",
+      "greeting": "Keep to the lit roads after dark. What do you need?",
+      "workLabel": "on night patrol",
+      "age": 34,
+      "appearance": {
+        "species": "maned",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "mantle",
+        "baseColor": 6,
+        "gradientColor": 7,
+        "markingColor": 5
+      },
+      "voice": 21,
+      "hours": {
+        "start": 18,
+        "end": 6
+      },
+      "route": "town_watch",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "barracks",
+        "x": 9,
+        "y": 2
+      },
+      "work": {
+        "cell": "town",
+        "x": 30,
+        "y": 37
+      },
+      "evening": {
+        "cell": "barracks",
+        "x": 9,
+        "y": 2
+      },
+      "personality": "Even-tempered and sharp-witted; asks the question behind the question.",
+      "backstory": "Tamsin once clerked for a magistrate and still writes down everything she is told on watch."
+    },
+    {
+      "id": "sorrel",
+      "name": "Sorrel",
+      "role": "civilian",
+      "description": "A sable gardener with soil worked into her forepaws and seed twine looped over one shoulder.",
+      "greeting": "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does.",
+      "workLabel": "tending the herb garden",
+      "age": 38,
+      "appearance": {
+        "species": "timber",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "piebald",
+        "baseColor": 4,
+        "gradientColor": 3,
+        "markingColor": 0
+      },
+      "voice": 8,
+      "hours": {
+        "start": 8,
+        "end": 17
+      },
+      "route": "",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "cottage",
+        "x": 2,
+        "y": 7
+      },
+      "work": {
+        "cell": "town",
+        "x": 7,
+        "y": 14
+      },
+      "evening": {
+        "cell": "town",
+        "x": 29,
+        "y": 17
+      },
+      "personality": "Gentle, stubborn and practical. Talks to plants more readily than to strangers.",
+      "backstory": "Sorrel has kept the herb garden since her mother did; she and Linden share Birchwall Cottage."
+    },
+    {
+      "id": "linden",
+      "name": "Linden",
+      "role": "civilian",
+      "description": "A broad ash-coated water carrier with a padded yoke and an easy, rolling laugh.",
+      "greeting": "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does.",
+      "workLabel": "drawing water at the fountain",
+      "age": 40,
+      "appearance": {
+        "species": "timber",
+        "sex": "male",
+        "stature": "average",
+        "pattern": "saddle",
+        "baseColor": 2,
+        "gradientColor": 1,
+        "markingColor": 5
+      },
+      "voice": 11,
+      "hours": {
+        "start": 8,
+        "end": 17
+      },
+      "route": "",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "cottage",
+        "x": 9,
+        "y": 7
+      },
+      "work": {
+        "cell": "town",
+        "x": 30,
+        "y": 20
+      },
+      "evening": {
+        "cell": "town",
+        "x": 34,
+        "y": 17
+      },
+      "personality": "Jovial, generous and a little nosy. Carries gossip the way he carries water.",
+      "backstory": "Linden hauls water for half the square and knows everyone's business by noon."
+    },
+    {
+      "id": "fennel",
+      "name": "Fennel",
+      "role": "civilian",
+      "description": "A young rust wolf who talks faster than he walks and knows the price of everything on the square.",
+      "greeting": "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does.",
+      "workLabel": "minding a market stall",
+      "age": 23,
+      "appearance": {
+        "species": "red",
+        "sex": "male",
+        "stature": "average",
+        "pattern": "solid",
+        "baseColor": 6,
+        "gradientColor": 7,
+        "markingColor": 6
+      },
+      "voice": 25,
+      "hours": {
+        "start": 8,
+        "end": 17
+      },
+      "route": "",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "longhouse",
+        "x": 2,
+        "y": 9
+      },
+      "work": {
+        "cell": "town",
+        "x": 25,
+        "y": 15
+      },
+      "evening": {
+        "cell": "town",
+        "x": 29,
+        "y": 21
+      },
+      "personality": "Eager, quick-talking and ambitious; wants a shop of his own someday.",
+      "backstory": "Fennel apprenticed under Wren for a season before taking his own stall on the square."
+    },
+    {
+      "id": "rook",
+      "name": "Rook",
+      "role": "civilian",
+      "description": "A lean sand-and-rust carter with a scarred harness strap and a quiet, steady stride.",
+      "greeting": "Welcome to Greyfen Crossing. The fountain hears most of the town's news before anyone else does.",
+      "workLabel": "hauling crates on the high street",
+      "age": 29,
+      "appearance": {
+        "species": "ethiopian",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "saddle",
+        "baseColor": 7,
+        "gradientColor": 6,
+        "markingColor": 0
+      },
+      "voice": 27,
+      "hours": {
+        "start": 8,
+        "end": 17
+      },
+      "route": "",
+      "paid": true,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "longhouse",
+        "x": 6,
+        "y": 9
+      },
+      "work": {
+        "cell": "town",
+        "x": 15,
+        "y": 18
+      },
+      "evening": {
+        "cell": "town",
+        "x": 34,
+        "y": 21
+      },
+      "personality": "Quiet, dependable and wary of fuss. Loyal once trust is earned.",
+      "backstory": "Rook carts goods between the gate and the shops and once hauled the captain out of a flooded ditch."
+    },
+    {
+      "id": "maple",
+      "name": "Maple",
+      "role": "civilian",
+      "description": "An old ivory wolf with clouded eyes and a warm voice, who knows every story the town tells about itself.",
+      "greeting": "Sit a while. Every stone in this square has a story, and I have outlived most of the wolves who could tell them.",
+      "workLabel": "telling stories by the fountain",
+      "age": 72,
+      "appearance": {
+        "species": "arctic",
+        "sex": "female",
+        "stature": "average",
+        "pattern": "solid",
+        "baseColor": 0,
+        "gradientColor": 1,
+        "markingColor": 1
+      },
+      "voice": 30,
+      "hours": {
+        "start": 8,
+        "end": 17
+      },
+      "route": "",
+      "paid": false,
+      "purse": 30,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "longhouse",
+        "x": 17,
+        "y": 9
+      },
+      "work": {
+        "cell": "town",
+        "x": 33,
+        "y": 20
+      },
+      "evening": {
+        "cell": "town",
+        "x": 33,
+        "y": 20
+      },
+      "personality": "Warm, wry and unhurried. Remembers everything and forgives most of it.",
+      "backstory": "Maple is the oldest wolf in Greyfen and the keeper of its stories, true and otherwise."
+    }
+  ],
+  "routes": [
+    {
+      "id": "town_watch",
+      "name": "Town watch circuit",
+      "posts": [
+        {
+          "cell": "town",
+          "x": 30,
+          "y": 37
+        },
+        {
+          "cell": "town",
+          "x": 22,
+          "y": 19
+        },
+        {
+          "cell": "town",
+          "x": 13,
+          "y": 14
+        },
+        {
+          "cell": "town",
+          "x": 13,
+          "y": 21
+        },
+        {
+          "cell": "town",
+          "x": 31,
+          "y": 3
+        },
+        {
+          "cell": "town",
+          "x": 51,
+          "y": 14
+        },
+        {
+          "cell": "town",
+          "x": 51,
+          "y": 22
+        },
+        {
+          "cell": "town",
+          "x": 41,
+          "y": 18
+        },
+        {
+          "cell": "town",
+          "x": 33,
+          "y": 37
+        }
+      ]
+    }
+  ],
+  "economy": {
+    "treasury": 1000,
+    "storeHerbs": 100,
+    "storeMeals": 50,
+    "dailyHerbs": 10,
+    "dailyMeals": 12
+  },
+  "herbPatch": {
+    "cell": "town",
+    "x": 4,
+    "y": 14
+  },
+  "slots": []
+}

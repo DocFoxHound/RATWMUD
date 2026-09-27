@@ -51,13 +51,71 @@ inline Object Society(const ratw::SocietyState& S)
         Ledger.Add(V(A));
     }
     O->SetArrayField(TEXT("ledger"), Ledger);
+    // Careers (positions, skill, mourning, estates waiting to be settled): Docs/Design/26-living-npcs.md, Phase 4.
+    auto Careers = New(), Positions = New(), Skill = New(), Mourning = New(), Estates = New();
+    Careers->SetNumberField(TEXT("day"), static_cast<double>(S.careers.day));
+    for (const auto& [Id, P] : S.careers.positions)
+    {
+        auto A = New();
+        Text(A, TEXT("holder"), P.holder); Text(A, TEXT("apprentice"), P.apprentice); Text(A, TEXT("lastHolder"), P.lastHolder);
+        A->SetNumberField(TEXT("vacantSince"), P.vacantSince);
+        Positions->SetObjectField(F(Id), A);
+    }
+    for (const auto& [Key, Value] : S.careers.skill) Skill->SetNumberField(F(Key), Value);
+    for (const auto& [Id, M] : S.careers.mourning)
+    {
+        auto A = New();
+        A->SetNumberField(TEXT("until"), M.until); Text(A, TEXT("whom"), M.whom);
+        Mourning->SetObjectField(F(Id), A);
+    }
+    for (const auto& [Id, Day] : S.careers.estates) Estates->SetNumberField(F(Id), Day);
+    Careers->SetObjectField(TEXT("positions"), Positions); Careers->SetObjectField(TEXT("skill"), Skill);
+    Careers->SetObjectField(TEXT("mourning"), Mourning); Careers->SetObjectField(TEXT("estates"), Estates);
+    O->SetObjectField(TEXT("careers"), Careers);
     return O;
+}
+// Careers as saved. Anything unreadable is left out (the society puts founders back in their own jobs for what is
+// missing, see Society::reconcileCareers); careers never make a checkpoint unreadable.
+inline ratw::CareerState ReadCareers(const Object& O)
+{
+    ratw::CareerState C;
+    if (!O.IsValid())
+        return C;
+    double Day = -1;
+    if (O->TryGetNumberField(TEXT("day"), Day) && FMath::IsFinite(Day) && Day >= -1 && Day < 1e9)
+        C.day = static_cast<std::int64_t>(Day);
+    if (auto Positions = Child(O, TEXT("positions")); Positions.IsValid())
+        for (const auto& Pair : Positions->Values)
+            if (auto A = Pair.Value.IsValid() && Pair.Value->Type == EJson::Object ? Pair.Value->AsObject() : Object(); A.IsValid())
+            {
+                ratw::PositionState P;
+                P.holder = S(String(A, TEXT("holder"))); P.apprentice = S(String(A, TEXT("apprentice")));
+                P.lastHolder = S(String(A, TEXT("lastHolder")));
+                double Since = -1;
+                if (A->TryGetNumberField(TEXT("vacantSince"), Since) && FMath::IsFinite(Since))
+                    P.vacantSince = Since;
+                C.positions[S(Pair.Key)] = P;
+            }
+    if (auto Skill = Child(O, TEXT("skill")); Skill.IsValid())
+        for (const auto& Pair : Skill->Values)
+            if (Pair.Value.IsValid() && Pair.Value->Type == EJson::Number)
+                C.skill[S(Pair.Key)] = Pair.Value->AsNumber();
+    if (auto Mourning = Child(O, TEXT("mourning")); Mourning.IsValid())
+        for (const auto& Pair : Mourning->Values)
+            if (auto A = Pair.Value.IsValid() && Pair.Value->Type == EJson::Object ? Pair.Value->AsObject() : Object(); A.IsValid())
+                C.mourning[S(Pair.Key)] = {Number(A, TEXT("until")), S(String(A, TEXT("whom")))};
+    if (auto Estates = Child(O, TEXT("estates")); Estates.IsValid())
+        for (const auto& Pair : Estates->Values)
+            if (Pair.Value.IsValid() && Pair.Value->Type == EJson::Number)
+                C.estates[S(Pair.Key)] = Pair.Value->AsNumber();
+    return C;
 }
 // A malformed subtree invalidates the complete checkpoint. Never silently refill purses.
 inline ratw::SocietyState ReadSociety(const Object& O)
 {
     ratw::SocietyState S;
-    bool Valid = O.IsValid() && O->Values.Num() == 12;
+    // Twelve fields, and "careers" in saves made since careers (Phase 4).
+    bool Valid = O.IsValid() && (O->Values.Num() == 12 || (O->Values.Num() == 13 && O->HasField(TEXT("careers"))));
     auto Integer = [&](const Object& J, const TCHAR* Key, double Max) -> std::int64_t {
         const double N = StrictNumber(J, Key, -1);
         if (N < 0 || N > Max || N != FMath::FloorToDouble(N)) { Valid = false; return 0; }
@@ -80,7 +138,7 @@ inline ratw::SocietyState ReadSociety(const Object& O)
     S.importsRemaining = int(Integer(O, TEXT("importsRemaining"), 4));
     S.herbPatch = int(Integer(O, TEXT("herbPatch"), 60)); S.decisionRemainder = Real(O, TEXT("decisionRemainder"));
     auto Accounts = Child(O, TEXT("accounts")), Residents = Child(O, TEXT("residents"));
-    if (!Accounts.IsValid() || Accounts->Values.Num() > 4096 || !Residents.IsValid() || Residents->Values.Num() > 6)
+    if (!Accounts.IsValid() || Accounts->Values.Num() > int32(ratw::MaxAccounts) || !Residents.IsValid() || Residents->Values.Num() > int32(ratw::MaxResidents))
         Valid = false;
     if (Accounts.IsValid() && Accounts->Values.Num() <= 4096)
         for (const auto& Pair : Accounts->Values)
@@ -94,7 +152,7 @@ inline ratw::SocietyState ReadSociety(const Object& O)
                 for (const auto& Item : Stock->Values) Account.stock[ratwjson::S(Item.Key)] = int(Integer(Stock, *Item.Key, 10000));
             S.accounts[ratwjson::S(Pair.Key)] = Account;
         }
-    if (Residents.IsValid() && Residents->Values.Num() <= 6)
+    if (Residents.IsValid() && Residents->Values.Num() <= int32(ratw::MaxResidents))
         for (const auto& Pair : Residents->Values)
         {
             auto A = Pair.Value.IsValid() && Pair.Value->Type == EJson::Object ? Pair.Value->AsObject() : Object();
@@ -124,6 +182,7 @@ inline ratw::SocietyState ReadSociety(const Object& O)
         E.kind = RequiredText(A, TEXT("kind")); E.from = RequiredText(A, TEXT("from"));
         E.to = RequiredText(A, TEXT("to")); E.item = RequiredText(A, TEXT("item")); S.ledger.push_back(E);
     }
+    S.careers = ReadCareers(Child(O, TEXT("careers")));
     if (!Valid) S.minted = -1;
     return S;
 }

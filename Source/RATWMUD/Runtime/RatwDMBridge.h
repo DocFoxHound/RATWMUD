@@ -7,6 +7,7 @@
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
 #include "HAL/FileManager.h"
+#include "Async/Async.h"
 #include <filesystem>
 #if PLATFORM_LINUX
 #include <sys/stat.h>
@@ -24,6 +25,16 @@ class FRatwDMBridge
     Array Receipts;
     double Accumulator = 2;
     bool Healthy = true;
+    // Each cell's terrain rows as last reported, by a fingerprint of its ground: the ground rarely changes, and a
+    // world's worth of rows is millions of characters to rebuild every two seconds.
+    struct FCachedTerrain
+    {
+        uint64 Fingerprint = 0;
+        Array Rows;
+    };
+    mutable std::map<std::string, FCachedTerrain> TerrainCache;
+    // The snapshot file is encoded and written on a worker; one at a time, and the next waits until it is done.
+    TFuture<bool> SnapshotWrite;
 
     static FString Text(const Object& O, const TCHAR* Key)
     {
@@ -59,7 +70,8 @@ class FRatwDMBridge
         uint8 Hash[20]; FSHA1::HashBuffer(Bytes.Get(), Bytes.Length(), Hash);
         return BytesToHex(Hash, 20);
     }
-    bool Write(const FString& Path, const Object& Value)
+    bool Write(const FString& Path, const Object& Value) { return WriteFile(Path, Value); }
+    static bool WriteFile(const FString& Path, const Object& Value)
     {
         const FString Temp = Path + TEXT(".") + FGuid::NewGuid().ToString(EGuidFormats::Digits) + TEXT(".tmp");
         if (!FFileHelper::SaveStringToFile(ratwjson::Encode(Value), *Temp, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM)) return false;
@@ -171,8 +183,23 @@ class FRatwDMBridge
             Array Claims, Rows;
             for (const auto& Claim : C.factionClaims) Claims.Add(V(F(Claim)));
             Territory->SetArrayField(TEXT("claims"), Claims); J->SetObjectField(TEXT("territory"), Territory);
-            for (int Y = 0; Y < C.height; ++Y)
-            { FString Row; for (int X = 0; X < C.width; ++X) Row += TCHAR(C.tile(X, Y)->glyph); Rows.Add(V(Row)); }
+            // A streamed cell nobody is near has no tiles in memory: its ground is reported unknown (spaces).
+            uint64 Fingerprint = 1469598103934665603ULL;
+            const auto Mix = [&Fingerprint](uint64 Value) { Fingerprint = (Fingerprint ^ Value) * 1099511628211ULL; };
+            Mix(uint64(C.width)); Mix(uint64(C.height)); Mix(uint64(C.tiles.size()));
+            for (const auto& T : C.tiles) Mix(static_cast<unsigned char>(T.glyph));
+            auto& Cached = TerrainCache[C.id];
+            if (Cached.Rows.Num() != C.height || Cached.Fingerprint != Fingerprint)
+            {
+                Cached.Fingerprint = Fingerprint; Cached.Rows.Reset();
+                for (int Y = 0; Y < C.height; ++Y)
+                {
+                    FString Row; Row.Reserve(C.width);
+                    for (int X = 0; X < C.width; ++X) { const auto* T = C.tile(X, Y); Row.AppendChar(T ? TCHAR(T->glyph) : TEXT(' ')); }
+                    Cached.Rows.Add(V(Row));
+                }
+            }
+            Rows = Cached.Rows;
             J->SetArrayField(TEXT("terrain"), Rows); Cells.Add(V(J));
         }
         for (const auto& Pair : World.factions())
@@ -321,7 +348,20 @@ class FRatwDMBridge
         }
         if (Error)
         { Healthy = false; UE_LOG(LogTemp, Error, TEXT("RATW operator queue filesystem failure; channel halted.")); return; }
-        if (!Write(Directory / TEXT("snapshot.json"), Snapshot(World, Characters, Online, Activity, Revision, Now)))
-        { Healthy = false; UE_LOG(LogTemp, Error, TEXT("RATW operator snapshot failed; channel halted.")); }
+        // The snapshot is taken here and encoded and written on a worker, so the game doesn't wait on a file of the
+        // whole world. While the last one is still being written, this one is skipped (the next comes in two seconds).
+        if (SnapshotWrite.IsValid())
+        {
+            if (!SnapshotWrite.IsReady()) return;
+            if (!SnapshotWrite.Get())
+            { Healthy = false; UE_LOG(LogTemp, Error, TEXT("RATW operator snapshot failed; channel halted.")); return; }
+        }
+        const FString Path = Directory / TEXT("snapshot.json");
+        const Object Value = Snapshot(World, Characters, Online, Activity, Revision, Now);
+        SnapshotWrite = Async(EAsyncExecution::ThreadPool, [Path, Value]() { return WriteFile(Path, Value); });
+    }
+    ~FRatwDMBridge()
+    {
+        if (SnapshotWrite.IsValid()) SnapshotWrite.Wait();
     }
 };

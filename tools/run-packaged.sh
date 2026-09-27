@@ -8,12 +8,18 @@ if [ ! -x "$ratw_binary" ]; then
 fi
 ratw_mode="${1:-play}"
 if [ "$#" -gt 0 ]; then shift; fi
+source "$ratw_root/tools/mind.sh"
+status=0
 case "$ratw_mode" in
   play)
-    exec "$ratw_binary" /Engine/Maps/Entry -windowed -ResX=1600 -ResY=1000 -ForceRes -NoSplash -NoSound "$@"
+    ratw_start_mind "$@"
+    "$ratw_binary" /Engine/Maps/Entry -windowed -ResX=1600 -ResY=1000 -ForceRes -NoSplash -NoSound "${ratw_mind_args[@]}" "$@" || status=$?
+    exit "$status"
     ;;
   server)
-    exec "$ratw_binary" '/Engine/Maps/Entry?listen' -RatwHeadlessHost -nullrhi -NoSound -NoSplash -Unattended -port=7787 -MULTIHOME="${RATW_BIND:-127.0.0.1}" -log "$@"
+    ratw_start_mind "$@"
+    "$ratw_binary" '/Engine/Maps/Entry?listen' -RatwHeadlessHost -nullrhi -NoSound -NoSplash -Unattended -port=7787 -MULTIHOME="${RATW_BIND:-127.0.0.1}" -log "${ratw_mind_args[@]}" "$@" || status=$?
+    exit "$status"
     ;;
   connect)
     ratw_address="${1:-127.0.0.1:7787}"

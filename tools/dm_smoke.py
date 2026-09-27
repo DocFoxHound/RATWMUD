@@ -69,11 +69,29 @@ class Smoke:
         self.checks.append(detail)
         print('PASS: ' + detail, flush=True)
 
-    def process(self, command, label):
+    def process(self, command, label, env=None):
         log = self.logs / f'dm-{self.kind}-{label}.log'
         stream = log.open('w')
         self.streams.append(stream)
-        return subprocess.Popen(command, cwd=self.root, stdout=stream, stderr=subprocess.STDOUT)
+        return subprocess.Popen(command, cwd=self.root, stdout=stream, stderr=subprocess.STDOUT, env=env)
+
+    def scratch_database(self):
+        """The Storykeeper keeps its state in PostgreSQL; this run gets its own database, dropped afterwards."""
+        import world_db
+        from test_world_db import superuser
+        self.database = f'ratw_dm_smoke_{os.getpid()}'
+        with superuser() as su:
+            su.execute(f'DROP DATABASE IF EXISTS {self.database} WITH (FORCE)')
+            su.execute(f'CREATE DATABASE {self.database} OWNER ratw_owner')
+            su.execute(f'GRANT CONNECT ON DATABASE {self.database} TO ratw_game')
+        with world_db.connect('dev', 'owner', dbname=self.database) as owner:
+            world_db.migrate(owner)
+
+    def drop_database(self):
+        from test_world_db import superuser
+        if getattr(self, 'database', None):
+            with superuser() as su:
+                su.execute(f'DROP DATABASE IF EXISTS {self.database} WITH (FORCE)')
 
     @staticmethod
     def stop(process):
@@ -129,8 +147,11 @@ class Smoke:
         self.check(True, 'Native authority publishes its separate owner-private operator snapshot.')
 
     def start_service(self):
+        if not getattr(self, 'database', None):
+            self.scratch_database()
         self.service = self.process([sys.executable, str(self.root / 'tools/dm_service.py'), '--exchange', str(self.exchange),
-                                     '--state-dir', str(self.state_dir), '--port', str(self.http_port)], 'http')
+                                     '--state-dir', str(self.state_dir), '--port', str(self.http_port)], 'http',
+                                    env={**os.environ, 'RATW_DEV_DBNAME': self.database})
         session = self.state_dir / 'session.json'
         self.wait(session.exists, 'Storykeeper private session file', 20)
         parts = urlsplit(json.loads(session.read_text())['url'])
@@ -342,6 +363,7 @@ class Smoke:
         finally:
             for process in (self.client, self.server, self.service):
                 self.stop(process)
+            self.drop_database()
             for stream in self.streams:
                 stream.close()
             self.report['elapsedSeconds'] = round(time.time() - self.started, 3)

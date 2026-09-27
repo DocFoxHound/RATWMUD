@@ -1,4 +1,4 @@
-import {EXECUTABLE, EVENT_LABELS, array, string, finite, recordId, recordName, cellOf, uniqueIds, utcLabel, utcDate, inputUtc, parseUtcInput, integer, numeric, bridgeFresh, normalizeCells, characters, mergedRecords, statusClass, eventPayload, auditStatus, commandMessage} from './model.mjs';
+import {EXECUTABLE, EVENT_LABELS, array, string, finite, recordId, recordName, cellOf, terrainLookup, terrainDraw, uniqueIds, utcLabel, utcDate, inputUtc, parseUtcInput, integer, numeric, bridgeFresh, normalizeCells, characters, mergedRecords, statusClass, eventPayload, auditStatus, commandMessage} from './model.mjs';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -7,6 +7,10 @@ let state = blankState(), token = '', receivedAt = 0, epoch = 0, polling = false
 let selectedCell = '', selectedChapter = '', selectedPreview = '', peakSuggestion = null, confirmation = null, currentPage = 'world';
 let statusNotice = null;
 const renderSignatures = new Map();
+// The terrain catalog, served beside this page as terrain.generated.mjs (tools/terrain_catalog.py). Until (unless) it
+// loads, tiles draw as their stored codes.
+let terrain = new Map();
+import('./terrain.generated.mjs').then(module => { terrain = terrainLookup(module.TERRAIN); drawMap(); }, () => undefined);
 let map = {zoom:1,panX:0,panY:0,scale:1,offsetX:0,offsetY:0,width:0,height:0,drag:null,moved:false,hitCells:[]};
 
 function node(tag, className = '', text = '') {
@@ -372,13 +376,15 @@ function drawMap() {
       if(claims.length>1){ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.strokeStyle='#b6a1c75f';for(let d=-h;d<w;d+=12){ctx.beginPath();ctx.moveTo(x+d,y+h);ctx.lineTo(x+d+h,y);ctx.stroke();}ctx.restore();}
     }
     if(map.scale>=5){
-      ctx.font=`${Math.min(14,map.scale*.88)}px ui-monospace,monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font=`${Math.min(14,map.scale*.88)}px "DejaVu Sans Mono",ui-monospace,monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+      const ascii=$('#layer-ascii').checked;
       for(let ty=0;ty<Math.min(cell.height,256);ty++){
         const row=string(array(cell.terrain)[ty]);
         for(let tx=0;tx<Math.min(cell.width,256);tx++){
-          const glyph=row[tx];if(!glyph||glyph===' ')continue;
-          ctx.fillStyle=glyph==='#'?'#829078':glyph==='~'?'#62868b':glyph==='+'?'#c5ab6f':'#637c60';
-          ctx.fillText(glyph,x+(tx+.5)*map.scale,y+(ty+.5)*map.scale);
+          const code=row[tx];if(!code||code===' ')continue;
+          const tile=terrainDraw(terrain,code,ascii);
+          if(tile.bg){ctx.fillStyle=tile.bg;ctx.fillRect(x+tx*map.scale,y+ty*map.scale,map.scale+.5,map.scale+.5);}
+          ctx.fillStyle=tile.fg;ctx.fillText(tile.text,x+(tx+.5)*map.scale,y+(ty+.5)*map.scale);
         }
       }
     }
@@ -538,7 +544,7 @@ function renderEventFields(){
     container.append(field('Audience','scope','select',{options:[['world','All connected players'],['cell','Players in a cell'],['player','One connected player'],['chapter','Connected Chapter members']]}),field('Target','target','select',{required:false}),field('Narrative text','text','textarea',{rows:5,maxLength:2000}));
     form.elements.namedItem('scope').addEventListener('change',renderNoticeTarget);
   } else if(kind==='weather') {
-    container.append(field('Cell','cell','select',{source:'cells'}),field('Weather preset','preset','select',{options:[['clear','Clear'],['rain','Rain'],['snow','Snow'],['fog','Fog'],['seasonal','Return to seasonal weather']]}));
+    container.append(field('Cell','cell','select',{source:'cells'}),field('Weather preset','preset','select',{options:[['clear','Clear'],['overcast','Overcast'],['rain','Rain'],['storm','Storm'],['snow','Snow'],['fog','Fog'],['sandstorm','Sandstorm'],['seasonal','Return to seasonal weather']]}));
   } else if(kind==='npc_relocate'){
     container.append(field('Existing NPC','npc','select',{source:'npcs'}),field('Destination cell','cell','select',{source:'cells'}));
     const pair=node('div','form-grid');pair.append(field('Local X','x','number',{min:0,max:256,step:.1,value:.5}),field('Local Y','y','number',{min:0,max:256,step:.1,value:.5}));container.append(pair,node('p','form-note','Starts real navigation; it does not teleport or create a resident. Recruited wolves and protected essential jobs cannot be reassigned. Arrival must be verified.'));
@@ -658,7 +664,7 @@ $('#confirm-accept').addEventListener('click',()=>finishConfirmation(true));
 $('#confirm-cancel').addEventListener('click',()=>finishConfirmation(false));
 $('#confirm-dialog').addEventListener('cancel',event=>{event.preventDefault();finishConfirmation(false);});
 $('#fit-map').addEventListener('click',fitMap);
-for(const id of ['layer-claims','layer-chapters','layer-actors','map-level'])$(`#${id}`).addEventListener('change',drawMap);
+for(const id of ['layer-claims','layer-chapters','layer-actors','layer-ascii','map-level'])$(`#${id}`).addEventListener('change',drawMap);
 $('#cell-search').addEventListener('input',renderWorld);
 $('#character-search').addEventListener('input',renderCharacters);
 $('#character-filter').addEventListener('change',renderCharacters);

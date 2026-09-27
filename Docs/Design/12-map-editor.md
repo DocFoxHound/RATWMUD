@@ -1,6 +1,6 @@
 # Atlas Workshop: separate two-tier map authoring
 
-Status: implemented first authoring slice, 2026-09-21. This document describes the authoring workflow and boundaries; verification results belong in the test report.
+Status: implemented first authoring slice, 2026-09-21. Storage is moving to PostgreSQL (DEV/PROD); see `20-world-database.md`. This document describes the authoring workflow and boundaries; verification results belong in the test report.
 
 ## Purpose and gameplay boundary
 
@@ -22,7 +22,9 @@ An initial cut chooses the first traversable spawn if one exists. It is a conven
 
 ## Data ownership and continuity
 
-The authoring document contains one shared terrain grid and sparse elevation overrides for the world canvas. World cells contain only rectangular bounds and metadata. They may not embed an independent copy of terrain. Detached rooms own their own grids because they are intentionally outside the main canvas.
+Since atlas v3 (2026-09-25) there is no shared canvas: each world cell holds its own terrain grid and sparse elevation overrides, like a detached room, and sits at x, y in world tiles anywhere within ±10⁹. The world is the ground its cells hold and has no edge; new cells come in preset sizes that snap to their neighbours. Brushes, fills and stamps work across cell seams, and cut, split and merge carry each tile into whichever cell now holds it. Older v1/v2 documents with one shared canvas convert on load. (The rest of this section describes the original v2 design.)
+
+The v2 authoring document contained one shared terrain grid and sparse elevation overrides for the world canvas. World cells contained only rectangular bounds and metadata. Detached rooms own their own grids because they are intentionally outside the main canvas.
 
 | Authoring element | Stored coordinates | Effect of cut, split, or merge |
 | --- | --- | --- |
@@ -43,7 +45,7 @@ Cell IDs are useful persistent identifiers, but a topological edit can legitimat
 
 The glyph map is still a terrain tileset. Wolves move freely over it according to the existing movement simulation. The editor changes content, not that control scheme.
 
-Elevation overrides use quarter-tile increments from −16 to +16. An absent override retains the glyph's game default: `:` is +0.25, `^` is +0.5, and other supported glyphs are level. An explicit zero overrides a raised glyph; choosing **Glyph default** removes the override. Cell Z describes placement in the larger world, separately from local tile elevation.
+Elevation overrides use half-tile increments from −16 to +16 (quarter steps were retired on 2026-09-26; older documents round to the nearest half on load). An absent override retains the glyph's game default: `^` is +0.5 and every other glyph is level. `:` Slope and `%` Cliff take the height you give them. The **Elevation** switch (key `E`) shows relief as Off, Shading, or Full, and marks which height changes can be walked; see `22-elevation-weather.md`. An explicit zero overrides a raised glyph; choosing **Glyph default** removes the override. Cell Z describes placement in the larger world, separately from local tile elevation.
 
 Explicit links connect distinct cells, including detached interiors. A link endpoint must be traversable, unique, and have a cardinally neighboring free arrival tile whose elevation differs by at most 0.55. Doors export a `+` marker while preserving the authored elevation. Stairs export `^`, defaulting to +0.5 unless explicitly overridden. Stairs and passages are always open. Painting a marker alone does not create a functioning link.
 
@@ -53,8 +55,9 @@ These generated passages preserve the established runtime behavior: reaching an 
 
 ## Architecture and validation
 
-- `Editor/model.mjs` is the pure editing model. Its public mutators validate a candidate and commit only on success. Selection uses IDs because successful edits replace nested cell objects.
-- `Editor/app.mjs`, `Editor/index.html`, and `Editor/style.css` provide the canvas, inspector, drill-down views, links, undo/redo, JSON downloads, and browser-local recovery.
+- `Editor/src/model/model.mjs` is the pure editing model (plain JS, tested with `node --test`). Its public mutators validate a candidate and commit only on success. Selection uses IDs because successful edits replace nested cell objects. `templates.mjs` holds the building templates.
+- `Editor/src` is a React + TypeScript app built with Vite (`bash tools/editor.sh` builds and serves it): menu bar, command palette and shortcuts from one command registry (`lib/commands.ts`), a canvas renderer with shape tools and draggable markers (`components/MapCanvas.tsx`), explorer, contextual inspector, Problems panel, four workspaces (Map for world terrain and cells, Interiors for detached rooms, People, Characters), undo/redo. Since 2026-09-25 the editor edits the one world live in PostgreSQL (`20-world-database.md`, `lib/live.ts`, `tools/live_edit.py`).
+- `tools/roster.py` validates the shared character roster, assigns profession slots permanently at export, and generates characters through the live-NPC model.
 - `tools/map_editor.py` serves only the fixed editor assets on loopback and performs authoritative export validation. It never opens the game's save database.
 - `Source/RATWMUD/Core/RatwAuthoring.cpp` independently validates the exported manifest and its cell files into a candidate world before replacing runtime content.
 
@@ -64,7 +67,7 @@ The local host restricts accepted Host/Origin values, uses a random session toke
 
 ## Saving, recovery, and safe playtests
 
-One completed brush drag is one undo step; the UI retains a bounded editing history. Browser-local drafts provide recovery, but a downloaded JSON file is the portable source of truth and the recommended backup. Clearing browser data can remove drafts. Draft saving does not write to the repository or a running world.
+One completed brush drag is one undo step; the UI retains a bounded history of the editor's own actions. Every action is saved to the DEV database as it happens, and undo sends the inverse edits, so it never overwrites someone else's later work.
 
 Each ZIP contains `atlas.json`, `world.ratw`, separate `cells/<id>.cell` files, and launch notes. It is a content snapshot, not a patch applied to another package. CLI export requires a new output directory and refuses to overwrite an existing directory. The tool does not hot-reload the game or publish content.
 

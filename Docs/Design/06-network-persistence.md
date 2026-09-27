@@ -79,8 +79,12 @@ write failure. The database connection closes before destruction.
 
 The transaction includes dormant and connected characters, doors, weather, NPC
 positions, permanent map knowledge, party membership, active NPC interactions,
-permanent summaries, social sessions and reward receipts. It saves every five
-seconds and after consequential interactions, disconnect and normal shutdown.
+permanent summaries, social sessions and reward receipts. It saves in the
+background every 15 seconds; chat, NPC conversation turns, door use and colour
+changes ask for a background save within three seconds (`SaveSoon()`) instead of
+each making the game wait on a whole-world save. Trades, gathering and eating,
+accounts, character creation, login/logout, operator actions, spawns and normal
+shutdown still save synchronously before replying.
 Typing, current speech markers, active paths and held input are cleared on restore.
 The plain core validates saved world geometry before it is accepted. Dormant
 characters stay outside the active simulation until they reconnect.
@@ -89,8 +93,12 @@ The single-row schema deliberately trades query flexibility for an atomic,
 reviewable MVP checkpoint. A production migration should normalize accounts,
 characters, sessions, rewards and memories while retaining transaction boundaries
 and source identifiers. Schema version 1 has no automatic migration from future
-versions. A crash can lose up to five seconds of movement; successful action
-commits and social settlement are saved synchronously.
+versions. A crash can lose up to 15 seconds of movement and up to three seconds
+of chat and conversation (a client retrying a lost chat command may then post it
+again); economic and account commits are saved synchronously. The per-NPC
+`live.npc_state` rows are rewritten only when a resident's state changed. In the database, saves are built and
+written by the persistence worker, usually as deltas (only the rows that changed, `game.save_checkpoint_delta`), and
+carry the event log's new entries (`game.events`); see `26-living-npcs.md`, Phase 2.
 
 ## Verification and remaining decisions
 

@@ -1,0 +1,22 @@
+id: longhouse
+name: The Long House
+description: A shared lodging hall for single workers and elders. Screened sleeping bays line the south wall behind a long communal table.
+world: 40 40 0
+size: 24 12
+outdoors: false
+weather: clear
+wind: 0 0 0
+lighting: 1 0.40000000000000002 warm
+grid:
+############+###########
+#......................#
+#......................#
+#......................#
+#.......TTTTTTTT.......#
+#.......TTTTTTTT.......#
+#......................#
+#......................#
+#...T...T.......T...T..#
+#...T...T.......T...T..#
+#...T...T.......T...T..#
+########################

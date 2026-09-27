@@ -1,0 +1,22 @@
+id: shop
+name: Tallow & Twine
+description: Shelves of candles, rope, dried herbs and wrapped meals line a narrow general store. A long counter keeps the goods and the customers politely apart.
+world: 0 -12 0
+size: 20 12
+outdoors: false
+weather: clear
+wind: 0 0 0
+lighting: 1 0.59999999999999998 warm
+grid:
+####################
+#..................#
+#.====........====.#
+#..................#
+#......========....#
+#..................#
+#..................#
+#..................#
+#.TT...............#
+#.TT...............#
+#..................#
+##########+#########

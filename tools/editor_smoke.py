@@ -14,7 +14,7 @@ import map_editor
 def fixture(root):
     # Use the actual browser model, not a hand-written equivalent.
     script = '''
-import * as m from './Editor/model.mjs';
+import * as m from './Editor/src/model/model.mjs';
 const p=m.createProject(64,48,'Atlas integration');
 m.paint(p,29,10,'~',6);
 m.setHeight(p,43,8,.25);
@@ -30,7 +30,9 @@ console.log(JSON.stringify(p));
 '''
     raw = subprocess.check_output(['node', '--input-type=module', '-e', script], cwd=root, text=True)
     p = json.loads(raw)
-    assert p['terrain'][10][31:34] == '~~~', 'Painting did not cross cut boundary'
+    ground = lambda x, y: next(c['terrain'][y - c['y']][x - c['x']] for c in p['cells']
+                               if c['x'] <= x < c['x'] + c['width'] and c['y'] <= y < c['y'] + c['height'])
+    assert ''.join(ground(x, 10) for x in range(31, 34)) == '~~~', 'Painting did not cross cut boundary'
     linked = next(c for c in p['cells'] if c['id'] == p['links'][0]['a']['cell'])
     assert linked['x'] + p['links'][0]['a']['x'] == 42, 'Split/merge moved a door anchor'
     return p

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Storykeeper: trusted-local DM planning, audit, and opt-in authority bridge.
 
-Standard library only. Never opens or edits a game save database. HTTP APIs are
+Keeps its state in the dm schema of the world database (DEV unless --database
+prod; needs psycopg). Never touches the game's own save tables. HTTP APIs are
 loopback-only and bearer authenticated; native effects cross a private file bridge.
 """
 from __future__ import annotations
@@ -17,8 +18,8 @@ import os
 from pathlib import Path
 import re
 import secrets
-import sqlite3
 import stat
+import sys
 import threading
 import time
 from datetime import datetime, timedelta, timezone
@@ -27,6 +28,53 @@ from urllib.parse import urlsplit, unquote
 import uuid
 
 ROOT = Path(__file__).resolve().parent.parent
+ACTIVITY = 'chapter, weekday, hour, activeminutes AS "activeMinutes", memberminutes AS "memberMinutes", samples'
+
+
+class PgState:
+    """The Storykeeper's tables in PostgreSQL (schema dm, migration 0012), used the way it used SQLite:
+    execute() with ? placeholders returning dict rows, and `with db:` for one transaction (nesting is fine)."""
+
+    def __init__(self, conn):
+        from psycopg.rows import dict_row
+        self.conn = conn
+        self.conn.row_factory = dict_row
+        self._open = []
+
+    def execute(self, sql, params=()):
+        return self.conn.execute(sql.replace('?', '%s'), params)
+
+    def __enter__(self):
+        transaction = self.conn.transaction()
+        transaction.__enter__()
+        self._open.append(transaction)
+        return self
+
+    def __exit__(self, *exc):
+        return self._open.pop().__exit__(*exc)
+
+    def close(self):
+        self.conn.close()
+
+
+def database_errors():
+    import psycopg
+    return psycopg.Error
+
+
+# Where the Storykeeper keeps its state: the dm schema of the DEV database unless told otherwise
+# (--database prod). Tests point this at a scratch database.
+DATABASE = 'dev'
+
+
+def default_connect():
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import world_db
+    return world_db.connect(DATABASE, 'game', options='-c search_path=dm')
+
+
+DEFAULT_CONNECT = default_connect
+WEATHERS = ('clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm')
 MAX_BODY = 65536
 MAX_SNAPSHOT = 8 * 1024 * 1024
 STALE_SECONDS = 10
@@ -192,7 +240,7 @@ def normalize_snapshot(raw, now):
                 checked(type(entry.get('outdoors')) is bool, 'Invalid shelter flag.')
                 item['outdoors'] = entry['outdoors']
                 weather = entry.get('weather', 'clear')
-                checked(weather in ('clear', 'rain', 'snow', 'fog'), 'Invalid cell weather.')
+                checked(weather in WEATHERS, 'Invalid cell weather.')
                 item['weather'] = weather
                 rows = entry.get('terrain')
                 checked(isinstance(rows, list) and len(rows) == item['height'] and
@@ -256,35 +304,15 @@ def normalize_snapshot(raw, now):
 
 
 class DMService:
-    def __init__(self, state_dir, exchange_dir, *, clock=time.time):
+    def __init__(self, state_dir, exchange_dir, *, clock=time.time, connect=None):
         self.state_dir = private_dir(state_dir)
         self.exchange_dir = private_dir(exchange_dir)
         self.outbox = private_dir(self.exchange_dir / 'outbox')
         self.inbox = private_dir(self.exchange_dir / 'inbox')
         self.clock = clock
         self.lock = threading.RLock()
-        db_path = self.state_dir / 'storykeeper.sqlite'
-        checked(not db_path.is_symlink(), 'Database cannot be a symlink.')
-        self.db = sqlite3.connect(db_path, check_same_thread=False)
-        os.chmod(db_path, 0o600)
-        self.db.row_factory = sqlite3.Row
-        self.db.executescript('''
-            PRAGMA journal_mode=WAL;
-            PRAGMA foreign_keys=ON;
-            CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS documents(kind TEXT NOT NULL,id TEXT NOT NULL,data TEXT NOT NULL,
-                PRIMARY KEY(kind,id));
-            CREATE TABLE IF NOT EXISTS commands(id TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,response TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS audit(sequence INTEGER PRIMARY KEY AUTOINCREMENT,at REAL NOT NULL,
-                action TEXT NOT NULL,target TEXT NOT NULL,detail TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS activity(chapter TEXT NOT NULL,weekday INTEGER NOT NULL,hour INTEGER NOT NULL,
-                activeMinutes REAL NOT NULL,memberMinutes REAL NOT NULL,samples INTEGER NOT NULL,
-                PRIMARY KEY(chapter,weekday,hour));
-            CREATE TABLE IF NOT EXISTS routes(chapter TEXT NOT NULL,source TEXT NOT NULL,destination TEXT NOT NULL,
-                transitions INTEGER NOT NULL,PRIMARY KEY(chapter,source,destination));
-            CREATE TABLE IF NOT EXISTS arrivals(npc TEXT PRIMARY KEY,at REAL NOT NULL,event TEXT NOT NULL);
-        ''')
-        self.db.commit()
+        # State lives in the database's dm schema; the state directory keeps only the private session file.
+        self.db = PgState((connect or DEFAULT_CONNECT)())
         self.snapshot = self._meta('snapshot')
         self.bridge_error = 'Authority snapshot has not been received.'
         self.world_mismatch = False
@@ -366,22 +394,22 @@ class DMService:
                 boundary = (dt.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)).timestamp()
                 seconds = min(end, boundary) - cursor
                 self.db.execute('''INSERT INTO activity VALUES(?,?,?,?,?,1) ON CONFLICT(chapter,weekday,hour)
-                    DO UPDATE SET activeMinutes=activeMinutes+excluded.activeMinutes,
-                    memberMinutes=memberMinutes+excluded.memberMinutes,samples=samples+1''',
+                    DO UPDATE SET activeMinutes=activity.activeMinutes+excluded.activeMinutes,
+                    memberMinutes=activity.memberMinutes+excluded.memberMinutes,samples=activity.samples+1''',
                     (chapter['id'], dt.weekday(), dt.hour, seconds / 60, seconds * len(active) / 60))
                 cursor += seconds
             for identifier in chapter['memberIds']:
                 before, after = previous.get(identifier), current.get(identifier)
                 if before and after and before['online'] and after['online'] and before['cell'] != after['cell']:
                     self.db.execute('''INSERT INTO routes VALUES(?,?,?,1) ON CONFLICT(chapter,source,destination)
-                        DO UPDATE SET transitions=transitions+1''', (chapter['id'], before['cell'], after['cell']))
+                        DO UPDATE SET transitions=routes.transitions+1''', (chapter['id'], before['cell'], after['cell']))
 
     def state(self):
         with self.lock:
             self.tick()
             result = {'version': 1, 'serverTime': utc(self.clock()), 'bridge': self.bridge(),
                       'snapshot': copy.deepcopy(self.snapshot),
-                      'activity': [dict(row) for row in self.db.execute('SELECT * FROM activity ORDER BY chapter,weekday,hour')],
+                      'activity': [dict(row) for row in self.db.execute(f'SELECT {ACTIVITY} FROM activity ORDER BY chapter,weekday,hour')],
                       'routes': [dict(row) for row in self.db.execute('SELECT * FROM routes ORDER BY chapter,source,destination')],
                       'audit': [dict(row) for row in self.db.execute('SELECT * FROM audit ORDER BY sequence DESC LIMIT 200')]}
             for singular, plural in [('campaign', 'campaigns'), ('beat', 'beats'), ('event', 'events'),
@@ -537,7 +565,7 @@ class DMService:
         elif kind == 'weather':
             shape(payload, ('cell', 'preset'))
             ident(payload['cell'])
-            checked(payload['preset'] in ('clear', 'rain', 'snow', 'fog', 'seasonal'), 'Unsupported weather preset.')
+            checked(payload['preset'] in (*WEATHERS, 'seasonal'), 'Unsupported weather preset.')
         elif kind == 'npc_relocate':
             shape(payload, ('npc', 'cell', 'x', 'y'))
             ident(payload['npc']); ident(payload['cell'])
@@ -730,7 +758,7 @@ class DMService:
 
     def _peak(self, chapter_id):
         checked(self._get('chapter', chapter_id), 'Unknown Chapter.')
-        rows = list(self.db.execute('SELECT * FROM activity WHERE chapter=? AND activeMinutes>0 ORDER BY activeMinutes DESC,weekday,hour', (chapter_id,)))
+        rows = list(self.db.execute(f'SELECT {ACTIVITY} FROM activity WHERE chapter=? AND activeMinutes>0 ORDER BY activeMinutes DESC,weekday,hour', (chapter_id,)))
         if not rows:
             return {'chapterId': chapter_id, 'suggestion': None, 'reason': 'No observed active Chapter minutes yet. No history was fabricated.'}
         best = rows[0]
@@ -878,7 +906,8 @@ def handler_class(service, token, frontend):
                     return
                 checked(not path.startswith('/api'), 'API route not found.', 404)
                 decoded = unquote(path)
-                checked(decoded in ('/', '/index.html', '/app.js', '/app.mjs', '/model.mjs', '/style.css'), 'Static route not found.', 404)
+                checked(decoded in ('/', '/index.html', '/app.js', '/app.mjs', '/model.mjs', '/terrain.generated.mjs', '/style.css'),
+                        'Static route not found.', 404)
                 file = frontend / ('index.html' if decoded == '/' else decoded.lstrip('/'))
                 checked(file.parent == frontend and not file.is_symlink(), 'Invalid static file.', 404)
                 types = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -888,7 +917,7 @@ def handler_class(service, token, frontend):
                 self._send(error.status, {'ok': False, 'error': str(error)})
             except OSError:
                 self._send(404, {'ok': False, 'error': 'Frontend file unavailable.'})
-            except sqlite3.Error:
+            except database_errors():
                 self._send(503, {'ok': False, 'error': 'Local state is unavailable.'})
 
         def do_POST(self):
@@ -907,7 +936,7 @@ def handler_class(service, token, frontend):
                 self._send(200, service.command(decode(raw)))
             except DMError as error:
                 self._send(error.status, {'ok': False, 'error': str(error)})
-            except (OSError, sqlite3.Error):
+            except (OSError, database_errors()):
                 self._send(503, {'ok': False, 'error': 'Local operation failed; no completion is implied. Inspect the local service.'})
 
         def do_OPTIONS(self):
@@ -926,7 +955,11 @@ def main():
     parser.add_argument('--exchange', type=Path, default=ROOT / 'Saved/DMBridge')
     parser.add_argument('--port', type=int, default=8780)
     parser.add_argument('--frontend', type=Path, default=ROOT / 'DM')
+    parser.add_argument('--database', choices=('dev', 'prod'), default='dev',
+                        help='whose dm schema holds the Storykeeper state (default dev)')
     args = parser.parse_args()
+    global DATABASE
+    DATABASE = args.database
     checked(1 <= args.port <= 65535, 'Invalid local port.')
     service = DMService(args.state_dir, args.exchange)
     token = secrets.token_urlsafe(32)
@@ -939,7 +972,7 @@ def main():
         while not stopping.wait(1):
             try:
                 service.tick()
-            except (OSError, sqlite3.Error, DMError):
+            except (OSError, database_errors(), DMError):
                 # Failure never changes a queued effect into an applied one.
                 service.bridge_error = 'Local service processing failed; inspect the private state directory.'
 

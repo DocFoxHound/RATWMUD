@@ -55,10 +55,21 @@ the same conversation. Direct later experiences can create new summaries.
 NPC input passes through the same hearing and visual perception rules as player
 input. A distant or obstructed utterance can contain `...`; an unseen action can
 contain `···`. The language provider never receives the source's hidden words.
-The deterministic recall path selects recent subject-specific active context or
-the most recent matching permanent summary; the adapter caps context sent to a
-provider. Rich relevance ranking and contradictory-belief handling remain future
-work.
+Two deterministic recall paths exist. `MemoryStore::recallForDialogue` is what a
+language model receives: up to 16 recent turns of the current conversation from
+both sides (the NPC's own lines as "You"), a note of what came earlier in it, and
+the ends (the most recent part) of up to three earlier conversations with the same
+subject, all within 3,600 bytes. `MemoryStore::recall` is the short form the
+authored offline replies quote. Relevance ranking, LLM-written summaries and
+contradictory-belief handling remain future work (see `26-living-npcs.md`).
+
+With the NPC Mind, a conversation also keeps the NPC's private notes ("(your note)") and promises made in it
+("(your promise)", "(their promise)"). When it closes, the Mind's summary from the NPC's point of view replaces the
+extractive one (`MemoryStore::rewrite`); the extractive summary stays if the Mind is absent or fails.
+
+Something said to an NPC while it is still answering is queued (the latest four
+lines) and answered in turn, rather than dropped. An NPC is addressed only when
+its name appears as a whole word ("Ash" is not addressed by "washing ashes").
 
 NPC replies are normal spatial roleplay posts. A generated answer cannot bypass
 hearing, visibility, order, map-marker duration or the narrative queue. A pending

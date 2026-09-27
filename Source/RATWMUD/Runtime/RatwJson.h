@@ -143,6 +143,7 @@ inline Object Entity(const ratw::Entity& E, double Time)
     Text(O, TEXT("id"), E.id);
     Text(O, TEXT("name"), E.name);
     Text(O, TEXT("cell"), E.cellId);
+    if (E.dead) O->SetBoolField(TEXT("dead"), true);
     O->SetNumberField(TEXT("x"), E.position.x);
     O->SetNumberField(TEXT("y"), E.position.y);
     O->SetNumberField(TEXT("facing"), E.facing);
@@ -229,6 +230,7 @@ inline ratw::Entity ReadEntity(const Object& O)
     const double Pace = StrictNumber(O, TEXT("pace"), O.IsValid() && O->HasField(TEXT("pace")) ? -1.0 : 0.0);
     E.pace = Pace >= 0 && Pace <= 10 && Pace == FMath::FloorToDouble(Pace) ? static_cast<int>(Pace) : -1;
     E.exhausted = Bool(O, TEXT("exhausted"));
+    E.dead = Bool(O, TEXT("dead"));
     bool Exhausted = false;
     if (O.IsValid() && O->HasField(TEXT("exhausted")))
     {
@@ -382,6 +384,16 @@ inline FString EnvironmentDescription(const ratw::Cell& Cell, const ratw::Enviro
     case ratw::Weather::Fog:
         Conditions = TEXT("Fog conceals the distance. Ears and nose can still find what the eyes cannot.");
         break;
+    case ratw::Weather::Overcast:
+        Conditions = TEXT("Low cloud flattens the light; the distance is grey but plain to see.");
+        break;
+    case ratw::Weather::Storm:
+        Conditions = TEXT("A storm lashes the ground. Thunder drowns quiet sounds, rain strips the air of scent, "
+                          "and the footing is treacherous.");
+        break;
+    case ratw::Weather::Sandstorm:
+        Conditions = TEXT("Driven sand blinds the eyes, clogs the nose and hisses over every quieter sound.");
+        break;
     default:
         Conditions = E.phase == "night" ? TEXT("The sky is clear, but darkness conceals distant movement.")
                                         : TEXT("The sky is clear; the changing light shapes what you can see.");
@@ -394,11 +406,20 @@ inline double ReadClockOffset(const Object& O)
     // Missing means a legacy noon start; malformed must reject the whole save.
     return O.IsValid() && O->HasField(TEXT("clockOffsetHours")) ? StrictNumber(O, TEXT("clockOffsetHours"), -1) : 12.0;
 }
+// A tile height (half steps, -16..16) as one printable character: '0' is -16, 'P' is level ground, 'p' is +16.
+inline TCHAR HeightChar(double Height)
+{
+    return TCHAR(TEXT('0') + FMath::Clamp(FMath::RoundToInt(Height * 2.0) + 32, 0, 64));
+}
+inline double HeightFromChar(TCHAR C)
+{
+    return C >= TEXT('0') && C <= TEXT('p') ? (int32(C - TEXT('0')) - 32) / 2.0 : 0.0;
+}
 inline ratw::Weather ReadWeather(const TSharedPtr<FJsonValue>& Value)
 {
     double NumberValue = -1;
     if (!Value.IsValid() || Value->Type != EJson::Number || !Value->TryGetNumber(NumberValue) ||
-        !FMath::IsFinite(NumberValue) || NumberValue < 0 || NumberValue > 3 ||
+        !FMath::IsFinite(NumberValue) || NumberValue < 0 || NumberValue >= ratw::WeatherKinds ||
         FMath::FloorToDouble(NumberValue) != NumberValue)
         return static_cast<ratw::Weather>(-1);
     return static_cast<ratw::Weather>(static_cast<int>(NumberValue));
@@ -428,13 +449,10 @@ inline ratw::Result EnvironmentCommand(ratw::World& World, const std::string& Ce
                                   : Value == TEXT("dusk") ? 18.0
                                                           : 0.0);
     }
-    if (Type != TEXT("weather") || !World.cell(CellId) ||
-        (Value != TEXT("clear") && Value != TEXT("rain") && Value != TEXT("snow") && Value != TEXT("fog")))
+    ratw::Weather Weather = ratw::Weather::Clear;
+    if (Type != TEXT("weather") || !World.cell(CellId) || !ratw::parseWeather(TCHAR_TO_UTF8(*Value), Weather))
         return {false, "Unknown weather preset or cell.", CellId};
-    World.setWeather(CellId, Value == TEXT("rain")   ? ratw::Weather::Rain
-                             : Value == TEXT("snow") ? ratw::Weather::Snow
-                             : Value == TEXT("fog")  ? ratw::Weather::Fog
-                                                     : ratw::Weather::Clear);
+    World.setWeather(CellId, Weather);
     return {true, "Weather updated.", CellId};
 }
 inline ratw::Wind ReadWind(const Object& O)

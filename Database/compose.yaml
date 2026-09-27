@@ -1,0 +1,21 @@
+# Local PostgreSQL for RATW: the DEV and PROD databases on one server.
+# Start it with `python3 tools/world_db.py up`, which also creates Database/.env
+# (generated passwords) on first use. Listens on this computer only.
+name: ratw
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:${RATW_DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ratw_prod"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  pgdata:

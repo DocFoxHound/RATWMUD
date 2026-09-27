@@ -183,7 +183,7 @@ class ExportTests(unittest.TestCase):
         files = editor.export_files(p)
         self.assertEqual(files, editor.export_files(p))
         self.assertEqual(p, before)
-        self.assertEqual(json.loads(files['atlas.json']), p)
+        self.assertEqual(json.loads(files['atlas.json']), editor.to_v3(copy.deepcopy(p)), 'saved as atlas v3')
         self.assertEqual(len([f for f in files if f.endswith('.cell')]), 4)
         self.assertTrue(files['world.ratw'].startswith('RATW_WORLD 1\n'))
 
@@ -218,13 +218,29 @@ class ExportTests(unittest.TestCase):
             p = interior(flat())
             p['links'][0]['kind'] = kind
             p['links'][0]['open'] = True
-            p['heights']['10,10'] = .25
+            p['heights']['10,10'] = -.5
             files = editor.export_files(p)
             row = next(shlex.split(r) for r in files['world.ratw'].splitlines()
                        if r.startswith('door "' + ('stairs_' if kind == 'stairs' else 'link_')))
             self.assertEqual(row[10], '1')
             self.assertEqual(row[13], '1' if kind == 'passage' else '0')
-            self.assertIn('height: 10 10 0.25\n', files['cells/field_1.cell'])
+            self.assertIn('height: 10 10 -0.5\n', files['cells/field_1.cell'])
+
+    def test_heights_are_half_steps_and_cliffs_export(self):
+        p = flat()
+        p['heights']['10,10'] = .25
+        with self.assertRaises(editor.ValidationError) as raised:
+            editor.export_files(p)
+        self.assertIn('height override', ' '.join(raised.exception.errors))
+        p = flat()
+        p['heights']['10,10'] = 1.5
+        p['terrain'][11] = p['terrain'][11][:10] + '%:' + p['terrain'][11][12:]
+        p['cells'][0]['weather'] = 'sandstorm'
+        cell = editor.export_files(p)['cells/field_1.cell']
+        self.assertIn('height: 10 10 1.5\n', cell)
+        self.assertIn('weather: sandstorm\n', cell)
+        self.assertIn('%:', cell)
+        self.assertNotIn('height: 11 11', cell)  # A slope carries no default height to override.
 
     def test_height_blocks_only_incompatible_seam(self):
         p = flat()
@@ -245,18 +261,53 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(len(seams), 112)
 
     def test_missing_or_overlapping_partition(self):
-        for mutate in (lambda p: p.update(cells=[]), lambda p: p['cells'].pop(),
-                       lambda p: p['cells'][1].update(x=0)):
+        for mutate in (lambda p: p.update(cells=[]), lambda p: p['cells'][1].update(x=0)):
             p = flat()
             mutate(p)
             self.bad(p)
 
+    def test_old_canvases_convert_to_cells_with_their_own_ground(self):
+        p = flat()
+        p['cells'].pop()
+        p['terrain'][-1] = p['terrain'][-1][:-1] + '#'          # Painted outside every cell: not part of the world.
+        p['origin'] = {'x': -100, 'y': 7}
+        v3, _ = editor.check_project(p)
+        self.assertEqual(v3['version'], 3)
+        self.assertFalse({'terrain', 'heights', 'width', 'height', 'origin'} & set(v3))
+        self.assertEqual([(c['x'], c['y']) for c in v3['cells']], [(c['x'] - 100, c['y'] + 7) for c in p['cells']])
+        self.assertEqual(v3['cells'][0]['terrain'], [row[:v3['cells'][0]['width']] for row in p['terrain'][:v3['cells'][0]['height']]])
+        self.assertIn('world.ratw', editor.export_files(p))
+
+    def test_cells_far_apart_and_the_game_limits(self):
+        v3, _ = editor.check_project(flat())
+        far = {**copy.deepcopy(v3['cells'][0]), 'id': 'far', 'x': 900_000_000, 'y': -500_000_000}
+        v3['cells'].append(far)
+        editor.check_project(v3)                                 # Far apart is fine.
+        v3['cells'].append({**copy.deepcopy(far), 'id': 'clash', 'x': far['x'] + 3})
+        with self.assertRaises(editor.ValidationError) as raised:
+            editor.check_project(v3)
+        self.assertIn('overlap', ' '.join(raised.exception.errors))
+        v3['cells'].pop()
+        many = copy.deepcopy(v3)
+        many['cells'] = [{**copy.deepcopy(far), 'id': f'c{i}', 'x': i * 64} for i in range(300)]
+        many['spawn'] = {'cell': 'c0', 'x': 1, 'y': 1}
+        many['links'] = []
+        with self.assertRaises(editor.ValidationError):
+            editor.check_project(many)                           # More than the game loads today...
+        editor.check_project(many, for_game=False)               # ...but the editor and database keep it.
+
+    def test_origin_places_cells_in_world_coordinates(self):
+        p = flat()
+        p['origin'] = {'x': -500, 'y': 40}
+        cell = editor.export_files(p)[f'cells/{p["cells"][0]["id"]}.cell']
+        self.assertIn(f'world: {p["cells"][0]["x"] - 500} {p["cells"][0]["y"] + 40} 0', cell)
+
     def test_structural_rejections(self):
-        mutations = [lambda p: p.update(version=2), lambda p: p.update(width=True),
+        mutations = [lambda p: p.update(version=3), lambda p: p.update(width=True),
                      lambda p: p.update(name='   '),
                      lambda p: p.update(width=10**500), lambda p: p.update(height=257),
                      lambda p: p.update(rooms={}), lambda p: p['terrain'].pop(),
-                     lambda p: p['terrain'].__setitem__(0, 'x' * 64),
+                     lambda p: p['terrain'].__setitem__(0, '?' * 64),
                      lambda p: p['cells'][0].update(id='../evil'),
                      lambda p: p['cells'][1].update(id='field_1'),
                      lambda p: p['cells'][0].update(terrain=['.' * 32] * 24),
@@ -352,10 +403,70 @@ class ExportTests(unittest.TestCase):
                 editor.read_json(raw)
 
 
+class ContentTests(unittest.TestCase):
+    """Atlas v2: people, patrol routes, economy and the herb patch."""
+
+    def greyfen(self):
+        return editor.read_json((editor.ROOT / 'Data/Worlds/Greyfen/greyfen.atlas.json').read_text(encoding='utf-8'))
+
+    def test_greyfen_exports_residents_routes_and_economy(self):
+        files = editor.export_files(self.greyfen())
+        manifest = files['world.ratw'].splitlines()
+        self.assertEqual(manifest[0], 'RATW_WORLD 2')
+        self.assertEqual(sum(line.startswith('resident ') for line in manifest), 10)
+        self.assertIn('herbs "town" 4.5 14.5', manifest)
+        self.assertTrue(any(line.startswith('route "town_watch" 9 ') for line in manifest))
+        self.assertIn('economy 1000 100 50 10 12', manifest)
+
+    def test_bundled_worlds_are_fresh(self):
+        import subprocess, sys
+        result = subprocess.run([sys.executable, str(editor.ROOT / 'tools/bundle_worlds.py'), '--check'],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_a_civilian_may_travel_a_route(self):
+        p = self.greyfen()
+        next(x for x in p['people'] if x['role'] == 'civilian').update(route='town_watch')
+        editor.check_project(p)
+
+    def test_bad_content_is_rejected(self):
+        def mutate(change):
+            p = self.greyfen()
+            change(p)
+            with self.assertRaises(editor.ValidationError):
+                editor.check_project(p)
+        mutate(lambda p: p['people'][0].update(role='wizard'))
+        mutate(lambda p: p['people'][0].update(id='treasury'))
+        mutate(lambda p: p['people'][0].update(id='wolf-abc'))
+        mutate(lambda p: next(x for x in p['people'] if x['role'] == 'merchant').update(route='town_watch'))
+        # (merchants keep shop; guards patrol a route and civilians may travel one)
+        mutate(lambda p: p['people'][1].update(route='missing'))
+        mutate(lambda p: p['people'][0]['work'].update(x=0, y=0))            # inside a wall
+        mutate(lambda p: p['people'][0]['hours'].update(end=7))              # start == end
+        mutate(lambda p: p['people'][0].update(extra=1))
+        mutate(lambda p: p['people'][0]['appearance'].update(species='fox'))
+        mutate(lambda p: p['people'].append(copy.deepcopy(p['people'][0])))  # duplicate ID
+        mutate(lambda p: p['routes'][0].update(posts=[]))
+        mutate(lambda p: p['economy'].update(treasury=-1))
+        mutate(lambda p: p.update(herbPatch={'cell': 'town', 'x': 0, 'y': 0}))
+
+    def test_worlds_without_people_still_export_version_1(self):
+        p = self.greyfen()
+        for key in ('people', 'routes', 'economy', 'herbPatch'):
+            p.pop(key)
+        self.assertEqual(editor.export_files(p)['world.ratw'].splitlines()[0], 'RATW_WORLD 1')
+
+
 class HttpTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.server = editor.make_server(0)
+        cls.temp = tempfile.TemporaryDirectory()
+        cls.roster_path = Path(cls.temp.name) / 'roster.json'
+        # Real profession catalog, no characters: tests never touch or depend on the real roster's people.
+        editor.roster_lib.save({**editor.roster_lib.load(), 'characters': []}, cls.roster_path)
+        cls.launched = []
+        cls.server = editor.make_server(0, roster_path=cls.roster_path, ai_config_path=Path(cls.temp.name) / 'missing.json',
+                                        launcher=lambda *args: cls.launched.append(args) or ['play', str(args[0])])
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
         cls.port = cls.server.server_port
@@ -365,6 +476,7 @@ class HttpTests(unittest.TestCase):
         cls.server.shutdown()
         cls.server.server_close()
         cls.thread.join()
+        cls.temp.cleanup()
 
     def request(self, method, path, body=None, headers=None):
         conn = http.client.HTTPConnection('127.0.0.1', self.port, timeout=5)
@@ -415,6 +527,75 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(status, 422)
         self.assertTrue(json.loads(raw)['errors'])
 
+    def greyfen_with_slot(self):
+        p = editor.read_json((editor.ROOT / 'Data/Worlds/Greyfen/greyfen.atlas.json').read_text(encoding='utf-8'))
+        spot = {'cell': 'town', 'x': 30, 'y': 20}
+        p['slots'] = [{'id': 'gate', 'name': 'Gate guard', 'profession': 'guard', 'workLabel': '', 'hours': {'start': 6, 'end': 18},
+                       'route': 'town_watch', 'paid': True, 'purse': 20, 'herbs': 0, 'meals': 1, 'home': spot, 'work': spot, 'evening': spot}]
+        return p
+
+    def add_character(self, cid, **prefs):
+        status, _, raw = self.request('GET', '/api/roster')
+        roster = json.loads(raw)
+        roster['characters'].append({'id': cid, 'name': cid.title(), 'age': 30, 'voice': 2, 'description': '', 'personality': 'Calm.',
+            'traits': [], 'backstory': '', 'greeting': 'Hi.', 'preferences': prefs, 'status': 'active', 'profession': '',
+            'assignment': None, 'origin': 'manual', 'appearance': {'species': 'red', 'sex': 'female', 'stature': 'short',
+            'pattern': 'solid', 'baseColor': 1, 'gradientColor': 1, 'markingColor': 1}})
+        status, _, raw = self.request('POST', '/api/roster', json.dumps(roster), self.auth())
+        self.assertEqual(status, 200, raw)
+        return json.loads(raw)
+
+    def test_roster_preview_assignment_and_protected_history(self):
+        self.add_character('vale', guard=3)
+        world = json.dumps(self.greyfen_with_slot())
+        status, _, raw = self.request('POST', '/api/roster/preview', world, self.auth())
+        self.assertEqual(status, 200, raw)
+        self.assertEqual(json.loads(raw)['plan'][0]['name'], 'Vale')
+        self.assertIsNone(editor.roster_lib.load(self.roster_path)['characters'][-1]['assignment'], 'preview never assigns')
+        status, _, archive = self.request('POST', '/api/export', world, self.auth())
+        self.assertEqual(status, 200)
+        manifest = zipfile.ZipFile(io.BytesIO(archive)).read('world.ratw').decode()
+        self.assertIn('resident "vale" "Vale" "guard"', manifest)
+        vale = next(c for c in editor.roster_lib.load(self.roster_path)['characters'] if c['id'] == 'vale')
+        self.assertEqual(vale['assignment'], {'world': 'greyfen', 'slot': 'gate'})
+        # A stale editor copy cannot erase the assignment or delete someone who has worked.
+        stale = editor.roster_lib.load(self.roster_path)
+        stale['characters'] = [c for c in stale['characters'] if c['id'] != 'vale']
+        status, _, raw = self.request('POST', '/api/roster', json.dumps(stale), self.auth())
+        kept = next(c for c in json.loads(raw)['characters'] if c['id'] == 'vale')
+        self.assertEqual((kept['status'], kept['profession']), ('removed', 'guard'))
+
+    def test_ai_generation_reports_missing_config(self):
+        status, _, raw = self.request('GET', '/api/ai')
+        self.assertFalse(json.loads(raw)['available'])
+        status, _, _ = self.request('POST', '/api/roster/generate', json.dumps({'count': 1}), self.auth())
+        self.assertEqual(status, 503)
+
+    def test_playtest_exports_fresh_folder_and_launches(self):
+        original = editor.PLAYTESTS
+        with tempfile.TemporaryDirectory() as temp:
+            editor.PLAYTESTS = Path(temp)
+            try:
+                p = flat()
+                status, _, raw = self.request('POST', '/api/playtest', json.dumps({'project': p, 'quickStart': True}), self.auth())
+            finally:
+                editor.PLAYTESTS = original
+            self.assertEqual(status, 200, raw)
+            manifest, save, quick, _ = self.launched[-1]
+            self.assertTrue(manifest.is_file() and manifest.name == 'world.ratw')
+            self.assertEqual((save.name, quick), ('save.sqlite', True))
+        self.assertEqual(self.request('POST', '/api/playtest', json.dumps({'project': {'bad': 1}}), self.auth())[0], 422)
+
+    def test_live_needs_database_and_portraits(self):
+        # Without the database there is no live world, and the host says so.
+        self.assertEqual(self.request('GET', '/api/live/world')[0], 503)
+        self.assertEqual(self.request('POST', '/api/live/sync', json.dumps({'since': 0}), self.auth())[0], 503)
+        self.assertEqual(self.request('GET', '/api/publish')[0], 503)
+        self.assertEqual(self.request('POST', '/api/publish/push', json.dumps({'password': 'x'}), self.auth())[0], 503)
+        status, headers, _ = self.request('GET', '/portraits/timber.png')
+        self.assertEqual((status, headers['Content-Type']), (200, 'image/png'))
+        self.assertEqual(self.request('GET', '/portraits/..%2Fsecret.png')[0], 404)
+
     def test_static_allowlist(self):
         for path in ('/../README.md', '/tools/npc_bridge.py', '/.env', '/api/../../secret'):
             self.assertEqual(self.request('GET', path)[0], 404)
@@ -422,7 +603,64 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(headers['Cache-Control'], 'no-store')
         self.assertNotIn('Access-Control-Allow-Origin', headers)
+        if (editor.DIST / 'fonts/DejaVuSansMono.ttf').is_file():
+            status, headers, _ = self.request('GET', '/fonts/DejaVuSansMono.ttf')   # The map's glyph font.
+            self.assertEqual((status, headers['Content-Type']), (200, 'font/ttf'))
 
+
+
+class LiveHostTests(unittest.TestCase):
+    """A host editing DEV (a live world): streamed worlds are not held to the ▶ Play file limits."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp = tempfile.TemporaryDirectory()
+        roster_path = Path(cls.temp.name) / 'roster.json'
+        editor.roster_lib.save({**editor.roster_lib.load(), 'characters': []}, roster_path)
+        world = type('LiveWorld', (), {'roster': editor.RosterFile(roster_path)})()
+        cls.launched, cls.streamed = [], []
+        cls.server = editor.make_server(0, ai_config_path=Path(cls.temp.name) / 'missing.json', world=world,
+                                        launcher=lambda *args: cls.launched.append(args) or ['play'],
+                                        live_launcher=lambda *args: cls.streamed.append(args) or ['live', 'play', 'dev'])
+        cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
+        cls.thread.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        cls.thread.join()
+        cls.temp.cleanup()
+
+    def post(self, path, body):
+        conn = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=30)
+        conn.request('GET', '/api/session')
+        token = json.loads(conn.getresponse().read())['token']
+        conn.request('POST', path, body=json.dumps(body),
+                     headers={'Content-Type': 'application/json', 'X-RATW-Editor': token})
+        result = conn.getresponse()
+        status, raw = result.status, result.read()
+        conn.close()
+        return status, json.loads(raw)
+
+    def big(self):
+        cells = [{'id': f'field_{i}', 'name': f'Field {i}', 'description': '', 'x': i * 256, 'y': 0, 'width': 256,
+                  'height': 256, 'z': 0, 'outdoors': True, 'weather': 'clear', 'terrain': ['.' * 256] * 256,
+                  'heights': {}} for i in range(5)]
+        return {'format': 'ratw-atlas', 'version': 3, 'name': 'Wide', 'cells': cells, 'rooms': [], 'links': [],
+                'spawn': {'cell': 'field_0', 'x': 5, 'y': 5}}
+
+    def test_a_big_world_validates_with_a_note(self):
+        status, data = self.post('/api/validate', self.big())
+        self.assertEqual(status, 200, data)
+        self.assertTrue(any('DEV database' in w for w in data['warnings']))
+
+    def test_play_streams_a_big_world_from_dev(self):
+        status, data = self.post('/api/playtest', {'project': self.big(), 'quickStart': True})
+        self.assertEqual(status, 200, data)
+        self.assertEqual(len(self.streamed), 1)
+        self.assertEqual(self.launched, [])
+        self.assertIn('DEV database', data['manifest'])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

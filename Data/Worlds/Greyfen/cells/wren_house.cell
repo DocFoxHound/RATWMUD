@@ -1,0 +1,20 @@
+id: wren_house
+name: Wren's Cottage
+description: A tidy two-room cottage smelling of cedar and ink. Account tallies are pinned in rows above a worn sleeping mat.
+world: 0 40 0
+size: 14 10
+outdoors: false
+weather: clear
+wind: 0 0 0
+lighting: 0.80000000000000004 0.5 warm
+grid:
+#######+######
+#............#
+#.===........#
+#............#
+#............#
+#............#
+#..TT........#
+#..TT........#
+#............#
+##############

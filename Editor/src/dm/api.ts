@@ -1,0 +1,97 @@
+// Calls to the Dungeon Master host (tools/dungeon_master.py). The session token lives in this tab only.
+import type {Person, Place, Project, Route} from '../model/model.mjs';
+
+export type Target = 'prod' | 'dev';
+export type Role = 'viewer' | 'dm' | 'admin';
+export interface Me { username: string; role: Role }
+export interface Character {
+    id: string; name: string; age: number | null; dead: boolean; cell: string; place: string; indoors: boolean;
+    x: number; y: number; worldX: number | null; worldY: number | null; posture: string; activity: string;
+    stats: Record<'strength' | 'dexterity' | 'wisdom' | 'stamina', number | null>;
+    skills: Record<'sneakSkill' | 'hearingSkill' | 'scentSkill', number | null>;
+    senses: Record<'hearing' | 'vision' | 'smell', number | null>;
+    saved: string;
+}
+export interface Action { id: number; kind: string; target: string; by: string; at: string; status: 'queued' | 'applied' | 'refused' | 'expired'; result: string }
+export interface Players { target: Target; world: {id: string; name: string} | null; characters: Character[]; actions: Action[] }
+
+const KEY = 'ratw-dm-session';
+let token = (() => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { return ''; } })();
+export const signedIn = () => !!token;
+
+export class DmError extends Error { constructor(message: string, readonly status: number) { super(message); } }
+
+async function call<T>(path: string, body?: unknown): Promise<T> {
+    const response = await fetch(path, {
+        method: body === undefined ? 'GET' : 'POST',
+        headers: {...(token ? {Authorization: `Bearer ${token}`} : {}), ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
+        body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
+    if (!response.ok) {
+        if (response.status === 401) setToken('');
+        throw new DmError(data.error ?? `Host replied ${response.status}.`, response.status);
+    }
+    return data as T;
+}
+function setToken(value: string) {
+    token = value;
+    try { if (value) sessionStorage.setItem(KEY, value); else sessionStorage.removeItem(KEY); } catch { /* private window */ }
+}
+
+export interface Holder { id: string; name: string; role: string; slot: string; work: Place; home: Place }
+export type AreaKind = 'wander' | 'spawn' | 'plan';
+/** A painted NPC area: tiles of one cell or interior (cell-local). */
+export interface NpcArea { id: string; name: string; kind: AreaKind; cell: string; tiles: [number, number][] }
+/** Keeps `count` NPCs made from the template alive in the area; the game server runs it. */
+export interface SpawnRule { id: string; name: string; area: string; template: string; count: number; respawnMinutes: number; enabled: boolean; alive: number; dead: number }
+export interface Npcs {
+    target: Target; world: string; people: Person[]; holders: Holder[]; dead: string[]; routes: Route[]; areas: NpcArea[]; spawns: SpawnRule[];
+    /** NPC ID → the area they wander; NPC ID → the rule that spawned them. */
+    wanders: Record<string, string>; spawned: Record<string, string>; actions: Action[];
+}
+
+export type FactionKind = 'npc' | 'city' | 'guild' | 'clan' | 'other';
+export type Stance = 'allied' | 'friendly' | 'neutral' | 'tense' | 'hostile' | 'war';
+export interface Faction { id: string; name: string; color: string; kind: FactionKind; description: string }
+/** A faction's claim on one cell or interior: painted tiles (place-local), or the whole place when empty. */
+export interface Claim { faction: string; area: string; tiles: [number, number][] }
+/** How `faction` regards `other`. */
+export interface Relation { faction: string; other: string; disposition: number; stance: Stance; reason: string; by: string; at: string }
+export interface Member { faction: string; npc: string; rank: string }
+export interface Factions {
+    target: Target; world: string; factions: Faction[]; claims: Claim[]; relations: Relation[]; members: Member[];
+    people: {id: string; name: string; role: string}[]; actions: Action[];
+}
+export interface RelationChange { disposition: number; stance: Stance; reason: string; by: string; at: string }
+
+export const dmApi = {
+    login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
+    logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
+    me: () => call<Me>('api/me'),
+    players: (target: Target) => call<Players>(`api/players?target=${target}`),
+    world: (target: Target) => call<Project>(`api/world?target=${target}`),
+    act: (target: Target, kind: string, characterId: string, reason: string) => call<{id: number}>('api/actions', {target, kind, characterId, reason}),
+    npcs: (target: Target) => call<Npcs>(`api/npcs?target=${target}`),
+    saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
+    deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),
+    npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>('api/npcs/life', {target, id, dead}),
+    saveRoute: (target: Target, route: Route) => call<{id: string; action: number}>('api/routes/save', {target, route}),
+    deleteRoute: (target: Target, id: string) => call<{id: string; action: number}>('api/routes/delete', {target, id}),
+    saveArea: (target: Target, area: NpcArea) => call<{id: string; action: number}>('api/areas/save', {target, area}),
+    deleteArea: (target: Target, id: string) => call<{id: string; action: number}>('api/areas/delete', {target, id}),
+    saveSpawn: (target: Target, rule: Omit<SpawnRule, 'alive' | 'dead'>) => call<{id: string}>('api/spawns/save', {target, rule}),
+    deleteSpawn: (target: Target, id: string) => call<{id: string}>('api/spawns/delete', {target, id}),
+    setWander: (target: Target, id: string, area: string | null) => call<{id: string; action: number}>('api/npcs/wander', {target, id, area}),
+    factions: (target: Target) => call<Factions>(`api/factions?target=${target}`),
+    relationHistory: (target: Target, faction: string, other: string) =>
+        call<RelationChange[]>(`api/factions/history?target=${target}&faction=${encodeURIComponent(faction)}&other=${encodeURIComponent(other)}`),
+    saveFaction: (target: Target, faction: Faction) => call<{id: string; action: number}>('api/factions/save', {target, faction}),
+    deleteFaction: (target: Target, id: string) => call<{id: string; action: number}>('api/factions/delete', {target, id}),
+    claim: (target: Target, faction: string, area: string, tiles: [number, number][]) => call<{action: number}>('api/factions/claim', {target, faction, area, tiles}),
+    unclaim: (target: Target, faction: string, area: string) => call<{action: number}>('api/factions/unclaim', {target, faction, area}),
+    relate: (target: Target, faction: string, other: string, disposition: number, stance: Stance, reason: string) =>
+        call<unknown>('api/factions/relation', {target, faction, other, disposition, stance, reason}),
+    member: (target: Target, faction: string, npc: string, rank: string | null) => call<unknown>('api/factions/member', {target, faction, npc, rank}),
+    action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`api/actions/${id}?target=${target}`),
+};

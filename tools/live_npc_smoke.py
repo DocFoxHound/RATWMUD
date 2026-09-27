@@ -22,7 +22,7 @@ from npc_bridge import Bridge, BridgeError, Server, load_config
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--config", type=Path, default=Path(__file__).resolve().parent.parent / "Saved/Config/RATWNPCAI.local.json")
     parser.add_argument("--packaged", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent

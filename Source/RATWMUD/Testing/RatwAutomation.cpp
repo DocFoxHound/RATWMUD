@@ -353,7 +353,7 @@ bool FRatwEnvironmentWireTest::RunTest(const FString&)
     }
     Saved = World.save();
     for (const TCHAR* Bad : {TEXT("{\"w\":true}"), TEXT("{\"w\":\"1\"}"), TEXT("{\"w\":1.5}"), TEXT("{\"w\":1e100}"),
-                             TEXT("{\"w\":null}"), TEXT("{\"w\":4}")})
+                             TEXT("{\"w\":null}"), TEXT("{\"w\":7}")})
     {
         const auto Invalid = Decode(Bad);
         Saved.weather["exterior"] = ReadWeather(Invalid->Values[TEXT("w")]);
@@ -408,6 +408,40 @@ bool FRatwLightingWireTest::RunTest(const FString&)
     const auto Night = World.environmentAt("tavern");
     TestEqual(TEXT("Lit tavern stays clear at night"), Night.illumination, 1.0);
     TestTrue(TEXT("Warm glow is present at night"), Night.glowStrength > .9 && Night.lightingTone == "warm");
+    return true;
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwLargePopulationTest, "RATW.Society.LargePopulationPersistence",
+                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FRatwLargePopulationTest::RunTest(const FString&)
+{
+    // A town of 200 residents (Upper Accord has 157) saves, round-trips through the save's JSON and restores whole.
+    using namespace ratwjson;
+    std::string Cell = "id: field\nname: Field\ndescription: Open ground.\nworld: 0 0 0\noutdoors: true\nweather: clear\ngrid:\n";
+    for (int Y = 0; Y < 32; ++Y)
+        Cell += std::string(32, ',') + "\n";
+    std::string Manifest = "RATW_WORLD 2\ncell \"field\" \"cells/field.cell\"\nspawn \"field\" 1.5 1.5\neconomy 1000 100 50 10 12\n";
+    for (int I = 0; I < 200; ++I)
+    {
+        const std::string Id = "r" + std::to_string(I), X = std::to_string(1 + I % 30) + ".5", Y = std::to_string(1 + I / 30) + ".5";
+        Manifest += "resident \"" + Id + "\" \"Resident " + std::to_string(I) + "\" \"civilian\" \"working\" \"A wolf.\" \"Hello.\" 30 "
+                    "\"timber\" \"female\" \"average\" \"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"field\" " + X + " " + Y +
+                    " \"field\" " + X + " " + Y + " \"field\" " + X + " " + Y + "\n";
+    }
+    ratw::World World;
+    const auto Loaded = World.loadWorldFiles({{"world.ratw", Manifest}, {"cells/field.cell", Cell}}, "many");
+    TestTrue(TEXT("A world of 200 residents loads"), Loaded.ok);
+    if (!Loaded.ok)
+        return true;
+    for (int I = 0; I < 40; ++I)
+        World.tick(1);
+    auto Saved = World.save();
+    TestEqual(TEXT("All 200 residents are in the save"), int32(Saved.society.residents.size()), 200);
+    Saved.society = ReadSociety(Decode(Encode(ratwjson::Society(Saved.society))));
+    TestEqual(TEXT("All 200 residents survive the save's JSON"), int32(Saved.society.residents.size()), 200);
+    ratw::World Restarted;
+    TestTrue(TEXT("The restarted world loads"), Restarted.loadWorldFiles({{"world.ratw", Manifest}, {"cells/field.cell", Cell}}, "many").ok);
+    const auto Restored = Restarted.restore(Saved);
+    TestTrue(TEXT("A save of 200 residents restores"), Restored.ok);
     return true;
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwSocietyWireTest, "RATW.Society.CalendarEconomyPersistence",

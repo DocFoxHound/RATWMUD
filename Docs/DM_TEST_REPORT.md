@@ -103,7 +103,7 @@ stopped, invalidating its temporary operator capability.
 cmake -S . -B build-dm -DCMAKE_BUILD_TYPE=Release
 cmake --build build-dm -j 6
 ctest --test-dir build-dm --output-on-failure
-node --test Editor/model.test.mjs DM/model.test.mjs
+node --test Editor/src/model/*.test.mjs DM/model.test.mjs
 python3 tools/test_map_editor.py
 python3 tools/test_dm_service.py
 bash tools/build.sh

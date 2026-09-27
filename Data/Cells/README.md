@@ -9,11 +9,13 @@ Each `.cell` file represents one independently stored space. It has UTF-8 header
 | `description` | Scene prose |
 | `world` | Relative X Y Z coordinates for neighborhood map |
 | `outdoors` | `true` enables weather effects on perception/movement |
-| `weather` | `clear`, `rain`, `fog`, or `snow` |
+| `weather` | `clear`, `overcast`, `rain`, `storm`, `fog`, `snow`, or `sandstorm` |
 | `wind` | Optional airflow direction in radians, strength 0–1, and variation flag 0/1; exported interiors are calm |
 | `lighting` | Optional `artificial daylightAccess tone`; both levels finite 0–1, tone `warm`, `neutral`, or `cool`. Legacy default `1 1 warm`; outdoors uses sky illumination instead |
-| `height` | Repeatable `x y value` sparse elevation override; −16..16 in quarter-tile steps |
+| `height` | Repeatable `x y value` sparse elevation override; −16..16 in half-tile steps |
 | `grid:` | All following lines form terrain rows; blank rows are invalid |
+
+Every tile is defined once in `Data/Terrain/terrain.json`: its one-character code (what cell files store), the Unicode glyph the map draws, its plain-ASCII fallback, colours and rules. After editing it, run `python3 tools/terrain_catalog.py` to regenerate the server and editor tables. The original tiles:
 
 | Glyph | Interpretation |
 | --- | --- |
@@ -23,8 +25,9 @@ Each `.cell` file represents one independently stored space. It has UTF-8 header
 | `T` | Solid, low table; does not block sight |
 | `=` | Solid, low counter; does not block sight |
 | `~` | Traversable shallow water; high movement cost |
-| `:` | Quarter-height approach to a rise |
-| `^` | Half-height step/rise; also used under stair fixtures |
+| `:` | Slope: no height of its own; a full step to or from it is walkable |
+| `^` | Stairs: +½ by default, and like a slope makes a full step walkable; also used under stair fixtures |
+| `%` | Cliff face: solid, not opaque; hides what lies behind only through its height |
 | `+` | Door location; the separate door fixture determines open/closed state |
 
 `World::loadCellFile(path)` validates rectangularity and prevents stranding current actors inside solid tiles. Load these before restoring world state. The three built-in demo cells are identical fallbacks for packaged builds that do not ship external content. Their demonstration fixture/portal definitions and six NPCs remain authored in `World::createDemo`; tests compare file data to the fallback cells to catch drift. Atlas exports now supply their own versioned fixture/portal records in a world manifest, but do not author NPCs or items.

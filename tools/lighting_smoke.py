@@ -16,9 +16,9 @@ def prepare(root):
     tests.mkdir(parents=True, exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix='lighting-', dir=tests))
     script = '''
-import * as m from './Editor/model.mjs';
+import * as m from './Editor/src/model/model.mjs';
 const p=m.createProject(32,24,'Lighting study');
-p.terrain=Array.from({length:24},(_,y)=>Array.from({length:32},(_,x)=>
+p.cells[0].terrain=Array.from({length:24},(_,y)=>Array.from({length:32},(_,x)=>
  x===0||y===0||x===31||y===23?'#':x>12&&x<20?'.':(x+y)%5===0?'"':',').join(''));
 m.cutGrid(p,32,24);p.cells[0].name='The Night Glade';
 p.cells[0].description='A trail runs through the brush toward a sheltered tavern.';

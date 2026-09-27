@@ -59,7 +59,17 @@ class MemoryStore
     std::uint64_t nextConversation = 1;
     void record(const std::string& npc, const std::string& subject, const MemoryTurn& turn);
     int consolidate(double now);
+    // The conversations the next consolidate(now) will close, as they stand (to be summarised elsewhere).
+    std::vector<ActiveMemory> due(double now) const;
+    // A better summary for a closed conversation (from the language model): replaces its text, keeps its sources.
+    // False if there is no such summary or the text is empty.
+    bool rewrite(const std::string& id, const std::string& text);
+    // A short recollection: the subject's latest words in this conversation, or the start of the latest summary.
     std::string recall(const std::string& npc, const std::string& subject) const;
+    // What an NPC brings to a reply, within `budget` bytes: this conversation's recent turns from both sides (its
+    // own as "You"), then what came earlier in it, then the ends of up to three earlier conversations. The current
+    // conversation comes first; the newest of everything is kept when something must be cut.
+    std::string recallForDialogue(const std::string& npc, const std::string& subject, std::size_t budget = 3600) const;
 };
 
 struct SocialPost

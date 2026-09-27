@@ -37,8 +37,42 @@ def fixture(now):
             'economy': {'minted': 1060, 'sunk': 0, 'ledger': []}}
 
 
+# The Storykeeper keeps its state in PostgreSQL: every test gets an empty dm schema in a scratch database.
+SCRATCH = None
+
+
+def setUpModule():
+    global SCRATCH
+    import secrets
+    import world_db
+    from test_world_db import database_available, superuser
+    if not database_available():
+        raise unittest.SkipTest('local PostgreSQL not running (python3 tools/world_db.py up)')
+    SCRATCH = f'ratw_test_dm_{secrets.token_hex(4)}'
+    with superuser() as su:
+        su.execute(f'CREATE DATABASE {SCRATCH} OWNER ratw_owner')
+        su.execute(f'GRANT CONNECT ON DATABASE {SCRATCH} TO ratw_game')
+    with world_db.connect('dev', 'owner', dbname=SCRATCH) as owner:
+        world_db.migrate(owner)
+    dm.DEFAULT_CONNECT = lambda: world_db.connect('dev', 'game', dbname=SCRATCH, options='-c search_path=dm')
+
+
+def tearDownModule():
+    from test_world_db import superuser
+    if SCRATCH:
+        with superuser() as su:
+            su.execute(f'DROP DATABASE {SCRATCH} WITH (FORCE)')
+
+
+def empty_state():
+    import world_db
+    with world_db.connect('dev', 'owner', dbname=SCRATCH) as owner:
+        owner.execute('TRUNCATE dm.meta, dm.documents, dm.commands, dm.audit, dm.activity, dm.routes, dm.arrivals')
+
+
 class ServiceFixture(unittest.TestCase):
     def setUp(self):
+        empty_state()
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         self.now = 1790000000.
@@ -147,7 +181,8 @@ class ServiceTests(ServiceFixture):
             dm.private_dir(link)
         snapshot = self.service.exchange_dir / 'snapshot.json'
         snapshot.unlink()
-        snapshot.symlink_to(self.service.state_dir / 'storykeeper.sqlite')
+        (self.service.state_dir / 'secret').write_text('{}')
+        snapshot.symlink_to(self.service.state_dir / 'secret')
         self.assertFalse(self.service.state()['bridge']['live'])
 
     def test_campaign_beat_references_prevent_cascading_deletion(self):

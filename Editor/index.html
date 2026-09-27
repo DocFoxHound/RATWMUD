@@ -4,78 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>RATW · Atlas Workshop</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>Atlas Workshop · RATW</title>
 </head>
 <body>
-  <header class="app-header">
-    <a class="brand" href="#" aria-label="Atlas Workshop home"><span class="brand-mark">W<span>›</span></span><span>RATW <b>ATLAS WORKSHOP</b></span></a>
-    <div class="project-heading"><input id="project-name" aria-label="Atlas name" maxlength="120"><span id="save-state">Local authoring · not a live world</span></div>
-    <nav class="file-actions" aria-label="Project files">
-      <button id="new-project">New</button><button id="open-project">Open</button><button id="save-project">Save JSON</button><button id="export-project" class="primary">Export world <span aria-hidden="true">↗</span></button>
-      <input id="open-file" type="file" accept=".json,application/json" hidden>
-    </nav>
-  </header>
-  <div id="recovery-banner" class="recovery-banner" hidden><span>A saved local draft is available. Your current canvas has not been replaced.</span><button id="recover-draft">Restore draft</button><button id="dismiss-draft">Dismiss</button></div>
-  <main class="workspace">
-    <aside class="left-panel" aria-label="Authoring tools">
-      <div class="panel-title">BUILD THE WORLD</div>
-      <nav class="workflow" aria-label="Editing levels">
-        <button id="world-mode" class="workflow-step active"><span class="step-number">01</span><span><strong>World canvas</strong><small>Draw first. Divide later.</small></span></button>
-        <button id="cell-mode" class="workflow-step"><span class="step-number">02</span><span><strong>Cell detail</strong><small>Rooms, routes & doorways</small></span></button>
-      </nav>
-      <section class="tool-section"><h2>Tools <span>1–6</span></h2>
-        <div class="tool-grid" role="group" aria-label="Map tools">
-          <button data-tool="select" class="active" title="Select · 1"><span>↖</span>Select</button><button data-tool="paint" title="Paint terrain · 2"><span>✎</span>Terrain</button><button data-tool="height" title="Paint elevation · 3"><span>≋</span>Height</button><button data-tool="link" title="Pick door endpoints · 4"><span>⇄</span>Link</button><button data-tool="spawn" title="Place starting point · 5"><span>W›</span>Spawn</button><button data-tool="pan" title="Pan canvas · 6"><span>✥</span>Pan</button>
-        </div>
-        <p id="tool-help" class="hint">Click a cell to select. Shift-click selects more. Double-click to work inside.</p>
-      </section>
-      <section class="tool-section"><h2>Terrain palette <span>ASCII</span></h2><div id="terrain-palette" class="terrain-palette" role="group" aria-label="Terrain glyphs"></div>
-        <label class="inline-field">Brush <select id="brush-size"><option value="1">1 tile</option><option value="2">2 × 2</option><option value="3">3 × 3</option><option value="5">5 × 5</option><option value="8">8 × 8</option></select></label>
-        <label class="inline-field">Elevation <select id="height-value"><option value="default">Glyph default</option><option value="-2">−2.00</option><option value="-1">−1.00</option><option value="-0.5">−0.50</option><option value="0">0.00</option><option value="0.25">+0.25</option><option value="0.5">+0.50</option><option value="1" selected>+1.00</option><option value="2">+2.00</option><option value="4">+4.00</option></select></label>
-      </section>
-      <section class="tool-section view-options"><h2>Authoring overlays</h2><label><input id="show-cuts" type="checkbox" checked> Cell boundaries</label><label><input id="show-heights" type="checkbox"> Elevation tint</label><label><input id="show-links" type="checkbox" checked> Connections & spawn</label><label><input id="show-territory" type="checkbox" checked> Faction claims & Chapter sites</label><div id="territory-legend" class="territory-legend" aria-label="Faction color legend"></div></section>
-      <div class="authoring-note"><span>◇</span><p>One continuous editing surface.<br>Each cell still plays separately.<br><b>No player fog is changed.</b></p></div>
-    </aside>
-    <section class="canvas-panel" aria-label="Map canvas">
-      <div class="canvas-toolbar"><div><span id="view-eyebrow">WORLD / OVERVIEW</span><h1 id="view-title">The North Reach</h1></div><div class="canvas-actions"><button id="undo" title="Undo · Ctrl+Z" aria-label="Undo">↶</button><button id="redo" title="Redo · Ctrl+Shift+Z" aria-label="Redo">↷</button><span class="toolbar-divider"></span><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><button id="fit-map">Fit</button></div></div>
-      <div id="canvas-wrap"><canvas id="map-canvas" tabindex="0" aria-label="ASCII terrain authoring canvas. Use the inspector to select cells and enter doorway coordinates without a mouse."></canvas><div id="canvas-empty" hidden>No cells selected. Choose a cell in the inspector to drill down.</div><div class="canvas-legend"><span><i class="legend-cut"></i>Cell boundary</span><span><i class="legend-link"></i>Linked doorway</span><span><i class="legend-spawn"></i>Starting point</span></div></div>
-      <div class="canvas-footer"><span id="pointer-status">64 × 48 tiles</span><span id="canvas-instruction">Wheel to zoom · Middle drag to pan</span><span id="world-count">4 cells · 1 interior</span></div>
-      <div id="message" role="status" aria-live="polite">Ready to author. Nothing here changes a running game.</div>
-    </section>
-    <aside class="right-panel" aria-label="Map inspector">
-      <div class="panel-title">INSPECTOR <span id="selection-count">1 SELECTED</span></div>
-      <section class="inspector-section"><div class="section-heading"><h2 id="selection-title">Selected cell</h2><button id="clear-selection" class="text-button">Clear</button></div>
-        <label>Navigate to cell / room<select id="cell-select"><option value="">Choose a cell…</option></select></label>
-        <div id="selection-empty" class="empty-note">Select a cell on the map, or draw terrain before making your first cut.</div>
-        <form id="metadata-form" hidden>
-          <label>Name<input id="cell-name" maxlength="120" required></label><label>Description<textarea id="cell-description" rows="2" maxlength="4000" placeholder="The story the terrain cannot tell…"></textarea></label>
-          <div class="field-pair"><label>Level (Z)<input id="cell-z" type="number" min="-16" max="16" step="1"></label><label>Weather<select id="cell-weather"><option value="clear">Clear</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="fog">Fog</option></select></label></div>
-          <label class="check-field"><input id="cell-outdoors" type="checkbox"> Outdoors / exposed to weather</label><p id="cell-dimensions" class="hint"></p>
-          <div class="field-pair"><label>Artificial light (0–1)<input id="cell-light" type="number" min="0" max="1" step="any" required></label><label>Daylight access (0–1)<input id="cell-daylight" type="number" min="0" max="1" step="any" required></label></div>
-          <label>Interior light tone<select id="cell-light-tone"><option value="warm">Warm / firelight</option><option value="neutral">Neutral</option><option value="cool">Cool</option></select></label>
-          <p class="hint">Indoor lighting only. Set both levels to 0 for a dark cellar; artificial 0 / daylight 1 for a windowed, unlit room. Outdoor cells retain these settings but use the sky.</p>
-          <p class="hint">Details are drafts until applied. Apply before switching cells or using other tools.</p>
-          <div class="button-row"><button type="submit">Apply details</button><button type="button" id="drill-down" class="accent-button">Drill down ↗</button></div>
-        </form>
-      </section>
-      <section class="inspector-section"><div class="section-heading"><h2>Territory & Chapter sites</h2><button id="manage-politics" class="text-button">Catalogs…</button></div><p class="hint">Claims may overlap. A Chapter site does not erase the surrounding faction's claim. Shift-select cells to apply a region together.</p><form id="territory-form" hidden><label>Region ID<input id="territory-region" maxlength="48" pattern="[a-z][a-z0-9_-]{0,47}" required></label><label>Chapter site<select id="territory-chapter"></select></label><fieldset><legend>Faction claims (any number)</legend><div id="territory-claims" class="territory-claims"></div></fieldset><p id="territory-selection-note" class="hint"></p><button type="submit" class="wide">Apply territory to selection</button></form><p id="territory-empty" class="hint">Select a cell or room to assign its region, faction claims, and Chapter site.</p></section>
-      <section class="inspector-section" id="partition-section"><h2>Partition the canvas</h2><p class="hint">Cuts organize terrain; they never redraw it. Merges and re-cuts refuse conflicting territory settings.</p><div class="field-pair"><label>Width<input id="cut-width" type="number" value="32" min="4" max="256"></label><label>Height<input id="cut-height" type="number" value="24" min="4" max="256"></label></div><button id="cut-grid" class="wide">Cut standard grid</button><div class="button-row"><button id="merge-cells">Merge selected</button><button id="show-split">Split cell…</button></div>
-        <form id="split-form" hidden><div class="field-pair"><label>Split across<select id="split-axis"><option value="x">Width (vertical cut)</option><option value="y">Height (horizontal cut)</option></select></label><label>Offset (tiles)<input id="split-offset" type="number" min="4" value="16"></label></div><button type="submit" class="wide">Confirm split</button></form>
-      </section>
-      <section class="inspector-section"><h2>Detached interiors <span id="room-count">1</span></h2><p class="hint">Rooms beyond this surface connect through explicit doors, stairs or passages.</p><div class="field-pair"><label>Width<input id="room-width" type="number" value="20" min="4" max="256"></label><label>Height<input id="room-height" type="number" value="14" min="4" max="256"></label></div><button id="add-room" class="wide">+ Create interior</button></section>
-      <section class="inspector-section"><div class="section-heading"><h2>Connections</h2><button id="new-link" class="text-button">+ New</button></div><div id="link-list" class="link-list"></div>
-        <form id="link-form" hidden><label>Connection name<input id="link-name" value="New doorway" maxlength="100"></label><div class="field-pair"><label>Kind<select id="link-kind"><option value="door">Door</option><option value="passage">Passage</option><option value="stairs">Stairs</option></select></label><label class="check-field"><input id="link-open" type="checkbox"><span id="link-open-label">Start open</span></label></div>
-          <fieldset><legend>Endpoint A <button type="button" id="pick-a" class="text-button">Pick on map</button></legend><select id="link-a-cell" aria-label="Endpoint A cell"></select><div class="field-pair"><label>X<input id="link-a-x" type="number" min="0" value="1" required></label><label>Y<input id="link-a-y" type="number" min="0" value="1" required></label></div></fieldset>
-          <fieldset><legend>Endpoint B <button type="button" id="pick-b" class="text-button">Pick on map</button></legend><select id="link-b-cell" aria-label="Endpoint B cell"></select><div class="field-pair"><label>X<input id="link-b-x" type="number" min="0" value="1" required></label><label>Y<input id="link-b-y" type="number" min="0" value="1" required></label></div></fieldset><div class="button-row"><button type="submit" class="accent-button">Create link</button><button type="button" id="cancel-link">Cancel</button></div>
-        </form>
-      </section>
-      <section class="inspector-section validation-section"><div class="section-heading"><h2>Preflight</h2><button id="validate-project" class="text-button">Recheck</button></div><p id="validation-summary"></p><ul id="validation-list"></ul></section>
-    </aside>
-  </main>
-  <dialog id="new-dialog"><form id="new-form"><div class="dialog-eyebrow">A NEW WORLD</div><h2>Start with a continuous canvas.</h2><p>Draw across the whole atlas, then divide it into playable cells. Save your current JSON first if you want to keep it.</p><label>Atlas name<input id="new-name" value="Untitled atlas" maxlength="120" required></label><div class="field-pair"><label>Width (tiles)<input id="new-width" type="number" value="64" min="4" max="256" required></label><label>Height (tiles)<input id="new-height" type="number" value="48" min="4" max="256" required></label></div><label class="check-field"><input id="new-auto-cut" type="checkbox" checked> Begin with standard 32 × 24 cuts</label><div class="button-row"><button type="button" id="cancel-new">Cancel</button><button type="submit" class="primary">Create blank atlas</button></div></form></dialog>
-  <dialog id="politics-dialog" aria-labelledby="politics-title"><div class="dialog-eyebrow">WORLD POLITICS / AUTHORING</div><h2 id="politics-title">Factions & Chapters</h2><p>These are stable world references, not player accounts or live DM controls. IDs cannot be renamed. Remove territory references before deleting a catalog entry.</p><div class="catalog-columns"><section><h3>Factions</h3><label>Edit or create<select id="faction-select"><option value="">+ New faction</option></select></label><form id="faction-form"><label>ID<input id="faction-id" maxlength="48" pattern="[a-z][a-z0-9_-]{0,47}" placeholder="north_reach" required></label><label>Name<input id="faction-name" maxlength="120" required></label><label>Claim color<input id="faction-color" type="color" value="#7799bb" required></label><div class="button-row"><button type="submit">Save faction</button><button id="remove-faction" type="button">Delete</button></div></form></section><section><h3>Chapters</h3><label>Edit or create<select id="chapter-select"><option value="">+ New Chapter</option></select></label><form id="chapter-form"><label>ID<input id="chapter-id" maxlength="48" pattern="[a-z][a-z0-9_-]{0,47}" placeholder="wayfarers" required></label><label>Name<input id="chapter-name" maxlength="120" required></label><p class="hint">The same Chapter may have sites in multiple cells and interiors. Ownership and migration are separate from a faction's territorial claim.</p><div class="button-row"><button type="submit">Save Chapter</button><button id="remove-chapter" type="button">Delete</button></div></form></section></div><p id="catalog-status" role="status" aria-live="polite"></p><div class="button-row"><button id="close-politics" type="button" class="primary">Done</button></div></dialog>
-  <dialog id="confirmation-dialog" aria-labelledby="confirmation-title" aria-describedby="confirmation-message"><form method="dialog"><div class="dialog-eyebrow">REVIEW THIS CHANGE</div><h2 id="confirmation-title">Continue editing?</h2><p id="confirmation-message"></p><div class="button-row"><button type="submit" value="cancel" autofocus>Cancel</button><button id="confirmation-accept" type="submit" value="accept" class="primary">Continue</button></div></form></dialog>
-  <script type="module" src="/app.mjs"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

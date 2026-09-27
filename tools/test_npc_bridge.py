@@ -242,10 +242,18 @@ class ProviderTests(BridgeAssertions):
 
 
 class BudgetTests(BridgeAssertions):
-    def new_bridge(self, provider=None, budget=2):
+    def new_bridge(self, provider=None, budget=2, concurrency=3):
         self.entries = []
         self.provider = provider or Mock(return_value=("A test reply.", {"total_tokens": 5}))
-        return bridge.Bridge(CONFIG, max_requests=budget, provider=self.provider, audit=self.entries.append)
+        return bridge.Bridge(CONFIG, max_requests=budget, provider=self.provider, audit=self.entries.append,
+                             concurrency=concurrency)
+
+    def assertIdle(self, instance):
+        self.assertEqual(0, instance.in_flight)
+        for _ in range(instance.concurrency):         # Every slot is free again.
+            self.assertTrue(instance.slots.acquire(blocking=False))
+        for _ in range(instance.concurrency):
+            instance.slots.release()
 
     def test_budget_exhaustion_never_calls_provider_again(self):
         instance = self.new_bridge()
@@ -259,17 +267,19 @@ class BudgetTests(BridgeAssertions):
         instance = self.new_bridge(Mock(side_effect=bridge.BridgeError("provider_http", 429)), budget=1)
         self.error("provider_http", instance.reply, CONTEXT)
         self.error("budget_exhausted", instance.reply, CONTEXT)
-        self.assertFalse(instance.lock.locked())
+        self.assertIdle(instance)
         self.assertEqual("provider_http", self.entries[0]["outcome"])
         self.assertEqual(429, self.entries[0]["http_status"])
 
     def test_busy_request_does_not_consume_budget(self):
-        instance = self.new_bridge()
-        instance.lock.acquire()
+        instance = self.new_bridge(concurrency=2)
+        for _ in range(2):
+            instance.slots.acquire()
         try:
             self.error("busy", instance.reply, CONTEXT)
         finally:
-            instance.lock.release()
+            for _ in range(2):
+                instance.slots.release()
         self.assertEqual(0, instance.attempts)
         self.provider.assert_not_called()
         self.assertEqual("A test reply.", instance.reply(CONTEXT))
@@ -294,7 +304,30 @@ class BudgetTests(BridgeAssertions):
         self.error("internal_error", instance.reply, CONTEXT)
         self.assertNotIn(FAKE_KEY, json.dumps(self.entries))
         self.assertEqual("internal_error", self.entries[0]["outcome"])
-        self.assertFalse(instance.lock.locked())
+        self.assertIdle(instance)
+
+    def test_conversations_are_answered_at_the_same_time(self):
+        both_started = threading.Barrier(2, timeout=5)
+
+        def provider(*_):
+            both_started.wait()          # Only returns once a second request is in progress too.
+            return "A test reply.", {"total_tokens": 5}
+
+        instance = self.new_bridge(Mock(side_effect=provider), budget=4, concurrency=2)
+        replies = []
+        workers = [threading.Thread(target=lambda: replies.append(instance.reply(CONTEXT))) for _ in range(2)]
+        for worker in workers:
+            worker.start()
+        for worker in workers:
+            worker.join(10)
+        self.assertEqual(["A test reply.", "A test reply."], replies)
+        self.assertEqual(2, instance.attempts)
+        self.assertIdle(instance)
+
+    def test_concurrency_is_bounded(self):
+        for bad in (0, bridge.MAX_CONCURRENCY + 1):
+            with self.assertRaises(ValueError):
+                self.new_bridge(concurrency=bad)
 
 
 class LocalHttpTests(BridgeAssertions):
@@ -369,6 +402,17 @@ class LocalHttpTests(BridgeAssertions):
             status, _, result = self.request()
         self.assertEqual((503, {"error": "provider_http"}), (status, result))
         self.assertNotIn(FAKE_KEY, json.dumps(result))
+
+
+class CharacterSheetTests(unittest.TestCase):
+    def test_personality_and_backstory_are_optional_and_bounded(self):
+        with_sheet = dict(CONTEXT, personality="Wry and patient.", backstory="Kept the ford for forty years.")
+        self.assertEqual(bridge.clean_context(with_sheet)["backstory"], "Kept the ford for forty years.")
+        self.assertNotIn("personality", bridge.clean_context(dict(CONTEXT, personality="")))
+        with self.assertRaises(bridge.BridgeError):
+            bridge.clean_context(dict(CONTEXT, backstory="x" * 12001))
+        with self.assertRaises(bridge.BridgeError):
+            bridge.clean_context(dict(CONTEXT, personality=7))
 
 
 if __name__ == "__main__":

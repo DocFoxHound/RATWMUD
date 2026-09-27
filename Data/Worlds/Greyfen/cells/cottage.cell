@@ -1,0 +1,20 @@
+id: cottage
+name: Birchwall Cottage
+description: A low family cottage with a shared table in the middle and two sleeping nooks along the back wall.
+world: 16 40 0
+size: 12 10
+outdoors: false
+weather: clear
+wind: 0 0 0
+lighting: 0.80000000000000004 0.5 warm
+grid:
+######+#####
+#..........#
+#..........#
+#..........#
+#....TT....#
+#....TT....#
+#..........#
+#..........#
+#..........#
+############

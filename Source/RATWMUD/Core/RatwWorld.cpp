@@ -1,14 +1,18 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <array>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <filesystem>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <queue>
 #include <set>
 #include <sstream>
+#include <thread>
 
 namespace ratw
 {
@@ -21,6 +25,12 @@ constexpr double SprintDrain = 15.0;
 constexpr double ExhaustionRecovery = 20.0;
 constexpr double DaySeconds = calendar::SecondsPerDay;
 constexpr int NavScale = 4;
+// Weighted A*: trusting the straight-line estimate this much more explores a small fraction of a large cell's
+// million-node grid, for routes at most this much longer than the shortest (in practice barely longer at all).
+constexpr double SearchGreed = 2.0;
+constexpr std::size_t SmoothLookahead = 40; // Waypoints a smoothed path may skip in one straight line.
+constexpr int RouteSearchesPerUpdate = 6;    // Residents who may plan a route in one schedule update,
+constexpr std::size_t RouteNodesPerUpdate = 100000; // and the search work they may do between them (nodes expanded).
 constexpr double Epsilon = 1e-7;
 constexpr double Pi = 3.14159265358979323846;
 constexpr double TurnSpeed = Pi; // Radians per second: 180 degrees.
@@ -31,8 +41,10 @@ Weather worldWeather(calendar::Weather value)
 }
 calendar::Weather skyWeather(Weather value)
 {
-    switch (value) { case Weather::Rain: return calendar::Weather::Rain; case Weather::Snow: return calendar::Weather::Snow;
-        case Weather::Fog: return calendar::Weather::Fog; default: return calendar::Weather::Clear; }
+    // The sky model only knows how much moonlight each kind lets through; cloud cover passes like rain, dust like fog.
+    switch (value) { case Weather::Rain: case Weather::Storm: case Weather::Overcast: return calendar::Weather::Rain;
+        case Weather::Snow: return calendar::Weather::Snow;
+        case Weather::Fog: case Weather::Sandstorm: return calendar::Weather::Fog; default: return calendar::Weather::Clear; }
 }
 double length(Vec2 a)
 {
@@ -90,40 +102,14 @@ Tile fromGlyph(char g)
 {
     Tile t;
     t.glyph = g;
-    switch (g)
+    if (const auto* info = terrainInfo(g))
     {
-    case '#':
-        t.terrain = Terrain::Wall;
-        t.solid = t.opaque = true;
-        break;
-    case 'T':
-        t.terrain = Terrain::Table;
-        t.solid = true;
-        break;
-    case '=':
-        t.terrain = Terrain::Counter;
-        t.solid = true;
-        break;
-    case '~':
-        t.terrain = Terrain::Water;
-        t.movementCost = 2.4;
-        break;
-    case ',':
-    case '"':
-        t.terrain = Terrain::Grass;
-        t.movementCost = 1.12;
-        break;
-    case '^':
-        t.terrain = Terrain::Stairs;
-        t.height = 0.5;
-        t.movementCost = 1.25;
-        break;
-    case ':':
-        t.height = 0.25;
-        t.movementCost = 1.12;
-        break;
-    default:
-        break;
+        t.terrain = info->kind;
+        t.solid = info->solid;
+        t.opaque = info->opaque;
+        t.height = info->height;
+        t.stature = info->stature;
+        t.movementCost = info->cost;
     }
     return t;
 }
@@ -170,14 +156,15 @@ struct AirRoute
 class AirRoutes
 {
   public:
-    AirRoutes(const Cell& c, const std::map<std::string, Door>& doors, Vec2 origin)
+    // `doors`: the cell's own doors (World::doorsIn), not the world's.
+    AirRoutes(const Cell& c, const std::vector<Door*>& doors, Vec2 origin)
         : c_(c), origin_(origin), open_(c.tiles.size(), false)
     {
         for (std::size_t i = 0; i < c.tiles.size(); ++i)
             open_[i] = !c.tiles[i].opaque && c.tiles[i].terrain != Terrain::Wall;
-        for (const auto& entry : doors)
+        for (const Door* door : doors)
         {
-            const auto& d = entry.second;
+            const auto& d = *door;
             if (d.cellId == c.id && !d.open && inside(d.position))
                 open_[index(int(d.position.x), int(d.position.y))] = false;
         }
@@ -313,6 +300,34 @@ Tile* Cell::tile(int x, int y)
     return const_cast<Tile*>(static_cast<const Cell&>(*this).tile(x, y));
 }
 
+Tile tileFromGlyph(char glyph)
+{
+    return fromGlyph(glyph);
+}
+
+const std::vector<TerrainInfo>& terrainCatalog()
+{
+    static const std::vector<TerrainInfo> catalog = {
+#define RATW_TERRAIN(code, kind, solid, opaque, height, stature, cost, ramp, glyph, ascii, fg, bg, name)                 \
+    {char(code), Terrain::kind, solid, opaque, height, stature, cost, ramp, char16_t(glyph), char(ascii), fg, bg, name},
+#include "RatwTerrainCatalog.inc"
+#undef RATW_TERRAIN
+    };
+    return catalog;
+}
+
+const TerrainInfo* terrainInfo(char code)
+{
+    static const auto index = [] {
+        std::array<const TerrainInfo*, 128> table{};
+        for (const auto& info : terrainCatalog())
+            table[static_cast<unsigned char>(info.code)] = &info;
+        return table;
+    }();
+    const auto slot = static_cast<unsigned char>(code);
+    return slot < index.size() ? index[slot] : nullptr;
+}
+
 const char* weatherName(Weather w)
 {
     switch (w)
@@ -323,9 +338,25 @@ const char* weatherName(Weather w)
         return "fog";
     case Weather::Snow:
         return "snow";
+    case Weather::Overcast:
+        return "overcast";
+    case Weather::Storm:
+        return "storm";
+    case Weather::Sandstorm:
+        return "sandstorm";
     default:
         return "clear";
     }
+}
+bool parseWeather(const std::string& name, Weather& out)
+{
+    for (int i = 0; i < WeatherKinds; ++i)
+        if (name == weatherName(static_cast<Weather>(i)))
+        {
+            out = static_cast<Weather>(i);
+            return true;
+        }
+    return false;
 }
 const char* knowledgeName(Knowledge k)
 {
@@ -370,6 +401,14 @@ int effectivePace(const Entity& actor)
     if (actor.posture != "standing" || actor.exhausted || actor.stamina <= 0.0)
         return 0;
     return std::clamp(actor.pace, 0, 10);
+}
+
+// A posture taken at once, without the timed rise only full simulation advances (for offstage NPCs).
+void settle(Entity& e, const char* posture)
+{
+    e.posture = posture;
+    e.postureRemaining = 0;
+    e.postureTarget.clear();
 }
 
 double paceSpeed(const Entity& actor)
@@ -540,12 +579,41 @@ void World::createDemo()
 void World::rebuildFixtureIndex()
 {
     blockingFixtures_.clear();
+    doorsIn_.clear();
+    portalsIn_.clear();
+    portalGrid_.clear();
+    neighborCache_.clear();
+    stepsCache_.clear();
+    for (auto& entry : doors_)
+        doorsIn_[entry.second.cellId].push_back(&entry.second);
     for (const auto& entry : doors_)
     {
         const auto& d = entry.second;
         if (!d.passage && d.id.rfind("stairs_", 0) != 0)
             blockingFixtures_[d.cellId][{int(std::floor(d.position.x)), int(std::floor(d.position.y))}].push_back(d.id);
     }
+}
+
+void World::indexSeams(const std::string& cellId, const std::vector<std::string>& seamIds)
+{
+    // What rebuildFixtureIndex() would give, for the one cell whose seams just arrived: its door list in ID order.
+    // Seams are open passages, so they never block sight or movement (blockingFixtures_), and every one leads where
+    // the cell's exits already said, so neither its neighbours nor any route changes (see firstSteps()). A seam
+    // that leads somewhere else means the manifest is out of step: then everything is rebuilt, as it used to be.
+    const auto exits = exits_.find(cellId);
+    portalGrid_.erase(cellId);
+    auto& list = doorsIn_[cellId];
+    for (const auto& id : seamIds)
+    {
+        auto& d = doors_.at(id);
+        if (exits == exits_.end() || !exits->second.count(d.targetCell))
+        {
+            rebuildFixtureIndex();
+            return;
+        }
+        list.push_back(&d);
+    }
+    std::sort(list.begin(), list.end(), [](const Door* a, const Door* b) { return a->id < b->id; });
 }
 
 bool World::blockedByDoor(const std::string& cellId, Vec2 point) const
@@ -570,6 +638,7 @@ Entity& World::addPlayer(const std::string& id, const std::string& name)
     auto existing = entities_.find(id);
     if (existing != entities_.end())
         return existing->second;
+    ensureLoaded(spawnCell_);
     Entity e;
     e.id = id;
     e.name = name;
@@ -590,6 +659,7 @@ bool World::removePlayer(const std::string& id)
     entities_.erase(it);
     pendingPortals_.erase(id);
     travels_.erase(id);
+    lastObserved_.erase(id);
     travelLegCells_.erase(id);
     travelRetryAt_.erase(id);
     travelProgress_.erase(id);
@@ -615,13 +685,93 @@ const Cell* World::cell(const std::string& id) const
     const auto it = cells_.find(id);
     return it == cells_.end() ? nullptr : &it->second;
 }
+const std::vector<Door*>& World::doorsIn(const std::string& cellId) const
+{
+    static const std::vector<Door*> none;
+    const auto found = doorsIn_.find(cellId);
+    return found == doorsIn_.end() ? none : found->second;
+}
+
+const std::vector<std::string>& World::neighborList(const std::string& cellId) const
+{
+    auto found = neighborCache_.find(cellId);
+    if (found == neighborCache_.end())
+    {
+        const auto all = neighbors(cellId);
+        found = neighborCache_.emplace(cellId, std::vector<std::string>(all.begin(), all.end())).first;
+    }
+    return found->second;
+}
+
+std::set<std::string> World::neighbors(const std::string& cellId) const
+{
+    std::set<std::string> out;
+    for (const auto* d : doorsIn(cellId))
+        if (d->portal)
+            out.insert(d->targetCell);
+    const auto seams = exits_.find(cellId);
+    if (seams != exits_.end())
+        out.insert(seams->second.begin(), seams->second.end());
+    return out;
+}
+
+const std::map<std::string, std::string>& World::cachedSteps(const std::string& from) const
+{
+    auto found = stepsCache_.find(from);
+    if (found == stepsCache_.end())
+        found = stepsCache_.emplace(from, firstSteps(from)).first;
+    return found->second;
+}
+
+std::map<std::string, std::string> World::firstSteps(const std::string& from) const
+{
+    std::map<std::string, std::string> first{{from, ""}};
+    std::queue<std::string> pending;
+    pending.push(from);
+    while (!pending.empty())
+    {
+        const auto current = pending.front(); pending.pop();
+        const auto visit = [&](const std::string& next) {
+            if (first.count(next))
+                return;
+            first[next] = current == from ? next : first[current];
+            pending.push(next);
+        };
+        // A streamed cell's seams are in its exits whether or not it is loaded; its loaded seam records are left
+        // to them, so a route never depends on which cells happen to be in memory (and loading one changes none).
+        const auto seams = exits_.find(current);          // Seams (always open).
+        for (const auto* d : doorsIn(current))
+            if (d->portal && !d->locked &&
+                !(d->passage && d->boundary && seams != exits_.end() && seams->second.count(d->targetCell)))
+                visit(d->targetCell);
+        if (seams != exits_.end())
+            for (const auto& next : seams->second)
+                visit(next);
+    }
+    return first;
+}
+
 const Door* World::door(const std::string& id) const
 {
     const auto it = doors_.find(id);
     return it == doors_.end() ? nullptr : &it->second;
 }
 
-bool World::passable(const std::string& cellId, Vec2 p, double fromHeight) const
+namespace
+{
+constexpr double FreeStep = 0.5, RampStep = 1.0, EyeHeight = 0.8, SightTarget = 0.5;
+bool ramp(const Tile* t)
+{
+    return t && (t->terrain == Terrain::Slope || t->terrain == Terrain::Stairs);
+}
+bool stepAllowed(const Tile* from, const Tile& to)
+{
+    const double rise = std::abs(to.height - (from ? from->height : 0.0));
+    return rise <= FreeStep + 1e-6 || (rise <= RampStep + 1e-6 && (ramp(from) || ramp(&to)));
+}
+} // namespace
+
+bool World::passable(const std::string& cellId, Vec2 p, const Tile* from) const
 {
     const auto* c = cell(cellId);
     if (!c || !finite(p))
@@ -630,7 +780,7 @@ bool World::passable(const std::string& cellId, Vec2 p, double fromHeight) const
          {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
     {
         const auto* t = c->tile(int(std::floor(s.x)), int(std::floor(s.y)));
-        if (!t || t->solid || std::abs(t->height - fromHeight) > 0.75)
+        if (!t || t->solid || !stepAllowed(from, *t))
             return false;
         if (blockedByDoor(cellId, s))
             return false;
@@ -638,27 +788,133 @@ bool World::passable(const std::string& cellId, Vec2 p, double fromHeight) const
     return true;
 }
 
+int World::regionAt(const Cell& c, Vec2 point) const
+{
+    const int x = int(std::floor(point.x)), y = int(std::floor(point.y));
+    const auto* map = regionMap(c);
+    return !map || x < 0 || y < 0 || x >= c.width || y >= c.height ? -1 : (*map)[std::size_t(y * c.width + x)];
+}
+
+const std::vector<int>* World::regionMap(const Cell& c) const
+{
+    if (!c.loaded || c.tiles.size() != std::size_t(c.width * c.height))
+        return nullptr;
+    std::uint64_t checksum = 1469598103934665603ULL;
+    for (const auto& t : c.tiles)
+    {
+        checksum = (checksum ^ std::uint64_t(static_cast<unsigned char>(t.glyph))) * 1099511628211ULL;
+        checksum = (checksum ^ std::uint64_t(std::int64_t(std::llround(t.height * 2)) + 64 + (t.solid ? 1024 : 0))) *
+                   1099511628211ULL;
+    }
+    auto& r = regions_[c.id];
+    if (r.region.size() != c.tiles.size() || r.checksum != checksum)
+    {
+        r.checksum = checksum;
+        r.region.assign(c.tiles.size(), -1);
+        int next = 0;
+        std::vector<int> frontier;
+        for (int start = 0; start < int(c.tiles.size()); ++start)
+        {
+            if (r.region[start] >= 0 || c.tiles[start].solid)
+                continue;
+            r.region[start] = next;
+            frontier.assign(1, start);
+            while (!frontier.empty())
+            {
+                const int i = frontier.back();
+                frontier.pop_back();
+                const int ix = i % c.width, iy = i / c.width;
+                for (const auto [dx, dy] : {std::pair{1, 0}, std::pair{-1, 0}, std::pair{0, 1}, std::pair{0, -1}})
+                {
+                    const int nx = ix + dx, ny = iy + dy, n = ny * c.width + nx;
+                    if (nx < 0 || ny < 0 || nx >= c.width || ny >= c.height || r.region[n] >= 0 || c.tiles[n].solid ||
+                        !stepAllowed(&c.tiles[i], c.tiles[n]))
+                        continue;
+                    r.region[n] = next;
+                    frontier.push_back(n);
+                }
+            }
+            ++next;
+        }
+    }
+    return &r.region;
+}
+
 bool World::lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const
 {
     const auto* c = cell(cellId);
-    if (!c || !finite(from) || !finite(to))
+    if (!c)
+        return false;
+    const auto fixtures = blockingFixtures_.find(cellId);
+    return lineOfSight(*c, fixtures == blockingFixtures_.end() ? nullptr : &fixtures->second, nullptr, from, to);
+}
+bool World::lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,
+                        Vec2 to) const
+{
+    const auto* c = &cell;
+    if (!finite(from) || !finite(to))
         return false;
     if (from.x < 0 || from.y < 0 || from.x >= c->width || from.y >= c->height || to.x < 0 || to.y < 0 ||
         to.x >= c->width || to.y >= c->height)
         return false;
+    // Sight runs from the observer's eye to the middle of the target's tile. Ground, and whatever stands on it,
+    // rising above that line hides what lies beyond: the far side of a hill, a plateau above a cliff, a thicket.
+    const auto* fromTile = c->tile(int(std::floor(from.x)), int(std::floor(from.y)));
+    const auto* toTile = c->tile(int(std::floor(to.x)), int(std::floor(to.y)));
+    const double eye = (fromTile ? fromTile->height : 0.0) + EyeHeight;
+    // A tall target (a tree, a statue) can show its top over ground that hides its foot.
+    const double target = (toTile ? toTile->height + std::max(SightTarget, toTile->stature) : SightTarget);
+    const int toX = int(std::floor(to.x)), toY = int(std::floor(to.y));
     const int count = std::max(1, int(std::ceil(distance(from, to) / 0.12)));
-    for (int i = 1; i < count; ++i)
-    {
+    // The line is sampled every 0.12 tiles: sample i of count lies at fraction i / count of the way. Samples a
+    // fraction of a tile apart mostly share a tile, and along a straight line the samples in one tile are
+    // consecutive, so each tile crossed is checked once for the whole run of samples in it. Within a run only the
+    // height of the sight line changes, and it changes steadily with f, so the lowest point of the line over that
+    // tile is at the run's first sample when the line climbs and its last when it falls: ground that rises above
+    // the line at any sample in the tile rises above it there. The result is exactly that of checking every sample.
+    const double dx = to.x - from.x, dy = to.y - from.y;
+    const auto at = [&](int i, bool y) {
         const double f = double(i) / count;
-        const Vec2 p{from.x + (to.x - from.x) * f, from.y + (to.y - from.y) * f};
+        return y ? from.y + dy * f : from.x + dx * f;
+    };
+    // The first sample after `i` that lies beyond tile coordinate `tileAt` along one axis (count if none does).
+    const auto leaves = [&](int i, int tileAt, double delta, bool y) {
+        if (delta == 0)
+            return count;
+        const double origin = y ? from.y : from.x;
+        const double edge = delta > 0 ? tileAt + 1.0 : double(tileAt);
+        const double guess = std::ceil((edge - origin) / delta * count);
+        int next = !(guess < count) ? count : guess <= i ? i + 1 : int(guess);
+        const auto beyond = [&](int k) { return delta > 0 ? at(k, y) >= edge : at(k, y) < edge; };
+        while (next > i + 1 && beyond(next - 1))
+            --next;
+        while (next < count && !beyond(next))
+            ++next;
+        return next;
+    };
+    for (int i = 1; i < count;)
+    {
+        const double px = at(i, false), py = at(i, true);
+        const int x = int(std::floor(px)), y = int(std::floor(py));
+        const int end = std::min(leaves(i, x, dx, false), leaves(i, y, dy, true));  // One past this tile's run.
         // The occluding destination itself is visible, without revealing beyond it.
-        if (int(std::floor(p.x)) == int(std::floor(to.x)) && int(std::floor(p.y)) == int(std::floor(to.y)))
-            continue;
-        const auto* t = c->tile(int(std::floor(p.x)), int(std::floor(p.y)));
-        if (!t || t->opaque)
-            return false;
-        if (blockedByDoor(cellId, p))
-            return false;
+        if (x != toX || y != toY)
+        {
+            const auto* t = c->tile(x, y);
+            if (!t || t->opaque)
+                return false;
+            const bool fixture = fixtureMask ? (*fixtureMask)[std::size_t(y * c->width + x)] != 0
+                                             : fixtures && fixtures->count({x, y});
+            if (fixture && blockedByDoor(c->id, {px, py}))
+                return false;
+            if (t != fromTile)
+            {
+                const double f = double(target - eye >= 0 ? i : end - 1) / count;
+                if (t->height + t->stature > eye + (target - eye) * f + 1e-6)
+                    return false;
+            }
+        }
+        i = end;
     }
     return true;
 }
@@ -671,12 +927,140 @@ bool World::visiblePoint(const Entity& o, Vec2 p) const
 {
     return distance(o.position, p) <= sightRange(o) && lineOfSight(o.cellId, o.position, p);
 }
+std::vector<char> World::visibleTileMask(const Entity& o, const Cell& c, double range) const
+{
+    std::vector<char> out(c.tiles.size(), 0);
+    if (!(range > 0))
+        return out;
+    const int x0 = std::max(0, int(std::floor(o.position.x - range))), x1 = std::min(c.width - 1, int(std::ceil(o.position.x + range)));
+    const int y0 = std::max(0, int(std::floor(o.position.y - range))), y1 = std::min(c.height - 1, int(std::ceil(o.position.y + range)));
+    const Cell* sightCell = o.cellId == c.id ? &c : cell(o.cellId);
+    if (!sightCell)
+        return out;
+    // Which tiles hold a closable fixture, as a flat mask: the rays below ask about thousands of tiles.
+    std::vector<char> fixtureTiles;
+    if (const auto fixtures = blockingFixtures_.find(o.cellId); fixtures != blockingFixtures_.end())
+    {
+        fixtureTiles.assign(sightCell->tiles.size(), 0);
+        for (const auto& [at, ids] : fixtures->second)
+            if (at.first >= 0 && at.second >= 0 && at.first < sightCell->width && at.second < sightCell->height)
+                fixtureTiles[std::size_t(at.second * sightCell->width + at.first)] = 1;
+    }
+    const auto* mask = fixtureTiles.empty() ? nullptr : &fixtureTiles;
+    for (int y = y0; y <= y1; ++y)
+        for (int x = x0; x <= x1; ++x)
+        {
+            const Vec2 p{x + .5, y + .5};
+            if (distance(o.position, p) <= range && lineOfSight(*sightCell, nullptr, mask, o.position, p))
+                out[std::size_t(y * c.width + x)] = 1;
+        }
+    return out;
+}
+World::View World::viewKey(const Entity& o, const Cell& c, double range) const
+{
+    std::uint64_t doors = 1469598103934665603ULL;
+    for (const Door* d : doorsIn(c.id))
+        if (!d->passage)
+            doors = (doors ^ std::uint64_t(d->open)) * 1099511628211ULL;
+    return {c.id, std::llround(o.position.x * 50), std::llround(o.position.y * 50), std::llround(range * 100), doors,
+            std::uint64_t(c.tiles.size()), {}};
+}
+const std::vector<char>& World::viewOf(const Entity& o, const Cell& c, bool* fresh) const
+{
+    const double range = sightRange(o);
+    const View key = viewKey(o, c, range);
+    auto& v = views_[o.id];
+    const bool same = v.cellId == key.cellId && v.x == key.x && v.y == key.y && v.range == key.range &&
+                      v.doors == key.doors && v.tiles == key.tiles && v.visible.size() == c.tiles.size();
+    if (!same)
+    {
+        v = key;
+        v.visible = visibleTileMask(o, c, range);
+    }
+    if (fresh)
+        *fresh = !same;
+    return v.visible;
+}
+void World::prepareViews(const std::vector<std::string>& observerIds) const
+{
+    struct Job
+    {
+        const Entity* observer;
+        const Cell* cell;
+        double range;
+        View key;
+    };
+    std::vector<Job> jobs;
+    for (const auto& id : observerIds)
+    {
+        const auto* o = entity(id);
+        const auto* c = o ? cell(o->cellId) : nullptr;
+        if (!o || !c)
+            continue;
+        const double range = sightRange(*o);
+        View key = viewKey(*o, *c, range);
+        const auto cached = views_.find(id);
+        if (cached != views_.end() && cached->second.cellId == key.cellId && cached->second.x == key.x &&
+            cached->second.y == key.y && cached->second.range == key.range && cached->second.doors == key.doors &&
+            cached->second.tiles == key.tiles && cached->second.visible.size() == c->tiles.size())
+            continue;
+        jobs.push_back({o, c, range, std::move(key)});
+    }
+    if (jobs.empty())
+        return;
+    // Only reads happen on the helpers (tiles, doors, fixtures); each writes its own result.
+    const std::size_t threads = std::min<std::size_t>(jobs.size(), std::max(1u, std::min(8u, std::thread::hardware_concurrency())));
+    if (threads > 1)
+    {
+        std::vector<std::thread> helpers;
+        for (std::size_t t = 1; t < threads; ++t)
+            helpers.emplace_back([&, t] {
+                for (std::size_t j = t; j < jobs.size(); j += threads)
+                    jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range);
+            });
+        for (std::size_t j = 0; j < jobs.size(); j += threads)
+            jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range);
+        for (auto& helper : helpers)
+            helper.join();
+    }
+    else
+        jobs[0].key.visible = visibleTileMask(*jobs[0].observer, *jobs[0].cell, jobs[0].range);
+    for (auto& job : jobs)
+        views_[job.observer->id] = std::move(job.key);
+}
 bool World::visiblePortal(const Entity& o, const Door& d) const
 {
     return d.cellId == o.cellId && d.portal && d.open && visiblePoint(o, d.position);
 }
 
 std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) const
+{
+    const auto* c = cell(a.cellId);
+    const auto* regions = c && finite(goal) && finite(a.position) ? regionMap(*c) : nullptr;
+    if (!regions)
+        return searchPath(a, goal, allowClosed);
+    std::uint64_t closed = 1469598103934665603ULL;
+    if (const auto fixtures = blockingFixtures_.find(a.cellId); !allowClosed && fixtures != blockingFixtures_.end())
+        for (const auto& [at, ids] : fixtures->second)
+            for (const auto& id : ids)
+                if (const auto* d = door(id); d && !d->open)
+                    for (const unsigned char ch : id + '\n')
+                        closed = (closed ^ ch) * 1099511628211ULL;
+    PathKey key{a.cellId, a.position.x, a.position.y, goal.x, goal.y, allowClosed, regions_.at(c->id).checksum, closed};
+    if (const auto found = pathCache_.find(key); found != pathCache_.end())
+    {
+        ++pathHits_;
+        return found->second;
+    }
+    ++pathMisses_;
+    auto path = searchPath(a, goal, allowClosed);
+    if (pathCache_.size() >= PathsKept)
+        pathCache_.clear();                         // Simple and rare: the everyday ways are soon found again.
+    pathCache_.emplace(std::move(key), path);
+    return path;
+}
+
+std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed) const
 {
     const auto* c = cell(a.cellId);
     if (!c || !finite(goal))
@@ -693,37 +1077,126 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
     const int start = index(a.position), end = index(goal);
     if (start < 0 || end < 0)
         return {};
-    auto allowed = [&](Vec2 p, double height) {
-        if (!allowClosed)
-            return passable(a.cellId, p, height);
+    // A goal in another region can never be reached: say so at once instead of searching everything reachable.
+    if (const int from = regionAt(*c, a.position), to = regionAt(*c, goal); from >= 0 && to >= 0 && from != to)
+        return {};
+    // passable() for this one cell, with its lookups done once: a search asks millions of times on a large cell.
+    // The tiles a closed door stands in, as a flat mask, rather than looking every sample up among the fixtures.
+    std::vector<char> closedTiles;
+    if (const auto fixtures = blockingFixtures_.find(a.cellId); !allowClosed && fixtures != blockingFixtures_.end())
+        for (const auto& [at, ids] : fixtures->second)
+            if (at.first >= 0 && at.second >= 0 && at.first < c->width && at.second < c->height)
+                for (const auto& id : ids)
+                    if (const auto* d = door(id); d && !d->open)
+                    {
+                        closedTiles.resize(c->tiles.size(), 0);
+                        closedTiles[std::size_t(at.second * c->width + at.first)] = 1;
+                    }
+    const bool anyClosed = !closedTiles.empty();
+    auto allowed = [&](Vec2 p, const Tile* from) {
+        // The footprint is tiny (Radius): nearly always all five points are on one tile, and one look will do.
+        const int cx = int(std::floor(p.x)), cy = int(std::floor(p.y));
+        if (int(std::floor(p.x - Radius)) == cx && int(std::floor(p.x + Radius)) == cx &&
+            int(std::floor(p.y - Radius)) == cy && int(std::floor(p.y + Radius)) == cy)
+        {
+            const auto* t = c->tile(cx, cy);
+            return t && !t->solid && stepAllowed(from, *t) && !(anyClosed && closedTiles[std::size_t(cy * c->width + cx)]);
+        }
         for (Vec2 s :
              {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
         {
-            const auto* t = c->tile(int(std::floor(s.x)), int(std::floor(s.y)));
-            if (!t || t->solid || std::abs(t->height - height) > .75)
+            const int tx = int(std::floor(s.x)), ty = int(std::floor(s.y));
+            const auto* t = c->tile(tx, ty);
+            if (!t || t->solid || !stepAllowed(from, *t))
+                return false;
+            if (anyClosed && closedTiles[std::size_t(ty * c->width + tx)])
                 return false;
         }
         return true;
     };
+    // allowed() for a node's centre, which the search asks of each node many times over (once for every neighbour
+    // it is reached from, and again for diagonal corners). A node's footprint is five points on at most five tiles;
+    // what they are is found once per search. Off ramps, a step is allowed when no footprint tile rises or falls
+    // more than FreeStep from where the step starts, which is so exactly when the lowest and highest of them don't
+    // (the rise is steady in the height on either side of it); with a ramp in play it is asked in full as before.
+    enum : std::uint8_t { FootprintBlocked = 1, FootprintRamp = 2 };
+    auto allowedNode = [&](int node, Vec2 p, const Tile* from) {
+        if (nav_.footprintSearch[std::size_t(node)] != nav_.search)
+        {
+            std::uint8_t flags = 0;
+            double low = std::numeric_limits<double>::infinity(), high = -low;
+            for (Vec2 s :
+                 {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
+            {
+                const int tx = int(std::floor(s.x)), ty = int(std::floor(s.y));
+                const auto* t = c->tile(tx, ty);
+                if (!t || t->solid || (anyClosed && closedTiles[std::size_t(ty * c->width + tx)]))
+                {
+                    flags |= FootprintBlocked;
+                    break;
+                }
+                if (ramp(t))
+                    flags |= FootprintRamp;
+                low = std::min(low, t->height);
+                high = std::max(high, t->height);
+            }
+            nav_.footprintSearch[std::size_t(node)] = nav_.search;
+            nav_.footprintFlags[std::size_t(node)] = flags;
+            nav_.footprintLow[std::size_t(node)] = low;
+            nav_.footprintHigh[std::size_t(node)] = high;
+        }
+        const auto flags = nav_.footprintFlags[std::size_t(node)];
+        if (flags & FootprintBlocked)
+            return false;
+        if ((flags & FootprintRamp) || !from || ramp(from))
+            return allowed(p, from);
+        const double base = from->height;
+        return std::abs(nav_.footprintHigh[std::size_t(node)] - base) <= FreeStep + 1e-6 &&
+               std::abs(nav_.footprintLow[std::size_t(node)] - base) <= FreeStep + 1e-6;
+    };
     const auto* dest = c->tile(int(goal.x), int(goal.y));
-    if (!dest || !allowed(goal, dest->height))
+    if (!dest || !allowed(goal, dest))
         return {};
     using QueueItem = std::pair<double, int>;
     std::priority_queue<QueueItem, std::vector<QueueItem>, std::greater<QueueItem>> open;
-    std::vector<double> g(static_cast<std::size_t>(w * h), std::numeric_limits<double>::infinity());
-    std::vector<int> previous(static_cast<std::size_t>(w * h), -1);
-    std::vector<bool> closed(static_cast<std::size_t>(w * h), false);
-    g[start] = 0;
-    open.push({distance(pos(start), goal), start});
+    const auto nodes = static_cast<std::size_t>(w * h);
+    if (nav_.seen.size() < nodes)
+    {
+        nav_.g.resize(nodes);
+        nav_.previous.resize(nodes);
+        nav_.seen.assign(nodes, 0);
+        nav_.closed.assign(nodes, 0);
+        nav_.footprintSearch.assign(nodes, 0);
+        nav_.footprintFlags.resize(nodes);
+        nav_.footprintLow.resize(nodes);
+        nav_.footprintHigh.resize(nodes);
+        nav_.search = 0;
+    }
+    if (++nav_.search == 0)
+    {
+        std::fill(nav_.seen.begin(), nav_.seen.end(), 0);
+        std::fill(nav_.closed.begin(), nav_.closed.end(), 0);
+        std::fill(nav_.footprintSearch.begin(), nav_.footprintSearch.end(), 0);
+        nav_.search = 1;
+    }
+    const std::uint32_t search = nav_.search;
+    auto gOf = [&](int i) { return nav_.seen[i] == search ? nav_.g[i] : std::numeric_limits<double>::infinity(); };
+    auto previousOf = [&](int i) { return nav_.seen[i] == search ? nav_.previous[i] : -1; };
+    auto isClosed = [&](int i) { return nav_.closed[i] == search; };
+    nav_.seen[start] = search;
+    nav_.g[start] = 0;
+    nav_.previous[start] = -1;
+    open.push({SearchGreed * distance(pos(start), goal), start});
     while (!open.empty())
     {
         const int current = open.top().second;
         open.pop();
-        if (closed[current])
+        if (isClosed(current))
             continue;
         if (current == end)
             break;
-        closed[current] = true;
+        nav_.closed[current] = search;
+        ++searchExpanded_;
         const Vec2 p = pos(current);
         const auto* tile = c->tile(int(p.x), int(p.y));
         if (!tile)
@@ -738,24 +1211,28 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
                     continue;
                 const int next = ny * w + nx;
                 const Vec2 q = pos(next);
-                if (closed[next] || !allowed(q, tile->height))
+                if (isClosed(next) || !allowedNode(next, q, tile))
                     continue;
-                if (dx && dy && (!allowed({p.x, q.y}, tile->height) || !allowed({q.x, p.y}, tile->height)))
+                // The diagonal's corners: {p.x, q.y} is the node in this column and the next row, and so on.
+                if (dx && dy &&
+                    (!allowedNode(ny * w + current % w, {p.x, q.y}, tile) || !allowedNode(current / w * w + nx, {q.x, p.y}, tile)))
                     continue;
                 const auto* nt = c->tile(int(q.x), int(q.y));
                 const double cost = distance(p, q) * nt->movementCost + std::abs(nt->height - tile->height) * .3;
-                if (g[current] + cost + Epsilon < g[next])
+                const double through = gOf(current) + cost;
+                if (through + Epsilon < gOf(next))
                 {
-                    g[next] = g[current] + cost;
-                    previous[next] = current;
-                    open.push({g[next] + distance(q, goal), next});
+                    nav_.seen[next] = search;
+                    nav_.g[next] = through;
+                    nav_.previous[next] = current;
+                    open.push({through + SearchGreed * distance(q, goal), next});
                 }
             }
     }
-    if (start != end && previous[end] < 0)
+    if (start != end && previousOf(end) < 0)
         return {};
     std::vector<Vec2> path;
-    for (int i = end; i != start; i = previous[i])
+    for (int i = end; i != start; i = previousOf(i))
     {
         if (i < 0)
             return {};
@@ -767,7 +1244,8 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
     if (!allowClosed && path.size() > 1)
     {
         // Remove the visible quarter-grid zigzag, preserving static clearance
-        // and approximately preserving the terrain cost chosen by A*.
+        // and approximately preserving the terrain cost chosen by A*. Looking a bounded way ahead and stopping at
+        // the first blocked line keeps this linear in the path's length; long city walks made it cubic.
         std::vector<Vec2> smooth;
         Vec2 anchor = a.position;
         std::size_t first = 0;
@@ -776,7 +1254,8 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
             std::size_t chosen = first;
             double routeCost = 0;
             Vec2 priorWaypoint = anchor;
-            for (std::size_t candidate = first; candidate < path.size(); ++candidate)
+            for (std::size_t candidate = first; candidate < path.size() && candidate < first + SmoothLookahead;
+                 ++candidate)
             {
                 const auto* rt = c->tile(int(path[candidate].x), int(path[candidate].y));
                 routeCost += distance(priorWaypoint, path[candidate]) * rt->movementCost;
@@ -791,7 +1270,7 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
                     const Vec2 p{anchor.x + (path[candidate].x - anchor.x) * f,
                                  anchor.y + (path[candidate].y - anchor.y) * f};
                     const auto* pt = c->tile(int(prior.x), int(prior.y));
-                    if (!pt || !allowed(p, pt->height))
+                    if (!pt || !allowed(p, pt))
                     {
                         clear = false;
                         break;
@@ -800,7 +1279,9 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
                     directCost += distance(prior, p) * nt->movementCost;
                     prior = p;
                 }
-                if (clear && directCost <= routeCost + .025)
+                if (!clear)
+                    break;
+                if (directCost <= routeCost + .025)
                     chosen = candidate;
             }
             smooth.push_back(path[chosen]);
@@ -817,6 +1298,8 @@ Result World::move(const std::string& id, double dx, double dy)
     auto* a = entity(id);
     if (!a)
         return {false, "Unknown actor.", {}};
+    if (a->dead)
+        return {false, "You are dead.", {}};
     if (!finite({dx, dy}))
         return {false, "Movement must be finite.", {}};
     if (!issuingTravel_ && length({dx, dy}) > Epsilon)
@@ -836,6 +1319,97 @@ Result World::move(const std::string& id, double dx, double dy)
     a->transitioned = false;
     return {true, "Movement accepted.", {}};
 }
+Result World::setDead(const std::string& id, bool dead)
+{
+    auto* a = entity(id);
+    if (!a)
+        return {false, "Unknown actor.", {}};
+    if (a->dead == dead)
+        return {false, dead ? a->name + " is already dead." : a->name + " is not dead.", {}};
+    stop(id);
+    a->dead = dead;
+    a->posture = dead ? "lying" : "standing";
+    a->postureTarget.clear();
+    a->postureRemaining = 0;
+    a->state = dead ? "dead" : "";
+    a->activity = dead ? "dead" : "";
+    a->typing = false;
+    recordEvent({dead ? "death" : "revival", id, {}, {}, 0, 0, {}, 0, 0, {}});
+    if (a->npc || society_.account(id))
+    {
+        careerNotes(dead ? society_.died(id, calendarDays_) : society_.revived(id));
+        if (dead)
+            // Those who were close grieve: the family for days, friends a little while.
+            for (const auto& [otherId, other] : entities_)
+            {
+                if (otherId == id || other.dead || !other.npc)
+                    continue;
+                const auto* b = bonds_.find(otherId, id);
+                const bool kin = society_.family(otherId, id);
+                if (kin || (b && (b->affinity >= 20 || b->familiarity >= 40)))
+                {
+                    society_.mourn(otherId, id, calendarDays_ + (kin ? 5 : 2));
+                    recordEvent({"mourning", otherId, id, {}, 0, 0, {}, 0, 0, kin ? "family" : "friend"});
+                }
+            }
+    }
+    return {true, dead ? a->name + " is dead." : a->name + " lives again.", {}};
+}
+
+Result World::adoptResident(const World& candidate, const std::string& id)
+{
+    const auto* spec = candidate.society_.spec(id);
+    const auto it = entities_.find(id);
+    if (it != entities_.end() && !it->second.npc)
+        return {false, "That is a player character, not an NPC.", {}};
+    if (!society_.adoptResident(candidate.society_, id))
+        return {false, "No such NPC.", {}};
+    if (!spec)
+    {
+        const std::string name = it != entities_.end() ? it->second.name : id;
+        if (it != entities_.end())
+            entities_.erase(it);
+        pendingPortals_.erase(id);
+        travels_.erase(id);
+        bonds_.forget(id);
+        return {true, name + " has left the world.", {}};
+    }
+    const auto* fresh = candidate.entity(id);
+    if (!fresh)
+        return {false, "The candidate world has no body for " + id + ".", {}};
+    if (it == entities_.end())
+    {
+        entities_[id] = *fresh;
+        return {true, spec->name + " has joined the world.", {}};
+    }
+    auto& e = it->second;
+    e.name = fresh->name;
+    e.description = fresh->description;
+    e.appearance = fresh->appearance;
+    e.speakingColor = fresh->speakingColor;
+    if (!e.dead)
+    {
+        e.activity = fresh->activity;
+        stop(id);                                   // Re-plan with the new schedule and places.
+    }
+    return {true, spec->name + " is updated.", {}};
+}
+
+void World::adoptLayers(const World& candidate)
+{
+    society_.adoptLayers(candidate.society_);
+}
+
+void World::adoptFactions(const World& candidate)
+{
+    factions_ = candidate.factions_;
+    for (auto& [id, place] : cells_)
+    {
+        const auto* other = candidate.cell(id);
+        place.factionClaims = other ? other->factionClaims : std::vector<std::string>{};
+    }
+}
+
 Result World::stop(const std::string& id)
 {
     auto* a = entity(id);
@@ -909,6 +1483,8 @@ Result World::moveTo(const std::string& id, double x, double y)
     auto* a = entity(id);
     if (!a || !finite({x, y}))
         return {false, "Invalid destination.", {}};
+    if (a->dead)
+        return {false, "You are dead.", {}};
     const auto* c = cell(a->cellId);
     if (!c)
         return {false, "Missing cell.", {}};
@@ -924,10 +1500,10 @@ Result World::moveTo(const std::string& id, double x, double y)
     Vec2 goal = requested;
     const Door* exit = nullptr;
     // A click on, or just beyond, a boundary portal expresses a crossing.
-    for (const auto& entry : doors_)
+    for (const Door* door : doorsIn(a->cellId))
     {
-        const auto& d = entry.second;
-        if (d.cellId != a->cellId || !d.boundary)
+        const auto& d = *door;
+        if (!d.boundary)
             continue;
         const bool horizontal =
             d.edge == 'N' || d.edge == 'S' || (d.edge == '-' && (d.position.y < 1 || d.position.y > c->height - 1));
@@ -952,20 +1528,21 @@ Result World::moveTo(const std::string& id, double x, double y)
     if (path.empty())
     {
         auto permissive = findPath(*a, goal, true);
+        Vec2 from = a->position;
         for (const auto& p : permissive)
         {
-            const auto* t = c->tile(int(a->position.x), int(a->position.y));
-            if (!passable(a->cellId, p, t ? t->height : 0))
+            // Each step is judged from the one before it: on slopes and stairs the ground changes along the way.
+            const auto* t = c->tile(int(from.x), int(from.y));
+            from = p;
+            if (!passable(a->cellId, p, t))
             {
-                for (const auto& entry : doors_)
-                    if (entry.second.cellId == a->cellId && !entry.second.open &&
-                        distance(entry.second.position, p) < 1.1)
+                for (const Door* d : doorsIn(a->cellId))
+                    if (!d->open && distance(d->position, p) < 1.1)
                     {
                         a->path = path;
                         if (!a->path.empty())
                             prepareMovement(*a);
-                        return {true, "Approaching the closed " + entry.second.name + ". Choose Open to continue.",
-                                entry.first};
+                        return {true, "Approaching the closed " + d->name + ". Choose Open to continue.", d->id};
                     }
                 break;
             }
@@ -993,6 +1570,8 @@ Result World::moveTo(const std::string& id, double x, double y)
 
 void World::transition(Entity& a, const Door& d)
 {
+    if (!ensureLoaded(d.targetCell).ok)
+        return;
     const auto* destination = cell(d.targetCell);
     if (!destination)
         return;
@@ -1006,7 +1585,7 @@ void World::transition(Entity& a, const Door& d)
         else
             arrival.y += a.position.y - d.position.y;
         const auto* anchor = destination->tile(int(d.arrival.x), int(d.arrival.y));
-        if (!anchor || !passable(d.targetCell, arrival, anchor->height))
+        if (!anchor || !passable(d.targetCell, arrival, anchor))
             arrival = d.arrival;
     }
     a.cellId = d.targetCell;
@@ -1225,10 +1804,20 @@ void World::integrate(Entity& a, double dt)
                 travel = std::min(travel, distance(a.position, a.path.front()));
             const Vec2 delta{direction.x * travel, direction.y * travel};
             const Vec2 proposed{a.position.x + delta.x, a.position.y + delta.y};
-            for (const auto& entry : doors_)
+            // An NPC crosses an open boundary only where its route leads out through that edge: walking along an
+            // edge it has just arrived by must not tip it back into the cell it came from.
+            const auto leaving = [&](char edge) {
+                if (!a.npc || edge == '-')
+                    return true;
+                if (a.path.empty())
+                    return false;
+                const auto end = a.path.back();
+                return edge == 'N' ? end.y < 0 : edge == 'S' ? end.y > c->height : edge == 'W' ? end.x < 0 : end.x > c->width;
+            };
+            for (const Door* door : doorsIn(a.cellId))
             {
-                const auto& d = entry.second;
-                if (d.cellId != a.cellId || !d.portal || !d.boundary || !d.open)
+                const auto& d = *door;
+                if (!d.portal || !d.boundary || !d.open || !leaving(d.edge))
                     continue;
                 const bool crossed = d.edge == 'N'   ? proposed.y < Radius
                                      : d.edge == 'S' ? proposed.y >= c->height - Radius
@@ -1257,16 +1846,37 @@ void World::integrate(Entity& a, double dt)
                     return;
                 }
             }
+            // Walking into any door takes the walker through it: stepping onto an
+            // open doorway or stair, or pushing into a closed, unlocked door.
+            // Locked doors still block; the arrival tile sits beside the far door.
+            const Vec2 lead{proposed.x + direction.x * Radius, proposed.y + direction.y * Radius};
+            for (Door* door : doorsIn(a.cellId))
+            {
+                auto& d = *door;
+                if (!d.portal || d.locked || (d.passage && d.boundary) ||
+                    !doorCovers(d, lead) || doorCovers(d, a.position) || !cell(d.targetCell))
+                    continue;
+                if (!d.open)
+                {
+                    d.open = true;
+                    if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
+                        doors_.at(d.linkedDoor).open = true;
+                }
+                movedTime += travel / speed;
+                a.facing = std::atan2(direction.y, direction.x);
+                transition(a, d);
+                return;
+            }
             Vec2 accepted = a.position;
-            if (passable(a.cellId, proposed, startTile->height))
+            if (passable(a.cellId, proposed, startTile))
                 accepted = proposed;
             else
             {
                 const Vec2 slideX{proposed.x, a.position.y};
                 const Vec2 slideY{a.position.x, proposed.y};
-                if (std::abs(delta.x) > Epsilon && passable(a.cellId, slideX, startTile->height))
+                if (std::abs(delta.x) > Epsilon && passable(a.cellId, slideX, startTile))
                     accepted = slideX;
-                if (std::abs(delta.y) > Epsilon && passable(a.cellId, {accepted.x, slideY.y}, startTile->height))
+                if (std::abs(delta.y) > Epsilon && passable(a.cellId, {accepted.x, slideY.y}, startTile))
                     accepted.y = slideY.y;
                 // A route invalidated by a newly closed door must not resume by itself.
                 if (!a.path.empty())
@@ -1311,49 +1921,451 @@ void World::updateStamina(Entity& a, double dt, double movedTime)
         a.exhausted = false;
 }
 
+namespace
+{
+// `text` as a JSON string of at most `limit` characters: valid UTF-8 only, control characters escaped.
+void jsonText(std::string& out, const std::string& text, std::size_t limit)
+{
+    out += '"';
+    std::size_t characters = 0;
+    for (std::size_t i = 0; i < text.size() && characters < limit;)
+    {
+        const auto byte = static_cast<unsigned char>(text[i]);
+        const std::size_t length = byte < 0x80 ? 1 : (byte >> 5) == 0x6 ? 2 : (byte >> 4) == 0xE ? 3 : (byte >> 3) == 0x1E ? 4 : 0;
+        bool valid = length && i + length <= text.size();
+        for (std::size_t k = 1; valid && k < length; ++k)
+            valid = (static_cast<unsigned char>(text[i + k]) & 0xC0) == 0x80;
+        if (!valid)
+        {
+            ++i;                                    // Not UTF-8: left out.
+            continue;
+        }
+        if (byte == '"' || byte == '\\')
+            out += '\\', out += char(byte);
+        else if (byte < 0x20)
+        {
+            static const char* hex = "0123456789abcdef";
+            out += "\\u00";
+            out += hex[byte >> 4];
+            out += hex[byte & 15];
+        }
+        else
+            out.append(text, i, length);
+        i += length;
+        ++characters;
+    }
+    out += '"';
+}
+} // namespace
+
+std::string eventsJson(const std::vector<WorldEvent>& events)
+{
+    std::string out = "[";
+    for (const auto& e : events)
+    {
+        if (out.size() > 1)
+            out += ',';
+        out += "{\"kind\":";
+        jsonText(out, e.kind.empty() ? std::string("event") : e.kind, 40);
+        out += ",\"actor\":";
+        jsonText(out, e.actor, 80);
+        out += ",\"target\":";
+        jsonText(out, e.target, 80);
+        out += ",\"cell\":";
+        jsonText(out, e.cell, 80);
+        out += ",\"item\":";
+        jsonText(out, e.item, 40);
+        out += ",\"detail\":";
+        jsonText(out, e.detail, 400);
+        std::ostringstream numbers;
+        numbers.precision(17);
+        numbers << ",\"time\":" << (std::isfinite(e.time) ? e.time : 0.0) << ",\"day\":" << (std::isfinite(e.day) ? e.day : 0.0)
+                << ",\"quantity\":" << e.quantity << ",\"coins\":" << e.coins << '}';
+        out += numbers.str();
+    }
+    return out + "]";
+}
+
+void World::recordEvent(WorldEvent event)
+{
+    event.time = time_;
+    event.day = calendarDays_;
+    if (event.cell.empty())
+        if (const auto* who = entity(event.actor))
+            event.cell = who->cellId;
+    bondsFromEvent(event);
+    events_.push_back(std::move(event));
+    if (events_.size() > EventsKept + EventsKept / 4)   // Trimmed in batches, not one at a time off the front.
+    {
+        const auto excess = events_.size() - EventsKept;
+        events_.erase(events_.begin(), events_.begin() + std::ptrdiff_t(excess));
+        droppedEvents_ += excess;
+    }
+}
+
+void World::bondsFromEvent(const WorldEvent& e)
+{
+    // Only between living characters: the treasury, "outside", the herb patch and the dead have no feelings.
+    const auto* actor = entity(e.actor);
+    const auto* target = entity(e.target);
+    if (e.actor == e.target || !actor || !target || actor->dead || target->dead)
+        return;
+    const double day = calendarDays_;
+    if (e.kind == "economy")
+    {
+        // A sale or a wage honestly paid: they know each other a little better and trust a little more.
+        bonds_.mutual(e.actor, e.target, {.5, .5, 1, 0, 0}, day);
+    }
+    else if (e.kind == "conversation")
+        bonds_.mutual(e.actor, e.target, {.2, 0, .5, 0, 0}, day);
+    else if (e.kind == "help" || e.kind == "gift")
+        bonds_.change(e.target, e.actor, {5, 3, 2, 0, 1}, day);        // The one helped warms to the helper.
+    else if (e.kind == "harm")
+    {
+        bonds_.change(e.target, e.actor, {-20, -20, 2, 15, 0}, day);   // The one harmed.
+        bonds_.change(e.actor, e.target, {0, 0, 2, 0, 0}, day);
+    }
+}
+
+void World::tendBonds()
+{
+    const auto hour = std::int64_t(std::floor(calendarDays_ * 24));
+    if (hour == bondHour_)
+        return;
+    bondHour_ = hour;
+    // An hour spent at home with the household, or at work with the others working there: familiarity grows, and a
+    // little liking. A crowded bunkhouse doesn't make everyone close to everyone: each knows only a few nearby.
+    std::map<std::string, std::vector<const Entity*>> together;
+    for (const auto& [id, e] : entities_)
+    {
+        if (!e.npc || e.dead)
+            continue;
+        const auto* life = society_.resident(id);
+        const auto* spec = society_.spec(id);
+        if (life && e.cellId == life->homeCell)
+            together["home " + life->homeCell].push_back(&e);
+        else if (spec && e.cellId == spec->work.cell)
+            together["work " + spec->work.cell].push_back(&e);
+    }
+    constexpr std::size_t Close = 3;
+    for (const auto& [place, people] : together)
+        for (std::size_t i = 0; i < people.size(); ++i)
+            for (std::size_t k = 1; k <= std::min(Close, people.size() - 1); ++k)
+            {
+                const auto* other = people[(i + k + std::size_t(hour)) % people.size()];
+                if (other != people[i])
+                    bonds_.change(people[i]->id, other->id, {.3, .1, 1, 0, 0}, calendarDays_);
+            }
+    const auto day = std::int64_t(std::floor(calendarDays_));
+    if (day != bondDay_)
+    {
+        if (bondDay_ >= 0)
+            bonds_.fade(calendarDays_);
+        bondDay_ = day;
+        careerNotes(society_.tendCareers(calendarDays_, careerWorld()));
+    }
+}
+
+CareerWorld World::careerWorld() const
+{
+    CareerWorld w;
+    // Offline player characters are alive; so is anyone whose body isn't dead.
+    w.alive = [this](const std::string& id) {
+        const auto* e = entity(id);
+        return e ? !e->dead : playerAccountId(id);
+    };
+    w.age = [this](const std::string& id) {
+        const auto* e = entity(id);
+        return e ? e->age : 30;
+    };
+    w.regard = [this](const std::string& who, const std::string& ofWhom) {
+        const auto* b = bonds_.find(who, ofWhom);
+        return b ? std::clamp(b->familiarity * .4 + b->affinity * .4 + b->trust * .2, 0.0, 100.0) : 0.0;
+    };
+    w.near = [this](const std::string& workCell, const std::string& homeCell) {
+        const auto* work = cell(workCell);
+        const auto* home = cell(homeCell);
+        const auto known = [](const Cell* c) { return c && !c->region.empty() && c->region != "unassigned"; };
+        return !known(work) || !known(home) || work->region == home->region;
+    };
+    return w;
+}
+
+void World::careerNotes(const std::vector<CareerNote>& notes)
+{
+    for (const auto& n : notes)
+        recordEvent({n.kind, n.actor, n.target, {}, 0, 0, {}, 0, 0, n.detail});
+    absorbJournal();                                // Inheritances are ledger entries.
+}
+
+Result World::apprentice(const std::string& player, const std::string& master)
+{
+    const auto* p = entity(player);
+    const auto* m = entity(master);
+    const auto* job = society_.jobOf(master);
+    if (!p || p->npc || !m || !m->npc || m->dead || !job)
+        return {false, "They have no trade to teach.", master};
+    const auto note = society_.apprentice(player, job->id, careerWorld(), calendarDays_);
+    if (note.kind != "apprenticeship")
+        return {false, note.detail, master};
+    careerNotes({note});
+    return {true, m->name + " takes you on as an apprentice: " + job->title + ".", master};
+}
+
+std::vector<WorldEvent> World::takeEvents()
+{
+    absorbJournal();
+    std::vector<WorldEvent> out;
+    out.swap(events_);
+    return out;
+}
+
+void World::absorbJournal()
+{
+    for (auto& entry : society_.takeJournal())
+    {
+        WorldEvent e;
+        e.kind = "economy";
+        e.detail = entry.kind;
+        e.actor = entry.from;
+        e.target = entry.to;
+        e.item = entry.item;
+        e.quantity = entry.quantity;
+        e.coins = entry.coins;
+        recordEvent(std::move(e));
+    }
+}
+
+std::size_t World::offstageCount() const
+{
+    std::size_t n = 0;
+    for (const auto& entry : entities_)
+        n += entry.second.offstage;
+    return n;
+}
+
+void World::nearCells(const Entity& e, std::set<std::string>& out) const
+{
+    // A door further off than this is a building the entity can neither see into nor reach within a few seconds.
+    constexpr double NearDoor = 24.0;
+    out.insert(e.cellId);
+    const auto seams = exits_.find(e.cellId);
+    if (seams != exits_.end())
+        out.insert(seams->second.begin(), seams->second.end());
+    auto portals = portalsIn_.find(e.cellId);
+    if (portals == portalsIn_.end())
+    {
+        std::vector<const Door*> list;
+        for (const Door* d : doorsIn(e.cellId))
+            if (d->portal && !(d->passage && d->boundary))
+                list.push_back(d);
+        portals = portalsIn_.emplace(e.cellId, std::move(list)).first;
+    }
+    for (const Door* d : portals->second)
+        if (distance(e.position, d->position) <= NearDoor)
+            out.insert(d->targetCell);
+    if (seams == exits_.end())                      // A world wholly in memory: its seams are ordinary records.
+        for (const Door* d : doorsIn(e.cellId))
+            if (d->portal && d->passage && d->boundary)
+                out.insert(d->targetCell);
+}
+
+std::set<std::string> World::stageCells() const
+{
+    std::set<std::string> stage;
+    for (const auto& entry : entities_)
+        if (!entry.second.npc)
+            nearCells(entry.second, stage);
+    return stage;
+}
+
+void World::placeOnStage(Entity& e, const std::set<std::string>& stage)
+{
+    // Companions go where their leader goes, always in full.
+    const bool off = e.leaderId.empty() && e.state != "following" && !stage.count(e.cellId);
+    if (off == e.offstage)
+        return;
+    // Either way the NPC stands where it is, which is a place it could stand: walking only ever reaches such
+    // places, and offstage hops only ever end on them. Whatever it was doing, it plans again from there.
+    e.offstage = off;
+    legs_.erase(e.id);
+    pathRetryAt_.erase(e.id);
+    pendingPortals_.erase(e.id);
+    e.path.clear();
+    e.input = {};
+    e.velocity = {};
+    e.turning = false;
+    if (e.posture == "rising")
+        settle(e, e.postureTarget.empty() ? "standing" : e.postureTarget.c_str());
+    if (!off)
+        ensureLoaded(e.cellId);
+}
+
+void World::moveOffstage(Entity& e, const std::string& task, const std::string& goalCell, Vec2 goal)
+{
+    // How much longer walking a route takes than a straight line, on average.
+    constexpr double Detour = 1.3;
+    auto& leg = legs_[e.id];
+    if (!leg.goalCell.empty() && (leg.goalCell != goalCell || distance(leg.goal, goal) > 1e-9))
+        leg = {};
+    if (!leg.goalCell.empty())
+    {
+        if (time_ < leg.arriveAt)
+            return;
+        if (leg.crossing)
+        {
+            e.cellId = leg.intoCell;
+            e.position = leg.arrival;
+        }
+        else
+            e.position = leg.to;
+        leg = {};
+        return;
+    }
+    const double speed = std::max(.5, paceSpeed(e));
+    if (e.cellId == goalCell)
+    {
+        leg = {goalCell, goal, false, {}, goal, {}, time_ + distance(e.position, goal) * Detour / speed};
+        return;
+    }
+    const auto& steps = cachedSteps(e.cellId);
+    const auto step = steps.find(goalCell);
+    if (step == steps.end())
+    {
+        e.activity = task + " — route unavailable";
+        return;
+    }
+    // The nearest way into the next cell: a door, or a crossing of the shared edge (known from the first time this
+    // cell was in memory; if it never has been, it is loaded once to learn them).
+    const auto nearest = [&]() -> const Door* {
+        const Door* best = nullptr;
+        const auto consider = [&](const Door& way) {
+            if (way.portal && !way.locked && way.targetCell == step->second &&
+                (!best || distance(e.position, way.position) < distance(e.position, best->position) - 1e-9))
+                best = &way;
+        };
+        for (const Door* way : doorsIn(e.cellId))
+            consider(*way);
+        const auto* here = cell(e.cellId);
+        if (here && !here->loaded)
+            if (const auto known = seamAnchors_.find(e.cellId); known != seamAnchors_.end())
+                for (const auto& way : known->second)
+                    consider(way);
+        return best;
+    };
+    const Door* way = nearest();
+    if (!way && !seamAnchors_.count(e.cellId) && ensureLoaded(e.cellId).ok)
+        way = nearest();
+    if (!way)
+    {
+        e.activity = task + " — route unavailable";
+        return;
+    }
+    leg = {goalCell, goal, true, way->targetCell, way->position, way->arrival,
+           time_ + distance(e.position, way->position) * Detour / speed};
+}
+
+bool World::nearPortal(const std::string& cellId, Vec2 p, double within) const
+{
+    constexpr double Square = 2.0;                  // No wider than `within` is ever asked to be.
+    auto grid = portalGrid_.find(cellId);
+    if (grid == portalGrid_.end())
+    {
+        std::map<std::pair<long, long>, std::vector<const Door*>> squares;
+        for (const Door* d : doorsIn(cellId))
+            if (d->portal)
+                squares[{long(std::floor(d->position.x / Square)), long(std::floor(d->position.y / Square))}].push_back(d);
+        grid = portalGrid_.emplace(cellId, std::move(squares)).first;
+    }
+    const long x = long(std::floor(p.x / Square)), y = long(std::floor(p.y / Square));
+    for (long dy = -1; dy <= 1; ++dy)
+        for (long dx = -1; dx <= 1; ++dx)
+            if (const auto found = grid->second.find({x + dx, y + dy}); found != grid->second.end())
+                for (const Door* d : found->second)
+                    if (distance(p, d->position) < within)
+                        return true;
+    return false;
+}
+
 void World::separate(double dt)
 {
-    for (auto i = entities_.begin(); i != entities_.end(); ++i)
+    // Only characters in the same cell push each other apart. Grouping them by cell first, keeping ID order within
+    // each group, visits the same pairs in the same order as comparing everyone with everyone (pairs in different
+    // cells share no one, so the groups don't affect each other), without the whole world's worth of pairs.
+    auto& byCell = separateScratch_;
+    byCell.clear();
+    for (auto& entry : entities_)
+        if (!entry.second.offstage)
+            byCell.push_back(&entry.second);
+    std::stable_sort(byCell.begin(), byCell.end(), [](const Entity* x, const Entity* y) { return x->cellId < y->cellId; });
+    for (std::size_t first = 0, end = 0; first < byCell.size(); first = end)
     {
-        auto j = i;
-        for (++j; j != entities_.end(); ++j)
+        end = first + 1;
+        while (end < byCell.size() && byCell[end]->cellId == byCell[first]->cellId)
+            ++end;
+        // A crowd is bucketed by where each stood as this step began, and only pairs in touching buckets are
+        // compared, still in the same order. Each push is at most .12 * dt, so across one step nobody moves anywhere
+        // near Slack; a pair further apart than a bucket at the start can't touch before the step ends.
+        constexpr double Slack = .25, Bucket = Radius * 2 + Slack;
+        constexpr std::size_t Crowd = 24;
+        std::map<std::pair<long, long>, std::vector<std::size_t>> buckets;
+        std::vector<std::size_t> later;
+        const bool crowded = end - first > Crowd;
+        const auto bucketOf = [](Vec2 p) { return std::pair<long, long>{long(std::floor(p.x / Bucket)), long(std::floor(p.y / Bucket))}; };
+        if (crowded)
+            for (std::size_t k = first; k < end; ++k)
+                buckets[bucketOf(byCell[k]->position)].push_back(k);
+        std::vector<std::pair<long, long>> startBucket;
+        if (crowded)
+            for (std::size_t k = first; k < end; ++k)
+                startBucket.push_back(bucketOf(byCell[k]->position));
+        for (std::size_t i = first; i < end; ++i)
         {
-            auto& a = i->second;
-            auto& b = j->second;
-            if (a.cellId != b.cellId)
-                continue;
-            const double d = distance(a.position, b.position);
-            if (d >= Radius * 2)
-                continue;
-            bool atPortal = false;
-            for (const auto& entry : doors_)
-                if (entry.second.cellId == a.cellId && entry.second.portal &&
-                    (distance(a.position, entry.second.position) < 1.7 ||
-                     distance(b.position, entry.second.position) < 1.7))
-                {
-                    atPortal = true;
-                    break;
-                }
-            if (atPortal || a.transitioned || b.transitioned)
-                continue;
-            Vec2 n =
-                d > Epsilon ? Vec2{(a.position.x - b.position.x) / d, (a.position.y - b.position.y) / d} : Vec2{1, 0};
-            const double push = std::min((Radius * 2 - d) * .15, .12 * dt);
-            const auto* c = cell(a.cellId);
-            const auto* ta = c->tile(int(a.position.x), int(a.position.y));
-            const auto* tb = c->tile(int(b.position.x), int(b.position.y));
-            const Vec2 pa{a.position.x + n.x * push, a.position.y + n.y * push},
-                pb{b.position.x - n.x * push, b.position.y - n.y * push};
-            if (ta && passable(a.cellId, pa, ta->height))
-                a.position = pa;
-            if (tb && passable(b.cellId, pb, tb->height))
-                b.position = pb;
+            later.clear();
+            if (crowded)
+            {
+                const auto [bx, by] = startBucket[i - first];
+                for (long dy = -1; dy <= 1; ++dy)
+                    for (long dx = -1; dx <= 1; ++dx)
+                        if (const auto found = buckets.find({bx + dx, by + dy}); found != buckets.end())
+                            for (const auto k : found->second)
+                                if (k > i)
+                                    later.push_back(k);
+                std::sort(later.begin(), later.end());
+            }
+            else
+                for (std::size_t j = i + 1; j < end; ++j)
+                    later.push_back(j);
+            for (const auto j : later)
+            {
+                auto& a = *byCell[i];
+                auto& b = *byCell[j];
+                const double d = distance(a.position, b.position);
+                if (d >= Radius * 2)
+                    continue;
+                const bool atPortal = nearPortal(a.cellId, a.position, 1.7) || nearPortal(a.cellId, b.position, 1.7);
+                if (atPortal || a.transitioned || b.transitioned)
+                    continue;
+                Vec2 n =
+                    d > Epsilon ? Vec2{(a.position.x - b.position.x) / d, (a.position.y - b.position.y) / d} : Vec2{1, 0};
+                const double push = std::min((Radius * 2 - d) * .15, .12 * dt);
+                const auto* c = cell(a.cellId);
+                const auto* ta = c->tile(int(a.position.x), int(a.position.y));
+                const auto* tb = c->tile(int(b.position.x), int(b.position.y));
+                const Vec2 pa{a.position.x + n.x * push, a.position.y + n.y * push},
+                    pb{b.position.x - n.x * push, b.position.y - n.y * push};
+                if (ta && passable(a.cellId, pa, ta))
+                    a.position = pa;
+                if (tb && passable(b.cellId, pb, tb))
+                    b.position = pb;
+            }
         }
     }
 }
 
 Result World::relocateResident(const std::string& id, const std::string& destination, double x, double y)
 {
+    ensureLoaded(destination);
     auto* actor = entity(id);
     const auto* targetCell = cell(destination);
     const auto* life = society_.resident(id);
@@ -1362,22 +2374,14 @@ Result World::relocateResident(const std::string& id, const std::string& destina
         x < .5 || y < .5 || x > targetCell->width - .5 || y > targetCell->height - .5)
         return {false, "Choose an existing, non-recruited resident and a traversable home; essential jobs are protected.", id};
     const auto* tile = targetCell->tile(int(x), int(y));
-    if (!tile || !passable(destination, {x, y}, tile->height))
+    if (!tile || !passable(destination, {x, y}, tile))
         return {false, "The proposed home is blocked.", id};
-    std::queue<std::string> pending;
-    std::set<std::string> reached{actor->cellId}; pending.push(actor->cellId);
-    while (!pending.empty())
-    {
-        const auto current = pending.front(); pending.pop();
-        for (const auto& entry : doors_)
-            if (entry.second.portal && !entry.second.locked && entry.second.cellId == current &&
-                reached.insert(entry.second.targetCell).second) pending.push(entry.second.targetCell);
-    }
-    if (!reached.count(destination) || (actor->cellId == destination &&
+    if (!cachedSteps(actor->cellId).count(destination) || (actor->cellId == destination &&
         distance(actor->position, {x, y}) > .35 && findPath(*actor, {x, y}, true).empty()))
         return {false, "No authored route reaches the proposed home.", id};
     if (!society_.relocate(id, destination, x, y)) return {false, "Resident already relocating or invalid home.", id};
     stop(id);
+    recordEvent({"relocation", id, {}, {}, 0, 0, {}, 0, 0, "new home in " + destination});
     return {true, "Relocation accepted; the resident must physically arrive before the home changes.", id};
 }
 
@@ -1388,13 +2392,23 @@ void World::updateSchedules()
     {
         advanceAge(pair.second, calendarDays_);
         const auto& e = pair.second;
+        if (e.dead)
+            continue;                               // The dead keep no schedule: no work, no hunger, no walking.
         bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following"};
     }
     society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
-    if (customWorld_) return;
+    absorbJournal();
+    tendBonds();
+    // When a shift changes, a whole town sets off at once: plan a bounded number of routes per update and let the
+    // rest set off on the next, rather than stalling the server for all of them in one tick.
+    int searches = 0;
+    const std::size_t expandedBefore = searchExpanded_;
+    const auto stage = tiered() ? stageCells() : std::set<std::string>{};
     for (auto& pair : entities_)
     {
         auto& e = pair.second;
+        if (e.npc && tiered())
+            placeOnStage(e, stage);
         const auto* life = society_.resident(pair.first);
         if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
         const std::string activity = life->task + " — " + life->reason;
@@ -1402,47 +2416,125 @@ void World::updateSchedules()
         const Vec2 target{life->goalX, life->goalY};
         if (e.cellId == life->goalCell && distance(e.position, target) <= .35)
         {
-            if (life->task == "sleep" && e.posture != "lying") setPosture(e.id, "lying");
+            if (life->task == "sleep" && e.posture != "lying")
+            {
+                if (e.offstage)
+                    settle(e, "lying");
+                else
+                    setPosture(e.id, "lying");
+            }
+            continue;
+        }
+        if (e.offstage)
+        {
+            if (e.posture == "lying" || e.posture == "sitting")
+                settle(e, "standing");
+            moveOffstage(e, life->task, life->goalCell, target);
             continue;
         }
         if (e.posture == "lying" || e.posture == "sitting") setPosture(e.id, "standing");
         if (!e.path.empty()) continue;
+        // A failed search on a large cell explores everything reachable; don't repeat it every half second.
+        if (const auto wait = pathRetryAt_.find(e.id); wait != pathRetryAt_.end() && time_ < wait->second) continue;
+        const auto seek = [&](Vec2 goal) {
+            if (searches >= RouteSearchesPerUpdate || searchExpanded_ - expandedBefore >= RouteNodesPerUpdate)
+                return Result{false, "Waiting to set off.", {}};
+            ++searches;
+            ++profile_.routeSearches;
+            const auto expandedAt = searchExpanded_;
+            const auto searchBegin = std::chrono::steady_clock::now();
+            auto result = moveTo(e.id, goal.x, goal.y);
+            const double took = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - searchBegin).count();
+            profile_.routeNodes += searchExpanded_ - expandedAt;
+            profile_.largestRoute = std::max(profile_.largestRoute, searchExpanded_ - expandedAt);
+            if (took > profile_.slowestRoute)
+            {
+                profile_.slowestRoute = took;
+                profile_.slowestRouteCell = e.cellId;
+                profile_.slowestRouteNodes = searchExpanded_ - expandedAt;
+                profile_.slowestRouteWaypoints = e.path.size();
+            }
+            if (e.path.empty() && !door(result.targetId))
+                pathRetryAt_[e.id] = time_ + 5.0;
+            else
+                pathRetryAt_.erase(e.id);
+            return result;
+        };
         if (e.cellId == life->goalCell)
         {
-            auto result = moveTo(e.id, target.x, target.y);
+            auto result = seek(target);
             if (const auto* barrier = door(result.targetId))
                 if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
                     interact(e.id, barrier->id, "open");
             continue;
         }
-        // Residents know their authored work/home routes, not player exploration.
-        std::queue<std::string> pending;
-        std::map<std::string, std::string> firstDoor;
-        pending.push(e.cellId);
-        firstDoor[e.cellId] = "";
-        while (!pending.empty() && !firstDoor.count(life->goalCell))
-        {
-            const auto current = pending.front(); pending.pop();
-            for (const auto& d : doors_)
-                if (d.second.portal && !d.second.locked && d.second.cellId == current &&
-                    !firstDoor.count(d.second.targetCell))
-                {
-                    firstDoor[d.second.targetCell] = current == e.cellId ? d.first : firstDoor[current];
-                    pending.push(d.second.targetCell);
-                }
-        }
-        if (!firstDoor.count(life->goalCell)) { e.activity = life->task + " — route unavailable"; continue; }
-        const auto* d = door(firstDoor[life->goalCell]);
+        // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
+        // then the first way into it (in ID order, as ever).
+        const auto& steps = cachedSteps(e.cellId);
+        const auto step = steps.find(life->goalCell);
+        if (step == steps.end()) { e.activity = life->task + " — route unavailable"; continue; }
+        // The nearest way into the next cell (a street door, or the closest tile of a shared edge).
+        // Only ways this resident can walk to count: behind a wall, the nearest point of an edge may be unreachable.
+        const Door* d = nullptr;
+        const auto* current = cell(e.cellId);
+        const auto* regions = current ? regionMap(*current) : nullptr;
+        const auto regionOf = [&](Vec2 p) {
+            const int x = int(std::floor(p.x)), y = int(std::floor(p.y));
+            return !regions || x < 0 || y < 0 || x >= current->width || y >= current->height
+                       ? -1 : (*regions)[std::size_t(y * current->width + x)];
+        };
+        const int region = regionOf(e.position);
+        for (const Door* way : doorsIn(e.cellId))
+            if (way->portal && !way->locked && way->targetCell == step->second &&
+                (region < 0 || regionOf(way->position) < 0 || regionOf(way->position) == region) &&
+                (!d || distance(e.position, way->position) < distance(e.position, d->position) - 1e-9))
+                d = way;
         if (!d) continue;
-        if (distance(e.position, d->position) <= d->reach)
+        if (d->boundary && d->open && d->edge != '-')
+        {
+            // Aim just past the shared edge: a corner tile belongs to two edges, and its centre alone is ambiguous.
+            const auto* here = cell(e.cellId);
+            Vec2 aim = d->position;
+            if (d->edge == 'N') aim.y = -.15; else if (d->edge == 'S') aim.y = here->height + .15;
+            else if (d->edge == 'W') aim.x = -.15; else aim.x = here->width + .15;
+            seek(aim);
+        }
+        else if (distance(e.position, d->position) <= d->reach)
             interact(e.id, d->id, d->open ? "enter" : "open");
         else
         {
-            auto result = moveTo(e.id, d->position.x, d->position.y);
+            // A closed door's own tile is blocked, so a search for it always fails; aim for the ground just in front
+            // of it instead, and open it on arrival (above).
+            Vec2 approach = d->position;
+            if (!d->open)
+            {
+                const auto* here = cell(e.cellId);
+                const auto* doorTile = here ? here->tile(int(std::floor(d->position.x)), int(std::floor(d->position.y))) : nullptr;
+                double best = std::numeric_limits<double>::infinity();
+                for (const Vec2 side : {Vec2{1, 0}, Vec2{-1, 0}, Vec2{0, 1}, Vec2{0, -1}})
+                {
+                    // Right up against the door: at night a wolf may see little more than a tile.
+                    const Vec2 front{std::floor(d->position.x) + .5 + side.x * .6, std::floor(d->position.y) + .5 + side.y * .6};
+                    if (passable(e.cellId, front, doorTile) && distance(e.position, front) < best)
+                    {
+                        best = distance(e.position, front);
+                        approach = front;
+                    }
+                }
+            }
+            auto result = seek(approach);
             if (const auto* barrier = door(result.targetId))
                 if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
                     interact(e.id, barrier->id, "open");
         }
+    }
+    if (tiered())
+    {
+        // What streaming keeps in memory until the next update: the surroundings of everyone onstage.
+        tierWanted_.clear();
+        for (const auto& entry : entities_)
+            if (!entry.second.offstage)
+                nearCells(entry.second, tierWanted_);
     }
 }
 
@@ -1453,6 +2545,14 @@ void World::tick(double dt)
     // Bounded steps prevent tunneling. The hosting server should use 1/30 s;
     // even delayed input cannot tunnel through an entire terrain feature.
     dt = std::min(dt, 60.0);
+    using Clock = std::chrono::steady_clock;
+    double tickStreaming = 0, tickSchedules = 0, tickMovement = 0, tickSeparation = 0, tickViews = 0;
+    const auto since = [](Clock::time_point start) {
+        return std::chrono::duration<double, std::milli>(Clock::now() - start).count();
+    };
+    auto mark = Clock::now();
+    stream();
+    tickStreaming += since(mark);
     while (dt > Epsilon)
     {
         const double step = std::min(dt, 1.0 / 30.0);
@@ -1469,20 +2569,63 @@ void World::tick(double dt)
         scheduleAccumulator_ += step;
         if (scheduleAccumulator_ + 1e-9 >= .5)
         {
+            mark = Clock::now();
             updateSchedules();
+            tickSchedules += since(mark);
             scheduleAccumulator_ = std::max(0., scheduleAccumulator_ - .5);
         }
+        mark = Clock::now();
         for (auto& entry : entities_)
         {
+            if (entry.second.dead)
+            {
+                entry.second.velocity = {};
+                entry.second.input = {};
+                entry.second.path.clear();
+                continue;
+            }
+            if (entry.second.offstage)
+                continue;                           // Offstage NPCs don't walk (see moveOffstage()).
             updateTravel(entry.second);
             integrate(entry.second, step);
         }
+        tickMovement += since(mark);
+        mark = Clock::now();
         separate(step);
+        tickSeparation += since(mark);
         dt -= step;
     }
+    mark = Clock::now();
+    // A player's map memory takes in what they see as they go. A view is thousands of sight rays, so it is taken
+    // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
+    // exactly where the player stands, so everything a player is shown is remembered.
+    std::vector<std::string> looking;
     for (const auto& entry : entities_)
         if (!entry.second.npc)
-            observe(entry.first);
+        {
+            const auto& e = entry.second;
+            const ObservedTile here{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))};
+            auto& last = lastObserved_[entry.first];
+            if (last.cellId == here.cellId && last.x == here.x && last.y == here.y)
+                continue;
+            last = here;
+            looking.push_back(entry.first);
+        }
+    prepareViews(looking);
+    for (const auto& id : looking)
+        observe(id);
+    absorbJournal();                                // Whatever the host did to the society directly.
+    tickViews += since(mark);
+    const auto add = [](TickProfile::Part& part, double ms) {
+        part.total += ms;
+        part.worst = std::max(part.worst, ms);
+    };
+    add(profile_.streaming, tickStreaming);
+    add(profile_.schedules, tickSchedules);
+    add(profile_.movement, tickMovement);
+    add(profile_.separation, tickSeparation);
+    add(profile_.views, tickViews);
+    ++profile_.ticks;
 }
 
 double World::visionClarity(const std::string& observerId, const std::string& sourceId) const
@@ -1533,10 +2676,10 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
     if (voice != Voice::Yell)
         return 0;
     double best = 0;
-    for (const auto& entry : doors_)
+    for (const Door* door : doorsIn(s->cellId))
     {
-        const auto& d = entry.second;
-        if (d.cellId != s->cellId || !d.portal || d.targetCell != o->cellId)
+        const auto& d = *door;
+        if (!d.portal || d.targetCell != o->cellId)
             continue;
         double route = distance(s->position, d.position) + distance(o->position, d.arrival) + 2.0;
         double transmission = d.open ? .80 : .24;
@@ -1631,6 +2774,21 @@ Environment World::environmentAt(const std::string& cellId) const
         out.sight *= .40;
         out.scent = 1.05; // Small humidity bonus; no automatic hearing penalty.
         break;
+    case Weather::Overcast:
+        out.sight *= .92; // Flat grey light only; the senses are otherwise untouched.
+        break;
+    case Weather::Storm:
+        out.sight *= .60;
+        out.hearing = .50;
+        out.scent = .55;
+        out.movement = .75;
+        break;
+    case Weather::Sandstorm:
+        out.sight *= .30;
+        out.hearing = .60;
+        out.scent = .35;
+        out.movement = .65;
+        break;
     default:
         break;
     }
@@ -1671,19 +2829,21 @@ Result World::trade(const std::string& player, const std::string& trader, const 
     const auto* p = entity(player);
     const auto* m = entity(trader);
     const auto* life = society_.resident(trader);
-    if (!p || p->npc || !m || !Society::merchant(trader) || p->cellId != m->cellId ||
+    if (!p || p->npc || !m || !society_.merchant(trader) || p->cellId != m->cellId ||
         distance(p->position, m->position) > 2. || visionClarity(player, trader) <= 0)
         return {false, "No accessible trader is within reach.", {}};
     if (m->posture == "lying" || (life && life->task == "sleep")) return {false, "The trader is sleeping.", trader};
     auto result = society_.trade(player, trader, item, quantity, buy);
+    absorbJournal();
     return {result.ok, result.message, trader};
 }
 Result World::gather(const std::string& player)
 {
     const auto* p = entity(player);
-    if (!p || p->npc || p->cellId != "exterior" || distance(p->position, {17.5, 7.5}) > 1.7 ||
-        !visiblePoint(*p, {17.5, 7.5})) return {false, "Approach the visible herb patch in Juniper Yard to gather.", {}};
+    if (!p || p->npc || herbCell_.empty() || p->cellId != herbCell_ || distance(p->position, herbPatch_) > 1.7 ||
+        !visiblePoint(*p, herbPatch_)) return {false, "Approach the visible herb patch to gather.", {}};
     auto result = society_.gather(player);
+    absorbJournal();
     return {result.ok, result.message, {}};
 }
 Result World::eat(const std::string& player)
@@ -1691,6 +2851,7 @@ Result World::eat(const std::string& player)
     auto* p = entity(player);
     if (!p || p->npc) return {false, "No controlled character.", {}};
     auto result = society_.eat(player);
+    absorbJournal();
     if (result.ok)
     {
         p->stamina = std::min(100., p->stamina + 10.);
@@ -1747,7 +2908,7 @@ double World::scentClarity(const std::string& observerId, const std::string& sou
     const auto* c = cell(observer->cellId);
     if (!c)
         return 0;
-    AirRoutes air(*c, doors_, observer->position);
+    AirRoutes air(*c, doorsIn(c->id), observer->position);
     return detectScent(*observer, *source, windAt(c->id), environmentAt(c->id).scent, air).clarity;
 }
 std::vector<ScentCue> World::scentCues(const std::string& observerId) const
@@ -1758,7 +2919,8 @@ std::vector<ScentCue> World::scentCues(const std::string& observerId) const
     const auto* c = cell(observer->cellId);
     if (!c)
         return {};
-    AirRoutes air(*c, doors_, observer->position);
+    // The air map covers the whole cell: made only once someone unseen is here to be smelled.
+    std::optional<AirRoutes> air;
     const auto wind = windAt(c->id);
     const double scentFactor = environmentAt(c->id).scent;
     std::map<int, ScentCue> sectors;
@@ -1767,7 +2929,9 @@ std::vector<ScentCue> World::scentCues(const std::string& observerId) const
         if (entry.first == observerId || entry.second.cellId != observer->cellId ||
             visionClarity(observerId, entry.first) > 0)
             continue;
-        const auto scent = detectScent(*observer, entry.second, wind, scentFactor, air);
+        if (!air)
+            air.emplace(*c, doorsIn(c->id), observer->position);
+        const auto scent = detectScent(*observer, entry.second, wind, scentFactor, *air);
         if (scent.clarity <= 0)
             continue;
         const double angle = std::atan2(scent.bearing.y, scent.bearing.x);
@@ -1784,7 +2948,7 @@ std::vector<ScentCue> World::scentCues(const std::string& observerId) const
 }
 void World::setWeather(const std::string& id, Weather weather)
 {
-    if (static_cast<int>(weather) >= 0 && static_cast<int>(weather) <= 3)
+    if (static_cast<int>(weather) >= 0 && static_cast<int>(weather) < WeatherKinds)
         if (auto* c = cell(id))
         {
             c->weather = weather;
@@ -1812,20 +2976,25 @@ void World::observe(const std::string& observerId)
     memory.worldZ = c->worldZ;
     memory.glyphs.resize(c->tiles.size(), ' ');
     memory.observed.resize(c->tiles.size(), false);
-    for (int y = 0; y < c->height; ++y)
-        for (int x = 0; x < c->width; ++x)
+    bool fresh = false;
+    const auto& visible = viewOf(*o, *c, &fresh);
+    auto& view = views_[observerId];
+    if (!fresh && view.remembered && memory.observed.size() == c->tiles.size())
+        return;                                     // Nothing it sees has changed since the last look.
+    view.remembered = true;                         // (A view made ahead by prepareViews() hasn't been taken in.)
+    const double range = sightRange(*o);
+    for (std::size_t index = 0; index < visible.size(); ++index)
+        if (visible[index])
         {
-            const auto index = static_cast<std::size_t>(y * c->width + x);
-            if (visiblePoint(*o, {x + .5, y + .5}))
-            {
-                memory.glyphs[index] = c->tiles[index].glyph;
-                memory.observed[index] = true;
-            }
+            memory.glyphs[index] = c->tiles[index].glyph;
+            memory.observed[index] = true;
         }
-    for (const auto& entry : doors_)
+    for (const Door* door : doorsIn(o->cellId))
     {
-        const auto& d = entry.second;
-        if (!visiblePortal(*o, d))
+        const auto& d = *door;
+        // visiblePortal(), with the range worked out once: a large cell has a thousand and more edge crossings.
+        if (!d.portal || !d.open || distance(o->position, d.position) > range ||
+            !lineOfSight(o->cellId, o->position, d.position))
             continue;
         const auto* adjacent = cell(d.targetCell);
         if (!adjacent)
@@ -1872,11 +3041,12 @@ Snapshot World::snapshot(const std::string& observerId)
     const auto remembered = book.find(c->id);
     const CellMemory emptyMemory;
     const auto& memory = remembered == book.end() ? emptyMemory : remembered->second;
+    const auto& seen = viewOf(*o, *c);
     for (int y = 0; y < c->height; ++y)
         for (int x = 0; x < c->width; ++x)
         {
             const auto i = static_cast<std::size_t>(y * c->width + x);
-            const bool visible = visiblePoint(*o, {x + .5, y + .5});
+            const bool visible = seen[i];
             out.visibleTiles[i] = visible;
             out.rememberedTiles[i] = !visible && i < memory.observed.size() && memory.observed[i];
             if (!visible)
@@ -1899,11 +3069,10 @@ Snapshot World::snapshot(const std::string& observerId)
             out.entities.push_back(std::move(visible));
         }
     }
-    for (const auto& entry : doors_)
-        if (!(entry.second.passage && entry.second.boundary) && entry.second.cellId == o->cellId &&
-            visiblePoint(*o, entry.second.position))
+    for (const Door* door : doorsIn(o->cellId))
+        if (!(door->passage && door->boundary) && visiblePoint(*o, door->position))
         {
-            Door visible = entry.second;
+            Door visible = *door;
             // Target anchors/paired fixture IDs are server topology, not UI data.
             visible.arrival = {};
             visible.linkedDoor.clear();
@@ -1914,12 +3083,12 @@ Snapshot World::snapshot(const std::string& observerId)
             out.doors.push_back(std::move(visible));
         }
     std::set<std::string> adjacent{c->id}, currentlyVisible{c->id};
-    for (const auto& entry : doors_)
-        if (entry.second.cellId == o->cellId && entry.second.portal)
+    for (const Door* door : doorsIn(o->cellId))
+        if (door->portal)
         {
-            adjacent.insert(entry.second.targetCell);
-            if (visiblePortal(*o, entry.second))
-                currentlyVisible.insert(entry.second.targetCell);
+            adjacent.insert(door->targetCell);
+            if (visiblePortal(*o, *door))
+                currentlyVisible.insert(door->targetCell);
         }
     for (const auto& id : adjacent)
     {
@@ -1964,6 +3133,7 @@ PersistedWorld World::save() const
     out.hasSociety = true;
     out.society = society_.state();
     out.memories = memories_;
+    out.bonds = bonds_.save();
     for (const auto& entry : entities_)
     {
         Entity e = entry.second;
@@ -1976,7 +3146,8 @@ PersistedWorld World::save() const
             out.players.push_back(std::move(e));
     }
     for (const auto& entry : doors_)
-        out.doorStates[entry.first] = entry.second.open;
+        if (!(entry.second.passage && entry.second.boundary))
+            out.doorStates[entry.first] = entry.second.open;
     for (const auto& entry : cells_)
     {
         out.weather[entry.first] = entry.second.weather;
@@ -1998,22 +3169,47 @@ Result World::restore(const PersistedWorld& state)
         (state.calendarDays < 0 && state.calendarDays != -1)) return {false, "Invalid saved calendar.", {}};
     const double restoredDays = state.calendarDays >= 0 ? state.calendarDays :
         std::fmod(state.clockOffsetHours + std::fmod(state.time, 7200.) * 24. / 7200., 24.) / 24.;
-    Society restoredSociety(!customWorld_);
-    if (state.hasSociety && !restoredSociety.restore(state.society)) return {false, "Invalid saved society or money ledger.", {}};
-    if (state.hasSociety && state.society.enabled == customWorld_) return {false, "Society does not match authored world.", {}};
-    if (state.hasSociety && state.society.budgetDay > std::floor(restoredDays)) return {false, "Society budget is in the future.", {}};
-    for (const auto& resident : restoredSociety.state().residents)
+    if (streamed())
     {
-        const auto& life = resident.second;
+        for (const auto* list : {&state.players, &state.npcs})
+            for (const auto& e : *list)
+                ensureLoaded(e.cellId);
+        if (state.hasSociety)
+            for (const auto& resident : state.society.residents)
+            {
+                ensureLoaded(resident.second.homeCell);
+                if (!resident.second.relocationCell.empty())
+                    ensureLoaded(resident.second.relocationCell);
+            }
+    }
+    Society restoredSociety = society_; // Carries the authored population to validate against.
+    restoredSociety.reset(society_.roster());
+    if (state.hasSociety && !restoredSociety.restore(state.society)) return {false, "Invalid saved society or money ledger.", {}};
+    Bonds restoredBonds;
+    if (!restoredBonds.restore(state.bonds)) return {false, "Invalid saved bonds.", {}};
+    if (state.hasSociety &&
+        (state.society.enabled != society_.state().enabled || restoredSociety.roster() != society_.roster()))
+        return {false, "Society does not match authored world.", {}};
+    if (state.hasSociety && state.society.budgetDay > std::floor(restoredDays)) return {false, "Society budget is in the future.", {}};
+    std::vector<std::string> residentIds;
+    for (const auto& resident : restoredSociety.state().residents)
+        residentIds.push_back(resident.first);
+    for (const auto& id : residentIds)
+    {
         const auto validHome = [&](const std::string& id, double x, double y) {
             const auto* c = cell(id);
             if (!c || !std::isfinite(x) || !std::isfinite(y) || x < .5 || y < .5 ||
                 x > c->width - .5 || y > c->height - .5) return false;
             const auto* t = c->tile(int(x), int(y)); return t && !t->solid;
         };
-        if (!validHome(life.homeCell, life.homeX, life.homeY) ||
-            (!life.relocationCell.empty() && !validHome(life.relocationCell, life.relocationX, life.relocationY)))
-            return {false, "Saved resident home or relocation is invalid.", resident.first};
+        const auto usable = [&] {
+            const auto& life = *restoredSociety.resident(id);
+            return validHome(life.homeCell, life.homeX, life.homeY) &&
+                   (life.relocationCell.empty() || validHome(life.relocationCell, life.relocationX, life.relocationY));
+        };
+        // A home the world no longer has (the building was rebuilt or moved): back to the authored bed.
+        if (!usable() && !(restoredSociety.rehome(id) && usable()))
+            return {false, "Saved resident home or relocation is invalid.", id};
     }
     for (const auto& e : state.players)
     {
@@ -2029,7 +3225,11 @@ Result World::restore(const PersistedWorld& state)
     for (const auto& d : state.doorStates)
     {
         if (!doors_.count(d.first))
+        {
+            if (d.first.rfind("seam_", 0) == 0)
+                continue;                  // Older saves kept seams (always open); streamed cells may not be loaded.
             return {false, "Unknown saved fixture.", d.first};
+        }
         effectiveDoors[d.first] = d.second;
     }
     for (const auto& entry : doors_)
@@ -2073,8 +3273,8 @@ Result World::restore(const PersistedWorld& state)
             const auto* t = c->tile(int(std::floor(p.x)), int(std::floor(p.y)));
             if (!t || t->solid)
                 return false;
-            for (const auto& entry : doors_)
-                if (entry.second.cellId == e.cellId && !effectiveDoors[entry.first] && doorCovers(entry.second, p))
+            for (const Door* d : doorsIn(e.cellId))
+                if (!effectiveDoors[d->id] && doorCovers(*d, p))
                     return false;
         }
         return true;
@@ -2085,14 +3285,52 @@ Result World::restore(const PersistedWorld& state)
         if (e.id.empty() || e.npc || !ids.insert(e.id).second || (entity(e.id) && entity(e.id)->npc) || !validActor(e))
             return {false, "Invalid saved player.", e.id};
     }
+    // The world may have been rebuilt since the checkpoint: an NPC it no longer has is dropped, and one who stood
+    // where a place no longer is (or is now built over) keeps the authored body. Anything malformed still rejects
+    // the whole checkpoint.
+    std::vector<const Entity*> keptNpcs;
+    std::set<std::string> rebuilt;
+    const auto placeable = [&](const Entity& e) {
+        const auto* c = cell(e.cellId);
+        if (!c || !finite(e.position) || e.position.x < 0 || e.position.y < 0 || e.position.x >= c->width ||
+            e.position.y >= c->height)
+            return false;
+        // Its whole footprint, not only the middle: an NPC offstage is saved wherever its last hop ended.
+        for (Vec2 p : {e.position, Vec2{e.position.x - Radius, e.position.y}, Vec2{e.position.x + Radius, e.position.y},
+                       Vec2{e.position.x, e.position.y - Radius}, Vec2{e.position.x, e.position.y + Radius}})
+        {
+            const auto* t = c->tile(int(std::floor(p.x)), int(std::floor(p.y)));
+            if (!t || t->solid)
+                return false;
+            for (const Door* d : doorsIn(e.cellId))
+                if (!effectiveDoors[d->id] && doorCovers(*d, p))
+                    return false;
+        }
+        return true;
+    };
     for (const auto& e : state.npcs)
     {
-        if (!e.npc || !entity(e.id) || !entity(e.id)->npc || !ids.insert(e.id).second || !validActor(e))
+        if (e.npc && !entity(e.id) && state.hasSociety && !restoredSociety.resident(e.id))
+            continue;                                         // A resident the world no longer has.
+        if (!e.npc || !entity(e.id) || !entity(e.id)->npc || !ids.insert(e.id).second)
             return {false, "Invalid saved NPC.", e.id};
+        if (!placeable(e) && validAppearance(e.appearance))
+        {
+            rebuilt.insert(e.id);
+            continue;
+        }
+        if (!validActor(e))
+            return {false, "Invalid saved NPC.", e.id};
+        keptNpcs.push_back(&e);
     }
     if (state.hasSociety)
-        for (const auto& life : state.society.residents)
-            if (!ids.count(life.first)) return {false, "Saved resident has no physical character record.", life.first};
+        for (const auto& life : restoredSociety.state().residents)
+        {
+            const bool newcomer = !state.society.residents.count(life.first);
+            if (!ids.count(life.first) && !rebuilt.count(life.first) &&
+                !(newcomer && entity(life.first) && entity(life.first)->npc))
+                return {false, "Saved resident has no physical character record.", life.first};
+        }
     for (const auto& owner : state.memories)
         for (const auto& entry : owner.second)
         {
@@ -2110,7 +3348,7 @@ Result World::restore(const PersistedWorld& state)
                     return {false, "Unobserved map detail in saved memory.", entry.first};
         }
     for (const auto& w : state.weather)
-        if (!cell(w.first) || static_cast<int>(w.second) < 0 || static_cast<int>(w.second) > 3)
+        if (!cell(w.first) || static_cast<int>(w.second) < 0 || static_cast<int>(w.second) >= WeatherKinds)
             return {false, "Invalid saved weather.", w.first};
     for (const auto& w : state.winds)
         if (!cell(w.first) || !std::isfinite(w.second.direction) || !std::isfinite(w.second.strength) ||
@@ -2132,8 +3370,9 @@ Result World::restore(const PersistedWorld& state)
         e.speakingUntil = 0;
         entities_[e.id] = std::move(e);
     }
-    for (auto e : state.npcs)
+    for (const auto* kept : keptNpcs)
     {
+        auto e = *kept;
         advanceAge(e, restoredDays);
         clearTransientMotion(e);
         e.typing = false;
@@ -2160,6 +3399,8 @@ Result World::restore(const PersistedWorld& state)
     society_ = std::move(restoredSociety);
     climateSlot_ = std::int64_t(std::floor(calendarDays_ * 4));
     memories_ = state.memories;
+    lastObserved_.clear();
+    bonds_ = std::move(restoredBonds);
     scheduleAccumulator_ = 0;
     pendingPortals_.clear();
     travels_.clear();
@@ -2178,11 +3419,102 @@ Result World::loadCellFile(const std::string& path)
     std::ifstream file(path);
     if (!file)
         return {false, "Cannot open cell file.", path};
+    return loadCell(file, path);
+}
+
+Result World::loadCellText(const std::string& text, const std::string& label)
+{
+    if (text.size() > 4 * 1024 * 1024)
+        return {false, "Missing or oversized cell file.", label};
+    std::istringstream file(text);
+    return loadCell(file, label);
+}
+
+Result World::loadCell(std::istream& file, const std::string& path)
+{
     Cell candidate;
+    const auto parsed = parseCell(file, path, candidate, false);
+    if (!parsed.ok)
+        return parsed;
+    for (const auto& entry : entities_)
+        if (entry.second.cellId == candidate.id)
+        {
+            const auto p = entry.second.position;
+            for (const Vec2 sample : {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius},
+                                      Vec2{p.x, p.y + Radius}})
+            {
+                const auto* tile = candidate.tile(int(std::floor(sample.x)), int(std::floor(sample.y)));
+                if (!tile || tile->solid)
+                    return {false, "Cell replacement would strand an actor.", entry.first};
+            }
+        }
+    for (const auto& entry : doors_)
+    {
+        const auto& d = entry.second;
+        for (const auto& anchor : {std::make_pair(d.cellId, d.position), std::make_pair(d.targetCell, d.arrival)})
+            if (anchor.first == candidate.id)
+            {
+                if (!finite(anchor.second) || anchor.second.x < 0 || anchor.second.y < 0 ||
+                    anchor.second.x >= candidate.width || anchor.second.y >= candidate.height)
+                    return {false, "Cell replacement would invalidate a portal anchor.", d.id};
+                const auto* tile = candidate.tile(int(anchor.second.x), int(anchor.second.y));
+                if (!tile || tile->solid)
+                    return {false, "Cell replacement would invalidate a portal anchor.", d.id};
+            }
+    }
+    cells_[candidate.id] = std::move(candidate);
+    return {true, "Cell loaded.", path};
+}
+
+namespace
+{
+// "X Y H" as the exporter writes it: two small whole numbers and a height of whole or half units ("3", "-1.5",
+// "2.0"). Those read exactly as a stream would read them; anything else is left to the stream (returns false).
+bool fastHeight(const std::string& value, int& x, int& y, double& height)
+{
+    std::size_t at = 0;
+    const auto whole = [&](int& out) {
+        const std::size_t start = at;
+        int number = 0;
+        while (at < value.size() && at - start < 4 && value[at] >= '0' && value[at] <= '9')
+            number = number * 10 + (value[at++] - '0');
+        out = number;
+        return at > start && (at == value.size() || value[at] < '0' || value[at] > '9');
+    };
+    if (!whole(x) || at >= value.size() || value[at++] != ' ' || !whole(y) || at >= value.size() || value[at++] != ' ')
+        return false;
+    const bool negative = at < value.size() && value[at] == '-';
+    if (negative)
+        ++at;
+    int units = 0;
+    if (!whole(units) || units > 16)
+        return false;
+    double half = 0;
+    if (at < value.size())
+    {
+        if (value[at] != '.' || at + 2 != value.size() || (value[at + 1] != '0' && value[at + 1] != '5'))
+            return false;
+        half = value[at + 1] == '5' ? .5 : 0;
+    }
+    height = negative ? -(units + half) : units + half;
+    return true;
+}
+} // namespace
+
+Result World::parseCell(std::istream& file, const std::string& path, Cell& candidate, bool headerOnly) const
+{
     std::string line;
+    int sizeW = 0, sizeH = 0;
     std::vector<std::string> rows;
     std::set<std::string> headers;
-    std::map<std::pair<int, int>, double> heights;
+    // Height overrides, and which tiles already have one (a large cell has tens of thousands of them).
+    struct HeightOverride
+    {
+        int x, y;
+        double height;
+    };
+    std::vector<HeightOverride> heights;
+    std::vector<bool> heightSet;
     bool inGrid = false;
     bool authoredWind = false;
     while (std::getline(file, line))
@@ -2204,6 +3536,8 @@ Result World::loadCellFile(const std::string& path)
         if (line == "grid:")
         {
             inGrid = true;
+            if (headerOnly)
+                break;
             continue;
         }
         const auto colon = line.find(':');
@@ -2241,18 +3575,14 @@ Result World::loadCellFile(const std::string& path)
             numbers >> candidate.worldX >> candidate.worldY >> candidate.worldZ;
             if (!numbers || !(numbers >> std::ws).eof() || !std::isfinite(candidate.worldX) ||
                 !std::isfinite(candidate.worldY) || !std::isfinite(candidate.worldZ) ||
-                std::abs(candidate.worldX) > 1e6 || std::abs(candidate.worldY) > 1e6 ||
+                std::abs(candidate.worldX) > 1e9 || std::abs(candidate.worldY) > 1e9 ||
                 std::abs(candidate.worldZ) > 1e6)
                 return {false, "Invalid world position.", path};
         }
         else if (key == "weather")
         {
-            if (value != "clear" && value != "rain" && value != "fog" && value != "snow")
+            if (!parseWeather(value, candidate.weather))
                 return {false, "Unknown weather value.", path};
-            candidate.weather = value == "rain"   ? Weather::Rain
-                                : value == "fog"  ? Weather::Fog
-                                : value == "snow" ? Weather::Snow
-                                                  : Weather::Clear;
         }
         else if (key == "wind")
         {
@@ -2274,17 +3604,33 @@ Result World::loadCellFile(const std::string& path)
             if (!values || !(values >> std::ws).eof() || !validLighting(candidate.lighting))
                 return {false, "Invalid cell lighting.", path};
         }
+        else if (key == "size")
+        {
+            std::istringstream numbers(value);
+            numbers >> sizeW >> sizeH;
+            if (!numbers || !(numbers >> std::ws).eof() || sizeW < 4 || sizeH < 4 || sizeW > 256 || sizeH > 256)
+                return {false, "Invalid cell size.", path};
+        }
         else if (key == "height")
         {
             int x = -1, y = -1;
             double height = 0;
-            std::istringstream numbers(value);
-            numbers >> x >> y >> height;
-            if (!numbers || !(numbers >> std::ws).eof() || x < 0 || y < 0 || x >= 512 || y >= 512 ||
-                !std::isfinite(height) || height < -16 || height > 16 ||
-                std::abs(height * 4 - std::round(height * 4)) > 1e-8 ||
-                !heights.emplace(std::make_pair(x, y), height).second)
+            if (!fastHeight(value, x, y, height))
+            {
+                std::istringstream numbers(value);
+                numbers >> x >> y >> height;
+                if (!numbers || !(numbers >> std::ws).eof())
+                    return {false, "Invalid or duplicate height override.", path};
+            }
+            if (x < 0 || y < 0 || x >= 512 || y >= 512 || !std::isfinite(height) || height < -16 || height > 16 ||
+                std::abs(height * 2 - std::round(height * 2)) > 1e-8)
                 return {false, "Invalid or duplicate height override.", path};
+            if (heightSet.empty())
+                heightSet.assign(512 * 512, false);
+            if (heightSet[std::size_t(y) * 512 + std::size_t(x)])
+                return {false, "Invalid or duplicate height override.", path};
+            heightSet[std::size_t(y) * 512 + std::size_t(x)] = true;
+            heights.push_back({x, y, height});
         }
         else
             return {false, "Unknown cell header.", path};
@@ -2294,62 +3640,137 @@ Result World::loadCellFile(const std::string& path)
                          std::all_of(candidate.id.begin(), candidate.id.end(), [](char ch) {
                              return (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-';
                          });
-    if (!file.eof() || !validId || !headers.count("name") || !headers.count("world") || !headers.count("outdoors") ||
-        !headers.count("weather") || !inGrid || rows.empty() || rows.size() > 512 || rows.front().empty() ||
-        rows.front().size() > 512)
-        return {false, "Invalid cell dimensions.", path};
-    candidate.width = int(rows.front().size());
-    candidate.height = int(rows.size());
-    for (const auto& row : rows)
+    if (headerOnly)
     {
-        if (row.size() != rows.front().size())
-            return {false, "Cell rows have different widths.", path};
-        for (char glyph : row)
-        {
-            if (std::string(".#,\"T=~:^+").find(glyph) == std::string::npos)
-                return {false, "Unknown terrain glyph.", path};
-            candidate.tiles.push_back(fromGlyph(glyph));
-        }
+        // A streamed cell's header: its size is given, its tiles come later.
+        if (!validId || !headers.count("name") || !headers.count("world") || !headers.count("outdoors") ||
+            !headers.count("weather") || !sizeW || !sizeH)
+            return {false, "Invalid streamed cell header.", path};
+        candidate.width = sizeW;
+        candidate.height = sizeH;
+        candidate.loaded = false;
     }
-    for (const auto& height : heights)
+    else
     {
-        auto* tile = candidate.tile(height.first.first, height.first.second);
-        if (!tile)
-            return {false, "Height override is outside its cell.", path};
-        tile->height = height.second;
+        if (!file.eof() || !validId || !headers.count("name") || !headers.count("world") || !headers.count("outdoors") ||
+            !headers.count("weather") || !inGrid || rows.empty() || rows.size() > 512 || rows.front().empty() ||
+            rows.front().size() > 512)
+            return {false, "Invalid cell dimensions.", path};
+        candidate.width = int(rows.front().size());
+        candidate.height = int(rows.size());
+        if (sizeW && (sizeW != candidate.width || sizeH != candidate.height))
+            return {false, "Cell size header disagrees with its grid.", path};
+        candidate.tiles.reserve(rows.size() * rows.front().size());
+        for (const auto& row : rows)
+        {
+            if (row.size() != rows.front().size())
+                return {false, "Cell rows have different widths.", path};
+            for (char glyph : row)
+            {
+                if (!terrainInfo(glyph))
+                    return {false, "Unknown terrain glyph.", path};
+                candidate.tiles.push_back(fromGlyph(glyph));
+            }
+        }
+        for (const auto& height : heights)
+        {
+            auto* tile = candidate.tile(height.x, height.y);
+            if (!tile)
+                return {false, "Height override is outside its cell.", path};
+            tile->height = height.height;
+        }
     }
     if (authoredWind && !candidate.outdoors && candidate.wind.strength != 0)
         return {false, "Indoor cells cannot have outdoor wind.", path};
-    for (const auto& entry : entities_)
-        if (entry.second.cellId == candidate.id)
-        {
-            const auto p = entry.second.position;
-            for (const Vec2 sample : {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius},
-                                      Vec2{p.x, p.y + Radius}})
-            {
-                const auto* tile = candidate.tile(int(std::floor(sample.x)), int(std::floor(sample.y)));
-                if (!tile || tile->solid)
-                    return {false, "Cell replacement would strand an actor.", entry.first};
-            }
-        }
-    for (const auto& entry : doors_)
-    {
-        const auto& d = entry.second;
-        for (const auto& anchor : {std::make_pair(d.cellId, d.position), std::make_pair(d.targetCell, d.arrival)})
-            if (anchor.first == candidate.id)
-            {
-                if (!finite(anchor.second) || anchor.second.x < 0 || anchor.second.y < 0 ||
-                    anchor.second.x >= candidate.width || anchor.second.y >= candidate.height)
-                    return {false, "Cell replacement would invalidate a portal anchor.", d.id};
-                const auto* tile = candidate.tile(int(anchor.second.x), int(anchor.second.y));
-                if (!tile || tile->solid)
-                    return {false, "Cell replacement would invalidate a portal anchor.", d.id};
-            }
-    }
     if (candidate.outdoors && !authoredWind)
         candidate.wind = {0.0, .5, true};
-    cells_[candidate.id] = std::move(candidate);
-    return {true, "Cell loaded.", path};
+    return {true, "Cell read.", path};
+}
+
+std::size_t World::loadedCells() const
+{
+    return std::size_t(std::count_if(cells_.begin(), cells_.end(), [](const auto& c) { return c.second.loaded; }));
+}
+
+void World::stream(double idle)
+{
+    if (!streamed())
+        return;
+    // Runs every tick, so it only does real work when someone has changed cells or an unload check is due.
+    // The cells characters are in; offstage NPCs need none (they travel without the ground in memory).
+    std::set<std::string> occupied;
+    for (const auto& entry : entities_)
+        if (!entry.second.offstage)
+            occupied.insert(entry.second.cellId);
+    const bool due = time_ >= streamCheck_;
+    if (!due && occupied == streamOccupied_)
+        return;
+    std::set<std::string> wanted = occupied;
+    if (tiered())
+        wanted.insert(tierWanted_.begin(), tierWanted_.end());   // Worked out each schedule update.
+    else
+        for (const auto& id : occupied)
+        {
+            const auto& next = neighborList(id);
+            wanted.insert(next.begin(), next.end());
+        }
+    for (const auto& id : wanted)
+    {
+        needed_[id] = time_;
+        ensureLoaded(id);
+    }
+    streamOccupied_ = std::move(occupied);
+    if (!due)
+        return;
+    streamCheck_ = time_ + 10.0;
+    std::vector<std::string> idle_;
+    for (const auto& entry : cells_)
+        if (entry.second.loaded && !wanted.count(entry.first) && time_ - needed_[entry.first] >= idle)
+            idle_.push_back(entry.first);
+    for (const auto& id : idle_)
+        unload(id);
+}
+
+std::vector<std::string> World::cellsSoonNeeded() const
+{
+    std::set<std::string> out;
+    if (!streamed())
+        return {};
+    for (const auto& [id, c] : cells_)
+        if (c.loaded)
+            for (const auto& next : neighborList(id))
+                if (const auto* n = cell(next); n && !n->loaded)
+                    out.insert(next);
+    return {out.begin(), out.end()};
+}
+
+void World::unload(const std::string& cellId)
+{
+    auto* c = cell(cellId);
+    if (!c || !c->loaded || !streamed())
+        return;
+    // This cell's seams leave doors_ and its door list; nothing else refers to them (see indexSeams()).
+    const auto exits = exits_.find(cellId);
+    portalGrid_.erase(cellId);
+    bool unexpected = false;
+    auto& here = doorsIn_[cellId];
+    std::vector<Door*> kept;
+    for (Door* d : here)
+        if (d->passage && d->boundary)
+        {
+            unexpected |= exits == exits_.end() || !exits->second.count(d->targetCell);
+            const std::string id = d->id;
+            doors_.erase(id);
+        }
+        else
+            kept.push_back(d);
+    here = std::move(kept);
+    if (unexpected)
+        rebuildFixtureIndex();
+    c->tiles.clear();
+    c->tiles.shrink_to_fit();
+    c->loaded = false;
+    needed_.erase(cellId);
 }
 
 } // namespace ratw

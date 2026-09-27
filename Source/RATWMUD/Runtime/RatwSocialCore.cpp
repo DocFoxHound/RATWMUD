@@ -25,6 +25,16 @@ std::string brief(const std::string& value, std::size_t limit)
         --end;
     return value.substr(0, end) + "…";
 }
+// The last `limit` bytes of `value`, starting on a whole UTF-8 character, marked "…" where cut.
+std::string tail(const std::string& value, std::size_t limit)
+{
+    if (value.size() <= limit)
+        return value;
+    std::size_t start = value.size() - limit;
+    while (start < value.size() && (static_cast<unsigned char>(value[start]) & 0xC0) == 0x80)
+        ++start;
+    return "…" + value.substr(start);
+}
 void append(ParsedPost& post, const std::string& kind, const std::string& text)
 {
     const std::string clean = trim(text);
@@ -315,6 +325,28 @@ int MemoryStore::consolidate(double now)
     return count;
 }
 
+std::vector<ActiveMemory> MemoryStore::due(double now) const
+{
+    std::vector<ActiveMemory> out;
+    for (const auto& [key, memory] : active)
+        if (now - memory.lastActivity >= InactivitySeconds)
+            out.push_back(memory);
+    return out;
+}
+
+bool MemoryStore::rewrite(const std::string& id, const std::string& text)
+{
+    if (text.empty())
+        return false;
+    for (auto& summary : summaries)
+        if (summary.id == id)
+        {
+            summary.text = "Summary. " + brief(text, 1200);
+            return true;
+        }
+    return false;
+}
+
 std::string MemoryStore::recall(const std::string& npc, const std::string& subject) const
 {
     const auto current = active.find(npc + "|" + subject);
@@ -328,6 +360,59 @@ std::string MemoryStore::recall(const std::string& npc, const std::string& subje
         if (it->npc == npc && it->subject == subject)
             return brief(it->text, 400);
     return {};
+}
+
+std::string MemoryStore::recallForDialogue(const std::string& npc, const std::string& subject, std::size_t budget) const
+{
+    std::string current;
+    if (const auto found = active.find(npc + "|" + subject); found != active.end())
+    {
+        const auto& memory = found->second;
+        // The newest turns that fit in two thirds of the budget, oldest of them first.
+        std::vector<std::string> lines;
+        std::size_t used = 0;
+        for (auto it = memory.turns.rbegin(); it != memory.turns.rend() && lines.size() < 16; ++it)
+        {
+            std::string line = (it->who == npc ? std::string("You") : it->who) + ": “" + brief(it->text, 300) + "”\n";
+            if (used + line.size() > budget * 2 / 3)
+                break;
+            used += line.size();
+            lines.push_back(std::move(line));
+        }
+        const bool trimmed = lines.size() < memory.turns.size();
+        if (!memory.olderContext.empty() || trimmed)
+            current += "Earlier in this conversation: " + tail(memory.olderContext.empty() ? std::string("(more was said)")
+                                                                                          : memory.olderContext, 400) + "\n";
+        if (!lines.empty())
+        {
+            current += "This conversation so far:\n";
+            for (auto it = lines.rbegin(); it != lines.rend(); ++it)
+                current += *it;
+        }
+    }
+    // Earlier conversations with this subject, newest first; a summary's end is its most recent part.
+    std::vector<std::string> earlier;
+    std::size_t room = budget > current.size() ? budget - current.size() : 0;
+    for (auto it = summaries.rbegin(); it != summaries.rend() && earlier.size() < 3; ++it)
+    {
+        if (it->npc != npc || it->subject != subject)
+            continue;
+        std::string text = it->text;
+        for (const std::string prefix : {"Conversation record. ", "Summary. "})
+            if (text.rfind(prefix, 0) == 0)
+                text = text.substr(prefix.size());
+        const std::string label = "An earlier conversation: ";
+        if (room < label.size() + 80)
+            break;
+        // Room for the label, the "…" marking a cut (three bytes) and the newline.
+        std::string entry = label + tail(text, std::min<std::size_t>(700, room - label.size() - 4)) + "\n";
+        room -= std::min(room, entry.size());
+        earlier.push_back(std::move(entry));
+    }
+    std::string out;
+    for (auto it = earlier.rbegin(); it != earlier.rend(); ++it)
+        out += *it;
+    return out + current;
 }
 
 int SocialLedger::record(SocialPost post, const std::vector<std::string>& listeners)

@@ -93,9 +93,9 @@ Empty catalogs produce no records. A default unassigned cell produces no territo
 Run:
 
 ```sh
-node --test Editor/model.test.mjs
+node --test Editor/src/model/*.test.mjs
 python3 -m unittest discover -s tools -p test_map_editor.py
-node --check Editor/app.mjs
+npm --prefix Editor run typecheck
 python3 -m py_compile tools/map_editor.py tools/test_map_editor.py
 ```
 

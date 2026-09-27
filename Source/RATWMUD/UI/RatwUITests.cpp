@@ -1,5 +1,6 @@
 #include "UI/SRatwGame.h"
 #include "UI/SRatwFrontDoor.h"
+#include "Core/RatwWorld.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
@@ -634,61 +635,101 @@ bool FRatwUIWeatherTest::RunTest(const FString&)
     TestTrue(TEXT("Condition summary uses server hearing and movement multipliers"),
              UI->EnvironmentEffectsLabel().Contains(TEXT("HEARING 62%")) &&
                  UI->EnvironmentEffectsLabel().Contains(TEXT("FOOTING 85%")));
-    const auto Rain = UI->WeatherMarks();
-    TestTrue(TEXT("Rain has multiple dense layers and ground splashes"), Rain.Num() > 100);
-    TestTrue(TEXT("Rain follows eastward wind"), Rain.Num() && Rain[0].End.X > Rain[0].Position.X);
-    TestTrue(TEXT("Rain includes static readable ground splash cues"),
-             Rain.ContainsByPredicate([](const SRatwGame::FWeatherMark& M) { return M.bSplash; }));
-    for (const auto& Mark : Rain)
-    {
-        TestTrue(TEXT("Rain starts inside the map, never over narrative or controls"),
-                 UI->MapRect.ContainsPoint(Mark.Position));
-        TestTrue(TEXT("Rain streak endpoints stay within the map"), UI->MapRect.ContainsPoint(Mark.End));
-        TestTrue(TEXT("Rain is restricted to the cell, not empty map canvas"),
-                 UI->CellBounds().ContainsPoint(Mark.Position) && UI->CellBounds().ContainsPoint(Mark.End));
-        TestTrue(TEXT("Rain opacity remains translucent"), Mark.Alpha >= 0 && Mark.Alpha < .7f);
-    }
+    using RatwWeatherArt::EArt;
+    auto Count = [](const TArray<SRatwGame::FWeatherLayer>& Layers, EArt Art) {
+        return Layers.FilterByPredicate([Art](const SRatwGame::FWeatherLayer& L) { return L.Art == Art; }).Num();
+    };
+    const auto Rain = UI->WeatherLayers();
+    TestTrue(TEXT("Rain falls in at least two depths of streaks"), Count(Rain, EArt::Rain) >= 2);
+    TestTrue(TEXT("Rain turns its streaks with an eastward wind"), Rain.Num() && Rain[0].Angle < 0);
+    for (const auto& Layer : Rain)
+        TestTrue(TEXT("Weather art stays translucent"), Layer.Tint.A > 0 && Layer.Tint.A < .7f);
+    const auto Splashes = UI->WeatherMarks();
+    TestTrue(TEXT("Rain keeps readable ground splash cues"),
+             Splashes.Num() > 0 && !Splashes.ContainsByPredicate([](const SRatwGame::FWeatherMark& M) { return !M.bSplash; }));
+    for (const auto& Mark : Splashes)
+        TestTrue(TEXT("Splashes stay inside the cell, never over narrative or controls"),
+                 UI->MapRect.ContainsPoint(Mark.Position) && UI->CellBounds().ContainsPoint(Mark.Position));
     UI->Clock = 3;
-    const auto MovingRain = UI->WeatherMarks();
-    TestFalse(TEXT("Ordinary rain moves with time"), MovingRain[0].Position.Equals(Rain[0].Position));
+    const auto MovingRain = UI->WeatherLayers();
+    TestFalse(TEXT("Ordinary rain moves with time"), MovingRain[0].Scroll.Equals(Rain[0].Scroll));
     Wind->SetNumberField(TEXT("direction"), PI);
     UI->ApplySnapshot(Snapshot);
-    const auto WestRain = UI->WeatherMarks();
-    TestTrue(TEXT("Wind reversal reverses rain slant"), WestRain[0].End.X < WestRain[0].Position.X);
+    TestTrue(TEXT("Wind reversal reverses rain slant"), UI->WeatherLayers()[0].Angle > 0);
     UI->bReducedMotion = true;
-    const auto StaticRain = UI->WeatherMarks();
+    const auto StaticRain = UI->WeatherLayers();
     UI->Clock = 500;
-    const auto LaterRain = UI->WeatherMarks();
-    TestEqual(TEXT("Reduced motion retains rain and splash count"), LaterRain.Num(), StaticRain.Num());
-    for (int I = 0; I < StaticRain.Num(); ++I)
-        TestTrue(TEXT("Reduced-motion precipitation has no time-dependent geometry"),
-                 StaticRain[I].Position.Equals(LaterRain[I].Position) && StaticRain[I].End.Equals(LaterRain[I].End) &&
-                     StaticRain[I].Size == LaterRain[I].Size && StaticRain[I].Alpha == LaterRain[I].Alpha);
+    const auto LaterRain = UI->WeatherLayers();
+    TestEqual(TEXT("Reduced motion keeps every rain layer"), LaterRain.Num(), StaticRain.Num());
+    for (int I = 0; I < StaticRain.Num() && I < LaterRain.Num(); ++I)
+        TestTrue(TEXT("Reduced-motion weather has no time-dependent geometry"),
+                 StaticRain[I].Scroll.Equals(LaterRain[I].Scroll) && StaticRain[I].Angle == LaterRain[I].Angle);
     TestTrue(TEXT("Reduced motion remains clearly identified as weather, not clear conditions"),
              UI->EnvironmentEffectsLabel().Contains(TEXT("STATIC WEATHER")));
+    Cell->SetStringField(TEXT("weather"), TEXT("storm"));
+    UI->ApplySnapshot(Snapshot);
+    TestTrue(TEXT("A storm is heavier rain than rain"), Count(UI->WeatherLayers(), EArt::Rain) > Count(StaticRain, EArt::Rain));
+    TestEqual(TEXT("Reduced motion never flashes lightning"), UI->LightningFlash(), 0.);
+    UI->bReducedMotion = false;
+    double Brightest = 0;
+    for (double Time = 0; Time < 30; Time += .02)
+    {
+        UI->Clock = Time;
+        Brightest = FMath::Max(Brightest, UI->LightningFlash());
+    }
+    TestTrue(TEXT("Storm lightning flashes, but dimly"), Brightest > .05 && Brightest <= .2);
+    UI->bReducedMotion = true;
     Cell->SetStringField(TEXT("weather"), TEXT("snow"));
     UI->ApplySnapshot(Snapshot);
-    const auto Snow = UI->WeatherMarks();
-    TestTrue(TEXT("Snow has its own particle presentation"), Snow.Num() > 100 && Snow[0].bSnow);
-    TestFalse(TEXT("Snow never borrows rain splashes"),
-              Snow.ContainsByPredicate([](const SRatwGame::FWeatherMark& M) { return M.bSplash; }));
+    const auto Snow = UI->WeatherLayers();
+    TestEqual(TEXT("Snow drifts in three depths of flakes"), Count(Snow, EArt::Snow), 3);
+    TestTrue(TEXT("Snow never borrows rain splashes or streaks"), UI->WeatherMarks().IsEmpty() && !Count(Snow, EArt::Rain));
     UI->Clock += 9;
-    const auto LaterSnow = UI->WeatherMarks();
-    TestTrue(TEXT("Reduced-motion snow stays static"), Snow[0].Position.Equals(LaterSnow[0].Position));
+    TestTrue(TEXT("Reduced-motion snow stays static"), Snow[0].Scroll.Equals(UI->WeatherLayers()[0].Scroll));
     Cell->SetStringField(TEXT("weather"), TEXT("fog"));
     UI->ApplySnapshot(Snapshot);
     TestTrue(TEXT("Fog does not pretend to be precipitation"), UI->WeatherMarks().IsEmpty());
-    const auto StaticFog = UI->FogVeils();
-    TestEqual(TEXT("Fog has layered veils instead of one flat wash"), StaticFog.Num(), 8);
-    for (const auto& Veil : StaticFog)
-        TestTrue(TEXT("Fog side edges remain beyond the map to prevent hard rectangle seams"),
-                 Veil.Position.X <= UI->VisibleCellBounds().Left &&
-                     Veil.Position.X + Veil.Size.X >= UI->VisibleCellBounds().Right);
+    const auto StaticFog = UI->WeatherLayers();
+    TestTrue(TEXT("Fog rolls in layered banks instead of one flat wash"), Count(StaticFog, EArt::Mist) >= 2);
     UI->Clock += 90;
-    TestTrue(TEXT("Reduced-motion fog keeps its static veils"),
-             StaticFog[0].Position.Equals(UI->FogVeils()[0].Position));
+    TestTrue(TEXT("Reduced-motion fog keeps its banks still"), StaticFog[0].Scroll.Equals(UI->WeatherLayers()[0].Scroll));
     UI->bReducedMotion = false;
-    TestFalse(TEXT("Normal fog slowly drifts with time"), StaticFog[0].Position.Equals(UI->FogVeils()[0].Position));
+    TestFalse(TEXT("Normal fog slowly drifts with time"), StaticFog[0].Scroll.Equals(UI->WeatherLayers()[0].Scroll));
+    Cell->SetStringField(TEXT("weather"), TEXT("sandstorm"));
+    UI->ApplySnapshot(Snapshot);
+    TestEqual(TEXT("A sandstorm is a known condition"), UI->Environment.Weather, FString(TEXT("sandstorm")));
+    TestTrue(TEXT("Sand blows along the wind"), Count(UI->WeatherLayers(), EArt::Dust) >= 2 &&
+                                                   UI->WeatherLayers().Last().Angle == UI->WindDirection);
+    Cell->SetStringField(TEXT("weather"), TEXT("clear"));
+    UI->ApplySnapshot(Snapshot);
+    TestTrue(TEXT("Dusk sun casts drifting cloud shadows"), Count(UI->WeatherLayers(), EArt::Cloud) == 1);
+    Env->SetNumberField(TEXT("daylight"), 0);
+    UI->ApplySnapshot(Snapshot);
+    TestTrue(TEXT("Cloud shadows vanish with the sun"), UI->WeatherLayers().IsEmpty());
+    Env->SetNumberField(TEXT("daylight"), .35);
+    for (EArt Art : {EArt::Mist, EArt::Cloud, EArt::Rain, EArt::Snow, EArt::Dust, EArt::Pool})
+    {
+        const auto Pixels = RatwWeatherArt::Pixels(Art);
+        int64 Painted = 0;
+        for (int64 I = 3; I < Pixels.Num(); I += 4)
+            Painted += Pixels[I] > 8;
+        TestTrue(TEXT("Every weather sheet is partly painted, partly clear"),
+                 Pixels.Num() == int64(RatwWeatherArt::Size) * RatwWeatherArt::Size * 4 && Painted > 0 &&
+                     Painted < int64(RatwWeatherArt::Size) * RatwWeatherArt::Size);
+    }
+    const auto Mist = RatwWeatherArt::Pixels(EArt::Mist);
+    const int32 Side = RatwWeatherArt::Size;
+    auto AlphaAt = [&](int32 X, int32 Y) { return int32(Mist[(int64(Y) * Side + X) * 4 + 3]); };
+    int32 Seam = 0, Inside = 0;
+    for (int32 Y = 0; Y < Side; ++Y)
+    {
+        Seam = FMath::Max(Seam, FMath::Abs(AlphaAt(0, Y) - AlphaAt(Side - 1, Y)));
+        for (int32 X = 1; X < Side; ++X)
+            Inside = FMath::Max(Inside, FMath::Abs(AlphaAt(X, Y) - AlphaAt(X - 1, Y)));
+    }
+    TestTrue(TEXT("Mist wraps without a seam sharper than its own texture"), Seam <= Inside);
+    Cell->SetStringField(TEXT("weather"), TEXT("fog"));
+    UI->ApplySnapshot(Snapshot);
     const auto Geometry = FGeometry::MakeRoot(FVector2D(1600, 1000), FSlateLayoutTransform());
     const TSharedRef<SWindow> Window = SNew(SWindow).ClientSize(FVector2D(1600, 1000));
     FSlateWindowElementList Elements(Window);
@@ -703,10 +744,11 @@ bool FRatwUIWeatherTest::RunTest(const FString&)
               FString::ChrN(32, TEXT('1')));
     TestTrue(TEXT("Environmental presentation cannot issue simulation commands"), Commands.IsEmpty());
     UI->SetPresentationPage(TEXT("world"));
-    TestTrue(TEXT("Remembered world atlas is not obscured by local fog"), UI->FogVeils().IsEmpty());
+    TestTrue(TEXT("Remembered world atlas is not obscured by local fog"), UI->WeatherLayers().IsEmpty());
     Cell->SetStringField(TEXT("weather"), TEXT("rain"));
     UI->ApplySnapshot(Snapshot);
-    TestTrue(TEXT("Local rain is not rendered over remembered world geometry"), UI->WeatherMarks().IsEmpty());
+    TestTrue(TEXT("Local rain is not rendered over remembered world geometry"),
+             UI->WeatherMarks().IsEmpty() && UI->WeatherLayers().IsEmpty());
     UI->SetPresentationPage(TEXT("balanced"));
     const FString Phases[] = {TEXT("dawn"), TEXT("day"), TEXT("dusk"), TEXT("night")};
     for (const FString& Phase : Phases)
@@ -749,7 +791,8 @@ bool FRatwUIWeatherTest::RunTest(const FString&)
     Env->SetNumberField(TEXT("illumination"), .08);
     UI->ApplySnapshot(Snapshot);
     TestEqual(TEXT("Shelter does not turn an unlit room into full daylight"), UI->Environment.Illumination, .08);
-    TestTrue(TEXT("Rain remains outside rather than falling through the roof"), UI->WeatherMarks().IsEmpty());
+    TestTrue(TEXT("Rain remains outside rather than falling through the roof"),
+             UI->WeatherMarks().IsEmpty() && UI->WeatherLayers().IsEmpty());
     TestTrue(TEXT("Indoor header names shelter rather than inventing adjacent exterior weather"),
              UI->EnvironmentLabel().EndsWith(TEXT("SHELTERED")) && !UI->EnvironmentLabel().Contains(TEXT("RAIN")));
     Env->SetStringField(TEXT("phase"), TEXT("day"));
@@ -759,7 +802,7 @@ bool FRatwUIWeatherTest::RunTest(const FString&)
               FString(TEXT("12:30 DAY · SHELTERED")));
     Cell->SetStringField(TEXT("weather"), TEXT("fog"));
     UI->ApplySnapshot(Snapshot);
-    TestTrue(TEXT("Exterior fog cannot fill a sheltered room"), UI->FogVeils().IsEmpty());
+    TestTrue(TEXT("Exterior fog cannot fill a sheltered room"), UI->WeatherLayers().IsEmpty());
     Cell->SetBoolField(TEXT("outdoors"), true);
     Cell->SetStringField(TEXT("weather"), TEXT("unsupported condition"));
     Env->SetStringField(TEXT("phase"), TEXT("unsupported phase"));
@@ -788,6 +831,109 @@ bool FRatwUIWeatherTest::RunTest(const FString&)
     TestEqual(TEXT("Missing modifiers do not retain stale weather penalties"), UI->Environment.Sight, 1.);
     return true;
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwUIElevationTest, "RATW.UI.Elevation",
+                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FRatwUIElevationTest::RunTest(const FString&)
+{
+    const TSharedRef<SRatwGame> UI = SNew(SRatwGame);
+    const auto Snapshot = MakeShared<FJsonObject>(), Cell = MakeShared<FJsonObject>(), Self = MakeShared<FJsonObject>();
+    TArray<TSharedPtr<FJsonValue>> Tiles;
+    auto AddTile = [&](int32 X, int32 Y, const TCHAR* Glyph, const TSharedPtr<FJsonValue>& Height) {
+        const auto Tile = MakeShared<FJsonObject>();
+        Tile->SetNumberField(TEXT("x"), X);
+        Tile->SetNumberField(TEXT("y"), Y);
+        Tile->SetStringField(TEXT("glyph"), Glyph);
+        Tile->SetField(TEXT("height"), Height);
+        Tile->SetBoolField(TEXT("visible"), true);
+        Tiles.Add(MakeShared<FJsonValueObject>(Tile));
+    };
+    AddTile(1, 1, TEXT("."), MakeShared<FJsonValueNumber>(1.5));
+    AddTile(2, 1, TEXT("%"), MakeShared<FJsonValueNumber>(3));
+    AddTile(3, 1, TEXT(":"), MakeShared<FJsonValueNumber>(-.5));
+    AddTile(1, 2, TEXT("."), MakeShared<FJsonValueBoolean>(true));
+    AddTile(2, 2, TEXT("."), MakeShared<FJsonValueNumber>(99));
+    Cell->SetStringField(TEXT("id"), TEXT("hill"));
+    Cell->SetNumberField(TEXT("width"), 6);
+    Cell->SetNumberField(TEXT("height"), 5);
+    Cell->SetBoolField(TEXT("outdoors"), true);
+    Cell->SetArrayField(TEXT("tiles"), Tiles);
+    Self->SetStringField(TEXT("id"), TEXT("self"));
+    Self->SetNumberField(TEXT("x"), 1.5);
+    Self->SetNumberField(TEXT("y"), 1.5);
+    Snapshot->SetObjectField(TEXT("cell"), Cell);
+    Snapshot->SetObjectField(TEXT("self"), Self);
+    UI->ApplySnapshot(Snapshot);
+    TestEqual(TEXT("Tile heights arrive with the tiles"), UI->HeightAt(2, 1), 3.f);
+    TestEqual(TEXT("Stand height is the wolf's own tile"), UI->SelfHeight(), 1.5f);
+    TestEqual(TEXT("Ground readout uses half steps"), UI->ElevationLabel(), FString(TEXT("GROUND +1½")));
+    TestEqual(TEXT("A boolean cannot become a height"), UI->HeightAt(1, 2), 0.f);
+    TestEqual(TEXT("Heights are bounded"), UI->HeightAt(2, 2), 16.f);
+    TestEqual(TEXT("Out-of-cell lookups repeat the nearest edge"), UI->HeightAt(-4, 1), UI->HeightAt(0, 1));
+    // The token eases toward new server positions; place it where the wolf now stands.
+    UI->EntityViews.FindChecked(TEXT("self")).Position = FVector2D(3.5, 1.5);
+    TestEqual(TEXT("Ground below the datum reads as negative"), UI->ElevationLabel(), FString(TEXT("GROUND −½")));
+    const auto Geometry = FGeometry::MakeRoot(FVector2D(1600, 1000), FSlateLayoutTransform());
+    const TSharedRef<SWindow> Window = SNew(SWindow).ClientSize(FVector2D(1600, 1000));
+    FSlateWindowElementList Elements(Window);
+    UI->MapRect = FSlateRect(584, 199, 1544, 816);
+    UI->Hits.Empty();
+    UI->DrawLocal(Geometry, Elements, 0);
+    TestFalse(TEXT("Elevation drawing adds no click targets of its own"),
+              UI->Hits.ContainsByPredicate([](const SRatwGame::FHit& H) { return H.Target.IsEmpty(); }));
+    TestFalse(TEXT("The map draws Unicode glyphs by default"), UI->bPlainGlyphs);
+    UI->Activate({FSlateRect(), TEXT("glyphs"), TEXT("")});
+    TestTrue(TEXT("Settings switch the map to its plain-ASCII fallback"), UI->bPlainGlyphs);
+    UI->DrawLocal(Geometry, Elements, 0);
+    const auto* Cliff = ratw::terrainInfo('%');
+    TestTrue(TEXT("Every catalog tile has a plain fallback and a Unicode glyph"),
+             Cliff && Cliff->ascii == '%' && Cliff->glyph == u'\u2592');
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwUILargeCellTest, "RATW.UI.LargeCellFollowsTheWolf",
+                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FRatwUILargeCellTest::RunTest(const FString&)
+{
+    const TSharedRef<SRatwGame> UI = SNew(SRatwGame);
+    const auto Snapshot = MakeShared<FJsonObject>(), Cell = MakeShared<FJsonObject>(), Self = MakeShared<FJsonObject>();
+    TArray<TSharedPtr<FJsonValue>> Rows, Seen, Heights;
+    for (int32 Y = 0; Y < 256; ++Y)
+    {
+        Rows.Add(MakeShared<FJsonValueString>(FString::ChrN(256, TEXT('_'))));
+        Seen.Add(MakeShared<FJsonValueString>(FString::ChrN(256, TEXT('2'))));
+        Heights.Add(MakeShared<FJsonValueString>(FString::ChrN(256, Y == 100 ? TEXT('R') : TEXT('P'))));
+    }
+    Cell->SetStringField(TEXT("id"), TEXT("city"));
+    Cell->SetNumberField(TEXT("width"), 256);
+    Cell->SetNumberField(TEXT("height"), 256);
+    Cell->SetBoolField(TEXT("outdoors"), true);
+    Cell->SetArrayField(TEXT("rows"), Rows);
+    Cell->SetArrayField(TEXT("heights"), Heights);
+    Snapshot->SetArrayField(TEXT("visibility"), Seen);
+    Self->SetStringField(TEXT("id"), TEXT("self"));
+    Self->SetNumberField(TEXT("x"), 130.5);
+    Self->SetNumberField(TEXT("y"), 140.5);
+    Snapshot->SetObjectField(TEXT("cell"), Cell);
+    Snapshot->SetObjectField(TEXT("self"), Self);
+    UI->ApplySnapshot(Snapshot);
+    TestEqual(TEXT("Height rows arrive: 'R' is one step up"), UI->HeightAt(3, 100), 1.f);
+    TestEqual(TEXT("'P' is level ground"), UI->HeightAt(3, 99), 0.f);
+    const auto Geometry = FGeometry::MakeRoot(FVector2D(1600, 1000), FSlateLayoutTransform());
+    const TSharedRef<SWindow> Window = SNew(SWindow).ClientSize(FVector2D(1600, 1000));
+    FSlateWindowElementList Elements(Window);
+    UI->MapRect = FSlateRect(584, 199, 1544, 816);
+    UI->DrawLocal(Geometry, Elements, 0);
+    const FVector2D OnScreen = UI->MapOrigin + UI->EntityViews.FindChecked(TEXT("self")).Position * UI->TileSize;
+    TestTrue(TEXT("The map centres on the wolf in a large cell"),
+             FMath::Abs(OnScreen.X - UI->MapRect.GetCenter().X) < 30 && FMath::Abs(OnScreen.Y - 508) < 30);
+    UI->EntityViews.FindChecked(TEXT("self")).Position = FVector2D(2, 2);
+    UI->DrawLocal(Geometry, Elements, 0);
+    TestTrue(TEXT("At the cell's corner the map stops at its edge instead of showing empty canvas"),
+             UI->MapOrigin.X <= UI->MapRect.Left && UI->MapOrigin.Y <= UI->MapRect.Top &&
+                 UI->MapOrigin.X > UI->MapRect.Left - 120 && UI->MapOrigin.Y > UI->MapRect.Top - 120);
+    return true;
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwUIAtmosphereTest, "RATW.UI.CellAtmosphere",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FRatwUIAtmosphereTest::RunTest(const FString&)
