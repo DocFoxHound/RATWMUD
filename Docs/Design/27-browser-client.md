@@ -1,14 +1,14 @@
 # 27. The browser client, and leaving Unreal
 
-Agreed 2026-09-28. The game leaves Unreal Engine entirely. The server is already our own (`Server/ratw_server.cpp`
-over the portable `ratw::game::Game`); the client becomes a web page. The NPC phases (doc 26, Phases 7 to 10) wait
-until this is done.
+Agreed and built 2026-09-28. The game left Unreal Engine entirely. The server is our own (`Server/ratw_server.cpp`
+over the portable `ratw::game::Game` in `Core/`); the client is a web page (`Client/`). The NPC phases (doc 26, Phases
+7 to 10) waited for this.
 
 ## Why this is small enough to do
 
 Unreal does three jobs here, and none of them needs an engine:
 
-- **Drawing.** The client (`Source/RATWMUD/UI`, about 6,000 lines) is 2D only: one hand-drawn 1600×1000 canvas
+- **Drawing.** The Unreal client (about 6,000 lines of Slate) was 2D only: one hand-drawn 1600×1000 canvas
   scaled to the window (`SRatwGame`), a few forms (`SRatwFrontDoor`), a recoloured portrait (`SRatwWolfDoll`) and
   procedural weather sheets (`RatwWeatherArt`). There are no meshes, materials, actors or imported assets. Every
   Slate call has a direct HTML canvas equivalent (boxes, lines, text, gradients, clipping, rotated images).
@@ -66,7 +66,36 @@ WASD stays. The page listens to `keydown`/`keyup` on the window and keeps the se
   Mind, Atlas playtest), and the Python smokes launch it instead of Unreal. Screenshots come from headless Chromium
   driving the real page.
 
-## Steps
+## Built
+
+- **The server's web side** (`Core/RatwWeb.h`, `Server/ratw_server.cpp`): HTTP/1.1 for the client's files (hashed
+  assets cached for good, the page never stale; nothing outside the folder, no hidden names), and RFC 6455 WebSockets
+  at `/ws` (masked client frames, fragments, ping, close; oversized or unknown messages end the connection). The
+  upgrade checks `Origin` against `Host`. The plain TCP link the Unreal client used is gone.
+- **The client** (`Client/`, 110 KB of JavaScript, 40 KB gzipped):
+  - `net/`: messages inflated synchronously (`net/inflate.ts`; the browser's `DecompressionStream` took about 110 ms a
+    message in headless Chromium and fell behind), delta sections, binary motion frames, and the session rules.
+  - `ui/frontDoor.ts`: sign in, the roster and the creator as HTML forms, scaled like the old 1440×940 layout.
+  - `game/state.ts` and `game/paint.ts`: `SRatwGame` ported rule for rule and draw call for draw call, in linear-light
+    colours as Slate mixed them, with Roboto and DejaVu Sans Mono bundled (`Data/Fonts`).
+  - `ui/portrait.ts` and `game/weatherArt.ts`: the recoloured portraits and the weather sheets, generated as before.
+- **Tests:** 27 client tests (the old `RATW.UI.*` and motion engine tests), the front door in headless Chromium
+  (`npm --prefix Client run test:browser`), and the server's web side in `server_parts_tests` and `server_smoke`.
+  Engine tests of the server's rules were checked against the portable suite and the gaps filled in the C++ tests.
+- **Scripted players** (`tools/client/scenario.ts`, driven by `tools/game_run.py`): every smoke runs the server and
+  plays in Node (`--headless`) or in the real page in headless Chromium (`tools/client/browser.mjs`), which takes the
+  screenshots in `artifacts/screenshots/`. All pass.
+- **Launchers:** `server.sh`, `play.sh` (a free port and the browser), `connect.sh` and `live.sh`; Atlas playtests use
+  `play.sh`. `tools/convert_saves.py` converts the Unreal server's SQLite saves.
+- **Removed:** the Unreal project, its runtime, UI and engine tests, the packaging and engine-test scripts. The
+  portable code moved from `Source/RATWMUD/Core` to `Core/`.
+
+## Still to do
+
+- **TLS on the server**, so remote players can sign in (until then passwords are accepted only over loopback).
+- Then doc 26's Phase 7.
+
+## Steps (as planned)
 
 1. **Server web transport.** HTTP static files and the WebSocket on `ratw_server`, with tests.
 2. **Client foundation.** The package, the connection and session layer, and the front door: sign in, roster,

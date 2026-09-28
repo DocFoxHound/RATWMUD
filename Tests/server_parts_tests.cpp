@@ -4,12 +4,16 @@
 #include "RatwAccountsCore.h"
 #include "RatwDirector.h"
 #include "RatwMind.h"
+#include "RatwMotionCore.h"
 #include "RatwSections.h"
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
+#include "RatwWire.h"
 
 #include <arpa/inet.h>
 #include <atomic>
+#include <cmath>
+#include <fstream>
 #include <functional>
 #include <set>
 #include <iostream>
@@ -75,6 +79,125 @@ void accountsTests()
     expect(allowed == 6 && limit.allow("peer", 170), "six tries a minute per peer, then more after it");
 }
 
+json::Value parsed(const std::string& text);
+
+// The input rules, exactly.
+void accountRulesTests()
+{
+    std::string normalized;
+    expect(accounts::normalizeUsername("Ash_Wolf-9", normalized) && normalized == "ash_wolf-9", "a username is lowercased, nothing else");
+    for (const std::string bad : {std::string("ab"), std::string("1wolf"), std::string(" ash"), std::string("ash wolf"),
+                                  std::string("ash@wolf"), std::string("w\xc3\xb6lf"), std::string("Ash\n"), std::string(33, 'a')})
+        expect(!accounts::normalizeUsername(bad, normalized), "not a username: " + bad);
+    expect(accounts::validPassword("correct horse battery staple, and then some more words") &&
+               accounts::validPassword(std::string(128, 'p')),
+           "a long passphrase, up to 128 bytes");
+    for (const std::string bad : {std::string("short"), std::string("a long password\twith a tab"), std::string("a long password\nsplit"),
+                                  std::string(129, 'p')})
+        expect(!accounts::validPassword(bad), "not a password: " + bad.substr(0, 20));
+    expect(accounts::validDisplayName("\xc3\x81sta Lj\xc3\xb3sd\xc3\xb3ttir") && accounts::validDisplayName("Ash"), "Unicode names are names");
+    expect(!accounts::validDisplayName("Ash\nWolf") && !accounts::validDisplayName("A"), "a newline, or one letter, is not");
+    expect(!accounts::validDisplayName(" Ash") && !accounts::validDisplayName("Ash "), "an untrimmed name is refused, not trimmed");
+    expect(accounts::validCommandId("create-1") && accounts::validCommandId("A_b-9") && accounts::validCommandId(std::string(128, 'c')),
+           "safe request IDs");
+    for (const std::string bad : {std::string(), std::string("../x"), std::string("a/b"), std::string("a.b"),
+                                  std::string("a b"), std::string("a\\b"), std::string(129, 'c')})
+        expect(!accounts::validCommandId(bad), "not a request ID: " + bad.substr(0, 20));
+    for (const std::string local : {"127.2.3.4", "::1", "[::1]"})
+        expect(accounts::isLoopbackAddress(local), "loopback: " + local);
+    for (const std::string remote : {"", "localhost", "0.0.0.0", "127.0.0.1.evil", "127.0.0.1:7787", "127.0.0.256", "::ffff:192.168.1.2"})
+        expect(!accounts::isLoopbackAddress(remote), "not loopback: " + remote);
+}
+
+std::string wolfId(int n)
+{
+    std::string hex = "0123456789abcdef0123456789abcde" + std::string(1, "0123456789abcdef"[n % 16]);
+    return "wolf-" + hex;
+}
+
+void accountOwnershipTests()
+{
+    std::string error;
+    const std::string password = "the same long passphrase";
+    accounts::Accounts a;
+    expect(a.registerAccount("ash_wolf", password, error) && a.registerAccount("bram_wolf", password, error), "two accounts: " + error);
+    error.clear();
+    expect(!a.registerAccount("ASH_WOLF", "another long passphrase", error) && !error.empty(),
+           "a name that normalises to an existing one is refused");
+    expect(a.authenticate("ash_wolf", password), "and the first keeps its password");
+    const auto state = a.state();
+    const auto& entries = state.array("entries");
+    expect(entries.size() == 2 && entries[0].number("iterations") == 600000 && entries[1].number("iterations") == 600000 &&
+               accounts::PasswordIterations == 600000,
+           "600000 PBKDF2 iterations are recorded");
+    expect(entries[0].string("salt") != entries[1].string("salt") && entries[0].string("verifier") != entries[1].string("verifier"),
+           "the same password gets a different salt and verifier");
+    expect(json::dump(state).find(password) == std::string::npos && json::dump(state).find("password") == std::string::npos,
+           "no password anywhere in what is saved");
+
+    const std::string wolf = wolfId(0), print = accounts::fingerprint("{\"name\":\"Ash\"}");
+    expect(a.addCharacter("ash_wolf", wolf, "create-1", print), "ash makes a character");
+    expect(!a.addCharacter("bram_wolf", wolf, "create-1", print) && !a.owns("bram_wolf", wolf), "another account cannot take it");
+    expect(!a.owns("bram_wolf", wolfId(15)) && !a.owns("bram_wolf", "player-ash"), "nor own one it guesses");
+    expect(!a.addCharacter("bram_wolf", "player-ash", "dev-1", print) && !a.owns("bram_wolf", "player-ash"),
+           "the development character cannot be claimed");
+    for (int i = 1; i <= 6; ++i)
+        expect(a.addCharacter("bram_wolf", wolfId(i), "create-" + std::to_string(i), print), "slot " + std::to_string(i));
+    expect(!a.addCharacter("bram_wolf", wolfId(7), "create-7", print) && a.characters("bram_wolf").size() == accounts::CharacterSlots &&
+               accounts::CharacterSlots == 6,
+           "six character slots, the seventh refused");
+    bool conflict = false;
+    expect(a.createdCharacter("ash_wolf", "create-1", accounts::fingerprint("other choices"), conflict).empty() && conflict,
+           "a conflicting replay finds nothing");
+    expect(a.createdCharacter("bram_wolf", "create-1", print, conflict) == wolfId(1) && !conflict, "each account's receipts are its own");
+
+    std::set<std::string> ids{wolf, "player-ash"};
+    for (int i = 1; i <= 6; ++i)
+        ids.insert(wolfId(i));
+    expect(a.referencesOnly(ids), "a legacy development character may be unowned");
+    auto withBad = ids;
+    withBad.insert("wolf-invalid");
+    expect(!a.referencesOnly(withBad), "a malformed ID in the generated namespace fails closed");
+    accounts::Accounts legacy;
+    expect(legacy.referencesOnly({"player-ash", "player-bram"}), "a legacy save has no accounts and needs none");
+    expect(legacy.restore(parsed(R"({"version":1,"entries":[]})")) && !legacy.exists("ash_wolf"), "and no accounts restore as none");
+
+    accounts::Accounts b;
+    expect(b.restore(a.state()) && b.owns("ash_wolf", wolf) && b.characters("bram_wolf").size() == 6, "restored");
+    const auto broken = [&](const std::function<void(json::Value&)>& change) {
+        auto s = a.state();
+        change(s);
+        return b.restore(s);
+    };
+    expect(!broken([](json::Value& s) { s.find("entries")->items()[0].set("salt", std::string(64, 'z')); }), "a salt must be hexadecimal");
+    expect(!broken([](json::Value& s) { s.find("entries")->items()[0].set("salt", "00"); }), "and 32 bytes");
+    expect(!broken([&](json::Value& s) { s.find("entries")->items()[0].add("password", password); }), "an unknown password field is refused");
+    expect(!broken([&](json::Value& s) {
+               auto& bram = s.find("entries")->items()[1];
+               bram.set("characters", json::Value(json::Array{json::Value(wolf)}));
+               auto receipt = json::Value::object(), creations = json::Value::object();
+               receipt.add("character", wolf);
+               receipt.add("fingerprint", print);
+               creations.add("create-1", receipt);
+               bram.set("creations", creations);
+           }),
+           "one character owned by two accounts is refused");
+    expect(b.owns("ash_wolf", wolf) && !b.owns("bram_wolf", wolf) && b.characters("bram_wolf").size() == 6 &&
+               b.authenticate("bram_wolf", password),
+           "a failed restore leaves what was there");
+
+    accounts::RateLimit limit;
+    int allowed = 0;
+    for (int peer = 0; peer < 5; ++peer)
+        for (int i = 0; i < 6; ++i)
+            allowed += limit.allow("peer" + std::to_string(peer), 100 + (peer * 6 + i) * .1);
+    expect(allowed == 24, "24 tries a minute across every peer, whoever they are (" + std::to_string(allowed) + ")");
+    for (int peer = 0; peer < 5; ++peer)
+        limit.forget("peer" + std::to_string(peer));
+    expect(!limit.allow("peer0", 104) && !limit.allow("fresh", 104), "disconnecting does not refill the shared budget");
+    expect(limit.allow("peer0", 164), "a minute does");
+}
+
 json::Value snapshot(const std::string& seen, int revealed)
 {
     auto root = json::Value::object(), cell = json::Value::object(), map = json::Value::array();
@@ -122,6 +245,86 @@ void sectionsTests()
     expect(!sections::fill(again, fresh), "a client without its copies notices");
     held.acknowledged(4, true);
     expect(held.known.empty(), "and asking for everything forgets what it held");
+}
+
+// A snapshot with every part a client can hold.
+json::Value fullSnapshot(const std::string& seen, const std::string& row)
+{
+    auto root = json::Value::object(), cell = json::Value::object(), map = json::Value::array(), travel = json::Value::array();
+    cell.add("id", "yard");
+    cell.add("rows", json::Value(json::Array{json::Value(row), json::Value("..~.")}));
+    cell.add("heights", json::Value(json::Array{json::Value("PPPP"), json::Value("PPQP")}));
+    root.add("cell", cell);
+    root.add("visibility", json::Value(json::Array{json::Value(seen)}));
+    for (int i = 0; i < 40; ++i)
+    {
+        auto entry = json::Value::object();
+        entry.add("id", "m" + std::to_string(i));
+        entry.add("glyphs", std::string(64, char('a' + i % 26)));
+        map.push(entry);
+    }
+    root.add("worldMap", map);
+    for (int i = 0; i < 2; ++i)
+    {
+        auto entry = json::Value::object();
+        entry.add("id", "t" + std::to_string(i));
+        entry.add("name", "Road " + std::to_string(i));
+        travel.push(entry);
+    }
+    root.add("travelMap", travel);
+    auto door = json::Value::object();
+    door.add("id", "gate");
+    door.add("open", false);
+    root.add("doors", json::Value(json::Array{door}));
+    auto item = json::Value::object();
+    item.add("item", "meal");
+    item.add("quantity", 2);
+    root.add("inventory", json::Value(json::Array{item}));
+    root.add("revision", 3);
+    return root;
+}
+
+void sectionKeysTests()
+{
+    const char* names[] = {"visibility", "cell.rows", "cell.heights", "worldMap", "travelMap", "doors", "inventory"};
+    sections::Held held;
+    sections::Cache client;
+    auto first = fullSnapshot("2", "....");
+    const auto keys = sections::strip(first, held.known);
+    for (const std::string name : names)
+        expect(keys.count(name) && first.object("sectionKeys").has(name), "every section gets a key: " + name);
+    for (const std::string entry : {"travelMap#t0", "travelMap#t1", "worldMap#m0", "worldMap#m39"})
+        expect(keys.count(entry) && first.object("sectionKeys").has(entry), "and every map entry: " + entry);
+    held.sending(1, keys);
+    const auto whole = json::dump(first).size();
+    auto second = fullSnapshot("2", "....");
+    held.sending(2, sections::strip(second, held.known));
+    expect(second.has("visibility") && second.has("worldMap") && second.has("travelMap") && second.has("doors") && second.has("inventory") &&
+               second.object("cell").has("rows") && second.object("cell").has("heights"),
+           "nothing is left out before the client's first acknowledgement");
+    expect(sections::fill(first, client) && first == fullSnapshot("2", "...."), "the first reads whole");
+    expect(sections::fill(second, client), "and the second");
+    held.acknowledged(1, false);
+    auto looked = fullSnapshot("3", "....");
+    const auto lookedKeys = sections::strip(looked, held.known);
+    expect(looked.has("visibility"), "a changed view is sent again");
+    expect(!looked.has("worldMap") && !looked.has("travelMap") && !looked.has("doors") && !looked.has("inventory") &&
+               !looked.object("cell").has("rows") && !looked.object("cell").has("heights"),
+           "but not the maps, doors, inventory or terrain");
+    expect(json::dump(looked).size() * 5 < whole,
+           "a held delta is much smaller (" + std::to_string(json::dump(looked).size()) + " of " + std::to_string(whole) + " bytes)");
+    expect(sections::fill(looked, client) && looked == fullSnapshot("3", "...."), "and reads as the whole");
+    held.sending(3, lookedKeys);
+    held.acknowledged(3, false);
+    auto dug = fullSnapshot("3", "#...");
+    sections::strip(dug, held.known);
+    expect(dug.object("cell").has("rows") && !dug.object("cell").has("heights"), "changed rows under a stale key are sent again");
+    auto stale = held.known;
+    stale["cell.rows"] = std::string(32, '0');
+    auto guessed = fullSnapshot("3", "....");
+    sections::strip(guessed, stale);
+    expect(guessed.object("cell").has("rows"), "a key the rows no longer match never leaves them out");
+    expect(sections::fill(dug, client) && dug == fullSnapshot("3", "#..."), "and the client takes the new rows");
 }
 
 // A stand-in for the NPC Mind: answers one POST with the given body.
@@ -219,6 +422,21 @@ void mindTests()
     garbled.converse(c, [&](const mind::Reply& r) { got = r; answered = true; });
     garbled.settle(5);
     expect(answered && !got.generated, "a malformed reply falls back to the authored line");
+    // Asked about the weather in the snow, the authored reply is what the snapshot says, never rain.
+    Cell snowy;
+    snowy.id = "exterior";
+    snowy.outdoors = true;
+    snowy.weather = Weather::Snow;
+    Environment env;
+    env.phase = "morning";
+    mind::Context weather = c;
+    weather.heardText = "What is the weather like?";
+    weather.environment = wire::environmentDescription(snowy, env);
+    const auto reply = mind::Client::authoredReply(weather);
+    expect(!weather.environment.empty() && reply == weather.environment && mind::lower(reply).find("snow") != std::string::npos,
+           "the weather is described as it is: " + reply);
+    expect(mind::lower(reply).find("rain") == std::string::npos, "and snow is never called rain");
+
     std::string error;
     expect(sys::zlibAvailable(error), "zlib loads: " + error);
     const std::string text(5000, 'w');
@@ -316,6 +534,72 @@ void directorTests()
            "a failed checkpoint is not acknowledged");
     expect(world.society().account("player-ash")->cash == cash, "a failed checkpoint undoes the transfer");
     expect(world.entity("player-ash")->typing && world.entity("player-ash")->path.size() == 1, "and leaves movement and typing alone");
+}
+
+bool posed(const json::Value& frame, const std::string& id)
+{
+    for (const auto& pose : frame.array("entities"))
+        if (pose.string("id") == id)
+            return true;
+    return false;
+}
+
+void motionTests()
+{
+    World world;
+    world.addPlayer("player-ash", "Ash");
+    world.addPlayer("player-bram", "Bram");
+    world.addPlayer("player-far", "Far");
+    const auto* keeper = world.entity("npc_keeper");
+    expect(keeper != nullptr, "the keeper is here");
+    auto* ash = world.entity("player-ash");
+    ash->cellId = keeper->cellId;
+    ash->position = {keeper->position.x + 1, keeper->position.y};
+    auto* bram = world.entity("player-bram");
+    bram->cellId = ash->cellId;
+    bram->position = ash->position;
+    std::string elsewhere;
+    for (const auto& [id, cell] : world.cells())
+        if (id != ash->cellId)
+            elsewhere = id;
+    expect(!elsewhere.empty(), "there is another cell");
+    auto* far = world.entity("player-far");
+    far->cellId = elsewhere;
+    far->position = ash->position;
+    auto f = motion::frame(world, "player-ash");
+    expect(f.string("observer") == "player-ash" && f.string("cellId") == ash->cellId, "a frame is the observer's");
+    expect(posed(f, "player-ash") && posed(f, "npc_keeper") && posed(f, "player-bram"), "it poses the observer and who it can see");
+    expect(!posed(f, "player-far") && json::dump(f).find("player-far") == std::string::npos, "never another cell's actors, not even their IDs");
+    ash->eyeHealth = 0;
+    bram->position = {bram->position.x + 10, bram->position.y};
+    f = motion::frame(world, "player-ash");
+    expect(!posed(f, "player-bram") && json::dump(f).find("player-bram") == std::string::npos && posed(f, "player-ash"),
+           "a pose the observer cannot see is dropped");
+
+    ash->eyeHealth = 1;
+    f = motion::frame(world, "player-ash");
+    f.add("motionSession", "session-1");
+    f.add("cellGeneration", 4);
+    f.set("revision", 42);
+    const auto back = motion::unpack(motion::pack(f));
+    expect(back.string("observer") == "player-ash" && back.string("cellId") == ash->cellId && back.number("revision") == 42 &&
+               back.string("motionSession") == "session-1" && back.number("cellGeneration") == 4,
+           "a frame's stamps survive packing");
+    const auto& sent = f.array("entities");
+    const auto& got = back.array("entities");
+    bool same = sent.size() == got.size() && !sent.empty();
+    for (std::size_t i = 0; same && i < sent.size(); ++i)
+        same = got[i].string("id") == sent[i].string("id") && std::abs(got[i].number("x") - sent[i].number("x")) < 1e-4 &&
+               std::abs(got[i].number("y") - sent[i].number("y")) < 1e-4;
+    expect(same, "and every pose, to within float precision");
+
+    // The bytes the browser client's test reads (Client/src/net/motion.golden.json): this pack() must make exactly them.
+    std::ifstream in(std::string(RATW_SOURCE_DIR) + "/Client/src/net/motion.golden.json");
+    const std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    const auto golden = parsed(text);
+    const auto bytes = motion::pack(golden.object("frame"));
+    const auto hex = sys::hex(bytes.data(), bytes.size());
+    expect(!bytes.empty() && hex == golden.string("bytes"), "the golden motion frame packs to its committed bytes: " + hex);
 }
 
 // A client's WebSocket frame: always masked.
@@ -445,8 +729,12 @@ int main()
     try
     {
         accountsTests();
+        accountRulesTests();
+        accountOwnershipTests();
         sectionsTests();
+        sectionKeysTests();
         mindTests();
+        motionTests();
         directorTests();
         webTests();
     }

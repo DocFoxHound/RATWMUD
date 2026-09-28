@@ -92,8 +92,8 @@ and whether generated dialogue should visibly carry a provider indicator.
 
 The game server applies all of it on bounded terms. See `26-living-npcs.md`, Phase 3.
 
-**Live by default (2026-09-27).** The launch scripts start the Mind themselves: `tools/server.sh`, `tools/play.sh`,
-`tools/live.sh` (through them) and `tools/run-packaged.sh`. The game then uses it (`tools/mind.sh`).
+**Live by default (2026-09-27).** The launch scripts start the Mind themselves: `tools/server.sh`, and `tools/play.sh`
+and `tools/live.sh` through it. The server then uses it (`tools/mind.sh`).
 - **Key and model** come from `Saved/Config/RATWNPCAI.local.json`: gitignored (also `*.local.json`) and readable only
   by its owner. `RATW_AI_CONFIG` can point elsewhere.
 - **History.** A game on `-RatwDatabase=dev|prod` gives the Mind that database's event log for NPCs' history.

@@ -31,6 +31,7 @@ The gameplay decisions below incorporate the completed clarification discussion.
 - Pin Unreal Engine **5.8.2**, Linux x64, changelist **56702186**, as observed in the installed engine's Build.version.
 - Keep world rules and persisted data independent from rendering APIs so the vertical slice can be reproduced in Godot if Unreal fails the engine gate.
 - This installed distribution contains Editor and Game targets but lacks a packaged Server target. Develop and test a separate authoritative headless process through `UnrealEditor -server -nullrhi`; a distributable dedicated-server binary remains a separate source-engine build gate. See `Docs/Design/00-architecture.md`.
+- **Superseded 2026-09-28:** the game left Unreal. The server is our own (`Server/ratw_server.cpp` over `Core/`) and the client is a web page (`Client/`); see `Docs/Design/27-browser-client.md` and ADR-007 in `Docs/Design/00-architecture.md`.
 
 ### 2.2 The Map Is a Logical Glyph Tilemap
 
@@ -567,6 +568,9 @@ reason_code, bounded_amount, validation_metadata, timestamp
 Stable IDs, revisions, and idempotency are MVP requirements rather than later hardening tasks.
 
 ### 5.5 Intended Repository Shape
+
+(The original intent, kept for the record. Today: `Core/` (the game), `Server/` (its server), `Client/` (the browser
+client), `Editor/` and `DM/` (the tools' web apps), `tools/`, `Data/`, `Database/`, `Tests/`, `Docs/`.)
 
 ```text
 RATWMUD.uproject

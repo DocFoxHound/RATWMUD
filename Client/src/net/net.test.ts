@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand} from './wire.ts';
+import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand, MaxRaw} from './wire.ts';
+import {readFileSync} from 'node:fs';
 import {inflate} from './inflate.ts';
 import {deflateSync, constants} from 'node:zlib';
 import {pack, unpack, type MotionFrame} from './motion.ts';
@@ -93,6 +94,38 @@ test('cut, padded or foreign motion frames are refused whole', () => {
     const huge = bytes.slice();
     new DataView(huge.buffer).setInt32(4, 1 << 20, true);
     assert.equal(unpack(huge), null, 'a string claiming to be enormous');
+});
+
+test('an advertised raw length of nothing, or over the limit, is refused before inflating', async () => {
+    const message = await encodeMessage(Kind.Snapshot, text('{"revision":1}'));
+    assert.equal(MaxRaw, 16 << 20);
+    for (const length of [0, MaxRaw + 1, 0xffffffff]) {
+        const bomb = message.slice();
+        new DataView(bomb.buffer).setUint32(1, length, true);
+        assert.equal(decodeMessage(bomb), null, `a raw length of ${length}`);
+    }
+});
+
+test('motion frames keep their stamps exactly and positions as float32', () => {
+    const sent: MotionFrame = {...frame, observer: 'player-bram', cellId: 'ridgemere-gate', revision: 1234567.891,
+        entities: [{id: 'player-bram', x: 0.1, y: -123.456, facing: 2.5, moving: false}, {id: 'npc_x', x: 1e-3, y: 4096.7, facing: 0, moving: true}]};
+    const got = unpack(pack(sent))!;
+    assert.equal(got.observer, 'player-bram');
+    assert.equal(got.cellId, 'ridgemere-gate');
+    assert.equal(got.revision, 1234567.891);
+    for (let i = 0; i < sent.entities.length; ++i) {
+        assert.equal(got.entities[i].x, Math.fround(sent.entities[i].x));
+        assert.equal(got.entities[i].y, Math.fround(sent.entities[i].y));
+    }
+});
+
+test('the server\'s packed motion bytes read back as the frame they came from', () => {
+    // Tests/server_parts_tests.cpp checks Core's motion::pack makes exactly these bytes from this frame.
+    const golden = JSON.parse(readFileSync(new URL('./motion.golden.json', import.meta.url), 'utf8')) as {frame: MotionFrame; bytes: string};
+    const bytes = Uint8Array.from(golden.bytes.match(/../g)!, h => parseInt(h, 16));
+    assert.deepEqual(unpack(bytes), golden.frame);
+    assert.equal(unpack(bytes)!.entities[1].id, 'npc_élan', 'a non-ASCII ID in its UTF-16 form');
+    assert.deepEqual(pack(golden.frame), bytes, 'and this client packs them the same');
 });
 
 test('left-out sections are put back from what the client holds', () => {

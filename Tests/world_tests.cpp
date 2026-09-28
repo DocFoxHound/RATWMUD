@@ -1253,6 +1253,37 @@ void deathAndResurrection()
     expect(!w.setDead("nobody", true).ok, "Unknown characters are refused");
 }
 
+// Commands name an actor by ID; an ID nobody has moves nothing and makes nobody.
+void forgedActors()
+{
+    World w;
+    player(w);
+    const auto count = w.entities().size();
+    for (const auto* id : {"player-forged", "npc_nobody", ""})
+        expect(!w.move(id, 1, 0).ok, std::string("Movement for an unknown actor is refused: ") + id);
+    w.tick(.5);
+    expect(w.entities().size() == count && !w.entity("player-forged"), "And no actor is made by it");
+}
+
+// The herb patch is gathered from beside it, out under the sky: not through a roof, and not from afar.
+void herbPatchReach()
+{
+    World w;
+    auto& p = player(w, "player-herbs");
+    const auto patch = w.herbPatchPosition();
+    const auto herbs = [&] { return Society::stock(*w.society().account("player-herbs"), "herbs"); };
+    const int before = herbs();
+    p.cellId = "tavern";
+    p.position = patch;
+    expect(!w.cell("tavern")->outdoors && w.herbPatchCell() != "tavern", "The tavern is a roofed room apart from the patch");
+    expect(!w.gather("player-herbs").ok && herbs() == before, "Nothing is gathered from the same spot indoors");
+    p.cellId = w.herbPatchCell();
+    p.position = {patch.x, patch.y + 1.8};
+    expect(!w.gather("player-herbs").ok && herbs() == before, "Nothing is gathered from beyond reach");
+    p.position = {patch.x, patch.y + 1.5};
+    expect(w.gather("player-herbs").ok && herbs() > before, "Gathered from within reach");
+}
+
 // lineOfSight() checks each tile a ray crosses once rather than every sample along it. This is the plain version, a
 // check at every sample, and the two must agree on every ray over rough ground with walls, trees and closed doors.
 bool sampledSight(const World& w, const Cell& c, Vec2 from, Vec2 to)
@@ -1457,6 +1488,8 @@ int main()
     try
     {
         deathAndResurrection();
+        forgedActors();
+        herbPatchReach();
         authoredWorld();
         continuousMovement();
         gradualFacing();

@@ -110,9 +110,8 @@ to standing through `/stand`. No model-provider calls are involved.
 
 ```bash
 ctest --test-dir build-core --output-on-failure
-bash tools/test-engine.sh
+npm --prefix Client test
 python3 tools/smoke.py movement
-python3 tools/smoke.py movement --packaged
 ```
 
 The graphical scenario writes `artifacts/screenshots/10-crouch-movement.png`

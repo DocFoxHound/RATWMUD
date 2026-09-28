@@ -48,12 +48,25 @@ int main()
     Check(perceivePost(Post, 0, 0, 12).empty(), "wholly unperceived event omitted");
     auto Heard = perceivePost(Post, 1, 0, 12);
     Check(Heard[1].text == "···", "unseen action uses visual marker");
+    const auto Mixed = parsePost("\"The ford is out.\" /sigh \"We take the ridge road.\"");
+    Check(Mixed.ok && Mixed.segments.size() == 3 && Mixed.segments[0].kind == "speech" &&
+              Mixed.segments[1].kind == "action" && Mixed.segments[2].kind == "speech",
+          "speech, action, speech parsed in order");
+    const auto Listener = perceivePost(Mixed, 1, 1, 77);
+    Check(Listener.size() == 3, "a listener perceives every segment of a mixed post");
+    Check(Listener[0].kind == "speech" && Listener[1].kind == "action" && Listener[2].kind == "speech",
+          "a listener perceives the segments in the order written");
+    Check(Listener[0].text == Mixed.segments[0].text && Listener[2].text == Mixed.segments[2].text &&
+              Listener[1].text == Mixed.segments[1].text,
+          "clearly heard speech keeps its exact words");
+    Check(Listener[2].text == "We take the ridge road.", "the heard speech is the words spoken");
 
     MemoryStore M;
     M.record("rowan", "ash", {1, 1000, "ash", "I promise to bring back the blue scarf."});
     Check(M.consolidate(4599) == 0, "memory not consolidated before one hour idle");
     M.record("rowan", "ash", {2, 4599, "ash", "We are still talking."});
     Check(M.consolidate(4600) == 0, "new activity resets inactivity timer");
+    Check(M.consolidate(8198) == 0, "one second before the new deadline nothing consolidates");
     Check(M.consolidate(8199) == 1, "exactly one hour inactivity consolidates");
     Check(M.summaries.size() == 1 && M.active.empty(), "active memory becomes permanent summary");
     Check(M.consolidate(9000) == 0 && M.summaries.size() == 1, "consolidation idempotent");

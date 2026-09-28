@@ -2,7 +2,11 @@
 // and a malformed one is refused rather than half-read.
 #include "RatwCheckpoint.h"
 
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <iterator>
+#include <map>
 #include <stdexcept>
 #include <string>
 
@@ -43,6 +47,52 @@ checkpoint::ServerState serverWith(const World& w)
     s.responseReceipts["player-ash"]["c1"] = "{\"ok\":true}";
     return s;
 }
+
+// Every field of a character the checkpoint keeps (not motion, typing or speech, which are never reloaded).
+bool sameCharacter(const Entity& a, const Entity& b)
+{
+    const auto& x = a.appearance;
+    const auto& y = b.appearance;
+    return a.id == b.id && a.name == b.name && a.cellId == b.cellId && a.position.x == b.position.x &&
+           a.position.y == b.position.y && a.facing == b.facing && a.npc == b.npc && a.dead == b.dead &&
+           x.species == y.species && x.sex == y.sex && x.stature == y.stature && x.pattern == y.pattern &&
+           x.baseColor == y.baseColor && x.gradientColor == y.gradientColor && x.markingColor == y.markingColor &&
+           x.gradientAmount == y.gradientAmount && x.patternAmount == y.patternAmount &&
+           a.speakingColor == b.speakingColor && a.posture == b.posture && a.state == b.state &&
+           a.description == b.description && a.activity == b.activity && a.hearing == b.hearing && a.vision == b.vision &&
+           a.earHealth == b.earHealth && a.eyeHealth == b.eyeHealth && a.sneakSkill == b.sneakSkill &&
+           a.hearingSkill == b.hearingSkill && a.smell == b.smell && a.noseHealth == b.noseHealth &&
+           a.scentSkill == b.scentSkill && a.dexterity == b.dexterity && a.stamina == b.stamina && a.pace == b.pace &&
+           a.exhausted == b.exhausted && a.age == b.age && a.ageNoticePending == b.ageNoticePending &&
+           a.strength == b.strength && a.wisdom == b.wisdom && a.lastBirthdayDay == b.lastBirthdayDay &&
+           a.postureTarget == b.postureTarget && a.postureRemaining == b.postureRemaining;
+}
+
+// Greyfen (Data/Worlds/Greyfen) with copies of Sorrel added until it has `residents` residents, as a build in memory.
+std::map<std::string, std::string> crowdedGreyfen(int residents)
+{
+    namespace fs = std::filesystem;
+    const fs::path root = fs::path(__FILE__).parent_path().parent_path() / "Data" / "Worlds" / "Greyfen";
+    const auto read = [](const fs::path& path) {
+        std::ifstream in(path, std::ios::binary);
+        return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+    };
+    std::map<std::string, std::string> files{{"world.ratw", read(root / "world.ratw")}};
+    for (const auto& entry : fs::directory_iterator(root / "cells"))
+        files["cells/" + entry.path().filename().string()] = read(entry.path());
+    auto& manifest = files["world.ratw"];
+    const auto at = manifest.find("resident \"sorrel\"");
+    expect(at != std::string::npos, "Greyfen is where it should be: " + root.string());
+    const std::string sorrel = manifest.substr(at, manifest.find('\n', at) - at);
+    for (int i = 10; i < residents; ++i)
+    {
+        std::string copy = sorrel;
+        copy.replace(copy.find("\"sorrel\""), 8, "\"extra_" + std::to_string(i) + "\"");
+        copy.replace(copy.find("\"Sorrel\""), 8, "\"Extra " + std::to_string(i) + "\"");
+        manifest += copy + "\n";
+    }
+    return files;
+}
 } // namespace
 
 int main()
@@ -57,6 +107,19 @@ int main()
         w.promise("player-ash", "npc_keeper", "come back tomorrow", 2);
         w.bonds().change("npc_keeper", "player-ash", {10, 5, 20, 0, 1}, w.calendarDays());
         w.believe("npc_keeper", "player-ash", "pays well", "saw it", .8);
+        // A character unlike the default in every field that is kept, and a sky unlike the one it started with.
+        auto& ash = *w.entity("player-ash");
+        ash.appearance = {"maned", "female", "tall", "piebald", 6, 4, 2, .2, .8};
+        ash.facing = 1.25;
+        ash.speakingColor = 9;
+        ash.state = "resting by the fire";
+        ash.description = "A test wolf with a notched ear.";
+        ash.hearing = .8; ash.vision = .9; ash.earHealth = .7; ash.eyeHealth = .95;
+        ash.sneakSkill = 12.5; ash.hearingSkill = 30; ash.smell = .85; ash.noseHealth = .9; ash.scentSkill = 44;
+        ash.dexterity = 61.5; ash.stamina = 72.25; ash.pace = 4;
+        ash.age = 27; ash.ageNoticePending = 1; ash.strength = 55.5; ash.wisdom = 33;
+        w.setWeather("exterior", Weather::Fog);
+        expect(w.setWind("exterior", 1.25, .4, true).ok && w.setLighting("tavern", .3, .6, "cool").ok, "the sky is set");
         auto saved = w.save();
         const auto server = serverWith(w);
         const auto doc = checkpoint::encode(saved, server, npcsOf(w), w.time());
@@ -74,6 +137,24 @@ int main()
         expect(serverBack.social.sessions["s1"].members["player-ash"].lastAudience == std::vector<std::string>{"npc_keeper"},
                "and who was listening");
         expect(serverBack.social.points["player-ash"] == 2, "social points counted from the ledger");
+        expect(serverBack.characters.size() == server.characters.size() && back.players.size() == server.characters.size(),
+               "every character, and they are the world's players");
+        expect(sameCharacter(serverBack.characters.at("player-ash"), server.characters.at("player-ash")) &&
+                   sameCharacter(back.players[0], server.characters.at("player-ash")),
+               "the character as it was, to its coat and its skills");
+        expect(back.clockOffsetHours == saved.clockOffsetHours && back.time == saved.time && back.calendarDays == saved.calendarDays,
+               "the same hour of the same day");
+        expect(back.weather == saved.weather && back.weather.at("exterior") == Weather::Fog, "the same weather");
+        bool sameWinds = back.winds.size() == saved.winds.size(), sameLight = back.lighting.size() == saved.lighting.size();
+        for (const auto& [cell, wind] : saved.winds)
+            sameWinds = sameWinds && back.winds.count(cell) && back.winds.at(cell).direction == wind.direction &&
+                        back.winds.at(cell).strength == wind.strength && back.winds.at(cell).variable == wind.variable;
+        for (const auto& [cell, light] : saved.lighting)
+            sameLight = sameLight && back.lighting.count(cell) && back.lighting.at(cell).artificial == light.artificial &&
+                        back.lighting.at(cell).daylightAccess == light.daylightAccess && back.lighting.at(cell).tone == light.tone;
+        expect(sameWinds && back.winds.at("exterior").variable && back.winds.at("exterior").strength == .4, "the same winds");
+        expect(sameLight && back.lighting.at("tavern").tone == "cool" && back.lighting.at("tavern").artificial == .3,
+               "the same lamps");
         World again;
         const auto restored = again.restore(back);
         expect(restored.ok, "the world restores from it: " + restored.message);
@@ -99,6 +180,45 @@ int main()
         bad = parsed;
         bad.find("society")->set("minted", -5);
         expect(checkpoint::decode(bad, back, serverBack, error) && !World().restore(back).ok, "a society that doesn't add up");
+        // A document from before the clock was saved starts from the noon epoch.
+        auto older = parsed;
+        older.erase("clockOffsetHours");
+        expect(checkpoint::decode(older, back, serverBack, error) && back.clockOffsetHours == 12.0,
+               "no clock offset reads as noon: " + error);
+        older.set("clockOffsetHours", "nine");
+        expect(checkpoint::decode(older, back, serverBack, error) && !World().restore(back).ok, "a clock offset that isn't a number");
+
+        // A town of two hundred, through text and back: every resident is there, where they were.
+        const auto files = crowdedGreyfen(200);
+        World crowd;
+        const auto built = crowd.loadWorldFiles(files, "crowded Greyfen");
+        expect(built.ok, "a town of two hundred loads: " + built.message);
+        expect(crowd.society().state().residents.size() == 200, "with two hundred residents");
+        crowd.setTimeOfDay(9);
+        for (int i = 0; i < 60; ++i)
+            crowd.tick(1);
+        const auto crowdDoc = checkpoint::encode(crowd.save(), checkpoint::ServerState{}, npcsOf(crowd), crowd.time());
+        json::Value crowdParsed;
+        expect(json::parse(json::dump(crowdDoc), crowdParsed, error), "the town's document parses: " + error);
+        PersistedWorld crowdBack;
+        checkpoint::ServerState crowdServer;
+        expect(checkpoint::decode(crowdParsed, crowdBack, crowdServer, error), "and decodes: " + error);
+        expect(crowdBack.npcs.size() == 200 && crowdBack.society.residents.size() == 200, "with every resident in it");
+        World crowdAgain;
+        expect(crowdAgain.loadWorldFiles(files, "crowded Greyfen").ok, "the town loads again");
+        const auto crowdRestored = crowdAgain.restore(crowdBack);
+        expect(crowdRestored.ok, "and restores from it: " + crowdRestored.message + " " + crowdRestored.targetId);
+        expect(crowdAgain.society().state().residents.size() == 200, "two hundred residents still");
+        int placed = 0;
+        for (const auto& [id, life] : crowd.society().state().residents)
+        {
+            const auto* was = crowd.entity(id);
+            const auto* now = crowdAgain.entity(id);
+            const auto* lives = crowdAgain.society().resident(id);
+            placed += was && now && lives && now->cellId == was->cellId && now->position.x == was->position.x &&
+                      now->position.y == was->position.y && lives->task == life.task && lives->hunger == life.hunger;
+        }
+        expect(placed == 200, "each where they were, doing what they were (" + std::to_string(placed) + " of 200)");
     }
     catch (const std::exception& error)
     {

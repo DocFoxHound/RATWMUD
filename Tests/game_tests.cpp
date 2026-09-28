@@ -4,7 +4,9 @@
 #include "RatwMotionCore.h"
 
 #include <cstdio>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <unistd.h>
 #include <stdexcept>
 #include <string>
@@ -219,6 +221,213 @@ void aRestartFromAFile()
     again.disconnect(&c);
     std::remove(path.c_str());
 }
+
+// A player session, not a development one: the sky, the clock, the lamps and the calendar are not theirs to change,
+// and a pace that isn't a whole step from 0 to 10 is refused.
+void playersCannotRuleTheSky()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts without dev tools: " + problem);
+    Client ash;
+    ash.id = 6;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    expect(ash.entityId == "player-ash", "a player enters");
+    const auto cellId = g.world().entity("player-ash")->cellId;
+    const auto before = g.world().save();
+    const auto hour = g.world().environmentAt(cellId).hour;
+    ash.events.clear();
+    for (const auto& [type, value] : std::initializer_list<std::pair<const char*, const char*>>{
+             {"weather", "fog"}, {"weather", "seasonal"}, {"time", "night"}, {"lighting", "unlit"}, {"calendar", "year"}})
+        g.command(&ash, cmd({{"type", type}, {"value", value}}));
+    int refused = 0;
+    for (const auto& e : ash.events)
+        refused += e.string("text") == "Environment controls are available only in development sessions.";
+    expect(refused == 5, "each is refused as a development control:\n" + ash.said());
+    const auto after = g.world().save();
+    expect(after.weather == before.weather && after.seasonalWeather == before.seasonalWeather, "the weather is as it was");
+    expect(after.clockOffsetHours == before.clockOffsetHours && g.world().environmentAt(cellId).hour == hour, "the hour is as it was");
+    expect(after.calendarDays == before.calendarDays, "the calendar is as it was");
+    const auto& lamps = g.world().cell(cellId)->lighting;
+    const auto& was = before.lighting.at(cellId);
+    expect(lamps.artificial == was.artificial && lamps.daylightAccess == was.daylightAccess && lamps.tone == was.tone,
+           "the lamps are as they were");
+    // Pace.
+    g.command(&ash, cmd({{"type", "pace"}, {"pace", 3}}));
+    expect(g.world().entity("player-ash")->pace == 3, "a whole step is taken");
+    for (const auto& bad : {json::Value::object(), json::Value(-1), json::Value(11), json::Value(4.5), json::Value(true),
+                            json::Value("4"), json::Value(1e100), json::Value()})
+    {
+        ash.events.clear();
+        g.command(&ash, cmd({{"type", "pace"}, {"pace", bad}}));
+        expect(g.world().entity("player-ash")->pace == 3 && ash.said().find("Pace must be a whole step") != std::string::npos,
+               "a pace of " + json::dump(bad) + " is refused and the pace kept");
+    }
+    ash.events.clear();
+    g.command(&ash, cmd({{"type", "pace"}}));
+    expect(g.world().entity("player-ash")->pace == 3 && !ash.events.empty(), "no pace at all is refused too");
+    g.disconnect(&ash);
+}
+
+// What another wolf is sent about you: how you look and what you are doing, never your body's numbers.
+void othersSeeNoPrivateStats()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client ash, wren;
+    ash.id = 7;
+    wren.id = 8;
+    g.connect(&ash);
+    g.connect(&wren);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    g.command(&wren, cmd({{"type", "hello"}, {"id", "wren"}, {"name", "Wren"}}));
+    auto* a = g.world().entity("player-ash");
+    auto* w = g.world().entity("player-wren");
+    expect(a && w, "both are in the world");
+    w->cellId = a->cellId;
+    w->position = {a->position.x + 1.5, a->position.y};
+    a->age = 37;
+    a->stamina = 61.5;
+    a->dexterity = 77.25;
+    a->strength = 58.5;
+    a->sneakSkill = 41;
+    a->hearingSkill = 23;
+    a->scentSkill = 19;
+    run(g, wren, .5);
+    expect(!wren.snapshots.empty(), "Wren has a view");
+    const auto& view = wren.snapshots.back();
+    const json::Value* seen = nullptr;
+    for (const auto& e : view.array("entities"))
+        if (e.string("id") == "player-ash")
+            seen = &e;
+    expect(seen != nullptr, "Wren sees Ash");
+    for (const auto* key : {"stamina", "dexterity", "effectiveDexterity", "age", "strength", "wisdom", "sneakSkill",
+                            "hearingSkill", "scentSkill", "smell", "noseHealth", "hearing", "vision", "pace", "exhausted",
+                            "cash", "socialXp"})
+        expect(!seen->has(key), std::string("Wren is not told Ash's ") + key);
+    expect(seen->string("lifeStage") == "adult", "only a life stage, not an age");
+    const auto& self = view["self"];
+    expect(self.has("stamina") && self.has("age") && self.has("sneakSkill"), "Wren's own numbers are hers to see");
+    g.disconnect(&wren);
+    g.disconnect(&ash);
+}
+
+std::string readFile(const std::string& path)
+{
+    std::ifstream in(path, std::ios::binary);
+    return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+}
+
+void writeFile(const std::string& path, const std::string& text)
+{
+    std::ofstream(path, std::ios::binary | std::ios::trunc) << text;
+}
+
+// A save that can't be used is kept as it is: the server refuses to start on it, or (when it may play on without
+// saving) never writes over it.
+void unreadableSavesAreKept()
+{
+    const std::string path = "/tmp/ratw-game-test-kept-" + std::to_string(::getpid()) + ".json";
+    const std::pair<const char*, std::string> saves[] = {
+        {"an empty file", ""},
+        {"a corrupt file", "{\"schema\":1,\"accounts\":"},
+        {"a schema it doesn't know", "{\"schema\":2,\"accounts\":{},\"players\":[],\"npcs\":[]}"},
+    };
+    for (const auto& [what, text] : saves)
+    {
+        writeFile(path, text);
+        {
+            game::Options o;
+            o.savePath = path;
+            game::Game g(o);
+            g.log = [](const char*, const std::string&) {};
+            std::string problem;
+            expect(!g.start(problem) && !g.storageReady(), std::string("a server that needs its save won't start on ") + what);
+        }
+        expect(readFile(path) == text, std::string("and leaves ") + what + " as it was");
+        game::Options o;
+        o.savePath = path;
+        o.requireStorage = false;
+        game::Game g(o);
+        g.log = [](const char*, const std::string&) {};
+        std::string problem;
+        expect(g.start(problem) && !g.storageReady(), std::string("one that may play on starts, not saving, on ") + what);
+        Client c;
+        c.id = 9;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "auth_register"}, {"username", "nobody"}, {"password", "a long enough password"}}));
+        expect(!c.last("lobby")->boolean("ok") && c.accountUsername.empty(), std::string("no account is made over ") + what);
+        for (int i = 0; i < 400; ++i)
+            g.tick(.05);                               // Past the autosave.
+        g.save();
+        g.disconnect(&c);
+        expect(readFile(path) == text, std::string("and ") + what + " is still as it was, byte for byte");
+    }
+    std::remove(path.c_str());
+}
+
+// Accounts and characters must agree: an account owning a character the save doesn't have, or a made character
+// nobody owns, stops the load.
+void mismatchedOwnersAreRefused()
+{
+    const std::string path = "/tmp/ratw-game-test-owners-" + std::to_string(::getpid()) + ".json";
+    std::remove(path.c_str());
+    {
+        game::Options o;
+        o.savePath = path;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "starts with a file save: " + problem);
+        Client c;
+        c.id = 10;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "auth_register"}, {"username", "fern"}, {"password", "a long enough password"}}));
+        auto appearance = json::Value::object();
+        appearance.add("species", "red"); appearance.add("sex", "female"); appearance.add("stature", "short");
+        appearance.add("pattern", "mantle"); appearance.add("baseColor", 2); appearance.add("gradientColor", 3);
+        appearance.add("markingColor", 4); appearance.add("gradientAmount", .3); appearance.add("patternAmount", .6);
+        g.command(&c, cmd({{"type", "character_create"}, {"name", "Fern"}, {"age", 20}, {"appearance", appearance}, {"commandId", "f1"}}));
+        expect(c.last("lobby")->array("characters").size() == 1, "a character is made");
+        g.disconnect(&c);
+    }
+    json::Value good;
+    std::string error;
+    expect(json::parse(readFile(path), good, error), "the save reads: " + error);
+    expect(good.array("players").size() == 1, "with its one character");
+    {
+        game::Options o;
+        o.savePath = path;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem) && g.storageReady(), "the save as it was loads: " + problem);
+    }
+    auto orphan = good.array("players")[0];
+    orphan.set("id", "wolf-00000000000000000000000000000abc");
+    auto withoutCharacter = good, withStranger = good;
+    withoutCharacter.set("players", json::Value::array());
+    withStranger.find("players")->push(orphan);
+    for (const auto& [what, document] : {std::pair<const char*, json::Value>{"an account's character missing", withoutCharacter},
+                                         std::pair<const char*, json::Value>{"a character nobody owns", withStranger}})
+    {
+        const auto text = json::dump(document);
+        writeFile(path, text);
+        game::Options o;
+        o.savePath = path;
+        game::Game g(o);
+        g.log = [](const char*, const std::string&) {};
+        std::string problem;
+        expect(!g.start(problem) && !g.storageReady(), std::string("a save with ") + what + " is refused");
+        g.save();
+        expect(readFile(path) == text, std::string("and kept as it was (") + what + ")");
+    }
+    std::remove(path.c_str());
+}
 } // namespace
 
 int main()
@@ -228,6 +437,10 @@ int main()
         aDevelopmentSession();
         accountsAndARestart();
         aRestartFromAFile();
+        playersCannotRuleTheSky();
+        othersSeeNoPrivateStats();
+        unreadableSavesAreKept();
+        mismatchedOwnersAreRefused();
     }
     catch (const std::exception& error)
     {

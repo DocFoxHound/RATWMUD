@@ -1,4 +1,4 @@
-// The scripted player: the scenarios the Unreal client ran with -RatwScenario (Testing/RatwScenario.cpp and
+// The scripted player: the scenarios the Unreal client once ran with -RatwScenario (Testing/RatwScenario.cpp and
 // RatwCharacterScenario.cpp), for the browser client (Docs/Design/27-browser-client.md). Each scenario plays one
 // character against a running server and writes its evidence, as before, to <capture>/<scenario>-<identity>.json.
 //

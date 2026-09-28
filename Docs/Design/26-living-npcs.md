@@ -515,11 +515,11 @@ What the first version left for later, built on the same day's numbers (all plac
 following a wagon by command rather than by walking; bandits other than on the roads; a combat design to replace the
 placeholder fight.
 
-## Phase 6: the backend at scale (built 2026-09-28, except a stripped server binary)
+## Phase 6: the backend at scale (built 2026-09-28)
 
 ### Built
 
-- **Delta snapshots** (`Source/RATWMUD/Runtime/RatwSnapshotSections.h`).
+- **Delta snapshots** (`Core/RatwSections.h`; the client's side is `Client/src/net/sections.ts`).
   - **What changes seldom.** A snapshot's big parts change far less often than the five times a second it is sent:
     the cell's ground and heights, what the wolf can see, the world and travel maps, the doors, the satchel.
   - **Keys.** Each part goes with a key, a hash of its content. The client acknowledges each snapshot it applies
@@ -572,7 +572,8 @@ Verified:
   entry the client holds goes as `{"$held": key}`, so a reveal costs one cell, not the whole map. Tested in
   `RATW.Network.DeltaSnapshots`.
 
-- **A standalone headless world server, with Unreal as the client** (`Server/ratw_server.cpp`).
+- **A standalone headless world server, with Unreal as the client** (`Server/ratw_server.cpp`). (Since then the Unreal
+  client and server were removed and the client is a web page: see doc 27. This records what was built at the time.)
   - **One game, two hosts.** The whole server side is portable C++ in `Core`: `ratw::game::Game`
     (`RatwGame.h`) holds the world, accounts and characters, commands, snapshots and events, the NPC Mind client
     (`RatwMind.h`), the Dungeon Master's bridge (`RatwDirector.h`), spawns, saves and releases. The Unreal server
@@ -592,14 +593,14 @@ Verified:
     headless; `Tests/server_parts_tests.cpp` covers accounts, sections, the Mind client and the bridge's request
     contract (moved there from the engine tests with the Unreal-only copies they tested).
 
-### Not yet
+### Closed without building
 
-- **A stripped dedicated-server binary.** This installed engine refuses Server targets (see the README). The
-  standalone server now fills that role: no Unreal on the server at all.
+- **A stripped dedicated-server binary.** The installed engine refused Server targets. It is no longer needed: the
+  standalone server became the only server, and the game left Unreal for a browser client (doc 27).
 
 ## Next phases (order agreed 2026-09-28)
 
-Phase 6's stripped server binary comes first; then:
+After the move to the browser client (doc 27) and TLS on the server:
 
 - **Phase 7: crime and law.** Theft and violence create witnesses and beliefs. The Watch investigates from what it
   knows, not from omniscience.
