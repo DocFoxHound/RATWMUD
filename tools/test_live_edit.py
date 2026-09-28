@@ -52,6 +52,50 @@ class LiveTests(unittest.TestCase):
         S.save_world(self.conn, greyfen(), None, create=True)
         self.project, self.seq = L.load(self.conn)
 
+    def test_a_lean_load_then_the_ground_of_what_comes_into_view(self):
+        """Outlines and previews first; then any cell's ground, heights as rows, exactly as the whole load has it."""
+        lean, seq = L.load(self.conn, lean=True)
+        self.assertEqual(seq, self.seq)
+        cell = lean['cells'][0]
+        self.assertIsNone(cell['terrain'])
+        self.assertEqual(len(cell['preview']), -(-cell['height'] // S.PREVIEW_STEP))
+        self.assertEqual(cell['preview'][0], self.project['cells'][0]['terrain'][0][::S.PREVIEW_STEP])
+        # Someone raises a tile; the ground sent afterwards has it, as of that edit.
+        whole = self.project['cells'][0]
+        x, y = whole['x'] + 2, whole['y'] + 1
+        before = S.load_world(self.conn, 'greyfen')[0]['cells'][0]['heights'].get('2,1')
+        self.edit((f'height:{x},{y}', before, 2.5))
+        cells, ground_seq = L.ground(self.conn, [cell['id'], 'no_such_cell'])
+        self.assertEqual(set(cells), {cell['id']})
+        self.assertGreater(ground_seq, seq)
+        sent = cells[cell['id']]
+        self.assertEqual(sent['terrain'], whole['terrain'])
+        self.assertEqual(S.decode_heights(sent['heightRows']), {**whole['heights'], '2,1': 2.5})
+        with self.assertRaises(ValueError):
+            L.ground(self.conn, [])
+        with self.assertRaises(ValueError):
+            L.ground(self.conn, [f'c{i}' for i in range(L.MAX_GROUND_CELLS + 1)])
+
+    def test_the_host_fills_in_ground_a_lean_editor_never_fetched(self):
+        lean, _ = L.load(self.conn, lean=True)
+        filled = L.fill_ground(self.conn, lean)
+        now = S.load_world(self.conn, 'greyfen')[0]
+        self.assertEqual([c['terrain'] for c in filled['cells']], [c['terrain'] for c in now['cells']])
+        self.assertEqual([c['heights'] for c in filled['cells']], [c['heights'] for c in now['cells']])
+        self.assertTrue(all('preview' not in c for c in filled['cells']))
+        # A cell the editor has re-cut keeps what it sent (placeholder or not): its outline no longer matches.
+        lean, _ = L.load(self.conn, lean=True)
+        lean['cells'][0]['width'] -= 1
+        self.assertIsNone(L.fill_ground(self.conn, lean)['cells'][0]['terrain'])
+
+    def test_heights_as_rows(self):
+        heights = {'0,0': -16, '3,1': 16, '2,2': .5, '1,0': 0}
+        rows = S.encode_heights(heights, 4, 3)
+        self.assertEqual(rows, ['0W..', '...*', '..X.'])
+        self.assertEqual(S.decode_heights(rows), heights)
+        self.assertIsNone(S.encode_heights({'0,0': .25}, 1, 1), 'a height between half steps is sent as it is')
+        self.assertIsNone(S.encode_heights({'0,0': 17}, 1, 1))
+
     def t(self, x, y):
         """A world tile as an edit value: its glyph, or None for plain ground."""
         g = glyph(self.project, x, y)

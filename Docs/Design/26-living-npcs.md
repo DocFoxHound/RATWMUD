@@ -561,13 +561,19 @@ Verified:
 - **Tools.** `tools/test_world_store.py` covers stale ground. `tools/test_publish.py` covers build reuse against
   edits, live layers and the roster. `tools/test_http_body.py` covers compression.
 
+### Built after (2026-09-28)
+
+- **Atlas and the Dungeon Master load only what is in view**, heights in a compact encoding: see doc 20, "Massive
+  worlds", step 4.
+- **The roster preview sends only what it depends on**, and only when that has changed: the slots, who is already
+  named, and the tiles beside each work spot (`/api/roster/plan`; a few kilobytes, however large the world), where it
+  used to send the whole world after every edit.
+- **World-map reveals as increments.** Each map entry (a cell and everything remembered of it) is held on its own: an
+  entry the client holds goes as `{"$held": key}`, so a reveal costs one cell, not the whole map. Tested in
+  `RATW.Network.DeltaSnapshots`.
+
 ### Not yet
 
-- **Atlas and the Dungeon Master loading only what is in view** (doc 20 step 4), and heights in a compact encoding
-  for them. Both need the editors' front ends to fetch by area; the cache above takes most of the wait out of loading
-  meanwhile.
-- **The roster preview sending only what changed.**
-- **World-map reveals as increments.** The maps are sent only when they change, but then whole.
 - **A stripped dedicated-server binary.** This installed engine refuses Server targets (see the README); the cooked
   game's headless host is the nearest.
 - **A standalone headless world server,** with Unreal as the client.

@@ -146,7 +146,7 @@ bool FRatwWireTest::RunTest(const FString&)
 namespace
 {
 // A snapshot shaped like the server's: a cell with its ground, what is seen, the maps, the doors, the satchel.
-TSharedPtr<FJsonObject> SampleSnapshot(const FString& Seen)
+TSharedPtr<FJsonObject> SampleSnapshot(const FString& Seen, int32 Revealed = -1)
 {
     using namespace ratwjson;
     auto Root = New(), Cell = New();
@@ -162,6 +162,15 @@ TSharedPtr<FJsonObject> SampleSnapshot(const FString& Seen)
         auto M = New();
         M->SetStringField(TEXT("id"), FString::Printf(TEXT("cell_%d"), I));
         M->SetNumberField(TEXT("x"), I * 64);
+        // What the wolf remembers of the cell: the bulk of a map entry.
+        FString Glyphs = I == Revealed ? TEXT("~") : TEXT("#");
+        uint32 Seed = 2654435761u * (I + 1);              // Varied, as remembered ground is: it doesn't compress away.
+        for (int32 K = 0; K < 1000; ++K)
+        {
+            Seed = Seed * 1664525u + 1013904223u;
+            Glyphs.AppendChar(TEXT(".,'\"~^#T")[(Seed >> 24) % 8]);
+        }
+        M->SetStringField(TEXT("glyphs"), Glyphs);
         Map.Add(V(M));
     }
     Cell->SetStringField(TEXT("id"), TEXT("yard"));
@@ -207,7 +216,10 @@ bool FRatwDeltaSnapshotTest::RunTest(const FString&)
     ratwsections::FCache Client;
     auto First = SampleSnapshot(Seen);
     const auto FirstKeys = ratwsections::Strip(First, Known);
-    TestEqual(TEXT("Every part has a key"), FirstKeys.Num(), ratwsections::Sections().Num());
+    int32 Parts = 0;
+    for (const auto& Key : FirstKeys) Parts += !Key.Key.Contains(TEXT("#"));
+    TestEqual(TEXT("Every part has a key"), Parts, ratwsections::Sections().Num());
+    TestEqual(TEXT("and every map entry"), FirstKeys.Num() - Parts, 80);
     const int32 FullBytes = WireBytes(First);
     TestTrue(TEXT("The client takes a whole snapshot as it is"), ratwsections::Fill(First, Client));
     TestTrue(TEXT("and it is exactly the snapshot"), Same(First, SampleSnapshot(Seen)));
@@ -231,6 +243,16 @@ bool FRatwDeltaSnapshotTest::RunTest(const FString&)
     TestFalse(TEXT("but not the maps"), Third->HasField(TEXT("worldMap")));
     TestTrue(TEXT("Filled"), ratwsections::Fill(Third, Client));
     TestTrue(TEXT("exactly"), Same(Third, SampleSnapshot(Moved)));
+    // A reveal in one cell: the maps go again, but only that cell's entry whole; the rest by key.
+    auto Reveal = SampleSnapshot(Moved, 3);
+    ratwsections::Strip(Reveal, ThirdKeys);
+    int32 Held = 0;
+    for (const auto& Entry : Reveal->GetArrayField(TEXT("worldMap")))
+        Held += Entry->AsObject()->HasField(TEXT("$held"));
+    TestEqual(TEXT("Every other cell goes by its key"), Held, 39);
+    TestTrue(FString::Printf(TEXT("A reveal costs one cell (%d bytes)"), WireBytes(Reveal)), WireBytes(Reveal) * 4 < FullBytes);
+    TestTrue(TEXT("Filled"), ratwsections::Fill(Reveal, Client));
+    TestTrue(TEXT("exactly, the revealed cell and the rest"), Same(Reveal, SampleSnapshot(Moved, 3)));
     // A client that lost what it kept (a new session) can't fill a snapshot, and says so.
     ratwsections::FCache Forgot;
     auto Fourth = SampleSnapshot(Moved);

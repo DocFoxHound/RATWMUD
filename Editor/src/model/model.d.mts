@@ -98,6 +98,7 @@ export function cellIndex(cells: WorldCell[]): {at(x: number, y: number): WorldC
 export function removeCell(project: Project, id: string): Project;
 export function addCell(project: Project, rect: {x: number; y: number; width: number; height: number}, name?: string): WorldCell;
 export function validate(value: unknown): {errors: string[]; warnings: string[]};
+export function withGround(c: WorldCell, terrain: string[], heights: Record<string, number>): WorldCell;
 export function getCell(project: Project, id: string): AnyCell | null;
 export function cellTerrain(project: Project, id: string): string[];
 

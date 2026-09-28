@@ -7,6 +7,7 @@ import type {Roster, SlotPreview} from './roster';
 import type {ElevationMode} from './elevation';
 import type {HeightBrush} from './glyphs';
 import {applyChanges, diff, inverse, type Batch, type Change, type ConflictNotice, type Editor, type Identity, type LiveStatus} from './live';
+import {blockedBy, groundPending, lateFor, noteRemote, settleCell, want, type Ground} from './lazyGround';
 
 export type View = {kind: 'world'} | {kind: 'cell'; id: string};
 export type Workspace = 'map' | 'interiors' | 'people' | 'characters';
@@ -131,6 +132,13 @@ export function commit<T>(label: string, operation: (draft: Project) => T, quiet
     try {
         const result = operation(draft);
         const ops = diff(before, draft);
+        // Ground not yet here (a world loaded lean) holds only placeholder tiles: nothing may change it or rely on it.
+        const waiting = blockedBy(before, draft, ops);
+        if (waiting.length) {
+            waiting.forEach(want);
+            toast('The ground there is still arriving; try again in a moment.', 'error');
+            return undefined;
+        }
         const batch = ops.length ? send(label, ops) : null;
         // When the world's edges move, canvas coordinates shift: forget the stale pointer position.
         const moved = ops.some(o => o.key === 'bounds');
@@ -183,6 +191,7 @@ export function loadProject(value: unknown) {
 export function applyRemote(changes: Change[], colorOf: (c: Change) => string) {
     const project = {...state.project};
     applyChanges(project, changes);
+    noteRemote(state.project, project, changes);
     const now = Date.now(), marks: Mark[] = [];
     for (const c of changes) {
         const [kind, rest] = [c.key.split(':')[0], c.key.slice(c.key.indexOf(':') + 1)];
@@ -200,6 +209,27 @@ export function applyRemote(changes: Change[], colorOf: (c: Change) => string) {
     const moved = changes.some(c => c.key === 'bounds');
     setState(s => ({project, marks: [...s.marks.filter(m => now - m.at < 4000), ...marks].slice(-4000), ...(moved ? {hover: null} : {})}));
     repairView();
+}
+
+/**
+ * Ground that has arrived for cells still waiting for it (as of edit `seq`), put in place; then edits others made there
+ * since are made again. Returns the cells taken: one re-cut meanwhile is asked for again.
+ */
+export function installGround(arrived: Map<string, Ground>, seq: number): string[] {
+    const taken: string[] = [];
+    const cells = state.project.cells.map(c => {
+        const g = arrived.get(c.id);
+        if (!g || !groundPending(c.id) || g.x !== c.x || g.y !== c.y || g.width !== c.width || g.height !== c.height) return c;
+        settleCell(c.id);
+        taken.push(c.id);
+        return M.withGround(c, g.terrain, g.heights);
+    });
+    if (!taken.length) return taken;
+    const project = {...state.project, cells};
+    const again = lateFor(cells.filter(c => taken.includes(c.id)), seq);
+    if (again.length) applyChanges(project, again);
+    setState({project});
+    return taken;
 }
 
 /** A refused batch: show the true values, forget the action, and tell the editor who got there first. */

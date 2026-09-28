@@ -2,9 +2,10 @@
 // and how they regard each other. Factions and claims reach a running game server at once; Atlas sees the factions
 // and which places they claim. A claim is not control (design doc 16), and claims may overlap.
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import type {Place, Project} from '../model/model.mjs';
+import type {Place} from '../model/model.mjs';
 import {surfaceFor} from '../lib/surface';
 import {Row, SelectField, Slider, TextField, Hint} from '../components/fields';
+import {useWorld} from './world';
 import {dmApi, type Action, type Claim, type Faction, type FactionKind, type Factions, type Me, type RelationChange, type Stance, type Target} from './api';
 import {MapView, type Overlay} from './MapView';
 import {idFrom, type Brush} from './LayerPanels';
@@ -27,9 +28,9 @@ const suggested = (d: number): Stance => (STANCES.find(s => d >= s.from) ?? STAN
 const COLORS = ['#c9574b', '#d9a441', '#7fc27f', '#5fb3d9', '#9b7fd9', '#d97fb8', '#a8c7ad', '#e0b85a'];
 
 export function FactionsTab({me, target}: {me: Me; target: Target}) {
-    const [world, setWorld] = useState<Project | null>(null);
     const [data, setData] = useState<Factions | null>(null);
     const [problem, setProblem] = useState('');
+    const world = useWorld(target, setProblem);
     const [view, setView] = useState<View>({kind: 'world'});
     const [sub, setSub] = useState<Sub>('territory');
     const [selected, setSelected] = useState<string | null>(null);
@@ -43,7 +44,7 @@ export function FactionsTab({me, target}: {me: Me; target: Target}) {
     const canAct = me.role !== 'viewer';
 
     const load = useCallback(() => dmApi.factions(target).then(d => { setData(d); setProblem(''); }).catch(e => setProblem((e as Error).message)), [target]);
-    useEffect(() => { void load(); dmApi.world(target).then(setWorld).catch(e => setProblem((e as Error).message)); }, [load, target]);
+    useEffect(() => { void load(); }, [load, target]);
     const waiting = data?.actions.some(a => a.status === 'queued');
     useEffect(() => { if (!waiting) return; const t = setTimeout(load, 1500); return () => clearTimeout(t); }, [waiting, data, load]);
 

@@ -3,7 +3,8 @@
 import * as M from '../model/model.mjs';
 import {api} from './api';
 import {colorFor, saveIdentity, startLive, type Identity, type Presence} from './live';
-import {applyRemote, connectLive, getState, loadProject, refuseBatch, setState, toast} from './store';
+import {adoptLean, startGround} from './lazyGround';
+import {applyRemote, connectLive, getState, installGround, loadProject, refuseBatch, setState, toast} from './store';
 
 let starting = false;
 
@@ -14,8 +15,10 @@ export async function startSession() {
     starting = true;
     let seq: number;
     try {
+        // Cell outlines and previews now; each cell's ground as it comes into view (lib/lazyGround.ts).
         const world = await api.live.load();
-        if (!loadProject(world.project)) throw new Error('The world from the database could not be read.');
+        startGround(api.live.ground, installGround);
+        if (!loadProject(adoptLean(world.project as never))) throw new Error('The world from the database could not be read.');
         seq = world.seq;
     } catch (error) {
         starting = false;

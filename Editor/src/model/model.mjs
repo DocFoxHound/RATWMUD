@@ -371,6 +371,12 @@ function canonical(value) {
         herbPatch: value.herbPatch ? anchor(value.herbPatch) : null};
 }
 
+/** The world cell with this ground in place of what it holds (ground fetched later for a world loaded lean), as a
+ *  canonical cell: the checks and normalization take it as it is. */
+export function withGround(c, terrain, heights) {
+    return remember({...c, terrain: [...terrain], heights: {...heights}});
+}
+
 export function getCell(project, id) {
     return project.cells.find(c => c.id === id) ?? project.rooms.find(c => c.id === id) ?? null;
 }

@@ -323,11 +323,22 @@ apart as they like. The steps:
    convert on load.
 3. **Edits cost what they change.** Done: shared unchanged cells, per-cell
    remembered checks, per-cell cached map images.
-4. **Load only what is in view.** Still to do. Atlas and the Dungeon Master
-   load every cell's ground at start. That's fine to tens of millions of tiles;
-   beyond, the host sends cell outlines first and each cell's ground when it
-   comes into view (and keeps edits flowing for loaded cells only). No schema
-   change: chunks are already keyed by world tile.
+4. **Load only what is in view.** Done (2026-09-28):
+   - **Outlines first.** Atlas and the Dungeon Master load the world lean (`?lean=1`): each world cell's outline and a
+     preview (every fourth tile of every fourth row, from the chunks' glyphs; no heights). DEV loads in 0.35 s as
+     1.2 MB, against 7.5 s and 58 MB whole.
+   - **Ground as it comes into view.** A cell drawn at a pixel a tile or more asks for its ground
+     (`/api/live/ground`, `/api/ground` for the Dungeon Master; up to 32 cells a request, three requests at once;
+     `Editor/src/lib/lazyGround.ts`). It is read from only the chunks it covers, with heights as rows of one
+     character a tile (`world_store.encode_heights`): 6.5 MB for DEV instead of 51 MB of `"x,y"` objects.
+   - **Editing.** Until its ground arrives, a cell holds placeholder ground that nothing may change or rely on: an
+     action touching it (painting, a re-cut, placing something there) is refused with a note and the ground is
+     fetched. Others' edits that land there meanwhile are kept and made again on the ground when it comes, if newer
+     than it.
+   - **Whole-world actions.** Validate, Export, Play and the roster preview send cells without their ground, and
+     the host fills them in from the database (`live_edit.fill_ground`). *Download a copy* first fetches the rest.
+   - **Verified** in headless Chromium on a copy of DEV: the world is shown after 0.9 s; zooming in fetched 16
+     cells in one 0.4 s request; a brush stroke saved as usual.
 5. **The game server loads cells on demand.** Done (2026-09-26):
    - **Builds are streamed.** `world.builds.files` holds only the manifest
      (`RATW_WORLD 3`): an `area` record per cell, `exits` records (which cells

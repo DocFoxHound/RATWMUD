@@ -565,6 +565,32 @@ class HttpTests(unittest.TestCase):
         kept = next(c for c in json.loads(raw)['characters'] if c['id'] == 'vale')
         self.assertEqual((kept['status'], kept['profession']), ('removed', 'guard'))
 
+    def test_a_slot_plan_needs_only_what_it_depends_on(self):
+        """The slots, who is named and the tiles beside each work spot give the same plan as the whole world."""
+        self.add_character('wren', shopkeeper=3)
+        world = self.greyfen_with_slot()
+        world['slots'][0].update({'profession': 'shopkeeper', 'route': ''})
+        status, _, whole = self.request('POST', '/api/roster/preview', json.dumps(world), self.auth())
+        self.assertEqual(status, 200, whole)
+        p, _ = editor.check_project(world, for_game=False)
+        town = next(c for c in p['cells'] if c['id'] == 'town')
+        w = world['slots'][0]['work']
+        ground = {f'town|{w["x"] + dx}|{w["y"] + dy}': town['terrain'][w['y'] + dy][w['x'] + dx]
+                  for dx in (-1, 0, 1) for dy in (-1, 0, 1) if dx or dy}
+        request = {'id': 'greyfen', 'name': world['name'], 'slots': world['slots'], 'people': [x['id'] for x in world.get('people', [])],
+                   'ground': ground}
+        status, _, lean = self.request('POST', '/api/roster/plan', json.dumps(request), self.auth())
+        self.assertEqual(status, 200, lean)
+        self.assertEqual(json.loads(lean), json.loads(whole))
+        self.assertLess(len(json.dumps(request)), len(json.dumps(world)) / 20)
+        # Walled in: no open tile beside the counter.
+        walled = {**request, 'ground': {k: '#' for k in ground}}
+        status, _, raw = self.request('POST', '/api/roster/plan', json.dumps(walled), self.auth())
+        self.assertEqual(status, 422)
+        self.assertIn('customers need an open tile', ' '.join(json.loads(raw)['errors']))
+        status, _, _ = self.request('POST', '/api/roster/plan', json.dumps({'slots': 'nope'}), self.auth())
+        self.assertEqual(status, 400)
+
     def test_ai_generation_reports_missing_config(self):
         status, _, raw = self.request('GET', '/api/ai')
         self.assertFalse(json.loads(raw)['available'])

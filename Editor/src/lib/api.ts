@@ -2,6 +2,9 @@
 // per-launch session token; the host only listens on loopback.
 import type {Project} from '../model/model.mjs';
 import type {Character, Roster, SlotPreview} from './roster';
+import * as M from '../model/model.mjs';
+import {forHost, groundPending, want, type SentGround} from './lazyGround';
+import {stable} from './live';
 
 let token: Promise<string> | null = null;
 const session = () => (token ??= fetch('api/session').then(r => r.json()).then(j => j.token as string));
@@ -36,10 +39,31 @@ export class PublishRefusal extends Error {
 }
 export interface PlaytestResult { folder: string; manifest: string; command: string }
 
+/** What "who fills each profession slot" depends on: the slots, who is already named, and the ground beside each
+ *  slot's work spot (customers need an open tile by a counter). A few kilobytes, however large the world. */
+export function slotPlanRequest(project: Project) {
+    const ground: Record<string, string> = {};
+    for (const slot of project.slots) {
+        const c = M.getCell(project, slot.work.cell);
+        if (!c) continue;
+        if (groundPending(c.id)) want(c.id);                     // Placeholder ground until it comes; asked again then.
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            const x = slot.work.x + dx, y = slot.work.y + dy, g = c.terrain[y]?.[x];
+            if ((dx || dy) && g !== undefined) ground[`${c.id}|${x}|${y}`] = g;
+        }
+    }
+    return {id: project.id, name: project.name, slots: project.slots, people: project.people.map(p => p.id), ground,
+        waiting: project.slots.some(s => groundPending(s.work.cell))};
+}
+let lastPlan: {key: string; answer: Promise<SlotPreview>} | null = null;
+const stamps = new WeakMap<object, number>();
+let stamp = 0;
+const stampOf = (o: object | null) => { if (!o) return 0; let n = stamps.get(o); if (n === undefined) stamps.set(o, n = ++stamp); return n; };
+
 export const api = {
-    validate: async (project: Project) => json<HostValidation>(await post('api/validate', project)),
+    validate: async (project: Project) => json<HostValidation>(await post('api/validate', forHost(project))),
     exportZip: async (project: Project): Promise<Blob> => {
-        const response = await post('api/export', project);
+        const response = await post('api/export', forHost(project));
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             throw new Error((data.errors ?? [data.error ?? 'Export failed.']).join('\n'));
@@ -49,7 +73,10 @@ export const api = {
     demo: async () => json<Project>(await fetch('api/demo')),
     /** The one world, edited live (tools/live_edit.py). */
     live: {
-        load: async () => json<{project: Project; seq: number}>(await fetch('api/live/world')),
+        /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view. */
+        load: async () => json<{project: Project; seq: number}>(await fetch('api/live/world?lean=1')),
+        ground: async (ids: string[]) => json<{seq: number; cells: Record<string, SentGround>}>(
+            await fetch(`api/live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
         edit: (body: unknown) => post('api/live/edit', body),
         sync: async (body: unknown) => json<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]}>(await post('api/live/sync', body)),
     },
@@ -59,10 +86,21 @@ export const api = {
         if (data.errors?.length) throw new Error(data.errors.join('\n'));
         return data as Roster;
     },
-    preview: async (project: Project) => {
-        const data = await json<SlotPreview & {errors?: string[]}>(await post('api/roster/preview', project));
-        if (data.errors?.length) throw new Error(data.errors.join('\n'));
-        return data;
+    /**
+     * Who would fill each profession slot. Only what that depends on is sent (slotPlanRequest), and only when it has
+     * changed since the last time (or the roster has): otherwise the last answer stands.
+     */
+    preview: async (project: Project, options: {roster?: object | null; force?: boolean} = {}) => {
+        const request = slotPlanRequest(project), key = stable(request) + '|' + stampOf(options.roster ?? null);
+        if (!options.force && lastPlan?.key === key) return lastPlan.answer;
+        const answer = (async () => {
+            const data = await json<SlotPreview & {errors?: string[]}>(await post('api/roster/plan', request));
+            if (data.errors?.length) throw new Error(data.errors.join('\n'));
+            return data as SlotPreview;
+        })();
+        lastPlan = {key, answer};
+        answer.catch(() => { if (lastPlan?.key === key) lastPlan = null; });
+        return answer;
     },
     /** Push to live (tools/publish.py). */
     publish: {
@@ -85,7 +123,7 @@ export const api = {
         return data.characters as Character[];
     },
     playtest: async (project: Project, quickStart: boolean) => {
-        const data = await json<PlaytestResult & {errors?: string[]}>(await post('api/playtest', {project, quickStart}));
+        const data = await json<PlaytestResult & {errors?: string[]}>(await post('api/playtest', {project: forHost(project), quickStart}));
         if (data.errors?.length) throw new Error(data.errors.join('\n'));
         return data;
     },

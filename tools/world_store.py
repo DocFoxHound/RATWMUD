@@ -408,9 +408,13 @@ def _keep_ground(conn, world_id, version, ground):
 
 def _cut_ground(q, cells, size):
     """Every cell's terrain rows and heights, cut from the terrain chunks it covers."""
+    return _cut(q('SELECT cx, cy, glyphs, heights FROM world.terrain_chunks WHERE world_id = %s'), cells, size)
+
+
+def _cut(chunk_rows, cells, size):
+    """Each cell's terrain rows and heights, cut from these terrain chunks (cx, cy, glyphs, heights)."""
     ground = {}
-    chunks = {(cx, cy): (glyphs, local) for cx, cy, glyphs, local in
-              q('SELECT cx, cy, glyphs, heights FROM world.terrain_chunks WHERE world_id = %s')}
+    chunks = {(cx, cy): (glyphs, local) for cx, cy, glyphs, local in chunk_rows}
     for c in cells:
         rows = []
         for y in range(c['y'], c['y'] + c['height']):
@@ -436,8 +440,74 @@ def _cut_ground(q, cells, size):
     return ground
 
 
-def load_world(conn, world_id: str) -> tuple[dict, int]:
-    """The project as the editor edits it (atlas v3: every world cell with its own ground), and its revision."""
+PREVIEW_STEP = 4
+HEIGHT_CODES = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-*'   # -16 .. 16 by halves.
+
+
+def _previews(chunk_rows, cells, size):
+    """Every PREVIEW_STEP-th glyph of every PREVIEW_STEP-th row of each cell, from the chunks' glyphs (cx, cy, glyphs)."""
+    chunks = {(cx, cy): glyphs for cx, cy, glyphs in chunk_rows}
+    out = {}
+    for c in cells:
+        rows = []
+        for y in range(c['y'], c['y'] + c['height'], PREVIEW_STEP):
+            cy, row = y // size, []
+            for x in range(c['x'], c['x'] + c['width'], PREVIEW_STEP):
+                found = chunks.get((x // size, cy))
+                row.append(found[(y - cy * size) * size + x - (x // size) * size] if found else '.')
+            rows.append(''.join(row))
+        out[c['id']] = rows
+    return out
+
+
+def encode_heights(heights: dict, width: int, height: int):
+    """A cell's heights as rows of one character a tile ('.' for none, else HEIGHT_CODES by half steps from -16): a
+    fraction of the size of the "x,y" object, which is most of a world's data. None if a height doesn't fit."""
+    rows = [['.'] * width for _ in range(height)]
+    for key, value in heights.items():
+        x, _, y = key.partition(',')
+        index = value * 2 + 32
+        if not float(index).is_integer() or not 0 <= index < len(HEIGHT_CODES) or not (0 <= int(x) < width and 0 <= int(y) < height):
+            return None
+        rows[int(y)][int(x)] = HEIGHT_CODES[int(index)]
+    return [''.join(r) for r in rows]
+
+
+def decode_heights(rows) -> dict:
+    """encode_heights, undone."""
+    out = {}
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != '.':
+                v = (HEIGHT_CODES.index(ch) - 32) / 2
+                out[f'{x},{y}'] = int(v) if v.is_integer() else v
+    return out
+
+
+def load_ground(conn, world_id: str, ids) -> dict:
+    """These world cells' ground as it is now, read from only the terrain chunks they cover: {id: {x, y, width, height,
+    terrain, heights}}. Cells that don't exist are left out."""
+    head = conn.execute('SELECT chunk_size FROM world.worlds WHERE id = %s', (world_id,)).fetchone()
+    if not head or not ids:
+        return {}
+    size = head[0]
+    cells = [{'id': r[0], 'x': r[1], 'y': r[2], 'width': r[3], 'height': r[4]} for r in conn.execute(
+        'SELECT id, x, y, width, height FROM world.cells WHERE world_id = %s AND id = ANY(%s)', (world_id, list(ids))).fetchall()]
+    wanted = {(cx, cy) for c in cells for cy in range(c['y'] // size, (c['y'] + c['height'] - 1) // size + 1)
+              for cx in range(c['x'] // size, (c['x'] + c['width'] - 1) // size + 1)}
+    chunk_rows = [r for r in conn.execute(
+        'SELECT cx, cy, glyphs, heights FROM world.terrain_chunks WHERE world_id = %s AND cx = ANY(%s) AND cy = ANY(%s)',
+        (world_id, sorted({x for x, _ in wanted}), sorted({y for _, y in wanted}))).fetchall() if (r[0], r[1]) in wanted]
+    ground = _cut(chunk_rows, cells, size)
+    return {c['id']: {**c, 'terrain': ground[c['id']][0], 'heights': ground[c['id']][1]} for c in cells}
+
+
+def load_world(conn, world_id: str, ground: bool = True) -> tuple[dict, int]:
+    """The project as the editor edits it (atlas v3: every world cell with its own ground), and its revision.
+
+    Without `ground`, each world cell comes as its outline: `terrain` and `heights` are None, and `preview` holds every
+    PREVIEW_STEP-th tile of every PREVIEW_STEP-th row, enough to draw it zoomed out. Its ground is fetched as it comes
+    into view (load_ground). Interiors always come whole."""
     head = conn.execute('''SELECT name, spawn_area, spawn_x, spawn_y, chunk_size, revision, updated_at
                            FROM world.worlds WHERE id = %s''', (world_id,)).fetchone()
     if head is None:
@@ -449,20 +519,12 @@ def load_world(conn, world_id: str) -> tuple[dict, int]:
     dicts = lambda sql: dict_rows(conn, sql, (world_id,))
     places = lambda sql: [{**r, 'claims': claims.get(r['id'], [])} for r in dicts(sql)]
     cells = [cell_entity(r) for r in places('SELECT * FROM world.cells WHERE world_id = %s ORDER BY position')]
-    # Each cell's ground, cut from the terrain chunks it covers: the slow part of a load, and changed only by edits
-    # that raise the revision, so kept per revision (a fresh copy each time; callers may change what they get).
-    # Not only the revision: a world made again from scratch starts its revisions over, and publishing writes PROD's
-    # rows as DEV has them. Any write to a chunk or a cell gives that row a new version (xmin), so these catch them all.
-    version = (revision, updated, size) + conn.execute('''
-        SELECT (SELECT coalesce(max(xmin::text::bigint), 0) || ':' || count(*) FROM world.terrain_chunks WHERE world_id = %s),
-               (SELECT coalesce(max(xmin::text::bigint), 0) || ':' || count(*) FROM world.cells WHERE world_id = %s)''',
-        (world_id, world_id)).fetchone()
-    ground = _cached_ground(conn, world_id, version)
-    if ground is None or any(c['id'] not in ground for c in cells):
-        ground = _cut_ground(q, cells, size)
-        _keep_ground(conn, world_id, version, ground)
-    for c in cells:
-        c['terrain'], c['heights'] = ground[c['id']]
+    if ground:
+        _ground_into(conn, q, world_id, cells, size, revision, updated)
+    else:
+        previews = _previews(q('SELECT cx, cy, glyphs FROM world.terrain_chunks WHERE world_id = %s'), cells, size)
+        for c in cells:
+            c['terrain'], c['heights'], c['preview'] = None, None, previews[c['id']]
     rooms = [room_entity(r) for r in places('SELECT * FROM world.interiors WHERE world_id = %s ORDER BY position')]
     links = [link_entity(r) for r in dicts('SELECT * FROM world.links WHERE world_id = %s ORDER BY position')]
     herb = q("SELECT area, x, y FROM world.resources WHERE world_id = %s AND kind = 'herb' ORDER BY id")
@@ -488,6 +550,24 @@ def load_world(conn, world_id: str) -> tuple[dict, int]:
         'slots': slots,
     }
     return project, revision
+
+
+def _ground_into(conn, q, world_id, cells, size, revision, updated):
+    """Gives each cell its ground (terrain rows and heights), from the kept copy while that is still current."""
+    # Each cell's ground, cut from the terrain chunks it covers: the slow part of a load, and changed only by edits
+    # that raise the revision, so kept per revision (a fresh copy each time; callers may change what they get).
+    # Not only the revision: a world made again from scratch starts its revisions over, and publishing writes PROD's
+    # rows as DEV has them. Any write to a chunk or a cell gives that row a new version (xmin), so these catch them all.
+    version = (revision, updated, size) + conn.execute('''
+        SELECT (SELECT coalesce(max(xmin::text::bigint), 0) || ':' || count(*) FROM world.terrain_chunks WHERE world_id = %s),
+               (SELECT coalesce(max(xmin::text::bigint), 0) || ':' || count(*) FROM world.cells WHERE world_id = %s)''',
+        (world_id, world_id)).fetchone()
+    ground = _cached_ground(conn, world_id, version)
+    if ground is None or any(c['id'] not in ground for c in cells):
+        ground = _cut_ground(q, cells, size)
+        _keep_ground(conn, world_id, version, ground)
+    for c in cells:
+        c['terrain'], c['heights'] = ground[c['id']]
 
 
 # --------------------------------------------------------------------------- Roster

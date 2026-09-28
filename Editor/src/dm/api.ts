@@ -1,5 +1,6 @@
 // Calls to the Dungeon Master host (tools/dungeon_master.py). The session token lives in this tab only.
 import type {Person, Place, Project, Route} from '../model/model.mjs';
+import type {SentGround} from '../lib/lazyGround';
 
 export type Target = 'prod' | 'dev';
 export type Role = 'viewer' | 'dm' | 'admin';
@@ -70,7 +71,10 @@ export const dmApi = {
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
     me: () => call<Me>('api/me'),
     players: (target: Target) => call<Players>(`api/players?target=${target}`),
-    world: (target: Target) => call<Project>(`api/world?target=${target}`),
+    /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view (dm/world.ts). */
+    world: (target: Target) => call<Project>(`api/world?target=${target}&lean=1`),
+    ground: (target: Target, ids: string[]) =>
+        call<{seq?: number; cells: Record<string, SentGround>}>(`api/ground?target=${target}&cells=${ids.map(encodeURIComponent).join(',')}`),
     act: (target: Target, kind: string, characterId: string, reason: string) => call<{id: number}>('api/actions', {target, kind, characterId, reason}),
     npcs: (target: Target) => call<Npcs>(`api/npcs?target=${target}`),
     saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),

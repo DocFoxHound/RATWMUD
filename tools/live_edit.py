@@ -348,13 +348,52 @@ def latest_seq(conn):
     return conn.execute('SELECT coalesce(max(seq), 0) FROM world.edits').fetchone()[0]
 
 
-def load(conn):
-    """The whole world for an editor that is starting, and the edit it is current to."""
+def load(conn, lean=False):
+    """The whole world for an editor that is starting, and the edit it is current to. Lean, each world cell comes as
+    its outline and a preview (S.load_world), and its ground is asked for as it comes into view (ground())."""
     with conn.transaction():
         conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
         world = world_row(conn)
-        project, _ = S.load_world(conn, world['id'])
+        project, _ = S.load_world(conn, world['id'], ground=not lean)
         return project, latest_seq(conn)
+
+
+MAX_GROUND_CELLS = 32
+
+
+def ground(conn, ids):
+    """These cells' ground and the edit it is current to: {id: {x, y, width, height, terrain, heightRows}}, heights as
+    S.encode_heights rows (or `heights` as an object, for a cell whose heights don't fit them)."""
+    if not isinstance(ids, list) or not 0 < len(ids) <= MAX_GROUND_CELLS or not all(isinstance(i, str) and 0 < len(i) <= 80 for i in ids):
+        raise ValueError(f'Ask for the ground of 1 to {MAX_GROUND_CELLS} cells.')
+    with conn.transaction():
+        conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
+        world = world_row(conn)
+        cells = S.load_ground(conn, world['id'], ids)
+        seq = latest_seq(conn)
+    out = {}
+    for cid, c in cells.items():
+        rows = S.encode_heights(c['heights'], c['width'], c['height'])
+        out[cid] = {k: c[k] for k in ('x', 'y', 'width', 'height', 'terrain')}
+        out[cid].update({'heightRows': rows} if rows is not None else {'heights': c['heights']})
+    return out, seq
+
+
+def fill_ground(conn, project):
+    """A project from an editor that loaded lean may have cells whose ground it never fetched (terrain None): gives
+    them their ground as it is now, in place. Anything else is left as sent."""
+    missing = [c['id'] for c in project.get('cells', []) if isinstance(c, dict) and c.get('terrain') is None and isinstance(c.get('id'), str)]
+    if not missing:
+        return project
+    world = world_row(conn)
+    for i in range(0, len(missing), 256):
+        found = S.load_ground(conn, world['id'], missing[i:i + 256])
+        for c in project['cells']:
+            g = found.get(c.get('id')) if isinstance(c, dict) and c.get('terrain') is None else None
+            if g and all(c.get(k) == g[k] for k in ('x', 'y', 'width', 'height')):
+                c['terrain'], c['heights'] = g['terrain'], g['heights']
+                c.pop('preview', None)
+    return project
 
 
 def apply_edit(conn, client_id, editor, label, ops):
@@ -460,10 +499,19 @@ class LiveWorld:
         except world_db.DatabaseError as error:
             raise S.Unavailable(f'The DEV database is not reachable. Start it with `python3 tools/world_db.py up`. ({error})') from error
 
-    def load(self):
+    def load(self, lean=False):
         with self.connect() as conn:
-            project, seq = load(conn)
+            project, seq = load(conn, lean)
         return {'project': project, 'seq': seq}
+
+    def ground(self, ids):
+        with self.connect() as conn:
+            cells, seq = ground(conn, ids)
+        return {'cells': cells, 'seq': seq}
+
+    def fill(self, project):
+        with self.connect() as conn:
+            return fill_ground(conn, project)
 
     def edit(self, data):
         with self.connect() as conn:

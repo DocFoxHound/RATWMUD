@@ -26,7 +26,7 @@ import http_body
 import roster as roster_lib
 import terrain_catalog
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 # Terrain codes, solid tiles and default heights all come from the one catalog (Data/Terrain/terrain.json).
@@ -520,8 +520,11 @@ def world_id(p):
     return slug if slug[0].isalpha() else 'w_' + slug
 
 
-def resolve_slots(p, roster_data):
-    """Fills profession slots from the roster. Returns (updated roster, plan, residents, warnings)."""
+def resolve_slots(p, roster_data, glyph_at=None):
+    """Fills profession slots from the roster. Returns (updated roster, plan, residents, warnings).
+
+    `glyph_at(cell, x, y)` (None where unknown) stands in for the project's ground, for a plan made from a slot plan
+    request (slot_plan), which carries only the tiles beside each slot's work spot; no residents are made then."""
     if not p.get('slots'):
         return roster_data, [], [], []
     updated, plan, warnings = roster_lib.assign({**p, 'id': world_id(p)}, roster_data)
@@ -533,8 +536,12 @@ def resolve_slots(p, roster_data):
             errors.append(f'Slot {slot["name"]}: only guard professions walk patrol routes.')
         if prof and prof['behavior'] == 'merchant':
             w = slot['work']
-            rows = cell_rows(p, next(c for c in p['cells'] + p['rooms'] if c['id'] == w['cell']))
-            if not any(0 <= w['y'] + dy < len(rows) and 0 <= w['x'] + dx < len(rows[0]) and rows[w['y'] + dy][w['x'] + dx] not in SOLID
+            if glyph_at is None:
+                rows = cell_rows(p, next(c for c in p['cells'] + p['rooms'] if c['id'] == w['cell']))
+                glyph = lambda x, y: rows[y][x] if 0 <= y < len(rows) and 0 <= x < len(rows[0]) else None
+            else:
+                glyph = lambda x, y: glyph_at(w['cell'], x, y)
+            if not any(glyph(w['x'] + dx, w['y'] + dy) not in (None, *SOLID)
                        for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1))):
                 errors.append(f'Slot {slot["name"]}: customers need an open tile beside the counter.')
     named = {x['id'] for x in p.get('people', [])}
@@ -543,7 +550,30 @@ def resolve_slots(p, roster_data):
         errors.append('Roster characters share an ID with named NPCs: ' + ', '.join(clash))
     if errors:
         raise ValidationError(errors)
-    return updated, plan, roster_lib.residents_for_slots(p, updated, plan), warnings
+    return updated, plan, roster_lib.residents_for_slots(p, updated, plan) if glyph_at is None else [], warnings
+
+
+MAX_SLOTS = 20000
+
+
+def slot_plan(request, roster_data):
+    """Who would fill each profession slot, from only what that depends on (Atlas sends it when any of it changes):
+    {id, name, slots, people: [named NPC IDs], ground: {"cell|x|y": glyph} beside each slot's work spot}.
+    Returns (plan, warnings); raises ValueError for a malformed request and ValidationError for problems."""
+    if not isinstance(request, dict):
+        raise ValueError('A slot plan request is an object.')
+    slots, people, ground = request.get('slots'), request.get('people'), request.get('ground', {})
+    place = lambda v: isinstance(v, dict) and isinstance(v.get('cell'), str) and all(isinstance(v.get(k), int) for k in ('x', 'y'))
+    if (not isinstance(slots, list) or len(slots) > MAX_SLOTS or not isinstance(people, list) or not isinstance(ground, dict)
+            or not all(isinstance(s_, dict) and all(isinstance(s_.get(k), str) for k in ('id', 'name', 'profession', 'route'))
+                       and place(s_.get('work')) for s_ in slots)
+            or not all(isinstance(i, str) for i in people)
+            or not all(isinstance(k, str) and isinstance(v, str) and len(v) == 1 for k, v in ground.items())):
+        raise ValueError('Malformed slot plan request.')
+    p = {'id': str(request.get('id') or ''), 'name': str(request.get('name') or 'world'), 'slots': slots,
+         'people': [{'id': i} for i in people], 'cells': [], 'rooms': []}
+    _, plan, _, warnings = resolve_slots(p, roster_data, lambda cell, x, y: ground.get(f'{cell}|{x}|{y}'))
+    return plan, warnings
 
 
 def export_files(value, roster_data=None, with_roster=False, stream=False):
@@ -888,6 +918,12 @@ def launch_live(quick: bool, log: Path):
     return command
 
 
+def lacks_ground(project) -> bool:
+    """A project from an editor that loaded lean, with cells whose ground it never fetched (the host fills them in)."""
+    return isinstance(project, dict) and isinstance(project.get('cells'), list) and any(
+        isinstance(c, dict) and c.get('terrain') is None for c in project['cells'])
+
+
 def tile_count(project) -> int:
     return sum(int(a.get('width', 0)) * int(a.get('height', 0)) for a in project.get('cells', []) + project.get('rooms', [])
                if isinstance(a, dict) and isinstance(a.get('width'), int) and isinstance(a.get('height'), int))
@@ -981,13 +1017,18 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
             if not self.trusted():
                 return self.reply(403, {'error': 'Local editor origin required.'})
             path = urlsplit(self.path).path
+            query = parse_qs(urlsplit(self.path).query)
             if path == '/api/session':
                 return self.reply(200, {'token': token})
             if path == '/api/demo':
                 return self.reply(200, demo_project())
             try:
                 if path == '/api/live/world':
-                    return self.reply(200, live().load())
+                    # ?lean=1: cell outlines and previews now, each cell's ground as it comes into view.
+                    return self.reply(200, live().load(lean=query.get('lean') == ['1']))
+                if path == '/api/live/ground':
+                    ids = [i for i in ','.join(query.get('cells', [])).split(',') if i]
+                    return self.reply(200, live().ground(ids))
                 if path == '/api/publish':
                     return self.reply(200, publishing().preview())
                 if path == '/api/roster':
@@ -995,6 +1036,8 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                         return self.reply(200, rosters.load())
             except HostError as error:
                 return self.reply(error.status, {'error': str(error)})
+            except ValueError as error:
+                return self.reply(400, {'error': str(error)})
             if path == '/api/ai':
                 return self.reply(200, {'available': ai['config'] is not None, 'model': getattr(ai['config'], 'model', ''), 'error': ai['error']})
             return self.static(path)
@@ -1005,6 +1048,11 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
             path = urlsplit(self.path).path
             try:
                 data = self.body()
+                # A lean editor sends cells whose ground it never fetched without it; the database has it.
+                if world is not None and path in ('/api/validate', '/api/export', '/api/roster/preview') and lacks_ground(data):
+                    data = live().fill(data)
+                if world is not None and path == '/api/playtest' and isinstance(data, dict) and lacks_ground(data.get('project')):
+                    data['project'] = live().fill(data['project'])
                 if path == '/api/validate':
                     # A world edited live in DEV is streamed, so its size is a note, not an error.
                     _, warnings = check_project(data, for_game=world is None)
@@ -1039,6 +1087,12 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                     with lock:
                         merged = rosters.save(merge_roster(data, rosters.load()))
                     return self.reply(200, merged)
+                if path == '/api/roster/plan':
+                    with lock:
+                        current = rosters.load()
+                    plan, warnings = slot_plan(data, current)
+                    names = {c['id']: c['name'] for c in current['characters']}
+                    return self.reply(200, {'plan': [{**e, 'name': names.get(e['character'], e['character'])} for e in plan], 'warnings': warnings})
                 if path == '/api/roster/preview':
                     with lock:
                         current = rosters.load()

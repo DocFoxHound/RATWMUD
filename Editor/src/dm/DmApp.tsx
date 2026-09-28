@@ -7,6 +7,7 @@ import {surfaceFor} from '../lib/surface';
 import {drawGround} from '../lib/ground';
 import {useGlyphRender} from '../lib/glyphFont';
 import {NpcTab} from './NpcTab';
+import {useWorld} from './world';
 import {FactionsTab} from './FactionsTab';
 import {dmApi, signedIn, type Action, type Character, type Me, type Players, type Target} from './api';
 
@@ -105,13 +106,13 @@ const COLUMNS: Column[] = [
 
 function PlayersTab({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<Players | null>(null);
-    const [world, setWorld] = useState<Project | null>(null);
+    const world = useWorld(target);
     const [problem, setProblem] = useState('');
     const [query, setQuery] = useState(''), [status, setStatus] = useState<'all' | 'alive' | 'dead'>('all');
     const [sort, setSort] = useState<{key: string; up: boolean}>({key: 'name', up: true});
     const [selected, setSelected] = useState<string | null>(null);
     const load = useCallback(() => dmApi.players(target).then(d => { setData(d); setProblem(''); }).catch(e => setProblem((e as Error).message)), [target]);
-    useEffect(() => { void load(); dmApi.world(target).then(setWorld).catch(() => setWorld(null)); }, [load, target]);
+    useEffect(() => { void load(); }, [load, target]);
     // While anything is queued, keep checking until the game server has answered.
     const waiting = data?.actions.some(a => a.status === 'queued');
     useEffect(() => { if (!waiting) return; const t = setTimeout(load, 1500); return () => clearTimeout(t); }, [waiting, data, load]);

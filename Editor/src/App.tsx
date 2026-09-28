@@ -19,7 +19,7 @@ export function App() {
     const project = useStore(s => s.project), roster = useStore(s => s.savedRoster);
     useEffect(() => {
         if (!project.slots.length) { setState({preview: null}); return; }
-        const timer = setTimeout(() => { api.preview(project).then(preview => setState({preview})).catch(() => undefined); }, 700);
+        const timer = setTimeout(() => { api.preview(project, {roster}).then(preview => setState({preview})).catch(() => undefined); }, 700);
         return () => clearTimeout(timer);
     }, [project, roster]);
     useEffect(() => {

@@ -8,6 +8,7 @@ import type {Person, Place, Project, Role, Route} from '../model/model.mjs';
 import {ROLE_INFO, formatHour} from '../lib/glyphs';
 import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
+import {useWorld} from './world';
 import {dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {AREA_KINDS, AreaInspector, LAYERS, RouteInspector, SpawnInspector, areaColor, idFrom, type Brush, type Layer, type SpawnDraft} from './LayerPanels';
@@ -16,9 +17,9 @@ type View = {kind: 'world'} | {kind: 'cell'; id: string};
 type Pick = 'new' | 'home' | 'work' | 'evening' | null;
 
 export function NpcTab({me, target}: {me: Me; target: Target}) {
-    const [world, setWorld] = useState<Project | null>(null);
     const [data, setData] = useState<Npcs | null>(null);
     const [problem, setProblem] = useState('');
+    const world = useWorld(target, setProblem);
     const [view, setView] = useState<View>({kind: 'world'});
     const [layer, setLayer] = useState<Layer>('npcs');
     const [selected, setSelected] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
     }, []);
 
     const load = useCallback(() => dmApi.npcs(target).then(d => { setData(d); setProblem(''); }).catch(e => setProblem((e as Error).message)), [target]);
-    useEffect(() => { void load(); dmApi.world(target).then(setWorld).catch(e => setProblem((e as Error).message)); }, [load, target]);
+    useEffect(() => { void load(); }, [load, target]);
     const waiting = data?.actions.some(a => a.status === 'queued');
     useEffect(() => { if (!waiting) return; const t = setTimeout(load, 1500); return () => clearTimeout(t); }, [waiting, data, load]);
     // Spawn counts change as the server works; refresh them now and then while that layer is open.

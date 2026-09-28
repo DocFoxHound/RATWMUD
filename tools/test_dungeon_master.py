@@ -66,6 +66,19 @@ class Fixture(unittest.TestCase):
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
 class DungeonMasterTests(Fixture):
 
+    def test_the_world_map_loads_lean_and_its_ground_as_asked(self):
+        whole = self.dm.world_map('dev')
+        lean = self.dm.world_map('dev', lean=True)
+        self.assertTrue(all(c['terrain'] is None and c['preview'] for c in lean['cells']))
+        ids = [c['id'] for c in lean['cells']]
+        sent = self.dm.ground('dev', ids)['cells']
+        for c in whole['cells']:
+            self.assertEqual(sent[c['id']]['terrain'], c['terrain'])
+            self.assertEqual(S.decode_heights(sent[c['id']]['heightRows']) if 'heightRows' in sent[c['id']] else sent[c['id']]['heights'],
+                             c['heights'])
+        with self.assertRaises(D.DMError):
+            self.dm.ground('dev', [])
+
     def test_sign_in_and_sessions(self):
         result = self.dm.login('dm-master', 'dm-master-password')
         self.assertEqual((result['username'], result['role']), ('dm-master', 'dm'))

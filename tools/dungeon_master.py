@@ -193,14 +193,24 @@ class DungeonMaster:
                                                 FROM dm.actions ORDER BY id DESC LIMIT 50''').fetchall()]
         return {'target': target, 'world': {'id': world[0], 'name': world[1]}, 'characters': characters, 'actions': actions}
 
-    def world_map(self, target):
-        """The world for plotting positions: the editor's project (terrain, cells, interiors)."""
+    def world_map(self, target, lean=False):
+        """The world for plotting positions: the editor's project (terrain, cells, interiors). Lean, each world cell
+        comes as its outline and a preview, and its ground is asked for as it comes into view (ground())."""
         with self.connect(target) as conn:
             world = conn.execute('SELECT id FROM world.worlds').fetchone()
             if not world:
                 raise DMError(f'The {target.upper()} database has no world yet.', 404)
-            project, _ = S.load_world(conn, world[0])
+            project, _ = S.load_world(conn, world[0], ground=not lean)
         return project
+
+    def ground(self, target, ids):
+        """These world cells' ground, heights as compact rows (live_edit.ground)."""
+        try:
+            with self.connect(target) as conn:
+                cells, _ = L.ground(conn, ids)
+        except ValueError as error:
+            raise DMError(str(error)) from error
+        return {'cells': cells}
 
     # -- live actions -----------------------------------------------------------
     def request(self, who, target, kind, character_id, reason=''):
@@ -751,7 +761,9 @@ def make_server(port=8766, dm=None):
             if method == 'GET' and path == '/api/players':
                 return self.reply(200, dm.players(self.target(query)))
             if method == 'GET' and path == '/api/world':
-                return self.reply(200, dm.world_map(self.target(query)))
+                return self.reply(200, dm.world_map(self.target(query), lean=query.get('lean') == ['1']))
+            if method == 'GET' and path == '/api/ground':
+                return self.reply(200, dm.ground(self.target(query), [i for i in ','.join(query.get('cells', [])).split(',') if i]))
             if method == 'POST' and path == '/api/actions':
                 data = self.body()
                 return self.reply(200, dm.request(who, str(data.get('target', 'prod')), str(data.get('kind', '')),

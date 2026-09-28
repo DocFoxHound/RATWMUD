@@ -7,6 +7,7 @@ import {glyphInfo} from './glyphs';
 import {drawnGlyph, glyphRender, GLYPH_STACK} from './glyphFont';
 import type {Surface} from './surface';
 import {heightGrid, shadeAt, type Camera} from './elevation';
+import {DETAIL_FROM, groundPending, PREVIEW_STEP, previewOf, want} from './lazyGround';
 
 export const DIRECT_ABOVE = 15;          // Above this many screen pixels per tile, draw glyphs directly (crisp).
 export const FONT = GLYPH_STACK;
@@ -125,6 +126,35 @@ function pixels(g: CanvasRenderingContext2D, cell: AnyCell, tint: boolean) {
     g.putImageData(out, 0, 0);
 }
 
+const previewImages = new WeakMap<string[], HTMLCanvasElement>();
+/** A cell still waiting for its ground: its preview (one pixel for each PREVIEW_STEP² tiles), lightly hatched. */
+function drawPreview(g: CanvasRenderingContext2D, cell: AnyCell, sx: number, sy: number, s: number) {
+    const rows = previewOf(cell.id) ?? [];
+    let image = previewImages.get(rows);
+    if (!image && rows.length) {
+        image = document.createElement('canvas');
+        image.width = Math.max(1, rows[0].length); image.height = rows.length;
+        const p = image.getContext('2d')!, out = p.createImageData(image.width, image.height), d = out.data;
+        rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) {
+            const [r, gr, b] = parse(swatch(glyphInfo(row[x]))), i = (y * image!.width + x) * 4;
+            d[i] = r; d[i + 1] = gr; d[i + 2] = b; d[i + 3] = 255;
+        } });
+        p.putImageData(out, 0, 0);
+        previewImages.set(rows, image);
+    }
+    const w = cell.width * s, h = cell.height * s;
+    if (image) {
+        g.imageSmoothingEnabled = false;
+        g.drawImage(image, sx, sy, image.width * PREVIEW_STEP * s, image.height * PREVIEW_STEP * s);
+    } else { g.fillStyle = '#1b1f1c'; g.fillRect(sx, sy, w, h); }
+    if (s >= DETAIL_FROM) {                                        // Its ground is on its way: say so.
+        g.save(); g.beginPath(); g.rect(sx, sy, w, h); g.clip();
+        g.strokeStyle = 'rgba(255, 255, 255, .08)'; g.lineWidth = 1;
+        for (let d = -h; d < w; d += 24) { g.beginPath(); g.moveTo(sx + d, sy + h); g.lineTo(sx + d + h, sy); g.stroke(); }
+        g.restore();
+    }
+}
+
 /** The surface tiles visible on a `w` × `h` canvas. */
 export function visibleTiles(cam: Camera, w: number, h: number) {
     return {x0: Math.floor(-cam.x / cam.s), y0: Math.floor(-cam.y / cam.s), x1: Math.ceil((w - cam.x) / cam.s), y1: Math.ceil((h - cam.y) / cam.s)};
@@ -138,6 +168,11 @@ export function drawGround(g: CanvasRenderingContext2D, surface: Surface, cam: C
     for (const piece of surface.pieces(view.x0, view.y0, view.x1, view.y1)) {
         const c = piece.cell, sx = cam.x + piece.x * s, sy = cam.y + piece.y * s;
         if (sx > w || sy > h || sx + c.width * s < 0 || sy + c.height * s < 0) continue;
+        if (groundPending(c.id)) {
+            drawPreview(g, c, sx, sy, s);
+            if (s >= DETAIL_FROM) want(c.id);
+            continue;
+        }
         if (s > DIRECT_ABOVE) {
             const x0 = Math.max(0, view.x0 - piece.x), y0 = Math.max(0, view.y0 - piece.y);
             const x1 = Math.min(c.width, view.x1 - piece.x), y1 = Math.min(c.height, view.y1 - piece.y);

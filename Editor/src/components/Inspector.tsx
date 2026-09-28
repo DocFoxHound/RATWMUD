@@ -382,7 +382,7 @@ function SlotInspector({project, slot}: {project: Project; slot: M.Slot}) {
     const entry = preview?.plan.find(e => e.slot === slot.id);
     const holder = entry && roster?.characters.find(c => c.id === entry.character);
     const refresh = async () => {
-        try { setState({preview: await api.preview(getState().project)}); }
+        try { setState({preview: await api.preview(getState().project, {roster: getState().savedRoster, force: true})}); }
         catch (error) { toast((error as Error).message, 'error'); }
     };
     return (<>

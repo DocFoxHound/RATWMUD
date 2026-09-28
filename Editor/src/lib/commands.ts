@@ -4,6 +4,7 @@ import * as M from '../model/model.mjs';
 import {api, download} from './api';
 import {ELEVATION_LABEL, ELEVATION_MODES, nextElevation} from './elevation';
 import {glyphRender, setPlainAscii} from './glyphFont';
+import {allGround, anyPending} from './lazyGround';
 import {commit, getState, isRoomView, openView, redo, setState, setWorkspace, toast, undo, useTool, type Tool} from './store';
 
 export interface Command {
@@ -82,7 +83,12 @@ const selectedCells = () => { const s = getState().selection; return s?.kind ===
 export const COMMANDS: Command[] = [
     {id: 'file.import', label: 'Import a .cell file as an interior…', menu: 'File', group: 'a', keys: 'Ctrl+O', match: ctrl('o'), run: importCellFile},
     {id: 'file.save', label: 'Save status', menu: 'File', group: 'b', keys: 'Ctrl+S', match: ctrl('s'), run: saveProject},
-    {id: 'file.saveas', label: 'Download a copy (atlas JSON)', menu: 'File', group: 'b', keys: 'Ctrl+Shift+S', match: ctrl('s', true), run: () => {
+    {id: 'file.saveas', label: 'Download a copy (atlas JSON)', menu: 'File', group: 'b', keys: 'Ctrl+Shift+S', match: ctrl('s', true), run: async () => {
+        // A copy is the whole world: first the ground of every cell not yet seen here.
+        if (anyPending()) {
+            toast('Fetching the rest of the world\'s ground for the copy…');
+            try { await allGround(); } catch (error) { toast((error as Error).message, 'error'); return; }
+        }
         download(`${safeName()}.atlas.json`, JSON.stringify(getState().project, null, 2) + '\n'); toast('Downloaded a copy of the world.', 'success');
     }},
     {id: 'file.export', label: 'Export world ZIP', menu: 'File', group: 'c', keys: 'Ctrl+E', match: ctrl('e'), run: exportZip},
