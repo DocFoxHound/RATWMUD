@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Real-client cell atmosphere gallery, authoring import and saved-light restart."""
+"""Cell atmosphere in the browser client: authored lighting, a gallery, and saved light across a restart."""
 import argparse
 import json
-import os
 from pathlib import Path
 import subprocess
 import tempfile
-import time
 
 import map_editor
+from game_run import series
 
 
 def prepare(root):
@@ -32,62 +31,19 @@ m.addLink(p,{id:'tavern',name:'Tavern door',kind:'door',open:false,
 p.spawn={cell:r.id,x:10,y:7};console.log(JSON.stringify(p));
 '''
     project = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', script], cwd=root, text=True))
-    return map_editor.write_export(project, run / 'export'), run / 'world.sqlite'
+    return map_editor.write_export(project, run / 'export'), run / 'world.json'
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--headless', action='store_true')
-    parser.add_argument('--packaged', action='store_true')
+    parser.add_argument('--headless', action='store_true', help='No browser and no screenshots')
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     manifest, save = prepare(root)
-    evidence = root / 'artifacts' / ('packaged-evidence' if args.packaged else 'screenshots')
-    evidence.mkdir(parents=True, exist_ok=True)
-    logs = root / 'artifacts/logs'
-    logs.mkdir(parents=True, exist_ok=True)
-    engine = Path(os.environ.get('RATW_UNREAL_ROOT', '/home/martinb/Applications/UnrealEngine/5.8.2'))
-    base = ([str(root / 'artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD')]
-            if args.packaged else [str(engine / 'Engine/Binaries/Linux/UnrealEditor'), str(root / 'RATWMUD.uproject')])
-    for scenario in ('lighting', 'lighting-restore'):
-        capture = scenario == 'lighting' and not args.headless
-        command = base + ['/Engine/Maps/Entry', '-game', '-NoSplash', '-NoSound', '-Unattended',
-                          '-noscreenmessages', '-ForceLogFlush', '-RatwIdentity=ash', '-RatwName=Ash', '-RatwDevIdentity',
-                          '-RatwDevTools', f'-RatwScenario={scenario}', f'-RatwWorld={manifest}',
-                          f'-RatwSave={save}', f'-RatwCaptureDir={evidence}']
-        command += (['-windowed', '-ResX=1600', '-ResY=1000', '-ForceRes', '-RenderOffscreen', '-RatwCaptureLighting']
-                    if capture else ['-nullrhi'])
-        kind = 'packaged' if args.packaged else 'native'
-        log = logs / f'{scenario}-{kind}-smoke.log'
-        started = time.time_ns()
-        child = None
-        try:
-            with log.open('w') as output:
-                child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT)
-                code = child.wait(timeout=170)
-            result = evidence / f'{scenario}-ash.json'
-            if not result.exists() or result.stat().st_mtime_ns < started:
-                raise RuntimeError(f'No fresh {scenario} evidence. See {log}')
-            report = json.loads(result.read_text())
-            if code or not report['passed']:
-                raise RuntimeError(f'{scenario} failed: {report["detail"]}. See {log}')
-            if capture:
-                for name in ('23-tavern-day.png', '24-tavern-warm-night.png', '25-tavern-unlit-night.png',
-                             '26-unlit-cellar-day.png', '27-tavern-cool-night.png', '28-outdoor-night-edges.png'):
-                    shot = evidence / name
-                    if not shot.exists() or shot.stat().st_mtime_ns < started or shot.stat().st_size < 1024:
-                        raise RuntimeError(f'No fresh screenshot: {name}')
-            print('PASS: ' + report['detail'], flush=True)
-        finally:
-            if child and child.poll() is None:
-                child.terminate()
-                try:
-                    child.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    child.kill()
-                    child.wait(timeout=10)
+    series(('lighting', 'lighting-restore'), save, manifest, headless=args.headless,
+           screenshots=('23-tavern-day.png', '24-tavern-warm-night.png', '25-tavern-unlit-night.png', '26-unlit-cellar-day.png',
+                        '27-tavern-cool-night.png', '28-outdoor-night-edges.png'))
     return 0
-
 
 if __name__ == '__main__':
     raise SystemExit(main())

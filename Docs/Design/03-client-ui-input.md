@@ -1,6 +1,6 @@
 # Client interface and input
 
-Status: implemented native Unreal Slate vertical slice. See `Source/RATWMUD/UI/SRatwGame.*`.
+Status: implemented in the browser client (`Client/src/game/`: `state.ts` for rules and input, `paint.ts` for drawing, `view.ts` for the page), ported from the native Unreal Slate slice (removed 2026-09-28; see 27-browser-client.md).
 
 ## Intent
 

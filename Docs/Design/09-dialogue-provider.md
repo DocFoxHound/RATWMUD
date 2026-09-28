@@ -7,7 +7,7 @@ Ordinary launches still make no remote model calls.
 
 ## Provider contract
 
-The NPC Mind client (`ratw::mind::Client`, `Source/RATWMUD/Core/RatwMind.h`) accepts an NPC's identity, description, current activity,
+The NPC Mind client (`ratw::mind::Client`, `Core/RatwMind.h`) accepts an NPC's identity, description, current activity,
 the perceived player message, a bounded subject-specific memory excerpt and scene
 description. It returns one spoken reply through a callback. The server wraps that
 reply as a speech segment and routes it through normal perception. The callback

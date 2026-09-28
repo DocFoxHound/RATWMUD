@@ -110,7 +110,7 @@ To reproduce the longer probes with an optimized build:
 ```bash
 cmake -S . -B build-soak -DCMAKE_BUILD_TYPE=Release
 cmake --build build-soak -j6
-c++ -O2 -std=c++17 -ISource/RATWMUD/Core Tests/society_soak.cpp build-soak/libratw_core.a -o build-soak/society_soak
+c++ -O2 -std=c++17 -ICore Tests/society_soak.cpp build-soak/libratw_core.a -o build-soak/society_soak
 build-soak/society_soak 30 --require-fed
 build-soak/society_soak 15 --collapsed --require-fed
 ```

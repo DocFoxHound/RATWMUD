@@ -609,7 +609,7 @@ class HttpTests(unittest.TestCase):
             self.assertEqual(status, 200, raw)
             manifest, save, quick, _ = self.launched[-1]
             self.assertTrue(manifest.is_file() and manifest.name == 'world.ratw')
-            self.assertEqual((save.name, quick), ('save.sqlite', True))
+            self.assertEqual((save.name, quick), ('save.json', True))
         self.assertEqual(self.request('POST', '/api/playtest', json.dumps({'project': {'bad': 1}}), self.auth())[0], 422)
 
     def test_live_needs_database_and_portraits(self):

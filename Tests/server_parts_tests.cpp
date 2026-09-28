@@ -1,4 +1,4 @@
-// The standalone server's parts (Phase 6): accounts as the Unreal runtime keeps them, delta snapshots between a server
+// The server's parts (Phase 6): accounts, delta snapshots between a server
 // and a client, the NPC Mind client against a small local stand-in, the operator bridge's request contract, and the web side
 // (HTTP requests, WebSocket handshakes and frames, which files may be served).
 #include "RatwAccountsCore.h"

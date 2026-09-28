@@ -257,7 +257,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
         except OSError:
-            pass  # Unreal may already have used its eight-second fallback.
+            pass  # The game may already have used its eight-second fallback.
 
     def do_POST(self):
         port = self.server.server_address[1]

@@ -1,6 +1,6 @@
-// The server end to end: started as its own process, a client connects over the plain link (RatwLink.h), enters,
-// walks and talks, and a restart finds everything where it was left, this time played over a WebSocket (RatwWeb.h) as
-// the browser plays. The client's files are served, and nothing outside them; another site's page can't connect.
+// The server end to end: started as its own process, a client connects over a WebSocket (RatwWeb.h) as the browser
+// does, enters, walks and talks, and a restart finds everything where it was left. The client's files are served, and
+// nothing outside them; another site's page can't connect.
 #include "RatwJsonDoc.h"
 #include "RatwLink.h"
 #include "RatwMotionCore.h"
@@ -125,7 +125,6 @@ bool takeServerFrame(std::string& buffer, std::uint8_t& op, std::string& payload
 struct Link
 {
     int fd = -1;
-    bool web = false;                                  // Over a WebSocket, as a browser plays.
     std::vector<std::uint8_t> controls;                // WebSocket control frames received (close, pong).
     std::string in;
     sections::Cache cache;
@@ -133,8 +132,8 @@ struct Link
     bool open(int port, const std::string& origin = {})
     {
         fd = connectTo(port);
-        if (fd < 0 || !web)
-            return fd >= 0;
+        if (fd < 0)
+            return false;
         const std::string request = "GET /ws HTTP/1.1\r\nHost: 127.0.0.1:" + std::to_string(port) +
                                     "\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\n"
                                     "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n" +
@@ -177,16 +176,9 @@ struct Link
     }
     void send(link::Kind kind, const void* payload, std::size_t length)
     {
-        if (web)
-        {
-            std::string message(1, char(kind));
-            message.append(static_cast<const char*>(payload), length);
-            sendWeb(web::Binary, message);
-            return;
-        }
-        std::string out;
-        link::appendFrame(out, kind, payload, length);
-        ::send(fd, out.data(), out.size(), MSG_NOSIGNAL);
+        std::string message(1, char(kind));
+        message.append(static_cast<const char*>(payload), length);
+        sendWeb(web::Binary, message);
     }
     void command(const std::string& json) { send(link::Command, json.data(), json.size()); }
     void ack(double revision)
@@ -217,25 +209,19 @@ struct Link
             const std::size_t before = in.size();
             link::Kind kind;
             std::string payload;
-            bool bad = false;
             for (;;)
             {
-                if (web)
-                {
-                    std::uint8_t op = 0;
-                    if (!takeServerFrame(in, op, payload))
-                        break;
-                    if (op != web::Binary)
-                    {
-                        controls.push_back(op);
-                        continue;
-                    }
-                    expect(!payload.empty(), "every message has its kind");
-                    kind = link::Kind(std::uint8_t(payload[0]));
-                    payload.erase(0, 1);
-                }
-                else if (!link::takeFrame(in, kind, payload, bad))
+                std::uint8_t op = 0;
+                if (!takeServerFrame(in, op, payload))
                     break;
+                if (op != web::Binary)
+                {
+                    controls.push_back(op);
+                    continue;
+                }
+                expect(!payload.empty(), "every message has its kind");
+                kind = link::Kind(std::uint8_t(payload[0]));
+                payload.erase(0, 1);
                 expect(payload.size() >= 4, "every frame from the server has its raw length");
                 std::uint32_t raw = 0;
                 for (int i = 0; i < 4; ++i)
@@ -260,7 +246,6 @@ struct Link
                 else
                     events.push_back(v);
             }
-            expect(!bad, "frames are well formed");
             if (!in.empty() && in.size() == before)
             {
                 // Part of a frame: wait for the rest.
@@ -344,10 +329,9 @@ int main(int argc, char** argv)
                "only GET");
         expect(httpExchange(port, "GET /ws HTTP/1.1\r\nHost: x\r\n\r\n").rfind("HTTP/1.1 426", 0) == 0,
                "the game's address wants a WebSocket");
-        expect(httpExchange(port, "NONSENSE\r\n\r\n").rfind("HTTP/1.1 400", 0) == 0 || true, "nonsense is not a link frame either");
+        expect(httpExchange(port, "NONSENSE\r\n\r\n").rfind("HTTP/1.1 400", 0) == 0, "anything but HTTP is refused");
         {
             Link foreign;
-            foreign.web = true;
             expect(!foreign.open(port, "https://evil.example"), "another site's page is refused");
             ::close(foreign.fd);
         }
@@ -360,7 +344,6 @@ int main(int argc, char** argv)
         pid = launch(argv[1], port, save, web);
         {
             Link c;
-            c.web = true;
             expect(c.open(port, "http://127.0.0.1:" + std::to_string(port)), "a second server takes a WebSocket from its own page");
             c.read(.3);
             expect(c.last("lobby") && c.last("lobby")->boolean("credentialsAllowed"), "a local browser may sign in");
@@ -384,7 +367,6 @@ int main(int argc, char** argv)
         }
         {
             Link c;
-            c.web = true;
             expect(c.open(port), "a program may connect without an Origin");
             c.sendWeb(web::Close, std::string("\x03\xe8", 2));
             c.read(.3);

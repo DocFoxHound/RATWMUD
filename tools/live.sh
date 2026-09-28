@@ -1,24 +1,19 @@
 #!/usr/bin/env bash
 # Runs the game on the one world in the database.
 #
-#   bash tools/live.sh server prod   dedicated server on PROD (what players join)
-#   bash tools/live.sh server dev    dedicated server on DEV, after building DEV's current world
-#   bash tools/live.sh play dev      a local game window on DEV (single process)
+#   bash tools/live.sh server prod   the server on PROD (what players join, at http://HOST:7788/)
+#   bash tools/live.sh server dev    the server on DEV, after building DEV's current world
+#   bash tools/live.sh play dev      DEV on this machine, opened in the browser
 #
-# Extra arguments go to the game (e.g. -port=7788). DEV's build is brought up to date
+# Extra arguments go to the server (e.g. --port 7790). DEV's build is brought up to date
 # first (skipped when nothing changed since the last one; RATW_NO_BUILD=1 skips the
-# check too). RATW_PACKAGED=1 runs the server from the cooked package (tools/package.sh)
-# instead of the editor: it starts in seconds, but runs the code the package was made
-# from. RATW_STANDALONE=1 runs the standalone headless server (tools/standalone.sh) instead:
-# no Unreal on the server at all, ready in seconds; players connect with
-# RATW_STANDALONE=1 bash tools/connect.sh HOST:7788. A server restarts itself when Push to
-# live publishes a new release (it exits with status 75 once nobody is connected); any
-# other exit ends it.
+# check too). A server restarts itself when Push to live publishes a new release (it
+# exits with status 75 once nobody is connected); any other exit ends it.
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-}"; database="${2:-}"
 if [[ "$mode" != server && "$mode" != play ]] || [[ "$database" != prod && "$database" != dev ]]; then
-  sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
   exit 2
 fi
 shift 2
@@ -28,17 +23,11 @@ fi
 RATW_DATABASE_URL="$(python3 "$ratw_root/tools/world_db.py" conninfo "$database" --role game)"
 export RATW_DATABASE_URL
 if [[ "$mode" == play ]]; then
-  exec bash "$ratw_root/tools/play.sh" "-RatwDatabase=$database" "$@"
+  exec bash "$ratw_root/tools/play.sh" --database "$database" "$@"
 fi
 while true; do
   status=0
-  if [[ "${RATW_STANDALONE:-0}" == 1 ]]; then
-    bash "$ratw_root/tools/standalone.sh" --database "$database" "$@" || status=$?
-  elif [[ "${RATW_PACKAGED:-0}" == 1 ]]; then
-    bash "$ratw_root/tools/run-packaged.sh" server "-RatwDatabase=$database" "$@" || status=$?
-  else
-    bash "$ratw_root/tools/server.sh" "-RatwDatabase=$database" "$@" || status=$?
-  fi
+  bash "$ratw_root/tools/server.sh" --database "$database" "$@" || status=$?
   if [[ "$status" -ne 75 ]]; then
     exit "$status"
   fi

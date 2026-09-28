@@ -1,6 +1,6 @@
 # Architecture and delivery baseline
 
-Status: accepted for the first development slice, 2026-09-20; extended through 2026-09-21 with Atlas Workshop, travel, calendar/economy, political metadata and the local Storykeeper first slice. This is a current development baseline, not production certification.
+Status: accepted for the first development slice, 2026-09-20; extended through 2026-09-21 with Atlas Workshop, travel, calendar/economy, political metadata and the local Storykeeper first slice. On 2026-09-28 the game left Unreal Engine for its own server and a browser client (ADR-007). This is a current development baseline, not production certification.
 
 ## Product boundary
 
@@ -22,41 +22,44 @@ granting ordinary players administrative commands or editing the game database.
 
 | Component | Source | Responsibility | Design |
 | --- | --- | --- | --- |
-| World simulation | Source/RATWMUD/Core | Cells, continuous movement, paths, doors, weather, heights, schedules | 01-world-simulation.md |
-| Perception and memory | Source/RATWMUD/Core | Sight, hearing, smell, per-observer map state and permanent exploration | 02-perception-maps.md |
-| Slate client | Source/RATWMUD/UI | Layout, glyph rendering, facing marker, input, menus | 03-client-ui-input.md |
-| Narrative | UI + Runtime | Composer, ordered posts, sensory filtering, IC/OOC and indicators | 04-narrative-composer.md |
-| Character and items | UI + Runtime | Portrait presentation, profile, icons, appearance and item state | 05-character-inventory.md |
-| Runtime authority | Source/RATWMUD/Runtime | RPC validation, identity, snapshots, restart and storage | 06-network-persistence.md |
-| NPC memory and life | Core + Runtime | Schedules, party participation, active context and durable summaries | 07-npc-memory.md |
-| Social progression | Runtime | Validated metadata, capped ledger, separate NPC relationships | 08-social-progression.md |
-| Dialogue provider | Runtime | Bounded NPC prose with a working offline fallback | 09-dialogue-provider.md |
-| Interaction and environment | Core + UI + Runtime | Verb semantics and sensory effects | 10-interactions-environment.md |
-| Verification | Tests + tools | Core behavior, engine integration, two clients, screenshots | 11-verification.md |
+| World simulation | Core | Cells, continuous movement, paths, doors, weather, heights, schedules | 01-world-simulation.md |
+| Perception and memory | Core | Sight, hearing, smell, per-observer map state and permanent exploration | 02-perception-maps.md |
+| Browser client | Client | Layout, glyph rendering, facing marker, input, menus, the front door | 03-client-ui-input.md, 27-browser-client.md |
+| Narrative | Client + Core/RatwGame.cpp | Composer, ordered posts, sensory filtering, IC/OOC and indicators | 04-narrative-composer.md |
+| Character and items | Client + Core | Portrait presentation, profile, icons, appearance and item state | 05-character-inventory.md |
+| Game server | Server + Core/RatwGame.cpp + Core/RatwWeb.cpp | Command validation, identity, snapshots, WebSockets, the client's files, restart and storage | 06-network-persistence.md |
+| NPC memory and life | Core | Schedules, party participation, active context and durable summaries | 07-npc-memory.md |
+| Social progression | Core | Validated metadata, capped ledger, separate NPC relationships | 08-social-progression.md |
+| Dialogue provider | Core/RatwMind.cpp + tools/npc_mind.py | Bounded NPC prose with a working offline fallback | 09-dialogue-provider.md |
+| Interaction and environment | Core + Client | Verb semantics and sensory effects | 10-interactions-environment.md |
+| Verification | Tests + Client tests + tools | Core behavior, the server end to end, the client, scripted players, screenshots | 11-verification.md |
 | Atlas Workshop | Editor + tools/map_editor.py + Core/RatwAuthoring.cpp | Continuous authoring, cell partitioning/detail, reciprocal links, safe exports and atomic import | 12-map-editor.md |
-| Pace and world travel | Core/RatwWorld.cpp + Core/RatwTravel.cpp + Runtime + UI | Dexterity-scaled pace, stamina, private remembered routes, local-leg execution and cancellation | 13-pace-and-world-travel.md |
-| Calendar and aging | Core/RatwCalendar.cpp + Core/RatwAging.cpp + Runtime + UI | Four-hour days, 365-day years, seasonal forecasts, lunar lighting, birthdays and age modifiers | 14-calendar-aging.md |
-| Resident life and economy | Core/RatwSociety.cpp + Core/RatwWorld.cpp + Runtime + UI | Deterministic needs/jobs/navigation, finite cash and stock, recipes, wages, trade and bounded external orders | 15-npc-society-economy.md |
-| Territory and migration | Editor + Core/RatwAuthoring.cpp + tools/map_editor.py + tools/dm_service.py + native authority | Region/claim/site metadata; declared Chapter capacity, finite migration previews, verified arrival and political records | 16-territory-chapters-migration.md |
-| Storykeeper | DM + tools/dm_service.py + private Runtime bridge | Trusted-local map/roster, campaigns, event approval/scheduling, observed activity, audit and allowlisted native effects | 17-storykeeper-dm.md |
-| Combat presentation (planned) | Future Core resolver + Runtime event projection + UI encounter cards/effects | Observer-filtered battle cues and one expandable log per encounter, independent of roleplay reveal | 18-combat-presentation.md |
+| Pace and world travel | Core/RatwWorld.cpp + Core/RatwTravel.cpp + Client | Dexterity-scaled pace, stamina, private remembered routes, local-leg execution and cancellation | 13-pace-and-world-travel.md |
+| Calendar and aging | Core/RatwCalendar.cpp + Core/RatwAging.cpp + Client | Four-hour days, 365-day years, seasonal forecasts, lunar lighting, birthdays and age modifiers | 14-calendar-aging.md |
+| Resident life and economy | Core/RatwSociety.cpp + Core/RatwWorld.cpp + Client | Deterministic needs/jobs/navigation, finite cash and stock, recipes, wages, trade and bounded external orders | 15-npc-society-economy.md |
+| Territory and migration | Editor + Core/RatwAuthoring.cpp + tools/map_editor.py + tools/dm_service.py + the server | Region/claim/site metadata; declared Chapter capacity, finite migration previews, verified arrival and political records | 16-territory-chapters-migration.md |
+| Storykeeper | DM + tools/dm_service.py + Core/RatwDirector.cpp | Trusted-local map/roster, campaigns, event approval/scheduling, observed activity, audit and allowlisted effects | 17-storykeeper-dm.md |
+| Combat presentation (planned) | Future Core resolver + event projection + Client encounter cards/effects | Observer-filtered battle cues and one expandable log per encounter, independent of roleplay reveal | 18-combat-presentation.md |
 
 ## Authority boundary
 
-The engine-independent C++ core has no font, camera, Slate or animation dependency. It can be tested with CMake/CTest without an editor process. Unreal owns network transport, game lifecycle, native desktop presentation and storage integration. The runtime converts core snapshots into an explicit JSON presentation contract sent only to the owning player controller.
+The C++ core (`Core/`) holds every rule and is tested with CMake/CTest. The server (`Server/ratw_server.cpp`) owns the
+transport, the game's lifecycle and storage: it serves the browser client's files and speaks WebSockets on one port.
+The game converts core state into an explicit JSON presentation contract sent only to the owning connection; the
+browser client draws it and sends back intentions.
 
 Each actor has server-owned identity. A client command names an intention; it cannot submit a new location, XP balance, memory, quest result or NPC relationship. World state is not replicated wholesale. Client UI selection, reveal timing and draft contents are local. Typing communicates only bounded presence.
 
 The administrative exception is explicit and out-of-band: a trusted OS owner
-starts the authority with `-RatwDMDirectory=/absolute/private/path`. Only that
+starts the server with `--dm-directory /absolute/private/path`. Only that
 private exchange carries omniscient data and typed operator requests. It is not
 a player RPC or an authentication upgrade for a development character. The
-service never opens the game's SQLite store; native authority still validates
+service never opens the game's save; the server still validates
 effects and checkpoints results. See ADR-006 below.
 
-## ADR-001: engine and toolchain
+## ADR-001: engine and toolchain (replaced by ADR-007)
 
-Use installed Unreal Engine 5.8.2, Linux x64, CL 56702186, with bundled clang 20.1.8. Start with a custom Slate renderer and individually drawn glyphs. UMG/Paper2D are not necessary for the first renderer. Terrain and actors remain separate layers.
+Superseded 2026-09-28; kept for the record. Use installed Unreal Engine 5.8.2, Linux x64, CL 56702186, with bundled clang 20.1.8. Start with a custom Slate renderer and individually drawn glyphs. UMG/Paper2D are not necessary for the first renderer. Terrain and actors remain separate layers.
 
 The observed installed platform configuration lists Linux Editor and Game targets, not Server. Keep a Server.Target.cs for a compatible source engine but use `UnrealEditor -server -nullrhi` for the development server. This is a separate authoritative server process with real Unreal networking. It does not constitute a packaged dedicated-server release. [Epic's dedicated-server guide](https://dev.epicgames.com/documentation/unreal-engine/setting-up-dedicated-servers-in-unreal-engine) documents the source-build prerequisite.
 
@@ -90,7 +93,7 @@ fine editing and reciprocal door, passage, or stair connections.
 The browser model validates edits transactionally. The exporter independently
 validates the authoring data, generates compatible open seams, and creates a
 snapshot containing the source atlas and separate runtime cell files. Runtime
-`-RatwWorld` import validates another candidate before replacing demo content.
+`--world` import validates another candidate before replacing demo content.
 No stage edits a running game or grants players additional map knowledge.
 
 Optional faction/Chapter catalogs and cell territory metadata follow the same
@@ -156,6 +159,25 @@ require DM confirmation; approved UTC times do not automatically shift. Armies,
 brigands, assassination and faction collapse are non-executable story plans.
 Full schemas/lifecycle limits live in `../DM_BRIDGE_CONTRACT.md` and
 `../DM_SERVICE_CONTRACT.md`; component design is `17-storykeeper-dm.md`.
+
+## ADR-007: our own server, a browser client, no engine
+
+Accepted 2026-09-28. Unreal did three jobs here and none needed an engine: it drew a 2D screen (one hand-drawn
+1600×1000 canvas, a few forms, a recoloured portrait, procedural weather sheets), carried the network, and hosted the
+server. The portable core already held every rule, and its own server (`Server/ratw_server.cpp`) already passed every
+smoke. So the client became a web page (`Client/`, TypeScript on a canvas, ported call for call from the Slate
+client) served by that server, and the Unreal project was removed. There is no 3D in the game's plans; were there, a
+3D client (Unreal or another engine) could speak the same WebSocket protocol.
+
+- **One port.** HTTP for the client's files, a WebSocket at `/ws` for the game (`Core/RatwWeb.h`). Each message is a
+  kind byte and the payload the game has always sent: command JSON, snapshot acknowledgements, and zlib-compressed
+  events, delta snapshots and binary motion frames.
+- **Keys by position.** WASD are read by `KeyboardEvent.code`, released on blur, and resent while held.
+- **Credentials** only over loopback until the server speaks TLS; the WebSocket upgrade checks `Origin`.
+- **Tests.** The Slate UI's engine tests became client tests (Node's test runner, and headless Chromium for the front
+  door); the scripted Unreal players became `tools/client/scenario.ts`, which plays in Node or in the real page.
+
+See [the browser client](27-browser-client.md).
 
 ## Deferred components
 

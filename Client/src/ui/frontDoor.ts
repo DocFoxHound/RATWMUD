@@ -271,6 +271,14 @@ export class FrontDoor {
         this.show('creator');
     }
 
+    /** A page the tools ask for (the Unreal client's SetPresentationPage): only one the account's state allows. */
+    presentationPage(page: string) {
+        if (page === 'creator') this.startCreation();
+        else if (page === 'roster' && this.stage === 'characters') this.show('roster');
+        else if (page === 'review' && this.draftAppearance) this.review();
+        else if ((page === 'login' || page === 'register') && this.stage === 'login') this.show(page);
+    }
+
     /** A draft from a tool (the Unreal client's SetCharacterDraft): a preview only, never created without review. */
     setDraft(name: string, age: number, appearance: Json) {
         if (this.busy || age < 6 || age > 99 || !readAppearance(appearance)) return;

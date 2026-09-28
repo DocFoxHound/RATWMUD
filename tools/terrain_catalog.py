@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / 'Data/Terrain/terrain.json'
-CPP = ROOT / 'Source/RATWMUD/Core/RatwTerrainCatalog.inc'
+CPP = ROOT / 'Core/RatwTerrainCatalog.inc'
 JS = ROOT / 'Editor/src/model/terrain.generated.mjs'
 DM_JS = ROOT / 'DM/terrain.generated.mjs'  # The older Storykeeper UI loads its own copy.
 CLIENT_JS = ROOT / 'Client/src/game/terrain.generated.mjs'  # The browser game client (Client/).

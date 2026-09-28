@@ -1,6 +1,6 @@
 // Optional physical-world soak; intentionally not part of the fast CTest suite.
 // From the repository root, after building the portable library:
-//   c++ -std=c++17 -ISource/RATWMUD/Core Tests/society_soak.cpp build-core/libratw_core.a -o /tmp/ratw-society-soak
+//   c++ -std=c++17 -ICore Tests/society_soak.cpp build-core/libratw_core.a -o /tmp/ratw-society-soak
 //   /tmp/ratw-society-soak 3 > artifacts/logs/society-physical-world-probe.log
 // Optional first argument: whole game days from 1 to 365 (default 3).
 // Optional flags: --collapsed restores the representative old day-15 failure;

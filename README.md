@@ -1,80 +1,54 @@
 # Runs Against the World
 
-A native Unreal prototype of a persistent, text-first roleplaying world inhabited by quadrupedal wolves. The terrain is a logical glyph tilemap; wolves move freely over it as an upright `W` with an orbiting `>` facing marker. Roleplay prose stays in the narrative pane.
+A persistent, text-first roleplaying world inhabited by quadrupedal wolves, played in the browser. The terrain is a logical glyph tilemap; wolves move freely over it as an upright `W` with an orbiting `>` facing marker. Roleplay prose stays in the narrative pane.
+
+The game is one server (`Server/ratw_server.cpp`, over the portable C++ game in `Core/`) and a browser client
+(`Client/`, TypeScript on a canvas). The server serves the client's page and plays the game over a WebSocket on the
+same port. There is no engine: see [the browser client](Docs/Design/27-browser-client.md) for why.
 
 ## Requirements
 
-- Unreal Engine **5.8.2** (Linux x64 is the verified development environment).
-- CMake 3.16+ and a C++17 compiler for portable simulation tests.
-- Python 3 for the local Atlas/Storykeeper services and verification scripts.
-- A modern browser for Atlas Workshop and Storykeeper; Node.js is needed only for their model tests.
-
-Set `RATW_UNREAL_ROOT` if your engine is installed elsewhere. The local default is `/home/martinb/Applications/UnrealEngine/5.8.2`.
+- CMake 3.16+ and a C++17 compiler (the server and its tests).
+- Node.js 22+ (the browser client's build and tests; Atlas Workshop and the Dungeon Master tools).
+- Python 3 (the local tool services and the smoke tests).
+- A modern browser to play. Headless Chromium (as Playwright installs it) for the screenshot smokes.
+- At run time the server loads zlib and OpenSSL's libcrypto, and libpq for the database worlds.
 
 ## Build and play
 
-An already-built Linux development package is available locally:
-
 ```bash
-bash tools/run-packaged.sh play
-```
-
-It runs without opening the Unreal editor. To rebuild the package, use
-`bash tools/package.sh`. The archive is under `artifacts/package/Linux/` and is
-intentionally excluded from Git.
-
-For editor-based development:
-
-```bash
-bash tools/build.sh
 bash tools/play.sh
 ```
 
-The default launch now opens **login → character selection → character creator**.
-Register a local test account with a unique test password (at least 12 bytes),
-create up to six characters, then select one to enter. The creator has five wolf
-species, four age stages, three statures, sex, natural coat gradients and markings.
-The same portrait appears on the character sheet and visible-character inspection;
-map actors stay `W>` glyphs. Appearance and ownership are saved on the authority.
+builds the server and the client when their sources changed, starts a server on this machine and opens the game in
+your browser. The first page is **login → character selection → character creator**. Register a local test account
+with a unique test password (at least 12 bytes), create up to six characters, then select one to enter. The creator
+has five wolf species, four age stages, three statures, sex, natural coat gradients and markings. The same portrait
+appears on the character sheet and visible-character inspection; map actors stay `W>` glyphs. Appearance and
+ownership are saved on the server.
 
-These are **trusted-local test accounts**, not public authentication. Native
-credential exchange is permitted only in standalone play or over loopback on this
-computer; it is blocked for remote peers until encrypted transport is implemented.
-There is no password recovery or character deletion yet.
+These are **trusted-local test accounts**, not public authentication. Passwords are accepted only from this
+computer (over loopback) until the server speaks TLS; from anywhere else the page refuses to send them. There is no
+password recovery or character deletion yet.
 
-For two players, start the headless development server in one terminal, then two clients:
-
-```bash
-bash tools/server.sh
-bash tools/connect.sh 127.0.0.1:7787
-bash tools/connect.sh 127.0.0.1:7787
-```
-
-Sign in separately and select different characters. Saves are local SQLite files
-under `Saved/`; pass `-RatwSave=/absolute/path.sqlite` to the server or standalone
-game to isolate a session. Automated smoke tests use disposable saves. Legacy
-development identities are available only with explicit `-RatwDevIdentity` on
-both authority and clients; this bypass is for controlled tests, not real accounts.
-
-The installed engine can host a headless authoritative server through its Editor
-executable. The package also supports a separate headless **listen host** with no
-local player character:
+For several players, run the server and open its page in each browser:
 
 ```bash
-bash tools/run-packaged.sh server
-bash tools/run-packaged.sh connect 127.0.0.1:7787
-bash tools/run-packaged.sh connect 127.0.0.1:7787
+bash tools/server.sh                  # http://127.0.0.1:7788/
+bash tools/connect.sh 127.0.0.1:7788  # opens that page (or open it by hand)
 ```
 
-Launch each command in its own terminal. The server scripts bind only to
-127.0.0.1 by default. `RATW_BIND` can select another interface for controlled
-development-identity tests, but remote account login remains deliberately blocked.
-Do not publicly expose this development server.
+Sign in separately and select different characters. The demo world saves to `Saved/ratw-world.json` (owner-only: it
+holds the account verifiers); `--save FILE` picks another save, and the smoke tests use disposable ones. The server
+binds to 127.0.0.1 by default; `RATW_BIND` chooses another interface for controlled tests. Do not expose this
+development server publicly. Development identities (`bash tools/play.sh --identity ash`, which starts the server
+with `--dev-identity` and opens `?identity=ash`) skip the account screens for tests; they are never for real accounts.
 
-`Source/RATWMUDServer.Target.cs` defines a stripped dedicated-server target, but
-this installed engine explicitly rejects Server targets. That distribution
-requires a compatible source engine. The tested packaged listen host is a useful
-local development option, not a production dedicated-server release.
+To work on the client with hot reload, run a server (`bash tools/server.sh`) and `npm --prefix Client run dev`; the
+Vite page forwards the game's WebSocket to it.
+
+Saves from the Unreal version (`Saved/*.sqlite`) are converted once with `python3 tools/convert_saves.py`; the old
+files are left as they were.
 
 ## Greyfen Crossing — testbed town
 
@@ -82,17 +56,15 @@ A small living town to walk through. It is currently the whole of the one
 world in the database (see [World database](#world-database-postgresql)), so the
 editor opens straight into it, and `bash tools/live.sh play dev` plays the
 current DEV version. `Data/Worlds/Greyfen/` keeps a fixed copy for offline
-testing, which `-RatwTown` loads; editor changes no longer update it. Play that copy with:
+testing; editor changes no longer update it. Play that copy with:
 
 ```bash
-bash tools/play.sh -RatwTown
+bash tools/play.sh --town
 ```
 
-It also works with `tools/server.sh -RatwTown` (clients connect normally) and,
-after `bash tools/package.sh`, with `bash tools/run-packaged.sh play -RatwTown`.
-The town saves to its own `Saved/ratw-town.sqlite`, so it never touches the demo
-save. The demo world refuses a town checkpoint (and the other way round).
-`-RatwTown` cannot be combined with `-RatwWorld`.
+It also works with `bash tools/server.sh --town` (players join normally). The town saves to its own
+`Saved/ratw-town.json`, so it never touches the demo save. The demo world refuses a town checkpoint (and the other
+way round).
 
 | Place | Who lives or works there |
 | --- | --- |
@@ -323,25 +295,19 @@ the rows that changed. NPC running state is also in `live.npc_state`:
 ```bash
 bash tools/live.sh server prod   # the live server players join
 bash tools/live.sh server dev    # builds DEV's current world (if it changed), then serves it
-bash tools/live.sh play dev      # a local game window on DEV
-RATW_PACKAGED=1 bash tools/live.sh server dev   # the same from the cooked package (tools/package.sh)
-RATW_STANDALONE=1 bash tools/live.sh server dev # the standalone headless server (no Unreal; port 7788)
-RATW_STANDALONE=1 bash tools/connect.sh 127.0.0.1:7788   # a player joining it
+bash tools/live.sh play dev      # DEV on this machine, opened in the browser
 ```
 
-The standalone server (`Server/ratw_server.cpp`, built by CMake in `build-core`
-as `ratw_server`) runs the same game code as the Unreal server: both host the
-portable `ratw::game::Game` (`Source/RATWMUD/Core/RatwGame.h`), so rules, saves
-and snapshots are identical and either can pick up the other's save. It starts
-in a couple of seconds on DEV. `bash tools/standalone.sh` runs it on its own;
-its options are listed at the top of `Server/ratw_server.cpp`.
+Players join at `http://HOST:7788/`. The server (`Server/ratw_server.cpp`, built by CMake in `build-core` as
+`ratw_server`) hosts the portable game, `ratw::game::Game` (`Core/RatwGame.h`), and starts in a couple of seconds on
+DEV; its options are listed at the top of `Server/ratw_server.cpp`.
 
 When Push to live publishes a new release, a running server tells anyone
 connected, and once nobody is connected it saves and exits with status 75;
 `live.sh` restarts it straight away on the new build with everything restored.
 The server needs the PostgreSQL client library (`libpq`) installed on the
-machine it runs on; it loads it at start-up. `-RatwWorld` (exported folders,
-editor playtests, smoke tests) and `-RatwTown` still use their own SQLite saves.
+machine it runs on; it loads it at start-up. `--world` (exported folders,
+editor playtests, smoke tests) and `--town` still use their own save files.
 
 The initial Push to live password is `password`; change it with
 `set-publish-password` (it needs the owner login from `Database/.env`, so only
@@ -428,12 +394,12 @@ The Dungeon Master is replacing Storykeeper; until its Story Creator is built,
 Storykeeper keeps working as described here.
 
 Storykeeper watches and directs a running authority; Atlas authors places.
-Launch the native authority with an explicit **absolute private directory**,
+Launch the server with an explicit **absolute private directory**,
 then start the service in another terminal using that same directory. Replace
 these example paths with private locations owned by your OS user:
 
 ```bash
-bash tools/server.sh -RatwDMDirectory=/absolute/private/ratw-bridge -RatwSave=/absolute/private/storykeeper-playtest.sqlite
+bash tools/server.sh --dm-directory /absolute/private/ratw-bridge --save /absolute/private/storykeeper-playtest.json
 python3 tools/dm_service.py --exchange /absolute/private/ratw-bridge --state-dir /absolute/private/storykeeper --port 8780
 ```
 
@@ -472,11 +438,8 @@ be cancelled as though they were never applied. See the
 [service contract](Docs/DM_SERVICE_CONTRACT.md), and
 [native bridge contract](Docs/DM_BRIDGE_CONTRACT.md).
 
-The current Linux package includes the private bridge. Add the same
-`-RatwDMDirectory` and isolated `-RatwSave` flags to
-`bash tools/run-packaged.sh server` to use it without the editor. Run
-`python3 tools/dm_smoke.py` or `python3 tools/dm_smoke.py --packaged` for an
-isolated end-to-end check. Both paths passed the current 23-check suite;
+Run `python3 tools/dm_smoke.py` for an isolated end-to-end check (the server, the
+Storykeeper service and a scripted browser-client player); it passes all 23 checks;
 [verification and limitations](Docs/DM_TEST_REPORT.md) and
 [actual screenshots](Docs/SCREENSHOTS.md) are recorded separately.
 
@@ -502,15 +465,13 @@ and lets you eat a meal; a visible herb patch in Juniper Yard supports **Gather*
 from within reach. Resources feed the same gathering/cooking/trading chain used
 by NPCs. Custom Atlas worlds do not yet author these demo NPCs or resource jobs.
 
-Development settings (`-RatwDevTools`) expose next-day/next-year jumps and
+Development settings (a server started with `--dev-tools`) expose next-day/next-year jumps and
 seasonal weather for testing. These mutate the selected development save; use
-a fresh `-RatwSave` for experiments. Normal clients cannot change the calendar.
+a fresh `--save` for experiments. Normal clients cannot change the calendar.
 
 ```bash
 python3 tools/society_smoke.py
-python3 tools/society_smoke.py --packaged
 python3 tools/aging_smoke.py
-python3 tools/aging_smoke.py --packaged
 ```
 
 The society check captures the graphical client and restarts its isolated save.
@@ -525,7 +486,7 @@ See [calendar design](Docs/Design/14-calendar-aging.md),
 
 | Input | Action |
 | --- | --- |
-| WASD | Continuous movement |
+| WASD | Continuous movement (by key position, so the same keys on AZERTY or Dvorak) |
 | Click terrain | Intelligent path to position |
 | Wheel over local map / Page Up / Page Down | Increase or decrease walking-to-sprinting pace |
 | Shift-wheel / Ctrl-wheel over local map | Pan vertically / horizontally without changing pace |
@@ -538,6 +499,10 @@ See [calendar design](Docs/Design/14-calendar-aging.md),
 | M | Local/world map |
 | C / I | Character / inventory |
 | L | Listen |
+
+Keys held when the window loses focus (Alt-Tab, another tab) are let go, so a wolf never walks on unattended. A
+browser keeps a few shortcuts for itself (Ctrl+W closes the tab); none of the game's keys use Ctrl. If your desktop
+takes Alt-click for moving windows, Ctrl-click turns just the same.
 
 Use quoted speech mixed with `/sigh`, `/action`, `/pose`, `/sit`, `/lay`, `/stand` or `/me`. Unquoted ordinary text is spoken. `/me` declares a current state visible on inspection. Use `//` to write a literal slash word. Local OOC has its own channel.
 
@@ -581,7 +546,7 @@ edge fades follow the actual cell boundary without tinting the story pane. Atlas
 Workshop's cell details expose artificial light, daylight access, and light tone.
 These are whole-cell settings, not individual lamp/shadow simulation. Reduced
 motion retains static weather cues without changing perception. For development
-playtests, launch with `-RatwDevTools` and use Settings' weather/time/lighting presets;
+playtests, start the server with `--dev-tools` and use Settings' weather/time/lighting presets;
 ordinary players cannot change them. See [weather and daylight](Docs/Design/10-interactions-environment.md).
 
 If Atlas Workshop was already running before an update, save your work, restart
@@ -590,26 +555,28 @@ If Atlas Workshop was already running before an update, save your work, restart
 ## Verification
 
 ```bash
-cmake -S . -B build-core -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build-core -DCMAKE_BUILD_TYPE=Release
 cmake --build build-core -j 6
-ctest --test-dir build-core --output-on-failure
-bash tools/test-engine.sh
-python3 tools/smoke.py network --headless
-python3 tools/character_smoke.py
-python3 tools/character_smoke.py --packaged
-python3 tools/smoke.py gallery
-python3 tools/smoke.py walkthrough
-python3 tools/smoke.py persistence
+ctest --test-dir build-core --output-on-failure    # the game, the server and its web side
+npm --prefix Client test                           # the browser client (network, session, game screen)
+npm --prefix Client run typecheck
+npm --prefix Client run build && npm --prefix Client run test:browser   # the front door in headless Chromium
+python3 tools/smoke.py network                     # every smoke: the server and scripted browser-client players;
+python3 tools/smoke.py persistence                 # --headless plays in Node without screenshots
 python3 tools/smoke.py movement
 python3 tools/smoke.py scent
-python3 tools/smoke.py scent --packaged --headless
-python3 tools/smoke.py network --packaged
+python3 tools/smoke.py gallery
+python3 tools/smoke.py walkthrough
+python3 tools/character_smoke.py
 python3 tools/travel_smoke.py
-python3 tools/travel_smoke.py --packaged --headless
 python3 tools/weather_smoke.py
-python3 tools/weather_smoke.py --packaged --headless
 python3 tools/lighting_smoke.py
-python3 tools/lighting_smoke.py --packaged --headless
+python3 tools/society_smoke.py
+python3 tools/aging_smoke.py
+python3 tools/editor_smoke.py --play
+python3 tools/dm_smoke.py
+python3 tools/mind_smoke.py
+python3 tools/test_convert_saves.py
 python3 tools/test_npc_bridge.py
 npm --prefix Editor test          # model and live-editing tests
 npm --prefix Editor run typecheck

@@ -10,25 +10,23 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
-import sqlite3
 import subprocess
 import threading
 import time
 
+from game_run import GameServer, evidence as game_evidence, start_scenario
 from npc_bridge import Bridge, BridgeError, Server, load_config
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path(__file__).resolve().parent.parent / "Saved/Config/RATWNPCAI.local.json")
-    parser.add_argument("--packaged", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     output = root / "artifacts/live-npc" / str(time.time_ns())
     output.mkdir(parents=True)
-    save = root / "Saved/Tests" / output.name / "world.sqlite"
+    save = root / "Saved/Tests" / output.name / "world.json"
     save.parent.mkdir(parents=True)
     audit = []
     report = {"passed": False, "stages": [], "audit": audit}
@@ -41,9 +39,6 @@ def main() -> int:
             worker.start()
             try:
                 endpoint = f"http://127.0.0.1:{server.server_address[1]}/dialogue"
-                engine = Path(os.environ.get("RATW_UNREAL_ROOT", "/home/martinb/Applications/UnrealEngine/5.8.2"))
-                binary = ([str(root / "artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD")]
-                          if args.packaged else [str(engine / "Engine/Binaries/Linux/UnrealEditor"), str(root / "RATWMUD.uproject")])
                 for stage, scenario in (("first-conversation", "dialogue-live"),
                                         ("restart-recall", "dialogue-recall"),
                                         ("long-term-recall", "dialogue-recall")):
@@ -51,32 +46,24 @@ def main() -> int:
                         assert evidence["activeTurnsBefore"] == 0, "Active detail was not consolidated before recall"
                         # Age only this disposable fixture; do not wait an hour
                         # or touch ordinary player saves. Exact timing has unit tests.
-                        with sqlite3.connect(save) as database:
-                            state = json.loads(database.execute("SELECT payload FROM world_state WHERE id=1").fetchone()[0])
-                            assert state["activeMemory"], "Expected active memory before consolidation"
-                            for memory in state["activeMemory"]:
-                                memory["lastActivity"] = time.time() - 3601
-                            database.execute("UPDATE world_state SET payload=? WHERE id=1", (json.dumps(state),))
+                        state = json.loads(save.read_text())
+                        assert state["activeMemory"], "Expected active memory before consolidation"
+                        for memory in state["activeMemory"]:
+                            memory["lastActivity"] = time.time() - 3601
+                        save.write_text(json.dumps(state))
                     folder = output / stage
                     folder.mkdir()
                     before = len(audit)
-                    command = binary + ["/Engine/Maps/Entry", "-game", "-nullrhi", "-NoSound", "-Unattended", "-NoSplash",
-                                        "-NoSteam", "-ForceLogFlush", "-RatwDevTools", "-RatwDevIdentity", "-RatwIdentity=ash", "-RatwName=Ash",
-                                        f"-RatwSave={save}", f"-RatwCaptureDir={folder}", f"-RatwScenario={scenario}",
-                                        f"-RatwDialogueEndpoint={endpoint}"]
-                    with (folder / "engine.log").open("w") as log:
-                        process = subprocess.Popen(command, cwd=root, stdout=log, stderr=subprocess.STDOUT)
+                    started = time.time_ns()
+                    with GameServer(save=save, flags=["--dev-tools", "--dialogue", endpoint], log=folder / "server.log") as game:
+                        process = start_scenario(game.port, scenario, "ash", capture=folder, log=folder / "client.log")
                         try:
                             code = process.wait(timeout=150)
                         finally:
                             if process.poll() is None:
-                                process.terminate()
-                                try:
-                                    process.wait(timeout=10)
-                                except subprocess.TimeoutExpired:
-                                    process.kill()
-                                    process.wait(timeout=10)
-                    result = json.loads((folder / f"{scenario}-ash.json").read_text())
+                                process.kill()
+                                process.wait(timeout=10)
+                    result = game_evidence(folder, scenario, "ash", started)
                     evidence = result.get("dialogueEvidence", {})
                     report["stages"].append({"stage": stage, "native_passed": result["passed"], **evidence})
                     assert code == 0 and result["passed"], f"Native stage failed: {stage}"
@@ -88,8 +75,7 @@ def main() -> int:
                         reply = evidence["replyText"].lower()
                         assert "willow" in reply and "blue" in reply and "stone" in reply, "NPC did not recall supplied facts"
                     if stage == "long-term-recall":
-                        with sqlite3.connect(save) as database:
-                            state = json.loads(database.execute("SELECT payload FROM world_state WHERE id=1").fetchone()[0])
+                        state = json.loads(save.read_text())
                         assert state.get("summaries"), "No persistent summary after aging the fixture"
                     print(f"PASS: {stage}: exact generated reply delivered; inventory/XP unchanged", flush=True)
                 report["probes"] = []
@@ -110,7 +96,7 @@ def main() -> int:
     except BridgeError as error:
         report["failure"] = {"code": error.code, "http_status": error.status}
         print(f"FAIL: {error.code} ({error.status})", flush=True)
-    except (AssertionError, OSError, ValueError, KeyError, TypeError, sqlite3.Error, subprocess.SubprocessError) as error:
+    except (AssertionError, OSError, ValueError, KeyError, TypeError, RuntimeError, subprocess.SubprocessError) as error:
         # Do not print arbitrary exception content; the stage evidence shows
         # provenance and assertion progress without a risk of credential output.
         report["failure"] = {"code": type(error).__name__}

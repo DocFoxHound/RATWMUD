@@ -15,9 +15,11 @@ const url = server ? `ws://${server}/ws` : gameUrl(location);
 
 let door: FrontDoor | null = null;
 let game: GameView | null = null;
+let lastLobby: Json | null = null;
 
 const connection = new Connection(url, {
     lobby(event) {
+        lastLobby = event;
         game?.destroy();
         game = null;
         if (!door) door = new FrontDoor(app, command => connection.submit(command));
@@ -49,6 +51,7 @@ declare global {
             door: () => FrontDoor | null;
             page: (name: string) => void;
             draft: (name: string, age: number, appearance: Json) => void;
+            lobby: () => Json | null;
         };
     }
 }
@@ -58,8 +61,8 @@ window.ratw = {
     door: () => door,
     page: name => {
         if (game) game.state.setPresentationPage(name);
-        else if (door && ['login', 'register', 'roster', 'creator', 'review'].includes(name))
-            door.show(name as 'login' | 'register' | 'roster' | 'creator' | 'review');
+        else door?.presentationPage(name);
     },
     draft: (name, age, appearance) => door?.setDraft(name, age, appearance),
+    lobby: () => lastLobby,
 };

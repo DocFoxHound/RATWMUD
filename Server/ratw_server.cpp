@@ -1,7 +1,6 @@
 // The game server (Docs/Design/26-living-npcs.md, Phase 6; 27-browser-client.md): the portable game (RatwGame.h) over
 // one port. A browser opens http://host:port/ for the client's files (--web) and plays over a WebSocket at /ws
-// (RatwWeb.h); the Unreal game, while it lasts, connects with -RatwServer=host:port over the plain link (RatwLink.h).
-// Each connection is told apart by its first bytes: an HTTP request, or a link frame.
+// (RatwWeb.h), each message one of the game's (RatwLink.h).
 //
 //   ratw_server --database dev|prod          the world in the database (RATW_DATABASE_URL), as tools/live.sh runs it
 //   ratw_server [--world MANIFEST] --save F  a world from files (or the built-in demo), saved to a private file
@@ -46,26 +45,21 @@ void stop(int) { stopping = 1; }
 
 // Replaceable frames (snapshots, motion) are dropped for a client this far behind; past the second, it is let go.
 constexpr std::size_t DropReplaceableAt = 4u << 20, DisconnectAt = 32u << 20;
-// A connection that has said nothing this long is the plain link's (a browser sends its request at once).
-constexpr auto QuietLink = std::chrono::milliseconds(250);
 
 class Client final : public game::Connection
 {
   public:
     enum class Mode
     {
-        Unknown,                                    // Nothing read yet.
         Http,                                       // Serving a file, or about to become a WebSocket.
-        WebSocket,                                  // A browser playing.
-        Link,                                       // The plain link (RatwLink.h).
+        WebSocket,                                  // A browser (or a test) playing.
     };
     int fd = -1;
     std::string address, in, out;
-    Mode mode = Mode::Unknown;
+    Mode mode = Mode::Http;
     web::Reader reader;
     bool closing = false, local = false, playing = false, finishing = false;
     std::size_t dropped = 0;
-    std::chrono::steady_clock::time_point accepted = std::chrono::steady_clock::now();
 
     void event(const std::string& json) override { queue(link::Event, json, false); }
     void snapshot(const std::string& json) override { queue(link::Snapshot, json, true); }
@@ -96,13 +90,8 @@ class Client final : public game::Connection
         for (int i = 0; i < 4; ++i)
             payload[std::size_t(i)] = char(rawLength >> (8 * i));
         std::memcpy(payload.data() + 4, packed.data(), packed.size());
-        if (mode == Mode::WebSocket)
-        {
-            payload.insert(payload.begin(), char(kind));
-            web::appendFrame(out, web::Binary, payload.data(), payload.size());
-        }
-        else
-            link::appendFrame(out, kind, payload.data(), payload.size());
+        payload.insert(payload.begin(), char(kind));
+        web::appendFrame(out, web::Binary, payload.data(), payload.size());
         if (out.size() > DisconnectAt)
             closing = true;                         // Hopelessly behind: let it reconnect.
     }
@@ -210,7 +199,7 @@ int main(int argc, char** argv)
     std::signal(SIGINT, stop);
     std::signal(SIGTERM, stop);
     std::signal(SIGPIPE, SIG_IGN);
-    std::cout << "RATW standalone server listening on port " << port << " (" << bind << "); ready in "
+    std::cout << "RATW server listening on port " << port << " (" << bind << "); ready in "
               << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() << " s" << std::endl;
 
     std::map<int, std::unique_ptr<Client>> clients;
@@ -236,7 +225,7 @@ int main(int argc, char** argv)
     };
     const auto play = [&](Client& c) {
         c.playing = true;
-        std::cout << "RATW_CONNECT " << c.address << (c.mode == Client::Mode::WebSocket ? " web" : " link") << std::endl;
+        std::cout << "RATW_CONNECT " << c.address << std::endl;
         g.connect(&c);
     };
     // One message of the game from a client: a command or a snapshot acknowledgement. False for anything else.
@@ -293,18 +282,6 @@ int main(int argc, char** argv)
     };
     // Everything a client has sent so far, by what kind of connection it turned out to be.
     const auto handle = [&](Client& c) {
-        if (c.mode == Client::Mode::Unknown)
-        {
-            // A browser speaks first; the link's client may wait to be shown the lobby.
-            if (c.in.size() < 4 && std::chrono::steady_clock::now() - c.accepted < QuietLink)
-                return;
-            c.mode = c.in.size() >= 4 && (c.in.compare(0, 4, "GET ") == 0 || c.in.compare(0, 4, "HEAD") == 0 || c.in.compare(0, 4, "POST") == 0 ||
-                             c.in.compare(0, 4, "PUT ") == 0 || c.in.compare(0, 4, "OPTI") == 0)
-                         ? Client::Mode::Http
-                         : Client::Mode::Link;
-            if (c.mode == Client::Mode::Link)
-                play(c);
-        }
         if (c.mode == Client::Mode::Http && !c.finishing)
         {
             web::Request r;
@@ -347,17 +324,6 @@ int main(int argc, char** argv)
                 }
             }
         }
-        if (c.mode == Client::Mode::Link)
-        {
-            link::Kind kind;
-            std::string payload;
-            bool bad = false;
-            while (!c.closing && link::takeFrame(c.in, kind, payload, bad))
-                if (!receive(c, kind, payload))
-                    c.closing = true;
-            if (bad)
-                c.closing = true;
-        }
     };
     while (!stopping && g.exitRequested() < 0 && Clock::now() < until)
     {
@@ -383,11 +349,8 @@ int main(int argc, char** argv)
                 c->address = text;
                 c->local = accounts::isLoopbackAddress(c->address);
                 c->id = nextId++;
-                clients[fd] = std::move(c);         // It joins the game once it is known what it is (handle()).
+                clients[fd] = std::move(c);         // It joins the game once it becomes a WebSocket (serve()).
             }
-        for (auto& [fd, c] : clients)
-            if (c->mode == Client::Mode::Unknown && !c->closing)
-                handle(*c);                         // A quiet connection becomes the link's.
         std::vector<int> gone;
         for (std::size_t i = 1; i < fds.size(); ++i)
         {
@@ -455,7 +418,7 @@ int main(int argc, char** argv)
         drop(fd);
     g.save();
     ::close(listener);
-    std::cout << "RATW standalone server stopped after " << ticks << " ticks; mean " << (ticks ? total / double(ticks) : 0)
+    std::cout << "RATW server stopped after " << ticks << " ticks; mean " << (ticks ? total / double(ticks) : 0)
               << " ms, slowest " << slowest << " ms" << std::endl;
     return g.exitRequested() >= 0 ? g.exitRequested() : 0;
 }

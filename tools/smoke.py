@@ -1,223 +1,102 @@
 #!/usr/bin/env python3
-"""Run real Unreal processes in an isolated save and collect their evidence."""
+"""Runs the server and scripted browser-client players on a disposable save, and checks their evidence.
+
+    python3 tools/smoke.py network|gallery|walkthrough|persistence|movement|scent [--headless]
+
+--headless plays without a browser (the client's own code in Node) and takes no screenshots.
+"""
 from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
-import subprocess
-import sqlite3
-import socket
-import errno
 import time
+
+from game_run import ROOT, GameServer, evidence, run_scenario, start_scenario
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=("network", "gallery", "walkthrough", "persistence", "movement", "scent"))
-    parser.add_argument("--headless", action="store_true", help="Skip GPU screenshots for transport testing")
-    parser.add_argument("--packaged", action="store_true", help="Run archived Linux binaries without the editor")
-    parser.add_argument("--standalone", metavar="RATW_SERVER", help="Network mode against the standalone server "
-                        "(build-core/ratw_server) instead of an Unreal server: the clients connect with -RatwServer")
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('mode', choices=('network', 'gallery', 'walkthrough', 'persistence', 'movement', 'scent'))
+    parser.add_argument('--headless', action='store_true', help='No browser and no screenshots')
     args = parser.parse_args()
-    root = Path(__file__).resolve().parent.parent
-    engine = Path(os.environ.get("RATW_UNREAL_ROOT", "/home/martinb/Applications/UnrealEngine/5.8.2"))
-    editor = engine / "Engine/Binaries/Linux/UnrealEditor"
-    output = root / ("artifacts/packaged-evidence" if args.packaged else "artifacts/screenshots")
-    logs = root / "artifacts/logs"
+    output = ROOT / 'artifacts' / 'screenshots'
+    logs = ROOT / 'artifacts' / 'logs'
     output.mkdir(parents=True, exist_ok=True)
     logs.mkdir(parents=True, exist_ok=True)
-    run_id = str(time.time_ns())
-    save = root / "Saved/Tests" / run_id / "world.sqlite"
+    run_id = time.time_ns()
+    save = ROOT / 'Saved' / 'Tests' / str(run_id) / 'world.json'
     save.parent.mkdir(parents=True, exist_ok=True)
-    processes: list[subprocess.Popen] = []
-    handles = []
-    common = ([str(root / "artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD")]
-              if args.packaged else [str(editor), str(root / "RATWMUD.uproject")])
-    flags = ["-NoSplash", "-NoSound", "-Unattended", "-noscreenmessages", "-NoSteam", "-NoVSync", "-ForceRes", "-ForceLogFlush", "-RatwDevTools", "-RatwDevIdentity"]
+    shots = not args.headless
 
-    def start(label: str, arguments: list[str]) -> subprocess.Popen:
-        handle = (logs / f"{'packaged-' if args.packaged else ''}{label}.log").open("w")
-        handles.append(handle)
-        child = subprocess.Popen(common + arguments + flags, cwd=root, stdout=handle, stderr=subprocess.STDOUT)
-        processes.append(child)
-        print(f"Started {label}: PID {child.pid}", flush=True)
-        return child
+    if args.mode == 'scent':
+        # A disposable two-player fixture: a hidden, crouching source twelve tiles upwind.
+        save.write_text(json.dumps({
+            'schema': 1, 'revision': 0, 'sequence': 1, 'time': 0,
+            'players': [
+                {'id': 'player-ash', 'name': 'Ash', 'cell': 'exterior', 'x': 20.5, 'y': 12.5, 'posture': 'standing', 'color': 0},
+                {'id': 'player-bracken', 'name': 'Bracken', 'cell': 'exterior', 'x': 8.5, 'y': 12.5, 'posture': 'crouching', 'color': 9},
+            ],
+            'weather': {'exterior': 0},
+            'winds': {'exterior': {'direction': 0, 'strength': 0.5, 'variable': False}},
+        }))
 
-    try:
-        if args.mode in ("network", "scent"):
-            if args.mode == "scent":
-                # Disposable two-player fixture: a hidden crouching source is
-                # twelve tiles upwind. Never changes the user's regular save.
-                payload = {
-                    "schema": 1, "revision": 0, "sequence": 1, "time": 0,
-                    "players": [
-                        {"id": "player-ash", "name": "Ash", "cell": "exterior",
-                         "x": 20.5, "y": 12.5, "posture": "standing", "color": 0},
-                        {"id": "player-bracken", "name": "Bracken", "cell": "exterior",
-                         "x": 8.5, "y": 12.5, "posture": "crouching", "color": 9},
-                    ],
-                    "weather": {"exterior": 0},
-                    "winds": {"exterior": {"direction": 0, "strength": 0.5, "variable": False}},
-                }
-                with sqlite3.connect(save) as database:
-                    database.execute("CREATE TABLE world_state (id INTEGER PRIMARY KEY CHECK(id=1), "
-                                     "schema_version INTEGER NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL)")
-                    database.execute("INSERT INTO world_state VALUES (1, 1, 0, ?)", (json.dumps(payload),))
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as reservation:
-                reservation.bind(("127.0.0.1", 0))
-                port = reservation.getsockname()[1]
-            hosting = ["/Engine/Maps/Entry?listen", "-RatwHeadlessHost"] if args.packaged else ["/Engine/Maps/Entry", "-server"]
-            # RATW_SERVER_FLAGS: more for the server, e.g. -RatwFullSnapshots to measure snapshots sent whole.
-            extra = os.environ.get("RATW_SERVER_FLAGS", "").split()
-            if args.standalone:
-                handle = (logs / "standalone-server.log").open("w")
-                handles.append(handle)
-                server = subprocess.Popen([args.standalone, "--save", str(save.with_suffix(".json")), "--port", str(port),
-                                           "--dev-identity", "--dev-tools"] + extra, cwd=root, stdout=handle, stderr=subprocess.STDOUT)
-                processes.append(server)
-                print(f"Started standalone server: PID {server.pid}", flush=True)
-            else:
-                server = start("server", hosting + ["-nullrhi", f"-port={port}", "-MULTIHOME=127.0.0.1", f"-RatwSave={save}"] + extra)
-            deadline = time.monotonic() + 90
-            while time.monotonic() < deadline:
-                if server.poll() is not None:
-                    raise RuntimeError("Server exited before listening; inspect artifacts/logs/server.log")
-                log = (logs / ("standalone-server.log" if args.standalone else "packaged-server.log" if args.packaged else "server.log")).read_text(errors="replace")
-                if f"listening on port {port}" in log:
-                    break
-                # Packaged stdout can buffer a quiet host's final startup line.
-                # The port was free before spawning our isolated server.
-                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
-                    try:
-                        probe.bind(("127.0.0.1", port))
-                    except OSError as error:
-                        if error.errno == errno.EADDRINUSE:
-                            break
-                        raise
-                time.sleep(0.25)
-            else:
-                raise RuntimeError("Timed out waiting for server to listen")
-            clients = []
-            identities = (("bracken", "Bracken"), ("ash", "Ash")) if args.mode == "scent" else (("ash", "Ash"), ("bracken", "Bracken"))
-            for identity, name in identities:
-                source = args.mode == "scent" and identity == "bracken"
-                graphics = ["-nullrhi"] if args.headless or source else ["-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen"]
-                scenario = "scent-source" if source else args.mode
-                capture = ["-RatwCaptureScent"] if args.mode == "scent" and not args.headless and not source else []
-                target = ["/Engine/Maps/Entry", f"-RatwServer=127.0.0.1:{port}"] if args.standalone else [f"127.0.0.1:{port}"]
-                clients.append(start(identity, target + ["-game", f"-RatwIdentity={identity}", f"-RatwName={name}", f"-RatwScenario={scenario}", f"-RatwCaptureDir={output}"] + graphics + capture))
-            if args.mode == "scent":
-                code = clients[1].wait(timeout=150)
-                evidence = output / "scent-ash.json"
-                if not evidence.exists() or evidence.stat().st_mtime_ns < int(run_id):
-                    raise RuntimeError("No fresh scent scenario evidence from this run")
-                result = json.loads(evidence.read_text())
-                if code or not result["passed"] or clients[0].poll() is not None:
-                    raise RuntimeError(f"Scent scenario failed: exit={code}, detail={result['detail']}")
-                if not args.headless:
-                    screenshot = output / "12-upwind-scent.png"
-                    if not screenshot.exists() or screenshot.stat().st_size < 1024 or screenshot.stat().st_mtime_ns < int(run_id):
-                        raise RuntimeError("Scent scenario did not capture its viewport")
+    if args.mode in ('network', 'scent'):
+        with GameServer(save=save, flags=['--dev-tools'], log=logs / 'server.log') as server:
+            players = (('bracken', 'scent-source'), ('ash', 'scent')) if args.mode == 'scent' else (('ash', 'network'), ('bracken', 'network'))
+            children = [start_scenario(server.port, scenario, identity, capture=output, screenshots=shots and scenario != 'scent-source',
+                                       log=logs / f'{identity}.log') for identity, scenario in players]
+            if args.mode == 'scent':
+                code = children[1].wait(timeout=180)
+                children[0].kill()
+                result = evidence(output, 'scent', 'ash', run_id)
+                if code or not result['passed']:
+                    raise RuntimeError(f"Scent scenario failed: {result['detail']}")
+                if shots:
+                    fresh(output / '12-upwind-scent.png', run_id)
                 print(f"PASS: {result['detail']}", flush=True)
             else:
-                codes = [client.wait(timeout=150) for client in clients]
-                evidence = [output / f"network-{identity}.json" for identity in ("ash", "bracken")]
-                if any(not path.exists() or path.stat().st_mtime_ns < int(run_id) for path in evidence):
-                    raise RuntimeError("No fresh two-client network evidence from this run")
-                results = [json.loads(path.read_text()) for path in evidence]
-                if any(codes) or not all(item["passed"] for item in results):
-                    raise RuntimeError(f"Network scenario failed: exits={codes}, details={[item['detail'] for item in results]}")
+                codes = [child.wait(timeout=180) for child in children]
+                results = [evidence(output, 'network', identity, run_id) for identity in ('ash', 'bracken')]
+                if any(codes) or not all(r['passed'] for r in results):
+                    raise RuntimeError(f"Network scenario failed: exits={codes}, details={[r['detail'] for r in results]}")
                 print("PASS: two independent clients moved and received each other's IC and local OOC events.", flush=True)
-        elif args.mode == "persistence" and args.standalone:
-            # The same three steps, each against a new standalone server process on one save (a JSON file).
-            store = save.with_suffix(".json")
-            for scenario in ("persist-write", "persist-read", "persist-aged"):
-                if scenario == "persist-aged":
-                    payload = json.loads(store.read_text())
-                    assert payload["activeMemory"], "No NPC interaction was stored"
-                    for memory in payload["activeMemory"]:
-                        memory["lastActivity"] = time.time() - 3601
-                    store.write_text(json.dumps(payload))
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as reservation:
-                    reservation.bind(("127.0.0.1", 0))
-                    port = reservation.getsockname()[1]
-                handle = (logs / f"standalone-{scenario}.log").open("w")
-                handles.append(handle)
-                server = subprocess.Popen([args.standalone, "--save", str(store), "--port", str(port), "--dev-identity"],
-                                          cwd=root, stdout=handle, stderr=subprocess.STDOUT)
-                processes.append(server)
-                deadline = time.monotonic() + 30
-                while f"listening on port {port}" not in (logs / f"standalone-{scenario}.log").read_text(errors="replace"):
-                    if server.poll() is not None or time.monotonic() > deadline:
-                        raise RuntimeError(f"The standalone server did not start; inspect artifacts/logs/standalone-{scenario}.log")
-                    time.sleep(.1)
-                child = start(scenario, ["/Engine/Maps/Entry", f"-RatwServer=127.0.0.1:{port}", "-game", "-nullrhi", "-RatwIdentity=ash",
-                                         "-RatwName=Ash", f"-RatwScenario={scenario}", f"-RatwCaptureDir={output}"])
-                code = child.wait(timeout=150)
-                server.terminate()
-                server.wait(timeout=30)
-                result = json.loads((output / f"{scenario}-ash.json").read_text())
-                if code or not result["passed"]:
-                    raise RuntimeError(f"{scenario} failed: {result['detail']}")
-                print(f"PASS: {scenario}: {result['detail']}", flush=True)
-            print("PASS: separate standalone server restarts retained character, map memory and conversation; one hour inactive produced a permanent summary.", flush=True)
-        elif args.mode == "persistence":
-            for scenario in ("persist-write", "persist-read", "persist-aged"):
-                if scenario == "persist-aged":
-                    # Only this run's disposable SQLite fixture is aged. The
-                    # core tests independently verify exact3599/3600 boundaries.
-                    with sqlite3.connect(save) as database:
-                        payload = json.loads(database.execute("SELECT payload FROM world_state WHERE id=1").fetchone()[0])
-                        assert payload["activeMemory"], "No NPC interaction was stored"
-                        for memory in payload["activeMemory"]:
-                            memory["lastActivity"] = time.time() - 3601
-                        database.execute("UPDATE world_state SET payload=? WHERE id=1", (json.dumps(payload),))
-                child = start(scenario, ["/Engine/Maps/Entry", "-game", "-nullrhi", "-RatwIdentity=ash", "-RatwName=Ash", f"-RatwScenario={scenario}", f"-RatwSave={save}", f"-RatwCaptureDir={output}"])
-                code = child.wait(timeout=150)
-                result = json.loads((output / f"{scenario}-ash.json").read_text())
-                if code or not result["passed"]:
-                    raise RuntimeError(f"{scenario} failed: {result['detail']}")
-                print(f"PASS: {scenario}: {result['detail']}", flush=True)
-            print("PASS: separate process restarts retained character, map memory and conversation; one hour inactive produced a permanent summary.", flush=True)
-        elif args.mode == "movement":
-            graphics = ["-nullrhi"] if args.headless else ["-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen", "-RatwCaptureMovement"]
-            child = start("movement", ["/Engine/Maps/Entry", "-game", "-RatwIdentity=ash", "-RatwName=Ash", "-RatwScenario=movement", f"-RatwSave={save}", f"-RatwCaptureDir={output}"] + graphics)
-            code = child.wait(timeout=150)
-            result = json.loads((output / "movement-ash.json").read_text())
-            if code or not result["passed"]:
-                raise RuntimeError(f"Movement failed: {result['detail']}")
-            print(f"PASS: {result['detail']}", flush=True)
-        elif args.mode == "walkthrough":
-            child = start("walkthrough", ["/Engine/Maps/Entry", "-game", "-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen", "-RatwIdentity=ash", "-RatwName=Ash", "-RatwScenario=walkthrough", f"-RatwSave={save}", f"-RatwCaptureDir={output}"])
-            code = child.wait(timeout=240)
-            result = json.loads((output / "walkthrough-ash.json").read_text())
-            images = [output / name for name in ("06-visible-vertical-world.png", "07-quiet-loft.png", "08-rain-in-juniper-yard.png")]
-            if code or not result["passed"] or not all(path.exists() and path.stat().st_size > 1024 for path in images):
-                raise RuntimeError(f"Walkthrough failed: {result['detail']}")
-            print(f"PASS: {result['detail']}", flush=True)
-        else:
-            child = start("gallery", ["/Engine/Maps/Entry", "-game", "-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen", "-RatwIdentity=ash", "-RatwName=Ash", "-RatwScenario=gallery", f"-RatwSave={save}", f"-RatwCaptureDir={output}"])
-            code = child.wait(timeout=600)
-            result = json.loads((output / "gallery-ash.json").read_text())
-            images = [output / name for name in ("01-tavern-local.png", "02-character-sheet.png", "03-inventory.png", "04-world-map.png", "05-settings.png", "09-text-first-layout.png")]
-            if code or not result["passed"] or not all(path.exists() and path.stat().st_size > 1024 for path in images):
-                raise RuntimeError("Gallery failed or one or more screenshots are missing")
-            print("PASS: six actual Unreal viewport screenshots captured.", flush=True)
-        return 0
-    finally:
-        for child in reversed(processes):
-            if child.poll() is None:
-                child.terminate()
-                try:
-                    child.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    child.kill()
-                    child.wait(timeout=10)
-        for handle in handles:
-            handle.close()
+    elif args.mode == 'persistence':
+        # Three steps, each against a new server process on one save.
+        for scenario in ('persist-write', 'persist-read', 'persist-aged'):
+            if scenario == 'persist-aged':
+                payload = json.loads(save.read_text())
+                assert payload['activeMemory'], 'No NPC interaction was stored'
+                for memory in payload['activeMemory']:
+                    memory['lastActivity'] = time.time() - 3601
+                save.write_text(json.dumps(payload))
+            with GameServer(save=save, log=logs / f'server-{scenario}.log') as server:
+                result = run_scenario(server.port, scenario, 'ash', capture=output, log=logs / f'{scenario}.log')
+            print(f"PASS: {scenario}: {result['detail']}", flush=True)
+        print('PASS: separate server restarts retained character, map memory and conversation; one hour inactive produced a permanent summary.', flush=True)
+    else:
+        with GameServer(save=save, flags=['--dev-tools'], log=logs / 'server.log') as server:
+            if args.mode == 'movement':
+                result = run_scenario(server.port, 'movement', 'ash', capture=output, screenshots=shots, log=logs / 'movement.log')
+                print(f"PASS: {result['detail']}", flush=True)
+            elif args.mode == 'walkthrough':
+                result = run_scenario(server.port, 'walkthrough', 'ash', capture=output, screenshots=True, timeout=240, log=logs / 'walkthrough.log')
+                for name in ('06-visible-vertical-world.png', '07-quiet-loft.png', '08-rain-in-juniper-yard.png'):
+                    fresh(output / name, run_id)
+                print(f"PASS: {result['detail']}", flush=True)
+            else:
+                run_scenario(server.port, 'gallery', 'ash', capture=output, screenshots=True, timeout=240, log=logs / 'gallery.log')
+                for name in ('01-tavern-local.png', '02-character-sheet.png', '03-inventory.png', '04-world-map.png', '05-settings.png',
+                             '09-text-first-layout.png'):
+                    fresh(output / name, run_id)
+                print('PASS: six browser-client screenshots captured.', flush=True)
+    return 0
 
 
-if __name__ == "__main__":
+def fresh(path: Path, since_ns: int):
+    if not path.exists() or path.stat().st_size < 1024 or path.stat().st_mtime_ns < since_ns:
+        raise RuntimeError(f'Missing or stale screenshot: {path}')
+
+
+if __name__ == '__main__':
     raise SystemExit(main())

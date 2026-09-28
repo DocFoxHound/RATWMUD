@@ -224,7 +224,7 @@ with the phases that give them rules, so none is created before there is somethi
 
 ## Phase 3: relationships, memory and the NPC Mind (built 2026-09-27)
 
-**Relationships** (`Source/RATWMUD/Core/RatwBonds.h`, `World::bonds()`).
+**Relationships** (`Core/RatwBonds.h`, `World::bonds()`).
 - **What a bond holds.** Every character's regard for another is one-sided, with affinity, trust and respect (-100..100),
   familiarity and fear (0..100), what is owed, and the day of last contact.
 - **Only rules move them.** The events the world records drive them (`World::bondsFromEvent`):
@@ -295,7 +295,7 @@ with the phases that give them rules, so none is created before there is somethi
 
 ## Phase 4: households, positions, apprentices and succession (built 2026-09-27)
 
-**Positions** (`Position`, `Society::positions()`, `Source/RATWMUD/Core/RatwCareers.cpp`).
+**Positions** (`Position`, `Society::positions()`, `Core/RatwCareers.cpp`).
 - **What a position is.** Every authored resident's job becomes a position the town has: its title, role (merchant,
   guard, civilian), workplace, counter, hours, route and pay. It outlives whoever holds it.
 - **Who holds it.** Each founder starts in their own. The daily routine reads a resident's job from the position they
@@ -389,7 +389,7 @@ starts everyone in their own job; an unreadable careers section never makes a sa
 
 ## Phase 5: the roads (built 2026-09-27; placeholder numbers throughout)
 
-`Source/RATWMUD/Core/RatwRoads.h`, `RatwRoads.cpp`; `World::roads()`.
+`Core/RatwRoads.h`, `RatwRoads.cpp`; `World::roads()`.
 
 - **Towns.** A town is a region (the cells' territory) where at least five people live and there is a market. On DEV
   there are three: Upper Accord, Ridgemere and Ser Ferro.
@@ -573,7 +573,7 @@ Verified:
   `RATW.Network.DeltaSnapshots`.
 
 - **A standalone headless world server, with Unreal as the client** (`Server/ratw_server.cpp`).
-  - **One game, two hosts.** The whole server side is portable C++ in `Source/RATWMUD/Core`: `ratw::game::Game`
+  - **One game, two hosts.** The whole server side is portable C++ in `Core`: `ratw::game::Game`
     (`RatwGame.h`) holds the world, accounts and characters, commands, snapshots and events, the NPC Mind client
     (`RatwMind.h`), the Dungeon Master's bridge (`RatwDirector.h`), spawns, saves and releases. The Unreal server
     (`RatwGameMode.cpp`) is now a thin adapter that hosts it behind Unreal's networking; the standalone server hosts

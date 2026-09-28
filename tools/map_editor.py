@@ -721,7 +721,7 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
     files['README.txt'] = ('RATW authored world export v1\n\n'
         'This is offline content, not a game save. Extract into a NEW directory.\n'
         'Launch from the RATWMUD repository:\n'
-        'bash tools/play.sh -RatwWorld=/absolute/path/to/world.ratw\n'
+        'bash tools/play.sh --world /absolute/path/to/world.ratw\n'
         'A separate custom-world save is used by default. Do not reuse a save after changing cell topology.\n'
         f'Residents: {len(p.get("people", []))}; patrol routes: {len(p.get("routes", []))}.\n'
         'atlas.json reopens the editable world (atlas v3: every cell holds its own ground); .cell files are the runtime cells.\n'
@@ -898,9 +898,9 @@ def merge_roster(incoming, on_disk):
 
 
 def launch_game(manifest: Path, save: Path, quick: bool, log: Path):
-    command = ['bash', str(ROOT / 'tools' / 'play.sh'), f'-RatwWorld={manifest}', f'-RatwSave={save}']
+    command = ['bash', str(ROOT / 'tools' / 'play.sh'), '--world', str(manifest), '--save', str(save)]
     if quick:
-        command += ['-RatwDevIdentity', '-RatwIdentity=tester', '-RatwName=Tester']
+        command += ['--identity', 'tester', '--name', 'Tester']
     with open(log, 'wb') as out:
         subprocess.Popen(command, cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                          start_new_session=True)
@@ -911,7 +911,7 @@ def launch_live(quick: bool, log: Path):
     """Plays DEV's world as the DEV server would: builds it, then streams it from the database (no size limit)."""
     command = ['bash', str(ROOT / 'tools' / 'live.sh'), 'play', 'dev']
     if quick:
-        command += ['-RatwDevIdentity', '-RatwIdentity=tester', '-RatwName=Tester']
+        command += ['--identity', 'tester', '--name', 'Tester']
     with open(log, 'wb') as out:
         subprocess.Popen(command, cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                          start_new_session=True)
@@ -1125,7 +1125,7 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                                                 'command': ' '.join(shlex.quote(c) for c in command)})
                     with lock:
                         manifest = write_export(data['project'], folder, rosters)
-                    command = launcher(manifest, folder / 'save.sqlite', bool(data.get('quickStart', True)), folder / 'game.log')
+                    command = launcher(manifest, folder / 'save.json', bool(data.get('quickStart', True)), folder / 'game.log')
                     shown = folder.relative_to(ROOT) if ROOT in folder.parents else folder
                     return self.reply(200, {'folder': str(shown), 'manifest': str(manifest),
                                             'command': ' '.join(shlex.quote(c) for c in command)})

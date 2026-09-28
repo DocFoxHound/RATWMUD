@@ -59,7 +59,7 @@ These generated passages preserve the established runtime behavior: reaching an 
 - `Editor/src` is a React + TypeScript app built with Vite (`bash tools/editor.sh` builds and serves it): menu bar, command palette and shortcuts from one command registry (`lib/commands.ts`), a canvas renderer with shape tools and draggable markers (`components/MapCanvas.tsx`), explorer, contextual inspector, Problems panel, four workspaces (Map for world terrain and cells, Interiors for detached rooms, People, Characters), undo/redo. Since 2026-09-25 the editor edits the one world live in PostgreSQL (`20-world-database.md`, `lib/live.ts`, `tools/live_edit.py`).
 - `tools/roster.py` validates the shared character roster, assigns profession slots permanently at export, and generates characters through the live-NPC model.
 - `tools/map_editor.py` serves only the fixed editor assets on loopback and performs authoritative export validation. It never opens the game's save database.
-- `Source/RATWMUD/Core/RatwAuthoring.cpp` independently validates the exported manifest and its cell files into a candidate world before replacing runtime content.
+- `Core/RatwAuthoring.cpp` independently validates the exported manifest and its cell files into a candidate world before replacing runtime content.
 
 Client Preflight is useful immediate feedback, not a security or correctness boundary. The Python exporter validates geometry, fields, IDs, coverage, heights, links, arrivals, spawn, and size limits again. Runtime import validates the serialized package independently, including reciprocal fixtures and cell-file containment within the export directory.
 

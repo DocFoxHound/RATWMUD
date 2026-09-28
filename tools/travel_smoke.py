@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Real Unreal pace/travel test using only a disposable authored map and save."""
+"""Pace and known travel in the browser client, on a disposable authored map and save."""
 import argparse
 import json
-import os
 from pathlib import Path
-import sqlite3
 import subprocess
 import tempfile
-import time
 
 import map_editor
+from game_run import series
 
 
 def prepare(root):
@@ -42,59 +40,18 @@ p.spawn={cell:p.cells[0].id,x:5,y:6};console.log(JSON.stringify(p));
                  players=[dict(id='player-ash', name='Ash', cell='cell_1', x=5.5, y=6.5,
                                posture='standing', color=0, dexterity=50, stamina=100, pace=0)],
                  mapMemories=memories)
-    save = run / 'world.sqlite'
-    with sqlite3.connect(save) as database:
-        database.execute('CREATE TABLE world_state (id INTEGER PRIMARY KEY CHECK(id=1), '
-                         'schema_version INTEGER NOT NULL, revision INTEGER NOT NULL, payload TEXT NOT NULL)')
-        database.execute('INSERT INTO world_state VALUES (1, 1, 0, ?)', (json.dumps(state),))
+    save = run / 'world.json'
+    save.write_text(json.dumps(state))
     return manifest, save
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--headless', action='store_true')
-    parser.add_argument('--packaged', action='store_true')
+    parser.add_argument('--headless', action='store_true', help='No browser and no screenshots')
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     manifest, save = prepare(root)
-    evidence = root / 'artifacts' / ('packaged-evidence' if args.packaged else 'screenshots')
-    evidence.mkdir(parents=True, exist_ok=True)
-    engine = Path(os.environ.get('RATW_UNREAL_ROOT', '/home/martinb/Applications/UnrealEngine/5.8.2'))
-    base = ([str(root / 'artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD')]
-            if args.packaged else [str(engine / 'Engine/Binaries/Linux/UnrealEditor'), str(root / 'RATWMUD.uproject')])
-    command = base + ['/Engine/Maps/Entry', '-game', '-NoSplash', '-NoSound', '-Unattended',
-                      '-noscreenmessages', '-ForceLogFlush', '-RatwIdentity=ash', '-RatwName=Ash', '-RatwDevIdentity',
-                      '-RatwScenario=travel', f'-RatwWorld={manifest}', f'-RatwSave={save}',
-                      f'-RatwCaptureDir={evidence}']
-    command += ['-nullrhi'] if args.headless else ['-windowed', '-ResX=1600', '-ResY=1000',
-                                                '-ForceRes', '-RenderOffscreen', '-RatwCaptureTravel']
-    log = root / 'artifacts/logs' / ('travel-packaged-smoke.log' if args.packaged else 'travel-native-smoke.log')
-    started = time.time_ns()
-    child = None
-    try:
-        with log.open('w') as output:
-            child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT)
-            code = child.wait(timeout=170)
-        result = evidence / 'travel-ash.json'
-        if not result.exists() or result.stat().st_mtime_ns < started:
-            raise RuntimeError(f'No fresh travel scenario evidence. See {log}')
-        report = json.loads(result.read_text())
-        if code or not report['passed']:
-            raise RuntimeError(f'Travel scenario failed: {report["detail"]}. See {log}')
-        if not args.headless:
-            for name in ('15-travel-pace.png', '16-known-routes.png'):
-                capture = evidence / name
-                if not capture.exists() or capture.stat().st_mtime_ns < started or capture.stat().st_size < 1024:
-                    raise RuntimeError(f'No fresh screenshot: {name}')
-        print('PASS: ' + report['detail'])
-    finally:
-        if child and child.poll() is None:
-            child.terminate()
-            try:
-                child.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                child.kill()
-                child.wait(timeout=10)
+    series(('travel',), save, manifest, headless=args.headless, screenshots=('15-travel-pace.png', '16-known-routes.png'))
     return 0
 
 

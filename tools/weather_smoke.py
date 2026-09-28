@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Native weather gallery and restart regression with a disposable Atlas glade."""
+"""The weather gallery and a restart, in the browser client, on a disposable Atlas glade."""
 import argparse
 import json
-import os
 from pathlib import Path
 import subprocess
 import tempfile
-import time
 
 import map_editor
+from game_run import series
 
 
 def prepare(root):
@@ -37,62 +36,19 @@ m.addLink(p,{id:'shelter',name:'Shelter door',kind:'door',open:false,
 p.spawn={cell:p.cells[0].id,x:16,y:12};console.log(JSON.stringify(p));
 '''
     project = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', script], cwd=root, text=True))
-    return map_editor.write_export(project, run / 'export'), run / 'world.sqlite'
+    return map_editor.write_export(project, run / 'export'), run / 'world.json'
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--headless', action='store_true')
-    parser.add_argument('--packaged', action='store_true')
+    parser.add_argument('--headless', action='store_true', help='No browser and no screenshots')
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     manifest, save = prepare(root)
-    evidence = root / 'artifacts' / ('packaged-evidence' if args.packaged else 'screenshots')
-    evidence.mkdir(parents=True, exist_ok=True)
-    logs = root / 'artifacts/logs'
-    logs.mkdir(parents=True, exist_ok=True)
-    engine = Path(os.environ.get('RATW_UNREAL_ROOT', '/home/martinb/Applications/UnrealEngine/5.8.2'))
-    base = ([str(root / 'artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD')]
-            if args.packaged else [str(engine / 'Engine/Binaries/Linux/UnrealEditor'), str(root / 'RATWMUD.uproject')])
-    for scenario in ('weather', 'weather-restore'):
-        capture = scenario == 'weather' and not args.headless
-        command = base + ['/Engine/Maps/Entry', '-game', '-NoSplash', '-NoSound', '-Unattended',
-                          '-noscreenmessages', '-ForceLogFlush', '-RatwIdentity=ash', '-RatwName=Ash', '-RatwDevIdentity',
-                          '-RatwDevTools', f'-RatwScenario={scenario}', f'-RatwWorld={manifest}',
-                          f'-RatwSave={save}', f'-RatwCaptureDir={evidence}']
-        command += (['-windowed', '-ResX=1600', '-ResY=1000', '-ForceRes', '-RenderOffscreen', '-RatwCaptureWeather']
-                    if capture else ['-nullrhi'])
-        kind = 'packaged' if args.packaged else 'native'
-        log = logs / f'{scenario}-{kind}-smoke.log'
-        started = time.time_ns()
-        child = None
-        try:
-            with log.open('w') as output:
-                child = subprocess.Popen(command, cwd=root, stdout=output, stderr=subprocess.STDOUT)
-                code = child.wait(timeout=160)
-            result = evidence / f'{scenario}-ash.json'
-            if not result.exists() or result.stat().st_mtime_ns < started:
-                raise RuntimeError(f'No fresh {scenario} evidence. See {log}')
-            report = json.loads(result.read_text())
-            if code or not report['passed']:
-                raise RuntimeError(f'{scenario} failed: {report["detail"]}. See {log}')
-            if capture:
-                for name in ('17-weather-day.png', '18-weather-rain.png', '19-weather-snow.png',
-                             '20-weather-fog.png', '21-weather-night.png', '22-weather-shelter.png'):
-                    shot = evidence / name
-                    if not shot.exists() or shot.stat().st_mtime_ns < started or shot.stat().st_size < 1024:
-                        raise RuntimeError(f'No fresh screenshot: {name}')
-            print('PASS: ' + report['detail'], flush=True)
-        finally:
-            if child and child.poll() is None:
-                child.terminate()
-                try:
-                    child.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    child.kill()
-                    child.wait(timeout=10)
+    series(('weather', 'weather-restore'), save, manifest, headless=args.headless,
+           screenshots=('17-weather-day.png', '18-weather-rain.png', '19-weather-snow.png', '20-weather-fog.png',
+                        '21-weather-night.png', '22-weather-shelter.png'))
     return 0
-
 
 if __name__ == '__main__':
     raise SystemExit(main())

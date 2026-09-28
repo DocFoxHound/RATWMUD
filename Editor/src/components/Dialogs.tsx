@@ -250,7 +250,7 @@ function PlayDialog() {
         </> : <>
             <Hint>Exports a fresh copy of this world into Saved/Playtests with its own save file, then starts the game on it. Your atlas and other saves are never touched.</Hint>
             <Toggle label="Quick start as a test character" hint="Skips login and character creation" checked={quick} onChange={setQuick} />
-            {result && <div className="launch-note"><b>Started.</b> The game window takes a few seconds to appear.<small>{result.folder}</small><code>{result.command}</code></div>}
+            {result && <div className="launch-note"><b>Started.</b> The game opens in your browser in a few seconds.<small>{result.folder}</small><code>{result.command}</code></div>}
         </>}
         <div className="modal-actions"><button onClick={done}>Close</button>
             <button className="play" disabled={!!errors.length || busy} onClick={launch}>{busy ? 'Exporting…' : result ? '▶ Launch again' : '▶ Play'}</button></div>

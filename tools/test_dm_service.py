@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Isolated Storykeeper tests: never starts Unreal or reads a game save."""
+"""Isolated Storykeeper tests: never starts the game or reads a game save."""
 import copy
 import http.client
 import json
