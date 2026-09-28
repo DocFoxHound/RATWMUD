@@ -14,6 +14,7 @@ bool cryptoAvailable(std::string& error);
 bool pbkdf2Sha256(const std::string& password, const std::uint8_t* salt, std::size_t saltLength, int iterations,
                   std::uint8_t* out, std::size_t outLength);
 bool sha256(const std::string& data, std::uint8_t out[32]);
+bool sha1(const std::string& data, std::uint8_t out[20]);
 bool randomBytes(std::uint8_t* out, std::size_t length);
 bool sameBytes(const std::uint8_t* a, const std::uint8_t* b, std::size_t length);   // In constant time.
 void wipe(void* data, std::size_t length);

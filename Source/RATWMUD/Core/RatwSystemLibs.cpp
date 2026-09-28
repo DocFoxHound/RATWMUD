@@ -35,6 +35,7 @@ struct Crypto
     int (*pbkdf2)(const char*, int, const unsigned char*, int, int, const void*, int, unsigned char*) = nullptr;
     const void* (*sha256md)() = nullptr;
     unsigned char* (*sha256)(const unsigned char*, std::size_t, unsigned char*) = nullptr;
+    unsigned char* (*sha1)(const unsigned char*, std::size_t, unsigned char*) = nullptr;
     int (*rand)(unsigned char*, int) = nullptr;
     int (*memcmp)(const void*, const void*, std::size_t) = nullptr;
     void (*cleanse)(void*, std::size_t) = nullptr;
@@ -51,7 +52,7 @@ const Crypto& crypto()
             return;
         }
         c.ok = bind(library, "PKCS5_PBKDF2_HMAC", c.pbkdf2) && bind(library, "EVP_sha256", c.sha256md) &&
-               bind(library, "SHA256", c.sha256) && bind(library, "RAND_bytes", c.rand) &&
+               bind(library, "SHA256", c.sha256) && bind(library, "SHA1", c.sha1) && bind(library, "RAND_bytes", c.rand) &&
                bind(library, "CRYPTO_memcmp", c.memcmp) && bind(library, "OPENSSL_cleanse", c.cleanse);
         if (!c.ok)
             c.error = "libcrypto lacks the functions accounts need.";
@@ -104,6 +105,12 @@ bool sha256(const std::string& data, std::uint8_t out[32])
 {
     const auto& c = crypto();
     return c.ok && c.sha256(reinterpret_cast<const unsigned char*>(data.data()), data.size(), out) != nullptr;
+}
+
+bool sha1(const std::string& data, std::uint8_t out[20])
+{
+    const auto& c = crypto();
+    return c.ok && c.sha1(reinterpret_cast<const unsigned char*>(data.data()), data.size(), out) != nullptr;
 }
 
 bool randomBytes(std::uint8_t* out, std::size_t length)

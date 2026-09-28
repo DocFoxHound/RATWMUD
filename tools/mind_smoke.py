@@ -10,14 +10,17 @@ process and an isolated synthetic save. Three runs of the dialogue scenarios:
      the extractive one.
 
   python3 tools/mind_smoke.py
+  python3 tools/mind_smoke.py --standalone build-core/ratw_server   the same against the standalone server
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
 from pathlib import Path
 import sqlite3
+import socket
 import subprocess
 import threading
 import time
@@ -25,12 +28,30 @@ import time
 import npc_mind as mind
 
 
+STANDALONE: str | None = None     # The standalone server, to run the game against instead of in one Unreal process.
+
+
 def run(root: Path, binary: list[str], save: Path, folder: Path, scenario: str, endpoint: str) -> dict:
     folder.mkdir()
     command = binary + ["/Engine/Maps/Entry", "-game", "-nullrhi", "-NoSound", "-Unattended", "-NoSplash", "-NoSteam",
                         "-ForceLogFlush", "-RatwDevTools", "-RatwDevIdentity", "-RatwIdentity=ash", "-RatwName=Ash",
-                        f"-RatwSave={save}", f"-RatwCaptureDir={folder}", f"-RatwScenario={scenario}",
-                        f"-RatwDialogueEndpoint={endpoint}"]
+                        f"-RatwCaptureDir={folder}", f"-RatwScenario={scenario}"]
+    authority = None
+    if STANDALONE:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as reservation:
+            reservation.bind(("127.0.0.1", 0))
+            port = reservation.getsockname()[1]
+        server_log = (folder / "server.log").open("w")
+        authority = subprocess.Popen([STANDALONE, "--save", str(save), "--port", str(port), "--dev-identity", "--dev-tools",
+                                      "--dialogue", endpoint], cwd=root, stdout=server_log, stderr=subprocess.STDOUT)
+        deadline = time.monotonic() + 30
+        while f"listening on port {port}" not in (folder / "server.log").read_text(errors="replace"):
+            if authority.poll() is not None or time.monotonic() > deadline:
+                raise OSError("The standalone server did not start.")
+            time.sleep(.1)
+        command += [f"-RatwServer=127.0.0.1:{port}"]
+    else:
+        command += [f"-RatwSave={save}", f"-RatwDialogueEndpoint={endpoint}"]
     with (folder / "engine.log").open("w") as log:
         process = subprocess.Popen(command, cwd=root, stdout=log, stderr=subprocess.STDOUT)
         try:
@@ -39,23 +60,44 @@ def run(root: Path, binary: list[str], save: Path, folder: Path, scenario: str, 
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=10)
+            if authority:
+                authority.terminate()
+                authority.wait(timeout=30)
     result = json.loads((folder / f"{scenario}-ash.json").read_text())
     assert code == 0 and result["passed"], f"{scenario} failed: {result.get('detail')}"
     return result
 
 
 def saved(save: Path) -> dict:
+    if STANDALONE:
+        return json.loads(save.read_text())
     with sqlite3.connect(save) as database:
         return json.loads(database.execute("SELECT payload FROM world_state WHERE id=1").fetchone()[0])
 
 
+def age(save: Path) -> None:
+    """Every open conversation, as if an hour had passed since its last word."""
+    state = saved(save)
+    for memory in state["activeMemory"]:
+        memory["lastActivity"] = time.time() - 3601
+    if STANDALONE:
+        save.write_text(json.dumps(state))
+        return
+    with sqlite3.connect(save) as database:
+        database.execute("UPDATE world_state SET payload=? WHERE id=1", (json.dumps(state),))
+
+
 def main() -> int:
+    global STANDALONE
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--standalone", metavar="RATW_SERVER", help="Run against the standalone server (build-core/ratw_server).")
+    STANDALONE = parser.parse_args().standalone
     root = Path(__file__).resolve().parent.parent
     engine = Path(os.environ.get("RATW_UNREAL_ROOT", "/home/martinb/Applications/UnrealEngine/5.8.2"))
     binary = [str(engine / "Engine/Binaries/Linux/UnrealEditor"), str(root / "RATWMUD.uproject")]
     output = root / "artifacts/mind-smoke" / str(time.time_ns())
     output.mkdir(parents=True)
-    save = root / "Saved/Tests" / output.name / "world.sqlite"
+    save = root / "Saved/Tests" / output.name / ("world.json" if STANDALONE else "world.sqlite")
     save.parent.mkdir(parents=True)
     audit: list[dict] = []
     server = mind.Server(0, mind.Mind(mind.FixtureProvider(), budget=mind.Budget(100, 100), audit=audit.append))
@@ -83,11 +125,7 @@ def main() -> int:
         assert set(bonds) <= again, "Bonds survive a restart"
         print("PASS: after a restart the bonds are still there.", flush=True)
 
-        with sqlite3.connect(save) as database:
-            state = json.loads(database.execute("SELECT payload FROM world_state WHERE id=1").fetchone()[0])
-            for memory in state["activeMemory"]:
-                memory["lastActivity"] = time.time() - 3601
-            database.execute("UPDATE world_state SET payload=? WHERE id=1", (json.dumps(state),))
+        age(save)
         run(root, binary, save, output / "aged", "dialogue-recall", endpoint)
         summaries = [s for s in saved(save).get("summaries", []) if s["npc"] == "npc_keeper"]
         assert any(s["text"].startswith("Summary. A conversation of") for s in summaries), \

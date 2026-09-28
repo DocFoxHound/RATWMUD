@@ -27,7 +27,7 @@ import dm_service
 
 
 class Smoke:
-    def __init__(self, packaged=False, restart=True):
+    def __init__(self, packaged=False, restart=True, standalone=None):
         self.root = Path(__file__).resolve().parent.parent
         tests = self.root / 'Saved/Tests'
         tests.mkdir(parents=True, exist_ok=True)
@@ -42,11 +42,12 @@ class Smoke:
         self.result_path = self.logs / f'dm-{self.kind}-smoke-result.json'
         self.restart = restart
         self.packaged = packaged
+        self.standalone = standalone               # The standalone server (build-core/ratw_server) as the authority.
         engine = Path(os.environ.get('RATW_UNREAL_ROOT', '/home/martinb/Applications/UnrealEngine/5.8.2'))
         self.base = ([str(self.root / 'artifacts/package/Linux/RATWMUD/Binaries/Linux/RATWMUD')]
                      if packaged else [str(engine / 'Engine/Binaries/Linux/UnrealEditor'), str(self.root / 'RATWMUD.uproject')])
         self.common = ['-nullrhi', '-NoSound', '-NoSplash', '-Unattended', '-ForceLogFlush', '-noscreenmessages', '-RatwDevIdentity']
-        self.game_port = self.port(socket.SOCK_DGRAM)
+        self.game_port = self.port(socket.SOCK_STREAM if standalone else socket.SOCK_DGRAM)
         self.http_port = self.port(socket.SOCK_STREAM)
         self.origin = f'http://127.0.0.1:{self.http_port}'
         self.server = self.client = self.service = None
@@ -126,15 +127,19 @@ class Smoke:
     def start_server(self, label='server'):
         started_ns = time.time_ns()
         host = ['/Engine/Maps/Entry?listen', '-RatwHeadlessHost'] if self.packaged else ['/Engine/Maps/Entry', '-server']
-        self.server = self.process(self.base + host + self.common + [
-            '-MULTIHOME=127.0.0.1', f'-port={self.game_port}', f'-RatwSave={self.run / "world.sqlite"}',
-            f'-RatwDMDirectory={self.exchange}'], label)
+        if self.standalone:
+            self.server = self.process([self.standalone, '--save', str(self.run / 'world.json'), '--port', str(self.game_port),
+                                        '--dev-identity', '--dm-directory', str(self.exchange)], label)
+        else:
+            self.server = self.process(self.base + host + self.common + [
+                '-MULTIHOME=127.0.0.1', f'-port={self.game_port}', f'-RatwSave={self.run / "world.sqlite"}',
+                f'-RatwDMDirectory={self.exchange}'], label)
 
         def ready():
             path = self.exchange / 'snapshot.json'
             if not path.exists() or path.stat().st_mtime_ns < started_ns:
                 return False
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM if self.standalone else socket.SOCK_DGRAM) as probe:
                 try:
                     probe.bind(('127.0.0.1', self.game_port))
                 except OSError as error:
@@ -249,7 +254,9 @@ class Smoke:
         self.report['worldId'] = world_id
 
         self.client_started_ns = time.time_ns()
-        self.client = self.process(self.base + [f'127.0.0.1:{self.game_port}', '-game'] + self.common +
+        target = (['/Engine/Maps/Entry', f'-RatwServer=127.0.0.1:{self.game_port}'] if self.standalone
+                  else [f'127.0.0.1:{self.game_port}'])
+        self.client = self.process(self.base + target + ['-game'] + self.common +
             ['-RatwIdentity=ash', '-RatwName=Ash', '-RatwScenario=dm-observer', f'-RatwCaptureDir={self.evidence}'], 'observer')
         state = self.fresh_condition(lambda state: self.actor(state, 'player-ash') and self.actor(state, 'player-ash')['online'] and
                                      self.actor(state, 'player-ash')['active'], 'Ash connected and issued look', 45)
@@ -376,8 +383,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--packaged', action='store_true', help='Use the current packaged executable rather than UnrealEditor.')
     parser.add_argument('--no-restart', action='store_true', help='Skip the final separate-authority restart/replay check.')
+    parser.add_argument('--standalone', metavar='RATW_SERVER', help='The standalone server (build-core/ratw_server) as the authority.')
     args = parser.parse_args()
-    Smoke(packaged=args.packaged, restart=not args.no_restart).execute()
+    Smoke(packaged=args.packaged, restart=not args.no_restart, standalone=args.standalone).execute()
     return 0
 
 

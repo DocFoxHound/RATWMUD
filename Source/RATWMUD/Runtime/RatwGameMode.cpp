@@ -10,7 +10,7 @@
 #include "Runtime/RatwDMBridge.h"
 #include "Runtime/RatwAccounts.h"
 #include "Runtime/RatwMotion.h"
-#include "Runtime/RatwCellPrefetch.h"
+#include "Core/RatwCellPrefetch.h"
 #include "Core/RatwPg.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
@@ -2528,9 +2528,20 @@ ARatwGameMode::ARatwGameMode()
     PrimaryActorTick.bCanEverTick = true;
 }
 ARatwGameMode::~ARatwGameMode() = default;
+namespace
+{
+// -RatwServer=host:port: this process is only a client of the standalone server; it runs no world of its own.
+bool ClientOfStandaloneServer()
+{
+    FString Address;
+    return FParse::Value(FCommandLine::Get(), TEXT("RatwServer="), Address);
+}
+} // namespace
 void ARatwGameMode::BeginPlay()
 {
     Super::BeginPlay();
+    if (ClientOfStandaloneServer())
+        return;
     if (!Runtime.IsValid())
     {
         Runtime = MakeShared<FRatwRuntime>();
@@ -2553,6 +2564,8 @@ void ARatwGameMode::Tick(float DeltaSeconds)
 void ARatwGameMode::PostLogin(APlayerController* NewPlayer)
 {
     Super::PostLogin(NewPlayer);
+    if (ClientOfStandaloneServer())
+        return;
     if (!Runtime.IsValid())
     {
         Runtime = MakeShared<FRatwRuntime>();

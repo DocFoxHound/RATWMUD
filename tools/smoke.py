@@ -18,6 +18,8 @@ def main() -> int:
     parser.add_argument("mode", choices=("network", "gallery", "walkthrough", "persistence", "movement", "scent"))
     parser.add_argument("--headless", action="store_true", help="Skip GPU screenshots for transport testing")
     parser.add_argument("--packaged", action="store_true", help="Run archived Linux binaries without the editor")
+    parser.add_argument("--standalone", metavar="RATW_SERVER", help="Network mode against the standalone server "
+                        "(build-core/ratw_server) instead of an Unreal server: the clients connect with -RatwServer")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     engine = Path(os.environ.get("RATW_UNREAL_ROOT", "/home/martinb/Applications/UnrealEngine/5.8.2"))
@@ -69,12 +71,20 @@ def main() -> int:
             hosting = ["/Engine/Maps/Entry?listen", "-RatwHeadlessHost"] if args.packaged else ["/Engine/Maps/Entry", "-server"]
             # RATW_SERVER_FLAGS: more for the server, e.g. -RatwFullSnapshots to measure snapshots sent whole.
             extra = os.environ.get("RATW_SERVER_FLAGS", "").split()
-            server = start("server", hosting + ["-nullrhi", f"-port={port}", "-MULTIHOME=127.0.0.1", f"-RatwSave={save}"] + extra)
+            if args.standalone:
+                handle = (logs / "standalone-server.log").open("w")
+                handles.append(handle)
+                server = subprocess.Popen([args.standalone, "--save", str(save.with_suffix(".json")), "--port", str(port),
+                                           "--dev-identity", "--dev-tools"] + extra, cwd=root, stdout=handle, stderr=subprocess.STDOUT)
+                processes.append(server)
+                print(f"Started standalone server: PID {server.pid}", flush=True)
+            else:
+                server = start("server", hosting + ["-nullrhi", f"-port={port}", "-MULTIHOME=127.0.0.1", f"-RatwSave={save}"] + extra)
             deadline = time.monotonic() + 90
             while time.monotonic() < deadline:
                 if server.poll() is not None:
                     raise RuntimeError("Server exited before listening; inspect artifacts/logs/server.log")
-                log = (logs / ("packaged-server.log" if args.packaged else "server.log")).read_text(errors="replace")
+                log = (logs / ("standalone-server.log" if args.standalone else "packaged-server.log" if args.packaged else "server.log")).read_text(errors="replace")
                 if f"listening on port {port}" in log:
                     break
                 # Packaged stdout can buffer a quiet host's final startup line.
@@ -96,7 +106,8 @@ def main() -> int:
                 graphics = ["-nullrhi"] if args.headless or source else ["-windowed", "-ResX=1600", "-ResY=1000", "-RenderOffscreen"]
                 scenario = "scent-source" if source else args.mode
                 capture = ["-RatwCaptureScent"] if args.mode == "scent" and not args.headless and not source else []
-                clients.append(start(identity, [f"127.0.0.1:{port}", "-game", f"-RatwIdentity={identity}", f"-RatwName={name}", f"-RatwScenario={scenario}", f"-RatwCaptureDir={output}"] + graphics + capture))
+                target = ["/Engine/Maps/Entry", f"-RatwServer=127.0.0.1:{port}"] if args.standalone else [f"127.0.0.1:{port}"]
+                clients.append(start(identity, target + ["-game", f"-RatwIdentity={identity}", f"-RatwName={name}", f"-RatwScenario={scenario}", f"-RatwCaptureDir={output}"] + graphics + capture))
             if args.mode == "scent":
                 code = clients[1].wait(timeout=150)
                 evidence = output / "scent-ash.json"
@@ -119,6 +130,39 @@ def main() -> int:
                 if any(codes) or not all(item["passed"] for item in results):
                     raise RuntimeError(f"Network scenario failed: exits={codes}, details={[item['detail'] for item in results]}")
                 print("PASS: two independent clients moved and received each other's IC and local OOC events.", flush=True)
+        elif args.mode == "persistence" and args.standalone:
+            # The same three steps, each against a new standalone server process on one save (a JSON file).
+            store = save.with_suffix(".json")
+            for scenario in ("persist-write", "persist-read", "persist-aged"):
+                if scenario == "persist-aged":
+                    payload = json.loads(store.read_text())
+                    assert payload["activeMemory"], "No NPC interaction was stored"
+                    for memory in payload["activeMemory"]:
+                        memory["lastActivity"] = time.time() - 3601
+                    store.write_text(json.dumps(payload))
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as reservation:
+                    reservation.bind(("127.0.0.1", 0))
+                    port = reservation.getsockname()[1]
+                handle = (logs / f"standalone-{scenario}.log").open("w")
+                handles.append(handle)
+                server = subprocess.Popen([args.standalone, "--save", str(store), "--port", str(port), "--dev-identity"],
+                                          cwd=root, stdout=handle, stderr=subprocess.STDOUT)
+                processes.append(server)
+                deadline = time.monotonic() + 30
+                while f"listening on port {port}" not in (logs / f"standalone-{scenario}.log").read_text(errors="replace"):
+                    if server.poll() is not None or time.monotonic() > deadline:
+                        raise RuntimeError(f"The standalone server did not start; inspect artifacts/logs/standalone-{scenario}.log")
+                    time.sleep(.1)
+                child = start(scenario, ["/Engine/Maps/Entry", f"-RatwServer=127.0.0.1:{port}", "-game", "-nullrhi", "-RatwIdentity=ash",
+                                         "-RatwName=Ash", f"-RatwScenario={scenario}", f"-RatwCaptureDir={output}"])
+                code = child.wait(timeout=150)
+                server.terminate()
+                server.wait(timeout=30)
+                result = json.loads((output / f"{scenario}-ash.json").read_text())
+                if code or not result["passed"]:
+                    raise RuntimeError(f"{scenario} failed: {result['detail']}")
+                print(f"PASS: {scenario}: {result['detail']}", flush=True)
+            print("PASS: separate standalone server restarts retained character, map memory and conversation; one hour inactive produced a permanent summary.", flush=True)
         elif args.mode == "persistence":
             for scenario in ("persist-write", "persist-read", "persist-aged"):
                 if scenario == "persist-aged":

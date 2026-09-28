@@ -10,7 +10,7 @@ public class RATWMUD : ModuleRules
         PublicIncludePaths.Add(ModuleDirectory);
         PublicDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore",
-            "Json", "JsonUtilities", "HTTP", "SQLiteCore", "OnlineSubsystemUtils", "ImageWrapper"
+            "Json", "JsonUtilities", "HTTP", "SQLiteCore", "OnlineSubsystemUtils", "ImageWrapper", "Sockets", "Networking"
         });
         AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
         // The world database client (Core/RatwPg.cpp) loads the system libpq at run time.

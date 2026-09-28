@@ -9,13 +9,16 @@
 # first (skipped when nothing changed since the last one; RATW_NO_BUILD=1 skips the
 # check too). RATW_PACKAGED=1 runs the server from the cooked package (tools/package.sh)
 # instead of the editor: it starts in seconds, but runs the code the package was made
-# from. A server restarts itself when Push to live publishes a new release (it exits
-# with status 75 once nobody is connected); any other exit ends it.
+# from. RATW_STANDALONE=1 runs the standalone headless server (tools/standalone.sh) instead:
+# no Unreal on the server at all, ready in seconds; players connect with
+# RATW_STANDALONE=1 bash tools/connect.sh HOST:7788. A server restarts itself when Push to
+# live publishes a new release (it exits with status 75 once nobody is connected); any
+# other exit ends it.
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-}"; database="${2:-}"
 if [[ "$mode" != server && "$mode" != play ]] || [[ "$database" != prod && "$database" != dev ]]; then
-  sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
   exit 2
 fi
 shift 2
@@ -29,7 +32,9 @@ if [[ "$mode" == play ]]; then
 fi
 while true; do
   status=0
-  if [[ "${RATW_PACKAGED:-0}" == 1 ]]; then
+  if [[ "${RATW_STANDALONE:-0}" == 1 ]]; then
+    bash "$ratw_root/tools/standalone.sh" --database "$database" "$@" || status=$?
+  elif [[ "${RATW_PACKAGED:-0}" == 1 ]]; then
     bash "$ratw_root/tools/run-packaged.sh" server "-RatwDatabase=$database" "$@" || status=$?
   else
     bash "$ratw_root/tools/server.sh" "-RatwDatabase=$database" "$@" || status=$?

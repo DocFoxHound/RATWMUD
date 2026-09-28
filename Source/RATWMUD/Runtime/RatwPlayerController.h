@@ -6,6 +6,7 @@
 #include "RatwPlayerController.generated.h"
 
 class SRatwGame;
+class FRatwRemoteLink;
 class SRatwFrontDoor;
 class FJsonObject;
 
@@ -17,6 +18,9 @@ class RATWMUD_API ARatwPlayerController : public APlayerController
     ARatwPlayerController();
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void PlayerTick(float DeltaTime) override;
+    // -RatwServer=host:port: a client of the standalone server (Server/ratw_server), not of an Unreal server.
+    bool IsRemoteClient() const { return Remote.IsValid(); }
     UFUNCTION(Server, Reliable) void ServerCommand(const FString& Json);
     void ClientSnapshot(const FString& Json);
     UFUNCTION(Client, Unreliable) void ClientCompressedSnapshot(const TArray<uint8>& Compressed, int32 RawBytes);
@@ -78,6 +82,11 @@ class RATWMUD_API ARatwPlayerController : public APlayerController
     int32 MotionFrameCount = 0, SnapshotCount = 0;
     int64 SnapshotBytesReceived = 0;
     ratwsections::FCache Sections;
+    TSharedPtr<FRatwRemoteLink> Remote;
+    void SendToServer(const FString& Json);
+    void SendAck(double Revision, bool Missing);
+    void ReceiveEventJson(const FString& Json);
+    void ApplyMotionFrame(const TSharedPtr<FJsonObject>& Frame);
     void ShowLobby(const TSharedPtr<FJsonObject>& Event);
     void ShowGame();
     void ApplySnapshotJson(const FString& Json);

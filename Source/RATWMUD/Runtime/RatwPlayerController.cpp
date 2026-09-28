@@ -3,6 +3,7 @@
 #include "Runtime/RatwSnapshotCodec.h"
 #include "Runtime/RatwMotion.h"
 #include "Runtime/RatwAccounts.h"
+#include "Runtime/RatwRemoteLink.h"
 #include "UI/SRatwGame.h"
 #include "UI/SRatwFrontDoor.h"
 #include "Dom/JsonObject.h"
@@ -31,6 +32,24 @@ void ARatwPlayerController::BeginPlay()
         return;
     if (!IsLocalController())
         return;
+    FString ServerAddress;
+    if (FParse::Value(FCommandLine::Get(), TEXT("RatwServer="), ServerAddress))
+    {
+        Remote = MakeShared<FRatwRemoteLink>();
+        FString Problem;
+        if (!Remote->Connect(ServerAddress, Problem))
+        {
+            UE_LOG(LogTemp, Error, TEXT("RATW standalone server unreachable: %s"), *Problem);
+            PendingLobby = MakeShared<FJsonObject>();
+            PendingLobby->SetStringField(TEXT("type"), TEXT("lobby"));
+            PendingLobby->SetStringField(TEXT("stage"), TEXT("login"));
+            PendingLobby->SetBoolField(TEXT("ok"), false);
+            PendingLobby->SetStringField(TEXT("message"), TEXT("The world server could not be reached: ") + Problem);
+            PendingLobby->SetArrayField(TEXT("characters"), {});
+        }
+        else
+            UE_LOG(LogTemp, Display, TEXT("RATW connected to the standalone server at %s"), *ServerAddress);
+    }
     const bool Development = FParse::Param(FCommandLine::Get(), TEXT("RatwDevIdentity"));
     if (!Development)
     {
@@ -58,7 +77,7 @@ void ARatwPlayerController::BeginPlay()
     Hello->SetStringField(TEXT("commandId"), FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens));
     FString Json;
     FJsonSerializer::Serialize(Hello, TJsonWriterFactory<>::Create(&Json));
-    ServerCommand(Json);
+    SendToServer(Json);
     if (!PendingSnapshot.IsEmpty())
         ApplySnapshotJson(PendingSnapshot);
 }
@@ -97,10 +116,67 @@ void ARatwPlayerController::SubmitCommand(const FString& Json)
     FString Encoded;
     FJsonSerializer::Serialize(Command.ToSharedRef(),
                                TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Encoded));
-    ServerCommand(Encoded);
+    SendToServer(Encoded);
+}
+
+void ARatwPlayerController::SendToServer(const FString& Json)
+{
+    if (Remote.IsValid())
+        Remote->SendCommand(Json);
+    else
+        ServerCommand(Json);
+}
+
+void ARatwPlayerController::SendAck(double Revision, bool Missing)
+{
+    if (Remote.IsValid())
+        Remote->SendAck(Revision, Missing);
+    else
+        ServerSnapshotAck(Revision, Missing);
+}
+
+void ARatwPlayerController::PlayerTick(float DeltaTime)
+{
+    Super::PlayerTick(DeltaTime);
+    if (!Remote.IsValid())
+        return;
+    const bool WasOpen = Remote->IsOpen();
+    Remote->Poll([this](ratw::link::Kind Kind, const TArray<uint8>& Raw, int32 WireBytes) {
+        if (Kind == ratw::link::Motion)
+        {
+            if (EnteredWorld)
+                if (const auto Frame = ratwmotion::Unpack(Raw))
+                    ApplyMotionFrame(Frame);
+            return;
+        }
+        FString Json;
+        {
+            const FUTF8ToTCHAR Text(reinterpret_cast<const ANSICHAR*>(Raw.GetData()), Raw.Num());
+            Json = FString(Text.Length(), Text.Get());
+        }
+        if (Kind == ratw::link::Snapshot)
+        {
+            SnapshotBytesReceived += WireBytes;
+            ApplySnapshotJson(Json);
+        }
+        else if (Kind == ratw::link::Event)
+            ReceiveEventJson(Json);
+    });
+    if (WasOpen && !Remote->IsOpen())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("RATW the standalone server closed the connection."));
+        auto Lost = MakeShared<FJsonObject>();
+        Lost->SetStringField(TEXT("type"), TEXT("lobby"));
+        Lost->SetStringField(TEXT("stage"), TEXT("login"));
+        Lost->SetBoolField(TEXT("ok"), false);
+        Lost->SetStringField(TEXT("message"), TEXT("The connection to the world server was lost."));
+        Lost->SetArrayField(TEXT("characters"), {});
+        ShowLobby(Lost);
+    }
 }
 bool ARatwPlayerController::AllowsLocalCredentials() const
 {
+    if (Remote.IsValid()) return Remote->IsLoopback();     // The standalone server decides too.
     if (!GetWorld()) return false;
     if (GetWorld()->GetNetMode() == NM_Standalone || (HasAuthority() && IsLocalController())) return true;
     const auto* Connection = GetNetConnection();
@@ -210,10 +286,10 @@ void ARatwPlayerController::ApplySnapshotJson(const FString& Json)
     // Put back the parts the server left out because this client holds them; lacking one, ask for everything.
     if (!ratwsections::Fill(Object, Sections))
     {
-        ServerSnapshotAck(Revision, true);
+        SendAck(Revision, true);
         return;
     }
-    ServerSnapshotAck(Revision, false);
+    SendAck(Revision, false);
     NewestGeneration = PresentationGeneration = Generation;
     PresentationCell = Object->GetObjectField(TEXT("cell"))->GetStringField(TEXT("id"));
     SnapshotRevision = Revision;
@@ -240,6 +316,11 @@ void ARatwPlayerController::ClientCompressedMotion_Implementation(const TArray<u
     if (!ratwwire::DecodeBytes(Compressed, RawBytes, Bytes)) return;
     const TSharedPtr<FJsonObject> Frame = ratwmotion::Unpack(Bytes);
     if (!Frame) return;
+    ApplyMotionFrame(Frame);
+}
+
+void ARatwPlayerController::ApplyMotionFrame(const TSharedPtr<FJsonObject>& Frame)
+{
     if (Frame->GetStringField(TEXT("motionSession")) != PresentationSession ||
         Frame->GetStringField(TEXT("observer")) != PresentationCharacterId) return;
     const int32 Generation = Frame->GetIntegerField(TEXT("cellGeneration"));
@@ -267,6 +348,11 @@ void ARatwPlayerController::ClientCompressedEvent_Implementation(const TArray<ui
     FString Json;
     if (!ratwwire::Decode(Compressed, RawBytes, Json))
         return;
+    ReceiveEventJson(Json);
+}
+
+void ARatwPlayerController::ReceiveEventJson(const FString& Json)
+{
     TSharedPtr<FJsonObject> Object;
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Object) || !Object.IsValid()) return;
     FString Type;

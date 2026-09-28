@@ -1,7 +1,7 @@
 // The game server's PostgreSQL client: parameters, NULLs, errors and
 // notifications, against a real database named by RATW_TEST_DATABASE_URL.
 #include "RatwPg.h"
-#include "Runtime/RatwCellPrefetch.h"
+#include "Core/RatwCellPrefetch.h"
 
 #include <chrono>
 #include <cstdlib>

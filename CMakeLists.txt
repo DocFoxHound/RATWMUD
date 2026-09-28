@@ -5,7 +5,7 @@ option(RATW_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_library(ratw_core Source/RATWMUD/Core/RatwWorld.cpp Source/RATWMUD/Core/RatwAuthoring.cpp Source/RATWMUD/Core/RatwTravel.cpp Source/RATWMUD/Core/RatwCalendar.cpp Source/RATWMUD/Core/RatwSociety.cpp Source/RATWMUD/Core/RatwAging.cpp Source/RATWMUD/Core/RatwAppearance.cpp Source/RATWMUD/Core/RatwResidents.cpp Source/RATWMUD/Core/RatwPg.cpp Source/RATWMUD/Core/RatwBonds.cpp Source/RATWMUD/Core/RatwCareers.cpp Source/RATWMUD/Core/RatwRoads.cpp Source/RATWMUD/Core/RatwJsonDoc.cpp Source/RATWMUD/Core/RatwWire.cpp Source/RATWMUD/Core/RatwSocialCore.cpp Source/RATWMUD/Core/RatwCheckpoint.cpp Source/RATWMUD/Core/RatwDbStore.cpp Source/RATWMUD/Core/RatwSystemLibs.cpp Source/RATWMUD/Core/RatwAccountsCore.cpp Source/RATWMUD/Core/RatwMind.cpp Source/RATWMUD/Core/RatwSections.cpp)
+add_library(ratw_core Source/RATWMUD/Core/RatwWorld.cpp Source/RATWMUD/Core/RatwAuthoring.cpp Source/RATWMUD/Core/RatwTravel.cpp Source/RATWMUD/Core/RatwCalendar.cpp Source/RATWMUD/Core/RatwSociety.cpp Source/RATWMUD/Core/RatwAging.cpp Source/RATWMUD/Core/RatwAppearance.cpp Source/RATWMUD/Core/RatwResidents.cpp Source/RATWMUD/Core/RatwPg.cpp Source/RATWMUD/Core/RatwBonds.cpp Source/RATWMUD/Core/RatwCareers.cpp Source/RATWMUD/Core/RatwRoads.cpp Source/RATWMUD/Core/RatwJsonDoc.cpp Source/RATWMUD/Core/RatwWire.cpp Source/RATWMUD/Core/RatwSocialCore.cpp Source/RATWMUD/Core/RatwCheckpoint.cpp Source/RATWMUD/Core/RatwDbStore.cpp Source/RATWMUD/Core/RatwSystemLibs.cpp Source/RATWMUD/Core/RatwAccountsCore.cpp Source/RATWMUD/Core/RatwMind.cpp Source/RATWMUD/Core/RatwSections.cpp Source/RATWMUD/Core/RatwMotionCore.cpp Source/RATWMUD/Core/RatwGame.cpp Source/RATWMUD/Core/RatwDirector.cpp)
 find_package(Threads REQUIRED)
 target_link_libraries(ratw_core PUBLIC ${CMAKE_DL_LIBS} Threads::Threads)
 target_include_directories(ratw_core PUBLIC Source/RATWMUD/Core)
@@ -59,6 +59,15 @@ add_test(NAME checkpoint_behaviors COMMAND checkpoint_tests)
 add_executable(server_parts_tests Tests/server_parts_tests.cpp)
 target_link_libraries(server_parts_tests PRIVATE ratw_core)
 add_test(NAME server_parts_behaviors COMMAND server_parts_tests)
+add_executable(game_tests Tests/game_tests.cpp)
+target_link_libraries(game_tests PRIVATE ratw_core)
+add_test(NAME game_behaviors COMMAND game_tests)
+# The standalone headless world server (Server/ratw_server.cpp; Docs/Design/26-living-npcs.md, Phase 6).
+add_executable(ratw_server Server/ratw_server.cpp)
+target_link_libraries(ratw_server PRIVATE ratw_core)
+add_executable(server_smoke Tests/server_smoke.cpp)
+target_link_libraries(server_smoke PRIVATE ratw_core)
+add_test(NAME server_end_to_end COMMAND server_smoke $<TARGET_FILE:ratw_server>)
 add_executable(careers_tests Tests/careers_tests.cpp)
 target_link_libraries(careers_tests PRIVATE ratw_core)
 add_test(NAME careers_behaviors COMMAND careers_tests)
@@ -101,7 +110,7 @@ add_test(NAME appearance_behaviors COMMAND appearance_tests)
 # Needs RATW_TEST_DATABASE_URL (a libpq connection string); skips without it.
 add_executable(pg_tests Tests/pg_tests.cpp)
 target_link_libraries(pg_tests PRIVATE ratw_core)
-target_include_directories(pg_tests PRIVATE Source/RATWMUD)   # Runtime/RatwCellPrefetch.h (plain C++, no Unreal).
+target_include_directories(pg_tests PRIVATE Source/RATWMUD)   # Core/RatwCellPrefetch.h.
 add_test(NAME pg_client COMMAND pg_tests)
 
 add_executable(town_tests Tests/town_tests.cpp)
