@@ -66,6 +66,7 @@ void Finish(bool Success, const FString& Detail)
     {
         Result->SetNumberField(TEXT("motionFrames"), Controller->GetMotionFrameCount());
         Result->SetNumberField(TEXT("fullSnapshots"), Controller->GetSnapshotCount());
+        Result->SetNumberField(TEXT("snapshotBytesReceived"), static_cast<double>(Controller->GetSnapshotBytesReceived()));
         for (const auto& Event : Controller->GetReceivedEvents())
             if (auto Object = Parse(Event))
                 Events.Add(MakeShared<FJsonValueObject>(Object));

@@ -12,7 +12,9 @@ and refuses if someone else saved the world since it was opened.
 from __future__ import annotations
 
 import argparse
+import pickle
 import sys
+import threading
 
 import map_editor
 import roster as roster_lib
@@ -383,20 +385,30 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False) 
     return new_revision
 
 
-def load_world(conn, world_id: str) -> tuple[dict, int]:
-    """The project as the editor edits it (atlas v3: every world cell with its own ground), and its revision."""
-    head = conn.execute('''SELECT name, spawn_area, spawn_x, spawn_y, chunk_size, revision
-                           FROM world.worlds WHERE id = %s''', (world_id,)).fetchone()
-    if head is None:
-        raise StoreError(f'Unknown world: {world_id}.')
-    name, spawn_area, spawn_x, spawn_y, size, revision = head
-    q = lambda sql: conn.execute(sql, (world_id,)).fetchall()
+_ground_lock = threading.Lock()
+_ground: dict = {}          # (database, world) -> (version, pickled {cell id: (terrain rows, heights)})
 
-    claims = claims_by_area(conn, world_id)
-    dicts = lambda sql: dict_rows(conn, sql, (world_id,))
-    places = lambda sql: [{**r, 'claims': claims.get(r['id'], [])} for r in dicts(sql)]
-    cells = [cell_entity(r) for r in places('SELECT * FROM world.cells WHERE world_id = %s ORDER BY position')]
-    # Each cell's ground, cut from the terrain chunks it covers.
+
+def _ground_key(conn, world_id):
+    info = getattr(conn, 'info', None)
+    return (getattr(info, 'host', ''), getattr(info, 'port', ''), getattr(info, 'dbname', ''), world_id)
+
+
+def _cached_ground(conn, world_id, version):
+    with _ground_lock:
+        hit = _ground.get(_ground_key(conn, world_id))
+    return pickle.loads(hit[1]) if hit and hit[0] == version else None
+
+
+def _keep_ground(conn, world_id, version, ground):
+    data = pickle.dumps(ground, protocol=5)
+    with _ground_lock:
+        _ground[_ground_key(conn, world_id)] = (version, data)
+
+
+def _cut_ground(q, cells, size):
+    """Every cell's terrain rows and heights, cut from the terrain chunks it covers."""
+    ground = {}
     chunks = {(cx, cy): (glyphs, local) for cx, cy, glyphs, local in
               q('SELECT cx, cy, glyphs, heights FROM world.terrain_chunks WHERE world_id = %s')}
     for c in cells:
@@ -420,8 +432,37 @@ def load_world(conn, world_id: str) -> tuple[dict, int]:
                     if 0 <= x < w and 0 <= y < h:
                         found.append((y, x, value))
         found.sort()
-        c['terrain'] = rows
-        c['heights'] = {f'{x},{y}': int(v) if isinstance(v, float) and v.is_integer() else v for y, x, v in found}
+        ground[c['id']] = (rows, {f'{x},{y}': int(v) if isinstance(v, float) and v.is_integer() else v for y, x, v in found})
+    return ground
+
+
+def load_world(conn, world_id: str) -> tuple[dict, int]:
+    """The project as the editor edits it (atlas v3: every world cell with its own ground), and its revision."""
+    head = conn.execute('''SELECT name, spawn_area, spawn_x, spawn_y, chunk_size, revision, updated_at
+                           FROM world.worlds WHERE id = %s''', (world_id,)).fetchone()
+    if head is None:
+        raise StoreError(f'Unknown world: {world_id}.')
+    name, spawn_area, spawn_x, spawn_y, size, revision, updated = head
+    q = lambda sql: conn.execute(sql, (world_id,)).fetchall()
+
+    claims = claims_by_area(conn, world_id)
+    dicts = lambda sql: dict_rows(conn, sql, (world_id,))
+    places = lambda sql: [{**r, 'claims': claims.get(r['id'], [])} for r in dicts(sql)]
+    cells = [cell_entity(r) for r in places('SELECT * FROM world.cells WHERE world_id = %s ORDER BY position')]
+    # Each cell's ground, cut from the terrain chunks it covers: the slow part of a load, and changed only by edits
+    # that raise the revision, so kept per revision (a fresh copy each time; callers may change what they get).
+    # Not only the revision: a world made again from scratch starts its revisions over, and publishing writes PROD's
+    # rows as DEV has them. Any write to a chunk or a cell gives that row a new version (xmin), so these catch them all.
+    version = (revision, updated, size) + conn.execute('''
+        SELECT (SELECT coalesce(max(xmin::text::bigint), 0) || ':' || count(*) FROM world.terrain_chunks WHERE world_id = %s),
+               (SELECT coalesce(max(xmin::text::bigint), 0) || ':' || count(*) FROM world.cells WHERE world_id = %s)''',
+        (world_id, world_id)).fetchone()
+    ground = _cached_ground(conn, world_id, version)
+    if ground is None or any(c['id'] not in ground for c in cells):
+        ground = _cut_ground(q, cells, size)
+        _keep_ground(conn, world_id, version, ground)
+    for c in cells:
+        c['terrain'], c['heights'] = ground[c['id']]
     rooms = [room_entity(r) for r in places('SELECT * FROM world.interiors WHERE world_id = %s ORDER BY position')]
     links = [link_entity(r) for r in dicts('SELECT * FROM world.links WHERE world_id = %s ORDER BY position')]
     herb = q("SELECT area, x, y FROM world.resources WHERE world_id = %s AND kind = 'herb' ORDER BY id")

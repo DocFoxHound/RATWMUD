@@ -67,7 +67,9 @@ def main() -> int:
                 reservation.bind(("127.0.0.1", 0))
                 port = reservation.getsockname()[1]
             hosting = ["/Engine/Maps/Entry?listen", "-RatwHeadlessHost"] if args.packaged else ["/Engine/Maps/Entry", "-server"]
-            server = start("server", hosting + ["-nullrhi", f"-port={port}", "-MULTIHOME=127.0.0.1", f"-RatwSave={save}"])
+            # RATW_SERVER_FLAGS: more for the server, e.g. -RatwFullSnapshots to measure snapshots sent whole.
+            extra = os.environ.get("RATW_SERVER_FLAGS", "").split()
+            server = start("server", hosting + ["-nullrhi", f"-port={port}", "-MULTIHOME=127.0.0.1", f"-RatwSave={save}"] + extra)
             deadline = time.monotonic() + 90
             while time.monotonic() < deadline:
                 if server.poll() is not None:

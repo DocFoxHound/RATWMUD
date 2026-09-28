@@ -885,6 +885,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         C->DevelopmentIdentity = DevelopmentId;
         C->MotionSession = FGuid::NewGuid().ToString(EGuidFormats::Digits);
         C->MotionCell.Empty(); C->MotionGeneration = 0;
+        C->ResetSections();                            // A new session: the client starts with nothing kept.
         auto Entered = New();
         Entered->SetStringField(TEXT("type"), TEXT("entered"));
         Entered->SetStringField(TEXT("id"), C->EntityId);
@@ -958,6 +959,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 auto Entered = New(); Entered->SetStringField(TEXT("type"), TEXT("entered"));
                 Entered->SetStringField(TEXT("id"), C->EntityId);
                 Entered->SetStringField(TEXT("motionSession"), C->MotionSession);
+                C->ResetSections();
                 Send(C, Entered); Snapshot(C); return true;
             }
             System(C, TEXT("Leave the current character before changing account or character selection."));
@@ -1115,6 +1117,11 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                     BeforeCells[E->id] = E->cellId;
         World.tick(Dt);
         ++Revision;
+        // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
+        for (const auto& [Who, Words] : World.takeNotices())
+            for (const auto& C : Clients)
+                if (C.IsValid() && S(C->EntityId) == Who)
+                    System(C.Get(), F(Words));
         for (const auto& Pair : BeforeCells)
             if (const auto* E = World.entity(Pair.first))
                 if (E->cellId != Pair.second)
@@ -1150,7 +1157,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                     if (C->MotionCell != F(E->cellId)) Snapshot(C.Get());
                     auto Motion = ratwmotion::Frame(World, E->id);
                     StampFrame(C.Get(), Motion, E->cellId);
-                    C->ClientMotion(Encode(Motion));
+                    C->ClientMotion(Motion);
                 }
         SaveAccumulator += Dt;
         AmbientAccumulator += Dt;
@@ -1365,7 +1372,18 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             auto J = Entity(E, View.time);
             Array Actions;
             Actions.Add(V(TEXT("inspect")));
-            if (E.npc)
+            if (E.transient)
+            {
+                // Folk of the road: a caravan is only to be looked at; bandits are paid off or fought.
+                if (World.hostile(E.id))
+                {
+                    J->SetBoolField(TEXT("hostile"), true);
+                    if (World.banditDemand(View.self.id) > 0) Actions.Add(V(TEXT("pay")));
+                    if (std::hypot(E.position.x - View.self.position.x, E.position.y - View.self.position.y) <= 2)
+                        Actions.Add(V(TEXT("attack")));
+                }
+            }
+            else if (E.npc)
             {
                 Actions.Add(V(TEXT("talk")));
                 if (World.society().merchant(E.id)) Actions.Add(V(TEXT("trade")));
@@ -1503,6 +1521,22 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         Root->SetObjectField(TEXT("memory"), Memory);
         Root->SetBoolField(TEXT("persistenceHealthy"), StorageReady);
         Root->SetBoolField(TEXT("devTools"), DevTools);
+        // Leave out what this client already holds (RatwSnapshotSections.h), and remember what this one carries.
+        // (A second snapshot at the same revision is dropped by the client, so the first one's keys are what count.)
+        // -RatwFullSnapshots sends every snapshot whole, as before.
+        static const bool Whole = FParse::Param(FCommandLine::Get(), TEXT("RatwFullSnapshots"));
+        if (!Whole)
+        {
+            const auto Keys = ratwsections::Strip(Root, C->KnownSections);
+            if (!C->SentSections.Contains(static_cast<double>(Revision)))
+                C->SentSections.Add(static_cast<double>(Revision), Keys);
+        }
+        while (C->SentSections.Num() > 32)
+        {
+            double Oldest = TNumericLimits<double>::Max();
+            for (const auto& Sent : C->SentSections) Oldest = FMath::Min(Oldest, Sent.Key);
+            C->SentSections.Remove(Oldest);
+        }
         C->ClientSnapshot(Encode(Root));
     }
 
@@ -1988,12 +2022,25 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                     System(C, TEXT("You cannot see that wolf."));
                     return;
                 }
+                if (Npc->transient)
+                {
+                    System(C, World.hostile(Target) ? TEXT("They want your purse, not your conversation.")
+                                                    : TEXT("The carters are too busy with the road to talk."));
+                    return;
+                }
                 if (World.hearingClarity(Target, Id) < 0.25)
                 {
                     System(C, TEXT("Move closer so that wolf can hear your greeting."));
                     return;
                 }
                 Talk(Target, Id, TEXT("Hello. I would like to talk."));
+            }
+            else if (Action == "attack" || Action == "pay")
+            {
+                const auto Done = Action == "attack" ? World.attack(Id, Target) : World.payBandits(Id, Target);
+                System(C, F(Done.message));
+                if (Done.ok)
+                    SaveSoon();
             }
             else if (Action == "ask for work")
             {
@@ -2153,7 +2200,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             const auto Evidence = ratw::roleplayEvidence(Post);
             Social.record({Event, Now(), Id, Player->cellId, Evidence.words, false, Evidence.contentHash}, Heard);
             for (const auto& Pair : World.entities())
-                if (Pair.second.npc)
+                if (Pair.second.npc && !Pair.second.transient)
                 {
                     const auto Sense = World.perceive(Pair.first, Id, Voice);
                     const auto HeardSegments = ratw::perceivePost(Post, Sense.hearing, Sense.vision,
@@ -2244,7 +2291,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         C->Saved = World.save();
         C->Characters = Characters;
         for (const auto& Pair : World.entities())
-            if (Pair.second.npc)
+            if (Pair.second.npc && !Pair.second.transient)   // Road folk come back from the roads' own state.
                 C->Npcs.push_back(Pair.second);
         C->CompanionOwner = CompanionOwner;
         C->Memories = Memories;
@@ -2344,6 +2391,11 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             J->SetNumberField(TEXT("nextAt"), Trip.nextAt); J->SetNumberField(TEXT("departed"), Trip.departed);
             J->SetNumberField(TEXT("guards"), Trip.guards); Text(J, TEXT("status"), Trip.status);
             J->SetArrayField(TEXT("escorts"), Strings(Trip.escorts)); J->SetArrayField(TEXT("letters"), Strings(Trip.letters));
+            Text(J, TEXT("cell"), Trip.cell); J->SetNumberField(TEXT("x"), Trip.x); J->SetNumberField(TEXT("y"), Trip.y);
+            J->SetNumberField(TEXT("waitUntil"), Trip.waitUntil);
+            auto With = New();
+            for (const auto& [Who, Cells] : Trip.with) With->SetNumberField(F(Who), Cells);
+            J->SetObjectField(TEXT("with"), With);
             Caravans.Add(V(J));
         }
         for (const auto& Camp : Saved.roads.camps)
@@ -2351,6 +2403,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             auto J = New();
             Text(J, TEXT("id"), Camp.id); Text(J, TEXT("cell"), Camp.cell); J->SetNumberField(TEXT("strength"), Camp.strength);
             J->SetNumberField(TEXT("hunger"), Camp.hunger); J->SetNumberField(TEXT("lastRaid"), Camp.lastRaid); J->SetBoolField(TEXT("active"), Camp.active);
+            J->SetNumberField(TEXT("x"), Camp.x); J->SetNumberField(TEXT("y"), Camp.y);
             Camps.Add(V(J));
         }
         for (const auto& Work : Saved.roads.contracts)
@@ -2772,13 +2825,19 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 C.leg = static_cast<std::size_t>(FMath::Max(0.0, Number(J, TEXT("leg")))); C.nextAt = Number(J, TEXT("nextAt"));
                 C.departed = Number(J, TEXT("departed")); C.guards = static_cast<int>(Number(J, TEXT("guards"), 1));
                 C.status = S(String(J, TEXT("status"))); C.escorts = Strings(J, TEXT("escorts")); C.letters = Strings(J, TEXT("letters"));
+                C.cell = S(String(J, TEXT("cell"))); C.x = Number(J, TEXT("x")); C.y = Number(J, TEXT("y"));
+                C.waitUntil = Number(J, TEXT("waitUntil"));
+                if (const auto With = Child(J, TEXT("with")); With.IsValid())
+                    for (const auto& [Who, Cells] : With->Values)
+                        if (Cells.IsValid() && Cells->Type == EJson::Number) C.with[S(Who)] = static_cast<int>(Cells->AsNumber());
                 if (C.leg < C.route.size()) Saved.roads.caravans.push_back(std::move(C));
             }
             for (const auto& Value : Items(Roads, TEXT("camps")))
             {
                 auto J = Value->AsObject();
                 Saved.roads.camps.push_back({S(String(J, TEXT("id"))), S(String(J, TEXT("cell"))), Number(J, TEXT("strength")),
-                                             Number(J, TEXT("hunger")), Number(J, TEXT("lastRaid")), Bool(J, TEXT("active"))});
+                                             Number(J, TEXT("hunger")), Number(J, TEXT("lastRaid")), Bool(J, TEXT("active")),
+                                             Number(J, TEXT("x"), -1), Number(J, TEXT("y"), -1)});
             }
             for (const auto& Value : Items(Roads, TEXT("contracts")))
             {

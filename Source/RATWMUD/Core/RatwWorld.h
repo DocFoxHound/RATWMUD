@@ -175,6 +175,8 @@ struct Entity
     // Simulation tier (see World::setTiered), never saved: an NPC far from every player lives its day in timed
     // steps from one known-good place to the next instead of walking every tile.
     bool offstage = false;
+    // Folk of the road (a caravan's wagon, bandits), made from the roads' state as needed and never saved themselves.
+    bool transient = false;
 };
 
 struct Door
@@ -395,6 +397,16 @@ class World
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
     // What an NPC has heard about someone, in words for a conversation (empty if nothing).
     std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;
+    // Fights (a first, placeholder version; only bandits can be fought). A player swings at a bandit within reach;
+    // stamina is what a fight wears down, and one beaten to the ground is robbed, not killed.
+    Result attack(const std::string& attacker, const std::string& target);
+    // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
+    Result payBandits(const std::string& player, const std::string& bandit);
+    bool hostile(const std::string& id) const;               // A bandit, still standing.
+    std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
+    // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
+    // call: (player, words), oldest first. The host shows them to the player.
+    std::vector<std::pair<std::string, std::string>> takeNotices();
     std::vector<WorldEvent> takeEvents();
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Route searches answered from the path cache, and searched (see findPath).
@@ -528,11 +540,66 @@ class World
     void setupTowns();
     void tendRoads();
     void roadsDaily();
-    void advanceCaravans();
     std::vector<std::string> routeBetween(const std::string& from, const std::string& to) const;
     void rumoursFromEvent(const WorldEvent& event);
     void contractsFromEvent(const WorldEvent& event);
     void settleContract(Contract& c, const std::string& status, const std::string& paidTo);
+    // Road folk: each one's part, keyed by entity ID ("road:...").
+    struct RoadFolk
+    {
+        std::string kind, of;               // "caravan" or "bandit"; the caravan's or camp's ID.
+        double hp = 16, share = 1, nextSwing = 0, nextPath = 0;
+        std::string lastCell;
+        double enteredAt = 0;               // When it came into its cell (a wagon stuck that long is moved on).
+    };
+    std::map<std::string, RoadFolk> folk_;
+    // Bandits who have stopped a player: asking (a demand) until they pay, get clear, or it comes to blows.
+    struct Encounter
+    {
+        std::string camp, player;
+        std::int64_t demand = 0;
+        double since = 0;
+        bool fighting = false;
+    };
+    std::vector<Encounter> encounters_;
+    std::map<std::string, double> spared_;          // Players bandits leave alone until then (world seconds).
+    std::map<std::string, double> swingReady_;      // When each player may swing again.
+    std::vector<std::pair<std::string, std::string>> notices_;
+    std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two towns (cells), for bandits.
+    std::int64_t priceHour_ = -1;
+    struct RouteBudget;
+    void tendRoadFolk();
+    void tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& budget);
+    void tendCamp(BanditCamp& camp, const std::set<std::string>& stage);
+    const Town* town(const std::string& id) const;
+    void caravanEntered(Caravan& c, const Entity& wagon);
+    void caravanArrived(Caravan& c);
+    Entity& addRoadFolk(const std::string& id, const std::string& name, const std::string& description,
+                        const std::string& cellId, Vec2 at, const std::string& kind, const std::string& of);
+    void removeRoadFolk(const std::string& id);
+    bool withCaravan(const std::string& who, const Entity& wagon) const;
+    Encounter* encounterWith(const std::string& player);
+    void endEncounter(const std::string& camp, double spareFor);
+    void clearCamp(BanditCamp& camp, const std::string& by);
+    void beaten(Entity& player, BanditCamp& camp);
+    BanditCamp* campOf(const std::string& banditId);
+    void notice(const std::string& player, std::string words) { notices_.push_back({player, std::move(words)}); }
+    void tendPrices();
+    void residentsTakeWork();
+    void tradeBetweenTowns();
+    Caravan* sendCaravan(const Town& from, const Town& to, const std::map<std::string, int>& load);
+    // Work on the road a resident has taken (a letter to carry, a caravan to guard): where it takes them now,
+    // in place of the day's plan. False if they have none, or it waits (for the morning, say).
+    bool errand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
+                std::string& goalCell, Vec2& goal) const;
+    // Walking (onstage) or hopping (offstage) toward a goal, through the cells in between: what residents do to
+    // follow their schedules, and what the road folk do.
+    struct RouteBudget
+    {
+        int searches = 0;
+        std::size_t expandedBefore = 0;
+    };
+    void headFor(Entity& e, const std::string& task, const std::string& goalCell, Vec2 target, RouteBudget& budget);
     std::int64_t marriageWeek_ = -1;
     void tendPromises();
     void tendMarriages();

@@ -306,7 +306,7 @@ python3 tools/world_db.py set-publish-password
 python3 tools/world_store.py import  # one-time: copy Data/Characters and Data/Worlds into DEV (--replace to overwrite)
 python3 tools/world_store.py list    # worlds in DEV
 python3 tools/world_db.py down      # stop; data is kept in the ratw_pgdata volume
-python3 tools/world_build.py dev     # compile DEV's world for a local DEV server
+python3 tools/world_build.py dev     # compile DEV's world for a local DEV server (skipped if unchanged; --force)
 python3 tools/world_build.py latest  # newest build in DEV and PROD
 ```
 
@@ -322,8 +322,9 @@ the rows that changed. NPC running state is also in `live.npc_state`:
 
 ```bash
 bash tools/live.sh server prod   # the live server players join
-bash tools/live.sh server dev    # builds DEV's current world, then serves it
+bash tools/live.sh server dev    # builds DEV's current world (if it changed), then serves it
 bash tools/live.sh play dev      # a local game window on DEV
+RATW_PACKAGED=1 bash tools/live.sh server dev   # the same from the cooked package (tools/package.sh)
 ```
 
 When Push to live publishes a new release, a running server tells anyone

@@ -317,5 +317,27 @@ class PublishTests(unittest.TestCase):
             S.save_roster(self.dev, roster)
 
 
+    def test_an_unchanged_world_is_not_built_again(self):
+        """Launching DEV again with nothing changed reuses its build; any edit, live layer or roster change doesn't."""
+        build_id, count = B.build(self.dev, 'test')
+        self.assertEqual(B.current(self.dev), (build_id, count))
+        before = S.load_world(self.dev, 'greyfen')[0]['cells'][0]['terrain'][2][3]
+        self.edit(('tile:3,2', None if before == '.' else before, '~'))
+        self.assertIsNone(B.current(self.dev), 'an edit makes the build out of date')
+        build_id, count = B.build(self.dev, 'test')
+        self.assertEqual(B.current(self.dev), (build_id, count))
+        # A live layer the game or the Dungeon Master changes directly (a faction), then the roster.
+        self.dev.execute("INSERT INTO live.factions (world_id, id, name, color, position) VALUES ('greyfen', 'wardens', 'Wardens', '#2255aa', 99)")
+        self.assertIsNone(B.current(self.dev), 'a new faction makes the build out of date')
+        build_id, _ = B.build(self.dev, 'test')
+        self.assertIsNotNone(B.current(self.dev))
+        roster = S.load_roster(self.dev)
+        try:
+            S.save_roster(self.dev, {**roster, 'characters': roster['characters'][1:]})
+            self.assertIsNone(B.current(self.dev), 'a roster change makes the build out of date')
+        finally:
+            S.save_roster(self.dev, roster)
+
+
 if __name__ == '__main__':
     unittest.main()

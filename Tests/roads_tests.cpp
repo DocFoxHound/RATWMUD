@@ -20,7 +20,7 @@ void expect(bool condition, const std::string& message)
         throw std::runtime_error(message);
 }
 
-constexpr int Cells = 9, Side = 16;
+constexpr int Side = 16;
 std::string id(int i) { return "c_" + std::to_string(i) + "_0"; }
 
 struct Fixture
@@ -55,13 +55,16 @@ std::string resident(const std::string& who, const std::string& name, const std:
     return r.str();
 }
 
-Fixture strip()
+// A strip of cells in a row, one letter each: 'E' the capital "east", 'M' a town "mid", 'W' the town "west", '.'
+// wild country. Each town's first cell is where its people live, its second its market.
+Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra = "")
 {
     Fixture f;
+    const int cells = int(layout.size());
     std::ostringstream m;
     m << "RATW_WORLD 3\n";
     int seam = 0;
-    for (int i = 0; i < Cells; ++i)
+    for (int i = 0; i < cells; ++i)
     {
         std::ostringstream cell;
         cell << "id: " << id(i) << "\nname: Stretch " << i << "\ndescription: Open ground.\nworld: " << i * Side
@@ -69,7 +72,7 @@ Fixture strip()
         for (int y = 0; y < Side; ++y) cell << std::string(Side, '.') << '\n';
         f.cells[id(i)] = cell.str();
         m << "area \"" << id(i) << "\"\n";
-        if (i + 1 < Cells)
+        if (i + 1 < cells)
             for (int k = 0; k < Side; ++k)
             {
                 const std::string a = "seam_" + std::to_string(seam) + "_a", b = "seam_" + std::to_string(seam) + "_b";
@@ -83,23 +86,33 @@ Fixture strip()
                 ++seam;
             }
     }
-    for (int i = 0; i < Cells; ++i)
+    const auto region = [](char c) { return c == 'E' ? "east" : c == 'M' ? "mid" : c == 'W' ? "west" : "wilds"; };
+    for (int i = 0; i < cells; ++i)
     {
-        m << "exits \"" << id(i) << "\" " << ((i > 0) + (i + 1 < Cells));
+        m << "exits \"" << id(i) << "\" " << ((i > 0) + (i + 1 < cells));
         if (i > 0) m << " \"" << id(i - 1) << '"';
-        if (i + 1 < Cells) m << " \"" << id(i + 1) << '"';
+        if (i + 1 < cells) m << " \"" << id(i + 1) << '"';
         m << '\n';
-        m << "territory \"" << id(i) << "\" \"" << (i <= 1 ? "east" : i >= 7 ? "west" : "wilds") << "\" \"-\" 0\n";
+        m << "territory \"" << id(i) << "\" \"" << region(layout[std::size_t(i)]) << "\" \"-\" 0\n";
     }
     m << "spawn \"" << id(0) << "\" 8.5 8.5\n";
     m << "economy 1000 100 50 10 12\n";
-    m << resident("em", "Ember Oak", "merchant", "keeping the east stall", 0, 2.5, 1, 8.5);
-    m << resident("wm", "Wren Reed", "merchant", "keeping the west stall", 8, 2.5, 8, 8.5);
-    for (int n = 1; n <= 5; ++n)
+    // East's first cell is 0; mid's and west's are wherever their letters start.
+    const auto first = [&](char c) { return int(layout.find(c)); };
+    const std::map<char, std::pair<std::string, std::string>> merchants = {
+        {'E', {"em", "Ember Oak"}}, {'M', {"mm", "Moss Hale"}}, {'W', {"wm", "Wren Reed"}}};
+    for (const auto& [c, who] : merchants)
     {
-        m << resident("e" + std::to_string(n), "East " + std::to_string(n), "civilian", "working", 0, 3.5 + n, 0, 3.5 + n);
-        m << resident("w" + std::to_string(n), "West " + std::to_string(n), "civilian", "working", 8, 3.5 + n, 8, 3.5 + n);
+        const int home = first(c);
+        if (home < 0)
+            continue;
+        const std::string tag = c == 'E' ? "e" : c == 'M' ? "m" : "w";
+        m << resident(who.first, who.second, "merchant", "keeping the stall", home, 2.5, home + 1, 8.5);
+        for (int n = 1; n <= 5; ++n)
+            m << resident(tag + std::to_string(n), std::string(c == 'E' ? "East" : c == 'M' ? "Mid" : "West") + " " + std::to_string(n), "civilian", "working",
+                          home, 3.5 + n, home, 3.5 + n);
     }
+    m << extra;
     f.manifest = m.str();
     return f;
 }
@@ -131,6 +144,33 @@ void run(World& w, double seconds)
 {
     for (double t = 0; t < seconds; t += 1)
         w.tick(1);
+}
+
+void nextMorning(World& w)
+{
+    auto saved = w.save();
+    saved.calendarDays = std::floor(saved.calendarDays) + 1.3;     // Early in the morning of the next day.
+    expect(w.restore(saved).ok, "A day passes");
+    w.tick(.6);
+}
+
+// A player who keeps beside a caravan's wagon, a step behind it, until it arrives where it was going.
+bool walkWith(World& w, const std::string& player, const std::string& trip, int seconds)
+{
+    for (int t = 0; t < seconds; ++t)
+    {
+        if (const auto* wagon = w.entity("road:" + trip))
+        {
+            auto* p = w.entity(player);
+            p->cellId = wagon->cellId;
+            p->position = {std::max(.6, wagon->position.x - 1), wagon->position.y};
+        }
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            if (e.kind == "caravan arrives" && e.actor == trip)
+                return true;
+    }
+    return false;
 }
 
 void townsAndCaravans()
@@ -191,7 +231,7 @@ void banditsAndContracts()
     expect(w.roads().camps[0].hunger < 100 - load * 3, "The loot feeds the bandits");
     expect(w.society().conserved(), "The reward was set aside, not made");
 
-    // Ada, in west, takes the escort; the camp is gone by the next caravan (the watch), so it arrives and she is paid.
+    // Ada, in west, takes the escort. The camp is gone by the next caravan (the watch), but she has to be there.
     auto* ada = w.entity("player-ada");
     ada->cellId = id(8);
     ada->position = {8.5, 8.5};
@@ -201,17 +241,70 @@ void banditsAndContracts()
     expect(w.takeContract("player-ada", escortId).ok, "Ada takes the escort");
     expect(!w.takeContract("player-ada", escortId).ok, "Once");
     w.roads().camps.clear();
+    w.roads().caravans.clear();                 // (The robbed one, going home.)
     const auto purse = w.society().account("player-ada")->cash;
-    auto saved = w.save();
-    saved.calendarDays += 1;                     // The next morning.
-    expect(w.restore(saved).ok, "A day passes");
-    w.tick(.6);
-    expect(!w.roads().caravans.empty() && w.roads().caravans.back().guards >= 3 &&
-               w.roads().caravans.back().escorts.size() == 1,
-           "The next caravan has her among its guards");
-    run(w, 7 * 150 + 20);
-    expect(w.society().account("player-ada")->cash > purse, "It arrives safely and she is paid");
+    // She goes to the capital's market to meet it.
+    ada->cellId = id(1);
+    ada->position = {8.5, 10.5};
+    w.takeNotices();
+    nextMorning(w);
+    expect(!w.roads().caravans.empty() && w.roads().caravans.back().escorts == std::vector<std::string>{"player-ada"},
+           "The next caravan counts her among its escorts");
+    bool told = false;
+    for (const auto& [who, words] : w.takeNotices())
+        told |= who == "player-ada" && words.find("making ready") != std::string::npos;
+    expect(told, "and she is told it is making ready");
+    const auto* wagon = w.entity("road:" + w.roads().caravans.back().id);
+    expect(wagon && wagon->transient && !wagon->offstage && wagon->cellId == id(1), "Its wagon stands in the market, in person");
+    // She walks beside it all the way.
+    const std::string trip = w.roads().caravans.back().id;
+    const bool arrived = walkWith(w, "player-ada", trip, 900);
+    expect(arrived, "It reaches west with her");
+    expect(w.society().account("player-ada")->cash == purse + 12, "and she is paid for guarding it");
     expect(w.society().conserved(), "Money is conserved");
+    // The wagon is never saved as itself: a restart brings it back from the caravan.
+    for (const auto& npc : w.save().npcs)
+        expect(npc.id.rfind("road:", 0) != 0, "Road folk are not saved as characters");
+}
+
+void anEscortWhoIsntThere()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().camps.clear();
+    w.roads().caravans.clear();
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(8);
+    ada->position = {8.5, 8.5};
+    auto& job = w.postContract("escort", "treasury", "west", "west", 12, 7, "guarding the next caravan to west");
+    const std::string jobId = job.id;
+    expect(w.takeContract("player-ada", jobId).ok, "Ada takes an escort");
+    const auto purse = w.society().account("player-ada")->cash;
+    const auto treasury = w.society().account("treasury")->cash;
+    nextMorning(w);
+    const std::string trip = w.roads().caravans.back().id;
+    run(w, 60);
+    expect(w.entity("road:" + trip) && w.entity("road:" + trip)->cellId == id(1), "The caravan waits for her");
+    // She never comes: it goes without her after two game hours, and gets there.
+    bool arrived = false;
+    for (int t = 0; t < 4000 && !arrived; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            arrived |= e.kind == "caravan arrives" && e.actor == trip;
+    }
+    expect(arrived, "It goes without her in the end");
+    expect(w.society().account("player-ada")->cash == purse, "She is not paid for a road she didn't walk");
+    bool returned = false;
+    for (const auto& k : w.roads().contracts)
+        returned |= k.id == jobId && k.status == "expired";
+    expect(returned && treasury > 0, "The pay goes back");
+    bool heard = false;
+    for (const auto& [who, words] : w.takeNotices())
+        heard |= who == "player-ada" && words.find("without you") != std::string::npos;
+    expect(heard, "and she hears so");
 }
 
 void couriersAndSupplies()
@@ -252,6 +345,245 @@ void couriersAndSupplies()
     expect(w.society().conserved(), "Money is conserved");
 }
 
+// Bandits of this camp standing in the world now.
+std::vector<const Entity*> bandits(const World& w, const std::string& camp)
+{
+    std::vector<const Entity*> out;
+    for (const auto& [eid, e] : w.entities())
+        if (eid.rfind("road:" + camp + ":", 0) == 0 && !e.dead)
+            out.push_back(&e);
+    return out;
+}
+
+bool heard(World& w, const std::string& who, const std::string& words)
+{
+    bool found = false;
+    for (const auto& [to, text] : w.takeNotices())
+        found |= to == who && text.find(words) != std::string::npos;
+    return found;
+}
+
+void banditsInPerson()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().caravans.clear();
+    w.roads().camps = {{"camp_mid", id(4), 9, 60, -100, true}};
+    run(w, 2);
+    expect(bandits(w, "camp_mid").empty(), "Nobody near: the bandits are only numbers");
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(3);
+    ada->position = {8.5, 8.5};
+    run(w, 2);
+    expect(bandits(w, "camp_mid").size() == 3, "Someone near: three of them in person (" +
+                                                 std::to_string(bandits(w, "camp_mid").size()) + ")");
+    expect(!w.banditDemand("player-ada"), "Not yet on their road, she is not stopped");
+    // Into their cell.
+    ada->cellId = id(4);
+    ada->position = {w.roads().camps[0].x - 3, w.roads().camps[0].y};
+    w.takeNotices();
+    run(w, 2);
+    const auto demand = w.banditDemand("player-ada");
+    expect(demand > 0, "They stop her and ask for her purse");
+    expect(heard(w, "player-ada", "Your purse"), "in words she is shown");
+    const auto purse = w.society().account("player-ada")->cash;
+    const auto* one = bandits(w, "camp_mid").front();
+    const auto paid = w.payBandits("player-ada", one->id);
+    expect(paid.ok && w.society().account("player-ada")->cash == purse - demand, "She pays: " + paid.message);
+    expect(w.society().account("bandits:camp_mid") && w.society().account("bandits:camp_mid")->cash == demand,
+           "and the camp has it");
+    expect(!w.banditDemand("player-ada"), "They let her go");
+    run(w, 30);
+    expect(!w.banditDemand("player-ada"), "and leave her be for a while");
+    expect(w.society().conserved(), "Money is conserved");
+    // She goes away; they are numbers again.
+    ada->cellId = id(8);
+    run(w, 2);
+    expect(bandits(w, "camp_mid").empty(), "Nobody near again: gone from the world");
+    for (const auto& npc : w.save().npcs)
+        expect(npc.id.rfind("road:", 0) != 0, "never saved as characters");
+}
+
+void aFight()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().caravans.clear();
+    w.roads().camps = {{"camp_mid", id(4), 9, 60, -100, true}};
+    const auto& bounty = w.postContract("bounty", "treasury", "west", "camp_mid", 30, 20, "the bandits at the ford");
+    const std::string bountyId = bounty.id;
+    auto* ada = w.entity("player-ada");
+    ada->strength = 90;
+    ada->dexterity = 90;
+    ada->cellId = id(3);
+    ada->position = {8.5, 8.5};
+    run(w, 2);
+    expect(!w.attack("player-ada", "npc_nobody").ok, "Nothing to fight that isn't there");
+    // She walks up to the leader and swings until it is over, one way or the other.
+    const auto purse = w.society().account("player-ada")->cash;
+    ada->cellId = id(4);
+    bool cleared = false;
+    std::string last;
+    for (int t = 0; t < 300 && !cleared; ++t)
+    {
+        const auto* leader = w.entity("road:camp_mid:0");
+        if (!leader || leader->dead)
+            break;
+        ada->position = {std::max(.6, leader->position.x - 1), leader->position.y};
+        ada->stamina = std::max(ada->stamina, 60.0);        // A strong fighter (and the test isn't about losing).
+        const auto swing = w.attack("player-ada", leader->id);
+        if (swing.ok)
+            last = swing.message;
+        w.tick(.5);
+        cleared = !w.roads().camps[0].active;
+    }
+    expect(cleared, "She strikes the leader down and the camp is broken (" + last + ")");
+    bool paid = false;
+    for (const auto& k : w.roads().contracts)
+        paid |= k.id == bountyId && k.status == "done";
+    expect(paid && w.society().account("player-ada")->cash >= purse + 30, "The bounty is hers");
+    expect(w.rumoursAbout("wm", "player-ada", "Ada").find("drove the bandits off") != std::string::npos,
+           "and the west market hears of it: " + w.rumoursAbout("wm", "player-ada", "Ada"));
+    expect(w.society().conserved(), "Money is conserved");
+}
+
+void beatenAndRobbed()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().caravans.clear();
+    w.roads().camps = {{"camp_mid", id(4), 9, 60, -100, true}};
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(3);
+    ada->position = {8.5, 8.5};
+    run(w, 2);
+    ada->cellId = id(4);
+    ada->position = {w.roads().camps[0].x - 3, w.roads().camps[0].y};
+    ada->stamina = 30;
+    w.society().shift("treasury", "player-ada", "", 0, 80, "test: a fuller purse");
+    const auto purse = w.society().account("player-ada")->cash;
+    // She neither pays nor leaves: they lose patience.
+    bool beaten = false;
+    for (int t = 0; t < 120 && !beaten; ++t)
+    {
+        w.entity("player-ada")->stamina = std::min(w.entity("player-ada")->stamina, 30.0);
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            beaten |= e.kind == "robbed" && e.target == "player-ada";
+    }
+    expect(beaten, "They beat her to the ground");
+    const auto now = w.society().account("player-ada")->cash;
+    expect(now < purse && now >= purse / 2 - 1, "and take half her purse (" + std::to_string(purse) + " -> " + std::to_string(now) + ")");
+    expect(!w.entity("player-ada")->dead, "but she lives");
+    expect(!w.banditDemand("player-ada"), "They leave her be");
+    expect(w.society().conserved(), "Money is conserved");
+}
+
+void residentsTakeWork()
+{
+    // A guard in the capital, and someone there out of work.
+    auto f = strip("EE.....WW", resident("eg", "Holt Vane", "guard", "keeping watch", 0, 12.5, 1, 12.5) +
+                                    resident("ex", "Bram Dell", "civilian", "-", 0, 13.5, 0, 13.5));
+    auto w = load(f);
+    w.tick(.6);
+    expect(!w.society().jobOf("ex"), "Bram has no work");
+    w.roads().camps.clear();
+    w.roads().caravans.clear();
+    // A letter nobody has taken for a couple of days.
+    auto& letter = w.postContract("courier", "em", "west", "wm", 5, 10, "a letter from Ember to Wren");
+    const std::string letterId = letter.id;
+    auto& escort = w.postContract("escort", "treasury", "west", "west", 12, 7, "guarding the next caravan to west");
+    const std::string escortId = escort.id;
+    auto saved = w.save();
+    saved.calendarDays += 2.05;
+    expect(w.restore(saved).ok, "Two days pass");
+    w.tick(.6);
+    const Contract* carried = nullptr;
+    const Contract* guarded = nullptr;
+    for (const auto& k : w.roads().contracts)
+    {
+        if (k.id == letterId) carried = &k;
+        if (k.id == escortId) guarded = &k;
+    }
+    expect(carried && carried->status == "taken" && carried->taker == "ex", "Bram takes the letter (" +
+                                                                                 (carried ? carried->taker : "") + ")");
+    expect(guarded && guarded->status == "taken" && guarded->taker == "eg", "and the town guard the escort");
+    const auto bram = w.society().account("ex")->cash;
+    const auto holt = w.society().account("eg")->cash;
+    // They go, in person: the letter to Wren, the guard with the caravan.
+    bool delivered = false, arrived = false;
+    for (int t = 0; t < 6000 && !(delivered && arrived); ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+        {
+            delivered |= e.kind == "contract done" && e.actor == "ex";
+            arrived |= e.kind == "caravan arrives";
+        }
+    }
+    expect(delivered && w.society().account("ex")->cash >= bram + 5, "Bram hands Wren the letter and is paid");
+    expect(arrived, "The caravan arrives");
+    expect(w.society().account("eg")->cash >= holt + 12, "and Holt, who walked with it, is paid");
+    expect(w.society().conserved(), "Money is conserved");
+}
+
+void tradeAndPrices()
+{
+    auto f = strip("EE...MM....WW");
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    expect(w.towns().size() == 3, "Three towns");
+    w.roads().camps.clear();
+    w.roads().caravans.clear();
+    // Mid has plenty; west has nothing left.
+    const int westMeals = stock(w, "stores:west", "meal");
+    w.society().consume("stores:west", "meal", westMeals, "test: a bad winter");
+    w.society().shift("treasury", "stores:west", "", 0, 200, "test: west has money");
+    // Dearer in west than in the capital, within the hour.
+    run(w, 700);
+    auto* ada = w.entity("player-ada");
+    w.society().shift("treasury", "player-ada", "", 0, 100, "test: purse");
+    const auto east = w.society().quote("player-ada", "em", "meal", 1, true).unitPrice;
+    const auto west = w.society().quote("player-ada", "wm", "meal", 1, true).unitPrice;
+    expect(west > east, "Food costs more where the stores are empty (" + std::to_string(west) + " against " + std::to_string(east) + ")");
+    (void)ada;
+    const int spare = stock(w, "treasury", "meal");
+    expect(w.society().shift("treasury", "stores:mid", "meal", std::min(40, spare), 0, "test: a good harvest"),
+           "Mid's good harvest (" + std::to_string(spare) + " to spare)");
+    const auto midCash = w.society().account("stores:mid")->cash;
+    nextMorning(w);
+    const Caravan* trade = nullptr;
+    for (const auto& c : w.roads().caravans)
+        if (c.from == "mid" && c.to == "west")
+            trade = &c;
+    std::string seen;
+    for (const auto& c : w.roads().caravans)
+        seen += c.from + ">" + c.to + " ";
+    expect(trade && stock(w, trade->account, "meal") > 0, "Mid sends food to west (" + seen + "; mid " +
+                                                              std::to_string(stock(w, "stores:mid", "meal")) + ", west " +
+                                                              std::to_string(stock(w, "stores:west", "meal")) + ")");
+    const std::string trip = trade->id;
+    const int load = stock(w, trade->account, "meal");
+    const int before = stock(w, "stores:west", "meal");
+    bool arrived = false;
+    for (int t = 0; t < 4000 && !arrived; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            arrived |= e.kind == "caravan arrives" && e.actor == trip;
+    }
+    expect(arrived && stock(w, "stores:west", "meal") >= before + load - 2, "It arrives with west's food");
+    expect(w.society().account("stores:mid")->cash > midCash, "and west pays mid for it");
+    expect(w.society().conserved(), "Money is conserved");
+}
+
 void rumoursSpread()
 {
     auto f = strip();
@@ -282,8 +614,14 @@ int main()
     {
         townsAndCaravans();
         banditsAndContracts();
+        anEscortWhoIsntThere();
         couriersAndSupplies();
         rumoursSpread();
+        banditsInPerson();
+        aFight();
+        beatenAndRobbed();
+        residentsTakeWork();
+        tradeAndPrices();
     }
     catch (const std::exception& error)
     {

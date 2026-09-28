@@ -79,6 +79,16 @@ bool Society::closeAccount(const std::string& id)
     return true;
 }
 
+double Society::priceFactor(const std::string& merchant, const std::string& item) const
+{
+    const auto* job = jobOf(merchant);
+    const auto store = priceFactors_.find(storeFor(job ? job->work.cell : std::string()));
+    if (store == priceFactors_.end())
+        return 1;
+    const auto found = store->second.find(item);
+    return found == store->second.end() || !std::isfinite(found->second) ? 1 : std::clamp(found->second, .5, 2.0);
+}
+
 const std::string& Society::storeFor(const std::string& cell) const
 {
     static const std::string treasury = "treasury";

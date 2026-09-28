@@ -36,4 +36,25 @@ inline bool Decode(const TArray<uint8>& Compressed, int32 RawBytes, FString& Jso
     Json = UTF8_TO_TCHAR(reinterpret_cast<const char*>(Raw.GetData()));
     return !Json.IsEmpty();
 }
+// The same envelope for bytes (binary motion frames).
+inline bool EncodeBytes(const TArray<uint8>& Raw, TArray<uint8>& Compressed, int32& RawBytes)
+{
+    RawBytes = Raw.Num();
+    if (RawBytes <= 0 || RawBytes > MaxRawBytes)
+        return false;
+    int32 Size = FCompression::CompressMemoryBound(NAME_Zlib, RawBytes);
+    Compressed.SetNumUninitialized(Size);
+    if (!FCompression::CompressMemory(NAME_Zlib, Compressed.GetData(), Size, Raw.GetData(), RawBytes))
+        return false;
+    Compressed.SetNum(Size);
+    return Size > 0 && Size <= MaxCompressedBytes;
+}
+
+inline bool DecodeBytes(const TArray<uint8>& Compressed, int32 RawBytes, TArray<uint8>& Raw)
+{
+    if (RawBytes <= 0 || RawBytes > MaxRawBytes || Compressed.IsEmpty() || Compressed.Num() > MaxCompressedBytes)
+        return false;
+    Raw.SetNumZeroed(RawBytes);
+    return FCompression::UncompressMemory(NAME_Zlib, Raw.GetData(), RawBytes, Compressed.GetData(), Compressed.Num());
+}
 } // namespace ratwwire

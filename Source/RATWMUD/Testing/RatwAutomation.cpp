@@ -5,6 +5,8 @@
 #include "Runtime/RatwSocialCore.h"
 #include "Runtime/RatwPersistence.h"
 #include "Runtime/RatwSnapshotCodec.h"
+#include "Runtime/RatwSnapshotSections.h"
+#include "Runtime/RatwMotion.h"
 #include "Runtime/RatwJson.h"
 #include "Runtime/RatwSocietyJson.h"
 #include "Runtime/RatwDMBridge.h"
@@ -138,6 +140,159 @@ bool FRatwWireTest::RunTest(const FString&)
               ratwwire::Decode(Bytes, ratwwire::MaxRawBytes + 1, RoundTrip));
     TestFalse(TEXT("Reject negative length"), ratwwire::Decode(Bytes, -1, RoundTrip));
     TestFalse(TEXT("Reject empty payload"), ratwwire::Decode({}, RawBytes, RoundTrip));
+    return true;
+}
+
+namespace
+{
+// A snapshot shaped like the server's: a cell with its ground, what is seen, the maps, the doors, the satchel.
+TSharedPtr<FJsonObject> SampleSnapshot(const FString& Seen)
+{
+    using namespace ratwjson;
+    auto Root = New(), Cell = New();
+    Array Rows, Heights, Visibility, Map, Doors, Inventory;
+    for (int32 Y = 0; Y < 128; ++Y)
+    {
+        Rows.Add(V(FString::ChrN(128, TEXT('.'))));
+        Heights.Add(V(FString::ChrN(128, TEXT('0'))));
+        Visibility.Add(V(Y == 5 ? Seen : FString::ChrN(128, TEXT('1'))));
+    }
+    for (int32 I = 0; I < 40; ++I)
+    {
+        auto M = New();
+        M->SetStringField(TEXT("id"), FString::Printf(TEXT("cell_%d"), I));
+        M->SetNumberField(TEXT("x"), I * 64);
+        Map.Add(V(M));
+    }
+    Cell->SetStringField(TEXT("id"), TEXT("yard"));
+    Cell->SetArrayField(TEXT("rows"), Rows);
+    Cell->SetArrayField(TEXT("heights"), Heights);
+    Root->SetObjectField(TEXT("cell"), Cell);
+    Root->SetArrayField(TEXT("visibility"), Visibility);
+    Root->SetArrayField(TEXT("worldMap"), Map);
+    Root->SetArrayField(TEXT("travelMap"), Map);
+    Root->SetArrayField(TEXT("doors"), Doors);
+    Root->SetArrayField(TEXT("inventory"), Inventory);
+    Root->SetNumberField(TEXT("revision"), 7);
+    return Root;
+}
+FString Condensed(const TSharedPtr<FJsonObject>& Object)
+{
+    FString Json;
+    const auto Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json);
+    FJsonSerializer::Serialize(Object.ToSharedRef(), Writer);
+    return Json;
+}
+// The same content, whatever order the fields are in (a part put back comes last).
+bool Same(const TSharedPtr<FJsonObject>& A, const TSharedPtr<FJsonObject>& B)
+{
+    return FJsonValue::CompareEqual(FJsonValueObject(A), FJsonValueObject(B));
+}
+int32 WireBytes(const TSharedPtr<FJsonObject>& Object)
+{
+    TArray<uint8> Bytes;
+    int32 Raw = 0;
+    return ratwwire::Encode(Condensed(Object), Bytes, Raw) ? Bytes.Num() : -1;
+}
+} // namespace
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwDeltaSnapshotTest, "RATW.Network.DeltaSnapshots",
+                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FRatwDeltaSnapshotTest::RunTest(const FString&)
+{
+    const FString Seen = FString::ChrN(128, TEXT('2'));
+    const FString Whole = Condensed(SampleSnapshot(Seen));
+    // First: nothing is known to be held, so everything goes, each part with its key.
+    ratwsections::FKeys Known;
+    ratwsections::FCache Client;
+    auto First = SampleSnapshot(Seen);
+    const auto FirstKeys = ratwsections::Strip(First, Known);
+    TestEqual(TEXT("Every part has a key"), FirstKeys.Num(), ratwsections::Sections().Num());
+    const int32 FullBytes = WireBytes(First);
+    TestTrue(TEXT("The client takes a whole snapshot as it is"), ratwsections::Fill(First, Client));
+    TestTrue(TEXT("and it is exactly the snapshot"), Same(First, SampleSnapshot(Seen)));
+    // Unacknowledged, the next goes whole too; acknowledged, what the client holds is left out and put back.
+    auto Unacknowledged = SampleSnapshot(Seen);
+    ratwsections::Strip(Unacknowledged, Known);
+    TestEqual(TEXT("Nothing is left out before an acknowledgement"), WireBytes(Unacknowledged), FullBytes);
+    Known = FirstKeys;
+    auto Second = SampleSnapshot(Seen);
+    ratwsections::Strip(Second, Known);
+    const int32 DeltaBytes = WireBytes(Second);
+    TestTrue(FString::Printf(TEXT("Held parts are left out (%d bytes, whole %d)"), DeltaBytes, FullBytes), DeltaBytes * 4 < FullBytes);
+    TestFalse(TEXT("The ground is not sent again"), Second->GetObjectField(TEXT("cell"))->HasField(TEXT("rows")));
+    TestTrue(TEXT("The client puts it back"), ratwsections::Fill(Second, Client));
+    TestTrue(TEXT("exactly as it was"), Same(Second, SampleSnapshot(Seen)));
+    // One tile comes into view: only what is seen goes, and the result is exact.
+    const FString Moved = TEXT("1") + FString::ChrN(127, TEXT('2'));
+    auto Third = SampleSnapshot(Moved);
+    const auto ThirdKeys = ratwsections::Strip(Third, Known);
+    TestTrue(TEXT("What is seen goes again"), Third->HasField(TEXT("visibility")));
+    TestFalse(TEXT("but not the maps"), Third->HasField(TEXT("worldMap")));
+    TestTrue(TEXT("Filled"), ratwsections::Fill(Third, Client));
+    TestTrue(TEXT("exactly"), Same(Third, SampleSnapshot(Moved)));
+    // A client that lost what it kept (a new session) can't fill a snapshot, and says so.
+    ratwsections::FCache Forgot;
+    auto Fourth = SampleSnapshot(Moved);
+    ratwsections::Strip(Fourth, ThirdKeys);
+    TestFalse(TEXT("A part it doesn't hold is noticed"), ratwsections::Fill(Fourth, Forgot));
+    // An older server's snapshot (no keys) is used as it is.
+    auto Old = SampleSnapshot(Seen);
+    TestTrue(TEXT("Older snapshots pass untouched"), ratwsections::Fill(Old, Forgot) && Condensed(Old) == Whole);
+    // A different part in place of a held one is never mistaken for it.
+    auto Changed = SampleSnapshot(Seen);
+    Changed->GetObjectField(TEXT("cell"))->SetArrayField(TEXT("rows"), {});
+    ratwsections::Strip(Changed, FirstKeys);
+    TestTrue(TEXT("Changed ground is sent"), Changed->GetObjectField(TEXT("cell"))->HasField(TEXT("rows")));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwBinaryMotionTest, "RATW.Network.BinaryMotionFrames",
+                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FRatwBinaryMotionTest::RunTest(const FString&)
+{
+    ratw::World World;
+    World.addPlayer("ash", "Ash");
+    auto Frame = ratwmotion::Frame(World, "ash");
+    Frame->SetStringField(TEXT("motionSession"), TEXT("0123456789abcdef"));
+    Frame->SetNumberField(TEXT("cellGeneration"), 3);
+    Frame->SetNumberField(TEXT("revision"), 1234);
+    const auto Bytes = ratwmotion::Pack(Frame);
+    const auto Back = ratwmotion::Unpack(Bytes);
+    TestTrue(TEXT("A frame survives the wire"), Back.IsValid());
+    if (!Back.IsValid()) return false;
+    for (const TCHAR* Field : {TEXT("motionSession"), TEXT("observer"), TEXT("cellId")})
+        TestEqual(FString::Printf(TEXT("%s kept"), Field), Back->GetStringField(Field), Frame->GetStringField(Field));
+    TestEqual(TEXT("generation kept"), Back->GetNumberField(TEXT("cellGeneration")), 3.0);
+    TestEqual(TEXT("revision kept"), Back->GetNumberField(TEXT("revision")), 1234.0);
+    const auto& Poses = Frame->GetArrayField(TEXT("entities"));
+    const auto& Unpacked = Back->GetArrayField(TEXT("entities"));
+    TestEqual(TEXT("Every pose"), Unpacked.Num(), Poses.Num());
+    for (int32 I = 0; I < FMath::Min(Poses.Num(), Unpacked.Num()); ++I)
+    {
+        const auto A = Poses[I]->AsObject(), B = Unpacked[I]->AsObject();
+        TestEqual(TEXT("its ID"), B->GetStringField(TEXT("id")), A->GetStringField(TEXT("id")));
+        TestTrue(TEXT("its place, to a hundred-thousandth of a tile"),
+                 FMath::Abs(B->GetNumberField(TEXT("x")) - A->GetNumberField(TEXT("x"))) < 1e-4 &&
+                     FMath::Abs(B->GetNumberField(TEXT("y")) - A->GetNumberField(TEXT("y"))) < 1e-4);
+        TestEqual(TEXT("moving or not"), B->GetBoolField(TEXT("moving")), A->GetBoolField(TEXT("moving")));
+    }
+    FString Json;
+    const auto Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json);
+    FJsonSerializer::Serialize(Frame.ToSharedRef(), Writer);
+    TestTrue(FString::Printf(TEXT("Smaller than JSON (%d bytes against %d)"), Bytes.Num(), FTCHARToUTF8(*Json).Length()),
+             Bytes.Num() < FTCHARToUTF8(*Json).Length());
+    // Anything malformed is refused whole.
+    auto Cut = Bytes;
+    Cut.SetNum(Cut.Num() - 3);
+    TestFalse(TEXT("A cut frame is refused"), ratwmotion::Unpack(Cut).IsValid());
+    auto Wrong = Bytes;
+    Wrong[0] ^= 0xff;
+    TestFalse(TEXT("Not a frame"), ratwmotion::Unpack(Wrong).IsValid());
+    auto Longer = Bytes;
+    Longer.Add(0);
+    TestFalse(TEXT("Trailing bytes are refused"), ratwmotion::Unpack(Longer).IsValid());
+    TestFalse(TEXT("Nothing is nothing"), ratwmotion::Unpack({}).IsValid());
     return true;
 }
 

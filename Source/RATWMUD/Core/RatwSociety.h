@@ -240,6 +240,10 @@ class Society
     // Which store each cell's merchants restock from (default: the treasury, the one store of a single town).
     void setStores(std::map<std::string, std::string> byCell) { storeForCell_ = std::move(byCell); }
     const std::string& storeFor(const std::string& cell) const;
+    // How dear goods are at each store's markets (1: as ever), set by the world from how much each town has; a
+    // merchant's prices follow the store they restock from.
+    void setPriceFactors(std::map<std::string, std::map<std::string, double>> byStore) { priceFactors_ = std::move(byStore); }
+    double priceFactor(const std::string& merchant, const std::string& item) const;
     // Marriage: both must be unmarried; from now on they are family.
     bool marry(const std::string& a, const std::string& b);
     const std::string* spouse(const std::string& resident) const;
@@ -306,6 +310,7 @@ class Society
     void defaultCareers();
     void reconcileCareers();
     bool bequeath(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins);
+    std::map<std::string, std::map<std::string, double>> priceFactors_;
     std::map<std::string, std::string> storeForCell_;   // Cell -> the store its merchants restock from (Phase 5).
     static constexpr std::int64_t MoneyCap = 1000000000;
     static constexpr int StockCap = 10000;

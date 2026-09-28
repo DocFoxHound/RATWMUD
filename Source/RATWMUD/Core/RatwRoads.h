@@ -14,30 +14,39 @@ namespace ratw
 struct Town
 {
     std::string id, market, store;
+    double marketX = 0, marketY = 0;      // Where the market's merchant stands: where caravans load and unload.
     int residents = 0, guards = 0;
 };
 
-// Goods on the road between the capital and a town. The load is its own account ("caravan:<id>"); it moves a cell
-// at a time, offstage, and may be raided where bandits camp.
+// Goods on the road between two towns. The load is its own account ("caravan:<id>"). The wagon is a character
+// in the world ("road:<id>", never saved itself): it walks the road where someone is near to see it, and goes in
+// timed hops elsewhere, like anyone offstage. It may be raided where bandits camp.
 struct Caravan
 {
     std::string id, from, to, account;
-    std::vector<std::string> route;       // Cells, from the capital's market to the town's.
-    std::size_t leg = 0;                  // The cell it is in (index into route).
-    double nextAt = 0, departed = 0;      // World seconds; calendar days.
-    int guards = 1;
-    std::string status = "travelling";    // "travelling", "arrived" or "raided".
-    std::vector<std::string> escorts;     // Players who took an escort contract for it.
+    std::vector<std::string> route;       // Cells, from the one town's market to the other's (as planned).
+    std::size_t leg = 0;                  // Cells entered since it set out.
+    double nextAt = 0, departed = 0;      // (Unused since the wagon walks; kept for older saves); calendar days.
+    int guards = 1;                       // Carters and town guards; escorts with it add to these.
+    std::string status = "travelling";    // "travelling", "returning", "raided" or "arrived".
+    std::vector<std::string> escorts;     // Those who took an escort contract for it: players or town guards.
     std::vector<std::string> letters;     // Courier contracts it carries.
+    std::string cell;                     // Where the wagon is (empty: at its first market, not yet out).
+    double x = 0, y = 0;
+    double waitUntil = 0;                 // Calendar day: it waits at the market this long for its escorts.
+    std::map<std::string, int> with;      // Cells each escort entered alongside it: paid only for being there.
 };
 
 // Robbers in wild country along a road. Loot feeds them; hunger makes them bold; starving, they scatter.
+// Where someone is near, its bandits are there in person ("road:<camp>:<n>", never saved), and may stop a
+// traveller for their purse or fight them.
 struct BanditCamp
 {
     std::string id, cell;
     double strength = 4, hunger = 30;     // 0..20, 0..100.
     double lastRaid = -100;               // Calendar day.
     bool active = true;
+    double x = -1, y = -1;                // Where they camp in the cell (found the first time anyone comes near).
 };
 
 // Work anyone may take: a bounty on a camp, an escort, a supply run, a letter to carry. The reward is held in trust

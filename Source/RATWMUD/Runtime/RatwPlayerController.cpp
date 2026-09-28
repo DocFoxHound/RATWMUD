@@ -1,6 +1,7 @@
 #include "Runtime/RatwPlayerController.h"
 #include "Runtime/RatwGameMode.h"
 #include "Runtime/RatwSnapshotCodec.h"
+#include "Runtime/RatwMotion.h"
 #include "Runtime/RatwAccounts.h"
 #include "UI/SRatwGame.h"
 #include "UI/SRatwFrontDoor.h"
@@ -160,7 +161,11 @@ void ARatwPlayerController::ClientSnapshot(const FString& Json)
     TArray<uint8> Compressed;
     int32 RawBytes = 0;
     if (ratwwire::Encode(Json, Compressed, RawBytes))
+    {
+        SnapshotBytesSent += Compressed.Num();
+        ++SnapshotsSent;
         ClientCompressedSnapshot(Compressed, RawBytes);
+    }
     else
         UE_LOG(LogTemp, Error, TEXT("RATW snapshot exceeds bounded network envelope"));
 }
@@ -168,8 +173,25 @@ void ARatwPlayerController::ClientSnapshot(const FString& Json)
 void ARatwPlayerController::ClientCompressedSnapshot_Implementation(const TArray<uint8>& Compressed, int32 RawBytes)
 {
     FString Json;
+    SnapshotBytesReceived += Compressed.Num();
     if (ratwwire::Decode(Compressed, RawBytes, Json))
         ApplySnapshotJson(Json);
+}
+
+void ARatwPlayerController::ServerSnapshotAck_Implementation(double Revision, bool Missing)
+{
+    if (Missing)
+    {
+        ResetSections();                               // Everything again, in the next snapshot.
+        return;
+    }
+    if (const auto* Keys = SentSections.Find(Revision))
+        KnownSections = *Keys;
+    else
+        return;                                        // Older than one already acknowledged (or never sent).
+    for (auto It = SentSections.CreateIterator(); It; ++It)
+        if (It.Key() <= Revision)
+            It.RemoveCurrent();
 }
 
 void ARatwPlayerController::ApplySnapshotJson(const FString& Json)
@@ -185,28 +207,39 @@ void ARatwPlayerController::ApplySnapshotJson(const FString& Json)
     const int32 Generation = Object->GetIntegerField(TEXT("cellGeneration"));
     const double Revision = Object->GetNumberField(TEXT("revision"));
     if (Generation < NewestGeneration || Revision <= SnapshotRevision) return;
+    // Put back the parts the server left out because this client holds them; lacking one, ask for everything.
+    if (!ratwsections::Fill(Object, Sections))
+    {
+        ServerSnapshotAck(Revision, true);
+        return;
+    }
+    ServerSnapshotAck(Revision, false);
     NewestGeneration = PresentationGeneration = Generation;
     PresentationCell = Object->GetObjectField(TEXT("cell"))->GetStringField(TEXT("id"));
     SnapshotRevision = Revision;
     ++SnapshotCount;
-    PendingSnapshot = Json;
+    {
+        PendingSnapshot.Reset();                       // The whole snapshot, as tools and tests read it.
+        const auto Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&PendingSnapshot);
+        FJsonSerializer::Serialize(Object.ToSharedRef(), Writer);
+    }
     if (GameWidget.IsValid()) GameWidget->ApplySnapshot(Object);
 }
 
-void ARatwPlayerController::ClientMotion(const FString& Json)
+void ARatwPlayerController::ClientMotion(const TSharedPtr<FJsonObject>& Frame)
 {
     TArray<uint8> Compressed;
     int32 RawBytes = 0;
-    if (ratwwire::Encode(Json, Compressed, RawBytes)) ClientCompressedMotion(Compressed, RawBytes);
+    if (ratwwire::EncodeBytes(ratwmotion::Pack(Frame), Compressed, RawBytes)) ClientCompressedMotion(Compressed, RawBytes);
 }
 
 void ARatwPlayerController::ClientCompressedMotion_Implementation(const TArray<uint8>& Compressed, int32 RawBytes)
 {
     if (!EnteredWorld) return;
-    FString Json;
-    TSharedPtr<FJsonObject> Frame;
-    if (!ratwwire::Decode(Compressed, RawBytes, Json) ||
-        !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Frame) || !Frame) return;
+    TArray<uint8> Bytes;
+    if (!ratwwire::DecodeBytes(Compressed, RawBytes, Bytes)) return;
+    const TSharedPtr<FJsonObject> Frame = ratwmotion::Unpack(Bytes);
+    if (!Frame) return;
     if (Frame->GetStringField(TEXT("motionSession")) != PresentationSession ||
         Frame->GetStringField(TEXT("observer")) != PresentationCharacterId) return;
     const int32 Generation = Frame->GetIntegerField(TEXT("cellGeneration"));
@@ -249,6 +282,7 @@ void ARatwPlayerController::ClientCompressedEvent_Implementation(const TArray<ui
             SnapshotRevision = MotionRevision = -1;
             MotionFrameCount = SnapshotCount = 0;
             PendingSnapshot.Empty();
+            Sections.Reset();
         }
         Object->TryGetStringField(TEXT("id"), PresentationCharacterId);
         ShowGame();

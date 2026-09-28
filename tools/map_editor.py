@@ -22,6 +22,7 @@ import threading
 import time
 import zipfile
 
+import http_body
 import roster as roster_lib
 import terrain_catalog
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -939,7 +940,7 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
             body = data if isinstance(data, bytes) else json.dumps(data, ensure_ascii=True).encode('utf-8')
             self.send_response(status)
             self.send_header('Content-Type', mime + '; charset=utf-8' if mime.startswith(('text/', 'application/json')) else mime)
-            self.send_header('Content-Length', str(len(body)))
+            body = http_body.send(self, body, mime)
             self.send_header('Cache-Control', 'no-store')
             self.send_header('X-Content-Type-Options', 'nosniff')
             self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'")

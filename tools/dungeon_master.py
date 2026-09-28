@@ -30,6 +30,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
+import http_body
 import live_edit as L
 import map_editor
 import world_db
@@ -696,7 +697,7 @@ def make_server(port=8766, dm=None):
             body = data if isinstance(data, bytes) else json.dumps(data, ensure_ascii=True, default=str).encode('utf-8')
             self.send_response(status)
             self.send_header('Content-Type', mime + ('; charset=utf-8' if mime.startswith(('text/', 'application/json')) else ''))
-            self.send_header('Content-Length', str(len(body)))
+            body = http_body.send(self, body, mime)
             self.send_header('Cache-Control', 'no-store')
             self.send_header('X-Content-Type-Options', 'nosniff')
             self.send_header('Referrer-Policy', 'no-referrer')

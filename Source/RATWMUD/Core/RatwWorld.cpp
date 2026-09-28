@@ -2010,7 +2010,7 @@ void World::bondsFromEvent(const WorldEvent& e)
     // Only between living characters: the treasury, "outside", the herb patch and the dead have no feelings.
     const auto* actor = entity(e.actor);
     const auto* target = entity(e.target);
-    if (e.actor == e.target || !actor || !target || actor->dead || target->dead)
+    if (e.actor == e.target || !actor || !target || actor->dead || target->dead || actor->transient || target->transient)
         return;
     const double day = calendarDays_;
     // A promise between these two is kept by dealing honestly with the other: trade, payment, a gift, help.
@@ -2543,22 +2543,25 @@ void World::updateSchedules()
     tendRoads();
     // When a shift changes, a whole town sets off at once: plan a bounded number of routes per update and let the
     // rest set off on the next, rather than stalling the server for all of them in one tick.
-    int searches = 0;
-    const std::size_t expandedBefore = searchExpanded_;
+    RouteBudget budget{0, searchExpanded_};
     const auto stage = tiered() ? stageCells() : std::set<std::string>{};
     for (auto& pair : entities_)
     {
         auto& e = pair.second;
         if (e.npc && tiered())
             placeOnStage(e, stage);
+        if (e.transient)
+            continue;                               // The road folk go their own ways (tendRoadFolk).
         const auto* life = society_.resident(pair.first);
         if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
-        const std::string activity = life->task + " — " + life->reason;
+        std::string task = life->task, reason = life->reason, goalCell = life->goalCell;
+        Vec2 target{life->goalX, life->goalY};
+        errand(pair.first, *life, task, reason, goalCell, target);   // Work on the road comes before the day's plan.
+        const std::string activity = task + " — " + reason;
         if (e.activity != activity) { stop(e.id); e.activity = activity; }
-        const Vec2 target{life->goalX, life->goalY};
-        if (e.cellId == life->goalCell && distance(e.position, target) <= .35)
+        if (e.cellId == goalCell && distance(e.position, target) <= .35)
         {
-            if (life->task == "sleep" && e.posture != "lying")
+            if (task == "sleep" && e.posture != "lying")
             {
                 if (e.offstage)
                     settle(e, "lying");
@@ -2567,108 +2570,7 @@ void World::updateSchedules()
             }
             continue;
         }
-        if (e.offstage)
-        {
-            if (e.posture == "lying" || e.posture == "sitting")
-                settle(e, "standing");
-            moveOffstage(e, life->task, life->goalCell, target);
-            continue;
-        }
-        if (e.posture == "lying" || e.posture == "sitting") setPosture(e.id, "standing");
-        if (!e.path.empty()) continue;
-        // A failed search on a large cell explores everything reachable; don't repeat it every half second.
-        if (const auto wait = pathRetryAt_.find(e.id); wait != pathRetryAt_.end() && time_ < wait->second) continue;
-        const auto seek = [&](Vec2 goal) {
-            if (searches >= RouteSearchesPerUpdate || searchExpanded_ - expandedBefore >= RouteNodesPerUpdate)
-                return Result{false, "Waiting to set off.", {}};
-            ++searches;
-            ++profile_.routeSearches;
-            const auto expandedAt = searchExpanded_;
-            const auto searchBegin = std::chrono::steady_clock::now();
-            auto result = moveTo(e.id, goal.x, goal.y);
-            const double took = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - searchBegin).count();
-            profile_.routeNodes += searchExpanded_ - expandedAt;
-            profile_.largestRoute = std::max(profile_.largestRoute, searchExpanded_ - expandedAt);
-            if (took > profile_.slowestRoute)
-            {
-                profile_.slowestRoute = took;
-                profile_.slowestRouteCell = e.cellId;
-                profile_.slowestRouteNodes = searchExpanded_ - expandedAt;
-                profile_.slowestRouteWaypoints = e.path.size();
-            }
-            if (e.path.empty() && !door(result.targetId))
-                pathRetryAt_[e.id] = time_ + 5.0;
-            else
-                pathRetryAt_.erase(e.id);
-            return result;
-        };
-        if (e.cellId == life->goalCell)
-        {
-            auto result = seek(target);
-            if (const auto* barrier = door(result.targetId))
-                if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
-                    interact(e.id, barrier->id, "open");
-            continue;
-        }
-        // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
-        // then the first way into it (in ID order, as ever).
-        const auto& steps = cachedSteps(e.cellId);
-        const auto step = steps.find(life->goalCell);
-        if (step == steps.end()) { e.activity = life->task + " — route unavailable"; continue; }
-        // The nearest way into the next cell (a street door, or the closest tile of a shared edge).
-        // Only ways this resident can walk to count: behind a wall, the nearest point of an edge may be unreachable.
-        const Door* d = nullptr;
-        const auto* current = cell(e.cellId);
-        const auto* regions = current ? regionMap(*current) : nullptr;
-        const auto regionOf = [&](Vec2 p) {
-            const int x = int(std::floor(p.x)), y = int(std::floor(p.y));
-            return !regions || x < 0 || y < 0 || x >= current->width || y >= current->height
-                       ? -1 : (*regions)[std::size_t(y * current->width + x)];
-        };
-        const int region = regionOf(e.position);
-        for (const Door* way : doorsIn(e.cellId))
-            if (way->portal && !way->locked && way->targetCell == step->second &&
-                (region < 0 || regionOf(way->position) < 0 || regionOf(way->position) == region) &&
-                (!d || distance(e.position, way->position) < distance(e.position, d->position) - 1e-9))
-                d = way;
-        if (!d) continue;
-        if (d->boundary && d->open && d->edge != '-')
-        {
-            // Aim just past the shared edge: a corner tile belongs to two edges, and its centre alone is ambiguous.
-            const auto* here = cell(e.cellId);
-            Vec2 aim = d->position;
-            if (d->edge == 'N') aim.y = -.15; else if (d->edge == 'S') aim.y = here->height + .15;
-            else if (d->edge == 'W') aim.x = -.15; else aim.x = here->width + .15;
-            seek(aim);
-        }
-        else if (distance(e.position, d->position) <= d->reach)
-            interact(e.id, d->id, d->open ? "enter" : "open");
-        else
-        {
-            // A closed door's own tile is blocked, so a search for it always fails; aim for the ground just in front
-            // of it instead, and open it on arrival (above).
-            Vec2 approach = d->position;
-            if (!d->open)
-            {
-                const auto* here = cell(e.cellId);
-                const auto* doorTile = here ? here->tile(int(std::floor(d->position.x)), int(std::floor(d->position.y))) : nullptr;
-                double best = std::numeric_limits<double>::infinity();
-                for (const Vec2 side : {Vec2{1, 0}, Vec2{-1, 0}, Vec2{0, 1}, Vec2{0, -1}})
-                {
-                    // Right up against the door: at night a wolf may see little more than a tile.
-                    const Vec2 front{std::floor(d->position.x) + .5 + side.x * .6, std::floor(d->position.y) + .5 + side.y * .6};
-                    if (passable(e.cellId, front, doorTile) && distance(e.position, front) < best)
-                    {
-                        best = distance(e.position, front);
-                        approach = front;
-                    }
-                }
-            }
-            auto result = seek(approach);
-            if (const auto* barrier = door(result.targetId))
-                if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
-                    interact(e.id, barrier->id, "open");
-        }
+        headFor(e, task, goalCell, target, budget);
     }
     if (tiered())
     {
@@ -2677,6 +2579,112 @@ void World::updateSchedules()
         for (const auto& entry : entities_)
             if (!entry.second.offstage)
                 nearCells(entry.second, tierWanted_);
+    }
+}
+
+void World::headFor(Entity& e, const std::string& task, const std::string& goalCell, Vec2 target, RouteBudget& budget)
+{
+    if (e.offstage)
+    {
+        if (e.posture == "lying" || e.posture == "sitting")
+            settle(e, "standing");
+        moveOffstage(e, task, goalCell, target);
+        return;
+    }
+    if (e.posture == "lying" || e.posture == "sitting") setPosture(e.id, "standing");
+    if (!e.path.empty()) return;
+    // A failed search on a large cell explores everything reachable; don't repeat it every half second.
+    if (const auto wait = pathRetryAt_.find(e.id); wait != pathRetryAt_.end() && time_ < wait->second) return;
+    const auto seek = [&](Vec2 goal) {
+        if (budget.searches >= RouteSearchesPerUpdate || searchExpanded_ - budget.expandedBefore >= RouteNodesPerUpdate)
+            return Result{false, "Waiting to set off.", {}};
+        ++budget.searches;
+        ++profile_.routeSearches;
+        const auto expandedAt = searchExpanded_;
+        const auto searchBegin = std::chrono::steady_clock::now();
+        auto result = moveTo(e.id, goal.x, goal.y);
+        const double took = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - searchBegin).count();
+        profile_.routeNodes += searchExpanded_ - expandedAt;
+        profile_.largestRoute = std::max(profile_.largestRoute, searchExpanded_ - expandedAt);
+        if (took > profile_.slowestRoute)
+        {
+            profile_.slowestRoute = took;
+            profile_.slowestRouteCell = e.cellId;
+            profile_.slowestRouteNodes = searchExpanded_ - expandedAt;
+            profile_.slowestRouteWaypoints = e.path.size();
+        }
+        if (e.path.empty() && !door(result.targetId))
+            pathRetryAt_[e.id] = time_ + 5.0;
+        else
+            pathRetryAt_.erase(e.id);
+        return result;
+    };
+    if (e.cellId == goalCell)
+    {
+        auto result = seek(target);
+        if (const auto* barrier = door(result.targetId))
+            if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
+                interact(e.id, barrier->id, "open");
+        return;
+    }
+    // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
+    // then the first way into it (in ID order, as ever).
+    const auto& steps = cachedSteps(e.cellId);
+    const auto step = steps.find(goalCell);
+    if (step == steps.end()) { e.activity = task + " — route unavailable"; return; }
+    // The nearest way into the next cell (a street door, or the closest tile of a shared edge).
+    // Only ways this resident can walk to count: behind a wall, the nearest point of an edge may be unreachable.
+    const Door* d = nullptr;
+    const auto* current = cell(e.cellId);
+    const auto* regions = current ? regionMap(*current) : nullptr;
+    const auto regionOf = [&](Vec2 p) {
+        const int x = int(std::floor(p.x)), y = int(std::floor(p.y));
+        return !regions || x < 0 || y < 0 || x >= current->width || y >= current->height
+                   ? -1 : (*regions)[std::size_t(y * current->width + x)];
+    };
+    const int region = regionOf(e.position);
+    for (const Door* way : doorsIn(e.cellId))
+        if (way->portal && !way->locked && way->targetCell == step->second &&
+            (region < 0 || regionOf(way->position) < 0 || regionOf(way->position) == region) &&
+            (!d || distance(e.position, way->position) < distance(e.position, d->position) - 1e-9))
+            d = way;
+    if (!d) return;
+    if (d->boundary && d->open && d->edge != '-')
+    {
+        // Aim just past the shared edge: a corner tile belongs to two edges, and its centre alone is ambiguous.
+        const auto* here = cell(e.cellId);
+        Vec2 aim = d->position;
+        if (d->edge == 'N') aim.y = -.15; else if (d->edge == 'S') aim.y = here->height + .15;
+        else if (d->edge == 'W') aim.x = -.15; else aim.x = here->width + .15;
+        seek(aim);
+    }
+    else if (distance(e.position, d->position) <= d->reach)
+        interact(e.id, d->id, d->open ? "enter" : "open");
+    else
+    {
+        // A closed door's own tile is blocked, so a search for it always fails; aim for the ground just in front
+        // of it instead, and open it on arrival (above).
+        Vec2 approach = d->position;
+        if (!d->open)
+        {
+            const auto* here = cell(e.cellId);
+            const auto* doorTile = here ? here->tile(int(std::floor(d->position.x)), int(std::floor(d->position.y))) : nullptr;
+            double best = std::numeric_limits<double>::infinity();
+            for (const Vec2 side : {Vec2{1, 0}, Vec2{-1, 0}, Vec2{0, 1}, Vec2{0, -1}})
+            {
+                // Right up against the door: at night a wolf may see little more than a tile.
+                const Vec2 front{std::floor(d->position.x) + .5 + side.x * .6, std::floor(d->position.y) + .5 + side.y * .6};
+                if (passable(e.cellId, front, doorTile) && distance(e.position, front) < best)
+                {
+                    best = distance(e.position, front);
+                    approach = front;
+                }
+            }
+        }
+        auto result = seek(approach);
+        if (const auto* barrier = door(result.targetId))
+            if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
+                interact(e.id, barrier->id, "open");
     }
 }
 
@@ -3283,6 +3291,8 @@ PersistedWorld World::save() const
         out.roads.beliefs.insert(out.roads.beliefs.end(), mine.begin(), mine.end());
     for (const auto& entry : entities_)
     {
+        if (entry.second.transient)
+            continue;                               // Road folk come back from the roads' own state.
         Entity e = entry.second;
         clearTransientMotion(e);
         e.typing = false;
@@ -3457,6 +3467,8 @@ Result World::restore(const PersistedWorld& state)
     };
     for (const auto& e : state.npcs)
     {
+        if (e.transient || e.id.rfind("road:", 0) == 0)
+            continue;                                         // Road folk are never restored as they were.
         if (e.npc && !entity(e.id) && state.hasSociety && !restoredSociety.resident(e.id))
             continue;                                         // A resident the world no longer has.
         if (!e.npc || !entity(e.id) || !entity(e.id)->npc || !ids.insert(e.id).second)
@@ -3505,7 +3517,7 @@ Result World::restore(const PersistedWorld& state)
         if (!cell(light.first) || !validLighting(light.second))
             return {false, "Invalid saved lighting.", light.first};
     for (auto it = entities_.begin(); it != entities_.end();)
-        if (!it->second.npc)
+        if (!it->second.npc || it->second.transient)
             it = entities_.erase(it);
         else
             ++it;
@@ -3559,6 +3571,11 @@ Result World::restore(const PersistedWorld& state)
             beliefs_[b.holder].push_back(b);
     roads_.beliefs.clear();
     townsReady_ = false;
+    folk_.clear();
+    encounters_.clear();
+    spared_.clear();
+    swingReady_.clear();
+    priceHour_ = -1;
     promises_.clear();
     for (const auto& p : state.promises)
         if (!p.by.empty() && !p.to.empty() && p.by.size() <= 80 && p.to.size() <= 80 && p.what.size() <= 200 &&

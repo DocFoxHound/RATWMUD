@@ -402,9 +402,9 @@ starts everyone in their own job; an unreadable careers section never makes a sa
 - **Caravans.** Every morning a caravan leaves the capital's market for each other town, carrying that town's share
   of the day's goods.
   - Its load is its own account, so goods really move.
-  - It crosses a cell every two and a half minutes along the road (the cell graph), offstage like a resident.
+  - Its wagon is in the world (see "In person" below), and goes along the road (the cell graph) at walking pace.
   - On arrival its load goes into the town's stores, and the carters tell the town's merchants what they heard in the
-    capital's market; that is how rumours cross between towns. Then it goes home empty.
+    market they came from; that is how rumours cross between towns. Then it goes home empty.
 - **Bandits.** Camps are placed in wild cells along the roads (one in six to begin with).
   - **Odds.** A loaded caravan passing a camp is robbed with odds of boldness (strength × hunger) against its guards
     and the carters' caution.
@@ -418,7 +418,8 @@ starts everyone in their own job; an unreadable careers section never makes a sa
 - **Contracts**, the reward set aside at once from the poster's purse (or the treasury) and paid or returned:
   - **Bounty:** done when the camp is gone (the watch; the Dungeon Master, or later combat, through
     `completeContract`).
-  - **Escort:** its taker joins the next caravan to that town (+2 guards) and is paid on a safe arrival.
+  - **Escort:** its taker goes with the next caravan to that town, adding two to its guards while there, and is paid
+    on a safe arrival (see "In person" below).
   - **Supply:** posted when a town's store runs low on food; done by selling goods to that town's merchant.
   - **Courier:** a resident who cares for someone in another town pays to have a letter carried. It is done when its
     taker stands before the recipient; untaken for a week, it goes with the carters.
@@ -447,31 +448,133 @@ starts everyone in their own job; an unreadable careers section never makes a sa
   - Two loaded caravans set out and bandits gathered on a road.
   - After a restart the same caravans were still on the road and none were sent twice.
 
-**Not yet:**
-- **Players and residents on the road in person.** Caravans and couriers are offstage hops; a player sees a caravan
-  only as events and its effects.
-- **Encounters with bandits for a player,** and so bounties done by players.
-- **Residents taking contracts themselves** (beyond carters carrying letters).
-- **Trade between the non-capital towns.**
-- **Prices that follow scarcity town by town.**
+### Second pass (built 2026-09-28): the road in person
 
-## Phase 6: the backend at scale
+What the first version left for later, built on the same day's numbers (all placeholders).
 
-- **Networking.** Delta snapshots: cell tiles once on entry, then entity changes; world-map reveals as increments;
-  binary motion frames.
+- **In person.** The road's folk are characters in the world (`Entity::transient`, IDs `road:...`), made from the
+  roads' own state as needed and never saved themselves. They are left out of saves, bonds, rumours, careers and the
+  NPC Mind: players can see them and inspect them, but not talk to them.
+  - **The wagon.** A caravan's wagon walks the road where someone is near, and goes in timed hops elsewhere, like any
+    resident offstage (the same `headFor` as residents' schedules). It stands in the market while it waits for its
+    escorts, up to two game hours.
+    - A wagon stuck ten minutes in a cell is moved on to the next.
+    - A wagon with no road on turns back, and what it carries goes back to its town's stores.
+  - **Escorts.** Escorts must be there, and are counted only while they are: in the wagon's cell or next to it.
+    - Each is paid on arrival only if there at the end and for at least half the cells. Otherwise the reward goes
+      back, and a player is told so.
+    - Players travelling with a caravan see what happens to it: bandits who weigh up its guards and let it pass, or
+      fall on it.
+- **Bandits in person** (spawned only when needed).
+  - **Only near.** A camp's bandits are in the world only while someone is in or next to its cell: one for every
+    three points of strength, up to six. The first of them is their leader.
+  - **Stopped.** A player in their cell with a purse is stopped when the camp is bold (hungry or strong, and not lying
+    low), and asked for part of it. The player can pay (*Pay*), get clear, or fight (*Attack*).
+  - **Patience.** After twenty seconds the bandits lose patience.
+  - **Fights** (`World::attack`; a placeholder until there is a combat design).
+    - Stamina is what a fight wears down; blows and swings cost it. Strength and dexterity set the odds and the
+      damage.
+    - A player beaten to the ground is robbed of half their purse (or what was asked, if more), not killed, and left
+      alone for a game hour.
+    - Felling the leader, or every bandit, breaks the camp. The camp's takings and any bounty on it go to whoever did
+      it, and every market hears who drove the bandits off.
+    - With half of them down, the rest run and lie low.
+  - **The takings.** What bandits take from players is held in the camp's account (`bandits:<camp>`), so money is
+    still conserved.
+- **Residents take work** that players have left for two days.
+  - Someone out of work in the writer's town carries a letter, walking it there (their errand overrides the day's
+    plan, except sleep).
+  - One of the town guard takes an escort when the caravan sets out, and walks the road with it.
+  - Errands are derived from the contracts, so nothing new is saved.
+- **Trade between towns.** Each day a town other than the capital with plenty of food or herbs for its people sends a
+  caravan to one with little.
+  - It carries up to twelve of each.
+  - On arrival the buying town's stores pay the selling town's a wholesale price (three a meal, one for herbs), as far
+    as they can.
+  - Bandits camp along every road between two towns, not only the capital's.
+- **Prices follow scarcity town by town.**
+  - Once a game hour, each store's price factor is worked out from what it holds for its people: half a meal and a
+    quarter of a bundle of herbs each is enough.
+  - The factor runs from 0.85 (plenty) to 1.6 (none), and multiplies what the trader's own stock already does.
+  - A merchant's prices follow the store they restock from.
+
+**Verified** (`Tests/roads_tests.cpp`, now 118 checks, money conserved throughout):
+- **Escorts in person.** A player who walks beside the wagon is paid on arrival. One who never comes is waited for,
+  then left behind, and their pay goes back.
+- **Bandits.** They appear only when someone is near, and are never saved. They stop a traveller, are paid off and
+  hold the coin, and let them be. They beat and rob one who neither pays nor leaves, without killing them.
+- **A fight.** A fight with the leader breaks the camp and pays the bounty, and the west market hears of it.
+- **Residents.** A resident out of work carries a letter to another town in person and is paid. A town guard walks
+  with a caravan and is paid.
+- **Trade and prices.** With three towns, the one with plenty sends food to the one with none, and is paid for it.
+  Food costs more where the stores are empty.
+- **On DEV** (`world_check`, 20 players across midnight): 7.7 ms mean tick (p99 21.5 ms), money conserved. There
+  are four caravans on the road: two from the capital, and two trading between Ridgemere and Ser Ferro.
+
+**Not yet:** residents taking bounties or supply runs themselves (the watch still does the bounties); a player
+following a wagon by command rather than by walking; bandits other than on the roads; a combat design to replace the
+placeholder fight.
+
+## Phase 6: the backend at scale (partly built 2026-09-28)
+
+### Built
+
+- **Delta snapshots** (`Source/RATWMUD/Runtime/RatwSnapshotSections.h`).
+  - **What changes seldom.** A snapshot's big parts change far less often than the five times a second it is sent:
+    the cell's ground and heights, what the wolf can see, the world and travel maps, the doors, the satchel.
+  - **Keys.** Each part goes with a key, a hash of its content. The client acknowledges each snapshot it applies
+    (`ServerSnapshotAck`, unreliable).
+  - **Leaving out.** The server then leaves out every part whose key the client is known to hold, and the client puts
+    its kept copy back (the newest six of each part) before anything uses the snapshot. The widget, the tools and the
+    tests see whole snapshots, as before.
+  - **Unreliable delivery.** Snapshots travel unreliably, so the server relies only on what an acknowledgement proves
+    arrived. A client missing a part asks for everything again, and a new session starts from nothing.
+  - **Turning it off.** `-RatwFullSnapshots` sends every snapshot whole.
+- **Binary motion frames** (`ratwmotion::Pack`, `Unpack`). The twenty-a-second pose frames are binary on the wire:
+  stamps, then each pose's ID, x, y, facing and whether it's moving (single precision). Malformed frames are refused
+  whole.
 - **Tools.**
-  - Atlas and the Dungeon Master load only what is in view (doc 20 step 4).
-  - Heights use a compact encoding.
-  - Responses are compressed.
-  - The roster preview sends only what changed.
-- **Launch.** Don't re-export the world on every `live.sh` launch when nothing changed. Use a cooked dedicated server
-  instead of `UnrealEditor -server`.
-- **A standalone headless world server.**
-  - `Source/RATWMUD/Core` is already portable C++, and the Unreal runtime mostly moves compressed JSON strings over RPCs.
-  - Moving the authority into its own process would give second-scale start-up, ordinary profilers and sanitizers, a
-    separate thread or process for the T2 world, and room for region processes later.
-  - Unreal would become the client.
-  - Best done after Phase 1 shows what the server core needs.
+  - **Cached ground.** Atlas and the Dungeon Master keep each cell's ground (terrain rows and heights, the slow part of
+    loading a world) between loads.
+    - It is checked each time against the revision, the time of change, and the row versions and counts of the
+      terrain chunks and cells, so an edit, a publish or a world made again is never served stale.
+    - Each caller gets its own copy.
+    - DEV's world loads in 0.9 s after the first time (7.8 s before).
+  - **Compressed responses.** Large text and JSON responses are gzipped for a browser that accepts it and isn't on
+    this machine (`tools/http_body.py`). A local one gets them as they are, which is faster there.
+- **Launch.**
+  - **No needless builds.** `tools/world_build.py dev` (and so `live.sh ... dev`) builds DEV only when it has changed
+    since the newest build. It compares a fingerprint of the world's revision, its live layers, the roster and the
+    exporter's code (migration 0025); `--force` builds anyway. Unchanged, a launch skips the half-minute export.
+  - **The cooked package.** `RATW_PACKAGED=1 bash tools/live.sh server ...` runs the cooked package's headless host
+    (`tools/run-packaged.sh server`) instead of the editor.
+
+Verified:
+- **Engine tests.** `RATW.Network.DeltaSnapshots` covers:
+  - parts left out only after an acknowledgement, and put back exactly;
+  - a changed part sent again;
+  - a client that lost its copies noticing.
+
+  `RATW.Network.BinaryMotionFrames` covers the round trip, the size against JSON, and refusal of cut, foreign or
+  padded frames.
+- **Smokes.** The two-client network smoke and the persistence smoke pass over real connections.
+- **Tools.** `tools/test_world_store.py` covers stale ground. `tools/test_publish.py` covers build reuse against
+  edits, live layers and the roster. `tools/test_http_body.py` covers compression.
+
+### Not yet
+
+- **Atlas and the Dungeon Master loading only what is in view** (doc 20 step 4), and heights in a compact encoding
+  for them. Both need the editors' front ends to fetch by area; the cache above takes most of the wait out of loading
+  meanwhile.
+- **The roster preview sending only what changed.**
+- **World-map reveals as increments.** The maps are sent only when they change, but then whole.
+- **A stripped dedicated-server binary.** This installed engine refuses Server targets (see the README); the cooked
+  game's headless host is the nearest.
+- **A standalone headless world server,** with Unreal as the client.
+  - It needs a portable checkpoint codec (today the save's JSON is read and written with Unreal's JSON types in
+    `RatwGameMode.cpp`) and a transport and login of its own.
+  - It would give second-scale start-up, ordinary profilers and sanitizers, and room for region processes later.
+  - `Source/RATWMUD/Core` is already portable, and `world_check` already runs it headless on DEV.
 
 ## More ideas to fold in
 

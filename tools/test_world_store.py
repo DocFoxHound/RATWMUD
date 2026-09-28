@@ -76,6 +76,23 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(S.save_world(self.conn, loaded, revision), revision + 1)
         self.assertEqual(S.load_world(self.conn, 'greyfen')[0]['cells'][0]['terrain'][3][5], '~')
 
+    def test_loads_after_the_first_reuse_the_ground_but_never_a_stale_one(self):
+        self.create(greyfen())
+        first, revision = S.load_world(self.conn, 'greyfen')
+        again, _ = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(first, again)
+        again['cells'][0]['terrain'][0] = 'changed by a caller'
+        self.assertEqual(S.load_world(self.conn, 'greyfen')[0], first)          # Each load gets its own copy.
+        # Made again from scratch with other ground, at the same revision number: the new ground, not the kept one.
+        self.conn.execute('DELETE FROM world.worlds')
+        other = copy.deepcopy(first)
+        row = other['cells'][0]['terrain'][2]
+        other['cells'][0]['terrain'][2] = '~' + row[1:]
+        self.create(other)
+        remade, remade_revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(remade_revision, revision)
+        self.assertEqual(remade['cells'][0]['terrain'][2][0], '~')
+
     def test_stale_saves_and_duplicate_creates_are_refused(self):
         self.create(greyfen())
         loaded, revision = S.load_world(self.conn, 'greyfen')
