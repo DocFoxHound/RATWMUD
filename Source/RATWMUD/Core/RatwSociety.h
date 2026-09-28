@@ -21,6 +21,7 @@ struct LifeBody
     std::string cell;
     double x = 0, y = 0;
     bool companion = false;
+    int age = 30;                                   // Their age now (the authored age is when they were written).
 };
 // The most residents a world may author: the world loader, the society and its saves all hold this many. With
 // simulation tiers (World::setTiered) a resident far from every player costs almost nothing per tick.
@@ -47,6 +48,11 @@ struct EconomyEntry
 };
 // A player character's ID ("player-..." in development saves, "wolf-<32 hex>"), as opposed to a resident's.
 bool playerAccountId(const std::string& id);
+// The accounts of things rather than people (Phase 5): a town's stores ("stores:<town>"), a caravan's load
+// ("caravan:<id>"), a bandit camp's loot ("bandits:<id>"), a contract's reward held in trust ("contract:<id>").
+bool facilityAccount(const std::string& id);
+// Goods the economy knows (herbs and meals, for now).
+bool itemValid(const std::string& item);
 
 struct Spot
 {
@@ -69,6 +75,7 @@ struct PositionState
 {
     std::string holder, apprentice, lastHolder;
     double vacantSince = -1;
+    bool newcomerAsked = false;   // A stranger has been sent for (see ResidentRequest).
 };
 struct Mourning
 {
@@ -81,8 +88,30 @@ struct CareerState
     std::map<std::string, double> skill;              // "resident|position" -> 0..100.
     std::map<std::string, Mourning> mourning;         // By resident.
     std::map<std::string, double> estates;            // The dead whose estates wait to be settled -> day of death.
+    std::map<std::string, std::string> spouses;       // Both ways.
+    std::map<std::string, std::vector<std::string>> parents;   // Child -> parents.
+    std::map<std::string, double> lastBirth;          // "a|b" (a < b) -> day their last child was born.
+    std::map<std::string, int> births;                // "a|b" -> how many children they have had.
     std::int64_t day = -1;                            // The last day careers were tended.
 };
+// A resident the world should gain: a stranger for a post nobody here can fill, or a child. The society decides that
+// one is wanted; the host makes them (a live world adds a row to live.npcs, cloned from `templateId`), then calls
+// welcome() with their ID.
+struct ResidentRequest
+{
+    std::string kind;             // "newcomer" or "birth".
+    std::string templateId;       // Whose record the newcomer's is cloned from (appearance, voice, manner).
+    std::string name;
+    int age = 0;
+    Spot home;
+    std::string positionId;       // Newcomer: the post they come for.
+    std::vector<std::string> parents;
+};
+// Skill families (a placeholder until skills are designed): what a job's skill is mostly about, so that some of it
+// carries to a similar job. "keeping the inn" and "keeping the stall" are both trade; a sawyer and a quarryman labour.
+const char* skillFamily(const std::string& title);
+// How long paid work takes at a skill (1 at 50; faster for the skilled, slower for beginners): 0.75..1.25.
+double workPace(double skill);
 // Something that happened to a career, for the world's event log.
 struct CareerNote
 {
@@ -196,6 +225,29 @@ class Society
     // Once a game day: estates settled, empty positions filled (apprentice, then family, then anyone local out of
     // work), apprentices taken on and finished, mourning ended. Returns what happened.
     std::vector<CareerNote> tendCareers(double day, const CareerWorld& world);
+    // A resident moves house (on marrying, say): they walk there and it becomes home on arrival. Unlike relocate()
+    // (the Dungeon Master's migrations, which spare those in essential work), anyone may.
+    bool moveHome(const std::string& resident, const std::string& cell, double x, double y);
+    // Moves existing money and goods between accounts, recorded as `kind` (a caravan's load, an escrowed reward, a
+    // town's tithe). Nothing is made or lost; what the receiver can't hold stays put. False if nothing moved.
+    bool shift(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins,
+               const std::string& kind);
+    // Goods used up (eaten by bandits, say): gone from the world, recorded as `kind`.
+    int consume(const std::string& account, const std::string& item, int quantity, const std::string& kind);
+    // A facility account (see facilityAccount), empty to begin with; closing one needs it empty.
+    bool openAccount(const std::string& id);
+    bool closeAccount(const std::string& id);
+    // Which store each cell's merchants restock from (default: the treasury, the one store of a single town).
+    void setStores(std::map<std::string, std::string> byCell) { storeForCell_ = std::move(byCell); }
+    const std::string& storeFor(const std::string& cell) const;
+    // Marriage: both must be unmarried; from now on they are family.
+    bool marry(const std::string& a, const std::string& b);
+    const std::string* spouse(const std::string& resident) const;
+    // Residents wanted since the last call (see ResidentRequest), and a made one taking their place in the society.
+    std::vector<ResidentRequest> takeRequests();
+    CareerNote welcome(const ResidentRequest& request, const std::string& id);
+    // The best a resident is at any job of this family (see skillFamily).
+    double familySkill(const std::string& resident, const std::string& family) const;
     // A player asks to learn a position's trade from its holder.
     CareerNote apprentice(const std::string& player, const std::string& positionId, const CareerWorld& world, double day);
     void addPlayer(const std::string& id);
@@ -247,12 +299,14 @@ class Society
     std::unordered_map<std::string, std::size_t> positionIndex_;
     mutable std::unordered_map<std::string, std::string> heldBy_, learning_;   // resident -> position (cache).
     mutable bool careersIndexed_ = false;
+    std::vector<ResidentRequest> requests_;
     void buildPositions();
     void indexCareers() const;
     void forgetCareers() { careersIndexed_ = false; }
     void defaultCareers();
     void reconcileCareers();
     bool bequeath(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins);
+    std::map<std::string, std::string> storeForCell_;   // Cell -> the store its merchants restock from (Phase 5).
     static constexpr std::int64_t MoneyCap = 1000000000;
     static constexpr int StockCap = 10000;
     mutable bool specsIndexed_ = false;

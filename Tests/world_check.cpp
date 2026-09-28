@@ -332,6 +332,24 @@ int main(int argc, char** argv)
     std::cout << "  " << server.offstageCount() << " residents offstage at the end; money "
               << (server.society().conserved() ? "conserved" : "NOT CONSERVED") << "; " << server.loadedCells()
               << " places in memory at the end; " << server.bonds().count() << " bonds between them\n";
+    {
+        const auto& roads = server.roads();
+        std::size_t travelling = 0, raided = 0, camps = 0, beliefs = 0, open = 0;
+        for (const auto& c : roads.caravans)
+            (c.status == "raided" ? raided : travelling) += 1;
+        for (const auto& b : roads.camps)
+            camps += b.active;
+        for (const auto& k : roads.contracts)
+            open += k.status == "open" || k.status == "taken";
+        for (const auto& [id, e] : server.entities())
+            if (const auto* mine = server.beliefsOf(id))
+                beliefs += mine->size();
+        std::cout << "  roads: " << server.towns().size() << " towns (";
+        for (const auto& t : server.towns())
+            std::cout << t.id << (&t == &server.towns().front() ? "*" : "") << (&t == &server.towns().back() ? "" : ", ");
+        std::cout << "); " << travelling << " caravans on the road, " << raided << " robbed; " << camps << " bandit camps; "
+                  << open << " open contracts; " << beliefs << " rumours held\n";
+    }
     std::cout << "  at their scheduled place: " << arrived << ", on their way: " << underway << ", without a route: "
               << lost.size() << '\n';
     for (const auto& who : lost)

@@ -59,6 +59,7 @@ inline Object Society(const ratw::SocietyState& S)
         auto A = New();
         Text(A, TEXT("holder"), P.holder); Text(A, TEXT("apprentice"), P.apprentice); Text(A, TEXT("lastHolder"), P.lastHolder);
         A->SetNumberField(TEXT("vacantSince"), P.vacantSince);
+        A->SetBoolField(TEXT("newcomerAsked"), P.newcomerAsked);
         Positions->SetObjectField(F(Id), A);
     }
     for (const auto& [Key, Value] : S.careers.skill) Skill->SetNumberField(F(Key), Value);
@@ -71,6 +72,18 @@ inline Object Society(const ratw::SocietyState& S)
     for (const auto& [Id, Day] : S.careers.estates) Estates->SetNumberField(F(Id), Day);
     Careers->SetObjectField(TEXT("positions"), Positions); Careers->SetObjectField(TEXT("skill"), Skill);
     Careers->SetObjectField(TEXT("mourning"), Mourning); Careers->SetObjectField(TEXT("estates"), Estates);
+    auto Spouses = New(), Parents = New(), LastBirth = New(), Births = New();
+    for (const auto& [Id, Other] : S.careers.spouses) Text(Spouses, *F(Id), Other);
+    for (const auto& [Child, Of] : S.careers.parents)
+    {
+        Array List;
+        for (const auto& Parent : Of) List.Add(V(F(Parent)));
+        Parents->SetArrayField(F(Child), List);
+    }
+    for (const auto& [Key, Day] : S.careers.lastBirth) LastBirth->SetNumberField(F(Key), Day);
+    for (const auto& [Key, Count] : S.careers.births) Births->SetNumberField(F(Key), Count);
+    Careers->SetObjectField(TEXT("spouses"), Spouses); Careers->SetObjectField(TEXT("parents"), Parents);
+    Careers->SetObjectField(TEXT("lastBirth"), LastBirth); Careers->SetObjectField(TEXT("births"), Births);
     O->SetObjectField(TEXT("careers"), Careers);
     return O;
 }
@@ -94,6 +107,9 @@ inline ratw::CareerState ReadCareers(const Object& O)
                 double Since = -1;
                 if (A->TryGetNumberField(TEXT("vacantSince"), Since) && FMath::IsFinite(Since))
                     P.vacantSince = Since;
+                bool Asked = false;
+                if (A->TryGetBoolField(TEXT("newcomerAsked"), Asked))
+                    P.newcomerAsked = Asked;
                 C.positions[S(Pair.Key)] = P;
             }
     if (auto Skill = Child(O, TEXT("skill")); Skill.IsValid())
@@ -108,6 +124,24 @@ inline ratw::CareerState ReadCareers(const Object& O)
         for (const auto& Pair : Estates->Values)
             if (Pair.Value.IsValid() && Pair.Value->Type == EJson::Number)
                 C.estates[S(Pair.Key)] = Pair.Value->AsNumber();
+    if (auto Spouses = Child(O, TEXT("spouses")); Spouses.IsValid())
+        for (const auto& Pair : Spouses->Values)
+            if (Pair.Value.IsValid() && Pair.Value->Type == EJson::String)
+                C.spouses[S(Pair.Key)] = S(Pair.Value->AsString());
+    if (auto Parents = Child(O, TEXT("parents")); Parents.IsValid())
+        for (const auto& Pair : Parents->Values)
+            if (Pair.Value.IsValid() && Pair.Value->Type == EJson::Array)
+                for (const auto& Parent : Pair.Value->AsArray())
+                    if (Parent.IsValid() && Parent->Type == EJson::String)
+                        C.parents[S(Pair.Key)].push_back(S(Parent->AsString()));
+    for (const auto& [Field, Into] : {std::pair<const TCHAR*, int>{TEXT("lastBirth"), 0}, {TEXT("births"), 1}})
+        if (auto Map = Child(O, Field); Map.IsValid())
+            for (const auto& Pair : Map->Values)
+                if (Pair.Value.IsValid() && Pair.Value->Type == EJson::Number && FMath::IsFinite(Pair.Value->AsNumber()))
+                {
+                    if (Into == 0) C.lastBirth[S(Pair.Key)] = Pair.Value->AsNumber();
+                    else C.births[S(Pair.Key)] = FMath::Clamp(int(Pair.Value->AsNumber()), 0, 3);
+                }
     return C;
 }
 // A malformed subtree invalidates the complete checkpoint. Never silently refill purses.

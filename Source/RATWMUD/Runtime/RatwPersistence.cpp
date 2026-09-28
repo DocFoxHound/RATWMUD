@@ -182,7 +182,8 @@ const std::vector<FSaveList>& SaveLists()
         {"ledger", nullptr, TEXT("ledger"), {TEXT("event"), TEXT("actor"), TEXT("partner"), TEXT("reason")}},
         {"socialRecent", nullptr, TEXT("socialRecent"), {TEXT("event"), TEXT("actor"), TEXT("cell")}},
         {"socialSessions", nullptr, TEXT("socialSessions"), {TEXT("id")}},
-        {"bonds", nullptr, TEXT("bonds"), {TEXT("holder"), TEXT("other")}}};
+        {"bonds", nullptr, TEXT("bonds"), {TEXT("holder"), TEXT("other")}},
+        {"beliefs", nullptr, TEXT("beliefs"), {TEXT("holder"), TEXT("subject"), TEXT("claim")}}};
     return Lists;
 }
 // A field as `e->>'field'` gives it: text as it is, whole numbers without a decimal point, missing or null as ''.

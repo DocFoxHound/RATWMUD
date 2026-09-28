@@ -1994,6 +1994,8 @@ void World::recordEvent(WorldEvent event)
         if (const auto* who = entity(event.actor))
             event.cell = who->cellId;
     bondsFromEvent(event);
+    rumoursFromEvent(event);
+    contractsFromEvent(event);
     events_.push_back(std::move(event));
     if (events_.size() > EventsKept + EventsKept / 4)   // Trimmed in batches, not one at a time off the front.
     {
@@ -2011,6 +2013,15 @@ void World::bondsFromEvent(const WorldEvent& e)
     if (e.actor == e.target || !actor || !target || actor->dead || target->dead)
         return;
     const double day = calendarDays_;
+    // A promise between these two is kept by dealing honestly with the other: trade, payment, a gift, help.
+    if (e.kind == "economy" || e.kind == "gift" || e.kind == "help")
+        for (auto& p : promises_)
+            if (p.status == "open" && ((p.by == e.actor && p.to == e.target) || (p.by == e.target && p.to == e.actor)))
+            {
+                p.status = "kept";
+                bonds_.change(p.to, p.by, {2, 6, 1, 0, 1}, day);
+                events_.push_back({"promise kept", p.by, p.to, e.cell, time_, day, {}, 0, 0, p.what});
+            }
     if (e.kind == "economy")
     {
         // A sale or a wage honestly paid: they know each other a little better and trust a little more.
@@ -2063,7 +2074,137 @@ void World::tendBonds()
             bonds_.fade(calendarDays_);
         bondDay_ = day;
         careerNotes(society_.tendCareers(calendarDays_, careerWorld()));
+        tendPromises();
+        tendMarriages();
     }
+}
+
+void World::promise(const std::string& by, const std::string& to, const std::string& what, double days)
+{
+    if (by.empty() || to.empty() || by == to || what.empty() || !std::isfinite(days) || days <= 0)
+        return;
+    promises_.push_back({by, to, what.substr(0, 200), calendarDays_, calendarDays_ + std::min(days, 30.0), "open"});
+    // Settled promises are history (the event log keeps them); a few hundred open ones are plenty.
+    promises_.erase(std::remove_if(promises_.begin(), promises_.end(), [&](const Promise& p) {
+                        return p.status != "open" && calendarDays_ - p.due > 30;
+                    }),
+                    promises_.end());
+    if (promises_.size() > 2000)
+        promises_.erase(promises_.begin(), promises_.begin() + std::ptrdiff_t(promises_.size() - 2000));
+}
+
+void World::tendPromises()
+{
+    for (auto& p : promises_)
+        if (p.status == "open" && calendarDays_ >= p.due)
+        {
+            p.status = "broken";
+            bonds_.change(p.to, p.by, {-4, -10, 0, 0, -2}, calendarDays_);
+            recordEvent({"promise broken", p.by, p.to, {}, 0, 0, {}, 0, 0, p.what});
+        }
+}
+
+std::string World::promisesBetween(const std::string& npc, const std::string& other, const std::string& otherName) const
+{
+    std::string out;
+    for (const auto& p : promises_)
+    {
+        if (p.status != "open" || !((p.by == npc && p.to == other) || (p.by == other && p.to == npc)))
+            continue;
+        const int days = int(std::ceil(p.due - calendarDays_));
+        out += (out.empty() ? "" : " ") + std::string(p.by == npc ? "You promised " + otherName : otherName + " promised you") +
+               ": " + p.what + " (due in " + std::to_string(std::max(0, days)) + " day" + (days == 1 ? "" : "s") + ").";
+    }
+    return out;
+}
+
+void World::tendMarriages()
+{
+    // Once a game week, two unmarried adults who like each other a great deal and know each other well may marry;
+    // one moves in with the other. Not every such pair, and not all at once.
+    const auto week = std::int64_t(std::floor(calendarDays_ / 7));
+    if (week == marriageWeek_)
+        return;
+    marriageWeek_ = week;
+    for (const auto& [id, e] : entities_)
+    {
+        if (!e.npc || e.dead || e.age < 18 || e.age > 60 || society_.spouse(id) || !society_.resident(id))
+            continue;
+        const auto* mine = bonds_.of(id);
+        if (!mine)
+            continue;
+        for (const auto& [other, b] : *mine)
+        {
+            const auto* o = entity(other);
+            const auto* back = bonds_.find(other, id);
+            if (!(id < other) || !o || !o->npc || o->dead || o->age < 18 || o->age > 60 || society_.spouse(other) ||
+                !society_.resident(other) || !back || b.affinity < 50 || back->affinity < 50 || b.familiarity < 60 ||
+                back->familiarity < 60 || society_.family(id, other) ||
+                (std::hash<std::string>{}(id + other) + std::uint64_t(week)) % 3 != 0)
+                continue;
+            // The one from the smaller household moves (the younger, if they are alike).
+            int here = 0, there = 0;
+            for (const auto& [someone, life] : society_.state().residents)
+                here += society_.household(someone, id), there += society_.household(someone, other);
+            const bool iMove = here < there || (here == there && e.age < o->age);
+            const auto& mover = iMove ? id : other;
+            const auto* stay = society_.resident(iMove ? other : id);
+            double x = stay->homeX, y = stay->homeY;
+            if (!society_.marry(id, other))
+                continue;
+            if (freeSpotNear(stay->homeCell, x, y))
+                society_.moveHome(mover, stay->homeCell, x, y);
+            recordEvent({"marriage", id, other, {}, 0, 0, {}, 0, 0, entity(mover)->name + " moves in"});
+            break;
+        }
+    }
+}
+
+bool World::freeSpotNear(const std::string& cellId, double& x, double& y)
+{
+    if (!ensureLoaded(cellId).ok)
+        return false;
+    const auto* c = cell(cellId);
+    if (!c)
+        return false;
+    std::set<std::pair<int, int>> homes;
+    for (const auto& [id, life] : society_.state().residents)
+        if (life.homeCell == cellId)
+            homes.insert({int(std::floor(life.homeX)), int(std::floor(life.homeY))});
+    const int cx = int(std::floor(x)), cy = int(std::floor(y));
+    for (int ring = 1; ring <= 4; ++ring)
+        for (int dy = -ring; dy <= ring; ++dy)
+            for (int dx = -ring; dx <= ring; ++dx)
+            {
+                if (std::max(std::abs(dx), std::abs(dy)) != ring)
+                    continue;
+                const int tx = cx + dx, ty = cy + dy;
+                const auto* t = c->tile(tx, ty);
+                if (!t || t->solid || homes.count({tx, ty}) || blockedByDoor(cellId, {tx + .5, ty + .5}))
+                    continue;
+                x = tx + .5;
+                y = ty + .5;
+                return true;
+            }
+    return false;
+}
+
+std::vector<ResidentRequest> World::takeResidentRequests()
+{
+    auto requests = society_.takeRequests();
+    for (auto& r : requests)
+        if (!freeSpotNear(r.home.cell, r.home.x, r.home.y))
+            r.home = {};                             // The host will find them somewhere to stay.
+    return requests;
+}
+
+Result World::welcomeResident(const ResidentRequest& request, const std::string& id)
+{
+    if (!entity(id))
+        return {false, "No such resident.", id};
+    const auto note = society_.welcome(request, id);
+    careerNotes({note});
+    return {note.kind != "refused", note.detail, id};
 }
 
 CareerWorld World::careerWorld() const
@@ -2394,11 +2535,12 @@ void World::updateSchedules()
         const auto& e = pair.second;
         if (e.dead)
             continue;                               // The dead keep no schedule: no work, no hunger, no walking.
-        bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following"};
+        bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following", e.age};
     }
     society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
     absorbJournal();
     tendBonds();
+    tendRoads();
     // When a shift changes, a whole town sets off at once: plan a bounded number of routes per update and let the
     // rest set off on the next, rather than stalling the server for all of them in one tick.
     int searches = 0;
@@ -3134,6 +3276,11 @@ PersistedWorld World::save() const
     out.society = society_.state();
     out.memories = memories_;
     out.bonds = bonds_.save();
+    out.promises = promises_;
+    out.roads = roads_;
+    out.roads.beliefs.clear();
+    for (const auto& [holder, mine] : beliefs_)
+        out.roads.beliefs.insert(out.roads.beliefs.end(), mine.begin(), mine.end());
     for (const auto& entry : entities_)
     {
         Entity e = entry.second;
@@ -3401,6 +3548,22 @@ Result World::restore(const PersistedWorld& state)
     memories_ = state.memories;
     lastObserved_.clear();
     bonds_ = std::move(restoredBonds);
+    // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again.
+    roads_ = state.roads;
+    roads_.caravans.erase(std::remove_if(roads_.caravans.begin(), roads_.caravans.end(),
+                                         [&](const Caravan& c) { return !society_.account(c.account); }),
+                          roads_.caravans.end());
+    beliefs_.clear();
+    for (const auto& b : state.roads.beliefs)
+        if (std::isfinite(b.confidence) && b.confidence > 0 && b.confidence <= 1)
+            beliefs_[b.holder].push_back(b);
+    roads_.beliefs.clear();
+    townsReady_ = false;
+    promises_.clear();
+    for (const auto& p : state.promises)
+        if (!p.by.empty() && !p.to.empty() && p.by.size() <= 80 && p.to.size() <= 80 && p.what.size() <= 200 &&
+            std::isfinite(p.made) && std::isfinite(p.due) && (p.status == "open" || p.status == "kept" || p.status == "broken"))
+            promises_.push_back(p);
     scheduleAccumulator_ = 0;
     pendingPortals_.clear();
     travels_.clear();

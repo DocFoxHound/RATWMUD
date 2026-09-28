@@ -354,26 +354,106 @@ starts everyone in their own job; an unreadable careers section never makes a sa
   - A Dungeon Master kill of Holly Ashwalker left "keeping the inn" vacant, with her sister Laurel mourning.
   - Everything was logged and saved.
 
+**Added the same day** (first versions with placeholder numbers):
+
+- **Newcomers.** A post nobody here has taken in eight days sends for a stranger (`ResidentRequest`).
+  - A live world adds them to `live.npcs` as a runtime resident: cloned from the last holder's record, with a fresh
+    name and age, a bed found near the old home or the work, and no job of their own (work label "-").
+  - The server takes them in like any spawn and gives them the post (`World::welcomeResident`), knowing something of
+    the work (skill 35).
+  - A world from files can't add people, so it only notes the want.
+  - Verified on a copy of DEV: Sedge Thistledown came to take up "helping at The Gatehouse Inn" and was still there
+    after a restart.
+- **Marriage.**
+  - About once a week, two unmarried adults (18–60) who each like the other 50 or more and know them 60 or more may
+    marry.
+  - The one from the smaller household moves in (`Society::moveHome`). A save may carry an essential worker's move
+    only if it is to their spouse's home, so operators still cannot move essential workers.
+  - Spouses and parents count as family.
+- **Births.**
+  - A married couple at home together, the mother 18–45, may have a child: about one a season, a year apart at least,
+    three at most.
+  - The child is made like a newcomer (age 0, a parent's surname), grows up without working until 16, and is counted
+    in the family.
+- **Promises the world keeps track of** (`World::promise`, `promisesBetween`). A promise from the NPC Mind becomes a
+  record due in three days.
+  - It is kept if the two trade, pay, give or help while it is open: trust grows, and "promise kept" is logged.
+  - It is broken if it falls due first: trust falls further than keeping raised it.
+  - Open promises are part of the NPC's context in conversation.
+- **Skill that matters.**
+  - Paid work finishes faster for the skilled (`workPace`: 1 at skill 50, 0.75–1.25).
+  - A placeholder table of skill families (craft, trade, labour, watch, service, travel, general; `skillFamily`)
+    carries half of one's best skill in a family to a new job in it.
+  - The NPC's standing at their trade ("a master of it", "skilled", "capable", "still learning") is part of the
+    conversation.
+
+## Phase 5: the roads (built 2026-09-27; placeholder numbers throughout)
+
+`Source/RATWMUD/Core/RatwRoads.h`, `RatwRoads.cpp`; `World::roads()`.
+
+- **Towns.** A town is a region (the cells' territory) where at least five people live and there is a market. On DEV
+  there are three: Upper Accord, Ridgemere and Ser Ferro.
+  - The capital is where people arrive (the spawn's region), and its store is the treasury.
+  - Every other town has its own store (`stores:<town>`), given its share of the treasury's goods once, by
+    population.
+  - Merchants restock from their own town's store and pay into it. Once a week the stores send what they took in
+    back to the treasury, which pays the wages.
+  - A world with one settlement keeps the treasury as its one store, exactly as before.
+- **Caravans.** Every morning a caravan leaves the capital's market for each other town, carrying that town's share
+  of the day's goods.
+  - Its load is its own account, so goods really move.
+  - It crosses a cell every two and a half minutes along the road (the cell graph), offstage like a resident.
+  - On arrival its load goes into the town's stores, and the carters tell the town's merchants what they heard in the
+    capital's market; that is how rumours cross between towns. Then it goes home empty.
+- **Bandits.** Camps are placed in wild cells along the roads (one in six to begin with).
+  - **Odds.** A loaded caravan passing a camp is robbed with odds of boldness (strength × hunger) against its guards
+    and the carters' caution.
+  - **A raid.** The load is taken and eaten, which feeds the camp. The town posts a bounty on the camp and asks for an
+    escort for the next caravan. Its merchants hear of it.
+  - **Lying low.** A camp that has just raided lies low for two days.
+  - **Hunger.** Hunger grows daily; a starving camp dwindles and scatters, and where a road has no camp one may
+    gather.
+  - **The watch.** A town's watch goes after camps with a price on them, with better chances the more guards it has,
+    and may clear them.
+- **Contracts**, the reward set aside at once from the poster's purse (or the treasury) and paid or returned:
+  - **Bounty:** done when the camp is gone (the watch; the Dungeon Master, or later combat, through
+    `completeContract`).
+  - **Escort:** its taker joins the next caravan to that town (+2 guards) and is paid on a safe arrival.
+  - **Supply:** posted when a town's store runs low on food; done by selling goods to that town's merchant.
+  - **Courier:** a resident who cares for someone in another town pays to have a letter carried. It is done when its
+    taker stands before the recipient; untaken for a week, it goes with the carters.
+
+  Unfinished contracts expire and their rewards go back. Players see the work near a merchant (*Ask for work*) and
+  take it (*Take k12*).
+- **Rumours** (`World::believe`, `rumoursAbout`; table `game.beliefs`, migration 0024). What a character has heard: a
+  claim about someone or something, who told them, and how sure they are.
+  - **Where they start:** witnesses (a death, harm, a marriage, a newcomer), those it happened to (a broken or kept
+    promise), mourners, and the markets told of a raid.
+  - **How they spread:** each day everyone tells the few they know best what they are surest of, at 70% of their
+    certainty. Rumours fade by 3% a day, and each character keeps at most 30.
+  - **In conversation:** "You have heard that Ash breaks promises (from Moss; fairly sure)."
+
+**Verified:**
+- `Tests/roads_tests.cpp`, 41 checks, with money conserved throughout:
+  - A caravan delivers its whole load, and the carters bring the capital's news to the west market.
+  - A strong, starving camp robs a caravan: loot eaten, bounty and escort posted, the market told.
+  - A player escorts the next caravan and is paid; a letter delivered in person pays and earns trust; a supply run is
+    done by selling to the town's merchant.
+  - Rumours pass from one to another less surely, and survive a restart.
+- **On DEV** (`world_check`, across midnight): three towns and three camps. Each day's caravans set out, some get
+  through and some are robbed, and money stays conserved.
+- **The live server on a copy of DEV:**
+  - The towns' stores were stocked.
+  - Two loaded caravans set out and bandits gathered on a road.
+  - After a restart the same caravans were still on the road and none were sent twice.
+
 **Not yet:**
-- **Newcomers.** Someone arriving from outside when nobody can fill a post needs a way to author a new resident; for
-  now the Dungeon Master's spawn rules do it.
-- **Promises the world tracks** (kept or broken).
-- **Births and marriages.**
-- **Skill affecting how well work is done.**
-
-## Phase 5: the roads
-
-- **Contracts** are records: courier, escort, supply run, bounty, patrol.
-  - They are raised by economic need ("Ser Ferro is short of glass, Ridgemere has plenty"), by NPCs ("take this letter
-    to my sister") or by players.
-  - NPCs or players take them.
-- **Caravans** are group entities with a manifest, guards and a route over the road graph, simulated at T2. Goods
-  really move between cities, so regional prices differ and trading pays.
-- **Bandits** are a faction with camps, strength and needs (they raid because they are hungry).
-  - A raid nobody sees is settled by strength against strength, and produces losses, rumours, bounties and price rises.
-  - Near a player it materialises and is played out.
-- **Patrols** come from a faction's strength and the threat it faces. A patrol that keeps being raided asks for
-  reinforcements, which draws guards from the city, which lets crime rise in the Sump.
+- **Players and residents on the road in person.** Caravans and couriers are offstage hops; a player sees a caravan
+  only as events and its effects.
+- **Encounters with bandits for a player,** and so bounties done by players.
+- **Residents taking contracts themselves** (beyond carters carrying letters).
+- **Trade between the non-capital towns.**
+- **Prices that follow scarcity town by town.**
 
 ## Phase 6: the backend at scale
 

@@ -125,6 +125,66 @@ void theWorldMovesThem()
            "with its bonds");
 }
 
+// Jump the world's calendar ahead through a save, then run the day's tending (bonds, promises, marriages...).
+void daysPass(World& w, double days)
+{
+    auto saved = w.save();
+    saved.calendarDays += days;
+    expect(w.restore(saved).ok, "The world moves on");
+    w.tick(.6);
+}
+
+void promisesKeptAndBroken()
+{
+    World w;
+    for (const auto& e : w.entities())
+        if (e.second.npc)
+            w.entity(e.first)->leaderId = "test-frozen";
+    w.addPlayer("player-ash", "Ash");
+    auto* ash = w.entity("player-ash");
+    ash->cellId = "tavern";
+    ash->position = {9.5, 7.5};
+    w.entity("npc_keeper")->position = {9.5, 6.5};
+    w.promise("player-ash", "npc_keeper", "come back for a meal", 3);
+    expect(w.promisesBetween("npc_keeper", "player-ash", "Ash").find("Ash promised you: come back for a meal (due in 3 days).") == 0,
+           "An open promise, in words: " + w.promisesBetween("npc_keeper", "player-ash", "Ash"));
+    const double trustBefore = w.bonds().find("npc_keeper", "player-ash") ? w.bonds().find("npc_keeper", "player-ash")->trust : 0;
+    expect(w.trade("player-ash", "npc_keeper", "meal", 1, true).ok, "Ash comes back and buys a meal");
+    expect(w.promises().back().status == "kept" && w.bonds().find("npc_keeper", "player-ash")->trust > trustBefore + 5,
+           "The promise is kept, and trust grows");
+    w.promise("player-ash", "npc_keeper", "bring firewood", 2);
+    const double trust = w.bonds().find("npc_keeper", "player-ash")->trust;
+    daysPass(w, 3);
+    expect(w.promises().back().status == "broken", "A promise left past its day is broken");
+    expect(w.bonds().find("npc_keeper", "player-ash")->trust < trust - 5, "and trust falls further than it rose");
+    bool logged = false;
+    for (const auto& e : w.takeEvents())
+        logged |= e.kind == "promise broken" && e.actor == "player-ash";
+    expect(logged, "Both are in the log");
+    expect(w.promisesBetween("npc_keeper", "player-ash", "Ash").empty(), "Nothing open remains");
+}
+
+void marriages()
+{
+    World w;
+    for (const auto& e : w.entities())
+        if (e.second.npc)
+            w.entity(e.first)->leaderId = "test-frozen";
+    w.entity("npc_cook")->age = 30;
+    w.entity("npc_smith")->age = 32;
+    w.bonds().mutual("npc_cook", "npc_smith", {80, 60, 90, 0, 0}, w.calendarDays());
+    for (int week = 0; week < 12 && !w.society().spouse("npc_cook"); ++week)
+    {
+        w.bonds().mutual("npc_cook", "npc_smith", {0, 0, 5, 0, 0}, w.calendarDays());   // They keep seeing each other.
+        daysPass(w, 7);
+    }
+    expect(w.society().spouse("npc_cook") && *w.society().spouse("npc_cook") == "npc_smith", "Two who love each other marry");
+    const auto* cook = w.society().resident("npc_cook");
+    const auto* smith = w.society().resident("npc_smith");
+    expect(!cook->relocationCell.empty() || !smith->relocationCell.empty(), "and one of them moves in with the other");
+    expect(w.restore(w.save()).ok, "A save with the move under way restores");
+}
+
 void timeTogether()
 {
     // Residents at work together for a working day come to know each other.
@@ -146,6 +206,8 @@ int main()
         describedInWords();
         savedAndRestored();
         theWorldMovesThem();
+        promisesKeptAndBroken();
+        marriages();
         timeTogether();
     }
     catch (const std::exception& error)

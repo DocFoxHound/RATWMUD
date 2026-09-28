@@ -17,6 +17,22 @@ std::string skillKey(const std::string& resident, const std::string& position)
 {
     return resident + "|" + position;
 }
+// Placeholder names for those born here and those who come from elsewhere, until naming is designed.
+const char* const FirstNames[] = {"Alder", "Briar", "Cinder", "Dusk", "Ember", "Fennel", "Gale", "Hazel", "Ivy", "Juniper",
+                                  "Kestrel", "Linden", "Moss", "Nettle", "Oriel", "Pike", "Quill", "Rowan", "Sorrel",
+                                  "Thorn", "Umber", "Vesper", "Willow", "Yarrow", "Wren", "Tansy", "Bramble", "Sedge"};
+const char* const FarSurnames[] = {"Farwander", "Roadsend", "Greymantle", "Longpath", "Stillwater", "Ashford", "Marrow",
+                                   "Coldbrook", "Windrow", "Thistledown"};
+std::uint64_t mix(const std::string& a, std::int64_t b)
+{
+    return std::hash<std::string>{}(a) * 1099511628211ULL + std::uint64_t(b) * 2654435761ULL;
+}
+std::string lower(std::string s)
+{
+    for (auto& c : s)
+        c = char(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
 // How much a position is a step up: keeping a shop, then the watch, then paid work, then unpaid.
 int rank(const Position* p)
 {
@@ -29,10 +45,64 @@ bool thisWeek(const std::string& id, std::int64_t day)
 }
 } // namespace
 
+bool facilityAccount(const std::string& id)
+{
+    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:"})
+        if (id.rfind(prefix, 0) == 0)
+            return id.size() <= 80 && id.size() > std::string(prefix).size();
+    return false;
+}
+
 bool Society::bequeath(const std::string& from, const std::string& to, const std::string& item, int quantity,
                        std::int64_t coins)
 {
-    // Existing money and goods only; what an heir can't hold stays with the estate.
+    return shift(from, to, item, quantity, coins, "inheritance");
+}
+
+bool Society::openAccount(const std::string& id)
+{
+    if (!facilityAccount(id) || state_.accounts.count(id) || state_.accounts.size() >= MaxAccounts)
+        return false;
+    state_.accounts[id] = {};
+    return true;
+}
+
+bool Society::closeAccount(const std::string& id)
+{
+    const auto found = state_.accounts.find(id);
+    if (!facilityAccount(id) || found == state_.accounts.end() || found->second.cash != 0)
+        return false;
+    for (const auto& [item, count] : found->second.stock)
+        if (count != 0)
+            return false;
+    state_.accounts.erase(found);
+    return true;
+}
+
+const std::string& Society::storeFor(const std::string& cell) const
+{
+    static const std::string treasury = "treasury";
+    const auto found = storeForCell_.find(cell);
+    return found == storeForCell_.end() || !state_.accounts.count(found->second) ? treasury : found->second;
+}
+
+int Society::consume(const std::string& account, const std::string& item, int quantity, const std::string& kind)
+{
+    const auto found = state_.accounts.find(account);
+    if (found == state_.accounts.end() || !itemValid(item) || quantity <= 0)
+        return 0;
+    const int used = std::min(quantity, stock(found->second, item));
+    if (used <= 0)
+        return 0;
+    found->second.stock[item] -= used;
+    record(kind, account, "consumed", item, std::min(used, 99), 0);
+    return used;
+}
+
+bool Society::shift(const std::string& from, const std::string& to, const std::string& item, int quantity,
+                    std::int64_t coins, const std::string& kind)
+{
+    // Existing money and goods only; what the receiver can't hold stays where it was.
     const auto a = state_.accounts.find(from), b = state_.accounts.find(to);
     if (a == state_.accounts.end() || b == state_.accounts.end() || from == to || coins < 0 || quantity < 0 ||
         a->second.cash < coins || (!item.empty() && stock(a->second, item) < quantity))
@@ -49,8 +119,91 @@ bool Society::bequeath(const std::string& from, const std::string& to, const std
         a->second.stock[item] -= quantity;
         b->second.stock[item] += quantity;
     }
-    record("inheritance", from, to, item, std::min(quantity, 99), std::max<std::int64_t>(0, coins));
+    record(kind, from, to, item, std::min(quantity, 99), std::max<std::int64_t>(0, coins));
     return true;
+}
+
+const char* skillFamily(const std::string& title)
+{
+    // A first sorting of the world's job titles by keyword; a proper list of skills will replace it.
+    static const std::vector<std::pair<const char*, std::vector<const char*>>> Families{
+        {"watch", {"watch", "guard", "patrol", "gate", "wall", "captain", "sentry"}},
+        {"trade", {"keeping", "shop", "stall", "inn", "tavern", "market", "trader", "selling", "pawn", "ledger", "merchant"}},
+        {"craft", {"smith", "forge", "glass", "weav", "sew", "tann", "carv", "joiner", "shipwright", "rope", "cooper",
+                   "potter", "brew", "bak", "cook", "kiln", "mason"}},
+        {"labour", {"saw", "quarry", "log", "haul", "unload", "dig", "rak", "burn", "fish", "farm", "herd", "gather",
+                    "forag", "barge", "dock", "carry", "labour"}},
+        {"service", {"serv", "wash", "clean", "steward", "house", "tend", "nurse", "heal", "scribe", "clerk", "tall"}},
+        {"travel", {"road", "travel", "carter", "courier", "rider", "caravan", "scout"}}};
+    const auto t = lower(title);
+    for (const auto& [family, words] : Families)
+        for (const char* word : words)
+            if (t.find(word) != std::string::npos)
+                return family;
+    return "general";
+}
+
+double workPace(double skill)
+{
+    return std::clamp(1.25 - (std::isfinite(skill) ? skill : 0) / 200, .75, 1.25);
+}
+
+double Society::familySkill(const std::string& resident, const std::string& family) const
+{
+    double best = 0;
+    const auto prefix = resident + "|";
+    for (auto it = state_.careers.skill.lower_bound(prefix); it != state_.careers.skill.end() && it->first.rfind(prefix, 0) == 0; ++it)
+        if (const auto* p = position(it->first.substr(prefix.size())); p && family == skillFamily(p->title))
+            best = std::max(best, it->second);
+    return best;
+}
+
+bool Society::marry(const std::string& a, const std::string& b)
+{
+    auto& spouses = state_.careers.spouses;
+    if (a == b || !state_.residents.count(a) || !state_.residents.count(b) || spouses.count(a) || spouses.count(b))
+        return false;
+    spouses[a] = b;
+    spouses[b] = a;
+    return true;
+}
+const std::string* Society::spouse(const std::string& resident) const
+{
+    const auto found = state_.careers.spouses.find(resident);
+    return found == state_.careers.spouses.end() ? nullptr : &found->second;
+}
+
+std::vector<ResidentRequest> Society::takeRequests()
+{
+    std::vector<ResidentRequest> out;
+    out.swap(requests_);
+    return out;
+}
+
+CareerNote Society::welcome(const ResidentRequest& request, const std::string& id)
+{
+    auto& c = state_.careers;
+    if (!state_.residents.count(id))
+        return {"refused", id, {}, "No such resident to welcome."};
+    if (request.kind == "birth")
+    {
+        c.parents[id] = request.parents;
+        forgetCareers();
+        return {"birth", id, request.parents.empty() ? std::string() : request.parents[0],
+                request.parents.size() > 1 ? "child of " + request.parents[0] + " and " + request.parents[1] : std::string()};
+    }
+    auto found = c.positions.find(request.positionId);
+    const auto* p = position(request.positionId);
+    if (found != c.positions.end())
+        found->second.newcomerAsked = false;
+    if (!p || found == c.positions.end() || !found->second.holder.empty())
+        return {"newcomer", id, {}, "came to town, but the post was taken; looking for work"};
+    found->second.holder = id;
+    found->second.vacantSince = -1;
+    auto& known = c.skill[skillKey(id, p->id)];
+    known = std::max(known, 35.0);                     // A stranger who has done this work elsewhere.
+    forgetCareers();
+    return {"newcomer", id, found->second.lastHolder, "came from outside to take up " + p->title};
 }
 
 void Society::buildPositions()
@@ -59,6 +212,8 @@ void Society::buildPositions()
     positionIndex_.clear();
     for (const auto& r : authored_.residents)
     {
+        if (r.workLabel == "-")
+            continue;                                  // Born here or come for another's post: no job of their own.
         Position p;
         p.id = "job:" + r.id;
         p.founder = r.id;
@@ -178,6 +333,17 @@ bool Society::household(const std::string& a, const std::string& b) const
 }
 bool Society::family(const std::string& a, const std::string& b) const
 {
+    if (a == b)
+        return false;
+    const auto& c = state_.careers;
+    if (const auto s = c.spouses.find(a); s != c.spouses.end() && s->second == b)
+        return true;
+    const auto childOf = [&](const std::string& child, const std::string& parent) {
+        const auto p = c.parents.find(child);
+        return p != c.parents.end() && std::find(p->second.begin(), p->second.end(), parent) != p->second.end();
+    };
+    if (childOf(a, b) || childOf(b, a))
+        return true;
     const auto* x = spec(a);
     const auto* y = spec(b);
     return x && y && household(a, b) && !surname(x->name).empty() && surname(x->name) == surname(y->name);
@@ -352,7 +518,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         ps.holder = chosen;
         ps.vacantSince = -1;
         auto& known = c.skill[skillKey(chosen, p.id)];
-        known = std::max(known, 10.0);
+        known = std::max({known, 10.0, .5 * familySkill(chosen, skillFamily(p.title))});   // Some of it carries over.
         notes.push_back({"succession", chosen, ps.lastHolder, p.title + ": " + how});
         forgetCareers();
     }
@@ -394,6 +560,65 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         ps.apprentice = chosen;
         notes.push_back({"apprenticeship", chosen, ps.holder, p.title});
         forgetCareers();
+    }
+
+    // A post nobody here has taken in eight days: a stranger is sent for, with the last holder's kind of manner.
+    for (auto& p : positions_)
+    {
+        auto& ps = c.positions[p.id];
+        if (!ps.holder.empty() || ps.vacantSince < 0 || ps.newcomerAsked || now - ps.vacantSince < 8)
+            continue;
+        std::string model = spec(ps.lastHolder) ? ps.lastHolder : p.founder;
+        if (!spec(model))
+            continue;
+        const auto* was = resident(model);
+        ResidentRequest r;
+        r.kind = "newcomer";
+        r.templateId = model;
+        const auto pick = mix(p.id, today);
+        r.name = std::string(FirstNames[pick % std::size(FirstNames)]) + " " + FarSurnames[(pick / 31) % std::size(FarSurnames)];
+        r.age = 22 + int(pick % 20);
+        // They lodge where the last holder lived if nobody of that house is left; otherwise near the work.
+        bool houseEmpty = true;
+        for (const auto& [id, life] : state_.residents)
+            if (id != ps.lastHolder && household(id, ps.lastHolder) && alive(id))
+                houseEmpty = false;
+        r.home = houseEmpty && was ? Spot{was->homeCell, was->homeX, was->homeY} : p.work;
+        r.positionId = p.id;
+        ps.newcomerAsked = true;
+        requests_.push_back(r);
+        notes.push_back({"newcomer sent for", {}, ps.lastHolder, p.title});
+    }
+
+    // Children, rarely: a married couple at home together, the mother of an age to bear, a year or so apart, no more
+    // than three. About one a season for those who can.
+    for (const auto& [a, b] : c.spouses)
+    {
+        if (!(a < b) || !alive(a) || !alive(b) || !household(a, b))
+            continue;
+        const auto* x = spec(a);
+        const auto* y = spec(b);
+        const auto* mother = x && x->appearance.sex == "female" && world.age(a) >= 18 && world.age(a) <= 45 ? x
+                             : y && y->appearance.sex == "female" && world.age(b) >= 18 && world.age(b) <= 45 ? y : nullptr;
+        if (!mother)
+            continue;
+        const auto key = a + "|" + b;
+        const int children = c.births.count(key) ? c.births.at(key) : 0;
+        const auto last = c.lastBirth.find(key);
+        if (children >= 3 || (last != c.lastBirth.end() && now - last->second < 300) || mix(key, today) % 90 != 0)
+            continue;
+        const auto* home = resident(mother->id);
+        ResidentRequest r;
+        r.kind = "birth";
+        r.templateId = mother->id;
+        const auto family = surname(mother->name);
+        r.name = std::string(FirstNames[mix(key, today + 7) % std::size(FirstNames)]) + (family.empty() ? "" : " " + family);
+        r.age = 0;
+        r.home = home ? Spot{home->homeCell, home->homeX, home->homeY} : mother->home;
+        r.parents = {a, b};
+        c.lastBirth[key] = now;
+        ++c.births[key];
+        requests_.push_back(r);
     }
     return notes;
 }

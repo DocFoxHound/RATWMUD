@@ -10,6 +10,7 @@
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwBonds.h"
+#include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
 
@@ -269,6 +270,15 @@ struct WorldEvent
 // UTF-8 characters, anything that isn't valid UTF-8 dropped, so no event can make a save fail.
 std::string eventsJson(const std::vector<WorldEvent>& events);
 
+// A promise made in conversation (Docs/Design/26-living-npcs.md), kept track of by the world: kept if the one who
+// made it trades with, pays, gives to or helps the other before it is due; broken if it falls due first.
+struct Promise
+{
+    std::string by, to, what;
+    double made = 0, due = 0;       // Calendar days.
+    std::string status = "open";    // "open", "kept" or "broken".
+};
+
 struct PersistedWorld
 {
     double time = 0;
@@ -285,6 +295,8 @@ struct PersistedWorld
     std::map<std::string, Lighting> lighting;
     std::map<std::string, std::map<std::string, CellMemory>> memories;
     std::vector<SavedBond> bonds;
+    std::vector<Promise> promises;
+    RoadsState roads;
 };
 
 class World
@@ -353,6 +365,36 @@ class World
     Bonds& bonds() { return bonds_; }
     // A player asks the NPC to take them on as an apprentice in the NPC's trade (see Society::apprentice).
     Result apprentice(const std::string& player, const std::string& master);
+    // A promise made in conversation, due in `days`. Keeping it builds the other's trust; breaking it costs more.
+    void promise(const std::string& by, const std::string& to, const std::string& what, double days = 3);
+    const std::vector<Promise>& promises() const { return promises_; }
+    // Open promises between two characters, in words for a conversation (empty if none).
+    std::string promisesBetween(const std::string& npc, const std::string& other, const std::string& otherName) const;
+    // Residents the society wants (a stranger for an empty post, a child), each with a free place to sleep found near
+    // the home it asked for. The host makes them and then calls welcomeResident with their new ID.
+    std::vector<ResidentRequest> takeResidentRequests();
+    Result welcomeResident(const ResidentRequest& request, const std::string& id);
+    // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
+    // or more towns; a single settlement keeps its one store (the treasury) as before.
+    const std::vector<Town>& towns() const { return towns_; }
+    const RoadsState& roads() const { return roads_; }
+    RoadsState& roads() { return roads_; }                 // For operators (clear a camp, say) and tests.
+    const Town* townOf(const std::string& cellId) const;
+    // Contracts a player could take where they stand, taking one, and marking one done (a bounty, by whoever ended
+    // the camp; the Dungeon Master, for now). Couriers, escorts and supply runs are finished by doing them.
+    std::vector<const Contract*> contractsNear(const std::string& player) const;
+    Result takeContract(const std::string& player, const std::string& contractId);
+    Result completeContract(const std::string& contractId, const std::string& by);
+    // Posts work, the reward set aside from the poster's purse at once (no reward if they can't pay).
+    Contract& postContract(const std::string& kind, const std::string& poster, const std::string& town,
+                           const std::string& target, std::int64_t reward, double days, const std::string& detail);
+    // What someone has heard: a claim about a subject, from a source, this sure (0..1). Rumours spread along bonds
+    // each day, losing confidence, and between towns with the caravans.
+    void believe(const std::string& holder, const std::string& subject, const std::string& claim,
+                 const std::string& source, double confidence);
+    const std::vector<Belief>* beliefsOf(const std::string& holder) const;
+    // What an NPC has heard about someone, in words for a conversation (empty if nothing).
+    std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;
     std::vector<WorldEvent> takeEvents();
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Route searches answered from the path cache, and searched (see findPath).
@@ -477,6 +519,25 @@ class World
     TickProfile profile_;
     std::vector<WorldEvent> events_;
     Bonds bonds_;
+    std::vector<Promise> promises_;
+    RoadsState roads_;
+    std::vector<Town> towns_;
+    std::map<std::string, std::string> townOfCell_;
+    bool townsReady_ = false;
+    std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
+    void setupTowns();
+    void tendRoads();
+    void roadsDaily();
+    void advanceCaravans();
+    std::vector<std::string> routeBetween(const std::string& from, const std::string& to) const;
+    void rumoursFromEvent(const WorldEvent& event);
+    void contractsFromEvent(const WorldEvent& event);
+    void settleContract(Contract& c, const std::string& status, const std::string& paidTo);
+    std::int64_t marriageWeek_ = -1;
+    void tendPromises();
+    void tendMarriages();
+    // An open, walkable tile near (x, y) in a cell that no resident calls home, for someone new to sleep.
+    bool freeSpotNear(const std::string& cellId, double& x, double& y);
     std::int64_t bondHour_ = -1, bondDay_ = -1;     // The last game hour and day bonds were tended.
     void bondsFromEvent(const WorldEvent& event);
     // The society's ledger entries since last time, as events (and so as bonds) now rather than at the next save.

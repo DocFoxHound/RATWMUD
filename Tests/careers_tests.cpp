@@ -208,6 +208,81 @@ void savedAndRestored()
     expect(legacy.restore(old) && legacy.jobOf("hale"), "A save from before careers: everyone in their own job");
 }
 
+void skillFamiliesAndPace()
+{
+    expect(std::string(skillFamily("keeping the inn")) == "trade" && std::string(skillFamily("keeping the stall")) == "trade",
+           "Shopkeeping is trade");
+    expect(std::string(skillFamily("working the saws")) == "labour" && std::string(skillFamily("blowing glass")) == "craft" &&
+               std::string(skillFamily("on the wall walk")) == "watch" && std::string(skillFamily("dreaming")) == "general",
+           "and so on, with anything unknown general");
+    expect(workPace(50) == 1 && workPace(90) < 1 && workPace(10) > 1 && workPace(100) >= .75 && workPace(-5) <= 1.25,
+           "The skilled work faster, within bounds");
+    Society s(Roster::None);
+    s.configure(town());
+    expect(s.familySkill("hale", "trade") == s.skill("hale", "job:hale") && s.familySkill("hale", "craft") == 0,
+           "A resident's skill in a family is their best job of it");
+}
+
+void strangersAndChildren()
+{
+    Society s(Roster::None);
+    auto roster = town();
+    s.configure(roster);
+    Fates fates;
+    // Rook dies; nobody here is free, so after eight days a stranger is sent for.
+    fates.dead.insert("rook");
+    s.died("rook", 1.2);
+    std::vector<ResidentRequest> wanted;
+    for (int later = 1; later <= 12 && wanted.empty(); ++later)
+    {
+        s.tendCareers(1.2 + later, fates.world(s));
+        wanted = s.takeRequests();
+        expect(wanted.empty() || later >= 8, "Nobody is sent for before eight days");
+    }
+    expect(wanted.size() == 1 && wanted[0].kind == "newcomer" && wanted[0].positionId == "job:rook" &&
+               wanted[0].templateId == "rook" && wanted[0].name.find(' ') != std::string::npos && wanted[0].age >= 22,
+           "A stranger is sent for, for his odd jobs");
+    s.tendCareers(40, fates.world(s));
+    expect(s.takeRequests().empty(), "and only once");
+    // The host makes them (here: a second roster with them in it), and they take up the post.
+    auto newcomer = roster.residents[3];
+    newcomer.id = "stranger";
+    newcomer.name = wanted[0].name;
+    newcomer.workLabel = "-";
+    roster.residents.push_back(newcomer);
+    Society made(Roster::None);
+    made.configure(roster);
+    expect(s.adoptResident(made, "stranger"), "The stranger arrives");
+    expect(!s.position("job:stranger"), "with no job of their own");
+    const auto note = s.welcome(wanted[0], "stranger");
+    expect(note.kind == "newcomer" && s.jobOf("stranger") && s.jobOf("stranger")->id == "job:rook",
+           "and takes up the post they came for");
+    expect(s.skill("stranger", "job:rook") >= 35, "knowing something of the work");
+
+    // A married couple at home together: a child, now and then, never more than three.
+    auto couple = town();
+    couple.residents[4].appearance.sex = "female";                     // Wren Ash, 40.
+    couple.residents.push_back(person("birch", "Birch Ash", "civilian", "hauling", 42, {"ash_house", 4.5, 3.5}, {"yard", 3.5, 2.5}));
+    Society home(Roster::None);
+    home.configure(couple);
+    expect(home.marry("wren", "birch") && home.spouse("wren") && *home.spouse("wren") == "birch", "Wren marries Birch");
+    expect(!home.marry("wren", "rook"), "and nobody else");
+    expect(home.family("birch", "wren"), "Married, they are family");
+    Fates alive;
+    std::vector<ResidentRequest> births;
+    for (int day = 0; day < 1200; ++day)
+    {
+        home.tendCareers(day + .3, alive.world(home));
+        for (auto& r : home.takeRequests())
+            if (r.kind == "birth")
+                births.push_back(r);
+    }
+    expect(!births.empty() && births.size() <= 3, "Children come, but no more than three: " + std::to_string(births.size()));
+    expect(births[0].age == 0 && births[0].templateId == "wren" && births[0].name.find("Ash") != std::string::npos &&
+               births[0].parents.size() == 2 && births[0].home.cell == "ash_house",
+           "A child of Wren and Birch, at home: " + births[0].name);
+}
+
 // In a world: a death empties a job and those close to the dead grieve.
 void griefInTheWorld()
 {
@@ -236,6 +311,8 @@ int main()
         playersAsApprentices();
         savedAndRestored();
         griefInTheWorld();
+        skillFamiliesAndPace();
+        strangersAndChildren();
     }
     catch (const std::exception& error)
     {

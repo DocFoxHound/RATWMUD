@@ -378,6 +378,19 @@ class DatabaseTests(unittest.TestCase):
         with self.as_role('editor') as editor:
             self.assertEqual(2, editor.execute("SELECT count(*) FROM game.bonds").fetchone()[0], 'Tools can read bonds')
 
+    def test_rumours_are_stored_one_row_each(self):
+        import json
+        doc = {'schema': 1, 'beliefs': [{'holder': 'wren', 'subject': 'player-ada', 'claim': 'breaks promises',
+                                         'source': 'moss', 'confidence': .63, 'day': 4.5},
+                                        {'holder': 'wren', 'subject': 'camp_x', 'claim': 'raids the road', 'source': 'the carters',
+                                         'confidence': .9, 'day': 4}]}
+        with self.as_role('game') as game:
+            game.execute('SELECT game.save_checkpoint(%s, 1, %s)', ('w', json.dumps(doc)))
+            rows = game.execute("SELECT key, holder, subject FROM game.beliefs WHERE world_id = 'w' ORDER BY key").fetchall()
+            self.assertEqual([('wren|camp_x|raids the road', 'wren', 'camp_x'),
+                              ('wren|player-ada|breaks promises', 'wren', 'player-ada')], rows)
+            self.assertEqual(doc, json.loads(game.execute('SELECT game.load_checkpoint(%s)', ('w',)).fetchone()[0]))
+
     def test_editor_cannot_write_game_state_or_read_admin(self):
         with self.as_role('editor') as editor:
             with self.assertRaises(psycopg.errors.InsufficientPrivilege):

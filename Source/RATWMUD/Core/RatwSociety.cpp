@@ -5,6 +5,11 @@
 
 namespace ratw
 {
+bool itemValid(const std::string& item)
+{
+    return item == "herbs" || item == "meal";
+}
+
 bool playerAccountId(const std::string& id)
 {
     if (id.rfind("player-", 0) == 0) return id.size() <= 80; // Existing development saves.
@@ -18,10 +23,6 @@ namespace
 {
 constexpr std::int64_t MoneyLimit = 1000000000;
 constexpr int StockLimit = 10000;
-bool itemValid(const std::string& item)
-{
-    return item == "herbs" || item == "meal";
-}
 bool near(const LifeBody& body, const std::string& cell, double x, double y)
 {
     return body.cell == cell && std::hypot(body.x - x, body.y - y) <= 1.2;
@@ -92,6 +93,19 @@ const ResidentLife* Society::resident(const std::string& id) const
 {
     const auto it = state_.residents.find(id);
     return it == state_.residents.end() ? nullptr : &it->second;
+}
+bool Society::moveHome(const std::string& npc, const std::string& cell, double x, double y)
+{
+    auto found = state_.residents.find(npc);
+    if (found == state_.residents.end() || !found->second.relocationCell.empty() || cell.empty() || cell.size() > 80 ||
+        !validNumber(x, 0, 256) || !validNumber(y, 0, 256))
+        return false;
+    auto& life = found->second;
+    life.relocationCell = cell;
+    life.relocationX = x;
+    life.relocationY = y;
+    life.progress = 0;
+    return true;
 }
 bool Society::relocate(const std::string& npc, const std::string& cell, double x, double y)
 {
@@ -711,7 +725,7 @@ bool Society::restore(const SocietyState& saved)
         for (auto it = s.residents.begin(); it != s.residents.end();)
             it = now.count(it->first) ? std::next(it) : s.residents.erase(it);
         for (auto it = s.accounts.begin(); it != s.accounts.end();)
-            if (it->first != "treasury" && !playerAccountId(it->first) && !now.count(it->first))
+            if (it->first != "treasury" && !playerAccountId(it->first) && !facilityAccount(it->first) && !now.count(it->first))
             {
                 treasury.cash += it->second.cash;           // A departed resident's coins go back to the town.
                 it = s.accounts.erase(it);
@@ -746,7 +760,8 @@ bool Society::restore(const SocietyState& saved)
         if (a.first.empty() || a.first.size() > 80 || a.second.cash < 0 || a.second.cash > MoneyLimit ||
             a.second.stock.size() > 2)
             return false;
-        if (a.first != "treasury" && !playerAccountId(a.first) && !fresh.state_.residents.count(a.first))
+        if (a.first != "treasury" && !playerAccountId(a.first) && !facilityAccount(a.first) &&
+            !fresh.state_.residents.count(a.first))
             return false;
         sum += a.second.cash;
         for (const auto& item : a.second.stock)
@@ -764,9 +779,19 @@ bool Society::restore(const SocietyState& saved)
             l.second.reason.size() > 256 || l.second.goalCell.size() > 80 ||
             l.second.homeCell.size() > 80 || l.second.relocationCell.size() > 80 ||
             !validNumber(l.second.homeX, 0, 256) || !validNumber(l.second.homeY, 0, 256) ||
-            !validNumber(l.second.relocationX, 0, 256) || !validNumber(l.second.relocationY, 0, 256) ||
-            (!l.second.relocationCell.empty() && l.second.role != "resident"))
+            !validNumber(l.second.relocationX, 0, 256) || !validNumber(l.second.relocationY, 0, 256))
             return false;
+    // Operators can't move those in essential work (see relocate); the only other move is to a spouse's home.
+    for (const auto& l : s.residents)
+    {
+        if (l.second.relocationCell.empty() || l.second.role == "resident")
+            continue;
+        const auto spouse = s.careers.spouses.find(l.first);
+        const auto home = spouse == s.careers.spouses.end() ? s.residents.end() : s.residents.find(spouse->second);
+        if (home == s.residents.end() || home->second.homeCell != l.second.relocationCell ||
+            s.careers.spouses.count(spouse->second) == 0 || s.careers.spouses.at(spouse->second) != l.first)
+            return false;
+    }
     std::int64_t previous = 0;
     for (const auto& e : s.ledger)
     {

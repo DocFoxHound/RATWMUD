@@ -175,7 +175,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             stand.paid = false;
             stand.startHour = learning ? learning->startHour : r->startHour;
             stand.endHour = learning ? learning->endHour : r->endHour;
-            stand.title = learning ? "apprenticed: " + learning->title : "looking for work";
+            stand.title = learning ? "apprenticed: " + learning->title : body.age < 16 ? "growing up" : "looking for work";
             stand.work = learning ? learning->work : r->evening;
             job = &stand;
         }
@@ -336,7 +336,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             continue;
         }
         life.progress += 1.;
-        const double duration = paidWork ? (guard ? 120. : 600.) : task == "eat" ? 8. : 12.;
+        // The skilled finish paid work sooner (workPace: 1 at skill 50).
+        const double duration = paidWork ? (guard ? 120. : 600.) * workPace(skill(pair.first, job->id))
+                                         : task == "eat" ? 8. : 12.;
         if (life.progress < duration)
             continue;
         life.progress = 0;
@@ -369,15 +371,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         else if (task == "trade")
         {
-            const auto& stores = *account("treasury");
+            // From the town's own stores (the treasury, where there is one town): what the caravans have brought.
+            const std::string& storeId = storeFor(job->work.cell);
+            const auto& stores = *account(storeId);
             const int meals = std::min({3, 12 - stock(wallet, "meal"), stock(stores, "meal"),
                                         int(std::min<std::int64_t>(3, wallet.cash / 4))});
             if (meals > 0)
-                transfer("treasury", pair.first, "meal", meals, 4, "wholesale restock");
+                transfer(storeId, pair.first, "meal", meals, 4, "wholesale restock");
             const int herbs = std::min({3, 8 - stock(wallet, "herbs"), stock(stores, "herbs"),
                                         int(std::min<std::int64_t>(3, wallet.cash))});
             if (herbs > 0)
-                transfer("treasury", pair.first, "herbs", herbs, 1, "wholesale restock");
+                transfer(storeId, pair.first, "herbs", herbs, 1, "wholesale restock");
             if (wallet.cash > 150 && stores.cash <= MoneyLimit - 30)
             {
                 wallet.cash -= 30;

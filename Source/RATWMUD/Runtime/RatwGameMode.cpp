@@ -430,6 +430,72 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
      * random open tile of the area and roams it. A fallen spawned NPC is cleared once `respawn_minutes` have passed, and
      * a new one takes their place. A rule that fails backs off for five minutes.
      */
+    // Residents the society wants (Society::takeRequests via World::takeResidentRequests): a stranger for a post
+    // nobody here could fill, or a child. A live world adds them to live.npcs, cloned from the template resident with
+    // their own name, age and home and no job of their own (work label "-"), takes them in like any spawn, then gives
+    // them their place (World::welcomeResident). A world from files can't keep new people, so none are made there.
+    void MakeResidents()
+    {
+        for (const auto& Request : World.takeResidentRequests())
+        {
+            if (DatabaseName.IsEmpty())
+            {
+                UE_LOG(LogTemp, Display, TEXT("RATW_RESIDENT %s wanted (%s), but a world from files can't add residents."),
+                       *F(Request.kind), *F(Request.name));
+                continue;
+            }
+            const auto* Model = World.society().spec(Request.templateId);
+            const auto* ModelLife = World.society().resident(Request.templateId);
+            if (!Model || !ModelLife)
+                continue;
+            std::string Id;
+            for (int Attempt = 0; Id.empty() && Attempt < 50; ++Attempt)
+            {
+                std::string Suffix;
+                for (auto Stamp = uint64(FDateTime::UtcNow().ToUnixTimestamp()) * 64 + uint64(Attempt); Stamp; Stamp /= 36)
+                    Suffix.insert(Suffix.begin(), "0123456789abcdefghijklmnopqrstuvwxyz"[Stamp % 36]);
+                const auto Candidate = (Request.kind == "birth" ? std::string("born_") : std::string("new_")) + Suffix;
+                const auto Taken = WorldDb.exec("SELECT 1 FROM live.npcs WHERE world_id = $1 AND id = $2 UNION ALL "
+                                                "SELECT 1 FROM live.npc_state WHERE world_id = $1 AND npc_id = $2", {LiveWorldId, Candidate});
+                if (Taken.ok && Taken.rows.empty() && !World.entity(Candidate))
+                    Id = Candidate;
+            }
+            if (Id.empty())
+                continue;
+            const auto Home = Request.home.cell.empty() ? ratw::Spot{ModelLife->homeCell, ModelLife->homeX, ModelLife->homeY} : Request.home;
+            const bool Child = Request.kind == "birth";
+            const auto* JobFor = World.society().position(Request.positionId);
+            const std::string Description = Child
+                ? "A young wolf, born here to " + Model->name + "'s family."
+                : "A stranger lately come to town" + (JobFor ? " to take up " + JobFor->title : std::string()) + ".";
+            const auto X = std::to_string(int(std::floor(Home.x))), Y = std::to_string(int(std::floor(Home.y)));
+            const auto Made = WorldDb.exec(
+                "INSERT INTO live.npcs (world_id, id, position, name, role, description, greeting, personality, backstory, work_label, age, voice, "
+                "appearance, route_id, paid, purse, herbs, meals, hours_start, hours_end, home_area, home_x, home_y, work_area, work_x, work_y, "
+                "evening_area, evening_x, evening_y, origin, wander_area, spawn_id) "
+                "SELECT world_id, $2, (SELECT coalesce(max(position) + 1, 0) FROM live.npcs WHERE world_id = $1), $3, 'civilian', $4, "
+                "'Hello.', personality, $5, '-', $6::integer, voice, appearance, NULL, false, $7::integer, 0, 1, hours_start, hours_end, "
+                "$8, $9::integer, $10::integer, $8, $9::integer, $10::integer, $8, $9::integer, $10::integer, 'runtime', NULL, NULL "
+                "FROM live.npcs WHERE world_id = $1 AND id = $11",
+                {LiveWorldId, Id, Request.name, Description, Child ? std::string("Born in the world, not written.") : std::string(),
+                 std::to_string(Request.age), Child ? std::string("0") : std::string("20"), Home.cell, X, Y, Request.templateId});
+            ratw::World Candidate;
+            std::string Problem;
+            const bool Loaded = Made.ok && LoadWithLivePeople(Candidate, Problem);
+            const auto Adopted = Loaded ? World.adoptResident(Candidate, Id) : ratw::Result{false, Made.ok ? Problem : Made.error, {}};
+            if (!Adopted.ok)
+            {
+                WorldDb.exec("DELETE FROM live.npcs WHERE world_id = $1 AND id = $2", {LiveWorldId, Id});
+                UE_LOG(LogTemp, Warning, TEXT("RATW_RESIDENT %s could not be made: %s"), *F(Request.name), *F(Adopted.message));
+                continue;
+            }
+            const auto Welcomed = World.welcomeResident(Request, Id);
+            UE_LOG(LogTemp, Display, TEXT("RATW_RESIDENT %s: %s (%s) %s"), *F(Request.kind), *F(Request.name), *F(Id), *F(Welcomed.message));
+            ++Revision;
+            SaveSoon();
+        }
+    }
+
     void RunSpawns(double Dt)
     {
         if (DatabaseName.IsEmpty() || (SpawnAccumulator += Dt) < 30)   // Respawn times are minutes: no need to ask often.
@@ -1119,6 +1185,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         WatchReleases(Dt);
         ApplyDmActions(Dt);
         RunSpawns(Dt);
+        MakeResidents();
         if (Prefetching && (PrefetchAccumulator += Dt) >= 1)
         {
             PrefetchAccumulator = 0;
@@ -1305,6 +1372,16 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 if (E.id == "npc_scout" && CompanionOwner.find(E.id) == CompanionOwner.end() &&
                     std::hypot(E.position.x - View.self.position.x, E.position.y - View.self.position.y) <= 3)
                     Actions.Add(V(TEXT("recruit")));
+                // Merchants know what work is going in town (contracts), and a player can take it on from them.
+                if (World.society().merchant(E.id) &&
+                    std::hypot(E.position.x - View.self.position.x, E.position.y - View.self.position.y) <= 3)
+                {
+                    const auto Work = World.contractsNear(View.self.id);
+                    if (!Work.empty())
+                        Actions.Add(V(TEXT("ask for work")));
+                    for (std::size_t I = 0; I < Work.size() && I < 3; ++I)
+                        Actions.Add(V(F("take " + Work[I]->id)));
+                }
                 // Ask to learn their trade: close by, a master with no apprentice, and not already learning one.
                 if (const auto* Job = World.society().jobOf(E.id);
                     Job && Job->role != "guard" && !E.dead &&
@@ -1561,7 +1638,19 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 Context.Mood = TEXT("sad");
         }
         if (const auto* Job = World.society().jobOf(NpcId))
-            Context.Activity += TEXT(" Trade: ") + F(Job->title) + TEXT(".");
+        {
+            const double Skill = World.society().skill(NpcId, Job->id);
+            Context.Activity += TEXT(" Trade: ") + F(Job->title) + TEXT(" (") +
+                                (Skill >= 80 ? TEXT("a master of it") : Skill >= 60 ? TEXT("skilled") : Skill >= 35 ? TEXT("capable")
+                                                                                                     : TEXT("still learning")) + TEXT(").");
+        }
+        if (Identified)
+        {
+            if (const auto Open = World.promisesBetween(NpcId, PlayerId, Player->name); !Open.empty())
+                Context.Relationship += (Context.Relationship.IsEmpty() ? TEXT("") : TEXT(" ")) + F(Open);
+            if (const auto Heard = World.rumoursAbout(NpcId, PlayerId, Player->name); !Heard.empty())
+                Context.Relationship += (Context.Relationship.IsEmpty() ? TEXT("") : TEXT(" ")) + F(Heard);
+        }
         if (const auto* Cell = World.cell(Npc->cellId))
         {
             Context.Environment = ratwjson::EnvironmentDescription(*Cell, World.environmentAt(Npc->cellId));
@@ -1650,6 +1739,7 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             const bool ByNpc = Reply.PromiseBy == TEXT("npc");
             Memories.record(NpcId, SubjectId, {Sequence++, Now(), ByNpc ? "(your promise)" : "(their promise)", S(Reply.Promise)});
             LogEvent("promise", ByNpc ? NpcId : SubjectId, ByNpc ? SubjectId : NpcId, S(Reply.Promise));
+            World.promise(ByNpc ? NpcId : SubjectId, ByNpc ? SubjectId : NpcId, S(Reply.Promise), 3);
         }
     }
 
@@ -1904,6 +1994,21 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                     return;
                 }
                 Talk(Target, Id, TEXT("Hello. I would like to talk."));
+            }
+            else if (Action == "ask for work")
+            {
+                FString List;
+                for (const auto* K : World.contractsNear(Id))
+                    List += FString::Printf(TEXT("\n  %s  %s%s"), *F(K->id), *F(K->detail),
+                                            K->reward ? *FString::Printf(TEXT(" (%lld pennies)"), static_cast<long long>(K->reward)) : TEXT(""));
+                System(C, List.IsEmpty() ? TEXT("There is no work to be had here just now.") : TEXT("Work to be had:") + List);
+            }
+            else if (Action.rfind("take ", 0) == 0)
+            {
+                const auto Taken = World.takeContract(Id, Action.substr(5));
+                System(C, F(Taken.message));
+                if (Taken.ok)
+                    Save();
             }
             else if (Action == "apprentice")
             {
@@ -2211,6 +2316,64 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             Bonds.Add(V(J));
         }
         Root->SetArrayField(TEXT("bonds"), Bonds);
+        Array Promises;                               // Promises made in conversation and what became of them.
+        for (const auto& P : Saved.promises)
+        {
+            auto J = New();
+            Text(J, TEXT("by"), P.by); Text(J, TEXT("to"), P.to); Text(J, TEXT("what"), P.what);
+            J->SetNumberField(TEXT("made"), P.made); J->SetNumberField(TEXT("due"), P.due); Text(J, TEXT("status"), P.status);
+            Promises.Add(V(J));
+        }
+        Root->SetArrayField(TEXT("promises"), Promises);
+        // The roads (Phase 5): caravans, bandit camps, contracts, and what everyone has heard.
+        auto Roads = New();
+        Roads->SetNumberField(TEXT("day"), static_cast<double>(Saved.roads.day));
+        Roads->SetNumberField(TEXT("nextId"), static_cast<double>(Saved.roads.nextId));
+        Roads->SetBoolField(TEXT("stocked"), Saved.roads.stocked);
+        Array Caravans, Camps, Contracts;
+        const auto Strings = [](const std::vector<std::string>& List) {
+            Array Out;
+            for (const auto& Item : List) Out.Add(V(F(Item)));
+            return Out;
+        };
+        for (const auto& Trip : Saved.roads.caravans)
+        {
+            auto J = New();
+            Text(J, TEXT("id"), Trip.id); Text(J, TEXT("from"), Trip.from); Text(J, TEXT("to"), Trip.to); Text(J, TEXT("account"), Trip.account);
+            J->SetArrayField(TEXT("route"), Strings(Trip.route)); J->SetNumberField(TEXT("leg"), double(Trip.leg));
+            J->SetNumberField(TEXT("nextAt"), Trip.nextAt); J->SetNumberField(TEXT("departed"), Trip.departed);
+            J->SetNumberField(TEXT("guards"), Trip.guards); Text(J, TEXT("status"), Trip.status);
+            J->SetArrayField(TEXT("escorts"), Strings(Trip.escorts)); J->SetArrayField(TEXT("letters"), Strings(Trip.letters));
+            Caravans.Add(V(J));
+        }
+        for (const auto& Camp : Saved.roads.camps)
+        {
+            auto J = New();
+            Text(J, TEXT("id"), Camp.id); Text(J, TEXT("cell"), Camp.cell); J->SetNumberField(TEXT("strength"), Camp.strength);
+            J->SetNumberField(TEXT("hunger"), Camp.hunger); J->SetNumberField(TEXT("lastRaid"), Camp.lastRaid); J->SetBoolField(TEXT("active"), Camp.active);
+            Camps.Add(V(J));
+        }
+        for (const auto& Work : Saved.roads.contracts)
+        {
+            auto J = New();
+            Text(J, TEXT("id"), Work.id); Text(J, TEXT("kind"), Work.kind); Text(J, TEXT("poster"), Work.poster); Text(J, TEXT("town"), Work.town);
+            Text(J, TEXT("target"), Work.target); Text(J, TEXT("taker"), Work.taker); Text(J, TEXT("status"), Work.status);
+            J->SetNumberField(TEXT("reward"), double(Work.reward)); J->SetNumberField(TEXT("created"), Work.created);
+            J->SetNumberField(TEXT("due"), Work.due); Text(J, TEXT("detail"), Work.detail);
+            Contracts.Add(V(J));
+        }
+        Roads->SetArrayField(TEXT("caravans"), Caravans); Roads->SetArrayField(TEXT("camps"), Camps);
+        Roads->SetArrayField(TEXT("contracts"), Contracts);
+        Root->SetObjectField(TEXT("roads"), Roads);
+        Array Beliefs;                                // One list, stored a row each (game.beliefs).
+        for (const auto& Heard : Saved.roads.beliefs)
+        {
+            auto J = New();
+            Text(J, TEXT("holder"), Heard.holder); Text(J, TEXT("subject"), Heard.subject); Text(J, TEXT("claim"), Heard.claim);
+            Text(J, TEXT("source"), Heard.source); J->SetNumberField(TEXT("confidence"), Heard.confidence); J->SetNumberField(TEXT("day"), Heard.day);
+            Beliefs.Add(V(J));
+        }
+        Root->SetArrayField(TEXT("beliefs"), Beliefs);
         Array Npcs;
         for (const auto& Npc : C.Npcs)
             Npcs.Add(V(PersistEntity(Npc, C.Time)));
@@ -2589,6 +2752,57 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         }
         for (const auto& Value : Items(Root, TEXT("npcs")))
             Saved.npcs.push_back(ReadEntity(Value->AsObject()));
+        if (auto Roads = Child(Root, TEXT("roads")); Roads.IsValid())
+        {
+            const auto Strings = [](const Object& J, const TCHAR* Key) {
+                std::vector<std::string> Out;
+                for (const auto& Item : Items(J, Key))
+                    if (Item.IsValid() && Item->Type == EJson::String) Out.push_back(S(Item->AsString()));
+                return Out;
+            };
+            Saved.roads.day = static_cast<std::int64_t>(Number(Roads, TEXT("day"), -1));
+            Saved.roads.nextId = std::max<std::int64_t>(1, static_cast<std::int64_t>(Number(Roads, TEXT("nextId"), 1)));
+            Saved.roads.stocked = Bool(Roads, TEXT("stocked"));
+            for (const auto& Value : Items(Roads, TEXT("caravans")))
+            {
+                auto J = Value->AsObject();
+                ratw::Caravan C;
+                C.id = S(String(J, TEXT("id"))); C.from = S(String(J, TEXT("from"))); C.to = S(String(J, TEXT("to")));
+                C.account = S(String(J, TEXT("account"))); C.route = Strings(J, TEXT("route"));
+                C.leg = static_cast<std::size_t>(FMath::Max(0.0, Number(J, TEXT("leg")))); C.nextAt = Number(J, TEXT("nextAt"));
+                C.departed = Number(J, TEXT("departed")); C.guards = static_cast<int>(Number(J, TEXT("guards"), 1));
+                C.status = S(String(J, TEXT("status"))); C.escorts = Strings(J, TEXT("escorts")); C.letters = Strings(J, TEXT("letters"));
+                if (C.leg < C.route.size()) Saved.roads.caravans.push_back(std::move(C));
+            }
+            for (const auto& Value : Items(Roads, TEXT("camps")))
+            {
+                auto J = Value->AsObject();
+                Saved.roads.camps.push_back({S(String(J, TEXT("id"))), S(String(J, TEXT("cell"))), Number(J, TEXT("strength")),
+                                             Number(J, TEXT("hunger")), Number(J, TEXT("lastRaid")), Bool(J, TEXT("active"))});
+            }
+            for (const auto& Value : Items(Roads, TEXT("contracts")))
+            {
+                auto J = Value->AsObject();
+                ratw::Contract K;
+                K.id = S(String(J, TEXT("id"))); K.kind = S(String(J, TEXT("kind"))); K.poster = S(String(J, TEXT("poster")));
+                K.town = S(String(J, TEXT("town"))); K.target = S(String(J, TEXT("target"))); K.taker = S(String(J, TEXT("taker")));
+                K.status = S(String(J, TEXT("status"))); K.reward = static_cast<std::int64_t>(Number(J, TEXT("reward")));
+                K.created = Number(J, TEXT("created")); K.due = Number(J, TEXT("due")); K.detail = S(String(J, TEXT("detail")));
+                Saved.roads.contracts.push_back(std::move(K));
+            }
+        }
+        for (const auto& Value : Items(Root, TEXT("beliefs")))
+        {
+            auto J = Value->AsObject();
+            Saved.roads.beliefs.push_back({S(String(J, TEXT("holder"))), S(String(J, TEXT("subject"))), S(String(J, TEXT("claim"))),
+                                           S(String(J, TEXT("source"))), Number(J, TEXT("confidence")), Number(J, TEXT("day"))});
+        }
+        for (const auto& Value : Items(Root, TEXT("promises")))
+        {
+            auto J = Value->AsObject();
+            Saved.promises.push_back({S(String(J, TEXT("by"))), S(String(J, TEXT("to"))), S(String(J, TEXT("what"))),
+                                      Number(J, TEXT("made")), Number(J, TEXT("due")), S(String(J, TEXT("status")))});
+        }
         for (const auto& Value : Items(Root, TEXT("bonds")))   // Absent from saves made before bonds: none then.
         {
             auto J = Value->AsObject();
