@@ -20,8 +20,12 @@ class RATWMUD_API ARatwGameMode : public AGameModeBase
     virtual void Logout(AController* Exiting) override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     void HandleCommand(ARatwPlayerController* Controller, const FString& Json);
+    // The client applied the snapshot of this revision (or lacks a part it was expected to hold).
+    void HandleAcknowledge(ARatwPlayerController* Controller, double Revision, bool Missing);
 
   private:
     TSharedPtr<FRatwRuntime> Runtime;
     float TickAccumulator = 0.f;
+    bool Failed = false;
+    bool EnsureRuntime();
 };

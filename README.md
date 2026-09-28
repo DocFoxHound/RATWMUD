@@ -325,7 +325,16 @@ bash tools/live.sh server prod   # the live server players join
 bash tools/live.sh server dev    # builds DEV's current world (if it changed), then serves it
 bash tools/live.sh play dev      # a local game window on DEV
 RATW_PACKAGED=1 bash tools/live.sh server dev   # the same from the cooked package (tools/package.sh)
+RATW_STANDALONE=1 bash tools/live.sh server dev # the standalone headless server (no Unreal; port 7788)
+RATW_STANDALONE=1 bash tools/connect.sh 127.0.0.1:7788   # a player joining it
 ```
+
+The standalone server (`Server/ratw_server.cpp`, built by CMake in `build-core`
+as `ratw_server`) runs the same game code as the Unreal server: both host the
+portable `ratw::game::Game` (`Source/RATWMUD/Core/RatwGame.h`), so rules, saves
+and snapshots are identical and either can pick up the other's save. It starts
+in a couple of seconds on DEV. `bash tools/standalone.sh` runs it on its own;
+its options are listed at the top of `Server/ratw_server.cpp`.
 
 When Push to live publishes a new release, a running server tells anyone
 connected, and once nobody is connected it saves and exits with status 75;

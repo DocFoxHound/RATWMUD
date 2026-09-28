@@ -1,9 +1,9 @@
 #pragma once
-// The game server, portable (Docs/Design/26-living-npcs.md, Phase 6): the authority a standalone server runs, with no
-// Unreal code. It is the Unreal runtime's FRatwRuntime (Source/RATWMUD/Runtime/RatwGameMode.cpp), rule for rule, over
-// the portable core: the world and its society, accounts and characters, commands, snapshots and events, NPC
-// conversation through the NPC Mind, the Dungeon Master's actions and spawn rules, saves, and releases. A host (the
-// standalone server's transport, or a test) makes a Connection for each client and calls in.
+// The game server, portable (Docs/Design/26-living-npcs.md, Phase 6): the one authority, with no Unreal code. The
+// standalone server (Server/ratw_server.cpp) runs it over TCP; the Unreal server (Runtime/RatwGameMode.cpp) runs it
+// behind Unreal's networking. It holds the world and its society, accounts and characters, commands, snapshots and
+// events, NPC conversation through the NPC Mind, the Dungeon Master's actions and spawn rules, saves, and releases. A
+// host (either server's transport, or a test) makes a Connection for each client and calls in.
 #include "RatwAccountsCore.h"
 #include "RatwCheckpoint.h"
 #include "RatwDbStore.h"
@@ -73,6 +73,10 @@ struct Options
     // file (RATW_WORLD manifest, absolute path), else the built-in demo world.
     std::string database, conninfo, worldFile;
     std::string savePath;                                     // For a world not from the database.
+    std::vector<std::string> cellFiles;                       // For the demo world: authored cell files loaded over it.
+    // Whether a save that can't be read (or saved to) stops the server. Always for a database world; a world from files
+    // may play on without saving (as the offline demo worlds do), with the save left as it was.
+    bool requireStorage = true;
     std::string dialogueEndpoint;                             // The NPC Mind (loopback only); empty for authored lines.
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
@@ -88,6 +92,9 @@ class Game
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
 
+    // Where the save of a world not from the database lives, in place of `savePath` (the Unreal server's SQLite
+    // files): set before start().
+    void useStore(std::unique_ptr<Store> store) { customStore_ = std::move(store); }
     // Loads the world and its save. False, with the problem, if the server must not run.
     bool start(std::string& problem);
     // Where notes go (level: "info", "warning", "error"). Standard error until set.
@@ -115,7 +122,7 @@ class Game
     World world_;
     MemoryStore memories_;
     SocialLedger social_;
-    std::unique_ptr<Store> store_;
+    std::unique_ptr<Store> store_, customStore_;
     mind::Client mind_;
     accounts::Accounts accounts_;
     accounts::RateLimit authRate_;

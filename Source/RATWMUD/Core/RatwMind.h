@@ -1,6 +1,5 @@
 #pragma once
-// The NPC Mind (tools/npc_mind.py), portable: what Source/RATWMUD/Runtime/RatwDialogueProvider.h does for the Unreal
-// runtime, for a standalone server. A loopback HTTP endpoint only; requests go on worker threads and their answers are
+// The NPC Mind's client (tools/npc_mind.py), for both servers. A loopback HTTP endpoint only; requests go on worker threads and their answers are
 // handed back on the game thread by poll(). Without an endpoint, or when it fails, NPCs answer with authored lines.
 #include "RatwJsonDoc.h"
 

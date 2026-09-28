@@ -1,7 +1,6 @@
 #pragma once
-// The operator bridge, portable: Source/RATWMUD/Runtime/RatwDMBridge.h (see Docs/DM_BRIDGE_CONTRACT.md) for the
-// standalone server. An opt-in, same-OS-user channel through a private directory: requests in outbox/, receipts in
-// inbox/, and the world as snapshot.json. Never routed through a character command or a client snapshot.
+// The operator bridge (see Docs/DM_BRIDGE_CONTRACT.md), for both servers. An opt-in, same-OS-user channel through a
+// private directory: requests in outbox/, receipts in inbox/, and the world as snapshot.json. Never routed through a character command or a client snapshot.
 #include "RatwJsonDoc.h"
 #include "RatwWorld.h"
 

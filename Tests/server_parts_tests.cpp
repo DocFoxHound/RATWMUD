@@ -1,12 +1,15 @@
 // The standalone server's parts (Phase 6): accounts as the Unreal runtime keeps them, delta snapshots between a server
-// and a client, and the NPC Mind client against a small local stand-in.
+// and a client, the NPC Mind client against a small local stand-in, and the operator bridge's request contract.
 #include "RatwAccountsCore.h"
+#include "RatwDirector.h"
 #include "RatwMind.h"
 #include "RatwSections.h"
 #include "RatwSystemLibs.h"
 
 #include <arpa/inet.h>
 #include <atomic>
+#include <functional>
+#include <set>
 #include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
@@ -161,6 +164,13 @@ void mindTests()
     mind::Client offline;
     offline.configure("http://example.com:80/dialogue");
     expect(!offline.live() && offline.label() == "Authored offline dialogue", "only loopback endpoints are used");
+    for (const std::string bad : {"http://127.0.0.1:8080@remote.example/dialogue", "http://localhost:8080\\@remote.example/",
+                                  "http://127.0.0.1:8080\n/", "http://localhost:99999/dialogue", "http://localhost:80evil/dialogue",
+                                  "http://127.0.0.1.evil:80/"})
+    {
+        offline.configure(bad);
+        expect(!offline.live(), "a malformed or look-alike endpoint is refused: " + bad);
+    }
     mind::Context c;
     c.npcId = "npc_keeper";
     c.name = "Rowan";
@@ -169,6 +179,10 @@ void mindTests()
     mind::Reply got;
     offline.converse(c, [&](const mind::Reply& r) { got = r; });
     expect(!got.generated && got.text.find("We have only just met, Ash") == 0, "offline, an authored line: " + got.text);
+    c.recollection = "I promised to return the blue scarf.";
+    offline.converse(c, [&](const mind::Reply& r) { got = r; });
+    expect(got.text.find("blue scarf") != std::string::npos, "offline, what it remembers is recalled");
+    c.recollection.clear();
 
     std::string request;
     std::atomic<bool> ready{false};
@@ -193,6 +207,16 @@ void mindTests()
     gone.converse(c, [&](const mind::Reply& r) { got = r; answered = true; });
     gone.settle(10);
     expect(answered && !got.generated, "an unreachable Mind falls back to the authored line");
+    // A Mind that answers nonsense: the authored line too.
+    ready = false;
+    const int badPort = serveOnce("{\"text\":", request, ready);
+    while (!ready) std::this_thread::yield();
+    mind::Client garbled;
+    garbled.configure("http://127.0.0.1:" + std::to_string(badPort) + "/dialogue");
+    answered = false;
+    garbled.converse(c, [&](const mind::Reply& r) { got = r; answered = true; });
+    garbled.settle(5);
+    expect(answered && !got.generated, "a malformed reply falls back to the authored line");
     std::string error;
     expect(sys::zlibAvailable(error), "zlib loads: " + error);
     const std::string text(5000, 'w');
@@ -200,6 +224,96 @@ void mindTests()
     expect(sys::compress(reinterpret_cast<const std::uint8_t*>(text.data()), text.size(), packed) && packed.size() < 100 &&
                sys::uncompress(packed.data(), packed.size(), text.size(), back) && std::string(back.begin(), back.end()) == text,
            "zlib round trip");
+}
+
+json::Value parsed(const std::string& text)
+{
+    json::Value v;
+    std::string error;
+    if (!json::parse(text, v, error))
+        throw std::runtime_error("bad test JSON: " + error);
+    return v;
+}
+
+// The operator bridge (Docs/DM_BRIDGE_CONTRACT.md): exactly-once requests, receipts that survive a restart, and a
+// failed checkpoint undoing what a request changed.
+void directorTests()
+{
+    director::Bridge bridge;
+    World world;
+    world.addPlayer("player-ash", "Ash");
+    const std::set<std::string> online{"player-ash"};
+    int commits = 0, notices = 0;
+    const auto commit = [&]() { ++commits; return true; };
+    const director::Bridge::Notice notice = [&](const std::set<std::string>& to, const std::string&) { notices += int(to.size()); };
+    const auto envelope = [&](const director::Bridge& b, const std::string& id, const std::string& kind, const std::string& payload) {
+        auto o = json::Value::object();
+        o.add("version", 1);
+        o.add("id", id);
+        o.add("worldId", b.state().string("worldId"));
+        o.add("createdAtUnix", 1000);
+        o.add("expiresAtUnix", 1120);
+        o.add("kind", kind);
+        o.add("payload", parsed(payload));
+        return o;
+    };
+    const auto ok = [](const json::Value& result) { return result.boolean("ok"); };
+    const std::string hash = "0123456789012345678901234567890123456789";
+    const auto transfer = envelope(bridge, "transfer-1", "economy_transfer",
+                                   R"({"from":"treasury","to":"player-ash","item":"meal","quantity":1,"coins":3})");
+    expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1001, commit, notice)), "operator transfers existing resources");
+    expect(world.society().account("player-ash")->cash == 23 && world.society().conserved(), "exactly three pennies, money conserved");
+    expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1200, commit, notice)), "a retry replays its receipt after expiry");
+    expect(commits == 1 && world.society().account("player-ash")->cash == 23, "a retry neither commits again nor pays twice");
+
+    director::Bridge restart;
+    expect(restart.restore(parsed(json::dump(bridge.state()))), "receipts survive a restore");
+    const auto broken = [&](const std::function<void(json::Value&)>& change) {
+        auto state = parsed(json::dump(bridge.state()));
+        change(state.find("receipts")->items()[0]);
+        return restart.restore(state);
+    };
+    expect(!broken([](json::Value& r) { r.find("result")->set("version", 2); }), "an unsupported receipt version fails closed");
+    expect(!broken([](json::Value& r) { r.find("result")->erase("detail"); }), "a receipt without its detail is refused");
+    expect(!broken([](json::Value& r) { r.set("fingerprint", std::string(40, 'z')); }), "a fingerprint must be hexadecimal");
+    expect(ok(restart.execute(transfer, "transfer-1", hash, world, online, 1200, commit, notice)), "a restarted bridge replays the request");
+    expect(!ok(bridge.execute(transfer, "transfer-1", "different", world, online, 1001, commit, notice)), "a reused ID with new content is refused");
+
+    auto cross = envelope(bridge, "cross-world", "weather", R"({"cell":"exterior","preset":"fog"})");
+    cross.set("worldId", "wrong-world");
+    expect(!ok(bridge.execute(cross, "cross-world", hash, world, online, 1001, commit, notice)), "another world's request is refused");
+    const auto bad = envelope(bridge, "bad-bool", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":false,"quantity":0,"coins":3})");
+    expect(!ok(bridge.execute(bad, "bad-bool", hash, world, online, 1001, commit, notice)), "a boolean item is not an empty item");
+    const auto announcement = envelope(bridge, "notice-1", "notice",
+                                       R"({"scope":"players","targets":["player-ash","player-absent"],"text":"A bell sounds across the yard."})");
+    expect(ok(bridge.execute(announcement, "notice-1", hash, world, online, 1001, commit, notice)) && notices == 1,
+           "a notice reaches only those online");
+    bridge.execute(announcement, "notice-1", hash, world, online, 1002, commit, notice);
+    expect(notices == 1, "a retried notice is not sent again");
+    const auto badNotice = envelope(bridge, "bad-notice", "notice", R"({"scope":"world","target":false,"text":"Must not broadcast."})");
+    expect(!ok(bridge.execute(badNotice, "bad-notice", hash, world, online, 1001, commit, notice)) && notices == 1,
+           "a malformed notice fails closed and sends nothing");
+    expect(!ok(bridge.execute(envelope(bridge, "army-1", "army", "{}"), "army-1", hash, world, online, 1001, commit, notice)),
+           "an unimplemented kind is never reported applied");
+    const auto expired = envelope(bridge, "expired-1", "weather", R"({"cell":"exterior","preset":"fog"})");
+    expect(!ok(bridge.execute(expired, "expired-1", hash, world, online, 1121, commit, notice)), "an expired request is refused");
+
+    const auto hidden = world.addPlayer("player-offline", "Offline");
+    world.removePlayer("player-offline");
+    const auto view = bridge.snapshot(world, {{"player-offline", hidden}}, online, {{"player-ash", 1000}}, 42, 1002);
+    expect(view.array("cells").size() == 3, "the operator sees every cell, whatever players have seen");
+    expect(view.array("characters").size() == 8, "six NPCs plus online and saved offline players");
+    expect(!view.has("activeMemory"), "no conversation memory in the operator's view");
+
+    director::Bridge failing;
+    const auto rollback = envelope(failing, "rollback-1", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":"","quantity":0,"coins":4})");
+    const auto cash = world.society().account("player-ash")->cash;
+    world.entity("player-ash")->path = {{17.5, 12.5}};
+    world.entity("player-ash")->typing = true;
+    expect(!ok(failing.execute(rollback, "rollback-1", hash, world, online, 1001, [] { return false; }, notice)),
+           "a failed checkpoint is not acknowledged");
+    expect(world.society().account("player-ash")->cash == cash, "a failed checkpoint undoes the transfer");
+    expect(world.entity("player-ash")->typing && world.entity("player-ash")->path.size() == 1, "and leaves movement and typing alone");
 }
 } // namespace
 
@@ -210,6 +324,7 @@ int main()
         accountsTests();
         sectionsTests();
         mindTests();
+        directorTests();
     }
     catch (const std::exception& error)
     {

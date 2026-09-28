@@ -256,18 +256,8 @@ void ARatwPlayerController::ClientCompressedSnapshot_Implementation(const TArray
 
 void ARatwPlayerController::ServerSnapshotAck_Implementation(double Revision, bool Missing)
 {
-    if (Missing)
-    {
-        ResetSections();                               // Everything again, in the next snapshot.
-        return;
-    }
-    if (const auto* Keys = SentSections.Find(Revision))
-        KnownSections = *Keys;
-    else
-        return;                                        // Older than one already acknowledged (or never sent).
-    for (auto It = SentSections.CreateIterator(); It; ++It)
-        if (It.Key() <= Revision)
-            It.RemoveCurrent();
+    if (auto* Mode = GetWorld() ? GetWorld()->GetAuthGameMode<ARatwGameMode>() : nullptr)
+        Mode->HandleAcknowledge(this, Revision, Missing);
 }
 
 void ARatwPlayerController::ApplySnapshotJson(const FString& Json)

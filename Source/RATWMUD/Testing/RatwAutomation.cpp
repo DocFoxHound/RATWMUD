@@ -9,8 +9,7 @@
 #include "Runtime/RatwMotion.h"
 #include "Runtime/RatwJson.h"
 #include "Runtime/RatwSocietyJson.h"
-#include "Runtime/RatwDMBridge.h"
-#include "Runtime/RatwDialogueProvider.h"
+#include "Core/RatwMind.h"
 #include "HAL/FileManager.h"
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
@@ -501,13 +500,12 @@ bool FRatwEnvironmentWireTest::RunTest(const FString&)
               World.environmentAt("exterior").hearing);
     TestEqual(TEXT("Weather/lighting/calendar metadata has no actor IDs or coordinates"), Wire->Values.Num(), 14);
     const auto Shelter = ratwjson::Environment(World.environmentAt("tavern"));
-    FRatwDialogueContext Context;
-    Context.HeardText = TEXT("What is the weather like?");
-    Context.Environment = EnvironmentDescription(*World.cell("exterior"), View.environment);
-    TestEqual(TEXT("Authored NPC response follows current local conditions"),
-              FRatwDialogueProvider::AuthoredReply(Context), Context.Environment);
-    TestFalse(TEXT("Snow fallback does not invent rain"),
-              FRatwDialogueProvider::AuthoredReply(Context).Contains(TEXT("Rain")));
+    ratw::mind::Context Context;
+    Context.heardText = "What is the weather like?";
+    Context.environment = TCHAR_TO_UTF8(*EnvironmentDescription(*World.cell("exterior"), View.environment));
+    TestTrue(TEXT("Authored NPC response follows current local conditions"),
+             ratw::mind::Client::authoredReply(Context) == Context.environment);
+    TestTrue(TEXT("Snow fallback does not invent rain"), ratw::mind::Client::authoredReply(Context).find("Rain") == std::string::npos);
     TestEqual(TEXT("Shelter uses same world hour"), Number(Shelter, TEXT("hour")), Number(Wire, TEXT("hour")));
     TestEqual(TEXT("Sheltered light is unaffected by outdoor night"), Number(Shelter, TEXT("illumination")), 1.0);
     for (const TCHAR* Key : {TEXT("sight"), TEXT("hearing"), TEXT("scent"), TEXT("movement")})
@@ -677,78 +675,6 @@ bool FRatwSocietyWireTest::RunTest(const FString&)
     TestEqual(TEXT("Gathered goods enter actual player inventory"), ratw::Society::stock(*World.society().account(P.id), "herbs"), Herbs + 1);
     TestEqual(TEXT("Gathering depletes shared finite patch"), World.society().state().herbPatch, Patch - 1);
     TestEqual(TEXT("Gathering does not mint money"), World.society().account(P.id)->cash, Cash);
-    return true;
-}
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRatwDirectorTest, "RATW.Director.PrivateOperatorContract",
-                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
-bool FRatwDirectorTest::RunTest(const FString&)
-{
-    using namespace ratwjson;
-    FRatwDMBridge Bridge;
-    ratw::World World;
-    World.addPlayer("player-ash", "Ash");
-    std::set<std::string> Online{"player-ash"};
-    int Commits = 0, Notices = 0;
-    auto Commit = [&]() { ++Commits; return true; };
-    auto Notice = [&](const std::set<std::string>& To, const FString&) { Notices += int(To.size()); };
-    auto Envelope = [&](const TCHAR* Id, const TCHAR* Kind, const TCHAR* Payload) {
-        auto O = New(); O->SetNumberField(TEXT("version"), 1); O->SetStringField(TEXT("id"), Id);
-        O->SetStringField(TEXT("worldId"), Bridge.Id()); O->SetNumberField(TEXT("createdAtUnix"), 1000);
-        O->SetNumberField(TEXT("expiresAtUnix"), 1120); O->SetStringField(TEXT("kind"), Kind);
-        O->SetObjectField(TEXT("payload"), Decode(Payload)); return O;
-    };
-    const FString Hash = TEXT("0123456789012345678901234567890123456789");
-    auto Transfer = Envelope(TEXT("transfer-1"), TEXT("economy_transfer"), TEXT("{\"from\":\"treasury\",\"to\":\"player-ash\",\"item\":\"meal\",\"quantity\":1,\"coins\":3}"));
-    TestTrue(TEXT("Operator transfers finite existing resources"), Bool(Bridge.Execute(Transfer, TEXT("transfer-1"), Hash, World, Online, 1001, Commit, Notice), TEXT("ok")));
-    TestEqual(TEXT("Existing purse receives exactly three pennies"), World.society().account("player-ash")->cash, std::int64_t(23));
-    TestTrue(TEXT("Money still conserved"), World.society().conserved());
-    TestTrue(TEXT("Retry replays receipt even after original expiry"), Bool(Bridge.Execute(Transfer, TEXT("transfer-1"), Hash, World, Online, 1200, Commit, Notice), TEXT("ok")));
-    TestEqual(TEXT("Retry neither re-commits nor duplicates transfer"), Commits, 1);
-    TestEqual(TEXT("Retry preserves purse"), World.society().account("player-ash")->cash, std::int64_t(23));
-    FRatwDMBridge Restart;
-    TestTrue(TEXT("Private receipt state survives JSON restore"), Restart.Restore(Decode(Encode(Bridge.State()))));
-    auto BrokenReceipt = Decode(Encode(Bridge.State()));
-    Child(Items(BrokenReceipt, TEXT("receipts"))[0]->AsObject(), TEXT("result"))->SetNumberField(TEXT("version"), 2);
-    TestFalse(TEXT("Unsupported persisted receipt version fails closed"), Restart.Restore(BrokenReceipt));
-    BrokenReceipt = Decode(Encode(Bridge.State()));
-    Child(Items(BrokenReceipt, TEXT("receipts"))[0]->AsObject(), TEXT("result"))->RemoveField(TEXT("detail"));
-    TestFalse(TEXT("Missing receipt detail cannot be replayed as a valid response"), Restart.Restore(BrokenReceipt));
-    BrokenReceipt = Decode(Encode(Bridge.State()));
-    Items(BrokenReceipt, TEXT("receipts"))[0]->AsObject()->SetStringField(TEXT("fingerprint"), FString::ChrN(40, 'z'));
-    TestFalse(TEXT("Persisted fingerprint must contain only hexadecimal"), Restart.Restore(BrokenReceipt));
-    TestTrue(TEXT("Restarted bridge replays same request"), Bool(Restart.Execute(Transfer, TEXT("transfer-1"), Hash, World, Online, 1200, Commit, Notice), TEXT("ok")));
-    TestFalse(TEXT("Reused ID with altered content is rejected"), Bool(Bridge.Execute(Transfer, TEXT("transfer-1"), TEXT("different"), World, Online, 1001, Commit, Notice), TEXT("ok")));
-    auto Cross = Envelope(TEXT("cross-world"), TEXT("weather"), TEXT("{\"cell\":\"exterior\",\"preset\":\"fog\"}"));
-    Cross->SetStringField(TEXT("worldId"), TEXT("wrong-world"));
-    TestFalse(TEXT("Cross-world requests are rejected"), Bool(Bridge.Execute(Cross, TEXT("cross-world"), Hash, World, Online, 1001, Commit, Notice), TEXT("ok")));
-    auto Bad = Envelope(TEXT("bad-bool"), TEXT("economy_transfer"), TEXT("{\"from\":\"treasury\",\"to\":\"player-ash\",\"item\":false,\"quantity\":0,\"coins\":3}"));
-    TestFalse(TEXT("Boolean item cannot coerce into an empty money-only transfer"), Bool(Bridge.Execute(Bad, TEXT("bad-bool"), Hash, World, Online, 1001, Commit, Notice), TEXT("ok")));
-    auto Announcement = Envelope(TEXT("notice-1"), TEXT("notice"), TEXT("{\"scope\":\"players\",\"targets\":[\"player-ash\",\"player-absent\"],\"text\":\"A bell sounds across the yard.\"}"));
-    TestTrue(TEXT("Chapter-resolved list only notices connected members"), Bool(Bridge.Execute(Announcement, TEXT("notice-1"), Hash, World, Online, 1001, Commit, Notice), TEXT("ok")));
-    TestEqual(TEXT("One recipient, no invented offline delivery"), Notices, 1);
-    Bridge.Execute(Announcement, TEXT("notice-1"), Hash, World, Online, 1002, Commit, Notice);
-    TestEqual(TEXT("Retried notice is not emitted a second time"), Notices, 1);
-    auto BadNotice = Envelope(TEXT("bad-notice"), TEXT("notice"), TEXT("{\"scope\":\"world\",\"target\":false,\"text\":\"Must not broadcast.\"}"));
-    TestFalse(TEXT("Malformed irrelevant notice target fails closed"), Bool(Bridge.Execute(BadNotice, TEXT("bad-notice"), Hash, World, Online, 1001, Commit, Notice), TEXT("ok")));
-    TestEqual(TEXT("Malformed notice emitted nothing"), Notices, 1);
-    auto Unsupported = Envelope(TEXT("army-1"), TEXT("army"), TEXT("{}"));
-    TestFalse(TEXT("Unimplemented army cannot be reported as applied"), Bool(Bridge.Execute(Unsupported, TEXT("army-1"), Hash, World, Online, 1001, Commit, Notice), TEXT("ok")));
-    auto Expired = Envelope(TEXT("expired-1"), TEXT("weather"), TEXT("{\"cell\":\"exterior\",\"preset\":\"fog\"}"));
-    TestFalse(TEXT("Expired new request is rejected"), Bool(Bridge.Execute(Expired, TEXT("expired-1"), Hash, World, Online, 1121, Commit, Notice), TEXT("ok")));
-    auto Hidden = World.addPlayer("player-offline", "Offline"); World.removePlayer("player-offline");
-    const auto View = Bridge.Snapshot(World, {{"player-offline", Hidden}}, Online, {{"player-ash", 1000}}, 42, 1002);
-    TestEqual(TEXT("Operator sees all three cells independent of player fog"), Items(View, TEXT("cells")).Num(), 3);
-    TestEqual(TEXT("Operator sees all six NPCs plus online and saved offline players"), Items(View, TEXT("characters")).Num(), 8);
-    TestFalse(TEXT("Operator export excludes conversation memory"), View->HasField(TEXT("activeMemory")));
-    FRatwDMBridge Failing;
-    auto Rollback = Envelope(TEXT("rollback-1"), TEXT("economy_transfer"), TEXT("{\"from\":\"treasury\",\"to\":\"player-ash\",\"item\":\"\",\"quantity\":0,\"coins\":4}"));
-    Rollback->SetStringField(TEXT("worldId"), Failing.Id());
-    const auto Cash = World.society().account("player-ash")->cash;
-    World.entity("player-ash")->path = {{17.5, 12.5}};
-    World.entity("player-ash")->typing = true;
-    TestFalse(TEXT("Checkpoint failure does not acknowledge application"), Bool(Failing.Execute(Rollback, TEXT("rollback-1"), Hash, World, Online, 1001, []() { return false; }, Notice), TEXT("ok")));
-    TestEqual(TEXT("Failed checkpoint rolls back authoritative funds"), World.society().account("player-ash")->cash, Cash);
-    TestTrue(TEXT("Rollback retains unrelated transient movement and typing"), World.entity("player-ash")->typing && World.entity("player-ash")->path.size() == 1);
     return true;
 }
 #endif

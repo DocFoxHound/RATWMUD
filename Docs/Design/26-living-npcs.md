@@ -264,7 +264,7 @@ with the phases that give them rules, so none is created before there is somethi
 - **Summaries.** `POST /summarize` summarises a finished conversation from the NPC's point of view, reporting claims as
   claims.
 - **Rehearsal.** `--fixture` gives offline replies with no model and no cost.
-- **What the game server does with a reply** (`FRatwDialogueProvider::Converse`, `Heed`): it checks every field again.
+- **What the game server does with a reply** (`ratw::mind::Client::converse`, `Game::heed`): it checks every field again.
   - The emotion becomes the NPC's mood.
   - Nudges move a recognised speaker's bond by at most 3 a reply and 6 an hour in each, so flattery can't buy
     adoration.
@@ -515,7 +515,7 @@ What the first version left for later, built on the same day's numbers (all plac
 following a wagon by command rather than by walking; bandits other than on the roads; a combat design to replace the
 placeholder fight.
 
-## Phase 6: the backend at scale (partly built 2026-09-28)
+## Phase 6: the backend at scale (built 2026-09-28, except a stripped server binary)
 
 ### Built
 
@@ -572,15 +572,30 @@ Verified:
   entry the client holds goes as `{"$held": key}`, so a reveal costs one cell, not the whole map. Tested in
   `RATW.Network.DeltaSnapshots`.
 
+- **A standalone headless world server, with Unreal as the client** (`Server/ratw_server.cpp`).
+  - **One game, two hosts.** The whole server side is portable C++ in `Source/RATWMUD/Core`: `ratw::game::Game`
+    (`RatwGame.h`) holds the world, accounts and characters, commands, snapshots and events, the NPC Mind client
+    (`RatwMind.h`), the Dungeon Master's bridge (`RatwDirector.h`), spawns, saves and releases. The Unreal server
+    (`RatwGameMode.cpp`) is now a thin adapter that hosts it behind Unreal's networking; the standalone server hosts
+    it over TCP. The two can no longer disagree.
+  - **Portable pieces under it.** The checkpoint codec (`RatwCheckpoint.h`, the save's JSON without Unreal types),
+    the database store (`RatwDbStore.h`), accounts (`RatwAccountsCore.h`), delta sections (`RatwSections.h`),
+    binary motion (`RatwMotionCore.h`), and zlib and OpenSSL loaded at run time (`RatwSystemLibs.h`).
+  - **The wire** (`RatwLink.h`): length-prefixed frames (command, snapshot acknowledgement, event, snapshot,
+    motion), each server payload zlib-compressed. Unreal connects with `-RatwServer=host:port`
+    (`RatwRemoteLink.h`); `RATW_STANDALONE=1` in `tools/connect.sh` and `tools/live.sh` picks it.
+  - **Numbers.** Ready in 2.4 s on DEV's database world (under 0.01 s on a test world). On DEV a walking player got snapshots of about 4.8 KB and motion frames of about
+    280 bytes. Ticks averaged 0.1 to 0.3 ms on test worlds and about 10 ms on DEV.
+  - **Verified.** The network, persistence, Dungeon Master (23 checks) and Mind smokes pass against both servers
+    with real Unreal clients (`--standalone build-core/ratw_server`), and a save moves between the two servers
+    both ways on a DEV copy. `Tests/server_smoke.cpp` (340 checks) and `Tests/game_tests.cpp` (94) drive the game
+    headless; `Tests/server_parts_tests.cpp` covers accounts, sections, the Mind client and the bridge's request
+    contract (moved there from the engine tests with the Unreal-only copies they tested).
+
 ### Not yet
 
-- **A stripped dedicated-server binary.** This installed engine refuses Server targets (see the README); the cooked
-  game's headless host is the nearest.
-- **A standalone headless world server,** with Unreal as the client.
-  - It needs a portable checkpoint codec (today the save's JSON is read and written with Unreal's JSON types in
-    `RatwGameMode.cpp`) and a transport and login of its own.
-  - It would give second-scale start-up, ordinary profilers and sanitizers, and room for region processes later.
-  - `Source/RATWMUD/Core` is already portable, and `world_check` already runs it headless on DEV.
+- **A stripped dedicated-server binary.** This installed engine refuses Server targets (see the README). The
+  standalone server now fills that role: no Unreal on the server at all.
 
 ## More ideas to fold in
 

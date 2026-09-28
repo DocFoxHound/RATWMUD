@@ -7,7 +7,7 @@ Ordinary launches still make no remote model calls.
 
 ## Provider contract
 
-`FRatwDialogueProvider` accepts an NPC's identity, description, current activity,
+The NPC Mind client (`ratw::mind::Client`, `Source/RATWMUD/Core/RatwMind.h`) accepts an NPC's identity, description, current activity,
 the perceived player message, a bounded subject-specific memory excerpt and scene
 description. It returns one spoken reply through a callback. The server wraps that
 reply as a speech segment and routes it through normal perception. The callback
@@ -66,10 +66,10 @@ reply and memory persistence remain server operations regardless of provider.
 ## Validation and future work
 
 Offline authored responses are exercised by the native NPC interaction scenario.
-The adapter compiles with Unreal HTTP support. Native automation includes a
-loopback fixture for success, HTTP failure, malformed/empty/oversized responses,
-and an eight-second timeout fallback, plus URL-validation regressions. The fixture
-never redirects or contacts another service. Separate live tests verify generated
+The client is portable C++ shared by both servers. `Tests/server_parts_tests.cpp`
+runs it against a loopback stand-in (a good reply, a malformed one, an unreachable
+Mind) and checks the URL-validation regressions. The stand-in never redirects or
+contacts another service. Separate live tests verify generated
 delivery by matching response hashes and recall across restarts/consolidation.
 The bridge answers up to three conversations at once by default (`--concurrency`,
 1–4); beyond that a request is refused as busy and the game uses its authored reply.

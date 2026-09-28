@@ -230,9 +230,14 @@ bool Game::start(std::string& problem)
                              std::to_string(world_.society().state().residents.size()));
         }
         else
+        {
+            for (const auto& file : options_.cellFiles)
+                if (const auto loaded = world_.loadCellFile(file); !loaded.ok)
+                    note("warning", "RATW authored cell rejected; using built-in fallback: " + loaded.message);
             for (const auto& [id, cell] : world_.cells())
                 world_.cell(id)->region = "demo_reach";
-        store_ = options_.savePath.empty() ? memoryStore() : fileStore(options_.savePath, problem);
+        }
+        store_ = customStore_ ? std::move(customStore_) : options_.savePath.empty() ? memoryStore() : fileStore(options_.savePath, problem);
         if (!store_)
             return false;
     }
@@ -241,7 +246,9 @@ bool Game::start(std::string& problem)
     if (!storageReady_)
     {
         problem = "the save could not be read; it is kept as it is and nothing is saved over it (" + store_->error() + ")";
-        return false;
+        if (live || options_.requireStorage)
+            return false;
+        note("error", "RATW " + problem);
     }
     if (live)
         applyExternalNpcStates();
