@@ -30,3 +30,7 @@ __pycache__/
 /Database/dm-accounts.txt
 /artifacts/backups/
 /artifacts/mind-smoke/
+
+# The browser client (Client/): its tools and its build.
+/Client/node_modules/
+/Client/dist/

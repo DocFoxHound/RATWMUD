@@ -597,14 +597,17 @@ Verified:
 - **A stripped dedicated-server binary.** This installed engine refuses Server targets (see the README). The
   standalone server now fills that role: no Unreal on the server at all.
 
-## More ideas to fold in
+## Next phases (order agreed 2026-09-28)
 
-- Schedules with market days, festivals, a day of rest, and weather changing plans.
-- A local **ambient director** that picks one or two NPC-to-NPC exchanges worth voicing where players are: gossip about
-  a recent event, rivals arguing.
-- A **chronicle** of each NPC's life, compiled from events, for the Dungeon Master and for storytelling.
-- **Crime and law**: theft and violence create witnesses and beliefs. The Watch investigates from what it knows, not
-  from omniscience.
+Phase 6's stripped server binary comes first; then:
+
+- **Phase 7: crime and law.** Theft and violence create witnesses and beliefs. The Watch investigates from what it
+  knows, not from omniscience.
+- **Phase 8: NPC chronicles.** A chronicle of each NPC's life, compiled from events, for the Dungeon Master and for
+  storytelling.
+- **Phase 9: schedules.** Market days, festivals, a day of rest, and weather changing plans.
+- **Phase 10: the ambient director.** A local director that picks one or two NPC-to-NPC exchanges worth voicing where
+  players are: gossip about a recent event, rivals arguing.
 
 ## Open questions
 

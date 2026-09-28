@@ -1,11 +1,12 @@
-// The standalone headless world server (Docs/Design/26-living-npcs.md, Phase 6): the portable game (RatwGame.h) over
-// TCP (RatwLink.h). No Unreal: it starts in about a second, runs under ordinary profilers and sanitizers, and serves
-// the same saves as the Unreal server. The Unreal game connects to it with -RatwServer=host:port.
+// The game server (Docs/Design/26-living-npcs.md, Phase 6; 27-browser-client.md): the portable game (RatwGame.h) over
+// one port. A browser opens http://host:port/ for the client's files (--web) and plays over a WebSocket at /ws
+// (RatwWeb.h); the Unreal game, while it lasts, connects with -RatwServer=host:port over the plain link (RatwLink.h).
+// Each connection is told apart by its first bytes: an HTTP request, or a link frame.
 //
 //   ratw_server --database dev|prod          the world in the database (RATW_DATABASE_URL), as tools/live.sh runs it
 //   ratw_server [--world MANIFEST] --save F  a world from files (or the built-in demo), saved to a private file
-//   options: --port 7788, --bind 127.0.0.1, --dialogue URL (the NPC Mind), --dm-directory DIR (the operator bridge),
-//            --dev-tools, --dev-identity,
+//   options: --port 7788, --bind 127.0.0.1, --web DIR (the built browser client), --dialogue URL (the NPC Mind),
+//            --dm-directory DIR (the operator bridge), --dev-tools, --dev-identity,
 //            --full-snapshots, --for SECONDS (stop after, saving: for tests)
 //
 // Exits 75 when a new release has been published and nobody is playing (tools/live.sh restarts it on the new build).
@@ -14,6 +15,7 @@
 #include "RatwLink.h"
 #include "RatwMotionCore.h"
 #include "RatwSystemLibs.h"
+#include "RatwWeb.h"
 
 #include <arpa/inet.h>
 #include <cerrno>
@@ -22,14 +24,17 @@
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <poll.h>
+#include <sstream>
 #include <string>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
 
@@ -41,14 +46,26 @@ void stop(int) { stopping = 1; }
 
 // Replaceable frames (snapshots, motion) are dropped for a client this far behind; past the second, it is let go.
 constexpr std::size_t DropReplaceableAt = 4u << 20, DisconnectAt = 32u << 20;
+// A connection that has said nothing this long is the plain link's (a browser sends its request at once).
+constexpr auto QuietLink = std::chrono::milliseconds(250);
 
 class Client final : public game::Connection
 {
   public:
+    enum class Mode
+    {
+        Unknown,                                    // Nothing read yet.
+        Http,                                       // Serving a file, or about to become a WebSocket.
+        WebSocket,                                  // A browser playing.
+        Link,                                       // The plain link (RatwLink.h).
+    };
     int fd = -1;
     std::string address, in, out;
-    bool closing = false, local = false;
+    Mode mode = Mode::Unknown;
+    web::Reader reader;
+    bool closing = false, local = false, playing = false, finishing = false;
     std::size_t dropped = 0;
+    std::chrono::steady_clock::time_point accepted = std::chrono::steady_clock::now();
 
     void event(const std::string& json) override { queue(link::Event, json, false); }
     void snapshot(const std::string& json) override { queue(link::Snapshot, json, true); }
@@ -58,11 +75,13 @@ class Client final : public game::Connection
         queue(link::Motion, std::string(bytes.begin(), bytes.end()), true);
     }
     bool allowsLocalCredentials() const override { return local; }
+    // Sends what is queued and then closes (an HTTP response, a WebSocket closing handshake).
+    void finish() { finishing = true; }
 
   private:
     void queue(link::Kind kind, const std::string& raw, bool replaceable)
     {
-        if (closing)
+        if (closing || finishing)
             return;
         if (replaceable && out.size() > DropReplaceableAt)
         {
@@ -77,16 +96,35 @@ class Client final : public game::Connection
         for (int i = 0; i < 4; ++i)
             payload[std::size_t(i)] = char(rawLength >> (8 * i));
         std::memcpy(payload.data() + 4, packed.data(), packed.size());
-        link::appendFrame(out, kind, payload.data(), payload.size());
+        if (mode == Mode::WebSocket)
+        {
+            payload.insert(payload.begin(), char(kind));
+            web::appendFrame(out, web::Binary, payload.data(), payload.size());
+        }
+        else
+            link::appendFrame(out, kind, payload.data(), payload.size());
         if (out.size() > DisconnectAt)
             closing = true;                         // Hopelessly behind: let it reconnect.
     }
 };
 
+// A file of the browser client, or false. Small files only: the client is a few hundred kilobytes.
+bool readFile(const std::string& path, std::string& out)
+{
+    struct stat info{};
+    if (::stat(path.c_str(), &info) != 0 || !S_ISREG(info.st_mode) || info.st_size > (16 << 20))
+        return false;
+    std::ifstream file(path, std::ios::binary);
+    std::ostringstream text;
+    text << file.rdbuf();
+    out = text.str();
+    return bool(file) || file.eof();
+}
+
 void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--dialogue URL] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
                  "                   [--for SECONDS]\n";
 }
 
@@ -101,7 +139,7 @@ int main(int argc, char** argv)
 {
     game::Options options;
     int port = 7788;
-    std::string bind = "127.0.0.1";
+    std::string bind = "127.0.0.1", webRoot;
     double runFor = -1;
     for (int i = 1; i < argc; ++i)
     {
@@ -119,6 +157,7 @@ int main(int argc, char** argv)
         else if (a == "--save") options.savePath = next();
         else if (a == "--port") port = std::atoi(next().c_str());
         else if (a == "--bind") bind = next();
+        else if (a == "--web") webRoot = next();
         else if (a == "--dialogue") options.dialogueEndpoint = next();
         else if (a == "--dm-directory") options.directorDirectory = next();
         else if (a == "--dev-tools") options.devTools = true;
@@ -186,10 +225,139 @@ int main(int argc, char** argv)
         auto found = clients.find(fd);
         if (found == clients.end())
             return;
-        g.disconnect(found->second.get());
+        const bool playing = found->second->playing;
+        if (playing)
+            g.disconnect(found->second.get());
         ::close(fd);
-        std::cout << "RATW_DISCONNECT " << found->second->address << " (" << clients.size() - 1 << " connected)" << std::endl;
+        const std::string address = found->second->address;
         clients.erase(found);
+        if (playing)
+            std::cout << "RATW_DISCONNECT " << address << " (" << clients.size() << " connected)" << std::endl;
+    };
+    const auto play = [&](Client& c) {
+        c.playing = true;
+        std::cout << "RATW_CONNECT " << c.address << (c.mode == Client::Mode::WebSocket ? " web" : " link") << std::endl;
+        g.connect(&c);
+    };
+    // One message of the game from a client: a command or a snapshot acknowledgement. False for anything else.
+    const auto receive = [&](Client& c, link::Kind kind, const std::string& payload) {
+        if (kind == link::Command && payload.size() <= link::MaxCommand)
+            g.command(&c, payload);
+        else if (kind == link::Ack && payload.size() == 9)
+        {
+            double revision;
+            std::memcpy(&revision, payload.data(), 8);
+            g.acknowledge(&c, revision, payload[8] != 0);
+        }
+        else
+            return false;                           // Nothing else is ever sent by a client.
+        return true;
+    };
+    // An HTTP request: the game's WebSocket, or one of the client's files.
+    const auto serve = [&](Client& c, const web::Request& r) {
+        if (r.path == web::GamePath)
+        {
+            if (!web::upgradeRequested(r))
+                c.out += web::response(426, "text/plain; charset=utf-8", "The game is played over a WebSocket.\n",
+                                       "Upgrade: websocket\r\n");
+            else if (!web::originAllowed(r))
+                c.out += web::response(403, "text/plain; charset=utf-8", "This page may not open the game.\n");
+            else if (const std::string accept = web::acceptKey(r.header("sec-websocket-key")); accept.empty())
+                c.out += web::response(500, "text/plain; charset=utf-8", "The server cannot accept WebSockets.\n");
+            else
+            {
+                c.out += web::handshake(accept);
+                c.mode = Client::Mode::WebSocket;
+                play(c);
+                return;
+            }
+            c.finish();
+            return;
+        }
+        std::string relative, body;
+        if (r.method != "GET" && r.method != "HEAD")
+            c.out += web::response(405, "text/plain; charset=utf-8", "Only GET.\n", "Allow: GET, HEAD\r\n");
+        else if (webRoot.empty() || !web::filePath(r.path, relative) || !readFile(webRoot + "/" + relative, body))
+            c.out += web::response(404, "text/plain; charset=utf-8", webRoot.empty() ? "This server has no client to serve (--web).\n" : "Not found.\n");
+        else
+        {
+            // Built assets have content hashes in their names, so they never change; the page itself always might.
+            const bool immutable = relative.rfind("assets/", 0) == 0;
+            std::string reply = web::response(200, web::contentType(relative), body,
+                                              immutable ? "Cache-Control: public, max-age=31536000, immutable\r\n" : "Cache-Control: no-cache\r\n");
+            if (r.method == "HEAD")
+                reply.resize(reply.size() - body.size());
+            c.out += reply;
+        }
+        c.finish();
+    };
+    // Everything a client has sent so far, by what kind of connection it turned out to be.
+    const auto handle = [&](Client& c) {
+        if (c.mode == Client::Mode::Unknown)
+        {
+            // A browser speaks first; the link's client may wait to be shown the lobby.
+            if (c.in.size() < 4 && std::chrono::steady_clock::now() - c.accepted < QuietLink)
+                return;
+            c.mode = c.in.size() >= 4 && (c.in.compare(0, 4, "GET ") == 0 || c.in.compare(0, 4, "HEAD") == 0 || c.in.compare(0, 4, "POST") == 0 ||
+                             c.in.compare(0, 4, "PUT ") == 0 || c.in.compare(0, 4, "OPTI") == 0)
+                         ? Client::Mode::Http
+                         : Client::Mode::Link;
+            if (c.mode == Client::Mode::Link)
+                play(c);
+        }
+        if (c.mode == Client::Mode::Http && !c.finishing)
+        {
+            web::Request r;
+            const int got = web::takeRequest(c.in, r);
+            if (got < 0)
+            {
+                c.out += web::response(400, "text/plain; charset=utf-8", "Bad request.\n");
+                c.finish();
+            }
+            else if (got > 0)
+                serve(c, r);
+        }
+        if (c.mode == Client::Mode::WebSocket)
+        {
+            web::Opcode op;
+            std::string payload;
+            int got;
+            while (!c.closing && !c.finishing && (got = web::takeMessage(c.in, c.reader, op, payload, link::MaxCommand + 1)) != 0)
+            {
+                if (got < 0)
+                {
+                    const char status[2] = {char(1002 >> 8), char(1002 & 255)};     // Protocol error.
+                    web::appendFrame(c.out, web::Close, status, 2);
+                    c.finish();
+                }
+                else if (op == web::Ping)
+                    web::appendFrame(c.out, web::Pong, payload.data(), payload.size());
+                else if (op == web::Close)
+                {
+                    web::appendFrame(c.out, web::Close, payload.data(), std::min<std::size_t>(payload.size(), 2));
+                    c.finish();
+                }
+                else if (op == web::Binary && !payload.empty() && receive(c, link::Kind(std::uint8_t(payload[0])), payload.substr(1)))
+                    continue;
+                else if (op != web::Pong)
+                {
+                    const char status[2] = {char(1003 >> 8), char(1003 & 255)};     // Unsupported data.
+                    web::appendFrame(c.out, web::Close, status, 2);
+                    c.finish();
+                }
+            }
+        }
+        if (c.mode == Client::Mode::Link)
+        {
+            link::Kind kind;
+            std::string payload;
+            bool bad = false;
+            while (!c.closing && link::takeFrame(c.in, kind, payload, bad))
+                if (!receive(c, kind, payload))
+                    c.closing = true;
+            if (bad)
+                c.closing = true;
+        }
     };
     while (!stopping && g.exitRequested() < 0 && Clock::now() < until)
     {
@@ -215,11 +383,11 @@ int main(int argc, char** argv)
                 c->address = text;
                 c->local = accounts::isLoopbackAddress(c->address);
                 c->id = nextId++;
-                auto* raw = c.get();
-                clients[fd] = std::move(c);
-                std::cout << "RATW_CONNECT " << raw->address << " (" << clients.size() << " connected)" << std::endl;
-                g.connect(raw);
+                clients[fd] = std::move(c);         // It joins the game once it is known what it is (handle()).
             }
+        for (auto& [fd, c] : clients)
+            if (c->mode == Client::Mode::Unknown && !c->closing)
+                handle(*c);                         // A quiet connection becomes the link's.
         std::vector<int> gone;
         for (std::size_t i = 1; i < fds.size(); ++i)
         {
@@ -241,24 +409,8 @@ int main(int argc, char** argv)
                         break;
                     }
                 }
-                link::Kind kind;
-                std::string payload;
-                bool bad = false;
-                while (!c.closing && link::takeFrame(c.in, kind, payload, bad))
-                {
-                    if (kind == link::Command && payload.size() <= link::MaxCommand)
-                        g.command(&c, payload);
-                    else if (kind == link::Ack && payload.size() == 9)
-                    {
-                        double revision;
-                        std::memcpy(&revision, payload.data(), 8);
-                        g.acknowledge(&c, revision, payload[8] != 0);
-                    }
-                    else
-                        c.closing = true;           // Nothing else is ever sent by a client.
-                }
-                if (bad)
-                    c.closing = true;
+                if (!c.closing)
+                    handle(c);
             }
             if (!c.out.empty() && (fds[i].revents & POLLOUT))
             {
@@ -268,6 +420,8 @@ int main(int argc, char** argv)
                 else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
                     c.closing = true;
             }
+            if (c.finishing && c.out.empty())
+                c.closing = true;
             if (c.closing)
                 gone.push_back(c.fd);
         }

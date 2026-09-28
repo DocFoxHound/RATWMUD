@@ -1,0 +1,105 @@
+// The words the game screen shows for the world's state (UI/SRatwGame.cpp): pace, posture, wind, weather, the
+// calendar and the moon, elevation and scent. Pure functions of what the server sent.
+import {bool, clamp, envNumber, num, obj, str, wholeCount, type Maybe} from './json.ts';
+
+const Compass = ['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'];
+export const compassName = (sector: number) => Compass[clamp(Math.trunc(sector), 0, 7)];
+
+export function paceLabel(pace: number): string {
+    return pace <= 0 ? 'WALK' : pace <= 5 ? 'TROT' : pace <= 8 ? 'RUN' : 'SPRINT';
+}
+
+export function postureLabel(self: Maybe): string {
+    const posture = str(self, 'posture', 'standing');
+    const remaining = num(self, 'postureRemaining');
+    if (remaining > 0) return `rising to ${str(self, 'postureTarget', 'standing')} · ${remaining.toFixed(1)}s`;
+    if (posture === 'crouching') return bool(self, 'moving') ? 'crouching · sneaking' : 'crouching · low profile';
+    return posture + (bool(self, 'turning') ? ' · turning' : '');
+}
+
+export interface ScentCue {
+    sector: number;
+    strength: number;
+    windborne: boolean;
+}
+
+export function scentLabel(cues: readonly ScentCue[]): string {
+    if (!cues.length) return 'SCENT · no unseen scent detected';
+    const directions = cues.slice(0, 2).map(c => compassName(c.sector)).join(' / ') + (cues.length > 2 ? ' …' : '');
+    return `SCENT · unseen wolf roughly ${directions}${cues.some(c => c.windborne) ? ' · upwind' : ''}`;
+}
+
+export function windLabel(outdoors: boolean, strength: number, direction: number, variable: boolean): string {
+    if (!outdoors) return 'SHELTERED · still air';
+    if (strength <= 0.01) return 'AIR FLOW · calm';
+    const to = (Math.round(direction / (Math.PI / 4)) + 8) % 8;
+    const force = strength < 0.3 ? 'light' : strength < 0.7 ? 'breeze' : 'strong';
+    return `AIR FLOW · ${compassName((to + 4) % 8)} -> ${compassName(to)} · ${force}${variable ? ' · shifting' : ''}`;
+}
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+export function environmentLabel(hour: number, phase: string, weather: string, outdoors: boolean): string {
+    const minutes = Math.floor(hour * 60) % (24 * 60);
+    return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)} ${phase.toUpperCase()} · ${outdoors ? weather.toUpperCase() : 'SHELTERED'}`;
+}
+
+const calendarOf = (snapshot: Maybe) => obj(obj(obj(snapshot, 'cell'), 'environment'), 'calendar');
+
+export function calendarLabel(snapshot: Maybe): string {
+    const calendar = calendarOf(snapshot);
+    const year = wholeCount(calendar, 'year'), day = wholeCount(calendar, 'dayOfYear', -1, 365);
+    const seasonDay = wholeCount(calendar, 'dayOfSeason', -1, 92);
+    const season = str(calendar, 'season').toLowerCase();
+    if (year < 1 || day < 1 || seasonDay < 1 || !['spring', 'summer', 'autumn', 'winter'].includes(season)) return 'THE SHARED WORLD';
+    return `YEAR ${year} · ${season.toUpperCase()} ${seasonDay} · DAY ${day} / 365`;
+}
+
+const Moons = ['new moon', 'waxing crescent', 'first quarter', 'waxing gibbous', 'full moon', 'waning gibbous',
+    'last quarter', 'waning crescent'];
+
+export function moonLabel(snapshot: Maybe): string {
+    const calendar = calendarOf(snapshot);
+    if (!calendar) return '';
+    const moon = str(calendar, 'moonName').toLowerCase();
+    if (!Moons.includes(moon)) return 'MOON · UNKNOWN';
+    return `${moon.toUpperCase()} · ${Math.round(envNumber(calendar, 'moonIllumination', 0, 1, 0) * 100)}% LIT`;
+}
+
+export interface EnvironmentView {
+    weather: string;
+    phase: string;
+    lightingTone: string;
+    lightSource: string;
+    hour: number;
+    daylight: number;
+    illumination: number;
+    artificialLight: number;
+    daylightAccess: number;
+    glowStrength: number;
+    sight: number;
+    hearing: number;
+    scent: number;
+    movement: number;
+}
+
+export function environmentEffectsLabel(e: EnvironmentView, outdoors: boolean, reducedMotion: boolean): string {
+    const exposure = outdoors ? 'EXPOSURE'
+        : e.illumination < 0.25 ? 'UNLIT SHELTER'
+            : e.glowStrength > 0.05 ? `${e.lightingTone.toUpperCase()} LIGHT` : 'SHELTERED';
+    const p = (v: number) => Math.round(v * 100);
+    return `${exposure} · SIGHT ${p(e.sight)}%  HEARING ${p(e.hearing)}%  SCENT ${p(e.scent)}%  FOOTING ${p(e.movement)}%` +
+        (reducedMotion ? ' · STATIC WEATHER' : '');
+}
+
+export function elevationLabel(height: number): string {
+    const halves = Math.round(Math.abs(height) * 2);
+    const amount = halves === 0 ? '0' : halves === 1 ? '½' : halves % 2 === 0 ? String(halves / 2) : `${Math.floor(halves / 2)}½`;
+    return `GROUND ${halves === 0 ? '' : height > 0 ? '+' : '−'}${amount}`;
+}
+
+/** A tile's height from its character in a "heights" row: '0'..'p' are -16..16 by halves. */
+export function heightFromChar(c: string): number {
+    const code = c.charCodeAt(0);
+    return code >= 48 && code <= 112 ? (code - 48 - 32) / 2 : 0;
+}

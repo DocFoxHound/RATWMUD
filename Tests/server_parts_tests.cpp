@@ -1,10 +1,12 @@
 // The standalone server's parts (Phase 6): accounts as the Unreal runtime keeps them, delta snapshots between a server
-// and a client, the NPC Mind client against a small local stand-in, and the operator bridge's request contract.
+// and a client, the NPC Mind client against a small local stand-in, the operator bridge's request contract, and the web side
+// (HTTP requests, WebSocket handshakes and frames, which files may be served).
 #include "RatwAccountsCore.h"
 #include "RatwDirector.h"
 #include "RatwMind.h"
 #include "RatwSections.h"
 #include "RatwSystemLibs.h"
+#include "RatwWeb.h"
 
 #include <arpa/inet.h>
 #include <atomic>
@@ -315,6 +317,127 @@ void directorTests()
     expect(world.society().account("player-ash")->cash == cash, "a failed checkpoint undoes the transfer");
     expect(world.entity("player-ash")->typing && world.entity("player-ash")->path.size() == 1, "and leaves movement and typing alone");
 }
+
+// A client's WebSocket frame: always masked.
+std::string clientFrame(std::uint8_t op, const std::string& data, bool fin = true)
+{
+    std::string out;
+    out += char((fin ? 0x80 : 0) | op);
+    const unsigned char mask[4] = {0x12, 0x34, 0x56, 0x78};
+    if (data.size() < 126)
+        out += char(0x80 | data.size());
+    else if (data.size() <= 0xffff)
+    {
+        out += char(0x80 | 126);
+        out += char(data.size() >> 8);
+        out += char(data.size());
+    }
+    else
+    {
+        out += char(0x80 | 127);
+        for (int shift = 56; shift >= 0; shift -= 8)
+            out += char(std::uint64_t(data.size()) >> shift);
+    }
+    out.append(reinterpret_cast<const char*>(mask), 4);
+    for (std::size_t i = 0; i < data.size(); ++i)
+        out += char(data[i] ^ mask[i % 4]);
+    return out;
+}
+
+void webTests()
+{
+    using namespace web;
+    std::string buffer = "GET /ws?x=1 HTTP/1.1\r\nHost: 127.0.0.1:7788\r\nUpgrade: websocket\r\nConnection: keep-alive, Upgrade\r\n"
+                         "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n";
+    Request r;
+    expect(takeRequest(buffer, r) == 0, "a request head without its blank line waits for more");
+    buffer += "\r\nleftover";
+    expect(takeRequest(buffer, r) == 1 && r.method == "GET" && r.path == "/ws" && r.query == "x=1" && buffer == "leftover",
+           "a request head is taken whole, and only it");
+    expect(r.header("HOST") == "127.0.0.1:7788" && upgradeRequested(r), "headers by any case; an upgrade is recognised");
+    expect(acceptKey(r.header("sec-websocket-key")) == "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=", "the accept key of RFC 6455's example");
+    expect(originAllowed(r), "a program (no Origin) may connect");
+    r.headers["origin"] = "http://127.0.0.1:7788";
+    expect(originAllowed(r), "the page this server served may connect");
+    r.headers["origin"] = "https://evil.example";
+    expect(!originAllowed(r), "another site's page may not");
+    r.headers["origin"] = "http://localhost:7788";
+    expect(!originAllowed(r), "nor a different name for the same host");
+    auto noUpgrade = r;
+    noUpgrade.headers["sec-websocket-version"] = "8";
+    expect(!upgradeRequested(noUpgrade), "only WebSocket version 13");
+    noUpgrade = r;
+    noUpgrade.headers["sec-websocket-key"] = "short";
+    expect(!upgradeRequested(noUpgrade), "a malformed key is refused");
+    for (const std::string bad : {"GET\r\n\r\n", "GET /x HTTP/2\r\n\r\n", "GET x HTTP/1.1\r\n\r\n", "GET /x HTTP/1.1\r\nno colon\r\n\r\n",
+                                  "GET /x HTTP/1.1\r\nBad Name: 1\r\n\r\n"})
+    {
+        std::string b = bad;
+        expect(takeRequest(b, r) == -1, "a malformed request is refused: " + bad.substr(0, 20));
+    }
+    std::string huge = "GET /x HTTP/1.1\r\n" + std::string(MaxRequestHead, 'a');
+    expect(takeRequest(huge, r) == -1, "an endless request head is refused");
+    expect(base64(reinterpret_cast<const std::uint8_t*>("ab"), 2) == "YWI=" && base64(reinterpret_cast<const std::uint8_t*>("abc"), 3) == "YWJj",
+           "base64 pads");
+
+    // Frames from a client.
+    Reader reader;
+    Opcode op;
+    std::string payload;
+    buffer = clientFrame(Binary, std::string("\x01{}", 3));
+    buffer.pop_back();
+    expect(takeMessage(buffer, reader, op, payload, 1000) == 0, "half a frame waits");
+    buffer = clientFrame(Binary, std::string("\x01{}", 3));
+    expect(takeMessage(buffer, reader, op, payload, 1000) == 1 && op == Binary && payload == std::string("\x01{}", 3) && buffer.empty(),
+           "a masked binary message is unmasked");
+    buffer = clientFrame(Binary, "ab", false) + clientFrame(Ping, "hi") + clientFrame(Continuation, "cd", false) +
+             clientFrame(Continuation, "ef");
+    expect(takeMessage(buffer, reader, op, payload, 1000) == 1 && op == Ping && payload == "hi", "a ping between fragments comes out first");
+    expect(takeMessage(buffer, reader, op, payload, 1000) == 1 && op == Binary && payload == "abcdef", "fragments are joined");
+    const std::string medium(300, 'm'), large(70000, 'l');
+    buffer = clientFrame(Binary, medium) + clientFrame(Binary, large);
+    expect(takeMessage(buffer, reader, op, payload, 100000) == 1 && payload == medium, "a 16-bit length");
+    expect(takeMessage(buffer, reader, op, payload, 100000) == 1 && payload == large, "a 64-bit length");
+    buffer = clientFrame(Binary, large);
+    expect(takeMessage(buffer, reader, op, payload, 1000) == -1, "a message over the limit is refused");
+    Reader fresh;
+    buffer = clientFrame(Binary, std::string(600, 'a'), false) + clientFrame(Continuation, std::string(600, 'b'));
+    expect(takeMessage(buffer, fresh, op, payload, 1000) == -1, "fragments over the limit together are refused");
+    buffer = std::string("\x82\x02hi", 4);
+    expect(takeMessage(buffer, fresh = Reader{}, op, payload, 1000) == -1, "an unmasked client frame is refused");
+    buffer = clientFrame(Continuation, "x");
+    expect(takeMessage(buffer, fresh = Reader{}, op, payload, 1000) == -1, "a continuation of nothing is refused");
+    buffer = clientFrame(Ping, "x", false);
+    expect(takeMessage(buffer, fresh = Reader{}, op, payload, 1000) == -1, "a fragmented control frame is refused");
+    buffer = clientFrame(3, "x");
+    expect(takeMessage(buffer, fresh = Reader{}, op, payload, 1000) == -1, "an unknown opcode is refused");
+    buffer = clientFrame(Binary, "x");
+    buffer[0] = char(buffer[0] | 0x40);
+    expect(takeMessage(buffer, fresh = Reader{}, op, payload, 1000) == -1, "extension bits are refused");
+
+    // Frames to a client.
+    std::string out;
+    appendFrame(out, Binary, medium.data(), 125);
+    expect(out.size() == 127 && std::uint8_t(out[0]) == 0x82 && out[1] == 125, "a short frame has a one-byte length");
+    out.clear();
+    appendFrame(out, Binary, medium.data(), 126);
+    expect(out.size() == 130 && std::uint8_t(out[1]) == 126, "a medium frame has a 16-bit length");
+    out.clear();
+    appendFrame(out, Binary, large.data(), large.size());
+    expect(out.size() == large.size() + 10 && std::uint8_t(out[1]) == 127, "a large frame has a 64-bit length");
+
+    // Files.
+    std::string file;
+    expect(filePath("/", file) && file == "index.html", "the page");
+    expect(filePath("/assets/index-3f9a_b.js", file) && file == "assets/index-3f9a_b.js", "a built asset");
+    for (const std::string bad : {"/../etc/passwd", "/assets/../../x", "/.env", "/assets/.hidden", "/a//b", "/assets/", "/a%2e%2e",
+                                  "/a b", "/a\\b", "", "x"})
+        expect(!filePath(bad, file), "not served: " + bad);
+    expect(contentType("assets/a.js").rfind("text/javascript", 0) == 0 && contentType("index.html").rfind("text/html", 0) == 0 &&
+               contentType("p/timber.png") == "image/png" && contentType("x.exe") == "application/octet-stream",
+           "content types");
+    expect(response(404, "text/plain", "no").find("Content-Length: 2\r\n") != std::string::npos, "a response says its length");
+}
 } // namespace
 
 int main()
@@ -325,6 +448,7 @@ int main()
         sectionsTests();
         mindTests();
         directorTests();
+        webTests();
     }
     catch (const std::exception& error)
     {
