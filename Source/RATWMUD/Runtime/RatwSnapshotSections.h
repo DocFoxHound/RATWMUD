@@ -17,7 +17,8 @@
 //
 // The maps are lists of cells, each with an "id" and everything the wolf remembers of it. When a map has changed,
 // usually only the cell the wolf is in has: each entry the client holds goes as {"$held": key} and is put back from
-// its copy, so a reveal costs one cell, not the whole map.
+// its copy, so a reveal costs one cell, not the whole map. An entry sent whole comes with its key among the keys
+// ("worldMap#<id>"), so the client never has to work keys out (the server's JSON may be written differently).
 namespace ratwsections
 {
 struct FSection
@@ -112,7 +113,10 @@ inline FKeys Strip(const TSharedPtr<FJsonObject>& Root, const FKeys& Known)
                 Changed = true;
             }
             else
+            {
+                KeysJson->SetStringField(Name, EntryKey);   // The client keeps it under this key.
                 Sent.Add(Entry);
+            }
         }
         if (Changed)
             Parent->SetArrayField(Section.Field, Sent);
@@ -184,8 +188,10 @@ inline bool Fill(const TSharedPtr<FJsonObject>& Root, FCache& Cache)
                         Referenced = true;
                         continue;
                     }
-                    if (Object && (*Object)->HasField(TEXT("id")))
-                        Cache.KeepEntry(KeyOf(Entry), Entry);
+                    FString Id, EntryKey;
+                    if (Object && (*Object)->TryGetStringField(TEXT("id"), Id) &&
+                        (*Keys)->TryGetStringField(FString(Section.Name) + TEXT("#") + Id, EntryKey))
+                        Cache.KeepEntry(EntryKey, Entry);     // Under the server's key for it.
                     Whole.Add(Entry);
                 }
                 if (Referenced)

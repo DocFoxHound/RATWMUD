@@ -2,7 +2,7 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Core/RatwWorld.h"
-#include "Runtime/RatwSocialCore.h"
+#include "Core/RatwSocialCore.h"
 #include "Runtime/RatwPersistence.h"
 #include "Runtime/RatwSnapshotCodec.h"
 #include "Runtime/RatwSnapshotSections.h"

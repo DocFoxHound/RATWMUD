@@ -1,0 +1,85 @@
+#pragma once
+// The NPC Mind (tools/npc_mind.py), portable: what Source/RATWMUD/Runtime/RatwDialogueProvider.h does for the Unreal
+// runtime, for a standalone server. A loopback HTTP endpoint only; requests go on worker threads and their answers are
+// handed back on the game thread by poll(). Without an endpoint, or when it fails, NPCs answer with authored lines.
+#include "RatwJsonDoc.h"
+
+#include <condition_variable>
+#include <cstdint>
+#include <deque>
+#include <functional>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
+
+namespace ratw::mind
+{
+struct Context
+{
+    std::string npcId, name, description, activity, playerName, heardText, memory, scene;
+    std::string recollection;                  // The short form the authored replies quote (MemoryStore::recall).
+    std::string environment, greeting, personality, backstory;
+    std::string subjectId, relationship, mood;
+};
+
+// Every field checked: the emotion one of a few words, the nudges -3..3, the notes short.
+struct Reply
+{
+    std::string text;
+    bool generated = false;
+    std::string emotion;
+    int affinity = 0, trust = 0;
+    std::string remember, promiseBy, promise;
+};
+
+// Text cut to at most `units` characters (UTF-16 units, as the Unreal runtime counts), never inside a character.
+std::string left(const std::string& text, std::size_t units);
+std::string trim(const std::string& text);
+std::string lower(const std::string& text);       // ASCII letters only.
+
+class Client
+{
+  public:
+    Client() = default;
+    Client(const Client&) = delete;
+    Client& operator=(const Client&) = delete;
+    ~Client();
+    // Only http://127.0.0.1:port/... or http://localhost:port/...; anything else leaves NPCs to authored lines.
+    void configure(const std::string& endpoint);
+    bool live() const { return !host_.empty(); }
+    std::string label() const;
+    static std::string authoredReply(const Context& c);
+    void converse(const Context& c, std::function<void(const Reply&)> done);
+    // A finished conversation summarised from the NPC's point of view; "" if there is no such service or it failed.
+    void summarize(const std::string& npcName, const std::vector<std::pair<std::string, std::string>>& turns,
+                   std::function<void(const std::string&)> done);
+    // Runs the completions of answers that have arrived (on the caller's thread: the game's).
+    void poll();
+    // Waits (at most `seconds`) until nothing is on its way, then runs what arrived: for tests and shutdown.
+    void settle(double seconds);
+
+  private:
+    struct Job
+    {
+        std::string path, body;
+        double timeout = 8;
+        std::function<void(int status, const std::string& body)> done;
+    };
+    std::string host_, path_;
+    int port_ = 0;
+    std::mutex lock_;
+    std::condition_variable wake_;
+    std::deque<Job> jobs_;
+    std::vector<std::function<void()>> finished_;
+    std::vector<std::thread> workers_;
+    int busy_ = 0;
+    bool stopping_ = false;
+    void post(Job job);
+    void work();
+};
+
+// One HTTP/1.1 POST to a loopback port: the status (0 if it failed) and the body. For the Mind, and tests.
+int httpPost(int port, const std::string& path, const std::string& body, double timeoutSeconds, std::string& response);
+} // namespace ratw::mind

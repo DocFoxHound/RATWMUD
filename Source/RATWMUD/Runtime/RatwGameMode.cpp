@@ -2,7 +2,9 @@
 #include "Runtime/RatwPlayerController.h"
 #include "Runtime/RatwPersistence.h"
 #include "Runtime/RatwDialogueProvider.h"
-#include "Runtime/RatwSocialCore.h"
+#include "Core/RatwSocialCore.h"
+#include "Core/RatwCheckpoint.h"
+#include "Core/RatwJsonDoc.h"
 #include "Runtime/RatwJson.h"
 #include "Runtime/RatwSocietyJson.h"
 #include "Runtime/RatwDMBridge.h"
@@ -2300,325 +2302,37 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         C->ResponseReceipts = ResponseReceipts;
         return C;
     }
-    static Object BuildState(const FSaveCapture& C)
+    // The checkpoint document is built and read by the portable core (Core/RatwCheckpoint.h), the same code a
+    // standalone server uses; the accounts and the director's receipts travel inside it as they are.
+    static ratw::json::Value Portable(const Object& O)
     {
-        auto Root = New();
-        Root->SetNumberField(TEXT("schema"), 1);
-        Root->SetObjectField(TEXT("accounts"), C.Accounts);
-        Root->SetNumberField(TEXT("sequence"), C.Sequence);
-        Root->SetNumberField(TEXT("revision"), C.Revision);
-        Root->SetObjectField(TEXT("director"), C.Director);
-        const auto& Saved = C.Saved;
-        Root->SetNumberField(TEXT("time"), Saved.time);
-        Root->SetNumberField(TEXT("clockOffsetHours"), Saved.clockOffsetHours);
-        Root->SetNumberField(TEXT("calendarDays"), Saved.calendarDays);
-        Root->SetObjectField(TEXT("society"), ratwjson::Society(Saved.society));
-        auto WeatherModes = New();
-        for (const auto& Pair : Saved.seasonalWeather) WeatherModes->SetBoolField(F(Pair.first), Pair.second);
-        Root->SetObjectField(TEXT("seasonalWeather"), WeatherModes);
-        Array Players;
-        for (const auto& Pair : C.Characters)
-            Players.Add(V(PersistEntity(Pair.second, C.Time)));
-        Root->SetArrayField(TEXT("players"), Players);
-        auto Doors = New();
-        for (const auto& Pair : Saved.doorStates)
-            Doors->SetBoolField(F(Pair.first), Pair.second);
-        Root->SetObjectField(TEXT("doors"), Doors);
-        Array Seen;
-        for (const auto& Observer : Saved.memories)
-            for (const auto& Pair : Observer.second)
-            {
-                const auto& M = Pair.second;
-                auto J = New();
-                Text(J, TEXT("observer"), Observer.first);
-                Text(J, TEXT("id"), M.cellId);
-                Text(J, TEXT("name"), M.name);
-                J->SetNumberField(TEXT("knowledge"), static_cast<int>(M.knowledge));
-                J->SetNumberField(TEXT("width"), M.width);
-                J->SetNumberField(TEXT("height"), M.height);
-                J->SetNumberField(TEXT("x"), M.worldX);
-                J->SetNumberField(TEXT("y"), M.worldY);
-                J->SetNumberField(TEXT("z"), M.worldZ);
-                Text(J, TEXT("glyphs"), std::string(M.glyphs.begin(), M.glyphs.end()));
-                FString Bits;
-                for (bool B : M.observed)
-                    Bits += B ? TEXT('1') : TEXT('0');
-                J->SetStringField(TEXT("observed"), Bits);
-                Seen.Add(V(J));
-            }
-        Root->SetArrayField(TEXT("mapMemories"), Seen);
-        Array Bonds;                                  // How everyone regards everyone (RatwBonds.h).
-        for (const auto& B : Saved.bonds)
-        {
-            auto J = New();
-            Text(J, TEXT("holder"), B.holder);
-            Text(J, TEXT("other"), B.other);
-            J->SetNumberField(TEXT("affinity"), B.bond.affinity);
-            J->SetNumberField(TEXT("trust"), B.bond.trust);
-            J->SetNumberField(TEXT("familiarity"), B.bond.familiarity);
-            J->SetNumberField(TEXT("fear"), B.bond.fear);
-            J->SetNumberField(TEXT("respect"), B.bond.respect);
-            J->SetNumberField(TEXT("owed"), static_cast<double>(B.bond.owed));
-            J->SetNumberField(TEXT("lastContact"), B.bond.lastContact);
-            Bonds.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("bonds"), Bonds);
-        Array Promises;                               // Promises made in conversation and what became of them.
-        for (const auto& P : Saved.promises)
-        {
-            auto J = New();
-            Text(J, TEXT("by"), P.by); Text(J, TEXT("to"), P.to); Text(J, TEXT("what"), P.what);
-            J->SetNumberField(TEXT("made"), P.made); J->SetNumberField(TEXT("due"), P.due); Text(J, TEXT("status"), P.status);
-            Promises.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("promises"), Promises);
-        // The roads (Phase 5): caravans, bandit camps, contracts, and what everyone has heard.
-        auto Roads = New();
-        Roads->SetNumberField(TEXT("day"), static_cast<double>(Saved.roads.day));
-        Roads->SetNumberField(TEXT("nextId"), static_cast<double>(Saved.roads.nextId));
-        Roads->SetBoolField(TEXT("stocked"), Saved.roads.stocked);
-        Array Caravans, Camps, Contracts;
-        const auto Strings = [](const std::vector<std::string>& List) {
-            Array Out;
-            for (const auto& Item : List) Out.Add(V(F(Item)));
-            return Out;
-        };
-        for (const auto& Trip : Saved.roads.caravans)
-        {
-            auto J = New();
-            Text(J, TEXT("id"), Trip.id); Text(J, TEXT("from"), Trip.from); Text(J, TEXT("to"), Trip.to); Text(J, TEXT("account"), Trip.account);
-            J->SetArrayField(TEXT("route"), Strings(Trip.route)); J->SetNumberField(TEXT("leg"), double(Trip.leg));
-            J->SetNumberField(TEXT("nextAt"), Trip.nextAt); J->SetNumberField(TEXT("departed"), Trip.departed);
-            J->SetNumberField(TEXT("guards"), Trip.guards); Text(J, TEXT("status"), Trip.status);
-            J->SetArrayField(TEXT("escorts"), Strings(Trip.escorts)); J->SetArrayField(TEXT("letters"), Strings(Trip.letters));
-            Text(J, TEXT("cell"), Trip.cell); J->SetNumberField(TEXT("x"), Trip.x); J->SetNumberField(TEXT("y"), Trip.y);
-            J->SetNumberField(TEXT("waitUntil"), Trip.waitUntil);
-            auto With = New();
-            for (const auto& [Who, Cells] : Trip.with) With->SetNumberField(F(Who), Cells);
-            J->SetObjectField(TEXT("with"), With);
-            Caravans.Add(V(J));
-        }
-        for (const auto& Camp : Saved.roads.camps)
-        {
-            auto J = New();
-            Text(J, TEXT("id"), Camp.id); Text(J, TEXT("cell"), Camp.cell); J->SetNumberField(TEXT("strength"), Camp.strength);
-            J->SetNumberField(TEXT("hunger"), Camp.hunger); J->SetNumberField(TEXT("lastRaid"), Camp.lastRaid); J->SetBoolField(TEXT("active"), Camp.active);
-            J->SetNumberField(TEXT("x"), Camp.x); J->SetNumberField(TEXT("y"), Camp.y);
-            Camps.Add(V(J));
-        }
-        for (const auto& Work : Saved.roads.contracts)
-        {
-            auto J = New();
-            Text(J, TEXT("id"), Work.id); Text(J, TEXT("kind"), Work.kind); Text(J, TEXT("poster"), Work.poster); Text(J, TEXT("town"), Work.town);
-            Text(J, TEXT("target"), Work.target); Text(J, TEXT("taker"), Work.taker); Text(J, TEXT("status"), Work.status);
-            J->SetNumberField(TEXT("reward"), double(Work.reward)); J->SetNumberField(TEXT("created"), Work.created);
-            J->SetNumberField(TEXT("due"), Work.due); Text(J, TEXT("detail"), Work.detail);
-            Contracts.Add(V(J));
-        }
-        Roads->SetArrayField(TEXT("caravans"), Caravans); Roads->SetArrayField(TEXT("camps"), Camps);
-        Roads->SetArrayField(TEXT("contracts"), Contracts);
-        Root->SetObjectField(TEXT("roads"), Roads);
-        Array Beliefs;                                // One list, stored a row each (game.beliefs).
-        for (const auto& Heard : Saved.roads.beliefs)
-        {
-            auto J = New();
-            Text(J, TEXT("holder"), Heard.holder); Text(J, TEXT("subject"), Heard.subject); Text(J, TEXT("claim"), Heard.claim);
-            Text(J, TEXT("source"), Heard.source); J->SetNumberField(TEXT("confidence"), Heard.confidence); J->SetNumberField(TEXT("day"), Heard.day);
-            Beliefs.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("beliefs"), Beliefs);
-        Array Npcs;
-        for (const auto& Npc : C.Npcs)
-            Npcs.Add(V(PersistEntity(Npc, C.Time)));
-        Root->SetArrayField(TEXT("npcs"), Npcs);
-        auto Companions = New();
-        for (const auto& Pair : C.CompanionOwner)
-            if (!Pair.second.empty())
-                Text(Companions, *F(Pair.first), Pair.second);
-        Root->SetObjectField(TEXT("companions"), Companions);
-        Root->SetNumberField(TEXT("nextConversation"), C.Memories.nextConversation);
-        Array Active;
-        for (const auto& Pair : C.Memories.active)
-        {
-            const auto& M = Pair.second;
-            auto J = New();
-            Text(J, TEXT("key"), Pair.first);
-            Text(J, TEXT("id"), M.id);
-            Text(J, TEXT("npc"), M.npc);
-            Text(J, TEXT("subject"), M.subject);
-            Text(J, TEXT("older"), M.olderContext);
-            J->SetNumberField(TEXT("started"), M.started);
-            J->SetNumberField(TEXT("lastActivity"), M.lastActivity);
-            Array Turns;
-            for (const auto& T : M.turns)
-            {
-                auto K = New();
-                K->SetNumberField(TEXT("event"), T.event);
-                K->SetNumberField(TEXT("at"), T.at);
-                Text(K, TEXT("who"), T.who);
-                Text(K, TEXT("text"), T.text);
-                Turns.Add(V(K));
-            }
-            J->SetArrayField(TEXT("turns"), Turns);
-            Active.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("activeMemory"), Active);
-        Array Summaries;
-        for (const auto& M : C.Memories.summaries)
-        {
-            auto J = New();
-            Text(J, TEXT("id"), M.id);
-            Text(J, TEXT("npc"), M.npc);
-            Text(J, TEXT("subject"), M.subject);
-            Text(J, TEXT("text"), M.text);
-            J->SetNumberField(TEXT("started"), M.started);
-            J->SetNumberField(TEXT("consolidated"), M.consolidated);
-            Array Sources;
-            for (auto Id : M.sourceEvents)
-                Sources.Add(MakeShared<FJsonValueNumber>(static_cast<double>(Id)));
-            J->SetArrayField(TEXT("sourceEvents"), Sources);
-            Summaries.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("summaries"), Summaries);
-        Array Ledger;
-        for (const auto& L : C.Social.entries)
-        {
-            auto J = New();
-            J->SetNumberField(TEXT("event"), L.event);
-            J->SetNumberField(TEXT("at"), L.at);
-            Text(J, TEXT("actor"), L.actor);
-            Text(J, TEXT("partner"), L.partner);
-            Text(J, TEXT("reason"), L.reason);
-            Text(J, TEXT("session"), L.session);
-            J->SetNumberField(TEXT("amount"), L.amount);
-            Ledger.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("ledger"), Ledger);
-        Array Recent;
-        for (const auto& Pair : C.Social.recent)
-        {
-            const auto& P = Pair.second;
-            auto J = New();
-            J->SetNumberField(TEXT("event"), P.event);
-            J->SetNumberField(TEXT("at"), P.at);
-            Text(J, TEXT("actor"), P.actor);
-            Text(J, TEXT("cell"), P.cell);
-            J->SetNumberField(TEXT("words"), P.words);
-            Recent.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("socialRecent"), Recent);
-        auto Weather = New();
-        for (const auto& Pair : Saved.weather)
-            Weather->SetNumberField(F(Pair.first), static_cast<int>(Pair.second));
-        Root->SetObjectField(TEXT("weather"), Weather);
-        auto Winds = New();
-        for (const auto& Pair : Saved.winds)
-            Winds->SetObjectField(F(Pair.first), ratwjson::Wind(Pair.second));
-        Root->SetObjectField(TEXT("winds"), Winds);
-        auto Lighting = New();
-        for (const auto& Pair : Saved.lighting)
-            Lighting->SetObjectField(F(Pair.first), ratwjson::Lighting(Pair.second));
-        Root->SetObjectField(TEXT("lighting"), Lighting);
-        auto Receipts = New();
-        for (const auto& Pair : C.CommandReceipts)
-        {
-            Array List;
-            for (const auto& Id : Pair.second)
-                List.Add(V(F(Id)));
-            Receipts->SetArrayField(F(Pair.first), List);
-        }
-        Root->SetObjectField(TEXT("commandReceipts"), Receipts);
-        Array Sessions;
-        for (const auto& Pair : C.Social.sessions)
-        {
-            const auto& Session = Pair.second;
-            auto J = New();
-            Text(J, TEXT("id"), Session.id);
-            Text(J, TEXT("cell"), Session.cell);
-            J->SetNumberField(TEXT("started"), Session.started);
-            J->SetNumberField(TEXT("last"), Session.last);
-            J->SetNumberField(TEXT("ended"), Session.ended);
-            Array Members;
-            for (const auto& Member : Session.members)
-            {
-                auto K = New();
-                Text(K, TEXT("actor"), Member.first);
-                K->SetNumberField(TEXT("turns"), Member.second.turns);
-                K->SetNumberField(TEXT("words"), Member.second.words);
-                K->SetNumberField(TEXT("replies"), Member.second.replies);
-                K->SetNumberField(TEXT("last"), Member.second.last);
-                K->SetNumberField(TEXT("joined"), Member.second.joined);
-                Members.Add(V(K));
-            }
-            J->SetArrayField(TEXT("members"), Members);
-            Sessions.Add(V(J));
-        }
-        Root->SetArrayField(TEXT("socialSessions"), Sessions);
-        auto OlderEvents = New();
-        for (const auto& Pair : C.Memories.active)
-        {
-            Array Events;
-            for (auto Event : Pair.second.olderEvents)
-                Events.Add(MakeShared<FJsonValueNumber>(static_cast<double>(Event)));
-            OlderEvents->SetArrayField(F(Pair.first), Events);
-        }
-        Root->SetObjectField(TEXT("olderMemoryEvents"), OlderEvents);
-        auto ResponseCache = New();
-        for (const auto& Actor : C.ResponseReceipts)
-        {
-            auto Values = New();
-            for (const auto& Entry : Actor.second)
-                Values->SetStringField(F(Entry.first), Entry.second);
-            ResponseCache->SetObjectField(F(Actor.first), Values);
-        }
-        Root->SetObjectField(TEXT("responseReceipts"), ResponseCache);
-        auto Audiences = New();
-        for (const auto& Scene : C.Social.sessions)
-            for (const auto& Member : Scene.second.members)
-            {
-                Array List;
-                for (const auto& Id : Member.second.lastAudience)
-                    List.Add(V(F(Id)));
-                Audiences->SetArrayField(F(Scene.first + "|" + Member.first), List);
-            }
-        Root->SetObjectField(TEXT("socialAudiences"), Audiences);
-        return Root;
+        ratw::json::Value V;
+        std::string Error;
+        if (!O.IsValid() || !ratw::json::parse(S(Encode(O)), V, Error))
+            return ratw::json::Value::object();
+        return V;
     }
-    /** Each NPC's running state, for live.npc_state (database worlds only), from a capture. */
-    static FString BuildNpcStates(const FSaveCapture& C)
+    static Object Unreal(const ratw::json::Value& V)
     {
-        Array Out;
-        for (const auto& E : C.Npcs)
-        {
-            auto J = New();
-            Text(J, TEXT("id"), E.id);
-            Text(J, TEXT("cell"), E.cellId);
-            J->SetNumberField(TEXT("x"), E.position.x);
-            J->SetNumberField(TEXT("y"), E.position.y);
-            J->SetNumberField(TEXT("age"), E.age);
-            J->SetBoolField(TEXT("dead"), E.dead);
-            if (const auto Life = C.Saved.society.residents.find(E.id); Life != C.Saved.society.residents.end())
-            {
-                Text(J, TEXT("task"), Life->second.task);
-                J->SetNumberField(TEXT("hunger"), Life->second.hunger);
-                J->SetNumberField(TEXT("fatigue"), Life->second.fatigue);
-            }
-            if (const auto Account = C.Saved.society.accounts.find(E.id); Account != C.Saved.society.accounts.end())
-            {
-                J->SetNumberField(TEXT("cash"), static_cast<double>(Account->second.cash));
-                auto Stock = New();
-                for (const auto& Item : Account->second.stock)
-                    Stock->SetNumberField(F(Item.first), Item.second);
-                J->SetObjectField(TEXT("stock"), Stock);
-            }
-            Out.Add(V(J));
-        }
-        FString Json;
-        const auto Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json);
-        FJsonSerializer::Serialize(Out, Writer);
-        return Json;
+        return Decode(F(ratw::json::dump(V.isObject() ? V : ratw::json::Value::object())));
     }
-
+    static ratw::json::Value BuildState(const FSaveCapture& C)
+    {
+        ratw::checkpoint::ServerState State;
+        State.accounts = Portable(C.Accounts);
+        State.director = Portable(C.Director);
+        State.sequence = C.Sequence;
+        State.revision = C.Revision;
+        State.characters = C.Characters;
+        State.companions = C.CompanionOwner;
+        State.memories = C.Memories;
+        State.social = C.Social;
+        State.commandReceipts = C.CommandReceipts;
+        for (const auto& [Actor, Entries] : C.ResponseReceipts)
+            for (const auto& [Key, Value] : Entries)
+                State.responseReceipts[Actor][Key] = S(Value);
+        return ratw::checkpoint::encode(C.Saved, State, C.Npcs, C.Time);
+    }
     /**
      * NPC states written from outside since this server last saved (DEV copying the live NPCs from PROD) are applied
      * over the restored checkpoint. Positions go only onto open ground in a cell that exists; purse changes are
@@ -2703,10 +2417,10 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         const TSharedRef<FSaveCapture> Capture = CaptureState();
         const bool Npcs = Persistence.IsDatabase();
         if (StorageReady && !Persistence.SaveInBackground(
-                                [Capture, Npcs](TSharedPtr<FJsonObject>& Document, FString& NpcStates) {
+                                [Capture, Npcs](ratw::json::Value& Document, std::string& NpcStates) {
                                     Document = BuildState(*Capture);
                                     if (Npcs)
-                                        NpcStates = BuildNpcStates(*Capture);
+                                        NpcStates = ratw::checkpoint::npcStates(Capture->Saved, Capture->Npcs);
                                 },
                                 Revision))
         {
@@ -2723,10 +2437,10 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
         const TSharedRef<FSaveCapture> Capture = CaptureState();
         const bool Npcs = Persistence.IsDatabase();
         if (StorageReady && !Persistence.Save(
-                                [Capture, Npcs](TSharedPtr<FJsonObject>& Document, FString& NpcStates) {
+                                [Capture, Npcs](ratw::json::Value& Document, std::string& NpcStates) {
                                     Document = BuildState(*Capture);
                                     if (Npcs)
-                                        NpcStates = BuildNpcStates(*Capture);
+                                        NpcStates = ratw::checkpoint::npcStates(Capture->Saved, Capture->Npcs);
                                 },
                                 Revision))
         {
@@ -2738,41 +2452,29 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
     {
         if (Payload.IsEmpty())
             return;
-        auto Root = Decode(Payload);
-        if (!Root.IsValid() || Number(Root, TEXT("schema")) != 1)
+        ratw::json::Value Document;
+        ratw::PersistedWorld Saved;
+        ratw::checkpoint::ServerState State;
+        std::string Problem;
+        if (!ratw::json::parse(S(Payload), Document, Problem) || !ratw::checkpoint::decode(Document, Saved, State, Problem))
         {
             StorageReady = false;
-            UE_LOG(LogTemp, Error, TEXT("RATW invalid save schema; checkpoint preserved, autosave disabled"));
+            UE_LOG(LogTemp, Error, TEXT("RATW restore rejected (%s); checkpoint preserved, autosave disabled"), *F(Problem));
             return;
         }
         FRatwAccounts RestoredAccounts;
-        if (Root->HasField(TEXT("accounts")) && !RestoredAccounts.Restore(Child(Root, TEXT("accounts"))))
+        if (Document.has("accounts") && !RestoredAccounts.Restore(Unreal(State.accounts)))
         {
             StorageReady = false;
             UE_LOG(LogTemp, Error, TEXT("RATW invalid account checkpoint; preserved and autosave disabled.")); return;
         }
-        Sequence = static_cast<uint64>(Number(Root, TEXT("sequence"), 1));
-        Revision = static_cast<uint64>(Number(Root, TEXT("revision")));
-        if (Root->HasField(TEXT("director")) && !DM.Restore(Child(Root, TEXT("director"))))
+        Sequence = State.sequence;
+        Revision = State.revision;
+        if (Document.has("director") && !DM.Restore(Unreal(State.director)))
         {
             StorageReady = false;
             UE_LOG(LogTemp, Error, TEXT("RATW invalid operator receipt checkpoint; autosave disabled.")); return;
         }
-        ratw::PersistedWorld Saved;
-        Saved.time = Number(Root, TEXT("time"));
-        Saved.clockOffsetHours = ratwjson::ReadClockOffset(Root);
-        Saved.calendarDays = Root->HasField(TEXT("calendarDays")) ? StrictNumber(Root, TEXT("calendarDays"), -2) : -1;
-        Saved.hasSociety = Root->HasField(TEXT("society"));
-        if (Saved.hasSociety) Saved.society = ratwjson::ReadSociety(Child(Root, TEXT("society")));
-        auto Modes = Child(Root, TEXT("seasonalWeather"));
-        if (Root->HasField(TEXT("seasonalWeather")) && !Modes.IsValid()) Saved.calendarDays = -2;
-        if (Modes.IsValid()) for (const auto& Pair : Modes->Values)
-        {
-            if (Pair.Value->Type != EJson::Boolean) Saved.calendarDays = -2;
-            else Saved.seasonalWeather[S(Pair.Key)] = Pair.Value->AsBool();
-        }
-        for (const auto& Value : Items(Root, TEXT("players")))
-            Saved.players.push_back(ReadEntity(Value->AsObject()));
         TSet<FString> CharacterIds;
         for (const auto& Player : Saved.players) CharacterIds.Add(F(Player.id));
         if (!RestoredAccounts.ReferencesOnly(CharacterIds))
@@ -2780,135 +2482,6 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
             StorageReady = false;
             UE_LOG(LogTemp, Error, TEXT("RATW character/account ownership is incomplete; autosave disabled.")); return;
         }
-        auto Doors = Child(Root, TEXT("doors"));
-        if (Doors.IsValid())
-            for (const auto& Pair : Doors->Values)
-                Saved.doorStates[S(Pair.Key)] = Pair.Value->AsBool();
-        for (const auto& Value : Items(Root, TEXT("mapMemories")))
-        {
-            auto J = Value->AsObject();
-            ratw::CellMemory M;
-            M.cellId = S(String(J, TEXT("id")));
-            M.name = S(String(J, TEXT("name")));
-            M.knowledge = static_cast<ratw::Knowledge>(static_cast<int>(Number(J, TEXT("knowledge"))));
-            M.width = static_cast<int>(Number(J, TEXT("width")));
-            M.height = static_cast<int>(Number(J, TEXT("height")));
-            M.worldX = Number(J, TEXT("x"));
-            M.worldY = Number(J, TEXT("y"));
-            M.worldZ = Number(J, TEXT("z"));
-            const auto Glyphs = S(String(J, TEXT("glyphs")));
-            M.glyphs.assign(Glyphs.begin(), Glyphs.end());
-            const FString Bits = String(J, TEXT("observed"));
-            for (TCHAR B : Bits)
-                M.observed.push_back(B == TEXT('1'));
-            Saved.memories[S(String(J, TEXT("observer")))][M.cellId] = M;
-        }
-        for (const auto& Value : Items(Root, TEXT("npcs")))
-            Saved.npcs.push_back(ReadEntity(Value->AsObject()));
-        if (auto Roads = Child(Root, TEXT("roads")); Roads.IsValid())
-        {
-            const auto Strings = [](const Object& J, const TCHAR* Key) {
-                std::vector<std::string> Out;
-                for (const auto& Item : Items(J, Key))
-                    if (Item.IsValid() && Item->Type == EJson::String) Out.push_back(S(Item->AsString()));
-                return Out;
-            };
-            Saved.roads.day = static_cast<std::int64_t>(Number(Roads, TEXT("day"), -1));
-            Saved.roads.nextId = std::max<std::int64_t>(1, static_cast<std::int64_t>(Number(Roads, TEXT("nextId"), 1)));
-            Saved.roads.stocked = Bool(Roads, TEXT("stocked"));
-            for (const auto& Value : Items(Roads, TEXT("caravans")))
-            {
-                auto J = Value->AsObject();
-                ratw::Caravan C;
-                C.id = S(String(J, TEXT("id"))); C.from = S(String(J, TEXT("from"))); C.to = S(String(J, TEXT("to")));
-                C.account = S(String(J, TEXT("account"))); C.route = Strings(J, TEXT("route"));
-                C.leg = static_cast<std::size_t>(FMath::Max(0.0, Number(J, TEXT("leg")))); C.nextAt = Number(J, TEXT("nextAt"));
-                C.departed = Number(J, TEXT("departed")); C.guards = static_cast<int>(Number(J, TEXT("guards"), 1));
-                C.status = S(String(J, TEXT("status"))); C.escorts = Strings(J, TEXT("escorts")); C.letters = Strings(J, TEXT("letters"));
-                C.cell = S(String(J, TEXT("cell"))); C.x = Number(J, TEXT("x")); C.y = Number(J, TEXT("y"));
-                C.waitUntil = Number(J, TEXT("waitUntil"));
-                if (const auto With = Child(J, TEXT("with")); With.IsValid())
-                    for (const auto& [Who, Cells] : With->Values)
-                        if (Cells.IsValid() && Cells->Type == EJson::Number) C.with[S(Who)] = static_cast<int>(Cells->AsNumber());
-                if (C.leg < C.route.size()) Saved.roads.caravans.push_back(std::move(C));
-            }
-            for (const auto& Value : Items(Roads, TEXT("camps")))
-            {
-                auto J = Value->AsObject();
-                Saved.roads.camps.push_back({S(String(J, TEXT("id"))), S(String(J, TEXT("cell"))), Number(J, TEXT("strength")),
-                                             Number(J, TEXT("hunger")), Number(J, TEXT("lastRaid")), Bool(J, TEXT("active")),
-                                             Number(J, TEXT("x"), -1), Number(J, TEXT("y"), -1)});
-            }
-            for (const auto& Value : Items(Roads, TEXT("contracts")))
-            {
-                auto J = Value->AsObject();
-                ratw::Contract K;
-                K.id = S(String(J, TEXT("id"))); K.kind = S(String(J, TEXT("kind"))); K.poster = S(String(J, TEXT("poster")));
-                K.town = S(String(J, TEXT("town"))); K.target = S(String(J, TEXT("target"))); K.taker = S(String(J, TEXT("taker")));
-                K.status = S(String(J, TEXT("status"))); K.reward = static_cast<std::int64_t>(Number(J, TEXT("reward")));
-                K.created = Number(J, TEXT("created")); K.due = Number(J, TEXT("due")); K.detail = S(String(J, TEXT("detail")));
-                Saved.roads.contracts.push_back(std::move(K));
-            }
-        }
-        for (const auto& Value : Items(Root, TEXT("beliefs")))
-        {
-            auto J = Value->AsObject();
-            Saved.roads.beliefs.push_back({S(String(J, TEXT("holder"))), S(String(J, TEXT("subject"))), S(String(J, TEXT("claim"))),
-                                           S(String(J, TEXT("source"))), Number(J, TEXT("confidence")), Number(J, TEXT("day"))});
-        }
-        for (const auto& Value : Items(Root, TEXT("promises")))
-        {
-            auto J = Value->AsObject();
-            Saved.promises.push_back({S(String(J, TEXT("by"))), S(String(J, TEXT("to"))), S(String(J, TEXT("what"))),
-                                      Number(J, TEXT("made")), Number(J, TEXT("due")), S(String(J, TEXT("status")))});
-        }
-        for (const auto& Value : Items(Root, TEXT("bonds")))   // Absent from saves made before bonds: none then.
-        {
-            auto J = Value->AsObject();
-            ratw::SavedBond B;
-            B.holder = S(String(J, TEXT("holder")));
-            B.other = S(String(J, TEXT("other")));
-            B.bond.affinity = Number(J, TEXT("affinity"));
-            B.bond.trust = Number(J, TEXT("trust"));
-            B.bond.familiarity = Number(J, TEXT("familiarity"));
-            B.bond.fear = Number(J, TEXT("fear"));
-            B.bond.respect = Number(J, TEXT("respect"));
-            B.bond.owed = static_cast<std::int64_t>(Number(J, TEXT("owed")));
-            B.bond.lastContact = Number(J, TEXT("lastContact"));
-            Saved.bonds.push_back(std::move(B));
-        }
-        auto Weather = Child(Root, TEXT("weather"));
-        if (Root->HasField(TEXT("weather")) && !Weather.IsValid())
-        {
-            StorageReady = false;
-            UE_LOG(LogTemp, Error, TEXT("RATW restore rejected; invalid weather record, checkpoint preserved."));
-            return;
-        }
-        if (Weather.IsValid())
-            for (const auto& Pair : Weather->Values)
-                Saved.weather[S(Pair.Key)] = ratwjson::ReadWeather(Pair.Value);
-        auto Winds = Child(Root, TEXT("winds"));
-        if (Root->HasField(TEXT("winds")) && !Winds.IsValid())
-        {
-            StorageReady = false;
-            UE_LOG(LogTemp, Error, TEXT("RATW restore rejected; invalid wind record, checkpoint preserved."));
-            return;
-        }
-        if (Winds.IsValid())
-            for (const auto& Pair : Winds->Values)
-                Saved.winds[S(Pair.Key)] =
-                    ratwjson::ReadWind(Pair.Value->Type == EJson::Object ? Pair.Value->AsObject() : Object());
-        auto Lighting = Child(Root, TEXT("lighting"));
-        if (Root->HasField(TEXT("lighting")) && !Lighting.IsValid())
-        {
-            StorageReady = false;
-            UE_LOG(LogTemp, Error, TEXT("RATW restore rejected; invalid lighting record, checkpoint preserved."));
-            return;
-        }
-        if (Lighting.IsValid())
-            for (const auto& Pair : Lighting->Values)
-                Saved.lighting[S(Pair.Key)] = ratwjson::ReadLighting(
-                    Pair.Value.IsValid() && Pair.Value->Type == EJson::Object ? Pair.Value->AsObject() : Object());
         const auto Restored = World.restore(Saved);
         if (!Restored.ok)
         {
@@ -2925,118 +2498,23 @@ class FRatwRuntime : public TSharedFromThis<FRatwRuntime>
                 Characters[Player.id] = *RestoredPlayer;
             World.removePlayer(Player.id);
         }
-        auto Companions = Child(Root, TEXT("companions"));
-        if (Companions.IsValid())
-            for (const auto& Pair : Companions->Values)
-            {
-                CompanionOwner[S(Pair.Key)] = S(Pair.Value->AsString());
-                if (auto* Npc = World.entity(S(Pair.Key)))
-                    Npc->leaderId = CompanionOwner[S(Pair.Key)];
-            }
-        Memories.nextConversation = static_cast<uint64>(Number(Root, TEXT("nextConversation"), 1));
-        for (const auto& Value : Items(Root, TEXT("activeMemory")))
+        for (const auto& [Npc, Owner] : State.companions)
         {
-            auto J = Value->AsObject();
-            ratw::ActiveMemory M;
-            M.id = S(String(J, TEXT("id")));
-            M.npc = S(String(J, TEXT("npc")));
-            M.subject = S(String(J, TEXT("subject")));
-            M.olderContext = S(String(J, TEXT("older")));
-            M.started = Number(J, TEXT("started"));
-            M.lastActivity = Number(J, TEXT("lastActivity"));
-            for (const auto& Turn : Items(J, TEXT("turns")))
-            {
-                auto K = Turn->AsObject();
-                M.turns.push_back({static_cast<uint64>(Number(K, TEXT("event"))), Number(K, TEXT("at")),
-                                   S(String(K, TEXT("who"))), S(String(K, TEXT("text")))});
-            }
-            Memories.active[S(String(J, TEXT("key")))] = M;
+            CompanionOwner[Npc] = Owner;
+            if (auto* E = World.entity(Npc))
+                E->leaderId = Owner;
         }
-        for (const auto& Value : Items(Root, TEXT("summaries")))
-        {
-            auto J = Value->AsObject();
-            ratw::MemorySummary M;
-            M.id = S(String(J, TEXT("id")));
-            M.npc = S(String(J, TEXT("npc")));
-            M.subject = S(String(J, TEXT("subject")));
-            M.text = S(String(J, TEXT("text")));
-            M.started = Number(J, TEXT("started"));
-            M.consolidated = Number(J, TEXT("consolidated"));
-            for (const auto& Source : Items(J, TEXT("sourceEvents")))
-                M.sourceEvents.push_back(static_cast<uint64>(Source->AsNumber()));
-            Memories.summaries.push_back(M);
-        }
-        for (const auto& Value : Items(Root, TEXT("ledger")))
-        {
-            auto J = Value->AsObject();
-            ratw::LedgerEntry L;
-            L.event = static_cast<uint64>(Number(J, TEXT("event")));
-            L.at = Number(J, TEXT("at"));
-            L.actor = S(String(J, TEXT("actor")));
-            L.partner = S(String(J, TEXT("partner")));
-            L.reason = S(String(J, TEXT("reason")));
-            L.session = S(String(J, TEXT("session")));
-            L.amount = static_cast<int>(Number(J, TEXT("amount")));
-            Social.entries.push_back(L);
-            Social.points[L.actor] += L.amount;
-        }
-        for (const auto& Value : Items(Root, TEXT("socialRecent")))
-        {
-            auto J = Value->AsObject();
-            ratw::SocialPost P;
-            P.event = static_cast<uint64>(Number(J, TEXT("event")));
-            P.at = Number(J, TEXT("at"));
-            P.actor = S(String(J, TEXT("actor")));
-            P.cell = S(String(J, TEXT("cell")));
-            P.words = static_cast<int>(Number(J, TEXT("words")));
-            Social.recent[P.actor] = P;
-        }
-        auto Receipts = Child(Root, TEXT("commandReceipts"));
-        if (Receipts.IsValid())
-            for (const auto& Pair : Receipts->Values)
-                for (const auto& Receipt : Pair.Value->AsArray())
-                    CommandReceipts[S(Pair.Key)].push_back(S(Receipt->AsString()));
-        for (const auto& Value : Items(Root, TEXT("socialSessions")))
-        {
-            auto J = Value->AsObject();
-            ratw::SocialSession Scene;
-            Scene.id = S(String(J, TEXT("id")));
-            Scene.cell = S(String(J, TEXT("cell")));
-            Scene.started = Number(J, TEXT("started"));
-            Scene.last = Number(J, TEXT("last"));
-            Scene.ended = Number(J, TEXT("ended"));
-            for (const auto& Value2 : Items(J, TEXT("members")))
-            {
-                auto K = Value2->AsObject();
-                ratw::Contribution C;
-                C.turns = static_cast<int>(Number(K, TEXT("turns")));
-                C.words = static_cast<int>(Number(K, TEXT("words")));
-                C.replies = static_cast<int>(Number(K, TEXT("replies")));
-                C.last = Number(K, TEXT("last"));
-                C.joined = Number(K, TEXT("joined"));
-                Scene.members[S(String(K, TEXT("actor")))] = C;
-            }
-            Social.sessions[Scene.id] = Scene;
-        }
-        auto OlderEvents = Child(Root, TEXT("olderMemoryEvents"));
-        if (OlderEvents.IsValid())
-            for (const auto& Pair : OlderEvents->Values)
-                for (const auto& Event : Pair.Value->AsArray())
-                    Memories.active[S(Pair.Key)].olderEvents.push_back(static_cast<uint64>(Event->AsNumber()));
-        auto ResponseCache = Child(Root, TEXT("responseReceipts"));
-        if (ResponseCache.IsValid())
-            for (const auto& Actor : ResponseCache->Values)
-            {
-                auto Values = Actor.Value->AsObject();
-                if (Values.IsValid())
-                    for (const auto& Entry : Values->Values)
-                        ResponseReceipts[S(Actor.Key)][S(Entry.Key)] = Entry.Value->AsString();
-            }
-        auto Audiences = Child(Root, TEXT("socialAudiences"));
-        for (auto& Scene : Social.sessions)
-            for (auto& Member : Scene.second.members)
-                for (const auto& Id : Items(Audiences, *F(Scene.first + "|" + Member.first)))
-                    Member.second.lastAudience.push_back(S(Id->AsString()));
+        Memories = State.memories;
+        Social.entries = State.social.entries;
+        Social.points = State.social.points;
+        Social.recent = State.social.recent;
+        Social.sessions = State.social.sessions;
+        for (const auto& [Who, Ids] : State.commandReceipts)
+            for (const auto& Id : Ids)
+                CommandReceipts[Who].push_back(Id);
+        for (const auto& [Actor, Entries] : State.responseReceipts)
+            for (const auto& [Key, Value] : Entries)
+                ResponseReceipts[Actor][Key] = F(Value);
         UE_LOG(LogTemp, Display, TEXT("RATW_RESTORE characters=%d summaries=%d ledger=%d"),
                static_cast<int>(Characters.size()), static_cast<int>(Memories.summaries.size()),
                static_cast<int>(Social.entries.size()));
