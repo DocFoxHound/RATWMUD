@@ -77,7 +77,7 @@ class CompileTests(unittest.TestCase):
     def test_the_round_folded_a_season_at_a_time(self):
         self.assertEqual([('Spring, Year 1', 'Earned 8 pennies (2 pennies in wages); sold 1 meal; cooked 1 meal; '
                                              'talked 2 times with Ada.'),
-                          ('Summer, Year 1', 'Spent 4 pennies; bought 2 herbs.')],
+                          ('Summer, Year 1', 'Spent 4 pennies; bought 2 bundles of herbs.')],
                          [(s['label'], s['text']) for s in self.c['seasons']])
 
     def test_counted_rows_from_the_database(self):
@@ -94,7 +94,7 @@ class CompileTests(unittest.TestCase):
                 ev(3, 1, 'economy', 'wren', 'fennel', item='meal', quantity=3, coins=4, detail='inheritance'),
                 ev(4, 1, 'economy', 'fennel', 'player-ada', coins=3, detail='stolen')]
         text = C.compile_chronicle('fennel', rows, NAMES)['seasons'][0]['text']
-        self.assertEqual('Earned 4 pennies; gathered 1 herbs; ate 1 meal; received 3 meals.', text,
+        self.assertEqual('Earned 4 pennies; gathered 1 bundle of herbs; ate 1 meal; received 3 meals.', text,
                          'A theft is told as a theft, not as spending')
 
     def test_told_to_the_npc(self):
@@ -122,6 +122,14 @@ class CompileTests(unittest.TestCase):
                 self.assertTrue(text[0].isupper() and text.endswith('.') and 'None' not in text, f'{kind}: {text}')
         you = C.compile_chronicle('fennel', [ev(1, 1, 'revival', 'fennel')], NAMES, second_person=True)
         self.assertEqual('You were brought back to life.', you['entries'][0]['text'])
+
+    def test_read_from_a_world_check_export(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False) as f:
+            json.dump({'events': [{'kind': 'marriage', 'actor': 'fennel', 'target': 'sorrel', 'day': 100.0}],
+                       'names': {'fennel': 'Fennel', 'sorrel': 'Sorrel'}}, f)
+        rows, names = C.from_export(f.name)
+        self.assertEqual('Fennel married Sorrel.', C.compile_chronicle('fennel', rows, names)['entries'][0]['text'])
 
     def test_story_lines(self):
         lines = C.story_lines(self.c)

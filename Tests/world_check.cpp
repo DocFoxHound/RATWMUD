@@ -12,6 +12,7 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -201,6 +202,9 @@ int main(int argc, char** argv)
         int at = 0;
     } worstSteady;
     std::vector<double> times, steady;           // `steady`: ticks in which no place had to be loaded.
+    // Each game day's share, to see whether ticks grow dearer as the world ages: total, schedules, movement,
+    // separation (ms), and ticks.
+    std::map<int, std::array<double, 5>> byDay;
     times.reserve(std::size_t(ticks));
     std::size_t mostLoaded = 0;
     for (int i = 0; i < ticks; ++i)
@@ -221,6 +225,12 @@ int main(int argc, char** argv)
                                 (profileAfter.movement.total - profileBefore.movement.total) +
                                 (profileAfter.separation.total - profileBefore.separation.total) +
                                 (profileAfter.views.total - profileBefore.views.total);
+        auto& day = byDay[int(std::floor((from + i * 0.05 / 600.0) / 24.0))];
+        day[0] += tickOnly;
+        day[1] += profileAfter.schedules.total - profileBefore.schedules.total;
+        day[2] += profileAfter.movement.total - profileBefore.movement.total;
+        day[3] += profileAfter.separation.total - profileBefore.separation.total;
+        day[4] += 1;
         if (i >= int(60 / 0.05) && tickOnly > worstSteady.total)
             worstSteady = {tickOnly,
                            profileAfter.streaming.total - profileBefore.streaming.total,
@@ -365,6 +375,13 @@ int main(int argc, char** argv)
         for (const auto& [kind, n] : kinds)
             std::cout << n << " " << kind << (kind == kinds.rbegin()->first ? "" : ", ");
         std::cout << "); " << server.crime().warrants.size() << " wanted, " << server.crime().custody.size() << " held\n";
+    }
+    if (byDay.size() > 1)
+    {
+        std::cout << "  by game day (mean ms a tick: all = schedules + movement + separation + ...):\n";
+        for (const auto& [d, t] : byDay)
+            std::cout << "    day " << d + 1 << ": " << t[0] / t[4] << " = " << t[1] / t[4] << " + " << t[2] / t[4] << " + "
+                      << t[3] / t[4] << " + ...\n";
     }
     if (!eventsFile.empty())
     {

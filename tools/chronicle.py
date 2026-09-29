@@ -12,6 +12,7 @@ season. Nothing is invented and nothing is stored: the log stays the one record,
     story_lines(chronicle)                     the chronicle as plain lines, for writing a life story from
 
     python3 tools/chronicle.py dev wren        prints Wren's chronicle from DEV (read only)
+    python3 tools/chronicle.py EVENTS [ID]     the same from `world_check ... --events EVENTS` (no ID: the fullest lives)
 """
 from __future__ import annotations
 
@@ -99,6 +100,14 @@ def title_of(detail: str) -> str:
     return detail.split(':', 1)[0].strip() or 'their work'
 
 
+def work(detail: str, titled: str, doing: str) -> str:
+    """A post as the log names it: a title ("Baker") or what the work is ("keeping the moneychanger shop")."""
+    title = title_of(detail)
+    if not detail:
+        return titled.format('their work')
+    return titled.format(title) if title[:1].isupper() else doing.format(title)
+
+
 def describe(row: dict, v: Voice) -> tuple[int, str] | None:
     """(importance, sentence) for one event about the subject, or None when it isn't theirs to tell."""
     kind, a, t, d = row['kind'], row['actor'], row['target'], row.get('detail', '')
@@ -112,12 +121,12 @@ def describe(row: dict, v: Voice) -> tuple[int, str] | None:
         'revival': (LIFE, f'{A} {v.was(a)} brought back to life'),
         'marriage': (LIFE, f'{A} married {T}'),
         'mourning': (LIFE, f'{A} mourned {T}, ' + ('one of the family' if d == 'family' else 'a friend')),
-        'apprenticeship': (LIFE, f'{A} became apprentice to {T} ({d or "a trade"})'),
-        'apprenticeship completed': (LIFE, f'{A} finished an apprenticeship with {T} ({d or "a trade"})'),
-        'succession': (LIFE, f'{A} took up the post of {title_of(d)}' + (f', after {T}' if t else '')
+        'apprenticeship': (LIFE, f'{A} became apprentice to {T}' + work(d, ' ({})', ', {}')),
+        'apprenticeship completed': (LIFE, f'{A} finished an apprenticeship with {T}' + work(d, ' ({})', ', {}')),
+        'succession': (LIFE, f'{A} ' + work(d, 'took up the post of {}', 'took over {}') + (f', after {T}' if t else '')
                        + (f' ({d.split(":", 1)[1].strip()})' if ':' in d else '')),
-        'vacancy': (NOTABLE, f'{A} left the post of {d or "their work"}'),
-        'returned to work': (NOTABLE, f'{A} went back to work as {d or "before"}'),
+        'vacancy': (NOTABLE, f'{A} ' + work(d, 'left the post of {}', 'gave up {}')),
+        'returned to work': (NOTABLE, f'{A} ' + work(d, 'went back to work as {}', 'went back to {}')),
         'estate settled': (NOTABLE, f'{v.whose(a)} estate was settled' + (f', {d}' if d else '')
                            + (f'; {T} inherited' if t and t != 'treasury' else '')),
         'newcomer sent for': (NOTABLE, f'a newcomer was sent for to take {v.whose(t)} place as {d or "worker"}'),
@@ -220,8 +229,12 @@ def fold_round(rows: list[dict], v: Voice) -> list[dict]:
     return out[-MAX_SEASONS:]
 
 
+GOODS = {'herbs': ('bundle of herbs', 'bundles of herbs')}
+
+
 def goods_of(quantity: int, item: str) -> str:
-    return f"{quantity} {item}{'' if quantity == 1 or item.endswith('s') else 's'}"
+    one, many = GOODS.get(item, (item, item if item.endswith('s') else item + 's'))
+    return f"{quantity} {one if quantity == 1 else many}"
 
 
 def book(season: dict, verb: str, row: dict) -> None:
@@ -281,10 +294,18 @@ def milestones(chronicle: dict, limit: int = 8) -> str:
     return '\n'.join(f"{e['date']}: {e['text']}" for e in chosen)
 
 
+def season_end(day: float) -> float:
+    """The last moment of the season a day falls in: a season's round is told after what happened in it."""
+    year, name, _ = season_of(day)
+    starts = [start for _, start in SEASONS] + [DAYS_PER_YEAR + 1]
+    following = starts[[n for n, _ in SEASONS].index(name) + 1]
+    return (year - 1) * DAYS_PER_YEAR + following - 1 - 1e-6
+
+
 def story_lines(chronicle: dict, limit: int = 80) -> list[str]:
     """Everything a story may draw on: the life events and the seasons' round, in order, dated."""
     items = [(e['day'], f"{e['date']}: {e['text']}") for e in chronicle['entries'] if e['kind'] != 'operator']
-    items += [(s['day'], f"{s['label']} (the round): {s['text']}") for s in chronicle['seasons']]
+    items += [(season_end(s['day']), f"{s['label']} (the round): {s['text']}") for s in chronicle['seasons']]
     return [text for _, text in sorted(items, key=lambda x: x[0])][-limit:]
 
 
@@ -368,14 +389,41 @@ def load(conn, subject: str, second_person: bool = False, limit: int = MAX_ROWS,
     return compile_chronicle(subject, rows, names, places, second_person)
 
 
+def from_export(path: str) -> tuple[list[dict], dict[str, str]]:
+    """Events and names from `world_check ... --events FILE`, as rows compile_chronicle takes."""
+    import json
+    data = json.loads(open(path, encoding='utf-8').read())
+    rows = [{'id': i + 1, 'day': float(e.get('day', 0)), 'kind': e.get('kind', ''), 'actor': e.get('actor', ''),
+             'target': e.get('target', ''), 'cell': e.get('cell', ''), 'item': e.get('item', ''),
+             'quantity': int(e.get('quantity', 0)), 'coins': int(e.get('coins', 0)), 'detail': e.get('detail', '')}
+            for i, e in enumerate(data['events'])]
+    return rows, data.get('names', {})
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('database', choices=('dev', 'prod'))
-    parser.add_argument('subject', help="an NPC's or a character's ID")
+    parser.add_argument('source', help="dev or prod (a world database), or a world_check --events file")
+    parser.add_argument('subject', nargs='?', help="an NPC's or a character's ID (without it: the fullest lives)")
+    parser.add_argument('--top', type=int, default=10, help='how many of the fullest lives to list')
     args = parser.parse_args()
-    import world_db
-    with world_db.connect(args.database, 'dm') as conn:
-        chronicle = load(conn, args.subject)
+    if args.source in ('dev', 'prod'):
+        if not args.subject:
+            parser.error('name someone to read from a database')
+        import world_db
+        with world_db.connect(args.source, 'dm') as conn:
+            chronicle = load(conn, args.subject)
+    else:
+        rows, names = from_export(args.source)
+        if not args.subject:
+            lives: dict[str, int] = {}
+            for r in rows:
+                if r['kind'] not in ROUTINE_KINDS and r['kind'] not in IMPERSONAL:
+                    for key in {r['actor'], r['target']} - {''}:
+                        lives[key] = lives.get(key, 0) + 1
+            for key, n in sorted(lives.items(), key=lambda kv: -kv[1])[:args.top]:
+                print(f'{n:5}  {key}  {names.get(key, "")}')
+            return 0
+        chronicle = compile_chronicle(args.subject, rows, names)
     print(f"{chronicle['name']}: {chronicle['events']} events, {chronicle['firstDate']} to {chronicle['lastDate']}")
     for line in story_lines(chronicle, limit=10_000):
         print('  ' + line)

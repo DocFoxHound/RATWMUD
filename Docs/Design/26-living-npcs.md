@@ -670,7 +670,16 @@ chronicles too.
   and seasons, or everything), story, and *in mind*: memories, open conversations, bonds both ways, rumours heard and
   said of them.
 - `python3 tools/chronicle.py dev ID` prints one from a database; `world_check ... --events FILE` writes a
-  simulation's events and names for reading chronicles without a database.
+  simulation's events and names, and `python3 tools/chronicle.py FILE [ID]` reads chronicles from it (without an ID,
+  the fullest lives). `world_check` also prints each game day's mean tick when a run spans more than one.
+- **Found while verifying (not fixed yet; older than Phases 7 and 8).** In a run of several game days on DEV, ticks grow
+  dearer day by day (mean 0.73 ms on day 1, 1.1 ms on day 2, 9.2 ms on day 3, with a p99 of 98 ms). Residents are
+  being stranded. Routes between cells are chosen cell by cell (`headFor`, `cachedSteps`), but the way into the next
+  cell can land them in a pocket of it (a strip along the edge, cut off by a height step) from which no way leads on.
+  `headFor` then finds no door in their region and does nothing, every half second, for good. On day 3, 113
+  Ridgemere residents stood on one tile of Warden Order's west edge and 106 on Western Approach's, and keeping a pile
+  apart costs the square of its size (`separate`). It wants region-aware choice of the way in, and a way out of a
+  pocket.
 - **Tests:** `tools/test_chronicle.py` (the calendar, every logged kind as a sentence, the round, the second person,
   and a scratch event log), the Mind's life and story tests, `ChronicleTests` in `tools/test_dungeon_master.py`, and
   `src/lib/chronicle.test.ts` in the Editor.
