@@ -10,6 +10,7 @@
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwBonds.h"
+#include "RatwCrime.h"
 #include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
@@ -166,6 +167,8 @@ struct Entity
     double postureRemaining = 0.0;
     std::string postureTarget;
     int speakingColor = 0;
+    // How badly hurt (0..100): at 100 a character is beaten down and lies there until it heals below 50 (Phase 7).
+    double hurt = 0.0;
     bool typing = false;
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
@@ -299,6 +302,7 @@ struct PersistedWorld
     std::vector<SavedBond> bonds;
     std::vector<Promise> promises;
     RoadsState roads;
+    CrimeState crime;
 };
 
 class World
@@ -393,13 +397,27 @@ class World
     // What someone has heard: a claim about a subject, from a source, this sure (0..1). Rumours spread along bonds
     // each day, losing confidence, and between towns with the caravans.
     void believe(const std::string& holder, const std::string& subject, const std::string& claim,
-                 const std::string& source, double confidence);
+                 const std::string& source, double confidence, const std::string& incident = {});
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
     // What an NPC has heard about someone, in words for a conversation (empty if nothing).
     std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;
     // Fights (a first, placeholder version; only bandits can be fought). A player swings at a bandit within reach;
     // stamina is what a fight wears down, and one beaten to the ground is robbed, not killed.
     Result attack(const std::string& attacker, const std::string& target);
+    // Crime and law (RatwCrime.h, Phase 7). A theft from or an assault on a resident is an incident, known only to
+    // those who perceived it; they tell the watch, which wants the offender once what it has heard is enough.
+    // Players can't steal from or attack each other.
+    Result steal(const std::string& thief, const std::string& victim);
+    Result report(const std::string& player, const std::string& guard);   // What they saw, told to the watch.
+    Result payFine(const std::string& person, const std::string& guard);  // What the watch asks, to a guard.
+    const CrimeState& crime() const { return crime_; }
+    CrimeState& crime() { return crime_; }                  // For operators and tests.
+    const Warrant* warrantFor(const std::string& person) const;
+    const Custody* custodyOf(const std::string& person) const;
+    std::int64_t owedBy(const Warrant& w) const;             // Restitution and the fine, in pennies.
+    bool guardOnDuty(const std::string& id) const;
+    std::string lawTown(const std::string& cellId) const;   // Whose Watch keeps the law here ("" for nobody's).
+    std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
     Result payBandits(const std::string& player, const std::string& bandit);
     bool hostile(const std::string& id) const;               // A bandit, still standing.
@@ -537,6 +555,35 @@ class World
     std::map<std::string, std::string> townOfCell_;
     bool townsReady_ = false;
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
+    CrimeState crime_;
+    std::int64_t crimeHour_ = -1;
+    std::map<std::string, double> stealReady_;              // When each may try again.
+    std::map<std::string, std::pair<std::string, double>> fights_;   // "attacker|target": the incident, the last blow.
+    std::map<std::string, std::string> pursuits_;           // Guard: whom they're going to stop.
+    struct Confrontation
+    {
+        std::string guard;
+        double deadline = 0;
+    };
+    std::map<std::string, Confrontation> confrontations_;   // Players told to pay or come along.
+    std::map<std::string, std::string> marks_;              // A hungry resident: whom they mean to take a meal from.
+    std::map<std::string, std::int64_t> tried_;             // The day each last tried.
+    Incident& openIncident(const std::string& kind, const std::string& offender, const std::string& victim);
+    Incident* incident(const std::string& id);
+    void witness(Incident& inc, double sleight);
+    void weigh(Incident& inc);
+    void reportTo(Incident& inc, Witness& w, const std::string& guard);
+    bool willReport(const Witness& w, const Incident& inc) const;
+    Result assault(const std::string& attacker, const std::string& target);
+    void settleWarrant(const Warrant& w, const std::string& guard);
+    bool gaolSpot(const std::string& town, std::string& cellId, double& x, double& y);
+    void takeIntoCustody(const std::string& person, const std::string& town, const std::string& guard);
+    void confront(const std::string& guard, const std::string& person);
+    bool crimeErrand(const std::string& resident, std::string& task, std::string& reason, std::string& goalCell, Vec2& goal) const;
+    void tendCrime();
+    void crimeDaily();
+    void chooseMarks();
+    void gossip();
     void setupTowns();
     void tendRoads();
     void roadsDaily();

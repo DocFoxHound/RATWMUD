@@ -147,9 +147,63 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         auto j = Value::object();
         j.add("holder", h.holder); j.add("subject", h.subject); j.add("claim", h.claim);
         j.add("source", h.source); j.add("confidence", h.confidence); j.add("day", h.day);
+        if (!h.incident.empty())
+            j.add("incident", h.incident);
         beliefs.push(j);
     }
     root.add("beliefs", beliefs);
+    // Crime and law (RatwCrime.h): incidents and who saw them, warrants, and who is held in a gaol.
+    auto crime = Value::object();
+    crime.add("nextIncident", saved.crime.nextIncident);
+    crime.add("day", saved.crime.day);
+    auto incidents = Value::array();
+    for (const auto& i : saved.crime.incidents)
+    {
+        auto j = Value::object();
+        j.add("id", i.id); j.add("kind", i.kind); j.add("offender", i.offender); j.add("victim", i.victim);
+        j.add("cell", i.cell); j.add("town", i.town); j.add("time", i.time); j.add("day", i.day);
+        j.add("item", i.item); j.add("quantity", i.quantity); j.add("coins", i.coins); j.add("status", i.status);
+        auto witnesses = Value::array();
+        for (const auto& w : i.witnesses)
+        {
+            auto k = Value::object();
+            k.add("id", w.id); k.add("identified", w.identified); k.add("clarity", w.clarity); k.add("reported", w.reported);
+            witnesses.push(k);
+        }
+        j.add("witnesses", witnesses);
+        incidents.push(j);
+    }
+    crime.add("incidents", incidents);
+    auto warrants = Value::array();
+    for (const auto& w : saved.crime.warrants)
+    {
+        auto j = Value::object();
+        j.add("person", w.person); j.add("town", w.town); j.add("fine", w.fine); j.add("since", w.since);
+        auto ids = Value::array();
+        for (const auto& id : w.incidents)
+            ids.push(id);
+        j.add("incidents", ids);
+        auto owed = Value::array();
+        for (const auto& r : w.restitution)
+        {
+            auto k = Value::object();
+            k.add("to", r.to); k.add("item", r.item); k.add("quantity", r.quantity); k.add("coins", r.coins);
+            owed.push(k);
+        }
+        j.add("restitution", owed);
+        warrants.push(j);
+    }
+    crime.add("warrants", warrants);
+    auto custody = Value::array();
+    for (const auto& c : saved.crime.custody)
+    {
+        auto j = Value::object();
+        j.add("person", c.person); j.add("town", c.town); j.add("cell", c.cell);
+        j.add("x", c.x); j.add("y", c.y); j.add("until", c.until);
+        custody.push(j);
+    }
+    crime.add("custody", custody);
+    root.add("crime", crime);
     auto npcList = Value::array();
     for (const auto& e : npcs)
         npcList.push(wire::persistEntity(e, time));
@@ -391,7 +445,35 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),
-                                       num(j, "confidence"), num(j, "day")});
+                                       num(j, "confidence"), num(j, "day"), j.string("incident")});
+    if (const auto& crime = root["crime"]; crime.isObject())
+    {
+        saved.crime.nextIncident = std::max<std::int64_t>(1, std::int64_t(num(crime, "nextIncident")));
+        saved.crime.day = std::int64_t(num(crime, "day", -1));
+        for (const auto& j : crime.array("incidents"))
+        {
+            Incident i;
+            i.id = j.string("id"); i.kind = j.string("kind"); i.offender = j.string("offender"); i.victim = j.string("victim");
+            i.cell = j.string("cell"); i.town = j.string("town"); i.time = num(j, "time"); i.day = num(j, "day");
+            i.item = j.string("item"); i.quantity = int(num(j, "quantity")); i.coins = std::int64_t(num(j, "coins"));
+            i.status = j.string("status", "open");
+            for (const auto& k : j.array("witnesses"))
+                i.witnesses.push_back({k.string("id"), k.boolean("identified"), num(k, "clarity"), k.boolean("reported")});
+            saved.crime.incidents.push_back(std::move(i));
+        }
+        for (const auto& j : crime.array("warrants"))
+        {
+            Warrant w;
+            w.person = j.string("person"); w.town = j.string("town"); w.fine = std::int64_t(num(j, "fine")); w.since = num(j, "since");
+            for (const auto& id : j.array("incidents"))
+                w.incidents.push_back(id.asString(""));
+            for (const auto& k : j.array("restitution"))
+                w.restitution.push_back({k.string("to"), k.string("item"), int(num(k, "quantity")), std::int64_t(num(k, "coins"))});
+            saved.crime.warrants.push_back(std::move(w));
+        }
+        for (const auto& j : crime.array("custody"))
+            saved.crime.custody.push_back({j.string("person"), j.string("town"), j.string("cell"), num(j, "x"), num(j, "y"), num(j, "until")});
+    }
     for (const auto& j : root.array("promises"))
         saved.promises.push_back({j.string("by"), j.string("to"), j.string("what"), num(j, "made"), num(j, "due"), j.string("status")});
     for (const auto& j : root.array("bonds"))

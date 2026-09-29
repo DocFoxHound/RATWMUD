@@ -268,7 +268,7 @@ Result World::completeContract(const std::string& contractId, const std::string&
 }
 
 void World::believe(const std::string& holder, const std::string& subject, const std::string& claim,
-                    const std::string& source, double confidence)
+                    const std::string& source, double confidence, const std::string& incident)
 {
     if (holder.empty() || subject.empty() || holder == subject || claim.empty() || !(confidence > .05))
         return;
@@ -277,10 +277,10 @@ void World::believe(const std::string& holder, const std::string& subject, const
         if (b.subject == subject && b.claim == claim)
         {
             if (confidence > b.confidence)
-                b = {holder, subject, claim, source, std::min(1.0, confidence), calendarDays_};
+                b = {holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident};
             return;
         }
-    mine.push_back({holder, subject, claim, source, std::min(1.0, confidence), calendarDays_});
+    mine.push_back({holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident});
     if (mine.size() > BeliefsKept)
         mine.erase(std::min_element(mine.begin(), mine.end(), [](const Belief& a, const Belief& b) { return a.confidence < b.confidence; }));
 }
@@ -1031,40 +1031,6 @@ void World::roadsDaily()
         }
     }
 
-    // Rumours spread along bonds (each tells a few they know well what they are surest of) and fade.
-    std::vector<std::pair<std::string, Belief>> telling;
-    for (const auto& [holder, mine] : beliefs_)
-    {
-        const auto* e = entity(holder);
-        const auto* known = bonds_.of(holder);
-        if (!e || !e->npc || e->dead || !known)
-            continue;
-        std::vector<const Belief*> best;
-        for (const auto& b : mine)
-            if (b.confidence >= .35)
-                best.push_back(&b);
-        std::sort(best.begin(), best.end(), [](const Belief* a, const Belief* b) { return a->confidence > b->confidence; });
-        best.resize(std::min<std::size_t>(best.size(), 2));
-        std::vector<std::pair<double, std::string>> listeners;
-        for (const auto& [other, b] : *known)
-            if (b.familiarity >= 30)
-                if (const auto* o = entity(other); o && o->npc && !o->dead)
-                    listeners.push_back({b.familiarity, other});
-        std::sort(listeners.rbegin(), listeners.rend());
-        for (std::size_t l = 0; l < listeners.size() && l < 3; ++l)
-            for (const auto* b : best)
-                if (listeners[l].second != b->subject)
-                    telling.push_back({listeners[l].second, {listeners[l].second, b->subject, b->claim, holder, b->confidence * .7, calendarDays_}});
-    }
-    for (auto& [holder, mine] : beliefs_)
-    {
-        for (auto& b : mine)
-            b.confidence *= .97;
-        mine.erase(std::remove_if(mine.begin(), mine.end(), [](const Belief& b) { return b.confidence < .1; }), mine.end());
-    }
-    for (const auto& [listener, b] : telling)
-        believe(listener, b.subject, b.claim, b.source, b.confidence);
-
     // Once a week the towns send what their stores took in back to the treasury, which pays the wages.
     if (today % 7 == 3)
         for (std::size_t i = 1; i < towns_.size(); ++i)
@@ -1333,8 +1299,49 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
     endEncounter(camp.id, 0);
 }
 
+// Once a day, in every world (Phase 7; with one town as with many).
+void World::gossip()
+{
+    // Rumours spread along bonds (each tells a few they know well what they are surest of) and fade.
+    std::vector<std::pair<std::string, Belief>> telling;
+    for (const auto& [holder, mine] : beliefs_)
+    {
+        const auto* e = entity(holder);
+        const auto* known = bonds_.of(holder);
+        if (!e || !e->npc || e->dead || !known)
+            continue;
+        std::vector<const Belief*> best;
+        for (const auto& b : mine)
+            if (b.confidence >= .35)
+                best.push_back(&b);
+        std::sort(best.begin(), best.end(), [](const Belief* a, const Belief* b) { return a->confidence > b->confidence; });
+        best.resize(std::min<std::size_t>(best.size(), 2));
+        std::vector<std::pair<double, std::string>> listeners;
+        for (const auto& [other, b] : *known)
+            if (b.familiarity >= 30)
+                if (const auto* o = entity(other); o && o->npc && !o->dead)
+                    listeners.push_back({b.familiarity, other});
+        std::sort(listeners.rbegin(), listeners.rend());
+        for (std::size_t l = 0; l < listeners.size() && l < 3; ++l)
+            for (const auto* b : best)
+                if (listeners[l].second != b->subject)
+                    telling.push_back({listeners[l].second, {listeners[l].second, b->subject, b->claim, holder, b->confidence * .7, calendarDays_, b->incident}});
+    }
+    for (auto& [holder, mine] : beliefs_)
+    {
+        for (auto& b : mine)
+            b.confidence *= .97;
+        mine.erase(std::remove_if(mine.begin(), mine.end(), [](const Belief& b) { return b.confidence < .1; }), mine.end());
+    }
+    for (const auto& [listener, b] : telling)
+        believe(listener, b.subject, b.claim, b.source, b.confidence, b.incident);
+
+}
+
 Result World::attack(const std::string& attacker, const std::string& target)
 {
+    if (!campOf(target))
+        return assault(attacker, target);           // Anyone but a bandit: a crime (RatwCrime.cpp).
     auto* a = entity(attacker);
     if (!a || a->npc)
         return {false, "No such character.", {}};

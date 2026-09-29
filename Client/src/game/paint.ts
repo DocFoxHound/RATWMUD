@@ -5,7 +5,7 @@ import {contains, rect, type Painter, type Point, type Rect} from '../ui/painter
 import {Amber, Blue, Ink, Line, Muted, Panel, Paper, Raised, Sage, Scent, speakingColor, font} from '../ui/theme.ts';
 import {drawPortrait, type Portraits} from '../ui/portrait.ts';
 import {arr, bool, boundedNum, clamp, countText, envNumber, isObject, num, obj, objects, str, wholeCount, wrapCoordinate, type Json} from './json.ts';
-import {calendarLabel, elevationLabel, environmentEffectsLabel, environmentLabel, moonLabel, paceLabel, postureLabel, scentLabel,
+import {calendarLabel, elevationLabel, lawLabel, environmentEffectsLabel, environmentLabel, moonLabel, paceLabel, postureLabel, scentLabel,
     windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState, Post} from './state.ts';
@@ -605,6 +605,8 @@ export class GamePainter {
         }
         if (s.facingPreview && s.canFaceAt(s.hover)) p.text(606 + extra, 782, 'ALT · CLICK TO TURN', 9, Amber, true);
         else p.text(606 + extra, 782, postureLabel(obj(s.snapshot, 'self')), 9, Sage);
+        const law = lawLabel(obj(s.snapshot, 'self'));
+        if (law) p.text(820 + extra, 782, law.slice(0, Math.max(10, Math.floor((580 - extra) / 6.5))), 9, rgb(0xe1aba2), true);
         p.text(1415, 782, `LOCAL  /  Z ${Math.trunc(num(cell, 'z'))}`, 9, Muted, true);
     }
 

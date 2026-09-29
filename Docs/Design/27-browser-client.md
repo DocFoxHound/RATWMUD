@@ -93,7 +93,7 @@ WASD stays. The page listens to `keydown`/`keyup` on the window and keeps the se
 ## Still to do
 
 - **TLS on the server**, so remote players can sign in (until then passwords are accepted only over loopback).
-- Then doc 26's Phase 7.
+- Doc 26's Phase 7 was built next.
 
 ## Steps (as planned)
 

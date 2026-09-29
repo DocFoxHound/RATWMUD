@@ -478,6 +478,13 @@ The society check captures the graphical client and restarts its isolated save.
 The aging check keeps a separate authority running across three client
 connections to exercise logged-out aging and command-retry behavior.
 
+**Crime and law.** Close to a resident, **Steal** tries their purse and **Attack** starts a fight (nobody is
+killed: a beaten resident collapses and gets up again). Only those who saw or heard it know; they tell the Watch
+when they meet a guard, and a player can **Report** to one. Once the Watch has enough, you are **wanted** (shown
+beside your posture): a guard who sees you stops you and asks restitution and a fine (**Pay fine**), or takes you to
+the gaol for two game hours. Hungry, penniless residents steal too. You can't rob or fight other players. See
+[Phase 7](Docs/Design/26-living-npcs.md).
+
 See [calendar design](Docs/Design/14-calendar-aging.md),
 [NPC/economy design](Docs/Design/15-npc-society-economy.md), and
 [verification](Docs/SOCIETY_TEST_REPORT.md) for formulas, sources and limits.

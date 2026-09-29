@@ -598,12 +598,50 @@ Verified:
 - **A stripped dedicated-server binary.** The installed engine refused Server targets. It is no longer needed: the
   standalone server became the only server, and the game left Unreal for a browser client (doc 27).
 
+## Phase 7: crime and law (built 2026-09-28; placeholder numbers throughout)
+
+Theft and violence create witnesses and beliefs, and the Watch acts only on what it has been told (`Core/RatwCrime.*`).
+Decisions agreed with the user: players may rob and attack residents but not each other; nobody is killed by it (a
+beaten resident collapses and gets up again: only the Dungeon Master kills); the Watch asks restitution and a fine,
+or holds the offender in the gaol for a few game hours; and residents in need steal too.
+
+- **Incidents.** A theft, an attempted theft or an assault is an incident (`inc-<n>`) in the town where it happened
+  (its Watch: the town, or in a world of one town without Town records, like Greyfen, the region). The last 400 are
+  kept, closed ones dropped first.
+- **Stealing** (the `steal` action, within 1.6 tiles, one try in four seconds): the odds are dexterity, sneaking and
+  crouching against how well the victim is watching. A success takes a few coins, else a meal, else herbs (moved, so
+  money stays conserved). A clumsy try is plain to anyone looking; a clean one only to the sharp-eyed.
+- **Assault** (`attack` on a resident, the bandits' reach and stamina rules): one incident per fight. Blows add
+  injury (`hurt`, saved); at 100 the victim is **beaten down** (lying, out of their schedule), heals 50 an hour and
+  gets up below 50.
+- **Witnesses.** Whoever perceives it at the time: onstage by sight (which identifies the offender) or, for a fight,
+  hearing (which doesn't); offstage by nearness. Resident witnesses believe it of the offender ("stole from Wren",
+  "saw it", tied to the incident) and like them less; players are told what they saw.
+- **The Watch weighs evidence.** Accounts reach it when a witness meets a guard on duty (within 6 tiles), or
+  offstage within the day, if they dare (fear) and are willing (affinity); players `report` to a guard. A guard's own
+  sight counts 2, the victim's 1, a bystander's .6 (times how clearly they saw), and hearsay among the guards up to
+  .5. At 1 the offender is **wanted**: restitution to the victim, and a fine (assault 8, attempted theft 3, theft 3
+  plus the goods' worth). Unsolved incidents go cold after 7 days.
+- **Guards act on it.** A guard on duty who sees someone wanted goes after them. A resident pays if they can, or is
+  taken. A player is told the charges and what is owed, and has 30 seconds to `pay fine`; walking off (8 tiles) or
+  not paying means the **gaol**: whatever they can pay is taken, and they are held, spent, in the town's gaol (a cell
+  named gaol, jail, lock-up, watch house, guard house or barracks, else a guard's post) for 2 game hours (residents
+  4). The door out is barred until then. Offstage, the wanted are caught with a chance of guards / (guards + 3) a day.
+- **Crime from need.** Each hour, residents who are hungry (70+), have no meal and under 6 pennies, and are the sort
+  to (about four in ten), mark a merchant in their town with food, go looking for a chance, and try when no guard on
+  duty is watching (once a day).
+- **The player's screen** shows `WANTED · charges · owes Np` or `HELD IN THE GAOL · N min` beside the posture; residents
+  offer `steal` and `attack` within reach, guards `report` and `pay fine`.
+- **Saved** in the checkpoint (`crime`: incidents with their witnesses, warrants with restitution, custody, the last
+  daily round), with each entity's injury and each belief's incident.
+- **Rumours now spread in every world**, once a day, not only in worlds of two or more towns: word of a crime reaches
+  guards by gossip.
+- **Tests:** `Tests/crime_tests.cpp` (refusals, a theft before the Watch and the fine paid, the gaol and release, a
+  beating and recovery with the victim's report, crime from hunger, and saving). `world_check` prints a crime line;
+  the perf gate on DEV is unchanged (same digest, same tick times).
+
 ## Next phases (order agreed 2026-09-28)
 
-After the move to the browser client (doc 27) and TLS on the server:
-
-- **Phase 7: crime and law.** Theft and violence create witnesses and beliefs. The Watch investigates from what it
-  knows, not from omniscience.
 - **Phase 8: NPC chronicles.** A chronicle of each NPC's life, compiled from events, for the Dungeon Master and for
   storytelling.
 - **Phase 9: schedules.** Market days, festivals, a day of rest, and weather changing plans.

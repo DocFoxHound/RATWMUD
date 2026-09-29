@@ -66,6 +66,7 @@ struct Belief
 {
     std::string holder, subject, claim, source;
     double confidence = 1, day = 0;
+    std::string incident;                 // What it is about, when it is a crime someone saw or heard of (RatwCrime.h).
 };
 
 struct RoadsState

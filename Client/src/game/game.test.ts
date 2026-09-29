@@ -2,7 +2,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, paintPart, testGame} from './testing.ts';
-import {paceLabel, scentLabel, windLabel, environmentLabel, environmentEffectsLabel, calendarLabel, moonLabel, elevationLabel} from './labels.ts';
+import {paceLabel, scentLabel, windLabel, environmentLabel, environmentEffectsLabel, calendarLabel, moonLabel, elevationLabel, lawLabel} from './labels.ts';
 import {alphaOf, Size, type Art} from './weatherArt.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {rect, contains} from '../ui/painter.ts';
@@ -850,4 +850,10 @@ test('motion frames: hidden wolves go at once and never come back from late meta
     s.applyMotion(frame(resumed, 2, 17.15));
     assert.equal(s.entities.get('self')!.motion.samples.length, 1, 'resuming after a stall rebases the timeline');
     assert.ok(close(s.motionClock - s.motionOffset, resumed, 1e-8), 'with headroom to interpolate again');
+});
+
+test('the law label shows custody before a warrant, and nothing for the law-abiding', () => {
+    assert.equal(lawLabel({}), '');
+    assert.equal(lawLabel({wanted: {charges: 'theft', owed: 9.4}}), 'WANTED · theft · owes 9p');
+    assert.equal(lawLabel({wanted: {charges: 'theft', owed: 9}, custody: {seconds: 61}}), 'HELD IN THE GAOL · 2 min');
 });

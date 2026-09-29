@@ -123,6 +123,8 @@ Value persistEntity(const Entity& e, double time)
     o.add("stamina", e.stamina);
     o.add("pace", e.pace);
     o.add("exhausted", e.exhausted);
+    if (e.hurt > 0)
+        o.add("hurt", e.hurt);
     return o;
 }
 
@@ -168,6 +170,10 @@ Entity readEntity(const Value& o)
     e.dead = o.boolean("dead");
     if (o.has("exhausted") && !o["exhausted"].isBool())
         e.stamina = -1;                            // Malformed fatigue state rejects the complete save.
+    if (const double hurt = strictNumber(o, "hurt", o.has("hurt") ? -1.0 : 0.0); hurt >= 0 && hurt <= 100)
+        e.hurt = hurt;
+    else
+        e.stamina = -1;                            // So does a malformed injury.
     e.postureTarget = o.string("postureTarget");
     e.postureRemaining = number(o, "postureRemaining");
     e.turnTarget = e.facing;                       // Input, paths and manual turn intents are never reloaded.

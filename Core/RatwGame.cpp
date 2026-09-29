@@ -1434,6 +1434,27 @@ void Game::sendSnapshot(Connection* c)
     wire::privatePace(self, *world_.entity(id));
     const auto* purse = world_.society().account(id);
     self.set("cash", purse ? purse->cash : 0);
+    // Crime and law: what the watch wants of this wolf, and how long they are held, if they are.
+    if (const auto* w = world_.warrantFor(id))
+    {
+        auto wanted = Value::object();
+        std::string charges;
+        for (const auto& inc : world_.crime().incidents)
+            if (std::find(w->incidents.begin(), w->incidents.end(), inc.id) != w->incidents.end())
+                charges += (charges.empty() ? "" : ", ") + inc.kind;
+        wanted.add("town", w->town);
+        wanted.add("fine", w->fine);
+        wanted.add("owed", world_.owedBy(*w));
+        wanted.add("charges", charges);
+        self.set("wanted", wanted);
+    }
+    if (const auto* held = world_.custodyOf(id))
+    {
+        auto custody = Value::object();
+        custody.add("seconds", std::max(0.0, (held->until - world_.calendarDays()) * calendar::SecondsPerDay));
+        custody.add("cell", held->cell);
+        self.set("custody", custody);
+    }
     root.add("self", self);
     auto cell = Value::object();
     cell.add("id", view.cell.id);
@@ -1501,6 +1522,22 @@ void Game::sendSnapshot(Connection* c)
             actions.push("talk");
             if (world_.society().merchant(e.id))
                 actions.push("trade");
+            // Crime and law: a close resident can be robbed or struck (never killed: they are beaten down); the
+            // watch takes reports, and fines from the wanted.
+            const auto* job = world_.society().jobOf(e.id);
+            const bool guard = job && job->role == "guard";
+            const bool reach = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 2;
+            if (!e.dead && reach && e.state != "beaten down")
+            {
+                actions.push("steal");
+                actions.push("attack");
+            }
+            if (guard && near(e) && !e.dead)
+            {
+                actions.push("report");
+                if (world_.warrantFor(view.self.id))
+                    actions.push("pay fine");
+            }
             if (e.id == "npc_scout" && !companionOwner_.count(e.id) && near(e))
                 actions.push("recruit");
             // Merchants know what work is going in town (contracts), and a player can take it on from them.
@@ -2153,6 +2190,13 @@ void Game::command(Connection* c, const std::string& raw)
                 return;
             }
             talk(target, id, "Hello. I would like to talk.");
+        }
+        else if (action == "steal" || action == "report" || action == "pay fine")
+        {
+            const auto done = action == "steal" ? world_.steal(id, target) : action == "report" ? world_.report(id, target) : world_.payFine(id, target);
+            system(c, done.message);
+            if (done.ok)
+                saveSoon();
         }
         else if (action == "attack" || action == "pay")
         {

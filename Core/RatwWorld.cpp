@@ -1570,6 +1570,13 @@ Result World::moveTo(const std::string& id, double x, double y)
 
 void World::transition(Entity& a, const Door& d)
 {
+    if (const auto* held = custodyOf(a.id); held && d.targetCell != held->cell)
+    {
+        if (!a.npc)
+            notice(a.id, "The door is barred. The watch holds you here a while yet.");
+        stop(a.id);
+        return;
+    }
     if (!ensureLoaded(d.targetCell).ok)
         return;
     const auto* destination = cell(d.targetCell);
@@ -2541,6 +2548,7 @@ void World::updateSchedules()
     absorbJournal();
     tendBonds();
     tendRoads();
+    tendCrime();
     // When a shift changes, a whole town sets off at once: plan a bounded number of routes per update and let the
     // rest set off on the next, rather than stalling the server for all of them in one tick.
     RouteBudget budget{0, searchExpanded_};
@@ -2554,9 +2562,12 @@ void World::updateSchedules()
             continue;                               // The road folk go their own ways (tendRoadFolk).
         const auto* life = society_.resident(pair.first);
         if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
+        if (e.state == "beaten down") continue;     // Lying where they fell until they can get up (tendCrime).
         std::string task = life->task, reason = life->reason, goalCell = life->goalCell;
         Vec2 target{life->goalX, life->goalY};
-        errand(pair.first, *life, task, reason, goalCell, target);   // Work on the road comes before the day's plan.
+        // The watch and the gaol, then work on the road, come before the day's plan.
+        if (!crimeErrand(pair.first, task, reason, goalCell, target))
+            errand(pair.first, *life, task, reason, goalCell, target);
         const std::string activity = task + " — " + reason;
         if (e.activity != activity) { stop(e.id); e.activity = activity; }
         if (e.cellId == goalCell && distance(e.position, target) <= .35)
@@ -3286,6 +3297,7 @@ PersistedWorld World::save() const
     out.bonds = bonds_.save();
     out.promises = promises_;
     out.roads = roads_;
+    out.crime = crime_;
     out.roads.beliefs.clear();
     for (const auto& [holder, mine] : beliefs_)
         out.roads.beliefs.insert(out.roads.beliefs.end(), mine.begin(), mine.end());
@@ -3562,6 +3574,12 @@ Result World::restore(const PersistedWorld& state)
     bonds_ = std::move(restoredBonds);
     // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again.
     roads_ = state.roads;
+    crime_ = state.crime;
+    pursuits_.clear();
+    confrontations_.clear();
+    marks_.clear();
+    fights_.clear();
+    crimeHour_ = -1;
     roads_.caravans.erase(std::remove_if(roads_.caravans.begin(), roads_.caravans.end(),
                                          [&](const Caravan& c) { return !society_.account(c.account); }),
                           roads_.caravans.end());

@@ -350,6 +350,15 @@ int main(int argc, char** argv)
         std::cout << "); " << travelling << " caravans on the road, " << raided << " robbed; " << camps << " bandit camps; "
                   << open << " open contracts; " << beliefs << " rumours held\n";
     }
+    {
+        std::map<std::string, int> kinds;
+        for (const auto& i : server.crime().incidents)
+            ++kinds[i.kind];
+        std::cout << "  crime: " << server.crime().incidents.size() << " incidents (";
+        for (const auto& [kind, n] : kinds)
+            std::cout << n << " " << kind << (kind == kinds.rbegin()->first ? "" : ", ");
+        std::cout << "); " << server.crime().warrants.size() << " wanted, " << server.crime().custody.size() << " held\n";
+    }
     std::cout << "  at their scheduled place: " << arrived << ", on their way: " << underway << ", without a route: "
               << lost.size() << '\n';
     for (const auto& who : lost)

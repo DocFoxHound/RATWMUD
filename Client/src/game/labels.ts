@@ -17,6 +17,15 @@ export function postureLabel(self: Maybe): string {
     return posture + (bool(self, 'turning') ? ' · turning' : '');
 }
 
+// Crime and law: held in the gaol (and for how long), or wanted by a town's watch (and what they ask).
+export function lawLabel(self: Maybe): string {
+    const custody = obj(self, 'custody');
+    if (custody) return `HELD IN THE GAOL · ${Math.ceil(num(custody, 'seconds') / 60)} min`;
+    const wanted = obj(self, 'wanted');
+    if (wanted) return `WANTED · ${str(wanted, 'charges')} · owes ${Math.trunc(num(wanted, 'owed'))}p`;
+    return '';
+}
+
 export interface ScentCue {
     sector: number;
     strength: number;
