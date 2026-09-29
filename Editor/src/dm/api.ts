@@ -1,6 +1,7 @@
 // Calls to the Dungeon Master host (tools/dungeon_master.py). The session token lives in this tab only.
 import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
+import type {Chronicle} from '../lib/chronicle';
 
 export type Target = 'prod' | 'dev';
 export type Role = 'viewer' | 'dm' | 'admin';
@@ -97,5 +98,9 @@ export const dmApi = {
     relate: (target: Target, faction: string, other: string, disposition: number, stance: Stance, reason: string) =>
         call<unknown>('api/factions/relation', {target, faction, other, disposition, stance, reason}),
     member: (target: Target, faction: string, npc: string, rank: string | null) => call<unknown>('api/factions/member', {target, faction, npc, rank}),
+    /** Someone's life from the event log, their story if one was written, and what they carry in mind (Phase 8). */
+    chronicle: (target: Target, id: string) => call<Chronicle>(`api/chronicle?target=${target}&id=${encodeURIComponent(id)}`),
+    /** Has their life story written from the chronicle (one call to the NPC model) and kept. */
+    writeStory: (target: Target, id: string) => call<Chronicle>('api/chronicle/story', {target, id}),
     action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`api/actions/${id}?target=${target}`),
 };

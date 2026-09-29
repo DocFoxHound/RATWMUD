@@ -73,3 +73,28 @@
 .dm-matrix td.on button { box-shadow: 0 0 0 2px #ffffff; }
 .toggle-row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
 .app.dm > .dm-npcs, .app.dm > .dm-players { flex: 1; min-height: 0; }
+
+/* Life (Phase 8): the chronicle, its story, and what someone carries in mind. */
+.dm-life { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.dm-life > header { display: flex; justify-content: space-between; align-items: center; }
+.dm-life > header small { color: var(--faint); letter-spacing: .08em; }
+.dm-segments { display: flex; gap: 4px; flex-wrap: wrap; }
+.dm-segments button { padding: 3px 9px; font-size: 12px; }
+.dm-segments button.on { border-color: var(--amber); color: var(--amber); }
+.dm-segments.small button { font-size: 11px; padding: 2px 8px; }
+.dm-story { display: grid; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #111a18; }
+.dm-story p { margin: 0; font-size: 13px; line-height: 1.55; }
+.dm-story button { justify-self: start; }
+.dm-timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; max-height: 420px; overflow-y: auto; }
+.dm-timeline li { display: grid; gap: 1px; padding: 4px 8px; border-left: 2px solid var(--line-2); font-size: 12.5px; }
+.dm-timeline li small { color: var(--faint); font-size: 11px; }
+.dm-timeline li.i3 { border-left-color: var(--amber); }
+.dm-timeline li.i1 { color: var(--muted); }
+.dm-timeline li.round { border-left-style: dashed; color: var(--muted); }
+.dm-mind { display: grid; gap: 6px; }
+.dm-mind h3 { margin: 6px 0 0; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.dm-bonds { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+.dm-bonds li { display: grid; gap: 1px; padding: 4px 8px; border: 1px solid #26312c; border-radius: 6px; }
+.dm-bonds li small { color: var(--faint); font-size: 11px; }
+.dm-mind details summary { cursor: pointer; font-size: 12.5px; }
+.dm-turns { margin: 4px 0 0; padding-left: 16px; font-size: 12px; display: grid; gap: 2px; }

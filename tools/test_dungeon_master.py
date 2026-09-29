@@ -373,5 +373,81 @@ class FactionTests(NpcFixture):
             self.assertEqual(raised.exception.status, 403)
 
 
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class ChronicleTests(Fixture):
+    """Chronicles (Phase 8): a life from the event log, what they carry in mind, and a story written from it offline."""
+
+    def setUp(self):
+        super().setUp()
+        import npc_mind
+        self.dm._writer = (npc_mind.Mind(npc_mind.FixtureProvider(), audit=lambda e: None), 'fixture')
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            owner.execute('TRUNCATE game.events, dm.stories')
+        payload = {'schema': 1,
+                   'players': [{'id': 'player-ada', 'name': 'Ada', 'description': 'A grey traveller.'}],
+                   'npcs': [{'id': 'wren', 'name': 'Wren', 'description': 'The shopkeeper.'}, {'id': 'sloe', 'name': 'Sloe'}],
+                   'bonds': [{'holder': 'wren', 'other': 'player-ada', 'affinity': -20, 'trust': -30, 'familiarity': 40,
+                              'fear': 10, 'respect': 0, 'owed': 0, 'lastContact': 3}],
+                   'beliefs': [{'holder': 'sloe', 'subject': 'player-ada', 'claim': 'stole from Wren',
+                                'source': 'wren', 'confidence': .8, 'day': 3, 'incident': 'inc-1'}],
+                   'summaries': [{'id': 'm1', 'npc': 'wren', 'subject': 'player-ada', 'text': 'Ada asked about rope.',
+                                  'started': 1, 'consolidated': 2, 'sourceEvents': []}]}
+        events = [{'kind': 'conversation', 'actor': 'player-ada', 'target': 'wren', 'day': 1},
+                  {'kind': 'economy', 'actor': 'player-ada', 'target': 'wren', 'item': 'meal', 'quantity': 1, 'coins': 6,
+                   'day': 1.2, 'detail': 'resident food purchase'},
+                  {'kind': 'theft', 'actor': 'player-ada', 'target': 'wren', 'coins': 3, 'cell': 'shop', 'day': 3, 'detail': 'inc-1'},
+                  {'kind': 'reported', 'actor': 'wren', 'target': 'sloe', 'day': 3.1, 'detail': 'theft (inc-1)'}]
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 2, %s)', ('greyfen', json.dumps(payload)))
+            game.execute("SELECT game.record_events('greyfen', %s::jsonb)", (json.dumps(events),))
+
+    def test_an_npcs_life_and_mind(self):
+        life = self.dm.chronicle('dev', 'wren')
+        self.assertEqual('Wren', life['name'])
+        self.assertEqual(['Wren first spoke with Ada.', 'Ada stole 3 pennies from Wren.', 'Wren told the watch (Sloe) of a theft.'],
+                         [e['text'] for e in life['entries']])
+        self.assertEqual('Tallow & Twine', life['entries'][1]['place'])
+        self.assertEqual('Earned 6 pennies; sold 1 meal; talked 1 time with Ada.', life['seasons'][0]['text'])
+        mind = life['mind']
+        self.assertEqual(['Ada asked about rope.'], [m['text'] for m in mind['memories']])
+        self.assertEqual([('player-ada', -20)], [(b['who'], b['affinity']) for b in mind['bonds']])
+        self.assertEqual('Ada', mind['names']['player-ada'])
+        self.assertIsNone(life['story'])
+
+    def test_a_players_life_and_what_is_said_of_them(self):
+        life = self.dm.chronicle('dev', 'player-ada')
+        self.assertIn('Ada stole 3 pennies from Wren.', [e['text'] for e in life['entries']])
+        self.assertEqual('Spent 6 pennies; bought 1 meal; talked 1 time with Wren.', life['seasons'][0]['text'])
+        self.assertEqual([('sloe', 'stole from Wren', 'wren')], [(b['holder'], b['claim'], b['source']) for b in life['mind']['said']])
+        self.assertEqual([('wren', -30)], [(b['who'], b['trust']) for b in life['mind']['regard']], 'How others regard them')
+        self.assertEqual(['Ada asked about rope.'], [m['text'] for m in life['mind']['memories']], 'What NPCs remember of them')
+
+    def test_a_story_written_once_and_kept(self):
+        master = self.sign_in('dm-master')
+        life = self.dm.write_story(master, 'dev', 'wren')
+        self.assertTrue(life['story']['text'].startswith('The chronicle of Wren holds'))
+        self.assertEqual((0, 'fixture', 'dm-master'), (life['story']['newer'], life['story']['model'], life['story']['by']))
+        self.assertEqual(life['story']['text'], self.dm.chronicle('dev', 'wren')['story']['text'], 'Kept, not rewritten')
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute("SELECT game.record_events('greyfen', %s::jsonb)",
+                         (json.dumps([{'kind': 'marriage', 'actor': 'wren', 'target': 'sloe', 'day': 9}]),))
+        self.assertEqual(1, self.dm.chronicle('dev', 'wren')['story']['newer'], 'The story is one event behind')
+        self.assertEqual(0, self.dm.write_story(master, 'dev', 'wren')['story']['newer'])
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            self.assertEqual(2, conn.execute("SELECT count(*) FROM dm.audit WHERE action = 'story.write'").fetchone()[0])
+
+    def test_who_may_have_stories_written(self):
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.write_story(self.sign_in('dm-viewer'), 'dev', 'wren')
+        self.assertEqual(403, raised.exception.status)
+        self.assertIsNotNone(self.dm.chronicle('dev', 'wren'), 'Viewers may read chronicles')
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.write_story(self.sign_in('dm-master'), 'dev', 'nobody')
+        self.assertEqual(422, raised.exception.status, 'Nothing to write from')
+        with self.assertRaises(D.DMError):
+            self.dm.chronicle('dev', '')
+
+
 if __name__ == '__main__':
     unittest.main()

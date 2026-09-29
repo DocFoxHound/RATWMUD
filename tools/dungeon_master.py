@@ -30,6 +30,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
+import chronicle as C
 import http_body
 import live_edit as L
 import map_editor
@@ -47,6 +48,10 @@ TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
 ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm', 'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm'}
+# What else a role may do here (not live actions for the game server).
+WRITES = {'story.write': 'dm'}
+STORIES_PER_HOUR = 30
+AI_CONFIG = ROOT / 'Saved' / 'Config' / 'RATWNPCAI.local.json'
 AREA_KINDS = ('wander', 'spawn', 'plan')
 FACTION_KINDS = ('npc', 'city', 'guild', 'clan', 'other')
 STANCES = ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
@@ -106,13 +111,14 @@ def create_defaults(conn):
 class DungeonMaster:
     """Everything the UI does, over connections to PROD (accounts, live world) and DEV (rehearsal)."""
 
-    def __init__(self, connect=None, clock=time.time):
+    def __init__(self, connect=None, clock=time.time, writer=None):
         if connect is None:
             pools = {target: world_db.Pool(target, 'dm') for target in TARGETS}    # Reused, not one per request.
             connect = lambda target: pools[target].connection()
         self._connect = connect
         self.clock = clock
         self.lock = threading.Lock()
+        self._writer = writer                  # (Mind, model): writes life stories; made when first needed.
 
     def connect(self, target):
         if target not in TARGETS:
@@ -282,6 +288,134 @@ class DungeonMaster:
         return {'target': target, 'world': world[0], 'people': project['people'], 'holders': holders, 'dead': dead,
                 'routes': project['routes'], 'areas': areas, 'spawns': spawns, 'wanders': wanders, 'spawned': spawned,
                 'actions': actions}
+
+    # -- chronicles (Docs/Design/26-living-npcs.md, Phase 8) ----------------------
+    def chronicle(self, target, subject):
+        """Someone's life from the event log, the story written from it (if any), and what they carry in mind:
+        memories, open conversations, bonds and what they have heard. For NPCs and player characters alike."""
+        subject = str(subject)
+        if not subject or len(subject) > 80:
+            raise DMError('Choose someone.')
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            life = C.load(conn, subject)
+            life['story'] = self.stored_story(conn, world, subject, life)
+            life['mind'] = self.mind_of(conn, world, subject)
+        return life
+
+    @staticmethod
+    def stored_story(conn, world, subject, life):
+        try:
+            row = conn.execute('''SELECT story, through_event, entries, model, written_by, written_at FROM dm.stories
+                                  WHERE world_id = %s AND subject = %s''', (world, subject)).fetchone()
+        except Exception as error:             # A database without migration 0026: no stories yet.
+            if 'stories' not in str(error):
+                raise
+            return None
+        if not row:
+            return None
+        newer = sum(1 for e in life['entries'] if (e['id'] or 0) > row[1])
+        return {'text': row[0], 'throughEvent': row[1], 'entries': row[2], 'model': row[3], 'by': row[4],
+                'at': row[5].isoformat(), 'newer': newer}
+
+    @staticmethod
+    def mind_of(conn, world, subject):
+        def rows(sql, *args):
+            try:
+                return conn.execute(sql, (world, *args)).fetchall()
+            except Exception as error:         # A table this database doesn't have yet (bonds 0023, beliefs 0024).
+                if 'does not exist' not in str(error):
+                    raise
+                return []
+        memories = [{'npc': d.get('npc', ''), 'subject': d.get('subject', ''), 'text': d.get('text', ''),
+                     'started': d.get('started'), 'consolidated': d.get('consolidated')}
+                    for (d,) in rows('''SELECT data FROM game.npc_memories WHERE world_id = %s AND (npc = %s OR data->>'subject' = %s)
+                                        ORDER BY (data->>'consolidated')::double precision DESC NULLS LAST LIMIT 40''',
+                                     subject, subject)]
+        talks = [{'npc': d.get('npc', ''), 'subject': d.get('subject', ''), 'started': d.get('started'),
+                  'lastActivity': d.get('lastActivity'),
+                  'turns': [{'who': t.get('who', ''), 'text': t.get('text', '')} for t in (d.get('turns') or [])[-12:]]}
+                 for (d,) in rows('''SELECT data FROM game.conversations WHERE world_id = %s
+                                     AND (data->>'npc' = %s OR data->>'subject' = %s) LIMIT 20''', subject, subject)]
+
+        def bond(d, key):
+            return {'who': d.get(key, ''), **{k: d.get(k, 0) for k in ('affinity', 'trust', 'familiarity', 'fear', 'respect',
+                                                                       'owed', 'lastContact')}}
+        order = "ORDER BY (data->>'familiarity')::double precision + abs((data->>'affinity')::double precision) DESC LIMIT 30"
+        bonds = [bond(d, 'other') for (d,) in rows(f'SELECT data FROM game.bonds WHERE world_id = %s AND holder = %s {order}', subject)]
+        regard = [bond(d, 'holder') for (d,) in rows(f'SELECT data FROM game.bonds WHERE world_id = %s AND other = %s {order}', subject)]
+
+        def belief(d):
+            return {k: d.get(k, '') for k in ('holder', 'subject', 'claim', 'source', 'confidence', 'day', 'incident')}
+        heard = [belief(d) for (d,) in rows('''SELECT data FROM game.beliefs WHERE world_id = %s AND holder = %s
+                                               ORDER BY (data->>'confidence')::double precision DESC LIMIT 40''', subject)]
+        said = [belief(d) for (d,) in rows('''SELECT data FROM game.beliefs WHERE world_id = %s AND subject = %s
+                                              ORDER BY (data->>'confidence')::double precision DESC LIMIT 40''', subject)]
+        keys = {subject} | {m['npc'] for m in memories} | {m['subject'] for m in memories} | {t['npc'] for t in talks} \
+            | {t['subject'] for t in talks} | {b['who'] for b in bonds + regard} \
+            | {b[k] for b in heard + said for k in ('holder', 'subject', 'source')}
+        keys = {k for k in keys if k}
+        names = C.fetch_names(conn, world, keys)
+        return {'memories': memories, 'conversations': talks, 'bonds': bonds, 'regard': regard, 'heard': heard,
+                'said': said, 'names': {k: names.get(k) or C.plain_name(k) for k in keys}}
+
+    def writer(self):
+        """The NPC Mind's story writer, with the same model and key as live NPCs (RATW_AI=fixture: offline)."""
+        with self.lock:
+            if self._writer is None:
+                import npc_bridge
+                import npc_mind
+                mode = os.environ.get('RATW_AI', 'on')
+                if mode == 'off':
+                    raise DMError('Life stories are off (RATW_AI=off).', 503)
+                if mode == 'fixture':
+                    provider, model = npc_mind.FixtureProvider(), 'fixture'
+                else:
+                    try:
+                        config = npc_bridge.load_config(Path(os.environ.get('RATW_AI_CONFIG') or AI_CONFIG))
+                    except npc_bridge.BridgeError as error:
+                        raise DMError(f'No story writer: the NPC model is not configured ({error.code}).', 503) from None
+                    provider, model = npc_mind.OpenAIProvider(config), config.model
+                budget = npc_mind.Budget(STORIES_PER_HOUR, STORIES_PER_HOUR)
+                self._writer = (npc_mind.Mind(provider, budget=budget, concurrency=2, timeout=40, wait=5), model)
+            return self._writer
+
+    def write_story(self, who, target, subject):
+        """Has the story of someone's life written from their chronicle, and keeps it (paid for once)."""
+        if RANK[who['role']] < RANK[WRITES['story.write']]:
+            raise DMError(f'Your role ({who["role"]}) cannot do that.', 403)
+        life = self.chronicle(target, subject)
+        lines = C.story_lines(life)
+        if not lines:
+            raise DMError(f"Nothing is recorded of {life['name']}'s life yet.")
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            try:
+                conn.execute('SELECT 1 FROM dm.stories LIMIT 0')
+            except Exception:
+                raise DMError('Apply migration 0026 first (python3 tools/world_db.py migrate).', 503) from None
+            row = conn.execute('''SELECT data->>'description' FROM game.npcs WHERE world_id = %s AND key = %s
+                                  UNION ALL SELECT data->>'description' FROM game.characters WHERE world_id = %s AND key = %s''',
+                               (world, subject, world, subject)).fetchone()
+        mind, model = self.writer()
+        import npc_bridge
+        try:
+            story = mind.story({'name': life['name'], 'description': (row and row[0]) or '', 'lines': lines})['story']
+        except npc_bridge.BridgeError as error:
+            raise DMError(f'The story could not be written just now ({error.code}).', 503) from None
+        with self.connect(target) as conn:
+            with conn.transaction():
+                conn.execute('''INSERT INTO dm.stories (world_id, subject, story, through_event, entries, model, written_by)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (world_id, subject) DO UPDATE SET story = excluded.story,
+                                    through_event = excluded.through_event, entries = excluded.entries,
+                                    model = excluded.model, written_by = excluded.written_by, written_at = now()''',
+                             (world, subject, story[:4000], life['lastEvent'], len(life['entries']), model[:80],
+                              who['username']))
+                self.audit(conn, who['username'], 'story.write', subject, f'{target.upper()}: the story of {life["name"]}')
+        return self.chronicle(target, subject)
 
     def save_npc(self, who, target, person):
         """Creates or changes a named NPC: checked against the whole world, written through the live-edit log,
@@ -768,6 +902,11 @@ def make_server(port=8766, dm=None):
                 data = self.body()
                 return self.reply(200, dm.request(who, str(data.get('target', 'prod')), str(data.get('kind', '')),
                                                   str(data.get('characterId', '')), str(data.get('reason', ''))))
+            if method == 'GET' and path == '/api/chronicle':
+                return self.reply(200, dm.chronicle(self.target(query), query.get('id', [''])[0]))
+            if method == 'POST' and path == '/api/chronicle/story':
+                data = self.body()
+                return self.reply(200, dm.write_story(who, str(data.get('target', 'prod')), str(data.get('id', ''))))
             if method == 'GET' and path == '/api/npcs':
                 return self.reply(200, dm.npcs(self.target(query)))
             if method == 'POST' and path == '/api/npcs/save':

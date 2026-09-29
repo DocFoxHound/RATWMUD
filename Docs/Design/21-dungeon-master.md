@@ -78,6 +78,20 @@ top.
   confirmation on PROD. The dead stay in the records; deaths are part of the
   world's history.
 
+#### Life: chronicles, stories and what they have in mind (built 2026-09-29)
+
+Under every named NPC and job holder in NPC Management, and every character in Players, a **Life** panel
+(`Editor/src/dm/LifePanel.tsx`, `GET /api/chronicle`):
+
+- **Chronicle:** their life compiled from the event log (`tools/chronicle.py`, doc 26 Phase 8), dated by the game's
+  calendar. It shows milestones only, life and seasons (with each season's round of trade and talk), or everything
+  (first meetings too).
+- **Story:** *Tell their story* has the NPC model write a short life story from the chronicle only (dm and admin;
+  one paid call, confirmed first). It is kept in `dm.stories` (migration 0026) with the last event it knew of, so the
+  panel says how many events have happened since; *Rewrite* writes it again. Each one is audited (`story.write`).
+- **In mind** (read only): the conversations they remember and those still open, their bonds and how others regard
+  them (in words and numbers), the rumours they have heard, and what is said of them.
+
 ### 2. Factions
 
 - **Factions of every kind:** NPC factions, cities and towns, and player

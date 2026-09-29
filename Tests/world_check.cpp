@@ -1,7 +1,7 @@
 // Loads a streamed world export (tools: map_editor.export_files(project, stream=True) written to a folder) the way
 // the game server does, then brings every cell into memory so the server's own checks run on all of it.
 //
-//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full]]
+//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
@@ -44,6 +44,7 @@ int main(int argc, char** argv)
     int playerCount = 1;
     bool check = true;
     bool full = false;                              // --full: every NPC in full simulation (no tiers).
+    std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -54,12 +55,14 @@ int main(int argc, char** argv)
             check = false;
         else if (flag == "--full")
             full = true;
+        else if (flag == "--events" && i + 1 < argc)
+            eventsFile = argv[++i];
         else
             usage = true;
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -190,6 +193,7 @@ int main(int argc, char** argv)
         if (e.npc)
             start[id] = e.cellId + " " + std::to_string(int(e.position.x)) + "," + std::to_string(int(e.position.y));
     const int ticks = int((to - from) * 600.0 / 0.05);      // A game hour is 600 real seconds; the server ticks at 20 Hz.
+    std::vector<ratw::WorldEvent> events;
     struct WorstTick
     {
         double total = 0, streaming = 0, schedules = 0, movement = 0, separation = 0, views = 0;
@@ -209,6 +213,9 @@ int main(int argc, char** argv)
         const auto profileBefore = server.tickProfile();
         server.tick(0.05);
         const auto& profileAfter = server.tickProfile();
+        if (!eventsFile.empty() && i % 20 == 0)
+            for (auto& e : server.takeEvents())
+                events.push_back(std::move(e));
         const double tickOnly = (profileAfter.streaming.total - profileBefore.streaming.total) +
                                 (profileAfter.schedules.total - profileBefore.schedules.total) +
                                 (profileAfter.movement.total - profileBefore.movement.total) +
@@ -358,6 +365,26 @@ int main(int argc, char** argv)
         for (const auto& [kind, n] : kinds)
             std::cout << n << " " << kind << (kind == kinds.rbegin()->first ? "" : ", ");
         std::cout << "); " << server.crime().warrants.size() << " wanted, " << server.crime().custody.size() << " held\n";
+    }
+    if (!eventsFile.empty())
+    {
+        // For reading chronicles offline (tools/chronicle.py --events): the events as the database would get them.
+        for (auto& e : server.takeEvents())
+            events.push_back(std::move(e));
+        std::ofstream out(eventsFile);
+        out << "{\"events\": " << ratw::eventsJson(events) << ", \"names\": {";
+        bool first = true;
+        for (const auto& [id, e] : server.entities())
+        {
+            std::string name;
+            for (const char ch : e.name)
+                if (ch == '"' || ch == '\\') name += std::string("\\") + ch;
+                else if (static_cast<unsigned char>(ch) >= 0x20) name += ch;
+            out << (first ? "" : ", ") << '"' << id << "\": \"" << name << '"';
+            first = false;
+        }
+        out << "}}\n";
+        std::cout << "  events: " << events.size() << " written to " << eventsFile << '\n';
     }
     std::cout << "  at their scheduled place: " << arrived << ", on their way: " << underway << ", without a route: "
               << lost.size() << '\n';

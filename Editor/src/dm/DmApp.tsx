@@ -9,6 +9,7 @@ import {useGlyphRender} from '../lib/glyphFont';
 import {NpcTab} from './NpcTab';
 import {useWorld} from './world';
 import {FactionsTab} from './FactionsTab';
+import {LifePanel} from './LifePanel';
 import {dmApi, signedIn, type Action, type Character, type Me, type Players, type Target} from './api';
 
 type Tab = 'npcs' | 'factions' | 'stories' | 'players' | 'live';
@@ -196,6 +197,7 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         {actions.length > 0 && <ol className="dm-actions">{actions.slice(0, 6).map(a =>
             <li key={a.id} className={a.status}><b>{a.kind.replace('character.', '')}</b> by {a.by} · {new Date(a.at).toLocaleTimeString()}
                 <span>{a.status === 'queued' ? 'waiting for the game server…' : `${a.status}: ${a.result}`}</span></li>)}</ol>}
+        <LifePanel me={me} target={target} id={character.id} name={character.name} />
     </div>;
 }
 

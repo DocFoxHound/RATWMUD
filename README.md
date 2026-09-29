@@ -385,6 +385,15 @@ passwords lock that account's sign-in for 15 minutes.
   - **Members:** named NPCs with a rank.
   Factions made in Atlas on DEV are pushed like NPCs: new ones are added, and
   once live the Dungeon Master's version wins.
+- **Life** (under every NPC, job holder and player character): their
+  **chronicle**, compiled from the event log and dated by the game calendar
+  (milestones only, with each season's round of work and trade, or
+  everything); **Tell their story** has the NPC model write a short life
+  story from it (dm and admin; one paid call, kept, and marked when newer
+  events arrive); and **In mind**: the conversations they remember, their
+  bonds both ways, and the rumours they have heard and that are told of
+  them. NPCs also know their own milestones when they talk. Needs migration
+  0026 (`python3 tools/world_db.py migrate`) for stories.
 - **Story Creator and LIVE** are the next phases; after them, Atlas will also be
   able to plan NPC areas and spawn rules on DEV (phase 8).
 

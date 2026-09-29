@@ -99,6 +99,68 @@ class MindTests(unittest.TestCase):
                 raise RuntimeError("database down")
         self.assertEqual("Mind the crust.", mind.Mind(Recording(), Broken(), audit=lambda e: None).dialogue(CONTEXT)["text"])
 
+    def test_their_life_joins_the_scene(self):
+        class FakeHistory:
+            def recent(self, *args):
+                return ""
+            def life(self, npc_id):
+                return "Spring 2, Year 1: You became apprentice to Rowan (Baker)." if npc_id == "wren" else ""
+        provider = Recording()
+        mind.Mind(provider, FakeHistory(), audit=lambda e: None).dialogue(CONTEXT)
+        self.assertEqual("Spring 2, Year 1: You became apprentice to Rowan (Baker).", provider.calls[0]["user"]["life"])
+        self.assertIn('"life" is what the NPC', provider.calls[0]["system"])
+        mind.Mind(provider, FakeHistory(), audit=lambda e: None).dialogue(dict(CONTEXT, npcId="rowan"))
+        self.assertNotIn("life", provider.calls[1]["user"], "Nothing lived, nothing sent")
+
+    def test_a_broken_life_never_stops_a_reply(self):
+        class Broken:
+            def recent(self, *args):
+                return ""
+            def life(self, npc_id):
+                raise RuntimeError("database down")
+        self.assertEqual("Mind the crust.", mind.Mind(Recording(), Broken(), audit=lambda e: None).dialogue(CONTEXT)["text"])
+
+    def test_a_life_is_read_once_a_while(self):
+        reads, now = [], [0.0]
+
+        class Conn:
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+        import chronicle
+        real = chronicle.load
+        chronicle.load = lambda conn, npc, **kw: reads.append(npc) or chronicle.compile_chronicle(
+            npc, [{"id": 1, "day": 1, "kind": "marriage", "actor": npc, "target": "sorrel"}], {"sorrel": "Sorrel"}, **{"second_person": True})
+        try:
+            history = mind.History(lambda: Conn(), clock=lambda: now[0])
+            self.assertEqual("Spring 2, Year 1: You married Sorrel.", history.life("wren"))
+            history.life("wren")
+            now[0] += mind.History.LIFE_SECONDS + 1
+            history.life("wren")
+        finally:
+            chronicle.load = real
+        self.assertEqual(["wren", "wren"], reads)
+
+    def test_a_story_from_a_chronicle_only(self):
+        provider = Recording(lambda call: {"story": "Fennel came to Greyfen in spring.\n\nShe learned to bake."})
+        got = mind.Mind(provider, audit=lambda e: None).story(
+            {"name": "Fennel", "description": "A young baker.", "lines": ["Spring 1, Year 1: Fennel first appeared."] * 200})
+        self.assertEqual({"story": "Fennel came to Greyfen in spring.\n\nShe learned to bake."}, got, "Paragraphs kept")
+        call = provider.calls[0]
+        self.assertEqual("npc_story", call["name"])
+        self.assertIn("Never invent events", call["system"])
+        self.assertEqual(mind.MAX_STORY_LINES, len(call["user"]["lines"]))
+        for bad in ({"name": "Fennel", "lines": []}, {"lines": ["x"]}, {"name": "Fennel", "lines": "x"}, []):
+            with self.assertRaises(BridgeError):
+                mind.Mind(provider, audit=lambda e: None).story(bad)
+        for reply_ in ({"story": ""}, {"story": 3}, {"story": "x", "extra": 1}):
+            with self.assertRaises(BridgeError):
+                mind.decode_story(reply_)
+        self.assertLessEqual(len(mind.decode_story({"story": "x" * 10_000})["story"]), mind.MAX_STORY)
+        fixture = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).story({"name": "Fennel", "lines": ["Day: A.", "Day: B."]})
+        self.assertEqual("The chronicle of Fennel holds 2 entries. A. B.", fixture["story"])
+
     def test_budgets(self):
         now = [0.0]
         budget = mind.Budget(per_hour=3, per_speaker_minute=2, clock=lambda: now[0])

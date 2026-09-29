@@ -640,10 +640,43 @@ or holds the offender in the gaol for a few game hours; and residents in need st
   beating and recovery with the victim's report, crime from hunger, and saving). `world_check` prints a crime line;
   the perf gate on DEV is unchanged (same digest, same tick times).
 
+## Phase 8: NPC chronicles (built 2026-09-29)
+
+A chronicle is someone's life as the event log records it (`tools/chronicle.py`). Nothing new is stored and nothing
+is invented: the log (Phase 2) stays the one record, and a chronicle is a view of it. The user's choices: a factual
+timeline, with a written life story only when the Dungeon Master asks for one; NPCs know their own milestones when
+they talk; the Dungeon Master's inspector shows the chronicle and what the NPC has in mind; player characters get
+chronicles too.
+
+- **What is told one by one:** arrivals and first appearances, apprenticeships begun and finished, posts taken up and
+  left, estates, relocations, marriages, mourning, deaths and revivals, promises made and broken, work taken on,
+  crimes done and suffered, the watch, and bandits on the road; also each first meeting. Importance 3 is a life event,
+  2 notable, 1 a first meeting. Road events that name no person (caravans passing, camps gathering) are the road's
+  story, not a person's.
+- **What is folded:** the daily round, one line a season: earned (and how much in wages) and spent; bought, sold,
+  gathered, cooked, ate, received and gave; whom they talked with; how often a player came into the world. The
+  database counts it a day at a time, so a merchant's thousand sales cost one grouped query. Ledger entries a crime
+  already tells (stolen goods, fines, restitution, bandits' takings) aren't counted twice.
+- **Dated** by the game's calendar ("Summer 9, Year 1"), with places named from the world's cells and interiors, and
+  people from the saved bodies, the player characters, the authored NPCs and the roster.
+- **The NPC knows their life.** With `--database`, the NPC Mind adds up to eight milestones in the second person to
+  what the NPC is told ("life": "Spring 2, Year 1: You became apprentice to Wren (Baker)."), read without the round
+  and kept ten minutes per NPC. The rules tell the model it is the NPC's own past, to speak of when it fits.
+- **Stories on request.** In the Dungeon Master (doc 21), *Tell their story* has the NPC Mind's model write at most
+  three paragraphs from the chronicle's lines only (`Mind.story`, the rules forbid inventing anything), confirmed
+  first as a paid call, kept in `dm.stories` (migration 0026) with the last event it knew of, audited, at most 30 an
+  hour. `RATW_AI=fixture` writes offline; `RATW_AI=off` turns stories off.
+- **In the Dungeon Master:** the Life panel under NPCs, job holders and player characters: chronicle (milestones, life
+  and seasons, or everything), story, and *in mind*: memories, open conversations, bonds both ways, rumours heard and
+  said of them.
+- `python3 tools/chronicle.py dev ID` prints one from a database; `world_check ... --events FILE` writes a
+  simulation's events and names for reading chronicles without a database.
+- **Tests:** `tools/test_chronicle.py` (the calendar, every logged kind as a sentence, the round, the second person,
+  and a scratch event log), the Mind's life and story tests, `ChronicleTests` in `tools/test_dungeon_master.py`, and
+  `src/lib/chronicle.test.ts` in the Editor.
+
 ## Next phases (order agreed 2026-09-28)
 
-- **Phase 8: NPC chronicles.** A chronicle of each NPC's life, compiled from events, for the Dungeon Master and for
-  storytelling.
 - **Phase 9: schedules.** Market days, festivals, a day of rest, and weather changing plans.
 - **Phase 10: the ambient director.** A local director that picks one or two NPC-to-NPC exchanges worth voicing where
   players are: gossip about a recent event, rivals arguing.

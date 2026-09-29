@@ -10,6 +10,7 @@ import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
 import {useWorld} from './world';
 import {dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
+import {LifePanel} from './LifePanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {AREA_KINDS, AreaInspector, LAYERS, RouteInspector, SpawnInspector, areaColor, idFrom, type Brush, type Layer, type SpawnDraft} from './LayerPanels';
 
@@ -298,17 +299,19 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         </main>
         <aside className="inspector" aria-label="Inspector">
             {problem && <p className="hint dm-note">{problem}</p>}
-            {layer === 'npcs' && (draft ? <NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canAct={canAct} busy={busy}
+            {layer === 'npcs' && (draft ? <><NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canAct={canAct} busy={busy}
                 dirty={dirty} isNew={isNew} dead={dead.has(draft.id)} target={target} actions={actions} areas={data?.areas ?? []}
                 wander={data?.wanders[draft.id] ?? ''} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
                 onWander={area => wander(draft.id, draft.name, area)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
+                {!isNew && <LifePanel me={me} target={target} id={draft.id} name={draft.name} />}</>
                 : holder ? <div className="dm-panel"><header><div><small>JOB HOLDER</small><h2>{holder.name}</h2></div>
                     {dead.has(holder.id) && <span className="dm-status dead">✝ dead</span>}</header>
                     <Hint>Holds the “{holder.slot}” profession slot. Their details come from the character roster and the slot; edit those in Atlas for now.</Hint>
                     {canAct && <div className="button-grid"><button className="danger" disabled={busy || dead.has(holder.id)} onClick={() => life(holder.id, holder.name, true)}>✝ Kill</button>
                         <button disabled={busy || !dead.has(holder.id)} onClick={() => life(holder.id, holder.name, false)}>Revive</button></div>}
-                    <ActionList actions={actions} target={target} /></div>
+                    <ActionList actions={actions} target={target} />
+                    <LifePanel me={me} target={target} id={holder.id} name={holder.name} /></div>
                 : <Overview title="NPC MANAGEMENT" target={target}>
                     <Hint>{data ? `${data.people.length} named NPCs and ${data.holders.length} job holders; ${data.dead.length} dead.` : 'Loading…'}</Hint>
                     <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to the {target.toUpperCase()} database and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint></Overview>)}
