@@ -165,6 +165,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     {
         const Position* position;
         Spot serve;
+        std::string community;                      // Of where it serves.
     };
     std::map<std::string, Open> openShops;
     atStall_.clear();
@@ -183,7 +184,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (body != bodies.end() && !body->second.companion && life && life->task == "trade" &&
             near(body->second, at) && stock(*account(holder), "meal") > 0)
         {
-            openShops[holder] = {&p, stall ? at : p.serve};
+            const Spot serve = stall ? at : p.serve;
+            openShops[holder] = {&p, serve, day_.communityOf ? day_.communityOf(serve.cell) : std::string()};
             if (stall)
                 atStall_.insert(holder);
         }
@@ -256,11 +258,19 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         const bool onDuty = guard && onHours;
         std::string task, reason;
         Spot goal{life.homeCell, life.homeX, life.homeY};
-        // Nearest open shop: same cell first, then any.
+        // Nearest open shop: in the same cell, else in the same town, else any (a long walk for a meal).
         const Spot* shop = nullptr;
+        int shopRank = -1;
+        const auto home = day_.communityOf ? day_.communityOf(life.homeCell) : std::string();
         for (const auto& open : openShops)
-            if (open.first != pair.first && (!shop || (open.second.serve.cell == body.cell && shop->cell != body.cell)))
-                shop = &open.second.serve;
+        {
+            if (open.first == pair.first)
+                continue;
+            const auto& at = open.second.serve;
+            const int rank = at.cell == body.cell ? 2 : !home.empty() && open.second.community == home ? 1 : 0;
+            if (rank > shopRank)
+                shop = &at, shopRank = rank;
+        }
         // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
         const auto visit = 8 + int(std::hash<std::string>{}(pair.first + "market") % 5);
         const bool marketHour = plan.kind == "market" && !plan.foul && !plan.crowd.empty() && !guard && !merchantRole &&

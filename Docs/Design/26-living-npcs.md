@@ -684,9 +684,17 @@ chronicles too.
   - If every way from the body of a cell into the next lands in a pocket, that connection is a dead end: routes leave
     it out (for everyone) until either cell's ground changes, and the resident is routed around.
   - Someone in a pocket, or cut off from the goal within the goal cell, takes the nearest way out that lands well.
+  - Pockets also come in pairs: the edge tiles either side of one seam, each a step below the rest of its cell, so
+    each can be left only for the other. Residents came to be in them by arriving from offstage (hops ignore
+    regions). With no walking way out, a resident clambers over the step to the open ground beside them (one tile,
+    never through a wall).
+  - A hungry resident buys food at an open shop in the same cell, else in their own town, else anywhere. It used to be
+    "anywhere" straight after the same cell, which sent Ridgemere's hungry to Upper Accord, across the edges where
+    they were stranded.
   - A cell's region map is checksummed once a tick, not on every look (it read every tile each time).
   - `Tests/stream_tests.cpp` builds a cell with a walled-off strip that every seam from the west lands on: a commuter
-    goes around it, and one put down on it gets out. Without the fix they are stranded there.
+    goes around it, and one put down on it gets out (without the fix they are stranded there); and a paired pocket
+    across a seam, which a resident clambers out of.
 
 ## Phase 9: schedules (built 2026-09-29; placeholder numbers throughout)
 

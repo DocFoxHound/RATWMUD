@@ -2733,7 +2733,34 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
         if (out)
             d = out;
     }
-    if (!d) return;
+    if (!d || ranked == 0)
+    {
+        // No walking way out at all: pockets come in pairs across a seam (an edge tile on each side, cut off from its
+        // own cell by a step), and someone set down in one (arriving from offstage, say) can only cross to the other.
+        // They clamber over the step to the open ground of the cell's body beside them (never through a wall).
+        if (current && region >= 0 && region != mainRegion(*current) && (e.cellId != goalCell || region != goalRegion))
+        {
+            const int body = mainRegion(*current);
+            const int cx = int(std::floor(e.position.x)), cy = int(std::floor(e.position.y));
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx)
+                    {
+                        if (!dx && !dy)
+                            continue;
+                        const Vec2 p{cx + dx + .5, cy + dy + .5};
+                        const auto* t = current->tile(cx + dx, cy + dy);
+                        if (!t || t->solid || regionOf(p) != body || blockedByDoor(e.cellId, p))
+                            continue;
+                        e.position = p;
+                        e.path.clear();
+                        e.velocity = {};
+                        pathRetryAt_.erase(e.id);
+                        return;
+                    }
+        }
+        if (!d)
+            return;
+    }
     if (d->boundary && d->open && d->edge != '-')
     {
         // Aim just past the shared edge: a corner tile belongs to two edges, and its centre alone is ambiguous.

@@ -195,11 +195,15 @@ void playersCrossAndReturn()
 // A strip along the west edge of c_1_0 is walled off from the rest of it: every seam from c_0_0 lands there, and
 // nothing leads on. A resident going east must not be stranded on it (residents were, for good, and piled up); they
 // go around, and one put down on the strip finds the way out.
+// Pip works in c_0_0 and lives two cells east, in c_2_0.
+const std::string PipEast =
+    "economy 1000 100 50 10 12\n"
+    "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
+    "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_2_0\" 8.5 8.5 \"c_0_0\" 8.5 8.5 \"c_2_0\" 9.5 8.5\n";
+
 Fixture pocketed()
 {
-    auto f = grid("economy 1000 100 50 10 12\n"
-                  "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
-                  "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_2_0\" 8.5 8.5 \"c_0_0\" 8.5 8.5 \"c_2_0\" 9.5 8.5\n");
+    auto f = grid(PipEast);
     auto& text = f.cells["c_1_0"];
     const auto rows = text.find("grid:\n") + 6;
     for (int y = 0; y < Side; ++y)
@@ -262,6 +266,35 @@ void noOneIsStrandedInAPocket()
             world.tick(1);
         expect(pip->cellId == "c_2_0", "Put down on the strip, Pip finds the way out and gets home: " + pip->cellId + " " + pip->activity);
     }
+}
+
+// Pockets in pairs: the edge tiles either side of one seam lie a step below the rest of both cells, so each can
+// only be left for the other. Someone set down there (arriving from offstage, say) clambers out over the step.
+void aPairedPocketIsClamberedOutOf()
+{
+    auto f = grid(PipEast);
+    for (const auto* id : {"c_0_0", "c_1_0"})
+    {
+        auto& text = f.cells[id];
+        const int low = std::string(id) == "c_0_0" ? Side - 1 : 0;   // The tiles either side of the seam at row 8.
+        std::string heights;
+        for (int y = 0; y < Side; ++y)
+            for (int x = 0; x < Side; ++x)
+                heights += "height: " + std::to_string(x) + " " + std::to_string(y) + " " + (x == low && y == 8 ? "0" : "2") + "\n";
+        text.insert(text.find("grid:"), heights);
+    }
+    auto world = load(f);
+    world.setTimeOfDay(18.5);
+    world.tick(1);
+    auto* pip = world.entity("pip");
+    world.ensureLoaded("c_1_0");
+    pip->cellId = "c_1_0";
+    pip->position = {.5, 8.5};
+    pip->path.clear();
+    for (int second = 0; second < 3000 && pip->cellId != "c_2_0"; ++second)
+        world.tick(1);
+    expect(pip->cellId == "c_2_0", "From a paired pocket Pip clambers out and gets home: " + pip->cellId + " " +
+                                       std::to_string(pip->position.x) + "," + std::to_string(pip->position.y) + " " + pip->activity);
 }
 
 // With simulation tiers, a resident far from every player travels in timed hops between known places.
@@ -374,6 +407,7 @@ int main()
         anOffstageResidentCommutes();
         aPlayerBringsResidentsOnstage();
         noOneIsStrandedInAPocket();
+        aPairedPocketIsClamberedOutOf();
         badSourcesAreRefused();
     }
     catch (const std::exception& error)
