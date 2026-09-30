@@ -513,6 +513,13 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
         wagon.activity = "waiting at the market for its escort";
         return;
     }
+    // Caravans wait out a storm (or a snowstorm, a sandstorm) where it finds them (Phase 9).
+    if (c.status != "arrived" && skyOf(wagon.cellId) == 2)
+    {
+        wagon.activity = "waiting out the weather";
+        stop(wagon.id);
+        return;
+    }
     if (wagon.cellId != c.cell)
     {
         c.cell = wagon.cellId;

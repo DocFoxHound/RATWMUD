@@ -103,4 +103,14 @@ Forecast forecastAt(std::uint64_t worldSeed, const std::string& cellId, double a
 
 std::string seasonName(Season season);
 std::string weatherName(Weather weather);
+
+// The week (Docs/Design/26-living-npcs.md, Phase 9): seven named days, the same everywhere, counted from Year 1's
+// first day (a Dawnday). Marketday brings stalls to every town's market; Restday rests all but the watch.
+constexpr int DaysPerWeek = 7;
+constexpr int Marketday = 5, Restday = 6;
+int weekdayOf(double absoluteGameDays);             // 0..6; 0 for invalid input.
+std::string weekdayName(int weekday);               // "Dawnday"... "Restday"; "" out of range.
+// Each season has one festival, on this day of it (a town's own name for it: World::festivalName).
+constexpr int FestivalDayOfSeason = 46;
+bool festivalDay(double absoluteGameDays);
 } // namespace ratw::calendar

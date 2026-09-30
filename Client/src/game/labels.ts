@@ -61,7 +61,19 @@ export function calendarLabel(snapshot: Maybe): string {
     const seasonDay = wholeCount(calendar, 'dayOfSeason', -1, 92);
     const season = str(calendar, 'season').toLowerCase();
     if (year < 1 || day < 1 || seasonDay < 1 || !['spring', 'summer', 'autumn', 'winter'].includes(season)) return 'THE SHARED WORLD';
-    return `YEAR ${year} · ${season.toUpperCase()} ${seasonDay} · DAY ${day} / 365`;
+    const weekday = str(calendar, 'weekday').toUpperCase();
+    return `YEAR ${year} · ${weekday ? weekday + ' · ' : ''}${season.toUpperCase()} ${seasonDay} · DAY ${day} / 365`;
+}
+
+// What kind of day it is where the player stands (Phase 9): nothing on an ordinary one.
+export function dayLabel(snapshot: Maybe): string {
+    const day = obj(obj(snapshot, 'cell'), 'day');
+    const kind = str(day, 'kind');
+    const foul = bool(day, 'foul');
+    if (kind === 'market') return foul ? 'MARKET DAY · NO STALLS TODAY' : 'MARKET DAY · STALLS OUT';
+    if (kind === 'rest') return 'REST DAY';
+    if (kind === 'festival') return `${str(day, 'name').toUpperCase()}${foul ? ' · KEPT INDOORS' : ' · FESTIVAL'}`;
+    return '';
 }
 
 const Moons = ['new moon', 'waxing crescent', 'first quarter', 'waxing gibbous', 'full moon', 'waning gibbous',

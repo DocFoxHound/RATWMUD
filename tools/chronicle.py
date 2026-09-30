@@ -47,6 +47,24 @@ def season_of(day: float) -> tuple[int, str, int]:
     return year, name, of_year - start + 1
 
 
+# The week (RatwCalendar.h, Phase 9): seven days, Year 1 beginning on a Dawnday.
+WEEKDAYS = ('Dawnday', 'Hearthday', 'Stoneday', 'Riverday', 'Emberday', 'Marketday', 'Restday')
+MARKETDAY, RESTDAY = 5, 6
+FESTIVAL_DAY = 46                                   # Of each season.
+
+
+def weekday_name(day: float) -> str:
+    return WEEKDAYS[max(0, int(day)) % 7]
+
+
+def season_length(day: int) -> int:
+    """How many days the season holding this day has (92, 92, 91, 90)."""
+    _, name, _ = season_of(day)
+    starts = [s for _, s in SEASONS] + [DAYS_PER_YEAR + 1]
+    i = [n for n, _ in SEASONS].index(name)
+    return starts[i + 1] - starts[i]
+
+
 def date_label(day: float) -> str:
     year, season, of_season = season_of(day)
     return f'{season} {of_season}, Year {year}'

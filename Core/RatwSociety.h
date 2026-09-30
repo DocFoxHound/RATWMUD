@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -58,6 +59,21 @@ struct Spot
 {
     std::string cell;
     double x = 0, y = 0; // Tile-center coordinates.
+};
+// What the calendar and the sky ask of a community's residents today (Docs/Design/26-living-npcs.md, Phase 9),
+// worked out by the world, which knows the places.
+struct DayPlan
+{
+    std::string kind = "work";                      // "work", "market", "rest" or "festival".
+    std::string name;                               // The festival's name.
+    std::vector<Spot> stalls, crowd;                // Where merchants set up, and where the townsfolk stand.
+    bool foul = false;                              // Too foul at the square for stalls or a gathering.
+};
+struct LifeDay
+{
+    std::map<std::string, DayPlan> plans;           // By community (a region).
+    std::function<std::string(const std::string& cell)> communityOf;
+    std::function<int(const std::string& cell)> sky; // -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
 };
 // Careers (Docs/Design/26-living-npcs.md, Phase 4). A position is a job the town has, built from the authored
 // residents (the job each founding resident was written with); it outlives whoever holds it.
@@ -265,6 +281,11 @@ class Society
     // Sends a resident home to their authored bed (their saved home no longer exists). False without such a resident.
     bool rehome(const std::string& id);
     void tick(double seconds, double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies);
+    // The day's plans, for the decisions that follow (the world sets them before each tick; without, every day is
+    // an ordinary working day under a fair sky).
+    void setDay(LifeDay day) { day_ = std::move(day); }
+    const LifeDay& day() const { return day_; }
+    bool atStall(const std::string& merchant) const { return atStall_.count(merchant) > 0; }
     EconomyResult quote(const std::string& player, const std::string& merchant, const std::string& item,
                         int quantity, bool buy) const;
     EconomyResult trade(const std::string& player, const std::string& merchant, const std::string& item,
@@ -292,6 +313,10 @@ class Society
     std::vector<EconomyEntry> takeJournal();
 
   private:
+    LifeDay day_;
+    std::set<std::string> atStall_;                 // Merchants trading from a market stall right now.
+    std::set<std::string> feasted_;                 // Fed at today's festival already.
+    std::int64_t feastDay_ = -1;
     SocietyState state_;
     Roster roster_ = Roster::Demo;
     AuthoredRoster authored_;

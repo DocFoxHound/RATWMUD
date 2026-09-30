@@ -78,6 +78,14 @@ top.
   confirmation on PROD. The dead stay in the records; deaths are part of the
   world's history.
 
+#### Calendar (built 2026-09-29)
+
+With no NPC selected, NPC Management shows the **Calendar** (`Editor/src/dm/CalendarPanel.tsx`, `GET /api/calendar`):
+the world's weekday, date and hour as last saved, when the next Marketday, Restday and seasonal festival fall, and
+**Call the festival** (dm and admin): a town, a name (or the season's own) and when (today from noon, or up to thirty
+days ahead). It is a `festival.call` live action, applied by a running game server and audited; recent calls and
+their outcomes are listed.
+
 #### Life: chronicles, stories and what they have in mind (built 2026-09-29)
 
 Under every named NPC and job holder in NPC Management, and every character in Players, a **Life** panel

@@ -133,8 +133,41 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
     const bool night = hour < 6 || hour >= 22;
     const auto slot = std::int64_t(std::floor(absoluteDay * 96)); // Patrols move post every 15 game minutes.
-    // A shop is open while whoever holds a merchant's position is trading at its counter (by holder).
-    std::map<std::string, const Position*> openShops;
+    const auto today = std::int64_t(std::floor(absoluteDay));
+    if (today != feastDay_)
+    {
+        feasted_.clear();
+        feastDay_ = today;
+    }
+    // The day's plan for a place's community, and its sky (Phase 9): an ordinary day under a fair sky without them.
+    static const DayPlan ordinary;
+    const auto planFor = [&](const std::string& cell) -> const DayPlan& {
+        if (!day_.communityOf)
+            return ordinary;
+        const auto found = day_.plans.find(day_.communityOf(cell));
+        return found == day_.plans.end() ? ordinary : found->second;
+    };
+    const auto sky = [&](const std::string& cell) { return day_.sky && !cell.empty() ? day_.sky(cell) : 0; };
+    const auto pick = [](const std::vector<Spot>& spots, const std::string& id) -> const Spot* {
+        return spots.empty() ? nullptr : &spots[std::hash<std::string>{}(id) % spots.size()];
+    };
+    // Where a merchant trades now: a market stall on Marketday mornings (unless the weather is foul), else the shop.
+    const auto tradingAt = [&](const Position& p, const std::string& holder) -> Spot {
+        const auto& plan = planFor(p.work.cell);
+        if (plan.kind == "market" && !plan.foul && hour >= 7 && hour < 14)
+            if (const auto* stall = pick(plan.stalls, holder))
+                return *stall;
+        return p.work;
+    };
+    // A shop is open while whoever holds a merchant's position is trading there (by holder), at its counter or its
+    // stall, and customers are served where the merchant stands.
+    struct Open
+    {
+        const Position* position;
+        Spot serve;
+    };
+    std::map<std::string, Open> openShops;
+    atStall_.clear();
     for (const auto& p : positions_)
     {
         if (p.role != "merchant")
@@ -145,9 +178,15 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         const auto& holder = held->second.holder;
         const auto body = bodies.find(holder);
         const auto* life = resident(holder);
+        const Spot at = tradingAt(p, holder);
+        const bool stall = at.cell != p.work.cell || at.x != p.work.x || at.y != p.work.y;
         if (body != bodies.end() && !body->second.companion && life && life->task == "trade" &&
-            near(body->second, p.work) && stock(*account(holder), "meal") > 0)
-            openShops[holder] = &p;
+            near(body->second, at) && stock(*account(holder), "meal") > 0)
+        {
+            openShops[holder] = {&p, stall ? at : p.serve};
+            if (stall)
+                atStall_.insert(holder);
+        }
     }
     std::map<std::string, std::string> reservations;
     std::map<std::string, int> routeWalkers;
@@ -194,15 +233,38 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.goalCell.clear();
             continue;
         }
-        const bool onHours = within(hour, job->startHour, job->endHour);
+        // The day and the sky (Phase 9). The watch keeps its hours whatever the day and the weather.
+        const auto& plan = planFor(life.homeCell);
+        const int workSky = sky(job->work.cell);
+        const bool festival = plan.kind == "festival" && hour >= 12 && hour < 23;
+        double endHour = job->endHour;
+        if (!guard && workSky == 1)
+            endHour -= 2;                           // Rain: outdoor work ends early.
+        bool onHours = within(hour, job->startHour, endHour);
+        std::string resting;                        // Why a working day isn't one.
+        if (!guard)
+        {
+            if (workSky == 2)
+                resting = "Foul weather: outdoor work has stopped.";
+            else if (festival)
+                resting = "Work stops for " + plan.name + ".";
+            else if (plan.kind == "rest" && !(merchantRole && hour >= 8 && hour < 12))
+                resting = "Restday: no work today.";   // Shops open the morning, so everyone can eat.
+            if (!resting.empty())
+                onHours = false;
+        }
         const bool onDuty = guard && onHours;
         std::string task, reason;
         Spot goal{life.homeCell, life.homeX, life.homeY};
         // Nearest open shop: same cell first, then any.
-        const Position* shop = nullptr;
+        const Spot* shop = nullptr;
         for (const auto& open : openShops)
-            if (open.first != pair.first && (!shop || (open.second->serve.cell == body.cell && shop->serve.cell != body.cell)))
-                shop = open.second;
+            if (open.first != pair.first && (!shop || (open.second.serve.cell == body.cell && shop->cell != body.cell)))
+                shop = &open.second.serve;
+        // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
+        const auto visit = 8 + int(std::hash<std::string>{}(pair.first + "market") % 5);
+        const bool marketHour = plan.kind == "market" && !plan.foul && !plan.crowd.empty() && !guard && !merchantRole &&
+                                hour >= visit && hour < visit + 1;
         if (!life.relocationCell.empty())
         {
             task = "relocate";
@@ -228,7 +290,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (!merchantRole && life.hunger >= 55 && stock(wallet, "meal") == 0 && wallet.cash >= 6 && shop)
         {
             task = "buy food";
-            goal = shop->serve;
+            goal = *shop;
             reason = onDuty ? "A short meal break at the shop." : "Hungry; buying a meal at the shop.";
         }
         else if (onDuty)
@@ -241,8 +303,31 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (merchantRole && onHours)
         {
             task = "trade";
-            goal = job->work;
-            reason = "Keeping shop; restocks from the town stores and pays market dues.";
+            goal = tradingAt(*job, pair.first);
+            reason = atStall_.count(pair.first) || goal.cell != job->work.cell || goal.x != job->work.x
+                         ? "Marketday: trading from a stall at the market."
+                         : "Keeping shop; restocks from the town stores and pays market dues.";
+        }
+        else if (festival && !night && life.fatigue < 80 && !(guard && within(hour, job->startHour, job->endHour)))
+        {
+            // The town gathers at its market to eat and talk into the night; the watch on duty stays at it.
+            if (plan.foul || plan.crowd.empty())
+            {
+                task = "at home";
+                reason = plan.name + ": the weather keeps everyone indoors.";
+            }
+            else
+            {
+                task = "festival";
+                goal = *pick(plan.crowd, pair.first);
+                reason = plan.name + ": the town gathers at the market.";
+            }
+        }
+        else if (marketHour)
+        {
+            task = "at the market";
+            goal = *pick(plan.crowd, pair.first);
+            reason = "Marketday: buying and gossiping at the stalls.";
         }
         else if (guard)
         {
@@ -272,18 +357,38 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             goal = job->work;
             reason = job->paid ? "Daily work, paid by the town treasury." : "Spending the day in familiar company.";
         }
+        else if (!resting.empty() && within(hour, job->startHour, job->endHour))
+        {
+            // A day off: with friends where the evenings are spent, unless the sky sends everyone home.
+            task = workSky == 2 || sky(r->evening.cell) == 2 ? "sheltering" : "resting";
+            if (task == "resting")
+                goal = sky(r->evening.cell) >= 1 ? Spot{life.homeCell, life.homeX, life.homeY} : r->evening;
+            reason = resting;
+        }
+        else if (within(hour, job->startHour, job->endHour) && workSky == 1)
+        {
+            task = "at home";
+            reason = "Rain ended the outdoor work early.";
+        }
         else if (within(hour, job->endHour, 22))
         {
             task = "socialize";
             goal = r->evening;
             reason = "Work is done; spending the evening in company.";
+            if (const int evening = sky(r->evening.cell); evening >= 1)
+            {
+                task = "at home";
+                goal = {life.homeCell, life.homeX, life.homeY};
+                reason = evening == 2 ? "Foul weather keeps the evening indoors." : "Rain keeps the evening indoors.";
+            }
         }
         else
         {
             task = "morning at home";
             reason = "Waking slowly before the working day.";
         }
-        if (travels && !(onHours && task == job->title) && task != "eat" && task != "buy food" && task != "relocate")
+        if (travels && !(onHours && task == job->title) && task != "eat" && task != "buy food" && task != "relocate" &&
+            task != "festival" && task != "at the market")
         {
             // Off the road's hours: stay put, camped or lodged where the day ended.
             goal = {body.cell, std::floor(body.x) + .5, std::floor(body.y) + .5};
@@ -309,6 +414,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.progress = 0;
             continue;
         }
+        // At a festival the town's stores feed everyone once (goods only: nothing is bought).
+        if (task == "festival" && feasted_.insert(pair.first).second)
+            shift(storeFor(life.homeCell), pair.first, "meal", 1, 0, "festival feast");
         const bool paidWork = job->paid && (task == "patrol" || task == "watch" || (task == job->title && onHours));
         // Working at their post in its hours, they grow more skilled at it; an apprentice beside a master who is
         // there too learns three times as fast. Nothing else depends on skill yet but who succeeds whom.
@@ -363,10 +471,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         {
             const std::string* seller = nullptr;
             for (const auto& open : openShops)
-                if (open.second->serve.cell == goal.cell && open.second->serve.x == goal.x &&
-                    open.second->serve.y == goal.y)
+                if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
                     seller = &open.first;
-            if (!seller || !transfer(*seller, pair.first, "meal", 1, 6, "resident food purchase"))
+            if (!seller || !transfer(*seller, pair.first, "meal", 1, atStall_.count(*seller) ? 5 : 6, "resident food purchase"))
                 life.reason = "Cannot buy food: the shop, its stock or the purse is unavailable.";
         }
         else if (task == "trade")
@@ -374,7 +481,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             // From the town's own stores (the treasury, where there is one town): what the caravans have brought.
             const std::string& storeId = storeFor(job->work.cell);
             const auto& stores = *account(storeId);
-            const int meals = std::min({3, 12 - stock(wallet, "meal"), stock(stores, "meal"),
+            // A stall on Marketday carries more.
+            const int carried = atStall_.count(pair.first) ? 20 : 12;
+            const int meals = std::min({3, carried - stock(wallet, "meal"), stock(stores, "meal"),
                                         int(std::min<std::int64_t>(3, wallet.cash / 4))});
             if (meals > 0)
                 transfer(storeId, pair.first, "meal", meals, 4, "wholesale restock");

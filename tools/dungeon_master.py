@@ -47,7 +47,7 @@ MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
 ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm', 'npc.revive': 'dm',
-           'layers.sync': 'dm', 'factions.sync': 'dm'}
+           'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm'}
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -288,6 +288,65 @@ class DungeonMaster:
         return {'target': target, 'world': world[0], 'people': project['people'], 'holders': holders, 'dead': dead,
                 'routes': project['routes'], 'areas': areas, 'spawns': spawns, 'wanders': wanders, 'spawned': spawned,
                 'actions': actions}
+
+    # -- the calendar (Docs/Design/26-living-npcs.md, Phase 9) ----------------------
+    def calendar(self, target):
+        """The world's date as last saved, its week, the season's festival, the communities that could hold one, and
+        festivals called lately."""
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            row = conn.execute("SELECT (payload::jsonb->>'calendarDays')::double precision FROM game.checkpoints WHERE world_id = %s",
+                               (world,)).fetchone()
+            day = row[0] if row and row[0] is not None and row[0] >= 0 else None
+            communities = [{'id': r[0], 'residents': r[1]} for r in conn.execute('''
+                SELECT p.region, count(*) FROM (
+                    SELECT home_area AS place FROM live.npcs WHERE world_id = %(w)s
+                    UNION ALL SELECT home_area FROM live.profession_slots WHERE world_id = %(w)s) h
+                JOIN (SELECT id, region FROM world.cells WHERE world_id = %(w)s
+                      UNION ALL SELECT id, region FROM world.interiors WHERE world_id = %(w)s) p ON p.id = h.place
+                WHERE p.region <> 'unassigned' GROUP BY p.region HAVING count(*) >= 5 ORDER BY count(*) DESC, p.region''',
+                {'w': world}).fetchall()]
+            actions = [{'id': r[0], 'target': r[1], 'payload': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
+                       for r in conn.execute('''SELECT id, target_id, payload, requested_by, requested_at, status, result
+                                                FROM dm.actions WHERE kind = 'festival.call' ORDER BY id DESC LIMIT 20''').fetchall()]
+        today = None
+        if day is not None:
+            year, season, of_season = C.season_of(day)
+            start = int(day) - of_season + 1
+            festival = start + C.FESTIVAL_DAY - 1
+            if festival < int(day):
+                festival += C.season_length(int(day))
+            today = {'day': day, 'date': C.date_label(day), 'weekday': C.weekday_name(day), 'season': season,
+                     'hour': round((day - int(day)) * 24, 2),
+                     'nextMarket': (C.MARKETDAY - int(day) % 7) % 7, 'nextRest': (C.RESTDAY - int(day) % 7) % 7,
+                     'nextFestival': festival - int(day), 'festivalDate': C.date_label(festival)}
+        return {'target': target, 'today': today, 'communities': communities, 'actions': actions,
+                'weekdays': list(C.WEEKDAYS)}
+
+    def call_festival(self, who, target, community, name='', in_days=0):
+        """Asks the game server to hold a festival in a community today (from noon) or some days ahead."""
+        self.allowed(who, 'festival.call')
+        community, name = str(community), str(name or '').strip()
+        if not community or len(community) > 80:
+            raise DMError('Choose a town.')
+        if len(name) > 60 or any(ord(c) < 32 for c in name):
+            raise DMError('A festival name is at most 60 plain characters.')
+        if not isinstance(in_days, int) or isinstance(in_days, bool) or not 0 <= in_days <= 30:
+            raise DMError('Call it for today or up to thirty days ahead.')
+        if community not in {c['id'] for c in self.calendar(target)['communities']}:
+            raise DMError(f'No town called {community} in {target.upper()}.', 404)
+        with self.connect(target) as conn:
+            with conn.transaction():
+                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
+                                         VALUES ('festival.call', %s, %s, %s) RETURNING id''',
+                                      (community, json.dumps({'name': name, 'inDays': in_days}), who['username'])).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                when = 'today' if not in_days else f'in {in_days} day{"s" if in_days != 1 else ""}'
+                self.audit(conn, who['username'], 'festival.call', community,
+                           f'{target.upper()}: a festival{" (" + name + ")" if name else ""} in {community}, {when}')
+        return {'id': action, 'status': 'queued'}
 
     # -- chronicles (Docs/Design/26-living-npcs.md, Phase 8) ----------------------
     def chronicle(self, target, subject):
@@ -902,6 +961,12 @@ def make_server(port=8766, dm=None):
                 data = self.body()
                 return self.reply(200, dm.request(who, str(data.get('target', 'prod')), str(data.get('kind', '')),
                                                   str(data.get('characterId', '')), str(data.get('reason', ''))))
+            if method == 'GET' and path == '/api/calendar':
+                return self.reply(200, dm.calendar(self.target(query)))
+            if method == 'POST' and path == '/api/festivals/call':
+                data = self.body()
+                return self.reply(200, dm.call_festival(who, str(data.get('target', 'prod')), data.get('community', ''),
+                                                        data.get('name', ''), data.get('inDays', 0)))
             if method == 'GET' and path == '/api/chronicle':
                 return self.reply(200, dm.chronicle(self.target(query), query.get('id', [''])[0]))
             if method == 'POST' and path == '/api/chronicle/story':

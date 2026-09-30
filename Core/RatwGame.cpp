@@ -489,7 +489,7 @@ void Game::applyDmActions(double dt)
         worldDb_.exec("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now() "
                       "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes'");
     }
-    const auto queued = worldDb_.exec("SELECT id, kind, target_id, requested_by FROM dm.actions WHERE status = 'queued' ORDER BY id LIMIT 50");
+    const auto queued = worldDb_.exec("SELECT id, kind, target_id, requested_by, payload::text FROM dm.actions WHERE status = 'queued' ORDER BY id LIMIT 50");
     bool changed = false;
     for (const auto& row : queued.rows)
     {
@@ -516,6 +516,21 @@ void Game::applyDmActions(double dt)
             }
             else
                 outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+        }
+        else if (kind == "festival.call")
+        {
+            // Payload: {"name": "...", "inDays": 0..30}; the target is the community (a town, or a region).
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const std::string name = payload.isObject() ? payload.string("name") : std::string();
+            const int inDays = payload.isObject() ? int(wire::number(payload, "inDays", 0)) : 0;
+            outcome = world_.callFestival(target, name, inDays);
+            if (outcome.ok)
+                for (auto* c : clients_)
+                    if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
+                        system(c, "Word goes round: " + outcome.message);
         }
         else if (kind == "npc.kill" || kind == "npc.revive")
         {
@@ -1467,6 +1482,15 @@ void Game::sendSnapshot(Connection* c)
     cell.add("weather", weatherName(view.cell.weather));
     cell.add("wind", wire::wind(view.cell.wind));
     cell.add("environment", wire::environment(view.environment));
+    {
+        // What kind of day it is here (Phase 9): an ordinary one, Marketday, Restday, or a festival and its name.
+        const auto plan = world_.dayPlan(world_.communityOf(view.cell.id));
+        auto day = Value::object();
+        day.add("kind", plan.kind);
+        day.add("name", plan.name);
+        day.add("foul", plan.foul);
+        cell.add("day", day);
+    }
     root.add("senses", wire::senses(view));
     // The cell as rows of text, one character a tile: its glyph (a space where the wolf knows nothing), whether it
     // is visible now ('2'), remembered ('1') or unknown ('0'), and its height.
@@ -1524,8 +1548,8 @@ void Game::sendSnapshot(Connection* c)
                 actions.push("trade");
             // Crime and law: a close resident can be robbed or struck (never killed: they are beaten down); the
             // watch takes reports, and fines from the wanted.
-            const auto* job = world_.society().jobOf(e.id);
-            const bool guard = job && job->role == "guard";
+            const auto* post = world_.society().jobOf(e.id);
+            const bool guard = post && post->role == "guard";
             const bool reach = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 2;
             if (!e.dead && reach && e.state != "beaten down")
             {
@@ -1853,6 +1877,16 @@ void Game::talk(const std::string& npcId, const std::string& playerId, const std
     {
         context.environment = wire::environmentDescription(*cell, world_.environmentAt(npc->cellId));
         context.scene = mind::left(cell->description, 3300) + " Current local conditions: " + context.environment;
+        // What day it is (Phase 9), and what the NPC is about: at the market, keeping a festival, resting.
+        const auto plan = world_.dayPlan(world_.communityOf(npc->cellId));
+        std::string day = "Today is " + calendar::weekdayName(calendar::weekdayOf(world_.calendarDays()));
+        if (plan.kind == "festival")
+            day += ", and " + plan.name + " (a festival)" + (plan.foul ? ", kept indoors for the weather" : "");
+        else if (plan.kind == "market")
+            day += plan.foul ? ": market day, but the weather keeps the stalls away" : ": market day, with stalls at the market";
+        else if (plan.kind == "rest")
+            day += ", the day of rest";
+        context.scene += " " + day + ".";
     }
     memories_.record(npcId, subjectId, {sequence_++, now(), context.playerName, heardText});
     // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.

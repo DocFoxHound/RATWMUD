@@ -3,6 +3,7 @@
 #include "RatwWorld.h"
 
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <set>
@@ -191,6 +192,78 @@ void playersCrossAndReturn()
            "Ada is back where she was, and her cell is loaded");
 }
 
+// A strip along the west edge of c_1_0 is walled off from the rest of it: every seam from c_0_0 lands there, and
+// nothing leads on. A resident going east must not be stranded on it (residents were, for good, and piled up); they
+// go around, and one put down on the strip finds the way out.
+Fixture pocketed()
+{
+    auto f = grid("economy 1000 100 50 10 12\n"
+                  "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
+                  "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_2_0\" 8.5 8.5 \"c_0_0\" 8.5 8.5 \"c_2_0\" 9.5 8.5\n");
+    auto& text = f.cells["c_1_0"];
+    const auto rows = text.find("grid:\n") + 6;
+    for (int y = 0; y < Side; ++y)
+    {
+        auto at = rows + std::size_t(y * (Side + 1));
+        text[at + 3] = '#';                                 // The wall between the strip and the field.
+        if (y == Side - 1)
+            text[at] = text[at + 1] = text[at + 2] = '#';   // No way out of the strip to the south either.
+    }
+    // Seams onto the wall are not made (a build never writes one): drop them on both sides.
+    const auto solid = [](double x, double y) { return int(x) == 3 || (int(x) < 3 && int(y) == Side - 1); };
+    for (auto& [cell, sides] : f.seams)
+    {
+        std::istringstream in(sides);
+        std::string line, kept;
+        while (std::getline(in, line))
+        {
+            std::istringstream fields(line);
+            std::string word, id, name1, name2, from, to;
+            double ax, ay, bx, by;
+            fields >> word >> std::quoted(id) >> std::quoted(name1) >> std::quoted(from) >> ax >> ay >> std::quoted(to) >> bx >> by;
+            if ((from == "c_1_0" && solid(ax, ay)) || (to == "c_1_0" && solid(bx, by)))
+                continue;
+            kept += line + '\n';
+        }
+        sides = kept;
+    }
+    return f;
+}
+
+void noOneIsStrandedInAPocket()
+{
+    {
+        auto f = pocketed();
+        auto world = load(f);
+        world.setTimeOfDay(18.5);                               // Off work in c_0_0: home is two cells east.
+        expect(world.entity("pip")->cellId == "c_0_0", "Pip starts at work");
+        bool pocketed = false;
+        for (int second = 0; second < 3000 && world.entity("pip")->cellId != "c_2_0"; ++second)
+        {
+            world.tick(1);
+            const auto* pip = world.entity("pip");
+            pocketed |= pip->cellId == "c_1_0" && pip->position.x < 3;
+        }
+        expect(world.entity("pip")->cellId == "c_2_0", "Pip gets home, around the strip: " + world.entity("pip")->cellId + " " +
+                                                           world.entity("pip")->activity);
+        expect(!pocketed, "without ever setting foot on it");
+    }
+    {
+        auto f = pocketed();
+        auto world = load(f);
+        world.setTimeOfDay(18.5);
+        world.tick(1);
+        auto* pip = world.entity("pip");
+        world.ensureLoaded("c_1_0");
+        pip->cellId = "c_1_0";                                  // Put down on the strip, as a seam used to leave them.
+        pip->position = {.5, 8.5};
+        pip->path.clear();
+        for (int second = 0; second < 3000 && pip->cellId != "c_2_0"; ++second)
+            world.tick(1);
+        expect(pip->cellId == "c_2_0", "Put down on the strip, Pip finds the way out and gets home: " + pip->cellId + " " + pip->activity);
+    }
+}
+
 // With simulation tiers, a resident far from every player travels in timed hops between known places.
 void anOffstageResidentCommutes()
 {
@@ -300,6 +373,7 @@ int main()
         playersCrossAndReturn();
         anOffstageResidentCommutes();
         aPlayerBringsResidentsOnstage();
+        noOneIsStrandedInAPocket();
         badSourcesAreRefused();
     }
     catch (const std::exception& error)

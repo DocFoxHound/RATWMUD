@@ -195,15 +195,24 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
     }
     crime.add("warrants", warrants);
     auto custody = Value::array();
-    for (const auto& c : saved.crime.custody)
+    for (const auto& held : saved.crime.custody)
     {
         auto j = Value::object();
-        j.add("person", c.person); j.add("town", c.town); j.add("cell", c.cell);
-        j.add("x", c.x); j.add("y", c.y); j.add("until", c.until);
+        j.add("person", held.person); j.add("town", held.town); j.add("cell", held.cell);
+        j.add("x", held.x); j.add("y", held.y); j.add("until", held.until);
         custody.push(j);
     }
     crime.add("custody", custody);
     root.add("crime", crime);
+    // Festivals the Dungeon Master called (Phase 9).
+    auto festivals = Value::array();
+    for (const auto& f : saved.festivals)
+    {
+        auto j = Value::object();
+        j.add("community", f.community); j.add("name", f.name); j.add("day", double(f.day));
+        festivals.push(j);
+    }
+    root.add("festivals", festivals);
     auto npcList = Value::array();
     for (const auto& e : npcs)
         npcList.push(wire::persistEntity(e, time));
@@ -446,6 +455,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),
                                        num(j, "confidence"), num(j, "day"), j.string("incident")});
+    for (const auto& j : root.array("festivals"))
+        saved.festivals.push_back({j.string("community"), j.string("name"), std::int64_t(num(j, "day"))});
     if (const auto& crime = root["crime"]; crime.isObject())
     {
         saved.crime.nextIncident = std::max<std::int64_t>(1, std::int64_t(num(crime, "nextIncident")));

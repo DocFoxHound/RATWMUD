@@ -10,6 +10,7 @@ import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
 import {useWorld} from './world';
 import {dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
+import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {AREA_KINDS, AreaInspector, LAYERS, RouteInspector, SpawnInspector, areaColor, idFrom, type Brush, type Layer, type SpawnDraft} from './LayerPanels';
@@ -314,7 +315,8 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                     <LifePanel me={me} target={target} id={holder.id} name={holder.name} /></div>
                 : <Overview title="NPC MANAGEMENT" target={target}>
                     <Hint>{data ? `${data.people.length} named NPCs and ${data.holders.length} job holders; ${data.dead.length} dead.` : 'Loading…'}</Hint>
-                    <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to the {target.toUpperCase()} database and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint></Overview>)}
+                    <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to the {target.toUpperCase()} database and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint>
+                    <CalendarPanel me={me} target={target} /></Overview>)}
             {layer === 'routes' && world && (routeDraft ? <><RouteInspector {...common} route={routeDraft} setRoute={setRouteDraft} world={world}
                 users={peopleNamed((data?.people ?? []).filter(p => p.route === routeDraft.id).map(p => p.id))} adding={addingPosts} setAdding={setAddingPosts}
                 onSave={saveRoute} onDelete={() => deleteLayer('the route', routeDraft.name, () => dmApi.deleteRoute(target, routeDraft.id))} />

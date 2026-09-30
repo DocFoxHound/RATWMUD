@@ -67,6 +67,16 @@ export interface Factions {
 }
 export interface RelationChange { disposition: number; stance: Stance; reason: string; by: string; at: string }
 
+/** The world's week and festivals (Phase 9). */
+export interface WorldCalendar {
+    target: Target;
+    today: {day: number; date: string; weekday: string; season: string; hour: number; nextMarket: number; nextRest: number;
+        nextFestival: number; festivalDate: string} | null;
+    communities: {id: string; residents: number}[];
+    actions: {id: number; target: string; payload: {name?: string; inDays?: number}; by: string; at: string; status: Action['status']; result: string}[];
+    weekdays: string[];
+}
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
@@ -102,5 +112,8 @@ export const dmApi = {
     chronicle: (target: Target, id: string) => call<Chronicle>(`api/chronicle?target=${target}&id=${encodeURIComponent(id)}`),
     /** Has their life story written from the chronicle (one call to the NPC model) and kept. */
     writeStory: (target: Target, id: string) => call<Chronicle>('api/chronicle/story', {target, id}),
+    calendar: (target: Target) => call<WorldCalendar>(`api/calendar?target=${target}`),
+    callFestival: (target: Target, community: string, name: string, inDays: number) =>
+        call<{id: number}>('api/festivals/call', {target, community, name, inDays}),
     action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`api/actions/${id}?target=${target}`),
 };

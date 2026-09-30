@@ -732,7 +732,7 @@ std::map<std::string, std::string> World::firstSteps(const std::string& from) co
     {
         const auto current = pending.front(); pending.pop();
         const auto visit = [&](const std::string& next) {
-            if (first.count(next))
+            if (first.count(next) || deadEnds_.count({current, next}))
                 return;
             first[next] = current == from ? next : first[current];
             pending.push(next);
@@ -799,6 +799,9 @@ const std::vector<int>* World::regionMap(const Cell& c) const
 {
     if (!c.loaded || c.tiles.size() != std::size_t(c.width * c.height))
         return nullptr;
+    if (const auto kept = regions_.find(c.id); ticking_ && kept != regions_.end() && kept->second.checkedTick == ticks_ &&
+                                               kept->second.region.size() == c.tiles.size())
+        return &kept->second.region;
     std::uint64_t checksum = 1469598103934665603ULL;
     for (const auto& t : c.tiles)
     {
@@ -807,8 +810,18 @@ const std::vector<int>* World::regionMap(const Cell& c) const
                    1099511628211ULL;
     }
     auto& r = regions_[c.id];
+    r.checkedTick = ticking_ ? ticks_ : 0;
     if (r.region.size() != c.tiles.size() || r.checksum != checksum)
     {
+        // New ground: what was known of its connections may no longer hold.
+        bool forgot = false;
+        for (auto it = deadEnds_.begin(); it != deadEnds_.end();)
+            if (it->first == c.id || it->second == c.id)
+                it = deadEnds_.erase(it), forgot = true;
+            else
+                ++it;
+        if (forgot)
+            stepsCache_.clear();
         r.checksum = checksum;
         r.region.assign(c.tiles.size(), -1);
         int next = 0;
@@ -836,8 +849,18 @@ const std::vector<int>* World::regionMap(const Cell& c) const
             }
             ++next;
         }
+        std::vector<std::size_t> sizes(std::size_t(next), 0);
+        for (const int k : r.region)
+            if (k >= 0)
+                ++sizes[std::size_t(k)];
+        r.main = sizes.empty() ? -1 : int(std::max_element(sizes.begin(), sizes.end()) - sizes.begin());
     }
     return &r.region;
+}
+
+int World::mainRegion(const Cell& c) const
+{
+    return regionMap(c) ? regions_.at(c.id).main : -1;
 }
 
 bool World::lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const
@@ -2060,7 +2083,9 @@ void World::tendBonds()
             continue;
         const auto* life = society_.resident(id);
         const auto* spec = society_.spec(id);
-        if (life && e.cellId == life->homeCell)
+        if (life && (life->task == "festival" || life->task == "at the market" || life->task == "resting"))
+            together["out " + e.cellId].push_back(&e);         // A crowd, or friends on a day off (Phase 9).
+        else if (life && e.cellId == life->homeCell)
             together["home " + life->homeCell].push_back(&e);
         else if (spec && e.cellId == spec->work.cell)
             together["work " + spec->work.cell].push_back(&e);
@@ -2072,7 +2097,8 @@ void World::tendBonds()
             {
                 const auto* other = people[(i + k + std::size_t(hour)) % people.size()];
                 if (other != people[i])
-                    bonds_.change(people[i]->id, other->id, {.3, .1, 1, 0, 0}, calendarDays_);
+                    bonds_.change(people[i]->id, other->id, place.rfind("out ", 0) == 0 ? BondChange{.5, .15, 1.5, 0, 0} : BondChange{.3, .1, 1, 0, 0},
+                                  calendarDays_);
             }
     const auto day = std::int64_t(std::floor(calendarDays_));
     if (day != bondDay_)
@@ -2544,6 +2570,7 @@ void World::updateSchedules()
             continue;                               // The dead keep no schedule: no work, no hunger, no walking.
         bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following", e.age};
     }
+    planDays();
     society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
     absorbJournal();
     tendBonds();
@@ -2630,22 +2657,6 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
             pathRetryAt_.erase(e.id);
         return result;
     };
-    if (e.cellId == goalCell)
-    {
-        auto result = seek(target);
-        if (const auto* barrier = door(result.targetId))
-            if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
-                interact(e.id, barrier->id, "open");
-        return;
-    }
-    // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
-    // then the first way into it (in ID order, as ever).
-    const auto& steps = cachedSteps(e.cellId);
-    const auto step = steps.find(goalCell);
-    if (step == steps.end()) { e.activity = task + " — route unavailable"; return; }
-    // The nearest way into the next cell (a street door, or the closest tile of a shared edge).
-    // Only ways this resident can walk to count: behind a wall, the nearest point of an edge may be unreachable.
-    const Door* d = nullptr;
     const auto* current = cell(e.cellId);
     const auto* regions = current ? regionMap(*current) : nullptr;
     const auto regionOf = [&](Vec2 p) {
@@ -2654,11 +2665,74 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
                    ? -1 : (*regions)[std::size_t(y * current->width + x)];
     };
     const int region = regionOf(e.position);
-    for (const Door* way : doorsIn(e.cellId))
-        if (way->portal && !way->locked && way->targetCell == step->second &&
-            (region < 0 || regionOf(way->position) < 0 || regionOf(way->position) == region) &&
-            (!d || distance(e.position, way->position) < distance(e.position, d->position) - 1e-9))
-            d = way;
+    const int goalRegion = e.cellId == goalCell ? regionOf(target) : -1;
+    if (e.cellId == goalCell && (region < 0 || goalRegion < 0 || region == goalRegion))
+    {
+        auto result = seek(target);
+        if (const auto* barrier = door(result.targetId))
+            if (!barrier->locked && distance(e.position, barrier->position) <= barrier->reach)
+                interact(e.id, barrier->id, "open");
+        return;
+    }
+    // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
+    // then the first way into it (in ID order, as ever). In the goal cell but cut off from the goal (below), the way
+    // on is out and back in.
+    auto step = cachedSteps(e.cellId).find(goalCell);
+    if (step == cachedSteps(e.cellId).end()) { e.activity = task + " — route unavailable"; return; }
+    std::string next = e.cellId == goalCell ? std::string() : step->second;
+    // Where a way comes out matters as much as where it starts. A seam can land on a strip of the next cell that a
+    // step or a wall cuts off from the rest, with no way on from it; residents were stranded there for good, and
+    // piled up. So a way is judged by where it lands, when the cell beyond is in memory to tell: in the goal's own
+    // region (the goal cell), or in the body of the cell (its largest region) on the way through.
+    const auto landing = [&](const Door& way) {         // 2: lands well; 1: can't tell; 0: lands in a pocket.
+        const auto* there = cell(way.targetCell);
+        if (!there || !regionMap(*there))
+            return 1;
+        const int arrives = regionAt(*there, way.arrival);
+        const int aim = way.targetCell == goalCell ? regionAt(*there, target) : -1;
+        const int wanted = aim >= 0 ? aim : mainRegion(*there);
+        return arrives < 0 || wanted < 0 ? 1 : arrives == wanted ? 2 : 0;
+    };
+    // The nearest way into the next cell (a street door, or the closest tile of a shared edge) of those landing best.
+    // Only ways this resident can walk to count: behind a wall, the nearest point of an edge may be unreachable.
+    // With no way into it from here (a pocket, or cut off from the goal), the nearest way anywhere that lands well.
+    const auto usable = [&](const Door* way) {
+        return way->portal && !way->locked && (region < 0 || regionOf(way->position) < 0 || regionOf(way->position) == region);
+    };
+    const auto nearer = [&](const Door* way, const Door* than) {
+        return !than || distance(e.position, way->position) < distance(e.position, than->position) - 1e-9;
+    };
+    const Door* d = nullptr;
+    int ranked = -1;
+    const auto choose = [&] {
+        d = nullptr;
+        ranked = -1;
+        for (const Door* way : doorsIn(e.cellId))
+            if (usable(way) && way->targetCell == next && !next.empty())
+                if (const int lands = landing(*way); lands > ranked || (lands == ranked && nearer(way, d)))
+                    d = way, ranked = lands;
+    };
+    choose();
+    if (d && ranked == 0 && region >= 0 && current && region == mainRegion(*current))
+    {
+        // From the body of this cell every way into the next lands in a pocket: that connection leads nowhere. Route
+        // around it (once found, for everyone), and choose again.
+        deadEnds_.insert({e.cellId, next});
+        stepsCache_.clear();
+        step = cachedSteps(e.cellId).find(goalCell);
+        if (step == cachedSteps(e.cellId).end()) { e.activity = task + " — route unavailable"; return; }
+        next = step->second;
+        choose();
+    }
+    if (!d || ranked == 0)
+    {
+        const Door* out = nullptr;
+        for (const Door* way : doorsIn(e.cellId))
+            if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) == 2)
+                out = way;
+        if (out)
+            d = out;
+    }
     if (!d) return;
     if (d->boundary && d->open && d->edge != '-')
     {
@@ -2706,6 +2780,9 @@ void World::tick(double dt)
     // Bounded steps prevent tunneling. The hosting server should use 1/30 s;
     // even delayed input cannot tunnel through an entire terrain feature.
     dt = std::min(dt, 60.0);
+    ++ticks_;
+    ticking_ = true;
+    struct Done { bool& flag; ~Done() { flag = false; } } done{ticking_};
     using Clock = std::chrono::steady_clock;
     double tickStreaming = 0, tickSchedules = 0, tickMovement = 0, tickSeparation = 0, tickViews = 0;
     const auto since = [](Clock::time_point start) {
@@ -3298,6 +3375,7 @@ PersistedWorld World::save() const
     out.promises = promises_;
     out.roads = roads_;
     out.crime = crime_;
+    out.festivals = festivals_;
     out.roads.beliefs.clear();
     for (const auto& [holder, mine] : beliefs_)
         out.roads.beliefs.insert(out.roads.beliefs.end(), mine.begin(), mine.end());
@@ -3575,6 +3653,9 @@ Result World::restore(const PersistedWorld& state)
     // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again.
     roads_ = state.roads;
     crime_ = state.crime;
+    festivals_ = state.festivals;
+    ++festivalsChanged_;
+    squaresDay_ = -1;
     pursuits_.clear();
     confrontations_.clear();
     marks_.clear();

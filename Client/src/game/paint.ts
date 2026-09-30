@@ -5,7 +5,7 @@ import {contains, rect, type Painter, type Point, type Rect} from '../ui/painter
 import {Amber, Blue, Ink, Line, Muted, Panel, Paper, Raised, Sage, Scent, speakingColor, font} from '../ui/theme.ts';
 import {drawPortrait, type Portraits} from '../ui/portrait.ts';
 import {arr, bool, boundedNum, clamp, countText, envNumber, isObject, num, obj, objects, str, wholeCount, wrapCoordinate, type Json} from './json.ts';
-import {calendarLabel, elevationLabel, lawLabel, environmentEffectsLabel, environmentLabel, moonLabel, paceLabel, postureLabel, scentLabel,
+import {calendarLabel, dayLabel, elevationLabel, lawLabel, environmentEffectsLabel, environmentLabel, moonLabel, paceLabel, postureLabel, scentLabel,
     windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState, Post} from './state.ts';
@@ -88,6 +88,8 @@ export class GamePainter {
         p.text(720, 24, calendarLabel(snapshot), 9, Sage, true);
         p.text(720, 43, environmentLabel(s.environment.hour, s.environment.phase, s.environment.weather, s.outdoors), 11, Muted);
         p.text(720, 64, moonLabel(snapshot), 9, Muted, true);
+        const today = dayLabel(snapshot);
+        if (today) p.text(900, 64, today.slice(0, 30), 9, Amber, true);
         this.button(1115, 28, 119, 39, 'CHARACTER', 'character');
         this.button(1242, 28, 119, 39, 'INVENTORY', 'inventory');
         this.button(1369, 28, 101, 39, 'SETTINGS', 'settings');

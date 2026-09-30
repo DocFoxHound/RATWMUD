@@ -11,6 +11,7 @@
 #include "RatwAppearance.h"
 #include "RatwBonds.h"
 #include "RatwCrime.h"
+#include "RatwSchedules.h"
 #include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
@@ -303,6 +304,7 @@ struct PersistedWorld
     std::vector<Promise> promises;
     RoadsState roads;
     CrimeState crime;
+    std::vector<CalledFestival> festivals;          // Called by the Dungeon Master (Phase 9).
 };
 
 class World
@@ -417,6 +419,14 @@ class World
     std::int64_t owedBy(const Warrant& w) const;             // Restitution and the fine, in pennies.
     bool guardOnDuty(const std::string& id) const;
     std::string lawTown(const std::string& cellId) const;   // Whose Watch keeps the law here ("" for nobody's).
+    // Schedules (Phase 9). A cell's community is its town (a region, where there are no town records); "" for none.
+    std::string communityOf(const std::string& cellId) const { return lawTown(cellId); }
+    DayPlan dayPlan(const std::string& community);          // Today's, as residents live it.
+    std::string dayLabel(const std::string& cellId);        // "Marketday", "Restday", "Stoneday · Harvest Home"...
+    std::string festivalName(const std::string& community, int season) const;
+    // A festival for a community, today (from noon) or some days ahead; `name` "" for the season's own.
+    Result callFestival(const std::string& community, const std::string& name, int inDays = 0);
+    const std::vector<CalledFestival>& calledFestivals() const { return festivals_; }
     std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
     Result payBandits(const std::string& player, const std::string& bandit);
@@ -541,6 +551,9 @@ class World
     const std::vector<std::string>& neighborList(const std::string& cellId) const;
     // firstSteps() for each starting cell, kept until doors change: residents ask it every half second.
     mutable std::map<std::string, std::map<std::string, std::string>> stepsCache_;
+    // Connections known to lead nowhere: every way from the body of one cell into the next lands in a pocket of it
+    // (found by residents, when both are in memory). Routes leave them out until either cell's ground changes.
+    mutable std::set<std::pair<std::string, std::string>> deadEnds_;
     const std::map<std::string, std::string>& cachedSteps(const std::string& from) const;
     std::map<std::string, Cell> cells_;
     std::map<std::string, FactionDefinition> factions_;
@@ -556,6 +569,21 @@ class World
     bool townsReady_ = false;
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
     CrimeState crime_;
+    // Schedules (RatwSchedules.cpp).
+    std::vector<CalledFestival> festivals_;
+    struct Square
+    {
+        bool found = false;
+        Spot at;
+        std::vector<Spot> stalls, crowd;
+    };
+    std::map<std::string, Square> squares_;                 // By community, worked out once a day.
+    std::int64_t squaresDay_ = -1, plannedAt_ = -1;
+    std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
+    std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
+    const Square& square(const std::string& community);
+    int skyOf(const std::string& cellId) const;            // -1 indoors, 0 fair, 1 wet, 2 harsh.
+    void planDays();
     std::int64_t crimeHour_ = -1;
     std::map<std::string, double> stealReady_;              // When each may try again.
     std::map<std::string, std::pair<std::string, double>> fights_;   // "attacker|target": the incident, the last blow.
@@ -744,11 +772,17 @@ class World
     {
         std::uint64_t checksum = 0;
         std::vector<int> region;
+        int main = -1;                              // The largest region: the body of the cell, beside its pockets.
+        std::uint64_t checkedTick = 0;              // Ground doesn't change inside a tick: checksummed once a tick.
     };
     mutable std::map<std::string, Regions> regions_;
-    // The cell's region map, validated once per call (it checksums every tile); null for a cell without tiles.
+    std::uint64_t ticks_ = 0;                       // Ticks begun; `ticking_` while one runs.
+    bool ticking_ = false;
+    // The cell's region map, validated once a tick (outside a tick, on every call: it checksums every tile); null for
+    // a cell without tiles.
     const std::vector<int>* regionMap(const Cell& cell) const;
     int regionAt(const Cell& cell, Vec2 point) const;
+    int mainRegion(const Cell& cell) const;         // -1 without tiles.
     struct TravelProgress
     {
         Vec2 position;

@@ -262,6 +262,7 @@ Value environment(const Environment& e)
     date.add("dayOfYear", e.date.dayOfYear);
     date.add("dayOfSeason", e.date.dayOfSeason);
     date.add("season", calendar::seasonName(e.date.season));
+    date.add("weekday", calendar::weekdayName(calendar::weekdayOf(e.date.absoluteDays)));
     date.add("moonName", e.date.moonName);
     date.add("moonPhase", e.date.moonPhase);
     date.add("moonIllumination", e.date.moonIllumination);

@@ -2,7 +2,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, paintPart, testGame} from './testing.ts';
-import {paceLabel, scentLabel, windLabel, environmentLabel, environmentEffectsLabel, calendarLabel, moonLabel, elevationLabel, lawLabel} from './labels.ts';
+import {paceLabel, scentLabel, windLabel, environmentLabel, environmentEffectsLabel, calendarLabel, dayLabel, moonLabel, elevationLabel, lawLabel} from './labels.ts';
 import {alphaOf, Size, type Art} from './weatherArt.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {rect, contains} from '../ui/painter.ts';
@@ -856,4 +856,16 @@ test('the law label shows custody before a warrant, and nothing for the law-abid
     assert.equal(lawLabel({}), '');
     assert.equal(lawLabel({wanted: {charges: 'theft', owed: 9.4}}), 'WANTED · theft · owes 9p');
     assert.equal(lawLabel({wanted: {charges: 'theft', owed: 9}, custody: {seconds: 61}}), 'HELD IN THE GAOL · 2 min');
+});
+
+test('the week and the day: the weekday in the calendar, and a market, rest day or festival beside the moon', () => {
+    const snapshot = {cell: {environment: {calendar: {year: 1, dayOfYear: 6, dayOfSeason: 6, season: 'Spring', weekday: 'Marketday'}},
+        day: {kind: 'market', name: '', foul: false}}};
+    assert.equal(calendarLabel(snapshot), 'YEAR 1 · MARKETDAY · SPRING 6 · DAY 6 / 365');
+    assert.equal(dayLabel(snapshot), 'MARKET DAY · STALLS OUT');
+    snapshot.cell.day = {kind: 'festival', name: 'Harvest Home', foul: true};
+    assert.equal(dayLabel(snapshot), 'HARVEST HOME · KEPT INDOORS');
+    snapshot.cell.day = {kind: 'work', name: '', foul: false};
+    assert.equal(dayLabel(snapshot), '');
+    assert.equal(dayLabel({}), '');
 });

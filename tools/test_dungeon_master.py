@@ -449,5 +449,41 @@ class ChronicleTests(Fixture):
             self.dm.chronicle('dev', '')
 
 
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class CalendarTests(NpcFixture):
+    """Schedules (Phase 9): the world's week and festivals, and calling one for a town."""
+
+    def test_the_date_and_the_week(self):
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 3, %s)', ('greyfen', json.dumps({'schema': 1, 'calendarDays': 5.5})))
+        cal = self.dm.calendar('dev')
+        self.assertEqual(('Marketday', 'Spring 6, Year 1', 12.0, 0, 1), (cal['today']['weekday'], cal['today']['date'],
+                         cal['today']['hour'], cal['today']['nextMarket'], cal['today']['nextRest']))
+        self.assertEqual((40, 'Spring 46, Year 1'), (cal['today']['nextFestival'], cal['today']['festivalDate']))
+        self.assertEqual(['greyfen'], [c['id'] for c in cal['communities']])
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 4, %s)', ('greyfen', json.dumps({'schema': 1, 'calendarDays': 50.2})))
+        self.assertEqual((87, 'Summer 46, Year 1'), (self.dm.calendar('dev')['today']['nextFestival'],
+                                                     self.dm.calendar('dev')['today']['festivalDate']))
+
+    def test_calling_a_festival(self):
+        master = self.sign_in('dm-master')
+        queued = self.dm.call_festival(master, 'dev', 'greyfen', 'The Lantern Night', 2)
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            row = conn.execute('SELECT kind, target_id, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(('festival.call', 'greyfen', {'name': 'The Lantern Night', 'inDays': 2}), row)
+        self.assertEqual([queued['id']], [a['id'] for a in self.dm.calendar('dev')['actions']])
+        for bad in (lambda: self.dm.call_festival(master, 'dev', 'nowhere'),
+                    lambda: self.dm.call_festival(master, 'dev', 'greyfen', 'x' * 61),
+                    lambda: self.dm.call_festival(master, 'dev', 'greyfen', '', 31),
+                    lambda: self.dm.call_festival(master, 'dev', 'greyfen', '', True)):
+            with self.assertRaises(D.DMError):
+                bad()
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.call_festival(self.sign_in('dm-viewer'), 'dev', 'greyfen')
+        self.assertEqual(403, raised.exception.status)
+
+
 if __name__ == '__main__':
     unittest.main()

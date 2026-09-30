@@ -172,6 +172,26 @@ Forecast forecastAt(std::uint64_t worldSeed, const std::string& cellId, double a
     return forecast(worldSeed, cellId, date.absoluteDay, static_cast<int>(date.hour / 6.0), climate);
 }
 
+int weekdayOf(double absoluteGameDays)
+{
+    if (!std::isfinite(absoluteGameDays) || absoluteGameDays < 0.0 || absoluteGameDays > MaxGameDays)
+        return 0;
+    return static_cast<int>(static_cast<std::uint64_t>(std::floor(absoluteGameDays)) % DaysPerWeek);
+}
+
+std::string weekdayName(int weekday)
+{
+    static const char* const names[DaysPerWeek] = {"Dawnday", "Hearthday", "Stoneday", "Riverday", "Emberday", "Marketday",
+                                                   "Restday"};
+    return weekday >= 0 && weekday < DaysPerWeek ? names[weekday] : "";
+}
+
+bool festivalDay(double absoluteGameDays)
+{
+    const auto date = calendarAt(absoluteGameDays);
+    return date.valid && date.dayOfSeason == FestivalDayOfSeason;
+}
+
 std::string seasonName(Season season)
 {
     switch (season)

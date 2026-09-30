@@ -246,7 +246,9 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     const int base = item == "meal" ? 6 : 2;
     // What the trader has on hand, and what the town has in store (priceFactor): scarce goods cost more.
     const double demand = (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
-    const std::int64_t price = buy ? std::int64_t(std::ceil(base * demand))
+    // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
+    const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(base * demand * .9)))
+                               : buy ? std::int64_t(std::ceil(base * demand))
                                    : std::max<std::int64_t>(1, std::int64_t(std::floor(base * demand * .55)));
     const std::int64_t total = price * quantity;
     if (!buy && held + quantity > cap)

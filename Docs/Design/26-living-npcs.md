@@ -672,21 +672,64 @@ chronicles too.
 - `python3 tools/chronicle.py dev ID` prints one from a database; `world_check ... --events FILE` writes a
   simulation's events and names, and `python3 tools/chronicle.py FILE [ID]` reads chronicles from it (without an ID,
   the fullest lives). `world_check` also prints each game day's mean tick when a run spans more than one.
-- **Found while verifying (not fixed yet; older than Phases 7 and 8).** In a run of several game days on DEV, ticks grow
-  dearer day by day (mean 0.73 ms on day 1, 1.1 ms on day 2, 9.2 ms on day 3, with a p99 of 98 ms). Residents are
-  being stranded. Routes between cells are chosen cell by cell (`headFor`, `cachedSteps`), but the way into the next
-  cell can land them in a pocket of it (a strip along the edge, cut off by a height step) from which no way leads on.
-  `headFor` then finds no door in their region and does nothing, every half second, for good. On day 3, 113
-  Ridgemere residents stood on one tile of Warden Order's west edge and 106 on Western Approach's, and keeping a pile
-  apart costs the square of its size (`separate`). It wants region-aware choice of the way in, and a way out of a
-  pocket.
-- **Tests:** `tools/test_chronicle.py` (the calendar, every logged kind as a sentence, the round, the second person,
-  and a scratch event log), the Mind's life and story tests, `ChronicleTests` in `tools/test_dungeon_master.py`, and
-  `src/lib/chronicle.test.ts` in the Editor.
+- **Found while verifying, and fixed (2026-09-29; older than Phases 7 and 8).** In a run of several game days on DEV,
+  ticks grew dearer day by day (mean 0.73 ms on day 1, 1.1 ms on day 2, 9.2 ms on day 3, with a p99 of 98 ms).
+  Residents were being stranded. Routes between cells are chosen cell by cell (`headFor`, `cachedSteps`), and the way
+  into the next cell could land them in a pocket of it (a strip along the edge, cut off by a height step) from which no
+  way led on; `headFor` found no door in their region and did nothing, for good. On day 3, 113 Ridgemere residents
+  stood on one tile of Warden Order's west edge and 106 on Western Approach's, and keeping a pile apart costs the
+  square of its size (`separate`). Now:
+  - A way into the next cell is judged by where it lands, when that cell is in memory: in the goal's own region (the
+    goal cell), or in the body of the cell (its largest region) on the way through. The best-landing nearest way wins.
+  - If every way from the body of a cell into the next lands in a pocket, that connection is a dead end: routes leave
+    it out (for everyone) until either cell's ground changes, and the resident is routed around.
+  - Someone in a pocket, or cut off from the goal within the goal cell, takes the nearest way out that lands well.
+  - A cell's region map is checksummed once a tick, not on every look (it read every tile each time).
+  - `Tests/stream_tests.cpp` builds a cell with a walled-off strip that every seam from the west lands on: a commuter
+    goes around it, and one put down on it gets out. Without the fix they are stranded there.
+
+## Phase 9: schedules (built 2026-09-29; placeholder numbers throughout)
+
+The user's choices: a seven-day week with a market day and a rest day; markets with stalls and a crowd; four seasonal
+festivals, and the Dungeon Master can call one; weather that shortens days, moves evenings indoors, stops outdoor
+work in storms and holds caravans. The watch keeps its hours through all of it. (`Core/RatwSchedules.*`, the day's
+plan; `Society::decideAuthored`, how residents live it.)
+
+- **The week** (`RatwCalendar.h`): Dawnday, Hearthday, Stoneday, Riverday, Emberday, **Marketday**, **Restday**, the
+  same everywhere, Year 1 beginning on a Dawnday. The client shows the weekday in the calendar line, and the day's
+  kind beside the moon ("MARKET DAY · STALLS OUT", "REST DAY", "HARVEST HOME · FESTIVAL").
+- **Communities.** A resident belongs to the community of their home: its town, or its region in a world of one town
+  (as the Watch does, Phase 7). Each has a market square: the town's market, or where most of its merchants work;
+  a market indoors spills out of its door into the street. Around it, worked out once a day on open ground reachable
+  from the square (not beds, not doorways): twelve stall spots a tile apart, and up to 64 places to stand.
+- **Marketday.** From seven to two, merchants trade from a stall at their town's square: they carry more (20 meals
+  rather than 12) and sell a tenth cheaper (rounded down: a meal is 5 pennies rather than 6). Each of the townsfolk
+  goes for an hour some time between eight and one, to buy and talk. In foul weather at the square the stalls stay in.
+- **Restday.** No work but the watch. Shops open the morning (8 to 12), so everyone can eat; people spend the day with
+  friends where they spend their evenings (at home when the weather is bad).
+- **Festivals.** The 46th day of each season. Each town has its own name for each season's festival (one of three,
+  as its name falls: the Blossom Fair, Midsummer, Harvest Home, Midwinter...). From noon work stops and the town
+  gathers at its square until eleven; the town's stores give everyone who comes one meal (goods only, nothing bought);
+  the watch on duty stays at it. A storm keeps it indoors. A "festival" event marks each one.
+- **The Dungeon Master calls a festival** for a town, today (from noon) or up to thirty days ahead, with a name or
+  the season's own: the Calendar panel in NPC Management (`POST /api/festivals/call`, a `festival.call` live action),
+  which also shows the world's date, weekday and when the next market, rest day and festival fall. Called festivals are
+  kept in the save; players in that town are told.
+- **Weather** (a cell's sky: indoors, fair, wet, or harsh for storms, snow and sandstorms):
+  - rain ends outdoor work two hours early, and moves evenings (and rest days) spent outdoors indoors, at home;
+  - harsh weather stops outdoor work (residents shelter at home) and keeps evenings in;
+  - stalls don't set up and festivals keep indoors when the square's weather is harsh;
+  - a caravan waits out harsh weather where it stands, and goes on after.
+- **Together.** An hour at a festival, at the market or resting with others builds familiarity with a few of those
+  nearby, and a little more liking than home or work does.
+- **NPCs know the day:** the conversation's scene says what day it is, and whether it is market day, the day of rest
+  or a festival.
+- **Tests:** `Tests/schedules_tests.cpp` (the week; Restday; Marketday stalls, prices, visits and foul weather;
+  festivals, the feast, a called festival kept through a save; storms and rain), a caravan waiting out a storm in
+  `Tests/roads_tests.cpp`, the Dungeon Master's calendar in `tools/test_dungeon_master.py`, and the client's labels.
 
 ## Next phases (order agreed 2026-09-28)
 
-- **Phase 9: schedules.** Market days, festivals, a day of rest, and weather changing plans.
 - **Phase 10: the ambient director.** A local director that picks one or two NPC-to-NPC exchanges worth voicing where
   players are: gossip about a recent event, rivals arguing.
 

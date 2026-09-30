@@ -572,6 +572,23 @@ void tradeAndPrices()
     const std::string trip = trade->id;
     const int load = stock(w, trade->account, "meal");
     const int before = stock(w, "stores:west", "meal");
+    // A storm over the road: the caravan waits it out where it stands (Phase 9), then goes on.
+    for (const auto& [id, c] : w.cells())
+        if (c.outdoors)
+            w.setWeather(id, Weather::Storm);
+    const auto legBefore = trade->leg;
+    for (int t = 0; t < 300; ++t)
+        w.tick(1);
+    const Caravan* waiting = nullptr;
+    for (const auto& c : w.roads().caravans)
+        if (c.id == trip)
+            waiting = &c;
+    expect(waiting && waiting->leg == legBefore && w.entity("road:" + trip) &&
+               w.entity("road:" + trip)->activity == "waiting out the weather",
+           "A caravan waits out a storm");
+    for (const auto& [id, c] : w.cells())
+        if (c.outdoors)
+            w.setWeather(id, Weather::Clear);
     bool arrived = false;
     for (int t = 0; t < 4000 && !arrived; ++t)
     {

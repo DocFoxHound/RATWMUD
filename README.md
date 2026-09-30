@@ -487,6 +487,14 @@ The society check captures the graphical client and restarts its isolated save.
 The aging check keeps a separate authority running across three client
 connections to exercise logged-out aging and command-retry behavior.
 
+**The week and its days.** Seven named days, the same everywhere; the calendar line shows which. On **Marketday**
+merchants trade from stalls at their town's market in the morning (more stock, a little cheaper) and the townsfolk
+come to buy and talk; on **Restday** nobody works but the watch (shops open the morning). Each season has a
+**festival** on its 46th day, with each town's own name for it: from noon the town gathers at its market and the stores
+feed everyone once. Rain ends outdoor work early and moves evenings indoors; storms and snow stop outdoor work, keep
+stalls and festivals in, and hold caravans where they are. The Dungeon Master can call a festival for a town. See
+[Phase 9](Docs/Design/26-living-npcs.md).
+
 **Crime and law.** Close to a resident, **Steal** tries their purse and **Attack** starts a fight (nobody is
 killed: a beaten resident collapses and gets up again). Only those who saw or heard it know; they tell the Watch
 when they meet a guard, and a player can **Report** to one. Once the Watch has enough, you are **wanted** (shown
