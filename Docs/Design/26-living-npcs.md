@@ -732,6 +732,11 @@ plan; `Society::decideAuthored`, how residents live it.)
   nearby, and a little more liking than home or work does.
 - **NPCs know the day:** the conversation's scene says what day it is, and whether it is market day, the day of rest
   or a festival.
+- **Measured.** The 20-player gate on DEV: mean tick 16.4 ms, p99 38 ms (the commit before: 16.8 ms, p99 49 ms; the
+  route fix and once-a-tick region checks more than pay for the plans). A week on DEV with one player (7:00 on day 1
+  to 7:00 on day 8): mean 2.0 ms, p99 12.5 ms, nobody without a route; mean by day 0.70, 0.68, 1.08, 1.17, 1.20,
+  1.82 (Marketday), 2.03 (Restday), 1.94 (Dawnday's night). Crowds make keeping people apart dearer on market and rest
+  days, and it does not all go again afterwards: one to watch in longer runs.
 - **Tests:** `Tests/schedules_tests.cpp` (the week; Restday; Marketday stalls, prices, visits and foul weather;
   festivals, the feast, a called festival kept through a save; storms and rain), a caravan waiting out a storm in
   `Tests/roads_tests.cpp`, the Dungeon Master's calendar in `tools/test_dungeon_master.py`, and the client's labels.
