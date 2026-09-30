@@ -114,7 +114,7 @@ class CompileTests(unittest.TestCase):
                  'newcomer sent for', 'relocation', 'cleared', 'promise', 'promise broken', 'contract posted',
                  'contract taken', 'contract completed', 'theft', 'attempted theft', 'assault', 'beaten down', 'warrant',
                  'reported', 'stopped by the watch', 'fine paid', 'arrest', 'released', 'bandits demand', 'fight', 'robbed',
-                 'paid off bandits', 'bandit falls', 'bandits flee', 'camp cleared', 'operator', 'something new']
+                 'paid off bandits', 'bandit falls', 'bandits flee', 'camp cleared', 'operator', 'quarrel', 'something new']
         for kind in kinds:
             for who in (('fennel', 'wren'), ('wren', 'fennel')):
                 c = C.compile_chronicle('fennel', [ev(1, 1, kind, *who, detail='Baker', coins=2)], NAMES)

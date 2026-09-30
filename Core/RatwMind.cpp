@@ -244,6 +244,103 @@ void Client::summarize(const std::string& npcName, const std::vector<std::pair<s
           }});
 }
 
+Exchange Client::authoredExchange(const ExchangeContext& c)
+{
+    const auto pick = [&](std::initializer_list<const char*> options) {
+        const auto n = std::hash<std::string>{}(c.a.name + c.b.name + c.kind) % options.size();
+        return std::string(*(options.begin() + n));
+    };
+    const auto told = [&](std::string text) {
+        // News is kept in the third person; its teller says it in the first.
+        if (text.rfind(c.a.name + " ", 0) == 0)
+            text = "I" + text.substr(c.a.name.size());
+        for (std::size_t at; (at = text.find(" " + c.a.name)) != std::string::npos;)
+            text.replace(at + 1, c.a.name.size(), "me");
+        return text;
+    };
+    Exchange out;
+    const auto say = [&](int who, const std::string& text) { out.lines.push_back({who, left(text, 240)}); };
+    if (c.kind == "gossip")
+    {
+        say(0, pick({"Have you heard? ", "They're saying ", "Word is "}) + c.subjectName + " " + c.claim + ".");
+        say(1, pick({"Truly? ", "Hm. ", "No! "}) + std::string(pick({"I'd not have thought it of them.", "I'll keep an eye out, then.",
+                                                                   "Who told you that?"})));
+    }
+    else if (c.kind == "news")
+    {
+        say(0, pick({"You'll have heard: ", "Did you hear? "}) + told(c.news) + ".");
+        say(1, pick({"I had not. How are you keeping?", "So I'd heard. These are strange days.", "Well. That's something."}));
+    }
+    else if (c.kind == "quarrel")
+    {
+        say(0, pick({"Still here, ", "Keep your distance, ", "I've nothing to say to you, "}) + c.b.name + ".");
+        say(1, pick({"Nor I to you.", "Mind your own business.", "The feeling is mutual."}));
+    }
+    else if (c.kind == "friends")
+    {
+        say(0, c.b.name + pick({"! Good to see you.", ", there you are.", ". How goes it?"}));
+        say(1, pick({"And you. ", "Well enough. "}) + (c.day.empty() ? std::string("A day like any other.") : c.day));
+    }
+    else
+    {
+        say(0, c.day.empty() ? std::string("A day like any other.") : c.day);
+        say(1, pick({"It is at that.", "So it is.", "Aye."}));
+    }
+    return out;
+}
+
+void Client::exchange(const ExchangeContext& c, std::function<void(const Exchange&)> done)
+{
+    const std::string suffix = "/dialogue";
+    if (!live() || path_.size() < suffix.size() || path_.compare(path_.size() - suffix.size(), suffix.size(), suffix) != 0)
+    {
+        done(authoredExchange(c));
+        return;
+    }
+    const auto persona = [](const Persona& p) {
+        auto o = json::Value::object();
+        o.add("name", left(p.name, 120));
+        o.add("description", left(p.description, 1000));
+        o.add("personality", left(p.personality, 1000));
+        return o;
+    };
+    auto body = json::Value::object();
+    body.add("a", persona(c.a));
+    body.add("b", persona(c.b));
+    body.add("aSeesB", left(c.aSeesB, 400));
+    body.add("bSeesA", left(c.bSeesA, 400));
+    auto topic = json::Value::object();
+    topic.add("kind", c.kind);
+    auto facts = json::Value::array();
+    for (std::size_t i = 0; i < c.facts.size() && i < 12; ++i)
+        facts.push(left(c.facts[i], 300));
+    topic.add("facts", facts);
+    body.add("topic", topic);
+    body.add("scene", left(c.scene, 2000));
+    post({path_.substr(0, path_.size() - suffix.size()) + "/exchange", json::dump(body), 8.0,
+          [c, done](int status, const std::string& text) {
+              Exchange out;
+              json::Value parsed;
+              std::string error;
+              bool a = false, b = false;
+              if (status == 200 && text.size() < 16384 && json::parse(text, parsed, error))
+                  for (const auto& line : parsed.array("lines"))
+                  {
+                      const auto who = line.string("speaker");
+                      const auto words = trim(line.string("text"));
+                      if ((who != "a" && who != "b") || words.empty() || out.lines.size() >= 4)
+                          continue;
+                      out.lines.push_back({who == "a" ? 0 : 1, left(words, 240)});
+                      (who == "a" ? a : b) = true;
+                  }
+              if (a && b)
+                  out.generated = true;
+              else
+                  out = authoredExchange(c);   // Checked again here: both must speak, or the authored lines stand in.
+              done(out);
+          }});
+}
+
 void Client::post(Job job)
 {
     std::lock_guard<std::mutex> guard(lock_);

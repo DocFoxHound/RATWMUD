@@ -2025,6 +2025,7 @@ void World::recordEvent(WorldEvent event)
             event.cell = who->cellId;
     bondsFromEvent(event);
     rumoursFromEvent(event);
+    noteNews(event);
     contractsFromEvent(event);
     events_.push_back(std::move(event));
     if (events_.size() > EventsKept + EventsKept / 4)   // Trimmed in batches, not one at a time off the front.

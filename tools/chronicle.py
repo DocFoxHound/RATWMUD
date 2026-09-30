@@ -172,6 +172,7 @@ def describe(row: dict, v: Voice) -> tuple[int, str] | None:
         'bandits flee': (NOTABLE, f'bandits fled from {T}'),
         'camp cleared': (NOTABLE, f'{A} cleared a bandit camp'),
         'operator': (NOTABLE, f'the Dungeon Master acted on {T}' + (f' ({d})' if d else '')),
+        'quarrel': (NOTABLE, f'{A} quarrelled with {T}'),
     }
     if kind.startswith('contract ') and kind not in lines:
         return NOTABLE, sentence(f'work for {T}' + (f' ({d})' if d else '') + f' was {kind[9:]}')

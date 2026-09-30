@@ -205,6 +205,8 @@ int main(int argc, char** argv)
     // Each game day's share, to see whether ticks grow dearer as the world ages: total, schedules, movement,
     // separation (ms), and ticks.
     std::map<int, std::array<double, 5>> byDay;
+    std::vector<double> picking;                    // The ambient director's look every five seconds (Phase 10).
+    std::size_t picked = 0;
     times.reserve(std::size_t(ticks));
     std::size_t mostLoaded = 0;
     for (int i = 0; i < ticks; ++i)
@@ -217,6 +219,13 @@ int main(int argc, char** argv)
         const auto profileBefore = server.tickProfile();
         server.tick(0.05);
         const auto& profileAfter = server.tickProfile();
+        if (i % 100 == 0 && !std::getenv("RATW_NO_AMBIENT_LOOK"))
+        {
+            // Only looked at, never spoken: the simulation goes on exactly as without it.
+            const auto lookBegin = std::chrono::steady_clock::now();
+            picked += server.ambientPicks(players).size();
+            picking.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lookBegin).count());
+        }
         if (!eventsFile.empty() && i % 20 == 0)
             for (auto& e : server.takeEvents())
                 events.push_back(std::move(e));
@@ -375,6 +384,14 @@ int main(int argc, char** argv)
         for (const auto& [kind, n] : kinds)
             std::cout << n << " " << kind << (kind == kinds.rbegin()->first ? "" : ", ");
         std::cout << "); " << server.crime().warrants.size() << " wanted, " << server.crime().custody.size() << " held\n";
+    }
+    if (!picking.empty())
+    {
+        double total = 0;
+        for (const double t : picking)
+            total += t;
+        std::cout << "  ambient director: a look every 5 s takes mean " << total / double(picking.size()) << " ms, worst "
+                  << *std::max_element(picking.begin(), picking.end()) << " ms; " << picked << " exchanges it would voice\n";
     }
     if (byDay.size() > 1)
     {

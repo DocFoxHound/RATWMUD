@@ -161,6 +161,37 @@ class MindTests(unittest.TestCase):
         fixture = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).story({"name": "Fennel", "lines": ["Day: A.", "Day: B."]})
         self.assertEqual("The chronicle of Fennel holds 2 entries. A. B.", fixture["story"])
 
+    def test_an_exchange_between_two_npcs(self):
+        request = {"a": {"name": "Wren", "description": "A baker.", "personality": "Wry."},
+                   "b": {"name": "Sorrel", "description": "A miller."}, "aSeesB": "You know Sorrel well.",
+                   "topic": {"kind": "gossip", "facts": ["Wren has heard that Ada stole from Fennel (from Sloe)."] * 20},
+                   "scene": "The square, on market day."}
+        provider = Recording(lambda call: {"lines": [{"speaker": "a", "text": "I heard Ada took coin from Fennel."},
+                                                     {"speaker": "b", "text": "Ada? \n Surely not."}]})
+        got = mind.Mind(provider, audit=lambda e: None).exchange(request)
+        self.assertEqual({"lines": [{"speaker": "a", "text": "I heard Ada took coin from Fennel."},
+                                    {"speaker": "b", "text": "Ada? Surely not."}]}, got, "One line each, on one line")
+        call = provider.calls[0]
+        self.assertEqual("npc_exchange", call["name"])
+        self.assertIn("using only the facts given", call["system"])
+        self.assertEqual(12, len(call["user"]["topic"]["facts"]))
+        for bad in ({"a": {"name": "Wren"}, "b": {"name": "Sorrel"}, "topic": {"kind": "sermon", "facts": []}},
+                    {"a": {"name": ""}, "b": {"name": "Sorrel"}, "topic": {"kind": "day", "facts": []}},
+                    {"a": {"name": "Wren"}, "topic": {"kind": "day", "facts": []}}):
+            with self.assertRaises(BridgeError):
+                mind.Mind(provider, audit=lambda e: None).exchange(bad)
+        for reply_ in ({"lines": [{"speaker": "a", "text": "Hello."}]},
+                       {"lines": [{"speaker": "a", "text": "Hi."}, {"speaker": "a", "text": "Hi again."}]},
+                       {"lines": [{"speaker": "c", "text": "Hi."}, {"speaker": "a", "text": "Hi."}]},
+                       {"lines": "no"}):
+            with self.assertRaises(BridgeError):
+                mind.decode_exchange(reply_)
+        long = mind.decode_exchange({"lines": [{"speaker": "a", "text": "x" * 900}, {"speaker": "b", "text": "y"}] * 3})
+        self.assertEqual(4, len(long["lines"]))
+        self.assertLessEqual(len(long["lines"][0]["text"]), mind.MAX_LINE)
+        fixture = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).exchange(request)
+        self.assertEqual(["a", "b"], [l["speaker"] for l in fixture["lines"]])
+
     def test_budgets(self):
         now = [0.0]
         budget = mind.Budget(per_hour=3, per_speaker_minute=2, clock=lambda: now[0])
@@ -245,6 +276,13 @@ class HttpTests(unittest.TestCase):
         self.assertEqual({"text", "emotion", "affinity", "trust", "remember", "promise"}, set(data))
         status, data = self.post("/summarize", {"npc": "Wren", "turns": [{"who": "Ash", "text": "Hello."}]})
         self.assertEqual((200, True), (status, "summary" in data))
+
+    def test_an_exchange_over_http(self):
+        status, data = self.post("/exchange", {"a": {"name": "Wren"}, "b": {"name": "Sorrel"},
+                                               "topic": {"kind": "day", "facts": ["It is market day."]}})
+        self.assertEqual(200, status)
+        self.assertEqual(["a", "b"], [line["speaker"] for line in data["lines"]])
+        self.assertEqual(400, self.post("/exchange", {"a": {"name": "Wren"}})[0])
 
     def test_guards(self):
         self.assertEqual(403, self.post("/dialogue", CONTEXT, host="evil.example")[0])

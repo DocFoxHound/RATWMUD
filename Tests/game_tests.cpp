@@ -3,6 +3,7 @@
 #include "RatwGame.h"
 #include "RatwMotionCore.h"
 
+#include <cmath>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -137,6 +138,57 @@ void aDevelopmentSession()
     expect(ash.said().find("Weather updated.") != std::string::npos, "dev tools change the weather");
     g.disconnect(&ash);
     expect(g.world().entity("player-ash") == nullptr && g.characters().count("player-ash"), "leaving keeps the character, offline");
+}
+
+// The ambient director (Phase 10): two residents who are friends, standing by a player, talk; the player hears it,
+// a line at a time, in the authored words when there is no NPC Mind.
+void residentsTalkWhereAPlayerCanHear()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash;
+    ash.id = 1;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    auto& w = g.world();
+    // Wait for two residents standing still near each other (at their work, say), and stand Ash beside them.
+    std::string a, b;
+    for (int i = 0; i < 240 && a.empty(); ++i)
+    {
+        run(g, ash, .5);
+        for (const auto& [x, ex] : w.entities())
+            for (const auto& [y, ey] : w.entities())
+                if (a.empty() && x < y && ex.npc && ey.npc && w.society().resident(x) && w.society().resident(y) &&
+                    ex.cellId == ey.cellId && ex.path.empty() && ey.path.empty() &&
+                    std::hypot(ex.position.x - ey.position.x, ex.position.y - ey.position.y) <= 2.5 &&
+                    w.society().resident(x)->task != "sleep" && w.society().resident(y)->task != "sleep")
+                    a = x, b = y;
+    }
+    expect(!a.empty(), "two residents stand together");
+    auto* me = w.entity("player-ash");
+    me->cellId = w.entity(a)->cellId;
+    me->position = {w.entity(a)->position.x, w.entity(a)->position.y + 1};
+    for (const auto& [x, y] : {std::pair{a, b}, std::pair{b, a}})
+        w.bonds().change(x, y, {30, 20, 60, 0, 0}, w.calendarDays());
+    ash.events.clear();
+    bool heardBoth = false;
+    for (int i = 0; i < 60 && !heardBoth; ++i)
+    {
+        run(g, ash, .5);
+        bool fromA = false, fromB = false;
+        for (const auto& e : ash.events)
+            if (e.string("type") == "roleplay")
+            {
+                fromA |= e.string("speaker") == w.entity(a)->name;
+                fromB |= e.string("speaker") == w.entity(b)->name;
+            }
+        heardBoth = fromA && fromB;
+    }
+    expect(heardBoth, "Ash hears both of them:\n" + ash.said());
+    expect(w.bonds().find(a, b)->familiarity > 60, "and the talk brought them a little closer");
 }
 
 void accountsAndARestart()
@@ -435,6 +487,7 @@ int main()
     try
     {
         aDevelopmentSession();
+        residentsTalkWhereAPlayerCanHear();
         accountsAndARestart();
         aRestartFromAFile();
         playersCannotRuleTheSky();

@@ -33,6 +33,24 @@ struct Reply
     std::string remember, promiseBy, promise;
 };
 
+// Two NPCs overheard (the ambient director, Phase 10): who they are, how each sees the other, and the topic's facts.
+struct Persona
+{
+    std::string name, description, personality;
+};
+struct ExchangeContext
+{
+    Persona a, b;                              // `a` opens.
+    std::string aSeesB, bSeesA, kind, scene;   // kind: "gossip", "news", "quarrel", "friends", "day".
+    std::vector<std::string> facts;
+    std::string subjectName, claim, news, day; // For the authored lines: the rumour, the news (as told), the day.
+};
+struct Exchange
+{
+    std::vector<std::pair<int, std::string>> lines;   // 0: a says, 1: b says.
+    bool generated = false;
+};
+
 // Text cut to at most `units` characters (UTF-16 units, as the Unreal runtime counts), never inside a character.
 std::string left(const std::string& text, std::size_t units);
 std::string trim(const std::string& text);
@@ -51,6 +69,9 @@ class Client
     std::string label() const;
     static std::string authoredReply(const Context& c);
     void converse(const Context& c, std::function<void(const Reply&)> done);
+    // A few lines between two NPCs; authored ones when there is no NPC Mind, or it fails.
+    static Exchange authoredExchange(const ExchangeContext& c);
+    void exchange(const ExchangeContext& c, std::function<void(const Exchange&)> done);
     // A finished conversation summarised from the NPC's point of view; "" if there is no such service or it failed.
     void summarize(const std::string& npcName, const std::vector<std::pair<std::string, std::string>>& turns,
                    std::function<void(const std::string&)> done);

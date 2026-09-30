@@ -141,6 +141,20 @@ class Game
     static constexpr std::size_t MaxQueuedTalk = 4;
     std::map<std::string, std::deque<QueuedTalk>> queuedTalk_;
     std::map<std::string, std::string> npcMood_;
+    // The ambient director (RatwGameAmbient.cpp, Phase 10): exchanges being voiced or spoken, and the model calls
+    // made for them in the last hour (world seconds).
+    struct AmbientTalk
+    {
+        std::uint64_t id = 0;
+        AmbientPick pick;
+        std::deque<std::pair<int, std::string>> lines;     // Still to say: 0 the teller, 1 the listener.
+        double nextAt = 0;
+        bool voiced = false, generated = false;
+    };
+    std::vector<AmbientTalk> ambient_;
+    std::deque<double> ambientCalls_;
+    double exchangeLookIn_ = 0;
+    std::uint64_t ambientNext_ = 1;
     struct NudgeBudget
     {
         std::int64_t hour = -1;
@@ -208,6 +222,8 @@ class Game
     void consolidate();
     void heed(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply);
     void talkNext(const std::string& npcId);
+    void ambient(double dt);                                  // Picks, voices and speaks NPC-to-NPC exchanges.
+    static constexpr int AmbientCallsPerHour = 30;
 
     // Saving.
     void saveSoon();

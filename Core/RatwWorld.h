@@ -12,6 +12,7 @@
 #include "RatwBonds.h"
 #include "RatwCrime.h"
 #include "RatwSchedules.h"
+#include "RatwAmbient.h"
 #include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
@@ -427,6 +428,12 @@ class World
     // A festival for a community, today (from noon) or some days ahead; `name` "" for the season's own.
     Result callFestival(const std::string& community, const std::string& name, int inDays = 0);
     const std::vector<CalledFestival>& calledFestivals() const { return festivals_; }
+    // The ambient director (Phase 10). The exchanges worth voicing now where these players can hear, best first (one
+    // a cell), leaving out anyone in `busy` (talking with a player, say) and whoever talked lately.
+    std::vector<AmbientPick> ambientPicks(const std::vector<std::string>& listeners, const std::set<std::string>& busy = {});
+    // An exchange was voiced: it counts against both and the place for a while, and does what talk does.
+    void ambientSpoken(const AmbientPick& pick);
+    std::string describeRegard(const std::string& holder, const std::string& other) const;
     std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
     Result payBandits(const std::string& player, const std::string& bandit);
@@ -569,19 +576,25 @@ class World
     bool townsReady_ = false;
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
     CrimeState crime_;
+    // The ambient director (RatwAmbient.cpp): when each resident and place last had an exchange (world seconds), and
+    // what has happened in residents' lives lately (a few items each, for two game days).
+    std::map<std::string, double> ambientLast_;
+    std::map<std::string, std::vector<AmbientNews>> news_;
+    void noteNews(const WorldEvent& event);
+    AmbientTopic ambientTopic(const std::string& a, const std::string& b);
     // Schedules (RatwSchedules.cpp).
     std::vector<CalledFestival> festivals_;
-    struct Square
+    struct MarketSquare
     {
         bool found = false;
         Spot at;
         std::vector<Spot> stalls, crowd;
     };
-    std::map<std::string, Square> squares_;                 // By community, worked out once a day.
+    std::map<std::string, MarketSquare> squares_;                 // By community, worked out once a day.
     std::int64_t squaresDay_ = -1, plannedAt_ = -1;
     std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
     std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
-    const Square& square(const std::string& community);
+    const MarketSquare& square(const std::string& community);
     int skyOf(const std::string& cellId) const;            // -1 indoors, 0 fair, 1 wet, 2 harsh.
     void planDays();
     std::int64_t crimeHour_ = -1;

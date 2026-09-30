@@ -495,6 +495,11 @@ feed everyone once. Rain ends outdoor work early and moves evenings indoors; sto
 stalls and festivals in, and hold caravans where they are. The Dungeon Master can call a festival for a town. See
 [Phase 9](Docs/Design/26-living-npcs.md).
 
+**Overheard.** Now and then, where you can hear, two residents standing together talk: passing on a rumour one
+has heard (about you, perhaps), telling news from their own lives, airing an old grudge, or remarking on the day. The
+NPC Mind writes the lines (authored ones stand in without it); what they say is real: a rumour passed on is believed,
+rivals sour, friends warm. See [Phase 10](Docs/Design/26-living-npcs.md).
+
 **Crime and law.** Close to a resident, **Steal** tries their purse and **Attack** starts a fight (nobody is
 killed: a beaten resident collapses and gets up again). Only those who saw or heard it know; they tell the Watch
 when they meet a guard, and a player can **Report** to one. Once the Watch has enough, you are **wanted** (shown

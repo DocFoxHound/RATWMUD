@@ -53,7 +53,7 @@ int World::skyOf(const std::string& cellId) const
     }
 }
 
-const World::Square& World::square(const std::string& community)
+const World::MarketSquare& World::square(const std::string& community)
 {
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (today != squaresDay_)

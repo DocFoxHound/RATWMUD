@@ -741,10 +741,50 @@ plan; `Society::decideAuthored`, how residents live it.)
   festivals, the feast, a called festival kept through a save; storms and rain), a caravan waiting out a storm in
   `Tests/roads_tests.cpp`, the Dungeon Master's calendar in `tools/test_dungeon_master.py`, and the client's labels.
 
-## Next phases (order agreed 2026-09-28)
+## Phase 10: the ambient director (built 2026-09-30; placeholder numbers throughout)
 
-- **Phase 10: the ambient director.** A local director that picks one or two NPC-to-NPC exchanges worth voicing where
-  players are: gossip about a recent event, rivals arguing.
+Now and then, where a player can hear, two residents standing together talk about something worth voicing, and what
+they say is real: rules decide what the talk does, the words only perform it (`Core/RatwAmbient.*`, the choice and its
+effects; `Core/RatwGameAmbient.cpp`, the voice). The user's choices: the NPC Mind writes the exchanges, with authored
+lines as the fallback; now and then; gossip spreads and feelings shift; NPCs may talk about players, from what they
+believe.
+
+- **Who.** Two residents in the same place, at most three tiles apart, both standing still and free: not asleep, on
+  patrol, following someone, held, beaten down, on an errand of the road or the watch, talking with a player (or
+  queued to), or speaking already. Of those a player can hear clearly (hearing clarity .35 and up), the twelve nearest
+  to the player are considered.
+- **What** (the best-scoring topic of the pair):
+  - **gossip** (3 and up): a rumour one of them heard lately (within four game days, fairly sure of it) and the other
+    hasn't, about anyone but the two of them. Players included, even within their earshot: only what the teller
+    believes, never private conversation. The one who knows opens.
+  - **news** (2.8): something from one's own life in the last two game days: a marriage, a death they mourn, taking
+    or becoming an apprentice, a new post, being robbed or attacked, an arrest.
+  - **quarrel** (2.5 and up): a grudge (affinity -25 or less either way); the one bearing it opens.
+  - **friends** (1.5): well known and liked.
+  - **day** (1): acquaintances, on a market day, a rest day, a festival or in the rain. Strangers say nothing.
+  The facts are plain statements (who heard what from whom, the day, the place, the weather), and the words may use
+  nothing else.
+- **How often.** Looked for every five seconds; at most three under way across the world, one per place; a place is
+  quiet for three minutes after one and each speaker for ten. At most 30 model calls an hour; past that, and without
+  the Mind, the authored lines speak.
+- **What it changes** (applied as it begins): gossip is believed by the listener, from the teller, at seven tenths the
+  teller's confidence (as gossip is), and warms the listener to the teller a little; a quarrel costs both some liking
+  and trust; friends and acquaintances grow a little closer. Each is logged as a conversation (a quarrel as a
+  `quarrel`, which chronicles tell).
+- **The voice.** The NPC Mind's `/exchange` writes two to four alternating lines from both personas, how each sees the
+  other (`Bonds::describe`), the topic's facts and the scene; every line is checked (who speaks, one or two sentences,
+  at most 240 characters, both must speak) or the authored lines stand in. Lines are spoken as NPCs speak to players
+  (`Game::publish`: heard by whoever can hear, as clearly as they can), a few seconds apart; the exchange stops if the
+  two part, fall, or a player speaks to either.
+- **Measured.** On DEV with 20 players, a look takes 1.0 ms (worst 2.0 ms) every five seconds; looking changes nothing
+  (the people digest is the same with and without).
+- **Tests:** `Tests/ambient_tests.cpp` (strangers are silent, friends chat, gossip passed on and believed, quiet after,
+  quarrels and news, the day, the authored lines), a player hearing two residents in `Tests/game_tests.cpp`, and the
+  Mind's exchange in `tools/test_npc_mind.py`.
+
+## After Phase 10
+
+The phases agreed on 2026-09-28 are built. Still to do from the list: TLS on the server, so remote players can sign in.
 
 ## Open questions
 

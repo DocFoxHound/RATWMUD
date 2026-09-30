@@ -1252,6 +1252,7 @@ void Game::tick(double dt)
     world_.tick(dt);
     ++revision_;
     mind_.poll();                                   // NPC Mind answers that have arrived.
+    ambient(dt);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
