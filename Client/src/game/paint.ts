@@ -415,6 +415,18 @@ export class GamePainter {
                 p.frame(bx, by, 32, 20, withAlpha(speakingColor(view.color), alpha * 0.6));
                 p.text(bx + 6, by - 1, view.typing ? '...' : "''", 13, withAlpha(speakingColor(view.color), alpha), true);
             }
+            // Spoken to: a dashed gold ring that stays while they are chosen.
+            if (s.talkTargets.includes(view.id)) {
+                const c = p.ctx;
+                c.save();
+                c.setLineDash?.([4, 3]);
+                c.beginPath();
+                c.arc(x, y, 15, 0, Math.PI * 2);
+                c.strokeStyle = css(withAlpha(Amber, 0.85));
+                c.lineWidth = 1.6;
+                c.stroke();
+                c.restore();
+            }
             // Pointed at in the In Sight list: a ring, so a name finds its wolf.
             if (s.highlight === view.id) {
                 p.ctx.beginPath();

@@ -26,7 +26,7 @@ export function fakeContext(): CanvasRenderingContext2D {
         createPattern: () => ({setTransform: noop}),
     };
     for (const name of ['fillRect', 'fillText', 'beginPath', 'moveTo', 'lineTo', 'stroke', 'save', 'restore', 'rect', 'clip', 'roundRect',
-        'translate', 'rotate', 'setTransform', 'drawImage', 'clearRect'])
+        'translate', 'rotate', 'setTransform', 'drawImage', 'clearRect', 'arc', 'setLineDash'])
         context[name] = noop;
     return new Proxy(context, {
         get: (target, key) => (key in target ? target[key as string] : undefined),

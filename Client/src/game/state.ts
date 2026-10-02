@@ -9,6 +9,7 @@ import type {MotionFrame} from '../net/motion.ts';
 export interface Post {
     id: string;
     speaker: string;
+    to: string[];               // Whom it was meant for, as this player can tell ("you", a name, "someone").
     text: string;
     channel: string;
     kind: string;
@@ -63,6 +64,7 @@ export interface KeyInput {
 }
 
 const MovementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
+const MaxTargets = 4;
 /** The story column's presets (CSS pixels): balanced, wide, text-first, compact. */
 export const StoryWidths = [460, 600, 760, 360];
 const KnownWeather = ['overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
@@ -152,6 +154,7 @@ export class GameState {
     highlight = '';             // A wolf pointed at in the In Sight list: ringed on the map.
     hoveredEntity = '';         // The wolf under the pointer on the map: lit in the list.
     hoverTooltips = true;       // Labels beside the pointer (the line under the map always shows).
+    talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
     inspectedText = '';
     toast = '';
     toastUntil = 0;
@@ -395,7 +398,12 @@ export class GameState {
             this.facingPreview = false;
             return;
         }
+        if (type === 'talkTarget') {
+            this.addTarget(str(e, 'id'));
+            return;
+        }
         const post: Post = {
+            to: arr(e, 'to').filter((v): v is string => typeof v === 'string').slice(0, 6),
             id: eventId, channel: str(e, 'channel', type === 'ooc' ? 'ooc' : 'ic'), kind: type,
             speaker: str(e, 'speaker', str(e, 'name', type === 'system' ? 'THE WORLD' : 'A voice')),
             color: Math.trunc(num(e, 'color')), text: str(e, 'text'), postedAt: this.clock, revealed: 0, system: false,
@@ -447,6 +455,8 @@ export class GameState {
             view.facing = pose.facing;
             view.placed = true;
         }
+        // A wolf out of sight is no longer spoken to.
+        if (this.talkTargets.some(id => !this.entities.has(id))) this.talkTargets = this.talkTargets.filter(id => this.entities.has(id));
         const settle = Math.exp(-delta / 0.12);
         this.cameraShift = [this.cameraShift[0] * settle, this.cameraShift[1] * settle];
         if (Math.abs(this.cameraShift[0]) + Math.abs(this.cameraShift[1]) < 0.5) this.cameraShift = [0, 0];
@@ -507,7 +517,8 @@ export class GameState {
             const id = `post_${++this.nextRequestId}`;
             this.pendingDrafts.set(id, text);
             this.composer.text = '';
-            this.send({type: 'chat', requestId: id, text, channel: this.channel, volume: this.volume});
+            this.send({type: 'chat', requestId: id, text, channel: this.channel, volume: this.volume,
+                ...(this.channel === 'ic' && this.talkTargets.length ? {targets: [...this.talkTargets]} : {})});
         }
         this.setChat(false);
     }
@@ -612,8 +623,12 @@ export class GameState {
                 this.modal = '';
                 return true;
             }
-            this.contextTarget = '';
+            if (this.contextTarget) {
+                this.contextTarget = '';
+                return true;
+            }
             if (this.chat) this.setChat(false);
+            else if (this.talkTargets.length) this.talkTargets = [];      // Esc on the map lets go of whom you speak to.
             else this.cancelTravel();
             return true;
         }
@@ -683,9 +698,36 @@ export class GameState {
         return false;
     }
 
-    /** A row of the In Sight list clicked: its menu, at the pointer. */
+    /** A row of the In Sight list clicked: a resident is chosen (or let go) to speak to; anyone else, their menu. */
     sightClicked(id: string, page: [number, number]) {
-        this.openContextAt(id, page);
+        const e = this.entities.get(id);
+        if (e && e.kind === 'npc' && e.actions.includes('talk')) this.toggleTarget(id);
+        else this.openContextAt(id, page);
+    }
+
+    toggleTarget(id: string) {
+        if (this.talkTargets.includes(id)) this.talkTargets = this.talkTargets.filter(t => t !== id);
+        else this.addTarget(id);
+    }
+
+    addTarget(id: string) {
+        const e = this.entities.get(id);
+        if (!e || e.self || this.talkTargets.includes(id)) return;
+        if (this.talkTargets.length >= MaxTargets) {
+            this.showToast(`You can speak to ${MaxTargets} at once. Let one go first.`);
+            return;
+        }
+        this.talkTargets = [...this.talkTargets, id];
+    }
+
+    /** Who will hear the next words as meant for them, for the hint above the composer. */
+    speakingTo(): {targets: EntityView[]; nearby: EntityView | null} {
+        const targets = this.talkTargets.map(id => this.entities.get(id)).filter((e): e is EntityView => !!e);
+        if (targets.length) return {targets, nearby: null};
+        // As the server decides: with no one chosen or named, the one resident close by, if there is only one.
+        const me = this.entities.get(this.selfId);
+        const near = me ? [...this.entities.values()].filter(e => e.kind === 'npc' && !e.self && Math.hypot(e.x - me.x, e.y - me.y) <= 6) : [];
+        return {targets, nearby: near.length === 1 ? near[0] : null};
     }
 
     /** A wolf's menu, opened from a panel (the In Sight list) at a point on the page. */

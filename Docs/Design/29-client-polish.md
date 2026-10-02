@@ -8,7 +8,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 | 1 | Smooth movement | Built 2026-10-02 |
 | 2 | A new screen: HTML panels around a larger canvas map, an In Sight list | Built 2026-10-02 |
 | 3 | Mouse-over: what is under the cursor, in words | Built 2026-10-02 |
-| 4 | Talk targets: choose who you are speaking to, several at once | Planned |
+| 4 | Talk targets: choose who you are speaking to, several at once | Built 2026-10-02 |
 | 7 | Regional weather: moving systems that fade with distance, driving the simulation | Planned |
 | 8 | A real minimap: true positions and sizes, coloured by terrain | Planned |
 | 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Planned |
@@ -90,3 +90,28 @@ Glyphs are not always recognisable, so the pointer is the wolf's eyes (`Client/s
 - **Shown twice:** always on the LOOKING AT line under the map, and beside the pointer after a moment's rest (off in
   Settings: "Pointer labels"). Pointing at a name in In Sight shows that wolf on the line too.
 - Only what the client already holds is used: nothing is asked of the server, so nothing hidden can be learned.
+
+## Phase 4: Talk targets (built 2026-10-02)
+
+Before, an NPC answered only when its name was in the line; "Talk" sent one canned greeting; any NPC in the world that
+caught its name answered at once, all together, and nothing said who a reply was for.
+
+- **Choosing:** click a resident's row in In Sight (again to let go), or "Talk" in their menu (the server checks they
+  can see and hear each other, then answers `{"type": "talkTarget"}`; nothing is said for the player). Up to four.
+  They stay chosen until they leave sight, are clicked off (the chip's ×), or Esc is pressed on the map. Chosen wolves
+  have a dashed gold ring on the map and a gold edge in the list.
+- **Above the composer:** "TALKING TO Ash × Bram ×", or, with no one chosen, "SPEAKING TO Ash (nearby)" when exactly
+  one resident is close, else "no one in particular".
+- **Who answers** (`Game::command`, "chat" with `targets`): only residents in the speaker's place are considered
+  (never the whole world); those addressed are the chosen ones who can hear it, in the order chosen, then anyone named
+  (and a companion asked for their thoughts); with no one chosen and no one named, the one resident within six tiles
+  who hears it clearly, if there is exactly one and the post is speech. Nobody else answers.
+- **In turn:** several addressed answer one after another (`TalkChain`, `continueChain`); each later one is told what
+  the earlier ones just said. A chosen wolf who can't hear is reported ("Ash is too far away to hear you.").
+- **Thinking:** a resident shows "..." from the moment they take up a line until they answer.
+- **For whom:** speech events carry `to`, each listener told as they can tell ("you", a name they can see, or
+  "someone"); the transcript shows "ASH → you" (in gold), "ASH → Bram".
+
+Tests: `game_tests` `talkTargets` (only the chosen answer, the player's words name them, two answer in order, a named
+wolf joins in, out of earshot is told, Talk chooses without speaking); `server_smoke` (the one close resident answers
+"→ you"); `game.test.ts` (choosing, sending, letting go when out of sight and with Esc).

@@ -140,6 +140,22 @@ class Game
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;
     std::map<std::string, double> operatorActivity_, typingExpiry_, lastChat_, npcLastSpeech_, lastMovementSound_;
+    // Several NPCs spoken to at once answer in turn (Docs/Design/29, phase 4): after the NPC keyed here replies, the next.
+    struct TalkTurn
+    {
+        std::string npcId, heardText;
+        SensoryResult sense;
+    };
+    struct TalkChain
+    {
+        std::string playerId;
+        Voice voice = Voice::Speak;
+        std::deque<TalkTurn> rest;
+        std::string said;                          // What the earlier ones answered, for the later ones to hear.
+    };
+    std::map<std::string, TalkChain> chainAfter_;
+    void continueChain(TalkChain chain);
+    std::map<std::string, std::string> replyingTo_;     // NPC → the player it is answering (for "→ you").
     std::map<std::string, std::string> companionOwner_;
     std::set<std::string> pendingNpc_;
     struct QueuedTalk
@@ -223,13 +239,16 @@ class Game
     void stampFrame(Connection* c, json::Value& root, const std::string& cell);
     void sendSnapshot(Connection* c);
     void movementSounds();
-    std::vector<std::string> publish(const std::string& author, const ParsedPost& post, Voice voice);
+    // Speech to everyone who can perceive it. `to`: whom it was meant for (each listener is told, as they can tell).
+    std::vector<std::string> publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to = {});
     void logEvent(const char* kind, const std::string& actor, const std::string& target = {}, const std::string& detail = {});
     void followTransition(const std::string& id, const std::string& previousCell);
 
     // NPC conversation.
-    void talk(const std::string& npcId, const std::string& playerId, const std::string& heardText, Voice voice = Voice::Speak,
-              const SensoryResult* perceived = nullptr);
+    // An NPC answers what a player said; `alsoHeard` is what others just answered (several spoken to at once). False
+    // if the NPC couldn't take it up at all.
+    bool talk(const std::string& npcId, const std::string& playerId, const std::string& heardText, Voice voice = Voice::Speak,
+              const SensoryResult* perceived = nullptr, const std::string& alsoHeard = {});
     void consolidate();
     void heed(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply);
     void talkNext(const std::string& npcId);

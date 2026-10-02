@@ -906,3 +906,41 @@ test('looking: the pointer names what is under it, from what the client already 
     s.worldMap = true;
     assert.equal(at(2.5, 0.5), null);
 });
+
+test('talk targets: chosen from the list or a menu, sent with what is said, let go when out of sight or with Esc', () => {
+    const {state: s, commands} = testGame();
+    const snapshot: Json = {cell: {id: 'square'}, self: {id: 'me', x: 5, y: 5}, entities: [
+        {id: 'ash', name: 'Ash', x: 6, y: 5, npc: true, actions: ['inspect', 'talk']},
+        {id: 'bram', name: 'Bram', x: 14, y: 5, npc: true, actions: ['inspect', 'talk']},
+        {id: 'wren', name: 'Wren', x: 5, y: 9, actions: ['inspect']}], time: 0, cellGeneration: 1};
+    s.applySnapshot(snapshot);
+    s.tick(0.016, 0.016);
+    assert.equal(s.speakingTo().nearby?.name, 'Ash', 'with no one chosen, the one resident close by');
+    s.sightClicked('ash', [0, 0]);
+    s.sightClicked('bram', [0, 0]);
+    assert.deepEqual(s.talkTargets, ['ash', 'bram']);
+    s.sightClicked('wren', [10, 10]);
+    assert.deepEqual(s.talkTargets, ['ash', 'bram'], 'a player is not a talk target: their row opens a menu');
+    assert.equal(s.contextTarget, 'wren');
+    s.contextTarget = '';
+    s.setChat(true);
+    s.composer.text = '"Good evening, both."';
+    s.submitPost();
+    const lastChat = () => commands.filter(c => c.type === 'chat').at(-1)!;
+    assert.deepEqual(lastChat().targets, ['ash', 'bram'], 'sent with what is said');
+    s.sightClicked('ash', [0, 0]);
+    assert.deepEqual(s.talkTargets, ['bram'], 'clicked again, let go');
+    s.receiveEvent({type: 'talkTarget', id: 'ash'});
+    assert.deepEqual(s.talkTargets, ['bram', 'ash'], 'the Talk menu item adds one');
+    s.receiveEvent({type: 'roleplay', id: 'r1', speaker: 'Ash', text: 'Evening.', to: ['you']});
+    assert.deepEqual(s.posts.at(-1)!.to, ['you'], 'a reply knows it was for you');
+    s.applySnapshot({...snapshot, time: 0.2, entities: [(snapshot.entities as Json[])[0]]});
+    s.tick(0.3, 0.016);
+    assert.deepEqual(s.talkTargets, ['ash'], 'out of sight, let go');
+    s.keyDown({code: 'Escape'});
+    assert.deepEqual(s.talkTargets, [], 'Esc on the map lets go of everyone');
+    s.setChat(true);
+    s.composer.text = '"Anyone?"';
+    s.submitPost();
+    assert.equal('targets' in lastChat(), false, 'with no one chosen, none are sent');
+});

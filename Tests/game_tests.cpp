@@ -542,12 +542,102 @@ void mismatchedOwnersAreRefused()
 }
 } // namespace
 
+// Talk targets (Docs/Design/29-client-polish.md, phase 4): only those spoken to answer, in turn, and the player is told
+// when a chosen wolf can't hear.
+void talkTargets()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash;
+    ash.id = 1;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    // Two residents in one place, the player between them.
+    std::vector<std::string> pair;
+    std::string cell;
+    for (const auto& [id, e] : g.world().entities())
+        if (e.npc && !e.transient && !e.dead && (cell.empty() || e.cellId == cell) && pair.size() < 2)
+        {
+            cell = e.cellId;
+            pair.push_back(id);
+        }
+    expect(pair.size() == 2, "two residents share a place in the demo world");
+    auto* a = g.world().entity(pair[0]);
+    auto* b = g.world().entity(pair[1]);
+    for (auto* e : {a, b})
+    {
+        g.world().stop(e->id);
+        e->cellId = cell;
+    }
+    a->position = {6, 6};
+    b->position = {8, 6};
+    auto* me = g.world().entity("player-ash");
+    me->cellId = cell;
+    me->position = {7, 6};
+    run(g, ash, .2);
+    const auto spoke = [&](const std::string& name) {
+        int n = 0;
+        for (const auto& e : ash.events)
+            n += e.string("type") == "roleplay" && e.string("speaker") == name;
+        return n;
+    };
+    const auto chat = [&](const std::string& text, std::vector<std::string> targets, const std::string& commandId) {
+        auto list = json::Value::array();
+        for (const auto& t : targets)
+            list.push(t);
+        ash.events.clear();
+        g.command(&ash, cmd({{"type", "chat"}, {"text", "\"" + text + "\""}, {"targets", list}, {"commandId", commandId}}));
+        run(g, ash, 1.2);
+    };
+    chat("Good day to you.", {a->id}, "t1");
+    expect(spoke(a->name) == 1 && spoke(b->name) == 0, "only the chosen wolf answers:\n" + ash.said());
+    const json::Value* mine = nullptr;
+    for (const auto& e : ash.events)
+        if (e.string("type") == "roleplay" && e.string("speaker") == "Ash")
+            mine = &e;
+    expect(mine && mine->array("to").size() == 1 && mine->array("to")[0].asString() == a->name, "the player's words say whom they were for");
+    chat("And what do you both make of it?", {a->id, b->id}, "t2");
+    expect(spoke(a->name) == 1 && spoke(b->name) == 1, "two chosen wolves both answer:\n" + ash.said());
+    std::size_t first = 0, second = 0;
+    for (std::size_t i = 0; i < ash.events.size(); ++i)
+        if (ash.events[i].string("type") == "roleplay")
+        {
+            if (ash.events[i].string("speaker") == a->name)
+                first = i;
+            if (ash.events[i].string("speaker") == b->name)
+                second = i;
+        }
+    expect(first < second, "one after the other, in the order chosen");
+    // Naming someone still reaches them, alongside the chosen.
+    chat("Tell me, " + b->name + ", is it always this quiet?", {a->id}, "t3");
+    expect(spoke(a->name) == 1 && spoke(b->name) == 1, "a wolf named answers too");
+    // A chosen wolf too far away to hear: the player is told.
+    a->position = {6 + 200, 6};
+    if (const auto* c = g.world().cell(cell); c && c->width > 210)
+    {
+        chat("Hello?", {a->id}, "t4");
+        expect(spoke(a->name) == 0 && ash.said().find("too far away to hear you") != std::string::npos, "out of earshot, and told so");
+    }
+    a->position = {6, 6};
+    run(g, ash, .2);
+    // Choosing someone says nothing for the player: the client adds them to its talk targets.
+    ash.events.clear();
+    g.command(&ash, cmd({{"type", "action"}, {"action", "talk"}, {"target", a->id}}));
+    expect(ash.last("talkTarget") && ash.last("talkTarget")->string("id") == a->id, "talk chooses a target");
+    expect(spoke("Ash") == 0, "without saying anything");
+    g.disconnect(&ash);
+}
+
 int main()
 {
     try
     {
         aDevelopmentSession();
         residentsTalkWhereAPlayerCanHear();
+        talkTargets();
         theGameAnswersWhatItKnows();
         accountsAndARestart();
         aRestartFromAFile();

@@ -75,7 +75,31 @@ export class StoryPanel {
         show(this.recover, !!s.failedDraft);
         setClass(this.textarea, 'writing', s.chat);
         this.textarea.readOnly = !s.chat;
+        this.updateTargets();
         this.updateFeed();
+    }
+
+    private targetsKey = '';
+    /** Above the composer: whom the next words go to, each chosen wolf a chip with ×. */
+    private updateTargets() {
+        const s = this.s;
+        const {targets, nearby} = s.speakingTo();
+        const key = s.channel === 'ooc' ? 'ooc' : JSON.stringify([targets.map(t => [t.id, t.name]), nearby?.name ?? '']);
+        if (key === this.targetsKey) return;
+        this.targetsKey = key;
+        this.targets.replaceChildren();
+        if (s.channel === 'ooc') return;
+        el('span', 'label muted', this.targets, targets.length ? 'TALKING TO' : 'SPEAKING TO');
+        if (!targets.length) {
+            el('span', nearby ? 'sage' : 'muted', this.targets, nearby ? `${nearby.name} (nearby)` : 'no one in particular');
+            el('span', 'muted small hint', this.targets, '· click a name in In Sight to choose');
+            return;
+        }
+        for (const t of targets) {
+            const chip = el('span', 'chip', this.targets, t.name);
+            button('×', 'chip-x', chip, () => s.toggleTarget(t.id)).title = `Stop speaking to ${t.name}`;
+        }
+        el('span', 'muted small hint', this.targets, '· Esc on the map lets go');
     }
 
     private updateFeed() {
@@ -101,7 +125,9 @@ export class StoryPanel {
                 const row = el('div', post.system ? 'post system' : 'post');
                 const color = css(post.system ? Muted : speakingColor(post.color));
                 row.style.setProperty('--voice', color);
-                el('div', 'speaker', row, post.speaker.toUpperCase());
+                const speaker = el('div', 'speaker', row, post.speaker.toUpperCase());
+                // Whom it was for: "→ you" stands out, so a reply meant for the player is never lost in a crowd.
+                if (post.to.length) el('span', post.to.includes('you') ? 'to you' : 'to', speaker, `  →  ${post.to.join(', ')}`);
                 const text = el('div', 'words', row);
                 this.feed.append(row);
                 this.shown.set(post, shown = {row, text, revealed: -1});

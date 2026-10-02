@@ -307,7 +307,19 @@ int main(int argc, char** argv)
             expect(c.snapshots.size() >= 8, "snapshots five a second (" + std::to_string(c.snapshots.size()) + ")");
             c.command(R"({"type":"chat","text":"\"Is anyone here?\"","commandId":"c1"})");
             c.read(.5);
-            expect(c.last("roleplay") && c.last("roleplay")->string("text").find("Is anyone here?") != std::string::npos, "what they say, heard");
+            const json::Value* said = nullptr;
+            const json::Value* answered = nullptr;
+            for (const auto& e : c.events)
+                if (e.string("type") == "roleplay")
+                {
+                    if (e.string("text").find("Is anyone here?") != std::string::npos)
+                        said = &e;
+                    else if (said)
+                        answered = &e;
+                }
+            expect(said != nullptr, "what they say, heard");
+            // With exactly one resident close by, that resident is the one spoken to, and answers the player.
+            expect(!answered || (answered->array("to").size() == 1 && answered->array("to")[0].asString() == "you"), "an answer says it is to you");
             expect(c.last("chatAccepted") != nullptr, "and accepted");
             ::close(c.fd);
         }

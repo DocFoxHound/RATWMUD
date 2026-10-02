@@ -58,8 +58,14 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .composer-bar { display: flex; gap: 12px; align-items: center; border-top: 1px solid #34443e; padding-top: 8px; min-height: 30px; }
 .composer-bar .label:first-child { flex: 1; }
 .composer-bar .small { padding: 5px 9px; background: var(--raised); font-size: 12px; }
-.talk-targets { display: flex; flex-wrap: wrap; gap: 6px; }
+.talk-targets { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 14px; }
 .talk-targets:empty { display: none; }
+.talk-targets .hint { font-size: 12px; }
+.chip { display: inline-flex; align-items: center; gap: 2px; background: #2b2f24; border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+    color: var(--gold); border-radius: 12px; padding: 1px 2px 1px 10px; }
+.chip-x { padding: 0 7px !important; font-size: 15px; color: var(--gold) !important; border-radius: 10px !important; }
+.post .speaker .to { color: var(--muted); }
+.post .speaker .to.you { color: var(--gold); }
 .composer-row { display: flex; gap: 8px; align-items: stretch; }
 .volume { width: 78px; flex: none; background: var(--raised) !important; font-size: 12px; letter-spacing: .05em; }
 .composer { flex: 1; height: 84px; resize: none; border: 1px solid #34443e; border-radius: 3px; outline: none; background: var(--ink);

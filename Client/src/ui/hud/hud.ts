@@ -244,6 +244,7 @@ export class Hud {
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
             setText(r.detail, [upperFirst(role), e.hostile ? 'hostile' : '', e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
             setClass(r.row, 'hostile', e.hostile);
+            setClass(r.row, 'targeted', s.talkTargets.includes(e.id));
             setClass(r.row, 'highlight', s.highlight === e.id || s.hoveredEntity === e.id);
             if (me) {
                 const d = distance(e), angle = Math.atan2(e.y - me.y, e.x - me.x);
@@ -282,6 +283,7 @@ export class Hud {
             if (s.highlight === e.id) s.highlight = '';
         });
         row.addEventListener('mousedown', ev => ev.preventDefault());
+        row.title = e.kind === 'npc' ? 'Click to speak to them (or stop); right-click for more' : 'Click for what you can do';
         row.addEventListener('click', ev => s.sightClicked(e.id, [ev.clientX, ev.clientY]));
         row.addEventListener('contextmenu', ev => {
             ev.preventDefault();
