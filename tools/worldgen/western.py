@@ -1368,7 +1368,9 @@ def with_streams(project, tiles):
     return {**project, 'cells': cells}, changed
 
 
-GENERATED = ('rm_', 'sf_')                 # Interiors, doors, people and routes of the two designed cities
+# Interiors, doors, people and routes of the two designed cities, and (doc 30) of the towns built into the w_ cells
+# and the cities' newcomers: replaced together, the towns rebuilt by worldgen.towns at the end of assemble().
+GENERATED = ('rm_', 'sf_', 'tn_', 'rmx_', 'sfx_')
 
 
 def claims_for(record):
@@ -1440,6 +1442,9 @@ def assemble(project, world, cells):
     for c in merged['cells']:
         if c['id'] in cell_claims:
             c['territory'] = {**c['territory'], 'claims': sorted(cell_claims[c['id']])}
+    # The towns, village and fortresses built out again on the new ground, and the cities' newcomers moved back in.
+    from . import towns
+    merged, _ = towns.build_all(merged, report=lambda line: print(f'  towns: {line}'))
     return merged
 
 

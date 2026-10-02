@@ -453,7 +453,7 @@ bool World::withCaravan(const std::string& who, const Entity& wagon) const
 void World::tendRoadFolk()
 {
     const auto stage = stageCells();
-    RouteBudget budget{0, searchExpanded_};
+    RouteBudget budget{0, searchExpanded_, 2, 30000};   // Caravans plan a couple of routes a turn at most.
     // Every caravan on the road has its wagon in the world, where it last was (or at its first market).
     std::set<std::string> wagons;
     for (auto& c : roads_.caravans)

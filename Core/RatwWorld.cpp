@@ -29,8 +29,10 @@ constexpr int NavScale = 4;
 // million-node grid, for routes at most this much longer than the shortest (in practice barely longer at all).
 constexpr double SearchGreed = 2.0;
 constexpr std::size_t SmoothLookahead = 40; // Waypoints a smoothed path may skip in one straight line.
-constexpr int RouteSearchesPerUpdate = 6;    // Residents who may plan a route in one schedule update,
-constexpr std::size_t RouteNodesPerUpdate = 100000; // and the search work they may do between them (nodes expanded).
+// Residents plan their routes a few a tick (planWantedRoutes): at most this many searches in one tick, and no new
+// one once this much search work (nodes expanded) has been done in it.
+constexpr int RouteSearchesPerTick = 1;
+constexpr std::size_t RouteNodesPerTick = 30000;
 constexpr double Epsilon = 1e-7;
 constexpr double Pi = 3.14159265358979323846;
 constexpr double TurnSpeed = Pi; // Radians per second: 180 degrees.
@@ -2579,7 +2581,8 @@ void World::updateSchedules()
     tendCrime();
     // When a shift changes, a whole town sets off at once: plan a bounded number of routes per update and let the
     // rest set off on the next, rather than stalling the server for all of them in one tick.
-    RouteBudget budget{0, searchExpanded_};
+    // Routes are not planned here: whoever needs one waits for planWantedRoutes, a few a tick.
+    RouteBudget budget{0, searchExpanded_, 0, 0, true};
     const auto stage = tiered() ? stageCells() : std::set<std::string>{};
     for (auto& pair : entities_)
     {
@@ -2621,6 +2624,29 @@ void World::updateSchedules()
     }
 }
 
+void World::planWantedRoutes()
+{
+    // In turn from where the last tick stopped, so no one waits behind the same few.
+    RouteBudget budget{0, searchExpanded_, RouteSearchesPerTick, RouteNodesPerTick, true};
+    auto it = routeWanted_.upper_bound(routeCursor_);
+    for (std::size_t looked = 0, total = routeWanted_.size(); looked < total && !routeWanted_.empty(); ++looked)
+    {
+        if (budget.searches >= budget.maxSearches || searchExpanded_ - budget.expandedBefore >= budget.maxNodes)
+            break;
+        if (it == routeWanted_.end())
+            it = routeWanted_.begin();
+        const std::string id = it->first;
+        const RouteWant want = it->second;
+        it = routeWanted_.erase(it);
+        routeCursor_ = id;
+        auto* e = entity(id);
+        if (!e || e->dead || e->offstage || !e->path.empty() || !e->leaderId.empty())
+            continue;
+        headFor(*e, want.task, want.goalCell, want.target, budget);
+        it = routeWanted_.upper_bound(id);
+    }
+}
+
 void World::headFor(Entity& e, const std::string& task, const std::string& goalCell, Vec2 target, RouteBudget& budget)
 {
     if (e.offstage)
@@ -2635,8 +2661,13 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
     // A failed search on a large cell explores everything reachable; don't repeat it every half second.
     if (const auto wait = pathRetryAt_.find(e.id); wait != pathRetryAt_.end() && time_ < wait->second) return;
     const auto seek = [&](Vec2 goal) {
-        if (budget.searches >= RouteSearchesPerUpdate || searchExpanded_ - budget.expandedBefore >= RouteNodesPerUpdate)
+        if (budget.searches >= budget.maxSearches || searchExpanded_ - budget.expandedBefore >= budget.maxNodes)
+        {
+            if (budget.defer)
+                routeWanted_[e.id] = {task, goalCell, target};
             return Result{false, "Waiting to set off.", {}};
+        }
+        routeWanted_.erase(e.id);
         ++budget.searches;
         ++profile_.routeSearches;
         const auto expandedAt = searchExpanded_;
@@ -2839,6 +2870,12 @@ void World::tick(double dt)
             updateSchedules();
             tickSchedules += since(mark);
             scheduleAccumulator_ = std::max(0., scheduleAccumulator_ - .5);
+        }
+        else if (!routeWanted_.empty())
+        {
+            mark = Clock::now();
+            planWantedRoutes();
+            tickSchedules += since(mark);
         }
         mark = Clock::now();
         for (auto& entry : entities_)
@@ -3709,6 +3746,8 @@ Result World::restore(const PersistedWorld& state)
             std::isfinite(p.made) && std::isfinite(p.due) && (p.status == "open" || p.status == "kept" || p.status == "broken"))
             promises_.push_back(p);
     scheduleAccumulator_ = 0;
+    routeWanted_.clear();
+    routeCursor_.clear();
     pendingPortals_.clear();
     travels_.clear();
     travelLegCells_.clear();

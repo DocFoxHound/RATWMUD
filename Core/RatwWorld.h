@@ -686,7 +686,20 @@ class World
     {
         int searches = 0;
         std::size_t expandedBefore = 0;
+        int maxSearches = 6;                    // RouteSearchesPerUpdate
+        std::size_t maxNodes = 100000;          // RouteNodesPerUpdate
+        bool defer = false;                     // Residents denied a search wait in routeWanted_ for a later tick.
     };
+    // Residents waiting to plan a route (Docs/Design/30, phase 5): planned a few a tick rather than all at once in a
+    // schedule update, so a town setting off never stalls one tick.
+    struct RouteWant
+    {
+        std::string task, goalCell;
+        Vec2 target;
+    };
+    std::map<std::string, RouteWant> routeWanted_;
+    std::string routeCursor_;
+    void planWantedRoutes();
     void headFor(Entity& e, const std::string& task, const std::string& goalCell, Vec2 target, RouteBudget& budget);
     std::int64_t marriageWeek_ = -1;
     void tendPromises();
