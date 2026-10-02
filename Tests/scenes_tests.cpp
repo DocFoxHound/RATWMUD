@@ -141,6 +141,33 @@ void picking()
     expect(lib.scenes()[3].always, "barks may be repeated");
 }
 
+// Alternatives written in parallel answer each other: the second reply to the second remark.
+void parallelAlternatives()
+{
+    Library lib;
+    std::string problem;
+    expect(lib.parse(R"(
+scene paired
+when topic=smalltalk
+a : one | two | three
+b : reply one | reply two | reply three
+a[merchant] : (a merchant's aside)
+b : end one | end two | end three
+)", "paired.scene", problem), problem);
+    auto s = moment("smalltalk");
+    const auto none = [](const std::string&) { return false; };
+    std::set<std::string> openings;
+    for (std::uint64_t seed = 0; seed < 60; ++seed)
+    {
+        const auto r = lib.pick(s, seed, none, {});
+        expect(r.lines.size() == 4 && r.lines[2].second == "(a merchant's aside)", "every turn spoken");
+        expect(r.lines[1].second == "reply " + r.lines[0].second && r.lines[3].second == "end " + r.lines[0].second,
+               "replies follow the remark they answer: " + r.lines[0].second + " / " + r.lines[1].second + " / " + r.lines[3].second);
+        openings.insert(r.lines[0].second);
+    }
+    expect(openings.size() == 3, "and each opening comes up");
+}
+
 void jobs()
 {
     expect(jobCategory("Master Smith of Westmarch", "", "civilian", 40) == "smith", "smith");
@@ -169,6 +196,7 @@ int main()
         theFormat();
         whoSaysWhat();
         picking();
+        parallelAlternatives();
         jobs();
         theRealLibrary();
     }

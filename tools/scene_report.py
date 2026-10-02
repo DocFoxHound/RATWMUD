@@ -60,12 +60,16 @@ def load():
 
 
 def renderings(scene):
-    """Distinct ways the scene can come out for one speaker pair (the alternatives of the lines that apply)."""
-    total = 1
+    """Distinct ways the scene can come out for one speaker pair. A turn with as many alternatives as the one before
+    answers it in parallel (Core/RatwScenes.cpp), so it adds no new ways."""
+    total, before = 1, 0
     turn = []
     for who, tags, alts in scene['lines'] + [('end', '', [])]:
         if turn and (who != turn[-1][0] or not turn[-1][1]):
-            total *= max(len(a) for _, _, a in turn)
+            count = max(len(a) for _, _, a in turn)
+            if count != before:
+                total *= count
+            before = count
             turn = []
         if who != 'end':
             turn.append((who, tags, alts))

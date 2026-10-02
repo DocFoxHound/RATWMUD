@@ -478,6 +478,10 @@ Rendered Library::render(const Scene& scene, const Situation& s, std::uint64_t s
         return true;
     };
     std::uint64_t r = mix(seed ^ hash(scene.id));
+    // Alternatives are written in parallel: a line with as many alternatives as the line spoken before it answers the
+    // same one (the second reply to the second remark), even past a single-line answer in between. Otherwise one at
+    // random.
+    std::size_t threadIndex = 0, threadCount = 0;
     for (std::size_t t = 0; t < scene.turns.size(); ++t)
     {
         const auto& turn = scene.turns[t];
@@ -496,11 +500,17 @@ Rendered Library::render(const Scene& scene, const Situation& s, std::uint64_t s
         }
         // One alternative at random; another if its blanks can't be filled.
         r = mix(r + t);
-        const std::size_t n = chosen->texts.size(), start = std::size_t(r % n);
+        const std::size_t n = chosen->texts.size(), start = n == threadCount ? threadIndex : std::size_t(r % n);
         std::string said;
         bool done = false;
-        for (std::size_t k = 0; k < n && !done; ++k)
+        std::size_t k = 0;
+        for (; k < n && !done; ++k)
             done = fill(chosen->texts[(start + k) % n], said);
+        if (done && n > 1)                  // A line with no alternatives (most speaker-tagged ones) keeps the thread.
+        {
+            threadIndex = (start + k - 1) % n;
+            threadCount = n;
+        }
         if (!done)
         {
             if (turn.optional)
