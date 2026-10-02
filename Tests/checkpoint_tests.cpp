@@ -158,6 +158,20 @@ int main()
         World again;
         const auto restored = again.restore(back);
         expect(restored.ok, "the world restores from it: " + restored.message);
+        {
+            // A resident redescribed or renamed since the save keeps the new words; the save keeps where they are.
+            auto stale = back;
+            expect(!stale.npcs.empty(), "the save has residents");
+            auto& old = stale.npcs.front();
+            old.name = "Old Name";
+            old.description = "Prince of somewhere, as the save remembers it.";
+            World fresh;
+            expect(fresh.restore(stale).ok, "a save with old words restores");
+            const auto* now = fresh.entity(old.id);
+            expect(now && now->description == w.entity(old.id)->description && now->name == w.entity(old.id)->name &&
+                       now->position.x == old.position.x && now->position.y == old.position.y,
+                   "who a resident is comes from the world as authored, where they are from the save");
+        }
         again.addPlayer("player-ash", "Ash");
         again.entity("player-ash")->cellId = w.entity("player-ash")->cellId;
         again.entity("player-ash")->position = w.entity("player-ash")->position;

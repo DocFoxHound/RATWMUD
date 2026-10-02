@@ -3713,6 +3713,13 @@ Result World::restore(const PersistedWorld& state)
     for (const auto* kept : keptNpcs)
     {
         auto e = *kept;
+        // Their name and description come from the world as authored (a renamed or redescribed resident stays
+        // changed); everything else, appearance included, from the save.
+        if (const auto* authored = entity(e.id))
+        {
+            e.name = authored->name;
+            e.description = authored->description;
+        }
         advanceAge(e, restoredDays);
         clearTransientMotion(e);
         e.typing = false;
