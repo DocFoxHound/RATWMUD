@@ -1,0 +1,362 @@
+# 31. Responsiveness and scale: one server, a thousand wolves
+
+Planned 2026-10-02. **Agreed; not started.**
+
+The plan is agreed (see "The decisions"); work has not started. The target is **1,000 players on one server**, with
+the world's roughly 1,000 residents. Hosting is local development now, dedicated servers later. We fix lag rather than
+split the game into services by system. The Unreal cleanup waits until the character-creator work is done; it is
+listed at the end.
+
+## Where we stand (measured 2026-10-02)
+
+All numbers are from this machine (20 threads), using DEV build 12 (966 residents, 1,289 places).
+
+**`world_check --simulate 7 7.2 --players N`** covers the world tick plus each player's view and motion frame. It
+leaves out JSON, compression and sending.
+
+| Players | Mean tick | p99 | One player's view | One motion frame |
+| --- | --- | --- | --- | --- |
+| 20 | 21.6 ms | 54 ms | 1.5 ms | 0.08 ms |
+| 100 | 86 ms | 159 ms | 2.1 ms | 0.09 ms |
+| 250 | 224 ms | 394 ms | 2.4 ms | 0.14 ms |
+| 500 | 354 ms | 659 ms | 1.9 ms | 0.13 ms |
+| 1,000 | **893 ms** | 1,444 ms | 2.4 ms | 0.20 ms |
+
+**A whole-game run** (scratch benchmark) covers everything the server does in a tick except writing to sockets:
+
+- `Game::tick`, which sends a real snapshot and motion frame to each fake client
+- zlib compression of every message, as the server does it
+- acknowledgements, so snapshots are deltas
+- a move command from every player every 2 seconds
+- three full saves at the end
+
+| Players | Mean loop | p99 | Compression | Snapshot (raw → packed) | Outgoing | One full save |
+| --- | --- | --- | --- | --- | --- | --- |
+| 5 | 13 ms | 37 ms | 0.8 ms | 24.8 KB → 3.0 KB | 0.8 Mbit/s | 60 ms |
+| 20 | **41 ms** | **87 ms** | 3.2 ms | 34 KB → 3.0 KB | 3.1 Mbit/s | 77 ms |
+| 100 | 209 ms | 357 ms | 19 ms | 35 KB → 3.0 KB | 16 Mbit/s | 215 ms |
+| 250 | 396 ms | 628 ms | 37 ms | 35 KB → 3.1 KB | 41 Mbit/s | 383 ms |
+| 500 | 692 ms | 1,124 ms | 65 ms | 34 KB → 3.0 KB | 81 Mbit/s | 668 ms |
+| 1,000 | **1,397 ms** | 1,985 ms | 121 ms | 37 KB → 3.2 KB | 173 Mbit/s | **about 1 s** |
+
+The whole-game run at 1,000 players is about **28× over budget**.
+
+**What fills a snapshot.** This was measured after the client had acknowledged earlier snapshots:
+
+- Visible wolves' details are about **70%** (11.5 KB of 16 KB). They are sent again in full every time.
+- The terrain is already held by the client and is not resent.
+
+The game has **50 ms per tick**. Reading the two tables together:
+
+- **Today one server holds about 20–25 players**, and its p99 is already over budget at 20.
+- **1,000 players is about 18× over budget on the world side alone, and about 28× over in the whole game.**
+- **Every full save stops the game for 60 ms to about 1 s**, and the cost grows with the number of players. About a dozen
+  ordinary commands trigger one: trade, eat, contracts, entering the world and others.
+
+## What breaks at 1,000 players, worst first
+
+1. **Views are rebuilt from scratch.** Each player gets five a second, at about 2.4 ms each. For 1,000 players that is
+   250 views a tick, about **600 ms**. Each view recomputes sight and builds every tile row, entity and section, and
+   only afterwards are unchanged parts trimmed away. A snapshot is still **about 35 KB of JSON raw** even after the
+   trim, which means most of that work is thrown away.
+2. **Motion frames scan the whole world.** `motion::frame` loops over *every* entity for every player, every tick,
+   keeping only the ones in the same cell (`RatwMotionCore.cpp:135`).
+   - With 2,000 entities that is 2 million checks a tick, about **200 ms**.
+   - Each frame is built as a JSON tree, then packed to binary, then zlib-compressed. Compression saves only about
+     35% on a 450-byte frame.
+3. **`movementSounds` does the same scan.** Every 0.2 s it loops over all entities for each player, with a sight
+   check for each (`RatwGame.cpp:1434`).
+4. **Compression runs per client on the game thread.** At level 6 this costs about 0.15 ms per player per tick: about
+   37 ms at 250 players, and about **150 ms** at 1,000. Chat is compressed once for each listener.
+5. **Movement and separation grow with crowds**: 4× and 2× from 20 to 1,000 players. Separation compares each
+   wolf with its neighbours in the cell, so a festival square with 300 wolves would be far worse.
+6. **Saves**, as above. They also deep-copy the whole world on the game thread.
+7. **One thread for everything.** Simulation, views, compression, sockets and saves share one core. The other 19
+   threads on this machine sit idle.
+8. **Smaller items:**
+   - `poll()` over 1,000 sockets on every pass.
+   - Entities live in a `std::map<std::string, Entity>`, so every lookup is a string comparison through a tree.
+   - Route-search spikes: the p99.9 is 52 ms with 20 players.
+   - Residents stranded on DEV make each day's ticks slower (commit 8ec3451).
+   - Bandwidth is about 160 kbit/s per player, about 160 Mbit/s for 1,000. A dedicated server can carry that, but it
+     should come down.
+
+**Can one machine do 1,000?** Probably yes, but only if it does both of these:
+
+- **Per-player work drops about 10×.** Change-driven views, frames built once per cell, and binary snapshots.
+- **That work spreads over cores.** Everything per player becomes read-only work between ticks.
+
+The rough budget:
+
+| Work | Volume | Cost each | Cost per tick | With 16 cores |
+| --- | --- | --- | --- | --- |
+| Snapshots | 5,000 a second (250 a tick) | under 0.2 ms | 50 ms | 3–4 ms |
+| Motion frames | 1,000 a tick | 0.01 ms | 10 ms | under 1 ms |
+
+That leaves the world simulation 30–40 ms on its own thread. If the gates in Phase 6 show this can't be reached,
+the fallback is splitting **by space** (see Phase 6).
+
+## The decisions (2026-10-02)
+
+| Problem | Chosen | Not chosen, and why |
+| --- | --- | --- |
+| The client | **Stay in the browser.** A desktop wrapper (Tauri or Electron) is possible later, with the same code. | A native client would remove none of the server's costs. |
+| Movement feel | **Hybrid:** the client is in charge of its own wolf, and the server checks it. During combat and chases, the server is in charge and the client predicts. | Server-only with prediction everywhere would cost the server more for players' movement. |
+| Scanning every wolf | **A spatial index first**, then motion built once per cell, slower updates for far wolves, and pawsteps folded into motion. | None of it can move to the client (see sight). |
+| Who sees whom | **The server decides, recomputing only on change.** The client works out terrain-only lighting and line-of-sight shading for the picture. | All of sight on the client would let a modified client see hidden wolves. |
+| Snapshots | **Wolves' details sent only when they change, in a binary format.** Snapshots stay on their five-a-second timer. | Sending on change instead of on a timer was not chosen. |
+| Compression and cores | **A compression policy, a thread pool for per-player work, and a network thread with `epoll`.** | Region processes stay a fallback (Phase 6). |
+| Saves | **The full redesign plus a journal:** valuables as small transactions, dirty rows, a `fork()` world snapshot, binary rows, and a replay journal. A crash loses at most a fraction of a second. | Fixing only the stalls; the redesign without a journal. |
+| Slow ticks | **Time budgets for route planning and schedules, and fix the stranded residents.** | |
+
+## How other games save, and what we take from each
+
+| Method | Who uses it | Taken for |
+| --- | --- | --- |
+| Dirty tracking, a row per record | Most MMOs | Players, residents, memories, bonds, beliefs |
+| Write-behind persistence thread | EVE, most MMO servers | Everything: the game thread never waits |
+| Small transactions for valuables, with a callback | Item and currency systems | Accounts, trades, money, items, contracts |
+| Append-only journal + snapshots | Redis AOF, databases | Crash recovery to within a fraction of a second |
+| Copy-on-write snapshot via `fork()` | Redis BGSAVE | The bulk world: society, doors, roads, weather |
+| Binary serialization | Nearly every engine | Rows the game reads back. JSON stays for tools and the DM. |
+
+## The plan
+
+Six phases, in this order. Each phase is measured with `game_load` (Phase 1) against the one before, and each is
+useful by itself.
+
+**Shared code.** Phases 2–4 change `RatwGame.cpp`, `RatwWorld.cpp` and the wire, and other work goes on in those
+files too: the character creator and NPC conversations. Agree who owns which files before each phase starts.
+
+### Phase 1. Measure
+
+1. **`Tests/game_load.cpp`**, promoted from the scratch benchmark:
+   - the whole `Game` with N fake clients that acknowledge snapshots and send movement
+   - a world export
+   - two layouts: spread over the country, and packed into one town
+   - output: mean and p99 loop time, split by part, bytes per client, and the cost of a save
+   It becomes the gate for every later phase. It is not a ctest: a run is minutes long.
+2. **The server's own timing:**
+   - every loop pass split into commands, world tick, views and snapshots, motion, compression, saves and socket
+     writes
+   - a minute's histogram of how long the game thread was blocked, by cause
+   - `TickProfile`, logged once a minute
+3. **A client overlay** (a settings toggle): ping, time from input to motion, frame time, and bytes per second.
+
+Gate: the baseline numbers recorded here, with the same machine and the same world build as the table above.
+
+### Phase 2. Saves that never stop the game
+
+The game thread only *notes* changes. A persistence worker (the existing `DbStore` thread, grown) writes them.
+
+1. **The journal.** This is the source of truth between snapshots.
+   - Every change to saved state is appended to an in-memory journal as a small binary record: an entity's row
+     changed, a trade, a door opened, money moved. Each record carries a sequence number.
+   - The worker writes the journal in batches, every 100–250 ms, as one transaction into `game.journal`
+     (append-only, like `game.events`).
+   - On start-up the server loads the latest snapshot and rows, then replays the journal after the snapshot's
+     sequence number.
+   - A crash loses at most the last batch window.
+   - `game.events` stays as it is. It is history for memories, rumours and the DM, not recovery.
+2. **Valuables wait for their commit, never on the game thread.**
+   - Covers: registering, creating a character, trade, gather and eat, contracts, apprenticing, recruiting, theft,
+     fines, bandits and paying.
+   - Each becomes a journal record that asks to be told when it commits. The game applies the change in memory at
+     once and replies to the player when the batch lands (a few ms to 250 ms later).
+   - If the commit fails, the change is undone in memory and the player is told. The command receipts that already
+     exist stop a retry from doing it twice.
+3. **Dirty rows.**
+   - Entities, characters, memories, bonds, beliefs and conversations carry a dirty mark, set where they change.
+   - Every few seconds the worker turns the journal's effect into their rows (`game.characters`, `game.npcs`, ...).
+     This is the "checkpoint" the journal replays from, and the journal before it is trimmed.
+   - Nothing hashes or rebuilds the whole document any more.
+4. **The world snapshot by `fork()`.**
+   - Every few minutes the server forks. The child serializes the bulk state that isn't rows (society, doors, roads,
+     weather, receipts: today's 566 KB `p_rest`) from its frozen copy, to a file, and exits. The parent hands that file
+     to the worker to store.
+   - Rules for the child:
+     - It touches only plain memory: no database connection, no locks, no threads, no logging through shared streams.
+     - It writes with plain `write()` calls and exits with `_exit()`.
+   - The fork happens between ticks, at a quiet moment. Copying the page tables takes a few ms.
+   - If the fork proves awkward, these sections get dirty rows like the rest.
+5. **Binary rows.**
+   - Rows the game reads back are stored in a versioned binary form. JSON readers are kept for tools, the DM and
+     `RATW_VERIFY_SAVES`.
+   - `world_db.py` and the DM read through a small decoder, or a JSON view the database builds.
+6. **File-mode worlds** (the demo, Greyfen, playtests) use the same journal and snapshot, in files beside the save.
+7. **Shutdown and release restarts** still finish a whole snapshot and wait for it. Waiting is right there.
+
+**Migration.** Old checkpoints load as they do now. The first new snapshot writes the new form, and
+`game.save_checkpoint_delta` is retired afterwards.
+
+Gate: at 250 players, no storage stall on the game thread over 1 ms. Kill the server at random mid-play 20 times, and
+nothing older than the batch window is lost. Valuables are never half-applied.
+
+### Phase 3. Movement: the client is in charge, the server in fights
+
+1. **The movement module.** Movement is extracted from `World` into a small self-contained C++ module:
+   - integration, pace and stamina
+   - collision with tiles, heights, doors and seams
+   - rise and turn timing
+   It has no dependencies. The server uses it for NPCs and for checking players. Emscripten builds it to
+   WebAssembly for the client. It is one source of truth.
+2. **Free mode** (normally): the client is in charge.
+   - The client moves its own wolf with the module, at once, and sends its pose 10–20 times a second, numbered: cell,
+     position, facing, pace, posture.
+   - The server doesn't integrate the player's movement. It **checks** each pose against the last accepted one:
+     - Distance: within what pace, stamina and the time since allow, with a tolerance for jitter.
+     - The path between the two poses: no solid tile, closed door or impossible height. The segment is sampled every
+       half tile.
+     - A change of cell only through a seam or door the wolf is standing at.
+     - Stamina charged on the server from the distance accepted.
+     - Posture and rise timing respected.
+   - **When a check fails**, the server answers with a correction to the last good pose, and the client snaps back
+     with easing. Failures are counted per character and logged. Repeated ones are flagged for the DM.
+   - Collisions with other wolves (separation) stay with the server, applied as a gentle push the client takes as a
+     correction.
+3. **Held mode** (combat and chases): the server is in charge, and the client predicts.
+   - **Held mode starts** when combat is detected (see "Settled"). That is when the character:
+     - strikes or is struck (an entry in `fights_`)
+     - is pursued by a guard (`pursuits_`)
+     - comes within a set distance of a standing hostile
+     - has committed a crime in the last N seconds
+     - is in any future PvP encounter
+   - **Held mode ends** after a quiet spell (about 10 s) with none of those.
+   - The client sends inputs (keys, numbered), as now. The server moves the wolf and returns, in that player's own
+     motion frame, the number of the last input it applied.
+   - The client predicts with the same module. When a frame arrives, it replays its unconfirmed inputs from the
+     server's pose and eases out any difference.
+   - **The mode** travels in the player's own motion frame. The client switches on the next frame. Switching to held
+     mode starts from the last accepted pose, so the switch makes no jump.
+4. **The wire.** The client sends its pose (free mode) or its numbered inputs (held mode). The player's own motion
+   frame gains the mode, the last applied input number, and corrections.
+
+Gate:
+
+- Input-to-motion under one frame in both modes, with 150 ms of simulated latency.
+- Scripted cheat attempts are all corrected: speed, walls, teleports, crossing a cell without a seam.
+- The server's movement time for players drops in `game_load`.
+
+### Phase 4. Per-player work
+
+1. **Spatial index (first).**
+   - Entities get integer handles. String IDs are used only at the edges (wire, saves, tools).
+   - Entities are kept in buckets per cell, with a grid of about 8 tiles inside each cell.
+   - Everything that looks for neighbours uses it: motion, sounds, separation, sight, barks, ambient picks.
+2. **Motion built once per cell per tick**, written straight to binary with no JSON tree.
+   - Each observer gets the cell's frame filtered by their sight list.
+   - The sight list is kept from Phase 4.4, so filtering is a lookup, not a sight check.
+   - Viewers who see the same wolves share one encoded frame.
+3. **Far wolves less often.**
+   - Wolves within about 24 tiles of the observer: every tick (20 Hz).
+   - Farther away in the same cell: every fourth tick (5 Hz).
+   - The client already interpolates.
+4. **Sight recomputed on change.** A player's sight list (whom they see and how clearly) is recomputed only when:
+   - the observer moves to a new tile
+   - a wolf near them moves to a new tile
+   - a door, light, weather or time-of-day change nearby alters it
+   Everything else reuses the list.
+5. **Pawsteps in the motion frame.** "Heard, not seen" becomes a flag (and a direction) in the frame. It is derived from
+   the same neighbour search, with no second scan. The client writes the line in the story pane.
+6. **Terrain shading on the client.**
+   - The client computes lighting and line-of-sight shading of the *terrain* from the tiles it holds, the light
+     sources and the time.
+   - The server's per-tile visibility rows leave the snapshot.
+   - Which wolves are shown remains the server's sight list, so nothing hidden is sent.
+7. **Wolves' details on change.**
+   - A visible wolf's details (name as known, appearance, actions, injuries, carried, posture text) are sent when they
+     change, or when the wolf first comes into view. Otherwise the snapshot refers to what the client holds, as
+     terrain does today.
+   - Change marks on the entity tell the snapshot builder; it doesn't build and compare.
+8. **Binary snapshots.**
+   - A compact, versioned binary layout replaces JSON for snapshots and motion. It is decoded in the client's worker.
+   - A JSON debug form is kept for tools, the headless client and smokes.
+   - Snapshots stay at five a second.
+9. **Compression policy.**
+   - No compression for messages under about 1 KB, which covers most motion frames.
+   - Larger messages use a deflate stream per connection, so repeated structure compresses away, at level 1–3.
+   - Broadcasts (chat, weather, announcements) are encoded and compressed once and shared.
+10. **The thread pool.** After `World::tick`, the world is read-only until the next tick.
+    - A fixed pool (one thread per core, less two) builds, encodes and compresses each due player's snapshot and
+      motion in parallel.
+    - Results go to each connection's outgoing queue.
+    - The simulation itself stays on one thread and deterministic.
+11. **The network thread.**
+    - It runs `epoll`: it accepts connections, reads, parses WebSocket frames and writes queued output.
+    - Commands reach the game thread through a lock-free queue, and are drained at the start of each tick.
+    - The game thread never touches a socket.
+12. **Separation** uses the spatial index, so a crowded square costs neighbours, not everyone.
+
+Gate: gates 1–3 below.
+
+### Phase 5. Smooth the spikes
+
+1. **Route planning and the schedules pass** run under a per-tick time budget (about 4 ms). Unfinished work carries
+   over to the next tick. This replaces the per-tick count.
+2. **The stranded residents** (commit 8ec3451): find why residents end up stranded and fix the cause, so the cost of
+   a tick stays flat over days of play.
+3. **A 30 Hz tick** stays possible once p99 is comfortably under 33 ms. Movement no longer needs it.
+
+Gate: p99.9 under 50 ms at 250 players. Over a simulated week, the mean tick on the last day is within 10% of the
+first day's.
+
+### Phase 6. Scale gates, and the fallback
+
+Each gate is run with `game_load` on the development machine. It must pass with players packed around the cities, and
+is checked with players spread out. Gate 4 is also
+run on the planned server hardware.
+
+| Gate | Players | Mean tick | p99 | Expected after |
+| --- | --- | --- | --- | --- |
+| 1 | 100 | under 25 ms | under 50 ms | Phases 2–3, and Phase 4.1–4.2 |
+| 2 | 250 | under 25 ms | under 50 ms | Phase 4 complete |
+| 3 | 500 | under 30 ms | under 50 ms | Phase 4's pool and network thread, and Phase 5 |
+| 4 | 1,000 | under 35 ms | under 50 ms | the server hardware |
+
+**If gate 3 or 4 can't be met**, the fallback is splitting by space. Several world processes each own a set of regions,
+with handover at the borders and a small relay for chat. It gets its own design doc if it comes to that.
+
+## Hardware notes for the dedicated server
+
+- The simulation thread wants **high single-core speed**. The pool wants **many cores**. A current 16–32 core part
+  with high boost clocks suits both.
+- Memory: the world is in the hundreds of MB. The `fork()` snapshot briefly needs room for pages changed while the
+  child writes, which is small.
+- **Postgres** on the same machine, on fast NVMe. The journal is small sequential writes. Move Postgres to its own
+  machine only if its disk competes with the game.
+- About 1 Gbit/s of network. Phase 4 should bring 1,000 players well under the 173 Mbit/s measured today.
+
+## Settled (2026-10-02)
+
+- **Free-mode tolerance:** 15% over the allowed distance, then tuned from Phase 1's data.
+- **Held-mode triggers:** the list in Phase 3.3 stands.
+  - The game has no general combat yet (doc 18 is design only), and no lawless or PvP zones. So held mode is
+    triggered by **combat detected as it happens**, not by place.
+  - Phase 3 builds the switch and its hooks: the existing assault, pursuit and crime paths, and a single
+    "combat began / ended" call for the combat system to use.
+  - Each trigger is wired up as the system behind it is built.
+- **The journal batch window:** 100–250 ms.
+- **Where players stand:** mostly around cities, where most stories and quests are. The **packed layout** (several
+  hundred players in and around the great cities) is the one the gates must pass. The spread layout is checked too.
+
+## Later: the Unreal cleanup (deferred)
+
+Nothing in the tracked code depends on Unreal. Left over:
+
+- **About 2.2 GB of untracked engine output.** Remove it:
+  - `Binaries/`, `Intermediate/`, `DerivedDataCache/`, `Content/`, `Build/`
+  - in `Saved/`: `StagedBuilds`, `Cooked`, `Shaders`, `MaterialStats`, `ShaderDebugInfo`, `UnrealBuildTool`,
+    `Autosaves`, `Crashes`, `Temp`
+- **Keep the rest of `Saved/`.** `Config/RATWNPCAI.local.json` (the AI key), the demo save, playtests, tests, logs
+  and DM review are all in use.
+- **Fix the stale paths:**
+  - the `Source/RATWMUD` fallback in `tools/game.sh:12`
+  - two migration comments
+  - the `.gitignore` entries for `Content/` and `Build/`
+- Mark `PLAN.md`'s Unreal milestones as historical.
+- Retire `tools/convert_saves.py` once no SQLite saves remain.
+- **Unreal-shaped formats that still work:**
+  - motion strings written as `FArchive` writes an `FString`
+  - Unreal-style GUIDs
+  - text limits counted in UTF-16 units
+  They go when Phase 4.8 replaces the wire format.
