@@ -1494,6 +1494,10 @@ void Game::sendSnapshot(Connection* c)
     cell.add("description", view.cell.description);
     cell.add("width", view.cell.width);
     cell.add("height", view.cell.height);
+    // Where the cell lies in the world, in tiles: the client keeps its camera steady across a crossing with it.
+    cell.add("x", view.cell.worldX);
+    cell.add("y", view.cell.worldY);
+    cell.add("z", view.cell.worldZ);
     cell.add("outdoors", view.cell.outdoors);
     cell.add("seasonalWeather", view.cell.seasonalWeather);
     cell.add("weather", weatherName(view.cell.weather));
@@ -1719,7 +1723,7 @@ void Game::sendSnapshot(Connection* c)
     root.add("devTools", options_.devTools);
     // Leave out what this client already holds (RatwSections.h), and remember what this one carries.
     if (!options_.fullSnapshots)
-        c->held.sending(double(revision_), sections::strip(root, c->held.known));
+        c->held.sending(double(revision_), sections::strip(root, c->held.known, &c->held.bases));
     c->snapshot(json::dump(root));
 }
 

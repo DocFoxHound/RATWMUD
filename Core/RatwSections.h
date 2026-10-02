@@ -13,15 +13,32 @@ namespace ratw::sections
 {
 using Keys = std::map<std::string, std::string>;
 
+// Recent values of the parts that can be sent as changes (what the wolf can see), by key: the bases for those changes.
+struct Bases
+{
+    std::map<std::string, json::Value> values;
+    std::vector<std::string> order;
+    void keep(const std::string& key, const json::Value& value);
+    const json::Value* find(const std::string& key) const;
+};
+
 // The server's side: gives every part its key (in "sectionKeys"), leaves out those the client holds (`known`, as of
-// the snapshot it last acknowledged), and sends each map entry it holds as {"$held": key}. Returns this snapshot's keys.
-Keys strip(json::Value& root, const Keys& known);
+// the snapshot it last acknowledged), and sends each map entry it holds as {"$held": key}. With `bases`, a changed
+// visibility is sent as row edits against the one the client holds, {"$delta": key, "edits": [[row, column, text]]},
+// when that is much smaller. Returns this snapshot's keys.
+Keys strip(json::Value& root, const Keys& known, Bases* bases = nullptr);
+
+// Row edits turning `base` (an array of strings) into `next`, or false where a delta can't or shouldn't be used.
+bool rowDelta(const json::Value& base, const json::Value& next, json::Value& edits);
+// `base` with `edits` applied; false if the edits don't fit it.
+bool applyRowDelta(const json::Value& base, const json::Value& edits, json::Value& out);
 
 // The server's record of one client: what it is known to hold, and what each snapshot not yet acknowledged carried.
 struct Held
 {
     Keys known;
     std::map<double, Keys> sent;
+    Bases bases;
     void reset() { known.clear(); sent.clear(); }
     // A snapshot of this revision is going out with these keys (a second at the same revision keeps the first's).
     void sending(double revision, Keys keys);

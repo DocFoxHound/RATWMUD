@@ -89,6 +89,19 @@ export class Sheets {
     private sheets = new Map<Art, HTMLCanvasElement>();
     private tinted = new Map<string, HTMLCanvasElement>();
 
+    /** Makes every sheet ahead of need, one per idle moment, so the first rain never costs a frame. */
+    warm() {
+        const arts: Art[] = ['cloud', 'rain', 'mist', 'snow', 'dust', 'pool'];
+        const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, {timeout: 2000}) : setTimeout(f, 50));
+        const next = () => {
+            const art = arts.shift();
+            if (!art) return;
+            this.sheet(art);
+            idle(next);
+        };
+        idle(next);
+    }
+
     /** The sheet in one colour (its alpha is the sheet's; the tint's alpha is applied when drawing). */
     get(art: Art, rgb: string): HTMLCanvasElement {
         const key = `${art}:${rgb}`;

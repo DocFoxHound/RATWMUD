@@ -1,7 +1,9 @@
-// One WebSocket to the server, feeding a Session: each message is handled as it arrives, so they stay in order (a
-// snapshot never overtakes the event before it). Works on the browser's WebSocket and on Node's.
-import {ackMessage, commandMessage, decodeMessage, Kind} from './wire.ts';
+// One WebSocket to the server, feeding a Session. In a browser, messages are inflated and parsed on a worker
+// (decodeWorker.ts) so a large snapshot never stalls a frame; they are handed on strictly in the order they arrived (a
+// snapshot never overtakes the event before it). Without workers (Node), the same decoding runs here, at once.
+import {ackMessage, commandMessage, Kind} from './wire.ts';
 import {unpack} from './motion.ts';
+import {decode, type Decoded} from './decodeWorker.ts';
 import {Session, type Json, type SessionView} from './session.ts';
 
 export interface ConnectionStats {
@@ -10,8 +12,6 @@ export interface ConnectionStats {
     messages: number;
     bytes: number;
 }
-
-const decoder = new TextDecoder();
 
 /** The game's address on the server this page came from (ws: or wss: to match the page). */
 export function gameUrl(location: {protocol: string; host: string}): string {
@@ -23,6 +23,11 @@ export class Connection {
     readonly stats: ConnectionStats = {opened: false, closed: false, messages: 0, bytes: 0};
     private socket: WebSocket;
     private waiting: Uint8Array[] = [];
+    private worker: Worker | null = null;
+    private sent = 0;
+    private handled = 0;
+    private early = new Map<number, Decoded>();
+    private idle: Array<() => void> = [];
 
     private onState: (open: boolean) => void;
 
@@ -32,6 +37,8 @@ export class Connection {
             command: json => { const m = commandMessage(json); if (m) this.send(m); },
             ack: (revision, missing) => this.send(ackMessage(revision, missing)),
         }, view);
+        this.worker = Connection.startWorker();
+        if (this.worker) this.worker.onmessage = (e: MessageEvent<Decoded>) => this.decoded(e.data);
         this.socket = new WebSocket(url);
         this.socket.binaryType = 'arraybuffer';
         this.socket.addEventListener('open', () => {
@@ -65,11 +72,22 @@ export class Connection {
     close() {
         this.stats.closed = true;
         this.socket.close();
+        this.worker?.terminate();
     }
 
-    /** Everything received so far has been handled (it always has: kept for callers that wait). */
+    /** Everything received so far has been handled. */
     settled(): Promise<void> {
-        return Promise.resolve();
+        if (this.handled === this.sent) return Promise.resolve();
+        return new Promise(resolve => this.idle.push(resolve));
+    }
+
+    private static startWorker(): Worker | null {
+        if (typeof Worker === 'undefined' || typeof document === 'undefined') return null;
+        try {
+            return new Worker(new URL('./decodeWorker.ts', import.meta.url), {type: 'module'});
+        } catch {
+            return null;
+        }
     }
 
     private send(message: Uint8Array) {
@@ -78,21 +96,26 @@ export class Connection {
     }
 
     private arrive(data: ArrayBuffer) {
-        const arrival = decodeMessage(data);
-        if (!arrival) return;
-        if (arrival.kind === Kind.Motion) {
-            const frame = unpack(arrival.raw);
+        const seq = this.sent++;
+        if (this.worker) this.worker.postMessage({seq, data}, [data]);
+        else this.decoded(decode(seq, data));
+    }
+
+    /** A decoded message: handed on once every message before it has been. */
+    private decoded(message: Decoded) {
+        this.early.set(message.seq, message);
+        for (let next = this.early.get(this.handled); next; next = this.early.get(this.handled)) {
+            this.early.delete(this.handled++);
+            this.handle(next);
+        }
+        if (this.handled === this.sent) for (const resolve of this.idle.splice(0)) resolve();
+    }
+
+    private handle(message: Decoded) {
+        if (message.kind === Kind.Motion) {
+            const frame = unpack(message.raw);
             if (frame) this.session.receiveMotion(frame);
-            return;
-        }
-        let value: unknown;
-        try {
-            value = JSON.parse(decoder.decode(arrival.raw));
-        } catch {
-            return;
-        }
-        if (typeof value !== 'object' || value === null || Array.isArray(value)) return;
-        if (arrival.kind === Kind.Snapshot) this.session.receiveSnapshot(value as Json, arrival.wireBytes);
-        else this.session.receiveEvent(value as Json);
+        } else if (message.kind === Kind.Snapshot) this.session.receiveSnapshot(message.value as Json, message.wireBytes);
+        else if (message.kind === Kind.Event) this.session.receiveEvent(message.value as Json);
     }
 }

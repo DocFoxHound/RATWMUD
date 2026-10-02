@@ -44,6 +44,20 @@ export class SectionCache {
     }
 }
 
+/** `base` (a list of strings) with row edits [row, column, text] applied, or null if they don't fit it. */
+export function applyRowDelta(base: Json, edits: Json): string[] | null {
+    if (!Array.isArray(base) || !Array.isArray(edits) || !base.every(r => typeof r === 'string')) return null;
+    const rows = (base as string[]).slice();
+    for (const e of edits) {
+        if (!Array.isArray(e) || e.length !== 3) return null;
+        const [row, column, text] = e;
+        if (!Number.isInteger(row) || !Number.isInteger(column) || typeof text !== 'string' || row < 0 || row >= rows.length || column < 0 ||
+            column + text.length > rows[row].length) return null;
+        rows[row] = rows[row].slice(0, column) + text + rows[row].slice(column + text.length);
+    }
+    return rows;
+}
+
 function parentOf(root: JsonObject, section: Section): JsonObject | null {
     if (!section.parent) return root;
     const child = root[section.parent];
@@ -70,6 +84,17 @@ export function fill(root: JsonObject, cache: SectionCache): boolean {
         if (!kept) cache.kept.set(section.name, kept = []);
         if (section.field in parent) {
             let value = parent[section.field];
+            // Sent as changes to a version kept here (what the wolf can see, as it walks).
+            if (isObject(value) && typeof value.$delta === 'string') {
+                const baseKey = value.$delta;
+                const base = kept.find(([k]) => k === baseKey);
+                const whole = base ? applyRowDelta(base[1], value.edits) : null;
+                if (!whole) {
+                    complete = false;
+                    continue;
+                }
+                parent[section.field] = value = whole;
+            }
             if (section.entries && Array.isArray(value)) {
                 const whole: Json[] = [];
                 let referenced = false;

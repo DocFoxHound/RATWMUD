@@ -1,6 +1,6 @@
 // Drawing the game screen: SRatwGame::OnPaint and its helpers (UI/SRatwGame.cpp), call for call, on a 1600×1000
 // canvas. Reads the state; records click targets (state.hits) and where the map is (state.mapRect and friends).
-import {css, hexColor, lerp, rgb, scale, transparent, withAlpha, type Color} from '../ui/color.ts';
+import {css, lerp, rgb, scale, transparent, withAlpha, type Color} from '../ui/color.ts';
 import {contains, rect, type Painter, type Point, type Rect} from '../ui/painter.ts';
 import {Amber, Blue, Ink, Line, Muted, Panel, Paper, Raised, Sage, Scent, speakingColor, font} from '../ui/theme.ts';
 import {drawPortrait, type Portraits} from '../ui/portrait.ts';
@@ -9,19 +9,9 @@ import {calendarLabel, dayLabel, elevationLabel, lawLabel, environmentEffectsLab
     windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState, Post} from './state.ts';
-import {TERRAIN} from './terrain.generated.mjs';
+import {TerrainLayer, terrainInfo, type SurfaceFactory} from './terrainLayer.ts';
 
-interface TerrainLook {
-    kind: string;
-    ramp: boolean;
-    glyph: string;
-    ascii: string;
-    fg: Color;
-    bg: Color;
-}
-const Terrain = new Map<string, TerrainLook>(TERRAIN.map(t => [t.code,
-    {kind: t.kind, ramp: t.ramp, glyph: t.glyph, ascii: t.ascii, fg: hexColor(t.fg), bg: hexColor(t.bg)}]));
-export const terrainInfo = (code: string) => Terrain.get(code);
+export {terrainInfo};
 
 interface Atmosphere {
     bounds: Rect;
@@ -54,12 +44,27 @@ export class GamePainter {
     private p: Painter;
     private sheets: Sheets;
     private portraits: Portraits;
+    readonly terrain: TerrainLayer;
+    private patterns = new WeakMap<CanvasImageSource, CanvasPattern | null>();
+    private lastCell = '';
+    private lastSelfScreen: Point | null = null;
+    // Each post's wrapped lines, kept until it reveals more or the column changes width.
+    private wrapped = new WeakMap<Post, {revealed: number; width: number; lines: string[]}>();
 
-    constructor(state: GameState, painter: Painter, sheets: Sheets, portraits: Portraits) {
+    constructor(state: GameState, painter: Painter, sheets: Sheets, portraits: Portraits, surfaces?: SurfaceFactory) {
         this.s = state;
         this.p = painter;
         this.sheets = sheets;
         this.portraits = portraits;
+        this.terrain = new TerrainLayer(surfaces);
+    }
+
+    private wrapPost(post: Post, width: number): string[] {
+        const kept = this.wrapped.get(post);
+        if (kept && kept.revealed === post.revealed && kept.width === width) return kept.lines;
+        const lines = this.p.wrap(post.text.slice(0, post.revealed), width, 14);
+        this.wrapped.set(post, {revealed: post.revealed, width, lines});
+        return lines;
     }
 
     private button(x: number, y: number, w: number, h: number, label: string, action: string, active = false, target = '') {
@@ -116,7 +121,7 @@ export class GamePainter {
                 ++waiting;
                 continue;
             }
-            const lines = p.wrap(post.text.slice(0, post.revealed), 439 + extra, 14);
+            const lines = this.wrapPost(post, 439 + extra);
             const height = 38 + lines.length * 23;
             feed.push({post, lines, height});
             total += height;
@@ -324,7 +329,11 @@ export class GamePainter {
         if (layer.tint.a <= 0.001 || layer.scale <= 0) return;
         const c = this.p.ctx;
         const sheet = this.sheets.get(layer.art, css(withAlpha(layer.tint, 1)));
-        const pattern = c.createPattern(sheet, 'repeat');
+        let pattern = this.patterns.get(sheet);
+        if (pattern === undefined) {
+            pattern = c.createPattern(sheet, 'repeat');
+            this.patterns.set(sheet, pattern);
+        }
         if (!pattern) return;
         const shiftX = wrapCoordinate(layer.scroll[0], SheetSize) * layer.scale, shiftY = wrapCoordinate(layer.scroll[1], SheetSize) * layer.scale;
         const cos = Math.cos(layer.angle), sin = Math.sin(layer.angle);
@@ -350,8 +359,10 @@ export class GamePainter {
             const w = b.right - b.left, h = b.bottom - b.top;
             const darkness = a.darkness;
             if (!foreground) {
-                if (a.glowStrength > 0.001) p.halo(b, a.haloRadius, withAlpha(a.glowColor, a.glowStrength * 0.42));
-                if (a.weatherStrength > 0.001) p.halo(b, a.haloRadius * 0.7, withAlpha(a.weatherColor, a.weatherStrength));
+                // A halo lies outside the room: nothing of it shows when the room covers the whole map.
+                const covered = b.left <= map.left && b.top <= map.top && b.right >= map.right && b.bottom >= map.bottom;
+                if (!covered && a.glowStrength > 0.001) p.halo(b, a.haloRadius, withAlpha(a.glowColor, a.glowStrength * 0.42));
+                if (!covered && a.weatherStrength > 0.001) p.halo(b, a.haloRadius * 0.7, withAlpha(a.weatherColor, a.weatherStrength));
                 if (s.outdoors) {
                     const ground = lerp(rgb(0x1e2c22), rgb(0x0a1225), darkness);
                     const horizon = lerp(rgb(0x343629), rgb(0x152339), darkness);
@@ -446,7 +457,7 @@ export class GamePainter {
     // ------------------------------------------------------------------ The local map
 
     private drawLocal() {
-        const s = this.s, p = this.p, e = s.environment;
+        const s = this.s, p = this.p;
         const extra = s.storyExtra;
         s.tileSize = Math.min(28, Math.min((882 - extra) / Math.min(s.cellWidth, 32), 548 / Math.min(s.cellHeight, 24)));
         // A cell that fits is centred; a larger one follows the wolf, stopping at its edges so no empty canvas
@@ -461,88 +472,23 @@ export class GamePainter {
         const map = s.mapRect;
         s.mapOrigin = [axis(viewX, map.left, map.right, s.cellWidth, me?.x ?? 0) + s.mapPan[0],
             axis(viewY, map.top, map.bottom, s.cellHeight, me?.y ?? 0) + s.mapPan[1]];
+        // A crossing keeps the wolf where it was on screen for a moment, then the view slides to where it belongs.
+        const cellKey = `${s.cellId}|${s.cellGeneration}`;
+        if (me) {
+            const screen: Point = [s.mapOrigin[0] + me.x * s.tileSize, s.mapOrigin[1] + me.y * s.tileSize];
+            if (this.lastCell && this.lastCell !== cellKey && this.lastSelfScreen)
+                s.cameraShift = [clamp(this.lastSelfScreen[0] - screen[0], -600, 600), clamp(this.lastSelfScreen[1] - screen[1], -400, 400)];
+            this.lastCell = cellKey;
+            this.lastSelfScreen = [screen[0] + s.cameraShift[0], screen[1] + s.cameraShift[1]];
+        }
+        s.mapOrigin = [s.mapOrigin[0] + s.cameraShift[0], s.mapOrigin[1] + s.cameraShift[1]];
         const [ox, oy] = s.mapOrigin, tile = s.tileSize;
         const cell = obj(s.snapshot, 'cell');
         this.drawEnvironment(false);
-        const ground = s.selfHeight();
-        // Only the tiles on screen are drawn: a large cell has tens of thousands more.
-        const firstX = Math.max(0, Math.floor((map.left - ox) / tile) - 1), firstY = Math.max(0, Math.floor((map.top - oy) / tile) - 1);
-        const lastX = Math.ceil((map.right - ox) / tile) + 1;
-        const lastY = Math.min(s.tileRows.length - 1, Math.ceil((map.bottom - oy) / tile) + 1);
-        const visibility = (x: number, y: number) => s.visibilityRows[y]?.[x] ?? '2';
-        const dark = 1 - e.illumination;
-        for (let y = firstY; y <= lastY; ++y) {
-            const row = s.tileRows[y];
-            for (let x = firstX; x <= Math.min(lastX, row.length - 1); ++x) {
-                const code = row[x];
-                const seen = visibility(x, y);
-                if (seen === '0' || code === ' ') continue;
-                const px = ox + x * tile, py = oy + y * tile;
-                const known = seen === '1';
-                const info = terrainInfo(code);
-                let color = info ? info.fg : Sage;
-                if (e.illumination < 1) {
-                    color = lerp(color, withAlpha(rgb(0x8195ad), color.a), dark * 0.28);
-                    color = withAlpha(scale(color, 1 - dark * 0.27), color.a);
-                }
-                if (known) color = withAlpha(color, 0.22);
-                // Height reads relative to the wolf: ground above it is lit and warm, ground below sinks into shade,
-                // and slopes facing the north-west light are brighter than those turned away.
-                const rise = s.heightAt(x, y) - ground;
-                if (!known) {
-                    const facing = clamp((s.heightAt(x + 1, y) + s.heightAt(x, y + 1) - s.heightAt(x - 1, y) - s.heightAt(x, y - 1)) * 0.5, -2, 2);
-                    const base = info ? info.bg : rgb(0x283126);
-                    let floor = rise >= 0 ? lerp(base, rgb(0x6b6a4a), Math.min(rise * 0.12, 0.4))
-                        : lerp(base, rgb(0x0b1216), Math.min(-rise * 0.14, 0.5));
-                    floor = withAlpha(scale(floor, 1 + facing * 0.2), 0.27 + Math.min(Math.abs(rise) * 0.03, 0.12));
-                    p.box(px, py, tile - 1, tile - 1, floor);
-                }
-                const shape = !info ? code : s.plainGlyphs ? info.ascii : info.glyph;
-                // Block and shade characters fill the whole tile, so walls and cliffs read as one mass.
-                const fill = s.plainGlyphs ? 0 : shape === '█' ? 1 : shape === '▓' ? 0.75 : shape === '▒' ? 0.5 : shape === '░' ? 0.28 : 0;
-                const lift = clamp(rise, -2, 2);
-                if (fill > 0) p.box(px, py - lift, tile, tile, withAlpha(color, color.a * fill));
-                else {
-                    const small = shape === '.' || shape === '·' || shape === '∙' || shape === ',';
-                    const size = small ? 12 : 15;
-                    const [w, h] = p.measure(shape, size, true);
-                    p.text(px + (tile - w) * 0.5, py + (tile - h) * 0.5 - lift, shape, size, color, true);
-                }
-            }
-        }
-        // Where the ground changes height, the edge is drawn by how it can be crossed: a faint contour for a half
-        // step, a warm line where a slope or stairs make a full step walkable, a heavy rim with a cast shadow for a
-        // ledge or cliff that can't be walked.
-        const seenOpen = (x: number, y: number) => {
-            const code = s.tileRows[y]?.[x];
-            const info = code ? terrainInfo(code) : undefined;
-            return !!info && info.kind !== 'wall' && (s.visibilityRows[y]?.[x] ?? '0') !== '0';
-        };
-        for (let y = firstY; y <= lastY; ++y)
-            for (let x = firstX; x <= Math.min(lastX, s.tileRows[y].length - 1); ++x)
-                for (const [dx, dy] of [[1, 0], [0, 1]]) {
-                    const nx = x + dx, ny = y + dy;
-                    if (!seenOpen(x, y) || !seenOpen(nx, ny)) continue;
-                    const infoA = terrainInfo(s.tileRows[y][x])!, infoB = terrainInfo(s.tileRows[ny][nx])!;
-                    const ha = s.heightAt(x, y), hb = s.heightAt(nx, ny), drop = Math.abs(ha - hb);
-                    const cliff = infoA.kind === 'cliff' || infoB.kind === 'cliff';
-                    if (drop < 0.01 && !cliff) continue;
-                    const remembered = s.visibilityRows[y][x] === '1' || s.visibilityRows[ny][nx] === '1';
-                    const fade = remembered ? 0.45 : 1;
-                    const ramp = infoA.ramp || infoB.ramp;
-                    const cx = ox + nx * tile, cy = oy + ny * tile;
-                    const end: Point = dx ? [cx, cy + tile] : [cx + tile, cy];
-                    if (drop <= 0.5 && !cliff) p.lines([[cx, cy], end], rgb(0xc9bf9a, 0.16 * fade), 1);
-                    else if (drop <= 1.01 && ramp && !cliff) p.lines([[cx, cy], end], rgb(0xd8b877, 0.34 * fade), 1.3);
-                    else {
-                        // The shadow falls on the lower side; a level cliff edge shades its open side.
-                        const lowAfter = hb < ha || (drop < 0.01 && infoA.kind === 'cliff');
-                        const band = Math.min(6, tile * 0.28);
-                        const shadowX = lowAfter ? cx : cx - dx * band, shadowY = lowAfter ? cy : cy - dy * band;
-                        p.box(shadowX, shadowY, dx ? band : tile, dx ? tile : band, rgb(0x04070a, 0.4 * fade));
-                        p.lines([[cx, cy], end], rgb(0xe9d2a0, 0.55 * fade), 2.2);
-                    }
-                }
+        // Only the tiles on screen (and a margin, kept offscreen) are drawn: a large cell has tens of thousands more.
+        this.terrain.draw(p, s, {x0: Math.max(0, Math.floor((map.left - ox) / tile) - 1), y0: Math.max(0, Math.floor((map.top - oy) / tile) - 1),
+            x1: Math.min(s.cellWidth - 1, Math.ceil((map.right - ox) / tile) + 1),
+            y1: Math.min(s.tileRows.length - 1, Math.ceil((map.bottom - oy) / tile) + 1)}, ox, oy, tile);
         // Actions come only from doors and wolves the server shows.
         for (const door of objects(s.snapshot, 'doors')) {
             const x = ox + num(door, 'x') * tile, y = oy + num(door, 'y') * tile;

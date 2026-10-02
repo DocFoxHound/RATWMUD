@@ -247,6 +247,62 @@ void sectionsTests()
     expect(held.known.empty(), "and asking for everything forgets what it held");
 }
 
+// What the wolf can see, sent as row edits as it walks (Docs/Design/29-client-polish.md).
+json::Value seeing(const std::vector<std::string>& rows)
+{
+    auto root = json::Value::object(), cell = json::Value::object(), visibility = json::Value::array();
+    cell.add("id", "yard");
+    root.add("cell", cell);
+    for (const auto& r : rows)
+        visibility.push(json::Value(r));
+    root.add("visibility", visibility);
+    return root;
+}
+
+void visibilityDeltaTests()
+{
+    const std::string blank(64, '0');
+    std::vector<std::string> rows(40, blank);
+    rows[10] = std::string(20, '0') + std::string(10, '2') + std::string(34, '0');
+    sections::Held held;
+    sections::Cache client;
+    auto first = seeing(rows);
+    held.sending(1, sections::strip(first, held.known, &held.bases));
+    expect(first.array("visibility").size() == 40, "the first view goes whole");
+    expect(sections::fill(first, client), "and is kept");
+    held.acknowledged(1, false);
+    auto walked = rows;
+    walked[10][19] = '2';
+    walked[10][29] = '1';
+    walked[11][20] = '2';
+    auto second = seeing(walked);
+    held.sending(2, sections::strip(second, held.known, &held.bases));
+    const auto& sent = second["visibility"];
+    expect(sent.isObject() && sent.has("$delta") && sent.array("edits").size() == 2, "a step sends only the rows that changed");
+    expect(sections::fill(second, client) && second == seeing(walked), "and the client rebuilds it exactly");
+    // An unacknowledged base: the next change is still against what the client is known to hold.
+    auto further = walked;
+    further[12][5] = '2';
+    auto third = seeing(further);
+    held.sending(3, sections::strip(third, held.known, &held.bases));
+    expect(third["visibility"].has("$delta") && sections::fill(third, client) && third == seeing(further), "edits stack on a held view");
+    sections::Cache fresh;
+    held.acknowledged(3, false);
+    auto last = further;
+    last[0][0] = '2';
+    auto fourth = seeing(last);
+    sections::strip(fourth, held.known, &held.bases);
+    expect(!sections::fill(fourth, fresh), "a client without the base asks for everything");
+    // A view changing almost everywhere goes whole.
+    std::vector<std::string> all(40, std::string(64, '2'));
+    auto fifth = seeing(all);
+    sections::strip(fifth, held.known, &held.bases);
+    expect(fifth["visibility"].isArray(), "a wholesale change goes whole");
+    json::Value edits, out;
+    expect(!sections::applyRowDelta(seeing(rows)["visibility"], json::Value(json::Array{json::Value(json::Array{json::Value(99), json::Value(0),
+        json::Value("2")})}), out), "edits outside the view are refused");
+}
+
 // A snapshot with every part a client can hold.
 json::Value fullSnapshot(const std::string& seen, const std::string& row)
 {
@@ -732,6 +788,7 @@ int main()
         accountRulesTests();
         accountOwnershipTests();
         sectionsTests();
+        visibilityDeltaTests();
         sectionKeysTests();
         mindTests();
         motionTests();

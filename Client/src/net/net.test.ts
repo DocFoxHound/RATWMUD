@@ -144,6 +144,20 @@ test('left-out sections are put back from what the client holds', () => {
     assert.ok(fill(whole, cache), 'a snapshot sent whole needs nothing');
 });
 
+test('what the wolf sees can come as row edits against a version held here', () => {
+    const cache = new SectionCache();
+    const first: Json = {visibility: ['0000', '0220'], sectionKeys: {visibility: 'v1'}};
+    assert.ok(fill(first, cache));
+    const second: Json = {visibility: {$delta: 'v1', edits: [[0, 1, '22'], [1, 3, '1']]}, sectionKeys: {visibility: 'v2'}};
+    assert.ok(fill(second, cache));
+    assert.deepEqual(second.visibility, ['0220', '0221']);
+    const again: Json = {sectionKeys: {visibility: 'v2'}};
+    assert.ok(fill(again, cache));
+    assert.deepEqual(again.visibility, ['0220', '0221'], 'and the result is kept under its own key');
+    assert.equal(fill({visibility: {$delta: 'v9', edits: []}, sectionKeys: {visibility: 'v3'}}, cache), false, 'an unknown base asks for everything');
+    assert.equal(fill({visibility: {$delta: 'v2', edits: [[5, 0, '2']]}, sectionKeys: {visibility: 'v4'}}, cache), false, 'and so do edits that do not fit');
+});
+
 test('map entries the client holds come by key alone', () => {
     const cache = new SectionCache();
     const a = {id: 'cell-a', name: 'A'}, b = {id: 'cell-b', name: 'B'};

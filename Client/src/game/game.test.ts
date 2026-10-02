@@ -869,3 +869,45 @@ test('the week and the day: the weekday in the calendar, and a market, rest day 
     assert.equal(dayLabel(snapshot), '');
     assert.equal(dayLabel({}), '');
 });
+
+test('the map ground is drawn offscreen once and redrawn only when what it shows changes', () => {
+    const {state: s, painter, surfaces} = testGame(true);
+    const rows = Array.from({length: 24}, () => '.'.repeat(32));
+    const snapshot: Json = {cell: {id: 'glade', width: 32, height: 24, rows, heights: []}, visibility: rows.map(() => '2'.repeat(32)),
+        self: {id: 'me', x: 16, y: 12}, time: 0, cellGeneration: 1};
+    s.applySnapshot(snapshot);
+    s.tick(0.016, 0.016);
+    draw(painter, 'drawLocal');
+    draw(painter, 'drawLocal');
+    assert.equal(painter.terrain.rebuilds, 1, 'drawn once for two frames');
+    assert.equal(surfaces.length, 1);
+    s.applySnapshot({...snapshot, time: 0.2});
+    draw(painter, 'drawLocal');
+    assert.equal(painter.terrain.rebuilds, 1, 'an unchanged snapshot (the same held parts) keeps it');
+    const seen = rows.map((_, y) => (y === 3 ? '1' : '2').repeat(32));
+    s.applySnapshot({...snapshot, time: 0.4, visibility: seen});
+    draw(painter, 'drawLocal');
+    assert.equal(painter.terrain.rebuilds, 2, 'a change in what the wolf sees redraws it');
+    s.plainGlyphs = true;
+    draw(painter, 'drawLocal');
+    assert.equal(painter.terrain.rebuilds, 3, 'and so does a change of glyphs');
+});
+
+test("the player's own wolf answers at once, carried ahead while moving, eased rather than jumped", () => {
+    const {state: s} = testGame();
+    s.applySnapshot({cell: {id: 'room'}, self: {id: 'me', x: 5, y: 5}, entities: [{id: 'other', x: 2, y: 2}], time: 0, cellGeneration: 1});
+    const frame = (time: number, x: number) => ({motionSession: '', observer: 'me', cellId: 'room', cellGeneration: 1, revision: 0, time,
+        entities: [{id: 'me', x, y: 5, facing: 0, moving: true}, {id: 'other', x: 2 + time * 3, y: 2, facing: 0, moving: true}]});
+    let t = 0;
+    for (let i = 1; i <= 20; ++i) {
+        s.applyMotion(frame(i * 0.05, 5 + i * 0.05 * 3));
+        for (let f = 0; f < 3; ++f) s.tick((t += 1 / 60), 1 / 60);
+    }
+    const me = s.entities.get('me')!, other = s.entities.get('other')!;
+    const newest = 5 + 20 * 0.05 * 3;
+    assert.ok(newest - me.x < 0.25, `own wolf close to its newest pose (${me.x} of ${newest})`);
+    assert.ok(me.x - (other.x + 3) > 0.05, `others are drawn further in the past, between real poses (${other.x + 3} against ${me.x})`);
+    s.applyMotion(frame(1.05, 40));
+    s.tick((t += 1 / 60), 1 / 60);
+    assert.equal(me.x, 40, 'a jump of more than two tiles is taken at once');
+});

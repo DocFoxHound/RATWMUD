@@ -22,9 +22,11 @@ export function obj(o: Maybe, k: string): Json | null {
     const v = o?.[k];
     return isObject(v) ? v : null;
 }
+const Empty: readonly unknown[] = Object.freeze([]);
+/** The list at `k`, or one shared empty list (the same each time, so "unchanged" can be told by identity). */
 export function arr(o: Maybe, k: string): unknown[] {
     const v = o?.[k];
-    return Array.isArray(v) ? v : [];
+    return Array.isArray(v) ? v : (Empty as unknown[]);
 }
 export const objects = (o: Maybe, k: string): Json[] => arr(o, k).filter(isObject);
 

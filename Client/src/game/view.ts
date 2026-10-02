@@ -14,6 +14,29 @@ import type {MotionFrame} from '../net/motion.ts';
 
 const MovementKeys = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD']);
 
+/** The last few hundred frames: how long apart they came, and how long drawing took (milliseconds). */
+export class FrameStats {
+    readonly intervals = new Float32Array(600);
+    readonly work = new Float32Array(600);
+    count = 0;
+
+    add(interval: number, work: number) {
+        const i = this.count++ % this.intervals.length;
+        this.intervals[i] = interval;
+        this.work[i] = work;
+    }
+    reset() {
+        this.count = 0;
+    }
+    /** p50, p99 and worst of one series over the frames kept. */
+    summary(series: 'intervals' | 'work' = 'intervals'): {p50: number; p99: number; worst: number; frames: number} {
+        const n = Math.min(this.count, this.intervals.length);
+        const sorted = Array.from(this[series].subarray(0, n)).sort((a, b) => a - b);
+        const at = (q: number) => (n ? sorted[Math.min(n - 1, Math.floor(q * n))] : 0);
+        return {p50: at(0.5), p99: at(0.99), worst: n ? sorted[n - 1] : 0, frames: n};
+    }
+}
+
 class TextareaComposer implements Composer {
     readonly element: HTMLTextAreaElement;
     private home: HTMLElement;
@@ -54,6 +77,8 @@ export class GameView {
     private frame = 0;
     private last = 0;
     private wheelRest = 0;
+    readonly frames = new FrameStats();
+    private showPerf = new URLSearchParams(location.search).has('perf');
     private cleanup: Array<() => void> = [];
 
     constructor(parent: HTMLElement, send: (command: Json) => void) {
@@ -72,14 +97,21 @@ export class GameView {
         this.composer = new TextareaComposer(textarea, this.canvas);
         this.state = new GameState(send, this.composer);
         const portraits = new Portraits();
-        this.painter = new GamePainter(this.state, new Painter(this.canvas.getContext('2d')!), new Sheets(), portraits);
+        const sheets = new Sheets();
+        sheets.warm();
+        this.painter = new GamePainter(this.state, new Painter(this.canvas.getContext('2d')!), sheets, portraits);
         this.listen();
         this.resize();
+        // Glyphs measured before the game's fonts arrive would sit off centre: measure again once they have.
+        document.fonts?.ready.then(() => this.painter.terrain.invalidate());
+        for (const f of ['400 20px "RATW Mono"', '400 20px "RATW Sans"', '500 20px "RATW Sans"']) document.fonts?.load(f).catch(() => {});
         this.canvas.focus({preventScroll: true});
         this.frame = requestAnimationFrame(t => this.draw(t));
     }
 
     applySnapshot(snapshot: Json) { this.state.applySnapshot(snapshot); }
+    /** How many times the map's ground has been drawn offscreen (for the frame smoke). */
+    groundRedrawn() { return this.painter.terrain.rebuilds; }
     applyMotion(frame: MotionFrame) { this.state.applyMotion(frame); }
     receiveEvent(event: Json) { this.state.receiveEvent(event); }
 
@@ -183,7 +215,22 @@ export class GameView {
         t.style.padding = `${9 * this.scale}px`;
     }
 
+    /** ?perf: frame times in the corner, for finding hitches by eye. */
+    private drawPerf(c: CanvasRenderingContext2D, dpr: number) {
+        const gaps = this.frames.summary('intervals'), work = this.frames.summary('work');
+        c.setTransform(dpr, 0, 0, dpr, 0, 0);
+        c.fillStyle = 'rgba(0,0,0,0.7)';
+        c.fillRect(8, 8, 330, 44);
+        c.fillStyle = gaps.p99 > 20 ? '#e1aba2' : '#a8c2a6';
+        c.font = '12px monospace';
+        c.textBaseline = 'top';
+        c.fillText(`frame p50 ${gaps.p50.toFixed(1)}  p99 ${gaps.p99.toFixed(1)}  worst ${gaps.worst.toFixed(1)} ms`, 14, 14);
+        c.fillText(`draw  p50 ${work.p50.toFixed(1)}  p99 ${work.p99.toFixed(1)}  ground redrawn ${this.painter.terrain.rebuilds}×`, 14, 32);
+    }
+
     private draw(time: number) {
+        const started = performance.now();
+        const interval = this.last ? time - this.last * 1000 : 0;
         const seconds = time / 1000;
         const delta = this.last ? Math.min(0.25, seconds - this.last) : 0;
         this.last = seconds;
@@ -196,6 +243,9 @@ export class GameView {
         c.setTransform(this.scale * dpr, 0, 0, this.scale * dpr, this.offset[0] * dpr, this.offset[1] * dpr);
         this.painter.paint();
         this.placeComposer();
+        const work = performance.now() - started;
+        if (interval > 0) this.frames.add(interval, work);
+        if (this.showPerf) this.drawPerf(c, dpr);
         this.frame = requestAnimationFrame(t => this.draw(t));
     }
 }

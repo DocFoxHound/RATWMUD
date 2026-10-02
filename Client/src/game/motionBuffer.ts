@@ -22,7 +22,11 @@ export class MotionBuffer {
         return true;
     }
 
-    at(time: number): TimedPose {
+    /**
+     * The pose at `time`. Past the newest sample it holds still, unless `ahead` allows carrying on at the last
+     * measured velocity for that many seconds at most (only for the player's own wolf, while it is being moved).
+     */
+    at(time: number, ahead = 0): TimedPose {
         const s = this.samples;
         if (!s.length) return {time: 0, x: 0, y: 0, facing: 0};
         if (time <= s[0].time) return s[0];
@@ -33,7 +37,12 @@ export class MotionBuffer {
                 const arc = Math.atan2(Math.sin(b.facing - a.facing), Math.cos(b.facing - a.facing));
                 return {time, x: a.x + (b.x - a.x) * alpha, y: a.y + (b.y - a.y) * alpha, facing: a.facing + arc * alpha};
             }
-        // No speculative extrapolation past an obstacle or out of visibility.
-        return s[s.length - 1];
+        // Other wolves are never extrapolated past an obstacle or out of visibility.
+        const last = s[s.length - 1];
+        if (ahead <= 0 || s.length < 2) return last;
+        const before = s[s.length - 2], span = last.time - before.time;
+        if (span <= 0 || span > 0.25) return last;
+        const t = Math.min(time - last.time, ahead) / span;
+        return {time, x: last.x + (last.x - before.x) * t, y: last.y + (last.y - before.y) * t, facing: last.facing};
     }
 }

@@ -14,6 +14,8 @@ struct Section
     const char* name;
     bool entries;
 };
+constexpr const char* DeltaSection = "visibility";
+constexpr std::size_t BasesKept = 48;
 const Section Sections[] = {{"", "visibility", "visibility", false}, {"cell", "rows", "cell.rows", false},
                             {"cell", "heights", "cell.heights", false}, {"", "worldMap", "worldMap", true},
                             {"", "travelMap", "travelMap", true}, {"", "doors", "doors", false},
@@ -44,7 +46,90 @@ std::string keyOf(const json::Value& v)
 }
 } // namespace
 
-Keys strip(json::Value& root, const Keys& known)
+void Bases::keep(const std::string& key, const json::Value& value)
+{
+    if (values.count(key))
+        return;
+    values.emplace(key, value);
+    order.push_back(key);
+    while (order.size() > BasesKept)
+    {
+        values.erase(order.front());
+        order.erase(order.begin());
+    }
+}
+
+const json::Value* Bases::find(const std::string& key) const
+{
+    const auto found = values.find(key);
+    return found == values.end() ? nullptr : &found->second;
+}
+
+bool rowDelta(const json::Value& base, const json::Value& next, json::Value& edits)
+{
+    if (!base.isArray() || !next.isArray() || base.items().size() != next.items().size())
+        return false;
+    edits = json::Value::array();
+    std::size_t whole = 0, changed = 0;
+    for (std::size_t row = 0; row < next.items().size(); ++row)
+    {
+        const auto& a = base.items()[row];
+        const auto& b = next.items()[row];
+        if (!a.isString() || !b.isString())
+            return false;
+        const std::string& from = a.asString();
+        const std::string& to = b.asString();
+        whole += to.size() + 3;
+        if (from == to)
+            continue;
+        if (from.size() != to.size())
+            return false;
+        std::size_t first = 0, last = to.size();
+        while (first < last && from[first] == to[first])
+            ++first;
+        while (last > first && from[last - 1] == to[last - 1])
+            --last;
+        auto edit = json::Value::array();
+        edit.push(double(row));
+        edit.push(double(first));
+        edit.push(to.substr(first, last - first));
+        edits.push(edit);
+        changed += last - first + 12;
+    }
+    return changed * 2 < whole;                    // Worth it only at under half the size.
+}
+
+bool applyRowDelta(const json::Value& base, const json::Value& edits, json::Value& out)
+{
+    if (!base.isArray() || !edits.isArray())
+        return false;
+    std::vector<std::string> rows;
+    for (const auto& r : base.items())
+    {
+        if (!r.isString())
+            return false;
+        rows.push_back(r.asString());
+    }
+    for (const auto& e : edits.items())
+    {
+        if (!e.isArray() || e.items().size() != 3 || !e.items()[0].isNumber() || !e.items()[1].isNumber() || !e.items()[2].isString())
+            return false;
+        const double row = e.items()[0].asNumber(), column = e.items()[1].asNumber();
+        const std::string& text = e.items()[2].asString();
+        if (row < 0 || row >= double(rows.size()) || row != double(std::size_t(row)) || column < 0 || column != double(std::size_t(column)))
+            return false;
+        auto& target = rows[std::size_t(row)];
+        if (std::size_t(column) + text.size() > target.size())
+            return false;
+        target.replace(std::size_t(column), text.size(), text);
+    }
+    out = json::Value::array();
+    for (auto& r : rows)
+        out.push(json::Value(std::move(r)));
+    return true;
+}
+
+Keys strip(json::Value& root, const Keys& known, Bases* bases)
 {
     Keys keys;
     auto keysJson = json::Value::object();
@@ -63,6 +148,20 @@ Keys strip(json::Value& root, const Keys& known)
         {
             if (whole)
                 parent->erase(s.field);
+            else if (bases && std::string(s.name) == DeltaSection)
+            {
+                const json::Value next = *value;
+                if (held != known.end())
+                    if (const auto* base = bases->find(held->second))
+                        if (json::Value edits; rowDelta(*base, next, edits))
+                        {
+                            auto delta = json::Value::object();
+                            delta.add("$delta", held->second);
+                            delta.add("edits", edits);
+                            *value = delta;
+                        }
+                bases->keep(key, next);
+            }
             continue;
         }
         const std::string prefix = std::string(s.name) + "#";
@@ -149,6 +248,20 @@ bool fill(json::Value& root, Cache& cache)
         auto& kept = cache.kept[s.name];
         if (auto* value = parent->find(s.field))
         {
+            if (const auto* base = value->isObject() ? value->find("$delta") : nullptr)
+            {
+                const auto found = base->isString()
+                    ? std::find_if(kept.begin(), kept.end(), [&](const auto& p) { return p.first == base->asString(); })
+                    : kept.end();
+                const auto* edits = value->find("edits");
+                json::Value whole;
+                if (found == kept.end() || !edits || !applyRowDelta(found->second, *edits, whole))
+                {
+                    complete = false;
+                    continue;
+                }
+                *value = whole;
+            }
             if (s.entries && value->isArray())
             {
                 auto whole = json::Value::array();

@@ -40,6 +40,7 @@ export interface EntityView {
     speaking: boolean;
     moving: boolean;
     spokenAt: number;
+    placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
 /** The composer, a real text box on the page (or a stand-in in tests). */
@@ -91,6 +92,8 @@ export class GameState {
     tileSize = 23;
     hover: [number, number] = [-1000, -1000];
     mapPan: [number, number] = [0, 0];
+    // After a change of cell, the camera starts where the last one left the wolf on screen and slides home.
+    cameraShift: [number, number] = [0, 0];
     clock = 0;
     lastTyping = -100;
     lastTypingSent = -100;
@@ -115,6 +118,7 @@ export class GameState {
     tileRows: string[] = [];
     visibilityRows: string[] = [];
     tileHeights: Float32Array = new Float32Array(0);
+    private sources: {rows: unknown; visibility: unknown; heights: unknown} = {rows: null, visibility: null, heights: null};
     environment = defaultEnvironment();
     chat = false;
     worldMap = false;
@@ -224,19 +228,33 @@ export class GameState {
             const pace = Math.trunc(boundedNum(self, 'pace', 0, 10));
             if (pace === this.requestedPace || this.clock - this.lastPaceRequest > 1.5) this.requestedPace = -1;
         }
+        // The big parts come back as the very same arrays while they are unchanged (sections.ts keeps them), so
+        // their decoded forms are kept too: the map's offscreen ground is redrawn only when something really changed.
         const strings = (list: unknown[]) => list.filter((v): v is string => typeof v === 'string');
-        this.tileRows = strings(arr(cell, 'tiles'));
-        if (!this.tileRows.length) this.tileRows = strings(arr(cell, 'rows'));
-        this.visibilityRows = strings(arr(s, 'visibility'));
-        this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
-        const heights = arr(cell, 'heights');
-        for (let y = 0; y < heights.length && y < this.cellHeight; ++y) {
-            const row = heights[y];
-            if (typeof row !== 'string') break;
-            for (let x = 0; x < Math.min(row.length, this.cellWidth); ++x) this.tileHeights[y * this.cellWidth + x] = heightFromChar(row[x]);
+        const rowsSource = arr(cell, 'tiles').length ? arr(cell, 'tiles') : arr(cell, 'rows');
+        if (rowsSource !== this.sources.rows || !this.tileRows.length) {
+            this.sources.rows = rowsSource;
+            this.tileRows = strings(rowsSource);
         }
-        if (!this.tileRows.length) {
+        const seenSource = arr(s, 'visibility');
+        if (seenSource !== this.sources.visibility) {
+            this.sources.visibility = seenSource;
+            this.visibilityRows = strings(seenSource);
+        }
+        const heights = arr(cell, 'heights');
+        if (heights !== this.sources.heights || this.tileHeights.length !== this.cellWidth * this.cellHeight) {
+            this.sources.heights = heights;
+            this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
+            for (let y = 0; y < heights.length && y < this.cellHeight; ++y) {
+                const row = heights[y];
+                if (typeof row !== 'string') break;
+                for (let x = 0; x < Math.min(row.length, this.cellWidth); ++x) this.tileHeights[y * this.cellWidth + x] = heightFromChar(row[x]);
+            }
+        }
+        if (!this.tileRows.length && objects(cell, 'tiles').length) {
             // Tiles sent one by one, as objects.
+            this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
+            this.sources = {rows: null, visibility: null, heights: null};
             const rows = Array.from({length: this.cellHeight}, () => Array(this.cellWidth).fill(' '));
             const seen = Array.from({length: this.cellHeight}, () => Array(this.cellWidth).fill('0'));
             for (const t of objects(cell, 'tiles')) {
@@ -391,12 +409,31 @@ export class GameState {
     tick(time: number, delta: number) {
         this.clock = time;
         this.motionClock += Math.max(0, delta);
+        const now = this.motionClock - this.motionOffset;
         for (const view of this.entities.values()) {
-            const pose = view.motion.at(this.motionClock - this.motionOffset - 0.1);
-            view.x = pose.x;
-            view.y = pose.y;
+            if (!view.self) {
+                // Others are drawn a tenth of a second in the past, always between two poses the server sent.
+                const pose = view.motion.at(now - 0.1);
+                view.x = pose.x;
+                view.y = pose.y;
+                view.facing = pose.facing;
+                continue;
+            }
+            // The player's own wolf answers at once: its newest pose, carried a little ahead while it is moving, and
+            // eased toward rather than jumped to, so jitter in arrival never shows. A real jump (a door, a correction
+            // of more than two tiles) is taken at once.
+            const moving = view.moving || this.heldKeys.size > 0;
+            const pose = view.motion.at(now - 0.03, moving ? 0.12 : 0.05);
+            const gap = Math.hypot(pose.x - view.x, pose.y - view.y);
+            const ease = gap > 2 || !view.placed ? 1 : 1 - Math.exp(-delta / 0.05);
+            view.x += (pose.x - view.x) * ease;
+            view.y += (pose.y - view.y) * ease;
             view.facing = pose.facing;
+            view.placed = true;
         }
+        const settle = Math.exp(-delta / 0.12);
+        this.cameraShift = [this.cameraShift[0] * settle, this.cameraShift[1] * settle];
+        if (Math.abs(this.cameraShift[0]) + Math.abs(this.cameraShift[1]) < 0.5) this.cameraShift = [0, 0];
         if (!this.canFaceAt(this.hover)) this.facingPreview = false;
         if (this.typingSent && this.clock - this.lastTyping > 3) this.setTyping(false);
         if (this.chat && this.clock - this.lastTyping < 3 && (!this.typingSent || this.clock - this.lastTypingSent > 1)) this.setTyping(true);
