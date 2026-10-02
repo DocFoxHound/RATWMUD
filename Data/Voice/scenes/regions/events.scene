@@ -1,0 +1,160 @@
+# Current events, as each part of the world talks of them.
+
+# ---------------------------------------------------------------- Prices
+
+scene re_prices_rain_coast
+when topic=prices region=rain_coast
+a : Vesk's raised the price of everything that swims. | {item} at {price}. The Houses must be laughing. | Even the rain will cost money soon.
+b[noble] : Prices follow the market.
+b[fisher] : I get none of it. The factor takes it all.
+b : The Houses always win. | Ha. Don't give them ideas. | Typical Ridgemere.
+a : Always. | They'll think of it. | Typical.
+
+scene re_prices_marches
+when topic=prices region=marches
+a : {item} at {price}. The Guild's at it again. | Prices on the wharf are a scandal. | The Heights don't even notice prices.
+b[merchant] : The Guild sets the floor. We just stand on it.
+b : The Guild always is. | Always. | They never do.
+a : Always. | A scandal. | Never.
+
+scene re_prices_accord
+when topic=prices region=accord
+a : Mountain prices again: {item} at {price}. | Everything climbs up here, prices too. | The lowland carts charge what they like.
+b[carter] : You try hauling it up.
+b : Always the way. | Ha. | They do.
+a : Always. | Ha. | They do.
+
+scene re_prices_country
+when topic=prices region=countryside
+a : {item} at {price}? In the city maybe, not here. | Country folk can't pay city prices. | We grow it ourselves, mostly. Lucky.
+b[farmer] : That's the advantage of the soil.
+b : City prices everywhere now. | No. | Very lucky.
+a : Everywhere. | No. | Very.
+
+# ---------------------------------------------------------------- Caravans and bandits
+
+scene re_caravan_crossing
+when topic=caravan region=accord_crossing
+a : The {other} caravan always stops here. Always. | Carters from {other} filled the yard. | Wagons to and from {other} all week.
+b[innkeeper] : And every one of them hungry.
+b : That's the Crossing. | Busy. | Good for trade.
+a : That it is. | Very. | Very.
+
+scene re_caravan_coast
+when topic=caravan region=rain_coast
+a : The {other} wagons came in soaked. | Coast road's mud to the axles; the {other} carts were late. | Wagons from {other} brought dry goods. Rare thing.
+b[carter] : The coast road eats wheels.
+b : Of course they did. | Always is. | Very rare.
+a : Of course. | Always. | Rare.
+
+scene re_bandits_downs
+when topic=bandits region=downs
+a : Raiders on the downs again. | The watch rode out after the bandits; came back empty-pawed. | They took a whole flock off the high pasture.
+b[herder] : I'm sleeping with my flock till they're gone.
+b[guard] : We'll get them. Next time.
+b : The downs are wide. | Typical. | A whole flock!
+a : Too wide. | Next time. | Every sheep.
+
+scene re_bandits_lake
+when topic=bandits region=lake
+a : Bandits on the lake road. | They say the garrison's going after them. | Boats are safer than the road now.
+b[soldier] : Give us a week.
+b : Again? | About time. | For now.
+a : Again. | Let's see. | For now.
+
+# ---------------------------------------------------------------- Crime
+
+scene re_crime_rain_coast
+when topic=crime region=rain_coast
+a : Theft by the quay again. | The Watch won't go into the Sump for {victim}. | {victim}'s been robbed; they're saying {subject}.
+b[guard] : We go where we're sent.
+b[beggar] : Blame the Sump. Always blame the Sump.
+b : The quay's rough. | Of course not. | Is that so?
+a : Very rough. | Of course. | So they say.
+
+scene re_crime_marches
+when topic=crime region=marches
+a : The City Guard says it'll find whoever robbed {victim}. | A robbery, in Ser Ferro, in daylight. | They say {subject} did it. Wharf rat.
+b[guard] : The Guard always finds them.
+b : Let's hope. | Shocking. | Careful who you name.
+a : Let's hope. | Very. | Everyone's naming them.
+
+scene re_crime_small_town
+when topic=crime region=towns
+a : Nothing ever happens here, and now {victim}'s robbed. | Everybody knows everybody; how could anyone rob {victim}? | We've never had to bolt our doors before.
+b[old] : Times change. Not for the better.
+b : Strange days. | Somebody new, maybe. | We do now.
+a : Very strange. | Maybe. | We do.
+
+# ---------------------------------------------------------------- Life
+
+scene re_life_marriage_country
+when topic=life kind=marriage region=countryside|towns
+a : The whole village came to {subject}'s wedding. | {subject} and {other} married in the chapel; there was dancing till dawn. | Every family brought something for the feast.
+b[old] : Weddings are when a village shows what it is.
+b : Wish I'd been. | Lovely. | That's how it should be.
+a : You missed it. | Very. | Always.
+
+scene re_life_death_city
+when topic=life kind=death region=cities
+a : {subject} is dead, did you hear? Big burial on the Rise. | The city didn't notice {subject} was gone. Only us. | They buried {subject} by the old wall.
+b[priest] : Every soul is noticed by the Saint.
+b : I heard. | Cities don't. | Quietly?
+a : Big crowd. | Only us. | Quietly.
+
+scene re_life_newcomer_country
+when topic=newcomer region=countryside|towns
+a : {subject} and kin have moved into the empty house. | {subject} came from the city. Doesn't know which end of a goat to milk. | Strangers are rare here. {subject}'s the talk of the town.
+b[old] : Teach them. We all learned.
+b : Good. Houses need families. | Ha. They'll learn. | Everyone's curious.
+a : They do. | Slowly. | Everyone.
+
+scene re_life_newcomer_city
+when topic=newcomer region=cities
+a : {subject} just arrived from the country. Gawping at everything. | New face on the lane: {subject}. | {subject} got lost three times yesterday.
+b : We all gawped once. | Welcome to them. | Ha.
+a : True. | Welcome. | Three times.
+
+# ---------------------------------------------------------------- Festivals
+
+scene re_fest_downs
+when topic=festival region=downs
+a : Bonfires on the downs for {festival}. | Sheep races for {festival}! | The whole frontier comes in for {festival}.
+b[child] : I'm racing a lamb this year!
+b : Lovely sight. | Sheep races! | Every year.
+a : It is. | Ha. | Always.
+
+scene re_fest_lake
+when topic=festival region=lake
+a : Lanterns floating on the mere for {festival}. | Boat races for {festival}. | The garrison rows over for {festival}.
+b[fisher] : I'll win this year. I've a new boat.
+b : Beautiful. | Who's racing? | And drinks the town dry.
+a : Very. | Everyone. | Every year.
+
+scene re_fest_fens
+when topic=festival region=fens
+a : Marsh lanterns for {festival}, to keep the lights away. | Everyone burns rushes on the doorstep for {festival}. | We sing the old fen songs for {festival}.
+b[old] : The songs are older than the town.
+b : A good custom. | Smells lovely. | I don't know the words.
+a : Very old. | It does. | Learn them.
+
+scene re_fest_steppe
+when topic=festival region=steppe
+a : Harvest dances for {festival}. | First sheaf goes to the chapel for {festival}. | Grain cakes for {festival}!
+b[farmer] : Pray for rain at {festival}. Every year.
+b : Lovely. | Every year. | My favourite.
+a : Every year. | Always. | Mine too.
+
+scene re_fest_fortress
+when topic=festival region=fortresses
+a : Double rations for {festival}, Commander says. | Even soldiers celebrate {festival}. | A barrel of ale for {festival}. One barrel.
+b[soldier] : One barrel for forty wolves.
+b : About time. | Barely. | One.
+a : About time. | Barely. | One.
+
+scene re_fest_coast
+when topic=festival region=rain_coast
+a : Rain or no rain, it's {festival}. | The boats get garlands for {festival}. | Even the Houses stop feuding for {festival}.
+b[sailor] : Garlands, then back to sea.
+b : Always rain for {festival}. | Pretty. | For a day.
+a : Always. | Very. | One day.
