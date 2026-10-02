@@ -1,0 +1,182 @@
+# Relationships: family, friends, rivals, gossip, one's own news, and the traveller standing near.
+
+scene fm2_spouses_money
+when topic=family band=spouses
+a : We need to put something by for winter. | You spent how much on that collar? | The roof needs mending, and that's coin.
+b : I know. I'll work extra. | It was a bargain! | Next month. I promise.
+a : Good. | It was not. | You said that last month.
+
+scene fm2_spouses_tease
+when topic=family band=spouses
+a : You still snore like a bear in a barrel. | Did you remember it's our marriage day? | Your mother visited. Again.
+b : And you still steal the blankets. | Of course I did. | She loves you really.
+a : I do not! | You did not. | She does not.
+
+scene fm2_spouses_tired
+when topic=family band=spouses time=dusk|night
+a : Come home, I'm tired of today. | Let's not talk about work tonight. | Sit with me by the fire.
+b : On my way. | Agreed. | Gladly.
+a : Good. | Good. | Good.
+
+scene fm2_siblings
+when topic=family band=family a.stage=adult|adolescent b.stage=adult|adolescent
+a : Mother says you never visit. | You still owe me for breaking my good bowl. | Remember when we hid in the woodpile all night?
+b : I visit! Sometimes. | That was ten years ago! | And Father found us at dawn.
+a : Not enough. | Still owe me. | He was so angry.
+
+scene fm2_parent_child
+when topic=family band=family a.stage=adult|old b.stage=young|adolescent
+a : Home before dark, do you hear? | Did you do your chores? | Wash your paws before supper.
+b : Yes! | Mostly. | They're clean!
+a : Good. | Mostly isn't all. | They are not.
+
+scene fm2_child_parent
+when topic=family band=family a.stage=young|adolescent
+a : Can I go play by the water? | I'm hungry. Is there food? | Can I have a penny? Just one?
+b : Not without someone grown. | There's bread on the shelf. | What for?
+a : Please? | Thank you! | Sweets.
+
+scene fm2_elder_advice
+when topic=family band=family a.stage=old
+a : Don't work yourself to the bone like I did. | Save your coin. Winter always comes. | You remind me of your grandfather.
+b : I'll try. | I am saving. | Do I?
+a : Try harder. | Good. | Stubborn, just like him.
+
+scene fm2_family_worry
+when topic=family band=family|spouses
+a : Our youngest has a fever. | Have you seen how thin Father's getting? | I'm worried about the little one.
+b[healer] : I'll come look tonight.
+b : I'll fetch the healer. | He won't eat. | So am I.
+a : Thank you. | Make him. | We'll watch them.
+
+scene fr2_shared_meal
+when topic=friends
+a : Eat with us tonight. | I made too much stew. Help me finish it. | Come by later; I've got a jug of something.
+b : I'd love to. | If you insist. | Something good?
+a : Good. | I insist. | You'll see.
+
+scene fr2_memory
+when topic=friends
+a : Remember when we got caught stealing apples? | We've known each other since we were pups. | Do you remember the flood year?
+b : My ears still burn. | Forever, it feels. | How could I forget?
+a : Worth it. | Forever. | Nor me.
+
+scene fr2_advice
+when topic=friends
+a : What would you do, in my place? | I need your advice. | Tell me honestly, am I being a fool?
+b : Sleep on it. | Ask me anything. | A little. But a good fool.
+a : I will. | Later. Somewhere quiet. | Thanks. I think.
+
+scene fr2_laughing
+when topic=friends
+a : You'll never guess what happened to me this morning. | I fell in the trough today. Don't laugh. | The baker called me by my mother's name.
+b : Tell me! | I'm laughing. | Ha! You do look like her.
+a : Later, over a drink. | I said don't. | I do not!
+
+scene qr2_debt
+when topic=quarrel
+a : You owe me, and everyone knows it. | Pay what you owe or I'll tell the watch. | I lent you coin in good faith.
+b : I'll pay when I can. | Tell them, then. | And I'll pay it in good time.
+a : When is that? | I will. | Good time is now.
+
+scene qr2_insult
+when topic=quarrel
+a : I heard what you called me. | Say it to my face. | You've a sharp tongue for a coward.
+b : I'll call you worse. | Gladly. | And you've a thick skull.
+a : Try it. | Go on. | Enough.
+
+scene qr2_territory
+when topic=quarrel place=market|street|work
+a : That's my spot. Move. | You're blocking my stall. | Keep your cart out of my way.
+b : I was here first. | It's a public street. | Your way? Ha.
+a : Not today. | Not this bit. | Mine.
+
+scene qr2_old_wound
+when topic=quarrel
+a : I've never forgiven you for that winter. | You know what you did. | Some things you don't forget.
+b : I've apologised a hundred times. | It was an accident. | Then don't.
+a : Not to me. | So you say. | I won't.
+
+scene gs2_heard_bad
+when topic=gossip
+a : People are saying {subject} {claim}. | Did you know {subject} {claim}? | It's all over town: {subject} {claim}.
+b[old] : Rumours are cheap. Truth costs more.
+b[merchant] : Is that so? I'll remember that, next time they want credit.
+b : Is it true? | I don't believe it. | Who started that?
+a : Seems so. | Believe what you like. | Not me.
+
+scene gs2_doubt
+when topic=gossip band=acquaintances|strangers
+a : I don't usually repeat things, but {subject} {claim}. | Heard {subject} {claim}. Probably nothing. | They say {subject} {claim}. Don't quote me.
+b : Then why repeat it? | Probably. | I won't.
+a : Fair. | Probably. | Good.
+
+scene nw2_work_new
+when topic=news kind=work
+a : {news}. Wish me luck. | You'll never guess. {news}. | So. {news}.
+b : Good luck! | Wonderful! | How do you feel?
+a : I'll need it. | Thank you. | Nervous.
+
+scene nw2_marriage_happy
+when topic=news kind=marriage
+a : {news}. I've never been happier. | It's true. {news}. | {news}, and the feast nearly bankrupted us.
+b : You look happy. | Congratulations! | Worth every penny.
+a : I am. | Thank you. | It was.
+
+scene nw2_loss_quiet
+when topic=news kind=loss
+a : I've had bad news. {news}. | {news}. I keep expecting to see them. | You'll have heard. {news}.
+b : I'm so sorry. | Come and eat with us. Don't be alone. | They were a good soul.
+a : Thank you. | Maybe. | They were.
+
+scene nw2_crime_victim
+when topic=news kind=crime
+a : {news}. I can't sleep since. | It happened to me. {news}. | Have you heard? {news}.
+b[guard] : Did you report it?
+b : That's dreadful. | Are you hurt? | Shameful.
+a : I'll manage. | Not badly. | Very.
+
+scene pl2_stranger_curious
+when topic=player known=no
+a : Where do you think {subject} is from? | {subject} has the look of the road about them. | Is {subject} buying or just looking?
+b[merchant] : Everyone's buying, if you ask nicely.
+b[old] : Far away. You can tell by the walk.
+b : Far, I'd guess. | They do. | Looking, as ever.
+a : Hm. | Dusty. | As ever.
+
+scene pl2_stranger_suspicious
+when topic=player known=no a.role=guard|merchant
+a : I'm keeping my eye on {subject}. | {subject} has been here a while. Doing what? | Strangers mean trouble, often as not.
+b : Probably harmless. | Looking around. | Often as not, they don't.
+a : Probably. | Hm. | We'll see.
+
+scene pl2_stranger_child
+when topic=player known=no a.stage=young
+a : Is {subject} a Warden? | I want to talk to {subject}! | Does {subject} have a sword?
+b : Leave them be. | Don't bother them. | I doubt it.
+a : But I want to! | Fine. | Maybe a little sword.
+
+scene pl2_known_friendly
+when topic=player known=yes
+a : {subject} helped me once, you know. | Good to see {subject} again. | {subject} always has a kind word.
+b : Did they? | It is. | Not to me.
+a : They did. | Very. | Ha.
+
+scene pl2_known_wary
+when topic=player known=yes
+a : {subject} again. Hm. | Wonder what {subject} wants this time. | {subject} owes me an answer.
+b : Leave it. | Who knows. | Ask them.
+a : Maybe. | Who knows. | I might.
+
+scene dy2_market
+when topic=day day=market
+a : I'll be glad when market's over. | Bought too much again. | The best stalls sell out by noon.
+b[merchant] : I'll be glad when I've sold everything.
+b : Not long now. | Always. | Go early.
+a : Not long. | Always. | Too late.
+
+scene dy2_rest
+when topic=day day=rest
+a : I'm not lifting a paw today. | Restday, and I'm still awake at dawn. Habit. | Shall we walk out of town today?
+b : Nor me. | Same. | Yes, let's.
+a : Good. | Habit. | Good.

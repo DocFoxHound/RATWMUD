@@ -1,0 +1,111 @@
+# Ridgemere: a rain-soaked medieval industrial harbour city. The Council of Houses in the leaking Rain Hall, the
+# Watch, the market and the Sump inside the walls; the quay, shipyard and smokehouses outside; the five Houses on
+# their estates: Grayrock (quarry and iron), Fell (timber), Ashcombe (charcoal and glass), Brinewater (ships and
+# rope), Vesk (fish, smoke and salt).
+
+scene rm_st_soot
+when topic=smalltalk region=ridgemere
+a : Soot on my washing again. | Can't tell if it's fog or smoke today. | The ironworks were roaring all night.
+b[old] : Soot and rain. Ridgemere's two seasons.
+b[miner] : That's the smell of wages, that is.
+b : Grayrock's furnaces. | Both, probably. | Never stops, does it.
+a : Always Grayrock. | Probably. | Never.
+
+scene rm_st_leaks
+when topic=smalltalk region=ridgemere place=home|tavern|work
+a : Roof's leaking over my bed now. | Put a bucket under it, the drip's driving me mad. | Everything in this city leaks.
+b[crafter] : Tar and new slates, that's what it needs. I can do it Restday.
+b[old] : Ridgemere roofs were built to leak. Keeps us humble.
+b : Mine too. | Two buckets. | Even the Rain Hall.
+a : Wonderful. | I've run out of buckets. | Especially the Rain Hall.
+
+scene rm_st_ship
+when topic=smalltalk region=ridgemere
+a : A southern ship came in. Smell the spices on the quay? | They say there's a ship from beyond the Isle in harbour. | Brinewater launched a new hull today.
+b[sailor] : Southern crews. Loud, and they cheat at dice.
+b[child] : Can I see the ship? Can I go on it?
+b : I'd love to taste one. | Beyond the Isle? Never. | Another one?
+a : Me too. | So they say. | Every season.
+
+scene rm_st_estates
+when topic=smalltalk|lore region=ridgemere
+a : Lord Grayrock's away again. Lady Grayrock runs everything, really. | Fellhall's hiring loggers. Hard work, fair coin. | Ashcombe glass is in every window in the upper streets.
+b[noble] : The Houses' affairs aren't street talk.
+b[laborer] : Fair coin? From House Fell? First time for everything.
+b : Always travelling, that one. | I might go. | And none in the Sump.
+a : Always. | Do. | None.
+
+scene rm_wk_ironworks
+when topic=work region=ridgemere a.job=smith|miner|laborer
+a : Pig iron's stacked to the rafters at Grayrock. | Lost a day's work when the furnace cracked. | The quarry face is unstable after the rain.
+b[smith] : Good iron, Grayrock's. Say what you like about them.
+b[miner] : Shore it up. Don't wait for the foreman.
+b : Somebody's buying it all. | Unpaid? | Stay off it.
+a : The Council, I hear. | Unpaid. | I will.
+
+scene rm_wk_smokehouse
+when topic=work region=rain_coast a.job=fisher|cook|laborer
+a : Racks are full at the Vesk smokehouses. | My eyes still sting from the smoke. | Herring run's late this year.
+b[fisher] : Late herring, dear herring.
+b : Good season, then. | Rub them with cold water. | Bad sign.
+a : For Vesk. | Doesn't help. | Very bad.
+
+scene rm_wk_rope
+when topic=work region=ridgemere
+a : Walked the ropewalk end to end forty times today. | Brinewater wants a cable as thick as my leg. | Hemp's damp. It'll rot.
+b[sailor] : Good rope's the difference between port and the bottom of the sea.
+b : Your poor legs. | For what ship? | Then dry it.
+a : Gone numb. | A big one. | In this rain?
+
+scene rm_lore_rain_hall
+when topic=lore region=ridgemere
+a : The Chancellor sat under a bucket in the Rain Hall, they say. | Two hundred years that roof's leaked. Nobody will pay to mend it. | The Houses argue over who pays for the roof.
+b[official] : It's a matter of precedence. Whoever pays, owns.
+b[old] : When it's mended, Ridgemere will fall. That's the old saying.
+b : Serves him right. | Typical. | Of course they do.
+a : Ha. | Typical Ridgemere. | Of course.
+
+scene rm_lore_isle
+when topic=lore region=rain_coast
+a : Mist round the Isle of Grey Horns again. | Nobody lands on the Isle. Nobody comes back the same. | Saw lights on the Isle last night.
+b[sailor] : I've sailed round it. Never landed. Never will.
+b[old] : The Isle was there before the city and it'll be there after.
+b : Always misty. | So they say. | Fishermen's lanterns.
+a : Always. | So they say. | Maybe.
+
+scene rm_ev_prices
+when topic=prices region=ridgemere
+a : The Houses put the price up. They always put the price up. | Vesk sets the fish price and we pay it. | Whatever the Houses don't own, they tax.
+b[noble] : The Houses keep this city fed.
+b[laborer] : And keep the Sump hungry.
+b : Same as ever. | Can't fight the Houses. | True.
+a : Same. | No. | Too true.
+
+scene rm_ev_bandits
+when topic=bandits|caravan region=rain_coast
+a : The southway's not safe since the raids. | Grayrock's sending armed guards with their carts now. | The Watch won't go past the third milestone.
+b[guard] : Not without more spears. The Council won't pay for them.
+b : Nothing's safe outside the walls. | Smart. | Cowards.
+a : Nothing. | Expensive, though. | Or wise.
+
+scene rm_ev_crime
+when topic=crime region=ridgemere
+a : Another robbery near the Sump. | The gaol's full to bursting. | The Watch dragged someone through the market in chains.
+b[guard] : Full gaol, quiet streets. Mostly.
+b[beggar] : They always blame the Sump.
+b : Not surprised. | Build a bigger one. | Grim sight.
+a : Nor me. | With what money? | It was.
+
+scene rm_fs_houses
+when topic=festival region=ridgemere
+a : Each House hangs its banner over the market for {festival}. | Vesk always gives out smoked fish for {festival}. | Rain or no rain, there's a parade for {festival}.
+b[child] : Free fish! Free fish!
+b[noble] : The Houses are generous on feast days.
+b : It's a sight. | Best fish of the year. | Always rain.
+a : It is. | Always is. | Always.
+
+scene rm_qr_houses
+when topic=quarrel region=ridgemere
+a : Your House cut my wages. | You Fell folk think you own the forest. | Still running errands for Grayrock?
+b : Not my doing. | We do own the forest. | It pays better than yours.
+a : Same House. | That's the trouble. | Barely.

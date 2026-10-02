@@ -1,0 +1,204 @@
+# More current events: more ways of talking about the same happenings, so news doesn't always sound the same.
+
+scene pr2_herbs_up_healer
+when topic=prices item=herbs dir=up b.job=healer
+a : Your remedies will cost more now, with herbs so dear. | Herbs at {price}. How do you manage? | Will your prices go up?
+b : I'll give what I can. The sick don't care about prices. | Badly. I've started growing my own. | I'm afraid so.
+a : You're a good soul. | Clever. | Can't be helped.
+
+scene pr2_herbs_up_gather
+when topic=prices item=herbs dir=up
+a : Herbs are dear. I'm going gathering this Restday. | At {price} a bundle, the hedges are gold. | I know a patch nobody else knows.
+b[old] : I know every herb patch from here to the hills. Not telling.
+b[child] : Can I come? I know which ones are poison!
+b : Take me with you. | Ha, true. | Tell me where.
+a : Maybe. | They are. | Not a chance.
+
+scene pr2_herbs_down_glut
+when topic=prices item=herbs dir=down
+a : Everyone's selling herbs this week. | Herbs going for {price}, cheap as dirt. | The stalls are drowning in herbs.
+b[merchant] : Too many sellers. Nobody makes a living.
+b[cook] : Cheap herbs, tasty stew.
+b : Buy now, then. | Good for us. | Must have been a good season.
+a : I will. | Very. | Must have.
+
+scene pr2_meal_up_child
+when topic=prices item=meal dir=up a.stage=young|adolescent
+a : Why is everyone grumbling about food? | Mama gave me half a loaf instead of a whole one. | Is there going to be a famine?
+b[old] : No famine. Just a dear year. We've had worse.
+b : Food costs more now. | It's a hard time. | No, no. Nothing like that.
+a : Why? | I'm still hungry. | Promise?
+
+scene pr2_meal_up_innkeeper
+when topic=prices item=meal dir=up b.job=innkeeper|cook
+a : Your soup's gone up a penny. | {price} for a bowl of stew? | Are you trying to starve us?
+b : My suppliers raised theirs. | Grain's dear. Everything's dear. | I'm trying not to starve myself.
+a : Everyone's suppliers did. | Hm. | Fair enough.
+
+scene pr2_meal_down_feast
+when topic=prices item=meal dir=down
+a : Food's cheap, let's have a feast! | With meals at {price}, I ate twice yesterday. | The granary must be bursting.
+b[farmer] : Good harvest, low prices. We work twice as hard for less.
+b : Count me in. | Lucky you. | Must be.
+a : Tonight, then. | Very. | Good.
+
+scene pr2_prices_council
+when topic=prices region=cities
+a : The council should fix the prices. | Somebody's getting rich off these prices. | The store's run by fools.
+b[official] : The council can't control the harvest.
+b[merchant] : Not me, I promise you.
+b : They never will. | Somebody always is. | Fools with keys.
+a : Never. | Always. | Ha.
+
+scene cv2_arrived_goods
+when topic=caravan kind=arrived
+a : The wagons from {other} brought cloth, I hear. | There'll be fresh stock at every stall. | Carters from {other} are drinking the inn dry.
+b[merchant] : Cloth and salt and needles. My shelves will be full.
+b[innkeeper] : Drinking it dry and paying for it. Bless them.
+b : Good. I need a new coat. | About time. | Ha.
+a : Get there early. | It is. | Bless them.
+
+scene cv2_arrived_news
+when topic=caravan kind=arrived
+a : Any news from {other}, with the caravan? | The carters say {other} is full of strangers. | The caravan brought letters from {other}.
+b[carter] : Same as here. Prices up, roads bad, everyone grumbling.
+b : Not that I heard. | Strangers? | Any for me?
+a : Same everywhere. | Lots, they say. | Not this time.
+
+scene cv2_left_worry
+when topic=caravan kind=left
+a : My son rides with the {other} caravan. | Hope they make {other} before the weather turns. | The wagons for {other} were overloaded.
+b[guard] : They had good guards. They'll be fine.
+b : He'll be back soon. | They will. | Greedy.
+a : I hope so. | Pray so. | Always.
+
+scene cv2_raided_aftermath
+when topic=caravan kind=raided
+a : What's left of the {other} caravan limped in. | The carters from {other} came back with nothing but the clothes on them. | Everything on the {other} wagons is gone.
+b[guard] : We'll ride out. When the council pays for it.
+b[healer] : Bring the hurt ones to me.
+b : Terrible. | Poor souls. | Who'll pay?
+a : It is. | They're lucky to be alive. | Nobody. Never anybody.
+
+scene bd2_camp_fear
+when topic=bandits kind=camp
+a : Bandits near {other}. My cousin saw their fires. | I'm not travelling till they're cleared out. | They say the bandits are hungry and bold.
+b[soldier] : Give us the order and we'll burn them out.
+b[old] : Bandits come and go. Like winter.
+b : Wise. | Stay home, then. | Bold ones are the worst.
+a : Very. | I will. | They are.
+
+scene bd2_bounty
+when topic=bandits
+a : Somebody should put a price on their heads. | The merchants are talking about a bounty. | I'd go after them myself, if I were younger.
+b[guard] : There's a bounty. Nobody's brave enough to collect.
+b[adolescent] : I'd go! I'd get them all!
+b : Somebody should. | Good. | Glad you're not.
+a : Somebody will. | About time. | Ha.
+
+scene cr2_theft_lock
+when topic=crime kind=theft
+a : Since {victim} was robbed, I lock everything. | They took {victim}'s savings. Everything. | Who robs a neighbour?
+b[guard] : Locks keep honest folk honest.
+b[merchant] : I sleep with my strongbox now.
+b : Wise. | That's terrible. | Somebody desperate.
+a : Better safe. | Awful. | Or wicked.
+
+scene cr2_theft_suspect
+when topic=crime kind=theft
+a : I think I know who robbed {victim}. | It was {subject}, they say. | I saw someone near {victim}'s door that night.
+b[guard] : Then tell the watch, not me.
+b : Tell the watch. | Are you sure? | Who?
+a : Maybe I will. | Sure enough. | I couldn't see.
+
+scene cr2_assault_fear
+when topic=crime kind=assault
+a : I'm walking home with company since {victim} was attacked. | They hit {victim} right in the street! | Nobody helped {victim}.
+b[guard] : We'll find them.
+b[healer] : {victim} will heal. Slowly.
+b : Good idea. | Shameful. | Nobody?
+a : Thank you. | Thank the stars. | Nobody.
+
+scene cr2_arrest_relief
+when topic=crime kind=arrest
+a : Glad they took {subject}. | The gaol will do {subject} good. | {subject} in chains. Never thought I'd see it.
+b[old] : Should have happened years ago.
+b : Me too. | Maybe. | Nor me.
+a : Years. | We'll see. | Strange days.
+
+scene lf2_marriage_feast
+when topic=life kind=marriage
+a : Were you at the wedding feast? | {subject}'s wedding had the best food I've eaten all year. | They danced till dawn at {subject}'s wedding.
+b[child] : I had three cakes! Three!
+b[old] : I danced too. One dance. Then I sat.
+b : I wish I had been. | Was it good? | I heard the music.
+a : You missed a treat. | Wonderful. | Everyone did.
+
+scene lf2_marriage_doubt
+when topic=life kind=marriage band=friends|family
+a : Between us, I give {subject}'s marriage a year. | Did {subject} really marry {other}? Of all wolves? | I'd not have picked {other}.
+b : Unkind. | Love is strange. | Nobody asked you.
+a : Honest. | Very. | True.
+
+scene lf2_death_memory
+when topic=life kind=death
+a : {subject} gave me my first job, you know. | I'll miss {subject}'s laugh. | {subject} always waved to me in the street.
+b[old] : The good ones always go first.
+b : They were kind. | So will I. | Everyone loved them.
+a : Very kind. | Everyone. | They did.
+
+scene lf2_death_funeral
+when topic=life kind=death
+a : Are you going to {subject}'s burial? | The whole street came for {subject}. | {other} hasn't stopped weeping.
+b[priest] : I'll speak the words. Come, if you can.
+b : I'll be there. | They were loved. | Poor {other}.
+a : So will I. | They were. | Poor soul.
+
+scene lf2_apprentice_pride
+when topic=life kind=apprentice
+a : {subject}'s mother is so proud of the apprenticeship. | {other} chose well, taking {subject}. | {subject} will be good at it.
+b[apprentice] : The first year is all sweeping. Tell them.
+b : She should be. | They did. | I think so.
+a : She is. | They did. | Let's hope.
+
+scene lf2_succession_change
+when topic=life kind=succession
+a : Things are different since {subject} took over. | {subject} runs it stricter than the old master. | Prices went up when {subject} took over.
+b[merchant] : New brooms, new prices.
+b : Better or worse? | Needs a firm paw. | Always do.
+a : Ask me in a month. | Maybe. | Always.
+
+scene nc2_newcomer_wary
+when topic=newcomer
+a : {subject} keeps to themselves. | Nobody knows where {subject} came from. | {subject} asked a lot of questions.
+b[guard] : I've had a word with them. Seem honest enough.
+b[old] : Give them time. We were all strangers once.
+b : Shy, maybe. | Does it matter? | Curious, then.
+a : Maybe. | It might. | Or nosy.
+
+scene nc2_newcomer_welcome
+when topic=newcomer band=friends|family
+a : Let's take {subject} some bread, to welcome them. | I'll invite {subject} to supper. | Somebody should show {subject} round.
+b : Good idea. | Kind of you. | You do it.
+a : Tomorrow, then. | Come too. | Fine. I will.
+
+scene fs2_today_tavern
+when topic=festival when=today place=tavern
+a : Drinks are flowing for {festival}! | One more for {festival}! | Nobody's sober tonight.
+b[innkeeper] : And nobody's paying, by the look of it.
+b : Here's to {festival}! | Cheers! | Least of all me.
+a : Cheers! | Ha! | Ha.
+
+scene fs2_today_child
+when topic=festival when=today a.stage=young|adolescent
+a : Can I stay up late for {festival}? Please? | I'm wearing my best collar for {festival}! | Is there a parade? Where?
+b[old] : I stayed up all night once, for a feast. Saw the dawn come.
+b : Just this once. | You look very fine. | At midday, by the fountain.
+a : Yes! | Thank you! | Let's go!
+
+scene fs2_soon_prepare
+when topic=festival when=soon
+a : I'm baking for {festival} already. | Who's playing music for {festival}? | Are you dancing at {festival}?
+b[baker] : Baking? I've been baking for a week.
+b : Save me some. | The same three as always. | If someone asks me.
+a : I'll try. | Ha. | Someone will.

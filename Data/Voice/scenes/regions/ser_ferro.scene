@@ -1,0 +1,101 @@
+# Ser Ferro: a bright city of white walls and red roofs on the great river, in tiers from the wharf (its few slums)
+# through the middle-class town and the Cathedral Rise of the Iron Saint to the elite quarter and the Prince's palace.
+
+scene sf_st_sun
+when topic=smalltalk region=marches
+a : Sun's fierce on the white walls today. | Can't look at the cathedral at noon; it's too bright. | Shade's worth a penny a stride today.
+b[old] : The northerners come here and burn in a day.
+b[child] : I can look at it! See? Ow. No I can't.
+b : Stay out of it at midday. | Close your eyes. | Find a portico.
+a : I'll try. | Ha. | Gladly.
+
+scene sf_st_tiers_climb
+when topic=smalltalk region=ser_ferro
+a : Delivered to the top tier today. Six hundred steps. | My cousin won't speak to us since he moved up a tier. | They say the elite quarter has fountains in every courtyard.
+b[noble] : The steps keep the riff-raff out.
+b[servant] : Fountains, and someone like me to clean them.
+b : Your poor legs. | He'll come down again. | And none down here.
+a : Never again. | When he's poor. | None.
+
+scene sf_st_wine
+when topic=smalltalk region=ser_ferro place=tavern|market|street
+a : This year's wine is thin. | Have you tried the red from the eastern slopes? | Wine's cheaper than water down at the wharf.
+b[innkeeper] : Thin? It's the finest in the Marches. At this price.
+b[old] : Wine was better when the old Prince was alive.
+b : Everything's thin this year. | Not yet. Is it good? | And better for you.
+a : True. | Very. | Ha.
+
+scene sf_st_palace_gossip
+when topic=smalltalk|lore region=ser_ferro
+a : They say the Prince's heir has gone hunting again. | A carriage with the palace arms went down to the wharf at midnight. | The palace kitchens threw away enough bread to feed the wharf.
+b[servant] : Don't repeat palace talk, if you want to keep your tongue.
+b[noble] : The heir is entitled to his pastimes.
+b : Hunting what? | What for? | Shameful.
+a : Who knows. | Who knows. | It is.
+
+scene sf_wk_guild
+when topic=work region=ser_ferro a.role=merchant
+a : The Merchants' Guild raised the stall fee again. | Guild inspector measured my scales today. | Can't sell a thing without the Guild's stamp.
+b[merchant] : The Guild protects us. From everyone but the Guild.
+b[official] : Fees keep the market honest.
+b : Of course they did. | Were they true? | That's the Guild.
+a : Of course. | True as the Saint. | Always.
+
+scene sf_wk_wharf
+when topic=work region=ser_ferro a.job=laborer|carter|sailor|fisher
+a : Barges six deep at the wharf. | Unloaded marble all morning. My back's gone. | River's too low for the heavy barges.
+b[sailor] : Low river, no wages.
+b : Busy, then. | For the cathedral? | Again?
+a : Too busy. | For somebody's palazzo. | Again.
+
+scene sf_wk_tannery
+when topic=work region=ser_ferro
+a : The old tannery stinks worse than ever. | They want to move the tannery outside the walls. | Hides piled to the roof at the tannery.
+b[crafter] : The smell is the work. The work is the smell.
+b : Downwind of it all day. | About time. | Good trade.
+a : Poor you. | They'll never do it. | Smelly trade.
+
+scene sf_lore_saint
+when topic=lore region=marches
+a : The Iron Saint answered my mother's prayer once. | Pilgrims climbing the Rise on their knees again. | They say the Saint's heart is iron and still beats.
+b[priest] : The Saint hears all who climb the Rise.
+b[old] : I've climbed it twice. Once for love, once for forgiveness.
+b : What did she pray for? | Devotion. | So they say.
+a : She never said. | Painful devotion. | So they say.
+
+scene sf_lore_flood
+when topic=lore region=ser_ferro
+a : The water marks from the great flood are still on the wharf walls. | My grandfather rowed down the wharf street in the flood. | The river took half the lower town once.
+b[old] : I saw it. Water up to the second floor. Boats in the streets.
+b : Higher than my head. | Rowed! | It could again.
+a : Much higher. | Rowed. | It could.
+
+scene sf_ev_prices
+when topic=prices region=ser_ferro
+a : The Guild says prices rise because of the roads. | Grain's dear on the wharf and cheap on the Heights. How? | Prices for the wharf, prices for the Heights.
+b[merchant] : Different tiers, different prices. That's Ser Ferro.
+b[laborer] : Everything's dear for the wharf.
+b : The Guild always says that. | Ask the Guild. | Always.
+a : Always. | They won't say. | Always.
+
+scene sf_ev_festival
+when topic=festival region=ser_ferro
+a : The Prince will appear on the balcony for {festival}. | Rose petals all down the Rise for {festival}. | The cathedral bells will ring all day for {festival}.
+b[child] : Will he wave at me? Will he?
+b[priest] : The Saint is honoured on every feast.
+b : I'll be there. | Beautiful. | Deafening.
+a : Early, for a good spot. | Always is. | Every year.
+
+scene sf_ev_crime
+when topic=crime region=ser_ferro
+a : City Guard's out in force since the robbery. | A purse-cutter on the Rise, among the pilgrims! | They hanged a thief in the old days. Now it's a fine.
+b[guard] : The Guard sees everything in Ser Ferro.
+b[old] : A fine! In my day it was the river.
+b : Good. | Shameless. | Better a fine.
+a : About time. | Shameless. | Maybe.
+
+scene sf_qr_tiers
+when topic=quarrel region=ser_ferro
+a : You wharf folk always want something for nothing. | Heights folk wouldn't know work if it bit them. | Moved up a tier and forgot your manners?
+b : We want what's fair. | We know plenty. | Moved up a tier and kept my purse.
+a : Fair. Ha. | Name one thing. | Rude.

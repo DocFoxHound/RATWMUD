@@ -1,0 +1,135 @@
+# Upper Accord: the mountain city. The Concord that governs it, the Warden Order and its training grounds, the
+# Accord Watch, the plaza, the wards, the snow and the long road down to the lowlands.
+
+scene ua_st_altitude
+when topic=smalltalk region=upper_accord
+a : The air's thin today. I'm puffing like a bellows. | Lowlanders always gasp on the stairs. | Climbed the Stair Gate twice today. My lungs are on fire.
+b[old] : Born up here, I was. Lowland air would drown me.
+b[child] : I can run up the stairs without stopping! Watch!
+b : You get used to it. | Take it slower. | Twice? You're mad.
+a : Do you? | I'll try. | Mad and late.
+
+scene ua_st_lowlands
+when topic=smalltalk region=upper_accord
+a : My sister wants me to move down to the lowlands. | Ever been down the main road all the way? | They say it's warm in the lowlands all year.
+b[old] : I went down once. Too flat. Too hot. Too many flies.
+b[adolescent] : I'd go tomorrow if they'd let me.
+b : And leave the mountain? | Once. Never again. | Warm and dull.
+a : I'm thinking about it. | Why not? | Warm sounds nice.
+
+scene ua_st_wards
+when topic=smalltalk region=upper_accord
+a : Rents are up in the Crafts ward again. | They're widening the lane behind the plaza. | Somebody's painted the ward stones blue.
+b[official] : The ward stones are Concord property. That's a fine.
+b[crafter] : Up again? I'll be sleeping in my workshop.
+b : Of course they are. | About time. | Pups, I'd wager.
+a : Of course. | Took long enough. | Blue. Bright blue.
+
+scene ua_st_fountain_coin
+when topic=smalltalk region=upper_accord place=market|street
+a[child] : I threw a penny in the fountain and made a wish! | Is it true the fountain grants wishes?
+a : Somebody fishes the coins out of the fountain every night. | The fountain froze again. | Meet me at the fountain at noon.
+b[guard] : That somebody will be fishing in a cell if I catch them.
+b[old] : The fountain never froze in my day.
+b : Wishes cost a penny now? | Again? | Noon, then.
+a : Everything costs a penny. | Again. | Don't be late.
+
+scene ua_st_snow_shovel
+when topic=smalltalk|weather region=upper_accord season=winter|autumn
+a : Shovelled my step three times this morning. | Snow up to my chest on the north lane. | They say the pass is closed.
+b[old] : This is nothing. Forty winters ago the snow reached the second floor.
+b[carter] : Closed? Then no wagons for a week. Wonderful.
+b : And it'll snow again tonight. | Take the south lane. | Closed till the thaw.
+a : Don't. | It's worse. | Then we wait.
+
+scene ua_wk_warden_training
+when topic=work|lore region=upper_accord
+a : The trainees were running the ridge at dawn again. | A trainee broke her leg on the obstacle wall. | The Order's taking applications next month.
+b[child] : I'm going to apply! I'm going to be a Warden!
+b[soldier] : Running's the easy part. Wait till they make them swim the tarn in winter.
+b[healer] : Bring them to the House of Mending, not the barracks surgeon.
+b : Better them than me. | Poor thing. | Every year they say that.
+a : Ha. | She'll mend. | And every year they come.
+
+scene ua_wk_concord_clerk
+when topic=work region=upper_accord a.job=official
+a : The Concord wants the roll of every ward by Restday. | I copied the same decree eleven times today. | Petitions are piled to the ceiling.
+b[official] : Eleven? I did fourteen.
+b[merchant] : Is there one about my stall licence in there?
+b : What for? | Your poor paws. | Somebody has to read them.
+a : Nobody tells clerks why. | Wrists aching. | Not me.
+
+scene ua_wk_watch_gate
+when topic=work region=upper_accord|accord_crossing a.role=guard
+a : Three hundred carts through the main gate since dawn. | A lowlander tried to bribe me with a fish. | Gate log's a mess. Who wrote this?
+b[guard] : That's nothing. Wait for harvest.
+b[carter] : I wasn't bribing you. That was a gift.
+b : Busy day. | A fish? | Not me.
+a : Busy and loud. | A fish. A dead one. | Somebody with no letters.
+
+scene ua_lore_first_oath
+when topic=lore region=upper_accord
+a : The Chapel of the First Oath had its doors open all night. | My grandmother swore her oath in the old chapel. | They say the First Oath was sworn on the mountain itself.
+b[priest] : The oath was sworn and the city was founded. Both are true.
+b[old] : I swore mine there too. I've kept most of it.
+b : Something to do with the Concord? | So did mine. | A good story.
+a : Probably. | Everyone's did. | It is.
+
+scene ua_lore_pass
+when topic=lore region=upper_accord
+a : The eastern pass took another traveller last winter. | Nobody crosses the eastern ridge after first snow. | There's an old shrine on the eastern ridge. I've seen it.
+b[old] : The ridge keeps what it takes. Bones and all.
+b[soldier] : Wardens patrol the pass. Mostly.
+b : Foolish to try. | Nobody sensible. | Have you? What's in it?
+a : It is. | Except fools. | Stones and old offerings.
+
+scene ua_lore_tarns
+when topic=lore|smalltalk region=upper_accord
+a : The tarns were glass-still this morning. | Fished in the upper tarn today. Caught nothing but cold. | They say a city lies under the deep tarn.
+b[old] : My father said the same. His father too.
+b[fisher] : Fish in the tarns are clever. They've seen every hook.
+b : Lovely up there. | Nothing bites in the cold. | A drowned city? Nonsense.
+a : Peaceful. | Nothing. | Probably.
+
+scene ua_ev_prices
+when topic=prices region=upper_accord
+a : Everything costs more up here. Hauling it up the mountain, they say. | Up the mountain, up in price. | The lowland carts charge a fortune for the climb.
+b[merchant] : Every crate comes up that road on somebody's back.
+b[carter] : You try dragging a full cart up the switchbacks.
+b : They're not wrong. | Always has. | Mountain prices.
+a : Still hurts. | Always. | Ha.
+
+scene ua_ev_festival
+when topic=festival region=upper_accord
+a : They're stringing lanterns across the plaza for {festival}. | The Concord's paying for the bonfires this year. | Wardens march in the parade for {festival}.
+b[child] : I get to carry a lantern this year! A real one!
+b[soldier] : We march, they cheer, we freeze. Every year.
+b : It'll be lovely. | First time in years. | Always a fine sight.
+a : It will. | About time. | It is.
+
+scene ua_ev_newcomer
+when topic=newcomer region=upper_accord
+a : {subject} came up from the lowlands. Still gasping on the stairs. | New wolf on our lane, {subject}. Lowlander. | {subject} asked me where the sea was. Up here!
+b[old] : They all gasp for a season. Then they're mountain wolves like the rest.
+b : Give them time. | Friendly? | The sea! Ha.
+a : I will. | Seems so. | I know.
+
+scene ua_ev_crime
+when topic=crime region=upper_accord
+a : A theft in the Crafts ward, right under the Watch's nose. | The Watch is turning over every cart at the gate since the robbery. | They say the thief ran for the lowlands.
+b[guard] : We'll catch them. Mountain only has so many roads.
+b[merchant] : My shutters are barred from now on.
+b : Shameful. | Slows everything. | Good riddance.
+a : It is. | It does. | If they catch them.
+
+scene ua_fr_plaza
+when topic=friends region=upper_accord
+a : Plaza bench, our usual? | Watch the trainees with me a while. | Shall we walk up to the overlook?
+b : Our usual. | Gladly. | If my legs will make it.
+a : I'll save the sunny end. | They're terrible this year. | We'll go slow.
+
+scene ua_qr_ward
+when topic=quarrel region=upper_accord
+a : Your ward always gets the snow cleared first. | You complained about me to the Concord, didn't you? | Keep your carts off my lane.
+b : We pay our dues. You should try it. | Somebody had to. | It's a public lane.
+a : We pay plenty. | Coward. | Not for your carts.

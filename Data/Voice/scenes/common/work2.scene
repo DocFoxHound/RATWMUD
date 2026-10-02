@@ -1,0 +1,165 @@
+# More work talk, by trade.
+
+scene wk2_brewer
+when topic=work a.job=brewer
+a : The new batch soured. Whole barrel. | Barley's dear this year; ale will cost more. | Smell that mash. Good batch, this.
+b[innkeeper] : I'll take the next three barrels if it's good.
+b : Bad luck. | Everything costs more. | Smells like bread.
+a : It happens. | Everything. | Liquid bread.
+
+scene wk2_sailor
+when topic=work a.job=sailor
+a : Sea's too rough to put out. | We lost a hand overboard on the last run. | Need a new sail; this one's more patch than canvas.
+b[sailor] : Rough sea, empty purse.
+b : Wait it out. | Terrible. Did they find them? | Can you afford it?
+a : No choice. | No. | Barely.
+
+scene wk2_herder
+when topic=work a.job=herder
+a : Lost a lamb to the crows. | Moving the flock to the high pasture tomorrow. | The dog's getting old; won't run like she did.
+b[farmer] : Crows, foxes, weather. Everything wants your sheep.
+b : Poor thing. | Good grass up there? | Neither will any of us.
+a : It happens. | Best of the year. | True.
+
+scene wk2_noble
+when topic=work a.job=noble
+a : The accounts of the estate are a disgrace. | My steward is robbing me, I'm sure of it. | The tenants want lower rents. Again.
+b[servant] : Shall I fetch the ledgers, my lord?
+b : Hire a better clerk. | Prove it. | They always do.
+a : I may. | I will. | Always.
+
+scene wk2_servant_gossip
+when topic=work a.job=servant b.job=servant
+a : The mistress was in a temper all morning. | Don't go near the study; he's in one of his moods. | They're having guests tonight. Thirty of them.
+b : Over what this time? | Thanks for the warning. | Thirty! Who's cooking?
+a : A missing spoon. | Any time. | We are. All night.
+
+scene wk2_scholar_debate
+when topic=work a.job=scholar b.job=scholar
+a : You've copied that date wrong. | The old records say the city is two hundred years older than we thought. | Have you read the new treatise?
+b : I copied it as written. | Nonsense. Show me. | Twice. It's rubbish.
+a : Then it was written wrong. | Come and see. | Agreed.
+
+scene wk2_healer_patient
+when topic=work b.job=healer
+a : My chest's been tight for a week. | Could you look at my paw? It won't heal. | Do you have something for sleep?
+b : Breathe in. Slowly. Hm. | Let me see. Keep it clean, and wrapped. | A little, to start. Not every night.
+a : Is it bad? | I'll try. | Thank you.
+
+scene wk2_priest_confession
+when topic=work b.job=priest
+a : I need to talk to someone. | Will you light a candle for my mother? | Does the Saint forgive everything?
+b : The chapel's always open. | Of course. | Almost everything. Ask, and find out.
+a : Tonight, then. | Thank you. | I will.
+
+scene wk2_guard_complaint
+when topic=work b.role=guard
+a : Somebody's been stealing from my woodpile. | There's a drunk asleep in my doorway. | Can't you do something about the noise at the tavern?
+b : I'll keep an eye out. | I'll move him along. | It's a tavern. Noise is its trade.
+a : Please. | Gently. | Hm.
+
+scene wk2_merchant_customer
+when topic=work b.role=merchant
+a : Do you have any good cloth? | How much for the lot? | Is this fresh?
+b : The best in town. | For you, a fair price. Let's talk. | Fresh this morning. Smell it.
+a : I'll be the judge. | Let's. | Hm. Fair enough.
+
+scene wk2_merchant_rival
+when topic=work a.role=merchant b.role=merchant
+a : Your prices are killing my trade. | Who's your supplier? Mine's a thief. | Shall we split the next order? Cheaper by the cartload.
+b : Lower yours, then. | Wouldn't you like to know. | That's not a bad idea.
+a : And starve? | I would. | Let's talk.
+
+scene wk2_fisher_weather
+when topic=work a.job=fisher weather=rain|storm|fog
+a : No boats out in this. | Fog on the water; you can't see your own bow. | Lost a day's catch to the weather.
+b : Mend nets instead. | Stay ashore. | There's always tomorrow.
+a : Already mended. | I will. | Always.
+
+scene wk2_farmer_weather
+when topic=work a.job=farmer weather=rain|storm|snow
+a : The field's a swamp. | Can't plough in this. | Rain's welcome, but not this much.
+b : It'll drain. | Rest, then. | Never pleased, farmers.
+a : Eventually. | Can't afford to. | Never.
+
+scene wk2_miner_safety
+when topic=work a.job=miner b.job=miner
+a : Did you check the props before you went down? | Lamp's guttering. Bad air, maybe. | Don't go past the third timber.
+b : Every one. | Come up. Now. | I won't.
+a : Good. | Right behind you. | Good.
+
+scene wk2_laborer_pay
+when topic=work a.job=laborer
+a : Paid by the load, and they lie about the loads. | Hauled stone all day for two pennies. | My back's worse than my grandfather's.
+b : Count them yourself next time. | Two? Robbery. | So's everyone's.
+a : I will. | Two. | Everyone's.
+
+scene wk2_apprentice_complain
+when topic=work a.job=apprentice
+a : My master makes me sweep three times a day. | I burned the bread again. | I'll never be as good as my master.
+b[old] : I swept for two years before they let me touch the real work.
+b : That's how you learn. | You'll learn. | Yes, you will.
+a : Learn what, sweeping? | I hope so. | Maybe.
+
+scene wk2_cook_market
+when topic=work a.job=cook
+a : The butcher sold me tough meat again. | I need more salt, and it's dear. | Three meals a day for forty mouths.
+b : Stew it longer. | Everything's dear. | No rest for you.
+a : All day. | Everything. | None.
+
+scene wk2_woodcutter_wolves
+when topic=work a.job=woodcutter
+a : Something big has been through the woods. Left tracks. | Cut forty logs today. | Old trees are the hardest.
+b[old] : Bears. There were always bears.
+b : Big? How big? | Busy day. | And the best wood.
+a : Big. | Very. | True.
+
+scene wk2_official_tax
+when topic=work a.job=official
+a : Taxes are due by the week's end. | Your licence has lapsed. | The council wants a count of every hearth.
+b[merchant] : I paid! I have the mark!
+b : Already? | Has it? Since when? | Every hearth? Why?
+a : Already. | Since last month. | For taxes.
+
+scene wk2_crafter_buyer
+when topic=work b.job=crafter
+a : Can you make me a chest by spring? | How long for a new table? | Your work is the best in town.
+b : Spring, if you pay half now. | A month. Good wood takes time. | Flattery won't lower the price.
+a : Half now. | A month it is. | Worth a try.
+
+scene wk2_innkeeper_guest
+when topic=work b.job=innkeeper
+a : Have you a room for the night? | Any news from the road? | What's in the pot tonight?
+b : One left. Small, and over the kitchen. | Plenty. Buy a drink and I'll tell you. | Mutton, and plenty of it.
+a : I'll take it. | Go on. | Good.
+
+scene wk2_baker_child
+when topic=work b.job=baker a.stage=young
+a : Can I have the broken ones? | Please can I have a bun? | What are you baking?
+b : Here, quick, before anyone sees. | One penny. | Bread. What else?
+a : Thank you! | I don't have a penny. | Can I watch?
+
+scene wk2_smith_child
+when topic=work b.job=smith a.stage=young|adolescent
+a : Can I work the bellows? | Will you teach me to make a sword? | Is it hot in there?
+b : Careful. Steady. Good. | When you're bigger. | Hot as the sun's kitchen.
+a : Look at the sparks! | I'm big now! | Cool!
+
+scene wk2_soldier_boredom
+when topic=work a.job=soldier
+a : Another day of nothing on the walls. | Polished my spear three times. | Commander says an inspection's coming.
+b : Nothing's good. | Polish it again. | Hide the dice.
+a : Nothing's boring. | Ha. | Already did.
+
+scene wk2_beggar_kindness
+when topic=work b.job=beggar
+a : Here. Buy something hot. | I've no coin, but take this bread. | Are you warm enough at night?
+b : Bless you. | Thank you. Truly. | Never.
+a : Go on. | It's nothing. | Come to the chapel; they'll help.
+
+scene wk2_carter_horse
+when topic=work a.job=carter
+a : Mule's gone lame. | My cart threw a wheel at the ford. | Six days on the road, two in the rain.
+b[smith] : Bring it round. I'll look.
+b : Rest it. | Again? | Sleep, then.
+a : Can't afford to. | Again. | Gladly.

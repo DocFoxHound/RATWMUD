@@ -1,0 +1,286 @@
+# More small talk: seasons, hours, ages and the little things of a day.
+
+scene st2_spring_air
+when topic=smalltalk season=spring
+a : Smell that? Green, everywhere. | First flowers by the well this morning. | Birds woke me at the fourth hour.
+b[old] : Another spring. I'll take it.
+b[child] : I found a bird's nest! Three eggs!
+b[farmer] : Planting time. No rest till midsummer.
+b : Lovely, isn't it. | Already? | Me too. Noisy things.
+a : It is. | Already. | Very noisy.
+
+scene st2_summer_long_days
+when topic=smalltalk season=summer
+a : Light till late, these days. | Too hot to sleep. | Days go on forever in summer.
+b[child] : I can play till dark and dark is late!
+b[old] : Too long. My day's done before the sun is.
+b : Good for working. | Leave the shutters open. | They do.
+a : Or for sitting. | Then the flies come in. | Mm.
+
+scene st2_autumn_leaves
+when topic=smalltalk season=autumn
+a : Leaves everywhere. | Nights are getting cold. | Have you put up stores for winter?
+b[farmer] : Harvest's in. Mostly.
+b[old] : Every autumn I count my friends. Fewer every year.
+b : Pretty, though. | Get the blankets out. | Some. Not enough.
+a : Pretty and slippery. | Already did. | Never enough.
+
+scene st2_winter_long_nights
+when topic=smalltalk season=winter
+a : Dark by the middle of the afternoon. | My water bowl froze inside the house. | Long nights.
+b[old] : Winter nights are for stories.
+b[child] : Is it really going to be dark this long forever?
+b : Keep the fire going. | Inside? Brr. | Long and cold.
+a : I'm trying. | Inside. | Too long.
+
+scene st2_midday_heat
+when topic=smalltalk time=day
+weight 0.8
+a : Midday already. | Half the day gone and nothing done. | Shall we eat?
+b[merchant] : Midday's when buyers come. Not now, though.
+b : Already? | Same here. | Yes. Starving.
+a : Already. | Typical. | Come on.
+
+scene st2_late_night
+when topic=smalltalk time=night
+a : What are you doing up? | Can't sleep either? | It's quiet. I like it quiet.
+b[guard] : My work. What's yours?
+b[innkeeper] : Last ones out. Then bed.
+b[old] : The old don't sleep. We watch.
+b : Couldn't sleep. | Not a wink. | Me too.
+a : Me neither. | Walk with me, then. | Mm.
+
+scene st2_female_talk
+when topic=smalltalk a.sex=female b.sex=female
+weight 0.7
+a : Your ruff looks lovely today. | Did you hear what Mother said to me? | I need a new collar. Help me choose?
+b[old] : At my age nobody looks at my ruff.
+b : Thank you! I brushed it for an hour. | Tell me. | Of course.
+a : It shows. | Later. Not here. | Tomorrow?
+
+scene st2_male_talk
+when topic=smalltalk a.sex=male b.sex=male
+weight 0.7
+a : Arm-wrestle you for a drink. | Heard you lost to your sister at dice. | You've put on weight, friend.
+b[old] : I used to win every arm-wrestle in town.
+b : You'll lose. | She cheats! | It's my winter coat.
+a : We'll see. | They all say that. | Sure it is.
+
+scene st2_mixed_flirt
+when topic=smalltalk band=acquaintances|friends a.stage=adult b.stage=adult
+weight 0.5
+a : Save me a dance at the next feast? | Walk me home? It's dark. | You've a kind laugh, did you know?
+b : Maybe. | If you insist. | Have I?
+a : I'll hold you to it. | I insist. | You have.
+
+scene st2_pup_question
+when topic=smalltalk a.stage=young
+a : Why is the sky up? | Where do the stars go in the day? | Why do old wolves have grey fur?
+b[old] : Because we've seen everything, and it's turned us grey.
+b[priest] : The stars sleep, like you should.
+b[child] : I don't know! Let's ask somebody!
+b : Because it is. | They hide. | Ask your mother.
+a : That's not an answer. | Where? | She said ask you.
+
+scene st2_pup_scolded
+when topic=smalltalk b.stage=young
+a : Don't run in the street! | Where are your manners? | Get away from the cart!
+b : Sorry! | I forgot them. | I was only looking!
+a : Sorry won't mend a broken leg. | Find them, then. | Look from over here.
+
+scene st2_adolescent_work
+when topic=smalltalk a.stage=adolescent b.stage=adult
+a : Will you teach me your trade? | I want to earn my own coin. | Is it hard, what you do?
+b[smith] : It's hot and it hurts. If you still want it after that, come back.
+b[merchant] : Learn to count first. Then come back.
+b : Ask me again in a year. | Good. Work hard. | Harder than it looks.
+a : I will! | I will. | I'm not afraid.
+
+scene st2_old_friends
+when topic=smalltalk a.stage=old b.stage=old
+a : We're the last two of our year, you know. | Remember the winter we got lost on the ridge? | My hearing's going. What did you say?
+b : Don't remind me. | I still have the scars. | I said nothing.
+a : Somebody has to remember. | Good times. | What?
+
+scene st2_lost_way
+when topic=smalltalk band=strangers
+a : Excuse me, which way to the market? | Is this the way to the gate? | I think I'm lost.
+b[guard] : Straight on, left at the well. Don't loiter.
+b[child] : I know! Follow me!
+b : That way, past the well. | Other way, I'm afraid. | Where are you going?
+a : Thank you. | Of course it is. | Nowhere, apparently.
+
+scene st2_rain_shelter
+when topic=smalltalk weather=rain|storm place=street|market|gate
+a : Mind if I shelter here? | This doorway's big enough for two. | Soaked through to the skin.
+b : Come in under. | Plenty of room. | Me too.
+a : Thank you. | Kind of you. | Miserable.
+
+scene st2_fog_meeting
+when topic=smalltalk weather=fog
+a : I nearly walked into you! | Is that you, {b}? I can't see a thing. | Fog like milk.
+b : Watch where you're going! | It's me. | Like soup.
+a : Couldn't see you. | Thought so. | Pea soup.
+
+scene st2_snow_play
+when topic=smalltalk weather=snow a.stage=young|adolescent
+a : Snowball fight! | Make a snow wolf with me! | Catch!
+b : You're on! | A big one! | Hey!
+a : Ha! Got you! | Bigger! | Ha ha!
+
+scene st2_debt_reminder
+when topic=smalltalk band=acquaintances|friends
+weight 0.6
+a : You still owe me for those meals. | When will I see my coin, {b}? | Don't think I've forgotten that debt.
+b : Next week. Truly. | Soon. | I haven't forgotten either.
+a : You said that last week. | Soon. Hm. | Good.
+
+scene st2_birthday
+when topic=smalltalk band=friends|family
+weight 0.5
+a : It's my naming day tomorrow. | Another year older today. | Don't tell anyone, but it's my birthday.
+b[old] : Wait till you're my age; you'll stop counting.
+b : Happy naming day! | Many more! | Your secret's safe.
+a : Thank you. | Thank you. | Ha.
+
+scene st2_new_baby
+when topic=smalltalk band=friends|family|acquaintances
+weight 0.4
+a : My sister had her litter. Four pups! | There's a new pup on our lane. | The baker's mate is expecting.
+b[old] : Pups are luck. Always were.
+b : Four! Wonderful. | A new voice to wake us. | Good for them.
+a : Four, and all loud. | Already does. | It is.
+
+scene st2_gift
+when topic=smalltalk band=friends|family|spouses
+weight 0.5
+a : I brought you something. | Here, this is for you. | Saw this and thought of you.
+b : For me? | You shouldn't have. | It's lovely.
+a : Of course. | I wanted to. | I hoped you'd like it.
+
+scene st2_apology
+when topic=smalltalk band=friends|family|acquaintances
+weight 0.4
+a : I'm sorry about what I said. | I was wrong, before. | Can we forget last week?
+b : It's forgotten. | I was too. | Already have.
+a : Thank you. | Friends? | Good.
+
+scene st2_help_carry
+when topic=smalltalk
+weight 0.6
+a : Could you help me with this? | Lend a paw here? | This is heavier than it looks.
+b[child] : I'm strong! Let me!
+b[old] : My back says no. Sorry.
+b : Of course. | Here. | Let me take one end.
+a : Thank you. | You're kind. | There.
+
+scene st2_complain_noise
+when topic=smalltalk place=street|market
+weight 0.6
+a : So much noise today. | Can't hear myself think. | Who's hammering at this hour?
+b[smith] : That'd be me. Sorry. Orders.
+b : Always noisy here. | Nor can I. | Somebody busy.
+a : Ha. | Mm. | Too busy.
+
+scene st2_thanks
+when topic=smalltalk band=acquaintances|friends
+weight 0.5
+a : Thank you for yesterday. | I never thanked you properly. | That was kind, what you did.
+b : It was nothing. | No need. | Anyone would have.
+a : It wasn't nothing. | There is. | Not anyone.
+
+scene st2_window_watch
+when topic=smalltalk a.stage=old place=home|street
+a : I watch the street from my window all day. | Saw three carts and a lost goat this morning. | Nothing gets past my window.
+b : What else did you see? | A goat? | I believe it.
+a : Everything. | Brown one. Very lost. | Nothing.
+
+scene st2_music
+when topic=smalltalk place=tavern|street|market
+weight 0.6
+a : Who's playing that pipe? | Lovely tune. | Somebody should pay that fiddler to stop.
+b[child] : Can I learn the pipe?
+b : No idea. Nice, though. | It is. | I'll pay him to go on.
+a : Very nice. | Very. | Ha.
+
+scene st2_news_traveller
+when topic=smalltalk band=acquaintances|friends
+a : A traveller told me there's war in the far east. | They say the roads are bad all the way to the coast. | Heard any news from outside?
+b[carter] : I go further than most. It's all quiet. Mostly.
+b[old] : There's always war somewhere.
+b : Far away, at least. | Roads are always bad. | Not a word.
+a : Let's hope it stays far. | True. | Me neither.
+
+scene st2_cat_dog
+when topic=smalltalk
+weight 0.4
+a : Have you seen my rat-catcher? Ginger cat, one ear. | That cat's been in my fish again. | Somebody's goat ate my washing.
+b[child] : I saw it! It went that way!
+b : Not today. | Shoo it off. | A goat?
+a : Thank you. | I tried. | A goat.
+
+scene st2_wedding_plans
+when topic=smalltalk band=friends|family
+weight 0.4
+a : We're thinking of marrying in spring. | Would you stand with me at my wedding? | Mother's already planning the feast.
+b : Wonderful! | I'd be honoured. | Of course she is.
+a : Don't tell anyone yet. | Thank you. | Of course.
+
+scene st2_too_cold
+when topic=smalltalk season=winter
+a : Cold enough to freeze the ears off you. | I can't feel my paws. | Light the fire, please.
+b[old] : Wear more. In my day we wore three coats.
+b : Get inside. | Stamp them. | Already lit.
+a : I'm going. | Doesn't help. | Bless you.
+
+scene st2_too_hot
+when topic=smalltalk season=summer
+a : I'm melting. | Water. I need water. | Too hot to move.
+b[child] : Let's go to the water! Let's swim!
+b : Find some shade. | Here, have mine. | Don't, then.
+a : Good idea. | Thank you. | I won't.
+
+scene st2_holiday_wish
+when topic=smalltalk
+weight 0.4
+a : If I had a free week, I'd sleep the whole of it. | One day I'll see the sea. | I'd like to go somewhere nobody knows me.
+b : Sleep is underrated. | It's big and wet. | That sounds lonely.
+a : Very. | So I hear. | Or peaceful.
+
+scene st2_who_that
+when topic=smalltalk band=acquaintances|friends
+a : Who's that talking to the guard? | Do you know that one by the well? | Never seen that cart before.
+b : No idea. | Lives on the next lane, I think. | Somebody new.
+a : Hm. | Ah. | Hm.
+
+scene st2_time_flies
+when topic=smalltalk a.stage=adult|old
+a : Where does the year go? | Seems like only yesterday you were a pup. | Time runs faster every year.
+b[child] : I'm not a pup! I'm big!
+b : Nobody knows. | You're making me feel old. | It does.
+a : Away, that's where. | You are old. | Like the river.
+
+scene st2_superstition
+when topic=smalltalk
+weight 0.5
+a : Never cut your claws after dark. Bad luck. | Knock twice on a door before you enter, always. | Whistle indoors and you call the wind.
+b[old] : My mother said that too. Every word.
+b[priest] : Superstition. The Saint has no time for it.
+b : Is that so? | I've never heard that. | Nonsense.
+a : That's so. | Now you have. | Is it?
+
+scene st2_compliment_food
+when topic=smalltalk place=tavern|home
+a : This is the best stew I've had all year. | Who made this bread? It's wonderful. | Is there more?
+b[cook] : Secret's in the bones. Simmer all day.
+b[innkeeper] : Glad you like it. That'll be another penny.
+b : I'll tell the cook. | I did. | Always more.
+a : Do. | You've a gift. | Good.
+
+scene st2_end_of_day
+when topic=smalltalk time=dusk
+a : Another day done. | Bed's calling me. | Long one, today.
+b[child] : I'm not tired!
+b[innkeeper] : Not done for me. Not till the last one leaves.
+b : Done and dusted. | Mine too. | Very.
+a : Sleep well. | Go on, then. | Rest well.
