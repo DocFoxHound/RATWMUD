@@ -80,7 +80,7 @@ Combat is turn-based, in the style of Final Fantasy Tactics. When a fight starts
 
 **What starts a fight.** A committed attack on an NPC, an NPC attacking (a guard arresting, bandits on the road), or a player-vs-player request that is accepted. There is no separate "enter combat" command.
 
-**Arena size.** Twice the default map view in width and in height, centred on the fighters, cut from the cell. A cell smaller than that, like the 32×24 tavern, is used whole. The arena never extends past the cell's edges.
+**Arena size.** Twice the default map view in width and in height, centred on the fighters, cut from the cell. A cell smaller than that, like the 32×24 tavern, is used whole. The arena never extends past the cell's edges. The arena also grows with battle size: each fighter who enters past the first two adds room (for example, about 1 tile of width and height per extra fighter), so a large battle always has open tiles for everyone to arrive on and move into. It stops growing at the cell's edges; past that, fighters arriving at a full edge are placed at the nearest open tile.
 
 **What is copied.** Terrain, elevation, fixtures, doors (open or closed), light level and weather, as they were at the start. The copy is frozen; a storm starting outside does not reach a fight already underway.
 
@@ -377,7 +377,7 @@ The biggest gap is that combat partly exists already: `World::assault` in `Core/
 | Question | Recommended default |
 | --- | --- |
 | How many tiles is "twice the screen"? | Measure the default map view and fix the arena size in tiles, so it doesn't change with window size or zoom |
-| Is there a fighter cap? | No. Battles can be any size, so very large ones need decisions: the arena grows past twice the screen as needed (up to the whole cell), and long rounds may need a shorter turn timer or NPC turns resolved together |
+| Is there a fighter cap? | No. Battles can be any size, so very large ones need decisions: the arena grows with the number of fighters (see Arena size), up to the whole cell, and long rounds may need a shorter turn timer or NPC turns resolved together |
 | Can a party member opt out of auto-join? | Yes, the 5 s Stay out button, plus a per-character setting to never auto-join |
 | How is a truce offered? | A Truce action proposes it; it passes only if every remaining fighter accepts on their next turn |
 | Can someone deliberately kill a Downed wolf? | Not in v1. Death comes only from the timer, so it is never one player's click |
