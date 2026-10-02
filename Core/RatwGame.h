@@ -117,6 +117,9 @@ class Game
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
     // checks and the review page (tools/ai_review.py) as much as for play.
     std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
+    // What an NPC Mind is told for a reply to what a player said (also for the review page).
+    mind::Context dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
+                                  bool identified);
     const std::map<std::string, Entity>& characters() const { return characters_; }
     std::size_t clients() const { return clients_.size(); }
     std::uint64_t revision() const { return revision_; }

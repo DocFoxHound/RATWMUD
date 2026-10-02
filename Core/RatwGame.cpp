@@ -1841,7 +1841,50 @@ void Game::talk(const std::string& npcId, const std::string& playerId, const std
         return;
     const bool identified = sense.identifiable;
     const std::string subjectId = identified ? playerId : "unidentified-voice-" + std::to_string(sequence_);
+    auto context = dialogueContext(npcId, playerId, heardText, identified);
+    memories_.record(npcId, subjectId, {sequence_++, now(), context.playerName, heardText});
+    // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.
+    logEvent("conversation", identified ? playerId : std::string(), npcId);
+    pendingNpc_.insert(npcId);
+    saveSoon();
+    std::weak_ptr<bool> alive = alive_;
+    // What the game can answer itself (a greeting, a price, the hours, a way: doc 28) it does, without a model.
+    if (const auto answer = gameAnswer(npcId, playerId, heardText, identified); !answer.empty())
+    {
+        if (!mind_.live() || polishOffUntil_ > world_.time())
+        {
+            speakReply(npcId, subjectId, identified, {answer}, "game");
+            return;
+        }
+        // Optionally put in the NPC's voice by the small model, every number and name kept; else as written.
+        mind_.polish(context.name, context.personality, context.mood, answer,
+                     [this, alive, npcId, subjectId, identified, answer](int status, const std::string& polished) {
+                         if (alive.expired())
+                             return;
+                         if (status == 503 && polished.empty())
+                             polishOffUntil_ = world_.time() + 600;   // Off, or unwell: ask again in ten minutes.
+                         speakReply(npcId, subjectId, identified, {polished.empty() ? answer : polished},
+                                    polished.empty() ? "game" : "game+polish");
+                     });
+        return;
+    }
+    mind_.converse(context, [this, alive, npcId, subjectId, identified](const mind::Reply& reply) {
+        if (alive.expired())
+            return;
+        speakReply(npcId, subjectId, identified, reply, reply.generated ? "model" : "written");
+    });
+}
+
+mind::Context Game::dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
+                                    bool identified)
+{
+    // Everything an NPC Mind is told for one reply: who the NPC is and is doing, what was heard, what they remember
+    // of the speaker and how they regard them, and the place and the day.
     mind::Context context;
+    auto* npc = world_.entity(npcId);
+    auto* player = world_.entity(playerId);
+    if (!npc || !player)
+        return context;
     context.npcId = npcId;
     context.name = npc->name;
     context.description = npc->description + " Current age: " + std::to_string(npc->age) + " years.";
@@ -1906,37 +1949,7 @@ void Game::talk(const std::string& npcId, const std::string& playerId, const std
             day += ", the day of rest";
         context.scene += " " + day + ".";
     }
-    memories_.record(npcId, subjectId, {sequence_++, now(), context.playerName, heardText});
-    // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.
-    logEvent("conversation", identified ? playerId : std::string(), npcId);
-    pendingNpc_.insert(npcId);
-    saveSoon();
-    std::weak_ptr<bool> alive = alive_;
-    // What the game can answer itself (a greeting, a price, the hours, a way: doc 28) it does, without a model.
-    if (const auto answer = gameAnswer(npcId, playerId, heardText, identified); !answer.empty())
-    {
-        if (!mind_.live() || polishOffUntil_ > world_.time())
-        {
-            speakReply(npcId, subjectId, identified, {answer}, "game");
-            return;
-        }
-        // Optionally put in the NPC's voice by the small model, every number and name kept; else as written.
-        mind_.polish(context.name, context.personality, context.mood, answer,
-                     [this, alive, npcId, subjectId, identified, answer](int status, const std::string& polished) {
-                         if (alive.expired())
-                             return;
-                         if (status == 503 && polished.empty())
-                             polishOffUntil_ = world_.time() + 600;   // Off, or unwell: ask again in ten minutes.
-                         speakReply(npcId, subjectId, identified, {polished.empty() ? answer : polished},
-                                    polished.empty() ? "game" : "game+polish");
-                     });
-        return;
-    }
-    mind_.converse(context, [this, alive, npcId, subjectId, identified](const mind::Reply& reply) {
-        if (alive.expired())
-            return;
-        speakReply(npcId, subjectId, identified, reply, reply.generated ? "model" : "written");
-    });
+    return context;
 }
 
 void Game::speakReply(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply,

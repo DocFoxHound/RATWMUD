@@ -35,10 +35,10 @@ def game_answers(samples: Path, check: Path) -> list[dict]:
 
 
 def model_reply(m: "mind.Mind", sample: dict) -> str:
-    context = {"npc": sample["name"], "player": "Reviewer", "heard": sample["say"],
-               "description": sample.get("description", ""), "activity": sample.get("activity", ""), "memory": "",
-               "scene": sample.get("scene", "")[:3000], "personality": sample.get("personality", ""),
-               "backstory": sample.get("backstory", "")[:4000], "subjectId": "player-reviewer"}
+    # The context the game itself would send (voice_check builds it as talk() does), trimmed as the game trims it.
+    context = {k: v for k, v in sample["context"].items() if isinstance(v, str)}
+    context["scene"] = context.get("scene", "")[:4000]
+    context["backstory"] = context.get("backstory", "")[:12000]
     try:
         return m.dialogue(context)["text"]
     except bridge.BridgeError as error:
@@ -107,8 +107,12 @@ def main() -> int:
         config = bridge.load_config(args.config)
         provider, voice, light = mind.OpenAIProvider(config), config.model, config.light
     quiet = lambda entry: None
-    big = mind.Mind(provider, audit=quiet, models={"voice": voice, "light": voice}, timeout=20)
-    small = mind.Mind(provider, audit=quiet, models={"voice": light, "light": light}, timeout=20)
+    # One reviewer asks everything in a row: no per-speaker limits here (play keeps them).
+    unlimited = lambda: mind.Budget(10_000, 10_000)
+    big = mind.Mind(provider, budget=unlimited(), audit=quiet, models={"voice": voice, "light": voice}, timeout=20)
+    small = mind.Mind(provider, budget=unlimited(), audit=quiet, models={"voice": light, "light": light}, timeout=20)
+    big.tiers = mind.Tiers("generous")
+    small.tiers = mind.Tiers("generous")
     samples = json.loads(args.samples.read_text())
     rows = []
     for s in game_answers(args.samples, args.check):

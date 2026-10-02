@@ -53,17 +53,16 @@ int main(int argc, char** argv)
         j.add("say", s.string("say"));
         j.add("route", answer.empty() ? "model" : "game");
         j.add("answer", answer);
-        // What a model would be told of them, roughly as the game tells it (for the review's model answers).
-        const auto* e = g.world().entity(npc);
-        j.add("description", e->description);
-        j.add("activity", e->activity);
-        if (const auto* spec = g.world().society().spec(npc))
-        {
-            j.add("personality", spec->personality);
-            j.add("backstory", spec->backstory);
-        }
-        if (const auto* c = g.world().cell(e->cellId))
-            j.add("scene", c->description);
+        // Exactly what an NPC Mind would be told for this reply, as the game builds it in play.
+        const auto c = g.dialogueContext(npc, "player-reviewer", s.string("say"), true);
+        auto context = json::Value::object();
+        for (const auto& [k, v] : std::initializer_list<std::pair<const char*, const std::string*>>{
+                 {"npc", &c.name}, {"player", &c.playerName}, {"description", &c.description}, {"activity", &c.activity},
+                 {"heard", &c.heardText}, {"memory", &c.memory}, {"scene", &c.scene}, {"personality", &c.personality},
+                 {"backstory", &c.backstory}, {"npcId", &c.npcId}, {"subjectId", &c.subjectId},
+                 {"relationship", &c.relationship}, {"mood", &c.mood}})
+            context.add(k, *v);
+        j.add("context", context);
         out.push(j);
     }
     std::cout << json::dump(out) << "\n";
