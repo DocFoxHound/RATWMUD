@@ -129,6 +129,7 @@ struct Link
     std::string in;
     sections::Cache cache;
     std::vector<json::Value> events, snapshots, motions;
+    std::vector<std::string> pongs;                    // The server's own answers to link::Ping (the 8 bytes back).
     bool open(int port, const std::string& origin = {})
     {
         fd = connectTo(port);
@@ -222,6 +223,11 @@ struct Link
                 expect(!payload.empty(), "every message has its kind");
                 kind = link::Kind(std::uint8_t(payload[0]));
                 payload.erase(0, 1);
+                if (kind == link::Pong)
+                {
+                    pongs.push_back(payload);
+                    continue;
+                }
                 expect(payload.size() >= 4, "every frame from the server has its raw length");
                 std::uint32_t raw = 0;
                 for (int i = 0; i < 4; ++i)
@@ -372,6 +378,12 @@ int main(int argc, char** argv)
             c.sendWeb(web::Ping, "hi");
             c.read(.2);
             expect(std::find(c.controls.begin(), c.controls.end(), web::Pong) != c.controls.end(), "a ping is answered");
+            c.send(link::Ping, "12345678", link::PingBytes);
+            c.read(.2);
+            expect(c.pongs.size() == 1 && c.pongs[0] == "12345678", "the game's ping comes straight back, uncompressed");
+            c.send(link::Ping, "1234", 4);
+            c.read(.2);
+            expect(c.pongs.size() == 1, "a ping of the wrong size is not answered");
             c.sendWeb(web::Text, "{}");
             c.read(.3);
             expect(std::find(c.controls.begin(), c.controls.end(), web::Close) != c.controls.end(), "text messages end the connection");

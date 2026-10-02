@@ -156,6 +156,13 @@ export class GameState {
     highlight = '';             // A wolf pointed at in the In Sight list: ringed on the map.
     hoveredEntity = '';         // The wolf under the pointer on the map: lit in the list.
     hoverTooltips = true;       // Labels beside the pointer (the line under the map always shows).
+    perfOverlay = false;        // The latency overlay (Settings, or ?perf): frames, ping, input to motion, traffic.
+    /** From a key that sets a standing wolf walking to the first motion frame that shows it moved (ms), the last 30. */
+    readonly inputToMotion: number[] = [];
+    private inputSentAt = 0;
+    private inputFrom: [number, number] | null = null;
+    private walking = false;
+    private selfPose: [number, number] | null = null;
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
     // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
     weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
@@ -374,6 +381,7 @@ export class GameState {
         this.motionVisible.clear();
         for (const pose of frame.entities) {
             this.motionVisible.add(pose.id);
+            if (pose.id === this.selfId) this.noteSelfPose(pose.x, pose.y);
             // Metadata is observer-filtered too; poses never invent actors.
             const view = this.entities.get(pose.id);
             if (view) {
@@ -383,6 +391,14 @@ export class GameState {
         }
         for (const id of [...this.entities.keys()]) if (!this.motionVisible.has(id)) this.entities.delete(id);
         this.movementPending = false;
+    }
+
+    private noteSelfPose(x: number, y: number) {
+        this.selfPose = [x, y];
+        if (!this.inputFrom || Math.hypot(x - this.inputFrom[0], y - this.inputFrom[1]) < 0.01) return;
+        this.inputToMotion.push(performance.now() - this.inputSentAt);
+        if (this.inputToMotion.length > 30) this.inputToMotion.shift();
+        this.inputFrom = null;
     }
 
     receiveEvent(e: Json) {
@@ -574,6 +590,12 @@ export class GameState {
         const travel = obj(this.snapshot, 'travel');
         // Reading, writing and focus changes release WASD, but do not reset an explicit overland route.
         if (x === 0 && y === 0 && (bool(travel, 'active') || bool(travel, 'paused'))) return;
+        const walking = !this.chat && (x !== 0 || y !== 0);
+        if (walking && !this.walking && this.selfPose) {
+            this.inputSentAt = performance.now();
+            this.inputFrom = this.selfPose;
+        }
+        this.walking = walking;
         if (!this.chat && (x !== 0 || y !== 0)) {
             this.movementPending = true;
             this.facingPreview = false;
@@ -927,6 +949,12 @@ export class GameState {
         else if (a === 'projection') this.flatWorld = !this.flatWorld;
         else if (a === 'glyphs') this.plainGlyphs = !this.plainGlyphs;
         else if (a === 'tooltips') this.hoverTooltips = !this.hoverTooltips;
+        else if (a === 'perf') {
+            this.perfOverlay = !this.perfOverlay;
+            try {
+                localStorage.setItem('ratw.perfOverlay', this.perfOverlay ? '1' : '');
+            } catch { /* No storage here: for this visit only. */ }
+        }
         else if (a === 'split') {
             const presets = StoryWidths, at = presets.indexOf(this.storyWidth);
             this.storyWidth = presets[(at + 1) % presets.length];

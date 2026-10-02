@@ -147,6 +147,7 @@ void PgClient::close()
 
 PgResult PgClient::exec(const std::string& sql, const std::vector<PgValue>& params)
 {
+    perf::Scope timed(meter, perf::Database);
     PgResult out;
     if (!conn_)
     {

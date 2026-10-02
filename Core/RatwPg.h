@@ -3,6 +3,8 @@
 // notifications). It loads the system libpq at run time rather than linking
 // it, so the engine's own toolchain never has to link against the system's C
 // library, and a server that does not use the database never needs it.
+#include "RatwPerf.h"
+
 #include <optional>
 #include <string>
 #include <utility>
@@ -40,6 +42,9 @@ class PgClient
     bool listen(const std::string& channel, std::string& error);
     // Notifications received since the last call: (channel, payload). Never blocks.
     std::vector<std::pair<std::string, std::string>> notifications();
+    // Where each statement's time is counted (as perf::Database); none by default. The game sets it on its own
+    // connection only: the save and prefetch workers' connections are on their own threads.
+    perf::Meter* meter = nullptr;
 
   private:
     void* conn_ = nullptr;

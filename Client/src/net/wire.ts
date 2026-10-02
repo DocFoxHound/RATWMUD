@@ -1,12 +1,13 @@
 // The game's wire over a WebSocket (Docs/Design/27-browser-client.md; the server's side is Core/RatwWeb.h and
 // RatwLink.h). Each message is a kind byte, then its payload:
 //
-//   to the server:   Command (a command's JSON), Ack (f64 revision, u8 missing: see sections.ts)
+//   to the server:   Command (a command's JSON), Ack (f64 revision, u8 missing: see sections.ts), Ping (8 bytes)
 //   from the server: Event, Snapshot (u32 raw length, then JSON, zlib-compressed), Motion (the same around a binary
-//                    frame: see motion.ts)
+//                    frame: see motion.ts), Pong (the Ping's 8 bytes back, not compressed: answered by the server
+//                    itself, for the latency overlay of Docs/Design/31-responsiveness.md)
 import {inflate} from './inflate.ts';
 
-export const Kind = {Command: 1, Ack: 2, Event: 10, Snapshot: 11, Motion: 12} as const;
+export const Kind = {Command: 1, Ack: 2, Ping: 3, Event: 10, Snapshot: 11, Motion: 12, Pong: 13} as const;
 export type ServerKind = typeof Kind.Event | typeof Kind.Snapshot | typeof Kind.Motion;
 export const MaxCommand = 65536;
 export const MaxRaw = 16 << 20;
@@ -29,6 +30,21 @@ export function ackMessage(revision: number, missing: boolean): Uint8Array {
     new DataView(out.buffer).setFloat64(1, revision, true);
     out[9] = missing ? 1 : 0;
     return out;
+}
+
+/** A ping carrying a time (ms, the page's clock); the server sends it straight back as a Pong. */
+export function pingMessage(at: number): Uint8Array {
+    const out = new Uint8Array(9);
+    out[0] = Kind.Ping;
+    new DataView(out.buffer).setFloat64(1, at, true);
+    return out;
+}
+
+/** The time a Pong carries back, or null if this message isn't one. */
+export function pongTime(data: ArrayBuffer | Uint8Array): number | null {
+    const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+    if (bytes.length !== 9 || bytes[0] !== Kind.Pong) return null;
+    return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getFloat64(1, true);
 }
 
 export interface Arrival {

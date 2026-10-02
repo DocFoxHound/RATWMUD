@@ -4,6 +4,8 @@
   python3 tools/world_build.py dev      build DEV's current world (for a local DEV server), unless the newest
                                         build was made from exactly what DEV is now (--force: build anyway)
   python3 tools/world_build.py latest   show the newest build in DEV and PROD
+  python3 tools/world_build.py export DIR
+                                        write DEV's newest build to DIR as files (world_check and game_load read it)
 
 PROD builds are made by Push to live (tools/publish.py), one per release.
 A build is what the game server loads, produced by the same exporter as
@@ -111,13 +113,34 @@ def latest(conn):
                                  'by': row[4], 'files': row[5]}
 
 
+def export(conn, build_id, directory: Path) -> int:
+    """A build written out as the files game_files() returns; the number written."""
+    files = game_files(conn, build_id)
+    for name, body in files.items():
+        path = directory / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body if isinstance(body, str) else json.dumps(body))
+    return len(files)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('command', choices=('dev', 'latest'))
+    parser.add_argument('command', choices=('dev', 'latest', 'export'))
+    parser.add_argument('directory', nargs='?', type=Path, help='export: where to write the build')
     parser.add_argument('--force', action='store_true', help='build DEV even if nothing has changed since the last build')
     args = parser.parse_args(argv)
     try:
-        if args.command == 'dev':
+        if args.command == 'export':
+            if not args.directory:
+                parser.error('export needs a directory')
+            with world_db.connect('dev', 'editor') as conn:
+                info = latest(conn)
+                if not info:
+                    print('DEV has no builds yet (python3 tools/world_build.py dev).', file=sys.stderr)
+                    return 1
+                count = export(conn, info['id'], args.directory)
+            print(f'DEV build {info["id"]}: {count} files written to {args.directory}.')
+        elif args.command == 'dev':
             with world_db.connect('dev', 'editor') as conn:
                 kept = None if args.force else current(conn)
                 if kept:

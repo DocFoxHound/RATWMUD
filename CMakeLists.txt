@@ -85,6 +85,9 @@ add_test(NAME stream_behaviors COMMAND stream_tests)
 # Not a test: loads a streamed world export the way the server does (see Tests/world_check.cpp).
 add_executable(world_check Tests/world_check.cpp)
 target_link_libraries(world_check PRIVATE ratw_core)
+# Not a test either: the whole game under load, the gate of Docs/Design/31-responsiveness.md (see Tests/game_load.cpp).
+add_executable(game_load Tests/game_load.cpp)
+target_link_libraries(game_load PRIVATE ratw_core)
 add_executable(aging_tests Tests/aging_tests.cpp)
 target_link_libraries(aging_tests PRIVATE ratw_core)
 add_test(NAME aging_behaviors COMMAND aging_tests)

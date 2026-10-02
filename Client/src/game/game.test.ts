@@ -820,6 +820,30 @@ test('motion frames: hidden wolves go at once and never come back from late meta
     assert.ok(close(s.motionClock - s.motionOffset, resumed, 1e-8), 'with headroom to interpolate again');
 });
 
+test('input to motion: timed from a key that starts a standing wolf walking to the frame that shows it moved', () => {
+    const {state: s} = testGame();
+    s.applySnapshot({cell: {id: 'room'}, self: {id: 'self', x: 5, y: 5}, entities: [], time: 0, cellGeneration: 1});
+    const frame = (time: number, x: number) => ({motionSession: '', observer: 'self', cellId: 'room', cellGeneration: 1,
+        revision: 0, time, entities: [{id: 'self', x, y: 5, facing: 0, moving: x !== 5}]});
+    s.applyMotion(frame(0.05, 5));
+    s.heldKeys.add('KeyD');
+    s.sendMove();
+    s.applyMotion(frame(0.1, 5));
+    assert.equal(s.inputToMotion.length, 0, 'not yet: the wolf has not moved');
+    s.applyMotion(frame(0.15, 5.2));
+    assert.equal(s.inputToMotion.length, 1, 'measured once it has');
+    assert.ok(s.inputToMotion[0] >= 0);
+    s.sendMove();
+    s.applyMotion(frame(0.2, 5.4));
+    assert.equal(s.inputToMotion.length, 1, 'still walking: nothing new to measure');
+    s.heldKeys.clear();
+    s.sendMove();
+    s.heldKeys.add('KeyA');
+    s.sendMove();
+    s.applyMotion(frame(0.25, 5.3));
+    assert.equal(s.inputToMotion.length, 2, 'stopping and setting off again is measured again');
+});
+
 test('the law label shows custody before a warrant, and nothing for the law-abiding', () => {
     assert.equal(lawLabel({}), '');
     assert.equal(lawLabel({wanted: {charges: 'theft', owed: 9.4}}), 'WANTED · theft · owes 9p');

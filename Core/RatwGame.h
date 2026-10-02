@@ -13,6 +13,7 @@
 #include "RatwVoice.h"
 #include "RatwScenes.h"
 #include "RatwArtwork.h"
+#include "RatwPerf.h"
 #include "RatwPg.h"
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
@@ -76,6 +77,9 @@ struct Options
     // A world from the database: "prod" or "dev", read with `conninfo` (a libpq connection string). Else a world
     // file (RATW_WORLD manifest, absolute path), else the built-in demo world.
     std::string database, conninfo, worldFile;
+    // A world build exported as files (world.ratw and the rest, cells/ID.cell, seams/ID: what tools/world_build.py
+    // export writes), played offline with its residents as built: the load test's world. In place of worldFile.
+    std::string worldExport;
     std::string savePath;                                     // For a world not from the database.
     std::vector<std::string> cellFiles;                       // For the demo world: authored cell files loaded over it.
     // Whether a save that can't be read (or saved to) stops the server. Always for a database world; a world from files
@@ -117,6 +121,12 @@ class Game
     void save();                                              // Stored before returning.
     // A status the host should exit with, once asked (75: a new release was published and nobody is playing).
     int exitRequested() const { return exit_; }
+    // Where the game thread's time is counted (Docs/Design/31-responsiveness.md, Phase 1); none by default.
+    void setMeter(perf::Meter* meter)
+    {
+        meter_ = meter;
+        worldDb_.meter = meter;
+    }
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
@@ -214,8 +224,10 @@ class Game
            releaseAccumulator_ = 0, dmAccumulator_ = 0, spawnAccumulator_ = 0, prefetchAccumulator_ = 0, streamLogAccumulator_ = 0;
     std::map<std::string, double> deadSince_, spawnBackoff_;
     PgClient worldDb_;
+    perf::Meter* meter_ = nullptr;
     std::int64_t loadedBuild_ = 0, pendingRelease_ = 0;
     std::map<std::string, std::string> worldFiles_, cellHeaders_;
+    std::map<std::string, std::pair<std::string, std::string>> exportCells_;   // A world export's cells: body, seams.
     std::string liveWorldId_;
     bool streamedBuild_ = false, releaseAnnounced_ = false, storageReady_ = false;
     int exit_ = -1;
@@ -229,6 +241,7 @@ class Game
 
     // Loading the world.
     bool loadFromDatabase(std::string& problem);
+    bool loadExport(std::string& problem);
     World::CellSource cellSource();
     bool loadWithLivePeople(World& into, std::string& problem);
     static std::string withoutPeople(const std::string& manifest);

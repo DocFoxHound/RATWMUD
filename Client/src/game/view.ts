@@ -11,6 +11,7 @@ import {Portraits} from '../ui/portrait.ts';
 import {Hud} from '../ui/hud/hud.ts';
 import type {Json} from './json.ts';
 import type {MotionFrame} from '../net/motion.ts';
+import type {NetSample} from '../net/connection.ts';
 
 const MovementKeys = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD']);
 
@@ -79,7 +80,8 @@ export class GameView {
     private wheelRest = 0;
     private cleanup: Array<() => void> = [];
     readonly frames = new FrameStats();
-    private showPerf = new URLSearchParams(location.search).has('perf');
+    /** The connection's numbers for the overlay (main.ts sets it). */
+    netSample: () => NetSample | null = () => null;
 
     constructor(parent: HTMLElement, send: (command: Json) => void) {
         this.root = document.createElement('div');
@@ -99,7 +101,9 @@ export class GameView {
         try {
             const width = Number(localStorage.getItem('ratw.storyWidth'));
             if (width >= 300 && width <= 1400) this.state.storyWidth = width;
+            this.state.perfOverlay = localStorage.getItem('ratw.perfOverlay') === '1';
         } catch { /* No storage here: the default width. */ }
+        if (new URLSearchParams(location.search).has('perf')) this.state.perfOverlay = true;
         this.hud = new Hud(this.root, this.state, portraits);
         this.canvas = this.hud.canvas;
         this.composer = composer = new TextareaComposer(this.hud.story.textarea, this.canvas);
@@ -216,17 +220,32 @@ export class GameView {
         this.canvas.style.height = `${h}px`;
     }
 
-    /** ?perf: frame times in the corner, for finding hitches by eye. */
+    /** The performance overlay (Settings, or ?perf): frames, the connection and input to motion, for finding lag by
+     *  eye (Docs/Design/31-responsiveness.md, Phase 1). */
     private drawPerf(c: CanvasRenderingContext2D, dpr: number) {
         const gaps = this.frames.summary('intervals'), work = this.frames.summary('work');
+        const net = this.netSample();
+        const input = [...this.state.inputToMotion].sort((a, b) => a - b);
+        const lines: Array<[string, boolean]> = [
+            [`frame p50 ${gaps.p50.toFixed(1)}  p99 ${gaps.p99.toFixed(1)}  worst ${gaps.worst.toFixed(1)} ms`, gaps.p99 > 20],
+            [`draw  p50 ${work.p50.toFixed(1)}  p99 ${work.p99.toFixed(1)}  ground redrawn ${this.painter.terrain.rebuilds}×`, work.p99 > 8],
+        ];
+        if (net)
+            lines.push([`ping  ${net.ping.toFixed(0)} ms (p50 ${net.pingP50.toFixed(0)})  in ${(net.bytesPerSecond / 1024).toFixed(1)} KB/s`,
+                net.pingP50 > 150]);
+        lines.push([input.length
+            ? `input→motion last ${this.state.inputToMotion[this.state.inputToMotion.length - 1].toFixed(0)}  p50 ${input[Math.floor(input.length / 2)].toFixed(0)} ms`
+            : 'input→motion  (walk from standing to measure)', input.length > 0 && input[Math.floor(input.length / 2)] > 150]);
         c.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const height = 8 + lines.length * 18;
         c.fillStyle = 'rgba(0,0,0,0.7)';
-        c.fillRect(8, this.size[1] - 52, 330, 44);
-        c.fillStyle = gaps.p99 > 20 ? '#e1aba2' : '#a8c2a6';
+        c.fillRect(8, this.size[1] - height - 8, 360, height);
         c.font = '12px monospace';
         c.textBaseline = 'top';
-        c.fillText(`frame p50 ${gaps.p50.toFixed(1)}  p99 ${gaps.p99.toFixed(1)}  worst ${gaps.worst.toFixed(1)} ms`, 14, this.size[1] - 46);
-        c.fillText(`draw  p50 ${work.p50.toFixed(1)}  p99 ${work.p99.toFixed(1)}  ground redrawn ${this.painter.terrain.rebuilds}×`, 14, this.size[1] - 28);
+        lines.forEach(([text, slow], i) => {
+            c.fillStyle = slow ? '#e1aba2' : '#a8c2a6';
+            c.fillText(text, 14, this.size[1] - height - 2 + i * 18);
+        });
     }
 
     private draw(time: number) {
@@ -243,7 +262,7 @@ export class GameView {
         this.hud.update();
         const work = performance.now() - started;
         if (interval > 0) this.frames.add(interval, work);
-        if (this.showPerf) this.drawPerf(c, dpr);
+        if (this.state.perfOverlay) this.drawPerf(c, dpr);
         this.frame = requestAnimationFrame(t => this.draw(t));
     }
 }

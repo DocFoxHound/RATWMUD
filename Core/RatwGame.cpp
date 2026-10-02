@@ -8,6 +8,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -238,7 +239,12 @@ bool Game::start(std::string& problem)
     }
     else
     {
-        if (!options_.worldFile.empty())
+        if (!options_.worldExport.empty())
+        {
+            if (!loadExport(problem))
+                return false;
+        }
+        else if (!options_.worldFile.empty())
         {
             const auto loaded = world_.loadWorldFile(options_.worldFile);
             if (!loaded.ok)
@@ -384,6 +390,56 @@ bool Game::loadFromDatabase(std::string& problem)
     return true;
 }
 
+bool Game::loadExport(std::string& problem)
+{
+    namespace fs = std::filesystem;
+    const fs::path root = options_.worldExport;
+    std::error_code error;
+    worldFiles_.clear();
+    cellHeaders_.clear();
+    exportCells_.clear();
+    std::map<std::string, std::string> seams;
+    for (fs::recursive_directory_iterator it(root, error), end; !error && it != end; it.increment(error))
+    {
+        if (!it->is_regular_file())
+            continue;
+        std::ifstream in(it->path(), std::ios::binary);
+        std::ostringstream text;
+        text << in.rdbuf();
+        const std::string path = fs::relative(it->path(), root).generic_string();
+        if (path.rfind("cells/", 0) == 0 && path.size() > 11 && path.compare(path.size() - 5, 5, ".cell") == 0)
+        {
+            const std::string id = path.substr(6, path.size() - 11), body = text.str();
+            const auto grid = body.find("grid:");
+            cellHeaders_[id] = grid == std::string::npos ? body : body.substr(0, grid + 5);
+            exportCells_[id].first = body;
+        }
+        else if (path.rfind("seams/", 0) == 0)
+            seams[path.substr(6)] = text.str();
+        else
+            worldFiles_[path] = text.str();
+    }
+    if (error || !worldFiles_.count("world.ratw"))
+    {
+        problem = "no world export at " + root.string() + (error ? ": " + error.message() : " (no world.ratw)");
+        return false;
+    }
+    for (auto& [id, cell] : exportCells_)
+        cell.second = seams[id];
+    streamedBuild_ = worldFiles_["world.ratw"].rfind("RATW_WORLD 3", 0) == 0;
+    if (streamedBuild_)
+        world_.setCellSource(cellSource());
+    const auto loaded = world_.loadWorldFiles(worldFiles_, root.string());
+    if (!loaded.ok)
+    {
+        problem = loaded.message;
+        return false;
+    }
+    note("info", "RATW_WORLD_EXPORT cells=" + std::to_string(world_.cells().size()) + " residents=" +
+                     std::to_string(world_.society().state().residents.size()));
+    return true;
+}
+
 std::string Game::withoutPeople(const std::string& manifest)
 {
     std::istringstream in(manifest);
@@ -428,6 +484,15 @@ World::CellSource Game::cellSource()
     };
     const auto build = std::to_string(loadedBuild_);
     source.load = [this, build](const std::string& id, std::string& body, std::string& seams) {
+        if (!exportCells_.empty())
+        {
+            const auto found = exportCells_.find(id);
+            if (found == exportCells_.end())
+                return "The export has no cell " + id + ".";
+            body = found->second.first;
+            seams = found->second.second;
+            return std::string();
+        }
         if (prefetching && prefetcher().Take(id, body, seams))
             return std::string();
         const auto cell = worldDb_.exec("SELECT body, seams FROM world.build_cells WHERE build_id = $1 AND cell_id = $2", {build, id});
@@ -1289,11 +1354,15 @@ void Game::login(Connection* c, const Value& j)
 
 void Game::tick(double dt)
 {
+    perf::Scope timed(meter_, perf::TickOther);
     std::map<std::string, std::string> beforeCells;
     for (auto* c : clients_)
         if (const auto* e = world_.entity(c->entityId))
             beforeCells[e->id] = e->cellId;
-    world_.tick(dt);
+    {
+        perf::Scope world(meter_, perf::World);
+        world_.tick(dt);
+    }
     ++revision_;
     mind_.poll();                                   // NPC Mind answers that have arrived.
     ambient(dt);
@@ -1328,15 +1397,21 @@ void Game::tick(double dt)
     snapshotAccumulator_ += dt;
     // Small observer-filtered poses at simulation cadence; full snapshots five times a second, and at once on a
     // change of cell.
-    for (auto* c : clients_)
-        if (const auto* e = world_.entity(c->entityId))
-        {
-            if (c->motionCell != e->cellId)
-                sendSnapshot(c);
-            auto frame = motion::frame(world_, e->id);
-            stampFrame(c, frame, e->cellId);
-            c->motion(frame);
-        }
+    {
+        perf::Scope motion(meter_, perf::Motion);
+        for (auto* c : clients_)
+            if (const auto* e = world_.entity(c->entityId))
+            {
+                if (c->motionCell != e->cellId)
+                {
+                    perf::Scope view(meter_, perf::Views);
+                    sendSnapshot(c);
+                }
+                auto frame = motion::frame(world_, e->id);
+                stampFrame(c, frame, e->cellId);
+                c->motion(frame);
+            }
+    }
     saveAccumulator_ += dt;
     ambientAccumulator_ += dt;
     if (snapshotAccumulator_ >= 0.2)
@@ -1347,27 +1422,28 @@ void Game::tick(double dt)
     // A quarter of the clients' snapshots in each tick (by a phase fixed per connection).
     snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
     {
+        perf::Scope views(meter_, perf::Views);
         std::vector<std::string> due;
         for (auto* c : clients_)
             if (!c->entityId.empty() && c->id % SnapshotPhases == snapshotPhase_)
                 due.push_back(c->entityId);
         world_.prepareViews(due);
-    }
-    for (auto* c : clients_)
-        if (!c->entityId.empty() && c->id % SnapshotPhases == snapshotPhase_)
-        {
-            auto* e = world_.entity(c->entityId);
-            if (e && e->ageNoticePending > 0)
+        for (auto* c : clients_)
+            if (!c->entityId.empty() && c->id % SnapshotPhases == snapshotPhase_)
             {
-                system(c, "A birthday has passed. You are now " + std::to_string(e->age) + " years old (" +
-                              std::to_string(e->ageNoticePending) + " year" + (e->ageNoticePending == 1 ? "" : "s") +
-                              " gained). Your character sheet reflects annual growth and age-related changes.");
-                e->ageNoticePending = 0;
+                auto* e = world_.entity(c->entityId);
+                if (e && e->ageNoticePending > 0)
+                {
+                    system(c, "A birthday has passed. You are now " + std::to_string(e->age) + " years old (" +
+                                  std::to_string(e->ageNoticePending) + " year" + (e->ageNoticePending == 1 ? "" : "s") +
+                                  " gained). Your character sheet reflects annual growth and age-related changes.");
+                    e->ageNoticePending = 0;
+                }
+                sendSnapshot(c);
+                if (e)
+                    e->transitioned = false;
             }
-            sendSnapshot(c);
-            if (e)
-                e->transitioned = false;
-        }
+    }
     watchReleases(dt);
     applyDmActions(dt);
     runSpawns(dt);
@@ -2741,6 +2817,7 @@ DbStore::Build Game::capture()
 
 void Game::autosave()
 {
+    perf::Scope timed(meter_, perf::Saves);
     saveSoonIn_ = -1;
     if (!store_)
         return;
@@ -2754,6 +2831,7 @@ void Game::autosave()
 
 void Game::save()
 {
+    perf::Scope timed(meter_, perf::Saves);
     saveSoonIn_ = -1;
     if (!store_)
         return;

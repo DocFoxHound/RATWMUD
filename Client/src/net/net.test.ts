@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand, MaxRaw} from './wire.ts';
+import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand, MaxRaw, pingMessage, pongTime} from './wire.ts';
 import {readFileSync} from 'node:fs';
 import {inflate} from './inflate.ts';
 import {deflateSync, constants} from 'node:zlib';
@@ -20,6 +20,18 @@ test('commands and acknowledgements are framed as the server reads them', () => 
     assert.equal(ack[0], Kind.Ack);
     assert.equal(new DataView(ack.buffer).getFloat64(1, true), 1234.5);
     assert.equal(ack[9], 1);
+});
+
+test('a ping carries a time, and the pong that answers it gives the time back (the latency overlay)', () => {
+    const ping = pingMessage(1234.25);
+    assert.equal(ping.length, 9);
+    assert.equal(ping[0], Kind.Ping);
+    const pong = ping.slice();
+    pong[0] = Kind.Pong;                     // What the server sends back: the same eight bytes.
+    assert.equal(pongTime(pong), 1234.25);
+    assert.equal(pongTime(ping), null, 'a ping is not a pong');
+    assert.equal(pongTime(pong.subarray(0, 8)), null, 'nor is a short message');
+    assert.equal(decodeMessage(pong), null, 'a pong is never decoded as a game message');
 });
 
 test('server messages inflate; malformed ones are ignored', async () => {

@@ -1,5 +1,5 @@
-// Loads a streamed world export (tools: map_editor.export_files(project, stream=True) written to a folder) the way
-// the game server does, then brings every cell into memory so the server's own checks run on all of it.
+// Loads a streamed world export (python3 tools/world_build.py export DIR writes DEV's newest build) the way the game
+// server does, then brings every cell into memory so the server's own checks run on all of it.
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE]]
 //

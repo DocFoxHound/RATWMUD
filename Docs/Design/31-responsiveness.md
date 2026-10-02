@@ -1,8 +1,8 @@
 # 31. Responsiveness and scale: one server, a thousand wolves
 
-Planned 2026-10-02. **Agreed; not started.**
+Planned 2026-10-02. **Agreed. Phase 1 built 2026-10-02; Phases 2–6 not started.**
 
-The plan is agreed (see "The decisions"); work has not started. The target is **1,000 players on one server**, with
+The plan is agreed (see "The decisions"). Phase 1 (measuring) is built; the rest has not started. The target is **1,000 players on one server**, with
 the world's roughly 1,000 residents. Hosting is local development now, dedicated servers later. We fix lag rather than
 split the game into services by system. The Unreal cleanup waits until the character-creator work is done; it is
 listed at the end.
@@ -144,6 +144,64 @@ files too: the character creator and NPC conversations. Agree who owns which fil
 3. **A client overlay** (a settings toggle): ping, time from input to motion, frame time, and bytes per second.
 
 Gate: the baseline numbers recorded here, with the same machine and the same world build as the table above.
+
+**Built 2026-10-02.**
+
+- **`Tests/game_load.cpp`** (`build-core/game_load EXPORT_DIR --players N --layout cities|spread`).
+  - The whole `Game`, with fake players that enter, walk (a new direction every 2 s) and acknowledge every snapshot.
+  - Every message is compressed exactly as the server does it.
+  - It prints the server's own log lines for the window, the cost per player, and a full save.
+  - `cities` packs players beside residents in the three most peopled regions. Today those are Upper Accord,
+    Ser Ferro and Ridgemere.
+- **The world for it.** `python3 tools/world_build.py export DIR` writes DEV's newest build as files, for
+  `game_load` and `world_check`. `game::Options::worldExport` plays such a folder offline, with its residents as
+  built.
+- **`Core/RatwPerf.h`.** A meter on the game thread. Each part is timed exclusive of the parts inside it: compressing a
+  snapshot counts as compression, and a save made by a command counts as saves.
+  - The parts are commands, world, views, motion, the rest of the tick, saves, database statements (on the game's own
+    connection), compression and sockets.
+  - `ratw_server` logs it every minute (`--perf-log SECONDS`, 0 for never):
+    - `RATW_PERF`: busy time per tick, as mean, p99 and max, and each part's mean per tick, plus traffic.
+    - `RATW_PERF_BLOCKED`: for each part with a call of 5 ms or more, a histogram of those calls.
+    - `RATW_PERF_WORLD`: `World::TickProfile` and route searches.
+- **Ping.** `link::Ping` / `link::Pong` are answered by the server itself, uncompressed, outside the game's ordered
+  messages.
+- **The client's performance overlay** (Settings → Performance overlay, or `?perf`; remembered in the browser) shows:
+  - frame and draw times
+  - ping, latest and median
+  - received KB/s
+  - **input→motion**: from the key that sets a standing wolf walking to the first motion frame that shows it moved
+- **Tests:**
+  - client: the ping framing, and input-to-motion timing
+  - `server_smoke`: the game's ping answered, and a wrong-sized one not
+  - `tools/test_world_build.py`: the export
+  - the movement and network smokes
+
+**The baseline** (DEV build 13, this machine, `game_load`, 30 s measured after a warm-up, file-mode saves):
+
+| Players | Layout | Busy per tick: mean / p99 | Views | Motion | Rest of tick | Compression | World | Full save | Save size |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | cities | **23 / 52 ms** | 13.2 | 1.3 | 0.2 | 1.9 | 6.3 | 61–75 ms | 4.8 MB |
+| 100 | cities | 79 / 136 ms | 51 | 6.4 | 1.9 | 9.0 | 10.4 | 133–156 ms | 16 MB |
+| 250 | cities | 262 / 432 ms | 169 | 26 | 13.5 | 30 | 22 | 351–534 ms | 37 MB |
+| 500 | cities | 619 / 1,137 ms | 387 | 68 | 57 | 68 | 37 | 558–625 ms | 71 MB |
+| 1,000 | cities | **929 / 1,474 ms** | 536 | 129 | 128 | 89 | 43 | 814–896 ms | **140 MB** |
+| 100 | spread | 125 / 176 ms | 87 | 9.7 | 2.2 | 12 | 13.6 | 135–147 ms | 20 MB |
+
+The middle columns are ms per tick. Bandwidth was about 220–260 kbit/s per player, 152 Mbit/s at 1,000.
+
+**What the baseline adds to the picture:**
+
+- **Views are 55–60% of everything** at every size, so Phase 4.3–4.7 matters most. Players in the cities are
+  *cheaper* per player than spread ones (51 against 87 ms at 100), because their views share loaded places.
+  Crowding mostly costs motion and the rest of the tick.
+- **"Rest of the tick" grows with the square of the players**: 0.2 → 128 ms. It is most likely `movementSounds`
+  (every player against every entity, five times a second) and the other per-player loops in `Game::tick`. This is not
+  yet measured part by part. Phase 4.1 and
+  4.5 remove it.
+- **The save grows by about 140 KB per player**: 140 MB of JSON at 1,000. Even the 15 s autosave stopped the game for
+  77 ms with 20 players. Phase 2 must find what each player adds before choosing row layouts.
+- **The world itself is not the problem**: 43 ms at 1,000 players. Movement and separation are its growing parts.
 
 ### Phase 2. Saves that never stop the game
 

@@ -1,7 +1,7 @@
 // One WebSocket to the server, feeding a Session. In a browser, messages are inflated and parsed on a worker
 // (decodeWorker.ts) so a large snapshot never stalls a frame; they are handed on strictly in the order they arrived (a
 // snapshot never overtakes the event before it). Without workers (Node), the same decoding runs here, at once.
-import {ackMessage, commandMessage, Kind} from './wire.ts';
+import {ackMessage, commandMessage, Kind, pingMessage, pongTime} from './wire.ts';
 import {unpack} from './motion.ts';
 import {decode, type Decoded} from './decodeWorker.ts';
 import {Session, type Json, type SessionView} from './session.ts';
@@ -12,6 +12,15 @@ export interface ConnectionStats {
     messages: number;
     bytes: number;
 }
+
+/** What the latency overlay shows of the connection (Docs/Design/31-responsiveness.md, Phase 1). */
+export interface NetSample {
+    ping: number;           // The latest round trip (ms); 0 before the first.
+    pingP50: number;        // The median of the last 30.
+    bytesPerSecond: number; // Received, over the last few seconds.
+}
+
+const PingEvery = 2000;     // ms
 
 /** The game's address on the server this page came from (ws: or wss: to match the page). */
 export function gameUrl(location: {protocol: string; host: string}): string {
@@ -28,6 +37,9 @@ export class Connection {
     private handled = 0;
     private early = new Map<number, Decoded>();
     private idle: Array<() => void> = [];
+    private pings: number[] = [];
+    private pinger: ReturnType<typeof setInterval> | null = null;
+    private byteMarks: Array<[number, number]> = [];       // (time, bytes received by then), one a ping apart.
 
     private onState: (open: boolean) => void;
 
@@ -45,15 +57,26 @@ export class Connection {
             this.stats.opened = true;
             for (const m of this.waiting.splice(0)) this.socket.send(m as Uint8Array<ArrayBuffer>);
             this.onState(true);
+            this.ping();
+            this.pinger = setInterval(() => this.ping(), PingEvery);
+            (this.pinger as unknown as {unref?: () => void}).unref?.();      // Never what keeps Node running.
         });
         this.socket.addEventListener('message', message => {
             if (!(message.data instanceof ArrayBuffer)) return;
             const data = message.data;
-            ++this.stats.messages;
             this.stats.bytes += data.byteLength;
+            // A Pong is the server's own answer, timed at once: it never joins the game's ordered messages.
+            const pong = pongTime(data);
+            if (pong !== null) {
+                this.pings.push(performance.now() - pong);
+                if (this.pings.length > 30) this.pings.shift();
+                return;
+            }
+            ++this.stats.messages;
             this.arrive(data);
         });
         this.socket.addEventListener('close', () => {
+            this.stopPinging();
             if (this.stats.closed) return;
             this.stats.closed = true;
             this.session.connectionLost();
@@ -69,7 +92,20 @@ export class Connection {
         this.session.submit(command);
     }
 
+    /** The latency overlay's numbers. */
+    netSample(): NetSample {
+        const sorted = [...this.pings].sort((a, b) => a - b);
+        const first = this.byteMarks[0], now = performance.now();
+        const seconds = first ? (now - first[0]) / 1000 : 0;
+        return {
+            ping: this.pings.length ? this.pings[this.pings.length - 1] : 0,
+            pingP50: sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0,
+            bytesPerSecond: seconds > 0 ? (this.stats.bytes - first[1]) / seconds : 0,
+        };
+    }
+
     close() {
+        this.stopPinging();
         this.stats.closed = true;
         this.socket.close();
         this.worker?.terminate();
@@ -79,6 +115,17 @@ export class Connection {
     settled(): Promise<void> {
         if (this.handled === this.sent) return Promise.resolve();
         return new Promise(resolve => this.idle.push(resolve));
+    }
+
+    private ping() {
+        this.send(pingMessage(performance.now()));
+        this.byteMarks.push([performance.now(), this.stats.bytes]);
+        if (this.byteMarks.length > 3) this.byteMarks.shift();
+    }
+
+    private stopPinging() {
+        if (this.pinger !== null) clearInterval(this.pinger);
+        this.pinger = null;
     }
 
     private static startWorker(): Worker | null {

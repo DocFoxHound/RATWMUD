@@ -42,7 +42,7 @@ export class Dialogs {
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? self : '',
             m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
-            m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.storyWidth,
+            m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
                 bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips] : '']);
         if (key === this.key) return;
         this.key = key;
@@ -191,6 +191,7 @@ export class Dialogs {
         toggle(s.flatWorld ? 'World: Always flat' : 'World: Automatic', 'projection');
         toggle(s.plainGlyphs ? 'Map: Plain ASCII' : 'Map: Unicode', 'glyphs');
         toggle(s.hoverTooltips ? 'Pointer labels: On' : 'Pointer labels: Off', 'tooltips');
+        toggle(s.perfOverlay ? 'Performance overlay: On' : 'Performance overlay: Off', 'perf');
         const width = s.storyWidth <= 360 ? 'Compact' : s.storyWidth <= 460 ? 'Balanced' : s.storyWidth <= 600 ? 'Wide' : 'Text-first';
         toggle(`Story column: ${width} (or drag its edge)`, 'split');
         if (bool(s.snapshot, 'devTools')) {

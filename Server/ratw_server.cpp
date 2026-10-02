@@ -6,13 +6,15 @@
 //   ratw_server [--world MANIFEST] --save F  a world from files (or the built-in demo), saved to a private file
 //   options: --port 7788, --bind 127.0.0.1, --web DIR (the built browser client), --dialogue URL (the NPC Mind),
 //            --dm-directory DIR (the operator bridge), --dev-tools, --dev-identity,
-//            --full-snapshots, --for SECONDS (stop after, saving: for tests)
+//            --full-snapshots, --for SECONDS (stop after, saving: for tests),
+//            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never)
 //
 // Exits 75 when a new release has been published and nobody is playing (tools/live.sh restarts it on the new build).
 #include "RatwAccountsCore.h"
 #include "RatwGame.h"
 #include "RatwLink.h"
 #include "RatwMotionCore.h"
+#include "RatwPerf.h"
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
 
@@ -41,6 +43,7 @@ using namespace ratw;
 namespace
 {
 volatile std::sig_atomic_t stopping = 0;
+perf::Meter meter;                                  // The game thread's time (Docs/Design/31-responsiveness.md).
 void stop(int) { stopping = 1; }
 
 // Replaceable frames (snapshots, motion) are dropped for a client this far behind; past the second, it is let go.
@@ -83,8 +86,12 @@ class Client final : public game::Connection
             return;
         }
         std::vector<std::uint8_t> packed;
-        if (!sys::compress(reinterpret_cast<const std::uint8_t*>(raw.data()), raw.size(), packed))
-            return;
+        {
+            perf::Scope timed(&meter, perf::Compression);
+            if (!sys::compress(reinterpret_cast<const std::uint8_t*>(raw.data()), raw.size(), packed))
+                return;
+        }
+        meter.sent(packed.size() + 5);
         std::string payload(4 + packed.size(), '\0');
         const auto rawLength = std::uint32_t(raw.size());
         for (int i = 0; i < 4; ++i)
@@ -114,7 +121,7 @@ void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
-                 "                   [--for SECONDS]\n";
+                 "                   [--for SECONDS] [--perf-log SECONDS]\n";
 }
 
 void blocking(int fd, bool on)
@@ -129,7 +136,7 @@ int main(int argc, char** argv)
     game::Options options;
     int port = 7788;
     std::string bind = "127.0.0.1", webRoot;
-    double runFor = -1;
+    double runFor = -1, perfLog = 60;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -156,6 +163,7 @@ int main(int argc, char** argv)
         else if (a == "--dev-identity") options.devIdentity = true;
         else if (a == "--full-snapshots") options.fullSnapshots = true;
         else if (a == "--for") runFor = std::atof(next().c_str());
+        else if (a == "--perf-log") perfLog = std::atof(next().c_str());
         else
         {
             usage();
@@ -179,6 +187,7 @@ int main(int argc, char** argv)
     }
     const auto started = std::chrono::steady_clock::now();
     game::Game g(options);
+    g.setMeter(&meter);
     g.log = [](const char* level, const std::string& text) { std::cout << (std::string(level) == "info" ? "" : std::string(level) + ": ") << text << std::endl; };
     if (!g.start(problem))
     {
@@ -213,6 +222,10 @@ int main(int argc, char** argv)
                                   : Clock::time_point::max();
     double slowest = 0, total = 0;
     std::size_t ticks = 0;
+    // The game thread's time: what it did between ticks (summed over the loop's passes), reported every perfLog seconds.
+    double busy = 0;
+    auto nextReport = perfLog > 0 ? Clock::now() + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(perfLog))
+                                  : Clock::time_point::max();
     const auto drop = [&](int fd) {
         auto found = clients.find(fd);
         if (found == clients.end())
@@ -233,8 +246,14 @@ int main(int argc, char** argv)
     };
     // One message of the game from a client: a command or a snapshot acknowledgement. False for anything else.
     const auto receive = [&](Client& c, link::Kind kind, const std::string& payload) {
+        perf::Scope timed(&meter, perf::Commands);
         if (kind == link::Command && payload.size() <= link::MaxCommand)
             g.command(&c, payload);
+        else if (kind == link::Ping && payload.size() == link::PingBytes)
+        {
+            const std::string pong = char(link::Pong) + payload;
+            web::appendFrame(c.out, web::Binary, pong.data(), pong.size());
+        }
         else if (kind == link::Ack && payload.size() == 9)
         {
             double revision;
@@ -335,6 +354,10 @@ int main(int argc, char** argv)
             fds.push_back({fd, short(POLLIN | (c->out.empty() ? 0 : POLLOUT)), 0});
         const int wait = std::max(0, int(std::chrono::duration_cast<std::chrono::milliseconds>(nextTick - Clock::now()).count()));
         ::poll(fds.data(), fds.size(), wait);
+        const auto woke = Clock::now();
+        bool ticked = false;
+        {
+        perf::Scope sockets(&meter, perf::Sockets);
         if (fds[0].revents & POLLIN)
             for (;;)
             {
@@ -367,7 +390,10 @@ int main(int argc, char** argv)
                 {
                     const auto n = ::recv(c.fd, buffer, sizeof buffer, 0);
                     if (n > 0)
+                    {
                         c.in.append(buffer, std::size_t(n));
+                        meter.received(std::size_t(n));
+                    }
                     else
                     {
                         if (n == 0 || (errno != EAGAIN && errno != EWOULDBLOCK))
@@ -393,8 +419,10 @@ int main(int argc, char** argv)
         }
         for (int fd : gone)
             drop(fd);
+        }
         if (Clock::now() >= nextTick)
         {
+            ticked = true;
             const auto begin = Clock::now();
             g.tick(0.05);
             const double took = std::chrono::duration<double, std::milli>(Clock::now() - begin).count();
@@ -405,6 +433,7 @@ int main(int argc, char** argv)
             if (Clock::now() - nextTick > std::chrono::seconds(1))
                 nextTick = Clock::now();            // Fell far behind (a stall): carry on from now, not in a rush.
             // Try to send what the tick produced now, rather than on the next wake.
+            perf::Scope sockets(&meter, perf::Sockets);
             for (auto& [fd, c] : clients)
                 if (!c->out.empty())
                 {
@@ -412,6 +441,23 @@ int main(int argc, char** argv)
                     if (n > 0)
                         c->out.erase(0, std::size_t(n));
                 }
+        }
+        busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
+        if (ticked)
+        {
+            meter.pass(busy, true);
+            busy = 0;
+        }
+        if (Clock::now() >= nextReport)
+        {
+            nextReport = Clock::now() + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(perfLog));
+            std::size_t playing = 0;
+            for (const auto& [fd, c] : clients)
+                playing += c->playing;
+            for (const auto& line : perf::report(meter.take(), playing))
+                std::cout << line << '\n';
+            std::cout << perf::worldLine(g.world().tickProfile()) << std::endl;
+            g.world().resetTickProfile();
         }
     }
     std::vector<int> all;

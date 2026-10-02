@@ -29,7 +29,10 @@ const connection = new Connection(url, {
     enter() {
         door?.destroy();
         door = null;
-        if (!game) game = new GameView(app, command => connection.submit(command));
+        if (!game) {
+            game = new GameView(app, command => connection.submit(command));
+            game.netSample = () => connection.netSample();
+        }
     },
     snapshot: snapshot => game?.applySnapshot(snapshot),
     motion: frame => game?.applyMotion(frame),
