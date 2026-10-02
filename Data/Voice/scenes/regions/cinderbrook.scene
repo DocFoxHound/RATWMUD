@@ -1,0 +1,221 @@
+# Cinderbrook: the forge-and-mine town in the hills above Ser Ferro, red with ore and smoke. The Hot Anvil, the Forge,
+# the Lamp and Wick, the Pithead Store, the Shrine of the Iron Saint and its nails, the Bonesetter's, the pits.
+
+scene rg_cb_nail_shrine
+when topic=lore region=cinderbrook
+a : Left a nail at the shrine this morning. Another safe week. | The shrine wall's more nail than plaster now. | My father's nails are in the shrine wall still. Hundreds of them.
+b[miner] : A nail for every return. Forget one and the Saint forgets you.
+b[priest] : The Iron Saint counts every nail. Every one.
+b : Long may it last. | Lot of safe returns. | Good wolf, your father.
+a : Long may it. | Lots, thank the Saint. | He was.
+
+scene rg_cb_pit_songs
+when topic=lore|smalltalk region=cinderbrook
+a : The old pit songs keep time with the picks. | Sang the lamp song all the way down this morning. | My grandmother taught me the shaft song. Nobody knows the last verse.
+b[miner] : Sing below, and you know the wolf beside you is still breathing.
+b[old] : The last verse is for the ones who didn't come up. You only sing it at the shrine.
+b : They do. | Good for luck. | Somebody must.
+a : Every stroke. | Always. | Somebody must.
+
+scene rg_cb_taste_ore
+when topic=work region=cinderbrook a.job=miner|smith|laborer
+a : Taste that. Good ore. You can tell by the bite. | This seam's gone sour. Tastes of copper. | The red vein's back, rich as blood.
+b[miner] : Old miners taste the rock. New ones lick their lamps.
+b[smith] : Good ore makes my anvil sing. Bring it.
+b : I'll take your word. | Bad luck. | Finally.
+a : Wise. | Very bad. | Finally.
+
+scene rg_cb_lamp_all_night
+when topic=smalltalk region=cinderbrook time=dusk|night
+a : I keep a lamp lit all night. Can't sleep in the dark any more. | Every window in the miners' row has a lamp in it. | Lamp oil's half my wages.
+b[miner] : After a day below, darkness feels like the shaft again.
+b[old] : The lamps used to be for the ones still down. Now it's just habit.
+b : I understand. | Pretty, from the hill. | Mine too.
+a : Thank you. | It is. | Everyone's.
+
+scene rg_cb_cough
+when topic=smalltalk region=cinderbrook
+a : Everybody coughs in Cinderbrook. Blame the weather. | My cough's worse in winter. | Even the children cough here.
+b[healer] : It's not the weather. It's the dust. Wear a cloth over your muzzle.
+b[old] : Coughed fifty years. Still here.
+b : The weather. Of course. | Everyone's is. | It's the smoke.
+a : Of course. | Everyone's. | The smoke.
+
+scene rg_cb_north_seam
+when topic=lore region=cinderbrook
+a : Nobody works the north seam since the lights. | They say the north seam groans at night. | Three wolves died in the north seam in my grandfather's day.
+b[miner] : The north seam is cursed. I won't go near it. Nobody should.
+b[priest] : There is no curse but carelessness. Pray, and prop your timbers.
+b : Wise of them. | Settling rock. | I'd heard two.
+a : Very wise. | Probably. | Three.
+
+scene rg_cb_trapped
+when topic=lore region=cinderbrook band=friends|family|acquaintances
+a : Old Ember was trapped two days below. Won't go down any more. | They dug the Flint brothers out after a day. One of them still won't talk. | Ever think about getting trapped?
+b[miner] : Every time I go down. Every single time.
+b[healer] : Two days below changes a wolf. Be gentle with them.
+b : Who'd blame him? | Poor soul. | I try not to.
+a : Nobody. | Poor soul. | Me neither.
+
+scene rg_cb_crown_price
+when topic=lore|smalltalk region=cinderbrook
+a : The Crown's ore price is theft. Plain theft. | The Royal Hand's agent was weighing carts again. | We dig, Ser Ferro gets rich. Same as always.
+b[miner] : Let the Crown come down a shaft and then name a price.
+b[official] : The Crown's price is fair for the times.
+b : It is. | Weighing them light, no doubt. | Same as always.
+a : Plain theft. | No doubt. | Always.
+
+scene rg_cb_sister_city
+when topic=smalltalk region=cinderbrook band=friends|family|spouses|acquaintances
+a : I send half my wage to my sister in Ser Ferro. | My cousin moved down to the city. Never writes. | Ser Ferro's only a day down the hill but it's another world.
+b[old] : The city eats the young ones. Always has.
+b : Good of you. | They never do. | It is.
+a : She's family. | Never. | Another world.
+
+scene rg_cb_hot_anvil
+when topic=smalltalk region=cinderbrook place=tavern
+a : Fight at the Hot Anvil last night over the shift roster. | Miners' boots lined up at the Anvil door like soldiers. | Ash in my ale again.
+b[innkeeper] : Loudest tavern in the Marches. I'm proud of it.
+b[miner] : The roster's a crime. Somebody had to say it.
+b : Again? | Every night. | Drink it anyway.
+a : Again. | Every night. | I did.
+
+scene rg_cb_charcoal
+when topic=work|lore region=cinderbrook
+a : The charcoal burners came in black as night. | Smoke from the clamps on the ridge. | The forges eat charcoal faster than the burners can make it.
+b[laborer] : Sat by a clamp for three nights. Can't smell anything now.
+b[smith] : No charcoal, no iron. Simple as that.
+b : Every time. | Thick today. | They always do.
+a : Every time. | Very thick. | Always.
+
+scene rg_cb_bonesetter
+when topic=lore|smalltalk region=cinderbrook
+a : The bonesetter set three legs this week. | The bench at the Bonesetter's is never empty. | Got my paw splinted after the rockfall. Still aches.
+b[healer] : Bones knit. Lungs don't. Wear your muzzle cloth.
+b : Bad week. | Never. | It will.
+a : Very bad. | Never. | For a while.
+
+scene rg_cb_red_dust
+when topic=smalltalk region=cinderbrook
+a : Everything's red here. My fur, my bread, my bed. | Washed my coat three times. Still red. | You can tell a Cinderbrook wolf in the city by the red on their paws.
+b[child] : I'm red all over! Look!
+b[old] : The red never comes out. You get used to it.
+b : That's the ore. | It never comes out. | Proud of it.
+a : The ore. | Never. | Very proud.
+
+scene rg_cb_forge_orders
+when topic=work region=cinderbrook a.job=smith|apprentice|laborer
+a : Picks and wedges, picks and wedges. Every day. | The city wants a cartload of bar iron by the feast. | Burned my paw on a pick head this morning.
+b[smith] : Iron doesn't care about your paws. Gloves, pup.
+b : Steady work. | They always do. | Ouch.
+a : Too steady. | Always. | Ouch indeed.
+
+scene rg_cb_lamp_wick
+when topic=work|smalltalk region=cinderbrook
+a : The Lamp and Wick mended my lamp for a penny. Good as new. | A miner's lamp is worth more than his boots. | The tinker sells brass things nobody needs.
+b[crafter] : A lamp that fails below is a grave. I mend them right.
+b[miner] : Without my lamp I'm blind and buried.
+b : Good deal. | True enough. | And people buy them.
+a : Very good. | True. | They do.
+
+scene rg_cb_shaft_collapse
+when topic=lore region=cinderbrook
+a : Another shaft fell in on the east hill. Nobody below, thank the Saint. | The old workings under the town are hollow, they say. | My floor cracked last night. Under the town's all tunnels.
+b[miner] : The hill's honeycomb. One day the whole town'll sink.
+b[old] : They mined under the market a hundred years ago. Nobody wrote it down.
+b : Thank the Saint. | Probably. | Mine too.
+a : Thank her. | Probably. | Everyone's.
+
+scene rg_cb_marches
+when topic=lore region=cinderbrook
+a : The Marches were all forest once, before the forges. | Ser Ferro's walls are built from our stone and nailed with our iron. | Without Cinderbrook iron, there'd be no Ser Ferro.
+b[old] : Forest to the river. My grandmother saw the last of it.
+b[noble] : Cinderbrook serves the Crown. That is its honour.
+b : Hard to imagine. | And they forget it. | They'd never say so.
+a : Very hard. | Always. | Never.
+
+scene rg_cb_pithead
+when topic=smalltalk region=cinderbrook place=street|market|work
+a : The Pithead Store's out of candles. Again. | Stout boots at the Pithead. Two marks. Two! | They give credit at the Pithead till payday. Then they take it all.
+b[merchant] : Candles go fastest in winter. Buy early.
+b : Again. | Robbery. | That's how it works.
+a : Again. | Pure robbery. | Always.
+
+scene rg_cb_iron_saint_feast
+when topic=lore region=cinderbrook
+a : On the Iron Saint's feast the whole town walks the pit road with lamps. | They'll carry the shrine's iron heart down the shaft again. | No picks swing on the Saint's day. Not one.
+b[priest] : The Saint walks with every miner. On her day, we walk with her.
+b[miner] : Best day of the year. Nobody goes down.
+b : Lovely sight. | Every year. | Not one.
+a : Very lovely. | Every year. | Not one.
+
+scene rg_cb_watchmen
+when topic=work region=cinderbrook a.role=guard
+a : Two watchmen for a whole town of miners. The Crown's a joke. | Broke up the Anvil fight. Got a black eye for it. | Somebody's stealing lamp oil from the store.
+b[guard] : Two's enough when the miners keep their own peace. Mostly.
+b : It is. | Earned it. | Probably a miner.
+a : A bad one. | Every bit. | Probably.
+
+scene rg_cb_slag_heap
+when topic=smalltalk region=cinderbrook a.stage=young|adolescent
+a : We slid down the slag heap on a board! | Found a shiny stone in the slag heap. | My mother says the slag heap's too dangerous.
+b[old] : I slid down that heap when I was your age. Broke my tail.
+b : Careful! | Let me see. | She's right.
+a : I am careful! | It's pretty. | It's fun, though.
+
+scene rg_cb_firedamp
+when topic=lore region=cinderbrook
+a : Bad air in the low drift today. Lamp flame went blue. | They lowered a bird down the new shaft. It came up fine. | The lamp's flame tells you everything below.
+b[miner] : Blue flame, run. Don't stop for your pick.
+b : Did you get out? | Good sign. | It does.
+a : Fast. | Good sign. | Everything.
+
+scene rg_cb_washday
+when topic=smalltalk region=cinderbrook place=home|street
+a : Pointless doing the wash. It's red by noon. | The brook runs red after the forge empties its quench. | We wash in the brook and come out dirtier.
+b[old] : Red water, red wolves. That's Cinderbrook.
+b : Do it anyway. | Every day. | I know.
+a : I do. | Every day. | I know.
+
+scene rg_cb_wages
+when topic=work region=cinderbrook a.job=miner|laborer
+a : Payday's late. The Crown's cart hasn't come. | Wages in iron tokens again. The Pithead takes them, at a discount. | We dug double this month and got the same pay.
+b[miner] : The Crown's cart comes when the Crown remembers.
+b : Again? | Robbery. | Of course.
+a : Again. | Robbery. | Of course.
+
+scene rg_cb_hills_view
+when topic=lore|smalltalk region=cinderbrook
+a : From the top workings you can see the river and the white city. | On a clear morning the cathedral silver flashes all the way up here. | The city looks so clean from up here.
+b[old] : From far away, everything looks clean.
+b : A fine view. | Like a star. | It isn't.
+a : Very fine. | It does. | Not at all.
+
+scene rg_cb_tunnel_ghost
+when topic=lore region=cinderbrook
+a : They say a miner still walks the old south drift, swinging his lamp. | Heard tapping in the dead workings again. | My lamp went out in the old drift and something breathed.
+b[miner] : The knockers. Leave them bread and they warn you before a fall.
+b[priest] : The dead rest. The living imagine.
+b : Old tale. | Water dripping. | You imagined it.
+a : Old and true. | Probably. | I didn't.
+
+scene rg_cb_ore_carts
+when topic=work region=cinderbrook a.job=carter|laborer|miner
+a : Ore carts down to the city all morning. | Brake broke on the steep road. Cart went into the ditch. | The ore road's more holes than road.
+b[carter] : Downhill with ore is the worst job in the Marches.
+b : Busy day. | Anybody hurt? | It always is.
+a : Very busy. | Only the cart. | Always.
+
+scene rg_cb_miners_wives
+when topic=smalltalk region=cinderbrook band=friends|family|spouses
+a : Every pithead bell, my heart stops. | I wait at the shaft every evening till I see the lamp come up. | You never get used to waiting.
+b[miner] : I count every evening I come up. Every one.
+b : I know. | So do I. | Never.
+a : I know. | Every evening. | Never.
+
+scene rg_cb_iron_bread
+when topic=smalltalk region=cinderbrook place=home|tavern|street
+a : Miners' pasties at the Anvil. Crust like armour. | My mother bakes the crust thick so you can hold it with sooty paws. | You throw the crust edge away, for the knockers.
+b[miner] : Eat the middle, leave the crust. The knockers get hungry too.
+b : Best food in the hills. | Clever. | Old custom.
+a : The best. | Very clever. | Very old.

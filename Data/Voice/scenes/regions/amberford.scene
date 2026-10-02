@@ -1,0 +1,213 @@
+# Amberford: a farming town at the ford on the amber steppe, rich in grain and short of rain. The Ford House, the
+# Amber Loaf, the Ford Brewhouse, the Ford Forge, Amberford Goods and its chalked prices, the Harvest Chapel and its
+# painted sun, the Toll and Watch, the Grain Barn, the mill, the fields and the sky that won't rain.
+
+scene rg_af_sky_watch
+when topic=smalltalk|weather region=amberford weather=clear|overcast
+a : Not a cloud since the new moon. | Clouds over the east ridge. Might rain. Might not. | I've looked at the sky so long my neck's stiff.
+b[farmer] : Watching won't bring it. But you can't stop watching.
+b[old] : The steppe was greener when my grandmother was young. She swore it.
+b : The wheat's thirsty. | Don't hope too hard. | Everybody's has.
+a : So am I. | I won't. | Everybody's.
+
+scene rg_af_field_names
+when topic=lore region=amberford
+a : Old Sheaf can name every field on the steppe and who ploughed it last. | The Long Acre's been in the Harrow family a hundred years. | Every field here has a name. Some have two.
+b[farmer] : Fields have names like wolves do. They've earned them.
+b[old] : The Crooked Mile, the Widow's Strip, the Sun Field. I ploughed them all.
+b : Remarkable memory. | And never sold. | Some have three.
+a : Very. | Never. | Some do.
+
+scene rg_af_first_sheaf
+when topic=lore region=amberford season=autumn|summer
+a : The first sheaf of the harvest goes to the Harvest Chapel. | My mother keeps the first sheaf of every harvest in the rafters. Forty of them. | Who cuts the first sheaf this year?
+b[priest] : The first sheaf for the Bright One, the rest for the hungry.
+b[farmer] : The eldest on the farm cuts it. Always the eldest.
+b : Old custom. | Forty! | The eldest, I'd guess.
+a : Very old. | Dusty rafters. | Probably.
+
+scene rg_af_grain_price
+when topic=smalltalk region=amberford place=market|street|work
+a : Grain price chalked by the door went down again. | The city buyers want our grain for nothing. | Price is up a penny a sack. First good news in a month.
+b[merchant] : The price is what the city pays. I just chalk it.
+b[farmer] : We grow the city's bread and eat the crusts.
+b : Again. | They always do. | Finally.
+a : Again. | Always. | Finally.
+
+scene rg_af_ford_moving
+when topic=lore region=amberford
+a : The ford's moving downstream, slowly. Nobody believes me. | My grandfather crossed the ford ten strides upstream from where it is now. | The ford stones shift after every spring flood.
+b[old] : Everything moves on the steppe. Ford, fields, folk.
+b[official] : The ford is where the toll post is. It's not going anywhere.
+b : I believe you. | Really? | They do.
+a : Thank you. | Really. | Every year.
+
+scene rg_af_ford_toll
+when topic=work|smalltalk region=amberford
+a : Toll-keeper took a penny off every cart at the ford today. | Carts lined up at the ford all morning. | Somebody tried to cross upstream to dodge the toll. Got stuck.
+b[official] : The toll keeps the ford stones in place. Mostly.
+b[carter] : A penny to get my wheels wet. Fair trade, I suppose.
+b : Busy day. | Harvest carts. | Served them right.
+a : Very busy. | Harvest. | Ha.
+
+scene rg_af_amber_loaf
+when topic=smalltalk region=amberford
+a : Best bread on the steppe at the Amber Loaf. | The Amber Loaf ran out before noon. | Steppe grain makes the sweetest bread there is.
+b[baker] : Our own grain, our own mill, our own oven. Can't beat that.
+b : Agreed. | Again? Go earlier. | It does.
+a : Still warm, too. | I'll try. | And the crust!
+
+scene rg_af_brewhouse
+when topic=smalltalk region=amberford
+a : You can smell the Brewhouse mash at the ford. | New barley ale at the Ford House tonight. | The brewer bought half the barley harvest.
+b[brewer] : Steppe barley makes ale golden as the fields.
+b : Smells good. | I'll be there. | Thirsty town.
+a : Very good. | See you there. | Very thirsty.
+
+scene rg_af_lost_land
+when topic=lore region=amberford band=friends|family|acquaintances
+a : The Furrows lost their land after the dry year. Work another's now. | One bad harvest and a family's gone from the steppe. | My neighbour's saving to buy a field. Third year now.
+b[farmer] : The steppe gives and the steppe takes. Mostly it takes.
+b : Hard thing. | Too true. | Good for them.
+a : Very hard. | Too true. | Very good.
+
+scene rg_af_harvest_chapel
+when topic=lore region=amberford
+a : Somebody's repainting the sun on the Harvest Chapel ceiling. | Sheaves stacked on the altar after the harvest. | They pray for rain in the Harvest Chapel every week now.
+b[priest] : The Bright One sends what we need. Not always what we want.
+b : Bright gold. | Every year. | Every day, soon.
+a : Very bright. | Every year. | Soon.
+
+scene rg_af_mill
+when topic=work region=amberford a.job=farmer|laborer|baker
+a : The ford mill's grinding day and night since harvest. | The millstream's too low to turn the wheel. | Waited all day at the mill for my sacks.
+b[laborer] : No water, no wheel. No wheel, no flour.
+b : Good harvest, then. | Dry year. | Busy miller.
+a : Good enough. | Very dry. | Very busy.
+
+scene rg_af_grain_barn
+when topic=lore|work region=amberford
+a : Grain Barn's stacked to the beams. Good year. | Rats in the Grain Barn again. Somebody get a cat. | The Grain Barn's half empty. The dry year hit hard.
+b[farmer] : A full barn and a quiet winter. That's all I ask.
+b : Thank the sun. | Two cats. | Hard winter ahead.
+a : Thank it. | Three. | Very hard.
+
+scene rg_af_ford_forge
+when topic=work region=amberford a.job=smith|apprentice|farmer
+a : Sharpened forty sickles before harvest. | The Ford Forge is booked till the last sheaf. | Broke my scythe on a stone in the Long Acre.
+b[smith] : Sharpen before harvest, not during. Nobody listens.
+b : Busy forge. | Every year. | Bad luck.
+a : Very busy. | Every year. | Very bad.
+
+scene rg_af_dust_storm
+when topic=weather|lore region=amberford weather=sandstorm|storm|overcast
+a : Dust storm took the topsoil off the east fields. | Grit in my teeth, grit in my bread. | The sky went yellow at noon.
+b[old] : Dust storms come when the steppe's thirsty. It's been thirsty a long while.
+b : Bad sign. | Every storm. | Strange light.
+a : Very bad. | Every one. | Very strange.
+
+scene rg_af_harvest_feast
+when topic=lore region=amberford season=autumn
+a : Harvest home at the Ford House tonight. Whole town's going. | Harvest garlands over the bar at the Ford House. | They dance round the last stook at harvest home.
+b[innkeeper] : Ale on the house for the last cart in. Old custom.
+b : Wouldn't miss it. | Lovely. | Every year.
+a : Nor would I. | Very lovely. | Every year.
+
+scene rg_af_steppe_wide
+when topic=smalltalk region=amberford
+a : The steppe goes on to the edge of the sky. | You can see a cart coming half a day off. | No hills, no trees. Just grain and sky.
+b[adolescent] : I'd like to see a mountain someday. Just once.
+b : It does. | Nothing to hide behind. | Gold and blue.
+a : Forever. | Nothing. | Gold and blue.
+
+scene rg_af_rain_dance
+when topic=lore region=amberford band=friends|family|acquaintances
+a : My grandmother used to spill a cup of water on the fields every dawn. For luck. | The old folk say singing brings rain. Nobody sings well enough. | Somebody poured ale on the Sun Field to bring rain.
+b[priest] : Prayer brings comfort. Rain comes when it comes.
+b : Did it work? | Ha. | Waste of ale.
+a : Sometimes. | Nobody. | A terrible waste.
+
+scene rg_af_toll_and_watch
+when topic=work region=amberford a.role=guard
+a : The toll and the watch share one house. Cramped as a hen coop. | Took the toll and broke up a fight before noon. | Two of us for a town and a ford. Never enough.
+b[guard] : Toll in the morning, watch at night. No rest.
+b : Cosy. | Busy morning. | Never.
+a : Very cosy. | Very busy. | Never enough.
+
+scene rg_af_grain_carts
+when topic=work region=amberford a.job=carter|farmer|merchant
+a : Grain carts heading for the city at dawn. | Carted forty sacks to the ford. | A grain cart overturned at the ford. Half the sacks wet.
+b[carter] : Grain's heavy and the roads are long. Every cart's a week of my life.
+b : Long road. | Heavy work. | Bad luck.
+a : Very long. | Very heavy. | Very bad.
+
+scene rg_af_locusts
+when topic=lore region=amberford
+a : My grandfather saw the locust year. The sky went black. | They say the locusts come every forty years. It's been thirty-nine. | Saw a grasshopper this morning and nearly fainted.
+b[old] : I saw it. Every green thing gone in a day. Every one.
+b[farmer] : Don't say it out loud. Don't.
+b : Terrible. | Don't count. | It's just a grasshopper.
+a : Terrible. | I can't help it. | So far.
+
+scene rg_af_ford_house
+when topic=smalltalk region=amberford place=tavern
+a : Grain dust in every crack of the Ford House. | The toll-keeper's table by the window's always taken. | Farm carts woke me at dawn at the Ford House.
+b[innkeeper] : The dust is the steppe. The steppe pays my bills.
+b : In my fur too. | Somebody should move him. | Every dawn.
+a : Mine too. | Not me. | Every single one.
+
+scene rg_af_sun_field
+when topic=lore region=amberford
+a : The Sun Field always ripens first. Nobody knows why. | They say the Sun Field was blessed by a priest long ago. | The Sun Field's the best ground on the steppe.
+b[farmer] : South slope, deep soil. Not a blessing. Just good ground.
+b : Strange. | So they say. | It is.
+a : Very strange. | So they say. | The best.
+
+scene rg_af_owls
+when topic=smalltalk region=amberford time=dusk|night
+a : Barn owls hunting over the stubble at dusk. | An owl lives in the Grain Barn rafters. Keeps the rats down. | Heard the owl call three times. Bad luck, they say.
+b[farmer] : An owl's worth three cats. Leave it be.
+b : Lovely sight. | Good owl. | Old nonsense.
+a : Very lovely. | Very good. | Probably.
+
+scene rg_af_wells
+when topic=lore|work region=amberford season=summer
+a : The town well's lower than I've ever seen. | Digging the well deeper. Hit rock. | They're rationing water from the well.
+b[old] : The well went dry once, when I was young. We drank from the ford.
+b : Dry year. | Bad luck. | It's come to that.
+a : Very dry. | Very bad. | It has.
+
+scene rg_af_seed
+when topic=work|smalltalk region=amberford season=spring
+a : Sowing the long field. Hope the rain comes. | Seed's dear this spring. Lost half to mice. | The steppe's green for one week in spring. Look at it.
+b[farmer] : Sow in hope, reap in sweat. That's farming.
+b : So do I. | Cursed mice. | Beautiful.
+a : So do I. | Cursed. | It is.
+
+scene rg_af_young_leaving
+when topic=smalltalk region=amberford band=friends|family|spouses
+a : My eldest wants to leave for Ser Ferro. | Every spring another young one goes off to the cities. | Farm's too small for three pups to inherit.
+b[old] : They go, they come back, they go again. The steppe pulls.
+b : Let them go. | Every spring. | Too true.
+a : Maybe. | Every spring. | Too true.
+
+scene rg_af_scarecrows
+when topic=lore|smalltalk region=amberford
+a : The Harrows dressed their scarecrow in the old toll-keeper's coat. | Every field has a scarecrow with a name. | Crows sat on the scarecrow's head. Not frightened at all.
+b[farmer] : A scarecrow's only as good as the wolf who moves it.
+b : He'd laugh. | What's yours called? | Clever crows.
+a : He would. | Old Straw. | Too clever.
+
+scene rg_af_stubble_fires
+when topic=lore|work region=amberford season=autumn
+a : Burning the stubble on the east fields. | Smoke over the steppe from every farm. | The stubble fire jumped the ditch last year.
+b[old] : Burn the stubble, sweeten the ground. Watch the wind.
+b : Smoky week. | Every autumn. | Watch the wind.
+a : Very smoky. | Every autumn. | I will.
+
+scene rg_af_toll_keeper
+when topic=smalltalk region=amberford
+a : The toll-keeper knows every cart by its creak. | The toll-keeper's never missed a day in thirty years. | The toll-keeper let a widow's cart through free.
+b[official] : A good toll-keeper knows when the rule bends.
+b : Sharp ears. | Never ill? | Kind wolf.
+a : Very sharp. | Never. | Very kind.

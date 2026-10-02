@@ -1,0 +1,231 @@
+# Everyday talk (doc 30): food, sleep, health and the body. Alternatives are written in parallel: the second reply
+# answers the second remark. A closing line usually carries on its own speaker's thought, so it reads well after any
+# answer.
+
+# ---------------------------------------------------------------- Food
+
+scene ev_food_marrow
+when topic=smalltalk
+a : I'd give a week's wages for a marrow bone right now. | Smell that? Someone's roasting a haunch. | I haven't had meat since Restday.
+b[cook] : Come by the kitchen after dark. There's always a bone going spare.
+b[child] : I had a bone yesterday! I buried it. I can't remember where.
+b : Wouldn't we all. | Torture, that is. | Nor me. Barley and more barley.
+a : A big one, cracked open, still warm. | Torture is the word. | My belly thinks my throat's been cut.
+
+scene ev_food_stew
+when topic=smalltalk time=dusk|night
+a : What's in your pot tonight? | I made a stew that could raise the dead. | I burned the supper again.
+b[cook] : Whatever the market didn't sell. That's the secret of every good stew.
+b[old] : The same thing I've eaten every night for forty years. And glad of it.
+b : Turnip, mostly. | Save me a bowl. | Again? What happened?
+a : Turnip's honest food. | Only if you bring bread. | I sat down for a moment and woke to smoke.
+
+scene ev_food_fish_or_fowl
+when topic=smalltalk
+a : Fish or fowl, if you could only eat one? | I could eat a whole goose by myself. | Rabbit's the best meat there is, and I'll hear no argument.
+b[fisher] : Fish, every time. Fowl's all bones and feathers.
+b[farmer] : Fowl. I raise them; I've earned the eating.
+b : Fowl. | I'd like to see that. | Venison, though.
+a : You've no taste. | Watch me, one day. | Venison's for lords. Rabbit's for the rest of us.
+
+scene ev_food_bread_stale
+when topic=smalltalk
+a : This bread could break a tooth. | Baker's loaves are smaller than they were. | Nothing beats bread still warm from the oven.
+b[baker] : Ask the miller why. I bake what the flour lets me.
+b : Soak it in broth. | I noticed that too. | Nothing.
+a : Broth's gone too. | Smaller and dearer. | Not even meat. Well. Almost nothing.
+
+scene ev_food_honey
+when topic=smalltalk season=summer|autumn
+a : Found a wild hive in a hollow oak. | Honey on warm bread. Is there anything better? | Got stung on the nose stealing honeycomb.
+b[child] : Can I have some? Please? Just a little?
+b[healer] : Honey on a wound keeps it clean. Don't eat it all.
+b : Where? Tell me where! | No. There isn't. | Serves you right.
+a : I'm not telling anyone. | There isn't. | Worth it. Still worth it.
+
+scene ev_food_feast_memory
+when topic=smalltalk
+a : Remember the feast at the end of last harvest? | I dreamt of roast boar last night. | Someone said there'll be a whole ox at the next festival.
+b[old] : I remember feasts that lasted three days. You pups don't know feasting.
+b : I still can't look at a pie. | And woke up hungry, I'll bet. | I'll believe it when I smell it.
+a : Four pies, you ate. | Starving. | So will I.
+
+scene ev_food_cheese
+when topic=smalltalk place=market|street|tavern
+a : That cheese seller's stall reeks from across the square. | I bought a wedge of hard cheese. Want some? | Who eats cheese that's gone blue?
+b[merchant] : The stronger it smells, the better it is. Everyone knows that.
+b : Good cheese ought to reek. | I'll never say no. | Those who know better than you.
+a : Not that much. | Here. Mind the rind. | I'll keep my nose, thanks.
+
+scene ev_food_grandmother
+when topic=smalltalk
+a : Nobody cooks like my grandmother did. | My mother's barley cakes. I'd give anything for one more. | I tried my father's recipe. It wasn't the same.
+b[old] : Cook it for someone you love. That's the missing spice.
+b : Nobody's grandmother cooks like theirs did. | What was in them? | It never is.
+a : True enough. | Barley, honey, love. And a thumb of lard. | It never is.
+
+scene ev_food_fasting
+when topic=smalltalk day=rest
+a : Are you fasting today, for the Bright One? | Mother says we fast till noon. I'll die. | I never fast. The Bright One wants me strong.
+b[priest] : Hunger reminds us that order is a gift. Bear it gladly.
+b : Till sundown. | You'll live. | That's convenient.
+a : I'll try. | Barely. | Very.
+
+scene ev_food_mushrooms
+when topic=smalltalk season=autumn
+a : Mushrooms everywhere after that rain. | Do you know which ones are safe? | My cousin ate the wrong mushroom once.
+b[healer] : If you're not certain, don't. I've seen what the pale ones do.
+b[herder] : The red ones with white spots. Never those. Not even the sheep.
+b : I'll pick some on the way home. | Only the brown ones. | What happened?
+a : Bring me a few. | The brown ones it is. | He talked to trees for a week.
+
+scene ev_food_salt
+when topic=smalltalk
+a : Supper without salt is just wet grief. | Salt's dearer than it should be. | I salted the pork too much. Now I'm drinking the well dry.
+b[fisher] : Salt keeps the catch. No salt, no winter.
+b : Wet grief, that's it exactly. | Everything is. | Serves you right.
+a : I'll borrow a pinch, if you've one. | Everything. | Three buckets so far.
+
+# ---------------------------------------------------------------- Sleep and dreams
+
+scene ev_sleep_dream_falling
+when topic=smalltalk time=dawn|day
+a : I dreamt I was falling all night. | Had the strangest dream. A silver fox talking to me. | Dreamt my teeth fell out.
+b[priest] : Dreams are the Bright One's whisper, or the Dark One's. Mind which.
+b[old] : At my age, you're glad to dream at all.
+b : I hate those. | What did it say? | That means money coming, they say.
+a : Woke up clutching the blanket. | Couldn't remember a word of it. | I could do with some.
+
+scene ev_sleep_snoring
+when topic=smalltalk
+a : My mate snores like a bellows. | You snore. I heard you through the wall. | Somebody in our house howls in their sleep.
+b[spouses] : I do not. And if I did, you'd have smothered me by now.
+b : Poke them in the ribs. | I never! | Bad dreams, maybe.
+a : They poke back. | Every night. | Every night, at the moon.
+
+scene ev_sleep_restless_moon
+when topic=smalltalk
+a : I can't sleep when the moon's that full. | Lay awake listening to the howls out past the wall. | The moon kept me up, shining right in my eyes.
+b[old] : The moon pulls at all of us. Some more than others.
+b[child] : I howled back at them! Mama was cross.
+b : Nor me. It itches under the fur. | Wild ones, I suppose. | Close your shutters.
+a : Itches is the word. | Sounded lonely, out there. | No shutters. Only a rag.
+
+scene ev_sleep_nap
+when topic=smalltalk time=day
+a : I could curl up right here in the sun. | Caught myself dozing on my feet earlier. | A nap after noon. That's the dream.
+b[guard] : Not on my watch, you couldn't.
+b : Go on, then. I won't tell. | Long night? | One day.
+a : Don't tempt me. | Long enough. | One day.
+
+scene ev_sleep_early
+when topic=smalltalk time=dawn season=autumn|winter|spring
+a : Up before the birds again. | Why do I always wake before I need to? | I've been awake since the last of the dark.
+b[baker] : I've had bread in the oven since then.
+b[farmer] : The cows don't care how tired you are.
+b : Me too. | Habit. | Me too.
+a : The birds can keep their mornings. | Habit, or worry. | Such is life.
+
+# ---------------------------------------------------------------- Health and the body
+
+scene ev_health_fur
+when topic=smalltalk season=spring
+a : I'm shedding like a haystack in a gale. | There's more fur on my floor than on me. | My undercoat's coming out in clumps.
+b[old] : Comb it out by the river. Birds use it for nests.
+b[child] : I put some in a sack. I'm making a pillow.
+b : Spring, isn't it. | Mine too. | Brush it out.
+a : Every year, the same mess. | Every corner. | I've brushed till my arm aches.
+
+scene ev_health_fur_winter
+when topic=smalltalk season=autumn|winter
+a : Coat's come in thick this year. Hard winter coming. | My winter fur's itching to come through. | Feel this coat. Soft as a cub's.
+b[old] : Thick coats, hard winter. My grandmother swore by it.
+b : I've noticed it too. | Scratch against a post. | Very fine.
+a : Hope she was wrong. | Doesn't help. | Brushed it twice this morning.
+
+scene ev_health_teeth
+when topic=smalltalk
+a : Cracked a tooth on a bone last night. | My jaw's been aching all week. | I need a tooth pulled and I'm terrified.
+b[healer] : Come see me. Better a short pain than a long one.
+b[old] : I've three teeth left and I bite harder than you.
+b : That's what you get for greed. | Clove oil helps. | Better out than in.
+a : Worth it. Good bone. | Where do I find clove oil? | Easy to say.
+
+scene ev_health_cough
+when topic=smalltalk season=autumn|winter weather=rain|snow|fog|overcast
+a : This cough won't let go of me. | Half the street's coughing. | My throat feels like I swallowed gravel.
+b[healer] : Steam and honey, and stay out of the damp. Nobody listens.
+b : There's a lot of it about. | It's the damp. | Drink something hot.
+a : It's sat on my chest for days. | It always is, this time of year. | Hot and strong.
+
+scene ev_health_paw
+when topic=smalltalk
+a : Got a thorn in my pad yesterday. Still limping. | My paws are cracked from the cobbles. | Stepped on something sharp in the dark.
+b[healer] : Let me see. Hm. Wash it and keep it dry.
+b[laborer] : Wrap them in cloth. That's what I do for the long hauls.
+b : Did you get it out? | Rub fat into them. | Glass, probably.
+a : Most of it. | They smell of tallow now. | Probably.
+
+scene ev_health_getting_old
+when topic=smalltalk b.stage=old
+a : How are your joints today, {b}? | You're looking well, {b}. | Do you need a paw with that?
+b : Creaking like an old gate. | Liar. But a kind one. | I'm not dead yet.
+a : I'll fetch you a stool. | I mean it. | Never said you were.
+
+scene ev_health_young_strong
+when topic=smalltalk a.stage=adolescent
+a : I grew again. My old collar won't fit. | I can outrun anyone on this street now. | Look, my voice cracked again.
+b[old] : Enjoy it. One day you'll grow the other way.
+b : Stop growing, you'll eat us out of house. | Prove it. | It'll settle.
+a : I can't help it! | Race you to the well. | It had better.
+
+scene ev_health_scars
+when topic=smalltalk
+a : Where'd you get that scar on your muzzle? | That's a fine scar. Fight? | I've had this notch in my ear since I was a pup.
+b[guard] : A drunk with a bottle. He's got a worse one.
+b[soldier] : The less said about it, the better.
+b : Fell off a cart. Not very heroic. | Something like that. | Suits you.
+a : Tell everyone it was a bear. | I won't ask. | My mother did it. Long story.
+
+scene ev_health_herbal_cure
+when topic=smalltalk
+a : My aunt swears by willow bark for everything. | I drank a nettle brew for my belly. Didn't help. | Does garlic really keep sickness off?
+b[healer] : Willow for aches. Nettle for blood. Garlic for keeping friends away.
+b : Old wives' cures. | You need mint, not nettle. | Keeps everyone else off, anyway.
+a : Old wives outlive us all. | Now you tell me. | That's good enough.
+
+# ---------------------------------------------------------------- The hour and the day
+
+scene ev_hour_bells
+when topic=smalltalk region=cities
+a : Was that the noon bell? | The bells were late this morning. | I wish they'd ring the bells softer.
+b[priest] : The bells keep the Bright One's order. Every hour in its place.
+b : It was. | The ringer overslept, I heard. | They're meant to wake the dead.
+a : Then I'm late. | Good for him. | Well, they woke me.
+
+scene ev_hour_long_day
+when topic=smalltalk time=dusk
+a : Is it over yet? This day? | That was the longest day of my life. | The light's going. I've done nothing.
+b : Nearly. | They all feel that way. | Tomorrow, then.
+a : Nearly isn't enough. | Not like this one. | Tomorrow I'll do twice as much.
+
+scene ev_hour_night_noises
+when topic=smalltalk time=night
+a : Hear that? Out past the wall. | Something's moving in the alley. | Quiet tonight. Too quiet.
+b[guard] : Rats, or cats, or lovers. It's always one of the three.
+b : Just the wind. | Probably a fox. | Enjoy it.
+a : The wind doesn't scratch. | A big fox. | I'm trying.
+
+scene ev_hour_weekday
+when topic=smalltalk
+a : {weekday} already? | Is it really {weekday}? | I always hate {weekday}.
+b[child] : Is it Restday soon? Is it?
+b : Already. | All day long. | What's wrong with {weekday}?
+a : Where does the time go? | Feels like the day before. | Everything.
+
+scene ev_hour_dawn_cold
+when topic=smalltalk time=dawn season=autumn|winter|spring
+a : Frost on the water trough. | Look at that mist on the fields. | My breath's smoking.
+b[farmer] : Fine morning for work. Get moving and you'll warm.
+b : Winter's sniffing at us. | Pretty, for once. | Mine too.
+a : I'm not ready for it. | It won't last. | I'll warm up eventually.

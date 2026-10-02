@@ -1,0 +1,231 @@
+# More of each place's market and road talk (Docs/Design/30-towns-and-talk.md), by trade, place and season.
+# Blanks: {item}, {price}, {other}. Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Upper Accord
+
+scene em_ua2_snow_closed
+when topic=prices dir=up region=upper_accord season=winter
+a : The pass is snowed shut and every stall knows it. | No carts up the mountain for a week. {item} at {price}. | When the snow comes, the prices climb faster than the stairs.
+b : They'll dig it out soon. | A week? It'll be two. | Everything climbs here.
+a : Not soon enough. | Don't say that. | Except wages.
+
+scene em_ua2_clerk_ledger
+when topic=prices dir=up region=upper_accord a.job=official|scholar
+a : The Concord's clerks record the price of bread in every member city. | I copied the market prices for the archive today. Grim reading. | Some scholar will read our price of {item} in a hundred years and pity us.
+b : Why? | Grim how? | Let them pity.
+a : So they can argue about it. | Higher than anywhere in the lowlands. | They'll be hungrier, probably.
+
+scene em_ua2_warden_road
+when topic=bandits region=upper_accord
+a : They say a Warden walked the low road and the bandits melted away. | Nobody robs a wagon with a Warden riding on it. | If the Wardens rode with the carts, there'd be no bandits.
+b : Stories. Wardens don't bother with bandits. | Nobody would dare. | They've better things to do.
+a : Good stories, though. | Nobody. | So I keep hearing.
+b?[guard] : The Wardens have their duties. Escorting cabbages isn't one.
+
+scene em_ua2_plaza_caravan
+when topic=caravan kind=arrived region=upper_accord place=market|street
+a : The {other} carters are selling straight off the wagons in the plaza. | A lowland carter's shouting prices by the fountain. | The Watch moved the {other} wagons off the plaza twice.
+b : Cheaper than the stalls? | Loudest wolf in the city. | They keep coming back.
+a : A little. | He'll lose his voice. | Like flies.
+b?[guard] : The plaza's not a wagon yard. Move them to the Crafts ward.
+
+scene em_ua2_tarns_fish
+when topic=prices item=meal region=upper_accord
+a : Tarn fish are the only thing that's cheap up here. | I'll catch my own supper in the upper tarn. | Nobody can afford lowland meat, so it's trout again.
+b : Cheap and full of bones. | Catch me one too. | Trout's good.
+a : Bones are free. | If they bite. | Every day?
+b?[fisher] : The tarns feed this city in winter. Don't forget it.
+
+# ---------------------------------------------------------------- Ridgemere
+
+scene em_rm2_quay_smell
+when topic=prices dir=down region=ridgemere place=market|street|shore
+a : Fish so cheap at the quay the gulls are getting choosy. | The smokehouses are giving away the broken pieces. | {item} for {price}. The Sump will eat tonight.
+b : Choosy gulls. That's a first. | Broken fish tastes the same. | Good.
+a : A good week. | Better, even. | About time.
+b?[fisher] : Good catch this week. Even Vesk can't hold back a full net.
+
+scene em_rm2_watch_bandits
+when topic=bandits region=ridgemere b.job=guard
+a : The Watch going after the robbers on the coast road? | Is it true the Watch won't leave the walls? | My cousin says the Watch is paid by the Houses to guard the Houses.
+b : Not unless the Council says so. | Our orders are the city. | Your cousin should mind his tongue.
+a : The Council won't. | Lucky city. | He never has.
+
+scene em_rm2_fell_timber
+when topic=caravan kind=arrived|left region=ridgemere a.job=woodcutter|laborer|carter
+a : House Fell sent forty logs by wagon and lost three on the hill. | The timber carts block the gate every morning. | Fellhall's timber caravan pays well and kills mules.
+b : Lost them where? | Every single morning. | Pays well, at least.
+a : Down the gorge. Gone. | And the Watch shouts at us. | Not the mules.
+
+scene em_rm2_sump_raid_blame
+when topic=caravan kind=raided region=ridgemere
+a : They'll search the Sump for the bandits. They always do. | Every time a cart's robbed, the Watch kicks down doors in the Sump. | The Sump will pay for that raid. It always pays.
+b : The robbers aren't from the Sump. | Nobody kicks down doors on the high streets. | It does.
+a : Doesn't matter. | Nobody. | Always.
+b?[beggar] : They came through last night. Took my blanket as evidence.
+
+scene em_rm2_winter_quay
+when topic=prices dir=up region=ridgemere season=winter
+a : The bay's frozen at the edges. No boats, no fish. | Winter storms keep the ships out. The Sump's hungry. | Ice on the quay and nothing on the stalls.
+b : Every winter. | And the Houses' cellars full. | Like every winter.
+a : Every winter. | Always full. | Every one.
+
+# ---------------------------------------------------------------- Ser Ferro
+
+scene em_sf2_wharf_prices
+when topic=prices dir=up region=ser_ferro place=market|street|shore
+a : At the wharf they sell bruised fruit at whole fruit prices. | {item} at {price} down at the wharf, and they won't haggle. | The wharf stalls have gone silent. Nobody's buying.
+b : Bruised is all the wharf gets. | They never haggle any more. | Nobody can.
+a : Bruised and dear. | Never. | Nobody.
+b?[merchant] : Guild price is Guild price. I don't make the rules.
+
+scene em_sf2_rise_feast
+when topic=prices dir=up region=ser_ferro
+a : The nobles on the Rise held a feast last night. Seven courses. | Up on the Rise they don't know what {item} costs. | A servant from the palace told me what they threw away. I could weep.
+b : Seven! I've had one this week. | Nor care. | Don't tell me. I'll weep too.
+a : One more than me. | Never have. | Too late.
+b?[noble] : Hospitality is an obligation, not an indulgence.
+
+scene em_sf2_barges
+when topic=caravan kind=arrived region=ser_ferro
+a : The {other} wagons came in the same day as the grain barges. Prices are falling. | Barges and wagons together. The wharf's a madhouse. | Road and river both delivering. A good day for Ser Ferro.
+b : Falling at last. | A rich madhouse. | Rare.
+a : Slowly. | Very rich. | Very rare.
+b?[laborer] : I've carried more sacks today than I have in a month.
+
+scene em_sf2_guild_raid
+when topic=caravan kind=raided region=ser_ferro
+a : The Guild's demanding the Crown clear the roads after the raid. | Guild merchants lost a fortune in that raid. You can hear them wailing. | The Guild is offering a reward for the robbers.
+b : The Crown will think about it. | A loud fortune. | A reward? How much?
+a : Slowly. | Very loud. | Enough to tempt the robbers' friends.
+b?[merchant] : We pay the Crown's taxes. We expect the Crown's roads.
+
+scene em_sf2_farms_bandits
+when topic=bandits region=ser_ferro a.job=farmer|herder
+a : They took my hens. All of them. | Bandits came to the farm gate asking for bread. I gave it. | The farms outside the walls have nobody to guard them.
+b : Your hens! | You gave it? | The King's riders won't come out for farms.
+a : Even the old one. | What would you do? | No. Never.
+
+# ---------------------------------------------------------------- Accord Crossing
+
+scene em_ac2_mules
+when topic=caravan kind=arrived|left region=accord_crossing a.job=herder|carter
+a : I'm renting out mules to the {other} caravan. Three marks a pair. | Every caravan needs fresh teams for the climb. | My mules know the mountain road better than the carters do.
+b : Three marks! | Lucky for you. | They're smarter, too.
+a : For the climb. Worth every penny. | Very. | Much smarter.
+
+scene em_ac2_toll_raid
+when topic=bandits region=accord_crossing b.job=official
+a : Will the toll pay for guards on the road, now? | We pay the toll for a safe road. Where is it? | Can the toll post do anything about the bandits?
+b : The toll pays for the road. Not the guards. | The road is safe. Mostly. | I count wheels. I don't fight bandits.
+a : Then what's it for? | Mostly. | Pity.
+
+scene em_ac2_inn_raid
+when topic=caravan kind=raided region=accord_crossing place=tavern
+a : The Crossed Roads is full of carters who won't leave. | Nobody's going out with the next caravan. They're all drinking. | The carters are making plans in the corner. Not good plans.
+b : Can't blame them. | Can you blame them? | Revenge, probably.
+a : No. | No. | Probably.
+b?[innkeeper] : They drink, they pay. Let them plan.
+
+# ---------------------------------------------------------------- Saltreach
+
+scene em_sr2_salt_price
+when topic=prices dir=up region=saltreach a.job=laborer|farmer|merchant
+a : Ridgemere paid less for salt this season. Again. | Salt's down, food's up. Saltreach loses both ways. | The Vesk factor says salt's cheap everywhere. Liar.
+b : Again? | Both ways, every way. | All factors lie.
+a : Every season. | Always. | Especially him.
+
+scene em_sr2_fog_wagons
+when topic=caravan kind=arrived region=saltreach weather=fog|rain
+a : The {other} wagons came in out of the fog like ghosts. | Can't see the caravan for the sea fog. | Wet wagons from {other}. The salt in the crates will cake.
+b : Ghosts with mules. | Hear it, though. | Then it's worth nothing.
+a : Muddy ghosts. | Bells and curses. | Less than nothing.
+
+# ---------------------------------------------------------------- Cinderbrook
+
+scene em_cb2_crown_agent
+when topic=prices dir=up region=cinderbrook
+a : The Crown's agent says iron's worth less this year. Bread isn't. | Ser Ferro's price for our iron fell again. | The agent counts our iron in pennies and our bread costs us marks.
+b : Bread never is. | Again. | That's the Crown.
+a : Never. | Again and again. | Always.
+b?[miner] : I'll dig less, then. See how they like that.
+
+scene em_cb2_raid_tools
+when topic=bandits region=cinderbrook a.job=smith|miner
+a : Bandits want iron. Iron's what we have. | Every forge in town is hiding its best tools now. | They took a cart of picks. Picks! What do bandits dig?
+b : Then lock up the forge. | Wise. | Graves, maybe.
+a : I sleep in it now. | Very. | Don't.
+
+# ---------------------------------------------------------------- Westmarch
+
+scene em_wm2_drovers_bandits
+when topic=bandits region=westmarch a.job=herder|farmer
+a : Drovers won't cross the downs with bandits about. | The cattle drive's late. Bandits on the drove road. | I've lost more sheep to robbers than to the weather this year.
+b : Then no meat this season. | Late means dear. | That's saying something.
+a : No meat. | Very dear. | It is.
+
+scene em_wm2_garrison_prices
+when topic=prices dir=up region=westmarch
+a : The garrison pays in Crown silver and the Mercantile loves them for it. | Soldiers buy first, and we buy what's left at twice the price. | Ever since the garrison grew, {item} costs {price}.
+b : Crown silver spends well. | Always. | Funny, that.
+a : For them. | Always. | Very funny.
+b?[soldier] : We're not the reason the roads are bad. We're why you have roads at all.
+
+# ---------------------------------------------------------------- Lakeside
+
+scene em_lk2_boatwright
+when topic=prices dir=up region=lakeside a.job=crafter|fisher
+a : Pitch costs more. Boats cost more. Fish cost more. | A new hull costs three times what it did. | The boatwrights are pricing out the fishers.
+b : One thing leads to another. | Three times! | Then nobody fishes.
+a : Round and round. | Three. | Nobody eats.
+
+scene em_lk2_mist_raid
+when topic=bandits region=lakeside weather=fog
+a : Mist on the mere. Perfect for robbers. | Stay off the shore road in this mist. | The Isle can't see the shore in this. Neither can we.
+b : Perfect for nobody else. | I'm staying in. | Good. Neither can the bandits.
+a : Nobody honest. | Wise. | Hope so.
+b?[fisher] : I'll stay in. The fish will keep.
+
+# ---------------------------------------------------------------- Fenhollow
+
+scene em_fh2_herbalists
+when topic=prices dir=up item=herbs region=fenhollow a.job=healer|merchant
+a : City buyers want our best feverwort and pay half its worth. | I sold the whole drying shed to a Ser Ferro buyer. Regretted it by noon. | Herbs dear in the city means herbs gone from Fenhollow.
+b : Sell to someone else. | Why? | Gone where we need them.
+a : There is no one else. | The price went up by dusk. | Exactly.
+
+scene em_fh2_bog_bandits
+when topic=bandits region=fenhollow a.job=laborer|farmer
+a : Cutters found a bandit camp on the far peat. Cold, thank the Bright One. | Somebody's been stealing our peat stacks. | Robbers on the causeway. Nobody's cutting today.
+b : Cold is good. | Bandits stealing peat? | A day lost.
+a : Cold for now. | Somebody's warm. | Two, maybe.
+
+# ---------------------------------------------------------------- Amberford
+
+scene em_af2_toll_grain
+when topic=caravan kind=arrived|left region=amberford a.job=farmer|official
+a : Every grain cart pays at the ford. Every one. | The toll on grain is what makes our bread dear. | The ford toll fed the council and starved the farms.
+b : The ford needs keeping. | And the toll goes up. | Harsh.
+a : Not that much keeping. | Every year. | True.
+
+scene em_af2_harvest_bandits
+when topic=bandits region=amberford season=summer|autumn
+a : Harvest time, and the bandits come for the granary. | Guard the stooks. Robbers burn fields at harvest. | Every harvest the bandits get bolder.
+b : Then guard the granary. | I'll take a turn. | And we get poorer.
+a : We will. | Thank you. | Every harvest.
+b?[farmer] : I'll sleep in the field with a pitchfork till it's in.
+
+# ---------------------------------------------------------------- Hollowmere and the Ghost Town
+
+scene em_hm2_garden_prices
+when topic=prices region=hollowmere_village
+a : Prices? We grow our own in Hollowmere. Mostly. | The carter's price for {item} made Granny laugh out loud. | We'll trade eggs for it, like always.
+b : Mostly. | She would. | Eggs are better than pennies.
+a : Mostly. | Loudly. | Always were.
+b?[old] : Coin is a town habit.
+
+scene em_gt_bandits
+when topic=bandits region=ghost_town
+a : If bandits come here they'll find nothing but dust and us. | Bandits wouldn't bother with the Ghost Town. Too many ghosts. | Saw riders on the far road. They didn't stop.
+b : And the ghosts. | Good. Let the ghosts keep them off. | Nobody ever stops.
+a : The ghosts can have them. | Good ghosts. | Lucky us.

@@ -1,0 +1,414 @@
+# Current events in town, part six: the same news in many more mouths. Region groups, seasons, weather, hours, and the
+# bands between the two speaking.
+
+# ---------------------------------------------------------------- Crime across the country
+
+scene et_cr_country_theft
+when topic=crime kind=theft region=countryside
+a : A thief, out here. We all know each other's doors. | {victim} robbed, and the nearest watch is a day's ride. | Out here a theft's everybody's business.
+b[farmer] : Then everybody'd better keep their eyes open.
+b : Someone knew the door, then. | We'll be our own watch. | Always has been.
+a : That's what worries me. | Again. | Always.
+
+scene et_cr_city_theft
+when topic=crime kind=theft region=cities
+a : Another one robbed. {victim}. You stop counting in a city. | City thieves are quick as eels. {victim} never felt a thing. | {victim} was robbed in the crowd by the hall.
+b[guard] : Crowds are their meat. Keep your coin in front of you.
+b : Stop counting, stop caring. | Eels in a barrel. | Every crowd has a thief in it.
+a : I try not to. | Slippery. | Or three.
+
+scene et_cr_coast_theft
+when topic=crime kind=theft region=rain_coast
+a : Somebody went through the smokehouse in the night. | Rain covers footsteps. {victim} heard nothing. | Wet night, light fingers. {victim} lost a purse.
+b[fisher] : Rain's a thief's cloak on this coast.
+b : The smell'll give them away. | It covers everything. | Always is, here.
+a : You'd hope. | Everything. | Always.
+
+scene et_cr_south_assault
+when topic=crime kind=assault region=south
+a : Hot nights make hot tempers. {victim} paid for someone's. | {victim} got knifed in a quarrel over nothing. | They say it was the heat. Like that excuses it.
+b[old] : Same every summer. The heat gets in the blood.
+b : Paid dear. | Nothing's always worth killing over, isn't it. | It doesn't.
+a : Too dear. | Apparently. | Not ever.
+
+scene et_cr_north_arrest
+when topic=crime kind=arrest region=north
+a : They marched {subject} through the snow to the cells. | {subject}'s arrested. They'll have a cold night. | Cells up here have frost on the inside. {subject}'ll learn.
+b[guard] : Cold cells make for quick confessions.
+b : Snow and chains. Grim. | Good. | Hard lesson.
+a : Very grim. | Fitting. | Hard country.
+
+scene et_cr_fog_theft
+when topic=crime kind=theft weather=fog
+a : The fog was so thick last night, a thief could walk in your front door. | {victim} was robbed in the fog. Couldn't see a paw in front. | Fog like this is a gift for thieves.
+b[guard] : We walked into each other twice on the round.
+b : One did. Into {victim}'s. | Who could? | And for ghosts.
+a : Exactly. | Nobody. | Don't.
+
+scene et_cr_storm_assault
+when topic=crime kind=assault weather=storm|rain
+a : Nobody heard {victim} shout over the storm. | {victim} was set on in the rain. Nobody about. | Even the watch sheltered last night. That's when it happened to {victim}.
+b[guard] : We don't shelter. We... took a moment under the arch.
+b : The storm drowned it. | Rain empties the streets. | Of course.
+a : Poor soul. | It does. | Of course it did.
+
+scene et_cr_rest_day
+when topic=crime kind=theft|assault day=rest
+a : On a rest day, too. The Bright One's day. | Couldn't even keep the rest day holy. | Everyone at chapel, houses empty. That's when they struck.
+b[priest] : Rest day or no, the Dark One doesn't keep the calendar.
+b : Nothing's sacred. | Not any more. | Clever and wicked.
+a : Nothing. | Not for them. | Wicked.
+
+scene et_cr_market_day
+when topic=crime kind=theft|assault day=market
+a : Market day's always worst for thieves. | Half the country in the square, and someone's purse is lighter. | Busy market, busy pickpockets.
+b[merchant] : I count my coin every hour on market day.
+b : Always. | Usually mine. | Busy everything.
+a : Every week. | Keep it closer. | Every week.
+
+scene et_cr_dawn_found
+when topic=crime kind=assault time=dawn
+a : Bakers found {victim} at first light. | The dawn bell, and the shouting started. {victim}. | First light showed the blood. {victim}'s.
+b[baker] : I'll never walk that lane at dawn without seeing it.
+b : Grim way to start a day. | Heard the shouting. Thought it was a fire. | Awful.
+a : Grim. | Worse than a fire. | Awful.
+
+scene et_cr_rivals_blame
+when topic=crime kind=theft band=rivals
+a : Funny how you're the only one on the street not robbed. | Odd, isn't it, {victim} robbed and you with a new coat. | Where were you the night {victim} was robbed?
+b : Funny how you'd think that. | I earned this coat. | Asleep. Like honest wolves.
+a : Just saying. | I'm sure. | Of course.
+
+scene et_cr_spouses_worry
+when topic=crime kind=theft|assault band=spouses
+a : Bolt the door tonight. I mean it. | We'll keep the coin under the hearthstone from now on. | I'm frightened. Is that foolish?
+b : Bolted. And barred. | And I'll sit on the hearthstone. | No. I'm frightened too.
+a : Good. | Idiot. | Good. Not just me.
+
+scene et_cr_friends_walk
+when topic=crime kind=theft|assault band=friends time=dusk|night
+a : Walk me home? After what's been happening? | I'll go the long way, by the lamps. | Don't go down the back lane tonight.
+b : Course. | I'll come with you. | I won't.
+a : Thank you. | Thank you. | Promise.
+
+scene et_cr_child_guard
+when topic=crime kind=theft|assault a.stage=young|adolescent b.role=guard
+a : Did you catch the bad wolf yet? | Can I help catch the robber? | Are you going to fight the thief?
+b : Not yet, pup. | You can keep your eyes open. That's helping. | Only if they're very foolish.
+a : Hurry up! | I'll watch everything! | I hope they are.
+
+scene et_cr_old_female
+when topic=crime kind=theft|assault a.stage=old a.sex=female
+a : I keep my rolling pin by the door now. I'm not afraid to use it. | My mother kept the town's peace with a broom. I've still got it. | No thief's getting past me. I sleep like a cat.
+b : I believe you. | I believe that too. | Lightly?
+a : Good. | Very sturdy broom. | With one eye open.
+
+scene et_cr_adolescent_bravado
+when topic=crime kind=theft|assault a.stage=adolescent band=friends
+a : If I'd been there, I'd have chased them off. | I could catch that thief. I'm fast. | Bet I could find who did it before the watch.
+b : You'd have run the other way. | Faster than a blade? | You'd find trouble.
+a : Would not. | Probably. | Same thing.
+
+# ---------------------------------------------------------------- Lives across the country
+
+scene et_lf_country_wedding
+when topic=life kind=marriage region=countryside
+a : The whole valley's coming to {subject}'s wedding. | Barn's swept for {subject}'s wedding dance. | {subject}'s wedding. Three days of eating.
+b[farmer] : Wedding in the barn, sleeping in the hay. Proper country.
+b : As it should be. | I'll bring the cider. | Three days! I'll need new trousers.
+a : Always. | Good. | Bigger ones.
+
+scene et_lf_city_wedding
+when topic=life kind=marriage region=cities
+a : {subject}'s wedding procession blocked the whole street. | {subject} married at the big chapel. Very grand. | Did you see {subject}'s wedding? Rose petals everywhere.
+b[merchant] : Grand for them. Bad for my trade, with the street closed.
+b : I was stuck behind it for an hour. | Grand and dear. | Still picking them out of my fur.
+a : Worth it, though. | Very dear. | Lovely.
+
+scene et_lf_north_death
+when topic=life kind=death region=north season=winter|autumn
+a : They'll keep {subject} cold till the ground softens. | Winter's long up here. {subject} didn't see the end of it. | {subject}'s gone. The cold took them, in the end.
+b[old] : Cold's merciful, in its way. You just go to sleep.
+b : The ground's like iron. | Too long. | It takes the old ones.
+a : Iron. | Always too long. | And not only old.
+
+scene et_lf_south_death
+when topic=life kind=death region=south
+a : They'll bury {subject} quick, with the heat. | Sun-sickness, they say. {subject}. | {subject} went in the hot spell.
+b[priest] : Quick or slow, the Bright One waits the same.
+b : Has to be. | Cruel sun. | Poor soul.
+a : Has to be. | Cruel. | Poor soul.
+
+scene et_lf_birth_winter
+when topic=life kind=birth season=winter
+a : A winter pup for {subject}. Born in the snow. | {subject}'s pup came on the coldest night of the year. | Winter-born, {subject}'s pup. Tough as old boots, they'll be.
+b[old] : Winter pups are hardy. Spring pups are lucky. That's the saying.
+b : Keep it warm! | Strong, then. | Tough as their mother.
+a : They are. | Very strong. | Tougher.
+
+scene et_lf_birth_spouses
+when topic=life kind=birth band=spouses
+a : {subject}'s pups are so small. Do you ever think... | Did you see {subject} with the pups? So happy. | {subject}'s pups made me want our own.
+b : I think about it all the time. | Happy and exhausted. | Me too.
+a : Really? | Both. | Then maybe.
+
+scene et_lf_appr_country
+when topic=life kind=apprentice region=countryside|towns
+a : {subject}'s going off to apprentice in the city. | {subject}'s apprenticed to the smith here. Stayed home. | {subject} starts with the miller tomorrow.
+b : The city swallows them. | Good. We need trades here. | Flour to the ears by noon.
+a : It might. | We do. | Ha.
+
+scene et_lf_appr_rivals
+when topic=life kind=apprentice band=rivals
+a : {subject} got the apprenticeship you wanted. | Did you hear who got taken on? {subject}. Not you. | Shame about the apprenticeship. {subject}'s, not yours.
+b : I didn't want it. | I'm aware. | You're enjoying this.
+a : Course not. | Just checking. | A little.
+
+scene et_lf_succ_rivals
+when topic=life kind=succession band=rivals
+a : {subject} takes over, and you get nothing. Again. | Passed over for {subject}. How does that feel? | {subject} got it all. Your face!
+b : Feels like I'll be fine. | Wonderful, thanks. | Enjoy it while it lasts.
+a : Sure. | Ha. | I will.
+
+scene et_lf_succ_old
+when topic=life kind=succession a.stage=old
+a : {subject} has the running of it now. In my day, you waited till the old one died. | Young {subject} in charge. The world goes too fast. | {subject} took over. I gave my trade over too late, myself.
+b : Times change. | Too fast. | Better too late than too early.
+a : Not for the better. | Much too fast. | Is it?
+
+scene et_lf_death_guard_b
+when topic=life kind=death b.role=guard
+a : Did you know {subject}? | Will the watch be at {subject}'s burying? | They say you found {subject}.
+b : A little. Good sort. | All of us. | I did. I'd rather not talk about it.
+a : I'm sorry. | Good. | Of course.
+
+scene et_lf_death_child_b
+when topic=life kind=death b.stage=young|adolescent
+a : You're very quiet. Is it about {subject}? | It's all right to be sad about {subject}. | Do you want to talk about {subject}?
+b : I keep thinking about them. | I know. | No.
+a : That's how you remember them. | Good. | All right. I'm here.
+
+scene et_lf_marriage_old_couple
+when topic=life kind=marriage a.stage=old b.stage=old
+a : {subject}'s married. Remember our wedding? | {subject} wed today. We were that young once. | Watching {subject} marry made me cry like a pup.
+b : I remember you trod on my tail. | Younger. Foolish. | You always cry.
+a : Once. | Happy fools. | Only at weddings.
+
+scene et_lf_marriage_merchant_b
+when topic=life kind=marriage b.role=merchant
+a : {subject}'s wedding. Did you sell them anything? | Who did the wedding cloth for {subject}? | {subject}'s getting married. I need a gift.
+b : Half the feast. | I did. Finest weave. | I've just the thing.
+a : Good for you. | It was fine. | Of course you have.
+
+scene et_lf_newcomer_marriage
+when topic=life kind=marriage band=acquaintances
+a : {subject}'s wedding was something. | Did you go to {subject}'s wedding? | {subject} married. Nice day for it.
+b : I heard. | No. Wasn't asked. | Wasn't it.
+a : It was. | Nor me. | Lovely.
+
+# ---------------------------------------------------------------- Newcomers across the country
+
+scene et_nc_city_crowd
+when topic=newcomer region=cities
+a : Another newcomer. {subject}. The city swallows them by the dozen. | {subject}'s new. You can tell by how they flinch at carts. | Saw {subject} lost in the market. City's too big for them.
+b[official] : Have them register at the hall. Everyone registers.
+b : And spits most of them out. | We all flinched once. | It's too big for me.
+a : Usually. | I still do. | Me too.
+
+scene et_nc_towns
+when topic=newcomer region=towns
+a : A newcomer here's news for a week. {subject}. | {subject} came to stay. In this town. | Everyone's had a look at {subject} by now.
+b : More than a week. | Wonder why. | Poor thing. Like a show.
+a : A month. | We'll find out. | Every eye.
+
+scene et_nc_winter_arrival
+when topic=newcomer season=winter
+a : Who arrives in winter? {subject}, apparently. | {subject} came in half-frozen. | Strange time to move, winter. {subject} did.
+b[innkeeper] : I gave them the room by the chimney.
+b : Someone with no choice. | Poor thing. | Running from something.
+a : That's what worries me. | Thawing now. | Probably.
+
+scene et_nc_spring_arrival
+when topic=newcomer season=spring|summer
+a : {subject} came with the warm weather. | New faces every {season}. {subject} this time. | {subject} arrived with the swallows.
+b : Sensible. | Every year. | Will they leave with them?
+a : Very. | Some stay. | We'll see.
+
+scene et_nc_rivals
+when topic=newcomer band=rivals
+a : I suppose you've already made friends with {subject}. | {subject} seems to like you. No accounting for taste. | Don't go poisoning {subject} against me.
+b : Somebody has to be friendly. | Jealous? | I'll tell them the truth.
+a : Charming. | Never. | That's what I'm afraid of.
+
+scene et_nc_spouses
+when topic=newcomer band=spouses
+a : Was {subject} looking at you at chapel? | {subject}'s handsome, isn't he? Don't answer that. | We should have {subject} round. They're alone.
+b : Only you, love. | I won't. | Good idea.
+a : Hm. | Good. | Tomorrow, then.
+
+scene et_nc_old_female
+when topic=newcomer a.stage=old a.sex=female
+a : I'll take that {subject} a pot of broth. Too thin, that one. | {subject} needs feeding up. I'll see to it. | That newcomer {subject} has no one to mend for them.
+b : They'll thank you. | Feeding up, aye. | Bless you.
+a : Course they will. | I'll start tonight. | Somebody must.
+
+scene et_nc_child_friend
+when topic=newcomer a.stage=young b.stage=young
+a : The new wolf {subject} has a pup our age! | {subject}'s pup is new. Can they play with us? | {subject} gave me a sweet!
+b : Can we play with them? | They can be on my side. | Did you share it?
+a : Let's ask! | My side! | No.
+
+scene et_nc_carter
+when topic=newcomer b.job=carter
+a : Did you bring {subject} in your wagon? | {subject} came with your load, didn't they? | {subject} said you gave them a ride.
+b : Picked them up on the road. Sore feet. | They paid with a song. Badly. | I did. Talked the whole way.
+a : Kind of you. | Ha. | That's the price.
+
+# ---------------------------------------------------------------- Festivals across the country
+
+scene et_fs_city
+when topic=festival region=cities when=today
+a : The streets are so full for {festival} you can't move. | Music on every corner for {festival}. | The hall's lit up for {festival}.
+b[guard] : Every pickpocket in the country's here too.
+b : Squeeze through. | Pick a corner. | Like a lantern.
+a : Squeezing. | All of them. | Beautiful.
+
+scene et_fs_towns
+when topic=festival region=towns|countryside when=today
+a : Everyone's on the green for {festival}. | One fiddler, one drum, the whole town dancing. For {festival}. | Trestle tables down the street for {festival}.
+b[old] : Same green, same tunes, sixty years. Wouldn't change a thing.
+b : Even the miser came. | Best kind. | Pass the bread.
+a : Even him. | The best. | Here.
+
+scene et_fs_rain
+when topic=festival when=soon weather=rain|storm|fog
+a : If this weather holds, {festival} will be a washout. | Pray it clears for {festival}. | Rain all week. Bad sign for {festival}.
+b[priest] : I'll pray. The Bright One owes us a fine day.
+b : It'll clear. | Praying. | Signs are nonsense.
+a : I hope. | Good. | Hope so.
+
+scene et_fs_snow
+when topic=festival weather=snow
+a : Snow for {festival}! Perfect. | Bonfire in the snow for {festival}. | Fresh snow, ribbons, it's {festival}.
+b[child] : Snowball fight at {festival}! I've got a pile ready!
+b : Prettiest feast day. | Warm in front, cold behind. | Couldn't be better.
+a : Prettiest. | Turn around now and then. | Couldn't.
+
+scene et_fs_spouses
+when topic=festival band=spouses when=soon
+a : What shall we bring to {festival}? | Shall we dance at {festival} like we used to? | Wear the green for {festival}. For me.
+b : The plum cake. Always. | My knees say no. My heart says yes. | For you, anything.
+a : Always. | Listen to your heart. | Good.
+
+scene et_fs_friends
+when topic=festival band=friends when=today
+a : Come on! It's {festival}! Stop working! | Meet me by the bonfire for {festival}. | Let's get a pie and watch the dancers for {festival}.
+b : Just finishing. | I'll find you. | Two pies.
+a : Now! | Don't be late. | Three.
+
+scene et_fs_rivals
+when topic=festival band=rivals when=soon
+a : I suppose you'll be showing off at {festival} again. | Don't steal my place at the {festival} table this year. | Your pie won the prize at {festival}. Fluke.
+b : I don't show off. | It's not your place. | Skill.
+a : Ha. | It is. | Fluke.
+
+scene et_fs_adolescent
+when topic=festival a.stage=adolescent
+a : Do you think anyone will ask me to dance at {festival}? | I'm staying up all night for {festival}. Nobody can stop me. | Can I have a cup of ale at {festival}? Just one?
+b : Someone will. | We'll see. | Half a cup.
+a : Who? | We will. | Half!
+
+scene et_fs_old_male
+when topic=festival a.stage=old a.sex=male
+a : I'll be telling my stories at {festival}, whether they want them or not. | I won the arm wrestling at {festival} six years running. Once. | My voice is going, but I'll sing at {festival}.
+b : They always want them. | Six years running, once? | We'll all sing with you.
+a : They don't. | Close enough. | Good.
+
+scene et_fs_merchant_b
+when topic=festival b.role=merchant when=soon
+a : Will you set up a stall for {festival}? | What are you selling at {festival}? | Busy week for you, with {festival}.
+b : Two stalls. | Sweets, ribbons, anything shiny. | The busiest.
+a : Greedy. | Shiny sells. | Good.
+
+# ---------------------------------------------------------------- Gossip across the country
+
+scene et_gs_city
+when topic=gossip region=cities
+a : Everyone in the city's heard {subject} {claim}. | In the city you can't sneeze without everyone knowing. {subject} {claim}. | It's on every corner. {subject} {claim}.
+b : The city's a big mouth. | Bless you. | Every corner.
+a : Biggest there is. | Ha. | Every one.
+
+scene et_gs_country
+when topic=gossip region=countryside|towns
+a : Out here there's nothing to do but talk. {subject} {claim}. | Small town, big ears. {subject} {claim}. | Everyone knows. {subject} {claim}.
+b : And talk we do. | Huge ears. | Course they do.
+a : Endlessly. | Enormous. | Always.
+
+scene et_gs_rain
+when topic=gossip weather=rain|fog|snow
+a : Nothing to do in this weather but talk. {subject} {claim}. | Stuck indoors, and I heard {subject} {claim}. | Under the eaves: {subject} {claim}.
+b : The weather breeds gossip. | Indoors is where gossip lives. | Eaves hear everything.
+a : It does. | Always. | Everything.
+
+scene et_gs_adolescent
+when topic=gossip a.stage=adolescent b.stage=adolescent
+a : You'll never believe it. {subject} {claim}! | Swear you won't tell. {subject} {claim}. | Everyone at the well says {subject} {claim}.
+b : I believe anything. | Swear. | Everyone!
+a : Ha! | Good. | Everyone.
+
+scene et_gs_old_pair
+when topic=gossip a.stage=old b.stage=old
+a : We're too old for gossip. But {subject} {claim}. | Did your hearing catch this one? {subject} {claim}. | In our day, a wolf who {claim} hid for a year. Now {subject} struts about.
+b : Too old to stop. | Louder. | Different times.
+a : Much too old. | {subject} {claim}! | Worse times.
+
+scene et_gs_merchant_pair
+when topic=gossip a.role=merchant b.role=merchant
+a : Between stalls: {subject} {claim}. | Customer told me {subject} {claim}. | Heard at the scales: {subject} {claim}.
+b : Bad for their credit. | Customers talk. | Scales don't lie, folk do.
+a : Very bad. | All day. | True.
+
+scene et_gs_apprentice
+when topic=gossip band=apprentice
+a : Master, is it true {subject} {claim}? | The other apprentices say {subject} {claim}. | I heard {subject} {claim}, master.
+b : Sweep, don't gossip. | The other apprentices talk too much. | Back to work.
+a : Yes, master. | Sorry, master. | Yes, master.
+
+scene et_gs_guard_pair
+when topic=gossip a.role=guard b.role=guard
+a : Off the record. {subject} {claim}. | Watch house talk: {subject} {claim}. | The captain thinks {subject} {claim}.
+b : Off the record, I heard that too. | Watch house talks more than a market. | The captain thinks a lot of things.
+a : Interesting. | Much more. | Mostly wrong.
+
+# ---------------------------------------------------------------- News across the country
+
+scene et_nw_rivals
+when topic=news band=rivals
+a : Before you hear it wrong: {news}. | Thought I'd tell you myself. {news}. | {news}. Go on, gloat.
+b : Thanks for telling me. | That's decent of you. | I won't gloat.
+a : Don't make it a habit. | I can be. | That's a first.
+
+scene et_nw_old
+when topic=news a.stage=old
+a : At my age, news is rare. {news}. | Listen, before I forget. {news}. | {news}. Still surprises in me yet.
+b : Rare and good. | I'm listening. | Plenty, I'd say.
+a : Very rare. | Good. | Ha.
+
+scene et_nw_spouses
+when topic=news band=spouses
+a : I didn't know how to tell you. {news}. | Sit down, love. {news}. | You'll hear it at the well, so here. {news}.
+b : We'll face it together. | Sitting. | Thank you for telling me first.
+a : Together. | Good. | Always first.
+
+scene et_nw_tavern
+when topic=news place=tavern
+a : Buy me a drink, I've news. {news}. | {news}. That's worth a cup. | Here's my news, and then I'm drinking. {news}.
+b[innkeeper] : That's worth one on the house.
+b : Drinks are on me. | Worth two. | Drink, then.
+a : Thank you. | Two! | Gladly.
+
+scene et_nw_strangers
+when topic=news band=strangers
+a : Odd thing to tell a stranger, but {news}. | You don't know me, but {news}. | {news}. Sorry, I needed to tell someone.
+b : Sometimes a stranger's easiest. | I'm glad you did. | It's all right.
+a : It is. | Thank you. | Thank you.

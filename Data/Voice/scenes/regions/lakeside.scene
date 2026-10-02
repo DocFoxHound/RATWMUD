@@ -1,0 +1,215 @@
+# Lakeside: fishers and boatwrights on the shore of the Mirrormere. The Still Water, the Drowned Oar, Mirrormere Fish,
+# the Boatwright's, the Netmaker's Loft, the Shore Oven, the Mere Chapel and its reed crosses, the Healer's House, the
+# reed beds, the mist, the Isle Fortress out on the water, and whatever moves beneath it.
+
+scene rg_ls_first_fish
+when topic=lore region=lakeside
+a : Threw the first fish back this morning, like always. | Never eat the first fish of the day. It belongs to the mere. | A lowlander ate his first catch. Fell in the lake by noon.
+b[fisher] : The mere gives the rest if you give back the first. Every boat knows it.
+b[priest] : The Bright One owns the mere. Still, it does no harm.
+b : Good habit. | So they say. | Served him right.
+a : Always. | Always. | Ha.
+
+scene rg_ls_lake_colour
+when topic=smalltalk|lore region=lakeside
+a : The mere's gone green as glass. Fish will be deep. | The water's dark today. Storm in the hills. | Silver on the water at dawn. Best fishing all season.
+b[fisher] : Read the colour, read the catch. My father's words.
+b[old] : I've watched that water seventy years. It's never the same twice.
+b : Deep and lazy. | Better stay in. | Get out there, then.
+a : Lazy as me. | I will. | I'm going.
+
+scene rg_ls_under_ice
+when topic=lore region=lakeside season=winter|autumn
+a : Old Heron swears something huge moved under the ice one winter. | When the mere freezes you can hear it groan all night. | My grandfather saw a shadow under the ice longer than a boat.
+b[old] : The mere's deeper than anyone's rope. Who knows what's down there.
+b[child] : Is it a monster? Will it eat me?
+b : He's seen too many winters. | Just the ice settling. | A big pike, maybe.
+a : Maybe. | Probably. | A very big pike.
+
+scene rg_ls_boatwright
+when topic=work region=lakeside a.job=crafter|apprentice|fisher
+a : The new skiff's ribs went in today. | Pitch smell all over the Boatwright's yard. | Somebody holed their boat on the Stone Teeth again.
+b[crafter] : A good skiff's ribs are bent green and dried slow. Rush it, it leaks.
+b : She'll be a beauty. | Smells like work. | Every month.
+a : She will. | Good work. | Every month.
+
+scene rg_ls_netmaker
+when topic=work|smalltalk region=lakeside
+a : The Netmaker's Loft looks like grey curtains hanging everywhere. | Ordered a new net. Three weeks' wait. | Pike tore through my net like it was spider silk.
+b[crafter] : A net's knots, and knots are time. No hurrying knots.
+b : It does. | Busy loft. | Big pike.
+a : Lovely in the light. | Very busy. | Enormous.
+
+scene rg_ls_shore_oven
+when topic=smalltalk region=lakeside time=dawn
+a : The Shore Oven's bread is out before the first boats. | Smell of the Shore Oven wakes the whole jetty. | Grabbed a hot loaf on the way to the boat.
+b[baker] : Bread before dawn for the boats. Every day for thirty years.
+b : Best smell there is. | Better than a bell. | Lucky you.
+a : The best. | Much better. | Very lucky.
+
+scene rg_ls_mere_chapel
+when topic=lore region=lakeside
+a : Hung a reed cross in the Mere Chapel for my brother's boat. | The chapel floor is laid with stones from the lake bed. | The Mere Chapel's beams are thick with reed crosses.
+b[priest] : Every cross is a prayer for safe water.
+b[old] : My mother laid one of those floor stones. Dived for it herself.
+b : May it keep him safe. | Lovely work. | Many prayers.
+a : May it. | Very lovely. | Very many.
+
+scene rg_ls_mist
+when topic=smalltalk|weather region=lakeside weather=fog|overcast
+a : Mist so thick I lost the jetty. | The mist comes in under the doors at the Still Water. | Nobody rows out in this.
+b[fisher] : Mist and still water. You row in circles and never know.
+b : Wait till noon. | Every night. | Nobody sane.
+a : I will. | Every night. | Nobody.
+
+scene rg_ls_isle_courting
+when topic=smalltalk region=lakeside band=friends|family|acquaintances
+a : Young Reed rows out to the Isle Fortress every Restday. Courting a soldier. | Half the lakeside girls are sweet on the garrison. | The garrison rows over for bread and stays for the dancing.
+b[soldier] : Lakeside folk are warmer than the Isle stones, that's sure.
+b[old] : I courted a garrison soldier once. Married a fisher instead.
+b : Sweet. | They always are. | Who could blame them?
+a : Very sweet. | Always. | Nobody.
+
+scene rg_ls_unclaimed
+when topic=lore region=lakeside
+a : They drew a body from the mere that nobody claimed. | The healer kept the drowned stranger's ring. Waiting for someone to ask. | They buried the stranger from the lake by the chapel.
+b[priest] : We said the words over them. The Bright One knows their name.
+b[guard] : No name, no town, no one asking. Strange business.
+b : Who was it? | Nobody's asked? | Poor soul.
+a : Nobody knows. | Nobody. | Poor soul.
+
+scene rg_ls_drowned_oar
+when topic=smalltalk region=lakeside place=tavern
+a : The Drowned Oar's full of nets and lantern smoke tonight. | Boatmen's wagers on the race at the Oar. | A fisher at the Oar claims he caught a pike as long as a bench.
+b[innkeeper] : Every fisher's pike gets a foot longer with every cup.
+b[fisher] : I saw it. Long as a bench and twice as ugly.
+b : Every night. | Who's winning? | And growing.
+a : Every night. | Nobody yet. | By the cup.
+
+scene rg_ls_reed_cutting
+when topic=work region=lakeside a.job=laborer|farmer|crafter
+a : Reed cutters were out at dawn in the shallows. | Thatching season. Every roof wants new reed. | Cut reed all day. My legs are wrinkled from the water.
+b[laborer] : Cut it low, bundle it tight. Wet reed rots, dry reed lasts.
+b : Early work. | Busy time. | Dry them by the fire.
+a : Very early. | Very busy. | I will.
+
+scene rg_ls_hold_breath
+when topic=smalltalk region=lakeside a.stage=young|adolescent
+a : I held my breath to fifty under the jetty! | Watch me dive for a lake stone! | Old Pike can hold her breath longer than anyone. I'll beat her.
+b[old] : Fifty? I did a hundred at your age. Come up for air, pup.
+b : Show-off. | Be careful! | Maybe someday.
+a : Watch me! | I will! | Someday!
+
+scene rg_ls_whittled_boats
+when topic=smalltalk region=lakeside
+a : Old Willow whittled a little boat for every child on the shore. | The children race their whittled boats off the jetty. | Found a tiny wooden boat washed up. Somebody's lost it.
+b[child] : Mine won! Mine's the fastest!
+b : Kind wolf. | Every Restday. | Some pup's crying.
+a : Very kind. | Every one. | Probably.
+
+scene rg_ls_hook_wounds
+when topic=lore|smalltalk region=lakeside
+a : The healer pulled a hook from a fisher's paw this morning. | The Healer's House has seen every kind of hook wound there is. | River-cold compresses. The healer swears by them.
+b[healer] : Cut it out clean and wash it in cold water. Most heal.
+b : Ouch. | I believe it. | They work.
+a : Very ouch. | Every kind. | Mostly.
+
+scene rg_ls_private_boat
+when topic=lore region=lakeside
+a : Nobody's allowed to touch old Heron's boat. Not even his kin. | That blue boat on the end has sat untouched ten years. | Why does nobody use that boat by the willows?
+b[fisher] : That boat's for the one who didn't come back. It waits.
+b[old] : Don't ask about that boat. Just don't.
+b : Strange. | Ten years. | No idea.
+a : Very strange. | Ten years. | I'll leave it.
+
+scene rg_ls_trout
+when topic=work region=lakeside a.job=fisher|cook|merchant
+a : Trout were rising at dusk. Good sign. | Smoked trout sells best at the Still Water. | Eel traps full this morning.
+b[cook] : Trout in butter with lake herbs. Nothing better on any table.
+b : Cast early tomorrow. | Always does. | Good catch.
+a : I will. | Always. | Very good.
+
+scene rg_ls_mirrormere_name
+when topic=lore region=lakeside
+a : On a still day you see the sky twice in the Mirrormere. | They say the mere shows you your future at midsummer dawn. | The Mirrormere gave the town everything. Fish, reed, stone.
+b[old] : I looked in at midsummer once. Saw my own face. Very disappointing.
+b[priest] : Superstition. Lovely, but superstition.
+b : That's how it got the name. | So they say. | And takes what it wants.
+a : It is. | So they say. | It does.
+
+scene rg_ls_still_water_inn
+when topic=smalltalk region=lakeside place=tavern|street
+a : The Still Water's low windows look right over the lake. | Smoked trout on every plate at the Still Water. | Travellers pay double for a lake room at the Still Water.
+b[innkeeper] : A room over the water's worth double. Wake up to herons.
+b : Best view in town. | Every plate. | Worth it.
+a : The best. | Every one. | So they say.
+
+scene rg_ls_jetty_repair
+when topic=work region=lakeside a.job=crafter|laborer|fisher
+a : The storm took two planks off the long jetty. | The jetty posts are rotting at the waterline. | Driving new piles for the jetty all week.
+b[crafter] : Oak for piles. Pine rots in a season.
+b : Mind your step. | They always do. | Hard work.
+a : Always. | Always. | Very hard.
+
+scene rg_ls_herons
+when topic=smalltalk region=lakeside place=shore|street
+a : Herons standing in the shallows like old priests. | A heron stole a fish right off my line. | Herons are the best fishers on the mere. Better than us.
+b[child] : I tried to stand like a heron. I fell over.
+b : Very still. | Cheeky bird. | True enough.
+a : Very still. | Cheeky. | Too true.
+
+scene rg_ls_isle_lights
+when topic=lore region=lakeside time=dusk|night
+a : The Isle Fortress's lights are on late tonight. | You can hear the garrison's bell across the water. | A boat from the Isle rowed over at midnight.
+b[soldier] : The garrison keeps watch. Lights mean they're doing their job.
+b : Watching for something. | Clear tonight. | What for?
+a : Always. | Very clear. | Who knows?
+
+scene rg_ls_weed
+when topic=work|smalltalk region=lakeside season=summer
+a : Lake weed's choking the shallows. | Can't row through the weed by the reed beds. | The mere goes warm and green in high summer.
+b[fisher] : Weed means warm water and lazy fish.
+b : Every summer. | Row round. | Every year.
+a : Every summer. | I tried. | Every year.
+
+scene rg_ls_drowning_season
+when topic=lore region=lakeside band=friends|family|spouses
+a : The mere took a swimmer at midsummer. Every year it takes one. | They say the mere wants one wolf every summer. | I won't let my pups swim past the willows.
+b[priest] : The mere takes the careless, not the chosen. Teach your young to swim.
+b : Every year. | Grim saying. | Wise.
+a : Every year. | Very grim. | Very wise.
+
+scene rg_ls_mere_bandits
+when topic=lore region=lakeside
+a : Boats without lanterns on the north shore again. | Somebody's been taking fish from the traps at night. | The garrison chased a boat across the mere last week.
+b[guard] : We row the north shore at dawn. We'll find them.
+b : Smugglers. | Thieves. | Did they catch it?
+a : Probably. | Probably. | Not yet.
+
+scene rg_ls_pike_story
+when topic=lore|smalltalk region=lakeside
+a : Old Mist's been chasing the same pike for twenty years. | They say there's a pike in the deep water old as the town. | Caught a pike with three hooks in its jaw already.
+b[fisher] : That pike's broken more lines than I've cast.
+b : He'll never catch it. | Ancient fish. | A survivor.
+a : Never. | Ancient. | A true survivor.
+
+scene rg_ls_eel_smoke
+when topic=work|smalltalk region=lakeside
+a : Smoked eel hanging in every chimney on the shore. | The eel smokers lit their fires before dawn. | Smoked eel's the only thing Lakeside sells to the cities.
+b[cook] : Eel smoked with alder wood. Nothing better in any city.
+b : Smells like home. | Early work. | And the trout.
+a : It does. | Very early. | And the trout.
+
+scene rg_ls_boat_naming
+when topic=lore region=lakeside
+a : Never rename a boat. The mere won't know her. | They named the new skiff after the healer. | Every boat on the mere has a name and a ribbon.
+b[fisher] : The ribbon's for the mere to find her in fog.
+b : Never. | Good choice. | Old custom.
+a : Never. | Very good. | Very old.
+
+scene rg_ls_reed_crosses
+when topic=lore|work region=lakeside
+a : Weaving reed crosses for the chapel beams. | Every new boat gets a reed cross at its bow. | The children weave reed crosses on Restday.
+b[priest] : A reed cross is a fisher's prayer, made with their own paws.
+b : Fine work. | Old custom. | Lovely.
+a : Thank you. | Very old. | Very lovely.

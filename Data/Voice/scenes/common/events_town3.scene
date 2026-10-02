@@ -1,0 +1,213 @@
+# Current events in town, part three: newcomers ({subject}) and festivals, today or a few days off ({festival}).
+
+# ---------------------------------------------------------------- Newcomers
+
+scene et_new_seen
+when topic=newcomer
+a : There's a new face in town. {subject}, they call them. | Have you met {subject}? Just moved here. | {subject}'s taken a room. Says they're staying.
+b[innkeeper] : Paid a month in advance. That's the sort of newcomer I like.
+b[old] : New faces come and go. Let's see if this one stays the winter.
+b : I've seen them about. | Not yet. What are they like? | Staying? Here? Brave.
+a : Seems decent enough. | Quiet. Watchful. | Or desperate.
+b?[friends] : We should ask them to supper. It's lonely, being new.
+
+scene et_new_suspicious
+when topic=newcomer band=friends|family|spouses
+a : I don't trust {subject}. Too many questions. | Where did {subject} come from, really? | {subject} smells of somewhere far off. I don't like it.
+b[guard] : I've got my eye on them. Nothing yet.
+b : Questions aren't a crime. | Ask them. | You don't like anything new.
+a : Not yet. | I might. | That's not true.
+
+scene et_new_welcome
+when topic=newcomer
+a : I took {subject} a loaf. They looked like they'd not eaten in days. | Showed {subject} the way to the well this morning. | {subject} asked me where the chapel was. Polite sort.
+b[priest] : The Bright One asks us to make room. Good.
+b : That's kind. | Somebody had to. | That's a good sign.
+a : It cost me nothing. | Nobody else would. | I thought so too.
+
+scene et_new_work
+when topic=newcomer
+a : Is {subject} looking for work? | {subject} asked if anyone's hiring. | I hear {subject} knows a trade.
+b[merchant] : I could use a pair of paws, if they can count.
+b[farmer] : Harvest needs every back. Send them to me.
+b : Everyone is. | Not many are. | Which one?
+a : True enough. | No. Sadly. | Nobody's sure.
+
+scene et_new_children
+when topic=newcomer a.stage=young|adolescent
+a : There's a new wolf called {subject}. Do they have any pups? | {subject} talks funny! | I saw {subject}. They've got a scar on their ear!
+b : I don't know. Ask nicely. | Don't say that to their face. | Don't stare at it.
+a : I'll ask. | Why not? It's true. | I only looked a little.
+
+scene et_new_old_view
+when topic=newcomer a.stage=old
+a : Another newcomer. {subject}. This town was all family once. | In my day, newcomers brought a gift to every door. | That {subject} hasn't been to chapel once.
+b : Towns grow. | Times change. | Give them time.
+a : Too fast. | Not for the better. | Hm.
+
+scene et_new_strangers
+when topic=newcomer band=strangers|acquaintances
+a : You'll have seen the newcomer. {subject}. | New wolf in town. {subject}. | Someone new's moved in. {subject}.
+b : I have. | I heard. | So I gather.
+a : That's all I know. | Seems fine. | We'll see.
+
+scene et_new_tavern
+when topic=newcomer place=tavern
+a : That's {subject}, the newcomer. In the corner. | {subject} bought a round last night. Everyone loves them now. | {subject} sits alone every night.
+b[innkeeper] : Pays, drinks slow, no trouble. Best customer I've had in a month.
+b : Looks lonely. | Buying friends is still buying. | Somebody ought to sit with them.
+a : I'll go over. | Cynic. | Go on, then.
+
+scene et_new_romance
+when topic=newcomer a.stage=adult b.stage=adult band=friends
+a : Have you seen {subject}? Very handsome. | {subject} smiled at me at the well. | I think I'll need directions from {subject}. Somewhere far.
+b : Calm yourself. | Smiled? Or squinted? | You're shameless.
+a : I'm perfectly calm. | Smiled. Definitely. | I'm hopeful.
+
+scene et_new_rumour_past
+when topic=newcomer
+a : They say {subject} left their last town in a hurry. | {subject} won't say where they're from. | I heard {subject} was a soldier once.
+b[guard] : Then they'll keep the peace, or I'll know why.
+b : Everyone's running from something. | That tells you something. | Could be. They walk like one.
+a : True. | It does. | They do.
+
+scene et_new_lost
+when topic=newcomer place=street|gate|market
+a : {subject} got lost twice today. Kept asking for the same street. | Poor {subject}. The streets here wind like eels. | Saw {subject} reading the signs out loud.
+b : We all did, once. | It's a maze. | At least they can read.
+a : True. | Worse in fog. | Fair point.
+
+scene et_new_scent
+when topic=newcomer
+a : {subject} smells of pine. Mountain folk, I'd say. | {subject}'s scent is all road dust and smoke. | You can smell the sea on {subject}.
+b[old] : A nose never lies. Scent tells you more than any story.
+b : Long way from home, then. | Travelled hard. | A sailor, maybe.
+a : Long way. | Very hard. | Maybe.
+
+# ---------------------------------------------------------------- Festivals today
+
+scene et_fest_today_joy
+when topic=festival when=today
+a : It's {festival} today! Have you seen the streets? | A merry feast to you, for {festival}! | Ribbons on every door for {festival}.
+b[old] : I've seen sixty of them and I still get a flutter.
+b[child] : There's going to be dancing and sweets and fire!
+b : Like a painting. | And to you! | Ribbons everywhere.
+a : Isn't it? | Eat well. | Lovely, isn't it.
+a?[friends] : Dance with me later. I won't take no.
+
+scene et_fest_today_work
+when topic=festival when=today a.role=merchant
+a : Busiest day of the year, this. I've not sat down. | Out of honey cakes already, and it's only noon on {festival}. | Everyone wants something on {festival}.
+b : Good for the purse. | Make more! | It's the season for it.
+a : Hard on the paws. | With what flour? | It is.
+
+scene et_fest_today_guard
+when topic=festival when=today a.role=guard
+a : A feast day means drunks. Lots of drunks. | No days off on {festival} for the watch. | Keep an eye out today. Pickpockets love {festival}.
+b[guard] : I'll bet you a penny we break up three fights before dusk.
+b : Every year. | Never is. | I will.
+a : Every year. | Never. | Good.
+
+scene et_fest_today_priest
+when topic=festival when=today
+a[priest] : On {festival}, we remember the Bright One gave us the hearth and the year's turning. Come to the chapel at noon.
+a : Are you going to the chapel blessing for {festival}? | The priest's preaching about {festival} at noon. | Will you light a candle for {festival}?
+b[priest] : I'd better. I'm leading it.
+b : After the feast. | I'll go for the hymns. | One for each of my family.
+a : Ha! | Just the hymns? | A good tradition.
+
+scene et_fest_today_food
+when topic=festival when=today place=market|street|tavern
+a : Smell the roasting? The feast for {festival}. | I've eaten three pies already. It's {festival}! | Honey cakes for {festival}, free at the hall!
+b[cook] : I've been up since the third hour basting. My arms are dead.
+b : Can't miss it. | Three! You'll burst. | Free? Run!
+a : Follow your nose. | Worth it. | Running.
+
+scene et_fest_today_children
+when topic=festival when=today a.stage=young|adolescent
+a : It's {festival}! Can I stay up late? | Can we go see the fire? Please? | I got a ribbon for {festival}!
+b : Just this once. | After supper. | It suits you.
+a : Yes! | Promise? | I know.
+
+scene et_fest_today_lonely
+when topic=festival when=today band=friends
+a : It's my first feast day without my mother. | It isn't the same this year, the feast. | I don't feel much like {festival}.
+b : Then spend it with us. | Nothing's the same. | You don't have to.
+a : Thank you. | No. | I know.
+
+scene et_fest_today_weather_bad
+when topic=festival when=today weather=rain|storm|snow
+a : Rain on {festival}. Of course. | The bonfire won't light in this. | All soaked through, and it's {festival}.
+b : Dance in the puddles. | It'll light. It always does. | Wet and happy.
+a : Why not. | Hope so. | Mostly wet.
+
+scene et_fest_today_weather_fine
+when topic=festival when=today weather=clear
+a : Clear skies for {festival}. The Bright One's smiling. | Not a cloud. Perfect for {festival}. | Dry as a bone for {festival}. Bonfire will be huge.
+b : For once. | Perfect. | Stand back from it.
+a : For once. | Perfect. | Ha!
+
+scene et_fest_today_tavern
+when topic=festival when=today place=tavern
+a : Another round for {festival}! | Half the town's in here for {festival}. | Somebody's singing the {festival} song. Badly.
+b[innkeeper] : At this rate I'll be retiring after {festival}.
+b : Just one more. | And the other half's outside. | Very badly.
+a : One more. | Every year. | Join in!
+
+scene et_fest_today_old
+when topic=festival when=today a.stage=old
+a : The feast was grander when I was young. | My mother made a cake for {festival} as big as a cartwheel. | I've danced at fifty feast days. Not today. My hips.
+b : Everything was. | Did she? | Fifty! Sit and watch.
+a : It was. | Bigger. | I will.
+
+scene et_fest_today_spouses
+when topic=festival when=today band=spouses
+a : Do you remember our first feast day together? | You still owe me a dance from last year's feast. | Wear the blue sash for {festival}.
+b : You fell in the river. | Do I? | The blue one? Fine.
+a : I was pushed. | You do. | It suits you.
+
+scene et_fest_today_rivals
+when topic=festival when=today band=rivals
+a : It's {festival}. Truce for a day? | Even on {festival} you look sour. | Let's not quarrel on {festival}.
+b : One day. | You bring out the sour in me. | Agreed. Tomorrow, though.
+a : One day. | Charming. | Tomorrow.
+
+# ---------------------------------------------------------------- Festivals soon
+
+scene et_fest_soon_prepare
+when topic=festival when=soon
+a : Nearly time for {festival}. Have you got your ribbons? | Only a few days to {festival}. | Everyone's busy getting ready for {festival}.
+b[cook] : I've a list of dishes as long as my tail.
+b[merchant] : Stocking up. Folk spend on {festival} like coin grows on trees.
+b : Not yet. | So soon? | I've done nothing.
+a : Better hurry. | Soon. | Me neither.
+
+scene et_fest_soon_child
+when topic=festival when=soon a.stage=young|adolescent
+a : How many sleeps until {festival}? | I can't wait for {festival}! | Are there fireworks at {festival}?
+b : A few more. | Nor can I. | Bonfires. Big ones.
+a : Too many. | Really? | Yes!
+
+scene et_fest_soon_doubts
+when topic=festival when=soon
+a : A feast? With prices what they are? | Time for {festival} already? | I can't afford {festival} this year.
+b : Still. A feast is a feast. | Already. | Nobody can.
+a : I suppose. | The year flies. | We'll manage.
+
+scene et_fest_soon_dress
+when topic=festival when=soon band=friends
+a : What are you wearing for {festival}? | I'm having a new sash made for {festival}. | I'll brush my coat till it shines for {festival}.
+b : Whatever's clean. | Fancy! | You'll look like a lord.
+a : Ha! | I know. | That's the plan.
+
+scene et_fest_soon_hall
+when topic=festival when=soon a.job=official|noble|priest
+a : The hall's paying for the {festival} bonfire this year. | Have the {festival} ribbons come yet? | We'll need the watch doubled for {festival}.
+b : Generous. | Not yet. | I'll tell the captain.
+a : Isn't it. | Chase them. | Good.
+
+scene et_fest_soon_strangers
+when topic=festival when=soon band=strangers|acquaintances
+a : It'll soon be {festival}. | Will you be out for {festival}? | Only a few days to {festival}, I hear.
+b : So it is. | Likely. | So I hear.
+a : Good. | Perhaps I'll see you. | Should be lively.

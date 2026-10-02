@@ -472,7 +472,22 @@ Rendered Library::render(const Scene& scene, const Situation& s, std::uint64_t s
             const auto found = blanks.find(name);
             if (found == blanks.end() || found->second.empty())
                 return false;
-            result += found->second;
+            // A blank that opens a sentence starts with a capital ("That grey stranger again?").
+            std::size_t back = result.size();
+            while (back > 0 && (result[back - 1] == ' ' || result[back - 1] == '"' || result[back - 1] == '\''))
+                --back;
+            const bool opens = back == 0 || result[back - 1] == '.' || result[back - 1] == '!' || result[back - 1] == '?';
+            // "the {festival} bonfire" with "the Greening" says the once.
+            std::string value = found->second;
+            const auto endsThe = [&](const std::string& t) {
+                return t.size() >= 4 && (t.compare(t.size() - 4, 4, "the ") == 0 || t.compare(t.size() - 4, 4, "The ") == 0) &&
+                       (t.size() == 4 || t[t.size() - 5] == ' ' || t[t.size() - 5] == '"');
+            };
+            if (value.rfind("the ", 0) == 0 && endsThe(result))
+                value = value.substr(4);
+            result += value;
+            if (opens && value[0] >= 'a' && value[0] <= 'z')
+                result[result.size() - value.size()] = char(value[0] - 'a' + 'A');
             i = end;
         }
         return true;

@@ -1,0 +1,273 @@
+# Work and trade by job (doc 30): those who keep order, rule, pray, learn and heal. Guards, soldiers, officials,
+# nobles, priests, scholars and healers. Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Guards
+
+scene tr_guard_night_watch
+when topic=work a.role=guard time=night|dusk
+a : Quiet night. I hate quiet nights. | Some drunk sang under the chapel window for an hour. | Saw a light moving on the old wall.
+b[guard] : Quiet's what we're paid for.
+b : Better than the other kind. | Did you move him? | Did you go and look?
+a : Quiet means someone's planning something. | Carried him home. He sang all the way. | Of course not. I'm not daft.
+
+scene tr_guard_boots
+when topic=work a.role=guard
+a : My boots let in water. Paws soaked all shift. | The sergeant wants us shaved and brushed by dawn. | Polished this helmet for an hour. Rained on it in a minute.
+b : Grease them. | Brushed? For whom? | That's the watch.
+a : I did. Water likes grease. | Some captain's coming. | That's the watch, every day.
+
+scene tr_guard_gate
+when topic=work a.role=guard place=gate
+a : Every cart through this gate wants to argue the toll. | A merchant tried to bribe me with a cheese. | Turned away three travellers without papers.
+b : They always do. | Was it a good cheese? | Where'd they go?
+a : They lose. Every time. | That's not the point. | Round the wall to the broken bit, probably.
+
+scene tr_guard_beggar
+when topic=work a.role=guard b.job=beggar
+a : You can't sleep on the chapel steps. Move along. | Back again? I told you yesterday. | Here. Get some soup. Don't tell the sergeant.
+b : Where am I to sleep, then? | And I came back. | Bright One keep you.
+a : Not on the steps. Anywhere else. | You're stubborn, I'll give you that. | And you keep your mouth shut.
+
+scene tr_guard_thief_chase
+when topic=work a.role=guard
+a : Chased a pickpocket through the market and lost him at the fish stalls. | Caught a lad with a stolen purse. Couldn't be more than ten. | Somebody's been stealing lamp oil from the street lamps.
+b : Fish stink hides everything. | What did you do? | Who steals lamp oil?
+a : I smell like fish now and he's gone. | Took him home to his mother. Worse than a cell. | Somebody cold. Or somebody planning.
+
+scene tr_guard_pay
+when topic=work a.role=guard b.role=guard
+a : Pay's short again. | They want two of us on the bridge and there's only us. | Captain's in a temper. Avoid the yard.
+b : The council takes its cut. | Then one of us stands on each end. | Again?
+a : The council takes everyone's cut. | And meets in the middle for a smoke. | He's always in a temper. Today's worse.
+
+scene tr_guard_ser_ferro
+when topic=work a.role=guard region=ser_ferro
+a : Another warehouse fire. Third this month. | The Couriers run their papers right past the Watch. | Captain says don't touch the merchant houses' carts.
+b : Insurance, I'd bet. | Proof's another matter. | Why not?
+a : Insurance and rivals. | Proof costs more than we're paid. | Because someone pays the captain more than us.
+
+scene tr_guard_ridgemere_sump
+when topic=work a.role=guard region=ridgemere
+a : Nobody wants the Sump patrol. | Pulled a body out of the canal this morning. | The Houses' guards think they own the streets.
+b : Draw lots. | Fell in? | They do own half of them.
+a : I always lose the lots. | Nobody falls in the canal by accident. | And the other half's theirs on Restday.
+
+scene tr_guard_fortress
+when topic=work a.job=guard|soldier region=fortresses
+a : Nothing on the horizon for a week. Nothing! | Stood the wall all night. Saw one owl. | The supply wagon's late again.
+b : Good. Keep it that way. | Was it a dangerous owl? | We'll eat the horse.
+a : Nothing makes me jumpy. | It looked at me. | Not my horse.
+
+scene tr_guard_new_recruit
+when topic=work a.role=guard b.stage=adolescent|young
+a : Want to join the watch, pup? | Stand up straight, you'll be a watchwolf one day. | Don't touch the spear.
+b : Can I have a spear? | Do you catch bandits? | I didn't!
+a : When you're taller than it. | Sometimes. Mostly drunks. | Your paw's on it right now.
+
+# ---------------------------------------------------------------- Soldiers
+
+scene tr_soldier_drill
+when topic=work a.job=soldier
+a : Drilled since dawn. Left, right, left, crossbow. | Sergeant had us run the wall in full kit. | Twenty quarrels at the butts, eighteen in.
+b[soldier] : You call that a drill? You should have seen the old captain.
+b : Must be tired. | Show-off. | Not bad.
+a : Tired's a word for it. | It wasn't my idea. | Not bad's not good.
+
+scene tr_soldier_rumour_war
+when topic=work|smalltalk a.job=soldier
+a : They say the army's moving south by summer. | Officers have been in the map room all week. | New orders came by courier. Sealed.
+b : They always say that. | Something's coming. | What do they say?
+a : One year it'll be true. | Or someone's lost a cart. | Sealed means nobody knows. Not even them.
+
+scene tr_soldier_barracks
+when topic=work a.job=soldier place=barracks
+a : The bunk under mine snores like a millrace. | Mess was grey again. Grey porridge, grey meat. | Someone pinched my good blanket.
+b : Pinch his nose. | Grey's a colour. | Check the corporal's bunk.
+a : He bites. | The only colour here. | Not a chance. I like living.
+
+scene tr_soldier_kit
+when topic=work a.job=soldier b.job=smith|crafter
+a : My harness strap's split. | Can you fix the crossbow? The latch slips. | The quartermaster won't give me new boots.
+b : Leave it, I'll stitch it. | Bring it in. | Buy them.
+a : Today? I'm on watch tonight. | It slipped in drill. Nearly put one in the sergeant. | On a soldier's pay?
+
+scene tr_soldier_home
+when topic=work|family a.job=soldier band=family|spouses|friends
+a : I've leave in a fortnight. Three days home. | Got a letter. Mother's not well. | Captain says no leave till the harvest.
+b : Three days! | Go to her. | That's months.
+a : Three days, and two of them on the road. | They won't let me. | Months of wall and porridge.
+
+# ---------------------------------------------------------------- Officials
+
+scene tr_off_ledgers
+when topic=work a.job=official
+a : Six ledgers to copy before the council sits. | Somebody spilled ink across the tax rolls. | Half the town hasn't paid its hearth tax.
+b : Six? | Can you still read them? | Can you blame them?
+a : Six, and the quill's split. | Enough to know who owes. | Blame, no. Collect, yes.
+
+scene tr_off_council
+when topic=work a.job=official|noble
+a : The council argued three hours over the price of lamp oil. | They voted to mend the bridge. Again. Next year. | A petition from the tanners. About the smell.
+b : And? | Again. | The tanners are complaining about the smell?
+a : Postponed. | Next year never comes. | No. Everyone else is. They want it noted.
+
+scene tr_off_bribe
+when topic=work a.job=official
+a : A merchant tried to slip me a mark to stamp his papers. | Someone's paying the weighmaster. I'd swear it. | The records office lost a deed. Conveniently.
+b : Did you take it? | Proof? | Whose deed?
+a : I took his name. | Not yet. | The one everyone's suing over.
+
+scene tr_off_upper_accord
+when topic=work a.job=official|scholar region=upper_accord
+a : The Concord clerks want every petition copied three times. | Wardens brought another one in last night. Gifted, they say. | The archive's flooded in the lower stacks.
+b : Three times? | Quickened? | Not the old manuscripts!
+a : Three. One to file, one to lose, one to argue over. | Nobody says that word out loud here. | Some of them. They'll blame the clerks.
+
+scene tr_off_ser_ferro_court
+when topic=work a.job=official|noble region=ser_ferro
+a : The Royal Hand's office wants every grain ledger by Restday. | A Concord Representative's visiting court. Everyone's polishing. | Another records clerk resigned. That's four.
+b : Why the grain? | Polishing what? | Four?
+a : Someone's selling the Crown's stores. | Everything, including their stories. | Four. Nobody says why.
+
+scene tr_off_toll
+when topic=work a.job=official|guard place=gate|work region=towns
+a : Toll takings are down a third this season. | A carter swore blind he'd paid at the last post. | I've a box of foreign coin no one will change.
+b : Fewer carts. | Had he? | Melt it.
+a : Or more smugglers. | He had the receipt. Forged. | I'd hang for it.
+
+# ---------------------------------------------------------------- Nobles
+
+scene tr_noble_estate
+when topic=work a.job=noble
+a : The steward's accounts don't add up. | Our tenants want the rents lowered again. | The estate roof needs mending and the treasury's empty.
+b[servant] : I'm sure there's a simple explanation, my lady. My lord.
+b : Have them checked. | Can you afford it? | Sell a painting.
+a : I had them checked. The checker's the steward's cousin. | I can't afford not to. | Which one? They're all of grandfather.
+
+scene tr_noble_houses
+when topic=work|smalltalk a.job=noble b.job=noble
+a : House Brinewater's been courting the Fells. | Your cousin snubbed me at the feast. | The council seat goes to whoever pays most.
+b : Let them. Fell timber, Brinewater hulls. It suits. | She snubs everyone. | That's how it's always gone.
+a : It suits them. It doesn't suit us. | Not with her teeth showing. | Then we'll pay most.
+
+scene tr_noble_hunting
+when topic=smalltalk|work a.job=noble
+a : The hunt runs at dawn. You'll run with us? | Lost my best hawk over the river. | The deer park's been poached.
+b : Gladly. | Can you get her back? | By whom?
+a : Wear something that doesn't clash. | She'll come back. She always does, eventually. | By whoever's hungry. Which is everyone.
+
+scene tr_noble_petition
+when topic=work a.job=noble b.role=civilian
+a : State your business. Briefly. | Another petition about the mill? | You're the one who wrote to my steward.
+b : The well on our street's run dry, my lord. | The miller cheats us, my lady. | I am. About the rent.
+a : I'll send someone. Eventually. | Every miller cheats. Prove it. | My steward handles rents. Go away.
+
+# ---------------------------------------------------------------- Priests
+
+scene tr_priest_sermon
+when topic=work a.job=priest
+a : Half the benches empty at morning prayers. | Wrote a sermon on duty. They'll sleep through it. | The chapel roof's dripping on the altar.
+b[old] : When I was young we filled every bench and the doorway.
+b : It's cold. They stay abed. | Duty's a sleepy word. | Bright One's tears.
+a : The Bright One rose earlier. | Then I'll shout it. | Rain's tears. Mend it with tiles.
+
+scene tr_priest_confession
+when topic=work a.job=priest
+a : Someone came to the chapel at midnight to unburden themselves. | Heard more sins today than I've had suppers. | A child asked me where the Dark One sleeps.
+b : Who? | Anything good? | What did you say?
+a : That's between them and the Bright One. | Nothing a priest repeats. | Nowhere near here. I hope.
+
+scene tr_priest_alms
+when topic=work a.job=priest b.job=beggar|child
+a : There's bread at the chapel door after prayers. | Come in out of the rain. | Have you eaten today?
+b : For anyone? | They won't throw me out? | Not since yesterday.
+a : For anyone who stays for the prayer. | Not while I'm here. | Then sit. Prayer can wait.
+
+scene tr_priest_funeral
+when topic=work a.job=priest
+a : Third burial this week. | Buried a fisher with no body. Just his name. | The family can't pay for the rites.
+b : A bad week. | That's hard. | Do it anyway.
+a : A bad season, it's turning into. | The sea keeps the rest. | I always do. Don't tell the bishop.
+
+scene tr_priest_concord
+when topic=work a.job=priest region=accord
+a : Concord inspectors examined the chapel books. | Pilgrims slept on the cathedral floor again. | The Wardens asked to see our birth records.
+b : Find anything? | Every year more. | Why?
+a : A few spelling mistakes. They noted them. | Faith is crowded. | They didn't say. They never do.
+
+scene tr_priest_tide_chapel
+when topic=work a.job=priest region=rain_coast|lake
+a : Cut another name into the chapel wall today. | Blessed the boats at dawn. Half the fleet didn't come. | The fishers want a prayer against the fog.
+b : Who? | Too early for them. | There's a prayer for that?
+a : Young one. Twenty. | Fish don't care about prayers either. | There is now.
+
+# ---------------------------------------------------------------- Scholars
+
+scene tr_scholar_manuscript
+when topic=work a.job=scholar
+a : This manuscript's four hundred years old and someone's used it as a table mat. | I've been reading by one candle for a week. | Found a page of the old chronicle no one's seen in a century.
+b : Can it be saved? | Your eyes! | What does it say?
+a : Most of it. Not the soup stain. | My eyes are for reading. | Nothing good about the Bright One's critics.
+
+scene tr_scholar_ink
+when topic=work a.job=scholar|official
+a : My quill keeps splitting in my teeth. | Ink froze in the pot overnight. | Copied a whole page and then sneezed on it.
+b : Bite softer. | Warm it by the fire. | Bless you.
+a : I'll bite the next one through. | It's between my paws now. | Bless the page. It needs it.
+
+scene tr_scholar_argument
+when topic=work|smalltalk a.job=scholar b.job=scholar|priest
+a : The old cities were built by the Bright One's own paws. It's written. | The chronicle has two dates for the founding. | I think the Dark One was a person once.
+b : Written by whom? | One's wrong. | Careful who hears that.
+a : By the faithful, obviously. | Or both are. | I said once. Not now.
+
+scene tr_scholar_pupil
+when topic=work a.job=scholar b.stage=young|adolescent
+a : Recite the seven virtues. | Hold the quill in your teeth, not your lip. | What year was the Concord founded?
+b : Order, duty, um... | It hurts. | Before I was born?
+a : Order, duty, community, and four more you'll learn by supper. | It hurts less with practice. | Considerably before. Read the page.
+
+scene tr_scholar_ser_ferro
+when topic=work a.job=scholar region=ser_ferro
+a : The royal library won't lend to commoners now. | The court historian rewrote last year already. | Bought a book of maps at the wharf. Half the rivers are wrong.
+b : Since when? | Already? | Only half?
+a : Since a commoner lent a book to the wrong wolf. | Kings like their history fresh. | Half's better than most.
+
+# ---------------------------------------------------------------- Healers
+
+scene tr_heal_fever
+when topic=work a.job=healer
+a : A fever's going through the lower street. | Set a broken leg this morning. Clean break, he'll walk. | Up all night with a whelping.
+b : Bad one? | Lucky lad. | How many pups?
+a : Bad enough. Boil your water. | Lucky he fell off a low roof. | Five. All squalling.
+
+scene tr_heal_herbs_short
+when topic=work|prices a.job=healer
+a : I'm out of willow bark. Can't treat a headache. | Somebody bought every bit of feverfew in the market. | The good moss only grows in the fens.
+b[farmer] : There's willow down by my ditch. Take what you need.
+b : Try the herb woman. | Who? | Go to the fens, then.
+a : The herb woman's who I buy from. | Someone with a fever, I'd hope. | And leave the sick for a week?
+
+scene tr_heal_gifted
+when topic=work|smalltalk a.job=healer
+a : There's a gifted healer in the city, they say. Closes a cut with a touch. | Folk think I should be able to heal with a word. | I'll stick to stitches and poultices.
+b : Is it true? | Can't you? | Stitches work.
+a : True, and it costs her. Everything costs. | I've a needle and a strong stomach. | Every time.
+
+scene tr_heal_miner
+when topic=work a.job=healer b.job=miner|laborer|smith
+a : Let me see that paw. | You're coughing worse. | Keep that bandage dry this time.
+b : It's nothing. | It's just the dust. | I'll try.
+a : Nothing's swollen up like a plum. | Dust doesn't make you spit blood. | Trying is how it gets infected.
+
+scene tr_heal_bonesetter
+when topic=work a.job=healer region=marches
+a : Two from the pits today. Crushed paws, both of them. | The long bench is full. I'm out of splints. | Set a shoulder with my weight on his chest. He swore at me in three tongues.
+b : The pits eat wolves. | Use fence rails. | Did it work?
+a : And spit out the bones for me. | I have been. | It worked. He's still swearing.
+
+scene tr_heal_fens
+when topic=work a.job=healer region=fens
+a : Fenhollow moss stops bleeding better than any salve. | Collected bog myrtle all morning. Legs black to the shoulder. | The marsh fever's back with the warm weather.
+b : Can you sell it in the city? | Smells nice, at least. | Already?
+a : They pay a penny for what's worth a mark. | Nice for a day. Then it's just bog. | Every summer. Like a cousin.

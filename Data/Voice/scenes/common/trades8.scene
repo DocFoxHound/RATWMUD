@@ -1,0 +1,235 @@
+# Work and trade by job (doc 30): the street trades, the watch and the seasons of work. Plain lines answer each
+# other in parallel.
+
+# ---------------------------------------------------------------- Merchants
+
+scene tr_merch_credit
+when topic=work a.role=merchant b.role=civilian band=acquaintances|friends|family
+a : I can't give you more credit, {b}. Not this time. | You've paid your slate. First time this year. | I'll knock a penny off. For you.
+b : Just till Restday. | Don't sound so surprised. | Bless you.
+a : That's what you said last Restday. | I'm not surprised. I'm astonished. | Don't tell anyone or they'll all want it.
+
+scene tr_merch_new_goods
+when topic=work a.role=merchant
+a : Got a crate of southern spices in. Smell that. | Bought a load of copper pots off a carter. Questions not asked. | New cloth from Ser Ferro. Red as a royal roof.
+b : Smells expensive. | Stolen? | How much?
+a : Smells expensive because it is. | Pots don't talk. | More than you'll pay. Less than it's worth.
+
+scene tr_merch_slow_day
+when topic=work a.role=merchant time=day
+a : Not one customer since dawn. | Sold a candle. One candle. | Folk walk past and look and walk on.
+b : It's early yet. | Big spender. | Shout louder.
+a : It's past noon. | I'll frame the penny. | I shouted till I lost my voice.
+
+scene tr_merch_thief
+when topic=work|crime a.role=merchant
+a : Some pup snatched an apple and ran. | Somebody's been stealing from the back of the stall. | Counted the till. Five pennies short. Again.
+b : Chase him? | Watch the back. | Who's got the key?
+a : At my age? He was gone. | I can't watch front and back. | Only me. And the cat.
+
+scene tr_merch_upper_streets
+when topic=work a.role=merchant region=cities
+a : The upper streets buy silk. The lower streets buy bread. I sell both. | A lady sent her servant to haggle. The servant's better at it than me. | The rich never carry coin. Everything on account.
+b : Clever. | Ha. | And pay when?
+a : Clever and tired. | I'll hire him away. | When they remember. They never remember.
+
+scene tr_merch_sea_trade
+when topic=work a.role=merchant region=rain_coast|lake|ser_ferro
+a : My ship's three days overdue. | Bought a share in a cargo. If it sinks, so do I. | Ships are in. Prices are down.
+b : Weather. | Brave. | Buy, then.
+a : Weather or worse. | Brave or stupid. Same thing at sea. | Buy cheap, pray for dear.
+
+scene tr_merch_partner
+when topic=work a.role=merchant b.role=merchant band=friends|family|spouses
+a : Shall we share a stall next market? | Watch my stall while I eat? | I'm thinking of selling up.
+b : Half the rent. Why not. | Bring me something back. | Don't be daft.
+a : And half the arguments. | A pie. Your favourite. | Daft's the only thing I've not sold.
+
+# ---------------------------------------------------------------- The watch
+
+scene tr_guard_drunks
+when topic=work a.role=guard time=night|dusk
+a : Carried three drunks home tonight. One bit me. | Broke up a fight outside the tavern. Over a song. | Locked a sailor in the cells to sleep it off.
+b : Another night in the watch. | A song? | He'll thank you.
+a : Another night of drunks. | A bad song. | He'll curse me. They always do.
+
+scene tr_guard_bored
+when topic=work a.role=guard time=day
+a : Stood at this post four hours. Seen two cats and a cart. | Counted the cobbles. Two hundred and ninety. | Nothing ever happens on this street.
+b : That's good, isn't it? | Count again. | Something will.
+a : Good and dull. | Two hundred and ninety-one now. | And I'll be on my break.
+
+scene tr_guard_sergeant
+when topic=work a.role=guard b.role=guard band=acquaintances|friends
+a : Sergeant's put us on double shifts all week. | Who drew the gate tonight? | The sergeant says the captain says the council says.
+b : Lovely. | You. | And nobody pays.
+a : Lovely and sleepless. | Of course I did. | And nobody pays. Nobody.
+
+scene tr_guard_fire
+when topic=work a.role=guard
+a : Fire in the warehouse quarter last night. | Formed a bucket line from the well. Tail singed. | We saved two houses. Lost the third.
+b : Anyone hurt? | Brave. | Two out of three.
+a : A cat, and some pride. | Brave and smoky. | Two out of three's a good night.
+
+scene tr_guard_recruit_story
+when topic=work|smalltalk a.role=guard
+a : Joined the watch for the pay. Stayed for the soup. | My first night on watch I arrested a statue. | Twenty years on the watch. Never drawn steel.
+b : Is the soup good? | A statue? | Lucky.
+a : The soup's terrible. That's why I stay. Habit. | It looked shifty in the fog. | Lucky or quick-talking.
+
+# ---------------------------------------------------------------- Innkeepers and officials
+
+scene tr_inn_stranger
+when topic=work a.job=innkeeper
+a : A traveller asked for a room with no window. | Somebody paid a week in advance and never came. | Two strangers sat in the corner all evening and drank water.
+b : Hiding? | Free money. | Water? In a tavern?
+a : From whom, is what I'd like to know. | Or a corpse in a ditch somewhere. | Water. I charged them for it.
+
+scene tr_inn_quiet_night
+when topic=work a.job=innkeeper time=night
+a : Last one out. Bolting the door. | Somebody's asleep on the bench. I'll leave them. | Counting the takings by one candle.
+b : Long day. | Kind of you. | Good night?
+a : Long day, short sleep. | Kind and lazy. | Good enough to open tomorrow.
+
+scene tr_off_census
+when topic=work a.job=official
+a : Counting every hearth in town for the census. Half lied. | Wrote down every wolf in the street. Three gave the same name. | The census says the town's grown. The council says it hasn't.
+b : Why lie? | Same name? | Who's right?
+a : Fewer hearths, less tax. | All Brin. All brothers, they say. | The census. The council's counting itself.
+
+scene tr_off_seal
+when topic=work a.job=official
+a : Lost the office seal. Turned the place upside down. | Stamped two hundred papers today. My jaw's sore. | Someone forged my signature. Badly.
+b : Find it? | Two hundred? | How badly?
+a : Under my own paw. All along. | Two hundred, and they'll all come back wrong. | Spelled my name wrong.
+
+# ---------------------------------------------------------------- Sailors, fishers and the shore
+
+scene tr_shore_morning
+when topic=work place=shore time=dawn
+a : The tide's out. Let's dig for clams. | Boats are going out. Fog's lifting. | Something washed up on the beach in the night.
+b : Bring a basket. | Late as usual. | What?
+a : Two baskets. | Late and wet. | A barrel. Empty, sadly.
+
+scene tr_sail_superstition
+when topic=work|smalltalk a.job=sailor|fisher
+a : Never whistle on a boat. Calls the wind. | A she-wolf on board's good luck, whatever the old fools say. | Saw a white gull at the mast. Means a calm.
+b : What if you want wind? | Which old fools? | Good sign?
+a : Then whistle very quietly. | All the ones who never sailed with my mother. | Good for sleeping, bad for sailing.
+
+# ---------------------------------------------------------------- Healers and priests more
+
+scene tr_heal_midwife
+when topic=work a.job=healer a.sex=female
+a : Three litters this week. I've not slept. | A first-time mother, terrified. Five healthy pups. | Called out at midnight. Turned out to be indigestion.
+b : Three! | All healthy? | At midnight?
+a : Three, and all at night. Pups always come at night. | Healthy and loud. | Too much plum pie.
+
+scene tr_priest_bells
+when topic=work a.job=priest|servant|laborer place=chapel
+a : Rang the bell for dawn prayers. My ears are still ringing. | The bell rope's frayed. One more pull and it goes. | Polished the brass till I saw my muzzle.
+b : Deaf yet? | Mend it. | Vain.
+a : What? | With what? The tithes went to the roof. | Clean, not vain.
+
+# ---------------------------------------------------------------- Seasons of work
+
+scene tr_season_spring_work
+when topic=work season=spring
+a : Spring. Everything wants doing at once. | Mud everywhere. Work's twice as slow. | First warm day. Worked with the doors open.
+b : Always does. | Wait for it to dry. | Lovely.
+a : And there's only one of me. | It never dries. | Lovely till the flies came in.
+
+scene tr_season_summer_work
+when topic=work season=summer
+a : Long days. Long work. | Worked from dawn till the stars. | Flies in the workshop. Flies in my ears.
+b : Good light, though. | No wonder you're thin. | Shut the door.
+a : Good light, no rest. | Thin and tired. | Then I'll cook.
+
+scene tr_season_autumn_work
+when topic=work season=autumn
+a : Everything needs doing before winter. | Leaves in the gutters, mud on the floors. | Stocked up wood and grain. Feels like armour.
+b : Get started. | Same every year. | Good.
+a : Started a month ago. Still going. | Same every year, and still a surprise. | Armour that burns, though.
+
+scene tr_season_winter_work
+when topic=work season=winter
+a : Short days. Can barely see to work. | Paws frozen to the tools. | Winter's slow. Folk don't buy.
+b : Light a lamp. | Wrap them. | Spring's coming.
+a : Lamp oil's dear. | In what? | Not fast enough.
+
+# ---------------------------------------------------------------- Night work
+
+scene tr_night_work
+when topic=work time=night
+a : Working by candlelight. Eyes like burnt holes. | The night shift's quieter. I like it. | Couldn't sleep, so I worked.
+b : Go to bed. | Quiet and cold. | Sleep's better.
+a : Bed's for the finished. | Cold's quiet. | Work's quieter.
+
+scene tr_night_bakers_guard
+when topic=work time=night|dawn a.job=baker b.role=guard
+a : Want a roll? First batch. | Anything stirring out there? | Mind the oven door, it's hot.
+b : Bless you. Yes. | A cat and a drunk. | I can feel it from here.
+a : Don't tell the sergeant. | Same as every night. | Warm your paws, then go.
+
+# ---------------------------------------------------------------- Children at chores, more
+
+scene tr_child_shop
+when topic=work a.stage=young|adolescent place=work|market
+a : Ma lets me mind the shop when she's out. | I swept the whole floor and nobody noticed. | A customer asked for something and I didn't know what it was.
+b : Don't give anything away. | I noticed. | What was it?
+a : I gave away one sweet. To me. | Really? | A gimlet. Still don't know.
+
+scene tr_child_errand_old
+when topic=work|smalltalk a.stage=young b.stage=old
+a : I'm fetching your water today, Granny. Ma said. | Do you need anything from market? | I can carry your basket!
+b : Good pup. Don't spill it. | Onions. And no dawdling. | It's heavier than you.
+a : Only a little! | No dawdling. Much. | I'm stronger than I look.
+
+# ---------------------------------------------------------------- Cooks, bakers and brewers in towns
+
+scene tr_food_town_cook
+when topic=work a.job=cook|innkeeper|baker region=towns
+a : The carters want meat. The meat's in the city. | Cooking for a town is cooking for a family. A loud one. | Everyone in town knows what I put in the stew.
+b : Give them mutton. | Loud and hungry. | Everything, I hope.
+a : Mutton again. They'll mutiny. | Loud, hungry and never late. | Everything left over.
+
+scene tr_food_fortress_brewer
+when topic=work a.job=brewer|cook region=fortresses
+a : The garrison ration is a pint a day. They want two. | Brewed in a fortress cellar. Tastes of stone. | Commander tasted my ale and smiled. First time all year.
+b : Give them two. | Stone's flavour. | Miracle.
+a : And watch them fall off the walls? | Stone and duty. | A small smile. I'll take it.
+
+# ---------------------------------------------------------------- Woodcutters and miners, more
+
+scene tr_wood_spring
+when topic=work a.job=woodcutter season=spring
+a : The sap's rising. Bad time to fell. | Planted forty saplings today. | Spring rains. The woods are a bog.
+b : Wait, then. | Forty! | Stay out.
+a : Waiting doesn't pay rent. | Forty, for my grandpups' grandpups. | Can't. The town still needs wood.
+
+scene tr_wood_old
+when topic=work a.job=woodcutter b.stage=old
+a : You cut these woods once, didn't you? | Which trees are best for bows? | Is it true you felled the great oak?
+b : Every tree from here to the river. | Yew. Old yew. Ask permission. | Took me a week. Wept after.
+a : They've grown back. | Permission from who? | Wept? Over a tree?
+b : Trees forgive. Lords don't.
+
+scene tr_mine_kids
+when topic=work|family a.job=miner b.stage=young|adolescent
+a : You're not going down the pit. Not ever. | Wash your paws, you look like a miner. | Did you bring my lunch?
+b : Why not? You do. | You look like a miner. | It's a bit squashed.
+a : Because I do. | That's because I am. | Squashed lunch is still lunch.
+
+# ---------------------------------------------------------------- Laborers, more
+
+scene tr_lab_storm_damage
+when topic=work a.job=laborer|crafter weather=storm|rain
+a : The storm took half the roofs on our street. | Clearing a fallen tree off the road all day. | Water's come into every cellar in the lower town.
+b : Work for you, at least. | Need help? | Bail it.
+a : Work for a week. Paid in thanks. | Bring a saw. | Bail a town?
+
+scene tr_lab_new_building
+when topic=work a.job=laborer|crafter place=street|work
+a : They're building a new hall on the square. | Dug foundations all week. Hit an old well. | The mason says the walls lean. They lean.
+b : Who for? | Full? | Prop them.
+a : The council. Who else? | Full of old boots. | Prop them, then pray.

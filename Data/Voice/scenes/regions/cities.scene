@@ -94,9 +94,9 @@ a : It is. | Thank you. | Every year.
 
 scene sf_prince
 when topic=lore region=ser_ferro
-a : The Prince rode through the upper tier today. | They say the Prince is ill. | The palace is hiring again.
-b[servant] : Don't believe the talk. The Prince is well. Mostly.
-b[noble] : The Prince's health is not a matter for the market.
+a : The King rode through the upper tier today. | They say the King is ill. | The palace is hiring again.
+b[servant] : Don't believe the talk. The King is well. Mostly.
+b[noble] : The King's health is not a matter for the market.
 b[child] : Did he wave? Did you see his horse?
 b : Did you see him? | Who says? | Doing what?
 a : From a distance. | Everyone. | Scrubbing, I expect.

@@ -1,0 +1,265 @@
+# Upper Accord, more of its own: the Concord and its envoys, the archives, the Warden Order and the wolves it brings
+# up the mountain, the Chapel of the First Oath, the Stair Gate and the wards, the snow, the tarns and the pass.
+
+scene rg_ua_envoys
+when topic=lore|smalltalk region=upper_accord
+a : Envoys from Ser Ferro came up the road today, banners and all. | Another delegation in Concord Hall. Ridgemere, by the colours. | The envoys' horses are eating the plaza bare.
+b[official] : Every member state must be heard. That is the whole of the Concord.
+b[servant] : They want hot water at every hour. Every single hour.
+b[child] : Did you see the banners? The silver one was the best!
+b : They come and go like weather. | Something's brewing, then. | Envoys and horses, both well fed.
+a : And leave the same. | Something always is. | Better fed than me.
+
+scene rg_ua_archive
+when topic=lore region=upper_accord
+a : The archive keepers are airing the old scrolls on the terrace. | They say the Concord archive holds a copy of every law ever written. | I once saw inside the lower archive. Shelves to the dark.
+b[scholar] : Not every law. Only every law worth keeping, and a few that weren't.
+b[old] : My mother copied for the archive forty years. Her teeth were black with ink.
+b : Hope it doesn't rain on them. | Every law? Who reads them? | What did it smell like?
+a : It won't dare. | Nobody, I'd guess. | Dust and old wax.
+
+scene rg_ua_quill_teeth
+when topic=work region=upper_accord a.job=scholar|official
+a : My jaw aches from holding the quill since dawn. | Bit clean through a quill today. Third this week. | The new ink tastes of iron.
+b[scholar] : Rest it in cold water. That's what the old copyists did.
+b[official] : Mind it doesn't drip on the seal. They'll make you copy it again.
+b : Hard work for a soft trade. | You bite too hard. | Spit it out, then.
+a : Softer than it looks. | So I'm told. | Can't, on the page.
+
+scene rg_ua_assessment
+when topic=lore region=upper_accord
+a : The Wardens brought another wolf up the pass last night. Chained, they say. | They're assessing someone in the training grounds. You can feel it in the air. | Did you hear what the new one up at the grounds can do?
+b[soldier] : Don't look at the carriage when it passes. Wardens don't like it.
+b[priest] : The Bright One gives strange gifts. We pray they're used well.
+b[old] : When I was a pup we only heard of one in a lifetime. Now it's every few years.
+b : Poor soul, whoever it is. | Probably nothing. | I'd rather not know.
+a : Or poor us. | I hope so. | Nor I.
+
+scene rg_ua_gifts_small
+when topic=smalltalk region=upper_accord
+a : The baker on our lane lights her ovens with a breath. A real Gift. | My cousin can nudge a cup across a table. That's his whole Gift. | Saw a clay-shaper fixing a step in the Crafts ward.
+b[child] : I'm going to have a Gift! I can feel it coming!
+b[scholar] : Small Gifts are the common kind. The archive lists hundreds.
+b : Handy for her. | Useful at supper. | Quicker than a mason.
+a : Very handy. | Only at supper. | Cheaper, too.
+
+scene rg_ua_stair_gate
+when topic=smalltalk region=upper_accord
+a : They're mending the Stair Gate steps again. | Stair Gate's shut for the envoys' parade. | Some lowlander fell on the Stair Gate ice this morning.
+b[guard] : Take the long road round. It's only an hour.
+b[crafter] : Somebody's paying a mason well for that.
+b : As every spring. | Of course it is. | Every winter, someone does.
+a : Every spring. | Of course. | Every winter.
+
+scene rg_ua_bell
+when topic=lore|smalltalk region=upper_accord
+a : The Concord Bell rang at midday. Something's been voted. | Did you count the strokes on the great bell? | They only ring the great bell for a vote or a death.
+b[official] : Seven strokes. A matter of law, not a death.
+b[priest] : Every bell is a prayer, whatever they ring it for.
+b : I wonder what. | I lost count at five. | Let's hope it's a vote.
+a : We'll hear soon enough. | So did I. | Let's hope.
+
+scene rg_ua_lowland_coin
+when topic=smalltalk region=upper_accord place=market|street
+a : A trader paid me in Ser Ferro coin. Is it good here? | Ridgemere pennies are lighter than ours, I swear. | Took a mark from an envoy's servant today.
+b[merchant] : Silver's silver. I weigh it all.
+b[official] : All member coin is good in Upper Accord. That's Concord law.
+b : Weigh it and see. | They're all clipped. | A whole mark! Lucky.
+a : I will. | Every one. | Lucky and tired.
+
+scene rg_ua_tarn_swim
+when topic=lore region=upper_accord
+a : Trainees swam the upper tarn this morning. Ice on the edges. | They say a Warden once stayed under the deep tarn an hour. | Nobody swims the tarns for pleasure.
+b[soldier] : We did it in my day. You don't forget the cold. Ever.
+b[healer] : Three came to me shaking. One couldn't feel her tail.
+b : Mad, all of them. | Nonsense. Nobody could. | Nobody sane.
+a : Mad and proud. | So they say. | Nobody at all.
+
+scene rg_ua_oath_day
+when topic=lore region=upper_accord
+a : Pups take their small oaths at the First Oath chapel next week. | I still remember the words of my oath. Every one. | My daughter's nervous about her oath day.
+b[priest] : The words are simple. Keeping them is the work.
+b[old] : I've forgotten the words. Kept the meaning, I think.
+b[adolescent] : Mine's next spring. I keep practising the bow.
+b : A fine day. | Say them for me. | Everyone is.
+a : It will be. | Another time. | She'll be fine.
+
+scene rg_ua_snow_bridge
+when topic=lore|weather region=upper_accord season=winter|spring
+a : The snow bridge on the upper path is still holding. | Someone went through the snow bridge by the falls. | Don't cross the gully till the thaw's done.
+b[old] : Snow bridges hold until they don't. Never trust one.
+b[guard] : We've put a rope across. Use it.
+b : For now. | Did they get out? | I won't.
+a : For now. | Barely. | Good.
+
+scene rg_ua_crafts_ward
+when topic=work region=upper_accord a.job=crafter|smith|apprentice
+a : The Crafts ward is so cold the glue won't set. | Three commissions from the envoys this week. | My master wants the Concord seal cut by Restday.
+b[crafter] : Keep the pot by the fire. Old trick.
+b[merchant] : Envoy coin. Charge them double, they won't notice.
+b : Hard season for it. | Busy, then. | Tight work.
+a : Hard every season. | Busy and paid. | Very tight.
+
+scene rg_ua_overlook
+when topic=smalltalk region=upper_accord
+a : Went up to the overlook. You can see three valleys on a clear day. | They say on a clear day you can see Ridgemere's smoke from the overlook. | The overlook wall's crumbling.
+b[old] : I've seen the sea from there, once. Once in seventy years.
+b[child] : Can we go? Please? I'll carry the bread!
+b : Worth the climb. | Never been that clear. | Somebody should fix it.
+a : Every time. | Not yet. | Somebody should.
+
+scene rg_ua_concord_young
+when topic=lore region=upper_accord
+a : My grandmother says the Concord's barely older than she is. | The Concord's young, they say, for something so big. | Before the Concord, the kings just fought.
+b[official] : Young in years. Old in purpose.
+b[old] : I remember when the first kings came up to sign. Such a fuss.
+b[scholar] : The archive holds the first charter. The ink's still bright.
+b : Is it? I thought it was ancient. | It feels old enough. | They still fight, quietly.
+a : Seems not. | Old enough. | Quietly, yes.
+
+scene rg_ua_switchbacks
+when topic=work region=upper_accord a.job=carter|laborer|herder
+a : Lost a wheel on the ninth switchback. | The road up is mud to the hocks. | Hauled lamp oil up the switchbacks all day.
+b[carter] : Ninth's the worst. Always was.
+b : Rough road. | It's the thaw. | Thirsty work.
+a : Rough every day. | Always the thaw. | And it's still not done.
+
+scene rg_ua_trainee_gossip
+when topic=smalltalk region=upper_accord
+a : One of the trainees was in the plaza, cloak and all, buying sweets. | Warden trainees are just pups underneath. | A trainee asked me the way to the bakery. Polite thing.
+b[soldier] : Let them have their sweets. They won't for long.
+b[adolescent] : I'd give anything to wear the grey cloak.
+b : Pups need sweets. | Pups with teeth. | They're well brought up.
+a : They do. | Sharp teeth. | Very polite.
+
+scene rg_ua_house_of_mending
+when topic=lore|work region=upper_accord
+a : The House of Mending's beds are full of lowlanders with mountain sickness. | They took my cousin into the House of Mending. Fever. | The healers' garden is all under snow.
+b[healer] : Lowlanders climb too fast. Every season, the same.
+b[priest] : I'll say a word at the chapel for your cousin.
+b : They never learn. | I hope it breaks. | It'll come back.
+a : Never. | So do I. | In spring.
+
+scene rg_ua_wards_rivalry
+when topic=smalltalk region=upper_accord
+a : The Chapel ward's lanterns are better than ours this year. | The Gate ward always thinks it's the heart of the city. | Our ward won the snow race again.
+b[old] : Wards argued about lanterns when I was a pup too.
+b : We'll do better next year. | Let them think it. | Again? Well run.
+a : We'd better. | They will anyway. | Well run.
+
+scene rg_ua_quickened_fear
+when topic=lore region=upper_accord band=friends|family|spouses
+a : Do you ever worry about what they keep up at the grounds? | If one of the Quickened got loose, would the walls stop it? | I dreamt about a fire wolf last night. The big kind.
+b[soldier] : The Wardens know their work. Sleep easy.
+b[priest] : The Bright One set order over chaos once. It will hold.
+b : Every night, a little. | I'd rather not think about it. | Just a dream.
+a : Me too. | Nor I. | Just a dream.
+
+scene rg_ua_bread
+when topic=smalltalk region=upper_accord place=market|street|home
+a : Mountain bread's too heavy. | You can't get a decent loaf up here, the dough won't rise. | The rye up here would break a tooth.
+b[baker] : Thin air. The dough sulks. Give it longer.
+b[old] : Mountain bread keeps a week. Lowland bread's mouldy in two days.
+b : You get used to it. | Buy it from the lowland carts. | Soak it in broth.
+a : I haven't yet. | Too dear. | I'll try.
+
+scene rg_ua_member_states
+when topic=lore region=upper_accord
+a : Ser Ferro's King has a vote on the council, they say. | How many states are in the Concord now? | They say Ridgemere's Houses want two votes.
+b[official] : One state, one voice. That is the rule, however loudly they ask.
+b[scholar] : The number changes with every treaty. The archive keeps the count.
+b : A big voice, then. | More than I can name. | Greedy.
+a : Very big. | Me too. | The Houses always are.
+
+scene rg_ua_wind_lane
+when topic=smalltalk|weather region=upper_accord
+a : The wind down the north lane took my hat clean off. | Wind's howling round the Concord dome. | Shutters banging all night on our lane.
+b[old] : Mountain wind. It'll blow till the moon turns.
+b[child] : I chased a hat right down to the gate once!
+b : Hold on to it next time. | Like the whole mountain's singing. | Nail them shut.
+a : I'll try. | A sad song. | I'll have to.
+
+scene rg_ua_pilgrims
+when topic=lore region=upper_accord
+a : Pilgrims came up to touch the First Oath stone. | A pilgrim walked all the way from the southern towns. Barefoot. | The chapel line went past the fountain this morning.
+b[priest] : Every paw that climbs the mountain is welcome.
+b[merchant] : Pilgrims buy candles, bread and nothing else. Good for bakers.
+b : Long way to come. | Devotion. | Busy morning.
+a : A long way. | Or madness. | Very busy.
+
+scene rg_ua_watch_ranks
+when topic=work region=upper_accord a.role=guard
+a : Sergeant has us drilling at the gate before dawn again. | Watch got new cloaks. Grey, like the Wardens', almost. | Nobody respects the Watch when the Wardens are about.
+b[guard] : We keep the streets. They keep the mountain. Both matter.
+b[soldier] : Drill makes you sharp. Grumble, then drill.
+b : Early mornings. | Fancy. | They should.
+a : Too early. | Almost. | They should.
+
+scene rg_ua_lantern_lane
+when topic=smalltalk region=upper_accord time=dusk|night
+a : Lamplighters are late on our lane. | Lanterns along the Stair Gate look like a necklace from here. | Oil's so dear they've cut every other lamp.
+b[guard] : Dark lanes make work for me. I'll speak to them.
+b[old] : When I was young there were no lamps at all. We had noses.
+b : They always are. | A pretty sight. | Typical.
+a : Always. | It is. | Typical.
+
+scene rg_ua_goat_cheese
+when topic=smalltalk region=upper_accord
+a : The herders brought down the new cheese. Strong stuff. | That mountain cheese could strip paint. | The goat cheese is the only thing up here cheaper than lowland food.
+b[herder] : Strong goats, strong cheese. Good for the blood.
+b[child] : It smells like feet. I'm not eating it.
+b : I'll get some. | It could. | Best thing about the mountain.
+a : Do. | Easily. | Nearly.
+
+scene rg_ua_registry
+when topic=lore region=upper_accord
+a : They say the Concord keeps a register of every Gifted wolf in every member state. | My neighbour had to go to the Hall to be written in the register. | Why should the Concord know what my sister can do?
+b[official] : The register protects the Gifted as much as anyone.
+b[scholar] : The register is older than most of the archive. It started with the Wardens.
+b : Every one? | Just for nudging spoons? | It's the law.
+a : So they say. | Spoons. | Law or not.
+
+scene rg_ua_falling_stone
+when topic=lore|smalltalk region=upper_accord season=spring
+a : Rockfall on the east road again. Thaw does it. | A boulder the size of a cart came down by the shrine. | You can hear the stones crack in the night when it thaws.
+b[old] : The mountain shrugs every spring. We live on its shoulders.
+b[guard] : Keep clear of the east road till we've cleared it.
+b : Every spring. | Anyone hurt? | Like old bones.
+a : Every one. | Not this time. | Old bones.
+
+scene rg_ua_lowland_envy
+when topic=smalltalk region=upper_accord band=acquaintances|strangers
+a : Lowlanders think we're all priests and clerks up here. | A Ser Ferro trader asked me if I'd ever seen a vine. | Folk down below think Upper Accord's made of marble.
+b[merchant] : Let them think it. They pay more for mountain goods.
+b : Half of us are. | Have you? | Some of it is.
+a : Not me. | Once, in a pot. | Not my lane.
+
+scene rg_ua_chapel_ward_silence
+when topic=lore region=upper_accord
+a : They keep the hour of silence at the First Oath chapel still. | Even the carts stop for the hour of silence in the Chapel ward. | My pup barked during the silence. Mortifying.
+b[priest] : An hour a day for order. It's not so much to ask.
+b[child] : I didn't mean to! It just came out!
+b : Good custom. | Even the carters? | It happens.
+a : It is. | Even them. | It does.
+
+scene rg_ua_first_snow
+when topic=lore|smalltalk region=upper_accord season=autumn
+a : First snow on the peak this morning. | Peak's gone white. Winter's coming down. | The herders are bringing the flocks down already.
+b[old] : First snow on the peak, forty days to the gate. Old saying.
+b[herder] : Better early than caught in a storm.
+b : Here it comes. | Already? | Early this year.
+a : Here it comes. | Already. | Early.
+
+scene rg_ua_warden_grey
+when topic=lore region=upper_accord
+a : You can tell a Warden by the grey cloak and the stillness. | A Warden bought bread at our stall. Nobody breathed. | Wardens never seem to hurry. Never.
+b[soldier] : They don't hurry because they don't need to.
+b : Still as stone. | I'd have dropped the loaf. | Never.
+a : Very still. | Nearly did. | Never.
+
+scene rg_ua_ink_market
+when topic=smalltalk|work region=upper_accord
+a : Half the shops on the archive lane sell ink and parchment. | Ink's cheaper here than anywhere. The clerks buy it by the barrel. | Parchment makers' yards smell worse than tanneries.
+b[scholar] : Good ink is black, thin, and lasts five hundred years.
+b : A city of clerks. | Barrels! | Same trade, really.
+a : Very much. | Barrels. | Same smell.

@@ -1,0 +1,346 @@
+# Talk about a traveller standing nearby (doc 30, topic player). {subject} is the traveller's name when the speaker
+# knows them (known=yes), or how they look when not (known=no: "a grey she-wolf"), so a stranger's description sits
+# mid-sentence. Speak of the traveller as "they". Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- Strangers: curious
+
+scene ev_pl_new_face
+when topic=player known=no
+a : See {subject} over there? Never seen them before. | Who's that? Look at {subject}, fresh off the road. | There's {subject} watching the street.
+b[guard] : I've had my eye on them since the gate.
+b[child] : Are they an adventurer? Do they have a sword?
+b : New face. | Travellers come and go. | Let them watch.
+a : Wonder what brings them. | They do. Mostly go. | Watching what, though?
+
+scene ev_pl_road_dust
+when topic=player known=no
+a : Look at the road dust on {subject}. Come a long way. | Smell {subject} by the wall? Somewhere far off. | Sniff the air near {subject}. Pine and river, I'd say.
+b[carter] : That's west-road dust. Red. I'd know it anywhere.
+b : Long way, by the paws on them. | Far off, and tired. | Good nose.
+a : Long road, then. | Tired and hungry, I'd guess. | Best in the street.
+
+scene ev_pl_coat
+when topic=player known=no
+a : Fine coat on {subject}, isn't it? | Have you ever seen markings like {subject} has? | Look at {subject}. Odd colouring for these parts.
+b[noble] : Common enough, in the south. One sees it at court.
+b[old] : My grandsire had markings like that. Southern blood.
+b : Very handsome. | Never. | Odd, but fine.
+a : I'd have a coat like that. | Striking. | Fine, yes.
+
+scene ev_pl_wondering_job
+when topic=player known=no
+a : What do you think {subject} does for a living? | See how {subject} stands? Like a soldier. | Bet you {subject} is a merchant. Look at those eyes.
+b[merchant] : Not a merchant. Merchants look at stalls, not faces.
+b : Hard to say. | Could be. | Merchant? Maybe a thief.
+a : Something with walking. | Or used to. | Same eyes, some would say.
+
+scene ev_pl_newcomer_hope
+when topic=player known=no place=tavern
+a : Look, {subject} just came in. Buy them a drink? | Think {subject} has news from the road? | I'd say {subject} could use a seat by the fire.
+b[innkeeper] : Strangers drink like everyone else. I'll see to it.
+b : You buy it. | Ask them. | Move over, then.
+a : I might. | I will, once they've eaten. | I'm moving.
+
+scene ev_pl_child_staring
+when topic=player known=no a.stage=young|adolescent
+a : Look! Look at {subject}! | Mama, who's {subject}? | Do you think {subject} has been to the sea?
+b[old] : It's rude to point, pup.
+b : Don't stare, it's rude. | A traveller. | Maybe. Ask politely.
+a : I'm not staring, I'm looking! | Can I go talk to them? | I'm too shy.
+
+# ---------------------------------------------------------------- Strangers: wary
+
+scene ev_pl_suspicious
+when topic=player known=no
+a : I don't like the look of {subject}. | I've seen {subject} hanging about the stalls all morning. | Keep an eye on {subject}. Shifty.
+b[guard] : Noted. If they're trouble, they'll learn fast.
+b[merchant] : Then I'll keep my paw on the coin box.
+b : You don't like anyone. | Looking, maybe. | You think everyone's shifty.
+a : I've good reasons. | Looking, or counting. | Usually right, though.
+
+scene ev_pl_suspicious_night
+when topic=player known=no time=dusk|night
+a : Who's {subject}, out at this hour? | I've watched {subject} in the shadows a while now. | Strange time for a stranger to be wandering.
+b[guard] : I'll have a word, if they're still here at the next bell.
+b : Lost, maybe. | Let them be. | Strange, yes.
+a : Or not lost at all. | Let's go inside. | Bar the door tonight.
+
+scene ev_pl_ser_ferro_judge
+when topic=player known=no region=ser_ferro
+a : I'd say {subject} isn't a Ser Ferro wolf. | Do you think {subject} has papers? | Somebody should tell {subject} to bathe before the cathedral.
+b[official] : Every visitor is registered at the gate. In principle.
+b : Countryside, by the walk. | The watch will ask. | Hush, they'll hear.
+a : Country wolves. Always staring at the walls. | They always do. | Let them.
+
+scene ev_pl_ridgemere_judge
+when topic=player known=no region=rain_coast
+a : Look at {subject}. Not dressed for our rain. | Look, {subject} has stopped to stare at the bay. | Whoever {subject} is, they're not from Ridgemere. Too dry.
+b[fisher] : Two days here and they'll have webbed paws.
+b : They'll learn. | First sight of the bay, maybe. | Not for long.
+a : Soon enough. | It takes you, the first time. | Give it a day.
+
+scene ev_pl_accord_warden
+when topic=player known=no region=accord
+a : Do you think {subject} came to see the wardens? | See the look on {subject}? Like the ones they bring in. | Stay back from {subject}. You never know, here.
+b[priest] : Every wolf who walks these streets is under the Bright One's eye.
+b[guard] : The wardens know who's here. That's enough for me.
+b : Maybe. | What look? | Don't be daft.
+a : Gifted, maybe. | Watched. | You never know.
+
+scene ev_pl_fortress
+when topic=player known=no region=fortresses
+a : A civilian at the fortress, {subject}. Odd. | Who let {subject} in? | I hope {subject} has business here.
+b[soldier] : Pass from the commander, I heard. Keep your mouth shut.
+b : Messenger, maybe. | The gate watch, obviously. | They will, or they won't stay.
+a : Messengers carry pouches. | Then they'd better be right. | Ha. True.
+
+scene ev_pl_ghost
+when topic=player known=no region=ghost_town
+a : Someone's come, {subject}. Why here? | Look, {subject} is poking about the ruins. | Do you think {subject} is from the Crown?
+b[old] : Nobody comes to a dead town for no reason.
+b : Lost, I'd say. | Treasure hunting. Fools. | Hide, just in case.
+a : Nobody gets this lost. | Nothing left to find. | Keep low.
+
+# ---------------------------------------------------------------- Strangers: admiring or rude
+
+scene ev_pl_handsome
+when topic=player known=no a.stage=adult|adolescent
+a : Have you seen {subject}? Very handsome. | Did you see the eyes on {subject}? Brightest I've ever seen. | I think {subject} smiled at me.
+b[spouses] : I'm standing right here, you know.
+b : Go and say something. | Eyes like amber. | Smiled? Or bared their teeth?
+a : I couldn't. | Amber, exactly. | A smile. Definitely a smile.
+
+scene ev_pl_rude
+when topic=player known=no
+a : Somebody should point {subject} to the bathhouse. | Who does {subject} think they are, strolling about like that? | Look at the mud on {subject}.
+b[priest] : Kindness to the stranger. It's written.
+b : After the road? We all could use one. | A traveller. Let them stroll. | Muddy roads.
+a : Some more than others. | Strolling's free, I suppose. | Muddy everything.
+
+scene ev_pl_strong
+when topic=player known=no a.job=laborer|soldier|guard|smith|miner
+a : I bet {subject} could lift a cart. | Shoulders on {subject}. I'd not like to quarrel. | Bet {subject} could swing a hammer.
+b : Ask them to help unload. | Nor me. | Hire them.
+a : I might. | Wise. | If they're for hire.
+
+scene ev_pl_hungry_look
+when topic=player known=no place=market|street
+a : See {subject} eyeing the bread stall? | I think {subject} hasn't eaten today. | I saw {subject} count their coins twice.
+b[baker] : They can have the burnt end. No charge.
+b[merchant] : I'll do a fair price. Even for strangers.
+b : Poor thing. | Looks thin. | Short, maybe.
+a : We've all been there. | Thin as a rake. | We've all been there.
+
+# ---------------------------------------------------------------- Someone they know
+
+scene ev_pk_back
+when topic=player known=yes
+a : There's {subject}, back again. | Look, it's {subject}. | {subject}'s around again, I see.
+b[merchant] : Good. They pay on time. A rare thing.
+b[child] : {subject}! Do you think they'll show me the trick again?
+b : Haven't seen them in a while. | Good. I like them. | So I see.
+a : Busy, I suppose. | Easy to like. | Hard to miss.
+
+scene ev_pk_well_thought
+when topic=player known=yes
+a : {subject} helped me fix my cart. Good sort. | {subject} always says good morning. Nobody else does. | I trust {subject}. Not many I do.
+b[old] : Manners are rare. Keep hold of the ones who have them.
+b : That's decent of them. | Nobody does. | That's saying something.
+a : More than decent. | I noticed. | It is.
+
+scene ev_pk_debt
+when topic=player known=yes a.role=merchant
+a : {subject} still owes me for last time. | {subject} drives a hard bargain. | {subject} bought half my stock. I could kiss them.
+b : Remind them. | Respect, then. | Don't. Just smile.
+a : Gently. They're good for it. | Grudging respect. | I'll smile all day.
+
+scene ev_pk_gossip_about
+when topic=player known=yes
+a : Did {subject} tell you where they've been? | {subject} came in with a fresh scar. | {subject} looks tired today.
+b[healer] : I'll take a look, if they'll let me.
+b : Never says much. | Trouble on the road? | Long days, maybe.
+a : Close as a clam, that one. | They didn't say. | We all have them.
+
+scene ev_pk_friendly_wave
+when topic=player known=yes place=street|market|gate
+a : Give {subject} a wave. | Shall we ask {subject} to supper? | {subject}'s always in a hurry, isn't it?
+b : There. Waved. | Why not. | Places to be.
+a : They saw. | I'll ask. | Always.
+
+scene ev_pk_tavern
+when topic=player known=yes place=tavern
+a : {subject} owes me a song from last time. | Save {subject} a seat. | {subject} drinks like a fish and never gets drunk.
+b[innkeeper] : I'd be glad of a good customer tonight.
+b : Make them sing. | Done. | Must be a gift.
+a : Loud, too. | Good. | Or a hollow leg.
+
+scene ev_pk_wary
+when topic=player known=yes
+a : {subject} again. I don't know about them. | Something about {subject} bothers me. | {subject} asks a lot of questions.
+b[guard] : I've noted their comings and goings.
+b : They've done nothing wrong. | You're too careful. | Curious, that's all.
+a : Not that I've seen. | Better careful. | Maybe.
+
+scene ev_pk_child_admires
+when topic=player known=yes a.stage=young|adolescent
+a : I want to be like {subject} when I'm grown. | {subject} told me about the far mountains! | {subject} is the bravest wolf I know.
+b[old] : Grow up yourself first, then decide.
+b : Do you, now? | Did they? | How do you know?
+a : Yes! | They saw snow on the peaks in summer! | I just know.
+
+scene ev_pk_old_approves
+when topic=player known=yes a.stage=old
+a : {subject} has good manners. Rare in the young. | {subject} carried my basket yesterday. | {subject} reminds me of my son.
+b : They're a good one. | Kind of them. | Does he still write?
+a : Raised right. | Wouldn't take a penny. | Not often.
+
+scene ev_pk_priest
+when topic=player known=yes a.job=priest
+a : I hope {subject} comes to prayers this Restday. | {subject} gave alms last time. Generous. | I pray for {subject} on the road.
+b : Maybe. | Generous indeed. | Kind of you.
+a : The door's open. | The Bright One sees it. | Every traveller needs it.
+
+# ---------------------------------------------------------------- More strangers, by who is looking
+
+scene ev_pl_healer_notices
+when topic=player known=no a.job=healer
+a : Did you see how {subject} favours one leg? | I don't like the colour of the eyes on {subject}. Fever, maybe. | I'd bet my herbs {subject} hasn't slept in days.
+b : I didn't notice. | You see sickness everywhere. | Neither have I.
+a : A healer notices. | Because it's everywhere. | Then we're a pair.
+
+scene ev_pl_innkeeper_sizes
+when topic=player known=no a.job=innkeeper
+a : I'll have a room for {subject} tonight, mark me. | Watch, {subject} will ask for the stew. Travellers always do. | I can tell what {subject} drinks from here. Dark ale.
+b : You can't know that. | Everyone asks for the stew. | How?
+a : Thirty years behind a counter. | Because it's good stew. | The way they lean.
+
+scene ev_pl_guard_notes
+when topic=player known=no a.job=guard|soldier
+a : Note it down: {subject}, came in at noon. | Watch {subject}. Paws near the purse, eyes on the stalls. | No weapon on {subject} that I can see. Good.
+b : Noted. | Watching. | Or one we can't see.
+a : Good. | Don't let them see you watch. | That's the worry.
+
+scene ev_pl_merchant_appraises
+when topic=player known=no a.role=merchant
+a : Purse on {subject} looks heavy. Hello, customer. | I'll bet {subject} needs boots. Look at those soles. | Somebody tell {subject} my prices are the best in {town}.
+b : Don't fleece them. | They do look worn. | Tell them yourself.
+a : Only a little. | Boots, and a new cloak. | I'm about to.
+
+scene ev_pl_farmer_squint
+when topic=player known=no a.job=farmer|herder
+a : Do you suppose {subject} knows one end of a plough from the other? | Town paws on {subject}. Soft. | Wonder if {subject} wants work. I need hands at harvest.
+b : Doubt it. | Soft as butter. | Ask them.
+a : Nor do half the wolves here. | Soft paws, sore by evening. | I might.
+
+scene ev_pl_priest_welcome
+when topic=player known=no a.job=priest
+a : We should welcome {subject}. The road is lonely. | I wonder if {subject} has found a bed tonight. | The Bright One sends us strangers to test our kindness.
+b : Go on, then. | The chapel has cots. | And our patience.
+a : I will, in a moment. | I'll tell them. | That too.
+
+scene ev_pl_scholar_curious
+when topic=player known=no a.job=scholar
+a : I'd give a lot to hear where {subject} has been. | The accent on {subject}. Western, I'd wager. | Do you think {subject} reads?
+b : Ask them. | You can tell from an accent? | Doubt it.
+a : I'd lose my nerve. | Vowels like river stones. Western. | Everyone should.
+
+scene ev_pl_noble_dismiss
+when topic=player known=no a.job=noble
+a : Must we have every vagabond in the square? Like {subject}? | Have someone see what {subject} wants. | Ugh, {subject} is staring at me.
+b : It's a public square. | I'll ask. | They stare at everyone.
+a : More's the pity. | Discreetly. | Not everyone is worth it.
+
+scene ev_pl_beggar_hopes
+when topic=player known=no a.job=beggar
+a : Maybe {subject} has a coin to spare. | I've seen kinder faces than the one on {subject}. | Bet {subject} gives. They've the look.
+b : Ask nicely. | And crueler ones. | Hope so.
+a : I always ask nicely. | Plenty crueler. | Here goes.
+
+scene ev_pl_carter_road_news
+when topic=player known=no a.job=carter
+a : Came by the east road, I'd wager. Ask {subject} if it's clear. | I passed {subject} on the road yesterday. Walks fast. | Mud on {subject} means the ford's still up.
+b : Ask them yourself. | Walks fast? On foot? | Is it?
+a : I will, once they've rested. | Faster than my mule. | Up to the axles, I'd say.
+
+scene ev_pl_old_memory
+when topic=player known=no a.stage=old
+a : I used to walk the roads like {subject}, once. | Watching {subject} makes me feel old. | Young ones on the road. Like {subject}. Brave or foolish.
+b : Did you? | You are old. | Both, usually.
+a : Every road from here to the sea. | Thank you, pup. | Both.
+
+scene ev_pl_two_kids
+when topic=player known=no a.stage=young|adolescent b.stage=young|adolescent
+a : Bet you can't go and talk to {subject}. | I dare you to sniff {subject}. | Do you think {subject} has treasure?
+b : Bet I can! | No! You do it! | A whole bag of it!
+a : Go on, then! | Coward! | Let's follow them!
+
+scene ev_pl_rain_stranger
+when topic=player known=no weather=rain|storm|snow
+a : Poor {subject}, out in this weather. | Look at {subject}, soaked to the bone. | Somebody give {subject} a roof.
+b : Their choice. | Wet as a fish. | The inn has room.
+a : Nobody chooses this. | Drowned rat. | I'll point the way.
+
+scene ev_pl_festival_stranger
+when topic=player known=no day=festival
+a : Do you think {subject} came for the festival? | Festival brings all sorts. Look at {subject}. | Bet {subject} has never seen a festival like ours.
+b : Everyone comes for the festival. | All sorts and their cousins. | Then they're in for a treat.
+a : Good for trade. | And their cousins' cousins. | A treat and a sore head.
+
+# ---------------------------------------------------------------- More travellers known by name
+
+scene ev_pk_long_absence
+when topic=player known=yes
+a : I thought {subject} had gone for good. | {subject} was away so long I'd forgotten their voice. | Where has {subject} been all this time?
+b : Seems not. | Ask them to sing. | Roads, I suppose.
+a : Glad to be wrong. | Ha. Maybe. | Long roads.
+
+scene ev_pk_helped
+when topic=player known=yes
+a : {subject} found my lost pup last spring. | {subject} stood up to that drunk for me. | I owe {subject} more than a drink.
+b : I remember. | Brave. | Then buy two.
+a : I'll never forget it. | Braver than I was. | Three, then.
+
+scene ev_pk_rumour
+when topic=player known=yes
+a : People say {subject} has been in trouble. | I heard {subject} is gifted. Is it true? | They say {subject} came from far across the mountains.
+b[priest] : Rumour is the Dark One's favourite tool. Hold your tongue.
+b : People say lots of things. | Who knows. | Maybe.
+a : They do. | Who knows. | Far from here, anyway.
+
+scene ev_pk_guard
+when topic=player known=yes a.job=guard|soldier
+a : {subject} is no trouble. Leave them be. | {subject} again. Keep half an eye. | I've seen {subject} draw a blade. Quick.
+b : Understood. | Half an eye. | Glad they're not against us.
+a : Good. | And the other half on the crowd. | So am I.
+
+scene ev_pk_spouses
+when topic=player known=yes band=spouses
+a : {subject} is back, love. | Shall we have {subject} round for supper? | You were sweet on {subject} once, weren't you?
+b : Is that so? | If you're cooking. | Before I met you.
+a : By the well. | I'll cook. | Hmm.
+
+scene ev_pk_rivals
+when topic=player known=yes band=rivals
+a : I suppose you're friends with {subject} too. | {subject} likes me better than you. | {subject} told me what you said about them.
+b : Better than with you. | Dream on. | Liar.
+a : Hm. | I don't dream. | Ask them, then.
+
+scene ev_pk_tavern_story
+when topic=player known=yes place=tavern time=dusk|night
+a : Get {subject} to tell the story about the bandits. | {subject} was in here last night till the lamps went out. | Last time {subject} drank, they danced on a table.
+b[innkeeper] : And broke a leg off it. Which I've not forgotten.
+b : I've heard it. It grows each time. | They have a gift for staying. | I'd pay to see that again.
+a : Better every time. | A gift, yes. | So would I.
+
+scene ev_pk_merchant_regular
+when topic=player known=yes place=market
+a : {subject} will want the usual. | Here comes {subject}. Put on a smile. | {subject} always haggles. Every time.
+b : What's the usual? | I'm always smiling. | So do you.
+a : Two loaves and a bit of cheese. | You're baring teeth. | And I enjoy it.
+
+scene ev_pk_child_follows
+when topic=player known=yes a.stage=young
+a : Can I go play with {subject}? | {subject} gave me a sweet once! | Is {subject} a warden?
+b[old] : Don't pester our guests, pup.
+b : Ask nicely. | Did they? | I don't think so.
+a : Please? | A sticky one! | They should be.

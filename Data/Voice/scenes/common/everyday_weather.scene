@@ -1,0 +1,363 @@
+# Weather talk (doc 30): every kind of sky, by season and hour. Weather scenes may repeat. Alternatives are written
+# in parallel.
+
+# ---------------------------------------------------------------- Clear
+
+scene ev_wx_clear_spring
+when topic=weather weather=clear season=spring
+a : Sun on my back at last. | Not a cloud. I'd forgotten the sky was blue. | The whole town's out of doors today.
+b[farmer] : Good drying day. The seed beds will thank it.
+b : Soak it up while it lasts. | Bluer than I remembered. | Who can blame them?
+a : Every drop of it. | I'll stare till my eyes water. | Not me.
+
+scene ev_wx_clear_summer_noon
+when topic=weather weather=clear season=summer time=day
+a : The cobbles are hot enough to blister. | The sun's an anvil today. | Even the flies are too hot to bother.
+b[laborer] : Try hauling stone in it. I'm dripping like a wet dog.
+b : Walk in the shade. | Find a cellar. | Small mercies.
+a : There isn't any. | All taken. | Very small.
+
+scene ev_wx_clear_autumn
+when topic=weather weather=clear season=autumn
+a : Crisp and bright. Perfect. | You can see the hills sharp as a knife edge today. | Lovely day, but there's a bite in the air.
+b[old] : Clear autumn days, cold autumn nights. Mark me.
+b : Best weather of the year. | Rain coming, then, by tomorrow. | Winter's clearing its throat.
+a : I'll enjoy it while it lasts. | You're always so cheerful. | Let it wait a while.
+
+scene ev_wx_clear_winter
+when topic=weather weather=clear season=winter
+a : Bright and bitter. | The snow glare's blinding. | Cold enough to freeze your whiskers stiff.
+b[child] : My whiskers have icicles! Look!
+b : Bright but bitter. | Squint and keep walking. | Mine snapped off.
+a : I'd rather grey and mild. | My eyes are watering. | Ha. I'm not surprised.
+
+scene ev_wx_clear_night
+when topic=weather weather=clear time=night
+a : Cold, clear night. Frost by morning. | You can see your breath. | Sky's full of stars.
+b[guard] : Easy watch. Nothing hides on a night like this.
+b : Cover the water butt. | Mine too. | Pretty.
+a : Already did. | Smokes like a chimney. | Cold, though.
+
+scene ev_wx_clear_dawn
+when topic=weather weather=clear time=dawn
+a : Red sky at dawn. | Look at the light on the roofs. | The dew's soaked my paws already.
+b[sailor] : Bright dawn, wind by noon. I'll keep my boat tied.
+b : Shepherd's warning, they say. | Gold, almost. | Walk on the stones.
+a : We'll see. | Gold and pink. | Too late.
+
+# ---------------------------------------------------------------- Rain
+
+scene ev_wx_rain_steady
+when topic=weather weather=rain
+a : Raining again. Of course it is. | I'm wet to the skin. | Listen to it on the roof.
+b[farmer] : The ground needs it. Don't curse it.
+b[child] : I've been jumping in puddles all morning!
+b : Of course. | Shake off by the door, not on me. | Soothing, in a way.
+a : Of course. | Too late. | Unless you're under it.
+
+scene ev_wx_rain_spring
+when topic=weather weather=rain season=spring
+a : Soft rain. Good for the fields. | Rain and blossom. | The gutters are singing.
+b[farmer] : A spring shower's worth a cartload of silver.
+b : And for the mud. | Smells sweet, at least. | Loud songs.
+a : Mud and all. | That's spring. | And the rats are leaving.
+
+scene ev_wx_rain_summer_storm_end
+when topic=weather weather=rain season=summer
+a : Thank the Bright One. Rain at last. | Warm rain. I almost like it. | Steam's coming off the cobbles.
+b : The dust was choking us. | Almost. | Like a bathhouse.
+a : My throat's been dry for weeks. | Not quite. | Without the bath.
+
+scene ev_wx_rain_autumn
+when topic=weather weather=rain season=autumn
+a : The leaves are a slick mess with this rain. | Cold rain. Gets into your bones. | My coat smells like wet dog.
+b[old] : My bones knew it yesterday.
+b : Mind you don't slip. | Hot cider tonight. | So does everyone's.
+a : I already did. | Two cups. | Not as bad as mine.
+
+scene ev_wx_rain_winter
+when topic=weather weather=rain season=winter
+a : Rain in winter. Worst of both worlds. | Sleet. Not snow, not rain. Misery. | Ice under the puddles.
+b : Wet and cold together. | Misery is right. | Watch your step.
+a : I hate it. | Sticks in your fur. | I watched. Still fell.
+
+scene ev_wx_rain_night
+when topic=weather weather=rain time=night
+a : Rain on the shutters all night. | Who's out in this? | Lamp keeps blowing out.
+b[guard] : Me. Thanks for asking.
+b : Puts me to sleep. | Fools and watchmen. | Put it in a lantern.
+a : Keeps me awake. | I'm not either. | I would if I had one.
+
+scene ev_wx_rain_region
+when topic=weather weather=rain region=rain_coast
+a : Ridgemere rain. Same as yesterday. Same as tomorrow. | The bay's lost in the rain. | Rain's coming sideways off the sea.
+b[fisher] : Rain's nothing. It's the wind with it you watch.
+b : Same as always. | Can't see the boats. | Hold your hood.
+a : I'd faint if it stopped. | They're out there somewhere. | Gone already.
+
+scene ev_wx_rain_market
+when topic=weather weather=rain place=market
+a : Rain's emptied the market. | My stall cover's leaking. | Nobody buys in the rain.
+b[merchant] : Cover your goods and smile. A wet buyer's a quick buyer.
+b : Good. Quicker shopping. | Tar it. | They're all at home.
+a : Not for the sellers. | Next dry day. | Warm and dry.
+
+# ---------------------------------------------------------------- Fog
+
+scene ev_wx_fog_thick
+when topic=weather weather=fog
+a : Can't see past my own nose. | This fog's thick as porridge. | Nearly walked into a wall.
+b[guard] : Stay off the streets if you can. Thieves love a fog.
+b : Follow your nose, then. | Cold porridge. | Nearly?
+a : My nose is confused too. | And just as grey. | Well. Walked into it, then.
+
+scene ev_wx_fog_dawn
+when topic=weather weather=fog time=dawn
+a : Mist on the fields like milk. | Fog'll burn off by noon. | Everything's dripping.
+b[farmer] : Fog at dawn, fair by noon. Usually.
+b : Pretty, in its way. | Hope so. | My whiskers are wet.
+a : Eerie, too. | It'd better. | Mine too.
+
+scene ev_wx_fog_sounds
+when topic=weather weather=fog
+a : Sounds strange in the fog. Muffled. | I could hear someone talking but couldn't see them. | Bells sound far away in this.
+b[old] : Fog carries voices from the old days. My mother said.
+b : Like wool in my ears. | Spooky. | Everything does.
+a : Wool and water. | I didn't like it. | Far and lonely.
+
+scene ev_wx_fog_coast
+when topic=weather weather=fog region=rain_coast|lake
+a : Fog horn's been going since dawn. | Sea fog. Everything tastes of salt. | Boats stayed in today.
+b[sailor] : Only a fool sails in sea fog. I've known fools. Buried a few.
+b : Long day for the ringer. | Salt and wet. | Wise of them.
+a : He'll be deaf by night. | Same as always. | For once.
+
+scene ev_wx_fog_scent
+when topic=weather weather=fog
+a : My nose is useless in this damp. | Smells all smeared together in fog. | Can't scent anything but wet stone.
+b[guard] : The thieves can't smell us either. Comfort yourself.
+b : Mine too. | Like a soup. | Nor me.
+a : Small comfort. | A bad soup. | It's like being half blind.
+
+# ---------------------------------------------------------------- Snow
+
+scene ev_wx_snow_first
+when topic=weather weather=snow season=autumn|winter
+a : First snow! | It's settling. | Snowflakes on my nose.
+b[child] : Snow! Snow! Can we play? Can we?
+b[old] : Here we go. Six months of it.
+b : Already? | It'll be deep by morning. | Lick them off.
+a : Already. | Better fetch wood. | Ha. Cold.
+
+scene ev_wx_snow_deep
+when topic=weather weather=snow season=winter
+a : Snow to my chest out past the gate. | Shovelled the door three times today. | The roofs are groaning under it.
+b[laborer] : They're paying for clearing the streets. Two pennies a day.
+b : Stay in, then. | Four, here. | Brush them off before they cave.
+a : Can't. Work. | Showing off. | I'll get the long pole.
+
+scene ev_wx_snow_quiet
+when topic=weather weather=snow
+a : The whole town's gone quiet under the snow. | Everything looks clean for once. | Fresh snow, fresh tracks.
+b[guard] : And every thief leaves a trail. Best weather there is.
+b : I like it quiet. | Until it turns to slush. | Who's been out already?
+a : Peaceful. | Then it's worse than before. | A fox, by the look.
+
+scene ev_wx_snow_spring
+when topic=weather weather=snow season=spring
+a : Snow? Now? | The blossoms are buried. | Won't last. Ground's too warm.
+b[farmer] : Late frost kills the buds. This is bad.
+b : Strange year. | Poor things. | Hope not.
+a : Strange and cold. | Poor us. | By noon.
+
+scene ev_wx_snow_fun
+when topic=weather weather=snow a.stage=young|adolescent
+a : Snowball fight! | Let's build a fort! | Let's make snow wolves of everyone!
+b[old] : Throw one at me and you'll regret it.
+b : You're on! | The biggest fort in town! | Even the priest!
+a : Duck! | It'll have towers! | Especially the priest!
+
+# ---------------------------------------------------------------- Overcast
+
+scene ev_wx_overcast
+when topic=weather weather=overcast
+a : Grey again. | Sky looks like old dishwater. | Can't tell if it'll rain or not.
+b[farmer] : It'll rain. My knees say so.
+b : Always grey. | That's a cruel thing to say about dishwater. | It's thinking about it.
+a : Grey as an old pelt. | Dishwater's cleaner. | Thinking hard.
+
+scene ev_wx_overcast_mood
+when topic=weather weather=overcast
+a : These grey days sink into your bones. | No sun for a week. | Sky's pressing down like a lid.
+b[priest] : The sun is behind it still. As the Bright One is.
+b : Some sun would be nice. | Feels like more. | Like a pot about to boil.
+a : Just a little. | Feels like forever. | Waiting.
+
+scene ev_wx_overcast_dusk
+when topic=weather weather=overcast time=dusk
+a : Getting dark early under these clouds. | No sunset tonight. | Lamps are lit already.
+b : Shorter days, too. | Never is, lately. | Good.
+a : Short and grey. | Miss them. | Cosy, at least.
+
+# ---------------------------------------------------------------- Storm
+
+scene ev_wx_storm
+when topic=weather weather=storm
+a : Hear that thunder? Close. | The wind's tearing slates off the roofs. | Lightning struck something out by the fields.
+b[child] : I'm not scared. I'm not. Is it over?
+b[old] : The sky's quarrelling. Stay indoors till it makes up.
+b : Shut the shutters. | Stay inside. | Pray it wasn't a barn.
+a : Bang, there it goes again. | I mean to. | Pray it wasn't mine.
+
+scene ev_wx_storm_sea
+when topic=weather weather=storm region=rain_coast|lake
+a : Waves over the harbour wall. | Boats will be lost tonight. | Spray's reaching the street.
+b[sailor] : Pray for anyone outside the bay tonight. I am.
+b[fisher] : Every boat's in but one.
+b : Look at it. | Bright One keep them. | Stand back from the edge.
+a : Never seen it this bad. | Keep them all. | I'm standing back.
+
+scene ev_wx_storm_night
+when topic=weather weather=storm time=night
+a : The house shook with that one. | Can't sleep through this. | The pups are under the bed.
+b : Mine too. | Who could? | Join them.
+a : Old timbers. | Nobody. | There's no room.
+
+scene ev_wx_storm_field
+when topic=weather weather=storm region=countryside|steppe
+a : Hail flattened the barley. | Wind's lying the wheat down flat. | Herd's spooked by the thunder.
+b[farmer] : A year's work, gone in an afternoon.
+b[herder] : Get them in the lee of the hill.
+b : That's bad. | It might stand back up. | Keep them together.
+a : Very bad. | Might. | Doing my best.
+
+# ---------------------------------------------------------------- Sandstorm
+
+scene ev_wx_sand
+when topic=weather weather=sandstorm
+a : Grit in my teeth, grit in my eyes. | Can't see the road for sand. | Sand coming under the door.
+b[herder] : Turn the herd's tails to it and wait.
+b[old] : The dry wind. My grandmother called it the Dark One's breath.
+b : Cover your face. | Stay put. | Wet cloth along the gap.
+a : Covered. Still eating it. | Not much choice. | Wet cloth. Good idea.
+
+scene ev_wx_sand_after
+when topic=weather weather=sandstorm
+a : Sand in everything. My bread. My bed. | My fur's full of dust. | The well's got sand in it.
+b : Shake out the blankets. | Roll in the river. | Let it settle.
+a : Shook them twice. | Tempting. | It'll take days.
+
+# ---------------------------------------------------------------- Indoors
+
+scene ev_wx_indoors_rain_heard
+when topic=weather weather=indoors season=autumn|winter|spring
+a : Hear it coming down out there? | Glad I'm in here and not out there. | Shut the door, the cold's getting in.
+b[innkeeper] : Foul weather's good for trade. Everyone wants a fire.
+b : Like nails on the roof. | You and me both. | Sorry. Sorry.
+a : I'm staying till it stops. | Out there's for fools. | Doors cost nothing to close.
+
+scene ev_wx_indoors_heat
+when topic=weather weather=indoors season=summer
+a : Stuffy in here. Open the shutters. | Cooler indoors, at least. | Hot as an oven, even inside.
+b : Then the flies come in. | Thick walls. | Fan yourself.
+a : I'll take the flies. | Thank the masons. | I'm too hot to fan.
+
+scene ev_wx_indoors_fire
+when topic=weather weather=indoors time=dusk|night
+a : Add a log, would you? | Nothing better than a fire on a night like this. | The smoke's going everywhere but up the chimney.
+b : Last one. | Nothing. | Chimney needs sweeping.
+a : Then make it last. | Except supper. | Know any sweeps?
+
+# ---------------------------------------------------------------- Seasonal and hourly
+
+scene ev_wx_season_turn
+when topic=weather
+a : You can feel the season turning. | Weather's been strange this {season}. | Smells different today.
+b[old] : The wind changed in the night. I felt it in my tail.
+b : I feel it in my fur. | Strange, how? | Change coming.
+a : The fur always knows. | Can't decide what it wants. | I can smell it.
+
+scene ev_wx_wind
+when topic=weather weather=clear|overcast
+a : Wind's from the north today. | My ears are flapping in this wind. | The washing's halfway to the next town.
+b[sailor] : North wind, clear skies, cold paws.
+b : Feels it. | Tie them down. | Chase it, then.
+a : Cold, too. | Very funny. | It's somebody's problem now.
+
+scene ev_wx_dawn_damp
+when topic=weather time=dawn weather=fog|overcast|rain
+a : Wet dawn again. | Dark morning. | Hard to get up when it's like this.
+b[baker] : The ovens don't care. Up we get.
+b : Grey and damp. | Light the lamp. | It always is.
+a : Damp to the bone. | The lamp's out of oil. | Always.
+
+scene ev_wx_dusk_cold
+when topic=weather time=dusk season=autumn|winter
+a : Cold coming down with the dark. | Sun's gone and so's the warmth. | Feel that chill?
+b : Get indoors. | Every evening. | In my ears.
+a : Soon. | Every one. | Pull your hood up.
+
+scene ev_wx_region_upper
+when topic=weather region=accord weather=clear|overcast|fog|snow|rain
+a : Mountain wind's coming down again. | The peaks are hidden today. | Cold up here even in summer.
+b[scholar] : The archives must be kept dry. We burn braziers all day.
+b : Bundle up. | Behind the clouds. | Always.
+a : I am bundled. | They'll be back. | Always.
+
+scene ev_wx_region_south
+when topic=weather region=south weather=clear|overcast
+a : Warm wind off the river. | Dry year down south. | The river smells of summer already.
+b[farmer] : Too dry and the barley burns.
+b : Pleasant. | It is. | Already.
+a : Pleasant now. | Hope for rain. | Already.
+
+# ---------------------------------------------------------------- More skies, by who is talking
+
+scene ev_wx_farmer_rain_wanted
+when topic=weather a.job=farmer|herder weather=clear season=summer
+a : Not a drop in three weeks. | The ground's cracking like old bread. | Stream's down to a trickle.
+b : Rain'll come. | Water the roots at dusk. | The wells are low too.
+a : When? After the crop's dead? | Dusk and dawn, every bucket I've got. | Everything's thirsty.
+
+scene ev_wx_guard_watch_rain
+when topic=weather a.job=guard|soldier weather=rain|storm|snow
+a : Four hours on the wall in this. | My cloak weighs twice what it did. | Water's running down my spear into my sleeve.
+b : Better you than me. | Wring it out. | Hold it the other way.
+a : That's the spirit. | Then it's just wet and lighter. | Then it runs down my neck.
+
+scene ev_wx_fisher_wind
+when topic=weather a.job=fisher|sailor
+a : Wind's backing. Weather's turning. | Swell's long and lazy. Something big out there. | Gulls are flying inland.
+b : You can tell from that? | A storm? | That's not good, is it?
+a : Twenty years on the water. You can tell. | A day off, maybe two. | It never is.
+
+scene ev_wx_child_puddles
+when topic=weather a.stage=young weather=rain
+a : This puddle's a lake! | I'm a fish! I'm a fish! | Look how big the splash is!
+b[old] : You'll catch your death. Indoors, now.
+b : Don't get too wet. | You're a soggy pup. | Not at me!
+a : I'm already too wet! | A soggy fish! | Too late!
+
+scene ev_wx_old_bones
+when topic=weather a.stage=old weather=overcast|fog|rain
+a : My bones said rain. My bones are never wrong. | Damp weather finds every old wound. | I've forgotten what warm feels like.
+b : They're never wrong. | Sit by the fire. | Come in where it's dry.
+a : Better than any priest. | And the old wounds tell old stories. | Dry isn't warm, pup.
+
+scene ev_wx_merchant_weather_trade
+when topic=weather a.role=merchant
+a : Weather like this, nobody's buying. | Good weather's good for trade. | Weather keeps the carts off the roads.
+b : They'll come back. | Then trade's good today. | And the goods off your shelves.
+a : They'd better. | Fine as you like. | And my purse empty.
+
+scene ev_wx_spouses_cold
+when topic=weather band=spouses season=winter
+a : Your paws are like ice. | Come closer, it's freezing. | Did you bank the fire?
+b : So are yours. | Gladly. | You were meant to.
+a : Then we'll warm them together. | Mind my cold nose. | Then we'll both be cold.
+
+scene ev_wx_strangers_weather
+when topic=weather band=strangers
+a : Weather, eh? | Some weather we're having. | Seen worse, I suppose.
+b : Indeed. | Some weather. | Always have.
+a : Well. Good day. | Mm. | Haven't we all.

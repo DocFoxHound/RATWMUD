@@ -1,0 +1,254 @@
+# Kin: the day itself (Docs/Design/30-towns-and-talk.md). Acquaintances and friends on what today is for: work,
+# market, rest or a festival, by the hour and the season.
+
+# ---------------------------------------------------------------- Workdays
+
+scene kn_day_work_dawn
+when topic=day day=work time=dawn
+a : Another day, another blister. | Up before the birds again. | Off to it, then?
+b : Another penny, too. | The birds are smarter than us. | No choice in it.
+a : Not enough of them. | They don't pay rent. | There never is.
+b : Never enough. | Lucky birds. | Never.
+
+scene kn_day_work_midday
+when topic=day day=work time=day
+a : Half the day gone already. | Have you eaten? | How's the work going?
+b : And half to go. | Not yet. No time. | Slowly. Like always.
+a : Don't remind me. | Make time. You'll fall over. | Slow's still moving.
+b : You asked. | After this. | Barely.
+
+scene kn_day_work_dusk
+when topic=day day=work time=dusk
+a : That's me done for today. | My back's a knot. | Home and supper, then bed.
+b : Lucky you. I've an hour more. | Mine's two knots. | And dream of rest day.
+a : I'll think of you. From my cushion. | We'll be knots together. | Every night.
+b : Kind of you. | Old knots. | Every single night.
+
+scene kn_day_work_rain
+when topic=day day=work weather=rain|storm
+a : Rain on a workday. Of course. | Working in this is a misery. | The master won't let us off for weather.
+b : Never on rest day. Always on work days. | Better wet than hungry. | Masters don't get wet.
+a : The sky's got a cruel streak. | Barely. | Not one drop.
+b : It's in the scriptures, I'm sure. | Barely's enough. | Not one, ever.
+
+scene kn_day_work_hot
+when topic=day day=work season=summer weather=clear
+a : Too hot to work. | The sun's like a forge today. | I'm shedding like a haystack.
+b : Too hot to stop, if you want paying. | Find some shade. | Everyone is. The street's full of fur.
+a : Paying's a cruel master. | There's no shade at the yard. | Somebody sweep it up.
+b : The cruellest. | Then drink water. Lots. | Not me.
+
+scene kn_day_work_cold
+when topic=day day=work season=winter
+a : My paws froze to the doorstep. | Can't feel my nose. | Who decided we work in winter?
+b : Lick them warm. | Then it's still there. | Whoever's sitting by a fire.
+a : Then my tongue freezes. | Good. I'll keep it. | Lucky them.
+b : You've a choice of frozen parts, then. | It's a good nose. | Lucky, lucky them.
+
+scene kn_day_work_almost_rest
+when topic=day day=work
+weight 0.5
+a : Is it rest day tomorrow? | How many more days to rest day? | It's {weekday} already.
+b : Not tomorrow. Day after. | Too many. | Is it? Where did the week go?
+a : One more day of this, then. | Count them for me. | Into the master's purse.
+b : One more. | I'd rather not. | Along with our wages.
+
+# ---------------------------------------------------------------- Market days
+
+scene kn_day_market_morning
+when topic=day day=market time=dawn|day
+a : Market day. Are you buying or selling? | The square's filling up early. | Going to the market?
+b : Looking, mostly. | Everyone's out for once. | Later. When the prices drop.
+a : Looking's free. | Market day does that. | They never drop for you.
+b : The only free thing there. | Everyone and their pups. | They drop for nobody.
+a : Mind your purse in the crowd. | And their pups' pups. | Then go early.
+
+scene kn_day_market_bargain
+when topic=day day=market
+a : I got a good price on wool. | Somebody tried to sell me a lame goat. | Did you see the jeweller's stall?
+b : How good? | Did you buy it? | Who can afford that?
+a : Good enough that I'm suspicious. | Of course not. | Nobody. That's why it's still full.
+b : Check it for moths. | I'd have. Cheap goat. | Looking's free.
+a : I will. | Lame goat. | So everyone keeps saying.
+
+scene kn_day_market_crowd
+when topic=day day=market place=market
+a : Too many wolves. I can't hear myself think. | Somebody trod on my tail. Twice. | Everyone in {town}'s here today.
+b : Then don't think. Shop. | Keep it up, then. | And all their smells.
+a : That's how you end up with a lame goat. | Up where? | I'm drowning in other wolves' breakfasts.
+b : That's a good goat. | Over your back. | Smells like fish and onions.
+
+scene kn_day_market_children
+when topic=day day=market a.stage=young b.stage=young|adolescent
+a : Can we go see the jugglers? | The sweet seller's here! | There's a bear on a chain by the gate!
+b : We don't have pennies. | Have you any pennies? | Don't go near it.
+a : We can watch for free. | I've got one! | I only want to look.
+b : Watching makes you want pennies. | One sweet, then. Split it. | It wants to look back. With teeth.
+a : Come on! | Fine. You can have the smaller half. | ...Maybe from here.
+
+scene kn_day_market_end
+when topic=day day=market time=dusk
+a : The stalls are packing up. | Did you get everything? | Well, that's the market done.
+b : And not before time. My legs. | Nearly. Forgot the salt. | Till next week.
+a : Mine too. | There's always one thing. | Same faces, same prices.
+b : Ah well. | Always the salt. | Same everything.
+
+# ---------------------------------------------------------------- Rest days
+
+scene kn_day_rest_plans
+when topic=day day=rest
+a : What are you doing today? | Rest day at last. | Chapel, then nothing at all.
+b : As little as I can. | Not long enough. | That's my plan too.
+a : That's the spirit. | It never is. | The best plan.
+b : I'm good at it. | Never. | Perfect plan.
+
+scene kn_day_rest_chapel
+when topic=day day=rest place=chapel|street time=dawn|day
+a : Going to chapel? | The brother's sermons get longer every week. | Did you see who came to chapel today?
+b : I'd better. My mother checks. | Longer and duller. | Half the town, for once.
+a : Mothers always check. | Bright One forgive me, but they do. | It's the cold. Chapel's warm.
+b : Even from the other side of the river. | He'll forgive you. He has to. | Good, warm sermons.
+
+scene kn_day_rest_lazy
+when topic=day day=rest time=day
+a : I haven't moved since breakfast. | I slept till noon. | I'm going to lie in the sun all day.
+b : I envy you. | Lucky wolf. | Mind you don't burn your nose.
+a : Envy's a sin. On rest day too. | Lucky and rested. | I'll move it to the shade.
+b : Then I'm doubly a sinner. | Rested and smug. | Lazy old wolf.
+
+scene kn_day_rest_chores
+when topic=day day=rest
+a : Some rest day. I've been mending all morning. | My mate's found twelve jobs for me. | Rest day means house work, apparently.
+b : Mending what? | Twelve? | Mine too.
+a : Everything that broke this week. | And they're still counting. | Every rest day.
+b : That's a long list. | Run. | Next week, we hide.
+a : Long and getting longer. | I can't. They know where I sleep. | Agreed.
+
+scene kn_day_rest_river
+when topic=day day=rest season=summer
+a : Coming down to the river? | The pups are swimming already. | Too hot to do anything but swim.
+b : If there's shade. | Then there's no room left. | Swim, then sleep.
+a : There's an old willow. | We'll swim upstream. | And eat.
+b : Then I'm coming. | Far upstream. | Swim, eat, sleep.
+
+scene kn_day_rest_winter
+when topic=day day=rest season=winter
+a : A rest day by the fire. Perfect. | Too cold for chapel. | Shall we sit at the tavern?
+b : Don't move. Don't even talk. | Don't let the brother hear. | Close to the hearth.
+a : Not a word. | He's at the tavern too. | Closest seat.
+b : Good. | Then we'll keep his secret. | Then hurry.
+
+# ---------------------------------------------------------------- Festivals
+
+scene kn_day_festival_morning
+when topic=day day=festival time=dawn|day
+a : Festival today! | Are you dancing tonight? | The whole town's out already.
+b : About time we had some fun. | If my knees hold. | And half the country.
+a : Long time coming. | They will. Knees love a festival. | Then we'd better get a good spot.
+b : Long and grey. | Mine don't. | Near the food.
+
+scene kn_day_festival_food
+when topic=day day=festival
+a : Have you tried the roast? | There's honey cake at every stall. | I've eaten too much already.
+b : Twice. | I've tried every stall. | It's a festival. That's the law.
+a : Only twice? | Every stall? | Then I'm very law-abiding.
+b : So far. | Twice. | A model citizen.
+
+scene kn_day_festival_dance
+when topic=day day=festival time=dusk|night
+a : Come and dance! | Listen to the drums. | I've not danced like that in years.
+b : My dancing's a crime. | Like a heart beating. | It showed. In a good way.
+a : Then be a criminal tonight. | Then dance to it. | In a good way? Really?
+b : Just one, then. | One dance. | No. But you looked happy.
+
+scene kn_day_festival_after
+when topic=day day=festival time=night
+a : My head's spinning. | Best festival in years. | I can't feel my feet.
+b : Too much cider. | Every year's the best in years. | Too much dancing.
+a : Not enough cider. | This one more so. | No such thing.
+b : Home, then. | Fair enough. | There's such a thing. Your feet say so.
+
+scene kn_day_festival_grump
+when topic=day day=festival a.stage=old
+a : All this noise. In my day festivals were dignified. | They'll be howling till dawn. | Waste of good food, if you ask me.
+b : In your day, you danced on the tables. | Join them. | Nobody asked you.
+a : That was dignified dancing. | My howl's got rusty. | Nobody ever does.
+b : On the tables. | Rust it more. | Have some cake.
+a : ...Pass the cider. | Maybe one. | Maybe one piece.
+
+# ---------------------------------------------------------------- Seasons and the year
+
+scene kn_day_spring
+when topic=day|smalltalk season=spring band=friends|acquaintances|family
+a : Spring at last. | Smell that? Green everywhere. | The pups are all over the meadow.
+b : My nose wakes up in spring. | Mud too. | The meadow's all over the pups.
+a : Mine never sleeps. | Mud's honest. | Covered.
+b : You're a dog, then. | It's still mud. | Every last one.
+
+scene kn_day_summer_long
+when topic=day|smalltalk season=summer band=friends|acquaintances|family time=dusk
+a : Still light, and it's late. | Long days are wasted on work. | I love these summer evenings.
+b : Longest day's soon. | Everything's wasted on work. | Midges love them too.
+a : Then they get short again. | Some day we'll be rich. | Midges love everything.
+b : All too soon. | Some day. | Especially me.
+
+scene kn_day_autumn
+when topic=day|smalltalk season=autumn band=friends|acquaintances|family
+a : Leaves turning already. | Harvest's nearly in. | I can smell winter coming.
+b : Every year sooner. | Then we feast. | Your nose is early.
+a : Or we get slower. | Then we pay the tithe. | My nose is never wrong.
+b : Speak for yourself. | Then we feast less. | Then winter's early.
+
+scene kn_day_winter_long
+when topic=day|smalltalk season=winter band=friends|acquaintances|family
+a : Dark before supper again. | The well's frozen. | How many days to spring?
+b : Long nights for sleeping. | Break it. With your head. | Too many.
+a : Long nights for worrying. | You first. | Count them anyway.
+b : Then sleep instead. | Ha. | I'd lose count.
+
+# ---------------------------------------------------------------- Plans with friends and kin
+
+scene kn_day_plans_friends
+when topic=day band=friends
+a : What are you doing tonight? | Come by later. | Supper at mine on {weekday}?
+b : Nothing I can't get out of. | Bring anything? | What's cooking?
+a : Then get out of it and come. | Just yourself. And cider. | Rabbit, if I catch one.
+b : I'll come. | Cider it is. | And if not?
+a : Good. | Plenty. | Turnips.
+
+scene kn_day_plans_family
+when topic=day band=family
+a : We're all eating at Mother's tonight. | Your turn to fetch the water. | Who's minding the pups today?
+b : All of us? There's no room. | It was my turn yesterday. | Not me. I did it last time.
+a : There's never room. We squeeze. | Then it's your turn twice. Life's unfair. | Then me, again.
+b : Like pups in a den. | It is. Bucket. | Thank you.
+a : Exactly like. | Bucket. | You owe me.
+
+scene kn_day_plans_spouses
+when topic=day band=spouses
+a : What shall we do today? | Your brother's coming at noon. | I'm going to market. Need anything?
+b : Something together. | Hide. | Bread and salt. And you back soon.
+a : Something together, then. | We can't hide. He's family. | Bread, salt, me.
+b : The river? | We can try. | In that order?
+a : The river. | We'll hide in plain sight. | Any order.
+
+scene kn_day_regional
+when topic=day region=ridgemere|saltreach
+a : Fishing boats are out early. | Market's half fish today. | The fog's lifting off the water.
+b : Before the weather turns. | It's always half fish. | First time in a week.
+a : Then it'll be fish for supper. | The other half is more fish. | Don't trust it.
+b : Again. | Smoked fish. | Never.
+
+scene kn_day_regional_mountain
+when topic=day region=upper_accord|northern_fortress
+a : Pass is open today. | Clear enough to see the lowlands. | The bells rang early at the Hall.
+b : For a day, maybe. | Like a map. | Concord business.
+a : Then the carters will run. | A map of better weather. | It's always Concord business.
+b : Run and get stuck. | Better and further. | Always.
+
+scene kn_day_regional_south
+when topic=day region=ser_ferro|amberford|cinderbrook
+a : Hot already, and barely morning. | The river's low. | Smell the vineyards on the wind.
+b : It'll be worse by noon. | It'll rise when the rains come. | Wine next year, then.
+a : A long nap at noon, then. | If they come. | If the grapes are kind.
+b : The only sensible thing. | They always come. Late. | They're never kind.

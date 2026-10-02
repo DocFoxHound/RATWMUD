@@ -1,0 +1,221 @@
+# Everyday talk (doc 30) by place and by region: the tavern, the chapel, the gate, the shore, the barracks, the
+# hall, the market; and small talk with a town's own colour. Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- Places
+
+scene ev_pl_tavern_fire
+when topic=smalltalk place=tavern
+a : Shove over, let me near the fire. | This ale tastes of the barrel. | Who's paying for this round?
+b[innkeeper] : Complaints go out the door. Coin goes on the counter.
+b : There's room by the dog. | All ale tastes of barrel. | Not me. I paid last time.
+a : The dog can shove over too. | Not like this. This is the barrel itself. | You never paid in your life.
+
+scene ev_pl_tavern_late
+when topic=smalltalk place=tavern time=night
+a : One more and I'm going home. | I said one more an hour ago. | Is the landlord watering this?
+b[innkeeper] : The landlord can hear you. And no.
+b : You said that an hour ago. | And here we are. | Tastes like it.
+a : I meant it then too. | Here we are indeed. | Tastes like puddle.
+
+scene ev_pl_chapel_quiet
+when topic=smalltalk place=chapel
+a : It's peaceful in here. | The candles smell of honey. | I haven't been inside since I was a pup.
+b[priest] : The doors are always open. Come more often.
+b : Peaceful, and cold. | Beeswax. The good kind. | It hasn't changed.
+a : Cold's good for the soul, they say. | Someone pays well for them. | Neither have I, much.
+
+scene ev_pl_chapel_sermon
+when topic=smalltalk place=chapel|street day=rest
+a : Long sermon this morning. | Did you understand the sermon? | The priest was in a mood today.
+b[priest] : I heard that. The Bright One heard it too.
+b : My tail went numb. | Something about order and duty. | Somebody must've sinned.
+a : Mine fell asleep entirely. | It's always that. | Not me. This week.
+
+scene ev_pl_gate_queue
+when topic=smalltalk place=gate
+a : The gate line's longer every day. | Why do they search every cart? | Half the country's coming through here.
+b[guard] : Because last week someone hid a stolen calf under the turnips.
+b[carter] : Two hours I waited. Two hours!
+b : Market day, maybe. | Orders. Always orders. | And leaving by noon.
+a : Every day's market day now. | Somebody's orders. | Where are they all going?
+
+scene ev_pl_gate_strangers
+when topic=smalltalk place=gate
+a : Strange scents on the road today. | Those travellers didn't smell like anywhere I know. | Lot of foreign tongues at the gate.
+b[guard] : We note everyone who passes. Don't you worry.
+b : From the far roads, maybe. | Southern, maybe. Spicy. | Trade's good.
+a : Far roads. | Spice and dust. | Trade's good for someone.
+
+scene ev_pl_shore
+when topic=smalltalk place=shore
+a : Water's cold enough to stop your heart. | Tide's out farther than I've ever seen. | Found a shell big as my paw.
+b[fisher] : Low tide means a storm coming. Mark it.
+b[sailor] : Seen bigger. Out past the Isle, they're big as shields.
+b : Don't swim, then. | Strange. | Keep it. Luck.
+a : Wasn't planning on it. | It makes me uneasy. | I'll keep it on my sill.
+
+scene ev_pl_barracks
+when topic=smalltalk place=barracks
+a : These cots were made for pups. | Who stole my good blanket? | Sergeant's in a foul temper.
+b[soldier] : Complain to the quartermaster. He'll laugh at you.
+b : Sleep on the floor, then. | Not me. | When isn't he?
+a : The floor's warmer. | Somebody did. | Fair point.
+
+scene ev_pl_hall
+when topic=smalltalk place=hall
+a : The council's sitting late again. | Look at the carvings on these beams. | It's always cold in the hall.
+b[official] : Matters of state take time. As do petitions. As do you.
+b : They love the sound of their voices. | Old work. Very old. | Big rooms always are.
+a : More than we do. | Older than the town, they say. | And small purses.
+
+scene ev_pl_market_haggle
+when topic=smalltalk place=market
+a : That cloth seller wanted a fortune. | I haggled her down by half! | Everything's a penny more than last market.
+b[merchant] : And she'll still feed her pups. Haggling's a dance, not a war.
+b : Walk away. They always call you back. | Teach me how. | Always is.
+a : She didn't call me back. | Look sad. Very sad. | Always is.
+
+scene ev_pl_market_crowd
+when topic=smalltalk place=market day=market
+a : I can't move for elbows today. | Mind your purse in this crush. | Everyone in the country's come to market.
+b[guard] : Keep your coin in your fur, not your belt.
+b : Market day. | Always do. | And their cousins.
+a : I'll come early next time. | I'll keep a paw on it. | Their cousins' cousins.
+
+scene ev_pl_home_chores
+when topic=smalltalk place=home
+a : The roof needs patching before the rain. | I swept and there's still sand in every corner. | Whose turn is it to fetch water?
+b[spouses] : Yours. It's always yours. You know that.
+b[child] : Not mine! I did it yesterday!
+b : I'll help Restday. | It follows us in on our paws. | Yours.
+a : You said that last Restday. | Sand and fur, everywhere. | I knew it.
+
+scene ev_pl_field_long
+when topic=smalltalk place=field
+a : These rows go on forever. | Look how high the barley's grown. | Rest a moment under the oak?
+b[farmer] : Rest's for winter. Bend your back.
+b : Halfway now. | Good year coming. | Just a moment.
+a : Halfway to forever. | Pray it holds. | Just one.
+
+# ---------------------------------------------------------------- Regions: the north and the coast
+
+scene ev_rg_ridgemere_rain_forever
+when topic=smalltalk region=ridgemere
+a : Has it stopped raining once this year? | I think I'm growing moss. | My shutters are swollen shut again.
+b[old] : It stopped once. The summer I was nine. A Restday, I think.
+b[child] : I like the rain. The gutters are rivers.
+b : Not that I've seen. | Green suits you. | Kick them.
+a : I don't believe it ever stops. | Mossy and miserable. | I kicked. Now my toe hurts.
+
+scene ev_rg_ridgemere_sump
+when topic=smalltalk region=ridgemere place=street|tavern|market
+a : Don't take the Sump stairs after dark. | Someone lost a purse down in the Sump again. | The Sump smells worse than ever.
+b[guard] : We patrol the Sump in fours now. Ask yourself why.
+b : I never do. | Of course they did. | Something died, maybe.
+a : Wise. | Never to be seen again. | Something always has.
+
+scene ev_rg_ridgemere_houses
+when topic=smalltalk region=ridgemere
+a : Brinewater's wolves were strutting about the quay. | Did you see House Vesk's banner on the new smokehouse? | The House wolves think the rain falls only on us.
+b[noble] : The Houses keep this city alive. Mind your tongue.
+b : Strutting like gulls. | Fish and salt, everywhere. | It does fall only on us. Have you seen their roofs?
+a : Gulls with purses. | Vesk wants every shed in Ridgemere. | Slate. Fine slate.
+
+scene ev_rg_saltreach_tide
+when topic=smalltalk region=saltreach
+a : Spring tide tonight. | Salt in my fur, salt in my bread, salt in my dreams. | The gulls are thick on the pans.
+b[fisher] : Bring the boats high. Spring tides take what's left low.
+b : Watch the pan walls. | That's Saltreach. | Something's dead out there.
+a : I'll check them before dark. | All of it. | Always is.
+
+scene ev_rg_accord_scholars
+when topic=smalltalk region=accord
+a : The archive scholars came through with their carts again. | A warden walked past me today. My fur stood on end. | Everyone in Upper Accord walks like they're late for prayers.
+b[scholar] : Manuscripts must be moved with care. We aren't sightseeing.
+b[guard] : Wardens go where they please. Best not stare.
+b : What do they want out here? | They have that effect. | They usually are.
+a : Old books, always. | I didn't stare. Much. | Slower, then. Pray slower.
+
+scene ev_rg_accord_quickened
+when topic=smalltalk region=accord
+a : Do you think the wardens really train Quickened here? | They brought another one in, they say. Guarded on all sides. | I'd hate to be Quickened. All eyes on you.
+b[priest] : Every gift is the Bright One's, and every gift needs order.
+b : So they say. | Poor thing. | Better that than ordinary.
+a : So they say. | Poor thing, or dangerous thing. | Maybe. I'm not so sure.
+
+# ---------------------------------------------------------------- Regions: the south and the river
+
+scene ev_rg_serferro_white
+when topic=smalltalk region=ser_ferro
+a : They're plastering the walls on the river street again. | Sun off these white walls is blinding. | Have you ever seen the cathedral at noon?
+b[official] : The city keeps its face clean. It's in the charter.
+b[priest] : The silver on the spire was a gift from three Crowns.
+b : Every spring. | Squint and bear it. | Takes your breath away.
+a : Clean face, dirty purse, my father said. | Squinting all summer. | Every time.
+
+scene ev_rg_serferro_river
+when topic=smalltalk region=ser_ferro place=street|shore|market
+a : River's low this year. | Barges stacked three deep at the wharves. | Smell the river? Mud and money.
+b[sailor] : Low water, high prices. The barges ground at the shallows.
+b[merchant] : River goods keep this city fat.
+b : Long dry spell. | Busy year. | Mud and money, yes.
+a : It needs rain. | Busy for someone. | Mostly mud, near the tanners.
+
+scene ev_rg_serferro_gardens
+when topic=smalltalk region=ser_ferro season=spring|summer
+a : The guild gardens are in flower. | Smell the orange trees by the hall? | Some lord's fountain is running again.
+b[noble] : The gardens are open to the respectable. On certain days.
+b : Lovely, aren't they. | Like summer itself. | For his guests, no doubt.
+a : I'd like to sit in one. | I stand there and breathe. | And never for us.
+
+scene ev_rg_cinderbrook_soot
+when topic=smalltalk region=marches
+a : Soot in my water bowl again. | The furnace glow lights the whole valley at night. | Hammers ringing since before dawn.
+b[smith] : That's the sound of good iron. Learn to love it.
+b[miner] : At least it's warm up here.
+b : You get used to it. | Pretty, in a way. | Never stops.
+a : I never have. | Hard to sleep under. | Never.
+
+scene ev_rg_amberford_grass
+when topic=smalltalk region=steppe
+a : Nothing but grass from here to the sky. | The wind never rests out here. | You can see a rider coming a day away.
+b[herder] : Good grass, fat herds. What else does a wolf need?
+b : It's peaceful. | Hold onto your hat. | Gives you time to hide.
+a : Too peaceful, some days. | Lost two hats this year. | Or to put the kettle on.
+
+scene ev_rg_fens_peat
+when topic=smalltalk region=fens
+a : The peat smoke gets into everything. | Mist on the fens so thick I lost the path. | Will-o'-wisps over the bog again last night.
+b[old] : Don't follow the lights. My brother did.
+b[healer] : The fens grow every herb a healer needs. And some she doesn't.
+b : I like the smell. | Follow the reed posts. | Marsh gas, nothing more.
+a : It smells like home. | I nearly walked into the water. | Marsh gas that dances?
+
+scene ev_rg_lake_mist
+when topic=smalltalk region=lake
+a : Mist sitting on the lake like a blanket. | Boats out early this morning. | The lake's glass-still today.
+b[fisher] : Still water, no wind, no fish. Lake sulks like a wife.
+b[sailor] : The Isle's hidden in that mist. I don't like it.
+b : Pretty, isn't it. | They always are. | Good day for a swim.
+a : Cold, though. | Lucky fish. | Brave of you.
+
+scene ev_rg_downs_hills
+when topic=smalltalk region=downs
+a : Sheep on every hill, as far as you can see. | The downs are gold in this light. | Wind smells of thyme up on the ridge.
+b[herder] : And every one of them a fool. I love them.
+b : Never seen so many. | Very fine. | Lovely.
+a : Fools and wool. | It's a good country. | Makes me want to roll in it.
+
+scene ev_rg_fortress_walls
+when topic=smalltalk region=fortresses
+a : Same walls, same faces, every day. | Wind howls through these arrow slits all night. | Rations are thinner than they were.
+b[soldier] : Ask for a transfer, then. See where they send you.
+b : That's soldiering. | Stuff them with rags. | Supply cart's late.
+a : That's my life now. | I'd have to steal rags. | Isn't it always.
+
+scene ev_rg_ghost_town
+when topic=smalltalk region=ghost_town
+a : I heard the bell in the old chapel ring. There's no rope. | Nobody comes here for good reasons. | The wind sounds like voices in these ruins.
+b[old] : This was a fine town once. Before.
+b : The wind, surely. | Then why are we here? | Only the wind.
+a : Surely. | Same as everyone. Nowhere else. | I keep telling myself.

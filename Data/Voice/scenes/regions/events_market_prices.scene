@@ -1,0 +1,291 @@
+# Prices, as each town feels them (Docs/Design/30-towns-and-talk.md): the mountain haul to Upper Accord, Ridgemere's
+# Houses and its Sump, Ser Ferro's guilds and tiers, and the towns' own trades. Blanks: {item}, {price}.
+# Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Upper Accord
+
+scene em_ua_pr_haul
+when topic=prices dir=up region=upper_accord
+a : Up the mountain, up the price. {price} for {item}. | The carters blame the switchbacks for every penny. | A lowlander told me {item} costs half down there.
+b : Every step of that road is a penny. | And the switchbacks blame the snow. | Then let the lowlander eat down there.
+a : And there are a lot of steps. | And the snow blames nobody. | Gladly.
+b?[carter] : You haul a cart up that mountain and tell me it's not worth it.
+
+scene em_ua_pr_concord
+when topic=prices dir=up region=upper_accord
+a : Could the Concord not do something about the price of {item}? | They debate the souls of nations and can't fix the price of {item}. | I'll petition the Concord. {price} is a sin.
+b : They're busy with bigger things. | Souls are cheaper. | Get in line behind the other petitions.
+a : Nothing's bigger than supper. | Clearly. | The line goes round the plaza.
+b?[official] : The Concord governs. It does not keep a market stall.
+
+scene em_ua_pr_warden_trainees
+when topic=prices dir=up item=meal region=upper_accord
+a : The trainees from the grounds eat like four wolves each. No wonder meals cost {price}. | The Wardens' cooks buy half the market. | When the Order's trainees come down, the bakers sell out.
+b : Running the ridge all day does that. | And leave us the scraps. | Lucky bakers.
+a : I'd eat like four, doing that. | Always. | Lucky and tired.
+
+scene em_ua_pr_snow_cheap
+when topic=prices dir=down region=upper_accord
+a : {item} for {price}, up here! Who died? | Cheap {item} at the Stair Gate stalls. A miracle. | The lowland carts must have come up full.
+b : Nobody. The pass opened, that's all. | Get it before it's gone. | First time this season.
+a : Then the pass is my new friend. | Running. | And the last, probably.
+
+scene em_ua_pr_crafts_ward
+when topic=prices dir=up region=upper_accord place=market|street
+a : In the Crafts ward they're trading tools for food now. | My neighbour paid for {item} with a mended lamp. | Coin's tight in the wards. Folk barter.
+b : Clever. | Did it work? | Coin was always tight up here.
+a : Necessary. | The lamp leaks, but yes. | Tighter now.
+b?[crafter] : My hinges buy more than my pennies, these days.
+
+# ---------------------------------------------------------------- Ridgemere
+
+scene em_rm_pr_sump
+when topic=prices dir=up region=ridgemere
+a : In the Sump they're boiling fish heads for supper. | {item} at {price}. The Sump will starve before the Houses notice. | The Sump children are begging at the market gate again.
+b : Fish heads are better than nothing. | The Houses notice. They just don't care. | Every day this week.
+a : Barely. | Exactly. | And every day they're thinner.
+b?[noble] : The Houses give alms every Restday.
+
+scene em_rm_pr_vesk_fish
+when topic=prices dir=up item=meal region=ridgemere
+a : House Vesk sets the price of fish and fish sets the price of supper. | Smoked fish at the quay costs more than fresh used to. | Vesk's smokehouses are full and the stalls are bare. Explain that.
+b : Vesk sets the price of everything wet. | Smoke costs money. | Easy. They're waiting for the price to climb.
+a : And everything here is wet. | So does Vesk. | That's exactly it.
+b?[fisher] : We catch it. Vesk sells it. We see none of the difference.
+
+scene em_rm_pr_rain_hall
+when topic=prices dir=up region=ridgemere
+a : The Council of Houses could fix prices in an afternoon. | Somebody should take {price} for {item} to the Rain Hall. | The Rain Hall leaks and so do our purses.
+b : And make less money? Never. | Take a bucket too. The roof leaks. | Ha. Put that on a banner.
+a : Never. | Two buckets. | Maybe I will.
+b?[official] : The Council has the matter in hand.
+
+scene em_rm_pr_herbs_mountain
+when topic=prices dir=up item=herbs region=ridgemere
+a : Herbs come down from the mountain farms, and the rain rots half of them. | Wet herbs at {price}. Mould, mostly. | Everything green in Ridgemere is moss.
+b : The rain rots everything. | Mould's a herb, if you're poor. | And moss is free.
+a : Including tempers. | Don't joke about that. | Then I'm rich.
+b?[healer] : Dry them by the fire the day you buy them. Or you'll lose them.
+
+scene em_rm_pr_cheap_ship
+when topic=prices dir=down region=ridgemere
+a : A southern ship came in full of grain. Prices dropped by dusk. | {item} for {price}. The quay's busy for once. | Brinewater's new hull brought a hold full of food.
+b : Long may the ships come. | For once. | Good old Brinewater.
+a : Long may they. | Enjoy it. | For once.
+b?[sailor] : Rough crossing for that cargo. Eat it slow and think of us.
+
+scene em_rm_pr_houses_rich
+when topic=prices region=ridgemere
+a : Up in the high streets nobody's counting pennies. | Lady Grayrock's cook bought every egg at the market. | The Houses' servants buy first and leave us the rest.
+b : Never have, never will. | Every egg? | The way it's always been.
+a : Must be nice. | Every last one. | Way it'll always be.
+b?[servant] : We're told what to buy. We don't eat it.
+
+# ---------------------------------------------------------------- Ser Ferro
+
+scene em_sf_pr_guild
+when topic=prices dir=up region=ser_ferro
+a : The Merchants' Guild met and the prices went up. Funny, that. | Every guild stall has the same price chalked. {price}. | The Guild calls it a fair price. Fair for the Guild.
+b : Not funny at all. | Same price, same smile. | Fair for everyone in the Guild.
+a : Not funny at all. | And the same lie. | Which isn't us.
+b?[merchant] : The Guild keeps the market from chaos. Mostly.
+
+scene em_sf_pr_tiers
+when topic=prices dir=up region=ser_ferro
+a : At the wharf {item} is {price}. On the Rise it's twice that and nobody blinks. | Everything costs more the higher you climb in this city. | Up the tiers the bakers sell cakes with gold leaf.
+b : On the Rise they pay for the view. | Even the air. | Gold leaf? Tastes of nothing.
+a : The view of us. | Especially the air. | Like their sermons.
+
+scene em_sf_pr_river
+when topic=prices dir=down region=ser_ferro
+a : The barges came down the river full. Prices fell. | {item} for {price} at the lower wharf. | River's been kind this month. Food's cheap.
+b : Bless the river. | Lower wharf's always cheapest. | Kind for once.
+a : And the bargemen. | And dirtiest. | For once.
+b?[sailor] : The river's always kind until it isn't.
+
+scene em_sf_pr_syndicate
+when topic=prices dir=up region=ser_ferro
+a : Somebody's skimming every crate off the wharf. That's the price. | They say the Syndicate takes a cut of every barrel. | Respectable merchants, respectable prices, and someone in a back room getting fat.
+b : Everyone knows. Nobody says. | They say. Quietly. | Someone always is.
+a : I'm saying it. | Quietly. | Always.
+b?[guard] : Careful who hears you say that.
+
+scene em_sf_pr_iron_saint
+when topic=prices dir=up region=ser_ferro
+a : The cathedral bakes bread for the poor on feast days. Good thing too. | I lit a candle to the Iron Saint for cheaper bread. | The Saint's almoners are feeding twice the usual.
+b : Bless them. | Did it work? | That tells you how bad it is.
+a : Bless them. | Not yet. | It does.
+b?[priest] : The Saint asks us to share the loaf, not to price it.
+
+# ---------------------------------------------------------------- Accord Crossing
+
+scene em_ac_pr_toll
+when topic=prices dir=up region=accord_crossing
+a : Toll's up, so food's up. Every cart passes it on. | The toll post adds a penny to every crate, and every crate adds a penny to supper. | {item} at {price}. Thank the toll.
+b : Pennies on pennies. | And supper adds one to the tavern bill. | Thank the toll for nothing.
+a : Pennies on pennies. | Round and round. | For nothing.
+b?[official] : The toll pays for the road. You'd miss the road.
+
+scene em_ac_pr_carters_eat
+when topic=prices dir=up item=meal region=accord_crossing
+a : Forty carters at the Crossed Roads last night. Not a crumb left. | When the yard's full, the stew runs out. | The carters eat everything before the town wakes.
+b : Forty! | Then the price goes up. | Then go to bed earlier and wake earlier.
+a : Forty hungry carters. | It does. | I can't wake earlier than a carter.
+b?[innkeeper] : I cook for sixty and serve eighty. Then they complain.
+
+scene em_ac_pr_cheap
+when topic=prices dir=down region=accord_crossing
+a : Everything passes through the Crossing. When there's plenty, we feel it first. | {item} for {price}. The yard must be overflowing. | The lowland carts dumped their extra before the climb.
+b : First to feel it, first to lose it. | Overflowing with mules, anyway. | Lighter for the mountain.
+a : Always. | And mule dung. | And cheaper for us.
+
+# ---------------------------------------------------------------- Saltreach
+
+scene em_sr_pr_salt
+when topic=prices dir=up region=saltreach
+a : Salt's the one thing we're never short of. Pity we can't eat it alone. | We sell Ridgemere salt and buy back salt fish at twice the price. | {item} at {price}, and the pans full of white gold.
+b : Pity indeed. | That's the trade. | White gold for someone else.
+a : Salt soup again. | A bad one. | Always.
+b?[laborer] : Rake the pans all day, and buy my supper with what's left.
+
+scene em_sr_pr_boats
+when topic=prices dir=up item=meal region=saltreach
+a : The boats came in empty. Supper's dear. | No fish, no supper. That's Saltreach. | Storm kept the boats in. Prices up by noon.
+b : Tomorrow, maybe. | That's the whole town in a line. | It always does.
+a : If the wind drops. | Put it on the chapel wall. | Always.
+b?[fisher] : Can't catch what won't come. The fish went south.
+
+scene em_sr_pr_vesk_factor
+when topic=prices dir=up region=saltreach
+a : The Vesk factor buys our catch low and sells it back high. | When Vesk sets the price, we pay it. | The factor came by and prices went up before he'd left.
+b : Ridgemere always takes. | What else can we do? | Of course they did.
+a : Always. | Nothing. Yet. | Of course.
+
+# ---------------------------------------------------------------- Cinderbrook
+
+scene em_cb_pr_ore
+when topic=prices dir=up region=cinderbrook
+a : Ore's cheap, food's dear. Backwards town. | Ser Ferro buys our iron for nothing and sells us bread for everything. | Miners can't eat iron.
+b : Backwards and sooty. | That's the Crown's way. | They'd try, if it came to it.
+a : And coughing. | Always has been. | We'll see.
+b?[miner] : I dug a cart of ore today. Bought half a loaf.
+
+scene em_cb_pr_herbs_cough
+when topic=prices dir=up item=herbs region=cinderbrook
+a : Coltsfoot for the cough at {price}. In a town where everyone coughs. | The healer's out of chest herbs again. | Everyone in Cinderbrook needs herbs and nobody can afford them.
+b : Of course it's dear. Everyone wants it. | Again. | That's Cinderbrook.
+a : Exactly. | Every season. | That's us.
+b?[healer] : Breathe through a damp cloth in the shafts. It's cheaper than any herb.
+
+scene em_cb_pr_cheap
+when topic=prices dir=down region=cinderbrook
+a : The Crown's carts brought grain. Food's cheaper. | {item} for {price}. The forge crews will eat tonight. | Cheaper bread. The smith's whistling.
+b : About time the Crown gave back. | Good. They earned it. | He never whistles.
+a : About time. | They did. | He is today.
+b?[smith] : A smith with a full belly works twice as hard.
+
+# ---------------------------------------------------------------- Westmarch
+
+scene em_wm_pr_mercantile
+when topic=prices dir=up region=westmarch
+a : The Mercantile's chalked new prices again. | Old Fennick at the Mercantile wrote my name in the book again. | Half the downs owes the Mercantile, and the prices keep climbing.
+b : Up or down? | How long is your line? | That's how they keep us.
+a : Up, mostly. | Longer than the book. | That's how.
+b?[merchant] : Credit costs. Somebody has to carry it.
+
+scene em_wm_pr_drovers
+when topic=prices dir=up item=meal region=westmarch
+a : The drovers are late and meat's dear all week. | No drovers this month, so no mutton. | Mutton at {price}. The drovers must be scarce.
+b : Turnips, then. | Barley, then. | Scarce as rain.
+a : Turnips again. | Barley again. | Scarcer.
+b?[herder] : Sheep don't walk themselves to market. Pay the drover.
+
+scene em_wm_pr_frontier
+when topic=prices dir=up region=westmarch
+a : Out here at the edge everything comes from far away. | We pay for the distance, every bite. | The garrison buys first and leaves us the dregs.
+b : The edge of everything. | Every mile on the bill. | Dregs and dust.
+a : Edge of the world. | Every one. | That's Westmarch.
+b?[soldier] : The garrison keeps you safe enough to buy anything at all.
+
+# ---------------------------------------------------------------- Lakeside
+
+scene em_lk_pr_fish
+when topic=prices dir=up item=meal region=lakeside
+a : Fish from the Mirrormere, and still it's {price}. | If the mere's full of fish, why's supper dear? | The boatwrights eat better than the fishers.
+b : Ask the fishers. | The mere's moody. | Boats sell for more than fish.
+a : They're out on the water. | Like everything here. | That's the trouble.
+b?[fisher] : The mere's full. The nets are torn. New nets cost.
+
+scene em_lk_pr_isle
+when topic=prices dir=up region=lakeside
+a : The Isle garrison rowed over and bought out the market. | Soldiers from the Isle pay in silver and leave us the bones. | Since the Isle doubled its watch, food's scarce here.
+b : They pay well, at least. | Bones make good soup. | Soldiers are hungry wolves.
+a : They do. That's the trouble. | Thin soup. | Hungry and rich.
+b?[soldier] : We've got to eat too. It's a long row with an empty belly.
+
+scene em_lk_pr_cheap
+when topic=prices dir=down region=lakeside
+a : Big catch on the mere. Fish for nothing. | {item} for {price}. Even the gulls are fat. | The boats came in so heavy they nearly sank.
+b : Eat fish till you swim. | Fat gulls and fat pups. | Nearly is fine.
+a : Already do. | That's a good week. | Very fine.
+
+# ---------------------------------------------------------------- Fenhollow
+
+scene em_fh_pr_herbs_ours
+when topic=prices dir=up item=herbs region=fenhollow
+a : We grow the herbs. How are they {price} in our own town? | Fenhollow herbs go out by the cartload and come back dearer. | The herbalists sell the best to the cities and keep the stems.
+b : Because the cities pay more. | Every cart, every season. | Stems for the locals.
+a : Always the cities. | Every season. | Stems and promises.
+b?[healer] : The cities pay. We don't. That's the whole of it.
+
+scene em_fh_pr_herbs_cheap
+when topic=prices item=herbs dir=down region=fenhollow
+a : Herbs cheap enough to stuff a mattress. | The marsh gave a good season. Every shed's full. | {price} a bundle. The herbalists are grumbling.
+b : I'll stuff mine. | Bless the marsh. | They always grumble.
+a : Sleep well, then. | For once. | And always eat.
+
+scene em_fh_pr_peat
+when topic=prices dir=up region=fenhollow
+a : Peat's wet and supper's dear. A good week for misery. | Can't dry peat, can't cook. Can't cook, buy food. Can't buy food. | The bog road's flooded and no carts are coming.
+b : A good week for marsh lights, too. | That's Fenhollow all over. | Then we wait.
+a : Don't follow them. | All over. | And we're hungry.
+b?[laborer] : Cut peat all morning. Wet as a fish.
+
+# ---------------------------------------------------------------- Amberford
+
+scene em_af_pr_grain
+when topic=prices dir=up item=meal region=amberford
+a : We grow the grain and pay {price} for a meal. | The grain goes over the ford and the bread comes back dearer. | The price chalked at the mill door's gone up again.
+b : That's trade. | The ford takes a toll both ways. | I saw.
+a : That's robbery. | Both ways. | Everyone saw.
+b?[farmer] : They buy my wheat cheap in the field and sell it dear in the loaf.
+
+scene em_af_pr_dry
+when topic=prices dir=up region=amberford
+a : No rain, no harvest, no cheap bread. | The ford's low and the fields are cracked. | The farmers are praying and the prices are climbing.
+b : Rain will come. | Bad year. | Pray with them.
+a : When? | Very bad. | I am.
+b?[farmer] : One more dry week and I'll lose the whole field.
+
+scene em_af_pr_harvest
+when topic=prices dir=down region=amberford season=summer|autumn
+a : Harvest's in. Bread's cheap. Amberford smiles. | The granary's full to the rafters. | {item} for {price}. The fields did us proud.
+b : Smile while you can. | Full granary, fat winter. | Proud and tired.
+a : While I can. | Let's hope. | Very tired.
+b?[farmer] : Every ear of it cut by paw and tooth. Remember that when you eat it.
+
+# ---------------------------------------------------------------- Hollowmere
+
+scene em_hm_pr_carter
+when topic=prices dir=up region=hollowmere_village
+a : The carter's late, so whatever he brings will cost more. | Prices in Hollowmere are whatever the carter says. | The carter brought salt and said a number. We paid it.
+b : He's always late. | And he says big numbers. | What else could we do?
+a : And always dear. | Bigger every time. | Nothing.
+
+scene em_hm_pr_garden
+when topic=prices dir=up region=hollowmere_village
+a : I'll grow more in the garden. Can't trust the carter's prices. | Every house in Hollowmere should keep a garden. | Herbs and beans from the garden. No pennies needed.
+b : Good idea. | Most do. | Beans again?
+a : About time. | The rest should. | Beans forever.
+
+b?[old] : Hollowmere fed itself before there was a road. It can again.

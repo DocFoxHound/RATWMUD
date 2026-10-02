@@ -1,0 +1,214 @@
+# Fenhollow: a damp town of peat cutters and herbalists at the edge of the Mirelands. The Peat Fire and its
+# hundred-year fire, Bogmyrtle's, the Marsh Apothecary, the Rushlight Chandler, the Stilt Chapel and its mist bell,
+# the Marsh Watch, the causeways, the eel channels and the lights that walk the fen at night.
+
+scene rg_fh_peat_fire
+when topic=lore region=fenhollow
+a : The Peat Fire's hearth hasn't gone out in a hundred years, they say. | Somebody nearly let the Peat Fire's fire die last winter. The whole town turned out. | Every hearth in Fenhollow was lit from the Peat Fire once.
+b[innkeeper] : My grandmother's grandmother lit it. I'll die before it goes out.
+b[old] : The day that fire dies, the fen takes the town. Old saying.
+b : A hundred years? | Close thing. | So they say.
+a : At least. | Very close. | Every one.
+
+scene rg_fh_marsh_lights
+when topic=lore region=fenhollow time=dusk|night
+a : The marsh lights are dancing out past the causeway. | Old Sedge talks to the marsh lights. Swears they answer. | Never follow the lights. Never.
+b[old] : The lights are the drowned, looking for the way home.
+b[priest] : Marsh gas and fear. Stay on the causeway and pray.
+b[child] : They're pretty! Can I go closer?
+b : Pretty, from here. | Mad as a heron. | Never.
+a : From here. | Quite mad. | Never.
+
+scene rg_fh_running_water
+when topic=lore region=fenhollow
+a : My aunt won't cross running water after dark. Not even the ditch. | They say what walks the fen at night can't cross a running lode. | The old folk build their doors facing the water. For protection.
+b[old] : Running water stops what still water hides. Remember that.
+b : Old fear. | So they say. | Odd custom.
+a : Very old. | So they say. | Very odd.
+
+scene rg_fh_peat_cutting
+when topic=work region=fenhollow a.job=laborer|miner|farmer
+a : Cut three hundred turves today. My back's broken. | Peat's too wet to burn this season. | Found an old wooden spade in the peat. Ancient thing.
+b[laborer] : Cut in spring, stack in summer, burn in winter. Never cut wet.
+b : Rest it. | Every season. | Older than the town?
+a : Can't. | Every one. | Probably.
+
+scene rg_fh_carved_stones
+when topic=lore region=fenhollow
+a : Peat cutters found carved stones under the bog again. | There's a stone in the Stilt Chapel wall with marks nobody can read. | They say a town lies under the Mirelands. Older than any.
+b[scholar] : The marks are old script. Older than the Concord's archive, perhaps.
+b[priest] : Old stones from the Dark One's age. Best left buried.
+b : What did they say? | Nobody at all? | Under the peat?
+a : Nobody can read them. | Nobody. | Deep under.
+
+scene rg_fh_bogmyrtle
+when topic=smalltalk region=fenhollow place=street|market|work
+a : Bogmyrtle's has a cure for everything. Trusts none of them. | Every jar in Bogmyrtle's is labelled in a hand nobody can read. | Bought a root from Bogmyrtle's for my fever. Tastes like the fen.
+b[healer] : Marsh herbs are strong. Strong cures, strong poisons.
+b : That's fen wisdom. | Except Bogmyrtle. | Did it work?
+a : It is. | Probably. | I'm still here.
+
+scene rg_fh_apothecary_doubt
+when topic=lore region=fenhollow band=friends|family|acquaintances
+a : They say the Marsh Apothecary's new tincture made three wolves sick. | Half the cures in the apothecary could be poison. | I wouldn't take anything from the apothecary's top shelf.
+b[healer] : Poison and cure are the same root at different doses.
+b : I'd heard. | Probably. | Nor would I.
+a : Careful, then. | Very careful. | Nor anyone.
+
+scene rg_fh_stilt_chapel
+when topic=lore region=fenhollow
+a : The Stilt Chapel's bell rang for the mist all night. | The flood came up to the Stilt Chapel's steps. Not past. | They built the chapel on stones after the old one drowned.
+b[priest] : The bell guides anyone caught on the causeways in the mist.
+b[old] : The old chapel's under the fen still. You can hear its bell some nights.
+b : Long night. | Never past. | Wise of them.
+a : Very long. | Never yet. | Very wise.
+
+scene rg_fh_eel_traps
+when topic=work region=fenhollow a.job=fisher|laborer|farmer
+a : Eel traps full in the north lode this morning. | Somebody's been emptying my traps before dawn. | Eels are fat this autumn.
+b[fisher] : Wicker traps, willow bait, and patience.
+b : Good haul. | Thieves. | Good eating.
+a : Very good. | Thieves. | Very good.
+
+scene rg_fh_lost_child
+when topic=lore region=fenhollow band=friends|family|spouses|acquaintances
+a : Widow Mire still walks the causeway every dusk. Looking. | The mire took a child three winters ago. She never stopped looking. | Keep your pups off the soft ground.
+b[priest] : Grief walks paths that never end. Be kind to her.
+b : Poor soul. | How terrible. | I always do.
+a : Rain or shine. | Three winters, and still. | Good.
+
+scene rg_fh_rushlights
+when topic=smalltalk region=fenhollow time=dusk|night
+a : The Rushlight Chandler sold out before the long nights. | Rushlights smoke worse than peat. | Fen nights are longer than anywhere.
+b[merchant] : Rushlights are cheap light. Tallow's for those with coin.
+b : Every winter. | Cheap light. | Feels that way.
+a : Every winter. | Very cheap. | It does.
+
+scene rg_fh_floods
+when topic=lore|weather region=fenhollow weather=rain|storm|overcast
+a : Water's over the low causeway again. | The lode's rising. Move the peat stacks. | Half the town's floors are wet.
+b[old] : The fen gives back what we take. Every winter.
+b[guard] : Nobody crosses the low causeway till it drops.
+b : Again? | Already did. | Every year.
+a : Again. | Good. | Every year.
+
+scene rg_fh_peat_smell
+when topic=smalltalk region=fenhollow
+a : You can smell a Fenhollow wolf a mile off. Peat smoke. | My coat smells of peat even after the city bathhouse. | Peat smoke gets into everything.
+b[old] : The smell is home. Wear it proud.
+b : Proud of it. | It never goes. | Even the bread.
+a : Very proud. | Never. | Even the bread.
+
+scene rg_fh_reading
+when topic=lore region=fenhollow
+a : Hardly anyone in Fenhollow can read. | The apothecary's the only one who reads the old labels. | Somebody left a book at the Peat Fire. Nobody could tell what it was.
+b[scholar] : I could teach. Nobody wants to learn.
+b[priest] : The chapel teaches letters on Restday. Nobody comes.
+b : Never needed to. | Lucky for him. | Strange.
+a : Never. | Lucky. | Very strange.
+
+scene rg_fh_herb_gatherers
+when topic=work region=fenhollow a.job=healer|farmer|laborer
+a : Gathered bogbean and marsh mallow all morning. | The best herbs grow in the worst places. | Saw something in the sedge watching me while I gathered.
+b[healer] : Pick at dawn, dry in shade. The marsh herbs keep their strength.
+b : Good haul. | Always. | A heron.
+a : Very good. | Always. | Probably.
+
+scene rg_fh_marsh_watch
+when topic=work region=fenhollow a.role=guard
+a : Nothing happens in Fenhollow. That's the trouble. | The Marsh Watch has two spears and a dog. | Walked the causeway patrol in the mist. Saw nothing. Heard everything.
+b[guard] : Quiet's good. Quiet's the job.
+b : Lucky you. | And a good dog. | That's the fen.
+a : Lucky. | A very good dog. | It is.
+
+scene rg_fh_mud
+when topic=smalltalk region=fenhollow
+a : Mud on every floor in Fenhollow. You stop noticing. | Lost a boot to the mire. | Even the chapel floor's muddy.
+b[child] : I like mud! It's squishy!
+b : That's the fen. | Gone for good. | Especially there.
+a : It is. | Gone. | Especially.
+
+scene rg_fh_mist_bell
+when topic=lore|weather region=fenhollow weather=fog
+a : Fog so thick you can't see the causeway stones. | Stay inside till the mist bell stops. | They're ringing the mist bell. Someone's out there.
+b[old] : Follow the bell, never the lights.
+b : Stay home. | I will. | Poor soul.
+a : I will. | I will. | Poor soul.
+
+scene rg_fh_cure_poison
+when topic=lore region=fenhollow
+a : They say the fen cure for fever is the same root that kills cattle. | Somebody sells a love potion at the Peat Fire. Smells like bog water. | Every fen cure is half a poison.
+b[healer] : Dose is everything. The fen teaches that early.
+b : Strange cure. | Probably is bog water. | And half a prayer.
+a : Very strange. | Probably. | Half a prayer.
+
+scene rg_fh_frogs
+when topic=smalltalk region=fenhollow season=spring|summer
+a : The frogs sang so loud last night I couldn't sleep. | Spawn in every ditch. Spring's here. | Frog legs at the Peat Fire tonight.
+b[cook] : Frog legs in butter. Don't make a face. They're good.
+b : Every spring. | Finally. | No thanks.
+a : Every spring. | Finally. | Your loss.
+
+scene rg_fh_stilts
+when topic=lore|smalltalk region=fenhollow
+a : Every house on the low side's on stilts now. | They raised my aunt's house a full stride last summer. | The old houses sank. You can see their roofs in the bog.
+b[crafter] : Oak stilts last. Pine rots in the wet.
+b : Wise. | Good thing. | Creepy.
+a : Very. | Very good. | Very creepy.
+
+scene rg_fh_bog_body
+when topic=lore region=fenhollow
+a : Peat cutters found a body in the bog. Old. Very old. | They say the bog keeps the dead perfect for a thousand years. | Found a leather shoe in the peat. Small. A pup's.
+b[priest] : We buried it in the chapel yard. Whoever it was.
+b[old] : The bog keeps everything. Even secrets.
+b : How old? | So they say. | Sad.
+a : Very old. | Perfect. | Very sad.
+
+scene rg_fh_mirelands
+when topic=lore region=fenhollow
+a : Nobody goes past the last cairn into the Mirelands. | The Mirelands stretch further than anyone's walked. | Somebody went into the Mirelands for herbs. Came back three days later, raving.
+b[old] : The cairns mark the safe paths. Past the last, there are none.
+b : Wise. | Endless. | Poor soul.
+a : Very wise. | Endless. | Poor soul.
+
+scene rg_fh_dragonflies
+when topic=smalltalk region=fenhollow season=summer
+a : Dragonflies thick as smoke over the lode. | The midges are eating me alive. | Hot and damp. Fen summer.
+b[child] : I caught a blue one! It flew away.
+b : Pretty, though. | Burn some peat. | The worst.
+a : Very pretty. | I am. | The worst.
+
+scene rg_fh_sedge_basket
+when topic=work|smalltalk region=fenhollow
+a : Wove six sedge baskets for the market. | Sedge mats sell well in the towns. | Peat spades are dearer than ever.
+b[crafter] : Sedge is free. The weaving's what costs.
+b : Good work. | Cheap trade. | Everything is.
+a : Thank you. | Honest trade. | Everything.
+
+scene rg_fh_tavern_tales
+when topic=smalltalk region=fenhollow place=tavern
+a : Somebody's telling the bog-wolf story again at the Peat Fire. | Peat smoke so thick in the Peat Fire you can't see the bar. | The Peat Fire's floor is half mud, half straw.
+b[innkeeper] : That fire's older than any of your stories.
+b : Not again. | Like a fog. | Better than bare mud.
+a : Every night. | Thick as fog. | Barely.
+
+scene rg_fh_causeway
+when topic=lore|work region=fenhollow
+a : They're laying new stones on the north causeway. | The causeway sank a hand's breadth since spring. | Only the causeways keep the fen from swallowing us.
+b[laborer] : Lay a stone, the fen eats a stone. Lay another.
+b : About time. | It always does. | They do.
+a : About time. | Always. | They do.
+
+scene rg_fh_willow_wands
+when topic=lore region=fenhollow
+a : My grandmother tied a willow wand over every door. | They hang willow over cradles in Fenhollow. For the mire. | Fen folk carry a willow wand at night.
+b[old] : Willow bends and never breaks. Like the fen folk.
+b : Old custom. | Lovely custom. | I do.
+a : Very old. | Very lovely. | Good.
+
+scene rg_fh_bittern
+when topic=lore region=fenhollow time=dusk|night
+a : The bittern's booming in the reeds. | Old folk say the bittern's boom is the bog's heart. | Heard the bittern three nights running.
+b[old] : When the bittern stops, the fen's dying.
+b : Eerie sound. | Strange saying. | Good sign.
+a : Very eerie. | Very strange. | I hope.

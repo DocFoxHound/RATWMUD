@@ -1,0 +1,270 @@
+# Work and trade by job (Docs/Design/30-towns-and-talk.md): the food and drink trades, and those in service.
+# Bakers, brewers, cooks, innkeepers and servants. Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Bakers
+
+scene tr_bake_dawn_ovens
+when topic=work a.job=baker time=dawn|night
+a : Ovens lit at the third hour again. | The dough was slow to rise. Cold night. | Forty loaves before the bell, and my eyes still shut.
+b[baker] : Bakers don't sleep. We just lie down between batches.
+b : You'll have a nap by noon. | Put it nearer the hearth next time. | Forty! Who's eating it all?
+a : I'll have a nap in my grave. | It was by the hearth. The hearth was cold too. | Everyone. And they all want it warm.
+
+scene tr_bake_burnt
+when topic=work a.job=baker
+a : I burnt the whole second tray. | Somebody opened the oven door and the loaves fell flat. | The rye's come out like bricks.
+b[apprentice] : It wasn't me. I mean, it might have been me.
+b[child] : Can I have the burnt ones?
+b : Sell them cheap at the back door. | Who was it? | Sell them to the masons. They like bricks.
+a : Cheap's still a loss. | I know who it was. | Very funny.
+
+scene tr_bake_flour_dear
+when topic=work|prices a.job=baker
+a : The miller wants another penny a sack. | This flour's half chaff. | I had to sieve weevils out of the last sack.
+b[farmer] : Grain's grain. The miller's the thief, not us.
+b[merchant] : Everyone's raising, friend. Raise yours.
+b : Change millers. | Complain to the guild. | Weevils are only flour that walks.
+a : There's only the one. | The guild's his cousins. | Don't tell the customers that.
+
+scene tr_bake_apprentice_kneading
+when topic=work a.job=baker b.job=apprentice|child
+a : Not like that. Push with the heel of your forepaw, then fold. | You've let it dry out. Wet your paws. | Slower. Dough knows when you're hurrying.
+b : Like this? | It keeps sticking to me. | It can't know anything. It's dough.
+a : Better. Now another two hundred times. | Flour your pads first, pup. | It knows. Look, it's sulking.
+
+scene tr_bake_festival_order
+when topic=work a.job=baker day=festival|market
+a : Honey cakes for the whole square. I've not stopped since yesterday. | The market crowd's eaten me out by mid-morning. | Everyone wants the sweet buns today.
+b : Charge double, then. | Bake more tomorrow. | Save me one.
+a : I did. They still bought them. | I'll be dead tomorrow. | Too late. Gone.
+
+scene tr_bake_rival
+when topic=work|smalltalk a.job=baker
+a : The new bakery by the well's selling loaves smaller than a fist. | They say {b} prefers the other baker's bread. | Somebody's been telling folk my crust is hard.
+b[rivals] : Your crust is hard.
+b : People notice short weight. | I'd never. | Your crust is fine.
+a : Give it a season. | Hm. | Thank you. Have a roll.
+
+scene tr_bake_rain_damp
+when topic=work a.job=baker weather=rain|fog|storm
+a : Damp gets in the flour bins whatever I do. | Bread won't crust in this weather. | The firewood's wet. The oven smokes.
+b : Keep a brazier by the bins. | Leave it in longer. | Dry it on top of the oven.
+a : And burn the place down? | Then it's dry inside. | I do. It still smokes.
+
+scene tr_bake_beggar_back_door
+when topic=work a.job=baker b.job=beggar|child
+a : Yesterday's loaves are at the back door. Take two, no more. | Here, the ends from the morning batch. | You again? Go on, then.
+b : Bright One bless you. | Still warm! | I'll sweep your step for it.
+a : Just don't tell the whole street. | Don't burn your mouth. | Sweep it properly this time.
+
+# ---------------------------------------------------------------- Brewers
+
+scene tr_brew_mash
+when topic=work a.job=brewer
+a : The mash went sour overnight. Whole tun lost. | I've had my head over the copper since dawn. | The new barley malted beautifully.
+b[innkeeper] : I'll need that ale by Marketday whether or no.
+b : Was the tun clean? | You smell like a wet loaf. | Good. Good malt, good ale.
+a : Clean as a chapel. Something got in. | Brewers always do. | Good ale, good coin, if the weather holds.
+
+scene tr_brew_taste
+when topic=work a.job=brewer
+a : Taste this. Tell me what's wrong with it. | New batch. Too bitter? | I added heather to the last brew. Try it.
+b[old] : Too thin. My father brewed it thicker.
+b[child] : I'm not allowed.
+b : It tastes of feet. | Bitter enough to make a priest swear. | It's... flowery.
+a : Feet? It's the yeast. | Good. That's how the carters like it. | Flowery's a fashion. You'll see.
+
+scene tr_brew_inn_order
+when topic=work a.job=brewer b.job=innkeeper
+a : Six barrels for you this week, same as last. | I can't do the dark ale till the new malt's in. | You still owe me for the last four casks.
+b : Make it eight. The caravans are thirsty. | Then send me more of the pale. | Soon. When the carters pay me.
+a : Eight, then, and the empties back. | Pale it is. | They always pay you soon.
+
+scene tr_brew_cellar_cold
+when topic=work a.job=brewer season=summer
+a : Too hot to brew. It all turns. | I've moved every cask down to the cellar. | The yeast's working like it's possessed.
+b : Brew at night. | Is the cellar cool enough? | Possessed ale. I'd buy that.
+a : I do. I'm tired of it. | Barely. | Everyone would, once.
+
+scene tr_brew_church
+when topic=work a.job=brewer|priest b.job=priest|brewer
+a : The chapel takes a tithe of every barrel now. | A brewer and a priest at one table. Tongues will wag. | Do the Bright One's feasts need so much ale?
+b : Order has to be paid for. | Let them wag. Pass the jug. | The feasts are long and the faithful thirsty.
+a : Order drinks a great deal. | That's the spirit. | So I've noticed.
+
+scene tr_brew_rain_coast
+when topic=work a.job=brewer region=rain_coast
+a : Ridgemere water makes good stout. Peat and rain. | The dock crews drink faster than I can brew. | Salt air gets in the casks.
+b : Peat and rain and soot. | Raise the price, they'll still drink. | Tar the bungs.
+a : The soot's what makes it Ridgemere. | They'd drink salt water if I sold it. | Every bung, every week.
+
+# ---------------------------------------------------------------- Cooks
+
+scene tr_cook_stew
+when topic=work a.job=cook
+a : The stew needs another hour and they're already shouting for it. | Somebody's eaten half the bacon for the pot. | The fire won't draw. Everything's half cooked.
+b[innkeeper] : Serve it. They're too drunk to tell.
+b : Thicken it with bread and send it out. | Wasn't me. | Rake out the ash.
+a : I have standards. Low ones, but standards. | Your whiskers are greasy. | I did. It's the flue.
+
+scene tr_cook_kitchen_boy
+when topic=work a.job=cook b.job=servant|apprentice|child
+a : Turnips. All of them. Peeled by the bell. | You call that chopped? Smaller. | Don't stand in the doorway, stand at the board.
+b : All of them? | It's chopped. Just big. | Where's the board?
+a : All. And the carrots after. | Smaller. Like a mouse could swallow it. | Under your nose, pup.
+
+scene tr_cook_noble_kitchen
+when topic=work a.job=cook|servant region=cities
+a : The house wants five courses tonight and fish from the morning. | Her ladyship sent the sauce back. Twice. | Guests at the high table. Nobody breathe.
+b : Five? With what fish? | What was wrong with it? | I'll breathe in the yard.
+a : With whatever the quay hasn't sold. | She didn't say. That's the worst part. | Breathe quietly.
+
+scene tr_cook_spices
+when topic=work|prices a.job=cook
+a : No pepper in the whole market. | Saffron's a mark an ounce, if you can find it. | I've run out of salt. Salt!
+b[merchant] : I've a little put by. For a friend. At a friend's price.
+b : Use more onion. | Then use marigold, nobody'll know. | Saltreach sends it by the cartload.
+a : Onion with everything. Like peasants. | I'll know. | Not this week they don't.
+
+scene tr_cook_feast
+when topic=work a.job=cook day=festival
+a : Three pigs on the spit since midnight. | The festival bread's rising in every tub we own. | I've never fed so many in one day.
+b : Smells like the gates of heaven. | Need a paw? | You'll sleep a week after.
+a : The gates of heaven need basting. | Turn the spit, then. Don't eat the crackling. | Two weeks.
+
+scene tr_cook_taste_spoon
+when topic=work a.job=cook
+a : Taste. Honestly. | Is it too salty? | This one's new. Duck with plums.
+b[child] : More, please!
+b : It's good. | Only a little. | Plums with duck? Odd. Good, though.
+a : Good isn't good enough. | A little means a lot. Water, quick. | Odd's how new things start.
+
+# ---------------------------------------------------------------- Innkeepers
+
+scene tr_inn_full_house
+when topic=work a.job=innkeeper
+a : Every bed's taken and three more sleeping in the stable. | Not a soul in all week. | A whole caravan crew arrived at once.
+b : Charge them for the straw. | It'll pick up with the season. | Hide the good ale.
+a : I already do. | It had better. | Hidden. They found it.
+
+scene tr_inn_brawl
+when topic=work a.job=innkeeper
+a : Two carters broke my best table last night. | Someone was sick in the fireplace. | A sailor bit a drover over a game of bones.
+b[guard] : You should have sent for the watch.
+b : Make them pay for it. | Charming. | Who won?
+a : They paid. With a fight. | Smelled lovely when it got going. | The sailor. He bit harder.
+
+scene tr_inn_rooms
+when topic=work a.job=innkeeper|servant
+a : The back room leaks onto the bed again. | Clean sheets on every bed by noon. | Someone's left a trunk in room four and gone.
+b : Move the bed. | Every bed? | Open it.
+a : Then it leaks onto the floor. | Every bed. And sweep under them. | Not in my inn. We wait a week.
+
+scene tr_inn_news
+when topic=work a.job=innkeeper
+a : The carters say the river road's flooding. | A courier came through at midnight, didn't even stop for ale. | Folk all over {town} are talking about nothing but the price of grain.
+b : They always say that. | Courier for who? | So's everyone.
+a : This time they were wet to the ears. | Didn't say. Didn't pay, either. | Grain's what they're scared of.
+
+scene tr_inn_cellar
+when topic=work a.job=innkeeper b.job=cook|servant|brewer
+a : Bring up two barrels of the brown. | We're down to the last cask of wine. | Who left the cellar door open? The cat's been at the cheese.
+b : Two? It's barely noon. | I'll go to the merchant. | The cat.
+a : Two. It's a Marketday crowd. | The good merchant. Not the cheap one. | The cat can pay for it.
+
+scene tr_inn_waystation
+when topic=work a.job=innkeeper region=accord_crossing|westmarch|amberford
+a : Three caravans in one evening. I need another cook. | Drovers come in smelling of sheep and leave smelling of my ale. | The road brings everyone through my door, eventually.
+b : Hire my cousin. | Better than the other way round. | Everyone and their mud.
+a : Can your cousin cook? | Much better. | Mud I can sweep. Debts I can't.
+
+scene tr_inn_tab
+when topic=work a.job=innkeeper
+a : Your tab's longer than my tail, {b}. | No more credit after Restday. | I'm writing it down. I always write it down.
+b[old] : I drank here before you were whelped.
+b : Payday's coming. | Just one more. | Write small.
+a : So's the next one and the next. | One, then. Then home. | I write very small. It all adds up.
+
+scene tr_inn_tale
+when topic=work|smalltalk a.job=innkeeper place=tavern
+a : A traveller tried to pay me in foreign coin last night. | A minstrel sang till dawn and paid in songs. | Someone carved their name in my bar.
+b : What did you do? | Were they good songs? | What name?
+a : Weighed it. It was mostly lead. | Not good enough to eat. | Can't read it. I'll know them by their teeth marks.
+
+# ---------------------------------------------------------------- Servants
+
+scene tr_serv_house_gossip
+when topic=work a.job=servant
+a : The master's in a black mood. Keep out of his way. | The mistress changed her gown four times before breakfast. | They're dining with the Houses tonight. Silver out.
+b : What happened? | Four? | All the silver?
+a : Letters. Bad ones. | And complained about every one. | Every spoon. Polished. Twice.
+
+scene tr_serv_long_day
+when topic=work a.job=servant
+a : Up before the fires, abed after the candles. | I carried water up four flights this morning. | The floors won't scrub themselves.
+b[old] : Thirty years of it. You stop noticing.
+b : Every day the same. | Ask for a mule. | Pity.
+a : Every day. | A mule would cost more than me. | Pity doesn't scrub.
+
+scene tr_serv_wages
+when topic=work a.job=servant
+a : My wages are late. Third week. | They docked me a penny for a chipped cup. | I've a bed and my board. That's all I get.
+b[merchant] : Come and work for me. I pay on Restday.
+b : Ask the steward. | A penny for a cup? | Better than the street.
+a : The steward says ask the master. | It wasn't even chipped before. | Barely.
+
+scene tr_serv_noble_pair
+when topic=work a.job=noble b.job=servant
+a : Fetch the grey cloak, {b}. | The fire's low. | Has my letter gone?
+b : At once. | I'll see to it. | This morning, by the courier.
+a : The other grey cloak. | Before I freeze, if you would. | Good. Not a word to anyone.
+
+scene tr_serv_kitchen_steal
+when topic=work|smalltalk a.job=servant|cook b.job=servant|cook
+a : Cook's counting the sugar loaves again. | Someone's been at the cream. | There's half a pie in the larder no one's claimed.
+b : Wasn't me. | Wasn't me either. | It's claimed now.
+a : She'll find out. She always does. | It was the cat. We agree. | Half each.
+
+scene tr_serv_ridgemere_house
+when topic=work a.job=servant region=ridgemere
+a : The Grayrock house wants its colours on every cushion by the feast. | House Vesk's steward docks us for the fish smell. | The Brinewater ladies want the windows washed in this rain.
+b : Every cushion? | We work for Vesk. Everything smells of fish. | In this rain?
+a : Every one. And the dogs' cushions. | That's what I told him. | They want to watch the rain through clean glass.
+
+# ---------------------------------------------------------------- Food trades together
+
+scene tr_food_market_stall
+when topic=work|smalltalk a.job=baker|cook|brewer place=market
+a : Best spot in the market's taken by the cheese seller again. | I sold out before the bell. | Rain's kept them all at home.
+b : Get here earlier. | Bake more. | They'll come when it stops.
+a : Earlier than dawn? | I'll need more flour first. | It never stops.
+
+scene tr_food_inn_cook
+when topic=work a.job=innkeeper b.job=cook
+a : The caravan wants supper for twenty, now. | Somebody complained the mutton was tough. | We're out of bread.
+b : Twenty? I've food for twelve. | It was tough. It was an old sheep. | Then they'll have porridge.
+a : Water the stew. | Don't say that to them. | Porridge and a smile.
+
+scene tr_food_bread_and_ale
+when topic=work|smalltalk a.job=baker b.job=brewer
+a : Your yeast makes better bread than mine. | We should go into business. Bread and ale. | Your barley man's charging you more than mine.
+b : Take a jar of it. | Fine. You do the mornings. | He likes you better.
+a : Bless you. | Done. You do the nights. | Everyone does.
+
+scene tr_food_hungry_winter
+when topic=work a.job=baker|cook|innkeeper season=winter
+a : The poor are at my door every morning now. | Stores are low. We'll be eating oats till spring. | Firewood costs more than the food it cooks.
+b : Winter always brings them. | Oats are honest food. | Burn the furniture.
+a : More every year. | Honest and dull. | I'd start with yours.
+
+scene tr_food_upper_accord
+when topic=work a.job=cook|innkeeper|baker region=accord
+a : The pilgrims want plain food. Fasting food. | Concord clerks eat like sparrows and complain like crows. | The Wardens take their meals early and silent.
+b : Plain's cheap. | And tip like sparrows. | They're trained to it.
+a : Plain is harder than it looks. | Smaller than sparrows. | I'd rather a carter. Loud, but they eat.
+
+scene tr_food_ser_ferro
+when topic=work a.job=cook|baker|innkeeper region=ser_ferro
+a : River eel's come in. Half the city wants it in pastry. | The white bread for the cathedral's due by the bell. | A court steward ordered sixty pies and paid with a promise.
+b : Eel pies, then. | The cathedral can wait a minute. | Ser Ferro coin. Shiny promises.
+a : Eel pies till my paws smell of river. | The cathedral never waits. | The shinier the promise, the longer the wait.

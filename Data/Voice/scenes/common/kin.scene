@@ -1,0 +1,367 @@
+# Kin: parents and their pups (Docs/Design/30-towns-and-talk.md). A grown wolf and a young one of the same family or
+# household. Plain lines are written in parallel: the second reply answers the second remark.
+
+# ---------------------------------------------------------------- A parent speaks first
+
+scene kn_pup_wash
+when topic=family band=family a.stage=adult b.stage=young
+a : Come here. You smell like the midden. | Hold still, there's burr in your ruff. | When did you last wash behind your ears?
+b : I was only by the midden a little bit. | Ow! It's not a burr, it's mine. | Ears don't need washing. They're for hearing.
+a : A little bit is enough for the whole street to know. | Then I'll leave you the part that's yours. | And for collecting dirt, it seems.
+b : Can I go back out after?
+
+scene kn_pup_questions
+when topic=family band=family a.stage=adult b.stage=young
+a : What are you staring at? | You've gone quiet. That's never good. | Out with it. I can see your ears working.
+b : Why does the moon follow us home? | Where do pups come from, really? | Why do we have to sleep when it's dark?
+a : It follows everyone. It's not so special as you think. | Ask me again when you're taller. | Because the dark is for owls, not for you.
+b : That's not an answer. | I'm taller than yesterday. | I'm part owl.
+a : It's the best one I have. | Not by enough. | You're all pup, and you're tired.
+
+scene kn_pup_chores
+when topic=family band=family a.stage=adult b.stage=young place=home
+a : The water bucket's empty again, {b}. | Who left the cushions in a heap? | The kindling won't fetch itself.
+b : It was full this morning! | The cushions did it themselves. | It could if you trained it.
+a : And now it's evening. Off you go. | Then the cushions can go without supper. | Then train it on the way to the woodpile.
+b : Fine. | Fine! I'll fix them. | Fine, fine.
+
+scene kn_pup_stranger_danger
+when topic=family band=family a.stage=adult b.stage=young place=street|market|gate
+a : Stay close. I don't like the scent of that crowd. | Don't talk to wolves you don't know. | If you lose me, go to the chapel steps and wait.
+b : Why? They smell like everyone else. | You talk to wolves you don't know. | What if the chapel moves?
+a : Not to me they don't. Stay close. | I'm grown. That's different. | Then you'll have bigger troubles than me.
+b : I'm close. I'm right here. | Everything's different when you're grown. | Chapels don't move. I was joking.
+
+scene kn_pup_fight
+when topic=family band=family a.stage=adult b.stage=young
+a : What happened to your ear? | Who chewed your tail like that? | Why is the cooper's pup crying in the street?
+b : Nothing. I fell. | It was a game. A rough game. | He started it.
+a : You fell onto someone's teeth? | Games don't leave toothmarks. | And you finished it, I see.
+b : ...Maybe. | Some do. | He's fine. He's just loud.
+a : We'll speak with his mother tonight. Together. | No more of that game. | Go and say sorry before I make you.
+
+scene kn_pup_supper
+when topic=family band=family a.stage=adult b.stage=young time=dusk|night
+a : Supper. Now. | Eat your greens, or there's no bone after. | You're picking at that like it bit you.
+b : I'm not hungry. | Greens are for goats. | It looks at me funny.
+a : You were hungry enough to steal from the larder this morning. | Goats are very healthy. | It's a turnip. It doesn't look at anyone.
+b : I'll eat half. | Then I want to be a goat. | Fine. One bite.
+a : All of it. | Then you'll eat like one. | Two.
+
+scene kn_pup_bedtime_story
+when topic=family band=family a.stage=adult b.stage=young time=night place=home
+a : Bed. And I mean now. | Last time I'll say it. Bed. | Lie down, close your eyes, think of nothing.
+b : Tell me a story first. | One more story. The one with the bear. | I can't think of nothing. I keep thinking of things.
+a : Once there was a pup who went to bed. The end. | The bear eats the pup who wouldn't sleep. The end. | Then think of sheep. Slow, dull sheep.
+b : That's a terrible story. | It does not! The bear is the pup's friend! | The sheep are running away.
+a : Then dream a better one. | You know it too well. Goodnight. | Let them. Goodnight.
+
+scene kn_pup_schooling
+when topic=family band=family a.stage=adult b.stage=young day=work
+a : Did you go to the chapel lessons today? | Show me your letters. Hold the quill properly. | What did the brother teach you?
+b : I went. Mostly. | The quill tastes of ink. | Something about the Bright One and a lot of rules.
+a : Mostly isn't a word the brother likes. | That's because it's full of ink. Again. | Rules are what keep the roof up. Remember them.
+b : He doesn't like most of my words. | Ink is food for quills. | I remember one rule. Don't bite the brother.
+
+scene kn_pup_birthday
+when topic=family band=family a.stage=adult b.stage=young
+a : You know what day comes after the next? | Somebody's getting older soon. | I hear a certain pup has a name day coming.
+b : Is it the one where I get a present? | Me? Am I getting old? | Mine! It's mine!
+a : Maybe. If you're good until then. | Old as the hills, nearly. | Unless you've swapped with someone.
+b : I'll be so good. | I don't feel old. | Never!
+a : I'll believe it when I see it. | Wait till your knees ache. | Then I'd better start planning.
+
+scene kn_pup_weather_out
+when topic=family band=family a.stage=adult b.stage=young weather=rain|storm|snow
+a : You're not going out in that. | Shake off before you come in. Outside! | Where's your cloak?
+b : But everyone else is out! | Too late. Sorry. | It was making me itch.
+a : Then everyone else will be wet. | The whole den smells of wet pup now. | Better itchy than sick.
+b : Wet's fun. | It's a nice smell. | I'm never sick.
+a : Not when you're coughing at midnight it isn't. | It is not. | Say that again in a week.
+
+scene kn_pup_snow
+when topic=family band=family a.stage=adult b.stage=young weather=snow
+a : Look at you. You're more snow than wolf. | Stop eating the snow. | Don't roll in it by the door. Go further out.
+b : I'm a snow wolf now. | It tastes like nothing. Good nothing. | Further out is too far.
+a : Snow wolves get dried by the fire. Come here. | Then eat something with a taste, at the table. | It's five steps.
+b : Can I melt slowly? | Snow is better than turnips. | That's a lot of steps.
+
+scene kn_pup_scent_lesson
+when topic=family band=family a.stage=adult b.stage=young place=street|market|field|wild
+a : Nose down. What do you smell? | Tell me who went by here. | Close your eyes. Now tell me where the baker is.
+b : Mud. And somebody's breakfast. | Two wolves. One of them was scared. | That way. No, that way!
+a : Whose breakfast? Think. | Good. How do you know? | Both ways can't be right.
+b : The fishmonger's. It's always fish. | The sharp smell. Like when I break a bowl. | The second way. It's warm bread.
+a : Good nose. | Exactly that smell. Good. | That's my pup.
+
+scene kn_pup_wants_job
+when topic=family band=family a.stage=adult b.stage=young
+a : What do you want to be when you're grown? | You've been watching the watch again. | Still set on being a sailor?
+b : A guard. With a harness and everything. | They have the best harnesses. | Sailors see the whole world.
+a : Guards stand in the rain all night. | They also stand in the rain. | Sailors see the inside of a bucket, mostly.
+b : I like rain. | I'd stand in it. | I'd see a bucket from the whole world.
+a : Ask me again when you're older. | You'd stand anywhere in a harness. | Well. Can't argue with that.
+
+scene kn_pup_lost_tooth
+when topic=family band=family a.stage=adult b.stage=young
+a : What's that gap in your smile? | Open up. Let me see that tooth. | You're talking funny.
+b : My tooth fell out in the bread! | It wobbles. It wobbles a lot. | I swallowed a tooth.
+a : Then the bread's paid for, I'd say. | Leave it be and it'll come in its own time. | It'll come out the other end. Don't fret.
+b : Will a bigger one grow? | Can I pull it? | Ew!
+a : Bigger and sharper. Bright One help us. | Not at the table. | Exactly. Ew.
+
+scene kn_pup_copying
+when topic=family band=family a.stage=adult b.stage=young
+a : Why are you walking like that? | Did you just growl at the cat? | Where did you learn that word?
+b : I'm walking like you. | The cat growled first. | From you. When you dropped the pot.
+a : I do not walk like that. | Cats don't growl. | I didn't say that.
+b : You do. Tail down, ears out. | This one did. | You said it three times.
+a : ...Maybe on Marketday. | Then leave it be anyway. | Well, don't you say it.
+
+scene kn_pup_working_parent
+when topic=family band=family a.stage=adult b.stage=young time=dawn
+a : I'm off to work. Mind your aunt. | Be good today. I'll be back by dark. | Up already? Go back to sleep.
+b : Can I come with you? | What will you bring back? | I can't sleep. The birds are too loud.
+a : When you're older. | Myself, if I'm lucky. | Then lie still and listen to them.
+b : You always say that. | That's not a present. | They're saying rude things.
+a : And one day I'll mean it. | It's the best one I've got. | Birds always are.
+
+scene kn_pup_worried
+when topic=family band=family a.stage=adult b.stage=young time=night
+a : You're shaking. What is it? | Can't sleep? Come here. | Was it the dream again?
+b : There was a noise on the roof. | The wind sounds like howling. | The big dark thing was chasing me.
+a : A cat. Only a cat. | It's only wind. It's not hungry. | Then I'll sit by you and it can chase me instead.
+b : Are you sure? | It sounds hungry. | It'll get you.
+a : I'm sure. Lie down. | I promise. Lie down. | It can try. Lie down.
+
+scene kn_pup_proud
+when topic=family band=family a.stage=adult b.stage=young
+a : I heard what you did for old Gemma. | Did you carry that all the way here yourself? | You shared your bread with the miller's pups?
+b : I only carried her basket. | Most of the way. | They looked hungry.
+a : That's what good wolves do. I'm proud of you. | That's more than most grown wolves would. | That's the Bright One's way.
+b : Proud enough for honey cake? | Most of the way is a lot. | I was hungry too, after.
+a : Proud enough for half a cake. | It is. Rest your legs. | We'll fix that.
+
+scene kn_pup_new_sibling
+when topic=family band=family a.stage=adult b.stage=young place=home
+a : Be gentle with the little one. | Shh. Your sister's finally asleep. | You were that small once.
+b : Why does she cry all the time? | When will she play with me? | I was never that loud.
+a : It's the only word she knows yet. | When she can stand without falling over. | You were louder.
+b : I'll teach her another word. | That'll take forever. | Was not.
+a : Teach her a nice one. | It'll take a season. You'll survive. | Ask your grandmother.
+
+scene kn_pup_market_wants
+when topic=family band=family a.stage=adult b.stage=young place=market
+a : Don't touch anything. | Stay by me, and don't beg. | Keep your nose out of the baskets.
+b : Can we get a honey cake? | Can I have a ribbon for my collar? | The fish are looking at me.
+a : We can get turnips. | We'll see. | Fish don't look at anyone. They're dead.
+b : Please? Just a little one? | That means no. | These ones are looking.
+a : If you carry the turnips. | It means we'll see. | Walk on.
+
+scene kn_pup_lie_caught
+when topic=family band=family a.stage=adult b.stage=young
+a : Who ate the cheese? | Did you break this bowl? | Why are your paws muddy if you were inside all day?
+b : The cat. | The wind. | I was inside. Mostly.
+a : Your breath says otherwise. | The wind doesn't leave paw prints. | Mostly again.
+b : ...The cat helped. | The wind pushed me. | I was outside a little bit.
+a : No cake for you or the cat. | Then you can sweep up for the wind. | Wash. Then we'll talk about lying.
+
+scene kn_pup_rest_day
+when topic=family band=family a.stage=adult b.stage=young day=rest
+a : No work today. What shall we do? | Chapel first, then the river. | Rest day. Let's do nothing at all.
+b : Go to the river! | Do we have to do chapel? | Nothing's boring.
+a : The river it is. If you don't fall in. | Yes. Brother Ansel expects you. | Nothing is wonderful when you're grown.
+b : I'll fall in a little. | He smells like candles. | I'm not grown.
+a : Not a little. Not at all. | Candles smell holy. Behave. | Then I'll do nothing and you can watch.
+
+scene kn_pup_festival
+when topic=family band=family a.stage=adult b.stage=young day=festival
+a : Stay where I can see you. There's a crowd. | One sweet. Only one. | Do you want to sit on my back to see?
+b : Can I watch the dancers? | Can I have two if they're small? | Yes! Higher!
+a : From here. Not from under their feet. | Small ones are still two. | I'm a wolf, not a tower.
+b : They're stepping everywhere. | That's maths. | You're a big wolf.
+a : Exactly. Stay here. | One sweet. Final word. | Fine. Hold on.
+
+# ---------------------------------------------------------------- The pup speaks first
+
+scene kn_pup_asks_play
+when topic=family band=family a.stage=young b.stage=adult
+a : Play with me? | Chase me! I'm the bandit! | Can you throw the stick?
+b : In a moment, I'm busy. | Bandits get caught, you know. | Only a few times. My jaw's tired.
+a : You always say a moment. | Not this one! | Ten times!
+b : And sometimes I mean it. | Run, then. I'm coming. | Three.
+a : This time? | Can't catch me! | Seven!
+
+scene kn_pup_tattle
+when topic=family band=family a.stage=young b.stage=adult
+a : He took my bone! | She's looking at me! | They won't let me play!
+b : Did you take his first? | Looking isn't a crime. | Then play something else.
+a : ...Only for a little bit. | She's looking hard. | Something else is boring.
+b : Give it back, then you'll both have peace. | Look back at her, then. | Boring's better than sulking.
+
+scene kn_pup_why_sad
+when topic=family band=family a.stage=young b.stage=adult
+a : Why are you sad? | Your tail's all low. | Did someone shout at you?
+b : I'm not sad. Just tired. | It's only been a long day. | Nobody shouted. Work's hard sometimes.
+a : You look sad. | My tail goes low when I'm sad. | I can shout at them for you.
+b : Then come and sit with me. That'll help. | Then maybe I'm a little sad. | Don't you dare. But thank you.
+
+scene kn_pup_found_thing
+when topic=family band=family a.stage=young b.stage=adult
+a : Look what I found! | I found a coin in the gutter! | There's a dead bird by the wall. Can I keep it?
+b : Put it down. Where was it? | A penny! Don't spend it all at once. | No. Absolutely not.
+a : By the well. It's shiny. | I want honey cake with it. | But it's very interesting.
+b : Shiny's not always good. Let me see. | That buys about half of one. | It'll be very interesting in three days. No.
+
+scene kn_pup_hungry
+when topic=family band=family a.stage=young b.stage=adult
+a : I'm hungry. | When's supper? | Is there anything to eat?
+b : You just ate. | When it's cooked. | There's bread, if you can reach it.
+a : That was ages ago. | Is it cooked yet? | I can't reach it.
+b : It was before you came in. | No. | Then you're not that hungry.
+
+scene kn_pup_scary_story
+when topic=family band=family a.stage=young b.stage=adult
+a : The big pups say there's a ghost in the old mill. | Is the Dark One real? | Do bandits eat pups?
+b : The big pups say a lot of things. | The brothers say so. But he's beaten. | Bandits eat bread, like everyone.
+a : They said it howls at night. | Can he come back? | Then why are they scary?
+b : That's the wind through the boards. | Not while the Bright One's watching. | Because they take things that aren't theirs.
+a : It howled like a wolf. | Is the Bright One always watching? | Like my bone?
+b : Then it's a wolf with a sore throat. | Always. Even now. Behave. | Exactly like your bone.
+
+scene kn_pup_old_enough
+when topic=family band=family a.stage=adolescent b.stage=adult
+a : I'm old enough to go to the tavern now. | Everyone else stays out after dark. | I want to go with the carters to the next town.
+b : You're old enough to sweep it. | Everyone else isn't my pup. | You want to sleep in a ditch, then.
+a : That's not the same. | That's not fair! | It's not a ditch, it's an adventure.
+b : It's close enough for now. | Fair isn't the point. Home by dark. | An adventure's a ditch you tell lies about later.
+a : You never let me do anything.
+
+scene kn_teen_courting
+when topic=family band=family a.stage=adult b.stage=adolescent
+a : You've groomed your ruff three times today. | Who's the lucky one? | Is that perfume? Bright One, it's strong.
+b : No I haven't. | Nobody. There's nobody. | It's not perfume. It's... soap.
+a : I've counted. | Nobody doesn't make you sing at the well. | Soap doesn't smell of roses.
+b : It's my ruff. I'll groom it how I like. | I don't sing. | Roses are soap now.
+a : Of course. Bring them to supper sometime. | Of course you don't. | Then go easy on the soap.
+
+scene kn_teen_sulk
+when topic=family band=family a.stage=adult b.stage=adolescent
+a : You've barely said a word all day. | What's eating you? | Look at me when I talk to you.
+b : There's nothing to say. | Nothing. | I am looking.
+a : There's always something to say. | Your tail says otherwise. | At my paws.
+b : Not to you. | My tail can mind its business. | They're nice paws.
+a : That stings. Come find me when it doesn't. | Then so will I. | Don't get clever.
+
+scene kn_teen_work_choice
+when topic=family band=family a.stage=adult b.stage=adolescent
+a : You'll need a trade soon. Have you thought? | The smith's taking an apprentice. | I could ask about a place for you at the stores.
+b : I've thought. I don't want one. | Smithing's hot and loud. | Counting sacks all day? No.
+a : Everyone wants to eat. | So is the tavern you like so much. | Counting sacks puts bread on the table.
+b : I'll eat what I catch. | That's different. | Somebody else can count.
+a : Then you'd better learn to catch. | It's not. Think about it. | Somebody else will, and they'll eat.
+
+scene kn_teen_scars
+when topic=family band=family a.stage=adult b.stage=adolescent
+a : Where'd you get that cut? | You smell of blood. Whose? | Who've you been running with?
+b : Wrestling. It's nothing. | Mine, a bit. It's fine. | Friends. Just friends.
+a : Wrestling who? | A bit's too much. Let me look. | Friends don't bleed you.
+b : Nobody you know. | Stop fussing. | They didn't. I fell.
+a : That's what worries me. | I'll fuss as much as I please. | Everyone in this family falls a lot lately.
+
+scene kn_teen_borrow
+when topic=family band=family a.stage=adolescent b.stage=adult
+a : Can I borrow your good collar? | Can I have a few pennies? | Can I take the cart to the field road?
+b : What for? | What for? | What for?
+a : There's a gathering. | Things. | Practice.
+b : Bring it back without teeth marks. | I'll need more than things. | With me beside you, then.
+a : I'll guard it with my life. | Fine. Things, and a bun. | Then watch me be brilliant.
+
+scene kn_teen_grown_up_talk
+when topic=family band=family a.stage=adolescent b.stage=adult
+a : Were you scared when you were my age? | How did you know you wanted to be with father? | Did you ever do anything stupid?
+b : Scared of everything, mostly of looking scared. | I didn't. I just never wanted to be anywhere else. | Ask your grandmother. She'll tell you, gladly.
+a : You never look scared. | That's soppy. | That many?
+b : Practice. | It is. It's also true. | More than she knows, even.
+
+scene kn_teen_curfew
+when topic=family band=family a.stage=adult b.stage=adolescent time=night
+a : Where have you been? It's past midnight. | You smell of cider. | Do you know what hour it is?
+b : Out. With friends. | It's not mine. Someone spilled it. | Late. I know. Sorry.
+a : I was about to wake the watch. | On your breath? | Sorry doesn't give me back my sleep.
+b : The watch was out too. | Someone spilled it in my mouth. | Then go back to sleep.
+a : Bed. We'll talk at dawn. | Very funny. Bed. | Not until you're in yours.
+
+scene kn_teen_chapel
+when topic=family band=family a.stage=adult b.stage=adolescent place=chapel|home day=rest
+a : Chapel. Get your collar on. | You're coming whether you like it or not. | The brother asked after you last week.
+b : I don't believe any of it. | I didn't like it last week either. | I'm sure he did.
+a : Then you can sit and not believe it quietly. | Liking isn't required. Coming is. | He also asked whether you can still sing.
+b : That's worse. | Why? | I can't. I won't.
+a : That's growing up. Collar. | Because we're a family. Collar. | Then you can mumble like the rest of us.
+
+scene kn_parent_gone
+when topic=family band=family a.stage=adult b.stage=young
+a : Your mother wouldn't want you sulking like this. | I miss him too, you know. | We'll go up to the stones on rest day. Say hello.
+b : She's not here to want anything. | You don't cry. | Will she hear us?
+a : No. But I am. And I'm asking. | Not where you can see. | I like to think so.
+b : ...Can I sit with you? | Sometimes I hear you. | I'll tell her about my tooth.
+
+scene kn_stepparent
+when topic=family band=family a.stage=adult b.stage=young
+a : You don't have to call me anything. Just my name's fine. | I'm not trying to take anyone's place. | Did you like the bread? I made it.
+b : I wasn't going to. | Good. | It was all right.
+a : That's fine too. | We'll find our own place, then. | All right is a start.
+b : ...Maybe I'll use your name, then. | Maybe. | It was a bit good.
+
+scene kn_mother_tired
+when topic=family band=family a.stage=young b.stage=adult b.sex=female
+a : Mama, are you asleep? | Mama, you said you'd look at my drawing. | Mama, can I sleep in your bed?
+b : I was, nearly. | I did. And I will. In a moment. | Only if you stop kicking.
+a : Sorry. Are you now? | Now's a moment. | I don't kick.
+b : Not anymore. What is it? | So it is. Show me. | You kick like a mule. Come on.
+
+scene kn_father_teaching
+when topic=family band=family a.stage=adult a.sex=male b.stage=young
+a : No, hold the rope in your teeth, not your lip. | Watch my paws. Like this. | Again. Slower this time.
+b : It tastes like rope. | Your paws are too big to watch. | I was slow!
+a : That's what rope tastes like. | Then watch my ears. | You were a hare. Again.
+b : I don't like it. | Your ears are wiggling. | Hares are fast.
+a : Nobody does. Pull. | That's me concentrating. | That's the trouble. Again.
+
+scene kn_pup_regional_snow
+when topic=family band=family a.stage=adult b.stage=young region=upper_accord|northern_fortress
+a : Mind the drifts by the steps. Last year a pup went in to the ears. | Wrap your tail round your nose when you sleep. | Don't lick the iron rail.
+b : I want to go in to the ears! | Why? | What happens if I do?
+a : You'd be lost till spring. | So it doesn't freeze off. | Your tongue stays and you come home without it.
+b : I'd dig out! | That's not true. | ...I'll lick the wood one.
+
+scene kn_pup_regional_harbour
+when topic=family band=family a.stage=adult b.stage=young region=ridgemere|saltreach|lakeside
+a : Not so near the edge of the quay! | Don't follow the gulls, they're thieves. | Stay off the boats. Every one of them.
+b : I wanted to see the fish. | They took my bread. | Even the little ones?
+a : The fish will see you first, when you fall in. | Then you know it already. | The little ones most of all.
+b : I can swim a bit. | I'll take theirs back. | They're the most fun.
+a : A bit's not enough for the harbour. | You'll lose. They're gulls. | That's why. Come away.
+
+scene kn_pup_regional_river_city
+when topic=family band=family a.stage=adult b.stage=young region=ser_ferro
+a : Look up there, the Cathedral bells. | Mind the fine folk's carriages. | Don't drink from the river below the tanneries.
+b : Do they ring for the Saint? | Why are they so fast? | It looks clean.
+a : For the Saint and for the hour. | Because they don't have to stop for anyone. | It's not. Trust my nose.
+b : The Saint must be very loud. | That's rude. | Your nose is always right.
+
+scene kn_pup_regional_fens
+when topic=family band=family a.stage=adult b.stage=young region=fenhollow|lakeside
+a : Keep to the boards. The peat swallows pups. | Don't follow the lights over the marsh at night. | That's not a log. Leave it be.
+b : I'm light. It won't swallow me. | They're pretty. | What is it, then?
+a : It's swallowed heavier. Boards. | Pretty things drown pups. | Something with teeth. Come.
+b : Fine. Boards. | Fine. | It looks like a log.
+a : Good. | Good. | So does every one of them. Come.
+
+scene kn_pup_regional_forge
+when topic=family band=family a.stage=adult b.stage=young region=cinderbrook|ser_ferro
+a : Stay back from the forge door. Sparks. | Don't touch the cooling bars. | Your fur's grey with ash again.
+b : The sparks are pretty. | They look cool. | Grey's a good colour.
+a : They're pretty till one lands in your ear. | They're not. That's how they fool you. | Not when it's supposed to be red.
+b : Ears are tough. | Clever bars. | I can be grey for a day.

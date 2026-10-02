@@ -1,0 +1,189 @@
+# Prices, caravans and bandits by who is talking (Docs/Design/30-towns-and-talk.md): pups, elders, and each trade's
+# own way of seeing the market and the road. Blanks: {item}, {price}, {other}. Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Pups
+
+scene em_pup_wagons
+when topic=caravan kind=arrived a.stage=young|adolescent
+a : Did you see the wagons? One had a horse with a bell on its bridle! | A carter gave me a ride on the back of his cart! | The wagons came from {other}! Where's {other}?
+b : I saw. Very fine. | Did your mother see you? | A long way off. Over the hills.
+a : I want a bell. | No. Don't tell her. | Can we go there?
+b : Ask the smith. | I won't. This time. | When you're grown.
+
+scene em_pup_bandit_game
+when topic=bandits a.stage=young|adolescent
+a : We're playing bandits and guards. I'm the bandit chief! | Are the bandits going to come here? | My friend says bandits eat pups.
+b : Bandit chiefs get caught in the end. | Not here. The walls are strong. | Your friend's a liar.
+a : Not this one. I'm too fast. | Promise? | I'll tell him you said so.
+b?[guard] : Not while I'm on the wall, they won't.
+
+scene em_pup_hungry
+when topic=prices item=meal dir=up a.stage=young|adolescent
+a : Why do we only get half a bowl now? | My tummy's growling louder than a dog. | Mama gave me her bread and said she wasn't hungry.
+b : Food costs more this week, little one. | Mine too. Drink some water. It helps. | Mamas say that sometimes.
+a : Is it my fault? | It doesn't help. | Was she lying?
+b : No, never. | I know. | Only a kind lie.
+
+scene em_pup_honey
+when topic=prices dir=down a.stage=young|adolescent
+a : We had honey on our bread! Honey! | Mama let me have two apples! | Supper was so big I couldn't finish it!
+b : Lucky pup. | Two? Spoiled. | That's never happened before.
+a : Very lucky! | Very spoiled! | I finished it later.
+
+scene em_pup_herbs
+when topic=prices item=herbs a.stage=young|adolescent
+a : I picked a whole basket of mint by the wall. Can I sell it? | The herb lady gave me a sprig of lavender for nothing. | Why do grown-ups fight about herbs?
+b : Ask your mother first. | She's soft on pups. | Because they're dear, little one.
+a : She'll say no. | I'll keep it forever. | I'll grow them for you.
+b?[merchant] : Bring it to me. I'll give you a penny for the lot.
+
+scene em_teen_road
+when topic=caravan a.stage=adolescent
+a : When I'm grown I'm going to drive the caravan to {other}. | I asked the head carter if I could go with them. | I'd go to {other} in a heartbeat. Anywhere but here.
+b : It's hard work. And cold. | And? | Everyone says that at your age.
+a : I don't care. | He laughed at me. | I mean it.
+b?[carter] : Learn to grease an axle first. Then we'll talk.
+
+# ---------------------------------------------------------------- Elders
+
+scene em_old_roads
+when topic=bandits a.stage=old
+a : When I was young the roads were worse than this. | Bandits are nothing new. My grandmother fought one off with a ladle. | In my day the lord's riders hanged robbers at the crossroads.
+b : Worse? Hard to believe. | A ladle! | And did it stop them?
+a : Much worse. Ask anyone my age. | A big iron ladle. | For a season or two.
+
+scene em_old_caravans
+when topic=caravan a.stage=old
+a : I drove the {other} road for thirty years. Every rut of it. | Caravans were bigger once. Forty wagons, fifty. | The bells on the harness. Same sound as when I was a pup.
+b : Thirty years! You must miss it. | Bigger and slower. | Some things don't change.
+a : Not the cold. The company, maybe. | Much slower. | Some things shouldn't.
+
+scene em_old_prices
+when topic=prices a.stage=old
+a : I've seen prices rise and fall forty times. They always come down. | Don't fret about {price}. It'll pass. | Everyone panics. Nobody remembers last time.
+b : Easy to say. | It doesn't feel like it'll pass. | You remember.
+a : Easy to live, too. | It always does. | I'm old. That's my job.
+
+scene em_old_young_spend
+when topic=prices dir=down a.stage=old
+a : Young ones spend it all the moment it's cheap. Fools. | Cheap today, dear tomorrow. Save some. | When prices drop, buy salt and keep it.
+b : Let them enjoy it. | Wise words. | Salt?
+a : They'll enjoy hunger later. | Old words. | Salt keeps. So does sense.
+
+# ---------------------------------------------------------------- Trades
+
+scene em_job_healer_herbs
+when topic=prices item=herbs a.job=healer
+a : I'm cutting every poultice in half to make the herbs last. | A pup came in with a fever and I nearly couldn't treat it. | Herbs at {price}. Folk will come to me too late now.
+b : Will that work? | Nearly? | They always come late.
+a : Half as well. | Nearly. | Later, now.
+b?[priest] : The chapel will help where it can. Send them to us.
+
+scene em_job_smith_raid
+when topic=bandits a.job=smith
+a : Everyone wants spearheads since the raids. | Three orders for knives today. Three! | I've never sold so many bolts for crossbows.
+b : Good for business. | Who's buying? | Expecting a war?
+a : Bad for sleep. | Frightened folk. | Expecting bandits.
+
+scene em_job_carter_road
+when topic=bandits a.job=carter
+a : I'm not driving that road without a guard. Not for any money. | Twenty years on the roads and I've never seen it this bad. | They hold up the lead wagon and the rest are stuck.
+b : Can't blame you. | Never? | Clever of them.
+a : Not for double. | Never. | Clever and cruel.
+
+scene em_job_carter_arrived
+when topic=caravan kind=arrived a.job=carter
+a : Six days on that road and my teeth are rattled loose. | Made it from {other} with every wheel on. A first. | My mules deserve a medal and a bucket of oats.
+b : Rest a day. | Every wheel! | Give them two buckets.
+a : Two days. | A miracle. | They'd kick me for one.
+
+scene em_job_innkeeper_caravan
+when topic=caravan a.job=innkeeper
+a : Caravan days fill my rooms. Caravan nights empty my cellar. | I've a spare room if the carters need it. | When the wagons are late, the tavern is a tomb.
+b : A fair trade. | They always need it. | A very quiet tomb.
+a : Usually. | Usually. | Quiet and cold.
+
+scene em_job_guard_patrol
+when topic=bandits a.job=guard
+a : Double watch tonight. Captain's orders. | Walked the wall six times. Nothing. Still nervous. | Every shadow outside the gate looks like a bandit to me.
+b : Again? | Nothing's good. | And to me.
+a : Again. | Nothing's good. | Then we're both fools.
+
+scene em_job_soldier_raid
+when topic=bandits a.job=soldier
+a : Give me twenty spears and a free night and I'll clear that road. | These bandits wouldn't last a morning against a real company. | They run when they see armour. Cowards, all of them.
+b : Ask the commander. | Then why haven't they been cleared? | Cowards with sharp knives.
+a : I have. Twice. | Orders. Always orders. | Knives break.
+
+scene em_job_farmer_prices
+when topic=prices item=meal a.job=farmer
+a : Bread's {price} and I sold my wheat for a pittance. | Folk curse the price of food. They should curse the merchants. | The field gives, the market takes.
+b : Somebody's making money. | Merchants are easy to curse. | And the market keeps.
+a : Not me. | And they deserve it. | Every season.
+
+scene em_job_fisher_prices
+when topic=prices item=meal a.job=fisher
+a : I catch the fish and still can't afford a pie. | Fish is cheap on the boat and dear on the plate. | The net was full and the buyer paid like it was empty.
+b : That's the way of it. | Somebody's taking the difference. | Buyers always do.
+a : A bad way. | Somebody. | Always.
+
+scene em_job_merchant_raid
+when topic=caravan kind=raided a.role=merchant
+a : I had a whole wagon on that caravan. | Bandits took my cloth. Now they'll wear it to rob me again. | I'll have to raise my prices. You'll hate me, but I must.
+b : I'm sorry. | Ha. Fine bandits. | I already hate you.
+a : So am I. | Fine and warm. | Fair.
+
+scene em_job_merchant_arrived
+when topic=caravan kind=arrived a.role=merchant
+a : My stall will be full by tomorrow. Tell your friends. | The {other} goods are in. Prices will settle. | Fresh stock at last. I was selling dust.
+b : I will. | Settle down, I hope. | Good dust, though.
+a : Bring coin. | Down, mostly. | Ha.
+b?[child] : Will you have sweets?
+
+scene em_job_cook_caravan
+when topic=caravan kind=arrived a.job=cook|baker
+a : The {other} caravan brought spices. Real ones. | Flour from {other}. I'll bake till my paws are white. | Pepper! They brought pepper from {other}!
+b : Make something good. | They're always white. | Is it dear?
+a : Come by at noon. | Whiter. | Dearer than gold.
+
+scene em_job_priest_raid
+when topic=caravan kind=raided a.job=priest
+a : We'll pray for the carters at the evening bell. | The wounded from the raid are sleeping in the chapel. | Even robbers are the Bright One's children. Hard as that is to say.
+b : Thank you. | Is there room? | Very hard.
+a : The Bright One hears. | Always room. | It is.
+
+scene em_job_official_raid
+when topic=bandits a.job=official
+a : The council's drafting a letter about the bandits. | I've written the report on the raid three times. | We're counting the losses from the {other} road.
+b : A letter. That'll scare them. | Why three? | How bad?
+a : It's a very stern letter. | Nobody liked the first two. | Bad enough to write down.
+
+scene em_job_beggar_caravan
+when topic=caravan kind=arrived a.job=beggar
+a : Carters are generous when they've made it home. | A carter from {other} gave me a whole penny. | Busy day. Busy days are good days for me.
+b : Good. | A whole one! | I'm glad.
+a : Very. | A whole one. | Me too.
+
+scene em_job_laborer_unload
+when topic=caravan kind=arrived a.job=laborer
+a : Two pennies a crate and there were sixty crates. | Hauled {other} barrels all morning. My shoulders are gone. | Good work while it lasts. The wagons pay well.
+b : That's a good day. | You'll ache tomorrow. | While it lasts.
+a : A very good day. | I ache today. | Always.
+
+scene em_job_herder_bandits
+when topic=bandits a.job=herder
+a : Lost two lambs. Not to wolves. To bandits. | I bring the flock in at noon now. Can't risk the dusk. | Bandits like mutton as much as anyone.
+b : Not to wolves? Ha. | Wise. | More, maybe.
+a : Not funny. | Very. | They don't pay for it.
+
+scene em_job_woodcutter_camp
+when topic=bandits kind=camp a.job=woodcutter
+a : Found a cold fire deep in the wood. Bones and rope. | I've stopped cutting near {other}. | Somebody's been taking my cut logs at night.
+b : Bandits? | Wise. | Someone's warm, then.
+a : Who else? | Too wise to die. | Warm and thieving.
+
+scene em_job_scholar_prices
+when topic=prices a.job=scholar|official
+a : Prices follow the roads. When the roads are bad, the market is bad. | It's all in the old ledgers. Every lean year, a raid first. | Hunger has a pattern, if you read enough.
+b : Can you predict them? | Then why don't we learn? | Do you read enough?
+a : I can try. | Because nobody reads ledgers. | Never.

@@ -1,0 +1,300 @@
+# Current events in town, by region, part one: the three cities, Accord Crossing, Saltreach and Cinderbrook. Crime,
+# lives, newcomers, festivals and gossip as each place tells them.
+
+# ---------------------------------------------------------------- Upper Accord
+
+scene et_ua_theft_archive
+when topic=crime kind=theft region=upper_accord
+a : A thief in the Accord. {victim}, robbed under the Concord's own windows. | The Accord Watch is turning out every ward over {victim}. | They say {victim} was robbed on the long stair.
+b[scholar] : If they'd taken a manuscript I'd understand. Coin? Vulgar.
+b[guard] : The wards are sealed at dusk until we know who.
+b : Under the Concord's nose. Embarrassing for someone. | Every ward? Good. | On the stair! Nowhere to run there.
+a : Very embarrassing. | Good and thorough. | Except down.
+
+scene et_ua_arrest_watch
+when topic=crime kind=arrest region=upper_accord
+a : The Accord Watch took {subject} to the cells under the hall. | {subject}'s arrested. The Concord's courts are slow but they don't forget. | Wardens were there when they took {subject}. Wardens!
+b[guard] : The Wardens were passing. We did the taking.
+b : Under the hall. Cold place. | Slow as glaciers. | Wardens? For a common thief?
+a : Very cold. | And as sure. | That's what frightens me.
+
+scene et_ua_newcomer_quickened
+when topic=newcomer region=upper_accord
+a : The Wardens brought {subject} up the mountain. You know what that means. | Is {subject} here for assessment? They have that look. | {subject} came up with a Warden escort.
+b[priest] : Gifts are the Bright One's to give. Be kind to them. They're frightened.
+b[child] : Is {subject} Quickened? Can they breathe fire? Can I see?
+b : Gifted, or worse. | That haunted look. Yes. | An escort. Poor thing.
+a : Or Quickened. | They all have it. | Poor thing, or dangerous thing.
+
+scene et_ua_newcomer_envoy
+when topic=newcomer region=upper_accord place=hall|street|market
+a : {subject}'s an envoy, they say. From some lowland court. | Another foreign face. {subject}. The Accord fills with them. | {subject} has the look of a diplomat. All smiles, no teeth.
+b[official] : The Concord receives all nations. That is its purpose.
+b : Envoys come and go. | It always has. | Those are the dangerous ones.
+a : Mostly go. | Always. | Aren't they.
+
+scene et_ua_death_scholar
+when topic=life kind=death region=upper_accord
+a : {subject}'s gone. They'll toll the archive bell. | The archives lost a mind with {subject}. | They're laying {subject} in the old crypt below the plaza.
+b[scholar] : Forty years of notes. Who'll read them now?
+b : Fitting. | And a kind one. | With the old greats.
+a : Very. | A rare kind. | They earned it.
+
+scene et_ua_festival_snow
+when topic=festival region=upper_accord
+a : They light the plaza lanterns for {festival} even in the snow. | Pilgrims are already climbing up for {festival}. | The Concord bells for {festival}! Hear them?
+b[old] : I've seen the plaza on {festival} for seventy years. Never tire of it.
+b : Snow and lanterns. Nothing finer. | The stairs will be packed. | Like the whole mountain's singing.
+a : Nothing. | Elbow to elbow. | It is.
+
+scene et_ua_gossip_concord
+when topic=gossip region=upper_accord
+a : In the Concord's own corridors, they say {subject} {claim}. | A clerk told me {subject} {claim}. Clerks know everything. | Word in the wards is that {subject} {claim}.
+b[official] : I would not repeat that near the hall, if I were you.
+b : Corridors leak. | They do. | The wards love a tale.
+a : Like Ridgemere roofs. | Every word. | They do.
+
+scene et_ua_assault_stair
+when topic=crime kind=assault region=upper_accord
+a : They found {victim} hurt on the switchbacks below the gate. | {victim} was beaten in the lower ward. | An attack, in the Accord. Who'd dare?
+b[guard] : Someone who doesn't know the Wardens will want to hear about it.
+b : On the switchbacks. Ice and blood. | The lower ward's always rougher. | Someone desperate.
+a : Grim. | Always was. | Or foolish.
+
+# ---------------------------------------------------------------- Ridgemere
+
+scene et_rm_theft_sump
+when topic=crime kind=theft region=ridgemere
+a : {victim} got robbed by the Sump. No surprise there. | Pickpockets from the Sump worked the quay crowd. {victim} lost a purse. | They say whoever robbed {victim} vanished into the Sump.
+b[guard] : The Watch won't go into the Sump past dark. Not without twenty.
+b[beggar] : Everyone blames the Sump. The Sump's just hungry.
+b : The Sump eats purses. | Quay's worse than the market. | And never came out.
+a : And spits out bones. | Always was. | Never do.
+
+scene et_rm_arrest_houses
+when topic=crime kind=arrest region=ridgemere
+a : The Watch took {subject}. Some House will have them out by morning. | {subject}'s arrested. Brinewater's man, they say. | {subject} in the cells. I'll wager the Council hears of it.
+b[noble] : The Houses do not interfere with the Watch. Publicly.
+b : If they're owned, they'll walk. | Then they'll be out by noon. | The Council hears everything.
+a : They're always owned. | Mark me. | And does nothing.
+
+scene et_rm_death_harbour
+when topic=life kind=death region=ridgemere
+a : {subject} drowned off the Brinewater quay. | They pulled {subject} from the bay this morning. | {subject} went with the boat in last night's swell.
+b[sailor] : The bay takes one a season. Feed it, they used to say.
+b : Bright One. The cold'll have taken them quick. | Poor soul. | That swell was cruel.
+a : Quick, I hope. | Poor soul. | Cruel.
+
+scene et_rm_death_furnace
+when topic=life kind=death region=ridgemere
+a : {subject} died at the Grayrock furnaces. | A crucible tipped. That's how {subject} went. | They say {subject} breathed too much of the smoke, all those years.
+b[smith] : Grayrock'll pay a widow's purse and light the furnace again by nightfall.
+b : That place eats wolves. | Bright One. | The smoke takes us all slow.
+a : Every year. | Terrible way. | Slow and sure.
+
+scene et_rm_newcomer_ship
+when topic=newcomer region=ridgemere
+a : {subject} came in on that southern ship. Decided to stay. | {subject} jumped ship, I hear. | {subject}'s looking for lodging. In Ridgemere. In the rain.
+b[sailor] : Southern crews always lose a wolf or two to Ridgemere. Bright One knows why.
+b : Brave or mad. | Jumped? Looking for trouble? | They'll drown in a week.
+a : Mad, probably. | Or running from it. | Or learn to love it.
+
+scene et_rm_festival_rain
+when topic=festival region=ridgemere
+a : Rain for {festival}, naturally. | They hung the ribbons under the overhangs for {festival}. | The Rain Hall leaks on {festival} same as every day.
+b[old] : Ridgemere keeps its feasts wet. I wouldn't know them dry.
+b : Naturally. | Clever. | Even feast days leak.
+a : We'd not know the difference. | Dry ribbons, for once. | Especially feast days.
+
+scene et_rm_gossip_houses
+when topic=gossip region=ridgemere
+a : In the Rain Hall they're saying {subject} {claim}. | A Vesk smokehouse girl told me {subject} {claim}. | The quay's buzzing. {subject} {claim}.
+b[noble] : The Houses have better things to whisper about than {subject}.
+b : The Hall talks more than it governs. | Smokehouse girls hear everything. | The quay always buzzes.
+a : Much more. | Smoke and secrets. | Like flies.
+
+scene et_rm_marriage_houses
+when topic=life kind=marriage region=ridgemere
+a : {subject}'s married into a House family, they say. | {subject} wed. The quay drank all night. | {subject}'s wedding was in the Rain Hall chapel. Damp but grand.
+b[noble] : House matches are business. Love is a pleasant accident.
+b : Up in the world. | Good excuse for a drink. | Damp and grand. Ridgemere all over.
+a : Very up. | Any excuse. | All over.
+
+# ---------------------------------------------------------------- Ser Ferro
+
+scene et_sf_theft_syndicate
+when topic=crime kind=theft region=ser_ferro
+a : {victim}'s robbed. Couriers, I'd bet. | Clean job on {victim}'s house. Too clean for a street thief. | Nobody's saying who robbed {victim}. Everybody knows not to.
+b[official] : The city's records show crime falling. I have the ledgers.
+b[merchant] : I pay my dues to the right wolves. My shop's untouched.
+b : Couriers don't do anything without leave. | Somebody planned it. | Wise of them.
+a : Somebody gave the leave. | Somebody always does. | Very wise.
+
+scene et_sf_arrest_courier
+when topic=crime kind=arrest region=ser_ferro
+a : They took {subject}. A Courier, they say. | {subject} arrested. Small fish. The big ones never are. | The King's guard took {subject} off the wharf.
+b[guard] : We take the ones we can catch. That's the job.
+b : One less Courier. Ten more tomorrow. | The big ones dine with magistrates. | The wharf'll be quiet a day.
+a : At least. | Always have. | A day.
+
+scene et_sf_death_cathedral
+when topic=life kind=death region=ser_ferro
+a : They're carrying {subject} up to the Cathedral Rise. | The Iron Saint's bell rang for {subject}. | {subject}'s funeral. White silk, silver candles, the lot.
+b[priest] : The Iron Saint keeps the faithful. Their name goes in the great book.
+b : A long climb for the bearers. | I heard it from the wharf. | Must have cost a fortune.
+a : Long and slow. | The whole city did. | Death's dear in Ser Ferro.
+
+scene et_sf_newcomer_wharf
+when topic=newcomer region=ser_ferro
+a : {subject} came off a river barge with nothing but a bag. | {subject}'s new to the city. Already asking about work on the wharf. | Saw {subject} gawping at the cathedral. Newcomer, clearly.
+b[official] : They'll need a residence paper from the hall. Three copies.
+b : The river brings all sorts. | Wharf'll take anyone. | We all gawped once.
+a : All sorts. | And chew them up. | Still do.
+
+scene et_sf_festival_bright
+when topic=festival region=ser_ferro
+a : They hang silver ribbons from the white walls for {festival}. | The King's procession for {festival} goes down the tiers at noon. | The river's crowded with lantern boats for {festival}.
+b[noble] : The palace gives a feast for {festival}. Invitation only, naturally.
+b : Silver and white. Dazzling. | I'll get a spot on the steps. | Like stars on the water.
+a : Bring shade. | Early, or you'll see nothing. | Lovely.
+
+scene et_sf_gossip_respectable
+when topic=gossip region=ser_ferro
+a : Over wine in the middle tier, they say {subject} {claim}. | A magistrate's servant swears {subject} {claim}. | Respectable folk are saying {subject} {claim}.
+b[noble] : One doesn't discuss such things. One simply stops inviting them.
+b : Wine loosens tongues. | Servants know more than masters. | Respectable folk say the worst things.
+a : And purses. | Always. | Behind fans.
+
+scene et_sf_assault_wharf
+when topic=crime kind=assault region=ser_ferro
+a : {victim} was beaten on the wharf. Someone sending a message. | They say whoever hurt {victim} was paid to. | Fine streets up top, knives down by the water. {victim} learned that.
+b[guard] : Messages get sent in Ser Ferro. We rarely find the sender.
+b : What message? | Paid by whom? | Always the way.
+a : Pay what you owe. | Who knows. | Always.
+
+scene et_sf_succession_merchant
+when topic=life kind=succession region=ser_ferro
+a : {subject} has the trading house now. And its debts, and its friends. | The guild's recognised {subject}. Very proper. | {subject} inherits the warehouses on the river.
+b[merchant] : And its arrangements. Every house in Ser Ferro has arrangements.
+b : The friends are the dangerous part. | Proper on paper. | Lucky them.
+a : Always. | It's Ser Ferro. | Or doomed.
+
+# ---------------------------------------------------------------- Accord Crossing
+
+scene et_ac_theft_wagon
+when topic=crime kind=theft region=accord_crossing
+a : Another wagon rifled in the yard. {victim}'s this time. | Somebody's been cutting purses at the Crossed Roads. | {victim} lost a cask off their wagon. Rolled away in the night.
+b[carter] : I sleep in the wagon bed now, with a cudgel. Best sleep I get.
+b[innkeeper] : Not in my common room. Out in the yard, maybe.
+b : The yard's a thieves' fair. | Busy inn, easy marks. | A cask doesn't roll itself.
+a : Every night. | Too easy. | Not uphill.
+
+scene et_ac_newcomer_traveller
+when topic=newcomer region=accord_crossing
+a : {subject}'s stopped here instead of going up the mountain. | {subject} took a job in the stables. Says they're staying. | Not many stay at the Crossing. {subject} did.
+b[carter] : Most pass through. The Crossing's a door, not a room.
+b : Smart. The mountain's hard. | Stables pay honest. | Wonder why.
+a : Very hard. | And smelly. | We'll find out.
+
+scene et_ac_festival_carters
+when topic=festival region=accord_crossing
+a : Carters from three roads for {festival}. The yard's packed. | The Crossed Roads is serving free soup for {festival}. | Wagons decorated with greenery for {festival}.
+b[innkeeper] : Free soup's the cheapest way to sell twenty barrels of ale.
+b : Never seen it fuller. | Free? Get in line! | Pretty sight.
+a : Never. | Running. | Very.
+
+scene et_ac_gossip_road
+when topic=gossip region=accord_crossing
+a : A carter up from the lowlands swears {subject} {claim}. | Road talk says {subject} {claim}. | Everyone passing through has heard {subject} {claim}.
+b[carter] : Road talk's half lies and half true. The trick is which half.
+b : Carters exaggerate. | The road knows. | Must be true, then.
+a : Some. | It does. | Or catching.
+
+scene et_ac_death_road
+when topic=life kind=death region=accord_crossing
+a : {subject} died on the switchbacks. Wagon went over. | They brought {subject} down from the mountain road on a hurdle. | Ice took {subject}'s wagon off the road.
+b[carter] : Every carter knows that bend. Doesn't help when it's iced.
+b : That road. | Bright One. | The ice gets someone every winter.
+a : That cursed road. | Poor soul. | Every winter.
+
+# ---------------------------------------------------------------- Saltreach
+
+scene et_sr_theft_salt
+when topic=crime kind=theft region=saltreach
+a : Somebody's been skimming salt off the pans at night. | {victim} lost a season's salt. Sacks gone from the shed. | They'll sell stolen salt in Ridgemere. Easy.
+b[merchant] : The Vesk factor'll want to know. He counts every sack.
+b : Salt's coin, here. | A season's work! | Ridgemere'd buy anything cheap.
+a : White coin. | Gone in a night. | Anything.
+
+scene et_sr_death_drowned
+when topic=life kind=death region=saltreach
+a : They'll cut {subject}'s name in the Tide Chapel. | The drowned bell rang for {subject} this morning. | The sea took {subject}. Boat came back empty.
+b[priest] : Another name on the wall. The sea's a hard tithe.
+b[fisher] : We all know it's coming. Doesn't help when it does.
+b : So many names. | I heard it from the pans. | Empty. That's the worst way.
+a : Too many. | Everyone did. | The worst.
+
+scene et_sr_newcomer_coast
+when topic=newcomer region=saltreach
+a : {subject} wants to work the pans. Hands soft as butter. | New face at the Tide Chapel. {subject}. | {subject} came from Ridgemere. Says it's quieter here.
+b[fisher] : Salt'll toughen them. Or send them home.
+b : Salt cracks them in a week. | Did they pray? | Quieter, yes. Not drier.
+a : Or less. | Hard. | Ha!
+
+scene et_sr_festival_tide
+when topic=festival region=saltreach
+a : They throw salt to the sea for {festival}. For the drowned. | Boats stay in for {festival}. Nets mended, lanterns lit. | Salt cakes for {festival}. Nowhere else makes them.
+b[old] : My mother threw salt every {season}. Now I throw it for her.
+b : A good custom. | Good. Everyone rests. | Salty sweet. Strange but good.
+a : Very. | We need it. | Strange and good.
+
+scene et_sr_gossip_vesk
+when topic=gossip region=saltreach
+a : The Vesk factor told the innkeeper {subject} {claim}. | On the pans they're saying {subject} {claim}. | Out on the boats: {subject} {claim}.
+b : The factor's a gossip. | The pans are dull work. Gossip helps. | The boats always know first.
+a : Worse than any of us. | Very dull. | Somehow.
+
+# ---------------------------------------------------------------- Cinderbrook
+
+scene et_cb_theft_ore
+when topic=crime kind=theft region=cinderbrook
+a : Somebody's carting ore off the tailings at night. | {victim} lost their wages. A week down the shaft for nothing. | They stole the lamp oil from the mine store.
+b[miner] : Steal a wolf's lamp oil and you might as well bury him.
+b : Selling it on the Ser Ferro road, I'd bet. | A whole week! | Cruel.
+a : Bet you're right. | All for nothing. | Deadly.
+
+scene et_cb_death_mine
+when topic=life kind=death region=cinderbrook
+a : {subject} didn't come up. North seam. | They've closed the shaft where {subject} died. | Another nail on the shrine wall that'll never be pulled. {subject}.
+b[miner] : I worked beside them yesterday. Yesterday.
+b[priest] : I'll take their nail down and bury it with them. As we always do.
+b : The north seam. Always the north seam. | Closed, after. Always after. | Bright One.
+a : Cursed place. | Always too late. | Bright One keep them.
+
+scene et_cb_newcomer_miner
+when topic=newcomer region=cinderbrook
+a : {subject} came up the Ser Ferro road to work the mines. | New wolf at the pithead. {subject}. Pale. | {subject} asked about mine wages. Brave or broke.
+b[miner] : Give them a week of red dust. Then see if they stay.
+b : Mining's what we've got. | They'll go red soon enough. | Usually broke.
+a : All we've got. | Red as the rest. | Usually.
+
+scene et_cb_festival_shrine
+when topic=festival region=cinderbrook
+a : For {festival} they ring the shaft bell once for every wolf who came back up. | The forges go cold for {festival}. The only day they do. | Even the smoke lifts for {festival}.
+b[smith] : One day off a year. I'll sleep through it.
+b : A long ringing this year. | Strange, the quiet. | Feels like a miracle.
+a : Good. | Very strange. | A small one.
+
+scene et_cb_gossip_crown
+when topic=gossip region=cinderbrook
+a : The Crown's agent let slip that {subject} {claim}. | Down the shaft they say {subject} {claim}. | Over the forge noise I heard {subject} {claim}.
+b[miner] : What's said in the dark stays there. Usually.
+b : The agent's a weasel. | Shaft talk. | You heard wrong, probably.
+a : A talkative weasel. | Dark and true. | Maybe.
+
+scene et_cb_assault
+when topic=crime kind=assault region=cinderbrook
+a : A fight at the pithead. {victim} came off worst. | They say {victim} was jumped for their wages. | Someone took a pick handle to {victim}.
+b[guard] : Pay day and drink. Never a good mix in this town.
+b : Pay day always ends in blood here. | For wages? Cowards. | A pick handle! Brute.
+a : Always. | Cowards. | A brute.

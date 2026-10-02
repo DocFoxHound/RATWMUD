@@ -1,0 +1,226 @@
+# Westmarch: the frontier market town of the southern downs, far from any city and proud of it. The Last Lantern,
+# the Mercantile and its ledger, the Downs Smithy, Drover's Block, the Hide Yard, Marrow's Herbs, the Down Chapel bell,
+# the Watch House and its map, the Granary, the barrows, the sheep and the empty downs.
+
+scene rg_wm_days_walk
+when topic=smalltalk|lore region=westmarch
+a : Accord Crossing's six days' walk from here. Seven with sheep. | Nearest city's ten days' walk. Suits me. | Nobody out here measures in miles. It's days' walk or nothing.
+b[herder] : Nine with sheep, if they're my sheep. Stubborn beasts.
+b[old] : I walked to the Crossing once. Came back and never left again.
+b : Far enough. | Suits me too. | Miles are for cities.
+a : Far enough. | Good. | Cities can keep them.
+
+scene rg_wm_lambing
+when topic=work|lore region=westmarch season=spring
+a : Lambing's started on the high fold. Nobody's sleeping. | Twin lambs at dawn, both alive. | Lost a ewe in the night. Lamb lived, though.
+b[herder] : Never trust a wolf who hasn't sat up a lambing night.
+b[farmer] : Spring's the hardest and the best, both at once.
+b : Busy season. | Good start. | Small mercies.
+a : The busiest. | Very good. | Small ones.
+
+scene rg_wm_lantern_window
+when topic=lore region=westmarch time=dusk|night
+a : Every house on the east road keeps a lantern in the window. | The Last Lantern's lamp's lit every night for travellers. Has been for a hundred years. | Put the lantern out for your son tonight.
+b[old] : A lantern in the window means somebody's still walking home.
+b[innkeeper] : That lamp's never gone out. Not once. My grandmother's oath.
+b : An old custom. | A hundred years. | I do, every night.
+a : A good one. | At least. | I know.
+
+scene rg_wm_barrows_luck
+when topic=lore region=westmarch
+a : Touched the old barrow stone before the market. For luck. | Somebody dug at the north barrow. Bad business. | The barrows are older than any town on the downs.
+b[old] : Touch the stone, don't take from it. That's the rule.
+b[priest] : The barrows are the old dead. Leave them in peace.
+b : Did it work? | Very bad. | Older than the Concord.
+a : We'll see. | Very bad. | Much older.
+
+scene rg_wm_mercantile_ledger
+when topic=smalltalk region=westmarch
+a : My name's on three pages of the Mercantile ledger. | The Mercantile ledger's thicker than a chapel book. | They say the ledger's got debts from my grandfather in it still.
+b[merchant] : Every debt's honest, and every debt gets paid. Eventually.
+b : Mine's on four. | Everybody's in it. | Probably true.
+a : Four! | Everybody. | Probably.
+
+scene rg_wm_drovers
+when topic=work region=westmarch a.job=herder|carter|merchant
+a : Drovers in from the south with a hundred head. | Cattle prices fell at the last market. | A drover lost twenty head to a storm on the downs.
+b[herder] : Drive slow, drive steady, and never cross the barrows at night.
+b : Good market, then. | Bad for us. | Bad luck.
+a : Very good. | Very bad. | Very bad luck.
+
+scene rg_wm_hide_yard
+when topic=smalltalk region=westmarch
+a : Wind's from the Hide Yard today. Shut the shutters. | The tanner's soaking a new batch. Whole town knows it. | Nobody buys a house downwind of the Hide Yard.
+b[crafter] : Leather's leather. The smell pays for the bread.
+b[child] : It smells like a dead thing! Yuck!
+b : Already did. | Whole town. | Nobody sane.
+a : Good. | Everybody. | Nobody.
+
+scene rg_wm_down_chapel_bell
+when topic=lore region=westmarch
+a : The Down Chapel bell carries for miles. Shepherds hear it on the high fold. | Ring the bell three times for a lost traveller, they say. | The bell rang at midnight last week. Nobody knows who.
+b[priest] : The bell was cast to carry. That's its whole purpose out here.
+b[herder] : Heard it from two days out once. Felt like home calling.
+b : For miles. | So they say. | Strange.
+a : For miles. | Old custom. | Very strange.
+
+scene rg_wm_watch_map
+when topic=lore|work region=westmarch
+a : The Watch House map's covered in pins. Every one a farm. | Watch rode out to the far farms again. | Half the pins on the watch map have no one left on them.
+b[guard] : We ride the circuit every week. Every farm.
+b : That's a lot of pins. | Hard ride. | Emptier every year.
+a : A lot. | Very hard. | Every year.
+
+scene rg_wm_emptying_downs
+when topic=lore region=westmarch band=friends|family|acquaintances
+a : The downs get emptier every year. Nobody knows why. | Three farms left empty since spring. | Young ones go east and never come back.
+b[old] : When I was young you could see a farm smoke from every hill.
+b[adolescent] : There's nothing out here but sheep and wind.
+b : Hard to say. | Sad to see. | Can you blame them?
+a : Hard. | Very sad. | Sometimes.
+
+scene rg_wm_granary
+when topic=work|lore region=westmarch
+a : The Granary's half full. Hard winter coming. | They count the Granary sacks every week now. | The Granary's the only stone building in town that doesn't leak.
+b[farmer] : Fill it in autumn, live through winter. Simple.
+b[official] : Every sack counted, every sack recorded.
+b : Let's hope not. | Wise. | Good thing too.
+a : Let's hope. | Very wise. | Very good.
+
+scene rg_wm_marrows_herbs
+when topic=smalltalk region=westmarch
+a : Marrow's Herbs sold me a charm for my bad knee. | The herbalist knows every plant on the downs by smell. | Marrow's out gathering again. Shop's shut.
+b[healer] : Charms help the ones who believe. Herbs help everyone.
+b : Did it work? | Every one. | Again.
+a : A little. | Every one. | Again.
+
+scene rg_wm_frontier_pride
+when topic=lore region=westmarch
+a : Nobody tells Westmarch what to do. Not the Concord, not anyone. | We pay no Crown and kneel to no House. | The Accord sends a tax clerk every few years. He never stays.
+b[old] : That's the frontier. We look after ourselves.
+b[official] : Somebody still has to keep the roads.
+b : Free as the wind. | And proud of it. | Who would?
+a : Free. | Very proud. | Nobody.
+
+scene rg_wm_drovers_block
+when topic=smalltalk region=westmarch place=street|market|work
+a : Drover's Block has mutton hung by the door. | Best mutton on the downs, at the Block. | The butcher's hooks are empty. Drovers are late.
+b[cook] : Mutton stew with downland herbs. Nothing better.
+b : Good timing. | So they say. | Again.
+a : Very good. | Best anywhere. | Again.
+
+scene rg_wm_letter_east
+when topic=smalltalk region=westmarch band=friends|family|spouses
+a : Still no letter from my son in the east. | A carter brought a letter for the Thornwell widow. First in a year. | Letters take a season to reach the downs.
+b[old] : No news means no bad news. That's what I tell myself.
+b : It'll come. | Good for her. | If they come.
+a : I hope. | Very good. | If.
+
+scene rg_wm_sheep_wander
+when topic=work region=westmarch a.job=herder|farmer
+a : Half my flock wandered over the Chalk Ridge in the night. | The sheep are restless. Something's out on the downs. | Sheared forty this week. My back's a hoop.
+b[herder] : Sheep go where they please. You just follow and swear.
+b : Find them? | Bad sign. | Rest it.
+a : Most. | Very bad. | Can't.
+
+scene rg_wm_last_lantern
+when topic=smalltalk region=westmarch place=tavern
+a : Long tables full tonight. Drovers and traders both. | The Last Lantern's beds creak like old bones. | Somebody's telling the barrow ghost story again.
+b[innkeeper] : The beds creak so you know you're not alone. Comfort, that.
+b : Busy night. | Every one. | Every night.
+a : Very busy. | Every one. | Every night.
+
+scene rg_wm_buried
+when topic=lore region=westmarch
+a : They say something's buried under the Down Chapel floor. | My grandmother swore a chest lies under the chapel altar. | Nobody digs under chapels. Not out here.
+b[priest] : Under the chapel floor is the chapel's business.
+b[old] : I know what's there. I'll take it to the barrows with me.
+b : Treasure? | A chest of what? | Nobody sane.
+a : Who knows? | She never said. | Nobody.
+
+scene rg_wm_chalk_figures
+when topic=lore region=westmarch
+a : The great chalk wolf on the hillside needs scouring again. | Children climbed the chalk wolf's tail. Rubbed a stripe off it. | Nobody knows who cut the chalk wolf.
+b[old] : Scour it every seven years or it fades and the luck goes.
+b[child] : We were only playing!
+b : Seven years already? | Little pests. | Older than the barrows.
+a : Already. | Little pests. | Probably.
+
+scene rg_wm_frontier_market
+when topic=work region=westmarch place=market|street
+a : Traders from four towns at market today. | The east traders sell cloth, we sell wool. Round it goes. | A trader from Amberford brought grain at a fair price.
+b[merchant] : Westmarch market's the only one for ten days in any direction.
+b : Busy market. | Round and round. | Rare thing.
+a : Very busy. | Round and round. | Very rare.
+
+scene rg_wm_wind_downs
+when topic=weather|smalltalk region=westmarch weather=clear|overcast|storm
+a : Wind off the downs could flay a wolf. | You can see weather coming a day off on the downs. | Wind's dropped. First still day in a month.
+b[herder] : Wind's the only thing out here that never leaves.
+b : Always is. | That's the downs. | Enjoy it.
+a : Always. | It is. | I will.
+
+scene rg_wm_debt_accord
+when topic=smalltalk region=westmarch band=friends|acquaintances
+a : Half of Westmarch came west to escape something. | Nobody asks where you came from, out here. | My neighbour came west to dodge a debt in the Accord.
+b[old] : Out here, you are what you do. Not what you did.
+b : Most of us. | Good rule. | Smart neighbour.
+a : Most. | Very good. | Smart.
+
+scene rg_wm_downs_smithy
+when topic=work region=westmarch a.job=smith|apprentice|farmer
+a : Ploughshares at the smithy, three weeks' wait. | The farrier's corner is full of drovers' horses. | Bent my share on a barrow stone.
+b[smith] : Barrow stones break everything. Plough round them.
+b : Busy smith. | Always is. | Bad luck.
+a : Very busy. | Always. | Very bad.
+
+scene rg_wm_shepherd_pipe
+when topic=lore|smalltalk region=westmarch
+a : You can hear the shepherds' pipes on the high fold at dusk. | Old shepherds play the same tune every night. Nobody knows its name. | My father piped to his flock. They came running.
+b[herder] : The sheep know the tune. That's all it's for.
+b : Lovely sound. | An old one. | Clever father.
+a : Very lovely. | Very old. | Very clever.
+
+scene rg_wm_far_fire
+when topic=lore region=westmarch time=night
+a : Saw a fire on the far downs last night. No farm out there. | Lights moving between the barrows. | Somebody's camping on the old road.
+b[guard] : We'll ride out at dawn. Probably drovers.
+b[old] : Don't go near lights between the barrows. Never.
+b : Drovers. | Fireflies. | Travellers.
+a : Probably.
+
+scene rg_wm_harvest_home
+when topic=lore|work region=westmarch season=autumn
+a : Last sheaf's in. Harvest home tonight. | The whole town helps bring in the far fields. | They hang the last sheaf in the chapel till spring.
+b[farmer] : Every wolf with paws helps at harvest. Even the watch.
+b[priest] : The last sheaf is the Bright One's share.
+b : Good harvest? | That's Westmarch. | Old custom.
+a : Good enough. | It is. | Very old.
+
+scene rg_wm_wolves_wild
+when topic=lore region=westmarch
+a : Wild dogs took two lambs off the high fold. | Something big has been at the sheep on the east down. | The old shepherds say the downs have teeth.
+b[herder] : Wild dogs, nothing more. But I'll sleep by the fold tonight.
+b : Bad luck. | Dogs, probably. | They do.
+a : Very bad. | Probably. | They do.
+
+scene rg_wm_never_city
+when topic=smalltalk region=westmarch a.stage=old
+a : Never seen a city. Never wanted to. | Folk in cities live in each other's laps. | My whole life on these downs and I'd do it again.
+b[adolescent] : I'd like to see one. Just once.
+b : Lucky you. | Too close. | Good life.
+a : Lucky. | Far too close. | A good one.
+
+scene rg_wm_tally_sticks
+when topic=lore|work region=westmarch
+a : Shepherds still keep count on tally sticks. | Old shepherds count sheep in the old numbers. Yan, tan, tethera. | Somebody's tally stick says forty. The fold says thirty-nine.
+b[herder] : Tally sticks don't lie. Shepherds do.
+b : Old ways. | Older than the town. | One's on the downs.
+a : The best ways. | Much older. | Probably.
+
+scene rg_wm_frost_fair
+when topic=lore region=westmarch season=winter
+a : The frost fair's on the Granary green next week. | They roast a whole sheep at the frost fair. | The frost fair's the only time the downs folk all come in.
+b[innkeeper] : Every bed in the Lantern's booked for the frost fair.
+b : Can't wait. | The smell! | Once a year.
+a : Nor me. | Wonderful. | Once.

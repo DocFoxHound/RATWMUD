@@ -1,0 +1,63 @@
+# Caravans leaving the towns, each with its own cargo and worry (Docs/Design/30-towns-and-talk.md). Blanks: {other}.
+# Alternatives run in parallel.
+
+scene em_dp_westmarch_wool
+when topic=caravan kind=left region=westmarch
+a : The wool carts left for {other}. Half the downs' fleeces on one road. | Wagons of hides and wool off to {other}. | The caravan took our wool to {other}. Now we wait for the coin.
+b : Pray it gets there. | Smelly cargo. | Waiting's the hard part.
+a : Every night. | Smells like money. | Always is.
+
+scene em_dp_lakeside_boats
+when topic=caravan kind=left region=lakeside
+a : They loaded a whole boat hull on a wagon for {other}. | Smoked pike from the mere went off to {other} this morning. | The caravan to {other} took two of the boatwrights' best oars.
+b : A boat on wheels. Madness. | Lucky {other}. | Best oars for the worst roads.
+a : Beautiful madness. | Very lucky. | Sad but true.
+
+scene em_dp_cinderbrook_ingots
+when topic=caravan kind=left region=cinderbrook
+a : Ingots stacked so high the wagon groaned leaving for {other}. | The iron's gone to {other}. The forges are quiet tonight. | Off goes our sweat to {other}, in bars.
+b : Heavy road ahead. | Quiet is rare here. | In bars and for pennies.
+a : Heavy and slow. | Enjoy it. | Always pennies.
+
+scene em_dp_fenhollow_peat
+when topic=caravan kind=left region=fenhollow
+a : Dried peat bricks and herbs off to {other}. Our whole year. | The caravan to {other} smelled of mint and bog. | Wagons to {other}, loaded with sleep-herbs for city wolves who can't sleep.
+b : Your whole year, rolling. | A fine smell. | City wolves never sleep.
+a : Rolling and bumping. | Fine and strange. | Too much wine.
+
+scene em_dp_amberford_seed
+when topic=caravan kind=left region=amberford
+a : Seed grain went to {other}. We kept the best back. | The caravan to {other} crossed the ford without losing a sack. | Wagons heavy with flour left for {other}.
+b : Wise. | A first. | Heavy and slow.
+a : Always. | A miracle. | And dusty.
+
+scene em_dp_saltreach_fish
+when topic=caravan kind=left region=saltreach
+a : The salt fish wagons left for {other}. Smell followed them to the gate. | Barrels of brine off to {other}. Mind the leaks. | Our salt's gone to {other}. Ridgemere will grumble.
+b : It'll follow them all the way. | Every barrel leaks. | Ridgemere always grumbles.
+a : All the way. | Every one. | Always.
+
+scene em_dp_accord_crossing_down
+when topic=caravan kind=left region=accord_crossing
+a : Wagons went down to {other} empty. They'll fill there. | The caravan to {other} took the mules we rented out. | Off to {other}. The yard's half empty already.
+b : Empty wagons, fast wagons. | Bring them back fat. | And quiet.
+a : Fast and rattling. | Fat and tired. | Very quiet.
+
+scene em_dp_ua_scrolls
+when topic=caravan kind=left region=upper_accord
+a : Concord letters went down with the caravan to {other}. Sealed in wax. | They sent a crate of copied decrees down to {other}. | The caravan to {other} took two Wardens' parcels. Nobody touched them.
+b : Important letters. | More decrees. Lucky {other}. | Wise of them.
+a : Very important. | Lucky them. | Very wise.
+b?[official] : Concord seals are not to be broken. On pain of more than fines.
+
+scene em_dp_rm_glass
+when topic=caravan kind=left region=ridgemere
+a : Ashcombe's glass went to {other} packed in straw and prayers. | The rope from Brinewater's off to {other}. Miles of it. | Vesk's smoked fish to {other}, three wagons' worth.
+b : Prayers break too. | Enough rope to hang the Council. | The roads will smell for a week.
+a : Fewer than glass. | Don't say that out loud. | Longer.
+
+scene em_dp_sf_wine
+when topic=caravan kind=left region=ser_ferro
+a : Ser Ferro wine for {other}. They'll drink it before it arrives. | The Guild sealed every crate before the caravan to {other} went. | Wagons out the river gate to {other}, flags flying.
+b : The carters will, anyway. | Guild seals and Guild prices. | Ser Ferro does love its flags.
+a : Every night. | Always. | Loves itself more.

@@ -1,0 +1,193 @@
+# Everyday talk (doc 30) shaped by who is talking: age, sex, job, and what the two are to each other.
+# Alternatives are written in parallel.
+
+scene ev_pp_old_old
+when topic=smalltalk a.stage=old b.stage=old
+a : Another one of the old crowd gone this winter. | My hips told me it'd rain. They were right. | The young ones don't listen to a word.
+b : Fewer of us every year. | Mine said the same. | Did we, at their age?
+a : Fewer, and louder. | Our hips should be on the council. | We listened to nothing. That's how I know.
+
+scene ev_pp_old_young
+when topic=smalltalk a.stage=old b.stage=young
+a : Mind your manners, pup. | What are you up to, little one? | Come here, I'll show you a trick with a string.
+b : Sorry! | Nothing! | A trick? Show me!
+a : That's better. | Nothing usually means mischief. | Watch my paws closely.
+
+scene ev_pp_young_old
+when topic=smalltalk a.stage=young b.stage=old
+a : Why is your fur all white? | How old are you? A hundred? | Did you know the Bright One?
+b : Snow got in it and never melted. | Older than the walls, pup. | Not personally.
+a : Really? | Wow. | Oh. Close, though?
+
+scene ev_pp_adolescent_pair
+when topic=smalltalk a.stage=adolescent b.stage=adolescent
+a : My father won't let me go to the festival dance. | Did you see who was looking at you at the well? | I'm leaving this town the moment I'm grown.
+b : Mine either. It's a conspiracy. | Who? Tell me! | Take me with you.
+a : We should sneak out. | Not telling. | If you can keep up.
+
+scene ev_pp_adolescent_adult
+when topic=smalltalk a.stage=adolescent b.stage=adult
+a : Can I help with the work? I'm strong now. | When were you my age, what did you do for fun? | Is it true you can join the watch at sixteen?
+b[guard] : Grow a bit more, and learn to hold your tongue. Then ask me.
+b : Strong, and clumsy. Carry the light things. | Worked, mostly. | Ask your parents first.
+a : I'm not clumsy! | That sounds terrible. | They'll say no.
+
+scene ev_pp_shes
+when topic=smalltalk a.sex=female b.sex=female
+a : My sister's having her litter any day now. | That one at the stall winked at me. Bold as brass. | Do you braid your mane, or is it like that?
+b[old] : Five I had, and every one of them trouble.
+b : She'll need help. Send for me. | Did you wink back? | Like this, sadly.
+a : I'll tell her. | I might have. | It suits you.
+
+scene ev_pp_hes
+when topic=smalltalk a.sex=male b.sex=male
+a : Arm-wrestle you for the next round. | I've been told to trim my ruff. For a wedding. | My mate says I've gone soft in the belly.
+b[soldier] : I'll break your arm and you'll still pay.
+b : You're on. | Whose wedding? | You have, a bit.
+a : Put your elbow down. | My cousin's. I'll look like a plucked hen. | Traitor.
+
+scene ev_pp_spouses_morning
+when topic=smalltalk band=spouses time=dawn|day
+a : You were up early. | Did you sleep at all? You tossed all night. | I'll be late home tonight.
+b : Someone had to fetch water. | A little. | Again?
+a : I'd have done it. | I'll make you something hot. | I'll bring something back.
+
+scene ev_pp_spouses_evening
+when topic=smalltalk band=spouses time=dusk|night
+a : Come sit by me. | How was your day, love? | The pups are finally asleep.
+b : In a moment. | Long. Don't ask. | Don't say it out loud. They'll hear.
+a : Now. Your tail's dragging. | I won't. Sit down. | Quiet as moths.
+
+scene ev_pp_family_chores
+when topic=smalltalk band=family
+a : Mother wants us both home by dark. | Did you tell Father about the broken jug? | We should visit Grandmother this week.
+b : She always does. | Not yet. Did you? | She'll want to feed us till we burst.
+a : She'll worry if we're late. | We'll tell him together. | I'll skip supper the day before.
+
+scene ev_pp_family_sibling
+when topic=smalltalk band=family a.stage=young|adolescent b.stage=young|adolescent
+a : Mother loves you more than me. | You took my blanket again! | I'm telling on you.
+b : Does not. | It's mine now. | Go on, then.
+a : She does! | It is not! | I will!
+
+scene ev_pp_friends_tease
+when topic=smalltalk band=friends
+a : You've got straw in your fur again. | Your tail's crooked, did you know? | You look terrible. Rough night?
+b : It's a style. | It's always been crooked. | Rough week.
+a : A haystack style. | It suits you, crooked. | I'll buy you a cider.
+
+scene ev_pp_friends_old_times
+when topic=smalltalk band=friends
+a : Remember when we stole the priest's pears? | We used to sit on this wall every evening as pups. | You still owe me for that broken pot.
+b : He chased us halfway to the river. | Feels like a hundred years. | What pot?
+a : Best pears I ever ate. | And a day ago. | The one you broke. Laughing.
+
+scene ev_pp_strangers_polite
+when topic=smalltalk band=strangers
+a : Fine day, isn't it? | You're not from around here, are you? | Excuse me, is this the way to the square?
+b : Fine enough. | No, just passing through. | Straight on, past the well.
+a : Good day to you. | Safe road, then. | My thanks.
+
+scene ev_pp_strangers_wary
+when topic=smalltalk band=strangers time=dusk|night
+a : Bit late to be standing about, isn't it? | Do I know you? | You've been leaning on that wall a while.
+b : I could say the same. | No. | It's a good wall.
+a : Fair. | Good. | Lean somewhere else.
+
+scene ev_pp_acquaint_name
+when topic=smalltalk band=acquaintances
+a : Remind me, is it {b}? | We met at the market. You sold me a basket. | Your cousin married my neighbour, didn't she?
+b : That's me. | The one that fell apart? | She did. Poor fellow.
+a : I'm terrible with names. | Er. Yes. | Poor fellow indeed.
+
+scene ev_pp_rivals
+when topic=smalltalk band=rivals
+a : Oh. It's you. | I see you've still got that ugly cart. | Still telling everyone you're the best in {town}?
+b : Charmed, as always. | I see you've still got that ugly face. | Only because it's true.
+a : Out of my way. | At least I can mend a cart. | Keep telling yourself.
+
+scene ev_pp_master_apprentice
+when topic=smalltalk band=apprentice a.stage=adult|old b.stage=adolescent|adult
+a : Have you swept the shop yet? | Your hands are steadier than last month. | Don't touch that, it's sharp.
+b : Twice. | I practised every night. | Too late.
+a : Do it a third time. Properly. | It shows. Keep at it. | Let me see. Hold still.
+
+scene ev_pp_guard_child
+when topic=smalltalk a.job=guard b.stage=young
+a : Where are your parents, pup? | No climbing on the walls. | Was that you ringing the gate bell?
+b : Over there. Somewhere. | I wasn't climbing. I was standing high. | No.
+a : Go and stay near them. | Standing high, then. Get down. | There's rust on your paw from the rope.
+
+scene ev_pp_merchant_customer
+when topic=smalltalk a.role=merchant b.role=civilian place=market|street|work
+a : Good day! Looking or buying? | For you, a special price. | You came back! I knew you would.
+b : Looking. | Special for everyone, I'll bet. | Don't get excited.
+a : Looking costs nothing. Yet. | Special for you. And everyone. | Too late. I'm excited.
+
+scene ev_pp_priest_layfolk
+when topic=smalltalk a.job=priest b.role=civilian
+a : I haven't seen you at prayers lately, {b}. | Your mother asks for you every Restday. | Is all well at home?
+b : I've been working. | I'll visit her. | Well enough.
+a : The Bright One works too. He still finds time. | Soon. Before she forgets your face. | Come to me if that changes.
+
+scene ev_pp_healer_patient
+when topic=smalltalk a.job=healer
+a : You're limping. Let me see that. | Have you been taking the tea I gave you? | Your eyes look tired. Sleeping?
+b : It's nothing. | When I remember. | Not much.
+a : It's never nothing. | Remember more. | Chamomile, before bed. And no ale.
+
+scene ev_pp_farmer_townsfolk
+when topic=smalltalk a.job=farmer b.role=merchant
+a : Town folk think bread grows on shelves. | Your prices and my prices aren't speaking. | My cart's full. Will you buy or won't you?
+b : It grows on mine. | They never were friends. | Show me the bottom of the sacks first.
+a : Because I put it there. | They should meet. | It's all good, top to bottom.
+
+scene ev_pp_smith_smalltalk
+when topic=smalltalk a.job=smith
+a : Burned my paw on a hot rivet. Third time this week. | Can't hear a thing. Too many years of hammer. | My forge has a crack in the hearth.
+b : Third time? You're getting careless. | What? | That's bad.
+a : Getting tired. | I said I can't hear a thing. | Very bad. Mason's coming tomorrow.
+
+scene ev_pp_servant_gossipless
+when topic=smalltalk a.job=servant
+a : The master wants his boots polished twice a day now. | Up before dawn, down after midnight. | I dropped a dish and nobody noticed. A miracle.
+b[noble] : Then polish them three times and he'll notice you.
+b : Twice? On what floors? | Hard life. | Lucky you.
+a : Marble floors. Clean ones. | Hard, but steady. | I said a prayer of thanks.
+
+scene ev_pp_beggar_kind
+when topic=smalltalk a.job=beggar
+a : Spare a crust, friend? | Cold night coming. | I used to own a boat, you know.
+b[priest] : Come to the chapel kitchen. There's soup at dusk.
+b : Here. It's not much. | It is. Stay by the bakery wall. | Did you?
+a : Bright One bless you. | It's warm there. Thank you. | A good little boat. Long ago.
+
+scene ev_pp_carter_road
+when topic=smalltalk a.job=carter
+a : The roads are mud to the axle. | My mule bit a toll keeper. Best day of my life. | Three days on the road and my back's a bent bow.
+b : Always are, this time of year. | Ha! Did you pay the toll? | Rest it.
+a : Always. | Double. Worth it. | No time. Unloading.
+
+scene ev_pp_scholar_curious
+when topic=smalltalk a.job=scholar
+a : Did you know this town is older than its records? | I found a map with a road that doesn't exist. | I've read every book in the chapel. Twice.
+b : I didn't, no. | Doesn't exist now, maybe. | Read something else, then.
+a : Fascinating, isn't it? | Exactly what I thought. Where did it go? | There is nothing else. That's the tragedy.
+
+scene ev_pp_noble_condescend
+when topic=smalltalk a.job=noble b.role=civilian
+a : You there. Is it always this muddy? | My carriage can't pass this street. | Is there anywhere decent to eat in this town?
+b : Mostly, yes. | It's a street for paws. | Depends on what you call decent.
+a : Charming. | Then someone should widen it. | Clean, and quiet, and far from you.
+
+scene ev_pp_soldier_soldier
+when topic=smalltalk a.job=soldier b.job=soldier|guard
+a : Your buckle's crooked. Sergeant'll skin you. | Heard we're being sent north. | My spear's got a split in the haft.
+b : Let him try. | Who told you that? | Report it before it snaps on you.
+a : I'll watch from a distance. | The cook. The cook knows everything. | I reported it a month ago.
+
+scene ev_pp_child_child_animals
+when topic=smalltalk a.stage=young b.stage=young
+a : I saw a frog as big as a loaf! | Do you want to see my beetle? | My dog can do a trick.
+b : Liar! | Is it alive? | What trick?
+a : As big as two loaves! | Mostly! | He sits. Sometimes.

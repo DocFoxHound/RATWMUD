@@ -60,7 +60,7 @@ a : Peace on this house. | All are welcome. | The bell will ring at dusk.
 
 scene bk_festival
 when topic=bark day=festival
-a : Happy {festival}! | Music! Somebody play music! | Best day of the year!
+a : Joy of {festival}! | Music! Somebody play music! | Best day of the year!
 
 scene bk_rest
 when topic=bark day=rest

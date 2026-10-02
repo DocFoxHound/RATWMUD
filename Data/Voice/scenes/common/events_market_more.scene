@@ -1,0 +1,200 @@
+# More market and road talk (Docs/Design/30-towns-and-talk.md): the odd corners of dear and cheap times, what the
+# wagons carry and who rides with them, and the stories that grow around bandits. Blanks: {item}, {price}, {other}.
+# Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Dear times
+
+scene em_more_theft_hunger
+when topic=prices item=meal dir=up
+a : Somebody stole a loaf off the baker's sill. With food this dear, who can blame them? | Saw a pup snatch an apple and run. Didn't have the heart to shout. | Hunger makes thieves of honest wolves.
+b : The baker can. | Neither would I. | And honest wolves of thieves, sometimes.
+a : The baker can afford it. | A small apple. | Sometimes.
+b?[guard] : I can blame them. It's my job to.
+
+scene em_more_watered_ale
+when topic=prices dir=up place=tavern
+a : This ale's half water. They're stretching it. | The stew's got more turnip than meat. Cheaper, I suppose. | Smaller mugs, same price. Clever.
+b : Half? Two thirds. | Turnip is cheap. | Clever and sly.
+a : Generous of you. | Turnip is turnip. | Sly and clever.
+b?[innkeeper] : Full measure, same as always. Your tongue's gone sour.
+
+scene em_more_trade_favours
+when topic=prices dir=up
+a : I mended her roof for a week of suppers. Better than coin. | Coin's scarce. Folk are trading work for food. | I'll sweep your floor for a bowl of soup. I'm not proud.
+b : Fair trade. | Like the old days. | Pride doesn't fill a belly.
+a : Better than fair. | The old days were hungry too. | No, it doesn't.
+
+scene em_more_rumour_famine
+when topic=prices item=meal dir=up
+a : Somebody said there's going to be a famine. | Old Hask says this is how the hungry years started last time. | Don't listen to the doom talk. It's one bad week.
+b : People love saying that. | Old Hask says a lot. | One bad week, then another.
+a : I hope they're wrong. | He does. Some of it true. | Don't.
+
+scene em_more_dear_gift
+when topic=prices dir=up band=friends|family
+a : I brought you a little {item}. Don't argue. | Here. I had extra. | Take this. I know you're short.
+b : You can't afford it either. | Liar. Nobody has extra. | I'm not short.
+a : I said don't argue. | Take it anyway. | You're short. Take it.
+
+scene em_more_skip_meal
+when topic=prices item=meal dir=up
+a : I've been eating once a day. Saves coin. | Skipped supper. Drank water and went to bed. | Bread at noon, nothing at night. That's my week.
+b : That's not enough. | That's no way to live. | That's my week too.
+a : It's what there is. | It's the way I'm living. | Then we're both thin.
+
+# ---------------------------------------------------------------- Cheap times
+
+scene em_more_cheap_party
+when topic=prices dir=down
+a : Food's cheap. Let's have everyone round. | A cheap week. I'm throwing a supper. | I bought enough for the whole lane.
+b : Everyone? Your floor's too small. | I'll bring the cider. | The whole lane will come.
+a : We'll stand. | Bring two. | Let them.
+
+scene em_more_cheap_save
+when topic=prices dir=down
+a : Cheap week. I'm drying and salting all I can. | Buying grain now for winter while it's {price}. | Smart wolves buy when it's cheap.
+b : Good thinking. | Clever. | Smart wolves have coin.
+a : Winter remembers. | Winter's long. | True. Borrow some.
+
+scene em_more_cheap_why
+when topic=prices dir=down
+a : Why's everything cheap? Did I miss news? | Cheap {item}. Somebody must have lost a bet. | A good harvest somewhere far away, I suppose.
+b : A good harvest, they say. | Or found a cellar. | Bless far away.
+a : Bless the harvest. | Bless the cellar. | Bless it twice.
+
+# ---------------------------------------------------------------- Caravans
+
+scene em_more_cv_wonders
+when topic=caravan kind=arrived
+a : They brought a bird from {other} that talks. A real bird! | One of the {other} carters had a sword with a jewel in the hilt. | There's a crate from {other} that smells of oranges.
+b : Talks? What does it say? | Stolen, I'd wager. | Oranges? Who can afford oranges?
+a : Rude things, mostly. | Probably. | Nobody here.
+
+scene em_more_cv_wrong_goods
+when topic=caravan kind=arrived
+a : I ordered nails from {other}. They sent buttons. | Half my order from {other} is wrong. | The carters swear the crate says what's in it. It doesn't.
+b : Buttons? Useful. | Only half? | Carters swear a lot.
+a : For what? Sewing roofs? | The useful half. | At me, mostly.
+
+scene em_more_cv_romance
+when topic=caravan kind=arrived
+a : That handsome carter from {other} is back. | Somebody's been waiting at the gate for the {other} caravan all week. | Did you see her run to meet the lead wagon?
+b : Your heart's showing. | I wonder who. | Nobody runs like that for cloth.
+a : Hush. | Don't you dare. | Nobody.
+
+scene em_more_cv_dust
+when topic=caravan kind=arrived season=summer weather=clear
+a : The {other} wagons came in under a cloud of dust. | Dust on everything after the caravan came through. | You could see them coming for an hour. Dust to the sky.
+b : Dry roads. | Shake it off. | Good warning.
+a : Very dry. | It's in my teeth. | Too good.
+
+scene em_more_cv_left_tears
+when topic=caravan kind=left
+a : She cried all the way to the gate when he left with the {other} wagons. | Saw a pup chase the caravan to the bridge. | Goodbyes at the gate, every caravan.
+b : Young love. | Their father, maybe. | They come back.
+a : Loud love. | Maybe. | Most of them.
+
+scene em_more_cv_left_goods
+when topic=caravan kind=left
+a : Our best went with the caravan. What's left is seconds. | The stalls are thin since the wagons left for {other}. | Everything worth having went to {other}.
+b : Seconds are fine. | Thin and dear. | Everything worth selling.
+a : Seconds and dear. | Always after. | Not having.
+
+scene em_more_cv_raided_tale
+when topic=caravan kind=raided
+a : One carter fought them off with a whip, they say. | They say a pup hid under a wagon and saw everything. | The lead mule bolted and saved a whole wagon.
+b : A whip against knives? | Brave pup. | Good mule.
+a : A long whip. | Brave and lucky. | Best mule in the land.
+
+scene em_more_cv_raided_ransom
+when topic=caravan kind=raided
+a : They're holding a carter for ransom. | The bandits sent word: pay, or they keep the driver. | Somebody's collecting coin to buy back the carter they took.
+b : How much? | Bright One. | I'll give what I can.
+a : More than we have. | Pray. | Every penny helps.
+
+# ---------------------------------------------------------------- Bandits
+
+scene em_more_bd_song
+when topic=bandits
+a : Somebody's made a song about the bandits. | The pups are singing about the robber chief. | There's a ballad going round the tavern about the raids.
+b : Is it good? | A terrible song. | A rude one, I bet.
+a : It's catchy. | Catchy, though. | Very rude.
+
+scene em_more_bd_caught
+when topic=bandits
+a : They say the watch caught one of them. | A bandit was brought in bound this morning. Or so I heard. | Did they really catch a robber, or is that just talk?
+b : One's a start. | Or so you heard. | Talk, probably.
+a : One of many. | So I heard. | Probably.
+b?[guard] : We caught a sheep thief. That's all I'll say.
+
+scene em_more_bd_inside
+when topic=bandits
+a : Someone in town is telling the bandits when the wagons leave. | The bandits know too much. Someone talks. | Watch who goes out the gate before a caravan. Watch them.
+b : That's a dangerous thing to say. | Everyone talks. | I'll watch.
+a : Dangerous and true. | To bandits? | Watch quietly.
+
+scene em_more_bd_old_soldier
+when topic=bandits a.stage=old
+a : Give me my old spear and I'd show those bandits. | I fought robbers on the old road when I was young. | Bandits run from anyone who stands their ground.
+b : Your old spear's a walking stick now. | Did you win? | Do they?
+a : Still pointy. | I'm here, aren't I? | Mostly.
+
+scene em_more_bd_gifted
+when topic=bandits
+weight 0.7
+a : They say one of the bandits is Gifted. Lights fires with a look. | A Gifted bandit, they say. Can hear a purse across a field. | People say the robbers have a Gifted wolf. People say a lot.
+b : That's how they burned the wagons. | Useful, for a thief. | They do.
+a : Maybe. | Very useful. | Too much.
+b?[scholar] : Most Gifts are small. A candle flame, a nudge. Not much of a bandit's tool.
+
+scene em_more_bd_pity
+when topic=bandits
+a : Some of those bandits were farmers once. Before the bad years. | They're hungry, the robbers. Like us, only desperate. | I almost feel sorry for them. Almost.
+b : Hungry doesn't excuse a knife. | We're hungry too and we don't rob. | Don't. They'd not feel sorry for you.
+a : No. But it explains it. | Not yet. | True.
+
+scene em_more_bd_brag
+when topic=bandits band=friends
+a : If bandits come for me, I'll bite. Hard. | Let them try me. I've got sharp teeth and a bad temper. | I'd scare them off with my singing.
+b : You'd faint. | You've got a bad temper, true. | You'd scare me off.
+a : I'd faint fiercely. | And sharp teeth. | That's the idea.
+
+scene em_more_bd_child_scare
+when topic=bandits b.stage=young|adolescent
+a : Stay inside the walls, little one. There are bandits. | Don't wander off. The robbers take pups who wander. | If you see strangers in the wood, run home.
+b : Do bandits eat pups? | They don't really, do they? | What if they're nice strangers?
+a : Only naughty ones. | No. But stay close. | Run home anyway.
+
+# ---------------------------------------------------------------- Mixed moments
+
+scene em_more_market_gossip
+when topic=prices dir=up place=market
+a : The fish wife says the merchants fixed the price over dinner. | Two stalls, same price, same moment. Funny. | The herb seller and the baker are cousins. Notice that?
+b : I'd believe it. | Very funny. | Now you mention it.
+a : So would I. | Hilarious. | Now I've noticed.
+b?[merchant] : We didn't fix anything. We read the same slate.
+
+scene em_more_caravan_guard_job
+when topic=caravan b.job=guard|soldier
+a : The caravan needs guards. Would you sign on? | Good coin guarding the wagons to {other}. | I heard they're hiring swords for the next caravan.
+b : For the right coin. | Good coin, cold nights. | I've a post here.
+a : How right? | Bring a blanket. | Shame.
+
+scene em_more_bandits_rest
+when topic=bandits day=rest
+a : Even bandits keep Restday, I hope. | Pray at the chapel today. For safe roads. | Restday and still I'm thinking about those robbers.
+b : I doubt it. | I will. | Rest your mind too.
+a : Me too. | Good. | I'll try.
+b?[priest] : The road is in the Bright One's sight. Pray, and bar your door.
+
+scene em_more_prices_dusk
+when topic=prices dir=up time=dusk
+a : Stalls are closing and I've bought nothing. Too dear. | End of the day and the prices didn't drop. | I waited till dusk for a better price. Didn't come.
+b : Tomorrow, maybe. | They never drop. | Never does.
+a : Tomorrow. | Never. | Never.
+
+scene em_more_prices_dawn
+when topic=prices time=dawn place=market
+a : Early to market. Best pick, worst price. | At dawn the sellers are grumpy and the {item} is fresh. | Here before the crowds. Still {price}.
+b : Same as always. | Grumpy sellers are honest sellers. | The crowds don't change the price.
+a : Always. | Honest and dear. | Sadly.

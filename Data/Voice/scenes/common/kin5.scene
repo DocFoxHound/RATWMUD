@@ -1,0 +1,252 @@
+# Kin: quarrels and rivals, and wolves who barely know each other (Docs/Design/30-towns-and-talk.md).
+
+# ---------------------------------------------------------------- Old grudges
+
+scene kn_q_fence
+when topic=quarrel
+a : Your fence is on my land again. | Your dog's been in my garden. | Your tree drops its leaves in my yard.
+b : My fence has been there twenty years. | My dog doesn't go anywhere it isn't welcome. | Trees do that. It's called autumn.
+a : And twenty years it's been wrong. | It's not welcome. That's the point. | Then autumn can sweep my yard.
+b : Take it to the council, then. | Then shut your gate. | Autumn's busy.
+a : Maybe I will. | Then keep your dog behind yours. | So am I.
+
+scene kn_q_stolen_customer
+when topic=quarrel a.role=merchant b.role=merchant
+a : You've been telling folk my goods are spoiled. | You undercut me on purpose. | That was my customer, and you know it.
+b : I tell folk the truth. | I sell at a price folk can pay. | Customers go where they like.
+a : The truth is your scales are short. | You sell at a loss to ruin me. | They go where you lure them.
+b : Say that again in front of the watch. | Ruin yourself, you don't need my help. | They go where the bread's fresher.
+a : Gladly. | We'll see who's ruined. | Stale lies.
+
+scene kn_q_insult_remembered
+when topic=quarrel
+a : I haven't forgotten what you said at the wedding. | You never did apologise. | You know what you did.
+b : I said what everyone was thinking. | For what? | I've done many things.
+a : Not everyone said it out loud. | You know for what. | This one has my name on it.
+b : Then they're cowards and I'm honest. | I don't. Tell me. | Then you'll have to remind me.
+a : You're cruel, is what you are. | I won't give you the pleasure. | I'll remind you with my teeth one day.
+
+scene kn_q_debt_unpaid
+when topic=quarrel
+a : You still haven't paid me back. | Where's my money? | Two seasons, and not a penny.
+b : I told you, when I have it. | Safe. In my purse. | It's been a hard two seasons.
+a : You had it for cider last night. | That's my purse you're talking about. | Not hard enough to stop you eating.
+b : Cider's a necessity. | It's mine now. Possession. | I'll pay. In time.
+a : So's paying debts. | That's not how it works. | Time's run out.
+
+scene kn_q_mate_stolen
+when topic=quarrel
+a : You knew she was walking out with me. | You took him from me. Don't pretend. | Everyone knows what you did.
+b : She chose. I didn't drag her. | He came to me. I didn't send for him. | Everyone knows a version.
+a : You smiled at her every chance you got. | You never stopped hanging round him. | Mine's the true one.
+b : Smiling's not stealing. | We were friends. | Yours makes you look better.
+a : It is when you do it. | Friends. Right. | It makes you look worse.
+
+scene kn_q_family_feud
+when topic=quarrel
+a : Your family's always been trouble. | My grandfather warned me about your lot. | Your mother cheated mine out of the mill.
+b : My family built half this street. | Your grandfather was a drunk. | My mother bought that mill fair.
+a : Built it crooked. | He was right, though. | Fair? With what?
+b : Built it before yours crawled in. | About what? Our lot or the cider? | With money your mother lost at bones.
+a : We'll see whose name lasts. | Both. | That's a lie.
+
+scene kn_q_work_blame
+when topic=quarrel
+a : You let the master think it was my fault. | I did the work, and you took the praise. | You always slack when I'm on shift with you.
+b : It was your fault. | I helped. | I work just as hard as you.
+a : You dropped the crate! | You held the door. | You work your jaw, mostly.
+b : You stacked it badly. | Holding doors is important. | At least it's working.
+a : I'll tell him the truth. | So is your mouth, apparently. | Not for long.
+
+scene kn_q_pups_fighting
+when topic=quarrel a.stage=adult b.stage=adult
+a : Your pup bit mine. | Keep your pup away from mine. | Teach your pups some manners.
+b : Yours started it. | Gladly. Yours is a menace. | Mine have manners. Yours have fleas.
+a : Mine's half his size! | Mine's a menace? Yours bit him! | Fleas? Say that again.
+b : Then he should pick fights his size. | After being provoked. | I'll say it slower.
+a : I'll be speaking to the elders. | You'll hear more of this. | Don't you dare.
+
+scene kn_q_snub
+when topic=quarrel
+a : You walked straight past me at the market. | Didn't you hear me call you? | You're still not speaking to me?
+b : I didn't see you. | I heard. | I'm speaking now, aren't I?
+a : You looked right at me. | And? | Barely.
+b : Then I didn't want to see you. | And I kept walking. | It's more than you deserve.
+a : Fine. I'll not call again. | That's petty. | And you wonder why I'm angry.
+
+scene kn_q_gossip_caught
+when topic=quarrel
+a : I hear you've been talking about me. | What did you tell the weaver about me? | Stop spreading lies about my family.
+b : Only what's true. | That you're behind on your rent. | What lies?
+a : It's not true! | That's my business. | That my brother's a thief.
+b : Then you've nothing to fear. | Then pay it, and there's nothing to tell. | He was caught at it, wasn't he?
+a : Keep my name out of your mouth. | Mind your own. | Once. Years ago.
+
+scene kn_q_rival_craft
+when topic=quarrel a.role=civilian|merchant b.role=civilian|merchant
+a : My work's twice as good as yours. | Folk come to me for the hard jobs. | I saw your latest. Charming. For a beginner.
+b : Twice as slow, too. | Folk come to me when they want it done today. | At least I finish what I start.
+a : Good work takes time. | Done badly, today. | I finish when it's right.
+b : So does starving. | Done, today. | So never, then.
+a : We'll see who's starving come winter. | Badly. | Charming.
+
+scene kn_q_guard_thief
+when topic=quarrel a.role=guard
+a : I've got my eye on you. | One wrong step and you're in the cells. | I know what you did last season.
+b : It's a nice eye. Keep it. | I walk very carefully. | Prove it.
+a : I'll keep it on you. | Everyone slips. | One day I will.
+b : It'll get bored. | Not me. | Then that's not today.
+a : It won't. | We'll see. | We'll see.
+
+scene kn_q_old_rivals
+when topic=quarrel a.stage=old b.stage=old
+a : Still alive, I see. | You've got older. And uglier. | I'll outlive you, just to spite you.
+b : Disappointed? | You've just got older. | I'll be at your wake, eating your cheese.
+a : A little. | Older's a gift. Ugly's a choice. | I'll be at yours, eating mine.
+b : Me too. Every morning I wake up. | Then choose better. | We'll see who goes first.
+a : Ha. | Ha. | I've a good few winters yet.
+
+scene kn_q_family_quarrel
+when topic=quarrel band=family
+a : You never visit Mother. | You took the good blankets when Father died. | You always have to be right.
+b : I visit. You're never there to see it. | You took his tools. We're even. | I usually am right.
+a : She says otherwise. | Tools for work. Blankets for comfort. | Not this time.
+b : She says a lot of things lately. | Comfort's worth more in winter. | Then prove it.
+a : Don't you dare say that about her. | We'll talk when you give them back. | I don't need to.
+
+scene kn_q_spouse_quarrel
+when topic=quarrel band=spouses
+a : You promised. You promised this time. | Don't speak to me like that in front of the neighbours. | I'm tired of carrying this den alone.
+b : I tried. | Then don't give me cause. | Alone? I work every day.
+a : Trying isn't doing. | Cause! I asked you a question! | Work isn't all of it.
+b : What do you want from me? | You asked it with your teeth out. | Then tell me what is.
+a : The truth. Once. | My teeth are my own business. | Being here. Really here.
+
+scene kn_q_apprentice_quarrel
+when topic=quarrel band=apprentice
+a : You're never going to learn if you don't listen. | Who told you to touch that? | That's the third time this week.
+b : I'd listen if you explained it. | Nobody. I thought I'd help. | It wasn't my fault this time.
+a : I explained it twice. | Don't think. Ask. | It's never your fault.
+b : You explained it fast. | You'd shout if I asked. | Once it wasn't.
+a : Then ask me to slow down. | I'd shout less. | Once in thirty times.
+
+# ---------------------------------------------------------------- Strangers
+
+scene kn_str_introduce
+when topic=smalltalk band=strangers
+weight 0.8
+a : I don't think we've met. | You're new, aren't you? | Have I seen you before?
+b : I'm {b}. | I've been here a while. Keep to myself. | I don't think so.
+a : I'm {a}. Pleased to meet you. | Most folk here don't. Welcome. | Then well met now.
+b : And you. | Thank you. | Well met.
+a?[merchant] : If you need anything, my stall's by the well.
+
+scene kn_str_scent_first
+when topic=smalltalk band=strangers
+a : You smell of the road. Come far? | That's a {town} scent on you, I'd say. | You smell of pine and smoke.
+b : Far enough. | Close. Good nose. | I've been in the hills.
+a : Most here have. | Long practice. | Lucky you. It's dull here.
+b : Some of us more than others. | It shows. | Dull's not the worst thing.
+a : True enough. | Ha. | No. Not the worst.
+
+scene kn_str_weather_ice
+when topic=smalltalk band=strangers|acquaintances
+a : Strange weather. | Is it always like this? | Do you think it'll clear?
+b : It's always strange here. | This time of year. | I stopped guessing years ago.
+a : I'd heard that. | Then I'll get used to it. | Wise.
+b : You'll get used to it. | Everyone does. | Saves disappointment.
+
+scene kn_str_suspicious
+when topic=smalltalk band=strangers time=dusk|night
+a : You're out late. | Not seen you round here before. | Looking for someone?
+b : So are you. | I've not seen you either. | Not anymore.
+a : I live here. | I live here. | Good. Move along, then.
+b : So do I. Two streets over. | Funny, so do I. | Moving.
+a : ...Then goodnight. | Then I'll know you next time. | Good.
+
+scene kn_str_help
+when topic=smalltalk band=strangers
+a : Excuse me, which way to the healer's? | Is this the road to {town}? | Do you know where I can get a bed tonight?
+b : Past the well, door with the green cloth. | It's the road to everywhere, if you walk long enough. | The inn, if you've pennies. The chapel, if you don't.
+a : Thank you kindly. | That's not an answer. | A few pennies.
+b : Mind the step, it's broken. | It's the best one I've got. Yes. Keep going. | Then the inn, but haggle.
+
+scene kn_str_awkward
+when topic=smalltalk band=strangers
+weight 0.5
+a : ... | Sorry. I thought you were someone else. | Oh! I didn't see you there.
+b : ... | Happens. | Not many do.
+a : Nice day. | You've a twin, somewhere. | That's not true. You're very noticeable.
+b : It is. | Poor wolf. | Thank you. I think.
+
+scene kn_str_compliment
+when topic=smalltalk band=strangers|acquaintances
+a : That's a fine harness. | Your coat's a striking colour. | Lovely collar.
+b : It was my father's. | So my mother said. Often. | Thank you. I made it.
+a : He had good taste. | She was right. | You've a gift.
+b : In harnesses, at least. | Don't tell her. | A small one.
+
+# ---------------------------------------------------------------- Acquaintances
+
+scene kn_acq_names
+when topic=smalltalk band=acquaintances
+a : It's {b}, isn't it? | Remind me your name? I'm terrible. | We've met. At the... somewhere.
+b : That's me. And you're {a}. | {b}. And you're {a}, I think. | At the market, last season.
+a : I am. Good memory. | I am. Better memory than mine. | That's it. You bought fish.
+b : For names. Not for anything useful. | Everyone's is better than yours. | I always buy fish.
+
+scene kn_acq_family_ask
+when topic=smalltalk band=acquaintances
+a : How's your family? | Is your mother keeping well? | Your eldest must be grown by now.
+b : Busy. Loud. Same as ever. | Stubborn as ever, so yes. | Nearly. Eats like three wolves.
+a : Good. Give them my regards. | Glad to hear it. | They do at that age.
+b : I will. | I'll tell her you asked. | Every age, with that one.
+
+scene kn_acq_see_you
+when topic=smalltalk band=acquaintances
+weight 0.6
+a : Haven't seen you in an age. | Where've you been hiding? | You're a rare sight these days.
+b : Working. Always working. | Nowhere interesting. | I've been ill, but better now.
+a : Don't work yourself into the ground. | Good. Interesting's trouble. | Glad you're better.
+b : Too late for that. | Mostly. | Me too.
+
+scene kn_acq_borrow_gossip
+when topic=smalltalk band=acquaintances
+a : You live by the mill, don't you? | Is it true your neighbour's moving away? | You work with the cooper, yes?
+b : For my sins. | Next season, they say. | I do. Why?
+a : The noise must be awful. | Who's taking the house? | Is he as grumpy as they say?
+b : You stop hearing it. | Nobody's said. | Grumpier.
+a : I couldn't. | Somebody will. | Poor you.
+
+scene kn_acq_warming
+when topic=smalltalk band=acquaintances
+a : We should have a cup some time. | You're always welcome at mine. | I've always meant to ask you round.
+b : We should. We say that a lot. | That's kind. | You've said that before.
+a : This time I'll mean it. | I mean it. | I know. I'm slow.
+b : Rest day, then? | I'll take you up on it. | Then rest day. Don't be slow.
+a : Rest day. | Please do. | I'll be quick.
+
+# ---------------------------------------------------------------- Rivals, not quite quarrelling
+
+scene kn_riv_polite
+when topic=smalltalk|day band=rivals
+a : {b}. | Good day to you. | Oh. It's you.
+b : {a}. | And to you. | It's me.
+a : Busy, I trust? | Business good? | Still here, then.
+b : Very. You? | Excellent. Yours? | Still here.
+a : Very. | Better than ever. | Pity.
+
+scene kn_riv_back_handed
+when topic=smalltalk band=rivals
+a : I like what you've done with your fur. Brave. | Your stall looks fuller today. Did you borrow stock? | Lovely to see your mate out. They look tired.
+b : Thank you. Some of us can carry it off. | Some of us have a supplier. | Mine's well. Sleeps soundly, unlike some.
+a : Some of us don't need to try. | So I've heard. Generous terms, I hear. | What's that supposed to mean?
+b : It shows. | Better than yours, I'd wager. | Nothing. Nothing at all.
+
+scene kn_riv_competition
+when topic=smalltalk|day band=rivals day=market|festival
+a : I'll have the best stall at the fair again this year. | Are you entering the race this festival? | My pie's going to win this year.
+b : You had the loudest, not the best. | I'll be there. Watch my tail as I pass. | Like it won last year?
+a : Loud is how you sell. | I'll be watching it from in front. | Last year the judge was your cousin.
+b : We'll see who sells. | Ha. We'll see. | And this year?
+a : We will. | We will. | Your aunt.

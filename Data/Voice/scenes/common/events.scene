@@ -177,7 +177,7 @@ a : Quiet, so far. | Somewhere far. | Indeed.
 scene fs_today
 when topic=festival when=today
 a[child] : It's {festival}! It's {festival}! | Will there be music? Will there be sweets?
-a : Happy {festival}! | Are you going to the celebration? | {festival} at last.
+a : Joy of {festival} to you! | Are you going to the celebration? | {festival} at last.
 b[old] : Every year it comes round faster.
 b[innkeeper] : Busiest day of my year. Pray for me.
 b[guard] : Celebrate all you like. Just don't fight.

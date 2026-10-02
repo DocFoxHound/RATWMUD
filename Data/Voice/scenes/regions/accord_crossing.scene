@@ -1,0 +1,217 @@
+# Accord Crossing: the caravan town where the Upper Accord road meets the lowland ways. The Crossed Roads inn, the
+# Waystation Stores, the Gate Forge, the Toll House Store, the Caravan Shed, the Toll Post, the carters and their beasts.
+
+scene rg_ac_counting_wagons
+when topic=smalltalk|lore region=accord_crossing
+a : Forty-one wagons through since dawn. I counted. | Every wagon in the west creaks past my window. | The road's quiet today. Too quiet for the Crossing.
+b[carter] : Forty-one, and every one of them stopped for a drink.
+b[old] : I've counted wagons here sixty years. The number never matters.
+b : Busy day. | Good for trade. | Weather up the mountain, maybe.
+a : Very busy. | For some. | Maybe.
+
+scene rg_ac_toll_grumble
+when topic=smalltalk|work region=accord_crossing
+a : The toll went up a penny a wheel. | A Ridgemere carter tried to argue the toll down. Lost. | Half the town lives off the toll, the other half complains about it.
+b[guard] : The Accord sets the toll. I just take it.
+b[carter] : A penny a wheel, four wheels, every trip. It adds up.
+b : Of course it did. | They always try. | And pay it anyway.
+a : Of course. | Always. | Every time.
+
+scene rg_ac_crossed_roads
+when topic=smalltalk region=accord_crossing place=tavern|street
+a : The Crossed Roads had carters sleeping on the tables last night. | Best stew in the west at the Crossed Roads, they say. | Somebody started a song at the inn that lasted till dawn.
+b[innkeeper] : Tables cost the same as beds, if you ask me. Nobody asks.
+b[carter] : Best stew, worst beds. Fair trade.
+b : Busy season. | They say that everywhere. | I heard it.
+a : Very busy. | They do. | So did everyone.
+
+scene rg_ac_carters_table
+when topic=lore region=accord_crossing
+a : The carters' table by the fire is sacred. Sit there and you'll learn. | Only carters sit at the fire table at the inn. | A merchant sat at the carters' table once. Once.
+b[carter] : Earn the seat, then take it. That's the rule.
+b[innkeeper] : I don't make the rules. I just keep the fire.
+b : Learned that the hard way. | Strange custom. | What happened?
+a : We all do. | Old custom. | He stood after.
+
+scene rg_ac_road_news
+when topic=lore|smalltalk region=accord_crossing
+a : All the road's news comes through the Crossing before it reaches anywhere else. | Heard from a carter what the Concord voted, a day before the Accord bell rang. | News is cheaper than ale here.
+b[merchant] : News is worth more than ale, if you know what to do with it.
+b[old] : News at the Crossing's half true and half late. Same as anywhere.
+b : That's the Crossing. | Carters talk. | And worth less.
+a : It is. | Endlessly. | Usually.
+
+scene rg_ac_gate_forge
+when topic=work region=accord_crossing a.job=smith|apprentice|carter
+a : Three wheel rims and a dozen shoes before noon. | The Gate Forge hasn't been cold in a month. | Every carter wants their rim done first.
+b[smith] : Rims first, shoes after. A lame beast is slower than a bent wheel. Barely.
+b : Hard morning. | Good trade. | They always do.
+a : Hot one. | Hot trade. | Always.
+
+scene rg_ac_beasts
+when topic=work region=accord_crossing a.job=herder|laborer|carter
+a : The carters' beasts ate a whole cart of hay overnight. | One of the draught horses kicked the stable door off. | Beasts are nervous. Storm up the mountain.
+b[herder] : Feed them, water them, keep out from behind them.
+b : Hungry beasts. | Mind your shins. | They always know.
+a : Very hungry. | Always. | They do.
+
+scene rg_ac_caravan_shed
+when topic=work|smalltalk region=accord_crossing
+a : The Caravan Shed's stacked to the roof waiting for the Ridgemere wagons. | Somebody's bales have sat in the shed since spring. | A crate in the shed's been ticking. Nobody'll open it.
+b[merchant] : Unclaimed goods go to auction after a season. I've an eye on a few.
+b[laborer] : I stack them, I don't ask what's in them.
+b : Wagons are late. | Forgotten, maybe. | Ticking?
+a : Very late. | Probably. | Ticking.
+
+scene rg_ac_coins_jar
+when topic=lore|smalltalk region=accord_crossing
+a : The innkeeper keeps a jar of coins from places nobody's heard of. | Got paid in a coin with a fish on it. Where's that from? | Every coin in the world passes through the Crossing, sooner or later.
+b[merchant] : A fish? South coast, I'd guess. Weigh it.
+b[old] : I had a coin once from beyond the Isle. Lost it in a wager.
+b : Strange collection. | No idea. | Every one, they say.
+a : Strange and heavy. | Nor me. | Nearly.
+
+scene rg_ac_fields
+when topic=work region=accord_crossing a.job=farmer|laborer
+a : The crossing fields are trampled again by stray beasts. | Wheel ruts right through my barley. | Hard to farm with the road at your door.
+b[farmer] : Fence it. Fence it twice. They'll still get in.
+b : Again? | Somebody should pay. | It is.
+a : Again. | Nobody will. | Very hard.
+
+scene rg_ac_mountain_climb
+when topic=lore region=accord_crossing
+a : From here it's all climbing to the Accord. | Carters rest a night here before the switchbacks. | The road up the mountain starts at our gate.
+b[carter] : Rest a night, curse a day. That's the mountain road.
+b[old] : I walked it once on foot. Never again.
+b : A hard road. | Wise of them. | And ends at theirs.
+a : Very hard. | Very wise. | So it does.
+
+scene rg_ac_lowland_ways
+when topic=lore|smalltalk region=accord_crossing
+a : Three roads leave the Crossing, and every one goes somewhere different. | The west road goes to the downs, the south to the marches. | You can be anywhere in a week from here.
+b[carter] : And every one of them has a ditch I've slid into.
+b[adolescent] : One day I'll take all three.
+b : That's why it's here. | And the north to the coast. | Anywhere but home.
+a : It is. | And the coast. | Anywhere.
+
+scene rg_ac_toll_post
+when topic=work region=accord_crossing a.role=guard
+a : A carter hid three barrels under his hay. | Toll book's short a penny and the sergeant wants to know why. | Spent the morning arguing with a Ser Ferro factor.
+b[guard] : Hay hides everything. Check the hay.
+b : Clever. | Always is. | They always argue.
+a : Not clever enough. | Always. | Always.
+
+scene rg_ac_waystation_stores
+when topic=smalltalk region=accord_crossing place=street|market|work
+a : Waystation Stores is out of rope again. | Hard bread at the stores, hard enough to build with. | The stores charge double before the mountain climb.
+b[merchant] : Out of rope, out of luck. The next wagon brings more.
+b : The carters bought it all. | It keeps, though. | Because they can.
+a : All of it. | It keeps. | They can.
+
+scene rg_ac_lost_find
+when topic=lore region=accord_crossing
+a : Somebody found a strongbox in the ditch by the mile stone. | Nobody's come back for the cloak left at the inn. Two seasons. | The road gives up strange things after rain.
+b[guard] : Bring it to the Toll Post. We'll keep it.
+b[old] : Never keep what the road leaves. Bad luck follows.
+b : Full? | Somebody's missing it. | Bones, once, they say.
+a : Empty. | Not anymore. | Bones.
+
+scene rg_ac_accord_watch_cousin
+when topic=smalltalk region=accord_crossing band=friends|family|acquaintances
+a : My cousin in the Accord Watch hasn't written since spring. | They say the Accord's busy with envoys. Nobody comes down. | Wish I'd gone up the mountain when I was young.
+b[old] : Letters come by the carters. Ask at the inn.
+b : Busy, I suppose. | Their loss. | You still could.
+a : I suppose. | Probably. | Maybe.
+
+scene rg_ac_dust
+when topic=smalltalk|weather region=accord_crossing season=summer
+a : Road dust in my teeth again. | Every wagon raises a cloud. | The whole town's the colour of the road.
+b[child] : I drew a wolf in the dust on the inn wall!
+b[old] : Dust in summer, mud in autumn. Crossing has two seasons.
+b : That's summer. | Every one. | Grey as a toll book.
+a : That's summer. | Every one. | Grey.
+
+scene rg_ac_ruts
+when topic=lore|smalltalk region=accord_crossing season=autumn|spring
+a : The ruts in the square are knee deep. | Mud's swallowing wheels at the gate. | The Accord promised to lay stones in the square. Years ago.
+b[carter] : Carts dug those ruts. Carts'll fill them, eventually.
+b : Every season. | Every rain. | Promises, promises.
+a : Every one. | Every rain. | Always promises.
+
+scene rg_ac_stablehands
+when topic=smalltalk region=accord_crossing a.stage=young|adolescent
+a : I groomed a carter's mare and he gave me a penny! | The big grey horse likes me. He nuzzled me. | When I grow up I'll drive my own wagon.
+b[carter] : Penny well earned, pup. Do it again tomorrow.
+b : Good work. | He's a gentle one. | You will.
+a : I will. | He is. | I will!
+
+scene rg_ac_inn_rooms
+when topic=smalltalk region=accord_crossing place=tavern
+a : Every room in the Crossed Roads is taken. Sleeping in the hayloft. | The rooms under the roof are cold as the mountain. | Only one shutter in my room, and it bangs.
+b[innkeeper] : Hayloft's free and warm. Don't smoke.
+b : Busy season. | They always are. | Wedge it.
+a : Very busy. | Always. | I tried.
+
+scene rg_ac_waystation_pride
+when topic=lore region=accord_crossing
+a : The Crossing's older than half the towns it serves. | My grandmother says the Crossing was one well and a tree once. | Without the Crossing, the Accord would starve.
+b[old] : One well, one tree, one wolf selling water. That's how it started.
+b : Older than it looks. | Before the road. | They'd never admit it.
+a : Much older. | Long before. | Never.
+
+scene rg_ac_carters_tales
+when topic=lore region=accord_crossing
+a : A carter swore he saw a Warden blink across the road ahead of him. | Carters' tales get taller every mile. | One carter says she drove the Ridgemere road fifty times and never once saw the sun.
+b[carter] : Every word's true. Some of them twice.
+b : Tall tale. | Every mile. | I believe that one.
+a : Very tall. | Every one. | Me too.
+
+scene rg_ac_toll_house_store
+when topic=smalltalk region=accord_crossing
+a : The Toll House Store has everything, at twice the price. | Bought a lamp at the Toll House Store. It leaks. | The Toll House shopkeeper hears everything.
+b[merchant] : A little of everything at a little more. That's honest trade.
+b : That's the Crossing. | Take it back. | Everything and more.
+a : It is. | I will. | Much more.
+
+scene rg_ac_bandit_fear
+when topic=lore|smalltalk region=accord_crossing time=dusk|night
+a : Nobody leaves the Crossing after dark. | The carters bar the shed doors at night. | Lanterns on the road at night are either fools or bandits.
+b[guard] : We watch the road. But it's a long road.
+b : Wise. | Sensible. | Or both.
+a : Very wise. | Very. | Both.
+
+scene rg_ac_wagons_wheels
+when topic=work region=accord_crossing a.job=crafter|smith|carter
+a : A whole wheel shattered on the mile stone. | The wheelwright's backed up a week. | Felloes and spokes, felloes and spokes. All day.
+b[crafter] : Ash for spokes, elm for hubs. Nothing else lasts.
+b : Bad luck. | Busy wheelwright. | Steady work.
+a : Very bad. | Very busy. | Steady.
+
+scene rg_ac_well
+when topic=lore|smalltalk region=accord_crossing
+a : The old well's still the best water on the road. | Carters fill every barrel at our well. | They say the well's never run dry. Not once.
+b[old] : That well's why the Crossing is here at all.
+b : Sweet water. | They do. | Not once.
+a : The sweetest. | Every one. | Not once.
+
+scene rg_ac_far_places
+when topic=smalltalk region=accord_crossing a.stage=adolescent b.stage=adult|old
+a : Have you ever been to Ser Ferro? | What's Ridgemere like? Really like? | Is it true there's a sea past the coast road?
+b[carter] : Been everywhere twice. It's all roads in the end.
+b : Once. Too hot. | Wet. Very wet. | Grey and endless.
+a : I'd still go.
+
+scene rg_ac_rain_mountain
+when topic=weather|smalltalk region=accord_crossing weather=rain|overcast|storm
+a : Rain down here means snow up the mountain. | Carters won't climb in this. | Every wagon's staying put tonight.
+b[carter] : Snow on the switchbacks. I'm not mad.
+b[innkeeper] : Full house again tonight, then.
+b : True enough. | Nor would I. | Good for the inn.
+a : Always. | Nor me. | Very good.
+
+scene rg_ac_mule_train
+when topic=smalltalk|work region=accord_crossing
+a : A mule train came down from the Accord. No wagons can climb in this. | Mules are smarter than carters. Ask any carter. | The mules refused the switchbacks this morning.
+b[herder] : A mule knows its own load. Never argue.
+b : Snow up there. | Ha. | Smart mules.
+a : Plenty of it. | Every carter says so. | Very smart.

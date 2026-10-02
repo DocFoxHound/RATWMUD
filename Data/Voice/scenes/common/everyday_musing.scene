@@ -1,0 +1,242 @@
+# Everyday talk (doc 30): idle musing, the moon, superstition, songs and games, prey and beasts, the seasons.
+# Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- Musing
+
+scene ev_muse_stars
+when topic=smalltalk time=night weather=clear
+a : Look at all those stars. | My father said the stars are the eyes of the old pack. | Which one is the Bright One's star?
+b[priest] : The steady one, low in the east. It never wanders.
+b[child] : I counted them once. I got to eleven and fell asleep.
+b : Makes you feel small. | Mine said they were holes in a sack. | That one. Maybe. I never know.
+a : Small, and lucky. | I like his better. | I'll pretend it's that one.
+
+scene ev_muse_purpose
+when topic=smalltalk stage=adult|old
+a : Do you ever wonder what it's all for? | Some days I think I was born to haul sacks and nothing else. | My mother wanted me to be more than this.
+b[priest] : Every wolf has a place in the order. Even the sack-hauler. Especially him.
+b[old] : It's for the pups. It's always for the pups.
+b : Every day. | Better than being born for nothing. | Mothers always do.
+a : And never get an answer. | I suppose. | I still hope to surprise her.
+
+scene ev_muse_wild_life
+when topic=smalltalk
+a : Ever think of running off into the wilds? | My great-grandsire lived wild, they say. No walls, no laws. | Sometimes I envy the wild packs.
+b[guard] : The wild's no romance. Cold, hunger and early graves.
+b[scholar] : Before the Bright One, all wolves lived so. The chronicles do not make it sound pleasant.
+b : Every spring. | And died young, I'll wager. | Until winter.
+a : Then I remember the cold. | Forty, they say. Old for the wild. | Until winter, yes.
+
+scene ev_muse_if_rich
+when topic=smalltalk
+a : If I had a purse of silver, I'd never work again. | What would you do with a fortune? | I found a penny in the gutter. My luck's turning.
+b[noble] : You'd be surprised how much work a fortune is.
+b[beggar] : Eat. Then eat again. Then sleep somewhere dry.
+b : You'd be bored in a month. | Buy a house with a real roof. | A penny. Steady on.
+a : I'd risk it. | That's a good answer. | It's a start.
+
+scene ev_muse_changes
+when topic=smalltalk b.stage=old
+a : Was it different here, when you were young? | Has the town changed much, {b}? | What was {town} like back then?
+b : Smaller. Quieter. Same quarrels. | Every stone and every face. | Muddier. Much muddier.
+a : Same quarrels. Sounds right. | I'd like to have seen it. | I can barely imagine.
+
+scene ev_muse_names
+when topic=smalltalk
+a : Why did your parents call you {b}? | I never liked my name. | If I have a pup I'll name it after my grandsire.
+b : After a great-aunt. A fearsome one. | What would you rather? | Kind of you.
+a : It suits you, then. | Something with teeth in it. | He'd have liked that.
+
+scene ev_muse_luck
+when topic=smalltalk
+a : Do you believe in luck? | Everything went wrong today. Everything. | Found a white feather on my doorstep.
+b[priest] : There's no luck. There's the order, and our place in it.
+b[old] : Luck's what you call it when you've forgotten the work.
+b : Some days. | Tomorrow's another day. | That's lucky, that is.
+a : Some days. Today it's against me. | It had better be kinder. | I'll keep it under my pillow.
+
+# ---------------------------------------------------------------- The moon
+
+scene ev_moon_full
+when topic=smalltalk time=dusk|night
+a : Moon's full tonight. Feel it? | The moon's swollen and red tonight. | You can hear them howling in the hills already.
+b[priest] : Pray at moonrise. The Dark One loves a full moon.
+b[child] : Can we howl? Just once? Please?
+b : In my bones. | Red moon. Bad omen, they say. | Every full moon.
+a : Everyone's restless. | So they say. | And every one, I want to join in.
+
+scene ev_moon_dark
+when topic=smalltalk time=night
+a : No moon tonight. Darker than a cellar. | I hate the moonless nights. | Good night for thieves, this.
+b[guard] : Keep your doors barred on dark nights. I mean it.
+b : Watch your step. | Me too. | Don't give anyone ideas.
+a : I'll keep a lamp lit. | Too many shadows. | My lips are sealed.
+
+scene ev_moon_howl
+when topic=smalltalk time=night
+a : Fancy a howl, for old times' sake? | Somebody's howling up on the hill. | When did you last howl at the moon?
+b[official] : Public howling within the walls is not permitted after the second bell.
+b[old] : When I was your age we howled every full moon, and no one complained.
+b : Only if you start. | Some drunk. | Too long ago.
+a : Together, then. Quietly. | A sad drunk. | Too long.
+
+scene ev_moon_songs
+when topic=smalltalk
+a : Do you know the moon song my mother sang? | Sing something, {b}. | I heard a howling song last night that made me weep.
+b[priest] : Only hymns, I'm afraid. But I know a good many.
+b : Some of it. Something about the silver road. | Not for a hundred pennies. | Which one?
+a : That's the one. | Coward. | The one about the lost cub.
+
+# ---------------------------------------------------------------- Superstition
+
+scene ev_super_crow
+when topic=smalltalk
+a : A crow sat on our roof all morning. | Three crows on the fence. Ill luck. | A raven followed me home.
+b[old] : Throw salt over your shoulder and say your mother's name.
+b[priest] : Birds are birds. Don't build a heresy out of feathers.
+b : Shoo it off. | Or a bad harvest. | Did you feed it?
+a : It came back. | Or both. | A crust. It seemed hungry.
+
+scene ev_super_threshold
+when topic=smalltalk place=home|street
+a : Never step over a sleeping wolf. Bad luck. | My aunt won't let anyone whistle indoors. | Always leave by the door you came in.
+b[old] : My mother hung iron over the door. Kept the Dark One out forty years.
+b : Says who? | Why ever not? | Or what?
+a : Everyone's grandmother. | Calls the wind, she says. | Or the house forgets you.
+
+scene ev_super_tail_chase
+when topic=smalltalk
+a : My pup chases her tail. They say it means rain. | Saw a wolf with a white tail tip. Luck all week. | Itchy nose. Somebody's talking about me.
+b[child] : I chase my tail. It doesn't make it rain.
+b : Rain's coming anyway. | I'll keep my eyes open. | Nobody's talking about you.
+a : There. Proof. | It works, I swear. | Well, now someone is.
+
+scene ev_super_dark_one
+when topic=smalltalk time=night
+a : My grandmother said the Dark One walks on moonless nights. | Don't say his name after dark. | Do you think the Dark One is still out there?
+b[priest] : The Bright One threw him down. But the shadows he left behind remain.
+b[child] : I'm not scared. ...Is he near here?
+b : Grandmothers say a lot. | I didn't. | Hush.
+a : She also lived to ninety. | Good. Don't. | Sorry.
+
+# ---------------------------------------------------------------- Songs and games
+
+scene ev_game_dice
+when topic=smalltalk place=tavern|street
+a : Fancy a game of knucklebones? | I lost three pennies at dice last night. | That carter cheats at dice. I'm sure of it.
+b[guard] : No gambling for coin in the street. Play for nuts.
+b : For pennies? Done. | You never learn. | Prove it.
+a : Set them up. | Never. | I'm watching his paws.
+
+scene ev_game_stories
+when topic=smalltalk place=tavern|home time=dusk|night
+a : Tell the one about the wolf who outran the river. | Know any good stories? | There's a teller in the square tonight.
+b[old] : Sit down, pup. That one takes a while.
+b : You've heard it a hundred times. | Only the ones about you. | Is she any good?
+a : And I'll hear it a hundred more. | Then tell those. | Made a guard cry last time.
+
+scene ev_game_pups_play
+when topic=smalltalk
+a : The pups have been wrestling in the mud all morning. | Our little one wants to play wardens and wolves. | Look at them racing round the well.
+b[old] : Let them. We'll all be stiff soon enough.
+b : As long as they wash. | Who gets to be the warden? | Racing and squealing.
+a : They won't. | Everyone wants to be the warden. | Makes my heart glad.
+
+scene ev_game_tug
+when topic=smalltalk a.stage=young|adolescent b.stage=young|adolescent
+a : Bet I can beat you at tug-of-rope. | Let's play hide-and-sniff! | Want to see me catch a rat?
+b : No you can't! | You're it! | Gross. Yes.
+a : Grab the end, then. | Close your eyes and count! | Watch this.
+
+scene ev_song_tavern
+when topic=smalltalk place=tavern
+a : Who's going to sing tonight? | That old drinking song again. I'll scream. | Someone should play the pipe.
+b[innkeeper] : Anyone who sings badly drinks for free. Keeps them quiet.
+b : Not me, I've a voice like a gate. | Everyone knows the words, at least. | The piper's drunk under a table.
+a : Then you'll drink free all night. | That's the trouble. | Typical.
+
+# ---------------------------------------------------------------- Prey and beasts
+
+scene ev_beast_rats
+when topic=smalltalk place=home|work|street|market
+a : Rats in the grain store again. | Caught a rat as big as a cat this morning. | Something's been at the sacks.
+b[merchant] : I'd pay well for a good ratter. Know any?
+b[child] : I can catch them! I'm the best ratter on the street!
+b : Get a cat. | Did you eat it? | Rats, surely.
+a : The cat's scared of them. | Don't be disgusting. | Rats with ambitions.
+
+scene ev_beast_deer
+when topic=smalltalk region=countryside|fens|lake|wild
+a : Saw a stag at the forest edge at dawn. | The deer are coming down for the crops. | Fresh deer tracks by the stream.
+b[farmer] : Coming for my turnips, the thieves.
+b[herder] : Old instinct. Even I wanted to chase it.
+b : Big one? | Hungry year in the hills. | Hunting party, maybe?
+a : Twelve points. | Must be. | Maybe.
+
+scene ev_beast_bear
+when topic=smalltalk region=north|countryside|wild
+a : They say a bear's been seen near the woodcutters' track. | Bear sign on the bark up the hill. | My uncle wrestled a bear once. Or so he says.
+b[woodcutter] : Saw it myself. Big as a cart. We're working in threes now.
+b[guard] : Report it to the watch, not the tavern.
+b : Stay well clear. | Fresh, was it? | Did he win?
+a : I mean to. | Claw marks still weeping sap. | He says so.
+
+scene ev_beast_hare
+when topic=smalltalk
+a : A hare ran right past me, close enough to bite. | Remember chasing hares in the long grass? | My paws still twitch when a hare runs by.
+b[old] : We lived on hares the winter I was born. My mother was a fine hunter.
+b : And you just watched it? | Long time ago. | That never goes.
+a : I'm a civilised wolf now. | Feels it. | Never does.
+
+scene ev_beast_crows_on_fields
+when topic=smalltalk region=countryside|steppe place=field|street
+a : The crows are thick on the stubble. | Rooks stole half the seed corn. | There's a hawk over the far meadow.
+b[farmer] : Need a pup with a sling, that's what.
+b : They'll have it clean by noon. | Clever birds. | Watching for mice.
+a : Before noon. | Too clever. | Lucky mice, today.
+
+scene ev_beast_dog
+when topic=smalltalk
+a : That stray dog's been following me for days. | The dogs barked all night on the farms. | Do you think dogs dream?
+b[herder] : A good dog's worth two shepherds. Treat it kind.
+b : Feed it and it's yours forever. | Something's out there. | Everything dreams.
+a : That's what I'm afraid of. | Something big. | Even rocks, I suppose.
+
+# ---------------------------------------------------------------- The seasons
+
+scene ev_season_spring_mud
+when topic=smalltalk season=spring
+a : Mud to the hocks everywhere. | Smell the new grass? | Lambs in the fields already.
+b[farmer] : Mud means growing. Don't complain.
+b[child] : I fell in a puddle on purpose!
+b : Spring, isn't it. | Best smell of the year. | Already.
+a : Spring and its mud. | It makes me want to run. | The year turns quickly.
+
+scene ev_season_summer_heat
+when topic=smalltalk season=summer weather=clear
+a : Too hot for a coat like mine. | I'd shave myself bald if I could. | Found a cool cellar. I'm living there now.
+b[old] : When I was young, summers were hotter. And we were grateful.
+b : Find some shade. | That'd be a sight. | Room for two?
+a : The shade's full. | Don't tempt me. | If you bring cider.
+
+scene ev_season_autumn_leaves
+when topic=smalltalk season=autumn
+a : The trees are turning. | Smell the woodsmoke? Autumn's here. | Leaves in my fur all day.
+b[woodcutter] : Good time for cutting. Sap's down.
+b : Already? | Best time of year. | Roll in them. Everyone does.
+a : Already. | It's the best. | I might have, a bit.
+
+scene ev_season_winter_long
+when topic=smalltalk season=winter
+a : Is this winter ever going to end? | Snowed in two days last week. | I've forgotten what grass smells like.
+b[old] : This is nothing. Ask me about the winter the river froze to the bottom.
+b[child] : I made a snow wolf! It's got stones for eyes!
+b : Not soon. | Me too. | Me too.
+a : I'll go mad by spring. | I ran out of firewood. | Spring can't come soon enough.
+
+scene ev_season_name
+when topic=smalltalk
+a : This {season} feels different, somehow. | I always loved {season} as a pup. | Every {season} seems shorter than the last.
+b[old] : They all feel shorter when you've had enough of them.
+b : Different how? | What's to love? | It does, doesn't it.
+a : Can't say. Just a feeling in the air. | The smells. Always the smells. | Doesn't it.

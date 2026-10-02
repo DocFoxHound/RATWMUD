@@ -1,0 +1,125 @@
+# Market and road talk for the voices heard least (Docs/Design/30-towns-and-talk.md): apprentices, servants, brewers,
+# bakers, woodcutters, and the sexes' own small differences. Blanks: {item}, {price}, {other}.
+# Alternatives run in parallel.
+
+scene em_x_apprentice_errand
+when topic=prices a.job=apprentice
+a : Master sent me for {item} and gave me half enough coin. | I'm to haggle for {item} or not come back. | If I come back without change the master will skin me.
+b : Then haggle. | Then haggle hard. | Then come back with change.
+a : I'm terrible at haggling. | I'm trying. | There won't be any.
+
+scene em_x_apprentice_caravan
+when topic=caravan kind=arrived a.job=apprentice
+a : Master says I'm to meet the {other} wagons and count the crates. | First time I've signed for a delivery! | I counted the {other} crates three times and got three numbers.
+b : Count carefully. | Did your paw shake? | Pick the middle one.
+a : I am! | A little. | That's what I did.
+
+scene em_x_servant_house
+when topic=prices dir=up a.job=servant
+a : The household wants fresh {item} every day, whatever it costs. | Cook gave me {price} and a list as long as my tail. | The mistress never asks what anything costs. I do.
+b : Lucky household. | Long tail, short coin. | Somebody has to.
+a : Lucky them. | Very long. | Somebody always does.
+
+scene em_x_servant_raid
+when topic=caravan kind=raided a.job=servant
+a : The master's furniture was on the raided wagons. He hasn't stopped shouting. | The mistress lost her new gowns in the raid. Weeping all morning. | We've been told to make do till the next caravan.
+b : Poor master. | Poor gowns. | Make do with what?
+a : Poor us, listening. | Poor us, again. | Nobody said.
+
+scene em_x_brewer_raid
+when topic=caravan kind=raided a.job=brewer|innkeeper
+a : My barley was on the raided wagons. No ale next week. | Bandits drank my cider, I'll bet. All forty barrels. | No hops, no ale, no customers.
+b : No ale? The town will riot. | Forty! They'll be singing for a week. | No customers, no coin.
+a : Let them. | Badly, I hope. | No anything.
+
+scene em_x_baker_flour
+when topic=prices dir=up item=meal a.job=baker
+a : Flour's up. My loaves are shrinking and so's my temper. | I'm up before dawn and still can't make bread cheap enough. | Folk curse my bread prices. They should curse the miller.
+b : Your temper was always small. | You do your best. | Millers are easy to curse.
+a : Smaller now. | It's not enough. | Easy and fair.
+
+scene em_x_baker_cheap
+when topic=prices item=meal dir=down a.job=baker
+a : Cheap flour. Buns for everyone. | I baked twice as much today. Sold it all. | The queue at my door went round the corner this morning.
+b : Save me a bun. | Twice! | Round the corner?
+a : One bun. Just one. | And I'm half dead. | Round two corners.
+
+scene em_x_woodcutter_road
+when topic=caravan kind=arrived|left a.job=woodcutter
+a : The caravan to {other} took two loads of my timber. | I cut the road clear for the {other} wagons last week. | Wagon wheels need good oak. I sold three trunks.
+b : Good coin. | Kind of you. | Oak's dear.
+a : Good back-ache. | They didn't thank me. | It should be.
+
+scene em_x_woodcutter_bandits
+when topic=bandits a.job=woodcutter
+a : I'm not going deep in the wood while those robbers are out there. | Found a snapped bowstring by my stack. Not mine. | Someone's been sleeping in my wood shelter.
+b : Cut near the town, then. | Not yours? Whose? | Bandits?
+a : Thin wood near town. | That's the question. | Or worse.
+
+scene em_x_female_market
+when topic=prices dir=up a.sex=female b.sex=female
+a : I've stopped buying ribbons. Bread first. | My sister and I are sharing a pot to save on firewood. | My mate thinks food appears in the cupboard by magic.
+b : Ribbons can wait. | Clever. | They all think that.
+a : They'll have to. | Cheaper, too. | Every last one.
+
+scene em_x_male_market
+when topic=prices dir=up a.sex=male b.sex=male
+a : My mate counts every penny now. I'm not allowed near the purse. | I'm supposed to buy {item} and not come back with anything else. | Went for bread, came back with a pie. In trouble now.
+b : Wise mate. | Will you manage it? | A whole pie?
+a : Very wise. | Never have yet. | Half eaten.
+
+scene em_x_adolescent_work
+when topic=caravan kind=arrived a.stage=adolescent
+a : The carters paid me a penny to water the mules. | I helped unload. They gave me a dried fig. | One carter told me about the sea. I've never seen the sea.
+b : A penny! Rich. | Was it good? | You will one day.
+a : Very rich. | Sweet as honey. | One day.
+
+scene em_x_ghost_town_road
+when topic=caravan kind=arrived|left region=ghost_town
+a : Wagons on the far road. They never come this way any more. | A caravan used to stop here, they say. Before. | Somebody waved from a wagon. I waved back.
+b : Nothing to stop for. | Before everyone left. | Brave of you.
+a : Nothing but us. | Before. | Felt nice.
+
+scene em_x_fortress_prices
+when topic=prices dir=up region=fortresses
+a : The quartermaster says rations cost more this season. | Commander's cut the cheese ration. Again. | They say food's dear in the towns. Out here it's just scarce.
+b : They always cost more. | Again? | Same thing, from where I stand.
+a : Always. | Again. | Same thing.
+b?[cook] : Scarce is my whole life. I make soup from boots.
+
+scene em_x_dusk_caravan_tavern
+when topic=caravan kind=arrived time=dusk|night place=tavern
+a : The {other} carters are telling road stories by the fire. | One of the carters says he saw a bear on the road from {other}. | The carters are betting on who drives fastest to {other}.
+b : Stories get bigger with ale. | A bear! Or a big dog. | They'd lose to a mule.
+a : They're huge already. | A very big dog. | Probably.
+
+scene em_x_rain_prices
+when topic=prices dir=up weather=rain|storm
+a : Rain on the stalls and nobody buying. | Wet market, soggy bread, dear as ever. | Rain keeps the carts away and the prices up.
+b : Nobody selling either. | Soggy and dear. | It always does.
+a : Everyone's home. | The worst kind. | Always.
+
+scene em_x_snow_caravan
+when topic=caravan kind=left weather=snow
+a : The caravan left for {other} in the snow. Brave or stupid. | Wagons out in this snow. They'll be digging by noon. | Snow on the road and the caravan still went.
+b : Both. | They'll be fine. | Coin waits for no weather.
+a : Mostly stupid. | Hope so. | Nor carter.
+
+scene em_x_market_day_caravan
+when topic=caravan kind=arrived day=market
+a : The {other} wagons came in on market day! Perfect timing. | Market day and a caravan. The square's packed. | Fresh goods for market day. The stalls are heaving.
+b : Perfect for the sellers. | Packed tight. | Heaving and loud.
+a : And the pickpockets. | Mind your purse. | Loud and lovely.
+b?[merchant] : Best day of the season. Don't block my stall.
+
+scene em_x_festival_caravan
+when topic=caravan kind=arrived day=festival
+a : The {other} caravan arrived on a feast day. They've brought musicians! | Carters from {other} joined the festival dancing. | The {other} wagons came just in time for the feast.
+b : Musicians! Wonderful. | Carters can't dance. | Just in time for the eating.
+a : Loud ones. | They can now. | And the drinking.
+
+scene em_x_strangers_bandits
+when topic=bandits band=acquaintances
+a : You drive the roads, don't you? Any trouble? | Have you heard any more about the bandits? | Is it true what they say about the road to the next town?
+b : Not on my road, thank the Bright One. | Only rumours. | Some of it.
+a : Lucky. | Rumours are enough. | Which some?

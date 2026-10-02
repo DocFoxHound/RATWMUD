@@ -1,0 +1,168 @@
+# The Ghost Town: a town abandoned long ago, where a few squatters live in patched shacks among the ruins and pick
+# through what was left. Nobody agrees why it emptied, and the ones who might know won't say.
+
+scene rg_gt_why_empty
+when topic=lore region=ghost_town
+a : Nobody agrees why this place emptied. Plague, some say. | Old Dust knows why they left. Won't say a word. | They left the plates on the tables. Whatever it was, it was quick.
+b[old] : Plague, fire, a curse, a debt. I've heard all four. Believe the quietest.
+b : Plague, or worse. | Then let him keep it. | Strange business.
+a : Or worse. | He will. | Very strange.
+
+scene rg_gt_empty_houses
+when topic=smalltalk region=ghost_town
+a : I talk to the empty houses. Somebody should. | The house on the corner creaks like it's breathing. | Every door in this town's been open for forty years.
+b : They don't answer, I hope. | It's the wind. | Nobody to close them.
+a : Not yet. | Probably. | Nobody.
+
+scene rg_gt_jumping
+when topic=smalltalk region=ghost_town
+a : Did you hear that? Something in the old hall. | I jump at every sound out here. | A shutter banged and I near died.
+b : A rat. Big one. | You get used to it. | Just the wind.
+a : I hope. | Not yet. | Probably.
+
+scene rg_gt_scavenging
+when topic=work region=ghost_town
+a : Found a good pot in the old inn's kitchen. | Picked the bakery clean years ago. Nothing left. | Found a ring under the chapel floor. Gold, maybe.
+b : Lucky. | Try the cellars. | Sell it far from here.
+a : Very lucky. | Too dangerous. | I will.
+
+scene rg_gt_hiding
+when topic=smalltalk region=ghost_town band=acquaintances|strangers|friends
+a : Nobody asks why you came here. That's the rule. | Came here to hide. Stayed because nobody looked. | Out here, nobody finds you unless you want them to.
+b : Good rule. | Wise. | That's the point.
+a : The only rule. | Or lucky. | It is.
+
+scene rg_gt_chapel_ruin
+when topic=lore region=ghost_town
+a : The chapel roof fell in last winter. Only the bell tower stands. | The chapel bell rang by itself one night. No wind. | Somebody's been leaving candles in the ruined chapel.
+b[priest] : Even a ruin is holy ground. Light a candle if you like.
+b : It'll fall too. | Imagination. | Who?
+a : Soon. | I hope so. | Nobody knows.
+
+scene rg_gt_patched_shacks
+when topic=work|smalltalk region=ghost_town
+a : Patched the shack roof with boards from the old granary. | Rain came through my roof again. | Built a new wall from the old inn's stones.
+b : It'll hold. | Patch it again. | Good stone.
+a : For now. | Always. | The best.
+
+scene rg_gt_travellers
+when topic=smalltalk region=ghost_town
+a : A traveller came through and ran when they saw us. | Travellers think we're ghosts. | Nobody passes through here on purpose.
+b : Let them run. | We nearly are. | Good.
+a : Let them. | Nearly. | Very good.
+
+scene rg_gt_old_signs
+when topic=lore region=ghost_town
+a : The old inn's sign still hangs. You can just read "The Gilded". | Somebody painted a mark on every door. Long ago. | There's a name scratched on the well stone. Over and over.
+b[old] : The marks on the doors were there when I came. Nobody washed them off.
+b : The Gilded what? | What mark? | Whose name?
+a : Nobody knows. | A ring with a line. | Rubbed away now.
+
+scene rg_gt_well
+when topic=lore|smalltalk region=ghost_town
+a : The old well still gives water. Sweet, too. | Nobody drank from the well for years. Then I did. | Something drops into the well at night. You hear the splash.
+b : Lucky for us. | Brave. | Stones falling.
+a : Very lucky. | Thirsty. | Probably.
+
+scene rg_gt_night
+when topic=lore region=ghost_town time=dusk|night
+a : The town sounds full at night. Voices, doors. | Lights in the old hall windows. Nobody lives there. | I bar my door after dark. Every night.
+b : The wind. | Moonlight on glass. | Wise.
+a : I hope. | Probably. | Very wise.
+
+scene rg_gt_dust
+when topic=smalltalk|weather region=ghost_town
+a : Dust blows through the empty streets like it owns them. | Dust in the shack, dust in my bed. | The wind's moving the old shutters again.
+b : It does now. | Always. | Let them bang.
+a : It does. | Always. | Let them.
+
+scene rg_gt_rats
+when topic=smalltalk region=ghost_town
+a : The rats in the granary are as big as dogs. | Ate rat stew again. Don't tell anyone. | The rats are the town's real citizens now.
+b : Bigger. | Better than nothing. | And the owls.
+a : Much bigger. | Barely. | The owls too.
+
+scene rg_gt_returning
+when topic=lore region=ghost_town band=friends|acquaintances
+a : An old wolf came and stood outside the tanner's house a whole day. Then left. | Somebody grew up here. You can tell by how they look at it. | They say the families swore never to come back.
+b : Visiting the dead. | Probably. | Why, I wonder.
+a : Maybe. | Poor soul. | Who knows?
+
+scene rg_gt_garden
+when topic=work region=ghost_town
+a : Turnips came up in the old garden. Somebody's, once. | The old orchard still fruits. Nobody else to pick it. | Found a herb bed under the weeds.
+b : Free supper. | Pick it all. | Useful.
+a : Free. | I will. | Very.
+
+scene rg_gt_squatter_quarrel
+when topic=smalltalk region=ghost_town
+a : That's my house. I found it first. | You took boards from my shack. | Keep out of the bakery. It's mine.
+b : There's forty houses. Pick another. | They were loose. | Nobody owns anything here.
+a : I like this one. | Not anymore. | I do.
+
+scene rg_gt_legend_curse
+when topic=lore region=ghost_town
+a : They say a Quickened wolf did this. Long ago. | They say the town angered the Concord, and the Concord made it empty. | They say the mayor sold the town to someone in a black coat.
+b[old] : Stories grow where people don't. That's all.
+b : Nonsense. | Who knows. | A likely story.
+a : Probably. | Nobody. | Very likely.
+
+scene rg_gt_scavenger_find
+when topic=lore|work region=ghost_town
+a : Found a box of letters in the old council house. | Found a pup's toy in the cellar. Made me sad all day. | Somebody's been digging in the old graveyard.
+b : What did they say? | Sad place. | Not me.
+a : Goodbyes, mostly. | Very sad. | Nor me.
+
+scene rg_gt_lonely
+when topic=smalltalk region=ghost_town band=friends|acquaintances
+a : It's good to hear another voice out here. | Some days I don't speak to anyone. | Don't you ever miss towns with people in them?
+b : It is. | Talk to me, then. | Sometimes.
+a : Very good. | I will. | Sometimes.
+
+scene rg_gt_crows
+when topic=smalltalk region=ghost_town
+a : Crows on every rooftop this morning. | Crows took my bread right off the step. | The crows know the town better than we do.
+b : Something's dead. | Thieves. | They've had longer.
+a : Probably. | Feathered thieves. | Much longer.
+
+scene rg_gt_inn_ruin
+when topic=lore region=ghost_town
+a : The old inn still has a barrel in the cellar. Nobody dares open it. | You can see where the bar was. Wolves drank here. | Somebody's carved their names into the inn's beams.
+b : Maybe it's still good. | Imagine it full. | Hundreds of names.
+a : I'll not try. | I try not to. | Hundreds.
+
+scene rg_gt_wind_voices
+when topic=lore region=ghost_town weather=clear|overcast|storm
+a : The wind through the empty windows sounds like a crowd. | You can hear singing in the wind, sometimes. | The wind says names out here. I swear it.
+b : It's only wind. | I've heard it too. | Don't.
+a : Probably. | Then I'm not mad. | All right.
+
+scene rg_gt_leaving
+when topic=smalltalk region=ghost_town
+a : Sometimes I think about leaving. Then I don't. | Where would I go? | One more winter here, then I'll go.
+b : Nobody leaves. | Nowhere. | You said that last winter.
+a : Seems not. | Nowhere. | I did.
+
+scene rg_gt_owls
+when topic=smalltalk region=ghost_town time=dusk|night
+a : The owls in the old hall screech all night. | An owl lives in the chapel tower. Only one who rings anything now. | Owls are the only watch this town has.
+b : Let them screech. | Wise bird. | Better than none.
+a : I have to. | Very wise. | Barely.
+
+scene rg_gt_coins
+when topic=work region=ghost_town
+a : Found old coins in a wall. Nobody takes them any more. | The coins here have a face nobody remembers. | Traded a ruin coin to a carter for bread. He laughed, but took it.
+b : Melt them. | Someone old would know. | Good trade.
+a : Maybe. | Nobody's left. | Very good.
+
+scene rg_gt_seasons
+when topic=smalltalk|weather region=ghost_town season=winter
+a : Winter's long in a town with no neighbours. | Burned the old council chairs for warmth. | Snow fills the empty streets and nobody shovels it.
+b : Very long. | They burned well. | Why would they?
+a : Very long. | Very well. | Nobody would.
+
+scene rg_gt_garden_stranger
+when topic=lore region=ghost_town
+a : Somebody's been tending the graves. Not us. | Fresh flowers on the old graves this morning. | Someone weeded the chapel yard in the night.
+b : Strange. | Who? | Not me.
+a : Very strange. | Nobody knows. | Nor me.

@@ -1,0 +1,352 @@
+# Barks (doc 30): one resident, one line, overheard in passing. Trades at their work by the hour, market and festival
+# days, the watch, children and elders, the weather, and each region's own cries. Barks may repeat.
+
+# ---------------------------------------------------------------- Merchants crying wares, by trade
+
+scene bk3_baker_dawn
+when topic=bark a.job=baker time=dawn
+a : First loaves of the day! Crust still crackling! | Rye, barley, and one honey loaf for the lucky! | Who's up early? Early wolves get the warm ones!
+
+scene bk3_baker_dusk
+when topic=bark a.job=baker time=dusk
+a : Day-old bread, half price! | Last of the rolls, going cheap! | Closing soon. Anyone for a loaf before the oven cools?
+
+scene bk3_butcher_cook
+when topic=bark a.job=cook
+a : Mutton pie! Hot mutton pie! | Who's hungry? I can smell you're hungry! | Broth! Thick enough to stand a spoon in! | Sausages, fresh this morning!
+
+scene bk3_brewer
+when topic=bark a.job=brewer
+a : New barrel tapped! Taste it before it's gone! | Cider from the south orchards! | Strong ale, honest measure! | Who wants to try my dark brew? Free taste!
+
+scene bk3_smith_cry
+when topic=bark a.job=smith a.role=merchant
+a : Nails by the hundred! | Horseshoes, hooks and hinges! | Bring me your blunt blades! | Iron pots that'll outlast your grandpups!
+
+scene bk3_crafter_cry
+when topic=bark a.job=crafter
+a : Baskets! Woven fresh this week! | Good leather belts, fair price! | Pots and jugs, glazed and sound! | Combs for your mane, carved bone!
+
+scene bk3_farmer_market
+when topic=bark a.job=farmer day=market
+a : Turnips! Onions! Fresh from the field! | Eggs, a dozen for four pennies! | Cabbages as big as your head! | New milk, still warm!
+
+scene bk3_fisher_late
+when topic=bark a.job=fisher time=dusk
+a : Last of the catch, cheap before it turns! | Herring, three for a penny! Going, going! | Take the lot and I'll throw in a crab!
+
+scene bk3_herbalist
+when topic=bark a.job=healer a.role=merchant
+a : Remedies for cough and chill! | Herb bundles, dried and fresh! | Salve for sore pads! Two pennies a pot!
+
+scene bk3_innkeeper_evening
+when topic=bark a.job=innkeeper time=dusk|night
+a : Beds by the fire! Clean straw! | Music tonight! Come in out of the dark! | Hot supper, cold ale, warm welcome! | No fighting inside. Everything else welcome.
+
+scene bk3_merchant_generic_market
+when topic=bark a.role=merchant day=market
+a : Market day prices! Today only! | Everything must go! | Come closer, come closer, you won't regret it! | Best deal in the square, I swear on my mother!
+
+scene bk3_merchant_rain
+when topic=bark a.role=merchant weather=rain|storm
+a : Oilcloth! Keep the rain off! | Come in under the awning, look while you dry! | Nobody's buying. Typical. | Wet goods, half price!
+
+scene bk3_merchant_cold
+when topic=bark a.role=merchant season=winter
+a : Wool cloaks! Thick and warm! | Firewood, a penny a bundle! | Mittens for your paws! | Hot chestnuts! Warm your paws on the bag!
+
+scene bk3_merchant_summer
+when topic=bark a.role=merchant season=summer
+a : Cold well water, a penny a cup! | Straw hats, keep the sun off your ears! | Fresh berries, sweet as kisses!
+
+scene bk3_merchant_haggle
+when topic=bark a.role=merchant place=market
+a : No, no, that's my final price. ...Very well, one penny less. | You'll ruin me! Fine. Take it. | Ha! You call that an offer?
+
+# ---------------------------------------------------------------- Workers at their task
+
+scene bk3_laborer_haul
+when topic=bark a.job=laborer time=dawn|day
+a : Lift on three! One, two... | Who stacked these crooked? | Watch your tail, coming through! | Easy! Easy with that barrel!
+
+scene bk3_carter_load
+when topic=bark a.job=carter place=street|gate|market
+a : Mind the wheel! | Clear a path, heavy load! | Somebody hold the mule's head! | That's not my crate. Whose crate is that?
+
+scene bk3_miner_shift
+when topic=bark a.job=miner
+a : Shift's changing! Lamps up! | Dust in my lungs, dust in my bread. | Shore up that beam before it shores you down! | Hear that creak? Out, everyone out! False alarm.
+
+scene bk3_woodcutter
+when topic=bark a.job=woodcutter
+a : Timber! Stand clear! | Axe needs sharpening again. | Stack it by length, not by luck! | Good oak, this.
+
+scene bk3_farmer_field
+when topic=bark a.job=farmer place=field
+a : Get on, you lazy ox! | Another row, another row. | Back's broken and the sun's barely up. | Crows! Shoo! Shoo!
+
+scene bk3_herder
+when topic=bark a.job=herder
+a : Come by! Come by! | Hey! Back to the flock, you fool beast! | One, two, three... where's number forty? | Easy, easy. Nobody's going to eat you.
+
+scene bk3_sailor_dock
+when topic=bark a.job=sailor place=shore|street|work
+a : Make fast that line! | Cargo for the north warehouse! | Who's got my knife? | Tide's turning! Look sharp!
+
+scene bk3_fisher_nets
+when topic=bark a.job=fisher place=shore|work
+a : Torn again. Who'll mend nets for a share? | Haul! Haul together! | Gulls! Get off my catch!
+
+scene bk3_servant_errand
+when topic=bark a.job=servant place=street|market
+a : Two pounds of flour, a candle, and the... the something. | Late, late, late again. | Excuse me, pardon me, master's business!
+
+scene bk3_official_notice
+when topic=bark a.job=official
+a : Hear the council's notice! Taxes due by month's end! | Permits for stalls, at the hall only! | By order of the council, no carts in the square after dark!
+
+scene bk3_scholar_mutter
+when topic=bark a.job=scholar
+a : That date is wrong. It must be wrong. | Ink. Where's my ink? | If the records are right, this wall is older than the town.
+
+scene bk3_apprentice
+when topic=bark a.job=apprentice
+a : Yes, master! Right away! | I'm sweeping, I'm sweeping! | One day I'll have my own shop. One day. | Ow! Hot! Hot!
+
+scene bk3_cook_kitchen
+when topic=bark a.job=cook place=work|tavern|home
+a : Who touched my knife? | Too much salt. Again. | Out of my kitchen, all of you! | Pass the onions. No, the other onions.
+
+scene bk3_innkeeper_inside
+when topic=bark a.job=innkeeper place=tavern
+a : Feet off the table! | Who's paying for that broken mug? | Two ales and a stew, coming up! | Last call! I said last call!
+
+# ---------------------------------------------------------------- The watch
+
+scene bk3_guard_day
+when topic=bark a.role=guard time=day
+a : Keep it moving. | No blocking the road with carts. | Is this your cart? Move it. | Anyone lost a purse? Brown leather?
+
+scene bk3_guard_dusk
+when topic=bark a.role=guard time=dusk
+a : Gate shuts at full dark! | Light your lanterns! | Lamps lit, doors latched! | Last carts in, hurry along!
+
+scene bk3_guard_night_rain
+when topic=bark a.role=guard time=night weather=rain|storm|snow
+a : Wretched night. All's well. Wet, but well. | Nobody about but me and the rats. | Third bell, and my tail's soaked through.
+
+scene bk3_guard_market
+when topic=bark a.role=guard day=market
+a : Watch your purses, there's cutpurses about! | No fighting over the last goose! | You there. Paw off that stall.
+
+scene bk3_guard_festival
+when topic=bark a.role=guard day=festival
+a : Celebrate quietly! | No climbing the poles! | I see you with that bottle. Fine. Just one. | Fires out by midnight, festival or not!
+
+scene bk3_soldier_drill
+when topic=bark a.job=soldier
+a : Left! Left! Left, right, left! | Shields up! | Again! Like you mean it! | Who taught you to hold a spear? A turnip?
+
+scene bk3_soldier_barracks
+when topic=bark a.job=soldier place=barracks
+a : Who's been in my kit? | Lights out in an hour! | Boots by the bed. Polished! | Cards later. Bring coin.
+
+# ---------------------------------------------------------------- Children
+
+scene bk3_child_morning
+when topic=bark a.stage=young time=dawn|day
+a : I'm a warden! You're all under arrest! | Look, I found a snail! | Mama, can I have a penny? Please? | I can count to a hundred! One, two, ninety, a hundred!
+
+scene bk3_child_evening
+when topic=bark a.stage=young time=dusk
+a : Five more minutes! | I'm not tired! I'm not! | Do I have to come in? | Can I sleep by the fire tonight?
+
+scene bk3_child_rain
+when topic=bark a.stage=young weather=rain
+a : Puddle! Biggest puddle in the world! | I'm a frog! Ribbit! | My boots are full of water! Isn't it great?
+
+scene bk3_child_snow
+when topic=bark a.stage=young weather=snow
+a : Snowball! Got you! | Look, my tracks! | I ate some snow. It tastes like nothing! | I'm a snow wolf! Grr!
+
+scene bk3_child_festival
+when topic=bark a.stage=young day=festival
+a : Sweets! They have sweets! | Look at the lanterns! | Can I stay up late? It's a festival! | I want to dance!
+
+scene bk3_adolescent_sulk
+when topic=bark a.stage=adolescent
+a : Nobody understands me. | I'm practically grown. | Why do I always have to do the chores? | When I leave this town, I'm never coming back.
+
+scene bk3_adolescent_show
+when topic=bark a.stage=adolescent place=street|market|field
+a : Watch me jump this wall! | Bet I can lift that sack. | Did you see that? Did anyone see that? | I'm faster than all of you!
+
+# ---------------------------------------------------------------- Elders
+
+scene bk3_old_weather
+when topic=bark a.stage=old weather=rain|fog|overcast|snow
+a : My hips knew it'd come to this. | Damp. Always damp. | Mark my words, worse tomorrow.
+
+scene bk3_old_sun
+when topic=bark a.stage=old weather=clear
+a : Ah. Sun on old bones. Lovely. | Don't block my light, pup. | Wake me if anything happens.
+
+scene bk3_old_remember
+when topic=bark a.stage=old
+a : I remember when this was all fields. | Prices! In my day a loaf was a penny. | Nobody visits any more. | Young ones walk too fast.
+
+scene bk3_old_night
+when topic=bark a.stage=old time=night
+a : Can't sleep. Never can, now. | Who's that out there? | The moon was brighter when I was young.
+
+# ---------------------------------------------------------------- Beggars and priests
+
+scene bk3_beggar_cold
+when topic=bark a.job=beggar season=winter|autumn
+a : A coin for a cold old wolf? | Bright One bless any kind paw. | Just enough for soup, friend. Just soup.
+
+scene bk3_beggar_rain
+when topic=bark a.job=beggar weather=rain|storm
+a : Pity the wet and the poor! | Rain on rich and poor alike, they say. Not true. | A penny for a dry corner?
+
+scene bk3_priest_rest
+when topic=bark a.job=priest day=rest
+a : Prayers at noon! All are welcome! | Rest, children. The Bright One rested too. | Come, light a candle for your lost ones.
+
+scene bk3_priest_street
+when topic=bark a.job=priest place=street|market|gate
+a : Order and duty, friends! | The chapel kitchen feeds the hungry at dusk. | Pray before you haggle! | Bless this street and all who walk it.
+
+scene bk3_priest_night
+when topic=bark a.job=priest time=night
+a : The Bright One watches the dark. Sleep easy. | Bar your doors, and say your prayers. | Peace in the night.
+
+# ---------------------------------------------------------------- Places and days
+
+scene bk3_tavern_noise
+when topic=bark place=tavern time=dusk|night
+a : Another round! | Sing it again! | Who spilled my drink? Who? | Don't tell me to be quiet, I'm happy!
+
+scene bk3_tavern_day
+when topic=bark place=tavern time=day
+a : Quiet in here today. | Bit early for ale. Pour one anyway. | Somebody wake that one up. Asleep since dawn.
+
+scene bk3_market_day
+when topic=bark day=market place=market|street
+a : Make way! Make way! | Has anyone seen a little pup in a red scarf? | Ow, my tail! Watch where you step! | Busy as a hive today.
+
+scene bk3_festival_day
+when topic=bark day=festival
+a : Happy festival! | Dance with me! | Who's got the drum? | More cider here!
+
+scene bk3_rest_day
+when topic=bark day=rest
+a : Nothing to do and all day to do it. | Lovely quiet. | Shops shut again. Of course.
+
+scene bk3_home_scold
+when topic=bark place=home
+a : Wipe your paws! | Who left the door open? | Supper's ready! Come and eat! | Stop chewing the table leg!
+
+scene bk3_home_night
+when topic=bark place=home time=night
+a : Bed, all of you. | Who's still awake? | Bank the fire before you sleep.
+
+scene bk3_field_dusk
+when topic=bark place=field time=dusk
+a : Home time, at last. | Leave the rest for tomorrow. | Beasts in, gate shut.
+
+scene bk3_gate_day
+when topic=bark place=gate time=dawn|day
+a : Papers? No papers? Name, then. | What's in the barrels? | Through you go. Next!
+
+scene bk3_hall
+when topic=bark place=hall
+a : Order! Order in the hall! | Petitions to the left! | The council will hear you when the council is ready.
+
+scene bk3_chapel_quiet
+when topic=bark place=chapel
+a : Shh. | Bright One, give me patience. | Mind the candles. | Someone left a pup's shoe here.
+
+scene bk3_shore_wind
+when topic=bark place=shore
+a : Tide's coming in fast! | Watch the rocks, they're slick! | Smell that sea air! | Gulls stole my bread!
+
+# ---------------------------------------------------------------- Weather and hours
+
+scene bk3_storm
+when topic=bark weather=storm
+a : Shut the shutters! | Whose roof was that? | Get inside! Everyone inside! | That one was close!
+
+scene bk3_fog
+when topic=bark weather=fog
+a : Who's there? | Can't see a thing. | Hello? Is someone there? | Where's the well gone?
+
+scene bk3_sand
+when topic=bark weather=sandstorm
+a : Cover your eyes! | Sand in everything! | Close the doors, quick! | Can't breathe, can't see!
+
+scene bk3_clear_dawn
+when topic=bark weather=clear time=dawn
+a : Beautiful morning! | Up, up, the sun's up! | Not a cloud. Lovely.
+
+scene bk3_night_cats
+when topic=bark time=night
+a : Shoo, cat! | Who's howling at this hour? | Lock up, lock up. | Quiet, some of us want to sleep!
+
+# ---------------------------------------------------------------- Regions
+
+scene bk3_ridgemere_quay
+when topic=bark region=rain_coast
+a : Smoked herring! Vesk's best! | Rope! Brinewater rope! | Mind the gutters, they're overflowing! | Rain again. Of course.
+
+scene bk3_ridgemere_sump
+when topic=bark region=ridgemere time=dusk|night
+a : Keep your purse close, friend. Sump's awake. | Lamp oil, cheap, no questions! | Who's got a dry corner for the night?
+
+scene bk3_serferro_river
+when topic=bark region=ser_ferro
+a : Wine from the south bank! | Silk, real silk! | River fish, still flapping! | Clean your boots before the cathedral steps!
+
+scene bk3_serferro_official
+when topic=bark region=ser_ferro a.job=official
+a : Permit, please. And the stamped copy. | That stall is two inches over the line. | Complaints in writing, to the third office.
+
+scene bk3_accord_scholar
+when topic=bark region=accord
+a : Manuscripts! Copies made fair and clean! | Make way for the warden! | Pilgrim badges! Blessed in the old chapel! | Quiet near the archive, please.
+
+scene bk3_cinderbrook_forge
+when topic=bark region=marches
+a : Ore cart coming down! | Pig iron, by the bar! | Fire's hot, hammers ready! | Somebody fetch water for the quench!
+
+scene bk3_saltreach_pans
+when topic=bark region=saltreach
+a : Salt! Clean white salt! | Rake it before the rain! | Tide's on the pans, look sharp!
+
+scene bk3_amberford_herds
+when topic=bark region=steppe
+a : Horses for sale! Sound in wind and limb! | Ford toll, two pennies! | Wool! Steppe wool, the warmest there is!
+
+scene bk3_fens_peat
+when topic=bark region=fens
+a : Peat bricks, dry and ready! | Eels from the dykes! | Fen herbs, for every ailment! | Mind the soft ground!
+
+scene bk3_lakeside
+when topic=bark region=lake
+a : Boats for hire! | Lake trout, fat and fresh! | Boatwright's yard, repairs done quick!
+
+scene bk3_downs_market
+when topic=bark region=downs
+a : Fleeces! Fresh-shorn fleeces! | Cheese from the hill farms! | Westmarch wool, finest on the downs!
+
+scene bk3_crossing_carts
+when topic=bark region=accord_crossing
+a : Wagons for the west road! | Room at the Crossed Roads! | Mules to hire, sturdy beasts!
+
+scene bk3_fortress_watch
+when topic=bark region=fortresses
+a : Watch change! | Wall's clear! | Who's on the north tower? Wake up! | Supply cart sighted!
+
+scene bk3_ghost_town
+when topic=bark region=ghost_town
+a : Who's there? Show yourself! | Nothing here worth stealing. | Go away. | This was my house once.

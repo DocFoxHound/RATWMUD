@@ -1,0 +1,259 @@
+# Work and trade by job (doc 30): each town's own work. The towns' characters come from tools/worldgen/towns.py.
+# Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Cinderbrook: forge and mine
+
+scene tr_cb_ore_price
+when topic=work|prices region=cinderbrook
+a : The Crown's buyer knocked a penny off the ore again. | Ser Ferro wants iron and won't pay for the hill it comes out of. | They weighed my cart wet and paid me dry.
+b[miner] : We should stop digging for a week. See how they like it.
+b : Thieves in good cloth. | Cities never do. | Classic.
+a : Thieves with a royal seal. | They'll pay when the hill stops giving. | Next time I'll weigh it in the river.
+
+scene tr_cb_nail_shrine
+when topic=work region=cinderbrook
+a : Left my nail at the Iron Saint's shrine this morning. | The shrine's thick with nails. Good season. | Someone took a nail from the shrine. Took it!
+b : Safe shift, then. | Good season. | Who'd dare?
+a : Safe shift. Every shift. Saint willing. | Saint's been kind. | Someone who'll be sorry below.
+
+scene tr_cb_hot_anvil
+when topic=work|smalltalk region=cinderbrook place=tavern
+a : Loudest argument in the Marches was here last night. Over a pick. | The Hot Anvil's out of ale. Cinderbrook in mourning. | Miners at one end, smiths at the other. Same as ever.
+b : Who won? | Mourning indeed. | Never mix.
+a : The pick. It was broken over someone's head. | Till the carter comes from Ser Ferro. | They mix at the end. Usually in a fight.
+
+scene tr_cb_lamp
+when topic=work region=cinderbrook a.job=crafter|miner|merchant
+a : Mended forty lamps this week. The pits eat them. | Brass is short. I'm patching lamps with tin. | A miner's lamp should burn a whole shift. These don't.
+b : Good trade. | Will they hold? | Blame the oil.
+a : Good trade in a bad business. | Better than the dark. | Blame the oil, the wick, and the hill.
+
+scene tr_cb_charcoal_burner
+when topic=work region=cinderbrook a.job=laborer|woodcutter
+a : The charcoal smoke's in everything. My bread tastes of it. | Burned two clamps this week. The forge took both. | My eyes are red as the ore.
+b : Everything tastes of it here. | They always want more. | Wash them.
+a : Even the honey. | More and faster. | In what? The brook's red too.
+
+# ---------------------------------------------------------------- Saltreach: salt and fish
+
+scene tr_sr_salt_pans
+when topic=work region=saltreach
+a : Raked salt all morning. My pads are cracked to bleeding. | The pans need sun and we've had a week of rain. | Salt house is near full. Prices will drop.
+b : Grease them. | Rain coast. | Good for buyers.
+a : Grease and salt. Stings worse. | Rain coast, rain salt, no salt. | Good for buyers, bad for rakers.
+
+scene tr_sr_vesk
+when topic=work region=saltreach
+a : The Vesk factor came by. He counted every sack. | Owe the Vesk more than a season's salt. | Ridgemere takes our salt and calls it theirs.
+b : He always counts. | Everyone does. | Their stamp, our sweat.
+a : And always comes up one short. | And next season too. | Their stamp, their coin, our sweat.
+
+scene tr_sr_brine_barrel
+when topic=work|smalltalk region=saltreach place=tavern
+a : The Brine and Barrel's full of sailors' songs again. | Smell of tar and smoke and wet coats. Home. | Somebody's singing the drowned-boat song. Bad luck.
+b : Nobody admits to knowing them. | Home sweet home. | Shut them up.
+a : Everybody knows them by the third cup. | Home sour home. | You try telling a sailor to shut up.
+
+scene tr_sr_gulls
+when topic=work region=saltreach|ridgemere a.job=fisher|sailor|laborer
+a : Gulls flying inland. Storm by night. | The gulls stole half my catch off the slab. | Gulls quiet today. Fair weather.
+b : They're never wrong. | Thieves with wings. | Go out, then.
+a : Never. Gulls and old knees. | Fat, loud thieves. | Already gone. Just came back for my net.
+
+# ---------------------------------------------------------------- Lakeside: fishers and boatwrights
+
+scene tr_lk_boatwright
+when topic=work region=lakeside
+a : Finished a new hull. Steamed every plank myself. | Caulking a boat that leaks like a basket. | The lake's too low for launching.
+b : Lovely lines. | Whose? | Wait for rain.
+a : Lovely lines and a leak I can't find. | The same fisher. Every season. | Rain's the one thing we never wait long for.
+
+scene tr_lk_ice_fishing
+when topic=work region=lakeside|isle_fortress season=winter
+a : Cut a hole in the ice and sat on it all morning. | Ice cracked under my hind paws. Ran. | Pike through the ice. Fat as a pup.
+b : Catch anything? | Gods! | Show me.
+a : A chill and a perch. | Faster than I've run in years. | It's at home. Being cooked.
+
+scene tr_lk_reeds
+when topic=work region=lake a.job=fisher|crafter|laborer
+a : Cutting reeds for thatch. Wet to the shoulders. | The reed beds are thick this year. | Thatchers want three loads by Restday.
+b : Good roofs, though. | Good. | Three!
+a : Good roofs, cold fishers. | Thick enough to hide a boat. | Three, and dry.
+
+# ---------------------------------------------------------------- Westmarch: frontier garrison and traders
+
+scene tr_wm_frontier
+when topic=work region=westmarch
+a : Last town before the empty downs. Everyone stops here. | A drover brought three hundred sheep through the square. | The Mercantile's ledger has half the downs in it.
+b : Good for trade. | Through the square? | Owing?
+a : Good for trade, bad for the cobbles. | And left half of them on the cobbles. | Owing, and proud of it.
+
+scene tr_wm_watch_house
+when topic=work region=westmarch a.role=guard
+a : The watch map shows a camp on the far downs. | Patrol came back with nothing but tired legs. | We're four for a town of forty.
+b : Bandits? | Better than the other thing. | Ask for more.
+a : Or drovers. Hard to tell at that distance. | Tired legs and a sore head. | From whom? The nearest city's a week off.
+
+scene tr_wm_hide_yard
+when topic=work region=westmarch a.job=crafter|laborer|merchant
+a : The Hide Yard reeks. Wind's the wrong way. | Bought twenty hides off the drovers cheap. | Tanning's slow money but sure money.
+b : Every day it reeks. | Good hides? | Sure as death.
+a : Today it reeks loud. | Good enough for boots. | Sure, and it smells like it.
+
+scene tr_wm_proud
+when topic=work|smalltalk region=westmarch
+a : We don't need a city. Never have. | City folk come through and ask where the shops are. | Nobody tells Westmarch what to do.
+b : Proud of it. | They are the shops. | Except the weather.
+a : Proud and poor. | And the cobbles. | The weather's from Westmarch too.
+
+# ---------------------------------------------------------------- Accord Crossing: caravan hub
+
+scene tr_ac_caravans
+when topic=work region=accord_crossing
+a : Counted eleven wagons in, nine out. | The Crossed Roads is full of carters again. | The caravan shed's stacked to the roof.
+b : Two stuck somewhere. | Good for the inn. | Busy season.
+a : Two on the road, or in a ditch. | Good for the inn, loud for the rest. | Busy as a beehive. Twice as stung.
+
+scene tr_ac_toll
+when topic=work region=accord_crossing
+a : The Accord toll went up again. | Paid the toll, then the bridge, then the ferryman. | The toll keeper knows every carter by name and debt.
+b : Robbery. | Three tolls! | He would.
+a : Robbery with a seal on it. | Three tolls, one road. | And by the creak of their wheels.
+
+scene tr_ac_stable
+when topic=work region=accord_crossing a.job=herder|laborer|carter
+a : Groomed twelve carters' horses before breakfast. | One of the carters' beasts kicked down a stall. | Hay's dear and the horses don't care.
+b : Twelve! | Bad-tempered beast. | They never do.
+a : Twelve and a mule. | Bad-tempered carter, more like. | Horses have it easy.
+
+# ---------------------------------------------------------------- Fenhollow: peat and herbs
+
+scene tr_fh_peat
+when topic=work region=fenhollow
+a : Cut peat since dawn. My fur's black and my nose is full. | The cuttings filled with water overnight. | Peat stacks are drying nicely.
+b : Warm winter, though. | Bail it. | Good.
+a : Warm winter, black summer. | Bail a bog? | Good, till the rain.
+
+scene tr_fh_herbalist
+when topic=work region=fenhollow a.job=healer|merchant|farmer
+a : City herbalists buy our bog moss and sell it as a cure. | Picked sundew till my eyes went cross. | Marsh mallow's in flower. Best week of the year.
+b : At ten times the price. | What's it for? | Pick it all.
+a : Twenty times. | Coughs. And warts. And it eats flies. | Leave some. Next year.
+
+scene tr_fh_fog
+when topic=work|weather region=fenhollow
+a : Fog so thick I walked into the dyke. | Can't see the next tussock. Stayed home. | Fen lights out in the fog again last night.
+b : You smell of it. | Good choice. | Don't follow them.
+a : Bog and shame. | Lost a day's peat, though. | Nobody who follows comes back.
+
+# ---------------------------------------------------------------- Amberford: farms and the ford toll
+
+scene tr_af_ford
+when topic=work region=amberford
+a : The ford's too high to cross. Carters waiting both sides. | Took a penny toll from a lord's carriage. He wasn't pleased. | River's dropped. Ford's easy.
+b : Wait it out. | Did he pay? | Good.
+a : They'll wait. And grumble. | Paid in copper and insults. | Easy for them. Fewer tolls for us.
+
+scene tr_af_harvest
+when topic=work region=amberford season=summer|autumn
+a : Amberford wheat, gold to the horizon. | Every pup in town's out binding sheaves. | The granary's full. Fuller than I've seen.
+b : Prettiest sight. | Even the little ones? | Good year.
+a : And the hardest work. | Even the little ones. They're slow. | Good year. Watch the prices drop.
+
+scene tr_af_mill
+when topic=work region=amberford|steppe a.job=farmer|laborer|merchant
+a : The mill wheel's jammed with weed. | Miller wants a sack in ten for his toll. | Ground grain all night. The stones were singing.
+b : Clear it. | Ten! | Good flour?
+a : In that cold water? | Ten, and he sweeps the floor for himself. | Fine as smoke.
+
+# ---------------------------------------------------------------- Hollowmere: the hamlet
+
+scene tr_hm_everyone
+when topic=work|smalltalk region=hollowmere_village
+a : There's twelve of us and twelve jobs. Nobody's idle. | Needed a smith. There isn't one. Went to Westmarch. | Hollowmere has one of everything and none spare.
+b : Twelve's enough. | Long walk. | Like life.
+a : Till someone gets ill. | Long walk for a nail. | Like everything.
+
+scene tr_hm_quiet
+when topic=work region=hollowmere_village
+a : Nothing happens here. I like it. | A stranger came through. Biggest news in a month. | Fed the pigs, mended the wall, ate supper. Busy day.
+b : Me too. | Who? | That's busy?
+a : Don't tell anyone. They'll come. | Didn't stop. Didn't say. | Busy for Hollowmere.
+
+# ---------------------------------------------------------------- The fortresses
+
+scene tr_ft_wall
+when topic=work region=fortresses
+a : Mortar's crumbling on the north face. | The quartermaster's counting quarrels again. | Commander inspects tomorrow. Polish everything.
+b : Report it. | We're short? | Everything?
+a : I did. Last winter. | Short of everything except orders. | Even the porridge.
+
+scene tr_ft_northern
+when topic=work region=northern_fortress
+a : Snow on the parapet again. In this season! | Watched the pass all night. Nothing moves up there. | Wind up here could peel a wolf.
+b : North for you. | Good. | Peel a stone.
+a : North's not for anyone. | Nothing's the hardest thing to watch. | Peeled me twice already.
+
+scene tr_ft_isle
+when topic=work region=isle_fortress
+a : Supply boat's late. Fog. | Gulls nest in the guardroom. | The isle's small enough to walk round before breakfast.
+b : Fish, then. | Throw them out. | Twice?
+a : Fish again. And again. | They come back. They always come back. | Twice, and you've seen it all.
+
+scene tr_ft_dark
+when topic=work region=dark_fortress
+a : Nobody sleeps well here. | Heard something in the old cells last night. | The commander keeps a lamp lit in every corridor.
+b : Old place. | Rats. | Oil's dear.
+a : Old and heavy. | Rats don't whisper. | Darkness is dearer.
+
+# ---------------------------------------------------------------- Ghost Town
+
+scene tr_gt_squat
+when topic=work|smalltalk region=ghost_town
+a : Pulled boards off the old hall to patch the shack. | Found a cellar full of broken bottles. | Planted beans where the market was.
+b : Anyone mind? | Any full ones? | Will they grow?
+a : Ghosts don't complain. | Two. We drank them. | Better than anything else here.
+
+scene tr_gt_why
+when topic=smalltalk|work region=ghost_town
+a : Why does nobody live here any more? | My gran said this was a busy town once. | Something happened here. Nobody says what.
+b : Fever. Long ago. | It was. | Best not to know.
+a : Fever leaves graves. Where are they? | Busy and gone. | Best for whom?
+
+# ---------------------------------------------------------------- The cities, by trade
+
+scene tr_ua_pilgrim_trade
+when topic=work region=upper_accord a.role=merchant
+a : Pilgrims buy any charm with the Bright One's mark on it. | Sold candles to the cathedral at a loss. Good for my soul. | Concord clerks check my licence every week.
+b : Do they work? | And your purse? | Every week?
+a : They comfort. That's the work. | My purse disagrees with my soul. | Every week, and it's always in order.
+
+scene tr_ua_warden_training
+when topic=work|smalltalk region=upper_accord
+a : The Wardens were drilling in the wild ground at dawn. | Saw a young one lift a cart without touching it. | The training grounds are closed to us now.
+b : Hard training. | Without touching? | Why?
+a : Hard and silent. | Not a whisker. Then fell asleep for a day. | They didn't say. They never say.
+
+scene tr_rm_quay
+when topic=work region=ridgemere place=shore|work
+a : Unloaded salt from Saltreach and iron for the yard. | The quay's flooded at the spring tide. | Smokehouses running all night. Fish and smoke.
+b : Busy quay. | Wet feet. | Smell carries.
+a : Busy and wet. | Wet everything. | Up to the Rain Hall.
+
+scene tr_rm_rain_hall
+when topic=work region=ridgemere a.job=official|noble|servant
+a : Rain's coming through the Rain Hall roof onto the council table. | The Houses met and agreed on nothing. | Buckets in the council chamber. Every session.
+b : Fitting. | As usual. | They should mend it.
+a : Fitting and wet. | Nothing and lunch. | They'd have to agree to.
+
+scene tr_sf_wharf
+when topic=work region=ser_ferro place=shore|work|market
+a : The wharves are thick with river barges. | Unloaded wine for the court. Not a drop for us. | River's low. Barges grounding.
+b : Busy season. | Not a drop? | Bad for trade.
+a : Busy and hot. | Not a drop. Smelled it all day. | Bad for barges. Good for haulers.
+
+scene tr_sf_white_plaster
+when topic=work region=ser_ferro a.job=crafter|laborer
+a : Whitewashed the cathedral steps. Rain washed it off. | Plastered three houses this week. Forelegs are white to the shoulder. | Red tiles for a merchant's roof. All the way up.
+b : Do it again. | Like a ghost. | Long way up.
+a : Do it again tomorrow. | A rich ghost. Three houses' worth. | Long way down.

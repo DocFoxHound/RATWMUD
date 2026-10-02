@@ -1,0 +1,227 @@
+# Kin: family, friends and quarrels with a local accent (Docs/Design/30-towns-and-talk.md). Each town's trades and
+# worries reach into its homes.
+
+# ---------------------------------------------------------------- Upper Accord
+
+scene kn_rg_ua_warden_son
+when topic=family band=family|spouses region=upper_accord
+a : Our boy passed the Warden trials. | The Order's sending her to the far passes. | He writes from the training grounds. Two lines.
+b : Bright One keep him. He'll freeze. | So far? | Two more than last month.
+a : He'll learn to like it. They all do. | They need good noses up there. | "Cold. Fed." That's the whole letter.
+b : They learn to stop saying they don't. | Hers is the best I know. | Cold and fed. That's all we need.
+
+scene kn_rg_ua_concord_quarrel
+when topic=quarrel region=upper_accord
+a : You voted for the tithe in the ward meeting. | Your cousin's a Concord clerk. That's how you got the house. | You told the Watch about my cart.
+b : Someone has to pay for the roads. | I paid for that house! | It was blocking the plaza.
+a : Not me, and not twice. | With whose favour? | For an hour!
+b : Twice is what it costs up here. | With my own coin. | An hour in the snow is an hour too long.
+a : Then move to the lowlands. | Prove it. | Mind your own plaza.
+
+scene kn_rg_ua_friends_snow
+when topic=friends region=upper_accord|accord_crossing season=winter
+a : Snowed in again. Come over, we'll play stones. | Your roof needs clearing or it'll fall in. | Did the pass close with your sister still on it?
+b : If I can find your door. | I know. My back says no. | She got through at dusk. Frozen and furious.
+a : Follow the smoke. | I'll help. Bring a shovel. | Frozen I can fix. Furious, never.
+b : I'll bring the cider. | And a shovel for you. | She'll thaw by spring.
+
+# ---------------------------------------------------------------- Ridgemere
+
+scene kn_rg_rm_sump_family
+when topic=family band=family|spouses region=ridgemere
+a : The Sump's flooded our floor again. | We'll never get out of this street. | The pups are coughing from the damp.
+b : Lift the bedding onto the crates. | We will. One penny at a time. | I'll ask the healer for the chest rub.
+a : The crates are floating. | At this rate, by my hundredth winter. | It costs.
+b : Then we sleep on the table. | Then we'll live to a hundred. | It costs less than a funeral.
+a : Fine. The table. | Stubborn wolf. | Hush. Ask her, then.
+
+scene kn_rg_rm_house_rivals
+when topic=quarrel region=ridgemere
+a : Your lot always sided with Grayrock. | Brinewater wolves think they own the quay. | Vesk's smoke has ruined my washing twice this week.
+b : Grayrock pays wages. Your House pays promises. | We built the quay. | Then wash it somewhere that isn't downwind of work.
+a : Wages that buy soot. | You built it crooked. | It's my yard! It was here first.
+b : Better soot than hunger. | It's lasted a hundred years. | So was the smokehouse.
+a : Soot is hunger with a roof. | Crooked for a hundred years. | Smoke and liars.
+
+scene kn_rg_rm_friends_quay
+when topic=friends region=ridgemere
+a : Coming to watch the boats come in? | My cousin's on the Brinewater ship to the Isle. | Dice on the quay tonight?
+b : If the rain holds off. | Long voyage. Rough water. | If the Watch keeps off.
+a : It won't. Come anyway. | She'll be sick the whole way. | They're busy with the Sump.
+b : Rain it is. | Sick and paid. | Then dice it is.
+
+# ---------------------------------------------------------------- Ser Ferro
+
+scene kn_rg_sf_tiers
+when topic=family band=family|spouses region=ser_ferro
+a : If we save, we could move up a tier. | Our daughter's been noticed by a merchant house. | The rent man came again.
+b : And pay for it the rest of our lives. | Noticed how? | He comes every week. He likes us.
+a : We'd have a view of the Cathedral. | As a clerk. As a clerk only. | He likes our pennies.
+b : We can see the Cathedral from the wharf. | Good. Only as a clerk. | We'll give him fewer.
+a : From the wharf you see the back of it. | Only as a clerk. | He'll come twice.
+
+scene kn_rg_sf_saint
+when topic=family|friends region=ser_ferro
+a : Light a candle for the Iron Saint with me? | Grandmother swears the Saint healed her leg. | The procession's on {weekday}. We'll take the pups.
+b : One each. Mine's for the harvest. | She swears it every feast day. | They'll want sweets the whole way.
+a : Mine's for your mother's temper. | It's a good leg now. | They can want.
+b : That needs two candles. | Then the Saint did good work. | They'll get.
+a : Three. | He always does. | They always do.
+
+scene kn_rg_sf_noble_snub
+when topic=quarrel region=ser_ferro
+a : You wouldn't even look at me in the upper town. | Since your house got its title, you've forgotten us. | The King's guard pushed my pup into the river.
+b : I was with my patron. It's complicated. | I've forgotten nothing. I've been busy. | The guard does as the guard does.
+a : Complicated. Like your nose in the air. | Busy with your new friends. | You'd say that. Your brother's one of them.
+b : That's unfair. | They're useful friends. | And he'd say sorry. I won't.
+a : It's true. | We used to be useful. | Then I'll not ask.
+
+# ---------------------------------------------------------------- Accord Crossing
+
+scene kn_rg_ac_caravan_family
+when topic=family band=family|spouses region=accord_crossing
+a : Your father's caravan is three days late. | Every carter in the yard asked for you. | Pack the cart. We leave with the next wagons.
+b : The pass is slow this time of year. | Tell them I'm busy. | Where to this time?
+a : Three days of slow? | With what? | Wherever the coin is.
+b : Four. Last year it was four. | With you, for once. | Then I'll pack warm.
+a : Then one more, and I'll worry. | Flatterer. | Pack everything.
+
+scene kn_rg_ac_friends_stories
+when topic=friends region=accord_crossing
+a : That carter swore he saw a bear the size of a house. | Heard any good lies from the southern wagons? | The Ser Ferro lot always talk loudest.
+b : Every carter's seen that bear. | One about a talking fish. | And drink slowest.
+a : Same bear, you think? | What did it say? | And pay last.
+b : Getting bigger every year. | "Buy more salt." | If at all.
+
+# ---------------------------------------------------------------- Saltreach
+
+scene kn_rg_sr_salt_family
+when topic=family band=family|spouses region=saltreach
+a : My paws are cracked raw from the pans. | The pups were playing in the salt flats again. | Rain spoiled half the pans.
+b : Let me rub some fat in them. | They come home white as ghosts. | Half's better than all.
+a : It stings. | And licking themselves till they're sick. | Half means half supper.
+b : That means it's working. | Then wash them before they lick. | Then half supper, and hope.
+a : It means it stings. | Easier said. | Hope's thin soup.
+
+scene kn_rg_sr_friends_boat
+when topic=friends region=saltreach|lakeside
+a : Coming out on the boat tomorrow? | You owe me for the nets. | I've a fish story for you.
+b : If you row. | Next catch. | Is it true?
+a : I always row. | You said that last catch. | Partly.
+b : You row in circles. | Last catch was bad. | The good part?
+a : Big circles. | They're all bad lately. | The fish was real.
+
+# ---------------------------------------------------------------- Cinderbrook
+
+scene kn_rg_cb_mine_family
+when topic=family band=family|spouses region=cinderbrook
+a : I don't want our son down the mine. | You came up black to the ears again. | The shaft gave way on the east side today.
+b : It's honest work. Good coin. | That's the mine. It's in my fur now. | Was anyone hurt?
+a : Honest work kills honest wolves. | Wash it out before you lie down. | Two. They got them out.
+b : Then the forge. He can apprentice. | It'll be grey by morning. | Both breathing?
+a : Better. Hotter, but better. | Better grey than black. | Barely.
+
+scene kn_rg_cb_quarrel_forge
+when topic=quarrel region=cinderbrook
+a : You've been taking ore from my pile. | Your hammering starts before dawn. | You told the foreman I was drunk.
+b : It was on my side of the post. | So does my rent. | You were drunk.
+a : The post moved in the night. | Rent's quieter. | Once!
+b : Posts don't walk. | Not mine. | Once on a shift.
+a : Thieves do. | Then hammer quieter. | You'll pay for that.
+
+# ---------------------------------------------------------------- Westmarch
+
+scene kn_rg_wm_garrison_mate
+when topic=family band=spouses region=westmarch
+a : They've posted you to the outer watch again. | You came back smelling of the woods. Any trouble? | When's your posting over?
+b : Somebody has to look west. | Tracks. Old ones. | Spring, if the captain remembers.
+a : Somebody with fewer pups. | Old tracks get new feet. | He won't. I'll remind him.
+b : I'll be careful. | I know. I'm careful. | You'd frighten him into it.
+a : Be more than careful. | Be more careful. | Good.
+
+scene kn_rg_wm_traders
+when topic=friends region=westmarch
+a : A trader came from the west with furs. | Nothing out there but trees and trouble. | Want to ride the boundary with me on rest day?
+b : Good furs? | And furs. | On rest day? Are you mad?
+a : The best I've seen. | Furs are trouble with good collars. | Quiet. Free air.
+b : Then I'll want a look. | Ha. | Fine. Bring food.
+
+# ---------------------------------------------------------------- Lakeside
+
+scene kn_rg_ls_boatwright
+when topic=family band=family region=lakeside
+a : Grandfather built this boat. Mind the keel. | The lake's high. Your uncle's boat came loose. | You'll learn the oars before you learn your letters.
+b : It leaks. | Did they find it? | Letters are easier.
+a : It leaks proudly. | Out in the reeds. Upside down. | Letters don't catch fish.
+b : It leaks all over my paws. | Was anyone in it? | They catch the brother's eye.
+a : Then bail with pride. | Only a cat. It swam. | Fish first.
+
+# ---------------------------------------------------------------- Fenhollow
+
+scene kn_rg_fh_peat_family
+when topic=family band=family|spouses region=fenhollow
+a : Your back's bent from cutting peat all day. | Grandmother wants to show the pups the herb beds. | The fog came in thick. Keep the pups inside.
+b : The peat's paid for supper. | Good. She knows every plant in the fen. | They'll sulk.
+a : The healer's paid for your back. | And every poison. | Better sulky than lost.
+b : Then we're even. | She'll teach them those too. | I'll tell them a story.
+a : We're never even. | Bright One help us. | The one about the fen lights.
+
+scene kn_rg_fh_friends_herbs
+when topic=friends region=fenhollow
+a : Found a patch of marshwort by the old bridge. | Will you come gathering tomorrow? | My mate thinks I'm mad, wading in the bog.
+b : Show me. I won't tell. | If you bring the boards. | You are mad.
+a : Swear on your tail. | I'll bring the boards. | Mad and rich, come market day.
+b : On my tail and my mother's. | Then I'll bring the bread. | Mad and wet.
+
+# ---------------------------------------------------------------- Amberford
+
+scene kn_rg_af_toll_family
+when topic=family band=family|spouses region=amberford
+a : Your father's taking the ford toll again today. | The harvest's in early. Help with the sheaves. | A cart got stuck in the ford. Took six of us.
+b : He likes it. He gets to scowl. | Always early when I've plans. | Did they pay toll for it?
+a : He's good at it. | Your plans are walking with the miller's son. | Twice. Once for stuck, once for out.
+b : He's had practice. | ...Maybe. | Father's a clever one.
+a : He scowled at me today. | Sheaves first. Then the miller's son. | He's a scowler. They're the cleverest.
+
+scene kn_rg_af_neighbours
+when topic=quarrel region=amberford|hollowmere_village|westmarch
+a : Your sheep were in my barley. | You've moved the boundary stone. | Your bull broke my fence and ate my cabbages.
+b : Sheep can't read fences. | That stone's always been there. | He was hungry.
+a : Then teach them. | It's moved a stride. I paced it. | So am I now.
+b : I'll teach them with a crook. | Your stride's short. | I'll send a cabbage over.
+a : And pay for the barley. | Pace it with me, then. | Three cabbages.
+
+# ---------------------------------------------------------------- Hollowmere
+
+scene kn_rg_hm_village
+when topic=family|friends region=hollowmere_village
+a : Everyone in this village is your cousin. | The whole village knew before I did. | Old Fern's turning ninety. The village is baking.
+b : Twice, some of them. | There are no secrets in Hollowmere. | Ninety! What's she eating?
+a : That's not funny. | Not one. Ever. | Spite, she says.
+b : It's a bit funny. | We'd go mad. Or madder. | Then I'll bake her a spite cake.
+
+# ---------------------------------------------------------------- The fortresses
+
+scene kn_rg_ft_letters_home
+when topic=family|friends region=fortresses
+a : Any letter from home? | My mate's had a pup. I've never seen it. | Do you miss your family?
+b : My mother. She says eat more. | Congratulations. Boy or girl? | Every night on the wall.
+a : Mothers always do. | Girl. They named her after my grandmother. | Me too.
+b : She's not here to see the stew. | Lucky pup. | Then we'll miss them together.
+
+scene kn_rg_ft_barracks_quarrel
+when topic=quarrel region=fortresses
+a : Stop taking my blanket. | You snore like a siege engine. | You cheated at bones and took my pay.
+b : It was on the floor. | I don't snore. You lie awake listening. | I won your pay.
+a : It was on my cot! | Everyone heard it. | You won with loaded bones.
+b : Then it's the floor's now. | Everyone hears you whining about it. | Prove it.
+a : I'll report you. | I'll smother you in your sleep. | I'll prove it with my teeth.
+
+# ---------------------------------------------------------------- The Ghost Town
+
+scene kn_rg_gt_squatters
+when topic=friends|family region=ghost_town
+a : Found another roof that's mostly roof. | Do you ever think about going back to town? | Is it just us left now?
+b : Mostly is plenty. | Every night. Then morning comes. | Just us and the wind.
+a : Mostly kept the rain off last night. | And you stay. | And the ghosts.
+b : Then it's a palace. | Here nobody asks for rent. | The ghosts don't eat much.

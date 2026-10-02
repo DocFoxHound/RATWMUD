@@ -1,0 +1,246 @@
+# Current events in town, part one: crime. Thefts and assaults ({victim}, and {subject}, who may be "someone" when
+# nobody saw), and arrests ({subject}). Alternatives are written in parallel: the second reply answers the second remark.
+
+# ---------------------------------------------------------------- Theft
+
+scene et_theft_purse
+when topic=crime kind=theft
+a : {victim} had their purse cut in broad daylight. | Did you hear? {victim} was robbed. | Somebody lifted {victim}'s coin on the way home.
+b[merchant] : That's three this month. I'm keeping my takings under the floor.
+b[old] : When I was young we hanged thieves at the gate. Not that it stopped them.
+b : In daylight? Bold. | Poor soul. Much taken? | On the way home. That's the worst of it.
+a : Bold, and quick with a blade. | All they had, I heard. | Right on their own doorstep.
+a?[friends] : Walk home with me tonight, would you?
+
+scene et_theft_lock
+when topic=crime kind=theft place=home|street
+a : I bought a new lock today. After {victim}. | Bolted the shutters for the first time in years. | I'm sleeping with my boots on, after what happened to {victim}.
+b[smith] : You and half the street. I've sold out of hasps.
+b[child] : Are the thieves going to come here? Will they take my top?
+b : Can't blame you. | Thieves don't care about shutters. | Your boots? Why?
+a : Better than doing nothing. | They care about noise. Mine creak. | So I can chase them, of course.
+
+scene et_theft_suspect
+when topic=crime kind=theft
+a : They say {subject} took it. From {victim}, of all people. | I keep hearing it was {subject}. | Folk point at {subject} for the thieving.
+b[guard] : Saying and proving are different animals. We need a witness.
+b[rivals] : You'd believe anything of anyone, you would.
+b : Can't say I'm surprised. | Names are cheap. | Folk point at all sorts.
+a : No, nor me. | Some are cheaper. | And sometimes they're right.
+
+scene et_theft_market_stall
+when topic=crime kind=theft place=market
+a : Half a stall's worth of goods gone from the market overnight. | {victim} lost a week's stock. Just gone. | Somebody's been working the market crowd. {victim} lost a purse.
+b[merchant] : I sleep under my stall now. My back hates me.
+b[guard] : We doubled the night round. They went the other way round.
+b : Overnight? With the watch about? | A week's work. Cruel. | Crowds are a thief's friend.
+a : The watch was in the tavern, I'd wager. | Cruel's the word. | Keep your hand on your coin.
+
+scene et_theft_child_view
+when topic=crime kind=theft a.stage=young|adolescent
+a : Mama says a thief got {victim}. Was it a monster? | Did the thief have a mask? | If I catch the thief, do I get a reward?
+b[old] : A thief's just a wolf with empty paws and no shame, pup.
+b[guard] : You leave the catching to us, little one.
+b : No monster. Just a sneak. | Nobody saw a mask. | You'll stay away from thieves.
+a : A sneak's worse. Sneaks are everywhere. | Then how do you know? | Aww.
+
+scene et_theft_shrug
+when topic=crime kind=theft band=acquaintances|strangers
+a : Another theft, I hear. {victim} this time. | Bad business with {victim}'s things. | {victim} got robbed, they say.
+b : There's always another. | It is. | So they say.
+a : Seems so. | Keep an eye on your own. | Mind yours.
+
+scene et_theft_priest
+when topic=crime kind=theft
+a[priest] : The Bright One gave us order. A thief spits on it. Pray for {victim}, and for the thief too.
+a : {victim} was robbed. What's the town coming to? | A thief, here, in our street. | They took everything {victim} had saved.
+b[priest] : The Dark One's work is small, most days. A cut purse. A broken latch. It adds up.
+b : Same as it always came to. | Our street's no different. | Everything? Cruel.
+a : Then it's coming to nothing new. | Apparently not. | Every last coin.
+
+scene et_theft_inside_job
+when topic=crime kind=theft place=work|tavern
+a : They knew just where the strongbox was. That wasn't luck. | Whoever robbed {victim} knew the house. | No door forced. Think on that.
+b[innkeeper] : I've counted my keys twice. All here. Still don't sleep.
+b : Someone close, then. | You think it's one of us? | That's worse than a broken door.
+a : Someone close. | I think we should watch our tongues. | Much worse.
+
+scene et_theft_night_noise
+when topic=crime kind=theft time=dawn|day
+a : Heard a clatter in the night and thought nothing of it. Then {victim} was robbed. | Dogs barking at the second hour. That was the thief. | Did anyone hear anything last night?
+b[guard] : I wish folk would shout when they hear a clatter. Save me a deal of trouble.
+b : You couldn't have known. | They always bark. | Not a whisker.
+a : I'll know next time. | Not like that. | Nor me. That's the worrying part.
+
+scene et_theft_rich_victim
+when topic=crime kind=theft
+a : {victim} was robbed. I'd have thought they'd more locks than doors. | Even {victim} isn't safe, then. | {victim} lost a silver cup, they say.
+b[beggar] : The rich lose a cup. I'd lose my blanket. Pity whom you like.
+b : Locks don't stop the clever ones. | None of us are. | A cup! Imagine owning a cup worth stealing.
+a : Clever ones go for the rich. | None. | I can't.
+
+scene et_theft_watch_blame
+when topic=crime kind=theft
+a : What is the watch for, if thieves walk in and out? | {victim} told the watch, and they yawned. | The watch says they'll look into it. They always look into it.
+b[guard] : We're eight wolves for the whole town. You want more of us, pay more tax.
+b : Drinking, mostly. | Yawning's what they're best at. | And look out of it again.
+a : I've noticed. | They're very good at it. | Every time.
+
+scene et_theft_fence
+when topic=crime kind=theft
+a : Someone's selling cheap pots out of a sack by the gate. Funny timing. | {victim}'s brooch will turn up on a stall, mark me. | Stolen goods go downriver by night.
+b[merchant] : If I see {victim}'s things on a stall, I'll know whose stall to watch.
+b : Very funny timing. | Probably in another town. | And come back up as honest wares.
+a : Laughing, I am. | Probably. | That's the trade.
+
+# ---------------------------------------------------------------- Assault
+
+scene et_assault_shock
+when topic=crime kind=assault
+a : {victim} was attacked last night. Beaten in the street. | Have you heard about {victim}? Set on in the dark. | They found {victim} by the wall, bleeding.
+b[healer] : I stitched the worst of it. They'll mend, if the fever stays away.
+b[old] : I've seen too many nights like that. It never stops being ugly.
+b : In the street? Here? | Bright One keep them. Who did it? | Bleeding? Is {victim} alive?
+a : Here. Right here. | Nobody's saying. | Alive. Barely.
+a?[friends] : Don't go out alone. Promise me.
+
+scene et_assault_fear
+when topic=crime kind=assault time=dusk|night
+a : I don't like walking now. Not since {victim}. | Stay in the light tonight. | I'm going the long way home. Past the lamps.
+b[guard] : Good. Keep to the lit streets till we've found who did it.
+b[adolescent] : I'm not scared. I'd bite whoever tried.
+b : Nor do I. | I always do now. | I'll walk with you.
+a : Strange times. | Good. | Thank you.
+
+scene et_assault_rumour_who
+when topic=crime kind=assault
+a : They say it was {subject} who hurt {victim}. | I keep hearing {subject} did that to {victim}. | Folk whisper {subject} did it.
+b[guard] : Then folk had better come and say it to me, plainly.
+b[family] : Don't. Not until we know. A name sticks like tar.
+b : I'd keep that to yourself until it's proven. | Whispers can hang a wolf. | I'd not say that too loud.
+a : You're right. | I know. | I won't.
+
+scene et_assault_tavern_brawl
+when topic=crime kind=assault place=tavern
+a : Is this where it happened? Where {victim} was hurt? | Blood on the floorboards still. | They scrubbed the boards, but you can tell.
+b[innkeeper] : Not in my house. Outside. They took it outside and it went too far.
+b : Near enough. | Don't look. | You can always tell.
+a : Bright One. | I can't not. | You can.
+
+scene et_assault_revenge
+when topic=crime kind=assault band=family|friends
+a : When I find who hurt {victim}, I'll tear their ears off. | I can't stop thinking about {victim}. | We should go and find who did it ourselves.
+b[old] : Revenge feeds itself. Let the watch carry it.
+b[guard] : You'll do nothing of the kind. I'll have two in the cells instead of one.
+b : You'll do no such thing. | Nor me. | And then what? Be the next one in a cell?
+a : Somebody has to. | They didn't deserve it. | Maybe.
+
+scene et_assault_healer
+when topic=crime kind=assault
+a[healer] : Broken ribs, a torn ear. {victim} will mend. The fear won't, not soon.
+a : How is {victim}? Have you seen them? | Is {victim} still at the healer's? | I took some broth round to {victim}.
+b[healer] : Sleeping, at last. It took poppy and a long talk.
+b : Sore, and quiet. Too quiet. | Still there. Won't eat. | That's kind of you.
+a : Give it time. | Poor soul. | It's nothing.
+
+scene et_assault_child
+when topic=crime kind=assault a.stage=young|adolescent
+a : Why did someone hurt {victim}? | Mama won't let me out after supper now. | Is the bad wolf going to come back?
+b[old] : Some wolves forget they were ever pups. That's all, little one.
+b : I don't know, pup. Some wolves are cruel. | Good. Listen to her. | Not here. We'll make sure of it.
+a : That's not a real answer. | It's not fair. | Promise?
+
+scene et_assault_strangers
+when topic=crime kind=assault band=strangers|acquaintances
+a : Terrible thing, about {victim}. | You heard about the attack? | Rough night in town, I'm told.
+b : Terrible. | I heard. | Very rough.
+a : Mind yourself. | Mind how you go. | Take care.
+
+scene et_assault_guards_watch
+when topic=crime kind=assault a.role=guard
+a : Double rounds tonight. After what happened to {victim}. | Captain wants a name for the {victim} business by morning. | Anyone hears a scuffle, they shout. Pass it on.
+b[guard] : Double rounds and half the pay. Lovely.
+b : Good. Make it triple. | Then go and find one. | I'll tell everyone.
+a : Don't tempt the captain. | That's the plan. | Good.
+
+scene et_assault_old_times
+when topic=crime kind=assault a.stage=old
+a : I remember when you could walk this town blind at midnight. | In my day the whole street came running at a scream. | Poor {victim}. In my day we'd have caught the brute by dawn.
+b[adolescent] : Did that ever actually happen, or is it just a story old folk tell?
+b : Different days. | Not now. They draw their shutters. | Maybe you would have.
+a : Worse days, some of them. Not this. | Shame on them. | We would.
+
+# ---------------------------------------------------------------- Arrests
+
+scene et_arrest_relief
+when topic=crime kind=arrest
+a : They've taken {subject} to the cells. | {subject}'s been arrested. I saw them marched off. | The watch caught {subject} at last.
+b[guard] : Took four of us. Bit one. We have them now, though.
+b[merchant] : Good. Maybe I'll sleep without a cudgel by the bed.
+b : Good riddance. | Marched off? In chains? | About time.
+a : For now. | Chains and all. | Long past time.
+a?[rivals] : Your cousin's friends with {subject}, isn't she?
+
+scene et_arrest_doubt
+when topic=crime kind=arrest
+a : They've arrested {subject}. I don't believe it. | {subject} in the cells. It doesn't sit right. | I've known {subject} years. They're no criminal.
+b[guard] : We don't drag wolves in for fun. There's cause.
+b[priest] : Pray for the truth, then. It tends to come out.
+b : You never know a wolf all the way through. | Nothing sits right these days. | Years can hide a lot.
+a : Maybe not. | No. | Maybe.
+
+scene et_arrest_watch_brag
+when topic=crime kind=arrest a.role=guard
+a : Got {subject}. Fair and square. | Bringing in {subject} was the best work this month. | You'll sleep easier. {subject}'s in the cells.
+b[merchant] : My thanks. Drinks are on me, one each, no more.
+b : Well done. | Proud of you. | Will they stay there?
+a : Just doing the job. | Thank you. | If the magistrate's sober.
+
+scene et_arrest_trial
+when topic=crime kind=arrest
+a : What'll happen to {subject} now? | Is there to be a hearing for {subject}? | They'll make an example of {subject}, I suppose.
+b[official] : The magistrate hears it after the market day. Everything by the ledger.
+b[priest] : Confession first. The Bright One's mercy is open even to {subject}.
+b : Fine, or the stocks, or worse. | Soon, I'd think. | They usually do.
+a : Worse, I hope. | Good. | Somebody has to be the example.
+
+scene et_arrest_family
+when topic=crime kind=arrest band=family
+a : How do I face the street, with {subject} in the cells? | Mother won't stop crying about {subject}. | They took {subject}. In front of everyone.
+b : Head up. You did nothing. | Let her cry. It helps. | I saw. I'm sorry.
+a : Easy to say. | I can't bear it. | Everyone stared.
+
+scene et_arrest_market
+when topic=crime kind=arrest place=market
+a : The stall's empty. Did you know? {subject}'s stall. | Watch came through the market for {subject} this morning. | Market's quiet today. Everyone's talking about {subject}.
+b[merchant] : One less stall. I'll not pretend I mind.
+b : Empty and stays empty, I'd guess. | I saw the scuffle. | They'll talk for a week.
+a : Probably. | I missed it. | At least.
+
+scene et_arrest_child
+when topic=crime kind=arrest a.stage=young|adolescent
+a : I saw them take {subject} away! With ropes! | Is {subject} bad now? | What's it like in the cells?
+b[guard] : Cold and dull, pup. Stay good and you'll never see one.
+b : Don't stare at things like that. | They did something bad. That's different. | Cold, and dark, and lonely.
+a : But it was exciting! | Can you become good again? | I'll be good.
+
+scene et_arrest_quiet_nod
+when topic=crime kind=arrest band=strangers|acquaintances
+a : They got {subject}, I hear. | Arrest in town today. | {subject}'s in the cells.
+b : So they did. | So I heard. | So they say.
+a : Good. | Let's hope it's the right one. | For now.
+
+scene et_arrest_bribe
+when topic=crime kind=arrest
+a : {subject} will be out in a day, you watch. Coin talks. | Somebody's coin will open that cell. | Wolves with friends don't stay in cells long.
+b[official] : That's slander, and I'll thank you not to say it near the hall.
+b[guard] : Not on my watch it won't.
+b : Probably. | Whose coin, though? | True enough.
+a : Mark me. | That's the question. | True as rain.
+
+scene et_arrest_innkeeper
+when topic=crime kind=arrest place=tavern
+a : They took {subject} from right there. That table. | {subject} owed half the tavern money. | Drink to the watch, then.
+b[innkeeper] : And left me the slate unpaid. Of course.
+b : Right there? | Owed you too? | To the watch.
+a : Under my nose. | Always pay first. | Who'd have thought.

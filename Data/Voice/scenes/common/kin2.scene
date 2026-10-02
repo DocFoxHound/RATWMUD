@@ -1,0 +1,282 @@
+# Kin: siblings, cousins, grandparents and grown children (Docs/Design/30-towns-and-talk.md). Family or household.
+
+# ---------------------------------------------------------------- Pups and siblings
+
+scene kn_sib_mine
+when topic=family band=family a.stage=young b.stage=young
+a : That's mine. | Give it back! | I saw it first.
+b : It's got my scent on it now. | Make me. | Seeing doesn't count.
+a : Only because you licked it! | I'll tell. | Seeing counts double.
+b : That's how you claim things. | Tell, then. | Does not.
+a : Then I'm licking yours. | I'm telling right now. | Does too!
+
+scene kn_sib_secret
+when topic=family band=family a.stage=young|adolescent b.stage=young|adolescent
+a : Can you keep a secret? | Promise you won't tell. | I know something you don't.
+b : Depends what it is. | I promise. Probably. | You don't know anything.
+a : Then I'm not telling. | Probably isn't a promise. | I know where the honey's hidden.
+b : I'll keep it. I swear on my tail. | I promise properly. | ...Where?
+a : The old cooper's barn has kittens in it. | I broke Mama's bowl and hid it. | Top shelf, behind the flour.
+
+scene kn_sib_race
+when topic=family band=family a.stage=young|adolescent b.stage=young|adolescent place=street|field|wild
+a : Race you to the well! | Bet I can jump that ditch and you can't. | Last one home is a wet cat.
+b : You always cheat. | You can't either. | You're the wet cat already.
+a : I don't cheat. I start early. | Watch me. | Not yet I'm not!
+b : That's cheating! | ...You're in the ditch. | Go!
+
+scene kn_sib_blame
+when topic=family band=family a.stage=young|adolescent b.stage=young|adolescent place=home
+a : You'd better clean that up before they see. | I'm not taking the blame for you again. | Who let the hens in?
+b : We'd better. You helped. | You never took the blame for me. | They came in on their own.
+a : I watched. Watching isn't helping. | Remember the cart wheel? | Through a shut door?
+b : Watching is helping a bit. | The cart wheel was your idea! | It was a very weak door.
+a : Fine. I'll get the broom. | Was not. | You're hopeless.
+
+scene kn_sib_bigger
+when topic=family band=family a.stage=adolescent b.stage=young
+a : Stop following me. | Go home. You're too small for this. | Why are you always behind me?
+b : I'm not following, I'm walking the same way. | I'm not small. | Because you go the interesting places.
+a : The same way as me, every day? | You don't even reach my shoulder. | They're only interesting without you.
+b : It's a good way. | I'll grow. | That's mean.
+a : ...Fine. Stay close and keep quiet. | Not fast enough. | It's true. ...Come on, then.
+
+scene kn_sib_protect
+when topic=family band=family a.stage=adolescent b.stage=young
+a : Who said that to you? | Did the tanner's pups chase you again? | Show me where they hit you.
+b : Nobody. Forget it. | It doesn't matter. | They didn't hit. They pushed.
+a : Nobody doesn't make you cry. | It matters to me. | Pushing's hitting with extra steps.
+b : The big one with the torn ear. | It was the tanner's pups. | Don't make it worse.
+a : I know him. He won't do it twice. | Then they'll meet me. | I won't make it worse. I'll make it stop.
+
+scene kn_sib_jealous
+when topic=family band=family a.stage=young|adolescent b.stage=young|adolescent
+a : Mama likes you better. | You always get the bigger bone. | Why do you get to stay up late?
+b : She doesn't. She just yells at me less. | I'm bigger. | Because I'm older.
+a : That's the same thing. | That's not fair. | That's not a reason.
+b : It's not. You'd know if you behaved. | Bigger's not about fair. | It's the only reason there is.
+a : I do behave! | Everything's about fair. | It's a stupid reason.
+
+scene kn_sib_teach
+when topic=family band=family a.stage=adolescent b.stage=young
+a : No, you're doing it wrong. Watch. | You hold the knot with your teeth, then pull with your paw. | Ears forward when you meet a grown-up. It's polite.
+b : That's how you did it! | My teeth are slipping. | Like this?
+a : I did it better. Again. | Bite harder. It's rope, it won't feel it. | Not that far forward. You look like a hare.
+b : This is boring. | Got it! | Like this?
+a : Everything useful's boring. | See? You're cleverer than you look. | Perfect.
+
+scene kn_sib_twins
+when topic=family band=family a.stage=young|adolescent b.stage=young|adolescent
+a : They called me by your name again. | Let's swap collars and see if anyone notices. | Do you ever wish we didn't look alike?
+b : Did you answer? | They'd notice by the smell. | Sometimes. When you do something stupid.
+a : Of course I answered. They had cake. | Not if we roll in each other's beds. | That's not often.
+b : Then that's my cake. | That's disgusting. Let's do it. | It's twice a day.
+a : You can have the crumbs. | Tonight. | Liar.
+
+scene kn_sib_adult_rivalry
+when topic=family band=family a.stage=adult b.stage=adult
+a : Father asked after you. You should visit. | I see you've taken the good cushion again. | Still owe me those three pennies, you know.
+b : I visit. When there's time. | You weren't using it. | From when we were pups?
+a : There's never time, with you. | I was getting to it. | Pennies don't stop being owed.
+b : Some of us work, you know. | Then get to it faster. | You're impossible.
+a : Some of us work and visit. | Some of us are older and know better. | I learned it from you.
+
+scene kn_sib_adult_warm
+when topic=family band=family a.stage=adult b.stage=adult
+a : Do you remember the winter we got lost in the woods? | You still hum that tune Mother sang. | It's good to sit with you. It's been too long.
+b : I remember you crying the whole way. | Do I? I didn't notice. | It has. Whose fault is that?
+a : You cried first. | Every time you're worried. | Both of ours.
+b : I was keeping you company. | I'm not worried. | Fair enough.
+a : Of course you were. | You're humming now. | Let's not leave it so long again.
+
+scene kn_sib_inheritance
+when topic=family band=family a.stage=adult b.stage=adult
+a : We need to talk about the house. | Have you thought about Father's tools? | Somebody has to look after Mother when the time comes.
+b : Not today. | You want them. Say it. | Somebody. You mean me.
+a : It's never today with you. | I could use them. You couldn't. | You live closer.
+b : Because it's never a good day for it. | I could learn. | I live closer because you left.
+a : Then we pick a bad one and get it done. | You won't. | That's not fair.
+
+scene kn_sib_newborn_aunt
+when topic=family band=family a.stage=adult b.stage=adult
+a : Have you held your nephew yet? | The little one has your nose, poor thing. | She cried when I picked her up. Must be the family scent.
+b : I'm afraid I'll drop him. | It's a fine nose. | She'll get used to us.
+a : You won't. They're tougher than they look. | It is, on you. On a pup it's enormous. | Before she can walk, I hope.
+b : I'll try tomorrow. | She'll grow into it. | Or she'll walk away from us.
+
+# ---------------------------------------------------------------- Grandparents
+
+scene kn_gran_stories
+when topic=family band=family a.stage=old b.stage=young
+a : Did I ever tell you about the winter the river froze solid? | When I was your age, there was no wall round this town. | Sit down. Let me tell you about your grandfather.
+b : Lots of times. | No wall? What about bandits? | Was he big?
+a : Then you'll know when I get it wrong. | We had teeth. That was our wall. | Bigger than the door. Couldn't fit through it.
+b : You always get the bear part wrong. | I've got teeth. | How did he get in, then?
+a : The bear was this big. | Not yet, not proper ones. | Through the window. Every night.
+
+scene kn_gran_spoils
+when topic=family band=family a.stage=old a.sex=female b.stage=young
+a : Here. Don't tell your mother. | I saved you the marrow. | I've a sweet in my pocket for a good pup.
+b : Is it honey? | All of it? | I'm good! I'm always good!
+a : Honey and nuts. | Every last bit. | That's not what your mother says.
+b : You're my best grandmother. | Thank you! | She's wrong.
+a : I'm your only one. | Eat it before she sees. | Of course she is.
+
+scene kn_gran_old_ways
+when topic=family band=family a.stage=old b.stage=young|adolescent
+a : In my day, pups bowed their head to their elders. | Why are you lying around? The sun's up. | Pups these days don't know how to howl properly.
+b : Why? | It's rest day. | I can howl!
+a : Respect. It costs nothing and buys a lot. | Rest day was for chapel, in my time. | Let's hear it, then.
+b : I respect you. Lots. | Chapel was boring in your time too. | Owooo!
+a : Then bow your head, cheeky. | ...It was. Don't tell the brother. | That's a pup with a cold. From the belly!
+
+scene kn_gran_forgets
+when topic=family band=family a.stage=old b.stage=adult
+a : Where did I put my spectacles? | Has the cart come for the grain yet? | Is your father home?
+b : They're on your head. | That was last season. | Father's been gone three winters.
+a : So they are. | Was it? Of course. | ...Yes. Yes, I know. I forget sometimes.
+b : Easy to miss them up there. | It's fine. Sit. | I know. It's all right.
+
+scene kn_gran_teaching_teen
+when topic=family band=family a.stage=old b.stage=adolescent
+a : You walk like you've got somewhere to be. | When you meet a lord, ears down, tail level. | That temper of yours. You get it from me.
+b : I do have somewhere to be. | Why level? | I don't have a temper!
+a : Nobody your age does. They just think so. | Low is begging. High is a challenge. Level is a wolf who knows their worth. | There it is.
+b : That's not true. | That's a lot to remember for a lord. | ...That's not fair.
+a : You'll see. | Then remember it for everyone. | Nor was my mother.
+
+scene kn_gran_health
+when topic=family band=family a.stage=adult b.stage=old
+a : You should rest more. | Has the healer been round? | Let me carry that for you.
+b : I'll rest when I'm dead. | She came and went. Fusses like a hen. | I've carried heavier than this since before you were whelped.
+a : Not soon, I hope. | Did you take what she gave you? | I know. Let me anyway.
+b : Not soon. Not if I can help it. | It tastes of ditchwater. | ...Just this once.
+a : Good. | Take it anyway. | Thank you.
+
+scene kn_gran_moving_in
+when topic=family band=family a.stage=adult b.stage=old place=home
+a : There's room for you here, you know. | You can't keep the old den warm by yourself any more. | The pups would love to have you close.
+b : I like my own fire. | I've kept it warm sixty winters. | They'd love my sweets, you mean.
+a : You can bring your fire. Well, the poker. | It's the next sixty I'm worried about. | That too.
+b : I'll think about it. | I'll think about it. | I'll think about it.
+a : That's what you said last winter. | You always say that. | Think faster.
+
+scene kn_gran_old_couple_kids
+when topic=family band=family a.stage=old b.stage=adult
+a : When are you going to bring a mate home? | You look thin. Are you eating? | You work too hard. Your father was the same.
+b : When I find one who'll put up with you. | I'm eating. | Someone has to.
+a : That's a long wait, then. | Not enough. Sit. Eat. | He said that too. Look where it got him.
+b : You said it, not me. | I just ate! | It got him a good life.
+a : I'll leave it with you. | Eat again. | ...It did, mostly.
+
+scene kn_gran_last_words
+when topic=family band=family a.stage=old b.stage=adult|adolescent time=dusk|night
+a : When I'm gone, the chest by the bed is yours. | Don't you cry too long for me, when it's time. | I'm not afraid, you know. Of the end.
+b : Don't talk like that. | Don't talk like that. | Don't talk like that.
+a : There's a ring in it. It was my mother's. | A day of crying, then back to work. That's how we do it. | I've had a good run. The Bright One knows I've been trouble.
+b : I don't want a ring. I want you. | I'll cry as long as I want. | Trouble's one word for it.
+a : You'll have both, for a while yet. | Stubborn. Good. | Ha. Help me up.
+
+# ---------------------------------------------------------------- Cousins and the household
+
+scene kn_cousins_visit
+when topic=family band=family a.stage=young|adolescent b.stage=young|adolescent
+a : Our cousins are coming from {town} on rest day. | Do you remember our cousin Lark? | Mother says the cousins are staying a whole week.
+b : The one who bites? | The one who cheats at stones? | A whole week? Where will they sleep?
+a : He doesn't bite any more. He's older. | He doesn't cheat. He just wins. | In our bed. With us.
+b : Older biters bite harder. | Nobody wins that much. | Then I'm sleeping in the barn.
+a : I'll hide your tail, then. | He does. | Me too.
+
+scene kn_household_crowded
+when topic=family band=family a.stage=adult b.stage=adult place=home
+a : There are too many of us under this roof. | Who used all the hot water? | Somebody's snoring like a millstone.
+b : Then you move out. | Whoever got up first. | It's your brother.
+a : I was here first. | I got up first. It was gone already. | It's you. I'd know that snore in my sleep.
+b : That's not how it works. | Then it's the cat. | You would know. You're never asleep.
+a : It is in this house. | The cat doesn't wash. | Because of you.
+
+scene kn_household_servant_family
+when topic=family band=family a.job=servant b.job=servant
+a : The house is in an uproar. They're expecting guests. | Her ladyship wants every floor polished again. | Did they pay us this week?
+b : Then we'll be up all night. | Again? We polished them yesterday. | Half. The rest after the feast, they say.
+a : We'll be up all week. | Yesterday was a different mood. | After the feast, after the season, after never.
+b : At least the kitchen gets the leftovers. | Moods change faster than floors dry. | Keep your voice down.
+a : That's the only reason I stay. | Better than in a mine. | They can't hear us down here.
+
+scene kn_household_family_business
+when topic=family|work band=family a.role=merchant b.role=merchant
+a : You undercharged the miller again. | Who's minding the counter? | We need to talk about the accounts.
+b : He's family. | I thought you were. | What about them?
+a : He's a third cousin. That's not family, that's a stranger with our nose. | I thought you were! | They don't add up. Again.
+b : It's family enough. | Then nobody is. Run! | Nothing ever adds up in winter.
+a : Then charge him family prices. Higher. | I'm running! | This is spring.
+
+scene kn_family_dinner_argue
+when topic=family band=family time=dusk|night place=home
+a : Pass the bread. | Who salted the stew? It's like seawater. | No talking about politics at the table.
+b : Say please. | I did. It's flavour. | Who's talking about politics?
+a : Please, your highness. | Flavour of the sea. | You were about to.
+b : There you are. Was that hard? | You've no taste. | I was about to talk about the Council.
+a : Very. | I'll drink the well dry. | That's politics.
+
+scene kn_family_reunion
+when topic=family band=family a.stage=adult|old b.stage=adult
+a : You came! I didn't think you'd make it. | You're thinner. Life in {town} not feeding you? | Let me look at you. Still got that scar.
+b : I said I would. | It feeds me fine. I just walk more. | Still got it. Still not telling how I got it.
+a : You said it last year, too. | Walk less, eat more. | I'll get it out of you after a cup or two.
+b : This year I meant it. | I'll stay a few days and eat plenty. | Many cups have tried.
+a : Good. Stay a while. | Good. | We'll see.
+
+scene kn_family_black_sheep
+when topic=family band=family a.stage=adult|old b.stage=adult
+a : Have you heard from your brother? | Your cousin's been seen with bad company again. | The family name's had enough mud on it.
+b : No. And I'm not asking. | He's always with bad company. He is bad company. | Then stop throwing more.
+a : He's still blood. | He's still family. | I'm not the one throwing.
+b : Blood that steals from Mother. | Family that's in the stocks twice a season. | You're the one talking about it.
+a : ...I'll send word anyway. | Somebody has to keep an eye. | Somebody has to.
+
+scene kn_family_named_after
+when topic=family band=family a.stage=young|adolescent b.stage=old
+a : Who chose my name? | Who was I named after? | Did you know the wolf I'm named for?
+b : After your great-uncle. Fiercest wolf I ever knew. | A wolf who never once backed down. | Knew him? I married him.
+a : Was he brave? | Did he win all his fights? | What was he like?
+b : Brave and stupid, the way the best ones are. | Nearly. The last one was the winter. | Like you. Loud and kind.
+a : I can be brave. | I'll win the winter. | I'm not loud.
+b : I know. Be clever too. | Nobody does. Just get far. | You are. Kind as well.
+
+scene kn_family_regional_estate
+when topic=family band=family a.job=noble b.job=noble region=ridgemere
+a : Your match has been arranged. House Brinewater. | You've been seen at the tavern by the quay. Again. | The estate accounts are a disgrace this season.
+b : Arranged without asking me. | The tavern's warmer than this hall. | Then let the steward answer for them.
+a : You're asked now. | A noble isn't seen in taverns. | The steward answers to you. And you answer to me.
+b : And if I say no? | Then I'll go unseen. | Then I answer: rain ruined the harvest.
+a : Then you'll say it to your grandfather. | That's not what I meant. | Rain ruins every harvest. We plan for it.
+
+scene kn_family_harbour
+when topic=family band=family region=ridgemere|saltreach|lakeside|isle_fortress
+a : Your father's boat's late in. | The sea took your uncle's nets last night. | Smoke the last of the fish before it turns.
+b : He'll be in by dark. The wind's against him. | All of them? | I'll do it before supper.
+a : I'll watch the harbour till he is. | Every last one. | Before noon. It's turning already.
+b : I'll come with you. | Then he'll need ours. | Before noon, then.
+
+scene kn_family_mountain
+when topic=family band=family region=upper_accord|northern_fortress
+a : Your brother's joined the Wardens. | We'll need more firewood if this cold lasts. | The road down's closed again. No word from your aunt.
+b : The Wardens? He can't even catch a hen. | I'll go up the slope with the cart. | She's stubborn. She'll be fine.
+a : They'll teach him. Or break him. | Take your brother. Before the Wardens get him. | She's stubborn, and it's cold.
+b : Bright One help them both. | I'll take him, if he's sober. | Stubborn keeps you warm.
+
+scene kn_family_river_city
+when topic=family band=family region=ser_ferro
+a : Your sister's hoping for a post at the palace. | The rents in the middle town have gone up again. | Will you light a candle for your grandmother at the Cathedral?
+b : The palace? We're wharf wolves. | Then we'll move down a tier. | I'll light two.
+a : She doesn't think so. | Not down to the wharf. Not again. | One's enough. She was frugal.
+b : Then the palace better watch out. | Then we'd better earn more. | Two. She'd want me to look generous.
+
+scene kn_family_farm
+when topic=family band=family region=amberford|westmarch|hollowmere_village|fenhollow
+a : The north field needs ploughing before the rain. | Your mother wants you home for the harvest. | The old ox is lame.
+b : Then we'd better start before dawn. | I'll be there. I always am. | We can borrow the neighbour's.
+a : We'd better start now. | You weren't, last year. | He'll want paying.
+b : Now's not before dawn. | Last year I was sick! | Then we pay him in turnips.
+a : It's before tomorrow's dawn. Come on. | Sick of work, maybe. | He has turnips.

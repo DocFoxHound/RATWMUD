@@ -1,0 +1,288 @@
+# Kin: friends (Docs/Design/30-towns-and-talk.md). Debts and favours, teasing, troubles shared, old friends and young.
+
+# ---------------------------------------------------------------- Debts and favours
+
+scene kn_fr_owe_pennies
+when topic=friends
+a : You still owe me those pennies. | About that loan... | Did you forget something? Say, five pennies?
+b : Next Marketday. Swear on my tail. | What loan? | I forgot nothing. I misplaced it.
+a : You said that last Marketday. | The one you spent on cider. | Then find it.
+b : And this one's the real one. | That was an investment. | I'm looking. Very slowly.
+a : I'll hold your tail to it. | In what? | Look faster.
+b?[friends] : Supper's on me tonight. Call it interest.
+
+scene kn_fr_owe_favour
+when topic=friends
+a : I need a favour. | You know how you owe me for the thing with the cart? | Are you busy on rest day?
+b : How big a favour? | I knew that would come back. | Why do I feel I'm about to be?
+a : Big. Moving my mother's furniture. | It's come back. My roof needs patching. | Because you are. Roof. Mine.
+b : Your mother has a lot of furniture. | That's a big thing for a cart. | I'll bring the tar.
+a : She has a lot of opinions too. | It was a big cart. | You're a good friend.
+
+scene kn_fr_lend_tool
+when topic=friends
+a : Can I borrow your saw again? | Have you still got my good knife? | When are you bringing back my cart?
+b : You never brought it back the last time. | Which knife? | Your cart?
+a : I did! It's on your bench. | The one with the bone handle. In your belt. | The one in your yard. With my name burned in it.
+b : ...So it is. Take it, then. | Oh. That knife. | That's barely a name. It's scratches.
+a : Thank you. | Yes. That knife. | Bring it back, scratches and all.
+
+scene kn_fr_covered_for
+when topic=friends
+a : Thanks for covering for me yesterday. | Did the master notice I was gone? | You didn't tell my mate where I was, did you?
+b : You owe me a cider. Maybe two. | He noticed. I said you were sick. | I said you were helping me.
+a : Two it is. | Was I very sick? | Was I helpful?
+b : Make it three. He asked a lot of questions. | Violently. Out both ends. | Enormously. Remember that.
+a : Three, then. | Lovely. | I'll remember.
+
+scene kn_fr_secret_kept
+when topic=friends
+a : You didn't tell anyone, did you? | Can I trust you with something? | I need you to forget what you saw last night.
+b : Not a soul. | Always. | Saw what? I was asleep.
+a : Not even your mate? | It's big. | Good. Stay asleep.
+b : Especially not my mate. | Then tell me before you burst. | I'm snoring as we speak.
+a : Good. | Later. Not here. | Good friend.
+
+# ---------------------------------------------------------------- Teasing
+
+scene kn_fr_tease_fur
+when topic=friends
+a : What happened to your fur? | Did you sleep in a hedge? | Have you seen yourself this morning?
+b : I washed it. | I slept in my bed. | Not if I can help it.
+a : It looks like it fought back. | Your bed's a hedge, then. | Wise.
+b : It's growing in. | It's a very old bed. | Thank you.
+a : Into what? | Get a new one. | You're welcome.
+
+scene kn_fr_tease_cooking
+when topic=friends
+a : I tried your stew. I'm still alive. | Your bread could stop a door. | Who taught you to cook? Your enemy?
+b : That's the nicest thing you've said all week. | It did stop a door. Saved me a latch. | My mother.
+a : Don't get used to it. | Useful bread. | I'm so sorry.
+b : I won't. | It's a talent. | So is she, now.
+a : Good. | It is not. | Ha.
+
+scene kn_fr_tease_dancing
+when topic=friends
+a : I saw you dancing at the tavern last night. | Who told you that you could sing? | Was that you howling at the moon last night?
+b : I was magnificent. | Nobody had to. I just knew. | The moon looked lonely.
+a : You were something. | Somebody should have stopped you. | It looked frightened.
+b : Magnificent. | They tried. | It's still up there, isn't it?
+a : Something. | Not hard enough. | Hiding behind a cloud.
+
+scene kn_fr_tease_romance
+when topic=friends
+a : So. The baker's widow. | You've been walking past the weaver's a lot. | Who's the one you keep looking for in the crowd?
+b : What about her? | It's on my way. | No one.
+a : Her bread's very good, they say. | To where? The river's the other way. | No one's got very nice ears.
+b : The bread is good. Only the bread. | To the weaver's. | ...Shut up.
+a : Only the bread. | Exactly. | Ha!
+
+scene kn_fr_tease_old
+when topic=friends a.stage=adult|old b.stage=adult|old
+a : Your muzzle's going grey. | You groaned when you sat down. | We're getting old, you and I.
+b : Distinguished. The word is distinguished. | I sighed. Contentedly. | Speak for yourself.
+a : Grey, the word is grey. | Like a wheel. | I am. And for you.
+b : Distinguished grey. | Like a wise old wheel. | I'm as young as I ever was.
+a : Fine. Distinguished. | Squeaky, too. | Your knees disagree.
+
+# ---------------------------------------------------------------- Troubles shared
+
+scene kn_fr_bad_day
+when topic=friends
+a : You look like you've been dragged by the tail. | What's wrong? Your ears haven't been up all day. | You can tell me, you know.
+b : I feel it. | Everything. Work, home, everything. | I know. I'm working up to it.
+a : Sit. I'll get us something to drink. | Start with work. | Take your time.
+b : Thank you. | The master shouted at me in front of everyone. | It's about my brother.
+a : That's what I'm here for. | Then he's a fool and everyone knows it. | Tell me.
+
+scene kn_fr_lost_job
+when topic=friends
+a : I've lost my place. | They let me go this morning. | No more work at the yard for me.
+b : What? Why? | Just like that? | What happened?
+a : They say there's not enough work. | Just like that. | I was late too many times.
+b : There's always work for a good pair of paws. | That's cruel. | How many is too many?
+a : Not this season. | It is. | All of them.
+b : I'll ask around. Something will turn up. | We'll ask at the docks tomorrow. | You'll stay with us till you're on your paws again.
+
+scene kn_fr_illness
+when topic=friends
+a : Is your mother any better? | How's your mate's cough? | I heard your little one was poorly.
+b : Worse, if anything. | The healer says it's in the chest. | A fever. Three nights now.
+a : I'm sorry. Can I do anything? | That's bad. Very bad. | That's frightening.
+b : Pray, maybe. | Bring soup. She won't eat mine. | It breaks, the healer says. Soon, she says.
+a : I will. Every night. | I'll bring two pots. | Then soon it will. I'll sit with you.
+
+scene kn_fr_grief
+when topic=friends
+a : I'm sorry about your father. | I came as soon as I heard. | Is there anything you need?
+b : Thank you. | Thank you for coming. | Nothing, really. Company.
+a : He was a good wolf. | I wouldn't be anywhere else. | Then I'll stay.
+b : He was. Stubborn as a stone. | It's strange. The house is too big now. | Thank you.
+a : Like you. | It'll shrink again. In time. | Always.
+
+scene kn_fr_homesick
+when topic=friends
+a : Do you ever miss home? | I had a letter from my sister. | Sometimes I think about going back.
+b : Every day, a little. | What does she say? | To the old village?
+a : Me too. More in the evenings. | They've a new pup. I've never seen him. | It's quieter. Smells of pine.
+b : The evenings are worst. | Then go and see him. | And of nothing to do.
+a : They are. | It's three days' walk. | That's the best part.
+
+scene kn_fr_fears
+when topic=friends time=dusk|night
+a : Do you ever worry it'll all go wrong? | I'm afraid of growing old alone. | What frightens you most?
+b : Every night before I sleep. | You won't. You've got me. | The deep water. Ever since I was a pup.
+a : What do you do about it? | That's not the same. | I didn't know that.
+b : I sleep anyway. | It's not worse. | Now you do. Don't tell.
+a : I'll try that. | It's not. Thank you. | Never.
+
+# ---------------------------------------------------------------- Passing the time
+
+scene kn_fr_tavern_round
+when topic=friends place=tavern
+a : Your round. | Another cup? | Shall we have one more and go?
+b : I bought the last one. | Why not. | We said that three cups ago.
+a : That was yesterday. | That's the spirit. | Then this one's the real last one.
+b : It still counts! | Two, then. | It never is.
+a : It doesn't. Pay up. | Two. | It might be.
+
+scene kn_fr_dice
+when topic=friends place=tavern|street|home
+a : Fancy a game of bones? | You cheated last time. | Double or nothing?
+b : For pennies or for honour? | I won last time. That's different. | Double of what? You've nothing.
+a : For pennies. Honour doesn't buy cider. | It's the same thing with you. | Of my nothing.
+b : Pennies, then. Throw. | Watch me close, then. | Then I'll take it.
+a : Ha! A hound and a hare. | I'm watching. | Done.
+
+scene kn_fr_morning_walk
+when topic=friends time=dawn
+a : Walk to the gate with me? | Lovely morning for once. | You're up early.
+b : If you're not too slow. | Don't say it. It'll rain. | Couldn't sleep.
+a : I'm never slow. | It won't dare. | Me neither.
+b : You are before breakfast. | It always dares. | Then let's walk it off.
+a : Then I'll be quick after. | Not today. | Let's.
+
+scene kn_fr_evening_rest
+when topic=friends time=dusk
+a : That's the day done. | I could sleep for a week. | Sit with me a while?
+b : Another one gone. | I could sleep for two. | Just a while.
+a : Too quickly. | Then we'll sleep for three together. | That's all I need.
+b : They always do. | Fine by me. | Good.
+
+scene kn_fr_young_mischief
+when topic=friends a.stage=young|adolescent b.stage=young|adolescent
+a : Let's sneak into the orchard. | Bet you won't ring the chapel bell. | Let's follow the watch on their rounds.
+b : The farmer's got a dog. | Bet I will. | They'll see us.
+a : The dog's old and deaf. | Then do it. | Not if we stay downwind.
+b : Old dogs still bite. | ...Tomorrow. | We'll be shadows.
+a : You're scared. | Scared. | Shadows. Come on.
+
+scene kn_fr_young_dream
+when topic=friends a.stage=young|adolescent b.stage=young|adolescent
+a : When I'm grown, I'm going to sea. | I'm going to be a Warden. | I'm going to be rich and live in a house with five fires.
+b : You get sick on the river ferry. | You can't even climb the wall. | Five? What for?
+a : That's the river. The sea's different. | Wardens have ladders. | One for each paw and one for my tail.
+b : The sea's bigger. And wetter. | I'll hold it for you. | That's the stupidest thing I've ever heard.
+a : Then I'll be sick bigger. | You'd better. | You'll want to visit.
+b : I'll wave from the dock. | Promise. | Every winter.
+
+scene kn_fr_adolescent_crush
+when topic=friends a.stage=adolescent b.stage=adolescent
+a : They looked at me. Right at me. | Do you think they'll be at the festival? | What if I said something stupid?
+b : They looked at everyone. | They go every year. | You always say something stupid.
+a : Longest at me. | Then I'll be there. | Thanks.
+b : Maybe a bit. | Then I'll be there to watch. | It's charming. Mostly.
+a : A bit's a start. | Don't you dare. | Mostly.
+
+scene kn_fr_adolescent_rebel
+when topic=friends a.stage=adolescent b.stage=adolescent
+a : I'm never going to be like my parents. | Let's leave {town}. Go somewhere bigger. | The brother at chapel's a fraud.
+b : Nobody plans to be. | And eat what? | Say it louder, see what happens.
+a : I'll be different. | Whatever we find. | I'm not scared of him.
+b : You'll be different in the same way. | Mice, then. | You're scared of his sister.
+a : That's not fair. | Mice are fine. | Everyone's scared of his sister.
+
+scene kn_fr_old_friends_memory
+when topic=friends a.stage=old b.stage=old
+a : Remember when we stole the lord's pears? | We've known each other sixty winters. | Do you remember old Thorn, the miller?
+b : You got stuck in the hedge. | And you're still the worst at bones. | Thorn with the one ear?
+a : You laughed so hard the dogs came. | And you still lose to me. | That's him. He owed me money.
+b : I laugh now, thinking of it. | Only because I let you. | He owed everyone money.
+a : So do I. | Liar. | Paid none of us.
+b : Good pears. | Old liar. | And we drank at his wake anyway.
+
+scene kn_fr_old_friends_today
+when topic=friends a.stage=old b.stage=old
+a : How are the bones? | Did you sleep? | Have you eaten today?
+b : Creaking. Like a gate. | Some. The dogs barked half the night. | Some bread. Some soup.
+a : Mine too. We'll creak together. | Dogs are worse than ever. | Not enough. Come to mine.
+b : Like a pair of old gates. | Everything's worse than ever. | If you've got the good cheese.
+a : Swinging in the wind. | That's what the old say. | I always have the good cheese.
+
+scene kn_fr_women
+when topic=friends a.sex=female b.sex=female
+a : Did you hear the way he spoke to me at the market? | My mate thinks I don't notice when he drinks. | Let's leave the pups with my sister and take the day.
+b : Like you'd never kept a stall in your life. | Mine thinks the same. They're not clever. | Yes. Let's.
+a : I've kept one twenty years! | They think we're blind. | The whole day, mind.
+b : Then next time we both go. | We're not. We're patient. | The whole day. And the cider.
+a : Together. | For now. | And the honey cake.
+
+scene kn_fr_men
+when topic=friends a.sex=male b.sex=male
+a : My mate's furious with me again. | Have you been fishing lately? | Fancy helping me with the shed on rest day?
+b : What did you do? | Not since spring. | Will there be cider?
+a : Nothing. Something. I'm not sure. | Let's go. The river's high. | If you work.
+b : That's the worst kind. | High means nothing bites. | I always work.
+a : It is. | Then we'll sit and lie about it. | You always drink.
+
+scene kn_fr_guard_friends
+when topic=friends a.role=guard b.role=guard
+a : Long night. | Did you see the sergeant's face? | Captain's in a mood again.
+b : Long and cold. | Like a slapped cat. | When isn't he?
+a : Two more till rest day. | Somebody's in trouble. | He smiled once. I saw it.
+b : Then we'll sleep a whole day. | As long as it's not us. | You were dreaming.
+a : A whole day. | Not this time. | Maybe.
+
+scene kn_fr_merchant_friends
+when topic=friends a.role=merchant b.role=merchant
+a : Slow day. | Have you seen the new stall by the gate? | The tax man was round again.
+b : Slow week. | Cheap rubbish. It won't last. | He's always round.
+a : Slow season, then. | They've got customers. | He took more than last time.
+b : We'll weather it. We always do. | Cheap customers. | Then we'll charge more than last time.
+a : We will. | Customers all the same. | There's the merchant in you.
+
+scene kn_fr_drinking_too_much
+when topic=friends place=tavern time=night
+a : I think the floor's moving. | One more and I'll sing. | Where did all the cups go?
+b : It's always moved. Hadn't you noticed? | Then that's enough. | Into you.
+a : It's not supposed to. | Just one. | All of them?
+b : It's a tavern floor. They dance. | Not even half. | Every last one.
+a : Then let's dance with it. | Fine. Home. | That explains the singing.
+
+scene kn_fr_regional_ridgemere
+when topic=friends region=ridgemere
+a : The Sump's flooded again. | Did you hear Vesk's smokehouse burned? | They say Grayrock's cutting wages at the quarry.
+b : Then the rats are swimming. | They'll smell it for a month. | Lord Grayrock needs another carriage, I suppose.
+a : Rats swim better than us. | The whole town will. | A gold one.
+b : They've had the practice. | Bright One spare us. | With House colours on the wheels.
+
+scene kn_fr_regional_ser_ferro
+when topic=friends region=ser_ferro
+a : Did you see the knights ride out this morning? | My cousin's got a post in the records office. | The King's birthday's coming. There'll be wine in the fountains.
+b : Shining like fish. | Writing all day? Poor wolf. | Last year it was water in the fountains.
+a : Off to scare bandits, they say. | He likes it. Says it's quiet. | This year they promised.
+b : Bandits are easy scared. Harvests aren't. | Quiet's a strange thing to want in Ser Ferro. | They promise every year.
+
+scene kn_fr_regional_accord
+when topic=friends region=upper_accord|accord_crossing
+a : Did you see the Wardens training in the snow? | The Concord's sent another envoy south. | The road down's a sheet of ice.
+b : Rather them than me. | There's always another envoy. | It's been ice since autumn.
+a : Running in harness, uphill. | They go, they come back fat. | My cart went sideways.
+b : That's how they stay so grim. | The roads to the south are kind to envoys. | Better sideways than down.
+
+scene kn_fr_regional_frontier
+when topic=friends region=westmarch|amberford|hollowmere_village|cinderbrook|saltreach|lakeside|fenhollow
+a : Things are quiet here. I like it. | The caravan's late. I miss the news. | When did you last go to the city?
+b : Quiet suits a small town. | News is mostly bad anyway. | Never. Never needed to.
+a : Some say it's dull. | Still. I like hearing it. | Never?
+b : Let them go to the city, then. | Then ask the carters. They lie well. | Everything I need's in {town}.

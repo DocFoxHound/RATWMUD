@@ -1,0 +1,215 @@
+# Work and trade by job (doc 30): working life for any trade. Days off, wages, injuries, weather at work,
+# comparing jobs. {a_job} and {b_job} only where the scene needs a job. Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Comparing jobs
+
+scene tr_any_trade_swap
+when topic=smalltalk|work a.job=smith|baker|brewer|farmer|fisher|miner|healer|carter|crafter|herder|cook|woodcutter b.job=smith|baker|brewer|farmer|fisher|miner|healer|carter|crafter|herder|cook|woodcutter
+a : I'd swap being a {a_job} for being a {b_job} any day. | Being a {a_job}'s harder than being a {b_job}. Admit it. | My da was a {b_job}. I chose to be a {a_job}. Wisely.
+b : You'd last a morning. | Never. | Wisely? Ha.
+a : A morning's all I'd need. | Admit it. Just once. | Wisely, and with all my toes.
+
+scene tr_any_trade_proud
+when topic=work a.job=smith|baker|brewer|farmer|fisher|miner|healer|carter|crafter|herder|cook|woodcutter|sailor
+a : There's no shame in being a {a_job}. Honest work. | Been a {a_job} thirty years. Never wanted anything else. | They laughed when I said I'd be a {a_job}.
+b[old] : Honest work keeps the teeth sharp and the heart clean.
+b : Honest and tiring. | Thirty years! | Who's laughing now?
+a : Honest and tiring and mine. | Thirty, and a few aches. | Not me. My back's too sore to laugh.
+
+scene tr_any_children_trade
+when topic=work|family a.job=smith|baker|brewer|farmer|fisher|miner|healer|carter|crafter|herder|cook|woodcutter band=family|spouses|friends
+a : I want the pup to learn the trade. | Our eldest wants nothing to do with being a {a_job}. | Should the young ones be {a_job}s like me?
+b : They'll choose for themselves. | Let them try something else. | Only if they want it.
+a : They'll choose wrong. Like I did. Happily. | And come back hungry. | Wanting's how it starts.
+
+scene tr_any_two_jobs
+when topic=work|smalltalk a.role=civilian b.role=civilian
+a : I take washing in at night for extra coin. | Thinking of a second trade. The first doesn't pay. | Worked two jobs this week. Slept one night.
+b : When do you sleep? | Which? | One night?
+a : Restday, if I'm lucky. | Anything with a roof. | One night, and I dreamed of work.
+
+# ---------------------------------------------------------------- Wages, coin and masters
+
+scene tr_any_wage_late
+when topic=work a.role=civilian
+a : Paid late again. Third time this season. | They paid me in grain instead of coin. | Got a whole mark this week. A mark!
+b[merchant] : Bring it here. I've exactly what you need.
+b : Complain. | Grain? | Don't spend it all.
+a : To whom? The one who pays me? | Two sacks. I'll eat it or sell it. | Too late. Half's gone.
+
+scene tr_any_master_temper
+when topic=work a.role=civilian band=acquaintances|friends
+a : The master threw a pot at me this morning. | Boss says I'm slow. I'm not slow. I'm careful. | Got praised today. Felt odd.
+b : Did it hit you? | Careful's slow to them. | Get used to it.
+a : Missed by a whisker. | Careful's how I keep my paws. | I won't have to.
+
+scene tr_any_quit
+when topic=work|smalltalk a.role=civilian
+a : I'm going to quit. I mean it this time. | The master offered me a raise. A penny. | Thinking of going to the city for work.
+b : You said that last month. | A whole penny! | The city's hard.
+a : This month I mean it more. | One whole penny a week. | So's here. With less pay.
+
+scene tr_any_guild_fee
+when topic=work|prices a.job=smith|baker|brewer|crafter|cook|merchant|carter
+a : The guild fee's due and I've nothing. | The guild's fining me for selling on Restday. | Guild says my mark's too like someone else's.
+b : Borrow it. | Did you? | Change it.
+a : From who? Everyone owes the guild. | Once. To a friend. | It's my father's mark.
+
+# ---------------------------------------------------------------- Injuries and illness at work
+
+scene tr_any_hurt_paw
+when topic=work a.role=civilian
+a : Crushed my paw under a crate. Can't put weight on it. | Burned my muzzle on the work. Smells of singed fur. | Strained my back lifting. Can't turn my head.
+b[healer] : Come by later. I'll have a look. Don't wait.
+b : Rest it. | You smell like a cooked supper. | Lie flat.
+a : Rest it? Who'll pay me to rest? | That's what my supper's going to smell of too. | Flat and useless. Great.
+
+scene tr_any_sick_day
+when topic=work|smalltalk a.role=civilian
+a : I worked with a fever yesterday. Can't remember any of it. | Half the workshop's down with a cough. | Missed work for my sister's whelping.
+b : You should have stayed in bed. | Stay away from me. | All well?
+a : Bed doesn't pay. | Too late. I've breathed on you. | Four pups. All squealing.
+
+scene tr_any_old_hurts
+when topic=work a.stage=old
+a : My hips know every change in the weather. | Did this work forty years. Now my paws won't let me. | The young ones don't listen to how it's done.
+b[stage=young] : We're listening! We just know better.
+b : Mine too. | Teach, then. | They never did.
+a : Better than any almanac. | Teaching's all I'm good for now. | Neither did I. My master said so.
+
+# ---------------------------------------------------------------- Work days, rest days and market days
+
+scene tr_any_restday
+when topic=work|smalltalk day=rest
+a : No work today. I don't know what to do with myself. | Restday, and the master still wants the books done. | Slept till noon. Glorious.
+b : Rest. | That's not rest. | Lucky.
+a : I've forgotten how. | That's work with a cushion. | Noon, and I'm still tired.
+
+scene tr_any_workday_dawn
+when topic=work time=dawn
+a : Another day. Same as the last. | Up before the birds. Again. | First one at work. Always first.
+b : Still alive, though. | They're lazy, the birds. | Show-off.
+a : Alive and tired. | They don't have rent. | Somebody has to open up.
+
+scene tr_any_end_of_day
+when topic=work time=dusk
+a : That's me done. My paws are done. | Nearly finished. One more and home. | Long day. Longer tomorrow.
+b : Home for supper? | You said that an hour ago. | Sleep, then.
+a : Supper and a straw bed. Paradise. | One more, I meant it. | Sleep and the same again.
+
+scene tr_any_market_rush
+when topic=work day=market a.role=merchant
+a : Market day. Everything I own's on the table. | The crowds are out early. Good sign. | Rain on market day. Typical.
+b : Sell it all. | Get them while they're spending. | Put up a cover.
+a : That's the plan. And go home light. | Spending? They're looking. | Covered. They're still at home.
+
+scene tr_any_festival_work
+when topic=work day=festival
+a : Everyone's at the festival and here I am working. | Somebody has to keep the fires going. | Festivals are my busiest days.
+b : Come after. | Not you, though. | Rich festival.
+a : After, everything's gone. | Always me, though. | Rich festival, empty bed.
+
+# ---------------------------------------------------------------- Weather at work
+
+scene tr_any_rain_work
+when topic=work weather=rain|storm
+a : Working in the rain all day. Soaked to the bone. | The rain's stopped work at the site. | Rain leaks into the workshop. Everything's damp.
+b : Dry off by the fire. | Paid anyway? | Move it.
+a : There's no fire. There's never a fire. | Not a penny. | Move it where? The roof's everywhere.
+
+scene tr_any_heat_work
+when topic=work weather=clear season=summer
+a : Too hot to work. Too poor not to. | Worked with my tongue out all afternoon. | Drank from the horse trough. Don't tell.
+b : Find shade. | You look it. | Was it clean?
+a : There's no shade where the work is. | I feel it. | Cleaner than the river.
+
+scene tr_any_snow_work
+when topic=work weather=snow
+a : Snow's stopped every cart in town. | Shovelled the yard twice already. | Snow in my boots, snow in my fur, snow in my supper.
+b : Day off, then. | It'll snow again. | Snow supper.
+a : A day off unpaid. | I know. That's why I'm sitting down. | Cold and crunchy.
+
+scene tr_any_fog_work
+when topic=work weather=fog
+a : Couldn't see the work in front of my nose this morning. | Fog's in the workshop. Like smoke without fire. | Walked to work by smell. Nearly walked into the wall.
+b : Use your nose, then. | Strange stuff. | Nearly?
+a : My nose is full of fog. | Wet smoke. | Nearly. The wall moved.
+
+# ---------------------------------------------------------------- Tools, borrowing and debts
+
+scene tr_any_borrow_tool
+when topic=work a.role=civilian b.role=civilian band=acquaintances|friends|family
+a : Can I borrow your saw? Mine's blunt. | You still have my good knife. | Lend me your ladder? Just till noon.
+b : If you bring it back this time. | Do I? | Noon. Not a moment later.
+a : I always bring it back. Eventually. | You've had it since spring. | Noon. On my honour.
+
+scene tr_any_tools_stolen
+when topic=work|crime a.role=civilian
+a : Someone stole my tools from the shed. | My good hammer's gone. Somebody's wearing my mark on it. | Lost a day's work looking for my knife.
+b : Report it. | Check the fence. | Where was it?
+a : The watch doesn't care about tools. | The fence has it. He wants a penny for it. | In my mouth. Then it wasn't.
+
+# ---------------------------------------------------------------- Guards and merchants by role
+
+scene tr_role_guard_merchant
+when topic=work a.role=guard b.role=merchant
+a : Your stall's blocking the road again. | Any trouble last night? | Saw a lad hanging about your stall.
+b : Two paws' width! Two! | Somebody tried the shutters. | Thank you. I'll watch for him.
+a : Two paws too many. | I'll walk past at midnight. | He'll be watching you too.
+
+scene tr_role_merchant_guard
+when topic=work a.role=merchant b.role=guard
+a : Where were you when they robbed my stall? | Can the watch walk by more often? | Here, a little something for your trouble.
+b : On the other side of town. | We're spread thin. | I can't take that.
+a : As ever. | Thin as watered ale. | Then call it a gift. For your mother.
+
+scene tr_role_guard_civilian
+when topic=work a.role=guard b.role=civilian
+a : Off the wall, you. | Seen anything odd tonight? | Curfew soon. Get home.
+b : Just looking at the view. | Only you. | It's not dark yet.
+a : The view's the same from the street. | Funny. Move along. | It will be. Home.
+
+scene tr_role_merchant_civilian
+when topic=work a.role=merchant b.role=civilian place=market|street|work
+a : Come and look! No charge for looking. | You there! I've got just what you need. | Back again? Still thinking?
+b : Just looking. | You don't know what I need. | Still thinking.
+a : Looking's free. Leaving's not. Ha! | Everyone needs rope. | Think faster. It's going quickly.
+
+scene tr_role_two_merchants_rain
+when topic=work a.role=merchant b.role=merchant weather=rain|storm|fog
+a : Nobody's out. I might as well shut. | My awning's caved in with the water. | Rain day. Count stock and curse.
+b : Same here. | Mine too. | Counting's all I'm doing.
+a : Let's shut together and share a jug. | Let's put up one between us. | Curse with me, then.
+
+# ---------------------------------------------------------------- Work and the town
+
+scene tr_any_new_shop
+when topic=work|smalltalk a.role=civilian|merchant
+a : Someone's opened a new shop by the well. | The old cobbler's shut. Nobody to fix boots now. | There's a stranger setting up in my trade, two doors down.
+b : What do they sell? | Shame. | Competition?
+a : Everything, badly. | Walk barefoot, then. | Or a fool. We'll see.
+
+scene tr_any_town_needs
+when topic=work|smalltalk region=towns
+a : What {town} needs is another smith. | We've three bakers and no healer. | Somebody should open a proper inn here.
+b : Write to the council. | Get sick in the city. | You do it.
+a : The council's two old wolves and a goat. | That's a long walk sick. | I'd drink the profits.
+
+scene tr_any_city_work
+when topic=work|smalltalk region=cities a.role=civilian
+a : Work's easier to find in the city. Wage is worse. | The city's eating the small trades. | Came here for work. Found a queue.
+b : True. | Always has. | Long queue?
+a : True and miserable. | Big mouth, the city. | Long as the market street.
+
+scene tr_any_strangers_work
+when topic=work band=strangers
+a : You work round here? | Is there work going? | What's your trade?
+b : For my sins. | Depends what you do. | This and that.
+a : Sins pay badly. | A bit of everything. | This and that pays least of all.
+
+scene tr_any_rivals_work
+when topic=work band=rivals
+a : Heard you lost the order to me. | Your work's sloppy. Everyone says. | Stay off my customers.
+b : Bought it, you mean. | Everyone being you. | Stay off my street.
+a : Fair and square. | Everyone with eyes. | It's a public street.
+b : Not when you're on it.

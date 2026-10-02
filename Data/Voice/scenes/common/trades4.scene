@@ -1,0 +1,344 @@
+# Work and trade by job (doc 30): land, water and street. Farmers, herders, fishers, sailors, merchants, beggars,
+# apprentices and children at their chores. Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Farmers
+
+scene tr_farm_sowing
+when topic=work a.job=farmer season=spring
+a : Sowed the barley field before the rain. Just. | Crows had half the seed before I'd turned round. | The plough horse threw a shoe in the furrow.
+b : Good timing. | Set the pups on them. | Bad luck.
+a : For once. | The pups ate the other half. | Bad luck and a long walk to the smith.
+
+scene tr_farm_harvest
+when topic=work a.job=farmer season=summer|autumn
+a : Wheat's in. Every sheaf. | Rain flattened the oats before we could cut them. | Need every paw in the family for the harvest.
+b[child] : Can I help? I can carry sheaves!
+b : Good yield? | Can you save any? | Even the old ones?
+a : Better than last year. Less than I prayed for. | Some. Enough for the pigs. | The old ones bind. The young ones carry.
+
+scene tr_farm_weather
+when topic=work|weather a.job=farmer
+a : We need rain. The ground's like a brick. | Too much rain. The roots'll rot. | Frost in the low field last night.
+b : It'll come. | It'll stop. | This late?
+a : After the crop's dead, it'll come. | After the crop's drowned, it'll stop. | Took the beans. All of them.
+
+scene tr_farm_lord
+when topic=work a.job=farmer
+a : The steward took a third of the harvest for the rent. | Lord's hunt went straight through my wheat. | They want the tithe in grain, not coin.
+b[noble] : The land is ours. The labour is yours. It's a fair arrangement.
+b : A third! | Did they pay? | Why grain?
+a : A third and a goose. | Pay? I got a nod. | Grain's going up. They know it.
+
+scene tr_farm_market
+when topic=work|prices a.job=farmer place=market
+a : Turnips for a penny a heap and no one's buying. | Brought eggs to market. Cart hit a rut. Brought omelette to market. | The merchants buy cheap at the gate and sell dear in the square.
+b[merchant] : Someone has to carry them the last mile.
+b : Bad week for turnips. | Oh no. | Always have.
+a : Every week's a bad week for turnips. | Sold it as pig feed. Got a penny. | Always will.
+
+scene tr_farm_pigs
+when topic=work|smalltalk a.job=farmer
+a : The sow's farrowed. Eleven piglets. | Pig got out and ate the neighbour's cabbages. | Fox took two hens in the night.
+b : Eleven! | Oh dear. | Foxes. Cousins of ours, almost.
+a : Ten. She lay on one. | He wants a pig for his cabbages. | Cousins I'd happily bite.
+
+scene tr_farm_carter
+when topic=work a.job=farmer b.job=carter
+a : Can you take my grain to the mill tomorrow? | You charged me double last time. | Your cart's been through my hedge again.
+b : For a sack of it. | The road was double. | Your hedge is in my road.
+a : Half a sack. | The road's the same road. | My hedge was there before your road.
+
+scene tr_farm_steppe
+when topic=work a.job=farmer|herder region=steppe|countryside
+a : Amberford wheat's the best in the south. Everybody says so. | Dug a new ditch to the ford. Water's sweet. | The dry wind's come early this year.
+b : Everybody from Amberford says so. | Good work. | Bad sign.
+a : Everybody with taste. | Sweet till the tanners move upstream. | Bad for the wheat, good for the dust.
+
+scene tr_farm_fen
+when topic=work a.job=farmer|laborer region=fens
+a : Cut peat all morning. Black to the hocks. | The dyke gave way. Water's in the north field. | Found a bog oak in the cutting. Old as the hills.
+b : Smells good burning, though. | Can you drain it? | Worth something?
+a : Smells like home. | With what, a spoon? | To a carpenter. Not to me.
+
+scene tr_farm_two_farmers
+when topic=work|smalltalk a.job=farmer b.job=farmer
+a : How's your barley? | Borrow your harrow tomorrow? | Did you hear the miller's raised his toll?
+b : Thin. Yours? | If you bring it back this time. | He'll lose custom.
+a : Thin too. Must be the year. | I always bring it back. | From who? He's the only one.
+
+# ---------------------------------------------------------------- Herders
+
+scene tr_herd_lambing
+when topic=work a.job=herder season=spring
+a : Up three nights with the lambing. | Lost a ewe and saved her twins. | First lamb of the year, born in a snow flurry.
+b : You look it. | Bottle them, then. | Hardy one.
+a : I'll sleep in summer. | Every two hours, all night. | Hardy or daft. Like its father.
+
+scene tr_herd_drive
+when topic=work a.job=herder
+a : Drove the flock to the high pasture. Lost two in the mist. | The goats got into the chapel garden. | Fleeces are heavy this year.
+b : Find them? | Did the priest see? | Good wool, good coin.
+a : One. The other's a wolf's dinner. A wild one. | He saw. He prayed for patience. | If the weavers pay fair.
+
+scene tr_herd_wild_wolves
+when topic=work|smalltalk a.job=herder
+a : Found wild tracks near the fold. | Something's been at the sheep. Not a fox. | Sat up all night with a crossbow.
+b : Wild ones? This close? | Bandits? | See anything?
+a : Hungry winter brings them down. | Bandits eat mutton too. | Two eyes in the dark. Gone by dawn.
+
+scene tr_herd_shearing
+when topic=work a.job=herder|farmer season=summer
+a : Shearing week. My jaw's sore from the shears. | Sheared forty today. Smell like a ewe. | One kicked me clean over the fence.
+b : Forty! | You do smell like a ewe. | Over the fence?
+a : Forty and a goat by mistake. | Thank you, I'm aware. | Over and into the trough.
+
+scene tr_herd_downs
+when topic=work a.job=herder region=downs|steppe
+a : The downs are green as I've ever seen them. | Drovers coming through for the Westmarch market. | Found a ewe stuck in a sinkhole. Took three of us to pull her out.
+b : Fat sheep this year. | Prices'll drop. | Stubborn ewe.
+a : Fat sheep, thin prices. | Drop for us. Not for the butcher. | Stubborn's the only kind there is.
+
+scene tr_herd_market
+when topic=work|prices a.job=herder place=market
+a : Wool's fetching nothing this year. | The butcher wants my best ram for a song. | Sold six lambs before noon.
+b[merchant] : Too much wool from the south. Everyone's flock had a good year.
+b : Hold it till spring. | Don't sell. | Good morning's work.
+a : And store it where? My bed? | He'll come back with a better song. | Good morning, long walk home.
+
+scene tr_herd_child
+when topic=work a.job=herder b.stage=young|adolescent
+a : Keep them out of the corn, that's all I ask. | Count them. How many? | Don't run at them. Walk.
+b : They don't listen! | Thirty... one? | Running's faster.
+a : Sheep never listen. That's why there's two of us. | Thirty-four. Count again. | And they'll scatter to the river.
+
+# ---------------------------------------------------------------- Fishers
+
+scene tr_fish_catch
+when topic=work a.job=fisher
+a : Nets came up empty three mornings running. | Pulled a cod as long as my leg. | The herring are in! The whole bay's silver.
+b[old] : The fish know when a storm's coming. Wait.
+b : Bad luck. | Liar. | Get out there!
+a : Bad luck or bad nets. | My hind leg. Ask anyone. | I've been out since the third hour.
+
+scene tr_fish_nets
+when topic=work a.job=fisher place=shore|work
+a : Mending nets all day. A seal tore through the best one. | The tar's run out. Can't seal the hull. | Lost a lobster pot in the swell.
+b : Seals are thieves. | Ask the boatwright. | Mark them better.
+a : Fat, whiskered thieves. | He's out of tar too. | I marked it. The sea moved it.
+
+scene tr_fish_weather
+when topic=work a.job=fisher|sailor
+a : Red sky at dawn. I'm staying ashore. | Fog's so thick you can't see the bow from the stern. | Wind's from the north. Good for going out.
+b : Wise. | Stay in. | Bring me a fish.
+a : Wise and poor. | And starve? | I'll bring you the smallest.
+
+scene tr_fish_saltreach
+when topic=work a.job=fisher|laborer region=rain_coast
+a : The Vesk factor wants our catch at his price or not at all. | Salt pans flooded again with the spring tide. | Smokehouse runs day and night this time of year.
+b : He owns the smokehouse. | Rake them out. | Smell carries all the way up the coast.
+a : And the boats. And us, near enough. | With what? It's all brine. | Smell of wages.
+
+scene tr_fish_lake
+when topic=work a.job=fisher|crafter region=lake
+a : The pike are biting by the reeds. | New boat's taking water. Bad caulking. | Ice is creeping in at the edges already.
+b : Big ones? | Back to the boatwright. | Early this year.
+a : Big as a pup. Twice as mean. | He says I hit a rock. | Early and thick.
+
+scene tr_fish_drowned
+when topic=work|smalltalk a.job=fisher|sailor
+a : Old Teag never came back from the morning tide. | They found his boat. Not him. | His wife's been on the harbour wall since dawn.
+b : Bright One keep him. | The sea keeps what it takes. | Someone sit with her.
+a : The Bright One's welcome to him. He was a grump. | Always has. | I will.
+
+scene tr_fish_selling
+when topic=work|prices a.job=fisher place=market
+a : Fresh mackerel, cheap, before it turns! | The cat's had two fish off my slab. | Nobody wants eels this week.
+b : How cheap? | Shoo it. | I'll take two.
+a : Cheap as a smile. | It comes back. It always comes back. | Bless you. Take three.
+
+# ---------------------------------------------------------------- Sailors
+
+scene tr_sail_voyage
+when topic=work a.job=sailor
+a : Twelve days from Ser Ferro and two of them becalmed. | The captain flogged the cook. The cook deserved it. | We're shipping salt to the Isle next week.
+b : Long trip. | What did he do? | Rough water out there.
+a : Long and dull and wet. | Put sand in the porridge. | Rough water, good pay.
+
+scene tr_sail_shore_leave
+when topic=work|smalltalk a.job=sailor place=tavern|street
+a : Three days' leave and I've spent it all in one. | Any tavern here not watered? | Haven't stood on dry land in a month. It keeps moving.
+b : Fast work. | Try the one by the quay. | It's you that's moving.
+a : Sailors don't spend slow. | The quay one waters the worst. | Same thing, at sea.
+
+scene tr_sail_rigging
+when topic=work a.job=sailor
+a : Climbed the rigging in a gale. Never again. | Rope burn right across my chest from the halyard. | Mended sails all morning with a needle in my teeth.
+b : How'd you climb? | Ouch. | Careful you don't swallow it.
+a : Claws and terror. | Pulled it with my whole weight. | Swallowed one once. Never again.
+
+scene tr_sail_captain
+when topic=work a.job=sailor b.job=sailor|merchant
+a : The captain wants to sail at the ebb, storm or no. | Cargo's not loaded. We'll miss the tide. | Who's paying for this run?
+b : The owner wants the cargo there. | Then load it faster. | A merchant house. Ask no more.
+a : The owner's not the one drowning. | With two wolves? | I've asked no more for years.
+
+scene tr_sail_ridgemere
+when topic=work a.job=sailor|laborer region=ridgemere
+a : Brinewater's launched a new hull. Three masts. | The southern crews cheat at dice and sing all night. | Fog in the bay. Ships blowing horns like lost cows.
+b : Who's crewing it? | Win back what they took. | Wait for it to lift.
+a : Anyone who'll sign. Me, maybe. | I'm trying. They cheat better. | Lifts by noon, rolls back by dusk.
+
+# ---------------------------------------------------------------- Merchants
+
+scene tr_merch_stock
+when topic=work a.role=merchant
+a : Half my shelves are bare till the caravan comes. | Bought a cartload of cloth at a bargain. Moths. | Sold more today than all last week.
+b : When's it due? | Every bale? | Good. Buy me a drink.
+a : Due a week ago. | Every bale has moths. Every moth's fat. | Half a drink.
+
+scene tr_merch_haggle
+when topic=work a.role=merchant b.role=civilian
+a : Four pennies, and that's robbing myself. | That's my best cloth. Feel it. | You won't find cheaper in {town}.
+b : Two. | It feels like the cheap cloth. | I'll look anyway.
+a : Three, and you're robbing me. | It feels like my best cloth because it is. | You'll be back.
+
+scene tr_merch_rivals
+when topic=work a.role=merchant b.role=merchant
+a : You've been undercutting me on candles. | My lamp oil's better than yours and everyone knows it. | Shall we fix the price of salt? Between us?
+b : The customers like a bargain. | Everyone knows mine burns longer. | I never heard you say that.
+a : The customers like me better. | Burns dimmer. | I never said it. Same price, then.
+
+scene tr_merch_ledger
+when topic=work a.role=merchant
+a : The ledger says I'm rich. My purse says otherwise. | Half the town owes me and none of them can pay. | Counted the coin three times. Still a penny short.
+b : Call in your debts. | Stop giving credit. | Count it again.
+a : And lose every customer? | Then nobody buys anything. | It's the same penny. Every time.
+
+scene tr_merch_scales
+when topic=work|crime a.role=merchant
+a : The weighmaster checked my scales again. | Somebody's been using a weighted thumb on the market scales. | I keep two sets of weights. One honest.
+b : Pass? | Who? | And the other?
+a : Barely. | Everyone, I'd wager. | For the weighmaster to check.
+
+scene tr_merch_ser_ferro
+when topic=work a.role=merchant region=ser_ferro
+a : The merchant houses buy everything at the wharf before it lands. | River tax went up a penny a barrel. | A Syndicate man offered to protect my shop.
+b : Get there earlier. | Barely noticeable. | From whom?
+a : Earlier than the houses? They own the dawn. | Barely noticeable a thousand times over. | From the Syndicate, presumably.
+
+scene tr_merch_caravan_town
+when topic=work a.role=merchant region=accord_crossing|westmarch|towns
+a : Everything here costs a third more than in the city. | The caravan brought one bolt of cloth. One. | Half the stock in this shop came up the road on a promise.
+b : Then go to the city. | One? | Promises are cheap.
+a : Three days each way? | One. And four buyers. | And the road charges extra for them.
+
+scene tr_merch_ridgemere_sump
+when topic=work a.role=merchant region=ridgemere
+a : Somebody stole the shutters off my shop. The shutters! | Sump folk can't pay a full penny, so I cut bread in eighths. | House Vesk's factor wants first refusal on all my salt.
+b : The Sump strips everything. | Eighths? | And you said?
+a : Next it'll be the walls. | Eighths, and they still owe me. | Yes, my lord. What else?
+
+# ---------------------------------------------------------------- Beggars
+
+scene tr_beg_cold
+when topic=work|smalltalk a.job=beggar
+a : Slept in a doorway last night. Woke with frost on my tail. | A kind soul gave me a whole penny today. | Nobody's giving. Everybody's poor this season.
+b[priest] : The chapel has a fire. You'll be welcome.
+b : Bright One. | A whole penny! | Even the rich?
+a : The Bright One didn't sleep in a doorway. | I'll eat like a lord. For a day. | The rich most of all.
+
+scene tr_beg_spot
+when topic=work a.job=beggar b.job=beggar
+a : That's my corner by the well. Find your own. | The chapel steps are the best spot on Restday. | Guards moved me off the bridge again.
+b : Nobody owns a corner. | Everyone knows. | They moved me too.
+a : I do. Ask anyone. | Everyone's there, that's the trouble. | Bridge is bad luck anyway.
+
+scene tr_beg_story
+when topic=work|smalltalk a.job=beggar
+a : I was a carter once. Before the bandits took everything. | Had a house in the upper streets. Hard to believe. | Lost a leg's use in the pits. Couldn't work after.
+b : What happened? | It is, a bit. | That's hard.
+a : The forest road happened. | I believe it. Some mornings. | Hard's the only way it goes.
+
+scene tr_beg_merchant
+when topic=work a.job=beggar b.role=merchant
+a : Spare a penny, good master? | Any bread going stale? | I'll mind your stall for a crust.
+b : Not today. | Round the back. | Mind it and touch nothing.
+a : Tomorrow, then. | Bright One bless you. | Not a crumb. I swear it.
+
+scene tr_beg_watch
+when topic=work a.job=beggar
+a : The watch kicked my bowl over this morning. | Someone's been telling the guards I'm a thief. | I see everything from this corner. Everything.
+b : Brutes. | Are you? | Like what?
+a : Brutes with boots. | Only sometimes. Not lately. | Like who goes where at night. That's worth more than pennies.
+
+scene tr_beg_ghost_town
+when topic=work|smalltalk a.job=beggar|laborer|none region=ghost_town
+a : Patched the roof with a door. Leaks less. | Found a pot that still holds water in the old inn. | Nobody comes here. That's the point.
+b : Good door? | Lucky. | Not even the watch.
+a : Better than the last roof. | Lucky's a strong word. | Especially not the watch.
+
+# ---------------------------------------------------------------- Apprentices
+
+scene tr_app_master_cruel
+when topic=work a.job=apprentice
+a : My master boxed my ears for dropping a chisel. | Swept the shop four times. Still not clean enough. | Seven years of this before I'm a journeyman.
+b[old] : I did ten. Built character.
+b : Did you drop it on him? | Is it clean? | Seven!
+a : Near his paw. Not on. Unluckily. | It's never clean. That's the trick. | Seven, and I've done one.
+
+scene tr_app_learning
+when topic=work a.job=apprentice
+a : I made my first whole thing today. A spoon. | Master let me work the forge alone for an hour. | Learned to tell a good hide from a bad one by smell.
+b : Proud of it? | Did you burn anything? | Useful nose.
+a : It's a bad spoon. It's mine. | Only my whisker. | Most useful thing I own.
+
+scene tr_app_journeyman
+when topic=work a.job=apprentice b.job=smith|crafter|baker|brewer|cook|healer
+a : When can I try the real work, master? | My indenture's up next spring. | Can I keep the offcuts?
+b : When the sweeping's perfect. | And then you'll wander and come back better. | Ask me nicely.
+a : The sweeping's never perfect. | Or worse. | Please, master. Nicely.
+
+scene tr_app_two
+when topic=work|smalltalk a.job=apprentice b.job=apprentice
+a : What does your master make you do? | Mine forgot to feed me again. | I'm going to run off and join a caravan.
+b : Fetch, carry, fetch, carry. | Mine feeds me scraps. | Take me with you.
+a : Same. Fetch. Carry. | Scraps are food. | Pack light.
+
+scene tr_app_slow
+when topic=work a.job=apprentice
+a : Three years and I still can't do it right. | Everyone else learns faster. | My master says I've a good nose and clumsy paws.
+b : It takes time. | Not everyone. | Better than the other way.
+a : It takes everyone else less. | Name one. | Clumsy paws never mind the nose.
+
+# ---------------------------------------------------------------- Children at play and chores
+
+scene tr_child_chores
+when topic=work|smalltalk a.stage=young b.stage=young|adolescent
+a : Ma says I have to fetch water before I play. | I fed the hens and one bit me. | I'm supposed to be watching the baby.
+b : I'll help. Then we play. | Hens are mean. | Where's the baby?
+a : Two buckets each! | Mean as goats. | ...I'll be right back.
+
+scene tr_child_play_guard
+when topic=smalltalk a.stage=young b.stage=young
+a : I'm the captain of the watch. You're the thief. | Let's play caravans. I'm the bandit. | I'm a Warden. You're Quickened. Run!
+b : I was the thief last time! | I want to be the bandit. | I'm not! Fire! Fire!
+a : Thieves get to run. Watch just shouts. | Two bandits, then. And no caravan. | That's not fair, you don't have fire!
+
+scene tr_child_job_dream
+when topic=smalltalk a.stage=young|adolescent
+a : When I'm grown I'll be a sailor. | I'm going to be a smith like my da. | I want to be a Warden and carry a big spear.
+b[old] : Be a baker. Bakers always eat.
+b : You get seasick on the pond. | You'll burn your whiskers. | Wardens don't carry spears.
+a : The pond's different. | Da has no whiskers left. He's fine. | Then I'll carry two.
+
+scene tr_child_market_errand
+when topic=smalltalk a.stage=young place=market|street
+a : I have to buy three onions and not get cheated. | Ma gave me a penny for bread and I dropped it. | The fish lady gave me a sprat for free!
+b : Count them. | Look in the gutter. | Lucky!
+a : One, two, four. Wait. | It's gone in the drain. | I ate it already.
+
+scene tr_child_worker
+when topic=work|smalltalk a.stage=adolescent
+a : I work the bellows at the forge now. Real pay. | Started at the mill. My fur's white with flour. | They let me run messages for the merchant.
+b : How much? | You look like a ghost. | Run fast?
+a : A penny a day. A whole penny. | A ghost with wages. | Fast enough. Faster than the last one.

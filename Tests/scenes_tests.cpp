@@ -64,7 +64,8 @@ void theFormat()
 {
     Library lib;
     std::string problem;
-    expect(lib.parse(Sample, "sample.scene", problem), "the sample parses: " + problem);
+    const bool parsed = lib.parse(Sample, "sample.scene", problem);
+    expect(parsed, "the sample parses: " + problem);
     expect(lib.size() == 4 && lib.hasTopic("prices") && lib.hasTopic("bark"), "four scenes, indexed by topic");
     const auto bad = [&](const std::string& text, const std::string& says) {
         Library l;
@@ -166,6 +167,28 @@ b : end one | end two | end three
         openings.insert(r.lines[0].second);
     }
     expect(openings.size() == 3, "and each opening comes up");
+    Library caps;
+    expect(caps.parse(R"(
+scene caps
+when topic=player
+a : {subject} again. Is {subject} lost? Look! {subject}.
+b : Hm.
+)", "caps.scene", problem), problem);
+    auto p = moment("player");
+    p.blanks["subject"] = "that grey stranger";
+    expect(caps.pick(p, 1, none, {}).lines[0].second == "That grey stranger again. Is that grey stranger lost? Look! That grey stranger.",
+           "a blank opening a sentence takes a capital");
+    Library the;
+    expect(the.parse(R"(
+scene feast
+when topic=festival
+a : The {festival} bonfire! Lighting it for {festival}. {festival} at last.
+b : Hm.
+)", "feast.scene", problem), problem);
+    auto f = moment("festival");
+    f.blanks["festival"] = "the Greening";
+    expect(the.pick(f, 1, none, {}).lines[0].second == "The Greening bonfire! Lighting it for the Greening. The Greening at last.",
+           "a festival's \"the\" isn't said twice");
 }
 
 void jobs()
@@ -182,7 +205,8 @@ void theRealLibrary()
 {
     Library lib;
     std::string problem;
-    expect(lib.load(std::string(RATW_SOURCE_DIR) + "/Data/Voice/scenes", problem), "the library loads whole:\n" + problem);
+    const bool loaded = lib.load(std::string(RATW_SOURCE_DIR) + "/Data/Voice/scenes", problem);
+    expect(loaded, "the library loads whole:\n" + problem);
     expect(lib.size() >= 100, "and is a library (" + std::to_string(lib.size()) + " scenes)");
     for (const auto& topic : {"smalltalk", "work", "weather", "prices", "caravan", "crime", "life", "festival", "player",
                               "gossip", "news", "quarrel", "friends", "day", "bark"})

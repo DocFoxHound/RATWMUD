@@ -1,0 +1,285 @@
+# Caravans and bandits, in any town (Docs/Design/30-towns-and-talk.md): wagons in and out, the road between, and the
+# camps that prey on it. Blanks: {other} (the other town; for a camp, the place it lies). Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Caravans arrived
+
+scene em_cv_in_bells
+when topic=caravan kind=arrived
+a : Hear the harness bells? The {other} wagons are in. | The caravan from {other} rolled in at first light. | Wagons from {other}, all of them, not one lost.
+b : I heard them from my bed. | Before the gate was even open? | Not one? That's a first this season.
+a : Half the street did. | They camped at the wall all night. | Bright One be thanked.
+b?[merchant] : I'll be at the yard before the dust settles. First pick is everything.
+b?[child] : Can we go and see the horses? Please?
+
+scene em_cv_in_news
+when topic=caravan kind=arrived
+a : The carters from {other} are full of stories. | What news came in with the {other} caravan? | The {other} drivers say the road's dry the whole way.
+b : Stories and dust, the pair of them. | Nothing good, I'll wager. | Dry road, fat purses.
+a : They say a bridge washed out near {other}. | You'd lose. They say harvest's good down there. | For once.
+b : Then the next one will be late. | Good for them. | Don't jinx it.
+
+scene em_cv_in_unloading
+when topic=caravan kind=arrived place=market|street|gate|work
+a : Took six of us to unload the {other} wagons. | My back's broken from lifting {other} crates. | They're stacking {other} barrels in the square.
+b : Good pay, though? | Your back's always broken. | Barrels of what?
+a : Two pennies each. Fair. | It is now. | Nobody's saying. Smells like vinegar.
+b?[laborer] : Six of us and one of them watching. As usual.
+b?[carter] : Stack them careful. Half of those are wine.
+
+scene em_cv_in_relief
+when topic=caravan kind=arrived
+a : My brother drives for the caravan. He's home safe from {other}. | I didn't sleep till the {other} wagons came in. | Every time the caravan's late I think the worst.
+b : Thank the Bright One. | Was someone you love with it? | And every time it comes, you breathe again.
+a : I lit a candle for him. | My brother. | Every time.
+b?[spouses] : Come here. You can stop worrying now.
+
+scene em_cv_in_goods
+when topic=caravan kind=arrived
+a : Cloth from {other}. Proper dyed cloth. | They brought salt fish from {other}. A whole wagon. | The {other} caravan brought pots. Copper pots!
+b : About time. My coat's in rags. | Salt fish for a month, then. | Copper! Who can afford copper?
+a : You'll look like a noble. | And thirsty with it. | Nobody. They'll sit there all season.
+b?[merchant] : And the prices on it would make you weep.
+b?[cook] : I'll take two of whatever's fresh.
+
+scene em_cv_in_strangers
+when topic=caravan kind=arrived
+a : Lots of new faces with the {other} wagons. | One of the {other} carters looked at me like he knew me. | The caravan guards from {other} are a rough lot.
+b : Strangers in town. Lock your door. | Do you know him? | Rough is what you want on the road.
+a : I always do. | Never seen him in my life. | And not in my tavern.
+b?[guard] : We'll keep an eye on them. Carters drink, carters fight.
+
+scene em_cv_in_tavern
+when topic=caravan kind=arrived place=tavern
+a : The {other} carters have taken every bench. | They're singing {other} songs. Badly. | One of the {other} drivers bought a round for the whole room.
+b : We'll stand, then. | Is there any other way? | A round? Where is he?
+a : We'll stand and glare. | Not in this tavern. | Asleep under the table.
+b?[innkeeper] : Caravan nights pay the winter rent.
+
+scene em_cv_in_letters
+when topic=caravan kind=arrived
+a : Any letters with the {other} caravan? | My cousin in {other} sent a parcel with the carters. | I'm waiting on word from {other}.
+b : Ask the head carter. | What's in it? | Did it come?
+a : I will. He owes me a drink. | Socks. She always sends socks. | Not yet.
+b?[official] : The post sack's at the hall. Names are read at noon.
+
+scene em_cv_in_brief
+when topic=caravan kind=arrived
+weight 0.6
+a : Caravan's in from {other}. | The {other} wagons came. | Saw the carters from {other} at the gate.
+b : Good. | At last. | Busy day, then.
+a : Very good. | At last. | Very.
+
+# ---------------------------------------------------------------- Caravans left
+
+scene em_cv_out_dawn
+when topic=caravan kind=left
+a : The caravan left for {other} before dawn. | Wagons rolled out to {other} this morning. | Heard the carts go at first light. Off to {other}.
+b : Safe roads to them. | Without me, thankfully. | My mug rattled on the shelf.
+a : Safe roads. | You'd hate it. | Mine too.
+b?[priest] : May the Bright One walk ahead of them.
+
+scene em_cv_out_sent_goods
+when topic=caravan kind=left
+a : I sent my whole season's work with the {other} caravan. | Half my stock is on that road to {other}. | If the {other} wagons don't make it, I'm ruined.
+b : Then pray for clear skies. | Brave of you. | They'll make it.
+a : I am, all day. | Or stupid. | They'd better.
+b?[merchant] : Never put it all on one cart. Never.
+
+scene em_cv_out_missing
+when topic=caravan kind=left
+a : My son went with the caravan to {other}. | First time my daughter's driven the {other} road. | My mate signed on as a guard for the trip to {other}.
+b : He'll come back with tales. | She'll be fine. The old drivers look out for the young. | Good coin, guarding.
+a : And with fleas. | I hope so. | Dangerous coin.
+b?[old] : I drove that road forty years. The fear passes. Mostly.
+
+scene em_cv_out_quiet
+when topic=caravan kind=left
+a : Town's quiet now the caravan's gone. | No carters, no fights, no singing. | The yard's empty. Only straw and dung.
+b : Peace at last. | I'll miss the singing. | And flies.
+a : For a week. | You won't. | And flies.
+b?[innkeeper] : Quiet and poor, now.
+
+scene em_cv_out_ask
+when topic=caravan kind=left
+a : Did the caravan take anything of yours to {other}? | When's the next one going to {other}? | You should have gone with the caravan to {other}.
+b : Only a letter. | Not till next season. | Me? I'd be sick the whole way.
+a : Love letter? | That long? | You're sick on a rope swing.
+b : Mind your business. | That long. | Exactly.
+
+scene em_cv_out_brief
+when topic=caravan kind=left
+weight 0.6
+a : Caravan's gone to {other}. | Wagons left for {other}. | The carters went off to {other}.
+b : Safe journey to them. | Already? | Good riddance.
+a : And home again. | Already. | Ha.
+
+# ---------------------------------------------------------------- Caravans raided
+
+scene em_cv_raided_shock
+when topic=caravan kind=raided
+a : They hit the {other} caravan. Bandits. | Did you hear what happened to the wagons from {other}? | The {other} caravan never made it. Raided.
+b : Was anyone hurt? | Tell me nobody died. | Bright One. Again?
+a : Two carters, they say. Bad wounds. | Nobody died. This time. | Again.
+b?[guard] : Then the captain will want riders on that road by tonight.
+
+scene em_cv_raided_goods_lost
+when topic=caravan kind=raided
+a : My order was on the {other} wagons. Gone. | Everything I'd paid for, gone to robbers. | They took the grain from the {other} caravan and burned the rest.
+b : Can you get your coin back? | All of it? | Burned? Why burn it?
+a : From bandits? | Every penny. | So we'd go hungry.
+b?[merchant] : I lost three crates myself. Nobody's covering it.
+
+scene em_cv_raided_anger
+when topic=caravan kind=raided
+a : Where was the guard when the {other} caravan was hit? | What do we pay the watch for? | Somebody should hunt those bandits down.
+b : Asleep, I expect. | Nothing useful. | Volunteering?
+a : Typical. | Exactly. | Maybe I am.
+b?[guard] : We're spread thin. Shout at the council, not at me.
+b?[soldier] : Give us horses and a free day and we'd finish them.
+
+scene em_cv_raided_fear
+when topic=caravan kind=raided
+a : I'll not travel to {other} till the road's cleared. | Nobody's driving to {other} after that raid. | They'll attack the next one too. You watch.
+b : Neither would I. | Then we'll go without. | Don't say that.
+a : Sensible. | Go without what? Everything comes that way. | Someone has to.
+b?[carter] : I'll drive. Someone has to. But I want double.
+
+scene em_cv_raided_prices
+when topic=caravan kind=raided
+a : Prices will jump now the {other} wagons are lost. | Buy what you need today. Tomorrow it'll cost more. | Every raid comes out of our bread.
+b : I know. I'm buying now. | Now you tell me. | Out of everyone's bread.
+a : Quick about it. | I told you yesterday. | Except the bandits'.
+b?[merchant] : I've already changed my slate.
+
+scene em_cv_raided_survivor
+when topic=caravan kind=raided
+a : One of the {other} carters walked in alone. Covered in mud. | They brought the wounded in on a hay cart. | A driver from the {other} caravan is at the healer's. Still shaking.
+b : What did he say? | Who's tending them? | Shaking? I'd never stop.
+a : Twenty of them, he said. Masked. | The healer and anyone with clean cloth. | Nor would I.
+b?[healer] : He'll live. His nerves might not.
+
+scene em_cv_raided_brief
+when topic=caravan kind=raided
+weight 0.6
+a : The {other} caravan got hit. | Bandits on the {other} road. | Wagons raided. From {other}.
+b : Again? | Bad. | No.
+a : Again. | Very bad. | Yes.
+
+# ---------------------------------------------------------------- Bandits on the roads
+
+scene em_bd_raided_where
+when topic=bandits kind=raided
+a : Bandits on the road to {other}. Wagons burned. | Did you hear? The {other} road's not safe. | They hit carts bound for {other}, bold as anything.
+b : In daylight? | Since when? | Bold or desperate.
+a : At noon, they say. | Since last week. | Both, I think.
+b?[old] : The road's been bad before. It gets cleared. It gets bad again.
+
+scene em_bd_raided_who
+when topic=bandits kind=raided
+a : Who are these bandits, anyway? | They say the robbers are deserters from some army. | My cousin swears the bandits are farmers gone hungry.
+b : Nobody knows. That's the fear of it. | Could be. | Hungry farmers don't burn wagons.
+a : That's the fear of it. | Could be. | Angry ones might.
+b?[soldier] : Deserters fight better than that. These are amateurs who got lucky.
+
+scene em_bd_raided_travel
+when topic=bandits kind=raided
+a : I was meant to go to {other} tomorrow. | My sister's coming from {other}. I'm sick with worry. | No one's going to {other} unless they're mad or armed.
+b : Wait a few days. | Send word. Tell her to wait. | Or both.
+a : I'll have to. | It'll never reach her in time. | Usually both.
+
+scene em_bd_raided_guards
+when topic=bandits kind=raided b.job=guard|soldier
+a : Are you going after the bandits? | Will the watch ride out against them? | You're a guard. Do something about the road to {other}.
+b : If the captain says so. I'm not riding out alone. | When we have the riders. | I'm a guard. Not an army.
+a : Then tell the captain. | When's that? | Then find an army.
+
+scene em_bd_raided_insurance
+when topic=bandits kind=raided a.role=merchant
+a : I'm hiring guards for my next cart. | I'll pay double for an escort to {other} now. | Every raid costs me a guard's wage, one way or another.
+b : Guards cost money. | Double? | Same coin, different robber.
+a : So does losing the cart. | And worth it. | Ha. Truer than you know.
+
+scene em_bd_raided_brief
+when topic=bandits kind=raided
+weight 0.6
+a : Bandits again. | The {other} road's bad. | More raids.
+b : Always bandits. | Avoid it. | Of course.
+a : Always. | I will. | Of course.
+
+# ---------------------------------------------------------------- Bandit camps
+
+scene em_bd_camp_smoke
+when topic=bandits kind=camp
+a : There's smoke up by {other}. Camp fires. | Someone saw bandits camped near {other}. | Don't go near {other}. There's a camp.
+b : Bandits or charcoal burners? | How many? | I wasn't planning to.
+a : Charcoal burners don't post sentries. | Enough to worry about. | Good.
+
+scene em_bd_camp_scared
+when topic=bandits kind=camp
+a : I won't walk past {other} even in daylight now. | My pups aren't allowed beyond the gate while that camp's at {other}. | They watch the road from {other}. You can feel it.
+b : Wise. | Quite right. | I've felt it. Like eyes on your neck.
+a : Or cowardly. | They hate it. | That's it exactly.
+b?[guard] : Stay inside the walls after dark and you've nothing to fear.
+
+scene em_bd_camp_rumour
+when topic=bandits kind=camp
+a : They say the camp at {other} has a leader with one ear. | Somebody said the bandits at {other} pay for their bread with stolen silver. | They say there's a Gifted wolf in that camp.
+b : One ear and no mercy, I suppose. | Someone's selling them bread, then. | Gifted? Probably lights their fires.
+a : That's what they say. | Someone in this town. | Probably.
+b?[scholar] : Most Gifts are small. A camp fire is about right.
+
+scene em_bd_camp_clear
+when topic=bandits kind=camp
+a : Someone should clear out that camp at {other}. | The watch could finish them in a night. | Why hasn't anyone driven them off from {other}?
+b : Someone with spears. | The watch couldn't find their own feet. | Nobody wants to go.
+a : Volunteer, then. | Unkind. Probably true. | Nobody ever does.
+b?[guard] : The watch guards the town. The country's not ours.
+b?[soldier] : Send a proper company, not a watch. They'd scatter by morning.
+
+scene em_bd_camp_sightings
+when topic=bandits kind=camp place=gate|field|wild|street
+a : Saw shapes moving on the ridge toward {other}. | Fresh tracks coming down from {other}. | Smelled smoke and old meat downwind of {other}.
+b : Tell the watch. | Fresh? How fresh? | That's them.
+a : I did. They wrote it down. | This morning's. | That's them.
+b?[herder] : They took two sheep from my flock last night.
+b?[woodcutter] : I've stopped cutting in that wood.
+
+scene em_bd_camp_brief
+when topic=bandits kind=camp
+weight 0.6
+a : That camp's still there. | Bandits at {other}. | Smoke from {other} again.
+b : I know. | Still? | Stay away.
+a : I know. | Still. | I will.
+
+# ---------------------------------------------------------------- Roads, by time and weather
+
+scene em_cv_in_rain
+when topic=caravan kind=arrived weather=rain|storm
+a : The {other} wagons came in through the mud. | Carters from {other} soaked to the bone. | Wheels caked to the axles, those {other} carts.
+b : Brave of them. | They'll be in the tavern drying out. | It'll take a day to scrape them.
+a : Or desperate for coin. | And drinking. | Two days.
+
+scene em_cv_in_snow
+when topic=caravan kind=arrived weather=snow
+a : A caravan from {other}, through all this snow. | The {other} carters had to dig out twice, they said. | Snow on every crate from {other}.
+b : Mad wolves. | Only twice? | Keeps it fresh.
+a : Rich mad wolves. | They were lucky. | True enough.
+
+scene em_cv_in_night
+when topic=caravan kind=arrived time=dusk|night
+a : The {other} caravan came in late. Lanterns all down the road. | Wagons from {other} came rolling in after dark. | They opened the gate at night for the {other} wagons.
+b : Pretty sight, the lanterns. | Lucky they found the road. | Rules are rules, except when they aren't.
+a : Like a festival. | Lucky indeed. | Exactly.
+b?[guard] : We don't like it. But we don't leave them outside either.
+
+scene em_cv_out_rain
+when topic=caravan kind=left weather=rain|storm|fog
+a : Wagons left for {other} in this weather. | They'll be stuck by noon. | Caravan went off to {other} in a fog thick as porridge.
+b : They'll be stuck by noon. | Probably. | Hope the lead wolf has a good nose.
+a : Probably. | They'll manage. | The best in town.
+
+scene em_bd_night_fear
+when topic=bandits time=dusk|night
+a : I lock my door twice now, with the bandits about. | Every noise at night sounds like a raid. | Bandits come at night, they say. In the dark.
+b : Can't blame you. | It's only the wind. | And by day, from what I hear.
+a : Three times, some nights. | Is it? | Then I'll never sleep.

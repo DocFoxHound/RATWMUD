@@ -1,0 +1,300 @@
+# Current events in town, by region, part two: Westmarch, Lakeside, Fenhollow, Amberford, Hollowmere, the three
+# fortresses and the ghost town.
+
+# ---------------------------------------------------------------- Westmarch
+
+scene et_wm_theft_sheep
+when topic=crime kind=theft region=westmarch
+a : Rustlers on the downs again. {victim} lost six head. | {victim}'s flock came back short by a dozen. | Somebody's driving stolen sheep east by night.
+b[herder] : I'll sleep out with mine and my crook. Let them try.
+b[guard] : We'll ride the barrow road at dusk. They use it, the cowards.
+b : Six! That's a winter's living. | A dozen! | East, toward the drovers' road.
+a : A whole winter. | Gone in a night. | Easy to sell there.
+
+scene et_wm_arrest_frontier
+when topic=crime kind=arrest region=westmarch
+a : They've locked {subject} in the old watch house. | {subject}'s taken. Westmarch looks after its own, and deals with its own. | The Mercantile pressed charges on {subject}, I hear.
+b : That watch house leaks. Good. | We do. | The Mercantile presses everyone.
+a : Very good. | Always have. | Half the downs owes it.
+
+scene et_wm_death_barrows
+when topic=life kind=death region=westmarch
+a : They'll lay {subject} by the old barrows. With the ancestors. | Lights on the barrows the night {subject} died. I saw them. | {subject}'s gone. The downs feel emptier.
+b[old] : The barrows take their own. Always have, long before the chapel.
+b[priest] : The Bright One keeps them, not the barrows. But I'll say the words there.
+b : With the old ones. Right. | You saw nothing but marsh gas. | They do.
+a : Right and proper. | I know what I saw. | Wide and empty.
+
+scene et_wm_newcomer_frontier
+when topic=newcomer region=westmarch
+a : {subject} rode in from the east. Says they want land. | {subject}'s a city wolf. You can tell by the boots. | {subject} asked about the barrows. First thing.
+b[herder] : Land's free out here. Keeping it is the hard part.
+b : Plenty of it. Not much grows. | They'll have mud on them by sundown. | Tell them to stay off them.
+a : Grass, mostly. | And blisters. | I did.
+
+scene et_wm_festival_drovers
+when topic=festival region=westmarch
+a : The drovers time their run to be here for {festival}. | Bonfires on every hill of the downs for {festival}. | The Last Lantern stays open all night for {festival}.
+b[innkeeper] : I'll sleep after {festival}. Some time next week.
+b : Cattle and ale. Westmarch feasting. | You can see them for leagues. | It always does.
+a : The best kind. | Like stars on the ground. | All night.
+
+scene et_wm_gossip
+when topic=gossip region=westmarch
+a : Out on the downs they're saying {subject} {claim}. | The drovers swear {subject} {claim}. | At the Mercantile counter: {subject} {claim}.
+b : Not much else to talk about out there. | Drovers swear about everything. | The counter's where truth goes to die.
+a : Sheep and gossip. | Mostly cattle. | And ledgers.
+
+# ---------------------------------------------------------------- Lakeside
+
+scene et_ls_theft_boat
+when topic=crime kind=theft region=lakeside
+a : Somebody's been taking boats at night again. {victim}'s this time. | {victim} lost the whole catch off the racks. | They took {victim}'s nets right off the jetty.
+b[fisher] : Mist hides a thief better than any cloak.
+b[soldier] : Could be garrison lads. Bored, drunk, a long row home.
+b : The mist covers everything. | The whole catch? | Jetty's never watched.
+a : Everything. | Every fish. | It is now.
+
+scene et_ls_death_mere
+when topic=life kind=death region=lakeside
+a : The mere took {subject}. Went out in the mist. Never came back. | They found {subject}'s skiff drifting by the reeds. | {subject}'s gone. The Mirrormere's still as glass, like nothing happened.
+b[fisher] : The mere's calm until it isn't. Every fisher knows it.
+b : The mist. Always the mist. | Empty, I suppose. | It doesn't care. It's water.
+a : Always. | Empty. | It doesn't.
+
+scene et_ls_newcomer_garrison
+when topic=newcomer region=lakeside
+a : {subject} came across from the isle. Done their service, staying. | {subject} wants to learn boatbuilding. | {subject} rowed in with the supply boat and never rowed back.
+b[soldier] : The isle does that. You serve, then you can't face the open roads.
+b : Plenty like that. | A good trade. | Deserter?
+a : Plenty. | It is. | Or just tired.
+
+scene et_ls_festival_lanterns
+when topic=festival region=lakeside
+a : Lanterns floating on the mere for {festival}. One for every soul lost. | The garrison rows over for {festival}. Every year. | Boat races across the mere for {festival}!
+b[child] : Can I light a lantern? Can I push it out?
+b : It's beautiful. And sad. | They drink us dry. | My cousin's rowing!
+a : Both. | Always. | Good luck to them.
+
+scene et_ls_gossip
+when topic=gossip region=lakeside
+a : The garrison lads swear {subject} {claim}. | On the jetty this morning: {subject} {claim}. | Mist and whispers. {subject} {claim}.
+b : The garrison's bored. They'll say anything. | The jetty hears everything. | Fits the weather.
+a : Anything. | Everything. | It does.
+
+# ---------------------------------------------------------------- Fenhollow
+
+scene et_fh_theft_cures
+when topic=crime kind=theft region=fenhollow
+a : Somebody stole {victim}'s dried bogmyrtle. A season's cures. | Peat stolen off the stacks. Who steals peat? | {victim} was robbed on the causeway at dusk.
+b[healer] : They'll poison themselves with it if they don't know the dose.
+b : A season's work. | Somebody cold. | The causeway's lonely at dusk.
+a : All gone. | Cold and shameless. | Very lonely.
+
+scene et_fh_death_marsh
+when topic=life kind=death region=fenhollow
+a : {subject} followed the marsh lights. They found them in the bog. | Fever took {subject}. The fen fever. | They're burying {subject} on the dry rise behind the chapel.
+b[old] : Never follow the lights. My grandmother said it, and her grandmother.
+b : Never follow the lights. | That fever's cruel. | Only dry ground left.
+a : Never. | So cruel. | And not much of it.
+
+scene et_fh_newcomer_cure
+when topic=newcomer region=fenhollow
+a : {subject} came for the marsh cures and decided to stay. | {subject} wants to learn the herbs. Brave, in this damp. | {subject} came in by the causeway, soaked to the knees.
+b[healer] : I'll teach them. The fen gives as much as it takes.
+b : The cures work, some of them. | They'll grow webbed paws. | Everyone does, first time.
+a : Some. | Ha! | Every time.
+
+scene et_fh_festival
+when topic=festival region=fenhollow
+a : They burn peat bonfires for {festival}. Smoke for a week. | Reed crowns for {festival}! I'm weaving mine. | The causeway's lined with torches for {festival}.
+b[child] : My crown's bigger than yours!
+b : Smells like home. | Show me when it's done. | Pretty, on the water.
+a : Smoky home. | Soon. | Reflections everywhere.
+
+scene et_fh_gossip
+when topic=gossip region=fenhollow
+a : Bogmyrtle says {subject} {claim}. She's never wrong. | At the peat cutting: {subject} {claim}. | Damp talk, but they say {subject} {claim}.
+b : Bogmyrtle's wrong half the time. | Peat cutters gossip like crows. | Everything's damp here.
+a : Never to her face. | Worse. | Even the talk.
+
+# ---------------------------------------------------------------- Amberford
+
+scene et_af_theft_grain
+when topic=crime kind=theft region=amberford
+a : Somebody broke into the granary. {victim}'s grain. | Grain sacks gone from {victim}'s barn. In a drought! | They took the toll box from the ford.
+b[farmer] : A thief in a dry year's worse than a thief in a wet one.
+b[official] : The toll box! That's the watch's wages.
+b : The granary! In this drought? | Shameless. | The whole box?
+a : Shameless. | Utterly. | Every penny.
+
+scene et_af_death
+when topic=life kind=death region=amberford
+a : {subject} died in the fields. Heat took them. | They found {subject} in the ford. The water's so low, how? | {subject}'s gone. They'll be buried under the old oak.
+b[farmer] : The sun's no friend this year.
+b : This heat'll kill us all. | Low water still drowns. | The oak's seen a lot of us off.
+a : It might. | Always does. | It has.
+
+scene et_af_newcomer
+when topic=newcomer region=amberford
+a : {subject} came to help with the harvest. Says they'll stay. | {subject} asked to rent a field. In a drought. | New wolf at the mill. {subject}.
+b[farmer] : Strong back? Then welcome.
+b : Good. We need paws. | Brave or foolish. | The miller needed help.
+a : We do. | Foolish. | Good.
+
+scene et_af_festival_harvest
+when topic=festival region=amberford
+a : The last sheaf goes on the hall door for {festival}. | Barn dance for {festival}! | The miller's grinding sweet flour for the {festival} loaves.
+b[farmer] : Even in a dry year, we feast. That's the point.
+b : Good luck for the year. | I'll bring my fiddle. | Golden loaves.
+a : It needs it. | Please do. | Amber loaves.
+
+scene et_af_gossip
+when topic=gossip region=amberford
+a : At the mill they're saying {subject} {claim}. | Over the hedgerow: {subject} {claim}. | The toll-keeper says {subject} {claim}.
+b : The mill's worse than a tavern. | Hedges have ears. | Toll-keepers see everyone.
+a : Dustier, too. | Long ones. | And tell everyone.
+
+# ---------------------------------------------------------------- Hollowmere
+
+scene et_hm_theft
+when topic=crime kind=theft region=hollowmere_village
+a : A thief? In Hollowmere? {victim}, of all wolves. | Nobody steals in Hollowmere. And yet {victim}'s robbed. | Must be someone passing through. Nobody here would rob {victim}.
+b[old] : Six generations, no lock on a single door. Now this.
+b : Strange days. | And yet. | Must be.
+a : Strange. | It's wrong. | Must be.
+
+scene et_hm_life
+when topic=life region=hollowmere_village
+a : The whole valley knows about {subject} by now. | {subject}! Did you hear? Of course you did. | News travels slow here, except about {subject}.
+b : There are only forty of us. | Course I did. | That's the only news.
+a : Forty, give or take. | Course you did. | Only news all {season}.
+
+scene et_hm_newcomer
+when topic=newcomer region=hollowmere_village
+a : {subject} came up the valley road. Nobody comes to Hollowmere by accident. | A newcomer! {subject}! First in years. | {subject} asked if the carter comes often.
+b[old] : Last newcomer was my wife. Forty years back.
+b : Then why did they come? | Years! | Ha. Did you tell them the truth?
+a : We'll find out. | Years and years. | I told them to be patient.
+
+scene et_hm_festival
+when topic=festival region=hollowmere_village
+a : Just us and a fiddle for {festival}. Best kind of feast. | The whole valley eats together for {festival}. | Bonfire by the brook for {festival}.
+b : The very best. | Every family brings a dish. | The brook sings for it.
+a : Small and warm. | And everybody eats. | It does.
+
+# ---------------------------------------------------------------- The fortresses
+
+scene et_ft_newcomer_recruit
+when topic=newcomer region=fortresses
+a : New recruit came in with the supply cart. {subject}. Green as grass. | {subject}'s been posted here. Looks like they've been sentenced. | Fresh blood. {subject}. Commander's pleased.
+b[soldier] : I was green once. Grass grows up into hay. Then you're old.
+b : They'll ripen. | Feels like it, at first. | He's pleased with anything that walks.
+a : If the cold doesn't take them. | It is, a bit. | And holds a spear.
+b?[old] : Give them the bunk by the stove. First winter's the worst.
+
+scene et_ft_newcomer_questions
+when topic=newcomer region=fortresses
+a : {subject} keeps asking what we're guarding. | {subject} asked when they get leave. | {subject} wanted to know where the tavern is.
+b[soldier] : Tell them the same thing they told us. Nothing.
+b : Tell them nothing. | Laugh in their face. | There isn't one. Break it gently.
+a : I will. | I did. | Poor thing.
+
+scene et_ft_newcomer_veteran
+when topic=newcomer region=fortresses
+a : {subject} transferred in. Served on the southern border, they say. | {subject}'s a veteran. Scars on scars. | {subject} doesn't talk. Just stands the wall and watches.
+b : Good. We need some sense here. | Scars mean they lived. | Best kind of soldier.
+a : We do. | They do. | It is.
+
+scene et_ft_newcomer_cook
+when topic=newcomer region=fortresses
+a : New cook arrived. {subject}. Pray for decent stew. | {subject}'s replacing the old quartermaster. | {subject} came up with the letters. Staying.
+b : Anything's better than the last cook. | The old one was a thief anyway. | Brought my letter?
+a : Don't say that. It tempts fate. | Everybody knew. | Same as always.
+
+scene et_nf_newcomer_cold
+when topic=newcomer region=northern_fortress
+a : {subject} arrived in a lowland cloak. They'll freeze by morning. | {subject} asked if it's always this cold. | {subject} saw the moor from the wall and went white.
+b[soldier] : Give them a real fur. And the ice-trick for their boots.
+b : Lend them a blanket. | Ha. Wait till winter. | Everyone does.
+a : I've spare. | It's summer. | First time.
+
+scene et_df_newcomer_deep
+when topic=newcomer region=dark_fortress
+a : {subject} heard the deep on their first night. Didn't sleep. | {subject} asked about the covered map. Already. | {subject} wants to go below. Don't let them.
+b[soldier] : Nobody goes below without the commander. Nobody.
+b : None of us did, first night. | Already. Curious one. | I won't.
+a : Nor since. | Dangerous trait. | Good.
+
+scene et_if_newcomer_isle
+when topic=newcomer region=isle_fortress
+a : {subject} got seasick on a lake. A lake! | {subject} rowed over this morning. Already wants to row back. | {subject} asked if the isle's really sinking.
+b[soldier] : They all ask that. Tell them we bail it out at night.
+b : On the Mirrormere? It was flat calm! | They all do. | Tell them yes.
+a : Flat as a plate. | All of us. | I did.
+
+scene et_ft_death
+when topic=life kind=death region=fortresses
+a : We'll bury {subject} outside the walls, with the others. | Commander's writing to {subject}'s family. | The whole garrison stood for {subject}.
+b[soldier] : The wall takes one or two a year. Cold, falls, fever.
+b : With the old garrison. | Hard letter to write. | Right and proper.
+a : They'll have company. | The hardest. | It is.
+
+scene et_ft_festival
+when topic=festival region=fortresses
+a : Extra rations for {festival}. Real meat. | Commander gives us a cask for {festival}. One cask, for all of us. | A fiddle on the wall for {festival}. Almost like home.
+b[soldier] : One cask, sixty soldiers. Wonderful.
+b : Real meat! I'll believe it when I see it. | Share it out careful. | Almost.
+a : I saw it. | Careful. | Almost.
+
+scene et_ft_crime
+when topic=crime kind=theft|assault region=fortresses
+a : Somebody's been at the rations store. {subject}, they say. | There was a fight in the barracks. | Commander's furious. Theft, in a fortress.
+b[soldier] : In a garrison? Where would you even hide it?
+b : They'll hang them, or worse. | Cabin fever. Always is. | He would be.
+a : Worse, probably. | Always. | Furious.
+
+scene et_ft_gossip
+when topic=gossip region=fortresses
+a : On the wall last night they said {subject} {claim}. | The supply carter says {subject} {claim}. | Barracks talk. {subject} {claim}.
+b : Bored soldiers. | Carters gossip like old women. | Barracks talk is barracks talk.
+a : Very bored. | Worse. | It passes the night.
+
+# ---------------------------------------------------------------- The ghost town
+
+scene et_gt_newcomer_squatter
+when topic=newcomer region=ghost_town
+a : Someone else has moved into the east houses. {subject}. | {subject} turned up in the night. Said they've nowhere else. | Another one, {subject}. This place fills up with nobodies.
+b[beggar] : Nobody comes here unless they've nowhere. We're all nowhere folk.
+b : More mouths for nothing. | None of us have. | We're all nobodies.
+a : Nothing's what we've got. | No. | At least we're together.
+
+scene et_gt_newcomer_wary
+when topic=newcomer region=ghost_town
+a : I don't like {subject}. They ask too much about why the town emptied. | {subject} reads the names on the chapel door. Out loud. | {subject} sleeps in the old inn. Alone. Brave.
+b : Nobody knows why. | Don't do that. It's bad luck. | Or foolish.
+a : That's what scares me. | Tell them. | Same thing, here.
+
+scene et_gt_newcomer_share
+when topic=newcomer region=ghost_town
+a : {subject} brought a sack of turnips. I like them already. | {subject} can fix a roof. That's worth something here. | {subject} lit a fire in the old square. First in a hundred years, maybe.
+b : Turnips are friendship. | Worth a lot. | Felt like the place breathed.
+a : Turnips are everything. | It is. | It did.
+
+scene et_gt_newcomer_lost
+when topic=newcomer region=ghost_town
+a : {subject} thought this was a living town. Came for work. | {subject} wandered in off the road. Lost. | {subject} keeps calling into empty houses, like someone will answer.
+b : Disappointed, I'd think. | Lost and stayed. Like us. | Someone might.
+a : Very. | Like us. | Don't say that.
+
+scene et_gt_crime
+when topic=crime kind=theft|assault region=ghost_town
+a : Somebody's taking from the shared pot. | Someone took my good blanket. There are four of us! | Things go missing. Wolves, or the town.
+b : One of us, then. | Four suspects. | Don't start that.
+a : One of us. | Three, not counting me. | It's the town.
+
+scene et_gt_festival
+when topic=festival region=ghost_town
+a : We'll keep {festival} here. Somebody should, in this place. | A fire and a song for {festival}. Even here. | They must have kept {festival} here once.
+b : For the ones who left. | Even here. | Tables still set, like they meant to.
+a : For them. | Even here. | Strange to think.

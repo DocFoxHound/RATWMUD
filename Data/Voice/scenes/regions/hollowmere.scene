@@ -1,0 +1,195 @@
+# Hollowmere village: a quiet hamlet of a few families in the Hollowmere valley. The Hollow Cup (one room, one barrel),
+# the Hollowmere Shop in a front room, the carter who brings everything, the valley fields, the woods and the mere.
+
+scene rg_hm_everyone_knows
+when topic=smalltalk|lore region=hollowmere_village
+a : Everybody in Hollowmere knew about it before I did. | You can't sneeze in Hollowmere without the whole valley saying bless you. | No secrets in a village this size.
+b[old] : I know everyone's business and keep half of it. The kind half.
+b[adolescent] : That's exactly why I want to leave.
+b : That's Hollowmere. | Too true. | None at all.
+a : That it is. | Far too true. | Not one.
+
+scene rg_hm_next_valley
+when topic=lore|smalltalk region=hollowmere_village
+a : Folk in the next valley talk funny. | My grandmother called the next valley "foreign parts". | Somebody from over the ridge married into the Oakfield family. Scandal.
+b[old] : Next valley over? Might as well be the Concord.
+b : They say the same about us. | She wasn't wrong. | Big scandal.
+a : Probably. | Not at all. | The biggest.
+
+scene rg_hm_carter_day
+when topic=smalltalk region=hollowmere_village
+a : Carter's due on Marketday. I've a list as long as my tail. | The carter didn't come. No salt till next week. | The carter brought a letter for the Brook family. First in years.
+b[merchant] : Whatever the carter brings, I sell. Whatever he forgets, you do without.
+b : Me too. | Again? | Who from?
+a : Longer. | Again. | Nobody knows yet.
+
+scene rg_hm_hollow_cup
+when topic=smalltalk region=hollowmere_village place=tavern
+a : The whole village fit in the Hollow Cup last night. All eleven of us. | One barrel, one room, and the best night in the valley. | The Hollow Cup's barrel ran dry before the songs did.
+b[innkeeper] : One barrel's plenty if you sip. Nobody sips.
+b : Cosy. | The very best. | Always does.
+a : Very cosy. | The best. | Always.
+
+scene rg_hm_never_further
+when topic=smalltalk region=hollowmere_village a.stage=adult|old
+a : Never been further than Westmarch. Never needed to. | Went to Westmarch once. Too many people. | Westmarch is a big enough city for me.
+b[adolescent] : Westmarch isn't a city! It's barely a town!
+b : Me neither. | Far too many. | Big enough.
+a : Never. | Far too many. | Big enough.
+
+scene rg_hm_last_of_family
+when topic=lore region=hollowmere_village
+a : The Valemeres owned the whole valley once. Now there's only old Hedge. | Old Hedge is the last of the family that owned Hollowmere. | They say every field here was a Valemere field once.
+b[old] : I remember when the Valemeres had a hall on the hill. Just stones now.
+b : Times change. | Poor old Hedge. | Long ago.
+a : They do. | Poor old soul. | Very long ago.
+
+scene rg_hm_valley_fields
+when topic=work region=hollowmere_village a.job=farmer|laborer|herder
+a : Brought in the hay from the low meadow. | The valley fields flooded in the spring melt. | Three of us for every field in the valley.
+b[farmer] : Small fields, small harvests, small worries.
+b : Good hay? | Every spring. | Enough, just.
+a : Sweet hay. | Every spring. | Just.
+
+scene rg_hm_woodcutter
+when topic=work|lore region=hollowmere_village
+a : The woodcutter felled the old oak by the brook. | Cord wood stacked for winter. Enough, I hope. | Heard the axe in the valley wood all day.
+b[woodcutter] : Cut one, plant two. My father's rule.
+b[old] : That oak was old when I was a pup.
+b : Shame. | Hope so. | Busy axe.
+a : A shame. | So do I. | Very busy.
+
+scene rg_hm_shop_front
+when topic=smalltalk region=hollowmere_village
+a : The shop's front room has more cobwebs than goods this week. | Bought the last candle in the shop. | The shop only opens when someone knocks.
+b[merchant] : Knock louder. I'm in the back with the goats.
+b : Carter's late. | Lucky you. | Knock, then.
+a : Very late. | Very lucky. | I did.
+
+scene rg_hm_mere
+when topic=lore region=hollowmere_village
+a : The little mere's frozen solid. Children are skating. | They say a bell's sunk in the mere. From a chapel that was never built. | Fished the mere all morning. Two perch.
+b[old] : That mere's deeper than it looks. Mind the pups.
+b[child] : I can skate backwards!
+b : Mind the edges. | Odd story. | Supper, anyway.
+a : I will. | Very odd. | Small supper.
+
+scene rg_hm_newcomer_rare
+when topic=smalltalk region=hollowmere_village
+a : A stranger walked through the valley yesterday. Didn't even stop. | Nobody new's moved here in ten years. | A traveller asked the way to Westmarch. Took the whole village to answer.
+b[old] : Strangers mean news, or trouble. Usually both.
+b : Shame. | Twelve years. | Everyone had an opinion.
+a : Rude. | Twelve. | Every one.
+
+scene rg_hm_hedgerows
+when topic=smalltalk region=hollowmere_village season=autumn|summer
+a : Blackberries thick in the hedgerows. | The hedges need laying before winter. | The children ate all the hedge plums.
+b[child] : They were ripe! You'd have eaten them too!
+b : Pick them. | Every year. | Little thieves.
+a : I will. | Every year. | Little thieves.
+
+scene rg_hm_quiet
+when topic=smalltalk region=hollowmere_village
+a : Nothing ever happens in Hollowmere. | A hen got loose. That's the week's news. | Quiet as a chapel on Restday.
+b[old] : Nothing happening is the best kind of happening.
+b[adolescent] : That's the problem.
+b : Good. | Big news. | Always.
+a : Good. | The biggest. | Always.
+
+scene rg_hm_valley_mist
+when topic=weather|lore region=hollowmere_village weather=fog|overcast
+a : Mist filling the valley like milk in a bowl. | Can't see the next house in this. | The valley holds the mist till noon.
+b[old] : Hollowmere means "the hollow with the mist". So my grandmother said.
+b : Pretty. | Stay in. | Always does.
+a : Very pretty. | I will. | Always.
+
+scene rg_hm_wedding
+when topic=lore region=hollowmere_village band=friends|family|acquaintances
+a : The last wedding here was three summers ago. Whole valley danced. | When there's a wedding, every family brings one dish. | They'll marry Brook and Oakfield next spring. Two families joined.
+b[old] : In a valley this small, every wedding's a family wedding.
+b : Lovely day. | Good custom. | Good match.
+a : Very lovely. | Very good. | Very good.
+
+scene rg_hm_westmarch_market
+when topic=smalltalk region=hollowmere_village
+a : Walking to Westmarch market tomorrow. Two days there and back. | Took the cart to Westmarch to sell the wool. | They pay better in Westmarch than the carter does.
+b[farmer] : The walk's long but the coin's honest.
+b : Long walk. | Good price? | Always.
+a : Very long. | Fair. | Always.
+
+scene rg_hm_ridge_path
+when topic=lore region=hollowmere_village
+a : The ridge path's the only way out of the valley in winter. | Someone carved a wolf's head on the ridge stone. Long ago. | They say the ridge stone marks the edge of the old Valemere lands.
+b[woodcutter] : Ridge path's slick as ice in winter. Take a staff.
+b : Steep one. | Old carving. | So they say.
+a : Very steep. | Very old. | So they say.
+
+scene rg_hm_goats
+when topic=smalltalk|work region=hollowmere_village
+a : The goats got into the shop again. | Goat ate my washing off the line. | Milked the goats before dawn.
+b[herder] : Goats are cleverer than wolves. Don't tell them.
+b : Again? | Every week. | Good milk?
+a : Again. | Every week. | Sweet.
+
+scene rg_hm_story_night
+when topic=lore|smalltalk region=hollowmere_village time=dusk|night
+a : Old Hedge is telling the story of the Valemere hall again. | Story night at the Hollow Cup. Everyone tells one. | The children want the ghost story. Always the ghost story.
+b[old] : A village lives on its stories. Somebody has to tell them.
+b : Again? | Fun night. | Every time.
+a : Again. | Very fun. | Every time.
+
+scene rg_hm_winter_shut
+when topic=lore|weather region=hollowmere_village season=winter
+a : Snowed in again. No carter till the thaw. | The valley's cut off for a month every winter. | We share stores in winter. Nobody goes hungry.
+b[old] : Fill the cellar in autumn, share in winter. That's the valley.
+b : Every winter. | Every year. | Good custom.
+a : Every winter. | Every year. | The best.
+
+scene rg_hm_children
+when topic=smalltalk region=hollowmere_village a.stage=young|adolescent
+a : There's only four of us pups in the whole valley. | I want to go to Westmarch and see real shops. | We built a dam in the brook! It's huge!
+b[old] : When I was young there were twenty pups here. Twenty!
+b : Small valley. | Someday. | Mind it doesn't flood.
+a : Very small. | Someday. | It won't!
+
+scene rg_hm_spring
+when topic=smalltalk region=hollowmere_village season=spring
+a : First lambs in the valley. | The brook's loud with the melt. | Primroses on the bank. Spring's here.
+b[farmer] : Spring's late in the hollow. Always a week behind.
+b : Lovely. | Every spring. | Finally.
+a : Very lovely. | Every spring. | Finally.
+
+scene rg_hm_hall_stones
+when topic=lore region=hollowmere_village
+a : Children dug up a carved stone from the old hall. | The old hall stones are in half the walls in the valley now. | They say there's a cellar under the hall stones nobody's found.
+b[old] : The Valemeres buried their silver when the bad years came. So they said.
+b : What did it show? | Waste not. | So they say.
+a : A wolf's head. | Very thrifty. | So they say.
+
+scene rg_hm_bees
+when topic=work|smalltalk region=hollowmere_village season=spring|summer
+a : The bees swarmed in the orchard. Took all morning to hive them. | Honey from the valley hives is the best in the west. | Got stung four times taking the comb.
+b[old] : Tell the bees the village news, or they'll leave. Old custom.
+b : Did you get them all? | Westmarch pays well for it. | Four! Poor paws.
+a : Most. | Very well. | Four.
+
+scene rg_hm_mill_stream
+when topic=lore|work region=hollowmere_village
+a : The old mill wheel's rotted through. | Nobody's ground grain in the valley mill for years. We take it to Westmarch. | The millstream still runs fast, even with no wheel.
+b[woodcutter] : I could cut a new wheel. Nobody'll pay for it.
+b : Shame. | A long walk with a sack. | Waste of good water.
+a : A shame. | Very long. | A waste.
+
+scene rg_hm_feast_share
+when topic=lore|smalltalk region=hollowmere_village band=friends|family|acquaintances
+a : Midwinter, the whole valley eats at one table. | Everybody brings what they have. Nobody counts. | Old Hedge carves at midwinter. Always has.
+b[old] : One table, one fire, one valley. That's Hollowmere.
+b : Best night of the year. | Good custom. | Steady paws, still.
+a : The best. | The very best. | Very steady.
+
+scene rg_hm_mushrooms
+when topic=smalltalk|work region=hollowmere_village season=autumn
+a : Mushrooms thick in the valley wood. | Only old Hedge knows which mushrooms are safe. | Found a ring of mushrooms in the meadow.
+b[old] : A ring of mushrooms is where the old folk danced. Don't step in.
+b : Pick them. | Ask Hedge. | Pretty.
+a : I will. | I will. | Very.

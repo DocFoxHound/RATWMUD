@@ -1,0 +1,228 @@
+# Kin: masters and apprentices (Docs/Design/30-towns-and-talk.md). One taught by the other: lessons, scoldings,
+# pride, and the day the apprentice is ready.
+
+# ---------------------------------------------------------------- The master speaks
+
+scene kn_ap_slow_down
+when topic=work|smalltalk|day band=apprentice a.stage=adult|old b.job=apprentice
+a : Slow down. Rushed work is wasted work. | Again. And this time, look at what you're doing. | Who taught you to do it like that?
+b : But it's taking forever. | I was looking! | You did.
+a : Forever is how long good work lasts. | You were looking at the door. | I did not. I'd never.
+b : That's a terrible saying. | The door's interesting. | Last week. You said, quick and dirty.
+a : It's a true one. Again. | Not as interesting as wages. | ...Never repeat that to a customer.
+
+scene kn_ap_praise
+when topic=work|smalltalk band=apprentice a.stage=adult|old b.job=apprentice
+a : That's good. That's actually good. | Show me that again. | You've got the knack of it now.
+b : Really? | Like this? | Have I?
+a : Don't let it go to your head. | Exactly like that. | Nearly. Don't get proud.
+b : Too late. | I can do it in my sleep. | Too late for that.
+a : Then do it awake. Ten more. | Let's see it awake first. | Then go humble yourself on the sweeping.
+
+scene kn_ap_scold
+when topic=work band=apprentice a.stage=adult|old b.job=apprentice
+a : What's this? Did you even try? | You've ruined a day's material. | I told you three times.
+b : I tried. It went wrong. | It was already bad. | I heard twice.
+a : Then try again, and think this time. | Bad material doesn't ruin itself. | The third time was the important one.
+b : Yes, master. | Yes, master. | Yes, master.
+a : Don't yes-master me. Do it. | And don't sulk. Sulking's slow. | Go on, then.
+
+scene kn_ap_early
+when topic=work|day band=apprentice a.stage=adult|old time=dawn b.job=apprentice
+a : You're late. | Fire's not lit. Why not? | You look half asleep.
+b : The bell hadn't gone! | I lit it. It went out. | Half's better than none.
+a : The work goes before the bell. | Fires don't go out on their own. | Not in my shop it isn't.
+b : Nobody told me that. | This one does. | It's three quarters, honestly.
+a : I'm telling you now. | Then watch it like a pup. | Get the water. Wake the rest of you.
+
+scene kn_ap_story_own_master
+when topic=work|smalltalk band=apprentice a.stage=old b.job=apprentice
+a : My old master would have boxed my ears for that. | When I was apprenticed, I slept on the shop floor. | You've got it easy, you know.
+b : You never box my ears. | On the floor? | Easy? My paws are raw.
+a : I'm not him. Thank the Bright One. | Next to the hearth. Warmest spot in town. | Mine were raw for a year.
+b : What was he like? | Was it comfortable? | Did it stop?
+a : Hard. Fair. Drank too much. | No. I loved it anyway. | They got tough. So will yours.
+
+scene kn_ap_secret_technique
+when topic=work band=apprentice a.stage=adult|old b.job=apprentice
+a : Come here. I'll show you something. Don't tell anyone. | This is how my master's master did it. | There's a trick to it nobody writes down.
+b : What is it? | Is it a secret? | Show me.
+a : You warm it first. Just a little. | It was. Now it's yours. | Watch my paws. Not my face.
+b : That's it? | Mine forever? | Your paws are very fast.
+a : That's it. And forty years of knowing when. | Till you teach it on. | Then watch closer.
+
+scene kn_ap_pay
+when topic=work|smalltalk band=apprentice a.job=apprentice
+a : Master, about my wages. | Could I have an advance? | The other apprentices get paid more.
+b : Wages? You get bed and board. | For what? | Then go work for their masters.
+a : And some coin. A little. | My mother's sick. | Maybe I will.
+b : A little. Next Marketday. | Then you'll have it. Don't tell the others. | Then go. See how long you last.
+a : Thank you. | Thank you, master. | ...I'll stay.
+
+scene kn_ap_mistake_customer
+when topic=work band=apprentice a.stage=adult|old place=work|market b.job=apprentice
+a : Never tell a customer it'll be ready tomorrow. | You gave him the wrong change. | Don't argue with the customer, even when she's wrong.
+b : But it will be. | Did I? | Even then?
+a : It will be the day after. Always say the day after. | Two pennies short. He'll be back. | Especially then. Let her be wrong at home.
+b : That's lying. | I'll pay it. | That's backwards.
+a : That's business. | Out of your wages. | That's trade.
+
+scene kn_ap_ready
+when topic=work|smalltalk band=apprentice a.stage=adult|old b.job=apprentice
+a : You'll be a journeyman by spring, I think. | You don't need me watching any more. | One day soon you'll have your own shop.
+b : Really? You think so? | I still need you. | My own? Here?
+a : I don't say things I don't think. | You need me less. That's the point. | Not here. I'll not have the competition.
+b : I won't let you down. | I'll miss being watched. | Then in the next town.
+a : You haven't yet. | No, you won't. | Far enough away. Close enough to visit.
+
+scene kn_ap_leave
+when topic=work|smalltalk band=apprentice a.job=apprentice
+a : I'm thinking of leaving to train somewhere else. | I want to see how they do it in the city. | My father wants me home.
+b : Somewhere else? Where? | The city does it badly. Fast and badly. | Your father's not your master. I am.
+a : Ser Ferro, maybe. | I'd still like to see. | He's my father.
+b : They'll teach you to cut corners. | Then go. And come back. | Then go to him. Then come back.
+a : You'd let me? | I will. | I'll ask him.
+
+scene kn_ap_master_ill
+when topic=work|family band=apprentice a.job=apprentice
+a : You should rest, master. I'll mind the shop. | You're coughing worse. | Let me lift that.
+b : You? Mind the shop? | It's nothing. | I've lifted that for thirty years.
+a : You taught me. Trust it. | It's something. Sit. | Then you've earned a rest from it.
+b : ...One morning. No more. | Fine. One cup of tea. | ...Just this once.
+a : One morning. | And then another. | Just this once.
+
+# ---------------------------------------------------------------- By trade
+
+scene kn_ap_smith
+when topic=work band=apprentice a.job=smith b.job=apprentice
+a : Watch the colour. Cherry red, not yellow. | Strike where it's hot, not where it's easy. | Tongs in your teeth, firm. Don't drop it.
+b : It looks orange to me. | It's all hot. | They're heavy.
+a : Then your eyes need training. Again. | Not like this it isn't. Look. | So's iron. You'll get stronger.
+b : Cherry. Got it. | There? | My jaw aches.
+a : That's cherry. Strike! | There. Now. | Good. It's supposed to.
+
+scene kn_ap_baker
+when topic=work band=apprentice a.job=baker b.job=apprentice
+a : The dough's not ready. Feel it. | Too much flour. You'll make bricks. | Up at the third hour tomorrow. Bread waits for no one.
+b : It feels like dough. | Then we'll sell bricks. | The third hour? The night's barely over.
+a : It feels like a pup's belly when it's ready. | To the mason, maybe. | The night's for the dough. Morning's for us.
+b : That's a strange thing to feel. | He'd pay well. | Fine.
+a : Bakers are strange wolves. | Out. Start again. | Third hour.
+
+scene kn_ap_healer
+when topic=work band=apprentice a.job=healer b.job=apprentice
+a : Name the herb. | Smell it. What's wrong with this wolf? | Clean the wound first. Always first.
+b : Feverfew. | Infection. It's sweet. | It's only a scratch.
+a : Good. What's it for? | Good nose. What do we do? | Scratches kill more wolves than swords.
+b : Fever. Obviously. | Clean it, open it, bind it. | That can't be true.
+a : Not obviously. Headaches too. | Good. | It's true. Clean it.
+
+scene kn_ap_scholar
+when topic=work band=apprentice a.job=scholar|priest|official b.job=apprentice
+a : Your letters are a disgrace. | Quill in your teeth, not your lip. | Read it back to me.
+b : I'm trying. | It keeps slipping. | All of it?
+a : Try neater. | Then bite harder. Not too hard. Just so. | Every word.
+b : There. | Like this? | "In the year of the long frost..."
+a : Better. Barely. | Better. | Good. Go on.
+
+scene kn_ap_cook
+when topic=work band=apprentice a.job=cook|innkeeper b.job=apprentice
+a : Taste it. What's missing? | You burned the onions again. | The stew's for forty, not four.
+b : More salt? | They were nearly brown. | Forty?
+a : Always salt, with you. Thyme. | Nearly brown is black. | There's a festival. Forty.
+b : I don't like thyme. | They're crispy. | Then we need more pots.
+a : The customers do. | Customers don't want crispy onions. | Then fetch them.
+
+scene kn_ap_carpenter
+when topic=work band=apprentice a.job=crafter|woodcutter b.job=apprentice
+a : Measure twice, cut once. | Follow the grain. Don't fight it. | Sand it till it's soft as fur.
+b : I measured once. Very carefully. | It keeps splitting. | It's already smooth.
+a : Once is how you waste a plank. | Because you're fighting it. | Smooth's for a fence. Fur's for a table.
+b : I'll measure again. | How do I not fight it? | Fur. Fine.
+a : And once more. | Listen to it. Wood talks. | Fur.
+
+scene kn_ap_fisher
+when topic=work band=apprentice a.job=fisher|sailor b.job=apprentice
+a : Knot's wrong. Do it again. | Read the water. Where are the fish? | Never stand up in the boat.
+b : It holds. | Under the water. | I wasn't standing. Much.
+a : It holds till a storm. Again. | Funny. Where the ripples break. | Much is too much.
+b : Is that better? | There? | Fine.
+a : That'll hold a whale. | There. Cast. | Sit.
+
+scene kn_ap_carter
+when topic=work band=apprentice a.job=carter|herder b.job=apprentice
+a : Check the axle every morning. | Talk to the ox. He works better. | Never take the forest road after dark.
+b : It was fine yesterday. | He doesn't understand. | It's faster.
+a : Yesterday's not today. | He understands tone. | Faster to the bandits.
+b : I'll check. | Good morning, ox. | Fine. The long road.
+a : Good. | Better. | Alive is fast enough.
+
+scene kn_ap_guard
+when topic=work band=apprentice a.role=guard b.job=apprentice
+a : Keep your eyes moving. Don't just stand there. | Never let them get behind you. | Ears up. You look asleep.
+b : There's nothing to see. | Who? | I'm not asleep.
+a : That's when you look harder. | Anyone. Everyone. | Then look awake.
+b : Still nothing. | Even you? | How?
+a : Good. Keep looking. | Especially me. | Ears up, tail level. Like that.
+
+scene kn_ap_farmer
+when topic=work band=apprentice a.job=farmer b.job=apprentice
+a : Straight furrows. Look at the post, not the ground. | You'll learn the soil by its smell. | Don't plant before the frost's gone.
+b : It's not straight? | It all smells like dirt. | It's gone. It's spring.
+a : Like a dog's hind leg. | Smell again. Sour, sweet, wet. | Spring's not a promise.
+b : The post moved. | Wet. It's wet. | When, then?
+a : The post never moves. | Good. Too wet. Wait a day. | When the old oak has leaves.
+
+scene kn_ap_merchant
+when topic=work band=apprentice a.role=merchant b.job=apprentice
+a : Never show what you want to pay. | Smile at every customer. Even that one. | Count it twice before it goes in the box.
+b : How do I hide it? | He bit me last week. | I counted it once.
+a : Look at the thing like it's ordinary. | Smile with your mouth closed, then. | Once is how pennies vanish.
+b : Like this? | Better than teeth. | Twice, then.
+a : Bored. Good. | Much better. | Twice. Always.
+
+scene kn_ap_brewer
+when topic=work band=apprentice a.job=brewer b.job=apprentice
+a : Smell the mash. Is it ready? | Too much hops. They'll spit it out. | Keep the barrels clean or it turns.
+b : It smells like breakfast. | Hops are flavour. | They're clean enough.
+a : Breakfast is a start. Give it a day. | Hops are bitter, is what they are. | Enough's how barrels go sour.
+b : A whole day? | Bitter's good. | Clean, then. Really clean.
+a : Brewing's waiting. | Not that bitter. | Good.
+
+# ---------------------------------------------------------------- The apprentice speaks
+
+scene kn_ap_asks_why
+when topic=work|smalltalk band=apprentice b.stage=adult|old a.job=apprentice
+a : Why do we always do it this way? | Couldn't we do it faster? | What if I tried it differently?
+b : Because it works. | You could. You'd do it badly. | Then you'd learn why we don't.
+a : There might be a better way. | Not if I'm careful. | Or I'd find a better way.
+b : There might. Find it after you've mastered this one. | Nobody's careful when they're fast. | ...Try it. On scrap.
+a : That'll take years. | I'd be careful. | Thank you.
+b : It took me twenty. | Prove it. | Don't thank me yet.
+
+scene kn_ap_tired
+when topic=work|day band=apprentice a.job=apprentice
+a : Can we stop for a bit? | My paws are burning. | I've been at it since dawn.
+b : When it's done. | They'll toughen. | So have I. Longer.
+a : It's never done. | When? | You're used to it.
+b : That's the trade. | When they stop burning. | You will be too.
+a : That's no answer. | Wonderful. | I'm not sure I want to be.
+b?[old] : I said the same thing, sixty winters ago. Sit, then. A short one.
+
+scene kn_ap_admire
+when topic=work|smalltalk band=apprentice a.job=apprentice
+a : How did you learn to do it so fast? | Will I ever be as good as you? | Everyone in {town} knows your work.
+b : Forty years of doing it slow. | Better, if you listen. | Some of it they'd rather forget.
+a : I don't have forty years. | Better? | Like what?
+b : Then you'd best start now. | Better. I'll make sure. | Like the gate I hung upside down.
+a : Now. | I'll listen. | Upside down?
+b : Now. | Then begin. | Nobody noticed for a week.
+
+scene kn_ap_gossip_master
+when topic=smalltalk band=apprentice a.job=apprentice
+a : The other apprentices say you were wild when you were young. | Did you really fight a bear? | Is it true you trained in Ser Ferro?
+b : The other apprentices say a lot. | It was a dog. A big one. | For a season. I hated it.
+a : So it's true? | A dog? | Why?
+b : Some of it. Get back to work. | A very big dog. | They worked us like oxen and fed us like sparrows.
+a : Which part? | Was it scary? | And you came back here.
+b : Work. | Terrifying. Work. | Best choice I ever made. Work.

@@ -1,0 +1,333 @@
+# Work and trade by job (doc 30): more for the trades heard least. Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Woodcutters
+
+scene tr_wood_charcoal
+when topic=work a.job=woodcutter|laborer region=marches|ridgemere
+a : Banked the charcoal clamp last night. Sat up with it till dawn. | The clamp caught and burned to ash. A week's work. | Smiths want charcoal faster than trees grow.
+b : Smoke in your eyes? | All of it? | Plant more trees.
+a : Smoke in my eyes, my fur, my dreams. | All but the smell. | Plant them and wait forty years?
+
+scene tr_wood_axe_lesson
+when topic=work a.job=woodcutter b.stage=young|adolescent
+a : Let the axe fall. Don't chop at it like it owes you money. | Notch on the side you want it to fall. | Stand back further. Further. There.
+b : It's heavy in my jaws. | Which side? | Why so far?
+a : Heavier when you're tired. Rest. | Away from the house, pup. | Trees don't fall where you think.
+
+scene tr_wood_lost
+when topic=work|smalltalk a.job=woodcutter
+a : Got turned round in the fog by the old pines. Walked in a circle till noon. | My mark on that beech has been cut out. | Someone's been setting snares on my paths.
+b : How'd you get back? | Who'd do that? | Poachers.
+a : Followed my own scent out. Embarrassing. | Someone who wants that beech. | Poachers on a lord's land. Hanging business.
+
+scene tr_wood_pay
+when topic=work|prices a.job=woodcutter
+a : A cart of firewood for six pennies. Six! | The carpenter wants planks and pays for kindling. | Folk complain at the price till the first frost.
+b : Charge eight. | Sell to someone else. | Then they pay anything.
+a : Then they'll cut their own. Badly. | There's no one else. | Then I'm the most loved wolf in town. Till spring.
+
+scene tr_wood_sawpit
+when topic=work a.job=woodcutter|crafter b.job=woodcutter|crafter|laborer
+a : You take top saw today. I'm sick of sawdust in my eyes. | Pull on the down stroke, not the up. | Third log and the saw's stuck again.
+b : I took it yesterday. | I am pulling on the down. | Wet wood.
+a : And I took it three days before. | Then pull harder. | Wet wood, wet wolves, wet everything.
+
+scene tr_wood_fortress
+when topic=work a.job=woodcutter|laborer region=fortresses
+a : The garrison burns more wood in a week than a town does in a month. | They want the trees cut back a bowshot from the walls. | Cut timber for the new palisade.
+b : Big ovens. | Why? | Strong?
+a : Big ovens and cold soldiers. | So nothing creeps up. Including me. | Strong enough for the paperwork.
+
+# ---------------------------------------------------------------- Scholars
+
+scene tr_schol_copying
+when topic=work a.job=scholar
+a : Copying the same page for the fourth time. A flourish went wrong. | The lord wants his family tree back to the Bright One. Every name. | Translating a letter from the south. Half the words are curses.
+b : Leave the flourish. | Back that far? | Translate them faithfully.
+a : The abbot notices flourishes. | I'll invent a few. Everyone does. | Faithfully would get me thrown out.
+
+scene tr_schol_library_cold
+when topic=work|smalltalk a.job=scholar season=winter|autumn
+a : No fires allowed in the library. My ink freezes. | Read all day with my tail wrapped round my nose. | The windows let in the wind and none of the light.
+b : Read in the kitchen. | Sounds cosy. | Ask for candles.
+a : And get gravy on the chronicles? | It's not. It's freezing. | Candles in a library? They'd hang me.
+
+scene tr_schol_debate
+when topic=work|smalltalk a.job=scholar b.role=civilian
+a : Do you know how old this town is? Nobody does. That's the scandal. | The well in the square is older than the chapel. I've proved it. | Your street's named after a battle nobody remembers.
+b : Old enough. | Does it matter? | Which battle?
+a : Old enough isn't a date. | It matters to the well. | Exactly. Nobody remembers.
+
+scene tr_schol_rich_patron
+when topic=work a.job=scholar b.job=noble|merchant
+a : The history of your house is nearly finished, my lord. | I need two marks for more parchment. | Your grandfather was a pirate, in the old records.
+b : Make it flattering. | Two marks? For skins? | He was a merchant.
+a : It is. Mostly. | Fine skins, for fine words. | A merchant with a lot of ships and no flag.
+
+scene tr_schol_star
+when topic=work|smalltalk a.job=scholar time=night|dusk
+a : The comet's back. The old books say every sixty years. | I've been counting stars for the calendar. Lost count. | Clouds again. A whole night wasted.
+b : Bad omen? | Start again. | Sleep, then.
+a : The priests think so. The books think not. | I'll start where I left off. Somewhere near the moon. | Sleeping's for wolves who don't owe a calendar.
+
+scene tr_schol_wardens
+when topic=work a.job=scholar region=upper_accord
+a : The Wardens' archive has a wing no one's allowed in. | I found a record of a Quickened wolf from two hundred years ago. | They're testing a new pup at the training ground.
+b : Have you tried? | What did it say? | Testing for what?
+a : Once. Never again. | Ash and fire, mostly. | That's not mine to know. Or yours.
+
+# ---------------------------------------------------------------- Miners
+
+scene tr_mine_flood
+when topic=work a.job=miner season=spring|autumn
+a : The low galleries are flooding again. | Worked the pump all shift. | Water came through the face like a tap opened.
+b : Can you pump it out? | Your shoulders! | Anyone hurt?
+a : Faster than it comes in? No. | Gone. My shoulders are gone. | Wet. Frightened. Not hurt.
+
+scene tr_mine_seam
+when topic=work a.job=miner b.job=miner|smith
+a : This seam's going thin. | The new shaft's hit rock harder than iron. | Ore's so rich here you can smell it.
+b : Follow it down. | Use fire on it. | Keep quiet.
+a : Down's where the water is. | We did. It laughed at us. | I'm whispering.
+
+scene tr_mine_tavern
+when topic=work|smalltalk a.job=miner place=tavern
+a : First drink's to the ones still down there. | Haven't seen the sun in five days. | My lungs are full of hill.
+b : To them. | It's still there. | Drink. Wash it out.
+a : And the second's to us for coming up. | I'll take your word. | It doesn't wash. It sits.
+
+scene tr_mine_fear
+when topic=work a.job=miner
+a : Heard the hill groan last night from my bed. | I dreamed the roof came down. | My pup wants to go down the pit. I said no.
+b : Hills groan. | Just a dream. | Good.
+a : Not like that. | It's always just a dream till it isn't. | Over my body, I said.
+
+# ---------------------------------------------------------------- Crafters
+
+scene tr_craft_weaver
+when topic=work a.job=crafter
+a : Wove a bolt of good wool. Merchant offered half its worth. | My loom's beam has cracked. | Somebody wants cloth dyed House Fell green. Nobody can match it.
+b : Sell elsewhere. | Can it be mended? | Close enough?
+a : There is no elsewhere. | With pegs and prayers. | Not for a House. They'd see it.
+
+scene tr_craft_potter
+when topic=work a.job=crafter
+a : Kiln opened. Half the pots cracked. | The clay from the river's full of grit. | Somebody wants fifty bowls by Marketday.
+b : Too hot? | Sieve it. | Fifty!
+a : Too hot, then too cold. | Sieve it with what? | Fifty, and all the same. Nothing's ever the same.
+
+scene tr_craft_roofer
+when topic=work a.job=crafter|laborer weather=rain|storm|snow
+a : Roofing in this weather. I'll be blown off. | Every roof in town's leaking at once. | Slates are slick as eels.
+b : Wait for it to clear. | Good for business. | Mind your step.
+a : The rain won't wait, why should I? | Good till I fall off one. | Four paws, no grip.
+
+scene tr_craft_guild
+when topic=work a.job=crafter b.job=crafter|official
+a : The guild wants its dues by Restday. | The guild says I can't sell outside the market. | Guild masters vote themselves the best orders.
+b : Pay them. | Rules are rules. | Always have.
+a : Pay them for what? | Rules made by guild masters. | Always will, unless.
+
+scene tr_craft_saltreach_barrel
+when topic=work a.job=crafter region=saltreach
+a : The Barrel Yard's behind. Salt house wants forty barrels. | Bent a stave and it sprang back and hit me on the nose. | Brine eats through the hoops in a season.
+b : Forty? | Your poor nose. | Use thicker iron.
+a : Forty, and they all must hold brine. | My poor nose is fine. My pride isn't. | Thicker iron, dearer barrels.
+
+# ---------------------------------------------------------------- Brewers
+
+scene tr_brew_mead
+when topic=work a.job=brewer
+a : Tried a mead with the heather honey. | The bees swarmed in the brew-house. | Mead's sweeter than ale and folk drink it twice as fast.
+b : And? | Did they sting? | Charge twice as much.
+a : Strong enough to make the priest dance. | Every one of them. On my nose. | Doubled the price. They drink it faster.
+
+scene tr_brew_hops
+when topic=work|prices a.job=brewer
+a : No hops this year. Brewing with bog myrtle. | The hop merchant's cheating me on the weight. | The barley's mouldy. All of it.
+b : Tastes different? | Weigh them yourself. | Mouldy barley?
+a : Tastes like a fen. Folk like it. | I did. He has a heavy paw. | Mould and ale don't marry.
+
+scene tr_brew_fest
+when topic=work a.job=brewer day=festival|market
+a : Every barrel I own went to the square. | They drank the festival ale by noon. | Market crowd's tasting my new brew.
+b : Brew more! | Good ale. | What do they say?
+a : It takes a fortnight! | Good ale, empty cellar. | That it's not as good as last year's. It's the same brew.
+
+scene tr_brew_wife
+when topic=work|family a.job=brewer band=spouses|family
+a : I'll be in the brew-house till late. | Taste this and tell me honestly. | We should sell the brew-house and buy a farm.
+b : You always are. | Honestly? Too sweet. | A farm? You'd die of boredom.
+a : It doesn't brew itself. | Honestly, I asked for honesty. Bit less of it. | Boredom's not so bad.
+
+# ---------------------------------------------------------------- Herders
+
+scene tr_herd_goats
+when topic=work a.job=herder
+a : The goats are on the roof of the woodshed again. | A goat ate my hat. | Milked twelve goats before dawn.
+b : How? | Your good hat? | Twelve!
+a : Goats don't explain themselves. | My only hat. | Twelve, and one kicked the pail.
+
+scene tr_herd_market_day
+when topic=work a.job=herder|farmer day=market
+a : Drove the flock to market. Lost one in the square. | The butchers are paying well this week. | Market's full of sheep. Nobody's buying.
+b : Find it? | Sell, then. | Bad timing.
+a : The baker found it. In his bakery. | Sold four. Kept the old ram. | Everybody had the same idea.
+
+scene tr_herd_winter
+when topic=work a.job=herder season=winter
+a : Hay's running low. The flock's thin. | Snow buried the fold. Dug them out by mouth. | Brought the ewes into the house. The house smells of ewe.
+b : Buy more hay. | Are they all right? | Warm, though.
+a : With what coin? | Cold, but alive. | Warm, and woolly, and loud.
+
+scene tr_herd_rustlers
+when topic=work|crime a.job=herder
+a : Three sheep gone in the night. No tracks. | Someone's been moving my boundary stones. | The marks on my ewes have been changed.
+b : Rustlers. | Your neighbour. | Report it.
+a : Rustlers with wings, then. | He says the stones moved by themselves. | To who? The watch can't tell one sheep from another.
+
+# ---------------------------------------------------------------- Beggars
+
+scene tr_beg_rain
+when topic=work|smalltalk a.job=beggar weather=rain|storm|snow
+a : Nobody stops to give in the rain. | My bowl's full of water. Nothing else. | Found a dry arch under the bridge. Don't tell.
+b : Get under cover. | Sorry. | I won't.
+a : Under cover nobody sees me. | Water's free, at least. | Others will. They always find out.
+
+scene tr_beg_market
+when topic=work a.job=beggar place=market
+a : Market days are best. Folk are flush. | A merchant gave me a bruised apple and a lecture. | A lady dropped a penny. I gave it back.
+b : Good pickings? | Which was worse? | Why?
+a : Good enough to eat. | The lecture. The apple was lovely. | She gave me two for it.
+
+scene tr_beg_gifted
+when topic=smalltalk a.job=beggar
+a : I could make a candle flicker once. A little Gift. Nobody pays for that. | They say I was a scholar's servant. I don't remember. | I knew a wolf who could find lost things. Died poor anyway.
+b : Show me. | Don't you? | Strange.
+a : It's gone. Hunger takes it. | Not much. Hunger eats memories. | Gifts don't feed you. That's the truth.
+
+scene tr_beg_pup
+when topic=smalltalk a.job=beggar b.stage=young|adolescent
+a : Got anything to eat, little one? | Run along. This corner's no place for pups. | Your ma should be looking for you.
+b : I've a crust. You can have half. | Why not? | She's working.
+a : Bright One bless you. Keep the bigger half. | It's no place for anyone. | Then stay by me till she comes.
+
+# ---------------------------------------------------------------- Apprentices
+
+scene tr_app_errand
+when topic=work a.job=apprentice place=street|market
+a : Sent to fetch a left-pawed hammer. The whole street laughed. | I'm to fetch nails, rope and the master's lunch. | Delivered the wrong order to the wrong house.
+b : There's no such thing. | Don't eat the lunch. | Uh oh.
+a : I know that now. | Half the lunch. | They kept it. And sent nothing back.
+
+scene tr_app_night
+when topic=work|smalltalk a.job=apprentice time=night|dusk
+a : Master's asleep. I've the forge to myself. | Can't sleep. My paws ache from the work. | Snuck out to the tavern. Don't tell.
+b : Don't burn it down. | Rub them. | I won't.
+a : I'll try something new. Quietly. | They ache more when I rub them. | You never saw me.
+
+scene tr_app_girl
+when topic=work a.job=apprentice a.sex=female
+a : The master says a she-wolf can't learn the forge. I've learned it. | Out-hammered the other apprentices today. | They gave me the lightest work. I took the heaviest.
+b : Show him. | Good for you. | Did they notice?
+a : I am. Every day. | Not good for them. | They noticed. They're sulking.
+
+scene tr_app_healer
+when topic=work a.job=apprentice b.job=healer
+a : Which herb is it for the cough again? | I set the splint. It's crooked. | The patient bit me.
+b : Coltsfoot. Write it down. | Crooked splint, crooked leg. Again. | They do that. Wash it.
+a : I wrote it down. On my paw. It rained. | Again. Straighter. | Wash it with what you'd use on them.
+
+# ---------------------------------------------------------------- Servants
+
+scene tr_serv_laundry
+when topic=work a.job=servant
+a : The laundry's frozen solid on the line. | Washed the master's shirts and they came out pink. | Scrubbed wine out of the tablecloth. It's a different wine stain now.
+b : Bring it in. | Pink! | How?
+a : It's stiff as boards. | Something red got in. Nobody knows what. | I tried vinegar. Then more wine.
+
+scene tr_serv_secrets
+when topic=work a.job=servant b.job=servant
+a : I know something about the young master I shouldn't. | The housekeeper reads all the post. | The mistress hides coin in the flour jar.
+b : Tell me. | Everyone knows. | Everyone knows that, too.
+a : Not here. Walls have ears. | And reseals it with candle wax. | The master doesn't.
+
+scene tr_serv_freed
+when topic=work a.job=servant
+a : I'm leaving service at midsummer. | Saved enough for a little shop. | They promised me a pension. I don't believe it.
+b : Where will you go? | A shop! | Get it in writing.
+a : Anywhere I don't have to bow. | A small one. Mine, though. | Writing's for the ones who can read.
+
+scene tr_serv_fortress_cook
+when topic=work a.job=servant|cook region=fortresses
+a : Porridge for a hundred and thirty. Every morning. | The commander wants meat on Restday. There's no meat. | The garrison eats like wolves. Well. They are.
+b : Every morning? | Give them a rabbit. | Like starving wolves.
+a : And noon, and evening. | One rabbit. A hundred and thirty mouths. | Starving, bored wolves.
+
+# ---------------------------------------------------------------- Healers, priests, fishers and others
+
+scene tr_heal_poor
+when topic=work a.job=healer
+a : I treated three today who couldn't pay. | A rich merchant wanted his gout seen to first. Ahead of a broken leg. | Payment in eggs again.
+b : You're too kind. | Did you? | Eggs are food.
+a : Too kind and too poor. | The leg first. He can wait. | A dozen eggs a week and I'm sick of eggs.
+
+scene tr_heal_death
+when topic=work a.job=healer|priest
+a : Lost one tonight. Nothing could be done. | The fever took the old weaver. | Sat with him to the end.
+b : You did your best. | She was old. | That's a kindness.
+a : My best wasn't enough. | Old, and she wanted to see spring. | It's the only medicine I had left.
+
+scene tr_priest_wedding
+when topic=work a.job=priest
+a : Two weddings tomorrow and the chapel's a mess. | The bride's family and the groom's family won't sit together. | Blessed a new house today. Smelled of fresh lime.
+b : I'll sweep it. | Put them on opposite sides. | Good to see new houses.
+a : Bless you. Twice. | Opposite sides and a wide aisle. | New houses, new families. Good.
+
+scene tr_priest_doubt
+when topic=work|smalltalk a.job=priest
+a : Sometimes I wonder if the Bright One still listens. | The bishop wants more tithes and less charity. | A wolf asked me if the Dark One is really gone.
+b : Does he? | Typical. | Is he?
+a : I keep talking anyway. | Order costs coin. Charity costs order. | I said yes. I believe it. Mostly.
+
+scene tr_fish_boat
+when topic=work a.job=fisher b.job=crafter|fisher
+a : My hull's sprung a plank. | How much for a new boat? | Patched the boat with tar and an old cloak.
+b : Bring it to the yard. | More than you have. | Will it float?
+a : It's at the bottom of the harbour. | Then patch the old one again. | Floats like a cloak.
+
+scene tr_fish_wife
+when topic=work|family a.job=fisher band=spouses|family
+a : I'll be out before dawn. Don't wake. | Brought home a basket of crabs. Supper. | The sea's angry today. I stayed in.
+b : I always wake. | Crabs again? | Good.
+a : Then lie still and pretend. | Crabs again. Sorry. | Angry sea, hungry family, though.
+
+scene tr_soldier_desert
+when topic=work|smalltalk a.job=soldier
+a : Another lad ran from the garrison in the night. | They'll catch him. They always do. | Thinking of buying out my service.
+b : Poor fool. | Will they hang him? | Can you afford it?
+a : Homesick fool. | Flog, not hang. Not for the first time. | In about twenty years.
+
+scene tr_soldier_officer
+when topic=work a.job=soldier b.job=noble|official
+a : Sir, the patrol's back. Nothing to report. | The new crossbows misfire one shot in five. | The men want their pay, sir.
+b : Nothing? Look harder. | Then aim the other four. | They'll have it when the treasury does.
+a : Harder at nothing, sir. | Yes, sir. | Yes, sir. I'll tell them that, sir.
+
+scene tr_noble_bored
+when topic=smalltalk|work a.job=noble
+a : I'm bored. Thoroughly. | Another feast. Another speech. Another goose. | My mother wants me married by midsummer.
+b : Take up a hobby. | Poor goose. | To whom?
+a : I took up gambling. Mother took it away. | Poor me. The goose is past caring. | To whoever has the most land and the fewest teeth.
+
+scene tr_carter_tired
+when topic=work|smalltalk a.job=carter place=tavern
+a : Fourteen hours on the box. Never again. | The horse knows the road better than me. Slept half the way. | Wheels squealed the whole way. I hear them now.
+b : Drink. | Lucky horse. | Grease them.
+a : Two. Then sleep. Then the box again. | Lucky me. | I'll grease my ears.
+
+scene tr_carter_cargo
+when topic=work a.job=carter
+a : Carted a coffin to the chapel. Nobody in it. Yet. | Two hens in a basket and a goat. Worst cargo yet. | A crate marked do not open. I've been thinking about it all day.
+b : For who? | Worse than coffins? | Don't.
+a : Didn't ask. Didn't want to know. | The goat ate the basket. | I won't. Probably.

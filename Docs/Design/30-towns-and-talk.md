@@ -7,7 +7,7 @@ language model at runtime.
 | Phase | What | State |
 |---|---|---|
 | 5 | Towns built out; about 950 residents | Built 2026-10-02 (DEV revision 7, build 12) |
-| 6 | NPC-to-NPC scenes: an engine and a large written library | Engine built 2026-10-02; library growing |
+| 6 | NPC-to-NPC scenes: an engine and a large written library | Built 2026-10-02: 2,507 scenes |
 
 ## Phase 5: The towns built out, the cities filled (built 2026-10-02)
 
@@ -79,7 +79,7 @@ Tests: `tools/test_towns.py` (a placeholder built and peopled with every residen
 a route, the place its own region, nothing outside it changed, a second run skipped; edited ground refused); the server
 tests unchanged and passing.
 
-## Phase 6: NPCs talking to each other (engine built 2026-10-02; the library grows in batches)
+## Phase 6: NPCs talking to each other (built 2026-10-02)
 
 How games like Skyrim do it: two idle NPCs near each other play a short **scene** chosen from a large pool by
 **conditions** (place, who they are to each other, who each is, the time, the weather, recent events), each line with
@@ -91,7 +91,9 @@ How games like Skyrim do it: two idle NPCs near each other play a short **scene*
   region or a region group, place, band, time, season, day, weather, the topic's own tags such as `item=herbs`
   `dir=up` `kind=raided` `known=no`, and either speaker's `a.sex`, `b.stage`, `a.job`, `b.role`), `weight N`, then
   lines `a : words | words` and `b[old] : words`. A speaker's tagged lines followed by an untagged one form a **turn**:
-  the first whose tags hold for that speaker is said, one of its `|` alternatives at random. `a?[friends] :` marks a
+  the first whose tags hold for that speaker is said. **Alternatives (`|`) are written in parallel:** a turn with as
+  many alternatives as the last one spoken answers the same one (the second reply to the second remark), even past a
+  single-line answer in between; otherwise one is taken at random. `a?[friends] :` marks a
   turn spoken only if it holds. Blanks: `{a} {b} {subject} {claim} {news} {item} {price} {other} {place} {town}
   {weekday} {season} {festival} {victim} {a_job} {b_job}`; a scene whose blank can't be filled isn't used.
   `groups.scene` names region groups (`rain_coast = ridgemere saltreach`).
@@ -125,6 +127,14 @@ the old library, then the authored lines, speak. The Mind writes exchanges live 
 given (default 0: never). **Barks:** every few seconds near a player, a resident within earshot may call out a line
 (a merchant's cry, the watch, a child at play, the weather), at most one every 25 s in a place. **What each character
 has heard** (up to 3,000 scenes) is kept in the save (`scenesHeard`), so a returning player hears new ones.
+
+**The library** (2,507 scenes in 77 files, about 54 hours of listening before an everyday scene repeats):
+current events (prices, caravans, bandits, crime, weddings, deaths, births, apprenticeships, successions,
+newcomers, festivals, gossip, news), work by every job category, family and relationships by band, age and sex,
+the everyday (food, sleep, the moon, superstitions, weather of every kind, travellers standing near) and barks, and
+each region's own lore and places (the cities 115 or more each, the towns 70 or more, the Ghost Town and fortresses
+40 or more). Blanks are filled for reading: one that opens a sentence takes a capital ("That grey stranger..."), and
+a festival's "the" isn't said twice ("the {festival} bonfire" with "the Greening"). Ser Ferro is ruled by a King.
 
 **Measuring the library:** `python3 tools/scene_report.py [--min N] [--region R]`: scenes by topic and region, lines
 written for each kind of speaker, distinct renderings, an estimate of listening hours before an everyday repeat, and

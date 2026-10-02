@@ -1,0 +1,252 @@
+# Ridgemere, more of its own: the five Houses and their colours, the Council in the leaking Rain Hall, the Watch,
+# the Sump, the quay and the shipyard, the smokehouses, the bay and the rain that never stops.
+
+scene rg_rm_colours
+when topic=lore|smalltalk region=ridgemere
+a : Grayrock grey, Fell green, Ashcombe amber, Brinewater blue, Vesk black. My pup learned them all today. | Saw two House liveries cross the street without a nod. | Vesk servants wear black even to weddings.
+b[noble] : The colours are older than the city walls. Wear them with care.
+b[servant] : Wear the wrong colour in the wrong street and you'll know it.
+b : Clever pup. | Feud's on again, then. | Black suits them.
+a : Cleverer than me. | When isn't it? | It does.
+
+scene rg_rm_grayrock_quarry
+when topic=lore|work region=ridgemere
+a : Grayrock's quarry face came down after the rain. | Half the city's built from Grayrock stone. | They're cutting a new face at the quarry. You can hear the wedges from here.
+b[miner] : Wet stone splits wrong. They should wait. They never wait.
+b[noble] : House Grayrock built Ridgemere. The city should remember it.
+b : Anyone under it? | And the other half's leaking. | All day and night.
+a : Two, they say. | Most of it. | All day.
+
+scene rg_rm_fell_timber
+when topic=lore|work region=ridgemere
+a : Fell's log rafts came down the river this morning. | Fellhall's sawpits are working by lamplight now. | House Fell owns every tree from here to the pass.
+b[laborer] : I rafted for Fell one season. Lost two toes to the cold.
+b[crafter] : Fell timber's the best there is. Pricey, but straight.
+b : Big ones? | They must have an order. | And charges for the shade.
+a : Big as towers. | Brinewater's, I'd bet. | For the shade, yes.
+
+scene rg_rm_ashcombe_glass
+when topic=lore region=ridgemere
+a : Ashcombe's glasshouse fires never go out, they say. | My neighbour got a piece of Ashcombe glass. Wouldn't let anyone touch it. | Charcoal smoke from the Ashcombe kilns is thick today.
+b[crafter] : Glass is sand and patience and charcoal. Mostly charcoal.
+b[old] : Ashcombe glass once only went into the Rain Hall. Now merchants have it.
+b : Hot work. | Proud of it, I'd wager. | Thicker than the fog.
+a : The hottest. | Very proud. | Thicker.
+
+scene rg_rm_brinewater_launch
+when topic=lore|smalltalk region=ridgemere
+a : Brinewater's launching the big hull at high tide tomorrow. | The whole quay turned out to watch the launch. | Brinewater named their new ship after the Chancellor. Flattery.
+b[sailor] : Launch at high tide or not at all. She'll float or she won't.
+b[noble] : Brinewater knows how to win friends on the Council.
+b[child] : Can we watch? I want to see the splash!
+b : I'll be there. | Grand sight. | Shameless.
+a : Come early. | It was. | Shameless and clever.
+
+scene rg_rm_vesk_smoke
+when topic=lore|work region=rain_coast
+a : Vesk's smokehouses are running night and day. | Everything in the lower town smells of Vesk fish. | Vesk wants more salt than the coast can rake.
+b[fisher] : Vesk buys every fish we catch. And pays half what they're worth.
+b[cook] : Vesk smoked herring. Best in the world. Don't tell them I said so.
+b : Herring's running, then. | Even the washing. | Salt's dear, then.
+a : Running thick. | Even the washing. | Very dear.
+
+scene rg_rm_rain_counting
+when topic=smalltalk|weather region=ridgemere
+a : Forty days of rain and counting. | I saw the sun yesterday, I'm sure of it. | My fur hasn't been dry since the last moon.
+b[old] : Forty? I've seen ninety. Rain's Ridgemere's oldest citizen.
+b[child] : I like the rain! Puddles everywhere!
+b : Forty-one tomorrow. | You were dreaming. | Nobody's has.
+a : Probably. | Probably. | Nobody's.
+
+scene rg_rm_sump_stairs
+when topic=smalltalk region=ridgemere
+a : The Sump stairs flooded to the third step. | Somebody's built a bridge of planks over the worst of the Sump. | Children in the Sump sell rats on sticks now.
+b[beggar] : Rats on sticks. Better than nothing on sticks.
+b[guard] : We pulled a body from the Sump channel this morning. Don't go there alone.
+b : It'll drop by morning. | Good for them. | That's the Sump.
+a : Maybe. | Good. | It is.
+
+scene rg_rm_watch_fours
+when topic=work region=ridgemere a.role=guard
+a : Captain says fours in the lower town now, not pairs. | Lost my lantern chasing a cutpurse through the alleys. | Watch pay's late again. The Council forgot us.
+b[guard] : Fours, and still I don't like it after dark.
+b : Safer that way. | Did you catch him? | Of course it is.
+a : Slower too. | He went into the Sump. | Of course.
+
+scene rg_rm_chancellor
+when topic=lore region=ridgemere
+a : The Chancellor walked the quay today, umbrella and all. | They say the Chancellor favours Brinewater. | The new Chancellor's from House Fell, they say. First in fifty years.
+b[official] : The Chancellor serves the Council, not a House. In principle.
+b[noble] : Every Chancellor favours someone. That's what the office is.
+b : An umbrella in Ridgemere? Optimist. | Everyone says that. | High time.
+a : A dry one. | Everyone. | Long time coming.
+
+scene rg_rm_harbour_dues
+when topic=work region=ridgemere a.job=sailor|merchant|fisher|carter
+a : The harbour master wants a penny a barrel now. | Dues up again. The Council's roof won't mend itself. | A ship turned back rather than pay the dues.
+b[sailor] : Southern ships will go to Saltreach instead. See if they don't.
+b[merchant] : I'll put it on the price. Someone else always pays.
+b : Robbery. | Of course they are. | Can't blame them.
+a : Daylight robbery. | Of course. | Nor me.
+
+scene rg_rm_bay_fog
+when topic=lore|weather region=ridgemere
+a : Fog bell on the harbour mole rang all night. | Couldn't see the end of the quay this morning. | The bay fog comes in faster than a wolf can run.
+b[sailor] : Fog's the worst. Rain you can sail through.
+b[old] : The fog took the old lighthouse keeper. Walked off the mole and never came back.
+b : I know. I counted the strokes. | Nor the water. | Faster than a horse.
+a : Every one. | Nor the ships. | And twice as cold.
+
+scene rg_rm_upper_streets
+when topic=smalltalk region=ridgemere
+a : The upper streets have drains that actually work. | Went up to deliver in the Grayrock quarter. Clean doorsteps, all of them. | Up the hill, the rain's the same but the roofs don't leak.
+b[noble] : Drains cost money. Money comes from work. Work, then.
+b[laborer] : Nobody up there's ever carried a sack in their life.
+b : Must be nice. | Clean and cold. | Lucky them.
+a : Must be. | Very cold. | Lucky.
+
+scene rg_rm_soup_kitchen
+when topic=smalltalk region=ridgemere
+a : The chapel's soup line went round the corner today. | They put barley in the chapel soup again. Real barley. | The Houses gave to the soup kitchen. Just before the Council vote.
+b[priest] : The Bright One feeds the hungry through whoever is willing. Even the Houses.
+b[beggar] : Real barley. I had two bowls. Don't tell.
+b : Hungry times. | A feast, then. | Funny timing.
+a : They are. | Nearly. | Very funny.
+
+scene rg_rm_shipyard
+when topic=work region=ridgemere a.job=crafter|laborer|apprentice|sailor
+a : Caulked seams all day in the yard. My paws are black with pitch. | Brinewater's yard is hiring sawyers. | They laid a new keel this morning. Fell oak.
+b[crafter] : Pitch comes off with butter. Old shipwright's trick.
+b : Hard trade. | Good pay? | A big one?
+a : Sticky trade. | Fair enough. | Big as a hall.
+
+scene rg_rm_mountain_back
+when topic=lore region=ridgemere
+a : The mountain behind us shed a whole slope after the storm. | They say the old city lies under the mountain's last fall. | Ridgemere's pressed between rock and water, my father says.
+b[old] : The mountain gives the stone and takes it back. That's the bargain.
+b[scholar] : The records speak of an older town. The rest is tavern talk.
+b : Mercy. | Tavern talk. | He's right.
+a : Mercy. | Probably. | He usually is.
+
+scene rg_rm_mud_carts
+when topic=smalltalk region=ridgemere place=street|market|gate
+a : A cart sank to its axles in the market road. | Mud's up to my hocks on the quay lane. | Somebody laid straw in the gate road. It's gone already.
+b[carter] : Ridgemere mud eats wheels. I carry two spares.
+b[child] : I lost a boot! It's still down there somewhere!
+b : Every week. | Every day. | Always is.
+a : Every week. | Always. | Always.
+
+scene rg_rm_house_feud
+when topic=lore region=ridgemere
+a : Grayrock and Fell came to blows over a boundary stone, they say. | Vesk refused to sell fish to Brinewater's kitchens. | The feud's been quiet a month. That worries me.
+b[noble] : A boundary stone is never only a stone.
+b[servant] : We're told not to speak to their servants. We speak anyway.
+b : Over a stone? | Petty. | Me too.
+a : Over a stone. | Very petty. | Me too.
+
+scene rg_rm_tenements
+when topic=smalltalk region=ridgemere place=home|street
+a : Twelve of us in two rooms now. | The landlord's patched the roof with sailcloth. | Our tenement stair's rotting from the bottom up.
+b[old] : Sleep in turns. That's how we did it.
+b : It's always crowded. | That'll hold a week. | Mind the fourth step.
+a : Always. | Barely. | I always do.
+
+scene rg_rm_lamp_oil
+when topic=smalltalk region=ridgemere time=dusk|night
+a : Lamp oil's dearer than ale this month. | We burn fish oil now. Smells like the quay. | Dark by the fourth hour after noon. I hate the season.
+b[merchant] : Whale oil from the south ships. Better light, worse price.
+b : Everything's dear. | Better than dark. | Long nights.
+a : Everything. | Barely. | Very long.
+
+scene rg_rm_charcoal_burners
+when topic=lore|work region=ridgemere
+a : Ashcombe's charcoal burners came down from the hills today. Black to the ears. | Smoke from the burners' clamps on the hills, see? | They say the charcoal burners never wash.
+b[laborer] : I burned charcoal one winter. You never get the smell out.
+b : Like ghosts. | Thick today. | Would you, up there?
+a : Sooty ghosts. | Very thick. | Probably not.
+
+scene rg_rm_rain_hall_buckets
+when topic=lore region=ridgemere
+a : They've counted forty buckets in the Rain Hall now. | A councillor's papers got soaked mid-speech. | Someone should pay to mend the Rain Hall roof.
+b[official] : Whoever mends the roof would own the Hall. That's the problem.
+b[old] : The day the roof stops leaking, the city falls. Leave it.
+b : Forty! | Serves him right. | Someone should.
+a : Forty. | Ha. | Nobody will.
+
+scene rg_rm_gulls
+when topic=smalltalk region=ridgemere place=shore|market|street
+a : A gull stole a whole herring off my table. | Gulls are thick on the quay roofs today. Storm coming. | Gulls are the only fat things in the lower town.
+b[fisher] : Gulls know the weather before we do.
+b[child] : I'm going to train one! It'll fetch me things!
+b : Cheeky birds. | Probably. | True enough.
+a : Cheeky thieves. | Probably. | Too true.
+
+scene rg_rm_mourning_bell
+when topic=lore region=rain_coast
+a : The drowned bell rang twice this week. | Two boats didn't come back from the banks. | They're cutting names again.
+b[priest] : The sea keeps its dead. We keep their names.
+b[sailor] : I knew one of the crews. Good wolves.
+b : Hard week on the water. | I'm sorry. | Too many names.
+a : Very hard. | So am I. | Far too many.
+
+scene rg_rm_fish_market_dawn
+when topic=smalltalk|work region=ridgemere time=dawn
+a : Fish market's loud as a riot this morning. | First boats in before the bell. | Herring cheap this morning, if you're quick.
+b[fisher] : Good catch, cheap price. That's the curse of a good catch.
+b[cook] : I'll take the lot if it's fresh.
+b : Always is. | Early luck. | I'll be quick.
+a : Always. | Early indeed. | Be quick.
+
+scene rg_rm_hungry_winter
+when topic=lore region=ridgemere band=friends|family|spouses|acquaintances
+a : My grandmother remembers the hungry winter. Ate boiled leather. | They say the Houses kept their stores shut the hungry winter. | Another hungry winter would finish the lower town.
+b[old] : I remember it. The Houses ate. We boiled boots.
+b[noble] : The Houses opened their stores in the end. People forget that.
+b : Mercy. | I believe it. | Let's hope not.
+a : Mercy. | So do I. | Let's hope.
+
+scene rg_rm_tarred_roofs
+when topic=work region=ridgemere a.job=crafter|laborer|apprentice
+a : Spent all day tarring roofs in the drizzle. | The tar won't take on wet slate. | Six roofs this week and every one leaks again.
+b[crafter] : Warm the tar, wait for a dry hour. If one comes.
+b : Wet work. | It never does. | That's Ridgemere.
+a : Very wet. | Never. | That's Ridgemere.
+
+scene rg_rm_southern_sailors
+when topic=smalltalk region=ridgemere place=tavern|shore|street
+a : Southern sailors singing in the quay taverns all night. | A southern sailor sold me a fruit I couldn't name. | The southerners complain about our cold like it's our fault.
+b[innkeeper] : They drink, they pay, they sing. I don't mind the singing.
+b[sailor] : They'd freeze stiff on a Ridgemere boat. Soft lot.
+b : Loud, but cheerful. | Was it good? | It is, a little.
+a : Very loud. | Sour. Then sweet. | A little.
+
+scene rg_rm_council_vote
+when topic=lore region=ridgemere
+a : Council voted three Houses to two on the harbour wall. | Vesk walked out of the Council again. | They say Ashcombe holds the deciding vote this season.
+b[official] : Three to two is a majority. Majorities pass.
+b[noble] : Walking out is a vote too, in its way.
+b : Who lost? | Again? | Lucky Ashcombe.
+a : Vesk and Fell. | Again. | Lucky and loud.
+
+scene rg_rm_snow_rain
+when topic=weather|smalltalk region=ridgemere season=winter
+a : Snow, then rain on the snow. Grey slush everywhere. | Snow lasted an hour. Now it's rain again. | It's too warm to snow and too cold to bear.
+b[old] : Ridgemere never gets a proper winter. Just a long wet one.
+b[child] : I made a snow wolf! It melted already.
+b : Typical. | Always does. | That's Ridgemere.
+a : Typical. | Always. | That's Ridgemere.
+
+scene rg_rm_cutpurses
+when topic=smalltalk region=ridgemere place=market|street
+a : Lost my purse in the market crush. Never felt a thing. | Keep your coin in your mouth in the market. Old Ridgemere habit. | Cutpurses work the fish market at dawn.
+b[guard] : They pass it hand to hand. Gone in a breath.
+b[beggar] : I never took nothing. Ask anyone.
+b : Ridgemere fingers. | Wise. | Every day.
+a : Too quick. | Very wise. | Every day.
+
+scene rg_rm_house_weddings
+when topic=lore region=ridgemere
+a : They say Brinewater and Ashcombe are making a match. | A House wedding means a week of free bread at the gates. | The last House wedding ended the Fell feud. For a year.
+b[noble] : A marriage between Houses is a treaty with flowers.
+b : That'll shift the Council. | Can't wait. | Only a year?
+a : It will. | Nor me. | A year.

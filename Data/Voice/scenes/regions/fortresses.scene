@@ -1,0 +1,325 @@
+# The three fortresses, each its own: the Northern Fortress on the bleak moor watching the passes; the Isle Fortress
+# on the Mirrormere guarding the lake ways; the Dark Fortress above the Drowned Deep, its garrison sworn to silence.
+
+# ---------------------------------------------------------------- The Northern Fortress
+
+scene rg_nf_moor_wind
+when topic=smalltalk|weather region=northern_fortress
+a : The moor wind cuts through mail like it isn't there. | Frost on the inside of the barracks wall again. | The stove in the barracks never keeps up.
+b[soldier] : Wear everything you own and then borrow more.
+b[cook] : Hot broth at the mess. That's all I can offer.
+b : That's the north. | Every night. | It never will.
+a : The north. | Every night. | Never.
+
+scene rg_nf_passes
+when topic=lore|work region=northern_fortress
+a : Nothing came through the passes this week. | Tracks in the snow on the high pass. Not ours. | The commander wants the passes walked twice a day now.
+b[soldier] : We watch the passes so nobody south has to.
+b[official] : Every track gets written in the log.
+b : Good. | Whose? | Twice?
+a : For now. | Nobody knows. | Twice.
+
+scene rg_nf_counting_days
+when topic=smalltalk region=northern_fortress
+a : Two hundred and twelve days left on my posting. | Somebody marks the days on the barracks wall. It's covered. | I've stopped counting. Counting makes it longer.
+b[soldier] : Two hundred days is nothing. I volunteered for three years.
+b : Who's counting? | Every soldier does. | Wise.
+a : I am. | Every one. | Very wise.
+
+scene rg_nf_sharpening
+when topic=smalltalk|work region=northern_fortress time=dusk|night
+a : Sharpening the same blade every evening. Habit. | That blade can't get any sharper. | The whetstone's the only sound in the barracks at night.
+b[soldier] : Busy paws keep your head from wandering.
+b : Habit's good. | Keeps you busy. | That and the wind.
+a : Very good. | It does. | And the wind.
+
+scene rg_nf_moor_night
+when topic=lore region=northern_fortress time=night
+a : Saw something on the moor last night. Big. | There's lights on the moor some nights. Nobody goes out. | The dogs howled at nothing all night.
+b[soldier] : Saw it too. I logged it. The commander didn't believe me.
+b : Imagination. | Never go out. | Not nothing.
+a : I hope. | Never. | Not nothing.
+
+scene rg_nf_escape
+when topic=smalltalk region=northern_fortress band=friends|acquaintances
+a : Half of us volunteered for the north to escape something. | Nobody asks why you came north. | I came north to forget. It's working.
+b[soldier] : The moor doesn't care what you did. That's its kindness.
+b : Me included. | Good rule. | Good.
+a : Me too. | The best. | Slowly.
+
+scene rg_nf_armoury_count
+when topic=work region=northern_fortress a.role=guard
+a : Counted the spears this morning. Two short. | The armoury's counted every dawn. Every single dawn. | Rust on half the mail again. The damp gets in.
+b[guard] : Two short means someone's busy explaining.
+b : Again? | Every dawn. | Oil it.
+a : Again. | Every dawn. | I will.
+
+scene rg_nf_mess_cook
+when topic=smalltalk region=northern_fortress place=hall|barracks|work
+a : The cook shouted at me for asking for more bread. | Mutton again. Always mutton. | The mess hall's the only warm room in the fortress.
+b[cook] : More bread? Bring me more flour and you can have more bread.
+b : She shouts at everyone. | Better than nothing. | That's why it's full.
+a : Everyone. | Barely. | Always full.
+
+scene rg_nf_letters
+when topic=smalltalk region=northern_fortress
+a : Supply cart brought letters. None for me. | My mother's letter took two months to get here. | I write home every week. Most never arrive.
+b[soldier] : Letters come with the thaw. Patience.
+b : Next time. | At least it came. | Keep writing.
+a : Maybe. | At least. | I will.
+
+scene rg_nf_old_fortress
+when topic=lore region=northern_fortress
+a : This fortress was built before the Concord. | The old stones in the north wall are older than the rest. | They say a whole garrison froze here one winter.
+b[old] : The north doesn't change. Only the soldiers do.
+b : Older than everything. | You can see it. | I believe it.
+a : Very old. | Clearly. | I do.
+
+scene rg_nf_snow_bound
+when topic=lore|weather region=northern_fortress season=winter|autumn
+a : Snowed in. No supply cart for weeks. | Snow to the battlements on the north side. | Digging out the gate again.
+b[soldier] : Rations halved till the thaw. Commander's orders.
+b : Again. | Every winter. | Again.
+a : Again. | Every winter. | Again.
+
+scene rg_nf_commander
+when topic=lore region=northern_fortress
+a : The commander walked the walls all night. | The commander's map has a new mark on it. | Nobody's seen the commander smile in a year.
+b[guard] : The commander knows something we don't.
+b : Couldn't sleep. | Where? | Hard posting.
+a : Nobody can. | The high pass. | The hardest.
+
+scene rg_nf_ravens
+when topic=smalltalk region=northern_fortress
+a : Ravens on the battlements again. | A raven stole a ration biscuit off the wall. | The ravens follow the patrols. Waiting.
+b[soldier] : Ravens know where the dead are. Don't feed them.
+b : Bad sign. | Bold bird. | For what?
+a : Very bad. | Very bold. | Don't ask.
+
+scene rg_nf_spring
+when topic=smalltalk region=northern_fortress season=spring
+a : The moor's turning green. Finally. | Thaw's here. The passes will open. | First supply cart since winter.
+b[soldier] : Spring means the passes open. Spring means work.
+b : Finally. | And trouble. | At last.
+a : Finally. | Probably. | At last.
+
+scene rg_nf_drill
+when topic=work region=northern_fortress a.role=guard
+a : Drill in the yard at dawn. In the sleet. | The commander drills us till we drop. | Shield wall drill again. My shoulder's numb.
+b[soldier] : Drill keeps you warm and keeps you alive.
+b : Every dawn. | That's the north. | Every day.
+a : Every one. | It is. | Every day.
+
+# ---------------------------------------------------------------- The Isle Fortress
+
+scene rg_if_fish_stew
+when topic=smalltalk region=isle_fortress
+a : Fish stew again. Every day, fish stew. | I'd give a month's pay for a loaf of Lakeside bread. | The cook says we're lucky to have fish. I say we're cursed.
+b[cook] : Fish is what the lake gives. Complain to the lake.
+b : Every day. | Me too. | Both, maybe.
+a : Every single day. | Two months'. | Both.
+
+scene rg_if_row_dark
+when topic=work|smalltalk region=isle_fortress
+a : Rowed the night patrol round the isle. Couldn't see my own paws. | Some of the old hands can row in pitch dark by sound. | Rowed to Lakeside and back before dawn.
+b[soldier] : Listen for the water on the rocks. That's your map.
+b : Hard row. | Impressive. | Long night.
+a : Very hard. | Very. | Very long.
+
+scene rg_if_fishing_walls
+when topic=smalltalk region=isle_fortress
+a : Caught a trout off the east wall when the sergeant wasn't looking. | Half the garrison fishes from the arrow slits. | The captain caught me fishing on watch. Extra duty.
+b[soldier] : A soldier with a line is a soldier who eats well.
+b : Clever. | Of course. | Worth it?
+a : Very. | Of course. | Yes.
+
+scene rg_if_sinking
+when topic=lore region=isle_fortress
+a : They say the isle is sinking. The water's higher on the steps. | The lowest cellar's always wet now. | The old jetty's under water.
+b[old] : Lake's rising, isle's sinking. Same thing to your feet.
+b : Nonsense. | It's the rain. | It was always low.
+a : Probably.
+
+scene rg_if_courting
+when topic=smalltalk region=isle_fortress band=friends|acquaintances
+a : Half the garrison's courting someone in Lakeside. | Rowed over to Lakeside for the dance. Worth the blisters. | The captain says no more Restday rowing to Lakeside.
+b[soldier] : Lakeside's warm. The isle's stone. Easy choice.
+b : Of course they are. | Was it? | They'll row anyway.
+a : Of course. | Very. | They will.
+
+scene rg_if_boat_hooks
+when topic=lore|work region=isle_fortress
+a : The garrison's famous for the boat hooks. Best weapon on water. | Practised boarding with the boat hooks all morning. | A boat hook's worth three spears on the lake.
+b[soldier] : Hook the boat, pull it close, then the spear.
+b : So they say. | Hard work. | True.
+a : It is. | Very hard. | Very true.
+
+scene rg_if_lake_ways
+when topic=lore region=isle_fortress
+a : The isle guards every boat that crosses the mere. | Smugglers try the north channel at night. | The captain logs every boat on the lake.
+b[guard] : Every boat, every cargo, every name.
+b : Busy work. | We'll catch them. | Every one.
+a : Very busy. | We will. | Every one.
+
+scene rg_if_damp
+when topic=smalltalk region=isle_fortress
+a : My blanket's never dry. Never. | Mould on the barracks walls again. | The lake's sound comes through every arrow slit.
+b[soldier] : Damp stone, damp wolves. That's the isle.
+b : Nobody's is. | Scrub it. | All night.
+a : Nobody's. | Again. | All night.
+
+scene rg_if_mist_watch
+when topic=work|weather region=isle_fortress weather=fog|overcast
+a : Mist on the mere. Can't see the shore. | Double watch in the mist. | Rang the mist bell all night.
+b[guard] : Mist is when they come. Keep your eyes open.
+b : Again. | Captain's orders. | Long night.
+a : Again. | Orders. | Very long.
+
+scene rg_if_captain_window
+when topic=lore region=isle_fortress
+a : The captain watches the water from the hall window all day. | The captain's map of the lake has every rock marked. | They say the captain was born on the lake.
+b[soldier] : The captain knows the lake better than the fish do.
+b : Watching for what? | Every rock. | Probably.
+a : Who knows. | Every one. | Probably.
+
+scene rg_if_supply_boat
+when topic=smalltalk region=isle_fortress
+a : Supply boat's late from Lakeside. | Supply boat brought bread! Real bread! | The supply boat brought ale. Somebody's popular.
+b[soldier] : Bread! Hide some before the sergeant sees.
+b : Again. | Finally. | Lucky.
+a : Again. | Finally. | Very lucky.
+
+scene rg_if_winter_ice
+when topic=lore|weather region=isle_fortress season=winter
+a : The mere froze. You could walk to Lakeside. | When the ice is thick, the isle's no island at all. | Ice patrols in winter. Walking on the lake.
+b[soldier] : Ice means anyone can walk to our walls. Double watch.
+b : Don't try it. | True enough. | Cold work.
+a : I won't. | Very true. | Very cold.
+
+scene rg_if_old_tower
+when topic=lore region=isle_fortress
+a : The old tower on the isle is older than the walls. | Nobody goes up the old tower. Stairs are rotten. | They say the tower was a lighthouse once.
+b[old] : The tower was here before the garrison. Somebody built it for something.
+b : Much older. | Wise. | Maybe.
+a : Much. | Very wise. | Maybe.
+
+scene rg_if_swimming
+when topic=smalltalk region=isle_fortress season=summer
+a : Swam round the isle in the heat. | Garrison swims off the south steps in summer. | Too warm for armour. Too cold to swim.
+b[soldier] : A soldier who can't swim on the isle is a dead soldier.
+b : Show-off. | Good for them. | Never happy.
+a : Proud of it. | Good. | Never.
+
+scene rg_if_lights_lakeside
+when topic=smalltalk region=isle_fortress time=dusk|night
+a : You can see Lakeside's lamps from the walls. | Lakeside's lamps look warm from here. | Somebody signals from the Lakeside jetty every night.
+b[soldier] : That's for someone in the garrison. Don't ask who.
+b : Pretty. | Warmer than here. | For who?
+a : Very. | Much. | Don't ask.
+
+# ---------------------------------------------------------------- The Dark Fortress
+
+scene rg_df_silence
+when topic=smalltalk region=dark_fortress
+a : No talk after dark. That's the rule. | Some of the garrison haven't spoken in a year. | The oath means silence. About most things.
+b[soldier] : We speak when we must. Not before.
+b : I know.
+a : Then hush.
+
+scene rg_df_what_guarded
+when topic=lore region=dark_fortress
+a : Nobody says what this garrison guards. | The covered map in the warden's hall. Nobody's seen under the cloth. | I asked a veteran what we guard. He just looked at me.
+b[soldier] : We guard. That's the whole of it.
+b : And nobody should. | Nobody. | And?
+a : Nobody. | Nobody. | Nothing more.
+
+scene rg_df_drowned_deep
+when topic=lore region=dark_fortress
+a : The Drowned Deep's black as ink below the walls. | They say the Deep has no bottom. | Something rises in the Deep some nights. Bubbles.
+b[soldier] : Don't look into the Deep too long.
+b : Black. | So they say. | Gas.
+a : Black. | So they say. | Probably.
+
+scene rg_df_singing
+when topic=lore region=dark_fortress time=night
+a : I heard the Deep singing last night. | The veterans stuff wax in their ears at night. | Something sings below the walls on still nights.
+b[soldier] : You heard nothing. Write nothing. Say nothing.
+b : Wind on the water. | Strange habit. | Wind.
+a : I hope. | Strange. | Probably.
+
+scene rg_df_candle_drowned
+when topic=lore region=dark_fortress
+a : The old sergeant keeps a candle burning for the drowned. | Who are the drowned? Nobody says. | A candle in every window facing the Deep.
+b[soldier] : Light the candle. Don't ask.
+b : Kind of him. | Nobody. | Old custom.
+a : Kind. | Nobody. | Very old.
+
+scene rg_df_oath
+when topic=lore region=dark_fortress band=friends|acquaintances
+a : The oath I took here can't be spoken. Not even to you. | They made us swear in the dark. One candle. | I'd break the oath to tell my mother. Then I remember what it's for.
+b[soldier] : The oath protects more than us.
+b : I understand. | I remember. | Don't.
+a : I know. | So do I. | I won't.
+
+scene rg_df_lamps
+when topic=smalltalk region=dark_fortress
+a : Never all the lamps lit in the barracks. | Oil's rationed. Half the lamps dark. | The warden says the Deep shouldn't see our light.
+b[soldier] : The dark is part of the duty.
+b : Never. | Again. | Odd thing.
+a : Never. | Again. | Very odd.
+
+scene rg_df_silent_meals
+when topic=smalltalk region=dark_fortress place=hall|barracks|work
+a : Silent meals again. Only spoons. | You can hear every chew in the mess. | Somebody laughed at supper. The warden looked up.
+b[cook] : Eat, don't talk. That's the mess rule.
+b : Always. | Every chew. | Bad idea.
+a : Always. | Every one. | Very bad.
+
+scene rg_df_iron_doors
+when topic=work region=dark_fortress a.role=guard
+a : Checked every iron door twice. | The lowest door's never opened on my watch. | The armoury doors are iron-bound and locked thrice.
+b[guard] : Doors stay shut. Check them, don't open them.
+b : Good. | Nor anyone's. | Thrice.
+a : Good. | Nobody's. | Thrice.
+
+scene rg_df_warden
+when topic=lore region=dark_fortress
+a : The warden sits alone in the cold hall most nights. | The warden's never left the fortress, they say. | The warden knows what's under the cloth.
+b[soldier] : The warden carries the weight for all of us.
+b : Watching. | Never? | Only the warden.
+a : Always. | Never. | Only.
+
+scene rg_df_fog
+when topic=weather|smalltalk region=dark_fortress weather=fog|overcast|rain
+a : Fog rising off the Deep. Thick as wool. | Can't see the bottom of the walls. | The fog off the Deep smells of iron.
+b[soldier] : Fog means double watch and no talk at all.
+b : Again. | Nor me. | Odd smell.
+a : Again. | Nor me. | Very odd.
+
+scene rg_df_new_recruit
+when topic=smalltalk region=dark_fortress a.stage=adolescent|adult
+a : The new recruit asked too many questions. They moved him to the night watch. | Recruits always ask what we guard. Then they stop. | First week here, I didn't sleep.
+b[soldier] : Questions stop after the first month. Or the recruit does.
+b : He'll learn. | They do. | Nobody does.
+a : He will. | They do. | Nobody.
+
+scene rg_df_crossbows
+when topic=work region=dark_fortress
+a : Crossbows pointed at the Deep, not the road. Ever noticed? | Drilled with the big crossbows on the water wall. | Why are the bolts barbed like harpoons?
+b[soldier] : Point them where you're told.
+b : I've noticed. | Hard work. | Don't ask.
+a : Hard not to. | Very hard. | Fine.
+
+scene rg_df_supply
+when topic=smalltalk region=dark_fortress
+a : The supply cart drivers won't come past the gate. | Carters leave the barrels at the outer road and run. | No visitors, ever. Not even letters.
+b[soldier] : Better they don't come in.
+b : Can't blame them. | Who'd stay? | Never.
+a : Nor I. | Not me. | Never.
+
+scene rg_df_dreams
+when topic=lore region=dark_fortress band=friends|acquaintances
+a : I keep dreaming of water. Deep water. | Everyone here dreams the same dream, they say. | I woke up at the water wall. Didn't walk there.
+b[soldier] : Tie your paw to the bunk. Some of us do.
+b : So do I. | I know. | That's not good.
+a : Strange. | It's true. | No.

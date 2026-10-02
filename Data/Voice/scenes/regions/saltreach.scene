@@ -1,0 +1,220 @@
+# Saltreach: salt and fish on the rain coast, in Ridgemere's long shadow. The Brine and Barrel, Gullwharf Fish, the
+# Barrel Yard, the Salt House, the Tide Chapel and its drowned names, the salt pans, the Vesk factor, the gulls.
+
+scene rg_sr_gull_weather
+when topic=smalltalk|lore region=saltreach
+a : Gulls flying inland. Storm by nightfall. | Gulls sitting on the Salt House roof. That means fair weather. | Not a gull on the strand this morning. I don't like it.
+b[fisher] : Trust the gulls before you trust the sky.
+b[old] : My mother read the gulls. Never wrong in forty years.
+b : Better get the boats in. | For once. | Neither do I.
+a : I'll tell the strand. | For once. | Something's coming.
+
+scene rg_sr_no_whistle
+when topic=lore region=saltreach
+a : Don't whistle indoors. You'll call the wind. | A stranger whistled in the Brine and Barrel. The room went silent. | My pup whistled on the jetty and his grandmother boxed his ears.
+b[sailor] : Whistle up a wind, drown a boat. Everybody knows that.
+b[child] : I only whistled a little bit!
+b : I never would. | Lowlander, I'd wager. | Good for her.
+a : Wise. | Must have been. | Good for her.
+
+scene rg_sr_drowned_button
+when topic=lore|smalltalk region=saltreach band=friends|family|spouses|acquaintances
+a : I still keep my uncle's button. From the coat they found. | Every boat in Saltreach carries something of the drowned. | Touch the button before you sail. That's what my father said.
+b[fisher] : I've three buttons and a buckle. Not one of them's brought luck. Kept me careful, though.
+b : Keep it close. | So they say. | He was right.
+a : Always. | Every boat. | He usually was.
+
+scene rg_sr_salt_sand
+when topic=smalltalk|work region=saltreach
+a : Ridgemere salt is half sand. Ours is the real thing. | The Vesk factor says our salt's too grey. | Rake the pans before the rain, or there's no salt at all.
+b[farmer] : Grey salt's honest salt. White salt's been boiled to death.
+b[merchant] : Ridgemere pays for ours and sells it as theirs. I've seen it.
+b : Everyone knows that. | He'd say anything to pay less. | Rain's coming, too.
+a : Everyone. | Anything. | Always is.
+
+scene rg_sr_vesk_factor
+when topic=lore|work region=saltreach
+a : The Vesk factor's in town counting barrels again. | Half of Saltreach owes the Vesk factor money. | The factor wears black like he's at a funeral.
+b[merchant] : Vesk buys everything. That's the trouble. They set the price.
+b[fisher] : I owe him a season's catch. Maybe two.
+b : Every week. | The other half's lying. | Ours, maybe.
+a : Every week. | Probably. | Probably ours.
+
+scene rg_sr_tide_chapel
+when topic=lore region=saltreach
+a : There's no room left on the Tide Chapel's north wall. | They'll start cutting names on the floor soon. | My grandmother can read every name in the chapel. Every one.
+b[priest] : We'll find room. The drowned are never turned away.
+b[old] : I'll be on that wall one day. Not drowned. Just old. They'll make an exception.
+b : Too many names. | Grim thought. | That's a gift.
+a : Far too many. | Very grim. | And a sad one.
+
+scene rg_sr_lights_water
+when topic=lore region=saltreach time=dusk|night
+a : Lights out on the water again last night. No boat out there. | Somebody saw lights past the point. Moving against the tide. | The lights come every autumn, my mother says.
+b[sailor] : Smugglers, or the drowned. Either way, don't row out to see.
+b[priest] : Pray, and keep your lantern lit.
+b : Smugglers. | Fishermen. | So they say.
+a : I hope so. | Probably. | So they say.
+
+scene rg_sr_ridgemere_shadow
+when topic=smalltalk region=saltreach
+a : Ridgemere takes our fish, our salt and our young. | Half the young ones go to Ridgemere and never come back. | Ridgemere looks down its nose at us. From its leaking roofs.
+b[adolescent] : There's work in Ridgemere. There's nothing here but brine.
+b[old] : Ridgemere's been hungry for us since before I was born.
+b : And our patience. | Can you blame them? | Ha. Leaking roofs.
+a : That too. | Sometimes. | Always leaking.
+
+scene rg_sr_barrel_yard
+when topic=work region=saltreach a.job=crafter|apprentice|laborer
+a : Two hundred staves bent this week. | The hoops won't sit true in this damp. | Herring barrels, salt barrels, everything barrels.
+b[crafter] : Heat the stave, bend it slow. Hurry and it splits.
+b : Busy yard. | It's always damp. | That's Saltreach.
+a : Very busy. | Always. | That's Saltreach.
+
+scene rg_sr_salt_house
+when topic=lore|work region=saltreach
+a : Water got into the Salt House. A whole heap gone to brine. | Salt House is full to the rafters. Good year. | Keep the Salt House dry, my father said. Above everything.
+b[laborer] : Lost a heap, lost a month's wages. Somebody's getting the blame.
+b[merchant] : Full is good. Full means Vesk can't squeeze us. For a week.
+b : Bad luck. | Finally. | Wise words.
+a : Very bad. | Finally. | He was right.
+
+scene rg_sr_herring
+when topic=work region=saltreach a.job=fisher|sailor|laborer|cook
+a : Herring's running thick off the point. | Nets so full we nearly lost the boat. | Not a herring in a week. The banks are empty.
+b[fisher] : Fill the boat while they run. They won't run forever.
+b : Good luck. | Lucky you. | Bad season.
+a : Lots of it. | Too lucky. | Very bad.
+
+scene rg_sr_pan_wall
+when topic=work|lore region=saltreach a.job=farmer|laborer
+a : The tide broke the pan wall again. | Rebuilt the pan wall twice this month. | Sun on the pans at last. Salt by the week's end.
+b[farmer] : Clay and stone and prayer. That's a pan wall.
+b : Again? | Twice! | Finally.
+a : Again. | Twice. | Finally.
+
+scene rg_sr_storm_night
+when topic=lore|smalltalk region=saltreach weather=storm|rain
+a : Storm's tearing at the jetty. | Nobody's out tonight, thank the Bright One. | Hope the Salt House roof holds.
+b[sailor] : I've ridden out worse. Not in a boat that small, mind.
+b[priest] : I'll ring the drowned bell, for those still out.
+b : Stay in. | Not tonight. | So do I.
+a : I will. | Thank the Bright One. | Me too.
+
+scene rg_sr_fish_slab
+when topic=smalltalk region=saltreach place=market|street|work
+a : Gullwharf's cat stole a whole mackerel today. | The fishmonger never chases the cat. Says it's lucky. | Best smoked eel on the coast at Gullwharf.
+b[merchant] : That cat's earned it. Keeps the rats off.
+b[child] : I named the cat. Its name's Captain.
+b : Lucky cat. | Odd luck. | Ridgemere can't touch it.
+a : Very lucky. | Very odd. | Nobody can.
+
+scene rg_sr_brine_and_barrel
+when topic=smalltalk region=saltreach place=tavern
+a : Somebody started the drowned sailor's song at the Barrel last night. | Coats steaming by the fire like a smokehouse. | The Brine and Barrel's floor is more salt than wood.
+b[innkeeper] : Nobody admits to knowing the words. Everybody sings them.
+b[sailor] : That song's older than the town. Sing it right or don't.
+b : Everyone joined in. | Warm, at least. | Everything here is.
+a : Everyone. | At least. | Everything.
+
+scene rg_sr_sail_away
+when topic=smalltalk region=saltreach a.stage=adolescent|young
+a : One day I'll sail to Ser Ferro and never come back. | I want to see the white city. Someday. | They say it's never cold in the south.
+b[old] : That's what your father said. He's mending nets on the jetty.
+b[sailor] : I've been. It's hot, and they cheat at dice.
+b : Maybe you will. | Someday. | So they say.
+a : I will. | Someday. | I'll see.
+
+scene rg_sr_kelp
+when topic=work|smalltalk region=saltreach
+a : Storm threw up kelp to the knees on the strand. | We spread kelp on the fields. Stinks, but it works. | Kelp fire's the smokiest fire there is.
+b[farmer] : Kelp makes the soil sweet. Don't waste it.
+b : Free for the taking. | Smart. | And smelliest.
+a : Free and stinking. | It is. | The smelliest.
+
+scene rg_sr_watch_post
+when topic=work region=saltreach a.role=guard
+a : Two bunks and a brazier, and I'm on the night watch again. | Nothing on the coast road but rain and more rain. | A cart from Ridgemere came through at midnight. No lamp.
+b[guard] : Note it in the book. Somebody up the road will want to know.
+b : Sorry for you. | Quiet, then. | Strange.
+a : Thank you. | Wet and quiet. | Very strange.
+
+scene rg_sr_net_twine
+when topic=work region=saltreach a.job=fisher|crafter|laborer
+a : Mending nets all morning. Seals tore them. | The new twine rots faster than the old. | My paws are raw from the net needle.
+b[fisher] : Tar the twine. Every time. My grandmother's rule.
+b : Cursed seals. | Cheap stuff. | Rest them.
+a : Cursed. | Very cheap. | Can't.
+
+scene rg_sr_drowned_bell_custom
+when topic=lore region=saltreach
+a : The drowned bell's rung for every lost boat for two hundred years. | Ring once for a boat late, twice for a boat lost. | Nobody sleeps when the drowned bell rings.
+b[priest] : The bell is the last thing they hear. We make sure they hear it.
+b[old] : I heard it ring twice for my brother. Never forgot the sound.
+b : A long time. | I know. | Nobody does.
+a : A very long time. | Everyone knows. | Nobody.
+
+scene rg_sr_shingle
+when topic=smalltalk region=saltreach place=shore|street
+a : The shingle sang all night in the surf. | Found a piece of green glass on the shingle. Southern glass. | Children dig for crabs in the shingle at low tide.
+b[child] : I caught one this big! It pinched me!
+b[old] : The shingle sings when the weather turns.
+b : Lovely sound. | A ship's? | Every day.
+a : Very lovely. | Probably. | Every one.
+
+scene rg_sr_ridgemere_road
+when topic=lore region=saltreach
+a : The coast road to Ridgemere's washed out at the cove again. | Half a day to Ridgemere when the road's good. It's never good. | A carter turned back from the cove. Said the sea had the road.
+b[carter] : That road's mostly mud with ambitions.
+b : Every winter. | Never. | It usually does.
+a : Every winter. | Never. | Usually.
+
+scene rg_sr_smoked_fish
+when topic=smalltalk|work region=saltreach
+a : Smoked herring for breakfast, smoked herring for supper. | The smokehouse fire's been burning three days. | My coat smells of smoke even after washing.
+b[cook] : Smoked herring's a feast if you do it right. Nobody does it right.
+b : That's Saltreach. | Big catch, then. | Everything does.
+a : That's Saltreach. | Very big. | Everything.
+
+scene rg_sr_seal_hunt
+when topic=lore region=saltreach
+a : The seals are back on the rocks past the point. | Old folk say seals are the drowned come to visit. | Seals ate half the morning catch.
+b[fisher] : Drowned or not, they're thieves.
+b[priest] : The drowned rest with the Bright One. The seals are just seals.
+b : Hungry ones. | Strange belief. | Thieves, then.
+a : Very hungry. | Old belief. | Fat thieves.
+
+scene rg_sr_sound
+when topic=lore|smalltalk region=saltreach
+a : You can hear Ridgemere's foundry bells across the water on a still night. | On a clear day you can see Ridgemere's smoke from the point. | Ridgemere's close enough to smell, far enough to ignore.
+b[old] : Closer every year, it feels like.
+b : Like ghosts ringing. | Never clear. | Just right.
+a : Very like. | Rarely. | Just right.
+
+scene rg_sr_widows
+when topic=lore region=saltreach band=friends|family|spouses
+a : Every second house on the strand has a widow in it. | My aunt watches the point every evening. Ten years now. | The sea makes widows faster than weddings.
+b[priest] : The chapel looks after its widows. As best it can.
+b : The sea's cruel. | Poor soul. | It does.
+a : Very cruel. | Poor soul. | It does.
+
+scene rg_sr_oilskins
+when topic=smalltalk region=saltreach
+a : Bought new oilskins at the Stores. They leak already. | Oilskins on, oilskins off, oilskins on. All day. | My oilskin's older than me. Still keeps the rain out.
+b[merchant] : Linseed every spring. That's your problem.
+b : Take them back. | That's the coast. | They don't make them like that now.
+a : I will. | It is. | They don't.
+
+scene rg_sr_wreck
+when topic=lore region=saltreach
+a : The old wreck on the point shows at low tide. | They say the wreck on the point was a Ser Ferro trader. | Children dare each other to touch the wreck.
+b[sailor] : She went down with all hands. Leave her be.
+b : Spooky. | Long ago. | I did, once.
+a : Very. | Very long. | Brave pup.
+
+scene rg_sr_cooper_song
+when topic=smalltalk|work region=saltreach a.job=crafter|apprentice|laborer|fisher
+a : The coopers hammer in time. You can dance to it. | The Barrel Yard's hammering starts before the gulls wake. | Rolled twenty barrels to the Salt House today.
+b[crafter] : Hammer in time or you hit your own paw.
+b : Lively yard. | Every morning. | Heavy work.
+a : Very lively. | Every one. | Very heavy.

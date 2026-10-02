@@ -1,5 +1,5 @@
 # Ser Ferro: a bright city of white walls and red roofs on the great river, in tiers from the wharf (its few slums)
-# through the middle-class town and the Cathedral Rise of the Iron Saint to the elite quarter and the Prince's palace.
+# through the middle-class town and the Cathedral Rise of the Iron Saint to the elite quarter and the King's palace.
 
 scene sf_st_sun
 when topic=smalltalk region=marches
@@ -21,13 +21,13 @@ scene sf_st_wine
 when topic=smalltalk region=ser_ferro place=tavern|market|street
 a : This year's wine is thin. | Have you tried the red from the eastern slopes? | Wine's cheaper than water down at the wharf.
 b[innkeeper] : Thin? It's the finest in the Marches. At this price.
-b[old] : Wine was better when the old Prince was alive.
+b[old] : Wine was better when the old King was alive.
 b : Everything's thin this year. | Not yet. Is it good? | And better for you.
 a : True. | Very. | Ha.
 
 scene sf_st_palace_gossip
 when topic=smalltalk|lore region=ser_ferro
-a : They say the Prince's heir has gone hunting again. | A carriage with the palace arms went down to the wharf at midnight. | The palace kitchens threw away enough bread to feed the wharf.
+a : They say the King's heir has gone hunting again. | A carriage with the palace arms went down to the wharf at midnight. | The palace kitchens threw away enough bread to feed the wharf.
 b[servant] : Don't repeat palace talk, if you want to keep your tongue.
 b[noble] : The heir is entitled to his pastimes.
 b : Hunting what? | What for? | Shameful.
@@ -80,7 +80,7 @@ a : Always. | They won't say. | Always.
 
 scene sf_ev_festival
 when topic=festival region=ser_ferro
-a : The Prince will appear on the balcony for {festival}. | Rose petals all down the Rise for {festival}. | The cathedral bells will ring all day for {festival}.
+a : The King will appear on the balcony for {festival}. | Rose petals all down the Rise for {festival}. | The cathedral bells will ring all day for {festival}.
 b[child] : Will he wave at me? Will he?
 b[priest] : The Saint is honoured on every feast.
 b : I'll be there. | Beautiful. | Deafening.

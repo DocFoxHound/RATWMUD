@@ -1,0 +1,268 @@
+# Work and trade by job (doc 30): iron, stone, timber and the backs that haul. Smiths, miners, woodcutters,
+# crafters, labourers and carters. Plain lines answer each other in parallel.
+
+# ---------------------------------------------------------------- Smiths
+
+scene tr_smith_temper
+when topic=work a.job=smith
+a : Quenched it too fast. Cracked right down the tang. | This blade won't hold an edge, whatever I do. | Three days on one hinge. Three days!
+b[apprentice] : I told you the oil was too cold. Quietly. To myself.
+b : Start again. | Bad iron. | Must be some hinge.
+a : Start again, he says. With what coal? | The iron's fine. I'm the problem today. | It's for the chapel door. It has to be perfect.
+
+scene tr_smith_apprentice_bellows
+when topic=work a.job=smith b.job=apprentice|child
+a : Steady on the bellows. Steady, not wild. | Watch the colour. Cherry red, then pull it. | Hold the tongs in your jaws like you mean it.
+b : My legs are tired. | It looks orange to me. | They taste of soot.
+a : Your legs will thank you in ten years. | Orange is too hot. Watch again. | Everything here tastes of soot. Get used to it.
+
+scene tr_smith_horseshoes
+when topic=work a.job=smith b.job=carter|farmer|herder
+a : Your horse has thrown another shoe. | That wheel rim's worn to a whisker. | Bring the plough in before the frost or it'll snap.
+b : Can you do it today? | How much for a new one? | It snapped already. Last frost.
+a : Today, if the horse behaves. | More than you want, less than a new wheel. | Then you should have brought it in before the last frost.
+
+scene tr_smith_coal
+when topic=work|prices a.job=smith
+a : Charcoal's gone up again. | The coal's wet. The fire spits. | I need iron and there's none to be had.
+b[miner] : Nobody sells iron cheap when the pits are flooding.
+b : Everything's up. | Dry it by the forge. | Try the caravans.
+a : My prices stay down, though. Somehow. | It is by the forge. It's still wet. | The caravans want coin first.
+
+scene tr_smith_order
+when topic=work a.job=smith
+a : A lord's man wants a sword by the new moon. Can't be done. | I'm making nails today. Just nails. All day. | Someone ordered a weathervane shaped like a goose.
+b : Tell him so. | Nails pay. | A goose?
+a : You don't tell a lord's man anything. | Nails pay, nails bore. | A goose. With a crown on.
+
+scene tr_smith_guard_blade
+when topic=work a.job=smith b.role=guard
+a : Your spear's notched like a saw. What did you hit? | You've been sharpening that wrong. | Leave the sword. Collect it Marketday.
+b : A wall. Long story. | I sharpen it the way the sergeant does. | Marketday? I'm on duty.
+a : Walls win. | Then the sergeant's wrong too. | Then send a pup for it.
+
+scene tr_smith_heat
+when topic=work a.job=smith season=summer
+a : Forge in summer. I'm cooked like a ham. | Drank a whole bucket and sweated out two. | Worked with the doors open and still near fainted.
+b : Work at night. | Two buckets? | Sit in the river.
+a : Then the neighbours complain of the ringing. | Two. I counted. | The river's full of tanners' muck.
+
+scene tr_smith_cinderbrook
+when topic=work a.job=smith|miner region=marches
+a : Ser Ferro wants picks by the cartload and pays by the spoonful. | The Crown's buyer weighed my iron short again. | Ore's redder from the north seam. Better iron.
+b : The city always does. | Scales are crooked. | North seam's cursed, they say.
+a : And we always sell. | Everyone knows. Nobody says. | Cursed or not, it rings true.
+
+scene tr_smith_westmarch_farrier
+when topic=work a.job=smith region=downs|steppe
+a : Every drover on the downs wants their beasts shod before the drive. | Ploughshares, all spring. Ploughshares and hinges. | Somebody brought a cart axle in two pieces.
+b : Busy, then. | Good honest work. | Mendable?
+a : Busy as a flea. | Honest. Not exciting. | Everything's mendable for a price.
+
+# ---------------------------------------------------------------- Miners
+
+scene tr_mine_gallery
+when topic=work a.job=miner
+a : The east gallery's creaking. We need more props. | Water's up to my belly in the low workings. | Struck a good vein today, fat and red.
+b[old] : Listen to the creaking. The rock talks before it falls.
+b : Tell the overseer. | Bail it, then. | About time.
+a : He says it's always creaked. | With what, my mouth? | Don't tell anyone. They'll want a share.
+
+scene tr_mine_lamp
+when topic=work a.job=miner
+a : My lamp went out down there. Pitch black. | The air's bad in the deep cut. Lamp burns blue. | Lost my lamp in the flood. Have to buy another.
+b : How'd you get out? | Don't go down. | Lamps cost.
+a : Followed the wall by scent. Slowly. | And lose a day's wage? | Everything costs. Except dying.
+
+scene tr_mine_cough
+when topic=work|smalltalk a.job=miner
+a : Can't stop coughing. Dust's in me now. | Spat black again this morning. | Pit cough's got old Harl. Three years down and he's done.
+b[healer] : Steam and honey. And stay out of the pit a week.
+b : Drink something. | Gods. | Poor soul.
+a : Ale doesn't help. I tried. | It's just the pit. | He'll go back down. They all do.
+
+scene tr_mine_shift
+when topic=work a.job=miner time=dawn
+a : Down before the sun, up after it. Never see daylight. | First into the cage again. | Another day under the hill.
+b : Spring's coming. Longer days. | Someone has to be first. | Bring a song.
+a : Longer days for the rest of you. | Someone always is me. | I'll sing the one about the drowned seam.
+
+scene tr_mine_pay
+when topic=work a.job=miner b.job=miner|official|merchant
+a : They paid us by the cart, and the carts got bigger. | The overseer docked me for a broken pick. | Wage day, and the tavern's already open.
+b : Clever, that. | Your pick, your fault. | Don't spend it all.
+a : Clever for them. | The rock broke it, not me. | Half. I'll spend half.
+
+scene tr_mine_luck
+when topic=work a.job=miner
+a : I left a nail at the shrine before going down. | Never whistle in the pit. Never. | Saw a white rat in the gallery today. Bad sign.
+b : Did it help? | Why not? | Or a rat.
+a : I came up. It helped. | The rock hears. That's why. | White ones are never just rats.
+
+scene tr_mine_kin
+when topic=work|family a.job=miner band=family|spouses
+a : I'll be late. They want a double shift. | Don't wait up. The pump's broken. | They're closing the north gallery. Shorter hours.
+b : Be careful. Promise. | I always wait up. | Thank the Bright One.
+a : I promise. I always do. | I know. Go to bed anyway. | Shorter hours, shorter pay.
+
+# ---------------------------------------------------------------- Woodcutters
+
+scene tr_wood_felling
+when topic=work a.job=woodcutter
+a : Felled an oak this morning. Shook the whole hillside. | My axe-head flew off mid-swing. | Wet wood, all of it. Won't burn till next year.
+b : I felt it in my bed. | Hurt anyone? | Stack it and wait.
+a : That was me. You're welcome. | Only a stump. | Next year I'll be cold, too.
+
+scene tr_wood_harness
+when topic=work a.job=woodcutter
+a : Dragged three logs home in harness today. My shoulders. | The saw's too blunt to cut butter. | The wolves from House Fell are cutting in our wood again.
+b[carter] : I'll take them on the cart, for a cut.
+b : Rest them. | Sharpen it. | Our wood? It's the lord's.
+a : Rest them, then drag three more. | I did. That was sharp. | The lord's never set paw in it.
+
+scene tr_wood_season
+when topic=work a.job=woodcutter season=autumn|winter
+a : Everyone wants firewood at once. | Cut till dark, cut tomorrow. | Frozen sap. The axe bounces.
+b : Raise your price. | Steady work, at least. | Wait for a thaw.
+a : I did. They still want it. | Steady as rain. | The town won't wait.
+
+scene tr_wood_forest
+when topic=work|smalltalk a.job=woodcutter
+a : Saw a bear's marks on a pine today. High up. | The deep wood's quiet lately. Too quiet. | Found a shrine out in the trees. Old one.
+b : Stay out of there. | Bandits? | Who'd build there?
+a : I went the long way home. | Maybe. Maybe just winter. | Somebody old.
+
+scene tr_wood_ridgemere
+when topic=work a.job=woodcutter|laborer region=ridgemere
+a : House Fell's foremen want twenty logs a wolf a day. | Floated the timber down to the yard. Lost two in the rapids. | The shipyard takes every straight trunk we cut.
+b : Twenty! | Lost to the sea now. | Ships need masts.
+a : Twenty. And they count. | House Fell will dock me for them. | Masts and more masts.
+
+scene tr_wood_carpenter
+when topic=work a.job=woodcutter|crafter b.job=crafter|woodcutter
+a : I need seasoned ash, not this green stuff. | Bring me cherry, if you find any. | This plank's warped like a dog's leg.
+b : Green's what I've got. | Cherry costs. | Wood moves. It's alive.
+a : Then I'll wait. | It's for a cradle. | It's dead. It's a plank.
+
+# ---------------------------------------------------------------- Crafters
+
+scene tr_craft_order_late
+when topic=work a.job=crafter
+a : The cooper's waiting on my staves and I'm two days behind. | Somebody wants a chest carved with their whole family on it. | I've been sewing harness leather since dawn.
+b : Two days is nothing. | Their whole family? | Your jaw must ache.
+a : Not to a cooper. | Eleven of them. And a dog. | My jaw's past aching. It's numb.
+
+scene tr_craft_tools
+when topic=work a.job=crafter
+a : Lost my good awl down a crack in the floor. | The glue pot boiled over and set like stone. | My father's chisels, still sharp after forty years.
+b : Pull the boards up. | Smells awful. | Good steel.
+a : And have the landlord on me? | Like a glue-boiling. Which it was. | Good steel, good father.
+
+scene tr_craft_apprentice
+when topic=work a.job=crafter b.job=apprentice|child
+a : Measure twice, cut once. How many times did you cut? | Sand it with the grain, not against it. | That joint's loose. Do it again.
+b : Three times. | Which way is the grain? | It's only a little loose.
+a : Three cuts, one plank, no shelf. | Look. The lines. Follow them. | A little loose is a broken chair.
+
+scene tr_craft_glass
+when topic=work a.job=crafter region=ridgemere
+a : Ashcombe glass came out green again. Too much iron. | Blew a bowl that held for one day. | The upper streets want coloured panes for every window.
+b : Green's pretty. | One day's something. | Coloured glass. In Ridgemere?
+a : Not on an Ashcombe bill. | Not for a mark it isn't. | To look at the rain in colour.
+
+scene tr_craft_cooper
+when topic=work a.job=crafter region=rain_coast|lake
+a : Every barrel I make goes to the salt house. | Hoops won't sit on these staves. | A leaky barrel came back. My name's burnt on it.
+b : Good trade. | Soak them. | Not your best.
+a : Steady trade. Never good. | Soaked them a day. | My worst. And my name.
+
+scene tr_craft_tanner
+when topic=work a.job=crafter region=downs
+a : The hide yard stinks so bad my mate won't sit with me. | Lime's eaten through my pads. | Twelve hides soaked and stretched today.
+b : Bathe. | Wear boots. | Busy day.
+a : I did. In the river. Twice. | On four paws? | And all twelve smell the same.
+
+# ---------------------------------------------------------------- Labourers
+
+scene tr_lab_hauling
+when topic=work a.job=laborer
+a : Hauled stone all morning in harness. Back's like broken pottery. | The foreman wants it done by dark. | Dropped a sack of grain on my paw.
+b[old] : Wait till you're older. Then it's like broken pottery all the time.
+b : Rub it with oil. | Can't be done. | Ouch.
+a : Oil's dear. Wolves are cheap. | That's what I told him. He laughed. | Grain's softer than stone, at least.
+
+scene tr_lab_day_wage
+when topic=work a.job=laborer
+a : Waited at the hiring post all morning. No one picked me. | Four pennies for a whole day. Four. | Got work on the wall repairs. Steady, for a week.
+b : Try the docks. | It's food. | Lucky.
+a : Docks want the big ones. | It's half a meal. | A week's a lifetime, this year.
+
+scene tr_lab_foreman
+when topic=work a.job=laborer b.job=official|merchant|laborer
+a : Is there work tomorrow? | The bricks came short. Again. | My shift's done. Where's my pay?
+b : Come early and see. | Count them twice. | Restday. Like everyone.
+a : I'm always early. | I did. Twice short. | Restday's three days off.
+
+scene tr_lab_ditch
+when topic=work a.job=laborer|farmer place=field|street
+a : Digging drains in this. Up to my hocks in mud. | The road's sunk again by the bridge. | Cleared three loads of muck from the gutters.
+b : Rather you than me. | They'll want it fixed by market. | Someone has to.
+a : Much rather. Pay me double. | Of course they will. | And it's always me.
+
+scene tr_lab_wall
+when topic=work a.job=laborer region=cities
+a : The council's mending the wall. Wants every back in the city. | Scaffold swayed under me. Didn't look down. | Mortared stones all day. Paws white as flour.
+b : Good pay? | Brave. | Like a baker.
+a : Council pay. So no. | Brave or daft. | A baker gets bread at least.
+
+scene tr_lab_docks
+when topic=work a.job=laborer|sailor place=shore|work region=rain_coast|ser_ferro|lake
+a : Unloaded a whole hull of salt before noon. | The crane rope snapped. Barrel went in the water. | They want us on the quay at the tide, not at the bell.
+b : No wonder you're tired. | Who pays for it? | The tide doesn't keep hours.
+a : Tired and salted. | Not the shipowner. | Nor do we, any more.
+
+scene tr_lab_two_tired
+when topic=work|smalltalk a.job=laborer b.job=laborer
+a : Why do we do this? | One more load and I'm done. | Race you to the end of the pile.
+b : Because we eat. | You said that four loads ago. | You'll lose.
+a : Eating's overrated. | I meant it four loads ago. | I'll lose slowly.
+
+# ---------------------------------------------------------------- Carters
+
+scene tr_cart_road
+when topic=work a.job=carter
+a : Ruts on the north road deep enough to drown a pup. | Axle cracked halfway up the hill. | Made the run in a day and a half. A record.
+b : Somebody should mend them. | Get it to the smith. | Bet the horse doesn't think so.
+a : Somebody. Never anybody. | I carried it on my back. | The horse is sulking. He'll live.
+
+scene tr_cart_load
+when topic=work a.job=carter
+a : Overloaded again. The merchant won't listen. | Half my load was rain-soaked when I got there. | Lost a cask off the back somewhere on the hill.
+b[merchant] : Load what I say, cart what I pay for.
+b : Then refuse. | Cover it. | Go back and look.
+a : And he'll hire someone who won't. | I did. Rain doesn't care. | Someone's found it by now. Lucky them.
+
+scene tr_cart_bandits
+when topic=work a.job=carter
+a : I don't take the forest road after dark. Not any more. | Two carters were robbed last month on the Accord road. | Always ride with a crossbow on the seat now.
+b[guard] : We patrol it. Most days.
+b : Wise. | Where? | Can you hit anything with it?
+a : Wise and alive. | By the old milestone. | Barely. But they don't know that.
+
+scene tr_cart_horse
+when topic=work a.job=carter|herder
+a : My old horse is going lame. | Bought a new mare. Bites. | The horse ate my lunch. Bread, cheese, the cloth.
+b : Rest her a week. | They all bite at first. | Even the cloth?
+a : A week's no money. | Not like this one. | The cloth was the best part, apparently.
+
+scene tr_cart_crossing
+when topic=work a.job=carter region=accord|steppe
+a : Toll's gone up at the ford. | Waited half a day for the toll keeper to wake. | The caravan shed's full. Had to stack outside.
+b : Again? | Lazy beggar. | It'll rain on it.
+a : Again. Every season. | Asleep in his booth. | It always does.
+
+scene tr_cart_upper_accord_road
+when topic=work a.job=carter|merchant region=upper_accord|accord_crossing
+a : Concord seals on every crate now. Takes an hour at the gate. | The road up to the Accord's all switchbacks. Kills the horses. | Hauled a load of manuscripts. Heavier than stone.
+b : Rules are rules. | Go slower. | Words weigh, they say.
+a : Rules are slow. | Slower than slow? | They weigh in a cart, I'll tell you that.

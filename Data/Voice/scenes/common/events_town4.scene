@@ -1,0 +1,206 @@
+# Current events in town, part four: gossip ({subject} {claim}: a rumour, which reads as a sentence) and a speaker's
+# own news ({news}: what happened to them, in the first person, like "I married Tamsin").
+
+# ---------------------------------------------------------------- Gossip
+
+scene et_gos_whisper
+when topic=gossip
+a : Lean in. {subject} {claim}. You didn't hear it from me. | Word at the well is that {subject} {claim}. | Don't spread it, but {subject} {claim}.
+b[old] : I've heard worse about better wolves. And better about worse.
+b[priest] : The Bright One frowns on a loose tongue, you know.
+b : I never hear anything from you. | The well knows everything. | Who would I tell?
+a : Good. | It always does. | Everyone, by supper.
+
+scene et_gos_disbelief
+when topic=gossip
+a : They say {subject} {claim}. | Apparently {subject} {claim}. | You'll love this. {subject} {claim}.
+b : Never. Not {subject}. | Apparently, apparently. Who says? | I don't love it. I don't believe it.
+a : That's what I said. | Half the street. | Suit yourself.
+b?[friends] : Tell me everything anyway.
+
+scene et_gos_delight
+when topic=gossip band=friends
+a : Oh, you'll want to sit down. {subject} {claim}. | I've been saving this one for you. {subject} {claim}. | Guess who {claim}? {subject}!
+b : I'm sitting. Go on. | You're a treasure. Go on. | No! Really?
+a : That's all I've got. Isn't it enough? | That's it. That's the whole of it. | Really and truly.
+b?[adolescent] : I'm telling everyone.
+
+scene et_gos_scold
+when topic=gossip band=spouses|family
+a : Did you know {subject} {claim}? | The whole street's saying {subject} {claim}. | Mother says {subject} {claim}.
+b : And you believe the street? | The street says a lot of things. | Your mother says a lot of things.
+a : Sometimes the street's right. | It does. | Don't start.
+
+scene et_gos_merchant
+when topic=gossip b.role=merchant
+a : I heard {subject} {claim}. | Word is {subject} {claim}. | Is it true {subject} {claim}?
+b : Then {subject} pays coin first, from now on. | Hm. I'll check my ledger. | If it is, they owe me an explanation.
+a : Wise. | Do. | And money, probably.
+
+scene et_gos_guard
+when topic=gossip b.role=guard
+a : Did you know {subject} {claim}? | They're saying {subject} {claim}. | I'd look into {subject}, if I were the watch. They say {subject} {claim}.
+b : I don't arrest wolves for rumours. | Saying's not proof. | If they break a law, I'll look.
+a : Shame. | It's a start. | Fair.
+
+scene et_gos_child
+when topic=gossip a.stage=young|adolescent
+a : I heard the grown-ups say {subject} {claim}. | Everyone says {subject} {claim}. Is that bad? | {subject} {claim}! I heard it!
+b : You shouldn't listen at doors. | Never you mind. | Hush. That's grown-up talk.
+a : I wasn't. Much. | But is it? | Everyone knows.
+
+scene et_gos_old
+when topic=gossip a.stage=old
+a : In my day, if a wolf {claim}, we'd not stop talking for a year. Now it's {subject}. | {subject} {claim}. Their grandmother would weep. | Mark me. {subject} {claim}. I know the signs.
+b : We're not stopping now either. | She would. | You always know the signs.
+a : Good. | Loudly. | I'm always right.
+
+scene et_gos_petty
+when topic=gossip
+a : {subject} {claim}. And they had the cheek to sit in the front pew. | {subject} {claim}, and still walks about with that nose in the air. | {subject} {claim}. And wore a new hat to market.
+b : The front pew! | That nose. | A new hat! The nerve.
+a : The front pew. | Higher than ever. | Feathers on it, too.
+
+scene et_gos_tavern
+when topic=gossip place=tavern
+a : Keep your voice down. {subject} {claim}. | Over the ale, I heard {subject} {claim}. | Barkeep says {subject} {claim}.
+b[innkeeper] : Don't put that on me. I just pour.
+b : I'm whispering. | Ale talks. | Barkeeps hear everything.
+a : Good. | It does. | Everything.
+
+scene et_gos_defend
+when topic=gossip band=friends|acquaintances
+a : People say {subject} {claim}. | They're saying {subject} {claim}, poor thing. | There's talk that {subject} {claim}.
+b[family] : That's my kin you're talking about.
+b : I don't care what people say. | Poor thing indeed. | There's always talk.
+a : Nor should you. | Poor thing. | Always.
+
+scene et_gos_rivals
+when topic=gossip band=rivals
+a : I suppose you've heard {subject} {claim}. Your friend. | {subject} {claim}. Don't pretend you're surprised. | Tell your friend {subject} that everyone knows they {claim}.
+b : Not my friend. | I'm not pretending anything. | Tell them yourself.
+a : Not any more, I'd think. | Course not. | Maybe I will.
+
+scene et_gos_market
+when topic=gossip place=market
+a : Heard it at the fish stall. {subject} {claim}. | Over the cabbages: {subject} {claim}. | Whole market's saying {subject} {claim}.
+b[merchant] : My stall's a market stall, not a gossip stall. Buying anything?
+b : The fish stall's never wrong. | Cabbages and scandal. | Whole market's slow today.
+a : Never. | My favourite. | Not the tongues.
+
+scene et_gos_skeptic
+when topic=gossip
+a : {subject} {claim}, they say. | I keep hearing {subject} {claim}. | Some say {subject} {claim}.
+b[scholar] : I'd want three witnesses before I believed the sun rose.
+b : Who's they? | Keep hearing it from whom? | Some say anything.
+a : Everyone, it seems. | The usual mouths. | True.
+
+scene et_gos_shocked
+when topic=gossip
+a : {subject} {claim}! I nearly dropped my basket. | My jaw hit the floor. {subject} {claim}. | {subject}. {subject} {claim}! Can you imagine?
+b : Did you drop it? | Pick it up, then. | I can, actually.
+a : Nearly. | Very funny. | You would.
+
+scene et_gos_worry
+when topic=gossip band=family|spouses
+a : If it's true that {subject} {claim}, what then? | They say {subject} {claim}. Should we stay away? | Folk say {subject} {claim}. Keep the pups away from them.
+b : Then we'll know where we stand. | Let's not be hasty. | I already do.
+a : I hope it isn't. | Fine. | Good.
+
+# ---------------------------------------------------------------- One's own news
+
+scene et_news_marriage_shy
+when topic=news kind=marriage
+a : I've something to tell you. {news}. | Don't laugh. {news}. | You'll hear it anyway. {news}.
+b[old] : Bless you both. Grow old and rude together.
+b : Wonderful! When? | Laugh? I'll cheer! | I'm glad I heard it from you.
+a : It's done already. | Cheer quietly. | So am I.
+b?[friends] : You didn't invite me! I'll never forgive you. I forgive you.
+
+scene et_news_marriage_tease
+when topic=news kind=marriage band=friends
+a : Well, it happened. {news}. | {news}. Stop grinning. | I've news. {news}.
+b : I knew it! I said so at midsummer! | I'll grin all I like. | About time!
+a : You did. Everyone did. | You're insufferable. | It is.
+
+scene et_news_marriage_old
+when topic=news kind=marriage a.stage=old
+a : At my age! {news}. | Don't look at me like that. {news}. | Love finds the old too. {news}.
+b : At any age! Good! | Like what? Like I'm happy for you? | It does!
+a : That's the spirit. | Exactly like that. | It did.
+
+scene et_news_loss_raw
+when topic=news kind=loss
+a : {news}. I don't know what to do with myself. | It's hard to say. {news}. | {news}. The house is so quiet.
+b[priest] : The Bright One holds them. And I'll hold you, if you'll let me.
+b[old] : Keep busy. Eat. Sleep. Grief walks beside you. It doesn't go.
+b : Come and stay with us. | Take your time. | Quiet's the worst of it.
+a : I might. | Thank you. | It is.
+
+scene et_news_loss_angry
+when topic=news kind=loss band=friends|family
+a : {news}. It's not fair. | Why them? {news}. | {news}. I want to break something.
+b : No. It isn't. | There's no why. | Break something of mine. I don't mind.
+a : None of it is. | Then what's the point? | Don't tempt me.
+b?[spouses] : I'm here. I'm not going anywhere.
+
+scene et_news_loss_brave
+when topic=news kind=loss a.stage=adult
+a : You'll have heard. {news}. I'm managing. | I'm all right. Really. {news}. | {news}. Back at work tomorrow.
+b : You don't have to manage. | Are you? | So soon?
+a : Someone has to. | No. | Work helps.
+
+scene et_news_loss_child
+when topic=news kind=loss a.stage=young|adolescent
+a : {news}. Mama won't stop crying. | {news}. Does it mean they're not coming back? | Everyone's sad at home. {news}.
+b[old] : Come here, pup. Cry if you want. I'll cry with you.
+b : Then you hug her tight. | No, little one. I'm sorry. | That's all right. Sad is all right.
+a : I will. | Not ever? | I know.
+
+scene et_news_work_new
+when topic=news kind=work
+a : Good news for once. {news}. | {news}. Real coin at last. | Guess what? {news}.
+b[merchant] : Then you can settle your slate with me, can't you.
+b : Well done! | Drinks on you, then. | Tell me!
+a : Thank you. | One drink. | I just did.
+
+scene et_news_work_lost
+when topic=news kind=work band=friends|family|spouses
+a : Bad news, I'm afraid. {news}. | {news}. I'm not sure it's a good thing. | {news}. Everything's changing.
+b : What will you do? | Change can be good. | We'll manage.
+a : Think. | Can it? | Will we?
+
+scene et_news_work_proud
+when topic=news kind=work a.stage=adolescent
+a : {news}! I'm earning! | {news}. I'm grown now. | Ma cried when I told her. {news}.
+b[old] : Earning's good. Don't spend it all on sweets.
+b : Look at you! | Grown? Nearly. | She would.
+a : Look at me! | Nearly grown. | Happy tears.
+
+scene et_news_crime_victim
+when topic=news kind=crime
+a : I have to tell someone. {news}. | {news}. I'm still shaking. | You'll hear it anyway. {news}.
+b[guard] : Did you report it? Tell me everything, slowly.
+b[healer] : Sit down. Let me look at you.
+b : Bright One. Are you hurt? | Sit down. Breathe. | I'm so sorry.
+a : Not badly. | I'm trying. | So am I.
+b?[friends] : Sleep at ours tonight. I won't hear no.
+
+scene et_news_crime_angry
+when topic=news kind=crime band=friends|family|spouses
+a : {news}. I'll find who did it. | {news}. In our own home. | {news}. And the watch shrugged.
+b : Let the watch do it. | That's the worst of it. Home. | Then we'll shout until they don't.
+a : They won't. | Nowhere's safe. | Loudly.
+
+scene et_news_crime_acq
+when topic=news kind=crime band=strangers|acquaintances
+a : Bad week. {news}. | {news}. Thought you should know, living near. | {news}. Lock your doors.
+b : I'm sorry to hear it. | Thank you for telling me. | I will.
+a : Thank you. | Neighbours ought to. | Do.
+
+scene et_news_generic
+when topic=news
+weight 0.5
+a : {news}. That's my news. | Did you hear? {news}. | {news}. Thought you'd want to know.
+b : That's quite something. | I hadn't heard. | Thank you for telling me.
+a : It is. | Now you have. | Of course.

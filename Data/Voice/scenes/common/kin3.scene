@@ -1,0 +1,330 @@
+# Kin: mates (Docs/Design/30-towns-and-talk.md). Newlyweds, old couples, couples with trouble, and the courting that
+# comes before; widows and widowers after.
+
+# ---------------------------------------------------------------- Newlyweds
+
+scene kn_mates_new_den
+when topic=family band=spouses a.stage=adult|young b.stage=adult|young
+a : I still can't believe this den is ours. | Do you think the neighbours heard us howling at the wedding? | Where shall we put my mother's chest?
+b : Ours, and the leak in the roof. | The neighbours in {town} heard. | As far from my cushion as it'll go.
+a : Ours, leak and all. | Good. Let them be jealous. | It's a lovely chest!
+b : I'll fix it on rest day. | They can be jealous quietly. | It smells of your mother.
+a : You said that last rest day. | Nobody's quiet at a wedding. | Everything of hers does. That's the point.
+
+scene kn_mates_new_cooking
+when topic=family band=spouses a.stage=adult|young b.stage=adult|young place=home
+a : I made the stew your way. | Is it supposed to be this colour? | Don't laugh. I'll get better at it.
+b : My way has less salt. | It's supposed to be food-coloured. | I'm not laughing. My eyes are watering.
+a : I'll learn your way. | It's very nearly food-coloured. | That's the pepper.
+b : We'll learn it together. | Nearly is enough for me. | ...It's good pepper.
+
+scene kn_mates_new_morning
+when topic=family band=spouses a.stage=adult|young b.stage=adult|young time=dawn
+a : Stay a little longer. | You hog all the blankets, you know. | You talk in your sleep.
+b : The fields won't wait. | I'm cold-blooded. | What did I say?
+a : The fields aren't as warm as me. | You're a furnace, is what you are. | Something about a fish. And then my name.
+b : ...They're not. A little longer, then. | A furnace that needs blankets. | In that order?
+a : Good. | Exactly. | I hope not.
+
+scene kn_mates_new_family_visit
+when topic=family band=spouses a.stage=adult|young b.stage=adult|young
+a : Your mother's coming to supper. | My brother wants to stay a few nights. | Your father still doesn't like me.
+b : She'll be nice this time. | How few? | He doesn't like anyone.
+a : She told me my fur was thin. | Five. Or ten. | He likes you.
+b : It's not thin. It's... airy. | Five, then he sleeps in the barn. | I'm his pup. He has to.
+a : That doesn't help. | Agreed. | That doesn't count.
+
+scene kn_mates_new_pups_talk
+when topic=family band=spouses a.stage=adult b.stage=adult
+a : Do you ever think about pups? | Your cousin's expecting again. | How many pups do you want?
+b : Every time I see one screaming in the market. | Again? That's six. | One. Maybe two. Not six.
+a : That's not a no. | She likes them. | Six would be warm in winter.
+b : It's not a yes. | She likes noise. | Six would be poor in winter.
+a : I'll take it. | We'll get noise either way. | Two, then.
+
+# ---------------------------------------------------------------- Settled couples
+
+scene kn_mates_chores_fight
+when topic=family band=spouses place=home
+a : Did you mend the gate like I asked? | Who left the fire to die? | You brought mud through the whole den again.
+b : I'll do it tomorrow. | I thought you were watching it. | It's not mud, it's honest dirt.
+a : You said that yesterday. | I was at the well! | It's honest mud, then. Wipe your paws.
+b : And tomorrow I'll mean it. | Then it died honestly. | My paws are always wiped.
+a : I'll mend it myself. | Light it again. | On what?
+
+scene kn_mates_money
+when topic=family band=spouses
+a : We're short this month. | You spent how much at the market? | We need to put something by for winter.
+b : We're always short. | It was a good price. | Winter's months away.
+a : Shorter than always. | It was a good price for something we don't need. | Winter never asks before it comes.
+b : I'll take more work. | It'll be useful one day. | Then a little. Starting next month.
+a : Not more. Better. | That's what you said about the last one. | Starting this one.
+
+scene kn_mates_jealous
+when topic=family band=spouses
+a : You spent a long time talking to the tanner. | Who's the one who smells of lilies on your collar? | You came home late again.
+b : She was telling me about her daughter. | That's the soap seller. I bumped into her stall. | The work ran long.
+a : For half the morning? | Bumped hard, by the smell. | It runs long every night.
+b : She has a lot of daughter. | It was a small stall. I fell into it. | Then come and see it run.
+a : ...Fine. | You're a clumsy wolf. | Maybe I will.
+
+scene kn_mates_make_up
+when topic=family band=spouses
+a : About what I said this morning. | I'm sorry I growled. | Can we stop being cross now?
+b : Which part? | You did more than growl. | I'm not cross. I'm thinking.
+a : All of it. Mostly the shouting. | I snapped. I'm sorry for that too. | You think loudly.
+b : It's forgotten. Nearly. | I know. Come here. | ...We can stop.
+a : I'll take nearly. | Thank you. | Good.
+
+scene kn_mates_old_habits
+when topic=family band=spouses a.stage=adult|old b.stage=adult|old
+a : You still turn three times before you lie down. | You still snore. | You still steal the warm side of the bed.
+b : It's how a wolf settles. | I don't snore. I breathe with purpose. | It was mine first.
+a : Every night for twenty years. | You breathe like a bellows. | Nothing's yours first in a marriage.
+b : And you've watched every time. | You've slept through it twenty years. | Then it's ours, and I'm in it.
+a : Someone has to. | Barely. | ...Fine.
+
+scene kn_mates_old_couple_memory
+when topic=family band=spouses a.stage=old b.stage=old
+a : Do you remember the night we met? | You were the worst dancer at the spring festival. | Your father hated me.
+b : You spilled cider on my tail. | I was the best. You were blind. | He came round.
+a : On purpose. You looked lonely. | I was dizzy. You trod on me. | After twenty winters.
+b : I was waiting for my friend. | Once. Twice. Fine, all night. | Twenty-two.
+a : And you got me instead. | Every step. | Worth the wait.
+b : Lucky me. | Every one. | It was.
+
+scene kn_mates_old_couple_aches
+when topic=family band=spouses a.stage=old b.stage=old place=home
+a : My hip's bad again. | Rub my back. Just there. Lower. | Pass me the blanket. My bones are cold.
+b : Mine's bad all the time. You don't hear me moaning. | There? | It's on you already.
+a : I hear you moaning all night. | Lower. | Then another.
+b : That's breathing. | That's your tail. | You're a cold old wolf.
+a : That's moaning. | Close enough. | And you're stuck with me.
+
+scene kn_mates_old_couple_bicker
+when topic=family band=spouses a.stage=old b.stage=old
+a : You've told that story wrong for forty years. | It was a Marketday, not a Restday. | That wasn't my sister, it was yours.
+b : I tell it better than you remember it. | It was a Restday. I had my good collar on. | It was yours. Yours had the squint.
+a : The bear was smaller. | You always wore your good collar. | Mine never had a squint.
+b : It grows each year. So do I. | Because I married you. | She squinted at me. It counts.
+a : You shrink each year. | ...Fair. | She squinted at everyone.
+
+scene kn_mates_old_couple_tender
+when topic=family band=spouses a.stage=old b.stage=old time=dusk|night
+a : Sit with me a while. | You're still the best-smelling wolf in {town}. | Do you think we'll go together, when it's time?
+b : I always do. | Your nose has gone, then. | I'd like that.
+a : Not always. You used to run off to the tavern. | My nose is the only thing that hasn't. | Me too. I don't know the way without you.
+b : I ran back, though. | Then trust it. | You never did. I led.
+a : Every time. | I do. | You led us into a bog, once.
+b : Every time. | Good. | It was a shortcut.
+
+scene kn_mates_work_worry
+when topic=family band=spouses time=dusk|night
+a : You've been quiet since you came home. | Bad day? | You're grinding your teeth.
+b : The master's cutting wages. | I made a mistake at work. A costly one. | Am I?
+a : How much? | How costly? | Like a millstone.
+b : Enough that it matters. | Enough that they'll remember. | It's nothing.
+a : We'll manage. We always do. | They'll forget by spring. Everyone forgets. | It's something. Tell me later, then.
+
+scene kn_mates_pups_asleep
+when topic=family band=spouses time=night place=home
+a : They're finally asleep. | Did you hear what our youngest said at supper? | Our eldest is growing up too fast.
+b : Don't move. Don't breathe. | That the stew tasted like feet? | Faster than I did.
+a : I'm going to breathe. Quietly. | Where does she get it? | You never grew up.
+b : Quietly. | From you. | Someone in this den has to stay a pup.
+a : Shh. | From your mother. | Fine. It's you.
+
+scene kn_mates_far_apart
+when topic=family band=spouses a.job=carter|sailor|soldier|merchant
+a : I'm off with the caravan again tomorrow. | I'll be gone a month this time. | They want me on the long run to {town}.
+b : You were only back on rest day. | A month? | That's the one with the bandits.
+a : I know. It's the work. | The pay's good. | It's the one with the pay.
+b : Bring yourself back. That's all. | Come back with all your legs. | Then come back with it.
+a : I always do. | All four. I promise. | And all of me.
+
+scene kn_mates_dream_house
+when topic=family band=spouses
+a : One day we'll have a house with a proper hearth. | I saw a den for sale by the river. | Wouldn't it be nice to live outside the walls?
+b : With a garden for the pups to dig up. | Can we afford a river? | Bandits like it outside the walls too.
+a : And a roof that doesn't leak. | Not this year. | We'd get dogs.
+b : Now you're dreaming. | Then next year. | Dogs bark at bandits. Bandits don't care.
+a : It's free to dream. | Next year, then. | Big dogs.
+
+scene kn_mates_snoring
+when topic=family band=spouses time=dawn place=home
+a : You snored all night. | I didn't sleep a wink. | Did you have to kick me?
+b : I don't snore. | I heard you snoring, so you slept some. | You were dreaming. You kicked first.
+a : The walls shook. | That was the wind. | Liar.
+b : Old walls. | Wind snores, then. | Sweet liar.
+
+scene kn_mates_spouse_drinks
+when topic=family|quarrel band=spouses
+a : You smell of the tavern again. | How many cups this time? | You've been drinking our grain money.
+b : One cup. With friends. | Not many. | It was a loan.
+a : One cup doesn't smell like a barrel. | Many, then. | To whom? The innkeeper?
+b : It was a big cup. | I'll stop. | ...I'll pay it back.
+a : I've heard that before. | I've heard that too. | You'll pay it back with sweat.
+
+scene kn_mates_spouse_cold
+when topic=quarrel band=spouses
+a : You didn't come to bed last night. | Are you going to speak to me today? | You're still angry about the money.
+b : I didn't feel like it. | When I've something to say. | I'm angry about the lie.
+a : You slept by the hearth like a dog. | Then I'll wait. | I didn't lie. I didn't tell.
+b : Better than lying beside you. | Wait, then. | That's lying with your mouth shut.
+a : That's cruel. | I will. | Fine. Then we'll talk tonight.
+
+scene kn_mates_spouse_ill
+when topic=family band=spouses
+a : How's your cough? | Did you sleep at all? | Let me see your eyes. You look feverish.
+b : Worse. Don't fuss. | A little. | It's only a chill.
+a : I'll fuss. I'm good at it. | Then I'll get the healer. | Chills don't make you shiver like that.
+b : You are. | No. Waste of pennies. | They do in my family.
+a : I'm going to the healer. | It's not a waste on you. | Then your family's lucky I married in.
+
+scene kn_mates_harvest_couple
+when topic=family band=spouses a.job=farmer|herder
+a : The barley's ready, I think. | Did you see the sky? Rain coming. | We'll need help this harvest.
+b : Two days more. Smell it. | Then we cut tomorrow. | Your brother owes us.
+a : Two days, and we lose it to rain. | Before dawn. | He'll want cider for it.
+b : Then tomorrow. | Before dawn. | Then he'll get cider.
+
+scene kn_mates_shop_couple
+when topic=family|work band=spouses a.role=merchant
+a : You gave the widow credit again. | Have you counted the till? | Somebody's been at the honey stock.
+b : She'll pay. She always does. Eventually. | Twice. It's short. | Not me.
+a : Eventually doesn't buy flour. | Short how much? | Your breath says otherwise.
+b : It buys goodwill. | Three pennies. | That's... the cat. It likes honey.
+a : Goodwill's not bread. | Then I'm watching the new boy. | We don't have a cat.
+
+scene kn_mates_guard_couple
+when topic=family band=spouses a.role=guard
+a : I'm on the night watch again. | Captain's sending us to the gate for a week. | There was trouble near the market last night.
+b : Again? Third time this week. | Wear your thick harness. | Were you hurt?
+a : Somebody has to. | It's not cold. | A scratch. Nothing.
+b : Somebody else, then. | It will be at night. | Show me the scratch.
+a : Tell the captain that. | Fine. The thick one. | It's nothing. ...It's a bit deep.
+
+scene kn_mates_heat_summer
+when topic=family band=spouses season=summer
+a : Too hot to sleep beside you. | You're shedding everywhere. | Let's take the pups to the river.
+b : Then sleep on the floor. | It's summer. Everyone sheds. | And sit in the shade like grown wolves.
+a : I might. | Everyone doesn't shed on my cushion. | While they drown each other.
+b : The floor's yours. | My cushion too, now. | That's what rivers are for.
+
+scene kn_mates_winter_cold
+when topic=family band=spouses season=winter
+a : Come closer, I'm frozen. | Is there wood for tonight? | Your paws are like ice.
+b : I'm right here. | Enough for tonight. Not tomorrow. | That's why I put them on you.
+a : Closer. | Then I'll cut more. | Monster.
+b : Any closer and I'm inside you. | In the morning. | Warm monster.
+
+scene kn_mates_regional_rain
+when topic=family band=spouses region=rain_coast
+a : The rain's got into the bedding again. | Another winter of this and I'll grow gills. | Your fur never dries.
+b : Hang it by the fire. | Gills would help. | It's the coast. Nothing dries.
+a : Then it'll smell of smoke. | You'd be a handsome fish. | It dried once. That summer.
+b : Smoke's better than damp. | I'd be a handsome anything. | Two days of it. I remember.
+
+scene kn_mates_regional_concord
+when topic=family band=spouses region=upper_accord
+a : The Concord's raising the tithe again. | Our son wants to join the Wardens. | The pass is closed. No salt till spring.
+b : They always do in a hard winter. | He's always wanted it. | Then we'll eat bland.
+a : Every winter's hard up here. | He's always wanted to bite the moon, too. | We've eaten bland before.
+b : So every year they raise it. | He'll grow out of the moon. | And complained the whole time.
+
+# ---------------------------------------------------------------- Courting
+
+scene kn_court_shy
+when topic=smalltalk|friends band=acquaintances|friends a.stage=adult|adolescent b.stage=adult|adolescent
+weight 0.7
+a : You look... well. Nice. You look nice. | Is that a new collar? | I saw you at the well this morning.
+b : Thank you. You look... nice too. | It was my mother's. | I go every morning.
+a : Good. That's good. | It suits you. | I know. I mean... I noticed.
+b : We should walk together, sometime. | Thank you. | You could come too. Tomorrow.
+a : Yes. Sometime. Tomorrow? | Will you walk with me later? | I will.
+
+scene kn_court_bold
+when topic=smalltalk|friends band=acquaintances|friends a.stage=adult b.stage=adult
+weight 0.6
+a : Will you dance with me at the festival? | I'd like to walk you home, if you'll let me. | You've the brightest eyes in {town}.
+b : If you don't tread on my tail. | It's three doors down. | That's a very old line.
+a : I'll tread very lightly. | Then I'll walk very slowly. | It's an old line because it works.
+b : Then yes. | Three slow doors, then. | It's not working.
+a : Good. | Good. | It's starting to. I can tell by your ears.
+
+scene kn_court_advice
+when topic=friends band=friends
+a : How do I tell someone I like them? | I think the cooper's daughter likes me. | Should I bring a gift? Flowers? A fish?
+b : Tell them. With your mouth. Using words. | She does. Everyone knows but you. | Not a fish.
+a : It's not that easy. | Everyone? | What's wrong with a fish?
+b : It's the easiest thing in the world. | Even the cooper knows. | It's a fish.
+a : Easy for you to say. | Then why didn't anyone tell me? | It's a big fish.
+b : I'm not the one who has to say it. | We're telling you now. | That's worse.
+
+scene kn_court_rejected
+when topic=friends band=friends
+a : I asked her to walk with me. | He said no. Politely. | Well, that's that. I told her how I feel.
+b : And? | Politely's the worst. | And?
+a : She said she was busy. Every night. For a season. | He wished me luck finding someone. | She said she'd always thought of me as a brother.
+b : Ouch. | Ouch. | Ouch.
+a : Ouch. | Yes. Ouch. | Ouch indeed.
+b : Come on. Cider's on me. | Come on. The tavern's warm. | Come on. I'll buy you a bun.
+
+scene kn_court_parents_approve
+when topic=family band=family a.stage=adult b.stage=adult|adolescent
+a : So. The wolf you've been walking out with. | Your father wants to meet this suitor of yours. | Is it serious?
+b : What about them? | He'll scare them off. | Maybe.
+a : Bring them to supper. | That's rather the point. | Maybe means yes in this family.
+b : You'll ask a hundred questions. | Then I'll warn them. | It means maybe!
+a : Only fifty. | Warn them well. | It means you're blushing under your fur.
+
+scene kn_court_gossip_couple
+when topic=smalltalk|friends band=friends|acquaintances
+a : Did you see them walking by the river? | Those two are courting, I'd swear to it. | When's the wedding, do you think?
+b : Arm in arm, nearly. | It's about time. | Spring, if her father has his way.
+a : Shoulder to shoulder, at least. | It's long past time. | Spring's a good time for weddings.
+b : Good for them. | They took long enough. | Every time's a good time if there's a feast.
+
+# ---------------------------------------------------------------- Widows and widowers
+
+scene kn_widow_lonely
+when topic=smalltalk|friends a.stage=old b.stage=adult|old
+weight 0.8
+a : The den's very quiet without him. | I still set two bowls out, sometimes. | I talk to her at night. Isn't that foolish?
+b : Come and eat with us. | It's habit. It'll pass. | It's not foolish.
+a : I don't want to be a burden. | I don't want it to. | She doesn't answer.
+b : You're not. Come on rest day. | Then keep setting them. | Maybe she just listens.
+a : Perhaps. | Perhaps I will. | Maybe.
+
+scene kn_widow_remarry
+when topic=friends band=friends a.stage=adult|old
+a : The miller's been calling on me. | Do you think it's too soon? | Folk will talk if I take another mate.
+b : He's a good wolf. Lonely too. | It's been two winters. | Folk talk anyway.
+a : He brings bread. Every day. | Two winters isn't long. | They'll talk worse.
+b : That's courting, that is. | It's long enough to be lonely. | Let them. You'll be warm.
+a : At my age? | Maybe. | Maybe I will.
+
+scene kn_widow_children
+when topic=family band=family a.stage=adult b.stage=young
+a : Your father would be proud of you today. | You've got his way of laughing. | Shall we visit his stone on rest day?
+b : Do you miss him? | I don't remember him laughing. | Can I bring him a flower?
+a : Every day. | He laughed all the time. Before. | He'd like that.
+b : Me too. Even when I don't remember. | I'll laugh for him, then. | A big yellow one.
+a : That's how it works. | Do. | The biggest.
+
+# ---------------------------------------------------------------- Weddings, among family
+
+scene kn_wedding_planning
+when topic=family band=family|spouses
+a : The wedding's in a month and nothing's ready. | How many are we feeding at the feast? | Your aunt wants to sing at the wedding.
+b : The wolves are ready. That's the main thing. | Half of {town}, it seems. | Bright One, no.
+a : The wolves are always ready. The bread isn't. | We can't feed half the town. | She's practising.
+b : Then we bake. | Then we feed a quarter and let them fight. | Then we'll practise smiling.
+a : All of us. | That's a wedding. | Smiling hard.
+
+scene kn_wedding_howl
+when topic=family|day band=family|friends day=festival
+a : Will you howl at the wedding tonight? | Can you still hit the high note? | The bride's family howls like sick crows.
+b : Loudest in the clearing. | Higher than you ever could. | Don't let them hear you say that.
+a : Your voice cracks on the long one. | Let's hear it, then. | They can't hear anything, they're too busy howling.
+b : That's called feeling. | Later. Not sober. | Then I'll howl over them.

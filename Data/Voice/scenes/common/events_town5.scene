@@ -1,0 +1,317 @@
+# Current events in town, part five: the same news heard by particular trades, places, hours and seasons.
+
+# ---------------------------------------------------------------- Theft, by trade
+
+scene et_theft_farmer
+when topic=crime kind=theft a.job=farmer|herder
+a : Somebody's been at the hen house too. Not only {victim}'s purse that's missing. | Two sacks of seed gone from my barn, the same night {victim} was robbed. | They're taking anything now. A ewe went off my field.
+b[guard] : Livestock's harder to hide than coin. Somebody'll smell it.
+b : Foxes, maybe? | Same thief, you think? | A whole ewe?
+a : Foxes don't untie the latch. | Same night, same town. You tell me. | Bleating all the way, I'd wager.
+
+scene et_theft_fisher
+when topic=crime kind=theft a.job=fisher|sailor
+a : My nets were cut and taken. Same week as {victim}. | They stole a skiff from the jetty. Whole boat. | Somebody's lifting the catch from the drying racks at night.
+b[fisher] : Mark your floats. A thief can't sell a net with your mark on it.
+b : Cut? That's spite. | A whole boat! | Hungry thieves.
+a : Spite or need. | Rowed off in the dark. | Or lazy ones.
+
+scene et_theft_carter
+when topic=crime kind=theft a.job=carter|merchant
+a : Two bales gone off my wagon while I ate. | {victim} lost their purse; I lost a cask of oil. Same thief, I'd bet. | I chain the axles now. Can you believe it?
+b[carter] : Never leave a load. Sleep on it if you must. I do.
+b : While you ate? Bold. | A cask! That's heavy. | I can believe anything now.
+a : Bold and hungry. | Took two of them, then. | So can I.
+
+scene et_theft_smith
+when topic=crime kind=theft a.job=smith|crafter
+a : My good hammer's gone. My father's hammer. | Somebody went through my tools in the night. | They took the half-finished blades off my bench.
+b[smith] : Tools carry the maker's marks. Watch the other forges.
+b : Your father's! I'm sorry. | Anything taken? | Half-finished? What use are those?
+a : Twenty years in my paw. | My best chisels. | Sold for the iron.
+
+scene et_theft_chapel
+when topic=crime kind=theft
+a : Someone took the poor box from the chapel. | They stole the candlesticks off the altar. | Even the chapel's not safe. {victim}'s not the only one robbed.
+b[priest] : The Bright One sees. I'd not want to carry that, not in this life or the next.
+b[beggar] : That box fed me through the winter. Whoever took it took my bread.
+b : From the chapel! Shameless. | The candlesticks? Bright One. | Nowhere's safe.
+a : The worst kind of thief. | The old silver ones. | Nowhere.
+
+scene et_theft_healer
+when topic=crime kind=theft a.job=healer
+a : Somebody took my poppy jar. That's not a thief. That's someone in pain. | My remedies were stolen. All the dried bundles. | Thieves took my salves and left the coin. Think on that.
+b : Or someone selling it. | Herbs are dear now. | Strange thief.
+a : Either way I'll be watching. | Too dear. | Desperate thief.
+
+scene et_theft_inn_room
+when topic=crime kind=theft place=tavern
+a : A guest woke up to an empty pack this morning. | Someone's been trying the room doors upstairs. | {victim} says they were robbed in their room.
+b[innkeeper] : Not in my house. It'll be a guest who did it. I'll turn the lot out.
+b : An empty pack? | Upstairs? With you asleep below? | In a room? With the bolt?
+a : Bare as a bone. | Heard them myself. | Bolts can be lifted.
+
+scene et_theft_winter
+when topic=crime kind=theft season=winter
+a : Firewood's going missing off the stacks. | Cold makes thieves of honest wolves. | Somebody took the blankets off {victim}'s line.
+b[old] : Hard winters breed sticky paws. Always have.
+b : Cold does strange things. | It does. | Blankets? In this cold, that's cruel.
+a : Strange and sad. | Even so. | Cruel or desperate.
+
+scene et_theft_festival
+when topic=crime kind=theft day=festival
+a : Pickpockets in the crowd. Mind your purse. | {victim} lost their purse in the dancing. | Thieves love a feast day.
+b[guard] : Dancing and drinking. Easiest pickings in the year.
+b : Mine's in my boot. | In the dancing? | They do.
+a : Clever. | Right under everyone's noses. | Every year.
+
+scene et_theft_apprentice
+when topic=crime kind=theft band=apprentice
+a : Master, someone's been at the shop's coin. I swear it's not me. | I saw someone near the back door last night. | Should I sleep in the shop, master? After {victim}?
+b : I know it's not you. | Why didn't you say? | No. Lock up and go home.
+a : Thank you. | I was frightened. | Yes, master.
+
+# ---------------------------------------------------------------- Assault, by place and trade
+
+scene et_assault_gate
+when topic=crime kind=assault place=gate
+a : They found {victim} just outside the gate. | The gatekeepers heard shouting and came too late. | Were you on the gate when {victim} was hurt?
+b[guard] : I was. I'll not forget the sound.
+b : So close to safety. | Too late's always the way. | No, thank the Bright One.
+a : So close. | Always. | Lucky.
+
+scene et_assault_market
+when topic=crime kind=assault place=market
+a : A fight in the market, and {victim} took the worst of it. | Blood on the cobbles by the well. | Did you see what happened to {victim}?
+b[merchant] : Right by my stall. Knocked my scales flying.
+b : In the market? In daylight? | I saw them scrubbing. | Only after. Awful.
+a : Bold as brass. | Didn't get it all. | Awful.
+
+scene et_assault_spouses
+when topic=crime kind=assault band=spouses
+a : I want you home before dark. After {victim}. | Promise me you won't walk the back lanes. | I couldn't bear it if it were you, like {victim}.
+b : I'll be home. | I promise. | It won't be.
+a : Before dark. | Swear it. | You can't know that.
+
+scene et_assault_soldier
+when topic=crime kind=assault a.job=soldier|guard
+a : Whoever did {victim} knew how to hurt. That wasn't a drunk. | Clean blows. Trained, I'd say. | If I meet the one who did it, I'll teach them a lesson in manners.
+b : A soldier, you think? | That's frightening. | Don't. You'll lose your post.
+a : Someone who's been one. | It should be. | Worth it.
+
+scene et_assault_healer2
+when topic=crime kind=assault b.job=healer
+a : Will {victim} be all right? | Did you treat {victim}? | You look tired. Is it {victim}?
+b : If the wound stays clean. | All night. Stitches and poultices. | I've not slept.
+a : Bright One grant it. | Bless your paws. | Rest. You need it.
+
+scene et_assault_old2
+when topic=crime kind=assault b.stage=old
+a : Did you hear what happened to {victim}? | Rough business, the attack. | They say {victim}'s still abed.
+b : I heard. I'm locking my door at sunset now. | I'm too old to run from brutes. | Poor creature.
+a : Wise. | You shouldn't have to. | Poor creature.
+
+# ---------------------------------------------------------------- Arrests, more voices
+
+scene et_arrest_merchant
+when topic=crime kind=arrest a.role=merchant
+a : {subject} owed me eleven pennies. I'll never see it now. | The watch took {subject}. One of my best customers. | Business is better with {subject} in the cells. Shameful to say.
+b : Write it off. | Best customer? Interesting. | Shameful, but honest.
+a : Painful. | Paid in cash. Always cash. | Honest is all I've got.
+
+scene et_arrest_tavern_cheer
+when topic=crime kind=arrest place=tavern time=dusk|night
+a : Drink to the watch! They got {subject}! | First time I've toasted the watch. | {subject}'s in a cell and I'm in a tavern. Justice.
+b[guard] : Buy me one, then, if you're so grateful.
+b : To the watch! | Don't make a habit of it. | Cheers to that.
+a : To the watch. | Never. | Cheers.
+
+scene et_arrest_priest
+when topic=crime kind=arrest b.job=priest
+a : Will you visit {subject} in the cells? | Is there any hope for {subject}? | Should we pray for {subject}?
+b : Tomorrow, with bread and the book. | There's always hope. That's the point. | For everyone, always.
+a : That's good of you. | I hope so. | I'll try.
+
+scene et_arrest_young_guard
+when topic=crime kind=arrest a.job=guard a.stage=adolescent|adult
+a : My first proper arrest. {subject}. | My paws were shaking when we took {subject}. | The captain said I did well with {subject}.
+b[guard] : Shaking's fine. Shaking means you know it matters.
+b : Well done. | Mine too, my first time. | Then you did.
+a : Thank you. | Really? | I did.
+
+# ---------------------------------------------------------------- Life, more voices
+
+scene et_wed_apprentice
+when topic=life kind=marriage band=apprentice
+a : Master, may I have the afternoon? For {subject}'s wedding? | Did you hear {subject} married, master? | Will you go to {subject}'s wedding, master?
+b : Go on. Be back by dark. | I heard. Back to work. | Perhaps. Sweep first.
+a : Thank you! | Yes, master. | Yes, master.
+
+scene et_wed_innkeeper
+when topic=life kind=marriage a.job=innkeeper|cook|brewer
+a : I'm doing the feast for {subject}'s wedding. Forty guests. | {subject}'s wedding emptied my cellar. | A wedding for {subject}, and I'm the one who's exhausted.
+b : Forty! Good luck. | Good for business. | The feast's always the hardest part.
+a : Forty hungry wolves. | And bad for my back. | Always.
+
+scene et_wed_noble
+when topic=life kind=marriage b.job=noble|official
+a : Will you go to {subject}'s wedding, my lord? | {subject} has married. The hall will want a gift sent. | Did you see {subject}'s match? A good family, I hear.
+b : I might show my face. | See to it. Something sensible. | Good enough.
+a : They'd be honoured. | At once. | Yes.
+
+scene et_death_winter
+when topic=life kind=death season=winter
+a : The ground's too hard to dig. {subject} lies in the chapel till the thaw. | Winter took {subject}. It takes someone every year. | Cold and dark, and now {subject}.
+b[priest] : They'll rest in the crypt till the spring. They don't mind waiting.
+b : Poor soul. | Every year. | It's the worst time.
+a : Poor soul. | Every year. | It is.
+
+scene et_death_young
+when topic=life kind=death a.stage=adult
+a : {subject} was so young. It's wrong. | A young one, {subject}. Nobody should bury their pups. | I keep thinking of {subject}'s mother.
+b[priest] : There's no answer I can give that will feel like one. I'm sorry.
+b : It is wrong. | Nobody. | So do I.
+a : All wrong. | Nobody ever should. | Poor soul.
+
+scene et_death_worker
+when topic=life kind=death a.job=laborer|miner|carter|fisher|sailor
+a : {subject}'s gone. It was the work that did it. | We lost {subject}. Same as we'll all go. On the job. | {subject} died working. Nobody paid for that.
+b : The work takes us all in the end. | Don't say that. | Nobody ever pays.
+a : It does. | It's true. | Nobody.
+
+scene et_death_tavern
+when topic=life kind=death place=tavern
+a : A drink for {subject}. | Raise your cup. To {subject}. | {subject}'s stool's empty tonight.
+b[innkeeper] : This one's on the house. For {subject}.
+b : To {subject}. | To {subject}. | So it is.
+a : Rest well. | May they rest. | Nobody sit there.
+
+scene et_birth_spring
+when topic=life kind=birth season=spring
+a : Spring pups, {subject}'s. Best time to be born. | New pups with the new leaves. {subject}'s litter. | {subject}'s pups came with the blossom.
+b[old] : Spring pups are lucky. They see the whole year warm before the cold.
+b : The very best. | Lovely. | Fitting.
+a : The best. | Lovely. | It is.
+
+scene et_birth_father
+when topic=life kind=birth band=friends a.sex=male
+a : Did you see {subject}'s face? Proud as a lord. | {subject} won't stop showing off the pups. | Every wolf in town has held {subject}'s pups by now.
+b : As he should be. | Let them. | Not me yet.
+a : Unbearable. | Insufferable. | Go on, then.
+
+scene et_appr_smith
+when topic=life kind=apprentice a.job=smith|crafter|baker|brewer
+a : {subject}'s apprenticed. Hope they've got thicker skin than I had. | {subject}'s starting out. I remember my first burn. | They'll work {subject} to the bone the first year.
+b : You turned out all right. | Show me the scar. | They worked you.
+a : Barely. | Here. | They did.
+
+scene et_succ_inn
+when topic=life kind=succession place=tavern
+a : {subject} runs the tavern now. Will the ale change? | The new keeper, {subject}, waters it less. | {subject}'s in charge. Prices up already.
+b[innkeeper] : That's my business you're talking about.
+b : Ale always changes. | Then I'm drinking here. | Of course they are.
+a : Not always for the worse. | Me too. | Of course.
+
+scene et_succ_farm
+when topic=life kind=succession a.job=farmer|herder
+a : {subject} has the farm now. Their father's land. | The fields have gone to {subject}. | Young {subject}'s master of the old farm.
+b : Can they work it? | Lucky. Good land. | Big boots to fill.
+a : We'll know by harvest. | Good land and debts. | Big boots.
+
+# ---------------------------------------------------------------- Newcomers, more voices
+
+scene et_new_merchant_rival
+when topic=newcomer a.role=merchant
+a : Is {subject} opening a stall? Competition's all I need. | {subject} asked about the price of a stall. | If {subject} sells what I sell, I'll be ruined.
+b : Maybe they'll be good for trade. | Uh oh. | You'll be fine.
+a : I doubt it. | Uh oh indeed. | Easy for you to say.
+
+scene et_new_guard_check
+when topic=newcomer a.role=guard
+a : I've had a word with {subject}. Their papers seem in order. | Keep an eye on {subject}. Just in case. | {subject} came in by the gate with very little.
+b : Good. | Just in case of what? | That's no crime.
+a : Seem. | Anything. | No.
+
+scene et_new_priest
+when topic=newcomer b.job=priest
+a : Have you met {subject}, the newcomer? | {subject} came to the chapel. | Will you visit {subject}?
+b : They came to the morning prayers. Shy, but they came. | I saw them. The Bright One welcomes all. | Tomorrow.
+a : A good start. | Good. | Good.
+
+scene et_new_family
+when topic=newcomer band=family|spouses
+a : We should ask {subject} to supper. | {subject} has no one here. | Did you see {subject} alone at the well?
+b : On a feast day? | Then we'll be someone. | I did.
+a : Any day. | We will. | So sad.
+
+scene et_new_job_mine
+when topic=newcomer b.job=farmer|miner|laborer|fisher
+a : {subject}'s looking for work. Have you room? | Could you use {subject}? They're strong. | {subject} said they know the {b_job}'s trade.
+b : Send them up. | If they don't mind mud. | We'll see.
+a : I will. | They'll manage. | Good.
+
+# ---------------------------------------------------------------- Festivals, by trade and hour
+
+scene et_fest_farmer
+when topic=festival a.job=farmer|herder
+a : Feast or no feast, the cows want milking on {festival}. | I'll go to {festival} after chores, if I can stand. | The harvest owes nothing to {festival}.
+b : They don't know it's a holiday. | You'd better. | Work first.
+a : Never do. | I'll try. | Always.
+
+scene et_fest_fisher
+when topic=festival a.job=fisher|sailor
+a : No boats out for {festival}. The whole quay's dancing. | We'll drink the catch money on {festival}. | Lanterns on the masts for {festival}.
+b : Good. You've earned it. | All of it? | Pretty sight.
+a : We have. | All of it. | It is.
+
+scene et_fest_night
+when topic=festival when=today time=night
+a : Still dancing at this hour, for {festival}! | The bonfire for {festival}'s still roaring. | I'll pay for this tomorrow. Worth it for {festival}.
+b[guard] : Home, the lot of you. Feast's over.
+b : One more dance. | Bright as noon. | You will.
+a : One more. | Look at it. | Worth it.
+
+scene et_fest_dawn
+when topic=festival when=today time=dawn
+a : Up early to hang the ribbons for {festival}. | First light, and the cooks are already roasting for {festival}. | Not even the birds are up, and it's {festival}.
+b : Early bird. | Smell that. | They will be.
+a : Always. | Glorious. | Soon.
+
+scene et_fest_healer
+when topic=festival a.job=healer
+a : A feast day keeps me busy. Burns, falls, bellyaches. | After {festival} comes the sore heads. I've the willow bark ready. | I'll be stitching after {festival}. Every year.
+b : Sounds busy. | Smart. | Every year.
+a : Very. | Always. | Every year.
+
+scene et_fest_soldier
+when topic=festival a.job=soldier|guard
+a : On duty all of {festival}. Again. | I'll watch {festival} from the wall. | They're doubling the guard for {festival}.
+b : Bad luck. | Best view. | Expect trouble.
+a : As always. | Cold view. | We do.
+
+# ---------------------------------------------------------------- Gossip, by place and hour
+
+scene et_gos_chapel
+when topic=gossip place=chapel
+a : In the chapel, of all places, I heard {subject} {claim}. | After prayers, everyone was whispering that {subject} {claim}. | Even the priest's heard {subject} {claim}.
+b[priest] : I hear a great deal. I repeat none of it.
+b : Hush. Not here. | Shame on them. | The priest hears everything.
+a : Outside, then. | Shameful. | Everything.
+
+scene et_gos_field
+when topic=gossip place=field|work
+a : While we were working, they said {subject} {claim}. | Over the furrows: {subject} {claim}. | Pass it down the row. {subject} {claim}.
+b : Work, not chatter. | Furrows have ears. | I'll pass it.
+a : I can do both. | Always. | Good.
+
+scene et_gos_night
+when topic=gossip time=night
+a : Can't sleep. Did you know {subject} {claim}? | Late, I know, but {subject} {claim}. | Before we turn in: {subject} {claim}.
+b : That'll keep me awake now. | It is late. | Goodnight.
+a : Sorry. | Very. | Goodnight.
+
+scene et_gos_home
+when topic=gossip place=home band=family|spouses
+a : Close the door. {subject} {claim}. | Not in front of the pups, but {subject} {claim}. | You'll never guess. {subject} {claim}.
+b : Closed. Go on. | Wait till they're asleep. | I'll never guess.
+a : That's all. | Fine. | Good.

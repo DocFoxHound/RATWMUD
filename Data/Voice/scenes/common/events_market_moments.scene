@@ -1,0 +1,214 @@
+# Prices, caravans and bandits by the moment (Docs/Design/30-towns-and-talk.md): who the two are to each other, where
+# they stand, the day, the season and the weather. Blanks: {item}, {price}, {other}. Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Between two
+
+scene em_band_spouses_budget
+when topic=prices dir=up band=spouses
+a : We'll have to tighten our belts again. | I'll skip the market this week. We'll make do. | Did you spend on {item}? We said we wouldn't.
+b : Again. We'll manage. | We always make do. | Only a little. You looked tired.
+a : We always do. | Somehow. | You're impossible. Thank you.
+
+scene em_band_spouses_caravan
+when topic=caravan kind=left band=spouses
+a : You're not thinking of driving with them to {other}, are you? | Next caravan, I'm going. The pay's too good. | I watched the wagons go and thought of you.
+b : Not this time. | We'll talk about it tonight. | Why me?
+a : Not any time. | We will. | You'd look grand on the driver's bench.
+
+scene em_band_spouses_bandits
+when topic=bandits band=spouses
+a : Bar the door tonight. Humour me. | I don't like you walking home after dark with bandits about. | If anything happened to you on that road...
+b : I'll bar it twice. | I'll come home early. | Nothing will.
+a : Thank you. | Promise. | You can't know that.
+
+scene em_band_family_pups
+when topic=prices item=meal dir=up band=family
+a : The little ones mustn't know we're short. | Give the pups the meat. We'll eat the bread. | Don't tell Mother how much food costs. She'll worry.
+b : They'll know. They always know. | We always do. | She already knows.
+a : Then let them know we're fine. | Always. | Of course she does.
+
+scene em_band_family_relative
+when topic=caravan kind=arrived|left band=family
+a : Aunt says she'll come with the next caravan from {other}. | Uncle sent word with the carters from {other}. | Our cousin's driving for the {other} caravan this season.
+b : Bright One help us. | Good news or bad? | That one? With his driving?
+a : I know. Hide the good cups. | Good. I think. His writing is terrible. | He's improved. A little.
+
+scene em_band_rivals_caravan
+when topic=caravan kind=arrived band=rivals
+a : I suppose you've already bought up the best of the {other} goods. | You were at the yard before dawn. Typical. | Don't think I didn't see you bribe the carter.
+b : Early wolf, best cloth. | Somebody has to be. | I tipped him. There's a difference.
+a : Greedy wolf, empty town. | Greedy somebody. | Not much of one.
+
+scene em_band_rivals_raid
+when topic=caravan kind=raided band=rivals
+a : I heard your crates were on the raided wagons. | Did you lose much in the raid? Don't lie. | Bad luck about your goods.
+b : Pleased, are you? | Less than you'd like. | Save your pity.
+a : Not entirely. | Shame. | I wasn't offering any.
+
+scene em_band_strangers_prices
+when topic=prices band=strangers
+a : Forgive me, but is {item} always {price} here? | Are prices always like this in {town}? | You look local. Is this a fair price for {item}?
+b : Not always. It's been a bad week. | Only when you're from elsewhere. | Fair for {town}.
+a : Lucky me. | Ha. I'll remember that. | Then {town} is dear.
+
+scene em_band_strangers_road
+when topic=bandits band=strangers
+a : Pardon me. Is the road to the next town safe? | Excuse me, I'm travelling on tomorrow. Bandits? | Is it true about the robbers on the road?
+b : Not lately, no. | Wait a few days, if you can. | Sadly, yes.
+a : Thank you. I'll wait. | I can't. Pray for me. | Then I'm staying.
+
+scene em_band_apprentice_market
+when topic=prices band=apprentice
+a : Watch how the price moves, and buy on the low days. | Don't buy herbs when everyone wants them. Buy before. | Write the prices down every week. You'll learn the pattern.
+b : Yes, master. | Before? How do I know? | Every week?
+a : And sell on the high ones. | You'll learn. | Every single week.
+
+scene em_band_friends_raid
+when topic=caravan kind=raided band=friends
+a : Are you all right? I heard your brother drives that road. | You've gone pale. Was someone of yours on the raided wagons? | I'll walk you to the gate to wait for news.
+b : He's fine. He wasn't on this one. | My cousin. We don't know yet. | Thank you. I can't sit still.
+a : Thank the Bright One. | I'll wait with you. | Then let's walk.
+
+scene em_band_friends_prices
+when topic=prices band=friends
+a : Come eat with us tonight. One more mouth is nothing. | Let's split a sack of {item}. Cheaper by the sack. | You've lost weight. Are you eating?
+b : I'll bring bread. | Good idea. | When I can.
+a : Bring yourself. That's enough. | Tomorrow, at the stall. | Tonight, then. At ours.
+
+# ---------------------------------------------------------------- Places
+
+scene em_place_home_prices
+when topic=prices dir=up place=home
+a : I counted the jar. We have enough till market day. Barely. | Shut the window, I'm burning the last of the candles. | No meat this week. I'm sorry.
+b : Barely is enough. | We'll sit in the dark and talk. | Don't be sorry. It's not your doing.
+a : It'll do. | I'd like that. | Still.
+
+scene em_place_chapel_raid
+when topic=caravan kind=raided place=chapel
+a : They've laid the wounded carters in the chapel. | Lighting a candle for the {other} caravan. | So many praying today. Since the raid.
+b : The chapel's the warmest place. | I'll light one too. | Fear brings folk to the Bright One.
+a : And the quietest. | Thank you. | And hope keeps them.
+b?[priest] : All are welcome here. The hurt most of all.
+
+scene em_place_chapel_prices
+when topic=prices dir=up place=chapel
+a : The alms box is full of buttons. Nobody has coin. | More wolves at the chapel kitchen every day. | Even the chapel candles cost more now.
+b : Buttons won't buy bread. | A hard season. | Light them anyway.
+a : No. They won't. | Very. | I will.
+b?[priest] : Buttons are an honest gift, if it's all they have.
+
+scene em_place_barracks_bandits
+when topic=bandits place=barracks
+a : Sergeant says we ride at dawn if the order comes. | Sharpen everything. Everything. | I hate waiting more than fighting.
+b : About time. | Done twice. | You haven't fought.
+a : We'll see. | Do it again. | I've waited plenty.
+b?[soldier] : Same as always. Order never comes.
+
+scene em_place_gate_caravan
+when topic=caravan kind=arrived place=gate
+a : Open the gate! The {other} wagons are here. | Count the wagons in. I make it nine. | Check every crate. Captain's orders, even for {other}.
+b : Opening! | Nine. And a straggler. | Even for {other}.
+a : Wave them through. | Ten, then. | Even them.
+b?[guard] : Nine and a mule. Write it down.
+
+scene em_place_gate_bandits
+when topic=bandits place=gate
+a : Close the gate early tonight. | Who's that on the road? Wait. Look. | Nobody out after the bell. Bandits.
+b : Early it is. | A shepherd. False alarm. | Nobody.
+a : Good. | Thank the stars. | Good.
+b?[guard] : Gate closes at dusk. No exceptions.
+
+scene em_place_field_bandits
+when topic=bandits place=field|wild
+a : Keep low. Somebody's moving in the treeline. | I'm not staying out here past noon with bandits about. | Leave the plough and run if you see riders.
+b : Deer, probably. | Nor me. | Leave the plough? It's my plough.
+a : Probably isn't certainly. | Let's go now. | It's your life too.
+
+scene em_place_shore_caravan
+when topic=caravan place=shore
+a : The wagons from {other} could be boats, for all the time they take. | Ship's faster than any caravan. | The road's longer than the sea. And worse.
+b : Boats can't climb hills. | And sinks quicker. | Nothing's worse than the sea.
+a : Nor can carters. | Not always. | You've not driven a wagon.
+b?[sailor] : Ships sink. Wagons don't. Each road has its drownings.
+
+scene em_place_hall_raid
+when topic=bandits place=hall
+a : The council heard the carters' complaints today. | The petition about the bandits reached the hall at last. | They argued about the raids till the candles burned down.
+b : And? | At last. | And decided what?
+a : Nothing yet. | Took long enough. | To meet again.
+b?[official] : The matter is before the council. Decisions take time.
+
+scene em_place_work_prices
+when topic=prices dir=up place=work
+a : The master's cutting wages. Says the price of {item} isn't his fault. | No bonus this season. Food's eating it. | We're working longer for the same coin.
+b : It's nobody's fault, apparently. | Same as last season. | Same as always.
+a : And nobody pays. | And the one before. | Always.
+
+# ---------------------------------------------------------------- Days, seasons and weather
+
+scene em_day_market_rush
+when topic=prices day=market
+a : Market day and the prices are worse than ever. | Every stall's raised its price for market day. | Market day crowds. Everyone wants {item}.
+b : They know we'll pay. | They always do on market day. | And everyone pays.
+a : We always do. | Every week. | Every week.
+
+scene em_day_rest_caravan
+when topic=caravan kind=arrived day=rest
+a : Wagons arriving on Restday? The priest won't like it. | Restday caravan. Nobody to unload. | The carters don't keep Restday. The road doesn't care.
+b : The priest likes nothing. | They'll wait. | Nor does the weather.
+a : He likes quiet. | Grumbling. | Nothing does.
+b?[priest] : The road is no excuse. But I'll bless them anyway.
+
+scene em_day_festival_prices
+when topic=prices day=festival
+a : Festival prices. They double everything. | A cup of cider for {price} at the festival. Robbery. | Everyone sells dear on a feast day.
+b : It's a festival. Pay up and smile. | You'll drink it anyway. | And everyone buys.
+a : I'll pay and grumble. | Twice. | That's the feast.
+
+scene em_season_spring_roads
+when topic=caravan kind=arrived season=spring
+a : First caravan of spring. Roads are mud, but they're open. | Spring caravans always come in muddy and late. | They say the thaw washed out half the road to {other}.
+b : Muddy is better than snowed in. | And welcome. | Half? Then they'll be later.
+a : Much better. | Very welcome. | Much later.
+
+scene em_season_summer_bandits
+when topic=bandits season=summer
+a : Bandits love summer. Long days, easy roads. | Every summer the robbers come out with the flies. | Warm nights, and the bandits sleep out under the stars.
+b : And long days for the watch too. | And go away with the frost. | Comfortable bandits.
+a : Not long enough. | If we're lucky. | Too comfortable.
+
+scene em_season_autumn_caravan
+when topic=caravan kind=arrived|left season=autumn
+a : Last caravans before winter. Everyone's buying. | Autumn wagons bring the stores in for the cold. | Get your winter goods now. No caravans after the snow.
+b : Busy season. | Fill the cellar. | I know. I'm late already.
+a : The busiest. | Fill two. | Hurry.
+
+scene em_season_winter_bandits
+when topic=bandits season=winter
+a : Even bandits shelter from this cold. | Winter bandits are the hungry ones. The dangerous ones. | Snow shows their tracks, at least.
+b : I hope so. | Hunger makes wolves bold. | If anyone follows them.
+a : We'll see. | Bold and stupid. | Nobody does.
+
+scene em_weather_fog_bandits
+when topic=bandits weather=fog
+a : Fog like this is a bandit's friend. | Can't see the end of the road. Anything could be out there. | Stay in. Fog and robbers go together.
+b : And a guard's enemy. | Your nose can see. | I'm staying in.
+a : Every guard's. | Not far enough. | Good.
+
+scene em_weather_storm_caravan
+when topic=caravan kind=left weather=storm|rain
+a : I hope the {other} wagons found shelter in this storm. | Caravan's out on the road in this. Poor carters. | The rain will wash the road to {other} away.
+b : They're used to it. | They'll be soaked. | It always does, then they rebuild it.
+a : Nobody's used to this. | And grumpy. | Slowly.
+
+scene em_weather_clear_caravan
+when topic=caravan kind=left weather=clear
+a : Lovely day for a caravan. Dry road all the way to {other}. | Clear skies. The carters will make good time. | Not a cloud. The wagons will be early, for once.
+b : Don't say it. You'll bring rain. | For once. | Early? Never.
+a : Too late. | For once. | Never say never.
+
+scene em_time_night_prices
+when topic=prices time=dusk|night
+a : I lay awake doing sums about the price of {item}. | Can't sleep for counting pennies. | The sums never come out right at night.
+b : Sums can wait till morning. | Count sheep instead. | They never do.
+a : They never wait. | Sheep cost money too. | Never.

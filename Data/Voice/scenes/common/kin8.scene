@@ -1,0 +1,204 @@
+# Kin: grown children and ageing parents, household life, and the moments families gather for
+# (Docs/Design/30-towns-and-talk.md).
+
+# ---------------------------------------------------------------- Grown children, ageing parents
+
+scene kn_adult_child_advice
+when topic=family band=family a.stage=old b.stage=adult
+a : You're working yourself to the bone. | That mate of yours. Are they treating you well? | You should come to chapel more.
+b : Somebody has to pay the rent. | They are. Stop asking. | I come when I can.
+a : Rent's not everything. | A parent has to ask. | The Bright One sees when you don't.
+b : It's most things. | Every visit? | Then he sees I'm busy.
+a : Not the important ones. | Every single one. | Busy isn't an excuse to him.
+
+scene kn_adult_child_tables_turn
+when topic=family band=family a.stage=adult b.stage=old
+a : Did you eat today? | You shouldn't climb that ladder at your age. | Let me look at that cut.
+b : I'm not a pup. | I've climbed it every spring for forty years. | It's a scratch. Leave it.
+a : Then eat like a grown wolf. | And you'll fall off it in the forty-first. | It's red. Let me see.
+b : You sound like me. | Then catch me. | ...Fine. Look. Then leave it.
+a : I learned from the best. | I will. | Thank you.
+
+scene kn_adult_child_old_room
+when topic=family band=family a.stage=old b.stage=adult place=home
+a : I kept your old cushion. | Your room's just as you left it. | I found your first collar in the chest.
+b : That flat old thing? | You could use the space. | It's tiny! Was I ever that small?
+a : You'd not sleep on anything else. | I like it as it is. | You were smaller. And louder.
+b : I'm sure I was difficult. | Then keep it. | Some things don't change.
+a : The most. | I will. | The louder part hasn't.
+
+scene kn_adult_child_disappoint
+when topic=family band=family a.stage=old b.stage=adult
+a : Your cousin's a master now, you know. | I'd hoped you'd follow your father into the trade. | When are you going to settle down?
+b : Good for my cousin. | I know. I'm sorry. | When I'm ready.
+a : Just saying. | Hoping's not ordering. | You're not getting younger.
+b : You're never just saying. | It felt like an order. | Neither are you.
+a : No. I suppose I'm not. | Then I'm sorry too. | Ha. True.
+
+scene kn_adult_child_proud_parent
+when topic=family band=family a.stage=old b.stage=adult
+a : I told the whole street what you did. | Your father would have been so proud. | You've done well for yourself.
+b : You didn't! | Would he? | Well enough.
+a : Twice. To the baker. | He'd have bought the whole tavern a round. | Better than well. Don't be modest.
+b : The baker tells everyone. | That's how he showed it. | All right. Better than well.
+a : That's the idea. | Always. | That's my pup.
+
+scene kn_parent_new_mate
+when topic=family band=family a.stage=adult b.stage=old b.sex=female
+a : So. You and the cooper. | Mother, the whole town's talking about you and that wolf. | Is it serious? Him and you?
+b : Me and the cooper. | Let them. They've nothing better. | At my age, everything's serious.
+a : I just... it's soon. | It's strange, that's all. | I'm glad. I think.
+b : Soon's relative when you're old. | Strange things keep you young. | You'll get used to it.
+a : I want you happy. | I'll get used to it. | I'll try.
+
+# ---------------------------------------------------------------- Household life
+
+scene kn_home_morning_chaos
+when topic=family band=family|spouses time=dawn place=home
+a : Who's seen my collar? | Somebody ate my breakfast. | The water's cold again.
+b : Where you threw it last night. | It had your name on it, did it? | Then heat it.
+a : I didn't throw it. | It had my scent on it! | No time.
+b : You dropped it with force. | Everything smells of you. That's the problem. | Then wash cold. Builds character.
+a : Found it. Under the cat. | I'll lick the bowl. | I've enough character.
+
+scene kn_home_guest_coming
+when topic=family band=family|spouses place=home
+a : Your aunt's visiting. Hide the cider. | We've guests at supper. Groom your ruff. | The brother's coming to bless the house.
+b : She'll find it. She always finds it. | My ruff's fine. | Bless it? Has something happened?
+a : Then hide it better. | It looks like a bird slept in it. | No. Your mother sent him.
+b : Under the floor. Again. | A small bird. | Of course she did.
+a : Good. | Groom it. | Be polite.
+
+scene kn_home_leak
+when topic=family band=family|spouses place=home weather=rain|storm|snow
+a : The roof's leaking over the hearth. | There's snow coming through the door gap. | My bed's soaked.
+b : Put the pot under it. | Pack it with rags. | Sleep in mine.
+a : The pot's under the other leak. | We're out of rags. | You kick.
+b : Then use the soup pot. | Use your old cloak. | Then sleep on the floor.
+a : We'll eat cold, then. | I liked that cloak. | Kicking it is.
+
+scene kn_home_new_pup_tired
+when topic=family band=spouses place=home
+a : Your turn. She's crying. | When did we last sleep? | Is he finally asleep?
+b : It's always my turn. | Some time last season. | Don't breathe. Don't move.
+a : It's your turn twice. | Sleep's for wolves without pups. | I'm not breathing.
+b : Fine. Fine. | Then we'll sleep when they're grown. | Good.
+
+scene kn_home_pet
+when topic=family|smalltalk band=family|spouses place=home
+a : The cat's been on the table again. | Where did that hen come from? | The dog's eaten another shoe.
+b : The cat owns the table. We just eat at it. | She followed the pups home. | We don't wear shoes.
+a : Then the cat can do the dishes. | She can follow them back. | Exactly. Whose was it?
+b : She'd do them with her tongue. | She lays eggs. | The neighbour's.
+a : ...Keep her. | Then she stays. | Bright One help us.
+
+scene kn_home_smell
+when topic=family|smalltalk band=family|spouses
+a : The house smells of wet wolf. | Something's died under the floor. | Who's been burning herbs?
+b : It always smells of wet wolf. | Probably a rat. | Me. To cover the rat.
+a : Worse than usual. | Probably a big one. | Now it smells of herbs and rat.
+b : Open a window. | Then get it out. | Better than rat alone.
+a : It's raining. | You get it out. | Barely.
+
+scene kn_home_money_jar
+when topic=family band=spouses|family place=home
+a : The money jar's lighter. | Who's been at the honey? | There were six eggs this morning.
+b : Not me. | Not me. | Not me.
+a : The pups, then. | The cat doesn't eat honey. | Eggs don't walk.
+b : Ask them. | The cat's very sticky. | This one might.
+a : I will. | ...Pups. | Pups.
+
+# ---------------------------------------------------------------- Family occasions
+
+scene kn_occ_name_day
+when topic=family|day band=family|spouses
+a : Happy name day! | Another year older. How does it feel? | I made you something.
+b : You remembered! | Same as yesterday, with more ache. | Is it edible?
+a : Every year. | That's how it starts. | Mostly.
+b : I forget, sometimes. | Thank you. I think. | I'll eat the edible part.
+a : That's what I'm for. | You're welcome. | Good.
+
+scene kn_occ_new_pups
+when topic=family band=family
+a : Three pups! Healthy, all of them. | Have you seen the litter yet? | The little grey one looks just like Grandmother.
+b : Three! Bright One be thanked. | Not yet. Are they loud? | Poor thing.
+a : And loud, all of them. | Like cats in a sack. | It suits her. She's a scowler.
+b : Then they're healthy. | That's healthy. | Then it's Grandmother to the bone.
+a : That's what the midwife said. | So I'm told. | Born grumpy.
+
+scene kn_occ_funeral
+when topic=family band=family time=dusk|night
+a : It was a good farewell. | So many came to see him off. | I didn't think I'd cry. I did.
+b : She'd have liked the singing. | Half the town. | Everyone did.
+a : Even the off-key ones. | He'd have hated the fuss. | Even you.
+b : Especially the off-key ones. | He'd have pretended to. | Even me.
+a : Come home with me tonight. | He loved it really. | Then we cry together.
+
+scene kn_occ_wedding_family
+when topic=family|day band=family day=festival
+a : You look wonderful. | I never thought I'd see you wed. | Are you nervous?
+b : I feel ridiculous. | Neither did I. | Shaking like a leaf.
+a : That means you look wonderful. | We were starting to worry. | Good. It means you care.
+b : I hope so. | Thank you, I think. | Hold me up if I fall.
+a : I know so. | I mean it kindly. | Always.
+
+scene kn_occ_returned
+when topic=family band=family
+a : You're home! We thought we'd lost you. | Look at you. Thin as a rake. | Three seasons without a word!
+b : I'm home. Took the long way. | The roads don't feed you. | I sent word. It must have been lost.
+a : The long way through where? | Then we'll feed you. Sit. | Lost like you were.
+b : Places I'll tell you about after supper. | Gladly. | Fair. I'm sorry.
+a : Every one. | And then sleep. | Never again.
+
+# ---------------------------------------------------------------- Scent and body, among kin
+
+scene kn_scent_mood
+when topic=family band=family|spouses
+a : You smell worried. | You're upset. Your ears give you away. | Who were you with? You smell of strangers.
+b : I'm not. | They don't give away anything. | Nobody. The market.
+a : Your scent never lies. | They're flat to your head. | The market doesn't smell of lavender.
+b : ...A little worried. | They're tired. | It does on one stall.
+a : Tell me. | Then rest them. | Hm.
+
+scene kn_tail_tell
+when topic=family|friends band=family|spouses|friends
+a : You're wagging. What's happened? | Your tail's tucked. Bad news? | Your hackles are up.
+b : Nothing. | Nothing. | Nothing.
+a : Nothing doesn't wag like that. | Nothing doesn't tuck like that. | Nothing doesn't raise hackles.
+b : I've been asked to walk out with someone. | The master wants to see me tomorrow. | Somebody barged me at the gate.
+a : I knew it! | It might be good. | Then I'll come with you next time.
+
+# ---------------------------------------------------------------- Serving households
+
+scene kn_house_servant_lady
+when topic=smalltalk|work a.job=servant b.job=noble b.sex=female
+a : Your tea, my lady. | The carriage is ready, my lady. | Shall I lay out the green collar?
+b : Is it hot? | Late, as usual. | The blue. The green makes me look like a frog.
+a : As hot as your ladyship likes. | It waited an hour, my lady. | As my lady wishes.
+b : Then you may go. | Then why didn't you say? | The blue. And don't smirk.
+a : Thank you, my lady. | You were asleep, my lady. | I never smirk, my lady.
+
+scene kn_house_servant_lord
+when topic=smalltalk|work a.job=servant b.job=noble b.sex=male
+a : Your letters, my lord. | Your bath is drawn, my lord. | The steward wishes a word, my lord.
+b : Anything worth reading? | Is it hot this time? | The steward always wishes a word.
+a : One from your mother, my lord. | Hot enough to boil a hen, my lord. | About the accounts, my lord.
+b : Burn it. No. Leave it. I'll read it later. | Good. Last time it was a pond. | Tell him I'm out.
+a : Very good, my lord. | It won't happen again, my lord. | He can hear you, my lord.
+
+scene kn_house_servants_gossip
+when topic=smalltalk a.job=servant b.job=servant
+a : The master was shouting again last night. | Her ladyship's pregnant, I'd bet a week's pay. | The young lord's been sneaking out.
+b : I heard. The whole house heard. | You'd lose. She's just fat on honey. | To the tavern by the quay.
+a : What do you think it was about? | Fat on honey doesn't make you sick in the mornings. | You knew?
+b : Money. It's always money. | Bright One, you might be right. | I hold the back door for him.
+a : Or the brother. | I'm always right. | You'll hang for that.
+b : Or money for the brother. | Usually. | He tips well.
+
+scene kn_house_cook_family
+when topic=work|smalltalk a.job=cook b.job=servant
+a : Get out of my kitchen. | Who's been eating from the pot? | The family wants roast again. Fourth day running.
+b : I'm only passing. | Not me. Smell my breath. | They'd eat it every day if you let them.
+a : Pass faster. | It smells of my stew. | Then they'd be fat as pigs.
+b : Smells good, though. | It's a good stew. | They're fat already.
+a : Out. | Out! | Hush. Somebody'll hear.

@@ -1,0 +1,252 @@
+# Ser Ferro, more of its own: the white walls and the river, the tiers, the Cathedral Rise of the Iron Saint, the
+# Crown and its records offices, the Guard and the knights, the Merchants' Guild, the gardens and the wine, and the
+# respectable rot beneath (the Couriers, and whoever pays them).
+
+scene rg_sf_records
+when topic=lore|work region=ser_ferro
+a : Spent the whole morning in the records office for one stamp. | The records clerks want a copy of a copy of my licence. | They say the records office has a room just for lost papers.
+b[official] : Procedure protects you. Even when it doesn't feel like it.
+b[merchant] : Slip the clerk a penny and the stamp comes faster.
+b : Only one? Lucky. | Of course they do. | And it's full.
+a : One stamp. One morning. | Of course. | Full to the beams.
+
+scene rg_sf_couriers
+when topic=lore region=ser_ferro
+a : The Couriers were seen at the wharf again. | They say the Couriers answer to someone higher. Nobody says who. | Another Courier taken by the Guard. Another one walks free tomorrow.
+b[guard] : We catch them. Somebody pays. They're out by Restday.
+b[merchant] : I pay my dues to the Guild. Only to the Guild. Understand?
+b : Everyone knows them. | Nobody ever will. | That's how it works.
+a : And nobody says so. | Never. | Every time.
+
+scene rg_sf_white_plaster
+when topic=smalltalk|work region=ser_ferro
+a : They whitewash the lower walls every spring and they're grey by autumn. | Plasterers on every street in the middle tier this week. | Some fool painted their door blue. The Guild's furious.
+b[crafter] : Lime and water and a good brush. And patience.
+b[official] : The colours of the city are set by ordinance. White walls, red roofs.
+b : The river damp does it. | Must be inspection season. | Blue? Brave.
+a : Every year. | Must be. | Brave or mad.
+
+scene rg_sf_cathedral_bells
+when topic=lore region=ser_ferro
+a : The cathedral bells rang for the knights' vigil all night. | Silver on the cathedral roof catches the sun like a blade. | They say the Iron Saint's cathedral took a hundred years to build.
+b[priest] : The cathedral is a prayer in stone, and prayers take time.
+b[old] : My grandfather carried stone for the north tower. He'd tell you every block.
+b : Hard to sleep. | You can see it from the farms. | Longer, I'd guess.
+a : Very hard. | From everywhere. | Longer.
+
+scene rg_sf_knights
+when topic=lore|smalltalk region=ser_ferro
+a : A new knight was made in the cathedral this morning. | The knights rode down the main road in full harness. | Knights are just nobles with heavier coats.
+b[soldier] : A knight earns the harness. Mostly.
+b[noble] : The knighthood is an honour, not a coat.
+b[child] : I'm going to be a knight! With a red plume!
+b : Good for them. | A fine sight. | Ha.
+a : Good for them. | Very fine. | Heavy coats.
+
+scene rg_sf_guard_captain
+when topic=lore region=ser_ferro
+a : The Captain of the Guard's been seen at the wharf every night this week. | New Captain's stricter than the old one. | They say the Captain dines with the Guild masters.
+b[guard] : The Captain knows what she's about. Don't you worry.
+b[merchant] : Everyone dines with the Guild masters, eventually.
+b : Something's afoot. | Good. | Who doesn't?
+a : Something. | Good. | Nobody.
+
+scene rg_sf_river_barges
+when topic=work region=ser_ferro a.job=laborer|carter|sailor|merchant
+a : Grain barges from upriver, twelve of them. | The river's carrying more wine than water this week. | Barge master wants double for the trip down to the sea.
+b[sailor] : River's easy going down. Coming back up's what costs.
+b : Busy wharf, then. | Harvest's in. | He can want.
+a : Very busy. | And sold already. | He'll get it.
+
+scene rg_sf_gardens
+when topic=smalltalk region=ser_ferro
+a : The palace gardens are open to the public on the feast. | The roses on the middle terrace are out. | Somebody's been picking the Guild hall's lemons.
+b[servant] : I weed those gardens. Nobody thanks the weeder.
+b[old] : The gardens were common land, once. Before the walls went up.
+b : I'll go. | Lovely smell. | Hungry somebody.
+a : Come with me. | Very lovely. | Clever somebody.
+
+scene rg_sf_wine_harvest
+when topic=work|smalltalk region=marches season=autumn
+a : The grape harvest's in. The presses are running. | Everyone's off to the vineyards. The city's half empty. | The eastern slopes had a good year.
+b[farmer] : Good year for grapes, bad year for backs.
+b[innkeeper] : New wine by the feast. Thin, but new.
+b : Good. | Quiet streets, for once. | Good for everyone.
+a : Very good. | For once. | Nearly everyone.
+
+scene rg_sf_middle_tier
+when topic=smalltalk region=ser_ferro
+a : The middle tier's all clerks and their wives' cousins. | We moved to the middle tier. The neighbours count our candles. | Middle tier, middle price, middle everything.
+b[official] : The middle tier is the city's spine. Someone has to keep the records.
+b[noble] : Middle tier folk. Always looking up, never quite arriving.
+b : That's the middle. | They'll stop, in time. | Comfortable, though.
+a : The middle. | Maybe. | Comfortable.
+
+scene rg_sf_wharf_slum
+when topic=smalltalk region=ser_ferro place=shore|street
+a : The wharf lanes flood every spring and nobody mends the drains. | Children sleeping under the barges again. | Down here's the part of Ser Ferro the envoys never see.
+b[beggar] : The wharf's honest. It doesn't pretend to be white.
+b[guard] : We clear them in the morning. They're back at night.
+b : Nobody up the hill cares. | Poor things. | That's the point.
+a : Nobody. | Poor things. | It is.
+
+scene rg_sf_gifted_count
+when topic=lore region=ser_ferro
+a : They say there's fewer than a few hundred Gifted in all of Ser Ferro. | My neighbour's in the register. Warms her tea with a look. | The Crown keeps a list of the Gifted. I'd hate to be on it.
+b[official] : Every Gifted wolf is catalogued. It's for their safety.
+b[scholar] : A few hundred among a hundred thousand. Rarer than knights.
+b : Hardly any. | Useful. | Me too.
+a : Hardly. | Very. | Me too.
+
+scene rg_sf_royal_hand
+when topic=lore region=ser_ferro
+a : The Royal Hand rode out to Cinderbrook this morning. | They say the Royal Hand runs the city while the Crown hunts. | Nobody likes the Royal Hand. Nobody says it loud.
+b[official] : The Hand speaks with the Crown's voice. Mind your own.
+b[noble] : The Hand has more friends than enemies. Barely.
+b : Ore business. | Somebody has to. | Not me.
+a : Ore and taxes. | Somebody. | Nor me.
+
+scene rg_sf_concord_seat
+when topic=lore region=ser_ferro
+a : Our Crown has a vote on the Concord council, they say. | A Concord representative was at the palace this week. | Why should Upper Accord tell us anything?
+b[official] : Ser Ferro is a member state. With a seat comes a voice.
+b[priest] : The Concord keeps the faith whole. Be grateful.
+b : A good vote, I hope. | About the Gifted, I'd guess. | Because we let them.
+a : I hope. | Probably. | For now.
+
+scene rg_sf_market_cheese
+when topic=smalltalk region=ser_ferro place=market|street
+a : The cheese stalls from the farm villages are back. | Oil, olives, figs. The south market's a feast today. | The fruit sellers are shouting over each other again.
+b[merchant] : Taste before you buy. Mine's the best, ask anyone.
+b[child] : They gave me a fig for free! A whole fig!
+b : Finally. | Smells wonderful. | Loud as gulls.
+a : Finally. | Doesn't it? | Louder.
+
+scene rg_sf_tanners_row
+when topic=work region=ser_ferro a.job=crafter|laborer|apprentice
+a : The dye vats on Tanners' Row ran red into the river. | Took a week's hides to the Row and came back stinking. | Tanners' Row wants a new drain. Nobody'll pay.
+b[crafter] : Red dye's dear. Spilling it's a crime.
+b : Again? | You always do. | Nobody ever will.
+a : Again. | Always. | Nobody.
+
+scene rg_sf_old_prince
+when topic=lore region=ser_ferro
+a : My grandmother says the old Crown was kinder. | They say the old palace had no walls at all. | The statue in the square is the first Crown. Nobody remembers his name.
+b[old] : The old Crown gave bread at every feast. Now it's speeches.
+b[scholar] : The records know his name. Ask a clerk.
+b : They always say that. | Brave times. | Somebody must.
+a : Every grandmother. | Or foolish. | Somebody.
+
+scene rg_sf_guild_hall
+when topic=lore region=ser_ferro
+a : The Merchants' Guild hall has more gold leaf than the cathedral. | Guild masters met behind shut doors all night. | You can't sell a fish in this city without the Guild's say.
+b[merchant] : Gold leaf on the ceiling. Debts on every floor.
+b[priest] : The cathedral asks for nothing. The Guild asks for everything.
+b : Of course it does. | Prices going up, then. | Not even a sprat.
+a : Of course. | Probably. | Not a sprat.
+
+scene rg_sf_heat
+when topic=smalltalk|weather region=ser_ferro season=summer
+a : Hot enough to bake bread on the white walls. | Everyone's asleep at midday. The streets are empty. | The fountains are the only cool place in the city.
+b[old] : Summer in Ser Ferro. Sleep through noon, live at night.
+b[guard] : Hot armour, hot tempers. Fights all afternoon.
+b : Shade and water. | Sensible folk. | Crowded ones.
+a : Shade and water. | Sensible. | Very crowded.
+
+scene rg_sf_night_streets
+when topic=smalltalk region=ser_ferro time=dusk|night
+a : The streets come alive after sundown in summer. | Lanterns along the river walk tonight. | Music from every courtyard up the hill.
+b[guard] : More folk, more trouble. Mind your purse.
+b[noble] : The upper tier's parties go on till dawn.
+b : Best time of day. | Pretty. | Wish I were invited.
+a : The best. | Very pretty. | Me too.
+
+scene rg_sf_farms
+when topic=work region=marches a.job=farmer|herder|laborer
+a : Took the cart in from the farm villages before dawn. | The city wants more grain than the fields can give. | The Crown's tax collector came round the farms again.
+b[farmer] : The city eats and we sweat. Always the way.
+b : Long road. | It always does. | Again?
+a : Very long. | Always. | Again.
+
+scene rg_sf_respectable
+when topic=lore region=ser_ferro band=friends|family|spouses
+a : That Guild master on our street has guests at midnight. Every week. | The finest house on the hill was paid for with something, I'd wager. | In Ridgemere the crooks wear rags. Here they wear silk.
+b[guard] : Keep that thought to yourself. Silk has long arms.
+b[merchant] : Everyone's clean in Ser Ferro. Until they're not.
+b : Don't look too hard. | Probably. | Too true.
+a : I won't. | Probably. | Too true.
+
+scene rg_sf_cathedral_steps
+when topic=lore|smalltalk region=ser_ferro
+a : Pilgrims fill the Rise steps from dawn to dusk. | The beggars on the Rise steps make more than I do. | I counted the Rise steps once. Lost count at four hundred.
+b[priest] : Every step is an offering. Every coin too.
+b[beggar] : The faithful are generous. The rich are not.
+b : Every day. | I believe it. | There's more.
+a : Every day. | So do I. | So I hear.
+
+scene rg_sf_river_god
+when topic=lore region=ser_ferro
+a : Old bargemen still throw a coin in the river before a trip. | They say the river had a name before the city did. | My grandfather wouldn't cross the river on a feast day.
+b[sailor] : I throw two. One for going, one for coming back.
+b[priest] : The Bright One rules the river as all else. A coin is a superstition.
+b : Old habits. | Probably. | Why not?
+a : Old and harmless. | So they say. | Bad luck, he said.
+
+scene rg_sf_bureaucracy
+when topic=smalltalk region=ser_ferro band=acquaintances|friends
+a : I need a permit to apply for a permit. | Three clerks, three stamps, one cart licence. | They lost my papers and fined me for not having them.
+b[official] : The process is long because the city is large.
+b : That's Ser Ferro. | Three stamps! | Typical.
+a : That's Ser Ferro. | Three. | Typical.
+
+scene rg_sf_pottery
+when topic=work region=ser_ferro a.job=crafter|merchant
+a : Red clay from the river banks makes the best roof tiles. | The kilns outside the gate are firing day and night. | Roof tiles are in demand since the storm.
+b[crafter] : Good clay, slow fire. Rush it and it cracks.
+b : Good trade. | Big order? | Every roof's broken.
+a : Steady trade. | Very big. | Half of them.
+
+scene rg_sf_upper_quarter
+when topic=smalltalk region=ser_ferro
+a : Went up to the elite quarter on an errand. Courtyards like gardens. | The upper quarter has guards at every turning now. | They wash the streets up there. With water!
+b[noble] : The upper quarter is kept to a standard. It costs.
+b[servant] : I scrub those courtyards. On my knees, every morning.
+b : Must be lovely. | To keep us out. | Waste of water.
+a : Lovely and cold. | Exactly. | Such a waste.
+
+scene rg_sf_flood_season
+when topic=lore|weather region=ser_ferro season=spring
+a : River's high with the thaw from the mountains. | The lower wharf's under a paw of water. | They've sandbagged the wharf gate.
+b[old] : The great flood came in spring too. I don't sleep well in spring.
+b[guard] : Sandbags hold if they're stacked right. They're not.
+b : Every spring. | Again. | Good.
+a : Every spring. | Again. | For now.
+
+scene rg_sf_bright_one
+when topic=lore region=ser_ferro
+a : The cathedral preacher spoke of the Dark One's age again. | They're painting the Bright One's ascension on the cathedral dome. | Order, structure, purpose. My mother says it every morning.
+b[priest] : Remember the chaos before the cities. Remember who ended it.
+b[old] : I've heard that sermon a thousand times. It still frightens me.
+b : Again? | It'll be beautiful. | Good words.
+a : Again. | It will. | Good words.
+
+scene rg_sf_dock_inspector
+when topic=work region=ser_ferro a.role=guard
+a : Inspected every barge from the north today. Found nothing, as usual. | Somebody tipped off the smugglers before we got there. | Guard's short-handed on the wharf again.
+b[guard] : Nothing found means someone was warned.
+b : As usual. | Again. | Always.
+a : As usual. | Again. | Always.
+
+scene rg_sf_river_bridges
+when topic=lore|smalltalk region=ser_ferro
+a : The old bridge has houses built right on it. | They say the old bridge was built by the first Crown's masons. | Toll on the new bridge, free on the old one. Guess which is crowded.
+b[old] : I was born in a house on the old bridge. You fall asleep to the water.
+b : Lovely. | So they say. | The old one.
+a : Very lovely. | So they say. | Always.
+
+scene rg_sf_syndicate_whisper
+when topic=lore region=ser_ferro band=friends|family|spouses
+a : Don't say that name in a tavern. Any tavern. | My cousin borrowed from the wrong lender. Now he carries parcels at night. | Every Guild seal in this city has a second seal underneath.
+b[merchant] : Some debts are paid in favours. Forever.
+b : I won't. | Poor wolf. | Hush.
+a : Good. | Poor wolf. | Hush.
