@@ -163,3 +163,6 @@ Reviewed with `tools/ai_review.py` against `gpt-5.6-luna` (the main voice), on t
   careful with facts. It answers players once the main voice's share is spent (`fallback_model`, a third setting).
 - The rules now tell every model the scene is background, not something to describe; it worked best on the smaller
   models (4 mentions of the hearth and juniper in 17 answers for mini, against 12 for the main voice).
+- **Decided 2026-10-02:** `gpt-5.4-mini` is the main voice for now (`model` and `fallback_model`), so it answers
+  players, writes the Dungeon Master's life stories and Atlas's generated characters; `gpt-5.4-nano` keeps summaries
+  and overheard exchanges. `gpt-5.6-luna` is kept back for other uses later.

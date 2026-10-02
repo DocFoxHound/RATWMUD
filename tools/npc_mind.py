@@ -292,7 +292,7 @@ def decode_summary(content: object) -> dict:
 
 # --------------------------------------------------------------------------- Providers
 
-NO_REASONING = ("gpt-5.6", "gpt-5.4")
+NO_REASONING = bridge.NO_REASONING
 
 
 class OpenAIProvider:
@@ -308,9 +308,7 @@ class OpenAIProvider:
                    "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                    "response_format": {"type": "json_schema",
                                        "json_schema": {"name": name, "strict": True, "schema": schema}}}
-        # No extended reasoning: an NPC's reply must come in seconds. Checked against the API for these families
-        # (gpt-5.6-luna, gpt-5.4-nano: no reasoning tokens, about two seconds a reply).
-        if model.startswith(NO_REASONING):
+        if model.startswith(NO_REASONING):        # No extended reasoning: replies must come in seconds.
             payload["reasoning_effort"] = "none"
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         connection = http.client.HTTPSConnection("api.openai.com", timeout=timeout)

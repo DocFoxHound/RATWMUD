@@ -48,6 +48,9 @@ class BridgeError(Exception):
 
 
 COST_MODES = ("generous", "balanced", "frugal")
+# Families told to skip extended reasoning: an NPC's reply must come in seconds. Checked against the API
+# (gpt-5.6-luna, gpt-5.4-nano and -mini: no reasoning tokens, about two seconds a reply).
+NO_REASONING = ("gpt-5.6", "gpt-5.4")
 
 
 @dataclass(frozen=True)
@@ -138,7 +141,7 @@ def make_payload(config: Config, context: dict) -> dict:
                 "type": "object", "properties": {"text": {"type": "string"}},
                 "required": ["text"], "additionalProperties": False}}},
     }
-    if config.model.startswith("gpt-5.6"):
+    if config.model.startswith(NO_REASONING):
         payload["reasoning_effort"] = "none"
     return payload
 
