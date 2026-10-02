@@ -283,6 +283,8 @@ void Game::endHolding()
 
 void Game::settle()
 {
+    hasher_.waitIdle();
+    finishSignIns();
     if (auto* writer = store_ ? store_->journal() : nullptr)
         writer->flush();
     releaseCommitted();

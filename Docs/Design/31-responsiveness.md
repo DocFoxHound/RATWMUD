@@ -295,16 +295,33 @@ stops.
 
 **Found along the way (not storage, for later phases):**
 
-- **Password hashing runs on the game thread.** Registering or signing in holds every player for about 140–230 ms.
-  It belongs on a worker.
-- **Entering the world copies the whole `World`** (`enterCharacter`, `character_create`), to roll back if something
-  fails. That is a login stall that grows with the world.
+- **Password hashing ran on the game thread.** Registering or signing in held every player for about 140–230 ms.
+  **Fixed 2026-10-02:**
+  - Passwords are worked on by two hasher threads (`accounts::Hasher`). The command returns at once and the answer
+    comes in a later tick.
+  - A second request waits for the first. A client gone before its answer is forgotten. Missing users still cost the
+    same.
+- **Entering the world copied the whole `World`** and every character (`enterCharacter`, `character_create`), to roll
+  back if something failed: 47–54 ms with DEV's world. **Fixed 2026-10-02:** only that character's entity and record
+  are undone. Entering now costs 7–9 ms.
 - **In-memory map memories are still 72 KB per remembered cell** (`std::vector<char>` and `std::vector<bool>`). This
   is most of the server's memory growth with players, and so most of the fork's cost.
 - **`tools/smoke.py persistence` fails on `HEAD` before Phase 2 too:** the NPC conversation memory isn't kept
   (`active=0`). It is from other work, not from saves.
 
-### Phase 3. Movement: the client is in charge, the server in fights
+### Phase 3. Movement: the client is in charge, the server in chases
+
+**Amended 2026-10-02 for combat (doc 33).**
+
+- **Fights take place in turn-based instanced arenas**, where a move is a turn command on a grid, chosen and checked
+  by the server. Real-time movement plays no part in a fight.
+- **So there are three modes, not two:**
+  - **free**: the client is in charge; the server checks it
+  - **held**: the server is in charge; the client predicts. For the real-time moments around a fight: pursued by a
+    guard, a crime just committed, a standing hostile close by.
+  - **fighting**: in an arena. Real-time movement is off; the arena's own turn moves come with the combat work.
+- **Phase 3 builds the switch into and out of fighting**, with no client or wire for arenas yet. Doc 33's rule that
+  held keys are let go when a fight ends (`transitioned`) still applies.
 
 1. **The movement module.** Movement is extracted from `World` into a small self-contained C++ module:
    - integration, pace and stamina

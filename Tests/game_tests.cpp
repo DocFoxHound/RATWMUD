@@ -265,6 +265,7 @@ void accountsAndARestart()
     g.command(&wren, cmd({{"type", "hello"}, {"id", "wren"}}));
     expect(wren.last("lobby") && !wren.last("lobby")->boolean("ok"), "development identities are refused unless enabled");
     g.command(&wren, cmd({{"type", "auth_register"}, {"username", "Wren"}, {"password", "a long enough password"}}));
+    g.settle();                                // Passwords are checked off the game thread (doc 31).
     expect(wren.last("lobby")->boolean("ok") && wren.accountUsername == "wren", "an account registers");
     auto appearance = json::Value::object();
     appearance.add("species", "timber"); appearance.add("sex", "female"); appearance.add("stature", "average");
@@ -292,6 +293,54 @@ void accountsAndARestart()
     g.disconnect(&wren);
     g.save();
     expect(g.characters().count(id) && g.storageReady(), "saved, with the character offline");
+}
+
+// Passwords are worked on off the game thread (doc 31): signing in costs the game almost nothing, the answer comes
+// in a later tick, a second request waits for the first, and a client gone before its answer is simply forgotten.
+void signingInNeverHoldsTheGame()
+{
+    game::Options o;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client a;
+    a.id = 40;
+    g.connect(&a);
+    g.command(&a, cmd({{"type", "auth_register"}, {"username", "heron"}, {"password", "a long enough password"}}));
+    g.settle();
+    expect(a.last("lobby")->boolean("ok"), "an account to sign in to");
+    g.command(&a, cmd({{"type", "auth_logout"}}));
+    const auto lobbies = [](const Client& c) {
+        std::size_t n = 0;
+        for (const auto& e : c.events)
+            n += e.string("type") == "lobby";
+        return n;
+    };
+    const auto before = lobbies(a);
+    const auto start = std::chrono::steady_clock::now();
+    g.command(&a, cmd({{"type", "auth_login"}, {"username", "heron"}, {"password", "a long enough password"}}));
+    const double took = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+    expect(took < 20, "the command returns at once, the password left to the hasher: " + std::to_string(took) + " ms");
+    expect(lobbies(a) == before && a.accountUsername.empty(), "with no answer yet");
+    g.command(&a, cmd({{"type", "auth_login"}, {"username", "heron"}, {"password", "a long enough password"}}));
+    expect(lobbies(a) == before + 1 && !a.last("lobby")->boolean("ok"), "a second request waits for the first");
+    g.settle();
+    expect(a.accountUsername == "heron" && a.last("lobby")->boolean("ok"), "then the answer: signed in");
+    Client b;
+    b.id = 41;
+    g.connect(&b);
+    g.command(&b, cmd({{"type", "auth_login"}, {"username", "heron"}, {"password", "the wrong password!!"}}));
+    g.disconnect(&b);
+    g.settle();
+    expect(b.accountUsername.empty(), "a client gone before its answer is forgotten");
+    Client c;
+    c.id = 42;
+    g.connect(&c);
+    g.command(&c, cmd({{"type", "auth_login"}, {"username", "heron"}, {"password", "the wrong password!!"}}));
+    g.settle();
+    expect(!c.last("lobby")->boolean("ok") && c.accountUsername.empty(), "a wrong password is still refused");
+    g.disconnect(&a);
+    g.disconnect(&c);
 }
 
 void aRestartFromAFile()
@@ -332,6 +381,7 @@ void aRestartFromAFile()
     c.id = 5;
     again.connect(&c);
     again.command(&c, cmd({{"type", "auth_login"}, {"username", "moss"}, {"password", "another long password"}}));
+    again.settle();                                // Passwords are checked off the game thread (doc 31).
     expect(c.accountUsername == "moss", "the account signs in again, its password verified from the save");
     again.command(&c, cmd({{"type", "character_enter"}, {"id", id}}));
     expect(c.entityId == id, "and plays on");
@@ -591,6 +641,7 @@ void mismatchedOwnersAreRefused()
         c.id = 10;
         g.connect(&c);
         g.command(&c, cmd({{"type", "auth_register"}, {"username", "fern"}, {"password", "a long enough password"}}));
+        g.settle();                                // Passwords are checked off the game thread (doc 31).
         auto appearance = json::Value::object();
         appearance.add("species", "red"); appearance.add("sex", "female"); appearance.add("stature", "short");
         appearance.add("pattern", "mantle"); appearance.add("baseColor", 2); appearance.add("gradientColor", 3);
@@ -882,6 +933,7 @@ int main()
         uploadedPortraits();
         theGameAnswersWhatItKnows();
         accountsAndARestart();
+        signingInNeverHoldsTheGame();
         aRestartFromAFile();
         playersCannotRuleTheSky();
         othersSeeNoPrivateStats();

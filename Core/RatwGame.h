@@ -178,6 +178,17 @@ class Game
     mind::Client mind_;
     accounts::Accounts accounts_;
     accounts::RateLimit authRate_;
+    // Passwords are worked on off this thread (doc 31): a sign-in or registration finishes in a later tick.
+    accounts::Hasher hasher_;
+    struct PendingSignIn
+    {
+        Connection* c;
+        bool registering;
+        std::string user;
+    };
+    std::map<std::uint64_t, PendingSignIn> signIns_;
+    std::uint64_t nextSignIn_ = 0;
+    void finishSignIns();
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

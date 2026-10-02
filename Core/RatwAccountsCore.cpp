@@ -152,10 +152,37 @@ std::string fingerprint(const std::string& value)
     return sys::hex(digest, 32);
 }
 
-bool Accounts::registerAccount(const std::string& username, const std::string& password, std::string& error)
+PasswordResult passwordWork(const PasswordJob& job)
+{
+    PasswordResult out;
+    out.ticket = job.ticket;
+    if (job.registering)
+    {
+        std::uint8_t salt[32], verifier[32];
+        if (sys::randomBytes(salt, sizeof salt) && derive(job.password, salt, PasswordIterations, verifier))
+        {
+            out.ok = true;
+            out.salt = sys::hex(salt, 32);
+            out.verifier = sys::hex(verifier, 32);
+        }
+        sys::wipe(verifier, sizeof verifier);
+        return out;
+    }
+    // Missing users pay the same bounded PBKDF2 cost; the answer is the same.
+    std::uint8_t salt[32] = {}, expected[32] = {}, actual[32] = {};
+    if (job.known && (!sys::readHex(job.salt, salt, 32) || !sys::readHex(job.verifier, expected, 32)))
+        return out;
+    const bool derived = derive(job.password, salt, job.known ? job.iterations : PasswordIterations, actual);
+    out.ok = job.known && derived && sys::sameBytes(actual, expected, 32);
+    sys::wipe(actual, sizeof actual);
+    sys::wipe(expected, sizeof expected);
+    return out;
+}
+
+bool Accounts::mayRegister(const std::string& username, std::string& error) const
 {
     std::string user;
-    if (!normalizeUsername(username, user) || !validPassword(password))
+    if (!normalizeUsername(username, user))
     {
         error = "Use a 3\xe2\x80\x93" "32 character username starting with a letter (letters, digits, _ or -), and a 12\xe2\x80\x93" "128 byte password without control characters.";
         return false;
@@ -165,36 +192,124 @@ bool Accounts::registerAccount(const std::string& username, const std::string& p
         error = "This account cannot be registered. Try another username, or sign in to an existing account.";
         return false;
     }
-    std::uint8_t salt[32], verifier[32];
-    if (!sys::randomBytes(salt, sizeof salt) || !derive(password, salt, PasswordIterations, verifier))
+    return true;
+}
+
+PasswordJob Accounts::signInJob(const std::string& username, const std::string& password) const
+{
+    PasswordJob job;
+    job.password = password;
+    if (!normalizeUsername(username, job.username) || !validPassword(password))
+        return job;                                // Unknown: checked at the same cost, and refused.
+    if (const auto found = accounts_.find(job.username); found != accounts_.end())
+    {
+        job.known = true;
+        job.salt = found->second.salt;
+        job.verifier = found->second.verifier;
+        job.iterations = found->second.iterations;
+    }
+    return job;
+}
+
+bool Accounts::addRegistered(const std::string& username, const PasswordResult& done, std::string& error)
+{
+    if (!mayRegister(username, error))            // Someone may have taken the name while the password was worked on.
+        return false;
+    if (!done.ok)
     {
         error = "Secure password storage is unavailable; no account was created.";
         return false;
     }
+    std::string user;
+    normalizeUsername(username, user);
     Account account;
-    account.salt = sys::hex(salt, 32);
-    account.verifier = sys::hex(verifier, 32);
-    sys::wipe(verifier, sizeof verifier);
+    account.salt = done.salt;
+    account.verifier = done.verifier;
     accounts_[user] = std::move(account);
     return true;
 }
 
+bool Accounts::registerAccount(const std::string& username, const std::string& password, std::string& error)
+{
+    if (!mayRegister(username, error))
+        return false;
+    if (!validPassword(password))
+    {
+        error = "Use a 3\xe2\x80\x93" "32 character username starting with a letter (letters, digits, _ or -), and a 12\xe2\x80\x93" "128 byte password without control characters.";
+        return false;
+    }
+    PasswordJob job;
+    job.registering = true;
+    job.password = password;
+    return addRegistered(username, passwordWork(job), error);
+}
+
 bool Accounts::authenticate(const std::string& username, const std::string& password) const
 {
-    std::string user;
-    if (!normalizeUsername(username, user) || !validPassword(password))
-        return false;
-    const auto found = accounts_.find(user);
-    const Account* account = found == accounts_.end() ? nullptr : &found->second;
-    // Missing users pay the same bounded PBKDF2 cost; the answer is the same.
-    std::uint8_t salt[32] = {}, expected[32] = {}, actual[32] = {};
-    if (account && (!sys::readHex(account->salt, salt, 32) || !sys::readHex(account->verifier, expected, 32)))
-        return false;
-    const bool derived = derive(password, salt, account ? account->iterations : PasswordIterations, actual);
-    const bool equal = derived && sys::sameBytes(actual, expected, 32);
-    sys::wipe(actual, sizeof actual);
-    sys::wipe(expected, sizeof expected);
-    return account && equal;
+    return passwordWork(signInJob(username, password)).ok;
+}
+
+// --------------------------------------------------------------------------- The hasher
+
+Hasher::Hasher(int threads)
+{
+    for (int i = 0; i < std::max(1, threads); ++i)
+        threads_.emplace_back([this] { run(); });
+}
+
+Hasher::~Hasher()
+{
+    {
+        std::lock_guard<std::mutex> guard(lock_);
+        stopping_ = true;
+    }
+    wake_.notify_all();
+    for (auto& t : threads_)
+        t.join();
+}
+
+void Hasher::submit(PasswordJob job)
+{
+    {
+        std::lock_guard<std::mutex> guard(lock_);
+        queue_.push_back(std::move(job));
+    }
+    wake_.notify_one();
+}
+
+std::vector<PasswordResult> Hasher::finished()
+{
+    std::lock_guard<std::mutex> guard(lock_);
+    std::vector<PasswordResult> out;
+    out.swap(done_);
+    return out;
+}
+
+void Hasher::waitIdle()
+{
+    std::unique_lock<std::mutex> guard(lock_);
+    idle_.wait(guard, [this] { return queue_.empty() && busy_ == 0; });
+}
+
+void Hasher::run()
+{
+    std::unique_lock<std::mutex> guard(lock_);
+    for (;;)
+    {
+        wake_.wait(guard, [this] { return stopping_ || !queue_.empty(); });
+        if (queue_.empty())
+            return;
+        auto job = std::move(queue_.front());
+        queue_.pop_front();
+        ++busy_;
+        guard.unlock();
+        auto result = passwordWork(job);
+        std::fill(job.password.begin(), job.password.end(), '\0');
+        guard.lock();
+        --busy_;
+        done_.push_back(std::move(result));
+        idle_.notify_all();
+    }
 }
 
 bool Accounts::owns(const std::string& username, const std::string& id) const

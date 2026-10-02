@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -1040,10 +1041,58 @@ void Game::connect(Connection* c)
     lobby(c);
 }
 
+void Game::finishSignIns()
+{
+    for (const auto& done : hasher_.finished())
+    {
+        const auto found = signIns_.find(done.ticket);
+        if (found == signIns_.end())
+            continue;                              // Its client has gone.
+        const auto pending = found->second;
+        signIns_.erase(found);
+        Connection* c = pending.c;
+        beginHolding(c);                           // A registration's answer waits for its journal record.
+        if (pending.registering)
+        {
+            std::string error;
+            if (!c->accountUsername.empty())
+                lobby(c, false, "Log out before signing into another account.");
+            else if (!accounts_.addRegistered(pending.user, done, error))
+                lobby(c, false, error);
+            else
+            {
+                record(Accounts);
+                if (!storageReady_)
+                {
+                    accounts_.removeAccount(pending.user);
+                    lobby(c, false, "Account creation could not be saved. No account was acknowledged.");
+                }
+                else
+                {
+                    c->accountUsername = pending.user;
+                    lobby(c, true, "Account saved. Create your first character.");
+                }
+            }
+        }
+        else if (!done.ok)
+            lobby(c, false, "Username or password was not accepted.");
+        else if (!c->accountUsername.empty())
+            lobby(c, false, "Log out before signing into another account.");
+        else
+        {
+            c->accountUsername = pending.user;
+            lobby(c, true, "Signed in. Choose a character or create one.");
+        }
+        endHolding();
+    }
+}
+
 void Game::disconnect(Connection* c)
 {
     if (!c)
         return;
+    for (auto it = signIns_.begin(); it != signIns_.end();)
+        it = it->second.c == c ? signIns_.erase(it) : std::next(it);
     leaveCharacter(c);
     c->accountUsername.clear();
     authRate_.forget(std::to_string(c->id));
@@ -1136,12 +1185,22 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
             lobby(c, false, "That character is already connected. Leave it on the other client first.");
             return false;
         }
-    const auto beforeWorld = world_;
-    const auto beforeCharacters = characters_;
+    // Undone exactly, if it fails, rather than by copying the whole world first (a 50 ms stall at every entry with
+    // DEV's world: doc 31). Only this character changes: its entity and its saved record.
+    const auto savedBefore = characters_.find(actor);
+    const std::optional<Entity> characterBefore =
+        savedBefore == characters_.end() ? std::nullopt : std::optional<Entity>(savedBefore->second);
+    const auto undo = [&] {
+        world_.removePlayer(actor);
+        if (characterBefore)
+            characters_[actor] = *characterBefore;
+        else
+            characters_.erase(actor);
+    };
     auto& player = world_.addPlayer(actor, name);
     if (!world_.society().account(actor))
     {
-        world_ = beforeWorld;
+        undo();
         lobby(c, false, "Character entry could not allocate a valid economy account; no world change was saved.");
         return false;
     }
@@ -1171,8 +1230,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     record(Economy | Character, actor);
     if (!storageReady_)
     {
-        world_ = beforeWorld;
-        characters_ = beforeCharacters;
+        undo();
         lobby(c, false, "Character entry could not be saved; the world remains closed.");
         return false;
     }
@@ -1291,31 +1349,33 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             lobby(c, false, "Use a 3\xe2\x80\x93" "32 character username starting with a letter (letters, digits, _ or -) and a 12\xe2\x80\x93" "128 byte password without control characters.");
             return true;
         }
-        const std::string password = passwordValue->asString();
-        if (type == "auth_register")
+        for (const auto& [ticket, pending] : signIns_)
+            if (pending.c == c)
+            {
+                lobby(c, false, "Your last request is still being checked.");
+                return true;
+            }
+        // The password is worked on by the hasher's threads (about 0.2 s, on purpose); the answer comes in a later
+        // tick (finishSignIns), and nobody else waits for it.
+        const bool registering = type == "auth_register";
+        accounts::PasswordJob job;
+        if (registering)
         {
-            const auto before = accounts_;
             std::string error;
-            if (!accounts_.registerAccount(user, password, error))
+            if (!accounts_.mayRegister(user, error))
             {
                 lobby(c, false, error);
                 return true;
             }
-            record(Accounts);
-            if (!storageReady_)
-            {
-                accounts_ = before;
-                lobby(c, false, "Account creation could not be saved. No account was acknowledged.");
-                return true;
-            }
+            job.registering = true;
+            job.username = user;
+            job.password = passwordValue->asString();
         }
-        else if (!accounts_.authenticate(user, password))
-        {
-            lobby(c, false, "Username or password was not accepted.");
-            return true;
-        }
-        c->accountUsername = user;
-        lobby(c, true, type == "auth_register" ? "Account saved. Create your first character." : "Signed in. Choose a character or create one.");
+        else
+            job = accounts_.signInJob(user, passwordValue->asString());
+        job.ticket = ++nextSignIn_;
+        signIns_[job.ticket] = {c, registering, user};
+        hasher_.submit(std::move(job));
         return true;
     }
     if (c->accountUsername.empty() || !accounts_.exists(c->accountUsername))
@@ -1357,8 +1417,8 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             lobby(c, false, "This local account already has six characters. Deletion is not available.");
             return true;
         }
-        const auto beforeWorld = world_;
-        const auto beforeCharacters = characters_;
+        // Undone exactly if it fails (no copy of the whole world first: doc 31). The new character has nothing
+        // anywhere yet but what is made here.
         const auto beforeAccounts = accounts_;
         const std::string newId = "wolf-" + guid();
         if (characters_.count(newId) || !accounts_.addCharacter(c->accountUsername, newId, commandId, print))
@@ -1369,7 +1429,7 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
         auto& player = world_.addPlayer(newId, name);
         if (!world_.society().account(newId))
         {
-            world_ = beforeWorld;
+            world_.removePlayer(newId);
             accounts_ = beforeAccounts;
             lobby(c, false, "Character creation could not allocate a valid economy account; no character was saved.");
             return true;
@@ -1385,8 +1445,7 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
         record(Accounts | Economy | Character, newId);
         if (!storageReady_)
         {
-            world_ = beforeWorld;
-            characters_ = beforeCharacters;
+            characters_.erase(newId);
             accounts_ = beforeAccounts;
             lobby(c, false, "Character creation could not be saved. No character was acknowledged.");
             return true;
@@ -1561,6 +1620,7 @@ void Game::tick(double dt)
         snapshotSaveAccumulator_ = 0;
         autosave();
     }
+    finishSignIns();
     {
         perf::Scope timed(meter_, perf::Saves);
         reapSnapshot(false);
