@@ -3,6 +3,7 @@
 // for the map's W token.
 import {CoatColors} from './theme.ts';
 import {isObject, type Json} from '../game/json.ts';
+import {drawWolf} from './wolfArt.ts';
 
 export interface Appearance {
     species: string;
@@ -14,7 +15,18 @@ export interface Appearance {
     markingColor: number;
     gradientAmount: number;
     patternAmount: number;
+    // Phase 9 (optional): free colours ("#rrggbb"), eyes, build and layered markings (as the server checks them).
+    coat?: string;
+    gradientTint?: string;
+    markingTint?: string;
+    eyes?: string;
+    build?: string;
+    markings?: Array<{mask: string; color: string; opacity: number}>;
 }
+
+const hex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{6}$/.test(v);
+export const MarkingMasks = ['socks', 'stockings', 'blaze', 'mask', 'cape', 'bib', 'belly', 'tail_tip', 'ear_tips', 'freckles', 'brindle',
+    'merle', 'scar', 'eye_patches', 'saddle'];
 
 const Species = ['timber', 'maned', 'arctic', 'red', 'ethiopian'];
 const inPalette = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < 8;
@@ -29,16 +41,33 @@ export function readAppearance(o: unknown): Appearance | null {
         !['solid', 'saddle', 'mantle', 'piebald'].includes(a.pattern as string) ||
         !inPalette(a.baseColor) || !inPalette(a.gradientColor) || !inPalette(a.markingColor) ||
         !amount(a.gradientAmount) || !amount(a.patternAmount)) return null;
-    return {species: a.species as string, sex: a.sex as string, stature: a.stature as string, pattern: a.pattern as string,
+    const out: Appearance = {species: a.species as string, sex: a.sex as string, stature: a.stature as string, pattern: a.pattern as string,
         baseColor: a.baseColor, gradientColor: a.gradientColor, markingColor: a.markingColor,
         gradientAmount: a.gradientAmount, patternAmount: a.patternAmount};
+    for (const key of ['coat', 'gradientTint', 'markingTint', 'eyes'] as const) {
+        if (a[key] === undefined) continue;
+        if (!hex(a[key])) return null;
+        out[key] = a[key] as string;
+    }
+    if (a.build !== undefined) {
+        if (!['lean', 'average', 'heavy'].includes(a.build as string)) return null;
+        out.build = a.build as string;
+    }
+    if (a.markings !== undefined) {
+        if (!Array.isArray(a.markings) || a.markings.length > 6) return null;
+        out.markings = [];
+        for (const m of a.markings) {
+            if (!isObject(m) || !MarkingMasks.includes(m.mask as string) || !hex(m.color) || !amount(m.opacity)) return null;
+            out.markings.push({mask: m.mask as string, color: m.color as string, opacity: m.opacity as number});
+        }
+    }
+    return out;
 }
 
 export type LifeStage = 'young' | 'adolescent' | 'adult' | 'old';
 export function lifeStage(age: number): LifeStage {
     return age <= 12 ? 'young' : age <= 17 ? 'adolescent' : age <= 64 ? 'adult' : 'old';
 }
-const StageFrame: Record<LifeStage, number> = {young: 0, adolescent: 1, adult: 2, old: 3};
 
 /** Height at the shoulder, for the sheet (Core/RatwAppearance.cpp). */
 export function shoulderHeightCm(a: Appearance, age: number): number {
@@ -93,66 +122,31 @@ export function recolor(source: Uint8ClampedArray, sheetWidth: number, frameX: n
     return out;
 }
 
-interface Sheet {
-    width: number;
-    height: number;
-    pixels: Uint8ClampedArray;
-}
-
 /** Portraits for one page: sheets loaded once, each look recoloured once. */
 export class Portraits {
-    private sheets = new Map<string, Sheet | 'loading' | 'failed'>();
     private made = new Map<string, HTMLCanvasElement>();
     onReady: () => void = () => {};
 
-    /** The portrait, or null while its sheet loads (or if it can't). */
+    /** The portrait: the stylised wolf (wolfArt.ts) in this coat and at this age, drawn once and kept. */
     get(appearance: Appearance, age: number): HTMLCanvasElement | null {
         const stage = lifeStage(Number.isFinite(age) ? Math.min(10000, Math.max(0, Math.trunc(age))) : 18);
         const key = JSON.stringify([appearance, stage]);
         const made = this.made.get(key);
         if (made) return made;
-        const sheet = this.sheet(appearance.species);
-        if (!sheet) return null;
-        const w = sheet.width / 2, h = sheet.height / 2, frame = StageFrame[stage];
+        if (typeof document === 'undefined') return null;
         const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const pixels = recolor(sheet.pixels, sheet.width, (frame % 2) * w, Math.floor(frame / 2) * h, w, h, appearance);
-        canvas.getContext('2d')!.putImageData(new ImageData(pixels as Uint8ClampedArray<ArrayBuffer>, w, h), 0, 0);
-        if (this.made.size > 32) this.made.clear();
+        canvas.width = 500;
+        canvas.height = 340;
+        const c = canvas.getContext('2d');
+        if (!c) return null;
+        drawWolf(c, appearance, stage);
+        if (this.made.size > 64) this.made.clear();
         this.made.set(key, canvas);
         return canvas;
     }
 
-    failed(species: string): boolean {
-        return this.sheets.get(species) === 'failed';
-    }
-
-    private sheet(species: string): Sheet | null {
-        const known = this.sheets.get(species);
-        if (known && typeof known === 'object') return known;
-        if (known) return null;
-        this.sheets.set(species, 'loading');
-        const image = new Image();
-        image.onload = () => {
-            const valid = image.width >= 4 && image.height >= 4 && image.width <= 4096 && image.height <= 4096 &&
-                image.width % 2 === 0 && image.height % 2 === 0;
-            if (!valid) {
-                this.sheets.set(species, 'failed');
-                return;
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            const c = canvas.getContext('2d', {willReadFrequently: true})!;
-            c.drawImage(image, 0, 0);
-            this.sheets.set(species, {width: image.width, height: image.height, pixels: c.getImageData(0, 0, image.width, image.height).data});
-            this.onReady();
-        };
-        image.onerror = () => this.sheets.set(species, 'failed');
-        // Only the five known species, never a path from the server.
-        image.src = `./portraits/${species}.png`;
-        return null;
+    failed(_species: string): boolean {
+        return false;                      // Drawn in code: there is no sheet to fail to load.
     }
 }
 
@@ -170,7 +164,7 @@ export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits
     const s = Math.min(w / image.width, h / (image.height * 1.12));
     const dw = image.width * s, dh = image.height * s * stature;
     ctx.save();
-    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = true;
     ctx.drawImage(image, x + (w - dw) / 2, y + h * 0.94 - dh * 0.9, dw, dh);
     ctx.restore();
     return true;

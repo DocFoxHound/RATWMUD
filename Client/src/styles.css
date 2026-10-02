@@ -239,3 +239,18 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .door-actions button { margin: 0; }
 .door-actions button.primary { flex: 1; }
 @media (max-width: 1400px) { .map-titles > .label:first-child { display: none; } .map-titles .effects { display: none; } }
+
+/* The creator (doc 29, phase 9): tabs, swatches, markings. */
+.creator { display: flex; flex-direction: column; gap: 14px; }
+.creator-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.door .creator-tabs .tab { background: var(--raised); color: var(--paper); padding: 9px 14px; font-size: 15px; }
+.door .creator-tabs .tab.active { background: var(--gold); color: var(--ink); }
+.creator-panel { display: flex; flex-direction: column; gap: 16px; min-height: 260px; }
+.swatch-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; }
+.door .swatch-grid .swatch { height: 28px; padding: 0; border-radius: 3px; border: 1px solid rgba(0,0,0,.4); }
+.door .swatch-grid .swatch.chosen { outline: 2px solid var(--paper); outline-offset: 2px; }
+.custom-colour { flex-direction: row !important; align-items: center; gap: 10px !important; margin-top: 6px; }
+.custom-colour input { width: 54px; height: 32px; padding: 0; border: none; background: none; }
+.marking-row { display: grid; grid-template-columns: 1fr 54px 1fr 40px 40px; gap: 8px; align-items: center; }
+.marking-row input[type=color] { width: 54px; height: 36px; padding: 0; border: none; background: none; }
+.door .marking-row .small { padding: 8px 0; background: var(--raised); color: var(--paper); }

@@ -1,8 +1,34 @@
 // The front door: signing in, the roster of up to six characters, and the creator (UI/SRatwFrontDoor.cpp), as
 // ordinary HTML forms. Account lobby only: credentials are never kept anywhere, and the password box is cleared as soon
 // as it has been sent.
-import {CoatColors, CoatNames} from './theme.ts';
+import {CoatNames} from './theme.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
+import {MaskNames, Masks} from './wolfArt.ts';
+
+// Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
+const CoatSwatches = ['#f4efe6', '#e8e1d3', '#ddd2bd', '#cfc0a2', '#c2ab84', '#b39a72', '#a3865f', '#8e7350', '#7a6142', '#655037',
+    '#52412d', '#3d3125', '#2a221b', '#1a1612', '#e1d9c6', '#c8ccca', '#adb3b2', '#939a99', '#777d7b', '#5f6563', '#484d4c', '#303534',
+    '#d9b48a', '#c9945e', '#b5733f', '#a26843', '#8f4f2a', '#7a3f22', '#c26b3a', '#d98a52', '#e0a86e', '#bfa27a', '#9c8a6a', '#8e8271',
+    '#6b5a48', '#4f4236', '#d6c7a8', '#c4b393', '#a99a7c', '#e6d2b0', '#cfb184', '#b08d5f', '#94704a', '#7b5a3b', '#5e442e', '#45331f',
+    '#ece7df', '#bcb4a8'];
+const EyeSwatches = ['#d9a441', '#c8902e', '#e3c35a', '#a0702a', '#7a5228', '#5a3a1e', '#8a9a3a', '#6a8a4a', '#5f9fd0', '#8fb8d8',
+    '#a9b3b8', '#3a2a1a'];
+
+/** A whole new look at random (keeping the name and age). */
+function randomiseAppearance(d: Json) {
+    const pick = <T>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)];
+    d.species = pick(Choices.species);
+    d.sex = pick(Choices.sex);
+    d.stature = pick(Choices.stature);
+    d.build = pick(['lean', 'average', 'average', 'heavy']);
+    d.coat = pick(CoatSwatches);
+    d.gradientTint = pick(CoatSwatches);
+    d.gradientAmount = Math.round(Math.random() * 10) / 10;
+    d.eyes = pick(EyeSwatches);
+    const count = Math.floor(Math.random() * 4);
+    if (count) d.markings = Array.from({length: count}, () => ({mask: pick(Masks), color: pick(CoatSwatches), opacity: 0.7 + Math.round(Math.random() * 3) / 10}));
+    else delete d.markings;
+}
 import {isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
 
@@ -307,72 +333,20 @@ export class FrontDoor {
             this.drawPortrait();
         };
         const fields = el('div', {className: 'door-fields'});
-        if (!reviewOnly) {
-            const name = el('input', {type: 'text', value: this.draftName, placeholder: 'The name others will know', maxLength: 64});
-            name.addEventListener('input', () => {
-                this.draftName = name.value.slice(0, 64);
-                nameHeading.textContent = this.draftName || 'Your wolf';
-            });
-            const choice = (field: string, caption: string) => {
-                const select = el('select', {});
-                for (const option of Choices[field]) select.append(el('option', {value: option, textContent: title(option)}));
-                select.value = str(draft, field);
-                select.addEventListener('change', () => {
-                    draft[field] = select.value;
-                    refresh();
-                });
-                return el('label', {}, el('span', {}, caption), select);
-            };
-            const age = el('input', {type: 'number', min: '6', max: '99', value: String(this.draftAge)});
-            age.addEventListener('input', () => {
-                const v = Math.trunc(Number(age.value));
-                if (Number.isFinite(v)) {
-                    this.draftAge = Math.min(99, Math.max(6, v));
-                    refresh();
-                }
-            });
-            const palette = (field: string, caption: string) => {
-                const row = el('div', {className: 'palette'});
-                CoatColors.forEach((hex, i) => {
-                    const b = el('button', {type: 'button', title: `${caption}: ${CoatNames[i]}`,
-                        textContent: `${num(draft, field) === i ? '✓ ' : ''}${CoatNames[i]}`});
-                    b.style.background = `#${hex.toString(16).padStart(6, '0')}`;
-                    b.style.color = i === 4 || i === 5 ? '#fff' : '#000';
-                    b.addEventListener('click', () => {
-                        draft[field] = i;
-                        for (const [j, other] of [...row.children].entries()) other.textContent = `${j === i ? '✓ ' : ''}${CoatNames[j]}`;
-                        refresh();
-                    });
-                    row.append(b);
-                });
-                return el('div', {className: 'field'}, el('span', {}, caption), row);
-            };
-            const amount = (field: string, caption: string) => {
-                const label = el('span', {}, `${caption} · ${Math.round(num(draft, field) * 100)}%`);
-                const slider = el('input', {type: 'range', min: '0', max: '1', step: '0.05', value: String(num(draft, field))});
-                slider.addEventListener('input', () => {
-                    draft[field] = Number(slider.value);
-                    label.textContent = `${caption} · ${Math.round(Number(slider.value) * 100)}%`;
-                    refresh();
-                });
-                return el('label', {}, label, slider);
-            };
-            fields.append(
-                el('label', {}, el('span', {}, 'CHARACTER NAME'), name),
-                el('div', {className: 'pair'}, choice('species', 'SPECIES'), choice('sex', 'SEX')),
-                el('div', {className: 'pair'}, el('label', {}, el('span', {}, 'STARTING AGE · 6–99'), age), choice('stature', 'STATURE · APPEARANCE ONLY')),
-                palette('baseColor', 'BASE COAT'), palette('gradientColor', 'GRADIENT COLOR'), amount('gradientAmount', 'GRADIENT STRENGTH'),
-                choice('pattern', 'MARKING PATTERN'), palette('markingColor', 'MARKING COLOR'), amount('patternAmount', 'MARKING STRENGTH'));
-        } else {
+        if (!reviewOnly) fields.append(this.creatorFields(draft, refresh, nameHeading));
+        else {
             const colour = (field: string) => CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, field))))];
             fields.append(
                 el('h2', {}, 'Review your wolf'),
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
                     `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${title(str(draft, 'pattern'))} markings`),
-                el('p', {className: 'muted'}, `Base coat: ${colour('baseColor')}`),
-                el('p', {className: 'muted'}, `Gradient: ${colour('gradientColor')}`),
-                el('p', {className: 'muted'}, `Markings: ${colour('markingColor')}`),
+                el('p', {className: 'muted'}, `Coat: ${str(draft, 'coat') || colour('baseColor')}`),
+                el('p', {className: 'muted'}, `Gradient: ${str(draft, 'gradientTint') || colour('gradientColor')}`),
+                el('p', {className: 'muted'}, Array.isArray(draft.markings) && draft.markings.length
+                    ? `Markings: ${(draft.markings as Json[]).map(m => MaskNames[str(m, 'mask')] ?? str(m, 'mask')).join(', ')}`
+                    : `Markings: ${title(str(draft, 'pattern'))}, ${colour('markingColor')}`),
+                el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${str(draft, 'eyes') || 'amber'}`),
                 el('p', {className: 'muted large'}, 'Creation saves this character to your account. You will return to character selection before ' +
                     'entering the world. Appearance does not grant free skill or stat bonuses.'));
         }
@@ -386,6 +360,154 @@ export class FrontDoor {
             this.button(reviewOnly ? 'CONFIRM & CREATE' : 'REVIEW CHARACTER', () => (reviewOnly ? this.create() : this.review()), true));
         const form = el('section', {className: 'door-card door-form'}, el('div', {className: 'scroll'}, fields), actions);
         return el('div', {className: 'door-row'}, preview, form);
+    }
+
+    private creatorTab = 'body';
+
+    /** The creator's controls, in tabs (doc 29, phase 9): body, coat, markings, eyes, name and age. */
+    private creatorFields(draft: Json, refresh: () => void, nameHeading: HTMLElement): HTMLElement {
+        const wrap = el('div', {className: 'creator'});
+        const tabs = el('div', {className: 'creator-tabs'});
+        const panel = el('div', {className: 'creator-panel'});
+        const tabNames: Array<[string, string]> = [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['name', 'Name & age']];
+        const render = () => {
+            tabs.replaceChildren(...tabNames.map(([id, label]) => {
+                const b = el('button', {type: 'button', className: id === this.creatorTab ? 'tab active' : 'tab', textContent: label});
+                b.addEventListener('click', () => {
+                    this.creatorTab = id;
+                    render();
+                });
+                return b;
+            }));
+            panel.replaceChildren(...this.creatorPanel(this.creatorTab, draft, () => {
+                refresh();
+                render();
+            }, nameHeading));
+        };
+        const random = el('button', {type: 'button', className: 'secondary', textContent: 'Randomise'});
+        random.addEventListener('click', () => {
+            randomiseAppearance(draft);
+            refresh();
+            render();
+        });
+        render();
+        wrap.append(tabs, panel, random);
+        return wrap;
+    }
+
+    private creatorPanel(tab: string, draft: Json, changed: () => void, nameHeading: HTMLElement): HTMLElement[] {
+        const choice = (field: string, caption: string, options: string[], fallback = '') => {
+            const select = el('select', {});
+            for (const option of options) select.append(el('option', {value: option, textContent: title(option)}));
+            select.value = str(draft, field) || fallback;
+            select.addEventListener('change', () => {
+                draft[field] = select.value;
+                changed();
+            });
+            return el('label', {}, el('span', {}, caption), select);
+        };
+        const swatches = (field: string, caption: string, colours: string[], allowCustom = true) => {
+            const row = el('div', {className: 'swatch-grid'});
+            for (const hex of colours) {
+                const b = el('button', {type: 'button', title: hex, className: str(draft, field) === hex ? 'swatch chosen' : 'swatch'});
+                b.style.background = hex;
+                b.addEventListener('click', () => {
+                    draft[field] = hex;
+                    changed();
+                });
+                row.append(b);
+            }
+            const items: Array<Node> = [el('span', {}, caption), row];
+            if (allowCustom) {
+                const custom = el('input', {type: 'color', value: str(draft, field) || colours[0], title: 'Any colour'});
+                custom.addEventListener('change', () => {
+                    draft[field] = custom.value.toLowerCase();
+                    changed();
+                });
+                items.push(el('label', {className: 'custom-colour'}, el('span', {}, 'or any colour'), custom));
+            }
+            return el('div', {className: 'field'}, ...items);
+        };
+        const amount = (field: string, caption: string) => {
+            const label = el('span', {}, `${caption} · ${Math.round(num(draft, field) * 100)}%`);
+            const slider = el('input', {type: 'range', min: '0', max: '1', step: '0.05', value: String(num(draft, field))});
+            slider.addEventListener('input', () => {
+                draft[field] = Number(slider.value);
+                label.textContent = `${caption} · ${Math.round(Number(slider.value) * 100)}%`;
+                this.drawPortrait();
+            });
+            return el('label', {}, label, slider);
+        };
+        if (tab === 'body')
+            return [el('div', {className: 'pair'}, choice('species', 'SPECIES', Choices.species), choice('sex', 'SEX', Choices.sex)),
+                el('div', {className: 'pair'}, choice('build', 'BUILD', ['lean', 'average', 'heavy'], 'average'),
+                    choice('stature', 'STATURE · APPEARANCE ONLY', Choices.stature)),
+                el('p', {className: 'muted'}, 'Species and sex shape the frame; build and stature change how it carries itself. None of it changes skills.')];
+        if (tab === 'coat')
+            return [swatches('coat', 'COAT', CoatSwatches), swatches('gradientTint', 'BELLY AND LEGS', CoatSwatches),
+                amount('gradientAmount', 'HOW FAR THE BELLY COLOUR REACHES')];
+        if (tab === 'eyes') return [swatches('eyes', 'EYES', EyeSwatches)];
+        if (tab === 'name') {
+            const name = el('input', {type: 'text', value: this.draftName, placeholder: 'The name others will know', maxLength: 64});
+            name.addEventListener('input', () => {
+                this.draftName = name.value.slice(0, 64);
+                nameHeading.textContent = this.draftName || 'Your wolf';
+            });
+            const age = el('input', {type: 'number', min: '6', max: '99', value: String(this.draftAge)});
+            age.addEventListener('input', () => {
+                const v = Math.trunc(Number(age.value));
+                if (Number.isFinite(v)) {
+                    this.draftAge = Math.min(99, Math.max(6, v));
+                    this.drawPortrait();
+                }
+            });
+            return [el('label', {}, el('span', {}, 'CHARACTER NAME'), name), el('label', {}, el('span', {}, 'STARTING AGE · 6–99'), age)];
+        }
+        // Markings: up to six layers, each a shape, a colour and a strength; the first is painted first.
+        const list = Array.isArray(draft.markings) ? (draft.markings as Json[]) : [];
+        const rows: HTMLElement[] = [el('p', {className: 'muted'}, list.length ? 'Each marking is painted over the last. Up to six.'
+            : `No markings chosen: the ${str(draft, 'pattern')} pattern is shown. Add markings to paint your own.`)];
+        list.forEach((m, i) => {
+            const mask = el('select', {});
+            for (const id of Masks) mask.append(el('option', {value: id, textContent: MaskNames[id]}));
+            mask.value = str(m, 'mask');
+            mask.addEventListener('change', () => {
+                m.mask = mask.value;
+                changed();
+            });
+            const colour = el('input', {type: 'color', value: str(m, 'color')});
+            colour.addEventListener('change', () => {
+                m.color = colour.value.toLowerCase();
+                changed();
+            });
+            const strength = el('input', {type: 'range', min: '0.1', max: '1', step: '0.05', value: String(num(m, 'opacity', 1))});
+            strength.addEventListener('input', () => {
+                m.opacity = Number(strength.value);
+                this.drawPortrait();
+            });
+            const remove = el('button', {type: 'button', className: 'small', textContent: '×', title: 'Remove'});
+            remove.addEventListener('click', () => {
+                list.splice(i, 1);
+                if (!list.length) delete draft.markings;
+                changed();
+            });
+            const up = el('button', {type: 'button', className: 'small', textContent: '↑', title: 'Paint earlier', disabled: i === 0});
+            up.addEventListener('click', () => {
+                [list[i - 1], list[i]] = [list[i], list[i - 1]];
+                changed();
+            });
+            rows.push(el('div', {className: 'marking-row'}, mask, colour, strength, up, remove));
+        });
+        if (list.length < 6) {
+            const add = el('button', {type: 'button', className: 'secondary', textContent: '+ Add a marking'});
+            add.addEventListener('click', () => {
+                draft.markings = [...list, {mask: 'socks', color: '#f2ede2', opacity: 1}];
+                changed();
+            });
+            rows.push(add);
+        }
+        rows.push(choice('pattern', 'PATTERN (WITHOUT MARKINGS)', Choices.pattern));
+        return rows;
     }
 
     private review() {

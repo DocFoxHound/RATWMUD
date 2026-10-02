@@ -54,6 +54,45 @@ bool restoresWith(const Value& record)
     return World().restore(saved).ok;
 }
 
+
+// Phase 9's appearance (Docs/Design/29-client-polish.md): free colours, eyes, build and up to six markings, each
+// optional; only known masks and "#rrggbb" colours.
+void appearanceV2Tests()
+{
+    Appearance a = unusualAppearance();
+    a.coat = "#7a5c3e";
+    a.eyes = "#e0b040";
+    a.build = "lean";
+    a.markings = {{"socks", "#f0ece0", .9}, {"blaze", "#ffffff", 1}, {"tail_tip", "#202020", .6}};
+    expect(validAppearance(a), "a phase 9 appearance is valid");
+    const auto j = wire::appearance(a);
+    expect(j.size() == 13 && j.has("markings") && j.has("coat") && !j.has("gradientTint"), "only the choices made are written");
+    Appearance back;
+    expect(wire::readAppearance(j, back) && back.coat == a.coat && back.eyes == a.eyes && back.build == "lean" &&
+               back.markings.size() == 3 && back.markings[1].mask == "blaze" && back.markings[2].opacity == .6,
+           "and read back");
+    const auto refused = [&](Value v, const std::string& what) { expect(!wire::readAppearance(v, back), "refused: " + what); };
+    auto bad = j;
+    bad.set("coat", "red");
+    refused(bad, "a colour that is not #rrggbb");
+    bad = j;
+    bad.set("build", "enormous");
+    refused(bad, "an unknown build");
+    bad = j;
+    bad.set("wings", true);
+    refused(bad, "an unknown field");
+    Appearance many = a;
+    many.markings.assign(7, {"socks", "#ffffff", 1});
+    refused(wire::appearance(many), "seven markings");
+    Appearance strange = a;
+    strange.markings = {{"tattoo", "#ffffff", 1}};
+    refused(wire::appearance(strange), "an unknown marking");
+    Appearance faint = a;
+    faint.markings = {{"socks", "#ffffff", 1.5}};
+    refused(wire::appearance(faint), "an opacity over one");
+    expect(wire::appearance(unusualAppearance()).size() == 9, "an older appearance keeps its nine fields");
+}
+
 void appearanceTests()
 {
     const auto canonical = wire::appearance(unusualAppearance());
@@ -539,6 +578,7 @@ int main()
     try
     {
         appearanceTests();
+        appearanceV2Tests();
         publicEntityTests();
         privateTests();
         persistTests();

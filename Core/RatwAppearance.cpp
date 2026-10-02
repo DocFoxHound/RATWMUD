@@ -14,8 +14,39 @@ bool paletteIndex(int index) { return index >= 0 && index < CoatColorCount; }
 const char* coatColorName(int index) { return paletteIndex(index) ? CoatNames[index] : ""; }
 const char* coatColorHex(int index) { return paletteIndex(index) ? CoatColors[index] : ""; }
 
+const char* const MarkingMasks[] = {"socks", "stockings", "blaze", "mask", "cape", "bib", "belly", "tail_tip", "ear_tips",
+                                    "freckles", "brindle", "merle", "scar", "eye_patches", "saddle", nullptr};
+
+bool knownMarking(const std::string& mask)
+{
+    for (auto* m = MarkingMasks; *m; ++m)
+        if (mask == *m)
+            return true;
+    return false;
+}
+
+bool hexColour(const std::string& s)
+{
+    if (s.size() != 7 || s[0] != '#')
+        return false;
+    for (std::size_t i = 1; i < 7; ++i)
+        if (!((s[i] >= '0' && s[i] <= '9') || (s[i] >= 'a' && s[i] <= 'f')))
+            return false;
+    return true;
+}
+
 bool validAppearance(const Appearance& appearance)
 {
+    for (const auto* colour : {&appearance.coat, &appearance.gradientTint, &appearance.markingTint, &appearance.eyes})
+        if (!colour->empty() && !hexColour(*colour))
+            return false;
+    if (!appearance.build.empty() && appearance.build != "lean" && appearance.build != "average" && appearance.build != "heavy")
+        return false;
+    if (appearance.markings.size() > MaxMarkings)
+        return false;
+    for (const auto& m : appearance.markings)
+        if (!knownMarking(m.mask) || !hexColour(m.color) || !std::isfinite(m.opacity) || m.opacity < 0 || m.opacity > 1)
+            return false;
     return (appearance.species == "timber" || appearance.species == "maned" || appearance.species == "arctic" ||
             appearance.species == "red" || appearance.species == "ethiopian") &&
            (appearance.sex == "female" || appearance.sex == "male") &&

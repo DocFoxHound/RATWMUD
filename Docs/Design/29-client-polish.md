@@ -11,7 +11,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 | 4 | Talk targets: choose who you are speaking to, several at once | Built 2026-10-02 |
 | 7 | Regional weather: moving systems that fade with distance, driving the simulation | Built 2026-10-02 |
 | 8 | A real minimap: true positions and sizes, coloured by terrain | Built 2026-10-02 |
-| 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Planned |
+| 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Creator built 2026-10-02; uploads next |
 
 (Phases 5 and 6, towns and NPC conversations, are in doc 30.)
 
@@ -172,3 +172,28 @@ the current cell's size (so everything further piled up at the edges), interiors
 
 Tests: `game.test.ts` (places drawn at their true offset and size around the wolf, a place never seen not drawn);
 `travel_tests` (the nearby map includes a visited place a few cells away).
+
+## Phase 9: Character creation (the creator built 2026-10-02; uploads next)
+
+**A richer appearance** (`Core/RatwAppearance.h`, `wire::readAppearance`; the client's `readAppearance`): beyond the
+nine fields every appearance has, optional `coat`, `gradientTint`, `markingTint` and `eyes` ("#rrggbb"), `build`
+(lean, average, heavy) and up to six `markings`, each `{mask, color, opacity}` with the mask from a fixed set (socks,
+stockings, blaze, face mask, cape, chest bib, pale belly, tail tip, ear tips, muzzle freckles, brindle, merle, old
+scar, eye patches, saddle). Only choices made are written, so older characters and every resident keep their nine
+fields; anything else is refused.
+
+**One stylised wolf, drawn in code** (`Client/src/ui/wolfArt.ts`) replaces the recoloured painted sheets. It is built
+from its parts (far legs, tail, body, neck, head, muzzle, near legs, ears), outlined as one shape. Species sets the
+proportions (the maned wolf's long legs and ears, the arctic wolf's stocky frame and full tail, the Ethiopian wolf's
+long muzzle); sex and build change the frame; youth means a big head on short legs, age a greying muzzle. Markings
+are painted within the parts they belong to, so they line up on every wolf; the old patterns (saddle, mantle,
+piebald) are markings too. The coat gives way to the belly colour as far as the gradient's strength says. The same
+drawing serves the creator, the character and closer-look sheets, and the In Sight list (cached by look and age).
+
+**The creator** (`frontDoor.ts`): a live preview beside tabs: **Body** (species, sex, build, stature), **Coat** (48
+natural coats or any colour, for the coat and for the belly and legs, and how far the belly colour reaches),
+**Markings** (add up to six, each a shape, a colour and a strength; reorder; remove), **Eyes**, and **Name & age**;
+and **Randomise**. The review lists the choices before creating.
+
+Tests: `wire_tests` `appearanceV2Tests` (written only when chosen, read back, bad colours, builds, fields, seven
+markings, unknown masks and strengths refused, older appearances unchanged); the front-door browser tests.

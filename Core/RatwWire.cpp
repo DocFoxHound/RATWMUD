@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 namespace ratw::wire
 {
@@ -25,14 +26,58 @@ Value appearance(const Appearance& a)
     o.add("markingColor", a.markingColor);
     o.add("gradientAmount", a.gradientAmount);
     o.add("patternAmount", a.patternAmount);
+    // Phase 9's choices, only when made (an older appearance keeps its nine fields).
+    for (const auto& [key, value] : {std::pair<const char*, const std::string*>{"coat", &a.coat}, {"gradientTint", &a.gradientTint},
+                                     {"markingTint", &a.markingTint}, {"eyes", &a.eyes}, {"build", &a.build}})
+        if (!value->empty())
+            o.add(key, *value);
+    if (!a.markings.empty())
+    {
+        auto list = Value::array();
+        for (const auto& m : a.markings)
+        {
+            auto j = Value::object();
+            j.add("mask", m.mask);
+            j.add("color", m.color);
+            j.add("opacity", m.opacity);
+            list.push(j);
+        }
+        o.add("markings", list);
+    }
     return o;
 }
 
 bool readAppearance(const Value& o, Appearance& out)
 {
-    if (!o.isObject() || o.size() != 9)
+    // The nine fields every appearance has, and phase 9's optional ones; nothing else.
+    static const std::set<std::string> optional{"coat", "gradientTint", "markingTint", "eyes", "build", "markings"};
+    if (!o.isObject() || o.size() < 9 || o.size() > 9 + optional.size())
         return false;
+    for (const auto& [key, value] : o.fields())
+        if (optional.count(key) == 0 && key != "species" && key != "sex" && key != "stature" && key != "pattern" && key != "baseColor" &&
+            key != "gradientColor" && key != "markingColor" && key != "gradientAmount" && key != "patternAmount")
+            return false;
     Appearance a;
+    for (const auto& [key, into] : {std::pair<const char*, std::string*>{"coat", &a.coat}, {"gradientTint", &a.gradientTint},
+                                    {"markingTint", &a.markingTint}, {"eyes", &a.eyes}, {"build", &a.build}})
+        if (const auto* v = o.find(key))
+        {
+            if (!v->isString() || v->asString().size() > 16)
+                return false;
+            *into = v->asString();
+        }
+    if (const auto* list = o.find("markings"))
+    {
+        if (!list->isArray() || list->items().size() > MaxMarkings)
+            return false;
+        for (const auto& m : list->items())
+        {
+            if (!m.isObject() || m.size() != 3 || !m["mask"].isString() || !m["color"].isString())
+                return false;
+            Marking mark{m.string("mask"), m.string("color"), strictNumber(m, "opacity", -1)};
+            a.markings.push_back(mark);
+        }
+    }
     const auto id = [&](const char* key, std::string& into) {
         const auto* v = o.find(key);
         if (!v || !v->isString() || v->asString().empty() || v->asString().size() > 16)
