@@ -1,5 +1,5 @@
-// The game screen on the page: a canvas filling the window (the 1600×1000 layout scaled to fit, as the Unreal client
-// did), the composer as a real text box over it, and the keyboard and mouse.
+// The game screen on the page: the HTML panels (ui/hud) around the map's canvas, the composer as a real text box in
+// the story column, and the keyboard and mouse.
 //
 // Keys are read by where they are on the keyboard (KeyboardEvent.code), so WASD sits under the left hand on any
 // layout. Held keys are let go whenever the page loses focus or is hidden, so a wolf never keeps walking after Alt-Tab.
@@ -8,7 +8,7 @@ import {GamePainter} from './paint.ts';
 import {Sheets} from './weatherArt.ts';
 import {Painter} from '../ui/painter.ts';
 import {Portraits} from '../ui/portrait.ts';
-import {pixels} from '../ui/theme.ts';
+import {Hud} from '../ui/hud/hud.ts';
 import type {Json} from './json.ts';
 import type {MotionFrame} from '../net/motion.ts';
 
@@ -69,42 +69,51 @@ const keyOf = (e: KeyboardEvent): KeyInput => ({code: e.code, shift: e.shiftKey,
 export class GameView {
     readonly state: GameState;
     readonly root: HTMLDivElement;
+    readonly hud: Hud;
     private canvas: HTMLCanvasElement;
     private composer: TextareaComposer;
     private painter: GamePainter;
-    private scale = 1;
-    private offset: [number, number] = [0, 0];
+    private size: [number, number] = [960, 617];
     private frame = 0;
     private last = 0;
     private wheelRest = 0;
+    private cleanup: Array<() => void> = [];
     readonly frames = new FrameStats();
     private showPerf = new URLSearchParams(location.search).has('perf');
-    private cleanup: Array<() => void> = [];
 
     constructor(parent: HTMLElement, send: (command: Json) => void) {
         this.root = document.createElement('div');
-        this.root.className = 'game';
-        this.canvas = document.createElement('canvas');
-        this.canvas.tabIndex = 0;
-        this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write.');
-        const textarea = document.createElement('textarea');
-        textarea.className = 'composer';
-        textarea.placeholder = 'Press Enter to write your part in the story…';
-        textarea.readOnly = true;
-        textarea.spellcheck = true;
-        this.root.append(this.canvas, textarea);
+        this.root.className = 'game-root';
         parent.append(this.root);
-        this.composer = new TextareaComposer(textarea, this.canvas);
-        this.state = new GameState(send, this.composer);
         const portraits = new Portraits();
+        // The state needs the composer and the panels need the state: the composer's text box is made first.
+        let composer: TextareaComposer | null = null;
+        const proxy = {
+            get text() { return composer!.text; },
+            set text(v: string) { composer!.text = v; },
+            focus: () => composer!.focus(),
+            blur: () => composer!.blur(),
+            insertNewline: () => composer!.insertNewline(),
+        };
+        this.state = new GameState(send, proxy);
+        try {
+            const width = Number(localStorage.getItem('ratw.storyWidth'));
+            if (width >= 300 && width <= 1400) this.state.storyWidth = width;
+        } catch { /* No storage here: the default width. */ }
+        this.hud = new Hud(this.root, this.state, portraits);
+        this.canvas = this.hud.canvas;
+        this.composer = composer = new TextareaComposer(this.hud.story.textarea, this.canvas);
         const sheets = new Sheets();
         sheets.warm();
-        this.painter = new GamePainter(this.state, new Painter(this.canvas.getContext('2d')!), sheets, portraits);
+        this.painter = new GamePainter(this.state, new Painter(this.canvas.getContext('2d')!), sheets);
         this.listen();
-        this.resize();
         // Glyphs measured before the game's fonts arrive would sit off centre: measure again once they have.
         document.fonts?.ready.then(() => this.painter.terrain.invalidate());
         for (const f of ['400 20px "RATW Mono"', '400 20px "RATW Sans"', '500 20px "RATW Sans"']) document.fonts?.load(f).catch(() => {});
+        const observer = new ResizeObserver(() => this.resize());
+        observer.observe(this.hud.mapWrap);
+        this.cleanup.push(() => observer.disconnect());
+        this.resize();
         this.canvas.focus({preventScroll: true});
         this.frame = requestAnimationFrame(t => this.draw(t));
     }
@@ -128,14 +137,14 @@ export class GameView {
         this.cleanup.push(() => target.removeEventListener(type, f as EventListener, options));
     }
 
+    /** A pointer position on the map, in the canvas's own CSS pixels. */
     private point(e: MouseEvent): [number, number] {
         const r = this.canvas.getBoundingClientRect();
-        return [(e.clientX - r.left - this.offset[0]) / this.scale, (e.clientY - r.top - this.offset[1]) / this.scale];
+        return [e.clientX - r.left, e.clientY - r.top];
     }
 
     private listen() {
         const s = this.state, textarea = this.composer.element;
-        this.on(window, 'resize', () => this.resize());
         this.on(window, 'keydown', e => {
             if (e.target === textarea) return;
             if (e.repeat && MovementKeys.has(e.code)) {
@@ -169,16 +178,18 @@ export class GameView {
         this.on(this.canvas, 'mouseleave', () => s.mouseLeave());
         this.on(this.canvas, 'mousedown', e => {
             e.preventDefault();
-            const target = s.mouseDown(this.point(e), e.button === 0, e.altKey, e.ctrlKey);
-            if (target === 'composer') this.composer.focus();
-            else if (document.activeElement !== this.canvas) {
-                if (document.activeElement === textarea && s.chat) return;
-                this.canvas.focus({preventScroll: true});
-            }
+            s.mouseDown(this.point(e), e.button === 0, e.altKey, e.ctrlKey);
+            if (document.activeElement === textarea && s.chat) return;
+            this.canvas.focus({preventScroll: true});
+        });
+        // A click anywhere outside an open menu closes it.
+        this.on(window, 'mousedown', e => {
+            const t = e.target as HTMLElement | null;
+            if (s.contextTarget && t !== this.canvas && !t?.closest?.('.menu, .sight-row')) s.contextTarget = '';
         });
         this.on(this.canvas, 'contextmenu', e => e.preventDefault());
-        // The wheel scrolls the story, changes pace over the map, and pans with Shift or Ctrl; one step per notch,
-        // however finely a trackpad reports it.
+        // The wheel over the map changes pace, and pans with Shift or Ctrl; one step per notch, however finely a
+        // trackpad reports it.
         this.on(this.canvas, 'wheel', e => {
             const step = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? 3 : e.deltaMode === WheelEvent.DOM_DELTA_PAGE ? 1 : 100;
             this.wheelRest += e.deltaY / step;
@@ -194,25 +205,13 @@ export class GameView {
 
     private resize() {
         const dpr = window.devicePixelRatio || 1;
-        const w = window.innerWidth, h = window.innerHeight;
+        const r = this.hud.mapWrap.getBoundingClientRect();
+        const w = Math.max(1, Math.floor(r.width)), h = Math.max(1, Math.floor(r.height));
+        this.size = [w, h];
         this.canvas.width = Math.round(w * dpr);
         this.canvas.height = Math.round(h * dpr);
         this.canvas.style.width = `${w}px`;
         this.canvas.style.height = `${h}px`;
-        this.scale = Math.min(w / 1600, h / 1000);
-        this.offset = [(w - 1600 * this.scale) / 2, (h - 1000 * this.scale) / 2];
-    }
-
-    private placeComposer() {
-        const s = this.state, t = this.composer.element;
-        t.style.display = s.modal ? 'none' : '';
-        t.readOnly = !s.chat;
-        t.style.left = `${this.offset[0] + 55 * this.scale}px`;
-        t.style.top = `${this.offset[1] + 823 * this.scale}px`;
-        t.style.width = `${(464 + s.storyExtra) * this.scale}px`;
-        t.style.height = `${77 * this.scale}px`;
-        t.style.fontSize = `${pixels(Math.max(10, Math.round(15 * this.scale)))}px`;
-        t.style.padding = `${9 * this.scale}px`;
     }
 
     /** ?perf: frame times in the corner, for finding hitches by eye. */
@@ -220,12 +219,12 @@ export class GameView {
         const gaps = this.frames.summary('intervals'), work = this.frames.summary('work');
         c.setTransform(dpr, 0, 0, dpr, 0, 0);
         c.fillStyle = 'rgba(0,0,0,0.7)';
-        c.fillRect(8, 8, 330, 44);
+        c.fillRect(8, this.size[1] - 52, 330, 44);
         c.fillStyle = gaps.p99 > 20 ? '#e1aba2' : '#a8c2a6';
         c.font = '12px monospace';
         c.textBaseline = 'top';
-        c.fillText(`frame p50 ${gaps.p50.toFixed(1)}  p99 ${gaps.p99.toFixed(1)}  worst ${gaps.worst.toFixed(1)} ms`, 14, 14);
-        c.fillText(`draw  p50 ${work.p50.toFixed(1)}  p99 ${work.p99.toFixed(1)}  ground redrawn ${this.painter.terrain.rebuilds}×`, 14, 32);
+        c.fillText(`frame p50 ${gaps.p50.toFixed(1)}  p99 ${gaps.p99.toFixed(1)}  worst ${gaps.worst.toFixed(1)} ms`, 14, this.size[1] - 46);
+        c.fillText(`draw  p50 ${work.p50.toFixed(1)}  p99 ${work.p99.toFixed(1)}  ground redrawn ${this.painter.terrain.rebuilds}×`, 14, this.size[1] - 28);
     }
 
     private draw(time: number) {
@@ -237,12 +236,9 @@ export class GameView {
         this.state.tick(seconds, delta);
         const c = this.canvas.getContext('2d')!;
         const dpr = window.devicePixelRatio || 1;
-        c.setTransform(1, 0, 0, 1, 0, 0);
-        c.fillStyle = '#11191b';
-        c.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        c.setTransform(this.scale * dpr, 0, 0, this.scale * dpr, this.offset[0] * dpr, this.offset[1] * dpr);
-        this.painter.paint();
-        this.placeComposer();
+        c.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.painter.paint(this.size[0], this.size[1]);
+        this.hud.update();
         const work = performance.now() - started;
         if (interval > 0) this.frames.add(interval, work);
         if (this.showPerf) this.drawPerf(c, dpr);

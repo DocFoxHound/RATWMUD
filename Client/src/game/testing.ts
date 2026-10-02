@@ -4,7 +4,6 @@ import {GameState, type Composer} from './state.ts';
 import {GamePainter} from './paint.ts';
 import {Painter} from '../ui/painter.ts';
 import type {Sheets} from './weatherArt.ts';
-import type {Portraits} from '../ui/portrait.ts';
 import type {Json} from './json.ts';
 
 export class FakeComposer implements Composer {
@@ -55,18 +54,17 @@ export function testGame(offscreen = false) {
     const composer = new FakeComposer();
     const state = new GameState(c => commands.push(c), composer);
     const sheets = {get: () => ({})} as unknown as Sheets;
-    const portraits = {get: () => null, failed: () => false} as unknown as Portraits;
     const factory = offscreen ? (width: number, height: number) => {
         const canvas = {width, height};
         surfaces.push(canvas);
         return {canvas: canvas as unknown as HTMLCanvasElement, ctx: fakeContext()};
     } : undefined;
-    const painter = new GamePainter(state, new Painter(fakeContext()), sheets, portraits, factory);
+    const painter = new GamePainter(state, new Painter(fakeContext()), sheets, factory);
     return {state, commands, composer, painter, surfaces};
 }
 
 /** The painter's private drawing steps, for tests that draw one part. */
-export function draw(painter: GamePainter, step: 'drawLocal' | 'drawModal' | 'drawTravelAtlas' | 'drawPace' | 'drawScent', ...args: unknown[]) {
+export function draw(painter: GamePainter, step: 'drawLocal' | 'drawTravelAtlas' | 'drawScent', ...args: unknown[]) {
     (painter as unknown as Record<string, (...a: unknown[]) => void>)[step](...args);
 }
 export function paintPart<T>(painter: GamePainter, part: 'atmosphere' | 'weatherLayers' | 'weatherMarks' | 'lightningFlash' | 'cellBounds' |

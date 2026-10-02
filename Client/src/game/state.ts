@@ -40,6 +40,10 @@ export interface EntityView {
     speaking: boolean;
     moving: boolean;
     spokenAt: number;
+    work: string;               // A resident's trade, as the server gives it ('' for players).
+    hostile: boolean;
+    appearance: Json | null;
+    lifeStage: string;
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -59,6 +63,8 @@ export interface KeyInput {
 }
 
 const MovementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
+/** The story column's presets (CSS pixels): balanced, wide, text-first, compact. */
+export const StoryWidths = [460, 600, 760, 360];
 const KnownWeather = ['overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
 export const DevWeathers = ['clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
 
@@ -140,7 +146,12 @@ export class GameState {
     travelPage = 0;
     lastPaceRequest = -100;
     travelAtlas = false;
-    storyExtra = 0;
+    storyWidth = 460;           // The story column, in CSS pixels (dragged, or one of the presets).
+    zoom = 2;                   // Index into paint.ts ZoomTiles.
+    contextPage: [number, number] | null = null;   // A menu opened from a panel, at this page point (else on the map).
+    highlight = '';             // A wolf pointed at in the In Sight list: ringed on the map.
+    hoveredEntity = '';         // The wolf under the pointer on the map: lit in the list.
+    hoverTooltips = true;       // Labels beside the pointer (the line under the map always shows).
     inspectedText = '';
     toast = '';
     toastUntil = 0;
@@ -282,12 +293,17 @@ export class GameState {
             let view = this.entities.get(id);
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
-                    color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100};
+                    color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
+                    appearance: null, lifeStage: 'adult'};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
             view.kind = str(e, 'kind', bool(e, 'npc') ? 'npc' : 'player');
             view.state = str(e, 'state', str(e, 'posture', 'standing'));
+            view.work = str(e, 'work');
+            view.hostile = bool(e, 'hostile');
+            view.appearance = obj(e, 'appearance');
+            view.lifeStage = str(e, 'lifeStage', 'adult');
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
             this.applyPose(view, e, poseTime);
@@ -648,6 +664,10 @@ export class GameState {
             this.sendAction('listen');
             return true;
         }
+        if (code === 'Equal' || code === 'NumpadAdd' || code === 'Minus' || code === 'NumpadSubtract') {
+            this.activate({rect: rect(0, 0, 0, 0), action: 'zoom', target: code === 'Equal' || code === 'NumpadAdd' ? 'in' : 'out'});
+            return true;
+        }
         return false;
     }
 
@@ -661,6 +681,22 @@ export class GameState {
             return true;
         }
         return false;
+    }
+
+    /** A row of the In Sight list clicked: its menu, at the pointer. */
+    sightClicked(id: string, page: [number, number]) {
+        this.openContextAt(id, page);
+    }
+
+    /** A wolf's menu, opened from a panel (the In Sight list) at a point on the page. */
+    openContextAt(id: string, page: [number, number]) {
+        const e = this.entities.get(id);
+        if (!e || e.self) return;
+        this.contextTarget = id;
+        this.contextName = e.name;
+        this.contextKind = e.kind;
+        this.contextActions = e.actions;
+        this.contextPage = page;
     }
 
     /** E: the nearest wolf, door or thing, as if clicked. */
@@ -710,10 +746,6 @@ export class GameState {
     wheel(point: [number, number], delta: number, shift: boolean, ctrl: boolean): boolean {
         this.facingPreview = false;
         if (this.modal) return false;
-        if (point[0] < 550 + this.storyExtra) {
-            this.transcriptScroll = Math.max(0, this.transcriptScroll + Math.round(delta * 85));
-            return true;
-        }
         if (contains(this.mapRect, point[0], point[1]) && !this.worldMap && !this.chat) {
             if (ctrl) this.mapPan[0] = clamp(this.mapPan[0] + delta * 60, -1000, 1000);
             else if (shift) this.mapPan[1] = clamp(this.mapPan[1] + delta * 60, -1000, 1000);
@@ -748,10 +780,6 @@ export class GameState {
                 return this.chat && !this.modal ? 'composer' : 'map';
             }
         if (this.modal) return 'map';
-        if (point[0] > 54 && point[0] < 520 + this.storyExtra && point[1] > 820 && point[1] < 902) {
-            this.setChat(true);
-            return 'composer';
-        }
         if (!this.worldMap && contains(this.mapRect, point[0], point[1])) {
             this.facingPreview = false;
             this.contextTarget = '';
@@ -817,8 +845,10 @@ export class GameState {
         else if (a === 'motion') this.reducedMotion = !this.reducedMotion;
         else if (a === 'projection') this.flatWorld = !this.flatWorld;
         else if (a === 'glyphs') this.plainGlyphs = !this.plainGlyphs;
+        else if (a === 'tooltips') this.hoverTooltips = !this.hoverTooltips;
         else if (a === 'split') {
-            this.storyExtra = this.storyExtra === 0 ? 150 : this.storyExtra === 150 ? 300 : this.storyExtra === 300 ? -100 : 0;
+            const presets = StoryWidths, at = presets.indexOf(this.storyWidth);
+            this.storyWidth = presets[(at + 1) % presets.length];
             this.mapPan = [0, 0];
             this.contextTarget = '';
         } else if (a === 'color') {
@@ -838,9 +868,14 @@ export class GameState {
                 return;
             }
             this.send({type: a});
+        } else if (a === 'zoom') {
+            this.zoom = clamp(this.zoom + (h.target === 'in' ? 1 : -1), 0, 3);
+            this.mapPan = [0, 0];
         } else if (a === 'target') {
             this.contextTarget = h.target;
-            this.contextPoint = [Math.min(1360, h.rect.right + 12), Math.min(670, h.rect.top)];
+            this.contextPage = null;
+            this.contextPoint = [Math.max(this.mapRect.left, Math.min(this.mapRect.right - 200, h.rect.right + 12)),
+                Math.max(this.mapRect.top, Math.min(this.mapRect.bottom - 260, h.rect.top))];
             this.contextName = h.target;
             this.contextActions = ['inspect'];
             this.contextKind = 'object';
@@ -887,8 +922,8 @@ export class GameState {
     /** Pages the tools and screenshots ask for (the Unreal client's SetPresentationPage). */
     setPresentationPage(page: string) {
         this.facingPreview = false;
-        if (page === 'text-first') this.storyExtra = 300;
-        if (page === 'balanced') this.storyExtra = 0;
+        if (page === 'text-first') this.storyWidth = 760;
+        if (page === 'balanced') this.storyWidth = 460;
         this.travelAtlas = page === 'travel';
         this.worldMap = page === 'world' || this.travelAtlas;
         this.modal = ['character', 'inventory', 'settings', 'trade'].includes(page) ? page : '';

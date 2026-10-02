@@ -1564,6 +1564,11 @@ void Game::sendSnapshot(Connection* c)
         }
         else if (e.npc)
         {
+            // What they do, for the In Sight list: their post's title, or the trade they were written with.
+            if (const auto* post = world_.society().jobOf(e.id); post && !post->title.empty())
+                j.set("work", post->title);
+            else if (const auto* spec = world_.society().spec(e.id); spec && !spec->workLabel.empty() && spec->workLabel != "-")
+                j.set("work", spec->workLabel);
             actions.push("talk");
             if (world_.society().merchant(e.id))
                 actions.push("trade");

@@ -1,0 +1,336 @@
+// The screen around the map (Docs/Design/29-client-polish.md, phase 2): a slim top bar, the story column on the left
+// (story.ts), the map in the middle with its header and actions, and on the right who is in sight and how the wolf is
+// doing. Plain HTML, updated in place each frame; the map itself is the canvas (game/paint.ts).
+import {css} from '../color.ts';
+import {Blue, Sage} from '../theme.ts';
+import {drawPortrait, type Portraits} from '../portrait.ts';
+import {bool, boundedNum, envNumber, obj, str} from '../../game/json.ts';
+import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel,
+    scentLabel} from '../../game/labels.ts';
+import type {EntityView, GameState} from '../../game/state.ts';
+import {Dialogs} from './dialogs.ts';
+import {button, el, setClass, setStyle, setText, show} from './dom.ts';
+import {noRect, StoryPanel} from './story.ts';
+
+const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
+
+/** One row of the In Sight list. */
+interface SightRow {
+    row: HTMLElement;
+    portrait: HTMLCanvasElement;
+    name: HTMLElement;
+    detail: HTMLElement;
+    where: HTMLElement;
+    drawn: string;              // The look last drawn into the portrait.
+}
+
+export class Hud {
+    readonly root: HTMLElement;
+    readonly story: StoryPanel;
+    readonly mapWrap: HTMLElement;
+    readonly canvas: HTMLCanvasElement;
+    private s: GameState;
+    private portraits: Portraits;
+    private dialogs: Dialogs;
+    // Top bar
+    private calendar: HTMLElement;
+    private weather: HTMLElement;
+    private moon: HTMLElement;
+    private day: HTMLElement;
+    private live: HTMLElement;
+    // Map header and actions
+    private mapPlace: HTMLElement;
+    private effects: HTMLElement;
+    private localTab: HTMLButtonElement;
+    private worldTab: HTMLButtonElement;
+    readonly looking: HTMLElement;
+    // The side
+    private sightList: HTMLElement;
+    private sightEmpty: HTMLElement;
+    private sightCount: HTMLElement;
+    private rows = new Map<string, SightRow>();
+    private paceLabel: HTMLElement;
+    private paceNote: HTMLElement;
+    private paceSteps: HTMLElement[] = [];
+    private staminaLabel: HTMLElement;
+    private staminaNote: HTMLElement;
+    private staminaFill: HTMLElement;
+    private senses: HTMLElement;
+    private who: HTMLElement;
+    private posture: HTMLElement;
+    private law: HTMLElement;
+    // Floating
+    private menu: HTMLElement;
+    private menuKey = '';
+    private toast: HTMLElement;
+    private connection: HTMLElement;
+    private resizer: HTMLElement;
+
+    constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
+        this.s = state;
+        this.portraits = portraits;
+        const act = (action: string, target = '') => state.activate({rect: noRect, action, target});
+        this.root = el('div', 'game', parent);
+
+        const top = el('header', 'topbar', this.root);
+        const brand = el('div', 'brand', top);
+        el('span', 'mark', brand, '◭');
+        el('span', 'title', brand, 'RUNS AGAINST THE WORLD');
+        const when = el('div', 'when', top);
+        this.calendar = el('span', 'label sage', when);
+        this.weather = el('span', 'muted', when);
+        this.moon = el('span', 'label muted', when);
+        this.day = el('span', 'label gold', when);
+        const menu = el('nav', 'top-actions', top);
+        button('CHARACTER', 'top', menu, () => act('character'));
+        button('INVENTORY', 'top', menu, () => act('inventory'));
+        button('SETTINGS', 'top', menu, () => act('settings'));
+        this.live = el('span', 'live label', top, '…');
+
+        this.story = new StoryPanel(this.root, state);
+        this.resizer = el('div', 'resizer', this.root);
+        this.resizer.title = 'Drag to widen the story or the map';
+        this.dragToResize();
+
+        const center = el('main', 'center', this.root);
+        const head = el('div', 'map-head', center);
+        const titles = el('div', 'map-titles', head);
+        el('span', 'label gold', titles, 'YOUR SURROUNDINGS');
+        this.mapPlace = el('span', 'map-place', titles);
+        this.effects = el('span', 'label muted effects', titles);
+        const views = el('div', 'tabs', head);
+        button('−', 'tab zoom', views, () => act('zoom', 'out')).title = 'Zoom out (−)';
+        button('+', 'tab zoom', views, () => act('zoom', 'in')).title = 'Zoom in (=)';
+        this.localTab = button('LOCAL MAP', 'tab', views, () => act('local'));
+        this.worldTab = button('WORLD MAP', 'tab', views, () => act('world'));
+        this.mapWrap = el('div', 'map', center);
+        this.canvas = el('canvas', '', this.mapWrap);
+        this.canvas.tabIndex = 0;
+        this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write.');
+        this.looking = el('div', 'looking muted', center);
+        const actions = el('div', 'actions', center);
+        el('span', 'label muted', actions, 'ACTIONS');
+        button('Listen  L', 'act', actions, () => act('listen'));
+        button('Look', 'act', actions, () => act('look'));
+        button('Smell', 'act', actions, () => act('smell'));
+        button('Wait', 'act', actions, () => act('wait'));
+        button('Sit', 'act', actions, () => act('sit'));
+        button('End scene', 'act', actions, () => act('session_end'));
+
+        const side = el('aside', 'side', this.root);
+        const sight = el('section', 'panel in-sight', side);
+        const sightHead = el('div', 'panel-head', sight);
+        el('span', 'label gold', sightHead, 'IN SIGHT');
+        this.sightCount = el('span', 'label muted', sightHead);
+        this.sightList = el('div', 'sight-list', sight);
+        this.sightEmpty = el('p', 'muted small', this.sightList, 'No one in sight.');
+        const status = el('section', 'panel status', side);
+        this.who = el('div', 'who', status);
+        this.posture = el('div', 'muted small', status);
+        this.law = el('div', 'law label', status);
+        const paceHead = el('div', 'meter-head', status);
+        this.paceLabel = el('span', 'label', paceHead);
+        this.paceNote = el('span', 'note', paceHead);
+        const steps = el('div', 'pace-steps', status);
+        for (let i = 0; i <= 10; ++i) {
+            const step = button('', 'pace-step', steps, () => act('pace', String(i)));
+            step.title = `Pace ${i}`;
+            this.paceSteps.push(step);
+        }
+        const gaits = el('div', 'gaits label muted', status);
+        for (const g of ['WALK', 'TROT', 'RUN', 'SPRINT']) el('span', '', gaits, g);
+        const staminaHead = el('div', 'meter-head', status);
+        this.staminaLabel = el('span', 'label', staminaHead);
+        const bar = el('div', 'bar', status);
+        this.staminaFill = el('div', 'fill', bar);
+        this.staminaNote = el('div', 'note', status);
+        this.senses = el('div', 'senses small', status);
+
+        const help = el('footer', 'helpbar', this.root);
+        el('span', 'label muted', help,
+            'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
+        this.connection = el('span', 'sage small', help);
+        this.menu = el('div', 'menu', this.root);
+        this.toast = el('div', 'toast', this.root);
+        this.dialogs = new Dialogs(this.root, state, portraits);
+        show(this.menu, false);
+        show(this.toast, false);
+    }
+
+    update() {
+        const s = this.s, snapshot = s.snapshot, self = obj(snapshot, 'self');
+        setStyle(this.root, '--story', `${s.storyWidth}px`);
+        setText(this.calendar, calendarLabel(snapshot));
+        setText(this.weather, environmentLabel(s.environment.hour, s.environment.phase, s.environment.weather, s.outdoors));
+        setText(this.moon, moonLabel(snapshot));
+        setText(this.day, dayLabel(snapshot).slice(0, 30));
+        setText(this.live, snapshot ? '● LIVE' : '…');
+        setClass(this.live, 'on', !!snapshot);
+        setText(this.mapPlace, s.cellName);
+        setText(this.effects, environmentEffectsLabel(s.environment, s.outdoors, s.reducedMotion));
+        setClass(this.localTab, 'active', !s.worldMap);
+        setClass(this.worldTab, 'active', s.worldMap);
+        setText(this.connection, str(snapshot, 'connection', 'Connecting to the world…'));
+        this.story.update();
+        this.updateSight();
+        this.updateStatus(self);
+        this.updateMenu();
+        show(this.toast, s.clock < s.toastUntil);
+        setText(this.toast, s.toast);
+        this.dialogs.update();
+    }
+
+    // ------------------------------------------------------------------ Who is in sight
+
+    private updateSight() {
+        const s = this.s, me = s.entities.get(s.selfId);
+        const others = [...s.entities.values()].filter(e => !e.self);
+        const distance = (e: EntityView) => (me ? Math.hypot(e.x - me.x, e.y - me.y) : 0);
+        others.sort((a, b) => distance(a) - distance(b));
+        setText(this.sightCount, others.length ? String(others.length) : '');
+        show(this.sightEmpty, !others.length);
+        const present = new Set<string>();
+        let before: Element | null = this.sightEmpty.nextElementSibling;
+        for (const e of others) {
+            present.add(e.id);
+            let r = this.rows.get(e.id);
+            if (!r) r = this.makeRow(e);
+            // Keep the list in order of distance without rebuilding it.
+            if (r.row !== before) this.sightList.insertBefore(r.row, before);
+            before = r.row.nextElementSibling;
+            setText(r.name, e.name || 'Someone');
+            setStyle(r.name, 'color', css(e.kind === 'npc' ? Sage : Blue));
+            const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
+            setText(r.detail, [upperFirst(role), e.hostile ? 'hostile' : '', e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
+            setClass(r.row, 'hostile', e.hostile);
+            setClass(r.row, 'highlight', s.highlight === e.id || s.hoveredEntity === e.id);
+            if (me) {
+                const d = distance(e), angle = Math.atan2(e.y - me.y, e.x - me.x);
+                const arrow = Arrows[((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8];
+                setText(r.where, d < 1.5 ? 'here' : `${arrow} ${d.toFixed(0)}`);
+            }
+            const look = JSON.stringify([e.appearance, e.lifeStage]);
+            if (r.drawn !== look) {
+                const c = r.portrait.getContext('2d');
+                if (c) {
+                    c.clearRect(0, 0, r.portrait.width, r.portrait.height);
+                    const age = e.lifeStage === 'young' ? 6 : e.lifeStage === 'adolescent' ? 13 : e.lifeStage === 'old' ? 65 : 18;
+                    // Drawn once its sheet has loaded; until then the row shows its initial.
+                    if (drawPortrait(c, this.portraits, e.appearance, age, 0, 0, r.portrait.width, r.portrait.height)) r.drawn = look;
+                }
+            }
+        }
+        for (const [id, r] of this.rows)
+            if (!present.has(id)) {
+                r.row.remove();
+                this.rows.delete(id);
+            }
+    }
+
+    private makeRow(e: EntityView): SightRow {
+        const s = this.s;
+        const row = el('div', 'sight-row');
+        const portrait = el('canvas', 'thumb', row);
+        portrait.width = portrait.height = 88;
+        const text = el('div', 'sight-text', row);
+        const name = el('div', 'sight-name', text);
+        const detail = el('div', 'sight-detail', text);
+        const where = el('div', 'sight-where', row);
+        row.addEventListener('mouseenter', () => (s.highlight = e.id));
+        row.addEventListener('mouseleave', () => {
+            if (s.highlight === e.id) s.highlight = '';
+        });
+        row.addEventListener('mousedown', ev => ev.preventDefault());
+        row.addEventListener('click', ev => s.sightClicked(e.id, [ev.clientX, ev.clientY]));
+        row.addEventListener('contextmenu', ev => {
+            ev.preventDefault();
+            s.openContextAt(e.id, [ev.clientX, ev.clientY]);
+        });
+        const r: SightRow = {row, portrait, name, detail, where, drawn: ''};
+        this.rows.set(e.id, r);
+        return r;
+    }
+
+    // ------------------------------------------------------------------ How the wolf is doing
+
+    private updateStatus(self: ReturnType<typeof obj>) {
+        const s = this.s;
+        setText(this.who, str(self, 'name', 'Connecting'));
+        setText(this.posture, `${postureLabel(self)}${str(self, 'state') ? `  ·  ${str(self, 'state')}` : ''}`);
+        const law = lawLabel(self);
+        setText(this.law, law);
+        show(this.law, !!law);
+        const pace = s.displayPace(), effective = Math.trunc(boundedNum(self, 'effectivePace', 0, 10));
+        const exhausted = bool(self, 'exhausted');
+        const stamina = boundedNum(self, 'stamina', 0, 100, 100), rate = boundedNum(self, 'staminaRate', -100, 100);
+        setText(this.paceLabel, `PACE · ${paceLabel(pace)} ${pace}/10`);
+        setClass(this.paceLabel, 'tired', exhausted);
+        setClass(this.paceLabel, 'gold', !exhausted && pace >= 9);
+        setText(this.paceNote, s.requestedPace >= 0 && s.clock - s.lastPaceRequest <= 1.5 ? 'REQUESTING…'
+            : exhausted ? 'EXHAUSTED · walking' : effective < pace ? 'POSTURE-LIMITED' : 'wheel / PgUp PgDn');
+        this.paceSteps.forEach((step, i) => {
+            setClass(step, 'on', i <= pace);
+            setClass(step, 'current', i === pace);
+            setClass(step, 'fast', i >= 9);
+        });
+        setText(this.staminaLabel, `STAMINA ${stamina.toFixed(0)}%  ·  DEX ${envNumber(self, 'effectiveDexterity', 0, 100,
+            envNumber(self, 'dexterity', 0, 100, 0)).toFixed(0)}  ·  TOP ${boundedNum(self, 'topSpeed', 0, 100).toFixed(1)} t/s`);
+        setStyle(this.staminaFill, 'width', `${stamina}%`);
+        setClass(this.staminaFill, 'draining', rate < -0.01);
+        setClass(this.staminaFill, 'tired', exhausted);
+        setText(this.staminaNote, rate < -0.01 ? `DRAINING ${(-rate).toFixed(1)}/s · ease pace for distance`
+            : rate > 0.01 ? (stamina >= 99.95 ? 'FULL' : `RECOVERING +${rate.toFixed(1)}/s`) : 'STEADY · sustainable travel');
+        setText(this.senses, `HEARING · ${s.movementHeard ? 'unseen pawsteps' : 'no unseen steps'}   ·   ${scentLabel(s.scentCues)}`);
+    }
+
+    // ------------------------------------------------------------------ The action menu
+
+    private updateMenu() {
+        const s = this.s;
+        const open = !!s.contextTarget && !s.modal;
+        show(this.menu, open);
+        if (!open) {
+            this.menuKey = '';
+            return;
+        }
+        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextActions, s.contextPage, s.contextPoint]);
+        if (key === this.menuKey) return;
+        this.menuKey = key;
+        this.menu.replaceChildren();
+        el('div', 'menu-title', this.menu, s.contextName);
+        s.contextActions.forEach((action, i) =>
+            button(`${i + 1}  ${upperFirst(action)}`, 'menu-item', this.menu, () => s.activate({rect: noRect, action: 'context', target: action})));
+        // On the map, beside what was clicked; from a panel, at the pointer. Kept on screen either way.
+        let x: number, y: number;
+        if (s.contextPage) [x, y] = s.contextPage;
+        else {
+            const r = this.canvas.getBoundingClientRect();
+            [x, y] = [r.left + s.contextPoint[0], r.top + s.contextPoint[1]];
+        }
+        const height = 50 + s.contextActions.length * 34;
+        setStyle(this.menu, 'left', `${Math.max(8, Math.min(window.innerWidth - 210, x))}px`);
+        setStyle(this.menu, 'top', `${Math.max(8, Math.min(window.innerHeight - height - 8, y))}px`);
+    }
+
+    // ------------------------------------------------------------------ Widening the story or the map
+
+    private dragToResize() {
+        this.resizer.addEventListener('mousedown', down => {
+            down.preventDefault();
+            const start = down.clientX, width = this.s.storyWidth;
+            const move = (e: MouseEvent) => {
+                this.s.storyWidth = Math.round(Math.max(300, Math.min(window.innerWidth * 0.6, width + e.clientX - start)));
+            };
+            const up = () => {
+                window.removeEventListener('mousemove', move);
+                window.removeEventListener('mouseup', up);
+                try {
+                    localStorage.setItem('ratw.storyWidth', String(this.s.storyWidth));
+                } catch { /* A private window: the width lasts this visit. */ }
+            };
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', up);
+        });
+    }
+}

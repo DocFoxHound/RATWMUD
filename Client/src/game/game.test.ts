@@ -10,8 +10,6 @@ import {terrainInfo} from './paint.ts';
 import type {Json} from './json.ts';
 
 const close = (a: number, b: number, e = 1e-6) => Math.abs(a - b) < e;
-const overlap = (a: {left: number; right: number; top: number; bottom: number}, b: typeof a) =>
-    a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 
 test('input: Enter writes, Shift+Enter keeps writing, Escape keeps the draft, a rejected post comes back, WASD only in navigation', () => {
     const {state: s, commands, composer} = testGame();
@@ -78,13 +76,12 @@ test('reveal: posts unfold one at a time; speech keeps its quotation marks', () 
     assert.equal(s.posts.at(-1)!.text, '"The road is quiet." sighs softly.');
 });
 
-test('pane balance cycles through four readable presets without touching the server or the draft', () => {
+test('the story column cycles through four readable widths without touching the server or the draft', () => {
     const {state: s, commands, composer} = testGame();
     composer.text = 'A draft that survives layout changes.\nAnother paragraph.';
-    for (const value of [150, 300, -100, 0]) {
+    for (const value of [600, 760, 360, 460]) {
         s.activate({rect: rect(0, 0, 0, 0), action: 'split', target: ''});
-        assert.equal(s.storyExtra, value);
-        assert.ok(525 + s.storyExtra >= 425 && 960 - s.storyExtra >= 660, 'narrative and map stay readable');
+        assert.equal(s.storyWidth, value);
         assert.equal(composer.text, 'A draft that survives layout changes.\nAnother paragraph.');
     }
     assert.equal(commands.length, 0);
@@ -265,9 +262,6 @@ test('pace and known travel', () => {
     assert.deepEqual(commands.at(-1), {type: 'pace', pace: 10});
     assert.equal(self.stamina, 42);
     let before = commands.length;
-    s.wheel([200, 450], 1, false, false);
-    assert.equal(s.transcriptScroll, 85, 'over the story the wheel scrolls it');
-    assert.equal(commands.length, before);
     s.wheel([900, 450], 1, true, false);
     s.wheel([900, 450], 1, false, true);
     assert.deepEqual(s.mapPan, [60, 60], 'Shift and Ctrl pan');
@@ -339,7 +333,6 @@ test('pace and known travel', () => {
     Object.assign(self, {pace: 9999, stamina: -1e9, staminaRate: 1e9});
     s.clock += 2;
     s.applySnapshot(snapshot);
-    draw(painter, 'drawPace');
     assert.equal(s.displayPace(), 10, 'malformed pace is bounded');
     assert.equal(commands.length, before);
 });
@@ -453,17 +446,11 @@ test('weather and light: presentation only, bounded, and never over the world ma
     s.applySnapshot(snapshot);
     s.activate({rect: rect(0, 0, 0, 0), action: 'time', target: 'night'});
     assert.deepEqual(commands, [{type: 'time', value: 'night'}]);
-    s.hits = [];
-    s.modal = 'settings';
-    draw(painter, 'drawModal');
-    const clock = s.hits.filter(h => h.action === 'time');
-    assert.equal(clock.length, 4);
-    assert.ok(clock.every(h => h.rect.left >= 326 && h.rect.right < 834 && h.rect.top >= 675 && h.rect.bottom <= 730));
     snapshot.devTools = false;
     s.applySnapshot(snapshot);
-    s.hits = [];
-    draw(painter, 'drawModal');
-    assert.ok(!s.hits.some(h => h.action === 'time'));
+    commands.length = 0;
+    s.activate({rect: rect(0, 0, 0, 0), action: 'time', target: 'day'});
+    assert.equal(commands.length, 0, 'and without development tools, the clock is not offered');
     cell.outdoors = false;
     env.illumination = 0.08;
     s.applySnapshot(snapshot);
@@ -602,21 +589,12 @@ test('cell atmosphere follows the room, never the viewport; lighting presets for
     s.applySnapshot(snapshot);
     s.activate({rect: rect(0, 0, 0, 0), action: 'lighting', target: 'warm'});
     assert.deepEqual(commands, [{type: 'lighting', value: 'warm'}]);
-    s.modal = 'settings';
-    s.hits = [];
-    draw(painter, 'drawModal');
-    const lighting = s.hits.filter(h => h.action === 'lighting');
-    assert.equal(lighting.length, 4);
-    for (const hit of lighting) {
-        assert.ok(hit.rect.left >= 326 && hit.rect.right <= 834 && hit.rect.top === 755 && hit.rect.bottom === 789);
-        assert.ok(s.hits.every(other => other === hit || !overlap(hit.rect, other.rect)), 'no overlap with other controls');
-    }
     snapshot.devTools = false;
     delete cell.environment;
     s.applySnapshot(snapshot);
-    s.hits = [];
-    draw(painter, 'drawModal');
-    assert.ok(!s.hits.some(h => h.action === 'lighting'));
+    commands.length = 0;
+    s.activate({rect: rect(0, 0, 0, 0), action: 'lighting', target: 'warm'});
+    assert.equal(commands.length, 0);
     assert.ok(e.glowStrength === 0 && e.artificialLight === 0 && e.illumination === 1 && e.lightingTone === 'neutral');
 });
 
@@ -674,16 +652,10 @@ test('calendar, moon and the finite economy', () => {
     herbs.canSell = false;
     assert.ok(!s.canTradeItem('herbs', false));
     herbs.canSell = true;
-    s.hits = [];
-    draw(painter, 'drawModal');
-    const offers = s.hits.filter(h => h.action === 'trade_buy' || h.action === 'trade_sell');
-    assert.equal(offers.length, 4);
-    assert.ok(offers.every(h => h.rect.left >= 326 && h.rect.right <= 1234 && h.rect.top >= 347 && h.rect.bottom < 737));
+    assert.ok(['herbs', 'meal'].every(g => s.canTradeItem(g, true) && s.canTradeItem(g, false)), 'four offers');
     delete snapshot.merchant;
     s.applySnapshot(snapshot);
-    s.hits = [];
-    draw(painter, 'drawModal');
-    assert.ok(!s.hits.some(h => h.action === 'trade_buy' || h.action === 'trade_sell'), 'no stale offers');
+    assert.ok(['herbs', 'meal'].every(g => !s.canTradeItem(g, true) && !s.canTradeItem(g, false)), 'no stale offers');
     s.activate({rect: rect(0, 0, 0, 0), action: 'trade_buy', target: 'meal'});
     assert.equal(commands.length, 0);
     s.activate({rect: rect(0, 0, 0, 0), action: 'eat', target: ''});
@@ -718,7 +690,7 @@ test('calendar, moon and the finite economy', () => {
     assert.equal(commands.length, 0);
     for (const page of ['character', 'inventory']) {
         s.setPresentationPage(page);
-        draw(painter, 'drawModal');
+        assert.equal(s.modal, page);
     }
     s.activate({rect: rect(0, 0, 0, 0), action: 'calendar', target: 'year'});
     assert.equal(commands.length, 0);
@@ -729,15 +701,9 @@ test('calendar, moon and the finite economy', () => {
     commands.length = 0;
     s.activate({rect: rect(0, 0, 0, 0), action: 'calendar', target: 'unsupported'});
     assert.equal(commands.length, 0);
-    s.setPresentationPage('settings');
-    s.hits = [];
-    draw(painter, 'drawModal');
-    const jumps = s.hits.filter(h => h.action === 'calendar' || (h.action === 'weather' && h.target === 'seasonal'));
-    assert.equal(jumps.length, 3);
-    for (const hit of jumps) {
-        assert.ok(hit.rect.left >= 886 && hit.rect.right <= 1234 && hit.rect.top === 800 && hit.rect.bottom === 832);
-        assert.ok(s.hits.every(other => other === hit || !overlap(hit.rect, other.rect)));
-    }
+    s.activate({rect: rect(0, 0, 0, 0), action: 'weather', target: 'seasonal'});
+    assert.deepEqual(commands, [{type: 'weather', value: 'seasonal'}]);
+    commands.length = 0;
     s.setPresentationPage('trade');
     assert.equal(s.modal, 'trade');
     delete env.calendar;

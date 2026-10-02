@@ -3,15 +3,16 @@
 import {css, lerp, rgb, scale, transparent, withAlpha, type Color} from '../ui/color.ts';
 import {contains, rect, type Painter, type Point, type Rect} from '../ui/painter.ts';
 import {Amber, Blue, Ink, Line, Muted, Panel, Paper, Raised, Sage, Scent, speakingColor, font} from '../ui/theme.ts';
-import {drawPortrait, type Portraits} from '../ui/portrait.ts';
-import {arr, bool, boundedNum, clamp, countText, envNumber, isObject, num, obj, objects, str, wholeCount, wrapCoordinate, type Json} from './json.ts';
-import {calendarLabel, dayLabel, elevationLabel, lawLabel, environmentEffectsLabel, environmentLabel, moonLabel, paceLabel, postureLabel, scentLabel,
-    windLabel} from './labels.ts';
+import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCount, wrapCoordinate, type Json} from './json.ts';
+import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
-import type {GameState, Post} from './state.ts';
+import type {GameState} from './state.ts';
 import {TerrainLayer, terrainInfo, type SurfaceFactory} from './terrainLayer.ts';
 
 export {terrainInfo};
+
+/** Tile sizes for the zoom steps, closest last. */
+export const ZoomTiles = [14, 18, 22, 28];
 
 interface Atmosphere {
     bounds: Rect;
@@ -37,180 +38,63 @@ interface WeatherLayer {
     tint: Color;
 }
 
-const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 export class GamePainter {
     private s: GameState;
     private p: Painter;
     private sheets: Sheets;
-    private portraits: Portraits;
     readonly terrain: TerrainLayer;
     private patterns = new WeakMap<CanvasImageSource, CanvasPattern | null>();
     private lastCell = '';
     private lastSelfScreen: Point | null = null;
-    // Each post's wrapped lines, kept until it reveals more or the column changes width.
-    private wrapped = new WeakMap<Post, {revealed: number; width: number; lines: string[]}>();
 
-    constructor(state: GameState, painter: Painter, sheets: Sheets, portraits: Portraits, surfaces?: SurfaceFactory) {
+    constructor(state: GameState, painter: Painter, sheets: Sheets, surfaces?: SurfaceFactory) {
         this.s = state;
         this.p = painter;
         this.sheets = sheets;
-        this.portraits = portraits;
         this.terrain = new TerrainLayer(surfaces);
     }
 
-    private wrapPost(post: Post, width: number): string[] {
-        const kept = this.wrapped.get(post);
-        if (kept && kept.revealed === post.revealed && kept.width === width) return kept.lines;
-        const lines = this.p.wrap(post.text.slice(0, post.revealed), width, 14);
-        this.wrapped.set(post, {revealed: post.revealed, width, lines});
-        return lines;
-    }
 
-    private button(x: number, y: number, w: number, h: number, label: string, action: string, active = false, target = '') {
-        const s = this.s, p = this.p;
-        const r = rect(x, y, x + w, y + h);
-        const hover = contains(r, s.hover[0], s.hover[1]);
-        if (active || hover) p.box(x, y, w, h, active ? rgb(0x303a2e) : Raised);
-        if (active) p.box(x, y + h - 2, w, 2, Amber);
-        p.text(x + 14, y + 10, label, 12, active ? Amber : Paper, false, active);
-        s.hits.push({rect: r, action, target});
-    }
-
-    paint() {
+    /**
+     * The map: the canvas is the map and nothing else (the panels around it are HTML, ui/hud). Coordinates are the
+     * canvas's own CSS pixels; `width` and `height` are its size.
+     */
+    paint(width = 960, height = 617) {
         const s = this.s, p = this.p;
         s.hits = [];
-        const snapshot = s.snapshot;
-        const self = obj(snapshot, 'self');
-        const extra = s.storyExtra;
-        p.box(0, 0, 1600, 1000, Ink);
-        // The restrained frame leaves the typography and spatial glyphs in the foreground.
-        p.box(0, 0, 1600, 96, rgb(0x151f20));
-        p.box(0, 95, 1600, 1, Line);
-        p.lines([[43, 62], [51, 32], [61, 45], [72, 29], [83, 62], [69, 54], [61, 69], [53, 54], [43, 62]], Amber, 1.5);
-        p.text(101, 27, 'RUNS AGAINST THE WORLD', 21, Paper, false, true);
-        p.text(103, 58, 'A LIVING WORLD.  A STORY OF YOUR OWN.', 9, Muted, true);
-        p.text(720, 24, calendarLabel(snapshot), 9, Sage, true);
-        p.text(720, 43, environmentLabel(s.environment.hour, s.environment.phase, s.environment.weather, s.outdoors), 11, Muted);
-        p.text(720, 64, moonLabel(snapshot), 9, Muted, true);
-        const today = dayLabel(snapshot);
-        if (today) p.text(900, 64, today.slice(0, 30), 9, Amber, true);
-        this.button(1115, 28, 119, 39, 'CHARACTER', 'character');
-        this.button(1242, 28, 119, 39, 'INVENTORY', 'inventory');
-        this.button(1369, 28, 101, 39, 'SETTINGS', 'settings');
-        p.box(1510, 44, 5, 5, snapshot ? Sage : Amber);
-        p.text(1525, 38, snapshot ? 'LIVE' : '…', 10, Sage, true);
-        p.box(30, 117, 525 + extra, 809, Panel);
-        p.frame(30, 117, 525 + extra, 809, Line);
-        p.text(54, 140, 'THE STORY', 11, Amber, true);
-        this.button(331 + extra, 128, 76, 38, 'IN WORLD', 'ic', s.channel === 'ic');
-        this.button(412 + extra, 128, 117, 38, 'LOCAL OOC', 'ooc', s.channel === 'ooc');
-        p.box(54, 181, 477 + extra, 1, Line);
-        p.text(54, 200, s.cellName, 25, Paper, false, true);
-        const sceneHeight = p.paragraph(54, 241, s.sceneDescription ||
-            (s.selfId ? 'No scene description has been authored yet.' : 'Connecting to the persistent world…'), 463 + extra, 14, Muted, 1.65);
-        const feedTop = Math.min(388, 263 + sceneHeight);
-        p.box(54, feedTop, 477 + extra, 1, Line);
-        p.text(54, feedTop + 15, s.channel === 'ic' ? 'NEARBY VOICES & ACTIONS' : 'OUT OF CHARACTER · THIS CELL', 9, Muted, true);
+        s.mapRect = rect(0, 0, width, height);
+        p.box(0, 0, width, height, rgb(0x0f1718));
+        if (s.worldMap) this.legacyFrame(() => this.drawWorld());
+        else this.drawLocal();
+    }
 
-        const feed: Array<{post: Post; lines: string[]; height: number}> = [];
-        let total = 0, waiting = 0;
-        for (const post of s.posts) {
-            if (post.channel !== s.channel && !post.system) continue;
-            if (post.revealed === 0 && !post.system) {
-                ++waiting;
-                continue;
-            }
-            const lines = this.wrapPost(post, 439 + extra);
-            const height = 38 + lines.length * 23;
-            feed.push({post, lines, height});
-            total += height;
+    /**
+     * The world map and travel atlas still draw in the old fixed 960×617 frame (phase 8 replaces them): fitted into
+     * the map, with the pointer and click targets carried between the two.
+     */
+    private legacyFrame(draw: () => void) {
+        const s = this.s, c = this.p.ctx, map = s.mapRect;
+        const old = rect(584, 199, 1544, 816);
+        const k = Math.min((map.right - map.left) / (old.right - old.left), (map.bottom - map.top) / (old.bottom - old.top));
+        const dx = map.left + ((map.right - map.left) - (old.right - old.left) * k) / 2 - old.left * k;
+        const dy = map.top + ((map.bottom - map.top) - (old.bottom - old.top) * k) / 2 - old.top * k;
+        const hover = s.hover, from = s.hits.length;
+        s.hover = [(hover[0] - dx) / k, (hover[1] - dy) / k];
+        const realMap = s.mapRect;
+        s.mapRect = old;
+        c.save();
+        c.translate(dx, dy);
+        c.scale(k, k);
+        try {
+            draw();
+        } finally {
+            c.restore();
+            s.hover = hover;
+            s.mapRect = realMap;
         }
-        const bottom = 744, start = feedTop + 45, available = bottom - start;
-        const scroll = clamp(s.transcriptScroll, 0, Math.max(0, total - available));
-        let y = total > available ? bottom - total + scroll : start;
-        p.clip(rect(49, start, 49 + 480 + extra, start + available), () => {
-            if (!feed.length)
-                p.paragraph(65, start + 29, 'The scene is yours to enter. Listen to the room, approach someone, or press Enter to begin a conversation.',
-                    433 + extra, 15, Muted, 1.85);
-            for (const entry of feed) {
-                const color = entry.post.system ? Muted : speakingColor(entry.post.color);
-                p.box(54, y + 4, 2, entry.height - 16, withAlpha(color, 0.5));
-                p.text(68, y, entry.post.speaker.toUpperCase(), 10, color, true);
-                let ty = y + 23;
-                for (const row of entry.lines) {
-                    p.text(68, ty, row, 14, color);
-                    ty += 23;
-                }
-                y += entry.height;
-            }
-        });
-        p.box(54, 756, 477 + extra, 1, Line);
-        p.text(55, 772, s.chat ? 'WRITING  /  YOUR DRAFT IS PRIVATE' : 'NAVIGATION  /  ENTER TO WRITE', 9, s.chat ? Sage : Muted, true);
-        if (waiting > 0 && extra >= 0) p.text(390 + extra, 772, `${waiting} QUEUED`, 9, Amber, true);
-        this.button(54, 792, 95, 28, s.volume.toUpperCase(), 'volume');
-        if (!s.failedDraft || extra >= 0)
-            p.text(160, 802, s.channel === 'ic' ? '/pose  /me  /sit  /lay  /stand' : 'Visible to this cell only', 11, Muted);
-        p.box(54, 822, 466 + extra, 79, Ink);
-        p.frame(54, 822, 466 + extra, 79, s.chat ? Sage : Line);
-        p.text(55, 909, 'SHIFT + ENTER  newline     ESC  keep draft', 9, Muted, true);
-        if (s.failedDraft) this.button(343 + extra, 782, 178, 35, 'RECOVER PRIOR POST', 'recover');
-
-        // The map, physically separate from the transcript.
-        p.text(586 + extra, 130, 'YOUR SURROUNDINGS', 10, Amber, true);
-        p.text(586 + extra, 154, s.cellName, 22, Paper, false, true);
-        p.text(586 + extra, 184, environmentEffectsLabel(s.environment, s.outdoors, s.reducedMotion), 8, Muted, true);
-        this.button(1270, 139, 113, 38, 'LOCAL MAP', 'local', !s.worldMap);
-        this.button(1390, 139, 143, 38, 'WORLD MAP', 'world', s.worldMap);
-        s.mapRect = rect(584 + extra, 199, 1544, 816);
-        p.box(584 + extra, 199, 960 - extra, 617, rgb(0x0f1718));
-        p.frame(584 + extra, 199, 960 - extra, 617, Line);
-        p.clip(rect(585 + extra, 200, 585 + extra + 958 - extra, 815), () => {
-            if (s.worldMap) this.drawWorld();
-            else this.drawLocal();
-        });
-        this.drawPace();
-        p.text(602 + extra, 890, 'SIGHT · map', 9, Muted);
-        p.text(722 + extra, 890, s.movementHeard ? 'HEARING · unseen pawsteps' : 'HEARING · no unseen steps heard', 9, s.movementHeard ? Blue : Muted);
-        p.text(942 + extra, 890, scentLabel(s.scentCues), 9, s.scentCues.length ? Scent : Muted);
-        p.box(584 + extra, 906, 960 - extra, 1, Line);
-        const left = 584 + extra;
-        p.text(left, 923, 'ACTIONS', 9, Muted, true);
-        this.button(left + 74, 912, 90, 33, 'Listen  L', 'listen');
-        this.button(left + 170, 912, 70, 33, 'Look', 'look');
-        this.button(left + 246, 912, 72, 33, 'Smell', 'smell');
-        this.button(left + 324, 912, 62, 33, 'Wait', 'wait');
-        this.button(left + 392, 912, 54, 33, 'Sit', 'sit');
-        this.button(left + 452, 912, 106, 33, 'End scene', 'session_end');
-        if (extra < 150) {
-            p.text(1282, 912, str(self, 'name', 'Connecting'), 12, Paper, false, true);
-            p.text(1282, 933, `${postureLabel(self)}  ·  ${str(self, 'state')}`.slice(0, 42), 10, Muted);
-        }
-        p.box(0, 951, 1600, 49, Panel);
-        p.box(0, 951, 1600, 1, Line);
-        p.text(38, 969, 'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · M map', 10, Muted, true);
-        p.text(1185, 969, str(snapshot, 'connection', 'Connecting to the world…'), 10, Sage);
-
-        if (s.contextTarget && !s.modal) {
-            const [cx, cy] = s.contextPoint;
-            const h = 57 + s.contextActions.length * 36;
-            p.box(cx + 5, cy + 6, 194, h, {r: 0, g: 0, b: 0, a: 0.5});
-            p.box(cx, cy, 194, h, Panel);
-            p.frame(cx, cy, 194, h, withAlpha(Amber, 0.5));
-            p.text(cx + 14, cy + 12, s.contextName, 13, Paper, false, true);
-            s.contextActions.forEach((action, i) => {
-                const ax = cx + 7, ay = cy + 45 + i * 36;
-                const r = rect(ax, ay, ax + 180, ay + 33);
-                if (contains(r, s.hover[0], s.hover[1])) p.box(ax, ay, 180, 33, Raised);
-                p.text(ax + 10, ay + 6, `${i + 1}  ${upperFirst(action)}`, 13, Sage);
-                s.hits.push({rect: r, action: 'context', target: action});
-            });
-        }
-        if (s.clock < s.toastUntil) {
-            p.box(620 + extra, 765, 880 - extra, 38, Panel);
-            p.text(635 + extra, 776, s.toast.slice(0, extra > 150 ? 65 : 105), 12, Amber);
-        }
-        if (s.modal) this.drawModal();
+        for (const h of s.hits.slice(from))
+            h.rect = rect(h.rect.left * k + dx, h.rect.top * k + dy, h.rect.right * k + dx, h.rect.bottom * k + dy);
     }
 
     // ------------------------------------------------------------------ Atmosphere and weather
@@ -458,18 +342,20 @@ export class GamePainter {
 
     private drawLocal() {
         const s = this.s, p = this.p;
-        const extra = s.storyExtra;
-        s.tileSize = Math.min(28, Math.min((882 - extra) / Math.min(s.cellWidth, 32), 548 / Math.min(s.cellHeight, 24)));
+        const map = s.mapRect;
+        const mapW = map.right - map.left, mapH = map.bottom - map.top;
+        // A small room fills the map (up to 28 pixels a tile); anything larger shows at the chosen zoom.
+        const fit = Math.min(mapW * 0.92 / s.cellWidth, mapH * 0.9 / s.cellHeight);
+        s.tileSize = Math.max(ZoomTiles[s.zoom] ?? 22, Math.min(28, fit));
         // A cell that fits is centred; a larger one follows the wolf, stopping at its edges so no empty canvas
         // shows. Shift/Ctrl + wheel look around (mapPan) until the wolf next moves.
-        const viewX = 1064 + extra * 0.5, viewY = 508;
+        const viewX = (map.left + map.right) / 2, viewY = (map.top + map.bottom) / 2;
         const me = s.entities.get(s.selfId);
         const axis = (center: number, low: number, high: number, tiles: number, self: number) => {
             const span = tiles * s.tileSize;
             if (span <= high - low || !me) return center - span * 0.5;
             return clamp(center - self * s.tileSize, high - span, low);
         };
-        const map = s.mapRect;
         s.mapOrigin = [axis(viewX, map.left, map.right, s.cellWidth, me?.x ?? 0) + s.mapPan[0],
             axis(viewY, map.top, map.bottom, s.cellHeight, me?.y ?? 0) + s.mapPan[1]];
         // A crossing keeps the wolf where it was on screen for a moment, then the view slides to where it belongs.
@@ -505,6 +391,7 @@ export class GamePainter {
         }
         const me2 = s.entities.get(s.selfId);
         if (me2) this.drawScent(ox + me2.x * tile, oy + me2.y * tile);
+        let hovered = '';
         for (const view of s.entities.values()) {
             const x = ox + view.x * tile, y = oy + view.y * tile;
             const color = view.self ? Amber : view.kind === 'npc' ? Sage : Blue;
@@ -528,6 +415,15 @@ export class GamePainter {
                 p.frame(bx, by, 32, 20, withAlpha(speakingColor(view.color), alpha * 0.6));
                 p.text(bx + 6, by - 1, view.typing ? '...' : "''", 13, withAlpha(speakingColor(view.color), alpha), true);
             }
+            // Pointed at in the In Sight list: a ring, so a name finds its wolf.
+            if (s.highlight === view.id) {
+                p.ctx.beginPath();
+                p.ctx.arc(x, y, 19, 0, Math.PI * 2);
+                p.ctx.strokeStyle = css(withAlpha(color, 0.8));
+                p.ctx.lineWidth = 2;
+                p.ctx.stroke();
+            }
+            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) {
                 const label = view.self ? `${view.name} · you` : view.name;
                 const [lw, lh] = p.measure(label, 11);
@@ -535,72 +431,32 @@ export class GamePainter {
                 p.text(x - lw * 0.5, y + 23, label, 11, color);
             }
         }
+        s.hoveredEntity = hovered;
         this.drawEnvironment(true);
-        p.text(606 + extra, 218, 'N ^', 10, Muted, true);
-        p.text(680 + extra, 218, windLabel(s.outdoors, s.windStrength, s.windDirection, s.windVariable), 9, Muted);
-        p.text(606 + extra, 236, elevationLabel(s.selfHeight()), 8, Muted, true);
-        p.text(1225, 218, 'W YOU', 8, Amber, true);
-        p.text(1305, 218, 'W PLAYER', 8, Blue, true);
-        p.text(1410, 218, 'W RESIDENT', 8, Sage, true);
+        // Words on the map, kept to its corners: wind and height top left, travel and turning along the bottom.
+        const L = map.left + 14, T = map.top + 12, B = map.bottom;
+        p.text(L, T, 'N ^', 10, Muted, true);
+        p.text(L + 46, T, windLabel(s.outdoors, s.windStrength, s.windDirection, s.windVariable), 9, Muted);
+        p.text(L, T + 18, elevationLabel(s.selfHeight()), 8, Muted, true);
         const travel = obj(s.snapshot, 'travel');
         if (bool(travel, 'active') || bool(travel, 'paused')) {
-            p.box(606 + extra, 738, 914 - extra, 37, Panel);
-            p.text(616 + extra, 750, `TRAVEL · ${str(travel, 'status', 'Following your route')}`.slice(0, extra > 150 ? 55 : 89), 10,
+            const w = mapW - 28;
+            p.box(L, B - 84, w, 37, Panel);
+            p.text(L + 10, B - 72, `TRAVEL · ${str(travel, 'status', 'Following your route')}`.slice(0, Math.max(20, Math.floor((w - 130) / 6.5))), 10,
                 bool(travel, 'paused') ? Amber : Sage);
-            p.box(1420, 742, 92, 28, Raised);
-            p.text(1429, 750, 'STOP · ESC', 9, Paper, true);
-            s.hits.push({rect: rect(1420, 742, 1512, 770), action: 'cancel_travel', target: ''});
+            const sx = L + w - 100;
+            p.box(sx, B - 80, 92, 28, Raised);
+            p.text(sx + 9, B - 72, 'STOP · ESC', 9, Paper, true);
+            s.hits.push({rect: rect(sx, B - 80, sx + 92, B - 52), action: 'cancel_travel', target: ''});
         }
-        if (s.facingPreview && s.canFaceAt(s.hover)) p.text(606 + extra, 782, 'ALT · CLICK TO TURN', 9, Amber, true);
-        else p.text(606 + extra, 782, postureLabel(obj(s.snapshot, 'self')), 9, Sage);
-        const law = lawLabel(obj(s.snapshot, 'self'));
-        if (law) p.text(820 + extra, 782, law.slice(0, Math.max(10, Math.floor((580 - extra) / 6.5))), 9, rgb(0xe1aba2), true);
-        p.text(1415, 782, `LOCAL  /  Z ${Math.trunc(num(cell, 'z'))}`, 9, Muted, true);
-    }
-
-    // ------------------------------------------------------------------ Pace and stamina
-
-    private drawPace() {
-        const s = this.s, p = this.p;
-        const self = obj(s.snapshot, 'self');
-        const left = 602 + s.storyExtra, width = 924 - s.storyExtra, paceWidth = width * 0.51;
-        const pace = s.displayPace(), effective = Math.trunc(boundedNum(self, 'effectivePace', 0, 10));
-        const exhausted = bool(self, 'exhausted');
-        const stamina = boundedNum(self, 'stamina', 0, 100, 100);
-        const rate = boundedNum(self, 'staminaRate', -100, 100);
-        const paceColor = exhausted ? rgb(0xe1aba2) : pace >= 9 ? Amber : Sage;
-        p.text(left, 827, `PACE · ${paceLabel(pace)} ${pace}/10`, 10, paceColor, true);
-        const limiter = s.requestedPace >= 0 && s.clock - s.lastPaceRequest <= 1.5 ? 'REQUESTING…'
-            : exhausted ? 'EXHAUSTED · walking' : effective < pace ? 'POSTURE-LIMITED' : 'wheel / PgUp PgDn';
-        p.text(left + paceWidth - 151, 829, limiter, 8, exhausted ? paceColor : Muted);
-        const step = paceWidth / 11;
-        for (let i = 0; i <= 10; ++i) {
-            const x = left + i * step;
-            p.box(x, 851, step - 3, 10, i <= pace ? withAlpha(i >= 9 ? Amber : Sage, i === pace ? 1 : 0.45) : Raised);
-            if (i === pace) p.frame(x, 849, step - 3, 14, paceColor);
-            s.hits.push({rect: rect(x, 846, x + step - 3, 879), action: 'pace', target: String(i)});
-        }
-        p.text(left, 867, 'WALK', 8, Muted, true);
-        p.text(left + step * 3, 867, 'TROT', 8, Muted, true);
-        p.text(left + step * 6, 867, 'RUN', 8, Muted, true);
-        p.text(left + step * 9, 867, 'SPRINT', 8, Amber, true);
-        const staminaX = left + paceWidth + 23, staminaWidth = width - paceWidth - 23;
-        const energy = exhausted ? rgb(0xe1aba2) : rate < -0.01 ? Amber : Sage;
-        p.text(staminaX, 827, `STAMINA  ${stamina.toFixed(0)}%`, 10, energy, true);
-        p.text(staminaX + staminaWidth - 121, 829, `DEX ${envNumber(self, 'effectiveDexterity', 0, 100, envNumber(self, 'dexterity', 0, 100, 0)).toFixed(0)}` +
-            ` · TOP ${boundedNum(self, 'topSpeed', 0, 100).toFixed(1)} t/s`, 8, Muted);
-        p.box(staminaX, 851, staminaWidth, 10, Raised);
-        p.box(staminaX, 851, staminaWidth * stamina / 100, 10, energy);
-        const rateText = rate < -0.01 ? `DRAINING ${(-rate).toFixed(1)}/s · ease pace for distance`
-            : rate > 0.01 ? (stamina >= 99.95 ? 'FULL · recovery is always active' : `RECOVERING +${rate.toFixed(1)}/s · ongoing recovery`)
-                : 'STEADY · sustainable travel';
-        p.text(staminaX, 867, rateText, 8, energy);
+        if (s.facingPreview && s.canFaceAt(s.hover)) p.text(L, B - 30, 'ALT · CLICK TO TURN', 9, Amber, true);
+        p.text(map.right - 110, B - 30, `LOCAL  /  Z ${Math.trunc(num(cell, 'z'))}`, 9, Muted, true);
     }
 
     // ------------------------------------------------------------------ The world map and the travel atlas
 
     private drawWorld() {
-        const s = this.s, p = this.p, extra = s.storyExtra;
+        const s = this.s, p = this.p, extra = 0;
         const tab = (x: number, label: string, action: string, active: boolean) => {
             p.box(x, 216, 130, 30, active ? Raised : Panel);
             p.frame(x, 216, 130, 30, active ? Sage : Line);
@@ -662,7 +518,7 @@ export class GamePainter {
     }
 
     private drawTravelAtlas() {
-        const s = this.s, p = this.p, extra = s.storyExtra;
+        const s = this.s, p = this.p, extra = 0;
         p.text(613 + extra, 225, 'YOUR TRAVEL ATLAS', 10, Sage, true);
         p.text(613 + extra, 251, 'Choose a place you have visited. Travel happens on foot, cell by cell.', 12, Muted);
         // Only remembered geography: never live neighbourhood data.
@@ -771,208 +627,5 @@ export class GamePainter {
             s.hits.push({rect: rect(1390, 738, 1518, 773), action: 'cancel_travel', target: ''});
         } else p.text(left, 745, 'No teleporting. Closed doors require an explicit open action.', 11, Muted);
         p.text(left, 785, 'WASD or a local click takes over · choose a comfortable pace below', 9, Muted);
-    }
-
-    // ------------------------------------------------------------------ Sheets and dialogs
-
-    private drawModal() {
-        const s = this.s, p = this.p;
-        p.box(0, 97, 1600, 854, rgb(0x080e10, 0.94));
-        p.box(298, 164, 1024, 697, {r: 0, g: 0, b: 0, a: 0.45});
-        p.box(288, 151, 1024, 697, Panel);
-        p.frame(288, 151, 1024, 697, Line);
-        const button = (x: number, y: number, w: number, h: number, label: string, action: string, target = '', active = false) => {
-            const r = rect(x, y, x + w, y + h);
-            p.box(x, y, w, h, active ? rgb(0x35402d) : Raised);
-            if (contains(r, s.hover[0], s.hover[1])) p.frame(x, y, w, h, Sage);
-            p.text(x + 12, y + 11, label, 12, active ? Amber : Paper);
-            s.hits.push({rect: r, action, target});
-        };
-        button(1240, 173, 47, 40, '×', 'close');
-        const self = obj(s.snapshot, 'self');
-        const m = s.modal;
-        if (m === 'character') {
-            p.text(324, 185, 'CHARACTER / APPEARANCE', 10, Amber, true);
-            p.text(324, 221, str(self, 'name', 'Your character'), 35, Paper, false, true);
-            p.text(325, 271, `AGE ${wholeCount(self, 'age', 18, 10000)}  ·  NORMAL  ·  A STORY STILL UNFOLDING`, 10, Muted, true);
-            const dex = envNumber(self, 'dexterity', 0, 100, 50);
-            p.text(325, 293, `STRENGTH ${envNumber(self, 'strength', 0, 100, 50).toFixed(0)}   DEXTERITY ${dex.toFixed(0)} ` +
-                `(${envNumber(self, 'effectiveDexterity', 0, 100, dex).toFixed(1)} effective)   WISDOM ${envNumber(self, 'wisdom', 0, 100, 50).toFixed(0)}`,
-                10, Sage, true);
-            p.box(324, 318, 509, 355, Ink);
-            p.frame(324, 318, 509, 355, Line);
-            drawPortrait(p.ctx, this.portraits, s.portraitAppearance(), s.portraitAge(), 324, 318, 509, 300);
-            p.text(342, 643, num(self, 'shoulderHeightCm') > 0
-                ? `${str(obj(self, 'appearance'), 'stature', 'average').toUpperCase()} STATURE · ${num(self, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER · SAVED PROFILE`
-                : 'STATIC PROFILE · YOUR SAVED APPEARANCE', 9, Muted, true);
-            p.text(866, 328, 'PRESENT STATE', 10, Amber, true);
-            p.text(866, 357, postureLabel(self), 18, Paper);
-            p.paragraph(866, 397, str(self, 'state', 'Set your current state with /me.'), 365, 14, Muted);
-            p.paragraph(866, 444, '/lay then move to sneak. /stand to walk normally.', 365, 11, Sage, 1.45);
-            p.text(866, 478, 'ROLEPLAY PROGRESSION', 10, Amber, true);
-            p.text(866, 508, `Level ${Math.trunc(num(self, 'socialLevel', 1))}`, 24, Paper);
-            p.text(866, 550, `${Math.trunc(num(self, 'socialXp'))} social experience`, 13, Sage);
-            p.box(866, 582, 354, 4, Line);
-            p.box(866, 582, clamp(num(self, 'socialXp') / 100, 0, 1) * 354, 4, Sage);
-            p.text(866, 613, `Sneak ${clamp(Math.trunc(num(self, 'sneakSkill')), 0, 100)} / 100`, 12, Sage);
-            p.text(1043, 613, `Hearing ${clamp(Math.trunc(num(self, 'hearingSkill')), 0, 100)} / 100`, 12, Sage);
-            p.text(866, 637, `Scent ${clamp(Math.trunc(num(self, 'scentSkill')), 0, 100)} / 100`, 12, Scent);
-            p.text(1043, 637, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`, 12, Muted);
-            p.text(866, 663, 'SKILLS · TRAINING NOT IMPLEMENTED', 9, Muted, true);
-            p.text(326, 706, 'DESCRIPTION', 10, Amber, true);
-            p.paragraph(326, 736, str(self, 'description',
-                'Your appearance belongs here. Map tokens remain simple, leaving actions and expression to the imagination.'), 690, 14, Paper);
-            button(1044, 789, 240, 40, 'CHARACTER SELECTION', 'leave_character');
-        } else if (m === 'inventory') {
-            p.text(324, 185, 'BELONGINGS / EQUIPMENT', 10, Amber, true);
-            p.text(324, 221, 'What you carry', 35, Paper, false, true);
-            p.text(325, 271, 'Each object has a place in the story.', 14, Muted);
-            p.text(856, 272, `PURSE · ${countText(self, 'cash')} silver pennies`, 13, Amber);
-            const items = arr(s.snapshot, 'inventory');
-            if (!items.length)
-                p.paragraph(326, 337, 'Your pack is empty. Objects you acquire will appear here, each with its own icon and description.', 700, 16, Muted);
-            items.slice(0, 6).forEach((value, i) => {
-                if (!isObject(value)) return;
-                const item = value;
-                const x = 325 + (i % 2) * 478, y = 327 + Math.floor(i / 2) * 142;
-                p.box(x, y, 455, 124, Ink);
-                p.frame(x, y, 455, 124, Line);
-                p.box(x + 14, y + 16, 81, 89, Raised);
-                this.itemIcon(x + 27, y + 28, item);
-                p.text(x + 113, y + 20, str(item, 'name'), 17, Paper, false, true);
-                p.text(x + 114, y + 50, `${bool(item, 'equipped') ? 'EQUIPPED' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}`, 9,
-                    bool(item, 'equipped') ? Sage : Muted, true);
-                p.paragraph(x + 114, y + 72, str(item, 'description'), 316, 12, Muted, 1.4);
-            });
-            if (s.inventoryQuantity('meal') > 0) button(326, 765, 160, 39, 'EAT ONE MEAL', 'eat');
-            const resource = s.visibleResource();
-            if (s.canGather()) button(501, 765, 165, 39, 'GATHER HERBS', 'gather');
-            else if (resource)
-                p.text(505, 779, wholeCount(resource, 'remaining') > 0 ? 'Approach the herb patch to gather.' : 'The visible herb patch is depleted.', 11, Muted);
-            const merchantId = str(obj(s.snapshot, 'merchant'), 'id');
-            if (merchantId)
-                button(949, 765, 285, 39, merchantId === 'npc_keeper' ? 'TRADE WITH THE KEEPER' : 'TRADE WITH THE SHOPKEEPER', 'trade_open', merchantId);
-            p.text(326, 823, 'Equipment appears on your sheet. Your map presence remains W>.', 12, Muted);
-        } else if (m === 'trade') {
-            const merchant = obj(s.snapshot, 'merchant');
-            const available = !!str(merchant, 'id');
-            p.text(324, 185, 'LOCAL TRADE / REAL GOODS & REAL PURSES', 10, Amber, true);
-            p.text(324, 221, available ? str(merchant, 'name', 'The keeper').slice(0, 38) : 'The counter is unattended', 31, Paper, false, true);
-            if (!available)
-                p.paragraph(326, 320, 'The keeper is no longer awake, visible, and within reach. Return to them to see current stock and offers. ' +
-                    'Old quotes are not retained.', 860, 17, Muted, 1.7);
-            else {
-                p.text(326, 273, 'One item per exchange. The authority rechecks every offer.', 13, Muted);
-                p.text(326, 307, `YOUR PURSE · ${countText(self, 'cash')} p`, 12, Amber, true);
-                p.text(804, 307, `KEEPER'S PURSE · ${countText(merchant, 'cash')} p`, 12, Sage, true);
-                (['herbs', 'meal'] as const).forEach((good, i) => {
-                    const item = s.tradeItem(good);
-                    const x = 326, y = 347 + i * 204;
-                    p.box(x, y, 908, 186, Ink);
-                    p.frame(x, y, 908, 186, Line);
-                    p.text(x + 20, y + 16, i === 0 ? 'Cooking herbs' : 'Prepared meal', 21, Paper, false, true);
-                    p.text(x + 21, y + 53, `KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`, 10, Muted, true);
-                    for (const buy of [true, false]) {
-                        const bx = x + (buy ? 21 : 465), by = y + 83;
-                        const enabled = s.canTradeItem(good, buy);
-                        const label = `${buy ? 'BUY 1 · ' : 'SELL 1 · '}${countText(item, buy ? 'buyPrice' : 'sellPrice')} p`;
-                        if (enabled) button(bx, by, 214, 39, label, buy ? 'trade_buy' : 'trade_sell', good);
-                        else {
-                            p.box(bx, by, 214, 39, Panel);
-                            p.text(bx + 12, by + 11, label, 12, Muted);
-                        }
-                        p.paragraph(bx, by + 51, enabled
-                            ? (buy ? "Your purse pays for one item from the keeper's stock." : 'The keeper pays for one item from your pack.')
-                            : str(item, buy ? 'buyReason' : 'sellReason', 'This offer is currently unavailable.').slice(0, 102),
-                        403, 12, enabled ? Muted : Amber, 1.4);
-                    }
-                });
-                p.text(326, 786, 'p = silver penny · stock, demand, and cash are finite', 12, Muted);
-                p.text(326, 811, 'Prices can change as residents gather, cook, buy, and eat.', 12, Muted);
-            }
-        } else if (m === 'settings') {
-            p.text(324, 185, 'PREFERENCES / READING & PRESENCE', 10, Amber, true);
-            p.text(324, 221, 'Make yourself heard', 35, Paper, false, true);
-            p.text(326, 291, 'YOUR SPEAKING COLOR', 10, Amber, true);
-            p.paragraph(326, 319, 'One color follows your words, typing ellipsis, and speaking marker. Your map identity keeps its own color.',
-                504, 14, Muted);
-            for (let i = 0; i < 32; ++i) {
-                const x = 326 + (i % 8) * 60, y = 395 + Math.floor(i / 8) * 55;
-                p.box(x, y, 43, 36, speakingColor(i));
-                if (i === s.selectedColor) p.frame(x - 4, y - 4, 51, 44, Paper);
-                s.hits.push({rect: rect(x, y, x + 43, y + 36), action: 'color', target: String(i)});
-            }
-            p.text(326, 644, '"There is always another story beyond the door."', 16, speakingColor(s.selectedColor));
-            p.text(888, 291, 'STORY FLOW', 10, Amber, true);
-            button(886, 323, 347, 45, `Reveal speed: ${s.revealSpeed === 0 ? 'Instant' : `${s.revealSpeed} characters / second`}`, 'speed');
-            p.paragraph(886, 382, 'One post unfolds at a time. Later voices wait their turn without changing when events happen.', 342, 13, Muted);
-            button(886, 474, 347, 45, s.reducedMotion ? 'Reduced motion: On · static weather' : 'Reduced motion: Off', 'motion');
-            button(886, 535, 170, 45, s.flatWorld ? 'World: Always flat' : 'World: Automatic', 'projection');
-            button(1063, 535, 170, 45, s.plainGlyphs ? 'Map: Plain ASCII' : 'Map: Unicode', 'glyphs');
-            const split = s.storyExtra < 0 ? 'Compact narrative' : s.storyExtra === 0 ? 'Balanced' : s.storyExtra === 150 ? 'Wide narrative' : 'Text-first';
-            button(886, 596, 347, 45, `Pane balance: ${split}`, 'split');
-            if (bool(s.snapshot, 'devTools')) {
-                p.text(326, 675, 'WORLD CLOCK · DEVELOPMENT ONLY', 9, Muted, true);
-                ['dawn', 'day', 'dusk', 'night'].forEach((t, i) => button(326 + i * 122, 692, 112, 34, t, 'time', t, s.environment.phase === t));
-                p.text(326, 738, 'ROOM LIGHTING · DEVELOPMENT ONLY', 9, Muted, true);
-                ['warm', 'unlit', 'daylit', 'cool'].forEach((t, i) => button(326 + i * 122, 755, 112, 34, t, 'lighting', t));
-                p.text(886, 663, 'DEVELOPMENT WEATHER', 9, Muted, true);
-                const short = ['clear', 'cloud', 'rain', 'storm', 'fog', 'snow', 'sand'];
-                ['clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'].forEach((w, i) => button(886 + i * 50, 686, 47, 39, short[i], 'weather', w));
-                p.text(886, 737, 'WIND FLOW · DEVELOPMENT ONLY', 9, Muted, true);
-                ['east', 'west', 'north', 'calm', 'live'].forEach((w, i) => button(886 + i * 70, 757, 66, 34, w, 'wind', w));
-                button(886, 800, 105, 32, 'Day +1', 'calendar', 'day');
-                button(1005, 800, 105, 32, 'Year +1', 'calendar', 'year');
-                button(1124, 800, 110, 32, 'Seasonal', 'weather', 'seasonal');
-            }
-            p.text(326, 798, 'ENTER  write / send     SHIFT + ENTER  newline', 10, Muted, true);
-            p.text(326, 814, 'ESC  preserve draft', 10, Muted, true);
-            p.text(326, 835, 'ALT + mouse previews facing; click to turn. /lay + move sneaks; /stand rises.', 12, Muted);
-        } else if (m === 'leave_character') {
-            p.text(324, 185, 'RETURN TO YOUR CHARACTERS', 10, Amber, true);
-            p.text(324, 249, 'Leave this character?', 33, Paper);
-            p.paragraph(326, 322, "Your character remains saved. Returning to selection ends this play session. Unsent drafts and this session's " +
-                'local transcript are not kept when switching characters.', 876, 19, Muted, 1.7);
-            button(326, 496, 284, 48, 'RETURN TO SELECTION', 'leave_confirm');
-            button(622, 496, 284, 48, 'KEEP PLAYING', 'leave_cancel');
-        } else {
-            p.text(324, 185, 'A CLOSER LOOK', 10, Amber, true);
-            if (s.portraitAppearance()) {
-                p.box(324, 285, 449, 355, Ink);
-                p.frame(324, 285, 449, 355, Line);
-                drawPortrait(p.ctx, this.portraits, s.portraitAppearance(), s.portraitAge(), 324, 285, 449, 355);
-                const inspected = s.inspectedCharacter;
-                p.text(326, 670, str(inspected, 'lifeStage', 'adult').toUpperCase() + (num(inspected, 'shoulderHeightCm') > 0
-                    ? ` · ${num(inspected, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER` : ' · STATIC CHARACTER PROFILE'), 10, Sage, true);
-                p.paragraph(805, 254, s.inspectedText, 426, 16, Paper, 1.6);
-            } else p.paragraph(325, 254, s.inspectedText, 876, 19, Paper, 1.7);
-            p.text(326, 787, 'Only information your character is allowed to perceive appears here.', 12, Muted);
-        }
-    }
-
-    private itemIcon(x: number, y: number, item: Json) {
-        const p = this.p;
-        const kind = str(item, 'icon', 'bag');
-        const at = (dx: number, dy: number): Point => [x + dx, y + dy];
-        if (kind.includes('bag') || kind.includes('satchel') || kind.includes('pack')) {
-            p.frame(x + 5, y + 18, 45, 39, Amber);
-            p.lines([at(11, 18), at(14, 6), at(43, 6), at(48, 18)], Amber, 2);
-            p.lines([at(6, 20), at(28, 34), at(49, 20)], Amber);
-        } else if (str(item, 'id') === 'herbs') {
-            p.lines([at(28, 59), at(26, 7)], Sage, 2);
-            for (let leaf = 0; leaf < 3; ++leaf) {
-                const ly = 16 + leaf * 13;
-                p.lines([at(27, ly + 8), at(8, ly - 3), at(17, ly + 10), at(27, ly + 8), at(47, ly - 4), at(38, ly + 11)], Sage, 1.6);
-            }
-        } else if (kind.includes('bowl') || kind.includes('food')) {
-            p.lines([at(3, 25), at(11, 51), at(46, 51), at(54, 25), at(3, 25)], Amber, 2);
-            p.lines([at(18, 13), at(15, 4), at(18, -1)], Muted);
-        } else if (kind.includes('knife') || kind.includes('weapon')) {
-            p.lines([at(10, 57), at(41, 8), at(48, 3), at(42, 26), at(21, 47)], Paper, 2);
-            p.lines([at(10, 38), at(30, 51)], Amber, 3);
-        } else {
-            p.lines([at(13, 15), at(39, 15), at(46, 53), at(9, 53), at(13, 15)], Sage, 2);
-            p.frame(x + 17, y + 5, 19, 10, Sage);
-        }
     }
 }

@@ -6,7 +6,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 | Phase | What | State |
 |---|---|---|
 | 1 | Smooth movement | Built 2026-10-02 |
-| 2 | A new screen: HTML panels around a larger canvas map, an In Sight list | Planned |
+| 2 | A new screen: HTML panels around a larger canvas map, an In Sight list | Built 2026-10-02 |
 | 3 | Mouse-over: what is under the cursor, in words | Planned |
 | 4 | Talk targets: choose who you are speaking to, several at once | Planned |
 | 7 | Regional weather: moving systems that fade with distance, driving the simulation | Planned |
@@ -52,3 +52,28 @@ Tests: `server_parts_tests` (visibility deltas: a step sends only changed rows, 
 everything, a wholesale change goes whole, edits outside the view are refused); `net.test.ts` (deltas on the client);
 `game.test.ts` (the ground drawn once and redrawn only on change; the own wolf close to its newest pose, others
 further back, a long jump taken at once).
+
+## Phase 2: A new screen (built 2026-10-02)
+
+The fixed 1600×1000 canvas, scaled to the window, became HTML panels around a canvas that is only the map
+(`Client/src/ui/hud/`):
+
+- **Layout** (`hud.ts`, `styles.css`): a CSS grid that fills the window. A slim top bar (calendar, weather, moon, the
+  day, Character / Inventory / Settings, LIVE); the **story column** on the left (`story.ts`), the main focus as
+  before, widened or narrowed by dragging its edge (kept in the browser) or with Settings' four presets; the **map** in
+  the middle with its header (place, what the weather does to the senses, zoom − +, local and world map) and the
+  actions beneath; and on the right **In Sight** and the wolf's status (pace, stamina, senses, posture, the law).
+- **The story** is real text: wrapping, selection and scrolling are the browser's. The transcript follows the newest
+  post until the reader scrolls up; posts still unfold one at a time.
+- **In Sight** lists every wolf the server shows, nearest first: a portrait drawn from their appearance and life stage,
+  their name (sage for residents, blue for players), what they do (the post's title, or the trade they were written
+  with: the snapshot's entities gained `work`), whether they are hostile, and which way and how far. Pointing at a row
+  rings that wolf on the map; pointing at a wolf on the map lights its row. Clicking a row (or right-clicking) opens
+  its menu at the pointer.
+- **The map** fills its space at any window size (DPR-aware). A small room is drawn up to 28 pixels a tile as before;
+  anything larger shows at the zoom chosen with − + or the = and − keys (14, 18, 22 or 28 pixels a tile), so a wide
+  window shows much more of the world. Its corner words (wind, height, travel, turning) follow its edges. The world
+  map and travel atlas keep their old drawing, fitted into the map, until phase 8 replaces them.
+- **Menus, sheets and messages are HTML:** the action menu (still keys 1 to 6), the character, belongings, trade,
+  settings, leaving and closer-look sheets (`dialogs.ts`, built again only when what they show changes), and the toast.
+  Buttons never take keyboard focus, so WASD stays with the map; a click outside a menu closes it.
