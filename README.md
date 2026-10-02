@@ -596,6 +596,7 @@ are in `Saved/Config/RATWNPCAI.local.json` (gitignored), or `RATW_AI_CONFIG`. To
 
   ```json
   "light_model": "<a small, cheap model>",
+  "fallback_model": "<who answers players past the main model's share>",
   "cost_mode": "balanced",
   "polish": false,
   "prices": {"<model>": {"input": 0.0, "cached_input": 0.0, "output": 0.0}}

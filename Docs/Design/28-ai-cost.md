@@ -150,3 +150,16 @@ with the main model kept for the conversations that are worth it.
   page in shuffled columns with the key at the end. Paid; run when wanted.
 - **Not done:** the provider's batch discount for writing the library (it calls the model one combination at a
   time); a cost view in the Dungeon Master. No small model is chosen yet: the operator names one in the config.
+
+## Choosing the small models (2026-10-01)
+
+Reviewed with `tools/ai_review.py` against `gpt-5.6-luna` (the main voice), on the game's real dialogue context:
+
+- **`gpt-5.4-nano`** spends no reasoning tokens with `reasoning_effort: none` and answers in about two seconds, but in
+  conversation it loses track of who is who and invents events; its exchanges ramble. Kept for summaries and overheard
+  exchanges (`light_model`).
+- **`gpt-5.4-mini`** reads as naturally as the main voice, keeps to the game's ways (the trade menu, debts), and echoes
+  the scene least. It invents small details as the main voice does (a dish, a rumour); the main voice was the more
+  careful with facts. It answers players once the main voice's share is spent (`fallback_model`, a third setting).
+- The rules now tell every model the scene is background, not something to describe; it worked best on the smaller
+  models (4 mentions of the hearth and juniper in 17 answers for mini, against 12 for the main voice).

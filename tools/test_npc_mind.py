@@ -213,6 +213,12 @@ class MindTests(unittest.TestCase):
         other = dict(CONTEXT, subjectId="player-birch")
         m.dialogue(other)
         self.assertEqual("big", provider.calls[-1]["model"], "Each speaker has their own share")
+        named = Recording()
+        m = mind.Mind(named, audit=lambda e: None, models={"voice": "big", "light": "small", "fallback": "middle"}, mode="frugal",
+                      budget=mind.Budget(1000, 1000))
+        for _ in range(mind.COST_MODES["frugal"]["voice_per_speaker"] + 1):
+            m.dialogue(CONTEXT)
+        self.assertEqual("middle", named.calls[-1]["model"], "or the fallback model, when one is named")
 
     def test_a_quick_failure_falls_back_to_the_small_model(self):
         class Flaky(Recording):

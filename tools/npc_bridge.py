@@ -60,10 +60,16 @@ class Config:
     light_model: str = ""
     cost_mode: str = "balanced"
     polish: bool = False
+    # Who answers players once the main voice's share is spent (the small model when unset).
+    fallback_model: str = ""
 
     @property
     def light(self) -> str:
         return self.light_model or self.model
+
+    @property
+    def fallback(self) -> str:
+        return self.fallback_model or self.light
 
 
 def valid_model(model: object) -> bool:
@@ -87,14 +93,15 @@ def load_config(path: Path) -> Config:
             raise BridgeError("invalid_key")
         if not valid_model(model):
             raise BridgeError("invalid_model")
-        light = data.get("light_model", "")
-        if light not in ("", None) and not valid_model(light):
+        light, fallback = data.get("light_model", ""), data.get("fallback_model", "")
+        if any(m not in ("", None) and not valid_model(m) for m in (light, fallback)):
             raise BridgeError("invalid_model")
         mode = data.get("cost_mode", "balanced")
         polish = data.get("polish", False)
         if mode not in COST_MODES or not isinstance(polish, bool):
             raise BridgeError("invalid_config")
-        return Config(model=model, api_key=key, light_model=light or "", cost_mode=mode, polish=polish)
+        return Config(model=model, api_key=key, light_model=light or "", cost_mode=mode, polish=polish,
+                      fallback_model=fallback or "")
     except BridgeError:
         raise
     except (OSError, ValueError, TypeError):

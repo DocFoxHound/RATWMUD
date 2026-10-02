@@ -39,7 +39,7 @@ int main(int argc, char** argv)
         std::cerr << "samples: " << problem << "\n";
         return 1;
     }
-    g.world().addPlayer("player-reviewer", "Reviewer");
+    g.world().addPlayer("player-reviewer", "Ash");   // An ordinary name: "Reviewer" coloured the replies.
     auto out = json::Value::array();
     for (const auto& s : samples.array("samples"))
     {
