@@ -205,6 +205,15 @@ struct Entity
     bool offstage = false;
     // Folk of the road (a caravan's wagon, bandits), made from the roads' state as needed and never saved themselves.
     bool transient = false;
+    // Free movement (Docs/Design/31-responsiveness.md, Phase 3), never saved: the player's client walks this wolf and
+    // says where it is (World::placeByClient), checked against walking's rules; the world no longer walks it.
+    bool clientWalks = false;
+    double clientMoved = 0;                       // Distance accepted since the last tick (for stamina).
+    double poseBudget = 0, poseRefilled = -1;     // How far poses may still go, refilled at walking speed.
+    double lastPoseAt = -1;                       // When the last pose was accepted.
+    int poseStrikes = 0;                          // Poses refused since the last one accepted.
+    std::uint32_t poseSeq = 0;                    // The last pose accepted.
+    std::uint32_t inputSeq = 0;                   // Held movement: the last input applied.
 };
 
 struct Door
@@ -492,6 +501,23 @@ class World
     const TickProfile& tickProfile() const { return profile_; }
     void resetTickProfile() { profile_ = {}; }
     Result move(const std::string& id, double dx, double dy);
+    // Free movement (doc 31, Phase 3). Whether a client walks this wolf itself; and a pose it sends, checked from where
+    // the wolf stands: no farther than its speed allows (with a margin, from a budget refilled at that speed, so a
+    // burst of poses gains nothing), only where it may stand, and never through a wall or a closed door. `ix, iy` is
+    // the way it is heading, so pushing into a door or a cell's edge still takes it through (only the server crosses).
+    void setClientWalks(const std::string& id, bool on);
+    struct PoseCheck
+    {
+        bool accepted = false, crossed = false;
+        std::string reason;                       // Why it was refused.
+    };
+    PoseCheck placeByClient(const std::string& id, std::uint32_t seq, double x, double y, double facing, double ix, double iy);
+    static constexpr double PoseMargin = 1.15, PoseSlack = .1;
+    // The moments around a fight, when the server walks a player itself (held movement): pursued by a guard, in a
+    // scuffle lately, an offence lately.
+    bool pursued(const std::string& id) const;
+    bool foughtWithin(const std::string& id, double seconds) const;
+    bool offendedWithin(const std::string& id, double seconds) const;
     Result moveTo(const std::string& id, double x, double y);
     Result face(const std::string& id, double x, double y);
     Result setPosture(const std::string& id, const std::string& posture);
@@ -927,11 +953,14 @@ class World
     void updateTravel(Entity& actor);
     void prepareMovement(Entity& actor);
     void transition(Entity& actor, const Door& door);
+    // Through a door or over a cell's edge, if walking from where `actor` stands toward `proposed` leads there.
+    bool throughDoor(Entity& actor, const Cell& c, Vec2 direction, Vec2 proposed, double travel, double speed, double& movedTime);
     void updateSchedules();
     void separate(double dt);
     void createDemo();
     void rebuildFixtureIndex();
     bool blockedByDoor(const std::string& cellId, Vec2 point) const;
+    class WalkingGrid;                                      // A cell as walking (RatwStep.h) sees it.
 };
 
 Tile tileFromGlyph(char glyph); // Terrain rules shared by built-in and authored cells.

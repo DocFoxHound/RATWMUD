@@ -1,7 +1,9 @@
 // Motion frames: the twenty-a-second poses, binary on the wire (Core/RatwMotionCore.h). Little-endian:
 //
 //   u32 magic "RMT1", string session, string observer, string cell, i32 cell generation, f64 revision, f64 time,
-//   i32 count, then per pose: string id, f32 x, f32 y, f32 facing, u8 moving
+//   i32 count, then per pose: string id, f32 x, f32 y, f32 facing, u8 moving; then the observer's own movement
+//   (Docs/Design/31-responsiveness.md, Phase 3): u8 mode (0 free, 1 held, 2 fighting), u32 the last held input
+//   applied, u32 the last pose of its own accepted
 //
 // A string is an i32 length, then: positive, that many bytes with a final 0 (Latin-1); negative, that many UTF-16
 // units with a final 0; zero, the empty string.
@@ -21,6 +23,10 @@ export interface MotionFrame {
     revision: number;
     time: number;
     entities: Pose[];
+    // The observer's own movement; absent in frames made by tests, read as free with nothing acknowledged.
+    mode?: number;
+    inputAck?: number;
+    poseAck?: number;
 }
 
 const Magic = 0x31544d52;
@@ -73,7 +79,7 @@ export function unpack(bytes: Uint8Array): MotionFrame | null {
     if (r.u32() !== Magic) return null;
     const frame: MotionFrame = {
         motionSession: r.string(), observer: r.string(), cellId: r.string(), cellGeneration: r.i32(),
-        revision: r.f64(), time: r.f64(), entities: [],
+        revision: r.f64(), time: r.f64(), entities: [], mode: 0, inputAck: 0, poseAck: 0,
     };
     const count = r.i32();
     if (r.bad || count < 0 || count > MaxPoses) return null;
@@ -82,6 +88,9 @@ export function unpack(bytes: Uint8Array): MotionFrame | null {
         if (r.bad) return null;
         frame.entities.push(pose);
     }
+    frame.mode = r.u8();
+    frame.inputAck = r.u32();
+    frame.poseAck = r.u32();
     return r.bad || r.at !== bytes.length ? null : frame;
 }
 
@@ -110,5 +119,6 @@ export function pack(frame: MotionFrame): Uint8Array {
     string(frame.motionSession); string(frame.observer); string(frame.cellId);
     i32(frame.cellGeneration); f64(frame.revision); f64(frame.time); i32(frame.entities.length);
     for (const p of frame.entities) { string(p.id); f32(p.x); f32(p.y); f32(p.facing); parts.push(p.moving ? 1 : 0); }
+    parts.push(frame.mode ?? 0); u32(frame.inputAck ?? 0); u32(frame.poseAck ?? 0);
     return Uint8Array.from(parts);
 }

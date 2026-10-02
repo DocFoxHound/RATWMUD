@@ -50,6 +50,14 @@ class Connection
     std::string motionSession, motionCell;
     int motionGeneration = 0;
     sections::Held held;                                      // What of its snapshots it is known to hold.
+    // Movement (Docs/Design/31-responsiveness.md, Phase 3): whether this client walks its own wolf when it may (it
+    // asks, with {"type":"walking","mode":"client"}), and the mode the server has it in: 0 free, 1 held (the server
+    // walks it: the moments around a fight), 2 fighting (in an arena: no walking at all).
+    bool clientWalking = false;
+    // It last walked by keys (a "move"), not by poses: the server walks it until a pose comes (rising from a sit, or a
+    // script that drives the wolf by keys).
+    bool keysWalking = false;
+    std::uint8_t movementMode = 0;
 };
 
 // Where the game's save lives. The database (DbStore) for a world from the database; a file for a world from files.
@@ -134,6 +142,16 @@ class Game
     // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
     // tick does this as it goes, without waiting).
     void settle();
+    // A character in a fight (doc 33's arenas, when they come): no walking of any kind until it ends.
+    void setFighting(const std::string& id, bool fighting);
+    enum MovementMode : std::uint8_t
+    {
+        FreeMovement = 0,
+        HeldMovement = 1,
+        Fighting = 2,
+    };
+    // Held around a fight: this close to a standing hostile, or this soon after a blow or an offence.
+    static constexpr double HostileNear = 8, HeldAfter = 10;
     // A status the host should exit with, once asked (75: a new release was published and nobody is playing).
     int exitRequested() const { return exit_; }
     // Where the game thread's time is counted (Docs/Design/31-responsiveness.md, Phase 1); none by default.
@@ -189,6 +207,8 @@ class Game
     std::map<std::uint64_t, PendingSignIn> signIns_;
     std::uint64_t nextSignIn_ = 0;
     void finishSignIns();
+    std::set<std::string> fighting_;
+    void updateMovementModes();
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

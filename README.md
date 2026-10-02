@@ -11,6 +11,8 @@ same port. There is no engine: see [the browser client](Docs/Design/27-browser-c
 - CMake 3.16+ and a C++17 compiler (the server and its tests).
 - Node.js 22+ (the browser client's build and tests; Atlas Workshop and the Dungeon Master tools).
 - Python 3 (the local tool services and the smoke tests).
+- Emscripten, only to rebuild the browser's walking (`bash tools/build_wasm.sh`, from `Core/RatwStep.cpp`); the built
+  `Client/src/wasm/walk.wasm` is committed, so nothing else needs it.
 - A modern browser to play. Headless Chromium (as Playwright installs it) for the screenshot smokes.
 - At run time the server loads zlib and OpenSSL's libcrypto, and libpq for the database worlds.
 

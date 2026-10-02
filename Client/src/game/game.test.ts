@@ -44,22 +44,24 @@ test('input: Enter writes, Shift+Enter keeps writing, Escape keeps the draft, a 
 
 test('input: movement is sent while held, and letting go of focus lets go of the keys', () => {
     const {state: s, commands} = testGame();
+    // Moves are numbered (seq) for held movement's acknowledgements (doc 31, Phase 3); the rest is compared here.
+    const last = () => { const {seq: _seq, ...rest} = commands.at(-1) as Record<string, unknown>; return rest; };
     s.keyDown({code: 'KeyD'});
     s.keyDown({code: 'KeyW'});
-    assert.deepEqual(commands.at(-1), {type: 'move', x: 1, y: -1}, 'diagonals combine');
+    assert.deepEqual(last(), {type: 'move', x: 1, y: -1}, 'diagonals combine');
     const before = commands.length;
     s.tick(1, 0.05);
     s.tick(1.1, 0.1);
     assert.ok(commands.length > before, 'held keys are resent');
     s.focusLost();
     assert.equal(s.heldKeys.size, 0);
-    assert.deepEqual(commands.at(-1), {type: 'move', x: 0, y: 0}, 'losing focus stops the wolf');
+    assert.deepEqual(last(), {type: 'move', x: 0, y: 0}, 'losing focus stops the wolf');
     s.focusGained();
     s.keyDown({code: 'KeyA'});
-    assert.deepEqual(commands.at(-1), {type: 'move', x: -1, y: 0});
+    assert.deepEqual(last(), {type: 'move', x: -1, y: 0});
     s.snapshot = {travel: {active: true}};
     s.keyUp({code: 'KeyA'});
-    assert.deepEqual(commands.at(-1), {type: 'move', x: -1, y: 0}, 'letting go never resets an overland route');
+    assert.deepEqual(last(), {type: 'move', x: -1, y: 0}, 'letting go never resets an overland route');
 });
 
 test('reveal: posts unfold one at a time; speech keeps its quotation marks', () => {

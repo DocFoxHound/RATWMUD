@@ -8,6 +8,7 @@ import {FrontDoor} from './ui/frontDoor.ts';
 import {GameView} from './game/view.ts';
 import type {Json} from './game/json.ts';
 import {artCache} from './ui/artwork.ts';
+import {Walker} from './game/walker.ts';
 
 const app = document.getElementById('app')!;
 const params = new URLSearchParams(location.search);
@@ -16,6 +17,13 @@ const url = server ? `ws://${server}/ws` : gameUrl(location);
 
 let door: FrontDoor | null = null;
 let game: GameView | null = null;
+// The page's own walking (doc 31, Phase 3): the server's movement rules as WebAssembly. Until it has loaded (or where it
+// can't run) the server walks the wolf, as before.
+let walker: Walker | null = null;
+Walker.load(new URL('./wasm/walk.wasm', import.meta.url).href).then(w => {
+    walker = w;
+    if (game && w) game.state.walker = w;
+});
 let lastLobby: Json | null = null;
 
 const connection = new Connection(url, {
@@ -32,6 +40,7 @@ const connection = new Connection(url, {
         if (!game) {
             game = new GameView(app, command => connection.submit(command));
             game.netSample = () => connection.netSample();
+            game.state.walker = walker;
         }
     },
     snapshot: snapshot => game?.applySnapshot(snapshot),

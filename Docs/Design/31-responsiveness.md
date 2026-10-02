@@ -1,8 +1,8 @@
 # 31. Responsiveness and scale: one server, a thousand wolves
 
-Planned 2026-10-02. **Agreed. Phases 1 and 2 built 2026-10-02; Phases 3–6 not started.**
+Planned 2026-10-02. **Agreed. Phases 1–3 built 2026-10-02; Phases 4–6 not started.**
 
-The plan is agreed (see "The decisions"). Phases 1 (measuring) and 2 (saves) are built; the rest has not started. The target is **1,000 players on one server**, with
+The plan is agreed (see "The decisions"). Phases 1 (measuring), 2 (saves) and 3 (movement) are built; the rest has not started. The target is **1,000 players on one server**, with
 the world's roughly 1,000 residents. Hosting is local development now, dedicated servers later. We fix lag rather than
 split the game into services by system. The Unreal cleanup waits until the character-creator work is done; it is
 listed at the end.
@@ -365,6 +365,49 @@ Gate:
 - Input-to-motion under one frame in both modes, with 150 ms of simulated latency.
 - Scripted cheat attempts are all corrected: speed, walls, teleports, crossing a cell without a seam.
 - The server's movement time for players drops in `game_load`.
+
+**Built 2026-10-02.**
+
+- **The shared rules: `Core/RatwStep.{h,cpp}`.** How fast a wolf goes, where it may stand, how it slides along what
+  blocks it, and what moving costs in stamina, on nothing but a grid of ground.
+  - `World::integrate`, `passable` and stamina now call it, unchanged in behaviour (the world and movement tests
+    pass).
+  - Door and edge crossing moved into `World::throughDoor`, used by both kinds of walking.
+- **The page runs the same code.** `Client/wasm/walk.cpp` is built to `Client/src/wasm/walk.wasm` (20 KB) by
+  `tools/build_wasm.sh` (Emscripten, in `~/emsdk`). The .wasm is committed. `Client/src/game/walker.ts` feeds it the
+  tiles, heights and closed doors the client holds.
+- **Free movement:**
+  - The page asks (`{"type":"walking","mode":"client"}`) and then walks its own wolf on the frame a key is pressed.
+  - It sends `pose` twenty times a second (position, facing, and heading, so pushing into a door still crosses).
+  - `World::placeByClient` checks each pose:
+    - a distance budget refilled at the wolf's real speed (15% margin, half a second's worth at most, so jitter costs
+      nothing and a burst of poses gains nothing)
+    - a place it may stand
+    - a clear way there (straight, or along one axis then the other, as walking slides)
+  - A refused pose is answered with `correction`, and the page eases back. Refusals are counted, and 20 or 200 in a row
+    are logged and recorded as an event for the DM.
+  - The world no longer walks that wolf. Stamina is charged from the distance accepted.
+  - The snapshot's `self` carries `walkSpeed` and `moveFactor`, so the page walks at the server's speed.
+- **The server walks the wolf** in held mode:
+  - **When:** pursued by a guard, a blow or an offence within 10 s, a standing hostile within 8 tiles, along a
+    clicked route, on a journey, or after keys rather than poses (rising from a sit, or a script driving by keys).
+  - **How the page predicts it:** with the same rules, from the server's newest pose, so it never draws the wolf
+    through a wall.
+  - Moves are numbered.
+- **Fighting** (`Game::setFighting`, for doc 33's arenas): no walking of any kind. Leaving it returns to free.
+- **The motion frame** ends with the observer's mode, the last input applied and the last pose accepted.
+- **Tests:**
+  - `game_tests`: a walk taken as sent; refused for five tiles at once, a burst over the budget, a pose in a wall, and
+    a leap across the cell; a door crossed by heading into it; an offence holds the wolf; a fight stops even the keys;
+    and free again after
+  - client: the walker's speed, walls, sliding, closed doors, ledges and heavy ground; the page walking at once,
+    twenty poses a second, corrections; held prediction stopping at a wall
+  - `tools/walking_smoke.py`: real key presses in headless Chromium; the wolf moves on the page, the server follows to
+    0.000 tiles, nothing is corrected
+  - the movement and network smokes
+- **Measured** (`game_load --players 100 --walking client|server`, cities): the world's movement went from 2.02 to
+  1.18 ms a tick, and the world from 9.35 to 7.09 ms. Reading the poses added 1.05 ms of commands, which Phase 4's
+  binary wire will cut. The tick mean went from 77 to 72 ms.
 
 ### Phase 4. Per-player work
 

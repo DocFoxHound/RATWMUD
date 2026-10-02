@@ -1041,6 +1041,49 @@ void Game::connect(Connection* c)
     lobby(c);
 }
 
+void Game::setFighting(const std::string& id, bool fighting)
+{
+    if (fighting)
+    {
+        fighting_.insert(id);
+        world_.setClientWalks(id, false);
+        world_.stop(id);
+    }
+    else
+        fighting_.erase(id);
+    updateMovementModes();
+}
+
+void Game::updateMovementModes()
+{
+    for (auto* c : clients_)
+    {
+        const auto* e = world_.entity(c->entityId);
+        if (!e)
+            continue;
+        const auto& id = e->id;
+        std::uint8_t mode = FreeMovement;
+        if (fighting_.count(id))
+            mode = Fighting;
+        else if (world_.pursued(id) || world_.foughtWithin(id, HeldAfter) || world_.offendedWithin(id, HeldAfter) ||
+                 !e->path.empty() || world_.travelState(id).active)
+            mode = HeldMovement;                   // (A route or a journey the server walks counts as held too.)
+        else
+            for (const auto& [otherId, other] : world_.entities())
+                if (other.cellId == e->cellId && other.npc && !other.dead &&
+                    std::hypot(other.position.x - e->position.x, other.position.y - e->position.y) <= HostileNear &&
+                    world_.hostile(otherId))
+                {
+                    mode = HeldMovement;
+                    break;
+                }
+        if (mode != c->movementMode && mode != FreeMovement)
+            world_.stop(id);                       // The server takes over from where the wolf stands, still.
+        c->movementMode = mode;
+        world_.setClientWalks(id, mode == FreeMovement && c->clientWalking && !c->keysWalking);
+    }
+}
+
 void Game::finishSignIns()
 {
     for (const auto& done : hasher_.finished())
@@ -1098,6 +1141,7 @@ void Game::disconnect(Connection* c)
     authRate_.forget(std::to_string(c->id));
     clients_.erase(std::remove(clients_.begin(), clients_.end(), c), clients_.end());
     waiting_.erase(std::remove_if(waiting_.begin(), waiting_.end(), [c](const Waiting& w) { return w.c == c; }), waiting_.end());
+    c->clientWalking = false;
     if (holding_ == c)
         holding_ = nullptr;
 }
@@ -1239,6 +1283,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     c->motionSession = guid();
     c->motionCell.clear();
     c->motionGeneration = 0;
+    c->movementMode = FreeMovement;
     c->held.reset();                               // A new session: the client starts with nothing kept.
     auto entered = Value::object();
     entered.add("type", "entered");
@@ -1563,6 +1608,7 @@ void Game::tick(double dt)
     {
         snapshotAccumulator_ = 0;
         movementSounds();
+        updateMovementModes();
     }
     // A quarter of the clients' snapshots in each tick (by a phase fixed per connection).
     snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
@@ -1702,6 +1748,10 @@ void Game::stampFrame(Connection* c, Value& root, const std::string& cell)
     root.set("motionSession", c->motionSession);
     root.set("cellGeneration", c->motionGeneration);
     root.set("revision", revision_);
+    const auto* self = world_.entity(c->entityId);
+    root.set("mode", int(c->movementMode));
+    root.set("inputAck", self ? double(self->inputSeq) : 0.0);
+    root.set("poseAck", self ? double(self->poseSeq) : 0.0);
 }
 
 void Game::sendSnapshot(Connection* c)
@@ -1752,6 +1802,13 @@ void Game::sendSnapshot(Connection* c)
         custody.add("seconds", std::max(0.0, (held->until - world_.calendarDays()) * calendar::SecondsPerDay));
         custody.add("cell", held->cell);
         self.set("custody", custody);
+    }
+    // What a client walking its own wolf needs to walk it as the server would (doc 31, Phase 3): its speed on flat
+    // ground at the pace it can keep, and how much the weather where it stands slows it.
+    if (const auto* me = world_.entity(id))
+    {
+        self.set("walkSpeed", paceSpeed(*me));
+        self.set("moveFactor", world_.environmentAt(me->cellId, me->position).movement);
     }
     root.add("self", self);
     auto cell = Value::object();
@@ -2486,10 +2543,62 @@ void Game::command(Connection* c, const std::string& raw)
     Result result;
     bool report = false;
     const auto num = [&](const char* key) { return wire::number(j, key); };
-    if (type == "move")
+    const bool walkingCommand = type == "move" || type == "path" || type == "pose" || type == "face" || type == "travel";
+    if (walkingCommand && c->movementMode == Fighting)
+    {
+        result = {false, "You are in a fight.", {}};
+        report = type != "move" && type != "pose";
+    }
+    else if (type == "walking")
+    {
+        // The client walks its own wolf where it may (free movement), and says where it is with "pose".
+        c->clientWalking = j.string("mode") == "client";
+        world_.setClientWalks(id, c->clientWalking && c->movementMode == FreeMovement && !c->keysWalking);
+    }
+    else if (type == "pose")
+    {
+        if (c->keysWalking && c->clientWalking && c->movementMode == FreeMovement)
+        {
+            c->keysWalking = false;                // Poses again: the client walks it.
+            world_.setClientWalks(id, true);
+        }
+        const auto check = world_.placeByClient(id, std::uint32_t(std::max(0.0, num("seq"))), num("x"), num("y"), num("facing"),
+                                                num("ix"), num("iy"));
+        if (!check.accepted && player->clientWalks)
+        {
+            // Where the wolf truly is: the client goes back there, eased.
+            auto correction = Value::object();
+            correction.add("type", "correction");
+            correction.add("seq", double(player->poseSeq));
+            correction.add("cellId", player->cellId);
+            correction.add("x", player->position.x);
+            correction.add("y", player->position.y);
+            correction.add("facing", player->facing);
+            correction.add("reason", check.reason);
+            send(c, correction);
+            if (player->poseStrikes == 20 || player->poseStrikes == 200)
+            {
+                note("warn", "RATW_POSE " + id + " " + std::to_string(player->poseStrikes) + " poses refused in a row (" + check.reason + ")");
+                logEvent("movement refused", id, {}, std::to_string(player->poseStrikes) + " poses refused: " + check.reason);
+            }
+        }
+    }
+    else if (type == "move")
+    {
+        if (std::hypot(num("x"), num("y")) > 0 && !c->keysWalking)
+        {
+            c->keysWalking = true;                 // Keys: the server walks it, until the client sends poses again.
+            world_.setClientWalks(id, false);
+        }
         result = world_.move(id, num("x"), num("y"));
+        if (const double seq = num("seq"); seq > 0)
+            player->inputSeq = std::uint32_t(seq);        // Held movement: the last input applied (the motion frame says).
+    }
     else if (type == "path")
     {
+        // A route the server walks: held until the wolf arrives (or the player takes over with the keys).
+        world_.setClientWalks(id, false);
+        c->movementMode = std::max<std::uint8_t>(c->movementMode, HeldMovement);
         result = world_.moveTo(id, num("x"), num("y"));
         report = !result.ok;
     }
@@ -2508,6 +2617,8 @@ void Game::command(Connection* c, const std::string& raw)
     else if (type == "travel")
     {
         const std::string target = j.string("target");
+        world_.setClientWalks(id, false);          // The journey is the server's to walk (held until it ends).
+        c->movementMode = std::max<std::uint8_t>(c->movementMode, HeldMovement);
         result = target.size() <= 96 ? world_.travelTo(id, target) : Result{false, "No known route to that destination.", {}};
         report = true;
     }

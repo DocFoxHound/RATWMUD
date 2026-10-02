@@ -1,4 +1,5 @@
 #include "RatwWorld.h"
+#include "RatwStep.h"
 
 #include <algorithm>
 #include <array>
@@ -18,11 +19,8 @@ namespace ratw
 {
 namespace
 {
-constexpr double Radius = 0.065;
-constexpr double WalkSpeed = 2.6;
-constexpr double StaminaRecovery = 5.0;
-constexpr double SprintDrain = 15.0;
-constexpr double ExhaustionRecovery = 20.0;
+// Walking's own numbers live with walking (RatwStep.h), which the browser shares.
+constexpr double Radius = step::Radius;
 constexpr double DaySeconds = calendar::SecondsPerDay;
 constexpr int NavScale = 4;
 // Weighted A*: trusting the straight-line estimate this much more explores a small fraction of a large cell's
@@ -393,11 +391,7 @@ const char* paceName(int pace)
 
 int effectivePace(const Entity& actor)
 {
-    // Lying movement first becomes a crouch. A requested sprint never
-    // overrides that posture, nor can it circumvent exhaustion recovery.
-    if (actor.posture != "standing" || actor.exhausted || actor.stamina <= 0.0)
-        return 0;
-    return std::clamp(actor.pace, 0, 10);
+    return step::effectivePace(actor.posture == "standing", actor.exhausted, actor.stamina, actor.pace);
 }
 
 // A posture taken at once, without the timed rise only full simulation advances (for offstage NPCs).
@@ -410,9 +404,7 @@ void settle(Entity& e, const char* posture)
 
 double paceSpeed(const Entity& actor)
 {
-    const double dexterity = clamp01(effectiveDexterity(actor) / 100.0);
-    const double sprintSpeed = WalkSpeed * (2.0 + 2.0 * dexterity);
-    return WalkSpeed + (sprintSpeed - WalkSpeed) * (effectivePace(actor) / 10.0);
+    return step::paceSpeed(clamp01(effectiveDexterity(actor) / 100.0), effectivePace(actor));
 }
 
 World::World()
@@ -761,28 +753,43 @@ bool ramp(const Tile* t)
 {
     return t && (t->terrain == Terrain::Slope || t->terrain == Terrain::Stairs);
 }
+step::Ground groundOf(const Tile& t)
+{
+    return {t.solid, t.height, ramp(&t), t.movementCost};
+}
 bool stepAllowed(const Tile* from, const Tile& to)
 {
-    const double rise = std::abs(to.height - (from ? from->height : 0.0));
-    return rise <= FreeStep + 1e-6 || (rise <= RampStep + 1e-6 && (ramp(from) || ramp(&to)));
+    const auto ground = from ? groundOf(*from) : step::Ground{};
+    return step::stepAllowed(from ? &ground : nullptr, groundOf(to));
 }
 } // namespace
+
+// A cell as walking sees it (RatwStep.h): its tiles, and its closed doors.
+class World::WalkingGrid final : public step::Grid
+{
+  public:
+    WalkingGrid(const World& world, const Cell& c) : world_(world), cell_(c) {}
+    bool ground(int x, int y, step::Ground& out) const override
+    {
+        const auto* t = cell_.tile(x, y);
+        if (t)
+            out = groundOf(*t);
+        return t != nullptr;
+    }
+    bool closedDoor(int x, int y) const override { return world_.blockedByDoor(cell_.id, {x + .5, y + .5}); }
+
+  private:
+    const World& world_;
+    const Cell& cell_;
+};
 
 bool World::passable(const std::string& cellId, Vec2 p, const Tile* from) const
 {
     const auto* c = cell(cellId);
     if (!c || !finite(p))
         return false;
-    for (Vec2 s :
-         {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
-    {
-        const auto* t = c->tile(int(std::floor(s.x)), int(std::floor(s.y)));
-        if (!t || t->solid || !stepAllowed(from, *t))
-            return false;
-        if (blockedByDoor(cellId, s))
-            return false;
-    }
-    return true;
+    const auto start = from ? groundOf(*from) : step::Ground{};
+    return step::passable(WalkingGrid(*this, *c), {p.x, p.y}, from ? &start : nullptr);
 }
 
 int World::regionAt(const Cell& c, Vec2 point) const
@@ -1339,6 +1346,151 @@ Result World::move(const std::string& id, double dx, double dy)
     a->transitioned = false;
     return {true, "Movement accepted.", {}};
 }
+void World::setClientWalks(const std::string& id, bool on)
+{
+    auto* a = entity(id);
+    if (!a || a->npc || a->clientWalks == on)
+        return;
+    a->clientWalks = on;
+    a->input = {};
+    a->path.clear();
+    a->velocity = {};
+    a->poseBudget = 0;
+    a->poseRefilled = -1;
+    a->poseStrikes = 0;
+}
+
+World::PoseCheck World::placeByClient(const std::string& id, std::uint32_t seq, double x, double y, double facing, double ix, double iy)
+{
+    PoseCheck r;
+    auto* a = entity(id);
+    if (!a || a->npc || a->dead || !a->clientWalks)
+    {
+        r.reason = "not walking freely";
+        return r;
+    }
+    if (seq <= a->poseSeq)
+    {
+        r.accepted = true;                         // Already had: late or repeated.
+        return r;
+    }
+    const auto refuse = [&](const char* why) {
+        ++a->poseStrikes;
+        r.reason = why;
+        return r;
+    };
+    const auto* c = cell(a->cellId);
+    const Vec2 to{x, y};
+    if (!c || !finite(to) || !std::isfinite(facing))
+        return refuse("not a place");
+    if (a->postureRemaining > 0 || a->posture == "sitting" || a->posture == "lying" || a->posture == "rising")
+        return refuse("not on its feet");
+    if (travelState(id).active)
+        return refuse("travelling");
+    const auto* startTile = c->tile(int(std::floor(a->position.x)), int(std::floor(a->position.y)));
+    const auto* endTile = c->tile(int(std::floor(to.x)), int(std::floor(to.y)));
+    if (!startTile || !endTile)
+        return refuse("off the ground");
+    // The most generous speed the ground allows between the two (the easier tile), in this weather.
+    const double speed = step::groundSpeed(paceSpeed(*a), std::min(startTile->movementCost, endTile->movementCost),
+                                           a->posture == "crouching", false, environmentAt(c->id, a->position).movement);
+    const double cap = speed * PoseMargin * .5 + PoseSlack;
+    if (a->poseRefilled < 0)
+        a->poseBudget = cap;
+    else
+        a->poseBudget = std::min(cap, a->poseBudget + speed * PoseMargin * std::max(0.0, time_ - a->poseRefilled));
+    a->poseRefilled = time_;
+    const double moved = distance(a->position, to);
+    if (moved > a->poseBudget + .05)
+        return refuse("farther than it could go");
+    const auto start = groundOf(*startTile);
+    const WalkingGrid grid(*this, *c);
+    if (!step::passable(grid, {to.x, to.y}, &start))
+        return refuse("not a place it can stand");
+    // The way there: straight, or (as walking slides along a wall) along one axis and then the other.
+    const auto clear = [&](std::initializer_list<Vec2> corners) {
+        Vec2 from = a->position;
+        for (const Vec2 next : corners)
+        {
+            const int steps = std::max(1, int(std::ceil(distance(from, next) / .2)));
+            for (int i = 1; i <= steps; ++i)
+            {
+                const Vec2 p{from.x + (next.x - from.x) * i / steps, from.y + (next.y - from.y) * i / steps};
+                const auto* under = c->tile(int(std::floor(from.x)), int(std::floor(from.y)));
+                const auto ground = under ? groundOf(*under) : step::Ground{};
+                if (!step::passable(grid, {p.x, p.y}, under ? &ground : nullptr))
+                    return false;
+            }
+            from = next;
+        }
+        return true;
+    };
+    if (!clear({to}) && !clear({Vec2{to.x, a->position.y}, to}) && !clear({Vec2{a->position.x, to.y}, to}))
+        return refuse("through something solid");
+    const Vec2 was = a->position;
+    a->facing = std::remainder(facing, 2.0 * Pi);
+    a->turning = false;
+    a->input = {};
+    a->poseBudget -= moved;
+    a->clientMoved += moved;
+    const double since = a->lastPoseAt < 0 ? .05 : std::max(.05, time_ - a->lastPoseAt);
+    a->velocity = {(to.x - was.x) / since, (to.y - was.y) / since};
+    a->lastPoseAt = time_;
+    a->poseSeq = seq;
+    a->poseStrikes = 0;
+    a->transitioned = false;
+    r.accepted = true;
+    // Heading into a door or over an edge: through it, as the server's own walking would take it, judged (as
+    // walking judges it) from where the wolf was toward where it is going.
+    const Vec2 heading = normalized({ix, iy});
+    if (finite(heading) && length(heading) > Epsilon)
+    {
+        const double travel = speed * .05;
+        double movedTime = 0;
+        if (throughDoor(*a, *c, heading, {to.x + heading.x * travel, to.y + heading.y * travel}, travel, speed, movedTime))
+        {
+            r.crossed = true;
+            a->poseBudget = 0;
+            a->poseRefilled = -1;
+            return r;
+        }
+    }
+    a->position = to;
+    return r;
+}
+
+bool World::pursued(const std::string& id) const
+{
+    for (const auto& [guard, whom] : pursuits_)
+        if (whom == id)
+            return true;
+    return false;
+}
+
+bool World::foughtWithin(const std::string& id, double seconds) const
+{
+    for (const auto& [pair, open] : fights_)
+        if (time_ - open.second <= seconds)
+        {
+            const auto bar = pair.find('|');
+            if (pair.compare(0, bar, id) == 0 || pair.compare(bar + 1, std::string::npos, id) == 0)
+                return true;
+        }
+    return false;
+}
+
+bool World::offendedWithin(const std::string& id, double seconds) const
+{
+    for (auto it = crime_.incidents.rbegin(); it != crime_.incidents.rend(); ++it)
+    {
+        if (time_ - it->time > seconds)
+            break;
+        if (it->offender == id)
+            return true;
+    }
+    return false;
+}
+
 Result World::setDead(const std::string& id, bool dead)
 {
     auto* a = entity(id);
@@ -1803,6 +1955,8 @@ void World::integrate(Entity& a, double dt)
                 transition(a, *d);
             return;
         }
+        if (a.clientWalks)
+            return;                                // Its client walks it (placeByClient).
         while (dt > Epsilon)
         {
             Vec2 direction = a.input;
@@ -1820,95 +1974,21 @@ void World::integrate(Entity& a, double dt)
             const auto* startTile = c->tile(int(a.position.x), int(a.position.y));
             if (!startTile)
                 return;
-            double speed = paceSpeed(a) / std::max(.1, startTile->movementCost);
-            if (a.posture == "crouching")
-                speed *= .30;
-            if (a.npc)
-                speed *= .57;
-            speed *= environmentAt(c->id, a.position).movement;
+            const double speed = step::groundSpeed(paceSpeed(a), startTile->movementCost, a.posture == "crouching", a.npc,
+                                                   environmentAt(c->id, a.position).movement);
             double travel = speed * dt;
             if (!a.path.empty())
                 travel = std::min(travel, distance(a.position, a.path.front()));
             const Vec2 delta{direction.x * travel, direction.y * travel};
             const Vec2 proposed{a.position.x + delta.x, a.position.y + delta.y};
-            // An NPC crosses an open boundary only where its route leads out through that edge: walking along an
-            // edge it has just arrived by must not tip it back into the cell it came from.
-            const auto leaving = [&](char edge) {
-                if (!a.npc || edge == '-')
-                    return true;
-                if (a.path.empty())
-                    return false;
-                const auto end = a.path.back();
-                return edge == 'N' ? end.y < 0 : edge == 'S' ? end.y > c->height : edge == 'W' ? end.x < 0 : end.x > c->width;
-            };
-            for (const Door* door : doorsIn(a.cellId))
-            {
-                const auto& d = *door;
-                if (!d.portal || !d.boundary || !d.open || !leaving(d.edge))
-                    continue;
-                const bool crossed = d.edge == 'N'   ? proposed.y < Radius
-                                     : d.edge == 'S' ? proposed.y >= c->height - Radius
-                                     : d.edge == 'W' ? proposed.x < Radius
-                                     : d.edge == 'E'
-                                         ? proposed.x >= c->width - Radius
-                                         : (d.position.y < 1 && proposed.y < Radius) ||
-                                               (d.position.y > c->height - 1 && proposed.y >= c->height - Radius) ||
-                                               (d.position.x < 1 && proposed.x < Radius) ||
-                                               (d.position.x > c->width - 1 && proposed.x >= c->width - Radius);
-                const bool horizontal = d.edge == 'N' || d.edge == 'S' ||
-                                        (d.edge == '-' && (d.position.y < 1 || d.position.y > c->height - 1));
-                const double lateral = horizontal ? proposed.x : proposed.y;
-                const double anchor = horizontal ? d.position.x : d.position.y;
-                const bool aligned =
-                    d.passage ? std::floor(lateral) == std::floor(anchor) : std::abs(lateral - anchor) < .43;
-                if (crossed && aligned)
-                {
-                    const double component = horizontal ? direction.y : direction.x;
-                    const double coordinate = horizontal ? a.position.y : a.position.x;
-                    const double limit = component < 0 ? Radius : (horizontal ? c->height : c->width) - Radius;
-                    if (std::abs(component) > Epsilon)
-                        movedTime += std::clamp((limit - coordinate) / component, 0.0, travel) / speed;
-                    a.facing = std::atan2(direction.y, direction.x);
-                    transition(a, d);
-                    return;
-                }
-            }
-            // Walking into any door takes the walker through it: stepping onto an
-            // open doorway or stair, or pushing into a closed, unlocked door.
-            // Locked doors still block; the arrival tile sits beside the far door.
-            const Vec2 lead{proposed.x + direction.x * Radius, proposed.y + direction.y * Radius};
-            for (Door* door : doorsIn(a.cellId))
-            {
-                auto& d = *door;
-                if (!d.portal || d.locked || (d.passage && d.boundary) ||
-                    !doorCovers(d, lead) || doorCovers(d, a.position) || !cell(d.targetCell))
-                    continue;
-                if (!d.open)
-                {
-                    d.open = true;
-                    if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
-                        doors_.at(d.linkedDoor).open = true;
-                }
-                movedTime += travel / speed;
-                a.facing = std::atan2(direction.y, direction.x);
-                transition(a, d);
+            if (throughDoor(a, *c, direction, proposed, travel, speed, movedTime))
                 return;
-            }
-            Vec2 accepted = a.position;
-            if (passable(a.cellId, proposed, startTile))
-                accepted = proposed;
-            else
-            {
-                const Vec2 slideX{proposed.x, a.position.y};
-                const Vec2 slideY{a.position.x, proposed.y};
-                if (std::abs(delta.x) > Epsilon && passable(a.cellId, slideX, startTile))
-                    accepted = slideX;
-                if (std::abs(delta.y) > Epsilon && passable(a.cellId, {accepted.x, slideY.y}, startTile))
-                    accepted.y = slideY.y;
-                // A route invalidated by a newly closed door must not resume by itself.
-                if (!a.path.empty())
-                    a.path.clear();
-            }
+            bool blocked = false;
+            const auto start = groundOf(*startTile);
+            const auto slid = step::slide(WalkingGrid(*this, *c), {a.position.x, a.position.y}, {proposed.x, proposed.y}, &start, blocked);
+            const Vec2 accepted{slid.x, slid.y};
+            if (blocked && !a.path.empty())
+                a.path.clear();                    // A route invalidated by a newly closed door must not resume by itself.
             const Vec2 actual{accepted.x - a.position.x, accepted.y - a.position.y};
             if (length(actual) > Epsilon)
             {
@@ -1925,27 +2005,93 @@ void World::integrate(Entity& a, double dt)
         }
     };
     advanceMotion();
-    if (a.cellId == originCell && elapsed > Epsilon)
+    if (a.clientWalks)
+    {
+        // What its client walked since the last tick is what moving cost; still for a moment, and it stands still.
+        if (const auto* c = cell(a.cellId); c && a.clientMoved > 0)
+            if (const auto* t = c->tile(int(a.position.x), int(a.position.y)))
+                movedTime = std::min(elapsed, a.clientMoved / std::max(.1, step::groundSpeed(paceSpeed(a), t->movementCost,
+                                                                         a.posture == "crouching", false, 1)));
+        a.clientMoved = 0;
+        if (a.lastPoseAt < 0 || time_ - a.lastPoseAt > .25)
+            a.velocity = {};
+    }
+    else if (a.cellId == originCell && elapsed > Epsilon)
         a.velocity = {(a.position.x - origin.x) / elapsed, (a.position.y - origin.y) / elapsed};
     updateStamina(a, elapsed, movedTime);
 }
 
+bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed, double travel, double speed, double& movedTime)
+{
+    // An NPC crosses an open boundary only where its route leads out through that edge: walking along an
+    // edge it has just arrived by must not tip it back into the cell it came from.
+    const auto leaving = [&](char edge) {
+        if (!a.npc || edge == '-')
+            return true;
+        if (a.path.empty())
+            return false;
+        const auto end = a.path.back();
+        return edge == 'N' ? end.y < 0 : edge == 'S' ? end.y > c.height : edge == 'W' ? end.x < 0 : end.x > c.width;
+    };
+    for (const Door* door : doorsIn(a.cellId))
+    {
+        const auto& d = *door;
+        if (!d.portal || !d.boundary || !d.open || !leaving(d.edge))
+            continue;
+        const bool crossed = d.edge == 'N'   ? proposed.y < Radius
+                             : d.edge == 'S' ? proposed.y >= c.height - Radius
+                             : d.edge == 'W' ? proposed.x < Radius
+                             : d.edge == 'E'
+                                 ? proposed.x >= c.width - Radius
+                                 : (d.position.y < 1 && proposed.y < Radius) ||
+                                       (d.position.y > c.height - 1 && proposed.y >= c.height - Radius) ||
+                                       (d.position.x < 1 && proposed.x < Radius) ||
+                                       (d.position.x > c.width - 1 && proposed.x >= c.width - Radius);
+        const bool horizontal = d.edge == 'N' || d.edge == 'S' ||
+                                (d.edge == '-' && (d.position.y < 1 || d.position.y > c.height - 1));
+        const double lateral = horizontal ? proposed.x : proposed.y;
+        const double anchor = horizontal ? d.position.x : d.position.y;
+        const bool aligned =
+            d.passage ? std::floor(lateral) == std::floor(anchor) : std::abs(lateral - anchor) < .43;
+        if (crossed && aligned)
+        {
+            const double component = horizontal ? direction.y : direction.x;
+            const double coordinate = horizontal ? a.position.y : a.position.x;
+            const double limit = component < 0 ? Radius : (horizontal ? c.height : c.width) - Radius;
+            if (std::abs(component) > Epsilon)
+                movedTime += std::clamp((limit - coordinate) / component, 0.0, travel) / speed;
+            a.facing = std::atan2(direction.y, direction.x);
+            transition(a, d);
+            return true;
+        }
+    }
+    // Walking into any door takes the walker through it: stepping onto an
+    // open doorway or stair, or pushing into a closed, unlocked door.
+    // Locked doors still block; the arrival tile sits beside the far door.
+    const Vec2 lead{proposed.x + direction.x * Radius, proposed.y + direction.y * Radius};
+    for (Door* door : doorsIn(a.cellId))
+    {
+        auto& d = *door;
+        if (!d.portal || d.locked || (d.passage && d.boundary) ||
+            !doorCovers(d, lead) || doorCovers(d, a.position) || !cell(d.targetCell))
+            continue;
+        if (!d.open)
+        {
+            d.open = true;
+            if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
+                doors_.at(d.linkedDoor).open = true;
+        }
+        movedTime += travel / speed;
+        a.facing = std::atan2(direction.y, direction.x);
+        transition(a, d);
+        return true;
+    }
+    return false;
+}
+
 void World::updateStamina(Entity& a, double dt, double movedTime)
 {
-    if (dt <= 0.0)
-        return;
-    const double pace = effectivePace(a) / 10.0;
-    const double grossDrain = SprintDrain * pace * pace;
-    const double before = a.stamina;
-    a.stamina = std::clamp(before + StaminaRecovery * dt - grossDrain * std::clamp(movedTime, 0.0, dt), 0.0, 100.0);
-    a.staminaRate = (a.stamina - before) / dt;
-    if (a.stamina <= Epsilon)
-    {
-        a.stamina = 0.0;
-        a.exhausted = true;
-    }
-    else if (a.exhausted && a.stamina >= ExhaustionRecovery - Epsilon)
-        a.exhausted = false;
+    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime);
 }
 
 namespace
@@ -3166,7 +3312,7 @@ Result World::eat(const std::string& player)
     if (result.ok)
     {
         p->stamina = std::min(100., p->stamina + 10.);
-        if (p->stamina >= ExhaustionRecovery) p->exhausted = false;
+        if (p->stamina >= step::ExhaustionRecovery) p->exhausted = false;
     }
     return {result.ok, result.message, {}};
 }
@@ -3596,8 +3742,8 @@ Result World::restore(const PersistedWorld& state)
             e.noseHealth < 0 || e.noseHealth > 1 || e.scentSkill < 0 || e.scentSkill > 100 ||
             !std::isfinite(e.dexterity) || e.dexterity < 0 || e.dexterity > 100 || !std::isfinite(e.stamina) ||
             e.stamina < 0 || e.stamina > 100 || e.pace < 0 || e.pace > 10 || !std::isfinite(e.staminaRate) ||
-            e.staminaRate < -SprintDrain - Epsilon || e.staminaRate > StaminaRecovery + Epsilon ||
-            (e.exhausted && e.stamina > ExhaustionRecovery) || !std::isfinite(e.postureRemaining) ||
+            e.staminaRate < -step::SprintDrain - Epsilon || e.staminaRate > step::StaminaRecovery + Epsilon ||
+            (e.exhausted && e.stamina > step::ExhaustionRecovery) || !std::isfinite(e.postureRemaining) ||
             e.postureRemaining < 0 || e.postureRemaining > 1.0 ||
             (e.posture != "rising" && !stablePosture(e.posture)) ||
             (e.posture == "rising" &&

@@ -5,6 +5,7 @@ import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import type {MotionFrame} from '../net/motion.ts';
+import type {DoorState, Walker} from './walker.ts';
 
 export interface Post {
     id: string;
@@ -163,6 +164,24 @@ export class GameState {
     private inputFrom: [number, number] | null = null;
     private walking = false;
     private selfPose: [number, number] | null = null;
+    // Free movement (Docs/Design/31-responsiveness.md, Phase 3): the page walks its own wolf with the server's own
+    // rules (walker.ts) and says where it is; the server checks every pose. The mode is the server's: 0 free, 1 held
+    // (the server walks the wolf, around a fight or along a route), 2 fighting.
+    walker: Walker | null = null;
+    movementMode = 1;
+    private walkAsked = false;
+    private freePose: {x: number; y: number; facing: number} | null = null;
+    private poseSeq = 0;
+    private poseAckSeen = 0;
+    private inputSeq = 0;
+    private lastPoseSent = -1;
+    private poseUnsent = false;
+    private easeUntil = 0;
+    /** Poses the server refused (the overlay and the walking smoke look at it). */
+    corrections = 0;
+    private doorStates: DoorState[] = [];
+    private cellVersion = 0;
+    private walkerVersion = -1;
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
     // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
     weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
@@ -197,6 +216,8 @@ export class GameState {
             this.motionVisible.clear();
             this.latestMotionTime = -1;
             this.motionClockReady = false;
+            this.freePose = null;
+            ++this.cellVersion;
         }
         this.cellGeneration = generation;
         this.cellId = newId;
@@ -275,6 +296,7 @@ export class GameState {
         if (rowsSource !== this.sources.rows || !this.tileRows.length) {
             this.sources.rows = rowsSource;
             this.tileRows = strings(rowsSource);
+            ++this.cellVersion;
         }
         const seenSource = arr(s, 'visibility');
         if (seenSource !== this.sources.visibility) {
@@ -284,6 +306,7 @@ export class GameState {
         const heights = arr(cell, 'heights');
         if (heights !== this.sources.heights || this.tileHeights.length !== this.cellWidth * this.cellHeight) {
             this.sources.heights = heights;
+            ++this.cellVersion;
             this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
             for (let y = 0; y < heights.length && y < this.cellHeight; ++y) {
                 const row = heights[y];
@@ -307,6 +330,16 @@ export class GameState {
             }
             this.tileRows = rows.map(r => r.join(''));
             this.visibilityRows = seen.map(r => r.join(''));
+        }
+        const doors = objects(s, 'doors').map(d => ({x: num(d, 'x'), y: num(d, 'y'), open: bool(d, 'open')}));
+        if (doors.length !== this.doorStates.length || doors.some((d, i) => d.open !== this.doorStates[i].open || d.x !== this.doorStates[i].x)) {
+            this.doorStates = doors;
+            ++this.cellVersion;
+        }
+        // A client that can walk its own wolf says so once it is in the world.
+        if (self && this.walker && !this.walkAsked) {
+            this.walkAsked = true;
+            this.send({type: 'walking', mode: 'client'});
         }
         const present = new Set<string>();
         const list = objects(s, 'entities');
@@ -376,6 +409,11 @@ export class GameState {
     applyMotion(frame: MotionFrame) {
         if (frame.cellId !== this.cellId || frame.cellGeneration !== this.cellGeneration) return;
         if (!(frame.time > this.latestMotionTime)) return;
+        if (frame.poseAck !== undefined) this.poseAckSeen = frame.poseAck;
+        if (frame.mode !== undefined) {
+            this.movementMode = frame.mode;
+            if (frame.mode !== 0) this.freePose = null;   // The server walks it now: its poses again.
+        }
         this.latestMotionTime = frame.time;
         this.observeMotionTime(frame.time);
         this.motionVisible.clear();
@@ -403,6 +441,15 @@ export class GameState {
 
     receiveEvent(e: Json) {
         const type = str(e, 'type', 'system');
+        if (type === 'correction') {
+            ++this.corrections;
+            // A pose the server couldn't accept: back to where the wolf truly is, eased rather than jumped.
+            if (str(e, 'cellId') === this.cellId && this.freePose) {
+                this.freePose = {x: num(e, 'x'), y: num(e, 'y'), facing: num(e, 'facing')};
+                this.easeUntil = this.clock + 0.15;
+            }
+            return;
+        }
         if (type === 'chatAccepted') {
             this.pendingDrafts.delete(str(e, 'requestId'));
             return;
@@ -479,11 +526,16 @@ export class GameState {
                 view.facing = pose.facing;
                 continue;
             }
+            if (this.walkFreely(view, delta)) continue;
             // The player's own wolf answers at once: its newest pose, carried a little ahead while it is moving, and
             // eased toward rather than jumped to, so jitter in arrival never shows. A real jump (a door, a correction
             // of more than two tiles) is taken at once.
             const moving = view.moving || this.heldKeys.size > 0;
-            const pose = view.motion.at(now - 0.03, moving ? 0.12 : 0.05);
+            let pose = view.motion.at(now - 0.03, moving ? 0.12 : 0.05);
+            // Held (doc 31, Phase 3): the server walks the wolf, and the page predicts it with the same rules: from the
+            // server's newest pose, the keys held walked on for the time since, never through a wall.
+            const predicted = this.predictHeld(view.motion, now);
+            if (predicted) pose = predicted;
             const gap = Math.hypot(pose.x - view.x, pose.y - view.y);
             const ease = gap > 2 || !view.placed ? 1 : 1 - Math.exp(-delta / 0.05);
             view.x += (pose.x - view.x) * ease;
@@ -499,7 +551,7 @@ export class GameState {
         if (!this.canFaceAt(this.hover)) this.facingPreview = false;
         if (this.typingSent && this.clock - this.lastTyping > 3) this.setTyping(false);
         if (this.chat && this.clock - this.lastTyping < 3 && (!this.typingSent || this.clock - this.lastTypingSent > 1)) this.setTyping(true);
-        if (!this.chat && this.heldKeys.size && this.clock - this.lastMove > 0.075) this.sendMove();
+        if (!this.chat && this.heldKeys.size && this.clock - this.lastMove > 0.075 && !this.freeWalking()) this.sendMove();
         for (const post of this.posts)
             if (post.channel === 'ic' && post.revealed < post.text.length) {
                 if (this.revealSpeed === 0 || this.reducedMotion) post.revealed = post.text.length;
@@ -511,6 +563,93 @@ export class GameState {
                 }
                 break;
             }
+    }
+
+    // ------------------------------------------------------------------ Walking freely
+
+    /** The page walks its own wolf: the server allows it, the walker is here, and the wolf is on its feet. */
+    freeWalking(): boolean {
+        if (!this.walker || !this.walkAsked || this.movementMode !== 0) return false;
+        const posture = str(obj(this.snapshot, 'self'), 'posture', 'standing');
+        return posture === 'standing' || posture === 'crouching';
+    }
+
+    /** One frame of free walking for the player's own wolf: false when the server walks it instead. */
+    private walkFreely(view: {x: number; y: number; facing: number; moving: boolean; placed?: boolean; motion: MotionBuffer}, delta: number): boolean {
+        if (!this.freeWalking() || !this.walker) return false;
+        if (!this.freePose) {
+            const newest = view.motion.samples.at(-1);
+            if (!newest) return false;
+            this.freePose = {x: newest.x, y: newest.y, facing: newest.facing};
+        }
+        const held = (code: string) => (this.heldKeys.has(code) ? 1 : 0);
+        const ix = this.chat ? 0 : held('KeyD') - held('KeyA'), iy = this.chat ? 0 : held('KeyS') - held('KeyW');
+        // Not walking, and every pose of its own answered: where the server has the wolf is where it is (the server
+        // may have walked it: a route, a script's keys, a push).
+        if (!ix && !iy && !this.poseUnsent && this.poseAckSeen >= this.poseSeq) {
+            const newest = view.motion.samples.at(-1);
+            if (newest && Math.hypot(newest.x - this.freePose.x, newest.y - this.freePose.y) > 1e-3) {
+                this.freePose = {x: newest.x, y: newest.y, facing: newest.facing};
+                this.easeUntil = this.clock + 0.15;
+            }
+        }
+        const pose = this.freePose;
+        if (ix || iy) {
+            if (this.walkerVersion !== this.cellVersion) {
+                this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates);
+                this.walkerVersion = this.cellVersion;
+            }
+            if (!this.walking) {
+                this.walking = true;
+                this.inputToMotion.push(0);        // Walked at once, on this very frame.
+                if (this.inputToMotion.length > 30) this.inputToMotion.shift();
+                this.facingPreview = false;
+                this.mapPan = [0, 0];
+            }
+            const self = obj(this.snapshot, 'self');
+            const step = this.walker.step(pose.x, pose.y, ix, iy, num(self, 'walkSpeed', 2.6), str(self, 'posture') === 'crouching',
+                num(self, 'moveFactor', 1), Math.min(Math.max(delta, 0), 0.1));
+            pose.x = step.x;
+            pose.y = step.y;
+            pose.facing = Math.atan2(iy, ix);
+            this.poseUnsent = true;
+        } else if (this.walking) {
+            this.walking = false;
+            this.poseUnsent = true;                // The last pose, where it stopped.
+        }
+        // Twenty poses a second while walking (also while pushing into a door: the heading takes it through).
+        if (this.poseUnsent && this.clock - this.lastPoseSent >= 0.05) {
+            this.send({type: 'pose', seq: ++this.poseSeq, x: pose.x, y: pose.y, facing: pose.facing, ix, iy});
+            this.lastPoseSent = this.clock;
+            this.poseUnsent = !!(ix || iy);
+            this.lastMove = this.clock;
+        }
+        const ease = this.clock < this.easeUntil ? 1 - Math.exp(-delta / 0.04) : 1;
+        view.x += (pose.x - view.x) * ease;
+        view.y += (pose.y - view.y) * ease;
+        view.facing = pose.facing;
+        view.moving = !!(ix || iy);
+        view.placed = true;
+        return true;
+    }
+
+    /** Where the server will have the wolf, held: its newest pose walked on by the keys held (null when not held). */
+    private predictHeld(motion: MotionBuffer, now: number): {time: number; x: number; y: number; facing: number} | null {
+        if (!this.walker || this.movementMode !== 1 || this.chat) return null;
+        const held = (code: string) => (this.heldKeys.has(code) ? 1 : 0);
+        const ix = held('KeyD') - held('KeyA'), iy = held('KeyS') - held('KeyW');
+        const newest = motion.samples.at(-1);
+        if ((!ix && !iy) || !newest) return null;
+        const self = obj(this.snapshot, 'self');
+        const posture = str(self, 'posture', 'standing');
+        if (posture !== 'standing' && posture !== 'crouching') return null;
+        if (this.walkerVersion !== this.cellVersion) {
+            this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates);
+            this.walkerVersion = this.cellVersion;
+        }
+        const ahead = clamp(now - newest.time, 0, 0.25);
+        const step = this.walker.step(newest.x, newest.y, ix, iy, num(self, 'walkSpeed', 2.6), posture === 'crouching', num(self, 'moveFactor', 1), ahead);
+        return {time: now, x: step.x, y: step.y, facing: Math.atan2(iy, ix)};
     }
 
     // ------------------------------------------------------------------ Sending
@@ -601,7 +740,7 @@ export class GameState {
             this.facingPreview = false;
             this.mapPan = [0, 0];                // Looking around ends when the wolf moves: the map follows it again.
         }
-        this.send({type: 'move', x: this.chat ? 0 : x, y: this.chat ? 0 : y});
+        this.send({type: 'move', x: this.chat ? 0 : x, y: this.chat ? 0 : y, seq: ++this.inputSeq});
         this.lastMove = this.clock;
     }
 

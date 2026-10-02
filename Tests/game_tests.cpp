@@ -2,6 +2,7 @@
 // snapshots and events, NPC conversation, and a restart from the save.
 #include "RatwGame.h"
 #include "RatwMotionCore.h"
+#include "RatwStep.h"
 
 #include <chrono>
 #include <cmath>
@@ -340,6 +341,148 @@ void signingInNeverHoldsTheGame()
     g.settle();
     expect(!c.last("lobby")->boolean("ok") && c.accountUsername.empty(), "a wrong password is still refused");
     g.disconnect(&a);
+    g.disconnect(&c);
+}
+
+// Free movement (doc 31, Phase 3): a client that asks walks its own wolf and says where it is. The server takes
+// poses its wolf could really have walked, and refuses (with where the wolf truly is) one too far, a burst adding up to
+// too far, one into a wall or through it, or a leap across the cell. Heading into a door still takes it through. The
+// moments around a fight hold it (the server walks it), and a fight stops walking altogether.
+void freeMovementIsChecked()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client c;
+    c.id = 50;
+    g.connect(&c);
+    g.command(&c, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    g.command(&c, cmd({{"type", "walking"}, {"mode", "client"}}));
+    auto* ash = g.world().entity(c.entityId);
+    expect(ash && ash->clientWalks, "a client that asks walks its own wolf");
+    unsigned seq = 0;
+    const auto corrections = [&] {
+        std::size_t n = 0;
+        for (const auto& e : c.events)
+            n += e.string("type") == "correction";
+        return n;
+    };
+    const auto pose = [&](double x, double y, double ix = 0, double iy = 0) {
+        g.command(&c, cmd({{"type", "pose"}, {"seq", double(++seq)}, {"x", x}, {"y", y}, {"facing", 0.0}, {"ix", ix}, {"iy", iy}}));
+    };
+    // Find open floor: a spot where it may stand, with room to walk east.
+    const std::string cell = ash->cellId;
+    Vec2 start = ash->position;
+    bool found = false;
+    for (int y = 1; y < 40 && !found; ++y)
+        for (int x = 1; x < 40 && !found; ++x)
+        {
+            bool open = true;
+            for (int k = 0; k <= 3 && open; ++k)
+            {
+                const auto* t = g.world().cell(cell)->tile(x + k, y);
+                open = t && !t->solid && t->height == 0 && t->movementCost == 1;
+            }
+            if (open)
+            {
+                start = {x + .5, y + .5};
+                found = true;
+            }
+        }
+    expect(found, "open floor to walk on");
+    ash->position = start;
+    g.tick(.05);
+    const auto before = corrections();
+    double x = start.x;
+    for (int i = 0; i < 6; ++i)
+    {
+        x += .12;                                   // A walk: 2.6 tiles a second is .13 a tick.
+        pose(x, start.y, 1, 0);
+        g.tick(.05);
+    }
+    expect(corrections() == before && std::abs(ash->position.x - x) < 1e-9, "a walk is taken as the client says");
+    expect(c.lastMotion.number("poseAck") == seq, "and the motion frame says which pose was last taken");
+    pose(x + 5, start.y);
+    expect(corrections() == before + 1 && std::abs(ash->position.x - x) < 1e-9, "five tiles at once is refused, the wolf where it was");
+    expect(c.last("correction")->number("x") == ash->position.x, "and the client is told where it truly is");
+    // Many small steps between two ticks add up: the budget runs out.
+    // (The budget holds half a second of walking, so a little network jitter costs nothing.)
+    const double from = ash->position.x;
+    double burst = from;
+    for (int i = 0; i < 30; ++i)
+        pose(burst += .12, start.y);
+    const double cap = 2.6 * World::PoseMargin * .5 + World::PoseSlack + .05;
+    expect(corrections() > before + 1 && ash->position.x <= from + cap + 1e-9,
+           "a burst of poses gains no more than half a second's walk: " + std::to_string(ash->position.x - from));
+    // Into a wall: the nearest solid tile.
+    g.tick(.5);
+    Vec2 wall{-1, -1};
+    for (int y = 0; y < 40 && wall.x < 0; ++y)
+        for (int xx = 0; xx < 40 && wall.x < 0; ++xx)
+            if (const auto* t = g.world().cell(cell)->tile(xx, y); t && t->solid &&
+                std::hypot(xx + .5 - ash->position.x, y + .5 - ash->position.y) < 6)
+                wall = {xx + .5, y + .5};
+    if (wall.x >= 0)
+    {
+        ash->position = start;
+        ash->poseRefilled = -1;
+        const auto n = corrections();
+        pose(wall.x, wall.y);
+        expect(corrections() == n + 1 && ash->position.x == start.x, "a pose inside a wall is refused");
+    }
+    pose(ash->position.x + 30, ash->position.y + 20);
+    expect(c.last("correction") && ash->position.x < 30, "a leap across the cell is refused");
+    // A door: heading into it from beside it takes the wolf through, as the server's own walking does.
+    bool crossed = false;
+    for (const auto& [doorId, d] : g.world().doors())
+    {
+        if (crossed || d.cellId != ash->cellId || !d.portal || d.locked || d.boundary || !g.world().cell(d.targetCell))
+            continue;
+        for (const Vec2 side : {Vec2{1, 0}, Vec2{-1, 0}, Vec2{0, 1}, Vec2{0, -1}})
+        {
+            if (crossed)
+                break;
+            // Just off the door's tile, as close as a wolf stands to a closed door.
+            const double off = .5 + step::Radius + .01;
+            const Vec2 beside{std::floor(d.position.x) + .5 + side.x * off, std::floor(d.position.y) + .5 + side.y * off};
+            ash->position = beside;
+            ash->poseRefilled = -1;
+            g.tick(.05);
+            if (ash->cellId != d.cellId)
+                break;
+            pose(beside.x, beside.y, -side.x, -side.y);
+            crossed = ash->cellId == d.targetCell;
+        }
+    }
+    expect(crossed, "heading into a door takes the wolf through it");
+    // The moments around a fight: an offence just now, and the server walks the wolf.
+    Incident theft;
+    theft.id = "inc-test";
+    theft.kind = "theft";
+    theft.offender = ash->id;
+    theft.time = g.world().time();
+    g.world().crime().incidents.push_back(theft);
+    for (int i = 0; i < 5; ++i)
+        g.tick(.05);
+    expect(!ash->clientWalks && c.lastMotion.number("mode") == game::Game::HeldMovement, "an offence holds the wolf: the server walks it");
+    const auto n = corrections();
+    pose(ash->position.x + .1, ash->position.y);
+    expect(corrections() == n, "its poses are set aside, not corrected");
+    g.setFighting(ash->id, true);
+    g.tick(.05);
+    expect(c.lastMotion.number("mode") == game::Game::Fighting, "a fight stops walking");
+    const auto at = ash->position;
+    g.command(&c, cmd({{"type", "move"}, {"x", 1.0}, {"y", 0.0}}));
+    for (int i = 0; i < 10; ++i)
+        g.tick(.05);
+    expect(ash->position.x == at.x && ash->position.y == at.y, "not even by the keys");
+    g.setFighting(ash->id, false);
+    g.world().crime().incidents.pop_back();
+    for (int i = 0; i < 5; ++i)
+        g.tick(.05);
+    expect(ash->clientWalks && c.lastMotion.number("mode") == game::Game::FreeMovement, "and after it, the client walks again");
     g.disconnect(&c);
 }
 
@@ -934,6 +1077,7 @@ int main()
         theGameAnswersWhatItKnows();
         accountsAndARestart();
         signingInNeverHoldsTheGame();
+        freeMovementIsChecked();
         aRestartFromAFile();
         playersCannotRuleTheSky();
         othersSeeNoPrivateStats();

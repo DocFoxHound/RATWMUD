@@ -1,6 +1,6 @@
 #pragma once
 // Motion frames: the poses an observer can see, twenty times a second, and their binary form (the layout Unreal's
-// FArchive wrote, kept so the format never changed). The browser client reads them with Client/src/net/motion.ts.
+// FArchive wrote, with the observer's own movement after the poses: doc 31, Phase 3). The browser client reads them with Client/src/net/motion.ts.
 #include "RatwJsonDoc.h"
 #include "RatwWorld.h"
 

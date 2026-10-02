@@ -1,6 +1,6 @@
 // The load test (Docs/Design/31-responsiveness.md, Phase 1): the whole game, as the server runs it, with N players.
 //
-//   game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S]
+//   game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S] [--walking server|client]
 //
 // EXPORT_DIR is a world build written out as files (python3 tools/world_build.py export DIR). Each player is a fake
 // client that does what the browser does: it enters with a development identity, walks (a new direction every two
@@ -10,6 +10,8 @@
 //
 //   --layout cities   (the default, and the gate) players packed beside residents in the three most peopled regions
 //   --layout spread   players beside residents taken evenly through the whole population
+//   --walking client  each player walks its own wolf (doc 31, Phase 3), sending poses twenty times a second as the page
+//                     does, and taking the server's correction when one is refused; "server" (the default) sends keys
 //
 // It prints the server's RATW_PERF lines for the measured window, then the cost of a full save. Not a ctest: a run
 // takes minutes. The gates are in the design doc.
@@ -43,8 +45,25 @@ struct Player final : game::Connection
 {
     double revision = -1;
     std::uint64_t bytes = 0;
+    std::size_t corrected = 0;
+    bool wasCorrected = false;
+    double cx = 0, cy = 0;
 
-    void event(const std::string& json) override { pack(json.data(), json.size()); }
+    void event(const std::string& json) override
+    {
+        pack(json.data(), json.size());
+        if (json.find("\"type\":\"correction\"") == std::string::npos)
+            return;
+        json::Value v;
+        std::string error;
+        if (json::parse(json, v, error))
+        {
+            ++corrected;
+            wasCorrected = true;
+            cx = v.number("x");
+            cy = v.number("y");
+        }
+    }
     void snapshot(const std::string& json) override
     {
         snapshotBytes += json.size();
@@ -86,7 +105,7 @@ std::string command(std::initializer_list<std::pair<const char*, json::Value>> f
 
 int usage()
 {
-    std::cerr << "usage: game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S]\n";
+    std::cerr << "usage: game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S] [--walking server|client]\n";
     return 2;
 }
 } // namespace
@@ -97,7 +116,7 @@ int main(int argc, char** argv)
         return usage();
     int players = 20;
     double seconds = 30, warmup = 20;
-    std::string layout = "cities";
+    std::string layout = "cities", walking = "server";
     for (int i = 2; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -111,10 +130,12 @@ int main(int argc, char** argv)
             seconds = std::max(1.0, std::atof(argv[++i]));
         else if (a == "--warmup")
             warmup = std::max(0.0, std::atof(argv[++i]));
+        else if (a == "--walking")
+            walking = argv[++i];
         else
             return usage();
     }
-    if (layout != "cities" && layout != "spread")
+    if ((layout != "cities" && layout != "spread") || (walking != "server" && walking != "client"))
         return usage();
     std::string problem;
     if (!sys::zlibAvailable(problem))
@@ -140,7 +161,8 @@ int main(int argc, char** argv)
     {
         game::Game g(options);
         g.log = [](const char* level, const std::string& text) {
-            if (std::string(level) != "info")
+            // (The fake players walk blindly into walls with --walking client: the server's refusals are expected.)
+            if (std::string(level) != "info" && text.rfind("RATW_POSE ", 0) != 0)
                 std::cerr << level << ": " << text << '\n';
         };
         if (!g.start(problem))
@@ -210,6 +232,10 @@ int main(int argc, char** argv)
                 }
             clients.push_back(std::move(c));
         }
+        std::vector<std::uint32_t> poseSeq(clients.size(), 0);
+        if (walking == "client")
+            for (auto& c : clients)
+                g.command(c.get(), command({{"type", "walking"}, {"mode", "client"}}));
 
         // Twenty ticks a second, as fast as they run: each tick, the commands due, the tick, and the acknowledgements.
         const auto run = [&](int ticks, bool measured) {
@@ -218,13 +244,32 @@ int main(int argc, char** argv)
                 const auto begin = Clock::now();
                 {
                     perf::Scope timed(&meter, perf::Commands);
-                    if (i % 40 == 0)
-                        for (std::size_t p = 0; p < clients.size(); ++p)
+                    for (std::size_t p = 0; p < clients.size(); ++p)
+                    {
+                        const int turn = (i / 40 + int(p)) % 4;
+                        const double x = turn == 0 ? 1 : turn == 2 ? -1 : 0, y = turn == 1 ? 1 : turn == 3 ? -1 : 0;
+                        auto& c = *clients[p];
+                        if (walking == "server")
                         {
-                            const int turn = (i / 40 + int(p)) % 4;
-                            const double x = turn == 0 ? 1 : turn == 2 ? -1 : 0, y = turn == 1 ? 1 : turn == 3 ? -1 : 0;
-                            g.command(clients[p].get(), command({{"type", "move"}, {"x", x}, {"y", y}}));
+                            if (i % 40 == 0)
+                                g.command(&c, command({{"type", "move"}, {"x", x}, {"y", y}}));
+                            continue;
                         }
+                        // The page's own walking, roughly: a walk's worth each tick in the same direction, back to the
+                        // server's word when it refuses one.
+                        const auto* me = g.world().entity(c.entityId);
+                        if (!me)
+                            continue;
+                        double px = me->position.x, py = me->position.y;
+                        if (c.wasCorrected)
+                        {
+                            px = c.cx;
+                            py = c.cy;
+                            c.wasCorrected = false;
+                        }
+                        g.command(&c, command({{"type", "pose"}, {"seq", double(++poseSeq[p])}, {"x", px + x * .12}, {"y", py + y * .12},
+                                               {"facing", 0.0}, {"ix", x}, {"iy", y}}));
+                    }
                 }
                 g.tick(0.05);
                 {
@@ -258,6 +303,13 @@ int main(int argc, char** argv)
         {
             most = std::max(most, c->bytes);
             all += c->bytes;
+        }
+        if (walking == "client")
+        {
+            std::size_t corrections = 0;
+            for (const auto& c : clients)
+                corrections += c->corrected;
+            std::cout << "poses refused: " << corrections << " of " << clients.size() * std::size_t(seconds / 0.05) << "\n";
         }
         std::cout << "per player: " << perf::fixed(double(all) * 8 / seconds / 1e3 / double(clients.size())) << " kbit/s (most "
                   << perf::fixed(double(most) * 8 / seconds / 1e3) << "); snapshot "

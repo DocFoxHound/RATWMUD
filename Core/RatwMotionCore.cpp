@@ -172,6 +172,11 @@ std::vector<std::uint8_t> pack(const Value& f)
         put<float>(out, float(pose.number("facing")));
         put<std::uint8_t>(out, pose.boolean("moving") ? 1 : 0);
     }
+    // The observer's own movement (Docs/Design/31-responsiveness.md, Phase 3): its mode, the last held input applied,
+    // and the last pose of its own accepted.
+    put<std::uint8_t>(out, std::uint8_t(f.number("mode")));
+    put<std::uint32_t>(out, std::uint32_t(f.number("inputAck")));
+    put<std::uint32_t>(out, std::uint32_t(f.number("poseAck")));
     return out;
 }
 
@@ -203,9 +208,12 @@ Value unpack(const std::vector<std::uint8_t>& bytes)
             return {};
         poses.push(pose);
     }
-    if (in.at != bytes.size())
-        return {};
     root.add("entities", poses);
+    root.add("mode", int(in.get<std::uint8_t>()));
+    root.add("inputAck", double(in.get<std::uint32_t>()));
+    root.add("poseAck", double(in.get<std::uint32_t>()));
+    if (in.bad || in.at != bytes.size())
+        return {};
     return root;
 }
 } // namespace ratw::motion
