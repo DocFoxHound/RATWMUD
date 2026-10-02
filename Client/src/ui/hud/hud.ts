@@ -10,6 +10,8 @@ import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawL
 import type {EntityView, GameState} from '../../game/state.ts';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
+import {MapRenderer, MapScales} from '../../game/minimap.ts';
+import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {noRect, StoryPanel} from './story.ts';
 
@@ -65,6 +67,8 @@ export class Hud {
     private menu: HTMLElement;
     private menuKey = '';
     private toast: HTMLElement;
+    private minimap: HTMLCanvasElement;
+    private mapRenderer = new MapRenderer(pageSurface);
     private tooltip: HTMLElement;
     private tipWhat: HTMLElement;
     private tipWhy: HTMLElement;
@@ -130,6 +134,16 @@ export class Hud {
         button('End scene', 'act', actions, () => act('session_end'));
 
         const side = el('aside', 'side', this.root);
+        // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.
+        const mini = el('section', 'panel minimap', side);
+        this.minimap = el('canvas', '', mini);
+        this.minimap.title = 'The country around · wheel to zoom · click for the World Map';
+        this.minimap.addEventListener('mousedown', e => e.preventDefault());
+        this.minimap.addEventListener('click', () => act('world'));
+        this.minimap.addEventListener('wheel', e => {
+            e.preventDefault();
+            state.miniZoom = Math.max(0, Math.min(MapScales.length - 1, state.miniZoom + (e.deltaY < 0 ? 1 : -1)));
+        }, {passive: false});
         const sight = el('section', 'panel in-sight', side);
         const sightHead = el('div', 'panel-head', sight);
         el('span', 'label gold', sightHead, 'IN SIGHT');
@@ -192,9 +206,23 @@ export class Hud {
         this.updateStatus(self);
         this.updateMenu();
         this.updateLook();
+        this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);
         this.dialogs.update();
+    }
+
+    private drawMinimap() {
+        const canvas = this.minimap, dpr = window.devicePixelRatio || 1;
+        const w = Math.max(1, Math.floor(canvas.clientWidth)), h = Math.max(1, Math.floor(canvas.clientHeight));
+        if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+        }
+        const c = canvas.getContext('2d');
+        if (!c) return;
+        c.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.mapRenderer.draw(c, this.s, {x: 0, y: 0, w, h}, MapScales[this.s.miniZoom] ?? 1);
     }
 
     // ------------------------------------------------------------------ Looking with the pointer

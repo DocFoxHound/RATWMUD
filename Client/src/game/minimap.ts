@@ -1,0 +1,226 @@
+// The map of the country around (Docs/Design/29-client-polish.md, phase 8): every known place drawn where it truly is
+// and as large as it truly is, one pixel a tile in its ground's colour, north up, centred on the wolf. Used twice: the
+// minimap in the side panel and the full World Map (M). Each place's picture is made once per change of what the wolf
+// remembers of it, and kept.
+import {bool, isObject, num, objects, str, type Json} from './json.ts';
+import {terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
+import type {GameState} from './state.ts';
+
+/** Pixels a tile, closest last. */
+export const MapScales = [0.25, 0.5, 1, 2, 4, 8];
+
+/** The scale at which the known places fill a box (the World Map opens fitted). */
+export function fitScale(snapshot: Json | null, w: number, h: number): number {
+    const places = placesOf(snapshot);
+    if (!places.length) return 1;
+    const x0 = Math.min(...places.map(p => p.x)), y0 = Math.min(...places.map(p => p.y));
+    const x1 = Math.max(...places.map(p => p.x + p.width)), y1 = Math.max(...places.map(p => p.y + p.height));
+    return Math.max(0.1, Math.min(8, 0.85 * Math.min(w / Math.max(1, x1 - x0), h / Math.max(1, y1 - y0))));
+}
+
+interface Place {
+    id: string;
+    name: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    visible: boolean;
+    current: boolean;
+    glyphs: string;
+}
+
+const srgb = (hex: string) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+const groundColours = new Map<string, number[]>();
+/** A tile's colour on the map: its ground, with a little of its glyph's colour. */
+function colourOf(code: string): number[] | null {
+    if (code === ' ') return null;
+    let c = groundColours.get(code);
+    if (!c) {
+        const t = TerrainHex.get(code);
+        if (!t || !terrainInfo(code)) return null;
+        const bg = srgb(t[1]), fg = srgb(t[0]);
+        c = bg.map((v, i) => Math.round(v * 0.45 + fg[i] * 0.55));
+        groundColours.set(code, c);
+    }
+    return c;
+}
+// The terrain catalogue's colours as written (sRGB hex), for pixels.
+import {TERRAIN} from './terrain.generated.mjs';
+const TerrainHex = new Map<string, [string, string]>(TERRAIN.map(t => [t.code, [t.fg, t.bg]]));
+
+/** The places the snapshot shows (worldMap), at the wolf's height. */
+export function placesOf(snapshot: Json | null): Place[] {
+    const out: Place[] = [];
+    for (const c of objects(snapshot, 'worldMap')) {
+        const knowledge = str(c, 'knowledge');
+        if (knowledge === 'unknown') continue;
+        const width = Math.trunc(num(c, 'width')), height = Math.trunc(num(c, 'height'));
+        if (width <= 0 || height <= 0 || width > 1024 || height > 1024) continue;
+        out.push({id: str(c, 'id'), name: str(c, 'name'), x: num(c, 'x'), y: num(c, 'y'), width, height, visible: bool(c, 'visible'),
+            current: bool(c, 'current'), glyphs: str(c, 'glyphs')});
+    }
+    return out;
+}
+
+export class MapRenderer {
+    private pictures = new Map<string, {key: string; surface: Surface}>();
+    private current: {rows: unknown; visibility: unknown; surface: Surface | null; at: number} = {rows: null, visibility: null, surface: null, at: -1};
+    private surfaces: SurfaceFactory;
+
+    constructor(surfaces: SurfaceFactory) {
+        this.surfaces = surfaces;
+    }
+
+    /** A remembered place as a picture (one pixel a tile); null without an offscreen canvas or a picture to make. */
+    private picture(p: Place): Surface | null {
+        if (!p.glyphs || p.glyphs.length !== p.width * p.height) return null;
+        const key = `${p.glyphs.length}:${hashText(p.glyphs)}`;
+        const kept = this.pictures.get(p.id);
+        if (kept && kept.key === key) return kept.surface;
+        const surface = this.surfaces(p.width, p.height);
+        if (!surface) return null;
+        const image = surface.ctx.createImageData(p.width, p.height);
+        for (let i = 0; i < p.glyphs.length; ++i) {
+            const c = colourOf(p.glyphs[i]);
+            if (!c) continue;
+            image.data[i * 4] = Math.round(c[0] * 0.7);
+            image.data[i * 4 + 1] = Math.round(c[1] * 0.7);
+            image.data[i * 4 + 2] = Math.round(c[2] * 0.7);
+            image.data[i * 4 + 3] = 255;
+        }
+        surface.ctx.putImageData(image, 0, 0);
+        if (this.pictures.size > 64) this.pictures.clear();
+        this.pictures.set(p.id, {key, surface});
+        return surface;
+    }
+
+    /** The wolf's own place, from its rows: what it sees bright, what it remembers dim. Remade at most twice a second. */
+    private currentPicture(s: GameState, clock: number): Surface | null {
+        const k = this.current;
+        if (k.surface && k.rows === s.tileRows && (k.visibility === s.visibilityRows || clock - k.at < 0.5)) return k.surface;
+        const w = s.cellWidth, h = s.cellHeight;
+        if (!k.surface || k.surface.canvas.width !== w || k.surface.canvas.height !== h) k.surface = this.surfaces(w, h);
+        if (!k.surface) return null;
+        const image = k.surface.ctx.createImageData(w, h);
+        for (let y = 0; y < h; ++y) {
+            const row = s.tileRows[y] ?? '', seen = s.visibilityRows[y] ?? '';
+            for (let x = 0; x < w; ++x) {
+                const v = seen[x] ?? '2';
+                if (v === '0') continue;
+                const c = colourOf(row[x] ?? ' ');
+                if (!c) continue;
+                const f = v === '2' ? 1 : 0.55, i = (y * w + x) * 4;
+                image.data[i] = Math.round(c[0] * f);
+                image.data[i + 1] = Math.round(c[1] * f);
+                image.data[i + 2] = Math.round(c[2] * f);
+                image.data[i + 3] = 255;
+            }
+        }
+        k.surface.ctx.putImageData(image, 0, 0);
+        k.rows = s.tileRows;
+        k.visibility = s.visibilityRows;
+        k.at = clock;
+        return k.surface;
+    }
+
+    /**
+     * Draws the map into a box of `c` (in its own units): centred on the wolf (plus `pan`, in tiles), `scale` pixels a
+     * tile. With `labels`, places are named.
+     */
+    draw(c: CanvasRenderingContext2D, s: GameState, box: {x: number; y: number; w: number; h: number}, scale: number,
+        pan: [number, number] = [0, 0], labels = false) {
+        const places = placesOf(s.snapshot);
+        const here = places.find(p => p.current);
+        const me = s.entities.get(s.selfId);
+        const cell = isObject(s.snapshot?.cell) ? s.snapshot!.cell as Json : null;
+        const cx = (here?.x ?? num(cell, 'x')) + (me?.x ?? s.cellWidth / 2) + pan[0];
+        const cy = (here?.y ?? num(cell, 'y')) + (me?.y ?? s.cellHeight / 2) + pan[1];
+        const toX = (wx: number) => box.x + box.w / 2 + (wx - cx) * scale;
+        const toY = (wy: number) => box.y + box.h / 2 + (wy - cy) * scale;
+        c.save();
+        c.beginPath();
+        c.rect(box.x, box.y, box.w, box.h);
+        c.clip();
+        c.fillStyle = '#0b1213';
+        c.fillRect(box.x, box.y, box.w, box.h);
+        c.imageSmoothingEnabled = scale < 1;
+        // Remembered places first, then the wolf's own on top.
+        for (const p of places) {
+            const x = toX(p.x), y = toY(p.y), w = p.width * scale, h = p.height * scale;
+            if (x > box.x + box.w || y > box.y + box.h || x + w < box.x || y + h < box.y) continue;
+            const picture = p.current ? this.currentPicture(s, s.clock) : this.picture(p);
+            if (picture) c.drawImage(picture.canvas, x, y, w, h);
+            else {
+                c.fillStyle = p.current ? 'rgba(168,194,166,0.18)' : 'rgba(139,155,145,0.12)';
+                c.fillRect(x, y, w, h);
+            }
+            c.strokeStyle = p.current ? 'rgba(217,182,123,0.6)' : p.visible ? 'rgba(168,194,166,0.35)' : 'rgba(139,155,145,0.18)';
+            c.lineWidth = 1;
+            c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+        }
+        // Where the weather is, faintly (the field over the wolf's own place).
+        const f = s.weatherField;
+        if (f && here) {
+            const tints: Record<string, string> = {r: '115,155,178', s: '78,98,117', n: '220,232,238', f: '190,205,202', d: '199,154,92', o: '154,163,168'};
+            for (let yy = 0; yy < f.rows; ++yy)
+                for (let xx = 0; xx < f.cols; ++xx) {
+                    const i = yy * f.cols + xx, tint = tints[f.kinds[i]], a = Number(f.amounts[i]) / 9;
+                    if (!tint || a <= 0) continue;
+                    c.fillStyle = `rgba(${tint},${(a * 0.28).toFixed(3)})`;
+                    c.fillRect(toX(here.x + xx * f.step - f.step / 2), toY(here.y + yy * f.step - f.step / 2), f.step * scale, f.step * scale);
+                }
+        }
+        // Doors of the wolf's place, then the wolves it can see, then the wolf.
+        const ox = here?.x ?? num(cell, 'x'), oy = here?.y ?? num(cell, 'y');
+        for (const d of objects(s.snapshot, 'doors')) {
+            c.fillStyle = '#d9b67b';
+            c.fillRect(toX(ox + num(d, 'x')) - 1.5, toY(oy + num(d, 'y')) - 1.5, 3, 3);
+        }
+        for (const e of s.entities.values()) {
+            if (e.self) continue;
+            const x = toX(ox + e.x), y = toY(oy + e.y);
+            c.fillStyle = e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
+            c.beginPath();
+            c.arc(x, y, Math.max(1.5, Math.min(3, scale)), 0, Math.PI * 2);
+            c.fill();
+            if (s.talkTargets.includes(e.id)) {
+                c.strokeStyle = '#d9b67b';
+                c.beginPath();
+                c.arc(x, y, 5, 0, Math.PI * 2);
+                c.stroke();
+            }
+        }
+        if (me) {
+            const x = toX(ox + me.x), y = toY(oy + me.y), r = 6;
+            c.fillStyle = '#d9b67b';
+            c.beginPath();
+            c.moveTo(x + Math.cos(me.facing) * r, y + Math.sin(me.facing) * r);
+            c.lineTo(x + Math.cos(me.facing + 2.5) * r * 0.8, y + Math.sin(me.facing + 2.5) * r * 0.8);
+            c.lineTo(x + Math.cos(me.facing - 2.5) * r * 0.8, y + Math.sin(me.facing - 2.5) * r * 0.8);
+            c.closePath();
+            c.fill();
+        }
+        if (labels) {
+            c.font = '12px sans-serif';
+            c.textBaseline = 'top';
+            for (const p of places) {
+                const x = toX(p.x), y = toY(p.y);
+                if (p.width * scale < 60) continue;
+                c.fillStyle = p.current ? '#d9b67b' : '#8b9b91';
+                c.fillText(p.name, x + 6, y + 5);
+            }
+        }
+        c.fillStyle = '#8b9b91';
+        c.font = '11px monospace';
+        c.textBaseline = 'top';
+        c.fillText('N ^', box.x + 6, box.y + 5);
+        c.restore();
+    }
+}
+
+function hashText(s: string): number {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; ++i) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h >>> 0;
+}

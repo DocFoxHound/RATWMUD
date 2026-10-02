@@ -167,7 +167,8 @@ void visitedOnlyAndMemoryPrivacy()
     knownRoute(world);
     const auto map = world.travelMap("wolf");
     expect(map.size() == 3 && hasCell(map, "c"), "Travel index includes nonadjacent previously visited cells");
-    expect(!hasCell(world.snapshot("wolf").worldMap, "c"), "Existing nearby map remains first-degree only");
+    // The nearby map shows every known place outdoors within 512 tiles (doc 29, phase 8), not only the next cells.
+    expect(hasCell(world.snapshot("wolf").worldMap, "c"), "The nearby map includes a visited place a few cells away");
     expect(std::all_of(map.begin(), map.end(), [](const MapCell& cell) { return cell.rememberedGlyphs.empty(); }),
            "Travel index transmits no remote tile payload");
     world.cell("c")->name = "Hidden rename";

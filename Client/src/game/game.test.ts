@@ -3,6 +3,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, paintPart, testGame} from './testing.ts';
 import {lookAt} from './look.ts';
+import {MapRenderer} from './minimap.ts';
 import {paceLabel, scentLabel, windLabel, environmentLabel, environmentEffectsLabel, calendarLabel, dayLabel, moonLabel, elevationLabel, lawLabel} from './labels.ts';
 import {alphaOf, Size, type Art} from './weatherArt.ts';
 import {MotionBuffer} from './motionBuffer.ts';
@@ -959,4 +960,25 @@ test('regional weather: the weather where the wolf stands, its strength in words
         time: 0.2, cellGeneration: 1});
     assert.equal(s.weatherField, null, 'a malformed field is not drawn');
     assert.equal(s.environment.weather, 'fog', 'without local weather, the cell\'s');
+});
+
+test('the map of the country: places where they truly are and as large as they are, centred on the wolf', () => {
+    const {state: s} = testGame();
+    s.applySnapshot({cell: {id: 'a', x: 0, y: 0, width: 256, height: 256, outdoors: true}, self: {id: 'me', x: 128, y: 128},
+        worldMap: [{id: 'a', name: 'Here', x: 0, y: 0, width: 256, height: 256, knowledge: 'visited', current: true},
+            {id: 'b', name: 'East', x: 256, y: 0, width: 256, height: 128, knowledge: 'visited'},
+            {id: 'c', name: 'Never seen', x: -256, y: 0, width: 256, height: 256, knowledge: 'unknown'}],
+        time: 0, cellGeneration: 1});
+    s.tick(0.016, 0.016);
+    const rects: number[][] = [];
+    const record = new Proxy({} as Record<string, unknown>, {
+        get: (_, key) => (key === 'fillRect' ? (...a: number[]) => rects.push(a) : key === 'canvas' ? undefined : () => {}),
+        set: () => true,
+    }) as unknown as CanvasRenderingContext2D;
+    new MapRenderer(() => null).draw(record, s, {x: 0, y: 0, w: 400, h: 300}, 0.5);
+    // Without offscreen canvases, each place is a box: Here centred on the wolf, East beside it, the unknown not at all.
+    const boxes = rects.filter(r => r[2] !== 400 && r[2] !== 3);
+    assert.deepEqual(boxes[0], [200 - 64, 150 - 64, 128, 128], 'here: 256 tiles at half a pixel a tile, the wolf in the middle');
+    assert.deepEqual(boxes[1], [200 + 64, 150 - 64, 128, 64], 'east: beside it, as wide and as tall as it is');
+    assert.equal(boxes.length, 2, 'a place never seen is not drawn');
 });

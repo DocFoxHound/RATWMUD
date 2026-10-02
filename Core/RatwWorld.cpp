@@ -3401,6 +3401,22 @@ Snapshot World::snapshot(const std::string& observerId)
             if (visiblePortal(*o, *door))
                 currentlyVisible.insert(door->targetCell);
         }
+    // And every known place outdoors within a day's walk at the same height (doc 29, phase 8): the minimap shows the
+    // country around, placed where it truly is, not only the next cells through a door.
+    if (c->outdoors)
+    {
+        const double px = c->worldX + o->position.x, py = c->worldY + o->position.y;
+        for (const auto& [id, memory] : book)
+        {
+            const auto* place = cell(id);
+            if (!place || !place->outdoors || memory.knowledge == Knowledge::Unknown || std::abs(memory.worldZ - c->worldZ) > .01)
+                continue;
+            const double nx = std::clamp(px, memory.worldX, memory.worldX + memory.width);
+            const double ny = std::clamp(py, memory.worldY, memory.worldY + memory.height);
+            if (std::hypot(nx - px, ny - py) <= 512)
+                adjacent.insert(id);
+        }
+    }
     for (const auto& id : adjacent)
     {
         const auto known = book.find(id);
@@ -3418,7 +3434,8 @@ Snapshot World::snapshot(const std::string& observerId)
         mc.knowledge = m.knowledge;
         mc.current = id == c->id;
         mc.visible = currentlyVisible.count(id) != 0;
-        if (m.knowledge == Knowledge::Visited)
+        // The current cell's glyphs are its rows, which the client already has: never sent twice.
+        if (m.knowledge == Knowledge::Visited && id != c->id)
         {
             mc.rememberedGlyphs = m.glyphs;
             for (std::size_t index = 0; index < mc.rememberedGlyphs.size(); ++index)

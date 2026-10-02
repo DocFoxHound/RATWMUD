@@ -10,7 +10,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 | 3 | Mouse-over: what is under the cursor, in words | Built 2026-10-02 |
 | 4 | Talk targets: choose who you are speaking to, several at once | Built 2026-10-02 |
 | 7 | Regional weather: moving systems that fade with distance, driving the simulation | Built 2026-10-02 |
-| 8 | A real minimap: true positions and sizes, coloured by terrain | Planned |
+| 8 | A real minimap: true positions and sizes, coloured by terrain | Built 2026-10-02 |
 | 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Planned |
 
 (Phases 5 and 6, towns and NPC conversations, are in doc 30.)
@@ -150,3 +150,25 @@ Tests: `weather_tests` `regionalField` (strongest at a front's middle and weaker
 more in the thick of it, drift, a front saved and restored, a pinned cell, the same systems in two worlds at the same
 moment, the grid); `server_parts_tests` (the DM's front; an unknown kind refused); `pace_tests` (rain set by hand
 pins its cell); `game.test.ts` (local weather and strength in words, the field parsed, a malformed one refused).
+
+## Phase 8: The map of the country (built 2026-10-02)
+
+The old "minimap" was the World Map's nearby view: every place a fixed 206×145 box, placed by dividing its offset by
+the current cell's size (so everything further piled up at the edges), interiors stacked on each other, and a
+17×5 sample of glyphs in one colour. Now (`Client/src/game/minimap.ts`):
+
+- **True positions and sizes:** every known place at the wolf's height is drawn where it lies in the world and as
+  large as it is, north up, centred on the wolf, **one pixel a tile in its ground's colour** (the terrain catalogue's
+  colours). Seen ground is bright, remembered ground dim, unexplored ground dark. Each place's picture is made once per
+  change of what the wolf remembers of it; the wolf's own place is drawn from its rows (at most twice a second).
+- **On top:** the doors of the wolf's place, the wolves it can see (talk targets ringed), the wolf as an arrow facing
+  its way, and the weather field, faintly.
+- **The minimap** sits at the top of the right column (2 pixels a tile to start; the wheel zooms it; a click opens the
+  World Map). **The World Map (M)** uses the same drawing, filling the map, with places named: it opens fitted to the
+  known places, the wheel zooms (0.25 to 8 pixels a tile) and Shift or Ctrl with the wheel pans. KNOWN ROUTES (the
+  travel atlas) is unchanged.
+- **The server** (`World::snapshot`) lists every known place outdoors within 512 tiles at the same height, not only
+  the cells through a door; the current cell's remembered glyphs are no longer sent (the client has its rows).
+
+Tests: `game.test.ts` (places drawn at their true offset and size around the wolf, a place never seen not drawn);
+`travel_tests` (the nearby map includes a visited place a few cells away).

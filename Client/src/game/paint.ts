@@ -7,6 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
+import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 
 /** The server's weather grid letters (RatwGame.cpp snapshot): kind names as the painter knows them. */
@@ -47,6 +48,7 @@ export class GamePainter {
     private p: Painter;
     private sheets: Sheets;
     readonly terrain: TerrainLayer;
+    readonly map: MapRenderer;
     private surfaces: SurfaceFactory;
     private patterns = new WeakMap<CanvasImageSource, CanvasPattern | null>();
     private lastCell = '';
@@ -58,6 +60,7 @@ export class GamePainter {
         this.sheets = sheets;
         this.terrain = new TerrainLayer(surfaces);
         this.surfaces = surfaces ?? pageSurface;
+        this.map = new MapRenderer(this.surfaces);
     }
 
 
@@ -70,8 +73,25 @@ export class GamePainter {
         s.hits = [];
         s.mapRect = rect(0, 0, width, height);
         p.box(0, 0, width, height, rgb(0x0f1718));
-        if (s.worldMap) this.legacyFrame(() => this.drawWorld());
+        if (s.worldMap && s.travelAtlas) this.legacyFrame(() => this.drawWorld());
+        else if (s.worldMap) this.drawCountry(width, height);
         else this.drawLocal();
+    }
+
+    /** The World Map (M): the country around, as the minimap draws it but filling the map, named, zoomed and panned. */
+    private drawCountry(width: number, height: number) {
+        const s = this.s, p = this.p;
+        const scale = s.worldZoom < 0 ? fitScale(s.snapshot, width, height) : MapScales[s.worldZoom] ?? 1;
+        this.map.draw(p.ctx, s, {x: 0, y: 0, w: width, h: height}, scale, s.worldPan, true);
+        const tab = (x: number, label: string, action: string, active: boolean) => {
+            p.box(x, 12, 130, 30, active ? Raised : Panel);
+            p.frame(x, 12, 130, 30, active ? Sage : Line);
+            p.text(x + 12, 20, label, 9, active ? Sage : Muted, true);
+            s.hits.push({rect: rect(x, 12, x + 130, 42), action, target: ''});
+        };
+        tab(width - 290, 'NEARBY', 'nearby', true);
+        tab(width - 150, 'KNOWN ROUTES', 'atlas', false);
+        p.text(14, height - 26, 'WHEEL zoom · SHIFT/CTRL+WHEEL pan · BRIGHT seen · DIM remembered · DARK unexplored', 9, Muted, true);
     }
 
     /**
@@ -542,8 +562,9 @@ export class GamePainter {
 
     // ------------------------------------------------------------------ The world map and the travel atlas
 
+    /** The travel atlas, in the old frame, with its tabs (the nearby map is drawCountry). */
     private drawWorld() {
-        const s = this.s, p = this.p, extra = 0;
+        const s = this.s, p = this.p;
         const tab = (x: number, label: string, action: string, active: boolean) => {
             p.box(x, 216, 130, 30, active ? Raised : Panel);
             p.frame(x, 216, 130, 30, active ? Sage : Line);
@@ -552,56 +573,7 @@ export class GamePainter {
         };
         tab(1250, 'NEARBY', 'nearby', !s.travelAtlas);
         tab(1390, 'KNOWN ROUTES', 'atlas', s.travelAtlas);
-        if (s.travelAtlas) {
-            this.drawTravelAtlas();
-            return;
-        }
-        const iso = bool(s.snapshot, 'isometric') && !s.flatWorld;
-        p.text(613 + extra, 225, iso ? 'VISIBLE VERTICAL CONNECTION' : 'NEIGHBORHOOD', 10, Sage, true);
-        p.text(613 + extra, 251, iso ? 'The visible upper cell lifts into view.' : 'What you can see. What you remember.', 13, Muted);
-        const cells = objects(s.snapshot, 'worldMap');
-        const current = cells.find(c => bool(c, 'current'));
-        const [curX, curY, curZ] = current ? [num(current, 'x'), num(current, 'y'), num(current, 'z')] : [0, 0, 0];
-        for (const c of cells) {
-            const isCurrent = bool(c, 'current'), visible = bool(c, 'visible');
-            const knowledge = str(c, 'knowledge');
-            if (!visible && !isCurrent && knowledge === 'unknown') continue;
-            const x = num(c, 'x') - curX, y = num(c, 'y') - curY, z = num(c, 'z') - curZ;
-            const rx = clamp(x / Math.max(1, s.cellWidth), -1, 1), ry = clamp(y / Math.max(1, s.cellHeight), -1, 1), rz = clamp(z, -1, 1);
-            let px = 961 + extra * 0.5 + rx * Math.min(235, (960 - extra - 230) * 0.5), py = 435 + ry * 157 - rz * 120;
-            if (iso) {
-                px += -ry * 52 - rz * 24;
-                py += rx * 37;
-            }
-            const w = 206, h = 145;
-            const color = isCurrent ? Amber : visible ? Sage : withAlpha(Muted, 0.5);
-            p.box(px, py, w, h, isCurrent ? rgb(0x242d23) : withAlpha(Panel, visible ? 1 : 0.45));
-            p.frame(px, py, w, h, color);
-            if (iso) {
-                p.lines([[px, py], [px + 32, py - 19], [px + w + 32, py - 19], [px + w, py]], withAlpha(color, 0.5));
-                p.lines([[px + w, py], [px + w + 32, py - 19], [px + w + 32, py + h - 19], [px + w, py + h]], withAlpha(color, 0.5));
-            }
-            if (isCurrent || visible || knowledge === 'visited') {
-                const glyphs = str(c, 'glyphs');
-                const width = Math.max(1, Math.trunc(num(c, 'width'))), height = Math.max(1, Math.trunc(num(c, 'height')));
-                for (let ty = 0; ty < 5; ++ty)
-                    for (let tx = 0; tx < 17; ++tx) {
-                        const sx = Math.round(tx * (width - 1) / 16), sy = Math.round(ty * (height - 1) / 4);
-                        const ch = glyphs[sy * width + sx];
-                        if (ch === undefined || ch === ' ' || ch === '\n') continue;
-                        const info = terrainInfo(ch);
-                        const shape = !info ? ch : s.plainGlyphs ? info.ascii : info.glyph;
-                        p.text(px + 10 + tx * 11, py + 34 + ty * 14, shape, 9, withAlpha(color, visible || isCurrent ? 0.4 : 0.17), true);
-                    }
-            }
-            p.text(px + 11, py + 11, str(c, 'name'), 12, color, false, true);
-            p.text(px + 11, py + 120, isCurrent ? 'YOU ARE HERE' : visible ? 'IN SIGHT' : knowledge === 'visited' ? 'VISITED · MEMORY' : 'GLIMPSED · OUTLINE',
-                8, color, true);
-            if (z !== 0) p.text(px + 157, py + 120, z > 0 ? 'ABOVE' : 'BELOW', 8, color, true);
-            if (isCurrent) p.text(px + 95, py + 64, 'W>', 15, Amber, true);
-        }
-        p.text(614 + extra, 742, 'Memories persist. Unseen changes and residents stay hidden.', 12, Muted);
-        p.text(614 + extra, 771, 'BRIGHT  currently seen      DIM  remembered      ABSENT  unexplored', 9, Muted, true);
+        this.drawTravelAtlas();
     }
 
     private drawTravelAtlas() {

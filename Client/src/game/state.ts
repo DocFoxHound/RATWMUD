@@ -65,6 +65,7 @@ export interface KeyInput {
 
 const MovementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 const MaxTargets = 4;
+const MapScalesForPan = [0.25, 0.5, 1, 2, 4, 8];    // As minimap.ts MapScales (kept here so state has no drawing import).
 /** The story column's presets (CSS pixels): balanced, wide, text-first, compact. */
 export const StoryWidths = [460, 600, 760, 360];
 const KnownWeather = ['overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
@@ -157,6 +158,9 @@ export class GameState {
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
     // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
     weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
+    worldZoom = -1;             // The World Map's scale (minimap.ts MapScales; -1 fits the known places), and its pan (tiles).
+    worldPan: [number, number] = [0, 0];
+    miniZoom = 3;               // The minimap's scale (2 pixels a tile).
     inspectedText = '';
     toast = '';
     toastUntil = 0;
@@ -806,6 +810,14 @@ export class GameState {
             if (ctrl) this.mapPan[0] = clamp(this.mapPan[0] + delta * 60, -1000, 1000);
             else if (shift) this.mapPan[1] = clamp(this.mapPan[1] + delta * 60, -1000, 1000);
             else if (delta) this.requestPace(this.displayPace() + (delta > 0 ? 1 : -1));
+            return true;
+        }
+        if (contains(this.mapRect, point[0], point[1]) && this.worldMap && !this.travelAtlas && !this.chat) {
+            if (this.worldZoom < 0) this.worldZoom = 2;
+            const step = 200 / (MapScalesForPan[this.worldZoom] ?? 1);
+            if (ctrl) this.worldPan[0] = clamp(this.worldPan[0] + delta * step, -3000, 3000);
+            else if (shift) this.worldPan[1] = clamp(this.worldPan[1] + delta * step, -3000, 3000);
+            else if (delta) this.worldZoom = clamp(this.worldZoom + (delta > 0 ? 1 : -1), 0, MapScalesForPan.length - 1);
             return true;
         }
         if (contains(this.mapRect, point[0], point[1]) && this.worldMap && this.travelAtlas && !this.chat) {
