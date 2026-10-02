@@ -1,0 +1,151 @@
+# Two trades meeting: what one asks of the other, or grumbles about to the other.
+
+scene pr_guard_merchant
+when topic=work|smalltalk a.role=guard b.role=merchant
+a : Any trouble at your stall? | Seen that cutpurse again? | Close up before dark tonight.
+b : Not today, touch wood. | Twice. Brazen little thing. | Why? What's happening?
+a : Good. | Tell me if you see them. | Just to be safe.
+
+scene pr_merchant_guard
+when topic=work|smalltalk a.role=merchant b.role=guard
+a : Somebody's been sleeping behind my stall. | Can you walk past my shop more often? | A customer refused to pay.
+b : I'll move them along. | I'll try. | I'll have a word.
+a : Thank you. | Please. | Thank you.
+
+scene pr_farmer_merchant
+when topic=work a.job=farmer b.role=merchant
+a : What'll you give me for a cart of turnips? | My grain's the best this side of the hills. | You pay less every season.
+b : Less than you'd like. | So says every farmer. | You grow more every season.
+a : Thief. | It is. | Not by much.
+
+scene pr_merchant_farmer
+when topic=work a.role=merchant b.job=farmer
+a : I'll take your whole crop, at a fair price. | When's the harvest in? | Turnips again? Grow something new.
+b : Fair to whom? | When the weather allows. | Turnips keep.
+a : To both of us. | Soon, I hope. | They do.
+
+scene pr_smith_farmer
+when topic=work a.job=smith b.job=farmer
+a : Your plough share's ready. | That's the third sickle you've broken this year. | Bring me your old iron; I'll take it in trade.
+b : Already? Good. | Stones in the field. | I'll bring it.
+a : Pay at the door. | Clear your field. | Good.
+
+scene pr_healer_guard
+when topic=work a.job=healer b.role=guard
+a : Another one brought in with a broken head. | Tell your sergeant to stop the brawls before they start. | You need to rest that knee.
+b : Tavern night. | Easier said. | Can't, on duty.
+a : Every tavern night. | Try. | Then it'll get worse.
+
+scene pr_priest_beggar
+when topic=work a.job=priest b.job=beggar
+a : There's soup at the chapel tonight. | Come in out of the cold. | How long since you ate?
+b : Bless you. | Thank you. | Two days.
+a : Come early. | Please. | Come now.
+
+scene pr_innkeeper_carter
+when topic=work a.job=innkeeper b.job=carter
+a : Your usual room? | You owe me for last time. | Any news from the road?
+b : Please. | Next run, I swear. | Bandits near the ford.
+a : Ready for you. | You swore last time. | Thank you for the warning.
+
+scene pr_carter_innkeeper
+when topic=work a.job=carter b.job=innkeeper
+a : A bed and a hot meal, if you've got them. | Stable for the mule? | Brought you a cask from the coast.
+b : Both, for a price. | Round the back. | Bless you.
+a : Here. | Thank you. | Pay me later.
+
+scene pr_scholar_child
+when topic=smalltalk a.job=scholar b.stage=young|adolescent
+a : Do you know your letters? | Would you like to learn to read? | What's two and three?
+b : Some of them. | Is it hard? | Five!
+a : I'll teach you the rest. | Not if you practise. | Clever.
+
+scene pr_child_guard
+when topic=smalltalk a.stage=young b.role=guard
+a : Have you caught any robbers? | Can I hold your spear? | Are you brave?
+b : One or two. | No. | When I have to be.
+a : Wow! | Please? | I'm brave too!
+
+scene pr_child_merchant
+when topic=smalltalk a.stage=young b.role=merchant
+a : What's that? Can I touch it? | How much for the shiny thing? | Do you have sweets?
+b : Look with your eyes. | More than you have. | One, for a smile.
+a : Please? | Oh. | Thank you!
+
+scene pr_old_healer
+when topic=smalltalk|work a.stage=old b.job=healer
+a : My hip's worse this winter. | I can't sleep for the pain. | Have you anything for old bones?
+b : Warm it, and walk a little each day. | I'll give you something. | Rest and warmth.
+a : Walking hurts. | Thank you. | Hm.
+
+scene pr_soldier_civilian
+when topic=smalltalk a.job=soldier b.role=civilian
+a : Anything happening in town? | Haven't had a day off in a month. | Is the tavern busy tonight?
+b : Not much. | That's hard. | Always.
+a : Good. | It is. | Good.
+
+scene pr_servant_noble
+when topic=work a.job=servant b.job=noble
+a : Your bath is ready, my lord. | Guests are waiting in the hall. | Shall I fetch the carriage?
+b : About time. | Let them wait. | Yes.
+a : Yes, my lord. | Of course. | At once.
+
+scene pr_noble_servant
+when topic=work a.job=noble b.job=servant
+a : Where is my blue cloak? | Tell the cook I want fish tonight. | You're late.
+b : Being mended, my lord. | Yes, my lord. | Forgive me.
+a : Mended? Again? | Good. | Don't let it happen again.
+
+scene pr_fisher_cook
+when topic=work a.job=fisher b.job=cook|innkeeper
+a : Fresh trout for your pot? | I'll trade you eels for a hot meal. | Big catch today; want some?
+b : How many? | Done. | Always.
+a : A dozen. | Good. | Here.
+
+scene pr_miner_smith
+when topic=work a.job=miner b.job=smith
+a : Good ore today. Want first pick? | Mend my pick? The point's gone. | Iron's coming up red as blood.
+b : Show me. | Leave it here. | Good.
+a : Here. | Thanks. | Best seam in years.
+
+scene pr_herder_farmer
+when topic=work a.job=herder b.job=farmer
+a : Your fence is down; my sheep got in your barley. | Can I graze the stubble after harvest? | Lost a ewe near your field.
+b : Again? | For a price. | I'll keep an eye out.
+a : Sorry. | Fair. | Thank you.
+
+scene pr_apprentice_child
+when topic=smalltalk a.job=apprentice b.stage=young
+a : Want to see what I made? | I'm learning a trade, you know. | Don't touch, it's sharp.
+b : Yes! | What trade? | I wasn't going to!
+a : Look. | A good one. | Good.
+
+scene pr_official_merchant
+when topic=work a.job=official b.role=merchant
+a : Your licence fee is due. | There's been a complaint about your scales. | The council wants a list of your goods.
+b : Again? | My scales are true! | What for?
+a : Again. | We'll see. | Taxes.
+
+scene pr_crafter_noble
+when topic=work a.job=crafter b.job=noble
+a : Your chest is finished, my lord. | The carving will take another week. | Gold leaf costs extra.
+b : About time. | A week! | Then use less.
+a : It's fine work. | Good work takes time. | As you wish.
+
+scene pr_beggar_child
+when topic=smalltalk a.job=beggar b.stage=young
+a : Spare a crust, little one? | Don't stare, pup. | Run along home.
+b : I have half a bun. Here. | Sorry. | Bye!
+a : Bless you. | It's all right. | Go on.
+
+scene pr_sailor_innkeeper
+when topic=smalltalk a.job=sailor b.job=innkeeper
+a : Rum, and keep it coming. | Six weeks at sea, and this is the first bed I've seen. | Any work going on the quay?
+b : Coin first. | Room's upstairs. | Ask at the Brinewater office.
+a : Here. | Bless you. | Thanks.
+
+scene pr_woodcutter_crafter
+when topic=work a.job=woodcutter b.job=crafter
+a : I've good oak for you. Seasoned two years. | Want ash for handles? | Cedar's dear this year.
+b : How much? | Always. | Everything is.
+a : For you, a fair price. | I'll bring a load. | Everything.

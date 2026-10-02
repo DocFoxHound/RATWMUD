@@ -1,0 +1,135 @@
+# The world around: weather, seasons, the stars, old stories everyone knows.
+
+scene wt2_rain_work
+when topic=weather weather=rain|storm
+a[merchant] : Nobody shops in the rain. | My awning's leaking onto the goods.
+a[laborer] : Hauling in the rain. Twice the weight, half the pay.
+a : Rain, rain, rain. | Everything's mud. | Can't get dry.
+b[old] : Rain's good for the wells. Be grateful.
+b[child] : I like the rain! Splash!
+b : It'll pass. | Mud everywhere. | Nor me.
+a : Eventually. | Everywhere. | Never.
+
+scene wt2_storm_fear
+when topic=weather weather=storm
+a : Hear that thunder? | Lightning struck the old oak last storm. | My shutters nearly blew off.
+b[child] : I'm not scared. I'm not! Is it over yet?
+b[old] : The sky's angry. It'll calm.
+b : Stay inside. | Split it clean, didn't it? | Nail them shut.
+a : I will. | Clean in two. | I did.
+
+scene wt2_fog_creepy
+when topic=weather weather=fog
+a : Fog like this, anything could be out there. | Can't see the end of my nose. | The fog's swallowed the whole street.
+b[guard] : Thieves love a fog.
+b[old] : Fog's just a cloud that got tired.
+b : Don't say that. | Stay close. | It'll lift.
+a : Sorry. | I will. | Hope so.
+
+scene wt2_snow_beauty
+when topic=weather weather=snow
+a : Look how quiet the snow makes everything. | First snow's always the prettiest. | Everything looks clean under snow.
+b[child] : Can we make snow wolves?
+b[old] : Pretty till you have to walk in it.
+b : It does. | Until it's grey slush. | For a day.
+a : Lovely. | True. | For a day.
+
+scene wt2_overcast
+when topic=weather weather=overcast
+a : Grey all day. | Sun hasn't shown its face in days. | Looks like rain, doesn't it?
+b : Might. | Gloomy. | Always looks like rain.
+a : Might not. | Very. | Ha.
+
+scene wt2_season_change_spring
+when topic=smalltalk|weather season=spring
+a : Mud season. | The thaw's flooded the low lanes. | Lambs in the fields already.
+b[farmer] : Busiest time of year.
+b : Always is. | Every year. | Spring's here.
+a : Always. | Every year. | At last.
+
+scene wt2_season_change_autumn
+when topic=smalltalk|weather season=autumn
+a : The geese are flying south. | First frost this morning. | Gathering season.
+b[old] : Early geese, hard winter.
+b : Already? | Cold one. | Busy time.
+a : Already. | Very. | Very.
+
+scene lr_stars
+when topic=lore time=night|dusk
+a : See the Wolf in the stars, there? | The Hunter's rising early this year. | My father named every star.
+b[old] : My mother told me the stars are the ancestors watching.
+b[child] : Where? Show me!
+b : I see it. | Early winter, then. | Do you remember them?
+a : Beautiful. | So they say. | Some.
+
+scene lr_moon
+when topic=lore time=night
+a : Big moon tonight. | They say a full moon makes pups wild. | Moon's red tonight. Bad sign.
+b[old] : The moon was bigger when I was young. Or I was smaller.
+b[child] : I feel wild! Awooo!
+b : Lovely. | Makes everyone wild. | Just dust in the air.
+a : Very. | Ha. | Maybe.
+
+scene lr_first_wolves
+when topic=lore
+a : They say the first wolves walked out of the mountain. | My grandmother said we came from across the sea. | Do you believe the old stories?
+b[priest] : The old stories hold truth, if not facts.
+b[old] : I believe the stories that keep pups behaving.
+b : Every town has its own story. | Mine says something else. | Some of them.
+a : True. | Everyone's does. | Some.
+
+scene lr_ghosts
+when topic=lore
+weight 0.7
+a : Do you believe in ghosts? | My house creaks at night like someone's walking. | I saw something in the old well once.
+b[old] : I've seen three. Two were drunk. One wasn't.
+b[priest] : The dead rest. Mostly.
+b[child] : Ghosts aren't real. Are they?
+b : No. | Old houses creak. | What was it?
+a : Nor me. Mostly. | I suppose. | I never found out.
+
+scene lr_dragons
+when topic=lore
+weight 0.5
+a : My uncle swears he saw a great serpent in the hills. | There are bones in the hills bigger than houses. | Monsters lived here once.
+b[scholar] : The bones are old. Very old. Not monsters.
+b : Your uncle drinks. | Have you seen them? | And now there's us.
+a : He does. | Once. | Ha.
+
+scene lr_proverbs
+when topic=lore|smalltalk
+a : Like my mother always said: a full belly forgives everything. | A wolf alone is a wolf in danger. | Never trust a fox who smiles.
+b[old] : She was a wise wolf, your mother.
+b : True enough. | Very true. | Nor a merchant.
+a : She was. | It is. | Ha.
+
+scene lr_old_war
+when topic=lore
+a : My grandfather fought in the old war. | There's a battlefield past the hills, still full of rusted blades. | Nobody remembers what the war was about.
+b[old] : I remember. Barely. Everyone was hungry.
+b[soldier] : Wars are always about the same thing. Somebody wanted more.
+b : Was he brave? | I'd not go there. | Nobody ever does.
+a : He said not. | Nor me. | Never.
+
+scene lr_harvest_moon
+when topic=lore season=autumn
+a : Harvest moon soon. | They say if you wish on the harvest moon, it comes true. | The old ones danced in the fields under the harvest moon.
+b[farmer] : I'll be too tired to dance.
+b : Make a wish, then. | Did it ever work? | Nobody dances now.
+a : I will. | Sometimes. | More's the pity.
+
+scene lr_winter_tale
+when topic=lore season=winter
+a : They say in the hardest winter, the river froze to the bottom. | A winter so cold birds fell from the sky. | My grandmother survived the Long Winter.
+b[old] : I remember the Long Winter. We ate bark.
+b[child] : Will this winter be long?
+b : Hard to believe. | Terrible. | How?
+a : It's true. | Very. | She never said.
+
+scene lr_luck
+when topic=lore|smalltalk
+weight 0.6
+a : Found a white stone today. Good luck. | Saw a heron. That's luck, isn't it? | My lucky charm's gone. Lost it.
+b[old] : Luck's what you make. And a white stone helps.
+b : Lucky you. | Herons are luck. | Find another.
+a : Hope so. | Good. | I'll try.

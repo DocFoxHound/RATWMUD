@@ -1,0 +1,220 @@
+# The towns in more depth: their trades, their worries, their neighbours, their stories.
+
+# ---------------------------------------------------------------- Accord Crossing
+
+scene ac_toll
+when topic=smalltalk|work region=accord_crossing
+a : The toll went up again at the post. | Half the carters camp outside to dodge the toll. | Toll-keeper counted my wheels twice.
+b[official] : The Accord sets the toll. I only take it.
+b[carter] : Robbery with a ledger.
+b : Of course it did. | Can't blame them. | You've got four. Always four.
+a : Always. | No. | Ha.
+
+scene ac_stables
+when topic=work region=accord_crossing a.job=herder|carter|laborer
+a : Forty beasts in the stable yard tonight. | A mule kicked me clean across the yard. | Hay's running low already.
+b : Busy season. | Mules. Never trust a mule. | Order more.
+a : Too busy. | Never again. | From where?
+
+scene ac_mountain_road
+when topic=lore|smalltalk region=accord_crossing
+a : Everyone going up to the Accord stops here first. | The switchbacks up the mountain are icy already. | Lowlanders always ask how far it is to the top.
+b[carter] : Far enough to kill a mule. I've seen it.
+b : We're the doorstep of the mountain. | Take the low road. | Further than they think.
+a : We are. | No low road left. | Always.
+
+scene ac_inn_full
+when topic=smalltalk region=accord_crossing place=tavern
+a : Not a bed left at the Crossed Roads. | Carters sleeping on the tables again. | Somebody's always singing at the Crossed Roads.
+b[innkeeper] : Full is good. Full is coin.
+b : Every night. | On the tables! | Badly, too.
+a : Every night. | Better than the mud. | Very badly.
+
+# ---------------------------------------------------------------- Saltreach
+
+scene sr_pans
+when topic=work region=saltreach a.job=farmer|laborer
+a : Raked the pans since dawn. | A good dry wind; the salt's coming fast. | Rain ruined a whole pan.
+b : Hard work. | Good. | Bad luck.
+a : Very. | For once. | Always is.
+
+scene sr_ridgemere_shadow
+when topic=smalltalk|lore region=saltreach
+a : Ridgemere wants everything we make, at half the price. | The Vesk factor came by again. | One day Saltreach will be bigger than Ridgemere.
+b[old] : Ridgemere always took more than it gave.
+b[fisher] : Vesk owns half the boats in this harbour.
+b : What can we do? | What did they want this time? | Ha. Dream on.
+a : Nothing. | More. Always more. | One day.
+
+scene sr_drowned_bell
+when topic=lore region=saltreach
+a : They ring the chapel bell for every boat lost. | The bell rang twice last winter. | My mother says she hears the drowned in the waves.
+b[priest] : We ring so they know we remember.
+b : A sad sound. | Two boats? | Mine says the same.
+a : Very. | Two. | Maybe they're right.
+
+# ---------------------------------------------------------------- Cinderbrook
+
+scene cb_cough
+when topic=smalltalk region=cinderbrook
+a : Everyone in this town coughs. | Smoke's so thick today I can taste it. | My fur's red with ore dust.
+b[healer] : Breathe through a wet cloth when you're near the forge.
+b[miner] : That's the taste of a living.
+b : It's the forge. | Every day. | Everyone's is.
+a : Always. | Always. | Everyone's.
+
+scene cb_safe_return
+when topic=lore region=cinderbrook
+a : Left a nail at the shrine for my brother's safe return. | Hundreds of nails on the shrine wall now. | Every nail is somebody who came back up.
+b[priest] : And every missing nail is somebody we pray for.
+b : He'll come back. | So many. | A good custom.
+a : He'd better. | So many. | It is.
+
+scene cb_ser_ferro_road
+when topic=smalltalk region=cinderbrook
+a : Ore carts go down to Ser Ferro every day. | My daughter works in Ser Ferro now. Never visits. | The city folk think we're savages up here.
+b[old] : Ser Ferro was built on Cinderbrook iron.
+b : Every day, rain or sun. | Busy, probably. | Let them.
+a : Every day. | Probably. | Let them.
+
+# ---------------------------------------------------------------- Westmarch
+
+scene wm_barrows
+when topic=lore region=downs
+a : Lights on the barrows again last night. | My grandfather dug into a barrow once. Never spoke of what he found. | Don't sleep on a barrow. You'll dream of the dead.
+b[old] : Leave the barrows be. That's all anyone needs to know.
+b[adolescent] : I'm going to camp on one. For a dare.
+b : Shepherds' fires. | Wise of him. | I won't.
+a : Maybe. | Very. | Don't.
+
+scene wm_frontier_pride
+when topic=smalltalk region=westmarch
+a : Nobody tells us what to do out here. | City folk wouldn't last a winter on the downs. | Westmarch looks after its own.
+b[old] : We came out here to be free. Free, and hungry, some years.
+b : Damn right. | Not a week. | Always has.
+a : Damn right. | Not a day. | Always will.
+
+scene wm_drovers
+when topic=work region=westmarch a.job=herder|merchant|farmer
+a : The drovers are in from the south with two hundred head. | Cattle prices fell when the drovers came in. | Wool's fetching a good price this year.
+b : Busy market, then. | Always do. | Good. Sell, then.
+a : Very. | Always. | I will.
+
+# ---------------------------------------------------------------- Lakeside
+
+scene ls_boats
+when topic=work region=lakeside a.job=fisher|crafter
+a : New skiff's nearly done; just the pitch. | Somebody's been taking my boat at night. | Lake's too calm; the fish see the nets.
+b : Fine-looking boat. | Chain it up. | Fish further out.
+a : It'll float. | I will. | Further.
+
+scene ls_mist
+when topic=smalltalk|weather region=lakeside
+a : Couldn't see the other end of the jetty this morning. | Mist comes in every dawn, lifts by noon. | The mere looks like milk.
+b[old] : The mere breathes. That's the mist.
+b : Every morning. | Like clockwork. | Pretty, though.
+a : Every morning. | Always. | Very.
+
+scene ls_isle
+when topic=smalltalk region=lakeside
+a : The garrison rowed in for supplies. Bought half the market. | My cousin's posted on the isle. Hates it. | The isle soldiers drink our tavern dry.
+b[innkeeper] : And pay well for it. Bless them.
+b : Good for trade. | Everyone hates it. | Every time.
+a : Very. | Everyone. | Every time.
+
+# ---------------------------------------------------------------- Fenhollow
+
+scene fh_cures
+when topic=work|smalltalk region=fenhollow
+a : People come from all over for the marsh cures. | Bogmyrtle's tonic cured my cough. Or killed it. | Half the cures in the fens are poison, half are miracles.
+b[healer] : The marsh is generous to those who know it.
+b : Fenhollow's famous for it. | Which half? | Pick carefully.
+a : Famous. | Still coughing. | Very.
+
+scene fh_floods
+when topic=smalltalk|weather region=fenhollow
+a : Water's up to the chapel stones again. | Boots never dry in this town. | Causeway's under water.
+b[old] : It's always under water. That's the fens.
+b : Raised for a reason. | Never. | Wade, then.
+a : Always. | Never. | Ugh.
+
+scene fh_peat
+when topic=work region=fenhollow a.job=miner|laborer
+a : Cut peat since dawn. | Found an old wooden thing deep in the peat. | Peat's wet; it won't sell.
+b : Back-breaking. | What kind of thing? | Dry it.
+a : Very. | Carved. Old. Strange. | In this weather?
+
+# ---------------------------------------------------------------- Amberford
+
+scene af_drought
+when topic=smalltalk|weather region=amberford
+a : Dust on everything. | No rain since the last moon. | Wells are getting low.
+b[farmer] : If it doesn't rain soon, the second crop's lost.
+b[old] : The steppe takes its time. Rain will come.
+b : Always dust here. | Pray for rain. | Share the water, then.
+a : Always. | I am. | We must.
+
+scene af_harvest
+when topic=work region=amberford a.job=farmer|laborer|baker
+a : Barn's full to the beams. | Good grain this year. Golden. | The miller's working night and day.
+b : A good year. | Golden as the name. | Busy miller.
+a : For once. | Amber. | Very busy.
+
+scene af_ford
+when topic=lore|smalltalk region=amberford
+a : The ford's moving, they say. A stride a year. | Toll at the ford pays for the watch. | My great-grandfather built the first bridge here. It washed away.
+b[old] : The river does what it likes.
+b : Moving? | Good use of it. | What happened?
+a : Slowly. | Very. | A flood.
+
+# ---------------------------------------------------------------- Hollowmere
+
+scene hm_carter
+when topic=smalltalk region=hollowmere_village
+a : The carter's a week late. | We're out of salt till the carter comes. | Do you think the carter's forgotten us?
+b[old] : He always comes. Late, but he comes.
+b : He'll come. | Borrow some. | Probably.
+a : Eventually. | From whom? | Probably.
+
+scene hm_valley
+when topic=lore|smalltalk region=hollowmere_village
+a : My family's farmed this valley for six generations. | The brook sings different before rain. | Nobody comes to Hollowmere by accident.
+b[old] : And six more, I hope.
+b : That's a long time. | Does it? | Nobody comes at all.
+a : Long. | Listen. | Good.
+
+# ---------------------------------------------------------------- The fortresses
+
+scene ft_rations
+when topic=smalltalk|work region=fortresses
+a : Salt pork again. | Cook says it's stew. It's water with a rumour of meat. | Supplies were short this month.
+b[cook] : Complain to the quartermaster, not me.
+b[soldier] : Eat it or starve. Those are the choices.
+b : Again. | Ha. | Again.
+a : Again. | True. | Always.
+
+scene ft_letters
+when topic=smalltalk region=fortresses
+a : Any letters come with the supplies? | My mother writes every month. Same letter every month. | Haven't heard from home since spring.
+b : Not for me. | At least she writes. | They'll write.
+a : Nor me. | True. | I hope.
+
+scene ft_watch_night
+when topic=work region=fortresses time=night
+a : Cold on the walls tonight. | Something moved out past the ditch. | Stay awake. Commander checks.
+b : Cold every night. | A fox. Probably. | Always.
+a : Every night. | Probably. | Always.
+
+# ---------------------------------------------------------------- The Ghost Town
+
+scene gt_squatters
+when topic=smalltalk|work region=ghost_town
+a : Found a good iron pot in the old inn. | Somebody's been through the east houses before us. | Wind howls through these walls all night.
+b : Lucky find. | Other scavengers? | You get used to it.
+a : Very. | Seems so. | Never.
+
+scene gt_history
+when topic=lore region=ghost_town
+a : Why did everyone leave this place? | There are names carved on the chapel door. Hundreds. | Every house left in a hurry. Tables still set.
+b : Plague, they say. | The ones who left. Or didn't. | Something scared them.
+a : Plague. | Or didn't. | Something.

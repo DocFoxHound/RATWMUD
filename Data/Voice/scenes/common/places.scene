@@ -1,0 +1,136 @@
+# Talk that belongs to a place: the tavern, the market, the home, the chapel, the barracks, the gate, the fields,
+# the shore and the road.
+
+scene pc_tavern_gossip
+when topic=smalltalk place=tavern
+a : See who's sitting in the corner? | That one's had too many already. | The innkeeper's watered the ale again.
+b[innkeeper] : I heard that.
+b : I see them. | Again? | Tastes like it.
+a : Interesting. | Again. | Every time.
+
+scene pc_tavern_dice
+when topic=smalltalk place=tavern time=dusk|night
+a : Dice? A penny a throw. | You cheated! I saw that. | Lost my whole wage at dice last night.
+b[guard] : No gambling where I can see it.
+b : Go on, then. | I never cheat. | Fool.
+a : Your throw. | Ha! | I know.
+
+scene pc_tavern_story
+when topic=smalltalk place=tavern
+a : Tell the one about the bear and the miller. | Did I ever tell you about my uncle's boat? | Who's got a good story tonight?
+b[old] : I've a hundred stories. Ninety are true.
+b : Not again. | Only six times. | Not me.
+a : Once more! | Seven, then. | Somebody!
+
+scene pc_tavern_fight
+when topic=smalltalk place=tavern time=night
+weight 0.5
+a : Those two are going to fight. | Somebody hold him back! | Not another brawl.
+b[innkeeper] : Outside! Take it outside!
+b[guard] : Not on my watch.
+b : Let them. | Let him go. | Every night.
+a : Ha. | Too late. | Every night.
+
+scene pc_market_haggle
+when topic=smalltalk place=market
+a : Did you see what they want for apples? | That stall's selling yesterday's fish. | Best bargains are at the end of the day.
+b[merchant] : Yesterday's? It was swimming this morning!
+b : Robbery. | Never buy from them. | That's the secret.
+a : Robbery. | Never. | Shh.
+
+scene pc_market_lost_child
+when topic=smalltalk place=market
+weight 0.6
+a : Have you seen a little one in a blue collar? | Lost my pup in the crowd! | Whose child is this?
+b[guard] : I'll call it out. Stay here.
+b : Not yet. | I'll help you look. | Not mine.
+a : Hurry. | Thank you. | Somebody's.
+
+scene pc_market_pickpocket
+when topic=smalltalk place=market
+weight 0.6
+a : My purse! Somebody's taken my purse! | Watch your pockets; there's a cutpurse about. | Saw a young one with quick paws by the fruit.
+b[guard] : Which way did they go?
+b : Oh no. | Thanks for the warning. | Point them out.
+a : I don't know! | Careful. | Gone now.
+
+scene pc_home_chores
+when topic=smalltalk place=home
+a : The floor won't sweep itself. | Fire needs more wood. | Who used the last of the water?
+b[child] : Not me!
+b : I'll do it later. | I'll fetch some. | Guilty.
+a : Now, please. | Good. | Fetch more.
+
+scene pc_home_quiet
+when topic=smalltalk place=home time=night|dusk
+a : Quiet in here tonight. | Shall I light the lamp? | Listen to the wind.
+b : Nice, isn't it. | Not yet. Let's sit in the dark a while. | Getting up.
+a : It is. | All right. | Mm.
+
+scene pc_chapel_prayer
+when topic=smalltalk|lore place=chapel
+a : I came to pray for my mother. | Do you think anyone hears? | The candles never go out here.
+b[priest] : Someone always hears.
+b : I'll pray with you. | Sometimes. | Somebody tends them.
+a : Thank you. | I hope so. | Always.
+
+scene pc_barracks_gripe
+when topic=smalltalk place=barracks
+a : Who's been at my bunk? | Somebody's snoring like a bear. | Boots by the door, I said!
+b : Not me. | Sergeant. Always the sergeant. | Sorry.
+a : Somebody. | Of course. | Again.
+
+scene pc_gate_traveller
+when topic=smalltalk place=gate
+a : Where are you headed? | Long way to come? | Watch the road east; it's washed out.
+b[carter] : Same as always: there, then back.
+b : South, if the road holds. | Far enough. | Thanks for the word.
+a : Safe travels. | Rest here a while. | Any time.
+
+scene pc_field_rest
+when topic=smalltalk place=field
+a : Shade under the hedge. Sit. | Water? | Too hot for working.
+b[farmer] : Five minutes. Then back to it.
+b : Gladly. | Please. | Too hot for anything.
+a : Five. | Here. | Ha.
+
+scene pc_shore_waves
+when topic=smalltalk place=shore
+a : Waves are big today. | Something washed up on the shore. | Tide's coming in fast.
+b[fisher] : Big waves, empty nets.
+b[child] : What is it? Can I see?
+b : Stay back from the edge. | What is it? | Move back.
+a : I will. | Just driftwood. | Hurry.
+
+scene pc_wild_tracks
+when topic=smalltalk place=wild
+a : Fresh tracks here. Big ones. | I heard something in the trees. | It's getting dark. We should hurry.
+b[guard] : Stay close. Keep moving.
+b : Bear? | Just birds. | Faster, then.
+a : Maybe. | I hope so. | Faster.
+
+scene pc_street_cart
+when topic=smalltalk place=street
+a : Mind the cart! | That cart nearly took my tail off. | Carts everywhere today.
+b[carter] : Sorry! Couldn't stop.
+b : Careless. | Watch out. | Market day.
+a : Careless. | I was. | Always.
+
+scene pc_street_puddle
+when topic=smalltalk place=street weather=rain|storm
+a : Stepped right in a puddle. | Street's a river. | Can't see the cobbles for water.
+b : Unlucky. | Swim, then. | Wade.
+a : Very. | Ha. | Ugh.
+
+scene pc_work_busy
+when topic=smalltalk place=work
+a : Don't touch that; it's not finished. | Busy, busy. Come back later? | Mind the tools.
+b : Sorry. | I'll wait. | I will.
+a : It's all right. | Thank you. | Good.
+
+scene pc_hall_formal
+when topic=smalltalk place=hall
+a : Speak softly in here. | The hall's grand, isn't it? | Waiting to be seen. Again.
+b[official] : All in good time.
+b : Of course. | Very. | Me too.
+a : Good. | Very. | Always waiting.
