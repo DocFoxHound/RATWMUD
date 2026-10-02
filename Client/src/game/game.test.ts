@@ -2,6 +2,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, paintPart, testGame} from './testing.ts';
+import {lookAt} from './look.ts';
 import {paceLabel, scentLabel, windLabel, environmentLabel, environmentEffectsLabel, calendarLabel, dayLabel, moonLabel, elevationLabel, lawLabel} from './labels.ts';
 import {alphaOf, Size, type Art} from './weatherArt.ts';
 import {MotionBuffer} from './motionBuffer.ts';
@@ -876,4 +877,32 @@ test("the player's own wolf answers at once, carried ahead while moving, eased r
     s.applyMotion(frame(1.05, 40));
     s.tick((t += 1 / 60), 1 / 60);
     assert.equal(me.x, 40, 'a jump of more than two tiles is taken at once');
+});
+
+test('looking: the pointer names what is under it, from what the client already holds', () => {
+    const {state: s, painter} = testGame();
+    const rows = ['..~~', '.PP.', '....'];
+    s.applySnapshot({cell: {id: 'glade', width: 4, height: 3, rows, heights: ['PPPP', 'PPPP', 'PPRP']},
+        visibility: ['2222', '2212', '0222'], self: {id: 'me', x: 0.5, y: 0.5}, entities: [{id: 'ash', name: 'Ash', x: 3.5, y: 2.5, npc: true,
+            work: 'baker', state: 'kneading dough', lifeStage: 'old'}], doors: [{id: 'gate', name: 'The gate', x: 0.5, y: 2.5, open: false}],
+        time: 0, cellGeneration: 1});
+    s.tick(0.016, 0.016);
+    s.mapRect = rect(0, 0, 400, 300);
+    draw(painter, 'drawLocal');
+    const at = (x: number, y: number) => lookAt(s, [s.mapOrigin[0] + x * s.tileSize, s.mapOrigin[1] + y * s.tileSize]);
+    assert.equal(at(2.5, 0.5)!.what, 'Shallow water');
+    assert.match(at(2.5, 0.5)!.why, /slower/i, 'with what it does to a wolf');
+    assert.equal(at(1.5, 1.5)!.what, 'Pine');
+    assert.equal(at(2.5, 1.5)!.what, 'Pine (remembered)', 'remembered ground says so');
+    assert.equal(at(0.5, 2.5)!.what, 'The gate', 'a door before the ground under it');
+    const ash = at(3.5, 2.5)!;
+    assert.equal(ash.what, 'Ash');
+    assert.match(ash.why, /Baker · old · kneading dough/);
+    assert.match(at(2.5, 2.5)!.why, /above you/, 'height relative to the wolf');
+    s.applySnapshot({cell: {id: 'glade', width: 4, height: 3, rows, heights: ['PPPP', 'PPPP', 'PPRP']}, visibility: ['2222', '2212', '0222'],
+        self: {id: 'me', x: 0.5, y: 0.5}, entities: [], time: 0.2, cellGeneration: 1});
+    assert.equal(at(0.5, 2.5)!.what, 'Unexplored', 'unseen ground gives nothing away');
+    assert.equal(lookAt(s, [-5, -5]), null, 'nothing off the map');
+    s.worldMap = true;
+    assert.equal(at(2.5, 0.5), null);
 });

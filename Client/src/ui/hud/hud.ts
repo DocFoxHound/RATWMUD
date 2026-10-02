@@ -8,6 +8,7 @@ import {bool, boundedNum, envNumber, obj, str} from '../../game/json.ts';
 import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel,
     scentLabel} from '../../game/labels.ts';
 import type {EntityView, GameState} from '../../game/state.ts';
+import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {noRect, StoryPanel} from './story.ts';
@@ -64,6 +65,13 @@ export class Hud {
     private menu: HTMLElement;
     private menuKey = '';
     private toast: HTMLElement;
+    private tooltip: HTMLElement;
+    private tipWhat: HTMLElement;
+    private tipWhy: HTMLElement;
+    private lookWhat: HTMLElement;
+    private lookWhy: HTMLElement;
+    private lookKey = '';
+    private lookSince = 0;
     private connection: HTMLElement;
     private resizer: HTMLElement;
 
@@ -109,6 +117,9 @@ export class Hud {
         this.canvas.tabIndex = 0;
         this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write.');
         this.looking = el('div', 'looking muted', center);
+        el('span', 'label muted', this.looking, 'LOOKING AT  ');
+        this.lookWhat = el('span', 'what', this.looking);
+        this.lookWhy = el('span', '', this.looking);
         const actions = el('div', 'actions', center);
         el('span', 'label muted', actions, 'ACTIONS');
         button('Listen  L', 'act', actions, () => act('listen'));
@@ -153,6 +164,10 @@ export class Hud {
         this.connection = el('span', 'sage small', help);
         this.menu = el('div', 'menu', this.root);
         this.toast = el('div', 'toast', this.root);
+        this.tooltip = el('div', 'tooltip', this.root);
+        this.tipWhat = el('div', 'what', this.tooltip);
+        this.tipWhy = el('div', 'why', this.tooltip);
+        show(this.tooltip, false);
         this.dialogs = new Dialogs(this.root, state, portraits);
         show(this.menu, false);
         show(this.toast, false);
@@ -176,9 +191,34 @@ export class Hud {
         this.updateSight();
         this.updateStatus(self);
         this.updateMenu();
+        this.updateLook();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);
         this.dialogs.update();
+    }
+
+    // ------------------------------------------------------------------ Looking with the pointer
+
+    private updateLook() {
+        const s = this.s;
+        const pointed = s.highlight ? s.entities.get(s.highlight) : undefined;
+        const look: Look | null = pointed ? describeWolf(pointed) : lookAt(s, s.hover);
+        if ((look?.key ?? '') !== this.lookKey) {
+            this.lookKey = look?.key ?? '';
+            this.lookSince = s.clock;
+        }
+        setText(this.lookWhat, look ? look.what : '');
+        setText(this.lookWhy, look ? (look.why ? `  —  ${look.why}` : '') : 'Point at anything on the map to see what it is.');
+        // Beside the pointer too, after a moment's rest, unless a menu or sheet is open or the player turned it off.
+        const tip = !!look && !pointed && s.hoverTooltips && !s.modal && !s.contextTarget && s.clock - this.lookSince >= 0.15;
+        show(this.tooltip, tip);
+        if (!tip || !look) return;
+        setText(this.tipWhat, look.what);
+        setText(this.tipWhy, look.why);
+        const r = this.canvas.getBoundingClientRect();
+        const x = r.left + s.hover[0] + 16, y = r.top + s.hover[1] + 18;
+        setStyle(this.tooltip, 'left', `${Math.min(window.innerWidth - 290, x)}px`);
+        setStyle(this.tooltip, 'top', `${Math.min(window.innerHeight - 70, y)}px`);
     }
 
     // ------------------------------------------------------------------ Who is in sight

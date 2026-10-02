@@ -7,7 +7,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 |---|---|---|
 | 1 | Smooth movement | Built 2026-10-02 |
 | 2 | A new screen: HTML panels around a larger canvas map, an In Sight list | Built 2026-10-02 |
-| 3 | Mouse-over: what is under the cursor, in words | Planned |
+| 3 | Mouse-over: what is under the cursor, in words | Built 2026-10-02 |
 | 4 | Talk targets: choose who you are speaking to, several at once | Planned |
 | 7 | Regional weather: moving systems that fade with distance, driving the simulation | Planned |
 | 8 | A real minimap: true positions and sizes, coloured by terrain | Planned |
@@ -77,3 +77,16 @@ The fixed 1600×1000 canvas, scaled to the window, became HTML panels around a c
 - **Menus, sheets and messages are HTML:** the action menu (still keys 1 to 6), the character, belongings, trade,
   settings, leaving and closer-look sheets (`dialogs.ts`, built again only when what they show changes), and the toast.
   Buttons never take keyboard focus, so WASD stays with the map; a click outside a menu closes it.
+
+## Phase 3: Looking with the pointer (built 2026-10-02)
+
+Glyphs are not always recognisable, so the pointer is the wolf's eyes (`Client/src/game/look.ts`):
+
+- **What is under it**, in this order: a wolf (name, what they do, hostile, a life stage other than adult, what they are
+  doing; never an exact age), a door (its name, open or closed), the herb patch (bundles left), the ground (the terrain
+  catalogue's `name` and `effect`, which were generated all along but never shown, and its height against the wolf's:
+  above, well above, below, a sheer drop). Remembered ground says "(remembered)"; ground never seen is "Unexplored",
+  and gives nothing away.
+- **Shown twice:** always on the LOOKING AT line under the map, and beside the pointer after a moment's rest (off in
+  Settings: "Pointer labels"). Pointing at a name in In Sight shows that wolf on the line too.
+- Only what the client already holds is used: nothing is asked of the server, so nothing hidden can be learned.

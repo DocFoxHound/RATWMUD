@@ -424,12 +424,6 @@ export class GamePainter {
                 p.ctx.stroke();
             }
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
-            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) {
-                const label = view.self ? `${view.name} · you` : view.name;
-                const [lw, lh] = p.measure(label, 11);
-                p.box(x - lw * 0.5 - 6, y + 21, lw + 12, lh + 7, Panel);
-                p.text(x - lw * 0.5, y + 23, label, 11, color);
-            }
         }
         s.hoveredEntity = hovered;
         this.drawEnvironment(true);
