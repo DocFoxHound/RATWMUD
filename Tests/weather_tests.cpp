@@ -334,6 +334,64 @@ void persistenceAndAtomicValidation()
 }
 } // namespace
 
+// The regional field (Docs/Design/29-client-polish.md, phase 7): strongest at a front's middle, fading to its edge,
+// drifting, scaling the senses, pinned cells left alone, called-up fronts saved, the world's own the same every time.
+void regionalField()
+{
+    World world;
+    arena(world);
+    expect(world.useSeasonalWeather("tavern").ok, "the arena follows the field");
+    expect(!world.spawnFront(Weather::Clear, 40, 18, 200, 0, 6).ok && !world.spawnFront(Weather::Rain, 40, 18, 5, 0, 6).ok,
+           "a front needs a kind and a sensible reach");
+    expect(world.spawnFront(Weather::Sandstorm, 40, 18, 200, 0, 12).ok, "a sandstorm front is called up");
+    expect(world.advanceCalendar(.15).ok, "and time passes while it grows");
+    const auto* c = world.cell("tavern");
+    // Its middle has drifted east (160 tiles a day): find where it is strongest along the row.
+    double best = 0, bestX = 0;
+    for (double x = 0; x < c->width; x += 1)
+        if (const auto s = world.weatherAt("tavern", {x, 18}); s.kind == Weather::Sandstorm && s.intensity > best)
+            best = s.intensity, bestX = x;
+    expect(best > .5, "strong near its middle");
+    const auto far = world.weatherAt("tavern", {std::max(0.0, bestX - 60), 0});
+    expect(far.kind != Weather::Sandstorm || far.intensity < best, "weaker further from its middle");
+    const auto middle = world.environmentAt("tavern", {bestX, 18});
+    const auto edge = world.environmentAt("tavern", {std::max(0.0, bestX - 60), 0});
+    expect(middle.weather == Weather::Sandstorm && middle.intensity > .5, "the environment says what and how strong");
+    expect(middle.sight < edge.sight && middle.movement <= edge.movement && middle.scent < edge.scent,
+           "and the senses suffer more in the thick of it");
+    expect(world.advanceCalendar(.1).ok, "a little later");
+    double later = 0, laterX = 0;
+    for (double x = 0; x < c->width; x += 1)
+        if (const auto s = world.weatherAt("tavern", {x, 18}); s.kind == Weather::Sandstorm && s.intensity > later)
+            later = s.intensity, laterX = x;
+    expect(later == 0 || laterX >= bestX, "it has moved on east (or past the arena)");
+    // Saved, and back after a restart.
+    const auto saved = world.save();
+    expect(saved.fronts.size() == 1 && saved.fronts[0].kind == Weather::Sandstorm, "a called-up front is saved");
+    World again;
+    arena(again);
+    expect(again.useSeasonalWeather("tavern").ok, "a second arena");
+    expect(again.restore(saved).ok, "restores");
+    bool found = false;
+    for (const auto& f : again.weatherSystems())
+        found |= f.id == saved.fronts[0].id;
+    expect(found, "and the front with it");
+    // Pinned by hand: the whole cell, at full strength, whatever the field says.
+    world.setWeather("tavern", Weather::Rain);
+    const auto pinned = world.weatherAt("tavern", {1, 1});
+    expect(pinned.kind == Weather::Rain && pinned.intensity == 1, "pins the cell");
+    // The world's own weather is the same at the same moment, every time.
+    World one, two;
+    expect(one.advanceCalendar(3.3).ok && two.advanceCalendar(3.3).ok, "two worlds, the same day");
+    expect(one.weatherSystems().size() == two.weatherSystems().size(), "the same systems");
+    for (std::size_t i = 0; i < one.weatherSystems().size(); ++i)
+        expect(one.weatherSystems()[i].id == two.weatherSystems()[i].id && one.weatherSystems()[i].x == two.weatherSystems()[i].x,
+               "exactly");
+    int cols = 0, rows = 0;
+    const auto grid = world.weatherGrid("tavern", 16, cols, rows);
+    expect(cols * rows == int(grid.size()) && cols >= 5 && rows >= 3, "a grid of the field for the client");
+}
+
 int main()
 {
     try
@@ -343,6 +401,7 @@ int main()
         actualPerceptionAndPrivacy();
         actualMovementAndStamina();
         persistenceAndAtomicValidation();
+        regionalField();
         std::cout << "PASS " << checks << " weather/day-night checks\n";
         return 0;
     }

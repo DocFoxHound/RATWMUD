@@ -187,6 +187,7 @@ void collisionAndEnvironment()
     auto& cell = *terrain.cell("tavern");
     cell.outdoors = true;
     cell.weather = Weather::Rain;
+    cell.seasonalWeather = false;          // Set by hand: the whole cell rains (the regional field leaves it be).
     for (auto& tile : cell.tiles)
         tile.movementCost = 2.4;
     terrain.move("p", 1, 0);

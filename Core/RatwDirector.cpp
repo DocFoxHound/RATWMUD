@@ -219,7 +219,7 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
     o.add("calendarDays", world.calendarDays());
     auto capabilities = Value::array(), cells = Value::array(), factions = Value::array(), chapters = Value::array(),
          actors = Value::array(), accounts = Value::array();
-    for (const char* capability : {"notice", "weather", "npc_relocate", "economy_transfer"})
+    for (const char* capability : {"notice", "weather", "weather_front", "npc_relocate", "economy_transfer"})
         capabilities.push(capability);
     o.add("capabilities", capabilities);
     for (const auto& [id, c] : world.cells())
@@ -364,6 +364,18 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     std::string announcement;
     if (kind == "weather" && keys(p, {"cell", "preset"}) && p.size() == 2)
         applied = wire::environmentCommand(world, text(p, "cell"), "weather", text(p, "preset"), true);
+    else if (kind == "weather_front" && keys(p, {"kind", "x", "y", "radius", "heading", "hours"}) && p.size() == 6)
+    {
+        // A front called up by the DM (doc 29, phase 7): a kind, its middle in world tiles, reach, heading and hours.
+        static const std::map<std::string, Weather> kinds{{"rain", Weather::Rain}, {"storm", Weather::Storm}, {"fog", Weather::Fog},
+                                                          {"snow", Weather::Snow}, {"overcast", Weather::Overcast},
+                                                          {"sandstorm", Weather::Sandstorm}};
+        const auto k = kinds.find(text(p, "kind"));
+        applied = k == kinds.end() ? Result{false, "Unknown front weather.", {}}
+                                   : world.spawnFront(k->second, wire::strictNumber(p, "x", NAN), wire::strictNumber(p, "y", NAN),
+                                                      wire::strictNumber(p, "radius", -1), wire::strictNumber(p, "heading", NAN),
+                                                      wire::strictNumber(p, "hours", -1));
+    }
     else if (kind == "npc_relocate" && keys(p, {"npc", "cell", "x", "y"}) && p.size() == 4)
         applied = world.relocateResident(text(p, "npc"), text(p, "cell"), wire::strictNumber(p, "x", -1), wire::strictNumber(p, "y", -1));
     else if (kind == "economy_transfer" && keys(p, {"from", "to", "item", "quantity", "coins"}) && p.size() == 5)

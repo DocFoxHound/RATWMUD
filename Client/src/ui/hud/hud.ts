@@ -177,7 +177,7 @@ export class Hud {
         const s = this.s, snapshot = s.snapshot, self = obj(snapshot, 'self');
         setStyle(this.root, '--story', `${s.storyWidth}px`);
         setText(this.calendar, calendarLabel(snapshot));
-        setText(this.weather, environmentLabel(s.environment.hour, s.environment.phase, s.environment.weather, s.outdoors));
+        setText(this.weather, environmentLabel(s.environment.hour, s.environment.phase, s.environment.weather, s.outdoors, s.environment.intensity));
         setText(this.moon, moonLabel(snapshot));
         setText(this.day, dayLabel(snapshot).slice(0, 30));
         setText(this.live, snapshot ? '● LIVE' : '…');

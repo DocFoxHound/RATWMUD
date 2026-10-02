@@ -7,7 +7,10 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {TerrainLayer, terrainInfo, type SurfaceFactory} from './terrainLayer.ts';
+import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
+
+/** The server's weather grid letters (RatwGame.cpp snapshot): kind names as the painter knows them. */
+const KindOfLetter: Record<string, string> = {r: 'rain', f: 'fog', n: 'snow', o: 'overcast', s: 'storm', d: 'sandstorm', c: 'clear'};
 
 export {terrainInfo};
 
@@ -44,6 +47,7 @@ export class GamePainter {
     private p: Painter;
     private sheets: Sheets;
     readonly terrain: TerrainLayer;
+    private surfaces: SurfaceFactory;
     private patterns = new WeakMap<CanvasImageSource, CanvasPattern | null>();
     private lastCell = '';
     private lastSelfScreen: Point | null = null;
@@ -53,6 +57,7 @@ export class GamePainter {
         this.p = painter;
         this.sheets = sheets;
         this.terrain = new TerrainLayer(surfaces);
+        this.surfaces = surfaces ?? pageSurface;
     }
 
 
@@ -127,7 +132,7 @@ export class GamePainter {
             const w = weather[e.weather] ?? (e.phase === 'dawn' || e.phase === 'dusk' ? [0xd59664, 0.1] as [number, number] : null);
             if (w) {
                 result.weatherColor = rgb(w[0]);
-                result.weatherStrength = w[1];
+                result.weatherStrength = w[1] * (weather[e.weather] ? Math.max(0.25, e.intensity) : 1);
             }
         }
         return result;
@@ -143,7 +148,7 @@ export class GamePainter {
         const width = area.right - area.left, height = area.bottom - area.top;
         if (width < 80 || height < 80) return marks;
         const animation = s.reducedMotion ? 0 : s.clock;
-        const count = storm ? 56 : 32;
+        const count = Math.round((storm ? 56 : 32) * Math.max(0.25, e.intensity));
         for (let i = 0; i < count; ++i) {
             const life = wrapCoordinate(animation * (storm ? 1.1 : 0.7) + i * 0.618, 1);
             if (life > 0.62) continue;
@@ -153,7 +158,8 @@ export class GamePainter {
         return marks;
     }
 
-    private weatherLayers(): WeatherLayer[] {
+    /** The moving sheets of one kind of weather (by default, the weather where the wolf stands). */
+    private weatherLayers(weather = this.s.environment.weather): WeatherLayer[] {
         const s = this.s, e = s.environment;
         const layers: WeatherLayer[] = [];
         if (!s.outdoors || s.worldMap) return layers;
@@ -163,29 +169,29 @@ export class GamePainter {
         const add = (art: Art, drift: Point, scaleBy: number, angle: number, tint: Color, offset: Point = [0, 0]) =>
             layers.push({art, scroll: [(drift[0] * t + offset[0]) / scaleBy, (drift[1] * t + offset[1]) / scaleBy], scale: scaleBy, angle, tint});
         // Sunlight: the shadows of passing clouds cross the ground; they vanish with the sun.
-        if ((e.weather === 'clear' || e.weather === 'overcast') && e.daylight > 0.05) {
-            const overcast = e.weather === 'overcast';
+        if ((weather === 'clear' || weather === 'overcast') && e.daylight > 0.05) {
+            const overcast = weather === 'overcast';
             const drift: Point = [wind[0] * 26 + 7, wind[1] * 26 + 3];
             add('cloud', drift, 2.2, 0, rgb(0x08100c, (overcast ? 0.24 : 0.16) * e.daylight));
             if (overcast) add('cloud', [drift[0] * 1.4, drift[1] * 1.4], 1.35, 0, rgb(0x0c1216, 0.14 * e.daylight));
         }
-        if (e.weather === 'rain' || e.weather === 'storm') {
-            const storm = e.weather === 'storm';
+        if (weather === 'rain' || weather === 'storm') {
+            const storm = weather === 'storm';
             // The sheets' streaks run along +Y; turn them to fall where the wind pushes.
             const angle = Math.atan2(-wind[0] * (storm ? 0.9 : 0.5), 1);
             const boost = storm ? 1.2 : 1;
             add('rain', [0, 420], 0.9, angle, rgb(0xa9c4d2, 0.26 * boost));
             add('rain', [0, 700], 1.35, angle, rgb(0xb9d0dc, 0.36 * boost));
             if (storm) add('rain', [0, 980], 1.8, angle, rgb(0xc7d9e2, 0.44));
-        } else if (e.weather === 'snow') {
+        } else if (weather === 'snow') {
             const scales = [0.8, 1.1, 1.5], fall = [20, 32, 48], alphas = [0.45, 0.62, 0.8];
             // Each depth sways on its own phase, so the flakes never march in step.
             for (let i = 0; i < 3; ++i)
                 add('snow', [wind[0] * 60, fall[i] + wind[1] * 40], scales[i], 0, rgb(0xe6eff2, alphas[i]), [Math.sin(t * 0.5 + i * 2.1) * 12, 0]);
-        } else if (e.weather === 'fog') {
+        } else if (weather === 'fog') {
             add('mist', [wind[0] * 8 + 5, wind[1] * 8 + 1], 2.6, 0, rgb(0xc3d1cf, 0.3));
             add('mist', [wind[0] * 14 - 4, wind[1] * 14 + 2], 1.7, 0, rgb(0xc8d6d3, 0.22));
-        } else if (e.weather === 'sandstorm') {
+        } else if (weather === 'sandstorm') {
             // Dust streaks run along the sheet's X axis, so the sheet turns to face the wind.
             const speed = 60 + 220 * s.windStrength;
             add('mist', [wind[0] * 30 + 12, wind[1] * 30], 3, 0, rgb(0xb88f58, 0.28));
@@ -193,6 +199,74 @@ export class GamePainter {
             add('dust', [speed * 1.6, 0], 1.2, s.windDirection, rgb(0xdcb886, 0.3));
         }
         return layers;
+    }
+
+    private weatherSurface: Surface | null = null;
+    private masks = new Map<string, Surface>();
+
+    /**
+     * Each kind of weather in the field over this cell, painted on its own and then cut down by a soft mask of how
+     * strong it is across the cell (the server's grid, scaled up smoothly), so rain thins toward a front's edge and
+     * gives way to fog or snow where two meet. False where it can't be done (no field, or no offscreen canvas).
+     */
+    private drawFieldWeather(b: Rect): boolean {
+        const s = this.s, f = s.weatherField, c = this.p.ctx;
+        const t = typeof c.getTransform === 'function' ? c.getTransform() : null;
+        if (!f || !t || !c.canvas || s.worldMap) return false;
+        const W = c.canvas.width, H = c.canvas.height;
+        const letters = new Set<string>();
+        for (let i = 0; i < f.kinds.length; ++i) if (f.kinds[i] !== 'c' && f.amounts[i] !== '0') letters.add(f.kinds[i]);
+        // Sunlit clear ground keeps its passing cloud shadows.
+        if (s.environment.weather === 'clear') for (const layer of this.weatherLayers('clear')) this.drawWeatherLayer(b, layer);
+        if (!letters.size) return true;
+        if (!this.weatherSurface || this.weatherSurface.canvas.width !== W || this.weatherSurface.canvas.height !== H)
+            this.weatherSurface = this.surfaces(W, H);
+        const surface = this.weatherSurface;
+        if (!surface) return false;
+        const oc = surface.ctx, size = f.step * s.tileSize, [ox, oy] = s.mapOrigin;
+        for (const letter of letters) {
+            const layers = this.weatherLayers(KindOfLetter[letter] ?? 'clear');
+            if (!layers.length) continue;
+            oc.setTransform(1, 0, 0, 1, 0, 0);
+            oc.globalCompositeOperation = 'source-over';
+            oc.clearRect(0, 0, W, H);
+            oc.setTransform(t);
+            oc.save();
+            oc.beginPath();
+            oc.rect(b.left, b.top, b.right - b.left, b.bottom - b.top);
+            oc.clip();
+            for (const layer of layers) this.drawWeatherLayer(b, layer, oc);
+            oc.restore();
+            const mask = this.maskFor(f, letter);
+            if (!mask) continue;
+            oc.globalCompositeOperation = 'destination-in';
+            oc.imageSmoothingEnabled = true;
+            oc.drawImage(mask.canvas, ox - size / 2, oy - size / 2, f.cols * size, f.rows * size);
+            oc.globalCompositeOperation = 'source-over';
+            c.save();
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.drawImage(surface.canvas, 0, 0);
+            c.restore();
+        }
+        return true;
+    }
+
+    /** One kind's strength over the cell as a tiny image: one pixel a grid sample, its alpha the strength. */
+    private maskFor(f: NonNullable<GameState['weatherField']>, letter: string): Surface | null {
+        const key = `${f.cols}x${f.rows}|${f.kinds}|${f.amounts}|${letter}`;
+        const kept = this.masks.get(key);
+        if (kept) return kept;
+        const surface = this.surfaces(f.cols, f.rows);
+        if (!surface) return null;
+        const image = surface.ctx.createImageData(f.cols, f.rows);
+        for (let i = 0; i < f.cols * f.rows; ++i) {
+            image.data[i * 4] = image.data[i * 4 + 1] = image.data[i * 4 + 2] = 255;
+            image.data[i * 4 + 3] = f.kinds[i] === letter ? Math.round(Number(f.amounts[i]) / 9 * 255) : 0;
+        }
+        surface.ctx.putImageData(image, 0, 0);
+        if (this.masks.size > 16) this.masks.clear();
+        this.masks.set(key, surface);
+        return surface;
     }
 
     private lightningFlash(): number {
@@ -206,12 +280,12 @@ export class GamePainter {
         if (since < 0 || since > 0.6) return 0;
         const first = since < 0.07 ? 1 : Math.exp(-(since - 0.07) * 10);
         const second = since > 0.18 && since < 0.24 ? 0.7 : 0;
-        return 0.2 * Math.max(first, second);
+        return 0.2 * Math.max(first, second) * Math.max(0.3, s.environment.intensity);
     }
 
-    private drawWeatherLayer(area: Rect, layer: WeatherLayer) {
+    private drawWeatherLayer(area: Rect, layer: WeatherLayer, on?: CanvasRenderingContext2D, alpha = 1) {
         if (layer.tint.a <= 0.001 || layer.scale <= 0) return;
-        const c = this.p.ctx;
+        const c = on ?? this.p.ctx;
         const sheet = this.sheets.get(layer.art, css(withAlpha(layer.tint, 1)));
         let pattern = this.patterns.get(sheet);
         if (pattern === undefined) {
@@ -225,7 +299,7 @@ export class GamePainter {
         const cy = (area.top + area.bottom) / 2 + sin * shiftX + cos * shiftY;
         pattern.setTransform(new DOMMatrix().translateSelf(cx, cy).rotateSelf(layer.angle * 180 / Math.PI).scaleSelf(layer.scale));
         c.save();
-        c.globalAlpha = Math.min(1, layer.tint.a);
+        c.globalAlpha = Math.min(1, layer.tint.a * alpha);
         c.fillStyle = pattern;
         c.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
         c.restore();
@@ -253,6 +327,8 @@ export class GamePainter {
                     p.gradient(b.left, b.top, w, h, horizon, ground, withAlpha(scale(ground, 0.78), 1), false);
                     if (e.phase === 'dawn' || e.phase === 'dusk')
                         p.gradient(b.left, b.top, w, h, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), e.phase === 'dawn');
+                    p.ctx.save();
+                    p.ctx.globalAlpha = e.weather === 'clear' ? 1 : Math.max(0.25, e.intensity);   // As strong as the weather here.
                     if (e.weather === 'rain') p.gradient(b.left, b.top, w, h, rgb(0x617a92, 0.08), rgb(0x34495c, 0.07), rgb(0x294859, 0.11), false);
                     else if (e.weather === 'snow') p.gradient(b.left, b.top, w, h, rgb(0xb4c3ce, 0.09), rgb(0x87a0b8, 0.07), rgb(0xb7c9ce, 0.12), false);
                     else if (e.weather === 'fog') p.box(b.left, b.top, w, h, rgb(0x9fafac, 0.11));
@@ -260,6 +336,7 @@ export class GamePainter {
                     else if (e.weather === 'storm') p.gradient(b.left, b.top, w, h, rgb(0x3c4b5c, 0.18), rgb(0x223040, 0.14), rgb(0x1b2836, 0.2), false);
                     else if (e.weather === 'sandstorm') p.gradient(b.left, b.top, w, h, rgb(0xc09a62, 0.2), rgb(0xa57b45, 0.16), rgb(0x8c6a3e, 0.22), true);
                     else if (e.phase === 'day') p.box(b.left, b.top, w, h, rgb(0xffd89a, 0.05 * e.daylight));
+                    p.ctx.restore();
                 } else if (darkness > 0.01) p.box(b.left, b.top, w, h, rgb(0x020610, darkness * 0.58));
                 return;
             }
@@ -277,7 +354,11 @@ export class GamePainter {
                 p.edgeFade(b, a.feather, weatherEdge, horizontal);
             }
             p.clip(b, () => {
-                for (const layer of this.weatherLayers()) this.drawWeatherLayer(b, layer);
+                // The regional field (doc 29, phase 7): each kind of weather drawn where it is, as strong as it is there.
+                if (!this.drawFieldWeather(b)) {
+                    const strength = e.weather === 'clear' ? 1 : Math.max(0.2, e.intensity);
+                    for (const layer of this.weatherLayers()) this.drawWeatherLayer(b, layer, undefined, strength);
+                }
                 for (const m of this.weatherMarks())
                     p.lines([[m.x - m.size, m.y - 1], [m.x, m.y + m.size * 0.35], [m.x + m.size, m.y - 1]], rgb(0x9dbaca, m.alpha), 0.8);
                 // In the dark, the ground beyond a wolf's own sight sinks into night around it.

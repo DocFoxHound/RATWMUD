@@ -48,9 +48,18 @@ export function windLabel(outdoors: boolean, strength: number, direction: number
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-export function environmentLabel(hour: number, phase: string, weather: string, outdoors: boolean): string {
+/** The weather where the wolf stands, with how strong it is there ("LIGHT RAIN", "HEAVY SNOW"). */
+export function weatherWords(weather: string, intensity?: number): string {
+    if (weather === 'clear') return 'CLEAR';
+    if (intensity === undefined) return weather.toUpperCase();
+    if (weather === 'overcast') return intensity < 0.45 ? 'THIN CLOUD' : 'OVERCAST';
+    const word = weather.toUpperCase();
+    return intensity < 0.35 ? `LIGHT ${word}` : intensity > 0.75 ? `HEAVY ${word}` : word;
+}
+
+export function environmentLabel(hour: number, phase: string, weather: string, outdoors: boolean, intensity?: number): string {
     const minutes = Math.floor(hour * 60) % (24 * 60);
-    return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)} ${phase.toUpperCase()} · ${outdoors ? weather.toUpperCase() : 'SHELTERED'}`;
+    return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)} ${phase.toUpperCase()} · ${outdoors ? weatherWords(weather, intensity) : 'SHELTERED'}`;
 }
 
 const calendarOf = (snapshot: Maybe) => obj(obj(obj(snapshot, 'cell'), 'environment'), 'calendar');
@@ -89,6 +98,7 @@ export function moonLabel(snapshot: Maybe): string {
 
 export interface EnvironmentView {
     weather: string;
+    intensity: number;          // How strong the weather is where the wolf stands (0..1).
     phase: string;
     lightingTone: string;
     lightSource: string;

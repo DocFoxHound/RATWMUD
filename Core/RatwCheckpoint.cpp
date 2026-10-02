@@ -221,6 +221,24 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
     for (const auto& [npc, owner] : c.companions)
         if (!owner.empty())
             companions.add(npc, owner);
+    // Weather fronts called up by a DM or developer (doc 29, phase 7); the world's own weather is worked out again.
+    auto fronts = Value::array();
+    for (const auto& f : saved.fronts)
+    {
+        auto j = Value::object();
+        j.add("id", f.id);
+        j.add("kind", int(f.kind));
+        j.add("x", f.x);
+        j.add("y", f.y);
+        j.add("radius", f.radius);
+        j.add("peak", f.peak);
+        j.add("vx", f.vx);
+        j.add("vy", f.vy);
+        j.add("born", f.born);
+        j.add("life", f.life);
+        fronts.push(j);
+    }
+    root.add("weatherFronts", fronts);
     root.add("companions", companions);
     auto heard = Value::object();
     for (const auto& [who, list] : c.scenesHeard)
@@ -523,6 +541,25 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     for (const auto& [cell, v] : root.object("lighting").fields())
         saved.lighting[cell] = wire::readLighting(v.isObject() ? v : Value());
     // The server's own part.
+    for (const auto& j : root.array("weatherFronts"))
+    {
+        WeatherSystem f;
+        f.id = j.string("id");
+        const double kind = j.number("kind", -1);
+        f.kind = Weather(int(kind));
+        f.x = j.number("x");
+        f.y = j.number("y");
+        f.radius = j.number("radius", 300);
+        f.peak = std::clamp(j.number("peak", 1), 0.0, 1.0);
+        f.vx = j.number("vx");
+        f.vy = j.number("vy");
+        f.born = j.number("born");
+        f.life = j.number("life", .5);
+        if (kind >= 1 && kind < WeatherKinds && !f.id.empty() && f.radius > 0 && f.radius <= 4000 && f.life > 0 && f.life <= 10 &&
+            std::isfinite(f.x) && std::isfinite(f.y) && std::isfinite(f.vx) && std::isfinite(f.vy) && std::isfinite(f.born) &&
+            saved.fronts.size() < 64)
+            saved.fronts.push_back(f);
+    }
     for (const auto& [npc, owner] : root.object("companions").fields())
         c.companions[npc] = owner.asString("");
     // (Older saves have none: everyone starts having heard nothing.)

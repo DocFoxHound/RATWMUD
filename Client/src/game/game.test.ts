@@ -944,3 +944,19 @@ test('talk targets: chosen from the list or a menu, sent with what is said, let 
     s.submitPost();
     assert.equal('targets' in lastChat(), false, 'with no one chosen, none are sent');
 });
+
+test('regional weather: the weather where the wolf stands, its strength in words, and the field for drawing', () => {
+    const {state: s} = testGame();
+    const field = {step: 16, cols: 3, rows: 2, kinds: 'rrcrfc', amounts: '930410'};
+    s.applySnapshot({cell: {id: 'downs', outdoors: true, weather: 'rain', localWeather: {kind: 'rain', intensity: 0.2}, weatherField: field},
+        self: {id: 'me', x: 1, y: 1}, time: 0, cellGeneration: 1});
+    assert.equal(s.environment.weather, 'rain');
+    assert.equal(s.environment.intensity, 0.2);
+    assert.equal(environmentLabel(12, 'day', s.environment.weather, true, s.environment.intensity), '12:00 DAY · LIGHT RAIN');
+    assert.equal(environmentLabel(12, 'day', 'snow', true, 0.9), '12:00 DAY · HEAVY SNOW');
+    assert.deepEqual(s.weatherField, field);
+    s.applySnapshot({cell: {id: 'downs', outdoors: true, weather: 'fog', weatherField: {...field, kinds: 'rr'}}, self: {id: 'me', x: 1, y: 1},
+        time: 0.2, cellGeneration: 1});
+    assert.equal(s.weatherField, null, 'a malformed field is not drawn');
+    assert.equal(s.environment.weather, 'fog', 'without local weather, the cell\'s');
+});

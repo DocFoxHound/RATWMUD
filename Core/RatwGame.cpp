@@ -1509,6 +1509,34 @@ void Game::sendSnapshot(Connection* c)
     cell.add("wind", wire::wind(view.cell.wind));
     cell.add("environment", wire::environment(view.environment));
     {
+        // The regional weather (doc 29, phase 7): what it is where the wolf stands, and a coarse grid of the field over
+        // the cell for drawing (one sample each 16 tiles: a letter for the kind, a digit 0-9 for the strength).
+        auto local = Value::object();
+        local.add("kind", weatherName(view.environment.weather));
+        local.add("intensity", std::round(view.environment.intensity * 100) / 100);
+        cell.add("localWeather", local);
+        int cols = 0, rows = 0;
+        const auto grid = world_.weatherGrid(view.cell.id, 16, cols, rows);
+        if (!grid.empty())
+        {
+            std::string kinds, amounts;
+            for (const auto& s : grid)
+            {
+                static const char letters[] = {'c', 'r', 'f', 'n', 'o', 's', 'd'};
+                const int k = std::clamp(int(s.kind), 0, int(sizeof letters) - 1);
+                kinds += letters[k];
+                amounts += char('0' + std::clamp(int(std::lround(s.intensity * 9)), 0, 9));
+            }
+            auto field = Value::object();
+            field.add("step", 16);
+            field.add("cols", cols);
+            field.add("rows", rows);
+            field.add("kinds", kinds);
+            field.add("amounts", amounts);
+            cell.add("weatherField", field);
+        }
+    }
+    {
         // What kind of day it is here (Phase 9): an ordinary one, Marketday, Restday, or a festival and its name.
         const auto plan = world_.dayPlan(world_.communityOf(view.cell.id));
         auto day = Value::object();
@@ -2250,6 +2278,24 @@ void Game::command(Connection* c, const std::string& raw)
     else if (type == "gather" || type == "eat")
     {
         result = type == "gather" ? world_.gather(id) : world_.eat(id);
+        report = true;
+        if (result.ok)
+            save();
+    }
+    else if (type == "front" && options_.devTools)
+    {
+        // A squall of the given weather over the player, 45 tiles across, drifting east for six hours (doc 29, phase 7).
+        Weather kind = Weather::Rain;
+        const auto value = j.string("value");
+        const std::map<std::string, Weather> kinds{{"rain", Weather::Rain}, {"storm", Weather::Storm}, {"fog", Weather::Fog},
+                                                   {"snow", Weather::Snow}, {"overcast", Weather::Overcast}, {"sandstorm", Weather::Sandstorm}};
+        if (const auto k = kinds.find(value); k != kinds.end())
+            kind = k->second;
+        const auto* c = world_.cell(player->cellId);
+        result = c && c->outdoors ? world_.spawnFront(kind, c->worldX + player->position.x, c->worldY + player->position.y, 45, 0, 6, true)
+                                  : Result{false, "Fronts are called up outdoors.", {}};
+        if (result.ok && c && !c->seasonalWeather)
+            world_.useSeasonalWeather(c->id);      // The cell follows the field again, so the front shows.
         report = true;
         if (result.ok)
             save();

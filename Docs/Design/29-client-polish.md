@@ -9,7 +9,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 | 2 | A new screen: HTML panels around a larger canvas map, an In Sight list | Built 2026-10-02 |
 | 3 | Mouse-over: what is under the cursor, in words | Built 2026-10-02 |
 | 4 | Talk targets: choose who you are speaking to, several at once | Built 2026-10-02 |
-| 7 | Regional weather: moving systems that fade with distance, driving the simulation | Planned |
+| 7 | Regional weather: moving systems that fade with distance, driving the simulation | Built 2026-10-02 |
 | 8 | A real minimap: true positions and sizes, coloured by terrain | Planned |
 | 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Planned |
 
@@ -115,3 +115,38 @@ caught its name answered at once, all together, and nothing said who a reply was
 Tests: `game_tests` `talkTargets` (only the chosen answer, the player's words name them, two answer in order, a named
 wolf joins in, out of earshot is told, Talk chooses without speaking); `server_smoke` (the one close resident answers
 "→ you"); `game.test.ts` (choosing, sending, letting go when out of sight and with Esc).
+
+## Phase 7: Regional weather (built 2026-10-02)
+
+Weather was one value per cell, rolled for each cell on its own every six game hours: neighbours didn't agree,
+nothing moved, and rain stopped at a cell's edge. Now there is a field of **weather systems** (`Core/RatwWeather.cpp`):
+
+- **The world's own weather is a pure function of the seed and the calendar.** Every six game hours each outdoor cell
+  may give birth to a system, by its **climate** and the season: wet (the rain coast: rain, storms), marsh (fog,
+  rain), cold (snow, fog), arid (sandstorms) or temperate. The climate is read from the cell's region name (coast,
+  isle, moor, peak, steppe, barrens, fen, mire...), so no data or migration was needed. A system has a kind, a reach
+  of 140 to 520 tiles, a strength, a life of 7 to 30 game hours, and drifts east on the prevailing wind (with a little
+  north or south). It gathers over its first sixth, holds, and fades over its last third; its strength falls smoothly
+  from its middle to its edge. The same moment always has the same weather, after a restart too.
+- **A point's weather** is the strongest system over it (and the next strongest where two meet). Fog gathers in low
+  ground. A cell set by hand (development presets, the DM's weather action) is **pinned**, all of it at full strength,
+  as before. Every 15 game minutes the systems are worked out again, and each cell left to the seasons shows the
+  weather at its middle (for its name, the schedules, the old views); this replaced the per-cell forecast loop.
+- **The senses follow the weather where each wolf is:** `World::environmentAt(cell, position)` scales sight, hearing,
+  scent, movement and the light by the strength there; sight radius, movement, hearing and scent pass the wolf's own
+  position. Walk out of the rain and the rain stops mattering. (Schedules still read the weather at a cell's middle.)
+- **Fronts** can be called up: the DM's new `weather_front` action (kind, middle in world tiles, reach, heading,
+  hours) and, for developers, `{"type": "front", "value": "rain"}` (a 45-tile squall over the player, already grown;
+  Settings has buttons). Called-up fronts are saved (`weatherFronts` in the checkpoint); the world's own aren't.
+- **The client** gets the weather where the wolf stands (`cell.localWeather`: kind and strength, shown as "LIGHT
+  RAIN", "HEAVY SNOW") and a coarse grid of the field over the cell (`cell.weatherField`: a letter for the kind and a
+  digit for the strength every 16 tiles). Each kind in view is painted on an offscreen canvas and cut down by a soft
+  mask of its strength (the grid scaled up smoothly), so rain thins toward a front's edge and gives way to another
+  kind where two meet. The tint, splashes and lightning follow the strength where the wolf stands. The spoken
+  description says so too ("Here it is only light, at the edge of it.").
+- **Cost:** with 966 residents and 20 players, mean 19.1 ms (from 17.6) and steady p99 40.7 ms (from 39.5).
+
+Tests: `weather_tests` `regionalField` (strongest at a front's middle and weaker away from it, the senses suffering
+more in the thick of it, drift, a front saved and restored, a pinned cell, the same systems in two worlds at the same
+moment, the grid); `server_parts_tests` (the DM's front; an unknown kind refused); `pace_tests` (rain set by hand
+pins its cell); `game.test.ts` (local weather and strength in words, the field parsed, a malformed one refused).

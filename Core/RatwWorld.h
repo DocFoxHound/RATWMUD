@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -108,6 +109,26 @@ struct Lighting
 // Shared authoritative conditions, not a client-only weather overlay. Factors
 // multiply otherwise healthy senses/base movement; sight includes illumination.
 // Shelter is currently authored per whole cell, not per roof tile.
+// The regional weather field (Docs/Design/29-client-polish.md, phase 7): weather systems that drift across the world
+// on the prevailing wind, strongest at their middle and fading toward their edge, born and dying over hours.
+struct WeatherSystem
+{
+    std::string id;                     // "<anchor cell>:<slot>" for the world's own; "front-<n>" for one called up.
+    Weather kind = Weather::Rain;
+    double x = 0, y = 0;                // Where its middle was when it was born (world tiles).
+    double radius = 300, peak = 1;      // Reach in tiles; strength at its middle, 0..1.
+    double vx = 0, vy = 0;              // Drift, tiles a game day.
+    double born = 0, life = .5;         // Calendar days.
+};
+// The weather at a point: the strongest kind there and how strong (0..1), and the next strongest (where two meet).
+struct WeatherSample
+{
+    Weather kind = Weather::Clear;
+    double intensity = 0;
+    Weather second = Weather::Clear;
+    double secondIntensity = 0;
+};
+
 struct Environment
 {
     double hour = 12.0, daylight = 1.0, illumination = 1.0;
@@ -116,6 +137,8 @@ struct Environment
     double artificialLight = 0.0, daylightAccess = 1.0, glowStrength = 0.0;
     std::string lightingTone = "neutral", lightSource = "daylight";
     calendar::Calendar date;
+    Weather weather = Weather::Clear;   // Where it was asked for: the kind, and how strong (0 indoors).
+    double intensity = 0;
 };
 
 struct Cell
@@ -292,6 +315,7 @@ struct PersistedWorld
     double clockOffsetHours = 12.0; // Legacy saves start from the noon epoch.
     double calendarDays = -1.0; // Absent legacy calendar preserves old phase; no retroactive age rewards.
     std::map<std::string, bool> seasonalWeather;
+    std::vector<WeatherSystem> fronts;  // Weather called up by the DM or a developer (the world's own isn't saved).
     bool hasSociety = false;
     SocietyState society;
     std::vector<Entity> players;
@@ -500,6 +524,15 @@ class World
     std::vector<ScentCue> scentCues(const std::string& observerId) const;
     Wind windAt(const std::string& cellId) const;
     Environment environmentAt(const std::string& cellId) const;
+    // At a point in the cell: the weather there, as strong as it is there (doc 29, phase 7).
+    Environment environmentAt(const std::string& cellId, Vec2 at) const;
+    WeatherSample weatherAt(const std::string& cellId, Vec2 at) const;
+    // A sample of the field over a cell for the client: one each `step` tiles, row by row.
+    std::vector<WeatherSample> weatherGrid(const std::string& cellId, int step, int& cols, int& rows) const;
+    const std::vector<WeatherSystem>& weatherSystems() const { return systems_; }
+    // Calls up a weather system: its kind, its middle (world tiles), reach, heading (radians, east 0) and hours.
+    // `grown`: already at full strength (a developer's front, to see at once), rather than gathering over its first hours.
+    Result spawnFront(Weather kind, double x, double y, double radius, double heading, double hours, bool grown = false);
     Result setTimeOfDay(double hour); // Finite [0,24); simulation clock only.
     Result setLighting(const std::string& cellId, double artificial, double daylightAccess, const std::string& tone);
     Result setWind(const std::string& cellId, double direction, double strength, bool variable = false);
@@ -834,6 +867,11 @@ class World
     double clockOffsetHours_ = 12.0;
     double calendarDays_ = .5;
     std::int64_t climateSlot_ = -1;
+    std::vector<WeatherSystem> systems_, fronts_;
+    std::int64_t fieldStamp_ = std::numeric_limits<std::int64_t>::min();
+    std::uint64_t frontNext_ = 1;
+    void refreshWeatherField(bool force = false);
+    WeatherSample sampleField(double x, double y) const;
     Society society_;
     double scheduleAccumulator_ = 0.0;
     std::string spawnCell_ = "tavern";

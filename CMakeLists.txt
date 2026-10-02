@@ -5,7 +5,7 @@ option(RATW_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwScenes.cpp)
+add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwScenes.cpp Core/RatwWeather.cpp)
 find_package(Threads REQUIRED)
 target_link_libraries(ratw_core PUBLIC ${CMAKE_DL_LIBS} Threads::Threads)
 target_include_directories(ratw_core PUBLIC Core)

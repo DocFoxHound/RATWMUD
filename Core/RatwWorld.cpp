@@ -36,11 +36,6 @@ constexpr std::size_t RouteNodesPerTick = 30000;
 constexpr double Epsilon = 1e-7;
 constexpr double Pi = 3.14159265358979323846;
 constexpr double TurnSpeed = Pi; // Radians per second: 180 degrees.
-Weather worldWeather(calendar::Weather value)
-{
-    switch (value) { case calendar::Weather::Rain: return Weather::Rain; case calendar::Weather::Snow: return Weather::Snow;
-        case calendar::Weather::Fog: return Weather::Fog; default: return Weather::Clear; }
-}
 calendar::Weather skyWeather(Weather value)
 {
     // The sky model only knows how much moonlight each kind lets through; cloud cover passes like rain, dust like fog.
@@ -946,7 +941,7 @@ bool World::lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const st
 
 double World::sightRange(const Entity& o) const
 {
-    return 27.0 * std::max(0.0, o.vision) * ageVisionFactor(o) * clamp01(o.eyeHealth) * environmentAt(o.cellId).sight;
+    return 27.0 * std::max(0.0, o.vision) * ageVisionFactor(o) * clamp01(o.eyeHealth) * environmentAt(o.cellId, o.position).sight;
 }
 bool World::visiblePoint(const Entity& o, Vec2 p) const
 {
@@ -1830,7 +1825,7 @@ void World::integrate(Entity& a, double dt)
                 speed *= .30;
             if (a.npc)
                 speed *= .57;
-            speed *= environmentAt(c->id).movement;
+            speed *= environmentAt(c->id, a.position).movement;
             double travel = speed * dt;
             if (!a.path.empty())
                 travel = std::min(travel, distance(a.position, a.path.front()));
@@ -2857,12 +2852,8 @@ void World::tick(double dt)
         calendarDays_ = std::min(calendar::MaxGameDays, calendarDays_ + step / DaySeconds);
         const auto slot = std::int64_t(std::floor(calendarDays_ * 4));
         if (slot != climateSlot_)
-        {
             climateSlot_ = slot;
-            for (auto& cellPair : cells_)
-                if (cellPair.second.outdoors && cellPair.second.seasonalWeather)
-                    cellPair.second.weather = worldWeather(calendar::forecastAt(0x52415457, cellPair.first, calendarDays_).weather);
-        }
+        refreshWeatherField();                     // The regional field, every 15 game minutes (RatwWeather.cpp).
         scheduleAccumulator_ += step;
         if (scheduleAccumulator_ + 1e-9 >= .5)
         {
@@ -2966,7 +2957,7 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
     const auto* sc = cell(s->cellId);
     if (!oc || !sc)
         return 0;
-    range *= environmentAt(oc->id).hearing;
+    range *= environmentAt(oc->id, o->position).hearing;
     if (o->cellId == s->cellId)
     {
         if (!lineOfSight(o->cellId, o->position, s->position))
@@ -2990,7 +2981,7 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
             transmission *= .45;
         if (!lineOfSight(o->cellId, d.arrival, o->position))
             transmission *= .45;
-        best = std::max(best, clarity(route, range * transmission * environmentAt(sc->id).hearing));
+        best = std::max(best, clarity(route, range * transmission * environmentAt(sc->id, s->position).hearing));
     }
     return best;
 }
@@ -3009,7 +3000,7 @@ double World::movementAudibility(const std::string& observerId, const std::strin
         std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0));
     const double sourceRange = s->posture == "crouching" ? 2.5 - 1.7 * clamp01(s->sneakSkill / 100.0) : 6.0;
     double range = sourceRange * sensitivity;
-    range *= environmentAt(c->id).hearing;
+    range *= environmentAt(c->id, o->position).hearing;
     if (!lineOfSight(o->cellId, o->position, s->position))
         range *= .38;
     const auto* ot = c->tile(int(o->position.x), int(o->position.y));
@@ -3023,6 +3014,12 @@ SensoryResult World::perceive(const std::string& observer, const std::string& so
     return {hearingClarity(observer, source, voice), visual, visual > 0.0, scentClarity(observer, source)};
 }
 Environment World::environmentAt(const std::string& cellId) const
+{
+    const auto* c = cell(cellId);
+    return environmentAt(cellId, c ? Vec2{c->width * .5, c->height * .5} : Vec2{});
+}
+
+Environment World::environmentAt(const std::string& cellId, Vec2 at) const
 {
     Environment out;
     out.date = calendar::calendarAt(calendarDays_);
@@ -3056,10 +3053,16 @@ Environment World::environmentAt(const std::string& cellId) const
     // These are legible game-balance factors, not a meteorological model.
     // Darkness changes sight only: it does not damage hearing or smell and
     // never secretly changes a selected gait or stamina recovery.
-    out.illumination = calendar::skyAt(calendarDays_, skyWeather(c->weather)).outdoorIllumination;
+    // The weather where it was asked for (doc 29, phase 7): each effect as strong as the weather is there.
+    const auto here = weatherAt(cellId, at);
+    out.weather = here.kind;
+    out.intensity = here.intensity;
+    const double clearLight = calendar::skyAt(calendarDays_, calendar::Weather::Clear).outdoorIllumination;
+    out.illumination = clearLight + (calendar::skyAt(calendarDays_, skyWeather(here.kind)).outdoorIllumination - clearLight) * here.intensity;
     out.lightSource = out.daylight <= Epsilon ? "night sky" : "daylight";
     out.sight = out.illumination;
-    switch (c->weather)
+    const double baseSight = out.sight;
+    switch (here.kind)
     {
     case Weather::Rain:
         out.sight *= .78;
@@ -3095,6 +3098,11 @@ Environment World::environmentAt(const std::string& cellId) const
     default:
         break;
     }
+    const auto scaled = [&](double full) { return 1.0 + (full - 1.0) * here.intensity; };
+    out.sight = baseSight * scaled(baseSight > Epsilon ? out.sight / baseSight : 1.0);
+    out.hearing = scaled(out.hearing);
+    out.scent = scaled(out.scent);
+    out.movement = scaled(out.movement);
     out.hearing *= 1.0 - .25 * windAt(cellId).strength;
     return out;
 }
@@ -3106,7 +3114,7 @@ Result World::setTimeOfDay(double hour)
     clockOffsetHours_ = std::fmod(hour - elapsedHours + 24.0, 24.0);
     calendarDays_ = std::floor(calendarDays_) + hour / 24.;
     climateSlot_ = -1;
-    for (auto& c : cells_) if (c.second.outdoors && c.second.seasonalWeather) useSeasonalWeather(c.first);
+    refreshWeatherField(true);
     return {true, "Time of day updated.", {}};
 }
 Result World::advanceCalendar(double days)
@@ -3116,7 +3124,7 @@ Result World::advanceCalendar(double days)
     calendarDays_ += days;
     climateSlot_ = -1;
     for (auto& e : entities_) advanceAge(e.second, calendarDays_);
-    for (auto& c : cells_) if (c.second.outdoors && c.second.seasonalWeather) useSeasonalWeather(c.first);
+    refreshWeatherField(true);
     return {true, "Shared calendar advanced.", {}};
 }
 Result World::useSeasonalWeather(const std::string& id)
@@ -3124,7 +3132,7 @@ Result World::useSeasonalWeather(const std::string& id)
     auto* c = cell(id);
     if (!c || !c->outdoors) return {false, "Seasonal weather requires an outdoor cell.", id};
     c->seasonalWeather = true;
-    c->weather = worldWeather(calendar::forecastAt(0x52415457, id, calendarDays_).weather);
+    refreshWeatherField(true);
     return {true, "Seasonal weather enabled.", id};
 }
 Result World::trade(const std::string& player, const std::string& trader, const std::string& item, int quantity, bool buy)
@@ -3212,7 +3220,7 @@ double World::scentClarity(const std::string& observerId, const std::string& sou
     if (!c)
         return 0;
     AirRoutes air(*c, doorsIn(c->id), observer->position);
-    return detectScent(*observer, *source, windAt(c->id), environmentAt(c->id).scent, air).clarity;
+    return detectScent(*observer, *source, windAt(c->id), environmentAt(c->id, observer->position).scent, air).clarity;
 }
 std::vector<ScentCue> World::scentCues(const std::string& observerId) const
 {
@@ -3225,7 +3233,7 @@ std::vector<ScentCue> World::scentCues(const std::string& observerId) const
     // The air map covers the whole cell: made only once someone unseen is here to be smelled.
     std::optional<AirRoutes> air;
     const auto wind = windAt(c->id);
-    const double scentFactor = environmentAt(c->id).scent;
+    const double scentFactor = environmentAt(c->id, observer->position).scent;
     std::map<int, ScentCue> sectors;
     for (const auto& entry : entities_)
     {
@@ -3336,7 +3344,7 @@ Snapshot World::snapshot(const std::string& observerId)
     out.self.input = {};
     out.cell = *c;
     out.cell.wind = windAt(c->id);
-    out.environment = environmentAt(c->id);
+    out.environment = environmentAt(c->id, o->position);
     out.scentCues = scentCues(observerId);
     out.visibleTiles.resize(c->tiles.size());
     out.rememberedTiles.resize(c->tiles.size());
@@ -3467,6 +3475,7 @@ PersistedWorld World::save() const
         out.lighting[entry.first] = entry.second.lighting;
         out.seasonalWeather[entry.first] = entry.second.seasonalWeather;
     }
+    out.fronts = fronts_;
     return out;
 }
 Result World::restore(const PersistedWorld& state)
@@ -3703,6 +3712,7 @@ Result World::restore(const PersistedWorld& state)
             cells_[w.first].seasonalWeather = false; // Safe legacy/manual mode.
         }
     for (const auto& mode : state.seasonalWeather) cells_[mode.first].seasonalWeather = mode.second;
+    fieldStamp_ = std::numeric_limits<std::int64_t>::min();   // The field is worked out again for the restored moment.
     for (const auto& w : state.winds)
         cells_[w.first].wind = {std::remainder(w.second.direction, 2.0 * Pi), w.second.strength, w.second.variable};
     for (const auto& light : state.lighting)
@@ -3712,6 +3722,11 @@ Result World::restore(const PersistedWorld& state)
     calendarDays_ = restoredDays;
     society_ = std::move(restoredSociety);
     climateSlot_ = std::int64_t(std::floor(calendarDays_ * 4));
+    fronts_ = state.fronts;
+    for (const auto& f : fronts_)
+        if (f.id.rfind("front-", 0) == 0)
+            frontNext_ = std::max(frontNext_, std::uint64_t(std::strtoull(f.id.c_str() + 6, nullptr, 10)) + 1);
+    refreshWeatherField(true);
     memories_ = state.memories;
     lastObserved_.clear();
     bonds_ = std::move(restoredBonds);

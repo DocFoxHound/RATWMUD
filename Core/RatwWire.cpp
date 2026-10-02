@@ -316,7 +316,9 @@ std::string environmentDescription(const Cell& cell, const Environment& e)
         return "It is " + time + ". " + light + " This room is sheltered from outdoor weather.";
     }
     const char* conditions;
-    switch (cell.weather)
+    // The weather where it was asked for (doc 29, phase 7), else the cell's.
+    const Weather kind = e.weather != Weather::Clear || e.intensity > 0 ? e.weather : cell.weather;
+    switch (kind)
     {
     case Weather::Rain: conditions = "Rain blurs the distance, masks quieter sounds, scatters airborne scent, and slows the footing."; break;
     case Weather::Snow: conditions = "Snow veils the distance, muffles sound, weakens airborne scent, and makes travel slower."; break;
@@ -330,7 +332,10 @@ std::string environmentDescription(const Cell& cell, const Environment& e)
         conditions = e.phase == "night" ? "The sky is clear, but darkness conceals distant movement."
                                         : "The sky is clear; the changing light shapes what you can see.";
     }
-    return "It is " + time + ". " + conditions;
+    std::string strength;
+    if (kind != Weather::Clear && kind != Weather::Overcast && e.intensity > 0)
+        strength = e.intensity < .35 ? " Here it is only light, at the edge of it." : e.intensity > .8 ? " Here it is at its heaviest." : "";
+    return "It is " + time + ". " + conditions + strength;
 }
 
 double readClockOffset(const Value& o)

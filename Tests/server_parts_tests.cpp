@@ -558,6 +558,12 @@ void directorTests()
     auto cross = envelope(bridge, "cross-world", "weather", R"({"cell":"exterior","preset":"fog"})");
     cross.set("worldId", "wrong-world");
     expect(!ok(bridge.execute(cross, "cross-world", hash, world, online, 1001, commit, notice)), "another world's request is refused");
+    // A weather front (doc 29, phase 7): a kind, its middle, reach, heading and hours; anything else refused.
+    const auto front = envelope(bridge, "front-1", "weather_front", R"({"kind":"storm","x":10,"y":10,"radius":300,"heading":0,"hours":6})");
+    expect(ok(bridge.execute(front, "front-1", hash, world, online, 1001, commit, notice)) && world.save().fronts.size() == 1,
+           "the DM calls up a storm front");
+    const auto badFront = envelope(bridge, "front-2", "weather_front", R"({"kind":"lava","x":10,"y":10,"radius":300,"heading":0,"hours":6})");
+    expect(!ok(bridge.execute(badFront, "front-2", hash, world, online, 1001, commit, notice)), "an unknown kind of front is refused");
     const auto bad = envelope(bridge, "bad-bool", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":false,"quantity":0,"coins":3})");
     expect(!ok(bridge.execute(bad, "bad-bool", hash, world, online, 1001, commit, notice)), "a boolean item is not an empty item");
     const auto announcement = envelope(bridge, "notice-1", "notice",

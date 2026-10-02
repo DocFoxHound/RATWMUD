@@ -71,7 +71,7 @@ const KnownWeather = ['overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
 export const DevWeathers = ['clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
 
 function defaultEnvironment(): EnvironmentView {
-    return {weather: 'clear', phase: 'day', lightingTone: 'neutral', lightSource: 'daylight', hour: 12, daylight: 1,
+    return {weather: 'clear', intensity: 1, phase: 'day', lightingTone: 'neutral', lightSource: 'daylight', hour: 12, daylight: 1,
         illumination: 1, artificialLight: 0, daylightAccess: 1, glowStrength: 0, sight: 1, hearing: 1, scent: 1, movement: 1};
 }
 
@@ -155,6 +155,8 @@ export class GameState {
     hoveredEntity = '';         // The wolf under the pointer on the map: lit in the list.
     hoverTooltips = true;       // Labels beside the pointer (the line under the map always shows).
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
+    // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
+    weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
     inspectedText = '';
     toast = '';
     toastUntil = 0;
@@ -195,8 +197,20 @@ export class GameState {
         this.outdoors = bool(cell, 'outdoors');
         const env = obj(cell, 'environment');
         const e = this.environment;
-        e.weather = str(cell, 'weather', 'clear');
+        // The weather where the wolf stands (doc 29, phase 7), else the cell's.
+        const local = obj(cell, 'localWeather');
+        e.weather = str(local, 'kind', str(cell, 'weather', 'clear'));
         if (!KnownWeather.includes(e.weather)) e.weather = 'clear';
+        e.intensity = local ? envNumber(local, 'intensity', 0, 1, 1) : 1;
+        if (e.weather === 'clear') e.intensity = 0;
+        this.weatherField = null;
+        const field = obj(cell, 'weatherField');
+        if (field) {
+            const cols = Math.trunc(num(field, 'cols')), rows = Math.trunc(num(field, 'rows')), step = Math.trunc(num(field, 'step'));
+            const kinds = str(field, 'kinds'), amounts = str(field, 'amounts');
+            if (cols > 0 && rows > 0 && cols * rows <= 4096 && step > 0 && kinds.length === cols * rows && amounts.length === cols * rows)
+                this.weatherField = {cols, rows, step, kinds, amounts};
+        }
         e.hour = envNumber(env, 'hour', 0, 24, 12);
         if (e.hour >= 24) e.hour = 0;
         e.phase = str(env, 'phase');
@@ -946,7 +960,7 @@ export class GameState {
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});
             else this.sendAction(h.target, this.contextTarget);
             this.contextTarget = '';
-        } else if (['weather', 'wind', 'time', 'lighting', 'calendar'].includes(a)) {
+        } else if (['weather', 'wind', 'time', 'lighting', 'calendar', 'front'].includes(a)) {
             if (!bool(this.snapshot, 'devTools')) return;
             if (a === 'calendar' && h.target !== 'day' && h.target !== 'year') return;
             this.send({type: a, value: h.target});
