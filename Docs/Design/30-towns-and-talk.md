@@ -7,7 +7,7 @@ language model at runtime.
 | Phase | What | State |
 |---|---|---|
 | 5 | Towns built out; about 950 residents | Built 2026-10-02 (DEV revision 7, build 12) |
-| 6 | NPC-to-NPC scenes: an engine and a large written library | Planned |
+| 6 | NPC-to-NPC scenes: an engine and a large written library | Engine built 2026-10-02; library growing |
 
 ## Phase 5: The towns built out, the cities filled (built 2026-10-02)
 
@@ -78,3 +78,59 @@ stopped; caravans plan at most two a turn. Measured: **mean 17.6 ms, steady p99 
 Tests: `tools/test_towns.py` (a placeholder built and peopled with every resident in a bed of their own, the watch on
 a route, the place its own region, nothing outside it changed, a second run skipped; edited ground refused); the server
 tests unchanged and passing.
+
+## Phase 6: NPCs talking to each other (engine built 2026-10-02; the library grows in batches)
+
+How games like Skyrim do it: two idle NPCs near each other play a short **scene** chosen from a large pool by
+**conditions** (place, who they are to each other, who each is, the time, the weather, recent events), each line with
+**variants** and replies that **branch** on the speaker; plus one-line **barks**. That is what this is, with no model.
+
+**The engine** (`Core/RatwScenes.{h,cpp}`):
+
+- **Scene files** (`Data/Voice/scenes/**/*.scene`, plain text): `scene <id>`, `when key=value|value ...` (topic,
+  region or a region group, place, band, time, season, day, weather, the topic's own tags such as `item=herbs`
+  `dir=up` `kind=raided` `known=no`, and either speaker's `a.sex`, `b.stage`, `a.job`, `b.role`), `weight N`, then
+  lines `a : words | words` and `b[old] : words`. A speaker's tagged lines followed by an untagged one form a **turn**:
+  the first whose tags hold for that speaker is said, one of its `|` alternatives at random. `a?[friends] :` marks a
+  turn spoken only if it holds. Blanks: `{a} {b} {subject} {claim} {news} {item} {price} {other} {place} {town}
+  {weekday} {season} {festival} {victim} {a_job} {b_job}`; a scene whose blank can't be filled isn't used.
+  `groups.scene` names region groups (`rain_coast = ridgemere saltreach`).
+- **Strict checking at load:** unknown topics, places, jobs, blanks, regions and conditions, lines over 160
+  characters, a scene without a line each speaker always says, a bark with a second speaker, a duplicate ID. Any
+  error and nothing loads (the server says so and falls back to the old library).
+- **Choosing:** scenes are indexed by topic; of those that fit the moment and can be filled, never one said in that
+  place lately (`recentScenes_`), and **one that none of the listening players has heard** if there is any (weather
+  and barks excepted). Scenes that test more about the moment weigh more (written for it, not for anywhere).
+- **Jobs** in the scenes' categories (`jobCategory`): from the post's title, the work label and the description
+  (smith, baker, innkeeper, guard, soldier, farmer, fisher, miner, healer, priest, scholar, carter, crafter, herder,
+  noble, servant, beggar, sailor, apprentice, cook, woodcutter, official, merchant, child...).
+
+**The world's side** (`Core/RatwAmbient.cpp`):
+
+- **Topics** beyond gossip, news, quarrels, friends and the day: **prices** (a town's meal or herb price moved a
+  tenth or more in the last day and a half: `World::priceSeen_`, from `tendPrices`), **caravan** (arrived, left or
+  raided, to or from this town), **bandits** (a camp lately active, a raid), **crime** (a theft or assault in town in
+  the last two days, the offender named only if anyone saw it), **life** and **newcomer** (weddings, deaths,
+  apprenticeships, successions, arrests and arrivals, kept by town: `World::townNews_`), **festival** (today, or
+  called for the next three days), **player** (a traveller near both: by name if they know them, else "that grey
+  stranger"), and the everyday: **family**, **work**, **weather**, **lore** and **smalltalk**, with a little chance in
+  their scores so the same two don't always talk of the same thing.
+- **Strangers talk now** (small talk, as strangers), and the talk warms them over time. Places are busier where more
+  stand about (an exchange every 60 s in a crowd, 100 s with a few, 180 s when quiet); a resident at most every 5 min.
+- **The moment** (`World::sceneMoment`): place kind (street, market, tavern, home, work, chapel, barracks, gate,
+  field, shore, wild, hall), the town (Upper Accord's campuses count as Upper Accord), the hour, season, day, sky.
+
+**The game's side** (`Core/RatwGameAmbient.cpp`): a picked exchange is voiced from the scenes; only if none fits does
+the old library, then the authored lines, speak. The Mind writes exchanges live only if `--ambient-model-calls N` is
+given (default 0: never). **Barks:** every few seconds near a player, a resident within earshot may call out a line
+(a merchant's cry, the watch, a child at play, the weather), at most one every 25 s in a place. **What each character
+has heard** (up to 3,000 scenes) is kept in the save (`scenesHeard`), so a returning player hears new ones.
+
+**Measuring the library:** `python3 tools/scene_report.py [--min N] [--region R]`: scenes by topic and region, lines
+written for each kind of speaker, distinct renderings, an estimate of listening hours before an everyday repeat, and
+the thin spots to write next.
+
+Tests: `Tests/scenes_tests.cpp` (the format and every check, who says what, optional turns, blanks, groups, the
+preference for scenes not heard, weights, variety, barks, job categories, the real library loading whole and covering
+every topic); `ambient_tests` (strangers make small talk, friends as friends, a festival); `game_tests`
+`residentsTalkFromWrittenScenes` (a scene spoken and heard, the memory surviving a restart).

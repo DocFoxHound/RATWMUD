@@ -1,0 +1,16 @@
+# Region groups for the scenes (Docs/Design/30-towns-and-talk.md): a scene may name a group instead of its towns.
+# Read before every other file.
+
+group accord = upper_accord accord_crossing
+group rain_coast = ridgemere saltreach
+group marches = ser_ferro cinderbrook
+group downs = westmarch hollowmere_village
+group lake = lakeside isle_fortress
+group fens = fenhollow
+group steppe = amberford
+group fortresses = northern_fortress isle_fortress dark_fortress
+group cities = upper_accord ridgemere ser_ferro
+group towns = accord_crossing saltreach cinderbrook westmarch lakeside fenhollow amberford hollowmere_village
+group north = ridgemere saltreach northern_fortress upper_accord
+group south = ser_ferro cinderbrook amberford fenhollow dark_fortress
+group countryside = westmarch hollowmere_village amberford fenhollow

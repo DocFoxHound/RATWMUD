@@ -113,7 +113,7 @@ bool readFile(const std::string& path, std::string& out)
 void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
                  "                   [--for SECONDS]\n";
 }
 
@@ -149,6 +149,7 @@ int main(int argc, char** argv)
         else if (a == "--web") webRoot = next();
         else if (a == "--dialogue") options.dialogueEndpoint = next();
         else if (a == "--voice-data") options.voiceData = next();
+        else if (a == "--ambient-model-calls") options.ambientModelCallsPerHour = std::max(0, std::atoi(next().c_str()));
         else if (a == "--voice-log") options.voiceLog = next();
         else if (a == "--dm-directory") options.directorDirectory = next();
         else if (a == "--dev-tools") options.devTools = true;

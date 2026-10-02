@@ -140,7 +140,50 @@ void Game::ambient(double dt)
                          (pick.topic.kind == "news" && (pick.topic.claim == "loss" || pick.topic.claim == "crime"));
     while (!ambientCalls_.empty() && now - ambientCalls_.front() > 3600)
         ambientCalls_.pop_front();
-    if (!salient || !mind_.live() || int(ambientCalls_.size()) >= AmbientCallsPerHour)
+    const bool live = salient && mind_.live() && int(ambientCalls_.size()) < options_.ambientModelCallsPerHour;
+    // The written scenes (doc 30): the moment as the scenes see it, and one no one listening has heard, if there is one.
+    if (!live && scenes_.hasTopic(pick.topic.kind))
+    {
+        scenes::Situation s;
+        s.topic = pick.topic.kind;
+        world_.sceneMoment(a->id, s.tags, s.blanks);
+        for (const auto& [k, v] : pick.topic.tags)
+            s.tags[k] = v;
+        for (const auto& [k, v] : pick.topic.blanks)
+            s.blanks[k] = v;
+        s.a = scenePerson(*a);
+        s.b = scenePerson(*b);
+        s.blanks["a_job"] = s.a.job == "none" ? std::string() : s.a.job;
+        s.blanks["b_job"] = s.b.job == "none" ? std::string() : s.b.job;
+        if (!context.subjectName.empty())
+            s.blanks.emplace("subject", context.subjectName);
+        if (pick.topic.kind == "gossip")
+            s.blanks["claim"] = context.claim;
+        if (!context.news.empty())
+            s.blanks["news"] = mind::firstPerson(context.news, a->name);
+        const auto hearers = hearersOf(a->id);
+        const auto heard = [&](const std::string& scene) {
+            for (const auto& h : hearers)
+                if (const auto found = scenesHeard_.find(h); found != scenesHeard_.end() && found->second.ids.count(scene))
+                    return true;
+            return false;
+        };
+        auto& recent = recentScenes_[cell];
+        auto chosen = scenes_.pick(s, id * 2654435761u + std::uint64_t(now * 7), heard, recent);
+        if (!chosen.id.empty())
+        {
+            for (const auto& h : hearers)
+                scenesHeard_[h].add(chosen.id);
+            recent.push_back(chosen.id);
+            while (recent.size() > 16)
+                recent.pop_front();
+            mind::Exchange x;
+            x.lines = chosen.lines;
+            begin(x, "scene");
+            return;
+        }
+    }
+    if (!live)
     {
         if (auto x = voices_.libraryEntries() ? fromLibrary() : mind::Exchange{}; !x.lines.empty())
             begin(x, "library");
@@ -162,5 +205,89 @@ void Game::ambient(double dt)
         else
             begin(written, "written");
     });
+}
+std::vector<std::string> Game::hearersOf(const std::string& speaker) const
+{
+    std::vector<std::string> out;
+    const auto* s = world_.entity(speaker);
+    for (const auto* c : clients_)
+        if (const auto* e = world_.entity(c->entityId); s && e && e->cellId == s->cellId &&
+                                                     world_.hearingClarity(e->id, speaker, Voice::Speak) >= .35)
+            out.push_back(e->id);
+    return out;
+}
+
+scenes::Person Game::scenePerson(const Entity& e) const
+{
+    scenes::Person p;
+    p.name = e.name;
+    p.sex = e.appearance.sex == "female" ? "female" : "male";
+    p.stage = lifeStageName(lifeStage(e.age));
+    const auto* spec = world_.society().spec(e.id);
+    const auto* post = world_.society().jobOf(e.id);
+    p.role = spec ? spec->role : std::string("civilian");
+    if (p.role != "merchant" && p.role != "guard")
+        p.role = "civilian";
+    p.job = scenes::jobCategory((post ? post->title : std::string()) + " " + e.description,
+                                spec ? spec->workLabel : std::string(), p.role, e.age);
+    return p;
+}
+
+void Game::barks(double dt)
+{
+    // Now and then, near a player, a resident calls out or remarks to no one in particular (doc 30): a merchant crying
+    // their wares, a guard's word, a child at play. A line at most every 25 seconds in a place.
+    if ((barkLookIn_ += dt) < 6 || !scenes_.hasTopic("bark"))
+        return;
+    barkLookIn_ = 0;
+    const double now = world_.time();
+    std::set<std::string> busy(pendingNpc_.begin(), pendingNpc_.end());
+    for (const auto& t : ambient_)
+        busy.insert(t.pick.teller), busy.insert(t.pick.listener);
+    for (const auto* c : clients_)
+    {
+        const auto* player = world_.entity(c->entityId);
+        if (!player || player->dead)
+            continue;
+        if (const auto last = barkLast_.find(player->cellId); last != barkLast_.end() && now - last->second < 25)
+            continue;
+        std::vector<const Entity*> near;
+        for (const auto& [id, e] : world_.entities())
+            if (e.npc && !e.dead && !e.transient && !e.offstage && e.cellId == player->cellId && !busy.count(id) &&
+                e.speakingUntil <= now && e.posture != "lying" &&
+                std::hypot(e.position.x - player->position.x, e.position.y - player->position.y) <= 14 &&
+                world_.hearingClarity(player->id, id, Voice::Speak) >= .5)
+                near.push_back(&e);
+        barkLast_[player->cellId] = now;          // Looked: the next look here waits, whether anyone spoke or not.
+        if (near.empty())
+            continue;
+        const auto* who = near[std::size_t(std::uint64_t(now * 13) % near.size())];
+        scenes::Situation s;
+        s.topic = "bark";
+        world_.sceneMoment(who->id, s.tags, s.blanks);
+        s.a = scenePerson(*who);
+        s.blanks["a_job"] = s.a.job == "none" ? std::string() : s.a.job;
+        const auto hearers = hearersOf(who->id);
+        const auto heard = [&](const std::string& scene) {
+            for (const auto& h : hearers)
+                if (const auto found = scenesHeard_.find(h); found != scenesHeard_.end() && found->second.ids.count(scene))
+                    return true;
+            return false;
+        };
+        auto& recent = recentScenes_["bark:" + player->cellId];
+        const auto chosen = scenes_.pick(s, std::uint64_t(now * 1000) ^ std::hash<std::string>{}(who->id), heard, recent);
+        if (chosen.id.empty() || chosen.lines.empty())
+            continue;
+        recent.push_back(chosen.id);
+        while (recent.size() > 12)
+            recent.pop_front();
+        ParsedPost post;
+        post.ok = true;
+        post.speech = true;
+        post.segments.push_back({"speech", chosen.lines.front().second});
+        publish(who->id, post, Voice::Speak);
+        npcLastSpeech_[who->id] = now;
+        voiced("bark", "scene", who->id);
+    }
 }
 } // namespace ratw::game

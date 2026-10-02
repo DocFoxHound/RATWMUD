@@ -1,0 +1,125 @@
+# The towns', the village's and the fortresses' own talk.
+
+scene tn_crossing_caravans
+when topic=lore|smalltalk region=accord_crossing
+a : Wagons stacked three deep in the yard again. | Every carter in the west stops here. | The Crossed Roads is full every night.
+b[carter] : Best stopping place between the mountain and the lowlands.
+b[innkeeper] : Full, and loud, and hungry. I love it and I hate it.
+b : Good for trade. | Seems that way. | Every night.
+a : Good for trade, bad for sleep. | It does. | And every morning.
+
+scene tn_saltreach_salt
+when topic=lore|work region=saltreach
+a : Salt pans are white as snow this week. | Ridgemere wants twice the salt it did last year. | The tide took a pan wall again.
+b[farmer] : Rake it before the rain comes, or it's lost.
+b[fisher] : Salt for the herring, herring for the salt.
+b : Good weather for it. | They pay well, at least. | Again?
+a : For once. | When they pay. | Again.
+
+scene tn_saltreach_drowned
+when topic=lore region=saltreach
+a : They cut another name into the Tide Chapel walls. | My father's name is on that wall. | The sea takes what it wants.
+b[priest] : We remember them all.
+b[old] : I've watched the sea all my life. It never forgives.
+b : I'm sorry. | Who was it? | It does.
+a : Thank you. | A young one. | Always.
+
+scene tn_cinderbrook_mines
+when topic=lore|work region=cinderbrook
+a : The north seam's flooding again. | Ore's good this month. Red as blood. | Another shaft collapsed up the hill.
+b[miner] : Don't go near the north seam. It's cursed, I tell you.
+b[smith] : Good ore makes good iron. Keep it coming.
+b[healer] : Anyone hurt? Bring them to me.
+b : Bad luck. | Good news. | Was anyone below?
+a : Always is. | For once. | Nobody, this time.
+
+scene tn_cinderbrook_crown
+when topic=lore region=cinderbrook
+a : The Crown's agent is in town again. | Ser Ferro takes the best of our iron and pays like misers. | They want more ore by spring.
+b[miner] : The Crown never came down a shaft in its life.
+b : Of course they do. | Same as always. | More? From where?
+a : Never will. | Always. | From our backs.
+
+scene tn_westmarch_frontier
+when topic=lore|smalltalk region=downs
+a : Nothing out there but sheep and barrows. | Travellers from the east are fewer this year. | The downs go on forever.
+b[herder] : And good grass. Don't forget the grass.
+b[old] : Don't go up among the barrows after dark.
+b[adolescent] : One day I'll walk to the end of them.
+b : That's the frontier. | Fewer travellers, fewer troubles. | They do.
+a : That it is. | Maybe. | Ha. Good luck.
+
+scene tn_westmarch_market
+when topic=work region=westmarch place=market|street
+a : Drovers in from the south with cattle. | The Mercantile's ledger's longer than the Mercantile. | Half the downs owes money here.
+b[merchant] : And the other half owes money to someone else.
+b : Good market, then. | Ha. | The whole frontier owes someone.
+a : Good enough. | True. | Everyone does.
+
+scene tn_lakeside_mere
+when topic=lore|smalltalk region=lake
+a : The Mirrormere's still as glass this morning. | Something big moved under the water last night. | Mist on the mere again.
+b[fisher] : Calm water, deep fish.
+b[old] : There are things in the mere older than the town.
+b[child] : A monster? A real one?
+b : Beautiful, isn't it? | Just a pike. A big pike. | Every morning.
+a : It is. | A very big pike. | Every morning.
+
+scene tn_isle_garrison
+when topic=lore region=lake
+a : Lights on the Isle Fortress all night. | The garrison rowed over for supplies again. | They say the isle is sinking.
+b[soldier] : Fish stew every day. I'd give a month's pay for bread.
+b : Something's keeping them up. | They pay in good coin. | Sinking? Nonsense.
+a : Something. | They do. | Probably.
+
+scene tn_fenhollow_marsh
+when topic=lore|smalltalk region=fens
+a : Marsh lights out again last night. | Don't follow the lights. Never follow the lights. | Peat's wet this season.
+b[healer] : The marsh gives the best herbs and takes the careless.
+b[old] : My grandmother followed the lights once. Came back different.
+b[miner] : Wet peat smokes. Dry peat burns. Nobody listens.
+b : Spirits, they say. | I wouldn't dream of it. | Always is.
+a : Something, anyway. | Good. | Always.
+
+scene tn_amberford_grain
+when topic=lore|work region=steppe
+a : Not a drop of rain in three weeks. | The ford's lower than I've ever seen. | Grain price chalked at the door again.
+b[farmer] : If it doesn't rain soon, there'll be no second planting.
+b[old] : The steppe was greener when I was a pup. I swear it.
+b : It'll come. | Easy crossing, at least. | Higher or lower?
+a : It had better. | Easy and strange. | Higher.
+
+scene tn_hollowmere_quiet
+when topic=smalltalk|lore region=hollowmere_village
+a : Nothing ever happens here. | The carter's late again. | Did you see the deer by the brook?
+b[old] : Nothing happening is a blessing.
+b[child] : Something happened! I fell in the brook!
+b : That's why I like it. | He's always late. | Beautiful creatures.
+a : I suppose. | Always. | They are.
+
+scene tn_fortress_posting
+when topic=smalltalk|work region=fortresses
+a : How many days left on your posting? | Commander inspects the walls at dawn. | Another quiet night on the walls.
+b[soldier] : Too many. Far too many.
+b : I stopped counting. | Polish your buckle, then. | Quiet is good.
+a : Ha. | Always. | Quiet is boring.
+
+scene tn_northern_cold
+when topic=lore|weather region=northern_fortress
+a : Ice on the inside of the walls this morning. | Wind off the moor could cut stone. | Something howled out on the moor last night.
+b[soldier] : Northern posting. They warned us.
+b : Stay by the stove. | It does. | Just the wind.
+a : They did. | Always. | I hope so.
+
+scene tn_dark_secret
+when topic=lore region=dark_fortress
+a : Don't ask what we guard. | The deep was loud last night. | Covered map's still covered.
+b[soldier] : I wasn't going to ask.
+b : I didn't hear anything. | Good. | Leave it covered.
+a : Good. | You didn't. | I will.
+
+scene tn_ghost
+when topic=smalltalk|lore region=ghost_town
+a : Did you hear that? Upstairs, in the old house. | Nobody's lived here for a hundred years. Except us. | Find anything worth having today?
+b : Just the wind. | And now there's us. | A bent spoon and a scare.
+a : Just the wind. | Lucky us. | Better than nothing.

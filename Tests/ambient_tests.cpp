@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
+#include <set>
 #include <string>
 
 using namespace ratw;
@@ -49,6 +50,10 @@ World scene()
         e->offstage = false;
     }
     expect(spot.x >= 0, "They stand on open ground");
+    // Everyone else is out of the way: strangers talk too now (doc 30), and these tests are about the two of them.
+    for (const auto& [id, e] : w.entities())
+        if (e.npc && id != "sorrel" && id != "fennel")
+            w.entity(id)->offstage = true;
     return w;
 }
 const Belief* belief(const World& w, const std::string& holder, const std::string& subject, const std::string& claim)
@@ -63,11 +68,19 @@ const Belief* belief(const World& w, const std::string& holder, const std::strin
 void strangersHaveNothingToSay()
 {
     auto w = scene();
-    expect(w.ambientPicks({"player-ada"}).empty(), "Two who don't know each other, on an ordinary day, say nothing");
-    w.bonds().change("sorrel", "fennel", {25, 10, 50, 0, 0}, w.calendarDays());
-    w.bonds().change("fennel", "sorrel", {20, 10, 50, 0, 0}, w.calendarDays());
-    const auto picks = w.ambientPicks({"player-ada"});
-    expect(picks.size() == 1 && picks[0].topic.kind == "friends" && picks[0].cell == "town", "Friends pass the time");
+    // Strangers now make small talk (doc 30): the everyday topics, as strangers.
+    const auto first = w.ambientPicks({"player-ada"});
+    static const std::set<std::string> everyday{"smalltalk", "lore", "player", "weather", "work"};
+    expect(first.size() == 1 && everyday.count(first[0].topic.kind) && first[0].topic.tags.at("band") == "strangers",
+           "Two who don't know each other pass the time of day, as strangers (" + (first.empty() ? std::string("nothing") : first[0].topic.kind) + ")");
+    expect(first[0].topic.tags.count("place") && first[0].topic.tags.count("region") && !first[0].topic.blanks.at("weekday").empty(),
+           "with the place, the region and the day for the scenes");
+    auto f = scene();
+    f.bonds().change("sorrel", "fennel", {25, 10, 50, 0, 0}, f.calendarDays());
+    f.bonds().change("fennel", "sorrel", {20, 10, 50, 0, 0}, f.calendarDays());
+    const auto picks = f.ambientPicks({"player-ada"});
+    expect(picks.size() == 1 && picks[0].topic.tags.at("band") == "friends" && picks[0].cell == "town",
+           "Friends pass the time, as friends (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind + "/" + picks[0].topic.tags.at("band")) + ")");
     expect(w.ambientPicks({}).empty(), "Only where a player can hear");
     expect(w.ambientPicks({"player-ada"}, {"sorrel"}).empty(), "Never with someone busy (talking to a player)");
     w.entity("player-ada")->position = {40.5, 30.5};
@@ -129,14 +142,19 @@ void theDayItself()
 {
     auto w = scene();
     w.bonds().change("sorrel", "fennel", {0, 0, 15, 0, 0}, w.calendarDays());
-    expect(w.ambientPicks({"player-ada"}).empty(), "Acquaintances say nothing of an ordinary day");
-    expect(w.callFestival("greyfen", "The Lantern Night").ok, "a festival is called");
-    const auto picks = w.ambientPicks({"player-ada"});
-    expect(picks.size() == 1 && picks[0].topic.kind == "day", "but a festival is worth remarking on");
-    bool mentioned = false;
-    for (const auto& f : picks[0].topic.facts)
-        mentioned |= f.find("The Lantern Night") != std::string::npos;
-    expect(mentioned, "and its name is among the facts");
+    const auto ordinary = w.ambientPicks({"player-ada"});
+    expect(ordinary.size() == 1 && ordinary[0].topic.kind != "day" && ordinary[0].topic.kind != "festival",
+           "On an ordinary day, acquaintances pass the time with the everyday");
+    auto f = scene();
+    f.bonds().change("sorrel", "fennel", {0, 0, 15, 0, 0}, f.calendarDays());
+    expect(f.callFestival("greyfen", "The Lantern Night").ok, "a festival is called");
+    const auto picks = f.ambientPicks({"player-ada"});
+    expect(picks.size() == 1 && picks[0].topic.kind == "festival", "but a festival is worth remarking on (" +
+           (picks.empty() ? std::string("nothing") : picks[0].topic.kind) + ")");
+    bool mentioned = picks[0].topic.blanks.count("festival") && picks[0].topic.blanks.at("festival") == "The Lantern Night";
+    for (const auto& fact : picks[0].topic.facts)
+        mentioned |= fact.find("The Lantern Night") != std::string::npos;
+    expect(mentioned, "and its name is there for the words");
 }
 
 void authoredLines()

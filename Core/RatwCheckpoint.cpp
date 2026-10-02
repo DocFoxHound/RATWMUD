@@ -222,6 +222,15 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         if (!owner.empty())
             companions.add(npc, owner);
     root.add("companions", companions);
+    auto heard = Value::object();
+    for (const auto& [who, list] : c.scenesHeard)
+    {
+        auto ids = Value::array();
+        for (const auto& id : list)
+            ids.push(id);
+        heard.add(who, ids);
+    }
+    root.add("scenesHeard", heard);
     root.add("nextConversation", c.memories.nextConversation);
     auto active = Value::array();
     for (const auto& [key, m] : c.memories.active)
@@ -516,6 +525,11 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     // The server's own part.
     for (const auto& [npc, owner] : root.object("companions").fields())
         c.companions[npc] = owner.asString("");
+    // (Older saves have none: everyone starts having heard nothing.)
+    for (const auto& [who, list] : root.object("scenesHeard").fields())
+        for (const auto& id : list.items())
+            if (id.isString() && c.scenesHeard[who].size() < 4000)
+                c.scenesHeard[who].push_back(id.asString());
     c.memories.nextConversation = std::uint64_t(num(root, "nextConversation", 1));
     for (const auto& j : root.array("activeMemory"))
     {

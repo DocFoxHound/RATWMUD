@@ -1,0 +1,193 @@
+# Current events: what has been happening in town. Prices that moved, caravans in and out, bandits on the roads,
+# crime, weddings and deaths, festivals, newcomers. Blanks come from the world (doc 30).
+
+# ---------------------------------------------------------------- Prices
+
+scene pr_herbs_up
+when topic=prices item=herbs dir=up
+a[healer] : Herbs at {price} a bundle. How am I to treat anyone? | I can't afford my own remedies at {price}.
+a[cook] : {price} for a bundle of herbs. My stew will taste of nothing.
+a : Have you seen what herbs cost now? {price}! | Herbs at {price}. Robbery. | Who can afford herbs at {price}?
+b[merchant] : The store's near empty. I pay more, you pay more.
+b[farmer] : Then gather your own. The hedges are full of them.
+b[old] : In my day you picked them free by the road.
+b : I saw. It's a scandal. | Everything's dearer this year. | I'll do without.
+a?[friends] : I'll share what I have, if you're short.
+
+scene pr_herbs_down
+when topic=prices item=herbs dir=down
+a : Herbs are cheap again, have you noticed? | Got a fat bundle of herbs for {price}. | Herbs are going for {price} now. Stock up.
+b[merchant] : Cheap for you. Ruin for me.
+b[healer] : Good. Maybe folk will come to me before they're dying.
+b : About time. | I'll get some on the way home. | Good news, for once.
+a : Buy while it lasts. | Exactly. | For once.
+
+scene pr_meal_up
+when topic=prices item=meal dir=up
+a[child] : Why is supper so small? | Mama says bread costs too much now.
+a : A hot meal costs {price} now. {price}! | Have you priced a meal lately? | I paid {price} for a bowl of soup.
+b[innkeeper] : Grain's dear, so food's dear. I don't set the price of grain.
+b[farmer] : Don't look at me. I see none of that coin.
+b[old] : I remember famine years. This isn't one. Yet.
+b : Everything's going up. | We'll be eating grass soon. | Cook at home, then.
+a : Not everything. My wages aren't. | Don't joke. | I do. Doesn't help.
+
+scene pr_meal_down
+when topic=prices item=meal dir=down
+a : Food's cheaper this week. | A meal for {price}. I nearly fell over. | The stores must be full.
+b[innkeeper] : Cheaper for you. My margins are thin as broth.
+b[farmer] : Good harvest. Somebody should thank us.
+b : Thank the stars. | Eat while you can. | Long may it last.
+a : Ha. | I intend to. | It won't.
+
+scene pr_general_grumble
+when topic=prices
+weight 0.6
+a : Prices, prices. That's all anyone talks about now. | My purse gets lighter every market. | Everything's {price} this week, or near enough.
+b[merchant] : Blame the roads. Every cart that's robbed is a price that rises.
+b[official] : The council is aware of the matter.
+b : Times are hard. | Mine too. | It'll settle.
+a : The council's always aware. Never does anything. | They are. | It had better.
+
+# ---------------------------------------------------------------- Caravans
+
+scene cv_arrived
+when topic=caravan kind=arrived
+a[merchant] : The caravan from {other} is in. I'll have stock by tonight. | Finally, the {other} wagons. My shelves were bare.
+a[child] : Did you see the wagons? Big ones! With bells!
+a : The caravan from {other} came in today. | Wagons in from {other}. | Did you see the carters from {other}?
+b[carter] : Rough road, but we made it. Barely.
+b[innkeeper] : That'll mean a full house tonight.
+b[guard] : I counted them in. Every crate.
+b : About time. | Anything good on them? | Good. Maybe prices will fall.
+a : Let's hope. | We'll see at market. | Maybe.
+
+scene cv_left
+when topic=caravan kind=left
+a : The wagons left for {other} this morning. | Caravan's away to {other}. | Saw the {other} caravan go out the gate.
+b[merchant] : My goods are on it. I'll not sleep till I hear.
+b[carter] : I should be on it. Lame mule.
+b[guard] : Light escort. I didn't like it.
+b : Safe journey to them. | Long road to {other}. | Let's hope it gets there.
+a : Let's hope. | It is. | It will.
+
+scene cv_raided
+when topic=caravan kind=raided
+a[merchant] : The {other} caravan was robbed. My whole order, gone. | Raided on the road from {other}. I'm ruined.
+a : Did you hear? The caravan from {other} was raided. | Bandits hit the {other} wagons. | They say the {other} caravan never made it.
+b[guard] : We need more blades on those roads, not fewer.
+b[carter] : That could have been me. That should have been me.
+b[old] : The roads were never safe. Never.
+b : Were they hurt? | That's terrible. | That'll put prices up.
+a : I don't know. | It is. | Everything will cost more now.
+
+# ---------------------------------------------------------------- Bandits
+
+scene bd_camp
+when topic=bandits kind=camp
+a : There's a bandit camp out by {other}, they say. | Travellers are being stopped near {other}. | Don't take the road past {other}.
+b[guard] : We know. We're waiting on more spears before we go out.
+b[carter] : I'll take the long way, then. Two days longer.
+b[child] : I'd fight them!
+b : Someone should clear them out. | I wasn't going to. | I'll stay home.
+a : Someone should. | Good. | Wise.
+
+scene bd_raided
+when topic=bandits kind=raided
+a : The roads aren't safe any more. | Bandits again, on the way to {other}. | Whole caravan stripped bare.
+b[guard] : Every raid makes them bolder.
+b[merchant] : And every raid makes me poorer.
+b : What's the watch doing? | Shocking. | Bold, aren't they.
+a : Not enough. | It is. | Too bold.
+
+# ---------------------------------------------------------------- Crime
+
+scene cr_theft
+when topic=crime kind=theft
+a[guard] : We're looking into the matter of {victim}'s loss. Seen anything? | A theft, under our noses.
+a : Did you hear {victim} was robbed? | Someone stole from {victim}. | They say {subject} robbed {victim}.
+b[merchant] : Lock your doors. I'm putting a second bolt on mine.
+b[guard] : We'll find who did it.
+b[old] : In my day thieves lost a paw.
+b : That's awful. | Who'd do such a thing? | Poor {victim}.
+a : Keep your purse close. | Someone desperate. | Poor soul.
+
+scene cr_assault
+when topic=crime kind=assault
+a : {victim} was attacked. In the street! | Someone beat {victim} half senseless. | Did you hear about {victim}?
+b[healer] : I patched them up. They'll live, no thanks to whoever did it.
+b[guard] : The watch is on it.
+b : Terrible. | Is {victim} all right? | What's the world coming to?
+a : Barely. | Nobody knows. | Nothing good.
+
+scene cr_arrest
+when topic=crime kind=arrest
+a : The watch took {subject} off to the gaol. | They arrested {subject}! | {subject}'s in the cells, I hear.
+b[guard] : And there they'll stay.
+b[old] : Always knew that one was trouble.
+b : What did they do? | About time. | I'd never have thought it.
+a : Nobody's saying. | I suppose. | Nor would I.
+
+# ---------------------------------------------------------------- Life in town
+
+scene lf_marriage
+when topic=life kind=marriage
+a[old] : {subject} and {other} are wed, did you hear? I remember them as pups.
+a : {subject} married {other}! | Did you hear? {subject} and {other} are wed. | There was a wedding. {subject} and {other}.
+b[child] : Was there cake?
+b[female] : About time. Everyone could see it. | They'll make a fine pair.
+b : Good for them. | I never thought they'd do it. | They'll be happy, I think.
+a : They will. | Nor did I. | Let's hope.
+
+scene lf_death
+when topic=life kind=death
+a[old] : {subject} has passed. That's another of my generation gone. | They buried {subject} this morning.
+a : Did you hear {subject} died? | {subject} is gone. | {other} is grieving; {subject} died.
+b[priest] : I said the words over them. It was a gentle end.
+b[child] : Is {subject} with the stars now?
+b : I'm sorry to hear it. | May they rest. | {other} must be heartbroken.
+a : So am I. | Rest well. | They are.
+
+scene lf_apprentice
+when topic=life kind=apprentice
+a : {subject}'s apprenticed to {other} now. | {other} took on {subject} as an apprentice. | Young {subject} is learning a trade at last.
+b[old] : Good. Idle paws find mischief.
+b[apprentice] : Poor thing. The first year is the worst.
+b : That's good news. | Good for them. | About time.
+a : It is. | It is. | Ha.
+
+scene lf_succession
+when topic=life kind=succession
+a : {subject} has taken over the old work. | So {subject} has the shop now. | {subject} stepped into the dead one's place.
+b[old] : Life goes on. Somebody has to do the work.
+b : Will they be any good? | They'll do well. | Big boots to fill.
+a : We'll see. | I hope so. | Very big.
+
+scene lf_newcomer
+when topic=newcomer
+a : Have you met {subject}? Just arrived. | There's a new face in town. {subject}, they're called. | {subject}'s moved in down the street.
+b[old] : New blood. Good. We need it.
+b[child] : Do they have pups? Can I play with them?
+b[guard] : I'll keep an eye on them.
+b : Not yet. What are they like? | Where are they from? | Welcome to them.
+a : Quiet, so far. | Somewhere far. | Indeed.
+
+# ---------------------------------------------------------------- Festivals
+
+scene fs_today
+when topic=festival when=today
+a[child] : It's {festival}! It's {festival}! | Will there be music? Will there be sweets?
+a : Happy {festival}! | Are you going to the celebration? | {festival} at last.
+b[old] : Every year it comes round faster.
+b[innkeeper] : Busiest day of my year. Pray for me.
+b[guard] : Celebrate all you like. Just don't fight.
+b : And to you! | Wouldn't miss it. | It's been a long wait.
+a : Come and find me later. | See you there. | Too long.
+
+scene fs_soon
+when topic=festival when=soon
+a : {festival} is soon. Are you ready? | Only a few days to {festival}. | What will you wear for {festival}?
+b[child] : I can't wait! I can't!
+b[merchant] : I've ordered extra of everything.
+b : Nearly ready. | I've not even thought about it. | My old best, as always.
+a : Good. | Better start thinking. | Ha.

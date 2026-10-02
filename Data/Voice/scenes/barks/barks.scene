@@ -1,0 +1,67 @@
+# Barks: one resident, one line, to no one in particular. Merchants crying their wares, the watch, children, the
+# weather. Barks may repeat.
+
+scene bk_merchant_call
+when topic=bark a.role=merchant time=dawn|day
+a[baker] : Fresh bread! Still warm from the oven! | Loaves, rolls, buns! Get them while they're hot!
+a[fisher] : Fish! Fresh this morning! | Trout and eel, fresh caught!
+a[smith] : Knives sharpened! Hinges mended! | Good iron, fair prices!
+a[innkeeper] : Hot soup and a warm fire inside! | Ale, cold ale! Come in out of the street!
+a : Fine goods, fair prices! | Come and see, come and see! | Best in {town}! Ask anyone!
+
+scene bk_guard
+when topic=bark a.role=guard
+a[time=night] : All's quiet. Get to your beds. | Lights out, the lot of you. | Who goes there? Oh. Carry on.
+a : Move along, move along. | Keep the way clear! | No loitering by the gate.
+
+scene bk_child
+when topic=bark a.stage=young|adolescent
+a : Can't catch me! | Mama! Mama, look! | One, two, three, four... ready or not! | I'm the captain of the guard!
+
+scene bk_old
+when topic=bark a.stage=old
+a : My knees, my knees. | In my day... ah, never mind. | Too much noise. Always too much noise.
+
+scene bk_weather_rain
+when topic=bark weather=rain|storm
+a : Will this rain never stop? | Soaked to the bone, again. | Somebody get the washing in!
+
+scene bk_weather_snow
+when topic=bark weather=snow
+a : Mind the ice! | Cold enough to freeze your breath. | Snow on snow on snow.
+
+scene bk_night
+when topic=bark time=night
+a : Time I was abed. | Dark already. | Quiet tonight.
+
+scene bk_dawn
+when topic=bark time=dawn
+a : Another day. | Up and at it. | Cold morning.
+
+scene bk_tavern
+when topic=bark place=tavern
+a : Another round over here! | Who's buying? | Somebody sing something! | This ale tastes of the barrel.
+
+scene bk_market
+when topic=bark place=market
+a : Mind your purses in this crush! | Everyone's out today. | Excuse me, coming through!
+
+scene bk_farmer
+when topic=bark a.job=farmer|herder
+a : Come on, you stubborn beast! | Rain or sun, the field doesn't care. | Back to the furrows.
+
+scene bk_laborer
+when topic=bark a.job=laborer|carter
+a : Heave! | Who packed this? A rock? | Watch your backs! Load coming through!
+
+scene bk_priest
+when topic=bark a.job=priest
+a : Peace on this house. | All are welcome. | The bell will ring at dusk.
+
+scene bk_festival
+when topic=bark day=festival
+a : Happy {festival}! | Music! Somebody play music! | Best day of the year!
+
+scene bk_rest
+when topic=bark day=rest
+a : Lovely quiet day. | No work, no worries. | Just sitting. Just sitting is fine.

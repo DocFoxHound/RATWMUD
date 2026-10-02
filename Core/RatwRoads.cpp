@@ -400,7 +400,18 @@ void World::tendPrices()
             for (const auto& [item, each] : {std::pair<const char*, double>{"meal", .5}, {"herbs", .25}})
             {
                 const double enough = std::max(1.0, t.residents * each);
-                factors[t.store][item] = std::clamp(1.4 - .4 * Society::stock(*store, item) / enough, .85, 1.6);
+                const double factor = std::clamp(1.4 - .4 * Society::stock(*store, item) / enough, .85, 1.6);
+                factors[t.store][item] = factor;
+                // A change worth talking of (doc 30): a tenth or more since the last one noticed.
+                auto& seen = priceSeen_[t.id][item];
+                if (seen.day < -50)
+                    seen = {factor, calendarDays_ - 10, 0};      // First seen: the price as it is, not a change.
+                else if (std::abs(factor - seen.factor) >= .1)
+                {
+                    seen.dir = factor > seen.factor ? 1 : -1;
+                    seen.day = calendarDays_;
+                    seen.factor = factor;
+                }
             }
     society_.setPriceFactors(std::move(factors));
 }

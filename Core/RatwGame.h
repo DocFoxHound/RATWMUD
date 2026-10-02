@@ -11,6 +11,7 @@
 #include "RatwJsonDoc.h"
 #include "RatwMind.h"
 #include "RatwVoice.h"
+#include "RatwScenes.h"
 #include "RatwPg.h"
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
@@ -83,6 +84,9 @@ struct Options
     // Cheaper voices (Docs/Design/28-ai-cost.md): the speech router and exchange library (a directory with
     // router.json and library.json; empty: off), and the ledger of who answered each NPC line (empty: none kept).
     std::string voiceData, voiceLog;
+    // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the written
+    // scenes (voiceData/scenes, doc 30) and the library voice them all.
+    int ambientModelCallsPerHour = 0;
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
@@ -121,6 +125,13 @@ class Game
     mind::Context dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
                                   bool identified);
     const std::map<std::string, Entity>& characters() const { return characters_; }
+    // The written scenes (doc 30): how many are loaded, and how many a character has heard.
+    std::size_t sceneLibrarySize() const { return scenes_.size(); }
+    std::size_t scenesHeardBy(const std::string& id) const
+    {
+        const auto found = scenesHeard_.find(id);
+        return found == scenesHeard_.end() ? 0 : found->second.order.size();
+    }
     std::size_t clients() const { return clients_.size(); }
     std::uint64_t revision() const { return revision_; }
 
@@ -270,7 +281,32 @@ class Game
     std::set<std::string> voicedIncidents_;                   // Incidents an exchange was written live for.
     double polishOffUntil_ = 0;
     std::uint64_t voiceSeed_ = 0;
-    static constexpr int AmbientCallsPerHour = 10;   // Live-written exchanges; the rest come from the library.
+    // The written scenes (doc 30), and what each player character has heard of them (newest last, bounded).
+    scenes::Library scenes_;
+    struct Heard
+    {
+        std::deque<std::string> order;
+        std::set<std::string> ids;
+        void add(const std::string& id)
+        {
+            if (!ids.insert(id).second)
+                return;
+            order.push_back(id);
+            while (order.size() > 3000)
+            {
+                ids.erase(order.front());
+                order.pop_front();
+            }
+        }
+    };
+    std::map<std::string, Heard> scenesHeard_;
+    std::map<std::string, std::deque<std::string>> recentScenes_;   // By cell: scenes said there lately.
+    std::map<std::string, double> barkLast_;                         // By cell: when someone last called out there.
+    double barkLookIn_ = 0;
+    void barks(double dt);
+    // The players in a cell who can hear `speaker` say something (for the heard lists).
+    std::vector<std::string> hearersOf(const std::string& speaker) const;
+    scenes::Person scenePerson(const Entity& e) const;
 
     // Saving.
     void saveSoon();

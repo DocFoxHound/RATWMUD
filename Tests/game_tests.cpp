@@ -542,6 +542,58 @@ void mismatchedOwnersAreRefused()
 }
 } // namespace
 
+// With the written scenes (doc 30): residents talk from them, a scene heard is remembered for the character, and the
+// memory survives a save.
+void residentsTalkFromWrittenScenes()
+{
+    game::Options o;
+    o.devIdentity = true;
+    o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";
+    o.savePath = "/tmp/ratw-game-test-scenes-" + std::to_string(::getpid()) + ".json";
+    std::remove(o.savePath.c_str());
+    std::string problem;
+    {
+        game::Game g(o);
+        expect(g.start(problem), "the demo world starts: " + problem);
+        expect(g.sceneLibrarySize() >= 100, "the scenes are loaded (" + std::to_string(g.sceneLibrarySize()) + ")");
+        Client ash;
+        ash.id = 1;
+        g.connect(&ash);
+        g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+        auto& w = g.world();
+        std::string a, b;
+        for (int i = 0; i < 240 && a.empty(); ++i)
+        {
+            run(g, ash, .5);
+            for (const auto& [x, ex] : w.entities())
+                for (const auto& [y, ey] : w.entities())
+                    if (a.empty() && x < y && ex.npc && ey.npc && w.society().resident(x) && w.society().resident(y) &&
+                        ex.cellId == ey.cellId && ex.path.empty() && ey.path.empty() &&
+                        std::hypot(ex.position.x - ey.position.x, ex.position.y - ey.position.y) <= 2.5 &&
+                        w.society().resident(x)->task != "sleep" && w.society().resident(y)->task != "sleep")
+                        a = x, b = y;
+        }
+        expect(!a.empty(), "two residents stand together");
+        auto* me = w.entity("player-ash");
+        me->cellId = w.entity(a)->cellId;
+        me->position = {w.entity(a)->position.x, w.entity(a)->position.y + 1};
+        ash.events.clear();
+        for (int i = 0; i < 80 && g.scenesHeardBy("player-ash") == 0; ++i)
+            run(g, ash, .5);
+        expect(g.scenesHeardBy("player-ash") >= 1, "a written scene is spoken, even between two who barely know each other:\n" + ash.said());
+        int lines = 0;
+        for (const auto& e : ash.events)
+            lines += e.string("type") == "roleplay";
+        expect(lines >= 1, "and heard");
+        g.disconnect(&ash);
+        g.save();
+    }
+    game::Game again(o);
+    expect(again.start(problem), "restarts: " + problem);
+    expect(again.scenesHeardBy("player-ash") >= 1, "what Ash has heard is remembered across a restart");
+    std::remove(o.savePath.c_str());
+}
+
 // Talk targets (Docs/Design/29-client-polish.md, phase 4): only those spoken to answer, in turn, and the player is told
 // when a chosen wolf can't hear.
 void talkTargets()
@@ -638,6 +690,7 @@ int main()
         aDevelopmentSession();
         residentsTalkWhereAPlayerCanHear();
         talkTargets();
+        residentsTalkFromWrittenScenes();
         theGameAnswersWhatItKnows();
         accountsAndARestart();
         aRestartFromAFile();

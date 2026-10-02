@@ -1,0 +1,118 @@
+# The three cities' own talk: their lore, their powers, their weather and their streets.
+
+# ---------------------------------------------------------------- Upper Accord
+
+scene ua_concord
+when topic=lore|smalltalk region=upper_accord
+a : The Concord sat late again last night. | They say the Concord can't agree on the colour of the sky. | Another petition turned away at Concord Hall.
+b[official] : The Concord deliberates. That is its purpose.
+b[old] : The Concord was wiser when I was young. Or I was more foolish.
+b : When don't they sit late? | Ha. That's the truth. | Nobody's surprised.
+a : Never, it seems. | It is. | Nobody ever is.
+
+scene ua_wardens
+when topic=lore region=upper_accord
+a : Saw a Warden come down from the training grounds today. | The Warden Order took three new pups this season. | They say Wardens never sleep.
+b[child] : I want to be a Warden! I'll train every day!
+b[guard] : Wardens. They think they're better than the Watch.
+b[old] : My cousin tried for the Order. Washed out the first winter.
+b : Proud, the lot of them. | Lucky pups. | Everybody sleeps, eventually.
+a : Proud and useful. | Lucky and bruised. | Ha.
+
+scene ua_mountain
+when topic=lore|weather region=upper_accord
+a : Mountain's wearing its cloud hat today. | Cold coming down off the peak. | Can you see the summit? Never can, this time of year.
+b[old] : When the mountain hides, the snow comes. Mark me.
+b : It always is. | Feel it in the air. | Never.
+a : Marked. | Me too. | Ha.
+
+scene ua_fountain
+when topic=smalltalk region=upper_accord place=market|street
+a : Meet me by the plaza fountain later? | Somebody threw a boot in the fountain again. | The plaza's packed today.
+b : At dusk. | Pups. Always pups. | Market crowds.
+a : Dusk, then. | Probably. | Always.
+
+scene ua_watch
+when topic=lore region=upper_accord|accord_crossing
+a : The Accord Watch doubled the gate guard. | They're checking every cart at the main gate now. | Did the Watch catch that thief yet?
+b[guard] : We do what's needed.
+b[carter] : Checking? Robbing, more like. Twice the toll.
+b : Something's got them nervous. | Takes forever to get in. | Not that I heard.
+a : Seems so. | It does. | Typical.
+
+# ---------------------------------------------------------------- Ridgemere
+
+scene rm_rain
+when topic=smalltalk|weather region=rain_coast
+a : Rain again. | I can't remember the last dry day. | Damp in my bones, damp in my bread.
+b[old] : Dry days are for the south. We've the rain, and we're the better for it.
+b[child] : I've never seen the sun properly. Is it nice?
+b : It's Ridgemere. It always rains. | Nor can anyone. | Get used to it.
+a : I know, I know. | Nobody can. | I never will.
+
+scene rm_houses
+when topic=lore region=ridgemere
+a : House Grayrock's carts are on every road this week. | They say Vesk and Brinewater aren't speaking again. | House Fell bought up the last of the cedar.
+b[noble] : The Houses' business is not for the street.
+b[laborer] : Whatever the Houses do, we pay for it.
+b[old] : The Houses have feuded since before my grandmother's grandmother.
+b : When were they ever? | They own everything. | That's the Houses for you.
+a : Never. | Everything. | Always.
+
+scene rm_council
+when topic=lore region=ridgemere
+a : The Council of Houses sat in the Rain Hall all night. | The roof of the Rain Hall leaks on the Chancellor, they say. | Council's raised the harbour dues.
+b[official] : The Council has its reasons.
+b : Serves them right. | Two hundred years, that roof's leaked. | Of course they have.
+a : Reasons for everything. | Longer. | Of course.
+
+scene rm_sump
+when topic=smalltalk region=ridgemere
+a : Watch yourself in the Sump after dark. | Another family moved into the Sump. Nowhere else to go. | Water's up in the Sump again.
+b[guard] : We don't go into the Sump in less than fours.
+b[beggar] : The Sump's home. It's not so bad. It's bad, but not so bad.
+b : Always is, this time of year. | Poor souls. | I never go there.
+a : Wise. | They are. | Nor me.
+
+scene rm_quay
+when topic=work|smalltalk region=rain_coast place=shore|street
+a : Big ship in from the south this morning. | The smokehouses are going full tilt. | Rope's dear since Brinewater raised its price.
+b[sailor] : Rough crossing, they say. Lost a mast.
+b[fisher] : Good season for herring. Vesk will be pleased.
+b : What's it carrying? | Can smell it from here. | Everything's dear.
+a : Wine, if we're lucky. | Always can. | Everything.
+
+# ---------------------------------------------------------------- Ser Ferro
+
+scene sf_saint
+when topic=lore region=marches
+a : The bells of the Iron Saint woke the whole city. | Light a candle to the Iron Saint for me. | They're polishing the Saint's statue for the feast.
+b[priest] : The Saint hears every bell and every candle.
+b[old] : I've lit a candle every week for forty years. Still waiting.
+b : Lovely sound, though. | I will. | Every year they do.
+a : It is. | Thank you. | Every year.
+
+scene sf_prince
+when topic=lore region=ser_ferro
+a : The Prince rode through the upper tier today. | They say the Prince is ill. | The palace is hiring again.
+b[servant] : Don't believe the talk. The Prince is well. Mostly.
+b[noble] : The Prince's health is not a matter for the market.
+b[child] : Did he wave? Did you see his horse?
+b : Did you see him? | Who says? | Doing what?
+a : From a distance. | Everyone. | Scrubbing, I expect.
+
+scene sf_tiers
+when topic=smalltalk region=ser_ferro
+a : My cousin's moved a tier higher. Thinks he's nobility now. | Too many steps in this city. | The wharf smells worse than ever.
+b[noble] : The tiers keep order. Everyone knows their place.
+b[laborer] : Some of us will never see the top tier.
+b : Good for him. | Builds strong legs. | It's the river.
+a : Ha. | Too strong. | It always is.
+
+scene sf_river
+when topic=work|smalltalk region=ser_ferro place=shore|street|market
+a : River's high. | Barges stuck at the lower wharf again. | The Merchants' Guild is fining late cargoes.
+b[merchant] : The Guild fines everything. It's how they eat.
+b[old] : I remember the flood. Half the wharf went under.
+b : Rain upriver. | Again. | Of course they are.
+a : Let's hope it drops. | Every week. | Of course.

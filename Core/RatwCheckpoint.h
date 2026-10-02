@@ -20,6 +20,8 @@ struct ServerState
     std::uint64_t sequence = 1, revision = 0;
     std::map<std::string, Entity> characters;     // Every player character, online or not.
     std::map<std::string, std::string> companions;   // NPC -> the player it follows.
+    // The NPC-to-NPC scenes each player character has heard, oldest first (doc 30): so a returning player hears new ones.
+    std::map<std::string, std::vector<std::string>> scenesHeard;
     MemoryStore memories;
     SocialLedger social;
     std::map<std::string, std::vector<std::string>> commandReceipts;

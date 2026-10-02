@@ -213,6 +213,10 @@ bool Game::start(std::string& problem)
                              std::to_string(voices_.libraryEntries()) + " exchanges in the library");
         else
             note("warn", "RATW_VOICE the voice data could not be read (" + trouble + "); models answer everything");
+        if (scenes_.load(options_.voiceData + "/scenes", trouble))
+            note("info", "RATW_SCENES " + std::to_string(scenes_.size()) + " written scenes for NPCs talking to each other");
+        else
+            note("warn", "RATW_SCENES the scenes could not be read: " + trouble);
     }
     if (!options_.voiceLog.empty())
     {
@@ -1269,6 +1273,7 @@ void Game::tick(double dt)
     ++revision_;
     mind_.poll();                                   // NPC Mind answers that have arrived.
     ambient(dt);
+    barks(dt);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
@@ -2633,6 +2638,8 @@ DbStore::Build Game::capture()
     c->server.revision = revision_;
     c->server.characters = characters_;
     c->server.companions = companionOwner_;
+    for (const auto& [who, heard] : scenesHeard_)
+        c->server.scenesHeard[who].assign(heard.order.begin(), heard.order.end());
     c->server.memories = memories_;
     c->server.social = social_;
     c->server.commandReceipts = commandReceipts_;
@@ -2735,6 +2742,10 @@ void Game::load(const std::string& payload)
         if (auto* e = world_.entity(npc))
             e->leaderId = owner;
     }
+    scenesHeard_.clear();
+    for (const auto& [who, list] : state.scenesHeard)
+        for (const auto& id : list)
+            scenesHeard_[who].add(id);
     memories_ = state.memories;
     social_.entries = state.social.entries;
     social_.points = state.social.points;

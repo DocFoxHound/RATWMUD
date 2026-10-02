@@ -580,8 +580,21 @@ class World
     // what has happened in residents' lives lately (a few items each, for two game days).
     std::map<std::string, double> ambientLast_;
     std::map<std::string, std::vector<AmbientNews>> news_;
+    std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
+    struct PriceSeen
+    {
+        double factor = 1, day = -100;
+        int dir = 0;                    // The last change worth talking of: +1 dearer, -1 cheaper.
+    };
+    std::map<std::string, std::map<std::string, PriceSeen>> priceSeen_;   // Town -> item.
     void noteNews(const WorldEvent& event);
+    std::string townIdOf(const std::string& cellId) const;
     AmbientTopic ambientTopic(const std::string& a, const std::string& b);
+  public:
+    // The written scenes' conditions and blanks for where `who` stands, now (doc 30).
+    void sceneMoment(const std::string& who, std::map<std::string, std::string>& tags, std::map<std::string, std::string>& blanks);
+  private:
+    void sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider);
     // Schedules (RatwSchedules.cpp).
     std::vector<CalledFestival> festivals_;
     struct MarketSquare

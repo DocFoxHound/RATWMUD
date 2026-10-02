@@ -1,0 +1,202 @@
+# The people around: a traveller standing near, gossip, news, quarrels, friends, family, the day and the weather.
+
+# ---------------------------------------------------------------- A traveller nearby
+
+scene pl_stranger
+when topic=player known=no
+a[child] : Look! Who's that? | Is that a traveller? Ask them where they're from!
+a[guard] : Keep an eye on {subject}. I don't know that face.
+a[merchant] : {subject} looks like they've coin to spend.
+a : Who's {subject}, do you know? | Never seen {subject} before. | {subject}. Not from round here.
+b[old] : Travellers. Always looking, never buying.
+b[guard] : Probably just passing through.
+b : No idea. | Don't stare. | Passing through, I'd guess.
+a : Hm. | I'm not staring. | Probably.
+
+scene pl_known
+when topic=player known=yes
+a : There's {subject} again. | {subject}'s back, I see. | Isn't that {subject}?
+b[merchant] : Good. {subject} pays fair.
+b[guard] : Hm. I'm watching that one.
+b : So it is. | Seems to like it here. | Hello to them.
+a : It is. | Seems so. | Indeed.
+
+scene pl_stranger_whisper
+when topic=player known=no band=friends|family
+a : Don't look now, but {subject} is listening. | Talk quieter. {subject} can hear us. | {subject} has big ears, I bet.
+b : Let them listen. | Oh. Right. | Ha. Most travellers do.
+a : Fine. | Exactly. | Ha.
+
+# ---------------------------------------------------------------- Gossip
+
+scene gs_heard
+when topic=gossip
+a : Have you heard? They say {subject} {claim}. | Word is {subject} {claim}. | I heard something about {subject}. That {subject} {claim}.
+b[old] : People say all sorts. I'll believe it when I see it.
+b[guard] : Is that so? I'll remember that.
+b[child] : Really? Really really?
+b : {subject}? I'd not have thought it. | Who told you that? | No!
+a : That's what I heard. | Never you mind. | It's true, I'd wager.
+
+scene gs_secret
+when topic=gossip band=friends|family|spouses
+a : Between us, {b}: {subject} {claim}. | Don't tell a soul, but {subject} {claim}. | You'll keep this to yourself? {subject} {claim}.
+b : I won't say a word. | Truly? | You're making that up.
+a : Good. | Truly. | I'm not!
+
+scene gs_rival
+when topic=gossip band=rivals
+a : Even you should know this: {subject} {claim}. | I suppose you'd want to hear: {subject} {claim}.
+b : And why would I believe you? | Spreading tales again?
+a : Believe what you like. | Suit yourself.
+
+# ---------------------------------------------------------------- News of one's own
+
+scene nw_marriage
+when topic=news kind=marriage
+a : {news}. Can you believe it? | You'll have heard: {news}. | {news}. I'm still getting used to it.
+b : Congratulations! | I'm so glad for you. | About time!
+a : Thank you. | So am I. | Ha. Everyone says that.
+
+scene nw_loss
+when topic=news kind=loss
+a : {news}. | It's hard, {b}. {news}. | I don't know how to say it. {news}.
+b[priest] : I'll keep them in my prayers. And you.
+b : I'm so sorry. | If there's anything I can do... | That's terrible.
+a : Thank you. | There isn't. But thank you. | It is.
+
+scene nw_work
+when topic=news kind=work
+a : {news}. | Big change for me: {news}. | Did I tell you? {news}.
+b : That's wonderful. | Good for you. | How is it so far?
+a : We'll see. | Thank you. | Hard. But good.
+
+scene nw_crime
+when topic=news kind=crime
+a : {news}. I'm still shaking. | Did you hear? {news}. | {news}. In broad daylight.
+b[guard] : The watch knows. We'll see to it.
+b : That's awful. | Are you all right? | Shameful.
+a : I hope so. | I will be. | It is.
+
+# ---------------------------------------------------------------- Old quarrels
+
+scene qr_grudge
+when topic=quarrel
+a : You've a nerve showing your face here. | Still sulking about last time? | I've not forgotten what you did.
+b : I go where I please. | Me? You started it. | Nor have I forgotten what you said.
+a : Then go somewhere else. | I did not. | Good. Remember it.
+
+scene qr_blame
+when topic=quarrel
+a : This is your doing, and you know it. | Everyone knows you can't be trusted. | Keep out of my way.
+b : Prove it. | Everyone knows nothing of the sort. | Gladly.
+a : I don't have to. | Ask anyone. | See that you do.
+
+scene qr_cold
+when topic=quarrel
+a : {b}. | Oh. It's you. | Hm.
+b : {a}. | Yes. Me. | Hm yourself.
+a : Well. | Charming as ever. | ...
+
+# ---------------------------------------------------------------- Friends
+
+scene fr_easy
+when topic=friends
+a : There you are! | I was hoping I'd see you. | Sit with me a while.
+b : Here I am. | And here I am. | Gladly.
+a : How have you been? | I've missed you. | Good.
+b : Better for seeing you. | Since yesterday? | Good company makes a good day.
+
+scene fr_tease
+when topic=friends
+a : You've got straw in your fur again. | Still can't whistle, can you? | Did you lose another bet?
+b : Where? Get it off! | I can whistle fine! | I'll win the next one.
+a : Ha. There. | Prove it. | You never do.
+
+# ---------------------------------------------------------------- The day
+
+scene dy_market
+when topic=day day=market
+a : Market day. Everyone's out. | Stalls are full today. | Busy at the stalls.
+b[merchant] : My best day. I hope.
+b : I'm going for bread. | Good day for it. | Too busy for me.
+a : Get there early. | It is. | Ha.
+
+scene dy_rest
+when topic=day day=rest
+a : A quiet day, for once. | No work today. What to do with myself? | Restday. Bliss.
+b[guard] : Not for me. Never a rest day for the watch.
+b : Sleep, that's what I'll do. | Sit in the sun. | Enjoy it.
+a : Sounds right. | Good plan. | I will.
+
+scene dy_festival
+when topic=day day=festival
+a : Quite a feast for {festival}! | Have you had any of the cakes? | Music everywhere for {festival}.
+b : Wonderful, isn't it? | Too many. | I've been dancing all morning.
+a : It is. | Never too many. | Save me a dance.
+
+scene dy_weather
+when topic=day
+a : Wet enough for you? | Filthy weather. | Can't see the end of the street for this.
+b : Wet enough for fish. | Filthy. | I've seen worse.
+a : Ha. | Indeed. | Have you?
+
+# ---------------------------------------------------------------- Family
+
+scene fm_kids
+when topic=family
+a : The little ones are growing like weeds. | Have you seen how tall our youngest is now? | The pups were up all night.
+b[old] : They grow and then they're gone. Enjoy them.
+b : They are. | Nearly as tall as me! | Again?
+a : I do. | Nearly. | Again.
+
+scene fm_chores
+when topic=family band=family|spouses
+a : Whose turn is it to fetch water? | Did you mend the roof yet? | The woodpile's low.
+b : Yours. | Tomorrow. | I'll split some tonight.
+a : It was mine yesterday! | You said that last week. | Good.
+
+scene fm_elder_care
+when topic=family band=family
+a : How's Grandmother? | Father's cough is worse. | Mother keeps asking after you.
+b : Stubborn as ever. | I'll bring something for it. | I'll visit tonight.
+a : Good. | Please. | She'd like that.
+
+scene fm_spouses_love
+when topic=family band=spouses
+a : I'm glad I married you. Some days. | You're a good mate, {b}. | Come home early tonight.
+b : Only some days? | So are you. | I'll try.
+a : Most days. | Ha. | Do.
+
+# ---------------------------------------------------------------- Weather
+
+scene wt_rain
+when topic=weather weather=rain|storm
+a[farmer] : Rain at last. The fields needed it. | Too much rain. The roots will rot.
+a[fisher] : No boats out in this.
+a : Wet through. | Will it ever stop raining? | Look at that rain.
+b[old] : My bones knew it was coming.
+b[child] : Puddles! Can I jump in them?
+b : Wet through myself. | It'll stop. Eventually. | Get inside.
+a : Ha. | Eventually. | Right behind you.
+
+scene wt_snow
+when topic=weather weather=snow
+a[child] : Snow! It's snowing! | Can we make a snow wolf?
+a : Snow again. | My paws are freezing. | Look at it come down.
+b[old] : Hard winter. I said it would be.
+b : Keep moving; you'll stay warm. | Pretty, though. | I'd rather be by a fire.
+a : Easy for you. | Pretty and cold. | Me too.
+
+scene wt_fog
+when topic=weather weather=fog
+a : Can't see my own paws in this fog. | Fog's come in thick. | Who's that? Oh, it's you.
+b[guard] : Easy for thieves, a fog like this.
+b : Mind where you step. | It'll burn off by noon. | Just me.
+a : I am. | Hope so. | Ha.
+
+scene wt_clear_hot
+when topic=weather season=summer weather=clear
+a : Too hot to think. | Find some shade. | The well's low.
+b : Too hot to work. | Good idea. | It'll rain soon.
+a : Too hot for anything. | Under the tree, then. | Hope so.
