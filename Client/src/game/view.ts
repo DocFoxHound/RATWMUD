@@ -123,6 +123,8 @@ export class GameView {
     groundRedrawn() { return this.painter.terrain.rebuilds; }
     applyMotion(frame: MotionFrame) { this.state.applyMotion(frame); }
     receiveEvent(event: Json) { this.state.receiveEvent(event); }
+    /** Portrait uploads answered: said in a toast. */
+    artworkEvent(event: Json) { this.state.receiveArtwork(event); }
 
     destroy() {
         cancelAnimationFrame(this.frame);

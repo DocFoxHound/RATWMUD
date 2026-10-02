@@ -9,6 +9,7 @@ import {useGlyphRender} from '../lib/glyphFont';
 import {NpcTab} from './NpcTab';
 import {useWorld} from './world';
 import {FactionsTab} from './FactionsTab';
+import {ArtworkPanel} from './ArtworkPanel';
 import {LifePanel} from './LifePanel';
 import {dmApi, signedIn, type Action, type Character, type Me, type Players, type Target} from './api';
 
@@ -161,6 +162,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
             <WorldMap world={world} characters={data?.characters ?? []} selected={selected} onSelect={setSelected} />
             {chosen ? <CharacterPanel me={me} target={target} character={chosen} actions={data!.actions.filter(a => a.target === chosen.id)} onAct={load} />
                 : <p className="hint">Select a character in the table or on the map.</p>}
+            <ArtworkPanel me={me} target={target} />
         </aside>
     </div>;
 }

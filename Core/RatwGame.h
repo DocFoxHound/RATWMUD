@@ -12,6 +12,7 @@
 #include "RatwMind.h"
 #include "RatwVoice.h"
 #include "RatwScenes.h"
+#include "RatwArtwork.h"
 #include "RatwPg.h"
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
@@ -127,6 +128,9 @@ class Game
     const std::map<std::string, Entity>& characters() const { return characters_; }
     // The written scenes (doc 30): how many are loaded, and how many a character has heard.
     std::size_t sceneLibrarySize() const { return scenes_.size(); }
+    // A Dungeon Master's decision on an uploaded portrait: "approve" or "reject" (doc 29, phase 9).
+    Result reviewArtwork(const std::string& id, const std::string& decision, const std::string& reason);
+    const std::map<std::string, art::Meta>& artworks() const { return artworkMeta_; }
     std::size_t scenesHeardBy(const std::string& id) const
     {
         const auto found = scenesHeard_.find(id);
@@ -300,6 +304,23 @@ class Game
         }
     };
     std::map<std::string, Heard> scenesHeard_;
+    // Uploaded portraits (RatwGameArtwork.cpp; doc 29, phase 9): where they are kept, every record, uploads under way.
+    std::unique_ptr<art::Store> artwork_;
+    std::map<std::string, art::Meta> artworkMeta_;
+    struct Upload
+    {
+        std::string id, character;
+        std::vector<unsigned char> data;
+        int parts = 0, received = 0;
+        double startedAt = 0;
+    };
+    std::map<std::uint64_t, Upload> uploads_;
+    bool artworkCommand(Connection* c, const json::Value& j, const std::string& type);
+    std::string artworkOwner(const Connection* c) const;
+    bool ownsCharacter(const Connection* c, const std::string& character) const;
+    const art::Meta* portraitOf(const std::string& character) const;
+    // The portrait `viewer` may see of `character` ("" for none): approved, or their own.
+    std::string visiblePortrait(const std::string& character, const std::string& viewer) const;
     std::map<std::string, std::deque<std::string>> recentScenes_;   // By cell: scenes said there lately.
     std::map<std::string, double> barkLast_;                         // By cell: when someone last called out there.
     double barkLookIn_ = 0;

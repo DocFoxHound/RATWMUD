@@ -6,6 +6,8 @@
 #include "RatwMind.h"
 #include "RatwMotionCore.h"
 #include "RatwSections.h"
+#include "RatwArtwork.h"
+#include "RatwSystemLibs.h"
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
 #include "RatwWire.h"
@@ -16,6 +18,7 @@
 #include <fstream>
 #include <functional>
 #include <set>
+#include <filesystem>
 #include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
@@ -786,6 +789,45 @@ void webTests()
 }
 } // namespace
 
+// Portraits (RatwArtwork.h): a PNG the server writes itself, and a folder that keeps them across a restart.
+void artworkTests()
+{
+    std::vector<unsigned char> rgba(std::size_t(4) * 3 * 4);
+    for (std::size_t i = 0; i < rgba.size(); ++i)
+        rgba[i] = static_cast<unsigned char>(i * 13);
+    const auto png = art::encodePng(rgba, 4, 3);
+    expect(png.rfind("\x89PNG\r\n\x1a\n", 0) == 0 && png.find("IHDR") == 12 && png.find("IEND") != std::string::npos, "a PNG");
+    expect(art::encodePng(rgba, 5, 3).empty(), "only if the pixels fit the size");
+    const auto at = png.find("IDAT");
+    const auto length = (std::uint32_t(std::uint8_t(png[at - 4])) << 24) | (std::uint32_t(std::uint8_t(png[at - 3])) << 16) |
+                        (std::uint32_t(std::uint8_t(png[at - 2])) << 8) | std::uint8_t(png[at - 1]);
+    std::vector<std::uint8_t> raw;
+    expect(sys::uncompress(reinterpret_cast<const std::uint8_t*>(png.data() + at + 4), length, 3 * (1 + 16), raw) && raw.size() == 51 &&
+               raw[0] == 0 && raw[1] == rgba[0] && raw[50] == rgba[47],
+           "whose pixels read back exactly");
+    const std::string dir = "/tmp/ratw-art-test-" + std::to_string(::getpid());
+    std::string problem;
+    {
+        auto store = art::folderStore(dir, problem);
+        expect(store != nullptr, "a portrait folder: " + problem);
+        art::Meta m;
+        m.id = "art-test1";
+        m.account = "ash";
+        m.character = "wolf-1";
+        expect(store->put(m, png, problem), "keeps a portrait");
+        m.status = "approved";
+        expect(store->update(m), "and a decision");
+        art::Meta bad = m;
+        bad.id = "../escape";
+        expect(!store->put(bad, png, problem), "never outside its folder");
+    }
+    auto again = art::folderStore(dir, problem);
+    std::string back;
+    expect(again && again->all().size() == 1 && again->all()[0].status == "approved" && again->image("art-test1", back) && back == png,
+           "and still has them after a restart");
+    std::filesystem::remove_all(dir);
+}
+
 int main()
 {
     try
@@ -795,6 +837,7 @@ int main()
         accountOwnershipTests();
         sectionsTests();
         visibilityDeltaTests();
+        artworkTests();
         sectionKeysTests();
         mindTests();
         motionTests();

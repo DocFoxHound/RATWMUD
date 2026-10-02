@@ -7,6 +7,7 @@ import {Connection, gameUrl} from './net/connection.ts';
 import {FrontDoor} from './ui/frontDoor.ts';
 import {GameView} from './game/view.ts';
 import type {Json} from './game/json.ts';
+import {artCache} from './ui/artwork.ts';
 
 const app = document.getElementById('app')!;
 const params = new URLSearchParams(location.search);
@@ -33,10 +34,17 @@ const connection = new Connection(url, {
     snapshot: snapshot => game?.applySnapshot(snapshot),
     motion: frame => game?.applyMotion(frame),
     event: event => game?.receiveEvent(event),
+    artwork: event => {
+        if (event.type === 'artwork') artCache.receive(event);
+        door?.artworkEvent(event);
+        game?.artworkEvent(event);
+    },
 }, open => {
     if (open && params.get('identity'))
         connection.submit({type: 'hello', id: params.get('identity'), name: params.get('name') ?? params.get('identity')});
 });
+
+artCache.send = command => connection.submit(command);
 
 // Before the server says anything, the front door says so.
 door = new FrontDoor(app, command => connection.submit(command));

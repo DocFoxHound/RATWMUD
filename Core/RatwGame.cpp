@@ -262,6 +262,17 @@ bool Game::start(std::string& problem)
             return false;
     }
     storageReady_ = true;
+    {
+        // Uploaded portraits (doc 29, phase 9): beside the save, or in the database. Not needed to play.
+        std::string trouble;
+        artwork_ = live ? art::databaseStore(options_.conninfo, liveWorldId_, trouble)
+                   : options_.savePath.empty() ? art::memoryStore() : art::folderStore(options_.savePath + ".art", trouble);
+        if (artwork_)
+            for (const auto& m : artwork_->all())
+                artworkMeta_[m.id] = m;
+        else
+            note("warn", "RATW_ARTWORK portraits can't be uploaded: " + trouble);
+    }
     load(store_->load());
     if (!storageReady_)
     {
@@ -536,6 +547,14 @@ void Game::applyDmActions(double dt)
             }
             else
                 outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+        }
+        else if (kind == "artwork.review")
+        {
+            // A Dungeon Master's decision on an uploaded portrait: payload {"decision": "approve"|"reject", "reason"}.
+            Value payload;
+            std::string problem;
+            json::parse(row[4] ? *row[4] : "{}", payload, problem);
+            outcome = reviewArtwork(target, payload.string("decision"), payload.string("reason"));
         }
         else if (kind == "festival.call")
         {
@@ -944,6 +963,11 @@ void Game::lobby(Connection* c, bool ok, const std::string& message)
             item.add("name", character.name);
             item.add("age", character.age);
             item.add("appearance", wire::appearance(character.appearance));
+            if (const auto* portrait = portraitOf(id))
+            {
+                item.add("artwork", portrait->id);
+                item.add("artworkStatus", portrait->status);
+            }
             roster.push(item);
         }
     e.add("characters", roster);
@@ -1459,6 +1483,11 @@ void Game::sendSnapshot(Connection* c)
     root.add("revision", revision_);
     stampFrame(c, root, view.cell.id);
     auto self = wire::entity(*world_.entity(id), view.time);
+    if (const auto* portrait = portraitOf(id))
+    {
+        self.set("artwork", portrait->id);           // The owner sees their own at once, and how it stands.
+        self.set("artworkStatus", portrait->status);
+    }
     self.set("socialXp", social_.points[id]);
     self.set("socialLevel", social_.level(id));
     self.set("hearing", view.self.hearing * view.self.earHealth * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
@@ -1581,6 +1610,9 @@ void Game::sendSnapshot(Connection* c)
     for (const auto& e : view.entities)
     {
         auto j = wire::entity(e, view.time);
+        if (!e.npc)
+            if (const auto portrait = visiblePortrait(e.id, id); !portrait.empty())
+                j.set("artwork", portrait);         // Approved portraits only (doc 29, phase 9).
         auto actions = Value::array();
         actions.push("inspect");
         if (e.transient)
@@ -2158,6 +2190,8 @@ void Game::command(Connection* c, const std::string& raw)
     const std::string type = j.string("type");
     if (accountCommand(c, j, type))
         return;
+    if (artworkCommand(c, j, type))
+        return;
     if (type == "hello")
     {
         login(c, j);
@@ -2482,6 +2516,8 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("name", other->name);
             e.add("title", other->name);
             e.add("appearance", wire::appearance(other->appearance));
+            if (const auto portrait = visiblePortrait(other->id, id); !portrait.empty())
+                e.add("artwork", portrait);
             e.add("lifeStage", lifeStageName(lifeStage(other->age)));
             e.add("shoulderHeightCm", shoulderHeightCm(other->appearance, other->age));
             e.add("description", other->description);

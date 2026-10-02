@@ -47,7 +47,8 @@ MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
 ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm', 'npc.revive': 'dm',
-           'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm'}
+           'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
+           'artwork.review': 'dm'}
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -346,6 +347,57 @@ class DungeonMaster:
                 when = 'today' if not in_days else f'in {in_days} day{"s" if in_days != 1 else ""}'
                 self.audit(conn, who['username'], 'festival.call', community,
                            f'{target.upper()}: a festival{" (" + name + ")" if name else ""} in {community}, {when}')
+        return {'id': action, 'status': 'queued'}
+
+    # -- uploaded portraits (Docs/Design/29-client-polish.md, phase 9) -------------
+    def artwork(self, target):
+        """Portraits waiting for a decision (new or reported), with the image, and the latest decisions."""
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            if not conn.execute("SELECT to_regclass('game.artwork') IS NOT NULL").fetchone()[0]:
+                return {'target': target, 'ready': False, 'pending': [], 'recent': [], 'actions': []}
+            names = dict(conn.execute('SELECT key, name FROM game.characters WHERE world_id = %s', (world,)).fetchall())
+
+            def row(r):
+                out = {'id': r[0], 'account': r[1], 'character': r[2], 'name': names.get(r[2], r[2]), 'status': r[3],
+                       'reason': r[4], 'reported': r[5], 'at': r[6].isoformat()}
+                if len(r) > 7:
+                    out['png'] = r[7]
+                return out
+            pending = [row(r) for r in conn.execute('''
+                SELECT id, account, character_id, status, reason, reported, created_at, png_base64 FROM game.artwork
+                WHERE world_id = %s AND status = 'pending' ORDER BY reported DESC, created_at LIMIT 50''', (world,)).fetchall()]
+            recent = [row(r) for r in conn.execute('''
+                SELECT id, account, character_id, status, reason, reported, coalesce(reviewed_at, created_at) FROM game.artwork
+                WHERE world_id = %s AND status <> 'pending' ORDER BY coalesce(reviewed_at, created_at) DESC LIMIT 20''', (world,)).fetchall()]
+            actions = [{'id': r[0], 'target': r[1], 'payload': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
+                       for r in conn.execute('''SELECT id, target_id, payload, requested_by, requested_at, status, result
+                                                FROM dm.actions WHERE kind = 'artwork.review' ORDER BY id DESC LIMIT 20''').fetchall()]
+        return {'target': target, 'ready': True, 'pending': pending, 'recent': recent, 'actions': actions}
+
+    def review_artwork(self, who, target, art_id, decision, reason=''):
+        """Asks the game server to approve or reject a portrait; it tells the owner and stores the decision."""
+        self.allowed(who, 'artwork.review')
+        art_id, decision, reason = str(art_id), str(decision), str(reason or '').strip()
+        if decision not in ('approve', 'reject'):
+            raise DMError('Approve or reject.')
+        if len(reason) > 400 or any(ord(c) < 32 for c in reason):
+            raise DMError('A reason is at most 400 plain characters.')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                found = conn.execute('SELECT character_id FROM game.artwork WHERE world_id = %s AND id = %s',
+                                     (world, art_id)).fetchone() if world else None
+                if not found:
+                    raise DMError('No such portrait.', 404)
+                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
+                                         VALUES ('artwork.review', %s, %s, %s) RETURNING id''',
+                                      (art_id, json.dumps({'decision': decision, 'reason': reason}), who['username'])).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                self.audit(conn, who['username'], 'artwork.review', art_id,
+                           f'{target.upper()}: {decision} the portrait of {found[0]}' + (f' — {reason}' if reason else ''))
         return {'id': action, 'status': 'queued'}
 
     # -- chronicles (Docs/Design/26-living-npcs.md, Phase 8) ----------------------
@@ -967,6 +1019,12 @@ def make_server(port=8766, dm=None):
                 data = self.body()
                 return self.reply(200, dm.call_festival(who, str(data.get('target', 'prod')), data.get('community', ''),
                                                         data.get('name', ''), data.get('inDays', 0)))
+            if method == 'GET' and path == '/api/artwork':
+                return self.reply(200, dm.artwork(self.target(query)))
+            if method == 'POST' and path == '/api/artwork/review':
+                data = self.body()
+                return self.reply(200, dm.review_artwork(who, str(data.get('target', 'prod')), str(data.get('id', '')),
+                                                         str(data.get('decision', '')), str(data.get('reason', ''))))
             if method == 'GET' and path == '/api/chronicle':
                 return self.reply(200, dm.chronicle(self.target(query), query.get('id', [''])[0]))
             if method == 'POST' and path == '/api/chronicle/story':

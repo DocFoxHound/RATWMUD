@@ -77,6 +77,14 @@ export interface WorldCalendar {
     weekdays: string[];
 }
 
+/** Uploaded portraits waiting for a decision, and the latest decisions (Docs/Design/29-client-polish.md, phase 9). */
+export interface Portrait { id: string; account: string; character: string; name: string; status: 'pending' | 'approved' | 'rejected';
+    reason: string; reported: boolean; at: string; png?: string }
+export interface Portraits {
+    target: Target; ready: boolean; pending: Portrait[]; recent: Portrait[];
+    actions: {id: number; target: string; payload: {decision?: string; reason?: string}; by: string; at: string; status: Action['status']; result: string}[];
+}
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
@@ -115,5 +123,8 @@ export const dmApi = {
     calendar: (target: Target) => call<WorldCalendar>(`api/calendar?target=${target}`),
     callFestival: (target: Target, community: string, name: string, inDays: number) =>
         call<{id: number}>('api/festivals/call', {target, community, name, inDays}),
+    artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
+    reviewArtwork: (target: Target, id: string, decision: 'approve' | 'reject', reason: string) =>
+        call<{id: number}>('api/artwork/review', {target, id, decision, reason}),
     action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`api/actions/${id}?target=${target}`),
 };

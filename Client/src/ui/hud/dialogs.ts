@@ -8,6 +8,7 @@ import {postureLabel} from '../../game/labels.ts';
 import type {GameState} from '../../game/state.ts';
 import {button, el, setClass} from './dom.ts';
 import {noRect} from './story.ts';
+import {artCache} from '../artwork.ts';
 
 export class Dialogs {
     private s: GameState;
@@ -37,7 +38,8 @@ export class Dialogs {
         }
         // What the open sheet shows; it is built again only when this changes (a trade's stock, a new colour...).
         const self = obj(s.snapshot, 'self');
-        const key = JSON.stringify([m, m === 'inspect' ? s.inspectedText : '', m === 'character' ? self : '',
+        const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork') : '';
+        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? self : '',
             m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.storyWidth,
@@ -64,12 +66,12 @@ export class Dialogs {
         el('h1', '', this.panel, title);
     }
 
-    private portrait(parent: HTMLElement, appearance: Json | null, age: number) {
+    private portrait(parent: HTMLElement, appearance: Json | null, age: number, artwork = '') {
         const canvas = el('canvas', 'portrait', parent);
         canvas.width = 500;
         canvas.height = 340;
         const c = canvas.getContext('2d');
-        if (c) drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height);
+        if (c) drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork || undefined);
         return canvas;
     }
 
@@ -81,7 +83,9 @@ export class Dialogs {
             `(${envNumber(self, 'effectiveDexterity', 0, 100, dex).toFixed(1)} effective)   WISDOM ${envNumber(self, 'wisdom', 0, 100, 50).toFixed(0)}`);
         const cols = el('div', 'sheet-cols', this.panel);
         const left = el('div', 'sheet-col', cols);
-        this.portrait(left, this.s.portraitAppearance(), this.s.portraitAge());
+        this.portrait(left, this.s.portraitAppearance(), this.s.portraitAge(), str(self, 'artwork'));
+        if (str(self, 'artworkStatus') === 'pending')
+            el('div', 'label gold', left, 'YOUR PORTRAIT IS WAITING FOR A DUNGEON MASTER · ONLY YOU SEE IT');
         el('div', 'label muted', left, num(self, 'shoulderHeightCm') > 0
             ? `${str(obj(self, 'appearance'), 'stature', 'average').toUpperCase()} STATURE · ${num(self, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER`
             : 'YOUR SAVED APPEARANCE');
@@ -222,8 +226,12 @@ export class Dialogs {
         if (s.portraitAppearance()) {
             const cols = el('div', 'sheet-cols', this.panel);
             const left = el('div', 'sheet-col', cols);
-            this.portrait(left, s.portraitAppearance(), s.portraitAge());
             const inspected = s.inspectedCharacter;
+            this.portrait(left, s.portraitAppearance(), s.portraitAge(), str(inspected, 'artwork'));
+            if (str(inspected, 'artwork')) {
+                const report = button('Report this portrait', 'secondary', left, () => s.reportPortrait(str(inspected, 'artwork')));
+                report.title = 'If a picture is not fit to be seen, a Dungeon Master will look at it again.';
+            }
             el('div', 'label sage', left, str(inspected, 'lifeStage', 'adult').toUpperCase() + (num(inspected, 'shoulderHeightCm') > 0
                 ? ` · ${num(inspected, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER` : ''));
             el('p', 'pre', el('div', 'sheet-col', cols), s.inspectedText);

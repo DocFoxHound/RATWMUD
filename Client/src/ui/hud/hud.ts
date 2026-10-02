@@ -11,6 +11,7 @@ import type {EntityView, GameState} from '../../game/state.ts';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
 import {MapRenderer, MapScales} from '../../game/minimap.ts';
+import {artCache} from '../artwork.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {noRect, StoryPanel} from './story.ts';
@@ -279,14 +280,14 @@ export class Hud {
                 const arrow = Arrows[((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8];
                 setText(r.where, d < 1.5 ? 'here' : `${arrow} ${d.toFixed(0)}`);
             }
-            const look = JSON.stringify([e.appearance, e.lifeStage]);
+            const look = JSON.stringify([e.appearance, e.lifeStage, e.artwork, !!artCache.get(e.artwork)]);
             if (r.drawn !== look) {
                 const c = r.portrait.getContext('2d');
                 if (c) {
                     c.clearRect(0, 0, r.portrait.width, r.portrait.height);
                     const age = e.lifeStage === 'young' ? 6 : e.lifeStage === 'adolescent' ? 13 : e.lifeStage === 'old' ? 65 : 18;
                     // Drawn once its sheet has loaded; until then the row shows its initial.
-                    if (drawPortrait(c, this.portraits, e.appearance, age, 0, 0, r.portrait.width, r.portrait.height)) r.drawn = look;
+                    if (drawPortrait(c, this.portraits, e.appearance, age, 0, 0, r.portrait.width, r.portrait.height, e.artwork)) r.drawn = look;
                 }
             }
         }

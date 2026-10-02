@@ -4,6 +4,7 @@
 import {CoatNames} from './theme.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
 import {MaskNames, Masks} from './wolfArt.ts';
+import {artCache, sendPortrait, squarePixels} from './artwork.ts';
 
 // Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
 const CoatSwatches = ['#f4efe6', '#e8e1d3', '#ddd2bd', '#cfc0a2', '#c2ab84', '#b39a72', '#a3865f', '#8e7350', '#7a6142', '#655037',
@@ -90,6 +91,7 @@ export class FrontDoor {
         this.root = el('div', {className: 'door'}, stage);
         parent.append(this.root);
         this.portraits.onReady = () => this.drawPortrait();
+        artCache.onReady = () => this.drawPortrait();
         this.timer = window.setInterval(() => this.tick(), 500);
         window.addEventListener('keydown', this.onKey);
         window.addEventListener('resize', this.fit);
@@ -273,9 +275,39 @@ export class FrontDoor {
             el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf`
                 : 'Choose an empty slot to make your first wolf.'),
             canvas,
-            el('p', {className: 'muted large'}, 'The portrait belongs to the sheet. On the map, your presence stays W> — simple, expressive, and yours to imagine.'),
+            c ? this.portraitControls(c) : el('p', {className: 'muted large'}, ''),
             enter);
         return el('div', {className: 'door-row'}, slots, detail);
+    }
+
+    /** Under a character's portrait: their own picture (uploaded, cropped square, approved by a DM before others see it). */
+    private portraitControls(c: Json): HTMLElement {
+        const status = str(c, 'artworkStatus');
+        const note = el('p', {className: 'muted'}, status === 'pending' ? 'Your own portrait is waiting for a Dungeon Master: only you see it until then.'
+            : status === 'approved' ? 'Your own portrait is shown to everyone.' : 'Use your own artwork as this character\'s portrait, if you like.');
+        const file = el('input', {type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif'});
+        file.style.display = 'none';
+        const choose = this.button(status ? 'REPLACE MY PORTRAIT' : 'UPLOAD MY OWN PORTRAIT', () => file.click());
+        file.addEventListener('change', async () => {
+            const picked = file.files?.[0];
+            if (!picked) return;
+            try {
+                const {pixels} = await squarePixels(picked);
+                this.setMessage('Uploading your portrait…');
+                sendPortrait(pixels, str(c, 'id'), command => this.submit(command));
+            } catch (error) {
+                this.setMessage(error instanceof Error ? error.message : 'That picture could not be read.', true);
+            }
+        });
+        return el('div', {className: 'portrait-controls'}, note, choose, file);
+    }
+
+    /** Portrait uploads answered (the lobby event that follows refreshes the roster). */
+    artworkEvent(e: Json) {
+        const type = str(e, 'type');
+        if (type === 'artworkError') this.setMessage(str(e, 'text'), true);
+        else if (type === 'artworkUploaded') this.setMessage(str(e, 'text'));
+        else if (type === 'artwork') this.drawPortrait();
     }
 
     private enter() {
@@ -539,7 +571,8 @@ export class FrontDoor {
         const creating = this.page === 'creator' || this.page === 'review';
         const appearance = creating ? this.draftAppearance : obj(this.selected(), 'appearance');
         const age = creating ? this.draftAge : num(this.selected(), 'age', 18);
-        if (!drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height)) {
+        const artwork = creating ? undefined : str(this.selected(), 'artwork') || undefined;
+        if (!drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork)) {
             const a = readAppearance(appearance);
             if (!a || this.portraits.failed(a.species)) {
                 c.fillStyle = '#a6a699';

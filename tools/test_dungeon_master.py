@@ -485,5 +485,41 @@ class CalendarTests(NpcFixture):
         self.assertEqual(403, raised.exception.status)
 
 
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class ArtworkTests(Fixture):
+    """Uploaded portraits (Docs/Design/29-client-polish.md, phase 9): the review queue and a queued decision."""
+
+    def upload(self, art_id, status='pending', reported=False):
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('''INSERT INTO game.artwork (world_id, id, account, character_id, status, sha256, png_base64, reported)
+                            VALUES ('greyfen', %s, 'ada', 'player-ada', %s, %s, 'iVBORw0KGgo=', %s)''',
+                         (art_id, status, 'ab' * 32, reported))
+
+    def test_the_queue_and_a_decision(self):
+        self.upload('art-one')
+        self.upload('art-two', reported=True)
+        self.upload('art-old', status='approved')
+        queue = self.dm.artwork('dev')
+        self.assertTrue(queue['ready'])
+        self.assertEqual(['art-two', 'art-one'], [p['id'] for p in queue['pending']])       # Reported first.
+        self.assertEqual(('Ada', 'iVBORw0KGgo='), (queue['pending'][0]['name'], queue['pending'][0]['png']))
+        self.assertEqual(['art-old'], [p['id'] for p in queue['recent']])
+        self.assertNotIn('png', queue['recent'][0])
+        master = self.sign_in('dm-master')
+        queued = self.dm.review_artwork(master, 'dev', 'art-one', 'reject', 'Not a wolf.')
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            row = conn.execute('SELECT kind, target_id, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(('artwork.review', 'art-one', {'decision': 'reject', 'reason': 'Not a wolf.'}), row)
+        self.assertEqual([queued['id']], [a['id'] for a in self.dm.artwork('dev')['actions']])
+        for bad in (lambda: self.dm.review_artwork(master, 'dev', 'art-none', 'approve'),
+                    lambda: self.dm.review_artwork(master, 'dev', 'art-one', 'maybe'),
+                    lambda: self.dm.review_artwork(master, 'dev', 'art-one', 'reject', 'x' * 401)):
+            with self.assertRaises(D.DMError):
+                bad()
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.review_artwork(self.sign_in('dm-viewer'), 'dev', 'art-one', 'approve')
+        self.assertEqual(403, raised.exception.status)
+
+
 if __name__ == '__main__':
     unittest.main()

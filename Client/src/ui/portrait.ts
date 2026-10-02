@@ -4,6 +4,7 @@
 import {CoatColors} from './theme.ts';
 import {isObject, type Json} from '../game/json.ts';
 import {drawWolf} from './wolfArt.ts';
+import {artCache} from './artwork.ts';
 
 export interface Appearance {
     species: string;
@@ -155,7 +156,17 @@ export class Portraits {
  * standing near the bottom. Returns false if there is nothing to draw (yet).
  */
 export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits, appearanceJson: unknown, age: number,
-    x: number, y: number, w: number, h: number): boolean {
+    x: number, y: number, w: number, h: number, artwork?: string): boolean {
+    // An uploaded portrait the viewer may see (doc 29, phase 9): drawn square, centred, in place of the wolf.
+    const picture = artCache.get(artwork);
+    if (picture) {
+        const side = Math.min(w, h);
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(picture, x + (w - side) / 2, y + (h - side) / 2, side, side);
+        ctx.restore();
+        return true;
+    }
     const appearance = readAppearance(appearanceJson);
     if (!appearance) return false;
     const image = portraits.get(appearance, age);

@@ -594,6 +594,101 @@ void residentsTalkFromWrittenScenes()
     std::remove(o.savePath.c_str());
 }
 
+// Uploaded portraits (Docs/Design/29-client-polish.md, phase 9): sent in parts as raw pixels, encoded by the server,
+// seen by their owner at once and by others only once approved; a report hides it again.
+std::string base64(const std::string& in)
+{
+    static const char* d = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string out;
+    for (std::size_t i = 0; i < in.size(); i += 3)
+    {
+        const unsigned n = (unsigned(std::uint8_t(in[i])) << 16) | (i + 1 < in.size() ? unsigned(std::uint8_t(in[i + 1])) << 8 : 0u) |
+                           (i + 2 < in.size() ? unsigned(std::uint8_t(in[i + 2])) : 0u);
+        out += d[(n >> 18) & 63];
+        out += d[(n >> 12) & 63];
+        out += i + 1 < in.size() ? d[(n >> 6) & 63] : '=';
+        out += i + 2 < in.size() ? d[n & 63] : '=';
+    }
+    return out;
+}
+
+void uploadedPortraits()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash, wren;
+    ash.id = 1;
+    wren.id = 2;
+    g.connect(&ash);
+    g.connect(&wren);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    g.command(&wren, cmd({{"type", "hello"}, {"id", "wren"}, {"name", "Wren"}}));
+    auto* w = g.world().entity("player-wren");
+    const auto* a = g.world().entity("player-ash");
+    w->cellId = a->cellId;
+    w->position = {a->position.x + 1, a->position.y};
+    std::string pixels(std::size_t(256) * 256 * 4, '\0');
+    for (std::size_t i = 0; i < pixels.size(); ++i)
+        pixels[i] = char(i % 4 == 3 ? 255 : (i * 7) % 251);
+    const auto upload = [&](Client& who, const std::string& character, const std::string& data, int parts) {
+        const std::size_t size = (data.size() + parts - 1) / parts;
+        for (int part = 0; part < parts; ++part)
+            g.command(&who, cmd({{"type", "artwork_upload"}, {"characterId", character}, {"uploadId", "u1"}, {"part", part}, {"parts", parts},
+                                 {"data", base64(data.substr(std::size_t(part) * size, size))}}));
+    };
+    upload(wren, "player-ash", pixels, 8);
+    expect(wren.last("artworkError") != nullptr, "nobody uploads a portrait for another's character");
+    upload(ash, "player-ash", pixels.substr(0, 1000), 1);
+    expect(ash.last("artworkError") && ash.last("artworkError")->string("text").find("256") != std::string::npos, "a portrait is 256 pixels square");
+    g.command(&ash, cmd({{"type", "artwork_upload"}, {"characterId", "player-ash"}, {"uploadId", "u2"}, {"part", 1}, {"parts", 8},
+                         {"data", base64(pixels.substr(0, 1000))}}));
+    expect(ash.last("artworkError") && ash.last("artworkError")->string("text").find("first part") != std::string::npos,
+           "an upload starts from its first part");
+    upload(ash, "player-ash", pixels, 8);
+    const auto* first = ash.last("artworkUploaded");
+    expect(first && first->string("status") == "pending", "eight parts make a portrait, waiting for approval");
+    const std::string replaced = first->string("id");
+    upload(ash, "player-ash", pixels, 8);
+    const auto* done = ash.last("artworkUploaded");
+    expect(done && done->string("id") != replaced && g.artworks().at(replaced).status == "rejected",
+           "a newer upload replaces one still waiting");
+    const std::string id = done->string("id");
+    run(g, ash, .5);
+    run(g, wren, .5);
+    expect(ash.snapshots.back()["self"].string("artwork") == id, "its owner sees it at once");
+    bool hidden = true;
+    for (const auto& e : wren.snapshots.back().array("entities"))
+        if (e.string("id") == "player-ash")
+            hidden = !e.has("artwork");
+    expect(hidden, "others don't, until it's approved");
+    g.command(&wren, cmd({{"type", "artwork_get"}, {"id", id}}));
+    expect(wren.last("artwork") && wren.last("artwork")->boolean("denied"), "nor can they fetch it");
+    g.command(&ash, cmd({{"type", "artwork_get"}, {"id", id}}));
+    expect(ash.last("artwork") && ash.last("artwork")->string("png").rfind("iVBORw0KGgo", 0) == 0, "the owner gets a PNG, made by the server");
+    expect(g.reviewArtwork(id, "approve", "").ok, "a DM approves it");
+    run(g, wren, .5);
+    bool shown = false;
+    for (const auto& e : wren.snapshots.back().array("entities"))
+        if (e.string("id") == "player-ash")
+            shown = e.string("artwork") == id;
+    expect(shown, "and now everyone sees it");
+    g.command(&wren, cmd({{"type", "artwork_report"}, {"id", id}, {"reason", "not a wolf"}}));
+    expect(wren.last("artworkReported") && g.artworks().at(id).status == "pending" && g.artworks().at(id).reported,
+           "a report sends it back to the DM, hidden again");
+    expect(!g.reviewArtwork(id, "maybe", "").ok && !g.reviewArtwork("art-nothing", "approve", "").ok, "only real decisions on real portraits");
+    for (int i = 0; i < 10; ++i)
+        upload(ash, "player-ash", pixels, 8);
+    g.command(&ash, cmd({{"type", "artwork_upload"}, {"characterId", "player-ash"}, {"uploadId", "u3"}, {"part", 0}, {"parts", 8},
+                         {"data", base64(pixels.substr(0, 1000))}}));
+    expect(g.artworks().size() == 10 && ash.last("artworkError")->string("text").find("one day") != std::string::npos,
+           "ten uploads a day, no more");
+    g.disconnect(&ash);
+    g.disconnect(&wren);
+}
+
 // Talk targets (Docs/Design/29-client-polish.md, phase 4): only those spoken to answer, in turn, and the player is told
 // when a chosen wolf can't hear.
 void talkTargets()
@@ -691,6 +786,7 @@ int main()
         residentsTalkWhereAPlayerCanHear();
         talkTargets();
         residentsTalkFromWrittenScenes();
+        uploadedPortraits();
         theGameAnswersWhatItKnows();
         accountsAndARestart();
         aRestartFromAFile();

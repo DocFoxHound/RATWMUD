@@ -11,7 +11,7 @@ each. The towns and NPC conversations agreed the same day are doc 30.
 | 4 | Talk targets: choose who you are speaking to, several at once | Built 2026-10-02 |
 | 7 | Regional weather: moving systems that fade with distance, driving the simulation | Built 2026-10-02 |
 | 8 | A real minimap: true positions and sizes, coloured by terrain | Built 2026-10-02 |
-| 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Creator built 2026-10-02; uploads next |
+| 9 | Character creation: layered coats and markings, uploaded portraits a DM approves | Built 2026-10-02 |
 
 (Phases 5 and 6, towns and NPC conversations, are in doc 30.)
 
@@ -173,7 +173,7 @@ the current cell's size (so everything further piled up at the edges), interiors
 Tests: `game.test.ts` (places drawn at their true offset and size around the wolf, a place never seen not drawn);
 `travel_tests` (the nearby map includes a visited place a few cells away).
 
-## Phase 9: Character creation (the creator built 2026-10-02; uploads next)
+## Phase 9: Character creation and uploaded portraits (built 2026-10-02)
 
 **A richer appearance** (`Core/RatwAppearance.h`, `wire::readAppearance`; the client's `readAppearance`): beyond the
 nine fields every appearance has, optional `coat`, `gradientTint`, `markingTint` and `eyes` ("#rrggbb"), `build`
@@ -197,3 +197,28 @@ and **Randomise**. The review lists the choices before creating.
 
 Tests: `wire_tests` `appearanceV2Tests` (written only when chosen, read back, bad colours, builds, fields, seven
 markings, unknown masks and strengths refused, older appearances unchanged); the front-door browser tests.
+
+**Uploaded portraits** (`Core/RatwArtwork.*`, `Core/RatwGameArtwork.cpp`, `Client/src/ui/artwork.ts`). The plan had a
+`POST /api/artwork` route that decoded the file on the server with a vendored image library. That was changed so no
+image parser runs on the server at all. The browser decodes the picture, crops the middle square and scales it to
+256×256. It then sends the raw RGBA pixels over the signed-in WebSocket, as `artwork_upload` in eight base64 parts
+(each well under the 64 KB command cap), in order, finished within two minutes. The server checks the parts add up
+to exactly 256×256×4 bytes and encodes the PNG itself (zlib, no metadata). It keeps the SHA-256, so nothing from the
+uploaded file survives. An account may upload ten in a day, and a character's newer upload replaces one still waiting.
+Each image is an `art-…` ID. File worlds keep them in a folder beside the save (`<save>.art/`, with
+`index.json`); database worlds keep them in `game.artwork` (migration 0027, the PNG as base64).
+
+**Who sees it.** The newest portrait of a character that hasn't been rejected is the character's portrait. Entities,
+the roster, the closer look and `self` carry its ID only when it is approved, or when the viewer owns it, so the owner
+sees theirs at once and everyone else sees the drawn wolf until a Dungeon Master approves. The client fetches an image
+once by ID (`artwork_get`, refused for anyone else's pending or any rejected one) and keeps it. The closer-look sheet
+has **Report**, which sends an approved portrait back to pending and hides it again.
+
+**Review** (`tools/dungeon_master.py` `artwork`/`review_artwork`; `Editor/src/dm/ArtworkPanel.tsx` in the Players
+workspace). The DM sees what is waiting, reported first, with the image. Approving or rejecting with a reason
+queues `artwork.review` on `dm.actions`. The game applies it within a second (`Game::reviewArtwork`), stores the
+decision, and tells the owner if they're on. File worlds have no DM queue, so they review from tests and code only.
+
+Tests: `game_tests` `uploadedPortraits` (parts, order, size, ownership, the daily limit, replacement, who sees the ID
+and the image, report, review); `server_parts` `artworkTests` (the PNG encoder against a decoder, folder and memory
+stores, safe IDs); `test_dungeon_master` `ArtworkTests` (the queue, a queued decision, bad input, viewers refused).

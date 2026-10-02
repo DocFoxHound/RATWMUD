@@ -19,6 +19,7 @@ export interface SessionView {
     snapshot(snapshot: Json): void;       // Whole, as if sent whole.
     motion(frame: MotionFrame): void;
     event(event: Json): void;             // Anything else, once in the world.
+    artwork?(event: Json): void;          // Uploaded portraits, in the lobby as in the world (doc 29, phase 9).
 }
 
 const str = (o: Json | undefined, k: string) => (o && typeof o[k] === 'string' ? (o[k] as string) : '');
@@ -90,6 +91,10 @@ export class Session {
             this.enteredWorld = true;
             this.remember(event);
             this.view.enter(event);
+            return;
+        }
+        if (type.startsWith('artwork')) {
+            this.view.artwork?.(event);
             return;
         }
         if (!this.enteredWorld) return;

@@ -45,6 +45,7 @@ export interface EntityView {
     hostile: boolean;
     appearance: Json | null;
     lifeStage: string;
+    artwork: string;            // An uploaded portrait this player may see ('' for none).
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -315,7 +316,7 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    appearance: null, lifeStage: 'adult'};
+                    appearance: null, lifeStage: 'adult', artwork: ''};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
@@ -325,6 +326,7 @@ export class GameState {
             view.hostile = bool(e, 'hostile');
             view.appearance = obj(e, 'appearance');
             view.lifeStage = str(e, 'lifeStage', 'adult');
+            view.artwork = str(e, 'artwork');
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
             this.applyPose(view, e, poseTime);
@@ -714,6 +716,17 @@ export class GameState {
             return true;
         }
         return false;
+    }
+
+    receiveArtwork(e: Json) {
+        const type = str(e, 'type');
+        if (type === 'artworkError') this.showToast(str(e, 'text'));
+        else if (type === 'artworkUploaded') this.showToast(str(e, 'text'));
+        else if (type === 'artworkReported') this.showToast('Reported. A Dungeon Master will look at it again.');
+    }
+
+    reportPortrait(id: string) {
+        if (id) this.send({type: 'artwork_report', id, reason: 'reported from a closer look'});
     }
 
     /** A row of the In Sight list clicked: a resident is chosen (or let go) to speak to; anyone else, their menu. */
