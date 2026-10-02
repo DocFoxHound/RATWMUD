@@ -5,7 +5,7 @@ Ridgemere: the five great Houses (their families, stewards, servants and workfor
 officials, the City Watch, shopkeepers, and the Sump. Lord Grayrock travels the Accord Road on House business and is
 almost never home; Lady Grayrock almost never leaves it.
 
-Ser Ferro: the Prince and his court, the palace guard, the Archprelate and the cathedral clergy, the elite families of
+Ser Ferro: the King and his court, the palace guard, the Archprelate and the cathedral clergy, the elite families of
 the Heights, the guilds, shopkeepers and craftsfolk of the middle town, the city guard, and the bargemen and poor of
 the wharf.
 """
@@ -82,7 +82,7 @@ SF_HOOKS = ['hopes a child will be taken into the palace household',
             'believes the Iron Saint once answered a prayer, and has never said which',
             'has a sweetheart in a palazzo on the Heights and a family who must not know',
             'remembers the flood that drowned half the wharf, and watches the river',
-            'is certain the Prince\'s heir will be a better ruler than his father',
+            'is certain the King\'s heir will be a better ruler than his father',
             'keeps a shop account book that does not quite add up',
             'is saving for a house one tier higher']
 
@@ -481,18 +481,18 @@ def ser_ferro(project, manifest, city, world, rng):
     # -- The palace and the court ------------------------------------------------------------------------------
     pal = B['The Palace of Ser Ferro']
     court, royal, kitchens = (r['id'] for r in pal['rooms'])
-    royals = [('Aurelio', 'male', 58, 'holding court', 'Prince of Ser Ferro, of the House of Castellane',
+    royals = [('Aurelio', 'male', 58, 'holding court', 'King of Ser Ferro, of the House of Castellane',
                'Magnificent, vain and genuinely devoted to his city; he remembers every slight and every kindness.',
                'Aurelio has ruled for thirty years and rebuilt the cathedral\'s great windows at his own cost; he '
                'fears his heir is too clever and his second son not clever enough.'),
-              ('Livia', 'female', 54, 'receiving at court', 'Princess of Ser Ferro, his consort',
+              ('Livia', 'female', 54, 'receiving at court', 'Queen of Ser Ferro, his consort',
                'Gracious, watchful and the finest diplomat in the palace.',
                'Livia came from the Valmonte palazzo on the Heights and has never let the other families forget it.'),
-              ('Cassio', 'male', 28, 'attending the court', 'the Prince\'s heir',
+              ('Cassio', 'male', 28, 'attending the court', 'the King\'s heir',
                'Clever, restless and impatient with ceremony.',
                'Cassio corresponds with Ridgemere\'s Houses in secret; he thinks Ser Ferro should buy their iron and '
                'their ships.'),
-              ('Serafina', 'female', 19, 'at her studies in the palace', 'the Prince\'s daughter',
+              ('Serafina', 'female', 19, 'at her studies in the palace', 'the King\'s daughter',
                'Bookish, stubborn and adored by the city.', 'Serafina slips out to the wharf in plain clothes, and '
                'half the guard knows it.'),
               ('Matteo', 'male', 11, 'playing in the palace gardens', 'the youngest prince', 'Mischievous and brave.',
@@ -506,10 +506,10 @@ def ser_ferro(project, manifest, city, world, rng):
               paid=False, purse=1000, personality=personality, backstory=backstory,
               greeting_line='You are in the presence of the Crown of Ser Ferro.')
     court_folk = [('The Hall of Petitions', 'hearing petitions', 'Ottavia Lanza', 'female', 50,
-                   'the Chancellor of Ser Ferro, who hears the city\'s petitions for the Prince'),
+                   'the Chancellor of Ser Ferro, who hears the city\'s petitions for the King'),
                   (None, 'announcing the court', None, None, None, 'the herald of the court, with a voice like a bell'),
-                  (None, 'attending the Prince', None, None, None, 'a courtier in red silk'),
-                  (None, 'attending the Princess', None, None, None, 'a lady of the court'),
+                  (None, 'attending the King', None, None, None, 'a courtier in red silk'),
+                  (None, 'attending the Queen', None, None, None, 'a lady of the court'),
                   (None, 'gossiping at court', None, None, None, 'a courtier with opinions on everyone')]
     for building, label, name, sex, age, job in court_folk:
         bed, _ = home_in(houses)
@@ -543,7 +543,7 @@ def ser_ferro(project, manifest, city, world, rng):
         bed, _ = home_in(houses)
         P.add(role='civilian', work_label='keeping the Chapel Royal', home=bed, work=P.work(B['The Chapel Royal']),
               evening=P.floor(B['The Chapel Royal']['rooms'][0]['id'], share=True), hours=(7, 19),
-              job='the royal chaplain', greeting_line='The Saint keeps the Prince. The Prince keeps the rest of us.')
+              job='the royal chaplain', greeting_line='The Saint keeps the King. The King keeps the rest of us.')
     # -- The cathedral ---------------------------------------------------------------------------------------------
     cath = B['The Cathedral of the Iron Saint']
     nave, crypt = (r['id'] for r in cath['rooms'])
@@ -551,7 +551,7 @@ def ser_ferro(project, manifest, city, world, rng):
     P.add(role='civilian', work_label='celebrating the Mass', home=P.bed(clergy), work=P.work(cath),
           evening=P.floor(nave, share=True), hours=(6, 20), age=66, sex='male', name='Benedetto Albani',
           job='the Archprelate of the Iron Saint, white-robed and ancient',
-          personality='Serene, formidable and quietly political; he has buried two Princes and crowned one.',
+          personality='Serene, formidable and quietly political; he has buried two Kings and crowned one.',
           backstory='Benedetto was a wharf child who swept the cathedral steps; he has never forgotten the wharf, '
                     'and the wharf has never forgotten him.',
           greeting_line='Peace of the Iron Saint upon you. Sit, if your legs are tired.')

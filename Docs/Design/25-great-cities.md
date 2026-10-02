@@ -63,7 +63,7 @@ wherever a street does.
    carpenters, smiths, coopers, vintners and more, the Three Bells, the Golden Sheaf Inn, the Muddy Oar, the Wool
    Guild Hall, the City Guard Barracks, the House of Saint Chiara, and the market square.
 3. **The Cathedral Rise** (centre): the **Cathedral of the Iron Saint** (nave, altar under the saint's statue, crypt of
-   the Princes) on its marble square with fountains and statues, the Chapter House and the Clergy House, finer shops
+   the Kings) on its marble square with fountains and statues, the Chapter House and the Clergy House, finer shops
    (apothecary, scribes, cartographer, chandler), more houses and the Sunlit Cup.
 4. **The Heights** (east): the elite — six palazzi (Valmonte, Lucenti, Aldobrandi, Orsenna, Castellane, Marenzi)
    among gardens, the Merchants' Guildhall, a jeweller, a bank and a silk merchant.
@@ -71,7 +71,7 @@ wherever a street does.
    Apartments above, the Palace Kitchens below), the Hall of Petitions, the Palace Guardhouse, the Chapel Royal, and
    the palace gardens (lawns, clipped hedges, fountains, statues) behind a marble forecourt.
 
-**People (141):** Prince Aurelio di Castellane, Princess Livia, the heir Cassio, Serafina and young Matteo; the
+**People (141):** King Aurelio di Castellane, Queen Livia, the heir Cassio, Serafina and young Matteo; the
 Chancellor Ottavia Lanza, herald and courtiers, the palace cook and household, the Captain and the palace guard; the
 Archprelate Benedetto Albani, priests, choirmaster, sexton, acolyte and scribe, and the sisters of Saint Chiara; the
 elite families and their servants; the guildmasters; shopkeepers, taverners and their families; painters, musicians,

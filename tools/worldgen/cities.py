@@ -8,7 +8,7 @@ sawmill), Ashcombe (charcoal and glass), Brinewater (ships and rope) and Vesk (f
 
 Ser Ferro (The Ser Ferro Marches, South) is a bright city of white walls and red roofs on the great river, built in
 tiers that rise from the wharf, where its few slums are, through the middle-class town and the Cathedral Rise to the
-elite quarter and, on the east side at the top, the Prince's palace and court.
+elite quarter and, on the east side at the top, the King's palace and court.
 
 Buildings are placed with the Upper Accord kit (buildings.py, site.py): each has its interiors, doors and the beds and
 work places its residents are given (citizens.py).
@@ -893,17 +893,17 @@ class SerFerro(City):
         out['palace'].append(self.building('palace', 'The Palace of Ser Ferro', '', [court, royal, below], 'palace', P,
                                            stairs, names=['The Court of Ser Ferro', 'The Royal Apartments',
                                                           'The Palace Kitchens'],
-                                           texts=['The throne room of the Princes of Ser Ferro: white marble, red '
+                                           texts=['The throne room of the Kings of Ser Ferro: white marble, red '
                                                   'banners, a carpet running to twin thrones and the court '
                                                   'standing in its finery along the pillars.',
                                                   'The royal apartments: painted ceilings, tall windows over the river '
                                                   'and beds hung with red silk.',
                                                   'Kitchens and the servants\' hall beneath the palace, all copper '
                                                   'pans, bread ovens and hurrying feet.'], roof='[', scale=.62))
-        out['palace'].append(self.named('hearing', 'The Hall of Petitions', 'Where the Prince\'s chancellor hears '
+        out['palace'].append(self.named('hearing', 'The Hall of Petitions', 'Where the King\'s chancellor hears '
                                         'the petitions of the city twice a week; the benches are always full.', 24, 14,
                                         'palace', P, roof='['))
-        out['palace'].append(self.named('barracks', 'The Palace Guardhouse', 'The Prince\'s own guard: polished '
+        out['palace'].append(self.named('barracks', 'The Palace Guardhouse', 'The King\'s own guard: polished '
                                         'breastplates on stands, red cloaks on pegs, bunks made to a finger\'s '
                                         'width.', 24, 12, 'palace', S, roof='['))
         out['palace'].append(self.named('chapel', 'The Chapel Royal', 'A jewel of a chapel for the royal family, '
@@ -915,7 +915,7 @@ class SerFerro(City):
                                          texts=['The great nave of the Iron Saint, founder of the city: white '
                                                 'pillars march to an altar under the saint\'s statue, light falls '
                                                 'through tall windows, and the incense never quite clears.',
-                                                'The crypt beneath the cathedral, where the Princes and the saint '
+                                                'The crypt beneath the cathedral, where the Kings and the saint '
                                                 'himself lie in niches of white stone.'], roof='[', scale=.62))
         out['rise'].append(self.named('reading', 'The Chapter House', 'The cathedral\'s clergy keep their records, '
                                       'their library and their quarrels here.', 20, 12, 'rise', S, roof='['))
