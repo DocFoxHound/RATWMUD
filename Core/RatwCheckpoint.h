@@ -32,6 +32,10 @@ struct ServerState
 // NPCs to write (road folk left out), and the time the capture was taken.
 json::Value encode(const PersistedWorld& world, const ServerState& server, const std::vector<Entity>& npcs, double time);
 
+// Parts of the document, as encode() writes them: for the journal (RatwJournal.h), which records them as they change.
+json::Value roads(const RoadsState& roads);
+json::Value crime(const CrimeState& crime);
+
 // Each NPC's running state for live.npc_state (a JSON array): where it is, how it is, its purse.
 std::string npcStates(const PersistedWorld& world, const std::vector<Entity>& npcs);
 

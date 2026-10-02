@@ -8,6 +8,7 @@
 #include "RatwCheckpoint.h"
 #include "RatwDbStore.h"
 #include "RatwDirector.h"
+#include "RatwJournal.h"
 #include "RatwJsonDoc.h"
 #include "RatwMind.h"
 #include "RatwVoice.h"
@@ -64,6 +65,14 @@ class Store
     virtual void queueEvents(std::vector<WorldEvent> events) = 0;
     virtual std::vector<std::pair<std::string, std::string>> externalNpcStates() = 0;
     virtual std::string error() const = 0;
+    // The journal of valuable changes (RatwJournal.h; Docs/Design/31-responsiveness.md, Phase 2), and its records after
+    // a seq. Null where there is none: valuables are then saved whole, waiting, as before.
+    virtual journal::Writer* journal() { return nullptr; }
+    virtual bool journalAfter(std::uint64_t, std::vector<journal::Record>&, std::string&) { return true; }
+    // The file a forked snapshot writes itself (a world saved to a file); "" for a store that is handed the document.
+    virtual std::string snapshotFile() const { return {}; }
+    // The highest revision stored so far; a store that stores before save() returns says so at once.
+    virtual std::uint64_t storedRevision() const { return UINT64_MAX; }
 };
 // The database store (game.checkpoints) as a Store.
 std::unique_ptr<Store> databaseStore(const std::string& conninfo, const std::string& worldId, std::string& error);
@@ -95,6 +104,9 @@ struct Options
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
+    // Snapshots of the world taken by a forked copy of the server, so the game never waits for one (doc 31, Phase 2).
+    // For a database or file world; tests turn it off to snapshot in place.
+    bool forkSnapshots = true;
     std::string connectionLabel = "Authoritative server · 20 Hz";
 };
 
@@ -119,6 +131,9 @@ class Game
     void acknowledge(Connection* c, double revision, bool missing);   // It applied that snapshot (or lacks a part).
     void tick(double dt);                                     // 20 times a second (dt 0.05).
     void save();                                              // Stored before returning.
+    // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
+    // tick does this as it goes, without waiting).
+    void settle();
     // A status the host should exit with, once asked (75: a new release was published and nobody is playing).
     int exitRequested() const { return exit_; }
     // Where the game thread's time is counted (Docs/Design/31-responsiveness.md, Phase 1); none by default.
@@ -149,7 +164,9 @@ class Game
     std::size_t clients() const { return clients_.size(); }
     std::uint64_t revision() const { return revision_; }
 
-    static constexpr double AutosaveSeconds = 15, SaveSoonSeconds = 3;
+    // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
+    // consolidated every AutosaveSeconds.
+    static constexpr double AutosaveSeconds = 15, SnapshotSeconds = 5, SaveSoonSeconds = 3;
     static constexpr unsigned SnapshotPhases = 4;
 
   private:
@@ -220,7 +237,7 @@ class Game
     double dmExpiryAccumulator_ = 60;
     bool dmNotified_ = true;
     unsigned snapshotPhase_ = 0;
-    double saveSoonIn_ = -1, snapshotAccumulator_ = 0, saveAccumulator_ = 0, ambientAccumulator_ = 0,
+    double saveSoonIn_ = -1, snapshotAccumulator_ = 0, saveAccumulator_ = 0, snapshotSaveAccumulator_ = 0, ambientAccumulator_ = 0,
            releaseAccumulator_ = 0, dmAccumulator_ = 0, spawnAccumulator_ = 0, prefetchAccumulator_ = 0, streamLogAccumulator_ = 0;
     std::map<std::string, double> deadSince_, spawnBackoff_;
     PgClient worldDb_;
@@ -346,6 +363,62 @@ class Game
     void saveSoon();
     void autosave();
     DbStore::Build capture();
+
+    // ------------------------------------------------------------------ The journal and snapshots (RatwGameJournal.cpp)
+    // What a valuable command may have changed: what the journal compares and records.
+    enum Valuable : unsigned
+    {
+        Economy = 1,       // Purses, stock, the economy's ledger and counters.
+        Careers = 2,       // Who holds and learns each position.
+        Roads = 4,         // Caravans, camps and contracts.
+        Crime = 8,         // Incidents, warrants, custody.
+        Companions = 16,   // Who travels with whom.
+        Accounts = 32,     // Sign-in accounts and the characters they own.
+        Character = 64,    // The character itself.
+    };
+    // Journals what a valuable command changed (or, with no journal, saves whole and waits, as before). Replies to
+    // the command's client wait for the record to be written.
+    void record(unsigned what, const std::string& character = {});
+    // The journal's view of what was last recorded, to find what changed since.
+    struct Shadow
+    {
+        bool primed = false;
+        std::map<std::string, EconomyAccount> accounts;
+        std::vector<std::int64_t> economy;          // Its counters, in a fixed order.
+        std::uint64_t ledgerLast = 0;
+        std::size_t ledgerSize = 0;
+        std::map<std::string, PositionState> positions;
+        std::string roads, crime, companions, signIns;
+    };
+    void prime(Shadow& shadow) const;
+    std::uint64_t journalSeq_ = 0;
+    Shadow shadow_;
+    // Replies held for a command whose record isn't written yet: released by releaseCommitted() in each tick.
+    Connection* holding_ = nullptr;
+    std::vector<std::string> held_;
+    std::uint64_t heldFor_ = 0;
+    struct Waiting
+    {
+        Connection* c;
+        std::uint64_t seq;
+        std::string event;
+    };
+    std::deque<Waiting> waiting_;
+    void beginHolding(Connection* c);
+    void endHolding();
+    void releaseCommitted();
+    bool journalFailing_ = false;
+    // A forked snapshot under way, and the ones handed to the store whose journal records can go once stored.
+    int snapshotChild_ = -1;
+    std::uint64_t snapshotJournal_ = 0, snapshotRevision_ = 0;
+    std::string snapshotDocument_, snapshotStates_;
+    int forkFailures_ = 0;
+    std::vector<std::pair<std::uint64_t, std::uint64_t>> trimWhenStored_;   // (revision, journal seq)
+    bool forkSnapshot();
+    void reapSnapshot(bool wait);
+    void trimStored();
+    void syncCharacters();
+    bool replayJournal(json::Value& document, std::string& problem);
     void load(const std::string& payload);
 };
 } // namespace ratw::game

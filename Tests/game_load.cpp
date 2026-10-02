@@ -264,7 +264,8 @@ int main(int argc, char** argv)
                   << (snapshots ? snapshotBytes / snapshots : 0) << " B raw, motion frame " << (motions ? motionBytes / motions : 0)
                   << " B raw\n";
 
-        // A full save, as about a dozen commands make one today (file mode: the whole document on this thread).
+        // A full save, waited for, as the server makes one when it stops (file mode: the whole document on this thread).
+        // Play itself is saved by forked snapshots and the journal (doc 31, Phase 2): their cost is under "saves" above.
         std::vector<double> saves;
         for (int i = 0; i < 3; ++i)
         {

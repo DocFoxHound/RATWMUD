@@ -461,6 +461,37 @@ Result environmentCommand(World& world, const std::string& cellId, const std::st
 
 // --------------------------------------------------------------------------- The society
 
+Value economyAccount(const EconomyAccount& a)
+{
+    auto j = Value::object(), stock = Value::object();
+    j.add("cash", a.cash);
+    for (const auto& [item, n] : a.stock)
+        stock.add(item, n);
+    j.add("stock", stock);
+    return j;
+}
+
+Value economyLedger(const std::vector<EconomyEntry>& entries)
+{
+    auto ledger = Value::array();
+    for (const auto& e : entries)
+    {
+        auto j = Value::object();
+        j.add("sequence", e.sequence); j.add("day", e.day); j.add("coins", e.coins); j.add("quantity", e.quantity);
+        j.add("kind", e.kind); j.add("from", e.from); j.add("to", e.to); j.add("item", e.item);
+        ledger.push(j);
+    }
+    return ledger;
+}
+
+Value careerPosition(const PositionState& p)
+{
+    auto j = Value::object();
+    j.add("holder", p.holder); j.add("apprentice", p.apprentice); j.add("lastHolder", p.lastHolder);
+    j.add("vacantSince", p.vacantSince); j.add("newcomerAsked", p.newcomerAsked);
+    return j;
+}
+
 Value society(const SocietyState& s)
 {
     auto o = Value::object();
@@ -475,14 +506,7 @@ Value society(const SocietyState& s)
     o.add("decisionRemainder", s.decisionRemainder);
     auto accounts = Value::object();
     for (const auto& [id, a] : s.accounts)
-    {
-        auto j = Value::object(), stock = Value::object();
-        j.add("cash", a.cash);
-        for (const auto& [item, n] : a.stock)
-            stock.add(item, n);
-        j.add("stock", stock);
-        accounts.add(id, j);
-    }
+        accounts.add(id, economyAccount(a));
     o.add("accounts", accounts);
     auto residents = Value::object();
     for (const auto& [id, r] : s.residents)
@@ -496,25 +520,12 @@ Value society(const SocietyState& s)
         residents.add(id, j);
     }
     o.add("residents", residents);
-    auto ledger = Value::array();
-    for (const auto& e : s.ledger)
-    {
-        auto j = Value::object();
-        j.add("sequence", e.sequence); j.add("day", e.day); j.add("coins", e.coins); j.add("quantity", e.quantity);
-        j.add("kind", e.kind); j.add("from", e.from); j.add("to", e.to); j.add("item", e.item);
-        ledger.push(j);
-    }
-    o.add("ledger", ledger);
+    o.add("ledger", economyLedger(s.ledger));
     auto careers = Value::object(), positions = Value::object(), skill = Value::object(), mourning = Value::object(),
          estates = Value::object();
     careers.add("day", double(s.careers.day));
     for (const auto& [id, p] : s.careers.positions)
-    {
-        auto j = Value::object();
-        j.add("holder", p.holder); j.add("apprentice", p.apprentice); j.add("lastHolder", p.lastHolder);
-        j.add("vacantSince", p.vacantSince); j.add("newcomerAsked", p.newcomerAsked);
-        positions.add(id, j);
-    }
+        positions.add(id, careerPosition(p));
     for (const auto& [key, v] : s.careers.skill)
         skill.add(key, v);
     for (const auto& [id, m] : s.careers.mourning)

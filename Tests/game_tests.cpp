@@ -3,6 +3,7 @@
 #include "RatwGame.h"
 #include "RatwMotionCore.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <fstream>
@@ -12,6 +13,7 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 using namespace ratw;
 namespace
@@ -307,13 +309,16 @@ void aRestartFromAFile()
         c.id = 4;
         g.connect(&c);
         g.command(&c, cmd({{"type", "auth_register"}, {"username", "moss"}, {"password", "another long password"}}));
+        g.settle();                                // Replies wait for the journal (doc 31, Phase 2).
         auto appearance = json::Value::object();
         appearance.add("species", "arctic"); appearance.add("sex", "male"); appearance.add("stature", "tall");
         appearance.add("pattern", "solid"); appearance.add("baseColor", 1); appearance.add("gradientColor", 1);
         appearance.add("markingColor", 1); appearance.add("gradientAmount", .2); appearance.add("patternAmount", .2);
         g.command(&c, cmd({{"type", "character_create"}, {"name", "Moss"}, {"age", 30}, {"appearance", appearance}, {"commandId", "m1"}}));
+        g.settle();
         id = c.last("lobby")->array("characters")[0].string("id");
         g.command(&c, cmd({{"type", "character_enter"}, {"id", id}}));
+        g.settle();
         g.world().entity(id)->position.x += 2;
         g.disconnect(&c);
     }
@@ -486,6 +491,92 @@ void unreadableSavesAreKept()
 
 // Accounts and characters must agree: an account owning a character the save doesn't have, or a made character
 // nobody owns, stops the load.
+// Saves that never stop the game (Docs/Design/31-responsiveness.md, Phase 2). A valuable command's reply waits for its
+// journal record; a crash after it loses nothing, the journal being replayed over the last checkpoint; a snapshot
+// taken by a forked copy of the server writes the save while the game plays on, and the records it covers go.
+void theJournalKeepsWhatACrashWouldLose()
+{
+    const std::string path = "/tmp/ratw-game-test-journal-" + std::to_string(::getpid()) + ".json";
+    const auto clean = [&] {
+        std::remove(path.c_str());
+        std::remove((path + ".journal").c_str());
+    };
+    clean();
+    std::string id;
+    const auto herbs = [&id](game::Game& g) {
+        const auto* account = g.world().society().account(id);
+        return account ? Society::stock(*account, "herbs") : -1;
+    };
+    int gathered = 0;
+    {
+        game::Options o;
+        o.savePath = path;
+        o.devIdentity = true;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "starts with a file save: " + problem);
+        expect(!readFile(path).empty(), "a world never saved is saved at once, for the journal to build on");
+        Client c;
+        c.id = 30;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+        g.settle();
+        id = c.entityId;
+        auto* ash = g.world().entity(c.entityId);
+        expect(ash != nullptr, "Ash is in the world");
+        ash->cellId = g.world().herbPatchCell();
+        ash->position = g.world().herbPatchPosition();
+        const int before = herbs(g);
+        const auto events = c.events.size();
+        g.command(&c, cmd({{"type", "gather"}}));
+        gathered = herbs(g);
+        expect(gathered > before, "herbs are gathered at once: " + std::to_string(before) + " -> " + std::to_string(gathered) +
+                                      " " + c.said());
+        g.settle();
+        expect(c.events.size() > events, "and the reply is sent once the journal has it");
+        const auto journal = readFile(path + ".journal");
+        expect(journal.find("herbs") != std::string::npos, "the journal holds what changed");
+        expect(readFile(path).find("\"herbs\":" + std::to_string(gathered)) == std::string::npos,
+               "the save itself does not yet");
+        // A crash: the game goes without saving.
+    }
+    {
+        game::Options o;
+        o.savePath = path;
+        o.devIdentity = true;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "starts again after the crash: " + problem);
+        expect(herbs(g) == gathered, "the herbs are still gathered: the journal replayed over the checkpoint");
+        // A snapshot from a forked copy: the save is written while the game goes on, and the journal is trimmed.
+        Client c;
+        c.id = 31;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+        g.settle();
+        const auto saveBefore = readFile(path);
+        bool written = false;
+        for (int i = 0; i < 400 && !written; ++i)
+        {
+            g.tick(.05);
+            if (i > 100)
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            written = readFile(path) != saveBefore && readFile(path + ".journal").find("herbs") == std::string::npos;
+        }
+        expect(written, "a forked snapshot replaced the save and the journal records it covers went");
+        expect(readFile(path).find("\"journal\"") != std::string::npos, "the save says how far into the journal it reaches");
+        g.disconnect(&c);
+    }
+    {
+        game::Options o;
+        o.savePath = path;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem) && herbs(g) == gathered, "and the snapshot alone brings it back: " + problem);
+    }
+    clean();
+}
+
 void mismatchedOwnersAreRefused()
 {
     const std::string path = "/tmp/ratw-game-test-owners-" + std::to_string(::getpid()) + ".json";
@@ -505,8 +596,10 @@ void mismatchedOwnersAreRefused()
         appearance.add("pattern", "mantle"); appearance.add("baseColor", 2); appearance.add("gradientColor", 3);
         appearance.add("markingColor", 4); appearance.add("gradientAmount", .3); appearance.add("patternAmount", .6);
         g.command(&c, cmd({{"type", "character_create"}, {"name", "Fern"}, {"age", 20}, {"appearance", appearance}, {"commandId", "f1"}}));
+        g.settle();                                // Replies wait for the journal (doc 31, Phase 2).
         expect(c.last("lobby")->array("characters").size() == 1, "a character is made");
         g.disconnect(&c);
+        g.save();                                  // As the server does when it stops: the file then holds it all.
     }
     json::Value good;
     std::string error;
@@ -794,6 +887,7 @@ int main()
         othersSeeNoPrivateStats();
         unreadableSavesAreKept();
         mismatchedOwnersAreRefused();
+        theJournalKeepsWhatACrashWouldLose();
     }
     catch (const std::exception& error)
     {

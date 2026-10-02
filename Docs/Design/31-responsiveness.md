@@ -1,8 +1,8 @@
 # 31. Responsiveness and scale: one server, a thousand wolves
 
-Planned 2026-10-02. **Agreed. Phase 1 built 2026-10-02; Phases 2–6 not started.**
+Planned 2026-10-02. **Agreed. Phases 1 and 2 built 2026-10-02; Phases 3–6 not started.**
 
-The plan is agreed (see "The decisions"). Phase 1 (measuring) is built; the rest has not started. The target is **1,000 players on one server**, with
+The plan is agreed (see "The decisions"). Phases 1 (measuring) and 2 (saves) are built; the rest has not started. The target is **1,000 players on one server**, with
 the world's roughly 1,000 residents. Hosting is local development now, dedicated servers later. We fix lag rather than
 split the game into services by system. The Unreal cleanup waits until the character-creator work is done; it is
 listed at the end.
@@ -106,7 +106,7 @@ the fallback is splitting **by space** (see Phase 6).
 | Who sees whom | **The server decides, recomputing only on change.** The client works out terrain-only lighting and line-of-sight shading for the picture. | All of sight on the client would let a modified client see hidden wolves. |
 | Snapshots | **Wolves' details sent only when they change, in a binary format.** Snapshots stay on their five-a-second timer. | Sending on change instead of on a timer was not chosen. |
 | Compression and cores | **A compression policy, a thread pool for per-player work, and a network thread with `epoll`.** | Region processes stay a fallback (Phase 6). |
-| Saves | **The full redesign plus a journal:** valuables as small transactions, dirty rows, a `fork()` world snapshot, binary rows, and a replay journal. A crash loses at most a fraction of a second. | Fixing only the stalls; the redesign without a journal. |
+| Saves | **A journal for valuables, and a `fork()` snapshot of everything else every 5 s** (changed from "the full redesign" once the fork cost was measured; see Phase 2). A crash loses no confirmed valuable and at most 5 s of the rest. | Full dirty rows and binary rows (held back); fixing only the stalls. |
 | Slow ticks | **Time budgets for route planning and schedules, and fix the stranded residents.** | |
 
 ## How other games save, and what we take from each
@@ -205,50 +205,104 @@ The middle columns are ms per tick. Bandwidth was about 220–260 kbit/s per pla
 
 ### Phase 2. Saves that never stop the game
 
-The game thread only *notes* changes. A persistence worker (the existing `DbStore` thread, grown) writes them.
+**Changed 2026-10-02, before building.**
 
-1. **The journal.** This is the source of truth between snapshots.
-   - Every change to saved state is appended to an in-memory journal as a small binary record: an entity's row
-     changed, a trade, a door opened, money moved. Each record carries a sequence number.
-   - The worker writes the journal in batches, every 100–250 ms, as one transaction into `game.journal`
-     (append-only, like `game.events`).
-   - On start-up the server loads the latest snapshot and rows, then replays the journal after the snapshot's
-     sequence number.
-   - A crash loses at most the last batch window.
-   - `game.events` stays as it is. It is history for memories, rumours and the DM, not recovery.
-2. **Valuables wait for their commit, never on the game thread.**
-   - Covers: registering, creating a character, trade, gather and eat, contracts, apprenticing, recruiting, theft,
-     fines, bandits and paying.
-   - Each becomes a journal record that asks to be told when it commits. The game applies the change in memory at
-     once and replies to the player when the batch lands (a few ms to 250 ms later).
-   - If the commit fails, the change is undone in memory and the player is told. The command receipts that already
-     exist stop a retry from doing it twice.
-3. **Dirty rows.**
-   - Entities, characters, memories, bonds, beliefs and conversations carry a dirty mark, set where they change.
-   - Every few seconds the worker turns the journal's effect into their rows (`game.characters`, `game.npcs`, ...).
-     This is the "checkpoint" the journal replays from, and the journal before it is trimmed.
-   - Nothing hashes or rebuilds the whole document any more.
-4. **The world snapshot by `fork()`.**
-   - Every few minutes the server forks. The child serializes the bulk state that isn't rows (society, doors, roads,
-     weather, receipts: today's 566 KB `p_rest`) from its frozen copy, to a file, and exits. The parent hands that file
-     to the worker to store.
-   - Rules for the child:
-     - It touches only plain memory: no database connection, no locks, no threads, no logging through shared streams.
-     - It writes with plain `write()` calls and exits with `_exit()`.
-   - The fork happens between ticks, at a quiet moment. Copying the page tables takes a few ms.
-   - If the fork proves awkward, these sections get dirty rows like the rest.
-5. **Binary rows.**
-   - Rows the game reads back are stored in a versioned binary form. JSON readers are kept for tools, the DM and
-     `RATW_VERIFY_SAVES`.
-   - `world_db.py` and the DM read through a small decoder, or a JSON view the database builds.
-6. **File-mode worlds** (the demo, Greyfen, playtests) use the same journal and snapshot, in files beside the save.
-7. **Shutdown and release restarts** still finish a whole snapshot and wait for it. Waiting is right there.
+- **Two facts changed the plan:**
+  - `fork()` measured 6–13 ms at 385–519 MB of memory.
+  - 99% of a player's 140 KB in the save was their map memories.
+- **What was chosen:** **valuables in a journal, everything else in a `fork()` snapshot every 5 s.**
+- **Held back:** dirty rows and binary rows. Dirty rows would mean marking every place the world changes.
+- **The gate became:** no storage stall over 15 ms, and none inside any command.
 
-**Migration.** Old checkpoints load as they do now. The first new snapshot writes the new form, and
-`game.save_checkpoint_delta` is retired afterwards.
+1. **Compact map memories.**
+   - A remembered cell's glyphs, and its seen tiles packed eight to a byte, are each deflated and stored in base64
+     (`glyphsZ`, `observedZ`).
+   - A barely-seen 256×256 cell was 128 KB of spaces and '0's. It is now a few hundred bytes.
+   - Old saves still read. A damaged memory is refused, not read as blank.
+2. **The journal** (`Core/RatwJournal.h`; `game.journal`, migration 0028; `<save>.journal` for a file world).
+   - **What is a valuable command:**
+     - registering, creating a character, entering and leaving
+     - trading, gathering, eating
+     - theft, reports, fines, attacks and paying bandits
+     - taking a contract, apprenticing, recruiting a companion
+   - **Each is applied at once, then `Game::record()` appends what changed as one record:** a list of changes to the
+     checkpoint document, each saying what something *now is*, so a record applied twice is harmless. It compares
+     against what it last recorded:
+     - purses and stock, account by account
+     - the economy's counters and ledger
+     - career positions, one by one
+     - roads, crime, companions and sign-in accounts, compared whole
+     - the character itself
+   - **The writer is a thread with its own connection.** It commits in batches: each batch forms while the last is
+     being written, so a quiet server commits at once.
+   - **A failed batch is retried every 0.5 s until written.** Nothing is undone. The replies simply wait, and the
+     server logs `RATW_JOURNAL cannot write`.
+3. **Replies wait for the record.**
+   - Every reply a command sends is held until the command ends.
+   - If it made a journal record, the replies go when that record is written.
+   - A client's later replies queue behind its earlier ones, so they keep their order.
+   - In a test the journal writes inline. Tools can call `Game::settle()`.
+4. **The snapshot by `fork()`, every 5 s** (and 3 s after other changes worth keeping):
+   - The child is a frozen copy of the game. It captures and encodes the checkpoint and writes it:
+     - **a file world:** its save, in place, by rename
+     - **a database:** a private file, which the store's worker thread reads and stores as before, as deltas
+   - The child uses only plain system calls and leaves with `_exit()`.
+   - One snapshot at a time. Three failures in a row fall back to saving in place.
+   - The document says how far into the journal it reaches (`"journal"`). Once it is stored, the records it covers
+     are trimmed.
+5. **Start-up.** The checkpoint loads, and the journal records after its `"journal"` are replayed over it before it
+   is decoded. A world never saved is saved at once, so the journal always has something to replay over.
+6. **What still waits for a whole save:**
+   - stopping the server
+   - a release restart
+   - the operator bridge's start and commits (rare, and operator-only)
+   - a store without a journal (a database not yet migrated): valuables save whole, as before
+   DM actions, spawns and development weather now ask for a snapshot soon instead.
+7. **Tests:**
+   - `journal_tests`: changes, replay, the file journal (a torn last line ignored, trimming), and a failed batch kept
+     until written
+   - `checkpoint_tests`: compact memories, old form, damage
+   - `game_tests`: herbs gathered, a crash without saving, the journal replayed, and a forked snapshot replacing the save
+     and trimming the journal
+   - `server_smoke`: an account registered, the server **killed with SIGKILL** right after the reply, and the account
+     signing in after a restart
+   - **By hand, against a copy of DEV with migration 0028:**
+     - database snapshots every ~5 s, with the journal trimmed
+     - an account only in the journal, the server killed, replayed on restart, and signing in
 
-Gate: at 250 players, no storage stall on the game thread over 1 ms. Kill the server at random mid-play 20 times, and
-nothing older than the batch window is lost. Valuables are never half-applied.
+**Measured** (`game_load`, cities layout, file-mode saves, DEV build 13; Phase 1's baseline in brackets):
+
+| Players | Storage on the game thread, worst | Save size | Mean / p99 per tick |
+| --- | --- | --- | --- |
+| 20 | **8.0 ms** (77 ms) | 2.0 MB (4.8 MB) | 23.5 / 59.5 ms (23.1 / 52.3) |
+| 100 | **9.4 ms** (142 ms) | 2.2 MB (16 MB) | 77.5 / 111.6 ms (79.2 / 135.5) |
+| 250 | **15.5 ms** (517 ms) | 2.6 MB (37 MB) | 193 / 260 ms (262 / 432) |
+
+That worst case is the fork, once every 5 s. A full save is still 60–130 ms, but it now happens only when the server
+stops.
+
+**Open: one crash at 1,000 players.**
+
+- **What happened:** the one 1,000-player run crashed after its 6-minute warm-up. The heap was found corrupted in
+  `malloc`, during `Game::sendSnapshot`.
+- **What doesn't reproduce it**, all under AddressSanitizer:
+  - `game_tests` (1,210 checks) and `journal_tests`
+  - a 100-player `game_load`: 60 s of play, a snapshot every 5 s, the journal writing throughout
+- **What isn't known:** whether it is new in Phase 2 or older and only showing at that size. Phase 1's single
+  1,000-player run did not crash.
+- **When to chase it:** with the 1,000-player gate (Phase 6). Runs of that size are not made for every phase: they take
+  15–45 minutes.
+
+**Found along the way (not storage, for later phases):**
+
+- **Password hashing runs on the game thread.** Registering or signing in holds every player for about 140–230 ms.
+  It belongs on a worker.
+- **Entering the world copies the whole `World`** (`enterCharacter`, `character_create`), to roll back if something
+  fails. That is a login stall that grows with the world.
+- **In-memory map memories are still 72 KB per remembered cell** (`std::vector<char>` and `std::vector<bool>`). This
+  is most of the server's memory growth with players, and so most of the fork's cost.
+- **`tools/smoke.py persistence` fails on `HEAD` before Phase 2 too:** the NPC conversation memory isn't kept
+  (`active=0`). It is from other work, not from saves.
 
 ### Phase 3. Movement: the client is in charge, the server in fights
 

@@ -31,6 +31,7 @@ class DatabaseStore final : public Store
 {
   public:
     DbStore db;
+    std::unique_ptr<journal::Writer> writer;
     bool database() const override { return true; }
     std::string load() override { return db.load(); }
     bool save(DbStore::Build build, std::uint64_t revision) override { return db.save(std::move(build), revision); }
@@ -39,12 +40,56 @@ class DatabaseStore final : public Store
     void queueEvents(std::vector<WorldEvent> events) override { db.queueEvents(std::move(events)); }
     std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return db.externalNpcStates(); }
     std::string error() const override { return db.error(); }
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string& problem) override
+    {
+        return db.journalAfter(after, out, problem);
+    }
+    std::uint64_t storedRevision() const override { return db.storedRevision(); }
 };
+
+// The journal in game.journal (migration 0028), written on its own connection so a long checkpoint write never
+// holds a trade's record back.
+std::unique_ptr<journal::Writer> databaseJournal(const std::string& conninfo, const std::string& worldId)
+{
+    auto pg = std::make_shared<PgClient>();
+    auto commit = [pg, conninfo, worldId](const std::vector<journal::Record>& batch, std::string& error) {
+        if (!pg->connected() && !pg->connect(conninfo, error))
+            return false;
+        auto result = pg->exec("BEGIN");
+        for (std::size_t i = 0; result.ok && i < batch.size(); ++i)
+            result = pg->exec("INSERT INTO game.journal (world_id, seq, record) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
+                              {worldId, std::to_string(batch[i].seq), withoutNul(batch[i].text)});
+        if (result.ok)
+            result = pg->exec("COMMIT");
+        if (!result.ok)
+        {
+            error = result.error;
+            pg->exec("ROLLBACK");
+        }
+        return result.ok;
+    };
+    auto trim = [pg, conninfo, worldId](std::uint64_t upTo, std::string& error) {
+        if (!pg->connected() && !pg->connect(conninfo, error))
+            return false;
+        const auto result = pg->exec("DELETE FROM game.journal WHERE world_id = $1 AND seq <= $2", {worldId, std::to_string(upTo)});
+        error = result.error;
+        return result.ok;
+    };
+    return std::make_unique<journal::Writer>(commit, trim);
+}
 
 class FileStore final : public Store
 {
   public:
     std::string path, problem;
+    std::unique_ptr<journal::Writer> writer;
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string& trouble) override
+    {
+        return journal::readFile(path + ".journal", after, out, trouble);
+    }
+    std::string snapshotFile() const override { return path; }
     bool database() const override { return false; }
     std::string load() override
     {
@@ -96,6 +141,17 @@ class MemoryStoreImpl final : public Store
 {
   public:
     std::string saved;
+    std::shared_ptr<std::vector<journal::Record>> records = std::make_shared<std::vector<journal::Record>>();
+    std::unique_ptr<journal::Writer> writer = journal::memoryWriter(records);
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string&) override
+    {
+        writer->flush();
+        for (const auto& r : *records)
+            if (r.seq > after)
+                out.push_back(r);
+        return true;
+    }
     bool database() const override { return false; }
     std::string load() override { return saved; }
     bool save(DbStore::Build build, std::uint64_t) override
@@ -140,6 +196,8 @@ std::unique_ptr<Store> databaseStore(const std::string& conninfo, const std::str
     auto store = std::make_unique<DatabaseStore>();
     if (!store->db.open(conninfo, worldId, error))
         return nullptr;
+    if (store->db.journalSupported())
+        store->writer = databaseJournal(conninfo, worldId);
     return store;
 }
 
@@ -152,6 +210,7 @@ std::unique_ptr<Store> fileStore(const std::string& path, std::string& error)
     }
     auto store = std::make_unique<FileStore>();
     store->path = path;
+    store->writer = journal::fileWriter(path + ".journal");
     return store;
 }
 
@@ -174,8 +233,13 @@ Game::Game(Options options) : options_(std::move(options)), random_(std::random_
 Game::~Game()
 {
     *alive_ = false;
+    reapSnapshot(true);
     if (store_)
+    {
         store_->flush();
+        if (auto* writer = store_->journal())
+            writer->flush();
+    }
 }
 
 void Game::note(const char* level, const std::string& text)
@@ -279,7 +343,24 @@ bool Game::start(std::string& problem)
         else
             note("warn", "RATW_ARTWORK portraits can't be uploaded: " + trouble);
     }
-    load(store_->load());
+    const std::string payload = store_->load();
+    load(payload);
+    if (auto* writer = store_->journal(); writer && storageReady_ && !journalSeq_)
+    {
+        // No checkpoint to replay over (a world never saved): records left by a crash before its first snapshot
+        // can't be applied to anything. They are set aside, and new ones numbered after them.
+        std::vector<journal::Record> orphans;
+        std::string trouble;
+        if (store_->journalAfter(0, orphans, trouble) && !orphans.empty())
+        {
+            journalSeq_ = orphans.back().seq;
+            writer->trim(journalSeq_);
+            note("warn", "RATW_JOURNAL " + std::to_string(orphans.size()) + " record(s) without a checkpoint were set aside");
+        }
+    }
+    // A world never saved is saved now, so the journal always has a checkpoint to be replayed over.
+    if (payload.empty() && storageReady_ && store_->journal())
+        save();
     if (!storageReady_)
     {
         problem = "the save could not be read; it is kept as it is and nothing is saved over it (" + store_->error() + ")";
@@ -307,6 +388,7 @@ bool Game::start(std::string& problem)
     }
     mind_.configure(options_.dialogueEndpoint);
     consolidate();
+    prime(shadow_);
     note("info", "RATW authoritative world ready; 20Hz; save=" + std::string(live ? options_.database + " database" : options_.savePath.empty() ? "memory" : options_.savePath) +
                      "; dialogue=" + mind_.label());
     return true;
@@ -679,7 +761,7 @@ void Game::applyDmActions(double dt)
     if (changed)
     {
         ++revision_;
-        save();
+        saveSoon();
     }
 }
 
@@ -851,7 +933,7 @@ void Game::runSpawns(double dt)
     if (changed)
     {
         ++revision_;
-        save();
+        saveSoon();
     }
 }
 
@@ -966,6 +1048,9 @@ void Game::disconnect(Connection* c)
     c->accountUsername.clear();
     authRate_.forget(std::to_string(c->id));
     clients_.erase(std::remove(clients_.begin(), clients_.end(), c), clients_.end());
+    waiting_.erase(std::remove_if(waiting_.begin(), waiting_.end(), [c](const Waiting& w) { return w.c == c; }), waiting_.end());
+    if (holding_ == c)
+        holding_ = nullptr;
 }
 
 void Game::acknowledge(Connection* c, double revision, bool missing)
@@ -976,7 +1061,11 @@ void Game::acknowledge(Connection* c, double revision, bool missing)
 
 void Game::send(Connection* c, const Value& e)
 {
-    if (c)
+    if (!c)
+        return;
+    if (c == holding_)
+        held_.push_back(json::dump(e));            // Sent when the command is done (endHolding).
+    else
         c->event(json::dump(e));
 }
 
@@ -1079,8 +1168,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     characters_[actor] = player;
     world_.observe(actor);
     logEvent("arrival", actor);
-    ++revision_;
-    save();
+    record(Economy | Character, actor);
     if (!storageReady_)
     {
         world_ = beforeWorld;
@@ -1126,7 +1214,7 @@ void Game::leaveCharacter(Connection* c)
     c->entityId.clear();
     c->developmentIdentity.clear();
     if (had)
-        save();
+        record(Economy | Character, id);           // Where they left, kept; the rest with the next snapshot.
 }
 
 bool Game::accountCommand(Connection* c, const Value& j, const std::string& type)
@@ -1213,8 +1301,7 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
                 lobby(c, false, error);
                 return true;
             }
-            ++revision_;
-            save();
+            record(Accounts);
             if (!storageReady_)
             {
                 accounts_ = before;
@@ -1295,8 +1382,7 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
         characters_[player.id] = player;
         world_.removePlayer(newId);
         logEvent("character created", newId);
-        ++revision_;
-        save();
+        record(Accounts | Economy | Character, newId);
         if (!storageReady_)
         {
             world_ = beforeWorld;
@@ -1461,7 +1547,7 @@ void Game::tick(double dt)
     }
     if (saveSoonIn_ >= 0 && (saveSoonIn_ -= dt) < 0)
     {
-        saveAccumulator_ = 0;
+        snapshotSaveAccumulator_ = 0;
         autosave();
     }
     if (saveAccumulator_ >= AutosaveSeconds)
@@ -1469,7 +1555,17 @@ void Game::tick(double dt)
         saveAccumulator_ = 0;
         consolidate();
         social_.tick(now());
+    }
+    if ((snapshotSaveAccumulator_ += dt) >= SnapshotSeconds)
+    {
+        snapshotSaveAccumulator_ = 0;
         autosave();
+    }
+    {
+        perf::Scope timed(meter_, perf::Saves);
+        reapSnapshot(false);
+        trimStored();
+        releaseCommitted();
     }
     if (storageReady_ && director_.enabled())
     {
@@ -2259,6 +2355,12 @@ void Game::command(Connection* c, const std::string& raw)
 {
     if (!c || raw.size() > 65536)
         return;
+    struct Hold
+    {
+        Game& game;
+        ~Hold() { game.endHolding(); }
+    } hold{*this};
+    beginHolding(c);
     Value j;
     std::string error;
     if (!json::parse(raw, j, error) || !j.isObject())
@@ -2372,7 +2474,7 @@ void Game::command(Connection* c, const std::string& raw)
         result = wire::environmentCommand(world_, player->cellId, type, j.string("value"), options_.devTools);
         report = true;
         if (result.ok)
-            save();
+            saveSoon();
     }
     else if (type == "trade")
     {
@@ -2383,14 +2485,14 @@ void Game::command(Connection* c, const std::string& raw)
                      : Result{false, "Invalid trade request.", {}};
         report = true;
         if (result.ok)
-            save();
+            record(Economy | Character, id);
     }
     else if (type == "gather" || type == "eat")
     {
         result = type == "gather" ? world_.gather(id) : world_.eat(id);
         report = true;
         if (result.ok)
-            save();
+            record(Economy | Character, id);
     }
     else if (type == "front" && options_.devTools)
     {
@@ -2408,7 +2510,7 @@ void Game::command(Connection* c, const std::string& raw)
             world_.useSeasonalWeather(c->id);      // The cell follows the field again, so the front shows.
         report = true;
         if (result.ok)
-            save();
+            saveSoon();
     }
     else if (type == "wind" && options_.devTools)
     {
@@ -2422,7 +2524,7 @@ void Game::command(Connection* c, const std::string& raw)
         const double direction = value == "west" ? pi : value == "north" ? -pi * .5 : 0.0;
         result = world_.setWind(player->cellId, direction, value == "calm" ? 0.0 : .5, value == "live");
         report = true;
-        save();
+        saveSoon();
     }
     else if (type == "action")
     {
@@ -2521,14 +2623,14 @@ void Game::command(Connection* c, const std::string& raw)
             const auto done = action == "steal" ? world_.steal(id, target) : action == "report" ? world_.report(id, target) : world_.payFine(id, target);
             system(c, done.message);
             if (done.ok)
-                saveSoon();
+                record(Economy | Crime | Character, id);
         }
         else if (action == "attack" || action == "pay")
         {
             const auto done = action == "attack" ? world_.attack(id, target) : world_.payBandits(id, target);
             system(c, done.message);
             if (done.ok)
-                saveSoon();
+                record(Economy | Crime | Roads | Character, id);
         }
         else if (action == "ask for work")
         {
@@ -2542,7 +2644,7 @@ void Game::command(Connection* c, const std::string& raw)
             const auto taken = world_.takeContract(id, action.substr(5));
             system(c, taken.message);
             if (taken.ok)
-                save();
+                record(Roads | Economy | Character, id);
         }
         else if (action == "apprentice")
         {
@@ -2556,7 +2658,7 @@ void Game::command(Connection* c, const std::string& raw)
             const auto taken = world_.apprentice(id, target);
             system(c, taken.message);
             if (taken.ok)
-                save();
+                record(Careers | Economy | Character, id);
         }
         else if (action == "recruit")
         {
@@ -2575,7 +2677,7 @@ void Game::command(Connection* c, const std::string& raw)
             npc->leaderId = id;
             system(c, npc->name + " accepts your invitation to travel together.");
             talk(target, id, "Will you travel with me?");
-            save();
+            record(Companions | Character, id);
         }
         else if (action == "inspect" && !world_.door(target))
         {
@@ -2808,8 +2910,10 @@ DbStore::Build Game::capture()
         if (e.npc && !e.transient)                 // Road folk come back from the roads' own state.
             c->npcs.push_back(e);
     const bool database = store_ && store_->database();
-    return [c, database](Value& document, std::string& npcStates) {
+    const auto journalSeq = journalSeq_;
+    return [c, database, journalSeq](Value& document, std::string& npcStates) {
         document = checkpoint::encode(c->saved, c->server, c->npcs, c->time);
+        document.set("journal", double(journalSeq));   // The journal records it covers (RatwJournal.h).
         if (database)
             npcStates = checkpoint::npcStates(c->saved, c->npcs);
     };
@@ -2819,14 +2923,19 @@ void Game::autosave()
 {
     perf::Scope timed(meter_, perf::Saves);
     saveSoonIn_ = -1;
-    if (!store_)
+    if (!store_ || !storageReady_)
+        return;
+    if (options_.forkSnapshots && forkFailures_ < 3 && forkSnapshot())
         return;
     store_->queueEvents(world_.takeEvents());
-    if (storageReady_ && !store_->saveInBackground(capture(), revision_))
+    const auto seq = journalSeq_;
+    if (!store_->saveInBackground(capture(), revision_))
     {
         storageReady_ = false;
         note("error", "RATW persistence commit failed: " + store_->error());
     }
+    else
+        trimWhenStored_.push_back({revision_, seq});
 }
 
 void Game::save()
@@ -2835,11 +2944,18 @@ void Game::save()
     saveSoonIn_ = -1;
     if (!store_)
         return;
+    reapSnapshot(true);                            // A snapshot under way is finished and handed over first.
     store_->queueEvents(world_.takeEvents());
+    const auto seq = journalSeq_;
     if (storageReady_ && !store_->save(capture(), revision_))
     {
         storageReady_ = false;
         note("error", "RATW persistence commit failed: " + store_->error());
+    }
+    else if (auto* writer = store_->journal(); writer && storageReady_)
+    {
+        trimWhenStored_.clear();
+        writer->trim(seq);
     }
 }
 
@@ -2851,7 +2967,8 @@ void Game::load(const std::string& payload)
     PersistedWorld saved;
     checkpoint::ServerState state;
     std::string problem;
-    if (!json::parse(payload, document, problem) || !checkpoint::decode(document, saved, state, problem))
+    if (!json::parse(payload, document, problem) || !replayJournal(document, problem) ||
+        !checkpoint::decode(document, saved, state, problem))
     {
         storageReady_ = false;
         note("error", "RATW restore rejected (" + problem + "); checkpoint preserved, autosave disabled");

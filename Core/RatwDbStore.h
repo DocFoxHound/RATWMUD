@@ -1,6 +1,7 @@
 #pragma once
 // A world's save in the database (game.checkpoints and the tables it splits into; migrations 0012, 0021, 0022).
 // Saves are written on a worker thread, most of them as just the rows that changed since the last one.
+#include "RatwJournal.h"
 #include "RatwJsonDoc.h"
 #include "RatwPg.h"
 #include "RatwWorld.h"
@@ -35,7 +36,8 @@ class DbStore
     std::string load();
 
     // Fills in the save's document, and the NPCs' running states (a JSON array for live.npc_state), on the worker:
-    // the game thread only captures what it reads. It must not touch anything the game changes.
+    // the game thread only captures what it reads. It must not touch anything the game changes. A document left null
+    // means there is nothing to write after all (a forked snapshot that failed): the save is skipped.
     using Build = std::function<void(json::Value& document, std::string& npcStates)>;
     // Without waiting: a newer save replaces one still waiting. False once a background write has failed.
     bool saveInBackground(Build build, std::uint64_t revision);
@@ -52,6 +54,11 @@ class DbStore
     void queueEvents(std::vector<WorldEvent> events);
     bool logsEvents() const { return eventsSupported_; }
     bool deltasSupported() const { return deltasSupported_; }
+    // The highest revision whose checkpoint has been written (0 for none yet in this run).
+    std::uint64_t storedRevision() const;
+    // The journal (RatwJournal.h, migration 0028): whether the database has it, and its records after a seq.
+    bool journalSupported() const { return journalSupported_; }
+    bool journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string& problem);
     // NPC states put in live.npc_state from outside since this server's last save: (id, state JSON).
     std::vector<std::pair<std::string, std::string>> externalNpcStates();
     std::string error() const;
@@ -72,10 +79,11 @@ class DbStore
     PgClient pg_;
     std::string worldId_, pgError_;
     std::map<std::string, std::map<std::string, std::uint64_t>> written_;
-    bool haveWritten_ = false, deltasSupported_ = false, eventsSupported_ = false, verify_ = false;
+    bool haveWritten_ = false, deltasSupported_ = false, eventsSupported_ = false, verify_ = false, journalSupported_ = false;
+    std::uint64_t storedRevision_ = 0;
     std::set<std::string> knownLists_;
     int deltasSinceWhole_ = 0;
-    void prepare(Checkpoint& next, std::map<std::string, std::map<std::string, std::uint64_t>>& nowWritten);
+    bool prepare(Checkpoint& next, std::map<std::string, std::map<std::string, std::uint64_t>>& nowWritten);
     bool write(const Checkpoint& save, const std::vector<WorldEvent>& events);
     void writer();
     std::mutex pgLock_;

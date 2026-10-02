@@ -397,9 +397,33 @@ int main(int argc, char** argv)
             expect(std::find(c.controls.begin(), c.controls.end(), web::Close) != c.controls.end(), "a close is answered with a close");
             ::close(c.fd);
         }
+        // Killed outright just after an account is saved (Docs/Design/31-responsiveness.md, Phase 2): the reply came only
+        // once the journal had it, so the account is there when the server comes back.
+        {
+            Link c;
+            expect(c.open(port, "http://127.0.0.1:" + std::to_string(port)), "a browser connects to register");
+            c.read(.3);
+            c.command(R"({"type":"auth_register","username":"kestrel","password":"a long enough password"})");
+            c.read(.5);
+            expect(c.last("lobby") && c.last("lobby")->boolean("ok"), "an account is saved");
+            ::kill(pid, SIGKILL);
+            ::waitpid(pid, &status, 0);
+            ::close(c.fd);
+        }
+        pid = launch(argv[1], port, save, web);
+        {
+            Link c;
+            expect(c.open(port, "http://127.0.0.1:" + std::to_string(port)), "the server comes back after being killed");
+            c.read(.3);
+            c.command(R"({"type":"auth_login","username":"kestrel","password":"a long enough password"})");
+            c.read(.5);
+            expect(c.last("lobby") && c.last("lobby")->boolean("ok"), "and the account saved just before signs in");
+            ::close(c.fd);
+        }
         ::kill(pid, SIGTERM);
         ::waitpid(pid, &status, 0);
         std::remove(save.c_str());
+        std::remove((save + ".journal").c_str());
         std::filesystem::remove_all(web);
         std::filesystem::remove(web + "/../ratw-secret-" + std::to_string(::getpid()));
     }

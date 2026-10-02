@@ -1,9 +1,11 @@
 #include "RatwCheckpoint.h"
 
+#include "RatwSystemLibs.h"
 #include "RatwWire.h"
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 
 namespace ratw::checkpoint
 {
@@ -27,7 +29,165 @@ std::vector<std::string> readStrings(const Value& o, const char* key)
     return out;
 }
 double num(const Value& o, const char* key, double fallback = 0) { return wire::number(o, key, fallback); }
+
+// Map memories compactly (Docs/Design/31-responsiveness.md, Phase 2): a remembered cell's glyphs, and its observed
+// tiles packed eight to a byte, each deflated and in base64. A 256x256 cell a wolf has barely seen was 128 KB of
+// spaces and '0's; it is now a few hundred bytes. Saves written before this ("glyphs", "observed") still read.
+const char Base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+std::string toBase64(const std::vector<std::uint8_t>& in)
+{
+    std::string out;
+    out.reserve((in.size() + 2) / 3 * 4);
+    for (std::size_t i = 0; i < in.size(); i += 3)
+    {
+        const std::uint32_t n = std::uint32_t(in[i]) << 16 | (i + 1 < in.size() ? std::uint32_t(in[i + 1]) << 8 : 0) |
+                                (i + 2 < in.size() ? in[i + 2] : 0);
+        out += Base64[n >> 18 & 63];
+        out += Base64[n >> 12 & 63];
+        out += i + 1 < in.size() ? Base64[n >> 6 & 63] : '=';
+        out += i + 2 < in.size() ? Base64[n & 63] : '=';
+    }
+    return out;
+}
+
+bool fromBase64(const std::string& in, std::vector<std::uint8_t>& out)
+{
+    out.clear();
+    std::uint32_t bits = 0;
+    int held = 0;
+    for (char ch : in)
+    {
+        if (ch == '=')
+            break;
+        const char* at = std::strchr(Base64, ch);
+        if (!at || !*at)
+            return false;
+        bits = bits << 6 | std::uint32_t(at - Base64);
+        if ((held += 6) >= 8)
+        {
+            held -= 8;
+            out.push_back(std::uint8_t(bits >> held & 255));
+        }
+    }
+    return true;
+}
+
+// Deflated and in base64; "" if zlib isn't there (the caller then writes the old, plain form).
+std::string packed(const std::vector<std::uint8_t>& raw)
+{
+    std::vector<std::uint8_t> out;
+    if (raw.empty() || !sys::compress(raw.data(), raw.size(), out))
+        return {};
+    return toBase64(out);
+}
+
+bool unpacked(const Value& j, const char* key, std::size_t length, std::vector<std::uint8_t>& raw)
+{
+    std::vector<std::uint8_t> deflated;
+    return fromBase64(j.string(key), deflated) && sys::uncompress(deflated.data(), deflated.size(), length, raw) && raw.size() == length;
+}
 } // namespace
+
+Value roads(const RoadsState& r)
+{
+    auto roads = Value::object();
+    roads.add("day", double(r.day));
+    roads.add("nextId", double(r.nextId));
+    roads.add("stocked", r.stocked);
+    auto caravans = Value::array(), camps = Value::array(), contracts = Value::array();
+    for (const auto& t : r.caravans)
+    {
+        auto j = Value::object();
+        j.add("id", t.id); j.add("from", t.from); j.add("to", t.to); j.add("account", t.account);
+        j.add("route", strings(t.route)); j.add("leg", double(t.leg));
+        j.add("nextAt", t.nextAt); j.add("departed", t.departed);
+        j.add("guards", t.guards); j.add("status", t.status);
+        j.add("escorts", strings(t.escorts)); j.add("letters", strings(t.letters));
+        j.add("cell", t.cell); j.add("x", t.x); j.add("y", t.y);
+        j.add("waitUntil", t.waitUntil);
+        auto with = Value::object();
+        for (const auto& [who, cells] : t.with)
+            with.add(who, cells);
+        j.add("with", with);
+        caravans.push(j);
+    }
+    for (const auto& b : r.camps)
+    {
+        auto j = Value::object();
+        j.add("id", b.id); j.add("cell", b.cell); j.add("strength", b.strength);
+        j.add("hunger", b.hunger); j.add("lastRaid", b.lastRaid); j.add("active", b.active);
+        j.add("x", b.x); j.add("y", b.y);
+        camps.push(j);
+    }
+    for (const auto& k : r.contracts)
+    {
+        auto j = Value::object();
+        j.add("id", k.id); j.add("kind", k.kind); j.add("poster", k.poster); j.add("town", k.town);
+        j.add("target", k.target); j.add("taker", k.taker); j.add("status", k.status);
+        j.add("reward", double(k.reward)); j.add("created", k.created);
+        j.add("due", k.due); j.add("detail", k.detail);
+        contracts.push(j);
+    }
+    roads.add("caravans", caravans); roads.add("camps", camps); roads.add("contracts", contracts);
+    return roads;
+}
+
+Value crime(const CrimeState& k)
+{
+    // Crime and law (RatwCrime.h): incidents and who saw them, warrants, and who is held in a gaol.
+    auto crime = Value::object();
+    crime.add("nextIncident", k.nextIncident);
+    crime.add("day", k.day);
+    auto incidents = Value::array();
+    for (const auto& i : k.incidents)
+    {
+        auto j = Value::object();
+        j.add("id", i.id); j.add("kind", i.kind); j.add("offender", i.offender); j.add("victim", i.victim);
+        j.add("cell", i.cell); j.add("town", i.town); j.add("time", i.time); j.add("day", i.day);
+        j.add("item", i.item); j.add("quantity", i.quantity); j.add("coins", i.coins); j.add("status", i.status);
+        auto witnesses = Value::array();
+        for (const auto& w : i.witnesses)
+        {
+            auto k = Value::object();
+            k.add("id", w.id); k.add("identified", w.identified); k.add("clarity", w.clarity); k.add("reported", w.reported);
+            witnesses.push(k);
+        }
+        j.add("witnesses", witnesses);
+        incidents.push(j);
+    }
+    crime.add("incidents", incidents);
+    auto warrants = Value::array();
+    for (const auto& w : k.warrants)
+    {
+        auto j = Value::object();
+        j.add("person", w.person); j.add("town", w.town); j.add("fine", w.fine); j.add("since", w.since);
+        auto ids = Value::array();
+        for (const auto& id : w.incidents)
+            ids.push(id);
+        j.add("incidents", ids);
+        auto owed = Value::array();
+        for (const auto& r : w.restitution)
+        {
+            auto k = Value::object();
+            k.add("to", r.to); k.add("item", r.item); k.add("quantity", r.quantity); k.add("coins", r.coins);
+            owed.push(k);
+        }
+        j.add("restitution", owed);
+        warrants.push(j);
+    }
+    crime.add("warrants", warrants);
+    auto custody = Value::array();
+    for (const auto& held : k.custody)
+    {
+        auto j = Value::object();
+        j.add("person", held.person); j.add("town", held.town); j.add("cell", held.cell);
+        j.add("x", held.x); j.add("y", held.y); j.add("until", held.until);
+        custody.push(j);
+    }
+    crime.add("custody", custody);
+    return crime;
+}
 
 Value encode(const PersistedWorld& saved, const ServerState& c, const std::vector<Entity>& npcs, double time)
 {
@@ -67,12 +227,28 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
             j.add("x", m.worldX);
             j.add("y", m.worldY);
             j.add("z", m.worldZ);
-            j.add("glyphs", std::string(m.glyphs.begin(), m.glyphs.end()));
-            std::string bits;
-            bits.reserve(m.observed.size());
-            for (bool b : m.observed)
-                bits += b ? '1' : '0';
-            j.add("observed", bits);
+            std::vector<std::uint8_t> bits((m.observed.size() + 7) / 8);
+            for (std::size_t i = 0; i < m.observed.size(); ++i)
+                if (m.observed[i])
+                    bits[i / 8] |= std::uint8_t(1u << (i % 8));
+            const auto glyphs = packed(std::vector<std::uint8_t>(m.glyphs.begin(), m.glyphs.end()));
+            const auto observed = packed(bits);
+            if ((m.glyphs.empty() || !glyphs.empty()) && (bits.empty() || !observed.empty()))
+            {
+                j.add("tiles", double(m.glyphs.size()));
+                j.add("glyphsZ", glyphs);
+                j.add("seenTiles", double(m.observed.size()));
+                j.add("observedZ", observed);
+            }
+            else
+            {
+                j.add("glyphs", std::string(m.glyphs.begin(), m.glyphs.end()));
+                std::string plain;
+                plain.reserve(m.observed.size());
+                for (bool b : m.observed)
+                    plain += b ? '1' : '0';
+                j.add("observed", plain);
+            }
             seen.push(j);
         }
     root.add("mapMemories", seen);
@@ -101,46 +277,7 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         promises.push(j);
     }
     root.add("promises", promises);
-    auto roads = Value::object();
-    roads.add("day", double(saved.roads.day));
-    roads.add("nextId", double(saved.roads.nextId));
-    roads.add("stocked", saved.roads.stocked);
-    auto caravans = Value::array(), camps = Value::array(), contracts = Value::array();
-    for (const auto& t : saved.roads.caravans)
-    {
-        auto j = Value::object();
-        j.add("id", t.id); j.add("from", t.from); j.add("to", t.to); j.add("account", t.account);
-        j.add("route", strings(t.route)); j.add("leg", double(t.leg));
-        j.add("nextAt", t.nextAt); j.add("departed", t.departed);
-        j.add("guards", t.guards); j.add("status", t.status);
-        j.add("escorts", strings(t.escorts)); j.add("letters", strings(t.letters));
-        j.add("cell", t.cell); j.add("x", t.x); j.add("y", t.y);
-        j.add("waitUntil", t.waitUntil);
-        auto with = Value::object();
-        for (const auto& [who, cells] : t.with)
-            with.add(who, cells);
-        j.add("with", with);
-        caravans.push(j);
-    }
-    for (const auto& b : saved.roads.camps)
-    {
-        auto j = Value::object();
-        j.add("id", b.id); j.add("cell", b.cell); j.add("strength", b.strength);
-        j.add("hunger", b.hunger); j.add("lastRaid", b.lastRaid); j.add("active", b.active);
-        j.add("x", b.x); j.add("y", b.y);
-        camps.push(j);
-    }
-    for (const auto& k : saved.roads.contracts)
-    {
-        auto j = Value::object();
-        j.add("id", k.id); j.add("kind", k.kind); j.add("poster", k.poster); j.add("town", k.town);
-        j.add("target", k.target); j.add("taker", k.taker); j.add("status", k.status);
-        j.add("reward", double(k.reward)); j.add("created", k.created);
-        j.add("due", k.due); j.add("detail", k.detail);
-        contracts.push(j);
-    }
-    roads.add("caravans", caravans); roads.add("camps", camps); roads.add("contracts", contracts);
-    root.add("roads", roads);
+    root.add("roads", checkpoint::roads(saved.roads));
     auto beliefs = Value::array();
     for (const auto& h : saved.roads.beliefs)
     {
@@ -152,58 +289,7 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         beliefs.push(j);
     }
     root.add("beliefs", beliefs);
-    // Crime and law (RatwCrime.h): incidents and who saw them, warrants, and who is held in a gaol.
-    auto crime = Value::object();
-    crime.add("nextIncident", saved.crime.nextIncident);
-    crime.add("day", saved.crime.day);
-    auto incidents = Value::array();
-    for (const auto& i : saved.crime.incidents)
-    {
-        auto j = Value::object();
-        j.add("id", i.id); j.add("kind", i.kind); j.add("offender", i.offender); j.add("victim", i.victim);
-        j.add("cell", i.cell); j.add("town", i.town); j.add("time", i.time); j.add("day", i.day);
-        j.add("item", i.item); j.add("quantity", i.quantity); j.add("coins", i.coins); j.add("status", i.status);
-        auto witnesses = Value::array();
-        for (const auto& w : i.witnesses)
-        {
-            auto k = Value::object();
-            k.add("id", w.id); k.add("identified", w.identified); k.add("clarity", w.clarity); k.add("reported", w.reported);
-            witnesses.push(k);
-        }
-        j.add("witnesses", witnesses);
-        incidents.push(j);
-    }
-    crime.add("incidents", incidents);
-    auto warrants = Value::array();
-    for (const auto& w : saved.crime.warrants)
-    {
-        auto j = Value::object();
-        j.add("person", w.person); j.add("town", w.town); j.add("fine", w.fine); j.add("since", w.since);
-        auto ids = Value::array();
-        for (const auto& id : w.incidents)
-            ids.push(id);
-        j.add("incidents", ids);
-        auto owed = Value::array();
-        for (const auto& r : w.restitution)
-        {
-            auto k = Value::object();
-            k.add("to", r.to); k.add("item", r.item); k.add("quantity", r.quantity); k.add("coins", r.coins);
-            owed.push(k);
-        }
-        j.add("restitution", owed);
-        warrants.push(j);
-    }
-    crime.add("warrants", warrants);
-    auto custody = Value::array();
-    for (const auto& held : saved.crime.custody)
-    {
-        auto j = Value::object();
-        j.add("person", held.person); j.add("town", held.town); j.add("cell", held.cell);
-        j.add("x", held.x); j.add("y", held.y); j.add("until", held.until);
-        custody.push(j);
-    }
-    crime.add("custody", custody);
-    root.add("crime", crime);
+    root.add("crime", checkpoint::crime(saved.crime));
     // Festivals the Dungeon Master called (Phase 9).
     auto festivals = Value::array();
     for (const auto& f : saved.festivals)
@@ -437,10 +523,27 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         m.worldX = num(j, "x");
         m.worldY = num(j, "y");
         m.worldZ = num(j, "z");
-        const auto glyphs = j.string("glyphs");
-        m.glyphs.assign(glyphs.begin(), glyphs.end());
-        for (char b : j.string("observed"))
-            m.observed.push_back(b == '1');
+        if (j.has("glyphsZ") || j.has("observedZ"))
+        {
+            const auto tiles = std::size_t(std::max(0.0, num(j, "tiles"))), seenTiles = std::size_t(std::max(0.0, num(j, "seenTiles")));
+            std::vector<std::uint8_t> glyphs, bits;
+            if ((tiles && !unpacked(j, "glyphsZ", tiles, glyphs)) || (seenTiles && !unpacked(j, "observedZ", (seenTiles + 7) / 8, bits)))
+            {
+                problem = "a map memory of " + j.string("observer") + " (" + m.cellId + ") can't be read";
+                return false;
+            }
+            m.glyphs.assign(glyphs.begin(), glyphs.end());
+            m.observed.resize(seenTiles);
+            for (std::size_t i = 0; i < seenTiles; ++i)
+                m.observed[i] = bits[i / 8] >> (i % 8) & 1;
+        }
+        else
+        {
+            const auto glyphs = j.string("glyphs");
+            m.glyphs.assign(glyphs.begin(), glyphs.end());
+            for (char b : j.string("observed"))
+                m.observed.push_back(b == '1');
+        }
         saved.memories[j.string("observer")][m.cellId] = m;
     }
     for (const auto& v : root.array("npcs"))

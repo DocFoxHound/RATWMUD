@@ -202,6 +202,56 @@ int main()
         older.set("clockOffsetHours", "nine");
         expect(checkpoint::decode(older, back, serverBack, error) && !World().restore(back).ok, "a clock offset that isn't a number");
 
+        // Map memories are kept compactly (doc 31, Phase 2): a big cell barely seen is a few hundred bytes, and comes back
+        // exactly; a save in the old plain form still reads.
+        {
+            auto withMemory = saved;
+            CellMemory m;
+            m.cellId = "big";
+            m.name = "A Big Place";
+            m.knowledge = Knowledge::Visited;
+            m.width = m.height = 256;
+            m.glyphs.assign(256 * 256, ' ');
+            m.observed.assign(256 * 256, false);
+            for (int i = 0; i < 300; ++i)
+            {
+                m.glyphs[std::size_t(1000 + i * 7)] = char('a' + i % 26);
+                m.observed[std::size_t(1000 + i * 7)] = true;
+            }
+            withMemory.memories["player-ash"]["big"] = m;
+            const auto compact = checkpoint::encode(withMemory, server, npcsOf(w), w.time());
+            const auto* entry = &compact.array("mapMemories").back();
+            expect(entry->has("glyphsZ") && json::dump(*entry).size() < 4000,
+                   "a barely-seen 256x256 memory is small: " + std::to_string(json::dump(*entry).size()) + " bytes");
+            json::Value reread;
+            expect(json::parse(json::dump(compact), reread, error), "it parses");
+            PersistedWorld memoryBack;
+            checkpoint::ServerState memoryServer;
+            expect(checkpoint::decode(reread, memoryBack, memoryServer, error), "and decodes: " + error);
+            const auto& again = memoryBack.memories["player-ash"]["big"];
+            expect(again.glyphs == m.glyphs && again.observed == m.observed && again.name == m.name && again.width == 256,
+                   "the same glyphs and tiles seen");
+            auto plain = reread;
+            auto& list = plain.find("mapMemories")->items();
+            auto& old = list.back();
+            old.erase("glyphsZ");
+            old.erase("observedZ");
+            old.set("glyphs", std::string(m.glyphs.begin(), m.glyphs.end()));
+            std::string bits;
+            for (bool b : m.observed)
+                bits += b ? '1' : '0';
+            old.set("observed", bits);
+            PersistedWorld plainBack;
+            expect(checkpoint::decode(plain, plainBack, memoryServer, error) &&
+                       plainBack.memories["player-ash"]["big"].glyphs == m.glyphs &&
+                       plainBack.memories["player-ash"]["big"].observed == m.observed,
+                   "the old plain form still reads: " + error);
+            auto broken = reread;
+            broken.find("mapMemories")->items().back().set("glyphsZ", "!!!");
+            expect(!checkpoint::decode(broken, plainBack, memoryServer, error) && error.find("map memory") != std::string::npos,
+                   "a damaged memory is refused, not read as blank");
+        }
+
         // A town of two hundred, through text and back: every resident is there, where they were.
         const auto files = crowdedGreyfen(200);
         World crowd;

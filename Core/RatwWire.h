@@ -47,6 +47,10 @@ Result environmentCommand(World& world, const std::string& cellId, const std::st
                           bool devTools);
 
 Value society(const SocietyState& s);
+// Parts of society(), as it writes them: for the journal (RatwJournal.h).
+Value economyAccount(const EconomyAccount& a);
+Value economyLedger(const std::vector<EconomyEntry>& entries);
+Value careerPosition(const PositionState& p);
 CareerState readCareers(const Value& o);
 // A malformed subtree invalidates the complete checkpoint (minted -1). Never silently refill purses.
 SocietyState readSociety(const Value& o);

@@ -99,6 +99,7 @@ bool DbStore::open(const std::string& conninfo, const std::string& worldId, std:
         if (row[0])
             knownLists_.insert(*row[0]);
     deltasSupported_ = yes(pg_.exec("SELECT to_regprocedure('game.save_checkpoint_delta(ratw_id,bigint,text,jsonb)') IS NOT NULL"));
+    journalSupported_ = yes(pg_.exec("SELECT to_regclass('game.journal') IS NOT NULL"));
     verify_ = verify_ || std::getenv("RATW_VERIFY_SAVES") != nullptr;
     return true;
 }
@@ -130,13 +131,15 @@ std::string DbStore::load()
     return *result.rows[0][0];
 }
 
-void DbStore::prepare(Checkpoint& next, std::map<std::string, std::map<std::string, std::uint64_t>>& nowWritten)
+bool DbStore::prepare(Checkpoint& next, std::map<std::string, std::map<std::string, std::uint64_t>>& nowWritten)
 {
     json::Value document;
     std::string states;
     next.build(document, states);
     next.build = nullptr;
     next.npcStates = states.empty() ? "[]" : states;
+    if (document.isNull())
+        return false;                              // Nothing to write after all.
     if (!document.isObject())
         document = json::Value::object();
     const bool whole = !deltasSupported_ || !haveWritten_ || deltasSinceWhole_ >= DeltasBetweenWholeSaves;
@@ -206,6 +209,7 @@ void DbStore::prepare(Checkpoint& next, std::map<std::string, std::map<std::stri
         next.changes = withoutNul(changes) + "}";
         next.delta = true;
     }
+    return true;
 }
 
 bool DbStore::write(const Checkpoint& save, const std::vector<WorldEvent>& events)
@@ -258,10 +262,17 @@ void DbStore::writer()
         events.swap(pendingEvents_);
         writing_ = true;
         queue.unlock();
-        const bool built = static_cast<bool>(next.build);
+        bool built = static_cast<bool>(next.build);
         std::map<std::string, std::map<std::string, std::uint64_t>> nowWritten;
-        if (built)
-            prepare(next, nowWritten);
+        if (built && !prepare(next, nowWritten))
+        {
+            queue.lock();
+            writing_ = false;
+            if (!events.empty())                   // Kept for the next checkpoint, in order.
+                pendingEvents_.insert(pendingEvents_.begin(), std::make_move_iterator(events.begin()), std::make_move_iterator(events.end()));
+            idle_.notify_all();
+            continue;
+        }
         bool ok;
         std::string problem;
         {
@@ -288,6 +299,8 @@ void DbStore::writer()
         }
         queue.lock();
         writing_ = false;
+        if (ok)
+            storedRevision_ = std::max(storedRevision_, next.revision);
         if (!ok)
         {
             backgroundFailed_ = true;
@@ -337,6 +350,30 @@ bool DbStore::flush()
     std::unique_lock<std::mutex> queue(queueLock_);
     idle_.wait(queue, [this] { return !pending_ && !writing_; });
     return !backgroundFailed_;
+}
+
+std::uint64_t DbStore::storedRevision() const
+{
+    std::lock_guard<std::mutex> guard(queueLock_);
+    return storedRevision_;
+}
+
+bool DbStore::journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string& problem)
+{
+    if (!journalSupported_)
+        return true;
+    std::lock_guard<std::mutex> connection(pgLock_);
+    const auto rows = pg_.exec("SELECT seq, record FROM game.journal WHERE world_id = $1 AND seq > $2 ORDER BY seq",
+                               {worldId_, std::to_string(after)});
+    if (!rows.ok)
+    {
+        problem = "the journal can't be read: " + rows.error;
+        return false;
+    }
+    for (const auto& row : rows.rows)
+        if (row[0] && row[1])
+            out.push_back({std::uint64_t(std::stoull(*row[0])), *row[1]});
+    return true;
 }
 
 std::vector<std::pair<std::string, std::string>> DbStore::externalNpcStates()
