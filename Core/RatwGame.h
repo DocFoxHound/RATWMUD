@@ -10,6 +10,7 @@
 #include "RatwDirector.h"
 #include "RatwJsonDoc.h"
 #include "RatwMind.h"
+#include "RatwVoice.h"
 #include "RatwPg.h"
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
@@ -18,6 +19,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <random>
@@ -78,6 +80,9 @@ struct Options
     // may play on without saving (as the offline demo worlds do), with the save left as it was.
     bool requireStorage = true;
     std::string dialogueEndpoint;                             // The NPC Mind (loopback only); empty for authored lines.
+    // Cheaper voices (Docs/Design/28-ai-cost.md): the speech router and exchange library (a directory with
+    // router.json and library.json; empty: off), and the ledger of who answered each NPC line (empty: none kept).
+    std::string voiceData, voiceLog;
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
@@ -109,6 +114,9 @@ class Game
     int exitRequested() const { return exit_; }
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
+    // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
+    // checks and the review page (tools/ai_review.py) as much as for play.
+    std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
     const std::map<std::string, Entity>& characters() const { return characters_; }
     std::size_t clients() const { return clients_.size(); }
     std::uint64_t revision() const { return revision_; }
@@ -223,7 +231,24 @@ class Game
     void heed(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply);
     void talkNext(const std::string& npcId);
     void ambient(double dt);                                  // Picks, voices and speaks NPC-to-NPC exchanges.
-    static constexpr int AmbientCallsPerHour = 30;
+    // Cheaper voices (RatwGameVoice.cpp): the game's own answer to what was said ("" leaves it to a model), a reply
+    // spoken and remembered, and a line of the ledger (no words in it: who, what kind, and which route).
+    void speakReply(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply,
+                    const char* route);
+    void voiced(const char* kind, const char* route, const std::string& npcId);
+    voice::Rules voices_;
+    std::ofstream voiceLog_;
+    struct Said
+    {
+        std::string asked, answer, line;
+        double at = 0;
+    };
+    std::map<std::string, Said> lastSaid_;                    // "npc|player": the last the game answered itself.
+    std::map<std::string, std::set<std::size_t>> recentExchanges_;   // By cell: library entries heard lately.
+    std::set<std::string> voicedIncidents_;                   // Incidents an exchange was written live for.
+    double polishOffUntil_ = 0;
+    std::uint64_t voiceSeed_ = 0;
+    static constexpr int AmbientCallsPerHour = 10;   // Live-written exchanges; the rest come from the library.
 
     // Saving.
     void saveSoon();

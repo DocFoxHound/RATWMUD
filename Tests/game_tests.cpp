@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <iterator>
 #include <unistd.h>
 #include <stdexcept>
@@ -189,6 +190,65 @@ void residentsTalkWhereAPlayerCanHear()
     }
     expect(heardBoth, "Ash hears both of them:\n" + ash.said());
     expect(w.bonds().find(a, b)->familiarity > 60, "and the talk brought them a little closer");
+}
+
+// Cheaper voices (doc 28): what the world can answer, the game answers itself, in the NPC's tone, with real
+// prices; the rest goes on to a model (authored lines here, with none configured); and every line is in the ledger.
+void theGameAnswersWhatItKnows()
+{
+    const std::string ledger = "/tmp/ratw-voices-" + std::to_string(::getpid()) + ".jsonl";
+    std::remove(ledger.c_str());
+    game::Options o;
+    o.devIdentity = true;
+    o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
+    o.voiceLog = ledger;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash;
+    ash.id = 1;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    auto& w = g.world();
+    const auto* keeper = w.entity("npc_keeper");
+    expect(keeper && w.society().merchant("npc_keeper"), "Rowan keeps shop");
+    w.entity("player-ash")->cellId = keeper->cellId;
+    w.entity("player-ash")->position = {keeper->position.x + 1, keeper->position.y};
+    run(g, ash, .2);
+    const auto say = [&](const std::string& words, const char* id) {
+        run(g, ash, 2);                             // A moment between posts, as the chat rules ask.
+        ash.events.clear();
+        g.command(&ash, cmd({{"type", "chat"}, {"text", "\"" + words + "\""}, {"commandId", id}}));
+        run(g, ash, .3);
+        std::string reply;
+        for (const auto& e : ash.events)
+            if (e.string("type") == "roleplay" && e.string("speaker") == "Rowan")
+                reply = e.string("text");
+        return reply;
+    };
+    const auto price = w.society().quote("player-ash", "npc_keeper", "meal", 1, true).unitPrice;
+    const auto sells = say("Rowan, what do you sell?", "v1");
+    expect(sells.find("A meal is " + std::to_string(price) + " pennies") != std::string::npos,
+           "Asked what he sells, Rowan gives his real price: " + sells);
+    const auto again = say("Rowan, what do you sell?", "v2");
+    expect(again.find(std::to_string(price)) != std::string::npos, "and again, as he said: " + again + " / " + ash.said());
+    expect(!say("Hello, Rowan!", "v3").empty(), "A greeting is answered");
+    const auto open = say("Rowan, I need to tell you about the strange wolf I saw on the road last night.", "v4");
+    expect(!open.empty(), "Anything else still gets an answer (from a model, or authored lines without one)");
+    g.disconnect(&ash);
+    std::ifstream in(ledger);
+    std::map<std::string, int> routes;
+    for (std::string line; std::getline(in, line);)
+    {
+        json::Value v;
+        std::string error;
+        expect(json::parse(line, v, error) && v.string("kind") == "dialogue" && v.string("npc") == "npc_keeper" &&
+                   !v.has("text"),
+               "Ledger lines say who and how, never what: " + line);
+        ++routes[v.string("route")];
+    }
+    expect(routes["game"] == 3 && routes["written"] == 1, "Three answered by the game, one left to a model (here, written)");
+    std::remove(ledger.c_str());
 }
 
 void accountsAndARestart()
@@ -488,6 +548,7 @@ int main()
     {
         aDevelopmentSession();
         residentsTalkWhereAPlayerCanHear();
+        theGameAnswersWhatItKnows();
         accountsAndARestart();
         aRestartFromAFile();
         playersCannotRuleTheSky();

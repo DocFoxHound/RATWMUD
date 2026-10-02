@@ -1,0 +1,126 @@
+{
+  "about": "What the game answers itself, before a model is asked (Docs/Design/28-ai-cost.md). Patterns match the whole of a short, normalised utterance (lower case, contractions spelt out, punctuation gone, the NPC's name and 'please' left out). The first intent that matches wins; nothing matches, and a model answers. Lines are chosen by intent, how well the NPC knows the speaker (stranger, known, or any) and the NPC's tone (from their personality), falling back to 'any' and 'plain'; a line is used only if the facts fill every blank in it.",
+  "maxWords": 9,
+  "intents": [
+    {"id": "greet", "patterns": ["(hi|hello|hey|hiya|greetings|well met|hail|good (morning|afternoon|evening|day)|morning|evening)( (there|friend|again|all|to you))?"]},
+    {"id": "thanks", "patterns": ["(thanks|thank you|thank you kindly|many thanks|cheers|much obliged|my thanks)( (friend|again|so much|a lot))?"]},
+    {"id": "bye", "patterns": ["(bye|goodbye|good bye|farewell|see you|see you later|later|take care|good night|so long|until next time|i must go|i should go)( (friend|then|again|now))?"]},
+    {"id": "trade", "patterns": [
+      "what (do|did) you (sell|have|have for sale|have to sell|stock|carry)( today)?",
+      "what are you selling( today)?",
+      "what is (for sale|on sale)",
+      "(how much|what) (is|are|for|do) (a |the |your )?(meal|meals|herbs|food|bundle of herbs|herbs cost|meals cost)( cost)?",
+      "what (are|is) your (prices|price)",
+      "(prices|price list)",
+      "what do you charge( for (food|a meal|meals|herbs))?",
+      "do you (sell|have) (food|meals|herbs|anything to eat)"]},
+    {"id": "hours", "patterns": [
+      "when (do|are) you (open|close|closed|closing|open today|shut)",
+      "what (are|is) your (hours|opening hours)",
+      "what hours do you keep",
+      "are you (still )?open( today)?",
+      "when (does|will) the shop (open|close)",
+      "(opening hours|hours)",
+      "when do you (work|start|finish|stop work)"]},
+    {"id": "job", "patterns": [
+      "who are you",
+      "what is your name",
+      "and you are",
+      "who might you be",
+      "what do you do( here| for a living)?",
+      "what is your (trade|job|work)",
+      "what work do you do"]},
+    {"id": "where", "patterns": [
+      "(where is|where can i find|how do i get to|which way (to|is)|where would i find|where do i find|do you know where) (the )?([a-z' ]+?)( is)?"]},
+    {"id": "wanted", "patterns": [
+      "am i wanted",
+      "am i in trouble( with the watch)?",
+      "what do i owe( the watch)?",
+      "what are the charges",
+      "do i owe (anything|the watch anything|the watch)",
+      "is there a warrant (for me|out for me)"]},
+    {"id": "day", "patterns": [
+      "what day is it( today)?",
+      "what is today",
+      "is it market ?day( today)?",
+      "is it (a |the )?(rest day|day of rest|restday)( today)?",
+      "what is the date( today)?",
+      "is there a festival( today)?"]}
+  ],
+  "openers": {
+    "plain": ["", "", "Well, "],
+    "warm": ["Of course! ", "Happy to help. ", "Ah, let me think. "],
+    "gruff": ["", "Hmph. ", "Listen. "],
+    "formal": ["Certainly. ", "Of course. ", "Allow me. "],
+    "sly": ["For you? ", "Ah, well now. ", "Since you ask, "],
+    "shy": ["Oh, um. ", "I, well. ", "Oh! "]
+  },
+  "lines": {
+    "greet": {
+      "stranger": {
+        "plain": ["{greeting}", "Well met, traveller.", "Hello there."],
+        "warm": ["{greeting}", "Welcome, welcome! Not seen you before.", "Hello, friend. New in town?"],
+        "gruff": ["{greeting}", "Hm. You want something?", "Aye?"],
+        "formal": ["{greeting}", "Good day to you.", "Greetings, traveller."],
+        "sly": ["{greeting}", "Well, well. A new face.", "Hello, stranger. What brings you?"],
+        "shy": ["{greeting}", "Oh. Hello.", "Um, hello."]
+      },
+      "known": {
+        "plain": ["Hello again, {player}.", "{player}. Good to see you.", "Back again, {player}?"],
+        "warm": ["{player}! Always good to see you.", "There you are, {player}. How are you keeping?", "Hello, hello, {player}!"],
+        "gruff": ["{player}.", "You again, {player}.", "Hm. {player}."],
+        "formal": ["Good to see you again, {player}.", "Welcome back, {player}.", "{player}, a pleasure as ever."],
+        "sly": ["Ah, {player}. Up to something?", "{player}! Just the wolf I wanted.", "Well, if it isn't {player}."],
+        "shy": ["Oh, {player}. Hello.", "Hello, {player}.", "{player}! Oh, hello."]
+      }
+    },
+    "thanks": {
+      "any": {
+        "plain": ["You're welcome.", "Glad to help.", "Think nothing of it."],
+        "warm": ["Any time at all!", "Oh, you're very welcome.", "My pleasure, truly."],
+        "gruff": ["Aye.", "Don't mention it.", "Fine."],
+        "formal": ["You are most welcome.", "It was no trouble.", "Not at all."],
+        "sly": ["You owe me one.", "I'll remember that.", "Anything for a friend."],
+        "shy": ["Oh, it's nothing.", "You're welcome.", "Um, no trouble."]
+      }
+    },
+    "bye": {
+      "known": {
+        "plain": ["Take care, {player}.", "Until next time, {player}.", "Go well, {player}."],
+        "warm": ["Safe roads, {player}! Come back soon.", "Look after yourself, {player}.", "Mind how you go, {player}!"],
+        "gruff": ["Aye.", "Off with you, then.", "Mind yourself, {player}."]
+      },
+      "any": {
+        "plain": ["Farewell.", "Go well.", "Safe travels."],
+        "warm": ["Safe roads, friend!", "Come back soon.", "Look after yourself."],
+        "gruff": ["Aye.", "Off you go.", "Mind yourself."],
+        "formal": ["Farewell, and good fortune.", "Until we meet again.", "Good day to you."],
+        "sly": ["Don't be a stranger.", "Watch your purse out there.", "Until next time."],
+        "shy": ["Oh, bye.", "Goodbye.", "Take care."]
+      }
+    },
+    "trade": {"any": {"plain": ["{opener}{answer}"]}},
+    "hours": {"any": {"plain": ["{opener}{answer}"]}},
+    "job": {"any": {"plain": ["{opener}{answer}"]}},
+    "where": {"any": {"plain": ["{opener}{answer}"]}},
+    "wanted": {"any": {"plain": ["{opener}{answer}"]}},
+    "day": {"any": {"plain": ["{opener}{answer}"]}},
+    "repeat": {
+      "any": {
+        "plain": ["As I said: {answer}", "Like I told you: {answer}"],
+        "warm": ["Oh, I said, didn't I? {answer}", "As I said, love: {answer}"],
+        "gruff": ["I told you already. {answer}", "Again? {answer}"],
+        "formal": ["As I mentioned: {answer}", "To repeat myself: {answer}"],
+        "sly": ["Weren't you listening? {answer}", "Twice in one breath? {answer}"],
+        "shy": ["Oh, um, like I said: {answer}", "I, I said: {answer}"]
+      }
+    }
+  },
+  "tones": {
+    "warm": ["warm", "kind", "gentle", "cheerful", "friendly", "jolly", "motherly", "fatherly", "generous", "patient", "affectionate", "open"],
+    "gruff": ["gruff", "blunt", "curt", "stern", "surly", "grim", "brusque", "taciturn", "rough", "grumpy", "hard"],
+    "formal": ["formal", "proper", "dignified", "precise", "meticulous", "courteous", "stiff", "solemn", "measured", "polite"],
+    "sly": ["sly", "wry", "shrewd", "cunning", "sharp", "sardonic", "teasing", "mischievous", "dry", "wily", "sarcastic"],
+    "shy": ["shy", "timid", "nervous", "quiet", "anxious", "soft-spoken", "hesitant", "reserved", "meek"]
+  }
+}

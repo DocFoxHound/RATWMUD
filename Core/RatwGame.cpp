@@ -204,6 +204,22 @@ std::string Game::guid()
 
 bool Game::start(std::string& problem)
 {
+    // Cheaper voices (doc 28): the router and the exchange library, and the ledger. Neither is needed to play.
+    if (!options_.voiceData.empty())
+    {
+        std::string trouble;
+        if (voices_.load(options_.voiceData, trouble))
+            note("info", "RATW_VOICE router " + std::string(voices_.routes() ? "on" : "off") + ", " +
+                             std::to_string(voices_.libraryEntries()) + " exchanges in the library");
+        else
+            note("warn", "RATW_VOICE the voice data could not be read (" + trouble + "); models answer everything");
+    }
+    if (!options_.voiceLog.empty())
+    {
+        voiceLog_.open(options_.voiceLog, std::ios::app);
+        if (!voiceLog_)
+            note("warn", "RATW_VOICE the ledger " + options_.voiceLog + " cannot be written");
+    }
     const bool live = !options_.database.empty();
     if (live)
     {
@@ -1845,7 +1861,8 @@ void Game::talk(const std::string& npcId, const std::string& playerId, const std
                             " meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
     context.playerName = identified ? player->name : "traveler";
     context.heardText = heardText;
-    context.memory = identified ? memories_.recallForDialogue(npcId, playerId) : std::string();
+    // The most recent of what they remember, not all of it: shorter requests cost less (doc 28).
+    context.memory = identified ? memories_.recallForDialogue(npcId, playerId, 1600) : std::string();
     context.recollection = identified ? memories_.recall(npcId, playerId) : std::string();
     if (identified)
     {
@@ -1895,24 +1912,51 @@ void Game::talk(const std::string& npcId, const std::string& playerId, const std
     pendingNpc_.insert(npcId);
     saveSoon();
     std::weak_ptr<bool> alive = alive_;
+    // What the game can answer itself (a greeting, a price, the hours, a way: doc 28) it does, without a model.
+    if (const auto answer = gameAnswer(npcId, playerId, heardText, identified); !answer.empty())
+    {
+        if (!mind_.live() || polishOffUntil_ > world_.time())
+        {
+            speakReply(npcId, subjectId, identified, {answer}, "game");
+            return;
+        }
+        // Optionally put in the NPC's voice by the small model, every number and name kept; else as written.
+        mind_.polish(context.name, context.personality, context.mood, answer,
+                     [this, alive, npcId, subjectId, identified, answer](int status, const std::string& polished) {
+                         if (alive.expired())
+                             return;
+                         if (status == 503 && polished.empty())
+                             polishOffUntil_ = world_.time() + 600;   // Off, or unwell: ask again in ten minutes.
+                         speakReply(npcId, subjectId, identified, {polished.empty() ? answer : polished},
+                                    polished.empty() ? "game" : "game+polish");
+                     });
+        return;
+    }
     mind_.converse(context, [this, alive, npcId, subjectId, identified](const mind::Reply& reply) {
         if (alive.expired())
             return;
-        pendingNpc_.erase(npcId);
-        if (!world_.entity(npcId))
-            return;
-        ParsedPost post;
-        post.ok = true;
-        post.speech = true;
-        post.segments.push_back({"speech", reply.text});
-        publish(npcId, post, Voice::Speak);
-        npcLastSpeech_[npcId] = world_.time();
-        memories_.record(npcId, subjectId, {sequence_++, now(), npcId, reply.text});
-        logEvent("conversation", npcId, identified ? subjectId : std::string());
-        heed(npcId, subjectId, identified, reply);
-        saveSoon();
-        talkNext(npcId);
+        speakReply(npcId, subjectId, identified, reply, reply.generated ? "model" : "written");
     });
+}
+
+void Game::speakReply(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply,
+                      const char* route)
+{
+    pendingNpc_.erase(npcId);
+    if (!world_.entity(npcId))
+        return;
+    ParsedPost post;
+    post.ok = true;
+    post.speech = true;
+    post.segments.push_back({"speech", reply.text});
+    publish(npcId, post, Voice::Speak);
+    npcLastSpeech_[npcId] = world_.time();
+    memories_.record(npcId, subjectId, {sequence_++, now(), npcId, reply.text});
+    logEvent("conversation", npcId, identified ? subjectId : std::string());
+    heed(npcId, subjectId, identified, reply);
+    voiced("dialogue", route, npcId);
+    saveSoon();
+    talkNext(npcId);
 }
 
 void Game::consolidate()
@@ -1930,8 +1974,11 @@ void Game::consolidate()
         std::vector<std::pair<std::string, std::string>> turns;
         for (const auto& t : conversation.turns)
             turns.emplace_back(t.who == conversation.npc ? name : t.who, t.text);
-        mind_.summarize(name, turns, [this, alive, id = conversation.id](const std::string& summary) {
-            if (!alive.expired() && !summary.empty() && memories_.rewrite(id, summary))
+        mind_.summarize(name, turns, [this, alive, id = conversation.id, npc = conversation.npc](const std::string& summary) {
+            if (alive.expired())
+                return;
+            voiced("summary", summary.empty() ? "written" : "model", npc);
+            if (!summary.empty() && memories_.rewrite(id, summary))
                 saveSoon();
         });
     }

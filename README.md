@@ -581,6 +581,36 @@ ordinary players cannot change them. See [weather and daylight](Docs/Design/10-i
 If Atlas Workshop was already running before an update, save your work, restart
 `bash tools/editor.sh`, and reload the page. The Python host does not hot-reload.
 
+## NPC voices and what they cost
+
+The NPC Mind (`tools/npc_mind.py`, started by the launchers) voices NPCs with a language model; the key and model
+are in `Saved/Config/RATWNPCAI.local.json` (gitignored), or `RATW_AI_CONFIG`. To keep the cost down
+([doc 28](Docs/Design/28-ai-cost.md)):
+
+- **The game answers what it knows itself:** greetings, thanks and goodbyes, prices and stock, opening hours, the
+  way to someone or somewhere, the watch's charges, the day. Only clear, single requests; anything else goes to a
+  model. The rules and lines are `Data/Voice/router.json`, checked against `Data/Voice/corpus.json`.
+- **Overheard exchanges come from a library** (`Data/Voice/library.json`) with blanks the game fills in; a model
+  writes one live only for gossip about a player standing there, or the first talk of a crime or a death.
+- **Two models.** In the config, alongside `model` (the main voice, for conversations with players):
+
+  ```json
+  "light_model": "<a small, cheap model>",
+  "cost_mode": "balanced",
+  "polish": false,
+  "prices": {"<model>": {"input": 0.0, "cached_input": 0.0, "output": 0.0}}
+  ```
+
+  The small model takes exchanges and summaries, and conversations once a speaker or the world has had its hour's
+  share of the main one (`cost_mode`: `generous`, `balanced` or `frugal`). `polish` has it put the game's own answers
+  in the NPC's voice, every number and name kept. `prices` (dollars per million tokens) are for the report below.
+- **The ledgers:** `Saved/Logs/npc-voices.jsonl` (who answered each NPC line: the game, the library, written lines
+  or a model) and `Saved/Logs/npc-mind-calls.jsonl` (each model call's tokens); neither holds any words.
+  `python3 tools/ai_cost.py` reports lines, tokens and money by day.
+- **Paid tools, run only when you mean to:** `python3 tools/ambient_library.py` (the small model writes more of the
+  library) and `python3 tools/ai_review.py` (a blind side-by-side page of the game, the small model and the main
+  model answering the same samples). `RATW_VOICE=off` turns the router and library off.
+
 ## Verification
 
 ```bash

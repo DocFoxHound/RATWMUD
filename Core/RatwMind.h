@@ -51,6 +51,9 @@ struct Exchange
     bool generated = false;
 };
 
+// News kept in the third person ("Sorrel married Rook"), as `teller` says it ("I married Rook").
+std::string firstPerson(std::string text, const std::string& teller);
+
 // Text cut to at most `units` characters (UTF-16 units, as the Unreal runtime counts), never inside a character.
 std::string left(const std::string& text, std::size_t units);
 std::string trim(const std::string& text);
@@ -72,6 +75,10 @@ class Client
     // A few lines between two NPCs; authored ones when there is no NPC Mind, or it fails.
     static Exchange authoredExchange(const ExchangeContext& c);
     void exchange(const ExchangeContext& c, std::function<void(const Exchange&)> done);
+    // The game's own answer put in the NPC's voice by the small model (doc 28): the status (0 without an NPC Mind)
+    // and the words, "" when it can't (polishing off, a fact lost, a failure): the game's own words stand then.
+    void polish(const std::string& npc, const std::string& personality, const std::string& mood, const std::string& reply,
+                std::function<void(int status, const std::string& text)> done);
     // A finished conversation summarised from the NPC's point of view; "" if there is no such service or it failed.
     void summarize(const std::string& npcName, const std::vector<std::pair<std::string, std::string>>& turns,
                    std::function<void(const std::string&)> done);

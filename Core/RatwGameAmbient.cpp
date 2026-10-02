@@ -99,7 +99,7 @@ void Game::ambient(double dt)
     talk.pick = pick;
     ambient_.push_back(talk);
     const auto id = talk.id;
-    const auto begin = [this, id](const mind::Exchange& written) {
+    const auto begin = [this, id](const mind::Exchange& written, const char* route) {
         for (auto& t : ambient_)
             if (t.id == id)
             {
@@ -108,22 +108,59 @@ void Game::ambient(double dt)
                 t.generated = written.generated;
                 t.nextAt = world_.time();
                 note("info", "RATW_AMBIENT " + t.pick.topic.kind + " " + t.pick.teller + " to " + t.pick.listener + " in " + t.pick.cell +
-                                 (written.generated ? " (the Mind)" : " (authored)"));
+                                 " (" + route + ")");
+                voiced("exchange", route, t.pick.teller);
             }
     };
-    // The model is asked only so often; past that, and without it, the authored lines speak.
+    // From the library (doc 28): an exchange written once with blanks, filled in here, for nothing.
+    const Bond ab = world_.bonds().find(a->id, b->id) ? *world_.bonds().find(a->id, b->id) : Bond{};
+    const Bond ba = world_.bonds().find(b->id, a->id) ? *world_.bonds().find(b->id, a->id) : Bond{};
+    const std::string band = std::min(ab.affinity, ba.affinity) <= -25                    ? "rivals"
+                             : ab.familiarity >= 40 && ab.affinity >= 20 && ba.affinity >= 10 ? "friends"
+                                                                                         : "acquaintances";
+    const std::map<std::string, std::string> blanks{
+        {"teller", a->name}, {"listener", b->name}, {"subject", context.subjectName}, {"claim", context.claim},
+        {"news", mind::firstPerson(context.news, a->name)}, {"day", context.day}};
+    const auto cell = pick.cell;
+    const auto fromLibrary = [this, cell, kind = pick.topic.kind, band, blanks, seed = id * 2654435761u]() {
+        const auto x = voices_.exchange(kind, band, blanks, seed, recentExchanges_[cell]);
+        mind::Exchange out;
+        out.lines = x.lines;
+        return out;
+    };
+    // Written live only when it matters most: gossip about a player standing there, or the first talk of a crime
+    // or a death. The model is asked only so often; past that, and without it, the library speaks (then the authored
+    // lines, when it has nothing fitting).
+    bool playerHere = false;
+    for (const auto* c : clients_)
+        if (const auto* e = world_.entity(c->entityId); e && e->id == pick.topic.subject && e->cellId == pick.cell)
+            playerHere = true;
+    const bool fresh = !pick.topic.incident.empty() && !voicedIncidents_.count(pick.topic.incident);
+    const bool salient = (pick.topic.kind == "gossip" && (playerHere || fresh)) ||
+                         (pick.topic.kind == "news" && (pick.topic.claim == "loss" || pick.topic.claim == "crime"));
     while (!ambientCalls_.empty() && now - ambientCalls_.front() > 3600)
         ambientCalls_.pop_front();
-    if (!mind_.live() || int(ambientCalls_.size()) >= AmbientCallsPerHour)
+    if (!salient || !mind_.live() || int(ambientCalls_.size()) >= AmbientCallsPerHour)
     {
-        begin(mind::Client::authoredExchange(context));
+        if (auto x = voices_.libraryEntries() ? fromLibrary() : mind::Exchange{}; !x.lines.empty())
+            begin(x, "library");
+        else
+            begin(mind::Client::authoredExchange(context), "written");
         return;
     }
     ambientCalls_.push_back(now);
+    if (!pick.topic.incident.empty())
+        voicedIncidents_.insert(pick.topic.incident);
     std::weak_ptr<bool> alive = alive_;
-    mind_.exchange(context, [alive, begin](const mind::Exchange& written) {
-        if (!alive.expired())
-            begin(written);
+    mind_.exchange(context, [alive, begin, fromLibrary, this](const mind::Exchange& written) {
+        if (alive.expired())
+            return;
+        if (written.generated)
+            begin(written, "model");
+        else if (auto x = voices_.libraryEntries() ? fromLibrary() : mind::Exchange{}; !x.lines.empty())
+            begin(x, "library");
+        else
+            begin(written, "written");
     });
 }
 } // namespace ratw::game

@@ -47,11 +47,28 @@ class BridgeError(Exception):
         self.code, self.status = code, status
 
 
+COST_MODES = ("generous", "balanced", "frugal")
+
+
 @dataclass(frozen=True)
 class Config:
     model: str
     api_key: str = field(repr=False)
     endpoint: str = ENDPOINT
+    # Cheaper voices (Docs/Design/28-ai-cost.md): a small model for routine work (the main one when unset), how freely
+    # the main one is spent, and whether the game's own answers are put in the NPC's voice by the small model.
+    light_model: str = ""
+    cost_mode: str = "balanced"
+    polish: bool = False
+
+    @property
+    def light(self) -> str:
+        return self.light_model or self.model
+
+
+def valid_model(model: object) -> bool:
+    return (isinstance(model, str) and 0 < len(model) <= 128
+            and all(c.isascii() and (c.isalnum() or c in "-._") for c in model))
 
 
 def load_config(path: Path) -> Config:
@@ -68,10 +85,16 @@ def load_config(path: Path) -> Config:
         if (not isinstance(key, str) or not key or len(key) > 4096
                 or any(ord(c) <= 32 or ord(c) >= 127 for c in key)):
             raise BridgeError("invalid_key")
-        if (not isinstance(model, str) or not model or len(model) > 128
-                or any(not (c.isascii() and (c.isalnum() or c in "-._")) for c in model)):
+        if not valid_model(model):
             raise BridgeError("invalid_model")
-        return Config(model=model, api_key=key)
+        light = data.get("light_model", "")
+        if light not in ("", None) and not valid_model(light):
+            raise BridgeError("invalid_model")
+        mode = data.get("cost_mode", "balanced")
+        polish = data.get("polish", False)
+        if mode not in COST_MODES or not isinstance(polish, bool):
+            raise BridgeError("invalid_config")
+        return Config(model=model, api_key=key, light_model=light or "", cost_mode=mode, polish=polish)
     except BridgeError:
         raise
     except (OSError, ValueError, TypeError):

@@ -45,6 +45,7 @@ ratw_start_mind() {
   [[ -n "$database" ]] && history=(--database "$database")
   mkdir -p "$ratw_root/Saved/Logs"
   python3 "$ratw_root/tools/npc_mind.py" "${source[@]}" "${history[@]}" --port "$port" \
+    --ledger "$ratw_root/Saved/Logs/npc-mind-calls.jsonl" \
     >"$ratw_root/Saved/Logs/npc-mind.log" 2>&1 &
   ratw_mind_pid=$!
   trap ratw_stop_mind EXIT

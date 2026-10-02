@@ -30,8 +30,8 @@ class Recording:
     def __init__(self, answer=None):
         self.calls, self.answer = [], answer or reply()
 
-    def complete(self, system, user, name, schema, max_tokens, timeout):
-        self.calls.append({"system": system, "user": json.loads(user), "name": name})
+    def complete(self, system, user, name, schema, max_tokens, timeout, model=None):
+        self.calls.append({"system": system, "user": json.loads(user), "name": name, "model": model})
         return (self.answer(self.calls[-1]) if callable(self.answer) else self.answer), {"total_tokens": 7}
 
 
@@ -191,6 +191,62 @@ class MindTests(unittest.TestCase):
         self.assertLessEqual(len(long["lines"][0]["text"]), mind.MAX_LINE)
         fixture = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).exchange(request)
         self.assertEqual(["a", "b"], [l["speaker"] for l in fixture["lines"]])
+
+    def test_the_main_voice_and_the_small_one(self):
+        provider = Recording(lambda call: {"summary": "They talked."} if call["name"] == "npc_summary" else reply())
+        m = mind.Mind(provider, audit=lambda e: None, models={"voice": "big", "light": "small"})
+        m.dialogue(CONTEXT)
+        m.summarize({"npc": "Wren", "turns": [{"who": "Ash", "text": "Hello."}]})
+        self.assertEqual(["big", "small"], [c["model"] for c in provider.calls], "Players get the main voice; summaries the small")
+        provider.answer = lambda call: {"lines": [{"speaker": "a", "text": "Hm."}, {"speaker": "b", "text": "Aye."}]}
+        m.exchange({"a": {"name": "Wren"}, "b": {"name": "Sorrel"}, "topic": {"kind": "day", "facts": []}})
+        self.assertEqual("small", provider.calls[-1]["model"], "Exchanges the small")
+
+    def test_budgets_bend_to_the_small_model(self):
+        provider = Recording()
+        m = mind.Mind(provider, audit=lambda e: None, models={"voice": "big", "light": "small"}, mode="frugal",
+                      budget=mind.Budget(1000, 1000))
+        for _ in range(mind.COST_MODES["frugal"]["voice_per_speaker"] + 2):
+            m.dialogue(CONTEXT)
+        used = [c["model"] for c in provider.calls]
+        self.assertEqual(["big"] * 20 + ["small"] * 2, used, "Past a speaker's hour of the main voice, the small one answers")
+        other = dict(CONTEXT, subjectId="player-birch")
+        m.dialogue(other)
+        self.assertEqual("big", provider.calls[-1]["model"], "Each speaker has their own share")
+
+    def test_a_quick_failure_falls_back_to_the_small_model(self):
+        class Flaky(Recording):
+            def complete(self, system, user, name, schema, max_tokens, timeout, model=None):
+                if model == "big":
+                    self.calls.append({"model": model})
+                    raise BridgeError("provider_http", 503)
+                return super().complete(system, user, name, schema, max_tokens, timeout, model)
+        provider = Flaky()
+        got = mind.Mind(provider, audit=lambda e: None, models={"voice": "big", "light": "small"}).dialogue(CONTEXT)
+        self.assertEqual(("Mind the crust.", ["big", "small"]), (got["text"], [c["model"] for c in provider.calls]))
+
+    def test_exchanges_are_written_only_so_often(self):
+        provider = Recording(lambda call: {"lines": [{"speaker": "a", "text": "Hm."}, {"speaker": "b", "text": "Aye."}]})
+        m = mind.Mind(provider, audit=lambda e: None, mode="frugal", budget=mind.Budget(1000, 1000))
+        request = {"a": {"name": "Wren"}, "b": {"name": "Sorrel"}, "topic": {"kind": "day", "facts": []}}
+        for _ in range(mind.COST_MODES["frugal"]["exchanges_per_hour"]):
+            m.exchange(request)
+        with self.assertRaises(BridgeError) as raised:
+            m.exchange(request)
+        self.assertEqual("budget_exhausted", raised.exception.code, "then the game's library speaks")
+
+    def test_polishing_keeps_the_facts(self):
+        request = {"npc": "Wren", "personality": "Wry.", "reply": "A meal is 6 pennies. Sorrel keeps the herbs."}
+        with self.assertRaises(BridgeError):
+            mind.Mind(Recording(), audit=lambda e: None).polish(request)
+        good = Recording(lambda call: {"text": "Six? No: 6 pennies a meal, love. Ask Sorrel for herbs."})
+        self.assertEqual("Six? No: 6 pennies a meal, love. Ask Sorrel for herbs.",
+                         mind.Mind(good, audit=lambda e: None, polish=True).polish(request)["text"])
+        bad = Recording(lambda call: {"text": "A meal is five pennies, ask Sorrel."})
+        with self.assertRaises(BridgeError):
+            mind.Mind(bad, audit=lambda e: None, polish=True).polish(request)
+        self.assertTrue(mind.keeps_facts("Open from 8 to 12. Rowan knows.", "From 8 until 12; Rowan knows, aye."))
+        self.assertFalse(mind.keeps_facts("Open from 8 to 12.", "Open from 8 till noon."))
 
     def test_budgets(self):
         now = [0.0]

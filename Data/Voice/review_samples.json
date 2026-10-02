@@ -1,0 +1,24 @@
+{
+  "about": "Sample lines for the blind review (tools/ai_review.py; doc 28), said to residents of the demo world. Some the game answers itself, some go to a model; the review shows each answered three ways.",
+  "samples": [
+    {"npc": "npc_keeper", "say": "Hello!"},
+    {"npc": "npc_keeper", "say": "What do you sell?"},
+    {"npc": "npc_keeper", "say": "When do you open?"},
+    {"npc": "npc_keeper", "say": "Who are you?"},
+    {"npc": "npc_keeper", "say": "What day is it?"},
+    {"npc": "npc_keeper", "say": "Thank you kindly."},
+    {"npc": "npc_keeper", "say": "Goodbye."},
+    {"npc": "npc_keeper", "say": "I've come a long way. Is there somewhere a tired wolf can rest?"},
+    {"npc": "npc_keeper", "say": "Have you heard anything strange from the road lately?"},
+    {"npc": "npc_keeper", "say": "I'm sorry, I can't pay today. Could I owe you?"},
+    {"npc": "npc_cook", "say": "Hello there."},
+    {"npc": "npc_cook", "say": "What's cooking? It smells wonderful."},
+    {"npc": "npc_cook", "say": "Who taught you to cook like this?"}
+  ],
+  "exchanges": [
+    {"kind": "gossip", "band": "friends", "teller": "Rowan", "listener": "Mara", "subject": "Ash", "claim": "stole from the cook"},
+    {"kind": "news", "band": "acquaintances", "teller": "Rowan", "listener": "Mara", "news": "Rowan took on an apprentice"},
+    {"kind": "quarrel", "band": "rivals", "teller": "Rowan", "listener": "Mara"},
+    {"kind": "day", "band": "acquaintances", "teller": "Rowan", "listener": "Mara", "day": "The stalls are full today."}
+  ]
+}

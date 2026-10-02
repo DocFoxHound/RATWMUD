@@ -1,0 +1,28 @@
+{
+  "about": "Overheard exchanges with blanks, played by the ambient director instead of asking a model (Docs/Design/28-ai-cost.md, step 4). Each has a kind (gossip, news, quarrel, friends, day), a band (friends, acquaintances, rivals, or any) and a tone (plain unless set). Speakers are a (who opens) and b. Blanks: {teller}, {listener}, {subject}, {claim}, {news}, {day}; nothing else, and no names or facts of their own. Written by hand to start; tools/ambient_library.py adds more from the small model.",
+  "exchanges": [
+    {"kind": "gossip", "band": "any", "lines": [["a", "Have you heard? They say {subject} {claim}."], ["b", "{subject}? I'd not have thought it."]]},
+    {"kind": "gossip", "band": "any", "lines": [["a", "Word is {subject} {claim}."], ["b", "Who told you that?"], ["a", "Never you mind. But it's true, I'd wager."]]},
+    {"kind": "gossip", "band": "friends", "lines": [["a", "{listener}, between us: {subject} {claim}."], ["b", "No! Truly?"], ["a", "Keep it to yourself, mind."]]},
+    {"kind": "gossip", "band": "friends", "lines": [["a", "You'll never guess what I heard about {subject}."], ["b", "Go on."], ["a", "That {subject} {claim}."], ["b", "Well. I'll keep an eye out."]]},
+    {"kind": "gossip", "band": "acquaintances", "lines": [["a", "I hear {subject} {claim}."], ["b", "Is that so. Thank you for telling me."]]},
+    {"kind": "gossip", "band": "rivals", "lines": [["a", "Even you should know this: {subject} {claim}."], ["b", "And why would I believe you?"], ["a", "Believe what you like."]]},
+    {"kind": "news", "band": "any", "lines": [["a", "You'll have heard: {news}."], ["b", "I had not. How are you keeping?"]]},
+    {"kind": "news", "band": "friends", "lines": [["a", "{listener}, did you hear? {news}."], ["b", "I did. If you need anything, you know where I am."], ["a", "Thank you. I know."]]},
+    {"kind": "news", "band": "friends", "lines": [["a", "Strange days. {news}."], ["b", "Strange days indeed."]]},
+    {"kind": "news", "band": "acquaintances", "lines": [["a", "Did you hear? {news}."], ["b", "So I'd heard. Well, well."]]},
+    {"kind": "news", "band": "rivals", "lines": [["a", "I suppose you've heard: {news}."], ["b", "Everyone has. You make sure of that."]]},
+    {"kind": "quarrel", "band": "rivals", "lines": [["a", "Still here, {listener}?"], ["b", "Still here. Same as you."], ["a", "Pity."]]},
+    {"kind": "quarrel", "band": "rivals", "lines": [["a", "I've nothing to say to you, {listener}."], ["b", "Then say nothing, and go."]]},
+    {"kind": "quarrel", "band": "rivals", "lines": [["a", "Keep your distance, {listener}."], ["b", "Gladly."], ["a", "And keep your snout out of my business."]]},
+    {"kind": "quarrel", "band": "rivals", "lines": [["a", "You've a nerve, showing your face."], ["b", "I go where I please, {teller}."]]},
+    {"kind": "friends", "band": "friends", "lines": [["a", "{listener}! There you are."], ["b", "Here I am. {day}"], ["a", "Isn't it just."]]},
+    {"kind": "friends", "band": "friends", "lines": [["a", "How goes it, {listener}?"], ["b", "Well enough. You?"], ["a", "Can't complain. Well, I could."], ["b", "You always do."]]},
+    {"kind": "friends", "band": "friends", "lines": [["a", "Good to see you, {listener}."], ["b", "And you. We should share a meal soon."]]},
+    {"kind": "friends", "band": "friends", "lines": [["a", "Tired, {listener}?"], ["b", "Bone tired. And you look worse."], ["a", "Charming as ever."]]},
+    {"kind": "day", "band": "any", "lines": [["a", "{day}"], ["b", "It is at that."]]},
+    {"kind": "day", "band": "any", "lines": [["a", "{day}"], ["b", "So it is."], ["a", "Well. Good day to you."]]},
+    {"kind": "day", "band": "acquaintances", "lines": [["a", "{day}"], ["b", "Aye. Good day, {teller}."]]},
+    {"kind": "day", "band": "friends", "lines": [["a", "{day} Shall we make the most of it?"], ["b", "Why not."]]}
+  ]
+}

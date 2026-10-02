@@ -244,20 +244,48 @@ void Client::summarize(const std::string& npcName, const std::vector<std::pair<s
           }});
 }
 
+std::string firstPerson(std::string text, const std::string& teller)
+{
+    if (teller.empty())
+        return text;
+    if (text.rfind(teller + " ", 0) == 0)
+        text = "I" + text.substr(teller.size());
+    for (std::size_t at; (at = text.find(" " + teller)) != std::string::npos;)
+        text.replace(at + 1, teller.size(), "me");
+    return text;
+}
+
+void Client::polish(const std::string& npc, const std::string& personality, const std::string& mood, const std::string& reply,
+                    std::function<void(int, const std::string&)> done)
+{
+    const std::string suffix = "/dialogue";
+    if (!live() || path_.size() < suffix.size() || path_.compare(path_.size() - suffix.size(), suffix.size(), suffix) != 0)
+    {
+        done(0, {});
+        return;
+    }
+    auto body = json::Value::object();
+    body.add("npc", left(npc, 120));
+    body.add("personality", left(personality, 1000));
+    body.add("mood", left(mood, 40));
+    body.add("reply", left(reply, 400));
+    post({path_.substr(0, path_.size() - suffix.size()) + "/polish", json::dump(body), 4.0,
+          [done](int status, const std::string& text) {
+              json::Value parsed;
+              std::string error, words;
+              if (status == 200 && text.size() < 8192 && json::parse(text, parsed, error))
+                  words = trim(parsed.string("text"));
+              done(status, left(words, 401).size() <= left(words, 400).size() ? words : std::string());
+          }});
+}
+
 Exchange Client::authoredExchange(const ExchangeContext& c)
 {
     const auto pick = [&](std::initializer_list<const char*> options) {
         const auto n = std::hash<std::string>{}(c.a.name + c.b.name + c.kind) % options.size();
         return std::string(*(options.begin() + n));
     };
-    const auto told = [&](std::string text) {
-        // News is kept in the third person; its teller says it in the first.
-        if (text.rfind(c.a.name + " ", 0) == 0)
-            text = "I" + text.substr(c.a.name.size());
-        for (std::size_t at; (at = text.find(" " + c.a.name)) != std::string::npos;)
-            text.replace(at + 1, c.a.name.size(), "me");
-        return text;
-    };
+    const auto told = [&](const std::string& text) { return firstPerson(text, c.a.name); };
     Exchange out;
     const auto say = [&](int who, const std::string& text) { out.lines.push_back({who, left(text, 240)}); };
     if (c.kind == "gossip")

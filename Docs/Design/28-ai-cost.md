@@ -1,6 +1,6 @@
 # 28. Cheaper NPC voices: the game answers what it can, a small model the rest
 
-Planned 2026-09-30, not built yet. The aim: much less spent on language models, with NPCs that still sound like
+Planned 2026-09-30; built 2026-10-01 (see "Built", at the end). The aim: much less spent on language models, with NPCs that still sound like
 themselves. The principle is the one the rest of the game follows: **rules decide, language performs**, and a model is
 used only where something new is being said.
 
@@ -112,3 +112,41 @@ with the main model kept for the conversations that are worth it.
 - Which small model, and the prices of both (in the config).
 - The cost mode, and the per-player and world budgets.
 - Whether the game's own answers are polished by the small model (better voice, a little cost) or used as written.
+
+## Built (2026-10-01)
+
+- **The ledger.** The game server writes `Saved/Logs/npc-voices.jsonl` (`--voice-log`): a line per NPC line said, with
+  its kind (dialogue, exchange, summary) and route (`game`, `game+polish`, `library`, `written`, `model`), never the
+  words. The NPC Mind appends each call to `Saved/Logs/npc-mind-calls.jsonl` (`--ledger`): kind, tier, model,
+  outcome, tokens and cached tokens. `tools/ai_cost.py` reports by day: lines and how they were answered, the share
+  answered without a model, calls and tokens by kind and model, and money where the config has prices.
+- **Two models.** `light_model`, `cost_mode` and `polish` in the Mind's config (`npc_bridge.Config`). Player dialogue
+  uses the main model until a speaker has had their hour's share (generous 120, balanced 60, frugal 20) or the world
+  has (1200, 600, 200), then the small one; a quick failure of the main model (an HTTP error, a refusal, a reply that
+  fails its checks) is answered by the small one. Exchanges, summaries and polishing use the small one; exchanges
+  written live are capped by mode (20, 10, 4 an hour) and the game caps them at 10. Without a `light_model`, the main
+  model does everything, as before.
+- **The speech router** (`Core/RatwVoice.*`, `Core/RatwGameVoice.cpp`, `Data/Voice/router.json`). What a player says
+  is normalised (lower case, contractions spelt out, punctuation, the NPC's name and "please" gone) and matched whole
+  against each request's patterns, nine words at most. A match is answered from the world: the merchant's real prices
+  and stock (`Society::quote`), their hours (with Restday and Marketday), name and work, where a resident works or
+  lives (never where a player is) or which way a place lies, a guard's warrants and what settles them, the day.
+  Recognised but with nothing true to say (an unknown place, hours for someone without a post), it goes to a model.
+  The same thing asked again within ten minutes is answered "as I said". Lines come in six tones (taken from the
+  personality's words), for strangers or those known (familiarity 25 and up), never the same line twice running; a
+  first meeting may use the NPC's own greeting. The corpus (`Data/Voice/corpus.json`, 50 lines) is checked by
+  `Tests/voice_tests.cpp`. With `polish`, the small model rewrites the answer and the Mind checks every number and
+  name survived, else the game's words stand; the game stops asking for ten minutes when polishing is off.
+- **The exchange library** (`Data/Voice/library.json`: 23 hand-written to start). The director plays one for most
+  exchanges, filled in (news in the teller's own words), passing over those heard lately in that place; it writes one
+  live only for gossip about a player there, the first talk of an incident, or news of a death or a crime, and falls
+  back to the library when that fails. `tools/ambient_library.py` has the small model write more (one call per kind,
+  band and tone), each checked: 2 to 4 lines, both speaking, only the listed blanks and those its kind needs, no
+  names of its own, no duplicates.
+- **Shorter requests.** Memory sent with a conversation is cut to 1600 characters (from 3600); history to the last six
+  dealings (from twelve); dialogue output to 260 tokens (from 320).
+- **The review.** `tools/ai_review.py` answers `Data/Voice/review_samples.json` three ways (the game via
+  `build-core/voice_check`, the small model, the main model) and exchanges three ways (library, small, main), on one
+  page in shuffled columns with the key at the end. Paid; run when wanted.
+- **Not done:** the provider's batch discount for writing the library (it calls the model one combination at a
+  time); a cost view in the Dungeon Master. No small model is chosen yet: the operator names one in the config.
