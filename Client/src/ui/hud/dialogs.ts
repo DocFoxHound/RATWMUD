@@ -17,9 +17,14 @@ export class Dialogs {
     private panel: HTMLElement;
     private key = '';
     private aliasInput: HTMLInputElement;
+    private noteInput: HTMLInputElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
+        this.noteInput = document.createElement('input');
+        this.noteInput.className = 'name-input';
+        this.noteInput.maxLength = 500;
+        this.noteInput.placeholder = 'Only you see this';
         this.aliasInput = document.createElement('input');
         this.aliasInput.className = 'name-input';
         this.aliasInput.addEventListener('keydown', e => {
@@ -47,7 +52,7 @@ export class Dialogs {
         // What the open sheet shows; it is built again only when this changes (a trade's stock, a new colour...).
         const self = obj(s.snapshot, 'self');
         const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork') : '';
-        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? self : '',
+        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
             m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
@@ -105,7 +110,7 @@ export class Dialogs {
         el('p', 'muted', right, str(self, 'state', 'Set your current state with /me.'));
         el('p', 'sage small', right, '/lay then move to sneak. /stand to walk normally.');
         el('div', 'label gold', right, 'ROLEPLAY PROGRESSION');
-        el('div', 'big', right, `Level ${Math.trunc(num(self, 'socialLevel', 1))}`);
+        el('div', 'big', right, `Level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
         el('div', 'sage', right, `${Math.trunc(num(self, 'socialXp'))} social experience`);
         const bar = el('div', 'bar', right);
         el('div', 'fill', bar).style.width = `${clamp(num(self, 'socialXp') / 100, 0, 1) * 100}%`;
@@ -115,6 +120,8 @@ export class Dialogs {
         el('span', 'scent', skills, `Scent ${clamp(Math.trunc(num(self, 'scentSkill')), 0, 100)} / 100`);
         el('span', 'muted', skills, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`);
         this.names(right, self);
+        this.stories(right, self);
+        this.reputation(right);
         el('div', 'label gold', this.panel, 'DESCRIPTION');
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
         const actions = el('div', 'sheet-actions', this.panel);
@@ -145,6 +152,32 @@ export class Dialogs {
             });
         }
         el('p', 'muted small', parent, 'Wolves know you only by a name you tell them: say "I\'m …" aloud, or Introduce from a wolf\'s menu.');
+    }
+
+    /** Their Stories (doc 32, 1.2): agree to one, tell one, give a Story Star. */
+    private stories(parent: HTMLElement, self: Json | null) {
+        const stories = arr(obj(self, 'social'), 'stories').filter(isObject);
+        if (!stories.length) return;
+        el('div', 'label gold', parent, 'STORIES');
+        for (const st of stories) {
+            const row = el('div', 'story-row', parent);
+            const id = str(st, 'id'), state = str(st, 'state');
+            el('span', '', row, `"${str(st, 'name')}" · ${state} · ${num(st, 'scenes')} scene${num(st, 'scenes') === 1 ? '' : 's'}` +
+                (bool(st, 'chapter') ? ' · a Chapter Story' : ''));
+            if (state === 'pending' && !bool(st, 'approved'))
+                button('AGREE', 'small', row, () => this.s.sendSocial({verb: 'approve', story: id}));
+            if (state === 'active' && bool(st, 'mine') && num(st, 'scenes') >= 2)
+                button('TELL IT', 'small', row, () => this.s.sendSocial({verb: 'close', story: id})).title = 'Close the Story and be paid for it';
+            for (const t of arr(st, 'starTargets').filter(isObject))
+                button(`★ ${str(t, 'name')}`, 'small', row, () => this.s.sendSocial({verb: 'storystar', story: id, target: str(t, 'id')}));
+        }
+    }
+
+    /** Their name about town (doc 32, 1.4): what residents who know them think, asked for, never a score. */
+    private reputation(parent: HTMLElement) {
+        el('div', 'label gold', parent, 'YOUR NAME ABOUT TOWN');
+        for (const line of this.s.reputation) el('div', 'small', parent, line);
+        button(this.s.reputation.length ? 'ASK AGAIN' : 'HEAR WHAT IS SAID', 'small', parent, () => this.s.sendSocial({verb: 'reputation'}));
     }
 
     private inventory(self: Json | null) {
@@ -279,6 +312,16 @@ export class Dialogs {
                 ? ` · ${num(inspected, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER` : ''));
             el('p', 'pre', el('div', 'sheet-col', cols), s.inspectedText);
         } else el('p', 'pre', this.panel, s.inspectedText);
+        // How they regard this wolf, and this wolf's own note on them (doc 32, 1.4).
+        const inspected = s.inspectedCharacter, id = str(inspected, 'id');
+        if (str(inspected, 'regard')) el('p', 'sage', this.panel, `They ${str(inspected, 'regard')}.`);
+        if (id && id !== s.selfId) {
+            el('div', 'label gold', this.panel, 'YOUR NOTE');
+            const row = el('div', 'name-add', this.panel);
+            this.noteInput.value = str(inspected, 'note');
+            row.append(this.noteInput);
+            button('SAVE', 'small', row, () => s.sendSocial({verb: 'note', target: id, text: this.noteInput.value}));
+        }
         el('p', 'muted small', this.panel, 'Only information your character is allowed to perceive appears here.');
     }
 }

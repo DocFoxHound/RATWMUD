@@ -24,6 +24,7 @@ ParsedPost parsePost(const std::string& text);
 struct SocialEvidence
 {
     int words = 0;
+    int actionWords = 0;        // Of /action and /pose: counted at half weight (doc 32, 1.1). /me sets a state: none.
     std::uint64_t contentHash = 0;
 };
 SocialEvidence roleplayEvidence(const ParsedPost& post);
@@ -81,6 +82,7 @@ struct SocialPost
     bool ooc = false;
     std::uint64_t contentHash = 0;
     std::vector<std::string> audience = {};
+    std::string party = {};     // Said with a party mate listening: the party's own scene (doc 32, 1.1).
 };
 struct LedgerEntry
 {
@@ -101,10 +103,51 @@ struct SocialSession
     std::string id, cell;
     double started = 0, last = 0, ended = 0;
     std::map<std::string, Contribution> members;
+    std::string party = {};       // A party's own scene, apart from the cell's (doc 32, 1.1).
 };
+// Gold Stars and Story Stars (doc 32, 1.2): binary thanks from one qualified participant to another.
+struct SocialStar
+{
+    std::string giver, recipient, source, kind;   // kind: "gold" (a scene) or "story".
+    double at = 0;
+    int amount = 0;
+};
+// A Story: a chain of qualified scenes sharing participants, approved by two thirds of them; closing it pays for the
+// continuity. `chapter` is set when its members are mostly one Chapter's (a Chapter Story, doc 32, Part 3).
+struct SocialStory
+{
+    std::string id, name, owner, state = "pending";   // pending, active, closed, expired.
+    double created = 0, last = 0;
+    std::vector<std::string> scenes;
+    std::set<std::string> members, approvals, starred;
+    std::string chapter;
+};
+struct SocialResult
+{
+    bool ok = false;
+    std::string message;
+    int amount = 0;
+};
+
 class SocialLedger
 {
   public:
+    std::vector<SocialStar> stars;
+    std::map<std::string, SocialStory> stories;
+    std::uint64_t nextStory = 1;
+    // What `actor` was paid for a scene (0 if nothing).
+    int paidFor(const std::string& actor, const std::string& session) const;
+    // Everyone paid more than nothing for a scene.
+    std::vector<std::string> paidIn(const std::string& session) const;
+    int usedToday(const std::string& actor, double now) const;
+    SocialResult star(const std::string& giver, const std::string& recipient, const std::string& session, double now);
+    SocialResult propose(const std::string& owner, const std::string& session, const std::string& name, double now);
+    SocialResult approve(const std::string& member, const std::string& story, double now);
+    SocialResult extend(const std::string& owner, const std::string& story, const std::string& session, double now);
+    SocialResult close(const std::string& owner, const std::string& story, double now);
+    SocialResult storyStar(const std::string& giver, const std::string& recipient, const std::string& story, double now);
+    const SocialStory* storyOf(const std::string& session) const;
+
     std::vector<LedgerEntry> entries;
     std::map<std::string, SocialPost> recent;
     std::map<std::string, int> points;
@@ -118,6 +161,13 @@ class SocialLedger
     int endFor(const std::string& actor, double now);
     void tick(double now);
     int level(const std::string& actor) const;
+
+  private:
+    int pay(const std::string& actor, const std::string& partner, const std::string& reason, const std::string& source,
+            int requested, double now, std::uint64_t event);
+    double pairDecay(const std::string& a, const std::string& b, double now) const;
 };
+// A title for a social level (doc 32, 1.3).
+std::string socialTitle(int level);
 
 } // namespace ratw

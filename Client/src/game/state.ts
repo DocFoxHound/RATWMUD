@@ -102,6 +102,7 @@ export class GameState {
     // What the screen is showing.
     snapshot: Json | null = null;
     inspectedCharacter: Json | null = null;
+    reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
     posts: Post[] = [];
     entities = new Map<string, EntityView>();
     motionVisible = new Set<string>();
@@ -669,6 +670,11 @@ export class GameState {
             this.facingPreview = false;
             return;
         }
+        if (type === 'reputation') {
+            // Their name about town (doc 32, 1.4), as the residents who know them would put it.
+            this.reputation = arr(e, 'lines').filter((l): l is string => typeof l === 'string');
+            return;
+        }
         if (type === 'talkTarget') {
             this.addTarget(str(e, 'id'));
             return;
@@ -877,6 +883,13 @@ export class GameState {
     }
 
     // ------------------------------------------------------------------ Sending
+
+    /** The individual social game (doc 32, Part 1): stars, Stories, notes, a name about town. */
+    sendSocial(fields: Json) {
+        this.send({type: 'social', ...fields});
+        if (fields.verb === 'note' && this.inspectedCharacter && this.inspectedCharacter.id === fields.target)
+            this.inspectedCharacter = {...this.inspectedCharacter, note: fields.text};
+    }
 
     sendAction(action: string, target = '') {
         // An introduction is said aloud, so whoever hears it learns the name (doc 32): "I'm Kestrel."

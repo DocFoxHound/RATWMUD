@@ -332,6 +332,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         root.add("acquaintances", c.acquaintances);
     if (!c.aliases.isNull())
         root.add("aliases", c.aliases);
+    if (!c.notes.isNull())
+        root.add("notes", c.notes);
     auto heard = Value::object();
     for (const auto& [who, list] : c.scenesHeard)
     {
@@ -410,6 +412,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
     {
         auto j = Value::object();
         j.add("id", s.id); j.add("cell", s.cell); j.add("started", s.started); j.add("last", s.last); j.add("ended", s.ended);
+        if (!s.party.empty())
+            j.add("party", s.party);
         auto members = Value::array();
         for (const auto& [actor, m] : s.members)
         {
@@ -422,6 +426,30 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         sessions.push(j);
     }
     root.add("socialSessions", sessions);
+    // Gold Stars, Story Stars and Stories (doc 32, 1.2).
+    auto stars = Value::array();
+    for (const auto& st : c.social.stars)
+    {
+        auto j = Value::object();
+        j.add("giver", st.giver); j.add("recipient", st.recipient); j.add("source", st.source); j.add("kind", st.kind);
+        j.add("at", st.at); j.add("amount", st.amount);
+        stars.push(j);
+    }
+    root.add("socialStars", stars);
+    auto stories = Value::array();
+    for (const auto& [id, st] : c.social.stories)
+    {
+        auto j = Value::object();
+        j.add("id", st.id); j.add("name", st.name); j.add("owner", st.owner); j.add("state", st.state);
+        j.add("created", st.created); j.add("last", st.last); j.add("chapter", st.chapter);
+        j.add("scenes", strings(st.scenes));
+        j.add("members", strings(std::vector<std::string>(st.members.begin(), st.members.end())));
+        j.add("approvals", strings(std::vector<std::string>(st.approvals.begin(), st.approvals.end())));
+        j.add("starred", strings(std::vector<std::string>(st.starred.begin(), st.starred.end())));
+        stories.push(j);
+    }
+    root.add("socialStories", stories);
+    root.add("nextStory", double(c.social.nextStory));
     auto older = Value::object();
     for (const auto& [key, m] : c.memories.active)
     {
@@ -674,6 +702,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     c.parties = root.object("parties");
     c.acquaintances = root["acquaintances"];
     c.aliases = root.object("aliases");
+    c.notes = root.object("notes");
     // (Older saves have none: everyone starts having heard nothing.)
     for (const auto& [who, list] : root.object("scenesHeard").fields())
         for (const auto& id : list.items())
@@ -720,6 +749,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     {
         SocialSession s;
         s.id = j.string("id"); s.cell = j.string("cell"); s.started = num(j, "started"); s.last = num(j, "last"); s.ended = num(j, "ended");
+        s.party = j.string("party");
         for (const auto& k : j.array("members"))
         {
             Contribution m;
@@ -729,6 +759,22 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         }
         c.social.sessions[s.id] = s;
     }
+    for (const auto& j : root.array("socialStars"))
+        c.social.stars.push_back({j.string("giver"), j.string("recipient"), j.string("source"), j.string("kind", "gold"), num(j, "at"),
+                                  int(num(j, "amount"))});
+    for (const auto& j : root.array("socialStories"))
+    {
+        SocialStory st;
+        st.id = j.string("id"); st.name = j.string("name"); st.owner = j.string("owner"); st.state = j.string("state", "pending");
+        st.created = num(j, "created"); st.last = num(j, "last"); st.chapter = j.string("chapter");
+        for (const auto& v : j.array("scenes")) st.scenes.push_back(v.asString(""));
+        for (const auto& v : j.array("members")) st.members.insert(v.asString(""));
+        for (const auto& v : j.array("approvals")) st.approvals.insert(v.asString(""));
+        for (const auto& v : j.array("starred")) st.starred.insert(v.asString(""));
+        if (!st.id.empty())
+            c.social.stories[st.id] = st;
+    }
+    c.social.nextStory = std::max<std::uint64_t>(1, std::uint64_t(num(root, "nextStory", 1)));
     for (const auto& [key, list] : root.object("olderMemoryEvents").fields())
         for (const auto& e : list.items())
             c.memories.active[key].olderEvents.push_back(std::uint64_t(e.asNumber()));

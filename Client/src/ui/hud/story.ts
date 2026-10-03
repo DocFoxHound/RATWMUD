@@ -5,6 +5,7 @@ import {Muted, speakingColor} from '../theme.ts';
 import type {GameState, Post} from '../../game/state.ts';
 import {inParty, withPlayers} from '../../game/party.ts';
 import {button, el, setClass, setText, show} from './dom.ts';
+import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 
 const MaxShown = 300;
 
@@ -16,6 +17,8 @@ export class StoryPanel {
     private place: HTMLElement;
     private scene: HTMLElement;
     private feedLabel: HTMLElement;
+    private sceneBar: HTMLElement;
+    private sceneKey = '';
     private feed: HTMLElement;
     private empty: HTMLElement;
     private ic: HTMLButtonElement;
@@ -44,6 +47,7 @@ export class StoryPanel {
         this.ooc = button('LOCAL OOC', 'tab', tabs, () => state.activate({rect: noRect, action: 'ooc', target: ''}));
         this.place = el('h2', 'place', this.root);
         this.scene = el('p', 'scene', this.root);
+        this.sceneBar = el('div', 'scene-bar', this.root);
         this.feedLabel = el('div', 'label muted feed-label', this.root);
         this.feed = el('div', 'feed', this.root);
         this.empty = el('p', 'feed-empty', this.feed,
@@ -89,7 +93,43 @@ export class StoryPanel {
         setClass(this.textarea, 'writing', s.chat);
         this.textarea.readOnly = !s.chat;
         this.updateTargets();
+        this.updateScene();
         this.updateFeed();
+    }
+
+    /** The scene this wolf is in, and the one just ended: its pay, stars to give, a Story to begin (doc 32, 1.1–1.2). */
+    private updateScene() {
+        const s = this.s, social = obj(obj(s.snapshot, 'self'), 'social');
+        const scene = obj(social, 'scene'), ended = obj(social, 'ended');
+        const stories = arr(social, 'stories').filter(isObject);
+        const key = JSON.stringify([scene, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')])]);
+        if (key === this.sceneKey) return;
+        this.sceneKey = key;
+        this.sceneBar.replaceChildren();
+        if (scene) {
+            const with_ = arr(scene, 'with').filter((w): w is string => typeof w === 'string');
+            el('span', 'label sage', this.sceneBar, bool(scene, 'party') ? 'PARTY SCENE' : 'IN A SCENE');
+            el('span', '', this.sceneBar, ` with ${with_.join(', ') || 'others'} · ${num(scene, 'turns')} turns` +
+                (bool(scene, 'quiet') ? ' · quiet' : ''));
+        }
+        if (ended) {
+            const row = el('div', 'scene-ended', this.sceneBar);
+            el('span', 'label gold', row, `SCENE ENDED · +${num(ended, 'xp')} SOCIAL`);
+            const session = str(ended, 'id');
+            for (const t of arr(ended, 'starTargets').filter(isObject))
+                button(`★ ${str(t, 'name')}`, 'small', row, () => s.sendSocial({verb: 'star', session, target: str(t, 'id')})).title =
+                    `Give ${str(t, 'name')} a Gold Star for this scene`;
+            if (bool(ended, 'storyable')) {
+                const mine = stories.find(st => bool(st, 'mine') && str(st, 'state') === 'active');
+                if (mine)
+                    button(`ADD TO "${str(mine, 'name')}"`, 'small', row, () => s.sendSocial({verb: 'extend', story: str(mine, 'id'), session}));
+                button('MAKE IT A STORY', 'small', row, () => {
+                    const name = window.prompt('A name for the Story');
+                    if (name?.trim()) s.sendSocial({verb: 'propose', session, name: name.trim()});
+                });
+            }
+        }
+        show(this.sceneBar, !!scene || !!ended);
     }
 
     private targetsKey = '';

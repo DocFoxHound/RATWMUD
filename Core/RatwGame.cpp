@@ -1698,6 +1698,7 @@ void Game::tick(double dt)
                 e->typing = false;
     companionTick(dt);                              // Residents travelling with a party (doc 32, Phase 3).
     partyTick(dt);
+    refreshSocialViews(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
     // Small observer-filtered poses at simulation cadence; full snapshots five times a second, and at once on a
@@ -1781,6 +1782,7 @@ void Game::tick(double dt)
         saveAccumulator_ = 0;
         consolidate();
         social_.tick(now());
+        afterSocial();
     }
     if ((snapshotSaveAccumulator_ += dt) >= SnapshotSeconds)
     {
@@ -1945,7 +1947,12 @@ void Game::sendSnapshot(Connection* c)
         self.set("artwork", portrait->id);           // The owner sees their own at once, and how it stands.
         self.set("artworkStatus", portrait->status);
     }
-    self.set("socialXp", social_.points[id]);
+    {
+        const auto points = social_.points.find(id);       // (Read only: views are built in parallel.)
+        self.set("socialXp", points == social_.points.end() ? 0 : points->second);
+    }
+    if (const auto view = socialViews_.find(id); view != socialViews_.end())
+        self.set("social", view->second);             // Scene, stars, Stories, title (doc 32, Part 1).
     self.set("socialLevel", social_.level(id));
     self.set("hearing", view.self.hearing * view.self.earHealth * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
     self.set("sneakSkill", view.self.sneakSkill);
@@ -3045,6 +3052,12 @@ void Game::command(Connection* c, const std::string& raw)
         report = true;
         saveSoon();
     }
+    else if (type == "social")
+    {
+        if (!socialCommand(c, j, result))
+            result = {false, "That isn't something you can do.", {}};
+        report = !result.message.empty();
+    }
     else if (type == "names")
     {
         if (!namesCommand(c, j, result))
@@ -3126,6 +3139,7 @@ void Game::command(Connection* c, const std::string& raw)
             else if (action == "session_end")
             {
                 social_.endFor(id, now());
+                afterSocial();
                 system(c, "Your active scene has ended. Qualified contributions have been settled by the server.");
             }
             else if (action == "wait")
@@ -3276,6 +3290,14 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("lifeStage", lifeStageName(lifeStage(other->age)));
             e.add("shoulderHeightCm", shoulderHeightCm(other->appearance, other->age));
             const auto described = veilFor(id, other->description);
+            // How they regard this wolf, in words; and this wolf's own note on them (doc 32, 1.4).
+            if (target != id)
+            {
+                e.add("regard", regardWords(other->id, id));
+                if (const auto mine = notes_.find(id); mine != notes_.end())
+                    if (const auto note = mine->second.find(other->id); note != mine->second.end())
+                        e.add("note", note->second);
+            }
             e.add("description", described);
             e.add("posture", other->posture);
             e.add("state", other->state);
@@ -3445,7 +3467,15 @@ void Game::command(Connection* c, const std::string& raw)
         if (const auto* mine = parties_.of(id))
             lastPartySpeech_[mine->id] = world_.time();
         const auto evidence = roleplayEvidence(post);
-        social_.record({event, now(), id, player->cellId, evidence.words, false, evidence.contentHash}, heard);
+        // Actions count at half weight; said with a party mate listening, it is the party's scene (doc 32, 1.1).
+        std::string partyScene;
+        if (const auto* mine = parties_.of(id))
+            for (const auto& listener : heard)
+                if (listener != id && parties_.together(id, listener) && clientOf(listener))
+                    partyScene = mine->id;
+        social_.record({event, now(), id, player->cellId, evidence.words + evidence.actionWords / 2, false, evidence.contentHash, {},
+                        partyScene},
+                       heard);
         // A chosen wolf who didn't hear: say so, rather than leave the player waiting.
         for (const auto& target : targets)
             if (std::none_of(hearers.begin(), hearers.end(), [&](const Heard& h) { return h.npcId == target; }))
@@ -3501,6 +3531,7 @@ DbStore::Build Game::capture()
     c->server.companions = companionOwner_;
     c->server.parties = parties_.save();
     c->server.acquaintances = known_.save();
+    c->server.notes = notesSave();
     {
         auto aliases = Value::object();
         for (const auto& [who, list] : aliases_)
@@ -3652,6 +3683,11 @@ void Game::load(const std::string& payload)
     social_.points = state.social.points;
     social_.recent = state.social.recent;
     social_.sessions = state.social.sessions;
+    social_.stars = state.social.stars;
+    social_.stories = state.social.stories;
+    social_.nextStory = state.social.nextStory;
+    socialSeen_ = social_.entries.size();             // (Scenes settled before the restart were told then.)
+    notesLoad(state.notes);
     for (const auto& [who, ids] : state.commandReceipts)
         for (const auto& receipt : ids)
             commandReceipts_[who].push_back(receipt);

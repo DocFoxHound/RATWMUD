@@ -196,8 +196,9 @@ SocialEvidence roleplayEvidence(const ParsedPost& post)
     bool word = false;
     for (const auto& segment : post.segments)
     {
-        if (segment.kind != "speech" && segment.kind != "narration")
+        if (segment.kind != "speech" && segment.kind != "narration" && segment.kind != "action")
             continue;
+        const bool acted = segment.kind == "action";       // (Half weight, counted apart: doc 32, 1.1.)
         for (std::size_t i = 0; i < segment.text.size(); ++i)
         {
             const unsigned char c = static_cast<unsigned char>(segment.text[i]);
@@ -211,7 +212,7 @@ SocialEvidence roleplayEvidence(const ParsedPost& post)
             {
                 if (!word)
                 {
-                    ++result.words;
+                    ++(acted ? result.actionWords : result.words);
                     if (!normalized.empty())
                         normalized += ' ';
                 }
@@ -234,6 +235,7 @@ SocialEvidence roleplayEvidence(const ParsedPost& post)
     // Long-form roleplay remains eligible. Bound its contribution metadata,
     // never truncate the actual prose or reward additional length beyond500.
     result.words = std::min(result.words, 500);
+    result.actionWords = std::min(result.actionWords, 500);
     return result;
 }
 
@@ -434,9 +436,10 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
     post.audience = listeners;
     acceptedEvents.insert(post.event);
     recent[post.actor] = post;
+    // A party's own scene, or the cell's (doc 32, 1.1): they don't merge.
     SocialSession* Scene = nullptr;
     for (auto& Pair : sessions)
-        if (Pair.second.cell == post.cell && Pair.second.ended == 0)
+        if (Pair.second.cell == post.cell && Pair.second.ended == 0 && Pair.second.party == post.party)
         {
             Scene = &Pair.second;
             break;
@@ -462,9 +465,38 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
         Member.last = P.at;
         Member.lastAudience = P.audience;
     };
+    // Party mates in earshot of each other open their party's scene at once; no A-B-A needed.
+    if (!Scene && !post.party.empty())
+    {
+        SocialSession S;
+        S.id = "scene-" + std::to_string(post.event);
+        S.cell = post.cell;
+        S.party = post.party;
+        S.started = post.at;
+        Add(S, post);
+        sessions[S.id] = S;
+        return 0;
+    }
+    // Someone outside answering a party's scene (they heard one of it, and it heard them) joins that scene.
+    if (post.party.empty())
+        for (auto& Pair : sessions)
+        {
+            auto& S = Pair.second;
+            if (S.ended != 0 || S.party.empty() || S.cell != post.cell)
+                continue;
+            for (const auto& Other : S.members)
+                if (Other.first != post.actor && post.at - Other.second.last <= 30 &&
+                    std::find(Other.second.lastAudience.begin(), Other.second.lastAudience.end(), post.actor) !=
+                        Other.second.lastAudience.end() &&
+                    std::find(post.audience.begin(), post.audience.end(), Other.first) != post.audience.end())
+                {
+                    Add(S, post);
+                    return 0;
+                }
+        }
     if (Scene)
     {
-        bool Participating = false;
+        bool Participating = !post.party.empty();          // (A party mate in earshot: always part of the party's scene.)
         for (const auto& Other : Scene->members)
             if (Other.first != post.actor &&
                 std::find(listeners.begin(), listeners.end(), Other.first) != listeners.end())
@@ -587,11 +619,250 @@ void SocialLedger::tick(double now)
     for (auto& Pair : sessions)
         if (Pair.second.ended == 0 && now - Pair.second.last >= 1800)
             settle(Pair.first, now);
+    // A Story nobody approved within a day closes without reward.
+    for (auto& [id, st] : stories)
+        if (st.state == "pending" && now - st.created > 86400)
+            st.state = "expired";
 }
 
 int SocialLedger::level(const std::string& actor) const
 {
     const auto it = points.find(actor);
     return 1 + (it == points.end() ? 0 : it->second / 100);
+}
+
+// ------------------------------------------------------------------ Gold Stars and Stories (doc 32, 1.2)
+
+std::string socialTitle(int level)
+{
+    return level >= 12 ? "Notable" : level >= 8 ? "Respected" : level >= 5 ? "Familiar Face" : level >= 3 ? "Known" : "Stranger";
+}
+
+int SocialLedger::paidFor(const std::string& actor, const std::string& session) const
+{
+    int n = 0;
+    for (const auto& e : entries)
+        if (e.actor == actor && e.session == session && e.reason == "qualified_session_settlement")
+            n += e.amount;
+    return n;
+}
+
+std::vector<std::string> SocialLedger::paidIn(const std::string& session) const
+{
+    std::vector<std::string> out;
+    for (const auto& e : entries)
+        if (e.session == session && e.reason == "qualified_session_settlement" && e.amount > 0 &&
+            std::find(out.begin(), out.end(), e.actor) == out.end())
+            out.push_back(e.actor);
+    return out;
+}
+
+int SocialLedger::usedToday(const std::string& actor, double now) const
+{
+    int n = 0;
+    for (const auto& e : entries)
+        if (e.actor == actor && now - e.at < 86400)
+            n += e.amount;
+    return n;
+}
+
+double SocialLedger::pairDecay(const std::string& a, const std::string& b, double now) const
+{
+    // Stars between the same two in a rolling day, either way: 1, 1/2, 1/4, then nothing.
+    int n = 0;
+    for (const auto& st : stars)
+        if (now - st.at < 86400 && ((st.giver == a && st.recipient == b) || (st.giver == b && st.recipient == a)))
+            ++n;
+    return n >= 3 ? 0 : 1.0 / double(1 << n);
+}
+
+int SocialLedger::pay(const std::string& actor, const std::string& partner, const std::string& reason, const std::string& source,
+                      int requested, double now, std::uint64_t event)
+{
+    int amount = std::max(0, std::min(requested, 100 - usedToday(actor, now)));
+    amount = std::min(amount, 2147483647 - points[actor]);
+    LedgerEntry e;
+    e.event = event;
+    e.at = now;
+    e.actor = actor;
+    e.partner = partner;
+    e.reason = reason;
+    e.amount = amount;
+    e.session = source;
+    entries.push_back(e);                 // (A zero receipt too: the same source can't pay later.)
+    points[actor] += amount;
+    return amount;
+}
+
+SocialResult SocialLedger::star(const std::string& giver, const std::string& recipient, const std::string& session, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended <= 0)
+        return {false, "That scene hasn't ended."};
+    if (giver == recipient)
+        return {false, "Not to yourself."};
+    // Both must have qualified in it (a settlement receipt, even one capped to nothing).
+    const auto qualified = [&](const std::string& who) {
+        for (const auto& e : entries)
+            if (e.actor == who && e.session == session && e.reason == "qualified_session_settlement")
+                return true;
+        return false;
+    };
+    if (!qualified(giver))
+        return {false, "Only those who took part may give a star."};
+    if (!qualified(recipient))
+        return {false, "They didn't take part in that scene."};
+    const int earned = paidFor(recipient, session);
+    for (const auto& st : stars)
+        if (st.kind == "gold" && st.source == session && st.giver == giver)
+            return {false, "You've already given a star for that scene."};
+    if (now - it->second.ended > 86400)
+        return {false, "That scene was too long ago."};
+    int given = 0;
+    for (const auto& st : stars)
+        given += st.giver == giver && now - st.at < 86400;
+    const double decay = given >= 10 ? 0 : pairDecay(giver, recipient, now);
+    const int amount = pay(recipient, giver, "gold_star", session, int(std::floor(std::min(2, earned) * decay)), now,
+                           std::hash<std::string>{}("gold|" + session + "|" + giver));
+    stars.push_back({giver, recipient, session, "gold", now, amount});
+    return {true, {}, amount};
+}
+
+const SocialStory* SocialLedger::storyOf(const std::string& session) const
+{
+    for (const auto& [id, st] : stories)
+        if (st.state != "expired" && std::find(st.scenes.begin(), st.scenes.end(), session) != st.scenes.end())
+            return &st;
+    return nullptr;
+}
+
+SocialResult SocialLedger::propose(const std::string& owner, const std::string& session, const std::string& name, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended <= 0)
+        return {false, "Only an ended scene can begin a Story."};
+    if (name.empty() || name.size() > 60)
+        return {false, "Give the Story a name (up to 60 letters)."};
+    const auto paid = paidIn(session);
+    if (paidFor(owner, session) <= 0 || paid.size() < 2)
+        return {false, "A Story begins with a scene that paid you and at least one other."};
+    if (storyOf(session))
+        return {false, "That scene is already part of a Story."};
+    int open = 0;
+    for (const auto& [id, st] : stories)
+        open += st.members.count(owner) && (st.state == "pending" || st.state == "active");
+    if (open >= 8)
+        return {false, "You're in too many open Stories."};
+    SocialStory st;
+    st.id = "story-" + std::to_string(nextStory++);
+    st.name = name;
+    st.owner = owner;
+    st.created = st.last = now;
+    st.scenes.push_back(session);
+    st.members.insert(paid.begin(), paid.end());
+    st.approvals.insert(owner);
+    if (st.approvals.size() * 3 >= st.members.size() * 2)
+        st.state = "active";
+    stories[st.id] = st;
+    return {true, st.id};
+}
+
+SocialResult SocialLedger::approve(const std::string& member, const std::string& id, double now)
+{
+    auto it = stories.find(id);
+    if (it == stories.end() || it->second.state != "pending")
+        return {false, "There's no Story waiting for your word."};
+    auto& st = it->second;
+    if (!st.members.count(member))
+        return {false, "You weren't part of it."};
+    st.approvals.insert(member);
+    st.last = now;
+    if (st.approvals.size() * 3 >= st.members.size() * 2)
+        st.state = "active";
+    return {true, st.state};
+}
+
+SocialResult SocialLedger::extend(const std::string& owner, const std::string& id, const std::string& session, double now)
+{
+    auto it = stories.find(id);
+    if (it == stories.end() || it->second.state != "active")
+        return {false, "That Story isn't under way."};
+    auto& st = it->second;
+    if (st.owner != owner)
+        return {false, "Only whoever began it carries it on."};
+    const auto s = sessions.find(session);
+    if (s == sessions.end() || s->second.ended <= 0)
+        return {false, "Only an ended scene can carry a Story on."};
+    if (storyOf(session))
+        return {false, "That scene is already part of a Story."};
+    const auto paid = paidIn(session);
+    bool shared = false;
+    for (const auto& p : paid)
+        shared |= st.members.count(p) > 0;
+    if (paid.size() < 2 || !shared)
+        return {false, "The scene must have paid two of you, and share someone with the Story."};
+    if (st.scenes.size() >= 32 || st.members.size() + paid.size() > 48)
+        return {false, "That Story is as long as a Story gets."};
+    st.scenes.push_back(session);
+    st.members.insert(paid.begin(), paid.end());
+    st.last = now;
+    return {true, {}};
+}
+
+SocialResult SocialLedger::close(const std::string& owner, const std::string& id, double now)
+{
+    auto it = stories.find(id);
+    if (it == stories.end() || it->second.state != "active")
+        return {false, "That Story isn't under way."};
+    auto& st = it->second;
+    if (st.owner != owner)
+        return {false, "Only whoever began it closes it."};
+    if (st.scenes.size() < 2)
+        return {false, "A Story needs at least two scenes."};
+    st.state = "closed";
+    st.last = now;
+    int total = 0;
+    for (const auto& m : st.members)
+    {
+        int paid = 0, scenes = 0;
+        for (const auto& sc : st.scenes)
+            if (const int p = paidFor(m, sc); p > 0)
+            {
+                paid += p;
+                ++scenes;
+            }
+        if (scenes < 2)
+            continue;
+        total += pay(m, "", "story_closure", st.id, paid / 4 + std::min(scenes - 1, 5), now,
+                     std::hash<std::string>{}("story|" + st.id + "|" + m));
+    }
+    return {true, {}, total};
+}
+
+SocialResult SocialLedger::storyStar(const std::string& giver, const std::string& recipient, const std::string& id, double now)
+{
+    auto it = stories.find(id);
+    if (it == stories.end() || it->second.state != "closed")
+        return {false, "Only a closed Story can be starred."};
+    auto& st = it->second;
+    const auto closed = [&](const std::string& who) {
+        for (const auto& e : entries)
+            if (e.actor == who && e.session == id && e.reason == "story_closure")
+                return true;
+        return false;
+    };
+    if (giver == recipient || !closed(giver) || !closed(recipient))
+        return {false, "Only between two who saw it through."};
+    if (st.starred.count(giver))
+        return {false, "You've given your star for this Story."};
+    int given = 0;
+    for (const auto& s : stars)
+        given += s.giver == giver && now - s.at < 86400;
+    const double decay = given >= 10 ? 0 : pairDecay(giver, recipient, now);
+    const int amount = pay(recipient, giver, "story_star", id, int(std::floor(4 * decay)), now,
+                           std::hash<std::string>{}("storystar|" + id + "|" + giver));
+    st.starred.insert(giver);
+    stars.push_back({giver, recipient, id, "story", now, amount});
+    return {true, {}, amount};
 }
 } // namespace ratw

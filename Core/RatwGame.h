@@ -327,6 +327,23 @@ class Game
     void companionRemarks(double t);
     std::string companionContext(const std::string& npcId) const;
     void adoptOldCompanions(const std::map<std::string, std::string>& owners);
+    // The individual social game (RatwGameSocial.cpp; doc 32, Part 1): scenes as players see them, Gold Stars and
+    // Stories, titles, regard in words, a name about town, and private notes.
+    std::size_t socialSeen_ = 0;
+    bool socialViewsDirty_ = true;
+    double socialViewsAccumulator_ = 0;
+    std::map<std::string, json::Value> socialViews_;                 // By player: worked out on the game thread.
+    std::map<std::string, std::map<std::string, std::string>> notes_; // Owner → wolf → their private note.
+    std::string regardWords(const std::string& holder, const std::string& other) const;
+    std::vector<std::string> reputationLines(const std::string& playerId) const;
+    void afterSocial();
+    void refreshSocialViews(double dt);
+    bool socialCommand(Connection* c, const json::Value& j, Result& result);
+    json::Value notesSave() const;
+    void notesLoad(const json::Value& saved);
+    void onSettled(const LedgerEntry& entry);
+    void markChapterStory(SocialStory& story);
+    void onStoryClosed(const SocialStory& story);
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

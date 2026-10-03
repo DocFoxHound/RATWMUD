@@ -1,7 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
-Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phase 3 (residents travelling with
-a party) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
+Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phases 3 (residents travelling with
+a party) and 4 (the social game widened) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -944,6 +944,54 @@ Not yet:
 
 Not yet: an authored "joinable" flag in Atlas or the DM, DM-assigned "story" companions, and remarks voiced by the
 Mind.
+
+### Phase 4: the social game widened (built 2026-10-03)
+
+- **Actions count at half weight** (`roleplayEvidence`): `/action` and `/pose` words are counted apart and add half to
+  a turn's words. `/me` sets a lasting state and still counts for nothing. Turns, replies, caps and duplicates are as
+  before.
+- **A party's own scene** (`SocialSession::party`):
+  - A line said with a party mate listening opens the party's scene at once (no A–B–A) or adds to it.
+  - The room's own scene forms apart, so two conversations in one place no longer merge.
+  - Someone outside who answers a party member (heard them in the last 30 s, and is heard by them) joins the party's
+    scene.
+  - Residents' lines never count.
+- **Gold Stars:** one per qualified participant per scene, to another who qualified in it, within a day of its end.
+  - Worth up to 2 (no more than the recipient was paid), with pair decay over a rolling day (1, ½, ¼, nothing).
+  - Only the first 10 stars a giver gives in a day pay.
+  - Receipts are kept even when worth nothing. The recipient warms to the giver.
+- **Stories:**
+  - Begun from an ended scene that paid the proposer and at least one other.
+  - Under way once two thirds of those who took part agree, otherwise lapsed after a day.
+  - Carried on by whoever began it with later scenes that share someone.
+  - Told (closed) after two or more scenes: each member paid in two or more of its scenes gets ¼ of what those
+    scenes paid them, plus one for each scene past the first (at most 5).
+  - **Story Stars:** one per teller, worth up to 4 with the same decay.
+  - Limits: 32 scenes and 48 members a Story, 8 open Stories a wolf. Everything is under the 100-a-day cap.
+- **Titles by social level:** 1 Stranger, 3 Known, 5 Familiar Face, 8 Respected, 12 Notable. Level 3 is what asking
+  a resident along as a friend needs (Phase 3).
+- **Scenes bring players closer:** each settlement moves each qualified player's regard for the others (+2
+  familiarity, +1 liking, +½ trust, +½ respect). A Gold Star warms the recipient to the giver.
+- **Look** says how a wolf regards the viewer, in words ("knows you a little, likes you and trusts you a little; you
+  owe them 3 pennies"). It also shows the viewer's private **note** on them (up to 500 letters, 300 notes a player,
+  saved).
+- **A name about town:** on request, worked out by community from the residents who know the player and from talk of
+  them. It is never stored and never a faction score ("Ridgemere: known to 12 residents; well liked; the Watch is wary
+  of you; 3 have heard talk of you").
+- **What a player sees** is worked out on the game thread every 2 seconds and when it changes: the scene they're in
+  (who with, turns, quiet), the scene just ended (pay, whom to star, whether it can begin or carry on a Story), and
+  their Stories.
+  - The story column shows a scene line with ★ buttons, MAKE IT A STORY and ADD TO a Story.
+  - The character sheet has the title, a STORIES list (AGREE, TELL IT, Story Stars) and YOUR NAME ABOUT TOWN.
+  - Look has the regard and a note box.
+- **Saved:** stars, Stories, party scenes and notes, in the checkpoint.
+- **Tests:**
+  - `Tests/social_game_tests.cpp`: half-weight actions; party scenes apart from the room's; a stranger joining;
+    stars, their limits and decay; a Story begun, agreed, carried on, told and starred; lapsing; titles.
+  - Through the game: Ada's party scene, settlement and pay, a star to Bo, a Story agreed, regard and a note in Look,
+    her name about town, and all of it after a restart.
+  - `Client/src/game/social.test.ts`.
+- **Load:** `game_load` with 100 players: mean 11.7 ms, p99 22.3 ms.
 
 ## Decisions
 

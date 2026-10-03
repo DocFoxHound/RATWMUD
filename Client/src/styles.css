@@ -103,6 +103,11 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .sight-row:hover, .sight-row.highlight { background: var(--raised); }
 .sight-row.targeted { box-shadow: inset 3px 0 var(--gold); background: #2b2f24; }
 .sight-row.hostile .sight-detail { color: #e1aba2; }
+/* The scene and Stories (doc 32). */
+.scene-bar { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; margin: 4px 0; border: 1px solid #34443e; border-radius: 3px;
+    font-size: 13px; }
+.scene-ended { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.story-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 3px 0; }
 /* Your names (doc 32). */
 .name-list { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .name-add { display: flex; gap: 6px; margin: 6px 0; }
