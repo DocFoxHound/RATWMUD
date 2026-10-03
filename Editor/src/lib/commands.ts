@@ -104,10 +104,10 @@ export const COMMANDS: Command[] = [
 
     {id: 'view.world', label: 'World overview', menu: 'View', group: 'a', keys: 'Home', match: e => e.key === 'Home', run: () => openView({kind: 'world'})},
     {id: 'view.fit', label: 'Fit to window', menu: 'View', group: 'a', keys: 'F', match: plain('f'), run: () => setState(s => ({fitRequest: s.fitRequest + 1}))},
-    ...(['cuts', 'grid', 'links', 'people', 'territory'] as const).map((k): Command => ({
+    ...(['cuts', 'grid', 'links', 'people', 'territory', 'camps'] as const).map((k): Command => ({
         id: `view.${k}`, menu: 'View', group: 'b', run: () => setState(s => ({overlays: {...s.overlays, [k]: !s.overlays[k]}})),
         checked: () => getState().overlays[k],
-        label: {cuts: 'Cell boundaries', grid: 'Tile grid', links: 'Doors, spawn & herbs', people: 'People', territory: 'Territory claims'}[k],
+        label: {cuts: 'Cell boundaries', grid: 'Tile grid', links: 'Doors, spawn & herbs', people: 'People', territory: 'Territory claims', camps: "Chapters' camps (from the game)"}[k],
     })),
     {id: 'view.relief', label: 'Cycle elevation relief (off / shading / full)', menu: 'View', group: 'b2', keys: 'E', match: plain('e'),
         run: () => { const next = nextElevation(getState().elevation); setState({elevation: next}); toast(`${ELEVATION_LABEL[next]}.`); }},

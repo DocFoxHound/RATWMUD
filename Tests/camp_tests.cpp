@@ -194,6 +194,15 @@ void campingThroughTheGame(const std::string& save)
             tick(camp::SecondsPerWorkHour + 1);
         }
         expect(g.camps().campStanding(lodge), "a camp standing");
+        // Not beside a full step up or down: the ground must be level enough to build on.
+        auto* ground = w.cell("exterior");
+        const double was = ground->tile(38, 20)->height;
+        ground->tile(38, 20)->height = ground->tile(37, 20)->height + 1.0;
+        a->position = {37.5, 20.5};
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "firepit"}}));
+        tick(.2);
+        expect(!g.camps().structureAt("exterior", 37, 20) && ada.said().find("too steep") != std::string::npos, "not on steep ground:\n" + ada.said());
+        ground->tile(38, 20)->height = was;
         // A cookfire: two bundles of herbs become a meal.
         a->position = {35.5, 20.5};
         g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "cookfire"}}));

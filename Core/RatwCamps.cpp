@@ -269,6 +269,54 @@ void Camps::abandon(const std::string& id)
         s->state = "ruin";
 }
 
+int bedsIn(const std::string& kind)
+{
+    static const std::map<std::string, int> beds{{"tent", 1}, {"leanto", 1}, {"hall", 4}, {"keep", 6}, {"tower", 1}};
+    const auto found = beds.find(kind);
+    return found == beds.end() ? 0 : found->second;
+}
+
+std::vector<std::string> postsIn(const std::string& kind)
+{
+    if (kind == "workshop") return {"smith's hand", "smith's hand"};
+    if (kind == "stable") return {"groom"};
+    if (kind == "well") return {"water-carrier"};
+    if (kind == "cookfire") return {"cook"};
+    if (kind == "storage") return {"storekeeper"};
+    return {};
+}
+
+int Camps::beds(const std::string& site) const
+{
+    int n = 0;
+    for (const auto* st : structuresOf(site))
+        if (st->built)
+            n += bedsIn(st->kind);
+    return n;
+}
+
+std::vector<std::string> Camps::freePosts(const std::string& site) const
+{
+    std::vector<std::string> posts;
+    for (const auto* st : structuresOf(site))
+        if (st->built)
+            for (const auto& p : postsIn(st->kind))
+                posts.push_back(p);
+    // Each of the site's staff holds one post: their own role if the site has it, else any.
+    std::vector<const Staff*> rest;
+    for (const auto& [npc, st] : staff_)
+        if (st.site == site)
+        {
+            if (const auto found = std::find(posts.begin(), posts.end(), st.role); found != posts.end())
+                posts.erase(found);
+            else
+                rest.push_back(&st);
+        }
+    for (std::size_t i = 0; i < rest.size() && !posts.empty(); ++i)
+        posts.pop_back();
+    return posts;
+}
+
 Value Camps::save() const
 {
     auto root = Value::object();
@@ -296,9 +344,22 @@ Value Camps::save() const
     {
         auto j = Value::object();
         j.add("npc", st.npc); j.add("site", st.site); j.add("role", st.role); j.add("wage", double(st.wage)); j.add("paidTo", st.paidTo);
+        j.add("arriving", st.arriving); j.add("since", st.since);
         staff.push(j);
     }
     root.add("staff", staff);
+    auto offers = Value::array();
+    for (const auto& o : offers_)
+    {
+        auto j = Value::object();
+        j.add("npc", o.npc); j.add("site", o.site); j.add("role", o.role); j.add("expires", o.expires);
+        offers.push(j);
+    }
+    root.add("offers", offers);
+    auto offered = Value::object();
+    for (const auto& [site, day] : offered_)
+        offered.add(site, day);
+    root.add("offered", offered);
     return root;
 }
 
@@ -324,9 +385,19 @@ void Camps::load(const Value& saved)
     }
     for (const auto& j : saved.array("staff"))
     {
-        Staff st{j.string("npc"), j.string("site"), j.string("role", "hand"), std::int64_t(j.number("wage")), j.number("paidTo")};
+        Staff st{j.string("npc"), j.string("site"), j.string("role", "hand"), std::int64_t(j.number("wage")), j.number("paidTo"),
+                 j.boolean("arriving"), j.number("since")};
         if (!st.npc.empty() && sites_.count(st.site))
             staff_[st.npc] = st;
     }
+    for (const auto& j : saved.array("offers"))
+    {
+        Offer o{j.string("npc"), j.string("site"), j.string("role"), j.number("expires")};
+        if (!o.npc.empty() && sites_.count(o.site))
+            offers_.push_back(o);
+    }
+    for (const auto& [site, day] : saved.object("offered").fields())
+        if (sites_.count(site))
+            offered_[site] = day.asNumber();
 }
 } // namespace ratw::camp

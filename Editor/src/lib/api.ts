@@ -60,6 +60,9 @@ const stamps = new WeakMap<object, number>();
 let stamp = 0;
 const stampOf = (o: object | null) => { if (!o) return 0; let n = stamps.get(o); if (n === undefined) stamps.set(o, n = ++stamp); return n; };
 
+/** A Chapter's building (Docs/Design/32), in its cell's tiles. */
+export interface CampBuilding { cell: string; x: number; y: number; kind: string; built: boolean; condition: number; site: string; chapter: string; colour: string }
+
 export const api = {
     validate: async (project: Project) => json<HostValidation>(await post('api/validate', forHost(project))),
     exportZip: async (project: Project): Promise<Blob> => {
@@ -78,6 +81,8 @@ export const api = {
         ground: async (ids: string[]) => json<{seq: number; cells: Record<string, SentGround>}>(
             await fetch(`api/live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
         edit: (body: unknown) => post('api/live/edit', body),
+        /** What the players' Chapters have built, as the DEV game server last saved it (read-only). */
+        camps: async () => json<{buildings: CampBuilding[]}>(await fetch('api/live/camps')),
         sync: async (body: unknown) => json<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]}>(await post('api/live/sync', body)),
     },
     roster: async () => json<Roster>(await fetch('api/roster')),

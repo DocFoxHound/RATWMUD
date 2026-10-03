@@ -7,6 +7,14 @@ import {adoptLean, startGround} from './lazyGround';
 import {applyRemote, connectLive, getState, installGround, loadProject, refuseBatch, setState, toast} from './store';
 
 let starting = false;
+let campsTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Chapters' camp buildings in the DEV game, drawn read-only on the map; checked every half minute. */
+function refreshCamps() {
+    if (campsTimer) clearTimeout(campsTimer);
+    api.live.camps().then(r => setState({camps: r.buildings})).catch(() => undefined)
+        .finally(() => { campsTimer = setTimeout(refreshCamps, 30_000); });
+}
 
 export async function startSession() {
     const identity = getState().identity;
@@ -20,6 +28,7 @@ export async function startSession() {
         startGround(api.live.ground, installGround);
         if (!loadProject(adoptLean(world.project as never))) throw new Error('The world from the database could not be read.');
         seq = world.seq;
+        refreshCamps();
     } catch (error) {
         starting = false;
         setState({live: {state: 'offline', pending: 0, error: (error as Error).message}});

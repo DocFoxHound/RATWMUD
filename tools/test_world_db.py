@@ -391,6 +391,34 @@ class DatabaseTests(unittest.TestCase):
                               ('wren|player-ada|breaks promises', 'wren', 'player-ada')], rows)
             self.assertEqual(doc, json.loads(game.execute('SELECT game.load_checkpoint(%s)', ('w',)).fetchone()[0]))
 
+    def test_chapters_camps_and_treaties_are_stored_one_row_each(self):
+        import json
+        doc = {'schema': 1,
+               'chapters': {'next': 3, 'chapters': [{'id': 'ch-1', 'name': 'Ash Wardens', 'level': 3, 'members': [{'id': 'ada'}]},
+                                                    {'id': 'ch-2', 'name': 'Reedfolk', 'level': 1, 'members': []}]},
+               'camps': {'next': 4, 'sites': [{'id': 'site-1', 'chapter': 'ch-1', 'cell': 'moor_3'}],
+                         'structures': [{'id': 'st-2', 'site': 'site-1', 'kind': 'tent', 'built': True}],
+                         'staff': [{'npc': 'moss', 'site': 'site-1', 'role': 'hand', 'wage': 4}]},
+               'factions': {'standings': [], 'lastDrift': 2,
+                            'treaties': [{'id': 'tr-1', 'faction': 'wardens', 'chapter': 'ch-1', 'state': 'pending'}],
+                            'levies': [],
+                            'houses': [{'chapter': 'ch-1', 'faction': 'wardens', 'state': 'pending', 'day': 4}]}}
+        with self.as_role('game') as game:
+            game.execute('SELECT game.save_checkpoint(%s, 1, %s)', ('w', json.dumps(doc)))
+            self.assertEqual([('ch-1', 'Ash Wardens', 3), ('ch-2', 'Reedfolk', 1)],
+                             game.execute("SELECT key, name, level FROM game.chapters WHERE world_id = 'w' ORDER BY key").fetchall())
+            self.assertEqual([('site-1', 'ch-1', 'moor_3')],
+                             game.execute("SELECT key, chapter, cell FROM game.camp_sites WHERE world_id = 'w'").fetchall())
+            self.assertEqual([('tr-1', 'ch-1', 'pending')],
+                             game.execute("SELECT key, chapter, state FROM game.treaties WHERE world_id = 'w'").fetchall())
+            self.assertEqual([('ch-1|wardens', 'pending')],
+                             game.execute("SELECT key, state FROM game.house_requests WHERE world_id = 'w'").fetchall())
+            payload = json.loads(game.execute("SELECT payload FROM game.checkpoints WHERE world_id = 'w'").fetchone()[0])
+            self.assertEqual({'next': 3}, payload['chapters'], 'The checkpoint row keeps only what is not a list')
+            self.assertEqual(doc, json.loads(game.execute('SELECT game.load_checkpoint(%s)', ('w',)).fetchone()[0]))
+        with self.as_role('editor') as editor:
+            self.assertEqual(1, editor.execute("SELECT count(*) FROM game.camp_structures").fetchone()[0], 'Tools can read camps')
+
     def test_editor_cannot_write_game_state_or_read_admin(self):
         with self.as_role('editor') as editor:
             with self.assertRaises(psycopg.errors.InsufficientPrivilege):

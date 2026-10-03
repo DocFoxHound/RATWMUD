@@ -1440,6 +1440,19 @@ void pathsAreRemembered()
     const auto changed = walkFromCorner();
     expect(w.pathCacheStats().second > misses, "New ground means a new search");
     expect(!samePath(changed, first), "and a new route around the wall");
+    // A Chapter's building in the gap (Docs/Design/32): the routes kept are forgotten, and there is no way through.
+    w.obstacles["tavern"].insert({12, 12});
+    w.stop("p");
+    w.entity("p")->position = {5.5, 5.5};
+    expect(!w.moveTo("p", 20.5, 12.5).ok, "a building closes the gap");
+    w.obstacles["tavern"].clear();
+    expect(samePath(walkFromCorner(), changed), "and gone, the way is open again");
+    // One standing on the way: the route goes round it, not through it.
+    w.obstacles["tavern"].insert({8, 8});
+    w.obstacles["tavern"].insert({9, 9});
+    for (const auto& at : walkFromCorner())
+        expect(!w.obstacles["tavern"].count({int(std::floor(at.x)), int(std::floor(at.y))}), "the route steps round the building");
+    w.obstacles["tavern"].clear();
 }
 
 // The event log: what happened, who, to whom, where; economy entries alongside the world's own; taken once.

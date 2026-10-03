@@ -1048,6 +1048,8 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                 if path == '/api/live/ground':
                     ids = [i for i in ','.join(query.get('cells', [])).split(',') if i]
                     return self.reply(200, live().ground(ids))
+                if path == '/api/live/camps':
+                    return self.reply(200, live().camps())
                 if path == '/api/publish':
                     return self.reply(200, publishing().preview())
                 if path == '/api/roster':

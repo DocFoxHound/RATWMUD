@@ -29,7 +29,14 @@ const std::vector<SaveList>& saveLists()
         {"socialRecent", nullptr, "socialRecent", {"event", "actor", "cell"}},
         {"socialSessions", nullptr, "socialSessions", {"id"}},
         {"bonds", nullptr, "bonds", {"holder", "other"}},
-        {"beliefs", nullptr, "beliefs", {"holder", "subject", "claim"}}};
+        {"beliefs", nullptr, "beliefs", {"holder", "subject", "claim"}},
+        {"chapters", "chapters", "chapters", {"id"}},
+        {"campSites", "camps", "sites", {"id"}},
+        {"campStructures", "camps", "structures", {"id"}},
+        {"campStaff", "camps", "staff", {"npc"}},
+        {"treaties", "factions", "treaties", {"id"}},
+        {"levies", "factions", "levies", {"id"}},
+        {"houseRequests", "factions", "houses", {"chapter", "faction"}}};
     return lists;
 }
 // A field as `e->>'field'` gives it: text as it is, whole numbers without a decimal point, missing or null as ''.

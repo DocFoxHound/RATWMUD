@@ -86,6 +86,23 @@ export interface Portraits {
     actions: {id: number; target: string; payload: {decision?: string; reason?: string}; by: string; at: string; status: Action['status']; result: string}[];
 }
 
+/** Chapters as the game server last saved them (Docs/Design/32): camps and their buildings, treaties, levies, Houses. */
+export interface ChapterMember { id: string; name: string; rank: number }
+export interface Chapter { id: string; name: string; colour: string; level: number; renown: number; charter: string; members: ChapterMember[];
+    hold: string; holdName: string; houseOf: string; toll: number; sworn: number }
+export interface CampBuilding { id: string; kind: string; x: number; y: number; built: boolean; condition: number }
+/** A camp or Hold; its buildings are in its cell's tiles (cellX + x on the world map). */
+export interface CampSite { id: string; chapter: string; name: string; cell: string; place: string; state: string; x: number; y: number;
+    cellX: number | null; cellY: number | null; structures: CampBuilding[]; staff: {npc: string; name: string; role: string; wage: number}[] }
+export interface Treaty { id: string; faction: string; factionName: string; chapter: string; build: boolean; tithe: number; levy: boolean;
+    labour: boolean; weeks: number; state: string; proposed: number; started: number }
+export interface HouseRequest { chapter: string; faction: string; factionName: string; state: string; day: number }
+export interface Levy { id: string; faction: string; factionName: string; chapter: string; place: string; needed: number; done: number; due: number; state: string }
+export interface Chapters {
+    target: Target; world: string; chapters: Chapter[]; sites: CampSite[]; treaties: Treaty[]; houses: HouseRequest[]; levies: Levy[];
+    actions: (Action & {payload: {approve?: boolean; faction?: string}})[];
+}
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
@@ -128,5 +145,9 @@ export const dmApi = {
     artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
     reviewArtwork: (target: Target, id: string, decision: 'approve' | 'reject', reason: string) =>
         call<{id: number}>('api/artwork/review', {target, id, decision, reason}),
+    chapters: (target: Target) => call<Chapters>(`api/chapters?target=${target}`),
+    /** Approves or refuses a pending treaty (its ID) or House request (the Chapter's ID and the faction). */
+    decide: (target: Target, what: 'treaty' | 'house', id: string, approve: boolean, faction = '', reason = '') =>
+        call<{id: number}>('api/chapters/decide', {target, what, id, approve, faction, reason}),
     action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`api/actions/${id}?target=${target}`),
 };

@@ -78,7 +78,8 @@ export function MapCanvas() {
     }, []);
 
     // --- Markers (people, posts, doors, spawn, herbs) -------------------------
-    const markers = useMemo(() => buildMarkers(project, surface, selection, overlays, workspace), [project, surface, selection, overlays, workspace]);
+    const camps = useStore(s => s.camps);
+    const markers = useMemo(() => buildMarkers(project, surface, selection, overlays, workspace, camps), [project, surface, selection, overlays, workspace, camps]);
 
     // --- Tool previews ----------------------------------------------------------
     const preview = useMemo((): {tiles: Tile[]; ghost?: {x: number; y: number; w: number; h: number; ok: boolean; door: Tile}} => {
@@ -179,7 +180,7 @@ export function MapCanvas() {
         const px = (e.clientX - r.left - camera.x) / camera.s, py = (e.clientY - r.top - camera.y) / camera.s;
         let best: Marker | null = null, dist = Infinity;
         for (const m of markers) {
-            if (m.faint) continue;   // Context from the other workspace is shown, not edited.
+            if (m.faint || m.kind === 'camp') continue;   // Context (another workspace's, or the game's) is shown, not edited.
             const d = Math.hypot(m.x - px, m.y - py), reach = Math.max(m.r, 10 / camera.s);
             if (d < reach && d < dist) { best = m; dist = d; }
         }
@@ -524,7 +525,8 @@ function drawRoutes(g: CanvasRenderingContext2D, project: Project, surface: Surf
     }
 }
 
-function buildMarkers(project: Project, surface: Surface, selection: EditorState['selection'], overlays: EditorState['overlays'], workspace: EditorState['workspace']): Marker[] {
+function buildMarkers(project: Project, surface: Surface, selection: EditorState['selection'], overlays: EditorState['overlays'], workspace: EditorState['workspace'],
+    camps: EditorState['camps']): Marker[] {
     const out: Marker[] = [];
     // Each workspace edits its own markers and shows the others' faintly for context.
     const owners: Record<string, EditorState['workspace'][]> = {link: ['map', 'interiors'], spawn: ['map'], herb: ['map']};
@@ -560,8 +562,20 @@ function buildMarkers(project: Project, surface: Surface, selection: EditorState
         }
         add(p.work, {kind: active ? 'person-active' : 'person', ref: {kind: 'person', id: p.id, slot: 'work'}, label: `${p.name}'s work place`, color, glyph: 'W', r: .7, select});
     }
+    // What players' Chapters have built in the game: not part of the world Atlas edits, so drawn but never selected.
+    if (overlays.camps) for (const b of camps) {
+        const at = surface.fromPlace({cell: b.cell, x: b.x, y: b.y});
+        if (at) out.push({kind: 'camp', x: at[0] + .5, y: at[1] + .5, label: `${b.chapter}: ${b.kind}${b.built ? '' : ' (being built)'} · ${b.site}`,
+            color: b.colour, glyph: CAMP_GLYPHS[b.kind] ?? '?', r: .55, faint: !b.built});
+    }
     return out;
 }
+
+/** Each camp building's glyph, as the game draws it (Core/RatwCamps.cpp). */
+const CAMP_GLYPHS: Record<string, string> = {
+    tent: '^', firepit: '*', leanto: '/', storage: '#', hitching: '|', cookfire: '&', watchpost: 'T', palisade: '=', gate: 'H',
+    hall: 'M', workshop: 'w', stable: 's', well: 'o', keep: 'K', wall: '#', tower: 'I', gatehouse: 'G',
+};
 
 function drawMarkers(g: CanvasRenderingContext2D, markers: Marker[], cam: Camera, hover: Tile | null) {
     const r = Math.max(5, Math.min(16, cam.s * .45));

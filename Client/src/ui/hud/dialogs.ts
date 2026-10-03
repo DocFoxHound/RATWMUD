@@ -293,6 +293,22 @@ export class Dialogs {
         }
         const sworn = arr(hold, 'sworn').filter((n): n is string => typeof n === 'string');
         if (sworn.length) el('div', 'small', right, `Sworn for life: ${sworn.join(', ')}`);
+        // The Hold's folk (doc 32, 5.5): beds and posts from what is built, who works there, and who would come.
+        const room = obj(hold, 'room');
+        if (room) {
+            el('div', 'label gold', right, 'THE HOLD\'S FOLK');
+            el('div', 'small', right, `${num(room, 'housed')} of ${num(room, 'beds')} beds taken · ${num(room, 'posts')} posts free`);
+            for (const w of arr(room, 'working').filter(isObject))
+                el('div', 'muted small', right, `${str(w, 'name')} · ${str(w, 'role')}${bool(w, 'arriving') ? ' · on the way' : ''}`);
+            for (const o of arr(room, 'offers').filter(isObject)) {
+                const row = el('div', 'story-row', right);
+                el('span', 'small', row, `${str(o, 'name')} would come as ${str(o, 'role')} · answer within ${num(o, 'days')} days`);
+                if (rank <= 1) {
+                    button('WELCOME', 'small', row, () => send({verb: 'welcome', target: str(o, 'id')}));
+                    button('TURN AWAY', 'small', row, () => send({verb: 'turnaway', target: str(o, 'id')}));
+                }
+            }
+        }
         el('div', 'label gold', right, 'MEETING PLACE');
         const meeting = obj(ch, 'meeting');
         el('div', '', right, meeting ? str(meeting, 'name') : 'None declared');

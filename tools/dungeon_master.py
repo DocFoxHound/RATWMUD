@@ -49,7 +49,7 @@ TARGETS = ('prod', 'dev')
 ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm',
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
-           'artwork.review': 'dm'}
+           'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm'}
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -938,6 +938,91 @@ class DungeonMaster:
                            f'{target.upper()}: {npc_id} ' + ('left ' + faction_id if rank is None else f'is in {faction_id}' + (f' as {rank}' if rank else '')))
         return {'faction': faction_id, 'npc': npc_id}
 
+    # -- Chapters (Docs/Design/32-parties-chapters-factions.md): camps, Holds, treaties and House requests -------------
+    def chapters(self, target):
+        """Every Chapter as last saved, its camps and their buildings (placed on the world map), treaties, levies and
+        House requests, and the recent decisions sent to the game server. Pending ones wait for a Dungeon Master for
+        a game day; then the faction's own rule decides."""
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            if not conn.execute("SELECT to_regclass('game.chapters') IS NOT NULL").fetchone()[0]:
+                raise DMError(f'The {target.upper()} database needs migrating (python3 tools/world_db.py migrate).', 409)
+            rows = lambda table: [r[0] for r in conn.execute(f'SELECT data FROM game.{table} WHERE world_id = %s ORDER BY position',
+                                                               (world,)).fetchall()]
+            places = {r['id']: r for r in S.dict_rows(conn, 'SELECT id, name, x, y FROM world.cells WHERE world_id = %s', (world,))}
+            names = {r[0]: r[1] for r in conn.execute(
+                'SELECT id, name FROM live.factions WHERE world_id = %s UNION ALL SELECT key, name FROM game.characters WHERE world_id = %s '
+                'UNION ALL SELECT id, name FROM live.npcs WHERE world_id = %s', (world, world, world)).fetchall()}
+            chapters = [{'id': c.get('id', ''), 'name': c.get('name', ''), 'colour': c.get('colour', ''), 'level': c.get('level', 1),
+                         'renown': c.get('renown', 0), 'charter': c.get('charter', ''),
+                         'members': [{'id': m.get('id', ''), 'name': names.get(m.get('id'), m.get('id', '')), 'rank': m.get('rank', 3)}
+                                     for m in c.get('members', [])],
+                         'hold': c.get('claimCell', ''), 'holdName': places.get(c.get('claimCell'), {}).get('name', ''),
+                         'houseOf': c.get('houseOf', ''), 'toll': c.get('toll', 0), 'sworn': len(c.get('sworn', []))}
+                        for c in rows('chapters')]
+            structures, staff = {}, {}
+            for st in rows('camp_structures'):
+                structures.setdefault(st.get('site'), []).append(
+                    {'id': st.get('id', ''), 'kind': st.get('kind', ''), 'x': st.get('x', 0), 'y': st.get('y', 0),
+                     'built': bool(st.get('built')), 'condition': st.get('condition', 100)})
+            for h in rows('camp_staff'):
+                staff.setdefault(h.get('site'), []).append({'npc': h.get('npc', ''), 'name': names.get(h.get('npc'), h.get('npc', '')),
+                                                            'role': h.get('role', ''), 'wage': h.get('wage', 0)})
+            sites = []
+            for s in rows('camp_sites'):
+                place = places.get(s.get('cell'))
+                sites.append({'id': s.get('id', ''), 'chapter': s.get('chapter', ''), 'name': s.get('name', ''), 'cell': s.get('cell', ''),
+                              'place': place['name'] if place else s.get('cell', ''), 'state': s.get('state', 'standing'),
+                              'x': s.get('x', 0), 'y': s.get('y', 0),
+                              # Buildings sit at cellX + x, cellY + y on the world map.
+                              'cellX': place['x'] if place else None, 'cellY': place['y'] if place else None,
+                              'structures': structures.get(s.get('id'), []), 'staff': staff.get(s.get('id'), [])})
+            named = lambda d: dict(d, factionName=names.get(d.get('faction'), d.get('faction', '')))
+            treaties = [named(t) for t in rows('treaties')]
+            houses = [named(h) for h in rows('house_requests')]
+            levies = [named(l) for l in rows('levies')]
+            actions = [{'id': r[0], 'kind': r[1], 'target': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6],
+                        'payload': r[7]}
+                       for r in conn.execute("SELECT id, kind, target_id, requested_by, requested_at, status, result, payload "
+                                             "FROM dm.actions WHERE kind IN ('treaty.decide', 'house.decide') ORDER BY id DESC LIMIT 40").fetchall()]
+        return {'target': target, 'world': world, 'chapters': chapters, 'sites': sites, 'treaties': treaties, 'houses': houses,
+                'levies': levies, 'actions': actions}
+
+    def decide(self, who, target, what, ident, approve, faction='', reason=''):
+        """Approves or refuses a pending treaty (by its ID) or House request (a Chapter's, to a faction). The game
+        server checks it is still pending and tells the Chapter."""
+        kind = {'treaty': 'treaty.decide', 'house': 'house.decide'}.get(str(what))
+        if not kind:
+            raise DMError('Decide a treaty or a House request.')
+        self.allowed(who, kind)
+        ident, faction, reason = str(ident), str(faction or ''), str(reason or '').strip()
+        if not isinstance(approve, bool):
+            raise DMError('Approve is true or false.')
+        if len(reason) > 400 or any(ord(c) < 32 for c in reason):
+            raise DMError('A reason is at most 400 plain characters.')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                if kind == 'treaty.decide':
+                    found = conn.execute("SELECT 1 FROM game.treaties WHERE world_id = %s AND key = %s AND state = 'pending'",
+                                         (world, ident)).fetchone() if world else None
+                    words = f"{'approve' if approve else 'refuse'} treaty {ident}"
+                    payload = {'approve': approve}
+                else:
+                    found = conn.execute("SELECT 1 FROM game.house_requests WHERE world_id = %s AND chapter = %s "
+                                         "AND data->>'faction' = %s AND state = 'pending'", (world, ident, faction)).fetchone() if world else None
+                    words = f"{'approve' if approve else 'refuse'} {ident} as a House of {faction}"
+                    payload = {'approve': approve, 'faction': faction}
+                if not found:
+                    raise DMError('Nothing pending by that name (it may have been decided already).', 404)
+                action = conn.execute('INSERT INTO dm.actions (kind, target_id, payload, requested_by) VALUES (%s, %s, %s, %s) RETURNING id',
+                                      (kind, ident, json.dumps(payload), who['username'])).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                self.audit(conn, who['username'], kind, ident, f'{target.upper()}: {words}' + (f' — {reason}' if reason else ''))
+        return {'id': action, 'status': 'queued'}
+
     def action(self, target, action_id):
         with self.connect(target) as conn:
             row = conn.execute('SELECT status, result, done_at FROM dm.actions WHERE id = %s', (int(action_id),)).fetchone()
@@ -1076,6 +1161,12 @@ def make_server(port=8766, dm=None):
                 '/api/factions/member': lambda d: dm.set_member(who, target(d), str(d.get('faction', '')), str(d.get('npc', '')),
                                                                 None if d.get('rank') is None else str(d['rank'])),
             })
+            if method == 'GET' and path == '/api/chapters':
+                return self.reply(200, dm.chapters(self.target(query)))
+            if method == 'POST' and path == '/api/chapters/decide':
+                data = self.body()
+                return self.reply(200, dm.decide(who, target(data), data.get('what'), data.get('id', ''), data.get('approve'),
+                                                 data.get('faction', ''), data.get('reason', '')))
             if method == 'GET' and path == '/api/factions':
                 return self.reply(200, dm.factions(self.target(query)))
             if method == 'GET' and path == '/api/factions/history':

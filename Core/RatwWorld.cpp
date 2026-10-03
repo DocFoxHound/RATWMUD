@@ -853,6 +853,14 @@ const std::vector<int>* World::regionMap(const Cell& c) const
         checksum = (checksum ^ std::uint64_t(std::int64_t(std::llround(t.height * 2)) + 64 + (t.solid ? 1024 : 0))) *
                    1099511628211ULL;
     }
+    // Chapters' buildings stand in the way as walls do; the checksum keys the routes kept, so they are found again.
+    const std::set<std::pair<int, int>>* blocks = nullptr;
+    if (const auto found = obstacles.find(c.id); found != obstacles.end() && !found->second.empty())
+        blocks = &found->second;
+    if (blocks)
+        for (const auto& [bx, by] : *blocks)
+            checksum = (checksum ^ (std::uint64_t(std::uint32_t(bx)) << 32 | std::uint32_t(by)) ^ 0x9e3779b97f4a7c15ULL) * 1099511628211ULL;
+    const auto solidAt = [&](int i) { return c.tiles[std::size_t(i)].solid || (blocks && blocks->count({i % c.width, i / c.width})); };
     auto& r = regions_[c.id];
     r.checkedTick = ticking_ ? ticks_ : 0;
     if (r.region.size() != c.tiles.size() || r.checksum != checksum)
@@ -872,7 +880,7 @@ const std::vector<int>* World::regionMap(const Cell& c) const
         std::vector<int> frontier;
         for (int start = 0; start < int(c.tiles.size()); ++start)
         {
-            if (r.region[start] >= 0 || c.tiles[start].solid)
+            if (r.region[start] >= 0 || solidAt(start))
                 continue;
             r.region[start] = next;
             frontier.assign(1, start);
@@ -884,7 +892,7 @@ const std::vector<int>* World::regionMap(const Cell& c) const
                 for (const auto [dx, dy] : {std::pair{1, 0}, std::pair{-1, 0}, std::pair{0, 1}, std::pair{0, -1}})
                 {
                     const int nx = ix + dx, ny = iy + dy, n = ny * c.width + nx;
-                    if (nx < 0 || ny < 0 || nx >= c.width || ny >= c.height || r.region[n] >= 0 || c.tiles[n].solid ||
+                    if (nx < 0 || ny < 0 || nx >= c.width || ny >= c.height || r.region[n] >= 0 || solidAt(n) ||
                         !stepAllowed(&c.tiles[i], c.tiles[n]))
                         continue;
                     r.region[n] = next;
@@ -1261,6 +1269,17 @@ bool World::searchable(const Entity& a, Vec2 goal, bool allowClosed, std::vector
                         closedTiles.resize(c->tiles.size(), 0);
                         closedTiles[std::size_t(at.second * c->width + at.first)] = 1;
                     }
+    // Chapters' buildings (Docs/Design/32, 5.7), shut like closed doors whatever allowClosed says; never the tiles the
+    // walker stands on or makes for, so one caught by a new building can still step out of it.
+    if (const auto found = obstacles.find(a.cellId); found != obstacles.end())
+        for (const auto& [bx, by] : found->second)
+            if (bx >= 0 && by >= 0 && bx < c->width && by < c->height &&
+                !(bx == int(std::floor(a.position.x)) && by == int(std::floor(a.position.y))) &&
+                !(bx == int(std::floor(goal.x)) && by == int(std::floor(goal.y))))
+            {
+                closedTiles.resize(c->tiles.size(), 0);
+                closedTiles[std::size_t(by * c->width + bx)] = 1;
+            }
     return true;
 }
 

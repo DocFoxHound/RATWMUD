@@ -81,7 +81,7 @@ void holdsThroughTheGame(const std::string& save)
     o.hiddenNames = false;
     o.forkSnapshots = false;
     o.savePath = save;
-    std::string lodge, steward, friendNpc;
+    std::string lodge, steward, friendNpc, newcomer;
     {
         game::Game g(o);
         std::string problem;
@@ -247,6 +247,41 @@ void holdsThroughTheGame(const std::string& save)
         const auto view = ada.snapshots.back()["self"]["chapter"]["hold"];
         expect(view.string("house") == "a minor House of The Crown" && view.string("claims") == "Juniper Yard" && view.array("sworn").size() == 1,
                "the Chapter window shows it: " + json::dump(view));
+        // Folk coming to live and work at the Hold (5.5; doc 16): beds in the hall and keep, posts at a workshop. Each
+        // week those willing are offered; an Officer welcomes one, who walks there, makes a home and is paid.
+        camps.work(camps.plan(site, "workshop", 36, 20).message, 100);
+        for (const auto& [id, e] : w.entities())
+            if (const auto* life = w.society().resident(id); e.npc && !e.transient && life && life->role == "resident" && id != friendNpc &&
+                                                            !w.society().jobOf(id) && newcomer.empty())
+                newcomer = id;
+        expect(!newcomer.empty(), "an ordinary resident without work");
+        w.entity(newcomer)->leaderId.clear();
+        w.bonds().change(newcomer, ada.entityId, {40, 20, 30, 0, 0}, w.calendarDays());
+        tick(6);
+        const auto& offers = g.camps().offers();
+        expect(std::any_of(offers.begin(), offers.end(), [&](const camp::Offer& o) { return o.npc == newcomer; }) &&
+                   ada.said().find("come to live and work at Crown Camp") != std::string::npos,
+               "a resident would come:\n" + ada.said());
+        tick(2.5);
+        const auto room = ada.snapshots.back()["self"]["chapter"]["hold"]["room"];
+        expect(room.number("beds") == 10 && room.number("posts") == 2 && !room.array("offers").empty(), "the Hold's room: " + json::dump(room));
+        const double churchNow = g.factions().earned("church", lodge);
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "welcome"}, {"target", newcomer}}));
+        expect(g.camps().staff().count(newcomer) && g.camps().staff().at(newcomer).arriving &&
+                   w.society().resident(newcomer)->relocationCell == "exterior",
+               "welcomed, they set out:\n" + ada.said());
+        expect(g.factions().earned("church", lodge) == churchNow - 3 || w.society().resident(newcomer)->homeCell != w.society().resident(friendNpc)->homeCell,
+               "and the faction they leave resents it");
+        const auto treasuryBefore = w.society().account("chapter:" + lodge)->cash;
+        for (int i = 0; i < 240 && g.camps().staff().at(newcomer).arriving; ++i)
+            tick(1);
+        expect(!g.camps().staff().at(newcomer).arriving && w.society().resident(newcomer)->homeCell == "exterior" &&
+                   ada.said().find("has made a home at Crown Camp") != std::string::npos,
+               "they arrive and take up their post:\n" + ada.said());
+        tick(1);
+        expect(w.society().account("chapter:" + lodge)->cash == treasuryBefore - camp::HoldWage, "and are paid from the treasury");
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "welcome"}, {"target", steward}}));
+        expect(ada.said().find("haven't asked to come") != std::string::npos, "only those who asked");
         g.save();
     }
     {
@@ -257,6 +292,7 @@ void holdsThroughTheGame(const std::string& save)
         expect(c && c->houseOf == "crown" && c->claimCell == "exterior" && c->sworn.count(friendNpc) && c->level == 5,
                "the House, its claim and its sworn survive a restart");
         expect(!g.factions().treaties().empty(), "and its treaties");
+        expect(g.camps().staff().count(newcomer) && !g.camps().staff().at(newcomer).arriving, "and its folk");
     }
     std::remove(save.c_str());
 }

@@ -63,6 +63,12 @@ std::string Game::whyNotGround(const std::string& cellId, int x, int y) const
         return "The ground won't take it here.";
     if (tile->glyph == 'd' || tile->glyph == '_' || tile->glyph == '8')
         return "Not on a road or a bridge.";
+    // Level ground only: not on a slope or stairs, nor beside a full step or more (heights are in half steps).
+    if (const auto* info = terrainInfo(tile->glyph); info && info->ramp)
+        return "The ground is too steep here.";
+    for (const auto& [dx, dy] : {std::pair{1, 0}, std::pair{-1, 0}, std::pair{0, 1}, std::pair{0, -1}})
+        if (const auto* next = cell->tile(x + dx, y + dy); next && std::fabs(next->height - tile->height) >= 1.0)
+            return "The ground is too steep here.";
     if (townCells_.count(cellId))
         return "Not in a town. Rent there instead.";
     for (const auto& d : world_.doorsIn(cellId))
@@ -332,6 +338,8 @@ void Game::campTick(double dt)
             leaving.push_back(npcId);
             continue;
         }
+        if (st.arriving)
+            continue;                              // On the way to make a home at the Hold (RatwGameHolds.cpp).
         npc->leaderId = "camp:" + site->id;
         npc->activity = "working at " + site->name;
         if (npc->cellId == site->cell && npc->path.empty() && std::hypot(npc->position.x - site->x - .5, npc->position.y - site->y - .5) > 4)

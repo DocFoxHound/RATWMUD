@@ -358,6 +358,25 @@ def load(conn, lean=False):
         return project, latest_seq(conn)
 
 
+def camps(conn):
+    """What the players' Chapters have built (Docs/Design/32), as the DEV game server last saved it, for Atlas to draw
+    read-only: [{cell, x, y, kind, built, condition, site, chapter, colour}], cell-local tiles. Empty before
+    migration 0030 or with no world."""
+    if not conn.execute("SELECT to_regclass('game.camp_structures') IS NOT NULL").fetchone()[0]:
+        return []
+    rows = conn.execute("""
+        SELECT s.data->>'cell', (b.data->>'x')::integer, (b.data->>'y')::integer, b.data->>'kind',
+               coalesce((b.data->>'built')::boolean, false), coalesce((b.data->>'condition')::real, 100),
+               coalesce(nullif(s.data->>'name', ''), 'Camp'), coalesce(c.data->>'name', s.chapter), coalesce(c.data->>'colour', '#92bacd')
+        FROM game.camp_structures b
+        JOIN game.camp_sites s ON s.world_id = b.world_id AND s.key = b.site
+        LEFT JOIN game.chapters c ON c.world_id = s.world_id AND c.key = s.chapter
+        WHERE b.world_id = (SELECT id FROM world.worlds LIMIT 1)
+        ORDER BY s.position, b.position""").fetchall()
+    return [{'cell': r[0], 'x': r[1], 'y': r[2], 'kind': r[3], 'built': r[4], 'condition': r[5], 'site': r[6], 'chapter': r[7], 'colour': r[8]}
+            for r in rows]
+
+
 MAX_GROUND_CELLS = 32
 
 
@@ -508,6 +527,10 @@ class LiveWorld:
         with self.connect() as conn:
             cells, seq = ground(conn, ids)
         return {'cells': cells, 'seq': seq}
+
+    def camps(self):
+        with self.connect() as conn:
+            return {'buildings': camps(conn)}
 
     def fill(self, project):
         with self.connect() as conn:

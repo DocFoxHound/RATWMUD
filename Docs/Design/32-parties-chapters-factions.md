@@ -1304,17 +1304,71 @@ Not yet:
   - The game offers Atlas's places to let first, then rooms above inns and warehouses.
   - Tested: a Greyfen world with a place to let and a joinable resident, and four refusals.
 
+### Finished on 2026-10-03 (the "still open" list)
+
+- **Chapters in Postgres** (migration `0030_chapters.sql`):
+  - Seven new tables, one row each: `game.chapters`, `game.camp_sites`, `game.camp_structures`, `game.camp_staff`,
+    `game.treaties`, `game.levies` and `game.house_requests`.
+  - They are written by the game server's checkpoints like its other lists (`game.sections`): only changed rows,
+    and read back on start. The checkpoint row keeps only counters and the Hold's offers.
+  - The tools and the Dungeon Master can read them. Tested by the database tests, and by a real server on a
+    scratch database whose delta saves matched its whole saves.
+  - Applied to DEV only.
+- **A Chapters screen for the Dungeon Master** (the DM's new **Chapters** tab):
+  - Every Chapter: its members, Hold, House, sworn residents and toll.
+  - Its camps on the map: buildings drawn in the Chapter's colour, faint while being built.
+  - Treaties and levies.
+  - **Waiting on you:** pending treaties (with their terms) and House requests, with Approve and Refuse buttons.
+    These queue `treaty.decide` and `house.decide` for the game server, which already handled them. A
+    Dungeon Master who leaves them for a game day lets the faction's own rule decide.
+  - Viewers can look but not decide. Every decision is audited.
+- **Atlas shows the buildings:**
+  - A read-only layer, **View ▸ Chapters' camps (from the game)**, on by default.
+  - It shows what the DEV game's Chapters have built, in their colours, faint while being built. It is refreshed
+    every half minute.
+  - It is not part of the world Atlas edits, so it can't be selected or moved.
+- **Steep ground:** a building can't go on a slope or stairs, nor beside a full step (a height change of one tile)
+  up or down ("The ground is too steep here.").
+- **Residents' routes know the buildings:**
+  - The world's region map and route search treat a built structure's tiles as walls.
+  - The buildings are part of the checksum that keys kept routes. When one is raised or falls, routes through it
+    are searched again, on the route thread too.
+  - A walker standing in, or heading for, a building's tile can still step out of it.
+  - Tested: a building closing the only gap leaves no way through; removed, the old route is back; one on the way
+    is walked round.
+- **Folk at a Hold** (5.5; doc 16's migration, made game-native):
+  - **Beds and posts** come from what is built *(placeholders)*:
+    - Beds: tent 1, lean-to 1, hall 4, keep 6, tower 1.
+    - Posts: workshop 2 (smith's hands), stable (groom), well (water-carrier), cookfire (cook), storage pile
+      (storekeeper).
+  - **Who takes a bed:** only those who came for the Chapter (sworn residents, and its staff who live there).
+    Settling a sworn resident now needs a free bed too.
+  - **Each week** a level V Chapter with a free bed and a free post hears of up to 3 residents willing to come:
+    - Who may come: ordinary residents, 16 or older, without work where they are, free of parties and other
+      Chapters, who can walk there.
+    - A faction's own members only come under a treaty's labour clause, or when the Chapter is that faction's House.
+    - They are ranked by their fondness for a member, plus 15 when their purse holds under 30 pennies. They must
+      score at least 10.
+    - The offer lasts 7 game days.
+  - **An Officer welcomes them, or turns them away,** on the Chapter sheet ("The Hold's folk").
+    - Welcoming needs a bed, a post and a week's wages in the treasury.
+    - They walk there (doc 16's relocation) and make a home beside a building with a free bed.
+    - The faction they leave resents it, as for a sworn resident.
+    - Once home, they work their post for 5 pennies a game day from the treasury *(placeholder)*. They leave if
+      it can't pay.
+  - Saved and restored. Tested through the game: offered, welcomed, the walk, the home, the first wage, and a
+    restart.
+
 ### Still to do
 
 - **NPCs:** DM-assigned "story" companions, and companion remarks voiced by the Mind.
-- **Structures:** steep ground isn't checked, Atlas doesn't show them, and residents' route caches don't yet know
-  them, so a resident's path may need to go round.
 - **Places to let:** naming them, and choosing furnishings.
-- **Holds:** housing and jobs at a Hold, ordinary residents migrating there (doc 16), and a DM screen for pending
-  treaties and House requests.
+- **Holds:** residents coming on their own, without an offer (doc 16's autonomous pipeline, after an economy
+  probe), and the DM's own actions on camps (repairing or removing a building).
 - **Factions:** a Trusted faction's Watch weighing members' word, gear from quartermasters (doc 35), and third-tier
   and story missions.
-- **Storage:** Chapters into Postgres and the DM.
+- **Storage:** parties are still kept in the checkpoint row (they end when their players leave), and PROD hasn't
+  had migrations 0029 and 0030 yet.
 - **Names:** hearsay names, residents who see through aliases, and choosing aliases at character creation.
 - **Older tests that fail before and after this work:** Greyfen now has 11 residents, not 10, which breaks
   `Editor/src/model/content.test.mjs`, `tools/test_map_editor.py` and `tools/test_publish.py`. These came with the
@@ -1347,8 +1401,8 @@ constant or rule to change.
 10. **Founding:** 3 founders, each at social level 5 (`Options::chapterFoundingLevel`), and 20 pennies (two marks)
     paid to the town.
 11. **Treaties and Houses:** a DM decides. Without a DM's word within a game day, the faction's own rule decides:
-    trust (40+) for a treaty, sworn (75+) and a Hold for a House. This was added because the DM tool has no screen
-    for them yet.
+    trust (40+) for a treaty, sworn (75+) and a Hold for a House. The DM's Chapters tab now shows them; the day's
+    grace stays so that a world without a Dungeon Master on hand still moves.
 12. **Levels never drop.** Neglect costs ground: wear, ruins, lapsed leases.
 13. **Burden follows a wolf** into any Chapter they join. It belongs to them, and a faction remembers it.
 14. **Aliases** are allowed (agreed 2026-10-02). Introductions are detected deterministically: a registered name
@@ -1357,6 +1411,9 @@ constant or rule to change.
 15. **Joining a party or Chapter** introduces no one: members introduce themselves in character. (The founding scene
     doesn't introduce the founders either. They will have done that in the scene.)
 16. **Raids and sieges** on camps and Holds: a later plan, built on the combat work?
+17. **Folk at a Hold:** the beds and posts per building, 5 pennies a game day, up to 3 offers a week lasting 7
+    days, and who is willing (fondness for a member, or a thin purse). Should residents of the Hold's own faction
+    come freely?
 
 ## Not in this plan
 

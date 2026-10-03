@@ -55,6 +55,23 @@ struct Staff
     std::string npc, site, role;
     std::int64_t wage = 0;
     double paidTo = 0;                            // Calendar day.
+    bool arriving = false;                        // Coming to live at the Hold (5.5): not working, nor paid, till home.
+    double since = 0;                             // Calendar day they were taken on.
+};
+
+// Room at a Hold (5.5): beds in what is built to live in, and work in what is built to work at. Placeholders.
+int bedsIn(const std::string& kind);              // tent 1, lean-to 1, hall 4, keep 6, tower 1.
+// The work a building gives, one role per post: workshop 2 (smith's hand), stable (groom), well (water-carrier),
+// cookfire (cook), storage pile (storekeeper).
+std::vector<std::string> postsIn(const std::string& kind);
+constexpr std::int64_t HoldWage = 5;              // Pennies a game day for work at a Hold (placeholder).
+constexpr double OfferDays = 7;                   // How long those willing to come wait for an answer.
+
+// A resident willing to come and live and work at a Hold (doc 16's migration preview, offered to the Chapter).
+struct Offer
+{
+    std::string npc, site, role;
+    double expires = 0;                           // Calendar day.
 };
 
 struct Outcome
@@ -95,6 +112,12 @@ class Camps
     void abandon(const std::string& site);
     std::map<std::string, Staff>& staff() { return staff_; }
     const std::map<std::string, Staff>& staff() const { return staff_; }
+    // A site's beds and posts in what is built and standing, and the posts not yet taken by its staff.
+    int beds(const std::string& site) const;
+    std::vector<std::string> freePosts(const std::string& site) const;
+    std::vector<Offer>& offers() { return offers_; }
+    const std::vector<Offer>& offers() const { return offers_; }
+    std::map<std::string, double>& offered() { return offered_; }   // Site → the calendar day it was last offered folk.
 
     json::Value save() const;
     void load(const json::Value& saved);
@@ -103,6 +126,8 @@ class Camps
     std::map<std::string, Site> sites_;
     std::map<std::string, Structure> structures_;
     std::map<std::string, Staff> staff_;          // By resident.
+    std::vector<Offer> offers_;
+    std::map<std::string, double> offered_;
     std::uint64_t next_ = 1;
 };
 } // namespace ratw::camp

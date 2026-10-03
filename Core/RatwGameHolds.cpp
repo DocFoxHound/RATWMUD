@@ -162,36 +162,64 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
     else if (verb == "settle")
     {
         // A sworn resident comes to live at the Hold (doc 16's relocation: they walk there, and it is their home).
-        const auto* site = chapter->claimCell.empty() ? nullptr : [&]() -> const camp::Site* {
-            for (const auto* s : camps_.sitesOf(chapter->id))
-                if (s->cell == chapter->claimCell)
-                    return s;
-            return nullptr;
-        }();
+        const auto* site = holdSite(chapter->id);
         if (member->rank > chapter::RankOfficer)
             result = {false, "An Officer or the Head asks that.", target};
         else if (!chapter->sworn.count(target))
             result = {false, "Only one sworn to the Chapter.", target};
         else if (!site)
             result = {false, "The Chapter has no Hold to settle them in.", target};
+        else if (housedAt(*site) >= camps_.beds(site->id))
+            result = {false, "There's no bed for them at the Hold. Build more to live in (a hall, a keep, tents).", target};
         else
         {
-            const auto moved = world_.relocateResident(target, site->cell, site->x + .5, site->y + 1.5);
+            const auto moved = moveToHold(target, *site);
             result = {moved.ok, moved.ok ? "They set out to make their home at the Hold." : "They can't go: " + moved.message, target};
             if (moved.ok)
+                resentLoss(target, chapter->id);
+        }
+    }
+    else if (verb == "welcome" || verb == "turnaway")
+    {
+        // One of those willing to come and live and work at the Hold (migrationTick), taken in or turned away.
+        auto& offers = camps_.offers();
+        const auto* site = holdSite(chapter->id);
+        const auto found = std::find_if(offers.begin(), offers.end(),
+                                        [&](const camp::Offer& o) { return o.npc == target && site && o.site == site->id; });
+        if (member->rank > chapter::RankOfficer)
+            result = {false, "An Officer or the Head answers that.", target};
+        else if (found == offers.end())
+            result = {false, "They haven't asked to come.", target};
+        else if (verb == "turnaway")
+        {
+            offers.erase(found);
+            result = {true, "Word goes back that there's no place for them.", target};
+        }
+        else if (const auto why = whyNotMigrate(target, chapter->id); !why.empty())
+        {
+            offers.erase(found);
+            result = {false, why, target};
+        }
+        else if (housedAt(*site) >= camps_.beds(site->id))
+            result = {false, "There's no bed for them at the Hold. Build more to live in (a hall, a keep, tents).", target};
+        else if (const auto posts = camps_.freePosts(site->id); posts.empty())
+            result = {false, "There's no work for them at the Hold. Build a workshop, a stable, a well...", target};
+        else if (const auto* purse = world_.society().account(treasuryOf(chapter->id));
+                 !purse || purse->cash < std::int64_t(faction::Factions::WeekDays) * camp::HoldWage)
+            result = {false, "The treasury can't promise them a week's wages.", target};
+        else
+        {
+            const std::string role = std::find(posts.begin(), posts.end(), found->role) != posts.end() ? found->role : posts.front();
+            const auto moved = moveToHold(target, *site);
+            if (!moved.ok)
+                result = {false, "They can't come: " + moved.message, target};
+            else
             {
-                // The faction they leave resents losing them (doc 16), less under a treaty's labour clause.
-                std::string home;
-                if (const auto* member = factions_.memberOf(target))
-                    home = member->first;
-                else if (const auto* life = world_.society().resident(target))
-                    if (const auto* cell = world_.cell(life->homeCell); cell && !cell->factionClaims.empty())
-                        home = cell->factionClaims.front();
-                if (!home.empty() && home != chapter->houseOf)
-                {
-                    const auto* t = factions_.activeTreaty(home, chapter->id);
-                    factions_.change(home, chapter->id, t && t->labour ? -1 : -3, "lost a resident to the Chapter's Hold", day);
-                }
+                offers.erase(found);
+                camps_.staff()[target] = camp::Staff{target, site->id, role, camp::HoldWage, 0, true, day};
+                resentLoss(target, chapter->id);
+                tellChapter(chapter->id, names::capitalised(strangerLabel(target)) + " sets out to live and work at " + site->name + ".", id);
+                result = {true, "They set out for the Hold, to work there as " + role + ".", target};
             }
         }
     }
@@ -290,6 +318,7 @@ void Game::holdTick(double dt)
         else if (t.tithe <= 0)
             t.paidTo = std::max(t.paidTo, day);
     }
+    migrationTick(day);
     // Levies: a faction calls each week on a Chapter sworn to it, or bound by a treaty to answer.
     const double week = std::floor(day / faction::Factions::WeekDays);
     for (const auto& [cid, c] : chapters_.all())
@@ -389,6 +418,173 @@ void Game::holdTick(double dt)
     }
 }
 
+const camp::Site* Game::holdSite(const std::string& chapterId) const
+{
+    const auto* c = chapters_.byId(chapterId);
+    if (!c || c->claimCell.empty())
+        return nullptr;
+    for (const auto* s : camps_.sitesOf(chapterId))
+        if (s->cell == c->claimCell && s->state == "standing")
+            return s;
+    return nullptr;
+}
+
+int Game::housedAt(const camp::Site& site) const
+{
+    // Only those who came for the Chapter: anyone else living in the place keeps their own house.
+    const auto* c = chapters_.byId(site.chapter);
+    int n = 0;
+    for (const auto& [id, life] : world_.society().state().residents)
+    {
+        const bool there = life.relocationCell == site.cell || (life.relocationCell.empty() && life.homeCell == site.cell);
+        const auto staff = camps_.staff().find(id);
+        n += there && ((c && c->sworn.count(id)) || (staff != camps_.staff().end() && staff->second.site == site.id));
+    }
+    return n;
+}
+
+std::string Game::whyNotMigrate(const std::string& npcId, const std::string& chapterId) const
+{
+    // Doc 16's candidates: ordinary residents without work where they are, free of other ties, who can get there.
+    const auto* e = world_.entity(npcId);
+    const auto* life = world_.society().resident(npcId);
+    const auto* c = chapters_.byId(chapterId);
+    const auto* site = holdSite(chapterId);
+    if (!e || !e->npc || e->transient || !life || !c || !site || e->dead || e->quickened || e->age < 16 || world_.warrantFor(npcId) ||
+        world_.custodyOf(npcId))
+        return "They can't come.";
+    if (life->role != "resident" && life->role != "civilian")
+        return "Their work keeps them where they are.";
+    if (world_.society().jobOf(npcId))
+        return "They have work where they are.";
+    if (parties_.of(npcId) || !e->leaderId.empty() || camps_.staff().count(npcId))
+        return "They are bound to someone else.";
+    if (!life->relocationCell.empty() || life->homeCell == site->cell)
+        return "They are moving already, or live there.";
+    for (const auto& [id, other] : chapters_.all())
+        if (other.sworn.count(npcId) && id != chapterId)
+            return "They are sworn to another Chapter.";
+    // A faction's own folk don't leave it for a stranger's Hold, unless a treaty's labour clause lets them, or the
+    // Chapter is that faction's House.
+    if (const auto* m = factions_.memberOf(npcId); m && m->first != c->houseOf)
+        if (const auto* t = factions_.activeTreaty(m->first, chapterId); !t || !t->labour)
+            return "Their loyalty is to " + (factions_.find(m->first) ? factions_.find(m->first)->name : m->first) + ".";
+    if (!world_.canWalkBetween(life->homeCell.empty() ? e->cellId : life->homeCell, site->cell))
+        return "No road brings them there.";
+    return {};
+}
+
+Result Game::moveToHold(const std::string& npcId, const camp::Site& site)
+{
+    // A home beside the next building with a free bed, else by the site's centre.
+    std::vector<std::pair<double, double>> spots;
+    int bed = housedAt(site);
+    for (const auto* st : camps_.structuresOf(site.id))
+    {
+        const int beds = st->built ? camp::bedsIn(st->kind) : 0;
+        if (beds <= 0)
+            continue;
+        if (bed < beds)
+        {
+            for (const auto& [dx, dy] : {std::pair{0, 1}, std::pair{0, -1}, std::pair{1, 0}, std::pair{-1, 0}})
+                spots.emplace_back(st->x + dx + .5, st->y + dy + .5);
+            break;
+        }
+        bed -= beds;
+    }
+    spots.emplace_back(site.x + .5, site.y + 1.5);
+    Result moved{false, "No home can be found for them there.", npcId};
+    for (const auto& [x, y] : spots)
+        if ((moved = world_.relocateResident(npcId, site.cell, x, y)).ok)
+            break;
+    return moved;
+}
+
+void Game::resentLoss(const std::string& npcId, const std::string& chapterId)
+{
+    // The faction they leave resents losing them (doc 16), less under a treaty's labour clause; not the Chapter's own.
+    const auto* chapter = chapters_.byId(chapterId);
+    std::string home;
+    if (const auto* member = factions_.memberOf(npcId))
+        home = member->first;
+    else if (const auto* life = world_.society().resident(npcId))
+        if (const auto* cell = world_.cell(life->homeCell); cell && !cell->factionClaims.empty())
+            home = cell->factionClaims.front();
+    if (!chapter || home.empty() || home == chapter->houseOf)
+        return;
+    const auto* t = factions_.activeTreaty(home, chapterId);
+    factions_.change(home, chapterId, t && t->labour ? -1 : -3, "lost a resident to the Chapter's Hold", world_.calendarDays());
+}
+
+void Game::migrationTick(double day)
+{
+    auto& offers = camps_.offers();
+    offers.erase(std::remove_if(offers.begin(), offers.end(), [&](const camp::Offer& o) { return o.expires <= day || !camps_.site(o.site); }),
+                 offers.end());
+    // Those on their way: home at last, they take up their post; a move that came to nothing ends it.
+    auto& staff = camps_.staff();
+    for (auto it = staff.begin(); it != staff.end();)
+    {
+        auto& st = it->second;
+        const auto* site = camps_.site(st.site);
+        const auto* life = world_.society().resident(it->first);
+        if (!st.arriving)
+            ++it;
+        else if (site && life && life->relocationCell.empty() && life->homeCell == site->cell)
+        {
+            st.arriving = false;
+            st.paidTo = std::floor(day);           // Paid for today at once (campTick).
+            tellChapter(site->chapter, names::capitalised(strangerLabel(it->first)) + " has made a home at " + site->name + ", and works there as " +
+                                           st.role + ".");
+            chapterViewsDirty_ = true;
+            ++it;
+        }
+        else if (!site || !life || life->relocationCell != site->cell)
+            it = staff.erase(it);
+        else
+            ++it;
+    }
+    // Each week a Hold with beds and work to spare hears of residents willing to come: up to three, those fondest of
+    // its members first, and those with least in their purse. An Officer welcomes them or turns them away.
+    for (const auto& [cid, c] : chapters_.all())
+    {
+        const auto* site = c.level >= 5 ? holdSite(cid) : nullptr;
+        if (!site || std::any_of(offers.begin(), offers.end(), [&](const camp::Offer& o) { return o.site == site->id; }))
+            continue;
+        if (const auto last = camps_.offered().find(site->id); last != camps_.offered().end() && day - last->second < camp::OfferDays)
+            continue;
+        const auto posts = camps_.freePosts(site->id);
+        const int room = std::min(camps_.beds(site->id) - housedAt(*site), int(posts.size()));
+        if (room <= 0)
+            continue;
+        camps_.offered()[site->id] = day;
+        std::vector<std::pair<double, std::string>> willing;
+        for (const auto& [id, life] : world_.society().state().residents)
+        {
+            if (!whyNotMigrate(id, cid).empty())
+                continue;
+            double fondest = 0;
+            for (const auto& [m, member] : c.members)
+                if (const auto* b = world_.bonds().find(id, m))
+                    fondest = std::max(fondest, b->affinity);
+            const auto* purse = world_.society().account(id);
+            const double score = fondest + (purse && purse->cash < 30 ? 15 : 0);
+            if (score >= 10)
+                willing.emplace_back(-score, id);
+        }
+        std::sort(willing.begin(), willing.end());
+        const int n = std::min({3, room, int(willing.size())});
+        for (int i = 0; i < n; ++i)
+            offers.push_back({willing[std::size_t(i)].second, site->id, posts[std::size_t(i) % posts.size()], day + camp::OfferDays});
+        if (n > 0)
+        {
+            tellChapter(cid, std::string(n == 1 ? "A resident would" : std::to_string(n) + " residents would") + " come to live and work at " + site->name +
+                                 ", if the Chapter will have them. (The Chapter sheet.)");
+            chapterViewsDirty_ = true;
+        }
+    }
+}
+
 Value Game::holdView(const std::string& chapterId, const std::string& viewer) const
 {
     auto v = Value::object();
@@ -432,6 +628,38 @@ Value Game::holdView(const std::string& chapterId, const std::string& viewer) co
     for (const auto& n : c->sworn)
         sworn.push(names::capitalised(labelFor(viewer, n)));
     v.add("sworn", sworn);
+    // The Hold's room for folk, who works there, and who would come (5.5).
+    if (const auto* site = holdSite(chapterId))
+    {
+        auto room = Value::object();
+        room.add("beds", camps_.beds(site->id));
+        room.add("housed", housedAt(*site));
+        room.add("posts", double(camps_.freePosts(site->id).size()));
+        auto working = Value::array();
+        for (const auto& [npc, st] : camps_.staff())
+            if (st.site == site->id)
+            {
+                auto o = Value::object();
+                o.add("name", names::capitalised(labelFor(viewer, npc)));
+                o.add("role", st.role);
+                o.add("arriving", st.arriving);
+                working.push(o);
+            }
+        room.add("working", working);
+        auto offers = Value::array();
+        for (const auto& o : camps_.offers())
+            if (o.site == site->id)
+            {
+                auto k = Value::object();
+                k.add("id", o.npc);
+                k.add("name", names::capitalised(labelFor(viewer, o.npc)));
+                k.add("role", o.role);
+                k.add("days", std::max(0.0, std::ceil(o.expires - world_.calendarDays())));
+                offers.push(k);
+            }
+        room.add("offers", offers);
+        v.add("room", room);
+    }
     return v;
 }
 

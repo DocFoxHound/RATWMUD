@@ -76,6 +76,20 @@ class LiveTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             L.ground(self.conn, [f'c{i}' for i in range(L.MAX_GROUND_CELLS + 1)])
 
+    def test_chapter_camps_for_atlas_to_draw(self):
+        import json
+        self.assertEqual({'buildings': []}, self.world.camps())
+        cell = self.project['cells'][0]['id']
+        doc = {'schema': 1, 'chapters': {'chapters': [{'id': 'ch-1', 'name': 'Ash Wardens', 'colour': '#c9574b'}]},
+               'camps': {'sites': [{'id': 'site-1', 'chapter': 'ch-1', 'cell': cell, 'name': 'Ash Camp'}],
+                         'structures': [{'id': 'st-1', 'site': 'site-1', 'kind': 'tent', 'x': 3, 'y': 4, 'built': True, 'condition': 90},
+                                        {'id': 'st-2', 'site': 'site-1', 'kind': 'hall', 'x': 6, 'y': 4, 'built': False}],
+                         'staff': []}}
+        with W.connect('dev', 'owner', dbname=self.name) as owner:
+            owner.execute('SELECT game.save_checkpoint(%s, 1, %s)', ('greyfen', json.dumps(doc)))
+        self.assertEqual([(cell, 3, 4, 'tent', True, 90, 'Ash Camp', 'Ash Wardens', '#c9574b'), (cell, 6, 4, 'hall', False, 100, 'Ash Camp', 'Ash Wardens', '#c9574b')],
+                         [tuple(b.values()) for b in self.world.camps()['buildings']])
+
     def test_the_host_fills_in_ground_a_lean_editor_never_fetched(self):
         lean, _ = L.load(self.conn, lean=True)
         filled = L.fill_ground(self.conn, lean)

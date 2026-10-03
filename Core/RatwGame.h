@@ -423,6 +423,15 @@ class Game
     void holdTick(double dt);
     json::Value holdView(const std::string& chapterId, const std::string& viewer) const;
     std::string swornContext(const std::string& npcId) const;
+    // Folk coming to live and work at a Hold (doc 32, 5.5; doc 16's migration): the Chapter's Hold site, those living
+    // there for it (sworn, or its staff), why a resident may not come, finding them a home by a building, and the
+    // resentment of the faction they leave.
+    const camp::Site* holdSite(const std::string& chapterId) const;
+    int housedAt(const camp::Site& site) const;
+    std::string whyNotMigrate(const std::string& npcId, const std::string& chapterId) const;
+    Result moveToHold(const std::string& npcId, const camp::Site& site);
+    void resentLoss(const std::string& npcId, const std::string& chapterId);
+    void migrationTick(double day);
     void payToll(const std::string& who);
     director::Bridge director_;
     std::vector<Connection*> clients_;

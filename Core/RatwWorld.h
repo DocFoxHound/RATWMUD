@@ -429,6 +429,8 @@ class World
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
     const std::map<std::string, Letting>& lettings() const { return lettings_; }
     Result relocateResident(const std::string& npc, const std::string& destination, double x, double y);
+    // Whether a resident could walk from one place to another, through unlocked portals.
+    bool canWalkBetween(const std::string& from, const std::string& to) const { return from == to || cachedSteps(from).count(to) > 0; }
     Result advanceCalendar(double days); // Explicit developer/test jump, never a client-authorized normal action.
     Result useSeasonalWeather(const std::string& cellId);
     Result trade(const std::string& player, const std::string& merchant, const std::string& item, int quantity, bool buy);

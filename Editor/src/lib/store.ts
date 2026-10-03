@@ -6,6 +6,7 @@ import type {Glyph, Place, PlaceRef, Project, Role} from '../model/model.mjs';
 import type {Roster, SlotPreview} from './roster';
 import type {ElevationMode} from './elevation';
 import type {HeightBrush} from './glyphs';
+import type {CampBuilding} from './api';
 import {applyChanges, diff, inverse, type Batch, type Change, type ConflictNotice, type Editor, type Identity, type LiveStatus} from './live';
 import {blockedBy, groundPending, lateFor, noteRemote, settleCell, want, type Ground} from './lazyGround';
 
@@ -30,7 +31,7 @@ export type Pending =
     | null;
 export type Dialog = 'identity' | 'conflict' | 'publish' | 'cut' | 'split' | 'room' | 'politics' | 'play' | 'shortcuts' | 'about' | 'generate' | null;
 export interface Toast { id: number; text: string; tone: 'info' | 'error' | 'success' }
-export interface Overlays { cuts: boolean; links: boolean; territory: boolean; people: boolean; routes: boolean; grid: boolean }
+export interface Overlays { cuts: boolean; links: boolean; territory: boolean; people: boolean; routes: boolean; grid: boolean; camps: boolean }
 
 /** Where someone else just edited, drawn briefly in their color: world tiles, or tiles of one interior. */
 export interface Mark { area: 'world' | string; x: number; y: number; w: number; h: number; color: string; at: number }
@@ -46,6 +47,8 @@ export interface EditorState {
     live: LiveStatus;
     identity: Identity | null;
     editors: Editor[];
+    /** Chapters' camp buildings from the DEV game (read-only; lib/session.ts refreshes them). */
+    camps: CampBuilding[];
     conflict: ConflictNotice | null;
     marks: Mark[];
     view: View;
@@ -82,10 +85,10 @@ export interface EditorState {
 
 let state: EditorState = {
     project: M.createProject(64, 48, 'Loading the world…'), past: [], future: [], loaded: false,
-    live: {state: 'connecting', pending: 0, error: ''}, identity: null, editors: [], conflict: null, marks: [],
+    live: {state: 'connecting', pending: 0, error: ''}, identity: null, editors: [], camps: [], conflict: null, marks: [],
     view: {kind: 'world'}, selection: null, tool: 'select', glyph: '#', brush: 1,
     height: 1, filled: true, role: 'civilian', building: 'house', side: 'S', cellSize: {w: 64, h: 64}, pending: null, dialog: null,
-    palette: false, overlays: {cuts: true, links: true, territory: false, people: true, routes: true, grid: false},
+    palette: false, overlays: {cuts: true, links: true, territory: false, people: true, routes: true, grid: false, camps: true},
     elevation: 'shade', toasts: [], hover: null, fitRequest: 0,
     workspace: 'map', lastView: {}, roster: null, savedRoster: null, character: null, profession: 'guard', preview: null,
 };

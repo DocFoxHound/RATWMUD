@@ -537,5 +537,55 @@ class ArtworkTests(Fixture):
         self.assertEqual(403, raised.exception.status)
 
 
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class ChapterTests(Fixture):
+    """Chapters, their camps and their pending dealings with the factions (Docs/Design/32): the screen and a decision."""
+
+    def save_chapters(self):
+        town = next(c for c in greyfen()['cells'])
+        doc = {'schema': 1, 'players': [{'id': 'player-ada', 'name': 'Ada', 'cell': town['id'], 'x': 1, 'y': 1}],
+               'chapters': {'next': 2, 'chapters': [{'id': 'ch-1', 'name': 'Ash Wardens', 'level': 3, 'renown': 120,
+                                                     'members': [{'id': 'player-ada', 'rank': 0}], 'claimCell': town['id'], 'sworn': ['moss']}]},
+               'camps': {'next': 3, 'sites': [{'id': 'site-1', 'chapter': 'ch-1', 'cell': town['id'], 'name': 'Ash Camp', 'x': 4, 'y': 5}],
+                         'structures': [{'id': 'st-1', 'site': 'site-1', 'kind': 'hall', 'x': 6, 'y': 7, 'built': True, 'condition': 80}],
+                         'staff': []},
+               'factions': {'treaties': [{'id': 'tr-1', 'faction': 'wardens', 'chapter': 'ch-1', 'state': 'pending', 'tithe': 5},
+                                         {'id': 'tr-0', 'faction': 'wardens', 'chapter': 'ch-1', 'state': 'ended'}],
+                            'levies': [], 'houses': [{'chapter': 'ch-1', 'faction': 'wardens', 'state': 'pending', 'day': 3}]}}
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 2, %s)', ('greyfen', json.dumps(doc)))
+        return town
+
+    def test_the_screen_and_decisions(self):
+        town = self.save_chapters()
+        view = self.dm.chapters('dev')
+        self.assertEqual(['Ash Wardens'], [c['name'] for c in view['chapters']])
+        self.assertEqual(([{'id': 'player-ada', 'name': 'Ada', 'rank': 0}], town['name'], 1),
+                         (view['chapters'][0]['members'], view['chapters'][0]['holdName'], view['chapters'][0]['sworn']))
+        site = view['sites'][0]
+        self.assertEqual((town['x'], town['y'], ['hall']), (site['cellX'], site['cellY'], [s['kind'] for s in site['structures']]))
+        self.assertEqual(['tr-1', 'tr-0'], [t['id'] for t in view['treaties']])
+        self.assertEqual(['pending'], [h['state'] for h in view['houses']])
+        master = self.sign_in('dm-master')
+        treaty = self.dm.decide(master, 'dev', 'treaty', 'tr-1', True, reason='Fair terms.')
+        house = self.dm.decide(master, 'dev', 'house', 'ch-1', False, faction='wardens')
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            rows = conn.execute('SELECT kind, target_id, payload FROM dm.actions WHERE id IN (%s, %s) ORDER BY id',
+                                (treaty['id'], house['id'])).fetchall()
+        self.assertEqual([('treaty.decide', 'tr-1', {'approve': True}),
+                          ('house.decide', 'ch-1', {'approve': False, 'faction': 'wardens'})], rows)
+        self.assertEqual({treaty['id'], house['id']}, {a['id'] for a in self.dm.chapters('dev')['actions']})
+        for bad in (lambda: self.dm.decide(master, 'dev', 'treaty', 'tr-0', True),          # No longer pending.
+                    lambda: self.dm.decide(master, 'dev', 'house', 'ch-1', True, faction='nobody'),
+                    lambda: self.dm.decide(master, 'dev', 'levy', 'tr-1', True),
+                    lambda: self.dm.decide(master, 'dev', 'treaty', 'tr-1', 'yes')):
+            with self.assertRaises(D.DMError):
+                bad()
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.decide(self.sign_in('dm-viewer'), 'dev', 'treaty', 'tr-1', True)
+        self.assertEqual(403, raised.exception.status)
+
+
 if __name__ == '__main__':
     unittest.main()
