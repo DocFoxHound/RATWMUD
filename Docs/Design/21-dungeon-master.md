@@ -147,6 +147,9 @@ Under every named NPC and job holder in NPC Management, and every character in P
 
 ### 3. Story Creator
 
+> **Superseded 2026-10-02** by `Docs/Design/34-dungeon-master-refresh.md`: stories become Storykeeper, a step
+> planner run by the game server, with quests, NPC briefs and an AI co-author. The sketch below is kept for history.
+
 - **A library of stories** saved in the database: drafts, versions, scheduled,
   running, finished, archived. Build, save, load and duplicate.
 - **A story is phases.** Each phase has **triggers** (a time; someone entering a
@@ -307,7 +310,7 @@ This is the biggest new piece of engineering.
      them on DEV.
    - Territory painting and the relations matrix.
    - Player factions (this needs guilds in the game).
-5. **Story Creator v1:**
+5. **Story Creator v1** (replaced by doc 34's phases):
    - Story data, the editor, save, load and versions, and DEV test runs.
    - The server's story engine with a first set of triggers and actions.
    - PROD scheduling and monitoring. Storykeeper retired.
