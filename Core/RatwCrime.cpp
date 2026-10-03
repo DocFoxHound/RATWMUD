@@ -633,7 +633,14 @@ void World::tendCrime()
             continue;
         }
         if (between(g->position, p->position) <= 1.8)
-            confront(it->first, it->second);
+        {
+            // Confronting a resident ends this pursuit, and perhaps others after it (takeIntoCustody): go on from
+            // this guard's place in the map, not from an iterator that may be gone.
+            const std::string guard = it->first, person = it->second;
+            confront(guard, person);
+            it = pursuits_.upper_bound(guard);
+            continue;
+        }
         ++it;
     }
     // A player told to pay who neither pays nor stays is taken.

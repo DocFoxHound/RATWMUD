@@ -175,6 +175,34 @@ void unpaidMeansGaol()
     expect(w.society().conserved(), "Money is conserved");
 }
 
+// A guard who chases a wanted resident and reaches them takes them in, and the chase ends cleanly. (Taking them in
+// ended the chase under the loop's feet: the server hung on a simulated week's third day.)
+void residentChasedDown()
+{
+    auto w = town();
+    beside(w, "rook", "wren");
+    beside(w, "sloe", "wren", -1, 2);          // A guard on patrol, in the shop (on open floor).
+    const auto id = stealUntilSeen(w, "rook", "wren");
+    give(w, "rook", -cash(w, "rook"));          // Whatever was taken is spent: nothing to pay a fine with.
+    // Wren tells the guard; the guard goes after Rook, reaches them and, as they can't pay, takes them in.
+    for (int i = 0; i < 200 && !w.custodyOf("rook"); ++i)
+    {
+        beside(w, "sloe", "wren", -1, 0);
+        beside(w, "rook", "sloe", 1.2, 0);
+        w.tick(.25);
+    }
+    const Incident* inc = nullptr;
+    for (const auto& x : w.crime().incidents)
+        if (x.id == id)
+            inc = &x;
+    expect(w.custodyOf("rook") && !w.warrantFor("rook") && inc && inc->status == "settled",
+           "The guard catches the broke resident, who goes to the gaol: " + (inc ? inc->status : std::string("?")));
+    for (int i = 0; i < 20; ++i)
+        w.tick(.5);
+    expect(w.custodyOf("rook"), "and stays there, the chase over");
+    expect(w.society().conserved(), "Money is conserved");
+}
+
 void assaultBeatsDown()
 {
     // Setting on a resident is an assault: a fight in an arena (Docs/Design/33-combat.md), and a crime.
@@ -323,6 +351,7 @@ int main()
         refusals();
         theftBeforeTheWatch();
         unpaidMeansGaol();
+        residentChasedDown();
         assaultBeatsDown();
         downedAndUp();
         needMakesThieves();
