@@ -1,7 +1,6 @@
 # Combat: turn-based arenas, attacks, injury and death
 
-Status: designed October 2, 2026; the turn-based core built the same day (see [Built](#built) at the end). Sword,
-Flamethrower, mana and the attack animations are still to come. This
+Status: designed October 2, 2026, and built the same day (see [Built](#built) at the end), all but the balance work. This
 document sets the combat rules; [18-combat-presentation.md](18-combat-presentation.md)
 still governs the encounter log and map-cue presentation except where noted.
 All numbers are starting tuning, not final balance. Shared working copy:
@@ -161,7 +160,10 @@ stamina per turn     = +8 at the start of each of your own turns
 
 **Turn order bar.** Every fighter sees the next six turns in order, like the Tactics turn list, so a slow sword swing visibly pushes the swinger down the list.
 
-**Facing.** You choose your facing at the end of your turn. Attacks from the side get +10% to hit and from behind +20%, which gives positioning a real payoff.
+**Facing.** You can turn to face any of eight ways at any point in your own turn, as often as you like. It costs neither
+your move nor your action, but it is locked until your turn comes round again. On the page: Q and E, the ⟲ ⟳ buttons,
+or Alt/Ctrl+click a tile. Attacks from the side get +10% to hit and from behind +20%, which gives positioning a real
+payoff.
 
 **Range on the grid.** Bite reaches adjacent tiles (diagonals included), Sword reaches 2 tiles, and Flamethrower is a cone you aim in one of 8 directions. Attacks need line of sight; fixtures block it.
 
@@ -457,13 +459,54 @@ without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are ne
   - `Client/src/game/battle.test.ts`.
   - A real fight in headless Chromium, three players each in their own browser: `node tools/client/fight.mjs`.
 
+Built next, the same day:
+- **Facing** on one's own turn, free (above).
+- **The sword:**
+  - A good like herbs and meals, with "sword" valid in the economy at 40 pennies. No shop stocks one yet; developers
+    grant them with `{"type":"grant","item":"sword"}`.
+  - Held in the mouth slot from the inventory, or in a fight as an action.
+  - Reaches two tiles if the tile between is clear, hits for 20 base, costs 14 stamina, and its weight of 10 delays
+    your next turn.
+  - No biting with it held, and speech is marked "(muffled)".
+  - A hit of 18 or more may knock it loose (20% − STR/10 %), and so does going down. It lies on the arena floor to be
+    picked up, and after the fight on the world's ground.
+  - Ground items are held by a `ground:lost` account, so goods are never lost. They are not yet saved across a
+    restart.
+- **The Fire Gift and Flamethrower:**
+  - Entity `gift`, `quickened` and `mana` (20 + WIS × 0.8). Mana comes back 2 a turn in a fight and 10 a minute out of
+    one.
+  - Who has the Gift is still the setting's to decide; developers give it with `{"type":"gift","gift":"fire"}`.
+  - Casting aims a cone and locks its tiles for everyone to see, takes the mana, 12 or 20 stamina and 3 or 5 health
+    (double at no mana), and ends the turn.
+  - The charge meter fills at 12 (Quickened 22) + WIS/10 a tick and goes off before anyone's turn. A hit on the caster
+    breaks it off and half the mana is lost.
+  - Damage is ×(0.5 + WIS/100), cut by 40% in heavy rain.
+  - Burning does 3 at the start of each of the next 3 turns, none for one standing in water, and Roll puts it out. An
+    NPC hit below 50 health runs.
+  - The spell leaves smoke for 3 rounds.
+- **The W nudge and recoil and the glyph marks** (`Client/src/game/fightFx.ts`):
+  - The attacker lunges 0.3 tiles (0.4 with a sword); the one hit recoils 0.25 (0.1 for a graze); the one missed
+    sidesteps 0.2.
+  - Marks: `*` contact, `)` a sword's cut, `'` a graze, a faded `(` miss.
+  - Fire: `^~*` flickering over the cone, `~` above anyone burning, `.:*` gathering at a caster's muzzle (who also
+    trembles), `░` smoke, `†` a dropped sword.
+  - All of it is drawn from the fight's log; reduced motion shows static marks only.
+- **Doc 18's encounter entry:** one story entry per fight this wolf is in, watches or can see ("N actions · Latest:
+  …"), kept up to date in place. Expand shows every line this page has seen, in its own scroll box.
+- **Truces:** a Truce action offers one; anyone still standing agrees or refuses at any time. It needs everyone
+  standing to agree, any blow calls it off, and the timid and the hurt take it.
+- **A body left in the fight:** a player who leaves the world mid-fight stays in it, away, for a minute or until it
+  ends, with their Downed timer paused. Coming back within that time picks up where they are.
+- **Crawling:** Downed out of a fight, a player is walked by the server at half a tile a second, still lying down.
+- **Fighting skill** for players: saved, starting at 50. It grows 0.2 for each blow that lands and 0.5 for standing at
+  the end, more slowly as it climbs. It is on the character's snapshot.
+- **Combat noise:** a player in the cell who can hear a fight they can't see (within 30 tiles) is told once.
+- **Party auto-join** is doc 32's (`Core/RatwGameParty.cpp`, built alongside): party mates who see the fight are
+  pulled in after 5 s unless they stay out, and a per-character setting turns it off.
+
 Not yet:
-- Sword and the mouth slot, Flamethrower, mana and the Fire Gift.
-- The W nudge and recoil and the glyph effects (the log says what happened).
-- Doc 18's single expandable encounter entry (the fight panel's log stands in).
-- Truces.
-- Player parties auto-joining (there are no player parties yet; NPC companions and bandit bands do come in).
-- A disconnected fighter's body staying 60 s: a player who leaves the world is out of the fight.
-- Crawling out of a fight.
-- Training fighting skill.
-- Combat noise through hearing.
+- Balance (phase 7): numbers tuned from simulator runs and playtests.
+- A smith or a shop that sells swords.
+- Who has the Fire Gift, decided by the setting.
+- Ground items kept across a restart.
+- Fire's light revealing the hidden. In the arena there is no one hidden; outside one, nothing burns yet.

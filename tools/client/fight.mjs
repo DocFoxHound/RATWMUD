@@ -36,6 +36,10 @@ try {
     const id = async p => p.evaluate(`${S}.selfId`);
     const ashId = await id(ash), boId = await id(bo);
     await sleep(800);
+    // Ash has the Gift of fire; Bo a sword (development grants: who has them is the setting's to decide).
+    await ash.evaluate(`${S}.send({type: 'gift', gift: 'fire'})`);
+    await bo.evaluate(`${S}.send({type: 'grant', item: 'sword'})`);
+    await sleep(400);
     await ash.evaluate(`${S}.sendAction('challenge', ${JSON.stringify(boId)})`);
     await bo.waitFor(`${S}.challenge`, 10);
     await bo.screenshot(`${OUT}/1-challenge.png`);
@@ -55,6 +59,15 @@ try {
         if (!b || b.over || b.turn !== ${JSON.stringify(me)}) return 'not mine';
         const self = b.fighters.find(f => f.id === ${JSON.stringify(me)}), foe = b.fighters.find(f => f.side !== self.side && f.status === 'fighting');
         if (!foe) { s.sendBattle('wait'); return 'no foe'; }
+        if (b.casting) { s.sendBattle('wait'); return 'gathering'; }
+        if (b.swords > 0 && !b.mouth && !b.acted) { s.sendBattle('hold'); return 'held'; }
+        if (b.flame && !window.cast && b.mana >= b.flame.mana && !b.acted) {
+            window.cast = true;
+            s.keyDown({code: 'KeyE'});               // A free turn first.
+            s.aiming = 'flame';
+            s.arenaClick(foe.x, foe.y);
+            return 'cast';
+        }
         const apart = (x, y) => Math.max(Math.abs(x - foe.x), Math.abs(y - foe.y));
         if (apart(self.x, self.y) > 1 && !b.moved) {
             let best = null;
@@ -70,6 +83,12 @@ try {
         const over = await ash.evaluate(`!${S}.battle || ${S}.battle.over`);
         if (over) break;
         const a = await playOnce(ash, ashId), b = await playOnce(bo, boId);
+        if (a === 'cast') {
+            await sleep(350);
+            await ash.screenshot(`${OUT}/4a-fire-gathering-ash.png`);
+            await cy.screenshot(`${OUT}/4b-fire-gathering-cy.png`);
+            results.push(`cast: ${await ash.evaluate(`JSON.stringify(${S}.battle.casts.map(c => c.tiles.length))`)} tiles`);
+        }
         if (!shot && (a === 'bit' || b === 'bit')) {
             await sleep(350);
             await ash.screenshot(`${OUT}/4-exchange-ash.png`);
@@ -81,6 +100,8 @@ try {
     await sleep(400);
     await ash.screenshot(`${OUT}/6-over-ash.png`);
     results.push(`banner: ${await ash.evaluate(`${S}.battle?.banner ?? '(gone)'`)}`);
+    const log = await ash.evaluate(`JSON.stringify((${S}.encounters.values().next().value?.lines ?? []).map(l => l.kind))`);
+    results.push(`story entry kinds: ${log}`);
     await ash.waitFor(`!${S}.battle`, 15);
     await sleep(1200);
     await ash.screenshot(`${OUT}/7-back-in-the-world-ash.png`);

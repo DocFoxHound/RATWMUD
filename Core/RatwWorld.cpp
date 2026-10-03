@@ -38,6 +38,7 @@ constexpr int RouteSearchesPerTick = 8;                // At most, in one step; 
 constexpr double RouteBudgetMs = 3;
 constexpr std::size_t RouteNodesPerTick = 30000;
 constexpr double Epsilon = 1e-7;
+constexpr double CrawlSpeed = 0.5;             // Tiles a second, Downed (Docs/Design/33-combat.md).
 constexpr double Pi = 3.14159265358979323846;
 constexpr double TurnSpeed = Pi; // Radians per second: 180 degrees.
 calendar::Weather skyWeather(Weather value)
@@ -1778,6 +1779,8 @@ Result World::face(const std::string& id, double x, double y)
 }
 void World::prepareMovement(Entity& a)
 {
+    if (a.downedLeft > 0)
+        return;                                     // Downed: it crawls, lying down (doc 33).
     // Repeated held input must not restart an in-progress rise.
     if (a.posture == "sitting" || a.posture == "lying")
     {
@@ -2130,8 +2133,9 @@ void World::integrate(Entity& a, double dt)
             const auto* startTile = c->tile(int(a.position.x), int(a.position.y));
             if (!startTile)
                 return;
-            const double speed = step::groundSpeed(paceSpeed(a), startTile->movementCost, a.posture == "crouching", a.npc,
-                                                   environmentAt(c->id, a.position).movement);
+            const double speed = a.downedLeft > 0 ? CrawlSpeed
+                                                  : step::groundSpeed(paceSpeed(a), startTile->movementCost, a.posture == "crouching",
+                                                                      a.npc, environmentAt(c->id, a.position).movement);
             double travel = speed * dt;
             if (!a.path.empty())
                 travel = std::min(travel, distance(a.position, a.path.front()));
@@ -3269,9 +3273,11 @@ void World::tick(double dt)
             }
             if (entry.second.offstage)
                 continue;                           // Offstage NPCs don't walk (see moveOffstage()).
-            if (entry.second.downedLeft > 0 || (!battles_.empty() && inBattle(entry.first)))
+            if ((entry.second.downedLeft > 0 && entry.second.npc) || entry.second.lingering ||
+                (!battles_.empty() && inBattle(entry.first)))
             {
-                // Down, or in a fight's arena: the wolf lies (or stands in its lineup) where it is.
+                // In a fight's arena (or gone, its body left in one): the wolf stands in its lineup. A resident left
+                // Downed lies where it fell; a player Downed may crawl (below).
                 entry.second.velocity = {};
                 entry.second.input = {};
                 entry.second.path.clear();

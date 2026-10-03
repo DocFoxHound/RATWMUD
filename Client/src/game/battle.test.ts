@@ -85,3 +85,51 @@ test('fights: the arena is drawn, fighters can be clicked, and others see a red 
     assert.equal(s.fights.length, 1, 'an onlooker sees the fight');
     draw(painter, 'drawLocal');
 });
+
+test('fights: turning is free and only on your turn; a sword strikes; fire is aimed', () => {
+    const {state: s, commands} = testGame();
+    s.applySnapshot(snapshot());
+    s.keyDown({code: 'KeyE'});
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'face', dir: 1}, 'E turns right an eighth');
+    s.keyDown({code: 'KeyQ'});
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'face', dir: 7}, 'Q turns left');
+    s.arenaFace(2, 1);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'face', dir: 6}, 'facing a tile: north');
+    // Not her turn: no turning.
+    s.applySnapshot(snapshot({battle: {...battle, turn: 'bo'}}));
+    const before = commands.length;
+    s.keyDown({code: 'KeyE'});
+    assert.equal(commands.length, before, 'locked until her turn comes again');
+    // A sword in the jaws: a click on a foe strikes with it.
+    s.applySnapshot(snapshot({battle: {...battle, you: {...(battle.you as Json), mouth: 'sword', gift: 'fire', mana: 30, flameLength: 3,
+        flameAngle: 23, flameMana: 25}}}));
+    s.fightTarget('bo');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'sword', target: 'bo'});
+    // Fire: aim, then a click sends it where it goes.
+    s.aiming = 'flame';
+    s.arenaClick(5, 2);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'flame', x: 5, y: 2});
+    assert.equal(s.aiming, '', 'aimed once');
+});
+
+test('fights: one story entry per fight, kept up to date; blows nudge the W', () => {
+    const {state: s} = testGame();
+    s.applySnapshot(snapshot());
+    const entry = s.posts.find(p => p.encounter);
+    assert.ok(entry, 'the fight has an entry in the story');
+    assert.match(entry!.text, /Latest: Bo bites Ada/);
+    s.clock = 1;
+    const hit = {seq: 5, kind: 'hit', text: 'Ada bites Bo (7).', actor: 'self', target: 'bo'};
+    s.applySnapshot(snapshot({battle: {...battle, log: [...(battle.log as Json[]), hit]}}));
+    assert.equal(s.posts.filter(p => p.encounter).length, 1, 'still one entry');
+    assert.match(entry!.text, /Latest: Ada bites Bo/);
+    assert.equal(entry!.encounter!.lines.length, 2, 'every line kept for Expand');
+    s.clock = 1.12;
+    const [dx] = s.fx.offset('self', s.clock, false);
+    const [bx] = s.fx.offset('bo', s.clock, false);
+    assert.ok(dx > 0.1 && bx > 0.1, 'Ada lunges toward Bo, and Bo recoils away');
+    assert.deepEqual(s.fx.offset('self', s.clock, true), [0, 0], 'reduced motion: no slide');
+    assert.ok(s.fx.marks(s.battle!, s.clock, false).some(m => m.glyph === '*'), 'and a mark where it landed');
+    s.applySnapshot(snapshot({battle: undefined}));
+    assert.ok(entry!.encounter!.over && /ended/.test(entry!.text), 'when it ends, the entry says so');
+});

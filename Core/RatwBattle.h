@@ -24,6 +24,27 @@ struct BattleFighter
     int timeouts = 0;
     int order = 0;                  // When they came in (ties in the turn order go to the earlier).
     double lineupX = 0, lineupY = 0;    // Where the wolf stands, frozen, in the world.
+    int burning = 0;                // Turns of Burning left (3 damage at the start of each).
+    bool casting = false;           // Charging a spell: can't move until it goes off.
+    bool scared = false;            // An NPC the fire put to flight.
+    bool truce = false;             // Agreed to the truce on offer.
+};
+
+// A spell charging (the tell): it goes off when its meter fills, on the tiles locked when it began.
+struct BattleCast
+{
+    std::string caster, spell;
+    int dir = 0;
+    std::vector<std::pair<int, int>> tiles;
+    double meter = 0, gain = 10, mana = 0;
+    bool quickened = false;
+};
+
+// Something on the arena's ground: a sword knocked loose.
+struct BattleDrop
+{
+    int x = 0, y = 0;
+    std::string item, owner;
 };
 
 struct BattleLine
@@ -31,6 +52,7 @@ struct BattleLine
     std::uint32_t seq = 0;
     double time = 0;
     std::string actor, target, kind, text;
+    std::vector<std::pair<int, int>> tiles;     // Where a spell went off (for the page's flame).
 };
 
 struct Battle
@@ -55,6 +77,11 @@ struct Battle
     std::string incident;               // An assault on a resident: the crime it is (RatwCrime.h).
     std::string camp;                   // Bandits from this camp (RatwRoads.h).
     int nextOrder = 0;
+    std::vector<BattleCast> casts;
+    std::vector<BattleDrop> drops;
+    std::string truceBy;                // Who offered a truce now on the table ("" for none).
+    std::vector<std::pair<std::pair<int, int>, int>> smoke;   // Tiles of smoke and the round they clear.
+    double lookedAround = -1;           // When it last looked for who can hear it.
 
     const BattleFighter* fighter(const std::string& who) const
     {
@@ -79,6 +106,13 @@ struct Battle
     }
 };
 
+// Something lying in the world: a sword knocked loose in a fight, dropped where it fell.
+struct GroundItem
+{
+    std::string id, cellId, item;
+    double x = 0, y = 0;
+};
+
 // A challenge to fight between players (doc 33: a fight between players needs the other's yes).
 struct Challenge
 {
@@ -100,8 +134,24 @@ constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;
 constexpr double DownedMinimum = .6, OverkillSeconds = 10, DownedTurnSeconds = 60;
 constexpr double StruggleSeconds = 20, TendSeconds = 10;   // Out of a fight.
-constexpr std::size_t BattleLogKept = 40;
+constexpr std::size_t BattleLogKept = 60;
 constexpr int YoungestFighter = 13;
+// The sword, held in the mouth.
+constexpr double SwordDamage = 20, SwordStamina = 14, SwordWeight = 10, KnockLooseFrom = 18;
+constexpr int SwordReach = 2;
+// Flamethrower, a Fire Gift (Gifted, Quickened).
+struct Spell
+{
+    double charge, length, halfAngle, damage, mana, stamina, self, weight;
+};
+constexpr Spell GiftedFlame{12, 3, 23, 21, 25, 12, 3, 20};
+constexpr Spell QuickenedFlame{22, 5, 35, 45, 40, 20, 5, 10};
+constexpr int BurnTurns = 3, SmokeRounds = 3;
+constexpr double BurnDamage = 3, RainFactor = .6, ManaPerTurn = 2, ManaPerSecond = 1.0 / 6;
+inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom * .8 : 0; }
+// Fighting skill grows with fighting, slower as it climbs.
+constexpr double SkillPerHit = .2, SkillPerFight = .5;
+constexpr double LingerSeconds = 60, NoiseReach = 30;
 
 // The meter a fighter gains each tick, and how far they may move in a turn (injury shortens it).
 inline double meterGain(double dexterity) { return 6 + dexterity / 10; }

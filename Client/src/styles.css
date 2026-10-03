@@ -283,6 +283,10 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .fight-who { font-size: 12px; color: #8fb0d6; }
 .fight-who.foe { color: #e0695e; }
 .fight-who.fallen { color: #ff9a3c; }
+.fight-mana { color: #ff9a3c; font-size: 12px; }
+.post.encounter .words { color: var(--muted); }
+.encounter-lines { max-height: 160px; overflow-y: auto; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.muffled { color: var(--muted); font-size: 11px; margin-left: 6px; }
 .fight-log { display: flex; flex-direction: column; gap: 1px; font-size: 12px; color: var(--muted); max-height: 92px; overflow-y: auto; }
 .fight-line.hit, .fight-line.down, .fight-line.death { color: var(--paper); }
 .fight-line.over { color: var(--gold); }

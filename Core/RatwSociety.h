@@ -303,6 +303,8 @@ class Society
     // Takes patrol routes and every resident's wander area from `from` (a validated candidate society).
     void adoptLayers(const Society& from);
     static int stock(const EconomyAccount& account, const std::string& item);
+    // Goods made (not bought: a smith's work, a grant): only goods, never money.
+    bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
     static const char* itemName(const std::string& id);
     std::int64_t moneySupply() const;

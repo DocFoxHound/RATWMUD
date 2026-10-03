@@ -21,7 +21,8 @@ export class FightPanel {
         const s = this.s, b = s.battle, self = obj(s.snapshot, 'self');
         const downedLeft = num(self, 'downedLeft');
         const key = JSON.stringify([b && [b.id, b.over, b.banner, b.turn, Math.ceil(b.turnLeft), b.moved, b.acted, b.observer, b.status,
-            b.struggling, b.canStruggle, b.order, b.watching, b.log.at(-1)?.seq, b.fighters.map(f => [f.id, f.label, f.status])],
+            b.struggling, b.canStruggle, b.order, b.watching, b.log.at(-1)?.seq, b.fighters.map(f => [f.id, f.label, f.status, f.truce]),
+            b.mouth, b.swords, Math.floor(b.mana), b.burning, b.casting, b.truceBy, b.agreed, b.drops.length, s.aiming],
             s.challenge && [s.challenge.name, Math.ceil(s.challenge.left)], downedLeft > 0 && [Math.ceil(downedLeft),
             bool(self, 'canStruggle'), bool(self, 'struggling')], b ? [] : s.fights]);
         if (key === this.key) return;
@@ -45,6 +46,9 @@ export class FightPanel {
             else if (myTurn(b, s.selfId)) el('span', 'fight-turn', head, `Your turn · ${Math.ceil(b.turnLeft)} s`);
             else if (b.turn) el('span', 'muted', head, `${b.turnName || name(b.turn)}'s turn`);
             if (b.watching > 0) el('span', 'muted small', head, `${b.watching} watching`);
+            if (b.gift) el('span', 'fight-mana', head, `Mana ${Math.floor(b.mana)}`);
+            if (b.mouth) el('span', 'muted small', head, `${b.mouth} in your jaws`);
+            if (b.casting) el('span', 'fight-alert', head, 'Gathering fire…');
             // The turn order: the next six turns.
             const order = row();
             el('span', 'label muted', order, 'NEXT');
@@ -63,13 +67,41 @@ export class FightPanel {
                 if (b.status === 'downed') {
                     if (b.canStruggle) button('Struggle up', 'act fight-go', acts, () => s.sendBattle('struggle'));
                     el('span', 'muted small', acts, 'You are down. Click a tile to crawl one.');
+                } else if (s.aiming === 'flame') {
+                    el('span', 'fight-turn', acts, 'Click where the fire goes · Esc to cancel');
+                    button('Cancel', 'act', acts, () => { s.aiming = ''; });
                 } else {
-                    el('span', 'muted small', acts, b.moved ? 'Click a foe next to you to bite.' : 'Click a lit tile to move, a foe next to you to bite.');
+                    const strike = b.mouth === 'sword' ? 'strike (up to two tiles)' : 'bite';
+                    el('span', 'muted small', acts, b.moved ? `Click a foe to ${strike}.` : `Click a lit tile to move, a foe to ${strike}.`);
+                    const turnL = button('⟲', 'act', acts, () => s.turnInFight(-1));
+                    turnL.title = 'Turn left (Q) · free · Alt+click a tile to face it';
+                    const turnR = button('⟳', 'act', acts, () => s.turnInFight(1));
+                    turnR.title = 'Turn right (E) · free';
+                    if (!b.acted) {
+                        if (b.burning > 0) button('Roll', 'act fight-go', acts, () => s.sendBattle('roll')).title = 'Put out the flames (your action)';
+                        if (b.swords > 0 || b.mouth)
+                            button(b.mouth === 'sword' ? 'Stow sword' : 'Hold sword', 'act', acts, () => s.sendBattle(b.mouth ? 'stow' : 'hold')).title =
+                                'Your action';
+                        if (b.drops.length && !b.mouth) button('Pick up', 'act', acts, () => s.sendBattle('pickup')).title = 'A sword next to you';
+                        if (b.flame)
+                            button(`Flamethrower · ${b.flame.mana} mana`, 'act fight-go', acts, () => { s.aiming = 'flame'; }).title =
+                                `A cone of fire: it gathers first (everyone sees where), costs breath and burns you a little${b.mana < b.flame.mana ? '. Too little mana: it will burn you twice as much' : ''}`;
+                        if (!b.truceBy) button('Offer truce', 'act', acts, () => s.sendBattle('truce'));
+                    }
                     button('Flee', 'act', acts, () => s.sendBattle('flee')).title = 'From the arena\'s edge: out of this fight for good';
                 }
                 button(b.moved || b.acted ? 'End turn' : 'Wait', 'act', acts, () => s.sendBattle('wait'));
             } else if (!b.over && b.status === 'downed')
                 el('span', 'muted small', acts, b.struggling ? 'You are trying to get up.' : 'You are down.');
+            // A truce on the table: anyone still standing may agree or refuse, on their turn or not.
+            if (!b.over && b.truceBy && !b.observer && b.status === 'fighting') {
+                const t = row();
+                el('span', 'fight-turn', t, `${b.truceBy === s.selfId ? 'You offer' : `${name(b.truceBy)} offers`} a truce`);
+                if (!b.agreed) {
+                    button('Agree', 'act fight-go', t, () => s.sendBattle('agree'));
+                    button('Refuse', 'act', t, () => s.sendBattle('refuse'));
+                } else el('span', 'muted small', t, 'You have agreed. Everyone standing must.');
+            }
             // Who is in it, and how they are.
             const who = row();
             for (const f of b.fighters) {

@@ -58,8 +58,26 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         you.add("side", mine->side);
         you.add("status", mine->status);
         you.add("struggling", mine->struggling);
+        you.add("burning", mine->burning);
+        you.add("casting", mine->casting);
+        you.add("truce", mine->truce);
         if (const auto* e = world_.entity(viewer))
+        {
             you.add("canStruggle", mine->status == "downed" && !mine->struggling && world_.recoveryAvailable(*e));
+            you.add("mouth", e->mouth);
+            if (const auto* purse = world_.society().account(viewer))
+                you.add("swords", Society::stock(*purse, "sword"));
+            if (!e->gift.empty())
+            {
+                you.add("gift", e->gift);
+                you.add("quickened", e->quickened);
+                you.add("mana", std::floor(e->mana));
+                const auto& spell = e->quickened ? battle::QuickenedFlame : battle::GiftedFlame;
+                you.add("flameLength", spell.length);
+                you.add("flameAngle", spell.halfAngle);
+                you.add("flameMana", spell.mana);
+            }
+        }
     }
     v.add("you", you);
     v.add("turn", b.turn);
@@ -90,6 +108,14 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         o.add("away", f.away);
         o.add("label", healthLabel(e->hurt, f.status == "downed", f.status == "dead"));
         o.add("health", std::round(100 - e->hurt));
+        if (!e->mouth.empty())
+            o.add("mouth", e->mouth);
+        if (f.burning > 0)
+            o.add("burning", f.burning);
+        if (f.casting)
+            o.add("casting", true);
+        if (!b.truceBy.empty())
+            o.add("truce", f.truce);
         if (f.id == viewer)
             o.add("stamina", std::round(e->stamina));
         if (f.status == "downed" && mine && mine->side == f.side)
@@ -97,6 +123,44 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         fighters.push(o);
     }
     v.add("fighters", fighters);
+    v.add("truceBy", b.truceBy);
+    const auto tileList = [](const std::vector<std::pair<int, int>>& tiles) {
+        auto list = Value::array();
+        for (const auto& [x, y] : tiles)
+        {
+            auto p = Value::array();
+            p.push(x);
+            p.push(y);
+            list.push(p);
+        }
+        return list;
+    };
+    // Spells gathering (their cones, locked), things on the arena's floor, smoke.
+    auto casts = Value::array();
+    for (const auto& cast : b.casts)
+    {
+        auto o = Value::object();
+        o.add("caster", cast.caster);
+        o.add("meter", std::round(cast.meter));
+        o.add("quickened", cast.quickened);
+        o.add("tiles", tileList(cast.tiles));
+        casts.push(o);
+    }
+    v.add("casts", casts);
+    auto drops = Value::array();
+    for (const auto& d : b.drops)
+    {
+        auto o = Value::object();
+        o.add("x", d.x);
+        o.add("y", d.y);
+        o.add("item", d.item);
+        drops.push(o);
+    }
+    v.add("drops", drops);
+    std::vector<std::pair<int, int>> smoke;
+    for (const auto& s : b.smoke)
+        smoke.push_back(s.first);
+    v.add("smoke", tileList(smoke));
     // The next six turns, as the meters stand (the Tactics turn list).
     struct Next
     {
@@ -138,7 +202,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         }
     v.add("reach", reach);
     auto lines = Value::array();
-    const std::size_t from = b.log.size() > 12 ? b.log.size() - 12 : 0;
+    const std::size_t from = b.log.size() > 24 ? b.log.size() - 24 : 0;
     for (std::size_t i = from; i < b.log.size(); ++i)
     {
         auto line = Value::object();
@@ -147,6 +211,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         line.add("actor", b.log[i].actor);
         line.add("target", b.log[i].target);
         line.add("text", b.log[i].text);
+        if (!b.log[i].tiles.empty())
+            line.add("tiles", tileList(b.log[i].tiles));
         lines.push(line);
     }
     v.add("log", lines);
@@ -196,6 +262,10 @@ Value Game::fightsInView(const Entity& self) const
                              !world_.inBattle(self.id));
         o.add("canObserve", !b.over && !world_.inBattle(self.id));
         o.add("watching", b.observers.count(self.id) > 0);
+        // For the story's one entry per fight (doc 18): how much has happened, and the latest of it.
+        o.add("actions", double(b.seq));
+        if (!b.log.empty())
+            o.add("latest", b.log.back().text);
         // A name on each side, for "join X's side".
         for (int side = 0; side < 2; ++side)
             for (const auto& f : b.fighters)
@@ -224,13 +294,28 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
         else
             result = world_.battleMove(id, int(std::floor(x)), int(std::floor(y)));
     }
+    else if (verb == "face")
+    {
+        const double dir = j.number("dir", -1);
+        result = world_.battleFace(id, std::isfinite(dir) ? int(dir) : -1);
+    }
+    else if (verb == "flame")
+    {
+        const double x = j.number("x", -1), y = j.number("y", -1);
+        result = std::isfinite(x) && std::isfinite(y)
+                     ? world_.battleAct(id, "flame", std::to_string(int(std::floor(x))) + "," + std::to_string(int(std::floor(y))))
+                     : Result{false, "Aim it: which way?", {}};
+    }
+    else if (verb == "agree" || verb == "refuse")
+        result = world_.answerTruce(id, verb == "agree");
     else if (verb == "join")
         result = world_.joinBattle(id, j.string("battle"), int(j.number("side", -1)));
     else if (verb == "observe")
         result = world_.observeBattle(id, j.string("battle"));
     else if (verb == "leave")
         result = world_.leaveObserving(id);
-    else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait")
+    else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||
+             verb == "roll" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce")
         result = world_.battleAct(id, verb, target);
     else
         return false;

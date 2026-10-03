@@ -128,6 +128,10 @@ export class Dialogs {
         }
         const actions = el('div', 'sheet-actions', this.panel);
         if (s.inventoryQuantity('meal') > 0) button('EAT ONE MEAL', 'primary', actions, () => this.act('eat'));
+        if (s.inventoryQuantity('sword') > 0) {
+            const held = str(self, 'mouth') === 'sword';
+            button(held ? 'PUT THE SWORD AWAY' : 'HOLD THE SWORD IN YOUR JAWS', 'primary', actions, () => this.act(held ? 'stow sword' : 'hold sword'));
+        }
         const resource = s.visibleResource();
         if (s.canGather()) button('GATHER HERBS', 'primary', actions, () => this.act('gather'));
         else if (resource)

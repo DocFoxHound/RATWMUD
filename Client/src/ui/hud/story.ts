@@ -27,7 +27,7 @@ export class StoryPanel {
     private volume: HTMLButtonElement;
     private hint: HTMLElement;
     private recover: HTMLButtonElement;
-    private shown = new Map<Post, {row: HTMLElement; text: HTMLElement; revealed: number}>();
+    private shown = new Map<Post, {row: HTMLElement; text: HTMLElement; revealed: number; version?: number; lines?: HTMLElement}>();
     private channel = '';
     private stick = true;                   // Following the newest post (until the reader scrolls up).
 
@@ -146,10 +146,32 @@ export class StoryPanel {
                 const speaker = el('div', 'speaker', row, post.speaker.toUpperCase());
                 // Whom it was for: "→ you" stands out, so a reply meant for the player is never lost in a crowd.
                 if (post.to.length) el('span', post.to.includes('you') ? 'to you' : 'to', speaker, `  →  ${post.to.join(', ')}`);
+                if (post.muffled) el('span', 'muffled', speaker, '(muffled)');
                 const text = el('div', 'words', row);
                 this.feed.append(row);
                 this.shown.set(post, shown = {row, text, revealed: -1});
+                if (post.encounter) {
+                    // One entry per fight (doc 18): the latest, and the whole of it on Expand.
+                    const enc = post.encounter;
+                    row.classList.add('encounter');
+                    const lines = el('div', 'encounter-lines', row);
+                    show(lines, false);
+                    const toggle = button('Expand', 'act', speaker, () => {
+                        enc.expanded = !enc.expanded;
+                        toggle.textContent = enc.expanded ? 'Collapse' : 'Expand';
+                        show(lines, enc.expanded);
+                        if (enc.expanded) lines.scrollTop = lines.scrollHeight;
+                    });
+                    shown.lines = lines;
+                }
                 added = true;
+            }
+            if (post.encounter && shown.lines && shown.version !== post.encounter.version) {
+                const lines = shown.lines, atEnd = lines.scrollTop + lines.clientHeight >= lines.scrollHeight - 4;
+                shown.version = post.encounter.version;
+                lines.replaceChildren(...post.encounter.lines.map(l => el('div', `fight-line ${l.kind}`, undefined, l.text)));
+                if (atEnd) lines.scrollTop = lines.scrollHeight;     // Following the newest, unless reading back.
+                shown.revealed = -1;
             }
             if (shown.revealed !== post.revealed) {
                 shown.revealed = post.revealed;

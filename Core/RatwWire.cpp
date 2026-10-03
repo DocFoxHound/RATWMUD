@@ -174,6 +174,16 @@ Value persistEntity(const Entity& e, double time)
         o.add("downedLeft", e.downedLeft);
     if (e.recoveryUsed >= 0)
         o.add("recoveryUsed", e.recoveryUsed);
+    if (!e.mouth.empty())
+        o.add("mouth", e.mouth);
+    if (!e.gift.empty())
+    {
+        o.add("gift", e.gift);
+        o.add("quickened", e.quickened);
+        o.add("mana", e.mana);
+    }
+    if (e.fightingSkill != 50)
+        o.add("fightingSkill", e.fightingSkill);
     return o;
 }
 
@@ -228,6 +238,15 @@ Entity readEntity(const Value& o)
     else
         e.stamina = -1;
     e.recoveryUsed = strictNumber(o, "recoveryUsed", -1.0);
+    e.mouth = o.string("mouth");
+    if (!e.mouth.empty() && e.mouth != "sword")
+        e.mouth.clear();
+    e.gift = o.string("gift");
+    if (!e.gift.empty() && e.gift != "fire")
+        e.gift.clear();
+    e.quickened = o.boolean("quickened");
+    e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
+    e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);
     e.postureTarget = o.string("postureTarget");
     e.postureRemaining = number(o, "postureRemaining");
     e.turnTarget = e.facing;                       // Input, paths and manual turn intents are never reloaded.

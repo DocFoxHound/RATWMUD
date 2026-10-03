@@ -1102,8 +1102,10 @@ void Game::updateMovementModes()
             continue;
         const auto& id = e->id;
         std::uint8_t mode = FreeMovement;
-        if (fighting_.count(id) || e->downedLeft > 0 || world_.inBattle(id))
-            mode = Fighting;                       // In an arena, or lying Downed: no walking at all (doc 33).
+        if (fighting_.count(id) || world_.inBattle(id) || e->lingering)
+            mode = Fighting;                       // In an arena: no walking at all (doc 33).
+        else if (e->downedLeft > 0)
+            mode = HeldMovement;                   // Downed: the server crawls the wolf (half a tile a second).
         else if (world_.pursued(id) || world_.foughtWithin(id, HeldAfter) || world_.offendedWithin(id, HeldAfter) ||
                  !e->path.empty() || world_.travelState(id).active)
             mode = HeldMovement;                   // (A route or a journey the server walks counts as held too.)
@@ -1281,6 +1283,9 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         else
             characters_.erase(actor);
     };
+    // Back before a lingering body (doc 33) left the fight: the wolf as it is now, not as it was saved.
+    const auto* stayed = world_.entity(actor);
+    const bool lingered = stayed && stayed->lingering;
     auto& player = world_.addPlayer(actor, name);
     if (!world_.society().account(actor))
     {
@@ -1289,7 +1294,12 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         return false;
     }
     const auto saved = characters_.find(actor);
-    if (saved != characters_.end())
+    if (lingered)
+    {
+        player.lingering = false;
+        lingering_.erase(actor);
+    }
+    else if (saved != characters_.end())
         player = saved->second;
     else
     {
@@ -1348,7 +1358,15 @@ void Game::leaveCharacter(Connection* c)
         world_.stop(e->id);
         characters_[e->id] = *e;
         logEvent("departure", id);
-        world_.removePlayer(id);
+        if (const auto* fight = world_.battleOf(id); fight && !fight->over)
+        {
+            // Gone mid-fight: the body stays in it, away, for a minute or until it ends (doc 33), so leaving the
+            // world is no way out of a fight.
+            world_.linger(id);
+            lingering_[id] = world_.time() + battle::LingerSeconds;
+        }
+        else
+            world_.removePlayer(id);
         ++revision_;
     }
     lastMovementSound_.erase(id);
@@ -1358,6 +1376,30 @@ void Game::leaveCharacter(Connection* c)
     c->developmentIdentity.clear();
     if (had)
         record(Economy | Character, id);           // Where they left, kept; the rest with the next snapshot.
+}
+
+void Game::releaseLingering()
+{
+    // A body left in a fight goes once the fight is over, or after a minute; what happened to it is kept.
+    for (auto it = lingering_.begin(); it != lingering_.end();)
+    {
+        auto* e = world_.entity(it->first);
+        const auto* fight = world_.battleOf(it->first);
+        if (e && e->lingering && fight && !fight->over && world_.time() < it->second)
+        {
+            ++it;
+            continue;
+        }
+        if (e && e->lingering)
+        {
+            e->lingering = false;
+            characters_[e->id] = *e;
+            world_.removePlayer(e->id);
+            record(Character, it->first);
+            ++revision_;
+        }
+        it = lingering_.erase(it);
+    }
 }
 
 bool Game::accountCommand(Connection* c, const Value& j, const std::string& type)
@@ -1673,6 +1715,7 @@ void Game::tick(double dt)
         snapshotAccumulator_ = 0;
         movementSounds();
         updateMovementModes();
+        releaseLingering();
     }
     // A quarter of the clients' snapshots in each tick (by a phase fixed per connection).
     snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
@@ -1921,6 +1964,18 @@ void Game::sendSnapshot(Connection* c)
     if (const auto* me = world_.entity(id))
     {
         self.set("health", std::round(100 - me->hurt));
+        self.set("fightingSkill", std::round(me->fightingSkill));
+        if (!me->mouth.empty())
+            self.set("mouth", me->mouth);
+        if (!me->gift.empty())
+        {
+            self.set("gift", me->gift);
+            self.set("quickened", me->quickened);
+            self.set("mana", std::floor(me->mana));
+            self.set("manaMax", std::round(battle::manaMax(me->wisdom, true)));
+        }
+        if (const auto* purse = world_.society().account(id); purse && Society::stock(*purse, "sword") > 0)
+            self.set("swords", Society::stock(*purse, "sword"));
         if (me->downedLeft > 0)
         {
             self.set("downedLeft", std::round(me->downedLeft));
@@ -2159,6 +2214,23 @@ void Game::sendSnapshot(Connection* c)
         root.add("battle", battleView(*fight, id));
     if (auto fights = fightsInView(view.self); fights.size() > 0)
         root.add("fights", fights);
+    // Things lying on the ground nearby (a sword knocked loose in a fight).
+    {
+        auto lying = Value::array();
+        for (const auto& g : world_.groundItems())
+            if (g.cellId == view.self.cellId && std::hypot(g.x - view.self.position.x, g.y - view.self.position.y) <= world_.sightRange(view.self))
+            {
+                auto o = Value::object();
+                o.add("id", g.id);
+                o.add("item", g.item);
+                o.add("x", g.x);
+                o.add("y", g.y);
+                o.add("near", std::hypot(g.x - view.self.position.x, g.y - view.self.position.y) <= 1.8);
+                lying.push(o);
+            }
+        if (lying.size() > 0)
+            root.add("ground", lying);
+    }
     if (const auto* challenge = world_.challengeTo(id))
         if (const auto* from = world_.entity(challenge->from))
         {
@@ -2190,6 +2262,9 @@ void Game::sendSnapshot(Connection* c)
             item("herbs", "Cooking herbs", "herb", "Finite ingredients. Sell to a trader who needs supplies.", false, herbs);
         if (meals > 0)
             item("meal", "Prepared meal", "food", "Consume one to restore 10 stamina. Cooking uses real ingredients.", false, meals);
+        if (const int swords = Society::stock(*purse, "sword"); swords > 0)
+            item("sword", "Sword", "weapon", "A blade a wolf carries in its jaws. In a fight it reaches two tiles and hits hard, but tires you.",
+                 view.self.mouth == "sword", swords);
     }
     item("token", "Wooden token", "token", "A smooth keepsake carved with a branch.", false, 1);
     root.add("inventory", inventory);
@@ -2302,6 +2377,8 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         e.add("color", speaker->speakingColor);
         e.add("anonymous", !sense.identifiable);
         e.add("speaker", sense.identifiable ? speaker->name : std::string("A voice"));
+        if (post.speech && !speaker->mouth.empty())
+            e.add("muffled", true);                // Words around a sword held in the jaws (doc 33).
         // Deliberately no author ID: even anonymous records can't be tied to hidden actors.
         auto output = Value::array();
         std::string text;
@@ -2868,6 +2945,19 @@ void Game::command(Connection* c, const std::string& raw)
             result = {false, "That isn't something a party does.", {}};
         report = true;
     }
+    else if ((type == "gift" || type == "grant") && options_.devTools)
+    {
+        // Development only: a Gift (who has one is the setting's to decide: the Dungeon Master, in time), or goods made.
+        if (type == "gift")
+            result = world_.giveGift(id, j.string("gift"), j.boolean("quickened"));
+        else
+            result = world_.society().create(id, j.string("item"), std::clamp(int(j.number("quantity", 1)), 1, 9), "development grant")
+                         ? Result{true, "Granted.", {}}
+                         : Result{false, "Not a good that can be made.", {}};
+        report = true;
+        if (result.ok)
+            record(Economy | Character, id);
+    }
     else if (type == "battle")
     {
         if (!battleCommand(c, j, result))
@@ -2988,6 +3078,15 @@ void Game::command(Connection* c, const std::string& raw)
             const auto done = world_.answerChallenge(id, action == "accept");
             system(c, done.message);
             updateMovementModes();
+        }
+        else if (action == "hold sword" || action == "stow sword" || action == "take")
+        {
+            const auto done = action == "hold sword" ? (world_.inBattle(id) ? world_.battleAct(id, "hold") : world_.holdItem(id, "sword"))
+                              : action == "stow sword" ? (world_.inBattle(id) ? world_.battleAct(id, "stow") : world_.stowItem(id))
+                                                       : world_.takeItem(id, target);
+            system(c, done.message);
+            if (done.ok)
+                record(Economy | Character, id);
         }
         else if (action == "struggle" || action == "tend")
         {

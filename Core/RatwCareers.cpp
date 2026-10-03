@@ -47,7 +47,7 @@ bool thisWeek(const std::string& id, std::int64_t day)
 
 bool facilityAccount(const std::string& id)
 {
-    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:"})
+    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:"})
         if (id.rfind(prefix, 0) == 0)
             return id.size() <= 80 && id.size() > std::string(prefix).size();
     return false;

@@ -7,7 +7,7 @@ namespace ratw
 {
 bool itemValid(const std::string& item)
 {
-    return item == "herbs" || item == "meal";
+    return item == "herbs" || item == "meal" || item == "sword";
 }
 
 bool playerAccountId(const std::string& id)
@@ -242,8 +242,8 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
         return {false, "This trader has no use for those goods."};
     const auto& m = *account(seller);
     const auto& p = *account(player);
-    const int held = stock(m, item), cap = item == "meal" ? 24 : 20;
-    const int base = item == "meal" ? 6 : 2;
+    const int held = stock(m, item), cap = item == "meal" ? 24 : item == "sword" ? 4 : 20;
+    const int base = item == "meal" ? 6 : item == "sword" ? 40 : 2;
     // What the trader has on hand, and what the town has in store (priceFactor): scarce goods cost more.
     const double demand = (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
@@ -287,6 +287,15 @@ EconomyResult Society::gather(const std::string& player)
     ++a.stock["herbs"];
     record("gather", "herb patch", player, "herbs", 1, 0);
     return {true, "You gather one bundle of cooking herbs. The patch has finite supplies."};
+}
+bool Society::create(const std::string& accountId, const std::string& item, int quantity, const std::string& reason)
+{
+    const auto found = state_.accounts.find(accountId);
+    if (found == state_.accounts.end() || !itemValid(item) || quantity < 1 || stock(found->second, item) > StockLimit - quantity)
+        return false;
+    found->second.stock[item] += quantity;
+    record(reason, "made", accountId, item, quantity, 0);
+    return true;
 }
 EconomyResult Society::eat(const std::string& player)
 {

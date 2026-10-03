@@ -242,6 +242,8 @@ class Game
     json::Value battleView(const Battle& b, const std::string& viewer) const;
     json::Value fightsInView(const Entity& self) const;
     bool battleCommand(Connection* c, const json::Value& j, Result& result);
+    std::map<std::string, double> lingering_;      // Players gone mid-fight, their bodies kept until then (doc 33).
+    void releaseLingering();
     // Parties (RatwGameParty.cpp; doc 32, Part 2): the "party" commands (false: not one of them), an invitation, the
     // party's out-of-character chat, the rules each tick (places kept, fights called into), and what a player sees of
     // their party and who is a party mate or hostile to them.

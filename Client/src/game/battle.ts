@@ -16,12 +16,28 @@ export interface FighterView {
     label: string;              // "Scratched", "Wounded", "Badly hurt", "Limping", "Downed", "Dead".
     health: number;
     downedLeft: number;         // Seconds, for one's own side's Downed; 0 otherwise.
+    mouth: string;              // "sword" when one is held in the jaws.
+    burning: number;            // Turns of Burning left.
+    casting: boolean;           // Gathering fire (the tell).
+    truce: boolean;             // Agreed to the truce on offer.
+}
+
+export type Tile = [number, number];
+
+export interface CastView {
+    caster: string;
+    meter: number;
+    quickened: boolean;
+    tiles: Tile[];
 }
 
 export interface BattleLine {
     seq: number;
     kind: string;
     text: string;
+    actor: string;
+    target: string;
+    tiles: Tile[];
 }
 
 export interface BattleView {
@@ -47,6 +63,28 @@ export interface BattleView {
     order: string[];
     reach: Array<[number, number]>;
     log: BattleLine[];
+    // This wolf's own means: what is in its jaws, swords carried, a Gift and its mana; burning, gathering fire.
+    mouth: string;
+    swords: number;
+    gift: string;
+    quickened: boolean;
+    mana: number;
+    flame: {length: number; angle: number; mana: number} | null;
+    burning: number;
+    casting: boolean;
+    agreed: boolean;
+    truceBy: string;
+    casts: CastView[];
+    drops: Array<{x: number; y: number; item: string}>;
+    smoke: Tile[];
+}
+
+export interface GroundView {
+    id: string;
+    item: string;
+    x: number;
+    y: number;
+    near: boolean;
 }
 
 export interface FightSquare {
@@ -62,6 +100,8 @@ export interface FightSquare {
     canJoin: boolean;
     canObserve: boolean;
     watching: boolean;
+    actions: number;
+    latest: string;
 }
 
 export interface ChallengeView {
@@ -77,6 +117,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
     const you = obj(b, 'you');
     const pair = (v: unknown): [number, number] | null =>
         Array.isArray(v) && v.length === 2 && typeof v[0] === 'number' && typeof v[1] === 'number' ? [v[0], v[1]] : null;
+    const tiles = (list: unknown[]): Tile[] => list.map(pair).filter((p): p is Tile => p !== null);
     return {
         id: str(b, 'id'),
         over: bool(b, 'over'),
@@ -100,12 +141,56 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             id: str(f, 'id'), name: str(f, 'name'), side: Math.trunc(num(f, 'side')), x: Math.trunc(num(f, 'x')),
             y: Math.trunc(num(f, 'y')), facing: Math.trunc(num(f, 'facing')), status: str(f, 'status', 'fighting'),
             npc: bool(f, 'npc'), away: bool(f, 'away'), label: str(f, 'label'), health: num(f, 'health'),
-            downedLeft: num(f, 'downedLeft'),
+            downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
+            casting: bool(f, 'casting'), truce: bool(f, 'truce'),
         })),
         order: arr(b, 'order').filter((v): v is string => typeof v === 'string'),
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
-        log: objects(b, 'log').map(l => ({seq: num(l, 'seq'), kind: str(l, 'kind'), text: str(l, 'text')})),
+        log: objects(b, 'log').map(l => ({seq: num(l, 'seq'), kind: str(l, 'kind'), text: str(l, 'text'), actor: str(l, 'actor'),
+            target: str(l, 'target'), tiles: tiles(arr(l, 'tiles'))})),
+        mouth: str(you, 'mouth'),
+        swords: Math.trunc(num(you, 'swords')),
+        gift: str(you, 'gift'),
+        quickened: bool(you, 'quickened'),
+        mana: num(you, 'mana'),
+        flame: str(you, 'gift') === 'fire' ? {length: num(you, 'flameLength', 3), angle: num(you, 'flameAngle', 23), mana: num(you, 'flameMana', 25)}
+            : null,
+        burning: Math.trunc(num(you, 'burning')),
+        casting: bool(you, 'casting'),
+        agreed: bool(you, 'truce'),
+        truceBy: str(b, 'truceBy'),
+        casts: objects(b, 'casts').map(c => ({caster: str(c, 'caster'), meter: num(c, 'meter'), quickened: bool(c, 'quickened'),
+            tiles: tiles(arr(c, 'tiles'))})),
+        drops: objects(b, 'drops').map(d => ({x: Math.trunc(num(d, 'x')), y: Math.trunc(num(d, 'y')), item: str(d, 'item')})),
+        smoke: tiles(arr(b, 'smoke')),
     };
+}
+
+export function readGround(snapshot: Json | null): GroundView[] {
+    return objects(snapshot, 'ground').map(g => ({id: str(g, 'id'), item: str(g, 'item'), x: num(g, 'x'), y: num(g, 'y'), near: bool(g, 'near')}));
+}
+
+/** Eighths of a turn from east, for a step (dx, dy), as the server counts them. */
+export function octant(dx: number, dy: number): number {
+    if (dx === 0 && dy === 0) return 0;
+    return ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;
+}
+
+/** The tiles a flame from (x, y) toward (tx, ty) would take in (the server locks its own; this is the preview). */
+export function coneTiles(b: BattleView, x: number, y: number, tx: number, ty: number, length: number, halfAngle: number): Tile[] {
+    const out: Tile[] = [];
+    if (tx === x && ty === y) return out;
+    const aim = Math.atan2(ty - y, tx - x);
+    const {x: ax, y: ay, w, h} = b.arena;
+    for (let cy = ay; cy < ay + h; ++cy)
+        for (let cx = ax; cx < ax + w; ++cx) {
+            const dx = cx - x, dy = cy - y, far = Math.hypot(dx, dy);
+            if (far < 0.5 || far > length + 0.5) continue;
+            let off = Math.abs(Math.atan2(dy, dx) - aim) * 180 / Math.PI;
+            if (off > 180) off = 360 - off;
+            if (off <= halfAngle + 1e-6) out.push([cx, cy]);
+        }
+    return out;
 }
 
 export function readFights(snapshot: Json | null): FightSquare[] {
@@ -114,7 +199,7 @@ export function readFights(snapshot: Json | null): FightSquare[] {
         standing: [Math.trunc(num(f, 'standing0')), Math.trunc(num(f, 'standing1'))],
         names: [str(f, 'side0'), str(f, 'side1')],
         round: Math.trunc(num(f, 'round')), over: bool(f, 'over'), canJoin: bool(f, 'canJoin'),
-        canObserve: bool(f, 'canObserve'), watching: bool(f, 'watching'),
+        canObserve: bool(f, 'canObserve'), watching: bool(f, 'watching'), actions: Math.trunc(num(f, 'actions')), latest: str(f, 'latest'),
     }));
 }
 

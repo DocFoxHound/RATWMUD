@@ -7,7 +7,8 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {myTurn, type BattleView} from './battle.ts';
+import {coneTiles, myTurn, type BattleView} from './battle.ts';
+import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 
@@ -429,6 +430,15 @@ export class GamePainter {
         }
     }
 
+    /** A glyph of what just happened, or of how the fight stands (fx.ts). */
+    private drawMark(m: Mark, ox: number, oy: number, tile: number) {
+        const colors: Record<Mark['color'], Color> = {hit: rgb(0xf3e3c3), graze: rgb(0xd9c08c), miss: Muted, fire: rgb(0xff8a3c),
+            smoke: Muted, burn: rgb(0xff6a2c), charge: rgb(0xffb35c), item: Paper};
+        const color = m.glyph === '*' && m.color === 'fire' ? rgb(0xd4483c) : colors[m.color];
+        const size = m.color === 'fire' ? Math.max(11, Math.round(this.s.tileSize * 0.7)) : 12;
+        this.turnedText(ox + (m.x + 0.5) * tile, oy + (m.y + 0.5) * tile, m.glyph, size, withAlpha(color, m.alpha), 0);
+    }
+
     /** Downed flashes orange; the dead are gray. */
     private fallenColor(state: string): Color {
         if (state === 'dead') return rgb(0x7d8285);
@@ -438,6 +448,12 @@ export class GamePainter {
     /** The red squares around fights an onlooker can see (their fighters stand frozen in a lineup inside). */
     private drawFights(ox: number, oy: number, tile: number) {
         const p = this.p, red = rgb(0xd4483c);
+        // Things lying on the ground: a sword knocked loose in a fight. Close enough, a click picks it up.
+        for (const g of this.s.ground) {
+            const x = ox + g.x * tile, y = oy + g.y * tile;
+            this.turnedText(x, y, g.item === 'sword' ? '†' : '?', 14, Paper, 0);
+            if (g.near) this.s.hits.push({rect: rect(x - 10, y - 10, x + 10, y + 10), action: 'ground', target: g.id});
+        }
         for (const f of this.s.fights) {
             const x = ox + f.x0 * tile, y = oy + f.y0 * tile, w = (f.x1 - f.x0) * tile, h = (f.y1 - f.y0) * tile;
             p.frame(x, y, w, h, withAlpha(red, f.over ? 0.4 : 0.9));
@@ -452,8 +468,21 @@ export class GamePainter {
         const {x: ax, y: ay, w: aw, h: ah} = b.arena;
         p.frame(ox + ax * tile, oy + ay * tile, aw * tile, ah * tile, withAlpha(rgb(0xd4483c), 0.75));
         p.frame(ox + ax * tile + 1, oy + ay * tile + 1, aw * tile - 2, ah * tile - 2, withAlpha(rgb(0xd4483c), 0.45));
+        // Spells gathering: their cones, locked, outlined in red for everyone to see (the tell).
+        for (const cast of b.casts)
+            for (const [x, y] of cast.tiles) {
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.12));
+                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.7));
+            }
+        const meFighter = b.fighters.find(f => f.id === s.selfId);
+        // Aiming fire: where it would go.
+        if (s.aiming === 'flame' && b.flame && meFighter) {
+            const tx = Math.floor((s.hover[0] - ox) / tile), ty = Math.floor((s.hover[1] - oy) / tile);
+            for (const [x, y] of coneTiles(b, meFighter.x, meFighter.y, tx, ty, b.flame.length, b.flame.angle))
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xff9a3c), 0.28));
+        }
         // Where this wolf can go this turn.
-        if (myTurn(b, s.selfId))
+        if (myTurn(b, s.selfId) && s.aiming !== 'flame')
             for (const [x, y] of b.reach) {
                 p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.16));
                 p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.35));
@@ -463,8 +492,12 @@ export class GamePainter {
         const wolfFont = clamp(Math.round(tile * 0.55), 10, 13);
         const reach = Math.min(13, tile * 0.55);
         let hovered = '';
+        const reduced = s.reducedMotion;
         for (const f of b.fighters) {
-            const x = ox + (f.x + 0.5) * tile, y = oy + (f.y + 0.5) * tile;
+            // A lunge, a recoil, a sidestep, a gathering caster's tremble: offsets for the eye only.
+            const [mx, my] = s.fx.offset(f.id, s.clock, reduced);
+            const [tx, ty] = s.fx.tremble(f.id, b, s.clock, reduced);
+            const x = ox + (f.x + 0.5 + mx + tx) * tile, y = oy + (f.y + 0.5 + my + ty) * tile;
             const self = f.id === s.selfId;
             const color = self ? Amber : f.side === mySide ? Blue : rgb(0xe0695e);
             if (b.turn === f.id && !b.over) {
@@ -480,6 +513,8 @@ export class GamePainter {
                 p.text(x - ww * 0.5, y - wh * 0.5, 'W', wolfFont, withAlpha(color, f.away ? 0.5 : 1), true);
                 const angle = f.facing * Math.PI / 4;
                 this.turnedText(x + Math.cos(angle) * reach, y + Math.sin(angle) * reach, '>', 10, color, angle);
+                if (f.mouth === 'sword')
+                    this.turnedText(x + Math.cos(angle + 0.9) * reach, y + Math.sin(angle + 0.9) * reach, '†', 10, Paper, angle + Math.PI / 2);
             }
             if (!self) {
                 const [nw] = p.measure(f.name, 9, true);
@@ -489,6 +524,7 @@ export class GamePainter {
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = f.id;
         }
         s.hoveredEntity = hovered;
+        for (const m of s.fx.marks(b, s.clock, reduced)) this.drawMark(m, ox, oy, tile);
         // Over: the banner, then the arena fades out.
         if (b.over) {
             const map = s.mapRect;

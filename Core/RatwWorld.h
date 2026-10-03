@@ -209,6 +209,13 @@ struct Entity
     double recoveryUsed = -1.0;               // The game day (whole) the self-recovery was last used; -1 never.
     double struggleUntil = 0.0, tendUntil = 0.0;   // Getting up, and tending someone, out of a fight (not saved).
     std::string tending;
+    // Fights (doc 33): what is held in the mouth ("" or "sword"); a Gift ("" or "fire"), Quickened or not, and its mana;
+    // fighting skill (0..100: NPCs' comes from their trade, a player's grows by fighting).
+    // All saved. `lingering`: the player has gone but their body stays in a fight a while.
+    std::string mouth, gift;
+    bool quickened = false;
+    double mana = 0.0, fightingSkill = 50.0;
+    bool lingering = false;
     bool typing = false;
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
@@ -497,6 +504,20 @@ class World
     bool downed(const std::string& id) const;
     bool recoveryAvailable(const Entity& e) const;
     battle::Temperament temperamentOf(const Entity& e) const;
+    // Turning to face another way, on one's own turn: free (eighths of a turn from east).
+    Result battleFace(const std::string& id, int dir);
+    // A truce offered, and agreed to (or refused): every fighter still standing must agree.
+    Result offerTruce(const std::string& id);
+    Result answerTruce(const std::string& id, bool agree);
+    // The mouth slot: holding a sword (one has one), putting it away; taking something lying on the ground.
+    Result holdItem(const std::string& id, const std::string& item);
+    Result stowItem(const std::string& id);
+    Result takeItem(const std::string& id, const std::string& groundId);
+    const std::vector<GroundItem>& groundItems() const { return ground_; }
+    // A Gift, given (the Dungeon Master or a developer: who has one is the setting's to decide).
+    Result giveGift(const std::string& id, const std::string& gift, bool quickened);
+    // A player gone from the world while fighting: the body stays, away, until the fight ends or a minute passes.
+    void linger(const std::string& id);
     // Crime and law (RatwCrime.h, Phase 7). A theft from or an assault on a resident is an incident, known only to
     // those who perceived it; they tell the watch, which wants the offender once what it has heard is enough.
     // Players can't steal from or attack each other.
@@ -797,6 +818,16 @@ class World
     std::vector<Challenge> challenges_;
     std::map<std::string, double> settleUntil_;     // No new fight for these until then (just back from one).
     std::uint64_t nextBattle_ = 0;
+    std::vector<GroundItem> ground_;
+    std::uint64_t nextGround_ = 0;
+    std::map<std::string, std::set<std::string>> heardFights_;   // Who has been told of a fight they could only hear.
+    Result swordStrike(Battle& b, BattleFighter& f, const std::string& target);
+    Result castFlame(Battle& b, BattleFighter& f, int x, int y);
+    void resolveCast(Battle& b, const BattleCast& cast);
+    void hurtFighter(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by, bool interrupt);
+    void dropItem(Battle& b, BattleFighter& f);
+    void tendFightSurroundings(Battle& b);
+    void growSkill(Entity& e, double amount);
     Battle* battleFor(const std::string& id);
     Battle* battleById(const std::string& battleId);
     Result startBattle(const std::string& attacker, const std::string& target, bool pvp);

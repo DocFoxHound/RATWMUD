@@ -318,8 +318,177 @@ void downedIsSaved()
     e.hurt = 100;
     e.downedLeft = 321;
     e.recoveryUsed = 4;
+    e.mouth = "sword";
+    e.gift = "fire";
+    e.quickened = true;
+    e.mana = 33;
+    e.fightingSkill = 61;
     const auto back = wire::readEntity(wire::persistEntity(e, 0));
     expect(back.downedLeft == 321 && back.recoveryUsed == 4 && back.hurt == 100, "Downed, and the day's getting-up, are saved");
+    expect(back.mouth == "sword" && back.gift == "fire" && back.quickened && back.mana == 33 && back.fightingSkill == 61,
+           "and the sword in the jaws, the Gift, its mana, and fighting skill");
+}
+
+// Two players in a fight, by challenge: "player-ad" goes first.
+Battle& duel(World& w)
+{
+    quiet(w);
+    auto& ad = w.addPlayer("player-ad", "Ad");
+    auto& bo = w.addPlayer("player-bo", "Bo");
+    bo.cellId = ad.cellId;
+    bo.position = {ad.position.x + 1.2, ad.position.y};
+    ad.dexterity = 90;
+    bo.dexterity = 40;
+    w.attack("player-ad", "player-bo");
+    w.answerChallenge("player-bo", true);
+    auto* b = const_cast<Battle*>(w.battleOf("player-ad"));
+    expect(b, "a duel");
+    w.tick(.05);
+    expect(b->turn == "player-ad", "Ad first");
+    return *b;
+}
+
+void facingAndTruce()
+{
+    World w;
+    auto& b = duel(w);
+    // Turning is free, and only on one's own turn.
+    expect(w.battleFace("player-ad", 3).ok && b.fighter("player-ad")->facing == 3, "Ad turns");
+    expect(!b.moved && !b.acted && b.turn == "player-ad", "and it costs nothing");
+    expect(!w.battleFace("player-bo", 1).ok, "Bo can't turn on Ad's turn");
+    expect(!w.battleFace("player-ad", 9).ok, "Facing is one of eight ways");
+    // A truce: offered, then agreed by everyone standing, ends it.
+    expect(w.offerTruce("player-ad").ok && b.truceBy == "player-ad", "Ad offers a truce");
+    expect(!b.over, "It needs Bo's word");
+    expect(w.answerTruce("player-bo", false).ok && b.truceBy.empty(), "Bo refuses: it's off");
+    expect(!w.offerTruce("player-ad").ok, "One offer a turn (it is her action)");
+    w.battleAct("player-ad", "wait");
+    untilTurnOf(w, "player-ad", {"player-bo"});
+    expect(w.offerTruce("player-ad").ok, "Offered again");
+    expect(w.answerTruce("player-bo", true).ok && b.over && b.banner.find("truce") != std::string::npos, "Agreed: the fight ends in a truce");
+}
+
+void theSword()
+{
+    World w;
+    auto& b = duel(w);
+    auto* ad = w.entity("player-ad");
+    auto* bo = w.entity("player-bo");
+    expect(!w.holdItem("player-ad", "sword").ok, "No sword to hold");
+    expect(w.society().create("player-ad", "sword", 1, "test"), "A sword is made");
+    expect(w.society().create("player-bo", "sword", 1, "test"), "and another");
+    expect(w.battleAct("player-ad", "hold").ok && ad->mouth == "sword", "Ad takes it in her jaws (her action)");
+    expect(b.acted, "which was her action");
+    w.battleAct("player-ad", "wait");
+    untilTurnOf(w, "player-ad", {"player-bo"});
+    // Two tiles apart: a sword reaches, a bite doesn't.
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    fb->x = fa->x + 2;
+    fb->y = fa->y;
+    expect(w.battleAct("player-ad", "bite", "player-bo").ok == false, "No biting with a sword in the mouth");
+    const double stamina = ad->stamina;
+    const auto r = w.battleAct("player-ad", "sword", "player-bo");
+    expect(r.ok && std::abs(ad->stamina - (stamina - battle::SwordStamina)) < 1e-9, "A sword reaches two tiles: " + r.message);
+    expect(b.weight == battle::SwordWeight, "and is heavy: the next turn comes later");
+    // Bo goes down holding his own: it drops, and stays where it fell after the fight.
+    bo->mouth = "sword";
+    bo->hurt = 99.5;
+    w.battleAct("player-ad", "wait");
+    for (int i = 0; i < 400 && bo->downedLeft <= 0; ++i)
+    {
+        if (b.turn == "player-ad")
+        {
+            const auto* f = b.fighter("player-ad");
+            const auto* o = b.fighter("player-bo");
+            ad->stamina = 100;
+            ad->exhausted = false;
+            if (test::apart(f->x, f->y, o->x, o->y) <= 2)
+                w.battleAct("player-ad", "sword", "player-bo");
+            else
+                for (const auto& [x, y] : w.battleReach("player-ad"))
+                    if (test::apart(x, y, o->x, o->y) <= 2)
+                    {
+                        w.battleMove("player-ad", x, y);
+                        w.battleAct("player-ad", "sword", "player-bo");
+                        break;
+                    }
+            if (b.turn == "player-ad")
+                w.battleAct("player-ad", "wait");
+        }
+        if (b.turn == "player-bo")
+            w.battleAct("player-bo", "wait");
+        w.tick(.1);
+    }
+    expect(bo->downedLeft > 0 && bo->mouth.empty() && b.drops.size() == 1, "Bo goes down and his sword falls (downed " + std::to_string(bo->downedLeft) +
+               ", mouth " + bo->mouth + ", drops " + std::to_string(b.drops.size()) + ", over " + std::to_string(b.over) +
+               ", hurt " + std::to_string(bo->hurt) + ", last " + b.log.back().text + ")");
+    for (int i = 0; i < 40; ++i)
+        w.tick(.1);
+    expect(w.groundItems().size() == 1 && w.groundItems()[0].item == "sword", "After the fight it lies on the ground");
+    const auto g = w.groundItems()[0];
+    ad->position = {g.x + .5, g.y};
+    const int before = Society::stock(*w.society().account("player-ad"), "sword");
+    expect(w.takeItem("player-ad", g.id).ok && w.groundItems().empty(), "Ad picks it up");
+    expect(Society::stock(*w.society().account("player-ad"), "sword") == before + 1, "and has it");
+    expect(w.entity("player-ad")->fightingSkill > 50, "Fighting taught her something");
+}
+
+void theFlame()
+{
+    World w;
+    auto& b = duel(w);
+    auto* ad = w.entity("player-ad");
+    auto* bo = w.entity("player-bo");
+    const auto r0 = w.battleAct("player-ad", "flame", "1,1");
+    expect(!r0.ok, "No Gift, no fire");
+    expect(w.giveGift("player-ad", "fire", false).ok && ad->mana == battle::manaMax(ad->wisdom, true), "Given the Gift of fire");
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    fb->x = fa->x + 2;
+    fb->y = fa->y;
+    const double mana = ad->mana, stamina = ad->stamina;
+    const auto r = w.battleAct("player-ad", "flame", std::to_string(fb->x) + "," + std::to_string(fb->y));
+    expect(r.ok && fa->casting && b.casts.size() == 1, "She gathers the fire: " + r.message);
+    expect(mana - ad->mana == battle::GiftedFlame.mana && stamina - ad->stamina == battle::GiftedFlame.stamina, "Mana and breath");
+    expect(std::abs(ad->hurt - battle::GiftedFlame.self) < 1e-9, "and a singed muzzle");
+    const auto& tiles = b.casts[0].tiles;
+    expect(std::find(tiles.begin(), tiles.end(), std::pair<int, int>{fb->x, fb->y}) != tiles.end(), "The cone takes in Bo's tile");
+    expect(b.turn != "player-ad", "Casting ends her turn");
+    // Bo steps aside? He waits: the fire comes.
+    for (int i = 0; i < 200 && !b.casts.empty(); ++i)
+    {
+        if (b.turn == "player-bo")
+            w.battleAct("player-bo", "wait");
+        if (b.turn == "player-ad")
+            w.battleAct("player-ad", "wait");
+        w.tick(.1);
+    }
+    expect(b.casts.empty() && !fa->casting, "It goes off");
+    expect(bo->hurt > 0 && fb->burning > 0, "Bo is burnt, and burning");
+    untilTurnOf(w, "player-bo", {"player-ad"});
+    expect(fb->burning == battle::BurnTurns - 1, "His turn begins with the burn");
+    expect(w.battleAct("player-bo", "roll").ok && fb->burning == 0, "Rolling puts it out");
+}
+
+void crawling()
+{
+    World w;
+    quiet(w);
+    auto& ad = w.addPlayer("player-ad", "Ad");
+    ad.hurt = 100;
+    ad.downedLeft = 600;
+    ad.state = "downed";
+    ad.posture = "lying";
+    const auto from = ad.position;
+    for (int i = 0; i < 20; ++i)
+    {
+        w.move("player-ad", 1, 0);
+        w.tick(.1);
+    }
+    const double went = std::hypot(ad.position.x - from.x, ad.position.y - from.y);
+    expect(went > .3 && went <= 1.05, "Downed, a wolf crawls half a tile a second: " + std::to_string(went));
+    expect(ad.posture == "lying" && ad.downedLeft > 0, "lying still");
 }
 
 void rules()
@@ -348,6 +517,10 @@ int main()
         watchingJoiningFleeing();
         aTimidResidentRuns();
         downedIsSaved();
+        facingAndTruce();
+        theSword();
+        theFlame();
+        crawling();
     }
     catch (const std::exception& e)
     {

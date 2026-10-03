@@ -6,8 +6,20 @@ import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
-import {arenaRows, arenaSight, fighterAt, myTurn, readBattle, readChallenge, readFights, type BattleView, type ChallengeView,
-    type FightSquare} from './battle.ts';
+import {arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, readChallenge, readFights, readGround, type BattleLine, type BattleView,
+    type ChallengeView, type FightSquare, type GroundView} from './battle.ts';
+import {FightEffects} from './fightFx.ts';
+
+/** One entry in the story per fight (Docs/Design/18-combat-presentation.md): the latest, and all of it when expanded. */
+export interface EncounterView {
+    id: string;
+    lines: BattleLine[];
+    actions: number;
+    latest: string;
+    over: boolean;
+    expanded: boolean;
+    version: number;
+}
 import {inParty, readParty, type PartyView} from './party.ts';
 
 export interface Post {
@@ -22,6 +34,8 @@ export interface Post {
     postedAt: number;
     system: boolean;
     party: boolean;             // Said in character to the speaker's party, and this player is in it (doc 32).
+    encounter?: EncounterView;  // The story's one entry for a fight (doc 18), kept up to date in place.
+    muffled?: boolean;          // Said around a sword held in the jaws (doc 33).
 }
 
 export interface Hit {
@@ -211,6 +225,10 @@ export class GameState {
     party: PartyView | null = null;
     fightEndedAt = -10;
     battleOverSeenAt = -10;
+    aiming = '';                // Choosing where a spell goes ("flame"), until a tile is clicked or Escape.
+    ground: GroundView[] = [];  // Things lying in sight (a sword knocked loose).
+    readonly fx = new FightEffects();
+    readonly encounters = new Map<string, EncounterView>();
     private plainRows: string[] = [];
     private mergedRows: string[] | null = null;
     private arenaSightKey = '';
@@ -421,6 +439,10 @@ export class GameState {
         this.battle = readBattle(this.snapshot);
         this.fights = readFights(this.snapshot);
         this.challenge = readChallenge(this.snapshot);
+        this.ground = readGround(this.snapshot);
+        this.fx.update(this.battle, this.clock);
+        this.updateEncounters(before);
+        if (!this.battle || !this.battle.flame || !myTurn(this.battle, this.selfId)) this.aiming = '';
         this.party = readParty(obj(this.snapshot, 'self'));
         if ((this.channel === 'party' || this.channel === 'partyooc') && !inParty(this.party)) this.channel = 'ic';
         if (this.tileRows !== this.mergedRows) this.plainRows = this.tileRows;     // Fresh rows from the server.
@@ -458,6 +480,60 @@ export class GameState {
         }
     }
 
+    /** The story's entry for each fight this wolf is in, watches or can see: kept up to date in place. */
+    private updateEncounters(before: BattleView | null) {
+        const touch = (id: string, lines: BattleLine[], actions: number, latest: string, over: boolean) => {
+            let enc = this.encounters.get(id);
+            if (!enc) {
+                enc = {id, lines: [], actions: 0, latest: '', over: false, expanded: false, version: 0};
+                this.encounters.set(id, enc);
+                this.posts.push({id: `encounter-${id}`, speaker: 'Combat', to: [], text: '', channel: 'ic', kind: 'encounter', color: 7,
+                    revealed: 1, postedAt: this.clock, system: false, party: false, encounter: enc});
+                if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);
+            }
+            const last = enc.lines.at(-1)?.seq ?? 0;
+            const fresh = lines.filter(l => l.seq > last);
+            if (fresh.length || actions !== enc.actions || latest !== enc.latest || over !== enc.over) {
+                enc.lines.push(...fresh);
+                enc.actions = Math.max(actions, enc.lines.length);
+                enc.latest = latest || enc.lines.at(-1)?.text || '';
+                enc.over = over;
+                ++enc.version;
+                const post = this.posts.find(p => p.encounter === enc);
+                if (post) {
+                    post.text = `${enc.actions} actions · Latest: ${enc.latest}${over ? ' · ended' : ''}`;
+                    post.revealed = post.text.length;
+                }
+            }
+        };
+        const b = this.battle;
+        if (b) touch(b.id, b.log, b.log.at(-1)?.seq ?? 0, b.log.at(-1)?.text ?? '', b.over);
+        for (const f of this.fights) touch(f.id, [], f.actions, f.latest, f.over);
+        // A fight gone from view: ended, as far as this wolf can tell.
+        if (before && !b) {
+            const enc = this.encounters.get(before.id);
+            if (enc && !enc.over) touch(before.id, [], enc.actions, enc.latest, true);
+        }
+        for (const enc of this.encounters.values())
+            if (!enc.over && enc.id !== b?.id && !this.fights.some(f => f.id === enc.id)) touch(enc.id, [], enc.actions, enc.latest, true);
+    }
+
+    /** Turns to face a tile, on this wolf's turn (free). */
+    arenaFace(tx: number, ty: number) {
+        const b = this.battle;
+        const me = b?.fighters.find(f => f.id === this.selfId);
+        if (!b || !me || !myTurn(b, this.selfId) || (tx === me.x && ty === me.y)) return;
+        this.sendBattle('face', {dir: octant(tx - me.x, ty - me.y)});
+    }
+
+    /** Turns an eighth left (−1) or right (+1), on this wolf's turn. */
+    turnInFight(step: number) {
+        const b = this.battle;
+        const me = b?.fighters.find(f => f.id === this.selfId);
+        if (!b || !me || !myTurn(b, this.selfId)) return;
+        this.sendBattle('face', {dir: (me.facing + step + 8) % 8});
+    }
+
     /** A fight command: move, bite, tend, flee, struggle, wait, join, observe, leave. */
     sendBattle(verb: string, extra: Json = {}) {
         this.send({type: 'battle', verb, ...extra});
@@ -470,7 +546,7 @@ export class GameState {
         const me = b.fighters.find(f => f.id === this.selfId);
         const f = b.fighters.find(o => o.id === id);
         if (!me || !f || f.id === me.id) return;
-        if (f.side !== me.side && f.status === 'fighting') this.sendBattle('bite', {target: id});
+        if (f.side !== me.side && f.status === 'fighting') this.sendBattle(b.mouth === 'sword' ? 'sword' : 'bite', {target: id});
         else if (f.side === me.side && f.status === 'downed') this.sendBattle('tend', {target: id});
     }
 
@@ -478,6 +554,11 @@ export class GameState {
     arenaClick(tx: number, ty: number) {
         const b = this.battle;
         if (!b) return;
+        if (this.aiming === 'flame') {
+            this.aiming = '';
+            if (myTurn(b, this.selfId)) this.sendBattle('flame', {x: tx, y: ty});
+            return;
+        }
         const there = fighterAt(b, tx, ty);
         if (there) {
             this.fightTarget(there.id);
@@ -608,6 +689,7 @@ export class GameState {
             post.text = parts.join(' ');
         }
         if (!post.text) return;
+        if (bool(e, 'muffled')) post.muffled = true;
         post.system = type === 'system' || type === 'error';
         post.revealed = post.system || post.channel !== 'ic' ? post.text.length : 0;
         if (type === 'error') this.showToast(post.text);
@@ -940,6 +1022,10 @@ export class GameState {
     /** A key pressed on the map; true when the game took it (the page then keeps it from the browser). */
     keyDown(k: KeyInput): boolean {
         const code = k.code;
+        if (code === 'Escape' && this.aiming) {
+            this.aiming = '';
+            return true;
+        }
         if (code === 'Escape') {
             this.facingPreview = false;
             if (this.modal) {
@@ -976,6 +1062,10 @@ export class GameState {
                 this.contextTarget = '';
                 return true;
             }
+        }
+        if (this.battle && (code === 'KeyQ' || code === 'KeyE')) {
+            this.turnInFight(code === 'KeyQ' ? -1 : 1);                   // Q / E turn, on one's own turn.
+            return true;
         }
         if (code === 'KeyE') {
             this.targetNearest();
@@ -1152,6 +1242,11 @@ export class GameState {
     mouseDown(point: [number, number], left: boolean, alt: boolean, ctrl: boolean): 'composer' | 'map' {
         // Modifier clicks own map input, entities and doors included. An unavailable facing action must never fall
         // through into pathing, inspection or an action menu.
+        if ((alt || ctrl) && this.battle && contains(this.mapRect, point[0], point[1])) {
+            // In a fight, Alt/Ctrl+click turns to face that tile (free, on one's turn).
+            this.arenaFace(Math.floor((point[0] - this.mapOrigin[0]) / this.tileSize), Math.floor((point[1] - this.mapOrigin[1]) / this.tileSize));
+            return 'map';
+        }
         if ((alt || ctrl) && contains(this.mapRect, point[0], point[1])) {
             if (left && this.canFaceAt(point)) {
                 this.sendFacing(point);
@@ -1302,7 +1397,12 @@ export class GameState {
                 this.contextActions = ['gather'];
             }
         } else if (a === 'fighter') {
-            this.fightTarget(h.target);
+            if (this.aiming === 'flame') {
+                const f = this.battle?.fighters.find(o => o.id === h.target);
+                if (f) this.arenaClick(f.x, f.y);
+            } else this.fightTarget(h.target);
+        } else if (a === 'ground') {
+            this.sendAction('take', h.target);
         } else if (a === 'context') {
             if (h.target === 'trade') this.openTrade(this.contextTarget);
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});

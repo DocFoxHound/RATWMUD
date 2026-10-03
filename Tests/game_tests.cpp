@@ -1134,6 +1134,59 @@ void fightsThroughTheGame()
     expect(!g.world().battleReach(ada.entityId).size(), "and she has nowhere to go out of turn");
 }
 
+void swordsMuffleAndBodiesLinger()
+{
+    // Doc 33: words around a sword in the jaws are muffled; a player who leaves mid-fight leaves their body in it.
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client ada, bo;
+    ada.id = 80;
+    bo.id = 81;
+    g.connect(&ada);
+    g.connect(&bo);
+    g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+    g.command(&bo, cmd({{"type", "hello"}, {"id", "bo"}, {"name", "Bo"}}));
+    auto* a = g.world().entity(ada.entityId);
+    auto* b = g.world().entity(bo.entityId);
+    b->position = {a->position.x + 1.2, a->position.y};
+    expect(g.world().society().create(ada.entityId, "sword", 1, "test"), "Ada has a sword");
+    g.command(&ada, cmd({{"type", "action"}, {"action", "hold sword"}}));
+    expect(a->mouth == "sword", "and holds it in her jaws");
+    run(g, ada, .6);
+    g.command(&ada, cmd({{"type", "chat"}, {"text", "\"Stand back.\""}, {"commandId", "m1"}}));
+    run(g, bo, .3);
+    bool muffled = false;
+    for (const auto& e : bo.events)
+        muffled = muffled || (e.string("type") == "roleplay" && e.string("speaker") == "Ada" && e.boolean("muffled"));
+    expect(muffled, "Bo hears her muffled");
+    g.command(&ada, cmd({{"type", "action"}, {"action", "stow sword"}}));
+    expect(a->mouth.empty(), "She puts it away");
+    // A fight, and Ada's connection goes.
+    g.command(&ada, cmd({{"type", "action"}, {"action", "challenge"}, {"target", bo.entityId}}));
+    g.command(&bo, cmd({{"type", "action"}, {"action", "accept"}}));
+    expect(g.world().inBattle(ada.entityId), "a fight");
+    const auto adaId = ada.entityId;
+    g.disconnect(&ada);
+    expect(g.world().entity(adaId) && g.world().entity(adaId)->lingering, "Her body stays in the fight");
+    expect(g.world().inBattle(adaId), "still a fighter in it");
+    run(g, bo, 2);
+    // Back within the minute: the same wolf, as it is now.
+    Client again;
+    again.id = 82;
+    g.connect(&again);
+    g.command(&again, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+    expect(again.entityId == adaId && !g.world().entity(adaId)->lingering && g.world().inBattle(adaId), "She comes back to it");
+    g.disconnect(&again);
+    for (int i = 0; i < 70 * 20 && g.world().entity(adaId); ++i)
+        run(g, bo, .05);
+    expect(!g.world().entity(adaId), "Gone a minute: the body leaves the world");
+    run(g, bo, 3);
+    expect(!g.world().inBattle(bo.entityId), "and the fight, with no one against Bo, is over");
+}
+
 int main()
 {
     try
@@ -1154,6 +1207,7 @@ int main()
         mismatchedOwnersAreRefused();
         theJournalKeepsWhatACrashWouldLose();
         fightsThroughTheGame();
+        swordsMuffleAndBodiesLinger();
     }
     catch (const std::exception& error)
     {
