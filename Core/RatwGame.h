@@ -302,6 +302,31 @@ class Game
     bool namesCommand(Connection* c, const json::Value& j, Result& result);
     void seedAcquaintances();
     json::Value namesView(const std::string& id) const;
+    // Residents travelling with a party (RatwGameCompanions.cpp; doc 32, 2.3): who may come and why, orders, following,
+    // wages, leaving, fighting beside the party, growing closer, and a few words of their own.
+    double companionAccumulator_ = 0, companionHours_ = 0;
+    std::set<std::string> seenIncidents_, warnedWatch_;
+    std::map<std::string, std::set<std::string>> sharedDanger_;       // Resident → party players they fought beside.
+    struct Moments
+    {
+        std::string cell;
+        bool trouble = false;
+        std::set<std::string> hurt;
+    };
+    std::map<std::string, Moments> companionMoments_;
+    std::map<std::string, double> remarkAt_, lastPartySpeech_;        // By party: next remark allowed; last words said.
+    static constexpr double RemarkSeconds = 180, QuietSeconds = 600;
+    std::string whyNotJoin(const std::string& npcId) const;
+    std::int64_t wageFor(const std::string& npcId) const;
+    void companionSays(const std::string& npcId, const std::string& words);
+    Result askAlong(const std::string& playerId, const std::string& npcId, bool hire);
+    Result orderCompanion(const std::string& playerId, const std::string& npcId, const std::string& order);
+    void releaseCompanions();
+    void companionLeaves(const std::string& npcId, const std::string& words, const std::string& why);
+    void companionTick(double dt);
+    void companionRemarks(double t);
+    std::string companionContext(const std::string& npcId) const;
+    void adoptOldCompanions(const std::map<std::string, std::string>& owners);
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

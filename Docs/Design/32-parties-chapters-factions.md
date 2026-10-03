@@ -1,6 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
-Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; the rest not started.** Five decisions were agreed on 2026-10-02: player-versus-player combat by
+Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phase 3 (residents travelling with
+a party) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -874,6 +875,75 @@ Not yet:
 - Residents who see through aliases.
 - Wolves whose looks are identical: development identities all share the default look, so they are told apart only by
   number.
+
+### Phase 3: residents travelling with a party (built 2026-10-03)
+
+- **The rules** (`Core/RatwParty.*`):
+  - A party holds up to 2 residents (`Companion`). Each records who asked them, why they came ("friend", "hired" or
+    "story"), the wage, when they joined, how far ahead they are paid, and whether they were told to wait.
+  - A player with a resident is a party of two. The leader (always a player) asks residents along.
+  - When the one who asked leaves, whoever leads looks after the resident. With no player left, the party ends and
+    its residents go home.
+  - The party's **goal** is a line the leader sets ("party goal").
+  - All of it is saved in the checkpoint.
+- **Who may come** (`Game::whyNotJoin`):
+  - Ordinary residents only. Not traders, the Watch, or those whose work keeps the town running (cook, keeper,
+    forager).
+  - Not someone at work in their working hours. Those whose trade is roving (scout, guide, hunter, traveller,
+    pilgrim, sellsword, courier, escort, tracker) may come at any hour.
+  - Not someone asleep, Quickened, under 13, wanted, held, hurt down, or already travelling.
+  - At most 4 + (players in the world ÷ 4) residents travel with parties at once *(placeholder)*.
+- **Why they come:**
+  - **As a friend:** the asker is at social level 3 or higher, and the resident's affinity is at least 40 and trust
+    at least 30. Otherwise they say so ("I hardly know you.").
+  - **Hired:** 6 pennies a game day, 10 for a roving trade *(placeholder)*. The first day is paid at once and each
+    dawn after, purse to purse (doc 15's conserved money). A resident who distrusts the asker (trust below −20)
+    won't work for any money.
+  - **Story:** reserved for the DM; there is no command yet.
+- **Their life while away:**
+  - Off their schedule (`leaderId = "party:<id>"`, which the schedules already respect).
+  - They follow whoever leads, or the member in the world, 0.9 tiles to either side.
+  - They cross into a new place with whoever they follow, unless told to wait.
+  - Orders from whoever asked them or the leader: **wait here**, **follow me**, **go home** and **dismiss**. Going
+    home lets them go back to their schedule from where they stand.
+- **Leaving of their own accord:**
+  - A friend after 2 game days, unless their affinity is 70 or more.
+  - A friend whose affinity falls below 20 or trust below 10. A hireling whose trust falls below −20.
+  - Unpaid at dawn.
+  - Seeing (identified) the party commit a crime: "I won't be part of that."
+  - Dying.
+  - The party is told why.
+- **Fights:**
+  - A party player's fight in sight brings them in at once on that side.
+  - Never against the Watch: "Not against the Watch. I won't."
+  - The combat code's own pull by leader no longer applies to party residents, so the Watch rule holds.
+  - Fighting side by side raises trust both ways (+3) when it ends.
+- **Growing closer:** each game hour in the same place, familiarity +1, liking +0.3 and trust +0.2, both ways.
+- **Their own words:** written lines, no model and no cost, at most one a party every 3 minutes *(placeholder)*:
+  - arriving somewhere new ("So this is Ser Ferro.");
+  - bandits in sight;
+  - a party mate badly hurt;
+  - 10 minutes of quiet.
+
+  They are said aloud and marked as said to the party. Voicing them through the Mind's cheap route is still to do.
+- **The Mind** is told the resident travels with a party, why and for what wage, who is with them and how they
+  regard each, the party's goal, and if they were told to wait.
+- **Older saves:** a resident following a player (Bracken's old `recruit`) joins that player's party as a friend.
+  The one-off `recruit` action is gone.
+- **The page:**
+  - Residents in the Party panel with why they came, their wage, and whether they're waiting.
+  - WAIT/FOLLOW, HOME and DISMISS buttons for whoever may give them orders.
+  - The party's goal, which the leader sets in a box.
+  - PARTY OOC is shown only with another player in the party.
+  - A resident's menu: "ask to join" and "hire for 6p a day", or the orders once they travel with you.
+- **Tests:**
+  - `Tests/party_tests.cpp`: the rules, and Bracken through the game: hired, following, waiting, fighting beside Ada,
+    paid at dawn, leaving unpaid, and leaving after seeing her rob someone.
+  - `Client/src/game/party.test.ts`.
+- **Load:** `game_load` with 100 players: mean 10.9 ms, p99 19.4 ms.
+
+Not yet: an authored "joinable" flag in Atlas or the DM, DM-assigned "story" companions, and remarks voiced by the
+Mind.
 
 ## Decisions
 

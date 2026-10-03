@@ -3,7 +3,7 @@
 import {css} from '../color.ts';
 import {Muted, speakingColor} from '../theme.ts';
 import type {GameState, Post} from '../../game/state.ts';
-import {inParty} from '../../game/party.ts';
+import {inParty, withPlayers} from '../../game/party.ts';
 import {button, el, setClass, setText, show} from './dom.ts';
 
 const MaxShown = 300;
@@ -75,7 +75,7 @@ export class StoryPanel {
         setClass(this.partyOoc, 'active', s.channel === 'partyooc');
         const grouped = inParty(s.party);
         show(this.party, grouped);
-        show(this.partyOoc, grouped);
+        show(this.partyOoc, withPlayers(s.party));       // (Residents travelling along hear only what is said aloud.)
         setText(this.feedLabel, FeedLabels[s.channel] ?? FeedLabels.ic);
         setText(this.mode, s.chat ? 'WRITING  /  YOUR DRAFT IS PRIVATE' : 'NAVIGATION  /  ENTER TO WRITE');
         setClass(this.mode, 'sage', s.chat);

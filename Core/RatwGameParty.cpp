@@ -110,6 +110,14 @@ bool Game::partyCommand(Connection* c, const Value& j, Result& result)
         if (outcome.ok)
             tellParty(partyBefore, nameOf(id) + " disbands the party.", id);
     }
+    else if (verb == "goal")
+    {
+        const auto goal = mind::trim(j.string("goal"));
+        const auto outcome = parties_.setGoal(id, goal);
+        result = {outcome.ok, outcome.ok ? (goal.empty() ? "The party has no goal now." : "The party is bound for: " + goal + ".") : outcome.message, {}};
+        if (outcome.ok)
+            tellParty(partyBefore, goal.empty() ? "The party has no goal now." : "The party is bound for: " + goal + ".", id);
+    }
     else if (verb == "stayout")
     {
         const auto pull = pulls_.find(id);
@@ -312,7 +320,36 @@ Value Game::partyView(const std::string& id) const
             }
             members.push(j);
         }
+        // Residents travelling with it (Phase 3), after the players.
+        for (const auto& c : p->companions)
+        {
+            auto j = Value::object();
+            j.add("id", c.id);
+            j.add("name", names::capitalised(labelFor(id, c.id)));
+            j.add("npc", true);
+            j.add("reason", c.reason);
+            if (c.wage > 0)
+                j.add("wage", double(c.wage));
+            j.add("waiting", c.waiting);
+            j.add("mine", c.by == id || p->leader == id);         // Whether this player may give them orders.
+            if (const auto* e = world_.entity(c.id))
+            {
+                j.add("online", true);
+                j.add("cell", e->cellId);
+                if (const auto* cell = world_.cell(e->cellId))
+                    j.add("place", cell->name);
+                j.add("x", std::round(e->position.x * 10) / 10);
+                j.add("y", std::round(e->position.y * 10) / 10);
+                j.add("health", std::round(100 - e->hurt));
+                if (e->downedLeft > 0)
+                    j.add("downed", true);
+                j.add("fighting", world_.inBattle(c.id));
+            }
+            members.push(j);
+        }
         v.add("members", members);
+        if (!p->goal.empty())
+            v.add("goal", p->goal);
     }
     if (const auto* waiting = parties_.inviteFor(id, now()))
     {

@@ -90,3 +90,20 @@ test('parties: the party commands', () => {
     verb('explode');
     assert.equal(commands.length, before, 'nothing unknown is sent');
 });
+
+test('parties: residents travelling with the party, and where it is bound', () => {
+    const p = readParty({party: {id: 'party-2', leader: 'self', goal: 'Ser Ferro', members: [
+        {id: 'self', name: 'Ada', leader: true, online: true},
+        {id: 'npc_scout', name: 'Bracken', npc: true, reason: 'hired', wage: 6, waiting: true, mine: true, online: true},
+    ]}})!;
+    assert.ok(inParty(p), 'a player and a resident are a party');
+    assert.equal(p.goal, 'Ser Ferro');
+    const b = p.members[1];
+    assert.ok(b.npc && b.reason === 'hired' && b.wage === 6 && b.waiting && b.mine);
+    const {state: s, commands} = testGame();
+    s.applySnapshot(snapshot({party: {id: 'party-2', leader: 'self', members: [{id: 'self'}, {id: 'npc_scout', npc: true}]}}));
+    s.activate({rect: {left: 0, top: 0, right: 0, bottom: 0}, action: 'party_verb', target: 'goal: Ser Ferro: the west gate'});
+    assert.deepEqual(commands.at(-1), {type: 'party', verb: 'goal', goal: 'Ser Ferro: the west gate'}, 'a goal may hold a colon');
+    s.sendAction('wait here', 'npc_scout');
+    assert.deepEqual(commands.at(-1), {type: 'action', action: 'wait here', target: 'npc_scout'});
+});

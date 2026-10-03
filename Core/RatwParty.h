@@ -1,7 +1,8 @@
 #pragma once
-// Parties (Docs/Design/32-parties-chapters-factions.md, Part 2): small, voluntary groups of players. One leader, up to
-// six players, one party each. An invitation lasts a minute; a member who leaves the world keeps their place for ten,
-// and a party with nobody in the world goes after ten. Pure rules, no world: the game (RatwGameParty.cpp) says who is
+// Parties (Docs/Design/32-parties-chapters-factions.md, Part 2): small, voluntary groups of players, and up to two
+// residents travelling with them (Phase 3). One leader (always a player), up to six players, one party each. An
+// invitation lasts a minute; a member who leaves the world keeps their place for ten, and a party with nobody in the
+// world goes after ten. Pure rules, no world: the game (RatwGameParty.cpp) says who is
 // in the world and words what happens; the checkpoint keeps it all (save/load).
 #include "RatwJsonDoc.h"
 
@@ -14,16 +15,29 @@
 
 namespace ratw::party
 {
-constexpr std::size_t MaxPlayers = 6;
+constexpr std::size_t MaxPlayers = 6, MaxCompanions = 2;
 constexpr double InviteSeconds = 60, HoldSeconds = 600;
 // Fights (doc 33): a member who can see a party mate's fight is pulled in after this, unless they choose to stay out;
 // whoever was on the other side stays hostile to them for this long after.
 constexpr double PullSeconds = 5, AggroSeconds = 300;
 
+// A resident travelling with a party: who asked them, why they came (a "friend", "hired", or a "story"), their wage
+// in pennies a game day if hired, when they joined and how far ahead they are paid (calendar days), and whether they
+// were told to wait where they are.
+struct Companion
+{
+    std::string id, by, reason;
+    std::int64_t wage = 0;
+    double joined = 0, paidThrough = 0;
+    bool waiting = false;
+};
+
 struct Party
 {
     std::string id, leader;
-    std::vector<std::string> members;     // In the order they joined; the leader among them.
+    std::vector<std::string> members;     // Players, in the order they joined; the leader among them.
+    std::vector<Companion> companions;    // Residents, in the order they joined.
+    std::string goal;                     // Where the leader says they are bound ("" for none).
 };
 
 struct Invite
@@ -43,7 +57,7 @@ class Parties
   public:
     const Party* of(const std::string& who) const;
     const Party* byId(const std::string& id) const;
-    // Everyone else in their party (empty when in none).
+    // Everyone else in their party, players and residents (empty when in none).
     std::vector<std::string> mates(const std::string& who) const;
     bool together(const std::string& a, const std::string& b) const;
     const std::map<std::string, Party>& all() const { return parties_; }
@@ -59,6 +73,16 @@ class Parties
     Outcome remove(const std::string& leader, const std::string& who);
     Outcome lead(const std::string& leader, const std::string& who);
     Outcome disband(const std::string& leader);
+    Outcome setGoal(const std::string& leader, const std::string& goal);
+
+    // Residents (Phase 3). `player` must lead their party or be in none (a party of them and the resident is made).
+    Outcome addCompanion(const std::string& player, Companion c);
+    const Companion* companion(const std::string& npc) const;
+    Companion* companion(const std::string& npc);
+    Outcome releaseCompanion(const std::string& npc);
+    std::size_t companionCount() const;
+    // Residents let go since the last call: by name, or because their party ended. The game sends them home.
+    std::vector<std::string> takeReleased();
 
     // Who is in the world now: members gone longer than HoldSeconds lose their place, parties with nobody in the world
     // for that long go, and old invitations lapse. Returns who lost their place (for the game to tell the rest).
@@ -78,6 +102,7 @@ class Parties
     std::map<std::string, Invite> invites_;          // By whom it is for: one waiting each.
     std::map<std::string, double> offline_;          // Members out of the world, and since when.
     std::set<std::string> neverAutoJoin_;
+    std::vector<std::string> released_;
     std::uint64_t next_ = 1;
 
     void drop(const std::string& who);               // Out of their party, the party mended or ended.

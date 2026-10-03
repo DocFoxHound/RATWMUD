@@ -1326,6 +1326,7 @@ export class GameState {
             // "remove:<id>", "lead:<id>".
             const [verb, rest] = h.target.split(':', 2);
             if (verb === 'autojoin') this.send({type: 'party', verb, on: rest !== 'off'});
+            else if (verb === 'goal') this.send({type: 'party', verb, goal: h.target.slice('goal:'.length).trim()});
             else if (['accept', 'decline', 'leave', 'disband', 'stayout', 'remove', 'lead'].includes(verb))
                 this.send({type: 'party', verb, ...(rest ? {target: rest} : {})});
         } else if (a === 'character' || a === 'inventory' || a === 'settings') {

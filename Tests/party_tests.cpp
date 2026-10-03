@@ -111,6 +111,33 @@ void savedAndRead()
     expect(!r.of("ada"), "a saved party of one is dropped");
 }
 
+void residentsInTheRules()
+{
+    party::Parties p;
+    party::Companion bracken;
+    bracken.id = "npc_scout";
+    bracken.reason = "hired";
+    bracken.wage = 10;
+    const auto made = p.addCompanion("ada", bracken);
+    expect(made.ok && p.of("ada") && p.of("npc_scout") && p.together("ada", "npc_scout"), "a resident with Ada makes a party");
+    expect(p.companion("npc_scout")->by == "ada" && p.of("ada")->leader == "ada", "Ada asked him, and leads");
+    expect(!p.invite("ada", "npc_scout", 0).ok, "residents aren't invited like players");
+    party::Companion wren{"npc_wren", "", "friend"};
+    expect(p.addCompanion("ada", wren).ok && !p.addCompanion("ada", {"npc_third", "", "friend"}).ok, "two at most");
+    expect(p.invite("ada", "bo", 0).ok && p.accept("bo", 0).ok, "a player joins too");
+    expect(!p.addCompanion("bo", {"npc_third", "", "friend"}).ok, "only the leader asks someone along");
+    expect(!p.lead("ada", "npc_scout").ok, "a resident can't lead");
+    p.leave("ada");
+    expect(p.of("bo")->leader == "bo" && p.companion("npc_scout")->by == "bo", "Ada goes: Bo leads and looks after them");
+    party::Parties q;
+    q.load(parsed(json::dump(p.save())));
+    expect(q.companion("npc_scout") && q.companion("npc_scout")->wage == 10 && q.companion("npc_wren")->reason == "friend",
+           "companions survive a save");
+    expect(p.releaseCompanion("npc_wren").ok && p.takeReleased() == std::vector<std::string>{"npc_wren"}, "let go, to be sent home");
+    p.leave("bo");
+    expect(!p.of("npc_scout") && p.takeReleased() == std::vector<std::string>{"npc_scout"}, "no player left: the party ends");
+}
+
 // ------------------------------------------------------------------ Through the game
 
 struct Client final : game::Connection
@@ -350,6 +377,119 @@ void stayingOut()
            "with auto-join off, a party mate's fight never calls him");
 }
 
+const json::Value* member(const Client& c, const std::string& id)
+{
+    for (const auto& m : c.self()["party"].array("members"))
+        if (m.string("id") == id)
+            return &m;
+    return nullptr;
+}
+
+void hiringAResident()
+{
+    // Bracken will come along for a wage; he follows, waits when told, fights beside Ada, is paid at dawn,
+    // and goes home when he isn't.
+    Three t(devOptions());
+    auto& w = t.g.world();
+    const std::string bracken = "npc_scout";
+    auto* b = w.entity(bracken);
+    expect(b, "Bracken is in the demo world");
+    b->cellId = w.entity(t.ada.entityId)->cellId;
+    b->position = {w.entity(t.ada.entityId)->position.x + 1, w.entity(t.ada.entityId)->position.y + 1};
+    t.tick(.5);
+    std::string hire;
+    if (const auto* e = t.ada.sees(bracken))
+        for (const auto& a : e->array("actions"))
+            if (a.asString().rfind("hire for ", 0) == 0)
+                hire = a.asString();
+    std::string offered;
+    if (const auto* e = t.ada.sees(bracken))
+        for (const auto& a : e->array("actions"))
+            offered += a.asString() + ", ";
+    expect(hire == "hire for 6p a day" && t.ada.offered(bracken, "ask to join"), "Ada may ask Bracken along, or hire him: " + offered);
+    const int wage = 6;
+    // As a friend: he hardly knows her.
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "ask to join"}, {"target", bracken}}));
+    t.tick(.3);
+    expect(!t.g.world().entity(bracken)->leaderId.size() && t.ada.said().find("won't come along as a friend") != std::string::npos,
+           "as a friend, he won't come yet:\n" + t.ada.said());
+    const auto cashBefore = w.society().account(t.ada.entityId)->cash;
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", hire}, {"target", bracken}}));
+    t.tick(.3);
+    expect(w.society().account(t.ada.entityId)->cash == cashBefore - wage, "hired: the first day's wage paid from her purse");
+    expect(member(t.ada, bracken) && member(t.ada, bracken)->string("reason") == "hired" && member(t.ada, bracken)->boolean("npc"),
+           "he is in her party, hired");
+    expect(t.ada.sees(bracken)->string("rel") == "party", "and shows as her party on the map");
+    expect(w.entity(bracken)->leaderId.rfind("party:", 0) == 0, "off his schedule, with the party");
+    expect(t.g.dialogueContext(bracken, t.ada.entityId, "hello", true).activity.find("travelling with a party as hired help") !=
+               std::string::npos,
+           "his Mind is told he travels with the party");
+    // He follows her across the room.
+    auto* a = w.entity(t.ada.entityId);
+    a->position = {a->position.x + 6, a->position.y};
+    t.tick(6);
+    const auto apart = [&] { return std::hypot(w.entity(bracken)->position.x - a->position.x, w.entity(bracken)->position.y - a->position.y); };
+    expect(apart() < 3, "he follows her (" + std::to_string(apart()) + " tiles)");
+    // Told to wait, he stays.
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "wait here"}, {"target", bracken}}));
+    a->position = {a->position.x - 6, a->position.y};
+    t.tick(4);
+    expect(apart() > 4 && member(t.ada, bracken)->boolean("waiting"), "told to wait, he waits");
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "follow me"}, {"target", bracken}}));
+    t.tick(6);
+    expect(apart() < 3, "and follows again when asked");
+    // A fight: Cy challenges Ada; Bracken comes in at once on her side.
+    t.place(t.cy, 0, 1.2);
+    t.tick(.3);
+    t.g.command(&t.cy, cmd({{"type", "action"}, {"action", "challenge"}, {"target", t.ada.entityId}}));
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "accept"}}));
+    t.tick(1);
+    const auto* fight = w.battleOf(t.ada.entityId);
+    expect(fight && fight->fighter(bracken) && fight->fighter(bracken)->side == fight->fighter(t.ada.entityId)->side,
+           "Bracken fights beside her");
+    // A new day: he is paid again; then her purse is empty, and he goes home.
+    w.advanceCalendar(1);
+    const auto before = w.society().account(t.ada.entityId)->cash;
+    t.tick(.5);
+    expect(w.society().account(t.ada.entityId)->cash == before - wage && t.ada.said().find("for another day") != std::string::npos,
+           "paid at dawn:\n" + t.ada.said());
+    if (const auto left = w.society().account(t.ada.entityId)->cash; left > 0)
+        w.society().shift(t.ada.entityId, bracken, "", 0, left, "test: spent");
+    w.advanceCalendar(1);
+    t.tick(.5);
+    expect(!member(t.ada, bracken) && w.entity(bracken)->leaderId.empty(), "unpaid, he leaves and goes home");
+    expect(t.ada.said().find("you couldn't pay them") != std::string::npos, "and she is told why:\n" + t.ada.said());
+}
+
+void aResidentWontWatchACrime()
+{
+    Three t(devOptions());
+    auto& w = t.g.world();
+    const std::string bracken = "npc_scout";
+    auto* a = w.entity(t.ada.entityId);
+    w.entity(bracken)->cellId = a->cellId;
+    w.entity(bracken)->position = {a->position.x + 1, a->position.y + 1};
+    t.tick(.3);
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "hire for 6p a day"}, {"target", bracken}}));
+    t.tick(.3);
+    expect(member(t.ada, bracken), "hired");
+    // Ada robs a resident in plain view; Bracken sees it and leaves.
+    std::string mark;
+    for (const auto& [id, e] : w.entities())
+        if (e.npc && id != bracken && e.cellId == a->cellId && w.society().resident(id) && !e.transient)
+            mark = id;
+    expect(!mark.empty(), "someone to rob");
+    w.entity(mark)->position = {a->position.x + 1, a->position.y};
+    a->dexterity = 1;                               // (Clumsy: plain to see.)
+    for (int i = 0; i < 6 && member(t.ada, bracken); ++i)
+    {
+        t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "steal"}, {"target", mark}}));
+        t.tick(5);
+    }
+    expect(!member(t.ada, bracken) && t.ada.said().find("they saw what was done") != std::string::npos,
+           "he won't be part of it:\n" + t.ada.said());
+}
+
 void aRestartKeepsTheParty()
 {
     auto o = devOptions();
@@ -392,6 +532,9 @@ int main()
         calledIntoAPartyMatesFight();
         stayingOut();
         aRestartKeepsTheParty();
+        residentsInTheRules();
+        hiringAResident();
+        aResidentWontWatchACrime();
     }
     catch (const std::exception& e)
     {

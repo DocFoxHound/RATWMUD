@@ -15,6 +15,11 @@ export interface PartyMember {
     health: number;
     downed: boolean;
     fighting: boolean;
+    npc: boolean;               // A resident travelling with the party (Phase 3).
+    reason: string;             // Why a resident came: "friend", "hired", "story".
+    wage: number;               // Pennies a game day, if hired.
+    waiting: boolean;           // Told to wait where they are.
+    mine: boolean;              // This player may give them orders.
 }
 
 export interface PartyView {
@@ -24,6 +29,7 @@ export interface PartyView {
     invite: {from: string; name: string; seconds: number} | null;
     pull: {name: string; seconds: number} | null;
     autoJoin: boolean;
+    goal: string;               // Where the leader says the party is bound.
 }
 
 /** The party from the own wolf's snapshot entry (`self.party`), or null when there is nothing to show. */
@@ -37,15 +43,22 @@ export function readParty(self: Json | null): PartyView | null {
         members: arr(p, 'members').filter((m): m is Json => !!m && typeof m === 'object' && !Array.isArray(m)).map(m => ({
             id: str(m, 'id'), name: str(m, 'name'), leader: bool(m, 'leader'), online: bool(m, 'online'), cell: str(m, 'cell'),
             place: str(m, 'place'), x: num(m, 'x'), y: num(m, 'y'), health: num(m, 'health', 100), downed: bool(m, 'downed'),
-            fighting: bool(m, 'fighting'),
+            fighting: bool(m, 'fighting'), npc: bool(m, 'npc'), reason: str(m, 'reason'), wage: num(m, 'wage'),
+            waiting: bool(m, 'waiting'), mine: bool(m, 'mine'),
         })),
         invite: invite ? {from: str(invite, 'from'), name: str(invite, 'name'), seconds: num(invite, 'seconds')} : null,
         pull: pull ? {name: str(pull, 'name'), seconds: num(pull, 'seconds')} : null,
         autoJoin: p.autoJoin !== false,
+        goal: str(p, 'goal'),
     };
 }
 
 /** In a party (not merely invited to one). */
 export function inParty(p: PartyView | null): boolean {
     return !!p && !!p.id && p.members.length > 1;
+}
+
+/** In a party with another player (party chat needs someone to hear it out of character). */
+export function withPlayers(p: PartyView | null): boolean {
+    return inParty(p) && p!.members.filter(m => !m.npc).length > 1;
 }

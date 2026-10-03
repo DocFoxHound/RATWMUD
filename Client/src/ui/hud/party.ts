@@ -15,6 +15,8 @@ export class PartyPanel {
     private pullText: HTMLElement;
     private list: HTMLElement;
     private foot: HTMLElement;
+    private goal: HTMLElement;
+    private goalInput: HTMLInputElement;
     private listKey = '';
 
     constructor(parent: HTMLElement, state: GameState) {
@@ -32,8 +34,20 @@ export class PartyPanel {
         const answers = el('span', 'party-answers', this.invite);
         button('ACCEPT', 'small', answers, () => act('accept'));
         button('DECLINE', 'small', answers, () => act('decline'));
+        this.goal = el('div', 'party-goal muted small', this.root);
         this.list = el('div', 'party-list', this.root);
         this.foot = el('div', 'party-foot', this.root);
+        // Where the party is bound (the leader sets it; residents travelling with it are told).
+        this.goalInput = document.createElement('input');
+        this.goalInput.className = 'name-input';
+        this.goalInput.placeholder = 'Where are you bound? (Enter)';
+        this.goalInput.maxLength = 120;
+        this.goalInput.addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            state.activate({rect: noRect, action: 'party_verb', target: `goal:${this.goalInput.value}`});
+            this.goalInput.value = '';
+            this.goalInput.blur();
+        });
     }
 
     update() {
@@ -46,6 +60,7 @@ export class PartyPanel {
         show(this.pull, !!p.pull);
         if (p.pull) setText(this.pullText, `Joining ${p.pull.name}'s fight in ${Math.max(0, Math.round(p.pull.seconds))}…`);
         const leading = p.leader === s.selfId;
+        setText(this.goal, p.goal ? `Bound for: ${p.goal}` : '');
         const key = JSON.stringify([p.members, leading, p.autoJoin]);
         if (key === this.listKey) return;
         this.listKey = key;
@@ -57,8 +72,16 @@ export class PartyPanel {
             el('span', 'party-name', who, (m.leader ? '★ ' : '') + (m.id === s.selfId ? `${m.name} (you)` : m.name));
             const here = m.online && !!m.cell && m.cell === s.cellId;
             const state = !m.online ? 'away' : m.downed ? 'DOWNED' : m.fighting ? 'fighting' : m.health < 100 ? `${m.health}% health` : '';
-            el('span', 'muted small', who, [here ? 'here' : m.place, state].filter(Boolean).join(' · '));
-            if (leading && m.id !== s.selfId) {
+            const why = m.npc ? (m.reason === 'hired' ? `hired · ${m.wage}p a day` : m.reason === 'story' ? 'with you for now' : 'a friend') : '';
+            el('span', 'muted small', who, [why, here ? 'here' : m.place, m.waiting ? 'waiting' : '', state].filter(Boolean).join(' · '));
+            if (m.npc && m.mine) {
+                // Orders for a resident travelling with the party.
+                const tools = el('span', 'party-tools', row);
+                const order = (o: string) => () => s.sendAction(o, m.id);
+                button(m.waiting ? 'FOLLOW' : 'WAIT', 'small', tools, order(m.waiting ? 'follow me' : 'wait here'));
+                button('HOME', 'small', tools, order('go home')).title = `Send ${m.name} home`;
+                button('DISMISS', 'small', tools, order('dismiss')).title = `Part ways with ${m.name}`;
+            } else if (leading && m.id !== s.selfId && !m.npc) {
                 const tools = el('span', 'party-tools', row);
                 button('LEAD', 'small', tools, () => act(`lead:${m.id}`)).title = `Make ${m.name} the leader`;
                 button('REMOVE', 'small', tools, () => act(`remove:${m.id}`)).title = `Send ${m.name} from the party`;
@@ -67,7 +90,10 @@ export class PartyPanel {
         this.foot.replaceChildren();
         if (!grouped) return;
         button('LEAVE', 'small', this.foot, () => act('leave'));
-        if (leading) button('DISBAND', 'small', this.foot, () => act('disband'));
+        if (leading) {
+            button('DISBAND', 'small', this.foot, () => act('disband'));
+            this.foot.append(this.goalInput);
+        }
         const auto = button(p.autoJoin ? 'JOIN THEIR FIGHTS: ON' : 'JOIN THEIR FIGHTS: OFF', 'small', this.foot,
             () => act(`autojoin:${p.autoJoin ? 'off' : 'on'}`));
         auto.title = 'Whether a party mate\'s fight you can see calls you in (after five seconds, with a chance to stay out)';

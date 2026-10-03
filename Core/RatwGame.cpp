@@ -1696,22 +1696,7 @@ void Game::tick(double dt)
         if (until <= world_.time())
             if (auto* e = world_.entity(id))
                 e->typing = false;
-    for (const auto& [npcId, owner] : companionOwner_)
-    {
-        auto* npc = world_.entity(npcId);
-        const auto* leader = world_.entity(owner);
-        if (!npc || !leader)
-            continue;
-        npc->activity = "travelling with a companion";
-        if (npc->cellId == leader->cellId)
-        {
-            const double d = std::hypot(npc->position.x - leader->position.x, npc->position.y - leader->position.y);
-            if (d > 2.7 && npc->path.empty())
-                world_.moveTo(npc->id, leader->position.x - 0.9, leader->position.y + 0.7);
-            if (d < 1.4)
-                world_.stop(npc->id);
-        }
-    }
+    companionTick(dt);                              // Residents travelling with a party (doc 32, Phase 3).
     partyTick(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
@@ -2216,8 +2201,19 @@ void Game::sendSnapshot(Connection* c)
                 if (world_.warrantFor(view.self.id))
                     actions.push("pay fine");
             }
-            if (e.id == "npc_scout" && !companionOwner_.count(e.id) && near(e))
-                actions.push("recruit");
+            // Residents who might travel with the party (doc 32, Phase 3), and orders for those who do.
+            if (near(e) && !parties_.of(e.id))
+                if (const auto* mine = parties_.of(view.self.id); (!mine || mine->leader == view.self.id) && whyNotJoin(e.id).empty())
+                {
+                    actions.push("ask to join");
+                    actions.push("hire for " + std::to_string(wageFor(e.id)) + "p a day");
+                }
+            if (const auto* c = parties_.companion(e.id); c && parties_.together(view.self.id, e.id))
+            {
+                actions.push(c->waiting ? "follow me" : "wait here");
+                actions.push("go home");
+                actions.push("dismiss");
+            }
             // Merchants know what work is going in town (contracts), and a player can take it on from them.
             if (world_.society().merchant(e.id) && near(e))
             {
@@ -2524,17 +2520,20 @@ void Game::followTransition(const std::string& id, const std::string& previousCe
     const auto* leader = world_.entity(id);
     if (!leader)
         return;
-    for (const auto& [npcId, owner] : companionOwner_)
-        if (owner == id)
+    // A party's residents cross with whoever they follow: the leader, or the one in the world (doc 32).
+    const auto* p = parties_.of(id);
+    if (!p || (p->leader != id && clientOf(p->leader)))
+        return;
+    for (const auto& c : p->companions)
+    {
+        auto* npc = world_.entity(c.id);
+        if (npc && !c.waiting && npc->cellId == previousCell && !world_.inBattle(c.id) && npc->downedLeft <= 0)
         {
-            auto* npc = world_.entity(npcId);
-            if (npc && npc->cellId == previousCell)
-            {
-                npc->cellId = leader->cellId;
-                npc->position = leader->position;
-                world_.stop(npc->id);
-            }
+            npc->cellId = leader->cellId;
+            npc->position = leader->position;
+            world_.stop(npc->id);
         }
+    }
 }
 
 // --------------------------------------------------------------------------- NPC conversation
@@ -2646,6 +2645,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.activity += " Purse: " + std::to_string(account->cash) + " silver pennies. Stock: " +
                             std::to_string(Society::stock(*account, "herbs")) + " herbs, " + std::to_string(Society::stock(*account, "meal")) +
                             " meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
+    context.activity += companionContext(npcId);       // Travelling with a party (doc 32, Phase 3).
     // What the NPC calls them: the name they gave, or how they look until they give one (doc 32).
     const std::string called = labelFor(npcId, playerId);
     context.playerName = identified ? called : "traveler";
@@ -3235,24 +3235,15 @@ void Game::command(Connection* c, const std::string& raw)
             if (taken.ok)
                 record(Careers | Economy | Character, id);
         }
-        else if (action == "recruit")
+        else if (action == "ask to join" || action.rfind("hire for ", 0) == 0)
         {
-            auto* npc = world_.entity(target);
-            if (!npc || target != "npc_scout" || world_.visionClarity(id, target) <= 0 || distanceTo(*npc) > 3)
-            {
-                system(c, "Only Bracken is available to recruit in this slice. Move closer to invite him.");
-                return;
-            }
-            if (companionOwner_.count(target))
-            {
-                system(c, "That wolf is already travelling with someone.");
-                return;
-            }
-            companionOwner_[target] = id;
-            npc->leaderId = id;
-            system(c, npc->name + " accepts your invitation to travel together.");
-            talk(target, id, "Will you travel with me?");
-            record(Companions | Character, id);
+            result = askAlong(id, target, action != "ask to join");
+            report = true;
+        }
+        else if (action == "wait here" || action == "follow me" || action == "go home" || action == "dismiss")
+        {
+            result = orderCompanion(id, target, action);
+            report = !result.ok;
         }
         else if (action.rfind("introduce", 0) == 0)
         {
@@ -3410,8 +3401,7 @@ void Game::command(Connection* c, const std::string& raw)
                 continue;
             const std::string lower = mind::lower(perceived);
             const bool targeted = std::find(targets.begin(), targets.end(), npcId) != targets.end();
-            const auto companion = companionOwner_.find(npcId);
-            const bool inParty = companion != companionOwner_.end() && companion->second == id;
+            const bool inParty = parties_.companion(npcId) && parties_.together(npcId, id);
             const bool invited = inParty && (lower.find("what do you think") != std::string::npos || lower.find("your thoughts") != std::string::npos);
             const bool interject = inParty && npcId == "npc_scout" && npcLastSpeech_[npcId] + 45 < world_.time() &&
                                    (lower.find("road") != std::string::npos || lower.find("danger") != std::string::npos);
@@ -3452,6 +3442,8 @@ void Game::command(Connection* c, const std::string& raw)
         for (const auto* h : addressed)
             to.push_back(h->npcId);
         const auto heard = publish(id, post, voice, to, channel == "party");
+        if (const auto* mine = parties_.of(id))
+            lastPartySpeech_[mine->id] = world_.time();
         const auto evidence = roleplayEvidence(post);
         social_.record({event, now(), id, player->cellId, evidence.words, false, evidence.contentHash}, heard);
         // A chosen wolf who didn't hear: say so, rather than leave the player waiting.
@@ -3646,12 +3638,11 @@ void Game::load(const std::string& payload)
         known_.load(state.acquaintances);
     else
         seedAcquaintances();
-    for (const auto& [npc, owner] : state.companions)
-    {
-        companionOwner_[npc] = owner;
-        if (auto* e = world_.entity(npc))
-            e->leaderId = owner;
-    }
+    adoptOldCompanions(state.companions);           // (Older saves: residents following a player.)
+    for (const auto& [partyId, p] : parties_.all())
+        for (const auto& c : p.companions)
+            if (auto* e = world_.entity(c.id))
+                e->leaderId = "party:" + partyId;
     scenesHeard_.clear();
     for (const auto& [who, list] : state.scenesHeard)
         for (const auto& id : list)
