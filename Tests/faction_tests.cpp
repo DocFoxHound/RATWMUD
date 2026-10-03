@@ -248,13 +248,31 @@ void factionsThroughTheGame()
     expect(g.factions().earned("watch", lodge) == earned + 4 && ch.byId(lodge)->renown == renown + 5, "done: standing and renown");
     expect(bo.said().find("The mission is done") != std::string::npos, "and Bo is told");
     // A merchant of a hostile faction won't serve; a faction at war shows red.
-    std::string merchant;
+    std::string merchant;                         // (One who sells meals.)
     for (const auto& [id, e] : w.entities())
-        if (e.npc && w.society().merchant(id))
+        if (e.npc && w.society().merchant(id) && w.society().account(id) && Society::stock(*w.society().account(id), "meal") > 0 &&
+            [&] {
+                for (const auto& ware : w.society().wares(id))
+                    if (ware == "meal")
+                        return true;
+                return false;
+            }())
             merchant = id;
     if (!merchant.empty())
     {
         g.factions().setMember(merchant, "watch", "", true);
+        // Trusted: its merchants give 15% back (here, on a meal), purse to purse.
+        auto* m = w.entity(merchant);
+        auto* bob = w.entity(bo.entityId);
+        bob->cellId = m->cellId;
+        bob->position = {m->position.x + 1, m->position.y};
+        w.society().shift("treasury", bo.entityId, "", 0, 40, "test: purse");
+        g.factions().change("watch", lodge, 30, "test", w.calendarDays(), 0, false);
+        tick(.5);
+        bo.events.clear();
+        g.command(&bo, cmd({{"type", "trade"}, {"target", merchant}, {"item", "meal"}, {"quantity", 3}, {"buy", true}}));
+        tick(.3);
+        expect(bo.said().find("back.") != std::string::npos, "a trusted Chapter's discount:\n" + bo.said());
         g.factions().change("watch", lodge, -100, "test", w.calendarDays(), 0, false);
         g.command(&bo, cmd({{"type", "trade"}, {"target", merchant}, {"item", "meal"}, {"quantity", 1}, {"buy", true}}));
         expect(bo.said().find("I don't serve the Ashen Lodge's sort") != std::string::npos, "turned away:\n" + bo.said());

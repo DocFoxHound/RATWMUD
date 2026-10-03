@@ -17,12 +17,14 @@ export type EdgeKind = 'flat' | 'step' | 'slope' | 'ledge' | 'solid';
 export interface Place { cell: string; x: number; y: number }
 export interface Lighting { artificial: number; daylightAccess: number; tone: 'warm' | 'neutral' | 'cool' }
 export interface Territory { region: string; claims: string[]; chapter: string }
+/** A place to let (Docs/Design/32, 5.2): from a landlord (a person's ID, or "treasury") at a weekly rent, to a Chapter of `level`. */
+export interface Letting { kind: 'hall' | 'warehouse'; landlord: string; rent: number; level: number }
 export type Weather = 'clear' | 'overcast' | 'rain' | 'storm' | 'fog' | 'snow' | 'sandstorm';
 export const WEATHERS: Weather[];
 
 interface CellBase {
     id: string; name: string; description: string; width: number; height: number; z: number;
-    outdoors: boolean; weather: Weather; lighting: Lighting; territory: Territory;
+    outdoors: boolean; weather: Weather; lighting: Lighting; territory: Territory; letting?: Letting;
 }
 /** A world cell sits at x, y in world tiles and holds its own ground (cell-local rows and heights). */
 export interface WorldCell extends CellBase { x: number; y: number; terrain: string[]; heights: Record<string, number> }
@@ -44,6 +46,8 @@ export interface Person {
     route: string; paid: boolean; purse: number; herbs: number; meals: number;
     home: Place; work: Place; evening: Place;
     personality: string; backstory: string;
+    /** May travel with a player's party, at any hour (Docs/Design/32, 2.3). */
+    joinable?: boolean;
 }
 /** A job placed in the world; the shared roster fills it at export. */
 export interface Slot {
@@ -136,6 +140,7 @@ export function upsertChapter(project: Project, chapter: Chapter): Chapter;
 export function removeFaction(project: Project, id: string): Project;
 export function removeChapter(project: Project, id: string): Project;
 export function setTerritory(project: Project, ids: string[], territory: Territory): Project;
+export function setLetting(project: Project, id: string, letting: Letting | null): Project;
 
 export function newPerson(project: Project, role?: Role, place?: Place | null, name?: string | null): Person;
 export function upsertPerson(project: Project, person: Person): Person;

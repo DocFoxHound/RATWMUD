@@ -340,7 +340,7 @@ Value Factions::save() const
     {
         auto j = Value::object();
         j.add("id", t.id); j.add("faction", t.faction); j.add("chapter", t.chapter); j.add("build", t.build);
-        j.add("tithe", double(t.tithe)); j.add("levy", t.levy); j.add("weeks", t.weeks); j.add("state", t.state);
+        j.add("tithe", double(t.tithe)); j.add("levy", t.levy); j.add("labour", t.labour); j.add("weeks", t.weeks); j.add("state", t.state);
         j.add("proposed", t.proposed); j.add("started", t.started); j.add("paidTo", t.paidTo);
         treaties.push(j);
     }
@@ -424,7 +424,7 @@ void Factions::load(const Value& saved)
     {
         Treaty t;
         t.id = j.string("id"); t.faction = j.string("faction"); t.chapter = j.string("chapter"); t.build = j.boolean("build");
-        t.tithe = std::int64_t(j.number("tithe")); t.levy = j.boolean("levy"); t.weeks = int(j.number("weeks", 8));
+        t.tithe = std::int64_t(j.number("tithe")); t.levy = j.boolean("levy"); t.labour = j.boolean("labour"); t.weeks = int(j.number("weeks", 8));
         t.state = j.string("state", "pending"); t.proposed = j.number("proposed"); t.started = j.number("started"); t.paidTo = j.number("paidTo");
         if (!t.id.empty())
             treaties_.push_back(t);

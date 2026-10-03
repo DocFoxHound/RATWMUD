@@ -60,7 +60,7 @@ export class Walker {
     }
 
     /** The cell this client holds, as walking sees it (the caller says when it changed: GameState's cell version). */
-    setCell(width: number, height: number, rows: string[], heights: Float32Array, doors: DoorState[]) {
+    setCell(width: number, height: number, rows: string[], heights: Float32Array, doors: DoorState[], blocked: Set<string> = new Set()) {
         const closed = doors.filter(d => !d.open).map(d => `${Math.floor(d.x)},${Math.floor(d.y)}`);
         this.width = width;
         this.height = height;
@@ -76,7 +76,7 @@ export class Walker {
                 view.setFloat32(at, heights[y * width + x] ?? 0, true);
                 view.setFloat32(at + 4, terrain ? terrain.cost : 1, true);
                 view.setFloat32(at + 8, terrain ? terrain.stature : 0, true);
-                view.setUint8(at + 12, terrain?.solid ? 1 : 0);
+                view.setUint8(at + 12, terrain?.solid || blocked.has(`${x},${y}`) ? 1 : 0);   // (A Chapter's structure: doc 32, 5.7.)
                 view.setUint8(at + 13, terrain?.ramp ? 1 : 0);
                 view.setUint8(at + 14, doorAt.has(`${x},${y}`) ? 1 : 0);
                 view.setUint8(at + 15, terrain?.opaque ? 1 : 0);

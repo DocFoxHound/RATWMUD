@@ -13,7 +13,44 @@ using json::Value;
 namespace
 {
 std::string treasuryOf(const std::string& chapterId) { return "chapter:" + chapterId; }
+// What a built structure does to the ground (5.7): most block the way (not fires, posts or gates); roofed ones shelter
+// the tiles about them from the weather.
+bool blocks(const std::string& kind)
+{
+    return kind != "firepit" && kind != "cookfire" && kind != "hitching" && kind != "gate" && kind != "gatehouse";
+}
+bool shelters(const std::string& kind)
+{
+    return kind == "tent" || kind == "leanto" || kind == "hall" || kind == "stable" || kind == "workshop" || kind == "keep" ||
+           kind == "tower" || kind == "gatehouse";
+}
 } // namespace
+
+void Game::refreshGround()
+{
+    // The world's walking and weather read the built structures (doc 32, 5.7); worked out again only when they change.
+    std::string key;
+    for (const auto& [id, st] : camps_.structures())
+        if (st.built && st.condition > 0)
+            key += id + ";";
+    if (key == groundKey_)
+        return;
+    groundKey_ = key;
+    world_.obstacles.clear();
+    world_.shelters.clear();
+    for (const auto& [id, st] : camps_.structures())
+    {
+        const auto* site = camps_.site(st.site);
+        if (!site || !st.built || st.condition <= 0)
+            continue;
+        if (blocks(st.kind))
+            world_.obstacles[site->cell].insert({st.x, st.y});
+        if (shelters(st.kind))
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx)
+                    world_.shelters[site->cell].insert({st.x + dx, st.y + dy});
+    }
+}
 
 std::string Game::whyNotGround(const std::string& cellId, int x, int y) const
 {
@@ -138,6 +175,24 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
                       target};
         }
     }
+    else if (verb == "cook")
+    {
+        // A built cookfire on the Chapter's ground: two herb bundles become a meal, as the cook makes them.
+        bool fire = false;
+        if (here)
+            for (const auto* st : camps_.structuresOf(here->id))
+                fire |= st->kind == "cookfire" && st->built && st->condition > 0 &&
+                        std::hypot(st->x + .5 - me->position.x, st->y + .5 - me->position.y) <= 2.2;
+        if (!fire)
+            result = {false, "Cook at your Chapter's cookfire.", {}};
+        else if (!world_.society().cook(id))
+            result = {false, "A meal takes two bundles of herbs.", {}};
+        else
+        {
+            record(Economy, id);
+            result = {true, "You cook a meal over the fire.", {}};
+        }
+    }
     else if (verb == "stopbuild")
     {
         building_.erase(id);
@@ -220,6 +275,7 @@ void Game::campTick(double dt)
     const double step = campAccumulator_;
     campAccumulator_ = 0;
     const double t = now(), day = world_.calendarDays();
+    refreshGround();
     // Building: a member by their work, while they stay by it.
     for (auto it = building_.begin(); it != building_.end();)
     {
@@ -339,6 +395,7 @@ Value Game::structuresView(const std::string& viewer, const std::string& cellId)
         o.add("progress", std::round(st->work / k->hours * 100));
         o.add("condition", std::round(st->condition));
         o.add("ruin", site->state == "ruin");
+        o.add("blocks", st->built && st->condition > 0 && site->state != "ruin" && blocks(st->kind));
         if (owner)
             o.add("colour", owner->colour);
         o.add("mine", mine && site->chapter == mine->id);
@@ -388,6 +445,11 @@ Value Game::campView(const std::string& viewer) const
             kinds.push(o);
         }
     v.add("kinds", kinds);
+    bool fire = false;
+    for (const auto* st : camps_.structuresOf(site->id))
+        fire |= st->kind == "cookfire" && st->built && st->condition > 0 &&
+                std::hypot(st->x + .5 - me->position.x, st->y + .5 - me->position.y) <= 2.2;
+    v.add("cookfire", fire);
     auto staff = Value::array();
     for (const auto& [npc, st] : camps_.staff())
         if (st.site == site->id)

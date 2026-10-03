@@ -78,6 +78,7 @@ struct Treaty
     bool build = false;                          // May build (and fortify) on the faction's land.
     std::int64_t tithe = 0;                      // Pennies a game week, from the Chapter's treasury.
     bool levy = false;                           // Answers the faction's levies.
+    bool labour = false;                         // Its people may go to the Chapter's Hold with little resentment (doc 16).
     int weeks = 8;
     std::string state = "pending";               // pending, active, ended, rejected.
     double proposed = 0, started = 0, paidTo = 0;// Calendar days.

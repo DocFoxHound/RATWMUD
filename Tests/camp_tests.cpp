@@ -4,6 +4,7 @@
 // and paid, a Hall reached, and a restart.
 #include "RatwCamps.h"
 #include "RatwGame.h"
+#include "RatwWire.h"
 
 #include <chrono>
 #include <cmath>
@@ -164,6 +165,22 @@ void campingThroughTheGame(const std::string& save)
         tick(2 * camp::SecondsPerWorkHour + 2);
         expect(g.camps().structure(tent)->built && ada.said().find("A Tent stands at Juniper Camp") != std::string::npos,
                "two minutes' work: the tent stands:\n" + ada.said());
+        // Built, the tent blocks the way and shelters the ground about it from the weather.
+        tick(1);
+        expect(w.obstacles["exterior"].count({31, 20}), "the tent stands in the way");
+        a->position = {29.5, 20.5};
+        w.moveTo(ada.entityId, 31.5, 20.5);
+        bool through = false;
+        for (int i = 0; i < 60; ++i)
+        {
+            tick(.05);
+            through |= int(std::floor(a->position.x)) == 31 && int(std::floor(a->position.y)) == 20;
+        }
+        expect(!through, "and nobody walks into it");
+        w.stop(ada.entityId);
+        wire::environmentCommand(w, "exterior", "weather", "rain", true);
+        const double open = w.environmentAt("exterior", {38.5, 25.5}).intensity, lee = w.environmentAt("exterior", {30.5, 20.5}).intensity;
+        expect(open > 0 && lee < open * .3, "in its lee the rain is a quarter as strong (" + std::to_string(lee) + " of " + std::to_string(open) + ")");
         // A firepit and a storage pile: a camp standing, and the stores reached from it.
         for (auto [kind, x] : {std::pair{"firepit", 32.5}, std::pair{"storage", 33.5}})
         {
@@ -177,6 +194,20 @@ void campingThroughTheGame(const std::string& save)
             tick(camp::SecondsPerWorkHour + 1);
         }
         expect(g.camps().campStanding(lodge), "a camp standing");
+        // A cookfire: two bundles of herbs become a meal.
+        a->position = {35.5, 20.5};
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "cookfire"}}));
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "build"}, {"target", g.camps().structureAt("exterior", 35, 20)->id}}));
+        tick(2 * camp::SecondsPerWorkHour + 1);
+        w.society().shift("treasury", ada.entityId, "herbs", 2, 0, "test: herbs");
+        const int meals = Society::stock(*w.society().account(ada.entityId), "meal");
+        const int herbs = Society::stock(*w.society().account(ada.entityId), "herbs");
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "cook"}}));
+        tick(.3);
+        expect(Society::stock(*w.society().account(ada.entityId), "meal") == meals + 1 &&
+                   Society::stock(*w.society().account(ada.entityId), "herbs") == herbs - 2,
+               "a meal cooked at the cookfire:\n" + ada.said());
+        a->position = {33.5, 20.5};
         w.society().shift("treasury", ada.entityId, "meal", 1, 0, "test: a meal");
         g.command(&ada, cmd({{"type", "chapter"}, {"verb", "store"}, {"item", "meal"}, {"quantity", 1}}));
         expect(Society::stock(*w.society().account("chapter:" + lodge), "meal") == 1, "stored from the camp's storage pile");
@@ -221,7 +252,7 @@ void campingThroughTheGame(const std::string& save)
         game::Game g(o);
         std::string problem;
         expect(g.start(problem), "restarts: " + problem);
-        expect(g.camps().sitesOf(lodge).size() == 1 && g.camps().structuresOf(site).size() == 3 && g.camps().staff().count("npc_scout"),
+        expect(g.camps().sitesOf(lodge).size() == 1 && g.camps().structuresOf(site).size() == 4 && g.camps().staff().count("npc_scout"),
                "the camp, its structures and its staff survive a restart");
     }
     std::remove(save.c_str());

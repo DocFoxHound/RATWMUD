@@ -165,3 +165,12 @@ test("the page sees exactly what the server sees: the demo world's exterior (Cli
     golden.seen.forEach((row, y) => [...row].forEach((c, x) => { if ((seen[y * golden.width + x] ? '1' : '0') !== c) ++differ; }));
     assert.equal(differ, 0, `${differ} tiles seen differently from the server`);
 });
+
+test("the walker: a Chapter's built structure stands in the way, as on the server (doc 32, 5.7)", async () => {
+    const walker = (await Walker.load(wasm))!;
+    const rows = ['..........', '..........', '..........'];
+    walker.setCell(10, 3, rows, new Float32Array(30), []);
+    assert.ok(walker.passable(5.5, 1.5, 4.5, 1.5), 'open ground');
+    walker.setCell(10, 3, rows, new Float32Array(30), [], new Set(['5,1']));
+    assert.ok(!walker.passable(5.5, 1.5, 4.5, 1.5), 'a tent there: not passable');
+});

@@ -547,7 +547,7 @@ std::string Game::withoutPeople(const std::string& manifest)
                 line = "RATW_WORLD 2";             // The version that allows NPC records, which are added next.
         }
         else if (line.rfind("economy ", 0) == 0 || line.rfind("route ", 0) == 0 || line.rfind("resident ", 0) == 0 ||
-                 line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0)
+                 line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0 || line.rfind("joinable ", 0) == 0)
             continue;
         else if (line.rfind("territory ", 0) == 0)
         {
@@ -1735,7 +1735,10 @@ void Game::tick(double dt)
             system(c, words);
     for (const auto& [id, cell] : beforeCells)
         if (const auto* e = world_.entity(id); e && e->cellId != cell)
+        {
             followTransition(id, cell);
+            payToll(id);                              // Into a Hold's claimed place (doc 32, 5.5).
+        }
     for (auto& [id, until] : typingExpiry_)
         if (until <= world_.time())
             if (auto* e = world_.entity(id))
@@ -3507,7 +3510,10 @@ void Game::command(Connection* c, const std::string& raw)
             report = true;
         }
         if (player->cellId != beforeCell)
+        {
             followTransition(id, beforeCell);
+            payToll(id);                              // Through a door into a Hold's claimed place (doc 32, 5.5).
+        }
         if (result.ok)
             operatorActivity_[id] = now();
         saveSoon();

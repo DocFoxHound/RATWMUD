@@ -542,6 +542,7 @@ Value Chapters::save() const
         j.add("friendlyFaction", c.friendlyFaction);
         j.add("claimCell", c.claimCell);
         j.add("houseOf", c.houseOf);
+        j.add("toll", c.toll);
         auto sworn = Value::array();
         for (const auto& n : c.sworn)
             sworn.push(n);
@@ -602,6 +603,7 @@ void Chapters::load(const Value& saved)
         c.friendlyFaction = j.boolean("friendlyFaction");
         c.claimCell = j.string("claimCell");
         c.houseOf = j.string("houseOf");
+        c.toll = std::clamp(int(j.number("toll")), 0, 5);
         for (const auto& n : j.array("sworn"))
             if (n.isString())
                 c.sworn.insert(n.asString());

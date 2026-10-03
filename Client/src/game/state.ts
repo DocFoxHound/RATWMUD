@@ -208,6 +208,7 @@ export class GameState {
     private doorStates: DoorState[] = [];
     private cellVersion = 0;
     private walkerVersion = -1;
+    private walkerBlocked = '';
     // Terrain shading worked out here (doc 31, Phase 4.6): which tiles the wolf sees, with the server's own sight
     // rule, on reaching a new tile; the server then leaves its visibility rows out. Which tiles the page knows at all
     // (the glyphs it was sent) stays the server's.
@@ -786,10 +787,7 @@ export class GameState {
         const key = `${this.cellId}|${this.cellVersion}|${Math.floor(x)},${Math.floor(y)}|${range}`;
         if (key === this.sightKey) return;
         this.sightKey = key;
-        if (this.walkerVersion !== this.cellVersion) {
-            this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates);
-            this.walkerVersion = this.cellVersion;
-        }
+        this.ensureWalkerCell();
         const seen = this.walker.sight(x, y, range);
         const rows: string[] = [];
         for (let ty = 0; ty < this.cellHeight; ++ty) {
@@ -834,10 +832,7 @@ export class GameState {
         }
         const pose = this.freePose;
         if (ix || iy) {
-            if (this.walkerVersion !== this.cellVersion) {
-                this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates);
-                this.walkerVersion = this.cellVersion;
-            }
+            this.ensureWalkerCell();
             if (!this.walking) {
                 this.walking = true;
                 this.inputToMotion.push(0);        // Walked at once, on this very frame.
@@ -884,16 +879,24 @@ export class GameState {
         const self = obj(this.snapshot, 'self');
         const posture = str(self, 'posture', 'standing');
         if (posture !== 'standing' && posture !== 'crouching') return null;
-        if (this.walkerVersion !== this.cellVersion) {
-            this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates);
-            this.walkerVersion = this.cellVersion;
-        }
+        this.ensureWalkerCell();
         const ahead = clamp(now - newest.time, 0, 0.25);
         const step = this.walker.step(newest.x, newest.y, ix, iy, num(self, 'walkSpeed', 2.6), posture === 'crouching', num(self, 'moveFactor', 1), ahead);
         return {time: now, x: step.x, y: step.y, facing: Math.atan2(iy, ix)};
     }
 
     // ------------------------------------------------------------------ Sending
+
+    /** The walker's copy of the cell, again when the cell or the Chapters' built structures in it change (doc 32, 5.7). */
+    private ensureWalkerCell() {
+        if (!this.walker) return;
+        const blocked = objects(this.snapshot, 'structures').filter(st => bool(st, 'blocks')).map(st => `${num(st, 'x')},${num(st, 'y')}`);
+        const key = blocked.join(';');
+        if (this.walkerVersion === this.cellVersion && this.walkerBlocked === key) return;
+        this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates, new Set(blocked));
+        this.walkerVersion = this.cellVersion;
+        this.walkerBlocked = key;
+    }
 
     /** A faction command (doc 32, Part 4): taking a mission. */
     sendFaction(fields: Json) {

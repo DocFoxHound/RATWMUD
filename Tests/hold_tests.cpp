@@ -222,10 +222,27 @@ void holdsThroughTheGame(const std::string& save)
                    std::string::npos,
                "and knows it");
         w.entity(friendNpc)->leaderId.clear();
+        // The Church claims the tavern the friend lives in: it resents losing them to the Hold (doc 16).
+        g.factions().define({"church", "The Church", "#e3d6a4", "npc"});
+        w.cell(w.society().resident(friendNpc)->homeCell)->factionClaims = {"church"};
+        const double churchBefore = g.factions().earned("church", lodge);
         g.command(&ada, cmd({{"type", "action"}, {"action", "settle at the Hold"}, {"target", friendNpc}}));
-        expect(ada.said().find("They set out to make their home at the Hold") != std::string::npos ||
-                   ada.said().find("They can't go:") != std::string::npos,
-               "asked to settle at the Hold:\n" + ada.said());
+        expect(g.factions().earned("church", lodge) == churchBefore - 3, "the Church resents it: -3 without a labour clause");
+        expect(ada.said().find("They set out to make their home at the Hold") != std::string::npos, "settled at the Hold:\n" + ada.said());
+        // A toll on the Hold's place: Cy, of no Chapter, pays it coming in through the yard door.
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "toll"}, {"amount", 2}}));
+        auto* cyE = w.entity(cy.entityId);
+        ch.leave(cy.entityId, unixNow());
+        w.society().shift("treasury", cy.entityId, "", 0, 10, "test: purse");
+        cyE->cellId = "tavern";
+        cyE->position = {16.5, 22.6};
+        const auto cyBefore = w.society().account(cy.entityId)->cash;
+        tick(.3);
+        g.command(&cy, cmd({{"type", "action"}, {"action", "open"}, {"target", "door_main"}}));
+        tick(1);
+        expect(w.entity(cy.entityId)->cellId == "exterior" && w.society().account(cy.entityId)->cash == cyBefore - 2 &&
+                   cy.said().find("toll to Ashen Lodge") != std::string::npos,
+               "Cy pays the toll (in " + w.entity(cy.entityId)->cellId + "):\n" + cy.said());
         tick(2.5);
         const auto view = ada.snapshots.back()["self"]["chapter"]["hold"];
         expect(view.string("house") == "a minor House of The Crown" && view.string("claims") == "Juniper Yard" && view.array("sworn").size() == 1,

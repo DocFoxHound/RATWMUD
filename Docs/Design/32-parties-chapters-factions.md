@@ -1268,16 +1268,57 @@ Not yet:
 
 ## After the nine phases
 
-**Still to do across the plan**, gathered from the phases' "Not yet":
+### Finished on 2026-10-03 (the phases' "not yet" list)
 
-- **NPCs:** an authored "joinable" flag for residents in Atlas or the DM, DM "story" companions, companion remarks
-  voiced by the Mind, and settling authored residents.
-- **Structures:** blocking movement and giving shelter, steep ground, cooking, and Atlas showing them.
-- **Places to let:** an Atlas field and furnishings.
-- **Factions:** treaties' labour clause, a Trusted faction's Watch weighing members' word, quartermasters' gear (after
-  doc 35's items), and third-tier and story missions.
-- **Storage:** Chapters into Postgres and the DM, replacing the DM service's SQLite Chapter records (Phase 5).
+- **Structures block the way and give shelter** (Phase 8):
+  - The game hands the world the tiles its Chapters' built structures stand on (`World::obstacles`) and the tiles
+    about the roofed ones (`World::shelters`). The world's walking treats the first as solid, and the weather where
+    a wolf stands is a quarter as strong on the second.
+  - Fires, hitching posts, gates and gatehouses don't block. Tents, lean-tos, halls, stables, workshops, keeps,
+    towers and gatehouses shelter.
+  - The page's own walking reads the same tiles from the snapshot (`blocks`), so it doesn't rubber-band at a wall.
+  - Tested: a tent nobody walks into, and rain in its lee.
+- **Cooking at a cookfire** (Phase 8): two bundles of herbs become a meal (`Society::cook`, the cook's own step:
+  nothing made from nothing). It is done at the Chapter's built cookfire, with COOK A MEAL in the camp panel.
+- **Settling authored residents at a Hold** (Phase 9): doc 16's relocation now takes an authored world's ordinary
+  residents ("civilian") as well as the demo's "resident" role. This is in `World::relocateResident`,
+  `Society::relocate` and its save check. Traders, the Watch and the essential workers are still refused.
+- **A treaty's labour clause** (Phase 9): settling a resident at the Hold costs the faction they leave −3 standing,
+  or −1 under a treaty with the labour clause (now a term, proposed by default). Their patron House's own people go
+  free.
+- **Tolls** (Phase 9): the Head sets 0–5 pennies. Players of no part in the Chapter pay it coming into the place its
+  Hold claims, purse to its treasury (told so, or let by when they can't pay).
+- **Quartermasters' terms** (Phase 6): a faction's merchants give 15% back to a Chapter it trusts, 25% to one sworn
+  to it, purse to purse after the sale. Bonus gear itself waits for doc 35's items.
+- **Atlas fields** (Phases 3 and 7):
+  - **Travels with parties**, a toggle on a resident. Such a resident may be asked along or hired at any hour,
+    whatever their work.
+  - **To let**, a section on a cell or interior: kind, landlord (the town or a resident), weekly rent and Chapter
+    level.
+  - How they travel:
+    - **Stored:** `live.npcs.joinable` and `world.cells/interiors.letting` (migration `0029_joinable.sql`).
+    - **Checked** by Atlas's model and `tools/map_editor.py` (the landlord must be a resident).
+    - **Exported** as new optional records `joinable "id"` (also emitted live by `live.people_manifest`) and
+      `let "place" "kind" "landlord" rent level`. Old worlds load unchanged.
+    - **Read** by `RatwAuthoring.cpp`, which refuses unknown places, landlords and residents, and duplicates.
+  - The game offers Atlas's places to let first, then rooms above inns and warehouses.
+  - Tested: a Greyfen world with a place to let and a joinable resident, and four refusals.
+
+### Still to do
+
+- **NPCs:** DM-assigned "story" companions, and companion remarks voiced by the Mind.
+- **Structures:** steep ground isn't checked, Atlas doesn't show them, and residents' route caches don't yet know
+  them, so a resident's path may need to go round.
+- **Places to let:** naming them, and choosing furnishings.
+- **Holds:** housing and jobs at a Hold, ordinary residents migrating there (doc 16), and a DM screen for pending
+  treaties and House requests.
+- **Factions:** a Trusted faction's Watch weighing members' word, gear from quartermasters (doc 35), and third-tier
+  and story missions.
+- **Storage:** Chapters into Postgres and the DM.
 - **Names:** hearsay names, residents who see through aliases, and choosing aliases at character creation.
+- **Older tests that fail before and after this work:** Greyfen now has 11 residents, not 10, which breaks
+  `Editor/src/model/content.test.mjs`, `tools/test_map_editor.py` and `tools/test_publish.py`. These came with the
+  world-generation work, not this plan.
 
 ## Decisions
 

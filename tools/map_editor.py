@@ -226,6 +226,14 @@ def check_project(value: object, for_game: bool = True) -> tuple[dict, list[str]
                             claim_ids.add(claim)
                     if len(claim_ids) == len(claims):
                         territory['claims'] = sorted(claims)
+        if 'letting' in c and c['letting'] is not None:
+            # A place to let (Docs/Design/32, 5.2): its landlord is checked against the people below.
+            letting = c['letting']
+            ok = (isinstance(letting, dict) and set(letting) == {'kind', 'landlord', 'rent', 'level'}
+                  and letting.get('kind') in ('hall', 'warehouse') and isinstance(letting.get('landlord'), str)
+                  and type(letting.get('rent')) is int and 1 <= letting['rent'] <= 100000
+                  and type(letting.get('level')) is int and 2 <= letting['level'] <= 5)
+            require(ok, f'{cid}: a place to let needs kind (hall or warehouse), landlord, rent (1-100000) and level (2-5).')
         if 'lighting' in c:
             light = c['lighting']
             require(isinstance(light, dict), f'{cid}: lighting must be an object.')
@@ -377,9 +385,10 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
     require(isinstance(people, list) and len(people) <= MAX_PEOPLE, f'people must be an array of at most {MAX_PEOPLE} residents.')
     person_ids = set()
     for person in people if isinstance(people, list) else []:
-        if not isinstance(person, dict) or set(person) != PERSON_KEYS:
-            errors.append('Each person requires exactly: ' + ', '.join(sorted(PERSON_KEYS)) + '.')
+        if not isinstance(person, dict) or set(person) - {'joinable'} != PERSON_KEYS:
+            errors.append('Each person requires exactly: ' + ', '.join(sorted(PERSON_KEYS)) + ' (and may have joinable).')
             continue
+        require(type(person.get('joinable', False)) is bool, f'Person {person["id"]}: joinable must be true or false.')
         pid = person['id']
         label = f'Person {pid}'
         require(isinstance(pid, str) and ID.fullmatch(pid) and pid not in person_ids and pid != 'treasury'
@@ -421,6 +430,11 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
                         and rows[w['y'] + dy][w['x'] + dx] not in SOLID
                         for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1))),
                     f'{label}: customers need an open tile beside the counter.')
+    for area in p.get('cells', []) + p.get('rooms', []):
+        letting = area.get('letting') if isinstance(area, dict) else None
+        if isinstance(letting, dict) and isinstance(letting.get('landlord'), str):
+            require(letting['landlord'] == 'treasury' or letting['landlord'] in person_ids,
+                    f'{area.get("id")}: the place to let names an unknown landlord.')
     slots = p.get('slots', [])
     require(isinstance(slots, list) and len(slots) <= 256, 'slots must be an array of at most 256 profession slots.')
     slot_ids = set()
@@ -675,6 +689,9 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             claims = ''.join(' ' + quote(claim) for claim in territory['claims'])
             manifest.append(f'territory {quote(c["id"])} {quote(territory["region"])} '
                             f'{quote(territory["chapter"] or "-")} {len(territory["claims"])}{claims}')
+        if c.get('letting'):
+            let = c['letting']
+            manifest.append(f'let {quote(c["id"])} {quote(let["kind"])} {quote(let["landlord"])} {let["rent"]} {let["level"]}')
     spawn = p['spawn']
     seams, exits = {}, {}
     if stream:
@@ -713,6 +730,8 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             str(r['purse']), str(r['herbs']), str(r['meals']), at(r['home']), at(r['work']), at(r['evening'])]))
         if r.get('personality') or r.get('backstory'):
             manifest.append(f'story {quote(r["id"])} {quote(fold(r.get("personality", "")))} {quote(fold(r.get("backstory", "")))}')
+        if r.get('joinable'):
+            manifest.append(f'joinable {quote(r["id"])}')     # May travel with a player's party (doc 32, 2.3).
     files['world.ratw'] = '\n'.join(manifest) + '\n'
     if stream:
         for c in by_id.values():

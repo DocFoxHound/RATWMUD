@@ -172,6 +172,14 @@ struct Cell
 
 struct FactionDefinition { std::string id, name, color; };
 struct ChapterDefinition { std::string id, name; };
+// A place to let, as Atlas authors it (Docs/Design/32, 5.2): kind "hall" or "warehouse", a landlord (a resident or
+// "treasury"), the rent in pennies a game week, and the Chapter level it needs.
+struct Letting
+{
+    std::string cell, kind, landlord;
+    std::int64_t rent = 0;
+    int level = 2;
+};
 
 struct Entity
 {
@@ -419,6 +427,7 @@ class World
     const Society& society() const { return society_; }
     const std::map<std::string, FactionDefinition>& factions() const { return factions_; }
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
+    const std::map<std::string, Letting>& lettings() const { return lettings_; }
     Result relocateResident(const std::string& npc, const std::string& destination, double x, double y);
     Result advanceCalendar(double days); // Explicit developer/test jump, never a client-authorized normal action.
     Result useSeasonalWeather(const std::string& cellId);
@@ -489,6 +498,8 @@ class World
     const Battle* battleOf(const std::string& id) const;
     const Battle* watching(const std::string& id) const;
     bool inBattle(const std::string& id) const { return battleOf(id) != nullptr; }
+    // A Chapter's structures (Docs/Design/32, 5.7), set by the game: the tiles they block, and the tiles they shelter.
+    std::map<std::string, std::set<std::pair<int, int>>> obstacles, shelters;
     // Who may go through a door into a place (Docs/Design/32, 5.2: a Chapter's rented rooms); unset, anyone may.
     std::function<bool(const std::string& who, const std::string& cell)> mayEnter;
     // A fighter's turn: move to a tile (crawl one, when Downed), and act: "bite", "tend", "struggle", "flee", "wait".
@@ -717,6 +728,7 @@ class World
     std::map<std::string, Cell> cells_;
     std::map<std::string, FactionDefinition> factions_;
     std::map<std::string, ChapterDefinition> chapters_;
+    std::map<std::string, Letting> lettings_;
     std::map<std::string, Entity> entities_;
     TickProfile profile_;
     std::vector<WorldEvent> events_;

@@ -99,12 +99,14 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
             t.build = j.boolean("build", true);
             t.tithe = std::clamp<std::int64_t>(std::int64_t(j.number("tithe", 20)), 0, 1000);
             t.levy = j.boolean("levy", true);
+            t.labour = j.boolean("labour", true);
             t.weeks = std::clamp(int(j.number("weeks", 8)), 1, 52);
             t.proposed = day;
             factions_.treaties().push_back(t);
             note("info", "RATW_TREATY_PENDING id=" + t.id + " faction=" + factionId + " chapter=" + chapter->id);
             result = {true, "\"We'll put it before those who decide.\" (A treaty: " + std::string(t.build ? "building rights, " : "") +
-                                std::to_string(t.tithe) + " pennies a week" + (t.levy ? ", answering levies" : "") + ", " +
+                                std::to_string(t.tithe) + " pennies a week" + (t.levy ? ", answering levies" : "") +
+                                (t.labour ? ", its people free to join the Hold" : "") + ", " +
                                 std::to_string(t.weeks) + " weeks.)",
                       target};
         }
@@ -176,6 +178,36 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
         {
             const auto moved = world_.relocateResident(target, site->cell, site->x + .5, site->y + 1.5);
             result = {moved.ok, moved.ok ? "They set out to make their home at the Hold." : "They can't go: " + moved.message, target};
+            if (moved.ok)
+            {
+                // The faction they leave resents losing them (doc 16), less under a treaty's labour clause.
+                std::string home;
+                if (const auto* member = factions_.memberOf(target))
+                    home = member->first;
+                else if (const auto* life = world_.society().resident(target))
+                    if (const auto* cell = world_.cell(life->homeCell); cell && !cell->factionClaims.empty())
+                        home = cell->factionClaims.front();
+                if (!home.empty() && home != chapter->houseOf)
+                {
+                    const auto* t = factions_.activeTreaty(home, chapter->id);
+                    factions_.change(home, chapter->id, t && t->labour ? -1 : -3, "lost a resident to the Chapter's Hold", day);
+                }
+            }
+        }
+    }
+    else if (verb == "toll")
+    {
+        const int toll = int(j.number("amount", -1));
+        if (member->rank != chapter::RankHead)
+            result = {false, "Only the Head sets the toll.", {}};
+        else if (chapter->claimCell.empty())
+            result = {false, "Only a Hold's claimed place has a toll.", {}};
+        else if (toll < 0 || toll > 5)
+            result = {false, "A toll is 0 to 5 pennies.", {}};
+        else
+        {
+            chapters_.byId(chapter->id)->toll = toll;
+            result = {true, toll ? "Others now pay " + std::to_string(toll) + (toll == 1 ? " penny" : " pennies") + " to come in." : "No toll.", {}};
         }
     }
     else
@@ -186,6 +218,28 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
         saveSoon();
     }
     return true;
+}
+
+void Game::payToll(const std::string& who)
+{
+    // Coming into a place a Hold claims (doc 32, 5.5): others pay its toll, purse to the Chapter's treasury.
+    const auto* e = world_.entity(who);
+    if (!e || e->npc)
+        return;
+    for (const auto& [id, c] : chapters_.all())
+    {
+        if (c.claimCell != e->cellId || c.toll <= 0 || c.members.count(who))
+            continue;
+        auto* cl = clientOf(who);
+        if (world_.society().shift(who, treasuryOf(id), "", 0, c.toll, "hold toll"))
+        {
+            record(Economy, who);
+            if (cl)
+                system(cl, "You pay " + std::to_string(c.toll) + (c.toll == 1 ? " penny" : " pennies") + " toll to " + c.name + ".");
+        }
+        else if (cl)
+            system(cl, c.name + "'s toll is " + std::to_string(c.toll) + " pennies; you haven't it. You're let by with a hard look.");
+    }
 }
 
 void Game::holdTick(double dt)
@@ -344,7 +398,10 @@ Value Game::holdView(const std::string& chapterId, const std::string& viewer) co
     if (const auto* f = factions_.find(c->houseOf))
         v.add("house", "a minor House of " + f->name);
     if (!c->claimCell.empty())
+    {
         v.add("claims", world_.cell(c->claimCell) ? world_.cell(c->claimCell)->name : c->claimCell);
+        v.add("toll", c->toll);
+    }
     auto treaties = Value::array();
     for (const auto& t : factions_.treaties())
         if (t.chapter == chapterId && (t.state == "active" || t.state == "pending"))
@@ -355,6 +412,7 @@ Value Game::holdView(const std::string& chapterId, const std::string& viewer) co
             o.add("build", t.build);
             o.add("tithe", double(t.tithe));
             o.add("levy", t.levy);
+            o.add("labour", t.labour);
             o.add("weeksLeft", t.state == "active" ? std::max(0.0, std::ceil((t.started + t.weeks * 7 - world_.calendarDays()) / 7)) : double(t.weeks));
             treaties.push(o);
         }

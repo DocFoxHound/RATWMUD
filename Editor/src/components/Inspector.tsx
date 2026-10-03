@@ -222,6 +222,7 @@ function CellInspector({project, cell, pinned = false}: {project: Project; cell:
             <Hint>To move someone in, select them and use Pick next to Home or Work. Or right-click a tile here to add a new resident.</Hint>
         </Section>
         <Section title="Territory" open={false}><TerritoryEditor ids={[cell.id]} territory={cell.territory} /></Section>
+        <Section title="To let" open={false}><LettingEditor id={cell.id} letting={cell.letting} /></Section>
         {room && <Section title="Danger zone" open={false}>
             <button className="danger wide" onClick={() => {
                 if (window.confirm(`Delete ${cell.name} and every door leading to it?`) && commit('Deleted interior.', p => M.removeRoom(p, cell.id)))
@@ -257,6 +258,27 @@ function TerritoryEditor({ids, territory}: {ids: string[]; territory: M.Territor
                 onChange={on => set({...territory, claims: on ? [...territory.claims, f.id] : territory.claims.filter(c => c !== f.id)})} />)
                 : <Hint>No factions yet. Add some under World → Factions & Chapters.</Hint>}
         </div>
+    </>);
+}
+
+/** A place to let to a Chapter (Docs/Design/32, 5.2): rooms or a hall, or a warehouse, from a landlord at a weekly rent. */
+function LettingEditor({id, letting}: {id: string; letting?: M.Letting}) {
+    const project = useStore(s => s.project);
+    const set = (l: M.Letting | null) => commit(l ? 'Updated the place to let.' : 'No longer to let.', p => M.setLetting(p, id, l), true);
+    if (!letting)
+        return <Toggle label="To let to a Chapter" hint="Rooms or a hall a Chapter can rent" checked={false}
+            onChange={on => on && set({kind: 'hall', landlord: 'treasury', rent: 30, level: 2})} />;
+    return (<>
+        <Toggle label="To let to a Chapter" checked onChange={on => !on && set(null)} />
+        <SelectField label="Kind" value={letting.kind} onChange={v => set({...letting, kind: v as M.Letting['kind']})}
+            options={[{value: 'hall', label: 'Rooms or a hall (a Lodge, level II)'}, {value: 'warehouse', label: 'A warehouse (a Company, level III)'}]} />
+        <SelectField label="Landlord" value={letting.landlord} onChange={v => set({...letting, landlord: v})}
+            options={[{value: 'treasury', label: 'The town'}, ...project.people.map(p => ({value: p.id, label: p.name}))]} />
+        <Row>
+            <NumberField label="Rent a week" value={letting.rent} min={1} max={100000} suffix="pennies" onCommit={v => set({...letting, rent: v})} />
+            <NumberField label="Chapter level" value={letting.level} min={2} max={5} onCommit={v => set({...letting, level: v})} />
+        </Row>
+        <Hint>Rent is paid weekly from the Chapter's treasury to the landlord. A faction claiming the place lets it only to a Chapter it knows well.</Hint>
     </>);
 }
 
@@ -303,6 +325,8 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
                 hint={person.route ? 'A traveller: walks these posts in order through working hours, and rests on the road wherever the day ends.' : 'Works at the work place.'}
                 options={[{value: '', label: 'Work at the work place'}, ...project.routes.map(r => ({value: r.id, label: `${r.name} (${r.posts.length} posts)`}))]} />}
             <Toggle label="Paid by the treasury" hint="Earns small wages for time spent working" checked={person.paid} onChange={v => update({paid: v})} />
+            <Toggle label="Travels with parties" hint="May be asked along or hired by a player's party at any hour (doc 32)" checked={!!person.joinable}
+                onChange={v => update({joinable: v || undefined})} />
         </Section>
         <Section title="Places">
             <PickButton refTo={{kind: 'person', id: person.id, slot: 'home'}} label="Home · sleeps here" place={person.home} />

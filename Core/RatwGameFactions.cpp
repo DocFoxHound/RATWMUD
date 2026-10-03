@@ -478,6 +478,13 @@ void Game::afterFactionTrade(const std::string& playerId, const std::string& mer
             if (auto* cl = clientOf(playerId))
                 system(cl, "\"For your Chapter's sort, it's " + std::to_string(extra) + " more.\"");
     }
+    // Its quartermasters' terms (4.3): a Chapter it trusts pays 15% less, one sworn to it 25% less (given back, purse
+    // to purse, after the sale: the trade itself is untouched).
+    if (eff >= 40)
+        if (const auto back = spent * (eff >= 75 ? 25 : 15) / 100; back > 0 && world_.society().shift(merchantId, playerId, "", 0, back, "faction discount"))
+            if (auto* cl = clientOf(playerId))
+                system(cl, "\"For a friend of " + (factions_.find(member->first) ? factions_.find(member->first)->name : member->first) + ", " +
+                               std::to_string(back) + " back.\"");
     // Trade with its merchants: +1 a mark... a little at a time, at most 3 a week (4.2).
     factionTradePennies_[member->first + "|" + c->id] += spent;
     auto& pennies = factionTradePennies_[member->first + "|" + c->id];

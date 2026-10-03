@@ -57,10 +57,10 @@ TABLES = {
     'world.terrain_chunks': (('world_id', 'cx', 'cy'), ('world_id', 'cx', 'cy', 'size', 'glyphs', 'heights')),
     'world.cells': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'description', 'x', 'y', 'width', 'height', 'z',
                                          'outdoors', 'weather', 'light_artificial', 'light_daylight', 'light_tone',
-                                         'region', 'chapter')),
+                                         'region', 'chapter', 'letting')),
     'world.interiors': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'description', 'width', 'height', 'glyphs',
                                              'heights', 'z', 'outdoors', 'weather', 'light_artificial', 'light_daylight',
-                                             'light_tone', 'region', 'chapter', 'overview_x', 'overview_y')),
+                                             'light_tone', 'region', 'chapter', 'overview_x', 'overview_y', 'letting')),
     'world.links': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'kind', 'open',
                                          'a_area', 'a_x', 'a_y', 'b_area', 'b_x', 'b_y')),
     'world.resources': (('world_id', 'id'), ('world_id', 'id', 'kind', 'area', 'x', 'y')),
@@ -72,7 +72,7 @@ TABLES = {
     'live.npcs': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'role', 'description', 'greeting', 'personality',
                                       'backstory', 'work_label', 'age', 'voice', 'appearance', 'route_id', 'paid', 'purse',
                                       'herbs', 'meals', 'hours_start', 'hours_end', 'home_area', 'home_x', 'home_y',
-                                      'work_area', 'work_x', 'work_y', 'evening_area', 'evening_x', 'evening_y')),
+                                      'work_area', 'work_x', 'work_y', 'evening_area', 'evening_x', 'evening_y', 'joinable')),
     'live.profession_slots': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'profession', 'work_label', 'route_id',
                                                    'paid', 'purse', 'herbs', 'meals', 'hours_start', 'hours_end',
                                                    'home_area', 'home_x', 'home_y', 'work_area', 'work_x', 'work_y',
@@ -105,6 +105,11 @@ def lighting(c):
 def territory(c):
     t = {**DEFAULT_TERRITORY, **c.get('territory', {})}
     return t['region'], t['chapter']
+
+
+def letting(c):
+    """A place to let (Docs/Design/32, 5.2) as stored: its terms, or None."""
+    return dict(c['letting']) if c.get('letting') else None
 
 
 def claims_of(c):
@@ -151,13 +156,13 @@ def cell_bounds(cells) -> tuple[int, int, int, int]:
 
 def cell_row(w, c, position):
     return (w, c['id'], position, c['name'], c.get('description', ''), c['x'], c['y'], c['width'], c['height'],
-            c.get('z', 0), c['outdoors'], c['weather'], *lighting(c), *territory(c))
+            c.get('z', 0), c['outdoors'], c['weather'], *lighting(c), *territory(c), letting(c))
 
 
 def room_row(w, r, position):
     return (w, r['id'], position, r['name'], r.get('description', ''), r['width'], r['height'], ''.join(r['terrain']),
             dict(r.get('heights', {})), r.get('z', 0), r['outdoors'], r['weather'], *lighting(r), *territory(r),
-            r.get('worldX', 0), r.get('worldY', 0))
+            r.get('worldX', 0), r.get('worldY', 0), letting(r))
 
 
 def link_row(w, link, position):
@@ -172,7 +177,7 @@ def npc_row(w, n, position):
     return (w, n['id'], position, n['name'], n['role'], n['description'], n['greeting'], n.get('personality', ''),
             n.get('backstory', ''), n['workLabel'], n['age'], n['voice'], dict(n['appearance']), n['route'] or None,
             n['paid'], n['purse'], n['herbs'], n['meals'], n['hours']['start'], n['hours']['end'],
-            *place(n['home']), *place(n['work']), *place(n['evening']))
+            *place(n['home']), *place(n['work']), *place(n['evening']), bool(n.get('joinable', False)))
 
 
 def slot_row(w, s, position):
@@ -189,7 +194,8 @@ def economy_row(w, economy):
 def _details(r):
     return {'z': r['z'], 'outdoors': r['outdoors'], 'weather': r['weather'],
             'lighting': {'artificial': num(r['light_artificial']), 'daylightAccess': num(r['light_daylight']), 'tone': r['light_tone']},
-            'territory': {'region': r['region'], 'claims': list(r.get('claims', [])), 'chapter': r['chapter']}}
+            'territory': {'region': r['region'], 'claims': list(r.get('claims', [])), 'chapter': r['chapter']},
+            **({'letting': dict(r['letting'])} if r.get('letting') else {})}
 
 
 def _anchor(r, k):
@@ -226,7 +232,8 @@ def _resident(r):
 def person_entity(r):
     return {'id': r['id'], 'name': r['name'], 'role': r['role'], 'description': r['description'], 'greeting': r['greeting'],
             'age': r['age'], 'appearance': r['appearance'], 'voice': r['voice'], **_resident(r),
-            'personality': r['personality'], 'backstory': r['backstory']}
+            'personality': r['personality'], 'backstory': r['backstory'],
+            **({'joinable': True} if r.get('joinable') else {})}
 
 
 def slot_entity(r):

@@ -511,6 +511,31 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             owner->personality = personality;
             owner->backstory = backstory;
         }
+        else if (command == "joinable")
+        {
+            // A resident who may travel with a party (Docs/Design/32, 2.3): follows its resident, once.
+            std::string id;
+            if (!quoted(fields, id) || !end(fields))
+                return reject("Malformed joinable record.");
+            const auto owner = std::find_if(roster.residents.begin(), roster.residents.end(),
+                                            [&](const ResidentSpec& r) { return r.id == id; });
+            if (owner == roster.residents.end() || owner->joinable)
+                return reject("Joinable must follow its resident, once: " + id);
+            owner->joinable = true;
+        }
+        else if (command == "let")
+        {
+            // A place to let (Docs/Design/32, 5.2): let "cell" "hall|warehouse" "landlord" rent level.
+            Letting l;
+            if (!quoted(fields, l.cell) || !quoted(fields, l.kind) || !quoted(fields, l.landlord))
+                return reject("Malformed let record.");
+            fields >> l.rent >> l.level;
+            if (!fields || !end(fields) || !identifier(l.cell, 48) || (l.kind != "hall" && l.kind != "warehouse") ||
+                (l.landlord != "treasury" && !identifier(l.landlord, 64)) || l.rent < 1 || l.rent > 100000 || l.level < 2 ||
+                l.level > 5 || candidate.lettings_.count(l.cell))
+                return reject("Invalid or duplicate let record.");
+            candidate.lettings_[l.cell] = l;
+        }
         else if (command == "wander")
         {
             std::string id;
@@ -613,6 +638,9 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             return reject("Territory references an unknown faction.");
         c->region = region; c->chapter = chapter; c->factionClaims = claims;
     }
+    for (const auto& [cell, l] : candidate.lettings_)
+        if (!candidate.cell(cell) || (l.landlord != "treasury" && !residentIds.count(l.landlord)))
+            return reject("A place to let names an unknown place or landlord: " + cell);
     for (const auto& [id, claims] : liveClaims)
     {
         auto* c = candidate.cell(id);

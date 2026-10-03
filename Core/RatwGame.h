@@ -412,6 +412,8 @@ class Game
     json::Value structuresView(const std::string& viewer, const std::string& cellId) const;
     json::Value campView(const std::string& viewer) const;
     json::Value sitesView(const std::string& chapterId) const;
+    std::string groundKey_;
+    void refreshGround();
     bool treatyAllows(const std::string& factionId, const std::string& chapterId, const std::string& what) const;
     // Halls and Holds (RatwGameHolds.cpp; doc 32, Phase 9).
     double holdAccumulator_ = 0;
@@ -421,6 +423,7 @@ class Game
     void holdTick(double dt);
     json::Value holdView(const std::string& chapterId, const std::string& viewer) const;
     std::string swornContext(const std::string& npcId) const;
+    void payToll(const std::string& who);
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

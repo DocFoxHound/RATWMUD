@@ -227,6 +227,13 @@ function checkShape(value) {
                     }
                 }
             }
+            if (own(c, 'letting') && c.letting !== null) {
+                // A place to let (Docs/Design/32, 5.2): kind, landlord (a person or "treasury"), weekly rent, level.
+                const l = c.letting;
+                check(object(l) && Object.keys(l).length === 4 && ['hall', 'warehouse'].includes(l.kind) && typeof l.landlord === 'string' &&
+                    integer(l.rent, 1, 100000) && integer(l.level, 2, 5),
+                    `${label} a place to let needs kind (hall or warehouse), landlord, rent (1-100000) and level (2-5).`);
+            }
             if (own(c, 'lighting')) {
                 const light = c.lighting;
                 check(object(light), `${label} lighting must be an object.`);
@@ -298,6 +305,7 @@ function checkShape(value) {
             check(ROLES.includes(p.role), `${label} role must be merchant, guard or civilian.`);
             check(integer(p.age, 0, 200), `${label} age must be a whole number from 0 to 200.`);
             check(integer(p.voice, 0, 31), `${label} voice color must be 0-31.`);
+            if (p.joinable !== undefined) check(typeof p.joinable === 'boolean', `${label} joinable must be true or false.`);
             check(typeof p.paid === 'boolean', `${label} paid must be true or false.`);
             check(typeof p.route === 'string' && (p.route === '' || ID.test(p.route)), `${label} route must be a route ID or empty.`);
             for (const [k, max] of [['purse', 100000], ['herbs', 10000], ['meals', 10000]])
@@ -335,7 +343,8 @@ function canonical(value) {
     const metadata = c => ({id: c.id, name: c.name, description: c.description,
         width: c.width, height: c.height, z: c.z, outdoors: c.outdoors, weather: c.weather,
         lighting: {...(c.lighting ?? defaultLighting())},
-        territory: {region: c.territory?.region ?? 'unassigned', claims: [...(c.territory?.claims ?? [])].sort(), chapter: c.territory?.chapter ?? ''}});
+        territory: {region: c.territory?.region ?? 'unassigned', claims: [...(c.territory?.claims ?? [])].sort(), chapter: c.territory?.chapter ?? ''},
+        ...(c.letting ? {letting: {kind: c.letting.kind, landlord: c.letting.landlord, rent: c.letting.rent, level: c.letting.level}} : {})});
     const person = p => ({id: p.id, name: p.name, role: p.role, description: p.description, greeting: p.greeting,
         workLabel: p.workLabel, age: p.age, voice: p.voice, route: p.route, paid: p.paid, purse: p.purse, herbs: p.herbs,
         meals: p.meals, hours: {start: p.hours.start, end: p.hours.end},
@@ -343,7 +352,7 @@ function canonical(value) {
             pattern: p.appearance.pattern, baseColor: p.appearance.baseColor, gradientColor: p.appearance.gradientColor,
             markingColor: p.appearance.markingColor},
         home: anchor(p.home), work: anchor(p.work), evening: anchor(p.evening),
-        personality: p.personality ?? '', backstory: p.backstory ?? ''});
+        personality: p.personality ?? '', backstory: p.backstory ?? '', ...(p.joinable ? {joinable: true} : {})});
     const slot = s => ({id: s.id, name: s.name, profession: s.profession, workLabel: s.workLabel, route: s.route, paid: s.paid,
         purse: s.purse, herbs: s.herbs, meals: s.meals, hours: {start: s.hours.start, end: s.hours.end},
         home: anchor(s.home), work: anchor(s.work), evening: anchor(s.evening)});
@@ -886,6 +895,17 @@ export function removeChapter(project, id) {
         if (!next.chapters.some(c => c.id === id)) fail(`Unknown chapter: ${id}.`);
         if ([...next.cells, ...next.rooms].some(c => c.territory.chapter === id)) fail('Chapter still has a site in a cell or room. Clear those sites before deleting it.');
         next.chapters = next.chapters.filter(c => c.id !== id);
+    });
+    return project;
+}
+
+/** A place to let (Docs/Design/32, 5.2), or none (null). */
+export function setLetting(project, id, letting) {
+    atomic(project, next => {
+        const cell = editable(next, id);
+        if (!cell) fail(`Unknown place: ${id}.`);
+        if (letting) cell.letting = clone(letting);
+        else delete cell.letting;
     });
     return project;
 }

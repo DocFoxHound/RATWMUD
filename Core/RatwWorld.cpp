@@ -808,7 +808,12 @@ class World::WalkingGrid final : public step::Grid
     {
         const auto* t = cell_.tile(x, y);
         if (t)
+        {
             out = groundOf(*t);
+            // A Chapter's built structure stands here (Docs/Design/32, 5.7).
+            if (const auto found = world_.obstacles.find(cell_.id); found != world_.obstacles.end() && found->second.count({x, y}))
+                out.solid = true;
+        }
         return t != nullptr;
     }
     bool closedDoor(int x, int y) const override { return world_.blockedByDoor(cell_.id, {x + .5, y + .5}); }
@@ -2855,7 +2860,8 @@ Result World::relocateResident(const std::string& id, const std::string& destina
     auto* actor = entity(id);
     const auto* targetCell = cell(destination);
     const auto* life = society_.resident(id);
-    if (!actor || !actor->npc || !life || life->role != "resident" || !actor->leaderId.empty() ||
+    // Ordinary residents: the demo's "resident" role, or an authored world's civilians (doc 32: settling at a Hold).
+    if (!actor || !actor->npc || !life || (life->role != "resident" && life->role != "civilian") || !actor->leaderId.empty() ||
         actor->state == "following" || !targetCell || !std::isfinite(x) || !std::isfinite(y) ||
         x < .5 || y < .5 || x > targetCell->width - .5 || y > targetCell->height - .5)
         return {false, "Choose an existing, non-recruited resident and a traversable home; essential jobs are protected.", id};
@@ -3473,7 +3479,11 @@ Environment World::environmentAt(const std::string& cellId, Vec2 at) const
     // Darkness changes sight only: it does not damage hearing or smell and
     // never secretly changes a selected gait or stamina recovery.
     // The weather where it was asked for (doc 29, phase 7): each effect as strong as the weather is there.
-    const auto here = weatherAt(cellId, at);
+    auto here = weatherAt(cellId, at);
+    // In the lee of a Chapter's tent or hall (Docs/Design/32, 5.7), the weather is a quarter as strong.
+    if (const auto found = shelters.find(cellId);
+        found != shelters.end() && found->second.count({int(std::floor(at.x)), int(std::floor(at.y))}))
+        here.intensity *= .25;
     out.weather = here.kind;
     out.intensity = here.intensity;
     const double clearLight = calendar::skyAt(calendarDays_, calendar::Weather::Clear).outdoorIllumination;

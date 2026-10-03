@@ -225,7 +225,15 @@ export class Dialogs {
         // Its Hold, its House, its treaties, the levies on it, and those sworn to it (doc 32, Phase 9).
         const hold = obj(ch, 'hold');
         if (str(hold, 'house')) el('div', 'label gold', this.panel, `RECOGNISED AS ${str(hold, 'house').toUpperCase()}`);
-        if (str(hold, 'claims')) el('div', 'small', this.panel, `The Chapter's Hold claims ${str(hold, 'claims')}.`);
+        if (str(hold, 'claims')) {
+            const row = el('div', 'story-row', this.panel);
+            el('span', 'small', row, `The Chapter's Hold claims ${str(hold, 'claims')} · toll ${num(hold, 'toll')}p for others coming in.`);
+            if (rank === 0)
+                button('SET TOLL', 'small', row, () => {
+                    const toll = window.prompt('Toll in pennies (0 to 5)', String(num(hold, 'toll')));
+                    if (toll !== null && /^[0-5]$/.test(toll.trim())) send({verb: 'toll', amount: +toll.trim()});
+                });
+        }
         const cols = el('div', 'sheet-cols', this.panel);
         const left = el('div', 'sheet-col', cols), right = el('div', 'sheet-col', cols);
         el('div', 'label gold', left, `RENOWN ${num(ch, 'renown')}`);
@@ -278,7 +286,8 @@ export class Dialogs {
             el('div', 'label gold', right, 'TREATIES AND LEVIES');
             for (const t of treaties)
                 el('div', 'small', right, `${str(t, 'faction')} · ${str(t, 'state') === 'pending' ? 'awaiting its word' : `${num(t, 'weeksLeft')} weeks left`}` +
-                    ` · ${bool(t, 'build') ? 'may build · ' : ''}${num(t, 'tithe')}p a week${bool(t, 'levy') ? ' · answers levies' : ''}`);
+                    ` · ${bool(t, 'build') ? 'may build · ' : ''}${num(t, 'tithe')}p a week${bool(t, 'levy') ? ' · answers levies' : ''}` +
+                    `${bool(t, 'labour') ? ' · its people free to join the Hold' : ''}`);
             for (const l of levies)
                 el('div', 'small', right, `LEVY: ${str(l, 'faction')} wants watch kept at ${str(l, 'place')} · ${num(l, 'minutes')} minutes still owed`);
         }

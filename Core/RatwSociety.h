@@ -188,6 +188,8 @@ struct ResidentSpec
     int herbs = 0, meals = 1;
     // A painted wander area (Dungeon Master): open tiles a civilian roams in work hours and evenings.
     std::vector<Spot> wander;
+    // May travel with a player's party (Atlas; Docs/Design/32, 2.3), at any hour.
+    bool joinable = false;
 };
 struct PatrolRoute
 {
@@ -244,6 +246,8 @@ class Society
     // A resident moves house (on marrying, say): they walk there and it becomes home on arrival. Unlike relocate()
     // (the Dungeon Master's migrations, which spare those in essential work), anyone may.
     bool moveHome(const std::string& resident, const std::string& cell, double x, double y);
+    // Two herb bundles become one prepared meal, in `who`'s stock (a player at a camp's cookfire). False without them.
+    bool cook(const std::string& who);
     // Moves existing money and goods between accounts, recorded as `kind` (a caravan's load, an escrowed reward, a
     // town's tithe). Nothing is made or lost; what the receiver can't hold stays put. False if nothing moved.
     bool shift(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins,

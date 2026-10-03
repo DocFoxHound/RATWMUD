@@ -67,6 +67,7 @@ struct Chapter
     // The Hold (Phase 9): the place it claims, and the faction that recognises it as a minor House.
     std::string claimCell, houseOf;
     std::set<std::string> sworn;                  // Residents sworn to it for life (members of no rank).
+    int toll = 0;                                 // Pennies asked of others coming into the place its Hold claims.
 };
 
 struct Proposal                                   // A founding waiting for its founders' word.

@@ -6,6 +6,9 @@
 #include "RatwGame.h"
 
 #include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <unistd.h>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -53,6 +56,37 @@ void leasesAlone()
     f.load(parsed(json::dump(e.save())));
     expect(f.property("loft") && f.lease("loft") && f.lease("loft")->guests.count("cy") && f.lease("loft")->notices.size() == 1,
            "saved and read, with what the DM made");
+}
+
+// Atlas's records (doc 32): `let` places to let and `joinable` residents, read from a world file, and refused when wrong.
+void authoredRecords()
+{
+    namespace fs = std::filesystem;
+    const fs::path source = RATW_SOURCE_DIR "/Data/Worlds/Greyfen";
+    const auto load = [&](const std::string& extra, World& w) {
+        const fs::path dir = fs::temp_directory_path() / ("ratw-let-" + std::to_string(::getpid()));
+        fs::remove_all(dir);
+        fs::copy(source, dir, fs::copy_options::recursive);
+        std::ofstream(dir / "world.ratw", std::ios::app) << extra;
+        const auto loaded = w.loadWorldFile((dir / "world.ratw").string());
+        fs::remove_all(dir);
+        return loaded;
+    };
+    World w;
+    const auto ok = load("let \"shop\" \"hall\" \"wren\" 30 2\njoinable \"harrow\"\n", w);
+    expect(ok.ok, "a world with a place to let and a joinable resident loads: " + ok.message);
+    expect(w.lettings().count("shop") && w.lettings().at("shop").landlord == "wren" && w.lettings().at("shop").rent == 30,
+           "the place to let is read");
+    expect(w.society().spec("harrow") && w.society().spec("harrow")->joinable && !w.society().spec("wren")->joinable,
+           "Harrow may travel with a party; Wren may not");
+    World bad;
+    expect(!load("let \"shop\" \"hall\" \"nobody\" 30 2\n", bad).ok, "an unknown landlord is refused");
+    World bad2;
+    expect(!load("let \"shop\" \"castle\" \"wren\" 30 2\n", bad2).ok, "an unknown kind is refused");
+    World bad3;
+    expect(!load("joinable \"nobody\"\n", bad3).ok, "an unknown resident is refused");
+    World bad4;
+    expect(!load("joinable \"harrow\"\njoinable \"harrow\"\n", bad4).ok, "once only");
 }
 
 struct Client final : game::Connection
@@ -214,6 +248,7 @@ int main()
     try
     {
         leasesAlone();
+        authoredRecords();
         rentingThroughTheGame();
     }
     catch (const std::exception& e)

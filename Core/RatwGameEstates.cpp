@@ -26,8 +26,13 @@ void Game::refreshEstates()
     for (const auto& [id, life] : world_.society().state().residents)
         if (!life.homeCell.empty())
             townCells_.insert(life.homeCell);
-    // Rooms above an inn ("<inn>, upstairs") from its keeper; warehouses from the town. A DM's own are kept.
+    // Rooms above an inn ("<inn>, upstairs") from its keeper; warehouses from the town. A DM's own are kept, and
+    // Atlas's (`let` records) come first.
     estates_.clearDerived();
+    for (const auto& [cellId, l] : world_.lettings())
+        if (const auto* c = world_.cell(cellId); c && !estates_.property(cellId))
+            estates_.define({cellId, c->name, l.kind, l.landlord, c->factionClaims.empty() ? std::string() : c->factionClaims.front(), l.rent,
+                             l.level});
     std::map<std::string, std::string> byName;
     for (const auto& [id, c] : world_.cells())
         byName[c.name] = id;

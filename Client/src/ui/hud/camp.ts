@@ -38,6 +38,8 @@ export class CampPanel {
                 button(built ? 'MEND' : 'WORK ON IT', 'small', row, () => send({verb: 'build', target: str(st, 'id')}));
             if (!built && num(st, 'progress') === 0) button('×', 'chip-x', row, () => send({verb: 'unplan', target: str(st, 'id')})).title = 'Take back the plan';
         }
+        if (bool(camp, 'cookfire'))
+            button('COOK A MEAL (2 HERBS)', 'small', this.body, () => send({verb: 'cook'})).title = 'Two bundles of herbs become a meal';
         el('div', 'label gold', this.body, 'PLAN HERE');
         const kinds = el('div', 'name-list', this.body);
         for (const k of arr(camp, 'kinds').filter(isObject))

@@ -56,16 +56,18 @@ std::string Game::whyNotJoin(const std::string& npcId) const
         return "They are in no state to travel.";
     if (parties_.of(npcId))
         return "They are already travelling with someone.";
-    // Those who keep the town running stay at it: traders, the Watch, and the cook, keeper and forager.
-    if (life->role != "resident" && life->role != "civilian")
+    // Those who keep the town running stay at it: traders, the Watch, and the cook, keeper and forager; unless Atlas
+    // marks them free to travel with a party.
+    const auto* spec = world_.society().spec(npcId);
+    const bool joinable = spec && spec->joinable;
+    if (life->role != "resident" && life->role != "civilian" && !joinable)
         return "Their work keeps them here.";
     if (e->quickened || e->age < battle::YoungestFighter || world_.warrantFor(npcId) || world_.custodyOf(npcId))
         return "They can't come.";
     if (life->task == "sleep")
         return "They are asleep.";
     const auto* job = world_.society().jobOf(npcId);
-    const auto* spec = world_.society().spec(npcId);
-    const bool roams = roving(job ? job->title : spec ? spec->workLabel : std::string());
+    const bool roams = joinable || roving(job ? job->title : spec ? spec->workLabel : std::string());
     if (job && !roams)
     {
         const double hour = world_.environmentAt(e->cellId).hour;

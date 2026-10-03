@@ -81,6 +81,18 @@ void Society::reset(Roster roster)
     state_.accounts["npc_smith"].stock["sword"] = SmithSwords;    // Ash keeps a few dull bronze blades for sale.
     record("initial funding", "outside", "settlement", "", 0, state_.minted);
 }
+bool Society::cook(const std::string& who)
+{
+    // Two herb bundles become one prepared meal (as the cook makes them): nothing made from nothing.
+    const auto found = state_.accounts.find(who);
+    if (found == state_.accounts.end() || stock(found->second, "herbs") < 2 || stock(found->second, "meal") >= StockLimit)
+        return false;
+    found->second.stock["herbs"] -= 2;
+    ++found->second.stock["meal"];
+    record("cook", who, who, "meal", 1, 0);
+    return true;
+}
+
 int Society::stock(const EconomyAccount& account, const std::string& item)
 {
     const auto it = account.stock.find(item);
@@ -112,7 +124,7 @@ bool Society::moveHome(const std::string& npc, const std::string& cell, double x
 bool Society::relocate(const std::string& npc, const std::string& cell, double x, double y)
 {
     auto found = state_.residents.find(npc);
-    if (found == state_.residents.end() || found->second.role != "resident" ||
+    if (found == state_.residents.end() || (found->second.role != "resident" && found->second.role != "civilian") ||
         !found->second.relocationCell.empty() || cell.empty() || cell.size() > 80 ||
         !validNumber(x, 0, 256) || !validNumber(y, 0, 256)) return false;
     auto& life = found->second;
@@ -816,7 +828,7 @@ bool Society::restore(const SocietyState& saved)
     // Operators can't move those in essential work (see relocate); the only other move is to a spouse's home.
     for (const auto& l : s.residents)
     {
-        if (l.second.relocationCell.empty() || l.second.role == "resident")
+        if (l.second.relocationCell.empty() || l.second.role == "resident" || l.second.role == "civilian")
             continue;
         const auto spouse = s.careers.spouses.find(l.first);
         const auto home = spouse == s.careers.spouses.end() ? s.residents.end() : s.residents.find(spouse->second);
