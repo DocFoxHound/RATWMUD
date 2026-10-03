@@ -4,7 +4,7 @@ import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, num, obj, objects
 import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
-import type {MotionFrame} from '../net/motion.ts';
+import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
 
 export interface Post {
@@ -184,6 +184,11 @@ export class GameState {
     private doorStates: DoorState[] = [];
     private cellVersion = 0;
     private walkerVersion = -1;
+    // Terrain shading worked out here (doc 31, Phase 4.6): which tiles the wolf sees, with the server's own sight
+    // rule, on reaching a new tile; the server then leaves its visibility rows out. Which tiles the page knows at all
+    // (the glyphs it was sent) stays the server's.
+    clientSight = false;
+    private sightKey = '';
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
     // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
     weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
@@ -300,8 +305,9 @@ export class GameState {
             this.tileRows = strings(rowsSource);
             ++this.cellVersion;
         }
+        // What the wolf sees: from the server, unless this page works it out itself (Phase 4.6: shadeTerrain).
         const seenSource = arr(s, 'visibility');
-        if (seenSource !== this.sources.visibility) {
+        if (!this.clientSight && seenSource !== this.sources.visibility) {
             this.sources.visibility = seenSource;
             this.visibilityRows = strings(seenSource);
         }
@@ -341,7 +347,8 @@ export class GameState {
         // A client that can walk its own wolf says so once it is in the world.
         if (self && this.walker && !this.walkAsked) {
             this.walkAsked = true;
-            this.send({type: 'walking', mode: 'client'});
+            this.clientSight = true;
+            this.send({type: 'walking', mode: 'client', sight: 'client'});
         }
         const present = new Set<string>();
         const list = objects(s, 'entities');
@@ -429,7 +436,12 @@ export class GameState {
                 view.moving = pose.moving;
             }
         }
-        for (const id of [...this.entities.keys()]) if (!this.motionVisible.has(id)) this.entities.delete(id);
+        // A wolf not in the frame has gone from sight, at once; but a partial frame leaves far wolves out (Phase 4.3):
+        // only one near enough that it would have been in it has gone.
+        const me = this.entities.get(this.selfId);
+        for (const [id, view] of [...this.entities])
+            if (!this.motionVisible.has(id) &&
+                (!frame.partial || !me || Math.hypot(view.x - me.x, view.y - me.y) <= FarAway - 1)) this.entities.delete(id);
         this.movementPending = false;
     }
 
@@ -554,6 +566,7 @@ export class GameState {
         if (this.typingSent && this.clock - this.lastTyping > 3) this.setTyping(false);
         if (this.chat && this.clock - this.lastTyping < 3 && (!this.typingSent || this.clock - this.lastTypingSent > 1)) this.setTyping(true);
         if (!this.chat && this.heldKeys.size && this.clock - this.lastMove > 0.075 && !this.freeWalking()) this.sendMove();
+        this.shadeTerrain();
         for (const post of this.posts)
             if (post.channel === 'ic' && post.revealed < post.text.length) {
                 if (this.revealSpeed === 0 || this.reducedMotion) post.revealed = post.text.length;
@@ -565,6 +578,37 @@ export class GameState {
                 }
                 break;
             }
+    }
+
+    // ------------------------------------------------------------------ Terrain shading
+
+    /** Works out again what the wolf sees, when it stands on a new tile or the cell, its doors or its sight changed. */
+    private shadeTerrain() {
+        if (!this.clientSight || !this.walker) return;
+        const self = obj(this.snapshot, 'self');
+        const me = this.entities.get(this.selfId);
+        if (!self || !me || !this.tileRows.length) return;
+        const x = this.freePose ? this.freePose.x : me.x, y = this.freePose ? this.freePose.y : me.y;
+        const range = num(self, 'sightRange', 0);
+        const key = `${this.cellId}|${this.cellVersion}|${Math.floor(x)},${Math.floor(y)}|${range}`;
+        if (key === this.sightKey) return;
+        this.sightKey = key;
+        if (this.walkerVersion !== this.cellVersion) {
+            this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates);
+            this.walkerVersion = this.cellVersion;
+        }
+        const seen = this.walker.sight(x, y, range);
+        const rows: string[] = [];
+        for (let ty = 0; ty < this.cellHeight; ++ty) {
+            const glyphs = this.tileRows[ty] ?? '';
+            let row = '';
+            for (let tx = 0; tx < this.cellWidth; ++tx) {
+                const known = (glyphs[tx] ?? ' ') !== ' ';
+                row += !known ? '0' : seen[ty * this.cellWidth + tx] ? '2' : '1';
+            }
+            rows.push(row);
+        }
+        this.visibilityRows = rows;
     }
 
     // ------------------------------------------------------------------ Walking freely

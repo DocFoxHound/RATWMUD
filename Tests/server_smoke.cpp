@@ -4,6 +4,7 @@
 #include "RatwJsonDoc.h"
 #include "RatwLink.h"
 #include "RatwMotionCore.h"
+#include "RatwPack.h"
 #include "RatwSections.h"
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
@@ -131,6 +132,7 @@ struct Link
     std::vector<json::Value> events, snapshots, motions;
     std::vector<std::string> pongs;                    // The server's own answers to link::Ping (the 8 bytes back).
     std::size_t stored = 0;                            // Messages that came uncompressed (small enough not to bother).
+    std::size_t packed = 0;                            // Snapshots that came packed (RatwPack.h), not as JSON.
     bool open(int port, const std::string& origin = {})
     {
         fd = connectTo(port);
@@ -251,7 +253,14 @@ struct Link
                 }
                 json::Value v;
                 std::string error;
-                expect(json::parse(std::string(bytes.begin(), bytes.end()), v, error), "JSON: " + error);
+                if (kind == link::PackedSnapshot)
+                {
+                    expect(pack::decode(std::string(bytes.begin(), bytes.end()), v), "a packed snapshot unpacks");
+                    kind = link::Snapshot;
+                    ++packed;
+                }
+                else
+                    expect(json::parse(std::string(bytes.begin(), bytes.end()), v, error), "JSON: " + error);
                 if (kind == link::Snapshot)
                 {
                     expect(sections::fill(v, cache), "a snapshot fills from what this client holds");
@@ -379,6 +388,7 @@ int main(int argc, char** argv)
             expect(!c.snapshots.empty() && std::abs(c.snapshots.back()["self"].number("x") - x) < .5, "Ash is where they were left");
             expect(c.motions.size() > 5 && !c.motions.back().isNull(), "motion frames over the WebSocket");
             expect(c.stored > 0, "small messages (motion frames) come uncompressed");
+            expect(c.packed > 0, "snapshots come packed");
             const double before = c.snapshots.back()["self"].number("x");
             c.command(R"({"type":"move","x":-1,"y":0})");
             c.read(1);

@@ -31,8 +31,11 @@ try {
         const gap = Math.hypot(settled.x - settled.sx, settled.y - settled.sy);
         if (settled.mode !== 0) failed = `not free movement (mode ${settled.mode})`;
         else if (settled.corrections) failed = `${settled.corrections} pose(s) refused by the server`;
+        else if (!(await page.evaluate(`(() => { const s = window.ratw.game().state;
+            return s.clientSight && !('visibility' in s.snapshot) && s.visibilityRows.some(r => r.includes('2')); })()`)))
+            failed = 'the page did not shade the terrain itself (or the server still sent its visibility)';
         else if (gap > 0.05) failed = `the server's position did not follow the page's (${gap.toFixed(3)} tiles apart)`;
-        else console.log(`PASS: walked ${moved.key} on the page; the server followed to within ${gap.toFixed(3)} tiles`);
+        else console.log(`PASS: walked ${moved.key} on the page; the server followed to within ${gap.toFixed(3)} tiles; the page shades what it sees`);
     }
 } catch (error) {
     failed = String(error);

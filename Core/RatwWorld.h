@@ -371,12 +371,11 @@ class World
     {
         return entities_;
     }
-    // The ids of the entities in a cell (doc 31, Phase 4): an index rebuilt each tick, and when one is added, removed
-    // or goes through a door, so a view or a motion frame looks at its own cell, not the whole world. Ids, never
-    // pointers (entities are replaced in place): a caller finds each and skips one no longer there or no longer in
-    // that cell.
-    const std::vector<std::string>& idsIn(const std::string& cellId) const;
-    // Builds the lazy indexes views read (idsIn's, the doors in each cell), so views built on several threads at once
+    // The entities in a cell (doc 31, Phase 4): an index rebuilt each tick, and whenever one is added, erased or goes
+    // through a door, so a view or a motion frame looks at its own cell, not the whole world. A caller still skips one
+    // whose cellId is no longer that cell (moved by something the index didn't hear of, until the next rebuild).
+    const std::vector<const Entity*>& entitiesIn(const std::string& cellId) const;
+    // Builds the lazy indexes views read (entitiesIn's, the doors in each cell), so views built on several threads at once
     // only read them (doc 31, Phase 4). Call it after the world last changed and before the views.
     void prepareReading() const;
     // How work is spread over threads (the game's pool: doc 31, Phase 4): run(count, job) calls job(i) for every i
@@ -909,10 +908,23 @@ class World
     };
     mutable std::map<std::string, Regions> regions_;
     std::uint64_t ticks_ = 0;                       // Ticks begun; `ticking_` while one runs.
-    mutable std::unordered_map<std::string, std::vector<std::string>> cellIndex_;   // idsIn's index.
-    mutable std::uint64_t indexTick_ = ~0ULL;
-    mutable std::size_t indexSize_ = 0;
-    mutable bool indexDirty_ = true;
+    // entitiesIn's index. A copy of the world starts with none (its pointers would be into the other world's entities).
+    struct CellIndex
+    {
+        std::unordered_map<std::string, std::vector<const Entity*>> cells;
+        std::uint64_t tick = ~0ULL;
+        std::size_t size = 0;
+        bool dirty = true;
+        CellIndex() = default;
+        CellIndex(const CellIndex&) {}
+        CellIndex& operator=(const CellIndex&)
+        {
+            cells.clear();
+            dirty = true;
+            return *this;
+        }
+    };
+    mutable CellIndex index_;
     Parallel parallel_;
     bool ticking_ = false;
     // The cell's region map, validated once a tick (outside a tick, on every call: it checksums every tile); null for

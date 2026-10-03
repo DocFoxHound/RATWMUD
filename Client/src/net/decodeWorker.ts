@@ -1,6 +1,7 @@
 // Inflating and parsing the server's messages away from the page's own thread, so a large snapshot never costs a
 // frame. Messages come back in the order they went in; the connection hands them on in that order.
 import {decodeMessage, Kind} from './wire.ts';
+import {unpackValue} from './pack.ts';
 
 export type Decoded =
     | {seq: number; kind: typeof Kind.Motion; raw: Uint8Array}
@@ -15,6 +16,12 @@ export function decode(seq: number, data: ArrayBuffer): Decoded {
     if (!arrival) return {seq, kind: 0};
     if (arrival.kind === Kind.Motion) return {seq, kind: Kind.Motion, raw: arrival.raw};
     let value: unknown;
+    if (arrival.kind === Kind.PackedSnapshot) {
+        // Packed (doc 31, Phase 4.8): read straight into the objects the JSON would have made.
+        value = unpackValue(arrival.raw);
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) return {seq, kind: 0};
+        return {seq, kind: Kind.Snapshot, value: value as Record<string, unknown>, wireBytes: arrival.wireBytes};
+    }
     try {
         value = JSON.parse(decoder.decode(arrival.raw));
     } catch {

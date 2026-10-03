@@ -35,6 +35,8 @@ enum Kind : std::uint8_t
     Snapshot = 11,
     Motion = 12,
     Pong = 13,
+    // A snapshot in the packed binary form (RatwPack.h), in place of JSON (doc 31, Phase 4.8): the same framing.
+    PackedSnapshot = 14,
 };
 constexpr std::uint32_t Stored = 0x80000000u;
 constexpr std::size_t StoreBelow = 1024;          // Bytes: smaller messages aren't worth compressing.

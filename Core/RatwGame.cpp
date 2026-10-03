@@ -1107,10 +1107,10 @@ void Game::updateMovementModes()
                  !e->path.empty() || world_.travelState(id).active)
             mode = HeldMovement;                   // (A route or a journey the server walks counts as held too.)
         else
-            for (const auto& otherId : world_.idsIn(e->cellId))
-                if (const auto* other = world_.entity(otherId); other && other->cellId == e->cellId && other->npc && !other->dead &&
+            for (const Entity* other : world_.entitiesIn(e->cellId))
+                if (other->cellId == e->cellId && other->npc && !other->dead &&
                     std::hypot(other->position.x - e->position.x, other->position.y - e->position.y) <= HostileNear &&
-                    world_.hostile(otherId))
+                    world_.hostile(other->id))
                 {
                     mode = HeldMovement;
                     break;
@@ -1641,9 +1641,11 @@ void Game::tick(double dt)
             }
         // Each player's frame reads the world and writes only its own client's state: all at once on the pool.
         world_.prepareReading();
+        ++frameTick_;
         const auto frameFor = [&](Connection* c) {
             const auto* e = world_.entity(c->entityId);
-            auto frame = motion::frame(world_, e->id);
+            // Far wolves in one frame of four for each client (by a phase of its own, so the full ones spread out).
+            auto frame = motion::frame(world_, e->id, (frameTick_ + c->id) % 4 == 0);
             stampFrame(c, frame, e->cellId);
             c->motion(frame);
         };
@@ -1798,10 +1800,9 @@ void Game::movementSounds()
         const auto* me = world_.entity(listener);
         const double range = world_.sightRange(*me);
         double best = 0;
-        for (const auto& id : world_.idsIn(me->cellId))   // (Footsteps carry within the cell.)
-            if (const auto* e = world_.entity(id); e && !e->npc && id != listener && e->cellId == me->cellId &&
-                                                   world_.visionClarity(*me, *e, range) <= 0)
-                best = std::max(best, world_.movementAudibility(listener, id));
+        for (const Entity* e : world_.entitiesIn(me->cellId))   // (Footsteps carry within the cell.)
+            if (!e->npc && e->id != listener && e->cellId == me->cellId && world_.visionClarity(*me, *e, range) <= 0)
+                best = std::max(best, world_.movementAudibility(listener, e->id));
         loudest[i] = best;
     };
     if (pool_)
@@ -1896,6 +1897,7 @@ void Game::sendSnapshot(Connection* c)
     if (const auto* me = world_.entity(id))
     {
         self.set("walkSpeed", paceSpeed(*me));
+        self.set("sightRange", world_.sightRange(*me));    // (For a client shading the terrain itself.)
         self.set("moveFactor", world_.environmentAt(me->cellId, me->position).movement);
     }
     root.add("self", self);
@@ -1994,7 +1996,8 @@ void Game::sendSnapshot(Connection* c)
     }
     cell.add("rows", kept.rows);
     cell.add("heights", kept.heights);
-    root.add("visibility", kept.visibility);
+    if (!c->clientSight)                           // (It works out what it sees itself: Phase 4.6.)
+        root.add("visibility", kept.visibility);
     root.add("cell", cell);
     const auto near = [&](const Entity& e) {
         return std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 3;
@@ -2119,8 +2122,8 @@ void Game::sendSnapshot(Connection* c)
     item("token", "Wooden token", "token", "A smooth keepsake carved with a branch.", false, 1);
     root.add("inventory", inventory);
     const Entity* trader = nullptr;
-    for (const auto& eid : world_.idsIn(view.self.cellId))   // (Its own cell's: doc 31, Phase 4.)
-        if (const auto* e = world_.entity(eid); e && e->cellId == view.self.cellId && world_.society().merchant(eid))
+    for (const Entity* e : world_.entitiesIn(view.self.cellId))   // (Its own cell's: doc 31, Phase 4.)
+        if (e->cellId == view.self.cellId && world_.society().merchant(e->id))
             trader = e;
     const auto* traderLife = trader ? world_.society().resident(trader->id) : nullptr;
     if (trader && purse && trader->posture != "lying" && (!traderLife || traderLife->task != "sleep") &&
@@ -2193,7 +2196,7 @@ void Game::finishSnapshot(Connection* c, json::Value root, double revision)
 {
     if (!options_.fullSnapshots)
         c->held.sending(revision, sections::strip(root, c->held.known, &c->held.bases));
-    c->snapshot(json::dump(root));
+    c->snapshotValue(root);
 }
 
 
@@ -2664,6 +2667,7 @@ void Game::command(Connection* c, const std::string& raw)
     {
         // The client walks its own wolf where it may (free movement), and says where it is with "pose".
         c->clientWalking = j.string("mode") == "client";
+        c->clientSight = j.string("sight") == "client";
         world_.setClientWalks(id, c->clientWalking && c->movementMode == FreeMovement && !c->keysWalking);
     }
     else if (type == "pose")

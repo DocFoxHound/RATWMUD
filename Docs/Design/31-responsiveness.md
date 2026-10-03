@@ -517,13 +517,42 @@ are the residents' schedules and route planning (`RATW_PERF_WORLD` worst), which
 **Gate 2** (250) is not met: 37.8 ms mean. **What is left is mostly the world's own tick**, which runs on one thread:
 residents walking, separation, schedules and route planning. Players' work now spreads over the cores.
 
-**Not done, and why:**
-- **Far wolves less often** (4.3). The client would have to keep a wolf missing from a frame rather than drop it.
-  Motion is already under 2 ms at 250 players.
-- **Terrain shading on the client** (4.6) and **binary snapshots** (4.8). Snapshots are already 5 KB, and their JSON
-  is written on the pool.
-- **Integer handles** throughout (4.1). The per-cell index gave most of the gain without touching every use of an id.
-- **A network thread** (4.11).
+**Then the rest, built the same day** (the parts first left out, done at the user's asking):
+
+- **Entity pointers in the cell index** (4.1, in place of integer handles throughout). `World::entitiesIn(cell)` holds
+  pointers:
+  - every erase marks the index stale
+  - a copy of the world starts with none
+  - views, motion frames, pawsteps and the trader search no longer look ids up
+- **Far wolves less often** (4.3):
+  - Wolves more than 24 tiles away go in one motion frame of four, at a phase of each client's own.
+  - The frame says it is partial. On such a frame the client drops only a missing wolf near enough that it would
+    have been in it, so a wolf gone from sight close by still goes at once.
+  - The saving is small in a city, where almost everything a wolf sees is within 24 tiles.
+- **Binary snapshots** (4.8, `Core/RatwPack.h`, `Client/src/net/pack.ts`):
+  - The same value tree as the JSON, packed: whole numbers as varints, others as float32 where that is exact, and
+    strings and keys numbered the second time they appear.
+  - The client reads it into the very same objects, so nothing that uses a snapshot changed.
+  - The server sends `link::PackedSnapshot`; tests and other hosts still get JSON (`Connection::snapshotValue`).
+  - A golden file holds both sides to the same bytes.
+  - Snapshots fell from 5.0 to 3.7 KB raw.
+- **A network thread** (4.11). `ratw_server`'s sockets are now on a thread of their own:
+  - accepting, reading, WebSocket and HTTP parsing, the client's files, writing
+  - the latency ping is answered there at once
+  - The game thread takes each client's messages from a queue (woken by an `eventfd`) and writes replies into each
+    client's buffer, under its lock. The network thread is woken only when a buffer goes from empty to non-empty.
+  - Clients are shared pointers, so one gone is never freed under the game.
+  - ThreadSanitizer is clean over the whole server smoke (735 checks); the browser and Dungeon Master smokes pass.
+- **Terrain shading on the page** (4.6):
+  - **The shared rule:** line of sight is now one template (`Core/RatwSight.h`) that `World::lineOfSight` and the
+    WebAssembly module both run.
+  - **What the page does:** it asks (`"sight": "client"`), works out which tiles its wolf sees when it reaches a new
+    tile, and marks seen, remembered and unknown itself. The server leaves its visibility rows out and sends
+    `self.sightRange`.
+  - **What stays with the server:** which tiles the page knows at all (the glyphs it is sent), and which wolves it is
+    shown.
+  - **Checks:** a golden of the demo exterior (two heights, a door, tiles hidden behind others) holds the server's
+    sight and the page's to the same tiles, with none different.
 
 ### Phase 5. Smooth the spikes
 

@@ -1,8 +1,11 @@
-// The browser's walking (Docs/Design/31-responsiveness.md, Phase 3): the server's own rules (Core/RatwStep.h),
-// compiled to WebAssembly by tools/build_wasm.sh into Client/src/wasm/walk.wasm. The page puts the cell it holds into
-// the grid (Client/src/game/walker.ts) and asks for one step at a time; the server checks every pose it is sent.
+// The browser's walking and sight (Docs/Design/31-responsiveness.md, Phases 3 and 4.6): the server's own rules
+// (Core/RatwStep.h, Core/RatwSight.h), compiled to WebAssembly by tools/build_wasm.sh into Client/src/wasm/walk.wasm.
+// The page puts the cell it holds into the grid (Client/src/game/walker.ts) and asks for one step at a time, and for
+// what its wolf can see when it reaches a new tile; the server checks every pose it is sent.
+#include "RatwSight.h"
 #include "RatwStep.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <vector>
@@ -11,18 +14,30 @@ using namespace ratw::step;
 
 namespace
 {
-// One tile as the page writes it: 12 bytes, little-endian.
+// One tile as the page writes it: 16 bytes, little-endian.
 struct Tile
 {
     float height;
     float cost;
-    std::uint8_t solid, ramp, closedDoor, known;
+    float stature;                                // How far what stands on it rises, for sight.
+    std::uint8_t solid, ramp, closedDoor, opaque;
 };
-static_assert(sizeof(Tile) == 12, "the page writes 12-byte tiles");
+static_assert(sizeof(Tile) == 16, "the page writes 16-byte tiles");
 
 int width = 0, height = 0;
 std::vector<Tile> tiles;
+std::vector<std::uint8_t> seen;
 double result[3];
+
+// The grid as sight (RatwSight.h) asks for it.
+struct SightGrid
+{
+    const Tile* tile(int x, int y) const
+    {
+        return x < 0 || y < 0 || x >= width || y >= height ? nullptr : &tiles[std::size_t(y) * std::size_t(width) + std::size_t(x)];
+    }
+    bool closedAt(int x, int y, double, double) const { return tile(x, y)->closedDoor != 0; }
+};
 
 class Cell final : public Grid
 {
@@ -51,7 +66,8 @@ __attribute__((export_name("walk_grid"))) Tile* walkGrid(int w, int h)
 {
     width = w > 0 && h > 0 && w <= 4096 && h <= 4096 ? w : 0;
     height = width ? h : 0;
-    tiles.assign(std::size_t(width) * std::size_t(height), Tile{0, 1, 0, 0, 0, 0});
+    tiles.assign(std::size_t(width) * std::size_t(height), Tile{0, 1, 0, 0, 0, 0, 0});
+    seen.assign(tiles.size(), 0);
     return tiles.data();
 }
 
@@ -85,5 +101,25 @@ __attribute__((export_name("walk_passable"))) int walkPassable(double x, double 
     Ground from;
     const bool known = groundAt(fx, fy, from);
     return passable(grid, {x, y}, known ? &from : nullptr) ? 1 : 0;
+}
+
+// What a wolf at (x, y) with this sight range can see: one byte a tile (1 seen), in the grid's order, as
+// World::visibleTileMask works it out on the server.
+__attribute__((export_name("walk_sight"))) std::uint8_t* walkSight(double x, double y, double range)
+{
+    std::fill(seen.begin(), seen.end(), 0);
+    if (!(range > 0) || !width)
+        return seen.data();
+    const int x0 = std::max(0, int(std::floor(x - range))), x1 = std::min(width - 1, int(std::ceil(x + range)));
+    const int y0 = std::max(0, int(std::floor(y - range))), y1 = std::min(height - 1, int(std::ceil(y + range)));
+    const SightGrid grid;
+    for (int ty = y0; ty <= y1; ++ty)
+        for (int tx = x0; tx <= x1; ++tx)
+        {
+            const double px = tx + .5, py = ty + .5;
+            if (std::hypot(px - x, py - y) <= range && ratw::sight::lineOfSight(grid, width, height, x, y, px, py))
+                seen[std::size_t(ty) * std::size_t(width) + std::size_t(tx)] = 1;
+        }
+    return seen.data();
 }
 }

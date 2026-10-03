@@ -122,7 +122,7 @@ struct Reader
 };
 } // namespace
 
-Value frame(const World& world, const std::string& observer)
+Value frame(const World& world, const std::string& observer, bool full)
 {
     auto root = Value::object();
     const auto* self = world.entity(observer);
@@ -133,14 +133,16 @@ Value frame(const World& world, const std::string& observer)
     root.add("time", world.time());
     auto poses = Value::array();
     const double range = world.sightRange(*self);       // Once per frame, not per wolf (doc 31, Phase 4).
-    for (const auto& id : world.idsIn(self->cellId))  // Its own cell's wolves (doc 31, Phase 4).
+    for (const Entity* found : world.entitiesIn(self->cellId))  // Its own cell's wolves (doc 31, Phase 4).
     {
-        const auto* found = world.entity(id);
-        if (!found)
-            continue;
         const auto& e = *found;
+        const auto& id = e.id;
         const bool isSelf = id == observer;
-        if (e.cellId != self->cellId || (!isSelf && world.visionClarity(*self, e, range) <= 0))
+        if (e.cellId != self->cellId)
+            continue;
+        if (!full && !isSelf && std::hypot(e.position.x - self->position.x, e.position.y - self->position.y) > FarAway)
+            continue;                              // Far: in the full frames only.
+        if (!isSelf && world.visionClarity(*self, e, range) <= 0)
             continue;
         auto pose = Value::object();
         pose.add("id", e.id);
@@ -152,6 +154,7 @@ Value frame(const World& world, const std::string& observer)
         poses.push(pose);
     }
     root.add("entities", poses);
+    root.add("partial", !full);
     return root;
 }
 
@@ -182,6 +185,7 @@ std::vector<std::uint8_t> pack(const Value& f)
     put<std::uint8_t>(out, std::uint8_t(f.number("mode")));
     put<std::uint32_t>(out, std::uint32_t(f.number("inputAck")));
     put<std::uint32_t>(out, std::uint32_t(f.number("poseAck")));
+    put<std::uint8_t>(out, f.boolean("partial") ? 1 : 0);
     return out;
 }
 
@@ -217,6 +221,7 @@ Value unpack(const std::vector<std::uint8_t>& bytes)
     root.add("mode", int(in.get<std::uint8_t>()));
     root.add("inputAck", double(in.get<std::uint32_t>()));
     root.add("poseAck", double(in.get<std::uint32_t>()));
+    root.add("partial", in.get<std::uint8_t>() != 0);
     if (in.bad || in.at != bytes.size())
         return {};
     return root;

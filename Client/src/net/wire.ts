@@ -7,8 +7,8 @@
 //                    itself, for the latency overlay of Docs/Design/31-responsiveness.md)
 import {inflate} from './inflate.ts';
 
-export const Kind = {Command: 1, Ack: 2, Ping: 3, Pose: 4, Event: 10, Snapshot: 11, Motion: 12, Pong: 13} as const;
-export type ServerKind = typeof Kind.Event | typeof Kind.Snapshot | typeof Kind.Motion;
+export const Kind = {Command: 1, Ack: 2, Ping: 3, Pose: 4, Event: 10, Snapshot: 11, Motion: 12, Pong: 13, PackedSnapshot: 14} as const;
+export type ServerKind = typeof Kind.Event | typeof Kind.Snapshot | typeof Kind.Motion | typeof Kind.PackedSnapshot;
 export const MaxCommand = 65536;
 export const MaxRaw = 16 << 20;
 /** The raw length's top bit: the payload is the raw bytes themselves, not compressed (small messages: doc 31, Phase 4). */
@@ -74,7 +74,7 @@ export function decodeMessage(data: ArrayBuffer | Uint8Array): Arrival | null {
     const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
     if (bytes.length < 6) return null;
     const kind = bytes[0];
-    if (kind !== Kind.Event && kind !== Kind.Snapshot && kind !== Kind.Motion) return null;
+    if (kind !== Kind.Event && kind !== Kind.Snapshot && kind !== Kind.Motion && kind !== Kind.PackedSnapshot) return null;
     const length = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(1, true);
     if (length >= Stored) {
         const raw = bytes.subarray(5);

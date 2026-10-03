@@ -10,11 +10,16 @@
 //            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never),
 //            --workers N (threads finishing players' snapshots in parallel; by default the cores less two, 0 for none)
 //
+// Two threads (doc 31, Phase 4.11): the network thread owns the sockets (accepting, reading, the WebSocket and HTTP
+// parsing, the client's files, pings, writing); the game thread runs the game, taking each client's messages from a
+// queue the network thread fills, and writing its replies into each client's buffer for the network thread to send.
+//
 // Exits 75 when a new release has been published and nobody is playing (tools/live.sh restarts it on the new build).
 #include "RatwAccountsCore.h"
 #include "RatwGame.h"
 #include "RatwLink.h"
 #include "RatwMotionCore.h"
+#include "RatwPack.h"
 #include "RatwPerf.h"
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
@@ -39,6 +44,11 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <atomic>
+#include <deque>
+#include <mutex>
+#include <poll.h>
+#include <sys/eventfd.h>
 #include <thread>
 #include <vector>
 
@@ -52,6 +62,10 @@ void stop(int) { stopping = 1; }
 // Replaceable frames (snapshots, motion) are dropped for a client this far behind; past the second, it is let go.
 constexpr std::size_t DropReplaceableAt = 4u << 20, DisconnectAt = 32u << 20;
 
+class Network;
+bool readFile(const std::string& path, std::string& out);
+void blocking(int fd, bool on);
+
 class Client final : public game::Connection
 {
   public:
@@ -60,16 +74,28 @@ class Client final : public game::Connection
         Http,                                       // Serving a file, or about to become a WebSocket.
         WebSocket,                                  // A browser (or a test) playing.
     };
+    // The network thread's alone.
     int fd = -1;
-    std::string address, in, out;
+    std::string in;
     Mode mode = Mode::Http;
     web::Reader reader;
-    bool closing = false, local = false, playing = false, finishing = false;
     bool watchingOut = false;                       // epoll also wakes for this socket being writable.
-    std::size_t dropped = 0;
+    // Set once at accept.
+    std::string address;
+    bool local = false;
+    // The game thread's alone: it has been shown the lobby (Game::connect) and not yet let go.
+    bool playing = false;
+    // Shared, under `lock`: what is waiting to be sent, and whether the connection is ending.
+    std::mutex lock;
+    std::string out;
+    std::atomic<bool> closing{false}, finishing{false};
+    std::atomic<std::size_t> dropped{0};
+    Network* network = nullptr;
 
     void event(const std::string& json) override { queue(link::Event, json, false); }
     void snapshot(const std::string& json) override { queue(link::Snapshot, json, true); }
+    // Packed, not JSON (doc 31, Phase 4.8): quicker to write and to read, and smaller.
+    void snapshotValue(const json::Value& root) override { queue(link::PackedSnapshot, pack::encode(root), true); }
     void motion(const json::Value& frame) override
     {
         const auto bytes = motion::pack(frame);
@@ -78,29 +104,406 @@ class Client final : public game::Connection
     bool allowsLocalCredentials() const override { return local; }
     // Sends what is queued and then closes (an HTTP response, a WebSocket closing handshake).
     void finish() { finishing = true; }
+    // Raw bytes (a frame or an HTTP response) for the network thread to send.
+    void append(const std::string& bytes);
 
   private:
-    void queue(link::Kind kind, const std::string& raw, bool replaceable)
+    void queue(link::Kind kind, const std::string& raw, bool replaceable);
+};
+
+// The sockets, on a thread of their own.
+class Network
+{
+  public:
+    struct Message
     {
-        if (closing || finishing)
+        enum Type
+        {
+            Connected,                              // A WebSocket opened: the game shows it the lobby.
+            Received,                               // One of the game's messages from it.
+            Gone,                                   // It has closed: the game lets it go.
+        } type;
+        std::shared_ptr<Client> client;
+        link::Kind kind = link::Command;
+        std::string payload;
+    };
+
+    Network(int listener, std::string webRoot) : listener_(listener), webRoot_(std::move(webRoot))
+    {
+        events_ = ::epoll_create1(EPOLL_CLOEXEC);
+        wake_ = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        gameWake_ = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        watch(listener_, false, EPOLL_CTL_ADD);
+        watch(wake_, false, EPOLL_CTL_ADD);
+    }
+    ~Network()
+    {
+        stopNow();
+        ::close(events_);
+        ::close(wake_);
+        ::close(gameWake_);
+    }
+    void start() { thread_ = std::thread([this] { run(); }); }
+    void stopNow()
+    {
+        if (!thread_.joinable())
             return;
+        stop_ = true;
+        signal(wake_);
+        thread_.join();
+    }
+    // Waits until a message is queued for the game, or `ms` pass.
+    void waitForGame(int ms)
+    {
+        pollfd p{gameWake_, POLLIN, 0};
+        if (::poll(&p, 1, std::max(0, ms)) > 0)
+        {
+            std::uint64_t n;
+            [[maybe_unused]] const auto r = ::read(gameWake_, &n, sizeof n);
+        }
+    }
+    std::vector<Message> take()
+    {
+        std::lock_guard<std::mutex> guard(inboxLock_);
+        std::vector<Message> out;
+        out.swap(inbox_);
+        return out;
+    }
+    // A client has output (or is ending): the network thread sends it.
+    void wantWrite(Client* c)
+    {
+        {
+            std::lock_guard<std::mutex> guard(writeLock_);
+            writable_.push_back(c->fd);
+        }
+        signal(wake_);
+    }
+    // Every client still open, after the thread has stopped (to let them go as the server stops).
+    std::vector<std::shared_ptr<Client>> remaining()
+    {
+        std::vector<std::shared_ptr<Client>> out;
+        for (auto& [fd, c] : clients_)
+            out.push_back(c);
+        return out;
+    }
+    void closeAll()
+    {
+        for (auto& [fd, c] : clients_)
+            ::close(fd);
+        clients_.clear();
+    }
+    std::size_t connected() const { return connected_.load(); }
+
+  private:
+    static void signal(int fd)
+    {
+        const std::uint64_t one = 1;
+        [[maybe_unused]] const auto r = ::write(fd, &one, sizeof one);
+    }
+    void watch(int fd, bool out, int op)
+    {
+        epoll_event e{};
+        e.events = EPOLLIN | (out ? EPOLLOUT : 0u);
+        e.data.fd = fd;
+        ::epoll_ctl(events_, op, fd, &e);
+    }
+    void post(Message m)
+    {
+        {
+            std::lock_guard<std::mutex> guard(inboxLock_);
+            inbox_.push_back(std::move(m));
+        }
+        signal(gameWake_);
+    }
+    // Writes what it can; anything left waits for the socket to be writable.
+    void flush(Client& c)
+    {
+        bool left;
+        {
+            std::lock_guard<std::mutex> guard(c.lock);
+            if (!c.out.empty())
+            {
+                const auto n = ::send(c.fd, c.out.data(), c.out.size(), MSG_NOSIGNAL);
+                if (n > 0)
+                    c.out.erase(0, std::size_t(n));
+                else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+                    c.closing = true;
+            }
+            left = !c.out.empty();
+            if (c.finishing && !left)
+                c.closing = true;
+        }
+        if (left != c.watchingOut && !c.closing)
+        {
+            c.watchingOut = left;
+            watch(c.fd, left, EPOLL_CTL_MOD);
+        }
+    }
+    void drop(int fd)
+    {
+        const auto found = clients_.find(fd);
+        if (found == clients_.end())
+            return;
+        auto c = found->second;
+        c->closing = true;
+        ::close(fd);
+        clients_.erase(found);
+        if (c->mode == Client::Mode::WebSocket)
+        {
+            --connected_;
+            post({Message::Gone, c});
+        }
+    }
+    // An HTTP request: the game's WebSocket, or one of the client's files.
+    void serve(const std::shared_ptr<Client>& c, const web::Request& r)
+    {
+        if (r.path == web::GamePath)
+        {
+            if (!web::upgradeRequested(r))
+                c->append(web::response(426, "text/plain; charset=utf-8", "The game is played over a WebSocket.\n", "Upgrade: websocket\r\n"));
+            else if (!web::originAllowed(r))
+                c->append(web::response(403, "text/plain; charset=utf-8", "This page may not open the game.\n"));
+            else if (const std::string accept = web::acceptKey(r.header("sec-websocket-key")); accept.empty())
+                c->append(web::response(500, "text/plain; charset=utf-8", "The server cannot accept WebSockets.\n"));
+            else
+            {
+                c->append(web::handshake(accept));
+                c->mode = Client::Mode::WebSocket;
+                ++connected_;
+                post({Message::Connected, c});
+                return;
+            }
+            c->finish();
+            return;
+        }
+        std::string relative, body;
+        if (r.method != "GET" && r.method != "HEAD")
+            c->append(web::response(405, "text/plain; charset=utf-8", "Only GET.\n", "Allow: GET, HEAD\r\n"));
+        else if (webRoot_.empty() || !web::filePath(r.path, relative) || !readFile(webRoot_ + "/" + relative, body))
+            c->append(web::response(404, "text/plain; charset=utf-8", webRoot_.empty() ? "This server has no client to serve (--web).\n" : "Not found.\n"));
+        else
+        {
+            // Built assets have content hashes in their names, so they never change; the page itself always might.
+            const bool immutable = relative.rfind("assets/", 0) == 0;
+            std::string reply = web::response(200, web::contentType(relative), body,
+                                              immutable ? "Cache-Control: public, max-age=31536000, immutable\r\n" : "Cache-Control: no-cache\r\n");
+            if (r.method == "HEAD")
+                reply.resize(reply.size() - body.size());
+            c->append(reply);
+        }
+        c->finish();
+    }
+    // Everything a client has sent so far, by what kind of connection it turned out to be.
+    void handle(const std::shared_ptr<Client>& c)
+    {
+        if (c->mode == Client::Mode::Http && !c->finishing)
+        {
+            web::Request r;
+            const int got = web::takeRequest(c->in, r);
+            if (got < 0)
+            {
+                c->append(web::response(400, "text/plain; charset=utf-8", "Bad request.\n"));
+                c->finish();
+            }
+            else if (got > 0)
+                serve(c, r);
+        }
+        if (c->mode != Client::Mode::WebSocket)
+            return;
+        web::Opcode op;
+        std::string payload;
+        int got;
+        while (!c->closing && !c->finishing && (got = web::takeMessage(c->in, c->reader, op, payload, link::MaxCommand + 1)) != 0)
+        {
+            const auto end = [&](int status) {
+                const char code[2] = {char(status >> 8), char(status & 255)};
+                std::string frame;
+                web::appendFrame(frame, web::Close, code, 2);
+                c->append(frame);
+                c->finish();
+            };
+            if (got < 0)
+                end(1002);                         // Protocol error.
+            else if (op == web::Ping)
+            {
+                std::string frame;
+                web::appendFrame(frame, web::Pong, payload.data(), payload.size());
+                c->append(frame);
+            }
+            else if (op == web::Close)
+            {
+                std::string frame;
+                web::appendFrame(frame, web::Close, payload.data(), std::min<std::size_t>(payload.size(), 2));
+                c->append(frame);
+                c->finish();
+            }
+            else if (op == web::Binary && !payload.empty())
+            {
+                const auto kind = link::Kind(std::uint8_t(payload[0]));
+                std::string body = payload.substr(1);
+                if (kind == link::Ping && body.size() == link::PingBytes)
+                {
+                    // Answered here, at once: the latency overlay measures the line, not the game's queue.
+                    std::string frame, pong = char(link::Pong) + body;
+                    web::appendFrame(frame, web::Binary, pong.data(), pong.size());
+                    c->append(frame);
+                }
+                else if ((kind == link::Command && body.size() <= link::MaxCommand) || (kind == link::Pose && body.size() == link::PoseBytes) ||
+                         (kind == link::Ack && body.size() == 9))
+                    post({Message::Received, c, kind, std::move(body)});
+                else
+                    end(1003);                     // Nothing else is ever sent by a client.
+            }
+            else if (op != web::Pong)
+                end(1003);                         // Unsupported data.
+        }
+    }
+    void run()
+    {
+        std::vector<epoll_event> ready(256);
+        while (!stop_)
+        {
+            const int count = ::epoll_wait(events_, ready.data(), int(ready.size()), 200);
+            std::vector<int> gone;
+            for (int k = 0; k < count; ++k)
+            {
+                const int fd = ready[std::size_t(k)].data.fd;
+                const auto flags = ready[std::size_t(k)].events;
+                if (fd == wake_)
+                {
+                    std::uint64_t n;
+                    [[maybe_unused]] const auto r = ::read(wake_, &n, sizeof n);
+                    std::vector<int> due;
+                    {
+                        std::lock_guard<std::mutex> guard(writeLock_);
+                        due.swap(writable_);
+                    }
+                    for (int w : due)
+                        if (const auto found = clients_.find(w); found != clients_.end())
+                        {
+                            flush(*found->second);
+                            if (found->second->closing)
+                                gone.push_back(w);
+                        }
+                    continue;
+                }
+                if (fd == listener_)
+                {
+                    for (;;)
+                    {
+                        sockaddr_in peer{};
+                        socklen_t length = sizeof peer;
+                        const int accepted = ::accept(listener_, reinterpret_cast<sockaddr*>(&peer), &length);
+                        if (accepted < 0)
+                            break;
+                        blocking(accepted, false);
+                        const int yes = 1;
+                        ::setsockopt(accepted, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof yes);
+                        auto c = std::make_shared<Client>();
+                        char text[64];
+                        ::inet_ntop(AF_INET, &peer.sin_addr, text, sizeof text);
+                        c->fd = accepted;
+                        c->address = text;
+                        c->local = accounts::isLoopbackAddress(c->address);
+                        c->id = nextId_++;
+                        c->network = this;
+                        watch(accepted, false, EPOLL_CTL_ADD);
+                        clients_[accepted] = c;    // It joins the game once it becomes a WebSocket (serve()).
+                    }
+                    continue;
+                }
+                const auto found = clients_.find(fd);
+                if (found == clients_.end())
+                    continue;
+                auto c = found->second;
+                if (flags & (EPOLLERR | EPOLLHUP))
+                    c->closing = true;
+                if (flags & EPOLLIN)
+                {
+                    char buffer[65536];
+                    for (;;)
+                    {
+                        const auto n = ::recv(c->fd, buffer, sizeof buffer, 0);
+                        if (n > 0)
+                        {
+                            c->in.append(buffer, std::size_t(n));
+                            meter.received(std::size_t(n));
+                        }
+                        else
+                        {
+                            if (n == 0 || (errno != EAGAIN && errno != EWOULDBLOCK))
+                                c->closing = true;
+                            break;
+                        }
+                    }
+                    if (!c->closing)
+                        handle(c);
+                }
+                if (!c->closing)
+                    flush(*c);                     // A reply now, and anything waiting for the socket.
+                if (c->closing)
+                    gone.push_back(fd);
+            }
+            for (int fd : gone)
+                drop(fd);
+        }
+    }
+
+    int listener_, events_ = -1, wake_ = -1, gameWake_ = -1;
+    std::string webRoot_;
+    std::map<int, std::shared_ptr<Client>> clients_;        // The network thread's.
+    std::uint64_t nextId_ = 1;
+    std::atomic<std::size_t> connected_{0};
+    std::mutex inboxLock_, writeLock_;
+    std::vector<Message> inbox_;
+    std::vector<int> writable_;
+    std::atomic<bool> stop_{false};
+    std::thread thread_;
+};
+
+void Client::append(const std::string& bytes)
+{
+    bool wasEmpty;
+    {
+        std::lock_guard<std::mutex> guard(lock);
+        wasEmpty = out.empty();
+        out += bytes;
+    }
+    if (wasEmpty && network)
+        network->wantWrite(this);
+}
+
+void Client::queue(link::Kind kind, const std::string& raw, bool replaceable)
+{
+    if (closing || finishing)
+        return;
+    std::string payload;
+    {
+        perf::Scope timed(&meter, perf::Compression);
+        if (!link::encode(kind, raw, payload))
+            return;
+    }
+    std::string frame;
+    web::appendFrame(frame, web::Binary, payload.data(), payload.size());
+    bool wasEmpty, ending = false;
+    {
+        std::lock_guard<std::mutex> guard(lock);
         if (replaceable && out.size() > DropReplaceableAt)
         {
-            ++dropped;                              // A newer one follows; this one would only be stale.
+            ++dropped;                             // A newer one follows; this one would only be stale.
             return;
         }
-        std::string payload;
-        {
-            perf::Scope timed(&meter, perf::Compression);
-            if (!link::encode(kind, raw, payload))
-                return;
-        }
-        meter.sent(payload.size());
-        web::appendFrame(out, web::Binary, payload.data(), payload.size());
+        wasEmpty = out.empty();
+        out += frame;
         if (out.size() > DisconnectAt)
-            closing = true;                         // Hopelessly behind: let it reconnect.
+            ending = true;                         // Hopelessly behind: let it reconnect.
     }
-};
+    meter.sent(payload.size());
+    if (ending)
+        closing = true;
+    if ((wasEmpty || ending) && network)
+        network->wantWrite(this);
+}
 
 // A file of the browser client, or false. Small files only: the client is a few hundred kilobytes.
 bool readFile(const std::string& path, std::string& out)
@@ -213,45 +616,27 @@ int main(int argc, char** argv)
     std::signal(SIGINT, stop);
     std::signal(SIGTERM, stop);
     std::signal(SIGPIPE, SIG_IGN);
+    Network network(listener, webRoot);
+    network.start();
     std::cout << "RATW server listening on port " << port << " (" << bind << "); ready in "
               << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() << " s" << std::endl;
 
-    std::map<int, std::unique_ptr<Client>> clients;
-    std::uint64_t nextId = 1;
     using Clock = std::chrono::steady_clock;
     auto nextTick = Clock::now();
     const auto until = runFor > 0 ? Clock::now() + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(runFor))
                                   : Clock::time_point::max();
     double slowest = 0, total = 0;
     std::size_t ticks = 0;
-    // The game thread's time: what it did between ticks (summed over the loop's passes), reported every perfLog seconds.
+    // The game thread's time: what it did between ticks (summed over its passes), reported every perfLog seconds.
     double busy = 0;
     auto nextReport = perfLog > 0 ? Clock::now() + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(perfLog))
                                   : Clock::time_point::max();
-    const auto drop = [&](int fd) {
-        auto found = clients.find(fd);
-        if (found == clients.end())
-            return;
-        const bool playing = found->second->playing;
-        if (playing)
-            g.disconnect(found->second.get());
-        ::close(fd);
-        const std::string address = found->second->address;
-        clients.erase(found);
-        if (playing)
-            std::cout << "RATW_DISCONNECT " << address << " (" << clients.size() << " connected)" << std::endl;
-    };
-    const auto play = [&](Client& c) {
-        c.playing = true;
-        std::cout << "RATW_CONNECT " << c.address << std::endl;
-        g.connect(&c);
-    };
-    // One message of the game from a client: a command or a snapshot acknowledgement. False for anything else.
+    // One message of the game from a client: a command, a pose or a snapshot acknowledgement.
     const auto receive = [&](Client& c, link::Kind kind, const std::string& payload) {
         perf::Scope timed(&meter, perf::Commands);
-        if (kind == link::Command && payload.size() <= link::MaxCommand)
+        if (kind == link::Command)
             g.command(&c, payload);
-        else if (kind == link::Pose && payload.size() == link::PoseBytes)
+        else if (kind == link::Pose)
         {
             std::uint32_t seq;
             float f[3];
@@ -259,202 +644,41 @@ int main(int argc, char** argv)
             std::memcpy(f, payload.data() + 4, 12);
             g.pose(&c, seq, f[0], f[1], f[2], double(std::int8_t(payload[16])), double(std::int8_t(payload[17])));
         }
-        else if (kind == link::Ping && payload.size() == link::PingBytes)
-        {
-            const std::string pong = char(link::Pong) + payload;
-            web::appendFrame(c.out, web::Binary, pong.data(), pong.size());
-        }
-        else if (kind == link::Ack && payload.size() == 9)
+        else if (kind == link::Ack)
         {
             double revision;
             std::memcpy(&revision, payload.data(), 8);
             g.acknowledge(&c, revision, payload[8] != 0);
         }
-        else
-            return false;                           // Nothing else is ever sent by a client.
-        return true;
     };
-    // An HTTP request: the game's WebSocket, or one of the client's files.
-    const auto serve = [&](Client& c, const web::Request& r) {
-        if (r.path == web::GamePath)
-        {
-            if (!web::upgradeRequested(r))
-                c.out += web::response(426, "text/plain; charset=utf-8", "The game is played over a WebSocket.\n",
-                                       "Upgrade: websocket\r\n");
-            else if (!web::originAllowed(r))
-                c.out += web::response(403, "text/plain; charset=utf-8", "This page may not open the game.\n");
-            else if (const std::string accept = web::acceptKey(r.header("sec-websocket-key")); accept.empty())
-                c.out += web::response(500, "text/plain; charset=utf-8", "The server cannot accept WebSockets.\n");
-            else
-            {
-                c.out += web::handshake(accept);
-                c.mode = Client::Mode::WebSocket;
-                play(c);
-                return;
-            }
-            c.finish();
+    std::size_t playing = 0;
+    const auto letGo = [&](Client& c) {
+        if (!c.playing)
             return;
-        }
-        std::string relative, body;
-        if (r.method != "GET" && r.method != "HEAD")
-            c.out += web::response(405, "text/plain; charset=utf-8", "Only GET.\n", "Allow: GET, HEAD\r\n");
-        else if (webRoot.empty() || !web::filePath(r.path, relative) || !readFile(webRoot + "/" + relative, body))
-            c.out += web::response(404, "text/plain; charset=utf-8", webRoot.empty() ? "This server has no client to serve (--web).\n" : "Not found.\n");
-        else
-        {
-            // Built assets have content hashes in their names, so they never change; the page itself always might.
-            const bool immutable = relative.rfind("assets/", 0) == 0;
-            std::string reply = web::response(200, web::contentType(relative), body,
-                                              immutable ? "Cache-Control: public, max-age=31536000, immutable\r\n" : "Cache-Control: no-cache\r\n");
-            if (r.method == "HEAD")
-                reply.resize(reply.size() - body.size());
-            c.out += reply;
-        }
-        c.finish();
+        c.playing = false;
+        --playing;
+        g.disconnect(&c);
+        std::cout << "RATW_DISCONNECT " << c.address << " (" << playing << " connected)" << std::endl;
     };
-    // Everything a client has sent so far, by what kind of connection it turned out to be.
-    const auto handle = [&](Client& c) {
-        if (c.mode == Client::Mode::Http && !c.finishing)
-        {
-            web::Request r;
-            const int got = web::takeRequest(c.in, r);
-            if (got < 0)
-            {
-                c.out += web::response(400, "text/plain; charset=utf-8", "Bad request.\n");
-                c.finish();
-            }
-            else if (got > 0)
-                serve(c, r);
-        }
-        if (c.mode == Client::Mode::WebSocket)
-        {
-            web::Opcode op;
-            std::string payload;
-            int got;
-            while (!c.closing && !c.finishing && (got = web::takeMessage(c.in, c.reader, op, payload, link::MaxCommand + 1)) != 0)
-            {
-                if (got < 0)
-                {
-                    const char status[2] = {char(1002 >> 8), char(1002 & 255)};     // Protocol error.
-                    web::appendFrame(c.out, web::Close, status, 2);
-                    c.finish();
-                }
-                else if (op == web::Ping)
-                    web::appendFrame(c.out, web::Pong, payload.data(), payload.size());
-                else if (op == web::Close)
-                {
-                    web::appendFrame(c.out, web::Close, payload.data(), std::min<std::size_t>(payload.size(), 2));
-                    c.finish();
-                }
-                else if (op == web::Binary && !payload.empty() && receive(c, link::Kind(std::uint8_t(payload[0])), payload.substr(1)))
-                    continue;
-                else if (op != web::Pong)
-                {
-                    const char status[2] = {char(1003 >> 8), char(1003 & 255)};     // Unsupported data.
-                    web::appendFrame(c.out, web::Close, status, 2);
-                    c.finish();
-                }
-            }
-        }
-    };
-    // epoll (doc 31, Phase 4): each wake costs only the sockets with something to do, not every socket every time.
-    const int events = ::epoll_create1(EPOLL_CLOEXEC);
-    const auto watch = [&](int fd, bool out, int op) {
-        epoll_event e{};
-        e.events = EPOLLIN | (out ? EPOLLOUT : 0u);
-        e.data.fd = fd;
-        ::epoll_ctl(events, op, fd, &e);
-    };
-    watch(listener, false, EPOLL_CTL_ADD);
-    // Writes what it can now; anything left wakes epoll when the socket can take more.
-    const auto flush = [&](Client& c) {
-        if (!c.out.empty())
-        {
-            const auto n = ::send(c.fd, c.out.data(), c.out.size(), MSG_NOSIGNAL);
-            if (n > 0)
-                c.out.erase(0, std::size_t(n));
-            else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-                c.closing = true;
-        }
-        if (c.out.empty() != !c.watchingOut && !c.closing)
-        {
-            c.watchingOut = !c.out.empty();
-            watch(c.fd, c.watchingOut, EPOLL_CTL_MOD);
-        }
-    };
-    std::vector<epoll_event> ready(256);
     while (!stopping && g.exitRequested() < 0 && Clock::now() < until)
     {
-        const int wait = std::max(0, int(std::chrono::duration_cast<std::chrono::milliseconds>(nextTick - Clock::now()).count()));
-        const int count = ::epoll_wait(events, ready.data(), int(ready.size()), wait);
+        network.waitForGame(int(std::chrono::duration_cast<std::chrono::milliseconds>(nextTick - Clock::now()).count()));
         const auto woke = Clock::now();
         bool ticked = false;
+        for (auto& m : network.take())
         {
-        perf::Scope sockets(&meter, perf::Sockets);
-        std::vector<int> gone;
-        for (int k = 0; k < count; ++k)
-        {
-            const int fd = ready[std::size_t(k)].data.fd;
-            const auto flags = ready[std::size_t(k)].events;
-            if (fd == listener)
+            auto& c = *m.client;
+            if (m.type == Network::Message::Connected)
             {
-                for (;;)
-                {
-                    sockaddr_in peer{};
-                    socklen_t length = sizeof peer;
-                    const int accepted = ::accept(listener, reinterpret_cast<sockaddr*>(&peer), &length);
-                    if (accepted < 0)
-                        break;
-                    blocking(accepted, false);
-                    ::setsockopt(accepted, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof yes);
-                    auto c = std::make_unique<Client>();
-                    char text[64];
-                    ::inet_ntop(AF_INET, &peer.sin_addr, text, sizeof text);
-                    c->fd = accepted;
-                    c->address = text;
-                    c->local = accounts::isLoopbackAddress(c->address);
-                    c->id = nextId++;
-                    watch(accepted, false, EPOLL_CTL_ADD);
-                    clients[accepted] = std::move(c);   // It joins the game once it becomes a WebSocket (serve()).
-                }
-                continue;
+                c.playing = true;
+                ++playing;
+                std::cout << "RATW_CONNECT " << c.address << std::endl;
+                g.connect(&c);
             }
-            const auto found = clients.find(fd);
-            if (found == clients.end())
-                continue;
-            auto& c = *found->second;
-            if (flags & (EPOLLERR | EPOLLHUP))
-                c.closing = true;
-            if (flags & EPOLLIN)
-            {
-                char buffer[65536];
-                for (;;)
-                {
-                    const auto n = ::recv(c.fd, buffer, sizeof buffer, 0);
-                    if (n > 0)
-                    {
-                        c.in.append(buffer, std::size_t(n));
-                        meter.received(std::size_t(n));
-                    }
-                    else
-                    {
-                        if (n == 0 || (errno != EAGAIN && errno != EWOULDBLOCK))
-                            c.closing = true;
-                        break;
-                    }
-                }
-                if (!c.closing)
-                    handle(c);
-            }
-            if (!c.closing)
-                flush(c);                          // A reply now, and anything waiting for the socket.
-            if (c.finishing && c.out.empty())
-                c.closing = true;
-            if (c.closing)
-                gone.push_back(c.fd);
-        }
-        for (int fd : gone)
-            drop(fd);
+            else if (m.type == Network::Message::Gone)
+                letGo(c);
+            else if (c.playing && !c.closing)
+                receive(c, m.kind, m.payload);
         }
         if (Clock::now() >= nextTick)
         {
@@ -468,17 +692,6 @@ int main(int argc, char** argv)
             nextTick += std::chrono::milliseconds(50);
             if (Clock::now() - nextTick > std::chrono::seconds(1))
                 nextTick = Clock::now();            // Fell far behind (a stall): carry on from now, not in a rush.
-            // Send what the tick produced now, rather than on the next wake; what can't go yet waits on epoll.
-            perf::Scope sockets(&meter, perf::Sockets);
-            std::vector<int> stuck;
-            for (auto& [fd, c] : clients)
-            {
-                flush(*c);
-                if (c->closing)
-                    stuck.push_back(fd);
-            }
-            for (int fd : stuck)
-                drop(fd);
         }
         busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
         if (ticked)
@@ -489,22 +702,20 @@ int main(int argc, char** argv)
         if (Clock::now() >= nextReport)
         {
             nextReport = Clock::now() + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(perfLog));
-            std::size_t playing = 0;
-            for (const auto& [fd, c] : clients)
-                playing += c->playing;
             for (const auto& line : perf::report(meter.take(), playing))
                 std::cout << line << '\n';
             std::cout << perf::worldLine(g.world().tickProfile()) << std::endl;
             g.world().resetTickProfile();
         }
     }
-    std::vector<int> all;
-    for (const auto& [fd, c] : clients)
-        all.push_back(fd);
-    for (int fd : all)
-        drop(fd);
+    network.stopNow();
+    for (auto& m : network.take())                  // Messages it queued before stopping: only the leavings matter.
+        if (m.type == Network::Message::Gone)
+            letGo(*m.client);
+    for (auto& c : network.remaining())
+        letGo(*c);
+    network.closeAll();
     g.save();
-    ::close(events);
     ::close(listener);
     std::cout << "RATW server stopped after " << ticks << " ticks; mean " << (ticks ? total / double(ticks) : 0)
               << " ms, slowest " << slowest << " ms" << std::endl;

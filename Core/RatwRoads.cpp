@@ -443,6 +443,7 @@ Entity& World::addRoadFolk(const std::string& id, const std::string& name, const
 void World::removeRoadFolk(const std::string& id)
 {
     entities_.erase(id);
+    index_.dirty = true;
     folk_.erase(id);
     legs_.erase(id);
     pathRetryAt_.erase(id);

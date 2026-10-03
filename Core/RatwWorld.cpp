@@ -1,4 +1,5 @@
 #include "RatwWorld.h"
+#include "RatwSight.h"
 #include "RatwStep.h"
 
 #include <algorithm>
@@ -628,26 +629,26 @@ Entity& World::addPlayer(const std::string& id, const std::string& name)
     observe(id);
     return stored;
 }
-const std::vector<std::string>& World::idsIn(const std::string& cellId) const
+const std::vector<const Entity*>& World::entitiesIn(const std::string& cellId) const
 {
-    if (indexDirty_ || indexTick_ != ticks_ || indexSize_ != entities_.size())
+    if (index_.dirty || index_.tick != ticks_ || index_.size != entities_.size())
     {
-        for (auto& [cell, ids] : cellIndex_)
-            ids.clear();
+        for (auto& [cell, list] : index_.cells)
+            list.clear();
         for (const auto& [id, e] : entities_)
-            cellIndex_[e.cellId].push_back(id);
-        indexDirty_ = false;
-        indexTick_ = ticks_;
-        indexSize_ = entities_.size();
+            index_.cells[e.cellId].push_back(&e);
+        index_.dirty = false;
+        index_.tick = ticks_;
+        index_.size = entities_.size();
     }
-    static const std::vector<std::string> none;
-    const auto found = cellIndex_.find(cellId);
-    return found == cellIndex_.end() ? none : found->second;
+    static const std::vector<const Entity*> none;
+    const auto found = index_.cells.find(cellId);
+    return found == index_.cells.end() ? none : found->second;
 }
 
 void World::prepareReading() const
 {
-    idsIn(std::string());
+    entitiesIn(std::string());
 }
 
 void World::observeAll(const std::vector<std::string>& observerIds)
@@ -668,11 +669,12 @@ void World::observeAll(const std::vector<std::string>& observerIds)
 
 bool World::removePlayer(const std::string& id)
 {
-    indexDirty_ = true;
+    index_.dirty = true;
     const auto it = entities_.find(id);
     if (it == entities_.end() || it->second.npc)
         return false;
     entities_.erase(it);
+    index_.dirty = true;
     pendingPortals_.erase(id);
     travels_.erase(id);
     lastObserved_.erase(id);
@@ -775,7 +777,7 @@ const Door* World::door(const std::string& id) const
 
 namespace
 {
-constexpr double FreeStep = 0.5, RampStep = 1.0, EyeHeight = 0.8, SightTarget = 0.5;
+constexpr double FreeStep = 0.5, RampStep = 1.0;
 bool ramp(const Tile* t)
 {
     return t && (t->terrain == Terrain::Slope || t->terrain == Terrain::Stairs);
@@ -905,72 +907,21 @@ bool World::lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const
 bool World::lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,
                         Vec2 to) const
 {
-    const auto* c = &cell;
-    if (!finite(from) || !finite(to))
-        return false;
-    if (from.x < 0 || from.y < 0 || from.x >= c->width || from.y >= c->height || to.x < 0 || to.y < 0 ||
-        to.x >= c->width || to.y >= c->height)
-        return false;
-    // Sight runs from the observer's eye to the middle of the target's tile. Ground, and whatever stands on it,
-    // rising above that line hides what lies beyond: the far side of a hill, a plateau above a cliff, a thicket.
-    const auto* fromTile = c->tile(int(std::floor(from.x)), int(std::floor(from.y)));
-    const auto* toTile = c->tile(int(std::floor(to.x)), int(std::floor(to.y)));
-    const double eye = (fromTile ? fromTile->height : 0.0) + EyeHeight;
-    // A tall target (a tree, a statue) can show its top over ground that hides its foot.
-    const double target = (toTile ? toTile->height + std::max(SightTarget, toTile->stature) : SightTarget);
-    const int toX = int(std::floor(to.x)), toY = int(std::floor(to.y));
-    const int count = std::max(1, int(std::ceil(distance(from, to) / 0.12)));
-    // The line is sampled every 0.12 tiles: sample i of count lies at fraction i / count of the way. Samples a
-    // fraction of a tile apart mostly share a tile, and along a straight line the samples in one tile are
-    // consecutive, so each tile crossed is checked once for the whole run of samples in it. Within a run only the
-    // height of the sight line changes, and it changes steadily with f, so the lowest point of the line over that
-    // tile is at the run's first sample when the line climbs and its last when it falls: ground that rises above
-    // the line at any sample in the tile rises above it there. The result is exactly that of checking every sample.
-    const double dx = to.x - from.x, dy = to.y - from.y;
-    const auto at = [&](int i, bool y) {
-        const double f = double(i) / count;
-        return y ? from.y + dy * f : from.x + dx * f;
-    };
-    // The first sample after `i` that lies beyond tile coordinate `tileAt` along one axis (count if none does).
-    const auto leaves = [&](int i, int tileAt, double delta, bool y) {
-        if (delta == 0)
-            return count;
-        const double origin = y ? from.y : from.x;
-        const double edge = delta > 0 ? tileAt + 1.0 : double(tileAt);
-        const double guess = std::ceil((edge - origin) / delta * count);
-        int next = !(guess < count) ? count : guess <= i ? i + 1 : int(guess);
-        const auto beyond = [&](int k) { return delta > 0 ? at(k, y) >= edge : at(k, y) < edge; };
-        while (next > i + 1 && beyond(next - 1))
-            --next;
-        while (next < count && !beyond(next))
-            ++next;
-        return next;
-    };
-    for (int i = 1; i < count;)
+    // The shared rule (RatwSight.h, which the page runs too), over this cell and its closable fixtures.
+    struct Grid
     {
-        const double px = at(i, false), py = at(i, true);
-        const int x = int(std::floor(px)), y = int(std::floor(py));
-        const int end = std::min(leaves(i, x, dx, false), leaves(i, y, dy, true));  // One past this tile's run.
-        // The occluding destination itself is visible, without revealing beyond it.
-        if (x != toX || y != toY)
+        const World& world;
+        const Cell& cell;
+        const FixtureTiles* fixtures;
+        const std::vector<char>* mask;
+        const Tile* tile(int x, int y) const { return cell.tile(x, y); }
+        bool closedAt(int x, int y, double px, double py) const
         {
-            const auto* t = c->tile(x, y);
-            if (!t || t->opaque)
-                return false;
-            const bool fixture = fixtureMask ? (*fixtureMask)[std::size_t(y * c->width + x)] != 0
-                                             : fixtures && fixtures->count({x, y});
-            if (fixture && blockedByDoor(c->id, {px, py}))
-                return false;
-            if (t != fromTile)
-            {
-                const double f = double(target - eye >= 0 ? i : end - 1) / count;
-                if (t->height + t->stature > eye + (target - eye) * f + 1e-6)
-                    return false;
-            }
+            const bool fixture = mask ? (*mask)[std::size_t(y * cell.width + x)] != 0 : fixtures && fixtures->count({x, y});
+            return fixture && world.blockedByDoor(cell.id, {px, py});
         }
-        i = end;
-    }
-    return true;
+    };
+    return sight::lineOfSight(Grid{*this, cell, fixtures, fixtureMask}, cell.width, cell.height, from.x, from.y, to.x, to.y);
 }
 
 double World::sightRange(const Entity& o) const
@@ -1577,6 +1528,8 @@ Result World::adoptResident(const World& candidate, const std::string& id)
         const std::string name = it != entities_.end() ? it->second.name : id;
         if (it != entities_.end())
             entities_.erase(it);
+            index_.dirty = true;
+    index_.dirty = true;
         pendingPortals_.erase(id);
         travels_.erase(id);
         bonds_.forget(id);
@@ -1778,7 +1731,7 @@ Result World::moveTo(const std::string& id, double x, double y)
 
 void World::transition(Entity& a, const Door& d)
 {
-    indexDirty_ = true;
+    index_.dirty = true;
     if (const auto* held = custodyOf(a.id); held && d.targetCell != held->cell)
     {
         if (!a.npc)
@@ -3570,18 +3523,16 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
             }
         }
     const double range = sightRange(*o);              // Once for the whole view, not per wolf (doc 31, Phase 4).
-    for (const auto& id : idsIn(o->cellId))         // Its own cell's wolves, not the world's.
+    for (const Entity* other : entitiesIn(o->cellId))  // Its own cell's wolves, not the world's.
     {
-        const auto found = entities_.find(id);
-        if (found == entities_.end() || found->second.cellId != o->cellId)
+        if (other->cellId != o->cellId)
             continue;
-        const auto& entry = *found;
-        const double clear = visionClarity(*o, entry.second, range);
-        if (entry.first != observerId && !entry.second.npc && clear <= 0 && movementAudibility(observerId, entry.first) > 0)
+        const double clear = visionClarity(*o, *other, range);
+        if (other->id != observerId && !other->npc && clear <= 0 && movementAudibility(observerId, other->id) > 0)
             out.movementHeard = true;
-        if (entry.first == observerId || clear > 0)
+        if (other->id == observerId || clear > 0)
         {
-            Entity visible = entry.second;
+            Entity visible = *other;
             visible.path.clear();
             visible.input = {};
             out.entities.push_back(std::move(visible));
@@ -3905,6 +3856,7 @@ Result World::restore(const PersistedWorld& state)
     for (const auto& light : state.lighting)
         if (!cell(light.first) || !validLighting(light.second))
             return {false, "Invalid saved lighting.", light.first};
+    index_.dirty = true;
     for (auto it = entities_.begin(); it != entities_.end();)
         if (!it->second.npc || it->second.transient)
             it = entities_.erase(it);

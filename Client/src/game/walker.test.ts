@@ -6,6 +6,7 @@ import {readFileSync} from 'node:fs';
 import {Walker} from './walker.ts';
 import {testGame} from './testing.ts';
 import type {Json} from './json.ts';
+import {heightFromChar} from './labels.ts';
 
 const wasm = readFileSync(new URL('../wasm/walk.wasm', import.meta.url));
 const close = (a: number, b: number, e = 1e-9) => Math.abs(a - b) < e;
@@ -99,4 +100,68 @@ test('held: the page predicts the server walking its wolf with the same rules, s
     }
     const view = s.entities.get('self')!;
     assert.ok(view.x > 5.7 && view.x <= 6 - 0.065 + 1e-6, `ahead of the server's pose, but stopped at the wall: ${view.x}`);
+});
+
+test('partial motion frames: a far wolf left out is kept; a near one left out has gone from sight; a full frame decides', () => {
+    const {state: s} = testGame();
+    s.applySnapshot({cell: {id: 'room', width: 100, height: 20}, self: {id: 'self', x: 2, y: 2},
+        entities: [{id: 'near', x: 5, y: 2}, {id: 'far', x: 60, y: 2}], time: 0, cellGeneration: 1});
+    const frame = (time: number, partial: boolean, ids: string[]) => ({motionSession: '', observer: 'self', cellId: 'room', cellGeneration: 1,
+        revision: 0, time, partial, entities: [{id: 'self', x: 2, y: 2, facing: 0, moving: false},
+            ...ids.map(id => ({id, x: id === 'near' ? 5 : 60, y: 2, facing: 0, moving: false}))]});
+    s.applyMotion(frame(0.05, false, ['near', 'far']));
+    s.tick(1, 0.016);
+    s.applyMotion(frame(0.1, true, ['near']));
+    assert.ok(s.entities.has('far'), 'a far wolf a partial frame leaves out is kept');
+    s.applyMotion(frame(0.15, true, []));
+    assert.ok(!s.entities.has('near') && s.entities.has('far'), 'a near wolf left out has gone from sight, at once');
+    s.applyMotion(frame(0.2, false, []));
+    assert.ok(!s.entities.has('far'), 'and a full frame without the far one says it has gone too');
+});
+
+test("the page's sight is the server's rule: walls and closed doors hide what lies beyond, and the range ends it", async () => {
+    const walker = (await Walker.load(wasm))!;
+    // The room: a wall down column 6 (rows 1 to 3), a closed door at (9, 1).
+    walker.setCell(12, 6, rows, new Float32Array(72), [{x: 9.5, y: 1.5, open: false}]);
+    const seen = walker.sight(2.5, 2.5, 27);
+    const at = (x: number, y: number) => seen[y * 12 + x];
+    assert.equal(at(3, 2), 1, 'open floor beside it');
+    assert.equal(at(5, 2), 1, 'up to the wall');
+    assert.equal(at(6, 2), 1, 'the wall itself');
+    assert.equal(at(8, 2), 0, 'not past it');
+    assert.equal(at(8, 5), 1, 'around it, where nothing stands between');
+    const near = walker.sight(8.5, 2.5, 27);
+    assert.equal(near[1 * 12 + 9], 1, 'a closed door is seen');
+    assert.equal(near[0 * 12 + 9], 0, 'but not through');
+    const short = walker.sight(2.5, 2.5, 2);
+    assert.equal(short[2 * 12 + 4], 1, 'within its range');
+    assert.equal(short[2 * 12 + 5], 0, 'not beyond it');
+});
+
+test('terrain shading on the page: seen, remembered and unknown worked out here, the server sending no visibility', async () => {
+    const {state: s, commands} = testGame();
+    s.walker = await Walker.load(wasm);
+    const known = rows.map((r, y) => (y === 5 ? '            ' : r));    // The bottom row unknown: blank glyphs.
+    s.applySnapshot({cell: {id: 'room', width: 12, height: 6, rows: known}, self: {id: 'self', x: 2.5, y: 2.5, posture: 'standing', sightRange: 27},
+        entities: [], doors: [], time: 0, cellGeneration: 1});
+    assert.ok(commands.some(c => c.type === 'walking' && c.sight === 'client'), 'it asks to shade the terrain itself');
+    s.applyMotion({motionSession: '', observer: 'self', cellId: 'room', cellGeneration: 1, revision: 0, time: 0.05,
+        entities: [{id: 'self', x: 2.5, y: 2.5, facing: 0, moving: false}], mode: 0});
+    s.tick(1, 0.016);
+    assert.equal(s.visibilityRows[2][3], '2', 'floor in sight: seen');
+    assert.equal(s.visibilityRows[2][8], '1', 'past the wall: remembered');
+    assert.equal(s.visibilityRows[5][3], '0', 'never sent: unknown');
+});
+
+test("the page sees exactly what the server sees: the demo world's exterior (Client/src/game/sight.golden.json)", async () => {
+    const golden = JSON.parse(readFileSync(new URL('./sight.golden.json', import.meta.url), 'utf8')) as {width: number; height: number;
+        x: number; y: number; range: number; rows: string[]; heights: string[]; doors: {x: number; y: number; open: boolean}[]; seen: string[]};
+    const walker = (await Walker.load(wasm))!;
+    const heights = new Float32Array(golden.width * golden.height);
+    golden.heights.forEach((row, y) => [...row].forEach((c, x) => { heights[y * golden.width + x] = heightFromChar(c); }));
+    walker.setCell(golden.width, golden.height, golden.rows, heights, golden.doors);
+    const seen = walker.sight(golden.x, golden.y, golden.range);
+    let differ = 0;
+    golden.seen.forEach((row, y) => [...row].forEach((c, x) => { if ((seen[y * golden.width + x] ? '1' : '0') !== c) ++differ; }));
+    assert.equal(differ, 0, `${differ} tiles seen differently from the server`);
 });

@@ -19,6 +19,7 @@ interface Exports {
     walk_result: () => number;
     walk_step: (x: number, y: number, ix: number, iy: number, flat: number, crouching: number, environment: number, dt: number) => void;
     walk_passable: (x: number, y: number, fx: number, fy: number) => number;
+    walk_sight: (x: number, y: number, range: number) => number;
 }
 
 /** A door as the snapshot lists it. */
@@ -28,10 +29,12 @@ export interface DoorState {
     open: boolean;
 }
 
-const TileBytes = 12;
+const TileBytes = 16;
 
 export class Walker {
     private readonly wasm: Exports;
+    private width = 0;
+    private height = 0;
 
     private constructor(wasm: Exports) {
         this.wasm = wasm;
@@ -59,6 +62,8 @@ export class Walker {
     /** The cell this client holds, as walking sees it (the caller says when it changed: GameState's cell version). */
     setCell(width: number, height: number, rows: string[], heights: Float32Array, doors: DoorState[]) {
         const closed = doors.filter(d => !d.open).map(d => `${Math.floor(d.x)},${Math.floor(d.y)}`);
+        this.width = width;
+        this.height = height;
         const base = this.wasm.walk_grid(width, height);
         if (!base && width * height > 0) return;
         const view = new DataView(this.wasm.memory.buffer, base, width * height * TileBytes);
@@ -70,10 +75,11 @@ export class Walker {
                 const terrain = terrainByCode(row[x] ?? ' ');
                 view.setFloat32(at, heights[y * width + x] ?? 0, true);
                 view.setFloat32(at + 4, terrain ? terrain.cost : 1, true);
-                view.setUint8(at + 8, terrain?.solid ? 1 : 0);
-                view.setUint8(at + 9, terrain?.ramp ? 1 : 0);
-                view.setUint8(at + 10, doorAt.has(`${x},${y}`) ? 1 : 0);
-                view.setUint8(at + 11, terrain ? 1 : 0);
+                view.setFloat32(at + 8, terrain ? terrain.stature : 0, true);
+                view.setUint8(at + 12, terrain?.solid ? 1 : 0);
+                view.setUint8(at + 13, terrain?.ramp ? 1 : 0);
+                view.setUint8(at + 14, doorAt.has(`${x},${y}`) ? 1 : 0);
+                view.setUint8(at + 15, terrain?.opaque ? 1 : 0);
             }
         }
     }
@@ -87,5 +93,11 @@ export class Walker {
 
     passable(x: number, y: number, fromX: number, fromY: number): boolean {
         return this.wasm.walk_passable(x, y, fromX, fromY) !== 0;
+    }
+
+    /** What a wolf at (x, y) with this sight range sees of the cell: 1 a tile it sees, as the server works it out. */
+    sight(x: number, y: number, range: number): Uint8Array {
+        const base = this.wasm.walk_sight(x, y, range);
+        return new Uint8Array(this.wasm.memory.buffer, base, this.width * this.height).slice();
     }
 }

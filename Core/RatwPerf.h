@@ -6,7 +6,7 @@
 //
 // Timing belongs to the thread that made the meter (the game's): a Scope on any other thread (the worker pool's)
 // counts nothing, and the pool's work is timed as a whole by the game thread around it. Traffic (sent) may be counted
-// from any thread. Timing costs two clock reads per Scope.
+// and received from any thread. Timing costs two clock reads per Scope.
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -119,7 +119,7 @@ class Meter
         bytesOut_.fetch_add(bytes, std::memory_order_relaxed);
         messagesOut_.fetch_add(1, std::memory_order_relaxed);
     }
-    void received(std::size_t bytes) { window_.bytesIn += bytes; }
+    void received(std::size_t bytes) { bytesIn_.fetch_add(bytes, std::memory_order_relaxed); }
 
     const Window& window() const { return window_; }
     // The window so far, and a new one begun.
@@ -128,6 +128,7 @@ class Meter
         Window out = std::move(window_);
         out.bytesOut = bytesOut_.exchange(0);
         out.messagesOut = messagesOut_.exchange(0);
+        out.bytesIn = bytesIn_.exchange(0);
         window_ = Window{};
         return out;
     }
@@ -143,7 +144,7 @@ class Meter
     std::array<Open, Stack> stack_{};
     std::size_t depth_ = 0;
     Window window_;
-    std::atomic<std::uint64_t> bytesOut_{0}, messagesOut_{0};
+    std::atomic<std::uint64_t> bytesOut_{0}, messagesOut_{0}, bytesIn_{0};
     std::thread::id owner_ = std::this_thread::get_id();
 };
 

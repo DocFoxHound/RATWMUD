@@ -42,6 +42,9 @@ class Connection
     virtual ~Connection() = default;
     virtual void event(const std::string& json) = 0;          // Reliable and in order.
     virtual void snapshot(const std::string& json) = 0;       // May be lost; each replaces the last.
+    // The snapshot as values, for a host that sends it in a form of its own (the server packs it: RatwPack.h). By
+    // default, as JSON text to snapshot(). Called on the game's worker threads, one at a time for any one client.
+    virtual void snapshotValue(const json::Value& root) { snapshot(json::dump(root)); }
     virtual void motion(const json::Value& frame) = 0;        // May be lost (the host sends it in binary).
     // Account passwords are accepted only from this computer: the native transport is not encrypted.
     virtual bool allowsLocalCredentials() const = 0;
@@ -55,6 +58,8 @@ class Connection
     // asks, with {"type":"walking","mode":"client"}), and the mode the server has it in: 0 free, 1 held (the server
     // walks it: the moments around a fight), 2 fighting (in an arena: no walking at all).
     bool clientWalking = false;
+    // It shades the terrain itself (doc 31, Phase 4.6): its snapshots leave the visibility rows out.
+    bool clientSight = false;
     // It last walked by keys (a "move"), not by poses: the server walks it until a pose comes (rising from a sit, or a
     // script that drives the wolf by keys).
     bool keysWalking = false;
@@ -226,6 +231,7 @@ class Game
     std::map<const Connection*, CellRows> cellRows_;
     // The worker pool, and whether the views due this tick are being built on it (they then only read the world).
     std::unique_ptr<Pool> pool_;
+    std::uint64_t frameTick_ = 0;
     bool batching_ = false;
     void finishSnapshot(Connection* c, json::Value root, double revision);
     void updateMovementModes();

@@ -3,7 +3,7 @@
 //   u32 magic "RMT1", string session, string observer, string cell, i32 cell generation, f64 revision, f64 time,
 //   i32 count, then per pose: string id, f32 x, f32 y, f32 facing, u8 moving; then the observer's own movement
 //   (Docs/Design/31-responsiveness.md, Phase 3): u8 mode (0 free, 1 held, 2 fighting), u32 the last held input
-//   applied, u32 the last pose of its own accepted
+//   applied, u32 the last pose of its own accepted, u8 partial (far wolves left out: Phase 4.3)
 //
 // A string is an i32 length, then: positive, that many bytes with a final 0 (Latin-1); negative, that many UTF-16
 // units with a final 0; zero, the empty string.
@@ -27,7 +27,12 @@ export interface MotionFrame {
     mode?: number;
     inputAck?: number;
     poseAck?: number;
+    // Wolves farther than FarAway were left out (they come in every fourth frame): keep the ones not in it.
+    partial?: boolean;
 }
+
+/** As the server's motion::FarAway (tiles). */
+export const FarAway = 24;
 
 const Magic = 0x31544d52;
 const MaxPoses = 4096;
@@ -91,6 +96,7 @@ export function unpack(bytes: Uint8Array): MotionFrame | null {
     frame.mode = r.u8();
     frame.inputAck = r.u32();
     frame.poseAck = r.u32();
+    frame.partial = r.u8() !== 0;
     return r.bad || r.at !== bytes.length ? null : frame;
 }
 
@@ -119,6 +125,6 @@ export function pack(frame: MotionFrame): Uint8Array {
     string(frame.motionSession); string(frame.observer); string(frame.cellId);
     i32(frame.cellGeneration); f64(frame.revision); f64(frame.time); i32(frame.entities.length);
     for (const p of frame.entities) { string(p.id); f32(p.x); f32(p.y); f32(p.facing); parts.push(p.moving ? 1 : 0); }
-    parts.push(frame.mode ?? 0); u32(frame.inputAck ?? 0); u32(frame.poseAck ?? 0);
+    parts.push(frame.mode ?? 0); u32(frame.inputAck ?? 0); u32(frame.poseAck ?? 0); parts.push(frame.partial ? 1 : 0);
     return Uint8Array.from(parts);
 }

@@ -5,6 +5,7 @@
 #include "RatwDirector.h"
 #include "RatwMind.h"
 #include "RatwMotionCore.h"
+#include "RatwPack.h"
 #include "RatwSections.h"
 #include "RatwArtwork.h"
 #include "RatwSystemLibs.h"
@@ -658,6 +659,43 @@ void motionTests()
                std::abs(got[i].number("y") - sent[i].number("y")) < 1e-4;
     expect(same, "and every pose, to within float precision");
 
+    // The page's sight (doc 31, Phase 4.6): what the server sees from this spot of the demo exterior is what the
+    // browser client's test expects its own sight to see (Client/src/game/sight.golden.json).
+    {
+        std::ifstream sightIn(std::string(RATW_SOURCE_DIR) + "/Client/src/game/sight.golden.json");
+        const std::string sightText((std::istreambuf_iterator<char>(sightIn)), std::istreambuf_iterator<char>());
+        const auto golden = parsed(sightText);
+        World w;
+        auto& eye = w.addPlayer("player-eye", "Eye");
+        eye.cellId = golden.string("cell");
+        eye.position = {golden.number("x"), golden.number("y")};
+        const auto view = w.snapshot("player-eye");
+        const int width = int(golden.number("width"));
+        std::size_t differ = 0;
+        for (std::size_t y = 0; y < golden.array("seen").size(); ++y)
+            for (int x = 0; x < width; ++x)
+                differ += (view.visibleTiles[y * std::size_t(width) + std::size_t(x)] ? '1' : '0') != golden.array("seen")[y].asString()[std::size_t(x)];
+        expect(differ == 0 && w.sightRange(*w.entity("player-eye")) == golden.number("range"),
+               "the server still sees what the sight golden says (" + std::to_string(differ) + " tiles differ)");
+    }
+    // Packed snapshots (doc 31, Phase 4.8): the bytes the browser client's test reads (Client/src/net/pack.golden.json).
+    {
+        std::ifstream packIn(std::string(RATW_SOURCE_DIR) + "/Client/src/net/pack.golden.json");
+        const std::string packText((std::istreambuf_iterator<char>(packIn)), std::istreambuf_iterator<char>());
+        const auto packGolden = parsed(packText);
+        const auto packed = pack::encode(packGolden["value"]);
+        std::string packHex;
+        char two[3];
+        for (unsigned char b : packed)
+        {
+            std::snprintf(two, sizeof two, "%02x", b);
+            packHex += two;
+        }
+        expect(packHex == packGolden.string("bytes"), "the golden value packs to its committed bytes: " + packHex);
+        json::Value back;
+        expect(pack::decode(packed, back) && back == packGolden["value"], "and unpacks to the same value");
+        expect(!pack::decode(packed.substr(0, packed.size() - 1), back), "a packed message cut short is refused");
+    }
     // The bytes the browser client's test reads (Client/src/net/motion.golden.json): this pack() must make exactly them.
     std::ifstream in(std::string(RATW_SOURCE_DIR) + "/Client/src/net/motion.golden.json");
     const std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());

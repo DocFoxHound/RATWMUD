@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand, MaxRaw, pingMessage, pongTime, poseMessage, Stored} from './wire.ts';
 import {readFileSync} from 'node:fs';
 import {inflate} from './inflate.ts';
+import {unpackValue} from './pack.ts';
 import {deflateSync, constants} from 'node:zlib';
 import {pack, unpack, type MotionFrame} from './motion.ts';
 import {fill, SectionCache, EntriesKept} from './sections.ts';
@@ -45,6 +46,14 @@ test('a pose is a few bytes, as the server reads them', () => {
     assert.equal(v.getFloat32(13, true), -1.5);
     assert.equal(v.getInt8(17), 1);
     assert.equal(v.getInt8(18), -1);
+});
+
+test('packed snapshots read into the same values the server packed (the golden bytes it makes)', () => {
+    const golden = JSON.parse(readFileSync(new URL('./pack.golden.json', import.meta.url), 'utf8')) as {value: unknown; bytes: string};
+    const bytes = Uint8Array.from(golden.bytes.match(/../g)!, h => parseInt(h, 16));
+    assert.deepEqual(unpackValue(bytes), golden.value);
+    assert.equal(unpackValue(bytes.subarray(0, bytes.length - 1)), undefined, 'a message cut short is refused');
+    assert.equal(unpackValue(Uint8Array.of(9)), undefined, 'an unknown tag is refused');
 });
 
 test('a small message comes as it is, not compressed (the raw length says so)', () => {

@@ -19,6 +19,7 @@
 // takes minutes. The gates are in the design doc.
 #include "RatwGame.h"
 #include "RatwLink.h"
+#include "RatwPack.h"
 #include "RatwMotionCore.h"
 #include "RatwPerf.h"
 #include "RatwSystemLibs.h"
@@ -69,6 +70,16 @@ struct Player final : game::Connection
             cx = v.number("x");
             cy = v.number("y");
         }
+    }
+    void snapshotValue(const json::Value& root) override
+    {
+        // As the server does (doc 31, Phase 4.8).
+        const auto packed = pack::encode(root);
+        snapshotBytes += packed.size();
+        ++snapshots;
+        pack(packed.data(), packed.size());
+        if (const auto* r = root.find("revision"))
+            revision = r->asNumber();
     }
     void snapshot(const std::string& json) override
     {
