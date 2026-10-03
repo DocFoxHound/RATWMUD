@@ -14,6 +14,7 @@ import {MapRenderer, MapScales} from '../../game/minimap.ts';
 import {artCache} from '../artwork.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
+import {FightPanel} from './fight.ts';
 import {noRect, StoryPanel} from './story.ts';
 
 const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -79,6 +80,7 @@ export class Hud {
     private lookSince = 0;
     private connection: HTMLElement;
     private resizer: HTMLElement;
+    private fight: FightPanel;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -121,6 +123,7 @@ export class Hud {
         this.canvas = el('canvas', '', this.mapWrap);
         this.canvas.tabIndex = 0;
         this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write.');
+        this.fight = new FightPanel(center, state);
         this.looking = el('div', 'looking muted', center);
         el('span', 'label muted', this.looking, 'LOOKING AT  ');
         this.lookWhat = el('span', 'what', this.looking);
@@ -207,6 +210,7 @@ export class Hud {
         this.updateStatus(self);
         this.updateMenu();
         this.updateLook();
+        this.fight.update();
         this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);

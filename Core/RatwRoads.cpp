@@ -17,7 +17,7 @@ constexpr int ContractDays = 10;
 constexpr double EscortWaitDays = 2.0 / 24;    // A caravan waits two game hours at the market for its escorts.
 constexpr double StuckSeconds = 600;           // A wagon that can't get on across a cell this long is moved on.
 constexpr double DemandSeconds = 20;           // Bandits wait this long for a purse before they come at you.
-constexpr double BanditSwing = 2.0, PlayerSwing = 1.2, Reach = 1.6;
+constexpr double Reach = 1.6;
 constexpr double TakeWorkAfterDays = 2;        // Residents take work players have left this long.
 const char* const BanditNames[] = {"a ragged bandit", "a scarred cutthroat", "a bandit with a torn ear",
                                    "a hungry-eyed outlaw", "a gaunt highwayman", "a grey-muzzled robber"};
@@ -1092,7 +1092,7 @@ bool World::hostile(const std::string& id) const
 {
     const auto f = folk_.find(id);
     const auto* e = entity(id);
-    return f != folk_.end() && f->second.kind == "bandit" && e && !e->dead;
+    return f != folk_.end() && f->second.kind == "bandit" && e && !e->dead && e->downedLeft <= 0;
 }
 
 std::int64_t World::banditDemand(const std::string& player) const
@@ -1168,7 +1168,7 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
     const Vec2 spot{camp.x, camp.y};
     std::vector<Entity*> standing;
     for (const auto& id : mine)
-        if (auto* b = entity(id); b && !b->dead)
+        if (auto* b = entity(id); b && !b->dead && b->downedLeft <= 0)
             standing.push_back(b);
     auto enc = std::find_if(encounters_.begin(), encounters_.end(), [&](const Encounter& e) { return e.camp == camp.id; });
     if (enc == encounters_.end())
@@ -1206,6 +1206,8 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
         }
         return;
     }
+    if (inBattle(enc->player))
+        return;                                     // The fight is in its arena now (RatwBattle.cpp).
     auto* player = entity(enc->player);
     if (!player || player->dead || player->cellId != camp.cell || between(player->position, spot) > 26 || standing.empty())
     {
@@ -1237,23 +1239,11 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
         }
         if (!b->path.empty())
             stop(b->id);
-        if (!fighting || time_ < f.nextSwing)
+        if (!fighting)
             continue;
-        f.nextSwing = time_ + BanditSwing;
-        const auto swing = std::int64_t(time_ * 1000);
-        const double hitChance = std::clamp(.5 - (effectiveDexterity(*player) - 50) / 250, .2, .8);
-        if (chance(b->id, swing) >= hitChance)
-        {
-            notice(player->id, "You twist away as " + b->name + " lunges at you.");
-            continue;
-        }
-        player->stamina = std::max(0.0, player->stamina - double(9 + roll(b->id, swing) % 7));
-        notice(player->id, "A blow from " + b->name + " lands hard.");
-        if (player->stamina <= 0)
-        {
-            beaten(*player, camp);
+        // Close enough: the fight begins, in its arena (RatwBattle.cpp), the whole band against the traveller.
+        if (const auto started = startBattle(b->id, player->id, false); started.ok)
             return;
-        }
     }
 }
 
@@ -1355,81 +1345,6 @@ void World::gossip()
     for (const auto& [listener, b] : telling)
         believe(listener, b.subject, b.claim, b.source, b.confidence, b.incident);
 
-}
-
-Result World::attack(const std::string& attacker, const std::string& target)
-{
-    if (!campOf(target))
-        return assault(attacker, target);           // Anyone but a bandit: a crime (RatwCrime.cpp).
-    auto* a = entity(attacker);
-    if (!a || a->npc)
-        return {false, "No such character.", {}};
-    if (a->dead)
-        return {false, "You are dead.", {}};
-    auto* b = entity(target);
-    auto* camp = campOf(target);
-    if (!b || !camp)
-        return {false, "There is no call to fight them.", target};
-    if (b->dead)
-        return {false, b->name + " is already down.", target};
-    if (a->cellId != b->cellId || between(a->position, b->position) > Reach)
-        return {false, "Get closer first.", target};
-    if (const auto ready = swingReady_.find(attacker); ready != swingReady_.end() && time_ < ready->second)
-        return {false, "You are still recovering your balance.", target};
-    if (a->stamina < 5)
-        return {false, "You are too spent to swing.", target};
-    a->stamina -= 6;
-    swingReady_[attacker] = time_ + PlayerSwing;
-    // Whoever strikes first, it's a fight now.
-    auto enc = std::find_if(encounters_.begin(), encounters_.end(), [&](const Encounter& e) { return e.camp == camp->id; });
-    if (enc == encounters_.end())
-        encounters_.push_back({camp->id, attacker, 0, time_, true});
-    else
-        enc->fighting = true;
-    const auto swing = std::int64_t(time_ * 1000);
-    const double hitChance = std::clamp(.55 + (effectiveDexterity(*a) - 50) / 200, .2, .9);
-    if (chance(attacker + target, swing) >= hitChance)
-        return {true, "You swing at " + b->name + " and miss.", target};
-    auto& f = folk_[target];
-    f.hp -= 4 + a->strength / 10 + double(roll(attacker, swing) % 4);
-    if (f.hp > 0)
-        return {true, "You strike " + b->name + (f.hp < 6 ? ". They are badly hurt." : ". They reel back."), target};
-    // Down.
-    stop(target);
-    b->dead = true;
-    b->posture = "lying";
-    b->state = b->activity = "dead";
-    camp->strength = std::max(0.0, camp->strength - f.share);
-    recordEvent({"bandit falls", attacker, camp->id, b->cellId, 0, 0, {}, 0, 0, b->name});
-    std::string words = "You strike " + b->name + " down.";
-    int standing = 0, fallen = 0;
-    std::vector<std::string> fleeing;
-    for (const auto& [id, other] : folk_)
-        if (other.kind == "bandit" && other.of == camp->id)
-            if (const auto* e = entity(id))
-            {
-                (e->dead ? fallen : standing) += 1;
-                if (!e->dead)
-                    fleeing.push_back(id);
-            }
-    // Their leader down (or all of them), the camp is broken; half of them down, the rest run.
-    const bool leader = target.size() >= 2 && target.compare(target.size() - 2, 2, ":0") == 0;
-    if (leader || standing == 0 || camp->strength <= .5)
-    {
-        for (const auto& id : fleeing)
-            removeRoadFolk(id);
-        clearCamp(*camp, attacker);
-    }
-    else if (fallen * 2 >= fallen + standing)
-    {
-        for (const auto& id : fleeing)
-            removeRoadFolk(id);
-        camp->lastRaid = calendarDays_;
-        endEncounter(camp->id, (calendar::SecondsPerDay / 24));
-        recordEvent({"bandits flee", camp->id, attacker, a->cellId, 0, 0, {}, 0, 0, "from " + a->name});
-        words += " The rest of them break and run into the wild.";
-    }
-    return {true, words, target};
 }
 
 Result World::payBandits(const std::string& player, const std::string& bandit)

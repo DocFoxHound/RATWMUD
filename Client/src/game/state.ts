@@ -6,6 +6,8 @@ import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
+import {arenaRows, arenaSight, fighterAt, myTurn, readBattle, readChallenge, readFights, type BattleView, type ChallengeView,
+    type FightSquare} from './battle.ts';
 
 export interface Post {
     id: string;
@@ -196,6 +198,17 @@ export class GameState {
     worldPan: [number, number] = [0, 0];
     miniZoom = 3;               // The minimap's scale (2 pixels a tile).
     inspectedText = '';
+    // Fights (Docs/Design/33-combat.md): the arena this wolf fights in or watches, the red squares in sight, a
+    // challenge to answer; when the last fight ended (everyone fades back into the world).
+    battle: BattleView | null = null;
+    fights: FightSquare[] = [];
+    challenge: ChallengeView | null = null;
+    fightEndedAt = -10;
+    battleOverSeenAt = -10;
+    private plainRows: string[] = [];
+    private mergedRows: string[] | null = null;
+    private arenaSightKey = '';
+    private arenaSightRows: string[] = [];
     toast = '';
     toastUntil = 0;
 
@@ -391,6 +404,76 @@ export class GameState {
             if (!present.has(id) && poseTime >= this.latestMotionTime) this.entities.delete(id);
         this.movementPending = false;
         if (!this.canFaceAt(this.hover)) this.facingPreview = false;
+        this.applyFight();
+    }
+
+    /** The fight, if any: the arena's ground and sight laid over the cell, and back to the world when it ends. */
+    private applyFight() {
+        const before = this.battle;
+        this.battle = readBattle(this.snapshot);
+        this.fights = readFights(this.snapshot);
+        this.challenge = readChallenge(this.snapshot);
+        if (this.tileRows !== this.mergedRows) this.plainRows = this.tileRows;     // Fresh rows from the server.
+        const b = this.battle;
+        if (b) {
+            if (!before) {
+                this.heldKeys.clear();
+                this.contextTarget = '';
+            }
+            if (b.over && !before?.over) this.battleOverSeenAt = this.clock;
+            const merged = arenaRows(this.plainRows, b);
+            const same = this.mergedRows && merged.length === this.mergedRows.length && merged.every((r, i) => r === this.mergedRows![i]);
+            if (!same) {
+                this.mergedRows = merged;
+                ++this.cellVersion;
+            }
+            this.tileRows = this.mergedRows!;
+            const key = `${b.id}|${b.arena.x},${b.arena.y},${b.arena.w},${b.arena.h}|${this.cellWidth}x${this.cellHeight}`;
+            if (key !== this.arenaSightKey) {
+                this.arenaSightKey = key;
+                this.arenaSightRows = arenaSight(this.cellWidth, this.cellHeight, b);
+            }
+            this.visibilityRows = this.arenaSightRows;
+        } else if (before) {
+            // Back in the world: its own ground and sight again, and everyone fades in where the fight left them.
+            this.fightEndedAt = this.clock;
+            this.tileRows = this.plainRows;
+            this.mergedRows = null;
+            this.arenaSightKey = '';
+            this.sightKey = '';
+            this.sources.visibility = null;
+            const seen = arr(this.snapshot, 'visibility').filter((v): v is string => typeof v === 'string');
+            if (!this.clientSight && seen.length) this.visibilityRows = seen;
+            ++this.cellVersion;
+        }
+    }
+
+    /** A fight command: move, bite, tend, flee, struggle, wait, join, observe, leave. */
+    sendBattle(verb: string, extra: Json = {}) {
+        this.send({type: 'battle', verb, ...extra});
+    }
+
+    /** A fighter clicked in the arena: bite an enemy, tend a fallen friend. */
+    fightTarget(id: string) {
+        const b = this.battle;
+        if (!b || b.observer) return;
+        const me = b.fighters.find(f => f.id === this.selfId);
+        const f = b.fighters.find(o => o.id === id);
+        if (!me || !f || f.id === me.id) return;
+        if (f.side !== me.side && f.status === 'fighting') this.sendBattle('bite', {target: id});
+        else if (f.side === me.side && f.status === 'downed') this.sendBattle('tend', {target: id});
+    }
+
+    /** A tile clicked in the arena: go there, if it's this wolf's turn and it can. */
+    arenaClick(tx: number, ty: number) {
+        const b = this.battle;
+        if (!b) return;
+        const there = fighterAt(b, tx, ty);
+        if (there) {
+            this.fightTarget(there.id);
+            return;
+        }
+        if (myTurn(b, this.selfId) && b.reach.some(([x, y]) => x === tx && y === ty)) this.sendBattle('move', {x: tx, y: ty});
     }
 
     observeMotionTime(serverTime: number) {
@@ -584,7 +667,7 @@ export class GameState {
 
     /** Works out again what the wolf sees, when it stands on a new tile or the cell, its doors or its sight changed. */
     private shadeTerrain() {
-        if (!this.clientSight || !this.walker) return;
+        if (!this.clientSight || !this.walker || this.battle) return;     // (In an arena, the whole arena is seen.)
         const self = obj(this.snapshot, 'self');
         const me = this.entities.get(this.selfId);
         if (!self || !me || !this.tileRows.length) return;
@@ -887,6 +970,7 @@ export class GameState {
             this.targetNearest();
             return true;
         }
+        if (this.battle && MovementKeys.includes(code)) return true;    // No walking in a fight: click a tile.
         if (MovementKeys.includes(code)) {
             this.heldKeys.add(code);
             this.sendMove();
@@ -1076,6 +1160,10 @@ export class GameState {
             if (this.chat) this.setChat(false);
             const wx = (point[0] - this.mapOrigin[0]) / this.tileSize, wy = (point[1] - this.mapOrigin[1]) / this.tileSize;
             if (wx < 0 || wy < 0 || wx >= this.cellWidth || wy >= this.cellHeight) return 'map';
+            if (this.battle) {
+                this.arenaClick(Math.floor(wx), Math.floor(wy));
+                return 'map';
+            }
             this.movementPending = true;
             this.send({type: 'path', x: wx, y: wy});
             return 'map';
@@ -1195,6 +1283,8 @@ export class GameState {
                 this.contextKind = 'resource';
                 this.contextActions = ['gather'];
             }
+        } else if (a === 'fighter') {
+            this.fightTarget(h.target);
         } else if (a === 'context') {
             if (h.target === 'trade') this.openTrade(this.contextTarget);
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});

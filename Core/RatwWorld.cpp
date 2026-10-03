@@ -2770,8 +2770,8 @@ void World::separate(double dt)
     auto& byCell = separateScratch_;
     byCell.clear();
     for (auto& entry : entities_)
-        if (!entry.second.offstage)
-            byCell.push_back(&entry.second);
+        if (!entry.second.offstage && entry.second.downedLeft <= 0 && (battles_.empty() || !inBattle(entry.first)))
+            byCell.push_back(&entry.second);        // (Nobody pushes a wolf lying down or frozen in a fight.)
     std::stable_sort(byCell.begin(), byCell.end(), [](const Entity* x, const Entity* y) { return x->cellId < y->cellId; });
     for (std::size_t first = 0, end = 0; first < byCell.size(); first = end)
     {
@@ -2931,7 +2931,7 @@ bool World::continueSchedules(double budgetMs)
                     continue;                       // The road folk go their own ways (tendRoadFolk).
                 const auto* life = society_.resident(it->first);
                 if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
-                if (e.state == "beaten down") continue;   // Lying where they fell until they can get up (tendCrime).
+                if (e.state == "beaten down" || e.downedLeft > 0 || inBattle(it->first)) continue;   // Lying where they fell, or fighting.
                 std::string task = life->task, reason = life->reason, goalCell = life->goalCell;
                 Vec2 target{life->goalX, life->goalY};
                 // The watch and the gaol, then work on the road, come before the day's plan.
@@ -3211,6 +3211,7 @@ void World::tick(double dt)
     // Bounded steps prevent tunneling. The hosting server should use 1/30 s;
     // even delayed input cannot tunnel through an entire terrain feature.
     dt = std::min(dt, 60.0);
+    const double elapsed = dt;
     ++ticks_;
     ticking_ = true;
     struct Done { bool& flag; ~Done() { flag = false; } } done{ticking_};
@@ -3268,6 +3269,14 @@ void World::tick(double dt)
             }
             if (entry.second.offstage)
                 continue;                           // Offstage NPCs don't walk (see moveOffstage()).
+            if (entry.second.downedLeft > 0 || (!battles_.empty() && inBattle(entry.first)))
+            {
+                // Down, or in a fight's arena: the wolf lies (or stands in its lineup) where it is.
+                entry.second.velocity = {};
+                entry.second.input = {};
+                entry.second.path.clear();
+                continue;
+            }
             updateTravel(entry.second);
             integrate(entry.second, step);
         }
@@ -3277,6 +3286,8 @@ void World::tick(double dt)
         tickSeparation += since(mark);
         dt -= step;
     }
+    tendDowned(elapsed);                            // Down, out of a fight: the timer, getting up, being tended.
+    tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
     mark = Clock::now();
     // A player's map memory takes in what they see as they go. A view is thousands of sight rays, so it is taken
     // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
@@ -4191,7 +4202,9 @@ Result World::restore(const PersistedWorld& state)
     folk_.clear();
     encounters_.clear();
     spared_.clear();
-    swingReady_.clear();
+    battles_.clear();
+    challenges_.clear();
+    settleUntil_.clear();
     priceHour_ = -1;
     promises_.clear();
     for (const auto& p : state.promises)

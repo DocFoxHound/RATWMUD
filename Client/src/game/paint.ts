@@ -7,6 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
+import {myTurn, type BattleView} from './battle.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 
@@ -425,6 +426,80 @@ export class GamePainter {
         }
     }
 
+    /** Downed flashes orange; the dead are gray. */
+    private fallenColor(state: string): Color {
+        if (state === 'dead') return rgb(0x7d8285);
+        return withAlpha(rgb(0xff9a3c), 0.45 + 0.55 * Math.abs(Math.sin(this.s.clock * 4)));
+    }
+
+    /** The red squares around fights an onlooker can see (their fighters stand frozen in a lineup inside). */
+    private drawFights(ox: number, oy: number, tile: number) {
+        const p = this.p, red = rgb(0xd4483c);
+        for (const f of this.s.fights) {
+            const x = ox + f.x0 * tile, y = oy + f.y0 * tile, w = (f.x1 - f.x0) * tile, h = (f.y1 - f.y0) * tile;
+            p.frame(x, y, w, h, withAlpha(red, f.over ? 0.4 : 0.9));
+            p.frame(x + 1, y + 1, w - 2, h - 2, withAlpha(red, f.over ? 0.25 : 0.6));
+            p.text(x + 3, y - 14, f.watching ? 'FIGHT · WATCHING' : 'FIGHT', 9, withAlpha(red, 0.95), true);
+        }
+    }
+
+    /** Inside a fight: the arena, where this wolf may move, and the fighters on their tiles. */
+    private drawArena(b: BattleView, ox: number, oy: number, tile: number) {
+        const s = this.s, p = this.p, c = p.ctx;
+        const {x: ax, y: ay, w: aw, h: ah} = b.arena;
+        p.frame(ox + ax * tile, oy + ay * tile, aw * tile, ah * tile, withAlpha(rgb(0xd4483c), 0.75));
+        p.frame(ox + ax * tile + 1, oy + ay * tile + 1, aw * tile - 2, ah * tile - 2, withAlpha(rgb(0xd4483c), 0.45));
+        // Where this wolf can go this turn.
+        if (myTurn(b, s.selfId))
+            for (const [x, y] of b.reach) {
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.16));
+                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.35));
+            }
+        const me = b.fighters.find(f => f.id === s.selfId);
+        const mySide = me ? me.side : 0;
+        const wolfFont = clamp(Math.round(tile * 0.55), 10, 13);
+        const reach = Math.min(13, tile * 0.55);
+        let hovered = '';
+        for (const f of b.fighters) {
+            const x = ox + (f.x + 0.5) * tile, y = oy + (f.y + 0.5) * tile;
+            const self = f.id === s.selfId;
+            const color = self ? Amber : f.side === mySide ? Blue : rgb(0xe0695e);
+            if (b.turn === f.id && !b.over) {
+                c.beginPath();
+                c.arc(x, y, 16, 0, Math.PI * 2);
+                c.strokeStyle = css(withAlpha(Amber, 0.5 + 0.4 * Math.abs(Math.sin(s.clock * 3))));
+                c.lineWidth = 2;
+                c.stroke();
+            }
+            if (f.status === 'downed' || f.status === 'dead') this.turnedText(x, y, 'W', wolfFont, this.fallenColor(f.status), Math.PI / 2);
+            else {
+                const [ww, wh] = p.measure('W', wolfFont, true);
+                p.text(x - ww * 0.5, y - wh * 0.5, 'W', wolfFont, withAlpha(color, f.away ? 0.5 : 1), true);
+                const angle = f.facing * Math.PI / 4;
+                this.turnedText(x + Math.cos(angle) * reach, y + Math.sin(angle) * reach, '>', 10, color, angle);
+            }
+            if (!self) {
+                const [nw] = p.measure(f.name, 9, true);
+                p.text(x - nw * 0.5, y - 26, f.name, 9, withAlpha(color, 0.85), true);
+            }
+            s.hits.push({rect: rect(x - 14, y - 14, x + 14, y + 14), action: 'fighter', target: f.id});
+            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = f.id;
+        }
+        s.hoveredEntity = hovered;
+        // Over: the banner, then the arena fades out.
+        if (b.over) {
+            const map = s.mapRect;
+            const fade = clamp((s.clock - s.battleOverSeenAt - 2) / 0.5, 0, 1);
+            if (fade > 0) p.box(map.left, map.top, map.right - map.left, map.bottom - map.top, withAlpha(Ink, fade));
+            const words = b.banner || 'The fight is over';
+            const [bw] = p.measure(words, 16, true);
+            const cx = (map.left + map.right) / 2, cy = (map.top + map.bottom) / 2;
+            p.box(cx - bw / 2 - 18, cy - 22, bw + 36, 40, withAlpha(Panel, 0.92));
+            p.frame(cx - bw / 2 - 18, cy - 22, bw + 36, 40, withAlpha(Amber, 0.6));
+            p.text(cx - bw / 2, cy - 12, words, 16, Paper, true);
+        }
+    }
+
     /** A character drawn turned, centred on a point (the facing arrows). */
     private turnedText(x: number, y: number, text: string, size: number, color: Color, angle: number) {
         const c = this.p.ctx;
@@ -493,18 +568,25 @@ export class GamePainter {
         const me2 = s.entities.get(s.selfId);
         if (me2) this.drawScent(ox + me2.x * tile, oy + me2.y * tile);
         let hovered = '';
-        for (const view of s.entities.values()) {
+        // Back from a fight, everyone fades in where it left them (doc 33).
+        const fadeIn = clamp((s.clock - s.fightEndedAt) / 0.75, 0, 1);
+        for (const view of s.battle ? [] : s.entities.values()) {
             const x = ox + view.x * tile, y = oy + view.y * tile;
-            const color = view.self ? Amber : view.kind === 'npc' ? Sage : Blue;
+            const color = withAlpha(view.self ? Amber : view.kind === 'npc' ? Sage : Blue, fadeIn);
             if (view.self) {
-                p.frame(x - 17, y - 17, 34, 34, withAlpha(Amber, 0.22));
+                p.frame(x - 17, y - 17, 34, 34, withAlpha(Amber, 0.22 * fadeIn));
                 p.box(x - 9, y - 10, 18, 21, Ink);
             }
             const wolfFont = clamp(Math.round(tile * 0.55), 10, 13);
-            const [ww, wh] = p.measure('W', wolfFont, true);
-            p.text(x - ww * 0.5, y - wh * 0.5, 'W', wolfFont, color, true);
             const reach = Math.min(13, tile * 0.55);
-            this.turnedText(x + Math.cos(view.facing) * reach, y + Math.sin(view.facing) * reach, '>', 10, color, view.facing);
+            if (view.state === 'downed' || view.state === 'dead') {
+                // Downed: a sideways W flashing orange. Dead: a sideways W in gray.
+                this.turnedText(x, y, 'W', wolfFont, withAlpha(this.fallenColor(view.state), fadeIn), Math.PI / 2);
+            } else {
+                const [ww, wh] = p.measure('W', wolfFont, true);
+                p.text(x - ww * 0.5, y - wh * 0.5, 'W', wolfFont, color, true);
+                this.turnedText(x + Math.cos(view.facing) * reach, y + Math.sin(view.facing) * reach, '>', 10, color, view.facing);
+            }
             if (view.self && s.facingPreview && s.canFaceAt(s.hover))
                 this.turnedText(x + Math.cos(s.previewFacing) * reach, y + Math.sin(s.previewFacing) * reach, '>', 10, withAlpha(color, 0.32),
                     s.previewFacing);
@@ -539,6 +621,8 @@ export class GamePainter {
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
         }
         s.hoveredEntity = hovered;
+        if (s.battle) this.drawArena(s.battle, ox, oy, tile);
+        else this.drawFights(ox, oy, tile);
         this.drawEnvironment(true);
         // Words on the map, kept to its corners: wind and height top left, travel and turning along the bottom.
         const L = map.left + 14, T = map.top + 12, B = map.bottom;

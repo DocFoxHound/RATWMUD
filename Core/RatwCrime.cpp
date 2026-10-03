@@ -328,56 +328,6 @@ Result World::steal(const std::string& thief, const std::string& victimId)
     return {true, "You lift " + took + " from " + v->name + (caught ? ", and they feel it." : " unnoticed."), victimId};
 }
 
-Result World::assault(const std::string& attacker, const std::string& target)
-{
-    auto* a = entity(attacker);
-    auto* b = entity(target);
-    if (!a || a->dead)
-        return {false, "No such character.", {}};
-    if (custodyOf(attacker))
-        return {false, "You are held in the gaol.", {}};
-    if (!b || b->transient || b->id == attacker)
-        return {false, "There is no call to fight them.", target};
-    if (!a->npc && !b->npc)
-        return {false, "You can't attack another player.", target};
-    if (b->dead || b->hurt >= DownAt)
-        return {false, b->name + " is already down.", target};
-    if (a->cellId != b->cellId || between(a->position, b->position) > Reach)
-        return {false, "Get closer first.", target};
-    if (const auto ready = swingReady_.find(attacker); ready != swingReady_.end() && time_ < ready->second)
-        return {false, "You are still recovering your balance.", target};
-    if (a->stamina < 5)
-        return {false, "You are too spent to swing.", target};
-    a->stamina -= 6;
-    swingReady_[attacker] = time_ + Swing;
-    // One fight is one incident, however many blows.
-    const std::string pair = attacker + "|" + target;
-    Incident* inc = nullptr;
-    if (const auto open = fights_.find(pair); open != fights_.end() && time_ - open->second.second < 60)
-        inc = incident(open->second.first);
-    if (!inc)
-    {
-        inc = &openIncident("assault", attacker, target);
-        recordEvent({"assault", attacker, target, inc->cell, 0, 0, {}, 0, 0, inc->id});
-        bonds_.change(target, attacker, {-20, -20, 2, 15, -5}, calendarDays_);
-        witness(*inc, 0);
-    }
-    fights_[pair] = {inc->id, time_};
-    const auto swing = std::int64_t(time_ * 1000);
-    const double hitChance = std::clamp(.55 + (effectiveDexterity(*a) - 50) / 200, .2, .9);
-    if (chance(attacker + target, swing) >= hitChance)
-        return {true, "You swing at " + b->name + " and miss.", target};
-    b->hurt = std::min(DownAt, b->hurt + 18 + a->strength / 5 + double(roll(attacker, swing) % 8));
-    if (b->hurt < DownAt)
-        return {true, "You strike " + b->name + (b->hurt > 60 ? ". They are badly hurt." : ". They stagger."), target};
-    stop(target);
-    b->posture = "lying";
-    b->state = "beaten down";
-    recordEvent({"beaten down", attacker, target, b->cellId, 0, 0, {}, 0, 0, inc->id});
-    witness(*inc, 0);                               // Those who came running see the end of it.
-    return {true, "You beat " + b->name + " to the ground.", target};
-}
-
 Result World::report(const std::string& player, const std::string& guard)
 {
     const auto* p = entity(player);
@@ -611,7 +561,7 @@ void World::tendCrime()
     }
     // The beaten get up again in time.
     for (auto& [id, e] : entities_)
-        if (e.hurt > 0 && !e.dead)
+        if (e.hurt > 0 && !e.dead && e.downedLeft <= 0 && !inBattle(id))  // Not while down, nor in a fight.
         {
             e.hurt = std::max(0.0, e.hurt - HealPerHour * .5 / (calendar::SecondsPerDay / 24));
             if (e.state == "beaten down" && e.hurt < UpBelow)

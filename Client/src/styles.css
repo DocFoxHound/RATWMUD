@@ -254,3 +254,21 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .marking-row { display: grid; grid-template-columns: 1fr 54px 1fr 40px 40px; gap: 8px; align-items: center; }
 .marking-row input[type=color] { width: 54px; height: 36px; padding: 0; border: none; background: none; }
 .door .marking-row .small { padding: 8px 0; background: var(--raised); color: var(--paper); }
+
+/* Fights (Docs/Design/33-combat.md): the panel under the map. */
+.fight-panel { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background: var(--panel);
+    border: 1px solid color-mix(in srgb, #d4483c 55%, transparent); border-radius: 3px; }
+.fight-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fight-alert { color: #f0a08f; font-weight: 600; }
+.fight-turn { color: var(--gold); font-weight: 600; }
+.fight-go { border-color: var(--gold) !important; color: var(--gold) !important; }
+.fight-chip { padding: 2px 7px; border: 1px solid #34443e; border-radius: 2px; font-size: 12px; color: var(--sage); }
+.fight-chip.foe { color: #e0695e; }
+.fight-chip.you { color: var(--gold); }
+.fight-chip.now { outline: 1px solid var(--gold); }
+.fight-who { font-size: 12px; color: #8fb0d6; }
+.fight-who.foe { color: #e0695e; }
+.fight-who.fallen { color: #ff9a3c; }
+.fight-log { display: flex; flex-direction: column; gap: 1px; font-size: 12px; color: var(--muted); max-height: 92px; overflow-y: auto; }
+.fight-line.hit, .fight-line.down, .fight-line.death { color: var(--paper); }
+.fight-line.over { color: var(--gold); }

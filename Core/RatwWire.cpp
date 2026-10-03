@@ -170,6 +170,10 @@ Value persistEntity(const Entity& e, double time)
     o.add("exhausted", e.exhausted);
     if (e.hurt > 0)
         o.add("hurt", e.hurt);
+    if (e.downedLeft > 0)
+        o.add("downedLeft", e.downedLeft);
+    if (e.recoveryUsed >= 0)
+        o.add("recoveryUsed", e.recoveryUsed);
     return o;
 }
 
@@ -219,6 +223,11 @@ Entity readEntity(const Value& o)
         e.hurt = hurt;
     else
         e.stamina = -1;                            // So does a malformed injury.
+    if (const double left = strictNumber(o, "downedLeft", o.has("downedLeft") ? -1.0 : 0.0); left >= 0 && left <= 86400)
+        e.downedLeft = left;
+    else
+        e.stamina = -1;
+    e.recoveryUsed = strictNumber(o, "recoveryUsed", -1.0);
     e.postureTarget = o.string("postureTarget");
     e.postureRemaining = number(o, "postureRemaining");
     e.turnTarget = e.facing;                       // Input, paths and manual turn intents are never reloaded.

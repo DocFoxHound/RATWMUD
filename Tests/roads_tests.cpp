@@ -1,6 +1,7 @@
 // The roads (RatwRoads.h): towns and their stores, caravans that carry real goods, bandits who take them, contracts,
 // and rumours. A strip of nine cells: the capital "east" at one end, "west" at the other, wild country between.
 #include "RatwWorld.h"
+#include "battle_play.h"
 
 #include <cmath>
 #include <iostream>
@@ -423,25 +424,26 @@ void aFight()
     ada->position = {8.5, 8.5};
     run(w, 2);
     expect(!w.attack("player-ada", "npc_nobody").ok, "Nothing to fight that isn't there");
-    // She walks up to the leader and swings until it is over, one way or the other.
+    // She walks up to the leader and goes for it: a fight in an arena (Docs/Design/33-combat.md), the whole band in it.
     const auto purse = w.society().account("player-ada")->cash;
     ada->cellId = id(4);
+    const auto* leader = w.entity("road:camp_mid:0");
+    expect(leader, "The camp's leader is on the road");
+    ada->position = {std::max(.6, leader->position.x - 1), leader->position.y};
+    const auto started = w.attack("player-ada", leader->id);
+    expect(started.ok && w.inBattle("player-ada"), "A fight begins: " + started.message);
+    expect(w.battleOf("player-ada")->fighters.size() >= 2 && !w.battleOf("player-ada")->camp.empty(), "against the band");
     bool cleared = false;
-    std::string last;
-    for (int t = 0; t < 300 && !cleared; ++t)
+    for (int t = 0; t < 6000 && !cleared; ++t)
     {
-        const auto* leader = w.entity("road:camp_mid:0");
-        if (!leader || leader->dead)
-            break;
-        ada->position = {std::max(.6, leader->position.x - 1), leader->position.y};
-        ada->stamina = std::max(ada->stamina, 60.0);        // A strong fighter (and the test isn't about losing).
-        const auto swing = w.attack("player-ada", leader->id);
-        if (swing.ok)
-            last = swing.message;
-        w.tick(.5);
+        auto* me = w.entity("player-ada");
+        me->stamina = std::max(me->stamina, 60.0);          // A strong fighter (and the test isn't about losing).
+        me->hurt = 0;
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
         cleared = !w.roads().camps[0].active;
     }
-    expect(cleared, "She strikes the leader down and the camp is broken (" + last + ")");
+    expect(cleared, "She downs the leader, the rest run, and the camp is broken");
     bool paid = false;
     for (const auto& k : w.roads().contracts)
         paid |= k.id == bountyId && k.status == "done";
@@ -468,9 +470,9 @@ void beatenAndRobbed()
     ada->stamina = 30;
     w.society().shift("treasury", "player-ada", "", 0, 80, "test: a fuller purse");
     const auto purse = w.society().account("player-ada")->cash;
-    // She neither pays nor leaves: they lose patience.
+    // She neither pays nor leaves: they lose patience, and it is a fight; she lets every turn go by.
     bool beaten = false;
-    for (int t = 0; t < 120 && !beaten; ++t)
+    for (int t = 0; t < 900 && !beaten; ++t)
     {
         w.entity("player-ada")->stamina = std::min(w.entity("player-ada")->stamina, 30.0);
         w.tick(1);
@@ -480,7 +482,7 @@ void beatenAndRobbed()
     expect(beaten, "They beat her to the ground");
     const auto now = w.society().account("player-ada")->cash;
     expect(now < purse && now >= purse / 2 - 1, "and take half her purse (" + std::to_string(purse) + " -> " + std::to_string(now) + ")");
-    expect(!w.entity("player-ada")->dead, "but she lives");
+    expect(!w.entity("player-ada")->dead && w.entity("player-ada")->downedLeft > 0, "but she lives, Downed");
     expect(!w.banditDemand("player-ada"), "They leave her be");
     expect(w.society().conserved(), "Money is conserved");
 }

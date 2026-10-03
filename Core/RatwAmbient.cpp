@@ -494,7 +494,7 @@ std::vector<AmbientPick> World::ambientPicks(const std::vector<std::string>& lis
         return found != ambientLast_.end() && time_ - found->second < every;
     };
     const auto free = [&](const Entity& e) {
-        if (!e.npc || e.dead || e.transient || e.offstage || e.state == "beaten down" || !e.leaderId.empty() ||
+        if (!e.npc || e.dead || e.transient || e.offstage || e.state == "beaten down" || e.downedLeft > 0 || !e.leaderId.empty() ||
             custodyOf(e.id) || busy.count(e.id) || e.speakingUntil > time_ || recent(e.id, EachEvery) ||
             !e.path.empty() || std::hypot(e.velocity.x, e.velocity.y) > .05)
             return false;

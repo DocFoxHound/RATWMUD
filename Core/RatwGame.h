@@ -153,7 +153,8 @@ class Game
     // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
     // tick does this as it goes, without waiting).
     void settle();
-    // A character in a fight (doc 33's arenas, when they come): no walking of any kind until it ends.
+    // A character held still by the host (tests): no walking of any kind until released. A fighter in an arena, and
+    // anyone Downed, are held so by the world's fights (doc 33) without it.
     void setFighting(const std::string& id, bool fighting);
     enum MovementMode : std::uint8_t
     {
@@ -235,6 +236,11 @@ class Game
     bool batching_ = false;
     void finishSnapshot(Connection* c, json::Value root, double revision);
     void updateMovementModes();
+    // Fights (RatwGameBattle.cpp): the arena as a fighter or watcher sees it, the red squares an onlooker sees, and
+    // the "battle" commands (false: not one of them).
+    json::Value battleView(const Battle& b, const std::string& viewer) const;
+    json::Value fightsInView(const Entity& self) const;
+    bool battleCommand(Connection* c, const json::Value& j, Result& result);
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

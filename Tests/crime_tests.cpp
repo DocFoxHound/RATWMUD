@@ -1,6 +1,7 @@
 // Crime and law (Core/RatwCrime.h; Docs/Design/26-living-npcs.md, Phase 7), in Greyfen: Wren keeps shop, four guards
 // keep the Watch.
 #include "RatwCheckpoint.h"
+#include "battle_play.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -96,7 +97,9 @@ void refusals()
     w.addPlayer("player-bo", "Bo");
     beside(w, "player-ada", "player-bo");
     expect(!w.steal("player-ada", "player-bo").ok, "No stealing from other players");
-    expect(!w.attack("player-ada", "player-bo").ok, "No fighting other players");
+    expect(w.attack("player-ada", "player-bo").ok && !w.inBattle("player-ada") && w.challengeTo("player-bo"),
+           "Another player is challenged, not set on");
+    expect(w.answerChallenge("player-bo", false).ok && !w.inBattle("player-bo"), "and a no is a no");
     beside(w, "player-ada", "wren", 5);
     expect(!w.steal("player-ada", "wren").ok, "A purse out of reach is safe");
     beside(w, "player-ada", "wren");
@@ -174,36 +177,81 @@ void unpaidMeansGaol()
 
 void assaultBeatsDown()
 {
+    // Setting on a resident is an assault: a fight in an arena (Docs/Design/33-combat.md), and a crime.
     auto w = town();
     w.addPlayer("player-ada", "Ada");
-    w.entity("player-ada")->strength = 90;
-    std::vector<WorldEvent> seen;
-    bool down = false;
-    for (int i = 0; i < 200 && !down; ++i)
-    {
-        beside(w, "player-ada", "wren");
-        w.entity("player-ada")->stamina = 100;
-        w.entity("player-ada")->exhausted = false;
-        w.attack("player-ada", "wren");
-        w.tick(1.3);
-        down = w.entity("wren")->state == "beaten down";
-    }
-    expect(down, "Enough blows beat a resident down");
-    expect(!w.entity("wren")->dead, "but never kill them");
-    expect(hasEvent(w, "beaten down", seen), "It is an event");
-    const auto assaults = std::count_if(w.crime().incidents.begin(), w.crime().incidents.end(),
-                                        [](const Incident& i) { return i.kind == "assault"; });
-    expect(assaults == 1, "One fight is one incident");
+    auto* ada = w.entity("player-ada");
+    ada->strength = 100;
+    ada->dexterity = 100;
+    beside(w, "player-ada", "wren");
+    const auto started = w.attack("player-ada", "wren");
+    expect(started.ok && w.inBattle("player-ada") && w.inBattle("wren"), "An attack starts a fight: " + started.message);
+    const auto assaults = [&] {
+        return std::count_if(w.crime().incidents.begin(), w.crime().incidents.end(), [](const Incident& i) { return i.kind == "assault"; });
+    };
+    expect(assaults() == 1, "It is an assault");
     expect(w.bonds().find("wren", "player-ada") && w.bonds().find("wren", "player-ada")->fear > 0, "Wren fears Ada now");
+    for (int i = 0; i < 4000 && w.inBattle("player-ada"); ++i)
+    {
+        w.entity("player-ada")->hurt = 0;           // (Not a test of losing.)
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
+    }
+    expect(!w.inBattle("player-ada"), "The fight ends");
+    const auto* wren = w.entity("wren");
+    expect(wren->downedLeft > 0 || wren->hurt > 0, "Wren is hurt, or down");
+    expect(!wren->dead, "and lives");
+    expect(assaults() == 1, "One fight is one incident");
     // Wren tells the Watch when a guard comes by.
     beside(w, "sloe", "wren", -1, 2);
     for (int i = 0; i < 10; ++i)
         w.tick(.5);
     expect(w.warrantFor("player-ada"), "The victim's account, told to a guard, makes a warrant");
-    // They recover in a few hours.
-    for (int i = 0; i < 4 * 600 && w.entity("wren")->state == "beaten down"; ++i)
+}
+
+void downedAndUp()
+{
+    // A guard fights back, and goes down; a resident left Downed gets up again by itself (once a day).
+    auto w = town();
+    w.addPlayer("player-ada", "Ada");
+    auto* ada = w.entity("player-ada");
+    ada->strength = 100;
+    ada->dexterity = 100;
+    beside(w, "player-ada", "sloe");
+    expect(w.attack("player-ada", "sloe").ok, "Ada goes for Sloe");
+    std::vector<WorldEvent> seen;
+    bool downed = false;
+    for (int i = 0; i < 4000 && w.inBattle("player-ada") && !downed; ++i)
+    {
+        w.entity("player-ada")->hurt = 0;
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
+        downed = w.entity("sloe")->downedLeft > 0;
+    }
+    expect(downed, "Enough bites put a guard down");
+    expect(hasEvent(w, "downed", seen), "It is an event");
+    expect(!w.entity("sloe")->dead, "Down is not dead");
+    for (int i = 0; i < 400 && w.inBattle("player-ada"); ++i)
+    {
+        w.entity("player-ada")->hurt = 0;
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
+    }
+    // She got up once in the fight (her one a day) and went down again: now only tending gets her up.
+    const auto* sloe = w.entity("sloe");
+    expect(sloe->downedLeft > 0 && !w.recoveryAvailable(*sloe), "Down twice: her own getting-up is spent");
+    for (int i = 0; i < 60; ++i)
         w.tick(1);
-    expect(w.entity("wren")->state != "beaten down", "and get up again");
+    expect(w.entity("sloe")->downedLeft > 0, "so she stays down");
+    for (int i = 0; i < 10; ++i)
+        w.tick(1);                                  // (Past the five seconds' settling after a fight.)
+    beside(w, "player-ada", "sloe");
+    const auto tended = w.tendWounds("player-ada", "sloe");
+    expect(tended.ok, "Ada can tend her: " + tended.message);
+    for (int i = 0; i < 12; ++i)
+        w.tick(1);
+    expect(w.entity("sloe")->downedLeft <= 0 && !w.entity("sloe")->dead && w.entity("sloe")->hurt > 75 && w.entity("sloe")->hurt <= 80,
+           "and Sloe is back on her feet, hurt");
 }
 
 void needMakesThieves()
@@ -276,6 +324,7 @@ int main()
         theftBeforeTheWatch();
         unpaidMeansGaol();
         assaultBeatsDown();
+        downedAndUp();
         needMakesThieves();
         savedAndRestored();
     }

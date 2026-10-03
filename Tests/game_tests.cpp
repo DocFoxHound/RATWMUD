@@ -1066,6 +1066,74 @@ void talkTargets()
     g.disconnect(&ash);
 }
 
+void fightsThroughTheGame()
+{
+    // Docs/Design/33-combat.md, through commands and snapshots: a challenge, the arena in the snapshot, turns, and an
+    // onlooker who sees a red square and watches.
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client ada, bo, cy;
+    ada.id = 70;
+    bo.id = 71;
+    cy.id = 72;
+    for (auto* c : {&ada, &bo, &cy})
+        g.connect(c);
+    g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+    g.command(&bo, cmd({{"type", "hello"}, {"id", "bo"}, {"name", "Bo"}}));
+    g.command(&cy, cmd({{"type", "hello"}, {"id", "cy"}, {"name", "Cy"}}));
+    auto* a = g.world().entity(ada.entityId);
+    auto* b = g.world().entity(bo.entityId);
+    auto* c = g.world().entity(cy.entityId);
+    b->cellId = c->cellId = a->cellId;
+    b->position = {a->position.x + 1.2, a->position.y};
+    c->position = {a->position.x - 2, a->position.y};
+    a->dexterity = 80;
+    run(g, ada, .5);
+    // The menu offers a challenge, not an attack, between players.
+    bool offered = false;
+    for (const auto& e : ada.snapshots.back().array("entities"))
+        if (e.string("id") == bo.entityId)
+            for (const auto& act : e.array("actions"))
+                offered = offered || act.asString() == "challenge";
+    expect(offered, "Bo can be challenged");
+    g.command(&ada, cmd({{"type", "action"}, {"action", "challenge"}, {"target", bo.entityId}}));
+    run(g, bo, .3);
+    expect(bo.snapshots.back().has("challenge") && bo.snapshots.back()["challenge"].string("from") == ada.entityId,
+           "Bo is asked");
+    g.command(&bo, cmd({{"type", "action"}, {"action", "accept"}}));
+    run(g, ada, .3);
+    run(g, cy, .3);
+    const auto& seen = ada.snapshots.back();
+    expect(seen.has("battle"), "Ada's snapshot carries the arena");
+    const auto fight = seen["battle"];
+    expect(fight["arena"].number("w") > 0 && fight.array("rows").size() == std::size_t(fight["arena"].number("h")),
+           "with its ground, a row a tile");
+    expect(fight.string("turn") == ada.entityId && !fight.array("reach").empty(), "Her turn, and where she may go");
+    expect(fight.array("order").size() >= 2 && fight.array("fighters").size() == 2, "the turn order and the fighters");
+    expect(ada.lastMotion.number("mode") == game::Game::Fighting, "No walking in the arena");
+    const auto before = a->position;
+    g.command(&ada, cmd({{"type", "move"}, {"x", 1.0}, {"y", 0.0}}));
+    run(g, ada, .3);
+    expect(a->position.x == before.x && a->position.y == before.y, "walking is refused");
+    // An onlooker sees the red square and may watch.
+    expect(cy.snapshots.back().has("fights") && cy.snapshots.back().array("fights").size() == 1, "Cy sees the fight");
+    const auto square = cy.snapshots.back().array("fights")[0];
+    expect(square.boolean("canJoin") && square.boolean("canObserve"), "and may join or watch it");
+    g.command(&cy, cmd({{"type", "battle"}, {"verb", "observe"}, {"battle", square.string("id")}}));
+    run(g, cy, .3);
+    expect(cy.snapshots.back().has("battle") && cy.snapshots.back()["battle"]["you"].boolean("observer"), "Watching, she sees it");
+    // A move and a wait, by command.
+    const auto spot = fight.array("reach")[0].items();
+    g.command(&ada, cmd({{"type", "battle"}, {"verb", "move"}, {"x", spot[0].asNumber()}, {"y", spot[1].asNumber()}}));
+    g.command(&ada, cmd({{"type", "battle"}, {"verb", "wait"}}));
+    run(g, ada, .3);
+    expect(ada.snapshots.back()["battle"].string("turn") != ada.entityId, "Her turn is done");
+    expect(!g.world().battleReach(ada.entityId).size(), "and she has nowhere to go out of turn");
+}
+
 int main()
 {
     try
@@ -1085,6 +1153,7 @@ int main()
         unreadableSavesAreKept();
         mismatchedOwnersAreRefused();
         theJournalKeepsWhatACrashWouldLose();
+        fightsThroughTheGame();
     }
     catch (const std::exception& error)
     {

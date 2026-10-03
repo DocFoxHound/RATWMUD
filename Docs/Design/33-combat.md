@@ -1,6 +1,7 @@
 # Combat: turn-based arenas, attacks, injury and death
 
-Status: design only, October 2, 2026. Nothing here is implemented. This
+Status: designed October 2, 2026; the turn-based core built the same day (see [Built](#built) at the end). Sword,
+Flamethrower, mana and the attack animations are still to come. This
 document sets the combat rules; [18-combat-presentation.md](18-combat-presentation.md)
 still governs the encounter log and map-cue presentation except where noted.
 All numbers are starting tuning, not final balance. Shared working copy:
@@ -403,3 +404,66 @@ Build the resolver first and the spectacle last; each phase is playable on its o
 5. **Feedback.** Reachable-tile tint, range previews, turn order bar, W nudge and recoil, contact glyphs, the encounter card from doc 18.
 6. **Sword, then Flamethrower.** Mouth slot and knock-loose; then mana, Fire Gift eligibility, charge meter, locked cone, Burning, self-damage.
 7. **Balance and playtest.** Fight simulator runs, then a real multi-client fight to check turn pacing.
+
+## Built
+
+Built October 2, 2026: the turn-based core (phases 1–4 above, and the parts of 5 that a fight can't be played
+without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are next.
+
+- **The rules** (`Core/RatwBattle.h`, `Core/RatwBattle.cpp`, World members):
+  - Starting a fight: an attack on an NPC, bandits who lose patience, or an accepted challenge between players.
+  - The arena is cut from the cell: 64×48 tiles (twice a 32×24 view) plus a tile each way per fighter past two, never
+    past the cell's edges.
+  - Fighters stand frozen in two facing lines in the world, where there is room.
+  - The initiative meter (6 + DEX/10 a tick); starters begin full, joiners empty.
+  - A turn is a move and one action (Bite, Tend, Flee, Struggle, Wait), with the next turn's head start when either is
+    skipped.
+  - Turn timers: 30 s, plus 15 once while typing; three run out in a row and the player is away and skipped until they
+    act again.
+  - Facing gives +10% to hit from the side and +20% from behind.
+  - Bite: 12 base damage, 8 stamina; stamina comes back +8 a turn, less when hurt; move range shrinks with injury.
+  - Downed: the timer by cause, minus overkill, counted a minute a turn in a fight and in real seconds outside one.
+    Struggling up works once a game day; anyone can tend; when the timer runs out, death is permanent.
+  - Fleeing from the arena's outer two rows, against adjacent foes' dexterity; no rejoining as a fighter, no new fight
+    with them until it ends.
+  - Joining from the square's edge, on either side, with no approval.
+  - Observe mode, and the observe-only lock.
+  - The 2 s banner, then everyone back in the world at their arena tile (or the nearest open spot), with a 5 s settle.
+  - NPC temperament: fighting skill, aggressive, cautious or timid by trade and age, and flee thresholds.
+- **What it replaced:**
+  - The real-time `World::assault` and the bandits' `World::attack` and blows are gone.
+  - An assault on a resident is still a crime (incident, witnesses, fear, the Watch). On-duty guards who see it join
+    against the attacker.
+  - A bandit camp's fight is the whole band against the traveller. When the leader goes down, the rest run and the camp
+    is broken; a traveller left Downed is robbed.
+- **Through the game** (`Core/RatwGameBattle.cpp`):
+  - `{"type":"battle","verb":...}` commands, and the `challenge`, `accept`, `decline`, `struggle` and `tend` actions.
+  - The snapshot's `battle` (the arena's ground, fighters, turn, order, reachable tiles, log), `fights` (red squares
+    in sight) and `challenge`, and `self.health` / `downedLeft`.
+  - A fighter or anyone Downed is in movement mode 2 (no walking).
+  - `downedLeft` and `recoveryUsed` are saved.
+- **The page** (`Client/src/game/battle.ts`, `paint.ts`, `ui/hud/fight.ts`):
+  - The arena drawn over the cell with only it in sight, reachable tiles lit, fighters on their tiles, and the
+    turn-holder ringed.
+  - Downed is a sideways `W` flashing orange; dead is a sideways `W` in gray (in the world too).
+  - Click a lit tile to move, a foe to bite, a fallen friend to tend.
+  - The fight panel: turn and timer, the next six turns, Wait/End turn, Flee, Struggle up, who is how hurt, and the
+    fight's log.
+  - Challenge prompts, being Downed out of a fight, and red squares with Join/Watch.
+  - The fade out at the end, and back in.
+- **Tests:**
+  - `Tests/battle_tests.cpp`, a fight through commands and snapshots in `Tests/game_tests.cpp`, and the rewritten crime
+    and bandit fights in `Tests/crime_tests.cpp` and `Tests/roads_tests.cpp`.
+  - `Client/src/game/battle.test.ts`.
+  - A real fight in headless Chromium, three players each in their own browser: `node tools/client/fight.mjs`.
+
+Not yet:
+- Sword and the mouth slot, Flamethrower, mana and the Fire Gift.
+- The W nudge and recoil and the glyph effects (the log says what happened).
+- Doc 18's single expandable encounter entry (the fight panel's log stands in).
+- Truces.
+- Player parties auto-joining (there are no player parties yet; NPC companions and bandit bands do come in).
+- A disconnected fighter's body staying 60 s: a player who leaves the world is out of the fight.
+- Crawling out of a fight.
+- Training fighting skill.
+- Combat noise through hearing.

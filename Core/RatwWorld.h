@@ -12,6 +12,7 @@
 #include <tuple>
 #include <vector>
 #include "RatwAppearance.h"
+#include "RatwBattle.h"
 #include "RatwBonds.h"
 #include "RatwCrime.h"
 #include "RatwSchedules.h"
@@ -201,8 +202,13 @@ struct Entity
     double postureRemaining = 0.0;
     std::string postureTarget;
     int speakingColor = 0;
-    // How badly hurt (0..100): at 100 a character is beaten down and lies there until it heals below 50 (Phase 7).
+    // How badly hurt (0..100): health is 100 − hurt. At 100 a character is Downed (Docs/Design/33-combat.md): lying,
+    // with `downedLeft` seconds until they die unless they struggle up (once a game day) or someone tends them.
     double hurt = 0.0;
+    double downedLeft = 0.0;
+    double recoveryUsed = -1.0;               // The game day (whole) the self-recovery was last used; -1 never.
+    double struggleUntil = 0.0, tendUntil = 0.0;   // Getting up, and tending someone, out of a fight (not saved).
+    std::string tending;
     bool typing = false;
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
@@ -463,9 +469,34 @@ class World
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
     // What an NPC has heard about someone, in words for a conversation (empty if nothing).
     std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;
-    // Fights (a first, placeholder version; only bandits can be fought). A player swings at a bandit within reach;
-    // stamina is what a fight wears down, and one beaten to the ground is robbed, not killed.
+    // Fights (Docs/Design/33-combat.md; RatwBattle.cpp). An attack starts a turn-based fight in an arena cut from the
+    // cell, or joins the fight the target is already in. A player attacking a player challenges them instead: the
+    // fight starts when they accept.
     Result attack(const std::string& attacker, const std::string& target);
+    Result challenge(const std::string& from, const std::string& to);
+    Result answerChallenge(const std::string& player, bool accept);
+    const Challenge* challengeTo(const std::string& player) const;
+    const std::vector<Battle>& battles() const { return battles_; }
+    const Battle* battle(const std::string& battleId) const;
+    // The fight a character is in as a fighter (fighting or Downed in it; not fled), or watching; null if none.
+    const Battle* battleOf(const std::string& id) const;
+    const Battle* watching(const std::string& id) const;
+    bool inBattle(const std::string& id) const { return battleOf(id) != nullptr; }
+    // A fighter's turn: move to a tile (crawl one, when Downed), and act: "bite", "tend", "struggle", "flee", "wait".
+    Result battleMove(const std::string& id, int x, int y);
+    Result battleAct(const std::string& id, const std::string& action, const std::string& target = {});
+    // The tiles a fighter may move to now (none when it isn't their turn, or they have moved).
+    std::vector<std::pair<int, int>> battleReach(const std::string& id) const;
+    // Coming into a fight from the edge of its square: as a fighter on a side, or to watch it.
+    Result joinBattle(const std::string& id, const std::string& battleId, int side);
+    Result observeBattle(const std::string& id, const std::string& battleId);
+    Result leaveObserving(const std::string& id);
+    // Out of a fight: struggling up from Downed (the once-a-day self-recovery), and tending someone Downed.
+    Result struggleUp(const std::string& id);
+    Result tendWounds(const std::string& id, const std::string& target);
+    bool downed(const std::string& id) const;
+    bool recoveryAvailable(const Entity& e) const;
+    battle::Temperament temperamentOf(const Entity& e) const;
     // Crime and law (RatwCrime.h, Phase 7). A theft from or an assault on a resident is an incident, known only to
     // those who perceived it; they tell the watch, which wants the offender once what it has heard is enough.
     // Players can't steal from or attack each other.
@@ -726,7 +757,6 @@ class World
     void weigh(Incident& inc);
     void reportTo(Incident& inc, Witness& w, const std::string& guard);
     bool willReport(const Witness& w, const Incident& inc) const;
-    Result assault(const std::string& attacker, const std::string& target);
     void settleWarrant(const Warrant& w, const std::string& guard);
     bool gaolSpot(const std::string& town, std::string& cellId, double& x, double& y);
     void takeIntoCustody(const std::string& person, const std::string& town, const std::string& guard);
@@ -762,7 +792,31 @@ class World
     };
     std::vector<Encounter> encounters_;
     std::map<std::string, double> spared_;          // Players bandits leave alone until then (world seconds).
-    std::map<std::string, double> swingReady_;      // When each player may swing again.
+    // Fights (RatwBattle.cpp).
+    std::vector<Battle> battles_;
+    std::vector<Challenge> challenges_;
+    std::map<std::string, double> settleUntil_;     // No new fight for these until then (just back from one).
+    std::uint64_t nextBattle_ = 0;
+    Battle* battleFor(const std::string& id);
+    Battle* battleById(const std::string& battleId);
+    Result startBattle(const std::string& attacker, const std::string& target, bool pvp);
+    void enterBattle(Battle& b, const std::string& id, int side, bool full);
+    void fitArena(Battle& b);
+    bool arenaOpen(const Battle& b, int x, int y, const std::string& except = {}) const;
+    void lineUp(Battle& b);
+    void tendBattles(double dt);
+    void beginTurn(Battle& b, BattleFighter& f);
+    void endTurn(Battle& b);
+    void npcTurn(Battle& b, BattleFighter& f);
+    Result bite(Battle& b, BattleFighter& f, const std::string& target);
+    void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);
+    void fightLine(Battle& b, const std::string& actor, const std::string& target, const std::string& kind, std::string text);
+    void checkOver(Battle& b);
+    void finishBattle(Battle& b);
+    void leaveArena(Battle& b, BattleFighter& f, bool fleeing);
+    std::vector<std::pair<int, int>> reachFrom(const Battle& b, const BattleFighter& f, int range) const;
+    void standUp(Entity& e, double health);
+    void tendDowned(double dt);
     std::vector<std::pair<std::string, std::string>> notices_;
     std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two towns (cells), for bandits.
     std::int64_t priceHour_ = -1;

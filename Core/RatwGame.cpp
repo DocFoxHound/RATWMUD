@@ -1102,8 +1102,8 @@ void Game::updateMovementModes()
             continue;
         const auto& id = e->id;
         std::uint8_t mode = FreeMovement;
-        if (fighting_.count(id))
-            mode = Fighting;
+        if (fighting_.count(id) || e->downedLeft > 0 || world_.inBattle(id))
+            mode = Fighting;                       // In an arena, or lying Downed: no walking at all (doc 33).
         else if (world_.pursued(id) || world_.foughtWithin(id, HeldAfter) || world_.offendedWithin(id, HeldAfter) ||
                  !e->path.empty() || world_.travelState(id).active)
             mode = HeldMovement;                   // (A route or a journey the server walks counts as held too.)
@@ -1916,6 +1916,17 @@ void Game::sendSnapshot(Connection* c)
         self.set("sightRange", world_.sightRange(*me));    // (For a client shading the terrain itself.)
         self.set("moveFactor", world_.environmentAt(me->cellId, me->position).movement);
     }
+    // Health and being Downed (doc 33): how hurt, how long they have, whether they can get up by themselves today.
+    if (const auto* me = world_.entity(id))
+    {
+        self.set("health", std::round(100 - me->hurt));
+        if (me->downedLeft > 0)
+        {
+            self.set("downedLeft", std::round(me->downedLeft));
+            self.set("canStruggle", world_.recoveryAvailable(*me) && me->struggleUntil <= 0);
+            self.set("struggling", me->struggleUntil > 0);
+        }
+    }
     root.add("self", self);
     auto cell = Value::object();
     cell.add("id", view.cell.id);
@@ -2035,7 +2046,7 @@ void Game::sendSnapshot(Connection* c)
                 j.set("hostile", true);
                 if (world_.banditDemand(view.self.id) > 0)
                     actions.push("pay");
-                if (std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 2)
+                if (std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= battle::StartReach)
                     actions.push("attack");
             }
         }
@@ -2054,7 +2065,7 @@ void Game::sendSnapshot(Connection* c)
             const auto* post = world_.society().jobOf(e.id);
             const bool guard = post && post->role == "guard";
             const bool reach = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 2;
-            if (!e.dead && reach && e.state != "beaten down")
+            if (!e.dead && reach && e.state != "beaten down" && e.downedLeft <= 0)
             {
                 actions.push("steal");
                 actions.push("attack");
@@ -2082,6 +2093,14 @@ void Game::sendSnapshot(Connection* c)
                 !world_.society().apprenticedTo(view.self.id) && near(e))
                 actions.push("apprentice");
         }
+        // Fights (doc 33): a player close by may be challenged; anyone lying Downed close by (out of a fight) tended.
+        const double apart = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y);
+        if (!e.npc && e.id != view.self.id && !e.dead && e.downedLeft <= 0 && apart <= battle::StartReach)
+            actions.push("challenge");
+        if (e.id != view.self.id && !e.dead && e.downedLeft > 0 && apart <= 2 && !world_.inBattle(e.id))
+            actions.push("tend");
+        if (e.downedLeft > 0)
+            j.set("downed", true);
         j.set("actions", actions);
         entities.push(j);
     }
@@ -2112,6 +2131,21 @@ void Game::sendSnapshot(Connection* c)
         travelMap.push(wire::mapCell(m, false));
     root.add("travelMap", travelMap);
     root.add("travel", wire::travel(world_.travelState(id)));
+    // Fights (doc 33): the arena, for a fighter or a watcher; the red squares, for anyone who can see one; and a
+    // challenge waiting for an answer.
+    if (const auto* fight = world_.battleOf(id) ? world_.battleOf(id) : world_.watching(id))
+        root.add("battle", battleView(*fight, id));
+    if (auto fights = fightsInView(view.self); fights.size() > 0)
+        root.add("fights", fights);
+    if (const auto* challenge = world_.challengeTo(id))
+        if (const auto* from = world_.entity(challenge->from))
+        {
+            auto o = Value::object();
+            o.add("from", from->id);
+            o.add("name", from->name);
+            o.add("left", std::max(0.0, challenge->until - world_.time()));
+            root.add("challenge", o);
+        }
     root.add("isometric", view.isometric);
     root.add("connection", options_.connectionLabel);
     root.add("dialogueProvider", mind_.label());
@@ -2676,7 +2710,7 @@ void Game::command(Connection* c, const std::string& raw)
     const bool walkingCommand = type == "move" || type == "path" || type == "pose" || type == "face" || type == "travel";
     if (walkingCommand && c->movementMode == Fighting)
     {
-        result = {false, "You are in a fight.", {}};
+        result = {false, player->downedLeft > 0 && !world_.inBattle(id) ? "You are down." : "You are in a fight.", {}};
         report = type != "move" && type != "pose";
     }
     else if (type == "walking")
@@ -2802,6 +2836,14 @@ void Game::command(Connection* c, const std::string& raw)
         report = true;
         saveSoon();
     }
+    else if (type == "battle")
+    {
+        if (!battleCommand(c, j, result))
+            result = {false, "You can't do that in a fight.", {}};
+        report = !result.ok;                       // What happened is in the fight's own log; only a refusal is said.
+        if (result.ok)
+            record(Character, id);
+    }
     else if (type == "action")
     {
         const std::string target = j.string("target"), action = j.string("action");
@@ -2901,12 +2943,26 @@ void Game::command(Connection* c, const std::string& raw)
             if (done.ok)
                 record(Economy | Crime | Character, id);
         }
-        else if (action == "attack" || action == "pay")
+        else if (action == "attack" || action == "pay" || action == "challenge")
         {
-            const auto done = action == "attack" ? world_.attack(id, target) : world_.payBandits(id, target);
+            const auto done = action == "pay" ? world_.payBandits(id, target) : world_.attack(id, target);
             system(c, done.message);
             if (done.ok)
                 record(Economy | Crime | Roads | Character, id);
+            updateMovementModes();
+        }
+        else if (action == "accept" || action == "decline")
+        {
+            const auto done = world_.answerChallenge(id, action == "accept");
+            system(c, done.message);
+            updateMovementModes();
+        }
+        else if (action == "struggle" || action == "tend")
+        {
+            const auto done = action == "struggle" ? world_.struggleUp(id) : world_.tendWounds(id, target);
+            system(c, done.message);
+            if (done.ok)
+                record(Character, id);
         }
         else if (action == "ask for work")
         {
