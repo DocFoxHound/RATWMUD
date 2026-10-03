@@ -105,6 +105,7 @@ export class GameState {
     snapshot: Json | null = null;
     inspectedCharacter: Json | null = null;
     reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
+    missionBoard: Json | null = null;   // The last faction mission board asked for (doc 32, 4.5).
     posts: Post[] = [];
     entities = new Map<string, EntityView>();
     motionVisible = new Set<string>();
@@ -674,6 +675,12 @@ export class GameState {
             this.facingPreview = false;
             return;
         }
+        if (type === 'missions') {
+            // A faction's mission board (doc 32, 4.5).
+            this.missionBoard = e;
+            this.modal = 'missions';
+            return;
+        }
         if (type === 'reputation') {
             // Their name about town (doc 32, 1.4), as the residents who know them would put it.
             this.reputation = arr(e, 'lines').filter((l): l is string => typeof l === 'string');
@@ -887,6 +894,11 @@ export class GameState {
     }
 
     // ------------------------------------------------------------------ Sending
+
+    /** A faction command (doc 32, Part 4): taking a mission. */
+    sendFaction(fields: Json) {
+        this.send({type: 'faction', ...fields});
+    }
 
     /** In a Chapter (doc 32, Part 3). */
     inChapter(): boolean {

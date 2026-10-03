@@ -21,6 +21,7 @@ struct ServerState
     std::map<std::string, Entity> characters;     // Every player character, online or not.
     std::map<std::string, std::string> companions;   // NPC -> the player it follows.
     json::Value parties;                          // RatwParty.h's save (null in older saves).
+    json::Value factions;                         // RatwFactions.h's save: standing, burdens, news, missions.
     json::Value chapters;                         // RatwChapters.h's save (doc 32, Part 3).
     json::Value notes;                            // Players' private notes on wolves they know (doc 32, 1.4).
     json::Value acquaintances, aliases;           // RatwNames.h: who knows whom by what name; players' aliases (doc 32).

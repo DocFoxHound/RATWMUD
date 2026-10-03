@@ -165,6 +165,7 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
         const auto o = chapters_.remove(id, target, t);
         if (o.ok)
         {
+            factions_.expelled(chapterId, target, world_.calendarDays());   // Their burden leaves with them, once heard of.
             if (auto* cl = clientOf(target))
                 system(cl, "You have been sent from the Chapter.");
             tellChapter(chapterId, names::capitalised(nameOf(target)) + " has been sent from the Chapter.", id);
@@ -293,7 +294,11 @@ void Game::onSettled(const LedgerEntry& entry)
         const auto actor = members.front();
         chapters_.addRenown(chapterId, "member scene", int(std::round(share)), entry.session, actor, now());
         if (members.size() >= 2)
+        {
             chapters_.addRenown(chapterId, "chapter scene", 5, entry.session, actor, now());
+            if (const auto s = social_.sessions.find(entry.session); s != social_.sessions.end())
+                factionScene(s->second.cell, chapterId);
+        }
         if (paid.size() > members.size())
             chapters_.addRenown(chapterId, "outreach", 3, entry.session, actor, now());
         chapterAdvanced(chapterId);
@@ -413,6 +418,7 @@ void Game::refreshChapterViews(double dt)
                 renown.push(o);
             }
             v.add("renownLog", renown);
+            v.add("standings", standingsView(c->id));     // Bands only (doc 32, 4.2b).
         }
         if (const auto* inv = chapters_.inviteFor(id, t))
             if (const auto* c = chapters_.byId(inv->first))

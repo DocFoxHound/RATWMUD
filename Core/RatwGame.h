@@ -17,6 +17,7 @@
 #include "RatwScenes.h"
 #include "RatwArtwork.h"
 #include "RatwChapters.h"
+#include "RatwFactions.h"
 #include "RatwPerf.h"
 #include "RatwPg.h"
 #include "RatwPool.h"
@@ -181,6 +182,9 @@ class Game
     }
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
+    // Factions in play (doc 32, Part 4): for tests and tools to define factions without a database.
+    faction::Factions& factions() { return factions_; }
+    chapter::Chapters& chapters() { return chapters_; }
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
     // checks and the review page (tools/ai_review.py) as much as for play.
     std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
@@ -358,6 +362,27 @@ class Game
     void refreshChapterViews(double dt);
     void tellChapter(const std::string& chapterId, const std::string& words, const std::string& except = {});
     void chapterAdvanced(const std::string& chapterId);
+    // Factions in play (RatwGameFactions.cpp; doc 32, Part 4).
+    faction::Factions factions_;
+    double factionAccumulator_ = 0, factionRefresh_ = 0;
+    std::set<std::string> factionIncidents_, factionCharged_, owing_;
+    std::map<std::string, std::int64_t> factionTradePennies_;
+    void refreshFactions();
+    std::string officialOf(const std::string& npcId) const;
+    std::vector<std::string> chapterMembers(const std::string& chapterId) const;
+    double standingOf(const std::string& factionId, const std::string& chapterId) const;
+    void factionTick(double dt);
+    std::string factionReport(const std::string& askerId, const std::string& officialId, bool paid);
+    void missionBoard(const std::string& factionId, const std::string& officialId, double day);
+    std::string missionWords(const faction::Mission& m, const std::string& viewer) const;
+    void completeMission(faction::Mission& m, double day);
+    void missionTick(double dt, double day);
+    bool factionCommand(Connection* c, const json::Value& j, Result& result);
+    bool factionTrade(const std::string& playerId, const std::string& merchantId, bool buy, Result& refusal);
+    void afterFactionTrade(const std::string& playerId, const std::string& merchantId, std::int64_t spent);
+    void factionScene(const std::string& cellId, const std::string& chapterId);
+    std::string factionContext(const std::string& npcId, const std::string& playerId) const;
+    json::Value standingsView(const std::string& chapterId) const;
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

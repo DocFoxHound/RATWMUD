@@ -1,7 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
 Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phases 3 (residents travelling with
-a party), 4 (the social game widened) and 5 (Chapters) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
+a party), 4 (the social game widened), 5 (Chapters) and 6 (factions in play) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -1051,6 +1051,72 @@ Mind.
     as an Initiate; Chapter OOC; a deposit and a refused draw; the meeting place; a marked wolf red to every member;
     renown from the scene; and a restart.
   - `Client/src/game/chapter.test.ts`.
+
+### Phase 6: factions in play (built 2026-10-03)
+
+- **Where factions come from** (`Game::refreshFactions`, every minute and at start):
+  - The world's factions.
+  - With a database: their kinds, named members with ranks, and relations, from `live.factions`,
+    `live.faction_members` and `live.faction_relations`.
+  - Whoever holds a position in a place a faction claims counts as its member, and a named member's entry wins.
+  - A faction's **officials** are its guards and traders, and named members with a rank.
+  - Without a database (tests, tools), `Game::factions()` defines them.
+- **Standing** (`Core/RatwFactions.*`):
+  - A Chapter's standing with a faction is what it earned, less its members' burdens (doubled when Trusted or more:
+    scrutiny).
+  - Bands, as in 4.2. The stance follows the band unless a DM sets one.
+  - Earned standing **ripples**: the faction's allies a quarter with it, its enemies a quarter against.
+  - It **drifts** one toward Neutral each game week.
+  - **Sources built:** missions (+4 tier 1, +7 tier 2); tithes of 20 pennies to an official (+1, at most 4 a week);
+    trade at its merchants (+1 for every 50 pennies spent, at most 3 a week); Chapter scenes in places it claims
+    (+1, at most 5 a week); and the DM.
+- **Burdens:**
+  - A crime by a player against a faction's member, or in a place it claims, adds a burden once the offender is
+    known by sight. It weighs by kind (assault 6+2, theft 4, attempted 2) and by how clearly they were seen.
+  - A conviction by the Watch adds 2. Burdens fade one a game week, two once restitution is paid.
+  - **Sending a member away** ("remove") keeps their burden counted against the Chapter until the faction hears:
+    told by a member ("tell of an expulsion" to an official), or by word a game day and a half later.
+- **Reports** ("ask about our standing", "pay for a report (5p)"):
+  - Friendly or better, the faction tells plainly. At Neutral it wants five pennies first.
+  - Distrusted or worse, or if the official distrusts the asker (trust below −20): "You know what your wolves did."
+  - A report gives the band, then up to three things that weigh: the day, the crime, the place, and the one seen,
+    named if a witness knew their name, otherwise by their look, "wearing your colours".
+  - The Chapter window only ever shows bands, with "Something weighs on your name with …" when burdens change the
+    band.
+- **Its merchants:** Hostile or worse turns a member away ("I don't serve the …'s sort"). Distrusted pays a quarter
+  more, purse to purse after the sale. The trade code itself is untouched.
+- **At war** (a DM-set stance), or a faction marked hostile by the Chapter (`faction:<id>`): its members show red to
+  the Chapter's, with the reason.
+- **The Mind** of a faction's member is told how their faction regards the speaker's Chapter.
+- **Mission boards** (tiers 1–2):
+  - Two open missions per tier, made when an official is asked. They lapse at the day's end.
+  - **Deliver** goods to the official, **carry a sealed letter** to one of its officials elsewhere, or **keep
+    watch** in a place for 5 or 10 minutes.
+  - Tier 1 needs a Lodge it knows well (15+); tier 2 a Company it trusts (40+).
+  - Rewards: 8 or 20 pennies from the town treasury (doc 15: moved, not made), standing, and Chapter renown (5 or 15).
+  - Deliveries and letters are handed over from the recipient's menu ("deliver mission-N"). A watch counts while the
+    taker stays in the place.
+- **Written:** `Docs/References/RATW_Factions.md` drafts the 14 factions with the setting bible's template: purposes,
+  methods, suggested relations, what each offers and takes away, and its missions. It is for the DM to adopt or
+  change.
+- **The page:** the mission board window (TAKE IT ON), standing bands in the Chapter window, and officials' menu
+  entries.
+- **Saved:** standing, weekly caps, burdens, news of expulsions and missions, in the checkpoint. Factions, members
+  and relations come from the world each start.
+- **Tests:**
+  - `Tests/faction_tests.cpp`: bands, caps, ripples, burdens, expulsion news, scrutiny, drift and saving.
+  - Through the game: a report paid at Neutral; a tithe; Ada's theft weighing, and the report naming what was seen;
+    Ada sent away, still weighing until Bo tells the sergeant; a mission taken and delivered; a hostile faction's
+    merchant turning Bo away; war shown red; and the Mind told.
+  - `Client/src/game/chapter.test.ts`.
+- **Load:** `game_load` with 100 players: mean 10.8 ms, p99 20.0 ms.
+
+Not yet:
+- **Treaties and levies** (4.4, 4.6). Treaties need the DM's approval, and they arrive with Phase 9.
+- **A member's word weighing more with a Trusted faction's Watch.** That lives in the crime code, which another
+  session is changing.
+- **Quartermasters' bonus gear.** Items are being redone (doc 35).
+- **Third-tier and story missions.**
 
 ## Decisions
 

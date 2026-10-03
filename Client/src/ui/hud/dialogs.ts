@@ -53,6 +53,7 @@ export class Dialogs {
         const self = obj(s.snapshot, 'self');
         const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork') : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
+            m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
@@ -66,6 +67,7 @@ export class Dialogs {
         close.title = 'Close (Esc)';
         if (m === 'character') this.character(self);
         else if (m === 'chapter_window') this.chapter(self);
+        else if (m === 'missions') this.missions();
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'trade') this.trade(self);
         else if (m === 'settings') this.settings();
@@ -241,6 +243,15 @@ export class Dialogs {
             }
             if (rank === 0 || (rank === 1 && num(m, 'rank') === 3)) button('SEND AWAY', 'small', row, () => send({verb: 'remove', target: id}));
         }
+        // How the factions regard the Chapter: bands only, never numbers or whose deeds (doc 32, 4.2b).
+        const standings = arr(ch, 'standings').filter(isObject);
+        if (standings.length) {
+            el('div', 'label gold', left, 'STANDING WITH THE FACTIONS');
+            for (const f of standings) {
+                el('div', 'small', left, `${str(f, 'name')} · ${str(f, 'band')}${str(f, 'stance') === 'war' ? ' · AT WAR' : ''}`);
+                if (str(f, 'weighs')) el('div', 'muted small', left, str(f, 'weighs'));
+            }
+        }
         el('div', 'label gold', right, 'MEETING PLACE');
         const meeting = obj(ch, 'meeting');
         el('div', '', right, meeting ? str(meeting, 'name') : 'None declared');
@@ -275,6 +286,25 @@ export class Dialogs {
         button('LEAVE THE CHAPTER', 'secondary', actions, () => {
             if (window.confirm('Leave the Chapter?')) send({verb: 'leave'});
         });
+    }
+
+    /** A faction's mission board (doc 32, 4.5). */
+    private missions() {
+        const board = this.s.missionBoard;
+        this.heading('MISSIONS', str(board, 'faction', 'A faction'));
+        const list = arr(board, 'missions').filter(isObject);
+        if (!list.length) el('p', 'muted', this.panel, 'Nothing today.');
+        for (const m of list) {
+            const row = el('div', 'story-row', this.panel);
+            el('span', bool(m, 'allowed') ? '' : 'muted', row, str(m, 'text'));
+            if (str(m, 'state') === 'taken') el('span', 'label sage', row, 'TAKEN');
+            else if (bool(m, 'allowed')) button('TAKE IT ON', 'small', row, () => {
+                this.s.sendFaction({verb: 'take', mission: str(m, 'id')});
+                this.act('close');
+            });
+            else el('span', 'muted small', row, num(m, 'tier') === 1 ? 'for a Lodge they know well' : 'for a Company they trust');
+        }
+        el('p', 'muted small', this.panel, 'Deliveries and letters are handed over from the recipient\'s menu; a watch is kept by staying there.');
     }
 
     /** Their Stories (doc 32, 1.2): agree to one, tell one, give a Story Star. */

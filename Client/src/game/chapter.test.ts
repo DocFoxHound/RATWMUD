@@ -31,3 +31,12 @@ test('chapters: chats only in a Chapter, a mate in its colour, and commands', ()
     s.applySnapshot(snapshot(null));
     assert.equal(s.channel, 'ic', 'out of the Chapter: back to the world');
 });
+
+test('factions: a mission board opens, and a mission is taken', () => {
+    const {state: s, commands} = testGame();
+    s.receiveEvent({type: 'missions', faction: 'The Greyfen Watch', missions: [{id: 'mission-1', text: 'Bring 2 meals', tier: 1, allowed: true}]});
+    assert.equal(s.modal, 'missions');
+    assert.equal(s.missionBoard?.faction, 'The Greyfen Watch');
+    s.sendFaction({verb: 'take', mission: 'mission-1'});
+    assert.deepEqual(commands.at(-1), {type: 'faction', verb: 'take', mission: 'mission-1'});
+});

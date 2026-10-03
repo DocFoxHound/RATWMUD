@@ -1700,6 +1700,7 @@ void Game::tick(double dt)
     partyTick(dt);
     refreshSocialViews(dt);
     chapterTick(dt);
+    factionTick(dt);
     refreshChapterViews(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
@@ -2128,6 +2129,16 @@ void Game::sendSnapshot(Connection* c)
     };
     auto entities = Value::array();
     const auto relations = relationsFor(id);
+    std::map<std::string, std::string> enemyFactions;
+    if (const auto* mine = chapters_.of(id))
+    {
+        for (const auto& h : mine->hostiles)
+            if (h.kind == "faction")
+                enemyFactions[h.target.substr(8)] = "hostile to your Chapter" + (h.reason.empty() ? std::string() : ": " + h.reason);
+        for (const auto& [fid, f] : factions_.all())
+            if (factions_.stanceOf(fid, mine->id, chapterMembers(mine->id)) == "war")
+                enemyFactions[fid] = f.name + " is at war with your Chapter";
+    }
     // What this wolf calls each one it sees (doc 32): a name it was given, else how they look. Two strangers who look
     // alike are told apart by number, in a fixed order.
     std::map<std::string, std::string> called;
@@ -2163,6 +2174,11 @@ void Game::sendSnapshot(Connection* c)
         {
             j.set("rel", "chapter");
             j.set("colour", relations.colour);
+        }
+        else if (const auto* member = e.npc ? factions_.memberOf(e.id) : nullptr; member && enemyFactions.count(member->first))
+        {
+            j.set("rel", "hostile");                  // A faction at war with their Chapter, or marked hostile by it (doc 32, 2.4).
+            j.set("why", enemyFactions.at(member->first));
         }
         else if (const auto found = relations.hostile.find(e.id); found != relations.hostile.end())
         {
@@ -2257,6 +2273,20 @@ void Game::sendSnapshot(Connection* c)
                 for (const auto& alias : found->second)
                     actions.push("introduce as " + alias);
         }
+        // A faction's officials (doc 32, Part 4): standing, reports, tithes, missions, news of an expulsion.
+        if (e.npc && near(e) && chapters_.of(view.self.id))
+            if (const auto factionId = officialOf(e.id); !factionId.empty())
+            {
+                actions.push("ask about our standing");
+                actions.push("pay for a report (5p)");
+                actions.push("ask for missions");
+                actions.push("give a tithe (20p)");
+                if (!factions_.stillCounted(factionId, chapters_.of(view.self.id)->id).empty())
+                    actions.push("tell of an expulsion");
+            }
+        for (const auto& m : factions_.missions())
+            if (m.state == "taken" && m.taker == view.self.id && m.kind != "guard" && (m.kind == "message" ? m.to : m.official) == e.id && near(e))
+                actions.push("deliver " + m.id);
         // Chapters (doc 32, Part 3): an Officer invites players, and marks anyone hostile to the Chapter.
         if (e.id != view.self.id)
             if (const auto* member = chapters_.member(view.self.id); member && member->rank <= chapter::RankOfficer)
@@ -2676,6 +2706,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
                             std::to_string(Society::stock(*account, "herbs")) + " herbs, " + std::to_string(Society::stock(*account, "meal")) +
                             " meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
     context.activity += companionContext(npcId);       // Travelling with a party (doc 32, Phase 3).
+    context.activity += factionContext(npcId, playerId);   // Their faction's view of the speaker's Chapter (doc 32, 4.1).
     // What the NPC calls them: the name they gave, or how they look until they give one (doc 32).
     const std::string called = labelFor(npcId, playerId);
     context.playerName = identified ? called : "traveler";
@@ -3029,9 +3060,18 @@ void Game::command(Connection* c, const std::string& raw)
     {
         const double qty = wire::strictNumber(j, "quantity", -1);
         const auto* buy = j.find("buy");
+        // A faction's merchant and the buyer's Chapter (doc 32, 4.3): turned away, or a surcharge after.
+        Result refusal;
+        const auto* purse = world_.society().account(id);
+        const std::int64_t before = purse ? purse->cash : 0;
         result = qty >= 1 && qty <= 99 && qty == std::floor(qty) && buy && buy->isBool()
-                     ? world_.trade(id, j.string("target"), j.string("item"), int(qty), buy->asBool())
+                     ? (!factionTrade(id, j.string("target"), buy->asBool(), refusal)
+                            ? refusal
+                            : world_.trade(id, j.string("target"), j.string("item"), int(qty), buy->asBool()))
                      : Result{false, "Invalid trade request.", {}};
+        if (result.ok && buy && buy->asBool())
+            if (const auto* after = world_.society().account(id))
+                afterFactionTrade(id, j.string("target"), before - after->cash);
         report = true;
         if (result.ok)
             record(Economy | Character, id);
@@ -3074,6 +3114,12 @@ void Game::command(Connection* c, const std::string& raw)
         result = world_.setWind(player->cellId, direction, value == "calm" ? 0.0 : .5, value == "live");
         report = true;
         saveSoon();
+    }
+    else if (type == "faction")
+    {
+        if (!factionCommand(c, j, result))
+            result = {false, "That isn't something a faction does.", {}};
+        report = !result.message.empty();
     }
     else if (type == "chapter")
     {
@@ -3293,6 +3339,21 @@ void Game::command(Connection* c, const std::string& raw)
             // An introduction is said aloud, so whoever hears it learns the name: the page sends it as speech ("I'm
             // Kestrel."). Said here as an action, it is only a reminder of how.
             system(c, "Introduce yourself aloud: say \"I'm\" and the name you go by.");
+        }
+        else if (action == "ask about our standing" || action == "pay for a report (5p)" || action == "ask for missions" ||
+                 action == "give a tithe (20p)" || action == "tell of an expulsion" || action.rfind("deliver mission-", 0) == 0)
+        {
+            auto k = Value::object();
+            k.add("verb", action == "ask about our standing" ? "report" : action == "pay for a report (5p)" ? "payreport"
+                          : action == "ask for missions"     ? "missions"
+                          : action == "give a tithe (20p)"   ? "tithe"
+                          : action == "tell of an expulsion" ? "tellexpulsion"
+                                                             : "deliver");
+            k.add("target", target);
+            if (action.rfind("deliver ", 0) == 0)
+                k.add("mission", action.substr(8));
+            factionCommand(c, k, result);
+            report = !result.message.empty();
         }
         else if (action == "invite to chapter" || action == "mark hostile" || action == "unmark hostile")
         {
@@ -3576,6 +3637,7 @@ DbStore::Build Game::capture()
     c->server.acquaintances = known_.save();
     c->server.notes = notesSave();
     c->server.chapters = chapters_.save();
+    c->server.factions = factions_.save();
     {
         auto aliases = Value::object();
         for (const auto& [who, list] : aliases_)
@@ -3733,6 +3795,7 @@ void Game::load(const std::string& payload)
     socialSeen_ = social_.entries.size();             // (Scenes settled before the restart were told then.)
     notesLoad(state.notes);
     chapters_.load(state.chapters);
+    factions_.load(state.factions);
     for (const auto& [who, ids] : state.commandReceipts)
         for (const auto& receipt : ids)
             commandReceipts_[who].push_back(receipt);
