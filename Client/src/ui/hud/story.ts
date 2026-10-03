@@ -25,6 +25,8 @@ export class StoryPanel {
     private ooc: HTMLButtonElement;
     private party: HTMLButtonElement;
     private partyOoc: HTMLButtonElement;
+    private chapter: HTMLButtonElement;
+    private chapterOoc: HTMLButtonElement;
     private mode: HTMLElement;
     private queued: HTMLElement;
     private volume: HTMLButtonElement;
@@ -44,6 +46,8 @@ export class StoryPanel {
         // The party's two (doc 32): in character, heard as speech is; out of character, at any distance.
         this.party = button('PARTY', 'tab', tabs, () => state.activate({rect: noRect, action: 'party', target: ''}));
         this.partyOoc = button('PARTY OOC', 'tab', tabs, () => state.activate({rect: noRect, action: 'partyooc', target: ''}));
+        this.chapter = button('CHAPTER', 'tab', tabs, () => state.activate({rect: noRect, action: 'chapter', target: ''}));
+        this.chapterOoc = button('CHAPTER OOC', 'tab', tabs, () => state.activate({rect: noRect, action: 'chapterooc', target: ''}));
         this.ooc = button('LOCAL OOC', 'tab', tabs, () => state.activate({rect: noRect, action: 'ooc', target: ''}));
         this.place = el('h2', 'place', this.root);
         this.scene = el('p', 'scene', this.root);
@@ -80,6 +84,10 @@ export class StoryPanel {
         const grouped = inParty(s.party);
         show(this.party, grouped);
         show(this.partyOoc, withPlayers(s.party));       // (Residents travelling along hear only what is said aloud.)
+        setClass(this.chapter, 'active', s.channel === 'chapter');
+        setClass(this.chapterOoc, 'active', s.channel === 'chapterooc');
+        show(this.chapter, s.inChapter());
+        show(this.chapterOoc, s.inChapter());
         setText(this.feedLabel, FeedLabels[s.channel] ?? FeedLabels.ic);
         setText(this.mode, s.chat ? 'WRITING  /  YOUR DRAFT IS PRIVATE' : 'NAVIGATION  /  ENTER TO WRITE');
         setClass(this.mode, 'sage', s.chat);
@@ -88,6 +96,8 @@ export class StoryPanel {
         setText(this.hint, s.channel === 'ic' ? 'SHIFT + ENTER newline · ESC keep draft · /pose /me /sit /lay /stand'
             : s.channel === 'party' ? 'SHIFT + ENTER newline · ESC keep draft · heard by your party in earshot, and by anyone close'
             : s.channel === 'partyooc' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · your party, anywhere'
+            : s.channel === 'chapter' ? 'SHIFT + ENTER newline · ESC keep draft · heard by your Chapter in earshot, and by anyone close'
+            : s.channel === 'chapterooc' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · your Chapter, anywhere'
             : 'SHIFT + ENTER newline · ESC keep draft · visible to this cell only');
         show(this.recover, !!s.failedDraft);
         setClass(this.textarea, 'writing', s.chat);
@@ -172,7 +182,7 @@ export class StoryPanel {
         let waiting = 0, added = false;
         const posts = s.posts.slice(-MaxShown);
         for (const post of posts) {
-            if (!post.system && (s.channel === 'party' ? !post.party : post.channel !== s.channel)) continue;
+            if (!post.system && (s.channel === 'party' ? !post.party : s.channel === 'chapter' ? !post.chapter : post.channel !== s.channel)) continue;
             if (post.revealed === 0 && !post.system) {
                 ++waiting;
                 continue;
@@ -234,6 +244,8 @@ const FeedLabels: Record<string, string> = {
     ic: 'NEARBY VOICES & ACTIONS',
     party: 'SAID TO YOUR PARTY · IN WORLD',
     partyooc: 'OUT OF CHARACTER · YOUR PARTY',
+    chapter: 'SAID TO YOUR CHAPTER · IN WORLD',
+    chapterooc: 'OUT OF CHARACTER · YOUR CHAPTER',
     ooc: 'OUT OF CHARACTER · THIS CELL',
 };
 

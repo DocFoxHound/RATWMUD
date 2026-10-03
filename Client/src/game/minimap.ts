@@ -2,7 +2,7 @@
 // and as large as it truly is, one pixel a tile in its ground's colour, north up, centred on the wolf. Used twice: the
 // minimap in the side panel and the full World Map (M). Each place's picture is made once per change of what the wolf
 // remembers of it, and kept.
-import {bool, isObject, num, objects, str, type Json} from './json.ts';
+import {bool, isObject, num, obj, objects, str, type Json} from './json.ts';
 import {terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 import type {GameState} from './state.ts';
 
@@ -180,7 +180,8 @@ export class MapRenderer {
         for (const e of s.entities.values()) {
             if (e.self) continue;
             const x = toX(ox + e.x), y = toY(oy + e.y);
-            c.fillStyle = e.rel === 'party' ? '#d9b67b' : e.hostile ? '#e0695e' : e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
+            c.fillStyle = e.rel === 'party' ? '#d9b67b' : e.hostile ? '#e0695e' : e.rel === 'chapter' && e.colour ? e.colour
+                : e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
             c.beginPath();
             c.arc(x, y, Math.max(1.5, Math.min(3, scale)), 0, Math.PI * 2);
             c.fill();
@@ -189,6 +190,19 @@ export class MapRenderer {
                 c.beginPath();
                 c.arc(x, y, 5, 0, Math.PI * 2);
                 c.stroke();
+            }
+        }
+        // The Chapter's meeting place (doc 32, 5.1): a ring in its colour, in any place this wolf knows.
+        const chapter = obj(obj(s.snapshot, 'self'), 'chapter'), meeting = obj(chapter, 'meeting');
+        if (meeting) {
+            const place = places.find(p => p.id === str(meeting, 'cell'));
+            if (place) {
+                c.strokeStyle = str(chapter, 'colour', '#d9b67b');
+                c.lineWidth = 2;
+                c.beginPath();
+                c.arc(toX(place.x + num(meeting, 'x')), toY(place.y + num(meeting, 'y')), 5, 0, Math.PI * 2);
+                c.stroke();
+                c.lineWidth = 1;
             }
         }
         // Party mates (doc 32): always shown, even out of sight, in any place this wolf knows.

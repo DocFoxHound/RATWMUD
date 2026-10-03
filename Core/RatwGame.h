@@ -16,6 +16,7 @@
 #include "RatwVoice.h"
 #include "RatwScenes.h"
 #include "RatwArtwork.h"
+#include "RatwChapters.h"
 #include "RatwPerf.h"
 #include "RatwPg.h"
 #include "RatwPool.h"
@@ -129,6 +130,8 @@ struct Options
     std::string connectionLabel = "Authoritative server · 20 Hz";
     // Names hidden until introduced (doc 32, 1.5). Off only for tests written before introductions.
     bool hiddenNames = true;
+    // The social level each of a Chapter's three founders needs (doc 32, 3.1; a placeholder). Tests lower it.
+    int chapterFoundingLevel = 5;
 };
 
 class Game
@@ -264,12 +267,13 @@ class Game
     double partyAccumulator_ = 0;
     struct Relations
     {
-        std::set<std::string> mates;
+        std::set<std::string> mates, chapterMates;
+        std::string colour;                                              // Their Chapter's.
         std::map<std::string, std::string> hostile;                      // Who, and why.
     };
     bool partyCommand(Connection* c, const json::Value& j, Result& result);
     Result partyInvite(const std::string& from, const std::string& to);
-    void partyChat(Connection* c, const Entity& speaker, const std::string& text);
+    void partyChat(Connection* c, const Entity& speaker, const std::string& text, const std::string& channel = "partyooc");
     void partyTick(double dt);
     Relations relationsFor(const std::string& viewer) const;
     json::Value partyView(const std::string& id) const;
@@ -344,6 +348,16 @@ class Game
     void onSettled(const LedgerEntry& entry);
     void markChapterStory(SocialStory& story);
     void onStoryClosed(const SocialStory& story);
+    // Chapters (RatwGameChapters.cpp; doc 32, Part 3).
+    chapter::Chapters chapters_;
+    std::map<std::string, json::Value> chapterViews_;
+    bool chapterViewsDirty_ = true;
+    double chapterViewsAccumulator_ = 0, chapterAccumulator_ = 0;
+    bool chapterCommand(Connection* c, const json::Value& j, Result& result);
+    void chapterTick(double dt);
+    void refreshChapterViews(double dt);
+    void tellChapter(const std::string& chapterId, const std::string& words, const std::string& except = {});
+    void chapterAdvanced(const std::string& chapterId);
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;
@@ -452,9 +466,9 @@ class Game
     void sendSnapshots(const std::vector<Connection*>& sending);
     void movementSounds();
     // Speech to everyone who can perceive it. `to`: whom it was meant for (each listener is told, as they can tell).
-    // `party`: said to the author's party (their party mates who hear it are told so).
+    // `group`: "party" or "chapter", said to the author's party or Chapter (its members who hear it are told so).
     std::vector<std::string> publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to = {},
-                                     bool party = false);
+                                     const std::string& group = {});
     void logEvent(const char* kind, const std::string& actor, const std::string& target = {}, const std::string& detail = {});
     void followTransition(const std::string& id, const std::string& previousCell);
 

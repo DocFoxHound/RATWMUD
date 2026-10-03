@@ -108,6 +108,10 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
     font-size: 13px; }
 .scene-ended { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .story-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 3px 0; }
+/* The Chapter window (doc 32). */
+.swatch { width: 26px; height: 26px; border-radius: 3px; border: 2px solid transparent; }
+.swatch.active { border-color: var(--paper); }
+.hostile-name { color: #e1aba2; }
 /* Your names (doc 32). */
 .name-list { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
 .name-add { display: flex; gap: 6px; margin: 6px 0; }

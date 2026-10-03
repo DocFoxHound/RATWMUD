@@ -102,6 +102,7 @@ export class Hud {
         this.day = el('span', 'label gold', when);
         const menu = el('nav', 'top-actions', top);
         button('CHARACTER', 'top', menu, () => act('character'));
+        button('CHAPTER', 'top', menu, () => act('chapter_window'));
         button('INVENTORY', 'top', menu, () => act('inventory'));
         button('SETTINGS', 'top', menu, () => act('settings'));
         this.live = el('span', 'live label', top, '…');
@@ -278,9 +279,10 @@ export class Hud {
             if (r.row !== before) this.sightList.insertBefore(r.row, before);
             before = r.row.nextElementSibling;
             setText(r.name, e.name || 'Someone');
-            setStyle(r.name, 'color', css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
+            setStyle(r.name, 'color', e.rel === 'chapter' && e.colour ? e.colour
+                : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
-            setText(r.detail, [upperFirst(role), e.rel === 'party' ? 'your party' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
+            setText(r.detail, [upperFirst(role), e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
                 e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
             setClass(r.row, 'hostile', e.hostile);
             setClass(r.row, 'targeted', s.talkTargets.includes(e.id));

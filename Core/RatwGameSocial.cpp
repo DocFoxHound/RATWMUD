@@ -381,10 +381,3 @@ void Game::notesLoad(const Value& saved)
 }
 } // namespace ratw::game
 
-namespace ratw::game
-{
-// Chapters take their share of what their members do (doc 32, Part 3): filled in by RatwGameChapters.cpp.
-void Game::onSettled(const LedgerEntry&) {}
-void Game::markChapterStory(SocialStory&) {}
-void Game::onStoryClosed(const SocialStory&) {}
-} // namespace ratw::game

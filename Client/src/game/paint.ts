@@ -612,7 +612,8 @@ export class GamePainter {
         for (const view of s.battle ? [] : s.entities.values()) {
             const x = ox + view.x * tile, y = oy + view.y * tile;
             // Who they are to this wolf (doc 32): a party mate in the player's own amber, anyone hostile in red.
-            const color = withAlpha(view.self || view.rel === 'party' ? Amber : view.hostile ? HostileRed : view.kind === 'npc' ? Sage : Blue,
+            const chapterColour = view.rel === 'chapter' && /^#[0-9a-f]{6}$/i.test(view.colour) ? rgb(parseInt(view.colour.slice(1), 16)) : null;
+            const color = withAlpha(view.self || view.rel === 'party' ? Amber : view.hostile ? HostileRed : chapterColour ?? (view.kind === 'npc' ? Sage : Blue),
                 fadeIn);
             if (view.self) {
                 p.frame(x - 17, y - 17, 34, 34, withAlpha(Amber, 0.22 * fadeIn));
@@ -630,6 +631,7 @@ export class GamePainter {
             }
             // Colour is never the only cue: a dot under a party mate, a "!" over anyone hostile.
             if (view.rel === 'party') p.box(x - 2, y + 11, 4, 3, color);
+            else if (view.rel === 'chapter') p.box(x - 6, y + 12, 12, 1.5, color);     // A Chapter mate: underlined.
             else if (view.hostile && !view.self) p.text(x - 3, y - 25, '!', 12, color, true);
             if (view.self && s.facingPreview && s.canFaceAt(s.hover))
                 this.turnedText(x + Math.cos(s.previewFacing) * reach, y + Math.sin(s.previewFacing) * reach, '>', 10, withAlpha(color, 0.32),

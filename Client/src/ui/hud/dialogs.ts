@@ -53,6 +53,7 @@ export class Dialogs {
         const self = obj(s.snapshot, 'self');
         const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork') : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
+            m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
@@ -64,6 +65,7 @@ export class Dialogs {
         const close = button('×', 'close', this.panel, () => this.act('close'));
         close.title = 'Close (Esc)';
         if (m === 'character') this.character(self);
+        else if (m === 'chapter_window') this.chapter(self);
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'trade') this.trade(self);
         else if (m === 'settings') this.settings();
@@ -152,6 +154,127 @@ export class Dialogs {
             });
         }
         el('p', 'muted small', parent, 'Wolves know you only by a name you tell them: say "I\'m …" aloud, or Introduce from a wolf\'s menu.');
+    }
+
+    /** The Chapter window (doc 32, Part 3): founding one, or the Chapter one is in. */
+    private chapter(self: Json | null) {
+        const s = this.s, ch = obj(self, 'chapter');
+        const send = (fields: Json) => s.sendChapter(fields);
+        if (!ch || !str(ch, 'id')) {
+            this.heading('CHAPTERS', 'No Chapter yet');
+            const proposal = obj(ch, 'proposal');
+            if (proposal) {
+                el('div', 'label gold', this.panel, `FOUNDING "${str(proposal, 'name')}"`);
+                for (const f of arr(proposal, 'founders').filter(isObject))
+                    el('div', '', this.panel, `${str(f, 'name')} · ${bool(f, 'agreed') ? 'agreed' : 'waiting'}`);
+                const row = el('div', 'sheet-actions', this.panel);
+                if (!bool(proposal, 'agreed')) button('AGREE', 'primary', row, () => send({verb: 'agree'}));
+                button('CALL IT OFF', 'secondary', row, () => send({verb: 'withdraw'}));
+                return;
+            }
+            if (str(ch, 'invite')) {
+                el('p', 'gold', this.panel, `You are invited to join "${str(ch, 'invite')}".`);
+                const row = el('div', 'sheet-actions', this.panel);
+                button('ACCEPT', 'primary', row, () => send({verb: 'accept'}));
+                button('DECLINE', 'secondary', row, () => send({verb: 'decline'}));
+                return;
+            }
+            // Founding: three together, in a scene, each at the social level it takes; two marks from the proposer.
+            el('p', 'muted', this.panel, 'A Chapter is founded by three wolves together, in a scene they are all taking part in. ' +
+                'Name it, choose its colour, write its charter, and choose the two who found it with you. It costs two marks.');
+            const name = el('input', 'name-input', this.panel);
+            name.placeholder = 'The Chapter\'s name';
+            name.maxLength = 32;
+            const charter = el('textarea', 'name-input', this.panel);
+            charter.placeholder = 'Its charter: what it stands for (optional)';
+            charter.maxLength = 600;
+            el('div', 'label gold', this.panel, 'COLOUR');
+            const colours = ['#5b8bd9', '#4fb0a5', '#8bbf5a', '#d9b67b', '#b58ad9', '#d98bc4', '#e0e0d0', '#7fa0b0'];
+            let colour = colours[0];
+            const swatches = el('div', 'name-list', this.panel);
+            for (const c of colours) {
+                const b = button('', 'swatch', swatches, () => {
+                    colour = c;
+                    for (const other of swatches.children) (other as HTMLElement).classList.remove('active');
+                    b.classList.add('active');
+                });
+                b.style.background = c;
+                if (c === colour) b.classList.add('active');
+            }
+            el('div', 'label gold', this.panel, 'FOUNDERS WITH YOU (TWO)');
+            const chosen = new Set<string>();
+            const people = el('div', 'name-list', this.panel);
+            for (const e of s.entities.values()) {
+                if (e.self || e.kind === 'npc') continue;
+                const b = button(e.name, 'small', people, () => {
+                    if (chosen.has(e.id)) chosen.delete(e.id);
+                    else chosen.add(e.id);
+                    b.classList.toggle('active', chosen.has(e.id));
+                });
+            }
+            const row = el('div', 'sheet-actions', this.panel);
+            button('PROPOSE THE CHAPTER', 'primary', row, () =>
+                send({verb: 'propose', name: name.value.trim(), charter: charter.value.trim(), colour, founders: [...chosen]}));
+            return;
+        }
+        const rank = num(ch, 'rank'), ranks = arr(ch, 'rankNames').filter((r): r is string => typeof r === 'string');
+        this.heading(`CHAPTER · ${str(ch, 'levelName').toUpperCase()} (LEVEL ${num(ch, 'level')})`, str(ch, 'name'));
+        if (str(ch, 'charter')) el('p', 'muted', this.panel, str(ch, 'charter'));
+        const cols = el('div', 'sheet-cols', this.panel);
+        const left = el('div', 'sheet-col', cols), right = el('div', 'sheet-col', cols);
+        el('div', 'label gold', left, `RENOWN ${num(ch, 'renown')}`);
+        const next = obj(ch, 'next');
+        if (next)
+            el('div', 'small', left, `To ${str(next, 'name')}: ${num(next, 'renown')} renown · ${num(next, 'haveActive')}/${num(next, 'active')} active · ` +
+                `${num(next, 'haveStories')}/${num(next, 'stories')} Chapter Stories${str(next, 'ground') ? ` · ${str(next, 'ground')}` : ''}`);
+        for (const r of arr(ch, 'renownLog').filter(isObject)) el('div', 'muted small', left, `+${num(r, 'amount')} ${str(r, 'kind')}`);
+        el('div', 'label gold', left, 'MEMBERS');
+        for (const m of arr(ch, 'members').filter(isObject)) {
+            const row = el('div', 'story-row', left);
+            el('span', bool(m, 'online') ? '' : 'muted', row, `${str(m, 'name')} · ${ranks[num(m, 'rank')] ?? ''}${bool(m, 'active') ? '' : ' · away'}`);
+            const id = str(m, 'id');
+            if (id === s.selfId) continue;
+            if (rank === 0) {
+                if (num(m, 'rank') > 1) button('RAISE', 'small', row, () => send({verb: 'rank', target: id, rank: num(m, 'rank') - 1}));
+                if (num(m, 'rank') < 3 && num(m, 'rank') > 0) button('LOWER', 'small', row, () => send({verb: 'rank', target: id, rank: num(m, 'rank') + 1}));
+                if (num(m, 'rank') === 1) button('MAKE HEAD', 'small', row, () => send({verb: 'rank', target: id, rank: 0}));
+            }
+            if (rank === 0 || (rank === 1 && num(m, 'rank') === 3)) button('SEND AWAY', 'small', row, () => send({verb: 'remove', target: id}));
+        }
+        el('div', 'label gold', right, 'MEETING PLACE');
+        const meeting = obj(ch, 'meeting');
+        el('div', '', right, meeting ? str(meeting, 'name') : 'None declared');
+        if (rank <= 1) button('MEET HERE', 'small', right, () => send({verb: 'meet'}));
+        el('div', 'label gold', right, `TREASURY · ${num(ch, 'treasury')} PENNIES`);
+        const amount = el('input', 'name-input', right);
+        amount.type = 'number';
+        amount.min = '1';
+        amount.placeholder = 'Pennies';
+        const money = el('div', 'name-list', right);
+        button('DEPOSIT', 'small', money, () => send({verb: 'deposit', amount: Math.trunc(+amount.value || 0)}));
+        if (rank <= 1) button('DRAW', 'small', money, () => send({verb: 'withdraw_money', amount: Math.trunc(+amount.value || 0)}));
+        el('div', 'label gold', right, 'HOSTILE TO THE CHAPTER');
+        const hostiles = arr(ch, 'hostiles').filter(isObject);
+        if (!hostiles.length) el('div', 'muted small', right, 'No one. Officers mark wolves from their menu.');
+        for (const h of hostiles) {
+            const row = el('div', 'story-row', right);
+            el('span', 'hostile-name', row, `${str(h, 'name')}${str(h, 'reason') ? ` · ${str(h, 'reason')}` : ''}`);
+            if (rank <= 1) button('UNMARK', 'small', row, () => send({verb: 'unhostile', target: str(h, 'target')}));
+        }
+        if (rank === 0 && num(ch, 'level') >= 2) {
+            el('div', 'label gold', right, 'RANK NAMES');
+            ranks.forEach((r, i) => {
+                const b = button(r, 'small', right, () => {
+                    const name = window.prompt(`A new name for the rank "${r}"`, r);
+                    if (name?.trim()) send({verb: 'rankname', rank: i, name: name.trim()});
+                });
+                b.title = 'Rename this rank';
+            });
+        }
+        const actions = el('div', 'sheet-actions', this.panel);
+        button('LEAVE THE CHAPTER', 'secondary', actions, () => {
+            if (window.confirm('Leave the Chapter?')) send({verb: 'leave'});
+        });
     }
 
     /** Their Stories (doc 32, 1.2): agree to one, tell one, give a Story Star. */

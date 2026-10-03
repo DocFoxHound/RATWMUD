@@ -1699,6 +1699,8 @@ void Game::tick(double dt)
     companionTick(dt);                              // Residents travelling with a party (doc 32, Phase 3).
     partyTick(dt);
     refreshSocialViews(dt);
+    chapterTick(dt);
+    refreshChapterViews(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
     // Small observer-filtered poses at simulation cadence; full snapshots five times a second, and at once on a
@@ -1953,6 +1955,8 @@ void Game::sendSnapshot(Connection* c)
     }
     if (const auto view = socialViews_.find(id); view != socialViews_.end())
         self.set("social", view->second);             // Scene, stars, Stories, title (doc 32, Part 1).
+    if (const auto view = chapterViews_.find(id); view != chapterViews_.end())
+        self.set("chapter", view->second);            // Their Chapter (doc 32, Part 3).
     self.set("socialLevel", social_.level(id));
     self.set("hearing", view.self.hearing * view.self.earHealth * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
     self.set("sneakSkill", view.self.sneakSkill);
@@ -2152,9 +2156,14 @@ void Game::sendSnapshot(Connection* c)
             if (options_.hiddenNames && !knowsName(id, e.id))
                 j.set("known", false);
         }
-        // Who they are to this wolf (doc 32): a party mate, or hostile (and why). Bandits are always hostile.
+        // Who they are to this wolf (doc 32): a party mate, a Chapter mate, or hostile (and why). Bandits always are.
         if (relations.mates.count(e.id))
             j.set("rel", "party");
+        else if (relations.chapterMates.count(e.id))
+        {
+            j.set("rel", "chapter");
+            j.set("colour", relations.colour);
+        }
         else if (const auto found = relations.hostile.find(e.id); found != relations.hostile.end())
         {
             j.set("rel", "hostile");
@@ -2248,6 +2257,20 @@ void Game::sendSnapshot(Connection* c)
                 for (const auto& alias : found->second)
                     actions.push("introduce as " + alias);
         }
+        // Chapters (doc 32, Part 3): an Officer invites players, and marks anyone hostile to the Chapter.
+        if (e.id != view.self.id)
+            if (const auto* member = chapters_.member(view.self.id); member && member->rank <= chapter::RankOfficer)
+            {
+                if (!e.npc && !chapters_.of(e.id))
+                    actions.push("invite to chapter");
+                if (!relations.chapterMates.count(e.id))
+                {
+                    bool marked = false;
+                    for (const auto& h : chapters_.of(view.self.id)->hostiles)
+                        marked |= h.target == e.id;
+                    actions.push(marked ? "unmark hostile" : "mark hostile");
+                }
+            }
         // Parties (doc 32): any player in sight may be invited, by one in no party or who leads theirs.
         if (!e.npc && e.id != view.self.id && !relations.mates.count(e.id))
             if (const auto* mine = parties_.of(view.self.id); !mine || mine->leader == view.self.id)
@@ -2434,7 +2457,7 @@ void Game::finishSnapshot(Connection* c, json::Value root, double revision)
 
 
 std::vector<std::string> Game::publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to,
-                                       bool party)
+                                       const std::string& group)
 {
     auto* speaker = world_.entity(author);
     if (!speaker)
@@ -2490,9 +2513,9 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
             if (sense.identifiable)
                 noticeIntroduction(author, listener, spoken);
         }
-        // Said to the party: its members who hear it are told so; anyone else overhears it as plain speech.
-        if (party && (listener == author || parties_.together(author, listener)))
-            e.add("party", true);
+        // Said to the party or Chapter: its members who hear it are told so; anyone else overhears it as plain speech.
+        if (!group.empty() && (listener == author || (group == "party" ? parties_.together(author, listener) : chapters_.together(author, listener))))
+            e.add(group, true);
         if (!to.empty())
         {
             // Whom it was meant for, as this listener can tell: "you", a name they can see, or "someone".
@@ -3052,6 +3075,12 @@ void Game::command(Connection* c, const std::string& raw)
         report = true;
         saveSoon();
     }
+    else if (type == "chapter")
+    {
+        if (!chapterCommand(c, j, result))
+            result = {false, "That isn't something a Chapter does.", {}};
+        report = !result.message.empty();
+    }
     else if (type == "social")
     {
         if (!socialCommand(c, j, result))
@@ -3265,6 +3294,15 @@ void Game::command(Connection* c, const std::string& raw)
             // Kestrel."). Said here as an action, it is only a reminder of how.
             system(c, "Introduce yourself aloud: say \"I'm\" and the name you go by.");
         }
+        else if (action == "invite to chapter" || action == "mark hostile" || action == "unmark hostile")
+        {
+            auto k = Value::object();
+            k.add("verb", action == "invite to chapter" ? "invite" : action == "mark hostile" ? "hostile" : "unhostile");
+            k.add("target", target);
+            k.add("reason", j.string("reason"));
+            chapterCommand(c, k, result);
+            report = true;
+        }
         else if (action == "invite")
         {
             result = partyInvite(id, target);
@@ -3350,9 +3388,14 @@ void Game::command(Connection* c, const std::string& raw)
             feedback(false, "You are not in a party.");
             return;
         }
-        if (channel == "partyooc")
+        if ((channel == "chapter" || channel == "chapterooc") && !chapters_.of(id))
         {
-            partyChat(c, *player, text);
+            feedback(false, "You are not in a Chapter.");
+            return;
+        }
+        if (channel == "partyooc" || channel == "chapterooc")
+        {
+            partyChat(c, *player, text, channel);
             feedback(true, "");
             return;
         }
@@ -3463,7 +3506,7 @@ void Game::command(Connection* c, const std::string& raw)
         std::vector<std::string> to;
         for (const auto* h : addressed)
             to.push_back(h->npcId);
-        const auto heard = publish(id, post, voice, to, channel == "party");
+        const auto heard = publish(id, post, voice, to, channel == "party" || channel == "chapter" ? channel : std::string());
         if (const auto* mine = parties_.of(id))
             lastPartySpeech_[mine->id] = world_.time();
         const auto evidence = roleplayEvidence(post);
@@ -3532,6 +3575,7 @@ DbStore::Build Game::capture()
     c->server.parties = parties_.save();
     c->server.acquaintances = known_.save();
     c->server.notes = notesSave();
+    c->server.chapters = chapters_.save();
     {
         auto aliases = Value::object();
         for (const auto& [who, list] : aliases_)
@@ -3688,6 +3732,7 @@ void Game::load(const std::string& payload)
     social_.nextStory = state.social.nextStory;
     socialSeen_ = social_.entries.size();             // (Scenes settled before the restart were told then.)
     notesLoad(state.notes);
+    chapters_.load(state.chapters);
     for (const auto& [who, ids] : state.commandReceipts)
         for (const auto& receipt : ids)
             commandReceipts_[who].push_back(receipt);

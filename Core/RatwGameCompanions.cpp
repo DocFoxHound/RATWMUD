@@ -95,7 +95,7 @@ void Game::companionSays(const std::string& npcId, const std::string& words)
     post.ok = true;
     post.speech = true;
     post.segments.push_back({"speech", words});
-    publish(npcId, post, Voice::Speak, {}, true);
+    publish(npcId, post, Voice::Speak, {}, "party");
     npcLastSpeech_[npcId] = world_.time();
 }
 

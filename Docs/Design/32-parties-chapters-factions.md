@@ -1,7 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
 Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phases 3 (residents travelling with
-a party) and 4 (the social game widened) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
+a party), 4 (the social game widened) and 5 (Chapters) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -992,6 +992,65 @@ Mind.
     her name about town, and all of it after a restart.
   - `Client/src/game/social.test.ts`.
 - **Load:** `game_load` with 100 players: mean 11.7 ms, p99 22.3 ms.
+
+### Phase 5: Chapters (built 2026-10-03)
+
+- **Where they live:** in the game's save (`chapters` in the checkpoint), like parties, not yet in Postgres tables or
+  as `live.factions` rows. The DM service's SQLite Chapter records (`tools/dm_service.py`) are separate and still
+  drive its notices and migration previews. Moving both into Postgres and showing Chapters in the DM is open work
+  (see "Decisions").
+- **The rules** (`Core/RatwChapters.h`, `Core/RatwChapters.cpp`, pure):
+  - **Founding:** three wolves in no Chapter. Name: 3–32 letters, unique, any case. Colour: `#rrggbb`, never red
+    (the hostile's colour) or too dark to see. Charter: up to 600 letters.
+  - The proposal lasts 10 minutes. The proposer becomes Head and the others its first Officers.
+  - **Ranks:** Head, Officer, Member, Initiate.
+    - An Officer invites (the invitation lasts 5 minutes), sends Initiates away, marks hostiles, sets the meeting
+      place and draws up to 20 pennies a day.
+    - The Head does all that, sets anyone's rank (making another Head hands the headship on) and, from Lodge
+      (level II), renames ranks.
+  - Whoever is sent away can't rejoin for 14 days. A Head who leaves hands on to the longest-serving Officer. The
+    last one out ends the Chapter.
+  - A Head away 30 days is succeeded by the longest-serving active Officer.
+  - **Renown:** a ledger kept per Chapter, at most 300 a rolling week. A DM award is outside the cap.
+  - **Levels:** I Gathering at founding. II Lodge at 400 renown, 5 active members (a scene in the last 14 days)
+    and 1 Chapter Story told. III–V also need their ground (Phases 7–9). Levels never drop.
+  - The log keeps ranks, joining, leaving, the treasury and levels.
+- **Through the game** (`Core/RatwGameChapters.cpp`):
+  - **Founded in a scene:** the three must all be in one open scene with two turns each. Each must be at
+    `Options::chapterFoundingLevel` (5 *(placeholder)*). The proposer pays the founding fee of 20 pennies (two
+    marks) to the town treasury when the last founder agrees, and only if the scene is still going.
+  - **The treasury** is a real purse (`chapter:<id>`, doc 15). Anyone deposits; Officers and the Head draw.
+  - **Chats:** **CHAPTER**, in character and heard as speech is, marked for members who hear it. **CHAPTER OOC** to
+    every member anywhere, each seeing the speaker as they know them.
+  - **On screen:** members are drawn in the Chapter's colour with an underline, and In Sight says "your Chapter".
+    Party colours come first.
+  - **The hostile list:** wolves, or whole other Chapters, marked by an Officer from a wolf's menu ("mark hostile")
+    with a reason. They show red to every member, with "hostile to your Chapter: reason".
+  - **The meeting place** is a ring in the Chapter's colour on members' minimaps.
+  - **Renown from what members do** (doc 32, 3.3), once a scene:
+    - a quarter of the best-paid member's pay, half if only Initiates took part, scaled by √(10 ÷ active) past ten
+      active members;
+    - +5 when two or more members qualified together;
+    - +3 when someone outside the Chapter qualified with them.
+  - **A Chapter Story** is a Story whose members are mostly one Chapter's. Telling it pays 20 + 5 a scene (at most
+    50) and counts toward the level gates.
+  - Each member's snapshot carries the Chapter (`self.chapter`): level and the next level's gates, renown and its
+    recent sources, members with ranks, the meeting place, hostiles and the treasury. It also carries an invitation
+    or a founding waiting for their word. It is worked out on the game thread every 2 seconds and when it changes.
+- **The page:**
+  - A **CHAPTER** button opens the Chapter window: a founding form (name, colour swatches, charter, two co-founders
+    chosen from players in sight), or a waiting invitation or founding.
+  - For a member, the window shows the Chapter: renown and the gates to the next level, members with
+    RAISE/LOWER/MAKE HEAD/SEND AWAY for those allowed, MEET HERE, DEPOSIT/DRAW, the hostile list with UNMARK, rank
+    names (Lodge and up), and LEAVE.
+  - Menus have "invite to chapter" and "mark hostile" / "unmark hostile" for Officers.
+- **Tests:**
+  - `Tests/chapter_tests.cpp`: colours; founding, ranks, invitations, sending away and the wait to rejoin; the
+    hostile list; leaving and succession; renown and its cap; Lodge; a Head long away; saving.
+  - Through the game: three found the Ashen Lodge in a party scene and pay the fee; a mate in its colour; Di joins
+    as an Initiate; Chapter OOC; a deposit and a refused draw; the meeting place; a marked wolf red to every member;
+    renown from the scene; and a restart.
+  - `Client/src/game/chapter.test.ts`.
 
 ## Decisions
 

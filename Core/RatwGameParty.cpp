@@ -145,19 +145,33 @@ bool Game::partyCommand(Connection* c, const Value& j, Result& result)
     return true;
 }
 
-void Game::partyChat(Connection* c, const Entity& speaker, const std::string& text)
+void Game::partyChat(Connection* c, const Entity& speaker, const std::string& text, const std::string& channel)
 {
+    // Out of character, to the party (or the Chapter) wherever they are; each reader sees the speaker as they know them.
     auto e = Value::object();
     e.add("type", "ooc");
-    e.add("channel", "partyooc");
+    e.add("channel", channel);
     e.add("sequence", sequence_++);
-    e.add("speaker", speaker.name);
     e.add("text", text);
     e.add("color", speaker.speakingColor);
-    send(c, e);
-    for (const auto& m : parties_.mates(speaker.id))
+    std::vector<std::string> readers{speaker.id};
+    if (channel == "chapterooc")
+    {
+        if (const auto* ch = chapters_.of(speaker.id))
+            for (const auto& [m, member] : ch->members)
+                if (m != speaker.id)
+                    readers.push_back(m);
+    }
+    else
+        for (const auto& m : parties_.mates(speaker.id))
+            readers.push_back(m);
+    (void)c;
+    for (const auto& m : readers)
         if (auto* other = clientOf(m))
+        {
+            e.set("speaker", names::capitalised(labelFor(m, speaker.id)));
             send(other, e);
+        }
 }
 
 void Game::partyTick(double dt)
@@ -261,6 +275,24 @@ Game::Relations Game::relationsFor(const std::string& viewer) const
     Relations r;
     for (const auto& m : parties_.mates(viewer))
         r.mates.insert(m);
+    // Their Chapter: its members in its colour, and whom it marks hostile (doc 32, 2.4 and Part 3).
+    if (const auto* ch = chapters_.of(viewer))
+    {
+        r.colour = ch->colour;
+        for (const auto& [m, member] : ch->members)
+            if (m != viewer)
+                r.chapterMates.insert(m);
+        for (const auto& h : ch->hostiles)
+        {
+            const std::string why = "hostile to your Chapter" + (h.reason.empty() ? std::string() : ": " + h.reason);
+            if (h.kind == "wolf")
+                r.hostile.emplace(h.target, why);
+            else if (h.kind == "chapter")
+                if (const auto* other = chapters_.byId(h.target))
+                    for (const auto& [m, member] : other->members)
+                        r.hostile.emplace(m, why);
+        }
+    }
     // In a fight, the other side; and the other side of each party mate's fight.
     const auto against = [&](const std::string& who, const char* why) {
         if (const auto* b = world_.battleOf(who))
@@ -283,6 +315,8 @@ Game::Relations Game::relationsFor(const std::string& viewer) const
         fought(m, "fought your party");
     r.hostile.erase(viewer);
     for (const auto& m : r.mates)
+        r.hostile.erase(m);
+    for (const auto& m : r.chapterMates)
         r.hostile.erase(m);
     return r;
 }

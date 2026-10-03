@@ -34,6 +34,7 @@ export interface Post {
     postedAt: number;
     system: boolean;
     party: boolean;             // Said in character to the speaker's party, and this player is in it (doc 32).
+    chapter?: boolean;          // Said in character to the speaker's Chapter, and this player is in it.
     encounter?: EncounterView;  // The story's one entry for a fight (doc 18), kept up to date in place.
     muffled?: boolean;          // Said around a sword held in the jaws (doc 33).
 }
@@ -62,7 +63,8 @@ export interface EntityView {
     spokenAt: number;
     work: string;               // A resident's trade, as the server gives it ('' for players).
     hostile: boolean;
-    rel: string;                // Who they are to this wolf (doc 32): 'party', 'hostile' or ''.
+    rel: string;                // Who they are to this wolf (doc 32): 'party', 'chapter', 'hostile' or ''.
+    colour: string;             // A Chapter mate's Chapter colour ("#rrggbb").
     why: string;                // Why hostile: 'bandit', 'fighting you', 'fought your party'...
     appearance: Json | null;
     lifeStage: string;
@@ -403,7 +405,7 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    rel: '', why: '', appearance: null, lifeStage: 'adult', artwork: ''};
+                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: ''};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
@@ -412,6 +414,7 @@ export class GameState {
             view.work = str(e, 'work');
             view.rel = str(e, 'rel');
             view.why = str(e, 'why');
+            view.colour = str(e, 'colour');
             view.hostile = bool(e, 'hostile') || view.rel === 'hostile';
             view.appearance = obj(e, 'appearance');
             view.lifeStage = str(e, 'lifeStage', 'adult');
@@ -446,6 +449,7 @@ export class GameState {
         if (!this.battle || !this.battle.flame || !myTurn(this.battle, this.selfId)) this.aiming = '';
         this.party = readParty(obj(this.snapshot, 'self'));
         if ((this.channel === 'party' || this.channel === 'partyooc') && !inParty(this.party)) this.channel = 'ic';
+        if ((this.channel === 'chapter' || this.channel === 'chapterooc') && !this.inChapter()) this.channel = 'ic';
         if (this.tileRows !== this.mergedRows) this.plainRows = this.tileRows;     // Fresh rows from the server.
         const b = this.battle;
         if (b) {
@@ -684,7 +688,7 @@ export class GameState {
             id: eventId, channel: str(e, 'channel', type === 'ooc' ? 'ooc' : 'ic'), kind: type,
             speaker: str(e, 'speaker', str(e, 'name', type === 'system' ? 'THE WORLD' : 'A voice')),
             color: Math.trunc(num(e, 'color')), text: str(e, 'text'), postedAt: this.clock, revealed: 0, system: false,
-            party: bool(e, 'party'),
+            party: bool(e, 'party'), chapter: bool(e, 'chapter'),
         };
         const segments = objects(e, 'segments');
         if (segments.length) {
@@ -884,6 +888,16 @@ export class GameState {
 
     // ------------------------------------------------------------------ Sending
 
+    /** In a Chapter (doc 32, Part 3). */
+    inChapter(): boolean {
+        return !!str(obj(obj(this.snapshot, 'self'), 'chapter'), 'id');
+    }
+
+    /** A Chapter command (doc 32, Part 3): found, agree, invite, ranks, the treasury, the hostile list... */
+    sendChapter(fields: Json) {
+        this.send({type: 'chapter', ...fields});
+    }
+
     /** The individual social game (doc 32, Part 1): stars, Stories, notes, a name about town. */
     sendSocial(fields: Json) {
         this.send({type: 'social', ...fields});
@@ -909,7 +923,7 @@ export class GameState {
     }
 
     setTyping(active: boolean) {
-        active = active && (this.channel === 'ic' || this.channel === 'party');
+        active = active && (this.channel === 'ic' || this.channel === 'party' || this.channel === 'chapter');
         if (this.typingSent === active && (!active || this.clock - this.lastTypingSent < 1)) return;
         this.typingSent = active;
         this.lastTypingSent = this.clock;
@@ -946,7 +960,7 @@ export class GameState {
     composerChanged() {
         if (!this.chat) return;
         this.lastTyping = this.clock;
-        if (this.channel === 'ic' || this.channel === 'party') this.setTyping(true);
+        if (this.channel === 'ic' || this.channel === 'party' || this.channel === 'chapter') this.setTyping(true);
     }
 
     /** A key in the composer; true when the game took it. */
@@ -1326,7 +1340,8 @@ export class GameState {
             this.showToast('Finding a route through places you have visited…');
         } else if (a === 'cancel_travel') {
             if (!this.chat && !this.modal) this.cancelTravel();
-        } else if (a === 'ic' || a === 'ooc' || ((a === 'party' || a === 'partyooc') && inParty(this.party))) {
+        } else if (a === 'ic' || a === 'ooc' || ((a === 'party' || a === 'partyooc') && inParty(this.party)) ||
+            ((a === 'chapter' || a === 'chapterooc') && this.inChapter())) {
             this.setTyping(false);
             this.channel = a;
             this.transcriptScroll = 0;
@@ -1342,7 +1357,7 @@ export class GameState {
             else if (verb === 'goal') this.send({type: 'party', verb, goal: h.target.slice('goal:'.length).trim()});
             else if (['accept', 'decline', 'leave', 'disband', 'stayout', 'remove', 'lead'].includes(verb))
                 this.send({type: 'party', verb, ...(rest ? {target: rest} : {})});
-        } else if (a === 'character' || a === 'inventory' || a === 'settings') {
+        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window') {
             if (this.chat) this.setChat(false);
             this.heldKeys.clear();
             this.sendMove();
