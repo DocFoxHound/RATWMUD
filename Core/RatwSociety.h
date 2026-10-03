@@ -29,7 +29,9 @@ struct LifeBody
 constexpr std::size_t MaxResidents = 16384;
 // Economy accounts: every resident, the treasury, and up to this many player characters.
 constexpr std::size_t MaxPlayerAccounts = 8192;
-constexpr std::size_t MaxAccounts = MaxResidents + MaxPlayerAccounts + 1;
+// Facility accounts: towns' stores, caravans, contracts, Chapters' treasuries, and every home's four stores (doc 36).
+constexpr std::size_t MaxFacilityAccounts = 32768;
+constexpr std::size_t MaxAccounts = MaxResidents + MaxPlayerAccounts + MaxFacilityAccounts + 1;
 
 struct ResidentLife
 {
@@ -259,6 +261,17 @@ class Society
     bool closeAccount(const std::string& id);
     // Which store each cell's merchants restock from (default: the treasury, the one store of a single town).
     void setStores(std::map<std::string, std::string> byCell) { storeForCell_ = std::move(byCell); }
+    // Home storage (Docs/Design/36-home-storage.md): each household's larder (food), chest (goods), wardrobe (wear)
+    // and woodpile (fuel), an account each ("home:<home cell>:<kind>"), owned by everyone who lives there.
+    static constexpr const char* StoreKinds[] = {"larder", "chest", "wardrobe", "woodpile"};
+    static std::string homeStore(const std::string& homeCell, const std::string& kind) { return "home:" + homeCell + ":" + kind; }
+    // Opens the stores of these homes where they don't exist yet, and stocks a new larder and chest for the
+    // household: a few days' meals and some herbs each, and a meal carried by anyone who has none.
+    void furnishHomes(const std::set<std::string>& homeCells);
+    // Where each home's stores stand, by home cell and kind (the world places them); a store not placed yet is
+    // reached at its household's home spot.
+    void setHomeStores(std::map<std::string, std::map<std::string, Spot>> spots) { homeStores_ = std::move(spots); }
+    const std::map<std::string, std::map<std::string, Spot>>& homeStores() const { return homeStores_; }
     const std::string& storeFor(const std::string& cell) const;
     // How dear goods are at each store's markets (1: as ever), set by the world from how much each town has; a
     // merchant's prices follow the store they restock from.
@@ -315,6 +328,9 @@ class Society
     bool smith(const std::string& id) const;
     std::vector<std::string> wares(const std::string& merchant) const;
     static constexpr int SmithSwords = 3;
+    // Food to start with (doc 36): a new player's own meals; a new household's larder, meals for each who lives there,
+    // and its chest, herbs for each. Placeholder amounts for the balance pass.
+    static constexpr int StartingMeals = 3, LarderMealsEach = 3, ChestHerbsEach = 2;
     static const char* itemName(const std::string& id);
     std::int64_t moneySupply() const;
     bool conserved() const;
@@ -356,6 +372,7 @@ class Society
     bool bequeath(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins);
     std::map<std::string, std::map<std::string, double>> priceFactors_;
     std::map<std::string, std::string> storeForCell_;   // Cell -> the store its merchants restock from (Phase 5).
+    std::map<std::string, std::map<std::string, Spot>> homeStores_;
     static constexpr std::int64_t MoneyCap = 1000000000;
     static constexpr int StockCap = 10000;
     mutable bool specsIndexed_ = false;

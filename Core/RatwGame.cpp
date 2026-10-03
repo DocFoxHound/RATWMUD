@@ -1962,6 +1962,46 @@ void Game::stampFrame(Connection* c, Value& root, const std::string& cell)
 // Snapshots for several clients at once: what a view would change done first, here, so the views themselves only
 // read and can be built at once on the pool (doc 31, Phase 4): each observer's memory, the cell index, each client's
 // kept rows, the notices.
+Value Game::storesView(const std::string& cellId) const
+{
+    // Whose they are (the household, by its first two names) and what is in them.
+    auto list = Value::array();
+    const auto spots = world_.homeStoreSpots().find(cellId);
+    if (spots == world_.homeStoreSpots().end())
+        return list;
+    std::vector<std::string> household;
+    for (const auto& [id, life] : world_.society().state().residents)
+        if (life.homeCell == cellId)
+            if (const auto* e = world_.entity(id))
+                household.push_back(e->name);
+    std::string owner = household.empty() ? std::string("No one's") : household[0];
+    if (household.size() == 2)
+        owner += " and " + household[1];
+    else if (household.size() > 2)
+        owner += " and " + std::to_string(household.size() - 1) + " others";
+    if (!household.empty())
+        owner += "'s";
+    for (const auto& [kind, spot] : spots->second)
+    {
+        const auto* account = world_.society().account(Society::homeStore(cellId, kind));
+        std::string contents;
+        if (account)
+            for (const auto& [item, count] : account->stock)
+                if (count > 0)
+                    contents += (contents.empty() ? "" : ", ") + std::to_string(count) + " " +
+                                (item == "meal" ? count == 1 ? "meal" : "meals" : item == "herbs" ? "herbs" : item + (count == 1 ? "" : "s"));
+        auto o = Value::object();
+        o.add("id", Society::homeStore(cellId, kind));
+        o.add("kind", kind);
+        o.add("x", spot.x);
+        o.add("y", spot.y);
+        o.add("owner", owner);
+        o.add("contents", contents.empty() ? std::string("empty") : contents);
+        list.push(o);
+    }
+    return list;
+}
+
 void Game::sendSnapshots(const std::vector<Connection*>& sending)
 {
     std::vector<std::string> due;
@@ -2463,6 +2503,7 @@ void Game::sendSnapshot(Connection* c)
             root.add("challenge", o);
         }
     root.add("structures", structuresView(id, view.cell.id));   // Camps, Halls and Holds here (doc 32, 5.7).
+    root.add("stores", storesView(view.cell.id));                // A home's larder, chest, wardrobe and woodpile (doc 36).
     root.add("isometric", view.isometric);
     root.add("connection", options_.connectionLabel);
     root.add("dialogueProvider", mind_.label());

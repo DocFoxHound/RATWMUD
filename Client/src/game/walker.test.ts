@@ -174,3 +174,21 @@ test("the walker: a Chapter's built structure stands in the way, as on the serve
     walker.setCell(10, 3, rows, new Float32Array(30), [], new Set(['5,1']));
     assert.ok(!walker.passable(5.5, 1.5, 4.5, 1.5), 'a tent there: not passable');
 });
+
+test("bodies: the page's own wolf walks into another and is held off by it, never passing through", async () => {
+    const {state: s} = testGame();
+    s.walker = await Walker.load(wasm);
+    s.applySnapshot({cell: {id: 'room', width: 12, height: 6, rows}, self: {id: 'self', x: 1.5, y: 4.5, posture: 'standing', walkSpeed: 2.6, moveFactor: 1},
+        entities: [{id: 'other', x: 3.5, y: 4.5}], doors: [], time: 0, cellGeneration: 1});
+    const frame = (time: number) => ({motionSession: '', observer: 'self', cellId: 'room', cellGeneration: 1, revision: 0, time,
+        entities: [{id: 'self', x: 1.5, y: 4.5, facing: 0, moving: false}, {id: 'other', x: 3.5, y: 4.5, facing: 0, moving: false}], mode: 0, inputAck: 0, poseAck: 0});
+    s.applyMotion(frame(0.05));
+    s.tick(1, 0.016);
+    s.heldKeys.add('KeyD');
+    let closest = 9;
+    for (let t = 1.016; t < 3; t += 0.016) {
+        s.tick(t, 0.016);
+        closest = Math.min(closest, s.entities.get('other')!.x - s.entities.get('self')!.x);
+    }
+    assert.ok(closest > 0.4 && closest < 0.5, `pressed up against it, a body apart: ${closest}`);
+});

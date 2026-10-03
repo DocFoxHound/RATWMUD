@@ -239,6 +239,19 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.goalCell.clear();
             continue;
         }
+        // Home storage (doc 36): meals beyond the one carried are put away in the larder whenever they're home
+        // (a shopkeeper's are the shop's stock, kept), and a larder with food in it is where a hungry wolf goes first.
+        const std::string larder = life.homeCell.empty() ? std::string() : homeStore(life.homeCell, "larder");
+        const auto* larderAccount = larder.empty() ? nullptr : account(larder);
+        if (larderAccount && !merchantRole && body.cell == life.homeCell && stock(wallet, "meal") > 1)
+            shift(pair.first, larder, "meal", stock(wallet, "meal") - 1, 0, "put away in the larder");
+        const bool larderHasFood = larderAccount && stock(*larderAccount, "meal") > 0 && !travels;
+        const auto larderSpot = [&]() -> Spot {
+            if (const auto home = homeStores_.find(life.homeCell); home != homeStores_.end())
+                if (const auto at = home->second.find("larder"); at != home->second.end())
+                    return at->second;
+            return {life.homeCell, life.homeX, life.homeY};
+        };
         // The day and the sky (Phase 9). The watch keeps its hours whatever the day and the weather.
         const auto& plan = planFor(life.homeCell);
         const int workSky = sky(job->work.cell);
@@ -300,6 +313,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const bool continuing = life.task == "eat" && life.goalCell == body.cell;
             goal = {body.cell, continuing ? life.goalX : body.x, continuing ? life.goalY : body.y};
             reason = "Hungry; a carried meal is available.";
+        }
+        else if (!merchantRole && life.hunger >= 55 && stock(wallet, "meal") == 0 && larderHasFood)
+        {
+            task = "fetch food";
+            goal = larderSpot();
+            reason = onDuty ? "A short meal break at home." : "Hungry; fetching a meal from the larder at home.";
         }
         else if (!merchantRole && life.hunger >= 55 && stock(wallet, "meal") == 0 && wallet.cash >= 6 && shop)
         {
@@ -401,7 +420,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             task = "morning at home";
             reason = "Waking slowly before the working day.";
         }
-        if (travels && !(onHours && task == job->title) && task != "eat" && task != "buy food" && task != "relocate" &&
+        if (travels && !(onHours && task == job->title) && task != "eat" && task != "buy food" && task != "fetch food" && task != "relocate" &&
             task != "festival" && task != "at the market")
         {
             // Off the road's hours: stay put, camped or lodged where the day ended.
@@ -464,7 +483,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (life.progress < duration)
             continue;
         life.progress = 0;
-        if (task == "eat")
+        if (task == "fetch food")
+        {
+            if (!larderAccount || !shift(larder, pair.first, "meal", 1, 0, "taken from the larder"))
+                life.reason = "The larder is empty.";
+        }
+        else if (task == "eat")
         {
             --wallet.stock["meal"];
             life.hunger = std::max(0., life.hunger - 55.);
@@ -487,7 +511,13 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             for (const auto& open : openShops)
                 if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
                     seller = &open.first;
-            if (!seller || !transfer(*seller, pair.first, "meal", 1, atStall_.count(*seller) ? 5 : 6, "resident food purchase"))
+            // One to eat and, where the purse allows, a couple more for the larder at home (doc 36): one trip feeds
+            // them for days, and a town doesn't all queue at the shop each morning.
+            const std::int64_t price = seller && atStall_.count(*seller) ? 5 : 6;
+            int meals = larderAccount ? int(std::min<std::int64_t>(3, wallet.cash / price)) : 1;
+            if (seller)
+                meals = std::max(1, std::min(meals, stock(*account(*seller), "meal")));
+            if (!seller || !transfer(*seller, pair.first, "meal", meals, price, "resident food purchase"))
                 life.reason = "Cannot buy food: the shop, its stock or the purse is unavailable.";
         }
         else if (task == "trade" && smith(pair.first))

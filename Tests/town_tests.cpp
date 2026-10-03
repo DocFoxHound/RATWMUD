@@ -100,7 +100,7 @@ void playerServices()
     player.position = {keeper->position.x, keeper->position.y + 1};
     const auto bought = world.trade("player-visitor", "wren", "meal", 1, true);
     expect(bought.ok, "Players buy from the shopkeeper: " + bought.message);
-    expect(held(world, "player-visitor", "meal") == 2 && world.society().conserved(), "Purchase moves real goods");
+    expect(held(world, "player-visitor", "meal") == Society::StartingMeals + 1 && world.society().conserved(), "Purchase moves real goods");
     expect(!world.trade("player-visitor", "npc_keeper", "meal", 1, true).ok, "Demo keeper is absent from town");
 }
 void dailyLife()
@@ -140,6 +140,10 @@ void wagesAndFood()
     auto state = world.save();
     state.society.residents.at("linden").hunger = 58;
     state.society.accounts.at("linden").stock.erase("meal");
+    // (Nothing in the larder at home either, or that is where Linden would go: larderFirst.)
+    if (auto larder = state.society.accounts.find(Society::homeStore(state.society.residents.at("linden").homeCell, "larder"));
+        larder != state.society.accounts.end())
+        larder->second.stock.erase("meal");
     expect(world.restore(state).ok, "Hungry fixture restores");
     const auto treasury = world.society().account("treasury")->cash;
     run(world, 900);
@@ -149,6 +153,44 @@ void wagesAndFood()
     expect(bought, "Hungry civilian walks to the shop and buys a meal");
     expect(world.society().account("treasury")->cash < treasury, "Guards and workers draw wages from the treasury");
 }
+// Home storage (Docs/Design/36-home-storage.md): every home indoors has a larder, a chest, a wardrobe and a woodpile,
+// the larder stocked for the household; a hungry resident eats from it before buying, and puts spare meals away.
+void larderFirst()
+{
+    auto world = town();
+    const auto home = world.society().resident("linden")->homeCell;
+    const auto larderId = Society::homeStore(home, "larder");
+    for (const char* kind : Society::StoreKinds)
+        expect(world.society().account(Society::homeStore(home, kind)), std::string("Linden's home has a ") + kind);
+    const auto* larder = world.society().account(larderId);
+    expect(larder && Society::stock(*larder, "meal") >= Society::LarderMealsEach, "its larder stocked for the household");
+    world.ensureLoaded(home);
+    const auto spots = world.homeStoreSpots();
+    expect(spots.count(home) && spots.at(home).count("larder"), "and standing somewhere in the home");
+    const auto at = spots.at(home).at("larder");
+    const auto* c = world.cell(home);
+    const auto* t = c->tile(int(at.x), int(at.y));
+    expect(t && !t->solid, "on open floor");
+    // Hungry, nothing carried: home to the larder, not to the shop.
+    world.setTimeOfDay(12);
+    auto state = world.save();
+    state.society.residents.at("linden").hunger = 58;
+    state.society.accounts.at("linden").stock.erase("meal");
+    expect(world.restore(state).ok, "Hungry fixture restores");
+    const int before = Society::stock(*world.society().account(larderId), "meal");
+    const auto purse = world.society().account("linden")->cash;
+    run(world, 900);
+    // (Read from the accounts, not the ledger: it keeps only its newest entries.)
+    expect(Society::stock(*world.society().account(larderId), "meal") < before && world.society().resident("linden")->hunger < 50,
+           "A hungry resident with food at home fetches a meal from the larder and eats");
+    expect(world.society().account("linden")->cash >= purse, "rather than spending at the shop");
+    expect(Society::stock(*world.society().account(larderId), "meal") < before, "and the larder has one fewer");
+    expect(world.society().conserved(), "Money is conserved");
+    // A new player starts with food of their own.
+    world.addPlayer("player-newcomer", "Newcomer");
+    expect(held(world, "player-newcomer", "meal") == Society::StartingMeals, "A new player starts with a few days' meals");
+}
+
 // Copies Greyfen to a scratch folder with one manifest line rewritten.
 Result loadVariant(const std::string& from, const std::string& to)
 {
@@ -523,6 +565,7 @@ int main()
         playerServices();
         dailyLife();
         wagesAndFood();
+        larderFirst();
         rejectsBadResidents();
         doorsWalkThrough();
         lockedDoorsStillBlock();

@@ -197,6 +197,11 @@ Result World::ensureLoaded(const std::string& cellId)
         doors_.emplace(id, std::move(d));
     }
     indexSeams(cellId, seamIds);
+    if (homesReady_ && !area.outdoors && !homeStoreSpots_.count(cellId))
+    {
+        placeHomeStores(cellId);                    // A home's stores stand once its interior is in memory (doc 36).
+        society_.setHomeStores(homeStoreSpots_);
+    }
     return {true, "Cell loaded.", cellId};
 }
 
@@ -796,6 +801,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         candidate.society_.configure(roster);
     candidate.rebuildFixtureIndex();
     *this = std::move(candidate);
+    furnishHomes();                                 // Every home's stores, from the start (doc 36).
     return {true, "Authored world loaded atomically.", path};
 }
 } // namespace ratw

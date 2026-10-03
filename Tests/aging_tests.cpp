@@ -131,7 +131,8 @@ int main()
         check(blocked.society().restore(work), "Blocked worksite fixture loads a nearly complete action");
         blocked.tick(2);
         const auto* cookAccount = blocked.society().account("npc_cook");
-        check(ratw::Society::stock(*cookAccount, "herbs") == 2 && ratw::Society::stock(*cookAccount, "meal") == 0 &&
+        // (Herbs untouched: nothing was cooked. A meal may have come with the home's first provisions: doc 36.)
+        check(ratw::Society::stock(*cookAccount, "herbs") == 2 && ratw::Society::stock(*cookAccount, "meal") <= 1 &&
                   blocked.society().resident("npc_cook")->progress == 0 && std::abs(cook->position.x - 4.5) < 1e-7 &&
                   std::abs(cook->position.y - 4.5) < 1e-7,
               "An unreachable physical worksite cannot complete a restored recipe or teleport its worker");

@@ -210,8 +210,8 @@ int main()
                   owned.society().account("treasury")->cash == reserveBefore - 20 && owned.society().conserved(),
               "Authenticated wolf IDs receive exactly one finite welcome purse");
         const auto* purse = owned.society().account(ownedId);
-        check(Society::stock(*purse, "herbs") == 2 && Society::stock(*purse, "meal") == 1,
-              "Authenticated wolf IDs receive real starter goods from the reserve");
+        check(Society::stock(*purse, "herbs") == 2 && Society::stock(*purse, "meal") == Society::StartingMeals,
+              "Authenticated wolf IDs receive real starter goods: herbs from the reserve, meals of their own (doc 36)");
         owned.addPlayer(ownedId, "Repeated entry");
         check(owned.society().account("treasury")->cash == reserveBefore - 20,
               "Re-entering same authenticated wolf does not repeat welcome grant");

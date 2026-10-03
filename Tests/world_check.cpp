@@ -211,6 +211,7 @@ int main(int argc, char** argv)
     std::map<int, std::array<double, 7>> stagesByDay;
     std::map<int, std::size_t> searchesByDay;
     std::map<int, std::array<std::size_t, 4>> crowdByDay;
+    std::map<int, std::string> biggestCrowd;        // Where each day's biggest crowd stood, and what it was doing.
     std::vector<double> picking;                    // The ambient director's look every five seconds (Phase 10).
     std::size_t picked = 0;
     times.reserve(std::size_t(ticks));
@@ -255,6 +256,7 @@ int main(int argc, char** argv)
             {
                 std::size_t all = 0, onstage = 0, transient = 0, pile = 0;
                 std::map<std::tuple<std::string, int, int>, std::size_t> tiles;
+                std::tuple<std::string, int, int> pileAt;
                 for (const auto& [id, e] : server.entities())
                 {
                     ++all;
@@ -262,9 +264,34 @@ int main(int argc, char** argv)
                     if (e.offstage || e.dead)
                         continue;
                     ++onstage;
-                    pile = std::max(pile, ++tiles[{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))}]);
+                    const std::tuple<std::string, int, int> at{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))};
+                    if (++tiles[at] > pile)
+                    {
+                        pile = tiles[at];
+                        pileAt = at;
+                    }
                 }
                 auto& c = crowdByDay[d];
+                if (pile > c[3])
+                {
+                    // What they were about: each activity (its task, before the reason) and how many.
+                    std::map<std::string, int> doing;
+                    std::size_t moving = 0, routed = 0;
+                    for (const auto& [id, e] : server.entities())
+                        if (!e.offstage && !e.dead && e.cellId == std::get<0>(pileAt) && int(std::floor(e.position.x)) == std::get<1>(pileAt) &&
+                            int(std::floor(e.position.y)) == std::get<2>(pileAt))
+                        {
+                            ++doing[e.activity.substr(0, e.activity.find(" — "))];
+                            moving += std::hypot(e.velocity.x, e.velocity.y) > 1e-6;
+                            routed += !e.path.empty();
+                        }
+                    std::ostringstream where;
+                    where << std::get<0>(pileAt) << " " << std::get<1>(pileAt) << "," << std::get<2>(pileAt) << " at "
+                          << int(std::fmod(from + i * 0.05 / 600.0, 24.0)) << ":00, " << moving << " moving, " << routed << " with a route:";
+                    for (const auto& [what, n] : doing)
+                        where << " " << n << "× " << what << ";";
+                    biggestCrowd[d] = where.str();
+                }
                 c = {std::max(c[0], all), std::max(c[1], onstage), std::max(c[2], transient), std::max(c[3], pile)};
             }
         }
@@ -437,6 +464,9 @@ int main(int argc, char** argv)
             const auto& c = crowdByDay[d];
             std::cout << "; " << double(searchesByDay[d]) / t[4] << "; " << c[0] << " " << c[1] << " " << c[2] << " " << c[3] << "\n";
         }
+        std::cout << "  each day's biggest crowd on one tile:\n";
+        for (const auto& [d, where] : biggestCrowd)
+            std::cout << "    day " << d + 1 << ": " << where << "\n";
     }
     if (!eventsFile.empty())
     {

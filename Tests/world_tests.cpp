@@ -222,6 +222,9 @@ void clickPathing()
     expect(near(p.position.x, 15.5, .08) && near(p.position.y, 17.5, .08), "Click path reaches exact sub-tile goal");
     expect(p.path.empty(), "Completed path is cleared");
     p.position = {16.5, 12.5};
+    // (The scout, who stands in that lane, kept out of it: walking into someone nudges them and is slowed by it.)
+    w.entity("npc_scout")->leaderId = "test-frozen";
+    w.entity("npc_scout")->position = {16.5, 15.5};
     expect(w.moveTo("p", 21.5, 12.5).ok, "Straight click accepts exact unsnapped route");
     advance(w, 1);
     expect(near(p.position.x, 19.1, .02) && near(p.position.y, 12.5, .02),
@@ -269,22 +272,39 @@ void transitions()
     expect(!w.interact("p", "door_pantry", "open").ok, "Cannot interact across stored cells");
     expect(!w.interact("p", "door_yard", "teleport").ok, "Unknown verbs rejected");
 }
-void gentleCollision()
+// Bodies (step::BodyRadius): wolves crowd and nudge each other but never stand on top of one another.
+void bodies()
 {
+    const auto distance = [](Vec2 p, Vec2 q) { return std::hypot(p.x - q.x, p.y - q.y); };
     World w;
+    for (const auto& [id, e] : w.entities())
+        if (e.npc)
+            w.entity(id)->cellId = "loft";            // (The tavern to themselves.)
     auto& a = player(w, "a");
     auto& b = player(w, "b");
+    const double body = step::BodyRadius * 2;
     a.position = {16.5, 12.5};
     b.position = a.position;
     w.tick(.1);
-    expect(std::abs(a.position.x - b.position.x) > .001, "Identical positions get gentle separation");
-    expect(std::abs(a.position.x - 16.5) < .03, "Gentle bump is small");
+    expect(distance(a.position, b.position) > .1, "Two on the very same spot are pushed apart at once");
+    advance(w, .5);
+    expect(distance(a.position, b.position) >= body - 1e-6, "and soon stand a body's width apart");
+    expect(std::abs((a.position.x + b.position.x) / 2 - 16.5) < .01, "each giving way half");
+    // Walking into someone nudges them along, and is slowed by it; they are never walked through.
     a.position = {15.5, 12.5};
     b.position = {16.5, 12.5};
     w.move("a", 1, 0);
-    advance(w, 1);
-    expect(a.position.x > 17.5, "Other wolves are not rigid blockers");
+    double closest = 1e9;
+    for (int i = 0; i < 20; ++i)
+    {
+        w.tick(.05);
+        closest = std::min(closest, distance(a.position, b.position));
+    }
+    expect(b.position.x > 16.7, "The one walked into is nudged along: " + std::to_string(b.position.x));
+    expect(a.position.x < b.position.x && closest > body * .7, "and never walked through");
+    expect(a.position.x < 15.5 + 2.6, "Pushing someone along is slower than walking free");
     w.stop("a");
+    // A crowd fills a room's floor rather than a single tile.
     a.position = {16.5, 22.5};
     for (int i = 0; i < 8; ++i)
     {
@@ -294,6 +314,16 @@ void gentleCollision()
     }
     expect(w.interact("a", "door_main", "open").ok, "Crowded destination cannot block a portal");
     expect(a.cellId == "exterior" && near(a.position.y, 1.5), "Crowded portal preserves authored arrival");
+    advance(w, 3);
+    double tightest = 1e9;
+    for (int i = 0; i < 8; ++i)
+    {
+        const auto& q = *w.entity("crowd" + std::to_string(i));
+        tightest = std::min(tightest, distance(q.position, a.position));
+        for (int j = i + 1; j < 8; ++j)
+            tightest = std::min(tightest, distance(q.position, w.entity("crowd" + std::to_string(j))->position));
+    }
+    expect(tightest >= body * .9, "and spreads out round it, none on top of another: " + std::to_string(tightest));
 }
 void sensesAndWeather()
 {
@@ -1544,7 +1574,7 @@ int main()
         postureMovement();
         clickPathing();
         transitions();
-        gentleCollision();
+        bodies();
         sensesAndWeather();
         stealthPerception();
         posturePortalTransitions();

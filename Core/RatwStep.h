@@ -10,6 +10,10 @@
 namespace ratw::step
 {
 constexpr double Radius = 0.065;              // A wolf's footprint, each way from its centre (tiles).
+// A wolf's body, each way from its centre (tiles): no two stand closer than twice this. They crowd and nudge each
+// other (everyone, players and residents alike), but never stand on top of one another. Two side by side fill a
+// one-tile passage.
+constexpr double BodyRadius = 0.25;
 constexpr double WalkSpeed = 2.6;             // Tiles a second, at a walk, on flat ground.
 constexpr double StaminaRecovery = 5.0;       // A second.
 constexpr double SprintDrain = 15.0;          // A second, at a full sprint.

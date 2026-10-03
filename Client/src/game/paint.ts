@@ -10,6 +10,9 @@ import type {GameState} from './state.ts';
 import {coneTiles, myTurn, type BattleView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
+
+/** How a home's stores are drawn (doc 36). */
+const StoreGlyphs: Record<string, string> = {larder: '%', chest: '=', wardrobe: 'H', woodpile: '#'};
 import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 
 // Hostile wolves (doc 32), the same red as a fight's other side.
@@ -608,6 +611,21 @@ export class GamePainter {
             const [gw, gh] = p.measure(str(st, 'glyph', '?'), size, true);
             p.text(x - gw / 2, y - gh / 2, str(st, 'glyph', '?'), size, withAlpha(base, alpha), true);
             if (!bool(st, 'built')) p.frame(x - tile * 0.45, y - tile * 0.45, tile * 0.9, tile * 0.9, withAlpha(base, 0.3));
+        }
+        // A home's stores (doc 36): larder, chest, wardrobe, woodpile; whose and what's in it when the pointer is near.
+        for (const st of objects(s.snapshot, 'stores')) {
+            const x = ox + num(st, 'x') * tile, y = oy + num(st, 'y') * tile;
+            const glyph = StoreGlyphs[str(st, 'kind')] ?? '?';
+            const size = clamp(Math.round(tile * 0.6), 10, 15);
+            const [gw, gh] = p.measure(glyph, size, true);
+            p.text(x - gw / 2, y - gh / 2, glyph, size, withAlpha(Amber, 0.7), true);
+            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 14) {
+                const kind = str(st, 'kind');
+                const label = `${str(st, 'owner')} ${kind} · ${str(st, 'contents')}`;
+                const [lw] = p.measure(label, 9, false);
+                p.box(x + 10, y - 9, lw + 10, 18, Panel);
+                p.text(x + 15, y - 5, label, 9, Paper);
+            }
         }
         const resource = s.visibleResource();
         if (resource) {

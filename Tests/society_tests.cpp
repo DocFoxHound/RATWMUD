@@ -53,9 +53,9 @@ void balancesAndTrade()
     const auto initial = society.moneySupply();
     society.addPlayer("player-one");
     expect(society.account("player-one")->cash == 20 && society.account("treasury")->cash == 980 &&
-               held(society, "player-one", "herbs") == 2 && held(society, "player-one", "meal") == 1 &&
-               society.moneySupply() == initial && society.conserved(),
-           "Welcome money and goods are transferred from finite treasury reserves");
+               held(society, "player-one", "herbs") == 2 && held(society, "player-one", "meal") == Society::StartingMeals &&
+               society.account("treasury")->stock.at("meal") == 50 && society.moneySupply() == initial && society.conserved(),
+           "Welcome money and herbs come from the finite treasury; a few days' meals are a player's own (doc 36)");
     const auto entries = society.state().ledger.size();
     society.addPlayer("player-one");
     society.addPlayer("npc-impostor");
@@ -66,7 +66,7 @@ void balancesAndTrade()
     expect(quote.ok && quote.unitPrice == 6 && quote.total == 12 && society.state().ledger.size() == entries,
            "Server quote derives a stock-dependent price without mutating accounts");
     expect(society.trade("player-one", "npc_keeper", "meal", 2, true).ok && society.account("player-one")->cash == 8 &&
-               held(society, "player-one", "meal") == 3 && held(society, "npc_keeper", "meal") == 10 &&
+               held(society, "player-one", "meal") == Society::StartingMeals + 2 && held(society, "npc_keeper", "meal") == 10 &&
                society.conserved(),
            "Purchase atomically transfers both finite goods and money");
     const auto sale = society.trade("player-one", "npc_keeper", "herbs", 2, false);
@@ -103,9 +103,10 @@ void balancesAndTrade()
     for (int index = 0; index < 55; ++index)
         treasury.addPlayer("player-" + std::to_string(index));
     expect(treasury.account("treasury")->cash == 0 && treasury.account("player-54")->cash == 0 &&
-               held(treasury, "player-54", "herbs") == 0 && held(treasury, "player-54", "meal") == 0 &&
-               treasury.moneySupply() == 1480 && treasury.conserved(),
-           "Many character creations exhaust grants instead of minting infinite starting assets");
+               held(treasury, "player-54", "herbs") == 0 && treasury.moneySupply() == 1480 && treasury.conserved(),
+           "Many character creations exhaust the treasury's grants of money and herbs instead of minting them");
+    // The one exception (doc 36): everyone starts with a few days' food, the treasury empty or not.
+    expect(held(treasury, "player-54", "meal") == Society::StartingMeals, "but every character still starts with its own meals");
 }
 void resourcesAndLocalWork()
 {
@@ -116,8 +117,9 @@ void resourcesAndLocalWork()
     expect(!society.gather("player-one").ok && society.state().herbPatch == 0 &&
                held(society, "player-one", "herbs") == 42 && society.conserved(),
            "Gathering depletes the shared patch without creating currency");
-    expect(society.eat("player-one").ok && held(society, "player-one", "meal") == 0 && !society.eat("player-one").ok,
-           "Eating consumes a real meal and cannot consume absent stock");
+    for (int had = held(society, "player-one", "meal"); had > 0; --had)
+        expect(society.eat("player-one").ok && held(society, "player-one", "meal") == had - 1, "Eating consumes a real meal");
+    expect(!society.eat("player-one").ok, "and cannot consume absent stock");
     society.tick(1, 1, 3, {});
     expect(society.state().herbPatch == 4, "Winter supplies only four new herb bundles per calendar day");
     society.tick(1, 2, 1, {});

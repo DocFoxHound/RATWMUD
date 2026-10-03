@@ -88,6 +88,7 @@ export interface KeyInput {
 }
 
 const MovementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
+const BodyWidth = 0.5;                                  // Two wolves' bodies (Core/RatwStep.h: twice BodyRadius).
 const MaxTargets = 4;
 const MapScalesForPan = [0.25, 0.5, 1, 2, 4, 8];    // As minimap.ts MapScales (kept here so state has no drawing import).
 /** The story column's presets (CSS pixels): balanced, wide, text-first, compact. */
@@ -851,6 +852,7 @@ export class GameState {
             this.walking = false;
             this.poseUnsent = true;                // The last pose, where it stopped.
         }
+        if (this.nudgeByBodies(pose)) this.poseUnsent = true;
         // Twenty poses a second while walking (also while pushing into a door: the heading takes it through).
         if (this.poseUnsent && this.clock - this.lastPoseSent >= 0.05) {
             ++this.poseSeq;
@@ -867,6 +869,30 @@ export class GameState {
         view.moving = !!(ix || iy);
         view.placed = true;
         return true;
+    }
+
+    /**
+     * Bodies (Core/RatwStep.h, BodyRadius): the page's own wolf never stands on another. Pressed against one, it gives
+     * way half the overlap, so walking into someone is slowed by them; the server, which leaves a page-walked wolf to
+     * its page, pushes the other the rest. True if it moved.
+     */
+    private nudgeByBodies(pose: {x: number; y: number}): boolean {
+        if (!this.walker) return false;
+        let moved = false;
+        for (const [id, other] of this.entities) {
+            if (id === this.selfId || other.self) continue;
+            const dx = pose.x - other.x, dy = pose.y - other.y, d = Math.hypot(dx, dy);
+            if (d >= BodyWidth) continue;
+            // On the very same spot: apart along a direction fixed by who it is.
+            const nx = d > 1e-9 ? dx / d : Math.cos(id.length), ny = d > 1e-9 ? dy / d : Math.sin(id.length);
+            const push = (BodyWidth - d) / 2;
+            const x = pose.x + nx * push, y = pose.y + ny * push;
+            if (!this.walker.passable(x, y, pose.x, pose.y)) continue;   // Not into a wall: the other gives way instead.
+            pose.x = x;
+            pose.y = y;
+            moved = true;
+        }
+        return moved;
     }
 
     /** Where the server will have the wolf, held: its newest pose walked on by the keys held (null when not held). */

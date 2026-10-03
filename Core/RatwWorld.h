@@ -573,6 +573,8 @@ class World
     std::vector<std::pair<std::string, std::string>> takeNotices();
     std::vector<WorldEvent> takeEvents();
     std::size_t droppedEvents() const { return droppedEvents_; }
+    // Each home's stores (doc 36) placed so far: home cell -> kind -> where it stands.
+    const std::map<std::string, std::map<std::string, Spot>>& homeStoreSpots() const { return homeStoreSpots_; }
     // Route searches answered from the path cache, and searched (see findPath).
     std::pair<std::size_t, std::size_t> pathCacheStats() const { return {pathHits_, pathMisses_}; }
     // Residents' route searches on a thread of their own (doc 31, Phase 5): a resident whose route isn't in the path
@@ -745,6 +747,12 @@ class World
     std::vector<Town> towns_;
     std::map<std::string, std::string> townOfCell_;
     bool townsReady_ = false;
+    // Home storage (Docs/Design/36-home-storage.md): every household's stores opened and stocked once (homesReady_),
+    // and where each home's stand, placed when its interior is first in memory.
+    bool homesReady_ = false;
+    std::map<std::string, std::map<std::string, Spot>> homeStoreSpots_;
+    void furnishHomes();
+    void placeHomeStores(const std::string& cellId);
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
     CrimeState crime_;
     // The ambient director (RatwAmbient.cpp): when each resident and place last had an exchange (world seconds), and
@@ -917,6 +925,9 @@ class World
     std::map<std::string, RouteWant> routeWanted_;
     std::string routeCursor_;
     void planWantedRoutes();
+    // A resident's own spot by a goal others share, and whether someone stands on it now (bodies: step::BodyRadius).
+    Vec2 spotNear(const Entity& e, const std::string& goalCell, Vec2 target) const;
+    bool spotTaken(const Entity& e, const std::string& cellId, Vec2 spot) const;
     void headFor(Entity& e, const std::string& task, const std::string& goalCell, Vec2 target, RouteBudget& budget);
     std::int64_t marriageWeek_ = -1;
     void tendPromises();

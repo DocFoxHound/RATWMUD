@@ -2837,78 +2837,113 @@ bool World::nearPortal(const std::string& cellId, Vec2 p, double within) const
 
 void World::separate(double dt)
 {
+    // Bodies (step::BodyRadius): no two wolves in a cell stand closer than a body's width. Each step, every pair
+    // that overlaps is pushed apart, half each, so a wolf walking into another nudges it aside and is slowed by it;
+    // a crowd presses and gives way. Two who can't be moved: a wolf lying downed (a body on the ground), and a
+    // player whose page walks it (the page nudges its own wolf: Client/src/game/state.ts); the other takes it all.
     // Only characters in the same cell push each other apart. Grouping them by cell first, keeping ID order within
-    // each group, visits the same pairs in the same order as comparing everyone with everyone (pairs in different
-    // cells share no one, so the groups don't affect each other), without the whole world's worth of pairs.
+    // each group, visits the same pairs in the same order as comparing everyone with everyone.
+    constexpr double Body = step::BodyRadius * 2;
     auto& byCell = separateScratch_;
     byCell.clear();
     for (auto& entry : entities_)
-        if (!entry.second.offstage && entry.second.downedLeft <= 0 && (battles_.empty() || !inBattle(entry.first)))
-            byCell.push_back(&entry.second);        // (Nobody pushes a wolf lying down or frozen in a fight.)
+        if (!entry.second.offstage && !entry.second.dead && (battles_.empty() || !inBattle(entry.first)))
+            byCell.push_back(&entry.second);        // (Nobody pushes a wolf frozen in a fight's lineup.)
     std::stable_sort(byCell.begin(), byCell.end(), [](const Entity* x, const Entity* y) { return x->cellId < y->cellId; });
-    for (std::size_t first = 0, end = 0; first < byCell.size(); first = end)
-    {
-        end = first + 1;
-        while (end < byCell.size() && byCell[end]->cellId == byCell[first]->cellId)
-            ++end;
-        // A crowd is bucketed by where each stood as this step began, and only pairs in touching buckets are
-        // compared, still in the same order. Each push is at most .12 * dt, so across one step nobody moves anywhere
-        // near Slack; a pair further apart than a bucket at the start can't touch before the step ends.
-        constexpr double Slack = .25, Bucket = Radius * 2 + Slack;
-        constexpr std::size_t Crowd = 24;
-        std::map<std::pair<long, long>, std::vector<std::size_t>> buckets;
-        std::vector<std::size_t> later;
-        const bool crowded = end - first > Crowd;
-        const auto bucketOf = [](Vec2 p) { return std::pair<long, long>{long(std::floor(p.x / Bucket)), long(std::floor(p.y / Bucket))}; };
-        if (crowded)
-            for (std::size_t k = first; k < end; ++k)
-                buckets[bucketOf(byCell[k]->position)].push_back(k);
-        std::vector<std::pair<long, long>> startBucket;
-        if (crowded)
-            for (std::size_t k = first; k < end; ++k)
-                startBucket.push_back(bucketOf(byCell[k]->position));
-        for (std::size_t i = first; i < end; ++i)
+    const auto fixed = [](const Entity& e) { return e.downedLeft > 0 || e.clientWalks; };
+    for (int pass = 0; pass < 2; ++pass)
+        for (std::size_t first = 0, end = 0; first < byCell.size(); first = end)
         {
-            later.clear();
+            end = first + 1;
+            while (end < byCell.size() && byCell[end]->cellId == byCell[first]->cellId)
+                ++end;
+            // A crowd is bucketed by where each stood as this pass began, and only pairs in touching buckets are
+            // compared, still in the same order. Each push is at most MaxPush, so across one pass nobody moves
+            // anywhere near Slack; a pair further apart than a bucket at the start can't touch before it ends.
+            const double maxPush = std::min(.2, 4 * dt);
+            const double slack = std::max(.25, 4 * maxPush), bucket = Body + slack;
+            constexpr std::size_t Crowd = 24;
+            std::map<std::pair<long, long>, std::vector<std::size_t>> buckets;
+            std::vector<std::size_t> later;
+            const bool crowded = end - first > Crowd;
+            const auto bucketOf = [bucket](Vec2 p) { return std::pair<long, long>{long(std::floor(p.x / bucket)), long(std::floor(p.y / bucket))}; };
+            std::vector<std::pair<long, long>> startBucket;
             if (crowded)
+                for (std::size_t k = first; k < end; ++k)
+                {
+                    startBucket.push_back(bucketOf(byCell[k]->position));
+                    buckets[startBucket.back()].push_back(k);
+                }
+            const auto* c = cell(byCell[first]->cellId);
+            if (!c)
+                continue;
+            for (std::size_t i = first; i < end; ++i)
             {
-                const auto [bx, by] = startBucket[i - first];
-                for (long dy = -1; dy <= 1; ++dy)
-                    for (long dx = -1; dx <= 1; ++dx)
-                        if (const auto found = buckets.find({bx + dx, by + dy}); found != buckets.end())
-                            for (const auto k : found->second)
-                                if (k > i)
-                                    later.push_back(k);
-                std::sort(later.begin(), later.end());
-            }
-            else
-                for (std::size_t j = i + 1; j < end; ++j)
-                    later.push_back(j);
-            for (const auto j : later)
-            {
-                auto& a = *byCell[i];
-                auto& b = *byCell[j];
-                const double d = distance(a.position, b.position);
-                if (d >= Radius * 2)
-                    continue;
-                const bool atPortal = nearPortal(a.cellId, a.position, 1.7) || nearPortal(a.cellId, b.position, 1.7);
-                if (atPortal || a.transitioned || b.transitioned)
-                    continue;
-                Vec2 n =
-                    d > Epsilon ? Vec2{(a.position.x - b.position.x) / d, (a.position.y - b.position.y) / d} : Vec2{1, 0};
-                const double push = std::min((Radius * 2 - d) * .15, .12 * dt);
-                const auto* c = cell(a.cellId);
-                const auto* ta = c->tile(int(a.position.x), int(a.position.y));
-                const auto* tb = c->tile(int(b.position.x), int(b.position.y));
-                const Vec2 pa{a.position.x + n.x * push, a.position.y + n.y * push},
-                    pb{b.position.x - n.x * push, b.position.y - n.y * push};
-                if (ta && passable(a.cellId, pa, ta))
-                    a.position = pa;
-                if (tb && passable(b.cellId, pb, tb))
-                    b.position = pb;
+                later.clear();
+                if (crowded)
+                {
+                    const auto [bx, by] = startBucket[i - first];
+                    for (long dy = -1; dy <= 1; ++dy)
+                        for (long dx = -1; dx <= 1; ++dx)
+                            if (const auto found = buckets.find({bx + dx, by + dy}); found != buckets.end())
+                                for (const auto k : found->second)
+                                    if (k > i)
+                                        later.push_back(k);
+                    std::sort(later.begin(), later.end());
+                }
+                else
+                    for (std::size_t j = i + 1; j < end; ++j)
+                        later.push_back(j);
+                for (const auto j : later)
+                {
+                    auto& a = *byCell[i];
+                    auto& b = *byCell[j];
+                    const double d = distance(a.position, b.position);
+                    if (d >= Body)
+                        continue;               // (Pushes never cross a door or a cell's edge: passable() is this cell.)
+                    const bool aFixed = fixed(a), bFixed = fixed(b);
+                    if (aFixed && bFixed)
+                        continue;
+                    Vec2 n;
+                    if (d > Epsilon)
+                        n = {(a.position.x - b.position.x) / d, (a.position.y - b.position.y) / d};
+                    else
+                    {
+                        // On the very same spot: apart along a direction fixed by who they are, so it's the same
+                        // every time.
+                        std::uint64_t h = 1469598103934665603ULL;
+                        for (const unsigned char ch : a.id + '|' + b.id)
+                            h = (h ^ ch) * 1099511628211ULL;
+                        const double angle = double(h % 6283) / 1000.0;
+                        n = {std::cos(angle), std::sin(angle)};
+                    }
+                    const double overlap = Body - d;
+                    const double shareA = aFixed ? 0 : bFixed ? 1 : .5, shareB = 1 - shareA;
+                    const auto* ta = c->tile(int(a.position.x), int(a.position.y));
+                    const auto* tb = c->tile(int(b.position.x), int(b.position.y));
+                    const double pushA = std::min(overlap * shareA, maxPush), pushB = std::min(overlap * shareB, maxPush);
+                    const Vec2 pa{a.position.x + n.x * pushA, a.position.y + n.y * pushA},
+                        pb{b.position.x - n.x * pushB, b.position.y - n.y * pushB};
+                    // Never into a wall or up a step too high: one against a wall leaves it to the other.
+                    const bool aMoves = pushA > 0 && ta && passable(a.cellId, pa, ta);
+                    const bool bMoves = pushB > 0 && tb && passable(b.cellId, pb, tb);
+                    if (aMoves)
+                        a.position = pa;
+                    if (bMoves)
+                        b.position = pb;
+                    if (aMoves != bMoves && !aFixed && !bFixed)
+                    {
+                        // One couldn't give way: the other takes the rest.
+                        auto& mover = aMoves ? a : b;
+                        const double sign = aMoves ? 1 : -1, more = std::min(overlap * .5, maxPush);
+                        const Vec2 further{mover.position.x + sign * n.x * more, mover.position.y + sign * n.y * more};
+                        const auto* tm = c->tile(int(mover.position.x), int(mover.position.y));
+                        if (tm && passable(mover.cellId, further, tm))
+                            mover.position = further;
+                    }
+                }
             }
         }
-    }
 }
 
 Result World::relocateResident(const std::string& id, const std::string& destination, double x, double y)
@@ -2961,6 +2996,8 @@ bool World::continueSchedules(double budgetMs)
         {
         case 0:
         {
+            if (!homesReady_)
+                furnishHomes();
             std::map<std::string, LifeBody> bodies;
             for (auto& pair : entities_)
             {
@@ -3021,7 +3058,17 @@ bool World::continueSchedules(double budgetMs)
                     errand(it->first, *life, task, reason, goalCell, target);
                 const std::string activity = task + " — " + reason;
                 if (e.activity != activity) { stop(e.id); e.activity = activity; }
-                if (e.cellId == goalCell && distance(e.position, target) <= .35)
+                // Bodies: no two stand on one point. Near the goal, someone else on it, they take a spot of their own
+                // beside it; and they are there once on either, or once near enough for the day's work (the society's
+                // 1.2 tiles) with the goal taken: a crowd at a counter stops pressing in.
+                const bool close = e.cellId == goalCell && distance(e.position, target) <= 3;
+                const Vec2 spot = close ? spotNear(e, goalCell, target) : target;
+                const bool arrived = e.cellId == goalCell &&
+                                     (distance(e.position, target) <= .35 || distance(e.position, spot) <= .35 ||
+                                      (distance(e.position, target) <= 1.2 && spotTaken(e, goalCell, target)));
+                if (arrived && !e.path.empty())
+                    stop(e.id);
+                if (arrived)
                 {
                     if (task == "sleep" && e.posture != "lying")
                     {
@@ -3032,7 +3079,7 @@ bool World::continueSchedules(double budgetMs)
                     }
                     continue;
                 }
-                headFor(e, task, goalCell, target, budget);
+                headFor(e, task, goalCell, spot, budget);
             }
             ++scheduleStage_;
             break;
@@ -3051,6 +3098,123 @@ bool World::continueSchedules(double budgetMs)
         }
     }
     return true;
+}
+
+void World::furnishHomes()
+{
+    // Every home indoors has its stores: a household living in a cell that is outdoors (a camp, the open road) has none.
+    homesReady_ = true;
+    std::set<std::string> homes;
+    for (const auto& [id, life] : society_.state().residents)
+        if (const auto* c = cell(life.homeCell); c && !c->outdoors)
+            homes.insert(life.homeCell);
+    society_.furnishHomes(homes);
+    for (const auto& home : homes)
+        if (const auto* c = cell(home); c && c->loaded)
+            placeHomeStores(home);
+    society_.setHomeStores(homeStoreSpots_);
+}
+
+void World::placeHomeStores(const std::string& cellId)
+{
+    // Along the walls, clear of doors and of where the household sleeps: the larder first (the one that matters
+    // most in a small room), then the chest, the wardrobe and the woodpile, each its own tile, a step apart. Chosen
+    // the same way every time, so a home's stores stand where they stood.
+    const auto* c = cell(cellId);
+    if (!c || !c->loaded || c->outdoors || homeStoreSpots_.count(cellId) || !society_.account(Society::homeStore(cellId, "larder")))
+        return;
+    std::vector<Vec2> beds;
+    for (const auto& [id, life] : society_.state().residents)
+        if (life.homeCell == cellId)
+            beds.push_back({life.homeX, life.homeY});
+    const auto& here = doorsIn(cellId);
+    struct Candidate
+    {
+        std::uint64_t order;
+        Vec2 at;
+    };
+    std::vector<Candidate> candidates;
+    for (int y = 0; y < c->height; ++y)
+        for (int x = 0; x < c->width; ++x)
+        {
+            const auto* t = c->tile(x, y);
+            if (!t || t->solid || t->terrain == Terrain::Water)
+                continue;
+            int walls = 0;
+            for (const auto [dx, dy] : {std::pair{1, 0}, {-1, 0}, {0, 1}, {0, -1}})
+            {
+                const auto* n = c->tile(x + dx, y + dy);
+                walls += !n || n->solid;
+            }
+            const Vec2 at{x + .5, y + .5};
+            const auto* ground = c->tile(x, y);
+            if (!walls || walls >= 3 || !passable(cellId, at, ground))
+                continue;                           // Against a wall, not boxed into a nook nobody could reach.
+            bool clear = true;
+            for (const Door* d : here)
+                clear = clear && distance(d->position, at) >= 2;
+            for (const auto& b : beds)
+                clear = clear && distance(b, at) >= 1.5;
+            if (!clear)
+                continue;
+            std::uint64_t h = 1469598103934665603ULL;
+            for (const unsigned char ch : cellId + ":" + std::to_string(x) + "," + std::to_string(y))
+                h = (h ^ ch) * 1099511628211ULL;
+            candidates.push_back({h, at});
+        }
+    std::sort(candidates.begin(), candidates.end(), [](const Candidate& a, const Candidate& b) { return a.order < b.order; });
+    auto& spots = homeStoreSpots_[cellId];
+    std::size_t next = 0;
+    for (const char* kind : Society::StoreKinds)
+        for (; next < candidates.size(); ++next)
+        {
+            const Vec2 at = candidates[next].at;
+            bool apart = true;
+            for (const auto& [placed, spot] : spots)
+                apart = apart && distance({spot.x, spot.y}, at) >= 1.5;
+            if (!apart)
+                continue;
+            spots[kind] = {cellId, at.x, at.y};
+            ++next;
+            break;
+        }
+}
+
+Vec2 World::spotNear(const Entity& e, const std::string& goalCell, Vec2 target) const
+{
+    // The goal itself while nobody stands on it; else a spot of its own by it (a shop counter, a well, shared): one of
+    // the places on two rings around it, chosen by who it is, the first from there it can stand on (and walk to: the
+    // same region).
+    const auto* c = cell(goalCell);
+    if (!c || !c->loaded || !regionMap(*c) || !spotTaken(e, goalCell, target))
+        return target;
+    std::uint64_t h = 1469598103934665603ULL;
+    for (const unsigned char ch : e.id)
+        h = (h ^ ch) * 1099511628211ULL;
+    constexpr int Spots = 17;                       // The goal, six at .55, ten at 1.
+    const int region = regionAt(*c, target);
+    for (int k = 0; k < Spots; ++k)
+    {
+        const int i = int((h + std::uint64_t(k)) % Spots);
+        Vec2 p = target;
+        if (i >= 1 && i <= 6)
+            p = {target.x + .55 * std::cos(i * Pi / 3), target.y + .55 * std::sin(i * Pi / 3)};
+        else if (i > 6)
+            p = {target.x + std::cos((i - 7) * Pi / 5 + .3), target.y + std::sin((i - 7) * Pi / 5 + .3)};
+        const auto* t = c->tile(int(std::floor(p.x)), int(std::floor(p.y)));
+        if (t && passable(goalCell, p, t) && (region < 0 || regionAt(*c, p) == region) && !spotTaken(e, goalCell, p))
+            return p;
+    }
+    return target;
+}
+
+bool World::spotTaken(const Entity& e, const std::string& cellId, Vec2 spot) const
+{
+    for (const Entity* other : entitiesIn(cellId))
+        if (other != &e && other->cellId == cellId && !other->offstage && !other->dead &&
+            distance(other->position, spot) < step::BodyRadius * 2)
+            return true;
+    return false;
 }
 
 void World::planWantedRoutes()
@@ -4319,6 +4483,7 @@ Result World::restore(const PersistedWorld& state)
             beliefs_[b.holder].push_back(b);
     roads_.beliefs.clear();
     townsReady_ = false;
+    homesReady_ = false;
     folk_.clear();
     encounters_.clear();
     spared_.clear();
@@ -4340,6 +4505,7 @@ Result World::restore(const PersistedWorld& state)
     travelLegCells_.clear();
     travelRetryAt_.clear();
     travelProgress_.clear();
+    furnishHomes();                                 // A save from before home storage gets it now (doc 36).
     return {true, "Saved world restored.", {}};
 }
 

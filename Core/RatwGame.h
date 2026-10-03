@@ -410,6 +410,7 @@ class Game
     bool campCommand(Connection* c, const json::Value& j, Result& result);
     void campTick(double dt);
     json::Value structuresView(const std::string& viewer, const std::string& cellId) const;
+    json::Value storesView(const std::string& cellId) const;     // Home storage (doc 36).
     json::Value campView(const std::string& viewer) const;
     json::Value sitesView(const std::string& chapterId) const;
     std::string groundKey_;

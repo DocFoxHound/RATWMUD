@@ -234,13 +234,12 @@ void Society::addPlayer(const std::string& id)
     EconomyAccount created;
     created.cash = std::min<std::int64_t>(20, reserve.cash);
     reserve.cash -= created.cash;
-    for (const auto& item : {"herbs", "meal"})
-    {
-        created.stock[item] = std::min(item == std::string("herbs") ? 2 : 1, stock(reserve, item));
-        reserve.stock[item] -= created.stock[item];
-    }
+    created.stock["herbs"] = std::min(2, stock(reserve, "herbs"));
+    reserve.stock["herbs"] -= created.stock["herbs"];
     state_.accounts[id] = created;
     record("settlement welcome grant", "treasury", id, "", 0, created.cash);
+    // Everyone starts with food (doc 36): a few days' meals of their own, not taken from stores that may be empty.
+    create(id, "meal", StartingMeals, "provisions to start with");
 }
 bool Society::transfer(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
                        std::int64_t price, const std::string& kind)
@@ -320,6 +319,35 @@ EconomyResult Society::gather(const std::string& player)
     record("gather", "herb patch", player, "herbs", 1, 0);
     return {true, "You gather one bundle of cooking herbs. The patch has finite supplies."};
 }
+void Society::furnishHomes(const std::set<std::string>& homeCells)
+{
+    if (!state_.enabled)
+        return;
+    std::map<std::string, std::vector<std::string>> households;
+    for (const auto& [id, life] : state_.residents)
+        if (!life.homeCell.empty() && homeCells.count(life.homeCell))
+            households[life.homeCell].push_back(id);
+    for (const auto& [home, members] : households)
+    {
+        bool fresh = false;
+        for (const char* kind : StoreKinds)
+            if (openAccount(homeStore(home, kind)) && std::string(kind) == "larder")
+                fresh = true;
+        if (!fresh)
+            continue;                               // Stocked when first opened; after that, by the household.
+        const int n = int(members.size());
+        const auto stockUp = [&](const std::string& store, const char* item, int quantity) {
+            for (; quantity > 0; quantity -= 99)            // (A ledger entry is at most 99 of anything.)
+                create(store, item, std::min(quantity, 99), "household provisions");
+        };
+        stockUp(homeStore(home, "larder"), "meal", LarderMealsEach * n);
+        stockUp(homeStore(home, "chest"), "herbs", ChestHerbsEach * n);
+        for (const auto& id : members)
+            if (const auto* a = account(id); a && stock(*a, "meal") == 0)
+                create(id, "meal", 1, "household provisions");
+    }
+}
+
 bool Society::create(const std::string& accountId, const std::string& item, int quantity, const std::string& reason)
 {
     const auto found = state_.accounts.find(accountId);
