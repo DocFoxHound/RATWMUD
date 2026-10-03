@@ -331,6 +331,14 @@ class Society
     std::vector<ResidentRequest> requests_;
     void buildPositions();
     void indexCareers() const;
+  public:
+    // Builds the lazy indexes (careers, specs) so readers on several threads at once only read them (doc 31, Phase 4).
+    void prepareReading() const
+    {
+        spec(std::string());
+        indexCareers();
+    }
+  private:
     void forgetCareers() { careersIndexed_ = false; }
     void defaultCareers();
     void reconcileCareers();

@@ -1226,6 +1226,13 @@ void schedules()
     expect(life && life->task == "paid work" && life->goalCell == "exterior" &&
                scout->activity == life->task + " — " + life->reason,
            "The authoritative daytime work task and its reason are exposed as current activity");
+    // The same with routes searched on the route thread (doc 31, Phase 5): the resident waits a tick or two for it.
+    World routed;
+    routed.setRoutesOffThread(true);
+    advance(routed, 68);
+    const auto* walker = routed.entity("npc_scout");
+    expect(walker->cellId == "exterior" || walker->position.y > start.y + 1,
+           "A resident whose route is searched off the game thread still walks toward the next routine");
     World party;
     party.entity("npc_scout")->leaderId = "p";
     const auto held = party.entity("npc_scout")->position;

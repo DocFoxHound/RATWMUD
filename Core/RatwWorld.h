@@ -5,6 +5,7 @@
 #include <iosfwd>
 #include <limits>
 #include <map>
+#include <memory>
 #include <unordered_map>
 #include <set>
 #include <string>
@@ -504,6 +505,10 @@ class World
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Route searches answered from the path cache, and searched (see findPath).
     std::pair<std::size_t, std::size_t> pathCacheStats() const { return {pathHits_, pathMisses_}; }
+    // Residents' route searches on a thread of their own (doc 31, Phase 5): a resident whose route isn't in the path
+    // cache waits a tick or two while it is searched, rather than the whole tick waiting on a long search. Off, the
+    // search runs at once on the caller (tests, tools). A copy of the world starts with it off.
+    void setRoutesOffThread(bool on);
     // Brings these players' views up to date together, on several threads at once (each view is thousands of sight
     // rays, and one player's doesn't depend on another's). observe() and snapshot() then find them ready. Changes
     // nothing they would have seen; call it from the thread that owns the world, between ticks.
@@ -517,6 +522,7 @@ class World
             double total = 0, worst = 0;
         };
         Part streaming, schedules, movement, separation, views;
+        double last[5] = {};                            // The last tick's: streaming, schedules, movement, separation, views.
         std::size_t ticks = 0, routeSearches = 0;
         std::size_t routeNodes = 0, largestRoute = 0;   // Nodes the route searches expanded, and the most in one.
         double slowestRoute = 0;                        // The longest one route search took (ms), and where.
@@ -981,6 +987,11 @@ class World
     View viewKey(const Entity& observer, const Cell& cell, double range) const;
     std::vector<Vec2> findPath(const Entity& actor, Vec2 goal, bool allowClosed = false) const;
     std::vector<Vec2> searchPath(const Entity& actor, Vec2 goal, bool allowClosed) const;   // findPath, uncached.
+    // searchPath's checks before the search: false when no route can exist; else the closed doors' tiles, for astar.
+    bool searchable(const Entity& actor, Vec2 goal, bool allowClosed, std::vector<char>& closedTiles) const;
+    struct NavScratch;
+    static std::vector<Vec2> astar(const Cell& cell, Vec2 origin, Vec2 goal, bool allowClosed, const std::vector<char>& closedTiles,
+                                   NavScratch& nav, std::size_t& expanded);
     // Paths already found, by everything a search depends on: the cell, its ground (the region checksum), which of
     // its doors are closed, the exact start and goal, and whether closed doors may be passed. Residents walk the same
     // ways every day (home, work, the shop); a repeat is a lookup. The same inputs always give the same path.
@@ -999,6 +1010,24 @@ class World
     static constexpr std::size_t PathsKept = 16384;
     mutable std::map<PathKey, std::vector<Vec2>> pathCache_;
     mutable std::size_t pathHits_ = 0, pathMisses_ = 0;
+    // The route thread (setRoutesOffThread): findPath, asked from a resident's seek (routeAsync_), hands a missing
+    // route to it and says so in routePending_; takeRoutes() puts what it found in the path cache at the start of a tick.
+    class RouteWorker;
+    struct RouteWorkerSlot
+    {
+        std::shared_ptr<RouteWorker> worker;
+        std::set<PathKey> requested;            // Handed over and not yet back.
+        std::map<std::string, PathKey> waiting; // Resident → the route they wait for (skipped until it's back).
+        PathKey last;                           // The route findPath last handed over or found waiting.
+        RouteWorkerSlot() = default;
+        RouteWorkerSlot(const RouteWorkerSlot&) {}
+        RouteWorkerSlot& operator=(const RouteWorkerSlot&) { return *this; }
+    };
+    mutable RouteWorkerSlot routes_;
+    mutable bool routeAsync_ = false, routePending_ = false;
+    // The ground of each cell as the route thread reads it: a copy, kept while the ground (its checksum) is unchanged.
+    mutable std::map<std::string, std::pair<std::uint64_t, std::shared_ptr<const Cell>>> routeCells_;
+    void takeRoutes();
     void integrate(Entity& actor, double dt);
     void updateStamina(Entity& actor, double dt, double movedTime);
     void updateTravel(Entity& actor);
@@ -1007,6 +1036,15 @@ class World
     // Through a door or over a cell's edge, if walking from where `actor` stands toward `proposed` leads there.
     bool throughDoor(Entity& actor, const Cell& c, Vec2 direction, Vec2 proposed, double travel, double speed, double& movedTime);
     void updateSchedules();
+    // The schedules pass as a chain of stages (doc 31, Phase 5): the society's half hour, bonds, roads, crime, then
+    // each resident's errand, then what streaming keeps. continueSchedules() runs stages in order until `budgetMs` is
+    // spent (a stage is never cut short, but the errands go a resident at a time) and says whether the chain is done;
+    // the rest wait for the next step. In a small world the whole chain fits in one step, as before.
+    bool continueSchedules(double budgetMs);
+    static constexpr double ScheduleBudgetMs = 3;
+    int scheduleStage_ = -1;                        // The next stage of the chain under way; -1 for none.
+    std::string errandCursor_;                      // The last resident whose errand was seen to.
+    std::set<std::string> errandStage_;             // The cells on stage for this chain (tiered).
     void separate(double dt);
     void createDemo();
     void rebuildFixtureIndex();

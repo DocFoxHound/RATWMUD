@@ -19,6 +19,18 @@ else()
   endif()
 endif()
 
+# A faster allocator for the server (doc 31, Phase 5): snapshots are built on many threads at once, and glibc's malloc
+# makes them wait on each other (at 100 players: mean 20.8 -> 18.2 ms, p99 54 -> 44). Used where installed
+# (gperftools: dnf install gperftools-libs), never with a sanitizer, which brings its own.
+set(RATW_FAST_MALLOC "")
+if(NOT RATW_SANITIZERS AND NOT CMAKE_CXX_FLAGS MATCHES "-fsanitize")
+  find_library(RATW_TCMALLOC NAMES tcmalloc_minimal libtcmalloc_minimal.so.4)
+  if(RATW_TCMALLOC)
+    set(RATW_FAST_MALLOC ${RATW_TCMALLOC})
+    message(STATUS "Server allocator: ${RATW_TCMALLOC}")
+  endif()
+endif()
+
 enable_testing()
 add_executable(world_tests Tests/world_tests.cpp)
 target_link_libraries(world_tests PRIVATE ratw_core)
@@ -72,7 +84,7 @@ target_link_libraries(wire_tests PRIVATE ratw_core)
 add_test(NAME wire_behaviors COMMAND wire_tests)
 # The standalone headless world server (Server/ratw_server.cpp; Docs/Design/26-living-npcs.md, Phase 6).
 add_executable(ratw_server Server/ratw_server.cpp)
-target_link_libraries(ratw_server PRIVATE ratw_core)
+target_link_libraries(ratw_server PRIVATE ratw_core ${RATW_FAST_MALLOC})
 add_executable(server_smoke Tests/server_smoke.cpp)
 target_link_libraries(server_smoke PRIVATE ratw_core)
 add_test(NAME server_end_to_end COMMAND server_smoke $<TARGET_FILE:ratw_server>)
@@ -90,7 +102,7 @@ add_executable(world_check Tests/world_check.cpp)
 target_link_libraries(world_check PRIVATE ratw_core)
 # Not a test either: the whole game under load, the gate of Docs/Design/31-responsiveness.md (see Tests/game_load.cpp).
 add_executable(game_load Tests/game_load.cpp)
-target_link_libraries(game_load PRIVATE ratw_core)
+target_link_libraries(game_load PRIVATE ratw_core ${RATW_FAST_MALLOC})
 add_executable(aging_tests Tests/aging_tests.cpp)
 target_link_libraries(aging_tests PRIVATE ratw_core)
 add_test(NAME aging_behaviors COMMAND aging_tests)

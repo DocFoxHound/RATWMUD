@@ -337,6 +337,7 @@ bool Game::start(std::string& problem)
     {
         pool_ = std::make_unique<Pool>(options_.workerThreads);
         world_.setParallel([this](std::size_t count, const std::function<void(std::size_t)>& job) { pool_->run(count, job); });
+        world_.setRoutesOffThread(true);
     }
     {
         // Uploaded portraits (doc 29, phase 9): beside the save, or in the database. Not needed to play.
@@ -1592,6 +1593,12 @@ void Game::tick(double dt)
         perf::Scope world(meter_, perf::World);
         world_.tick(dt);
     }
+    if (meter_)
+    {
+        const auto& last = world_.tickProfile().last;
+        meter_->note("streaming=" + perf::fixed(last[0]) + " schedules=" + perf::fixed(last[1]) + " movement=" +
+                     perf::fixed(last[2]) + " separation=" + perf::fixed(last[3]) + " views=" + perf::fixed(last[4]));
+    }
     ++revision_;
     mind_.poll();                                   // NPC Mind answers that have arrived.
     ambient(dt);
@@ -1628,17 +1635,20 @@ void Game::tick(double dt)
     // change of cell.
     {
         perf::Scope motion(meter_, perf::Motion);
-        std::vector<Connection*> framed;
+        std::vector<Connection*> framed, arrived;
         for (auto* c : clients_)
             if (const auto* e = world_.entity(c->entityId))
             {
                 if (c->motionCell != e->cellId)
-                {
-                    perf::Scope view(meter_, perf::Views);
-                    sendSnapshot(c);
-                }
+                    arrived.push_back(c);
                 framed.push_back(c);
             }
+        if (!arrived.empty())
+        {
+            // Into a new cell: its snapshot first, all at once on the pool (a new cell's comes with its tiles).
+            perf::Scope view(meter_, perf::Views);
+            sendSnapshots(arrived);
+        }
         // Each player's frame reads the world and writes only its own client's state: all at once on the pool.
         world_.prepareReading();
         ++frameTick_;
@@ -1667,41 +1677,11 @@ void Game::tick(double dt)
     snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
     {
         perf::Scope views(meter_, perf::Views);
-        std::vector<std::string> due;
         std::vector<Connection*> sending;
         for (auto* c : clients_)
             if (!c->entityId.empty() && c->id % SnapshotPhases == snapshotPhase_)
-            {
-                due.push_back(c->entityId);
                 sending.push_back(c);
-            }
-        {
-            perf::Scope sight(meter_, perf::Sight);
-            world_.prepareViews(due);
-            // What a view would change, done here, so the views themselves only read and can be built at once on the
-            // pool (doc 31, Phase 4): each observer's memory, the cell index, each client's kept rows, the notices.
-            for (auto* c : sending)
-            {
-                auto* e = world_.entity(c->entityId);
-                if (e && e->ageNoticePending > 0)
-                {
-                    system(c, "A birthday has passed. You are now " + std::to_string(e->age) + " years old (" +
-                                  std::to_string(e->ageNoticePending) + " year" + (e->ageNoticePending == 1 ? "" : "s") +
-                                  " gained). Your character sheet reflects annual growth and age-related changes.");
-                    e->ageNoticePending = 0;
-                }
-                cellRows_[c];
-            }
-            world_.observeAll(due);
-        }
-        world_.prepareReading();
-        batching_ = true;
-        if (pool_)
-            pool_->run(sending.size(), [&](std::size_t i) { sendSnapshot(sending[i]); });
-        else
-            for (auto* c : sending)
-                sendSnapshot(c);
-        batching_ = false;
+        sendSnapshots(sending);
         for (auto* c : sending)
             if (auto* e = world_.entity(c->entityId))
                 e->transitioned = false;
@@ -1841,6 +1821,42 @@ void Game::stampFrame(Connection* c, Value& root, const std::string& cell)
     root.set("mode", int(c->movementMode));
     root.set("inputAck", self ? double(self->inputSeq) : 0.0);
     root.set("poseAck", self ? double(self->poseSeq) : 0.0);
+}
+
+// Snapshots for several clients at once: what a view would change done first, here, so the views themselves only
+// read and can be built at once on the pool (doc 31, Phase 4): each observer's memory, the cell index, each client's
+// kept rows, the notices.
+void Game::sendSnapshots(const std::vector<Connection*>& sending)
+{
+    std::vector<std::string> due;
+    for (auto* c : sending)
+        if (!c->entityId.empty())
+            due.push_back(c->entityId);
+    {
+        perf::Scope sight(meter_, perf::Sight);
+        world_.prepareViews(due);
+        for (auto* c : sending)
+        {
+            auto* e = world_.entity(c->entityId);
+            if (e && e->ageNoticePending > 0)
+            {
+                system(c, "A birthday has passed. You are now " + std::to_string(e->age) + " years old (" +
+                              std::to_string(e->ageNoticePending) + " year" + (e->ageNoticePending == 1 ? "" : "s") +
+                              " gained). Your character sheet reflects annual growth and age-related changes.");
+                e->ageNoticePending = 0;
+            }
+            cellRows_[c];
+        }
+        world_.observeAll(due);
+    }
+    world_.prepareReading();
+    batching_ = true;
+    if (pool_)
+        pool_->run(sending.size(), [&](std::size_t i) { sendSnapshot(sending[i]); });
+    else
+        for (auto* c : sending)
+            sendSnapshot(c);
+    batching_ = false;
 }
 
 void Game::sendSnapshot(Connection* c)

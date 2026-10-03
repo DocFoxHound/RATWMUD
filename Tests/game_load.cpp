@@ -267,12 +267,15 @@ int main(int argc, char** argv)
                     perf::Scope timed(&meter, perf::Commands);
                     for (std::size_t p = 0; p < clients.size(); ++p)
                     {
-                        const int turn = (i / 40 + int(p)) % 4;
+                        // Each player turns every two seconds at a moment of its own: real players don't all turn,
+                        // and cross tile edges, on the same tick.
+                        const int at = i + int(p) * 7;
+                        const int turn = (at / 40 + int(p)) % 4;
                         const double x = turn == 0 ? 1 : turn == 2 ? -1 : 0, y = turn == 1 ? 1 : turn == 3 ? -1 : 0;
                         auto& c = *clients[p];
                         if (walking == "server")
                         {
-                            if (i % 40 == 0)
+                            if (at % 40 == 0 || i == 0)
                                 g.command(&c, command({{"type", "move"}, {"x", x}, {"y", y}}));
                             continue;
                         }

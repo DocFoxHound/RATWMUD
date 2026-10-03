@@ -68,6 +68,14 @@ class Meter
     {
         std::array<Totals, PartCount> parts{};
         std::vector<double> passes;                 // Busy time of each loop pass that ran a tick (ms).
+        // The slowest passes, slowest first, with what they spent on each part and the world's note on them.
+        struct Slow
+        {
+            double ms = 0;
+            std::array<double, PartCount> parts{};
+            std::string note;
+        };
+        std::vector<Slow> slowest;
         std::uint64_t ticks = 0;
         std::uint64_t bytesOut = 0, messagesOut = 0, bytesIn = 0;
         Clock::time_point began = Clock::now();
@@ -100,11 +108,18 @@ class Meter
     {
         if (!own())
             return;
+        passParts_[p] += ms;
         auto& t = window_.parts[p];
         t.ms += ms;
         t.worst = std::max(t.worst, ms);
         ++t.count;
         ++t.histogram[bucket(ms)];
+    }
+    // Said of this pass, kept with it if it's one of the slowest (the world's own parts, say).
+    void note(std::string words)
+    {
+        if (own())
+            note_ = std::move(words);
     }
     void pass(double busyMs, bool ticked)
     {
@@ -112,7 +127,17 @@ class Meter
         {
             window_.passes.push_back(busyMs);
             ++window_.ticks;
+            auto& slow = window_.slowest;
+            if (slow.size() < SlowestKept || busyMs > slow.back().ms)
+            {
+                const auto at = std::find_if(slow.begin(), slow.end(), [&](const Window::Slow& s) { return busyMs > s.ms; });
+                slow.insert(at, {busyMs, passParts_, note_});
+                if (slow.size() > SlowestKept)
+                    slow.pop_back();
+            }
         }
+        passParts_ = {};
+        note_.clear();
     }
     void sent(std::size_t bytes)
     {
@@ -130,11 +155,15 @@ class Meter
         out.messagesOut = messagesOut_.exchange(0);
         out.bytesIn = bytesIn_.exchange(0);
         window_ = Window{};
+        passParts_ = {};
+        note_.clear();
         return out;
     }
 
   private:
-    static constexpr std::size_t Stack = 8;
+    static constexpr std::size_t Stack = 8, SlowestKept = 5;
+    std::array<double, PartCount> passParts_{};
+    std::string note_;
     struct Open
     {
         Part part;
@@ -217,6 +246,19 @@ inline std::vector<std::string> report(const Meter::Window& w, std::size_t clien
     }
     if (!blocked.empty())
         lines.push_back("RATW_PERF_BLOCKED" + blocked);
+    // "RATW_PERF_SLOWEST": the slowest passes, each with the parts of 1 ms or more, and the world's note.
+    std::string slowest;
+    for (const auto& slow : w.slowest)
+    {
+        slowest += " " + fixed(slow.ms) + "ms[";
+        std::string parts;
+        for (std::size_t p = 0; p < PartCount; ++p)
+            if (slow.parts[p] >= 1)
+                parts += (parts.empty() ? "" : " ") + std::string(name(Part(p))) + "=" + fixed(slow.parts[p]);
+        slowest += parts + (slow.note.empty() ? "" : " | " + slow.note) + "]";
+    }
+    if (!slowest.empty())
+        lines.push_back("RATW_PERF_SLOWEST" + slowest);
     return lines;
 }
 } // namespace ratw::perf

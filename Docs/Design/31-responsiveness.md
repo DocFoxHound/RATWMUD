@@ -106,7 +106,7 @@ the fallback is splitting **by space** (see Phase 6).
 | Who sees whom | **The server decides, recomputing only on change.** The client works out terrain-only lighting and line-of-sight shading for the picture. | All of sight on the client would let a modified client see hidden wolves. |
 | Snapshots | **Wolves' details sent only when they change, in a binary format.** Snapshots stay on their five-a-second timer. | Sending on change instead of on a timer was not chosen. |
 | Compression and cores | **A compression policy, a thread pool for per-player work, and a network thread with `epoll`.** | Region processes stay a fallback (Phase 6). |
-| Saves | **A journal for valuables, and a `fork()` snapshot of everything else every 5 s** (changed from "the full redesign" once the fork cost was measured; see Phase 2). A crash loses no confirmed valuable and at most 5 s of the rest. | Full dirty rows and binary rows (held back); fixing only the stalls. |
+| Saves | **A journal for valuables, and a `fork()` snapshot of everything else every 30 s** (changed from "the full redesign" once the fork cost was measured, see Phase 2; from every 5 s to every 30 s in Phase 6). A crash loses no confirmed valuable and at most 30 s of the rest. | Full dirty rows and binary rows (held back); fixing only the stalls. |
 | Slow ticks | **Time budgets for route planning and schedules, and fix the stranded residents.** | |
 
 ## How other games save, and what we take from each
@@ -242,7 +242,7 @@ The middle columns are ms per tick. Bandwidth was about 220–260 kbit/s per pla
    - If it made a journal record, the replies go when that record is written.
    - A client's later replies queue behind its earlier ones, so they keep their order.
    - In a test the journal writes inline. Tools can call `Game::settle()`.
-4. **The snapshot by `fork()`, every 5 s** (and 3 s after other changes worth keeping):
+4. **The snapshot by `fork()`, every 5 s** (every 30 s since Phase 6; and 3 s after other changes worth keeping):
    - The child is a frozen copy of the game. It captures and encodes the checkpoint and writes it:
      - **a file world:** its save, in place, by rename
      - **a database:** a private file, which the store's worker thread reads and stores as before, as deltas
@@ -565,6 +565,56 @@ residents walking, separation, schedules and route planning. Players' work now s
 Gate: p99.9 under 50 ms at 250 players. Over a simulated week, the mean tick on the last day is within 10% of the
 first day's.
 
+**Built 2026-10-02.**
+
+1. **The schedules pass in stages** (`World::continueSchedules`, 3 ms a tick):
+   - **The stages:** the society's half-second (one piece), bonds, roads, crime, then the residents' errands.
+   - **How it carries over:** the errands go a resident at a time from a cursor. The time is checked every 32
+     residents, and what is left waits for the next tick.
+   - **Before:** the whole pass ran in one tick, 10–12 ms every second, worst 43 ms.
+2. **Route planning by time** (`planWantedRoutes`): as many searches as fit in 3 ms. A long search runs alone; cheap
+   ones go several to a tick. At most 8 a tick.
+3. **Routes searched on a thread of their own** (`World::setRoutesOffThread`, on wherever the game has its pool):
+   - **What changes for a resident:** a route missing from the path cache is handed to the route thread, and the
+     resident waits in `routeWanted_` (skipped until it comes back). At the start of a tick the found routes go into
+     the path cache, where the resident's next try finds them. The rest of `moveTo` and `headFor` is unchanged.
+   - **What the thread reads:** a copy of the cell's ground, kept while its checksum holds, and the closed doors'
+     tiles as they were when asked. The search itself (`World::astar`) only reads what it is given.
+   - **Why it matters:** single searches of 35–160 ms (Ridgemere's heights expand 90,000 nodes) no longer happen on
+     the game thread. The schedules' worst tick at 100 players fell from 43 to 14 ms.
+   - **Copies of the world** start with it off, and tests and tools search at once as before. One world test runs a
+     resident's day with it on.
+4. **A data race fixed:** the society's careers and specs are built lazily, and snapshots on the pool built them at
+   once from several threads (`free(): invalid pointer`, found with ThreadSanitizer). `Society::prepareReading` builds
+   them before the views, from `World::prepareReading`.
+5. **Snapshots on a change of cell** go out together on the pool (`Game::sendSnapshots`), as the regular ones do. They
+   were sent one after another on the game thread.
+6. **tcmalloc** for the server and `game_load` (CMake finds it; `dnf install gperftools-libs`). Snapshots on 18
+   threads were waiting on glibc's allocator: at 100 players the mean fell from 20.8 to 18.2 ms and p99 from 54 to
+   44 ms. Sanitizer builds don't use it.
+7. **The slowest ticks, broken down:** `RATW_PERF_SLOWEST` lists the five slowest passes of a window. Each shows its
+   parts and the world's own (streaming, schedules, movement, separation, views).
+8. **The stranded residents** were already fixed (doc 26, commit f1c1eaf).
+9. **Measured** (`game_load`, cities, 30 s; Phase 4's numbers in brackets):
+
+| Players | Mean / p99 per tick | World | Views + sight |
+| --- | --- | --- | --- |
+| 100 | **18.2 / 43** (20.5 / 51) | 10.5 | 6.1 |
+| 250 | **33.5 / 77** (37.8 / 95) | 17.3 | 12.4 |
+
+**What the numbers mean on this machine.** The development laptop (i9-13900H) runs the "quiet" power profile with the
+powersave governor. Under load its cores run at 0.4–1.7 GHz. A snapshot taking 5 ms alone takes 10–30 ms when all
+cores are busy, and that is CPU time, not waiting: the cores slow down together. Spikes at 250 players are now mostly
+that, not the game. For numbers that compare with a server, measure on the "performance" profile
+(`powerprofilesctl set performance`).
+
+**Gate 1** (100 players, under 25 ms mean and 50 ms p99) **is met.** **The Phase 5 gate** (p99.9 under 50 ms at 250)
+**is not met** on this machine: p99 is 77 ms. What remains is the world's own tick (17 ms at 250: residents walking,
+separation and the players' memory as they cross tiles) and every core slowing at once.
+
+**The week check is still to do.** A first run (`world_check --simulate 6 174`) was stopped partway: the laptop's power
+profile changed during it, so its days could not be compared.
+
 ### Phase 6. Scale gates, and the fallback
 
 Each gate is run with `game_load` on the development machine. It must pass with players packed around the cities, and
@@ -580,6 +630,61 @@ run on the planned server hardware.
 
 **If gate 3 or 4 can't be met**, the fallback is splitting by space. Several world processes each own a set of regions,
 with handover at the borders and a small relay for chat. It gets its own design doc if it comes to that.
+
+**Measured 2026-10-02** (the development laptop on its "performance" power profile from here on; `game_load`, 30 s,
+file saves). Gate 4 (1,000 players) was not run: it takes too long to run every phase, and is for the server hardware.
+
+| Run | Mean / p99 per tick | World | Views + sight | Gate 3 (under 30 / 50 ms) |
+| --- | --- | --- | --- | --- |
+| 500, cities | **28.4 / 60.5** | 13.1 | 11.2 | mean met; p99 not |
+| 500, spread | 41.2 / 87.6 | 17.1 | 18.7 | neither |
+
+What was found and done:
+
+- **`game_load`'s players moved in lockstep.** All of them turned on the same tick every two seconds, so they sent
+  their keys and crossed tile edges together, and the memory pass spiked (25 ms). Each now turns at a moment of its
+  own (real players don't all turn on one tick). The world's worst views pass fell to 12 ms.
+- **The p99 at 500 is the snapshot ticks.** Every 5 s (1% of ticks) a tick takes 60–67 ms:
+  - `fork()` itself is 17 ms. It copies the page tables, about 17 ms per GB, and the server holds 1.07 GB at 500
+    players: 340 MB of world, then about 1.5 MB a player.
+  - Then 15–20 ms more in the same tick. Every page the game writes to after the fork is copied once (copy on write).
+  - **Huge pages don't help much:** glibc's `hugetlb` tunable took the fork from 20 to 15 ms, and tcmalloc is faster
+    overall.
+  - **The journal can't replace the snapshot:** it holds only the valuables. Positions, needs and the rest are only
+    in snapshots.
+  - At 1,000 players the fork alone would be about 32 ms.
+- **Spread out**, each player's view and sight cost about 60% more than in the cities. Their ground differs, so less
+  of it is shared or reused.
+
+**Gate 4 on the development laptop** (1,000 players, cities, 60 s, snapshots every 30 s; run once at the user's
+asking). Phase 1 measured about 1,400 ms a tick at 1,000 players.
+
+| Mean / p99 / worst | World | Views + sight | Motion | Memory | Per player | Full save |
+| --- | --- | --- | --- | --- | --- | --- |
+| **50.3 / 77.7 / 109 ms** | 19.2 | 22.1 | 2.5 | 1.78 GB | 197 kbit/s (167 Mbit/s in all) | 350–395 ms, 4.7 MB |
+
+- **Not met** (under 35 ms mean, 50 ms p99). The mean is at the 50 ms budget: on this laptop the server just keeps 20
+  ticks a second at 1,000. The gate is meant for the server hardware.
+- **The crash from Phase 2 did not come back.** It was most likely the careers race fixed in Phase 5.
+- **The snapshot ticks** are 103–106 ms (the fork is 31–33 ms at 1.78 GB, as expected), but there are only two a
+  minute now, outside p99.
+- **What sets p99 now:** snapshot building on the pool (views 58–59 ms in the worst ticks), the world's own thread
+  (19 ms: movement 6.6, its views 8.8), and the schedules (up to 22 ms).
+- A 1,000-player run now takes about 80 s, not 15–45 minutes.
+
+**Decided with the user:** keep the journal and the fork, not the full redesign (dirty rows), for now.
+
+- **Snapshots every 30 s, not 5** (`Game::SnapshotSeconds`). It takes the snapshot ticks out of p99, though not out of
+  p99.9. A crash loses up to 30 s of positions and needs; valuables are still never lost.
+- **If the snapshot ticks still break gate 4 on the server hardware,** the full redesign is the fix. Its save costs
+  what changed, not the server's size. It gets its own design doc first.
+
+**What is open:**
+
+1. **Making the snapshot tick cheaper.** Each player's kept state is about 1.5 MB, and a city cell's rows are about
+   250 KB of it. Halving it would take a few ms off the fork.
+2. **Spread players' views.**
+3. **The fallback (splitting by space)** only once these are done, and only if gate 4 fails on the server hardware.
 
 ## Hardware notes for the dedicated server
 

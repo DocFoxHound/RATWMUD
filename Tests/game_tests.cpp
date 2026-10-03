@@ -749,10 +749,11 @@ void theJournalKeepsWhatACrashWouldLose()
         g.settle();
         const auto saveBefore = readFile(path);
         bool written = false;
-        for (int i = 0; i < 400 && !written; ++i)
+        const int due = int(game::Game::SnapshotSeconds / .05);   // Ticks until the next snapshot is taken.
+        for (int i = 0; i < due + 300 && !written; ++i)
         {
             g.tick(.05);
-            if (i > 100)
+            if (i > due)
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             written = readFile(path) != saveBefore && readFile(path + ".journal").find("herbs") == std::string::npos;
         }

@@ -3,6 +3,10 @@
 #include "RatwStep.h"
 
 #include <algorithm>
+#include <utility>
+#include <mutex>
+#include <deque>
+#include <condition_variable>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -30,7 +34,8 @@ constexpr double SearchGreed = 2.0;
 constexpr std::size_t SmoothLookahead = 40; // Waypoints a smoothed path may skip in one straight line.
 // Residents plan their routes a few a tick (planWantedRoutes): at most this many searches in one tick, and no new
 // one once this much search work (nodes expanded) has been done in it.
-constexpr int RouteSearchesPerTick = 1;
+constexpr int RouteSearchesPerTick = 8;                // At most, in one step; RouteBudgetMs decides first.
+constexpr double RouteBudgetMs = 3;
 constexpr std::size_t RouteNodesPerTick = 30000;
 constexpr double Epsilon = 1e-7;
 constexpr double Pi = 3.14159265358979323846;
@@ -649,6 +654,7 @@ const std::vector<const Entity*>& World::entitiesIn(const std::string& cellId) c
 void World::prepareReading() const
 {
     entitiesIn(std::string());
+    society_.prepareReading();
 }
 
 void World::observeAll(const std::vector<std::string>& observerIds)
@@ -669,7 +675,6 @@ void World::observeAll(const std::vector<std::string>& observerIds)
 
 bool World::removePlayer(const std::string& id)
 {
-    index_.dirty = true;
     const auto it = entities_.find(id);
     if (it == entities_.end() || it->second.npc)
         return false;
@@ -1047,6 +1052,115 @@ bool World::visiblePortal(const Entity& o, const Door& d) const
     return d.cellId == o.cellId && d.portal && d.open && visiblePoint(o, d.position);
 }
 
+// The route thread (doc 31, Phase 5): searches handed over by findPath, on copies of the cells' ground, one after
+// another in the order asked. take() hands back what's done.
+class World::RouteWorker
+{
+  public:
+    struct Job
+    {
+        PathKey key;
+        std::shared_ptr<const Cell> cell;
+        Vec2 from, goal;
+        bool allowClosed;
+        std::vector<char> closedTiles;
+    };
+    struct Done
+    {
+        PathKey key;
+        std::vector<Vec2> path;
+        std::size_t expanded;
+        double ms;
+    };
+    RouteWorker() : thread_([this] { work(); }) {}
+    ~RouteWorker()
+    {
+        {
+            std::lock_guard<std::mutex> guard(lock_);
+            stopping_ = true;
+        }
+        wake_.notify_one();
+        thread_.join();
+    }
+    void add(Job job)
+    {
+        {
+            std::lock_guard<std::mutex> guard(lock_);
+            jobs_.push_back(std::move(job));
+        }
+        wake_.notify_one();
+    }
+    std::vector<Done> take()
+    {
+        std::lock_guard<std::mutex> guard(lock_);
+        return std::exchange(done_, {});
+    }
+
+  private:
+    void work()
+    {
+        NavScratch nav;
+        for (;;)
+        {
+            Job job;
+            {
+                std::unique_lock<std::mutex> guard(lock_);
+                wake_.wait(guard, [&] { return stopping_ || !jobs_.empty(); });
+                if (stopping_)
+                    return;
+                job = std::move(jobs_.front());
+                jobs_.pop_front();
+            }
+            std::size_t expanded = 0;
+            const auto begun = std::chrono::steady_clock::now();
+            auto path = astar(*job.cell, job.from, job.goal, job.allowClosed, job.closedTiles, nav, expanded);
+            const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begun).count();
+            std::lock_guard<std::mutex> guard(lock_);
+            done_.push_back({std::move(job.key), std::move(path), expanded, ms});
+        }
+    }
+    std::mutex lock_;
+    std::condition_variable wake_;
+    std::deque<Job> jobs_;
+    std::vector<Done> done_;
+    bool stopping_ = false;
+    std::thread thread_;                            // Last: started once everything it uses is.
+};
+
+void World::setRoutesOffThread(bool on)
+{
+    if (on && !routes_.worker)
+        routes_.worker = std::make_shared<RouteWorker>();
+    else if (!on)
+    {
+        routes_.worker.reset();
+        routes_.requested.clear();
+        routes_.waiting.clear();
+    }
+}
+
+void World::takeRoutes()
+{
+    if (!routes_.worker)
+        return;
+    for (auto& done : routes_.worker->take())
+    {
+        routes_.requested.erase(done.key);
+        profile_.routeNodes += done.expanded;
+        profile_.largestRoute = std::max(profile_.largestRoute, done.expanded);
+        if (done.ms > profile_.slowestRoute)
+        {
+            profile_.slowestRoute = done.ms;
+            profile_.slowestRouteCell = done.key.cellId;
+            profile_.slowestRouteNodes = done.expanded;
+            profile_.slowestRouteWaypoints = done.path.size();
+        }
+        if (pathCache_.size() >= PathsKept)
+            pathCache_.clear();
+        pathCache_[std::move(done.key)] = std::move(done.path);
+    }
+}
+
 std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) const
 {
     const auto* c = cell(a.cellId);
@@ -1066,6 +1180,35 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
         ++pathHits_;
         return found->second;
     }
+    if (routeAsync_ && routes_.worker)
+    {
+        // A resident's route, searched on the route thread. One at a time: the permissive retry (moveTo) waits for
+        // the plain route to come back first.
+        if (routePending_)
+            return {};
+        std::vector<char> closedTiles;
+        if (searchable(a, goal, allowClosed, closedTiles))
+        {
+            routePending_ = true;
+            routes_.last = key;
+            if (routes_.requested.insert(key).second)
+            {
+                ++pathMisses_;
+                auto& ground = routeCells_[c->id];
+                if (!ground.second || ground.first != key.ground)
+                {
+                    auto copy = std::make_shared<Cell>();
+                    copy->id = c->id;
+                    copy->width = c->width;
+                    copy->height = c->height;
+                    copy->tiles = c->tiles;
+                    ground = {key.ground, std::move(copy)};
+                }
+                routes_.worker->add({key, ground.second, a.position, goal, allowClosed, std::move(closedTiles)});
+            }
+            return {};
+        }
+    }
     ++pathMisses_;
     auto path = searchPath(a, goal, allowClosed);
     if (pathCache_.size() >= PathsKept)
@@ -1076,27 +1219,33 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
 
 std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed) const
 {
+    std::vector<char> closedTiles;
+    if (!searchable(a, goal, allowClosed, closedTiles))
+        return {};
+    return astar(*cell(a.cellId), a.position, goal, allowClosed, closedTiles, nav_, searchExpanded_);
+}
+
+bool World::searchable(const Entity& a, Vec2 goal, bool allowClosed, std::vector<char>& closedTiles) const
+{
     const auto* c = cell(a.cellId);
     if (!c || !finite(goal))
-        return {};
+        return false;
     if (goal.x < 0 || goal.y < 0 || goal.x >= c->width || goal.y >= c->height || a.position.x < 0 || a.position.y < 0 ||
         a.position.x >= c->width || a.position.y >= c->height)
-        return {};
+        return false;
     const int w = c->width * NavScale, h = c->height * NavScale;
-    auto pos = [w](int i) { return Vec2{(i % w + .5) / NavScale, (i / w + .5) / NavScale}; };
     auto index = [w, h](Vec2 p) {
         const int x = int(std::floor(p.x * NavScale)), y = int(std::floor(p.y * NavScale));
         return x < 0 || y < 0 || x >= w || y >= h ? -1 : y * w + x;
     };
-    const int start = index(a.position), end = index(goal);
-    if (start < 0 || end < 0)
-        return {};
+    if (index(a.position) < 0 || index(goal) < 0)
+        return false;
     // A goal in another region can never be reached: say so at once instead of searching everything reachable.
     if (const int from = regionAt(*c, a.position), to = regionAt(*c, goal); from >= 0 && to >= 0 && from != to)
-        return {};
+        return false;
     // passable() for this one cell, with its lookups done once: a search asks millions of times on a large cell.
     // The tiles a closed door stands in, as a flat mask, rather than looking every sample up among the fixtures.
-    std::vector<char> closedTiles;
+    closedTiles.clear();
     if (const auto fixtures = blockingFixtures_.find(a.cellId); !allowClosed && fixtures != blockingFixtures_.end())
         for (const auto& [at, ids] : fixtures->second)
             if (at.first >= 0 && at.second >= 0 && at.first < c->width && at.second < c->height)
@@ -1106,6 +1255,24 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
                         closedTiles.resize(c->tiles.size(), 0);
                         closedTiles[std::size_t(at.second * c->width + at.first)] = 1;
                     }
+    return true;
+}
+
+// The search itself (doc 31, Phase 5): over a cell's ground, with doors closed where `closedTiles` says, in `nav`'s
+// scratch, counting the nodes it expands into `expanded`. Only reads the cell: the route worker runs it on a copy.
+std::vector<Vec2> World::astar(const Cell& cell, Vec2 origin, Vec2 goal, bool allowClosed, const std::vector<char>& closedTiles,
+                               NavScratch& nav, std::size_t& expanded)
+{
+    const auto* c = &cell;
+    const int w = c->width * NavScale, h = c->height * NavScale;
+    auto pos = [w](int i) { return Vec2{(i % w + .5) / NavScale, (i / w + .5) / NavScale}; };
+    auto index = [w, h](Vec2 p) {
+        const int x = int(std::floor(p.x * NavScale)), y = int(std::floor(p.y * NavScale));
+        return x < 0 || y < 0 || x >= w || y >= h ? -1 : y * w + x;
+    };
+    const int start = index(origin), end = index(goal);
+    if (start < 0 || end < 0)
+        return {};
     const bool anyClosed = !closedTiles.empty();
     auto allowed = [&](Vec2 p, const Tile* from) {
         // The footprint is tiny (Radius): nearly always all five points are on one tile, and one look will do.
@@ -1135,7 +1302,7 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
     // (the rise is steady in the height on either side of it); with a ramp in play it is asked in full as before.
     enum : std::uint8_t { FootprintBlocked = 1, FootprintRamp = 2 };
     auto allowedNode = [&](int node, Vec2 p, const Tile* from) {
-        if (nav_.footprintSearch[std::size_t(node)] != nav_.search)
+        if (nav.footprintSearch[std::size_t(node)] != nav.search)
         {
             std::uint8_t flags = 0;
             double low = std::numeric_limits<double>::infinity(), high = -low;
@@ -1154,19 +1321,19 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
                 low = std::min(low, t->height);
                 high = std::max(high, t->height);
             }
-            nav_.footprintSearch[std::size_t(node)] = nav_.search;
-            nav_.footprintFlags[std::size_t(node)] = flags;
-            nav_.footprintLow[std::size_t(node)] = low;
-            nav_.footprintHigh[std::size_t(node)] = high;
+            nav.footprintSearch[std::size_t(node)] = nav.search;
+            nav.footprintFlags[std::size_t(node)] = flags;
+            nav.footprintLow[std::size_t(node)] = low;
+            nav.footprintHigh[std::size_t(node)] = high;
         }
-        const auto flags = nav_.footprintFlags[std::size_t(node)];
+        const auto flags = nav.footprintFlags[std::size_t(node)];
         if (flags & FootprintBlocked)
             return false;
         if ((flags & FootprintRamp) || !from || ramp(from))
             return allowed(p, from);
         const double base = from->height;
-        return std::abs(nav_.footprintHigh[std::size_t(node)] - base) <= FreeStep + 1e-6 &&
-               std::abs(nav_.footprintLow[std::size_t(node)] - base) <= FreeStep + 1e-6;
+        return std::abs(nav.footprintHigh[std::size_t(node)] - base) <= FreeStep + 1e-6 &&
+               std::abs(nav.footprintLow[std::size_t(node)] - base) <= FreeStep + 1e-6;
     };
     const auto* dest = c->tile(int(goal.x), int(goal.y));
     if (!dest || !allowed(goal, dest))
@@ -1174,32 +1341,32 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
     using QueueItem = std::pair<double, int>;
     std::priority_queue<QueueItem, std::vector<QueueItem>, std::greater<QueueItem>> open;
     const auto nodes = static_cast<std::size_t>(w * h);
-    if (nav_.seen.size() < nodes)
+    if (nav.seen.size() < nodes)
     {
-        nav_.g.resize(nodes);
-        nav_.previous.resize(nodes);
-        nav_.seen.assign(nodes, 0);
-        nav_.closed.assign(nodes, 0);
-        nav_.footprintSearch.assign(nodes, 0);
-        nav_.footprintFlags.resize(nodes);
-        nav_.footprintLow.resize(nodes);
-        nav_.footprintHigh.resize(nodes);
-        nav_.search = 0;
+        nav.g.resize(nodes);
+        nav.previous.resize(nodes);
+        nav.seen.assign(nodes, 0);
+        nav.closed.assign(nodes, 0);
+        nav.footprintSearch.assign(nodes, 0);
+        nav.footprintFlags.resize(nodes);
+        nav.footprintLow.resize(nodes);
+        nav.footprintHigh.resize(nodes);
+        nav.search = 0;
     }
-    if (++nav_.search == 0)
+    if (++nav.search == 0)
     {
-        std::fill(nav_.seen.begin(), nav_.seen.end(), 0);
-        std::fill(nav_.closed.begin(), nav_.closed.end(), 0);
-        std::fill(nav_.footprintSearch.begin(), nav_.footprintSearch.end(), 0);
-        nav_.search = 1;
+        std::fill(nav.seen.begin(), nav.seen.end(), 0);
+        std::fill(nav.closed.begin(), nav.closed.end(), 0);
+        std::fill(nav.footprintSearch.begin(), nav.footprintSearch.end(), 0);
+        nav.search = 1;
     }
-    const std::uint32_t search = nav_.search;
-    auto gOf = [&](int i) { return nav_.seen[i] == search ? nav_.g[i] : std::numeric_limits<double>::infinity(); };
-    auto previousOf = [&](int i) { return nav_.seen[i] == search ? nav_.previous[i] : -1; };
-    auto isClosed = [&](int i) { return nav_.closed[i] == search; };
-    nav_.seen[start] = search;
-    nav_.g[start] = 0;
-    nav_.previous[start] = -1;
+    const std::uint32_t search = nav.search;
+    auto gOf = [&](int i) { return nav.seen[i] == search ? nav.g[i] : std::numeric_limits<double>::infinity(); };
+    auto previousOf = [&](int i) { return nav.seen[i] == search ? nav.previous[i] : -1; };
+    auto isClosed = [&](int i) { return nav.closed[i] == search; };
+    nav.seen[start] = search;
+    nav.g[start] = 0;
+    nav.previous[start] = -1;
     open.push({SearchGreed * distance(pos(start), goal), start});
     while (!open.empty())
     {
@@ -1209,8 +1376,8 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
             continue;
         if (current == end)
             break;
-        nav_.closed[current] = search;
-        ++searchExpanded_;
+        nav.closed[current] = search;
+        ++expanded;
         const Vec2 p = pos(current);
         const auto* tile = c->tile(int(p.x), int(p.y));
         if (!tile)
@@ -1236,9 +1403,9 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
                 const double through = gOf(current) + cost;
                 if (through + Epsilon < gOf(next))
                 {
-                    nav_.seen[next] = search;
-                    nav_.g[next] = through;
-                    nav_.previous[next] = current;
+                    nav.seen[next] = search;
+                    nav.g[next] = through;
+                    nav.previous[next] = current;
                     open.push({through + SearchGreed * distance(q, goal), next});
                 }
             }
@@ -1261,7 +1428,7 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
         // and approximately preserving the terrain cost chosen by A*. Looking a bounded way ahead and stopping at
         // the first blocked line keeps this linear in the path's length; long city walks made it cubic.
         std::vector<Vec2> smooth;
-        Vec2 anchor = a.position;
+        Vec2 anchor = origin;
         std::size_t first = 0;
         while (first < path.size())
         {
@@ -1528,8 +1695,7 @@ Result World::adoptResident(const World& candidate, const std::string& id)
         const std::string name = it != entities_.end() ? it->second.name : id;
         if (it != entities_.end())
             entities_.erase(it);
-            index_.dirty = true;
-    index_.dirty = true;
+        index_.dirty = true;
         pendingPortals_.erase(id);
         travels_.erase(id);
         bonds_.forget(id);
@@ -2498,6 +2664,7 @@ void World::placeOnStage(Entity& e, const std::set<std::string>& stage)
     e.offstage = off;
     legs_.erase(e.id);
     pathRetryAt_.erase(e.id);
+    routes_.waiting.erase(e.id);
     pendingPortals_.erase(e.id);
     e.path.clear();
     e.input = {};
@@ -2695,77 +2862,140 @@ Result World::relocateResident(const std::string& id, const std::string& destina
 
 void World::updateSchedules()
 {
-    std::map<std::string, LifeBody> bodies;
-    for (auto& pair : entities_)
+    scheduleStage_ = 0;
+    continueSchedules(1e18);                        // All of it, now.
+}
+
+bool World::continueSchedules(double budgetMs)
+{
+    using Clock = std::chrono::steady_clock;
+    const auto begun = Clock::now();
+    const auto spent = [&] { return std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= budgetMs; };
+    while (scheduleStage_ >= 0)
     {
-        advanceAge(pair.second, calendarDays_);
-        const auto& e = pair.second;
-        if (e.dead)
-            continue;                               // The dead keep no schedule: no work, no hunger, no walking.
-        bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following", e.age};
-    }
-    planDays();
-    society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
-    absorbJournal();
-    tendBonds();
-    tendRoads();
-    tendCrime();
-    // When a shift changes, a whole town sets off at once: plan a bounded number of routes per update and let the
-    // rest set off on the next, rather than stalling the server for all of them in one tick.
-    // Routes are not planned here: whoever needs one waits for planWantedRoutes, a few a tick.
-    RouteBudget budget{0, searchExpanded_, 0, 0, true};
-    const auto stage = tiered() ? stageCells() : std::set<std::string>{};
-    for (auto& pair : entities_)
-    {
-        auto& e = pair.second;
-        if (e.npc && tiered())
-            placeOnStage(e, stage);
-        if (e.transient)
-            continue;                               // The road folk go their own ways (tendRoadFolk).
-        const auto* life = society_.resident(pair.first);
-        if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
-        if (e.state == "beaten down") continue;     // Lying where they fell until they can get up (tendCrime).
-        std::string task = life->task, reason = life->reason, goalCell = life->goalCell;
-        Vec2 target{life->goalX, life->goalY};
-        // The watch and the gaol, then work on the road, come before the day's plan.
-        if (!crimeErrand(pair.first, task, reason, goalCell, target))
-            errand(pair.first, *life, task, reason, goalCell, target);
-        const std::string activity = task + " — " + reason;
-        if (e.activity != activity) { stop(e.id); e.activity = activity; }
-        if (e.cellId == goalCell && distance(e.position, target) <= .35)
+        if (scheduleStage_ > 0 && spent())
+            return false;                           // The rest next step.
+        switch (scheduleStage_)
         {
-            if (task == "sleep" && e.posture != "lying")
+        case 0:
+        {
+            std::map<std::string, LifeBody> bodies;
+            for (auto& pair : entities_)
             {
-                if (e.offstage)
-                    settle(e, "lying");
-                else
-                    setPosture(e.id, "lying");
+                advanceAge(pair.second, calendarDays_);
+                const auto& e = pair.second;
+                if (e.dead)
+                    continue;                       // The dead keep no schedule: no work, no hunger, no walking.
+                bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following", e.age};
             }
-            continue;
+            planDays();
+            society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
+            absorbJournal();
+            ++scheduleStage_;
+            break;
         }
-        headFor(e, task, goalCell, target, budget);
+        case 1:
+            tendBonds();
+            ++scheduleStage_;
+            break;
+        case 2:
+            tendRoads();
+            ++scheduleStage_;
+            break;
+        case 3:
+            tendCrime();
+            errandCursor_.clear();
+            errandStage_ = tiered() ? stageCells() : std::set<std::string>{};
+            ++scheduleStage_;
+            break;
+        case 4:
+        {
+            // When a shift changes, a whole town sets off at once: routes are not planned here; whoever needs one
+            // waits for planWantedRoutes, a few a tick. The errands go a resident at a time, in ID order from where
+            // the last step stopped.
+            RouteBudget budget{0, searchExpanded_, 0, 0, true};
+            int sinceCheck = 0;
+            for (auto it = entities_.upper_bound(errandCursor_); it != entities_.end(); ++it)
+            {
+                if (++sinceCheck >= 32)
+                {
+                    sinceCheck = 0;
+                    if (spent())
+                        return false;               // On from here next step.
+                }
+                errandCursor_ = it->first;
+                auto& e = it->second;
+                if (e.npc && tiered())
+                    placeOnStage(e, errandStage_);
+                if (e.transient)
+                    continue;                       // The road folk go their own ways (tendRoadFolk).
+                const auto* life = society_.resident(it->first);
+                if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
+                if (e.state == "beaten down") continue;   // Lying where they fell until they can get up (tendCrime).
+                std::string task = life->task, reason = life->reason, goalCell = life->goalCell;
+                Vec2 target{life->goalX, life->goalY};
+                // The watch and the gaol, then work on the road, come before the day's plan.
+                if (!crimeErrand(it->first, task, reason, goalCell, target))
+                    errand(it->first, *life, task, reason, goalCell, target);
+                const std::string activity = task + " — " + reason;
+                if (e.activity != activity) { stop(e.id); e.activity = activity; }
+                if (e.cellId == goalCell && distance(e.position, target) <= .35)
+                {
+                    if (task == "sleep" && e.posture != "lying")
+                    {
+                        if (e.offstage)
+                            settle(e, "lying");
+                        else
+                            setPosture(e.id, "lying");
+                    }
+                    continue;
+                }
+                headFor(e, task, goalCell, target, budget);
+            }
+            ++scheduleStage_;
+            break;
+        }
+        default:
+            if (tiered())
+            {
+                // What streaming keeps in memory until the next update: the surroundings of everyone onstage.
+                tierWanted_.clear();
+                for (const auto& entry : entities_)
+                    if (!entry.second.offstage)
+                        nearCells(entry.second, tierWanted_);
+            }
+            scheduleStage_ = -1;
+            break;
+        }
     }
-    if (tiered())
-    {
-        // What streaming keeps in memory until the next update: the surroundings of everyone onstage.
-        tierWanted_.clear();
-        for (const auto& entry : entities_)
-            if (!entry.second.offstage)
-                nearCells(entry.second, tierWanted_);
-    }
+    return true;
 }
 
 void World::planWantedRoutes()
 {
-    // In turn from where the last tick stopped, so no one waits behind the same few.
+    // In turn from where the last tick stopped, so no one waits behind the same few; by time (doc 31, Phase 5): as
+    // many as fit in RouteBudgetMs, a long search alone, cheap ones several to a step.
+    using Clock = std::chrono::steady_clock;
+    const auto begun = Clock::now();
     RouteBudget budget{0, searchExpanded_, RouteSearchesPerTick, RouteNodesPerTick, true};
     auto it = routeWanted_.upper_bound(routeCursor_);
     for (std::size_t looked = 0, total = routeWanted_.size(); looked < total && !routeWanted_.empty(); ++looked)
     {
-        if (budget.searches >= budget.maxSearches || searchExpanded_ - budget.expandedBefore >= budget.maxNodes)
+        if (budget.searches >= budget.maxSearches || searchExpanded_ - budget.expandedBefore >= budget.maxNodes ||
+            (budget.searches > 0 && std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= RouteBudgetMs))
             break;
         if (it == routeWanted_.end())
             it = routeWanted_.begin();
+        if (const auto waits = routes_.waiting.find(it->first); waits != routes_.waiting.end())
+        {
+            // Their route is still being searched on the route thread: nothing to do for them yet.
+            if (routes_.requested.count(waits->second))
+            {
+                ++it;
+                continue;
+            }
+            routes_.waiting.erase(waits);
+        }
         const std::string id = it->first;
         const RouteWant want = it->second;
         it = routeWanted_.erase(it);
@@ -2799,11 +3029,21 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
             return Result{false, "Waiting to set off.", {}};
         }
         routeWanted_.erase(e.id);
-        ++budget.searches;
-        ++profile_.routeSearches;
         const auto expandedAt = searchExpanded_;
         const auto searchBegin = std::chrono::steady_clock::now();
+        routeAsync_ = bool(routes_.worker);
+        routePending_ = false;
         auto result = moveTo(e.id, goal.x, goal.y);
+        routeAsync_ = false;
+        if (routePending_)
+        {
+            // Being searched on the route thread: asked again next tick, when it may be in the path cache.
+            routeWanted_[e.id] = {task, goalCell, target};
+            routes_.waiting[e.id] = routes_.last;
+            return Result{false, "Waiting to set off.", {}};
+        }
+        ++budget.searches;
+        ++profile_.routeSearches;
         const double took = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - searchBegin).count();
         profile_.routeNodes += searchExpanded_ - expandedAt;
         profile_.largestRoute = std::max(profile_.largestRoute, searchExpanded_ - expandedAt);
@@ -2967,6 +3207,7 @@ void World::tick(double dt)
 {
     if (!std::isfinite(dt) || dt <= 0)
         return;
+    takeRoutes();
     // Bounded steps prevent tunneling. The hosting server should use 1/30 s;
     // even delayed input cannot tunnel through an entire terrain feature.
     dt = std::min(dt, 60.0);
@@ -2993,10 +3234,21 @@ void World::tick(double dt)
         scheduleAccumulator_ += step;
         if (scheduleAccumulator_ + 1e-9 >= .5)
         {
+            // A new half hour of schedules: the last one's chain finished first (never left behind), then this one
+            // begun, as far as the step's budget goes (doc 31, Phase 5).
             mark = Clock::now();
-            updateSchedules();
+            if (scheduleStage_ >= 0)
+                continueSchedules(1e18);
+            scheduleStage_ = 0;
+            continueSchedules(ScheduleBudgetMs);
             tickSchedules += since(mark);
             scheduleAccumulator_ = std::max(0., scheduleAccumulator_ - .5);
+        }
+        else if (scheduleStage_ >= 0)
+        {
+            mark = Clock::now();
+            continueSchedules(ScheduleBudgetMs);
+            tickSchedules += since(mark);
         }
         else if (!routeWanted_.empty())
         {
@@ -3054,6 +3306,8 @@ void World::tick(double dt)
     add(profile_.movement, tickMovement);
     add(profile_.separation, tickSeparation);
     add(profile_.views, tickViews);
+    const double last[] = {tickStreaming, tickSchedules, tickMovement, tickSeparation, tickViews};
+    std::copy(std::begin(last), std::end(last), profile_.last);
     ++profile_.ticks;
 }
 
@@ -3946,6 +4200,7 @@ Result World::restore(const PersistedWorld& state)
             promises_.push_back(p);
     scheduleAccumulator_ = 0;
     routeWanted_.clear();
+    routes_.waiting.clear();
     routeCursor_.clear();
     pendingPortals_.clear();
     travels_.clear();

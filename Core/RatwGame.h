@@ -195,7 +195,7 @@ class Game
 
     // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
     // consolidated every AutosaveSeconds.
-    static constexpr double AutosaveSeconds = 15, SnapshotSeconds = 5, SaveSoonSeconds = 3;
+    static constexpr double AutosaveSeconds = 15, SnapshotSeconds = 30, SaveSoonSeconds = 3;
     static constexpr unsigned SnapshotPhases = 4;
 
   private:
@@ -340,6 +340,7 @@ class Game
     // The world as each client sees it.
     void stampFrame(Connection* c, json::Value& root, const std::string& cell);
     void sendSnapshot(Connection* c);
+    void sendSnapshots(const std::vector<Connection*>& sending);
     void movementSounds();
     // Speech to everyone who can perceive it. `to`: whom it was meant for (each listener is told, as they can tell).
     std::vector<std::string> publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to = {});
