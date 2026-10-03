@@ -229,7 +229,11 @@ FRatwCellPrefetch& prefetcher()
 bool prefetching = false;
 } // namespace
 
-Game::Game(Options options) : options_(std::move(options)), random_(std::random_device{}()) {}
+Game::Game(Options options) : options_(std::move(options)), random_(std::random_device{}())
+{
+    // A Chapter's rented places are locked to all but its members and guests (doc 32, 5.2).
+    world_.mayEnter = [this](const std::string& who, const std::string& cell) { return mayEnterPlace(who, cell); };
+}
 
 Game::~Game()
 {
@@ -709,6 +713,35 @@ void Game::applyDmActions(double dt)
             std::string problem;
             json::parse(row[4] ? *row[4] : "{}", payload, problem);
             outcome = reviewArtwork(target, payload.string("decision"), payload.string("reason"));
+        }
+        else if (kind == "estate.set" || kind == "estate.clear")
+        {
+            // A place to let (doc 32, 5.2), the target its cell. Payload: {"name", "kind": "hall"|"warehouse",
+            // "landlord": a resident or "treasury", "faction", "rent" (pennies a week), "level" (2..5)}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const auto* cell = world_.cell(target);
+            if (!cell)
+                outcome = {false, "No such place.", target};
+            else if (kind == "estate.clear")
+            {
+                estates_.unmark(target);
+                saveSoon();
+                outcome = {true, "It is no longer to let once its lease (if any) ends.", target};
+            }
+            else
+            {
+                const auto rent = std::int64_t(wire::number(payload, "rent", 30));
+                const int level = std::clamp(int(wire::number(payload, "level", 2)), 2, 5);
+                estates_.define({target, payload.string("name", cell->name), payload.string("kind", "hall"), payload.string("landlord", "treasury"),
+                                 payload.string("faction", cell->factionClaims.empty() ? std::string() : cell->factionClaims.front()),
+                                 std::clamp<std::int64_t>(rent, 1, 100000), level});
+                estates_.markAuthored(target);
+                saveSoon();
+                outcome = {true, cell->name + " is to let.", target};
+            }
         }
         else if (kind == "festival.call")
         {
@@ -1701,6 +1734,7 @@ void Game::tick(double dt)
     refreshSocialViews(dt);
     chapterTick(dt);
     factionTick(dt);
+    estateTick(dt);
     refreshChapterViews(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
@@ -1958,6 +1992,8 @@ void Game::sendSnapshot(Connection* c)
         self.set("social", view->second);             // Scene, stars, Stories, title (doc 32, Part 1).
     if (const auto view = chapterViews_.find(id); view != chapterViews_.end())
         self.set("chapter", view->second);            // Their Chapter (doc 32, Part 3).
+    if (auto place = placeView(id); !place.isNull())
+        self.set("place", std::move(place));          // A place to let, where they stand (doc 32, 5.2).
     self.set("socialLevel", social_.level(id));
     self.set("hearing", view.self.hearing * view.self.earHealth * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
     self.set("sneakSkill", view.self.sneakSkill);
@@ -2301,6 +2337,12 @@ void Game::sendSnapshot(Connection* c)
                     actions.push(marked ? "unmark hostile" : "mark hostile");
                 }
             }
+        // Guests of a Chapter's rented place (doc 32, 5.2): an Officer inside lets a wolf come and go.
+        if (!e.npc && e.id != view.self.id && !relations.chapterMates.count(e.id))
+            if (const auto* lease = estates_.lease(view.self.cellId); lease && chapters_.of(view.self.id) &&
+                                                                     chapters_.of(view.self.id)->id == lease->chapter &&
+                                                                     chapters_.member(view.self.id)->rank <= chapter::RankOfficer)
+                actions.push(lease->guests.count(e.id) ? "no longer let in" : "let in");
         // Parties (doc 32): any player in sight may be invited, by one in no party or who leads theirs.
         if (!e.npc && e.id != view.self.id && !relations.mates.count(e.id))
             if (const auto* mine = parties_.of(view.self.id); !mine || mine->leader == view.self.id)
@@ -3355,6 +3397,14 @@ void Game::command(Connection* c, const std::string& raw)
             factionCommand(c, k, result);
             report = !result.message.empty();
         }
+        else if (action == "let in" || action == "no longer let in")
+        {
+            auto k = Value::object();
+            k.add("verb", action == "let in" ? "guest" : "unguest");
+            k.add("target", target);
+            estateCommand(c, k, result);
+            report = true;
+        }
         else if (action == "invite to chapter" || action == "mark hostile" || action == "unmark hostile")
         {
             auto k = Value::object();
@@ -3638,6 +3688,7 @@ DbStore::Build Game::capture()
     c->server.notes = notesSave();
     c->server.chapters = chapters_.save();
     c->server.factions = factions_.save();
+    c->server.estates = estates_.save();
     {
         auto aliases = Value::object();
         for (const auto& [who, list] : aliases_)
@@ -3796,6 +3847,7 @@ void Game::load(const std::string& payload)
     notesLoad(state.notes);
     chapters_.load(state.chapters);
     factions_.load(state.factions);
+    estates_.load(state.estates);
     for (const auto& [who, ids] : state.commandReceipts)
         for (const auto& receipt : ids)
             commandReceipts_[who].push_back(receipt);

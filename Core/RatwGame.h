@@ -18,6 +18,7 @@
 #include "RatwArtwork.h"
 #include "RatwChapters.h"
 #include "RatwFactions.h"
+#include "RatwEstates.h"
 #include "RatwPerf.h"
 #include "RatwPg.h"
 #include "RatwPool.h"
@@ -185,6 +186,7 @@ class Game
     // Factions in play (doc 32, Part 4): for tests and tools to define factions without a database.
     faction::Factions& factions() { return factions_; }
     chapter::Chapters& chapters() { return chapters_; }
+    estate::Estates& estates() { return estates_; }
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
     // checks and the review page (tools/ai_review.py) as much as for play.
     std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
@@ -383,6 +385,17 @@ class Game
     void factionScene(const std::string& cellId, const std::string& chapterId);
     std::string factionContext(const std::string& npcId, const std::string& playerId) const;
     json::Value standingsView(const std::string& chapterId) const;
+    // A Chapter's ground (RatwGameEstates.cpp; doc 32, Part 5).
+    estate::Estates estates_;
+    double estateAccumulator_ = 0, estateRefresh_ = 0;
+    std::set<std::string> rentWarned_;
+    void refreshEstates();
+    bool mayEnterPlace(const std::string& who, const std::string& cell) const;
+    void estateTick(double dt);
+    bool estateCommand(Connection* c, const json::Value& j, Result& result);
+    json::Value placeView(const std::string& viewer) const;
+    json::Value leasesView(const std::string& chapterId) const;
+    bool campHere(const std::string& who) const;
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

@@ -236,7 +236,7 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
             }
         }
     }
-    else
+    else if (!estateCommand(c, j, result))        // Leases, guests, notices, stores (doc 32, Part 5).
         return false;
     return true;
 }
@@ -419,6 +419,7 @@ void Game::refreshChapterViews(double dt)
             }
             v.add("renownLog", renown);
             v.add("standings", standingsView(c->id));     // Bands only (doc 32, 4.2b).
+            v.add("leases", leasesView(c->id));           // Its rented places (doc 32, 5.2).
         }
         if (const auto* inv = chapters_.inviteFor(id, t))
             if (const auto* c = chapters_.byId(inv->first))

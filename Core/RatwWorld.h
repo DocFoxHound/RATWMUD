@@ -489,6 +489,8 @@ class World
     const Battle* battleOf(const std::string& id) const;
     const Battle* watching(const std::string& id) const;
     bool inBattle(const std::string& id) const { return battleOf(id) != nullptr; }
+    // Who may go through a door into a place (Docs/Design/32, 5.2: a Chapter's rented rooms); unset, anyone may.
+    std::function<bool(const std::string& who, const std::string& cell)> mayEnter;
     // A fighter's turn: move to a tile (crawl one, when Downed), and act: "bite", "tend", "struggle", "flee", "wait".
     Result battleMove(const std::string& id, int x, int y);
     Result battleAct(const std::string& id, const std::string& action, const std::string& target = {});

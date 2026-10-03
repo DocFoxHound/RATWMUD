@@ -16,6 +16,7 @@ import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
 import {PartyPanel} from './party.ts';
+import {PlacePanel} from './place.ts';
 import {noRect, StoryPanel} from './story.ts';
 
 const HostileRed = rgb(0xe0695e);
@@ -84,6 +85,7 @@ export class Hud {
     private resizer: HTMLElement;
     private fight: FightPanel;
     private party: PartyPanel;
+    private place: PlacePanel;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -153,6 +155,7 @@ export class Hud {
             state.miniZoom = Math.max(0, Math.min(MapScales.length - 1, state.miniZoom + (e.deltaY < 0 ? 1 : -1)));
         }, {passive: false});
         this.party = new PartyPanel(side, state);
+        this.place = new PlacePanel(side, state);
         const sight = el('section', 'panel in-sight', side);
         const sightHead = el('div', 'panel-head', sight);
         el('span', 'label gold', sightHead, 'IN SIGHT');
@@ -217,6 +220,7 @@ export class Hud {
         this.updateLook();
         this.fight.update();
         this.party.update();
+        this.place.update();
         this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);

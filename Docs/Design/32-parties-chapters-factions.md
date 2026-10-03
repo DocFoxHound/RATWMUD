@@ -1,7 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
 Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phases 3 (residents travelling with
-a party), 4 (the social game widened), 5 (Chapters) and 6 (factions in play) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
+a party), 4 (the social game widened), 5 (Chapters), 6 (factions in play) and 7 (renting) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -1117,6 +1117,46 @@ Not yet:
   session is changing.
 - **Quartermasters' bonus gear.** Items are being redone (doc 35).
 - **Third-tier and story missions.**
+
+### Phase 7: renting (built 2026-10-03)
+
+- **What is to let** (`Game::refreshEstates`, every 5 minutes):
+  - Every inn's upstairs ("The Gatehouse Inn, upstairs"), let by the inn's keeper at 30 pennies a week, to a Lodge
+    (level II).
+  - Every warehouse, let by the town at 50 a week, to a Company (level III).
+  - Whatever a DM marks with the new `estate.set` action (name, kind, landlord, faction, rent, level) or takes off
+    with `estate.clear`.
+  - A place's faction is the one claiming it (or its inn). It lets only to a Chapter it knows well (15+).
+  - There is no Atlas field yet; the DM action stands in.
+- **Leases** (`Core/RatwEstates.*`):
+  - Taken by an Officer or the Head from inside the place. The first week is paid at once, from the Chapter's
+    treasury to the landlord's purse. At most three places a Chapter.
+  - Each week's rent falls due, paid the same way. Unpaid: a week's grace with a warning, then eviction.
+  - If the land's faction turns Hostile (−40 or worse), the lease lapses at the next rent.
+- **The door is locked** to all but the Chapter's members and its guests. This is one new hook in the world's door
+  passage, `World::mayEnter`; residents aren't stopped.
+  - An Officer inside lets a wolf in ("let in", "no longer let in").
+- **Inside:** a notice board (20 notices of up to 200 letters, taken down by their writer or an Officer). The
+  Chapter's **stores** (meals, herbs, swords) are kept in its treasury's purse, so they are one store shared by all its
+  places. Initiates put in but don't take out.
+- **The Company level's ground:** a lease held 14 days, paid up, sets it.
+- **The page:**
+  - A **place panel** where a rentable place is: its terms, landlord and faction, and TAKE THE LEASE.
+  - Inside the Chapter's own: days paid, notices, and the stores with put in / take one.
+  - The Chapter window lists what it rents.
+- **Saved:** leases with their guests and notices, and the DM's places, in the checkpoint.
+- **Tests:**
+  - `Tests/estate_tests.cpp`: leases, rent, grace and eviction, the fortnight, saving.
+  - Through the game, in the demo tavern's loft: refused to a Gathering, then to an empty treasury; leased (the
+    keeper paid); locked to Cy through the real stairs while Bo goes up; Cy let in as a guest; a notice and a meal in
+    the stores; rent paid at the week; warned, then evicted; and, leased again for a fortnight, a Company.
+- **Load:** `game_load` with 100 players: mean 11.3 ms, p99 20.8 ms.
+
+Not yet:
+- **Naming a rented place and choosing furnishings.**
+- **A landlord holding the stores against a debt.** The stores are the Chapter's purse, so eviction doesn't seize
+  them.
+- **An Atlas field for places to let.**
 
 ## Decisions
 

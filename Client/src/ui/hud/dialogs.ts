@@ -252,6 +252,13 @@ export class Dialogs {
                 if (str(f, 'weighs')) el('div', 'muted small', left, str(f, 'weighs'));
             }
         }
+        const leases = arr(ch, 'leases').filter(isObject);
+        if (leases.length) {
+            el('div', 'label gold', right, 'RENTED');
+            for (const l of leases)
+                el('div', 'small', right, `${str(l, 'name')} · ${num(l, 'rent')}p a week · ${num(l, 'daysPaid')} days paid · held ` +
+                    `${num(l, 'heldDays')} days${str(l, 'state') === 'grace' ? ' · OVERDUE' : ''}`);
+        }
         el('div', 'label gold', right, 'MEETING PLACE');
         const meeting = obj(ch, 'meeting');
         el('div', '', right, meeting ? str(meeting, 'name') : 'None declared');

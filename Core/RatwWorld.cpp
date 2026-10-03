@@ -1908,6 +1908,13 @@ void World::transition(Entity& a, const Door& d)
         stop(a.id);
         return;
     }
+    // A place a Chapter rents is locked to all but its members and guests (Docs/Design/32, 5.2).
+    if (!a.npc && mayEnter && !mayEnter(a.id, d.targetCell))
+    {
+        notice(a.id, "The door is locked.");
+        stop(a.id);
+        return;
+    }
     if (!ensureLoaded(d.targetCell).ok)
         return;
     const auto* destination = cell(d.targetCell);
