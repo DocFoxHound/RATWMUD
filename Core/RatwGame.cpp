@@ -714,6 +714,17 @@ void Game::applyDmActions(double dt)
             json::parse(row[4] ? *row[4] : "{}", payload, problem);
             outcome = reviewArtwork(target, payload.string("decision"), payload.string("reason"));
         }
+        else if (kind == "treaty.decide" || kind == "house.decide")
+        {
+            // A Dungeon Master's word (Phase 9): the target a treaty's ID, or a Chapter's for a House (with its "faction").
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const bool approve = payload.isObject() && payload.boolean("approve");
+            outcome = kind == "treaty.decide" ? decideTreaty(target, approve, "by a Dungeon Master")
+                                              : decideHouse(target, payload.string("faction"), approve, "by a Dungeon Master");
+        }
         else if (kind == "estate.set" || kind == "estate.clear")
         {
             // A place to let (doc 32, 5.2), the target its cell. Payload: {"name", "kind": "hall"|"warehouse",
@@ -1736,6 +1747,7 @@ void Game::tick(double dt)
     factionTick(dt);
     estateTick(dt);
     campTick(dt);
+    holdTick(dt);
     refreshChapterViews(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
@@ -2316,6 +2328,13 @@ void Game::sendSnapshot(Connection* c)
         if (e.npc && near(e) && chapters_.of(view.self.id))
             if (const auto factionId = officialOf(e.id); !factionId.empty())
             {
+                if (const auto* head = chapters_.member(view.self.id); head && head->rank == chapter::RankHead)
+                {
+                    if (chapters_.of(view.self.id)->level >= 3)
+                        actions.push("propose a treaty");
+                    if (chapters_.of(view.self.id)->level >= 5)
+                        actions.push("ask to be recognised as a House");
+                }
                 actions.push("ask about our standing");
                 actions.push("pay for a report (5p)");
                 actions.push("ask for missions");
@@ -2326,6 +2345,19 @@ void Game::sendSnapshot(Connection* c)
         for (const auto& m : factions_.missions())
             if (m.state == "taken" && m.taker == view.self.id && m.kind != "guard" && (m.kind == "message" ? m.to : m.official) == e.id && near(e))
                 actions.push("deliver " + m.id);
+        // Sworn residents (doc 32, Phase 9): asked of a resident by an Officer of a Hall; settled at the Hold.
+        if (e.npc && near(e))
+            if (const auto* member = chapters_.member(view.self.id); member && member->rank <= chapter::RankOfficer)
+            {
+                const auto* mine = chapters_.of(view.self.id);
+                if (mine->sworn.count(e.id))
+                {
+                    if (!mine->claimCell.empty())
+                        actions.push("settle at the Hold");
+                }
+                else if (mine->level >= 4 && world_.society().resident(e.id) && !e.transient)
+                    actions.push("ask to swear to the Chapter");
+            }
         // Chapters (doc 32, Part 3): an Officer invites players, and marks anyone hostile to the Chapter.
         if (e.id != view.self.id)
             if (const auto* member = chapters_.member(view.self.id); member && member->rank <= chapter::RankOfficer)
@@ -2753,6 +2785,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
                             " meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
     context.activity += companionContext(npcId);       // Travelling with a party (doc 32, Phase 3).
     context.activity += factionContext(npcId, playerId);   // Their faction's view of the speaker's Chapter (doc 32, 4.1).
+    context.activity += swornContext(npcId);              // Sworn to a Chapter for life (doc 32, Phase 9).
     // What the NPC calls them: the name they gave, or how they look until they give one (doc 32).
     const std::string called = labelFor(npcId, playerId);
     context.playerName = identified ? called : "traveler";
@@ -3400,6 +3433,17 @@ void Game::command(Connection* c, const std::string& raw)
                 k.add("mission", action.substr(8));
             factionCommand(c, k, result);
             report = !result.message.empty();
+        }
+        else if (action == "propose a treaty" || action == "ask to be recognised as a House" || action == "ask to swear to the Chapter" ||
+                 action == "settle at the Hold")
+        {
+            auto k = Value::object();
+            k.add("verb", action == "propose a treaty" ? "treaty" : action == "ask to be recognised as a House" ? "house"
+                          : action == "ask to swear to the Chapter"                                    ? "swear"
+                                                                                                      : "settle");
+            k.add("target", target);
+            holdCommand(c, k, result);
+            report = true;
         }
         else if (action == "let in" || action == "no longer let in")
         {

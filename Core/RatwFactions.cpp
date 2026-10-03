@@ -239,6 +239,22 @@ void Factions::spread(double day)
                       expulsions_.end());
 }
 
+Treaty* Factions::treaty(const std::string& id)
+{
+    for (auto& t : treaties_)
+        if (t.id == id)
+            return &t;
+    return nullptr;
+}
+
+const Treaty* Factions::activeTreaty(const std::string& faction, const std::string& chapter) const
+{
+    for (const auto& t : treaties_)
+        if (t.faction == faction && t.chapter == chapter && t.state == "active")
+            return &t;
+    return nullptr;
+}
+
 Mission* Factions::mission(const std::string& id)
 {
     for (auto& m : missions_)
@@ -319,6 +335,33 @@ Value Factions::save() const
         missions.push(j);
     }
     root.add("missions", missions);
+    auto treaties = Value::array();
+    for (const auto& t : treaties_)
+    {
+        auto j = Value::object();
+        j.add("id", t.id); j.add("faction", t.faction); j.add("chapter", t.chapter); j.add("build", t.build);
+        j.add("tithe", double(t.tithe)); j.add("levy", t.levy); j.add("weeks", t.weeks); j.add("state", t.state);
+        j.add("proposed", t.proposed); j.add("started", t.started); j.add("paidTo", t.paidTo);
+        treaties.push(j);
+    }
+    root.add("treaties", treaties);
+    auto levies = Value::array();
+    for (const auto& l : levies_)
+    {
+        auto j = Value::object();
+        j.add("id", l.id); j.add("faction", l.faction); j.add("chapter", l.chapter); j.add("cell", l.cell); j.add("place", l.place);
+        j.add("needed", l.needed); j.add("done", l.done); j.add("due", l.due); j.add("state", l.state);
+        levies.push(j);
+    }
+    root.add("levies", levies);
+    auto houses = Value::array();
+    for (const auto& h : houses_)
+    {
+        auto j = Value::object();
+        j.add("chapter", h.chapter); j.add("faction", h.faction); j.add("state", h.state); j.add("day", h.day);
+        houses.push(j);
+    }
+    root.add("houses", houses);
     root.add("nextMission", double(nextMission_));
     root.add("lastDrift", lastDrift_);
     return root;
@@ -374,6 +417,29 @@ void Factions::load(const Value& saved)
         if (!m.id.empty())
             missions_.push_back(m);
     }
+    treaties_.clear();
+    levies_.clear();
+    houses_.clear();
+    for (const auto& j : saved.array("treaties"))
+    {
+        Treaty t;
+        t.id = j.string("id"); t.faction = j.string("faction"); t.chapter = j.string("chapter"); t.build = j.boolean("build");
+        t.tithe = std::int64_t(j.number("tithe")); t.levy = j.boolean("levy"); t.weeks = int(j.number("weeks", 8));
+        t.state = j.string("state", "pending"); t.proposed = j.number("proposed"); t.started = j.number("started"); t.paidTo = j.number("paidTo");
+        if (!t.id.empty())
+            treaties_.push_back(t);
+    }
+    for (const auto& j : saved.array("levies"))
+    {
+        Levy l;
+        l.id = j.string("id"); l.faction = j.string("faction"); l.chapter = j.string("chapter"); l.cell = j.string("cell");
+        l.place = j.string("place"); l.needed = j.number("needed", 1200); l.done = j.number("done"); l.due = j.number("due");
+        l.state = j.string("state", "called");
+        if (!l.id.empty())
+            levies_.push_back(l);
+    }
+    for (const auto& j : saved.array("houses"))
+        houses_.push_back({j.string("chapter"), j.string("faction"), j.string("state", "pending"), j.number("day")});
     nextMission_ = std::max<std::uint64_t>(1, std::uint64_t(saved.number("nextMission", 1)));
     lastDrift_ = saved.number("lastDrift", -1);
 }

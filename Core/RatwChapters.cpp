@@ -540,6 +540,12 @@ Value Chapters::save() const
         j.add("campStanding", c.campStanding);
         j.add("fortified", c.fortified);
         j.add("friendlyFaction", c.friendlyFaction);
+        j.add("claimCell", c.claimCell);
+        j.add("houseOf", c.houseOf);
+        auto sworn = Value::array();
+        for (const auto& n : c.sworn)
+            sworn.push(n);
+        j.add("sworn", sworn);
         list.push(j);
     }
     root.add("chapters", list);
@@ -594,6 +600,11 @@ void Chapters::load(const Value& saved)
         c.campStanding = j.boolean("campStanding");
         c.fortified = j.boolean("fortified");
         c.friendlyFaction = j.boolean("friendlyFaction");
+        c.claimCell = j.string("claimCell");
+        c.houseOf = j.string("houseOf");
+        for (const auto& n : j.array("sworn"))
+            if (n.isString())
+                c.sworn.insert(n.asString());
         if (c.id.empty() || c.members.empty() || chapters_.count(c.id))
             continue;
         bool headed = false;

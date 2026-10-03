@@ -189,6 +189,9 @@ class Game
     chapter::Chapters& chapters() { return chapters_; }
     estate::Estates& estates() { return estates_; }
     camp::Camps& camps() { return camps_; }
+    // A Dungeon Master's decision on a treaty or a House (Phase 9); without one within a game day, the faction's rule.
+    Result decideTreaty(const std::string& id, bool approve, const std::string& by);
+    Result decideHouse(const std::string& chapterId, const std::string& factionId, bool approve, const std::string& by);
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
     // checks and the review page (tools/ai_review.py) as much as for play.
     std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
@@ -410,6 +413,14 @@ class Game
     json::Value campView(const std::string& viewer) const;
     json::Value sitesView(const std::string& chapterId) const;
     bool treatyAllows(const std::string& factionId, const std::string& chapterId, const std::string& what) const;
+    // Halls and Holds (RatwGameHolds.cpp; doc 32, Phase 9).
+    double holdAccumulator_ = 0;
+    std::map<std::string, double> levyWeek_;
+    std::uint64_t levyNext_ = 0;
+    bool holdCommand(Connection* c, const json::Value& j, Result& result);
+    void holdTick(double dt);
+    json::Value holdView(const std::string& chapterId, const std::string& viewer) const;
+    std::string swornContext(const std::string& npcId) const;
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

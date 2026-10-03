@@ -1,9 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
-Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phases 3 (residents travelling with
-a party), 4 (the social game widened), 5 (Chapters), 6 (factions in play), 7 (renting) and 8 (camps) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
-request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
-reports that must be asked for. They are written into the parts below and listed under "Decisions".
+Planned 2026-10-02. **All nine phases built: 1–2 on 2026-10-02, 3–9 on 2026-10-03.** See "Built" for what each does and
+what is still to do, and "Decisions" for the choices made while building, which are for you to confirm.
 
 This plan expands the social and roleplay game. It covers:
 
@@ -1213,6 +1211,74 @@ Not yet:
 - **Cooking at a cookfire.** It needs doc 15/35's transformations.
 - **Atlas showing structures** (5.7). The DM can see them only in saves for now.
 
+### Phase 9: Halls and Holds (built 2026-10-03)
+
+- **Treaties** (4.6):
+  - The Head of a Company or more proposes one to a faction's official ("propose a treaty"). The defaults are
+    building rights on its land, a 20-penny weekly tithe, answering its levies, and 8 weeks.
+  - A Dungeon Master decides with the new `treaty.decide` action. The server log says `RATW_TREATY_PENDING`.
+  - **Without a DM's word within a game day, the faction's own rule decides:** it agrees if it trusts the Chapter
+    (40+). This keeps play moving while the DM tool has no screen for it.
+  - An active treaty: the tithe is taken each game week from the Chapter's treasury, the first at once. A missed
+    tithe breaks the treaty (−10). A treaty runs its course after its weeks, and a new one replaces the old.
+  - Its building rights let the Chapter camp and fortify on the faction's land.
+- **Levies** (4.4):
+  - Each game week, a faction calls on a Chapter sworn to it (75+), or bound by a treaty to answer, to keep watch
+    where one of its officials is: twenty member-minutes, all told, by the week's end.
+  - Answered: +5. Ignored: −10. The Chapter is told both ways.
+- **Fortifying a faction's land** (palisades, gates, stone) takes its sworn friendship (75+) or a treaty's building
+  rights.
+- **The Hold:** eight stone walls, a keep and a gatehouse built at a site. The Chapter then **claims** that place
+  (`claimCell`), is told so, and the Chapter window shows it.
+  - **Level V** (Hold) also needs the faction friendship for its land: the site is on unclaimed land, or the
+    claimant regards the Chapter at least well (15+), or a treaty allows it.
+- **Minor House:**
+  - The Head of a Hold asks a faction's official ("ask to be recognised as a House") when that faction is sworn to
+    the Chapter (75+).
+  - It is decided by a DM (`house.decide`), or after a day by the faction's rule (a Hold it is sworn to).
+  - Once recognised, the Chapter window says so, and sworn residents know it.
+- **Sworn residents:**
+  - From a Hall (IV), an Officer asks an ordinary resident ("ask to swear to the Chapter"). They swear only from a
+    deep bond with the asker (affinity 70+, trust 60+), and are otherwise "not yet".
+  - Once sworn: they wear the Chapter's colours on every member's map, the Mind knows they are sworn for life, and
+    the Chapter window lists them.
+  - **Settling at the Hold** ("settle at the Hold") uses doc 16's relocation: they walk there and make it their
+    home.
+- **What a member sees:** in the Chapter window, its House, its claim, treaties (pending or with weeks left, and
+  their terms), levies still owed, and the sworn.
+- **Saved:** treaties, levies and House requests (with the faction save); the claim, House and sworn (with the
+  Chapter).
+- **Tests:**
+  - `Tests/hold_tests.cpp`, through the game: a treaty waiting, then the Crown's land closed to a camp.
+  - The treaty agreed by a DM, its tithe paid, and a camp made by its terms.
+  - A levy called and answered (+5), then the treaty broken by an unpaid tithe.
+  - Fortifying refused, then allowed once sworn. The Hold built, Juniper Yard claimed, level V.
+  - A minor House by the Crown's own rule, a resident sworn and wearing the colours, and settling at the Hold asked.
+  - And a restart.
+- **Load:** `game_load` with 100 players: mean 11.3 ms, p99 20.3 ms.
+
+Not yet:
+- **Settling authored residents.** Doc 16's relocation (`World::relocateResident`) moves only residents whose role is
+  "resident". Authored worlds' civilians are refused, so settling at a Hold works in the demo world but not yet in
+  the DEV world.
+- **Housing and jobs at a Hold**, and doc 16's migration of ordinary residents to it.
+- **A DM screen for pending treaties and House requests.** For now there are log lines and the two actions.
+- **The labour clause of a treaty** (doc 16's resentment modifier).
+- **Tolls.**
+
+## After the nine phases
+
+**Still to do across the plan**, gathered from the phases' "Not yet":
+
+- **NPCs:** an authored "joinable" flag for residents in Atlas or the DM, DM "story" companions, companion remarks
+  voiced by the Mind, and settling authored residents.
+- **Structures:** blocking movement and giving shelter, steep ground, cooking, and Atlas showing them.
+- **Places to let:** an Atlas field and furnishings.
+- **Factions:** treaties' labour clause, a Trusted faction's Watch weighing members' word, quartermasters' gear (after
+  doc 35's items), and third-tier and story missions.
+- **Storage:** Chapters into Postgres and the DM, replacing the DM service's SQLite Chapter records (Phase 5).
+- **Names:** hearsay names, residents who see through aliases, and choosing aliases at character creation.
+
 ## Decisions
 
 ### Agreed 2026-10-02
@@ -1228,21 +1294,27 @@ Not yet:
 5. **The Chapter isn't told who did what.** It must ask the faction's officials, or pick it up from rumour and news
    (4.2b).
 
-### Still open
+### Built as placeholders, for you to confirm (2026-10-03)
 
-6. **Party size:** 6 players + 2 NPCs?
-7. **Do authored `/me` actions count** toward scenes at half weight?
-8. **Chapter size:** no hard cap with sublinear renown *(recommended)*, or a cap (e.g. 50)?
-9. **Level names:** Gathering, Lodge, Company, Hall, Hold, or names from the setting?
-10. **Founding gate:** 3 founders at social level 5 and a 2-mark fee?
-11. **Who approves treaties and minor-House recognition:** the DM by hand at first *(recommended)*, or rules?
-12. **Can a Chapter's level drop?** Recommended no; neglect costs property instead.
-13. **Does burden follow an expelled wolf** into a new Chapter? Recommended yes, to stop laundering.
+These were open when building began. Each was built as the doc recommended or as its placeholder. Each is one
+constant or rule to change.
+
+6. **Party size:** 6 players and 2 residents.
+7. **Actions:** `/action` and `/pose` count at half weight. `/me`, which sets a lasting state, counts for nothing.
+8. **Chapter size:** no cap. Renown from members' scenes is scaled by √(10 ÷ active) past ten active members.
+9. **Level names:** Gathering, Lodge, Company, Hall, Hold.
+10. **Founding:** 3 founders, each at social level 5 (`Options::chapterFoundingLevel`), and 20 pennies (two marks)
+    paid to the town.
+11. **Treaties and Houses:** a DM decides. Without a DM's word within a game day, the faction's own rule decides:
+    trust (40+) for a treaty, sworn (75+) and a Hold for a House. This was added because the DM tool has no screen
+    for them yet.
+12. **Levels never drop.** Neglect costs ground: wear, ruins, lapsed leases.
+13. **Burden follows a wolf** into any Chapter they join. It belongs to them, and a faction remembers it.
 14. **Aliases** are allowed (agreed 2026-10-02). Introductions are detected deterministically: a registered name
     after an introduction phrase in the wolf's own speech, plus an Introduce button (1.5). Still open: how many
     aliases, and how true names leak out later.
-15. **Joining a party or Chapter:** should it introduce members to each other automatically? The draft says no:
-    you introduce yourself in character, and only founders are introduced by the founding scene.
+15. **Joining a party or Chapter** introduces no one: members introduce themselves in character. (The founding scene
+    doesn't introduce the founders either. They will have done that in the scene.)
 16. **Raids and sieges** on camps and Holds: a later plan, built on the combat work?
 
 ## Not in this plan

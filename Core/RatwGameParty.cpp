@@ -282,6 +282,7 @@ Game::Relations Game::relationsFor(const std::string& viewer) const
         for (const auto& [m, member] : ch->members)
             if (m != viewer)
                 r.chapterMates.insert(m);
+        r.chapterMates.insert(ch->sworn.begin(), ch->sworn.end());   // Sworn residents wear its colours too.
         for (const auto& h : ch->hostiles)
         {
             const std::string why = "hostile to your Chapter" + (h.reason.empty() ? std::string() : ": " + h.reason);

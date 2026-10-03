@@ -70,6 +70,35 @@ struct Mission
     double expires = 0;                          // Calendar day.
 };
 
+// A treaty (4.6): typed terms between a Chapter and a faction. Proposed by the Chapter's Head to an official; decided by
+// a Dungeon Master, or after a game day without one, by the faction's own rule (it agrees with a Chapter it trusts).
+struct Treaty
+{
+    std::string id, faction, chapter;
+    bool build = false;                          // May build (and fortify) on the faction's land.
+    std::int64_t tithe = 0;                      // Pennies a game week, from the Chapter's treasury.
+    bool levy = false;                           // Answers the faction's levies.
+    int weeks = 8;
+    std::string state = "pending";               // pending, active, ended, rejected.
+    double proposed = 0, started = 0, paidTo = 0;// Calendar days.
+};
+
+// A levy (4.4): the faction calls on a Chapter sworn to it, or bound by treaty, to keep watch somewhere this week.
+struct Levy
+{
+    std::string id, faction, chapter, cell, place;
+    double needed = 1200, done = 0;              // Members' seconds there.
+    double due = 0;                              // Calendar day.
+    std::string state = "called";                // called, answered, ignored.
+};
+
+// A Chapter asking to be recognised as a minor House by a faction (Hold level, Sworn): decided like a treaty.
+struct HouseRequest
+{
+    std::string chapter, faction, state = "pending";
+    double day = 0;
+};
+
 // A band's name for a disposition (4.2): Sworn, Trusted, Known well, Neutral, Distrusted, Hostile, Enemy.
 const char* band(double disposition);
 std::string defaultStance(double disposition);
@@ -112,6 +141,16 @@ class Factions
     void spread(double day);                                                          // News travels.
     std::vector<std::string> stillCounted(const std::string& faction, const std::string& chapter) const;
 
+    // Treaties, levies and Houses (4.4, 4.6; Phase 9).
+    std::vector<Treaty>& treaties() { return treaties_; }
+    const std::vector<Treaty>& treaties() const { return treaties_; }
+    Treaty* treaty(const std::string& id);
+    const Treaty* activeTreaty(const std::string& faction, const std::string& chapter) const;
+    std::string nextTreatyId() { return "treaty-" + std::to_string(nextMission_++); }
+    std::vector<Levy>& levies() { return levies_; }
+    const std::vector<Levy>& levies() const { return levies_; }
+    std::vector<HouseRequest>& houseRequests() { return houses_; }
+
     // Missions (4.5).
     std::vector<Mission>& missions() { return missions_; }
     const std::vector<Mission>& missions() const { return missions_; }
@@ -132,6 +171,9 @@ class Factions
     std::map<std::string, std::map<std::string, Burden>> burdens_;          // faction → wolf → burden
     std::vector<Expulsion> expulsions_;
     std::vector<Mission> missions_;
+    std::vector<Treaty> treaties_;
+    std::vector<Levy> levies_;
+    std::vector<HouseRequest> houses_;
     std::uint64_t nextMission_ = 1;
     double lastDrift_ = -1;
 };

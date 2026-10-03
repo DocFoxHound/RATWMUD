@@ -222,6 +222,10 @@ export class Dialogs {
         const rank = num(ch, 'rank'), ranks = arr(ch, 'rankNames').filter((r): r is string => typeof r === 'string');
         this.heading(`CHAPTER · ${str(ch, 'levelName').toUpperCase()} (LEVEL ${num(ch, 'level')})`, str(ch, 'name'));
         if (str(ch, 'charter')) el('p', 'muted', this.panel, str(ch, 'charter'));
+        // Its Hold, its House, its treaties, the levies on it, and those sworn to it (doc 32, Phase 9).
+        const hold = obj(ch, 'hold');
+        if (str(hold, 'house')) el('div', 'label gold', this.panel, `RECOGNISED AS ${str(hold, 'house').toUpperCase()}`);
+        if (str(hold, 'claims')) el('div', 'small', this.panel, `The Chapter's Hold claims ${str(hold, 'claims')}.`);
         const cols = el('div', 'sheet-cols', this.panel);
         const left = el('div', 'sheet-col', cols), right = el('div', 'sheet-col', cols);
         el('div', 'label gold', left, `RENOWN ${num(ch, 'renown')}`);
@@ -269,6 +273,17 @@ export class Dialogs {
                 const name = window.prompt('A name for the camp', `${str(ch, 'name')}'s camp`);
                 if (name?.trim()) send({verb: 'camp', name: name.trim()});
             });
+        const treaties = arr(hold, 'treaties').filter(isObject), levies = arr(hold, 'levies').filter(isObject);
+        if (treaties.length || levies.length) {
+            el('div', 'label gold', right, 'TREATIES AND LEVIES');
+            for (const t of treaties)
+                el('div', 'small', right, `${str(t, 'faction')} · ${str(t, 'state') === 'pending' ? 'awaiting its word' : `${num(t, 'weeksLeft')} weeks left`}` +
+                    ` · ${bool(t, 'build') ? 'may build · ' : ''}${num(t, 'tithe')}p a week${bool(t, 'levy') ? ' · answers levies' : ''}`);
+            for (const l of levies)
+                el('div', 'small', right, `LEVY: ${str(l, 'faction')} wants watch kept at ${str(l, 'place')} · ${num(l, 'minutes')} minutes still owed`);
+        }
+        const sworn = arr(hold, 'sworn').filter((n): n is string => typeof n === 'string');
+        if (sworn.length) el('div', 'small', right, `Sworn for life: ${sworn.join(', ')}`);
         el('div', 'label gold', right, 'MEETING PLACE');
         const meeting = obj(ch, 'meeting');
         el('div', '', right, meeting ? str(meeting, 'name') : 'None declared');

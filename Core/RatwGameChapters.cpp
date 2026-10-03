@@ -236,7 +236,7 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
             }
         }
     }
-    else if (!estateCommand(c, j, result) && !campCommand(c, j, result))   // Leases, stores, camps (doc 32, Part 5).
+    else if (!estateCommand(c, j, result) && !campCommand(c, j, result) && !holdCommand(c, j, result))   // Ground (doc 32, Part 5).
         return false;
     return true;
 }
@@ -421,6 +421,7 @@ void Game::refreshChapterViews(double dt)
             v.add("standings", standingsView(c->id));     // Bands only (doc 32, 4.2b).
             v.add("leases", leasesView(c->id));           // Its rented places (doc 32, 5.2).
             v.add("sites", sitesView(c->id));             // Its own ground (doc 32, 5.3).
+            v.add("hold", holdView(c->id, id));           // Treaties, levies, its claim, a House, the sworn (Phase 9).
         }
         if (const auto* inv = chapters_.inviteFor(id, t))
             if (const auto* c = chapters_.byId(inv->first))

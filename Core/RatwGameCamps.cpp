@@ -85,6 +85,13 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
             result = {false, "Nothing like that can be built.", {}};
         else if (chapter->level < k->level)
             result = {false, std::string("A ") + k->name + " takes a " + chapter::levelName(k->level) + ".", {}};
+        else if (const auto* cell = world_.cell(me->cellId); k->fortification && cell && !cell->factionClaims.empty() &&
+                                                             standingOf(cell->factionClaims.front(), chapter->id) < 75 &&
+                                                             !treatyAllows(cell->factionClaims.front(), chapter->id, "fortify"))
+            result = {false, "Fortifying " + (factions_.find(cell->factionClaims.front()) ? factions_.find(cell->factionClaims.front())->name
+                                                                                           : cell->factionClaims.front()) +
+                                 "'s land takes its sworn friendship, or a treaty.",
+                      {}};
         else if (const auto why = whyNotGround(me->cellId, x, y); !why.empty())
             result = {false, why, {}};
         else if (!world_.society().shift(treasuryOf(chapter->id), "treasury", "", 0, k->cost, "chapter building materials"))
@@ -414,11 +421,3 @@ Value Game::sitesView(const std::string& chapterId) const
 }
 } // namespace ratw::game
 
-namespace ratw::game
-{
-// Whether a treaty lets a Chapter do this on a faction's land (Phase 9 makes treaties).
-bool Game::treatyAllows(const std::string&, const std::string&, const std::string&) const
-{
-    return false;
-}
-} // namespace ratw::game

@@ -64,6 +64,9 @@ struct Chapter
     std::map<std::string, double> expelled;       // Who was sent away, and when (they can't rejoin for a while).
     // The ground held (Parts 5): kept by the game's later phases; the level gates read them.
     bool hallHeldTwoWeeks = false, campStanding = false, fortified = false, friendlyFaction = false;
+    // The Hold (Phase 9): the place it claims, and the faction that recognises it as a minor House.
+    std::string claimCell, houseOf;
+    std::set<std::string> sworn;                  // Residents sworn to it for life (members of no rank).
 };
 
 struct Proposal                                   // A founding waiting for its founders' word.

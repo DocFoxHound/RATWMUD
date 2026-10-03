@@ -219,6 +219,12 @@ The entries below add what is particular to each.
 
 ## Open for the DM
 
+- **The DEV world's own faction IDs** (`council_of_houses`, `ridgemere_watch`, `house_grayrock`, `house_fell`,
+  `house_ashcombe`, `house_brinewater`, `house_vesk`, `crown_of_ser_ferro`, `church_iron_saint`, `ser_ferro_guard`,
+  `merchants_guild`, `concord`, `warden_order`) match these entries.
+- DEV also has **The Accord Watch** (`accord_watch`), Upper Accord's watch: write it up like the Ridgemere Watch.
+- **The Syndicate isn't in DEV yet.** It would have to be made in the DM.
+
 - Which of these to adopt, and their real members and ranks in `live.faction_members`. Until then, every guard and
   trader working in a place a faction claims counts as its official.
 - Starting relations for `live.faction_relations`. The figures above are suggestions only.
