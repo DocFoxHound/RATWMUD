@@ -78,7 +78,7 @@ void layout()
         civilians += pair.second.role == "civilian";
         merchants += world.society().merchant(pair.first);
     }
-    expect(guards == 4 && civilians == 5 && merchants == 1, "Four guards, five civilians and one shopkeeper");
+    expect(guards == 4 && civilians == 5 && merchants == 2, "Four guards, five civilians, a shopkeeper and a smith");
     expect(world.society().resident("wren")->homeCell == "wren_house", "Shopkeeper has own house");
     const auto* sheet = world.society().spec("wren");
     expect(sheet && sheet->personality.find("Shrewd") == 0 && sheet->backstory.find("peddler") != std::string::npos,

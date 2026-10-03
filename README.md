@@ -75,6 +75,7 @@ way round).
 | Wren's Cottage | Wren's own house; she tallies accounts there in the evening and sleeps there |
 | Greyfen Barracks (bunk bays, mess table, captain's room) | **Captain Harrow** and guards **Sloe** (day watch), **Birch** and **Tamsin** (night watch) |
 | Birchwall Cottage | **Sorrel** (gardener) and **Linden** (water carrier) |
+| The square's forge | **Brann**, smith: sells dull bronze swords (held in the jaws in a fight); use **Trade** |
 | The Long House (lodging hall, spare bay) | **Fennel** (stall keeper), **Rook** (carter), **Maple** (elder storyteller) |
 
 Walk into a building's door to go in, and back out through the doorway to

@@ -791,6 +791,51 @@
       },
       "personality": "Warm, wry and unhurried. Remembers everything and forgives most of it.",
       "backstory": "Maple is the oldest wolf in Greyfen and the keeper of its stories, true and otherwise."
+    },
+    {
+      "id": "brann",
+      "name": "Brann",
+      "role": "merchant",
+      "description": "A broad, soot-grey wolf with scorched forepaws who keeps a small forge at the edge of the square.",
+      "greeting": "Bronze, not steel, and the edges are long gone. But a blade's a blade, and it'll sit well in your jaws.",
+      "workLabel": "keeping the forge",
+      "age": 48,
+      "appearance": {
+        "species": "timber",
+        "sex": "male",
+        "stature": "tall",
+        "pattern": "mantle",
+        "baseColor": 5,
+        "gradientColor": 2,
+        "markingColor": 5
+      },
+      "voice": 14,
+      "hours": {
+        "start": 8,
+        "end": 18
+      },
+      "route": "",
+      "paid": true,
+      "purse": 40,
+      "herbs": 0,
+      "meals": 1,
+      "home": {
+        "cell": "longhouse",
+        "x": 21,
+        "y": 9
+      },
+      "work": {
+        "cell": "town",
+        "x": 20,
+        "y": 17
+      },
+      "evening": {
+        "cell": "town",
+        "x": 22,
+        "y": 20
+      },
+      "personality": "Gruff, patient and honest about his wares; proud of old work, embarrassed by dull blades.",
+      "backstory": "Brann came down from the hill mines when the bronze ran out, and now mends what he can and sells the old blades he once made."
     }
   ],
   "routes": [

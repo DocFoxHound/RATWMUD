@@ -40,7 +40,7 @@ std::string pennies(std::int64_t n)
 // What a thing is worth to the Watch, for fines and for restitution in coin when the goods are gone.
 std::int64_t worth(const std::string& item, int quantity)
 {
-    return std::int64_t(quantity) * (item == "meal" ? 6 : item == "herbs" ? 2 : 0);
+    return std::int64_t(quantity) * (item == "meal" ? 6 : item == "herbs" ? 2 : item == "sword" ? 40 : 0);
 }
 std::string charge(const std::string& kind)
 {

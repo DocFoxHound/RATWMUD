@@ -1058,7 +1058,7 @@ void Game::applyExternalNpcStates()
                 treasury->second.cash -= delta;
             }
             if (const auto& stock = j["stock"]; stock.isObject())
-                for (const char* item : {"herbs", "meal"})
+                for (const char* item : {"herbs", "meal", "sword"})
                     if (stock[item].isNumber())
                         account->second.stock[item] = int(std::clamp(stock.number(item), 0.0, 10000.0));
         }
@@ -2338,15 +2338,22 @@ void Game::sendSnapshot(Connection* c)
         if (meals > 0)
             item("meal", "Prepared meal", "food", "Consume one to restore 10 stamina. Cooking uses real ingredients.", false, meals);
         if (const int swords = Society::stock(*purse, "sword"); swords > 0)
-            item("sword", "Sword", "weapon", "A blade a wolf carries in its jaws. In a fight it reaches two tiles and hits hard, but tires you.",
+            item("sword", "Dull bronze sword", "weapon",
+                 "An old bronze blade, its edge long gone, carried in the jaws. In a fight it reaches two tiles and hits hard, "
+                 "but tires you.",
                  view.self.mouth == "sword", swords);
     }
     item("token", "Wooden token", "token", "A smooth keepsake carved with a branch.", false, 1);
     root.add("inventory", inventory);
     const Entity* trader = nullptr;
+    double traderAt = 1e18;
     for (const Entity* e : world_.entitiesIn(view.self.cellId))   // (Its own cell's: doc 31, Phase 4.)
         if (e->cellId == view.self.cellId && world_.society().merchant(e->id))
-            trader = e;
+            if (const double d = std::hypot(e->position.x - view.self.position.x, e->position.y - view.self.position.y); d < traderAt)
+            {
+                trader = e;                         // The nearest (a smith and a shopkeeper may share a square).
+                traderAt = d;
+            }
     const auto* traderLife = trader ? world_.society().resident(trader->id) : nullptr;
     if (trader && purse && trader->posture != "lying" && (!traderLife || traderLife->task != "sleep") &&
         world_.visionClarity(id, trader->id) > 0 &&
@@ -2358,8 +2365,9 @@ void Game::sendSnapshot(Connection* c)
             m.add("name", names::capitalised(labelFor(id, trader->id)));
             m.add("cash", account->cash);
             auto goods = Value::array();
-            for (const char* itemId : {"herbs", "meal"})
+            for (const auto& ware : world_.society().wares(trader->id))
             {
+                const char* itemId = ware.c_str();
                 auto good = Value::object();
                 good.add("id", itemId);
                 good.add("name", Society::itemName(itemId));

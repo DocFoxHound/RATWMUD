@@ -504,9 +504,22 @@ Built next, the same day:
 - **Party auto-join** is doc 32's (`Core/RatwGameParty.cpp`, built alongside): party mates who see the fight are
   pulled in after 5 s unless they stay out, and a per-character setting turns it off.
 
+Built after that:
+- **Smiths sell the sword, a dull bronze one for now.**
+  - A smith is a merchant whose work says "smith" or "forge" (`Society::smith`), or the demo's Ash. A smith deals only
+    in swords (`Society::wares`): it starts with three, forges another while it has fewer than three, and sells to
+    players, not food to the town.
+  - Greyfen has Brann, at his forge on the square (in the atlas, so in `world.ratw` too).
+  - The DEV world's seven forge and smithy keepers (Aster Stormcoat at Cinderpaw Forge, Loam Cragfoot at The Cold
+    Hammer…) are smiths by the same rule, with no change to its data.
+  - The trade window lists what the trader actually deals in.
+  - A purse may now hold three kinds of goods (herbs, meals, swords) in a save; it was two.
+- **The Dungeon Master gives the Fire Gift.** The Players tab has Give fire Gift, Make Quickened and Take Gift away.
+  Each is a `character.gift` action, with payload `{"gift": "fire" | "", "quickened": bool}`, applied online or
+  offline and audited. The sheet shows each character's Gift. The development command stays.
+
 Not yet:
 - Balance (phase 7): numbers tuned from simulator runs and playtests.
-- A smith or a shop that sells swords.
-- Who has the Fire Gift, decided by the setting.
+- Swords better than dull bronze.
 - Ground items kept across a restart.
 - Fire's light revealing the hidden. In the arena there is no one hidden; outside one, nothing burns yet.

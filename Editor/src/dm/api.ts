@@ -12,6 +12,7 @@ export interface Character {
     stats: Record<'strength' | 'dexterity' | 'wisdom' | 'stamina', number | null>;
     skills: Record<'sneakSkill' | 'hearingSkill' | 'scentSkill', number | null>;
     senses: Record<'hearing' | 'vision' | 'smell', number | null>;
+    gift: string; quickened: boolean;            // A Gift (Docs/Design/33-combat.md): "fire" or "".
     saved: string;
 }
 export interface Action { id: number; kind: string; target: string; by: string; at: string; status: 'queued' | 'applied' | 'refused' | 'expired'; result: string }
@@ -94,7 +95,8 @@ export const dmApi = {
     world: (target: Target) => call<Project>(`api/world?target=${target}&lean=1`),
     ground: (target: Target, ids: string[]) =>
         call<{seq?: number; cells: Record<string, SentGround>}>(`api/ground?target=${target}&cells=${ids.map(encodeURIComponent).join(',')}`),
-    act: (target: Target, kind: string, characterId: string, reason: string) => call<{id: number}>('api/actions', {target, kind, characterId, reason}),
+    act: (target: Target, kind: string, characterId: string, reason: string, payload?: Record<string, unknown>) =>
+        call<{id: number}>('api/actions', {target, kind, characterId, reason, ...(payload ? {payload} : {})}),
     npcs: (target: Target) => call<Npcs>(`api/npcs?target=${target}`),
     saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
     deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),

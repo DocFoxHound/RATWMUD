@@ -1,5 +1,6 @@
 #include "RatwSociety.h"
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <limits>
 
@@ -77,6 +78,7 @@ void Society::reset(Roster roster)
     state_.accounts["npc_keeper"].stock = {{"herbs", 8}, {"meal", 12}};
     state_.accounts["npc_cook"].stock = {{"herbs", 12}, {"meal", 4}};
     state_.accounts["npc_porter"].stock = {{"herbs", 10}, {"meal", 2}};
+    state_.accounts["npc_smith"].stock["sword"] = SmithSwords;    // Ash keeps a few dull bronze blades for sale.
     record("initial funding", "outside", "settlement", "", 0, state_.minted);
 }
 int Society::stock(const EconomyAccount& account, const std::string& item)
@@ -160,13 +162,30 @@ const ResidentSpec* Society::spec(const std::string& id) const
 bool Society::merchant(const std::string& id) const
 {
     if (roster_ == Roster::Demo)
-        return id == "npc_keeper";
+        return id == "npc_keeper" || id == "npc_smith";
     const auto* r = spec(id);
     return r && r->role == "merchant";
 }
+bool Society::smith(const std::string& id) const
+{
+    if (roster_ == Roster::Demo)
+        return id == "npc_smith";
+    const auto* r = spec(id);
+    if (!r || r->role != "merchant")
+        return false;
+    std::string work = r->workLabel;
+    std::transform(work.begin(), work.end(), work.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+    return work.find("smith") != std::string::npos || work.find("forge") != std::string::npos;
+}
+std::vector<std::string> Society::wares(const std::string& merchant) const
+{
+    if (smith(merchant))
+        return {"sword"};
+    return {"herbs", "meal"};
+}
 const char* Society::itemName(const std::string& id)
 {
-    return id == "herbs" ? "Cooking herbs" : id == "meal" ? "Prepared meal" : "Unknown goods";
+    return id == "herbs" ? "Cooking herbs" : id == "meal" ? "Prepared meal" : id == "sword" ? "Dull bronze sword" : "Unknown goods";
 }
 void Society::record(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
                      int quantity, std::int64_t coins)
@@ -238,7 +257,8 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
         return {false, "This trader is unavailable."};
     if (quantity < 1 || quantity > 99)
         return {false, "Choose a whole quantity from 1 to 99."};
-    if (!itemValid(item))
+    const auto deals = wares(seller);
+    if (!itemValid(item) || std::find(deals.begin(), deals.end(), item) == deals.end())
         return {false, "This trader has no use for those goods."};
     const auto& m = *account(seller);
     const auto& p = *account(player);
@@ -770,7 +790,7 @@ bool Society::restore(const SocietyState& saved)
     for (const auto& a : s.accounts)
     {
         if (a.first.empty() || a.first.size() > 80 || a.second.cash < 0 || a.second.cash > MoneyLimit ||
-            a.second.stock.size() > 2)
+            a.second.stock.size() > 3)                 // Herbs, meals, swords.
             return false;
         if (a.first != "treasury" && !playerAccountId(a.first) && !facilityAccount(a.first) &&
             !fresh.state_.residents.count(a.first))

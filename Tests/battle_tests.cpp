@@ -1,4 +1,5 @@
 // Turn-based fights in arenas (Core/RatwBattle.h; Docs/Design/33-combat.md), in the demo world.
+#include "RatwCheckpoint.h"
 #include "RatwWire.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
@@ -491,6 +492,45 @@ void crawling()
     expect(ad.posture == "lying" && ad.downedLeft > 0, "lying still");
 }
 
+void smiths()
+{
+    // Greyfen's smith, Brann, and the demo's, Ash: they sell dull bronze swords, and nothing else.
+    World town;
+    expect(town.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok, "Greyfen loads");
+    auto& soc = town.society();
+    expect(soc.merchant("brann") && soc.smith("brann") && !soc.smith("wren"), "Brann is a smith; Wren is not");
+    expect(soc.wares("brann") == std::vector<std::string>{"sword"}, "a smith deals in swords");
+    expect(Society::stock(*soc.account("brann"), "sword") == Society::SmithSwords, "and has a few on hand");
+    expect(std::string(Society::itemName("sword")) == "Dull bronze sword", "a dull bronze sword");
+    auto& ada = town.addPlayer("player-ada", "Ada");
+    const auto* brann = town.entity("brann");
+    ada.cellId = brann->cellId;
+    ada.position = {brann->position.x + 1, brann->position.y};
+    soc.create("player-ada", "herbs", 1, "test");
+    town.society().shift("treasury", "player-ada", "", 0, 100, "test: a purse for a sword");
+    expect(!soc.quote("player-ada", "brann", "herbs", 1, false).ok, "Brann won't buy herbs");
+    const auto bought = soc.trade("player-ada", "brann", "sword", 1, true);
+    expect(bought.ok && Society::stock(*soc.account("player-ada"), "sword") == 1, "Ada buys a sword: " + bought.message);
+    // Herbs, a meal and a sword: three kinds of goods, and the save still holds.
+    soc.create("player-ada", "meal", 1, "test");
+    const auto saved = town.save();
+    {
+        // And through the checkpoint document (where a purse once held at most two kinds of goods).
+        checkpoint::ServerState server;
+        PersistedWorld back;
+        std::string problem;
+        const auto doc = checkpoint::encode(saved, server, {}, 0);
+        expect(checkpoint::decode(doc, back, server, problem), "The checkpoint reads back: " + problem);
+    }
+    World again;
+    expect(again.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok, "Greyfen loads again");
+    expect(again.restore(saved).ok, "A purse with herbs, a meal and a sword is saved and restored");
+    expect(Society::stock(*again.society().account("player-ada"), "sword") == 1, "the sword with it");
+    World demo;
+    expect(demo.society().smith("npc_smith") && Society::stock(*demo.society().account("npc_smith"), "sword") > 0,
+           "In the demo world, Ash keeps a forge too");
+}
+
 void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
@@ -521,6 +561,7 @@ int main()
         theSword();
         theFlame();
         crawling();
+        smiths();
     }
     catch (const std::exception& e)
     {

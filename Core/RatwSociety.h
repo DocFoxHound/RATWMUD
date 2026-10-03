@@ -306,6 +306,11 @@ class Society
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
+    // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals only
+    // in swords, starting with SmithSwords and forging another while it has fewer; every other merchant in herbs and meals.
+    bool smith(const std::string& id) const;
+    std::vector<std::string> wares(const std::string& merchant) const;
+    static constexpr int SmithSwords = 3;
     static const char* itemName(const std::string& id);
     std::int64_t moneySupply() const;
     bool conserved() const;

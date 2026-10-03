@@ -651,8 +651,8 @@ SocietyState readSociety(const Value& o)
             EconomyAccount account;
             account.cash = integer(a, "cash", 1e9);
             const auto& stock = a["stock"];
-            if (!a.isObject() || a.size() != 2 || !stock.isObject() || stock.size() > 2) valid = false;
-            if (stock.isObject() && stock.size() <= 2)
+            if (!a.isObject() || a.size() != 2 || !stock.isObject() || stock.size() > 3) valid = false;   // Herbs, meals, swords.
+            if (stock.isObject() && stock.size() <= 3)
                 for (const auto& [item, _] : stock.fields())
                     account.stock[item] = int(integer(stock, item.c_str(), 10000));
             s.accounts[id] = account;

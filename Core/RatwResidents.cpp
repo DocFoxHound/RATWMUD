@@ -43,6 +43,8 @@ void Society::resetAuthored()
         if (r.meals > 0)
             account.stock["meal"] = r.meals;
         state_.accounts[r.id] = account;
+        if (smith(r.id))
+            state_.accounts[r.id].stock["sword"] = SmithSwords;     // A smith's own work, for sale.
         state_.minted += account.cash;
         ResidentLife life;
         life.role = r.role;
@@ -181,6 +183,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         const auto* life = resident(holder);
         const Spot at = tradingAt(p, holder);
         const bool stall = at.cell != p.work.cell || at.x != p.work.x || at.y != p.work.y;
+        if (smith(holder))
+            continue;                               // A forge sells to players, not food to the town.
         if (body != bodies.end() && !body->second.companion && life && life->task == "trade" &&
             near(body->second, at) && stock(*account(holder), "meal") > 0)
         {
@@ -485,6 +489,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                     seller = &open.first;
             if (!seller || !transfer(*seller, pair.first, "meal", 1, atStall_.count(*seller) ? 5 : 6, "resident food purchase"))
                 life.reason = "Cannot buy food: the shop, its stock or the purse is unavailable.";
+        }
+        else if (task == "trade" && smith(pair.first))
+        {
+            // At the forge: another blade while there are fewer than a few on hand.
+            if (stock(wallet, "sword") < SmithSwords)
+                create(pair.first, "sword", 1, "forged");
         }
         else if (task == "trade")
         {

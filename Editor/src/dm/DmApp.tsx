@@ -178,6 +178,15 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
+    // A Gift (doc 33): the setting decides who has one, and here the Dungeon Master gives it, or takes it away.
+    const gift = async (kind: '' | 'fire', quickened: boolean) => {
+        const words = kind ? (quickened ? 'Make Quickened (fire)' : 'Give the Gift of fire to') : 'Take the Gift from';
+        if (target === 'prod' && !window.confirm(`${words} ${character.name} in the LIVE world?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, 'character.gift', character.id, reason, {gift: kind, quickened}); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
     const pending = actions.some(a => a.status === 'queued');
     const stat = (label: string, v: number | null, digits = 0) => <div><b>{v === null || v === undefined ? '—' : v.toFixed(digits)}</b><span>{label}</span></div>;
     return <div className="dm-panel">
@@ -185,6 +194,7 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
             <span className={character.dead ? 'dm-status dead' : 'dm-status'}>{character.dead ? '✝ dead' : 'alive'}</span></header>
         <p className="meta">{character.place} · {character.x.toFixed(1)}, {character.y.toFixed(1)}{character.indoors ? ' (indoors)' : ''} · age {character.age ?? '—'} · {character.posture}{character.activity ? ` · ${character.activity}` : ''}</p>
         <div className="stats">{stat('strength', character.stats.strength)}{stat('dexterity', character.stats.dexterity)}{stat('wisdom', character.stats.wisdom)}{stat('stamina', character.stats.stamina)}</div>
+        <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}</p>
         <div className="stats">{stat('sneak', character.skills.sneakSkill)}{stat('hearing skill', character.skills.hearingSkill)}{stat('scent skill', character.skills.scentSkill)}
             {stat('vision', character.senses.vision, 2)}</div>
         {canAct ? <>
@@ -192,6 +202,11 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
             <div className="button-grid">
                 <button className="danger" disabled={busy || pending || character.dead} onClick={() => void act('character.kill')}>✝ Kill</button>
                 <button disabled={busy || pending || !character.dead} onClick={() => void act('character.resurrect')}>Resurrect</button>
+            </div>
+            <div className="button-grid">
+                <button disabled={busy || pending || (character.gift === 'fire' && !character.quickened)} onClick={() => void gift('fire', false)}>Give fire Gift</button>
+                <button disabled={busy || pending || character.quickened} onClick={() => void gift('fire', true)}>Make Quickened</button>
+                <button disabled={busy || pending || !character.gift} onClick={() => void gift('', false)}>Take Gift away</button>
             </div>
             <p className="hint">The game server applies it within a second, online or offline. Nothing happens until a {target.toUpperCase()} server is running; unapplied actions expire after ten minutes.</p>
         </> : <p className="hint">Your account can view but not change the world.</p>}

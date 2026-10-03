@@ -190,10 +190,11 @@ export class Dialogs {
         const purses = el('div', 'purses', this.panel);
         el('span', 'gold', purses, `YOUR PURSE · ${countText(self, 'cash')} p`);
         el('span', 'sage', purses, `KEEPER'S PURSE · ${countText(merchant, 'cash')} p`);
-        for (const good of ['herbs', 'meal'] as const) {
+        // What this trader deals in, as the server lists it (a shopkeeper: herbs and meals; a smith: swords).
+        for (const good of arr(merchant, 'items').filter(isObject).map(i => str(i, 'id')).filter(Boolean)) {
             const item = s.tradeItem(good);
             const card = el('div', 'trade', this.panel);
-            el('div', 'item-name', card, good === 'herbs' ? 'Cooking herbs' : 'Prepared meal');
+            el('div', 'item-name', card, str(item, 'name', good));
             el('div', 'label muted', card, `KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`);
             const row = el('div', 'trade-row', card);
             for (const buy of [true, false]) {

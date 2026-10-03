@@ -74,6 +74,7 @@ target_compile_definitions(server_parts_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_C
 add_test(NAME server_parts_behaviors COMMAND server_parts_tests)
 add_executable(battle_tests Tests/battle_tests.cpp)
 target_link_libraries(battle_tests PRIVATE ratw_core)
+target_compile_definitions(battle_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME battle_behaviors COMMAND battle_tests)
 add_executable(party_tests Tests/party_tests.cpp)
 target_link_libraries(party_tests PRIVATE ratw_core)

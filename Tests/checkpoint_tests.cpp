@@ -84,7 +84,10 @@ std::map<std::string, std::string> crowdedGreyfen(int residents)
     const auto at = manifest.find("resident \"sorrel\"");
     expect(at != std::string::npos, "Greyfen is where it should be: " + root.string());
     const std::string sorrel = manifest.substr(at, manifest.find('\n', at) - at);
-    for (int i = 10; i < residents; ++i)
+    int authored = 0;                               // Greyfen's own, counted (a smith joined them: doc 33).
+    for (std::size_t from = manifest.find("\nresident "); from != std::string::npos; from = manifest.find("\nresident ", from + 1))
+        ++authored;
+    for (int i = authored; i < residents; ++i)
     {
         std::string copy = sorrel;
         copy.replace(copy.find("\"sorrel\""), 8, "\"extra_" + std::to_string(i) + "\"");

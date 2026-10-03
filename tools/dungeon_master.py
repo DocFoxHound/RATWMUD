@@ -46,7 +46,8 @@ MAX_FAILURES, LOCK_MINUTES = 5, 15
 MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
-ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm', 'npc.revive': 'dm',
+ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm',
+           'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
            'artwork.review': 'dm'}
 # What else a role may do here (not live actions for the game server).
@@ -191,6 +192,8 @@ class DungeonMaster:
                     'worldX': (place['x'] + (x if place['kind'] == 'cell' else 0)) if place else None,
                     'worldY': (place['y'] + (y if place['kind'] == 'cell' else 0)) if place else None,
                     'posture': data.get('posture', ''), 'activity': data.get('activity', ''),
+                    # A Gift (doc 33): "fire" or "", Quickened or not.
+                    'gift': data.get('gift', ''), 'quickened': bool(data.get('quickened')),
                     'stats': {k: data.get(k) for k in ('strength', 'dexterity', 'wisdom', 'stamina')},
                     'skills': {k: data.get(k) for k in ('sneakSkill', 'hearingSkill', 'scentSkill')},
                     'senses': {k: data.get(k) for k in ('hearing', 'vision', 'smell')},
@@ -220,11 +223,21 @@ class DungeonMaster:
         return {'cells': cells}
 
     # -- live actions -----------------------------------------------------------
-    def request(self, who, target, kind, character_id, reason=''):
-        """Queues a live action for the game server. Returns its ID; the server writes back the outcome."""
+    def request(self, who, target, kind, character_id, reason='', payload=None):
+        """Queues a live action for the game server. Returns its ID; the server writes back the outcome. A Gift
+        (character.gift) carries {"gift": "fire" | "", "quickened": bool}."""
         needed = ACTIONS.get(kind)
         if not needed:
             raise DMError(f'Unknown action: {kind}.')
+        detail = ''
+        if kind == 'character.gift':
+            gift = payload.get('gift', '') if isinstance(payload, dict) else None
+            if gift not in ('', 'fire') or not isinstance(payload.get('quickened', False), bool):
+                raise DMError('A Gift is {"gift": "fire" or "", "quickened": true or false}.')
+            payload = {'gift': gift, 'quickened': bool(payload.get('quickened')) and gift == 'fire'}
+            detail = ' — ' + ('no Gift' if not gift else 'Quickened: fire' if payload['quickened'] else 'Gifted: fire')
+        else:
+            payload = {}
         if RANK[who['role']] < RANK[needed]:
             raise DMError(f'Your role ({who["role"]}) cannot do that.', 403)
         with self.connect(target) as conn:
@@ -232,11 +245,11 @@ class DungeonMaster:
                 exists = conn.execute('SELECT name FROM game.characters WHERE key = %s', (str(character_id),)).fetchone()
                 if not exists:
                     raise DMError('No such character.', 404)
-                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by) VALUES (%s, %s, %s)
-                                            RETURNING id''', (kind, character_id, who['username'])).fetchone()[0]
+                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s)
+                                            RETURNING id''', (kind, character_id, who['username'], json.dumps(payload))).fetchone()[0]
                 conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
                 self.audit(conn, who['username'], kind, character_id,
-                           f'{target.upper()}: {kind} {exists[0]}' + (f' — {reason[:500]}' if reason else ''))
+                           f'{target.upper()}: {kind} {exists[0]}{detail}' + (f' — {reason[:500]}' if reason else ''))
         return {'id': action_id, 'status': 'queued'}
 
     def queue(self, conn, who, target, kind, target_id, detail):
@@ -1012,7 +1025,8 @@ def make_server(port=8766, dm=None):
             if method == 'POST' and path == '/api/actions':
                 data = self.body()
                 return self.reply(200, dm.request(who, str(data.get('target', 'prod')), str(data.get('kind', '')),
-                                                  str(data.get('characterId', '')), str(data.get('reason', ''))))
+                                                  str(data.get('characterId', '')), str(data.get('reason', '')),
+                                                  data.get('payload')))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':

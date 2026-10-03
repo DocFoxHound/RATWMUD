@@ -124,6 +124,22 @@ class DungeonMasterTests(Fixture):
         self.assertIn('Testing', audit[1])
         self.assertEqual(self.dm.players('dev')['actions'], [], 'PROD and DEV queues are separate')
 
+    def test_a_gift_is_queued_with_its_payload(self):
+        master = self.sign_in('dm-master')
+        queued = self.dm.request(master, 'prod', 'character.gift', 'player-ada', 'Testing fire', {'gift': 'fire', 'quickened': True})
+        self.assertEqual(self.dm.action('prod', queued['id'])['status'], 'queued')
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute("SELECT kind, target_id, payload FROM dm.actions WHERE kind = 'character.gift'").fetchone()
+        self.assertEqual(row, ('character.gift', 'player-ada', {'gift': 'fire', 'quickened': True}), 'the game server reads the Gift')
+        with self.assertRaises(D.DMError):
+            self.dm.request(master, 'prod', 'character.gift', 'player-ada', '', {'gift': 'water'})
+        taken = self.dm.request(master, 'prod', 'character.gift', 'player-ada', '', {'gift': '', 'quickened': True})
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute('SELECT payload FROM dm.actions WHERE id = %s', (taken['id'],)).fetchone()
+        self.assertEqual(row[0], {'gift': '', 'quickened': False}, 'no Gift is never Quickened')
+        ada = self.dm.players('prod')['characters'][0]
+        self.assertEqual((ada['gift'], ada['quickened']), ('', False), 'the sheet shows the Gift (none yet)')
+
     def test_roles(self):
         viewer = self.sign_in('dm-viewer')
         self.assertTrue(self.dm.players('prod')['characters'])
