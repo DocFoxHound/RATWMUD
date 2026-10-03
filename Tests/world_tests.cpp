@@ -1,4 +1,5 @@
 #include "RatwWorld.h"
+#include "RatwStep.h"
 
 #include <cmath>
 #include <iostream>
@@ -1214,6 +1215,33 @@ void windAndScentPersistence()
                near(w.windAt("exterior").strength, constant.strength, 1e-10),
            "Nonvariable wind does not acquire unintended weather-clock gusts");
 }
+// Where flat tiles of 4, 4.5 and 5 meet at a corner (as at Warden Order's north edge), a footprint reaching from
+// the 4.5 onto both the 4 and the 5 must be refused: once its centre was on the 4, no step was allowed from there,
+// not even back, and residents walked into it and stayed for good, asking for routes every half second.
+void cornerTrap()
+{
+    struct Corner final : step::Grid
+    {
+        bool ground(int x, int y, step::Ground& out) const override
+        {
+            if (x < 0 || y < 0 || x > 1 || y > 1)
+                return false;
+            const double heights[2][2] = {{4.0, 4.0}, {4.5, 5.0}};   // [y][x]
+            out = {false, heights[y][x], false, 1};
+            return true;
+        }
+        bool closedDoor(int, int) const override { return false; }
+    } grid;
+    const step::Ground middling{false, 4.5, false, 1}, low{false, 4.0, false, 1};
+    const step::Point trap{1.006, .994};
+    expect(!step::passable(grid, trap, &middling), "A spot that can be stepped into but never out of is refused");
+    expect(step::passable(grid, {1.006, .9}, &low) && step::passable(grid, {.9, 1.1}, &middling),
+           "Ground beside it, standing on one height, is fine");
+    bool blocked = false;
+    const auto at = step::slide(grid, {.9, 1.1}, trap, &middling, blocked);
+    expect(blocked && step::passable(grid, at, &middling), "Walking toward it stops short, somewhere it can walk on from");
+}
+
 void schedules()
 {
     World w;
@@ -1527,6 +1555,7 @@ int main()
         preparedViewsMatch();
         pathsAreRemembered();
         eventLog();
+        cornerTrap();
         schedules();
         cellFiles();
         persistedRoundtripAndPrivacy();

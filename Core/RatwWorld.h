@@ -590,6 +590,8 @@ class World
         };
         Part streaming, schedules, movement, separation, views;
         double last[5] = {};                            // The last tick's: streaming, schedules, movement, separation, views.
+        // The schedules by stage (ms in all): society, bonds, roads, crime, errands, streaming's wants, route planning.
+        double stages[7] = {};
         std::size_t ticks = 0, routeSearches = 0;
         std::size_t routeNodes = 0, largestRoute = 0;   // Nodes the route searches expanded, and the most in one.
         double slowestRoute = 0;                        // The longest one route search took (ms), and where.

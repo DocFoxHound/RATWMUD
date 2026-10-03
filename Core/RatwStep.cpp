@@ -16,12 +16,17 @@ bool passable(const Grid& grid, Point p, const Ground* from)
     if (!std::isfinite(p.x) || !std::isfinite(p.y))
         return false;
     const Point samples[] = {p, {p.x - Radius, p.y}, {p.x + Radius, p.y}, {p.x, p.y - Radius}, {p.x, p.y + Radius}};
+    Ground centre;
     for (const auto& s : samples)
     {
         const int x = int(std::floor(s.x)), y = int(std::floor(s.y));
         Ground g;
         if (!grid.ground(x, y, g) || g.solid || !stepAllowed(from, g) || grid.closedDoor(x, y))
             return false;
+        if (&s == samples)
+            centre = g;                         // The first sample is the centre.
+        else if (!stepAllowed(&centre, g))
+            return false;                       // Somewhere it could step into but never out of.
     }
     return true;
 }

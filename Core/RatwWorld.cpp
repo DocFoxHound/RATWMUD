@@ -1308,6 +1308,7 @@ std::vector<Vec2> World::astar(const Cell& cell, Vec2 origin, Vec2 goal, bool al
             const auto* t = c->tile(cx, cy);
             return t && !t->solid && stepAllowed(from, *t) && !(anyClosed && closedTiles[std::size_t(cy * c->width + cx)]);
         }
+        const Tile* centre = nullptr;
         for (Vec2 s :
              {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
         {
@@ -1316,6 +1317,10 @@ std::vector<Vec2> World::astar(const Cell& cell, Vec2 origin, Vec2 goal, bool al
             if (!t || t->solid || !stepAllowed(from, *t))
                 return false;
             if (anyClosed && closedTiles[std::size_t(ty * c->width + tx)])
+                return false;
+            if (!centre)
+                centre = t;                     // The first sample is the centre: it must be stood on (step::passable).
+            else if (!stepAllowed(centre, *t))
                 return false;
         }
         return true;
@@ -1331,16 +1336,20 @@ std::vector<Vec2> World::astar(const Cell& cell, Vec2 origin, Vec2 goal, bool al
         {
             std::uint8_t flags = 0;
             double low = std::numeric_limits<double>::infinity(), high = -low;
+            const Tile* centre = nullptr;
             for (Vec2 s :
                  {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
             {
                 const int tx = int(std::floor(s.x)), ty = int(std::floor(s.y));
                 const auto* t = c->tile(tx, ty);
-                if (!t || t->solid || (anyClosed && closedTiles[std::size_t(ty * c->width + tx)]))
+                if (!t || t->solid || (anyClosed && closedTiles[std::size_t(ty * c->width + tx)]) ||
+                    (centre && !stepAllowed(centre, *t)))
                 {
-                    flags |= FootprintBlocked;
+                    flags |= FootprintBlocked;      // (Also where it couldn't stand: see step::passable.)
                     break;
                 }
+                if (!centre)
+                    centre = t;
                 if (ramp(t))
                     flags |= FootprintRamp;
                 low = std::min(low, t->height);
@@ -2177,7 +2186,19 @@ void World::integrate(Entity& a, double dt)
             bool blocked = false;
             const auto start = groundOf(*startTile);
             const auto slid = step::slide(WalkingGrid(*this, *c), {a.position.x, a.position.y}, {proposed.x, proposed.y}, &start, blocked);
-            const Vec2 accepted{slid.x, slid.y};
+            Vec2 accepted{slid.x, slid.y};
+            if (blocked && length({accepted.x - a.position.x, accepted.y - a.position.y}) <= Epsilon &&
+                !passable(a.cellId, a.position, startTile))
+            {
+                // Standing somewhere it may not stand (a corner it was let into before step::passable knew better,
+                // in an older save), it can't step anywhere: back to the middle of its own tile, which is sound.
+                const Vec2 middle{std::floor(a.position.x) + .5, std::floor(a.position.y) + .5};
+                if (passable(a.cellId, middle, startTile))
+                {
+                    accepted = middle;
+                    blocked = false;
+                }
+            }
             if (blocked && !a.path.empty())
                 a.path.clear();                    // A route invalidated by a newly closed door must not resume by itself.
             const Vec2 actual{accepted.x - a.position.x, accepted.y - a.position.y};
@@ -2747,12 +2768,29 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
     }
     // The nearest way into the next cell: a door, or a crossing of the shared edge (known from the first time this
     // cell was in memory; if it never has been, it is loaded once to learn them).
+    // Ways landing in a pocket of the next cell (a strip cut off from the rest) come last, where the cell is in memory
+    // to tell: residents set down in one, onstage, could find no way on, and piled up there.
+    const auto pocket = [&](const Door& way) {
+        const auto* there = cell(way.targetCell);
+        if (!there || !regionMap(*there))
+            return false;
+        const int arrives = regionAt(*there, way.arrival);
+        const int wanted = way.targetCell == goalCell ? regionAt(*there, goal) : mainRegion(*there);
+        return arrives >= 0 && wanted >= 0 && arrives != wanted;
+    };
     const auto nearest = [&]() -> const Door* {
         const Door* best = nullptr;
+        bool bestPocket = false;
         const auto consider = [&](const Door& way) {
-            if (way.portal && !way.locked && way.targetCell == step->second &&
-                (!best || distance(e.position, way.position) < distance(e.position, best->position) - 1e-9))
+            if (!way.portal || way.locked || way.targetCell != step->second)
+                return;
+            const bool inPocket = pocket(way);
+            if (!best || (bestPocket && !inPocket) ||
+                (bestPocket == inPocket && distance(e.position, way.position) < distance(e.position, best->position) - 1e-9))
+            {
                 best = &way;
+                bestPocket = inPocket;
+            }
         };
         for (const Door* way : doorsIn(e.cellId))
             consider(*way);
@@ -2911,6 +2949,14 @@ bool World::continueSchedules(double budgetMs)
     {
         if (scheduleStage_ > 0 && spent())
             return false;                           // The rest next step.
+        const int stage = std::min(scheduleStage_, 5);
+        const auto stageBegun = Clock::now();
+        struct StageTime
+        {
+            double& into;
+            Clock::time_point begun;
+            ~StageTime() { into += std::chrono::duration<double, std::milli>(Clock::now() - begun).count(); }
+        } stageTime{profile_.stages[stage], stageBegun};
         switch (scheduleStage_)
         {
         case 0:
@@ -3009,6 +3055,13 @@ bool World::continueSchedules(double budgetMs)
 
 void World::planWantedRoutes()
 {
+    const auto planBegun = std::chrono::steady_clock::now();
+    struct PlanTime
+    {
+        double& into;
+        std::chrono::steady_clock::time_point begun;
+        ~PlanTime() { into += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begun).count(); }
+    } planTime{profile_.stages[6], planBegun};
     // In turn from where the last tick stopped, so no one waits behind the same few; by time (doc 31, Phase 5): as
     // many as fit in RouteBudgetMs, a long search alone, cheap ones several to a step.
     using Clock = std::chrono::steady_clock;
@@ -3176,29 +3229,54 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
     {
         // No walking way out at all: pockets come in pairs across a seam (an edge tile on each side, cut off from its
         // own cell by a step), and someone set down in one (arriving from offstage, say) can only cross to the other.
-        // They clamber over the step to the open ground of the cell's body beside them (never through a wall).
+        // They clamber to the nearest open ground of the cell's body: beside them, or, where solid features (trees,
+        // rocks) hem the pocket in, over them, up to six tiles off. Never through a wall or over a cliff.
         if (current && region >= 0 && region != mainRegion(*current) && (e.cellId != goalCell || region != goalRegion))
         {
             const int body = mainRegion(*current);
+            const int w = current->width;
             const int cx = int(std::floor(e.position.x)), cy = int(std::floor(e.position.y));
-            for (int dy = -1; dy <= 1; ++dy)
-                for (int dx = -1; dx <= 1; ++dx)
+            std::map<int, int> steps{{cy * w + cx, 0}};
+            std::deque<std::pair<int, int>> open{{cx, cy}};
+            while (!open.empty())
+            {
+                const auto [x, y] = open.front();
+                open.pop_front();
+                const int taken = steps[y * w + x];
+                const Vec2 p{x + .5, y + .5};
+                const auto* t = current->tile(x, y);
+                if (taken > 0 && !t->solid && regionOf(p) == body && !blockedByDoor(e.cellId, p))
+                {
+                    e.position = p;
+                    e.path.clear();
+                    e.velocity = {};
+                    pathRetryAt_.erase(e.id);
+                    return;
+                }
+                if (taken >= 6)
+                    continue;
+                for (int dy = -1; dy <= 1; ++dy)
+                    for (int dx = -1; dx <= 1; ++dx)
                     {
-                        if (!dx && !dy)
+                        // Only open ground and features are clambered over.
+                        const auto* n = current->tile(x + dx, y + dy);
+                        if (!n || n->terrain == Terrain::Cliff || (n->solid && n->terrain != Terrain::Feature))
                             continue;
-                        const Vec2 p{cx + dx + .5, cy + dy + .5};
-                        const auto* t = current->tile(cx + dx, cy + dy);
-                        if (!t || t->solid || regionOf(p) != body || blockedByDoor(e.cellId, p))
-                            continue;
-                        e.position = p;
-                        e.path.clear();
-                        e.velocity = {};
-                        pathRetryAt_.erase(e.id);
-                        return;
+                        if (steps.emplace((y + dy) * w + x + dx, taken + 1).second)
+                            open.push_back({x + dx, y + dy});
                     }
+            }
         }
         if (!d)
-            return;
+        {
+            // Nothing better: out by any way at all, even one whose far side can't be judged (the cell beyond not in
+            // memory). A pocket entered over a seam is left back over it; waiting here would be for good.
+            for (const Door* way : doorsIn(e.cellId))
+                if (usable(way) && way->targetCell != e.cellId && nearer(way, d))
+                    d = way;
+            if (!d)
+                return;
+        }
     }
     if (d->boundary && d->open && d->edge != '-')
     {

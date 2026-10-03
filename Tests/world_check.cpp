@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <tuple>
 #include <sstream>
 #include <string>
 
@@ -205,6 +206,11 @@ int main(int argc, char** argv)
     // Each game day's share, to see whether ticks grow dearer as the world ages: total, schedules, movement,
     // separation (ms), and ticks.
     std::map<int, std::array<double, 5>> byDay;
+    // And what grows: the schedules' stages (ms), route searches, and (sampled every 30 s, the most in the day) the
+    // wolves in the world, those onstage, the road folk, and the most standing on one tile.
+    std::map<int, std::array<double, 7>> stagesByDay;
+    std::map<int, std::size_t> searchesByDay;
+    std::map<int, std::array<std::size_t, 4>> crowdByDay;
     std::vector<double> picking;                    // The ambient director's look every five seconds (Phase 10).
     std::size_t picked = 0;
     times.reserve(std::size_t(ticks));
@@ -240,6 +246,28 @@ int main(int argc, char** argv)
         day[2] += profileAfter.movement.total - profileBefore.movement.total;
         day[3] += profileAfter.separation.total - profileBefore.separation.total;
         day[4] += 1;
+        {
+            const int d = int(std::floor((from + i * 0.05 / 600.0) / 24.0));
+            for (int k = 0; k < 7; ++k)
+                stagesByDay[d][std::size_t(k)] += profileAfter.stages[k] - profileBefore.stages[k];
+            searchesByDay[d] += profileAfter.routeSearches - profileBefore.routeSearches;
+            if (i % 600 == 0)
+            {
+                std::size_t all = 0, onstage = 0, transient = 0, pile = 0;
+                std::map<std::tuple<std::string, int, int>, std::size_t> tiles;
+                for (const auto& [id, e] : server.entities())
+                {
+                    ++all;
+                    transient += e.transient;
+                    if (e.offstage || e.dead)
+                        continue;
+                    ++onstage;
+                    pile = std::max(pile, ++tiles[{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))}]);
+                }
+                auto& c = crowdByDay[d];
+                c = {std::max(c[0], all), std::max(c[1], onstage), std::max(c[2], transient), std::max(c[3], pile)};
+            }
+        }
         if (i >= int(60 / 0.05) && tickOnly > worstSteady.total)
             worstSteady = {tickOnly,
                            profileAfter.streaming.total - profileBefore.streaming.total,
@@ -399,6 +427,16 @@ int main(int argc, char** argv)
         for (const auto& [d, t] : byDay)
             std::cout << "    day " << d + 1 << ": " << t[0] / t[4] << " = " << t[1] / t[4] << " + " << t[2] / t[4] << " + "
                       << t[3] / t[4] << " + ...\n";
+        std::cout << "  by game day (schedules by stage, mean ms a tick: society bonds roads crime errands streaming routes; route"
+                     " searches a tick; most wolves, onstage, road folk, on one tile):\n";
+        for (const auto& [d, t] : byDay)
+        {
+            std::cout << "    day " << d + 1 << ":";
+            for (const double ms : stagesByDay[d])
+                std::cout << " " << ms / t[4];
+            const auto& c = crowdByDay[d];
+            std::cout << "; " << double(searchesByDay[d]) / t[4] << "; " << c[0] << " " << c[1] << " " << c[2] << " " << c[3] << "\n";
+        }
     }
     if (!eventsFile.empty())
     {

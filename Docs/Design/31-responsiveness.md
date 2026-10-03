@@ -612,8 +612,52 @@ that, not the game. For numbers that compare with a server, measure on the "perf
 **is not met** on this machine: p99 is 77 ms. What remains is the world's own tick (17 ms at 250: residents walking,
 separation and the players' memory as they cross tiles) and every core slowing at once.
 
-**The week check is still to do.** A first run (`world_check --simulate 6 174`) was stopped partway: the laptop's power
-profile changed during it, so its days could not be compared.
+**The week check** (`world_check --simulate 6 174 --no-check`, DEV's export, 965 residents and one player, 2,016,000
+ticks, 1 h 42 min; 2026-10-03). **Not met:** the mean tick on day 7 is 2.7 times day 1's.
+
+| Day | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Mean ms a tick | 1.34 | 1.27 | 2.37 | 2.43 | 2.51 | 3.48 | 3.56 |
+| of it, schedules | 0.69 | 0.75 | 1.30 | 1.32 | 1.35 | 1.81 | 2.08 |
+| of it, separation | 0.25 | 0.20 | 0.60 | 0.63 | 0.67 | 1.01 | 0.89 |
+
+- **It grows in steps**, on days 3 and 6, not steadily. The schedules and separation (keeping crowds apart) grow
+  most.
+- **Residents keep asking for routes:** 12.97 million route searches, 99.6% answered from the path cache. That is
+  6.4 a tick, all week. At the end 561 residents were on their way somewhere and 379 at their place.
+- **In absolute terms it is still small:** 3.6 ms a tick on day 7, p99.9 23 ms, worst 153 ms (a schedules step
+  with four route searches; this tool searches on the game thread).
+- **Found by the first attempt:** that run hung on day 3. A guard catching a wanted resident ended the pursuit while
+  the crime pass was walking the pursuits (`tendCrime`); it now goes on from the guard's place.
+  `crime_tests` covers it.
+- **Why** (found 2026-10-03 with `world_check`'s new per-day breakdown: the schedules' stages, route searches, and
+  the most wolves on one tile): residents stuck for good, piling up, and asking for routes every half second.
+  - **A corner trap in the walking rules.** Where flat tiles of 4, 4.5 and 5 meet at a corner, a footprint reaching
+    from the 4.5 onto both others was allowed. With its centre on the 4, no step from there was. 21 residents stood
+    on one spot at Warden Order, each having asked for a route 7,000–38,000 times. **Now** `step::passable` also
+    asks that a wolf could stand where it is from the ground under its own centre, and the route search agrees
+    (`World::astar`). A wolf already in such a spot (an older save) is put back in the middle of its tile when
+    blocked. `world_tests` (`cornerTrap`) holds it; `walk.wasm` was rebuilt.
+  - **Offstage hops into pockets.** Residents travelling offstage took the nearest way into the next cell wherever it
+    landed. 31 of Fenhollow's stood on one tile at South Saddle, a pocket hemmed in by trees, with no way on. **Now**
+    offstage hops prefer ways that don't land in a pocket (where the cell beyond is in memory to tell).
+  - **No way out of a pair of pockets.** A resident in a pocket now clambers to the nearest open ground of the
+    cell's body over open ground and features (trees, rocks), up to six tiles, never through walls or over cliffs.
+    With nowhere to clamber, they leave by any way at all rather than wait for good.
+- **Again with the fixes** (the same run, 2026-10-03):
+
+| Day | 1 | 2 | 3 | 4 | 5 | 6 | 7 | (8, part) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mean ms a tick | 0.90 | 0.70 | 1.08 | 1.10 | 1.18 | 1.77 | 1.03 | 0.83 |
+| Route searches a tick | 0.03 | 0.03 | 0.06 | 0.36 | 0.46 | 0.22 | 0.11 | 0.20 |
+| Most on one tile | 19 | 7 | 22 | 25 | 39 | 50 | 92 | 12 |
+
+  - The week's mean tick halved (2.99 → 1.53 ms), and route searches fell from 13 million to 374,000.
+  - **The cost no longer climbs:** the days rise and fall. Day 7 is 15% above day 1, so the gate's 10% is just
+    missed, but day 8 is below it.
+  - **Still to look at:** the crowds of days 5–7 (50 and 92 on one tile, gone by day 8), which may be a gathering
+    (a market or festival), and p99.9 (45 ms), now mostly real route searches, which this tool runs on the game
+    thread and the server on its route thread.
 
 ### Phase 6. Scale gates, and the fallback
 

@@ -42,7 +42,10 @@ class Grid
 
 // Whether a step from one height to another may be taken.
 bool stepAllowed(const Ground* from, const Ground& to);
-// Whether a wolf may stand at `p` (its footprint clear of solid ground, closed doors and steps too high from `from`).
+// Whether a wolf may stand at `p`: its footprint clear of solid ground, closed doors and steps too high from `from`,
+// and from the ground under its own centre. (The last matters where tiles of different heights meet at a corner: a
+// footprint can reach from a middling tile onto both a lower and a higher one, and once its centre is on the lower,
+// no step from there is allowed. A wolf that went there could never leave.)
 bool passable(const Grid& grid, Point p, const Ground* from);
 // Where a wolf going from `at` toward `proposed` ends: there, or slid along whatever blocks it, or where it was.
 // `blocked`: it couldn't go all the way.
