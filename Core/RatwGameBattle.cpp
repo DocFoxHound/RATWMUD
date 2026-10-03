@@ -82,12 +82,13 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("you", you);
     v.add("turn", b.turn);
     if (const auto* t = world_.entity(b.turn))
-        v.add("turnName", t->name);
+        v.add("turnName", names::capitalised(labelFor(viewer, t->id)));
     v.add("turnLeft", b.turn.empty() ? 0.0 : std::max(0.0, b.deadline - world_.time()));
     v.add("moved", b.moved);
     v.add("acted", b.acted);
     v.add("round", b.turns);
     v.add("watching", double(b.observers.size()));
+    const auto veiled = veilMap(viewer);           // Names this wolf doesn't know, as the fighters look (doc 32).
     auto fighters = Value::array();
     for (const auto& f : b.fighters)
     {
@@ -98,7 +99,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             continue;
         auto o = Value::object();
         o.add("id", f.id);
-        o.add("name", e->name);
+        o.add("name", names::capitalised(labelFor(viewer, f.id)));   // As this wolf knows them (doc 32).
         o.add("side", f.side);
         o.add("x", f.x);
         o.add("y", f.y);
@@ -210,7 +211,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         line.add("kind", b.log[i].kind);
         line.add("actor", b.log[i].actor);
         line.add("target", b.log[i].target);
-        line.add("text", b.log[i].text);
+        line.add("text", names::veil(b.log[i].text, veiled));
         if (!b.log[i].tiles.empty())
             line.add("tiles", tileList(b.log[i].tiles));
         lines.push(line);
@@ -265,14 +266,14 @@ Value Game::fightsInView(const Entity& self) const
         // For the story's one entry per fight (doc 18): how much has happened, and the latest of it.
         o.add("actions", double(b.seq));
         if (!b.log.empty())
-            o.add("latest", b.log.back().text);
+            o.add("latest", veilFor(self.id, b.log.back().text));
         // A name on each side, for "join X's side".
         for (int side = 0; side < 2; ++side)
             for (const auto& f : b.fighters)
                 if (f.side == side && f.status != "fled")
                     if (const auto* e = world_.entity(f.id))
                     {
-                        o.add(side == 0 ? "side0" : "side1", e->name);
+                        o.add(side == 0 ? "side0" : "side1", names::capitalised(labelFor(self.id, f.id)));
                         break;
                     }
         out.push(o);

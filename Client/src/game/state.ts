@@ -879,6 +879,14 @@ export class GameState {
     // ------------------------------------------------------------------ Sending
 
     sendAction(action: string, target = '') {
+        // An introduction is said aloud, so whoever hears it learns the name (doc 32): "I'm Kestrel."
+        if (action === 'introduce' || action.startsWith('introduce as ')) {
+            const name = action === 'introduce' ? str(obj(obj(this.snapshot, 'self'), 'names'), 'name') : action.slice('introduce as '.length);
+            if (!name) return;
+            this.send({type: 'chat', requestId: `post_${++this.nextRequestId}`, text: `"I'm ${name}."`, channel: 'ic', volume: 'speak',
+                ...(target ? {targets: [target]} : {})});
+            return;
+        }
         this.send({type: 'action', action, target});
     }
 
@@ -1309,6 +1317,10 @@ export class GameState {
             this.setTyping(false);
             this.channel = a;
             this.transcriptScroll = 0;
+        } else if (a === 'name_add' || a === 'name_retire') {
+            // Aliases (doc 32): names this wolf also goes by.
+            const name = h.target.trim();
+            if (name) this.send({type: 'names', verb: a === 'name_add' ? 'add' : 'retire', name});
         } else if (a === 'party_verb') {
             // The party's commands (doc 32): "accept", "decline", "leave", "disband", "stayout", "autojoin:on|off",
             // "remove:<id>", "lead:<id>".

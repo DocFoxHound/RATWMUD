@@ -152,7 +152,7 @@ export class GameView {
     private listen() {
         const s = this.state, textarea = this.composer.element;
         this.on(window, 'keydown', e => {
-            if (e.target === textarea) return;
+            if (e.target === textarea || e.target instanceof HTMLInputElement) return;   // (Typing a name, say.)
             if (e.repeat && MovementKeys.has(e.code)) {
                 e.preventDefault();
                 return;
@@ -160,7 +160,7 @@ export class GameView {
             if (s.keyDown(keyOf(e))) e.preventDefault();
         });
         this.on(window, 'keyup', e => {
-            if (e.target === textarea) return;
+            if (e.target === textarea || e.target instanceof HTMLInputElement) return;
             if (s.keyUp(keyOf(e))) e.preventDefault();
         });
         // Nothing stays held when attention goes elsewhere.

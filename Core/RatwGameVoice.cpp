@@ -95,8 +95,8 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     if (intent.id.empty())
         return {};
     std::map<std::string, std::string> facts{{"name", npc->name}};
-    if (identified)
-        facts["player"] = player->name;
+    if (identified && knowsName(npcId, playerId))
+        facts["player"] = labelFor(npcId, playerId);     // Only a name they were given (doc 32).
     // Their own greeting, the first time they meet.
     if (spec && !spec->greeting.empty() && (!identified || memories_.recall(npcId, playerId).empty()))
         facts["greeting"] = spec->greeting;
@@ -152,7 +152,9 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     else if (intent.id == "job")
     {
         std::string doing = spec ? spec->workLabel : std::string();
-        if (job && job->role == "guard")
+        if (!willName(npcId, playerId))                    // Not to them, not yet (doc 32).
+            answer = !doing.empty() ? "My name's my own business. I spend my days " + doing + "." : "My name's my own business.";
+        else if (job && job->role == "guard")
             answer = "I'm " + npc->name + ", of the watch.";
         else if (const auto* master = society.apprenticedTo(npcId))
             answer = "I'm " + npc->name + ". I'm learning the trade: " + master->title + ".";

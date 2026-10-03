@@ -293,7 +293,7 @@ Value Game::partyView(const std::string& id) const
         {
             auto j = Value::object();
             j.add("id", m);
-            j.add("name", nameOf(m));
+            j.add("name", names::capitalised(labelFor(id, m)));      // A party mate is a stranger until introduced.
             j.add("leader", m == p->leader);
             const auto* e = world_.entity(m);
             const bool online = e && clientOf(m);
@@ -319,7 +319,7 @@ Value Game::partyView(const std::string& id) const
         any = true;
         auto j = Value::object();
         j.add("from", waiting->from);
-        j.add("name", nameOf(waiting->from));
+        j.add("name", names::capitalised(labelFor(id, waiting->from)));
         j.add("seconds", std::max(0.0, std::ceil(waiting->expires - now())));
         v.add("invite", j);
     }
@@ -327,7 +327,7 @@ Value Game::partyView(const std::string& id) const
     {
         any = true;
         auto j = Value::object();
-        j.add("name", nameOf(pull->second.mate));
+        j.add("name", names::capitalised(labelFor(id, pull->second.mate)));
         j.add("seconds", std::max(0.0, std::ceil(pull->second.at - world_.time())));
         v.add("pull", j);
     }

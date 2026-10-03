@@ -16,9 +16,17 @@ export class Dialogs {
     private overlay: HTMLElement;
     private panel: HTMLElement;
     private key = '';
+    private aliasInput: HTMLInputElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
+        this.aliasInput = document.createElement('input');
+        this.aliasInput.className = 'name-input';
+        this.aliasInput.addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            this.act('name_add', this.aliasInput.value);
+            this.aliasInput.value = '';
+        });
         this.portraits = portraits;
         this.overlay = el('div', 'overlay', parent);
         this.panel = el('div', 'sheet', this.overlay);
@@ -46,6 +54,7 @@ export class Dialogs {
                 bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips] : '']);
         if (key === this.key) return;
         this.key = key;
+        const typing = document.activeElement === this.aliasInput;      // (Kept, and kept focused, as the sheet is rebuilt.)
         this.panel.replaceChildren();
         const close = button('×', 'close', this.panel, () => this.act('close'));
         close.title = 'Close (Esc)';
@@ -55,6 +64,7 @@ export class Dialogs {
         else if (m === 'settings') this.settings();
         else if (m === 'leave_character') this.leave();
         else this.inspect();
+        if (typing && this.aliasInput.isConnected) this.aliasInput.focus();
     }
 
     private act(action: string, target = '') {
@@ -104,10 +114,37 @@ export class Dialogs {
         el('span', 'sage', skills, `Hearing ${clamp(Math.trunc(num(self, 'hearingSkill')), 0, 100)} / 100`);
         el('span', 'scent', skills, `Scent ${clamp(Math.trunc(num(self, 'scentSkill')), 0, 100)} / 100`);
         el('span', 'muted', skills, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`);
+        this.names(right, self);
         el('div', 'label gold', this.panel, 'DESCRIPTION');
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
         const actions = el('div', 'sheet-actions', this.panel);
         button('CHARACTER SELECTION', 'primary', actions, () => this.act('leave_character'));
+    }
+
+    /** Your names (doc 32): the true one, and up to three others you go by. Nobody knows any until you say it. */
+    private names(parent: HTMLElement, self: Json | null) {
+        const names = obj(self, 'names');
+        if (!names || !bool(names, 'hidden')) return;
+        el('div', 'label gold', parent, 'YOUR NAMES');
+        el('div', 'big', parent, str(names, 'name'));
+        const aliases = arr(names, 'aliases').filter((a): a is string => typeof a === 'string');
+        const list = el('div', 'name-list', parent);
+        for (const alias of aliases) {
+            const chip = el('span', 'chip', list, alias);
+            button('×', 'chip-x', chip, () => this.act('name_retire', alias)).title =
+                `Stop going by ${alias} (those who know you by it still will)`;
+        }
+        if (aliases.length < 3) {
+            const row = el('div', 'name-add', parent);
+            row.append(this.aliasInput);
+            this.aliasInput.placeholder = 'Another name you go by';
+            this.aliasInput.maxLength = 24;
+            button('ADD', 'small', row, () => {
+                this.act('name_add', this.aliasInput.value);
+                this.aliasInput.value = '';
+            });
+        }
+        el('p', 'muted small', parent, 'Wolves know you only by a name you tell them: say "I\'m …" aloud, or Introduce from a wolf\'s menu.');
     }
 
     private inventory(self: Json | null) {

@@ -328,6 +328,10 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
     root.add("companions", companions);
     if (!c.parties.isNull())
         root.add("parties", c.parties);
+    if (!c.acquaintances.isNull())
+        root.add("acquaintances", c.acquaintances);
+    if (!c.aliases.isNull())
+        root.add("aliases", c.aliases);
     auto heard = Value::object();
     for (const auto& [who, list] : c.scenesHeard)
     {
@@ -668,6 +672,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     for (const auto& [npc, owner] : root.object("companions").fields())
         c.companions[npc] = owner.asString("");
     c.parties = root.object("parties");
+    c.acquaintances = root["acquaintances"];
+    c.aliases = root.object("aliases");
     // (Older saves have none: everyone starts having heard nothing.)
     for (const auto& [who, list] : root.object("scenesHeard").fields())
         for (const auto& id : list.items())

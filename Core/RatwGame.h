@@ -11,6 +11,7 @@
 #include "RatwJournal.h"
 #include "RatwJsonDoc.h"
 #include "RatwMind.h"
+#include "RatwNames.h"
 #include "RatwParty.h"
 #include "RatwVoice.h"
 #include "RatwScenes.h"
@@ -126,6 +127,8 @@ struct Options
     // (the default, and tests') does it all on the game thread. The server asks for the cores it has, less two.
     unsigned workerThreads = 0;
     std::string connectionLabel = "Authoritative server · 20 Hz";
+    // Names hidden until introduced (doc 32, 1.5). Off only for tests written before introductions.
+    bool hiddenNames = true;
 };
 
 class Game
@@ -273,6 +276,32 @@ class Game
     void tellParty(const std::string& partyId, const std::string& words, const std::string& except = {});
     void tellParty(const std::vector<std::string>& members, const std::string& words, const std::string& except = {});
     std::string nameOf(const std::string& id) const;
+    // Names and introductions (RatwGameNames.cpp; doc 32, 1.5): who knows whom by what name, players' aliases, what a
+    // viewer calls a wolf (its name, or how it looks), introductions noticed in what was heard, residents giving their
+    // names, and the game's own messages veiled for a viewer.
+    names::Acquaintances known_;
+    std::map<std::string, std::vector<std::string>> aliases_;
+    std::map<std::string, std::vector<std::string>> introducedTo_;      // By whom, as one line is heard: for the receipt.
+    std::set<std::string> owedName_;                                     // "npc|player": a friendly resident told a name.
+    static constexpr double FamiliarEnough = 50;                         // Familiarity at which a resident offers a name.
+    std::vector<std::string> namesOf(const std::string& id) const;
+    bool knowsName(const std::string& viewer, const std::string& id) const;
+    std::string strangerLabel(const std::string& id) const;
+    std::string lookOf(const std::string& id, const std::map<std::string, int>* trades) const;
+    void refreshLabels(double dt);
+    std::map<std::string, std::string> veilMap(const std::string& viewer) const;
+    std::map<std::string, std::string> labels_;                          // How each wolf looks to a stranger.
+    double labelsAccumulator_ = 1;
+    std::string labelFor(const std::string& viewer, const std::string& id) const;
+    std::string veilFor(const std::string& viewer, const std::string& text) const;
+    bool willName(const std::string& npcId, const std::string& playerId) const;
+    bool learnName(const std::string& knower, const std::string& known, const std::string& name, const std::string& how);
+    void noticeIntroduction(const std::string& author, const std::string& listener, const std::string& heard);
+    void sendIntroductionReceipt(const std::string& author);
+    void npcSpokeTo(const std::string& npcId, const std::string& playerId);
+    bool namesCommand(Connection* c, const json::Value& j, Result& result);
+    void seedAcquaintances();
+    json::Value namesView(const std::string& id) const;
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

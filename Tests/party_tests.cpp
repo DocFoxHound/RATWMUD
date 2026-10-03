@@ -222,6 +222,7 @@ game::Options devOptions()
 {
     game::Options o;
     o.devIdentity = true;
+    o.hiddenNames = false;                 // Names are names_tests' (doc 32, 1.5); here, everyone knows everyone.
     return o;
 }
 

@@ -93,6 +93,7 @@ void run(game::Game& g, Client& c, double seconds)
 void aDevelopmentSession()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     o.devTools = true;
     game::Game g(o);
@@ -149,6 +150,7 @@ void aDevelopmentSession()
 void residentsTalkWhereAPlayerCanHear()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -202,6 +204,7 @@ void theGameAnswersWhatItKnows()
     const std::string ledger = "/tmp/ratw-voices-" + std::to_string(::getpid()) + ".jsonl";
     std::remove(ledger.c_str());
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
     o.voiceLog = ledger;
@@ -257,6 +260,7 @@ void theGameAnswersWhatItKnows()
 void accountsAndARestart()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     game::Game g(o);
     std::string problem;
     expect(g.start(problem), "starts: " + problem);
@@ -301,6 +305,7 @@ void accountsAndARestart()
 void signingInNeverHoldsTheGame()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     game::Game g(o);
     std::string problem;
     expect(g.start(problem), "starts: " + problem);
@@ -351,6 +356,7 @@ void signingInNeverHoldsTheGame()
 void freeMovementIsChecked()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -493,6 +499,7 @@ void aRestartFromAFile()
     std::string id;
     {
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
         std::string problem;
@@ -515,6 +522,7 @@ void aRestartFromAFile()
         g.disconnect(&c);
     }
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.savePath = path;
     game::Game again(o);
     std::string problem;
@@ -537,6 +545,7 @@ void aRestartFromAFile()
 void playersCannotRuleTheSky()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -586,6 +595,7 @@ void playersCannotRuleTheSky()
 void othersSeeNoPrivateStats()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -654,6 +664,7 @@ void unreadableSavesAreKept()
         writeFile(path, text);
         {
             game::Options o;
+            o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
             o.savePath = path;
             game::Game g(o);
             g.log = [](const char*, const std::string&) {};
@@ -662,6 +673,7 @@ void unreadableSavesAreKept()
         }
         expect(readFile(path) == text, std::string("and leaves ") + what + " as it was");
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         o.requireStorage = false;
         game::Game g(o);
@@ -703,6 +715,7 @@ void theJournalKeepsWhatACrashWouldLose()
     int gathered = 0;
     {
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         o.devIdentity = true;
         game::Game g(o);
@@ -735,6 +748,7 @@ void theJournalKeepsWhatACrashWouldLose()
     }
     {
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         o.devIdentity = true;
         game::Game g(o);
@@ -763,6 +777,7 @@ void theJournalKeepsWhatACrashWouldLose()
     }
     {
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
         std::string problem;
@@ -777,6 +792,7 @@ void mismatchedOwnersAreRefused()
     std::remove(path.c_str());
     {
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
         std::string problem;
@@ -802,6 +818,7 @@ void mismatchedOwnersAreRefused()
     expect(good.array("players").size() == 1, "with its one character");
     {
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
         std::string problem;
@@ -818,6 +835,7 @@ void mismatchedOwnersAreRefused()
         const auto text = json::dump(document);
         writeFile(path, text);
         game::Options o;
+        o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
         g.log = [](const char*, const std::string&) {};
@@ -835,6 +853,7 @@ void mismatchedOwnersAreRefused()
 void residentsTalkFromWrittenScenes()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";
     o.savePath = "/tmp/ratw-game-test-scenes-" + std::to_string(::getpid()) + ".json";
@@ -903,6 +922,7 @@ std::string base64(const std::string& in)
 void uploadedPortraits()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -982,6 +1002,7 @@ void uploadedPortraits()
 void talkTargets()
 {
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -1071,6 +1092,7 @@ void fightsThroughTheGame()
     // Docs/Design/33-combat.md, through commands and snapshots: a challenge, the arena in the snapshot, turns, and an
     // onlooker who sees a red square and watches.
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -1138,6 +1160,7 @@ void swordsMuffleAndBodiesLinger()
 {
     // Doc 33: words around a sword in the jaws are muffled; a player who leaves mid-fight leaves their body in it.
     game::Options o;
+    o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;

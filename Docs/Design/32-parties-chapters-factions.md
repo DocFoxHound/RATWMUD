@@ -1,6 +1,6 @@
 # 32. Parties, Chapters, factions and the social game
 
-Planned 2026-10-02. **Phase 1 (parties) built 2026-10-02; the rest not started.** Five decisions were agreed on 2026-10-02: player-versus-player combat by
+Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; the rest not started.** Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -809,8 +809,71 @@ descriptions. 6 needs 5. 7–9 need 5 and 6.
   party, so this shows only that parties add nothing when unused.
 
 Not yet: NPC party members (Phase 3; Bracken still follows by the old rule, and companions still join their leader's
-fights through the combat code), names hidden until introduced (Phase 2), and the party's own scene for social XP
-(Phase 4).
+fights through the combat code), and the party's own scene for social XP (Phase 4).
+
+### Phase 2: names and introductions (built 2026-10-02)
+
+- **The rules** (`Core/RatwNames.h`, `Core/RatwNames.cpp`, pure):
+  - **Hearing an introduction:** an introduction phrase followed by one of the speaker's own registered names, whole
+    words, any case, curly apostrophes too. The phrases are "I'm", "I am", "my name is", "name's", "call me", "they
+    call me", "you can call me" and "the name is". A name opening the line followed by ", of" or "at your service"
+    also counts.
+  - What doesn't count: "I'm tired", naming someone else, or talking about oneself.
+  - **Aliases:** up to 3, each 2–24 letters (spaces, hyphens and apostrophes only inside). None may repeat the true name
+    or another alias.
+  - **A stranger's look:** a size or build, then age, coat colour and "wolf", then the most visible marking ("a tall
+    russet wolf with white socks"). Colours are named from the nearest of a few.
+  - **Veiling the game's own messages:** whole-word, capitalised names replaced by labels. Possessives still count. A
+    name followed by another capitalised word ("Ash Hollow") is left alone.
+  - **Who knows whom** is one-sided and keeps every name each wolf was given, using the newest. At most 600 per wolf,
+    the oldest met dropped first. Saved in the checkpoint (`acquaintances`, `aliases`).
+- **Through the game** (`Core/RatwGameNames.cpp`):
+  - **What each viewer calls each wolf:** the name they were given, else the wolf's look. A resident is known by their
+    trade: "the innkeeper" where they're the only one in the community, "a guard" where there are several. Road folk
+    (bandits, carters) go by what they are.
+  - Two strangers who look alike are numbered in a fixed order ("a dun wolf (2)").
+  - Looks are worked out once a second on the game thread, so views built in parallel only read them.
+  - **Where labels replace names:** entity `name` (with `known: false` for strangers), chat speakers and `to`, local
+    and party OOC, Look, talk targets, the trader, a challenge, the Party panel, and fighters and side names in fights.
+    The game's own messages and fight logs are veiled per reader.
+  - **Introductions:** whoever perceived the line learns the name as spoken. A whisper reaches only those close
+    enough. The speaker gets a receipt ("You introduced yourself as Kestrel to the innkeeper and a dun wolf."). Each
+    listener is told ("A dun wolf is Kestrel.").
+  - **Residents giving their names:**
+    - When asked ("What is your name?"), if they are willing. A resident is unwilling when their trust in the asker is
+      below −20, or when they are a bandit. An unwilling resident answers "My name's my own business."
+    - In return when a player introduces themself to a friendly one (affinity ≥ 0).
+    - Unprompted once familiarity reaches 50.
+    - The language model is told whether it knows the player's name and whether to give its own. The server records
+      a name only within these rules.
+  - **What a resident calls a player:** the name they were given, else the player's look. This goes for the Mind's
+    context, the relationship line, promises and rumours.
+  - **Saves from before names were hidden:** wolves already well acquainted with a player (familiarity ≥ 25) keep each
+    other's names.
+  - `Options::hiddenNames` (on by default) turns it off, for older tests only.
+- **The page:**
+  - **Introduce** and **Introduce as Kestrel** in a wolf's menu, for anyone within 6 tiles who doesn't know your name.
+    It is said aloud as speech (`"I'm Kestrel."`), so hearing decides who learns it.
+  - **Your names** on the character sheet: the true name, aliases as chips (× retires one; those who know it keep
+    it), and a box to add one.
+  - Typing in any text box no longer moves the wolf.
+- **Tests:**
+  - `Tests/names_tests.cpp`: the rules; strangers and introductions; an alias; a whisper heard only close by; the
+    game's messages veiled; residents giving their name in return, keeping it from one they distrust, and telling one
+    who asks; a restart; and names shown when not hidden.
+  - `Client/src/game/names.test.ts`.
+  - Older tests run with `hiddenNames = false`: `Tests/game_tests.cpp` and `Tests/party_tests.cpp`.
+  - In a real browser: `node tools/client/names.mjs`. Ash sees Bo as he looks; Bo takes an alias on his sheet and
+    introduces himself by it from his menu; Ash then knows him as Kestrel; Bo gets the receipt.
+- **Load:** `game_load` with 100 players, all strangers to one another: mean 11.9 ms, p99 22.6 ms (11.5 and 19.9
+  before).
+
+Not yet:
+- Choosing aliases during character creation; for now they are added on the character sheet.
+- Hearsay names.
+- Residents who see through aliases.
+- Wolves whose looks are identical: development identities all share the default look, so they are told apart only by
+  number.
 
 ## Decisions
 

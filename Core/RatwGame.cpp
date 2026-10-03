@@ -730,6 +730,46 @@ void Game::applyDmActions(double dt)
             const auto* npc = world_.entity(target);
             outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
         }
+        else if (kind == "character.gift")
+        {
+            // A Gift given or taken away (doc 33: who has one is the setting's to decide, through the Dungeon Master).
+            // Payload: {"gift": "fire" | "", "quickened": bool}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const std::string gift = payload.isObject() ? payload.string("gift") : std::string();
+            const bool quickened = payload.isObject() && payload.boolean("quickened");
+            const auto told = [&](const Entity& e) {
+                return gift.empty() ? e.name + " no longer has a Gift."
+                                    : e.name + (quickened ? " is Quickened: the Gift of fire, enormous." : " has the Gift of fire.");
+            };
+            if (!gift.empty() && gift != "fire")
+                outcome = {false, "The only Gift known to the game is fire.", {}};
+            else if (auto* online = world_.entity(target); online && !online->npc)
+            {
+                outcome = world_.giveGift(target, gift, quickened);
+                if (outcome.ok)
+                {
+                    if (auto* c = clientOf(target))
+                        system(c, gift.empty() ? "The fire in you has gone quiet." : quickened
+                                                                                      ? "Fire wakes in you, vast and frightening: you are Quickened."
+                                                                                      : "Fire wakes in you: you have the Gift.");
+                    characters_[target] = *online;
+                    outcome.message = told(*online);
+                }
+            }
+            else if (auto saved = characters_.find(target); saved != characters_.end())
+            {
+                auto& e = saved->second;
+                e.gift = gift;
+                e.quickened = !gift.empty() && quickened;
+                e.mana = battle::manaMax(e.wisdom, !gift.empty());
+                outcome = {true, told(e) + " (offline)", {}};
+            }
+            else
+                outcome = {false, "No such character.", {}};
+        }
         else if (kind == "character.kill" || kind == "character.resurrect")
         {
             const bool kill = kind == "character.kill";
@@ -1209,7 +1249,7 @@ void Game::system(Connection* c, const std::string& message)
     auto e = Value::object();
     e.add("type", "system");
     e.add("speaker", "World");
-    e.add("text", message);
+    e.add("text", c ? veilFor(c->entityId, message) : message);   // Names they don't know, as the wolf looks (doc 32).
     e.add("sequence", sequence_++);
     e.add("color", 7);
     if (c)
@@ -1673,6 +1713,7 @@ void Game::tick(double dt)
         }
     }
     partyTick(dt);
+    refreshLabels(dt);
     snapshotAccumulator_ += dt;
     // Small observer-filtered poses at simulation cadence; full snapshots five times a second, and at once on a
     // change of cell.
@@ -1983,6 +2024,7 @@ void Game::sendSnapshot(Connection* c)
             self.set("struggling", me->struggleUntil > 0);
         }
     }
+    self.set("names", namesView(id));                 // Their name and aliases (doc 32).
     // The party (doc 32): its members and where they are, an invitation waiting, a party mate's fight calling.
     if (auto party = partyView(id); !party.isNull())
         self.set("party", std::move(party));
@@ -2090,9 +2132,34 @@ void Game::sendSnapshot(Connection* c)
     };
     auto entities = Value::array();
     const auto relations = relationsFor(id);
+    // What this wolf calls each one it sees (doc 32): a name it was given, else how they look. Two strangers who look
+    // alike are told apart by number, in a fixed order.
+    std::map<std::string, std::string> called;
+    {
+        std::map<std::string, std::vector<std::string>> alike;
+        for (const auto& e : view.entities)
+        {
+            called[e.id] = labelFor(id, e.id);
+            if (!knowsName(id, e.id))
+                alike[called[e.id]].push_back(e.id);
+        }
+        for (auto& [label, ids] : alike)
+            if (ids.size() > 1)
+            {
+                std::sort(ids.begin(), ids.end());
+                for (std::size_t n = 1; n < ids.size(); ++n)
+                    called[ids[n]] = label + " (" + std::to_string(n + 1) + ")";
+            }
+    }
     for (const auto& e : view.entities)
     {
         auto j = wire::entity(e, view.time);
+        if (e.id != id)
+        {
+            j.set("name", names::capitalised(called[e.id]));
+            if (options_.hiddenNames && !knowsName(id, e.id))
+                j.set("known", false);
+        }
         // Who they are to this wolf (doc 32): a party mate, or hostile (and why). Bandits are always hostile.
         if (relations.mates.count(e.id))
             j.set("rel", "party");
@@ -2170,6 +2237,14 @@ void Game::sendSnapshot(Connection* c)
         const double apart = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y);
         if (!e.npc && e.id != view.self.id && !e.dead && e.downedLeft <= 0 && apart <= battle::StartReach)
             actions.push("challenge");
+        // Introductions (doc 32): to anyone close who doesn't know this wolf's name, by any of its names.
+        if (options_.hiddenNames && e.id != view.self.id && !e.transient && !e.dead && apart <= 6 && !knowsName(e.id, view.self.id))
+        {
+            actions.push("introduce");
+            if (const auto found = aliases_.find(view.self.id); found != aliases_.end())
+                for (const auto& alias : found->second)
+                    actions.push("introduce as " + alias);
+        }
         // Parties (doc 32): any player in sight may be invited, by one in no party or who leads theirs.
         if (!e.npc && e.id != view.self.id && !relations.mates.count(e.id))
             if (const auto* mine = parties_.of(view.self.id); !mine || mine->leader == view.self.id)
@@ -2236,7 +2311,7 @@ void Game::sendSnapshot(Connection* c)
         {
             auto o = Value::object();
             o.add("from", from->id);
-            o.add("name", from->name);
+            o.add("name", names::capitalised(labelFor(id, from->id)));
             o.add("left", std::max(0.0, challenge->until - world_.time()));
             root.add("challenge", o);
         }
@@ -2280,7 +2355,7 @@ void Game::sendSnapshot(Connection* c)
         {
             auto m = Value::object();
             m.add("id", trader->id);
-            m.add("name", trader->name);
+            m.add("name", names::capitalised(labelFor(id, trader->id)));
             m.add("cash", account->cash);
             auto goods = Value::array();
             for (const char* itemId : {"herbs", "meal"})
@@ -2376,7 +2451,8 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         e.add("sequence", event);
         e.add("color", speaker->speakingColor);
         e.add("anonymous", !sense.identifiable);
-        e.add("speaker", sense.identifiable ? speaker->name : std::string("A voice"));
+        // By the name the listener knows them by, or as they look (doc 32).
+        e.add("speaker", sense.identifiable ? names::capitalised(labelFor(listener, author)) : std::string("A voice"));
         if (post.speech && !speaker->mouth.empty())
             e.add("muffled", true);                // Words around a sword held in the jaws (doc 33).
         // Deliberately no author ID: even anonymous records can't be tied to hidden actors.
@@ -2394,6 +2470,15 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         }
         e.add("segments", output);
         e.add("text", text);
+        // An introduction heard ("I'm Kestrel"): the listener knows them by that name now (doc 32).
+        {
+            std::string spoken;
+            for (const auto& segment : segments)
+                if (segment.kind == "speech")
+                    spoken += (spoken.empty() ? "" : " ") + segment.text;
+            if (sense.identifiable)
+                noticeIntroduction(author, listener, spoken);
+        }
         // Said to the party: its members who hear it are told so; anyone else overhears it as plain speech.
         if (party && (listener == author || parties_.together(author, listener)))
             e.add("party", true);
@@ -2405,13 +2490,14 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
                 if (whom == listener)
                     names.push("you");
                 else if (const auto* w = world_.entity(whom); w && (whom == author || world_.visionClarity(listener, whom) > 0))
-                    names.push(w->name);
+                    names.push(labelFor(listener, whom));
                 else
                     names.push("someone");
             e.add("to", names);
         }
         send(c, e);
     }
+    sendIntroductionReceipt(author);
     return heard;
 }
 
@@ -2552,7 +2638,18 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.activity += " Purse: " + std::to_string(account->cash) + " silver pennies. Stock: " +
                             std::to_string(Society::stock(*account, "herbs")) + " herbs, " + std::to_string(Society::stock(*account, "meal")) +
                             " meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
-    context.playerName = identified ? player->name : "traveler";
+    // What the NPC calls them: the name they gave, or how they look until they give one (doc 32).
+    const std::string called = labelFor(npcId, playerId);
+    context.playerName = identified ? called : "traveler";
+    if (options_.hiddenNames && identified)
+    {
+        if (!knowsName(npcId, playerId))
+            context.activity += " You don't know this wolf's name; they haven't given it. Don't call them by any name.";
+        if (!knowsName(playerId, npcId))
+            context.activity += willName(npcId, playerId)
+                                    ? " They don't know your name. Tell them if they ask, or once you're on friendly terms."
+                                    : " They don't know your name, and you'd rather keep it from them for now.";
+    }
     context.heardText = heardText;
     // The most recent of what they remember, not all of it: shorter requests cost less (doc 28).
     context.memory = identified ? memories_.recallForDialogue(npcId, playerId, 1600) : std::string();
@@ -2560,7 +2657,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
     if (identified)
     {
         context.subjectId = playerId;
-        context.relationship = world_.bonds().describe(npcId, playerId, player->name);
+        context.relationship = world_.bonds().describe(npcId, playerId, called);
     }
     if (const auto mood = npcMood_.find(npcId); mood != npcMood_.end())
         context.mood = mood->second;
@@ -2579,9 +2676,9 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
     }
     if (identified)
     {
-        if (const auto open = world_.promisesBetween(npcId, playerId, player->name); !open.empty())
+        if (const auto open = world_.promisesBetween(npcId, playerId, called); !open.empty())
             context.relationship += (context.relationship.empty() ? "" : " ") + open;
-        if (const auto heard = world_.rumoursAbout(npcId, playerId, player->name); !heard.empty())
+        if (const auto heard = world_.rumoursAbout(npcId, playerId, called); !heard.empty())
             context.relationship += (context.relationship.empty() ? "" : " ") + heard;
     }
     if (const auto* cell = world_.cell(npc->cellId))
@@ -2623,6 +2720,7 @@ void Game::speakReply(const std::string& npcId, const std::string& subjectId, bo
         replyingTo_.erase(whom);
     }
     publish(npcId, post, Voice::Speak, to);
+    npcSpokeTo(npcId, subjectId);
     npcLastSpeech_[npcId] = world_.time();
     memories_.record(npcId, subjectId, {sequence_++, now(), npcId, reply.text});
     logEvent("conversation", npcId, identified ? subjectId : std::string());
@@ -2939,6 +3037,12 @@ void Game::command(Connection* c, const std::string& raw)
         report = true;
         saveSoon();
     }
+    else if (type == "names")
+    {
+        if (!namesCommand(c, j, result))
+            result = {false, "That isn't something you can do with a name.", {}};
+        report = true;
+    }
     else if (type == "party")
     {
         if (!partyCommand(c, j, result))
@@ -3055,7 +3159,7 @@ void Game::command(Connection* c, const std::string& raw)
             auto chosen = Value::object();
             chosen.add("type", "talkTarget");
             chosen.add("id", target);
-            chosen.add("name", npc->name);
+            chosen.add("name", names::capitalised(labelFor(id, target)));
             send(c, chosen);
         }
         else if (action == "steal" || action == "report" || action == "pay fine")
@@ -3142,6 +3246,12 @@ void Game::command(Connection* c, const std::string& raw)
             talk(target, id, "Will you travel with me?");
             record(Companions | Character, id);
         }
+        else if (action.rfind("introduce", 0) == 0)
+        {
+            // An introduction is said aloud, so whoever hears it learns the name: the page sends it as speech ("I'm
+            // Kestrel."). Said here as an action, it is only a reminder of how.
+            system(c, "Introduce yourself aloud: say \"I'm\" and the name you go by.");
+        }
         else if (action == "invite")
         {
             result = partyInvite(id, target);
@@ -3159,17 +3269,18 @@ void Game::command(Connection* c, const std::string& raw)
             auto e = Value::object();
             e.add("type", "inspect");
             e.add("id", other->id);
-            e.add("name", other->name);
-            e.add("title", other->name);
+            e.add("name", names::capitalised(labelFor(id, other->id)));
+            e.add("title", names::capitalised(labelFor(id, other->id)));
             e.add("appearance", wire::appearance(other->appearance));
             if (const auto portrait = visiblePortrait(other->id, id); !portrait.empty())
                 e.add("artwork", portrait);
             e.add("lifeStage", lifeStageName(lifeStage(other->age)));
             e.add("shoulderHeightCm", shoulderHeightCm(other->appearance, other->age));
-            e.add("description", other->description);
+            const auto described = veilFor(id, other->description);
+            e.add("description", described);
             e.add("posture", other->posture);
             e.add("state", other->state);
-            e.add("text", other->description + " Current posture: " + other->posture + ". " + other->state);
+            e.add("text", described + " Current posture: " + other->posture + ". " + other->state);
             send(c, e);
         }
         else
@@ -3230,12 +3341,14 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("type", "ooc");
             e.add("channel", "ooc");
             e.add("sequence", sequence_++);
-            e.add("speaker", player->name);
             e.add("text", text);
             e.add("color", player->speakingColor);
             for (auto* other : clients_)
                 if (const auto* actor = world_.entity(other->entityId); actor && actor->cellId == player->cellId)
+                {
+                    e.set("speaker", names::capitalised(labelFor(other->entityId, id)));
                     send(other, e);
+                }
             feedback(true, "");
             return;
         }
@@ -3297,6 +3410,14 @@ void Game::command(Connection* c, const std::string& raw)
             const bool named = namesWord(lower, mind::lower(e.name)) || invited || interject;
             const bool near = sense.hearing >= 0.5 && std::hypot(e.position.x - player->position.x, e.position.y - player->position.y) <= 6;
             hearers.push_back({npcId, perceived, sense, targeted, named, near});
+            {
+                std::string spoken;
+                for (const auto& segment : segments)
+                    if (segment.kind == "speech")
+                        spoken += (spoken.empty() ? "" : " ") + segment.text;
+                if (sense.identifiable)
+                    noticeIntroduction(id, npcId, spoken);
+            }
         }
         std::vector<const Heard*> addressed;
         for (const auto& target : targets)          // In the order chosen.
@@ -3379,6 +3500,18 @@ DbStore::Build Game::capture()
     c->server.characters = characters_;
     c->server.companions = companionOwner_;
     c->server.parties = parties_.save();
+    c->server.acquaintances = known_.save();
+    {
+        auto aliases = Value::object();
+        for (const auto& [who, list] : aliases_)
+        {
+            auto names = Value::array();
+            for (const auto& a : list)
+                names.push(a);
+            aliases.add(who, names);
+        }
+        c->server.aliases = aliases;
+    }
     for (const auto& [who, heard] : scenesHeard_)
         c->server.scenesHeard[who].assign(heard.order.begin(), heard.order.end());
     c->server.memories = memories_;
@@ -3495,6 +3628,16 @@ void Game::load(const std::string& payload)
         world_.removePlayer(player.id);
     }
     parties_.load(state.parties);
+    aliases_.clear();
+    for (const auto& [who, list] : state.aliases.fields())
+        for (const auto& a : list.items())
+            if (a.isString() && aliases_[who].size() < names::MaxAliases)
+                aliases_[who].push_back(a.asString());
+    // Who knows whom (doc 32). A save from before introductions has none: those well acquainted keep each other's names.
+    if (state.acquaintances.isObject())
+        known_.load(state.acquaintances);
+    else
+        seedAcquaintances();
     for (const auto& [npc, owner] : state.companions)
     {
         companionOwner_[npc] = owner;
