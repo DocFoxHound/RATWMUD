@@ -140,6 +140,16 @@ class DungeonMasterTests(Fixture):
         ada = self.dm.players('prod')['characters'][0]
         self.assertEqual((ada['gift'], ada['quickened']), ('', False), 'the sheet shows the Gift (none yet)')
 
+    def test_bandits_are_called_with_a_count(self):
+        master = self.sign_in('dm-master')
+        queued = self.dm.request(master, 'prod', 'bandits.call', 'player-ada', '', {'count': 2})
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute('SELECT kind, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(row, ('bandits.call', {'count': 2}))
+        for wrong in ({'count': 0}, {'count': 7}, {'count': True}, {'count': '2'}):
+            with self.assertRaises(D.DMError):
+                self.dm.request(master, 'prod', 'bandits.call', 'player-ada', '', wrong)
+
     def test_roles(self):
         viewer = self.sign_in('dm-viewer')
         self.assertTrue(self.dm.players('prod')['characters'])

@@ -564,6 +564,9 @@ class World
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
     Result payBandits(const std::string& player, const std::string& bandit);
     bool hostile(const std::string& id) const;               // A bandit, still standing.
+    // Bandits called up near someone (the Dungeon Master: doc 33): a small camp of `count` (1..6) five to ten tiles away,
+    // on open ground away from doors; they come out at once, as any camp does when someone is near.
+    Result callBandits(const std::string& near, int count);
     std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
     // call: (player, words), oldest first. The host shows them to the player.

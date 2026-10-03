@@ -1088,6 +1088,37 @@ void World::endEncounter(const std::string& camp, double spareFor)
             ++it;
 }
 
+Result World::callBandits(const std::string& near, int count)
+{
+    const auto* e = entity(near);
+    if (!e || e->dead)
+        return {false, "No such character.", near};
+    count = std::clamp(count, 1, 6);
+    if (!ensureLoaded(e->cellId).ok)
+        return {false, "That place isn't loaded.", near};
+    Vec2 spot{-1, -1};
+    for (int ring = 5; ring <= 10 && spot.x < 0; ++ring)
+        for (int k = 0; k < 16 && spot.x < 0; ++k)
+        {
+            const double a = k * 3.14159265358979323846 / 8;
+            const Vec2 p{std::floor(e->position.x + std::cos(a) * ring) + .5, std::floor(e->position.y + std::sin(a) * ring) + .5};
+            if (passable(e->cellId, p) && !nearPortal(e->cellId, p, 3))
+                spot = p;
+        }
+    if (spot.x < 0)
+        return {false, "There is no open ground near them for a camp.", near};
+    int n = 0;
+    for (const auto& c : roads_.camps)
+        n += c.id.rfind("camp_dm_", 0) == 0;
+    BanditCamp camp{"camp_dm_" + std::to_string(n + 1), e->cellId, 3.0 * count, 50, -100, true};
+    camp.x = spot.x;
+    camp.y = spot.y;
+    roads_.camps.push_back(camp);
+    recordEvent({"bandits called", "dungeon master", near, e->cellId, 0, 0, {}, count, 0, camp.id});
+    return {true, std::to_string(count) + (count == 1 ? " bandit gathers" : " bandits gather") + " a few strides from " + e->name + ".",
+            camp.id};
+}
+
 bool World::hostile(const std::string& id) const
 {
     const auto f = folk_.find(id);

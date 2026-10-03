@@ -774,6 +774,17 @@ void Game::applyDmActions(double dt)
             const auto* npc = world_.entity(target);
             outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
         }
+        else if (kind == "bandits.call")
+        {
+            // Bandits called up near a character (doc 33): payload {"count": 1..6}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const int count = payload.isObject() ? int(wire::number(payload, "count", 1)) : 1;
+            outcome = world_.entity(target) ? world_.callBandits(target, count)
+                                            : Result{false, "They aren't in the world: bandits come only where someone is.", {}};
+        }
         else if (kind == "character.gift")
         {
             // A Gift given or taken away (doc 33: who has one is the setting's to decide, through the Dungeon Master).

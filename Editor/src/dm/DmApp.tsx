@@ -190,6 +190,14 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
+    // Bandits called up near them (doc 33): a small camp a few strides off, for a fight that isn't with townsfolk.
+    const callBandits = async (count: number) => {
+        if (target === 'prod' && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} in the LIVE world?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, 'bandits.call', character.id, reason, {count}); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
     const pending = actions.some(a => a.status === 'queued');
     const stat = (label: string, v: number | null, digits = 0) => <div><b>{v === null || v === undefined ? '—' : v.toFixed(digits)}</b><span>{label}</span></div>;
     return <div className="dm-panel">
@@ -210,6 +218,10 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
                 <button disabled={busy || pending || (character.gift === 'fire' && !character.quickened)} onClick={() => void gift('fire', false)}>Give fire Gift</button>
                 <button disabled={busy || pending || character.quickened} onClick={() => void gift('fire', true)}>Make Quickened</button>
                 <button disabled={busy || pending || !character.gift} onClick={() => void gift('', false)}>Take Gift away</button>
+            </div>
+            <div className="button-grid">
+                <button disabled={busy || pending || character.dead} onClick={() => void callBandits(1)}>Call a bandit near them</button>
+                <button disabled={busy || pending || character.dead} onClick={() => void callBandits(3)}>Call three bandits</button>
             </div>
             <p className="hint">The game server applies it within a second, online or offline. Nothing happens until a {target.toUpperCase()} server is running; unapplied actions expire after ten minutes.</p>
         </> : <p className="hint">Your account can view but not change the world.</p>}

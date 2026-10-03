@@ -95,7 +95,7 @@ export class GroundPainter {
                 const px = ox + x * tile, py = oy + y * tile;
                 if (style.floor) {
                     if (currentFill !== style.floor) c.fillStyle = currentFill = style.floor;
-                    c.fillRect(px, py, tile - 1, tile - 1);
+                    c.fillRect(px, py, tile, tile);
                 }
                 const lift = clamp(rise, -2, 2);
                 if (currentFill !== style.color) c.fillStyle = currentFill = style.color;
@@ -121,16 +121,16 @@ export class GroundPainter {
             color = lerp(color, withAlpha(rgb(0x8195ad), color.a), dark * 0.28);
             color = withAlpha(scale(color, 1 - dark * 0.27), color.a);
         }
-        if (known) color = withAlpha(color, 0.22);
+        // Remembered ground stays readable, only softer: a gentle step down from what is in sight, so the edge of sight
+        // in broken country (a forest) doesn't cut the map into hard patches.
+        if (known) color = withAlpha(scale(color, 0.8), 0.5);
         // Height reads relative to the wolf: ground above it is lit and warm, ground below sinks into shade, and
         // slopes facing the north-west light are brighter than those turned away.
-        let floor = '';
-        if (!known) {
-            const base = info ? info.bg : rgb(0x283126);
-            let f = rise >= 0 ? lerp(base, rgb(0x6b6a4a), Math.min(rise * 0.12, 0.4)) : lerp(base, rgb(0x0b1216), Math.min(-rise * 0.14, 0.5));
-            f = withAlpha(scale(f, 1 + facing * 0.2), 0.27 + Math.min(Math.abs(rise) * 0.03, 0.12));
-            floor = css(f);
-        }
+        const base = info ? info.bg : rgb(0x283126);
+        let f = rise >= 0 ? lerp(base, rgb(0x6b6a4a), Math.min(rise * 0.12, 0.4)) : lerp(base, rgb(0x0b1216), Math.min(-rise * 0.14, 0.5));
+        f = withAlpha(scale(f, 1 + facing * 0.2), 0.27 + Math.min(Math.abs(rise) * 0.03, 0.12));
+        if (known) f = withAlpha(scale(f, 0.75), f.a * 0.7);
+        const floor = css(f);
         const shape = !info ? code : plain ? info.ascii : info.glyph;
         // Block and shade characters fill the whole tile, so walls and cliffs read as one mass.
         const fill = plain ? 0 : blocks[shape] ?? 0;

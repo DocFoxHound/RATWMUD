@@ -46,7 +46,8 @@ MAX_FAILURES, LOCK_MINUTES = 5, 15
 MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
-ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'npc.sync': 'dm', 'npc.kill': 'dm',
+ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'bandits.call': 'dm', 'npc.sync': 'dm',
+           'npc.kill': 'dm',
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
            'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm'}
@@ -236,6 +237,12 @@ class DungeonMaster:
                 raise DMError('A Gift is {"gift": "fire" or "", "quickened": true or false}.')
             payload = {'gift': gift, 'quickened': bool(payload.get('quickened')) and gift == 'fire'}
             detail = ' — ' + ('no Gift' if not gift else 'Quickened: fire' if payload['quickened'] else 'Gifted: fire')
+        elif kind == 'bandits.call':
+            count = payload.get('count', 1) if isinstance(payload, dict) else 1
+            if not isinstance(count, int) or isinstance(count, bool) or not 1 <= count <= 6:
+                raise DMError('Call between one and six bandits.')
+            payload = {'count': count}
+            detail = f' — {count} bandit{"s" if count > 1 else ""} near them'
         else:
             payload = {}
         if RANK[who['role']] < RANK[needed]:

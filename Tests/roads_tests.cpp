@@ -487,6 +487,31 @@ void beatenAndRobbed()
     expect(w.society().conserved(), "Money is conserved");
 }
 
+void banditsCalled()
+{
+    // The Dungeon Master calls a bandit up near a traveller (doc 33): a camp of one, a few strides off, out at once.
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().caravans.clear();
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(5);
+    ada->position = {8.5, 8.5};
+    run(w, 1);
+    expect(!w.callBandits("nobody", 1).ok, "Only near someone");
+    const auto called = w.callBandits("player-ada", 1);
+    expect(called.ok, "One bandit called: " + called.message);
+    run(w, 2);
+    const auto near = bandits(w, called.targetId);
+    expect(near.size() == 1, "One comes out");
+    const double gap = std::hypot(near[0]->position.x - ada->position.x, near[0]->position.y - ada->position.y);
+    expect(gap >= 2 && gap <= 12, "a few strides off: " + std::to_string(gap));
+    ada->position = {near[0]->position.x - 1, near[0]->position.y};
+    const auto fight = w.attack("player-ada", near[0]->id);
+    expect(fight.ok && w.inBattle("player-ada"), "and can be fought: " + fight.message);
+}
+
 void residentsTakeWork()
 {
     // A guard in the capital, and someone there out of work.
@@ -639,6 +664,7 @@ int main()
         banditsInPerson();
         aFight();
         beatenAndRobbed();
+        banditsCalled();
         residentsTakeWork();
         tradeAndPrices();
     }
