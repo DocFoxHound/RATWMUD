@@ -1,7 +1,7 @@
 # 32. Parties, Chapters, factions and the social game
 
 Planned 2026-10-02. **Phases 1 (parties) and 2 (names and introductions) built 2026-10-02; Phases 3 (residents travelling with
-a party), 4 (the social game widened), 5 (Chapters), 6 (factions in play) and 7 (renting) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
+a party), 4 (the social game widened), 5 (Chapters), 6 (factions in play), 7 (renting) and 8 (camps) built 2026-10-03.** See "Built" below. Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -1157,6 +1157,61 @@ Not yet:
 - **A landlord holding the stores against a debt.** The stores are the Chapter's purse, so eviction doesn't seize
   them.
 - **An Atlas field for places to let.**
+
+### Phase 8: camps (built 2026-10-03)
+
+- **The structure layer** (`Core/RatwCamps.*`): sites (a Chapter's ground, 12 tiles about its centre) holding
+  structures on tiles. They are kept in the game's save and sent in each snapshot (`structures`), never written into
+  the terrain (5.7).
+- **The catalogue** *(placeholders: materials in pennies from the treasury, work-hours, level)*:
+  - **Camp (level III):** tent, firepit, lean-to, storage pile, hitching post, cookfire, watch post.
+  - **Hall (level IV):** palisade section, gate, timber hall, workshop, stable, well.
+  - **Hold (level V):** stone keep, stone wall, tower, gatehouse. These are built in Phase 9.
+- **Making camp:** an Officer or the Head, from Company (level III).
+  - **How many:** one site at Company, three from Hall.
+  - **Where not:**
+    - not on a road, street or bridge, in water, in a wall or a doorway;
+    - not in a town (any place where someone works or lives: rent there instead);
+    - not within 20 tiles of another Chapter's ground.
+  - **Claimed land:** needs that faction's trust (40+) or a treaty (Phase 9).
+- **Building is play:**
+  - An Officer plans a structure where they stand; the materials are paid from the treasury, and refunded if the
+    plan is taken back before work starts.
+  - Members **work** on it from within 2 tiles ("work on it"). One work-hour is one minute of one wolf's work
+    *(placeholder)*, and several working together build faster. Walking off stops the work.
+  - The same work **mends** a worn structure.
+  - Scenes held while building count as scenes, as any do.
+- **Wear:** a little each game day, tents fastest and stone slowest. It is four times as fast when no member has been
+  on the ground for 21 real days, and a site whose every structure has crumbled stands as a **ruin**. Only the Head
+  gives ground up. **Levels are never lost.**
+- **Staff:** a resident travelling with the party (Phase 3) can be **stationed** at the camp by an Officer.
+  - They keep near its centre (`leaderId = camp:<site>`), paid each game dawn from the treasury.
+  - Unpaid, they go home. An Officer can let them go.
+- **The stores** are reached from a camp with a storage pile built (the same store as the Chapter's rented places).
+- **The levels' ground:**
+  - **Hall (IV):** a camp standing, meaning a site with three things built.
+  - **Hold (V):** a fortified camp (eight palisade sections, a gate and a timber hall) and a faction's friendship,
+    which Phase 9 adds.
+- **The page:**
+  - Structures are drawn on the map in the Chapter's colour: dim and framed while being built, faded as they wear,
+    grey in ruin.
+  - A **camp panel** on the Chapter's ground: what stands and what is planned, WORK ON IT and MEND when close, PLAN
+    HERE with costs, and who works there.
+  - The Chapter window lists its ground and has MAKE CAMP HERE. The minimap marks its sites.
+- **Tests:**
+  - `Tests/camp_tests.cpp`: sites and spacing, plans, work, a camp standing, fortified, wear and mending, saving,
+    and a ruin.
+  - Through the game in Juniper Yard: refused to a Lodge; a camp made; a tent paid for and built by two minutes'
+    work; a firepit and a storage pile; the stores reached; a Hall reached; wear, then mending; Bracken hired and
+    stationed, then paid from the treasury; and a restart.
+- **Load:** `game_load` with 100 players: mean 10.9 ms, p99 19.9 ms.
+
+Not yet:
+- **Structures don't block movement or give shelter from the weather.** That needs the world's collision and weather
+  to read the layer; the doc wants it, and it is open.
+- **Steep ground isn't checked.**
+- **Cooking at a cookfire.** It needs doc 15/35's transformations.
+- **Atlas showing structures** (5.7). The DM can see them only in saves for now.
 
 ## Decisions
 

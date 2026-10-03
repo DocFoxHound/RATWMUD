@@ -259,6 +259,16 @@ export class Dialogs {
                 el('div', 'small', right, `${str(l, 'name')} · ${num(l, 'rent')}p a week · ${num(l, 'daysPaid')} days paid · held ` +
                     `${num(l, 'heldDays')} days${str(l, 'state') === 'grace' ? ' · OVERDUE' : ''}`);
         }
+        // Its own ground (doc 32, 5.3): sites, and making camp where the Officer stands.
+        el('div', 'label gold', right, 'GROUND');
+        const sites = arr(ch, 'sites').filter(isObject);
+        if (!sites.length) el('div', 'muted small', right, num(ch, 'level') >= 3 ? 'No camp yet.' : 'A Company (level III) may make camp.');
+        for (const site of sites) el('div', 'small', right, `${str(site, 'name')} · ${str(site, 'place')} · ${num(site, 'built')} built`);
+        if (rank <= 1 && num(ch, 'level') >= 3)
+            button('MAKE CAMP HERE', 'small', right, () => {
+                const name = window.prompt('A name for the camp', `${str(ch, 'name')}'s camp`);
+                if (name?.trim()) send({verb: 'camp', name: name.trim()});
+            });
         el('div', 'label gold', right, 'MEETING PLACE');
         const meeting = obj(ch, 'meeting');
         el('div', '', right, meeting ? str(meeting, 'name') : 'None declared');

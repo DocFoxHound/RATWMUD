@@ -17,6 +17,7 @@ import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
 import {PartyPanel} from './party.ts';
 import {PlacePanel} from './place.ts';
+import {CampPanel} from './camp.ts';
 import {noRect, StoryPanel} from './story.ts';
 
 const HostileRed = rgb(0xe0695e);
@@ -86,6 +87,7 @@ export class Hud {
     private fight: FightPanel;
     private party: PartyPanel;
     private place: PlacePanel;
+    private camp: CampPanel;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -156,6 +158,7 @@ export class Hud {
         }, {passive: false});
         this.party = new PartyPanel(side, state);
         this.place = new PlacePanel(side, state);
+        this.camp = new CampPanel(side, state);
         const sight = el('section', 'panel in-sight', side);
         const sightHead = el('div', 'panel-head', sight);
         el('span', 'label gold', sightHead, 'IN SIGHT');
@@ -221,6 +224,7 @@ export class Hud {
         this.fight.update();
         this.party.update();
         this.place.update();
+        this.camp.update();
         this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);

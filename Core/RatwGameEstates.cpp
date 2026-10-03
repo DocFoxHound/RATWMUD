@@ -19,6 +19,13 @@ const char* const Goods[] = {"herbs", "meal", "sword"};
 
 void Game::refreshEstates()
 {
+    // Where the towns are, for camps (5.3): every place someone works or lives.
+    townCells_.clear();
+    for (const auto& pos : world_.society().positions())
+        townCells_.insert(pos.work.cell);
+    for (const auto& [id, life] : world_.society().state().residents)
+        if (!life.homeCell.empty())
+            townCells_.insert(life.homeCell);
     // Rooms above an inn ("<inn>, upstairs") from its keeper; warehouses from the town. A DM's own are kept.
     estates_.clearDerived();
     std::map<std::string, std::string> byName;
@@ -331,11 +338,3 @@ Value Game::leasesView(const std::string& chapterId) const
 }
 } // namespace ratw::game
 
-namespace ratw::game
-{
-// A Chapter camp where this wolf stands (Phase 8 builds camps).
-bool Game::campHere(const std::string&) const
-{
-    return false;
-}
-} // namespace ratw::game

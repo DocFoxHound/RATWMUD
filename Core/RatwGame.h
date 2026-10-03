@@ -19,6 +19,7 @@
 #include "RatwChapters.h"
 #include "RatwFactions.h"
 #include "RatwEstates.h"
+#include "RatwCamps.h"
 #include "RatwPerf.h"
 #include "RatwPg.h"
 #include "RatwPool.h"
@@ -187,6 +188,7 @@ class Game
     faction::Factions& factions() { return factions_; }
     chapter::Chapters& chapters() { return chapters_; }
     estate::Estates& estates() { return estates_; }
+    camp::Camps& camps() { return camps_; }
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
     // checks and the review page (tools/ai_review.py) as much as for play.
     std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
@@ -396,6 +398,18 @@ class Game
     json::Value placeView(const std::string& viewer) const;
     json::Value leasesView(const std::string& chapterId) const;
     bool campHere(const std::string& who) const;
+    // Camps, Halls and Holds (RatwGameCamps.cpp; doc 32, 5.3–5.7).
+    camp::Camps camps_;
+    std::map<std::string, std::string> building_;                    // Player → the structure they work on.
+    std::set<std::string> townCells_;
+    double campAccumulator_ = 0, lastWearDay_ = -1;
+    std::string whyNotGround(const std::string& cellId, int x, int y) const;
+    bool campCommand(Connection* c, const json::Value& j, Result& result);
+    void campTick(double dt);
+    json::Value structuresView(const std::string& viewer, const std::string& cellId) const;
+    json::Value campView(const std::string& viewer) const;
+    json::Value sitesView(const std::string& chapterId) const;
+    bool treatyAllows(const std::string& factionId, const std::string& chapterId, const std::string& what) const;
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;

@@ -598,6 +598,17 @@ export class GamePainter {
             p.frame(x - 11, y - 13, 23, 27, withAlpha(Amber, 0.25));
             s.hits.push({rect: rect(x - 15, y - 16, x + 15, y + 16), action: 'target', target: str(door, 'id')});
         }
+        // A Chapter's camps, Halls and Holds (doc 32, 5.7): its colour; dim while being built; grey in ruin.
+        for (const st of objects(s.snapshot, 'structures')) {
+            const x = ox + (num(st, 'x') + 0.5) * tile, y = oy + (num(st, 'y') + 0.5) * tile;
+            const hex = str(st, 'colour');
+            const base = bool(st, 'ruin') ? Muted : /^#[0-9a-f]{6}$/i.test(hex) ? rgb(parseInt(hex.slice(1), 16)) : Amber;
+            const alpha = bool(st, 'built') ? 0.35 + 0.65 * Math.max(0, num(st, 'condition')) / 100 : 0.35;
+            const size = clamp(Math.round(tile * 0.7), 11, 17);
+            const [gw, gh] = p.measure(str(st, 'glyph', '?'), size, true);
+            p.text(x - gw / 2, y - gh / 2, str(st, 'glyph', '?'), size, withAlpha(base, alpha), true);
+            if (!bool(st, 'built')) p.frame(x - tile * 0.45, y - tile * 0.45, tile * 0.9, tile * 0.9, withAlpha(base, 0.3));
+        }
         const resource = s.visibleResource();
         if (resource) {
             const x = ox + num(resource, 'x') * tile, y = oy + num(resource, 'y') * tile;

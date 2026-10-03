@@ -1735,6 +1735,7 @@ void Game::tick(double dt)
     chapterTick(dt);
     factionTick(dt);
     estateTick(dt);
+    campTick(dt);
     refreshChapterViews(dt);
     refreshLabels(dt);
     snapshotAccumulator_ += dt;
@@ -1994,6 +1995,8 @@ void Game::sendSnapshot(Connection* c)
         self.set("chapter", view->second);            // Their Chapter (doc 32, Part 3).
     if (auto place = placeView(id); !place.isNull())
         self.set("place", std::move(place));          // A place to let, where they stand (doc 32, 5.2).
+    if (auto camp = campView(id); !camp.isNull())
+        self.set("camp", std::move(camp));            // Their Chapter's ground, where they stand (doc 32, 5.3).
     self.set("socialLevel", social_.level(id));
     self.set("hearing", view.self.hearing * view.self.earHealth * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
     self.set("sneakSkill", view.self.sneakSkill);
@@ -2413,6 +2416,7 @@ void Game::sendSnapshot(Connection* c)
             o.add("left", std::max(0.0, challenge->until - world_.time()));
             root.add("challenge", o);
         }
+    root.add("structures", structuresView(id, view.cell.id));   // Camps, Halls and Holds here (doc 32, 5.7).
     root.add("isometric", view.isometric);
     root.add("connection", options_.connectionLabel);
     root.add("dialogueProvider", mind_.label());
@@ -3689,6 +3693,7 @@ DbStore::Build Game::capture()
     c->server.chapters = chapters_.save();
     c->server.factions = factions_.save();
     c->server.estates = estates_.save();
+    c->server.camps = camps_.save();
     {
         auto aliases = Value::object();
         for (const auto& [who, list] : aliases_)
@@ -3848,6 +3853,7 @@ void Game::load(const std::string& payload)
     chapters_.load(state.chapters);
     factions_.load(state.factions);
     estates_.load(state.estates);
+    camps_.load(state.camps);
     for (const auto& [who, ids] : state.commandReceipts)
         for (const auto& receipt : ids)
             commandReceipts_[who].push_back(receipt);

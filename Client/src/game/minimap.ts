@@ -2,7 +2,7 @@
 // and as large as it truly is, one pixel a tile in its ground's colour, north up, centred on the wolf. Used twice: the
 // minimap in the side panel and the full World Map (M). Each place's picture is made once per change of what the wolf
 // remembers of it, and kept.
-import {bool, isObject, num, obj, objects, str, type Json} from './json.ts';
+import {arr, bool, isObject, num, obj, objects, str, type Json} from './json.ts';
 import {terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 import type {GameState} from './state.ts';
 
@@ -204,6 +204,13 @@ export class MapRenderer {
                 c.stroke();
                 c.lineWidth = 1;
             }
+        }
+        // The Chapter's own ground (doc 32, 5.3): a square in its colour.
+        for (const site of arr(chapter, 'sites').filter(isObject)) {
+            const place = places.find(p => p.id === str(site, 'cell'));
+            if (!place) continue;
+            c.strokeStyle = str(chapter, 'colour', '#d9b67b');
+            c.strokeRect(toX(place.x + num(site, 'x')) - 4, toY(place.y + num(site, 'y')) - 4, 8, 8);
         }
         // Party mates (doc 32): always shown, even out of sight, in any place this wolf knows.
         for (const m of s.party?.members ?? []) {
