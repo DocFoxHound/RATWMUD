@@ -61,6 +61,23 @@ All amounts are *placeholders* for the balance pass.
 3. **Putting away:** at home, meals beyond the one carried go into the larder. A shopkeeper's are the shop's stock and
    stay with them.
 
+## Beds, shops and settling (2026-10-03)
+
+- **Up to four to a bed.** When a home's interior is first in memory, each resident gets a place on a bed tile
+  (`b` bed, `z` straw bedding): the bed their home spot is on while it has room, else the nearest bed in the home with
+  room. One alone has the bed's middle; two to four have its quarters, half a tile apart, so their bodies don't press.
+  In DEV every resident has a bed: 926 beds with one, 3 with two, 2 with four (the halls short of beds). Greyfen's
+  homes have no bed tiles, and its residents sleep where they always did.
+- **The nearest shop.** A hungry resident chose the first open shop of the best kind (in their cell, then their
+  town), in shopkeepers' ID order. So everyone hungry in a cell walked to the same shop, together. Now they take the
+  nearest in their cell.
+- **Food stalls every morning in the cities.** Where a community has six shops or more, a third of its shopkeepers keep
+  a stall in the market square from 7 to 14 on ordinary working days, as well as on Marketday. A small town's market
+  keeps to Marketday.
+- **Coming to rest.** Two wolves going nowhere (no route, no keys) settle a little pressed together, four-fifths of a
+  body's width apart, instead of pushing each other every step in a corner or a crowd. Anyone walking still nudges them
+  a full body's width.
+
 ## Seen in the game
 
 - Inside a home, the page draws each store (`%` larder, `=` chest, `H` wardrobe, `#` woodpile).
@@ -72,6 +89,7 @@ All amounts are *placeholders* for the balance pass.
 - `town_tests` (`larderFirst`): Greyfen's homes have all four stores, the larder stocked and standing on open floor.
   A hungry resident with food at home eats from the larder and doesn't spend at the shop. A new player starts with
   three meals.
+- `town_tests`: a cottage with one bed, its two residents sharing it a body apart.
 - `society_tests`, `appearance_tests`: starting meals are a player's own; money and herbs still come from the
   treasury and run out.
 

@@ -80,6 +80,8 @@ void starve(World& w)
             state.accounts["treasury"].cash += a.cash;
             a.cash = 0;
             a.stock.erase("meal");
+            if (auto larder = state.accounts.find(Society::homeStore(life.homeCell, "larder")); larder != state.accounts.end())
+                larder->second.stock.erase("meal");    // (Nothing at home either: doc 36's larders.)
         }
     expect(w.society().restore(state), "The society takes the change");
 }

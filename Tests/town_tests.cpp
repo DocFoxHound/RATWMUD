@@ -1,4 +1,5 @@
 #include "RatwWorld.h"
+#include "RatwStep.h"
 
 #include <cmath>
 #include <filesystem>
@@ -10,6 +11,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 
 using namespace ratw;
 namespace
@@ -186,6 +188,31 @@ void larderFirst()
     expect(world.society().account("linden")->cash >= purse, "rather than spending at the shop");
     expect(Society::stock(*world.society().account(larderId), "meal") < before, "and the larder has one fewer");
     expect(world.society().conserved(), "Money is conserved");
+    // Beds (doc 36): everyone sleeps on a bed at home, up to four to a bed, never on top of one another. Greyfen's
+    // homes have no beds (its residents sleep where they always did); one bed in the cottage, and its two share it.
+    world.cell("cottage")->tile(2, 7)->glyph = 'b';
+    expect(world.restore(world.save()).ok, "The cottage, with a bed, restores");
+    const auto& sorrelBed = world.beds().at("sorrel");
+    const auto& lindenBed = world.beds().at("linden");
+    expect(sorrelBed.cell == "cottage" && int(sorrelBed.x) == 2 && int(sorrelBed.y) == 7 && int(lindenBed.x) == 2 &&
+               int(lindenBed.y) == 7,
+           "The cottage's two share its one bed");
+    std::map<std::tuple<std::string, int, int>, std::vector<Vec2>> onBed;
+    for (const auto& [id, bed] : world.beds())
+    {
+        const auto* t = world.cell(bed.cell)->tile(int(bed.x), int(bed.y));
+        expect(t && (t->glyph == 'b' || t->glyph == 'z'), id + " sleeps on a bed");
+        onBed[{bed.cell, int(bed.x), int(bed.y)}].push_back({bed.x, bed.y});
+    }
+    expect(!onBed.empty(), "Residents have beds");
+    for (const auto& [tile, places] : onBed)
+    {
+        expect(places.size() <= 4, "No more than four to a bed");
+        for (std::size_t i = 0; i < places.size(); ++i)
+            for (std::size_t j = i + 1; j < places.size(); ++j)
+                expect(std::hypot(places[i].x - places[j].x, places[i].y - places[j].y) >= step::BodyRadius * 2 - 1e-9,
+                       "and those sharing one lie a body apart");
+    }
     // A new player starts with food of their own.
     world.addPlayer("player-newcomer", "Newcomer");
     expect(held(world, "player-newcomer", "meal") == Society::StartingMeals, "A new player starts with a few days' meals");

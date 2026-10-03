@@ -575,6 +575,7 @@ class World
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Each home's stores (doc 36) placed so far: home cell -> kind -> where it stands.
     const std::map<std::string, std::map<std::string, Spot>>& homeStoreSpots() const { return homeStoreSpots_; }
+    const std::map<std::string, Spot>& beds() const { return beds_; }
     // Route searches answered from the path cache, and searched (see findPath).
     std::pair<std::size_t, std::size_t> pathCacheStats() const { return {pathHits_, pathMisses_}; }
     // Residents' route searches on a thread of their own (doc 31, Phase 5): a resident whose route isn't in the path
@@ -751,6 +752,8 @@ class World
     // and where each home's stand, placed when its interior is first in memory.
     bool homesReady_ = false;
     std::map<std::string, std::map<std::string, Spot>> homeStoreSpots_;
+    std::map<std::string, Spot> beds_;              // Each resident's place on a bed at home: up to four to a bed.
+    void placeBeds(const std::string& cellId);
     void furnishHomes();
     void placeHomeStores(const std::string& cellId);
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.

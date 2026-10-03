@@ -199,8 +199,10 @@ Result World::ensureLoaded(const std::string& cellId)
     indexSeams(cellId, seamIds);
     if (homesReady_ && !area.outdoors && !homeStoreSpots_.count(cellId))
     {
-        placeHomeStores(cellId);                    // A home's stores stand once its interior is in memory (doc 36).
+        placeHomeStores(cellId);                    // A home's stores and beds once its interior is in memory (doc 36).
+        placeBeds(cellId);
         society_.setHomeStores(homeStoreSpots_);
+        society_.setBeds(beds_);
     }
     return {true, "Cell loaded.", cellId};
 }

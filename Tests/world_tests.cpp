@@ -288,7 +288,7 @@ void bodies()
     w.tick(.1);
     expect(distance(a.position, b.position) > .1, "Two on the very same spot are pushed apart at once");
     advance(w, .5);
-    expect(distance(a.position, b.position) >= body - 1e-6, "and soon stand a body's width apart");
+    expect(distance(a.position, b.position) >= body * .8 - 1e-6, "and soon stand apart, pressed a little: at rest, they settle");
     expect(std::abs((a.position.x + b.position.x) / 2 - 16.5) < .01, "each giving way half");
     // Walking into someone nudges them along, and is slowed by it; they are never walked through.
     a.position = {15.5, 12.5};
@@ -323,7 +323,7 @@ void bodies()
         for (int j = i + 1; j < 8; ++j)
             tightest = std::min(tightest, distance(q.position, w.entity("crowd" + std::to_string(j))->position));
     }
-    expect(tightest >= body * .9, "and spreads out round it, none on top of another: " + std::to_string(tightest));
+    expect(tightest >= body * .8 - 1e-6, "and spreads out round it, none on top of another: " + std::to_string(tightest));
 }
 void sensesAndWeather()
 {

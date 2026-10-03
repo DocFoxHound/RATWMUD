@@ -154,9 +154,20 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         return spots.empty() ? nullptr : &spots[std::hash<std::string>{}(id) % spots.size()];
     };
     // Where a merchant trades now: a market stall on Marketday mornings (unless the weather is foul), else the shop.
+    // In a city (six shops or more) a third of them keep a food stall in the square each ordinary morning too
+    // (doc 36), so a city's food isn't all behind a few shop counters; a small town's market keeps to Marketday.
+    std::map<std::string, int> shopsIn;
+    if (day_.communityOf)
+        for (const auto& p : positions_)
+            if (p.role == "merchant")
+                ++shopsIn[day_.communityOf(p.work.cell)];
+    const auto dailyStall = [&](const Position& p, const std::string& holder) {
+        const auto shops = day_.communityOf ? shopsIn.find(day_.communityOf(p.work.cell)) : shopsIn.end();
+        return shops != shopsIn.end() && shops->second >= 6 && std::hash<std::string>{}(holder + "stall") % 3 == 0;
+    };
     const auto tradingAt = [&](const Position& p, const std::string& holder) -> Spot {
         const auto& plan = planFor(p.work.cell);
-        if (plan.kind == "market" && !plan.foul && hour >= 7 && hour < 14)
+        if ((plan.kind == "market" || (plan.kind == "work" && dailyStall(p, holder))) && !plan.foul && hour >= 7 && hour < 14)
             if (const auto* stall = pick(plan.stalls, holder))
                 return *stall;
         return p.work;
@@ -275,6 +286,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         const bool onDuty = guard && onHours;
         std::string task, reason;
         Spot goal{life.homeCell, life.homeX, life.homeY};
+        if (const auto bed = beds_.find(pair.first); bed != beds_.end() && bed->second.cell == life.homeCell)
+            goal = bed->second;                     // Their place on a bed at home (doc 36).
         // Nearest open shop: in the same cell, else in the same town, else any (a long walk for a meal).
         const Spot* shop = nullptr;
         int shopRank = -1;
@@ -284,8 +297,11 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (open.first == pair.first)
                 continue;
             const auto& at = open.second.serve;
+            // The nearest of the best: everyone hungry in a cell went to the same shop (the first in ID order), and
+            // walked there together.
             const int rank = at.cell == body.cell ? 2 : !home.empty() && open.second.community == home ? 1 : 0;
-            if (rank > shopRank)
+            if (rank > shopRank || (rank == shopRank && rank == 2 &&
+                                    std::hypot(at.x - body.x, at.y - body.y) < std::hypot(shop->x - body.x, shop->y - body.y)))
                 shop = &at, shopRank = rank;
         }
         // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
@@ -338,7 +354,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             task = "trade";
             goal = tradingAt(*job, pair.first);
             reason = atStall_.count(pair.first) || goal.cell != job->work.cell || goal.x != job->work.x
-                         ? "Marketday: trading from a stall at the market."
+                         ? plan.kind == "market" ? "Marketday: trading from a stall at the market."
+                                                 : "A morning at a food stall in the market square."
                          : "Keeping shop; restocks from the town stores and pays market dues.";
         }
         else if (festival && !night && life.fatigue < 80 && !(guard && within(hour, job->startHour, job->endHour)))

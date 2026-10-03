@@ -2851,6 +2851,11 @@ void World::separate(double dt)
             byCell.push_back(&entry.second);        // (Nobody pushes a wolf frozen in a fight's lineup.)
     std::stable_sort(byCell.begin(), byCell.end(), [](const Entity* x, const Entity* y) { return x->cellId < y->cellId; });
     const auto fixed = [](const Entity& e) { return e.downedLeft > 0 || e.clientWalks; };
+    // At rest: going nowhere (no route, no keys). Two at rest press together a little and settle there (Rest of a
+    // body's width apart) rather than pushing every step in a corner or a crowd with nowhere to go; anyone walking
+    // still nudges them a full body's width.
+    constexpr double Rest = .8;
+    const auto resting = [](const Entity& e) { return e.path.empty() && std::abs(e.input.x) < 1e-9 && std::abs(e.input.y) < 1e-9; };
     for (int pass = 0; pass < 2; ++pass)
         for (std::size_t first = 0, end = 0; first < byCell.size(); first = end)
         {
@@ -2899,7 +2904,8 @@ void World::separate(double dt)
                     auto& a = *byCell[i];
                     auto& b = *byCell[j];
                     const double d = distance(a.position, b.position);
-                    if (d >= Body)
+                    const double apart = resting(a) && resting(b) ? Body * Rest : Body;
+                    if (d >= apart)
                         continue;               // (Pushes never cross a door or a cell's edge: passable() is this cell.)
                     const bool aFixed = fixed(a), bFixed = fixed(b);
                     if (aFixed && bFixed)
@@ -2917,7 +2923,7 @@ void World::separate(double dt)
                         const double angle = double(h % 6283) / 1000.0;
                         n = {std::cos(angle), std::sin(angle)};
                     }
-                    const double overlap = Body - d;
+                    const double overlap = apart - d;
                     const double shareA = aFixed ? 0 : bFixed ? 1 : .5, shareB = 1 - shareA;
                     const auto* ta = c->tile(int(a.position.x), int(a.position.y));
                     const auto* tb = c->tile(int(b.position.x), int(b.position.y));
@@ -3111,8 +3117,62 @@ void World::furnishHomes()
     society_.furnishHomes(homes);
     for (const auto& home : homes)
         if (const auto* c = cell(home); c && c->loaded)
+        {
             placeHomeStores(home);
+            placeBeds(home);
+        }
     society_.setHomeStores(homeStoreSpots_);
+    society_.setBeds(beds_);
+}
+
+void World::placeBeds(const std::string& cellId)
+{
+    // Up to four to a bed (doc 36). Each sleeps on the bed their home spot is on while it has room, else on the
+    // nearest bed in the home with room, else where they were (the floor). One alone on a bed has its middle; two to
+    // four have its quarters, half a tile apart, so their bodies don't press.
+    const auto* c = cell(cellId);
+    if (!c || !c->loaded || c->outdoors)
+        return;
+    const auto isBed = [](const Tile* t) { return t && !t->solid && (t->glyph == 'b' || t->glyph == 'z'); };
+    std::vector<std::pair<int, int>> beds;
+    for (int y = 0; y < c->height; ++y)
+        for (int x = 0; x < c->width; ++x)
+            if (isBed(c->tile(x, y)))
+                beds.push_back({x, y});
+    if (beds.empty())
+        return;
+    std::map<std::pair<int, int>, std::vector<std::string>> sleepers;
+    std::vector<std::pair<std::string, Vec2>> members;
+    for (const auto& [id, life] : society_.state().residents)
+        if (life.homeCell == cellId)
+            members.push_back({id, {life.homeX, life.homeY}});
+    std::vector<std::pair<std::string, Vec2>> waiting;
+    for (const auto& [id, home] : members)
+    {
+        const std::pair<int, int> tile{int(std::floor(home.x)), int(std::floor(home.y))};
+        if (isBed(c->tile(tile.first, tile.second)) && sleepers[tile].size() < 4)
+            sleepers[tile].push_back(id);
+        else
+            waiting.push_back({id, home});
+    }
+    for (const auto& [id, home] : waiting)
+    {
+        const std::pair<int, int>* nearest = nullptr;
+        for (const auto& b : beds)
+            if (sleepers[b].size() < 4 &&
+                (!nearest || distance(home, {b.first + .5, b.second + .5}) < distance(home, {nearest->first + .5, nearest->second + .5})))
+                nearest = &b;
+        if (nearest)
+            sleepers[*nearest].push_back(id);
+    }
+    for (const auto& [tile, ids] : sleepers)
+        for (std::size_t k = 0; k < ids.size(); ++k)
+        {
+            Vec2 at{tile.first + .5, tile.second + .5};
+            if (ids.size() > 1)
+                at = {tile.first + (k % 2 ? .75 : .25), tile.second + (k / 2 ? .75 : .25)};
+            beds_[ids[k]] = {cellId, at.x, at.y};
+        }
 }
 
 void World::placeHomeStores(const std::string& cellId)

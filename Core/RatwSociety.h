@@ -272,6 +272,9 @@ class Society
     // reached at its household's home spot.
     void setHomeStores(std::map<std::string, std::map<std::string, Spot>> spots) { homeStores_ = std::move(spots); }
     const std::map<std::string, std::map<std::string, Spot>>& homeStores() const { return homeStores_; }
+    // Where each resident sleeps (the world gives each a place on a bed in their home, up to four to a bed); without
+    // one, their home spot.
+    void setBeds(std::map<std::string, Spot> beds) { beds_ = std::move(beds); }
     const std::string& storeFor(const std::string& cell) const;
     // How dear goods are at each store's markets (1: as ever), set by the world from how much each town has; a
     // merchant's prices follow the store they restock from.
@@ -373,6 +376,7 @@ class Society
     std::map<std::string, std::map<std::string, double>> priceFactors_;
     std::map<std::string, std::string> storeForCell_;   // Cell -> the store its merchants restock from (Phase 5).
     std::map<std::string, std::map<std::string, Spot>> homeStores_;
+    std::map<std::string, Spot> beds_;
     static constexpr std::int64_t MoneyCap = 1000000000;
     static constexpr int StockCap = 10000;
     mutable bool specsIndexed_ = false;

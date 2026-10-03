@@ -152,15 +152,15 @@ DayPlan World::dayPlan(const std::string& community)
         plan.kind = "market";
     else if (weekday == calendar::Restday)
         plan.kind = "rest";
-    if (plan.kind == "market" || plan.kind == "festival")
+    // The square's stalls every day (some shopkeepers keep a food stall there each morning, doc 36); its crowd on a
+    // market or festival day.
+    const auto& sq = square(community);
+    if (sq.found)
     {
-        const auto& sq = square(community);
-        if (sq.found)
-        {
-            plan.stalls = sq.stalls;
+        plan.stalls = sq.stalls;
+        plan.foul = skyOf(sq.at.cell) == 2;
+        if (plan.kind == "market" || plan.kind == "festival")
             plan.crowd = sq.crowd;
-            plan.foul = skyOf(sq.at.cell) == 2;
-        }
     }
     return plan;
 }
