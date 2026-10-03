@@ -55,6 +55,8 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .post .speaker { font-family: 'RATW Mono', monospace; font-size: 12px; letter-spacing: .05em; margin-bottom: 4px; }
 .post .words { font-size: 15px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 .post.system { opacity: .85; }
+.post.party { border-left: 3px solid var(--gold); background: color-mix(in srgb, var(--gold) 6%, transparent); }
+.talk-targets .party { color: var(--gold); }
 .composer-bar { display: flex; gap: 12px; align-items: center; border-top: 1px solid #34443e; padding-top: 8px; min-height: 30px; }
 .composer-bar .label:first-child { flex: 1; }
 .composer-bar .small { padding: 5px 9px; background: var(--raised); font-size: 12px; }
@@ -101,6 +103,18 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .sight-row:hover, .sight-row.highlight { background: var(--raised); }
 .sight-row.targeted { box-shadow: inset 3px 0 var(--gold); background: #2b2f24; }
 .sight-row.hostile .sight-detail { color: #e1aba2; }
+/* The Party panel (doc 32). */
+.party .party-call, .party .party-invite { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 6px 8px; margin-bottom: 8px; border-radius: 3px; }
+.party .party-call { background: #3a2422; color: #e1aba2; }
+.party .party-invite { background: #2b2f24; color: var(--gold); }
+.party .party-answers { display: flex; gap: 4px; }
+.party-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 4px 2px; }
+.party-row.away { opacity: .55; }
+.party-who { display: flex; flex-direction: column; min-width: 0; }
+.party-name { color: var(--gold); }
+.party-tools, .party-foot { display: flex; gap: 4px; flex-wrap: wrap; }
+.party-foot { margin-top: 6px; }
 .thumb { width: 44px; height: 44px; flex: none; background: var(--ink); border-radius: 3px; image-rendering: pixelated; }
 .sight-text { flex: 1; min-width: 0; }
 .sight-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

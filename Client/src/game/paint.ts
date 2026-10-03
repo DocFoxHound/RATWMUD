@@ -11,6 +11,9 @@ import {myTurn, type BattleView} from './battle.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 
+// Hostile wolves (doc 32), the same red as a fight's other side.
+const HostileRed = rgb(0xe0695e);
+
 /** The server's weather grid letters (RatwGame.cpp snapshot): kind names as the painter knows them. */
 const KindOfLetter: Record<string, string> = {r: 'rain', f: 'fog', n: 'snow', o: 'overcast', s: 'storm', d: 'sandstorm', c: 'clear'};
 
@@ -572,7 +575,9 @@ export class GamePainter {
         const fadeIn = clamp((s.clock - s.fightEndedAt) / 0.75, 0, 1);
         for (const view of s.battle ? [] : s.entities.values()) {
             const x = ox + view.x * tile, y = oy + view.y * tile;
-            const color = withAlpha(view.self ? Amber : view.kind === 'npc' ? Sage : Blue, fadeIn);
+            // Who they are to this wolf (doc 32): a party mate in the player's own amber, anyone hostile in red.
+            const color = withAlpha(view.self || view.rel === 'party' ? Amber : view.hostile ? HostileRed : view.kind === 'npc' ? Sage : Blue,
+                fadeIn);
             if (view.self) {
                 p.frame(x - 17, y - 17, 34, 34, withAlpha(Amber, 0.22 * fadeIn));
                 p.box(x - 9, y - 10, 18, 21, Ink);
@@ -587,6 +592,9 @@ export class GamePainter {
                 p.text(x - ww * 0.5, y - wh * 0.5, 'W', wolfFont, color, true);
                 this.turnedText(x + Math.cos(view.facing) * reach, y + Math.sin(view.facing) * reach, '>', 10, color, view.facing);
             }
+            // Colour is never the only cue: a dot under a party mate, a "!" over anyone hostile.
+            if (view.rel === 'party') p.box(x - 2, y + 11, 4, 3, color);
+            else if (view.hostile && !view.self) p.text(x - 3, y - 25, '!', 12, color, true);
             if (view.self && s.facingPreview && s.canFaceAt(s.hover))
                 this.turnedText(x + Math.cos(s.previewFacing) * reach, y + Math.sin(s.previewFacing) * reach, '>', 10, withAlpha(color, 0.32),
                     s.previewFacing);

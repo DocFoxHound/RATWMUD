@@ -8,6 +8,7 @@ import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
 import {arenaRows, arenaSight, fighterAt, myTurn, readBattle, readChallenge, readFights, type BattleView, type ChallengeView,
     type FightSquare} from './battle.ts';
+import {inParty, readParty, type PartyView} from './party.ts';
 
 export interface Post {
     id: string;
@@ -20,6 +21,7 @@ export interface Post {
     revealed: number;
     postedAt: number;
     system: boolean;
+    party: boolean;             // Said in character to the speaker's party, and this player is in it (doc 32).
 }
 
 export interface Hit {
@@ -46,6 +48,8 @@ export interface EntityView {
     spokenAt: number;
     work: string;               // A resident's trade, as the server gives it ('' for players).
     hostile: boolean;
+    rel: string;                // Who they are to this wolf (doc 32): 'party', 'hostile' or ''.
+    why: string;                // Why hostile: 'bandit', 'fighting you', 'fought your party'...
     appearance: Json | null;
     lifeStage: string;
     artwork: string;            // An uploaded portrait this player may see ('' for none).
@@ -203,6 +207,8 @@ export class GameState {
     battle: BattleView | null = null;
     fights: FightSquare[] = [];
     challenge: ChallengeView | null = null;
+    // The party (doc 32): who is in it and where, an invitation waiting, a party mate's fight calling.
+    party: PartyView | null = null;
     fightEndedAt = -10;
     battleOverSeenAt = -10;
     private plainRows: string[] = [];
@@ -378,14 +384,16 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    appearance: null, lifeStage: 'adult', artwork: ''};
+                    rel: '', why: '', appearance: null, lifeStage: 'adult', artwork: ''};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
             view.kind = str(e, 'kind', bool(e, 'npc') ? 'npc' : 'player');
             view.state = str(e, 'state', str(e, 'posture', 'standing'));
             view.work = str(e, 'work');
-            view.hostile = bool(e, 'hostile');
+            view.rel = str(e, 'rel');
+            view.why = str(e, 'why');
+            view.hostile = bool(e, 'hostile') || view.rel === 'hostile';
             view.appearance = obj(e, 'appearance');
             view.lifeStage = str(e, 'lifeStage', 'adult');
             view.artwork = str(e, 'artwork');
@@ -413,6 +421,8 @@ export class GameState {
         this.battle = readBattle(this.snapshot);
         this.fights = readFights(this.snapshot);
         this.challenge = readChallenge(this.snapshot);
+        this.party = readParty(obj(this.snapshot, 'self'));
+        if ((this.channel === 'party' || this.channel === 'partyooc') && !inParty(this.party)) this.channel = 'ic';
         if (this.tileRows !== this.mergedRows) this.plainRows = this.tileRows;     // Fresh rows from the server.
         const b = this.battle;
         if (b) {
@@ -587,6 +597,7 @@ export class GameState {
             id: eventId, channel: str(e, 'channel', type === 'ooc' ? 'ooc' : 'ic'), kind: type,
             speaker: str(e, 'speaker', str(e, 'name', type === 'system' ? 'THE WORLD' : 'A voice')),
             color: Math.trunc(num(e, 'color')), text: str(e, 'text'), postedAt: this.clock, revealed: 0, system: false,
+            party: bool(e, 'party'),
         };
         const segments = objects(e, 'segments');
         if (segments.length) {
@@ -598,7 +609,7 @@ export class GameState {
         }
         if (!post.text) return;
         post.system = type === 'system' || type === 'error';
-        post.revealed = post.system || post.channel === 'ooc' ? post.text.length : 0;
+        post.revealed = post.system || post.channel !== 'ic' ? post.text.length : 0;
         if (type === 'error') this.showToast(post.text);
         this.posts.push(post);
         if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);
@@ -795,7 +806,7 @@ export class GameState {
     }
 
     setTyping(active: boolean) {
-        active = active && this.channel === 'ic';
+        active = active && (this.channel === 'ic' || this.channel === 'party');
         if (this.typingSent === active && (!active || this.clock - this.lastTypingSent < 1)) return;
         this.typingSent = active;
         this.lastTypingSent = this.clock;
@@ -832,7 +843,7 @@ export class GameState {
     composerChanged() {
         if (!this.chat) return;
         this.lastTyping = this.clock;
-        if (this.channel === 'ic') this.setTyping(true);
+        if (this.channel === 'ic' || this.channel === 'party') this.setTyping(true);
     }
 
     /** A key in the composer; true when the game took it. */
@@ -1199,10 +1210,17 @@ export class GameState {
             this.showToast('Finding a route through places you have visited…');
         } else if (a === 'cancel_travel') {
             if (!this.chat && !this.modal) this.cancelTravel();
-        } else if (a === 'ic' || a === 'ooc') {
+        } else if (a === 'ic' || a === 'ooc' || ((a === 'party' || a === 'partyooc') && inParty(this.party))) {
             this.setTyping(false);
             this.channel = a;
             this.transcriptScroll = 0;
+        } else if (a === 'party_verb') {
+            // The party's commands (doc 32): "accept", "decline", "leave", "disband", "stayout", "autojoin:on|off",
+            // "remove:<id>", "lead:<id>".
+            const [verb, rest] = h.target.split(':', 2);
+            if (verb === 'autojoin') this.send({type: 'party', verb, on: rest !== 'off'});
+            else if (['accept', 'decline', 'leave', 'disband', 'stayout', 'remove', 'lead'].includes(verb))
+                this.send({type: 'party', verb, ...(rest ? {target: rest} : {})});
         } else if (a === 'character' || a === 'inventory' || a === 'settings') {
             if (this.chat) this.setChat(false);
             this.heldKeys.clear();

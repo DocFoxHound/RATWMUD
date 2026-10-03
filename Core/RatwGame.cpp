@@ -1630,6 +1630,7 @@ void Game::tick(double dt)
                 world_.stop(npc->id);
         }
     }
+    partyTick(dt);
     snapshotAccumulator_ += dt;
     // Small observer-filtered poses at simulation cadence; full snapshots five times a second, and at once on a
     // change of cell.
@@ -1927,6 +1928,9 @@ void Game::sendSnapshot(Connection* c)
             self.set("struggling", me->struggleUntil > 0);
         }
     }
+    // The party (doc 32): its members and where they are, an invitation waiting, a party mate's fight calling.
+    if (auto party = partyView(id); !party.isNull())
+        self.set("party", std::move(party));
     root.add("self", self);
     auto cell = Value::object();
     cell.add("id", view.cell.id);
@@ -2030,9 +2034,23 @@ void Game::sendSnapshot(Connection* c)
         return std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 3;
     };
     auto entities = Value::array();
+    const auto relations = relationsFor(id);
     for (const auto& e : view.entities)
     {
         auto j = wire::entity(e, view.time);
+        // Who they are to this wolf (doc 32): a party mate, or hostile (and why). Bandits are always hostile.
+        if (relations.mates.count(e.id))
+            j.set("rel", "party");
+        else if (const auto found = relations.hostile.find(e.id); found != relations.hostile.end())
+        {
+            j.set("rel", "hostile");
+            j.set("why", found->second);
+        }
+        else if (e.transient && world_.hostile(e.id))
+        {
+            j.set("rel", "hostile");
+            j.set("why", "bandit");
+        }
         if (!e.npc)
             if (const auto portrait = visiblePortrait(e.id, id); !portrait.empty())
                 j.set("artwork", portrait);         // Approved portraits only (doc 29, phase 9).
@@ -2097,6 +2115,10 @@ void Game::sendSnapshot(Connection* c)
         const double apart = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y);
         if (!e.npc && e.id != view.self.id && !e.dead && e.downedLeft <= 0 && apart <= battle::StartReach)
             actions.push("challenge");
+        // Parties (doc 32): any player in sight may be invited, by one in no party or who leads theirs.
+        if (!e.npc && e.id != view.self.id && !relations.mates.count(e.id))
+            if (const auto* mine = parties_.of(view.self.id); !mine || mine->leader == view.self.id)
+                actions.push("invite");
         if (e.id != view.self.id && !e.dead && e.downedLeft > 0 && apart <= 2 && !world_.inBattle(e.id))
             actions.push("tend");
         if (e.downedLeft > 0)
@@ -2250,7 +2272,8 @@ void Game::finishSnapshot(Connection* c, json::Value root, double revision)
 }
 
 
-std::vector<std::string> Game::publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to)
+std::vector<std::string> Game::publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to,
+                                       bool party)
 {
     auto* speaker = world_.entity(author);
     if (!speaker)
@@ -2294,6 +2317,9 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         }
         e.add("segments", output);
         e.add("text", text);
+        // Said to the party: its members who hear it are told so; anyone else overhears it as plain speech.
+        if (party && (listener == author || parties_.together(author, listener)))
+            e.add("party", true);
         if (!to.empty())
         {
             // Whom it was meant for, as this listener can tell: "you", a name they can see, or "someone".
@@ -2836,6 +2862,12 @@ void Game::command(Connection* c, const std::string& raw)
         report = true;
         saveSoon();
     }
+    else if (type == "party")
+    {
+        if (!partyCommand(c, j, result))
+            result = {false, "That isn't something a party does.", {}};
+        report = true;
+    }
     else if (type == "battle")
     {
         if (!battleCommand(c, j, result))
@@ -3011,6 +3043,11 @@ void Game::command(Connection* c, const std::string& raw)
             talk(target, id, "Will you travel with me?");
             record(Companions | Character, id);
         }
+        else if (action == "invite")
+        {
+            result = partyInvite(id, target);
+            report = true;
+        }
         else if (action == "inspect" && !world_.door(target))
         {
             const auto* other = world_.entity(target);
@@ -3076,7 +3113,19 @@ void Game::command(Connection* c, const std::string& raw)
         player->typing = false;
         if (!world_.travelState(id).active)
             world_.stop(id);
-        if (j.string("channel") == "ooc")
+        const std::string channel = j.string("channel");
+        if ((channel == "party" || channel == "partyooc") && !parties_.of(id))
+        {
+            feedback(false, "You are not in a party.");
+            return;
+        }
+        if (channel == "partyooc")
+        {
+            partyChat(c, *player, text);
+            feedback(true, "");
+            return;
+        }
+        if (channel == "ooc")
         {
             auto e = Value::object();
             e.add("type", "ooc");
@@ -3174,7 +3223,7 @@ void Game::command(Connection* c, const std::string& raw)
         std::vector<std::string> to;
         for (const auto* h : addressed)
             to.push_back(h->npcId);
-        const auto heard = publish(id, post, voice, to);
+        const auto heard = publish(id, post, voice, to, channel == "party");
         const auto evidence = roleplayEvidence(post);
         social_.record({event, now(), id, player->cellId, evidence.words, false, evidence.contentHash}, heard);
         // A chosen wolf who didn't hear: say so, rather than leave the player waiting.
@@ -3230,6 +3279,7 @@ DbStore::Build Game::capture()
     c->server.revision = revision_;
     c->server.characters = characters_;
     c->server.companions = companionOwner_;
+    c->server.parties = parties_.save();
     for (const auto& [who, heard] : scenesHeard_)
         c->server.scenesHeard[who].assign(heard.order.begin(), heard.order.end());
     c->server.memories = memories_;
@@ -3345,6 +3395,7 @@ void Game::load(const std::string& payload)
             characters_[player.id] = *e;
         world_.removePlayer(player.id);
     }
+    parties_.load(state.parties);
     for (const auto& [npc, owner] : state.companions)
     {
         companionOwner_[npc] = owner;

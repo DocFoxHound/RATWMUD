@@ -1,6 +1,6 @@
 # 32. Parties, Chapters, factions and the social game
 
-Planned 2026-10-02. **Draft. Not started.** Five decisions were agreed on 2026-10-02: player-versus-player combat by
+Planned 2026-10-02. **Phase 1 (parties) built 2026-10-02; the rest not started.** Five decisions were agreed on 2026-10-02: player-versus-player combat by
 request, party chat in two forms, names hidden until introduced, crimes as a burden that leaves with the member, and
 reports that must be asked for. They are written into the parts below and listed under "Decisions".
 
@@ -753,6 +753,64 @@ designed in a separate thread). Check these against it before building:
 
 Phases 1–4 need nothing from 5–9 and could start soon. Phase 2 should land before 5, since rosters and reports rely on
 descriptions. 6 needs 5. 7–9 need 5 and 6.
+
+## Built
+
+### Phase 1: parties (built 2026-10-02)
+
+- **The rules** (`Core/RatwParty.h`, `Core/RatwParty.cpp`, pure, no world):
+  - Invite: by a player in no party, or by the leader. The invitation lasts 60 s, and one waits per player. The party
+    exists once it is accepted.
+  - Up to 6 players, one party each.
+  - Leader actions: invite, send someone away, hand on the lead, disband. Anyone can leave. A leader who leaves hands
+    the lead to whoever joined next. A party of one is no party.
+  - A member out of the world keeps their place for 10 minutes. A party with nobody in the world goes after 10
+    minutes.
+  - Each player has a setting to never be called into a party mate's fight.
+  - Saved in the checkpoint (`parties`), offline times included.
+- **Through the game** (`Core/RatwGameParty.cpp`):
+  - `{"type":"party","verb":...}` commands: invite, accept, decline, leave, remove, lead, disband, stayout, autojoin.
+    There is also an `invite` action on any player in sight, offered to someone in no party or to the leader.
+  - Everyone affected is told in their story column.
+- **Chat:**
+  - **Party** (`channel: "party"`) is ordinary in-character speech, heard as speech is. Its party listeners get
+    `party: true`. Anyone else close by overhears it as plain speech.
+  - **Party OOC** (`channel: "partyooc"`) goes to the party's players wherever they are. Both need a party.
+- **The fight call-in** (doc 33's "party auto-join"):
+  - A party mate who can see a party mate's fight, and isn't fighting, watching it or held, is told "Joining Ash's
+    fight…".
+  - After 5 s they join on that side, unless they chose Stay out. They are called once per fight.
+  - Nobody is called into a fight with party mates on both sides (sparring).
+- **Who is who** (each entity's `rel` and `why`, worked out per viewer):
+  - `party`;
+  - `hostile` with a reason: "fighting you", "fighting your party", "fought you" or "fought your party" (for 5
+    minutes after), or "bandit".
+- **The snapshot's `self.party`:** members with name, leader, online, cell, place, position, health, downed and
+  fighting; an invitation waiting; a fight calling (with seconds); and the auto-join setting.
+- **The page** (`Client/src/game/party.ts`, `ui/hud/party.ts`, `story.ts`, `paint.ts`, `minimap.ts`):
+  - **On the map:** party mates are drawn in the player's amber with a dot under them. Hostile wolves are red with a
+    `!` above.
+  - **In Sight** names are coloured the same way and say "your party" or "hostile · why". The Look line says it too.
+  - **Minimap:** party mates are amber dots wherever they are, in any place the player knows. Hostile wolves in sight
+    are red dots.
+  - **The Party panel:** an invitation with Accept/Decline, the fight call-in with Stay out, and members with place
+    and state. Leaders get Lead and Remove buttons; everyone gets Leave, Disband (leader only) and the join-their-
+    fights setting.
+  - **Chat tabs:** PARTY and PARTY OOC, shown only in a party. The PARTY feed shows lines said to the party, and those
+    lines are edged in gold in the IN WORLD feed too.
+- **Tests:**
+  - `Tests/party_tests.cpp`: the rules, then through the game: invitations and the view, the two chats (overheard,
+    out of earshot, anywhere), being called into a fight, staying out, auto-join off, and a restart.
+  - `Client/src/game/party.test.ts`.
+  - In a real browser with three players: `node tools/client/party.mjs` (RATW_SERVER and RATW_WEB pick the server and
+    page). It checks the invitation, the party mate on the map, OOC privacy, Cy red while fighting the party, and Bo
+    called in on Ash's side.
+- **Load:** `game_load` with 100 players (cities): mean 11.5 ms, p99 19.9 ms. The load test's players are in no
+  party, so this shows only that parties add nothing when unused.
+
+Not yet: NPC party members (Phase 3; Bracken still follows by the old rule, and companions still join their leader's
+fights through the combat code), names hidden until introduced (Phase 2), and the party's own scene for social XP
+(Phase 4).
 
 ## Decisions
 

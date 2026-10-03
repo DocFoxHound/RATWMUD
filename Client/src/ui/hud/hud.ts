@@ -1,8 +1,8 @@
 // The screen around the map (Docs/Design/29-client-polish.md, phase 2): a slim top bar, the story column on the left
 // (story.ts), the map in the middle with its header and actions, and on the right who is in sight and how the wolf is
 // doing. Plain HTML, updated in place each frame; the map itself is the canvas (game/paint.ts).
-import {css} from '../color.ts';
-import {Blue, Sage} from '../theme.ts';
+import {css, rgb} from '../color.ts';
+import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {bool, boundedNum, envNumber, obj, str} from '../../game/json.ts';
 import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel,
@@ -15,8 +15,10 @@ import {artCache} from '../artwork.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
+import {PartyPanel} from './party.ts';
 import {noRect, StoryPanel} from './story.ts';
 
+const HostileRed = rgb(0xe0695e);
 const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
 
@@ -81,6 +83,7 @@ export class Hud {
     private connection: HTMLElement;
     private resizer: HTMLElement;
     private fight: FightPanel;
+    private party: PartyPanel;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -148,6 +151,7 @@ export class Hud {
             e.preventDefault();
             state.miniZoom = Math.max(0, Math.min(MapScales.length - 1, state.miniZoom + (e.deltaY < 0 ? 1 : -1)));
         }, {passive: false});
+        this.party = new PartyPanel(side, state);
         const sight = el('section', 'panel in-sight', side);
         const sightHead = el('div', 'panel-head', sight);
         el('span', 'label gold', sightHead, 'IN SIGHT');
@@ -211,6 +215,7 @@ export class Hud {
         this.updateMenu();
         this.updateLook();
         this.fight.update();
+        this.party.update();
         this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);
@@ -273,9 +278,10 @@ export class Hud {
             if (r.row !== before) this.sightList.insertBefore(r.row, before);
             before = r.row.nextElementSibling;
             setText(r.name, e.name || 'Someone');
-            setStyle(r.name, 'color', css(e.kind === 'npc' ? Sage : Blue));
+            setStyle(r.name, 'color', css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
-            setText(r.detail, [upperFirst(role), e.hostile ? 'hostile' : '', e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
+            setText(r.detail, [upperFirst(role), e.rel === 'party' ? 'your party' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
+                e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
             setClass(r.row, 'hostile', e.hostile);
             setClass(r.row, 'targeted', s.talkTargets.includes(e.id));
             setClass(r.row, 'highlight', s.highlight === e.id || s.hoveredEntity === e.id);

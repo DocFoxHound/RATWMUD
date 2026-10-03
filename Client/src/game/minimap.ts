@@ -180,7 +180,7 @@ export class MapRenderer {
         for (const e of s.entities.values()) {
             if (e.self) continue;
             const x = toX(ox + e.x), y = toY(oy + e.y);
-            c.fillStyle = e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
+            c.fillStyle = e.rel === 'party' ? '#d9b67b' : e.hostile ? '#e0695e' : e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
             c.beginPath();
             c.arc(x, y, Math.max(1.5, Math.min(3, scale)), 0, Math.PI * 2);
             c.fill();
@@ -190,6 +190,19 @@ export class MapRenderer {
                 c.arc(x, y, 5, 0, Math.PI * 2);
                 c.stroke();
             }
+        }
+        // Party mates (doc 32): always shown, even out of sight, in any place this wolf knows.
+        for (const m of s.party?.members ?? []) {
+            if (m.id === s.selfId || !m.online || s.entities.has(m.id)) continue;
+            const place = places.find(p => p.id === m.cell);
+            if (!place) continue;
+            const x = toX(place.x + m.x), y = toY(place.y + m.y);
+            c.fillStyle = '#d9b67b';
+            c.beginPath();
+            c.arc(x, y, Math.max(2, Math.min(3.5, scale)), 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = '#11191b';
+            c.stroke();
         }
         if (me) {
             const x = toX(ox + me.x), y = toY(oy + me.y), r = 6;

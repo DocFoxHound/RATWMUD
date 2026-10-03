@@ -17,7 +17,7 @@ export function describeWolf(e: EntityView): Look {
     const what = e.self ? `${e.name || 'You'} (you)` : e.name || 'Someone';
     const kind = e.self ? '' : e.kind === 'npc' ? (e.work ? upperFirst(e.work) : 'A resident') : 'A player';
     const doing = e.state && e.state !== 'standing' ? e.state : e.moving ? 'moving' : 'standing';
-    return {key: `wolf:${e.id}`, what, why: [kind, e.hostile ? 'hostile' : '', e.lifeStage !== 'adult' ? e.lifeStage : '', doing]
+    return {key: `wolf:${e.id}`, what, why: [kind, e.rel === 'party' ? 'your party' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '', e.lifeStage !== 'adult' ? e.lifeStage : '', doing]
         .filter(Boolean).join(' · ')};
 }
 

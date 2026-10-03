@@ -11,6 +11,7 @@
 #include "RatwJournal.h"
 #include "RatwJsonDoc.h"
 #include "RatwMind.h"
+#include "RatwParty.h"
 #include "RatwVoice.h"
 #include "RatwScenes.h"
 #include "RatwArtwork.h"
@@ -241,6 +242,35 @@ class Game
     json::Value battleView(const Battle& b, const std::string& viewer) const;
     json::Value fightsInView(const Entity& self) const;
     bool battleCommand(Connection* c, const json::Value& j, Result& result);
+    // Parties (RatwGameParty.cpp; doc 32, Part 2): the "party" commands (false: not one of them), an invitation, the
+    // party's out-of-character chat, the rules each tick (places kept, fights called into), and what a player sees of
+    // their party and who is a party mate or hostile to them.
+    party::Parties parties_;
+    struct Pull
+    {
+        std::string battle;
+        int side = 0;
+        double at = 0;                  // World seconds.
+        std::string mate;               // Whose fight it is.
+    };
+    std::map<std::string, Pull> pulls_;                                  // Who is being called into a fight.
+    std::map<std::string, std::set<std::string>> stayedOut_;             // Who won't be called into which fights.
+    std::map<std::string, std::map<std::string, double>> foes_;          // A player's recent foes, until when.
+    double partyAccumulator_ = 0;
+    struct Relations
+    {
+        std::set<std::string> mates;
+        std::map<std::string, std::string> hostile;                      // Who, and why.
+    };
+    bool partyCommand(Connection* c, const json::Value& j, Result& result);
+    Result partyInvite(const std::string& from, const std::string& to);
+    void partyChat(Connection* c, const Entity& speaker, const std::string& text);
+    void partyTick(double dt);
+    Relations relationsFor(const std::string& viewer) const;
+    json::Value partyView(const std::string& id) const;
+    void tellParty(const std::string& partyId, const std::string& words, const std::string& except = {});
+    void tellParty(const std::vector<std::string>& members, const std::string& words, const std::string& except = {});
+    std::string nameOf(const std::string& id) const;
     director::Bridge director_;
     std::vector<Connection*> clients_;
     std::map<std::string, Entity> characters_;
@@ -349,7 +379,9 @@ class Game
     void sendSnapshots(const std::vector<Connection*>& sending);
     void movementSounds();
     // Speech to everyone who can perceive it. `to`: whom it was meant for (each listener is told, as they can tell).
-    std::vector<std::string> publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to = {});
+    // `party`: said to the author's party (their party mates who hear it are told so).
+    std::vector<std::string> publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to = {},
+                                     bool party = false);
     void logEvent(const char* kind, const std::string& actor, const std::string& target = {}, const std::string& detail = {});
     void followTransition(const std::string& id, const std::string& previousCell);
 
