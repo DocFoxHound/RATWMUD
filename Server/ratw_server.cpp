@@ -7,7 +7,8 @@
 //   options: --port 7788, --bind 127.0.0.1, --web DIR (the built browser client), --dialogue URL (the NPC Mind),
 //            --dm-directory DIR (the operator bridge), --dev-tools, --dev-identity,
 //            --full-snapshots, --for SECONDS (stop after, saving: for tests),
-//            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never)
+//            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never),
+//            --workers N (threads finishing players' snapshots in parallel; by default the cores less two, 0 for none)
 //
 // Exits 75 when a new release has been published and nobody is playing (tools/live.sh restarts it on the new build).
 #include "RatwAccountsCore.h"
@@ -18,6 +19,7 @@
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
 
+#include <algorithm>
 #include <arpa/inet.h>
 #include <cerrno>
 #include <chrono>
@@ -31,12 +33,13 @@
 #include <memory>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <poll.h>
+#include <sys/epoll.h>
 #include <sstream>
 #include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <thread>
 #include <vector>
 
 using namespace ratw;
@@ -62,6 +65,7 @@ class Client final : public game::Connection
     Mode mode = Mode::Http;
     web::Reader reader;
     bool closing = false, local = false, playing = false, finishing = false;
+    bool watchingOut = false;                       // epoll also wakes for this socket being writable.
     std::size_t dropped = 0;
 
     void event(const std::string& json) override { queue(link::Event, json, false); }
@@ -85,19 +89,13 @@ class Client final : public game::Connection
             ++dropped;                              // A newer one follows; this one would only be stale.
             return;
         }
-        std::vector<std::uint8_t> packed;
+        std::string payload;
         {
             perf::Scope timed(&meter, perf::Compression);
-            if (!sys::compress(reinterpret_cast<const std::uint8_t*>(raw.data()), raw.size(), packed))
+            if (!link::encode(kind, raw, payload))
                 return;
         }
-        meter.sent(packed.size() + 5);
-        std::string payload(4 + packed.size(), '\0');
-        const auto rawLength = std::uint32_t(raw.size());
-        for (int i = 0; i < 4; ++i)
-            payload[std::size_t(i)] = char(rawLength >> (8 * i));
-        std::memcpy(payload.data() + 4, packed.data(), packed.size());
-        payload.insert(payload.begin(), char(kind));
+        meter.sent(payload.size());
         web::appendFrame(out, web::Binary, payload.data(), payload.size());
         if (out.size() > DisconnectAt)
             closing = true;                         // Hopelessly behind: let it reconnect.
@@ -121,7 +119,7 @@ void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
-                 "                   [--for SECONDS] [--perf-log SECONDS]\n";
+                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N]\n";
 }
 
 void blocking(int fd, bool on)
@@ -137,6 +135,7 @@ int main(int argc, char** argv)
     int port = 7788;
     std::string bind = "127.0.0.1", webRoot;
     double runFor = -1, perfLog = 60;
+    int workers = -1;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -164,6 +163,7 @@ int main(int argc, char** argv)
         else if (a == "--full-snapshots") options.fullSnapshots = true;
         else if (a == "--for") runFor = std::atof(next().c_str());
         else if (a == "--perf-log") perfLog = std::atof(next().c_str());
+        else if (a == "--workers") workers = std::atoi(next().c_str());
         else
         {
             usage();
@@ -186,6 +186,8 @@ int main(int argc, char** argv)
         return 2;
     }
     const auto started = std::chrono::steady_clock::now();
+    options.workerThreads = workers >= 0 ? unsigned(workers)
+                                         : unsigned(std::clamp(int(std::thread::hardware_concurrency()) - 2, 0, 16));
     game::Game g(options);
     g.setMeter(&meter);
     g.log = [](const char* level, const std::string& text) { std::cout << (std::string(level) == "info" ? "" : std::string(level) + ": ") << text << std::endl; };
@@ -249,6 +251,14 @@ int main(int argc, char** argv)
         perf::Scope timed(&meter, perf::Commands);
         if (kind == link::Command && payload.size() <= link::MaxCommand)
             g.command(&c, payload);
+        else if (kind == link::Pose && payload.size() == link::PoseBytes)
+        {
+            std::uint32_t seq;
+            float f[3];
+            std::memcpy(&seq, payload.data(), 4);
+            std::memcpy(f, payload.data() + 4, 12);
+            g.pose(&c, seq, f[0], f[1], f[2], double(std::int8_t(payload[16])), double(std::int8_t(payload[17])));
+        }
         else if (kind == link::Ping && payload.size() == link::PingBytes)
         {
             const std::string pong = char(link::Pong) + payload;
@@ -347,43 +357,75 @@ int main(int argc, char** argv)
             }
         }
     };
+    // epoll (doc 31, Phase 4): each wake costs only the sockets with something to do, not every socket every time.
+    const int events = ::epoll_create1(EPOLL_CLOEXEC);
+    const auto watch = [&](int fd, bool out, int op) {
+        epoll_event e{};
+        e.events = EPOLLIN | (out ? EPOLLOUT : 0u);
+        e.data.fd = fd;
+        ::epoll_ctl(events, op, fd, &e);
+    };
+    watch(listener, false, EPOLL_CTL_ADD);
+    // Writes what it can now; anything left wakes epoll when the socket can take more.
+    const auto flush = [&](Client& c) {
+        if (!c.out.empty())
+        {
+            const auto n = ::send(c.fd, c.out.data(), c.out.size(), MSG_NOSIGNAL);
+            if (n > 0)
+                c.out.erase(0, std::size_t(n));
+            else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+                c.closing = true;
+        }
+        if (c.out.empty() != !c.watchingOut && !c.closing)
+        {
+            c.watchingOut = !c.out.empty();
+            watch(c.fd, c.watchingOut, EPOLL_CTL_MOD);
+        }
+    };
+    std::vector<epoll_event> ready(256);
     while (!stopping && g.exitRequested() < 0 && Clock::now() < until)
     {
-        std::vector<pollfd> fds{{listener, POLLIN, 0}};
-        for (const auto& [fd, c] : clients)
-            fds.push_back({fd, short(POLLIN | (c->out.empty() ? 0 : POLLOUT)), 0});
         const int wait = std::max(0, int(std::chrono::duration_cast<std::chrono::milliseconds>(nextTick - Clock::now()).count()));
-        ::poll(fds.data(), fds.size(), wait);
+        const int count = ::epoll_wait(events, ready.data(), int(ready.size()), wait);
         const auto woke = Clock::now();
         bool ticked = false;
         {
         perf::Scope sockets(&meter, perf::Sockets);
-        if (fds[0].revents & POLLIN)
-            for (;;)
-            {
-                sockaddr_in peer{};
-                socklen_t length = sizeof peer;
-                const int fd = ::accept(listener, reinterpret_cast<sockaddr*>(&peer), &length);
-                if (fd < 0)
-                    break;
-                blocking(fd, false);
-                ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof yes);
-                auto c = std::make_unique<Client>();
-                char text[64];
-                ::inet_ntop(AF_INET, &peer.sin_addr, text, sizeof text);
-                c->fd = fd;
-                c->address = text;
-                c->local = accounts::isLoopbackAddress(c->address);
-                c->id = nextId++;
-                clients[fd] = std::move(c);         // It joins the game once it becomes a WebSocket (serve()).
-            }
         std::vector<int> gone;
-        for (std::size_t i = 1; i < fds.size(); ++i)
+        for (int k = 0; k < count; ++k)
         {
-            auto& c = *clients.at(fds[i].fd);
-            if (fds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+            const int fd = ready[std::size_t(k)].data.fd;
+            const auto flags = ready[std::size_t(k)].events;
+            if (fd == listener)
+            {
+                for (;;)
+                {
+                    sockaddr_in peer{};
+                    socklen_t length = sizeof peer;
+                    const int accepted = ::accept(listener, reinterpret_cast<sockaddr*>(&peer), &length);
+                    if (accepted < 0)
+                        break;
+                    blocking(accepted, false);
+                    ::setsockopt(accepted, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof yes);
+                    auto c = std::make_unique<Client>();
+                    char text[64];
+                    ::inet_ntop(AF_INET, &peer.sin_addr, text, sizeof text);
+                    c->fd = accepted;
+                    c->address = text;
+                    c->local = accounts::isLoopbackAddress(c->address);
+                    c->id = nextId++;
+                    watch(accepted, false, EPOLL_CTL_ADD);
+                    clients[accepted] = std::move(c);   // It joins the game once it becomes a WebSocket (serve()).
+                }
+                continue;
+            }
+            const auto found = clients.find(fd);
+            if (found == clients.end())
+                continue;
+            auto& c = *found->second;
+            if (flags & (EPOLLERR | EPOLLHUP))
                 c.closing = true;
-            if (fds[i].revents & POLLIN)
+            if (flags & EPOLLIN)
             {
                 char buffer[65536];
                 for (;;)
@@ -404,14 +446,8 @@ int main(int argc, char** argv)
                 if (!c.closing)
                     handle(c);
             }
-            if (!c.out.empty() && (fds[i].revents & POLLOUT))
-            {
-                const auto n = ::send(c.fd, c.out.data(), c.out.size(), MSG_NOSIGNAL);
-                if (n > 0)
-                    c.out.erase(0, std::size_t(n));
-                else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
-                    c.closing = true;
-            }
+            if (!c.closing)
+                flush(c);                          // A reply now, and anything waiting for the socket.
             if (c.finishing && c.out.empty())
                 c.closing = true;
             if (c.closing)
@@ -432,15 +468,17 @@ int main(int argc, char** argv)
             nextTick += std::chrono::milliseconds(50);
             if (Clock::now() - nextTick > std::chrono::seconds(1))
                 nextTick = Clock::now();            // Fell far behind (a stall): carry on from now, not in a rush.
-            // Try to send what the tick produced now, rather than on the next wake.
+            // Send what the tick produced now, rather than on the next wake; what can't go yet waits on epoll.
             perf::Scope sockets(&meter, perf::Sockets);
+            std::vector<int> stuck;
             for (auto& [fd, c] : clients)
-                if (!c->out.empty())
-                {
-                    const auto n = ::send(fd, c->out.data(), c->out.size(), MSG_NOSIGNAL);
-                    if (n > 0)
-                        c->out.erase(0, std::size_t(n));
-                }
+            {
+                flush(*c);
+                if (c->closing)
+                    stuck.push_back(fd);
+            }
+            for (int fd : stuck)
+                drop(fd);
         }
         busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
         if (ticked)
@@ -466,6 +504,7 @@ int main(int argc, char** argv)
     for (int fd : all)
         drop(fd);
     g.save();
+    ::close(events);
     ::close(listener);
     std::cout << "RATW server stopped after " << ticks << " ticks; mean " << (ticks ? total / double(ticks) : 0)
               << " ms, slowest " << slowest << " ms" << std::endl;

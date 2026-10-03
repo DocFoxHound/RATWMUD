@@ -4,13 +4,17 @@
 // it (compressing a snapshot counts as compression, not as the view that sent it). The server reports a window of it
 // every minute; the load test, once at the end.
 //
-// The game thread only: nothing here is locked. Timing costs two clock reads per Scope.
+// Timing belongs to the thread that made the meter (the game's): a Scope on any other thread (the worker pool's)
+// counts nothing, and the pool's work is timed as a whole by the game thread around it. Traffic (sent) may be counted
+// from any thread. Timing costs two clock reads per Scope.
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -20,7 +24,8 @@ enum Part : std::uint8_t
 {
     Commands,       // A client's commands and acknowledgements, as they arrive.
     World,          // World::tick: streaming, schedules, movement, separation, views' sight.
-    Views,          // Building and sending players' snapshots (and their sight, prepared together).
+    Views,          // Building and sending players' snapshots.
+    Sight,          // What the players due a snapshot can see, and their memories of it (before their views).
     Motion,         // Building and sending players' motion frames.
     TickOther,      // The rest of Game::tick: the Mind, ambient talk, barks, residents, the DM, the director.
     Saves,          // Capturing the world for a save, and waiting for one (Game::save).
@@ -32,7 +37,7 @@ enum Part : std::uint8_t
 
 inline const char* name(Part p)
 {
-    static const char* names[] = {"commands", "world", "views", "motion", "tick-other", "saves", "database", "compression", "sockets"};
+    static const char* names[] = {"commands", "world", "views", "sight", "motion", "tick-other", "saves", "database", "compression", "sockets"};
     return p < PartCount ? names[p] : "?";
 }
 
@@ -69,15 +74,18 @@ class Meter
     };
 
     // Timed work: inclusive time less the time of any Scope that ran inside it.
+    bool own() const { return std::this_thread::get_id() == owner_; }
     void begin(Part p)
     {
+        if (!own())
+            return;
         if (depth_ < Stack)
             stack_[depth_] = {p, Clock::now(), 0};
         ++depth_;
     }
     void end()
     {
-        if (depth_ == 0)
+        if (!own() || depth_ == 0)
             return;
         --depth_;
         if (depth_ >= Stack)
@@ -90,6 +98,8 @@ class Meter
     }
     void add(Part p, double ms)
     {
+        if (!own())
+            return;
         auto& t = window_.parts[p];
         t.ms += ms;
         t.worst = std::max(t.worst, ms);
@@ -104,7 +114,11 @@ class Meter
             ++window_.ticks;
         }
     }
-    void sent(std::size_t bytes) { window_.bytesOut += bytes; ++window_.messagesOut; }
+    void sent(std::size_t bytes)
+    {
+        bytesOut_.fetch_add(bytes, std::memory_order_relaxed);
+        messagesOut_.fetch_add(1, std::memory_order_relaxed);
+    }
     void received(std::size_t bytes) { window_.bytesIn += bytes; }
 
     const Window& window() const { return window_; }
@@ -112,6 +126,8 @@ class Meter
     Window take()
     {
         Window out = std::move(window_);
+        out.bytesOut = bytesOut_.exchange(0);
+        out.messagesOut = messagesOut_.exchange(0);
         window_ = Window{};
         return out;
     }
@@ -127,6 +143,8 @@ class Meter
     std::array<Open, Stack> stack_{};
     std::size_t depth_ = 0;
     Window window_;
+    std::atomic<std::uint64_t> bytesOut_{0}, messagesOut_{0};
+    std::thread::id owner_ = std::this_thread::get_id();
 };
 
 // Times the enclosing block as `p`; nothing at all without a meter.

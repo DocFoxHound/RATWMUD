@@ -24,6 +24,7 @@ bool readHex(const std::string& text, std::uint8_t* out, std::size_t count);
 
 // zlib (the zlib format, as FCompression's NAME_Zlib). False if zlib can't be loaded or the data doesn't fit.
 bool zlibAvailable(std::string& error);
-bool compress(const std::uint8_t* data, std::size_t length, std::vector<std::uint8_t>& out);
+// zlib at `level` (1 fastest ... 9 smallest; 6, zlib's own default, for saves).
+bool compress(const std::uint8_t* data, std::size_t length, std::vector<std::uint8_t>& out, int level = 6);
 bool uncompress(const std::uint8_t* data, std::size_t length, std::size_t rawLength, std::vector<std::uint8_t>& out);
 } // namespace ratw::sys

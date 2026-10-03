@@ -41,6 +41,7 @@ const connection = new Connection(url, {
             game = new GameView(app, command => connection.submit(command));
             game.netSample = () => connection.netSample();
             game.state.walker = walker;
+            game.state.poseSender = (seq, x, y, facing, ix, iy) => connection.sendPose(seq, x, y, facing, ix, iy);
         }
     },
     snapshot: snapshot => game?.applySnapshot(snapshot),

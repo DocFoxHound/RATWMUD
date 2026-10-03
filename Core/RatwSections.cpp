@@ -1,7 +1,9 @@
 #include "RatwSections.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 namespace ratw::sections
 {
@@ -13,13 +15,28 @@ struct Section
     const char* field;
     const char* name;
     bool entries;
+    // Entries' fields that change from moment to moment: left out of an entry's key, and sent with each reference
+    // to a held entry (the rest of it is sent only when it changes).
+    const char* const* moving = nullptr;
 };
-constexpr const char* DeltaSection = "visibility";
+// A visible wolf's pose and timers (doc 31, Phase 4): its details (name, looks, actions...) change seldom.
+const char* const EntityMotion[] = {"x", "y", "facing", "turning", "moving", "postureRemaining", "speakingRemaining", nullptr};
+bool isMoving(const Section& s, const std::string& field)
+{
+    for (auto* m = s.moving; m && *m; ++m)
+        if (field == *m)
+            return true;
+    return false;
+}
+// Sent as row edits against a version the client holds, when that is much smaller: what the wolf can see, and the
+// cell's ground and heights (unseen tiles are left blank, so every step that shows new ground changes them: whole,
+// they were 67 KB a snapshot for a walking wolf in a city: doc 31, Phase 4).
+bool deltaSection(const std::string& name) { return name == "visibility" || name == "cell.rows" || name == "cell.heights"; }
 constexpr std::size_t BasesKept = 48;
 const Section Sections[] = {{"", "visibility", "visibility", false}, {"cell", "rows", "cell.rows", false},
                             {"cell", "heights", "cell.heights", false}, {"", "worldMap", "worldMap", true},
                             {"", "travelMap", "travelMap", true}, {"", "doors", "doors", false},
-                            {"", "inventory", "inventory", false}};
+                            {"", "inventory", "inventory", false}, {"", "entities", "entities", true, EntityMotion}};
 constexpr std::size_t KeptPerSection = 6, EntriesKept = 4096;
 
 json::Value* parentOf(json::Value& root, const Section& s)
@@ -30,18 +47,104 @@ json::Value* parentOf(json::Value& root, const Section& s)
     return p && p->isObject() ? p : nullptr;
 }
 
-// FNV-1a over the text, both halves: a key is only ever compared with keys this server made.
-std::string keyOf(const json::Value& v)
+// Two 64-bit hashes walked straight over the value (types, strings, the bits of numbers), without writing it out as
+// text first: keying sections was an eighth of the server's work that way (doc 31, Phase 4). A key is only ever
+// compared with keys this server made.
+struct Hash
 {
-    const std::string text = json::dump(v);
     std::uint64_t a = 1469598103934665603ULL, b = 0x9E3779B97F4A7C15ULL;
-    for (unsigned char c : text)
+    void byte(unsigned char c)
     {
         a = (a ^ c) * 1099511628211ULL;
         b = (b ^ c) * 0x100000001B3ULL + 0x632BE59BD9B4E019ULL;
     }
+    void bytes(const void* data, std::size_t n)
+    {
+        const auto* p = static_cast<const unsigned char*>(data);
+        for (std::size_t i = 0; i < n; ++i)
+            byte(p[i]);
+    }
+    // Eight bytes at a time: a cell's rows run to tens of kilobytes a snapshot.
+    void word(std::uint64_t w)
+    {
+        a = (a ^ w) * 0x100000001B3ULL;
+        a ^= a >> 29;
+        b = (b ^ w) * 0x9E3779B97F4A7C15ULL + 0x632BE59BD9B4E019ULL;
+        b ^= b >> 31;
+    }
+    void text(const std::string& s)
+    {
+        word(std::uint64_t(s.size()));
+        std::size_t i = 0;
+        for (; i + 8 <= s.size(); i += 8)
+        {
+            std::uint64_t w;
+            std::memcpy(&w, s.data() + i, 8);
+            word(w);
+        }
+        std::uint64_t tail = 0;
+        std::memcpy(&tail, s.data() + i, s.size() - i);
+        word(tail);
+    }
+    void value(const json::Value& v)
+    {
+        byte(static_cast<unsigned char>(v.type()));
+        switch (v.type())
+        {
+        case json::Value::Type::Null:
+            break;
+        case json::Value::Type::Bool:
+            byte(v.asBool() ? 1 : 0);
+            break;
+        case json::Value::Type::Number:
+        {
+            const double d = v.asNumber();
+            bytes(&d, sizeof d);
+            break;
+        }
+        case json::Value::Type::String:
+            text(v.asString());
+            break;
+        case json::Value::Type::List:
+        {
+            const auto n = std::uint64_t(v.items().size());
+            bytes(&n, sizeof n);
+            for (const auto& item : v.items())
+                value(item);
+            break;
+        }
+        case json::Value::Type::Object:
+        {
+            const auto n = std::uint64_t(v.fields().size());
+            bytes(&n, sizeof n);
+            for (const auto& [key, item] : v.fields())
+            {
+                text(key);
+                value(item);
+            }
+            break;
+        }
+        }
+    }
+};
+
+std::string keyOf(const json::Value& v, const Section* skipping = nullptr)
+{
+    Hash h;
+    if (skipping && skipping->moving && v.isObject())
+    {
+        // An object's fields, but for those that move.
+        for (const auto& [key, item] : v.fields())
+            if (!isMoving(*skipping, key))
+            {
+                h.text(key);
+                h.value(item);
+            }
+    }
+    else
+        h.value(v);
     char out[33];
-    std::snprintf(out, sizeof out, "%016llx%016llx", static_cast<unsigned long long>(a), static_cast<unsigned long long>(b));
+    std::snprintf(out, sizeof out, "%016llx%016llx", static_cast<unsigned long long>(h.a), static_cast<unsigned long long>(h.b));
     return out;
 }
 } // namespace
@@ -139,7 +242,16 @@ Keys strip(json::Value& root, const Keys& known, Bases* bases)
         auto* value = parent ? parent->find(s.field) : nullptr;
         if (!value)
             continue;
-        const std::string key = keyOf(*value);
+        std::string key;
+        if (bases && value->storage() && !s.entries)
+        {
+            auto& last = bases->keys[s.name];
+            if (last.first.storage() != value->storage())
+                last = {*value, keyOf(*value)};
+            key = last.second;
+        }
+        else
+            key = keyOf(*value);
         keys[s.name] = key;
         keysJson.add(s.name, key);
         const auto held = known.find(s.name);
@@ -148,7 +260,7 @@ Keys strip(json::Value& root, const Keys& known, Bases* bases)
         {
             if (whole)
                 parent->erase(s.field);
-            else if (bases && std::string(s.name) == DeltaSection)
+            else if (bases && deltaSection(s.name))
             {
                 const json::Value next = *value;
                 if (held != known.end())
@@ -183,12 +295,15 @@ Keys strip(json::Value& root, const Keys& known, Bases* bases)
                 sent.push(entry);
                 continue;
             }
-            const std::string name = prefix + id->asString(), entryKey = keyOf(entry);
+            const std::string name = prefix + id->asString(), entryKey = keyOf(entry, &s);
             keys[name] = entryKey;
             if (const auto h = known.find(name); h != known.end() && h->second == entryKey)
             {
                 auto reference = json::Value::object();
                 reference.add("$held", entryKey);
+                for (const auto& [field, item] : entry.fields())
+                    if (isMoving(s, field))
+                        reference.add(field, item);
                 sent.push(reference);
                 changed = true;
             }
@@ -273,7 +388,15 @@ bool fill(json::Value& root, Cache& cache)
                         const auto found = cache.entries.find(held->asString());
                         if (found == cache.entries.end())
                             return false;
-                        whole.push(found->second);
+                        // The held entry, with what moved since sent alongside.
+                        auto filled = json::Value::object();
+                        for (const auto& [field, item] : found->second.fields())
+                            if (!entry.has(field))
+                                filled.add(field, item);
+                        for (const auto& [field, item] : entry.fields())
+                            if (field != "$held")
+                                filled.add(field, item);
+                        whole.push(filled);
                         referenced = true;
                         continue;
                     }

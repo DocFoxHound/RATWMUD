@@ -5,6 +5,7 @@
 #include <iosfwd>
 #include <limits>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <string>
 #include <tuple>
@@ -156,8 +157,15 @@ struct Cell
     std::vector<Tile> tiles;
     // False while a streamed cell's tiles and seams are not in memory; its header (everything above) always is.
     bool loaded = true;
-    const Tile* tile(int x, int y) const;
-    Tile* tile(int x, int y);
+    // In the header so it inlines: sight and walking ask for tiles millions of times a second (doc 31, Phase 4).
+    const Tile* tile(int x, int y) const
+    {
+        if (x < 0 || y < 0 || x >= width || y >= height)
+            return nullptr;
+        const auto index = static_cast<std::size_t>(y * width + x);
+        return index < tiles.size() ? &tiles[index] : nullptr;
+    }
+    Tile* tile(int x, int y) { return const_cast<Tile*>(static_cast<const Cell&>(*this).tile(x, y)); }
 };
 
 struct FactionDefinition { std::string id, name, color; };
@@ -273,6 +281,10 @@ struct Snapshot
     bool isometric = false;
     std::vector<ScentCue> scentCues; // Aggregated unseen wolves, no identities.
     bool movementHeard = false;      // Anonymous unseen player movement only.
+    // A snapshot taken without tiles (World::snapshot's `withTiles` false: doc 31, Phase 4) leaves `cell` its header
+    // and points at the live cell and the observer's memory of it instead, for the caller to read at once.
+    const Cell* source = nullptr;
+    const CellMemory* memory = nullptr;
 };
 
 struct Result
@@ -359,6 +371,20 @@ class World
     {
         return entities_;
     }
+    // The ids of the entities in a cell (doc 31, Phase 4): an index rebuilt each tick, and when one is added, removed
+    // or goes through a door, so a view or a motion frame looks at its own cell, not the whole world. Ids, never
+    // pointers (entities are replaced in place): a caller finds each and skips one no longer there or no longer in
+    // that cell.
+    const std::vector<std::string>& idsIn(const std::string& cellId) const;
+    // Builds the lazy indexes views read (idsIn's, the doors in each cell), so views built on several threads at once
+    // only read them (doc 31, Phase 4). Call it after the world last changed and before the views.
+    void prepareReading() const;
+    // How work is spread over threads (the game's pool: doc 31, Phase 4): run(count, job) calls job(i) for every i
+    // below count and returns when all are done. Unset, the world makes its own threads where it uses them.
+    using Parallel = std::function<void(std::size_t, const std::function<void(std::size_t)>&)>;
+    void setParallel(Parallel run) { parallel_ = std::move(run); }
+    // observe() for several observers at once (on the parallel runner): each writes only its own memory and view.
+    void observeAll(const std::vector<std::string>& observerIds);
     const std::map<std::string, Door>& doors() const
     {
         return doors_;
@@ -538,12 +564,20 @@ class World
     std::vector<MapCell> travelMap(const std::string& id) const;
     Result interact(const std::string& id, const std::string& target, const std::string& verb);
     std::vector<std::string> actions(const std::string& id, const std::string& target) const;
-    Snapshot snapshot(const std::string& observerId);
+    // `withTiles` false: the cell's header only, with `source` and `memory` to read its tiles from (copying a city
+    // cell's 65,000 tiles for every view was a large part of a snapshot's cost).
+    // `observeFirst` false: the observer's memory was brought up to date already (observe), as views built in parallel
+    // need (doc 31, Phase 4: a snapshot then only reads the world).
+    Snapshot snapshot(const std::string& observerId, bool withTiles = true, bool observeFirst = true);
     SensoryResult perceive(const std::string& observerId, const std::string& sourceId,
                            Voice voice = Voice::Speak) const;
     bool lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const;
     double hearingClarity(const std::string& observerId, const std::string& sourceId, Voice voice = Voice::Speak) const;
     double visionClarity(const std::string& observerId, const std::string& sourceId) const;
+    // The same with the observer's sight range already known (sightRange): for a view or a motion frame, which ask it
+    // of every wolf in the cell (doc 31, Phase 4: the range was worked out three times a wolf).
+    double visionClarity(const Entity& observer, const Entity& source, double range) const;
+    double sightRange(const Entity& observer) const;
     // Movement sounds only: this never reduces deliberate spoken voice volume.
     double movementAudibility(const std::string& observerId, const std::string& sourceId) const;
     double scentClarity(const std::string& observerId, const std::string& sourceId) const;
@@ -875,6 +909,11 @@ class World
     };
     mutable std::map<std::string, Regions> regions_;
     std::uint64_t ticks_ = 0;                       // Ticks begun; `ticking_` while one runs.
+    mutable std::unordered_map<std::string, std::vector<std::string>> cellIndex_;   // idsIn's index.
+    mutable std::uint64_t indexTick_ = ~0ULL;
+    mutable std::size_t indexSize_ = 0;
+    mutable bool indexDirty_ = true;
+    Parallel parallel_;
     bool ticking_ = false;
     // The cell's region map, validated once a tick (outside a tick, on every call: it checksums every tile); null for
     // a cell without tiles.
@@ -909,6 +948,7 @@ class World
     // half step is free, a full step needs a slope or stairs on either side, anything more is a ledge.
     bool passable(const std::string& cellId, Vec2 p, const Tile* from = nullptr) const;
     bool visiblePoint(const Entity& observer, Vec2 point) const;
+    bool visiblePoint(const Entity& observer, Vec2 point, double range) const;
     bool visiblePortal(const Entity& observer, const Door& door) const;
     // visiblePoint() for every tile of the observer's cell at once (1 = visible): the sight range is worked out once
     // and only tiles within it are traced, where testing each tile alone recomputes the light for every one.
@@ -927,7 +967,6 @@ class World
     const std::vector<char>& viewOf(const Entity& observer, const Cell& cell, bool* fresh = nullptr) const;
     // The cache key viewOf() compares (everything but the tiles seen).
     View viewKey(const Entity& observer, const Cell& cell, double range) const;
-    double sightRange(const Entity& observer) const;
     std::vector<Vec2> findPath(const Entity& actor, Vec2 goal, bool allowClosed = false) const;
     std::vector<Vec2> searchPath(const Entity& actor, Vec2 goal, bool allowClosed) const;   // findPath, uncached.
     // Paths already found, by everything a search depends on: the cell, its ground (the region checksum), which of

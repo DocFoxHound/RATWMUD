@@ -1,6 +1,7 @@
 // The load test (Docs/Design/31-responsiveness.md, Phase 1): the whole game, as the server runs it, with N players.
 //
 //   game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S] [--walking server|client]
+//             [--workers N]
 //
 // EXPORT_DIR is a world build written out as files (python3 tools/world_build.py export DIR). Each player is a fake
 // client that does what the browser does: it enters with a development identity, walks (a new direction every two
@@ -10,17 +11,21 @@
 //
 //   --layout cities   (the default, and the gate) players packed beside residents in the three most peopled regions
 //   --layout spread   players beside residents taken evenly through the whole population
+//   --workers N       threads finishing snapshots in parallel, as the server has (default: the cores less two; 0: none)
 //   --walking client  each player walks its own wolf (doc 31, Phase 3), sending poses twenty times a second as the page
 //                     does, and taking the server's correction when one is refused; "server" (the default) sends keys
 //
 // It prints the server's RATW_PERF lines for the measured window, then the cost of a full save. Not a ctest: a run
 // takes minutes. The gates are in the design doc.
 #include "RatwGame.h"
+#include "RatwLink.h"
 #include "RatwMotionCore.h"
 #include "RatwPerf.h"
 #include "RatwSystemLibs.h"
 
 #include <algorithm>
+#include <thread>
+#include <atomic>
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
@@ -38,7 +43,8 @@ using Clock = std::chrono::steady_clock;
 namespace
 {
 perf::Meter meter;
-std::size_t snapshotBytes = 0, snapshots = 0, motionBytes = 0, motions = 0;
+// Counted from the snapshot workers' threads too.
+std::atomic<std::size_t> snapshotBytes{0}, snapshots{0}, motionBytes{0}, motions{0};
 
 // A browser, as far as the server's work for it goes.
 struct Player final : game::Connection
@@ -85,13 +91,13 @@ struct Player final : game::Connection
   private:
     void pack(const char* data, std::size_t size)
     {
-        std::vector<std::uint8_t> packed;
+        std::string payload;
         {
             perf::Scope timed(&meter, perf::Compression);
-            sys::compress(reinterpret_cast<const std::uint8_t*>(data), size, packed);
+            link::encode(link::Event, std::string(data, size), payload);
         }
-        bytes += packed.size() + 5;
-        meter.sent(packed.size() + 5);
+        bytes += payload.size();
+        meter.sent(payload.size());
     }
 };
 
@@ -117,6 +123,7 @@ int main(int argc, char** argv)
     int players = 20;
     double seconds = 30, warmup = 20;
     std::string layout = "cities", walking = "server";
+    int workers = -1;
     for (int i = 2; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -132,6 +139,8 @@ int main(int argc, char** argv)
             warmup = std::max(0.0, std::atof(argv[++i]));
         else if (a == "--walking")
             walking = argv[++i];
+        else if (a == "--workers")
+            workers = std::atoi(argv[++i]);
         else
             return usage();
     }
@@ -151,6 +160,7 @@ int main(int argc, char** argv)
     options.savePath = save.string();
     options.devIdentity = true;
     options.requireStorage = false;
+    options.workerThreads = workers >= 0 ? unsigned(workers) : unsigned(std::clamp(int(std::thread::hardware_concurrency()) - 2, 0, 16));
     auto cleanUp = [&] {
         std::error_code ignored;
         fs::remove(save, ignored);
@@ -267,8 +277,7 @@ int main(int argc, char** argv)
                             py = c.cy;
                             c.wasCorrected = false;
                         }
-                        g.command(&c, command({{"type", "pose"}, {"seq", double(++poseSeq[p])}, {"x", px + x * .12}, {"y", py + y * .12},
-                                               {"facing", 0.0}, {"ix", x}, {"iy", y}}));
+                        g.pose(&c, ++poseSeq[p], float(px + x * .12), float(py + y * .12), 0, x, y);   // (link::Pose, as the server reads it.)
                     }
                 }
                 g.tick(0.05);
@@ -288,7 +297,10 @@ int main(int argc, char** argv)
                   << g.world().loadedCells() << " places loaded)\n";
         meter.take();
         g.world().resetTickProfile();
-        snapshotBytes = snapshots = motionBytes = motions = 0;
+        snapshotBytes = 0;
+        snapshots = 0;
+        motionBytes = 0;
+        motions = 0;
         run(int(seconds / 0.05), true);
 
         // The window as the server would log it. Its rates are per second of game time, not of the run's own time.
@@ -313,7 +325,8 @@ int main(int argc, char** argv)
         }
         std::cout << "per player: " << perf::fixed(double(all) * 8 / seconds / 1e3 / double(clients.size())) << " kbit/s (most "
                   << perf::fixed(double(most) * 8 / seconds / 1e3) << "); snapshot "
-                  << (snapshots ? snapshotBytes / snapshots : 0) << " B raw, motion frame " << (motions ? motionBytes / motions : 0)
+                  << (snapshots ? snapshotBytes.load() / snapshots.load() : 0) << " B raw, motion frame "
+                  << (motions ? motionBytes.load() / motions.load() : 0)
                   << " B raw\n";
 
         // A full save, waited for, as the server makes one when it stops (file mode: the whole document on this thread).

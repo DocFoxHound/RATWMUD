@@ -7,10 +7,12 @@
 //                    itself, for the latency overlay of Docs/Design/31-responsiveness.md)
 import {inflate} from './inflate.ts';
 
-export const Kind = {Command: 1, Ack: 2, Ping: 3, Event: 10, Snapshot: 11, Motion: 12, Pong: 13} as const;
+export const Kind = {Command: 1, Ack: 2, Ping: 3, Pose: 4, Event: 10, Snapshot: 11, Motion: 12, Pong: 13} as const;
 export type ServerKind = typeof Kind.Event | typeof Kind.Snapshot | typeof Kind.Motion;
 export const MaxCommand = 65536;
 export const MaxRaw = 16 << 20;
+/** The raw length's top bit: the payload is the raw bytes themselves, not compressed (small messages: doc 31, Phase 4). */
+export const Stored = 0x80000000;
 
 const encoder = new TextEncoder();
 
@@ -29,6 +31,20 @@ export function ackMessage(revision: number, missing: boolean): Uint8Array {
     out[0] = Kind.Ack;
     new DataView(out.buffer).setFloat64(1, revision, true);
     out[9] = missing ? 1 : 0;
+    return out;
+}
+
+/** Where the page's own wolf is (doc 31, Phase 3/4): u32 seq, f32 x, f32 y, f32 facing, i8 heading x, i8 heading y. */
+export function poseMessage(seq: number, x: number, y: number, facing: number, ix: number, iy: number): Uint8Array {
+    const out = new Uint8Array(19);
+    const view = new DataView(out.buffer);
+    out[0] = Kind.Pose;
+    view.setUint32(1, seq >>> 0, true);
+    view.setFloat32(5, x, true);
+    view.setFloat32(9, y, true);
+    view.setFloat32(13, facing, true);
+    view.setInt8(17, Math.sign(ix));
+    view.setInt8(18, Math.sign(iy));
     return out;
 }
 
@@ -59,7 +75,12 @@ export function decodeMessage(data: ArrayBuffer | Uint8Array): Arrival | null {
     if (bytes.length < 6) return null;
     const kind = bytes[0];
     if (kind !== Kind.Event && kind !== Kind.Snapshot && kind !== Kind.Motion) return null;
-    const rawLength = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(1, true);
+    const length = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(1, true);
+    if (length >= Stored) {
+        const raw = bytes.subarray(5);
+        return raw.length === length - Stored && raw.length > 0 ? {kind: kind as ServerKind, raw, wireBytes: bytes.length} : null;
+    }
+    const rawLength = length;
     if (rawLength === 0 || rawLength > MaxRaw) return null;
     try {
         return {kind: kind as ServerKind, raw: inflate(bytes.subarray(5), rawLength), wireBytes: bytes.length};

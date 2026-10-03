@@ -168,6 +168,8 @@ export class GameState {
     // rules (walker.ts) and says where it is; the server checks every pose. The mode is the server's: 0 free, 1 held
     // (the server walks the wolf, around a fight or along a route), 2 fighting.
     walker: Walker | null = null;
+    /** Sends a pose in binary (main.ts sets it); without it (tests) a pose goes as a JSON command. */
+    poseSender: ((seq: number, x: number, y: number, facing: number, ix: number, iy: number) => void) | null = null;
     movementMode = 1;
     private walkAsked = false;
     private freePose: {x: number; y: number; facing: number} | null = null;
@@ -619,7 +621,9 @@ export class GameState {
         }
         // Twenty poses a second while walking (also while pushing into a door: the heading takes it through).
         if (this.poseUnsent && this.clock - this.lastPoseSent >= 0.05) {
-            this.send({type: 'pose', seq: ++this.poseSeq, x: pose.x, y: pose.y, facing: pose.facing, ix, iy});
+            ++this.poseSeq;
+            if (this.poseSender) this.poseSender(this.poseSeq, pose.x, pose.y, pose.facing, ix, iy);
+            else this.send({type: 'pose', seq: this.poseSeq, x: pose.x, y: pose.y, facing: pose.facing, ix, iy});
             this.lastPoseSent = this.clock;
             this.poseUnsent = !!(ix || iy);
             this.lastMove = this.clock;

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand, MaxRaw, pingMessage, pongTime} from './wire.ts';
+import {ackMessage, commandMessage, decodeMessage, encodeMessage, Kind, MaxCommand, MaxRaw, pingMessage, pongTime, poseMessage, Stored} from './wire.ts';
 import {readFileSync} from 'node:fs';
 import {inflate} from './inflate.ts';
 import {deflateSync, constants} from 'node:zlib';
@@ -32,6 +32,33 @@ test('a ping carries a time, and the pong that answers it gives the time back (t
     assert.equal(pongTime(ping), null, 'a ping is not a pong');
     assert.equal(pongTime(pong.subarray(0, 8)), null, 'nor is a short message');
     assert.equal(decodeMessage(pong), null, 'a pong is never decoded as a game message');
+});
+
+test('a pose is a few bytes, as the server reads them', () => {
+    const m = poseMessage(7, 12.5, 3.25, -1.5, 1, -1);
+    assert.equal(m.length, 19);
+    assert.equal(m[0], Kind.Pose);
+    const v = new DataView(m.buffer);
+    assert.equal(v.getUint32(1, true), 7);
+    assert.equal(v.getFloat32(5, true), 12.5);
+    assert.equal(v.getFloat32(9, true), 3.25);
+    assert.equal(v.getFloat32(13, true), -1.5);
+    assert.equal(v.getInt8(17), 1);
+    assert.equal(v.getInt8(18), -1);
+});
+
+test('a small message comes as it is, not compressed (the raw length says so)', () => {
+    const raw = text(JSON.stringify({type: 'system', text: 'hi'}));
+    const message = new Uint8Array(5 + raw.length);
+    message[0] = Kind.Event;
+    new DataView(message.buffer).setUint32(1, (raw.length | Stored) >>> 0, true);
+    message.set(raw, 5);
+    const arrival = decodeMessage(message);
+    assert.equal(arrival?.kind, Kind.Event);
+    assert.deepEqual(arrival?.raw, raw);
+    const wrong = message.slice();
+    new DataView(wrong.buffer).setUint32(1, ((raw.length + 1) | Stored) >>> 0, true);
+    assert.equal(decodeMessage(wrong), null, 'a stored length that does not match');
 });
 
 test('server messages inflate; malformed ones are ignored', async () => {

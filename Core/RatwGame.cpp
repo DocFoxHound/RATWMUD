@@ -333,6 +333,11 @@ bool Game::start(std::string& problem)
             return false;
     }
     storageReady_ = true;
+    if (options_.workerThreads > 0)
+    {
+        pool_ = std::make_unique<Pool>(options_.workerThreads);
+        world_.setParallel([this](std::size_t count, const std::function<void(std::size_t)>& job) { pool_->run(count, job); });
+    }
     {
         // Uploaded portraits (doc 29, phase 9): beside the save, or in the database. Not needed to play.
         std::string trouble;
@@ -1041,6 +1046,39 @@ void Game::connect(Connection* c)
     lobby(c);
 }
 
+void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy)
+{
+    if (!c || c->entityId.empty() || c->movementMode == Fighting)
+        return;
+    const auto& id = c->entityId;
+    auto* player = world_.entity(id);
+    if (!player)
+        return;
+    if (c->keysWalking && c->clientWalking && c->movementMode == FreeMovement)
+    {
+        c->keysWalking = false;                    // Poses again: the client walks it.
+        world_.setClientWalks(id, true);
+    }
+    const auto check = world_.placeByClient(id, seq, x, y, facing, ix, iy);
+    if (check.accepted || !player->clientWalks)
+        return;
+    // Where the wolf truly is: the client goes back there, eased.
+    auto correction = Value::object();
+    correction.add("type", "correction");
+    correction.add("seq", double(player->poseSeq));
+    correction.add("cellId", player->cellId);
+    correction.add("x", player->position.x);
+    correction.add("y", player->position.y);
+    correction.add("facing", player->facing);
+    correction.add("reason", check.reason);
+    send(c, correction);
+    if (player->poseStrikes == 20 || player->poseStrikes == 200)
+    {
+        note("warn", "RATW_POSE " + id + " " + std::to_string(player->poseStrikes) + " poses refused in a row (" + check.reason + ")");
+        logEvent("movement refused", id, {}, std::to_string(player->poseStrikes) + " poses refused: " + check.reason);
+    }
+}
+
 void Game::setFighting(const std::string& id, bool fighting)
 {
     if (fighting)
@@ -1069,9 +1107,9 @@ void Game::updateMovementModes()
                  !e->path.empty() || world_.travelState(id).active)
             mode = HeldMovement;                   // (A route or a journey the server walks counts as held too.)
         else
-            for (const auto& [otherId, other] : world_.entities())
-                if (other.cellId == e->cellId && other.npc && !other.dead &&
-                    std::hypot(other.position.x - e->position.x, other.position.y - e->position.y) <= HostileNear &&
+            for (const auto& otherId : world_.idsIn(e->cellId))
+                if (const auto* other = world_.entity(otherId); other && other->cellId == e->cellId && other->npc && !other->dead &&
+                    std::hypot(other->position.x - e->position.x, other->position.y - e->position.y) <= HostileNear &&
                     world_.hostile(otherId))
                 {
                     mode = HeldMovement;
@@ -1142,6 +1180,7 @@ void Game::disconnect(Connection* c)
     clients_.erase(std::remove(clients_.begin(), clients_.end(), c), clients_.end());
     waiting_.erase(std::remove_if(waiting_.begin(), waiting_.end(), [c](const Waiting& w) { return w.c == c; }), waiting_.end());
     c->clientWalking = false;
+    cellRows_.erase(c);
     if (holding_ == c)
         holding_ = nullptr;
 }
@@ -1589,6 +1628,7 @@ void Game::tick(double dt)
     // change of cell.
     {
         perf::Scope motion(meter_, perf::Motion);
+        std::vector<Connection*> framed;
         for (auto* c : clients_)
             if (const auto* e = world_.entity(c->entityId))
             {
@@ -1597,10 +1637,21 @@ void Game::tick(double dt)
                     perf::Scope view(meter_, perf::Views);
                     sendSnapshot(c);
                 }
-                auto frame = motion::frame(world_, e->id);
-                stampFrame(c, frame, e->cellId);
-                c->motion(frame);
+                framed.push_back(c);
             }
+        // Each player's frame reads the world and writes only its own client's state: all at once on the pool.
+        world_.prepareReading();
+        const auto frameFor = [&](Connection* c) {
+            const auto* e = world_.entity(c->entityId);
+            auto frame = motion::frame(world_, e->id);
+            stampFrame(c, frame, e->cellId);
+            c->motion(frame);
+        };
+        if (pool_)
+            pool_->run(framed.size(), [&](std::size_t i) { frameFor(framed[i]); });
+        else
+            for (auto* c : framed)
+                frameFor(c);
     }
     saveAccumulator_ += dt;
     ambientAccumulator_ += dt;
@@ -1615,12 +1666,19 @@ void Game::tick(double dt)
     {
         perf::Scope views(meter_, perf::Views);
         std::vector<std::string> due;
+        std::vector<Connection*> sending;
         for (auto* c : clients_)
             if (!c->entityId.empty() && c->id % SnapshotPhases == snapshotPhase_)
+            {
                 due.push_back(c->entityId);
-        world_.prepareViews(due);
-        for (auto* c : clients_)
-            if (!c->entityId.empty() && c->id % SnapshotPhases == snapshotPhase_)
+                sending.push_back(c);
+            }
+        {
+            perf::Scope sight(meter_, perf::Sight);
+            world_.prepareViews(due);
+            // What a view would change, done here, so the views themselves only read and can be built at once on the
+            // pool (doc 31, Phase 4): each observer's memory, the cell index, each client's kept rows, the notices.
+            for (auto* c : sending)
             {
                 auto* e = world_.entity(c->entityId);
                 if (e && e->ageNoticePending > 0)
@@ -1630,10 +1688,21 @@ void Game::tick(double dt)
                                   " gained). Your character sheet reflects annual growth and age-related changes.");
                     e->ageNoticePending = 0;
                 }
-                sendSnapshot(c);
-                if (e)
-                    e->transitioned = false;
+                cellRows_[c];
             }
+            world_.observeAll(due);
+        }
+        world_.prepareReading();
+        batching_ = true;
+        if (pool_)
+            pool_->run(sending.size(), [&](std::size_t i) { sendSnapshot(sending[i]); });
+        else
+            for (auto* c : sending)
+                sendSnapshot(c);
+        batching_ = false;
+        for (auto* c : sending)
+            if (auto* e = world_.entity(c->entityId))
+                e->transitioned = false;
     }
     watchReleases(dt);
     applyDmActions(dt);
@@ -1712,18 +1781,37 @@ void Game::tick(double dt)
 void Game::movementSounds()
 {
     // Audio awareness is separate from map identification: an unseen wolf may be heard without its ID, name or place.
+    // Who hears what is worked out for every listener at once (on the pool: doc 31, Phase 4), and told here.
+    std::vector<Connection*> listeners;
     for (auto* c : clients_)
     {
-        if (c->entityId.empty())
+        if (c->entityId.empty() || !world_.entity(c->entityId))
             continue;
-        const auto& listener = c->entityId;
-        const auto prior = lastMovementSound_.find(listener);
-        if (prior != lastMovementSound_.end() && world_.time() - prior->second < 3.0)
-            continue;
+        const auto prior = lastMovementSound_.find(c->entityId);
+        if (prior == lastMovementSound_.end() || world_.time() - prior->second >= 3.0)
+            listeners.push_back(c);
+    }
+    std::vector<double> loudest(listeners.size(), 0);
+    world_.prepareReading();
+    const auto hear = [&](std::size_t i) {
+        const auto& listener = listeners[i]->entityId;
+        const auto* me = world_.entity(listener);
+        const double range = world_.sightRange(*me);
         double best = 0;
-        for (const auto& [id, e] : world_.entities())
-            if (!e.npc && id != listener && world_.visionClarity(listener, id) <= 0)
+        for (const auto& id : world_.idsIn(me->cellId))   // (Footsteps carry within the cell.)
+            if (const auto* e = world_.entity(id); e && !e->npc && id != listener && e->cellId == me->cellId &&
+                                                   world_.visionClarity(*me, *e, range) <= 0)
                 best = std::max(best, world_.movementAudibility(listener, id));
+        loudest[i] = best;
+    };
+    if (pool_)
+        pool_->run(listeners.size(), hear);
+    else
+        for (std::size_t i = 0; i < listeners.size(); ++i)
+            hear(i);
+    for (std::size_t i = 0; i < listeners.size(); ++i)
+    {
+        const double best = loudest[i];
         if (best <= 0)
             continue;
         auto e = Value::object();
@@ -1733,8 +1821,8 @@ void Game::movementSounds()
         e.add("anonymous", true);
         e.add("sequence", sequence_++);
         e.add("color", 7);
-        send(c, e);
-        lastMovementSound_[listener] = world_.time();
+        send(listeners[i], e);
+        lastMovementSound_[listeners[i]->entityId] = world_.time();
     }
 }
 
@@ -1759,7 +1847,7 @@ void Game::sendSnapshot(Connection* c)
     const auto id = c->entityId;
     if (!world_.entity(id))
         return;
-    const auto view = world_.snapshot(id);
+    const auto view = world_.snapshot(id, false, !batching_);
     auto root = Value::object();
     root.add("time", view.time);
     root.add("revision", revision_);
@@ -1864,33 +1952,49 @@ void Game::sendSnapshot(Connection* c)
         cell.add("day", day);
     }
     root.add("senses", wire::senses(view));
-    // The cell as rows of text, one character a tile: its glyph (a space where the wolf knows nothing), whether it
-    // is visible now ('2'), remembered ('1') or unknown ('0'), and its height.
-    auto rows = Value::array(), visibility = Value::array(), heights = Value::array();
-    const int width = view.cell.width;
-    for (int y = 0; y < view.cell.height; ++y)
+    // The cell as rows of text, one character a tile: its glyph (a space where the wolf knows nothing, its memory of
+    // it where it remembers), whether it is visible now ('2'), remembered ('1') or unknown ('0'), and its height (level
+    // ground where not seen now). Built again only when what the wolf sees or remembers, or the cell, has changed.
+    auto& kept = batching_ ? cellRows_.find(c)->second : cellRows_[c];   // (Made beforehand when built in parallel.)
+    const auto* source = view.source;
+    if (!source || kept.cell != view.cell.id || kept.tiles != source->tiles.data() || kept.visible != view.visibleTiles ||
+        kept.remembered != view.rememberedTiles)
     {
-        std::string row, seen, height;
-        row.reserve(std::size_t(width));
-        seen.reserve(std::size_t(width));
-        height.reserve(std::size_t(width));
-        for (int x = 0; x < width; ++x)
+        auto rows = Value::array(), visibility = Value::array(), heights = Value::array();
+        const int width = view.cell.width;
+        const auto& tiles = source ? source->tiles : view.cell.tiles;
+        for (int y = 0; y < view.cell.height; ++y)
         {
-            const int i = y * width + x;
-            const bool known = i < int(view.cell.tiles.size());
-            const bool visible = known && i < int(view.visibleTiles.size()) && view.visibleTiles[std::size_t(i)];
-            const bool remembered = known && i < int(view.rememberedTiles.size()) && view.rememberedTiles[std::size_t(i)];
-            row += visible || remembered ? view.cell.tiles[std::size_t(i)].glyph : ' ';
-            seen += visible ? '2' : remembered ? '1' : '0';
-            height += visible || remembered ? wire::heightChar(view.cell.tiles[std::size_t(i)].height) : wire::heightChar(0);
+            std::string row, seen, height;
+            row.reserve(std::size_t(width));
+            seen.reserve(std::size_t(width));
+            height.reserve(std::size_t(width));
+            for (int x = 0; x < width; ++x)
+            {
+                const auto i = std::size_t(y * width + x);
+                const bool known = i < tiles.size();
+                const bool visible = known && i < view.visibleTiles.size() && view.visibleTiles[i];
+                const bool remembered = known && i < view.rememberedTiles.size() && view.rememberedTiles[i];
+                const char memoryGlyph = view.memory && i < view.memory->glyphs.size() ? view.memory->glyphs[i] : ' ';
+                row += visible ? tiles[i].glyph : remembered ? (source ? memoryGlyph : tiles[i].glyph) : ' ';
+                seen += visible ? '2' : remembered ? '1' : '0';
+                height += visible ? wire::heightChar(tiles[i].height) : wire::heightChar(0);
+            }
+            rows.push(row);
+            visibility.push(seen);
+            heights.push(height);
         }
-        rows.push(row);
-        visibility.push(seen);
-        heights.push(height);
+        kept.cell = view.cell.id;
+        kept.tiles = source ? static_cast<const void*>(source->tiles.data()) : nullptr;
+        kept.visible = view.visibleTiles;
+        kept.remembered = view.rememberedTiles;
+        kept.rows = rows;
+        kept.visibility = visibility;
+        kept.heights = heights;
     }
-    cell.add("rows", rows);
-    cell.add("heights", heights);
-    root.add("visibility", visibility);
+    cell.add("rows", kept.rows);
+    cell.add("heights", kept.heights);
+    root.add("visibility", kept.visibility);
     root.add("cell", cell);
     const auto near = [&](const Entity& e) {
         return std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 3;
@@ -2015,9 +2119,9 @@ void Game::sendSnapshot(Connection* c)
     item("token", "Wooden token", "token", "A smooth keepsake carved with a branch.", false, 1);
     root.add("inventory", inventory);
     const Entity* trader = nullptr;
-    for (const auto& [eid, e] : world_.entities())
-        if (world_.society().merchant(eid) && e.cellId == view.self.cellId)
-            trader = &e;
+    for (const auto& eid : world_.idsIn(view.self.cellId))   // (Its own cell's: doc 31, Phase 4.)
+        if (const auto* e = world_.entity(eid); e && e->cellId == view.self.cellId && world_.society().merchant(eid))
+            trader = e;
     const auto* traderLife = trader ? world_.society().resident(trader->id) : nullptr;
     if (trader && purse && trader->posture != "lying" && (!traderLife || traderLife->task != "sleep") &&
         world_.visionClarity(id, trader->id) > 0 &&
@@ -2081,10 +2185,17 @@ void Game::sendSnapshot(Connection* c)
     root.add("persistenceHealthy", storageReady_);
     root.add("devTools", options_.devTools);
     // Leave out what this client already holds (RatwSections.h), and remember what this one carries.
+    finishSnapshot(c, std::move(root), double(revision_));
+}
+
+// What the client holds left out, written, sent: the client's own state alone, so many can go at once on the pool.
+void Game::finishSnapshot(Connection* c, json::Value root, double revision)
+{
     if (!options_.fullSnapshots)
-        c->held.sending(double(revision_), sections::strip(root, c->held.known, &c->held.bases));
+        c->held.sending(revision, sections::strip(root, c->held.known, &c->held.bases));
     c->snapshot(json::dump(root));
 }
+
 
 std::vector<std::string> Game::publish(const std::string& author, const ParsedPost& post, Voice voice, const std::vector<std::string>& to)
 {
@@ -2556,33 +2667,7 @@ void Game::command(Connection* c, const std::string& raw)
         world_.setClientWalks(id, c->clientWalking && c->movementMode == FreeMovement && !c->keysWalking);
     }
     else if (type == "pose")
-    {
-        if (c->keysWalking && c->clientWalking && c->movementMode == FreeMovement)
-        {
-            c->keysWalking = false;                // Poses again: the client walks it.
-            world_.setClientWalks(id, true);
-        }
-        const auto check = world_.placeByClient(id, std::uint32_t(std::max(0.0, num("seq"))), num("x"), num("y"), num("facing"),
-                                                num("ix"), num("iy"));
-        if (!check.accepted && player->clientWalks)
-        {
-            // Where the wolf truly is: the client goes back there, eased.
-            auto correction = Value::object();
-            correction.add("type", "correction");
-            correction.add("seq", double(player->poseSeq));
-            correction.add("cellId", player->cellId);
-            correction.add("x", player->position.x);
-            correction.add("y", player->position.y);
-            correction.add("facing", player->facing);
-            correction.add("reason", check.reason);
-            send(c, correction);
-            if (player->poseStrikes == 20 || player->poseStrikes == 200)
-            {
-                note("warn", "RATW_POSE " + id + " " + std::to_string(player->poseStrikes) + " poses refused in a row (" + check.reason + ")");
-                logEvent("movement refused", id, {}, std::to_string(player->poseStrikes) + " poses refused: " + check.reason);
-            }
-        }
-    }
+        pose(c, std::uint32_t(std::max(0.0, num("seq"))), num("x"), num("y"), num("facing"), num("ix"), num("iy"));
     else if (type == "move")
     {
         if (std::hypot(num("x"), num("y")) > 0 && !c->keysWalking)

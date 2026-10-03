@@ -283,18 +283,6 @@ ScentDetection detectScent(const Entity& observer, const Entity& source, Wind wi
 }
 } // namespace
 
-const Tile* Cell::tile(int x, int y) const
-{
-    if (x < 0 || y < 0 || x >= width || y >= height)
-        return nullptr;
-    const auto index = static_cast<std::size_t>(y * width + x);
-    return index < tiles.size() ? &tiles[index] : nullptr;
-}
-Tile* Cell::tile(int x, int y)
-{
-    return const_cast<Tile*>(static_cast<const Cell&>(*this).tile(x, y));
-}
-
 Tile tileFromGlyph(char glyph)
 {
     return fromGlyph(glyph);
@@ -640,8 +628,47 @@ Entity& World::addPlayer(const std::string& id, const std::string& name)
     observe(id);
     return stored;
 }
+const std::vector<std::string>& World::idsIn(const std::string& cellId) const
+{
+    if (indexDirty_ || indexTick_ != ticks_ || indexSize_ != entities_.size())
+    {
+        for (auto& [cell, ids] : cellIndex_)
+            ids.clear();
+        for (const auto& [id, e] : entities_)
+            cellIndex_[e.cellId].push_back(id);
+        indexDirty_ = false;
+        indexTick_ = ticks_;
+        indexSize_ = entities_.size();
+    }
+    static const std::vector<std::string> none;
+    const auto found = cellIndex_.find(cellId);
+    return found == cellIndex_.end() ? none : found->second;
+}
+
+void World::prepareReading() const
+{
+    idsIn(std::string());
+}
+
+void World::observeAll(const std::vector<std::string>& observerIds)
+{
+    // The shared maps get their entries here, so on the threads each observer only changes its own.
+    for (const auto& id : observerIds)
+        if (const auto* o = entity(id); o && !o->npc && cell(o->cellId))
+        {
+            memories_[id][o->cellId];
+            views_[id];
+        }
+    if (parallel_)
+        parallel_(observerIds.size(), [&](std::size_t i) { observe(observerIds[i]); });
+    else
+        for (const auto& id : observerIds)
+            observe(id);
+}
+
 bool World::removePlayer(const std::string& id)
 {
+    indexDirty_ = true;
     const auto it = entities_.find(id);
     if (it == entities_.end() || it->second.npc)
         return false;
@@ -952,7 +979,11 @@ double World::sightRange(const Entity& o) const
 }
 bool World::visiblePoint(const Entity& o, Vec2 p) const
 {
-    return distance(o.position, p) <= sightRange(o) && lineOfSight(o.cellId, o.position, p);
+    return visiblePoint(o, p, sightRange(o));
+}
+bool World::visiblePoint(const Entity& o, Vec2 p, double range) const
+{
+    return distance(o.position, p) <= range && lineOfSight(o.cellId, o.position, p);
 }
 std::vector<char> World::visibleTileMask(const Entity& o, const Cell& c, double range) const
 {
@@ -989,7 +1020,10 @@ World::View World::viewKey(const Entity& o, const Cell& c, double range) const
     for (const Door* d : doorsIn(c.id))
         if (!d->passage)
             doors = (doors ^ std::uint64_t(d->open)) * 1099511628211ULL;
-    return {c.id, std::llround(o.position.x * 50), std::llround(o.position.y * 50), std::llround(range * 100), doors,
+    // By the tile the observer stands on (doc 31, Phase 4.4: sight is worked out again on reaching a new tile, or when
+    // a door, the light or the weather changes it), cast from where it stands as it arrives. Keyed by its position to
+    // a fiftieth of a tile, a walking wolf's thousands of sight rays were cast again for nearly every snapshot.
+    return {c.id, std::llround(std::floor(o.position.x)), std::llround(std::floor(o.position.y)), std::llround(range * 100), doors,
             std::uint64_t(c.tiles.size()), {}};
 }
 const std::vector<char>& World::viewOf(const Entity& o, const Cell& c, bool* fresh) const
@@ -1037,7 +1071,9 @@ void World::prepareViews(const std::vector<std::string>& observerIds) const
         return;
     // Only reads happen on the helpers (tiles, doors, fixtures); each writes its own result.
     const std::size_t threads = std::min<std::size_t>(jobs.size(), std::max(1u, std::min(8u, std::thread::hardware_concurrency())));
-    if (threads > 1)
+    if (parallel_)
+        parallel_(jobs.size(), [&](std::size_t j) { jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range); });
+    else if (threads > 1)
     {
         std::vector<std::thread> helpers;
         for (std::size_t t = 1; t < threads; ++t)
@@ -1742,6 +1778,7 @@ Result World::moveTo(const std::string& id, double x, double y)
 
 void World::transition(Entity& a, const Door& d)
 {
+    indexDirty_ = true;
     if (const auto* held = custodyOf(a.id); held && d.targetCell != held->cell)
     {
         if (!a.npc)
@@ -3052,8 +3089,7 @@ void World::tick(double dt)
             looking.push_back(entry.first);
         }
     prepareViews(looking);
-    for (const auto& id : looking)
-        observe(id);
+    observeAll(looking);                            // (On the game's pool, where it has one: doc 31, Phase 4.)
     absorbJournal();                                // Whatever the host did to the society directly.
     tickViews += since(mark);
     const auto add = [](TickProfile::Part& part, double ms) {
@@ -3076,15 +3112,21 @@ double World::visionClarity(const std::string& observerId, const std::string& so
         return 0;
     if (o->id == s->id)
         return 1;
-    if (o->cellId != s->cellId || !visiblePoint(*o, s->position))
+    return o->cellId == s->cellId ? visionClarity(*o, *s, sightRange(*o)) : 0;
+}
+double World::visionClarity(const Entity& o, const Entity& s, double range) const
+{
+    if (o.id == s.id)
+        return 1;
+    if (o.cellId != s.cellId || !visiblePoint(o, s.position, range))
         return 0;
-    if (s->posture == "crouching")
+    if (s.posture == "crouching")
     {
-        const double detectionRange = (7.0 - 4.0 * clamp01(s->sneakSkill / 100.0)) * (sightRange(*o) / 27.0);
-        if (distance(o->position, s->position) >= detectionRange)
+        const double detectionRange = (7.0 - 4.0 * clamp01(s.sneakSkill / 100.0)) * (range / 27.0);
+        if (distance(o.position, s.position) >= detectionRange)
             return 0;
     }
-    return clarity(distance(o->position, s->position), sightRange(*o) * .5);
+    return clarity(distance(o.position, s.position), range * .5);
 }
 double World::hearingClarity(const std::string& observerId, const std::string& sourceId, Voice voice) const
 {
@@ -3474,21 +3516,34 @@ const std::map<std::string, CellMemory>& World::memories(const std::string& id) 
     const auto it = memories_.find(id);
     return it == memories_.end() ? empty : it->second;
 }
-Snapshot World::snapshot(const std::string& observerId)
+Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool observeFirst)
 {
     Snapshot out;
     out.time = time_;
     const auto* o = entity(observerId);
     if (!o)
         return out;
-    observe(observerId);
+    if (observeFirst)
+        observe(observerId);
     const auto* c = cell(o->cellId);
     if (!c)
         return out;
     out.self = *o;
     out.self.path.clear();
     out.self.input = {};
-    out.cell = *c;
+    if (withTiles)
+        out.cell = *c;
+    else
+    {
+        // The header: everything but the tiles.
+        out.cell.id = c->id; out.cell.name = c->name; out.cell.description = c->description;
+        out.cell.width = c->width; out.cell.height = c->height;
+        out.cell.worldX = c->worldX; out.cell.worldY = c->worldY; out.cell.worldZ = c->worldZ;
+        out.cell.outdoors = c->outdoors; out.cell.weather = c->weather; out.cell.wind = c->wind; out.cell.lighting = c->lighting;
+        out.cell.seasonalWeather = c->seasonalWeather; out.cell.region = c->region; out.cell.chapter = c->chapter;
+        out.cell.factionClaims = c->factionClaims; out.cell.loaded = c->loaded;
+        out.source = c;
+    }
     out.cell.wind = windAt(c->id);
     out.environment = environmentAt(c->id, o->position);
     out.scentCues = scentCues(observerId);
@@ -3498,6 +3553,8 @@ Snapshot World::snapshot(const std::string& observerId)
     const auto remembered = book.find(c->id);
     const CellMemory emptyMemory;
     const auto& memory = remembered == book.end() ? emptyMemory : remembered->second;
+    if (!withTiles && remembered != book.end())
+        out.memory = &remembered->second;
     const auto& seen = viewOf(*o, *c);
     for (int y = 0; y < c->height; ++y)
         for (int x = 0; x < c->width; ++x)
@@ -3506,19 +3563,23 @@ Snapshot World::snapshot(const std::string& observerId)
             const bool visible = seen[i];
             out.visibleTiles[i] = visible;
             out.rememberedTiles[i] = !visible && i < memory.observed.size() && memory.observed[i];
-            if (!visible)
+            if (!visible && withTiles)
             {
                 out.cell.tiles[i] = Tile{};
                 out.cell.tiles[i].glyph = out.rememberedTiles[i] ? memory.glyphs[i] : ' ';
             }
         }
-    for (const auto& entry : entities_)
+    const double range = sightRange(*o);              // Once for the whole view, not per wolf (doc 31, Phase 4).
+    for (const auto& id : idsIn(o->cellId))         // Its own cell's wolves, not the world's.
     {
-        if (entry.first != observerId && !entry.second.npc && entry.second.cellId == o->cellId &&
-            visionClarity(observerId, entry.first) <= 0 && movementAudibility(observerId, entry.first) > 0)
+        const auto found = entities_.find(id);
+        if (found == entities_.end() || found->second.cellId != o->cellId)
+            continue;
+        const auto& entry = *found;
+        const double clear = visionClarity(*o, entry.second, range);
+        if (entry.first != observerId && !entry.second.npc && clear <= 0 && movementAudibility(observerId, entry.first) > 0)
             out.movementHeard = true;
-        if (entry.first == observerId ||
-            (entry.second.cellId == o->cellId && visionClarity(observerId, entry.first) > 0))
+        if (entry.first == observerId || clear > 0)
         {
             Entity visible = entry.second;
             visible.path.clear();
@@ -3527,7 +3588,7 @@ Snapshot World::snapshot(const std::string& observerId)
         }
     }
     for (const Door* door : doorsIn(o->cellId))
-        if (!(door->passage && door->boundary) && visiblePoint(*o, door->position))
+        if (!(door->passage && door->boundary) && visiblePoint(*o, door->position, range))
         {
             Door visible = *door;
             // Target anchors/paired fixture IDs are server topology, not UI data.
@@ -3544,7 +3605,8 @@ Snapshot World::snapshot(const std::string& observerId)
         if (door->portal)
         {
             adjacent.insert(door->targetCell);
-            if (visiblePortal(*o, *door))
+            // (visiblePortal, with the range worked out once: a city cell has hundreds of doors.)
+            if (door->cellId == o->cellId && door->open && visiblePoint(*o, door->position, range))
                 currentlyVisible.insert(door->targetCell);
         }
     // And every known place outdoors within a day's walk at the same height (doc 29, phase 8): the minimap shows the

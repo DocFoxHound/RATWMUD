@@ -132,10 +132,15 @@ Value frame(const World& world, const std::string& observer)
     root.add("cellId", self->cellId);
     root.add("time", world.time());
     auto poses = Value::array();
-    for (const auto& [id, e] : world.entities())
+    const double range = world.sightRange(*self);       // Once per frame, not per wolf (doc 31, Phase 4).
+    for (const auto& id : world.idsIn(self->cellId))  // Its own cell's wolves (doc 31, Phase 4).
     {
+        const auto* found = world.entity(id);
+        if (!found)
+            continue;
+        const auto& e = *found;
         const bool isSelf = id == observer;
-        if (!isSelf && (e.cellId != self->cellId || world.visionClarity(observer, id) <= 0))
+        if (e.cellId != self->cellId || (!isSelf && world.visionClarity(*self, e, range) <= 0))
             continue;
         auto pose = Value::object();
         pose.add("id", e.id);

@@ -1,7 +1,7 @@
 // One WebSocket to the server, feeding a Session. In a browser, messages are inflated and parsed on a worker
 // (decodeWorker.ts) so a large snapshot never stalls a frame; they are handed on strictly in the order they arrived (a
 // snapshot never overtakes the event before it). Without workers (Node), the same decoding runs here, at once.
-import {ackMessage, commandMessage, Kind, pingMessage, pongTime} from './wire.ts';
+import {ackMessage, commandMessage, Kind, pingMessage, pongTime, poseMessage} from './wire.ts';
 import {unpack} from './motion.ts';
 import {decode, type Decoded} from './decodeWorker.ts';
 import {Session, type Json, type SessionView} from './session.ts';
@@ -90,6 +90,11 @@ export class Connection {
 
     submit(command: Json) {
         this.session.submit(command);
+    }
+
+    /** Where the page's own wolf is: a few bytes, twenty times a second (doc 31, Phase 4). */
+    sendPose(seq: number, x: number, y: number, facing: number, ix: number, iy: number) {
+        this.send(poseMessage(seq, x, y, facing, ix, iy));
     }
 
     /** The latency overlay's numbers. */

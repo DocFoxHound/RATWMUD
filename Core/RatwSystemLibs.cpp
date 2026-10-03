@@ -177,14 +177,14 @@ bool zlibAvailable(std::string& error)
     return zlib().ok;
 }
 
-bool compress(const std::uint8_t* data, std::size_t length, std::vector<std::uint8_t>& out)
+bool compress(const std::uint8_t* data, std::size_t length, std::vector<std::uint8_t>& out, int level)
 {
     const auto& z = zlib();
     if (!z.ok)
         return false;
     unsigned long size = z.bound(static_cast<unsigned long>(length));
     out.resize(size);
-    if (z.compress2(out.data(), &size, data, static_cast<unsigned long>(length), 6) != 0)
+    if (z.compress2(out.data(), &size, data, static_cast<unsigned long>(length), level) != 0)
         return false;
     out.resize(size);
     return true;

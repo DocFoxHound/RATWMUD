@@ -73,6 +73,12 @@ class Value
     const Value& object(const std::string& key) const;   // A null value if missing or not an object.
 
     bool operator==(const Value& other) const;     // Same content; objects compare field sets, whatever their order.
+    // The shared storage of an array or object (null for anything else). Containers are copied on write, so a value
+    // with the same storage as another still holds exactly the same content.
+    const void* storage() const
+    {
+        return array_ ? static_cast<const void*>(array_.get()) : object_ ? static_cast<const void*>(object_.get()) : nullptr;
+    }
     bool operator!=(const Value& other) const { return !(*this == other); }
 
   private:

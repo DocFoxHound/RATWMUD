@@ -16,6 +16,7 @@
 #include "RatwArtwork.h"
 #include "RatwPerf.h"
 #include "RatwPg.h"
+#include "RatwPool.h"
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
 #include "RatwWorld.h"
@@ -115,6 +116,9 @@ struct Options
     // Snapshots of the world taken by a forked copy of the server, so the game never waits for one (doc 31, Phase 2).
     // For a database or file world; tests turn it off to snapshot in place.
     bool forkSnapshots = true;
+    // Worker threads that key, write and compress players' snapshots in parallel after each tick (doc 31, Phase 4); 0
+    // (the default, and tests') does it all on the game thread. The server asks for the cores it has, less two.
+    unsigned workerThreads = 0;
     std::string connectionLabel = "Authoritative server · 20 Hz";
 };
 
@@ -137,6 +141,8 @@ class Game
     void disconnect(Connection* c);                           // Its character leaves the world first.
     void command(Connection* c, const std::string& json);
     void acknowledge(Connection* c, double revision, bool missing);   // It applied that snapshot (or lacks a part).
+    // A client walking its own wolf says where it is (link::Pose; the same as the "pose" command, without the JSON).
+    void pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy);
     void tick(double dt);                                     // 20 times a second (dt 0.05).
     void save();                                              // Stored before returning.
     // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
@@ -208,6 +214,20 @@ class Game
     std::uint64_t nextSignIn_ = 0;
     void finishSignIns();
     std::set<std::string> fighting_;
+    // Each client's last cell rows, heights and visibility, reused while what it sees and remembers is unchanged
+    // (doc 31, Phase 4): building and keying them for a 256x256 city cell every snapshot was most of a view's cost.
+    struct CellRows
+    {
+        std::string cell;
+        const void* tiles = nullptr;
+        std::vector<bool> visible, remembered;
+        json::Value rows, visibility, heights;
+    };
+    std::map<const Connection*, CellRows> cellRows_;
+    // The worker pool, and whether the views due this tick are being built on it (they then only read the world).
+    std::unique_ptr<Pool> pool_;
+    bool batching_ = false;
+    void finishSnapshot(Connection* c, json::Value root, double revision);
     void updateMovementModes();
     director::Bridge director_;
     std::vector<Connection*> clients_;

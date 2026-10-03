@@ -11,6 +11,8 @@ interface Section {
     field: string;
     name: string;        // Its name among the keys.
     entries?: boolean;   // A list of objects with an "id", each held (and sent) on its own.
+    // Entries' fields that change from moment to moment: sent with each {"$held": key}, laid over the held entry.
+    moving?: readonly string[];
 }
 
 export const Sections: readonly Section[] = [
@@ -21,6 +23,9 @@ export const Sections: readonly Section[] = [
     {parent: '', field: 'travelMap', name: 'travelMap', entries: true},
     {parent: '', field: 'doors', name: 'doors'},
     {parent: '', field: 'inventory', name: 'inventory'},
+    // The wolves in view (doc 31, Phase 4): each one's details only when they change, its pose and timers every time.
+    {parent: '', field: 'entities', name: 'entities', entries: true,
+        moving: ['x', 'y', 'facing', 'turning', 'moving', 'postureRemaining', 'speakingRemaining']},
 ];
 
 export const KeptPerSection = 6;
@@ -101,7 +106,8 @@ export function fill(root: JsonObject, cache: SectionCache): boolean {
                 for (const entry of value) {
                     if (isObject(entry) && typeof entry.$held === 'string') {
                         if (!cache.entries.has(entry.$held)) return false;
-                        whole.push(cache.entries.get(entry.$held));
+                        const {$held: _held, ...moved} = entry;
+                        whole.push({...(cache.entries.get(entry.$held) as JsonObject), ...moved});
                         referenced = true;
                         continue;
                     }

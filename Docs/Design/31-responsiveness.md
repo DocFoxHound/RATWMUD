@@ -1,8 +1,8 @@
 # 31. Responsiveness and scale: one server, a thousand wolves
 
-Planned 2026-10-02. **Agreed. Phases 1–3 built 2026-10-02; Phases 4–6 not started.**
+Planned 2026-10-02. **Agreed. Phases 1–4 built 2026-10-02; Phases 5–6 not started.**
 
-The plan is agreed (see "The decisions"). Phases 1 (measuring), 2 (saves) and 3 (movement) are built; the rest has not started. The target is **1,000 players on one server**, with
+The plan is agreed (see "The decisions"). Phases 1 (measuring), 2 (saves), 3 (movement) and 4 (per-player work) are built; the rest has not started. The target is **1,000 players on one server**, with
 the world's roughly 1,000 residents. Hosting is local development now, dedicated servers later. We fix lag rather than
 split the game into services by system. The Unreal cleanup waits until the character-creator work is done; it is
 listed at the end.
@@ -460,6 +460,70 @@ Gate:
 12. **Separation** uses the spatial index, so a crowded square costs neighbours, not everyone.
 
 Gate: gates 1–3 below.
+
+**Built 2026-10-02**, each step measured with `game_load`. The profiling was done with callgrind; gprof's numbers
+misled at first.
+
+1. **Compression** (4.9). Messages under 1 KB (most motion frames) go uncompressed: the raw length's top bit is
+   `link::Stored`, and both decoders read it. The rest go at zlib level 1, not 6. Compression went from 8.9 to 3.4 ms
+   a tick at 100 players, for 14% more bandwidth.
+2. **Section keys hashed straight from the value**, eight bytes at a time, not by writing JSON first. A part sent
+   again as the very same value is not hashed again: its copy-on-write storage (`json::Value::storage`) is kept per
+   client.
+3. **Wolves' details sent when they change** (4.7). `entities` is a delta section:
+   - each wolf's details go once, then as `{"$held": key}`
+   - its pose and timers (x, y, facing, turning, moving, posture and speech timers) travel with every reference
+4. **The cell's ground and heights as row edits.** Unseen tiles are blank, so every step that shows new ground
+   changed them. They went whole, 67 KB a snapshot for a walking wolf in a city.
+   - Snapshots fell from about 16 KB to 5 KB raw.
+   - The rows themselves are reused while what the wolf sees and remembers is unchanged.
+   - `World::snapshot` can leave out the tiles, and the game reads the live cell and the memory directly, so a
+     city's 65,000 tiles are no longer copied for every view.
+5. **Sight** (4.4):
+   - **The range once per view and motion frame** (`visionClarity(observer, source, range)`). It was worked out up to
+     three times for every wolf and every door, each sampling the weather field.
+   - **Views keyed by the tile**, as agreed, not by the position to a fiftieth of a tile. A walking wolf's thousands
+     of sight rays had been cast again for nearly every snapshot. Sight fell from 6.1 to 0.5 ms a tick at 100
+     players.
+6. **The spatial index** (4.1). `World::idsIn(cell)` holds ids, never pointers, and is rebuilt each tick and on
+   entries, removals and doors. Views, motion frames, pawsteps, the hostile check and the trader search look at their
+   own cell, not all 2,000 entities.
+7. **The pool** (4.10, `Core/RatwPool.h`):
+   - **What runs on it:** every due player's whole snapshot, the motion frames, sight (`prepareViews`), memory
+     (`World::observeAll`) and pawsteps.
+   - **On the game thread first:** what a view would change (memory, the indexes, each client's kept rows,
+     notices). The views then only read the world.
+   - **Checks:** ThreadSanitizer is clean at 30, 60 and 80 players, the last walking freely. The meter counts only on
+     the game thread, and traffic atomically.
+   - **Size:** the server uses the cores less two (`--workers N`); tests use none.
+8. **Binary poses**, for input. A pose is 18 bytes (`link::Pose`), not a JSON command: 5,000 a second at 250 players
+   cost 5 ms of command parsing.
+9. **`epoll`** (4.11) in place of `poll()`. Only sockets with something to do are looked at; output waits are watched
+   only while some is pending. The network work is still on the game thread: with `epoll` and the pool, a thread of
+   its own wasn't needed yet.
+10. **Measured** (`game_load`, cities, 30 s, file saves; Phase 1's baseline in brackets):
+
+| Players | Mean / p99 per tick | World | Views + sight | Motion | Snapshot raw | kbit/s per player |
+| --- | --- | --- | --- | --- | --- | --- |
+| 20 | **11.1 / 39** (23 / 52) | 6.6 | 3.4 | 0.7 | 5.0 KB (17 KB) | 173 (220) |
+| 100 | **20.5 / 51** (79 / 136) | 11.5 | 6.6 | 1.1 | 4.9 KB (16 KB) | 174 (218) |
+| 250 | **37.8 / 95** (262 / 432) | 18.8 | 13.7 | 1.8 | 5.2 KB (15 KB) | 181 (223) |
+| 100 spread | 31.8 / 92 (125 / 176) | 17.4 | 11.1 | 1.4 | | |
+| 250, the page walking | 34.9 / 82 | 14.2 | 12.7 | 1.8 | | |
+
+**Gate 1** (100 players, under 25 ms mean and 50 ms p99): **the mean is met. The p99 (51 ms) is just over.** Its spikes
+are the residents' schedules and route planning (`RATW_PERF_WORLD` worst), which Phase 5 is for.
+
+**Gate 2** (250) is not met: 37.8 ms mean. **What is left is mostly the world's own tick**, which runs on one thread:
+residents walking, separation, schedules and route planning. Players' work now spreads over the cores.
+
+**Not done, and why:**
+- **Far wolves less often** (4.3). The client would have to keep a wolf missing from a frame rather than drop it.
+  Motion is already under 2 ms at 250 players.
+- **Terrain shading on the client** (4.6) and **binary snapshots** (4.8). Snapshots are already 5 KB, and their JSON
+  is written on the pool.
+- **Integer handles** throughout (4.1). The per-cell index gave most of the gain without touching every use of an id.
+- **A network thread** (4.11).
 
 ### Phase 5. Smooth the spikes
 
