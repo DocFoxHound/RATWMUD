@@ -91,7 +91,9 @@ class Site:
                 'territory': {'region': region, 'claims': [], 'chapter': ''}})
             record['rooms'].append({'id': rid, 'name': room.name, 'z': room.z,
                                     'beds': [dict(zip('xy', turn(p))) for p in room.beds],
-                                    'work': [dict(zip('xy', turn(p))) for p in room.work]})
+                                    'work': [dict(zip('xy', turn(p))) for p in room.work],
+                                    'stations': [{**dict(zip('xy', turn((x, y)))), 'station': kind}
+                                                 for x, y, kind in room.stations]})
             if i == 0:
                 ix, iy = turn(room.door)
                 cid, lx, ly = self.cell_at(dx, dy)
@@ -105,11 +107,17 @@ class Site:
             self.links.append({'id': f'{bid}_stairs_{n + 1}', 'name': f'{b.name} stairs', 'kind': 'stairs',
                                'open': True, 'a': {'cell': ra, 'x': pa[0], 'y': pa[1]},
                                'b': {'cell': rb, 'x': pb[0], 'y': pb[1]}})
+        if getattr(b, 'fresh', False):
+            record['fresh'] = True
+            FRESH_ROOMS.update(r['id'] for r in record['rooms'])
         self.manifest.append(record)
         return bid, outside
 
 
 LIGHT_DEFAULT = {'artificial': .8, 'daylightAccess': .5, 'tone': 'warm'}
+# Rooms of buildings added by doc 35 (Building.fresh): the cities' newcomers (towns.fill_city) leave their beds and
+# floors alone, so the residents generated before doc 35 come out exactly as they were.
+FRESH_ROOMS: set[str] = set()
 
 
 class Lots:

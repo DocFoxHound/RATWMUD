@@ -1250,6 +1250,8 @@ class Western:
         self.lay_ground()
         placed = self.scatter_features()
         self.mark_cliffs()
+        cities.build_quarters(self)        # Doc 35: last, so nothing before it moves.
+        self.mark_cliffs()
         # Nothing of the new world may touch Upper Accord's region.
         x, y, w, h = UA
         self.c.codes[y:y + h, x:x + w] = ord(',')
@@ -1433,11 +1435,12 @@ def assemble(project, world, cells):
             r['territory'] = {**r['territory'], 'claims': room_claims[r['id']]}
     cell_claims = {}
     for sid, region in world.places.items():
-        if sid in ('ridgemere', 'ser_ferro') or sid.startswith('estate_'):
+        if sid in ('ridgemere', 'ser_ferro') or sid.startswith(('estate_', 'quarter_')):
             ys, xs = np.nonzero(region)
             key = f'@{int(xs.mean()) // CELL}_{int(ys.mean()) // CELL}'
+            city = sid[8:] if sid.startswith('quarter_') else sid
             add = {'ridgemere': ['council_of_houses', 'ridgemere_watch'],
-                   'ser_ferro': ['crown_of_ser_ferro', 'ser_ferro_guard']}.get(sid, ['house_' + sid[7:]])
+                   'ser_ferro': ['crown_of_ser_ferro', 'ser_ferro_guard']}.get(city, ['house_' + sid[7:]])
             cell_claims.setdefault(by_grid[key], set()).update(add)
     for c in merged['cells']:
         if c['id'] in cell_claims:
@@ -1508,8 +1511,15 @@ def main(argv=None):
         (args.out / 'buildings.json').write_text(json.dumps(world.city_site.manifest, indent=1), encoding='utf-8')
         (args.out / 'project.json').write_text(json.dumps(merged), encoding='utf-8')
     if args.import_dev:
+        import time
         import world_db
         import world_store
+        # The world as it was, kept before anything is written (as the other generators keep it).
+        folder = Path(__file__).resolve().parents[2] / 'artifacts/backups'
+        folder.mkdir(parents=True, exist_ok=True)
+        backup = folder / f'{project["id"]}_dev_r{revision}_before_western_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
+        backup.write_text(json.dumps(project, ensure_ascii=False), encoding='utf-8')
+        print(f'DEV revision {revision} backed up to {backup}.')
         # Every generated cell, interior, door, resident and route is replaced; anything else authored is kept.
         with world_db.connect('dev', 'editor') as conn:
             new = world_store.save_world(conn, merged, revision)

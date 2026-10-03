@@ -22,7 +22,7 @@ import numpy as np
 
 import terrain_catalog as catalog
 from . import field
-from .buildings import TRADES, Building, hall, house, shop, tavern, tenement
+from .buildings import TRADES, WORKS, WORKS_TRADE, Building, hall, house, shop, tavern, tenement, works
 from .canvas import DEFAULT_HEIGHT, Canvas, code, reachable
 from .cities import fp, grow, shrink
 from .citizens import Folk
@@ -64,6 +64,12 @@ TOWNS = {
             ('hall', 'warehouse', 'The Caravan Shed', 'Bales and crates waiting for the next wagons up or down.', 20, 13),
             ('hall', 'guard', 'The Toll Post', 'Where the Accord\'s toll is taken and the road watched.', 14, 9),
         ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 6, 'The Carters\' Bunkhouse'),
+            ('works', 'cartwright', 'The Wheelwright\'s Yard', 'Every caravan wagon that limps in leaves on new wheels.'),
+            ('works', 'stables', 'The Crossing Stables', 'Draught horses for hire and for sale: the carters\' best friends and worst expense.', 2),
+            ('shop', 'saddler', 'The Trace and Collar', 'Draught harness, pack harness and panniers, mended while you wait.'),
+        ],
         houses=6, tenements=1,
         outside=[('carter', 'loads the caravan wagons', 3, 'gate'), ('farmer', 'works the crossing fields', 3, 'field'),
                  ('stablehand', 'tends the carters\' beasts', 2, 'gate')],
@@ -90,6 +96,12 @@ TOWNS = {
              18, 12),
             ('hall', 'guard', 'The Watch Post', 'Two bunks, a brazier and a view of the coast road.', 14, 9),
         ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 6, 'The Pan Hands\' House'),
+            ('works', 'saltworks', 'The Saltreach Pans', 'Saltreach salt, rake by rake; half of it goes to the Ridgemere smokehouses.'),
+            ('works', 'smokehouse', 'The Gullwharf Smokehouse', 'Herring split and hung by the thousand.'),
+            ('shop', 'chandler', 'Tar and Tallow', 'Pitch for the boats, candles for the cottages, rope for everything.'),
+        ],
         houses=6, tenements=1,
         outside=[('fisher', 'fishes the grey coast', 4, 'shore'), ('salter', 'rakes the salt pans', 3, 'field')],
         farms=1, guards=2, field='0',
@@ -114,6 +126,12 @@ TOWNS = {
             ('hall', 'healer', 'The Bonesetter\'s', 'Splints, poultices and a long bench for the hurt from the pits.',
              16, 10),
             ('hall', 'guard', 'The Watch Post', 'The Crown\'s two watchmen keep their spears and their quarrels here.', 14, 9),
+        ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 6, 'Furnace Row'),
+            ('works', 'ironworks', 'The Cinderbrook Bloomery', 'Ore from the pits goes in red and comes out iron.', 4),
+            ('works', 'kilnhouse', 'The Charcoal Sheds', 'The hills\' charcoal, stacked dry for the furnaces.', 2),
+            ('works', 'foundry', 'The Bell Pit', 'Copper and tin from the hill mines, cast into bells, buckles and bronze for Ser Ferro.'),
         ],
         houses=6, tenements=2,
         outside=[('miner', 'digs ore in the hill workings', 5, 'gate'), ('charcoal burner', 'burns charcoal for the forges',
@@ -140,6 +158,11 @@ TOWNS = {
             ('hall', 'guard', 'The Watch House', 'The frontier watch: a few beds, a rack of spears and a map of the downs.',
              16, 10),
             ('hall', 'warehouse', 'The Granary', 'The town\'s grain, against a hard winter.', 18, 12),
+        ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('works', 'stables', 'The Drovers\' Stables', 'Horses for plough and cart, traded on market day.', 2),
+            ('shop', 'weaver', 'Downland Wool', 'Fleeces from the downs, spun and woven into thick plain cloth.'),
+            ('shop', 'saddler', 'The Strap and Buckle', 'Harness for wolf and horse alike.'),
         ],
         houses=8, tenements=1,
         outside=[('farmer', 'farms the downland fields', 4, 'field'), ('shepherd', 'keeps sheep on the downs', 3, 'gate'),
@@ -170,6 +193,9 @@ TOWNS = {
             ('hall', 'healer', 'The Healer\'s House', 'Clean beds, river-cold compresses and a healer who has seen '
              'every kind of hook wound.', 16, 10),
         ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('works', 'smokehouse', 'The Mirrormere Smokehouse', 'Trout and eel smoked over alder.'),
+        ],
         houses=9, tenements=2,
         outside=[('fisher', 'fishes the Mirrormere', 6, 'shore'), ('reed cutter', 'cuts reeds along the shore', 2, 'shore'),
                  ('farmer', 'works the lakeside fields', 2, 'field')],
@@ -193,6 +219,11 @@ TOWNS = {
             ('hall', 'chapel', 'The Stilt Chapel', 'A chapel raised on stones against the floods, with a bell for the mist.',
              14, 10),
             ('hall', 'guard', 'The Marsh Watch', 'A small watch for a town that rarely sees trouble but fears it.', 14, 9),
+        ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 6, 'The Kiln Loft'),
+            ('shop', 'potter', 'The Mire Kiln', 'Pots and pipes of Mireland clay, fired with peat.'),
+            ('works', 'brewery', 'The Bog Brewery', 'Dark, peat-smoked ale nobody else can stomach.'),
         ],
         houses=8, tenements=1,
         outside=[('peat cutter', 'cuts peat in the fens', 4, 'gate'), ('eel trapper', 'traps eels in the channels', 3, 'shore'),
@@ -218,6 +249,12 @@ TOWNS = {
             ('hall', 'guard', 'The Toll and Watch', 'The ford toll and the town watch share one cramped house.', 14, 9),
             ('hall', 'warehouse', 'The Grain Barn', 'The steppe\'s harvest, stacked in sacks to the beams.', 20, 13),
         ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 6, 'The Millers\' Row'),
+            ('works', 'mill', 'The Ford Mill', 'The wheel in the ford grinds the whole steppe\'s grain.'),
+            ('shop', 'cooper', 'Amberford Cooperage', 'Casks for the ale and the grain trade.'),
+            ('works', 'stables', 'The Grain Road Stables', 'Teams of heavy horses for the grain wagons.', 2),
+        ],
         houses=8, tenements=1,
         outside=[('farmer', 'farms the amber fields', 6, 'field'), ('miller', 'grinds at the ford mill', 1, 'shore'),
                  ('toll keeper', 'keeps the ford toll', 1, 'gate')],
@@ -235,6 +272,9 @@ TOWNS = {
         buildings=[
             ('tavern', 'The Hollow Cup', 'Barely a tavern: one room, one barrel, and the whole village on a good night.'),
             ('shop', 'general', 'The Hollowmere Shop', 'A counter in a front room selling what the carter last brought.'),
+        ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('shop', 'herbalist', 'Valley Remedies', 'Dried herbs and the old cures of the valley.'),
         ],
         houses=3, tenements=0,
         outside=[('farmer', 'farms the valley fields', 3, 'field'), ('woodcutter', 'cuts wood in the valley', 1, 'gate')],
@@ -260,6 +300,10 @@ TOWNS = {
             ('hall', 'refectory', 'The Mess Hall', 'Long tables, a great hearth and a cook who shouts.', 18, 12),
             ('shop', 'armorer', 'The Armoury', 'Spears, shields and mail in racks, counted every morning.'),
         ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 6, 'The Engineers\' Quarters'),
+            ('works', 'arsenal', 'The North Arsenal', 'Where the fortress\'s wall crossbows are built, mended and kept.'),
+        ],
         houses=0, tenements=0, outside=[], farms=0, guards=11,
         heads=['North', 'Frost', 'Rime', 'Crag', 'Bleak'], tails=['ward', 'watch', 'guard', 'helm', 'hold'],
         quirks=['counts the days to the end of the posting', 'sharpens the same blade every evening'],
@@ -274,6 +318,10 @@ TOWNS = {
             ('hall', 'refectory', 'The Mess Hall', 'Fish stew, every day, and complaints about it.', 18, 12),
             ('shop', 'armorer', 'The Armoury', 'Spears, bows and the boat hooks the garrison is famous for.'),
         ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 3, 'The Smith\'s Loft'),
+            ('shop', 'smith', 'The Isle Forge', 'Mends the garrison\'s blades and the boats\' fittings.'),
+        ],
         houses=0, tenements=0, outside=[], farms=0, guards=11,
         heads=['Isle', 'Mere', 'Tower', 'Moat', 'Grey'], tails=['ward', 'watch', 'guard', 'keep', 'wall'],
         quirks=['can row in the dark', 'fishes from the walls when no one is watching'],
@@ -287,6 +335,10 @@ TOWNS = {
             ('hall', 'leader', 'The Warden\'s Hall', 'A cold hall with one high seat and one map kept covered.', 20, 12),
             ('hall', 'refectory', 'The Mess Hall', 'Silent meals at long tables.', 18, 12),
             ('shop', 'armorer', 'The Armoury', 'Blades, crossbows and iron-bound doors.'),
+        ],
+        industry=[  # Doc 35: built after everything else, from their own random sequence.
+            ('tenement', 3, 'The Smith\'s Loft'),
+            ('shop', 'smith', 'The Silent Forge', 'The garrison\'s smith works without a word.'),
         ],
         houses=0, tenements=0, outside=[], farms=0, guards=11,
         heads=['Dark', 'Deep', 'Black', 'Night', 'Grim'], tails=['ward', 'watch', 'guard', 'hold', 'gate'],
@@ -464,6 +516,13 @@ def make(cfg, entry, rng, family_name=None):
         p = shop(rng, style, trade)
         return Building('shop', name, style, fp(p.w, p.h), [p.room('', name, f'{name}, {TRADES[trade]["label"].lower()}. {text}')],
                         district=cfg['prefix'], trade=trade)
+    if kind == 'works':
+        _, works_kind, name, text = entry[:4]
+        hands = entry[4] if len(entry) > 4 else 3
+        # Inside, the cinder floor of a workshop (Ser Ferro's whitewash and flagstones in its own towns).
+        p = works(rng, style if style == 'serferro' else 'works', works_kind, hands)
+        return Building('works', name, style, fp(p.w, p.h), [p.room('', name, f'{name}: {WORKS[works_kind][1]}. {text}')],
+                        district=cfg['prefix'], trade=works_kind)
     if kind in ('inn', 'tavern'):
         inn = kind == 'inn'
         name, text = entry[1], entry[2]
@@ -527,6 +586,7 @@ def place_buildings(place: Place, site: TownSite, cfg, street, square, centre, r
         lots.take(x0, y0, w, h)
         site.manifest[-1]['town'] = place.sid
         placed.append((bid, b, outside))
+    place.lots = lots                     # What is left, for doc 35's industry (place_industry).
     return placed, missing
 
 
@@ -589,6 +649,87 @@ def farms(place: Place, cfg, site: TownSite, rng, families):
     return fields
 
 
+def place_industry(place: Place, site: TownSite, cfg, rng):
+    """Doc 35's businesses, built once everything that was here before is in place (so it all stays where it was):
+    on the lots left inside the walls, or else outside near a gate on open ground with the door towards the gate (as
+    mills, stables and smokehouses often were). A building that would cut a door off from the gate is taken away
+    again. Returns the names of any that found no place."""
+    c = place.canvas
+    start = place.gates[0]['in']
+
+    def doors_reachable():
+        walk = reachable(c.codes, c.heights, start)
+        return all(walk[m['door']['y'], m['door']['x']] for m in site.manifest)
+
+    def attempt(b, x0, y0, facing):
+        saved = (c.codes.copy(), c.heights.copy(), len(site.rooms), len(site.links), len(site.manifest))
+        site.place(b, x0, y0, facing, place.sid, open_door=True)
+        site.manifest[-1]['town'] = place.sid
+        if doors_reachable():
+            return True
+        c.codes[:], c.heights[:] = saved[0], saved[1]
+        del site.rooms[saved[2]:], site.links[saved[3]:], site.manifest[saved[4]:]
+        return False
+
+    outside = []
+    lots = place.lots
+    centre = place.square_centre
+    for e in cfg['industry']:
+        b = make(cfg, e, rng)
+        b.fresh = True
+        fw, fh = b.footprint
+        for _, x0, y0, facing, w, h in lots.candidates(fw, fh, centre, limit=1500):
+            if lots.clear(x0, y0, w, h) and attempt(b, x0, y0, facing):
+                lots.take(x0, y0, w, h)
+                break
+        else:
+            if b.kind != 'tenement':
+                outside.append(b)
+    place.outside_wanted = outside
+    return outside_industry(place, site, rng, attempt)
+
+
+def outside_industry(place: Place, site: TownSite, rng, attempt):
+    """Doc 35's workshops with no room inside the walls, built outside near a gate."""
+    c, codes = place.canvas, place.canvas.codes
+    walk = reachable(codes, c.heights, place.gates[0]['in'])
+    solid = np.isin(codes, [ord(t['code']) for t in catalog.TILES if t.get('solid')])
+    wet = np.isin(codes, [ord(x) for x in 'W~w'])
+    roads = np.isin(place.before, [ord(x) for x in 'd_8+G'])
+    open_ground = walk & ~solid & ~wet & ~roads & (codes == place.before)
+    taken = grow(place.inside | place.walls, 4) | grow(codes != place.before, 3)
+    H, W = codes.shape
+    missing = []
+    for b in place.outside_wanted:
+        best = None
+        for g in place.gates:
+            ox, oy = g['out']
+            for _ in range(500):
+                facing = rng.choice('NSEW')
+                fw, fh = b.footprint if facing in 'NS' else b.footprint[::-1]
+                x0, y0 = ox + rng.randint(-40, 30), oy + rng.randint(-40, 30)
+                if x0 < 4 or y0 < 4 or x0 + fw + 4 >= W or y0 + fh + 4 >= H:
+                    continue
+                area = (slice(y0 - 2, y0 + fh + 2), slice(x0 - 2, x0 + fw + 2))
+                if taken[area].any() or open_ground[area].mean() < .9:
+                    continue
+                dx, dy = ox - (x0 + fw / 2), oy - (y0 + fh / 2)        # The door faces the gate.
+                if facing != (('E' if dx > 0 else 'W') if abs(dx) > abs(dy) else ('S' if dy > 0 else 'N')):
+                    continue
+                d = math.hypot(dx, dy)
+                if best is None or d < best[0]:
+                    best = (d, x0, y0, facing, fw, fh)
+        if best is None:
+            missing.append(b.name)
+            continue
+        _, x0, y0, facing, fw, fh = best
+        if not attempt(b, x0, y0, facing):
+            missing.append(b.name)
+            continue
+        taken[y0 - 6:y0 + fh + 6, x0 - 6:x0 + fw + 6] = True
+    return missing
+
+
 def shore_spots(place: Place, rng, n=12):
     """Walkable tiles by the water near the place (for fishers and the like)."""
     codes = place.canvas.codes
@@ -624,6 +765,8 @@ def labels_for(record):
         return word, f'keeps {name}'[:40]
     if kind in ('inn', 'tavern'):
         return 'innkeeper' if kind == 'inn' else 'tavern keeper', f'keeps {name}'[:40]
+    if kind == 'works':
+        return WORKS_TRADE.get(record['trade'], 'master'), f'runs {name}'[:40]
     return kind, f'works at {name}'[:40]
 
 
@@ -631,7 +774,7 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
     P = Folk(project, manifest, rng, cfg['prefix'], R.FEMALE, R.MALE, cfg['heads'], cfg['tails'],
              cfg['quirks'] + R.QUIRKS[:6], cfg['hooks'])
     mine = [b for b in manifest if b.get('town') == place.sid]
-    homes = [b for b in mine if b['kind'] in ('house', 'tenement')]
+    homes = [b for b in mine if b['kind'] in ('house', 'tenement') and not b.get('fresh')]
     rng.shuffle(homes)
     homes.sort(key=lambda b: b['kind'] != 'house')
     inns = [b for b in mine if b['kind'] in ('inn', 'tavern')]
@@ -659,7 +802,7 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
     # The work there is: each building's keeper (and helpers), the watch, and the work outside the walls.
     jobs = []
     for b in mine:
-        if b['kind'] in ('house', 'tenement') or b.get('farm'):
+        if b['kind'] in ('house', 'tenement') or b.get('farm') or b.get('fresh'):
             continue
         word, label = labels_for(b)
         if b['kind'] in ('shop', 'inn', 'tavern'):
@@ -668,6 +811,13 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
             if b['kind'] in ('inn', 'tavern') and cfg['people'] >= 25:
                 jobs.append(dict(role='civilian', label=f'serves at {b["name"]}'[:40], job=f'a server at {b["name"]}',
                                  work=('building', b), hours=(14, 23)))
+        elif b['kind'] == 'works':
+            # The master who runs it (and sells what it makes), and the hands who work its stations.
+            jobs.append(dict(role='merchant', label=label, job=f'the {word} of {place.name}', work=('building', b), hours=(6, 18)))
+            hands = sum(len(r['work']) for r in b['rooms']) - 1
+            for _ in range(max(0, min(hands, 2))):
+                jobs.append(dict(role='civilian', label=f'works at {b["name"]}'[:40], job=f'a hand at {b["name"]}',
+                                 work=('building', b), hours=(6, 18)))
         elif b['kind'] == 'chapel':
             jobs.append(dict(role='civilian', label=f'keeps {b["name"]}'[:40], job=f'the keeper of {b["name"]}',
                              work=('building', b), hours=(6, 19)))
@@ -746,6 +896,33 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
     return P, jobs
 
 
+def staff_industry(P, place: Place, manifest, rng):
+    """Doc 35's businesses, staffed after everyone else: a master (and a hand or two at a works) in whatever beds the
+    town still has free. Returns the jobs no bed could be found for."""
+    P.rng = rng
+    mine = [b for b in manifest if b.get('town') == place.sid]
+    homes = [b for b in mine if b['kind'] in ('house', 'tenement')]
+    rng.shuffle(homes)
+    homes.sort(key=lambda b: not b.get('fresh'))
+    jobs = []
+    for b in [b for b in mine if b.get('fresh')]:
+        word, label = labels_for(b)
+        jobs.append(dict(role='merchant', label=label, job=f'the {word} of {place.name}', b=b))
+        if b['kind'] == 'works':
+            hands = sum(len(r['work']) for r in b['rooms']) - 1
+            jobs += [dict(role='civilian', label=f'works at {b["name"]}'[:40], job=f'a hand at {b["name"]}', b=b)
+                     for _ in range(max(0, min(hands, 2)))]
+    unfilled = []
+    for job in jobs:
+        home = next((bed for bed in (P.bed(h) for h in homes) if bed), None)
+        if home is None:
+            unfilled.append(job)
+            continue
+        P.add(role=job['role'], work_label=job['label'], home=home, work=P.work(job['b']), evening=home, hours=(6, 18),
+              job=job['job'], age=rng.randint(20, 58))
+    return unfilled
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # The three cities, filled out
 # ---------------------------------------------------------------------------------------------------------------
@@ -789,7 +966,8 @@ def fill_city(project, city, cfg, seed=SEED):
         if city == 'ser_ferro':
             return r['id'].startswith('sf_')
         return r['territory']['region'] in UA_REGIONS and not r['id'].startswith(('rm_', 'sf_', 'tn_'))
-    rooms = [r for r in project['rooms'] if ours(r)]
+    from .site import FRESH_ROOMS
+    rooms = [r for r in project['rooms'] if ours(r) and r['id'] not in FRESH_ROOMS]
     homes = [r for r in rooms if not any(word in r['name'] for word in NOT_HOMES)]
     beds = [(r, x, y) for r in homes for y, row in enumerate(r['terrain']) for x, ch in enumerate(row)
             if ch in 'bz' and (r['id'], x, y) not in P.taken]
@@ -899,6 +1077,8 @@ def build(project, sid, cfg, reserved, seed=SEED):
             raise ValueError(f'{name}: only {len(placed)} buildings fit; not building it like that')
         fields = farms(place, cfg, site, rng, families)
     shore = shore_spots(place, rng)
+    if cfg.get('industry') and not cfg.get('ruined'):
+        missing += place_industry(place, site, cfg, random.Random(f'{seed}:{sid}:doc35'))
     # Every door must be reachable from a gate on foot, by the game's own rules.
     start = place.gates[0]['in']
     walk = reachable(place.canvas.codes, place.canvas.heights, start)
@@ -910,6 +1090,7 @@ def build(project, sid, cfg, reserved, seed=SEED):
     rooms = [{**r, 'worldX': r['worldX'] + place.cell['x'], 'worldY': r['worldY'] + place.cell['y']} for r in site.rooms]
     staged = {**project, 'rooms': project['rooms'] + rooms, 'links': project['links'] + site.links}
     P, unfilled = populate(staged, place, cfg, site.manifest, rng, fields, shore)
+    unfilled += staff_industry(P, place, site.manifest, random.Random(f'{seed}:{sid}:doc35:people'))
     return {'place': place, 'rooms': rooms, 'links': site.links, 'people': P.people, 'routes': P.routes,
             'manifest': site.manifest, 'missing': missing, 'unfilled': unfilled}
 

@@ -76,6 +76,8 @@ class City:
     def __init__(self, world, site, seed, prefix, region):
         self.world, self.site, self.c = world, site, world.c
         self.rng = random.Random(seed)
+        # Doc 35's additions draw from their own sequence, so the buildings that were already here keep their sizes.
+        self.new_rng = random.Random(seed * 7 + 35)
         self.prefix, self.region = prefix, region
         self.placed = []                    # (building id, Building, manifest record)
         self.districts = {}                 # name -> anchor (canvas x, y)
@@ -176,10 +178,67 @@ class City:
             _, insides[side] = self.gate(region, ring, target, side, 5, thick, level, key=(sid, side))
         return region, region & ~grow(ring, 1), level, insides
 
+    def estate_ground(self, sid, region, ground, level, gate_in):
+        c = self.c
+        ys, xs = np.nonzero(region)
+        x, y, w, h = xs.min(), ys.min(), xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
+        far = (x + w - gate_in[0] + x, y + h - gate_in[1] + y)       # The manor stands away from the gate.
+        self.districts[f'{sid}_seat'] = (min(max(far[0], x + 20), x + w - 20), min(max(far[1], y + 18), y + h - 18))
+        self.districts[f'{sid}_works'] = gate_in
+        drive = c.line_mask([gate_in, self.districts[f'{sid}_seat']], 4) & ground
+        self.drives[sid] = drive
+        avenues = drive | self.inner_ring(ground, 3)
+        c.paint(avenues, 'd', level)
+        return avenues
+
+    @staticmethod
+    def facing(frm, to):
+        dx, dy = to[0] - frm[0], to[1] - frm[1]
+        return ('E' if dx > 0 else 'W') if abs(dx) > abs(dy) else ('S' if dy > 0 else 'N')
+
+    def works_quarter(self, sid, name, cells, size, toward, city_gate, wanted, style, wall_ch, ground_ch, extra):
+        """A walled quarter of workshops outside the city (doc 35), found like an estate (clear of every place and
+        road), with its own road to the city gate. Its buildings use the districts f'{sid}_works' (by its gate) and
+        f'{sid}_seat' (the far side). Called once the rest of the world is laid out (build_quarters)."""
+        w = self.world
+        taken = w.ua_mask | self.c.locked | np.isin(self.c.codes, [ord(ch) for ch in 'd_8G+'])
+        for other in w.places.values():
+            taken = taken | other
+        # The full size near the city if it fits, else smaller (fewer of its buildings may then find a lot).
+        spot = None
+        for scale in (1, .9, .8, .7):
+            ew, eh = int(size[0] * scale), int(size[1] * scale)
+            for cell in cells:
+                try:
+                    spot = self.find_box(cell, ew, eh, toward, grow(taken, 6))
+                    break
+                except ValueError:
+                    continue
+            if spot:
+                break
+        if spot is None:
+            print(f'  {self.region}: no room anywhere for {name}')
+            return
+        x, y = spot
+        print(f'  {self.region}: {name} is {ew}x{eh} at ({x}, {y})')
+        side = self.facing((x + ew / 2, y + eh / 2), toward)
+        region, ground, level, insides = self.compound(sid, x, y, ew, eh, wall_ch, ground_ch, {side: toward})
+        avenues = self.estate_ground(sid, region, ground, level, insides[side])
+        lanes = self.lanes(ground, (24, 18), 3, angle=.1)
+        lots, _ = self.district(ground & ~avenues, avenues, lanes & ~avenues, wanted(), jitter=10, lane_ch='d')
+        self.yards(lots.open & ground, ground_ch, extra=extra)
+        self.spots[sid] = insides[side]
+        # Its road, routed now on the finished map from the quarter's gate to the city's.
+        a, b = w.gates[(sid, side)], w.gates[city_gate]
+        line = w.route(a, b, w.route_costs())[:-1] + [b]
+        road = f'{name} Road' if name.startswith('The ') else f'The {name} Road'
+        w.road_lines[road] = line
+        w.road(road, line, ends=(w.gate_levels[(sid, side)], w.gate_levels[city_gate]))
+
     # -- buildings -----------------------------------------------------------------------------------------------
     def place_all(self, lots, wanted, gap_jitter=16):
-        rng = self.rng
         for b in wanted:
+            rng = self.new_rng if getattr(b, 'fresh', False) else self.rng
             near = self.districts[b.district]
             jitter = (near[0] + rng.uniform(-gap_jitter, gap_jitter), near[1] + rng.uniform(-gap_jitter, gap_jitter))
             fw, fh = b.footprint
@@ -198,7 +257,10 @@ class City:
 
     def district(self, ground, avenues, lanes, wanted, jitter=14, lane_ch='_'):
         """Build a district: the large buildings first, each on an avenue; then the lanes are cut between them and
-        the smaller buildings fill in along lanes and avenues. Returns the lots left over (for yards)."""
+        the smaller buildings fill in along lanes and avenues; doc 35's additions (fresh) take what lots are left, so
+        the buildings that were here before keep their places. Returns the lots left over (for yards)."""
+        fresh = [b for b in wanted if getattr(b, 'fresh', False)]
+        wanted = [b for b in wanted if not getattr(b, 'fresh', False)]
         big = [b for b in wanted if b.footprint[0] * b.footprint[1] >= 130]
         small = [b for b in wanted if b.footprint[0] * b.footprint[1] < 130]
         lots = Lots(ground & ~avenues, avenues)
@@ -208,6 +270,7 @@ class City:
         streets = avenues | cut
         lots = Lots(ground & ~streets & ~grow(self.built, 1), streets)
         self.place_all(lots, small, gap_jitter=jitter)
+        self.place_all(lots, fresh, gap_jitter=jitter)
         return lots, streets
 
     def named(self, kind, name, text, w, h, district, style, roof=''):
@@ -224,15 +287,28 @@ class City:
                                 z=(zs or [0, 1, -1])[i]))
         return Building(kind, name, style, fp(plans[0].w, plans[0].h, scale), rooms, list(stairs), district, roof, trade)
 
-    def a_shop(self, trade, name, text, district, style):
-        p = shop(self.rng, style, trade)
+    def a_shop(self, trade, name, text, district, style, fresh=False):
+        p = shop(self.new_rng if fresh else self.rng, style, trade)
         room = p.room('', name, f'{name}, {TRADES[trade]["label"].lower()}. {text}')
-        return Building('shop', name, style, fp(p.w, p.h), [room], district=district, trade=trade)
+        b = Building('shop', name, style, fp(p.w, p.h), [room], district=district, trade=trade)
+        b.fresh = fresh
+        return b
 
-    def a_house(self, name, text, district, style, people=3, kind='house'):
-        p = house(self.rng, style, people) if kind == 'house' else tenement(self.rng, style, people)
-        return Building(kind, name, style, fp(p.w, p.h), [p.room('', name, text)], district=district,
-                        roof=STYLE_ROOFS.get(style, ''))
+    def a_works(self, kind, name, text, district, style, hands=3, roof=''):
+        """One of doc 35's workshops: its stations laid out, the trade recorded so its master and hands are found."""
+        b = self.building('works', name, f'{name}: {WORKS[kind][1]}. {text}',
+                          [works(self.new_rng, 'works' if style == 'ridgemere' else style, kind, hands)], district,
+                          style, roof=roof or STYLE_ROOFS.get(style, ''), trade=kind)
+        b.fresh = True
+        return b
+
+    def a_house(self, name, text, district, style, people=3, kind='house', fresh=False):
+        rng = self.new_rng if fresh else self.rng
+        p = house(rng, style, people) if kind == 'house' else tenement(rng, style, people)
+        b = Building(kind, name, style, fp(p.w, p.h), [p.room('', name, text)], district=district,
+                     roof=STYLE_ROOFS.get(style, ''))
+        b.fresh = fresh
+        return b
 
     def a_tavern(self, name, text, district, style, inn=False, upstairs_text=''):
         plans, stairs = tavern(self.rng, style, inn)
@@ -397,12 +473,48 @@ class Ridgemere(City):
             taken = taken | grow(region, 8)
             getattr(self, f'estate_{house}')(sid, region, ground, lvl, insides[side], (x, y, ew, eh))
             self.roads.append((f'The {house.title()} Road', [f'{sid}.{side}', 'ridgemere.E'], False))
+        # The Tanners' Reach: the trades too foul, too hot or too big for inside the walls, out by the East Gate
+        # among the Houses' estates.
+        # Built last of all (build_quarters), so the rest of the world comes out as it did before doc 35.
+        self.pending_quarter = dict(sid='quarter_ridgemere', name="The Tanners' Reach",
+                                    cells=[(2, 0), (2, 1), (1, 1), (1, 0)], size=(120, 84), toward=east_out,
+                                    city_gate=('ridgemere', 'E'), wanted=self.tanners_reach, style='ridgemere',
+                                    wall_ch='#', ground_ch='>', extra=(('x', .01), ('O', .008), ('|', .01)))
         return self
 
-    @staticmethod
-    def facing(frm, to):
-        dx, dy = to[0] - frm[0], to[1] - frm[1]
-        return ('E' if dx > 0 else 'W') if abs(dx) > abs(dy) else ('S' if dy > 0 else 'N')
+    def tanners_reach(self):
+        S, d, far = 'ridgemere', 'quarter_ridgemere_works', 'quarter_ridgemere_seat'
+        b = [self.a_works('tannery', 'The Reach Tannery', 'The biggest tannery in the west: hides off the ships, '
+                          'bark from the Fell forests, lime from Grayrock.', far, S, 4),
+             self.a_works('tannery', 'Old Mother Tannery', 'Older, smaller and somehow worse-smelling.', far, S, 3),
+             self.a_works('papermill', 'The Rag Mill', 'The Sump sells its rags here; the Council buys the paper '
+                          'back.', d, S, 3),
+             self.a_works('dyeworks', 'The Blue Vats', 'Woad-blue for the Watch\'s cloaks and grey for everyone '
+                          'else.', far, S, 3),
+             self.a_works('foundry', 'The Reach Foundry', 'Brass buckles, pewter cups and type for the Council Press.',
+                          d, S, 3),
+             self.a_works('stables', 'The South Gate Stables', 'Draught horses for every wagon that leaves the city.',
+                          d, S, 2),
+             self.a_works('weaving_shed', 'The Brinewater Sail Loft', 'Brinewater canvas for the ships, woven by the '
+                          'bolt.', far, S, 3),
+             self.a_works('saltworks', 'The Vesk Salt Pans', 'Sea brine boiled grey over coal fires; the salt that '
+                          'keeps the Vesk smokehouses in business.', far, S, 3)]
+        for trade, name, text in (
+                ('smith', 'The Anchor Forge', 'Chain, anchors and boat-iron for the harbour.'),
+                ('armorer', 'The Rivet and Rain', 'Brigandines and kettle helms for the Watch and the Houses\' guards; '
+                 'oiled against rust twice a day.'),
+                ('saddler', 'Collar and Trace', 'Draught harness for the Houses\' carts, work harness for everyone else.'),
+                ('weaver', 'Greywool', 'Heavy undyed wool for heavy wet weather.'),
+                ('herbalist', 'Moss & Marrow', 'Rain-lung remedies and burn salve for the forgehands.'),
+                ('scribe', 'Wetink Lane Scriveners', 'Contracts, debts and letters home, in ink that never quite dries.'),
+                ('printer', 'The Council Press', 'Proclamations of the Council of Houses, tide tables and the broadsheet '
+                 'everyone pretends not to read.')):
+            b.append(self.a_shop(trade, name, text, d, S, fresh=True))
+        for name in ('Tanners\' Row', 'Vat Court', 'Lime Yard', 'Pan Row', 'Rag Court', 'The Long Shed', 'Hidegate', 'Pressmen\'s Court'):
+            b.append(self.a_house(name, 'Workers\' lodgings of the Reach: sleeping places along every wall and the smell '
+                                  'of the vats in everything.', d, S, 6, kind='tenement',
+                                  fresh=True))
+        return b
 
     def along(self, quay, y):
         pts = np.argwhere(quay)
@@ -554,19 +666,6 @@ class Ridgemere(City):
             c.codes[beside] = ord('Y')
         self.yards(open_ground & ~garden, work_ch, extra=work_extra)
 
-    def estate_ground(self, sid, region, ground, level, gate_in):
-        c = self.c
-        ys, xs = np.nonzero(region)
-        x, y, w, h = xs.min(), ys.min(), xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
-        far = (x + w - gate_in[0] + x, y + h - gate_in[1] + y)       # The manor stands away from the gate.
-        self.districts[f'{sid}_seat'] = (min(max(far[0], x + 20), x + w - 20), min(max(far[1], y + 18), y + h - 18))
-        self.districts[f'{sid}_works'] = gate_in
-        drive = c.line_mask([gate_in, self.districts[f'{sid}_seat']], 4) & ground
-        self.drives[sid] = drive
-        avenues = drive | self.inner_ring(ground, 3)
-        c.paint(avenues, 'd', level)
-        return avenues
-
     def estate_grayrock(self, sid, region, ground, level, gate_in, box):
         x, y, w, h = box
         avenues = self.estate_ground(sid, region, ground, level, gate_in)
@@ -583,6 +682,12 @@ class Ridgemere(City):
                                f'{sid}_works', S),
                  self.building('works', 'The Quarry Office', 'Grayrock\'s quarry office: ' + WORKS['quarry_office'][1] +
                                '.', [works(self.rng, S, 'quarry_office', 2)], f'{sid}_works', S),
+                 self.a_works('arsenal', 'The Grayrock Arsenal', 'The Houses\' wall crossbows are built here, and '
+                              'the Council pretends not to count them.', f'{sid}_works', 'ridgemere', 3),
+                 self.a_works('foundry', 'The Grayrock Foundry', 'Bronze for fittings and the harbour bells.',
+                              f'{sid}_works', 'ridgemere', 3),
+                 self.a_works('limeworks', 'The Grayrock Lime Kilns', 'Quarry limestone burnt for the mortar of the '
+                              'whole city.', f'{sid}_works', 'ridgemere', 2),
                  self.named('barracks', 'The Grayrock Bunkhouse', 'Quarrymen and forgehands sleep here in shifts, '
                             'their boots grey with stone dust.', 24, 12, f'{sid}_works', 'ridgemere')]
         lots, _ = self.district(ground & lots.open, avenues, np.zeros_like(ground),
@@ -625,6 +730,8 @@ class Ridgemere(City):
         S = 'works'
         extra = [self.building('works', 'The Fell Sawmill', 'The great saw of House Fell: ' + WORKS['sawmill'][1] +
                                '.', [works(self.rng, S, 'sawmill', 6)], f'{sid}_works', S),
+                 self.a_works('cartwright', 'The Fell Wagon Yard', 'Fell timber, Fell wagons: the House builds '
+                              'what carries its logs.', f'{sid}_works', 'ridgemere', 3),
                  self.named('barracks', 'The Loggers\' Bunkhouse', 'Loggers back from the camps sleep here, their '
                             'boots and cloaks steaming along the walls.', 24, 12, f'{sid}_works', 'ridgemere')]
         lots, _ = self.district(ground & lots.open, avenues, np.zeros_like(ground),
@@ -640,6 +747,8 @@ class Ridgemere(City):
                                '.', [works(self.rng, S, 'glassworks', 5)], f'{sid}_works', S),
                  self.building('works', 'The Kilnhouse', 'Ashcombe\'s charcoal store: ' + WORKS['kilnhouse'][1] + '.',
                                [works(self.rng, S, 'kilnhouse', 3)], f'{sid}_works', S),
+                 self.a_works('brickworks', 'The Ashcombe Tileworks', 'Slate is dear; Ashcombe tile is cheap, and '
+                              'its kilns burn Ashcombe charcoal.', f'{sid}_works', 'ridgemere', 3),
                  self.a_house('Burners\' Row', 'A long cottage where the charcoal burners sleep between burns, '
                               'everything in it faintly smoked.', f'{sid}_works', 'ridgemere', 6, kind='tenement')]
         lots, _ = self.district(ground & lots.open, avenues, np.zeros_like(ground),
@@ -693,6 +802,7 @@ RIDGEMERE_SHOPS = [
     ('tinker', 'Mend & Make Do', 'Pots, locks and lamps put right, or near enough.'),
     ('brewer', 'The Black Tun', 'A thick dark ale brewed with rainwater, which is to say, local.'),
 ]
+
 TENEMENT_NAMES = ['Soot Row', 'The Drip', 'Tallow Court', 'Cinder Stair', 'The Rookery', 'Brine Yard', 'Gullwing Row',
                   'The Leaks', 'Fishgut Lane', 'Coalhole Court', 'Rope Alley', 'The Warrens', 'Bilge Row',
                   'Rust Court', 'Lantern Yard', 'Mudside']
@@ -824,7 +934,42 @@ class SerFerro(City):
         c.paint(up & ~stairs, ']', None)
         c.paint(stairs, '^', None)
         self.river_piers(inner, dist)
+        # Il Borgo: the city's workshops outside the East Gate, where the guilds keep their smoke and stink.
+        self.pending_quarter = dict(sid='quarter_ser_ferro', name='Il Borgo', cells=[(1, 9), (1, 8), (0, 8)],
+                                    size=(120, 88), toward=east_out, city_gate=('ser_ferro', 'E'), wanted=self.borgo,
+                                    style='serferro', wall_ch=']', ground_ch='.',
+                                    extra=(('x', .01), ('O', .008), ('Y', .01)))
         return self
+
+    def borgo(self):
+        S, d, far = 'serferro', 'quarter_ser_ferro_works', 'quarter_ser_ferro_seat'
+        b = []
+        for kind, name, text, district in (
+                ('tannery', 'La Concia', 'Downwind of everything, as the guild requires.', far),
+                ('papermill', 'Cartiera Bianca', 'A horse-gin turns the stamping mill; the cathedral buys the paper.', d),
+                ('brickworks', 'The Red Tile Works', 'The red tiles of every roof in Ser Ferro come out of these kilns.', far),
+                ('mill', 'Mulino del Borgo', 'Grain from the golden fields, ground by a horse-gin.', d),
+                ('dyeworks', 'Tintoria Bellandi', 'The colours the Wool Guild argues over are made here.', far),
+                ('foundry', 'Fonderia delle Campane', 'The cathedral\'s bells were cast here, and are recast when they '
+                 'crack.', far),
+                ('cartwright', 'Carri Galli', 'Wagons for the grain road and carriages for the Heights.', d),
+                ('stables', 'The East Gate Stables', 'Draught horses for the grain wagons and the palazzi\'s carriages.', d),
+                ('arsenal', 'The Royal Arsenal', 'The King\'s engineers build and keep the city\'s wall and siege '
+                 'crossbows here, behind a guarded gate.', far)):
+            b.append(self.a_works(kind, name, text, district, S, 3))
+        for trade, name, text in (
+                ('armorer', 'Armeria del Leone', 'Breastplates and gorgets for the city guard, engraved for the '
+                 'officers.'),
+                ('saddler', 'Cuoio Fino', 'Tooled dress harness for the Heights and honest work harness for the rest.'),
+                ('glassblower', 'Vetro Chiaro', 'Goblets, vials and window glass; spectacles to order.'),
+                ('mason', 'Marmi Ferrante', 'White marble cut for steps, sills and saints.')):
+            b.append(self.a_shop(trade, name, text, d, S, fresh=True))
+        for name in ('Corte dei Conciatori', 'Casa dei Fornaciai', 'Corte dei Tintori', 'Casa dei Fonditori',
+                     'Corte dei Carrai', 'Casa Lunga'):
+            b.append(self.a_house(name, 'Lodgings for the Borgo\'s workers: whitewashed once, sooty now, a hearth and '
+                                  'sleeping places along every wall.', d, S, 6, kind='tenement',
+                                  fresh=True))
+        return b
 
     def box_mask(self, x, y, w, h):
         m = np.zeros(self.c.codes.shape, dtype=bool)
@@ -947,6 +1092,8 @@ class SerFerro(City):
                 rng.choice(['lower', 'lower_south'])
             tier = 'rise' if district == 'rise' else 'lower'
             out[tier].append(self.a_shop(trade, name, text, district, S))
+        for trade, name, text in SERFERRO_NEW_SHOPS:
+            out['rise'].append(self.a_shop(trade, name, text, 'rise_south', S, fresh=True))
         out['rise'].append(self.a_tavern('The Sunlit Cup', 'A bright tavern on the Cathedral Rise: whitewashed '
                                          'walls, red wine, pilgrims and gossip.', 'rise', S))
         out['lower'].append(self.a_tavern('The Three Bells', 'The lower town\'s favourite: long tables, songs and '
@@ -1005,6 +1152,11 @@ SERFERRO_SHOPS = [
     ('fishmonger', 'Pesce del Fiume', 'River fish on ice, eels in tubs.'),
     ('herbalist', 'Erbe di Campo', 'Herbs from the golden fields, dried in bunches.'),
 ]
+SERFERRO_NEW_SHOPS = [  # Doc 35: on the Cathedral Rise.
+    ('perfumer', 'Profumi Lucenti', 'Rose, citrus and costly musk; the court is known by its scents.'),
+    ('printer', 'Stamperia della Santa', 'Psalters, almanacs and the palace\'s edicts, printed under the cathedral\'s '
+     'licence.'),
+]
 ELITE_FAMILIES = ['Valmonte', 'Lucenti', 'Aldobrandi', 'Orsenna', 'Castellane', 'Marenzi']
 SERFERRO_FAMILIES = ['Bellandi', 'Castelli', 'Dardano', 'Ferrante', 'Galli', 'Lanza', 'Moretti', 'Neri', 'Orsini',
                      'Pallotta', 'Rinaldi', 'Salvini', 'Toscani', 'Valeri', 'Venturi', 'Albani', 'Benedetti',
@@ -1038,6 +1190,14 @@ SERFERRO_TENEMENT_PROSE = [
     'A crumbling tenement by the river, its whitewash long gone grey; families sleep in every corner.',
     'Damp rooms that flood in spring, curtained into homes. The city\'s poor live here, out of the palace\'s sight.',
 ]
+
+
+def build_quarters(world):
+    """Doc 35's works quarters, once the world is laid out: the roads, ground and scattered features before them
+    come out exactly as they did before the quarters existed."""
+    for city in world.cities:
+        if getattr(city, 'pending_quarter', None):
+            city.works_quarter(**city.pending_quarter)
 
 
 def build(world):

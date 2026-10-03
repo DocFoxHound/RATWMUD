@@ -14,6 +14,7 @@ from __future__ import annotations
 import random
 
 from . import residents as R
+from .buildings import WORKS_STATIONS, WORKS_TRADE
 from .cities import HOUSES, ELITE_FAMILIES
 
 SEED = 5151
@@ -169,11 +170,40 @@ def household_of(P, b):
     return P.bed(b)
 
 
+def staff_works(P, manifest, city, rng, greeting):
+    """Doc 35's buildings, staffed after everyone else (so the residents generated before keep their names, homes and
+    work): a keeper for each new shop; a master and a hand or two for each new works. They sleep in doc 35's own
+    lodgings; a city that runs out of those leaves the rest unstaffed and says so."""
+    P.rng = rng
+    mine = [b for b in manifest if b.get('city') == city and b.get('fresh')]
+    lodgings = [b for b in mine if b['kind'] in ('house', 'tenement')]
+    rest = [m for m in manifest if m.get('city') == city and m['kind'] in ('inn', 'tavern') and not m.get('fresh')]
+
+    def evening():
+        return P.floor(rng.choice(rest)['rooms'][0]['id'], share=True) if rest and rng.random() < .5 else None
+
+    for b in [b for b in mine if b['kind'] in ('works', 'shop')]:
+        if b['kind'] == 'shop':
+            crew = [('merchant', f'keeping {b["name"]}'[:40], f'who keeps {b["name"]}')]
+        else:
+            word = WORKS_TRADE[b['trade']]
+            stations = sum(len(r['work']) for r in b['rooms'])
+            crew = [('merchant', f'running {b["name"]}'[:40], f'the {word} who runs {b["name"]}')] + \
+                   [('civilian', f'works at {b["name"]}'[:40], f'a hand at {b["name"]}')] * min(2, max(0, stations - 1))
+        for role, label, job in crew:
+            bed = next((x for x in (P.bed(h) for h in lodgings) if x), None)
+            if bed is None:
+                print(f'  {city}: no bed left for {job}')
+                continue
+            P.add(role=role, work_label=label, home=bed, work=P.work(b), evening=evening() or bed, hours=(6, 18),
+                  job=job, greeting_line=greeting)
+
+
 def ridgemere(project, manifest, city, world, rng):
     P = Folk(project, manifest, rng, 'rm_', RM_FEMALE, RM_MALE, RM_HEADS, RM_TAILS, RM_QUIRKS, RM_HOOKS)
     B = index(manifest, 'ridgemere')
     homes = [b for b in manifest if b.get('city') == 'ridgemere' and b['kind'] in ('house', 'tenement')
-             and not b['district'].startswith('estate_')]
+             and not b['district'].startswith('estate_') and not b.get('fresh')]
     rng.shuffle(homes)
     homes.sort(key=lambda b: b['kind'] == 'tenement')         # Houses first for the better-off.
     tenements = [b for b in homes if b['kind'] == 'tenement']
@@ -364,7 +394,7 @@ def ridgemere(project, manifest, city, world, rng):
               evening=P.floor(B[building]['rooms'][0]['id'], share=True), hours=(10, 23.5) if 'tap' in label else (6, 20),
               job=job, greeting_line=f'Dry yourself by the fire. {rain.split(".")[0]}.')
     # Shopkeepers and their households.
-    for b in [b for b in manifest if b.get('city') == 'ridgemere' and b['kind'] == 'shop']:
+    for b in [b for b in manifest if b.get('city') == 'ridgemere' and b['kind'] == 'shop' and not b.get('fresh')]:
         bed, house = home_in(homes)
         keeper = P.add(role='merchant', work_label=f'keeping {b["name"]}'[:40], home=bed, work=P.work(b),
                        family=family_of(house),
@@ -462,7 +492,7 @@ def ser_ferro(project, manifest, city, world, rng):
     houses = [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'house'
               and b['name'] != 'The Clergy House']
     rng.shuffle(houses)
-    tenements = [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'tenement']
+    tenements = [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'tenement' and not b.get('fresh')]
 
     def home_in(pool):
         for b in pool:
@@ -619,7 +649,7 @@ def ser_ferro(project, manifest, city, world, rng):
         P.add(role='merchant', work_label=label, home=bed, work=P.work(B[building]),
               evening=P.floor(B[building]['rooms'][0]['id'], share=True), hours=(10, 23.5) if 'tap' in label else (6, 20),
               job=job, greeting_line='Sit, sit! Wine? Bread? Both?')
-    for b in [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'shop']:
+    for b in [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'shop' and not b.get('fresh')]:
         bed, house = home_in(houses)
         keeper = P.add(role='merchant', work_label=f'keeping {b["name"]}'[:40], home=bed, work=P.work(b),
                        family=family_of(house),
@@ -709,9 +739,18 @@ def populate(project, manifest, world, seed=SEED):
     by_city = {c.region: c for c in world.cities}
     people, routes = [], []
     base = dict(project)
+    folks = []
     for build in (ridgemere, ser_ferro):
         city = by_city['ridgemere' if build is ridgemere else 'ser_ferro']
         P = build({**base, 'people': base.get('people', []) + people}, manifest, city, world, rng)
         people += P.people
         routes += P.routes
+        folks.append((city.region, P))
+    # Doc 35's staff last, from their own sequence.
+    for region, P in folks:
+        before = len(P.people)
+        staff_works(P, manifest, region, random.Random(f'{seed}:{region}:doc35'),
+                    'Mind the fires. And the vats. And the floor.' if region == 'ridgemere'
+                    else 'Careful: everything here is hot, wet or sharp.')
+        people += P.people[before:]
     return people, routes

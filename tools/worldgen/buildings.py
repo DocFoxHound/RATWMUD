@@ -37,6 +37,7 @@ class Room:
     beds: list = dc_field(default_factory=list)       # (x, y) tiles where a resident sleeps.
     work: list = dc_field(default_factory=list)       # (x, y) tiles where someone works.
     door: tuple | None = None                          # (x, y) of the street door, for the ground floor.
+    stations: list = dc_field(default_factory=list)   # (x, y, station id): work stations (Data/Items/stations.json).
 
     @property
     def width(self):
@@ -73,7 +74,7 @@ class Plan:
         self.door = (w // 2, h - 1)
         self.g[h - 1][w // 2] = '+'
         self.keep = {(w // 2, h - 2), (w // 2, h - 3)}     # The lane in from the door stays clear.
-        self.beds, self.work = [], []
+        self.beds, self.work, self.stations = [], [], []
 
     def free(self, x, y):
         return 0 < x < self.w - 1 and 0 < y < self.h - 1 and self.g[y][x] == self.floor and (x, y) not in self.keep
@@ -111,9 +112,31 @@ class Plan:
             self.work.append((x, y))
             self.keep.add((x, y))
 
+    def station(self, x, y, kind, ch=None):
+        """A work station (doc 35), recorded; drawn with `ch` or its stand-in tile until stations are placed objects."""
+        if self.put(x, y, ch or STAND_IN[kind]):
+            self.stations.append((x, y, kind))
+            return True
+        return False
+
     def room(self, key, name, description, **kw):
-        r = Room(key, name, description, self.g, beds=self.beds, work=self.work, door=self.door, **kw)
+        r = Room(key, name, description, self.g, beds=self.beds, work=self.work, door=self.door,
+                 stations=self.stations, **kw)
         return r
+
+
+# The terrain tile each station is drawn with until the engine places stations as objects with their own glyphs
+# (Data/Items/stations.json has those glyphs).
+STAND_IN = {
+    'hearth': 'h', 'oven': 'v', 'smokehouse': '|', 'brew_kettle': 'O', 'press': 'x', 'millstones': 'o',
+    'butcher_block': 'T', 'rendering_pot': 'h', 'tanning_pits': '~', 'leather_bench': 'T', 'spinning_wheel': 'c',
+    'loom': 'T', 'dye_vat': '~', 'tailor_table': 'T', 'smelter': '{', 'forge': 'A', 'crucible': '{',
+    'grindstone': 'o', 'jeweler_bench': 'T', 'workbench': 'T', 'pole_lathe': 'T', 'saw_pit': '<', 'sawmill': '<',
+    'potter_wheel': 'c', 'kiln': '{', 'lime_kiln': '{', 'mason_banker': 'o', 'glass_furnace': '{',
+    'charcoal_clamp': '{', 'still': 'O', 'apothecary_bench': 'T', 'drying_rack': '|', 'salt_pan': '~',
+    'chandler_kettle': 'h', 'ropewalk': 'x', 'paper_vat': '~', 'printing_press': 'x', 'scribe_desk': 'l',
+    'siege_frame': '<', 'wall_crossbow': 'y', 'siege_crossbow': 'y',
+}
 
 
 def stairs_between(lower: Plan, upper: Plan, x, y):
@@ -165,12 +188,20 @@ def shop(rng, style, trade):
     p = Plan(w, h, s['wall'], s['floor'], rng)
     goods = TRADES[trade]['goods']
     for x in range(1, w - 1):
-        p.put(x, 1, goods[x % len(goods)])
+        ch = goods[x % len(goods)]
+        if ch == 'v' and TRADES[trade].get('oven_goods'):
+            p.station(x, 1, 'oven', ch)
+        else:
+            p.put(x, 1, ch)
     p.run(2, 4, 1, 0, w - 4, '=')
     p.g[4][w - 3] = p.floor                                     # A gap at the end of the counter.
     p.worker(w // 2, 3)
-    for x, y, ch in TRADES[trade].get('fixtures', ()):
-        p.put(x if x >= 0 else w + x, y if y >= 0 else h + y, ch)
+    for x, y, ch, kind in TRADES[trade].get('fixtures', ()):
+        x, y = x if x >= 0 else w + x, y if y >= 0 else h + y
+        if kind:
+            p.station(x, y, kind, ch)
+        else:
+            p.put(x, y, ch)
     p.put(1, h - 2, 'O')
     p.put(w - 2, h - 2, 'x')
     return p
@@ -349,31 +380,40 @@ def stacks(rng, style, w, h, deep: bool):
     return p
 
 
+# A shop: its goods along the back wall, its label, and its fixtures (x, y, tile, station or None; negative x or y
+# counts from the far edge). The fixtures of the trades that were here before doc 35 are unchanged (residents are
+# placed by shuffling a room's floor, so one more fixture would move them all); doc 35 only says which are stations.
+# `oven_goods`: the goods row's ovens are stations too.
 TRADES = {
     'general': {'goods': 'kxO', 'label': 'General goods'},
-    'smith': {'goods': 'yxy', 'label': 'Smithy', 'fixtures': [(2, -3, 'A'), (3, -3, 'h'), (-3, -3, 'O')]},
-    'armorer': {'goods': 'yyx', 'label': 'Armorer', 'fixtures': [(2, -3, 'A')]},
-    'baker': {'goods': 'vvx', 'label': 'Bakery', 'fixtures': [(2, -3, 'T'), (3, -3, 'T')]},
-    'butcher': {'goods': 'OTx', 'label': 'Butcher', 'fixtures': [(2, -3, 'T'), (3, -3, 'T')]},
-    'tanner': {'goods': 'OOx', 'label': 'Tannery', 'fixtures': [(2, -3, '~'), (3, -3, '~'), (-3, -3, 'O')]},
-    'apothecary': {'goods': 'kkO', 'label': 'Apothecary', 'fixtures': [(2, -3, 'T')]},
-    'herbalist': {'goods': 'kOk', 'label': 'Herbalist', 'fixtures': [(2, -3, 'T')]},
-    'tailor': {'goods': 'kxk', 'label': 'Tailor', 'fixtures': [(2, -3, 'T'), (3, -3, 'T')]},
-    'weaver': {'goods': 'xkx', 'label': 'Weaver', 'fixtures': [(2, -3, 'T'), (-3, -3, 'T')]},
-    'carpenter': {'goods': 'xxT', 'label': 'Carpenter', 'fixtures': [(2, -3, 'T'), (-3, -3, 'x')]},
-    'potter': {'goods': 'kkx', 'label': 'Potter', 'fixtures': [(2, -3, 'v')]},
+    'smith': {'goods': 'yxy', 'label': 'Smithy', 'fixtures': [(2, -3, 'A', 'forge'), (3, -3, 'h', 'hearth'), (-3, -3, 'O', None)]},
+    'armorer': {'goods': 'yyx', 'label': 'Armorer', 'fixtures': [(2, -3, 'A', 'forge')]},
+    'baker': {'goods': 'vvx', 'label': 'Bakery', 'fixtures': [(2, -3, 'T', 'workbench'), (3, -3, 'T', 'workbench')], 'oven_goods': True},
+    'butcher': {'goods': 'OTx', 'label': 'Butcher', 'fixtures': [(2, -3, 'T', 'butcher_block'), (3, -3, 'T', 'butcher_block')]},
+    'tanner': {'goods': 'OOx', 'label': 'Tannery', 'fixtures': [(2, -3, '~', 'tanning_pits'), (3, -3, '~', 'tanning_pits'), (-3, -3, 'O', None)]},
+    'apothecary': {'goods': 'kkO', 'label': 'Apothecary', 'fixtures': [(2, -3, 'T', 'apothecary_bench')]},
+    'herbalist': {'goods': 'kOk', 'label': 'Herbalist', 'fixtures': [(2, -3, 'T', 'apothecary_bench')]},
+    'tailor': {'goods': 'kxk', 'label': 'Tailor', 'fixtures': [(2, -3, 'T', 'tailor_table'), (3, -3, 'T', 'tailor_table')]},
+    'weaver': {'goods': 'xkx', 'label': 'Weaver', 'fixtures': [(2, -3, 'T', 'loom'), (-3, -3, 'T', 'spinning_wheel')]},
+    'carpenter': {'goods': 'xxT', 'label': 'Carpenter', 'fixtures': [(2, -3, 'T', 'workbench'), (-3, -3, 'x', None)]},
+    'potter': {'goods': 'kkx', 'label': 'Potter', 'fixtures': [(2, -3, 'v', 'kiln')]},
     'jeweler': {'goods': 'kxk', 'label': 'Jeweler'},
-    'scribe': {'goods': 'kKk', 'label': 'Scribe', 'fixtures': [(2, -3, 'l'), (-3, -3, 'l')]},
-    'chandler': {'goods': 'kOk', 'label': 'Chandler', 'fixtures': [(2, -3, 'h')]},
-    'fletcher': {'goods': 'yxk', 'label': 'Fletcher', 'fixtures': [(2, -3, 'T')]},
+    'scribe': {'goods': 'kKk', 'label': 'Scribe', 'fixtures': [(2, -3, 'l', 'scribe_desk'), (-3, -3, 'l', 'scribe_desk')]},
+    'chandler': {'goods': 'kOk', 'label': 'Chandler', 'fixtures': [(2, -3, 'h', 'chandler_kettle')]},
+    'fletcher': {'goods': 'yxk', 'label': 'Fletcher', 'fixtures': [(2, -3, 'T', 'workbench')]},
     'provisioner': {'goods': 'xOx', 'label': 'Provisioner'},
-    'cooper': {'goods': 'OOO', 'label': 'Cooper', 'fixtures': [(2, -3, 'x')]},
-    'mason': {'goods': 'xox', 'label': 'Stonemason', 'fixtures': [(2, -3, 'o'), (-3, -3, 'o')]},
-    'fishmonger': {'goods': 'OTO', 'label': 'Fishmonger', 'fixtures': [(2, -3, '~')]},
-    'cartographer': {'goods': 'kKk', 'label': 'Cartographer', 'fixtures': [(2, -3, 'T'), (3, -3, 'l')]},
-    'brewer': {'goods': 'OOO', 'label': 'Brewer', 'fixtures': [(2, -3, 'O'), (3, -3, 'O'), (-3, -3, 'v')]},
-    'tinker': {'goods': 'xkx', 'label': 'Tinker', 'fixtures': [(2, -3, 'A')]},
+    'cooper': {'goods': 'OOO', 'label': 'Cooper', 'fixtures': [(2, -3, 'x', 'workbench')]},
+    'mason': {'goods': 'xox', 'label': 'Stonemason', 'fixtures': [(2, -3, 'o', 'mason_banker'), (-3, -3, 'o', 'mason_banker')]},
+    'fishmonger': {'goods': 'OTO', 'label': 'Fishmonger', 'fixtures': [(2, -3, '~', None)]},
+    'cartographer': {'goods': 'kKk', 'label': 'Cartographer', 'fixtures': [(2, -3, 'T', 'scribe_desk'), (3, -3, 'l', 'scribe_desk')]},
+    'brewer': {'goods': 'OOO', 'label': 'Brewer', 'fixtures': [(2, -3, 'O', 'brew_kettle'), (3, -3, 'O', 'brew_kettle'), (-3, -3, 'v', 'kiln')]},
+    'tinker': {'goods': 'xkx', 'label': 'Tinker', 'fixtures': [(2, -3, 'A', 'forge')]},
     'moneychanger': {'goods': 'kxk', 'label': 'Moneychanger'},
+    # Doc 35's new shops.
+    'perfumer': {'goods': 'kOk', 'label': 'Perfumer', 'fixtures': [(2, -3, 'O', 'still'), (3, -3, 'O', 'still'), (-3, -3, 'T', 'apothecary_bench')]},
+    'printer': {'goods': 'kKk', 'label': 'Printing house', 'fixtures': [(2, -3, 'x', 'printing_press'), (-3, -3, '{', 'crucible'), (-4, -3, 'T', 'apothecary_bench')]},
+    'saddler': {'goods': 'xkx', 'label': 'Harness-maker', 'fixtures': [(2, -3, 'T', 'leather_bench'), (-3, -3, 'T', 'leather_bench')]},
+    'glassblower': {'goods': 'kxk', 'label': 'Glassblower', 'fixtures': [(2, -3, '{', 'glass_furnace'), (-3, -3, 'o', 'grindstone')]},
 }
 
 
@@ -450,6 +490,48 @@ WORKS = {  # kind: (size, what fills it)
     'fishmarket': ((22, 14), 'long slab tables, barrels of brine and a gutter to the sea'),
     'quarry_office': ((14, 10), 'a tally table, picks and wedges, and a map of the faces pinned to the wall'),
     'kilnhouse': ((18, 12), 'charcoal sacks to the rafters and a kiln that never cools'),
+    # Doc 35's industry: big workshops laid out from their stations (WORKS_STATIONS).
+    'tannery': ((22, 13), 'lime pits and bark-liquor pits in rows, hides pegged on frames, and a smell that reaches '
+                'the next street'),
+    'foundry': ((20, 13), 'crucible furnaces, casting pits of sand and the moulds of bells, buckles and type'),
+    'dyeworks': ((20, 12), 'steaming vats of blue, red and yellow, and cloth hung dripping from the beams'),
+    'papermill': ((20, 12), 'rag vats, a stamping mill and stacks of new sheets pressed between felts'),
+    'brickworks': ((22, 13), 'kilns along the back wall and ranks of drying bricks and tiles on the floor'),
+    'limeworks': ((18, 12), 'a lime kiln breathing white dust and a mason\'s banker by the door'),
+    'saltworks': ((22, 12), 'broad shallow pans over slow fires, and salt raked into grey heaps'),
+    'mill': ((16, 12), 'a pair of millstones turned by the wheel outside, and flour in the air like fog'),
+    'arsenal': ((24, 14), 'engineers\' frames where emplacement crossbows are built, a forge for the prods and racks '
+                'of great bolts'),
+    'cartwright': ((20, 12), 'wheels on stands, axles on trestles, and a forge for the tyres'),
+    'weaving_shed': ((22, 12), 'looms in two rows, spinning wheels by the windows and the clack of shuttles'),
+    'brewery': ((20, 12), 'brewing coppers, mash tuns and casks to the ceiling'),
+    'stables': ((20, 11), 'stalls of heavy draught horses, hay to the rafters and harness on every peg'),
+}
+
+# Each new works kind: its stations in order of importance, and how many of each.
+WORKS_STATIONS = {
+    'tannery': [('tanning_pits', 6), ('leather_bench', 2), ('rendering_pot', 1)],
+    'foundry': [('crucible', 3), ('smelter', 1), ('workbench', 2)],
+    'dyeworks': [('dye_vat', 6), ('tailor_table', 1)],
+    'papermill': [('paper_vat', 3), ('press', 2)],
+    'brickworks': [('kiln', 4), ('workbench', 2)],
+    'limeworks': [('lime_kiln', 2), ('mason_banker', 2)],
+    'saltworks': [('salt_pan', 6)],
+    'mill': [('millstones', 2)],
+    'arsenal': [('siege_frame', 2), ('forge', 2), ('workbench', 2)],
+    'cartwright': [('workbench', 4), ('forge', 1)],
+    'weaving_shed': [('loom', 6), ('spinning_wheel', 3)],
+    'brewery': [('brew_kettle', 4), ('press', 1), ('kiln', 1)],
+    'stables': [],
+}
+# What its keeper is called (towns use it for the work label) and the trade whose skill it uses.
+WORKS_TRADE = {
+    'ironworks': 'smith', 'glassworks': 'glassblower', 'sawmill': 'carpenter', 'smokehouse': 'fishmonger',
+    'ropewalk': 'chandler', 'shipwright': 'shipwright', 'fishmarket': 'fishmonger', 'quarry_office': 'mason',
+    'kilnhouse': 'charcoal burner', 'tannery': 'tanner', 'foundry': 'founder', 'dyeworks': 'dyer',
+    'papermill': 'papermaker', 'brickworks': 'brickmaker', 'limeworks': 'lime burner', 'saltworks': 'salter',
+    'mill': 'miller', 'arsenal': 'engineer', 'cartwright': 'cartwright', 'weaving_shed': 'weaver',
+    'brewery': 'brewer', 'stables': 'horse-dealer',
 }
 
 
@@ -458,15 +540,18 @@ def works(rng, style, kind, workers=4):
     s = STYLES[style]
     (w, h), _ = WORKS[kind]
     p = Plan(w, h, s['wall'], s['floor'], rng)
-    if kind == 'ironworks':
+    if kind in WORKS_STATIONS:
+        spots = laid_out(p, kind)
+    elif kind == 'ironworks':
         for x in range(2, w - 2, 4):
-            p.put(x, 1, '{')
+            p.station(x, 1, 'smelter')
             p.put(x + 1, 1, '{')
-            p.put(x, 3, 'A')
+            p.station(x, 3, 'forge')
         for x in range(2, w - 2, 3):
             p.put(x, h - 3, 'x')
         spots = [(x + 1, 4) for x in range(2, w - 2, 4)]
     elif kind == 'glassworks':
+        p.station(w // 2, h // 2 - 2, 'glass_furnace')
         for dx in (-1, 0, 1):
             for dy in (-1, 0):
                 p.put(w // 2 + dx, h // 2 + dy - 1, '{')
@@ -476,6 +561,7 @@ def works(rng, style, kind, workers=4):
         spots = [(w // 2 - 3, h // 2 - 1), (w // 2 + 3, h // 2 - 1), (4, 4), (w - 5, 4), (w // 2, h // 2 + 1)]
     elif kind == 'sawmill':
         for y in range(2, h - 3, 4):
+            p.station(w // 2 - 2, y, 'sawmill')
             p.run(3, y, 1, 0, 6, 'T')
             p.run(w - 9, y, 1, 0, 6, 'T')
             p.run(w // 2 - 2, y, 1, 0, 4, '<')
@@ -483,20 +569,22 @@ def works(rng, style, kind, workers=4):
         spots = [(5, 3), (w - 7, 3), (5, 7), (w - 7, 7), (5, 11), (w - 7, 11)]
     elif kind == 'smokehouse':
         for y in range(2, h - 3, 3):
-            p.run(2, y, 1, 0, w - 4, '|')
+            p.station(2, y, 'smokehouse')
+            p.run(3, y, 1, 0, w - 5, '|')
             p.put(w // 2 - 3, y + 1, 'i')
             p.put(w // 2 + 3, y + 1, 'i')
         spots = [(2, h - 3), (w - 3, h - 3), (4, 3), (w - 5, 3)]
     elif kind == 'ropewalk':
-        p.put(1, 2, 'O')
+        p.station(1, 2, 'ropewalk', 'O')
         p.put(w - 2, 2, 'O')
         for x in range(4, w - 4, 6):
             p.put(x, 1, 'x')
         spots = [(3, 3), (w // 3, 3), (2 * w // 3, 3), (w - 4, 3)]
     elif kind == 'shipwright':
         p.run(3, 3, 1, 0, w - 6, '<')
-        p.run(3, 7, 1, 0, w - 6, 'T')
-        p.put(2, 1, 'A')
+        p.station(3, 7, 'workbench')
+        p.run(4, 7, 1, 0, w - 7, 'T')
+        p.station(2, 1, 'forge')
         p.put(w - 3, 1, 'y')
         spots = [(4, 5), (w - 5, 5), (w // 2, 5), (w // 2, 8)]
     elif kind == 'fishmarket':
@@ -511,11 +599,39 @@ def works(rng, style, kind, workers=4):
         spots = [(5, 4), (w - 3, 4)]
     else:  # kilnhouse
         p.run(1, 1, 1, 0, w - 2, 'x')
-        p.put(w // 2, h // 2, '{')
+        p.station(w // 2, h // 2, 'charcoal_clamp')
         spots = [(w // 2 - 2, h // 2), (w // 2 + 2, h // 2), (3, h - 3)]
     for x, y in spots[:max(1, workers)]:
         p.worker(x, y)
     return p
+
+
+def laid_out(p: Plan, kind):
+    """A new works kind: its stations along the back wall and down the side walls, a work spot in front of each,
+    stock by the door. Returns the work spots."""
+    w, h = p.w, p.h
+    if kind == 'stables':
+        for x in range(2, w - 2, 3):          # Stalls along the back, hay bales between, harness racks by the door.
+            p.put(x, 1, 'z')
+            p.put(x + 1, 2, '|')
+        p.run(2, h - 3, 1, 0, 4, 'x')
+        return [(w // 2, 4), (3, 4), (w - 4, 4)]
+    places = [(x, 1) for x in range(2, w - 2, 3)] + [(1, y) for y in range(4, h - 4, 3)] + \
+             [(w - 2, y) for y in range(4, h - 4, 3)] + [(x, h // 2) for x in range(4, w - 4, 4)]
+    spots = []
+    i = 0
+    for station, n in WORKS_STATIONS[kind]:
+        for _ in range(n):
+            while i < len(places):
+                x, y = places[i]
+                i += 1
+                if p.station(x, y, station):
+                    front = (x, y + 1) if y == 1 else (x + 1, y) if x == 1 else (x - 1, y) if x == w - 2 else (x, y + 1)
+                    spots.append(front)
+                    break
+    for x in range(2, w // 2 - 2, 2):
+        p.put(x, h - 2, 'x' if x % 4 else 'O')
+    return spots
 
 
 def villa(rng, style, family, servants):
