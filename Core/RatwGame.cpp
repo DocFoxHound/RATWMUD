@@ -1508,7 +1508,10 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         lingering_.erase(actor);
     }
     else if (saved != characters_.end())
+    {
         player = saved->second;
+        world_.returnFromAway(player);             // Down or resting while away (doc 38).
+    }
     else
     {
         player.description = "A road-worn quadrupedal wolf with a small shoulder satchel. Their coat and history are yours to imagine.";
@@ -1565,6 +1568,8 @@ void Game::leaveCharacter(Connection* c)
         e->typing = false;
         world_.stop(e->id);
         characters_[e->id] = *e;
+        characters_[e->id].awaySince = world_.calendarDays();   // Away time counts as rest (doc 38).
+        characters_[e->id].awayInBed = world_.inBed(*e);
         logEvent("departure", id);
         if (const auto* fight = world_.battleOf(id); fight && !fight->over)
         {
@@ -1602,6 +1607,8 @@ void Game::releaseLingering()
         {
             e->lingering = false;
             characters_[e->id] = *e;
+            characters_[e->id].awaySince = world_.calendarDays();
+            characters_[e->id].awayInBed = world_.inBed(*e);
             world_.removePlayer(e->id);
             record(Character, it->first);
             ++revision_;
@@ -2239,6 +2246,18 @@ void Game::sendSnapshot(Connection* c)
             self.set("downedLeft", std::round(me->downedLeft));
             self.set("canStruggle", world_.recoveryAvailable(*me) && me->struggleUntil <= 0);
             self.set("struggling", me->struggleUntil > 0);
+        }
+        // Rest (doc 38): downings since a full rest, and the rest under way (in a bed, toward a full one).
+        if (me->downsSinceRest > 0)
+            self.set("downsSinceRest", me->downsSinceRest);
+        if (me->restRun > 0)
+        {
+            const bool bed = world_.inBed(*me);
+            auto rest = Value::object();
+            rest.add("hours", std::floor((bed ? me->bedRun : me->restRun) * 10) / 10);
+            rest.add("bed", bed);
+            rest.add("full", battle::FullRestHours);
+            self.set("rest", std::move(rest));
         }
     }
     self.set("names", namesView(id));                 // Their name and aliases (doc 32).

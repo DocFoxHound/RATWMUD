@@ -164,8 +164,9 @@ void downedAndBackToTheWorld()
         downed = bo.downedLeft > 0;
     }
     expect(downed, "Bitten past his last: Bo is Downed");
-    expect(bo.downedLeft >= battle::DownedBite * battle::DownedMinimum && bo.downedLeft <= battle::DownedBite,
-           "with a bite's timer: " + std::to_string(bo.downedLeft));
+    expect(bo.downedLeft >= battle::GetUpBite && bo.downedLeft <= battle::GetUpBite + 100 * battle::GetUpOverkillSeconds,
+           "down a bite's while, his first downing: " + std::to_string(bo.downedLeft));
+    expect(bo.downsSinceRest == 1, "His first downing since a full rest");
     expect(bo.state == "downed" && bo.posture == "lying" && !bo.dead, "lying, not dead");
     b = &fight(w, "ada");
     expect(b->over, "His side has nobody standing: the fight is over");
@@ -187,18 +188,18 @@ void downedAndBackToTheWorld()
     for (int i = 0; i < 25; ++i)
         w.tick(1);
     expect(bo.downedLeft <= 0 && std::abs(bo.hurt - 85) < 1, "and is up, on his last legs");
-    // Down again the same day: he can't get up by himself.
+    // Down again the same day: he can't struggle up, but nobody dies (doc 38): his time down runs out and he gets up.
     bo.hurt = 100;
     bo.downedLeft = 30;
     bo.state = "downed";
     expect(!w.struggleUp("bo").ok, "Once a day only");
     for (int i = 0; i < 35; ++i)
         w.tick(1);
-    expect(bo.dead, "Left untended, the timer runs out: he dies");
-    expect(w.setDead("bo", true).ok == false, "and stays dead");
+    expect(!bo.dead && bo.downedLeft <= 0 && bo.posture == "standing" && std::abs(bo.hurt - (100 - battle::GetUpHealth)) < 1,
+           "Left untended, he gets up when his time is up, sore, alive");
 }
 
-void deathInAFight()
+void gettingUpInAFight()
 {
     World w;
     quiet(w);
@@ -223,17 +224,97 @@ void deathInAFight()
         w.tick(.1);
     }
     expect(bo.downedLeft > 0 && !b.over, "Bo is down, Cy still stands: the fight goes on");
-    // His turns still come: each takes a minute off his timer. With little left and his getting-up spent, he dies.
-    bo.downedLeft = 30;
+    // With his getting-up spent and his time down run out, he gets up in the fight: a player never dies (doc 38).
+    bo.downedLeft = 3;
     bo.recoveryUsed = std::floor(w.calendarDays());
-    for (int i = 0; i < 2000 && !bo.dead; ++i)
+    for (int i = 0; i < 100 && bo.downedLeft > 0; ++i)
     {
         for (const auto* other : {"ada", "cy"})
             if (w.battleOf(other) && test::acting(w.battleOf(other), other))
                 w.battleAct(other, "wait");
         w.tick(.1);
     }
-    expect(bo.dead && b.fighter("bo")->status == "dead", "Bo dies in the fight");
+    expect(!bo.dead && b.fighter("bo")->status == "fighting" && std::abs(bo.hurt - (100 - battle::GetUpHealth)) < 1,
+           "Bo gets back up in the fight, alive");
+    expect(std::any_of(b.log.begin(), b.log.end(), [](const auto& l) { return l.text.find("gets back up") != std::string::npos; }),
+           "and the fight says so");
+}
+
+// Doc 38: downings without a full rest keep a wolf down longer; only a bed gives a full rest; time away counts.
+void restAndRepeatedDowns()
+{
+    World w;
+    quiet(w);
+    auto& ada = wolf(w, "ada");
+    auto& bo = wolf(w, "bo", 1.2);
+    ada.dexterity = 90;
+    ada.strength = 100;
+    std::vector<double> downs;
+    for (int round = 0; round < 5; ++round)
+    {
+        bo.hurt = 95;
+        bo.recoveryUsed = std::floor(w.calendarDays());   // (No struggling up: each time down is waited out.)
+        expect(w.attack("ada", "bo").ok && w.answerChallenge("bo", true).ok, "a fight, round " + std::to_string(round));
+        for (int i = 0; i < 3000 && bo.downedLeft <= 0; ++i)
+        {
+            test::playTurn(w, "ada");
+            if (w.battleOf("bo") && test::acting(w.battleOf("bo"), "bo"))
+                w.battleAct("bo", "wait");
+            w.tick(.1);
+        }
+        downs.push_back(bo.downedLeft);
+        for (int i = 0; i < 4000 && (bo.downedLeft > 0 || w.inBattle("bo") || w.inBattle("ada")); ++i)
+            w.tick(1);
+        expect(!bo.dead && bo.downedLeft <= 0, "He gets up each time, round " + std::to_string(round));
+        for (int i = 0; i < 10; ++i)
+            w.tick(1);                                // (The settling after a fight.)
+    }
+    expect(bo.downsSinceRest == 5, "Five downings without rest: " + std::to_string(bo.downsSinceRest));
+    const auto stretch = [&](int n) { return downs[n] / downs[0]; };
+    expect(stretch(1) > 1.6 && stretch(2) > 3.2 && stretch(3) > 4.8 && stretch(4) > 6.4,
+           "each keeps him down longer: " + std::to_string(downs[0]) + " " + std::to_string(downs[4]));
+    expect(downs[4] <= battle::GetUpLongest, "never past half an hour");
+    // A partial rest: six hours lying on the ground helps, but resets nothing.
+    bo.hurt = 0;
+    w.setPosture("bo", "lying");
+    for (int i = 0; i < 2; ++i)
+        w.tick(1);
+    for (int i = 0; i < int(battle::FullRestHours * battle::RestHourSeconds / 30) + 2; ++i)
+        w.tick(30);
+    expect(bo.restRun >= battle::FullRestHours && bo.bedRun == 0, "Lying on the ground is a partial rest: " + std::to_string(bo.restRun));
+    expect(bo.downsSinceRest == 5 && !w.recoveryAvailable(bo), "and resets nothing");
+    // A full rest: six hours lying in a bed.
+    auto* c = w.cell(bo.cellId);
+    c->tile(int(std::floor(bo.position.x)), int(std::floor(bo.position.y)))->glyph = 'b';
+    expect(w.inBed(bo), "He lies in a bed");
+    for (int i = 0; i < int(battle::FullRestHours * battle::RestHourSeconds / 30) + 2; ++i)
+        w.tick(30);
+    expect(bo.downsSinceRest == 0 && w.recoveryAvailable(bo) && bo.fullRestDay > 0, "Six hours in a bed: a full rest");
+    // Getting up breaks a rest.
+    w.setPosture("bo", "standing");
+    for (int i = 0; i < 4; ++i)
+        w.tick(1);
+    expect(bo.restRun == 0 && bo.bedRun == 0, "Standing breaks the rest");
+    // Away (logged out): the time counts down a downing, then rests; in a bed only if they left lying in one.
+    Entity gone = bo;
+    gone.downsSinceRest = 3;
+    gone.hurt = 100;
+    gone.downedLeft = 600;
+    gone.awaySince = w.calendarDays() - 1200 / calendar::SecondsPerDay;
+    w.returnFromAway(gone);
+    expect(gone.downedLeft <= 0 && std::abs(gone.hurt - (100 - battle::GetUpHealth)) < 1 && gone.awaySince < 0,
+           "Away longer than his time down: he is up when he comes back");
+    expect(gone.downsSinceRest == 3, "but lying down hurt is no rest");
+    gone.awaySince = w.calendarDays() - 5 * battle::RestHourSeconds / calendar::SecondsPerDay;
+    gone.awayInBed = false;
+    gone.restRun = gone.bedRun = 0;
+    w.returnFromAway(gone);
+    expect(gone.downsSinceRest == 3 && gone.restRun >= 7, "Away five hours, not in a bed: a partial rest, half again");
+    gone.awaySince = w.calendarDays() - 5 * battle::RestHourSeconds / calendar::SecondsPerDay;
+    gone.awayInBed = true;
+    gone.restRun = gone.bedRun = 0;
+    w.returnFromAway(gone);
+    expect(gone.downsSinceRest == 0, "Away five hours in a bed: 7.5 hours' rest, a full one");
 }
 
 void watchingJoiningFleeing()
@@ -332,7 +413,17 @@ void downedIsSaved()
     e.quickened = true;
     e.mana = 33;
     e.fightingSkill = 61;
+    e.downsSinceRest = 3;
+    e.restRun = 2.5;
+    e.bedRun = 1.5;
+    e.fullRestDay = 12.25;
+    e.awaySince = 13.5;
+    e.awayInBed = true;
     const auto back = wire::readEntity(wire::persistEntity(e, 0));
+    expect(back.downsSinceRest == 3 && back.restRun == 2.5 && back.bedRun == 1.5 && back.fullRestDay == 12.25 &&
+               back.awaySince == 13.5 && back.awayInBed,
+           "and rest: downings since a full rest, the rest run, the last full rest, time away (doc 38)");
+
     expect(back.downedLeft == 321 && back.recoveryUsed == 4 && back.hurt == 100, "Downed, and the day's getting-up, are saved");
     expect(back.mouth == "sword" && back.gift == "fire" && back.quickened && back.mana == 33 && back.fightingSkill == 61,
            "and the sword in the jaws, the Gift, its mana, and fighting skill");
@@ -622,7 +713,8 @@ int main()
         rules();
         challengeAndTurns();
         downedAndBackToTheWorld();
-        deathInAFight();
+        gettingUpInAFight();
+        restAndRepeatedDowns();
         watchingJoiningFleeing();
         aTimidResidentRuns();
         downedIsSaved();

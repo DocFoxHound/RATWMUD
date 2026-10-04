@@ -3708,6 +3708,7 @@ void World::tick(double dt)
         dt -= step;
     }
     tendDowned(elapsed);                            // Down, out of a fight: the timer, getting up, being tended.
+    restPlayers(elapsed);                           // Lying or sitting still: rest (doc 38).
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
     mark = Clock::now();
     // A player's map memory takes in what they see as they go. A view is thousands of sight rays, so it is taken

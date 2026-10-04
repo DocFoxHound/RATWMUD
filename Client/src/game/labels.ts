@@ -17,6 +17,15 @@ export function postureLabel(self: Maybe): string {
     return posture + (bool(self, 'turning') ? ' · turning' : '');
 }
 
+// Rest under way (doc 38): toward a full rest in a bed, or a partial one anywhere else; "" when not resting.
+export function restLabel(self: Maybe): string {
+    const rest = obj(self, 'rest');
+    if (!rest) return '';
+    const hours = num(rest, 'hours'), full = num(rest, 'full', 6);
+    if (!bool(rest, 'bed')) return '  ·  resting (no bed: a partial rest)';
+    return hours >= full ? '  ·  fully rested' : `  ·  resting in a bed · ${hours.toFixed(1)} of ${full} h`;
+}
+
 // Crime and law: held in the gaol (and for how long), or wanted by a town's watch (and what they ask).
 export function lawLabel(self: Maybe): string {
     const custody = obj(self, 'custody');

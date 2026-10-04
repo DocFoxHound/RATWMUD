@@ -6,7 +6,7 @@ import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {bool, boundedNum, envNumber, obj, str} from '../../game/json.ts';
 import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel,
-    scentLabel} from '../../game/labels.ts';
+    restLabel, scentLabel} from '../../game/labels.ts';
 import type {EntityView, GameState} from '../../game/state.ts';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
@@ -143,6 +143,7 @@ export class Hud {
         button('Smell', 'act', actions, () => act('smell'));
         button('Wait', 'act', actions, () => act('wait'));
         button('Sit', 'act', actions, () => act('sit'));
+        button('Lie down', 'act', actions, () => act('lay')).title = 'Rest: six hours lying in a bed is a full rest';
         button('End scene', 'act', actions, () => act('session_end'));
 
         const side = el('aside', 'side', this.root);
@@ -348,7 +349,7 @@ export class Hud {
     private updateStatus(self: ReturnType<typeof obj>) {
         const s = this.s;
         setText(this.who, str(self, 'name', 'Connecting'));
-        setText(this.posture, `${postureLabel(self)}${str(self, 'state') ? `  ·  ${str(self, 'state')}` : ''}`);
+        setText(this.posture, `${postureLabel(self)}${str(self, 'state') ? `  ·  ${str(self, 'state')}` : ''}${restLabel(self)}`);
         const law = lawLabel(self);
         setText(this.law, law);
         show(this.law, !!law);

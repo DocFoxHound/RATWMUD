@@ -111,10 +111,12 @@ export class FightPanel {
             if (downedLeft > 0) {
                 any = true;
                 const r = row();
-                el('span', 'fight-alert', r, `You are down · ${clockLabel(downedLeft)} left`);
+                const downs = num(self, 'downsSinceRest');
+                el('span', 'fight-alert', r, `You are down · up in ${clockLabel(downedLeft)}`);
+                if (downs >= 2) el('span', 'muted small', r, `Down ${downs} times without a full rest: it takes longer each time`);
                 if (bool(self, 'struggling')) el('span', 'muted small', r, 'You are struggling to get up…');
                 else if (bool(self, 'canStruggle')) button('Struggle up', 'act fight-go', r, () => s.sendAction('struggle'));
-                else el('span', 'muted small', r, 'Only someone tending your wounds can get you up.');
+                else el('span', 'muted small', r, 'You get up when your time is up, or sooner if someone tends your wounds.');
             }
             for (const f of s.fights) {
                 any = true;

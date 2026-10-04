@@ -211,10 +211,18 @@ struct Entity
     std::string postureTarget;
     int speakingColor = 0;
     // How badly hurt (0..100): health is 100 − hurt. At 100 a character is Downed (Docs/Design/33-combat.md): lying,
-    // with `downedLeft` seconds until they die unless they struggle up (once a game day) or someone tends them.
+    // with `downedLeft` seconds until a player gets up (doc 38), or an NPC dies, unless they struggle up (once a game
+    // day) or someone tends them.
     double hurt = 0.0;
     double downedLeft = 0.0;
     double recoveryUsed = -1.0;               // The game day (whole) the self-recovery was last used; -1 never.
+    // Rest (doc 38): a player's downings since their last full rest, which stretch the next one; the rest they have had
+    // without a break, anywhere (`restRun`) and lying in a bed (`bedRun`), in game hours; the calendar day of their last
+    // full rest. `awaySince`: the calendar day they left the world, while gone (-1 while here), and whether they left
+    // lying in a bed.
+    int downsSinceRest = 0;
+    double restRun = 0.0, bedRun = 0.0, fullRestDay = -1.0, awaySince = -1.0;
+    bool awayInBed = false;
     double struggleUntil = 0.0, tendUntil = 0.0;   // Getting up, and tending someone, out of a fight (not saved).
     std::string tending;
     // Fights (doc 33): what is held in the mouth ("" or "sword"); a Gift ("" or "fire"), Quickened or not, and its mana;
@@ -893,6 +901,16 @@ class World
     std::vector<std::pair<int, int>> reachFrom(const Battle& b, const BattleFighter& f, int range) const;
     void standUp(Entity& e, double health);
     void tendDowned(double dt);
+    void fullRest(Entity& e);
+    void restPlayers(double dt);
+
+  public:
+    // A player back in the world (doc 38): the time they were away counts down their downed period and rests them.
+    void returnFromAway(Entity& e);
+    // Lying on a bed or straw (doc 36's `b` and `z` tiles): where a full rest is had (doc 38).
+    bool inBed(const Entity& e) const;
+
+  private:
     std::vector<std::pair<std::string, std::string>> notices_;
     std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two towns (cells), for bandits.
     std::int64_t priceHour_ = -1;

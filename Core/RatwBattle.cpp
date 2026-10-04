@@ -906,7 +906,18 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     auto* e = entity(f.id);
     if (!e)
         return;
-    e->downedLeft = std::max(base * battle::DownedMinimum, base - overkill * battle::OverkillSeconds);
+    if (e->npc)
+        e->downedLeft = std::max(base * battle::DownedMinimum, base - overkill * battle::OverkillSeconds);
+    else
+    {
+        // A player lies down for a while, never dies (doc 38): the longer for each downing since a full rest.
+        ++e->downsSinceRest;
+        const double getUp = base == battle::DownedBlunt ? battle::GetUpBlunt : base == battle::DownedFire ? battle::GetUpFire
+                                                                                                          : battle::GetUpBite;
+        e->downedLeft = std::min(battle::GetUpLongest,
+                                 getUp * battle::getUpStretch(e->downsSinceRest) + overkill * battle::GetUpOverkillSeconds);
+    }
+    e->restRun = 0;
     e->state = "downed";
     e->posture = "lying";
     e->postureTarget.clear();
@@ -1307,7 +1318,15 @@ void World::tendBattles(double dt)
             if (f.status == "downed" && !e->lingering)
             {
                 e->downedLeft -= dt;
-                if (e->downedLeft <= 0)
+                if (e->downedLeft <= 0 && !e->npc)
+                {
+                    // A player's time down is up: they get back up, sore (doc 38).
+                    standUp(*e, battle::GetUpHealth);
+                    f.status = "fighting";
+                    f.struggling = false;
+                    fightLine(b, f.id, {}, "rise", e->name + " gets back up.");
+                }
+                else if (e->downedLeft <= 0)
                 {
                     e->downedLeft = 0;
                     f.status = "dead";
@@ -1470,15 +1489,97 @@ void World::tendDowned(double dt)
         if (e.npc && e.struggleUntil <= 0 && recoveryAvailable(e))
             e.struggleUntil = time_ + battle::StruggleSeconds;
         e.downedLeft -= dt;
-        if (e.downedLeft <= 0)
+        if (e.downedLeft <= 0 && !e.npc)
+        {
+            standUp(e, battle::GetUpHealth);
+            notice(id, "You get back on your feet, sore all over.");
+        }
+        else if (e.downedLeft <= 0)
         {
             e.downedLeft = 0;
-            if (!e.npc)
-                notice(id, "Your wounds are too much. You die.");
             setDead(id, true);
         }
     }
 }
+
+void World::restPlayers(double dt)
+{
+    // Rest (doc 38): lying or sitting still, out of a fight and not down, without a break, is a partial rest; six hours
+    // of it lying in a bed is a full rest.
+    for (auto& [id, e] : entities_)
+    {
+        if (e.npc || e.dead || e.lingering)
+            continue;
+        if (e.fullRestDay < 0)
+            e.fullRestDay = calendarDays_;          // (Characters from before rest was kept: counted from now.)
+        const bool still = (e.posture == "lying" || e.posture == "sitting") && e.path.empty() &&
+                           std::hypot(e.velocity.x, e.velocity.y) < .05;
+        if (!still || e.downedLeft > 0 || (!battles_.empty() && inBattle(id)))
+        {
+            e.restRun = e.bedRun = 0;
+            continue;
+        }
+        const double hours = dt / battle::RestHourSeconds;
+        e.restRun += hours;
+        if (!inBed(e))
+        {
+            e.bedRun = 0;
+            continue;
+        }
+        const double before = e.bedRun;
+        e.bedRun += hours;
+        if (before < battle::FullRestHours && e.bedRun >= battle::FullRestHours)
+        {
+            fullRest(e);
+            notice(id, "You have slept well. Your strength is coming back.");
+        }
+    }
+}
+
+bool World::inBed(const Entity& e) const
+{
+    if (e.posture != "lying")
+        return false;
+    const auto* c = cell(e.cellId);
+    const auto* t = c && c->loaded ? c->tile(int(std::floor(e.position.x)), int(std::floor(e.position.y))) : nullptr;
+    return t && !t->solid && (t->glyph == 'b' || t->glyph == 'z');
+}
+
+void World::fullRest(Entity& e)
+{
+    e.downsSinceRest = 0;
+    e.recoveryUsed = -1;
+    e.fullRestDay = calendarDays_;
+}
+
+void World::returnFromAway(Entity& e)
+{
+    if (e.awaySince < 0)
+        return;
+    const double away = std::max(0.0, (calendarDays_ - e.awaySince) * calendar::SecondsPerDay);
+    const bool bed = e.awayInBed;
+    e.awaySince = -1;
+    e.awayInBed = false;
+    // Down when they left: the time away counts it down, and none of it is rest.
+    if (e.downedLeft > 0 && !e.dead)
+    {
+        e.downedLeft -= away;
+        if (e.downedLeft > 0)
+            return;
+        standUp(e, battle::GetUpHealth);
+        e.restRun = e.bedRun = 0;
+        return;
+    }
+    const double hours = away / battle::RestHourSeconds * battle::AwayRestRate;
+    e.restRun += hours;
+    if (!bed)
+        return;
+    const double before = e.bedRun;
+    e.bedRun += hours;
+    if (before < battle::FullRestHours && e.bedRun >= battle::FullRestHours)
+        fullRest(e);
+}
+
 
 // ------------------------------------------------------------------ Facing, truces
 

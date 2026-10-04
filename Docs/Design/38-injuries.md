@@ -1,6 +1,7 @@
 # Injuries: no death for players, and wounds that stay
 
-Status: **plan, drafted October 4, 2026**. Nothing here is built. It replaces the death rules in
+Status: **plan, drafted October 4, 2026; phase 1 (no death, the downed period, rest) built the same day** (see Build
+phases). It replaces the death rules in
 [33-combat.md](33-combat.md) ("Downed and death") for player characters. Doc 33 keeps the fight rules: health, the
 Downed state, struggling up and tending. All numbers are starting tuning, not final balance.
 
@@ -30,7 +31,7 @@ role-play with.
 
 A game day is 4 real hours (`calendar::SecondsPerDay` = 14400 s), so a game hour is 10 real minutes and a game week is
 28 real hours. "Days to weeks" of healing means a few real hours to a couple of real days. Most of that time a player is
-logged out, so logged-out time counts as rest (below).
+logged out, so logged-out time counts as rest (below): a full rest if they left lying in a bed, a partial one if not.
 
 ## Downed: down, not dying
 
@@ -43,8 +44,9 @@ Ways up are as in doc 33:
 - **Struggling up**, once per game day.
 - **Being tended** by someone else, which ends the period at once.
 
-The period runs in real time, in a fight and out of one, logged in or not. A player who logs out while Downed is still
-lying there for others to tend, and gets up when the period runs out.
+The period runs in real time, in a fight and out of one, logged in or not. A player who logs out while Downed leaves the
+world as any player does (after lingering, in a fight), and the time away counts the period down: back after it ran
+out, they are up at 10 health where they lay. Lying down hurt is not rest.
 
 ### Repeated downings stretch the period
 
@@ -150,9 +152,9 @@ build up while the wolf is resting:
 
 | Resting | Rest hours per game hour |
 | --- | --- |
-| Lying down or sitting, out of a fight, not moving | 1 |
-| The same in its own home, or on a bed or straw | 1.5 |
-| Logged out (asleep in its den) | 1.5 |
+| Lying in a bed or on straw (a full rest's way) | 1.5 |
+| Lying down or sitting anywhere else, out of a fight, not moving (a partial rest) | 0.75 |
+| Logged out: in a bed if they left lying in one, else as a partial rest | 1.5 or 0.75 |
 | Up and about | 0.25 (a wolf heals a little anyway) |
 | Sprinting, fighting, Downed | 0 |
 
@@ -183,6 +185,10 @@ Lasting injuries are the rare, memorable ones. Each trigger is a roll, made when
 | A downing that is the 4th or later since a full rest | 60% |
 | A downing with a severe acute injury on the struck body part | 50%: that injury sets into its lasting form |
 | Burning down to 0 | 25%: burn scars |
+
+**Going without a full rest raises every roll above**: +5 percentage points for each game day since the last full rest
+(the first day free), up to +25. Partial rests heal, but only a night in a bed keeps a wolf from wearing down: one who
+naps on the road between fights is the one who ends up with the limp.
 
 Only one lasting injury per fight, whatever the rolls, so one disastrous fight leaves one mark, not five.
 
@@ -220,26 +226,30 @@ with the change logged like other DM actions.
 
 ## Rest
 
-A **full rest** is 6 rest hours without a break: lying or sitting still, out of a fight, or logged out. That is an hour
-of real time lying down, or simply logging off for a while.
+**A full rest needs a bed.** It is 6 rest hours without a break lying in a bed or on straw (doc 36's `b` and `z`
+tiles), out of a fight: an hour of real time asleep, or logging off while lying in one (logged-out time counts half
+again, so 40 real minutes away will do).
 
 A full rest:
 
 - sets the count of downings since full rest to 0;
-- gives back the struggle-up, if it was spent (it also comes back at day rollover, as now).
+- gives back the struggle-up, if it was spent (it also comes back at day rollover, as now);
+- marks the day of the last full rest, which the lasting-injury rolls count from.
 
-Partial rest still counts towards healing acute injuries; it just doesn't reset the downing count.
+**Every other rest is partial**: lying or sitting still anywhere else, or logged out not lying in a bed. It heals acute
+injuries more slowly (the table above) and resets nothing. Standing up, moving, fighting or going down breaks a rest,
+and the six hours start again.
 
-The client shows rest while it builds: "Resting: 2 of 6 hours", next to the posture buttons. Sit and lay already exist
-as actions, so resting needs no new controls.
+The status panel shows rest beside the posture: "resting in a bed · 2.3 of 6 h", or "resting (no bed: a partial
+rest)". The actions row has Sit and Lie down.
 
 ## What players see
 
 - **Character sheet: a new Injuries section.** Acute injuries with severity and time to heal; lasting ones with when and
   how they were got ("Torn left ear: in a fight with a bandit, early spring, year 2").
 - **The story** (doc 18) gets one line per new acute or lasting injury, and one when an acute injury heals.
-- **The fight panel** lists combat injuries. The Downed banner shows the period left and, after a second downing, says
-  why it is longer ("Down again without rest: 5 min").
+- **The fight panel** lists combat injuries. The Downed banner shows when you get up ("up in 2:30") and, after a
+  second downing, says why it is longer ("Down 2 times without a full rest: it takes longer each time").
 - **Look** at another wolf shows its visible injuries.
 
 ## Data
@@ -250,7 +260,9 @@ On the character (`Entity`), all saved with the character and sent to its owner:
 injuries[]        {id, kind ("acute"|"lasting"), type, part, severity (1..3, acute), restLeft (rest hours, acute),
                    gotDay, cause, from (who or what), side ("left"|"right"|"")}
 downsSinceRest    int
-restRun           rest hours in the current unbroken rest (for the full-rest check)
+restRun, bedRun   rest hours in the current unbroken rest, anywhere and in a bed (the full-rest check)
+fullRestDay       calendar day of the last full rest (from first entry, for characters made before rest was kept)
+awaySince, awayInBed   while logged out: the calendar day they left, and whether lying in a bed
 ```
 
 Combat injuries live on `BattleFighter` and are not saved. `downedLeft` keeps its name but now counts down to getting
@@ -261,8 +273,10 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
 
 ## Build phases
 
-1. **No death.** The downed period replaces the death timer for players; get up at 10 health; the downings count and
-   stretch; full rest resets it. Doc 33 updated.
+1. **No death.** Built October 4, 2026. The downed period replaces the death timer for players (NPCs keep doc 33's,
+   pending the open question); get up at 10 health, in a fight or out; the downings count and stretch; partial and
+   full rest, a full one only in a bed; time away counts; "to the death" terms read "until one goes down"; the status
+   panel shows rest, the actions row gains Lie down. `battle_tests` restAndRepeatedDowns and gettingUpInAFight.
 2. **Combat injuries.** Bleeding and Staggered beside Burning and Winded, in the arena and the fight panel.
 3. **Acute injuries.** Triggers, the table, effects, rest hours, strain, healing steps; character sheet and story lines.
 4. **Lasting injuries.** Triggers, the one-per-fight rule, effects and caps, appearance and veiled labels, Look.
@@ -274,7 +288,7 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
 | Question | Recommendation |
 | --- | --- |
 | Do NPCs die? | Residents no, by the same rule. Hostile NPCs a DM calls up: a "mortal" flag, off by default. |
-| Does logged-out time count as rest anywhere, or only at home? | Anywhere, at 1.5×. Requiring a home punishes players without one. |
+| Does logged-out time count as rest anywhere? | **Decided:** as a partial rest anywhere; a full rest only if they left lying in a bed. |
 | Can a downed wolf be robbed or dragged off? | Not now. Worth a design of its own (captivity, ransom) later. |
 | Should acute injuries be given on every downing, or rolled? | Every downing. Losing is the main cost now that death is gone. |
 | Can lasting injuries ever be healed? | No, by design; a DM correction only. Magic that heals them could be a rare, late story reward. |

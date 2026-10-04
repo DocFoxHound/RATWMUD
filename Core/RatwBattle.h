@@ -137,6 +137,15 @@ constexpr double BiteDamage = 12, BiteStamina = 8;
 constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;
 constexpr double DownedMinimum = .6, OverkillSeconds = 10;
+// A player is never killed (doc 38): they lie down for a while, longer for each downing since their last full rest, and
+// get up at GetUpHealth. The bases are for the cause, as above; the stretch is by downings, counting this one.
+constexpr double GetUpBite = 150, GetUpBlunt = 180, GetUpFire = 120, GetUpHealth = 10;
+constexpr double GetUpOverkillSeconds = 2, GetUpLongest = 30 * 60;
+inline double getUpStretch(int downs) { return downs <= 1 ? 1 : downs == 2 ? 2 : downs == 3 ? 4 : downs == 4 ? 6 : 8; }
+// Rest (doc 38), in game hours: lying or sitting still, unbroken, is a partial rest; six hours of it lying in a bed is a
+// full rest, which resets the downings, gives back the struggle-up and is when the last one was. Logged out counts
+// half again, in a bed if they left lying in one.
+constexpr double RestHourSeconds = 600, FullRestHours = 6, AwayRestRate = 1.5;
 constexpr double StruggleSeconds = 20, TendSeconds = 10;   // Out of a fight.
 constexpr std::size_t BattleLogKept = 60;
 constexpr int YoungestFighter = 13;

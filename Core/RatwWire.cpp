@@ -174,6 +174,19 @@ Value persistEntity(const Entity& e, double time)
         o.add("downedLeft", e.downedLeft);
     if (e.recoveryUsed >= 0)
         o.add("recoveryUsed", e.recoveryUsed);
+    if (e.downsSinceRest > 0)
+        o.add("downsSinceRest", double(e.downsSinceRest));
+    if (e.restRun > 0)
+        o.add("restRun", e.restRun);
+    if (e.bedRun > 0)
+        o.add("bedRun", e.bedRun);
+    if (e.fullRestDay >= 0)
+        o.add("fullRestDay", e.fullRestDay);
+    if (e.awaySince >= 0)
+    {
+        o.add("awaySince", e.awaySince);
+        o.add("awayInBed", e.awayInBed);
+    }
     if (!e.mouth.empty())
         o.add("mouth", e.mouth);
     if (!e.gift.empty())
@@ -238,6 +251,12 @@ Entity readEntity(const Value& o)
     else
         e.stamina = -1;
     e.recoveryUsed = strictNumber(o, "recoveryUsed", -1.0);
+    e.downsSinceRest = std::clamp(int(strictNumber(o, "downsSinceRest", 0.0)), 0, 99);
+    e.restRun = std::clamp(strictNumber(o, "restRun", 0.0), 0.0, 1e6);
+    e.bedRun = std::clamp(strictNumber(o, "bedRun", 0.0), 0.0, 1e6);
+    e.fullRestDay = strictNumber(o, "fullRestDay", -1.0);
+    e.awaySince = strictNumber(o, "awaySince", -1.0);
+    e.awayInBed = o.boolean("awayInBed");
     e.mouth = o.string("mouth");
     if (!e.mouth.empty() && e.mouth != "sword")
         e.mouth.clear();
