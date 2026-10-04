@@ -1192,6 +1192,19 @@ void fightsThroughTheGame()
                        f["odds"].number("base") <= f["odds"].number("hit"),
                    "a chance and a blow: " + json::dump(f["odds"]));
     }
+    // Her own injuries come off the blow she would give (doc 38): a severe wrenched neck, bites 4 weaker.
+    const auto blowAt = [&] {
+        for (const auto& f : ada.snapshots.back()["battle"].array("fighters"))
+            if (f.has("odds"))
+                return f["odds"].number("damage");
+        return -1.0;
+    };
+    const double whole = blowAt();
+    expect(g.world().addInjury(ada.entityId, "wrenched_neck", 3, "", "a test").ok, "Ada has a wrenched neck");
+    run(g, ada, .3);
+    expect(blowAt() <= whole - 3 && blowAt() >= 1, "and her bite's blow shows it: " + std::to_string(whole) + " to " + std::to_string(blowAt()));
+    a->injuries.clear();
+    run(g, ada, .3);
     expect(ada.lastMotion.number("mode") == game::Game::Fighting, "No walking in the arena");
     const auto before = a->position;
     g.command(&ada, cmd({{"type", "move"}, {"x", 1.0}, {"y", 0.0}}));

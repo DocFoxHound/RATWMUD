@@ -321,11 +321,14 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
 - **Saved** with the character (`injuries` in the entity's save; unknown kinds dropped on reading).
 - **DM tools**: the DM app's Players tab lists a character's injuries with **Take away**, and gives one of any kind at a
   severity and side (`character.injury`, payload `{"add", "severity", "side"}` or `{"remove": id}`), online or offline.
-- **Not yet**: the strike previews' damage (`odds.damage`) doesn't take the attacker's own injuries off; the DM action's
-  application by the game server is tested only by its parts (the queue in `test_dungeon_master`, the world's
-  `addInjury`/`removeInjury` in `injury_tests`), as the Gift's is. Herbs and healers.
+- **The strike previews** (`odds.damage`) take the attacker's own injuries off the blow, as a real blow does (before an
+  ambush's more).
+- **Not yet**: herbs and healers.
 - Tests: `injury_tests` (61 checks: the tables, effects, floors and caps, healing, strain, a real downing, saving, the DM's
-  add and remove); `test_dungeon_master` (the action and its payload); `social.test.ts` (Look's words);
+  add and remove); `game_tests` (the preview's blow with a hurt neck); `test_dungeon_master` (the action and its
+  payload); `test_dm_live` (end to end: a real server on a scratch database applies the queued action to a signed-in
+  player, who is told and sees it, then to the same player offline, and the saved character keeps it;
+  `tools/client/hold.ts` is the player); `social.test.ts` (Look's words);
   `tools/client/injuries.mjs` (the sheet, the Status window and Look in the real page).
 
 ## Open questions

@@ -290,8 +290,11 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 // comes at).
                 const int quarter = battle::quarterOf(battle::octantGap(f.guarding ? battle::octant(mine->x - f.x, mine->y - f.y) : f.facing,
                                                                         battle::octant(mine->x - f.x, mine->y - f.y)));
-                odds.add("damage", std::round(battle::expectedThrough(*e, quarter, (sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125),
-                                                                      sword ? "cut" : "thrust")));
+                // Less what one's own injuries take off a blow (doc 38), as a real blow has it.
+                const auto hurt = injury::effects(me->injuries);
+                const double blow = std::max(1.0, (sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125) -
+                                                      (sword ? hurt.swordLess : hurt.biteLess));
+                odds.add("damage", std::round(battle::expectedThrough(*e, quarter, blow, sword ? "cut" : "thrust")));
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
                 o.add("odds", odds);
             }
