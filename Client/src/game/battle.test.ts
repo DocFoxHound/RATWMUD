@@ -248,3 +248,29 @@ test('a challenge names its terms (doc 37, phase 4): the menu offers them, the d
     assert.equal(termsWords('blood'), 'to first blood');
     assert.equal(termsWords(readBattle({battle})!.terms), 'until one goes down', 'a fight without terms is until one goes down (doc 38)');
 });
+
+test('planning ahead (doc 37, phase 5): while one\'s bar fills, a tile, a foe or a fallen friend clicked is planned', () => {
+    const {state: s, commands} = testGame();
+    const waiting: Json = {...battle, turn: '', turnLeft: 0, planning: true, haste: 2.5, reach: [[3, 2], [4, 2]]};
+    s.applySnapshot(snapshot({battle: waiting}));
+    const b = s.battle!;
+    assert.ok(b.planning && b.plan === null && b.haste === 2.5, 'waiting, no plan yet, the bars hastened');
+    s.arenaClick(3, 2);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'plan', x: 3, y: 2}, 'a lit tile: planned, not moved to');
+    s.fightTarget('bo');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'plan', act: 'bite', target: 'bo'}, 'a foe: a bite planned');
+    s.fightTarget('cy');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'plan', act: 'tend', target: 'cy'}, 'a fallen friend: tending planned');
+    // Planned already: the server says so, and the same again takes it back.
+    s.applySnapshot(snapshot({battle: {...waiting, you: {...(battle.you as Json), plan: {x: 3, y: 2, act: 'bite', target: 'bo'}}}}));
+    assert.deepEqual(s.battle!.plan, {move: [3, 2], act: 'bite', target: 'bo'}, 'the plan, read');
+    s.fightTarget('bo');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'unplan', part: 'act'}, 'the bite clicked again: taken back');
+    s.arenaClick(3, 2);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'unplan', part: 'move'}, 'the tile clicked again: taken back');
+    s.applySnapshot(snapshot({battle: {...waiting, you: {...(battle.you as Json), plan: {act: 'rest', target: ''}}}}));
+    assert.deepEqual(s.battle!.plan, {move: null, act: 'rest', target: ''}, 'a plan without a move');
+    // Walking, a fighter shows where it is going.
+    s.applySnapshot(snapshot({battle: {...battle, fighters: (battle.fighters as Json[]).map(f => (f.id === 'bo' ? {...f, walk: [[4, 2], [3, 2]]} : f))}}));
+    assert.deepEqual(s.battle!.fighters.find(f => f.id === 'bo')!.walk, [[4, 2], [3, 2]], "Bo's way there");
+});

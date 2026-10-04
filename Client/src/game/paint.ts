@@ -557,7 +557,9 @@ export class GamePainter {
         const range = b.mouth === 'sword' ? 2 : 1;
         // Where this wolf can go: an outline round the lit tiles. The aimed-at foe's strike tiles
         // among them are marked, brighter where the blow is likelier (their side and back).
-        if (me && mine && !b.moved && s.aiming !== 'flame' && b.reach.length) {
+        // Waiting for one's turn (doc 37): the same, for the next turn, dashed; a click plans it.
+        const planning = !!me && !mine && b.planning;
+        if (me && (mine || planning) && !b.moved && s.aiming !== 'flame' && b.reach.length) {
             const lit = new Set(b.reach.map(([x, y]) => `${x},${y}`));
             lit.add(`${me.x},${me.y}`);              // One's own tile is inside the outline, not a hole in it.
             const occupied = new Set(b.fighters.filter(f => f.status !== 'fled').map(f => `${f.x},${f.y}`));
@@ -570,8 +572,9 @@ export class GamePainter {
                 if (!lit.has(`${x - 1},${y}`)) { c.moveTo(x0, y0); c.lineTo(x0, y0 + tile); }
                 if (!lit.has(`${x + 1},${y}`)) { c.moveTo(x0 + tile, y0); c.lineTo(x0 + tile, y0 + tile); }
             }
-            c.strokeStyle = css(withAlpha(Amber, 0.75));
+            c.strokeStyle = css(withAlpha(Amber, planning ? 0.45 : 0.75));
             c.lineWidth = 1.5;
+            if (planning) c.setLineDash([3, 4]);
             c.stroke();
             c.restore();
             const aimed = b.fighters.find(f => f.id === s.fightTargetId());
@@ -606,7 +609,7 @@ export class GamePainter {
         }
         // Pointing at a foe on one's turn: the blow. From here if they're in reach; else from the tile a click would
         // step to (shown as a ghost), or "out of reach".
-        if (me && mine && !b.acted && pointedFoe && s.aiming !== 'flame') {
+        if (me && ((mine && !b.acted) || planning) && pointedFoe && s.aiming !== 'flame') {
             const step = apart(me.x, me.y, pointedFoe.x, pointedFoe.y) <= range ? {x: me.x, y: me.y, reaches: true}
                 : stepToward(b, me, pointedFoe, range);
             const foeAt = centre(pointedFoe.x, pointedFoe.y);
@@ -626,6 +629,36 @@ export class GamePainter {
             } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
         }
         const colorOf = (f: FighterView) => (f.id === s.selfId ? Amber : f.side === mySide ? Blue : foeRed);
+        // Others walking (doc 37: a turn shown, not just run): the way they are going, and where it ends.
+        for (const f of b.fighters) {
+            if (!f.walk.length || f.id === s.selfId || f.status === 'fled') continue;
+            const end = f.walk[f.walk.length - 1];
+            c.save();
+            c.setLineDash([3, 4]);
+            p.lines([centre(f.x, f.y), ...f.walk.map(([x, y]) => centre(x, y))], withAlpha(colorOf(f), 0.6), 2);
+            c.restore();
+            const [ex, ey] = centre(end[0], end[1]);
+            c.beginPath();
+            c.arc(ex, ey, radius * 0.6, 0, Math.PI * 2);
+            c.strokeStyle = css(withAlpha(colorOf(f), 0.6));
+            c.lineWidth = 1.5;
+            c.stroke();
+        }
+        // One's plan for the next turn: where it goes (a ghost) and at whom; what it does is said once the names are.
+        const planned = me && planning && b.plan ? this.drawPlan(b, me, centre, tile, range) : null;
+        // A word or two beside a wolf, where it covers no other wolf or name: `below` first, else above first.
+        const say = ([x, y]: Point, text: string, color: Color, alpha: number, below: boolean) => {
+            const size = tile >= 24 ? 11 : 10;
+            const [w] = p.measure(text, size, true);
+            const under: [number, number] = [x - w / 2, y + radius + 6], over: [number, number] = [x - w / 2, y - radius - 22];
+            const spots: [number, number][] = [below ? under : over, below ? over : under, [x + radius + 10, y - 7], [x - radius - 10 - w, y - 7],
+                [x - w / 2, y + radius + 22], [x - w / 2, y - radius - 38]];
+            const spot = spots.find(([lx, ly]) => !overlaps(rect(lx - 4, ly, lx + w + 4, ly + 15))) ?? spots[0];
+            placed.push(rect(spot[0] - 4, spot[1], spot[0] + w + 4, spot[1] + 15));
+            p.box(spot[0] - 4, spot[1], w + 8, 15, withAlpha(Ink, 0.85 * alpha));
+            p.frame(spot[0] - 4, spot[1], w + 8, 15, withAlpha(color, 0.75 * alpha));
+            p.text(spot[0], spot[1] + 1, text, size, withAlpha(color, alpha), true);
+        };
         // The wolf pointed at (not oneself): where it is weak, as a ring of three: front, sides, back.
         const pointed = b.fighters.find(f => f.id === (s.hoveredEntity || s.highlight) && f.id !== s.selfId && f.status === 'fighting');
         if (pointed) {
@@ -685,6 +718,7 @@ export class GamePainter {
             const hit = Math.max(14, radius + 4);
             s.hits.push({rect: rect(x - hit, y - hit, x + hit, y + hit), action: 'fighter', target: f.id});
         }
+        if (planned) say(planned.at, planned.word, Amber, 1, false);
         // On one's own turn, one's own tile turns the wolf: split three by three, each of its eight outer parts faces
         // that way. Shown when the pointer is on it (a drag from it turns the wolf too); a click on any tile or wolf
         // round it still moves or strikes there. Pushed last, so it wins over one's own wolf.
@@ -734,11 +768,60 @@ export class GamePainter {
             c.fillText(f.text, fx, fy);
             c.restore();
         }
+        // What the others just did, a word or two under each: "steps in", "bites".
+        for (const cap of s.fx.captions(s.clock)) {
+            const f = b.fighters.find(o => o.id === cap.id);
+            if (!f || f.status === 'fled') continue;
+            const [wx, wy] = s.walkOffset(f.id, f.x, f.y, s.clock);
+            say(centre(f.x + wx, f.y + wy), cap.text, colorOf(f), cap.alpha, true);
+        }
         // Over: the arena fades out (how it ended is the fight screen's result card: combat.ts).
         if (b.over) {
             const fade = clamp((s.clock - s.battleOverSeenAt - 2) / 0.5, 0, 1);
             if (fade > 0) p.box(map.left, map.top, map.right - map.left, map.bottom - map.top, withAlpha(Ink, fade));
         }
+    }
+
+    /**
+     * One's plan for the next turn (doc 37, phase 5), drawn while one's bar fills: the way to the tile planned and a
+     * ghost there; the action in a word over it; a planned blow's line to its foe (stepping in first, if out of reach),
+     * and planned fire's cone.
+     */
+    private drawPlan(b: BattleView, me: FighterView, centre: (x: number, y: number) => Point, tile: number, range: number): {at: Point; word: string} {
+        const p = this.p, c = p.ctx, plan = b.plan!;
+        const strike = plan.act === 'bite' || plan.act === 'sword';
+        const foe = b.fighters.find(f => f.id === plan.target);
+        let at: [number, number] = plan.move ?? [me.x, me.y];
+        if (!plan.move && strike && foe && apart(me.x, me.y, foe.x, foe.y) > range) {
+            const step = stepToward(b, me, foe, range);
+            if (step) at = [step.x, step.y];
+        }
+        const moved = at[0] !== me.x || at[1] !== me.y;
+        if (moved) {
+            c.save();
+            c.setLineDash([4, 4]);
+            p.lines(pathTo(b, [me.x, me.y], at).map(([x, y]) => centre(x, y)), withAlpha(Amber, 0.75), 2);
+            c.restore();
+            this.drawToken({...me, x: at[0], y: at[1]}, centre(at[0], at[1]), tile, Amber, 0.5, false);
+        }
+        const from = centre(at[0], at[1]);
+        if (strike && foe) {
+            c.save();
+            c.setLineDash([5, 4]);
+            p.lines([from, centre(foe.x, foe.y)], withAlpha(rgb(0xe0695e), 0.75), 2);
+            c.restore();
+        }
+        if (plan.act === 'flame' && b.flame) {
+            const [tx, ty] = plan.target.split(',').map(Number);
+            for (const [x, y] of coneTiles(b, at[0], at[1], tx, ty, b.flame.length, b.flame.angle)) {
+                const [cx, cy] = centre(x, y);
+                p.frame(cx - tile / 2 + 2, cy - tile / 2 + 2, tile - 4, tile - 4, withAlpha(rgb(0xff9a3c), 0.6));
+            }
+        }
+        // The action, in a word, said over where it will be done (once the names are placed).
+        const words: Record<string, string> = {bite: 'BITE', sword: 'STRIKE', flame: 'FIRE', tend: 'TEND', roll: 'ROLL', rest: 'REST', hold: 'TAKE SWORD',
+            stow: 'STOW', pickup: 'PICK UP', flee: 'FLEE'};
+        return {at: from, word: plan.act ? `NEXT · ${words[plan.act] ?? plan.act.toUpperCase()}` : 'NEXT'};
     }
 
     /**

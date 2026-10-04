@@ -3,7 +3,7 @@
 // a heavy blow shakes the view; a fall bursts; fire fills its cone and leaves ash; health drains with a lag so the size
 // of a blow shows. All of it is drawn from the fight's own log: the server's positions never move, and nothing here
 // decides an outcome. What should be heard is queued as cues (ui/sound.ts plays them).
-import type {BattleLine, BattleView, Tile} from './battle.ts';
+import {apart, type BattleLine, type BattleView, type FighterView, type Tile} from './battle.ts';
 
 export interface Mark {
     x: number;                  // Tile coordinates (centres), in the arena.
@@ -31,6 +31,13 @@ export interface Ring {
     alpha: number;
 }
 
+/** What another wolf just did, in a word or two, said under its token (doc 37: a turn shown, not just run). */
+export interface Caption {
+    id: string;
+    text: string;
+    alpha: number;
+}
+
 interface Effect {
     kind: string;
     actor: string;
@@ -43,6 +50,7 @@ interface Effect {
 }
 
 const Strike = 0.25, Mark = 0.5, Flame = 1.0, Ash = 2.5, FloatTime = 1.1, Flash = 0.18, Shake = 0.32, Burst = 0.7;
+const Said = 1.6;               // How long a caption stays under the wolf.
 const Heavy = 18;               // A blow this hard shakes the view (doc 33: it can knock a sword loose).
 
 /** A bump that goes out and comes back over `length` seconds: 0 → 1 → 0. */
@@ -60,14 +68,24 @@ export class FightEffects {
     private shakeSize = 0;
     /** Sounds to play, oldest first: taken by whoever plays them (`takeCues`). */
     private cues: string[] = [];
+    private said: Array<{id: string; text: string; at: number}> = [];
+    private walking = new Map<string, boolean>();   // Who was walking at the last look (a walk begun is said).
     selfId = '';
 
     /** Takes in a fight's new lines (by their sequence); the first sight of a fight starts nothing (no replay). */
     update(b: BattleView | null, clock: number) {
         this.effects = this.effects.filter(e => clock - e.at < Math.max(Flame + Ash, FloatTime) + 0.2);
+        this.said = this.said.filter(c => clock - c.at < Said);
         if (!b) {
             this.shown.clear();
+            this.walking.clear();
             return;
+        }
+        // Another wolf setting off: where to, in a word (closing in, falling back).
+        for (const f of b.fighters) {
+            const walking = f.walk.length > 0;
+            if (walking && !this.walking.get(f.id) && f.id !== this.selfId) this.say(f.id, moveWord(b, f), clock);
+            this.walking.set(f.id, walking);
         }
         const last = this.seen.get(b.id);
         const top = b.log.reduce((m, l) => Math.max(m, l.seq), 0);
@@ -105,6 +123,21 @@ export class FightEffects {
         }
         const cue = Cues[line.kind];
         if (cue) this.cues.push(cue);
+        const word = captionOf(line);
+        if (word && line.actor && line.actor !== this.selfId) this.say(line.actor, word, clock);
+    }
+
+    private say(id: string, text: string, clock: number) {
+        this.said = this.said.filter(c => c.id !== id);         // (One at a time under a wolf: the latest.)
+        this.said.push({id, text, at: clock});
+    }
+
+    /** What other wolves just did, a word or two each: "steps in", then "bites". */
+    captions(clock: number): Caption[] {
+        return this.said.map(c => {
+            const t = clock - c.at;
+            return {id: c.id, text: c.text, alpha: t < Said * 0.7 ? 1 : Math.max(0, 1 - (t - Said * 0.7) / (Said * 0.3))};
+        }).filter(c => c.alpha > 0);
     }
 
     /** The sounds since last asked. */
@@ -274,4 +307,40 @@ export class FightEffects {
         if (reduced || !b.fighters.find(f => f.id === id)?.casting) return [0, 0];
         return [Math.sin(clock * 40) * 0.04, Math.cos(clock * 33) * 0.03];
     }
+}
+
+/** A fight line's doing, in a word or two, for the caption under whoever did it ("" for none). */
+export function captionOf(line: BattleLine): string {
+    const t = line.text;
+    switch (line.kind) {
+        case 'hit': return 'bites';
+        case 'graze': return t.includes(' nicks ') ? 'cuts' : 'bites';
+        case 'slash': return 'cuts';
+        case 'miss': return t.includes(' swings ') ? 'swings' : 'snaps';
+        case 'charge': return 'gathers fire';
+        case 'flame': return 'FIRE';
+        case 'tend': return 'tends';
+        case 'roll': return 'rolls';
+        case 'rest': return 'rests';
+        case 'hold': return 'takes a sword';
+        case 'stow': return 'stows the sword';
+        case 'pickup': return 'grabs the sword';
+        case 'struggle': return 'struggles';
+        case 'flee': return t.includes('cut off') ? 'tries to flee' : 'flees';
+        case 'wait': return t.endsWith(' waits.') ? 'waits' : '';
+        case 'yield': return t.includes('offers to yield') ? 'yields' : '';
+        case 'truce': return t.includes('offers a truce') ? 'offers a truce' : '';
+        default: return '';
+    }
+}
+
+/** A walk begun, in a word: closing on a foe, falling back from them, or only moving. */
+export function moveWord(b: BattleView, f: FighterView): string {
+    const foes = b.fighters.filter(o => o.side !== f.side && o.status === 'fighting');
+    const end = f.walk[f.walk.length - 1];
+    if (!end || !foes.length) return 'moves';
+    const nearest = (x: number, y: number) => Math.min(...foes.map(o => apart(x, y, o.x, o.y)));
+    const reach = f.mouth === 'sword' ? 2 : 1;
+    if (nearest(end[0], end[1]) <= reach) return 'steps in';
+    return nearest(end[0], end[1]) > nearest(f.x, f.y) ? 'falls back' : 'moves';
 }

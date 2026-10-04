@@ -601,6 +601,13 @@ export class GameState {
         const me = b.fighters.find(f => f.id === this.selfId);
         const f = b.fighters.find(o => o.id === id);
         if (!me || !f || f.id === me.id) return;
+        if (!myTurn(b, this.selfId) && b.planning) {
+            // Waiting for one's turn: the blow (or the tending) is planned, played as the turn comes (doc 37).
+            const act = f.side !== me.side && f.status === 'fighting' ? (b.mouth === 'sword' ? 'sword' : 'bite')
+                : f.side === me.side && f.status === 'downed' ? 'tend' : '';
+            if (act) this.planAction(act, id);
+            return;
+        }
         if (f.side !== me.side && f.status === 'fighting') {
             // Out of reach on one's turn: step to the tile in reach that is nearest, then strike, in one click.
             const strike = b.mouth === 'sword' ? 'sword' : 'bite', range = strike === 'sword' ? 2 : 1;
@@ -615,6 +622,13 @@ export class GameState {
             this.sendBattle(strike, {target: id});
         }
         else if (f.side === me.side && f.status === 'downed') this.sendBattle('tend', {target: id});
+    }
+
+    /** Plans an action for one's next turn (doc 37), or takes it back when it is the one already planned. */
+    planAction(act: string, target = '') {
+        const plan = this.battle?.plan;
+        if (plan && plan.act === act && plan.target === target) this.sendBattle('unplan', {part: 'act'});
+        else this.sendBattle('plan', {act, target});
     }
 
     /** A strike waiting on a walk (fightTarget): struck when this wolf gets there, still in its turn and in reach. */
@@ -649,6 +663,7 @@ export class GameState {
         if (this.aiming === 'flame') {
             this.aiming = '';
             if (myTurn(b, this.selfId)) this.sendBattle('flame', {x: tx, y: ty});
+            else if (b.planning) this.sendBattle('plan', {act: 'flame', x: tx, y: ty});
             return;
         }
         const there = fighterAt(b, tx, ty);
@@ -657,6 +672,12 @@ export class GameState {
             return;
         }
         if (myTurn(b, this.selfId) && b.reach.some(([x, y]) => x === tx && y === ty)) this.sendBattle('move', {x: tx, y: ty});
+        else if (!myTurn(b, this.selfId) && b.planning) {
+            // Waiting: where to go when the turn comes; the tile planned (or one's own) again takes it back.
+            const me = b.fighters.find(f => f.id === this.selfId), move = b.plan?.move;
+            if ((move && move[0] === tx && move[1] === ty) || (me && me.x === tx && me.y === ty)) this.sendBattle('unplan', {part: 'move'});
+            else if (b.reach.some(([x, y]) => x === tx && y === ty)) this.sendBattle('plan', {x: tx, y: ty});
+        }
     }
 
     observeMotionTime(serverTime: number) {

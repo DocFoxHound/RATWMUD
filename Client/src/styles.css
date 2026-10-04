@@ -521,6 +521,7 @@ button.given { opacity: .6; }
 .game button.abtn.go { border-color: color-mix(in srgb, var(--gold) 60%, transparent); }
 .game button.abtn.warn .abtn-sub { color: #f0a08f; }
 .game button.abtn.armed { background: #3a2a1a; border-color: #ff9a3c; }
+.game button.abtn.planned { border-color: var(--gold); border-style: dashed; background: color-mix(in srgb, var(--gold) 14%, transparent); }
 .game button.abtn.end { margin-left: auto; min-width: 128px; overflow: hidden; border-color: var(--gold); }
 .game button.abtn.end:disabled { opacity: .75; border-color: #3a4a43; }
 .end-fill { position: absolute; inset: auto auto 0 0; height: 3px; background: var(--gold); transition: width .2s linear; }

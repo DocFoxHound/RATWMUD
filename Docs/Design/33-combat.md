@@ -8,7 +8,7 @@ https://claude.ai/code/artifact/39ec1b30-75e1-460b-b93e-b94d296582ad
 
 ## Overview
 
-Combat v1 is turn-based, in the style of Final Fantasy Tactics, and adds three attacks: Bite, Sword (held in the mouth) and Flamethrower. A fight moves its fighters into a private arena copied from their cell, while the world outside sees them lined up inside a red square. Turns come from an initiative meter that fills by dexterity. Injury lingers as lost movement, and death is permanent, so the system rewards caution and teamwork.
+Combat v1 is turn-based, in the style of Final Fantasy Tactics, and adds three attacks: Bite, Sword (held in the mouth) and Flamethrower. A fight moves its fighters into a private arena copied from their cell, while the world outside sees them lined up inside a red square. Turns come from an initiative meter that fills by dexterity. Injury lingers as lost movement. Death is permanent for NPCs; a player who goes down stays down for a while instead ([38-injuries.md](38-injuries.md)). Either way the system rewards caution and teamwork.
 
 **Design pillars**
 
@@ -16,7 +16,8 @@ Combat v1 is turn-based, in the style of Final Fantasy Tactics, and adds three a
 - **Stats decide outcomes.** Hit, dodge, speed and damage all derive from character stats, so builds feel different.
 - **Everything costs something.** Physical attacks spend stamina; magic spends mana and hurts the caster; getting hurt slows you down.
 - **Readable at a glance.** The W icon nudges on attacks and recoils on hits; magic is shown with glyphs and always has a visible tell.
-- **Death is rare but real.** A generous downed timer, one self-recovery, then rescue by others or permanent death.
+- **Death is rare but real.** A generous downed timer, one self-recovery, then rescue by others or permanent death. (For
+  players, doc 38 replaces death with a downed period and lasting injuries.)
 
 ## Stats that drive combat
 
@@ -58,14 +59,14 @@ Age already adjusts effective dexterity and senses, so old characters dodge less
                               |
                               v
    Joiners  --------->      Turns      --------->  Fled
-   edge Join or        fullest initiative          flee from an edge tile;
-   auto-join;          meter acts next;            can only observe after
-   start at 0          move + one action,
-   initiative          15 s per player
+   edge Join or        a full initiative           flee from an edge tile;
+   auto-join;          bar acts at once;           can only observe after
+   start at 0          move, action, facing;
+   initiative          20 s per player
                               |
                               v
                           Fight ends
-           (one side all down or fled, or a truce)
+     (one side all down, fled or yielded; a truce; or it lapses)
                               |
                               v
                 Everyone fades into the world
@@ -143,8 +144,8 @@ A player who wants to watch can enter a fight as a bodiless observer. Observers 
 
 ## Turns and initiative
 
-Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf and on their card:
-about twenty-five seconds at DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
+Each fighter has an initiative bar that fills in real time by dexterity, shown on the turn order strip above the map and
+on their card: about twenty-five seconds at DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
 each on their own clock. Nobody waits in a queue, so a fight of twenty takes about as long as a fight of two. Ending a
 turn early starts your bar again at once, so quick decisions win you more turns.
 
@@ -152,8 +153,11 @@ Why not one turn after another: in a big fight a queue makes everyone wait for e
 hours. Turns that overlap keep each player's own rhythm (charge, act, charge) whatever the size of the fight, and make
 dodging a charging attack possible (below).
 
+**No dead air** (doc 37, phase 5): while no player is taking a turn and no fire is gathering, every bar fills 2.5 times
+as fast, until someone's turn comes. A DEX 50 bar then fills in 10 s; the turn order strip shows "» ×2.5" meanwhile.
+
 ```text
-bar per second       = (6 + DEX / 10) × 100 / 275       // DEX 50 → full in 25 s, DEX 100 → in 17.2 s
+bar per second       = (6 + DEX / 10) × 100 / 275       // DEX 50 → full in 25 s, DEX 100 → in 17.2 s (× 2.5: no dead air)
 move range (tiles)   = floor((3 + DEX / 25) × injury factor × pace factor), minimum 1
 pace factor          = 0.5 + pace / 10                  // walk (0) 0.5, trot (5) 1, sprint (10) 1.5: DEX 50 → 2, 5, 7
 running stamina      = (pace − 3) × 0.6 a tile, above a trot of 3   // sprint: 4.2 a tile; walking is free
@@ -166,23 +170,30 @@ stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×
 Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
 that sets it back (Sword 10).
 
+**Planning ahead** (doc 37, phase 5): while your bar fills you can choose your next turn. Click a tile your next turn
+could reach (they are outlined, dashed), a foe to strike, a fallen friend to tend, or an action (fire, rest, roll, the
+sword, pick up, flee). The plan shows as a ghost of your wolf with the action named over it ("NEXT · BITE"). When the turn
+comes it plays half a second in: the move first (a blow at a foe out of reach steps in first, as a click does), then the
+action once the walk is done. What can no longer be done is said, and left for you to do; the rest of the turn is still
+yours, to turn, write or do more. Clicking the planned tile or foe again, or Clear plan, takes it back.
+
 **A turn has three parts: the move, the action and the facing.** The action is a bite, a sword stroke, fire, tending,
 rolling, taking or stowing a sword, picking one up, offering a truce (and, later, using an item). With all three used
 the turn ends by itself, 1.5 s after the last, so a few taps of Q or E can settle the facing (each turn of the head puts
 the end off again). Rest uses the move and the action. Facing first and moving after, the walk keeps the facing chosen.
 The action bar shows the three, ticked as they are used.
 
-**Turn timer.** A player has 20 s per turn, shown counting down on their card and bar and in a banner at the top of the
-map. Typing a roleplay line extends it once by 15 s. Otherwise a turn ends when its three parts are used, its time runs
+**Turn timer.** A player has 20 s per turn, shown counting down on their card, round their face on the turn order strip and
+inside End turn. Typing a roleplay line extends it once by 15 s. Otherwise a turn ends when its three parts are used, its time runs
 out or End turn is pressed. (Struggling up ends it at once: the wolf rises at the start of the next.) NPC turns end when
-they have done what they mean to. After three timeouts in a
-row the player is marked away and their turns are skipped until they act again; the fight panel says so, with an
+they have done what they mean to. A turn whose time runs out with nothing done (no move, no action) is let pass; after
+three of those in a row the player is marked away and their turns are skipped until they act again; the fight panel says so, with an
 **I'm back** button. A player who leaves mid-fight is away too, and coming back makes their turns theirs again.
 
 **The first blow.** Whoever starts a fight has the first turn to themselves: the NPCs set on (and any who join with
 them) wait until it is over before they act.
 
-**Moving is by clicking, and is walked.** On your turn the tiles you can reach are lit; click one to go there. The wolf
+**Moving is by clicking, and is walked.** On your turn the tiles you can reach are outlined; click one to go there. The wolf
 walks (or runs) there a tile at a time, around others, at its pace: 0.45 s a tile at a walk to 0.2 s at a sprint, slower
 hurt, a crawl 1 s. The tile it is going to is its own meanwhile; anyone stepping into its way stops it short. What
 happens on the way happens to it: a fire going off catches a wolf still crossing the cone. An NPC walks there before it
@@ -199,14 +210,18 @@ move goes at this pace, what a tile costs and what comes back next turn.
 turn it is wanted, before moving or acting; the turn stays open for turning and writing until its time or End turn. A
 resting wolf's card says so.
 
-**NPC turns** resolve on their own, 1.5 s after their bar fills, so players can follow what happened.
+**NPC turns** resolve on their own, 1.5 s after their bar fills, so players can follow what happened. They are shown,
+not just run (doc 37, phase 5): anyone else who sets off walking shows the way they are going and where it ends, with a
+word under them ("steps in", "falls back", "moves"), and what they do is said the same way ("bites", "cuts", "gathers
+fire", "tends", "flees").
 
 **Two in the same moment.** The server takes commands in the order they arrive: two wolves stepping onto the same tile,
 the first gets it; a bite on a wolf that has just moved away misses its chance ("Get next to them first").
 
-**Names and bars.** Every fighter in view carries their name (as you know them: doc 32's hidden names) and their
-initiative bar; anyone acting is ringed, and their bar shows the time left in their turn. The banner at the top of the
-map says whether it is your turn.
+**Names and the turn order.** Every fighter in view carries their name (as you know them: doc 32's hidden names);
+anyone acting is ringed. The initiative bars are on the turn order strip above the map (a face for each fighter, its
+ring filling, those acting first), which also says whether it is your turn ("YOUR TURN", "YOUR TURN IN 6"). They
+replaced the bars under each wolf and the banner on the map (doc 37, phase 1).
 
 **The fighter cards** on the right are in the order turns come: those acting now on top (ACTING NOW), then the rest
 (COMING UP) in the order their bars will fill. Each card has the fighter's health, stamina, mana if they have a Gift, and
@@ -219,14 +234,16 @@ Burning, Winded, Wounded, Badly hurt, Limping, Down), each saying on hover what 
 **status**: health, stamina and mana with what drives each, what is wrong (the injuries, named), one's stats and pace,
 and one's belongings, to equip and use (holding or stowing the sword is the turn's action in a fight). Out of a fight
 the same window opens from the health, stamina and mana bars in the status panel, which show all three at all times
-(mana for the Gifted), in a fight too, under the cards. Nothing is drawn on the wolf
-or its portrait: uploaded portraits differ in shape, and a name reads plainly.
+(mana for the Gifted), in a fight too, under the cards. Nothing is drawn on a portrait: uploaded portraits differ in
+shape, and a name reads plainly. The arena token carries only what a glance needs (doc 37): a health ring, the facing
+wedge and a † for a held sword; injuries and other states are named on the cards, not drawn on the token.
 
 **Facing is yours to choose.** A player's wolf faces the way it walks, unless they turn it by hand after the move began,
 which stands; attacking never turns it. On
-your turn eight small arrows on the rim of your wolf's own tile let you pick any of eight ways, as often as you like, without spending the move or
-the action (or Q and E, the ⟲ ⟳ buttons, or Alt/Ctrl+click a tile). Each fighter starts facing the nearest foe. NPCs turn
-as they act. Attacks from the side get +10% to hit and from behind +20%, so facing is how you guard your back. The arrows stay
+your turn your wolf's own tile, split three by three, turns it: each of its eight outer parts is a way to face, as often
+as you like, without spending the move or the action. Dragging from your wolf the way it should face does the same, as
+do Q and E, the ⟲ ⟳ buttons and Alt/Ctrl+click on a tile. Each fighter starts facing the nearest foe. NPCs turn
+as they act. Attacks from the side get +10% to hit and from behind +20%, so facing is how you guard your back. The facing parts stay
 inside your own tile so that a click on any tile or wolf around you still moves or strikes there.
 
 **Clicking a foe out of reach** on your turn, before you have moved, walks to the lit tile nearest them and strikes
@@ -283,14 +300,16 @@ Any player or NPC can flee, but a wolf who flees is out of that fight for good. 
 
 **A fight ends** when:
 
-- one side has no one left standing (all Downed, fled or dead), or
-- every remaining fighter agrees to a truce.
+- one side has no one left standing (all Downed, fled, dead or yielded: doc 37's duel terms and Yield);
+- every remaining fighter agrees to a truce; or
+- every player still standing in it has been away for a minute, with no NPC to fight on: it lapses, as a truce.
 
 ### When the fight is over
 
 Fighters move around the arena, so they rarely finish where their frozen wolves stand in the world. When a fight ends, everyone fades back into the real world at the spot where they were standing in the arena. No one slides or walks back.
 
-1. **Last action resolves.** The arena shows a 2 s banner: "The fight is over · Bracken's side stands" (or "Truce").
+1. **Last action resolves.** The banner ("The fight is over · Bracken's side stands", "Truce", "Bo yields") heads the
+   result card the fight screen shows over the arena for 2 s, and on for up to 16 s after (doc 37, phase 4).
 2. **Arena fades out** for fighters and observers over 0.5 s.
 3. **The world swaps at once.** The red square and the frozen lineup fade out while every fighter fades in at their arena spot, both over 0.75 s. Bystanders see the lineup dissolve and the fighters appear where the fight left them.
 4. **Encounter card closes** with an ended state and a narrative line such as "The fight breaks apart."
@@ -321,13 +340,13 @@ Bite is the always-available baseline; Sword trades stamina and speed for reach 
 | Stamina cost | 8 | 14 |
 | Side effect | None in v1 | Can be knocked loose (below) |
 
-At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent in about 12 bite turns or 7 sword turns. With a turn coming round every 20–25 s (a 15 s bar plus the turn itself), a one-on-one fight lasts about 4–5 minutes. Bite stamina breaks even with the +8 per turn; Sword runs a 6-per-turn deficit that only matters in long fights.
+At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent in about 12 bite turns or 7 sword turns. A DEX 50 bar fills in 25 s, or 10 s while no one is deciding (doc 37's no dead air). With both players deciding quickly a turn comes round every 8–9 s (measured in a browser duel, doc 37, phase 5); with both taking their full 20 s, every 30–45 s. A one-on-one fight lasts a few minutes, longer when it is written through. Bite stamina breaks even with the +8 per turn; Sword runs a 6-per-turn deficit that only matters in long fights.
 
 **Stamina limits.** Below the attack's cost, the attack is refused with a short "too winded" message. Exhaustion (stamina 0 until it recovers to 20) blocks physical attacks too, reusing the existing hysteresis.
 
 **The mouth slot.** A wolf holding a sword cannot bite or pick up another item until it drops or stows the sword. Speech while holding it stays allowed, but its IC text is marked as muffled. A hit dealing 18+ damage has a 20% − (STR / 10)% chance to knock the sword to the ground at the wielder's feet.
 
-**Unarmed defence.** There is no block button in v1. Dodge is passive and comes from dexterity (see the hit formula), so a defender's only active choices are to strike back, back off or flee.
+**Unarmed defence.** There is no block button in v1. Dodge is passive and comes from dexterity (see the hit formula), so a defender's only active choices are to strike back, back off or flee. (Guard and Shove are planned: doc 37, phase 6.)
 
 ## Magic: Flamethrower
 
@@ -364,7 +383,11 @@ Flammable fixtures (hay, wooden tables) catching fire is a natural next step but
 
 Recommendation: glyphs, not graphics. They match the ASCII-derived map and the vocabulary already set in [18-combat-presentation.md](18-combat-presentation.md). They also leave the detail to prose, which is the project's core idea.
 
-**Arena view.** Inside a fight the map shows the arena grid. On your turn your reachable tiles are tinted, and attack range and spell cones are outlined before you confirm. The turn order bar sits above the map. A charging spell's locked cone stays outlined in red until it fires.
+> Doc 37 (phases 2–3, built) redraws much of this: fighters are round tokens in their side's colour with a facing wedge
+> and a health ring, the world outside the arena is dimmed, damage rises off the wolf as a figure, and heavy blows shake
+> the view. The motion and marks below are kept under the tokens.
+
+**Arena view.** Inside a fight the map shows the arena grid. On your turn your reachable tiles are outlined, and attack range and spell cones are outlined before you confirm. The turn order bar sits above the map. A charging spell's locked cone stays outlined in red until it fires.
 
 **W motion (nudge and recoil).** The `W` slides a fraction of a tile and springs back. This is a display offset only: the server position never changes, so it cannot affect collision or hits. It amends the rule in doc 18 that a wolf is never moved for an effect.
 
@@ -412,7 +435,7 @@ The pace strip and stamina bar already show top speed (see [13-pace-and-world-tr
 
 **Healing.** Out of combat, hurt heals at the existing rate (50 per in-game hour, `HealPerHour` in `Core/RatwCrime.cpp`). No healing happens while the wolf is in an active fight. Herbs, rest and healer NPCs are future work.
 
-**Stamina in combat.** In the arena, stamina comes back +8 at the start of each of your turns, reduced by injury as above. Outside a fight the usual +5/s applies. A hurt wolf therefore runs short sooner in both.
+**Stamina in combat.** In the arena, stamina comes back 4 + STR/10 at the start of each of your turns (8 at STR 40), reduced by injury as above, and twice that after a turn of Rest. Outside a fight the usual +5/s applies. A hurt wolf therefore runs short sooner in both.
 
 ## Downed and death
 
@@ -437,7 +460,7 @@ A wolf at 0 health is Downed, not dead. Each wolf has one self-recovery; after u
   spent)                ally tends        to revive)        timer runs out
 ```
 
-The bottom row is the danger zone: once the self-recovery is spent, a second downing needs an ally before the timer ends. Both Downed states run the same 7–20 minute timer, counted in turns while a fight lasts.
+The bottom row is the danger zone: once the self-recovery is spent, a second downing needs an ally before the timer ends. Both Downed states run the same 7–20 minute timer, in real time (below).
 
 **Downed timer.** Set in minutes by what put the wolf down. Overkill (damage past 0) shortens it by 10 s per point, to no less than 60% of the base. It runs in real time, in a fight and out of one (paused only for a player gone from the world).
 
@@ -496,17 +519,18 @@ Build the resolver first and the spectacle last; each phase is playable on its o
 ## Built
 
 Built October 2, 2026: the turn-based core (phases 1–4 above, and the parts of 5 that a fight can't be played
-without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are next.
+without). Sword and Flamethrower (phase 6) followed the same day (below); the balance work (phase 7) is still to do.
+Some first numbers here changed later, as noted: the rules sections above are current.
 
 - **The rules** (`Core/RatwBattle.h`, `Core/RatwBattle.cpp`, World members):
   - Starting a fight: an attack on an NPC, bandits who lose patience, or an accepted challenge between players.
   - The arena is cut from the cell: 64×48 tiles (twice a 32×24 view) plus a tile each way per fighter past two, never
     past the cell's edges.
   - Fighters stand frozen in two facing lines in the world, where there is room.
-  - The initiative bar (6 + DEX/10, filling in real time: fifteen seconds at DEX 50); starters begin full, joiners empty.
+  - The initiative bar (6 + DEX/10, filling in real time: fifteen seconds at DEX 50, later 25 s); starters begin full, joiners empty.
   - A turn is a move and one action (Bite, Tend, Flee, Struggle, Wait), with the next turn's head start when either is
-    skipped.
-  - Initiative bars that fill in real time; 15 s turns, plus 15 once while typing; end early to refill sooner; three
+    skipped. (Later three parts, the facing too, and Rest.)
+  - Initiative bars that fill in real time; 15 s turns (later 20 s), plus 15 once while typing; end early to refill sooner; three
     run out in a row and the player is away and skipped until they act again.
   - Facing gives +10% to hit from the side and +20% from behind.
   - Bite: 12 base damage, 8 stamina; stamina comes back +8 a turn, less when hurt; move range shrinks with injury.
@@ -536,7 +560,7 @@ without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are ne
   - Downed is a sideways `W` flashing orange; dead is a sideways `W` in gray (in the world too).
   - Click a lit tile to move, a foe to bite, a fallen friend to tend.
   - The fight panel: turn and timer, the next six turns, Wait/End turn, Flee, Struggle up, who is how hurt, and the
-    fight's log.
+    fight's log. (Later replaced by doc 37's fight screen.)
   - Challenge prompts, being Downed out of a fight, and red squares with Join/Watch.
   - The fade out at the end, and back in.
 - **Tests:**
@@ -609,6 +633,7 @@ Playtest fixes, October 4 (a player's playtest of fights with residents, a duel 
   skipped (`World::stopLingering`). Away for any reason, the fight panel offers **I'm back** (battle verb `back`).
 - **The first blow** is the starter's: NPCs on the other side wait out that first turn (`Battle::opening`).
 - **15 s turns**, and 15 more once while typing (were 10 and 10): time to read the log, decide and write a line.
+  (Since raised to 20 s turns, `battle::TurnSeconds`, with 25 s bars at DEX 50; see the rules above.)
 - **The view frames the fight:** oneself, everyone within a dozen tiles and at least the nearest foe, with the lit
   tiles, zoomed in as close as that allows (it followed the wolf's frozen place in the lineup, so a foe could be off
   screen). Foes' names in the fight panel are buttons that strike them.

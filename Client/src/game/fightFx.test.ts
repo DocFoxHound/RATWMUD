@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readBattle} from './battle.ts';
-import {FightEffects} from './fightFx.ts';
+import {captionOf, FightEffects, moveWord} from './fightFx.ts';
 import type {Json} from './json.ts';
 
 const fight = (log: Json[]): Json => ({battle: {
@@ -68,4 +68,24 @@ test('health drains after a blow: held a moment, then down to the true figure; i
     for (let t = 1.5; t < 3; t += 0.05) fx.lagHealth('bo', 40, t);
     assert.equal(fx.lagHealth('bo', 40, 3), 40, 'down to the true figure');
     assert.equal(fx.lagHealth('bo', 60, 3.1), 60, 'tended: up at once');
+});
+
+test('others\' turns shown (doc 37, phase 5): a word under a wolf for what it does, and for setting off', () => {
+    const fx = new FightEffects();
+    fx.selfId = 'ada';
+    fx.update(readBattle(fight([{seq: 1, kind: 'start', actor: 'bo', target: 'ada', text: 'Bo goes for Ada.'}])), 0);
+    const walking = fight([{seq: 1, kind: 'start', actor: 'bo', target: 'ada', text: 'Bo goes for Ada.'}]);
+    ((walking.battle as Json).fighters as Json[])[1].walk = [[4, 3], [3, 3]];
+    ((walking.battle as Json).fighters as Json[])[1].x = 5;
+    fx.update(readBattle(walking), 1);
+    assert.deepEqual(fx.captions(1.1).map(c => [c.id, c.text]), [['bo', 'steps in']], 'Bo sets off toward Ada: "steps in"');
+    fx.update(readBattle(fight([{seq: 2, kind: 'hit', actor: 'bo', target: 'ada', text: 'Bo bites Ada (6).'},
+        {seq: 3, kind: 'hit', actor: 'ada', target: 'bo', text: 'Ada bites Bo (9).'}])), 2);
+    assert.deepEqual(fx.captions(2.1).map(c => [c.id, c.text]), [['bo', 'bites']], 'then "bites" (and nothing under oneself)');
+    assert.equal(fx.captions(5).length, 0, 'and it fades');
+    assert.equal(captionOf({seq: 1, kind: 'wait', actor: 'bo', target: '', text: 'Bo ends their turn.', tiles: []}), '', 'a turn ended is not said');
+    assert.equal(captionOf({seq: 1, kind: 'miss', actor: 'bo', target: '', text: 'Bo swings at Ada and misses.', tiles: []}), 'swings');
+    const away = readBattle(fight([]))!;
+    const bo = {...away.fighters[1], x: 3, walk: [[6, 2]] as Array<[number, number]>};
+    assert.equal(moveWord(away, bo), 'falls back', 'away from the foe: "falls back"');
 });

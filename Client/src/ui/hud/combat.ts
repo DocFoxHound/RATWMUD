@@ -39,6 +39,7 @@ interface Action {
     enabled: boolean;
     kind: '' | 'go' | 'end' | 'small' | 'warn';
     run: () => void;
+    planned?: boolean;          // Planned for one's next turn (doc 37): it plays as the turn comes.
 }
 
 /**
@@ -218,10 +219,14 @@ export class CombatScreen {
         const mine = myTurn(b, s.selfId);
         const wait = me ? secondsToTurn(me, since) : 0;
         const head = b.over ? 'OVER' : b.observer ? 'WATCHING' : !me ? '' : me.status === 'downed' && !mine ? 'YOU ARE DOWN'
-            : mine ? 'YOUR TURN' : Number.isFinite(wait) ? `YOUR TURN IN ${Math.ceil(wait)}` : 'WAITING';
+            : mine ? 'YOUR TURN' : Number.isFinite(wait) ? `YOUR TURN IN ${Math.ceil(wait)}${b.planning ? (b.plan ? ' · PLANNED' : ' · PLAN IT') : ''}` : 'WAITING';
         setText(this.stripHead, head);
         setClass(this.stripHead, 'mine', mine);
-        setText(this.stripNote, [`ROUND ${Math.max(1, b.round)}`, b.watching > 0 ? `${b.watching} watching` : ''].filter(Boolean).join(' · '));
+        // No one deciding, the bars fill faster (doc 37): said, so a quicker turn isn't a surprise.
+        setText(this.stripNote, [`ROUND ${Math.max(1, b.round)}`, b.haste > 1 && !b.over ? `» ×${b.haste}` : '',
+            b.watching > 0 ? `${b.watching} watching` : ''].filter(Boolean).join(' · '));
+        const hasteTip = b.haste > 1 ? 'No one is deciding a turn: every bar fills faster until someone\'s turn comes' : '';
+        if (this.stripNote.title !== hasteTip) this.stripNote.title = hasteTip;
     }
 
     // ------------------------------------------------------------------ The fighters
@@ -415,8 +420,8 @@ export class CombatScreen {
         const s = this.s, me = this.me(b), mine = myTurn(b, s.selfId);
         const target = b.fighters.find(f => f.id === this.s.fightTargetId());
         this.actions = this.actionsFor(b, me, mine, target);
-        const key = JSON.stringify([b.over, b.banner, this.actions.map(a => [a.id, a.label, a.sub, a.enabled, a.tip, a.kind]),
-            b.truceBy, b.agreed, b.observer, b.yieldBy, mine, b.moved, b.acted, b.faced, b.resting]);
+        const key = JSON.stringify([b.over, b.banner, this.actions.map(a => [a.id, a.label, a.sub, a.enabled, a.tip, a.kind, a.planned]),
+            b.truceBy, b.agreed, b.observer, b.yieldBy, mine, b.moved, b.acted, b.faced, b.resting, s.aiming]);
         if (key !== this.barKey) {
             this.barKey = key;
             this.bar.replaceChildren();
@@ -494,9 +499,13 @@ export class CombatScreen {
                 enabled: true, kind: 'go', run: () => s.sendBattle('back')});
             return out;
         }
-        const notYet = mine ? '' : ' (on your turn)';
-        const end: Action = {id: 'end', key: 'Space', icon: 'end', label: mine ? 'End turn' : 'Waiting', sub: '',
-            tip: mine ? 'End your turn now (Space): your bar starts filling again at once, sooner if you held back' : 'Your bar is filling',
+        // Waiting for one's turn, it can be planned (doc 37): chosen now, played as the turn comes.
+        const planning = !mine && b.planning;
+        const plan = b.plan;
+        const notYet = mine ? '' : planning ? ' · planned now, played as your turn comes' : ' (on your turn)';
+        const end: Action = {id: 'end', key: 'Space', icon: 'end', label: mine ? 'End turn' : plan ? 'Planned' : 'Waiting', sub: '',
+            tip: mine ? 'End your turn now (Space): your bar starts filling again at once, sooner if you held back'
+                : 'Your bar is filling. Plan your turn meanwhile: click where to go, a foe to strike, or an action',
             enabled: mine, kind: 'end', run: () => s.sendBattle('wait')};
         if (me.status === 'downed') {
             out.push({id: 'struggle', key: '1', icon: 'rise', label: 'Struggle up', sub: b.canStruggle ? 'once a day' : 'spent',
@@ -507,31 +516,35 @@ export class CombatScreen {
             return out;
         }
         const acted = b.acted, odds = target?.odds;
-        const why = (more: string) => (!mine ? `Not your turn yet` : acted ? 'You have acted this turn' : more);
+        const free = (mine && !acted) || planning;     // An action can be taken now, or planned.
+        const why = (more: string) => (planning ? 'planned now, played as your turn comes' : !mine ? `Not your turn yet` : acted ? 'You have acted this turn' : more);
+        // Now on one's turn; else planned (and, planned already, taken back).
+        const doOr = (act: string, now: () => void, target = '') => (mine ? now : () => s.planAction(act, target));
+        const isPlanned = (act: string, target = '') => !!plan && plan.act === act && plan.target === target;
         const blow = odds ? `${odds.hit}% · ${odds.damage}` : '';
         const who = target ? ` ${target.name}` : '';
         // 1: the bite, or 2: the sword, at the foe aimed at (stepping in first if they're out of reach).
         if (b.mouth !== 'sword')
             out.push({id: 'bite', key: '1', icon: 'bite', label: 'Bite', sub: blow,
                 tip: `Bite${who} (1): 8 breath${odds && !odds.reach ? ', stepping in first' : ''}${!target ? ' · no one to bite' : ''}${!mine || acted ? ` · ${why('')}` : ''}`,
-                enabled: mine && !acted && !!target, kind: '', run: () => target && s.fightTarget(target.id)});
+                enabled: free && !!target, kind: '', run: () => target && s.fightTarget(target.id), planned: isPlanned('bite', target?.id)});
         if (b.mouth === 'sword')
             out.push({id: 'sword', key: '2', icon: 'sword', label: 'Sword', sub: blow,
                 tip: `Strike${who} with the sword (2): reaches two tiles, 14 breath, slows your next turn${!mine || acted ? ` · ${why('')}` : ''}`,
-                enabled: mine && !acted && !!target, kind: '', run: () => target && s.fightTarget(target.id)});
+                enabled: free && !!target, kind: '', run: () => target && s.fightTarget(target.id), planned: isPlanned('sword', target?.id)});
         else if (b.swords > 0)
             out.push({id: 'hold', key: '2', icon: 'sword', label: 'Take sword', sub: 'action', tip: `Take a sword in your jaws (2): uses your action${notYet}`,
-                enabled: mine && !acted, kind: '', run: () => s.sendBattle('hold')});
+                enabled: free, kind: '', run: doOr('hold', () => s.sendBattle('hold')), planned: isPlanned('hold')});
         if (b.flame)
             out.push({id: 'fire', key: '3', icon: 'fire', label: 'Fire', sub: `${b.flame.mana} mana`, kind: b.mana < b.flame.mana ? 'warn' : '',
                 tip: `Flamethrower (3): aim a cone; it gathers for a few seconds (everyone sees where), costs breath and singes you${b.mana < b.flame.mana ? ' · too little mana: it will burn you twice as much' : ''}${notYet}`,
-                enabled: mine && !acted, run: () => (s.aiming = s.aiming === 'flame' ? '' : 'flame')});
+                enabled: free, run: () => (s.aiming = s.aiming === 'flame' ? '' : 'flame'), planned: plan?.act === 'flame'});
         const fallen = b.fighters.find(f => f.side === me.side && f.id !== me.id && f.status === 'downed');
         if (fallen) {
             const near = Math.max(Math.abs(fallen.x - me.x), Math.abs(fallen.y - me.y)) <= 1;
             out.push({id: 'tend', key: '4', icon: 'tend', label: 'Tend', sub: near ? '10 breath' : 'too far',
-                tip: `Tend ${fallen.name}'s wounds (4): they stand at 20 health${near ? '' : ' · get next to them first'}`,
-                enabled: mine && !acted && near, kind: 'go', run: () => s.fightTarget(fallen.id)});
+                tip: `Tend ${fallen.name}'s wounds (4): they stand at 20 health${near ? '' : ' · get next to them first'}${notYet}`,
+                enabled: (mine && !acted && near) || planning, kind: 'go', run: () => s.fightTarget(fallen.id), planned: isPlanned('tend', fallen.id)});
         }
         // Resting: no move and no action this turn, twice the stamina back at the next. Chosen anew each turn (doc 33).
         if (me.status === 'fighting' && !b.casting)
@@ -539,22 +552,23 @@ export class CombatScreen {
                 tip: b.resting ? 'Resting this turn: twice the stamina back at the start of your next'
                     : `Rest (R): a turn without moving or acting, for twice the stamina back at your next (+${(me.regen * 2).toFixed(0)}). ` +
                       `You can still turn and write. Rest again each turn you mean to${b.moved || acted ? ' · you have already moved or acted' : ''}${notYet}`,
-                enabled: mine && !b.moved && !acted && !b.resting, kind: b.resting ? 'go' : '', run: () => s.sendBattle('rest')});
+                enabled: (mine && !b.moved && !acted && !b.resting) || planning, kind: b.resting ? 'go' : '', run: doOr('rest', () => s.sendBattle('rest')),
+                planned: isPlanned('rest')});
         if (b.burning > 0)
             out.push({id: 'roll', key: '5', icon: 'roll', label: 'Roll', sub: 'put out', tip: `Roll on the ground to put out the flames (5)${notYet}`,
-                enabled: mine && !acted, kind: 'go', run: () => s.sendBattle('roll')});
+                enabled: free, kind: 'go', run: doOr('roll', () => s.sendBattle('roll')), planned: isPlanned('roll')});
         if (b.drops.length && !b.mouth)
             out.push({id: 'pickup', key: '6', icon: 'pickup', label: 'Pick up', sub: 'sword', tip: `Pick up the sword beside you (6)${notYet}`,
-                enabled: mine && !acted, kind: '', run: () => s.sendBattle('pickup')});
+                enabled: free, kind: '', run: doOr('pickup', () => s.sendBattle('pickup')), planned: isPlanned('pickup')});
         if (b.mouth === 'sword')
             out.push({id: 'stow', key: '', icon: 'pickup', label: 'Stow', sub: 'action', tip: `Put the sword away${notYet}`,
-                enabled: mine && !acted, kind: 'small', run: () => s.sendBattle('stow')});
+                enabled: free, kind: 'small', run: doOr('stow', () => s.sendBattle('stow')), planned: isPlanned('stow')});
         if (!b.truceBy)
             out.push({id: 'truce', key: '7', icon: 'truce', label: 'Truce', sub: '', tip: 'Offer a truce (7): the fight ends if everyone standing agrees',
                 enabled: mine && !acted, kind: '', run: () => s.sendBattle('truce')});
         out.push({id: 'flee', key: '8', icon: 'flee', label: 'Flee', sub: '', kind: '',
             tip: `Flee (8): from the arena's edge only (the red band), out of this fight for good${notYet}`,
-            enabled: mine && !acted, run: () => s.sendBattle('flee')});
+            enabled: free, run: doOr('flee', () => s.sendBattle('flee')), planned: isPlanned('flee')});
         if (!b.yieldBy)
             out.push({id: 'yield', key: '9', icon: 'yield', label: 'Yield', sub: '', kind: '',
                 tip: 'Yield (9), at any time: you are out of the fight on your feet, if the other side lets you be (residents and the watch do)',
@@ -563,12 +577,15 @@ export class CombatScreen {
             run: () => s.turnInFight(-1)});
         out.push({id: 'right', key: 'E', icon: 'right', label: '', sub: '', tip: "Turn right (E): your turn's facing (turn as often as you like; with the move and the action used, the turn ends a moment after)", enabled: mine, kind: 'small',
             run: () => s.turnInFight(1)});
+        if (planning && plan)
+            out.push({id: 'unplan', key: '', icon: 'no', label: 'Clear plan', sub: '', tip: 'Take back what you planned for your turn', enabled: true,
+                kind: 'small', run: () => s.sendBattle('unplan', {part: ''})});
         out.push(end);
         return out;
     }
 
     private button(parent: HTMLElement, a: Action): HTMLButtonElement {
-        const b = button('', `abtn${a.kind ? ` ${a.kind}` : ''}${this.s.aiming === 'flame' && a.id === 'fire' ? ' armed' : ''}`, parent, () => {
+        const b = button('', `abtn${a.kind ? ` ${a.kind}` : ''}${this.s.aiming === 'flame' && a.id === 'fire' ? ' armed' : ''}${a.planned ? ' planned' : ''}`, parent, () => {
             if (a.enabled) a.run();
         });
         b.disabled = !a.enabled;

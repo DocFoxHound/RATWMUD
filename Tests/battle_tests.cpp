@@ -971,6 +971,87 @@ void dueTerms()
     }
 }
 
+// Pace (doc 37, phase 5): no dead air, and planning one's turn while one's bar fills.
+void planningAhead()
+{
+    {
+        // No dead air: with no player deciding and no fire gathering, every bar fills faster.
+        World w;
+        auto& b = duel(w);
+        auto* fb = b.fighter("player-bo");
+        expect(w.meterHaste(b) == 1, "Ad deciding: the bars fill as ever");
+        w.battleAct("player-ad", "wait");
+        expect(!fb->acting && w.meterHaste(b) == battle::Haste, "no one deciding: faster");
+        const double bo0 = fb->meter;
+        w.tick(1);
+        const double perSecond = battle::meterGain(effectiveDexterity(*w.entity("player-bo"))) * battle::MeterPerSecond;
+        expect(std::abs(fb->meter - bo0 - perSecond * battle::Haste) < 1, "Bo's bar fills " + std::to_string(fb->meter - bo0) + " in a second");
+        b.casts.push_back({});
+        expect(w.meterHaste(b) == 1, "while fire gathers, as ever (time to step out of it)");
+    }
+    {
+        // A move and a bite planned while Bo's bar fills, played as his turn comes; the rest of the turn is his.
+        World w;
+        auto& b = duel(w);
+        auto* fa = b.fighter("player-ad");
+        auto* fb = b.fighter("player-bo");
+        expect(w.battleReach("player-bo").empty() && !w.planReach("player-bo").empty(), "Bo can't move now, but sees where his next turn reaches");
+        std::pair<int, int> to{-1, -1};
+        for (const auto& [x, y] : w.planReach("player-bo"))
+            if (test::apart(x, y, fa->x, fa->y) == 1 && (x != fb->x || y != fb->y))
+                to = {x, y};
+        expect(to.first >= 0, "a tile beside Ad");
+        expect(!w.planMove("player-bo", fa->x + 40, fa->y).ok, "not out of his reach");
+        expect(w.planMove("player-bo", to.first, to.second).ok && w.planAct("player-bo", "bite", "player-ad").ok, "Bo plans: there, then bite Ad");
+        expect(!w.planAct("player-bo", "bite", "player-bo").ok && !w.planAct("player-bo", "dance", "").ok, "(only what can be planned)");
+        expect(!w.planAct("player-ad", "bite", "player-bo").ok, "Ad, taking her turn, does it now instead");
+        expect(!w.battleAct("player-bo", "bite", "player-ad").ok, "and it is still not his turn");
+        w.battleAct("player-ad", "wait");
+        for (int i = 0; i < 400 && !fb->acting; ++i)
+        {
+            w.tick(.1);
+            if (fa->acting)
+                w.battleAct("player-ad", "wait");
+        }
+        expect(fb->acting && !fb->moved, "his turn comes");
+        expect(!w.planMove("player-bo", to.first, to.second).ok, "(no planning in one's own turn)");
+        for (int i = 0; i < 60 && (!fb->plan.empty() || !fb->walk.empty()); ++i)
+            w.tick(.1);
+        expect(fb->x == to.first && fb->y == to.second && fb->moved && fb->acted, "he went there and bit");
+        expect(std::any_of(b.log.begin(), b.log.end(), [](const BattleLine& l) { return l.actor == "player-bo" && (l.kind == "hit" || l.kind == "graze" || l.kind == "miss"); }),
+               "the bite is in the log");
+        expect(fb->acting, "his turn is still his (to turn, to write)");
+        for (int i = 0; i < int(battle::TurnSeconds * 10) + 5 && fb->acting; ++i)
+            w.tick(.1);
+        expect(!fb->acting && fb->timeouts == 0, "a turn used, left to run out, is not a turn let pass");
+    }
+    {
+        // A bite planned at a foe out of reach steps in first, as a click on them does.
+        World w;
+        auto& b = duel(w);
+        auto* fa = b.fighter("player-ad");
+        auto* fb = b.fighter("player-bo");
+        w.battleAct("player-ad", "wait");
+        std::pair<int, int> far{-1, -1};
+        for (const auto& [x, y] : w.planReach("player-bo"))
+            if (test::apart(x, y, fb->x, fb->y) >= 2 && test::apart(x, y, fa->x, fa->y) >= 2)
+                far = {x, y};
+        expect(far.first >= 0, "room to stand apart");
+        fa->x = far.first;                          // (Ad stands off, where Bo's move reaches.)
+        fa->y = far.second;
+        expect(w.planAct("player-bo", "bite", "player-ad").ok, "Bo plans a bite at Ad, out of reach");
+        expect(w.unplan("player-bo", "act").ok && fb->plan.empty(), "takes it back");
+        w.planAct("player-bo", "bite", "player-ad");
+        for (int i = 0; i < 400 && (!fb->acting || !fb->plan.empty() || !fb->walk.empty()); ++i)
+        {
+            w.tick(.1);
+            if (fa->acting)
+                w.battleAct("player-ad", "wait");
+        }
+        expect(test::apart(fb->x, fb->y, fa->x, fa->y) == 1 && fb->acted, "he steps in and bites");
+    }
+}
+
 void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
@@ -1147,6 +1228,7 @@ int main()
         dodgingTheFire();
         playtestFixes();
         dueTerms();
+        planningAhead();
         devConsoleFights();
         devConsoleTeamFight();
     }

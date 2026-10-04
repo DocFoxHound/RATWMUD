@@ -544,6 +544,15 @@ class World
     Result battleAct(const std::string& id, const std::string& action, const std::string& target = {});
     // The tiles a fighter may move to now (none when it isn't their turn, or they have moved).
     std::vector<std::pair<int, int>> battleReach(const std::string& id) const;
+    // Planning ahead while one's bar fills (doc 37): the tiles one's next turn could reach from here; a tile to go to
+    // and an action to take ("bite", "sword", "flame" (target "x,y"), "tend", "roll", "rest", "hold", "stow", "pickup",
+    // "flee"), each played as the turn begins; and taking back the move ("move"), the action ("act") or both ("").
+    std::vector<std::pair<int, int>> planReach(const std::string& id) const;
+    Result planMove(const std::string& id, int x, int y);
+    Result planAct(const std::string& id, const std::string& action, const std::string& target);
+    Result unplan(const std::string& id, const std::string& part);
+    // How fast the fight's bars fill now: battle::Haste with no player taking a turn and no fire gathering, else 1.
+    double meterHaste(const Battle& b) const;
     // The chance a blow from `f` lands on `t` from where they stand now (hit or graze): dexterity, fighting skill and
     // the side or back it comes from (doc 33). The same number the blow is rolled against, for the page's preview.
     double strikeChance(const BattleFighter& f, const BattleFighter& t) const;
@@ -926,6 +935,8 @@ class World
     void beginTurn(Battle& b, BattleFighter& f);
     void endTurn(Battle& b, BattleFighter& f);
     void npcTurn(Battle& b, BattleFighter& f);
+    void playPlan(Battle& b, BattleFighter& f);
+    std::vector<std::pair<int, int>> reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina) const;
     Result bite(Battle& b, BattleFighter& f, const std::string& target);
     void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);
     void yieldFighter(Battle& b, BattleFighter& f, const std::string& to, const std::string& line);

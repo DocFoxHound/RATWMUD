@@ -1095,13 +1095,207 @@ std::vector<std::pair<int, int>> World::battleReach(const std::string& id) const
         return f->struggling ? std::vector<std::pair<int, int>>{} : reachFrom(*b, *f, 1);   // A crawl.
     if (f->status != "fighting")
         return {};
+    return reachWith(*b, *f, *e, e->stamina);
+}
+
+std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina) const
+{
     // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
-    const int pace = fightPace(*e);
-    int range = battle::moveRange(effectiveDexterity(*e), e->hurt, pace);
-    const int walking = battle::moveRange(effectiveDexterity(*e), e->hurt, 0);
-    while (range > walking && range * battle::tileStamina(pace) > e->stamina)
+    const int pace = fightPace(e);
+    int range = battle::moveRange(effectiveDexterity(e), e.hurt, pace);
+    const int walking = battle::moveRange(effectiveDexterity(e), e.hurt, 0);
+    while (range > walking && range * battle::tileStamina(pace) > stamina)
         --range;
-    return reachFrom(*b, *f, range);
+    return reachFrom(b, f, range);
+}
+
+// ------------------------------------------------------------------ Planning ahead (doc 37, phase 5)
+
+std::vector<std::pair<int, int>> World::planReach(const std::string& id) const
+{
+    const auto* b = battleOf(id);
+    const auto* f = b ? b->fighter(id) : nullptr;
+    const auto* e = entity(id);
+    if (!b || b->over || !f || !e || f->acting || f->status != "fighting" || f->casting)
+        return {};
+    // From where it stands, with the stamina it will have when the turn comes.
+    const double stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (f->resting ? battle::RestFactor : 1));
+    return reachWith(*b, *f, *e, stamina);
+}
+
+namespace
+{
+// Whether one may plan now, and why not.
+std::string cantPlan(const Battle* b, const BattleFighter* f)
+{
+    if (!b || !f)
+        return "You are not in a fight.";
+    if (b->over)
+        return "The fight is over.";
+    if (f->acting)
+        return "It's your turn: do it now.";
+    if (f->status != "fighting")
+        return "You can't plan from where you lie.";
+    if (f->casting)
+        return "You are gathering the fire.";
+    return {};
+}
+} // namespace
+
+Result World::planMove(const std::string& id, int x, int y)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    if (const auto why = cantPlan(b, f); !why.empty())
+        return {false, why, {}};
+    f->away = false;                                // Any try brings an away player back.
+    f->timeouts = 0;
+    if (x == f->x && y == f->y)
+    {
+        f->plan.move = false;                       // Staying put.
+        return {true, {}, {}};
+    }
+    const auto reach = planReach(id);
+    if (std::find(reach.begin(), reach.end(), std::pair<int, int>{x, y}) == reach.end())
+        return {false, "Your next turn can't take you there.", {}};
+    if (f->plan.act == "rest")
+        f->plan.act.clear();                        // (Resting is a turn without a move.)
+    f->plan.move = true;
+    f->plan.x = x;
+    f->plan.y = y;
+    return {true, {}, {}};
+}
+
+Result World::planAct(const std::string& id, const std::string& action, const std::string& target)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    if (const auto why = cantPlan(b, f); !why.empty())
+        return {false, why, {}};
+    const auto* e = entity(id);
+    f->away = false;
+    f->timeouts = 0;
+    if (action == "bite" || action == "sword")
+    {
+        const auto* t = b->fighter(target);
+        if (!t || t->side == f->side || t->status != "fighting")
+            return {false, "Strike whom?", target};
+    }
+    else if (action == "tend")
+    {
+        const auto* t = b->fighter(target);
+        if (!t || t->side != f->side || t->status != "downed")
+            return {false, "Tend whom? Only someone on your side who is down.", target};
+    }
+    else if (action == "flame")
+    {
+        if (!e || e->gift != "fire")
+            return {false, "You have no Gift of fire.", {}};
+        if (target.find(',') == std::string::npos)
+            return {false, "Aim it: which way?", {}};
+    }
+    else if (action == "roll")
+    {
+        if (f->burning <= 0)
+            return {false, "You aren't burning.", {}};
+    }
+    else if (action == "rest")
+        f->plan.move = false;                       // (A turn without a move.)
+    else if (action != "hold" && action != "stow" && action != "pickup" && action != "flee")
+        return {false, "You can't plan that.", {}};
+    f->plan.act = action;
+    f->plan.target = target;
+    return {true, {}, target};
+}
+
+Result World::unplan(const std::string& id, const std::string& part)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    if (!b || !f)
+        return {false, "You are not in a fight.", {}};
+    if (part == "move")
+        f->plan.move = false;
+    else if (part == "act")
+    {
+        f->plan.act.clear();
+        f->plan.target.clear();
+    }
+    else if (!f->plan.begun)
+        f->plan = {};
+    return {true, {}, {}};
+}
+
+void World::playPlan(Battle& b, BattleFighter& f)
+{
+    // The turn has come: the planned move first (or, for a blow at a foe out of reach, a step in as a click on them
+    // takes), then the action once the walk is done. What can't be done now is said, and left for the player to do.
+    const std::string id = f.id;
+    auto& plan = f.plan;
+    if (f.status != "fighting")
+    {
+        plan = {};
+        return;
+    }
+    const auto* e = entity(id);
+    std::string act = plan.act;
+    if ((act == "bite" || act == "sword") && e)
+        act = e->mouth == "sword" ? "sword" : "bite";   // Whatever is in the jaws when the moment comes.
+    if (!plan.begun)
+    {
+        plan.begun = true;
+        if (act == "rest")
+        {
+            plan = {};
+            if (const auto r = battleAct(id, "rest"); !r.ok)
+                notice(id, "Your plan: " + r.message);
+            return;
+        }
+        int tx = f.x, ty = f.y;
+        if (plan.move)
+        {
+            tx = plan.x;
+            ty = plan.y;
+        }
+        else if (act == "bite" || act == "sword")
+        {
+            const auto* t = b.fighter(plan.target);
+            const int range = act == "sword" ? battle::SwordReach : 1;
+            if (t && t->status == "fighting" && tilesApart(f.x, f.y, t->x, t->y) > range)
+                for (const auto& [x, y] : battleReach(id))
+                {
+                    const int d = tilesApart(x, y, t->x, t->y), best = tilesApart(tx, ty, t->x, t->y);
+                    if (d < best || (d == best && tilesApart(x, y, f.x, f.y) < tilesApart(tx, ty, f.x, f.y)))
+                    {
+                        tx = x;
+                        ty = y;
+                    }
+                }
+        }
+        if (tx != f.x || ty != f.y)
+            if (const auto r = battleMove(id, tx, ty); !r.ok)
+                notice(id, "Your plan: " + r.message);
+    }
+    if (!f.walk.empty())
+        return;                                     // (The action when it gets there.)
+    const std::string target = plan.target;
+    plan = {};
+    if (act.empty())
+        return;
+    if (const auto r = battleAct(id, act, target); !r.ok && !r.message.empty())
+        notice(id, "Your plan: " + r.message);
+}
+
+double World::meterHaste(const Battle& b) const
+{
+    // No dead air (doc 37): while no player is taking a turn and no fire is gathering, the bars fill faster.
+    if (b.over || !b.casts.empty())
+        return 1;
+    for (const auto& f : b.fighters)
+        if (f.acting && !f.away)
+            if (const auto* e = entity(f.id); e && !e->npc)
+                return 1;
+    return battle::Haste;
 }
 
 Result World::battleAct(const std::string& id, const std::string& action, const std::string& target)
@@ -1821,6 +2015,7 @@ void World::tendBattles(double dt)
             }
         }
         walkFighters(b);
+        const double haste = meterHaste(b);
         // Real time (doc 33's initiative, as a bar): every bar fills but those taking a turn, and the Downed bleed. A
         // full bar is a turn at once: several fighters may be acting together, each on their own clock.
         for (auto& f : b.fighters)
@@ -1852,7 +2047,7 @@ void World::tendBattles(double dt)
             }
             if (f.acting)
                 continue;
-            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond * dt);
+            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond * haste * dt);
             if (f.meter >= 100)
             {
                 f.readyAt = time_;
@@ -1909,6 +2104,13 @@ void World::tendBattles(double dt)
                 endTurn(b, f);
                 continue;
             }
+            // A plan made while the bar filled plays out (doc 37); the rest of the turn is still theirs.
+            if (!f.plan.empty() && time_ >= f.turnStarted + battle::PlanBeat)
+            {
+                playPlan(b, f);
+                if (b.over || !f.acting)
+                    continue;
+            }
             // Move, action and facing all used: the turn ends by itself, a moment after the last (doc 33).
             if (const int used = int(f.moved) + int(f.acted) + int(f.faced); used != f.partsUsed)
             {
@@ -1928,9 +2130,14 @@ void World::tendBattles(double dt)
                 f.extended = true;
                 continue;
             }
-            if (++f.timeouts >= battle::AwayAfter)
-                f.away = true;
-            fightLine(b, f.id, {}, "timeout", e->name + " lets the moment pass.");
+            if (f.moved || f.acted)
+                f.timeouts = 0;                     // (A turn used, left to run out: not a turn let pass.)
+            else
+            {
+                if (++f.timeouts >= battle::AwayAfter)
+                    f.away = true;
+                fightLine(b, f.id, {}, "timeout", e->name + " lets the moment pass.");
+            }
             endTurn(b, f);
         }
     }

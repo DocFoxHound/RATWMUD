@@ -106,6 +106,19 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 return st;
             }());
             you.add("mouth", e->mouth);
+            // What it plans to do when its turn comes (doc 37, phase 5).
+            if (!mine->plan.empty())
+            {
+                auto plan = Value::object();
+                if (mine->plan.move)
+                {
+                    plan.add("x", mine->plan.x);
+                    plan.add("y", mine->plan.y);
+                }
+                plan.add("act", mine->plan.act);
+                plan.add("target", mine->plan.target);
+                you.add("plan", plan);
+            }
             if (const auto* purse = world_.society().account(viewer))
                 you.add("swords", Society::stock(*purse, "sword"));
             if (!e->gift.empty())
@@ -128,6 +141,11 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("moved", acting && mine->moved);
     v.add("acted", acting && mine->acted);
     v.add("faced", acting && mine->faced);           // The turn's third part (doc 33): all three, and it ends by itself.
+    // Planning (doc 37): while its bar fills, a fighter on its feet sees where its next turn could reach (`reach`).
+    const bool planning = !observer && !mine->acting && mine->status == "fighting" && !mine->casting && !b.over;
+    v.add("planning", planning);
+    const double haste = world_.meterHaste(b);     // The bars filling faster, with no one deciding (no dead air).
+    v.add("haste", haste);
     v.add("round", b.turns);
     v.add("watching", double(b.observers.size()));
     const auto veiled = veilMap(viewer);           // Names this wolf doesn't know, as the fighters look (doc 32).
@@ -154,11 +172,24 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         o.add("meter", std::round(std::max(0.0, f.meter) * 10) / 10);
         o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed")
                           ? 0.0
-                          : battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond);
+                          : battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond * haste);
         o.add("acting", f.acting);
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
+        if (!f.walk.empty())
+        {
+            // Walking there (doc 37: a turn shown, not just run): the tiles still to go.
+            auto walk = Value::array();
+            for (const auto& [wx, wy] : f.walk)
+            {
+                auto p = Value::array();
+                p.push(wx);
+                p.push(wy);
+                walk.push(p);
+            }
+            o.add("walk", walk);
+        }
         // What drives the bars, for their tooltips: stamina back a turn (doubled resting), the bar's fill time.
         o.add("regen", std::round(battle::staminaPerTurn(e->hurt, e->strength) * (f.resting ? battle::RestFactor : 1) * 10) / 10);
         o.add("fillSeconds", std::round(100 / (battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond)));
@@ -279,8 +310,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         smoke.push_back(s.first);
     v.add("smoke", tileList(smoke));
     auto reach = Value::array();
-    if (acting)
-        for (const auto& [x, y] : world_.battleReach(viewer))
+    if (acting || planning)
+        for (const auto& [x, y] : acting ? world_.battleReach(viewer) : world_.planReach(viewer))
         {
             auto p = Value::array();
             p.push(x);
@@ -404,6 +435,24 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
                      ? world_.battleAct(id, "flame", std::to_string(int(std::floor(x))) + "," + std::to_string(int(std::floor(y))))
                      : Result{false, "Aim it: which way?", {}};
     }
+    else if (verb == "plan")
+    {
+        // {"verb":"plan","x":..,"y":..}: a tile to go to; {"verb":"plan","act":..,"target":..} (fire: "x", "y"): an action.
+        const std::string act = j.string("act");
+        const double x = j.number("x", -1), y = j.number("y", -1);
+        if (act == "flame")
+            result = std::isfinite(x) && std::isfinite(y)
+                         ? world_.planAct(id, act, std::to_string(int(std::floor(x))) + "," + std::to_string(int(std::floor(y))))
+                         : Result{false, "Aim it: which way?", {}};
+        else if (!act.empty())
+            result = world_.planAct(id, act, target);
+        else if (std::isfinite(x) && std::isfinite(y))
+            result = world_.planMove(id, int(std::floor(x)), int(std::floor(y)));
+        else
+            result = {false, "Plan what?", {}};
+    }
+    else if (verb == "unplan")
+        result = world_.unplan(id, j.string("part"));
     else if (verb == "agree" || verb == "refuse")
         result = world_.answerTruce(id, verb == "agree");
     else if (verb == "spare" || verb == "press")

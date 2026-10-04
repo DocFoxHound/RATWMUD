@@ -48,6 +48,16 @@ struct BattleFighter
     // Combat injuries (doc 38): turns of Bleeding left; Staggered (1: its bar is set back when this turn ends, 2: set
     // back already; both shown until its next turn).
     int bleeding = 0, staggered = 0;
+    // A plan made while its bar fills (doc 37, phase 5): a tile to go to and an action (its target a fighter, or "x,y"
+    // for fire), played out as its turn begins; the rest of the turn is still its own. `begun`: the move is under way.
+    struct Plan
+    {
+        bool move = false;
+        int x = 0, y = 0;
+        std::string act, target;
+        bool begun = false;
+        bool empty() const { return !move && act.empty(); }
+    } plan;
 };
 
 // A spell charging (the tell): it goes off when its meter fills, on the tiles locked when it began.
@@ -162,7 +172,10 @@ constexpr double RestFactor = 2;
 constexpr double BleedFrom = 18, BleedDamage = 2, StaggerFrom = 25, StaggerSetback = 20;
 constexpr int BleedTurns = 3;
 constexpr int AwayAfter = 3;
-constexpr double PartsGrace = 1.5;              // A turn with move, action and facing used ends this long after the last.
+constexpr double PartsGrace = 1.5;
+// Pace (doc 37, phase 5): a plan plays this long into its turn (time to see it is one's turn); with no player taking a
+// turn and no fire gathering, every bar fills this many times faster (no dead air).
+constexpr double PlanBeat = .5, Haste = 2.5;              // A turn with move, action and facing used ends this long after the last.
 // A move is walked a tile at a time (slower hurt: the injury factor), a crawl slower still.
 constexpr double StepSeconds = .45, SprintStepSeconds = .2, CrawlStepSeconds = 1.0;   // At a walk; at a sprint.
 constexpr int NpcPace = 6;                                     // NPCs fight at a run.

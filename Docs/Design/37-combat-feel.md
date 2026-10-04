@@ -1,7 +1,7 @@
 # Combat feel: a fight screen that reads at a glance
 
-Status: **plan, drafted October 4, 2026**, from a playtest of the built combat (doc 33) after its playtest fixes. Nothing
-here is built. Decisions taken the same day are marked **Decided**. Doc 33 keeps the rules; doc 18 keeps the encounter log. This
+Status: **plan, drafted October 4, 2026**, from a playtest of the built combat (doc 33) after its playtest fixes. Phases
+1–5 were built the same day (see [Built](#built)); 6 and 7 are to come. Decisions taken the same day are marked **Decided**. Doc 33 keeps the rules; doc 18 keeps the encounter log. This
 document is about how a fight looks, feels and flows.
 
 ## What a fight is like today
@@ -79,9 +79,11 @@ When you enter a fight the HUD changes to a combat layout. It changes back when 
 │  part]        │                                          │ │ 🔥 burning 2  │ │
 │               │                                          │ └───────────────┘ │
 ├───────────────┴──────────────────────────────────────────┴───────────────────┤
-│  [1 🦷 Bite 75%·12]  [2 ⚔ Sword]  [3 🔥 Fire 25]  [⛨ Guard]  [✋ Tend]  [🏳 Truce]  [↩ Flee]  [⏎ END TURN ▓▓▓░ 9s] │
+│  [1 🦷 Bite 75%·12]  [2 ⚔ Sword]  [3 🔥 Fire 25]  [⛨ Guard*]  [✋ Tend]  [🏳 Truce]  [↩ Flee]  [⏎ END TURN ▓▓▓░ 9s] │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+(* Guard comes with phase 6; the built bar has Bite, Sword, Fire, Tend, Roll, Pick up, Stow, Truce, Flee and Yield.)
 
 - **Turn order strip (top):** small portraits from the existing drawn-wolf art (`wolfArt.ts`) in the order turns will
   come, each with a filling ring; the one acting has a countdown ring. It replaces bars under every wolf and the
@@ -151,6 +153,9 @@ When you enter a fight the HUD changes to a combat layout. It changes back when 
   who did what without reading the log.
 - **Decided:** keep overlapping real-time bars, with planning ahead and "no dead air" (not strict alternating turns,
   nor only faster bars).
+- **Decided (2026-10-04):** the bars stay at 25 s (DEX 50) and "no dead air" stays at ×2.5, so a duel comes round in
+  about 10 s at best; the 8 s target is dropped. Fights stay paced for reading and writing.
+- **Decided (2026-10-04):** NPC turns play out briefly on the map, about a second each (the token walks, then strikes).
 
 ### 6. Choices: a little more to play with
 
@@ -186,7 +191,9 @@ with a recorded playtest (screenshots and timings, as for this document) before 
 ## Measures
 
 - A new player gets through their first fight without reading any instruction text (playtest with the panel text hidden).
-- Median time between one's own turns in a duel: today about 13 s; target under 8 s.
+- Median time between one's own turns in a duel: about 13 s when this was written (15 s bars); since the bars went to
+  25 s at DEX 50 and turns to 20 s (doc 33) it is over 25 s. Target about 10 s with phase 5 (the 8 s target was dropped
+  on 2026-10-04 to keep the 25 s bars). Measured after phase 5: 8.7 s, with both players deciding at once.
 - After any blow, a player can say who hit whom, and for how much, without the log.
 - In a fight, no more than one panel of information that isn't about the fight.
 
@@ -361,3 +368,52 @@ with a recorded playtest (screenshots and timings, as for this document) before 
   - in the browser: a duel to first blood chosen from the menu (versus card, both results), and a duel until one
     yields ended by Yield and Spare.
   - The older tests of downing and death now fight to the death.
+
+**Phase 5, October 4, 2026: every second yours** (server `Core/RatwBattle.cpp` `planMove`, `planAct`, `unplan`,
+`playPlan`, `meterHaste`; page `Client/src/game/paint.ts` `drawPlan`, `fightFx.ts` captions, `ui/hud/combat.ts`).
+- **No dead air:** while no player is taking a turn and no fire is gathering, every bar fills ×2.5 (`battle::Haste`)
+  until someone's turn comes.
+  - The fighters' `rate` carries it, so the turn order strip and End turn count down truly.
+  - The strip says "» ×2.5" meanwhile, with a tooltip.
+  - Fire gathering keeps the normal pace, so there is still time to step out of the cone.
+- **Planning ahead:** while your bar fills, the fight screen works as it does on your turn, but plans instead of doing.
+  - Your next turn's reach is outlined, dashed: the tiles it could take you to from where you stand, with the stamina it
+    will have then (`World::planReach`).
+  - Click a tile to plan the move. Click a foe (or Bite or Sword) to plan the blow, or a fallen friend to plan tending.
+    Fire, Rest, Roll, Take sword, Stow, Pick up and Flee plan from the action bar. Truce and the facing are left for
+    the turn itself.
+  - The plan is drawn as a ghost of your wolf at the planned tile, the way there dashed, a dashed line to a planned
+    blow's foe (or the step a blow out of reach would take), planned fire's cone, and a badge over it: "NEXT · BITE".
+  - The planned button is dashed gold. The strip reads "YOUR TURN IN 6 · PLANNED" (or "· PLAN IT").
+  - Clicking the planned tile, foe or action again takes it back, as does Clear plan.
+  - Battle verbs `plan` (`x`, `y` for the move; `act` and `target`, or `x`, `y` for fire) and `unplan` (`part`:
+    `move`, `act`, or both); the snapshot's `you.plan`, `planning` and `haste`.
+- **The plan plays** half a second into the turn (`battle::PlanBeat`, after the chime and "YOUR TURN"):
+  - the move first; a blow planned at a foe now out of reach steps in first, to the reachable tile nearest them, as a
+    click on them does;
+  - then the action, once the walk is done, with whatever is in the jaws then (a bite becomes a sword stroke if a sword
+    was taken up meanwhile);
+  - what can no longer be done is said ("Your plan: Get next to them first.") and left for the player;
+  - the turn is still theirs after it: to turn, to write, or to end it.
+- **A turn used, left to run out, isn't let pass:** only a turn with no move and no action counts toward being marked
+  away, and only it is logged "lets the moment pass". Before, a planned (or simply unhurried) turn that ran its time
+  counted as one.
+- **NPC turns shown, not just run:**
+  - anyone else walking shows the way they are going, dashed in their side's colour, and a ring where it ends (the
+    snapshot sends each fighter's `walk`);
+  - a word under them as they set off ("steps in" to a foe, "falls back" from them, "moves");
+  - then what they did ("bites", "cuts", "swings", "snaps", "gathers fire", "FIRE", "tends", "rolls", "rests",
+    "flees", "yields"…), each for about a second and a half, placed where it covers no wolf or name;
+  - nothing is said under oneself. NPCs keep their 1.5 s pause before acting, then walk and strike.
+- **Tested:**
+  - `Tests/battle_tests.cpp` `planningAhead`: the bars faster with no one deciding, not while fire gathers; a move and a
+    bite planned, refused out of reach, refused in one's own turn, played as the turn comes, the turn still one's own
+    after, and no timeout counted; a bite at a foe out of reach stepping in first; a plan taken back;
+  - `Client/src/game/battle.test.ts`: tiles, foes and fallen friends planned while waiting, taken back when clicked
+    again, the plan, `walk` and `haste` read;
+  - `Client/src/game/fightFx.test.ts`: "steps in" then "bites" under an NPC, nothing under oneself, "falls back", a
+    turn ended not said;
+  - in the browser (scratch Greyfen):
+    - a duel where both planned while waiting (a bite, and a move away) and both plans played as the turns came;
+    - a minute of quick turns: 8.7 s median between one's own turns (25 s bars);
+    - a fight with residents and the watch, with "steps in" and "bites" under them as they came.

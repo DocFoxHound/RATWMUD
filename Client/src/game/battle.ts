@@ -32,6 +32,7 @@ export interface FighterView {
     rate: number;
     acting: boolean;            // Taking a turn now (several may be at once: doc 33).
     turnLeft: number;           // Seconds left in it, when acting.
+    walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
     lifeStage: string;
     stamina: number;            // Everyone's (−1 if not sent).
@@ -106,7 +107,12 @@ export interface BattleView {
     round: number;
     watching: number;
     fighters: FighterView[];
-    reach: Array<[number, number]>;
+    reach: Array<[number, number]>;      // On one's turn, where the move can go; planning, where the next turn's could.
+    // Planning ahead while one's bar fills (doc 37, phase 5): whether one can now, what is planned (played as the turn
+    // comes), and how much faster the bars fill while no one is deciding (no dead air).
+    planning: boolean;
+    plan: PlanView | null;
+    haste: number;
     log: BattleLine[];
     // This wolf's own means: what is in its jaws, swords carried, a Gift and its mana; burning, gathering fire.
     mouth: string;
@@ -128,6 +134,13 @@ export interface BattleView {
     casts: CastView[];
     drops: Array<{x: number; y: number; item: string}>;
     smoke: Tile[];
+}
+
+/** A turn planned ahead: a tile to go to (`move`), an action and its target (a fighter's id; fire, "x,y"). */
+export interface PlanView {
+    move: Tile | null;
+    act: string;
+    target: string;
 }
 
 export interface GroundView {
@@ -204,7 +217,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
             gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
-            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'),
+            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')),
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
             regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),
@@ -213,6 +226,9 @@ export function readBattle(snapshot: Json | null): BattleView | null {
                 damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach')} : null,
         })),
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
+        planning: bool(b, 'planning'),
+        plan: readPlan(obj(you, 'plan')),
+        haste: num(b, 'haste', 1),
         log: objects(b, 'log').map(l => ({seq: num(l, 'seq'), kind: str(l, 'kind'), text: str(l, 'text'), actor: str(l, 'actor'),
             target: str(l, 'target'), tiles: tiles(arr(l, 'tiles'))})),
         mouth: str(you, 'mouth'),
@@ -237,6 +253,11 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         drops: objects(b, 'drops').map(d => ({x: Math.trunc(num(d, 'x')), y: Math.trunc(num(d, 'y')), item: str(d, 'item')})),
         smoke: tiles(arr(b, 'smoke')),
     };
+}
+
+function readPlan(p: Json | null): PlanView | null {
+    if (!p) return null;
+    return {move: typeof p.x === 'number' && typeof p.y === 'number' ? [p.x, p.y] : null, act: str(p, 'act'), target: str(p, 'target')};
 }
 
 export function readGround(snapshot: Json | null): GroundView[] {
