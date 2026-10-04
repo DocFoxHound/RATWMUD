@@ -789,11 +789,12 @@ export class GamePainter {
      */
     private drawPlan(b: BattleView, me: FighterView, centre: (x: number, y: number) => Point, tile: number, range: number): {at: Point; word: string} {
         const p = this.p, c = p.ctx, plan = b.plan!;
-        const strike = plan.act === 'bite' || plan.act === 'sword';
+        const strike = plan.act === 'bite' || plan.act === 'sword' || plan.act === 'shove';
         const foe = b.fighters.find(f => f.id === plan.target);
         let at: [number, number] = plan.move ?? [me.x, me.y];
-        if (!plan.move && strike && foe && apart(me.x, me.y, foe.x, foe.y) > range) {
-            const step = stepToward(b, me, foe, range);
+        const reach = plan.act === 'shove' ? 1 : range;
+        if (!plan.move && strike && foe && apart(me.x, me.y, foe.x, foe.y) > reach) {
+            const step = stepToward(b, me, foe, reach);
             if (step) at = [step.x, step.y];
         }
         const moved = at[0] !== me.x || at[1] !== me.y;
@@ -820,7 +821,7 @@ export class GamePainter {
         }
         // The action, in a word, said over where it will be done (once the names are placed).
         const words: Record<string, string> = {bite: 'BITE', sword: 'STRIKE', flame: 'FIRE', tend: 'TEND', roll: 'ROLL', rest: 'REST', hold: 'TAKE SWORD',
-            stow: 'STOW', pickup: 'PICK UP', flee: 'FLEE'};
+            stow: 'STOW', pickup: 'PICK UP', flee: 'FLEE', guard: 'GUARD', shove: 'SHOVE'};
         return {at: from, word: plan.act ? `NEXT · ${words[plan.act] ?? plan.act.toUpperCase()}` : 'NEXT'};
     }
 
@@ -881,6 +882,14 @@ export class GamePainter {
             c.closePath();
             c.fillStyle = css(color);
             c.fill();
+            if (f.guarding) {
+                // On guard (doc 37): a bar across its front.
+                c.beginPath();
+                c.arc(x, y, r + 7, a - 1.05, a + 1.05);
+                c.strokeStyle = css(Paper);
+                c.lineWidth = 4;
+                c.stroke();
+            }
         }
         c.restore();
         const size = Math.round(r * 1.15);

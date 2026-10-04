@@ -102,8 +102,9 @@ foreleg, left hind leg, right hind leg or tail. A spot takes any number of piece
 where it can go (`any` for fur clips, charms and bells; `ears` for ear cuffs; `tail` for tail rings; the legs for
 bracelets; the ruff for collars and beads). The status screen shows the spots as markers on the wolf.
 
-Drawing a sheathed weapon is free outside a fight. In a fight it costs the move, not the action (a guard harness
-makes it free). *(placeholder)*
+Drawing a sheathed weapon is free outside a fight. In a fight it is part of the move, not the action: once a turn,
+and a tile off the walk if drawn before it (doc 37, phase 6, built for the sword); a guard harness makes it free.
+*(placeholder)*
 
 ### 1.2 Carrying
 
@@ -470,6 +471,12 @@ crafter, NPC or player fills a contract with real goods and is paid from the buy
 - **Medicine as actions:** bandages and stitching kits make Tend wounds stronger; smelling salts wake a Downed ally.
 - **Emplacements:** a crossbow set up on a cell can be crewed in a fight that cell's arena copies (doc 33 Part 2).
 
+**Decided (2026-10-04): who builds what.** The combat session (doc 33/37) adds armour to the fight rules: a blow's
+damage less the target's summed `protect` minus the weapon's pierce (with the "+n vs cut/thrust" extras), never below
+1; worn armour's DEX penalty and a heavy load slowing the initiative bar. The battle view should send each fighter's
+protection (and the reduction in `odds.damage`) so the page can show it. The UI session shows it: protection on the
+status screen and the cards' gear doll, and the strike previews' damage figures after armour.
+
 ## Phases
 
 1. **Done (2026-10-03):** the catalog, recipes, stations and business types, with their checker; the towns' and
@@ -478,6 +485,10 @@ crafter, NPC or player fills a contract with real goods and is paid from the buy
    - The server loads `Data/Items` in place of the hard-coded list. Old saves keep `herbs`, `meal` and `sword` under
      the same ids.
    - Weight, stacks, quality, maker and spoiling; the inventory shows the load.
+   - **Decided (2026-10-04):** weight and load come first (the UI session): a load bar on the status screen and the
+     belongings sheet ("Load 18 of 24.5 lb · comfortable"), and a chip in the status panel only when heavy or
+     overloaded, saying what it costs. Quality and the maker's mark move to Phase 5, with crafting: until then
+     everything sold is Common.
    - Shops sell what they actually stock.
 3. **Station objects.**
    - The engine places stations from the building data, draws their glyphs and keeps their state.

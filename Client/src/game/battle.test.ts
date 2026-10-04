@@ -274,3 +274,15 @@ test('planning ahead (doc 37, phase 5): while one\'s bar fills, a tile, a foe or
     s.applySnapshot(snapshot({battle: {...battle, fighters: (battle.fighters as Json[]).map(f => (f.id === 'bo' ? {...f, walk: [[4, 2], [3, 2]]} : f))}}));
     assert.deepEqual(s.battle!.fighters.find(f => f.id === 'bo')!.walk, [[4, 2], [3, 2]], "Bo's way there");
 });
+
+test('guard and shove (doc 37, phase 6): one on guard has no side or back to strike; the sword is taken with the move', () => {
+    const odds = {hit: 55, base: 55, damage: 12, reach: true};
+    const b = readBattle({battle: {...battle, drew: true, fighters: [
+        {id: 'self', name: 'Ada', side: 0, x: 2, y: 2, facing: 0, status: 'fighting'},
+        {id: 'bo', name: 'Bo', side: 1, x: 3, y: 2, facing: 0, status: 'fighting', guarding: true, odds},
+    ]}})!;
+    const bo = b.fighters[1];
+    assert.ok(bo.guarding && b.drew, 'on guard, and a sword drawn this turn, read');
+    assert.equal(chanceFrom(bo, 2, 2), 55, 'from behind him, still only the head-on chance');
+    assert.equal(chanceFrom({...bo, guarding: false}, 2, 2), 75, '(not on guard: +20 from behind)');
+});

@@ -48,6 +48,9 @@ struct BattleFighter
     // Combat injuries (doc 38): turns of Bleeding left; Staggered (1: its bar is set back when this turn ends, 2: set
     // back already; both shown until its next turn).
     int bleeding = 0, staggered = 0;
+    // Doc 37, phase 6: on guard until its next turn (harder to hit, and it turns to meet a blow); a sword taken up or
+    // put away this turn (part of the move, not the action: once a turn, a tile off the move if before it).
+    bool guarding = false, drew = false;
     // A plan made while its bar fills (doc 37, phase 5): a tile to go to and an action (its target a fighter, or "x,y"
     // for fire), played out as its turn begins; the rest of the turn is still its own. `begun`: the move is under way.
     struct Plan
@@ -183,6 +186,9 @@ constexpr double BannerSeconds = 2.0, FadeSeconds = .5, SettleSeconds = 5;
 constexpr double ChallengeSeconds = 30, StartReach = 3.0;
 constexpr double YieldSeconds = 20, LapseSeconds = 60;   // An offer to yield unanswered; a fight everyone left.
 constexpr double BiteDamage = 12, BiteStamina = 8;
+// Guard (doc 37): a blow's chance against one on guard, this much lower. Shove: its breath, and the odds of a push
+// (STR against STR), less against one on guard.
+constexpr double GuardDodge = .2, ShoveStamina = 8, ShoveOdds = .6;
 constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;
 constexpr double DownedMinimum = .6, OverkillSeconds = 10;

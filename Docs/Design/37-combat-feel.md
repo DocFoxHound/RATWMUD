@@ -1,7 +1,7 @@
 # Combat feel: a fight screen that reads at a glance
 
 Status: **plan, drafted October 4, 2026**, from a playtest of the built combat (doc 33) after its playtest fixes. Phases
-1–5 were built the same day (see [Built](#built)); 6 and 7 are to come. Decisions taken the same day are marked **Decided**. Doc 33 keeps the rules; doc 18 keeps the encounter log. This
+1–6 were built the same day (see [Built](#built)); 7 is to come. Decisions taken the same day are marked **Decided**. Doc 33 keeps the rules; doc 18 keeps the encounter log. This
 document is about how a fight looks, feels and flows.
 
 ## What a fight is like today
@@ -83,7 +83,8 @@ When you enter a fight the HUD changes to a combat layout. It changes back when 
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-(* Guard comes with phase 6; the built bar has Bite, Sword, Fire, Tend, Roll, Pick up, Stow, Truce, Flee and Yield.)
+(* The built bar: Bite or Sword (or Take sword), Fire, Tend, Rest, Roll, Pick up, Stow, Guard, Shove, Truce, Flee,
+Yield, the turns left and right, and End turn.)
 
 - **Turn order strip (top):** small portraits from the existing drawn-wolf art (`wolfArt.ts`) in the order turns will
   come, each with a filling ring; the one acting has a countdown ring. It replaces bars under every wolf and the
@@ -417,3 +418,33 @@ with a recorded playtest (screenshots and timings, as for this document) before 
     - a duel where both planned while waiting (a bite, and a move away) and both plans played as the turns came;
     - a minute of quick turns: 8.7 s median between one's own turns (25 s bars);
     - a fight with residents and the watch, with "steps in" and "bites" under them as they came.
+
+**Phase 6, October 4, 2026: a little more to play with** (server `Core/RatwBattle.cpp` `shove`, the `guard` action,
+`strikeChance`; page `ui/hud/combat.ts`, `paint.ts`, `ui/icons.ts`).
+- **Guard** (G, a shield): the action, no blow.
+  - Until one's next turn, a blow's chance is 20% lower (`battle::GuardDodge`), and the one on guard turns to meet
+    each blow before it is rolled, so no side or back can be struck.
+  - The odds on the cards and the map's previews show it ("55%" head on, from anywhere).
+  - It shows as a bar across the front of the token, a shield on the card, and "on guard" under a wolf as it takes
+    it.
+  - An NPC that isn't aggressive stands on guard when a foe is at its throat and it has no blow to give (winded, or
+    the wrong thing in its jaws).
+- **Shove** (F, an arrow at a bar): the action, at the foe aimed at (or any wolf next to one).
+  - A tile straight back, 8 stamina, on 60% + (STR − their STR)%, within 20–90%, 20% less against one on guard.
+  - Nowhere for them to go (a wall, a wolf, a ledge, the arena's end), and it is only a shove. A walk under way stops
+    where they are.
+  - It can be planned; a shove planned at a wolf out of reach steps in first, as a blow does.
+- **The sword with the move:** taking up a sword one carries (2), or stowing it, no longer takes the action.
+  - Once a turn; before the walk it costs a tile of the move. So a wolf can take up its sword and strike in one turn.
+  - The buttons say "move" under them. Picking a sword up off the ground is still the action.
+- **Roll** already had its icon and tooltip, and shows only while burning (phase 1).
+- **The bar fits:** with Guard and Shove, the action bar is a little tighter (narrower buttons and gaps), so it stays
+  one row at 1600 px. The help line lists G guard and F shove, and that a click while waiting plans.
+- **Tested:**
+  - `Tests/battle_tests.cpp` `guardAndShove`: on guard, a blow from behind no likelier than 20 less than head on, and
+    the guard turned to meet it; Guard as the action, lasting until the next turn; a shove back a tile (or nowhere to
+    go), once a turn, not from afar. `theSword`: taken up with the move, a tile off it, once a turn;
+  - `Client/src/game/battle.test.ts`: one on guard has no side or back in the preview; `fightFx.test.ts`: "on guard",
+    "shoves";
+  - in the browser: a sword taken up and struck with in one turn, Guard by its key (the foe's odds fell to the
+    head-on 55%), a shove planned while waiting and played as the turn came ("bo shoves ash back"), the bar one row.

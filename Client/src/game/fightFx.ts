@@ -58,7 +58,7 @@ const bump = (t: number, length: number) => (t < 0 || t > length ? 0 : Math.sin(
 
 /** What a fight line should sound like (ui/sound.ts), if anything. */
 const Cues: Record<string, string> = {hit: 'bite', graze: 'graze', slash: 'cut', miss: 'miss', flame: 'fire', charge: 'charge',
-    burn: 'burn', down: 'down', death: 'down', rise: 'rise', tend: 'rise', truce: 'truce', yield: 'truce', over: 'over'};
+    burn: 'burn', down: 'down', death: 'down', rise: 'rise', tend: 'rise', truce: 'truce', yield: 'truce', over: 'over', shove: 'graze'};
 
 export class FightEffects {
     private seen = new Map<string, number>();       // The last line seen of each fight.
@@ -111,7 +111,7 @@ export class FightEffects {
         const hurt = ['burn', 'down', 'death', 'rise'].includes(line.kind) ? line.actor : line.target;
         const effect: Effect = {kind: line.kind, actor: line.actor, target: hurt, tiles: line.tiles, at: clock, from: at(line.actor),
             to: at(hurt), damage};
-        if (['hit', 'graze', 'slash', 'miss', 'burnt', 'burn', 'flame', 'down', 'death', 'tend', 'rise'].includes(line.kind)) this.effects.push(effect);
+        if (['hit', 'graze', 'slash', 'miss', 'burnt', 'burn', 'flame', 'down', 'death', 'tend', 'rise', 'shove'].includes(line.kind)) this.effects.push(effect);
         // A heavy blow, fire, or a fall shakes the view: more when it is oneself.
         const heavy = damage >= Heavy || line.kind === 'flame' || line.kind === 'down' || line.kind === 'death';
         if (heavy || (damage > 0 && hurt === this.selfId)) {
@@ -322,6 +322,8 @@ export function captionOf(line: BattleLine): string {
         case 'tend': return 'tends';
         case 'roll': return 'rolls';
         case 'rest': return 'rests';
+        case 'guard': return 'on guard';
+        case 'shove': return 'shoves';
         case 'hold': return 'takes a sword';
         case 'stow': return 'stows the sword';
         case 'pickup': return 'grabs the sword';

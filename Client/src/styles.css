@@ -504,25 +504,25 @@ button.given { opacity: .6; }
 /* What this wolf can do: icon buttons, its key in the corner, the odds or the cost beneath. */
 .action-bar { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background: var(--panel); border: 1px solid #34443e;
     border-radius: 4px; }
-.bar-actions { display: flex; gap: 6px; align-items: stretch; flex-wrap: wrap; }
+.bar-actions { display: flex; gap: 4px; align-items: stretch; flex-wrap: wrap; }
 .bar-banner { font-size: 16px; font-weight: 500; color: var(--gold); text-align: center; padding: 10px; }
 .bar-truce { display: flex; align-items: center; gap: 10px; color: var(--paper); font-size: 14px; }
 .bar-truce > .icon { font-size: 20px; }
 .game button.abtn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-    min-width: 70px; padding: 6px 8px 5px; background: #1e2a28; border: 1px solid #3a4a43; border-radius: 5px; color: var(--paper); }
+    min-width: 58px; padding: 6px 5px 5px; background: #1e2a28; border: 1px solid #3a4a43; border-radius: 5px; color: var(--paper); }
 .game button.abtn:hover:not(:disabled) { background: var(--raised); border-color: var(--gold); }
 .game button.abtn:disabled { opacity: .4; }
 .abtn-icon { width: 26px; height: 26px; }
 .abtn-label { font-size: 12px; white-space: nowrap; }
 .abtn-sub { font: 11px 'RATW Mono', monospace; color: var(--gold); min-height: 13px; white-space: nowrap; }
 .abtn-key { position: absolute; top: 2px; left: 4px; font: 10px 'RATW Mono', monospace; color: var(--muted); }
-.game button.abtn.small { min-width: 40px; padding: 6px 4px; }
+.game button.abtn.small { min-width: 34px; padding: 6px 3px; }
 .game button.abtn.small .abtn-icon { width: 22px; height: 22px; }
 .game button.abtn.go { border-color: color-mix(in srgb, var(--gold) 60%, transparent); }
 .game button.abtn.warn .abtn-sub { color: #f0a08f; }
 .game button.abtn.armed { background: #3a2a1a; border-color: #ff9a3c; }
 .game button.abtn.planned { border-color: var(--gold); border-style: dashed; background: color-mix(in srgb, var(--gold) 14%, transparent); }
-.game button.abtn.end { margin-left: auto; min-width: 128px; overflow: hidden; border-color: var(--gold); }
+.game button.abtn.end { margin-left: auto; min-width: 112px; overflow: hidden; border-color: var(--gold); }
 .game button.abtn.end:disabled { opacity: .75; border-color: #3a4a43; }
 .end-fill { position: absolute; inset: auto auto 0 0; height: 3px; background: var(--gold); transition: width .2s linear; }
 .bar-truce .abtn { flex-direction: row; min-width: 0; gap: 6px; padding: 5px 12px; }

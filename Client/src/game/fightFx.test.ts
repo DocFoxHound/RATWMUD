@@ -85,6 +85,8 @@ test('others\' turns shown (doc 37, phase 5): a word under a wolf for what it do
     assert.equal(fx.captions(5).length, 0, 'and it fades');
     assert.equal(captionOf({seq: 1, kind: 'wait', actor: 'bo', target: '', text: 'Bo ends their turn.', tiles: []}), '', 'a turn ended is not said');
     assert.equal(captionOf({seq: 1, kind: 'miss', actor: 'bo', target: '', text: 'Bo swings at Ada and misses.', tiles: []}), 'swings');
+    assert.equal(captionOf({seq: 1, kind: 'guard', actor: 'bo', target: '', text: 'Bo stands on guard.', tiles: []}), 'on guard');
+    assert.equal(captionOf({seq: 1, kind: 'shove', actor: 'bo', target: 'ada', text: 'Bo shoves Ada back.', tiles: []}), 'shoves');
     const away = readBattle(fight([]))!;
     const bo = {...away.fighters[1], x: 3, walk: [[6, 2]] as Array<[number, number]>};
     assert.equal(moveWord(away, bo), 'falls back', 'away from the foe: "falls back"');

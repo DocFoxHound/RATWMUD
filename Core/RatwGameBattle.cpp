@@ -141,6 +141,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("moved", acting && mine->moved);
     v.add("acted", acting && mine->acted);
     v.add("faced", acting && mine->faced);           // The turn's third part (doc 33): all three, and it ends by itself.
+    v.add("drew", acting && mine->drew);             // A sword taken up or put away this turn (part of the move: doc 37).
     // Planning (doc 37): while its bar fills, a fighter on its feet sees where its next turn could reach (`reach`).
     const bool planning = !observer && !mine->acting && mine->status == "fighting" && !mine->casting && !b.over;
     v.add("planning", planning);
@@ -177,6 +178,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
+        if (f.guarding)
+            o.add("guarding", true);            // On guard (doc 37): harder to hit, turning to meet a blow.
         if (!f.walk.empty())
         {
             // Walking there (doc 37: a turn shown, not just run): the tiles still to go.
@@ -465,7 +468,7 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
         result = world_.leaveObserving(id);
     else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||
              verb == "roll" || verb == "rest" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce" ||
-             verb == "back" || verb == "yield")
+             verb == "back" || verb == "yield" || verb == "guard" || verb == "shove")
         result = world_.battleAct(id, verb, target);
     else
         return false;

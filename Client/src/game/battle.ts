@@ -32,6 +32,7 @@ export interface FighterView {
     rate: number;
     acting: boolean;            // Taking a turn now (several may be at once: doc 33).
     turnLeft: number;           // Seconds left in it, when acting.
+    guarding: boolean;          // On guard (doc 37): harder to hit, turning to meet a blow, until their next turn.
     walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
     lifeStage: string;
@@ -103,6 +104,7 @@ export interface BattleView {
     turnLeft: number;
     moved: boolean;
     acted: boolean;
+    drew: boolean;              // A sword taken up or put away this turn (part of the move: doc 37).
     faced: boolean;             // This turn's facing used (doc 33): move, action and facing all used, the turn ends itself.
     round: number;
     watching: number;
@@ -208,6 +210,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         moved: bool(b, 'moved'),
         acted: bool(b, 'acted'),
         faced: bool(b, 'faced'),
+        drew: bool(b, 'drew'),
         round: Math.trunc(num(b, 'round')),
         watching: Math.trunc(num(b, 'watching')),
         fighters: objects(b, 'fighters').map(f => ({
@@ -217,7 +220,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
             gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
-            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')),
+            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')), guarding: bool(f, 'guarding'),
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
             regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),
@@ -359,6 +362,7 @@ export function quarter(foe: FighterView, x: number, y: number): 'front' | 'side
 /** The chance (percent) of a blow at `foe` from tile (x, y), by the rules the server rolls with. */
 export function chanceFrom(foe: FighterView, x: number, y: number): number {
     if (!foe.odds) return 0;
+    if (foe.guarding) return foe.odds.base;            // On guard, they turn to meet it: no side or back (doc 37).
     const q = quarter(foe, x, y);
     return Math.max(20, Math.min(95, foe.odds.base + (q === 'back' ? 20 : q === 'side' ? 10 : 0)));
 }

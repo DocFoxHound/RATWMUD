@@ -42,6 +42,9 @@ const Paths: Record<string, string> = {
     miss: 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z',
     // Time passing.
     wait: 'M12 7v5l3 3M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+    // Guard (a shield) and Shove (a push against a bar), doc 37.
+    guard: 'M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z',
+    shove: 'M3 12h11M10 7l5 5-5 5M19 4v16',
     // Joining, starting.
     start: 'M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z',
 };

@@ -167,18 +167,20 @@ stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×
 ```
 
 **On your turn** you may move up to your range and take one action, in either order. Actions are Bite, Sword, a spell,
-Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
+Guard, Shove, Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
 that sets it back (Sword 10).
 
 **Planning ahead** (doc 37, phase 5): while your bar fills you can choose your next turn. Click a tile your next turn
 could reach (they are outlined, dashed), a foe to strike, a fallen friend to tend, or an action (fire, rest, roll, the
-sword, pick up, flee). The plan shows as a ghost of your wolf with the action named over it ("NEXT · BITE"). When the turn
+sword, pick up, guard, shove, flee). The plan shows as a ghost of your wolf with the action named over it ("NEXT · BITE"). When the turn
 comes it plays half a second in: the move first (a blow at a foe out of reach steps in first, as a click does), then the
 action once the walk is done. What can no longer be done is said, and left for you to do; the rest of the turn is still
 yours, to turn, write or do more. Clicking the planned tile or foe again, or Clear plan, takes it back.
 
-**A turn has three parts: the move, the action and the facing.** The action is a bite, a sword stroke, fire, tending,
-rolling, taking or stowing a sword, picking one up, offering a truce (and, later, using an item). With all three used
+**A turn has three parts: the move, the action and the facing.** The action is a bite, a sword stroke, fire, a shove, standing on
+guard, tending, rolling, picking a sword up off the ground, offering a truce (and, later, using an item). Taking up a
+sword one carries, or stowing it, is part of the move instead (doc 37, phase 6): once a turn, and before the walk it
+costs a tile of it. With all three used
 the turn ends by itself, 1.5 s after the last, so a few taps of Q or E can settle the facing (each turn of the head puts
 the end off again). Rest uses the move and the action. Facing first and moving after, the walk keeps the facing chosen.
 The action bar shows the three, ticked as they are used.
@@ -232,7 +234,7 @@ Burning, Winded, Wounded, Badly hurt, Limping, Down), each saying on hover what 
 
 **One's own card and status.** One's own card is outlined and tinted so it is easy to find. A click on it opens one's
 **status**: health, stamina and mana with what drives each, what is wrong (the injuries, named), one's stats and pace,
-and one's belongings, to equip and use (holding or stowing the sword is the turn's action in a fight). Out of a fight
+and one's belongings, to equip and use (in a fight, holding or stowing the sword is part of the turn's move). Out of a fight
 the same window opens from the health, stamina and mana bars in the status panel, which show all three at all times
 (mana for the Gifted), in a fight too, under the cards. Nothing is drawn on a portrait: uploaded portraits differ in
 shape, and a name reads plainly. The arena token carries only what a glance needs (doc 37): a health ring, the facing
@@ -346,7 +348,10 @@ At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent
 
 **The mouth slot.** A wolf holding a sword cannot bite or pick up another item until it drops or stows the sword. Speech while holding it stays allowed, but its IC text is marked as muffled. A hit dealing 18+ damage has a 20% − (STR / 10)% chance to knock the sword to the ground at the wielder's feet.
 
-**Unarmed defence.** There is no block button in v1. Dodge is passive and comes from dexterity (see the hit formula), so a defender's only active choices are to strike back, back off or flee. (Guard and Shove are planned: doc 37, phase 6.)
+**Defence.** Dodge is passive and comes from dexterity (see the hit formula). Besides striking back, backing off or fleeing, a defender can (doc 37, phase 6):
+
+- **Guard** (the action): no blow this turn; until its next turn, blows at it are 20% less likely to land, and it turns to meet each one, so there is no side or back to strike. An NPC that isn't aggressive stands on guard when a foe is at its throat and it has no blow to give.
+- **Shove** (the action): an adjacent wolf (foe or friend) a tile straight back, out of a doorway, off a fallen friend or toward the edge rows. 8 stamina; it works on 60% + (your STR − theirs)%, between 20% and 90%, 20% less against one on guard. With nowhere for them to go (a wall, a wolf, a ledge) it is only a shove. A wolf shoved mid-walk stops there.
 
 ## Magic: Flamethrower
 

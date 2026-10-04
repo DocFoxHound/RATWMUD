@@ -484,8 +484,11 @@ void theSword()
     expect(!w.holdItem("player-ad", "sword").ok, "No sword to hold");
     expect(w.society().create("player-ad", "sword", 1, "test"), "A sword is made");
     expect(w.society().create("player-bo", "sword", 1, "test"), "and another");
-    expect(w.battleAct("player-ad", "hold").ok && ad->mouth == "sword", "Ad takes it in her jaws (her action)");
-    expect(b.fighter("player-ad")->acted, "which was her action");
+    const auto reachBefore = w.battleReach("player-ad").size();
+    expect(w.battleAct("player-ad", "hold").ok && ad->mouth == "sword", "Ad takes it in her jaws");
+    expect(!b.fighter("player-ad")->acted && b.fighter("player-ad")->drew, "as part of her move, not her action (doc 37)");
+    expect(w.battleReach("player-ad").size() < reachBefore, "a tile off the move, taken before it");
+    expect(!w.battleAct("player-ad", "stow").ok, "once a turn");
     w.battleAct("player-ad", "wait");
     untilTurnOf(w, "player-ad", {"player-bo"});
     // Two tiles apart: a sword reaches, a bite doesn't.
@@ -1052,6 +1055,63 @@ void planningAhead()
     }
 }
 
+// Choices (doc 37, phase 6): Guard, Shove.
+void guardAndShove()
+{
+    {
+        // On guard: harder to hit, and turning to meet the blow (no back or side to it).
+        World w;
+        auto& b = duel(w);
+        auto* fa = b.fighter("player-ad");
+        auto* fb = b.fighter("player-bo");
+        fb->facing = battle::octant(fb->x - fa->x, fb->y - fa->y);      // Bo's back to Ad.
+        const double behind = w.strikeChance(*fa, *fb);
+        fb->guarding = true;
+        const double guarded = w.strikeChance(*fa, *fb);
+        auto headOn = *fb;
+        headOn.guarding = false;
+        headOn.facing = battle::octant(fa->x - fb->x, fa->y - fb->y);
+        const double front = w.strikeChance(*fa, headOn);
+        expect(guarded < behind && std::abs(guarded - std::clamp(front - battle::GuardDodge, .2, .95)) < .051,
+               "on guard, no blow from behind, and 20 less than head on: " + std::to_string(behind) + " → " + std::to_string(guarded));
+        w.battleAct("player-ad", "bite", "player-bo");
+        expect(fb->facing == battle::octant(fa->x - fb->x, fa->y - fb->y), "and Bo turned to meet it");
+        fb->guarding = false;
+        // Guard is an action; it lasts until one's next turn.
+        w.battleAct("player-ad", "wait");
+        untilTurnOf(w, "player-bo", {"player-ad"});
+        expect(w.battleAct("player-bo", "guard").ok && fb->guarding && fb->acted, "Bo stands on guard: his action");
+        expect(!w.battleAct("player-bo", "bite", "player-ad").ok, "(no blow as well)");
+        w.battleAct("player-bo", "wait");
+        expect(fb->guarding, "still on guard after his turn");
+        untilTurnOf(w, "player-bo", {"player-ad"});
+        expect(!fb->guarding, "until his next turn");
+    }
+    {
+        // A shove: an adjacent wolf a tile straight back, strength against strength.
+        World w;
+        auto& b = duel(w);
+        auto* fa = b.fighter("player-ad");
+        auto* fb = b.fighter("player-bo");
+        w.entity("player-ad")->strength = 100;                 // (Sure to push.)
+        w.entity("player-bo")->strength = 10;
+        const int bx = fb->x, by = fb->y, dx = fb->x - fa->x, dy = fb->y - fa->y;
+        expect(test::apart(fa->x, fa->y, fb->x, fb->y) == 1, "side by side");
+        const double stamina = w.entity("player-ad")->stamina;
+        const auto r = w.battleAct("player-ad", "shove", "player-bo");
+        expect(r.ok && fa->acted && w.entity("player-ad")->stamina == stamina - battle::ShoveStamina, "Ad shoves: her action, and breath: " + r.message);
+        const bool moved = fb->x == bx + dx && fb->y == by + dy;
+        expect(moved || b.log.back().text.find("nowhere") != std::string::npos, "Bo goes back a tile (or had nowhere to go): " + b.log.back().text);
+        expect(!w.battleAct("player-ad", "shove", "player-bo").ok, "(once: it was her action)");
+        w.battleAct("player-ad", "wait");
+        // Not from afar.
+        untilTurnOf(w, "player-ad", {"player-bo"});
+        fb->x = fa->x + 3;
+        fb->y = fa->y;
+        expect(!w.battleAct("player-ad", "shove", "player-bo").ok, "a shove needs them next to you");
+    }
+}
+
 void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
@@ -1229,6 +1289,7 @@ int main()
         playtestFixes();
         dueTerms();
         planningAhead();
+        guardAndShove();
         devConsoleFights();
         devConsoleTeamFight();
     }

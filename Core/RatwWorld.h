@@ -919,6 +919,7 @@ class World
     std::uint64_t nextGround_ = 0;
     std::map<std::string, std::set<std::string>> heardFights_;   // Who has been told of a fight they could only hear.
     Result swordStrike(Battle& b, BattleFighter& f, const std::string& target);
+    Result shove(Battle& b, BattleFighter& f, const std::string& target);
     Result castFlame(Battle& b, BattleFighter& f, int x, int y);
     void resolveCast(Battle& b, const BattleCast& cast);
     void dropItem(Battle& b, BattleFighter& f);
@@ -936,7 +937,7 @@ class World
     void endTurn(Battle& b, BattleFighter& f);
     void npcTurn(Battle& b, BattleFighter& f);
     void playPlan(Battle& b, BattleFighter& f);
-    std::vector<std::pair<int, int>> reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina) const;
+    std::vector<std::pair<int, int>> reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina, int less = 0) const;
     Result bite(Battle& b, BattleFighter& f, const std::string& target);
     void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);
     void yieldFighter(Battle& b, BattleFighter& f, const std::string& to, const std::string& line);

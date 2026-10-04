@@ -315,6 +315,7 @@ export class CombatScreen {
             if (f.mouth === 'sword') marks.push(['sword', 'A sword in their jaws']);
             if (f.away) marks.push(['away', 'Away: their turns are skipped']);
             if (f.truce) marks.push(['truce', 'Agreed to the truce']);
+            if (f.guarding) marks.push(['guard', 'On guard: harder to hit, and turns to meet a blow, until their next turn']);
             const marksKey = marks.map(m => m[0]).join();
             if (marksKey !== c.marksKey) {
                 c.marksKey = marksKey;
@@ -533,8 +534,9 @@ export class CombatScreen {
                 tip: `Strike${who} with the sword (2): reaches two tiles, 14 breath, slows your next turn${!mine || acted ? ` · ${why('')}` : ''}`,
                 enabled: free && !!target, kind: '', run: () => target && s.fightTarget(target.id), planned: isPlanned('sword', target?.id)});
         else if (b.swords > 0)
-            out.push({id: 'hold', key: '2', icon: 'sword', label: 'Take sword', sub: 'action', tip: `Take a sword in your jaws (2): uses your action${notYet}`,
-                enabled: free, kind: '', run: doOr('hold', () => s.sendBattle('hold')), planned: isPlanned('hold')});
+            out.push({id: 'hold', key: '2', icon: 'sword', label: 'Take sword', sub: 'move',
+                tip: `Take a sword in your jaws (2): part of your move, not your action (a tile off the move if taken before it)${b.drew ? ' · done this turn' : ''}${notYet}`,
+                enabled: (mine && !b.drew) || planning, kind: '', run: doOr('hold', () => s.sendBattle('hold')), planned: isPlanned('hold')});
         if (b.flame)
             out.push({id: 'fire', key: '3', icon: 'fire', label: 'Fire', sub: `${b.flame.mana} mana`, kind: b.mana < b.flame.mana ? 'warn' : '',
                 tip: `Flamethrower (3): aim a cone; it gathers for a few seconds (everyone sees where), costs breath and singes you${b.mana < b.flame.mana ? ' · too little mana: it will burn you twice as much' : ''}${notYet}`,
@@ -561,8 +563,20 @@ export class CombatScreen {
             out.push({id: 'pickup', key: '6', icon: 'pickup', label: 'Pick up', sub: 'sword', tip: `Pick up the sword beside you (6)${notYet}`,
                 enabled: free, kind: '', run: doOr('pickup', () => s.sendBattle('pickup')), planned: isPlanned('pickup')});
         if (b.mouth === 'sword')
-            out.push({id: 'stow', key: '', icon: 'pickup', label: 'Stow', sub: 'action', tip: `Put the sword away${notYet}`,
-                enabled: free, kind: 'small', run: doOr('stow', () => s.sendBattle('stow')), planned: isPlanned('stow')});
+            out.push({id: 'stow', key: '', icon: 'pickup', label: 'Stow', sub: 'move', tip: `Put the sword away: part of your move, not your action${b.drew ? ' · done this turn' : ''}${notYet}`,
+                enabled: (mine && !b.drew) || planning, kind: 'small', run: doOr('stow', () => s.sendBattle('stow')), planned: isPlanned('stow')});
+        // Guard (G): no blow, harder to hit and turning to meet one, until one's next turn. Shove (F): the foe aimed at
+        // (or anyone next to you) a tile straight back (doc 37).
+        if (me.status === 'fighting') {
+            out.push({id: 'guard', key: 'G', icon: 'guard', label: me.guarding ? 'On guard' : 'Guard', sub: '−20%',
+                tip: `Guard (G): no blow this turn; until your next, blows at you are 20% less likely and you turn to meet them (no side or back to strike)${notYet}`,
+                enabled: free && !me.guarding, kind: me.guarding ? 'go' : '', run: doOr('guard', () => s.sendBattle('guard')), planned: isPlanned('guard')});
+            const next = target && Math.max(Math.abs(target.x - me.x), Math.abs(target.y - me.y)) <= 1;
+            out.push({id: 'shove', key: 'F', icon: 'shove', label: 'Shove', sub: next ? '8 breath' : 'too far',
+                tip: `Shove${who} (F): a tile straight back, out of a doorway or toward the edge; strength against strength, harder against one on guard${next ? '' : ' · get next to them first'}${notYet}`,
+                enabled: ((mine && !acted && !!next) || planning) && !!target, kind: '',
+                run: () => target && (mine ? s.sendBattle('shove', {target: target.id}) : s.planAction('shove', target.id)), planned: isPlanned('shove', target?.id)});
+        }
         if (!b.truceBy)
             out.push({id: 'truce', key: '7', icon: 'truce', label: 'Truce', sub: '', tip: 'Offer a truce (7): the fight ends if everyone standing agrees',
                 enabled: mine && !acted, kind: '', run: () => s.sendBattle('truce')});
@@ -600,7 +614,8 @@ export class CombatScreen {
     /** A key on the map while the fight screen shows: true when it was one of its actions. */
     private key(code: string): boolean {
         if (!this.s.battle) return false;
-        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
+        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : code === 'KeyG' ? 'G' : code === 'KeyF' ? 'F'
+            : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
         if (!pressed) return false;
         const a = this.actions.find(x => x.key === pressed);
         if (a?.enabled) a.run();
@@ -797,4 +812,5 @@ const LineIcons: Record<string, string> = {
     start: 'start', join: 'start', hit: 'bite', graze: 'bite', miss: 'miss', slash: 'sword', charge: 'fire', flame: 'fire', burn: 'fire',
     burnt: 'fire', roll: 'roll', down: 'down', death: 'down', rise: 'rise', struggle: 'rise', tend: 'tend', wait: 'wait', timeout: 'wait',
     flee: 'flee', truce: 'truce', over: 'truce', yield: 'yield', refuse: 'no', hold: 'sword', drop: 'sword', pickup: 'pickup', break: 'no',
+    guard: 'guard', shove: 'shove', stow: 'sword',
 };

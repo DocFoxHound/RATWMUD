@@ -972,6 +972,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.turnStarted = time_;
     f.deadline = time_ + battle::TurnSeconds;
     f.moved = f.acted = f.extended = f.faced = false;
+    f.guarding = f.drew = false;                    // (On guard until now.)
     f.partsUsed = 0;
     f.partsAt = time_;
     f.weight = 0;
@@ -1095,10 +1096,10 @@ std::vector<std::pair<int, int>> World::battleReach(const std::string& id) const
         return f->struggling ? std::vector<std::pair<int, int>>{} : reachFrom(*b, *f, 1);   // A crawl.
     if (f->status != "fighting")
         return {};
-    return reachWith(*b, *f, *e, e->stamina);
+    return reachWith(*b, *f, *e, e->stamina, f->drew ? 1 : 0);    // (A sword taken up first costs a tile.)
 }
 
-std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina) const
+std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina, int less) const
 {
     // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
     const int pace = fightPace(e);
@@ -1106,6 +1107,9 @@ std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleF
     const int walking = battle::moveRange(effectiveDexterity(e), e.hurt, 0);
     while (range > walking && range * battle::tileStamina(pace) > stamina)
         --range;
+    range -= less;
+    if (range <= 0)
+        return {};
     return reachFrom(b, f, range);
 }
 
@@ -1181,6 +1185,12 @@ Result World::planAct(const std::string& id, const std::string& action, const st
         if (!t || t->side == f->side || t->status != "fighting")
             return {false, "Strike whom?", target};
     }
+    else if (action == "shove")
+    {
+        const auto* t = b->fighter(target);
+        if (!t || t->id == f->id || t->status != "fighting")
+            return {false, "Shove whom?", target};
+    }
     else if (action == "tend")
     {
         const auto* t = b->fighter(target);
@@ -1201,7 +1211,7 @@ Result World::planAct(const std::string& id, const std::string& action, const st
     }
     else if (action == "rest")
         f->plan.move = false;                       // (A turn without a move.)
-    else if (action != "hold" && action != "stow" && action != "pickup" && action != "flee")
+    else if (action != "hold" && action != "stow" && action != "pickup" && action != "flee" && action != "guard")
         return {false, "You can't plan that.", {}};
     f->plan.act = action;
     f->plan.target = target;
@@ -1257,7 +1267,7 @@ void World::playPlan(Battle& b, BattleFighter& f)
             tx = plan.x;
             ty = plan.y;
         }
-        else if (act == "bite" || act == "sword")
+        else if (act == "bite" || act == "sword" || act == "shove")
         {
             const auto* t = b.fighter(plan.target);
             const int range = act == "sword" ? battle::SwordReach : 1;
@@ -1347,6 +1357,19 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         return {false, "You are gathering the fire: you can only wait.", {}};
     if (action == "truce")
         return offerTruce(id);
+    if (action == "hold" || action == "stow")
+    {
+        // Taking up or putting away a sword is part of the move, not the action (doc 37): once a turn; before the
+        // move it costs a tile of it.
+        if (f.drew)
+            return {false, "You have already reached for your sword this turn.", {}};
+        r = action == "hold" ? holdItem(id, "sword") : stowItem(id);
+        if (!r.ok)
+            return r;
+        f.drew = true;
+        fightLine(*b, id, {}, action, e->name + (action == "hold" ? " takes up a sword in their jaws." : " puts their sword away."));
+        return r;
+    }
     if (f.acted)
         return {false, "You have already acted this turn.", {}};
     if (action == "bite")
@@ -1384,14 +1407,15 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         fightLine(*b, id, {}, "roll", e->name + " rolls and puts the flames out.");
         r = {true, "You roll, and the flames go out.", {}};
     }
-    else if (action == "hold" || action == "stow")
+    else if (action == "shove")
+        r = shove(*b, f, target);
+    else if (action == "guard")
     {
-        r = action == "hold" ? holdItem(id, "sword") : stowItem(id);
-        if (r.ok)
-        {
-            f.acted = true;
-            fightLine(*b, id, {}, action, e->name + (action == "hold" ? " takes up a sword in their jaws." : " puts their sword away."));
-        }
+        // No blow: harder to hit, and turning to meet one, until its next turn (doc 37).
+        f.guarding = true;
+        f.acted = true;
+        fightLine(*b, id, {}, "guard", e->name + " stands on guard.");
+        r = {true, "You stand on guard: harder to hit, and you turn to meet any blow, until your next turn.", {}};
     }
     else if (action == "pickup")
     {
@@ -1479,8 +1503,9 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     if (!e || !d)
         return 0;
     // From the side or behind is easier: how far the defender faces from where the blow comes.
+    // One on guard turns to meet it, and is harder to hit (doc 37).
     const int gap = battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y));
-    const double angle = gap >= 3 ? .2 : gap == 2 ? .1 : 0;
+    const double angle = t.guarding ? -battle::GuardDodge : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
     return std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
                           (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle,
                       .2, .95);
@@ -1509,6 +1534,8 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     }
     if (e->npc)
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
+    if (t->guarding)
+        t->facing = battle::octant(f.x - t->x, f.y - t->y);     // On guard: it turns to meet the blow.
     f.acted = true;
     const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
@@ -1937,6 +1964,10 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         battleAct(f.id, "sword", mark->id);
     else if (e->mouth.empty() && tilesApart(f.x, f.y, mark->x, mark->y) == 1 && !e->exhausted && e->stamina >= battle::BiteStamina)
         battleAct(f.id, "bite", mark->id);
+    // A foe at its throat and no blow to give (winded, or the wrong thing in its jaws): all but the aggressive stand on
+    // guard (doc 37).
+    if (!b.over && f.acting && !f.acted && temper.kind != "aggressive" && tilesApart(f.x, f.y, mark->x, mark->y) == 1)
+        battleAct(f.id, "guard");
     if (!b.over && f.acting)
         battleAct(f.id, "wait");
 }
@@ -2649,6 +2680,8 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
     f.acted = true;
     f.weight = std::max(f.weight, battle::SwordWeight);
+    if (t->guarding)
+        t->facing = battle::octant(f.x - t->x, f.y - t->y);
     const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|sword|" + target, key);
@@ -2667,6 +2700,47 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     if (t->status == "downed")
         return {true, "Your blade takes " + d->name + " down.", target};
     return {true, std::string(graze ? "You nick " : "You cut ") + d->name + ".", target};
+}
+
+Result World::shove(Battle& b, BattleFighter& f, const std::string& target)
+{
+    // A push (doc 37): an adjacent wolf a tile straight back, out of a doorway or toward the edge, strength against
+    // strength (less against one on guard). Nowhere for them to go, and it is only a shove.
+    auto* t = b.fighter(target);
+    auto* e = entity(f.id);
+    auto* d = entity(target);
+    if (!t || !d || t->id == f.id || t->status != "fighting")
+        return {false, "Shove whom?", target};
+    if (tilesApart(f.x, f.y, t->x, t->y) != 1)
+        return {false, "Get next to them first.", target};
+    if (e->exhausted || e->stamina < battle::ShoveStamina)
+        return {false, "You are too winded to shove.", target};
+    e->stamina -= battle::ShoveStamina;
+    if (e->stamina <= 0)
+    {
+        e->stamina = 0;
+        e->exhausted = true;
+    }
+    if (e->npc)
+        f.facing = battle::octant(t->x - f.x, t->y - f.y);
+    f.acted = true;
+    const int nx = t->x + (t->x - f.x), ny = t->y + (t->y - f.y);
+    if (!b.inArena(nx, ny) || !arenaOpen(b, nx, ny, t->id) || !stepBetween(b.cellId, t->x, t->y, nx, ny))
+    {
+        fightLine(b, f.id, target, "shove", e->name + " shoves " + d->name + ", but there is nowhere for them to go.");
+        return {true, "You shove " + d->name + ", but there is nowhere for them to go.", target};
+    }
+    const double odds = std::clamp(battle::ShoveOdds + (e->strength - d->strength) / 100 - (t->guarding ? battle::GuardDodge : 0), .2, .9);
+    if (chance(f.id + "|shove|" + target, std::int64_t(b.seq) * 7919 + b.turns) >= odds)
+    {
+        fightLine(b, f.id, target, "shove", e->name + " shoves at " + d->name + ", but " + d->name + " holds their ground.");
+        return {true, d->name + " holds their ground.", target};
+    }
+    t->x = nx;
+    t->y = ny;
+    t->walk.clear();                                // (A walk under way is stopped where it stands.)
+    fightLine(b, f.id, target, "shove", e->name + " shoves " + d->name + " back.");
+    return {true, "You shove " + d->name + " back.", target};
 }
 
 Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
