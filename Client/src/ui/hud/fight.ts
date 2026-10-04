@@ -21,7 +21,7 @@ export class FightPanel {
         const s = this.s, b = s.battle, self = obj(s.snapshot, 'self');
         const downedLeft = num(self, 'downedLeft');
         const key = JSON.stringify([b && [b.id, b.over, b.banner, b.turn, Math.ceil(b.turnLeft), b.moved, b.acted, b.observer, b.status,
-            b.struggling, b.canStruggle, b.order, b.watching, b.log.at(-1)?.seq, b.fighters.map(f => [f.id, f.label, f.status, f.truce]),
+            b.struggling, b.canStruggle, b.watching, b.log.at(-1)?.seq, b.fighters.map(f => [f.id, f.label, f.status, f.truce, f.acting]),
             b.mouth, b.swords, Math.floor(b.mana), b.burning, b.casting, b.truceBy, b.agreed, b.drops.length, s.aiming],
             s.challenge && [s.challenge.name, Math.ceil(s.challenge.left)], downedLeft > 0 && [Math.ceil(downedLeft),
             bool(self, 'canStruggle'), bool(self, 'struggling')], b ? [] : s.fights]);
@@ -44,22 +44,15 @@ export class FightPanel {
             el('span', 'label gold', head, b.observer ? 'WATCHING A FIGHT' : 'FIGHT');
             if (b.over) el('span', 'fight-alert', head, b.banner || 'The fight is over');
             else if (myTurn(b, s.selfId)) el('span', 'fight-turn', head, `Your turn · ${Math.ceil(b.turnLeft)} s`);
-            else if (b.turn) el('span', 'muted', head, `${b.turnName || name(b.turn)}'s turn`);
+            else {
+                const others = b.fighters.filter(f => f.acting && f.id !== s.selfId).map(f => f.name);
+                if (others.length) el('span', 'muted', head, `Acting now: ${others.join(', ')}`);
+            }
             if (b.watching > 0) el('span', 'muted small', head, `${b.watching} watching`);
             if (b.gift) el('span', 'fight-mana', head, `Mana ${Math.floor(b.mana)}`);
             if (b.mouth) el('span', 'muted small', head, `${b.mouth} in your jaws`);
             if (b.casting) el('span', 'fight-alert', head, 'Gathering fire…');
-            // The turn order: the next six turns.
-            const order = row();
-            el('span', 'label muted', order, 'NEXT');
             const me = b.fighters.find(f => f.id === s.selfId);
-            b.order.forEach((id, i) => {
-                const f = b.fighters.find(o => o.id === id);
-                const chip = el('span', 'fight-chip', order, f ? f.name : id);
-                if (i === 0) chip.classList.add('now');
-                if (f && me && f.side !== me.side) chip.classList.add('foe');
-                if (f?.id === s.selfId) chip.classList.add('you');
-            });
             // What this wolf can do.
             const acts = row();
             if (b.observer) button('Stop watching', 'act', acts, () => s.sendBattle('leave'));
@@ -72,7 +65,7 @@ export class FightPanel {
                     button('Cancel', 'act', acts, () => { s.aiming = ''; });
                 } else {
                     const strike = b.mouth === 'sword' ? 'strike (up to two tiles)' : 'bite';
-                    el('span', 'muted small', acts, b.moved ? `Click a foe to ${strike}.` : `Click a lit tile to move, a foe to ${strike}.`);
+                    el('span', 'muted small', acts, `${b.moved ? '' : 'Click a lit tile to move. '}${b.acted ? '' : `Click a foe to ${strike}. `}Click an arrow round your wolf to face.`);
                     const turnL = button('⟲', 'act', acts, () => s.turnInFight(-1));
                     turnL.title = 'Turn left (Q) · free · Alt+click a tile to face it';
                     const turnR = button('⟳', 'act', acts, () => s.turnInFight(1));
@@ -90,7 +83,10 @@ export class FightPanel {
                     }
                     button('Flee', 'act', acts, () => s.sendBattle('flee')).title = 'From the arena\'s edge: out of this fight for good';
                 }
-                button(b.moved || b.acted ? 'End turn' : 'Wait', 'act', acts, () => s.sendBattle('wait'));
+                button('End turn', 'act fight-go', acts, () => s.sendBattle('wait')).title =
+                    'Your initiative bar starts filling again at once (sooner if you held back your move or action)';
+            } else if (!b.over && !b.observer && b.status === 'fighting') {
+                el('span', 'muted small', acts, 'Your bar is filling: your turn starts the moment it is full.');
             } else if (!b.over && b.status === 'downed')
                 el('span', 'muted small', acts, b.struggling ? 'You are trying to get up.' : 'You are down.');
             // A truce on the table: anyone still standing may agree or refuse, on their turn or not.

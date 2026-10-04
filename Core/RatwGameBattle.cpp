@@ -80,12 +80,12 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         }
     }
     v.add("you", you);
-    v.add("turn", b.turn);
-    if (const auto* t = world_.entity(b.turn))
-        v.add("turnName", names::capitalised(labelFor(viewer, t->id)));
-    v.add("turnLeft", b.turn.empty() ? 0.0 : std::max(0.0, b.deadline - world_.time()));
-    v.add("moved", b.moved);
-    v.add("acted", b.acted);
+    // This wolf's own turn (several fighters may be taking theirs at once: doc 33).
+    const bool acting = !observer && mine->acting;
+    v.add("turn", acting ? viewer : std::string());
+    v.add("turnLeft", acting ? std::max(0.0, mine->deadline - world_.time()) : 0.0);
+    v.add("moved", acting && mine->moved);
+    v.add("acted", acting && mine->acted);
     v.add("round", b.turns);
     v.add("watching", double(b.observers.size()));
     const auto veiled = veilMap(viewer);           // Names this wolf doesn't know, as the fighters look (doc 32).
@@ -106,6 +106,14 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         o.add("facing", f.facing);
         o.add("status", f.status);
         o.add("npc", e->npc);
+        // The initiative bar: how full, how fast it fills (a second), and whether it is full and waiting its turn.
+        o.add("meter", std::round(std::max(0.0, f.meter) * 10) / 10);
+        o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed")
+                          ? 0.0
+                          : battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond);
+        o.add("acting", f.acting);
+        if (f.acting)
+            o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
         o.add("label", healthLabel(e->hurt, f.status == "downed", f.status == "dead"));
         o.add("health", std::round(100 - e->hurt));
@@ -142,7 +150,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     {
         auto o = Value::object();
         o.add("caster", cast.caster);
-        o.add("meter", std::round(cast.meter));
+        o.add("left", std::max(0.0, cast.firesAt - world_.time()));      // The countdown everyone sees.
+        o.add("of", cast.firesAt - cast.castAt);
         o.add("quickened", cast.quickened);
         o.add("tiles", tileList(cast.tiles));
         casts.push(o);
@@ -162,38 +171,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     for (const auto& s : b.smoke)
         smoke.push_back(s.first);
     v.add("smoke", tileList(smoke));
-    // The next six turns, as the meters stand (the Tactics turn list).
-    struct Next
-    {
-        std::string id;
-        double meter, gain;
-        int order;
-    };
-    std::vector<Next> next;
-    for (const auto& f : b.fighters)
-        if (f.status == "fighting" || f.status == "downed")
-            if (const auto* e = world_.entity(f.id))
-                next.push_back({f.id, f.id == b.turn ? 0.0 : f.meter, battle::meterGain(effectiveDexterity(*e)), f.order});
-    auto order = Value::array();
-    if (!b.turn.empty())
-        order.push(b.turn);
-    for (int k = 0; k < 6 && !next.empty() && !b.over; ++k)
-    {
-        double need = 1e18;
-        for (const auto& n : next)
-            need = std::min(need, std::max(0.0, std::ceil((100 - n.meter) / n.gain)));
-        for (auto& n : next)
-            n.meter += n.gain * need;
-        auto pick = next.begin();
-        for (auto it = next.begin(); it != next.end(); ++it)
-            if (it->meter > pick->meter + 1e-9 || (std::abs(it->meter - pick->meter) <= 1e-9 && it->order < pick->order))
-                pick = it;
-        order.push(pick->id);
-        pick->meter = 0;
-    }
-    v.add("order", order);
     auto reach = Value::array();
-    if (!observer && b.turn == viewer)
+    if (acting)
         for (const auto& [x, y] : world_.battleReach(viewer))
         {
             auto p = Value::array();

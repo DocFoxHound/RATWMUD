@@ -50,10 +50,10 @@ void untilTurnOf(World& w, const std::string& id, const std::vector<std::string>
     for (double t = 0; t < limit; t += .1)
     {
         const auto* b = w.battleOf(id);
-        if (!b || b->over || b->turn == id)
+        if (!b || b->over || test::acting(b, id))
             return;
         for (const auto& other : waiters)
-            if (b->turn == other)
+            if (test::acting(b, other))
                 w.battleAct(other, "wait");
         w.tick(.1);
     }
@@ -86,9 +86,9 @@ void challengeAndTurns()
     const auto* c = w.cell(b.cellId);
     expect(b.w == std::min(c->width, battle::ArenaWidth) && b.h == std::min(c->height, battle::ArenaHeight),
            "The arena is twice the view, cut from the cell: " + std::to_string(b.w) + "x" + std::to_string(b.h));
-    // Those who started it act at once, quickest first.
+    // Those who started it act at once: both their bars began full. Turns don't wait on each other (doc 33).
     w.tick(.05);
-    expect(b.turn == "ada", "Ada, the quicker, goes first");
+    expect(test::acting(&b, "ada") && test::acting(&b, "bo"), "Both act at once");
     // In the world they stand frozen.
     const Vec2 lineup = ada.position;
     w.tick(1);
@@ -107,28 +107,36 @@ void challengeAndTurns()
     expect(to.first >= 0, "She can get next to Bo");
     expect(w.battleMove("ada", to.first, to.second).ok, "and does");
     expect(!w.battleMove("ada", me->x, me->y + 1).ok, "One move a turn");
-    expect(!w.battleAct("bo", "wait").ok, "Nobody acts out of turn");
+    expect(w.battleAct("bo", "wait").ok && !test::acting(&b, "bo"), "Bo, in his own turn meanwhile, ends it");
+    expect(!w.battleAct("bo", "wait").ok, "and can't act again until his bar fills");
     const double stamina = ada.stamina;
     r = w.battleAct("ada", "bite", "bo");
     expect(r.ok, "A bite: " + r.message);
     expect(std::abs(ada.stamina - (stamina - battle::BiteStamina)) < 1e-9, "It costs stamina");
-    expect(b.turn != "ada", "Moved and acted: her turn is over");
+    expect(!test::acting(&b, "ada"), "Moved and acted: her turn is over");
     // Bo lets his turns run out: each counts as waiting, and after three he is away and skipped at once.
-    w.tick(.05);
-    expect(b.turn == "bo", "Bo's turn");
+    for (int i = 0; i < 200 && !test::acting(&b, "bo"); ++i)
+        w.tick(.1);
+    expect(test::acting(&b, "bo"), "Bo's bar fills: his turn");
     for (double t = 0; t < battle::TurnSeconds + .5; t += .5)
         w.tick(.5);
-    expect(b.fighter("bo")->timeouts == 1 && b.log.back().kind == "timeout", "Time runs out: it counts as waiting");
-    for (int i = 0; i < 400 && !b.fighter("bo")->away; ++i)
+    expect(b.fighter("bo")->timeouts == 1, "Time runs out: it counts as waiting");
+    for (int i = 0; i < 800 && !b.fighter("bo")->away; ++i)
     {
-        if (b.turn == "ada")
+        if (test::acting(&b, "ada"))
             w.battleAct("ada", "wait");
-        w.tick(.5);
+        w.tick(.1);
     }
     expect(b.fighter("bo")->away, "Three in a row: away");
-    w.battleAct("ada", "wait");
-    w.tick(.05);
-    expect(b.turn == "ada", "An away player's turn is skipped at once");
+    bool lingered = false;
+    for (int i = 0; i < 150; ++i)
+    {
+        if (test::acting(&b, "ada"))
+            w.battleAct("ada", "wait");
+        w.tick(.1);
+        lingered = lingered || (test::acting(&b, "bo") && b.fighter("bo")->turnStarted < w.time() - .2);
+    }
+    expect(!lingered && b.fighter("bo")->timeouts == 3, "An away player's turns pass at once");
     // Coming back: acting again (any fight command) brings him back.
     expect(w.battleAct("bo", "wait").ok == false && !b.fighter("bo")->away, "Any try brings him back");
 }
@@ -150,7 +158,7 @@ void downedAndBackToTheWorld()
     for (int i = 0; i < 2000 && !downed; ++i)
     {
         test::playTurn(w, "ada");
-        if (w.battleOf("bo") && w.battleOf("bo")->turn == "bo")
+        if (w.battleOf("bo") && test::acting(w.battleOf("bo"), "bo"))
             w.battleAct("bo", "wait");
         w.tick(.1);
         downed = bo.downedLeft > 0;
@@ -210,7 +218,7 @@ void deathInAFight()
     {
         test::playTurn(w, "ada");
         for (const auto* other : {"bo", "cy"})
-            if (w.battleOf(other) && w.battleOf(other)->turn == other)
+            if (w.battleOf(other) && test::acting(w.battleOf(other), other))
                 w.battleAct(other, "wait");
         w.tick(.1);
     }
@@ -221,7 +229,7 @@ void deathInAFight()
     for (int i = 0; i < 2000 && !bo.dead; ++i)
     {
         for (const auto* other : {"ada", "cy"})
-            if (w.battleOf(other) && w.battleOf(other)->turn == other)
+            if (w.battleOf(other) && test::acting(w.battleOf(other), other))
                 w.battleAct(other, "wait");
         w.tick(.1);
     }
@@ -262,7 +270,7 @@ void watchingJoiningFleeing()
         if (f.id != "bo" && test::apart(f.x, f.y, bf->x, bf->y) <= 1)
             f.x = b.x0 + b.w - 3;
     untilTurnOf(w, "bo", {"ada", "dee"});
-    expect(b.turn == "bo", "Bo's turn");
+    expect(test::acting(&b, "bo"), "Bo's turn");
     const auto fled = w.battleAct("bo", "flee");
     expect(fled.ok && b.fighter("bo")->status == "fled", "Bo flees from the edge: " + fled.message);
     const auto* bo = w.entity("bo");
@@ -303,7 +311,7 @@ void aTimidResidentRuns()
     bool ran = false;
     for (int i = 0; i < 4000 && !ran && w.inBattle("ada"); ++i)
     {
-        if (w.battleOf("ada")->turn == "ada")
+        if (test::acting(w.battleOf("ada"), "ada"))
             w.battleAct("ada", "wait");
         w.tick(.1);
         ran = !w.inBattle(resident);
@@ -345,7 +353,8 @@ Battle& duel(World& w)
     auto* b = const_cast<Battle*>(w.battleOf("player-ad"));
     expect(b, "a duel");
     w.tick(.05);
-    expect(b->turn == "player-ad", "Ad first");
+    expect(test::acting(b, "player-ad") && test::acting(b, "player-bo"), "Both begin acting at once");
+    w.battleAct("player-bo", "wait");               // Bo lets his first turn go: Ad's alone, for the tests.
     return *b;
 }
 
@@ -355,7 +364,7 @@ void facingAndTruce()
     auto& b = duel(w);
     // Turning is free, and only on one's own turn.
     expect(w.battleFace("player-ad", 3).ok && b.fighter("player-ad")->facing == 3, "Ad turns");
-    expect(!b.moved && !b.acted && b.turn == "player-ad", "and it costs nothing");
+    expect(!b.fighter("player-ad")->moved && !b.fighter("player-ad")->acted && test::acting(&b, "player-ad"), "and it costs nothing");
     expect(!w.battleFace("player-bo", 1).ok, "Bo can't turn on Ad's turn");
     expect(!w.battleFace("player-ad", 9).ok, "Facing is one of eight ways");
     // A truce: offered, then agreed by everyone standing, ends it.
@@ -379,7 +388,7 @@ void theSword()
     expect(w.society().create("player-ad", "sword", 1, "test"), "A sword is made");
     expect(w.society().create("player-bo", "sword", 1, "test"), "and another");
     expect(w.battleAct("player-ad", "hold").ok && ad->mouth == "sword", "Ad takes it in her jaws (her action)");
-    expect(b.acted, "which was her action");
+    expect(b.fighter("player-ad")->acted, "which was her action");
     w.battleAct("player-ad", "wait");
     untilTurnOf(w, "player-ad", {"player-bo"});
     // Two tiles apart: a sword reaches, a bite doesn't.
@@ -391,14 +400,14 @@ void theSword()
     const double stamina = ad->stamina;
     const auto r = w.battleAct("player-ad", "sword", "player-bo");
     expect(r.ok && std::abs(ad->stamina - (stamina - battle::SwordStamina)) < 1e-9, "A sword reaches two tiles: " + r.message);
-    expect(b.weight == battle::SwordWeight, "and is heavy: the next turn comes later");
+    expect(b.fighter("player-ad")->weight == battle::SwordWeight, "and is heavy: the next turn comes later");
     // Bo goes down holding his own: it drops, and stays where it fell after the fight.
     bo->mouth = "sword";
     bo->hurt = 99.5;
     w.battleAct("player-ad", "wait");
     for (int i = 0; i < 400 && bo->downedLeft <= 0; ++i)
     {
-        if (b.turn == "player-ad")
+        if (test::acting(&b, "player-ad"))
         {
             const auto* f = b.fighter("player-ad");
             const auto* o = b.fighter("player-bo");
@@ -414,10 +423,10 @@ void theSword()
                         w.battleAct("player-ad", "sword", "player-bo");
                         break;
                     }
-            if (b.turn == "player-ad")
+            if (test::acting(&b, "player-ad"))
                 w.battleAct("player-ad", "wait");
         }
-        if (b.turn == "player-bo")
+        if (test::acting(&b, "player-bo"))
             w.battleAct("player-bo", "wait");
         w.tick(.1);
     }
@@ -455,13 +464,13 @@ void theFlame()
     expect(std::abs(ad->hurt - battle::GiftedFlame.self) < 1e-9, "and a singed muzzle");
     const auto& tiles = b.casts[0].tiles;
     expect(std::find(tiles.begin(), tiles.end(), std::pair<int, int>{fb->x, fb->y}) != tiles.end(), "The cone takes in Bo's tile");
-    expect(b.turn != "player-ad", "Casting ends her turn");
+    expect(!test::acting(&b, "player-ad"), "Casting ends her turn");
     // Bo steps aside? He waits: the fire comes.
     for (int i = 0; i < 200 && !b.casts.empty(); ++i)
     {
-        if (b.turn == "player-bo")
+        if (test::acting(&b, "player-bo"))
             w.battleAct("player-bo", "wait");
-        if (b.turn == "player-ad")
+        if (test::acting(&b, "player-ad"))
             w.battleAct("player-ad", "wait");
         w.tick(.1);
     }
@@ -490,6 +499,66 @@ void crawling()
     const double went = std::hypot(ad.position.x - from.x, ad.position.y - from.y);
     expect(went > .3 && went <= 1.05, "Downed, a wolf crawls half a tile a second: " + std::to_string(went));
     expect(ad.posture == "lying" && ad.downedLeft > 0, "lying still");
+}
+
+void barsFillInRealTime()
+{
+    World w;
+    auto& b = duel(w);
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    // Ad is acting; Bo let his turn go, and his bar is filling from its head start.
+    expect(fa->acting && !fb->acting && fb->meter == 40, "Ad acts; Bo's bar fills again from 40");
+    const int facing = fa->facing;
+    const auto reach = w.battleReach("player-ad");
+    w.battleMove("player-ad", reach.back().first, reach.back().second);
+    expect(fa->facing == facing, "Moving doesn't turn her: a player faces where they choose");
+    const double bo0 = fb->meter;
+    w.tick(1);
+    const double boPerSecond = battle::meterGain(effectiveDexterity(*w.entity("player-bo"))) * battle::MeterPerSecond;
+    expect(std::abs(fb->meter - bo0 - boPerSecond) < 1, "Bo's bar fills in real time while Ad acts");
+    expect(w.battleAct("player-ad", "wait").ok && fa->meter == 20 && !fa->acting,
+           "Ending early: her bar starts again at once (a head start for not acting)");
+    // The moment Bo's bar is full he acts, whoever else is acting.
+    for (int i = 0; i < 100 && !fb->acting; ++i)
+        w.tick(.1);
+    expect(fb->acting, "Bo's bar full: his turn, at once");
+    for (int i = 0; i < 105; ++i)
+        w.tick(.1);
+    expect(!fb->acting && fb->timeouts == 1, "A turn lasts ten seconds");
+}
+
+void dodgingTheFire()
+{
+    // The fire's countdown is in seconds, for everyone to see; a wolf whose bar fills in time steps out of it.
+    World w;
+    auto& b = duel(w);
+    auto* ad = w.entity("player-ad");
+    w.giveGift("player-ad", "fire", false);
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    w.entity("player-bo")->dexterity = 100;             // A quick wolf.
+    fb->x = fa->x + 2;
+    fb->y = fa->y;
+    fb->meter = 95;                                       // About to act.
+    const auto r = w.battleAct("player-ad", "flame", std::to_string(fb->x) + "," + std::to_string(fb->y));
+    expect(r.ok && b.casts.size() == 1, "Ad gathers fire at Bo: " + r.message);
+    const double wait = b.casts[0].firesAt - b.casts[0].castAt;
+    expect(std::abs(wait - battle::GiftedFlame.charge / (1 + ad->wisdom / 200)) < 1e-9 && wait > 3 && wait < 4,
+           "It goes off in about three and a half seconds: " + std::to_string(wait));
+    for (int i = 0; i < 20 && !fb->acting; ++i)
+        w.tick(.1);
+    expect(fb->acting, "Bo's bar fills first");
+    const auto& cone = b.casts[0].tiles;
+    std::pair<int, int> out{-1, -1};
+    for (const auto& [x, y] : w.battleReach("player-bo"))
+        if (std::find(cone.begin(), cone.end(), std::pair<int, int>{x, y}) == cone.end())
+            out = {x, y};
+    expect(out.first >= 0 && w.battleMove("player-bo", out.first, out.second).ok, "He steps out of the cone");
+    const double hurt = w.entity("player-bo")->hurt;
+    for (int i = 0; i < 50 && !b.casts.empty(); ++i)
+        w.tick(.1);
+    expect(b.casts.empty() && w.entity("player-bo")->hurt == hurt && fb->burning == 0, "The fire goes off where he was: he is untouched");
 }
 
 void smiths()
@@ -562,6 +631,8 @@ int main()
         theFlame();
         crawling();
         smiths();
+        barsFillInRealTime();
+        dodgingTheFire();
     }
     catch (const std::exception& e)
     {

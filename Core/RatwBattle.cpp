@@ -259,6 +259,17 @@ Result World::startBattle(const std::string& attacker, const std::string& target
         }
     }
     lineUp(b);
+    for (auto& f : b.fighters)
+    {
+        // Each begins facing the nearest of the other side (after that a player turns only when they choose).
+        int best = std::numeric_limits<int>::max();
+        for (const auto& o : b.fighters)
+            if (o.side != f.side && tilesApart(f.x, f.y, o.x, o.y) < best)
+            {
+                best = tilesApart(f.x, f.y, o.x, o.y);
+                f.facing = battle::octant(o.x - f.x, o.y - f.y);
+            }
+    }
     for (const auto& f : b.fighters)
     {
         stop(f.id);
@@ -279,6 +290,7 @@ void World::enterBattle(Battle& b, const std::string& id, int side, bool full)
     f.id = id;
     f.side = side;
     f.meter = full ? 100 : 0;
+    f.readyAt = full ? time_ : -1;
     f.order = b.nextOrder++;
     f.lineupX = e ? e->position.x : 0;
     f.lineupY = e ? e->position.y : 0;
@@ -477,6 +489,15 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
         b->fighters.pop_back();
         return {false, "There is no room to get into that fight.", {}};
     }
+    {
+        int nearest = std::numeric_limits<int>::max();
+        for (const auto& o : b->fighters)
+            if (o.side != side && o.status == "fighting" && tilesApart(f.x, f.y, o.x, o.y) < nearest)
+            {
+                nearest = tilesApart(f.x, f.y, o.x, o.y);
+                f.facing = battle::octant(o.x - f.x, o.y - f.y);
+            }
+    }
     stop(id);
     setClientWalks(id, false);
     lineUp(*b);
@@ -588,11 +609,11 @@ void World::fightLine(Battle& b, const std::string& actor, const std::string& ta
 void World::beginTurn(Battle& b, BattleFighter& f)
 {
     auto* e = entity(f.id);
-    b.turn = f.id;
-    b.turnStarted = time_;
-    b.deadline = time_ + battle::TurnSeconds;
-    b.moved = b.acted = b.extended = false;
-    b.weight = 0;
+    f.acting = true;
+    f.turnStarted = time_;
+    f.deadline = time_ + battle::TurnSeconds;
+    f.moved = f.acted = f.extended = false;
+    f.weight = 0;
     ++b.turns;
     if (f.status == "downed")
     {
@@ -603,21 +624,6 @@ void World::beginTurn(Battle& b, BattleFighter& f)
             e->recoveryUsed = std::floor(calendarDays_);
             f.status = "fighting";
             fightLine(b, f.id, {}, "rise", e->name + " struggles back to their feet.");
-        }
-        else if (!e->lingering)                     // (A player gone from the world: their timer waits.)
-        {
-            e->downedLeft -= battle::DownedTurnSeconds;
-            if (e->downedLeft <= 0)
-            {
-                e->downedLeft = 0;
-                f.status = "dead";
-                f.meter = 0;
-                setDead(f.id, true);
-                fightLine(b, f.id, {}, "death", e->name + " dies of their wounds.");
-                b.turn.clear();
-                checkOver(b);
-                return;
-            }
         }
     }
     if (f.status == "fighting")
@@ -634,7 +640,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
             hurtFighter(b, f, battle::BurnDamage, battle::DownedFire, {}, true);
             if (f.status != "fighting")
             {
-                b.turn.clear();
+                f.acting = false;
                 checkOver(b);
                 return;
             }
@@ -644,11 +650,11 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     b.smoke.erase(std::remove_if(b.smoke.begin(), b.smoke.end(), [&](const auto& s) { return b.turns >= s.second; }), b.smoke.end());
 }
 
-void World::endTurn(Battle& b)
+void World::endTurn(Battle& b, BattleFighter& f)
 {
-    if (auto* f = b.fighter(b.turn))
-        f->meter = (b.moved ? 0 : 20) + (b.acted ? 0 : 20) - b.weight;
-    b.turn.clear();
+    f.meter = (f.moved ? 0 : 20) + (f.acted ? 0 : 20) - f.weight;   // Its bar starts again (a head start if it held back).
+    f.readyAt = -1;
+    f.acting = false;
     checkOver(b);
 }
 
@@ -662,9 +668,9 @@ Result World::battleMove(const std::string& id, int x, int y)
     auto& f = *b->fighter(id);
     f.away = false;                                 // Any try brings an away player back.
     f.timeouts = 0;
-    if (b->turn != id)
+    if (!f.acting)
         return {false, "It isn't your turn.", {}};
-    if (b->moved)
+    if (f.moved)
         return {false, "You have already moved this turn.", {}};
     if (f.status == "downed" && f.struggling)
         return {false, "You are trying to get up.", {}};
@@ -673,23 +679,24 @@ Result World::battleMove(const std::string& id, int x, int y)
     const auto reach = battleReach(id);
     if (std::find(reach.begin(), reach.end(), std::pair<int, int>{x, y}) == reach.end())
         return {false, "You can't get there this turn.", {}};
-    f.facing = battle::octant(x - f.x, y - f.y);
+    if (const auto* mover = entity(id); mover && mover->npc)
+        f.facing = battle::octant(x - f.x, y - f.y);  // (A player's facing changes only when they turn: doc 33.)
     f.x = x;
     f.y = y;
-    b->moved = true;
-    if (b->acted || f.status == "downed")
-        endTurn(*b);
+    f.moved = true;
+    if (f.acted || f.status == "downed")
+        endTurn(*b, f);
     return {true, {}, {}};
 }
 
 std::vector<std::pair<int, int>> World::battleReach(const std::string& id) const
 {
     const auto* b = battleOf(id);
-    if (!b || b->over || b->turn != id || b->moved)
+    if (!b || b->over)
         return {};
     const auto* f = b->fighter(id);
     const auto* e = entity(id);
-    if (!f || !e)
+    if (!f || !e || !f->acting || f->moved)
         return {};
     if (f->status == "downed")
         return f->struggling ? std::vector<std::pair<int, int>>{} : reachFrom(*b, *f, 1);   // A crawl.
@@ -715,13 +722,13 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
     auto* e = entity(id);
     f.away = false;                                 // Any try brings an away player back.
     f.timeouts = 0;
-    if (b->turn != id)
+    if (!f.acting)
         return {false, "It isn't your turn.", {}};
     Result r{true, {}, target};
     if (action == "wait")
     {
-        fightLine(*b, id, {}, "wait", e->name + (b->moved || b->acted ? " ends their turn." : " waits."));
-        endTurn(*b);
+        fightLine(*b, id, {}, "wait", e->name + (f.moved || f.acted ? " ends their turn." : " waits."));
+        endTurn(*b, f);
         return {true, "You wait.", {}};
     }
     if (f.status == "downed")
@@ -732,8 +739,8 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
             return {false, "You have no strength left to rise. Only someone tending your wounds can get you up.", {}};
         f.struggling = true;
         fightLine(*b, id, {}, "struggle", e->name + " tries to struggle up.");
-        b->acted = true;
-        endTurn(*b);
+        f.acted = true;
+        endTurn(*b, f);
         return {true, "You try to struggle up. If nothing hits you, you'll be on your feet next turn.", {}};
     }
     if (f.status != "fighting")
@@ -742,7 +749,7 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         return {false, "You are gathering the fire: you can only wait.", {}};
     if (action == "truce")
         return offerTruce(id);
-    if (b->acted)
+    if (f.acted)
         return {false, "You have already acted this turn.", {}};
     if (action == "bite")
         r = bite(*b, f, target);
@@ -760,7 +767,7 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         if (f.burning <= 0)
             return {false, "You aren't burning.", {}};
         f.burning = 0;
-        b->acted = true;
+        f.acted = true;
         fightLine(*b, id, {}, "roll", e->name + " rolls and puts the flames out.");
         r = {true, "You roll, and the flames go out.", {}};
     }
@@ -769,7 +776,7 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         r = action == "hold" ? holdItem(id, "sword") : stowItem(id);
         if (r.ok)
         {
-            b->acted = true;
+            f.acted = true;
             fightLine(*b, id, {}, action, e->name + (action == "hold" ? " takes up a sword in their jaws." : " puts their sword away."));
         }
     }
@@ -785,7 +792,7 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
             return {false, "You can't take it.", {}};
         e->mouth = drop->item;
         b->drops.erase(drop);
-        b->acted = true;
+        f.acted = true;
         fightLine(*b, id, {}, "pickup", e->name + " snatches up the sword.");
         r = {true, "You snatch up the sword.", {}};
     }
@@ -803,8 +810,9 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         standUp(*te, battle::TendedHealth);
         t->status = "fighting";
         t->struggling = false;
-        f.facing = battle::octant(t->x - f.x, t->y - f.y);
-        b->acted = true;
+        if (e->npc)
+            f.facing = battle::octant(t->x - f.x, t->y - f.y);
+        f.acted = true;
         fightLine(*b, id, target, "tend", e->name + " tends " + te->name + "'s wounds; " + te->name + " is back on their feet.");
         r = {true, "You get " + te->name + " back on their feet.", target};
     }
@@ -817,27 +825,27 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
             if (o.side != f.side && o.status == "fighting" && tilesApart(f.x, f.y, o.x, o.y) == 1)
                 if (const auto* oe = entity(o.id))
                     best = std::max(best, effectiveDexterity(*oe));
-        b->acted = true;
+        f.acted = true;
         if (best >= 0)
         {
             const double odds = std::clamp(.5 + (effectiveDexterity(*e) - best) / 100, .2, .9);
             if (chance(id + "flee", std::int64_t(b->seq) * 31 + b->turns) >= odds)
             {
                 fightLine(*b, id, {}, "flee", e->name + " tries to break away, but is cut off.");
-                endTurn(*b);
+                endTurn(*b, f);
                 return {true, "You try to break away, but they cut you off.", {}};
             }
         }
         fightLine(*b, id, {}, "flee", e->name + " breaks away and flees the fight.");
         leaveArena(*b, f, true);
-        b->turn.clear();
+        f.acting = false;
         checkOver(*b);
         return {true, "You break away and flee the fight.", {}};
     }
     else
         return {false, "You can't do that in a fight.", {}};
-    if (r.ok && b->moved && b->acted && !b->over)
-        endTurn(*b);
+    if (r.ok && f.moved && f.acted && !b->over)
+        endTurn(*b, f);
     else
         checkOver(*b);
     return r;
@@ -864,8 +872,9 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
         e->stamina = 0;
         e->exhausted = true;
     }
-    f.facing = battle::octant(t->x - f.x, t->y - f.y);
-    b.acted = true;
+    if (e->npc)
+        f.facing = battle::octant(t->x - f.x, t->y - f.y);
+    f.acted = true;
     // From the side or behind is easier: how far the defender faces from where the blow comes.
     const int gap = battle::octantGap(t->facing, battle::octant(f.x - t->x, f.y - t->y));
     const double angle = gap >= 3 ? .2 : gap == 2 ? .1 : 0;
@@ -946,7 +955,8 @@ void World::checkOver(Battle& b)
     {
         b.over = true;
         b.overAt = time_;
-        b.turn.clear();
+        for (auto& o : b.fighters)
+            o.acting = false;
         b.banner = "The fight ends in a truce";
         fightLine(b, {}, {}, "over", b.banner + ".");
         return;
@@ -955,7 +965,8 @@ void World::checkOver(Battle& b)
         return;
     b.over = true;
     b.overAt = time_;
-    b.turn.clear();
+    for (auto& o : b.fighters)
+        o.acting = false;
     std::string winner;
     for (const auto& f : b.fighters)
         if (f.status == "fighting" && (a > 0 ? f.side == 0 : f.side == 1))
@@ -1093,7 +1104,7 @@ void World::npcTurn(Battle& b, BattleFighter& f)
     auto* e = entity(f.id);
     if (!e)
     {
-        endTurn(b);
+        endTurn(b, f);
         return;
     }
     if (f.status == "downed")
@@ -1114,12 +1125,12 @@ void World::npcTurn(Battle& b, BattleFighter& f)
     // A truce on the table: the timid and the hurt take it; the aggressive won't.
     if (!b.truceBy.empty() && !f.truce)
         answerTruce(f.id, temper.kind != "aggressive" || health < temper.fleeBelow * 2);
-    if (b.over || b.turn != f.id)
+    if (b.over || !f.acting)
         return;
     if (f.burning > 0)
     {
         battleAct(f.id, "roll");
-        if (b.turn == f.id)
+        if (f.acting)
             battleAct(f.id, "wait");
         return;
     }
@@ -1168,7 +1179,7 @@ void World::npcTurn(Battle& b, BattleFighter& f)
             if (best != std::pair<int, int>{f.x, f.y})
                 battleMove(f.id, best.first, best.second);
         }
-        if (!b.over && b.turn == f.id)
+        if (!b.over && f.acting)
         {
             if (b.onEdge(f.x, f.y))
                 battleAct(f.id, "flee");
@@ -1183,7 +1194,7 @@ void World::npcTurn(Battle& b, BattleFighter& f)
             if (tilesApart(f.x, f.y, o->x, o->y) == 1)
             {
                 battleAct(f.id, "tend", o->id);
-                if (b.turn == f.id)
+                if (f.acting)
                     battleAct(f.id, "wait");
                 return;
             }
@@ -1234,18 +1245,18 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         if (best != std::pair<int, int>{f.x, f.y})
             battleMove(f.id, best.first, best.second);
     }
-    if (b.over || b.turn != f.id)
+    if (b.over || !f.acting)
         return;
     if (e->mouth == "sword" && tilesApart(f.x, f.y, mark->x, mark->y) <= battle::SwordReach && !e->exhausted &&
         e->stamina >= battle::SwordStamina)
         battleAct(f.id, "sword", mark->id);
     else if (e->mouth.empty() && tilesApart(f.x, f.y, mark->x, mark->y) == 1 && !e->exhausted && e->stamina >= battle::BiteStamina)
         battleAct(f.id, "bite", mark->id);
-    if (!b.over && b.turn == f.id)
+    if (!b.over && f.acting)
         battleAct(f.id, "wait");
 }
 
-void World::tendBattles(double)
+void World::tendBattles(double dt)
 {
     // Challenges nobody answered.
     for (auto it = challenges_.begin(); it != challenges_.end();)
@@ -1271,8 +1282,7 @@ void World::tendBattles(double)
             {
                 f.status = "fled";
                 b.fled.insert(f.id);
-                if (b.turn == f.id)
-                    b.turn.clear();
+                f.acting = false;
             }
         if (!b.over)
             checkOver(b);
@@ -1287,95 +1297,86 @@ void World::tendBattles(double)
                 finishBattle(b);
             continue;
         }
-        // Turns run straight on from one to the next; a few may pass in one tick (NPCs pause, players don't wait
-        // when they are away).
-        for (int guard = 0; guard < 64 && !b.over; ++guard)
+        // Real time (doc 33's initiative, as a bar): every bar fills but those taking a turn, and the Downed bleed. A
+        // full bar is a turn at once: several fighters may be acting together, each on their own clock.
+        for (auto& f : b.fighters)
         {
-            if (b.turn.empty())
+            auto* e = entity(f.id);
+            if (!e || !takesTurns(f))
+                continue;
+            if (f.status == "downed" && !e->lingering)
             {
-                std::vector<BattleFighter*> live;
-                for (auto& f : b.fighters)
-                    if (takesTurns(f) && entity(f.id))
-                        live.push_back(&f);
-                if (live.empty())
+                e->downedLeft -= dt;
+                if (e->downedLeft <= 0)
                 {
-                    checkOver(b);
-                    break;
-                }
-                double need = std::numeric_limits<double>::max();
-                for (auto* f : live)
-                {
-                    const double gain = battle::meterGain(effectiveDexterity(*entity(f->id)));
-                    need = std::min(need, std::max(0.0, std::ceil((100 - f->meter) / gain)));
-                }
-                for (const auto& c : b.casts)
-                    need = std::min(need, std::max(0.0, std::ceil((100 - c.meter) / c.gain)));
-                for (auto* f : live)
-                    f->meter += battle::meterGain(effectiveDexterity(*entity(f->id))) * need;
-                for (auto& c : b.casts)
-                    c.meter += c.gain * need;
-                // A spell that has gathered goes off before anyone's turn.
-                bool fired = false;
-                for (std::size_t i = 0; i < b.casts.size();)
-                    if (b.casts[i].meter >= 100 - 1e-9)
-                    {
-                        const auto cast = b.casts[i];
-                        b.casts.erase(b.casts.begin() + std::ptrdiff_t(i));
-                        resolveCast(b, cast);
-                        fired = true;
-                    }
-                    else
-                        ++i;
-                if (fired)
-                {
-                    checkOver(b);
+                    e->downedLeft = 0;
+                    f.status = "dead";
+                    f.meter = 0;
+                    f.acting = false;
+                    setDead(f.id, true);
+                    fightLine(b, f.id, {}, "death", e->name + " dies of their wounds.");
                     continue;
                 }
-                BattleFighter* next = live.front();
-                for (auto* f : live)
-                {
-                    const double fd = effectiveDexterity(*entity(f->id)), nd = effectiveDexterity(*entity(next->id));
-                    if (f->meter > next->meter + 1e-9 || (std::abs(f->meter - next->meter) <= 1e-9 &&
-                                                          (fd > nd || (fd == nd && f->order < next->order))))
-                        next = f;
-                }
-                beginTurn(b, *next);
-                if (b.turn.empty())
-                    continue;                       // They died at the start of it.
             }
-            auto* f = b.fighter(b.turn);
-            auto* e = f ? entity(f->id) : nullptr;
-            if (!f || !e || !takesTurns(*f))
+            if (f.acting)
+                continue;
+            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond * dt);
+            if (f.meter >= 100)
             {
-                b.turn.clear();
+                f.readyAt = time_;
+                beginTurn(b, f);
+            }
+        }
+        // Spells go off when their time is up, whoever is acting then (the tell is a countdown everyone sees).
+        for (std::size_t i = 0; i < b.casts.size();)
+            if (time_ >= b.casts[i].firesAt)
+            {
+                const auto cast = b.casts[i];
+                b.casts.erase(b.casts.begin() + std::ptrdiff_t(i));
+                resolveCast(b, cast);
+            }
+            else
+                ++i;
+        checkOver(b);
+        if (b.over)
+            continue;
+        for (auto& f : b.fighters)
+        {
+            if (!f.acting || b.over)
+                continue;
+            auto* e = entity(f.id);
+            if (!e || !takesTurns(f))
+            {
+                f.acting = false;
                 continue;
             }
             if (e->npc)
             {
-                if (time_ < b.turnStarted + battle::NpcPause)
-                    break;
-                npcTurn(b, *f);
-                if (b.turn == f->id)
-                    endTurn(b);
+                if (time_ >= f.turnStarted + battle::NpcPause)
+                {
+                    npcTurn(b, f);
+                    if (f.acting)
+                        endTurn(b, f);
+                }
                 continue;
             }
-            if (f->away)
+            if (f.away)
             {
-                endTurn(b);
+                endTurn(b, f);
                 continue;
             }
-            if (time_ < b.deadline)
-                break;
-            if (e->typing && !b.extended)
+            if (time_ < f.deadline)
+                continue;
+            if (e->typing && !f.extended)
             {
-                b.deadline += battle::TypingExtra;
-                b.extended = true;
-                break;
+                f.deadline += battle::TypingExtra;
+                f.extended = true;
+                continue;
             }
-            if (++f->timeouts >= battle::AwayAfter)
-                f->away = true;
-            fightLine(b, f->id, {}, "timeout", e->name + " lets the moment pass.");
-            endTurn(b);
+            if (++f.timeouts >= battle::AwayAfter)
+                f.away = true;
+            fightLine(b, f.id, {}, "timeout", e->name + " lets the moment pass.");
+            endTurn(b, f);
         }
     }
     for (const auto& b : battles_)
@@ -1491,7 +1492,7 @@ Result World::battleFace(const std::string& id, int dir)
     auto& f = *b->fighter(id);
     f.away = false;
     f.timeouts = 0;
-    if (b->turn != id)
+    if (!f.acting)
         return {false, "You can turn only on your turn.", {}};
     if (f.status != "fighting")
         return {false, "You can't turn now.", {}};
@@ -1507,24 +1508,24 @@ Result World::offerTruce(const std::string& id)
     if (!b || b->over)
         return {false, "You are not in a fight.", {}};
     auto& f = *b->fighter(id);
-    if (b->turn != id || f.status != "fighting")
+    if (!f.acting || f.status != "fighting")
         return {false, "You can offer a truce only on your turn.", {}};
     if (!b->truceBy.empty())
         return answerTruce(id, true);
-    if (b->acted)
+    if (f.acted)
         return {false, "You have already acted this turn.", {}};
     b->truceBy = id;
     for (auto& o : b->fighters)
         o.truce = o.id == id;
-    b->acted = true;
+    f.acted = true;
     const auto* e = entity(id);
     fightLine(*b, id, {}, "truce", e->name + " offers a truce.");
     for (const auto& o : b->fighters)
         if (const auto* oe = entity(o.id); oe && !oe->npc && o.id != id && o.status == "fighting")
             notice(o.id, e->name + " offers a truce. Agree or refuse.");
     checkOver(*b);
-    if (!b->over && b->turn == id && b->moved)
-        endTurn(*b);
+    if (!b->over && f.acting && f.moved)
+        endTurn(*b, f);
     return {true, "You offer a truce.", {}};
 }
 
@@ -1701,9 +1702,10 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         e->stamina = 0;
         e->exhausted = true;
     }
-    f.facing = battle::octant(t->x - f.x, t->y - f.y);
-    b.acted = true;
-    b.weight = std::max(b.weight, battle::SwordWeight);
+    if (e->npc)
+        f.facing = battle::octant(t->x - f.x, t->y - f.y);
+    f.acted = true;
+    f.weight = std::max(f.weight, battle::SwordWeight);
     const int gap = battle::octantGap(t->facing, battle::octant(f.x - t->x, f.y - t->y));
     const double hit = std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
                                       (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + (gap >= 3 ? .2 : gap == 2 ? .1 : 0),
@@ -1742,7 +1744,8 @@ Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
     cast.spell = "flame";
     cast.dir = battle::octant(x - f.x, y - f.y);
     cast.quickened = e->quickened;
-    cast.gain = spell.charge + e->wisdom / 10;
+    cast.castAt = time_;
+    cast.firesAt = time_ + spell.charge / (1 + e->wisdom / 200);   // A hard countdown: bars that fill in time may dodge.
     const double aim = std::atan2(double(y - f.y), double(x - f.x));
     for (int ty = b.y0; ty < b.y0 + b.h; ++ty)
         for (int tx = b.x0; tx < b.x0 + b.w; ++tx)
@@ -1761,9 +1764,10 @@ Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
     cast.mana = desperate ? e->mana : spell.mana;
     e->mana -= cast.mana;
     e->stamina -= spell.stamina;
-    f.facing = cast.dir;
-    b.acted = true;
-    b.weight = std::max(b.weight, spell.weight);
+    if (e->npc)
+        f.facing = cast.dir;
+    f.acted = true;
+    f.weight = std::max(f.weight, spell.weight);
     fightLine(b, f.id, {}, "charge", e->name + " draws a deep breath; heat shimmers at their jaw.");
     b.log.back().tiles = cast.tiles;
     hurtFighter(b, f, spell.self * (desperate ? 2 : 1), battle::DownedFire, {}, false);
@@ -1771,9 +1775,8 @@ Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
         return {true, "The fire turns on you.", {}};
     f.casting = true;
     b.casts.push_back(cast);
-    if (!b.moved)
-        b.moved = true;                             // (No moving while it gathers.)
-    endTurn(b);
+    f.moved = true;                                 // (No moving while it gathers.)
+    endTurn(b, f);
     return {true, "You gather the fire.", {}};
 }
 

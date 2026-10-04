@@ -20,6 +20,10 @@ export interface FighterView {
     burning: number;            // Turns of Burning left.
     casting: boolean;           // Gathering fire (the tell).
     truce: boolean;             // Agreed to the truce on offer.
+    meter: number;              // Initiative, 0..100 as last sent; it fills at `rate` a second until full.
+    rate: number;
+    acting: boolean;            // Taking a turn now (several may be at once: doc 33).
+    turnLeft: number;           // Seconds left in it, when acting.
 }
 
 export type Tile = [number, number];
@@ -29,6 +33,8 @@ export interface CastView {
     meter: number;
     quickened: boolean;
     tiles: Tile[];
+    left: number;               // Seconds until it goes off (a countdown everyone sees), and how long it gathers.
+    of: number;
 }
 
 export interface BattleLine {
@@ -53,14 +59,12 @@ export interface BattleView {
     struggling: boolean;
     canStruggle: boolean;
     turn: string;
-    turnName: string;
     turnLeft: number;
     moved: boolean;
     acted: boolean;
     round: number;
     watching: number;
     fighters: FighterView[];
-    order: string[];
     reach: Array<[number, number]>;
     log: BattleLine[];
     // This wolf's own means: what is in its jaws, swords carried, a Gift and its mana; burning, gathering fire.
@@ -131,7 +135,6 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         struggling: bool(you, 'struggling'),
         canStruggle: bool(you, 'canStruggle'),
         turn: str(b, 'turn'),
-        turnName: str(b, 'turnName'),
         turnLeft: num(b, 'turnLeft'),
         moved: bool(b, 'moved'),
         acted: bool(b, 'acted'),
@@ -142,9 +145,9 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             y: Math.trunc(num(f, 'y')), facing: Math.trunc(num(f, 'facing')), status: str(f, 'status', 'fighting'),
             npc: bool(f, 'npc'), away: bool(f, 'away'), label: str(f, 'label'), health: num(f, 'health'),
             downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
-            casting: bool(f, 'casting'), truce: bool(f, 'truce'),
+            casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
+            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'),
         })),
-        order: arr(b, 'order').filter((v): v is string => typeof v === 'string'),
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
         log: objects(b, 'log').map(l => ({seq: num(l, 'seq'), kind: str(l, 'kind'), text: str(l, 'text'), actor: str(l, 'actor'),
             target: str(l, 'target'), tiles: tiles(arr(l, 'tiles'))})),
@@ -160,7 +163,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         agreed: bool(you, 'truce'),
         truceBy: str(b, 'truceBy'),
         casts: objects(b, 'casts').map(c => ({caster: str(c, 'caster'), meter: num(c, 'meter'), quickened: bool(c, 'quickened'),
-            tiles: tiles(arr(c, 'tiles'))})),
+            tiles: tiles(arr(c, 'tiles')), left: num(c, 'left'), of: num(c, 'of')})),
         drops: objects(b, 'drops').map(d => ({x: Math.trunc(num(d, 'x')), y: Math.trunc(num(d, 'y')), item: str(d, 'item')})),
         smoke: tiles(arr(b, 'smoke')),
     };
@@ -243,6 +246,11 @@ export function arenaSight(width: number, height: number, b: BattleView): string
         out.push('0'.repeat(Math.max(0, x)) + '2'.repeat(Math.max(0, Math.min(w, width - x))) + '0'.repeat(Math.max(0, width - x - w)));
     }
     return out;
+}
+
+/** How full a fighter's initiative bar is now (0..1), from what was sent and the time since. */
+export function meterNow(f: FighterView, since: number): number {
+    return Math.max(0, Math.min(100, f.meter + f.rate * Math.max(0, since))) / 100;
 }
 
 /** Seconds as m:ss. */

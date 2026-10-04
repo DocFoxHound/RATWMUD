@@ -7,7 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {coneTiles, myTurn, type BattleView} from './battle.ts';
+import {coneTiles, meterNow, myTurn, type BattleView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 
@@ -471,12 +471,26 @@ export class GamePainter {
         const {x: ax, y: ay, w: aw, h: ah} = b.arena;
         p.frame(ox + ax * tile, oy + ay * tile, aw * tile, ah * tile, withAlpha(rgb(0xd4483c), 0.75));
         p.frame(ox + ax * tile + 1, oy + ay * tile + 1, aw * tile - 2, ah * tile - 2, withAlpha(rgb(0xd4483c), 0.45));
-        // Spells gathering: their cones, locked, outlined in red for everyone to see (the tell).
-        for (const cast of b.casts)
+        // Spells gathering: their cones, locked, outlined in red for everyone to see (the tell), deepening as the
+        // countdown runs out; the seconds left over the cone.
+        for (const cast of b.casts) {
+            const left = Math.max(0, cast.left - (s.clock - s.battleAt));
+            const near = cast.of > 0 ? 1 - left / cast.of : 0;
+            let cx = 0, cy = 0;
             for (const [x, y] of cast.tiles) {
-                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.12));
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.1 + 0.3 * near));
                 p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.7));
+                cx += x;
+                cy += y;
             }
+            if (cast.tiles.length) {
+                const words = `${left.toFixed(1)}s`;
+                const [ww] = p.measure(words, 12, true);
+                const tx = ox + (cx / cast.tiles.length + 0.5) * tile, ty = oy + (cy / cast.tiles.length + 0.5) * tile;
+                p.box(tx - ww / 2 - 4, ty - 9, ww + 8, 16, withAlpha(Ink, 0.85));
+                p.text(tx - ww / 2, ty - 8, words, 12, rgb(0xff9a3c), true);
+            }
+        }
         const meFighter = b.fighters.find(f => f.id === s.selfId);
         // Aiming fire: where it would go.
         if (s.aiming === 'flame' && b.flame && meFighter) {
@@ -484,18 +498,37 @@ export class GamePainter {
             for (const [x, y] of coneTiles(b, meFighter.x, meFighter.y, tx, ty, b.flame.length, b.flame.angle))
                 p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xff9a3c), 0.28));
         }
-        // Where this wolf can go this turn.
-        if (myTurn(b, s.selfId) && s.aiming !== 'flame')
+        // Where this wolf can go this turn: lit plainly, the tile under the pointer brighter.
+        const mine = myTurn(b, s.selfId);
+        if (mine && s.aiming !== 'flame') {
+            const hx = Math.floor((s.hover[0] - ox) / tile), hy = Math.floor((s.hover[1] - oy) / tile);
+            const pulse = 0.08 * Math.abs(Math.sin(s.clock * 2.5));
             for (const [x, y] of b.reach) {
-                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.16));
-                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.35));
+                const under = x === hx && y === hy;
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, (under ? 0.5 : 0.24) + pulse));
+                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, under ? 1 : 0.6));
             }
+        }
         const me = b.fighters.find(f => f.id === s.selfId);
         const mySide = me ? me.side : 0;
         const wolfFont = clamp(Math.round(tile * 0.55), 10, 13);
         const reach = Math.min(13, tile * 0.55);
         let hovered = '';
         const reduced = s.reducedMotion;
+        // On one's own turn: eight arrows round the wolf, one for each way it can face (the bright one, where it does).
+        // Drawn first, so a click on a wolf standing next to it still goes to that wolf.
+        if (me && mine && me.status === 'fighting' && s.aiming !== 'flame') {
+            const x = ox + (me.x + 0.5) * tile, y = oy + (me.y + 0.5) * tile;
+            for (let dir = 0; dir < 8; ++dir) {
+                const angle = dir * Math.PI / 4, r = Math.max(22, tile * 0.95);
+                const ax2 = x + Math.cos(angle) * r, ay2 = y + Math.sin(angle) * r;
+                const now = dir === me.facing;
+                const near = Math.hypot(ax2 - s.hover[0], ay2 - s.hover[1]) < 9;
+                p.box(ax2 - 7, ay2 - 7, 14, 14, withAlpha(Ink, now || near ? 0.85 : 0.6));
+                this.turnedText(ax2, ay2, '>', now ? 14 : 12, withAlpha(now ? Amber : Paper, now ? 1 : near ? 1 : 0.7), angle);
+                s.hits.push({rect: rect(ax2 - 8, ay2 - 8, ax2 + 8, ay2 + 8), action: 'face', target: String(dir)});
+            }
+        }
         for (const f of b.fighters) {
             // A lunge, a recoil, a sidestep, a gathering caster's tremble: offsets for the eye only.
             const [mx, my] = s.fx.offset(f.id, s.clock, reduced);
@@ -503,7 +536,7 @@ export class GamePainter {
             const x = ox + (f.x + 0.5 + mx + tx) * tile, y = oy + (f.y + 0.5 + my + ty) * tile;
             const self = f.id === s.selfId;
             const color = self ? Amber : f.side === mySide ? Blue : rgb(0xe0695e);
-            if (b.turn === f.id && !b.over) {
+            if (f.acting && !b.over) {
                 c.beginPath();
                 c.arc(x, y, 16, 0, Math.PI * 2);
                 c.strokeStyle = css(withAlpha(Amber, 0.5 + 0.4 * Math.abs(Math.sin(s.clock * 3))));
@@ -519,15 +552,59 @@ export class GamePainter {
                 if (f.mouth === 'sword')
                     this.turnedText(x + Math.cos(angle + 0.9) * reach, y + Math.sin(angle + 0.9) * reach, '†', 10, Paper, angle + Math.PI / 2);
             }
-            if (!self) {
-                const [nw] = p.measure(f.name, 9, true);
-                p.text(x - nw * 0.5, y - 26, f.name, 9, withAlpha(color, 0.85), true);
+            // Everyone's name, and their initiative bar: filling until their turn, full and waiting, or (theirs now) the
+            // time left in it.
+            const label = self ? 'You' : f.name;
+            const [nw] = p.measure(label, 10, true);
+            const crowded = b.fighters.some(o => o !== f && o.y === f.y - 1 && Math.abs(o.x - f.x) <= 1);
+            const ly = crowded ? y + 21 : y - 31;
+            p.box(x - nw * 0.5 - 3, ly, nw + 6, 13, withAlpha(Ink, 0.75));
+            p.text(x - nw * 0.5, ly, label, 10, withAlpha(color, 0.95), true);
+            if (f.status === 'fighting' || f.status === 'downed') {
+                const bw = 28, bx = x - bw / 2, by = y + 15;
+                p.box(bx, by, bw, 4, withAlpha(Ink, 0.85));
+                if (f.acting && !b.over) {
+                    const left = clamp((f.turnLeft - (s.clock - s.battleAt)) / 10, 0, 1);
+                    p.box(bx, by, bw * (f.id === s.selfId || !f.npc ? left : 1), 4, Amber);
+                } else {
+                    const full = meterNow(f, s.clock - s.battleAt);
+                    const ready = full >= 1;
+                    p.box(bx, by, bw * full, 4, ready ? withAlpha(Paper, 0.6 + 0.4 * Math.abs(Math.sin(s.clock * 4))) : withAlpha(color, 0.85));
+                }
+                p.frame(bx - 0.5, by - 0.5, bw + 1, 5, withAlpha(color, 0.35));
             }
             s.hits.push({rect: rect(x - 14, y - 14, x + 14, y + 14), action: 'fighter', target: f.id});
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = f.id;
         }
         s.hoveredEntity = hovered;
         for (const m of s.fx.marks(b, s.clock, reduced)) this.drawMark(m, ox, oy, tile);
+        // Whose turn it is, said plainly at the top of the map: a headline, and on one's own turn what to do.
+        if (!b.over) {
+            const map = s.mapRect;
+            const left = Math.max(0, Math.ceil(b.turnLeft - (s.clock - s.battleAt)));
+            const others = b.fighters.filter(f => f.acting && f.id !== s.selfId).map(f => f.name);
+            const filling = b.observer ? 'WATCHING' : b.status === 'downed' || b.status === 'fighting' ? 'YOUR BAR IS FILLING' : '';
+            const head = mine ? `YOUR TURN · ${left}s`
+                : [others.length ? `ACTING: ${others.join(', ').toUpperCase()}` : '', filling].filter(Boolean).join(' · ') || 'BARS FILLING';
+            const hint = !mine ? ''
+                : b.status === 'downed' ? 'You are down: click a lit tile to crawl, or Struggle up'
+                : s.aiming === 'flame' ? 'Aim the fire: click where it goes · Esc to cancel'
+                : [b.moved ? '' : 'Click a lit tile to move', b.acted ? '' : 'click a foe to attack', 'click an arrow to face', 'End turn when done']
+                    .filter(Boolean).join(' · ');
+            const room = map.right - map.left - 40;
+            const fit = (words: string, size: number) => {
+                let w = words;
+                while (w.length > 4 && p.measure(w, size, false)[0] > room) w = w.slice(0, -2);
+                return w === words ? w : w.trimEnd() + '…';
+            };
+            const h1 = fit(head, 14), h2 = hint ? fit(hint, 11) : '';
+            const w1 = p.measure(h1, 14, true)[0], w2 = h2 ? p.measure(h2, 11, false)[0] : 0;
+            const bw = Math.max(w1, w2) + 24, bh = h2 ? 40 : 24, cx = (map.left + map.right) / 2, ty = map.top + 8;
+            p.box(cx - bw / 2, ty, bw, bh, withAlpha(Panel, 0.92));
+            p.frame(cx - bw / 2, ty, bw, bh, withAlpha(mine ? Amber : Muted, mine ? 0.8 : 0.4));
+            p.text(cx - w1 / 2, ty + 3, h1, 14, mine ? Amber : Paper, true);
+            if (h2) p.text(cx - w2 / 2, ty + 22, h2, 11, Paper, false);
+        }
         // Over: the banner, then the arena fades out.
         if (b.over) {
             const map = s.mapRect;

@@ -231,6 +231,8 @@ export class GameState {
     party: PartyView | null = null;
     fightEndedAt = -10;
     battleOverSeenAt = -10;
+    battleAt = 0;               // When the fight as last sent arrived (bars and timers run on from it).
+    private lastWalkHint = -10;
     aiming = '';                // Choosing where a spell goes ("flame"), until a tile is clicked or Escape.
     ground: GroundView[] = [];  // Things lying in sight (a sword knocked loose).
     readonly fx = new FightEffects();
@@ -447,6 +449,7 @@ export class GameState {
         this.fights = readFights(this.snapshot);
         this.challenge = readChallenge(this.snapshot);
         this.ground = readGround(this.snapshot);
+        this.battleAt = this.clock;
         this.fx.update(this.battle, this.clock);
         this.updateEncounters(before);
         if (!this.battle || !this.battle.flame || !myTurn(this.battle, this.selfId)) this.aiming = '';
@@ -1147,7 +1150,14 @@ export class GameState {
             this.targetNearest();
             return true;
         }
-        if (this.battle && MovementKeys.includes(code)) return true;    // No walking in a fight: click a tile.
+        if (this.battle && MovementKeys.includes(code)) {
+            // No walking in a fight: moving is by clicking a lit tile, on one's turn.
+            if (this.clock - this.lastWalkHint > 4) {
+                this.lastWalkHint = this.clock;
+                this.showToast('In a fight, click a lit tile to move (on your turn). Use the arrows around your wolf to face.');
+            }
+            return true;
+        }
         if (MovementKeys.includes(code)) {
             this.heldKeys.add(code);
             this.sendMove();
@@ -1483,6 +1493,8 @@ export class GameState {
                 const f = this.battle?.fighters.find(o => o.id === h.target);
                 if (f) this.arenaClick(f.x, f.y);
             } else this.fightTarget(h.target);
+        } else if (a === 'face') {
+            this.sendBattle('face', {dir: Number(h.target)});
         } else if (a === 'ground') {
             this.sendAction('take', h.target);
         } else if (a === 'context') {

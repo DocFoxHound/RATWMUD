@@ -1134,7 +1134,7 @@ void fightsThroughTheGame()
     expect(fight["arena"].number("w") > 0 && fight.array("rows").size() == std::size_t(fight["arena"].number("h")),
            "with its ground, a row a tile");
     expect(fight.string("turn") == ada.entityId && !fight.array("reach").empty(), "Her turn, and where she may go");
-    expect(fight.array("order").size() >= 2 && fight.array("fighters").size() == 2, "the turn order and the fighters");
+    expect(fight.array("fighters").size() == 2, "the fighters, with their bars");
     expect(ada.lastMotion.number("mode") == game::Game::Fighting, "No walking in the arena");
     const auto before = a->position;
     g.command(&ada, cmd({{"type", "move"}, {"x", 1.0}, {"y", 0.0}}));

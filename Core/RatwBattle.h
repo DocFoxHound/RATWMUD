@@ -17,7 +17,12 @@ struct BattleFighter
     int side = 0;                   // 0: those who started it; 1: those they set on.
     int x = 0, y = 0;               // Tile in the arena (the cell's own tile coordinates).
     int facing = 0;                 // Eighths of a turn from east (y down: 2 is south).
-    double meter = 0;               // Initiative, 0..100: at 100 it is their turn.
+    double meter = 0;               // Initiative, 0..100, filling in real time: full, it is their turn when it comes.
+    double readyAt = -1;            // When it last filled.
+    // Its own turn (doc 33): taken the moment its bar is full, alongside anyone else whose bar is.
+    bool acting = false, moved = false, acted = false, extended = false;
+    double turnStarted = 0, deadline = 0;
+    double weight = 0;              // The heaviest action this turn: it sets the bar back.
     std::string status = "fighting";    // "fighting", "downed", "dead", "fled".
     bool struggling = false;        // Downed and getting up: stands at the start of their next turn.
     bool away = false;              // Three turns let run out: skipped at once until they act again.
@@ -37,6 +42,7 @@ struct BattleCast
     int dir = 0;
     std::vector<std::pair<int, int>> tiles;
     double meter = 0, gain = 10, mana = 0;
+    double castAt = 0, firesAt = 0;         // When it began, and when it goes off: a hard countdown everyone sees.
     bool quickened = false;
 };
 
@@ -63,10 +69,6 @@ struct Battle
     std::set<std::string> observers;    // Watching now (bodiless: Observe mode).
     std::set<std::string> observed;     // Everyone who ever watched: they may only watch again.
     std::set<std::string> fled;         // Gone for good: they may only watch.
-    std::string turn;                   // Whose turn it is ("" between turns).
-    double turnStarted = 0, deadline = 0;
-    bool moved = false, acted = false, extended = false;
-    double weight = 0;                  // The heaviest action this turn: it delays the next.
     int turns = 0;                      // Turns taken, for the round count the square shows.
     std::uint32_t seq = 0;
     std::vector<BattleLine> log;        // The most recent lines (BattleLogKept).
@@ -125,14 +127,16 @@ namespace battle
 // Placeholder numbers, to be tuned with play (doc 33).
 constexpr int ArenaWidth = 64, ArenaHeight = 48;     // Twice a 32×24 map view at the default zoom.
 constexpr int GrowthFrom = 2;                        // Each fighter past these two adds a tile each way.
-constexpr double TurnSeconds = 30, TypingExtra = 15, NpcPause = 1.5;
+constexpr double TurnSeconds = 10, TypingExtra = 10, NpcPause = 1.5;
+// The initiative bar fills in real time: at DEX 50 (a gain of 11) in five seconds.
+constexpr double MeterPerSecond = 100.0 / (11 * 5);
 constexpr int AwayAfter = 3;
 constexpr double BannerSeconds = 2.0, FadeSeconds = .5, SettleSeconds = 5;
 constexpr double ChallengeSeconds = 30, StartReach = 3.0;
 constexpr double BiteDamage = 12, BiteStamina = 8;
 constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;
-constexpr double DownedMinimum = .6, OverkillSeconds = 10, DownedTurnSeconds = 60;
+constexpr double DownedMinimum = .6, OverkillSeconds = 10;
 constexpr double StruggleSeconds = 20, TendSeconds = 10;   // Out of a fight.
 constexpr std::size_t BattleLogKept = 60;
 constexpr int YoungestFighter = 13;
@@ -144,8 +148,9 @@ struct Spell
 {
     double charge, length, halfAngle, damage, mana, stamina, self, weight;
 };
-constexpr Spell GiftedFlame{12, 3, 23, 21, 25, 12, 3, 20};
-constexpr Spell QuickenedFlame{22, 5, 35, 45, 40, 20, 5, 10};
+// `charge`: seconds the fire gathers, before wisdom (÷ (1 + WIS/200)): 3.5 s Gifted, 2.6 s Quickened at WIS 30.
+constexpr Spell GiftedFlame{4, 3, 23, 21, 25, 12, 3, 20};
+constexpr Spell QuickenedFlame{3, 5, 35, 45, 40, 20, 5, 10};
 constexpr int BurnTurns = 3, SmokeRounds = 3;
 constexpr double BurnDamage = 3, RainFactor = .6, ManaPerTurn = 2, ManaPerSecond = 1.0 / 6;
 inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom * .8 : 0; }

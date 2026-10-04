@@ -316,8 +316,10 @@ void Game::companionTick(double dt)
     {
         if (b.over)
             continue;
-        for (const auto& f : b.fighters)
+        // By index, and each fighter copied: joinBattle below adds to b.fighters, which may move it (doc 33).
+        for (std::size_t i = 0; i < b.fighters.size(); ++i)
         {
+            const BattleFighter f = b.fighters[i];
             if (f.status == "fled" || !clientOf(f.id))
                 continue;
             const auto* p = parties_.of(f.id);

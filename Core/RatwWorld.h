@@ -872,7 +872,7 @@ class World
     void lineUp(Battle& b);
     void tendBattles(double dt);
     void beginTurn(Battle& b, BattleFighter& f);
-    void endTurn(Battle& b);
+    void endTurn(Battle& b, BattleFighter& f);
     void npcTurn(Battle& b, BattleFighter& f);
     Result bite(Battle& b, BattleFighter& f, const std::string& target);
     void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);

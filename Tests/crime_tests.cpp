@@ -251,37 +251,45 @@ void downedAndUp()
     expect(w.attack("player-ada", "sloe").ok, "Ada goes for Sloe");
     std::vector<WorldEvent> seen;
     bool downed = false;
+    std::string guard;                              // Whichever guard goes down (Sloe may run, and Harrow come in).
     for (int i = 0; i < 4000 && w.inBattle("player-ada") && !downed; ++i)
     {
         w.entity("player-ada")->hurt = 0;
         test::playTurn(w, "player-ada");
         w.tick(.25);
-        downed = w.entity("sloe")->downedLeft > 0;
+        for (const char* id : {"sloe", "harrow", "birch", "tamsin"})
+            if (w.entity(id) && w.entity(id)->downedLeft > 0)
+                guard = id;
+        downed = !guard.empty();
     }
     expect(downed, "Enough bites put a guard down");
     expect(hasEvent(w, "downed", seen), "It is an event");
-    expect(!w.entity("sloe")->dead, "Down is not dead");
+    expect(!w.entity(guard)->dead, "Down is not dead");
     for (int i = 0; i < 400 && w.inBattle("player-ada"); ++i)
     {
         w.entity("player-ada")->hurt = 0;
         test::playTurn(w, "player-ada");
         w.tick(.25);
     }
-    // She got up once in the fight (her one a day) and went down again: now only tending gets her up.
-    const auto* sloe = w.entity("sloe");
-    expect(sloe->downedLeft > 0 && !w.recoveryAvailable(*sloe), "Down twice: her own getting-up is spent");
+    // Out of the fight: a guard who hasn't used today's getting-up struggles up alone; one who has stays down until tended.
+    const bool canRise = w.recoveryAvailable(*w.entity(guard));
     for (int i = 0; i < 60; ++i)
         w.tick(1);
-    expect(w.entity("sloe")->downedLeft > 0, "so she stays down");
-    for (int i = 0; i < 10; ++i)
-        w.tick(1);                                  // (Past the five seconds' settling after a fight.)
-    beside(w, "player-ada", "sloe");
-    const auto tended = w.tendWounds("player-ada", "sloe");
-    expect(tended.ok, "Ada can tend her: " + tended.message);
-    for (int i = 0; i < 12; ++i)
-        w.tick(1);
-    expect(w.entity("sloe")->downedLeft <= 0 && !w.entity("sloe")->dead && w.entity("sloe")->hurt > 75 && w.entity("sloe")->hurt <= 80,
-           "and Sloe is back on her feet, hurt");
+    if (canRise)
+        expect(w.entity(guard)->downedLeft <= 0 && w.entity(guard)->hurt > 70 && w.entity(guard)->hurt <= 85, "The guard struggles up, hurt");
+    else
+    {
+        expect(w.entity(guard)->downedLeft > 0, "Down twice in a day: the guard stays down");
+        for (int i = 0; i < 10; ++i)
+            w.tick(1);                              // (Past the five seconds' settling after a fight.)
+        beside(w, "player-ada", guard);
+        const auto tended = w.tendWounds("player-ada", guard);
+        expect(tended.ok, "Ada can tend them: " + tended.message);
+        for (int i = 0; i < 12; ++i)
+            w.tick(1);
+        expect(w.entity(guard)->downedLeft <= 0 && !w.entity(guard)->dead && w.entity(guard)->hurt > 75 && w.entity(guard)->hurt <= 80,
+               "and the guard is back on their feet, hurt");
+    }
 }
 
 void needMakesThieves()

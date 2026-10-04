@@ -15,11 +15,18 @@ inline int apart(int ax, int ay, int bx, int by)
     return std::max(std::abs(ax - bx), std::abs(ay - by));
 }
 
+// Whether `id` is taking a turn now (several may be at once: doc 33).
+inline bool acting(const Battle* b, const std::string& id)
+{
+    const auto* f = b ? b->fighter(id) : nullptr;
+    return f && f->acting;
+}
+
 // Plays one turn if it is `id`'s; true if it did.
 inline bool playTurn(World& w, const std::string& id)
 {
     const auto* b = w.battleOf(id);
-    if (!b || b->over || b->turn != id)
+    if (!b || b->over || !acting(b, id))
         return false;
     const auto* me = b->fighter(id);
     if (me->status != "fighting")
@@ -54,14 +61,14 @@ inline bool playTurn(World& w, const std::string& id)
         if (to != std::pair<int, int>{me->x, me->y})
             w.battleMove(id, to.first, to.second);
     }
-    if ((b = w.battleOf(id)) && !b->over && b->turn == id)
+    if ((b = w.battleOf(id)) && !b->over && acting(b, id))
     {
         me = b->fighter(id);
         const auto* m = b->fighter(markId);
         if (m && apart(me->x, me->y, m->x, m->y) == 1)
             w.battleAct(id, "bite", markId);
     }
-    if ((b = w.battleOf(id)) && !b->over && b->turn == id)
+    if ((b = w.battleOf(id)) && !b->over && acting(b, id))
         w.battleAct(id, "wait");
     return true;
 }

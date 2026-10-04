@@ -61,7 +61,7 @@ Age already adjusts effective dexterity and senses, so old characters dodge less
    edge Join or        fullest initiative          flee from an edge tile;
    auto-join;          meter acts next;            can only observe after
    start at 0          move + one action,
-   initiative          30 s per player
+   initiative          10 s per player
                               |
                               v
                           Fight ends
@@ -143,29 +143,49 @@ A player who wants to watch can enter a fight as a bodiless observer. Observers 
 
 ## Turns and initiative
 
-Each fighter has an initiative meter from 0 to 100 that fills by dexterity. Whoever reaches 100 takes a turn while everyone else waits; then the meters keep filling. Between turns no real time passes, so the fight moves from one turn straight to the next.
+Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf: about five seconds at
+DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
+each on their own clock. Nobody waits in a queue, so a fight of twenty takes about as long as a fight of two. Ending a
+turn early starts your bar again at once, so quick decisions win you more turns.
+
+Why not one turn after another: in a big fight a queue makes everyone wait for everyone, and a battle could take
+hours. Turns that overlap keep each player's own rhythm (charge, act, charge) whatever the size of the fight, and make
+dodging a charging attack possible (below).
 
 ```text
-meter gain per tick  = 6 + DEX / 10                                        // DEX 50 → 11, DEX 100 → 16
-move range (tiles)   = floor((3 + DEX / 25) × injury factor), minimum 1    // DEX 50, unhurt → 5
-meter after a turn   = 0, +20 if you did not move, +20 if you did not act, − the action's weight
+bar per second       = (6 + DEX / 10) × 100 / 55        // DEX 50 → full in 5 s, DEX 100 → in 3.4 s
+move range (tiles)   = floor((3 + DEX / 25) × injury factor), minimum 1   // DEX 50, unhurt → 5
+bar after a turn     = 0, +20 if you did not move, +20 if you did not act, − the action's weight
 stamina per turn     = +8 at the start of each of your own turns
 ```
 
-**On your turn** you may move up to your range and take one action, in either order. Actions are Bite, Sword, a spell, Tend wounds, Flee or Wait. Skipping the move or the action makes your next turn come sooner, as in Final Fantasy Tactics. Heavy actions carry a weight that delays the next turn (Sword 10).
+**On your turn** you may move up to your range and take one action, in either order. Actions are Bite, Sword, a spell,
+Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
+that sets it back (Sword 10).
 
-**Turn timer.** A player has 30 s per turn. Typing a roleplay line extends it once by 15 s; the line is attached to that turn's action in the encounter log. Running out of time counts as Wait. After three timeouts in a row the player is marked away and their turns are skipped instantly until they act again, so one absent player cannot stall everyone.
+**Turn timer.** A player has 10 s per turn, shown counting down on their bar and in a banner at the top of the map.
+Typing a roleplay line extends it once by 10 s. Running out of time counts as ending the turn. After three timeouts in a
+row the player is marked away and their turns are skipped until they act again.
 
-**NPC turns** resolve on their own, with a 1.5 s pause so players can follow what happened.
+**Moving is by clicking.** On your turn the tiles you can reach are lit; click one to go there. There is no WASD in a
+fight (pressing it says how to move).
 
-**Turn order bar.** Every fighter sees the next six turns in order, like the Tactics turn list, so a slow sword swing visibly pushes the swinger down the list.
+**NPC turns** resolve on their own, 1.5 s after their bar fills, so players can follow what happened.
 
-**Facing.** You can turn to face any of eight ways at any point in your own turn, as often as you like. It costs neither
-your move nor your action, but it is locked until your turn comes round again. On the page: Q and E, the ⟲ ⟳ buttons,
-or Alt/Ctrl+click a tile. Attacks from the side get +10% to hit and from behind +20%, which gives positioning a real
-payoff.
+**Two in the same moment.** The server takes commands in the order they arrive: two wolves stepping onto the same tile,
+the first gets it; a bite on a wolf that has just moved away misses its chance ("Get next to them first").
 
-**Range on the grid.** Bite reaches adjacent tiles (diagonals included), Sword reaches 2 tiles, and Flamethrower is a cone you aim in one of 8 directions. Attacks need line of sight; fixtures block it.
+**Names and bars.** Every fighter in view carries their name (as you know them: doc 32's hidden names) and their
+initiative bar; anyone acting is ringed, and their bar shows the time left in their turn. The banner at the top of the
+map says whether it is your turn, and who is acting.
+
+**Facing is yours to choose.** A player's wolf faces only where they turn it: moving and attacking never turn it. On
+your turn eight arrows round your wolf let you pick any of eight ways, as often as you like, without spending the move or
+the action (or Q and E, the ⟲ ⟳ buttons, or Alt/Ctrl+click a tile). Each fighter starts facing the nearest foe. NPCs turn
+as they act. Attacks from the side get +10% to hit and from behind +20%, so facing is how you guard your back.
+
+**Range on the grid.** Bite reaches adjacent tiles (diagonals included), Sword reaches 2 tiles, and Flamethrower is a
+cone you aim in one of 8 directions. Attacks need line of sight; fixtures block it.
 
 ## NPC fighting temperament
 
@@ -256,7 +276,7 @@ Flamethrower is a Fire Gift, so only Gifted or Quickened Fire Wolves can use it.
 
 | | Gifted | Quickened |
 | --- | --- | --- |
-| Charge speed (per tick) | 12 + WIS / 10 | 22 + WIS / 10 |
+| Gathers for (seconds) | 4 ÷ (1 + WIS/200) | 3 ÷ (1 + WIS/200) |
 | Area | 3-tile cone | 5-tile cone, wider |
 | Base damage | 21 | 45 |
 | Mana cost | 25 | 40 |
@@ -264,7 +284,7 @@ Flamethrower is a Fire Gift, so only Gifted or Quickened Fire Wolves can use it.
 | Self-damage to caster | 3 | 5 |
 | Weight (delays next turn) | 20 | 10 |
 
-**The tell.** Casting starts a separate charge meter from 0 to 100, and the spell goes off when it fills. The cone's tiles are locked when the cast starts and shown to everyone in red. A Gifted caster with WIS 30 fills it in 7 ticks, so most other fighters get a turn first and can step out of the cone or hit the caster. The caster cannot move while charging, and taking any damage cancels the spell and still spends half the mana. Observers also get a narrative line ("Ember draws a deep breath; heat shimmers at her jaw").
+**The tell.** Casting starts a hard countdown in seconds, and the spell goes off when it runs out, whoever is acting then. The cone's tiles are locked when the cast starts and shown to everyone in red, deepening as the time runs out, with the seconds left over it. Gifted fire gathers for 4 s ÷ (1 + WIS/200), Quickened for 3 s ÷ (1 + WIS/200): 3.5 s and 2.6 s at WIS 30. A wolf whose bar fills before then can step out of the cone, or hit the caster. The caster cannot move while charging, and taking any damage cancels the spell and still spends half the mana. Observers also get a narrative line ("Ember draws a deep breath; heat shimmers at her jaw").
 
 **Costs beyond mana.** The breath comes from the lungs, so it drains stamina like a sprint. Every cast singes the caster's muzzle for a small fixed amount of hurt, which also counts toward the movement penalty. Casting at 0 mana is allowed but burns double health, a desperate last resort.
 
@@ -353,7 +373,7 @@ A wolf at 0 health is Downed, not dead. Each wolf has one self-recovery; after u
 
 The bottom row is the danger zone: once the self-recovery is spent, a second downing needs an ally before the timer ends. Both Downed states run the same 7–20 minute timer, counted in turns while a fight lasts.
 
-**Downed timer.** Set in minutes by what put the wolf down. Overkill (damage past 0) shortens it by 10 s per point, to no less than 60% of the base. Inside a fight the timer counts in the Downed wolf's own turns, one minute per turn, so a slow round can never kill anyone by itself. Whatever is left runs in real minutes after the fight ends.
+**Downed timer.** Set in minutes by what put the wolf down. Overkill (damage past 0) shortens it by 10 s per point, to no less than 60% of the base. It runs in real time, in a fight and out of one (paused only for a player gone from the world).
 
 | Cause of the downing blow | Base timer | Minimum |
 | --- | --- | --- |
@@ -401,7 +421,7 @@ Build the resolver first and the spectacle last; each phase is playable on its o
 
 1. **Arena and turns.** Encounter lifecycle, arena copied from the cell, grid snapping, initiative meter, move plus act, turn timer and away-skipping, fade-out and fade-in back to the world at arena positions. Bite only, against one NPC. Replaces `assault` and the bandit `attack`.
 2. **World view and joining.** Red square and lineup, edge Join, late joiners starting at 0 initiative, party and NPC auto-join, PvP challenge and approval, Observe mode and its observe-only lock.
-3. **Fleeing, Downed and death.** Edge Flee and the no-rejoin rule, Downed timers counted in turns, struggle up, tend wounds, permanent death.
+3. **Fleeing, Downed and death.** Edge Flee and the no-rejoin rule, Downed timers, struggle up, tend wounds, permanent death.
 4. **NPC temperament.** Fighting skill, profession table, age modifiers, aggressive / cautious / timid turn behaviour.
 5. **Feedback.** Reachable-tile tint, range previews, turn order bar, W nudge and recoil, contact glyphs, the encounter card from doc 18.
 6. **Sword, then Flamethrower.** Mouth slot and knock-loose; then mana, Fire Gift eligibility, charge meter, locked cone, Burning, self-damage.
@@ -417,14 +437,14 @@ without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are ne
   - The arena is cut from the cell: 64×48 tiles (twice a 32×24 view) plus a tile each way per fighter past two, never
     past the cell's edges.
   - Fighters stand frozen in two facing lines in the world, where there is room.
-  - The initiative meter (6 + DEX/10 a tick); starters begin full, joiners empty.
+  - The initiative bar (6 + DEX/10, filling in real time: five seconds at DEX 50); starters begin full, joiners empty.
   - A turn is a move and one action (Bite, Tend, Flee, Struggle, Wait), with the next turn's head start when either is
     skipped.
-  - Turn timers: 30 s, plus 15 once while typing; three run out in a row and the player is away and skipped until they
-    act again.
+  - Initiative bars that fill in real time; 10 s turns, plus 10 once while typing; end early to refill sooner; three
+    run out in a row and the player is away and skipped until they act again.
   - Facing gives +10% to hit from the side and +20% from behind.
   - Bite: 12 base damage, 8 stamina; stamina comes back +8 a turn, less when hurt; move range shrinks with injury.
-  - Downed: the timer by cause, minus overkill, counted a minute a turn in a fight and in real seconds outside one.
+  - Downed: the timer by cause, minus overkill, in real seconds in a fight and out of one.
     Struggling up works once a game day; anyone can tend; when the timer runs out, death is permanent.
   - Fleeing from the arena's outer two rows, against adjacent foes' dexterity; no rejoining as a fighter, no new fight
     with them until it ends.
@@ -478,7 +498,7 @@ Built next, the same day:
   - Who has the Gift is still the setting's to decide; developers give it with `{"type":"gift","gift":"fire"}`.
   - Casting aims a cone and locks its tiles for everyone to see, takes the mana, 12 or 20 stamina and 3 or 5 health
     (double at no mana), and ends the turn.
-  - The charge meter fills at 12 (Quickened 22) + WIS/10 a tick and goes off before anyone's turn. A hit on the caster
+  - The fire gathers on a countdown everyone sees (3.5 s Gifted, 2.6 s Quickened at WIS 30) and goes off when it runs out. A hit on the caster
     breaks it off and half the mana is lost.
   - Damage is ×(0.5 + WIS/100), cut by 40% in heavy rain.
   - Burning does 3 at the start of each of the next 3 turns, none for one standing in water, and Roll puts it out. An

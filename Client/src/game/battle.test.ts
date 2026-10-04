@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
-import {arenaRows, arenaSight, clockLabel, fighterAt, myTurn, readBattle, readFights} from './battle.ts';
+import {arenaRows, arenaSight, clockLabel, fighterAt, meterNow, myTurn, readBattle, readFights} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
 
@@ -132,4 +132,26 @@ test('fights: one story entry per fight, kept up to date; blows nudge the W', ()
     assert.ok(s.fx.marks(s.battle!, s.clock, false).some(m => m.glyph === '*'), 'and a mark where it landed');
     s.applySnapshot(snapshot({battle: undefined}));
     assert.ok(entry!.encounter!.over && /ended/.test(entry!.text), 'when it ends, the entry says so');
+});
+
+test('fights: arrows round your wolf to face, initiative bars that fill between updates', () => {
+    const {state: s, commands, painter} = testGame();
+    s.applySnapshot(snapshot({battle: {...battle, fighters: (battle.fighters as Json[]).map(f => ({...f, meter: 40, rate: 20}))}}));
+    s.mapRect = rect(0, 0, 800, 600);
+    draw(painter, 'drawLocal');
+    const arrows = s.hits.filter(h => h.action === 'face');
+    assert.equal(arrows.length, 8, 'eight ways to face, on your turn');
+    s.activate(arrows[2]);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'face', dir: 2});
+    const bo = s.battle!.fighters.find(f => f.id === 'bo')!;
+    assert.ok(Math.abs(meterNow(bo, 1.5) - 0.7) < 1e-9, 'a bar runs on between updates: 40 + 20 a second');
+    assert.equal(meterNow(bo, 10), 1, 'and stops full');
+    s.applySnapshot(snapshot({battle: {...battle, turn: 'bo'}}));
+    s.hits = [];
+    draw(painter, 'drawLocal');
+    assert.equal(s.hits.filter(h => h.action === 'face').length, 0, 'not your turn: no turning');
+    const before = commands.length;
+    s.keyDown({code: 'KeyW'});
+    assert.equal(commands.length, before, 'no WASD in a fight');
+    assert.match(s.toast, /click a lit tile/, 'but a hint how to move');
 });
