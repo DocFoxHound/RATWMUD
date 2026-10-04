@@ -355,6 +355,10 @@ The pace strip and stamina bar already show top speed (see [13-pace-and-world-tr
 
 ## Downed and death
 
+> **Superseded for player characters by [38-injuries.md](38-injuries.md)** (planned, not built): players no longer
+> die. The death timer becomes a downed period that grows with repeated downings without rest, and fights leave
+> combat, acute and lasting injuries. Until that is built, the rules below are what the game does.
+
 A wolf at 0 health is Downed, not dead. Each wolf has one self-recovery; after using it, a second downing can only be undone by another player. If the timer runs out, the character dies permanently. Timers are long because death cannot be undone.
 
 ```text
