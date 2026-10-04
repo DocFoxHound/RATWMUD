@@ -1112,6 +1112,42 @@ void guardAndShove()
     }
 }
 
+// Armour (doc 35, Part 8): a flat reduction by the kind of blow, never all of it; heavy armour slows the bar.
+void armourInFights()
+{
+    World w;
+    auto& b = duel(w);
+    auto* bo = w.entity("player-bo");
+    expect(battle::throughArmour(*bo, 12, "thrust") == 12, "No armour: the whole blow");
+    bo->worn["body"] = "brigandine_coat";                      // Protect 6, +1 against thrusts, DEX −5.
+    expect(battle::armourAgainst(*bo, "thrust") == 7 && battle::armourAgainst(*bo, "cut") == 6, "a brigandine: 7 against a bite, 6 a cut");
+    expect(battle::throughArmour(*bo, 12, "thrust") == 5 && battle::throughArmour(*bo, 20, "cut") == 14, "a bite of 12 does 5, a cut of 20 does 14");
+    expect(battle::throughArmour(*bo, 12, "thrust", 5) == 10, "pierce goes through it");
+    bo->worn["neck"] = "steel_gorget";
+    bo->worn["head"] = "kettle_helm";
+    bo->worn["paws"] = "splinted_greaves";
+    expect(battle::throughArmour(*bo, 12, "thrust") == 3, "a full set: a quarter still gets through");
+    expect(battle::armourDex(*bo) == -8, "and it weighs on the bar: DEX −8");
+    // In the fight: the bite is told with what the armour took; Bo's bar fills slower.
+    auto* fb = b.fighter("player-bo");
+    auto* fa = b.fighter("player-ad");
+    fb->facing = battle::octant(fa->x - fb->x, fa->y - fb->y);
+    const double hurt = bo->hurt;
+    for (int i = 0; i < 20 && bo->hurt == hurt; ++i)
+    {
+        w.battleAct("player-ad", "bite", "player-bo");
+        w.entity("player-ad")->stamina = 100;
+        fa->acted = false;
+    }
+    expect(bo->hurt > hurt && bo->hurt - hurt <= 4, "a bite on him does 3 or so: " + std::to_string(bo->hurt - hurt));
+    expect(std::any_of(b.log.begin(), b.log.end(), [](const BattleLine& l) { return l.text.find("the armour taking") != std::string::npos; }),
+           "and the log says the armour took some");
+    const double gain = fb->meter;
+    w.tick(1);
+    const double armoured = battle::meterGain(effectiveDexterity(*bo) - 8) * battle::MeterPerSecond;
+    expect(std::abs(fb->meter - gain - armoured) < .5, "his bar fills as DEX 8 lower");
+}
+
 void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
@@ -1290,6 +1326,7 @@ int main()
         dueTerms();
         planningAhead();
         guardAndShove();
+        armourInFights();
         devConsoleFights();
         devConsoleTeamFight();
     }

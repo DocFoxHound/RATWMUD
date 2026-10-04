@@ -173,7 +173,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         o.add("meter", std::round(std::max(0.0, f.meter) * 10) / 10);
         o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed")
                           ? 0.0
-                          : battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond * haste);
+                          : battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste);
         o.add("acting", f.acting);
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
@@ -195,7 +195,16 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         }
         // What drives the bars, for their tooltips: stamina back a turn (doubled resting), the bar's fill time.
         o.add("regen", std::round(battle::staminaPerTurn(e->hurt, e->strength) * (f.resting ? battle::RestFactor : 1) * 10) / 10);
-        o.add("fillSeconds", std::round(100 / (battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond)));
+        o.add("fillSeconds", std::round(100 / (battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond)));
+        // Armour (doc 35, Part 8): what it takes off a cut and a thrust (a bite), and what it takes off the bar's DEX.
+        if (const int cut = battle::armourAgainst(*e, "cut"), thrust = battle::armourAgainst(*e, "thrust"); cut > 0 || thrust > 0)
+        {
+            auto armour = Value::object();
+            armour.add("cut", cut);
+            armour.add("thrust", thrust);
+            armour.add("dex", battle::armourDex(*e));
+            o.add("armour", armour);
+        }
         if (f.resting)
             o.add("resting", true);
         // Injuries, named (doc 38): what is wrong with them, and what it does. Shown on their card, never drawn on them.
@@ -264,7 +273,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 auto headOn = f;
                 headOn.facing = battle::octant(mine->x - f.x, mine->y - f.y);
                 odds.add("base", std::round(world_.strikeChance(*mine, headOn) * 100));
-                odds.add("damage", std::round((sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125)));
+                odds.add("damage", std::round(battle::throughArmour(*e, (sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125),
+                                                                   sword ? "cut" : "thrust")));    // (Through their armour.)
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
                 o.add("odds", odds);
             }

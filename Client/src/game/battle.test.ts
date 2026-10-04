@@ -304,3 +304,12 @@ test('the first fights\' tips (doc 37, phase 7): which fit when, kept once per c
     s.activate({rect: rect(0, 0, 0, 0), action: 'fighttips', target: ''});
     assert.ok(s.fightTips && s.tipsSeen().length === 0, 'and on again: shown again');
 });
+
+test('armour in fights (doc 35, Part 8): what a fighter\'s armour takes off a cut and a bite, and off its bar', () => {
+    const b = readBattle({battle: {...battle, fighters: [
+        {id: 'bo', name: 'Bo', side: 1, x: 3, y: 2, status: 'fighting', armour: {cut: 9, thrust: 10, dex: -5}},
+        {id: 'cy', name: 'Cy', side: 1, x: 4, y: 2, status: 'fighting'},
+    ]}})!;
+    assert.deepEqual(b.fighters[0].armour, {cut: 9, thrust: 10, dex: -5});
+    assert.equal(b.fighters[1].armour, null, 'none worn');
+});

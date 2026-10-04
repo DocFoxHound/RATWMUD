@@ -11,6 +11,8 @@
 
 namespace ratw
 {
+struct Entity;
+
 struct BattleFighter
 {
     std::string id;
@@ -189,6 +191,16 @@ constexpr double BiteDamage = 12, BiteStamina = 8;
 // Guard (doc 37): a blow's chance against one on guard, this much lower. Shove: its breath, and the odds of a push
 // (STR against STR), less against one on guard.
 constexpr double GuardDodge = .2, ShoveStamina = 8, ShoveOdds = .6;
+// Armour (doc 35, Part 8): a flat reduction, the protection worn (all of it, until hit zones) plus its extra against the
+// kind of blow, less the blow's pierce; at least this share of a blow still gets through. A bite is a thrust of the
+// teeth, a sword a cut, neither with any pierce.
+constexpr double ArmourFloor = .25;
+// What a wolf has on against a kind of blow ("cut", "thrust", "blunt"), all its armour together; and what its armour
+// takes off its dexterity for the initiative bar (0 or less: doc 35's weight).
+int armourAgainst(const Entity& e, const std::string& type);
+int armourDex(const Entity& e);
+// A blow of `damage` of `type` and `pierce` on `target`, after its armour.
+double throughArmour(const Entity& target, double damage, const std::string& type, int pierce = 0);
 constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;
 constexpr double DownedMinimum = .6, OverkillSeconds = 10;

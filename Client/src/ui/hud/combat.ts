@@ -356,6 +356,9 @@ export class CombatScreen {
             if (f.mouth === 'sword') marks.push(['sword', 'A sword in their jaws']);
             if (f.away) marks.push(['away', 'Away: their turns are skipped']);
             if (f.truce) marks.push(['truce', 'Agreed to the truce']);
+            if (f.armour)
+                marks.push(['armour', `Armour: takes ${f.armour.cut} off a cut and ${f.armour.thrust} off a bite (less a weapon's pierce); ` +
+                    `at least a quarter of a blow still gets through${f.armour.dex < 0 ? ` · its weight slows their bar as DEX −${-f.armour.dex}` : ''}`]);
             if (f.guarding) marks.push(['guard', 'On guard: harder to hit, and turns to meet a blow, until their next turn']);
             const marksKey = marks.map(m => m[0]).join();
             if (marksKey !== c.marksKey) {

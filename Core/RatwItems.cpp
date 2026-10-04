@@ -109,6 +109,10 @@ Catalog build()
         item.rain = wearNumber(i, "rain");
         item.jingle = wearNumber(i, "jingle");
         item.protect = int(i.object("armor").number("protect", 0));
+        item.vsCut = int(i.object("armor").object("vs").number("cut", 0));
+        item.vsThrust = int(i.object("armor").object("vs").number("thrust", 0));
+        item.vsBlunt = int(i.object("armor").object("vs").number("blunt", 0));
+        item.dex = int(i.object("armor").number("dex", 0));
         if (item.id.empty() || item.name.empty() || item.price < 1 || item.price > 1000 || (slot == "jewelry" && item.spots.empty()))
             continue;
         c.wearables.push_back(std::move(item));

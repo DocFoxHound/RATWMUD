@@ -353,6 +353,20 @@ At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent
 - **Guard** (the action): no blow this turn; until its next turn, blows at it are 20% less likely to land, and it turns to meet each one, so there is no side or back to strike. An NPC that isn't aggressive stands on guard when a foe is at its throat and it has no blow to give.
 - **Shove** (the action): an adjacent wolf (foe or friend) a tile straight back, out of a doorway, off a fallen friend or toward the edge rows. 8 stamina; it works on 60% + (your STR − theirs)%, between 20% and 90%, 20% less against one on guard. With nowhere for them to go (a wall, a wolf, a ledge) it is only a shove. A wolf shoved mid-walk stops there.
 
+**Armour** ([35-items-crafting-industry.md](35-items-crafting-industry.md), Part 8; built October 4, 2026). Every piece
+worn adds its protection, plus its extra against the kind of blow ("+1 vs cut"); the blow's pierce comes off that, and
+what is left comes off the blow, after a graze is halved. At least a quarter of a blow always gets through. A bite is a
+thrust of the teeth and the bit-sword a cut, neither with any pierce. Fire, burning and bleeding go round armour. All the
+pieces count against every blow until hit zones come (doc 35: throat, head, body, legs). The armour's DEX penalties
+(a brigandine −5, splinted greaves −2…) slow the initiative bar, not the dodge. The log tells it ("Ash bites Bo, the
+armour taking 10 (3)."), the odds on a foe's card and the map's previews give the blow through it ("~3"), and the card
+carries a breastplate mark saying what it takes off a cut and a bite.
+
+```text
+through   = max(blow × 0.25, blow − max(0, protection + extra vs its kind − pierce))
+bar       = 6 + (DEX + the armour's DEX penalties) / 10      // a brigandine and greaves: DEX 50 fills as 43
+```
+
 ## Magic: Flamethrower
 
 Flamethrower is a Fire Gift, so only Gifted or Quickened Fire Wolves can use it. It is powerful, slow to start and costly in three ways: mana, stamina and the caster's own health. This keeps the setting bible's rule that magic is rare and limited, not casual spellcasting.

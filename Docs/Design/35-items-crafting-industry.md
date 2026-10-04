@@ -63,7 +63,7 @@ All numbers are *placeholders* for a later balance pass. Prices are in silver pe
 - **Armour and weapons at a glance:** every visible wolf's card (In Sight, and the fighter cards in a fight) carries a
   little wolf in outline with its armour shaded and a blade at the muzzle; pointing at it lists them. Others' equipment
   pages, from a closer look, are to look at only.
-- **Not yet:** harness loops, warmth and rain with the weather, jingle, scent, armour in fights, weight.
+- **Not yet:** harness loops, warmth and rain with the weather, jingle, scent, weight. (Armour in fights is built: Part 8.)
 
 ## Principles
 
@@ -467,6 +467,8 @@ crafter, NPC or player fills a contract with real goods and is paid from the buy
   loose less often.
 - **Armour:** first a flat reduction, the summed protection minus the attack's pierce, with the per-type extras. Hit
   zones (throat, head, body, legs) come later: Bite aims for the throat, and leg hits add to lingering movement loss.
+  *Built October 4, 2026, as doc 33's "Armour": at least a quarter of a blow gets through; the DEX penalties slow the
+  initiative bar. The other weapons, hit zones, weight and medicine are still to come.*
 - **Weight:** body armour's DEX penalty and a heavy load slow the initiative meter.
 - **Medicine as actions:** bandages and stitching kits make Tend wounds stronger; smelling salts wake a Downed ally.
 - **Emplacements:** a crossbow set up on a cell can be crewed in a fight that cell's arena copies (doc 33 Part 2).

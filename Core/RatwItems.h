@@ -23,6 +23,8 @@ struct Item
     int price = 0;
     std::vector<std::string> spots;                 // Jewellery: where it may go ("any" expanded).
     int status = 0, warmth = 0, rain = 0, jingle = 0, protect = 0;
+    // Armour (doc 35, Part 8): more protection against a kind of blow, and what it takes off dexterity (as a negative).
+    int vsCut = 0, vsThrust = 0, vsBlunt = 0, dex = 0;
 };
 
 struct Business

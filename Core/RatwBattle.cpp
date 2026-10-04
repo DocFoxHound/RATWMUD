@@ -1,5 +1,6 @@
 // Turn-based fights in arenas (RatwBattle.h; Docs/Design/33-combat.md). World members, kept here.
 #include "RatwBattle.h"
+#include "RatwItems.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -26,6 +27,14 @@ int tilesApart(int ax, int ay, int bx, int by)
 {
     return std::max(std::abs(ax - bx), std::abs(ay - by));
 }
+
+// ", the armour taking 4": what armour took off a blow, when it took a point or more.
+std::string armourWords(double bare, double through)
+{
+    const long taken = std::lround(bare) - std::lround(through);
+    return taken >= 1 ? ", the armour taking " + std::to_string(taken) : std::string();
+}
+
 std::string whole(double n)
 {
     return std::to_string(std::max(1L, std::lround(n)));
@@ -38,6 +47,30 @@ bool takesTurns(const BattleFighter& f)
 
 namespace battle
 {
+int armourAgainst(const Entity& e, const std::string& type)
+{
+    int total = 0;
+    for (const auto& [slot, id] : e.worn)
+        if (const auto* item = items::wearable(id); item && item->protect > 0)
+            total += item->protect + (type == "cut" ? item->vsCut : type == "thrust" ? item->vsThrust : type == "blunt" ? item->vsBlunt : 0);
+    return total;
+}
+
+int armourDex(const Entity& e)
+{
+    int dex = 0;
+    for (const auto& [slot, id] : e.worn)
+        if (const auto* item = items::wearable(id))
+            dex += std::min(0, item->dex);
+    return dex;
+}
+
+double throughArmour(const Entity& target, double damage, const std::string& type, int pierce)
+{
+    const int armour = std::max(0, armourAgainst(target, type) - pierce);
+    return armour <= 0 ? damage : std::max(damage * ArmourFloor, damage - armour);
+}
+
 int moveRange(double dexterity, double hurt, int pace)
 {
     return std::max(1, int(std::floor((3 + dexterity / 25) * injuryFactor(hurt) * paceFactor(pace))));
@@ -1549,8 +1582,10 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     double damage = battle::BiteDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|" + f.id, key));
     if (graze)
         damage /= 2;
+    const double bare = damage;
+    damage = battle::throughArmour(*d, damage, "thrust");     // Teeth: a thrust, no pierce (doc 35, Part 8).
     const std::string how = graze ? " grazes " : " bites ";
-    fightLine(b, f.id, target, graze ? "graze" : "hit", e->name + how + d->name + " (" + whole(damage) + ").");
+    fightLine(b, f.id, target, graze ? "graze" : "hit", e->name + how + d->name + armourWords(bare, damage) + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
@@ -2078,7 +2113,7 @@ void World::tendBattles(double dt)
             }
             if (f.acting)
                 continue;
-            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond * haste * dt);
+            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * dt);
             if (f.meter >= 100)
             {
                 f.readyAt = time_;
@@ -2694,7 +2729,10 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     double damage = battle::SwordDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
     if (graze)
         damage /= 2;
-    fightLine(b, f.id, target, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + " (" + whole(damage) + ").");
+    const double bare = damage;
+    damage = battle::throughArmour(*d, damage, "cut");        // The bit-sword: a cut, no pierce (doc 35, 2.1).
+    fightLine(b, f.id, target, graze ? "graze" : "slash",
+              e->name + (graze ? " nicks " : " cuts ") + d->name + armourWords(bare, damage) + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
