@@ -2,9 +2,9 @@
 // about the fight only: the order turns will come in along the top of the map, a card for each fighter on the right,
 // what this wolf can do as icon buttons under the map (keys 1–8, Space to end the turn), and the fight told line by
 // line above the composer. Everything else on the screen steps aside (hud.ts: the `fight-mode` class).
-import {clockLabel, myTurn, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
+import {clockLabel, meterNow, myTurn, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
 import {lawLabel} from '../../game/labels.ts';
-import {obj} from '../../game/json.ts';
+import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {icon} from '../icons.ts';
@@ -23,6 +23,7 @@ interface Ended {
     fallen: Array<{id: string; name: string}>;
     observer: boolean;
     until: number;              // Shown until then (the page's clock), or closed.
+    fight: string;                  // The fight's id: its roleplay review comes as its scene settles (doc 33).
 }
 
 /** One of this wolf's actions, as the bar shows it. */
@@ -80,6 +81,9 @@ interface Card {
     healthText: HTMLElement;
     stamina: HTMLElement;
     staminaFill: HTMLElement;
+    init: HTMLElement;              // The initiative bar: a turn's time running out, or the bar filling toward one.
+    initFill: HTMLElement;
+    initText: HTMLElement;
     mana: HTMLElement;
     manaFill: HTMLElement;
     odds: HTMLElement;
@@ -102,6 +106,7 @@ export class CombatScreen {
     private cardList = new Map<string, Card>();
     private groupHeads: HTMLElement[] = [];
     private cardsKey = '';
+    private litCard = '';
     // Under the map: what this wolf can do.
     private bar: HTMLElement;
     private barKey = '';
@@ -219,14 +224,19 @@ export class CombatScreen {
         const s = this.s, me = this.me(b);
         const mySide = me ? me.side : 0;
         const shown = b.fighters.filter(f => f.status !== 'fled');
-        const groups = [shown.filter(f => f.side === mySide), shown.filter(f => f.side !== mySide)];
+        // In the order turns come: those acting now on top, then the rest as their bars will fill; the dead last.
+        const wait = (f: FighterView) => (f.status === 'dead' || f.status === 'yielded' ? Infinity : secondsToTurn(f, since));
+        const acting = shown.filter(f => f.acting && !b.over);
+        const coming = shown.filter(f => !(f.acting && !b.over)).sort((a, c) => wait(a) - wait(c) || a.side - c.side);
+        const groups = [acting, coming];
         const key = JSON.stringify([b.observer, groups.map(g => g.map(f => f.id))]);
         if (key !== this.cardsKey) {
             this.cardsKey = key;
             this.cards.replaceChildren();
             this.groupHeads = [];
-            const names = [b.observer ? 'ONE SIDE' : 'YOUR SIDE', b.observer ? 'THE OTHER' : 'AGAINST YOU'];
+            const names = ['ACTING NOW', 'COMING UP'];
             groups.forEach((group, i) => {
+                if (!group.length) return;
                 this.groupHeads.push(el('div', 'label muted cards-head', this.cards, names[i]));
                 for (const f of group) this.cards.append(this.card(f).root);
             });
@@ -245,6 +255,10 @@ export class CombatScreen {
             setClass(c.root, 'down', f.status === 'downed' || f.status === 'dead' || f.status === 'yielded');
             setClass(c.root, 'target', foe && f.id === target);
             setClass(c.root, 'lit', s.highlight === f.id || s.hoveredEntity === f.id);
+            if (s.hoveredEntity === f.id && this.litCard !== f.id) {
+                c.root.scrollIntoView({block: 'nearest'});   // Pointed at on the map: its card in sight.
+                this.litCard = f.id;
+            } else if (!s.hoveredEntity) this.litCard = '';
             const health = Math.max(0, Math.min(100, f.health));
             setStyle(c.healthFill, 'width', `${health}%`);
             setStyle(c.health.firstElementChild as HTMLElement, 'width', `${health}%`);
@@ -260,7 +274,7 @@ export class CombatScreen {
             show(c.stamina, f.stamina >= 0);
             if (f.stamina >= 0) {
                 setStyle(c.staminaFill, 'width', `${Math.max(0, Math.min(100, f.stamina))}%`);
-                c.stamina.title = `Breath ${Math.round(f.stamina)} · a bite takes 8, a sword 14; +8 at the start of each turn`;
+                c.stamina.title = `Stamina ${Math.round(f.stamina)} · a bite takes 8, a sword 14, running more the faster the pace; some comes back each turn`;
             }
             show(c.mana, f.mana >= 0 && f.manaMax > 0);
             if (f.mana >= 0 && f.manaMax > 0) {
@@ -300,8 +314,15 @@ export class CombatScreen {
             show(c.odds, !!oddsKey);
             setClass(c.odds, 'far', !!f.odds && !f.odds.reach);
             const left = f.acting ? Math.max(0, f.turnLeft - since) : 0;
+            // Initiative: acting, the turn's time running out; else the bar filling toward their turn.
+            const due = wait(f);
+            const fillInit = f.acting && !b.over ? (f.npc ? 1 : Math.min(1, left / TurnSeconds)) : meterNow(f, since);
+            setStyle(c.initFill, 'width', `${Math.round(fillInit * 100)}%`);
+            setClass(c.init, 'acting', f.acting && !b.over);
+            setText(c.initText, b.over ? '' : f.acting ? (f.npc ? 'acting' : `acting · ${Math.ceil(left)} s`)
+                : Number.isFinite(due) ? `turn in ${Math.ceil(due)} s` : '');
             const clock = f.status === 'downed' && f.downedLeft > 0 ? `${f.npc ? 'bleeding' : 'up in'} · ${clockLabel(Math.max(0, f.downedLeft - since))}`
-                : f.acting && !f.npc && !b.over ? `${Math.ceil(left)} s` : '';
+                : '';
             setText(c.clock, clock);
             c.root.title = self ? '' : foe ? (mine ? 'Click to aim at them' : 'Click to aim at them on your turn')
                 : f.status === 'downed' && mine ? 'Click to tend their wounds' : '';
@@ -324,6 +345,10 @@ export class CombatScreen {
         const healthText = el('span', 'meter-text', health);
         const stamina = el('div', 'meter thin stamina', body);
         const staminaFill = el('div', 'fill', stamina);
+        const init = el('div', 'meter init', body);
+        const initFill = el('div', 'fill', init);
+        const initText = el('span', 'meter-text', init);
+        init.title = 'Initiative: when their bar is full, it is their turn';
         const mana = el('div', 'meter thin mana', body);
         const manaFill = el('div', 'fill', mana);
         const foot = el('div', 'fcard-foot', body);
@@ -340,7 +365,7 @@ export class CombatScreen {
             if (now.side !== me.side && now.status === 'fighting') s.fightFocus = f.id;
             else if (now.side === me.side && now.status === 'downed' && myTurn(b, s.selfId)) s.fightTarget(f.id);
         });
-        const card: Card = {root, face, name, marks, marksKey: '-', health, healthFill, healthText, stamina, staminaFill, mana, manaFill, odds,
+        const card: Card = {root, face, name, marks, marksKey: '-', health, healthFill, healthText, stamina, staminaFill, init, initFill, initText, mana, manaFill, odds,
             oddsKey: '-', clock, lastHealth: -1};
         this.cardList.set(f.id, card);
         return card;
@@ -544,7 +569,7 @@ export class CombatScreen {
         const showing = !!ended && s.clock < ended.until;
         show(this.result, showing);
         if (!showing || !ended) return;
-        const key = JSON.stringify([ended.until, !!b, ended.fallen.length]);
+        const key = JSON.stringify([ended.until, !!b, ended.fallen.length, this.review(ended)]);
         if (key === this.resultKey) return;
         this.resultKey = key;
         this.buildResult(ended, !b);
@@ -589,14 +614,20 @@ export class CombatScreen {
             : won ? (me.status === 'fighting' ? 'You stand' : 'Your side stands')
             : me.status === 'yielded' ? 'You yield' : me.status === 'downed' ? 'You are down' : me.status === 'dead' ? 'You die' : 'Beaten';
         const notes: string[] = [];
-        if (me?.status === 'downed') notes.push('Bleeding: struggle up, or wait for someone to tend your wounds.');
+        if (me?.status === 'downed') notes.push('Down: you get up when your time is up, sooner if you struggle up or someone tends you.');
         const law = lawLabel(obj(s.snapshot, 'self'));
         if (law) notes.push(law.charAt(0) + law.slice(1).toLowerCase());
         else if (b.crime && me) notes.push('The watch will hear of this.');
         const fallen = me?.status === 'fighting' || won
             ? b.fighters.filter(f => f.id !== s.selfId && f.status === 'downed').map(f => ({id: f.id, name: f.name})) : [];
         return {title, tone: !me || even ? 'even' : won ? 'win' : 'lose', banner: b.banner, dealt, taken, notes, fallen, observer: !me,
-            until: s.clock + 16};
+            until: s.clock + 16, fight: b.id};
+    }
+
+    /** The fight's settled scene, as this wolf sees it: its pay and whom it may star (doc 33's roleplay review). */
+    private review(ended: Ended): Json | null {
+        const done = obj(obj(obj(this.s.snapshot, 'self'), 'social'), 'ended');
+        return done && bool(done, 'fight') && str(done, 'id') === `fight-${ended.fight}` ? done : null;
     }
 
     private buildResult(ended: Ended, back: boolean) {
@@ -617,6 +648,24 @@ export class CombatScreen {
             stat('down', ended.taken, 'taken');
         }
         for (const note of ended.notes) el('div', 'result-note', this.result, note);
+        // The roleplay review: a Gold Star to each who played it well, one each (doc 33).
+        const review = this.review(ended);
+        if (review) {
+            const box = el('div', 'result-review', this.result);
+            el('div', 'label gold', box, `ROLEPLAY REVIEW · +${num(review, 'xp')} SOCIAL`);
+            el('div', 'muted small', box, bool(review, 'talked') ? 'For the fight, and twice for roleplaying it.'
+                : 'For the fight. Talk it through: roleplay in a fight pays twice.');
+            const targets = arr(review, 'starTargets').filter(isObject), starred = arr(review, 'starred').filter(isObject);
+            const row = el('div', 'result-stars', box);
+            for (const t of targets)
+                button(`★ ${str(t, 'name')}`, 'small', row, () => s.sendSocial({verb: 'star', session: str(review, 'id'), target: str(t, 'id')})).title =
+                    `Give ${str(t, 'name')} a Gold Star for how they roleplayed this fight`;
+            for (const t of starred) {
+                const given = button(`★ ${str(t, 'name')} ✓`, 'small given', row, () => undefined);
+                given.disabled = true;
+            }
+            if (!targets.length && !starred.length) el('span', 'muted small', row, 'No one else to star.');
+        }
         const next = el('div', 'result-next', this.result);
         // Back in the world: the fallen may be tended (their timer runs), and the scene written.
         for (const f of ended.fallen)

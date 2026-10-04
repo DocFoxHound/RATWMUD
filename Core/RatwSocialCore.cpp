@@ -606,19 +606,95 @@ int SocialLedger::settle(const std::string& id, double now)
     }
     return Total;
 }
+void SocialLedger::joinFight(const std::string& fight, const std::string& cell, const std::string& member, double now)
+{
+    auto& S = sessions[fightScene(fight)];
+    if (S.id.empty())
+    {
+        S.id = fightScene(fight);
+        S.cell = cell;
+        S.party = fightTag(fight);
+        S.started = now;
+        S.last = now;
+    }
+    if (S.ended == 0 && !S.members.count(member))
+        S.members[member].joined = now;
+}
+
+int SocialLedger::settleFight(const std::string& fight, const std::set<std::string>& fought, double now)
+{
+    auto It = sessions.find(fightScene(fight));
+    if (It == sessions.end() || It->second.ended > 0)
+        return 0;
+    auto& Scene = It->second;
+    Scene.ended = now;
+    const auto shaped = [](const Contribution& c) { return c.turns >= 2 && c.words >= 35 && c.replies >= 1; };
+    std::vector<std::string> Talked, Paid;
+    for (const auto& [who, c] : Scene.members)
+        if (shaped(c))
+            Talked.push_back(who);
+    if (Talked.size() < 2)
+        Talked.clear();                             // (Talking alone is no scene.)
+    for (const auto& [who, c] : Scene.members)
+        if (fought.count(who) || std::find(Talked.begin(), Talked.end(), who) != Talked.end())
+            Paid.push_back(who);
+    const auto joined = [&](const std::string& A, const std::string& B) {
+        return Scene.members[A].joined == Scene.members[B].joined ? A < B : Scene.members[A].joined < Scene.members[B].joined;
+    };
+    std::sort(Talked.begin(), Talked.end(), joined);
+    std::sort(Paid.begin(), Paid.end(), joined);
+    int Total = 0;
+    for (std::size_t Index = 0; Index < Paid.size(); ++Index)
+    {
+        const auto& Actor = Paid[Index];
+        int Count = 0;
+        for (const auto& Entry : entries)
+            if (Entry.actor == Actor && now - Entry.at < 86400 && Entry.amount > 0)
+                ++Count;
+        // The same partners again and again pay less: the most repeated, over the scenes both were paid in today.
+        int MostRepeated = 0;
+        for (const auto& Peer : Paid)
+            if (Peer != Actor)
+            {
+                int Repeat = 0;
+                for (const auto& [sid, Other] : sessions)
+                    if (sid != Scene.id && Other.ended > 0 && now - Other.ended < 86400 && paidFor(Actor, sid) > 0 &&
+                        paidFor(Peer, sid) > 0)
+                        ++Repeat;
+                MostRepeated = std::max(MostRepeated, Repeat);
+            }
+        int Amount = fought.count(Actor) ? FightXP : 0;
+        const auto talked = std::find(Talked.begin(), Talked.end(), Actor);
+        if (talked != Talked.end())
+        {
+            const auto at = std::size_t(talked - Talked.begin());
+            Amount += FightTalkFactor * (at < 4 ? 20 : at < 8 ? 12 : 5);
+        }
+        Amount = MostRepeated >= 4 || Count >= 8 ? 0 : Amount / (1 << MostRepeated);
+        std::string Partners;
+        for (const auto& Peer : Paid)
+            if (Peer != Actor)
+                Partners += (Partners.empty() ? "" : ",") + Peer;
+        // The same receipt as any scene's, so stars and Stories take it as one (a zero one too: no paying twice).
+        Total += pay(Actor, Partners, "qualified_session_settlement", Scene.id, Amount, now,
+                     static_cast<std::uint64_t>(Scene.started * 1000) + Index);
+    }
+    return Total;
+}
+
 int SocialLedger::endFor(const std::string& actor, double now)
 {
     int Amount = 0;
     for (auto& Pair : sessions)
-        if (Pair.second.ended == 0 && Pair.second.members.count(actor))
-            Amount += settle(Pair.first, now);
+        if (Pair.second.ended == 0 && Pair.second.members.count(actor) && !isFight(Pair.second))
+            Amount += settle(Pair.first, now);      // (A fight's scene ends with the fight.)
     return Amount;
 }
 void SocialLedger::tick(double now)
 {
     for (auto& Pair : sessions)
-        if (Pair.second.ended == 0 && now - Pair.second.last >= 1800)
-            settle(Pair.first, now);
+        if (Pair.second.ended == 0 && now - Pair.second.last >= (isFight(Pair.second) ? 10800 : 1800))
+            settle(Pair.first, now);                // (A fight's scene ends with its fight: this only if that was lost.)
     // A Story nobody approved within a day closes without reward.
     for (auto& [id, st] : stories)
         if (st.state == "pending" && now - st.created > 86400)
@@ -714,8 +790,8 @@ SocialResult SocialLedger::star(const std::string& giver, const std::string& rec
         return {false, "They didn't take part in that scene."};
     const int earned = paidFor(recipient, session);
     for (const auto& st : stars)
-        if (st.kind == "gold" && st.source == session && st.giver == giver)
-            return {false, "You've already given a star for that scene."};
+        if (st.kind == "gold" && st.source == session && st.giver == giver && st.recipient == recipient)
+            return {false, "You've already given them a star for that scene."};   // One to each, as many as took part.
     if (now - it->second.ended > 86400)
         return {false, "That scene was too long ago."};
     int given = 0;

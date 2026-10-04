@@ -10,13 +10,6 @@ import {button, el, setClass} from './dom.ts';
 import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 
-/** The Dev Console's commands (the server's own list is in Core/RatwGameDev.cpp; it checks every one). */
-const DevCommands: [string, string][] = [
-    ['/fight-test-1', 'A fight where you stand: one weak bandit on the far side of the arena, with a clear way to you.'],
-    ['/fight-end-myself', 'Ends the fight you are in, as a draw.'],
-    ['/help', 'Lists the commands the server knows.'],
-];
-
 export class Dialogs {
     private s: GameState;
     private portraits: Portraits;
@@ -25,7 +18,6 @@ export class Dialogs {
     private key = '';
     private aliasInput: HTMLInputElement;
     private noteInput: HTMLInputElement;
-    private consoleInput: HTMLInputElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -39,20 +31,6 @@ export class Dialogs {
             if (e.key !== 'Enter') return;
             this.act('name_add', this.aliasInput.value);
             this.aliasInput.value = '';
-        });
-        this.consoleInput = document.createElement('input');
-        this.consoleInput.className = 'name-input console-input';
-        this.consoleInput.maxLength = 60;
-        this.consoleInput.placeholder = '/fight-test-1';
-        this.consoleInput.spellcheck = false;
-        this.consoleInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
-                this.s.runDevCommand(this.consoleInput.value);
-                this.consoleInput.value = '';
-            } else if (e.key === 'Escape' || e.key === '`') {
-                e.preventDefault();
-                this.act('close');
-            }
         });
         this.portraits = portraits;
         this.overlay = el('div', 'overlay', parent);
@@ -76,16 +54,14 @@ export class Dialogs {
         const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork') : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
-            m === 'console' ? [s.devLog.length, s.devLog.at(-1)] : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
-                bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume, s.isDungeonMaster()] : '']);
+                bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume] : '']);
         if (key === this.key) return;
         this.key = key;
         const typing = document.activeElement === this.aliasInput;      // (Kept, and kept focused, as the sheet is rebuilt.)
-        const consoleTyping = document.activeElement === this.consoleInput;
         this.panel.replaceChildren();
         const close = button('×', 'close', this.panel, () => this.act('close'));
         close.title = 'Close (Esc)';
@@ -96,7 +72,6 @@ export class Dialogs {
         else if (m === 'trade') this.trade(self);
         else if (m === 'settings') this.settings();
         else if (m === 'leave_character') this.leave();
-        else if (m === 'console') this.console(consoleTyping);
         else this.inspect();
         if (typing && this.aliasInput.isConnected) this.aliasInput.focus();
     }
@@ -505,10 +480,6 @@ export class Dialogs {
         toggle(s.perfOverlay ? 'Performance overlay: On' : 'Performance overlay: Off', 'perf');
         const width = s.storyWidth <= 360 ? 'Compact' : s.storyWidth <= 460 ? 'Balanced' : s.storyWidth <= 600 ? 'Wide' : 'Text-first';
         toggle(`Story column: ${width} (or drag its edge)`, 'split');
-        if (s.isDungeonMaster()) {
-            el('div', 'label gold', this.panel, 'DUNGEON MASTER');
-            button('Open the Dev Console (` key)', 'setting', this.panel, () => this.act('dev_console'));
-        }
         if (bool(s.snapshot, 'devTools')) {
             const dev = el('div', 'dev', this.panel);
             const group = (label: string, values: string[], action: string, names = values, active = '') => {
@@ -525,39 +496,6 @@ export class Dialogs {
             group('CALENDAR · DEVELOPMENT ONLY', ['day', 'year'], 'calendar', ['Day +1', 'Year +1']);
         }
         el('p', 'muted small', this.panel, 'ENTER write / send · SHIFT + ENTER newline · ESC preserve draft · ALT + mouse previews facing; click to turn.');
-    }
-
-    /** The Dev Console, for a player marked Dungeon Master: commands to run where they stand, and what came of them. */
-    private console(typing: boolean) {
-        const s = this.s;
-        this.heading('DUNGEON MASTER · DEV CONSOLE', 'Dev Console');
-        if (!s.isDungeonMaster()) {
-            el('p', 'muted', this.panel, 'Only a Dungeon Master has the Dev Console.');
-            return;
-        }
-        const row = el('div', 'console-row', this.panel);
-        row.append(this.consoleInput);
-        button('Run', 'small', row, () => {
-            s.runDevCommand(this.consoleInput.value);
-            this.consoleInput.value = '';
-        });
-        el('div', 'label muted', this.panel, 'COMMANDS · OR TYPE ONE IN THE CHAT BOX, STARTING WITH /');
-        const list = el('div', 'console-commands', this.panel);
-        for (const [name, help] of DevCommands) {
-            const line = el('div', 'console-command', list);
-            button(name, 'small', line, () => s.runDevCommand(name));
-            el('span', 'muted', line, help);
-        }
-        el('div', 'label muted', this.panel, 'WHAT CAME OF IT');
-        const log = el('div', 'console-log', this.panel);
-        if (!s.devLog.length) el('p', 'muted small', log, 'Nothing run yet.');
-        for (const entry of [...s.devLog].reverse()) {
-            const item = el('div', entry.ok ? 'console-entry ok' : 'console-entry refused', log);
-            el('b', '', item, entry.command);
-            el('pre', '', item, entry.text);
-        }
-        el('p', 'muted small', this.panel, '` or ESC closes the console.');
-        if (typing || !this.consoleInput.value) requestAnimationFrame(() => this.consoleInput.focus());
     }
 
     private leave() {

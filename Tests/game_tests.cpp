@@ -1185,7 +1185,7 @@ void fightsThroughTheGame()
     {
         expect(f.has("appearance") && !f.string("lifeStage").empty(), "each fighter's look, for a portrait");
         const bool her = f.string("id") == ada.entityId;
-        expect(her == f.has("stamina"), "breath shown for her own side only");
+        expect(f.has("stamina"), "everyone's stamina shown, on their card (doc 33)");
         expect(her != f.has("odds"), "odds against the foe only");
         if (!her)
             expect(f["odds"].number("hit") >= 20 && f["odds"].number("hit") <= 95 && f["odds"].number("damage") > 0 &&

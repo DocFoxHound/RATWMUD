@@ -87,6 +87,41 @@ void actionsAndPartyScenes()
     expect(joined, "someone answering the party joins its scene");
 }
 
+// A fight is a scene of its own (doc 33): its players are paid for the fight, twice the usual for talking it through,
+// and each may give a Gold Star to each of the others.
+void fightScenes()
+{
+    SocialLedger l;
+    std::uint64_t event = 1;
+    const double t = 5000;
+    for (const char* who : {"ada", "bo", "cy"})
+        l.joinFight("b1", "field", who, t);
+    const auto scene = SocialLedger::fightScene("b1");
+    expect(l.sessions.count(scene) && l.sessions[scene].members.size() == 3 && SocialLedger::isFight(l.sessions[scene]),
+           "the fight's scene has its fighters in it from the start");
+    // Ada and Bo talk it through (their words carry the fight's tag); Cy fights in silence.
+    const auto talk = converse(l, "ada", "bo", t + 1, event, "field", SocialLedger::fightTag("b1"));
+    expect(talk == scene, "their words are the fight's scene, not a scene of their own");
+    expect(l.endFor("ada", t + 50) == 0 && l.sessions[scene].ended == 0, "a fight's scene ends with the fight, not a scene-end");
+    l.settleFight("b1", {"ada", "bo", "cy"}, t + 60);
+    const int talked = SocialLedger::FightXP + SocialLedger::FightTalkFactor * 20;
+    expect(l.paidFor("ada", scene) == talked && l.paidFor("bo", scene) == talked,
+           "talking it through: the fight, and twice a scene's pay: " + std::to_string(l.paidFor("ada", scene)));
+    expect(l.paidFor("cy", scene) == SocialLedger::FightXP, "fighting in silence: the fight's pay");
+    expect(l.settleFight("b1", {"ada"}, t + 70) == 0 && l.paidFor("ada", scene) == talked, "never paid twice");
+    // Stars: one to each of the others, as many as took part.
+    expect(l.star("cy", "ada", scene, t + 80).ok && l.star("cy", "bo", scene, t + 81).ok, "Cy stars both of them");
+    expect(!l.star("cy", "ada", scene, t + 82).ok, "but each only once");
+    expect(l.star("ada", "cy", scene, t + 83).ok, "and the silent fighter can be starred too");
+    // One who took no part in it (fewer than two turns, no words) is not paid.
+    SocialLedger m;
+    m.joinFight("b2", "field", "di", t);
+    m.joinFight("b2", "field", "ed", t);
+    m.settleFight("b2", {"di"}, t + 30);
+    expect(m.paidFor("di", SocialLedger::fightScene("b2")) == SocialLedger::FightXP && m.paidFor("ed", SocialLedger::fightScene("b2")) == 0,
+           "only those who took their turns are paid for the fight");
+}
+
 void starsAndStories()
 {
     SocialLedger l;
@@ -304,6 +339,7 @@ int main()
     try
     {
         actionsAndPartyScenes();
+        fightScenes();
         starsAndStories();
         aSceneSeenAndStarred("/tmp/ratw-social-test-" + std::to_string(::getpid()) + ".json");
     }

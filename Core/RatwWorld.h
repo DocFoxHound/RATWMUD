@@ -921,6 +921,11 @@ class World
     // Steps from each arena tile to (x, y), walking as fighters do (eight ways, no corner cut, around others but
     // `mover`): row by row over the arena, -1 where there is no way.
     std::vector<int> stepsTo(const Battle& b, int x, int y, const std::string& mover) const;
+    // The tiles a fighter walks to (x, y), in order, not counting where it stands; empty if there is no way.
+    std::vector<std::pair<int, int>> walkTo(const Battle& b, const BattleFighter& f, int x, int y) const;
+    void walkFighters(Battle& b);
+    double stepSeconds(const BattleFighter& f) const;
+    int fightPace(const Entity& e) const;           // The pace a fighter moves at: theirs, an NPC's run, or a walk.
     void standUp(Entity& e, double health);
     void tendDowned(double dt);
     void fullRest(Entity& e);
@@ -1138,6 +1143,11 @@ class World
     // Movement from `from` (nullptr: level ground at height 0). Heights are half-tile steps: a
     // half step is free, a full step needs a slope or stairs on either side, anything more is a ledge.
     bool passable(const std::string& cellId, Vec2 p, const Tile* from = nullptr) const;
+    // Someone could stand at p, on its own tile's ground, at whatever height that is. (passable() with no `from` asks
+    // about stepping up from height 0, which rules out any ground above or below it.)
+    bool standable(const std::string& cellId, Vec2 p) const;
+    // One fighter's step from tile (x, y) to (nx, ny) of a cell: standable there, and no ledge between.
+    bool stepBetween(const std::string& cellId, int x, int y, int nx, int ny) const;
     bool visiblePoint(const Entity& observer, Vec2 point) const;
     bool visiblePoint(const Entity& observer, Vec2 point, double range) const;
     bool visiblePortal(const Entity& observer, const Door& door) const;

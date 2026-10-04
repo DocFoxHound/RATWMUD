@@ -147,8 +147,12 @@ export class GameState {
     channel = 'ic';
     volume = 'speak';
     modal = '';
-    /** The Dev Console's log (a player marked Dungeon Master): each command run and the server's answer, newest last. */
+    /** The Dev Console (a player marked Dungeon Master; ui/hud/devConsole.ts): open or not, the commands the server
+     *  offers ([name, help], as it last said), and each command run with the server's answer, newest last. */
+    devConsole = false;
+    devCommands: [string, string][] = [];
     devLog: {command: string; ok: boolean; text: string}[] = [];
+    private devCommandsAsked = false;
     contextTarget = '';
     /** Combat sound (doc 37, phase 3): 0 off, up to 1; Settings cycles it, and it is kept on this computer. */
     soundVolume = 0.6;
@@ -241,6 +245,8 @@ export class GameState {
     // Fights (Docs/Design/33-combat.md): the arena this wolf fights in or watches, the red squares in sight, a
     // challenge to answer; when the last fight ended (everyone fades back into the world).
     battle: BattleView | null = null;
+    walkShown = new Map<string, {x: number; y: number; at: number}>();   // Fighters as drawn, gliding (walkOffset).
+    strikeOnArrival: {target: string; verb: string; x: number; y: number; range: number} | null = null;
     fights: FightSquare[] = [];
     challenge: ChallengeView | null = null;
     // The party (doc 32): who is in it and where, an invitation waiting, a party mate's fight calling.
@@ -466,6 +472,7 @@ export class GameState {
         this.challenge = readChallenge(this.snapshot);
         this.ground = readGround(this.snapshot);
         this.battleAt = this.clock;
+        this.strikeIfArrived();
         this.fx.selfId = this.selfId;
         this.fx.update(this.battle, this.clock);
         // One's own turn come round: a soft chime.
@@ -548,6 +555,22 @@ export class GameState {
             if (!enc.over && enc.id !== b?.id && !this.fights.some(f => f.id === enc.id)) touch(enc.id, [], enc.actions, enc.latest, true);
     }
 
+    /** Where a fighter is drawn, gliding after its tile: a move is walked a tile at a time (doc 33). Returns the offset
+     * from its tile, in tiles. */
+    walkOffset(id: string, x: number, y: number, clock: number): [number, number] {
+        const shown = this.walkShown.get(id);
+        if (!shown || Math.max(Math.abs(shown.x - x), Math.abs(shown.y - y)) > 8 || this.reducedMotion) {
+            this.walkShown.set(id, {x, y, at: clock});
+            return [0, 0];
+        }
+        const dt = clamp(clock - shown.at, 0, 0.25), dx = x - shown.x, dy = y - shown.y, gap = Math.hypot(dx, dy);
+        const step = Math.max(3, gap * 4) * dt;
+        if (gap <= step) shown.x = x, shown.y = y;
+        else shown.x += dx / gap * step, shown.y += dy / gap * step;
+        shown.at = clock;
+        return [shown.x - x, shown.y - y];
+    }
+
     /** Turns to face a tile, on this wolf's turn (free). */
     arenaFace(tx: number, ty: number) {
         const b = this.battle;
@@ -580,13 +603,30 @@ export class GameState {
             // Out of reach on one's turn: step to the tile in reach that is nearest, then strike, in one click.
             const strike = b.mouth === 'sword' ? 'sword' : 'bite', range = strike === 'sword' ? 2 : 1;
             if (apart(me.x, me.y, f.x, f.y) > range && myTurn(b, this.selfId)) {
+                // A move is walked (doc 33): the blow is struck on arrival, if the foe is still in reach then.
                 const step = stepToward(b, me, f, range);
                 if (step) this.sendBattle('move', {x: step.x, y: step.y});
-                if (!step?.reaches) return;
+                if (step?.reaches) this.strikeOnArrival = {target: id, verb: strike, x: step.x, y: step.y, range};
+                return;
             }
+            this.strikeOnArrival = null;
             this.sendBattle(strike, {target: id});
         }
         else if (f.side === me.side && f.status === 'downed') this.sendBattle('tend', {target: id});
+    }
+
+    /** A strike waiting on a walk (fightTarget): struck when this wolf gets there, still in its turn and in reach. */
+    private strikeIfArrived() {
+        const p = this.strikeOnArrival, b = this.battle;
+        if (!p) return;
+        const me = b?.fighters.find(f => f.id === this.selfId), foe = b?.fighters.find(f => f.id === p.target);
+        if (!b || !me || !foe || b.over || !myTurn(b, this.selfId) || b.acted || foe.status !== 'fighting') {
+            this.strikeOnArrival = null;
+            return;
+        }
+        if (me.x !== p.x || me.y !== p.y) return;   // (Still walking.)
+        this.strikeOnArrival = null;
+        if (apart(me.x, me.y, foe.x, foe.y) <= p.range) this.sendBattle(p.verb, {target: p.target});
     }
 
     /** The foe the fight screen aims at: one pointed at (on the map or a card), else the one chosen, else the nearest. */
@@ -734,7 +774,13 @@ export class GameState {
             // The Dev Console's answer (Core/RatwGameDev.cpp): kept in its log, and said in a toast.
             this.devLog.push({command: str(e, 'command'), ok: bool(e, 'ok'), text: str(e, 'text')});
             if (this.devLog.length > 30) this.devLog.splice(0, this.devLog.length - 30);
-            this.showToast(str(e, 'text').split('\n')[0]);
+            if (!this.devConsole) this.showToast(str(e, 'text').split('\n')[0]);
+            return;
+        }
+        if (type === 'devCommands') {
+            this.devCommands = arr(e, 'commands')
+                .filter((c): c is [string, string] => Array.isArray(c) && typeof c[0] === 'string' && typeof c[1] === 'string')
+                .map(c => [c[0], c[1]] as [string, string]);
             return;
         }
         if (type === 'talkTarget') {
@@ -1058,6 +1104,27 @@ export class GameState {
         this.send({type: 'dev', command: text.startsWith('/') ? text : `/${text}`});
     }
 
+    /** Opens or closes the Dev Console (only ever for a Dungeon Master); the first time, asks the server what it offers. */
+    toggleDevConsole(open = !this.devConsole) {
+        this.devConsole = open && this.isDungeonMaster();
+        if (this.devConsole) {
+            this.modal = '';
+            this.setChat(false);
+            if (!this.devCommandsAsked || !this.devCommands.length) {
+                this.devCommandsAsked = true;
+                this.send({type: 'devCommands'});
+            }
+        }
+    }
+
+    /** The commands that begin with what is typed (a leading "/" or not), alphabetically: all of them for nothing typed. */
+    devSuggestions(typed: string): [string, string][] {
+        const [word = '', ...rest] = typed.trim().toLowerCase().replace(/^\/+/, '').split(/\s+/);
+        return this.devCommands
+            .filter(([name]) => (rest.length ? name.slice(1).toLowerCase() === word : name.slice(1).toLowerCase().startsWith(word)))
+            .sort(([x], [y]) => x.localeCompare(y));
+    }
+
     submitPost() {
         const text = this.composer.text.trim();
         if (text.startsWith('/') && this.isDungeonMaster()) {
@@ -1065,6 +1132,7 @@ export class GameState {
             this.composer.text = '';
             this.runDevCommand(text);
             this.setChat(false);
+            this.toggleDevConsole(true);          // Where the answer is.
             return;
         }
         if (text) {
@@ -1183,6 +1251,10 @@ export class GameState {
         }
         if (code === 'Escape') {
             this.facingPreview = false;
+            if (this.devConsole) {
+                this.toggleDevConsole(false);
+                return true;
+            }
             if (this.modal) {
                 this.modal = '';
                 return true;
@@ -1201,7 +1273,7 @@ export class GameState {
             return true;
         }
         if (code === 'Backquote' && this.isDungeonMaster() && !this.chat) {
-            this.modal = this.modal === 'console' ? '' : 'console';           // The Dev Console (a Dungeon Master's).
+            this.toggleDevConsole();                                         // The Dev Console (a Dungeon Master's).
             return true;
         }
         if (this.modal) return true;
@@ -1433,7 +1505,8 @@ export class GameState {
     wheel(point: [number, number], delta: number, shift: boolean, ctrl: boolean): boolean {
         this.facingPreview = false;
         if (this.modal) return false;
-        if (contains(this.mapRect, point[0], point[1]) && !this.worldMap && !this.chat) {
+        // In a fight the wheel sets pace even while writing: it is how far the next move goes (doc 33).
+        if (contains(this.mapRect, point[0], point[1]) && !this.worldMap && (!this.chat || this.battle)) {
             if (ctrl) this.mapPan[0] = clamp(this.mapPan[0] + delta * 60, -1000, 1000);
             else if (shift) this.mapPan[1] = clamp(this.mapPan[1] + delta * 60, -1000, 1000);
             else if (delta) this.requestPace(this.displayPace() + (delta > 0 ? 1 : -1));
@@ -1556,7 +1629,7 @@ export class GameState {
             this.modal = a;
             this.contextTarget = '';
         } else if (a === 'close') this.modal = '';
-        else if (a === 'dev_console' && this.isDungeonMaster()) this.modal = 'console';
+        else if (a === 'dev_console') this.toggleDevConsole();
         else if (a === 'volume') this.volume = this.volume === 'speak' ? 'whisper' : this.volume === 'whisper' ? 'yell' : 'speak';
         else if (a === 'send') {
             if (this.chat) this.submitPost();

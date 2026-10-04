@@ -386,6 +386,7 @@ class Game
     std::string regardWords(const std::string& holder, const std::string& other) const;
     std::vector<std::string> reputationLines(const std::string& playerId) const;
     void afterSocial();
+    void tendFightScenes();                       // Each fight a scene: its players in it; settled when it ends.
     void refreshSocialViews(double dt);
     bool socialCommand(Connection* c, const json::Value& j, Result& result);
     json::Value notesSave() const;

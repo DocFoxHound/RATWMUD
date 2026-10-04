@@ -33,6 +33,12 @@ struct BattleFighter
     bool casting = false;           // Charging a spell: can't move until it goes off.
     bool scared = false;            // An NPC the fire put to flight.
     bool truce = false;             // Agreed to the truce on offer.
+    // A move is a walk (doc 33): the tiles still to step onto, the next one at `stepAt`. A player faces the way they
+    // walk unless they turned by hand since the move began (`turned`).
+    std::vector<std::pair<int, int>> walk;
+    double stepAt = 0;
+    bool turned = false;
+    int turnsTaken = 0;             // Turns begun: two or more and a player is paid for the fight (doc 33).
 };
 
 // A spell charging (the tell): it goes off when its meter fills, on the tiles locked when it began.
@@ -137,10 +143,13 @@ namespace battle
 // Placeholder numbers, to be tuned with play (doc 33).
 constexpr int ArenaWidth = 64, ArenaHeight = 48;     // Twice a 32×24 map view at the default zoom.
 constexpr int GrowthFrom = 2;                        // Each fighter past these two adds a tile each way.
-constexpr double TurnSeconds = 15, TypingExtra = 15, NpcPause = 1.5;
-// The initiative bar fills in real time: at DEX 50 (a gain of 11) in fifteen seconds.
-constexpr double MeterPerSecond = 100.0 / (11 * 15);
+constexpr double TurnSeconds = 20, TypingExtra = 15, NpcPause = 1.5;
+// The initiative bar fills in real time: at DEX 50 (a gain of 11) in twenty seconds.
+constexpr double MeterPerSecond = 100.0 / (11 * 20);
 constexpr int AwayAfter = 3;
+// A move is walked a tile at a time (slower hurt: the injury factor), a crawl slower still.
+constexpr double StepSeconds = .45, SprintStepSeconds = .2, CrawlStepSeconds = 1.0;   // At a walk; at a sprint.
+constexpr int NpcPace = 6;                                     // NPCs fight at a run.
 constexpr double BannerSeconds = 2.0, FadeSeconds = .5, SettleSeconds = 5;
 constexpr double ChallengeSeconds = 30, StartReach = 3.0;
 constexpr double YieldSeconds = 20, LapseSeconds = 60;   // An offer to yield unanswered; a fight everyone left.
@@ -181,9 +190,14 @@ constexpr double LingerSeconds = 60, NoiseReach = 30;
 // The meter a fighter gains each tick, and how far they may move in a turn (injury shortens it).
 inline double meterGain(double dexterity) { return 6 + dexterity / 10; }
 inline double injuryFactor(double hurt) { return 1 - .6 * (hurt / 100); }
-int moveRange(double dexterity, double hurt);
-// Stamina back at the start of each of one's own turns.
-double staminaPerTurn(double hurt);
+// Pace (the wheel, 0 walk .. 10 sprint, as in the world) scales how far a turn's move goes: half at a walk, as far as
+// DEX allows at a trot (5), half again at a sprint. Faster than a trot (4 and up) costs stamina for every tile; an
+// exhausted wolf walks.
+inline double paceFactor(int pace) { return .5 + .1 * pace; }
+inline double tileStamina(int pace) { return pace > 3 ? (pace - 3) * .6 : 0; }
+int moveRange(double dexterity, double hurt, int pace = 5);
+// Stamina back at the start of each of one's own turns: by strength, less hurt.
+double staminaPerTurn(double hurt, double strength = 40);
 // Eighths of a turn from east for a step (dx, dy); and how far apart two facings are (0..4).
 int octant(double dx, double dy);
 inline int octantGap(int a, int b)

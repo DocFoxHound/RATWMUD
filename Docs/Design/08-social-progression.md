@@ -62,6 +62,18 @@ Repeating that end request cannot settle it again. Scene state, ledger receipts
 and materialized totals are persisted in the same SQLite world transaction.
 The client renders only confirmed totals from snapshots.
 
+**Fights are scenes** (doc 33). Each fight has its own scene from its start, with every player fighting in it a member
+whether they talk or not; fighters' words go to it (tagged as a party's are), not to the cell's scene, and leaving with
+the scene-end action doesn't end it: the fight's end does. Settling it pays each player who took two turns or more 10 XP
+for the fight, and those who talked it through (the qualifying shape above, with at least one other) twice the scene
+pay on top (40 for contributors 1–4). Repeated partners decay it as above (counted over scenes both were paid in
+today), and the 8-scene and 100 XP daily limits apply. The receipt is the ordinary session receipt, so stars and Stories
+treat a fight as any scene.
+
+**Gold Stars: one to each.** A participant may give a Gold Star to each other paid participant of an ended scene, one
+per recipient (as the source model has it), not one per scene. A fight's result card offers them as its roleplay
+review, as does the bar above the composer for an hour after any scene.
+
 Gold Stars, Stories, Story Stars, consent-reviewed recaps, tier diversity gates and
 the shadow evaluator are explicitly deferred. They must become separate typed
 metadata paths rather than generic “give social XP” commands.

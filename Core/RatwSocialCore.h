@@ -158,6 +158,16 @@ class SocialLedger
     // Eligible listeners must be connected humans that actually perceived this post.
     int record(SocialPost post, const std::vector<std::string>& eligibleListeners);
     int settle(const std::string& session, double now);
+    // A fight is a scene of its own (doc 33): its scene's id, and the tag its fighters' words carry (as a party's do).
+    static std::string fightScene(const std::string& fight) { return "fight-" + fight; }
+    static std::string fightTag(const std::string& fight) { return "fight:" + fight; }
+    static bool isFight(const SocialSession& s) { return s.party.rfind("fight:", 0) == 0; }
+    // A player in a fight: a member of its scene from the start, whether they talk or not.
+    void joinFight(const std::string& fight, const std::string& cell, const std::string& member, double now);
+    // The fight is over: those in `fought` (who took their turns) are paid for the fight, and those who talked it
+    // through (the usual shape, with another who did) twice a scene's pay; the usual decay and daily caps after.
+    int settleFight(const std::string& fight, const std::set<std::string>& fought, double now);
+    static constexpr int FightXP = 10, FightTalkFactor = 2;
     int endFor(const std::string& actor, double now);
     void tick(double now);
     int level(const std::string& actor) const;

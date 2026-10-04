@@ -105,7 +105,12 @@ void challengeAndTurns()
         expect(test::apart(x, y, me->x, me->y) <= range, "never past her range");
     const auto to = besideOn(w, "ada", "bo");
     expect(to.first >= 0, "She can get next to Bo");
+    const auto from = std::pair<int, int>{me->x, me->y};
     expect(w.battleMove("ada", to.first, to.second).ok, "and does");
+    expect(std::pair<int, int>{me->x, me->y} == from && !me->walk.empty(), "She walks there: a move takes time (doc 33)");
+    for (int i = 0; i < 40 && !me->walk.empty(); ++i)
+        w.tick(.1);
+    expect(std::pair<int, int>{me->x, me->y} == to, "and gets there");
     expect(!w.battleMove("ada", me->x, me->y + 1).ok, "One move a turn");
     expect(w.battleAct("bo", "wait").ok && !test::acting(&b, "bo"), "Bo, in his own turn meanwhile, ends it");
     expect(!w.battleAct("bo", "wait").ok, "and can't act again until his bar fills");
@@ -113,7 +118,9 @@ void challengeAndTurns()
     r = w.battleAct("ada", "bite", "bo");
     expect(r.ok, "A bite: " + r.message);
     expect(std::abs(ada.stamina - (stamina - battle::BiteStamina)) < 1e-9, "It costs stamina");
-    expect(!test::acting(&b, "ada"), "Moved and acted: her turn is over");
+    expect(test::acting(&b, "ada"), "Moved and acted, her turn goes on until its time or she ends it (doc 33)");
+    expect(w.battleFace("ada", (me->facing + 4) % 8).ok, "so she can still turn");
+    expect(w.battleAct("ada", "wait").ok && !test::acting(&b, "ada"), "and ends it herself");
     // Bo lets his turns run out: each counts as waiting, and after three he is away and skipped at once.
     for (int i = 0; i < 200 && !test::acting(&b, "bo"); ++i)
         w.tick(.1);
@@ -554,7 +561,9 @@ void theFlame()
     expect(std::abs(ad->hurt - battle::GiftedFlame.self) < 1e-9, "and a singed muzzle");
     const auto& tiles = b.casts[0].tiles;
     expect(std::find(tiles.begin(), tiles.end(), std::pair<int, int>{fb->x, fb->y}) != tiles.end(), "The cone takes in Bo's tile");
-    expect(!test::acting(&b, "player-ad"), "Casting ends her turn");
+    expect(test::acting(&b, "player-ad") && !w.battleMove("player-ad", fa->x + 1, fa->y).ok,
+           "Casting, her turn goes on (to turn, or talk) but she can't move");
+    expect(w.battleAct("player-ad", "wait").ok && !test::acting(&b, "player-ad"), "She ends it");
     // Bo steps aside? He waits: the fire comes.
     for (int i = 0; i < 200 && !b.casts.empty(); ++i)
     {
@@ -591,6 +600,50 @@ void crawling()
     expect(ad.posture == "lying" && ad.downedLeft > 0, "lying still");
 }
 
+// Pace in a fight (doc 33): the wheel's pace sets how far a turn's move goes; running costs stamina a tile; stamina
+// comes back a little each turn, by strength; an exhausted wolf walks.
+void paceAndStamina()
+{
+    World w;
+    auto& b = duel(w);
+    auto* fa = b.fighter("player-ad");
+    auto* ad = w.entity("player-ad");
+    const auto farthest = [&] {
+        int far = 0;
+        for (const auto& [x, y] : w.battleReach("player-ad"))
+            far = std::max(far, test::apart(x, y, fa->x, fa->y));
+        return far;
+    };
+    ad->stamina = 100;
+    w.setPace("player-ad", 0);
+    const int walking = farthest();
+    w.setPace("player-ad", 10);
+    const int sprinting = farthest();
+    expect(walking >= 1 && sprinting >= walking * 2, "A sprint goes far further than a walk: " + std::to_string(walking) + " v " +
+           std::to_string(sprinting));
+    ad->stamina = 5;
+    expect(farthest() < sprinting && farthest() >= walking, "Short of breath, only as far as it pays for (a walk is free)");
+    ad->stamina = 100;
+    std::pair<int, int> to{fa->x, fa->y};
+    for (const auto& t : w.battleReach("player-ad"))
+        if (test::apart(t.first, t.second, fa->x, fa->y) > test::apart(to.first, to.second, fa->x, fa->y))
+            to = t;
+    expect(w.battleMove("player-ad", to.first, to.second).ok, "She sprints");
+    const double spent = 100 - ad->stamina, tiles = double(fa->walk.size());
+    expect(std::abs(spent - tiles * battle::tileStamina(10)) < 1e-9 && spent > 0,
+           "and it costs her breath, by the tile: " + std::to_string(spent));
+    for (int i = 0; i < 60 && !fa->walk.empty(); ++i)
+        w.tick(.1);
+    expect(fa->x == to.first && fa->y == to.second, "She gets there");
+    // Exhausted, she walks.
+    ad->exhausted = true;
+    w.battleAct("player-ad", "wait");
+    expect(battle::staminaPerTurn(0, 80) > battle::staminaPerTurn(0, 20) && battle::staminaPerTurn(60, 50) < battle::staminaPerTurn(0, 50),
+           "Stamina back a turn: more for the strong, less for the hurt");
+    expect(battle::moveRange(50, 0, 0) < battle::moveRange(50, 0, 5) && battle::moveRange(50, 0, 5) < battle::moveRange(50, 0, 10),
+           "Range by pace");
+}
+
 void barsFillInRealTime()
 {
     World w;
@@ -599,18 +652,23 @@ void barsFillInRealTime()
     auto* fb = b.fighter("player-bo");
     // Ad is acting; Bo let his turn go, and his bar is filling from its head start.
     expect(fa->acting && !fb->acting && fb->meter == 40, "Ad acts; Bo's bar fills again from 40");
-    const int facing = fa->facing;
     const auto reach = w.battleReach("player-ad");
-    w.battleMove("player-ad", reach.back().first, reach.back().second);
-    expect(fa->facing == facing, "Moving doesn't turn her: a player faces where they choose");
+    const auto [tx, ty] = reach.back();
+    w.battleMove("player-ad", tx, ty);
     const double bo0 = fb->meter;
     w.tick(1);
     const double boPerSecond = battle::meterGain(effectiveDexterity(*w.entity("player-bo"))) * battle::MeterPerSecond;
     expect(std::abs(fb->meter - bo0 - boPerSecond) < 1, "Bo's bar fills in real time while Ad acts");
+    for (int i = 0; i < 60 && !fa->walk.empty(); ++i)
+        w.tick(.1);
+    expect(fa->x == tx && fa->y == ty, "She walks where she was going");
+    const int walked = fa->facing;
+    expect(w.battleFace("player-ad", (walked + 2) % 8).ok && fa->facing == (walked + 2) % 8,
+           "She faced the way she walked; turning by hand after it stands (doc 33)");
     expect(w.battleAct("player-ad", "wait").ok && fa->meter == 20 && !fa->acting,
            "Ending early: her bar starts again at once (a head start for not acting)");
     // The moment Bo's bar is full he acts, whoever else is acting.
-    for (int i = 0; i < 100 && !fb->acting; ++i)
+    for (int i = 0; i < 400 && !fb->acting; ++i)
         w.tick(.1);
     expect(fb->acting, "Bo's bar full: his turn, at once");
     for (int i = 0; i < int(battle::TurnSeconds * 10) + 5; ++i)
@@ -880,6 +938,33 @@ void devConsoleFights()
         expect(!World::testCamp(c.id), "and so is its camp");
     expect(ada.downedLeft <= 0 && !ada.dead, "Ada is none the worse");
     expect(w.testFight("ada").ok, "Another can be started");
+
+    // On raised ground (a hillside, a valley floor above the sea): every tile two steps up, so nothing is at height 0.
+    World hill;
+    quiet(hill);
+    auto& bo = wolf(hill, "ada");
+    for (auto& t : hill.cell(bo.cellId)->tiles)
+        t.height += 2;
+    const auto onHill = hill.testFight("ada");
+    expect(onHill.ok, "A test fight starts on raised ground too: " + onHill.message);
+    const auto* hb = hill.battleOf("ada");
+    const auto* hm = hb ? hb->fighter("ada") : nullptr;
+    const auto* ht = hb ? hb->fighter(onHill.targetId) : nullptr;
+    expect(hm && ht && test::apart(hm->x, hm->y, ht->x, ht->y) > int(battle::StartReach) + 2, "the bandit across the arena there as well");
+    int near = 1000;
+    for (int i = 0; i < 3000 && near > 1; ++i)
+    {
+        hb = hill.battleOf("ada");
+        if (!hb || hb->over)
+            break;
+        if (test::acting(hb, "ada"))
+            hill.battleAct("ada", "wait");
+        hill.tick(.1);
+        if ((hb = hill.battleOf("ada")) && hb->fighter(onHill.targetId))
+            near = std::min(near, test::apart(hb->fighter("ada")->x, hb->fighter("ada")->y, hb->fighter(onHill.targetId)->x,
+                                              hb->fighter(onHill.targetId)->y));
+    }
+    expect(near <= 1, "and it reaches Ada up there (closest " + std::to_string(near) + ")");
 }
 
 int main()
@@ -900,6 +985,7 @@ int main()
         crawling();
         smiths();
         barsFillInRealTime();
+        paceAndStamina();
         dodgingTheFire();
         playtestFixes();
         dueTerms();

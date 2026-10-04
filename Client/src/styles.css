@@ -79,7 +79,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .resizer { grid-area: resize; cursor: col-resize; background: transparent; }
 .resizer:hover { background: #34443e; }
 
-.center { grid-area: center; display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 10px 14px 8px; gap: 8px; }
+.center { grid-area: center; position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 10px 14px 8px; gap: 8px; }
 .map-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .map-titles { display: flex; align-items: baseline; gap: 14px; min-width: 0; overflow: hidden; white-space: nowrap; }
 .map-place { font-size: 19px; font-weight: 500; }
@@ -202,15 +202,6 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .dev { border-top: 1px solid #34443e; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .dev-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .dev-row .small { background: var(--raised); padding: 6px 10px; }
-.console-row { display: flex; gap: 6px; margin: 8px 0 12px; }
-.console-input { font-family: ui-monospace, monospace; }
-.console-commands { display: grid; gap: 6px; margin: 6px 0 12px; }
-.console-command { display: flex; gap: 10px; align-items: center; }
-.console-command .small { background: var(--raised); padding: 6px 10px; font-family: ui-monospace, monospace; min-width: 160px; text-align: left; }
-.console-log { display: grid; gap: 6px; max-height: 260px; overflow: auto; margin-top: 6px; }
-.console-entry { border-left: 3px solid #4f7a4a; padding: 4px 8px; background: var(--ink); }
-.console-entry.refused { border-left-color: #a5574a; }
-.console-entry pre { margin: 2px 0 0; white-space: pre-wrap; font: inherit; color: var(--paper); }
 .dev-row .active { color: var(--gold); }
 
 /* The front door: a 1440×940 layout scaled to the window. */
@@ -373,6 +364,15 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 .meter.thin { height: 5px; border-radius: 2px; }
 .meter.stamina .fill { background: #a8c2a6; }
 .meter.mana .fill { background: #9f8ad8; }
+.meter.init { height: 12px; }
+.meter.init .fill { background: color-mix(in srgb, var(--gold) 55%, #000); transition: width .2s linear; }
+.meter.init.acting .fill { background: var(--gold); }
+.meter.init .meter-text { line-height: 12px; font-size: 10px; }
+.turn-strip .strip-chips { display: none; }
+.result-review { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 10px 0 4px; padding-top: 10px;
+    border-top: 1px solid #34443e; }
+.result-stars { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+button.given { opacity: .6; }  /* Initiative is on the fighter cards now (doc 33). */
 .fcard-foot { display: flex; justify-content: space-between; align-items: center; min-height: 16px; }
 .odds { display: inline-flex; align-items: center; gap: 5px; color: var(--paper); font: 12px 'RATW Mono', monospace; }
 .odds .odds-hit { color: var(--gold); font-weight: 600; }
@@ -476,3 +476,24 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 .result-next .abtn { flex-direction: row; gap: 6px; min-width: 0; padding: 6px 12px; }
 .result-next .abtn .abtn-icon { width: 18px; height: 18px; }
 .map .versus canvas { position: static; inset: auto; }
+
+/* The Dev Console (a Dungeon Master's; ui/hud/devConsole.ts): down over the map, the game going on behind it. */
+.top-actions .top.dev { color: #e6c481; border-color: #6b5a33; }
+.top-actions .top.dev.active { background: #3a3220; }
+.dev-console { position: absolute; z-index: 30; top: 0; left: 0; right: 0; max-height: 55%; display: flex; flex-direction: column;
+    background: rgba(9, 13, 13, .94); border-bottom: 2px solid #6b5a33; box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+    font-family: ui-monospace, 'Cascadia Mono', Menlo, monospace; font-size: 13px; }
+.dev-console-head { display: flex; align-items: center; gap: 14px; padding: 6px 10px; border-bottom: 1px solid #26312c; }
+.dev-console-head .close { margin-left: auto; }
+.dev-console-log { flex: 1; min-height: 80px; overflow: auto; padding: 6px 10px; display: grid; align-content: start; gap: 2px; }
+.dev-console-entry { white-space: pre-wrap; color: var(--paper); }
+.dev-console-entry.command { color: #e6c481; margin-top: 4px; }
+.dev-console-entry.ok { color: #a8c7ad; }
+.dev-console-entry.refused { color: #e1857a; }
+.dev-console-line { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-top: 1px solid #26312c; }
+.dev-console-prompt { color: #e6c481; }
+.dev-console-input { flex: 1; background: transparent; border: none; outline: none; color: var(--paper); font: inherit; }
+.dev-console-suggest { max-height: 160px; overflow: auto; border-top: 1px solid #1d2624; padding: 2px 0 6px; }
+.dev-console-suggestion { display: flex; gap: 14px; padding: 3px 10px 3px 26px; cursor: pointer; }
+.dev-console-suggestion b { color: #e6c481; min-width: 180px; font-weight: 600; }
+.dev-console-suggestion.chosen, .dev-console-suggestion:hover { background: #22301f; }

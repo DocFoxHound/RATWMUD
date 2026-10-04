@@ -253,7 +253,7 @@ function PlayDialog() {
             {result && <div className="launch-note"><b>Started.</b> The game opens in your browser in a few seconds.<small>{result.folder}</small><code>{result.command}</code></div>}
         </>}
         <div className="modal-actions"><button onClick={done}>Close</button>
-            <button className="play" disabled={!!errors.length || busy} onClick={launch}>{busy ? 'Exporting…' : result ? '▶ Launch again' : '▶ Play'}</button></div>
+            <button className="play" disabled={!!errors.length || busy} onClick={launch}>{busy ? 'Starting…' : result ? '▶ Launch again' : '▶ Play'}</button></div>
     </Modal>;
 }
 

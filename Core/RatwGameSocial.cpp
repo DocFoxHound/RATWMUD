@@ -128,8 +128,11 @@ void Game::afterSocial()
         const auto& e = entries[socialSeen_];
         if (e.reason != "qualified_session_settlement")
             continue;
+        const bool fight = e.session.rfind("fight-", 0) == 0;
         if (auto* c = clientOf(e.actor))
-            system(c, e.amount > 0 ? "The scene ends. +" + std::to_string(e.amount) + " social." : "The scene ends.");
+            system(c, fight ? "The fight is over" + (e.amount > 0 ? ": +" + std::to_string(e.amount) + " social" : std::string()) +
+                                  ". Give a Gold Star to each who roleplayed it well (above where you write)."
+                            : e.amount > 0 ? "The scene ends. +" + std::to_string(e.amount) + " social." : "The scene ends.");
         std::size_t at = 0;
         while (at <= e.partner.size())
         {
@@ -144,6 +147,51 @@ void Game::afterSocial()
         onSettled(e);                             // (Chapters take their share: doc 32, Part 3.)
     }
     socialViewsDirty_ = true;
+}
+
+void Game::tendFightScenes()
+{
+    // Each fight is a scene of its own (doc 33): its players are in it from the start, talking or not; when it is over,
+    // those who took their turns are paid for it, and twice the usual for roleplaying it through.
+    bool settled = false;
+    for (const auto& b : world_.battles())
+    {
+        if (!b.over)
+        {
+            for (const auto& f : b.fighters)
+                if (const auto* e = world_.entity(f.id); e && !e->npc && f.status != "fled")
+                    social_.joinFight(b.id, b.cellId, f.id, now());
+            continue;
+        }
+        const auto scene = social_.sessions.find(SocialLedger::fightScene(b.id));
+        if (scene == social_.sessions.end() || scene->second.ended > 0)
+            continue;
+        std::set<std::string> fought;
+        for (const auto& f : b.fighters)
+            if (f.turnsTaken >= 2)
+                fought.insert(f.id);
+        social_.settleFight(b.id, fought, now());
+        settled = true;
+    }
+    // A fight gone without being seen over (cleared at once): its scene ends with what is known.
+    for (auto& [sid, s] : social_.sessions)
+        if (s.ended == 0 && SocialLedger::isFight(s))
+        {
+            const auto fight = s.party.substr(6);
+            if (std::none_of(world_.battles().begin(), world_.battles().end(), [&](const Battle& b) { return b.id == fight; }))
+            {
+                std::set<std::string> members;
+                for (const auto& [m, c] : s.members)
+                    members.insert(m);
+                social_.settleFight(fight, members, now());
+                settled = true;
+            }
+        }
+    if (settled)
+    {
+        afterSocial();
+        saveSoon();
+    }
 }
 
 void Game::refreshSocialViews(double dt)
@@ -195,20 +243,33 @@ void Game::refreshSocialViews(double dt)
                 auto ended = Value::object();
                 ended.add("id", last->id);
                 ended.add("xp", social_.paidFor(id, last->id));
-                bool starred = false;
-                for (const auto& st : social_.stars)
-                    starred |= st.kind == "gold" && st.source == last->id && st.giver == id;
-                auto targets = Value::array();
-                if (!starred)
-                    for (const auto& e : social_.entries)
-                        if (e.session == last->id && e.reason == "qualified_session_settlement" && e.actor != id)
-                        {
-                            auto o = Value::object();
-                            o.add("id", e.actor);
-                            o.add("name", names::capitalised(labelFor(id, e.actor)));
+                // A star for each other who took part, one each (doc 33's fight review; any scene the same).
+                auto targets = Value::array(), starredNames = Value::array();
+                std::set<std::string> listed;
+                for (const auto& e : social_.entries)
+                    if (e.session == last->id && e.reason == "qualified_session_settlement" && e.actor != id &&
+                        listed.insert(e.actor).second)
+                    {
+                        const bool starred = std::any_of(social_.stars.begin(), social_.stars.end(), [&](const SocialStar& st) {
+                            return st.kind == "gold" && st.source == last->id && st.giver == id && st.recipient == e.actor;
+                        });
+                        auto o = Value::object();
+                        o.add("id", e.actor);
+                        o.add("name", names::capitalised(labelFor(id, e.actor)));
+                        if (starred)
+                            starredNames.push(o);
+                        else
                             targets.push(o);
-                        }
+                    }
                 ended.add("starTargets", targets);
+                ended.add("starred", starredNames);
+                if (SocialLedger::isFight(*last))
+                {
+                    // A fight: paid for it, and twice for talking it through.
+                    const auto& me = last->members.at(id);
+                    ended.add("fight", true);
+                    ended.add("talked", me.turns >= 2 && me.words >= 35 && me.replies >= 1);
+                }
                 // May it begin or carry on a Story?
                 const auto paid = social_.paidIn(last->id);
                 ended.add("storyable", !social_.storyOf(last->id) && paid.size() >= 2 && social_.paidFor(id, last->id) > 0);

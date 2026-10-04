@@ -1,6 +1,8 @@
 // The Dev Console: commands for a player marked Dungeon Master (from the Dungeon Master app's Players tab, saved with
 // the character as Entity::dungeonMaster), for trying things out where they stand. Each command is answered with a
-// {"type": "devResult", "command", "ok", "text"} for the console's log. Nobody else may use it, whatever the page sends.
+// {"type": "devResult", "command", "ok", "text"} for the console's log; {"type": "devCommands"} asks for the list the
+// console suggests from as one types ({"type": "devCommands", "commands": [[name, help], ...]}). Nobody else may use
+// it, whatever the page sends.
 #include "RatwGame.h"
 
 #include <algorithm>
@@ -15,7 +17,7 @@ struct DevCommand
     const char* name;
     const char* help;
 };
-// What the console offers (the page lists the same in Client/src/ui/hud/dialogs.ts).
+// What the console offers: add a command here and in devCommand() below; the console learns of it by itself.
 constexpr DevCommand DevCommands[] = {
     {"help", "Lists these commands."},
     {"fight-test-1", "A fight where you stand: one weak bandit on the far side of the arena, with a clear way to you."},
@@ -37,6 +39,23 @@ void Game::devCommand(Connection* c, const json::Value& j)
         command.resize(60);
 
     const auto* me = world_.entity(id);
+    if (j.string("type") == "devCommands")
+    {
+        auto list = json::Value::array();
+        if (me && !me->npc && me->dungeonMaster)
+            for (const auto& d : DevCommands)
+            {
+                auto row = json::Value::array();
+                row.push(std::string("/") + d.name);
+                row.push(d.help);
+                list.push(std::move(row));
+            }
+        auto reply = json::Value::object();
+        reply.add("type", "devCommands");
+        reply.add("commands", std::move(list));
+        send(c, reply);
+        return;
+    }
     Result result;
     if (!me || me->npc || !me->dungeonMaster)
         result = {false, "Only a Dungeon Master has the Dev Console.", {}};

@@ -916,24 +916,51 @@ def merge_roster(incoming, on_disk):
     return roster_lib.check_roster(incoming)
 
 
+# How long a playtest server may sit with nobody playing before it stops: Atlas opens the game in the browser, so
+# closing the page ends the playtest instead of leaving a server running (they used to pile up, one per launch).
+PLAYTEST_IDLE = 300
+
+
+def wait_until_listening(process, log: Path, seconds: float = 240.0):
+    """Waits for the launched server to say it is listening, so a server that is refused or fails is reported, not
+    announced as started. Still building after `seconds` (DEV's world can take a while): left to carry on."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        text = log.read_text(errors='replace') if log.exists() else ''
+        if 'RATW server listening on port' in text:          # (Not the NPC Mind's own "listening on port".)
+            return
+        rejected = [line for line in text.splitlines() if 'RATW_WORLD_REJECTED' in line]
+        if rejected:
+            raise HostError('The game did not start: ' + rejected[-1].split('RATW_WORLD_REJECTED:', 1)[-1].strip())
+        if process.poll() is not None:
+            last = [line for line in text.splitlines() if line.strip()][-3:]
+            raise HostError('The game did not start (exit ' + str(process.returncode) + '): ' + (' / '.join(last) or 'no output'))
+        time.sleep(0.25)
+
+
 def launch_game(manifest: Path, save: Path, quick: bool, log: Path):
-    command = ['bash', str(ROOT / 'tools' / 'play.sh'), '--world', str(manifest), '--save', str(save)]
+    command = ['bash', str(ROOT / 'tools' / 'play.sh'), '--world', str(manifest), '--save', str(save),
+               '--idle-exit', str(PLAYTEST_IDLE)]
     if quick:
         command += ['--identity', 'tester', '--name', 'Tester']
     with open(log, 'wb') as out:
-        subprocess.Popen(command, cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                         start_new_session=True)
+        process = subprocess.Popen(command, cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                   start_new_session=True)
+    wait_until_listening(process, log)
     return command
 
 
 def launch_live(quick: bool, log: Path):
-    """Plays DEV's world as the DEV server would: builds it, then streams it from the database (no size limit)."""
-    command = ['bash', str(ROOT / 'tools' / 'live.sh'), 'play', 'dev']
+    """Plays DEV's world as the DEV server would: builds it, then streams it from the database (no size limit). As a
+    scratch server (Docs/Design/20-world-database.md): it reads DEV's world and save but writes nothing back, so it runs
+    beside the real DEV server, and the playtest never touches the game's save database."""
+    command = ['bash', str(ROOT / 'tools' / 'live.sh'), 'play', 'dev', '--scratch', '--idle-exit', str(PLAYTEST_IDLE)]
     if quick:
         command += ['--identity', 'tester', '--name', 'Tester']
     with open(log, 'wb') as out:
-        subprocess.Popen(command, cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                         start_new_session=True)
+        process = subprocess.Popen(command, cwd=ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                   start_new_session=True)
+    wait_until_listening(process, log)
     return command
 
 

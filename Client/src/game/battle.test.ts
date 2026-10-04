@@ -59,7 +59,13 @@ test('fights: no walking; a lit tile moves, a foe bites, a fallen friend is tend
     s.arenaClick(8, 3);
     assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'move', x: 3, y: 2}, 'an unlit one: nothing');
     s.arenaClick(5, 2);
-    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'bite', target: 'bo'}, 'a foe: bite');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'move', x: 4, y: 2}, 'a foe out of reach: walk up to them first');
+    const walking = commands.length;
+    s.applySnapshot(snapshot());
+    assert.equal(commands.length, walking, 'no blow while still walking');
+    const arrived = (battle.fighters as Json[]).map(f => (f.id === 'self' ? {...f, x: 4} : f));
+    s.applySnapshot(snapshot({battle: {...battle, moved: true, fighters: arrived}}));
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'bite', target: 'bo'}, 'then, there, the bite');
     s.fightTarget('cy');
     assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'tend', target: 'cy'}, 'a friend who is down: tend');
     // Over, then gone: back to the world's own ground and sight, everyone fading in.
@@ -105,7 +111,12 @@ test('fights: turning is free and only on your turn; a sword strikes; fire is ai
     s.applySnapshot(snapshot({battle: {...battle, you: {...(battle.you as Json), mouth: 'sword', gift: 'fire', mana: 30, flameLength: 3,
         flameAngle: 23, flameMana: 25}}}));
     s.fightTarget('bo');
-    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'sword', target: 'bo'});
+    const step = commands.at(-1) as Json;
+    assert.equal(step.verb, 'move', 'out of a sword\'s reach: walk in first');
+    const there = (battle.fighters as Json[]).map(f => (f.id === 'self' ? {...f, x: step.x, y: step.y} : f));
+    s.applySnapshot(snapshot({battle: {...battle, moved: true, fighters: there, you: {...(battle.you as Json), mouth: 'sword', gift: 'fire',
+        mana: 30, flameLength: 3, flameAngle: 23, flameMana: 25}}}));
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'sword', target: 'bo'}, 'and strike with it on arrival');
     // Fire: aim, then a click sends it where it goes.
     s.aiming = 'flame';
     s.arenaClick(5, 2);

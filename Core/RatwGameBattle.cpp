@@ -131,10 +131,9 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             o.add("casting", true);
         if (!b.truceBy.empty())
             o.add("truce", f.truce);
-        // How they look, for the fight screen's portraits (doc 37); one's own side's breath and mana.
+        // How they look, for the fight screen's portraits (doc 37); everyone's breath and mana, on their cards.
         o.add("appearance", wire::appearance(e->appearance));
         o.add("lifeStage", lifeStageName(lifeStage(e->age)));
-        if (!observer && mine->side == f.side)
         {
             o.add("stamina", std::round(e->stamina));
             if (!e->gift.empty())

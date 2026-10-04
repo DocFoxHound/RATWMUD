@@ -1,6 +1,6 @@
 #pragma once
 // A scripted fighter for tests (Docs/Design/33-combat.md): on its turn it closes on the nearest enemy still standing
-// and bites it, then ends the turn.
+// and bites it, then ends the turn. A move is walked, so it may take a few calls (with ticks between) to finish.
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -29,6 +29,8 @@ inline bool playTurn(World& w, const std::string& id)
     if (!b || b->over || !acting(b, id))
         return false;
     const auto* me = b->fighter(id);
+    if (!me->walk.empty())
+        return true;                                // Walking there (a move takes time: doc 33); the rest on arrival.
     if (me->status != "fighting")
     {
         w.battleAct(id, "wait");
@@ -60,6 +62,8 @@ inline bool playTurn(World& w, const std::string& id)
             }
         if (to != std::pair<int, int>{me->x, me->y})
             w.battleMove(id, to.first, to.second);
+        if ((b = w.battleOf(id)) && b->fighter(id) && !b->fighter(id)->walk.empty())
+            return true;
     }
     if ((b = w.battleOf(id)) && !b->over && acting(b, id))
     {

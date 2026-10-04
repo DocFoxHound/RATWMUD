@@ -837,6 +837,20 @@ bool World::passable(const std::string& cellId, Vec2 p, const Tile* from) const
     return step::passable(WalkingGrid(*this, *c), {p.x, p.y}, from ? &start : nullptr);
 }
 
+bool World::standable(const std::string& cellId, Vec2 p) const
+{
+    const auto* c = cell(cellId);
+    const auto* t = c && finite(p) ? c->tile(int(std::floor(p.x)), int(std::floor(p.y))) : nullptr;
+    return t && passable(cellId, p, t);
+}
+
+bool World::stepBetween(const std::string& cellId, int x, int y, int nx, int ny) const
+{
+    const auto* c = cell(cellId);
+    const auto* from = c ? c->tile(x, y) : nullptr;
+    return from && standable(cellId, {nx + .5, ny + .5}) && passable(cellId, {nx + .5, ny + .5}, from);
+}
+
 int World::regionAt(const Cell& c, Vec2 point) const
 {
     const int x = int(std::floor(point.x)), y = int(std::floor(point.y));

@@ -38,14 +38,14 @@ bool takesTurns(const BattleFighter& f)
 
 namespace battle
 {
-int moveRange(double dexterity, double hurt)
+int moveRange(double dexterity, double hurt, int pace)
 {
-    return std::max(1, int(std::floor((3 + dexterity / 25) * injuryFactor(hurt))));
+    return std::max(1, int(std::floor((3 + dexterity / 25) * injuryFactor(hurt) * paceFactor(pace))));
 }
 
-double staminaPerTurn(double hurt)
+double staminaPerTurn(double hurt, double strength)
 {
-    return hurt < 25 ? 8 : hurt < 50 ? 6 : 4;
+    return (4 + strength / 10) * (hurt < 25 ? 1 : hurt < 50 ? .75 : .5);
 }
 
 int octant(double dx, double dy)
@@ -184,7 +184,7 @@ Result World::testFight(const std::string& player)
             for (int dx = -ring; dx <= ring && beside.x < 0; ++dx)
             {
                 const Vec2 at{std::floor(p->position.x) + dx + .5, std::floor(p->position.y) + dy + .5};
-                if (std::max(std::abs(dx), std::abs(dy)) == ring && passable(p->cellId, at))
+                if (std::max(std::abs(dx), std::abs(dy)) == ring && standable(p->cellId, at))
                     beside = at;
             }
     if (beside.x < 0)
@@ -465,12 +465,96 @@ void World::fitArena(Battle& b)
 
 bool World::arenaOpen(const Battle& b, int x, int y, const std::string& except) const
 {
-    if (!b.inArena(x, y) || !passable(b.cellId, {x + .5, y + .5}))
+    if (!b.inArena(x, y) || !standable(b.cellId, {x + .5, y + .5}))
         return false;
     for (const auto& f : b.fighters)
-        if (f.id != except && f.status != "fled" && f.x == x && f.y == y)
-            return false;
+        if (f.id != except && f.status != "fled" &&
+            ((f.x == x && f.y == y) || (!f.walk.empty() && f.walk.back() == std::pair<int, int>{x, y})))
+            return false;                           // (Where someone is walking to is theirs.)
     return true;
+}
+
+std::vector<std::pair<int, int>> World::walkTo(const Battle& b, const BattleFighter& f, int tx, int ty) const
+{
+    // Down the steps stepsTo counts, one tile at a time, the way it walks: eight ways, never cutting a corner.
+    std::vector<std::pair<int, int>> out;
+    const auto steps = stepsTo(b, tx, ty, f.id);
+    const auto at = [&](int x, int y) { return b.inArena(x, y) ? steps[std::size_t((y - b.y0) * b.w + (x - b.x0))] : -1; };
+    const auto open = [&](int x, int y) { return b.inArena(x, y) && arenaOpen(b, x, y, f.id); };
+    int x = f.x, y = f.y;
+    for (int left = at(x, y); left > 0;)
+    {
+        bool stepped = false;
+        // Straight toward the goal first, then the others.
+        const int gx = (tx > x) - (tx < x), gy = (ty > y) - (ty < y);
+        const std::pair<int, int> order[] = {{gx, gy}, {gx, 0}, {0, gy}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        for (const auto& [dx, dy] : order)
+        {
+            const int nx = x + dx, ny = y + dy;
+            if ((dx == 0 && dy == 0) || at(nx, ny) != left - 1 || !stepBetween(b.cellId, x, y, nx, ny))
+                continue;
+            if (dx != 0 && dy != 0 && (!open(x + dx, y) || !open(x, y + dy)) && !(nx == tx && ny == ty))
+                continue;
+            out.push_back({nx, ny});
+            x = nx;
+            y = ny;
+            --left;
+            stepped = true;
+            break;
+        }
+        if (!stepped)
+            return {};
+    }
+    return out;
+}
+
+double World::stepSeconds(const BattleFighter& f) const
+{
+    const auto* e = entity(f.id);
+    if (f.status == "downed")
+        return battle::CrawlStepSeconds;
+    const double pace = e ? fightPace(*e) / 10.0 : .5;
+    return (battle::StepSeconds + (battle::SprintStepSeconds - battle::StepSeconds) * pace) /
+           std::max(.4, battle::injuryFactor(e ? e->hurt : 0));
+}
+
+int World::fightPace(const Entity& e) const
+{
+    return e.exhausted ? 0 : e.npc ? battle::NpcPace : e.pace;
+}
+
+void World::walkFighters(Battle& b)
+{
+    // Moves are walked: a tile at a time, facing the way of each step unless turned by hand since (doc 33).
+    for (auto& f : b.fighters)
+    {
+        if (f.walk.empty())
+            continue;
+        if (b.over || (f.status != "fighting" && f.status != "downed"))
+        {
+            f.walk.clear();
+            continue;
+        }
+        while (!f.walk.empty() && time_ >= f.stepAt)
+        {
+            const auto [nx, ny] = f.walk.front();
+            bool blocked = false;
+            for (const auto& o : b.fighters)
+                if (o.id != f.id && o.status != "fled" && o.x == nx && o.y == ny)
+                    blocked = true;                 // (Someone stepped into the way: it stops short.)
+            if (blocked)
+            {
+                f.walk.clear();
+                break;
+            }
+            if (!f.turned)
+                f.facing = battle::octant(nx - f.x, ny - f.y);
+            f.x = nx;
+            f.y = ny;
+            f.walk.erase(f.walk.begin());
+            f.stepAt += stepSeconds(f);
+        }
+    }
 }
 
 std::vector<std::pair<int, int>> World::reachFrom(const Battle& b, const BattleFighter& f, int range) const
@@ -497,7 +581,8 @@ std::vector<std::pair<int, int>> World::reachFrom(const Battle& b, const BattleF
             for (int dx = -1; dx <= 1; ++dx)
             {
                 const int nx = x + dx, ny = y + dy;
-                if ((dx == 0 && dy == 0) || !b.inArena(nx, ny) || at(nx, ny) >= 0 || !arenaOpen(b, nx, ny, f.id))
+                if ((dx == 0 && dy == 0) || !b.inArena(nx, ny) || at(nx, ny) >= 0 || !arenaOpen(b, nx, ny, f.id) ||
+                    !stepBetween(b.cellId, x, y, nx, ny))
                     continue;
                 if (dx != 0 && dy != 0 && (!arenaOpen(b, x + dx, y, f.id) || !arenaOpen(b, x, y + dy, f.id)))
                     continue;
@@ -527,7 +612,7 @@ std::vector<int> World::stepsTo(const Battle& b, int tx, int ty, const std::stri
             for (int dx = -1; dx <= 1; ++dx)
             {
                 const int nx = x + dx, ny = y + dy;
-                if ((dx == 0 && dy == 0) || !open(nx, ny) || at(nx, ny) >= 0)
+                if ((dx == 0 && dy == 0) || !open(nx, ny) || at(nx, ny) >= 0 || !stepBetween(b.cellId, nx, ny, x, y))
                     continue;
                 if (dx != 0 && dy != 0 && (!open(x + dx, y) || !open(x, y + dy)) && !(x == tx && y == ty))
                     continue;
@@ -566,7 +651,7 @@ void World::lineUp(Battle& b)
         for (std::size_t i = 0; i < row.size(); ++i)
         {
             const Vec2 p{mx + (double(i) - (double(row.size()) - 1) / 2), my + (side == 0 ? -1 : 1)};
-            if (!passable(b.cellId, p))
+            if (!standable(b.cellId, p))
             {
                 fits = false;
                 break;
@@ -779,6 +864,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.deadline = time_ + battle::TurnSeconds;
     f.moved = f.acted = f.extended = false;
     f.weight = 0;
+    ++f.turnsTaken;
     ++b.turns;
     if (f.status == "downed")
     {
@@ -793,7 +879,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     }
     if (f.status == "fighting")
     {
-        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt));
+        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength));
         if (e->exhausted && e->stamina >= 20)
             e->exhausted = false;
         if (!e->gift.empty())
@@ -846,13 +932,22 @@ Result World::battleMove(const std::string& id, int x, int y)
     const auto reach = battleReach(id);
     if (std::find(reach.begin(), reach.end(), std::pair<int, int>{x, y}) == reach.end())
         return {false, "You can't get there this turn.", {}};
-    if (const auto* mover = entity(id); mover && mover->npc)
-        f.facing = battle::octant(x - f.x, y - f.y);  // (A player's facing changes only when they turn: doc 33.)
-    f.x = x;
-    f.y = y;
+    auto walk = walkTo(*b, f, x, y);
+    if (walk.empty())
+        return {false, "You can't get there this turn.", {}};
+    if (auto* mover = entity(id))
+    {
+        // Running costs breath for every tile (doc 33); out of it, the wolf is exhausted.
+        mover->stamina = std::max(0.0, mover->stamina - double(walk.size()) * battle::tileStamina(fightPace(*mover)));
+        if (mover->stamina <= 0)
+            mover->exhausted = true;
+    }
+    f.walk = std::move(walk);                       // Walked a tile at a time (walkFighters), facing the way it goes.
+    f.stepAt = time_ + stepSeconds(f);
+    f.turned = false;
     f.moved = true;
-    if (f.acted || f.status == "downed")
-        endTurn(*b, f);
+    if (const auto* mover = entity(id); mover && mover->npc && (f.acted || f.status == "downed"))
+        endTurn(*b, f);                             // (A player's turn ends at its time or End turn: doc 33.)
     return {true, {}, {}};
 }
 
@@ -869,7 +964,13 @@ std::vector<std::pair<int, int>> World::battleReach(const std::string& id) const
         return f->struggling ? std::vector<std::pair<int, int>>{} : reachFrom(*b, *f, 1);   // A crawl.
     if (f->status != "fighting")
         return {};
-    return reachFrom(*b, *f, battle::moveRange(effectiveDexterity(*e), e->hurt));
+    // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
+    const int pace = fightPace(*e);
+    int range = battle::moveRange(effectiveDexterity(*e), e->hurt, pace);
+    const int walking = battle::moveRange(effectiveDexterity(*e), e->hurt, 0);
+    while (range > walking && range * battle::tileStamina(pace) > e->stamina)
+        --range;
+    return reachFrom(*b, *f, range);
 }
 
 Result World::battleAct(const std::string& id, const std::string& action, const std::string& target)
@@ -1011,7 +1112,8 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
             if (chance(id + "flee", std::int64_t(b->seq) * 31 + b->turns) >= odds)
             {
                 fightLine(*b, id, {}, "flee", e->name + " tries to break away, but is cut off.");
-                endTurn(*b, f);
+                if (e->npc)
+                    endTurn(*b, f);
                 return {true, "You try to break away, but they cut you off.", {}};
             }
         }
@@ -1023,7 +1125,7 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
     }
     else
         return {false, "You can't do that in a fight.", {}};
-    if (r.ok && f.moved && f.acted && !b->over)
+    if (r.ok && f.moved && f.acted && !b->over && e->npc)
         endTurn(*b, f);
     else
         checkOver(*b);
@@ -1113,6 +1215,7 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     f.status = "downed";
     f.struggling = false;
     f.burning = 0;
+    f.walk.clear();
     fightLine(b, f.id, by, "down", e->name + " goes down.");
     if (f.casting)
     {
@@ -1216,7 +1319,7 @@ void World::leaveArena(Battle& b, BattleFighter& f, bool fleeing)
     if (!e)
         return;
     const auto freeAt = [&](Vec2 p) {
-        if (!passable(b.cellId, p))
+        if (!standable(b.cellId, p))
             return false;
         for (const Entity* o : entitiesIn(b.cellId))
             if (o && o->id != e->id && o->cellId == b.cellId && !o->offstage &&
@@ -1401,6 +1504,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
             }
             if (best != std::pair<int, int>{f.x, f.y})
                 battleMove(f.id, best.first, best.second);
+            if (!f.walk.empty())
+                return;                             // (The rest when it gets there.)
         }
         if (!b.over && f.acting)
         {
@@ -1459,6 +1564,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         }
         if (best != std::pair<int, int>{f.x, f.y})
             battleMove(f.id, best.first, best.second);
+        if (!f.walk.empty())
+            return;                                 // (The rest when it gets there.)
     }
     else if (temper.kind == "timid" && tilesApart(f.x, f.y, mark->x, mark->y) > 1)
     {
@@ -1473,6 +1580,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
             }
         if (best != std::pair<int, int>{f.x, f.y})
             battleMove(f.id, best.first, best.second);
+        if (!f.walk.empty())
+            return;                                 // (The rest when it gets there.)
     }
     if (b.over || !f.acting)
         return;
@@ -1558,6 +1667,7 @@ void World::tendBattles(double dt)
                 continue;
             }
         }
+        walkFighters(b);
         // Real time (doc 33's initiative, as a bar): every bar fills but those taking a turn, and the Downed bleed. A
         // full bar is a turn at once: several fighters may be acting together, each on their own clock.
         for (auto& f : b.fighters)
@@ -1631,10 +1741,12 @@ void World::tendBattles(double dt)
                     }
                     b.opening.clear();
                 }
+                if (!f.walk.empty())
+                    continue;                       // Walking there first; then the rest of its turn.
                 if (time_ >= f.turnStarted + battle::NpcPause)
                 {
                     npcTurn(b, f);
-                    if (f.acting)
+                    if (f.acting && f.walk.empty())
                         endTurn(b, f);
                 }
                 continue;
@@ -1859,6 +1971,7 @@ Result World::battleFace(const std::string& id, int dir)
     if (dir < 0 || dir > 7)
         return {false, "Face which way?", {}};
     f.facing = dir;                                 // Free: it costs neither the move nor the action.
+    f.turned = true;                                // (Kept, over the way a walk under way would turn it.)
     return {true, {}, {}};
 }
 
@@ -1884,7 +1997,7 @@ Result World::offerTruce(const std::string& id)
         if (const auto* oe = entity(o.id); oe && !oe->npc && o.id != id && o.status == "fighting")
             notice(o.id, e->name + " offers a truce. Agree or refuse.");
     checkOver(*b);
-    if (!b->over && f.acting && f.moved)
+    if (!b->over && f.acting && f.moved && e->npc)
         endTurn(*b, f);
     return {true, "You offer a truce.", {}};
 }
@@ -2130,7 +2243,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     {
         // The blade's reach needs the tile between them clear of walls.
         const int mx = f.x + (t->x - f.x) / 2, my = f.y + (t->y - f.y) / 2;
-        if (!passable(b.cellId, {mx + .5, my + .5}))
+        if (!standable(b.cellId, {mx + .5, my + .5}))
             return {false, "Something is in the way.", target};
     }
     if (e->exhausted || e->stamina < battle::SwordStamina)
@@ -2192,7 +2305,7 @@ Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
             double off = std::abs(std::atan2(dy, dx) - aim) * 180 / Pi;
             if (off > 180)
                 off = 360 - off;
-            if (off <= spell.halfAngle + 1e-6 && passable(b.cellId, {tx + .5, ty + .5}))
+            if (off <= spell.halfAngle + 1e-6 && standable(b.cellId, {tx + .5, ty + .5}))
                 cast.tiles.push_back({tx, ty});
         }
     // Mana, breath, and a singed muzzle. At no mana it still comes, at double the burn: a last resort.
@@ -2212,7 +2325,8 @@ Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
     f.casting = true;
     b.casts.push_back(cast);
     f.moved = true;                                 // (No moving while it gathers.)
-    endTurn(b, f);
+    if (e->npc)
+        endTurn(b, f);                              // (A player may still turn, or talk, till their time or End turn.)
     return {true, "You gather the fire.", {}};
 }
 

@@ -60,6 +60,6 @@ try {
         code = 1;
     }
 } finally {
-    browser.close();
+    await browser.close();
 }
 process.exit(code);

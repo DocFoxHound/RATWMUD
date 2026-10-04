@@ -1956,6 +1956,7 @@ void Game::tick(double dt)
         movementSounds();
         updateMovementModes();
         releaseLingering();
+        tendFightScenes();
     }
     // A quarter of the clients' snapshots in each tick (by a phase fixed per connection).
     snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
@@ -3455,7 +3456,7 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok)
             record(Economy | Character, id);
     }
-    else if (type == "dev")
+    else if (type == "dev" || type == "devCommands")
         devCommand(c, j);
     else if (type == "battle")
     {
@@ -3900,6 +3901,10 @@ void Game::command(Connection* c, const std::string& raw)
             for (const auto& listener : heard)
                 if (listener != id && parties_.together(id, listener) && clientOf(listener))
                     partyScene = mine->id;
+        // A fighter's words are the fight's scene (doc 33): roleplaying it through pays twice.
+        if (const auto* fight = world_.battleOf(id); fight && !fight->over)
+            if (const auto* me = fight->fighter(id); me && me->status != "fled")
+                partyScene = SocialLedger::fightTag(fight->id);
         social_.record({event, now(), id, player->cellId, evidence.words + evidence.actionWords / 2, false, evidence.contentHash, {},
                         partyScene},
                        heard);

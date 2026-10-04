@@ -178,11 +178,18 @@ Positions do not exist anywhere DM can read today. Players are saved only as the
 ### 1.1b Dungeon Masters in the game: the Dev Console (built 2026-10-04)
 
 A player character can be marked a **Dungeon Master in the game**, from the Players tab (*Make Dungeon Master in
-game*; admins only, the `character.dm` action, online or offline). The mark is saved with the character
-(`Entity::dungeonMaster`), never shown to other players, and gives them the **Dev Console**: the ` key, or Settings →
-*Open the Dev Console*. Commands are typed there or in the chat box starting with `/` (a Dungeon Master's slash
-command is never said aloud). The server checks the mark on every command (`Core/RatwGameDev.cpp`) and answers each
-in the console's log.
+game*; admins only, the `character.dm` action, online or offline). The Players tab shows it (a DM column, and yes or
+no on the character), at once when the game server applies it. The mark is saved with the character
+(`Entity::dungeonMaster`, in its record), and `game.characters.dungeon_master` (migration 0033) is that as true or
+false, kept in step by PostgreSQL. It is never shown to other players.
+
+A Dungeon Master has the **Dev Console** (`Client/src/ui/hud/devConsole.ts`), and nobody else sees any sign of it: a
+**DEV CONSOLE** button in the top bar, and the ` key. It drops down over the map like a game's console, the game going
+on behind it: what it has printed, a line to type into, and as one types, the commands that fit, alphabetically (all
+of them for `/` or nothing). Tab completes, ↑ ↓ choose, Enter runs, Esc or ` closes; a suggestion can be clicked.
+Commands can also be typed in the chat box starting with `/` (a Dungeon Master's slash command is never said aloud;
+the console opens with the answer). The server keeps the list (`{"type": "devCommands"}`), checks the mark on every
+command (`Core/RatwGameDev.cpp`), and answers each in the console.
 
 | Command | Does |
 |---|---|
@@ -190,7 +197,7 @@ in the console's log.
 | `/fight-end-myself` | Ends the fight they are in, as a draw (like a truce: nobody stays hostile). |
 | `/help` | Lists the commands. |
 
-New commands go in `Core/RatwGameDev.cpp` and the console's list in `Client/src/ui/hud/dialogs.ts`.
+New commands go in `Core/RatwGameDev.cpp` (its list and its handler); the console offers them by itself.
 
 ### 1.2 Workspaces
 

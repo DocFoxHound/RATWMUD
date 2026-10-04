@@ -124,11 +124,24 @@ export class StoryPanel {
         }
         if (ended) {
             const row = el('div', 'scene-ended', this.sceneBar);
-            el('span', 'label gold', row, `SCENE ENDED · +${num(ended, 'xp')} SOCIAL`);
+            const fight = bool(ended, 'fight');
             const session = str(ended, 'id');
-            for (const t of arr(ended, 'starTargets').filter(isObject))
+            const targets = arr(ended, 'starTargets').filter(isObject), starred = arr(ended, 'starred').filter(isObject);
+            if (fight) {
+                // The fight's roleplay review (doc 33): a Gold Star to each who played it well, one each, as many as like.
+                el('span', 'label gold', row, `ROLEPLAY REVIEW · FIGHT OVER · +${num(ended, 'xp')} SOCIAL`);
+                el('span', 'muted small', row, bool(ended, 'talked') ? 'Paid for the fight, and twice for roleplaying it.'
+                    : 'Paid for the fight. Talk it through next time: roleplay in a fight pays twice.');
+                if (targets.length || starred.length) el('span', 'muted small', row, 'Who roleplayed it well? Give each a Gold Star:');
+            } else el('span', 'label gold', row, `SCENE ENDED · +${num(ended, 'xp')} SOCIAL`);
+            for (const t of targets)
                 button(`★ ${str(t, 'name')}`, 'small', row, () => s.sendSocial({verb: 'star', session, target: str(t, 'id')})).title =
-                    `Give ${str(t, 'name')} a Gold Star for this scene`;
+                    `Give ${str(t, 'name')} a Gold Star for this ${fight ? 'fight' : 'scene'}`;
+            for (const t of starred) {
+                const given = button(`★ ${str(t, 'name')} ✓`, 'small given', row, () => undefined);
+                given.disabled = true;
+                given.title = `You gave ${str(t, 'name')} a Gold Star`;
+            }
             if (bool(ended, 'storyable')) {
                 const mine = stories.find(st => bool(st, 'mine') && str(st, 'state') === 'active');
                 if (mine)

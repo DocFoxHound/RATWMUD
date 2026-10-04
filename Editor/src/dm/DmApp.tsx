@@ -100,6 +100,7 @@ type Column = {key: string; label: string; title?: string; get: (c: Character) =
 const COLUMNS: Column[] = [
     {key: 'name', label: 'Name', get: c => c.name},
     {key: 'status', label: 'Status', get: c => (c.dead ? 'dead' : 'alive')},
+    {key: 'dm', label: 'DM', title: 'A Dungeon Master in the game (has the Dev Console)', get: c => (c.dungeonMaster ? 'DM' : '')},
     {key: 'age', label: 'Age', get: c => c.age},
     {key: 'place', label: 'Place', get: c => c.place},
     {key: 'x', label: 'X', get: c => c.x, fixed: 1},
@@ -218,8 +219,10 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
             <span className={character.dead ? 'dm-status dead' : 'dm-status'}>{character.dead ? '✝ dead' : 'alive'}</span></header>
         <p className="meta">{character.place} · {character.x.toFixed(1)}, {character.y.toFixed(1)}{character.indoors ? ' (indoors)' : ''} · age {character.age ?? '—'} · {character.posture}{character.activity ? ` · ${character.activity}` : ''}</p>
         <div className="stats">{stat('strength', character.stats.strength)}{stat('dexterity', character.stats.dexterity)}{stat('wisdom', character.stats.wisdom)}{stat('stamina', character.stats.stamina)}</div>
-        <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}
-            {character.dungeonMaster && <> · <b>Dungeon Master in the game</b> (has the Dev Console)</>}</p>
+        <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}</p>
+        <p className="meta">Dungeon Master in the game: {character.dungeonMaster ? <b>yes</b> : 'no'}
+            {character.dungeonMaster ? ' · has the Dev Console (the ` key in the game)' : ''}
+            {pending && actions.some(a => a.kind === 'character.dm' && a.status === 'queued') ? ' · changing: waiting for the game server…' : ''}</p>
         <div className="stats">{stat('sneak', character.skills.sneakSkill)}{stat('hearing skill', character.skills.hearingSkill)}{stat('scent skill', character.skills.scentSkill)}
             {stat('vision', character.senses.vision, 2)}</div>
         {canAct ? <>

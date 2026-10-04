@@ -1109,7 +1109,7 @@ Result World::callBandits(const std::string& near, int count)
         {
             const double a = k * 3.14159265358979323846 / 8;
             const Vec2 p{std::floor(e->position.x + std::cos(a) * ring) + .5, std::floor(e->position.y + std::sin(a) * ring) + .5};
-            if (passable(e->cellId, p) && !nearPortal(e->cellId, p, 3))
+            if (standable(e->cellId, p) && !nearPortal(e->cellId, p, 3))
                 spot = p;
         }
     if (spot.x < 0)
@@ -1170,7 +1170,7 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
         const auto* c = cell(camp.cell);
         if (!c)
             return;
-        if (camp.x < 0 || !passable(camp.cell, {camp.x, camp.y}))
+        if (camp.x < 0 || !standable(camp.cell, {camp.x, camp.y}))
         {
             // Where they camp: open ground near the middle, off the way through.
             double best = 1e18;
@@ -1179,7 +1179,7 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
                 {
                     const Vec2 p{x + .5, y + .5};
                     const double d = between(p, {c->width / 2.0, c->height / 2.0}) + (roll(camp.id, y * 1000 + x) % 5);
-                    if (d < best && passable(camp.cell, p) && !nearPortal(camp.cell, p, 3))
+                    if (d < best && standable(camp.cell, p) && !nearPortal(camp.cell, p, 3))
                         best = d, camp.x = p.x, camp.y = p.y;
                 }
             if (best >= 1e18)
@@ -1189,7 +1189,7 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
         for (int i = 0; i < n; ++i)
         {
             Vec2 at{camp.x + std::cos(i * 1.3) * 1.5 * (i > 0), camp.y + std::sin(i * 1.3) * 1.5 * (i > 0)};
-            if (!passable(camp.cell, at))
+            if (!standable(camp.cell, at))
                 at = {camp.x, camp.y};
             const std::string id = "road:" + camp.id + ":" + std::to_string(i);
             const std::string name = i == 0 ? "the bandit leader" : BanditNames[roll(id, 7) % std::size(BanditNames)];

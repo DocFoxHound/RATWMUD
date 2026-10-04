@@ -19,6 +19,7 @@ import {CombatScreen} from './combat.ts';
 import {PartyPanel} from './party.ts';
 import {PlacePanel} from './place.ts';
 import {CampPanel} from './camp.ts';
+import {DevConsole} from './devConsole.ts';
 import {noRect, StoryPanel} from './story.ts';
 
 const HostileRed = rgb(0xe0695e);
@@ -94,6 +95,8 @@ export class Hud {
     private party: PartyPanel;
     private place: PlacePanel;
     private camp: CampPanel;
+    private devConsole: DevConsole;
+    private devButton: HTMLButtonElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -115,6 +118,10 @@ export class Hud {
         button('CHAPTER', 'top', menu, () => act('chapter_window'));
         button('INVENTORY', 'top', menu, () => act('inventory'));
         button('SETTINGS', 'top', menu, () => act('settings'));
+        // Only for a player marked Dungeon Master (the Dungeon Master app): the Dev Console, also the ` key.
+        this.devButton = button('DEV CONSOLE', 'top dev', menu, () => act('dev_console'));
+        this.devButton.title = 'The Dev Console (`): commands for Dungeon Masters';
+        show(this.devButton, false);
         this.live = el('span', 'live label', top, '…');
 
         this.story = new StoryPanel(this.root, state);
@@ -123,6 +130,7 @@ export class Hud {
         this.dragToResize();
 
         const center = el('main', 'center', this.root);
+        this.devConsole = new DevConsole(center, state);
         const head = el('div', 'map-head', center);
         const titles = el('div', 'map-titles', head);
         el('span', 'label gold', titles, 'YOUR SURROUNDINGS');
@@ -241,6 +249,9 @@ export class Hud {
         this.party.update();
         this.place.update();
         this.camp.update();
+        show(this.devButton, s.isDungeonMaster());
+        setClass(this.devButton, 'active', s.devConsole);
+        this.devConsole.update();
         this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);

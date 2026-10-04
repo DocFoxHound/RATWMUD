@@ -183,9 +183,17 @@ class DungeonMaster:
                 SELECT c.id, c.name, c.x, c.y, 'cell' AS kind FROM world.cells c WHERE c.world_id = %s
                 UNION ALL SELECT i.id, i.name, i.overview_x, i.overview_y, 'interior' FROM world.interiors i WHERE i.world_id = %s''',
                 (world[0], world[0]))}
+            # Dungeon Masters in the game: as saved (game.characters.dungeon_master, migration 0033), or as the game server
+            # has just made them, when it has applied a character.dm the save hasn't caught up with yet.
+            made = {r[0]: (r[1], r[2]) for r in conn.execute('''
+                SELECT DISTINCT ON (target_id) target_id, (payload->>'dungeonMaster')::boolean, done_at FROM dm.actions
+                WHERE kind = 'character.dm' AND status = 'applied' ORDER BY target_id, id DESC''').fetchall()}
             characters = []
-            for key, data, saved in conn.execute('SELECT key, data, updated_at FROM game.characters WHERE world_id = %s ORDER BY name',
-                                                 (world[0],)).fetchall():
+            for key, data, saved, master in conn.execute('''SELECT key, data, updated_at, dungeon_master FROM game.characters
+                                                            WHERE world_id = %s ORDER BY name''', (world[0],)).fetchall():
+                latest = made.get(key)
+                if latest and latest[1] and latest[1] > saved:
+                    master = latest[0]
                 place = places.get(data.get('cell'))
                 x, y = float(data.get('x', 0)), float(data.get('y', 0))
                 characters.append({
@@ -199,7 +207,7 @@ class DungeonMaster:
                     # A Gift (doc 33): "fire" or "", Quickened or not.
                     'gift': data.get('gift', ''), 'quickened': bool(data.get('quickened')),
                     # Marked a Dungeon Master in the game: they have the Dev Console.
-                    'dungeonMaster': bool(data.get('dungeonMaster')),
+                    'dungeonMaster': bool(master),
                     'stats': {k: data.get(k) for k in ('strength', 'dexterity', 'wisdom', 'stamina')},
                     'skills': {k: data.get(k) for k in ('sneakSkill', 'hearingSkill', 'scentSkill')},
                     'senses': {k: data.get(k) for k in ('hearing', 'vision', 'smell')},

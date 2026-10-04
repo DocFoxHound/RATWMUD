@@ -143,8 +143,8 @@ A player who wants to watch can enter a fight as a bodiless observer. Observers 
 
 ## Turns and initiative
 
-Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf: about fifteen seconds at
-DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
+Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf and on their card:
+about twenty seconds at DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
 each on their own clock. Nobody waits in a queue, so a fight of twenty takes about as long as a fight of two. Ending a
 turn early starts your bar again at once, so quick decisions win you more turns.
 
@@ -153,26 +153,39 @@ hours. Turns that overlap keep each player's own rhythm (charge, act, charge) wh
 dodging a charging attack possible (below).
 
 ```text
-bar per second       = (6 + DEX / 10) × 100 / 165       // DEX 50 → full in 15 s, DEX 100 → in 10.3 s
-move range (tiles)   = floor((3 + DEX / 25) × injury factor), minimum 1   // DEX 50, unhurt → 5
+bar per second       = (6 + DEX / 10) × 100 / 220       // DEX 50 → full in 20 s, DEX 100 → in 13.8 s
+move range (tiles)   = floor((3 + DEX / 25) × injury factor × pace factor), minimum 1
+pace factor          = 0.5 + pace / 10                  // walk (0) 0.5, trot (5) 1, sprint (10) 1.5: DEX 50 → 2, 5, 7
+running stamina      = (pace − 3) × 0.6 a tile, above a trot of 3   // sprint: 4.2 a tile; walking is free
 bar after a turn     = 0, +20 if you did not move, +20 if you did not act, − the action's weight
-stamina per turn     = +8 at the start of each of your own turns
+stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×0.75 Wounded, ×0.5 Badly hurt or worse
 ```
 
 **On your turn** you may move up to your range and take one action, in either order. Actions are Bite, Sword, a spell,
 Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
 that sets it back (Sword 10).
 
-**Turn timer.** A player has 15 s per turn, shown counting down on their bar and in a banner at the top of the map.
-Typing a roleplay line extends it once by 15 s. Running out of time counts as ending the turn. After three timeouts in a
+**Turn timer.** A player has 20 s per turn, shown counting down on their card and bar and in a banner at the top of the
+map. Typing a roleplay line extends it once by 15 s. **A player's turn ends only when its time runs out or they press End
+turn**: moving and acting don't end it, so there is time to turn, and to write. (Struggling up still ends it: the wolf
+rises at the start of the next.) NPC turns end when they have done what they mean to. After three timeouts in a
 row the player is marked away and their turns are skipped until they act again; the fight panel says so, with an
 **I'm back** button. A player who leaves mid-fight is away too, and coming back makes their turns theirs again.
 
 **The first blow.** Whoever starts a fight has the first turn to themselves: the NPCs set on (and any who join with
 them) wait until it is over before they act.
 
-**Moving is by clicking.** On your turn the tiles you can reach are lit; click one to go there. There is no WASD in a
-fight (pressing it says how to move).
+**Moving is by clicking, and is walked.** On your turn the tiles you can reach are lit; click one to go there. The wolf
+walks (or runs) there a tile at a time, around others, at its pace: 0.45 s a tile at a walk to 0.2 s at a sprint, slower
+hurt, a crawl 1 s. The tile it is going to is its own meanwhile; anyone stepping into its way stops it short. What
+happens on the way happens to it: a fire going off catches a wolf still crossing the cone. An NPC walks there before it
+strikes. There is no WASD in a fight (pressing it says how to move).
+
+**Pace is the wheel**, as in the world, and sets how far a turn's move goes (the table above). Faster than a trot costs
+stamina for every tile run; the lit tiles reach only as far as your stamina pays for. Physical attacks cost stamina too
+(Bite 8, Sword 14), and stamina comes back only a little at the start of each of your turns, by strength: a wolf that
+sprints and bites every turn runs out. An exhausted wolf (stamina 0, until 20) can only walk, and can't bite or swing.
+NPCs fight at a run (6).
 
 **NPC turns** resolve on their own, 1.5 s after their bar fills, so players can follow what happened.
 
@@ -181,16 +194,29 @@ the first gets it; a bite on a wolf that has just moved away misses its chance (
 
 **Names and bars.** Every fighter in view carries their name (as you know them: doc 32's hidden names) and their
 initiative bar; anyone acting is ringed, and their bar shows the time left in their turn. The banner at the top of the
-map says whether it is your turn, and who is acting.
+map says whether it is your turn.
 
-**Facing is yours to choose.** A player's wolf faces only where they turn it: moving and attacking never turn it. On
+**The fighter cards** on the right are in the order turns come: those acting now on top (ACTING NOW), then the rest
+(COMING UP) in the order their bars will fill. Each card has the fighter's health, stamina, mana if they have a Gift, and
+their initiative bar, with the seconds to their turn (or left in it). Pointing at a wolf on the map lights its card.
+
+**Facing is yours to choose.** A player's wolf faces the way it walks, unless they turn it by hand after the move began,
+which stands; attacking never turns it. On
 your turn eight small arrows on the rim of your wolf's own tile let you pick any of eight ways, as often as you like, without spending the move or
 the action (or Q and E, the ⟲ ⟳ buttons, or Alt/Ctrl+click a tile). Each fighter starts facing the nearest foe. NPCs turn
 as they act. Attacks from the side get +10% to hit and from behind +20%, so facing is how you guard your back. The arrows stay
 inside your own tile so that a click on any tile or wolf around you still moves or strikes there.
 
-**Clicking a foe out of reach** on your turn, before you have moved, steps to the lit tile nearest them and strikes
-if that brings them into reach (1 tile for a bite, 2 for a sword), all in one click.
+**Clicking a foe out of reach** on your turn, before you have moved, walks to the lit tile nearest them and strikes
+when the wolf gets there, if they are still in reach (1 tile for a bite, 2 for a sword): one click.
+
+**A fight is a scene** (doc 08): from the start each player in it is a member of the fight's own scene, and what
+fighters say goes to it, not the cell's. When the fight is over it settles: each player who took two turns or more is
+paid for the fight (10 social), and those who talked it through (the usual shape: two meaningful turns, 35 words and a
+reply, with another who did) are paid twice a scene's pay on top (40 for the first four). The usual repeated-partner
+decay and daily caps apply. **The roleplay review** follows on the fight's result card (and above the composer for an
+hour): each player may give a Gold Star to each of the others who took part, one each, as many as they like; each pays
+as Gold Stars do (doc 08).
 
 **Range on the grid.** Bite reaches adjacent tiles (diagonals included), Sword reaches 2 tiles, and Flamethrower is a
 cone you aim in one of 8 directions. Attacks need line of sight; fixtures block it.
@@ -217,6 +243,9 @@ How well an NPC fights, and how willingly, comes from three things: its professi
 - **Aggressive:** closes on the nearest enemy, prefers wounded targets, flanks to attack from the side or back.
   NPCs close in by the way there is through the arena, around walls and tables (`World::stepsTo`, 2026-10-04), not
   as the crow flies, which left them stuck behind furniture.
+- **Raised ground** (2026-10-04): which arena tiles are open, and where fighters and camps may stand, is judged on each
+  tile's own ground (`World::standable`), and a step between arena tiles may not climb a ledge (`World::stepBetween`).
+  Before, they were judged as steps up from height 0, so on any ground above or below it nothing was open.
 - **Cautious:** attacks only targets already adjacent or in reach, keeps near allies, tends Downed allies when it can.
 - **Timid:** keeps distance, attacks only when cornered, and tries to flee as soon as it is hurt at all if no ally is close.
 

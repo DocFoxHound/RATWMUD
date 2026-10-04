@@ -26,8 +26,8 @@ export interface FighterView {
     turnLeft: number;           // Seconds left in it, when acting.
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
     lifeStage: string;
-    stamina: number;            // One's own side only (−1 for the other side's).
-    mana: number;               // One's own side's Gifted (−1 otherwise), out of manaMax.
+    stamina: number;            // Everyone's (−1 if not sent).
+    mana: number;               // The Gifted's (−1 otherwise), out of manaMax.
     manaMax: number;
     odds: StrikeOdds | null;    // A foe, as this wolf would strike them from where it stands now.
 }
@@ -43,7 +43,7 @@ export interface StrikeOdds {
 export type Tile = [number, number];
 
 /** A player's turn, in seconds (battle::TurnSeconds); typing a line adds as much again, once. */
-export const TurnSeconds = 15;
+export const TurnSeconds = 20;
 
 export interface CastView {
     caster: string;

@@ -32,7 +32,7 @@ export function findChrome() {
 const Keys = {
     KeyW: ['w', 87], KeyA: ['a', 65], KeyS: ['s', 83], KeyD: ['d', 68], KeyE: ['e', 69], KeyI: ['i', 73], KeyC: ['c', 67],
     KeyL: ['l', 76], KeyM: ['m', 77], Enter: ['Enter', 13], Escape: ['Escape', 27], PageUp: ['PageUp', 33], PageDown: ['PageDown', 34],
-    Digit1: ['1', 49], Digit2: ['2', 50], Digit3: ['3', 51], AltLeft: ['Alt', 18], ShiftLeft: ['Shift', 16],
+    Digit1: ['1', 49], Digit2: ['2', 50], Digit3: ['3', 51], AltLeft: ['Alt', 18], ShiftLeft: ['Shift', 16], Backquote: ['`', 192],
 };
 
 class Page {
@@ -120,6 +120,12 @@ export class Browser {
             `--window-size=${width},${height}`, '--no-first-run', '--no-default-browser-check', '--disable-gpu',
             '--hide-scrollbars', '--force-device-scale-factor=1', 'about:blank'], {stdio: 'ignore'});
         const browser = new Browser(chrome, port, profile, width, height);
+        // Never left running: if this script ends, is stopped (Ctrl-C, a timeout's SIGTERM) or fails, Chromium goes too.
+        const gone = () => browser.kill();
+        process.once('exit', gone);
+        for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'])
+            process.once(signal, () => { gone(); process.exit(130); });
+        process.once('uncaughtException', error => { gone(); console.error(error); process.exit(1); });
         for (let i = 0; i < 100; ++i) {
             await sleep(100);
             try {
@@ -127,7 +133,7 @@ export class Browser {
                 if (targets.some(t => t.type === 'page')) return browser;
             } catch { /* starting */ }
         }
-        browser.close();
+        await browser.close();
         throw new Error('Chromium did not start');
     }
 
@@ -151,8 +157,18 @@ export class Browser {
         return page;
     }
 
-    close() {
+    /** Stops Chromium at once and removes its profile (what can be removed while it is still going). */
+    kill() {
         try { this.process.kill('SIGKILL'); } catch { /* gone */ }
         try { rmSync(this.profile, {recursive: true, force: true}); } catch { /* busy */ }
+    }
+
+    /** Stops Chromium, waits for it to be gone, then removes its profile. */
+    async close() {
+        const exited = this.process.exitCode !== null || this.process.signalCode !== null ? Promise.resolve()
+            : new Promise(resolve => this.process.once('exit', resolve));
+        try { this.process.kill('SIGKILL'); } catch { /* gone */ }
+        await Promise.race([exited, sleep(5000)]);
+        try { rmSync(this.profile, {recursive: true, force: true, maxRetries: 3, retryDelay: 100}); } catch { /* busy */ }
     }
 }

@@ -645,7 +645,8 @@ export class GamePainter {
             // A lunge, a recoil, a sidestep, a gathering caster's tremble: offsets for the eye only.
             const [mx, my] = s.fx.offset(f.id, s.clock, reduced);
             const [tx, ty] = s.fx.tremble(f.id, b, s.clock, reduced);
-            const x = ox + (f.x + 0.5 + mx + tx) * tile, y = oy + (f.y + 0.5 + my + ty) * tile;
+            const [wx, wy] = s.walkOffset(f.id, f.x, f.y, s.clock);   // Walking there, a tile at a time.
+            const x = ox + (f.x + 0.5 + mx + tx + wx) * tile, y = oy + (f.y + 0.5 + my + ty + wy) * tile;
             const self = f.id === s.selfId;
             const color = colorOf(f);
             if (f.acting && !b.over) {
