@@ -170,14 +170,14 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         finally { setBusy(false); }
     };
     const live = target === 'prod';
-    const sure = (what: string) => !live || window.confirm(`${what} in the LIVE world?`);
+    const sure = (what: string) => !live || window.confirm(`${what} on PROD?`);
     const taken = () => [...(data?.people ?? []).map(p => p.id), ...(data?.holders ?? []).map(h => h.id)];
     const save = () => {
         if (!draft || !sure(`Save ${draft.name}`)) return;
         const person = isNew ? {...draft, id: idFrom(draft.name, taken(), 'npc')} : draft;
         return finish(async () => { await dmApi.saveNpc(target, person); setSelected(person.id); }, `Saved ${person.name}.`);
     };
-    const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ' from the LIVE world' : ''}? They leave the world entirely.`) &&
+    const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ' from PROD' : ''}? They leave the world entirely.`) &&
         (!live || window.confirm(`Really delete ${draft.name}? This cannot be undone.`)) &&
         finish(() => dmApi.deleteNpc(target, draft.id).then(() => setSelected(null)), `Deleted ${draft.name}.`);
     const life = (id: string, name: string, kill: boolean) => sure(`${kill ? 'Kill' : 'Revive'} ${name}`) &&
@@ -213,7 +213,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         return finish(async () => { await dmApi.saveSpawn(target, rule); setSelected(rule.id); }, `Saved ${rule.name}.`);
     };
     const deleteLayer = (what: string, name: string, run: () => Promise<unknown>) =>
-        window.confirm(`Delete ${what} ${name}${live ? ' from the LIVE world' : ''}?`) && finish(() => run().then(() => setSelected(null)), `Deleted ${name}.`);
+        window.confirm(`Delete ${what} ${name}${live ? ' from PROD' : ''}?`) && finish(() => run().then(() => setSelected(null)), `Deleted ${name}.`);
     const revert = () => {
         if (isNew) { setIsNew(false); setSelected(null); setDraft(null); setRouteDraft(null); setAreaDraft(null); setSpawnDraft(null); setAddingPosts(false); return; }
         setDraft(saved ? M.clone(saved) : null); setRouteDraft(savedRoute ? M.clone(savedRoute) : null);
@@ -339,7 +339,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
 }
 
 function Overview({title, target, children}: {title: string; target: Target; children: React.ReactNode}) {
-    return <div className="dm-panel"><header><div><small>{title}</small><h2>{target === 'prod' ? 'The live world' : 'The rehearsal world'}</h2></div></header>{children}</div>;
+    return <div className="dm-panel"><header><div><small>{title}</small><h2>{target === 'prod' ? 'PROD: the players’ world' : 'DEV: the rehearsal world'}</h2></div></header>{children}</div>;
 }
 
 function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onPick, onSave, onRevert, onDelete, onLife}: {

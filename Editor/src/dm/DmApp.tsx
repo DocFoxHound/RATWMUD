@@ -1,4 +1,4 @@
-// Dungeon Master: runs the living world (Docs/Design/21-dungeon-master.md).
+// Dungeon Master: runs the living world (Docs/Design/21-dungeon-master.md, 34-dungeon-master-refresh.md).
 // Atlas builds places; this app manages everything alive in them, in PROD (live) or DEV (rehearsal).
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {Project} from '../model/model.mjs';
@@ -7,6 +7,7 @@ import {surfaceFor} from '../lib/surface';
 import {drawGround} from '../lib/ground';
 import {useGlyphRender} from '../lib/glyphFont';
 import {NpcTab} from './NpcTab';
+import {LiveTab} from './LiveTab';
 import {useWorld} from './world';
 import {FactionsTab} from './FactionsTab';
 import {ChaptersTab} from './ChaptersTab';
@@ -15,7 +16,9 @@ import {LifePanel} from './LifePanel';
 import {dmApi, signedIn, type Action, type Character, type Me, type Players, type Target} from './api';
 
 type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live';
+// LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
 const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string}[] = [
+    {id: 'live', label: 'LIVE', icon: '●', ready: true, blurb: ''},
     {id: 'npcs', label: 'NPC Management', icon: '☺', ready: true, blurb: ''},
     {id: 'factions', label: 'Factions', icon: '⚑', ready: true,
         blurb: 'NPC factions, cities, and player guilds and clans; paint territory; set how they regard each other, up to war. Coming in phase 4.'},
@@ -23,8 +26,6 @@ const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string
     {id: 'stories', label: 'Story Creator', icon: '✦', ready: false,
         blurb: 'Build, save and load multi-phase world stories with triggers and actions; test on DEV, run on PROD. Coming in phase 5.'},
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
-    {id: 'live', label: 'LIVE', icon: '●', ready: false,
-        blurb: 'Watch the game as it happens: every player and NPC, and the chat. Coming once its details are settled.'},
 ];
 
 export function DmApp() {
@@ -60,7 +61,7 @@ function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
 }
 
 function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
-    const [tab, setTab] = useState<Tab>('players');
+    const [tab, setTab] = useState<Tab>('live');
     const [target, setTarget] = useState<Target>('prod');
     const current = TABS.find(t => t.id === tab)!;
     return <div className={target === 'prod' ? 'app dm prod' : 'app dm dev'}>
@@ -72,7 +73,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             </div>
             <div className="dm-target segmented" role="radiogroup" aria-label="Which world">
                 <button role="radio" aria-checked={target === 'prod'} className={target === 'prod' ? 'on prod' : ''} onClick={() => setTarget('prod')}
-                    title="The live world players are in">PROD · live</button>
+                    title="The world players are in">PROD · players</button>
                 <button role="radio" aria-checked={target === 'dev'} className={target === 'dev' ? 'on' : ''} onClick={() => setTarget('dev')}
                     title="The rehearsal world">DEV · rehearsal</button>
             </div>
@@ -81,7 +82,8 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
                 <button onClick={() => { void dmApi.logout().finally(onSignOut); }}>Sign out</button>
             </div>
         </header>
-        {tab === 'npcs' ? <NpcTab me={me} target={target} key={target} />
+        {tab === 'live' ? <LiveTab me={me} target={target} key={target} />
+            : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} />
             : tab === 'factions' ? <FactionsTab me={me} target={target} key={target} />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : current.ready ? <PlayersTab me={me} target={target} key={target} />
@@ -175,7 +177,7 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
     const canAct = me.role !== 'viewer';
     const act = async (kind: 'character.kill' | 'character.resurrect') => {
         const verb = kind === 'character.kill' ? 'Kill' : 'Resurrect';
-        if (target === 'prod' && !window.confirm(`${verb} ${character.name} in the LIVE world?`)) return;
+        if (target === 'prod' && !window.confirm(`${verb} ${character.name} on PROD?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, kind, character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -184,7 +186,7 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
     // A Gift (doc 33): the setting decides who has one, and here the Dungeon Master gives it, or takes it away.
     const gift = async (kind: '' | 'fire', quickened: boolean) => {
         const words = kind ? (quickened ? 'Make Quickened (fire)' : 'Give the Gift of fire to') : 'Take the Gift from';
-        if (target === 'prod' && !window.confirm(`${words} ${character.name} in the LIVE world?`)) return;
+        if (target === 'prod' && !window.confirm(`${words} ${character.name} on PROD?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.gift', character.id, reason, {gift: kind, quickened}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -192,7 +194,7 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
     };
     // Bandits called up near them (doc 33): a small camp a few strides off, for a fight that isn't with townsfolk.
     const callBandits = async (count: number) => {
-        if (target === 'prod' && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} in the LIVE world?`)) return;
+        if (target === 'prod' && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} on PROD?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'bandits.call', character.id, reason, {count}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }

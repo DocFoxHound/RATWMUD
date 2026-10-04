@@ -20,9 +20,11 @@ export interface Overlay {
 
 /** The world or one place, with area tiles, route lines and NPC spawn-point markers.
  *  Wheel zooms; drag pans (right-drag while painting); click selects or picks; drag paints in paint mode. */
-export function MapView({surface, markers, overlay, selected, mode, onClick, onPaint, onOpen}: {surface: Surface; world?: Project; markers: Marker[]; overlay: Overlay;
+export function MapView({surface, markers, overlay, selected, mode, onClick, onPaint, onOpen, cluster = 0}: {surface: Surface; world?: Project; markers: Marker[]; overlay: Overlay;
     selected: string | null; mode: Mode; onClick: (place: Place | null, marker: Marker | null) => void; onPaint: (place: Place | null, start: boolean) => void;
-    onOpen: (cell: string) => void}) {
+    onOpen: (cell: string) => void;
+    /** Below this zoom (pixels a tile), markers close together on screen are drawn as one count (the LIVE map); 0 never. */
+    cluster?: number}) {
     const wrap = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null);
     const [size, setSize] = useState({w: 800, h: 600});
     const [cam, setCam] = useState({s: 12, x: 20, y: 20});
@@ -105,7 +107,28 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
             });
         }
         const r = Math.max(5, Math.min(14, s * .45));
-        for (const m of markers) {
+        let drawn = markers;
+        if (cluster && s < cluster) {                    // Gather markers sharing a patch of screen into a count.
+            const cells = new Map<string, Marker[]>(), CELL = 28;
+            for (const m of markers) {
+                const px = ox + m.x * s, py = oy + m.y * s;
+                if (px < -CELL || py < -CELL || px > size.w + CELL || py > size.h + CELL) continue;
+                const key = `${Math.floor(px / CELL)},${Math.floor(py / CELL)}`;
+                const list = cells.get(key);
+                if (list) list.push(m); else cells.set(key, [m]);
+            }
+            drawn = [];
+            for (const list of cells.values()) {
+                if (list.length === 1 || list.some(m => m.id === selected)) { drawn.push(...list); continue; }
+                const px = ox + list.reduce((a, m) => a + m.x, 0) / list.length * s, py = oy + list.reduce((a, m) => a + m.y, 0) / list.length * s;
+                const big = Math.min(18, 9 + Math.log2(list.length) * 2.2);
+                g.beginPath(); g.arc(px, py, big, 0, Math.PI * 2); g.fillStyle = 'rgba(13,20,19,.88)'; g.fill();
+                g.lineWidth = 2; g.strokeStyle = list[0].color; g.stroke();
+                g.font = `700 ${list.length > 99 ? 10 : 11}px Inter, system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+                g.fillStyle = '#ded5c3'; g.fillText(String(list.length), px, py + 1);
+            }
+        }
+        for (const m of drawn) {
             const px = ox + m.x * s, py = oy + m.y * s, on = m.id === selected;
             g.globalAlpha = m.dead ? .45 : 1;
             g.beginPath(); g.arc(px, py, r, 0, Math.PI * 2);

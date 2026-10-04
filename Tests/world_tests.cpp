@@ -69,6 +69,37 @@ void authoredWorld()
         expect(!e.description.empty(), "NPC has authored description");
     }
 }
+// A Dungeon Master's move from the LIVE map (doc 34): onto any open tile of any place, never into a wall.
+void dungeonMasterMoves()
+{
+    World w;
+    auto& p = player(w);
+    const auto* yard = w.cell("exterior");
+    bool moved = false;
+    for (int y = 1; y < yard->height - 1 && !moved; ++y)
+        for (int x = 1; x < yard->width - 1 && !moved; ++x)
+            if (!yard->tile(x, y)->solid && w.teleport(p.id, "exterior", x + .3, y + .9).ok)
+            {
+                moved = true;
+                expect(p.cellId == "exterior" && near(p.position.x, x + .5) && near(p.position.y, y + .5), "A move lands on the tile's centre");
+                expect(p.transitioned && p.path.empty(), "A moved player's client is told, and any walk is dropped");
+            }
+    expect(moved, "Someone can be moved onto open ground");
+    const auto* tavern = w.cell("tavern");
+    for (int y = 0; y < tavern->height; ++y)
+        for (int x = 0; x < tavern->width; ++x)
+            if (tavern->tile(x, y)->solid)
+            {
+                expect(!w.teleport(p.id, "tavern", x, y).ok && p.cellId == "exterior", "Never into a wall");
+                y = tavern->height;
+                break;
+            }
+    expect(!w.teleport(p.id, "nowhere", 2, 2).ok, "Never to a place that isn't there");
+    expect(!w.teleport(p.id, "tavern", -1, 2).ok && !w.teleport(p.id, "tavern", tavern->width, 2).ok, "Never off the edge");
+    expect(!w.teleport("nobody", "tavern", 16, 12).ok, "Only someone in the world");
+    const auto npc = w.entities().begin()->first;
+    expect(w.teleport(npc, p.cellId, p.position.x, p.position.y).ok && w.entity(npc)->cellId == p.cellId, "NPCs are moved too");
+}
 void continuousMovement()
 {
     World w;
@@ -1570,6 +1601,7 @@ int main()
         herbPatchReach();
         authoredWorld();
         continuousMovement();
+        dungeonMasterMoves();
         gradualFacing();
         postureMovement();
         clickPathing();

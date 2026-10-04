@@ -15,7 +15,7 @@ export function ArtworkPanel({me, target}: {me: Me; target: Target}) {
     const decide = async (p: Portrait, decision: 'approve' | 'reject') => {
         const reason = (reasons[p.id] ?? '').trim();
         if (decision === 'reject' && !reason && !window.confirm(`Reject ${p.name}'s portrait without a reason?`)) return;
-        if (target === 'prod' && !window.confirm(`${decision === 'approve' ? 'Approve' : 'Reject'} ${p.name}'s portrait in the LIVE world?`)) return;
+        if (target === 'prod' && !window.confirm(`${decision === 'approve' ? 'Approve' : 'Reject'} ${p.name}'s portrait on PROD?`)) return;
         setBusy(p.id); setProblem('');
         try { await dmApi.reviewArtwork(target, p.id, decision, reason); await load(); }
         catch (error) { setProblem((error as Error).message); }

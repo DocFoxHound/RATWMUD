@@ -52,7 +52,7 @@ class Fixture(unittest.TestCase):
     def setUp(self):
         for target, name in self.names.items():
             with W.connect(target, 'owner', dbname=name) as owner:
-                owner.execute('TRUNCATE dm.admins, dm.sessions, dm.actions, dm.audit CASCADE')
+                owner.execute('TRUNCATE dm.admins, dm.sessions, dm.actions, dm.audit, dm.watchers, dm.watch CASCADE')
             with W.connect(target, 'game', dbname=name) as game:
                 save_with_player(game)
         with W.connect('prod', 'dm', dbname=self.names['prod']) as conn:
@@ -149,6 +149,41 @@ class DungeonMasterTests(Fixture):
         for wrong in ({'count': 0}, {'count': 7}, {'count': True}, {'count': '2'}):
             with self.assertRaises(D.DMError):
                 self.dm.request(master, 'prod', 'bandits.call', 'player-ada', '', wrong)
+
+    def test_the_live_map_watches_and_moves_people(self):
+        viewer, master = self.sign_in('dm-viewer'), self.sign_in('dm-master')
+        first = self.dm.live(viewer, 'prod')
+        self.assertIsNone(first['frame'], 'no game server has written a frame yet')
+        self.assertIsNone(first['age'])
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            watching = game.execute('SELECT EXISTS (SELECT 1 FROM dm.watchers WHERE until > now())').fetchone()[0]
+            self.assertTrue(watching, 'looking at the map tells the game server someone is watching')
+            frame = {'day': 3.5, 'people': [['player-ada', 'Ada', 'p', 'town', 10.5, 12.5, 0, '', 'walking']], 'shops': []}
+            game.execute('INSERT INTO dm.watch (world_id, frame) VALUES (%s, %s)', ('greyfen', json.dumps(frame)))
+            game.execute("INSERT INTO game.events (world_id, game_time, game_day, kind, actor, cell) VALUES "
+                         "('greyfen', 1, 1, 'theft', 'npc_a', 'town'), ('greyfen', 1, 1, 'economy', 'npc_a', 'town')")
+        seen = self.dm.live(viewer, 'prod')
+        self.assertEqual(seen['frame'], frame)
+        self.assertLess(seen['age'], 60)
+        self.assertEqual([e['kind'] for e in seen['events']], ['theft'], 'the quiet events (trade) are left off the map')
+        self.assertIsNone(self.dm.live(viewer, 'dev')['frame'], 'PROD and DEV are watched apart')
+
+        town = next(c for c in greyfen()['cells'])['id']
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.move(viewer, 'prod', 'character.move', 'player-ada', town, 4, 5)
+        self.assertEqual(raised.exception.status, 403, 'viewers only watch')
+        queued = self.dm.move(master, 'prod', 'character.move', 'player-ada', town, 4, 5, 'Stuck in a wall')
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute('SELECT kind, target_id, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(row, ('character.move', 'player-ada', {'cell': town, 'x': 4, 'y': 5}))
+        self.assertEqual(self.dm.live(viewer, 'prod')['actions'][0]['id'], queued['id'], 'the map shows how a move went')
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            audit = owner.execute("SELECT detail FROM dm.audit WHERE action = 'character.move'").fetchone()[0]
+        self.assertIn('Stuck in a wall', audit)
+        for kind, cell, x, y in (('npc.explode', town, 1, 1), ('npc.move', 'nowhere', 1, 1), ('npc.move', town, -1, 1),
+                                 ('npc.move', town, 1.5, 1), ('npc.move', town, True, 1)):
+            with self.assertRaises(D.DMError):
+                self.dm.move(master, 'prod', kind, 'npc_a', cell, x, y)
 
     def test_roles(self):
         viewer = self.sign_in('dm-viewer')

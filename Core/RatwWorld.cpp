@@ -2975,6 +2975,36 @@ Result World::relocateResident(const std::string& id, const std::string& destina
     return {true, "Relocation accepted; the resident must physically arrive before the home changes.", id};
 }
 
+Result World::teleport(const std::string& id, const std::string& cellId, double x, double y)
+{
+    auto* a = entity(id);
+    if (!a)
+        return {false, "They aren't in the world.", id};
+    if (inBattle(id))
+        return {false, a->name + " is in a fight.", id};
+    if (!ensureLoaded(cellId).ok)
+        return {false, "No such place.", id};
+    const auto* destination = cell(cellId);
+    if (!destination || !std::isfinite(x) || !std::isfinite(y) || x < 0 || y < 0 || x >= destination->width || y >= destination->height)
+        return {false, "That isn't a tile of " + (destination ? destination->name : cellId) + ".", id};
+    const Vec2 at{std::floor(x) + .5, std::floor(y) + .5};
+    const auto* tile = destination->tile(int(at.x), int(at.y));
+    if (!tile || tile->solid || !passable(cellId, at, tile))
+        return {false, "No one can stand there.", id};
+    stop(id);
+    a->cellId = cellId;
+    a->position = at;
+    a->velocity = {};
+    a->input = {};
+    a->path.clear();
+    a->turning = false;
+    pendingPortals_.erase(id);
+    a->transitioned = true;
+    if (!a->npc)
+        observe(id);
+    return {true, a->name + " is now in " + destination->name + ".", id};
+}
+
 void World::updateSchedules()
 {
     scheduleStage_ = 0;

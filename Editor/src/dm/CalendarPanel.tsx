@@ -15,7 +15,7 @@ export function CalendarPanel({me, target}: {me: Me; target: Target}) {
     }, [target]);
     useEffect(() => { void load(); }, [load]);
     const call = async () => {
-        if (target === 'prod' && !window.confirm(`Call a festival in ${town} in the LIVE world, ${days(when)}?`)) return;
+        if (target === 'prod' && !window.confirm(`Call a festival in ${town} on PROD, ${days(when)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.callFestival(target, town, name.trim(), when); setName(''); await load(); }
         catch (error) { setProblem((error as Error).message); }

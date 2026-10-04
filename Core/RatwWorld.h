@@ -429,6 +429,9 @@ class World
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
     const std::map<std::string, Letting>& lettings() const { return lettings_; }
     Result relocateResident(const std::string& npc, const std::string& destination, double x, double y);
+    // A Dungeon Master's move (doc 34, the LIVE map): someone in the world put straight onto an open tile of any place,
+    // where they carry on. Not someone in a fight, or a tile they couldn't stand on.
+    Result teleport(const std::string& id, const std::string& cellId, double x, double y);
     // Whether a resident could walk from one place to another, through unlocked portals.
     bool canWalkBetween(const std::string& from, const std::string& to) const { return from == to || cachedSteps(from).count(to) > 0; }
     Result advanceCalendar(double days); // Explicit developer/test jump, never a client-authorized normal action.

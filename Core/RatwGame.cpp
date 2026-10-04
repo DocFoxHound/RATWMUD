@@ -450,6 +450,7 @@ bool Game::loadFromDatabase(std::string& problem)
     }
     worldFiles_["world.ratw"] = withoutPeople(worldFiles_["world.ratw"]);
     liveWorldId_ = *row[0];
+    watch_ = std::make_unique<watch::Feed>(options_.conninfo, liveWorldId_);
     loadedBuild_ = std::stoll(*row[1]);
     streamedBuild_ = worldFiles_["world.ratw"].rfind("RATW_WORLD 3", 0) == 0;
     cellHeaders_.clear();
@@ -853,6 +854,45 @@ void Game::applyDmActions(double dt)
             }
             else
                 outcome = {false, "No such character.", {}};
+        }
+        else if (kind == "npc.move" || kind == "character.move")
+        {
+            // Put someone on a tile from the LIVE map (doc 34): payload {"cell", "x", "y"}. A character not in the world
+            // wakes there.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const std::string cell = payload.isObject() ? payload.string("cell") : std::string();
+            const double x = payload.isObject() ? wire::number(payload, "x", -1) : -1, y = payload.isObject() ? wire::number(payload, "y", -1) : -1;
+            const auto* someone = world_.entity(target);
+            if (someone && someone->npc != (kind == "npc.move"))
+                outcome = {false, kind == "npc.move" ? "That is a player character." : "That is an NPC.", {}};
+            else if (someone)
+            {
+                outcome = world_.teleport(target, cell, x, y);
+                if (outcome.ok && !someone->npc)
+                {
+                    if (auto* c = clientOf(target))
+                        system(c, "You find yourself somewhere else.");
+                    characters_[target] = *world_.entity(target);
+                }
+            }
+            else if (auto saved = characters_.find(target); kind == "character.move" && saved != characters_.end())
+            {
+                const auto* place = world_.ensureLoaded(cell).ok ? world_.cell(cell) : nullptr;
+                const auto* tile = place && x >= 0 && y >= 0 ? place->tile(int(x), int(y)) : nullptr;
+                if (!tile || tile->solid)
+                    outcome = {false, "No one can stand there.", {}};
+                else
+                {
+                    saved->second.cellId = cell;
+                    saved->second.position = {std::floor(x) + .5, std::floor(y) + .5};
+                    outcome = {true, saved->second.name + " will wake in " + place->name + " (offline).", {}};
+                }
+            }
+            else
+                outcome = {false, kind == "npc.move" ? "No such NPC in the world." : "No such character.", {}};
         }
         changed |= outcome.ok;
         worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
@@ -1823,6 +1863,7 @@ void Game::tick(double dt)
     }
     watchReleases(dt);
     applyDmActions(dt);
+    feedWatch(dt);
     runSpawns(dt);
     makeResidents();
     if (prefetching && (prefetchAccumulator_ += dt) >= 1)

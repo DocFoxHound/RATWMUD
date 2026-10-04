@@ -1,12 +1,13 @@
 # 34. Dungeon Master refresh: running the world, and Storykeeper for its stories
 
-Planned 2026-10-02. **Draft. Not started.** Six decisions were agreed on 2026-10-02 (listed under "Decisions"). This plan
-extends `Docs/Design/21-dungeon-master.md`, whose phases 1–4 are built, and replaces its phase 5 ("Story Creator v1")
-with the larger story system below. Doc 21 still describes the parts that are built.
+Planned 2026-10-02. **Phase 1 started:** LIVE's first slice was built 2026-10-04 (1.1). Seven decisions were agreed on
+2026-10-02 (listed under "Decisions"). This plan extends `Docs/Design/21-dungeon-master.md`, whose phases 1–4 are
+built, and replaces its phase 5 ("Story Creator v1") with the larger story system below. Doc 21 still describes the
+parts that are built.
 
 This plan has four parts:
 
-- **Dungeon Master (DM):** the live-world tool. It opens on a calm *World Desk* and keeps its curated workspaces for
+- **Dungeon Master (DM):** the live-world tool. It opens on *LIVE*, the world map as it is now, with every detail off until switched on, and keeps its curated workspaces for
   NPCs, factions, Chapters, roads, the economy and players. It can drive every live system the game has, or will have.
 - **Storykeeper:** the name stays, but now for the place inside DM where stories are planned, run and watched. Stories
   are world-level events that reach players. They are made of steps with requirements, and they spawn quests,
@@ -62,24 +63,110 @@ All numbers here are placeholders to be tuned. Each is marked *(placeholder)* th
 
 ## Part 1: The shape of the app
 
-### 1.1 World Desk (the first screen)
+### 1.1 LIVE (the main screen)
 
-What a DM needs at a glance, with no tables:
+DM opens on one screen: **LIVE**, the world map as it is now. It is the first tab, and where everyone lands after
+signing in. It fills in doc 21's LIVE placeholder.
 
-- **Stories:** each running story with its step, a one-line summary, and when it last moved, plus the scheduled
-  stories and those waiting on a DM decision.
-- **Alerts:** refused or expired actions, a story stalled past its expected time, a cast member killed, a story that
-  failed validation, players online with nothing near them *(later)*.
-- **The world today:** date, weekday, weather by region, festivals, the next Marketday and Restday.
-- **What happened:** notable events from `game.events` (deaths, crimes, caravans robbed, relations crossing a
-  threshold, Chapters levelling), with a link to the record behind each one.
-- **Players in stories:** who is taking part, and who has been touched by one (a notice heard, a rumour believed, a
-  quest offered).
-- **Quick actions:** post a notice, call a festival, set the weather, pause all stories.
+**First slice built 2026-10-04** (`Editor/src/dm/LiveTab.tsx`, `GET /api/live`, `POST /api/live/move`,
+`Core/RatwWatch.*`, `Core/RatwGameWatch.cpp`, migration 0031):
+
+- the map with live positions, gathered into counts below a zoom of 4 pixels a tile, and double-click to open a place;
+- the layers Players, NPCs, Shops, Structures, Chapters, Factions, Routes & areas and Events, all off at the start;
+  NPCs narrow by role and road folk, Players by those away, both by the dead, and a search finds anyone;
+- moving any player or NPC (`npc.move`, `character.move`, through `World::teleport`), kill, revive and resurrect;
+- spawning a new or copied named NPC on a tile;
+- the side panel: how fresh the positions are, refused actions, recent events, the calendar.
+
+Not yet: dragging a marker to move it, temporary NPCs, resurrecting at a chosen tile in one step (resurrect, then move),
+the Stories, Quests, Rumours and Weather layers, and the rail's story entries and other quick actions. Roads (caravans
+and bandits) show in the NPCs layer as folk of the road, and crime in the Events layer, until their own layers come.
+
+**The map**
+
+- **Zoom** from the whole world down to single tiles. The wheel zooms and dragging pans, as `Editor/src/dm/MapView.tsx`
+  does today. Zooming into a place or interior opens it in place, and a breadcrumb leads back out. Elevation shading
+  keeps its `E` toggle.
+- **Live positions:** where every player and NPC is now, not where they spawn. Spawn points stay in the NPCs workspace,
+  as doc 21 says. Positions are at most a couple of seconds old (see *The watch feed* below), and the map says how
+  old they are.
+- **Zoomed out,** markers gather into a count per place ("Ridgemere: 41 NPCs, 3 players"), so 1,000 players and every
+  resident stay readable. Zooming in splits them into single markers.
+- **Hover** shows a name and a line about the marker. **Click** opens the inspector beside the map: who or what it is,
+  what they are doing, and links into the workspace that edits it.
+
+**Layers: everything is off at the start**
+
+The map opens showing only the ground. A layer panel switches on what the DM wants to see, and each layer can be
+narrowed further. Every layer is off each time DM starts.
+
+| Layer | Shows | Narrow by |
+|---|---|---|
+| Players | Online players; offline characters at their last saved place, dimmed | online or offline, alive or dead, party, Chapter, name |
+| NPCs | Every NPC where they are now | named, job holders, spawned; role, faction, town; alive or dead; in a story; name |
+| Shops | Stores, keepers and markets, with stock and price factor on hover | town, kind |
+| Structures | Places and buildings, doors and interiors, and Chapter structures (doc 32 Part 5) | kind, owner |
+| Chapters | Chapter sites, meeting places, rentals, camps and holds, with members online | Chapter |
+| Factions | Painted territory claims | faction, kind |
+| Stories | Each running story's places, its cast, and where its current step is waiting | story, step |
+| Quests | Givers, objective places, and players holding quests | story, quest, status |
+| Routes & areas | Patrol routes, wander, spawn and plan areas, spawn rules | kind |
+| Roads | Caravans moving, bandit camps, contracts | town, kind |
+| Crime | Recent incidents, warrants, the gaol | days back |
+| Rumours | Where a chosen rumour is believed, town by town | rumour |
+| Weather | Weather by region | none |
+| Events | Notable events from `game.events`, pinned where they happened | kind, days back |
+
+A layer that depends on a system not built yet (Chapters, structures, quests) appears when that system is built.
+
+**Moving and spawning, from the map**
+
+- **Move an NPC:** select them, then *Move* and click a tile, or drag the marker. This is `npc.move`: the server checks
+  the tile is open and walkable, places them there, and they carry on with their day from there. Changing where they
+  live, work or spawn stays in the NPCs workspace.
+- **Move a player:** the same for a character. An online player is moved at once and told so. For an offline
+  character, the saved position changes, and they wake there. This is doc 21 phase 6's teleport, done from the map.
+- **Bring a dead character back where they lie,** or at a chosen tile (resurrect with a place).
+- **Spawn an NPC:** *Spawn* and click a tile. Choose one of:
+  - a **new named NPC** (the NPC form opens with the place filled in);
+  - a **copy of an existing NPC** (role, looks, hours, personality), like a spawn rule's newcomer;
+  - a **temporary NPC** for a while or a story (a messenger, a crowd), who leaves when their time or their story ends.
+
+  Named and copied NPCs go through `live.npcs` and `npc.sync`, as today. Temporary ones are a server action and are not
+  added to the live tables.
+- Moves and spawns are audited. On PROD, moving a player and spawning ask for confirmation, and moves can be reversed
+  (Part 8).
+
+**Around the map**
+
+A collapsible rail beside the map holds:
+
+- running stories, each with its step and the AI's one-line summary (Part 9);
+- alerts: refused or expired actions, stalled stories, a cast member killed, a story that failed its check;
+- the world today: date, weekday, weather, festivals, the next Marketday and Restday;
+- quick actions: post a notice, call a festival, set the weather, pause all stories.
+
+Clicking an entry shows it on the map and turns on its layer.
+
+**The watch feed**
+
+Positions do not exist anywhere DM can read today. Players are saved only as they change, and NPCs only in the
+5-second snapshot. So:
+
+- While a DM has the map open, the server writes a compact frame of every player's and NPC's position and state
+  *(placeholder: every 2 s)*. It goes to an unlogged table, `dm.watch`, one row per world. The DM host reads it when the
+  map asks, every 2 s, so no notification is needed.
+- The DM backend passes frames to the browser. Layers that change slowly (shops, claims, routes) are read from their
+  tables as today.
+- The server writes frames only while a DM has asked for one in the last minute (`dm.watchers`) *(placeholder)*, so
+  the feed costs nothing when nobody is watching. The frame is made on the game thread (a list of names and places) and
+  written by a thread of its own on its own connection, so the tick never waits on the database.
+- The feed never carries chat or what anyone said.
 
 ### 1.2 Workspaces
 
-The curated tools, each a map with an explorer, inspector and command palette, as today:
+The curated tools, one level down from LIVE, each a map with an explorer, inspector and command palette, as
+today:
 
 | Workspace | Covers |
 |---|---|
@@ -89,7 +176,7 @@ The curated tools, each a map with an explorer, inspector and command palette, a
 | **Economy** | The treasury, ledgers, mint and sink counters, explicit transfers, sources and sinks, and keeper stock. |
 | **Players** | Today's tab, plus doc 21 phase 6 (teleport, items, coins, mute, kick, ban, notes) and the quests each player holds. |
 | **Storykeeper** | Parts 2–6. |
-| **LIVE** | Everyone moving, and chat, as doc 21 left it. |
+| **Chat** | The game's chat as it happens (doc 21's LIVE sketch had it; LIVE is now the map). |
 | **Audit** | Every action and edit: who, when, why, what the game did, and before and after. |
 | **Records** (admin) | 1.3. |
 
@@ -329,7 +416,7 @@ runs in tests (`RATW_AI=off|fixture`).
   of real time), and how many players it is likely to reach.
 - **Write:** quest text, notices, NPC briefs and scene lines, in the setting's voice.
 - **Summarise progress:** for each running story, a short account of what has happened so far and what is likely next,
-  from its run log and the events it touched. It is shown on the World Desk and in Watch, and refreshed on request or
+  from its run log and the events it touched. It is shown in LIVE's side panel and in Watch, and refreshed on request or
   when a step changes *(placeholder: at most once an hour per run)*.
 - **Suggest:** from the run state and the world, the next moves a DM could make ("the courier quest has had no taker
   for two days; post it in Ser Ferro too, or let the step time out"), and stories the world seems ready for (a relation
@@ -342,7 +429,8 @@ Postgres, as the project prefers.
 - **DM side:**
   - `dm.story_defs` (id, name, scope, weight, status) and `dm.story_versions` (definition JSON, author, notes, checked);
   - `dm.quest_templates`;
-  - `dm.ai_notes` (summaries and suggestions, with the run and version they were about).
+  - `dm.ai_notes` (summaries and suggestions, with the run and version they were about);
+  - `dm.watch` (unlogged): the latest watch frame for each world (1.1).
   - Today's `dm.stories` (AI life stories) is renamed `dm.life_stories` to avoid confusion.
 - **Game side, written by the server:**
   - `game.story_runs` (run, version, step, state JSON, started, updated, status);
@@ -356,10 +444,12 @@ Postgres, as the project prefers.
 Each phase passes the perf gate (`world_check --players 20`, and doc 31's measurements at up to 250 players) before
 the next starts.
 
-1. **One channel and the World Desk:**
+1. **One channel and LIVE:**
    - the action catalog;
    - the old Storykeeper's effects moved into `dm.actions`, and its app and file bridge retired;
-   - the World Desk;
+   - LIVE (first slice built 2026-10-04): zoom, live positions through the watch feed, the layer panel with Players, NPCs, Shops,
+     Structures (places and doors), Factions, Routes & areas and Events, and moving and spawning;
+   - the rail (alerts, the world today, quick actions);
    - the Audit workspace;
    - account management in the app.
 2. **Deeper curated editing:**

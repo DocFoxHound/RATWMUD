@@ -25,6 +25,7 @@
 #include "RatwPool.h"
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
+#include "RatwWatch.h"
 #include "RatwWorld.h"
 
 #include <cstdint>
@@ -502,6 +503,8 @@ class Game
     std::map<std::string, std::string> worldFiles_, cellHeaders_;
     std::map<std::string, std::pair<std::string, std::string>> exportCells_;   // A world export's cells: body, seams.
     std::string liveWorldId_;
+    std::unique_ptr<watch::Feed> watch_;                               // The LIVE map's positions (doc 34); a database world only.
+    double watchAccumulator_ = 0;
     bool streamedBuild_ = false, releaseAnnounced_ = false, storageReady_ = false;
     int exit_ = -1;
     std::mt19937_64 random_;
@@ -521,6 +524,8 @@ class Game
     void readNotifications();
     void watchReleases(double dt);
     void applyDmActions(double dt);
+    void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
+    std::string watchFrame() const;
     void makeResidents();
     void runSpawns(double dt);
     bool spawnTile(const std::string& area, const std::string& tilesJson, int& x, int& y);

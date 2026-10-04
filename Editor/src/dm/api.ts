@@ -103,6 +103,18 @@ export interface Chapters {
     actions: (Action & {payload: {approve?: boolean; faction?: string}})[];
 }
 
+/** The LIVE map (Docs/Design/34-dungeon-master-refresh.md, 1.1). A frame's people: [id, name, kind, cell, x, y, flags, role,
+ *  doing]; kind "p" a player in the world, "o" a character not in it, "n" an NPC, "r" folk of the road; flags 1 dead,
+ *  2 downed, 4 off stage, 8 in a fight. Shops: [merchant, name, label, cell, x, y, at a stall]. */
+export type LivePerson = [string, string, 'p' | 'o' | 'n' | 'r', string, number, number, number, string, string];
+export type LiveShop = [string, string, string, string, number, number, boolean];
+export interface LiveEvent { id: number; kind: string; actor: string; target: string; cell: string; day: number; detail: string; at: string }
+export interface Live {
+    target: Target; frame: {day: number; people: LivePerson[]; shops: LiveShop[]} | null;
+    /** Seconds since the game server wrote the frame; null if it never has. */
+    age: number | null; events: LiveEvent[]; actions: Action[];
+}
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
@@ -115,6 +127,10 @@ export const dmApi = {
     act: (target: Target, kind: string, characterId: string, reason: string, payload?: Record<string, unknown>) =>
         call<{id: number}>('api/actions', {target, kind, characterId, reason, ...(payload ? {payload} : {})}),
     npcs: (target: Target) => call<Npcs>(`api/npcs?target=${target}`),
+    /** Asking keeps this account watching: the game server writes frames only while someone is. */
+    live: (target: Target) => call<Live>(`api/live?target=${target}`),
+    move: (target: Target, kind: 'npc.move' | 'character.move', id: string, place: Place, reason = '') =>
+        call<{id: number}>('api/live/move', {target, kind, id, cell: place.cell, x: place.x, y: place.y, reason}),
     saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
     deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),
     npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>('api/npcs/life', {target, id, dead}),

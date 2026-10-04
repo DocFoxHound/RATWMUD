@@ -50,7 +50,8 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'npc.kill': 'dm',
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
-           'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm'}
+           'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm',
+           'npc.move': 'dm', 'character.move': 'dm'}
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -1030,6 +1031,62 @@ class DungeonMaster:
                 self.audit(conn, who['username'], kind, ident, f'{target.upper()}: {words}' + (f' — {reason}' if reason else ''))
         return {'id': action, 'status': 'queued'}
 
+    # -- the LIVE map (Docs/Design/34-dungeon-master-refresh.md, 1.1) ----------------
+    WATCH_SECONDS = 60
+    QUIET_EVENTS = ('economy', 'operator', 'conversation')
+
+    def live(self, who, target):
+        """The newest frame of everyone's position, how old it is, notable recent events and the day's moves and NPC saves. Asking
+        keeps this account watching for a minute: the game server writes frames only while someone is."""
+        with self.connect(target) as conn:
+            world = conn.execute('SELECT id FROM world.worlds').fetchone()
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            with conn.transaction():
+                conn.execute('''INSERT INTO dm.watchers (username, until) VALUES (%s, now() + make_interval(secs => %s))
+                                ON CONFLICT (username) DO UPDATE SET until = excluded.until''', (who['username'], self.WATCH_SECONDS))
+            row = conn.execute('''SELECT frame, extract(epoch FROM now() - written_at) FROM dm.watch WHERE world_id = %s''',
+                               (world[0],)).fetchone()
+            frame = None
+            if row:
+                try:
+                    frame = json.loads(row[0])
+                except ValueError:
+                    frame = None
+            events = [{'id': r[0], 'kind': r[1], 'actor': r[2], 'target': r[3], 'cell': r[4], 'day': r[5], 'detail': r[6],
+                       'at': r[7].isoformat()}
+                      for r in conn.execute('''SELECT id, kind, actor, target, cell, game_day, detail, recorded_at FROM game.events
+                                               WHERE world_id = %s AND cell <> '' AND kind <> ALL(%s)
+                                               ORDER BY id DESC LIMIT 80''', (world[0], list(self.QUIET_EVENTS))).fetchall()]
+            actions = [{'id': r[0], 'kind': r[1], 'target': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
+                       for r in conn.execute('''SELECT id, kind, target_id, requested_by, requested_at, status, result FROM dm.actions
+                                                WHERE kind IN ('npc.move', 'character.move', 'npc.sync')
+                                                      AND requested_at > now() - interval '1 day'
+                                                ORDER BY id DESC LIMIT 30''').fetchall()]
+        return {'target': target, 'frame': frame, 'age': round(float(row[1]), 1) if row else None, 'events': events,
+                'actions': actions}
+
+    def move(self, who, target, kind, someone, cell, x, y, reason=''):
+        """Puts an NPC (npc.move) or a player character (character.move) on a tile; the game server checks the tile."""
+        if kind not in ('npc.move', 'character.move'):
+            raise DMError('Move an NPC (npc.move) or a character (character.move).')
+        self.allowed(who, kind)
+        if not someone or not cell or not all(isinstance(v, int) and not isinstance(v, bool) and 0 <= v < 4096 for v in (x, y)):
+            raise DMError('Say who, and a tile: a place and whole-number x and y.')
+        with self.connect(target) as conn:
+            place = conn.execute('''SELECT name FROM world.cells WHERE id = %s UNION ALL SELECT name FROM world.interiors WHERE id = %s
+                                    LIMIT 1''', (cell, cell)).fetchone()
+            if not place:
+                raise DMError('No such place.', 404)
+            with conn.transaction():
+                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s)
+                                            RETURNING id''', (kind, someone, who['username'],
+                                                               json.dumps({'cell': cell, 'x': x, 'y': y}))).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
+                self.audit(conn, who['username'], kind, someone,
+                           f'{target.upper()}: moved {someone} to {place[0]} {x}, {y}' + (f' — {reason[:500]}' if reason else ''))
+        return {'id': action_id, 'status': 'queued'}
+
     def action(self, target, action_id):
         with self.connect(target) as conn:
             row = conn.execute('SELECT status, result, done_at FROM dm.actions WHERE id = %s', (int(action_id),)).fetchone()
@@ -1119,6 +1176,12 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.request(who, str(data.get('target', 'prod')), str(data.get('kind', '')),
                                                   str(data.get('characterId', '')), str(data.get('reason', '')),
                                                   data.get('payload')))
+            if method == 'GET' and path == '/api/live':
+                return self.reply(200, dm.live(who, self.target(query)))
+            if method == 'POST' and path == '/api/live/move':
+                data = self.body()
+                return self.reply(200, dm.move(who, str(data.get('target', 'prod')), str(data.get('kind', '')), str(data.get('id', '')),
+                                               str(data.get('cell', '')), data.get('x'), data.get('y'), str(data.get('reason', ''))))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':
