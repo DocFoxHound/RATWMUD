@@ -166,10 +166,16 @@ stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×
 Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
 that sets it back (Sword 10).
 
+**A turn has three parts: the move, the action and the facing.** The action is a bite, a sword stroke, fire, tending,
+rolling, taking or stowing a sword, picking one up, offering a truce (and, later, using an item). With all three used
+the turn ends by itself, 1.5 s after the last, so a few taps of Q or E can settle the facing (each turn of the head puts
+the end off again). Rest uses the move and the action. Facing first and moving after, the walk keeps the facing chosen.
+The action bar shows the three, ticked as they are used.
+
 **Turn timer.** A player has 20 s per turn, shown counting down on their card and bar and in a banner at the top of the
-map. Typing a roleplay line extends it once by 15 s. **A player's turn ends only when its time runs out or they press End
-turn**: moving and acting don't end it, so there is time to turn, and to write. (Struggling up still ends it: the wolf
-rises at the start of the next.) NPC turns end when they have done what they mean to. After three timeouts in a
+map. Typing a roleplay line extends it once by 15 s. Otherwise a turn ends when its three parts are used, its time runs
+out or End turn is pressed. (Struggling up ends it at once: the wolf rises at the start of the next.) NPC turns end when
+they have done what they mean to. After three timeouts in a
 row the player is marked away and their turns are skipped until they act again; the fight panel says so, with an
 **I'm back** button. A player who leaves mid-fight is away too, and coming back makes their turns theirs again.
 
@@ -207,7 +213,13 @@ map says whether it is your turn.
 their initiative bar, with the seconds to their turn (or left in it). Pointing at a wolf on the map lights its card.
 Each bar explains itself on hover: what fills it or drains it, by which stats (one's own stats shown on one's own card)
 and what is affecting it now. **Injuries show on the card**, named, as chips under the name (Bleeding, Staggered,
-Burning, Winded, Wounded, Badly hurt, Limping, Down), each saying on hover what it does. Nothing is drawn on the wolf
+Burning, Winded, Wounded, Badly hurt, Limping, Down), each saying on hover what it does.
+
+**One's own card and status.** One's own card is outlined and tinted so it is easy to find. A click on it opens one's
+**status**: health, stamina and mana with what drives each, what is wrong (the injuries, named), one's stats and pace,
+and one's belongings, to equip and use (holding or stowing the sword is the turn's action in a fight). Out of a fight
+the same window opens from the health, stamina and mana bars in the status panel, which show all three at all times
+(mana for the Gifted), in a fight too, under the cards. Nothing is drawn on the wolf
 or its portrait: uploaded portraits differ in shape, and a name reads plainly.
 
 **Facing is yours to choose.** A player's wolf faces the way it walks, unless they turn it by hand after the move began,

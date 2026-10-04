@@ -40,6 +40,11 @@ struct BattleFighter
     bool turned = false;
     int turnsTaken = 0;             // Turns begun: two or more and a player is paid for the fight (doc 33).
     bool resting = false;           // Rested this turn (no move): twice the stamina back at the next.
+    // A turn's three parts (doc 33): the move, the action and the facing. With all three used it ends by itself, a
+    // moment after the last (`partsAt`: when the last was used; another turn of the head puts it off).
+    bool faced = false;
+    int partsUsed = 0;
+    double partsAt = 0;
     // Combat injuries (doc 38): turns of Bleeding left; Staggered (1: its bar is set back when this turn ends, 2: set
     // back already; both shown until its next turn).
     int bleeding = 0, staggered = 0;
@@ -157,6 +162,7 @@ constexpr double RestFactor = 2;
 constexpr double BleedFrom = 18, BleedDamage = 2, StaggerFrom = 25, StaggerSetback = 20;
 constexpr int BleedTurns = 3;
 constexpr int AwayAfter = 3;
+constexpr double PartsGrace = 1.5;              // A turn with move, action and facing used ends this long after the last.
 // A move is walked a tile at a time (slower hurt: the injury factor), a crawl slower still.
 constexpr double StepSeconds = .45, SprintStepSeconds = .2, CrawlStepSeconds = 1.0;   // At a walk; at a sprint.
 constexpr int NpcPace = 6;                                     // NPCs fight at a run.

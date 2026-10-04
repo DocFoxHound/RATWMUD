@@ -4,7 +4,7 @@
 import {css, rgb} from '../color.ts';
 import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
-import {bool, boundedNum, envNumber, obj, str} from '../../game/json.ts';
+import {bool, boundedNum, clamp, envNumber, num, obj, str} from '../../game/json.ts';
 import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel,
     restLabel, scentLabel} from '../../game/labels.ts';
 import type {EntityView, GameState} from '../../game/state.ts';
@@ -70,6 +70,11 @@ export class Hud {
     private staminaLabel: HTMLElement;
     private staminaNote: HTMLElement;
     private staminaFill: HTMLElement;
+    private healthLabel: HTMLElement;
+    private healthFill: HTMLElement;
+    private manaRow: HTMLElement;
+    private manaLabel: HTMLElement;
+    private manaFill: HTMLElement;
     private senses: HTMLElement;
     private who: HTMLElement;
     private posture: HTMLElement;
@@ -195,11 +200,24 @@ export class Hud {
         }
         const gaits = el('div', 'gaits label muted', status);
         for (const g of ['WALK', 'TROT', 'RUN', 'SPRINT']) el('span', '', gaits, g);
+        // Health, stamina and mana, always in view (in a fight too): a click opens one's status (doc 33).
+        const healthHead = el('div', 'meter-head', status);
+        this.healthLabel = el('span', 'label', healthHead);
+        const healthBar = el('div', 'bar health', status);
+        this.healthFill = el('div', 'fill', healthBar);
         const staminaHead = el('div', 'meter-head', status);
         this.staminaLabel = el('span', 'label', staminaHead);
         const bar = el('div', 'bar', status);
         this.staminaFill = el('div', 'fill', bar);
         this.staminaNote = el('div', 'note', status);
+        this.manaRow = el('div', 'mana-row', status);
+        this.manaLabel = el('span', 'label', el('div', 'meter-head', this.manaRow));
+        this.manaFill = el('div', 'fill', el('div', 'bar mana', this.manaRow));
+        for (const part of [healthHead, healthBar, staminaHead, bar, this.manaRow]) {
+            part.classList.add('opens-status');
+            part.title = 'Your status, belongings and equipment (click)';
+            part.addEventListener('click', () => act('status'));
+        }
         this.senses = el('div', 'senses small', status);
 
         const help = el('footer', 'helpbar', this.root);
@@ -382,6 +400,17 @@ export class Hud {
         const pace = s.displayPace(), effective = Math.trunc(boundedNum(self, 'effectivePace', 0, 10));
         const exhausted = bool(self, 'exhausted');
         const stamina = boundedNum(self, 'stamina', 0, 100, 100), rate = boundedNum(self, 'staminaRate', -100, 100);
+        const health = boundedNum(self, 'health', 0, 100, 100), downedLeft = num(self, 'downedLeft');
+        setText(this.healthLabel, `HEALTH ${Math.round(health)}  ·  ${downedLeft > 0 ? 'DOWN' : health >= 100 ? 'UNHURT' : health > 75 ? 'SCRATCHED'
+            : health > 50 ? 'WOUNDED' : health > 25 ? 'BADLY HURT' : 'LIMPING'}`);
+        setStyle(this.healthFill, 'width', `${health}%`);
+        setClass(this.healthFill, 'low', health <= 25);
+        const manaMax = num(self, 'manaMax');
+        show(this.manaRow, manaMax > 0);
+        if (manaMax > 0) {
+            setText(this.manaLabel, `MANA ${Math.floor(num(self, 'mana'))} / ${manaMax}`);
+            setStyle(this.manaFill, 'width', `${clamp(num(self, 'mana') / manaMax, 0, 1) * 100}%`);
+        }
         setText(this.paceLabel, `PACE · ${paceLabel(pace)} ${pace}/10`);
         setClass(this.paceLabel, 'tired', exhausted);
         setClass(this.paceLabel, 'gold', !exhausted && pace >= 9);

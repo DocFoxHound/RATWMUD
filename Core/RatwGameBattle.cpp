@@ -104,6 +104,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("turnLeft", acting ? std::max(0.0, mine->deadline - world_.time()) : 0.0);
     v.add("moved", acting && mine->moved);
     v.add("acted", acting && mine->acted);
+    v.add("faced", acting && mine->faced);           // The turn's third part (doc 33): all three, and it ends by itself.
     v.add("round", b.turns);
     v.add("watching", double(b.observers.size()));
     const auto veiled = veilMap(viewer);           // Names this wolf doesn't know, as the fighters look (doc 32).

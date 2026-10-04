@@ -707,6 +707,38 @@ void restAndCombatInjuries()
     expect(fb->bleeding == battle::BleedTurns - 1, "A light bite doesn't start it again");
 }
 
+// A turn's three parts (doc 33): move, action and facing. With all three used the turn ends by itself, a moment
+// after the last; turning again puts it off. Faced first, the walk keeps that facing.
+void threePartTurns()
+{
+    World w;
+    auto& b = duel(w);
+    auto* fa = b.fighter("player-ad");
+    w.entity("player-ad")->pace = 5;
+    const int chosen = (fa->facing + 3) % 8;
+    expect(w.battleFace("player-ad", chosen).ok && fa->faced, "Ad faces first: one part");
+    std::pair<int, int> to{fa->x, fa->y};
+    for (const auto& t : w.battleReach("player-ad"))
+        if (test::apart(t.first, t.second, fa->x, fa->y) > test::apart(to.first, to.second, fa->x, fa->y))
+            to = t;
+    expect(w.battleMove("player-ad", to.first, to.second).ok, "then moves: two");
+    for (int i = 0; i < 60 && !fa->walk.empty(); ++i)
+        w.tick(.1);
+    expect(fa->facing == chosen, "She walked there still facing the way she chose");
+    expect(test::acting(&b, "player-ad"), "Two parts: her turn goes on");
+    expect(w.battleAct("player-ad", "rest").ok == false, "(no rest once she has moved)");
+    // Her action: offering a truce.
+    expect(w.battleAct("player-ad", "truce").ok && fa->acted, "an action: three");
+    w.tick(.5);
+    expect(test::acting(&b, "player-ad"), "a moment to settle her facing");
+    expect(w.battleFace("player-ad", (chosen + 1) % 8).ok, "she turns again");
+    w.tick(1.2);
+    expect(test::acting(&b, "player-ad"), "which puts the end off");
+    for (int i = 0; i < 10 && fa->acting; ++i)
+        w.tick(.1);
+    expect(!fa->acting, "then all three used, her turn ends by itself");
+}
+
 void barsFillInRealTime()
 {
     World w;
@@ -1050,6 +1082,7 @@ int main()
         barsFillInRealTime();
         paceAndStamina();
         restAndCombatInjuries();
+        threePartTurns();
         dodgingTheFire();
         playtestFixes();
         dueTerms();

@@ -9,6 +9,7 @@ import type {GameState} from '../../game/state.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {icon} from '../icons.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
+import {noRect} from './story.ts';
 
 const ageOf = (stage: string) => (stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18);
 
@@ -346,7 +347,7 @@ export class CombatScreen {
             const clock = f.status === 'downed' && f.downedLeft > 0 ? `${f.npc ? 'bleeding' : 'up in'} · ${clockLabel(Math.max(0, f.downedLeft - since))}`
                 : '';
             setText(c.clock, clock);
-            c.root.title = self ? '' : foe ? (mine ? 'Click to aim at them' : 'Click to aim at them on your turn')
+            c.root.title = self ? 'You · click for your status, belongings and equipment' : foe ? (mine ? 'Click to aim at them' : 'Click to aim at them on your turn')
                 : f.status === 'downed' && mine ? 'Click to tend their wounds' : '';
         }
     }
@@ -383,6 +384,10 @@ export class CombatScreen {
         });
         root.addEventListener('mousedown', e => e.preventDefault());
         root.addEventListener('click', () => {
+            if (f.id === s.selfId) {
+                s.activate({rect: noRect, action: 'status', target: ''});   // One's own card: one's status, belongings, equipment.
+                return;
+            }
             const b = s.battle, me = b && this.me(b), now = b?.fighters.find(o => o.id === f.id);
             if (!b || !me || !now || b.observer) return;
             if (now.side !== me.side && now.status === 'fighting') s.fightFocus = f.id;
@@ -401,7 +406,7 @@ export class CombatScreen {
         const target = b.fighters.find(f => f.id === this.s.fightTargetId());
         this.actions = this.actionsFor(b, me, mine, target);
         const key = JSON.stringify([b.over, b.banner, this.actions.map(a => [a.id, a.label, a.sub, a.enabled, a.tip, a.kind]),
-            b.truceBy, b.agreed, b.observer, b.yieldBy]);
+            b.truceBy, b.agreed, b.observer, b.yieldBy, mine, b.moved, b.acted, b.faced, b.resting]);
         if (key !== this.barKey) {
             this.barKey = key;
             this.bar.replaceChildren();
@@ -439,6 +444,14 @@ export class CombatScreen {
             }
             const row = el('div', 'bar-actions', this.bar);
             for (const a of this.actions) {
+                // The turn's three parts, before End turn: used ones ticked; all three, and the turn ends by itself.
+                if (a.kind === 'end' && mine && me?.status === 'fighting') {
+                    const parts = el('div', 'turn-parts', row);
+                    parts.title = 'A turn is a move, an action (a bite, a strike, fire, tending, an item…) and a facing. ' +
+                        'With all three used it ends by itself; or end it sooner. Rest uses the move and the action.';
+                    for (const [name, used] of [['MOVE', b.moved], ['ACTION', b.acted], ['FACING', b.faced]] as const)
+                        el('span', `turn-part${used ? ' used' : ''}`, parts, `${used ? '✓' : '·'} ${name}`);
+                }
                 const btn = this.button(row, a);
                 if (a.kind === 'end') {
                     this.endFill = el('span', 'end-fill', btn);
@@ -536,9 +549,9 @@ export class CombatScreen {
             out.push({id: 'yield', key: '9', icon: 'yield', label: 'Yield', sub: '', kind: '',
                 tip: 'Yield (9), at any time: you are out of the fight on your feet, if the other side lets you be (residents and the watch do)',
                 enabled: true, run: () => s.sendBattle('yield')});
-        out.push({id: 'left', key: 'Q', icon: 'left', label: '', sub: '', tip: 'Turn left (Q): free, on your turn', enabled: mine, kind: 'small',
+        out.push({id: 'left', key: 'Q', icon: 'left', label: '', sub: '', tip: "Turn left (Q): your turn's facing (turn as often as you like; with the move and the action used, the turn ends a moment after)", enabled: mine, kind: 'small',
             run: () => s.turnInFight(-1)});
-        out.push({id: 'right', key: 'E', icon: 'right', label: '', sub: '', tip: 'Turn right (E): free, on your turn', enabled: mine, kind: 'small',
+        out.push({id: 'right', key: 'E', icon: 'right', label: '', sub: '', tip: "Turn right (E): your turn's facing (turn as often as you like; with the move and the action used, the turn ends a moment after)", enabled: mine, kind: 'small',
             run: () => s.turnInFight(1)});
         out.push(end);
         return out;

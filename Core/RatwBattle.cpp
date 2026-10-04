@@ -862,7 +862,9 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.acting = true;
     f.turnStarted = time_;
     f.deadline = time_ + battle::TurnSeconds;
-    f.moved = f.acted = f.extended = false;
+    f.moved = f.acted = f.extended = f.faced = false;
+    f.partsUsed = 0;
+    f.partsAt = time_;
     f.weight = 0;
     ++f.turnsTaken;
     ++b.turns;
@@ -964,7 +966,7 @@ Result World::battleMove(const std::string& id, int x, int y)
     }
     f.walk = std::move(walk);                       // Walked a tile at a time (walkFighters), facing the way it goes.
     f.stepAt = time_ + stepSeconds(f);
-    f.turned = false;
+    f.turned = f.faced;                             // (Faced by hand first this turn: the walk keeps that facing.)
     f.moved = true;
     if (const auto* mover = entity(id); mover && mover->npc && (f.acted || f.status == "downed"))
         endTurn(*b, f);                             // (A player's turn ends at its time or End turn: doc 33.)
@@ -1793,6 +1795,17 @@ void World::tendBattles(double dt)
                 endTurn(b, f);
                 continue;
             }
+            // Move, action and facing all used: the turn ends by itself, a moment after the last (doc 33).
+            if (const int used = int(f.moved) + int(f.acted) + int(f.faced); used != f.partsUsed)
+            {
+                f.partsUsed = used;
+                f.partsAt = std::max(f.partsAt, time_);
+            }
+            if (f.partsUsed == 3 && time_ >= f.partsAt + battle::PartsGrace)
+            {
+                endTurn(b, f);
+                continue;
+            }
             if (time_ < f.deadline)
                 continue;
             if (e->typing && !f.extended)
@@ -2009,6 +2022,8 @@ Result World::battleFace(const std::string& id, int dir)
         return {false, "Face which way?", {}};
     f.facing = dir;                                 // Free: it costs neither the move nor the action.
     f.turned = true;                                // (Kept, over the way a walk under way would turn it.)
+    f.faced = true;                                 // A turn's third part (doc 33); turning again puts its end off.
+    f.partsAt = time_;
     return {true, {}, {}};
 }
 

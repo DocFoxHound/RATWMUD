@@ -150,6 +150,17 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .bar .fill { height: 100%; background: var(--sage); }
 .bar .fill.draining { background: var(--gold); }
 .bar .fill.tired { background: #e1aba2; }
+.bar.health .fill { background: #c76a5c; }
+.bar.health .fill.low { background: #ff6a4c; }
+.bar.mana .fill { background: #9f8ad8; }
+.mana-row { display: flex; flex-direction: column; gap: 6px; }
+.opens-status { cursor: pointer; }
+.status-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 10px 0 14px; }
+.status-meter .bar { margin: 4px 0; }
+.status-conditions { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 14px; }
+.status-condition { display: flex; gap: 10px; align-items: baseline; }
+.status-condition .hurt { font: 11px/18px 'RATW Mono', monospace; text-transform: uppercase; letter-spacing: .04em; padding: 0 6px;
+    border: 1px solid #6b3a33; color: #ffb0a0; background: #2a1513; border-radius: 2px; white-space: nowrap; }
 .senses { color: var(--muted); line-height: 1.5; }
 
 .helpbar { grid-area: help; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 18px;
@@ -346,7 +357,8 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 .cards-head { margin-top: 4px; }
 .fcard { --c: var(--friend); display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; padding: 8px;
     background: var(--panel); border: 1px solid #34443e; border-left: 3px solid var(--c); border-radius: 4px; cursor: pointer; }
-.fcard.self { --c: var(--self); cursor: default; }
+.fcard.self { --c: var(--self); cursor: pointer; border: 2px solid var(--self);
+    background: color-mix(in srgb, var(--self) 12%, var(--panel)); }   /* One's own card: plain to see; a click opens one's status. */
 .fcard.foe { --c: var(--foe); }
 .fcard.acting { box-shadow: 0 0 0 1px var(--c), 0 0 12px -2px var(--c); }
 .fcard.target { outline: 2px dashed var(--foe); outline-offset: 2px; }
@@ -384,7 +396,12 @@ button.given { opacity: .6; }
 .fcard-hurts .hurt.burning { border-color: #a3521f; color: #ffb35c; }
 .fcard-hurts .hurt.winded, .fcard-hurts .hurt.wounded { border-color: #5a5a3a; color: #e2d9a0; background: #1f1f14; }
 .fcard-hurts .hurt.down { border-color: #ff9a3c; color: #ff9a3c; }
-.meter { cursor: help; }  /* Initiative is on the fighter cards now (doc 33). */
+.meter { cursor: help; }
+/* The turn's three parts (doc 33), beside End turn. */
+.turn-parts { display: flex; flex-direction: column; justify-content: center; gap: 2px; margin-left: auto; padding: 0 8px; cursor: help; }
+.turn-part { font: 10px/14px 'RATW Mono', monospace; letter-spacing: .06em; color: var(--muted); }
+.turn-part.used { color: var(--gold); }
+.game .turn-parts + button.abtn.end { margin-left: 0; }  /* Initiative is on the fighter cards now (doc 33). */
 .fcard-foot { display: flex; justify-content: space-between; align-items: center; min-height: 16px; }
 .odds { display: inline-flex; align-items: center; gap: 5px; color: var(--paper); font: 12px 'RATW Mono', monospace; }
 .odds .odds-hit { color: var(--gold); font-weight: 600; }

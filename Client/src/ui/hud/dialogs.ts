@@ -4,7 +4,7 @@ import {css} from '../color.ts';
 import {speakingColor} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {arr, bool, clamp, countText, envNumber, isObject, num, obj, str, wholeCount, type Json} from '../../game/json.ts';
-import {postureLabel} from '../../game/labels.ts';
+import {postureLabel, restLabel} from '../../game/labels.ts';
 import type {GameState} from '../../game/state.ts';
 import {button, el, setClass} from './dom.ts';
 import {noRect} from './story.ts';
@@ -55,8 +55,9 @@ export class Dialogs {
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
-            m === 'inventory' || m === 'trade' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
+            m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
                 obj(s.snapshot, 'resource')] : '',
+            m === 'status' ? [self, s.battle && !s.battle.observer ? [s.battle.fighters.find(f => f.id === s.selfId), s.battle.acted, s.battle.turn] : null] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
                 bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume] : '']);
         if (key === this.key) return;
@@ -69,6 +70,7 @@ export class Dialogs {
         else if (m === 'chapter_window') this.chapter(self);
         else if (m === 'missions') this.missions();
         else if (m === 'inventory') this.inventory(self);
+        else if (m === 'status') this.status(self);
         else if (m === 'trade') this.trade(self);
         else if (m === 'settings') this.settings();
         else if (m === 'leave_character') this.leave();
@@ -391,8 +393,71 @@ export class Dialogs {
     }
 
     private inventory(self: Json | null) {
-        const s = this.s;
         this.heading('BELONGINGS / EQUIPMENT', 'What you carry');
+        this.belongings(self);
+    }
+
+    /** One's status (doc 33): health, stamina and mana and what drives them; what is wrong; stats; and belongings, to
+     * equip and use. Opened from one's own card in a fight, or one's health and stamina out of one. */
+    private status(self: Json | null) {
+        const s = this.s, b = s.battle && !s.battle.observer ? s.battle : null;
+        const me = b?.fighters.find(f => f.id === s.selfId);
+        this.heading('STATUS / EQUIPMENT', str(self, 'name', 'You'));
+        el('div', 'label muted', this.panel, b ? 'IN A FIGHT' : 'IN THE WORLD');
+        const vitals = el('div', 'status-vitals', this.panel);
+        const meter = (name: string, value: number, max: number, cls: string, why: string) => {
+            const row = el('div', 'status-meter', vitals);
+            el('div', 'label gold', row, `${name} · ${Math.round(value)} / ${max}`);
+            el('div', 'fill', el('div', `bar ${cls}`, row)).style.width = `${clamp(value / Math.max(1, max), 0, 1) * 100}%`;
+            el('p', 'muted small', row, why);
+        };
+        const health = num(self, 'health', 100);
+        meter('HEALTH', health, 100, 'health', 'Out of a fight hurt heals, 50 an hour. Hurt shortens a move in a fight (by up to 60%) and slows you in ' +
+            'the world. At 0 you go down; you get up after a while (longer for each time since your last full rest in a bed), ' +
+            'sooner if someone tends you or you struggle up (once a day).');
+        const stamina = me && me.stamina >= 0 ? me.stamina : num(self, 'stamina', 100);
+        meter('STAMINA', stamina, 100, '', b && me ? `In a fight it comes back only at the start of each of your turns: ${me.regen} next ` +
+            `(4 + STR ÷ 10, less hurt; twice after a turn of rest). A bite costs 8, a sword 14, running faster than a trot ` +
+            `${b.tileStamina > 0 ? `${b.tileStamina.toFixed(1)} a tile at your pace` : 'by the tile'}. At 0 you are winded: walking only, no biting.`
+            : 'Out of a fight it comes back 5 a second and drains when you run fast (the pace, on the wheel). At 0 you are exhausted ' +
+              'and can only walk until it is back to 20.');
+        if (num(self, 'manaMax') > 0)
+            meter('MANA', num(self, 'mana'), num(self, 'manaMax'), 'mana', 'Most mana is 20 + WIS × 0.8. In a fight +2 at the start of each ' +
+                'turn, out of one slowly. Fire costs 25 (Quickened 40); with too little it burns you twice as much.');
+        // What is wrong: in a fight its injuries, named; out of one, what one's state says.
+        el('div', 'label gold', this.panel, 'CONDITION');
+        const list = el('div', 'status-conditions', this.panel);
+        const condition = (name: string, does: string) => {
+            const row = el('div', 'status-condition', list);
+            el('span', 'hurt', row, name);
+            el('span', 'muted small', row, does);
+        };
+        if (me) for (const i of me.injuries) condition(i.name, i.does);
+        else {
+            const downedLeft = num(self, 'downedLeft');
+            if (downedLeft > 0) condition('Down', `You get up in about ${Math.ceil(downedLeft / 60)} min, sooner if tended or you struggle up.`);
+            if (bool(self, 'exhausted')) condition('Exhausted', 'Walking only until your stamina is back to 20.');
+            if (health <= 25 && downedLeft <= 0) condition('Limping', 'Badly hurt: slow, and no sprinting.');
+            else if (health < 75) condition(health <= 50 ? 'Badly hurt' : 'Wounded', 'Slower, and it shows. Rest and time heal it.');
+        }
+        const downs = num(self, 'downsSinceRest');
+        if (downs > 0) condition(`Down ${downs}× without a full rest`, 'Each time you go down you stay down longer, until you sleep six hours in a bed.');
+        const rest = restLabel(self).replace(/^\s*·\s*/, '');
+        if (rest) condition('Resting', rest);
+        if (!list.childElementCount) el('p', 'muted small', list, 'Nothing is wrong with you.');
+        const dex = envNumber(self, 'dexterity', 0, 100, 50);
+        el('div', 'label sage', this.panel, `STRENGTH ${envNumber(self, 'strength', 0, 100, 50).toFixed(0)}   DEXTERITY ${dex.toFixed(0)} ` +
+            `(${envNumber(self, 'effectiveDexterity', 0, 100, dex).toFixed(1)} effective)   WISDOM ${envNumber(self, 'wisdom', 0, 100, 50).toFixed(0)}   ` +
+            `·   PACE ${Math.trunc(num(self, 'pace'))}/10`);
+        el('div', 'label gold', this.panel, 'BELONGINGS / EQUIPMENT');
+        this.belongings(self);
+        button('CHARACTER SHEET', '', el('div', 'sheet-actions', this.panel), () => this.act('character'));
+    }
+
+    /** What one carries, and what can be done with it: the purse, the items, equipping and using them. */
+    private belongings(self: Json | null) {
+        const s = this.s;
+        const fight = s.battle && !s.battle.observer ? s.battle : null;
         el('div', 'gold', this.panel, `PURSE · ${countText(self, 'cash')} silver pennies`);
         const items = arr(s.snapshot, 'inventory').filter(isObject);
         const grid = el('div', 'items', this.panel);
@@ -407,11 +472,19 @@ export class Dialogs {
             el('p', 'muted small', text, str(item, 'description'));
         }
         const actions = el('div', 'sheet-actions', this.panel);
-        if (s.inventoryQuantity('meal') > 0) button('EAT ONE MEAL', 'primary', actions, () => this.act('eat'));
+        if (s.inventoryQuantity('meal') > 0 && !fight) button('EAT ONE MEAL', 'primary', actions, () => this.act('eat'));
         if (s.inventoryQuantity('sword') > 0) {
             const held = str(self, 'mouth') === 'sword';
-            button(held ? 'PUT THE SWORD AWAY' : 'HOLD THE SWORD IN YOUR JAWS', 'primary', actions, () => this.act(held ? 'stow sword' : 'hold sword'));
+            const label = held ? 'PUT THE SWORD AWAY' : 'HOLD THE SWORD IN YOUR JAWS';
+            if (fight) {
+                // In a fight it is the turn's action (doc 33).
+                const mine = fight.turn === s.selfId;
+                const go = button(`${label} · YOUR ACTION`, 'primary', actions, () => s.sendBattle(held ? 'stow' : 'hold'));
+                go.disabled = !mine || fight.acted;
+                go.title = !mine ? 'On your turn' : fight.acted ? 'You have acted this turn' : 'Uses this turn\'s action';
+            } else button(label, 'primary', actions, () => this.act(held ? 'stow sword' : 'hold sword'));
         }
+        if (fight) return;                          // (Gathering and trading wait for the fight to end.)
         const resource = s.visibleResource();
         if (s.canGather()) button('GATHER HERBS', 'primary', actions, () => this.act('gather'));
         else if (resource)

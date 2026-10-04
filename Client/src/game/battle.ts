@@ -93,6 +93,7 @@ export interface BattleView {
     turnLeft: number;
     moved: boolean;
     acted: boolean;
+    faced: boolean;             // This turn's facing used (doc 33): move, action and facing all used, the turn ends itself.
     round: number;
     watching: number;
     fighters: FighterView[];
@@ -184,6 +185,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         turnLeft: num(b, 'turnLeft'),
         moved: bool(b, 'moved'),
         acted: bool(b, 'acted'),
+        faced: bool(b, 'faced'),
         round: Math.trunc(num(b, 'round')),
         watching: Math.trunc(num(b, 'watching')),
         fighters: objects(b, 'fighters').map(f => ({
