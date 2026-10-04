@@ -894,6 +894,27 @@ void Game::applyDmActions(double dt)
             else
                 outcome = {false, kind == "npc.move" ? "No such NPC in the world." : "No such character.", {}};
         }
+        else if (kind == "visitor.add" || kind == "visitor.leave")
+        {
+            // Temporary folk from the LIVE map (doc 34), the target their new ID. Payload {"name", "description",
+            // "like": a resident whose looks (and, with no description, words) they take, "cell", "x", "y", "minutes"}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            if (kind == "visitor.leave")
+                outcome = world_.sendVisitorAway(target);
+            else if (!payload.isObject())
+                outcome = {false, "Say who and where.", {}};
+            else
+            {
+                const auto* like = world_.entity(payload.string("like"));
+                const auto description = payload.string("description", like ? like->description : std::string());
+                outcome = world_.addVisitor(target, payload.string("name"), description, like ? like->appearance : Appearance{},
+                                            payload.string("cell"), wire::number(payload, "x", -1), wire::number(payload, "y", -1),
+                                            wire::number(payload, "minutes", 0));
+            }
+        }
         changed |= outcome.ok;
         worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
                       {*row[0], std::string(outcome.ok ? "applied" : "refused"), outcome.message});
@@ -3418,7 +3439,9 @@ void Game::command(Connection* c, const std::string& raw)
             }
             if (npc->transient)
             {
-                system(c, world_.hostile(target) ? "They want your purse, not your conversation." : "The carters are too busy with the road to talk.");
+                system(c, world_.hostile(target)                 ? "They want your purse, not your conversation."
+                          : world_.visitorLeaves(target) >= 0 ? npc->name + " has nothing to say to you just now."
+                                                              : "The carters are too busy with the road to talk.");
                 return;
             }
             if (world_.hearingClarity(target, id) < 0.25)

@@ -432,6 +432,15 @@ class World
     // A Dungeon Master's move (doc 34, the LIVE map): someone in the world put straight onto an open tile of any place,
     // where they carry on. Not someone in a fight, or a tile they couldn't stand on.
     Result teleport(const std::string& id, const std::string& cellId, double x, double y);
+    // Temporary folk a Dungeon Master brings in from the LIVE map (doc 34): a stranger standing where put, who leaves
+    // when their time is up (1 minute to a day of world time). Never saved; looked at, not talked to (yet: briefs are
+    // doc 34 Part 6). `look` is how they look, often a copy of a resident's.
+    Result addVisitor(const std::string& id, const std::string& name, const std::string& description, const Appearance& look,
+                      const std::string& cellId, double x, double y, double minutes);
+    Result sendVisitorAway(const std::string& id);
+    // When a temporary visitor leaves (world seconds), or a negative number for anyone else.
+    double visitorLeaves(const std::string& id) const { const auto v = visitors_.find(id); return v == visitors_.end() ? -1 : v->second; }
+    double worldTime() const { return time_; }
     // Whether a resident could walk from one place to another, through unlocked portals.
     bool canWalkBetween(const std::string& from, const std::string& to) const { return from == to || cachedSteps(from).count(to) > 0; }
     Result advanceCalendar(double days); // Explicit developer/test jump, never a client-authorized normal action.
@@ -838,6 +847,7 @@ class World
         double enteredAt = 0;               // When it came into its cell (a wagon stuck that long is moved on).
     };
     std::map<std::string, RoadFolk> folk_;
+    std::map<std::string, double> visitors_;   // Temporary folk (addVisitor): when each leaves, in world seconds.
     // Bandits who have stopped a player: asking (a demand) until they pay, get clear, or it comes to blows.
     struct Encounter
     {
@@ -1180,6 +1190,8 @@ const TerrainInfo* terrainInfo(char code); // Null for a code the catalog does n
 const std::vector<TerrainInfo>& terrainCatalog();
 const char* weatherName(Weather value);
 bool parseWeather(const std::string& name, Weather& out); // False for an unknown name; `out` is then unchanged.
+// How strong a weather system is at a point on a calendar day: 0 outside its reach or its life (RatwWeather.cpp).
+double weatherStrengthAt(const WeatherSystem& system, double x, double y, double day);
 const char* knowledgeName(Knowledge value);
 const char* voiceName(Voice value);
 const char* paceName(int pace);

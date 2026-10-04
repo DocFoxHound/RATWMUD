@@ -12,10 +12,10 @@ import {useWorld} from './world';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
-import {dmApi, type Action, type Chapters, type Factions, type Live, type LiveEvent, type LivePerson, type Me, type Npcs, type Target} from './api';
+import {dmApi, type Action, type Chapters, type Factions, type Live, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
-type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events';
+type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'weather';
 const LAYERS: {id: LayerId; label: string; icon: string; color: string}[] = [
     {id: 'players', label: 'Players', icon: '☺', color: '#7fc8f8'},
     {id: 'npcs', label: 'NPCs', icon: '☻', color: '#a8c7ad'},
@@ -25,15 +25,19 @@ const LAYERS: {id: LayerId; label: string; icon: string; color: string}[] = [
     {id: 'factions', label: 'Factions', icon: '⚑', color: '#e1aba2'},
     {id: 'routes', label: 'Routes & areas', icon: '⤳', color: '#e0b85a'},
     {id: 'events', label: 'Events', icon: '!', color: '#d98b5f'},
+    {id: 'rumours', label: 'Rumours', icon: '“', color: '#b9a3e0'},
+    {id: 'weather', label: 'Weather', icon: '☁', color: '#9db9d6'},
 ];
-// Layers whose systems aren't built yet (doc 34): shown, so the DM knows they are coming.
-const LATER = ['Stories', 'Quests', 'Rumours', 'Weather'];
-const ROAD = '#d98b5f', OFFLINE = '#7d8a85';
+// Layers whose systems aren't built yet (doc 34 phases 3 and 5): shown, so the DM knows they are coming.
+const LATER = ['Stories', 'Quests'];
+const ROAD = '#d98b5f', OFFLINE = '#7d8a85', VISITOR = '#d6d98f', HEARD = '#b9a3e0';
+const WEATHER: Record<string, string> = {rain: '#6f9fd6', fog: '#c7ccd1', snow: '#f2f5f7', overcast: '#9aa3ab', storm: '#7b6fd6', sandstorm: '#d6b06f'};
 const CRIMES = new Set(['theft', 'attempted theft', 'warrant', 'arrest', 'reported', 'raid', 'fine paid', 'released']);
 const POLL_MS = 2000;
 
-type Pick = {kind: 'move'; who: LivePerson} | {kind: 'spawn'} | null;
-interface SpawnDraft { place: Place; name: string; role: Role; copy: string }
+type Pick = {kind: 'move'; who: LivePerson} | {kind: 'revive'; who: LivePerson} | {kind: 'spawn'} | null;
+/** Who is spawned: a named NPC who stays (saved like any other), or a temporary visitor for some minutes. */
+interface SpawnDraft { place: Place; name: string; role: Role; copy: string; stays: boolean; minutes: number }
 
 export function LiveTab({me, target}: {me: Me; target: Target}) {
     const [problem, setProblem] = useState('');
@@ -42,6 +46,9 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const [view, setView] = useState<View>({kind: 'world'});
     const [on, setOn] = useState<Set<LayerId>>(() => new Set());   // Every layer off at the start.
     const [showOffline, setShowOffline] = useState(true), [showRoad, setShowRoad] = useState(true), [showDead, setShowDead] = useState(true);
+    const [showVisitors, setShowVisitors] = useState(true);
+    const [rumours, setRumours] = useState<Rumour[] | null>(null);
+    const [rumour, setRumour] = useState(-1);         // Which rumour the Rumours layer follows (an index), -1 none.
     const [npcRole, setNpcRole] = useState('');
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState<string | null>(null);
@@ -73,6 +80,13 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     useEffect(() => { if ((on.has('routes') || pick?.kind === 'spawn') && !npcs) void loadNpcs(); }, [on, pick, npcs, loadNpcs]);
     useEffect(() => { if (on.has('factions') && !factions) dmApi.factions(target).then(setFactions).catch(e => setProblem((e as Error).message)); }, [on, factions, target]);
     useEffect(() => { if (on.has('chapters') && !chapters) dmApi.chapters(target).then(setChapters).catch(e => setProblem((e as Error).message)); }, [on, chapters, target]);
+    useEffect(() => {                                 // Rumours change as the world saves: read again every half minute while shown.
+        if (!on.has('rumours')) return;
+        const read = () => dmApi.rumours(target).then(r => setRumours(r.rumours)).catch(e => setProblem((e as Error).message));
+        void read();
+        const t = setInterval(read, 30000);
+        return () => clearInterval(t);
+    }, [on, target]);
 
     const toggle = (id: LayerId) => setOn(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
     const surface = useMemo(() => (world ? surfaceFor(world, view as never) : null), [world, view]);
@@ -97,13 +111,15 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const shownPeople = useMemo(() => people.filter(p => {
         if (!showDead && p[6] & 1) return false;
         if (p[2] === 'p' || p[2] === 'o') return on.has('players') && (p[2] === 'p' || showOffline) && matches(p);
+        if (p[2] === 't') return on.has('npcs') && showVisitors && matches(p);
         return on.has('npcs') && (p[2] !== 'r' || showRoad) && (!npcRole || (npcRole === 'other' ? !(p[7] in ROLE_INFO) : p[7] === npcRole)) && matches(p);
-    }), [people, on, showOffline, showRoad, showDead, npcRole, q]); // eslint-disable-line react-hooks/exhaustive-deps
+    }), [people, on, showOffline, showRoad, showDead, showVisitors, npcRole, q]); // eslint-disable-line react-hooks/exhaustive-deps
+    const followed = on.has('rumours') && rumours && rumour >= 0 ? rumours[rumour] ?? null : null;
 
     const markers = useMemo((): Marker[] => {
         const out: Marker[] = [];
-        const push = (id: string, spot: [number, number] | null, color: string, glyph: string, label: string, dead = false, editable = false) => {
-            if (spot) out.push({id, x: spot[0], y: spot[1], color, glyph, label, dead, editable});
+        const push = (id: string, spot: [number, number] | null, color: string, glyph: string, label: string, dead = false, editable = false, draggable = false) => {
+            if (spot) out.push({id, x: spot[0], y: spot[1], color, glyph, label, dead, editable, draggable});
         };
         if (on.has('structures') && world) {
             if (view.kind === 'world') for (const r of world.rooms) push(`x:${r.id}`, at(r.id, 0, 0), '#c9b79c', '▣', r.name);
@@ -116,21 +132,35 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             push(`c:${site.id}`, at(site.cell, site.x + .5, site.y + .5), ch?.colour || '#cfa3d9', '♞', `${site.name} · ${ch?.name ?? site.chapter} (${site.state})`);
         }
         if (on.has('shops')) for (const s of live?.frame?.shops ?? [])
-            push(`s:${s[0]}`, at(s[3], s[4], s[5]), '#e6c481', '⚖', `${s[2] || 'Shop'} · ${s[1]}${s[6] ? ' (at a stall)' : ''}`, false, true);
+            push(`s:${s[0]}`, at(s[3], s[4], s[5]), '#e6c481', '⚖', `${s[2] || 'Shop'} · ${s[1]}${s[6] ? ' (at a stall)' : ''}`);
         if (on.has('events')) for (const e of live?.events ?? [])
             push(`e:${e.id}`, centre(e.cell), CRIMES.has(e.kind) ? '#e07a6a' : e.kind.startsWith('caravan') ? '#e0b85a' : '#b8b0a0', '!', eventLine(e, placeName));
+        const shown = new Set<string>();
         for (const p of shownPeople) {
             const player = p[2] === 'p' || p[2] === 'o';
-            const color = p[2] === 'o' ? OFFLINE : player ? '#7fc8f8' : p[2] === 'r' ? ROAD : ROLE_INFO[p[7] as Role]?.color ?? '#a8c7ad';
-            const glyph = player ? '☺' : p[2] === 'r' ? '⛟' : ROLE_INFO[p[7] as Role]?.icon ?? '●';
-            push(`${player ? 'p' : 'n'}:${p[0]}`, at(p[3], p[4], p[5]), color, glyph, personLine(p), !!(p[6] & 1), p[2] !== 'o');
+            const color = p[2] === 'o' ? OFFLINE : player ? '#7fc8f8' : p[2] === 'r' ? ROAD : p[2] === 't' ? VISITOR : ROLE_INFO[p[7] as Role]?.color ?? '#a8c7ad';
+            const glyph = player ? '☺' : p[2] === 'r' ? '⛟' : p[2] === 't' ? '✧' : ROLE_INFO[p[7] as Role]?.icon ?? '●';
+            push(`${player ? 'p' : 'n'}:${p[0]}`, at(p[3], p[4], p[5]), color, glyph, personLine(p), !!(p[6] & 1), p[2] !== 'o', canAct);
+            shown.add(p[0]);
+        }
+        if (followed) {                                // Who has heard the rumour followed, where they are now (and whom it's about).
+            const holders = new Set(followed.holders);
+            for (const p of people) {
+                if (p[0] === followed.subject) push(`r:${p[0]}`, at(p[3], p[4], p[5]), '#e07a6a', '◎', `${p[1]} · the rumour is about them`);
+                else if (holders.has(p[0]) && !shown.has(p[0])) push(`r:${p[0]}`, at(p[3], p[4], p[5]), HEARD, '“', `${p[1]} · has heard it`);
+            }
         }
         return out;
-    }, [on, world, view, at, centre, placeName, chapters, live, shownPeople]);
+    }, [on, world, view, at, centre, placeName, chapters, live, shownPeople, followed, people, canAct]);
 
     const overlay = useMemo((): Overlay => {
-        const out: Overlay = {tiles: [], rects: [], paths: []};
+        const out: Overlay = {tiles: [], rects: [], paths: [], circles: []};
         if (!surface || !world) return out;
+        if (on.has('weather')) {                       // Weather systems over the world; inside a place, as they fall over it.
+            const cell = view.kind === 'cell' ? world.cells.find(c => c.id === view.id) : undefined;
+            if (view.kind === 'world' || cell) for (const [, kind, x, y, r, strength] of live?.frame?.weather ?? [])
+                out.circles!.push({x: x - (cell?.x ?? 0), y: y - (cell?.y ?? 0), r, color: WEATHER[kind] ?? '#9db9d6', strength, label: kind});
+        }
         if (on.has('factions') && factions) for (const c of factions.claims) {
             const color = factions.factions.find(f => f.id === c.faction)?.color || '#e1aba2';
             if (!c.tiles.length) {
@@ -147,10 +177,10 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             }
         }
         return out;
-    }, [surface, world, view, on, factions, npcs]);
+    }, [surface, world, view, on, factions, npcs, live]);
 
     // ---- what is selected
-    const person = selected && (selected.startsWith('p:') || selected.startsWith('n:')) ? people.find(p => p[0] === selected.slice(2)) ?? null : null;
+    const person = selected && (selected.startsWith('p:') || selected.startsWith('n:') || selected.startsWith('r:')) ? people.find(p => p[0] === selected.slice(2)) ?? null : null;
     const shop = selected?.startsWith('s:') ? live?.frame?.shops.find(s => s[0] === selected.slice(2)) ?? null : null;
     const event = selected?.startsWith('e:') ? live?.events.find(e => `e:${e.id}` === selected) ?? null : null;
     const site = selected?.startsWith('c:') ? chapters?.sites.find(s => `c:${s.id}` === selected) ?? null : null;
@@ -167,13 +197,14 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         if (pick) {
             if (!place) { setNote('Choose a tile inside a place.'); return; }
             if (pick.kind === 'move') {
-                const who = pick.who, kind = who[2] === 'n' || who[2] === 'r' ? 'npc.move' : 'character.move';
                 setPick(null);
-                if (!sure(`Move ${who[1]} to ${placeName(place.cell)} ${place.x}, ${place.y}`)) return;
-                void run(() => dmApi.move(target, kind, who[0], place), `Moving ${who[1]}: waiting for the game server…`);
+                moveTo(pick.who, place);
+            } else if (pick.kind === 'revive') {
+                setPick(null);
+                reviveAt(pick.who, place);
             } else {
                 setPick(null);
-                setSpawn({place, name: '', role: 'civilian', copy: ''});
+                setSpawn({place, name: '', role: 'civilian', copy: '', stays: true, minutes: 30});
                 setSelected(null);
             }
             return;
@@ -181,8 +212,38 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         setSpawn(null);
         setSelected(marker?.id ?? null);
     };
+    const npcKind = (p: LivePerson) => (p[2] === 'p' || p[2] === 'o' ? 'character.move' : 'npc.move') as 'npc.move' | 'character.move';
+    const moveTo = (who: LivePerson, place: Place) => {
+        if (!sure(`Move ${who[1]} to ${placeName(place.cell)} ${place.x}, ${place.y}`)) return;
+        void run(() => dmApi.move(target, npcKind(who), who[0], place), `Moving ${who[1]}: waiting for the game server…`);
+    };
+    /** Brings the dead back, then puts them on the tile: two actions the server takes in order. */
+    const reviveAt = (who: LivePerson, place: Place) => {
+        const npc = npcKind(who) === 'npc.move';
+        if (!sure(`${npc ? 'Revive' : 'Resurrect'} ${who[1]} at ${placeName(place.cell)} ${place.x}, ${place.y}`)) return;
+        void run(async () => {
+            await (npc ? dmApi.npcLife(target, who[0], false) : dmApi.act(target, 'character.resurrect', who[0], ''));
+            await dmApi.move(target, npcKind(who), who[0], place);
+        }, `Bringing ${who[1]} back there: waiting for the game server…`);
+    };
+    const onDrop = (marker: Marker, place: Place | null) => {
+        const who = people.find(p => p[0] === marker.id.slice(2));
+        if (!who) return;
+        if (!place) { setNote('Drop them on a tile inside a place.'); return; }
+        if (who[6] & 1) reviveAt(who, place); else moveTo(who, place);
+    };
     const saveSpawn = () => {
-        if (!spawn || !world || !npcs) return;
+        if (!spawn || !world) return;
+        if (!spawn.stays) {                            // A temporary visitor: the game server alone, nothing saved.
+            const like = npcs?.people.find(p => p.id === spawn.copy);
+            const name = spawn.name.trim() || like?.name || '';
+            if (!name) { setNote('Give the visitor a name.'); return; }
+            if (!sure(`Bring ${name} to ${placeName(spawn.place.cell)} for ${spawn.minutes} minutes`)) return;
+            void run(async () => { await dmApi.visit(target, name, spawn.place, spawn.minutes, spawn.copy); setSpawn(null); },
+                `${name} is on the way: waiting for the game server…`);
+            return;
+        }
+        if (!npcs) return;
         const taken = [...npcs.people.map(p => p.id), ...npcs.holders.map(h => h.id)];
         const source = npcs.people.find(p => p.id === spawn.copy);
         const name = spawn.name.trim() || (source ? `${source.name} (copy)` : '');
@@ -194,6 +255,8 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         void run(async () => { await dmApi.saveNpc(target, newcomer); setSpawn(null); setNpcs(null); },
             `${name} is written to the ${target.toUpperCase()} world; a running game server brings them in within a second.`);
     };
+    const sendAway = (p: LivePerson) => sure(`Send ${p[1]} away`) &&
+        void run(() => dmApi.leave(target, p[0]), `Sending ${p[1]} away: waiting for the game server…`);
     const life = (p: LivePerson, kill: boolean) => {
         const npc = p[2] === 'n' || p[2] === 'r';
         if (!sure(`${kill ? 'Kill' : npc ? 'Revive' : 'Resurrect'} ${p[1]}`) || (kill && prod && !window.confirm(`Really kill ${p[1]}?`))) return;
@@ -203,18 +266,20 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
 
     const counts = useMemo(() => {
         const n = {online: 0, offline: 0, npcs: 0, road: 0};
-        for (const p of people) { if (p[2] === 'p') n.online++; else if (p[2] === 'o') n.offline++; else if (p[2] === 'r') n.road++; else n.npcs++; }
+        for (const p of people) { if (p[2] === 'p') n.online++; else if (p[2] === 'o') n.offline++; else if (p[2] === 'r' || p[2] === 't') n.road++; else n.npcs++; }
         return n;
     }, [people]);
     const layerCount: Partial<Record<LayerId, string>> = {
         players: `${counts.online} on · ${counts.offline} off`, npcs: String(counts.npcs + counts.road),
         shops: live?.frame ? String(live.frame.shops.length) : undefined, events: live ? String(live.events.length) : undefined,
+        rumours: rumours ? String(rumours.length) : undefined, weather: live?.frame?.weather ? String(live.frame.weather.length) : undefined,
     };
     const found = q ? people.filter(matches).slice(0, 40) : [];
     const stale = !live?.frame || live.age === null || live.age > 10;
     // What needs a look: refusals of the last hour (the host sends the day's).
     const alerts = (live?.actions ?? []).filter(a => (a.status === 'refused' || a.status === 'expired') && Date.now() - Date.parse(a.at) < 3600e3).slice(0, 5);
     const mode: Mode = pick ? 'pick' : 'select';
+    const nameOf = (id: string) => people.find(p => p[0] === id)?.[1] ?? id;
     const titleOf = view.kind === 'world' ? 'World' : placeName(view.id);
 
     return <div className="dm-npcs dm-live">
@@ -240,9 +305,17 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                 </div>}
                 {on.has('npcs') && <div className="live-filters">
                     <label><input type="checkbox" checked={showRoad} onChange={e => setShowRoad(e.target.checked)} /> Folk of the road (caravans, bandits)</label>
+                    <label><input type="checkbox" checked={showVisitors} onChange={e => setShowVisitors(e.target.checked)} /> Temporary visitors</label>
                     <label>Role <select value={npcRole} onChange={e => setNpcRole(e.target.value)}>
                         <option value="">all</option>{Object.entries(ROLE_INFO).map(([id, r]) => <option key={id} value={id}>{r.label}</option>)}<option value="other">other</option>
                     </select></label>
+                </div>}
+                {on.has('rumours') && <div className="live-filters">
+                    <label>Follow <select value={rumour} onChange={e => setRumour(Number(e.target.value))}>
+                        <option value={-1}>{rumours ? (rumours.length ? 'a rumour…' : 'nothing is going round') : 'Loading…'}</option>
+                        {(rumours ?? []).map((r, i) => <option key={i} value={i}>{rumourLine(r, nameOf)} ({r.holders.length})</option>)}
+                    </select></label>
+                    {followed && <span>{followed.holders.length} have heard it, {Math.round(followed.sure * 100)}% sure on average.</span>}
                 </div>}
                 {(on.has('players') || on.has('npcs')) && <div className="live-filters">
                     <label><input type="checkbox" checked={showDead} onChange={e => setShowDead(e.target.checked)} /> The dead</label>
@@ -262,34 +335,42 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                     </span>
                 </div>
                 <div className="options">
-                    {pick ? <><b className="tool-name">{pick.kind === 'move' ? `Move ${pick.who[1]}` : 'Spawn an NPC'}</b>
+                    {pick ? <><b className="tool-name">{pick.kind === 'move' ? `Move ${pick.who[1]}` : pick.kind === 'revive' ? `Bring ${pick.who[1]} back at…` : 'Spawn an NPC'}</b>
                         <span className="tool-help">Click a tile on the map · Esc to cancel</span><button onClick={() => setPick(null)}>Cancel</button></>
-                        : <><span className="tool-help">Wheel zooms · drag pans · double-click a place to open it</span>
+                        : <><span className="tool-help">Wheel zooms · drag pans · drag someone to move them · double-click a place to open it</span>
                             {canAct && <button className="primary" onClick={() => { setSelected(null); setPick({kind: 'spawn'}); }}>+ Spawn NPC</button>}
                             <button onClick={() => setRail(r => !r)} title="Show or hide the side panel">{rail ? 'Hide panel ▸' : '◂ Panel'}</button></>}
                 </div>
             </div>
             {surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={selected} mode={mode} cluster={4}
-                onClick={onMapClick} onPaint={() => undefined} onOpen={id => setView({kind: 'cell', id})} />
+                onClick={onMapClick} onPaint={() => undefined} onOpen={id => setView({kind: 'cell', id})} onMarkerDrop={canAct ? onDrop : undefined} />
                 : <div className="dm-center"><p className="hint">{problem || 'Loading the world…'}</p></div>}
         </main>
         {rail && <aside className="inspector" aria-label="Inspector">
             {(note || problem) && <p className="hint dm-note">{note || problem}</p>}
             {spawn ? <div className="dm-panel"><header><div><small>SPAWN</small><h2>{placeName(spawn.place.cell)} · {spawn.place.x}, {spawn.place.y}</h2></div></header>
                 <label className="field"><span>Name</span><input autoFocus value={spawn.name} onChange={e => setSpawn({...spawn, name: e.target.value})} placeholder={spawn.copy ? 'As the copy, if left empty' : 'Their name'} /></label>
-                <label className="field"><span>A copy of</span><select value={spawn.copy} onChange={e => setSpawn({...spawn, copy: e.target.value})}>
+                <div className="segmented">
+                    <button className={spawn.stays ? 'on' : ''} onClick={() => setSpawn({...spawn, stays: true})} title="Saved like any NPC; lives here">Stays</button>
+                    <button className={spawn.stays ? '' : 'on'} onClick={() => setSpawn({...spawn, stays: false})} title="Never saved; leaves when the time is up">Visits for a while</button>
+                </div>
+                {!spawn.stays && <label className="field"><span>Minutes</span><input type="number" min={1} max={1440} value={spawn.minutes}
+                    onChange={e => setSpawn({...spawn, minutes: Math.max(1, Math.min(1440, Math.round(Number(e.target.value) || 1)))})} /></label>}
+                <label className="field"><span>{spawn.stays ? 'A copy of' : 'Looks like'}</span><select value={spawn.copy} onChange={e => setSpawn({...spawn, copy: e.target.value})}>
                     <option value="">Nobody: someone new</option>
                     {(npcs?.people ?? []).slice().sort((a, b) => a.name.localeCompare(b.name)).map(p => <option key={p.id} value={p.id}>{p.name} ({p.workLabel || p.role})</option>)}
                 </select></label>
-                {!spawn.copy && <div className="segmented">{M.ROLES.map(r => <button key={r} className={spawn.role === r ? 'on' : ''} onClick={() => setSpawn({...spawn, role: r as Role})}
+                {spawn.stays && !spawn.copy && <div className="segmented">{M.ROLES.map(r => <button key={r} className={spawn.role === r ? 'on' : ''} onClick={() => setSpawn({...spawn, role: r as Role})}
                     style={{color: spawn.role === r ? ROLE_INFO[r as Role].color : undefined}}>{ROLE_INFO[r as Role].icon} {ROLE_INFO[r as Role].label}</button>)}</div>}
-                <Hint>They live, work and spend evenings here until changed in NPC Management. A copy takes the other’s role, looks, hours and personality.</Hint>
-                <div className="button-grid"><button className="primary" disabled={busy || !npcs} onClick={saveSpawn}>{npcs ? 'Spawn' : 'Loading…'}</button>
+                <Hint>{spawn.stays ? 'They live, work and spend evenings here until changed in NPC Management. A copy takes the other’s role, looks, hours and personality.'
+                    : 'A stranger who stands here and is looked at, not talked to, and leaves when the time is up. Nothing about them is saved.'}</Hint>
+                <div className="button-grid"><button className="primary" disabled={busy || (spawn.stays && !npcs)} onClick={saveSpawn}>{spawn.stays && !npcs ? 'Loading…' : 'Spawn'}</button>
                     <button onClick={() => setSpawn(null)}>Cancel</button></div>
             </div>
             : person ? <PersonPanel p={person} place={placeName(person[3])} canAct={canAct} busy={busy} target={target}
                 actions={(live?.actions ?? []).filter(a => a.target === person[0])}
-                onMove={() => setPick({kind: 'move', who: person})} onLife={kill => life(person, kill)} />
+                onMove={() => setPick({kind: 'move', who: person})} onLife={kill => life(person, kill)}
+                onReviveAt={() => setPick({kind: 'revive', who: person})} onSendAway={() => sendAway(person)} />
             : shop ? <div className="dm-panel"><header><div><small>SHOP</small><h2>{shop[2] || 'Shop'}</h2></div>{shop[6] && <span className="dm-status">at a stall</span>}</header>
                 <Hint>Kept by {shop[1]}, in {placeName(shop[3])} at {Math.floor(shop[4])}, {Math.floor(shop[5])}.</Hint>
                 <button onClick={() => { setOn(s => new Set(s).add('npcs')); setSelected(`n:${shop[0]}`); }}>Show {shop[1]}</button></div>
@@ -315,10 +396,10 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     </div>;
 }
 
-function PersonPanel({p, place, canAct, busy, target, actions, onMove, onLife}: {p: LivePerson; place: string; canAct: boolean; busy: boolean; target: Target;
-    actions: Action[]; onMove: () => void; onLife: (kill: boolean) => void}) {
+function PersonPanel({p, place, canAct, busy, target, actions, onMove, onLife, onReviveAt, onSendAway}: {p: LivePerson; place: string; canAct: boolean;
+    busy: boolean; target: Target; actions: Action[]; onMove: () => void; onLife: (kill: boolean) => void; onReviveAt: () => void; onSendAway: () => void}) {
     const player = p[2] === 'p' || p[2] === 'o', dead = !!(p[6] & 1);
-    const kind = p[2] === 'p' ? 'PLAYER · IN THE WORLD' : p[2] === 'o' ? 'PLAYER · AWAY' : p[2] === 'r' ? 'FOLK OF THE ROAD' : 'NPC';
+    const kind = p[2] === 'p' ? 'PLAYER · IN THE WORLD' : p[2] === 'o' ? 'PLAYER · AWAY' : p[2] === 'r' ? 'FOLK OF THE ROAD' : p[2] === 't' ? 'TEMPORARY VISITOR' : 'NPC';
     const states = [dead && 'dead', p[6] & 2 && 'downed', p[6] & 8 && 'in a fight', p[6] & 4 && 'off stage'].filter(Boolean) as string[];
     return <div className="dm-panel">
         <header><div><small>{kind}</small><h2>{p[1]}</h2></div>{dead ? <span className="dm-status dead">✝ dead</span> : states.length > 0 && <span className="dm-status">{states[0]}</span>}</header>
@@ -326,21 +407,30 @@ function PersonPanel({p, place, canAct, busy, target, actions, onMove, onLife}: 
         {p[8] && <Hint>Now: {p[8]}</Hint>}
         {states.length > 1 && <Hint>Also: {states.slice(1).join(', ')}.</Hint>}
         {p[2] === 'r' && <Hint>Made by the roads as needed and never saved: moving them lasts only until the road takes them back.</Hint>}
+        {p[2] === 't' && <Hint>Brought in from this map. Nothing about them is saved, and they leave when their time is up.</Hint>}
         {canAct && <div className="button-grid">
-            <button className="primary" disabled={busy} onClick={onMove} title={p[2] === 'o' ? 'They wake there' : 'Put them on a tile'}>Move…</button>
-            {dead ? <button disabled={busy} onClick={() => onLife(false)}>{player ? 'Resurrect' : 'Revive'}</button>
+            <button className="primary" disabled={busy} onClick={onMove} title={p[2] === 'o' ? 'They wake there' : 'Put them on a tile (or drag them)'}>Move…</button>
+            {p[2] === 't' ? <button disabled={busy} onClick={onSendAway}>Send away</button>
+                : dead ? <><button disabled={busy} onClick={() => onLife(false)} title="Where they lie">{player ? 'Resurrect' : 'Revive'}</button>
+                    <button disabled={busy} onClick={onReviveAt} title="Bring them back on a tile you choose">Bring back at…</button></>
                 : <button className="danger" disabled={busy || p[2] === 'r'} onClick={() => onLife(true)}>✝ Kill</button>}
         </div>}
         <ActionList actions={actions} target={target} />
     </div>;
 }
 
-const LABELS: Record<string, string> = {'npc.move': 'Move', 'character.move': 'Move', 'npc.sync': 'NPC saved'};
+const LABELS: Record<string, string> = {'npc.move': 'Move', 'character.move': 'Move', 'npc.sync': 'NPC saved', 'visitor.add': 'Visitor',
+    'visitor.leave': 'Sent away', 'npc.revive': 'Revive', 'character.resurrect': 'Resurrect'};
 function ActionList({actions, target}: {actions: Action[]; target?: Target}) {
     if (!actions.length) return null;
     return <ol className="dm-actions">{actions.slice(0, 6).map(a => <li key={a.id} className={a.status}>
         <b>{LABELS[a.kind] ?? a.kind}</b> {a.target} by {a.by} · {new Date(a.at).toLocaleTimeString()}
         <span>{a.status === 'queued' ? `waiting for a ${(target ?? 'game').toUpperCase()} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
+}
+
+function rumourLine(r: Rumour, nameOf: (id: string) => string) {
+    const line = `${nameOf(r.subject)} ${r.claim}`;
+    return line.length > 70 ? line.slice(0, 69) + '…' : line;
 }
 
 function personLine(p: LivePerson) {

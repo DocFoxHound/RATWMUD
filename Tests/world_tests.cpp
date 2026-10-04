@@ -99,6 +99,31 @@ void dungeonMasterMoves()
     expect(!w.teleport("nobody", "tavern", 16, 12).ok, "Only someone in the world");
     const auto npc = w.entities().begin()->first;
     expect(w.teleport(npc, p.cellId, p.position.x, p.position.y).ok && w.entity(npc)->cellId == p.cellId, "NPCs are moved too");
+
+    // Temporary visitors: put on a tile for a while, never saved, gone when their time is up.
+    Appearance look;
+    look.baseColor = 3;
+    const auto& here = p.position;
+    expect(w.addVisitor("visitor_a", "A messenger", "", look, p.cellId, here.x, here.y, 2).ok, "A visitor arrives on open ground");
+    const auto* v = w.entity("visitor_a");
+    expect(v && v->npc && v->transient && v->appearance.baseColor == 3 && !v->description.empty(), "Looking as asked, a stranger by default");
+    expect(w.visitorLeaves("visitor_a") > w.worldTime() && w.visitorLeaves(npc) < 0, "Only visitors have a time to leave");
+    expect(!w.addVisitor("visitor_a", "Again", "", look, p.cellId, here.x, here.y, 2).ok, "Never two with one ID");
+    expect(!w.addVisitor("visitor_b", "Long", "", look, p.cellId, here.x, here.y, 24 * 60 + 1).ok &&
+               !w.addVisitor("visitor_b", "Brief", "", look, p.cellId, here.x, here.y, .5).ok, "A minute to a day");
+    expect(!w.addVisitor("visitor_b", "", "", look, p.cellId, here.x, here.y, 5).ok, "Every visitor has a name");
+    expect(!w.addVisitor("visitor_b", "Lost", "", look, "nowhere", 2, 2, 5).ok, "Never somewhere that isn't there");
+    const auto state = w.save();
+    bool saved = false;
+    for (const auto& e : state.npcs)
+        saved |= e.id == "visitor_a";
+    expect(!saved, "Visitors are never saved");
+    for (int i = 0; i < 30 * 125; ++i)
+        w.tick(1.0 / 30);
+    expect(!w.entity("visitor_a") && w.visitorLeaves("visitor_a") < 0, "Gone once their two minutes are up");
+    expect(w.addVisitor("visitor_c", "Sent away", "", look, p.cellId, here.x, here.y, 60).ok && w.sendVisitorAway("visitor_c").ok &&
+               !w.entity("visitor_c"), "Or sent away sooner");
+    expect(!w.sendVisitorAway(npc).ok && w.entity(npc), "Only visitors can be sent away");
 }
 void continuousMovement()
 {

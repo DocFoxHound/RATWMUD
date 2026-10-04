@@ -3005,6 +3005,49 @@ Result World::teleport(const std::string& id, const std::string& cellId, double 
     return {true, a->name + " is now in " + destination->name + ".", id};
 }
 
+Result World::addVisitor(const std::string& id, const std::string& name, const std::string& description, const Appearance& look,
+                         const std::string& cellId, double x, double y, double minutes)
+{
+    if (id.empty() || entity(id))
+        return {false, "Someone already has that ID.", id};
+    if (name.empty() || name.size() > 60)
+        return {false, "Give them a name (up to 60 letters).", id};
+    if (!std::isfinite(minutes) || minutes < 1 || minutes > 24 * 60)
+        return {false, "They stay between a minute and a day.", id};
+    if (!ensureLoaded(cellId).ok || !cell(cellId))
+        return {false, "No such place.", id};
+    const auto* place = cell(cellId);
+    if (!std::isfinite(x) || !std::isfinite(y) || x < 0 || y < 0 || x >= place->width || y >= place->height)
+        return {false, "That isn't a tile of " + place->name + ".", id};
+    const Vec2 at{std::floor(x) + .5, std::floor(y) + .5};
+    const auto* tile = place->tile(int(at.x), int(at.y));
+    if (!tile || tile->solid || !passable(cellId, at, tile))
+        return {false, "No one can stand there.", id};
+    Entity e;
+    e.id = id;
+    e.name = name;
+    e.description = description.empty() ? "A stranger, passing through." : description;
+    e.appearance = look;
+    e.cellId = cellId;
+    e.position = at;
+    e.npc = true;
+    e.transient = true;
+    e.age = 30;
+    entities_[id] = std::move(e);
+    index_.dirty = true;
+    visitors_[id] = time_ + minutes * 60;
+    return {true, name + " is in " + place->name + " for " + std::to_string(int(minutes)) + " minutes.", id};
+}
+
+Result World::sendVisitorAway(const std::string& id)
+{
+    if (!visitors_.erase(id))
+        return {false, "They aren't a temporary visitor.", id};
+    if (entity(id))
+        removeRoadFolk(id);                         // (Takes anyone out of the world and its indexes.)
+    return {true, "They are gone.", id};
+}
+
 void World::updateSchedules()
 {
     scheduleStage_ = 0;
@@ -3576,6 +3619,14 @@ void World::tick(double dt)
     if (!std::isfinite(dt) || dt <= 0)
         return;
     takeRoutes();
+    for (auto v = visitors_.begin(); v != visitors_.end();)        // Temporary folk whose time is up go (addVisitor).
+        if (time_ >= v->second || !entity(v->first))
+        {
+            const auto id = (v++)->first;
+            sendVisitorAway(id);
+        }
+        else
+            ++v;
     // Bounded steps prevent tunneling. The hosting server should use 1/30 s;
     // even delayed input cannot tunnel through an entire terrain feature.
     dt = std::min(dt, 60.0);

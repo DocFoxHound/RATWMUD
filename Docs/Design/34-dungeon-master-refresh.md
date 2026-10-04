@@ -78,9 +78,21 @@ signing in. It fills in doc 21's LIVE placeholder.
 - spawning a new or copied named NPC on a tile;
 - the side panel: how fresh the positions are, refused actions, recent events, the calendar.
 
-Not yet: dragging a marker to move it, temporary NPCs, resurrecting at a chosen tile in one step (resurrect, then move),
-the Stories, Quests, Rumours and Weather layers, and the rail's story entries and other quick actions. Roads (caravans
-and bandits) show in the NPCs layer as folk of the road, and crime in the Events layer, until their own layers come.
+**Second slice built 2026-10-04:**
+
+- **Drag to move:** drag anyone onto a tile (dragging one of the dead brings them back there).
+- **Temporary visitors** (`visitor.add`, `visitor.leave`; `World::addVisitor`): *Spawn NPC* → *Visits for a while*,
+  for 1 minute to a day, perhaps looking like a resident. Never saved; looked at, not talked to (briefs are Part 6);
+  gone when their time is up, or *Send away*. On the map as "t", with how long they have left.
+- **Bring back at…:** the dead brought back on a chosen tile (revive or resurrect, then a move, taken in order).
+- **Rumours layer** (`GET /api/live/rumours`, from `game.beliefs`): follow one rumour and see everyone who has heard
+  it where they are now, and whom it is about.
+- **Weather layer:** the weather systems over the world, in the watch frame, drawn as soft discs by kind and
+  strength; inside a place, as they fall over it.
+
+Not yet: the Stories and Quests layers (their systems are phases 3 and 5), and the rail's story entries and other
+quick actions. Roads (caravans and bandits) show in the NPCs layer as folk of the road, and crime in the Events layer,
+until their own layers come.
 
 **The map**
 

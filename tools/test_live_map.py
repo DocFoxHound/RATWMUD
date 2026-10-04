@@ -101,6 +101,33 @@ class LiveMap(unittest.TestCase):
         self.assertEqual(refused['status'], 'refused', 'an NPC is not moved as a player character')
         refused = self.settled(self.dm.move(self.master, 'dev', 'npc.move', 'nobody', cell, x, y)['id'])
         self.assertEqual(refused['status'], 'refused')
+        self.assertIn('weather', live['frame'], 'the weather systems come with the positions')
+
+    def test_a_visitor_comes_and_is_sent_away(self):
+        live = self.watch(lambda l: l['frame'] is not None)
+        host = next(p for p in live['frame']['people'] if p[2] == 'n')
+        cell, x, y = host[3], int(host[4]), int(host[5])
+        queued = self.dm.visit(self.master, 'dev', 'A messenger', cell, x, y, 30, like=host[0])
+        self.assertEqual(self.settled(queued['id'])['status'], 'applied')
+        seen = self.watch(lambda l: any(p[0] == queued['visitor'] for p in l['frame']['people']), seconds=10)
+        visitor = next(p for p in seen['frame']['people'] if p[0] == queued['visitor'])
+        self.assertEqual((visitor[1], visitor[2], visitor[3]), ('A messenger', 't', cell), 'a temporary visitor, where put')
+        self.assertIn('leaves in 30 min', visitor[8])
+        self.assertEqual(self.settled(self.dm.leave(self.master, 'dev', queued['visitor'])['id'])['status'], 'applied')
+        self.watch(lambda l: all(p[0] != queued['visitor'] for p in l['frame']['people']), seconds=10)
+
+    def test_the_dead_are_brought_back_where_chosen(self):
+        live = self.watch(lambda l: l['frame'] is not None)
+        npcs = [p for p in live['frame']['people'] if p[2] == 'n']
+        fallen, there = npcs[-1], npcs[-2]
+        self.dm.npc_life(self.master, 'dev', fallen[0], True)
+        self.watch(lambda l: any(p[0] == fallen[0] and p[6] & 1 for p in l['frame']['people']), seconds=10)
+        # As the map does it: revive, then move; the server takes them in order.
+        self.dm.npc_life(self.master, 'dev', fallen[0], False)
+        moved = self.dm.move(self.master, 'dev', 'npc.move', fallen[0], there[3], int(there[4]), int(there[5]))
+        self.assertEqual(self.settled(moved['id'])['status'], 'applied')
+        self.watch(lambda l: any(p[0] == fallen[0] and not p[6] & 1 and p[3] == there[3] and int(p[4]) == int(there[4])
+                                 for p in l['frame']['people']), seconds=10)
 
 
 if __name__ == '__main__':

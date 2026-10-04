@@ -104,13 +104,17 @@ export interface Chapters {
 }
 
 /** The LIVE map (Docs/Design/34-dungeon-master-refresh.md, 1.1). A frame's people: [id, name, kind, cell, x, y, flags, role,
- *  doing]; kind "p" a player in the world, "o" a character not in it, "n" an NPC, "r" folk of the road; flags 1 dead,
- *  2 downed, 4 off stage, 8 in a fight. Shops: [merchant, name, label, cell, x, y, at a stall]. */
-export type LivePerson = [string, string, 'p' | 'o' | 'n' | 'r', string, number, number, number, string, string];
+ *  doing]; kind "p" a player in the world, "o" a character not in it, "n" an NPC, "r" folk of the road, "t" a temporary
+ *  visitor; flags 1 dead, 2 downed, 4 off stage, 8 in a fight. Shops: [merchant, name, label, cell, x, y, at a stall].
+ *  Weather: [id, kind, x, y (world tiles), reach, strength 0..1]. */
+export type LivePerson = [string, string, 'p' | 'o' | 'n' | 'r' | 't', string, number, number, number, string, string];
+export type LiveWeather = [string, string, number, number, number, number];
+/** A rumour going round: who it is about, what is said, who has heard it, and how sure they are on average. */
+export interface Rumour { subject: string; claim: string; holders: string[]; sure: number }
 export type LiveShop = [string, string, string, string, number, number, boolean];
 export interface LiveEvent { id: number; kind: string; actor: string; target: string; cell: string; day: number; detail: string; at: string }
 export interface Live {
-    target: Target; frame: {day: number; people: LivePerson[]; shops: LiveShop[]} | null;
+    target: Target; frame: {day: number; people: LivePerson[]; shops: LiveShop[]; weather?: LiveWeather[]} | null;
     /** Seconds since the game server wrote the frame; null if it never has. */
     age: number | null; events: LiveEvent[]; actions: Action[];
 }
@@ -131,6 +135,11 @@ export const dmApi = {
     live: (target: Target) => call<Live>(`api/live?target=${target}`),
     move: (target: Target, kind: 'npc.move' | 'character.move', id: string, place: Place, reason = '') =>
         call<{id: number}>('api/live/move', {target, kind, id, cell: place.cell, x: place.x, y: place.y, reason}),
+    /** A temporary visitor on a tile for `minutes`, perhaps looking like a resident (`like`). */
+    visit: (target: Target, name: string, place: Place, minutes: number, like = '') =>
+        call<{id: number; visitor: string}>('api/live/visit', {target, name, cell: place.cell, x: place.x, y: place.y, minutes, like}),
+    leave: (target: Target, id: string) => call<{id: number}>('api/live/leave', {target, id}),
+    rumours: (target: Target) => call<{target: Target; rumours: Rumour[]}>(`api/live/rumours?target=${target}`),
     saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
     deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),
     npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>('api/npcs/life', {target, id, dead}),

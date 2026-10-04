@@ -134,6 +134,8 @@ double strengthOf(const WeatherSystem& s, double x, double y, double day)
 }
 } // namespace
 
+double weatherStrengthAt(const WeatherSystem& system, double x, double y, double day) { return strengthOf(system, x, y, day); }
+
 void World::refreshWeatherField(bool force)
 {
     const auto stamp = std::int64_t(std::floor(calendarDays_ / FieldStep));

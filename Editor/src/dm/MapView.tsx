@@ -10,25 +10,32 @@ import {glyphInfo, glyphLabel} from '../lib/glyphs';
 import {useGlyphRender} from '../lib/glyphFont';
 
 export type Mode = 'select' | 'pick' | 'paint';
-export interface Marker { id: string; x: number; y: number; color: string; glyph: string; label: string; dead: boolean; editable: boolean }
+export interface Marker { id: string; x: number; y: number; color: string; glyph: string; label: string; dead: boolean; editable: boolean;
+    /** May be dragged onto a tile (with onMarkerDrop). */
+    draggable?: boolean }
 /** Drawn under the markers, in surface tiles: painted tiles, whole-place fills and lines through numbered points. */
 export interface Overlay {
     tiles: {x: number; y: number; color: string; strong: boolean}[];
     rects: {x: number; y: number; w: number; h: number; color: string; strong: boolean}[];
     paths: {points: [number, number][]; color: string; numbered: boolean; loop: boolean}[];
+    /** Soft discs under everything else (the LIVE map's weather): middle and radius in surface tiles, 0..1 strength. */
+    circles?: {x: number; y: number; r: number; color: string; strength: number; label: string}[];
 }
 
 /** The world or one place, with area tiles, route lines and NPC spawn-point markers.
  *  Wheel zooms; drag pans (right-drag while painting); click selects or picks; drag paints in paint mode. */
-export function MapView({surface, markers, overlay, selected, mode, onClick, onPaint, onOpen, cluster = 0}: {surface: Surface; world?: Project; markers: Marker[]; overlay: Overlay;
+export function MapView({surface, markers, overlay, selected, mode, onClick, onPaint, onOpen, cluster = 0, onMarkerDrop}: {surface: Surface; world?: Project; markers: Marker[]; overlay: Overlay;
     selected: string | null; mode: Mode; onClick: (place: Place | null, marker: Marker | null) => void; onPaint: (place: Place | null, start: boolean) => void;
     onOpen: (cell: string) => void;
     /** Below this zoom (pixels a tile), markers close together on screen are drawn as one count (the LIVE map); 0 never. */
-    cluster?: number}) {
+    cluster?: number;
+    /** A draggable marker dropped on a tile (or off the map: null). */
+    onMarkerDrop?: (marker: Marker, place: Place | null) => void}) {
     const wrap = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null);
     const [size, setSize] = useState({w: 800, h: 600});
     const [cam, setCam] = useState({s: 12, x: 20, y: 20});
-    const drag = useRef<{sx: number; sy: number; cx: number; cy: number; moved: boolean} | null>(null);
+    const drag = useRef<{sx: number; sy: number; cx: number; cy: number; moved: boolean; marker: Marker | null} | null>(null);
+    const [ghost, setGhost] = useState<{marker: Marker; x: number; y: number} | null>(null);   // A marker being dragged.
     const painting = useRef<string | null>(null);        // The last tile painted in this stroke.
     const [hover, setHover] = useState<Marker | null>(null);
     useGlyphRender();                                    // Redraw once the glyph font loads, or when Plain ASCII is toggled.
@@ -78,6 +85,16 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
                 g.strokeRect(ox + c.x * s + .5, oy + c.y * s + .5, c.width * s - 1, c.height * s - 1);
                 if (c.width * s > 80) { g.font = '600 12px Inter, system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = '#cdd6cc'; g.fillText(c.name, ox + c.x * s + 8, oy + c.y * s + 14); }
             }
+        }
+        for (const c of overlay.circles ?? []) {
+            const px = ox + c.x * s, py = oy + c.y * s, pr = Math.max(4, c.r * s);
+            const glow = g.createRadialGradient(px, py, 0, px, py, pr);
+            glow.addColorStop(0, c.color); glow.addColorStop(1, 'rgba(0,0,0,0)');
+            g.globalAlpha = .18 + .32 * c.strength; g.fillStyle = glow;
+            g.beginPath(); g.arc(px, py, pr, 0, Math.PI * 2); g.fill();
+            g.globalAlpha = .9; g.font = '600 12px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.fillStyle = '#ded5c3'; if (pr > 30) g.fillText(c.label, px, py);
+            g.globalAlpha = 1;
         }
         for (const r of overlay.rects) {
             g.globalAlpha = r.strong ? .38 : .22; g.fillStyle = r.color;
@@ -137,12 +154,18 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
             g.font = `700 ${Math.floor(r * 1.1)}px Inter, system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
             g.fillStyle = m.editable || m.glyph === '◇' ? '#11191b' : m.color; g.fillText(m.dead ? '✝' : m.glyph, px, py + 1);
             g.globalAlpha = 1;
-            if (on || m === hover) {
+            if (on || m === hover || ghost?.marker === m) {
                 g.font = '600 12px Inter, system-ui, sans-serif'; g.textAlign = 'left';
                 const w = g.measureText(m.label).width;
                 g.fillStyle = 'rgba(13,20,19,.9)'; g.fillRect(px + r + 4, py - 10, w + 10, 20);
                 g.fillStyle = '#ded5c3'; g.fillText(m.label, px + r + 9, py);
             }
+        }
+        if (ghost) {                                     // Where a dragged marker would land.
+            const fx = ox + ghost.marker.x * s, fy = oy + ghost.marker.y * s, tx = ox + (Math.floor(ghost.x) + .5) * s, ty = oy + (Math.floor(ghost.y) + .5) * s;
+            g.strokeStyle = ghost.marker.color; g.lineWidth = 2; g.setLineDash([5, 4]);
+            g.beginPath(); g.moveTo(fx, fy); g.lineTo(tx, ty); g.stroke(); g.setLineDash([]);
+            g.globalAlpha = .7; g.beginPath(); g.arc(tx, ty, r, 0, Math.PI * 2); g.fillStyle = ghost.marker.color; g.fill(); g.globalAlpha = 1;
         }
     });
     const tile = (e: React.MouseEvent) => {
@@ -172,7 +195,9 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
                 setCam(c => { const s = Math.max(.2, Math.min(64, c.s * Math.exp(-e.deltaY * .0015))); return {s, x: mx - (mx - c.x) * (s / c.s), y: my - (my - c.y) * (s / c.s)}; }); }}
             onPointerDown={e => {
                 if (mode === 'paint' && e.button === 0) { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); paint(e, true); return; }
-                drag.current = {sx: e.clientX, sy: e.clientY, cx: cam.x, cy: cam.y, moved: false};
+                const grabbed = mode === 'select' && e.button === 0 && onMarkerDrop ? markerAt(e) : null;
+                drag.current = {sx: e.clientX, sy: e.clientY, cx: cam.x, cy: cam.y, moved: false, marker: grabbed?.draggable ? grabbed : null};
+                if (drag.current.marker) (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
             }}
             onPointerMove={e => {
                 const [tx, ty] = tile(e);
@@ -180,12 +205,14 @@ export function MapView({surface, markers, overlay, selected, mode, onClick, onP
                 if (painting.current !== null && e.buttons & 1) { paint(e, false); return; }
                 const d = drag.current;
                 if (d && e.buttons) { if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 4) d.moved = true;
-                    if (d.moved) setCam(c => ({...c, x: d.cx + e.clientX - d.sx, y: d.cy + e.clientY - d.sy})); }
+                    if (d.moved && d.marker) setGhost({marker: d.marker, x: tx, y: ty});
+                    else if (d.moved) setCam(c => ({...c, x: d.cx + e.clientX - d.sx, y: d.cy + e.clientY - d.sy})); }
                 else if (mode !== 'paint') { const m = markerAt(e); if (m !== hover) setHover(m); }
             }}
             onPointerUp={e => {
                 if (painting.current !== null) { painting.current = null; return; }
                 const d = drag.current; drag.current = null;
+                if (d?.marker && d.moved) { setGhost(null); onMarkerDrop?.(d.marker, placeAt(e)); return; }
                 if (d?.moved || e.button !== 0 || mode === 'paint') return;
                 onClick(placeAt(e), mode === 'pick' ? null : markerAt(e));
             }}

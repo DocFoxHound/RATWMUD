@@ -185,6 +185,40 @@ class DungeonMasterTests(Fixture):
             with self.assertRaises(D.DMError):
                 self.dm.move(master, 'prod', kind, 'npc_a', cell, x, y)
 
+    def test_visitors_and_rumours_on_the_live_map(self):
+        viewer, master = self.sign_in('dm-viewer'), self.sign_in('dm-master')
+        town = next(c for c in greyfen()['cells'])['id']
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.visit(viewer, 'prod', 'A messenger', town, 4, 5, 30)
+        self.assertEqual(raised.exception.status, 403, 'viewers only watch')
+        queued = self.dm.visit(master, 'prod', '  A   messenger ', town, 4, 5, 30, like='npc_a')
+        self.assertTrue(queued['visitor'].startswith('visitor_'))
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute('SELECT kind, target_id, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(row, ('visitor.add', queued['visitor'], {'name': 'A messenger', 'cell': town, 'x': 4, 'y': 5, 'minutes': 30, 'like': 'npc_a'}))
+        for name, cell, minutes in (('', town, 30), ('x' * 61, town, 30), ('Lost', 'nowhere', 30), ('Brief', town, 0),
+                                    ('Long', town, 24 * 60 + 1), ('Half', town, 1.5)):
+            with self.assertRaises(D.DMError):
+                self.dm.visit(master, 'prod', name, cell, 4, 5, minutes)
+        gone = self.dm.leave(master, 'prod', queued['visitor'])
+        self.assertEqual(self.dm.action('prod', gone['id'])['status'], 'queued')
+        with self.assertRaises(D.DMError):
+            self.dm.leave(master, 'prod', 'npc_a')
+        kinds = [a['kind'] for a in self.dm.live(viewer, 'prod')['actions']]
+        self.assertEqual(kinds[:2], ['visitor.leave', 'visitor.add'], 'the map shows how they went')
+
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            for i, holder in enumerate(('npc_a', 'npc_b', 'npc_c')):
+                data = {'holder': holder, 'subject': 'player-ada', 'claim': 'stole a pie', 'confidence': .5 + i * .2}
+                game.execute('INSERT INTO game.beliefs (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                             ('greyfen', f'{holder}|player-ada|stole a pie', i, json.dumps(data)))
+            game.execute('INSERT INTO game.beliefs (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'npc_a|npc_b|is kind', 3, json.dumps({'holder': 'npc_a', 'subject': 'npc_b', 'claim': 'is kind'})))
+        going = self.dm.rumours('prod')['rumours']
+        self.assertEqual(going[0], {'subject': 'player-ada', 'claim': 'stole a pie', 'holders': ['npc_a', 'npc_b', 'npc_c'], 'sure': .7},
+                         'the most widely heard first, with everyone who has heard it')
+        self.assertEqual(len(going), 2)
+
     def test_roles(self):
         viewer = self.sign_in('dm-viewer')
         self.assertTrue(self.dm.players('prod')['characters'])

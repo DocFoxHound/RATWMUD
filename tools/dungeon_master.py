@@ -51,7 +51,7 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
            'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm',
-           'npc.move': 'dm', 'character.move': 'dm'}
+           'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm'}
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -1060,7 +1060,8 @@ class DungeonMaster:
                                                ORDER BY id DESC LIMIT 80''', (world[0], list(self.QUIET_EVENTS))).fetchall()]
             actions = [{'id': r[0], 'kind': r[1], 'target': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
                        for r in conn.execute('''SELECT id, kind, target_id, requested_by, requested_at, status, result FROM dm.actions
-                                                WHERE kind IN ('npc.move', 'character.move', 'npc.sync')
+                                                WHERE kind IN ('npc.move', 'character.move', 'npc.sync', 'visitor.add',
+                                                               'visitor.leave', 'npc.revive', 'character.resurrect')
                                                       AND requested_at > now() - interval '1 day'
                                                 ORDER BY id DESC LIMIT 30''').fetchall()]
         return {'target': target, 'frame': frame, 'age': round(float(row[1]), 1) if row else None, 'events': events,
@@ -1086,6 +1087,53 @@ class DungeonMaster:
                 self.audit(conn, who['username'], kind, someone,
                            f'{target.upper()}: moved {someone} to {place[0]} {x}, {y}' + (f' — {reason[:500]}' if reason else ''))
         return {'id': action_id, 'status': 'queued'}
+
+    def visit(self, who, target, name, cell, x, y, minutes, like='', description=''):
+        """Brings a temporary visitor onto a tile for a while (visitor.add): never saved, gone when their time is up.
+        They may look like a resident (`like`), and take that resident's description when given none."""
+        self.allowed(who, 'visitor.add')
+        name = ' '.join(str(name).split())
+        if not 1 <= len(name) <= 60:
+            raise DMError('Give them a name (up to 60 letters).')
+        if not isinstance(minutes, int) or isinstance(minutes, bool) or not 1 <= minutes <= 24 * 60:
+            raise DMError('They stay between a minute and a day (whole minutes).')
+        if not cell or not all(isinstance(v, int) and not isinstance(v, bool) and 0 <= v < 4096 for v in (x, y)):
+            raise DMError('Say where: a place and whole-number x and y.')
+        visitor = f'visitor_{int(self.clock() * 1000):x}{secrets.token_hex(2)}'
+        payload = {'name': name, 'cell': cell, 'x': x, 'y': y, 'minutes': minutes, 'like': str(like)[:80]}
+        if description:
+            payload['description'] = str(description)[:400]
+        with self.connect(target) as conn:
+            place = conn.execute('''SELECT name FROM world.cells WHERE id = %s UNION ALL SELECT name FROM world.interiors WHERE id = %s
+                                    LIMIT 1''', (cell, cell)).fetchone()
+            if not place:
+                raise DMError('No such place.', 404)
+            with conn.transaction():
+                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES ('visitor.add', %s, %s, %s)
+                                            RETURNING id''', (visitor, who['username'], json.dumps(payload))).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
+                self.audit(conn, who['username'], 'visitor.add', visitor,
+                           f'{target.upper()}: {name} visits {place[0]} {x}, {y} for {minutes} min')
+        return {'id': action_id, 'visitor': visitor, 'status': 'queued'}
+
+    def leave(self, who, target, visitor):
+        """Sends a temporary visitor away before their time (visitor.leave)."""
+        self.allowed(who, 'visitor.leave')
+        if not str(visitor).startswith('visitor_'):
+            raise DMError('Only a temporary visitor can be sent away.')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                return {'id': self.queue(conn, who, target, 'visitor.leave', str(visitor), f'sent {visitor} away'), 'status': 'queued'}
+
+    def rumours(self, target):
+        """What is going round: each rumour (who it is about, and what is said), with everyone who has heard it, most
+        widely heard first (game.beliefs, as last saved)."""
+        with self.connect(target) as conn:
+            rows = conn.execute('''SELECT subject, data->>'claim', array_agg(holder ORDER BY holder), avg((data->>'confidence')::float)
+                                     FROM game.beliefs WHERE subject IS NOT NULL GROUP BY 1, 2
+                                     ORDER BY count(*) DESC LIMIT 60''').fetchall()
+        return {'target': target, 'rumours': [{'subject': r[0], 'claim': r[1] or '', 'holders': r[2], 'sure': round(r[3] or 0, 2)}
+                                              for r in rows]}
 
     def action(self, target, action_id):
         with self.connect(target) as conn:
@@ -1182,6 +1230,16 @@ def make_server(port=8766, dm=None):
                 data = self.body()
                 return self.reply(200, dm.move(who, str(data.get('target', 'prod')), str(data.get('kind', '')), str(data.get('id', '')),
                                                str(data.get('cell', '')), data.get('x'), data.get('y'), str(data.get('reason', ''))))
+            if method == 'GET' and path == '/api/live/rumours':
+                return self.reply(200, dm.rumours(self.target(query)))
+            if method == 'POST' and path == '/api/live/visit':
+                data = self.body()
+                return self.reply(200, dm.visit(who, str(data.get('target', 'prod')), data.get('name', ''), str(data.get('cell', '')),
+                                                data.get('x'), data.get('y'), data.get('minutes'), str(data.get('like', '')),
+                                                str(data.get('description', ''))))
+            if method == 'POST' and path == '/api/live/leave':
+                data = self.body()
+                return self.reply(200, dm.leave(who, str(data.get('target', 'prod')), str(data.get('id', ''))))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':

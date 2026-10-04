@@ -23,7 +23,8 @@ void Game::feedWatch(double dt)
 // {"day": calendar days, "people": [[id, name, kind, cell, x, y, flags, role, doing], ...],
 //  "shops": [[merchant, name, label, cell, x, y, at a stall], ...]}
 // kind: "p" a player in the world, "o" a player character not in it (where they were saved), "n" an NPC, "r" folk of
-// the road (a caravan's wagon, bandits: made as needed, never saved). flags: 1 dead, 2 downed, 4 off stage, 8 in a fight.
+// the road (a caravan's wagon, bandits: made as needed, never saved), "t" a temporary visitor (World::addVisitor).
+// flags: 1 dead, 2 downed, 4 off stage, 8 in a fight. "weather": the systems over the world (below).
 std::string Game::watchFrame() const
 {
     using json::Value;
@@ -53,6 +54,11 @@ std::string Game::watchFrame() const
         const auto* spec = society.spec(id);
         const auto* life = society.resident(id);
         const std::string role = spec ? spec->role : life ? life->role : std::string();
+        if (const double leaves = world_.visitorLeaves(id); leaves >= 0)
+        {
+            row(e, "t", flags, "", "leaves in " + std::to_string(int(std::ceil((leaves - world_.worldTime()) / 60))) + " min");
+            continue;
+        }
         row(e, e.transient ? "r" : "n", flags, role, life ? life->task : e.activity.empty() ? e.state : e.activity);
         if (spec && spec->role == "merchant" && !spec->work.cell.empty())
         {
@@ -70,10 +76,29 @@ std::string Game::watchFrame() const
     for (const auto& [id, e] : characters_)
         if (!world_.entity(id))
             row(e, "o", e.dead ? 1 : 0, "", "");
+    // The weather systems over the world now: [id, kind, x, y (their middle, world tiles), reach, strength there].
+    Value weather = Value::array();
+    const double day = world_.calendarDays();
+    for (const auto& s : world_.weatherSystems())
+    {
+        const double x = s.x + s.vx * (day - s.born), y = s.y + s.vy * (day - s.born);
+        const double strength = weatherStrengthAt(s, x, y, day);
+        if (strength <= .02)
+            continue;
+        Value w = Value::array();
+        w.push(s.id);
+        w.push(weatherName(s.kind));
+        w.push(tenth(x));
+        w.push(tenth(y));
+        w.push(tenth(s.radius));
+        w.push(std::round(strength * 100) / 100);
+        weather.push(std::move(w));
+    }
     Value frame = Value::object();
     frame.add("day", world_.calendarDays());
     frame.add("people", std::move(people));
     frame.add("shops", std::move(shops));
+    frame.add("weather", std::move(weather));
     return json::dump(frame);
 }
 } // namespace ratw::game
