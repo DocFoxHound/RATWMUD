@@ -313,6 +313,10 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 .fight-mode .side > :not(.fight-cards), .fight-mode .center > .actions, .fight-mode .center > .looking,
 .fight-mode .map-head .tabs, .fight-mode .map-head .effects, .fight-mode .story .scene, .fight-mode .story .scene-bar { display: none !important; }
 .fight-mode .story .place { font-size: 18px; }
+/* In a fight one's pace and stamina stay in view, under the cards: they are how far the next move goes and what it costs. */
+.fight-mode .side > .panel.status { display: block !important; order: 2; flex: none; }
+.fight-mode .side > .fight-cards { order: 1; }
+.fight-mode .status > .who, .fight-mode .status > .law, .fight-mode .status > .senses, .fight-mode .status > .muted.small { display: none; }
 .fight-mode .map { border-color: #6b3a33; box-shadow: inset 0 0 0 1px #2a1513; }
 .game { --self: #d9b67b; --friend: #8fb0d6; --foe: #e0695e; }
 
@@ -372,7 +376,15 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 .result-review { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 10px 0 4px; padding-top: 10px;
     border-top: 1px solid #34443e; }
 .result-stars { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-button.given { opacity: .6; }  /* Initiative is on the fighter cards now (doc 33). */
+button.given { opacity: .6; }
+/* Injuries on a fighter's card (doc 38): named chips, each saying what it does on hover. */
+.fcard-hurts { display: flex; flex-wrap: wrap; gap: 4px; }
+.fcard-hurts .hurt { font: 10px/16px 'RATW Mono', monospace; letter-spacing: .04em; text-transform: uppercase; padding: 0 5px;
+    border-radius: 2px; border: 1px solid #6b3a33; color: #ffb0a0; background: #2a1513; cursor: help; }
+.fcard-hurts .hurt.burning { border-color: #a3521f; color: #ffb35c; }
+.fcard-hurts .hurt.winded, .fcard-hurts .hurt.wounded { border-color: #5a5a3a; color: #e2d9a0; background: #1f1f14; }
+.fcard-hurts .hurt.down { border-color: #ff9a3c; color: #ff9a3c; }
+.meter { cursor: help; }  /* Initiative is on the fighter cards now (doc 33). */
 .fcard-foot { display: flex; justify-content: space-between; align-items: center; min-height: 16px; }
 .odds { display: inline-flex; align-items: center; gap: 5px; color: var(--paper); font: 12px 'RATW Mono', monospace; }
 .odds .odds-hit { color: var(--gold); font-weight: 600; }

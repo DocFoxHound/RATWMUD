@@ -925,7 +925,6 @@ class World
     std::vector<std::pair<int, int>> walkTo(const Battle& b, const BattleFighter& f, int x, int y) const;
     void walkFighters(Battle& b);
     double stepSeconds(const BattleFighter& f) const;
-    int fightPace(const Entity& e) const;           // The pace a fighter moves at: theirs, an NPC's run, or a walk.
     void standUp(Entity& e, double health);
     void tendDowned(double dt);
     void fullRest(Entity& e);
@@ -936,6 +935,7 @@ class World
     void returnFromAway(Entity& e);
     // Lying on a bed or straw (doc 36's `b` and `z` tiles): where a full rest is had (doc 38).
     bool inBed(const Entity& e) const;
+    int fightPace(const Entity& e) const;           // The pace a fighter moves at: theirs, an NPC's run, or a walk.
 
   private:
     std::vector<std::pair<std::string, std::string>> notices_;

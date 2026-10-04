@@ -242,7 +242,7 @@ export class Hud {
         const fighting = !!s.battle;
         setClass(this.root, 'fight-mode', fighting);
         setText(this.help, fighting && s.battle?.observer ? 'WATCHING A FIGHT · ENTER write'
-            : fighting ? 'CLICK a lit tile to move · CLICK a foe to strike · 1–8 actions · SPACE end turn · Q / E turn · ENTER write'
+            : fighting ? 'CLICK a lit tile to move · CLICK a foe to strike · WHEEL pace · 1–9 actions · R rest · SPACE end turn · Q / E turn · ENTER write'
             : 'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
         this.combat.update();
         this.fight.update();
@@ -397,8 +397,20 @@ export class Hud {
         setStyle(this.staminaFill, 'width', `${stamina}%`);
         setClass(this.staminaFill, 'draining', rate < -0.01);
         setClass(this.staminaFill, 'tired', exhausted);
-        setText(this.staminaNote, rate < -0.01 ? `DRAINING ${(-rate).toFixed(1)}/s · ease pace for distance`
-            : rate > 0.01 ? (stamina >= 99.95 ? 'FULL' : `RECOVERING +${rate.toFixed(1)}/s`) : 'STEADY · sustainable travel');
+        const b = s.battle, me = b && !b.observer ? b.fighters.find(f => f.id === s.selfId) : undefined;
+        if (b && me) {
+            // In a fight (doc 33): how far a move goes at this pace, what it costs, what comes back next turn.
+            setText(this.staminaLabel, `STAMINA ${Math.round(me.stamina >= 0 ? me.stamina : stamina)}  ·  STR ${b.stats?.str ?? '?'}  ·  DEX ${b.stats?.dex ?? '?'}`);
+            setText(this.staminaNote, `MOVE ${b.moveRange} TILES AT THIS PACE  ·  ${b.tileStamina > 0 ? `${b.tileStamina.toFixed(1)} STAMINA A TILE` : 'WALKING IS FREE'}` +
+                `  ·  +${me.regen} NEXT TURN${b.resting ? ' (RESTING)' : ''}`);
+            this.staminaNote.title = 'Pace (the wheel) sets how far a move goes: half at a walk, as far as DEX allows at a trot, half again at ' +
+                'a sprint. Faster than a trot costs stamina a tile. Stamina comes back only at the start of each turn (4 + STR ÷ 10, less hurt; ' +
+                'twice that after a turn of rest). Bites cost 8, a sword 14.';
+        } else {
+            this.staminaNote.title = '';
+            setText(this.staminaNote, rate < -0.01 ? `DRAINING ${(-rate).toFixed(1)}/s · ease pace for distance`
+                : rate > 0.01 ? (stamina >= 99.95 ? 'FULL' : `RECOVERING +${rate.toFixed(1)}/s`) : 'STEADY · sustainable travel');
+        }
         setText(this.senses, `HEARING · ${s.movementHeard ? 'unseen pawsteps' : 'no unseen steps'}   ·   ${scentLabel(s.scentCues)}`);
     }
 

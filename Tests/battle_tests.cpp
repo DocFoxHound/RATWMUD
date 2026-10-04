@@ -644,6 +644,67 @@ void paceAndStamina()
            "Range by pace");
 }
 
+// Resting a turn (doc 33): no move, twice the stamina back at the next; and the combat injuries (doc 38): a hard bite
+// bleeds, a very hard blow staggers.
+void restAndCombatInjuries()
+{
+    World w;
+    auto& b = duel(w);
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    auto* ad = w.entity("player-ad");
+    ad->stamina = 30;
+    expect(w.battleAct("player-ad", "rest").ok && fa->resting && fa->moved, "Ad rests: no move this turn");
+    expect(!w.battleMove("player-ad", fa->x + 1, fa->y).ok, "she can't move after resting");
+    expect(test::acting(&b, "player-ad"), "and her turn goes on (she might still act)");
+    w.battleAct("player-ad", "wait");
+    for (int i = 0; i < 600 && !fa->acting; ++i)
+    {
+        if (fb->acting)
+            w.battleAct("player-bo", "wait");
+        w.tick(.1);
+    }
+    expect(fa->acting && !fa->resting, "Her next turn comes");
+    expect(std::abs(ad->stamina - (30 + 2 * battle::staminaPerTurn(ad->hurt, ad->strength))) < 1e-6,
+           "with twice the stamina back: " + std::to_string(ad->stamina));
+    expect(!w.battleMove("player-ad", fa->x + 99, fa->y).ok && !fa->moved, "a new turn: her move is hers again");
+    w.battleAct("player-ad", "wait");
+    for (int i = 0; i < 600 && !fa->acting; ++i)
+    {
+        if (fb->acting)
+            w.battleAct("player-bo", "wait");
+        w.tick(.1);
+    }
+    const double before = ad->stamina;
+    w.battleAct("player-ad", "wait");
+    for (int i = 0; i < 600 && !fa->acting; ++i)
+    {
+        if (fb->acting)
+            w.battleAct("player-bo", "wait");
+        w.tick(.1);
+    }
+    expect(std::abs(ad->stamina - std::min(100.0, before + battle::staminaPerTurn(ad->hurt, ad->strength))) < 1e-6,
+           "Not resting again: the usual back (rest is chosen each turn)");
+    // A hard bite bleeds; a very hard blow staggers.
+    auto* bo = w.entity("player-bo");
+    const double hurt0 = bo->hurt;
+    fb->meter = 50;
+    w.hurtFighter(b, *fb, 26, battle::DownedBite, "player-ad", true);
+    expect(fb->bleeding == battle::BleedTurns, "A bite of 26: Bo bleeds");
+    expect(fb->staggered == 2 && fb->meter == 50 - battle::StaggerSetback, "and staggers: his bar set back");
+    w.battleAct("player-ad", "wait");
+    for (int i = 0; i < 600 && !fb->acting; ++i)
+    {
+        if (fa->acting)
+            w.battleAct("player-ad", "wait");
+        w.tick(.1);
+    }
+    expect(std::abs(bo->hurt - (hurt0 + 26 + battle::BleedDamage)) < 1e-6 && fb->bleeding == battle::BleedTurns - 1 && fb->staggered == 0,
+           "At his turn he bleeds, and is no longer staggered: " + std::to_string(bo->hurt));
+    w.hurtFighter(b, *fb, 10, battle::DownedBite, "player-ad", true);
+    expect(fb->bleeding == battle::BleedTurns - 1, "A light bite doesn't start it again");
+}
+
 void barsFillInRealTime()
 {
     World w;
@@ -986,6 +1047,7 @@ int main()
         smiths();
         barsFillInRealTime();
         paceAndStamina();
+        restAndCombatInjuries();
         dodgingTheFire();
         playtestFixes();
         dueTerms();

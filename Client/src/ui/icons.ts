@@ -24,6 +24,8 @@ const Paths: Record<string, string> = {
     right: 'M16 6h4V2M20 6a9 9 0 1 0 1 7',
     // Done: on to the next.
     end: 'M5 5l7 7-7 7M12 5l7 7-7 7',
+    // A crescent moon: resting a turn.
+    rest: 'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',
     // Getting up.
     rise: 'M12 20V7M7 12l5-5 5 5M5 4h14',
     // Watching.

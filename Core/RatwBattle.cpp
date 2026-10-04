@@ -877,9 +877,12 @@ void World::beginTurn(Battle& b, BattleFighter& f)
             fightLine(b, f.id, {}, "rise", e->name + " struggles back to their feet.");
         }
     }
+    f.staggered = 0;
+    const bool rested = f.resting;
+    f.resting = false;
     if (f.status == "fighting")
     {
-        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength));
+        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (rested ? battle::RestFactor : 1));
         if (e->exhausted && e->stamina >= 20)
             e->exhausted = false;
         if (!e->gift.empty())
@@ -889,6 +892,18 @@ void World::beginTurn(Battle& b, BattleFighter& f)
             --f.burning;
             fightLine(b, f.id, {}, "burn", e->name + " burns (" + whole(battle::BurnDamage) + ").");
             hurtFighter(b, f, battle::BurnDamage, battle::DownedFire, {}, true);
+            if (f.status != "fighting")
+            {
+                f.acting = false;
+                checkOver(b);
+                return;
+            }
+        }
+        if (f.bleeding > 0)
+        {
+            --f.bleeding;
+            fightLine(b, f.id, {}, "bleed", e->name + " bleeds (" + whole(battle::BleedDamage) + ").");
+            hurtFighter(b, f, battle::BleedDamage, battle::DownedBite, {}, false);
             if (f.status != "fighting")
             {
                 f.acting = false;
@@ -906,6 +921,11 @@ void World::endTurn(Battle& b, BattleFighter& f)
     if (f.id == b.opening)
         b.opening.clear();
     f.meter = (f.moved ? 0 : 20) + (f.acted ? 0 : 20) - f.weight;   // Its bar starts again (a head start if it held back).
+    if (f.staggered == 1)
+    {
+        f.meter -= battle::StaggerSetback;          // Staggered in its own turn: the next bar starts lower (doc 38).
+        f.staggered = 2;
+    }
     f.readyAt = -1;
     f.acting = false;
     checkOver(b);
@@ -1034,6 +1054,20 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         if (comma == std::string::npos)
             return {false, "Aim it: which way?", {}};
         r = castFlame(*b, f, std::atoi(target.c_str()), std::atoi(target.c_str() + comma + 1));
+    }
+    else if (action == "rest")
+    {
+        // Catching one's breath: no move this turn, twice the stamina back at the next (doc 33). Each turn anew.
+        if (f.status != "fighting")
+            return {false, "You can't rest now.", {}};
+        if (f.moved)
+            return {false, "You have already moved this turn: rest instead of moving, before it.", {}};
+        if (f.casting)
+            return {false, "You are gathering the fire.", {}};
+        f.moved = true;
+        f.resting = true;
+        fightLine(*b, id, {}, "rest", e->name + " catches their breath.");
+        return {true, "You catch your breath: no moving this turn, and twice the stamina back at your next.", {}};
     }
     else if (action == "roll")
     {
@@ -1215,6 +1249,8 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     f.status = "downed";
     f.struggling = false;
     f.burning = 0;
+    f.bleeding = 0;
+    f.staggered = 0;
     f.walk.clear();
     fightLine(b, f.id, by, "down", e->name + " goes down.");
     if (f.casting)
@@ -2116,6 +2152,24 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     d->hurt += damage;
     if (d->npc)
         stop(t.id);
+    // Combat injuries (doc 38): a hard bite or cut bleeds; a very hard blow staggers.
+    if (!by.empty() && downedBase == battle::DownedBite && damage >= battle::BleedFrom && d->hurt < 100)
+    {
+        if (t.bleeding <= 0)
+            fightLine(b, t.id, {}, "bleeding", d->name + " is bleeding.");
+        t.bleeding = battle::BleedTurns;
+    }
+    if (!by.empty() && damage >= battle::StaggerFrom && d->hurt < 100 && t.staggered == 0)
+    {
+        fightLine(b, t.id, {}, "stagger", d->name + " staggers.");
+        if (t.acting)
+            t.staggered = 1;
+        else
+        {
+            t.meter = std::max(0.0, t.meter - battle::StaggerSetback);
+            t.staggered = 2;
+        }
+    }
     if (!by.empty() && !b.truceBy.empty())
     {
         b.truceBy.clear();

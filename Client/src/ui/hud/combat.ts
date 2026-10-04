@@ -81,6 +81,8 @@ interface Card {
     healthText: HTMLElement;
     stamina: HTMLElement;
     staminaFill: HTMLElement;
+    hurts: HTMLElement;             // Their injuries, named (doc 38): chips under the name.
+    hurtsKey: string;
     init: HTMLElement;              // The initiative bar: a turn's time running out, or the bar filling toward one.
     initFill: HTMLElement;
     initText: HTMLElement;
@@ -270,16 +272,32 @@ export class CombatScreen {
             }
             c.lastHealth = health;
             setText(c.healthText, f.status === 'dead' ? 'dead' : f.status === 'downed' ? 'down' : `${Math.round(health)}`);
-            c.health.title = `${f.label} · ${Math.round(health)} health`;
+            // What is wrong with them, named: chips under the name, each saying what it does (never drawn on the wolf).
+            const hurtsKey = f.injuries.map(i => `${i.kind}|${i.does}`).join();
+            if (hurtsKey !== c.hurtsKey) {
+                c.hurtsKey = hurtsKey;
+                c.hurts.replaceChildren();
+                for (const i of f.injuries) el('span', `hurt ${i.kind}`, c.hurts, i.name).title = `${i.name}: ${i.does}`;
+            }
+            show(c.hurts, f.injuries.length > 0);
+            const stats = self ? b.stats : null;
+            const hurtNames = f.injuries.map(i => i.name.toLowerCase()).join(', ');
+            c.health.title = `Health ${Math.round(health)} of 100 · ${f.label}. Bites take about 12 (more with STR), a sword 20, fire more; ` +
+                `at 0 a wolf goes down. Hurt shortens the move (by up to 60%) and slows a wolf in the world; Wounded (under 75) ` +
+                `gets ¾ of the stamina back a turn, Badly hurt (under 50) half.${hurtNames ? ` Now: ${hurtNames}.` : ''}`;
             show(c.stamina, f.stamina >= 0);
             if (f.stamina >= 0) {
                 setStyle(c.staminaFill, 'width', `${Math.max(0, Math.min(100, f.stamina))}%`);
-                c.stamina.title = `Stamina ${Math.round(f.stamina)} · a bite takes 8, a sword 14, running more the faster the pace; some comes back each turn`;
+                c.stamina.title = `Stamina ${Math.round(f.stamina)} of 100 · back ${f.regen} at the start of their next turn ` +
+                    `(4 + STR ÷ 10${stats ? `, STR ${stats.str}` : ''}; ¾ Wounded, ½ Badly hurt${f.resting ? '; doubled: resting this turn' : ''}). ` +
+                    `Costs: a bite 8, a sword 14, running faster than a trot ${self ? (b.tileStamina > 0 ? `${b.tileStamina.toFixed(1)} a tile at this pace` : 'by the tile (nothing at this pace)') : 'by the tile'}. ` +
+                    `At 0 a wolf is winded: it can only walk, and can't bite or swing, until 20.`;
             }
             show(c.mana, f.mana >= 0 && f.manaMax > 0);
             if (f.mana >= 0 && f.manaMax > 0) {
                 setStyle(c.manaFill, 'width', `${Math.max(0, Math.min(100, (f.mana / f.manaMax) * 100))}%`);
-                c.mana.title = `Mana ${Math.floor(f.mana)} of ${f.manaMax} · +2 a turn`;
+                c.mana.title = `Mana ${Math.floor(f.mana)} of ${f.manaMax} (20 + WIS × 0.8${stats ? `, WIS ${stats.wis}` : ''}) · +2 at the start ` +
+                    `of each turn, and slowly out of a fight. Fire costs 25 (Quickened 40); too little, and it burns its caster twice as much.`;
             }
             // Little marks for what is going on with them.
             const marks: [string, string][] = [];
@@ -319,6 +337,10 @@ export class CombatScreen {
             const fillInit = f.acting && !b.over ? (f.npc ? 1 : Math.min(1, left / TurnSeconds)) : meterNow(f, since);
             setStyle(c.initFill, 'width', `${Math.round(fillInit * 100)}%`);
             setClass(c.init, 'acting', f.acting && !b.over);
+            c.init.title = `Initiative: their bar fills in about ${f.fillSeconds} s (6 + DEX ÷ 10${stats ? `, DEX ${stats.dex}` +
+                (stats.dex !== stats.baseDex ? ` (${stats.baseDex} before age and injury)` : '') : ''}); full, it is their turn, alongside anyone ` +
+                `else's. After a turn it starts at 0, +20 for not moving, +20 for not acting, less a heavy blow's weight (sword 10)` +
+                `${f.injuries.some(i => i.kind === 'staggered') ? '; staggered: set back 20' : ''}.`;
             setText(c.initText, b.over ? '' : f.acting ? (f.npc ? 'acting' : `acting · ${Math.ceil(left)} s`)
                 : Number.isFinite(due) ? `turn in ${Math.ceil(due)} s` : '');
             const clock = f.status === 'downed' && f.downedLeft > 0 ? `${f.npc ? 'bleeding' : 'up in'} · ${clockLabel(Math.max(0, f.downedLeft - since))}`
@@ -339,6 +361,7 @@ export class CombatScreen {
         const top = el('div', 'fcard-top', body);
         const name = el('span', 'fcard-name', top);
         const marks = el('span', 'fcard-marks', top);
+        const hurts = el('div', 'fcard-hurts', body);
         const health = el('div', 'meter health', body);
         el('div', 'lag', health);                       // What a blow took, draining after it (styles.css).
         const healthFill = el('div', 'fill', health);
@@ -365,7 +388,7 @@ export class CombatScreen {
             if (now.side !== me.side && now.status === 'fighting') s.fightFocus = f.id;
             else if (now.side === me.side && now.status === 'downed' && myTurn(b, s.selfId)) s.fightTarget(f.id);
         });
-        const card: Card = {root, face, name, marks, marksKey: '-', health, healthFill, healthText, stamina, staminaFill, init, initFill, initText, mana, manaFill, odds,
+        const card: Card = {root, face, name, marks, marksKey: '-', health, healthFill, healthText, stamina, staminaFill, hurts, hurtsKey: '-', init, initFill, initText, mana, manaFill, odds,
             oddsKey: '-', clock, lastHealth: -1};
         this.cardList.set(f.id, card);
         return card;
@@ -487,6 +510,13 @@ export class CombatScreen {
                 tip: `Tend ${fallen.name}'s wounds (4): they stand at 20 health${near ? '' : ' · get next to them first'}`,
                 enabled: mine && !acted && near, kind: 'go', run: () => s.fightTarget(fallen.id)});
         }
+        // Resting: no move this turn, twice the stamina back at the next. Chosen anew each turn (doc 33).
+        if (me.status === 'fighting' && !b.casting)
+            out.push({id: 'rest', key: 'R', icon: 'rest', label: b.resting ? 'Resting' : 'Rest', sub: `+${(b.resting ? me.regen : me.regen * 2).toFixed(0)} next`,
+                tip: b.resting ? 'Resting this turn: twice the stamina back at the start of your next'
+                    : `Rest (R): give up this turn's move to get twice the stamina back at your next (+${(me.regen * 2).toFixed(0)}). ` +
+                      `You can still act. Rest again each turn you mean to${b.moved ? ' · you have already moved' : ''}${notYet}`,
+                enabled: mine && !b.moved && !b.resting, kind: b.resting ? 'go' : '', run: () => s.sendBattle('rest')});
         if (b.burning > 0)
             out.push({id: 'roll', key: '5', icon: 'roll', label: 'Roll', sub: 'put out', tip: `Roll on the ground to put out the flames (5)${notYet}`,
                 enabled: mine && !acted, kind: 'go', run: () => s.sendBattle('roll')});
@@ -530,7 +560,7 @@ export class CombatScreen {
     /** A key on the map while the fight screen shows: true when it was one of its actions. */
     private key(code: string): boolean {
         if (!this.s.battle) return false;
-        const pressed = code === 'Space' ? 'Space' : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
+        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
         if (!pressed) return false;
         const a = this.actions.find(x => x.key === pressed);
         if (a?.enabled) a.run();

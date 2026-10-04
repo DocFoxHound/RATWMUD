@@ -29,7 +29,18 @@ export interface FighterView {
     stamina: number;            // Everyone's (−1 if not sent).
     mana: number;               // The Gifted's (−1 otherwise), out of manaMax.
     manaMax: number;
+    regen: number;              // Stamina back at the start of their next turn (doubled resting).
+    fillSeconds: number;        // How long their initiative bar takes to fill from empty.
+    resting: boolean;           // Resting this turn (no move): twice the stamina back at the next.
+    injuries: InjuryView[];     // What is wrong with them, named (doc 38): on their card, never drawn on them.
     odds: StrikeOdds | null;    // A foe, as this wolf would strike them from where it stands now.
+}
+
+/** An injury or condition, named, with what it does. */
+export interface InjuryView {
+    kind: string;
+    name: string;
+    does: string;
 }
 
 /** A blow from where this wolf stands now: the chance it lands (percent), its usual damage, and whether it reaches. */
@@ -96,6 +107,12 @@ export interface BattleView {
     flame: {length: number; angle: number; mana: number} | null;
     burning: number;
     casting: boolean;
+    // This wolf's pace in the fight (the wheel), how far a move goes at it, a tile's stamina, resting this turn, its stats.
+    pace: number;
+    moveRange: number;
+    tileStamina: number;
+    resting: boolean;
+    stats: {dex: number; baseDex: number; str: number; wis: number} | null;
     agreed: boolean;
     truceBy: string;
     casts: CastView[];
@@ -178,6 +195,8 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'),
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
+            regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),
+            injuries: objects(f, 'injuries').map(i => ({kind: str(i, 'kind'), name: str(i, 'name'), does: str(i, 'does')})),
             odds: obj(f, 'odds') ? {hit: num(obj(f, 'odds'), 'hit'), base: num(obj(f, 'odds'), 'base', num(obj(f, 'odds'), 'hit')),
                 damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach')} : null,
         })),
@@ -193,6 +212,12 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             : null,
         burning: Math.trunc(num(you, 'burning')),
         casting: bool(you, 'casting'),
+        pace: Math.trunc(num(you, 'pace')),
+        moveRange: Math.trunc(num(you, 'moveRange')),
+        tileStamina: num(you, 'tileStamina'),
+        resting: bool(you, 'resting'),
+        stats: obj(you, 'stats') ? {dex: num(obj(you, 'stats'), 'dex'), baseDex: num(obj(you, 'stats'), 'baseDex'),
+            str: num(obj(you, 'stats'), 'str'), wis: num(obj(you, 'stats'), 'wis')} : null,
         agreed: bool(you, 'truce'),
         truceBy: str(b, 'truceBy'),
         casts: objects(b, 'casts').map(c => ({caster: str(c, 'caster'), meter: num(c, 'meter'), quickened: bool(c, 'quickened'),

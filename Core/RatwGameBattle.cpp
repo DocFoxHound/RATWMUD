@@ -68,6 +68,20 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         if (const auto* e = world_.entity(viewer))
         {
             you.add("canStruggle", mine->status == "downed" && !mine->struggling && world_.recoveryAvailable(*e));
+            // Pace and stamina (doc 33): how far a move goes at this pace, what a tile costs, what comes back next turn.
+            const int pace = world_.fightPace(*e);
+            you.add("pace", pace);
+            you.add("moveRange", battle::moveRange(effectiveDexterity(*e), e->hurt, pace));
+            you.add("tileStamina", battle::tileStamina(pace));
+            you.add("resting", mine->resting);
+            you.add("stats", [&] {
+                auto st = Value::object();
+                st.add("dex", std::round(effectiveDexterity(*e)));
+                st.add("baseDex", std::round(e->dexterity));
+                st.add("str", std::round(e->strength));
+                st.add("wis", std::round(e->wisdom));
+                return st;
+            }());
             you.add("mouth", e->mouth);
             if (const auto* purse = world_.society().account(viewer))
                 you.add("swords", Society::stock(*purse, "sword"));
@@ -121,6 +135,43 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
+        // What drives the bars, for their tooltips: stamina back a turn (doubled resting), the bar's fill time.
+        o.add("regen", std::round(battle::staminaPerTurn(e->hurt, e->strength) * (f.resting ? battle::RestFactor : 1) * 10) / 10);
+        o.add("fillSeconds", std::round(100 / (battle::meterGain(effectiveDexterity(*e)) * battle::MeterPerSecond)));
+        if (f.resting)
+            o.add("resting", true);
+        // Injuries, named (doc 38): what is wrong with them, and what it does. Shown on their card, never drawn on them.
+        auto injuries = Value::array();
+        bool injured = false;
+        const auto whole = [](double n) { return std::to_string(int(std::lround(n))); };
+        const auto injury = [&](const std::string& kind, const std::string& name, const std::string& does) {
+            injured = true;
+            auto i = Value::object();
+            i.add("kind", kind);
+            i.add("name", name);
+            i.add("does", does);
+            injuries.push(i);
+        };
+        if (f.status == "downed")
+            injury("down", "Down", "Can't fight; crawls a tile. Up when the time runs out, or tended.");
+        if (f.burning > 0)
+            injury("burning", "Burning", whole(battle::BurnDamage) + " damage at the start of each turn, " + std::to_string(f.burning) +
+                                             " more. Roll to put it out.");
+        if (f.bleeding > 0)
+            injury("bleeding", "Bleeding", whole(battle::BleedDamage) + " damage at the start of each turn, " + std::to_string(f.bleeding) +
+                                               " more.");
+        if (f.staggered > 0)
+            injury("staggered", "Staggered", "A hard blow: their bar set back " + whole(battle::StaggerSetback) + ".");
+        if (e->exhausted && f.status == "fighting")
+            injury("winded", "Winded", "Out of breath: can only walk, and can't bite or swing, until stamina is back to 20.");
+        if (e->hurt >= 75 && f.status == "fighting")
+            injury("limping", "Limping", "Badly hurt: moves less, and gets less stamina back a turn.");
+        else if (e->hurt >= 50 && f.status == "fighting")
+            injury("hurt", "Badly hurt", "Moves less, and gets half the stamina back a turn.");
+        else if (e->hurt >= 25 && f.status == "fighting")
+            injury("wounded", "Wounded", "Moves a little less; three quarters of the stamina back a turn.");
+        if (injured)
+            o.add("injuries", injuries);
         o.add("label", f.status == "yielded" ? std::string("Yielded") : healthLabel(e->hurt, f.status == "downed", f.status == "dead"));
         o.add("health", std::round(100 - e->hurt));
         if (!e->mouth.empty())
@@ -338,7 +389,7 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
     else if (verb == "leave")
         result = world_.leaveObserving(id);
     else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||
-             verb == "roll" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce" ||
+             verb == "roll" || verb == "rest" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce" ||
              verb == "back" || verb == "yield")
         result = world_.battleAct(id, verb, target);
     else

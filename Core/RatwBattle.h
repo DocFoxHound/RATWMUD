@@ -39,6 +39,10 @@ struct BattleFighter
     double stepAt = 0;
     bool turned = false;
     int turnsTaken = 0;             // Turns begun: two or more and a player is paid for the fight (doc 33).
+    bool resting = false;           // Rested this turn (no move): twice the stamina back at the next.
+    // Combat injuries (doc 38): turns of Bleeding left; Staggered (1: its bar is set back when this turn ends, 2: set
+    // back already; both shown until its next turn).
+    int bleeding = 0, staggered = 0;
 };
 
 // A spell charging (the tell): it goes off when its meter fills, on the tiles locked when it began.
@@ -144,8 +148,14 @@ namespace battle
 constexpr int ArenaWidth = 64, ArenaHeight = 48;     // Twice a 32×24 map view at the default zoom.
 constexpr int GrowthFrom = 2;                        // Each fighter past these two adds a tile each way.
 constexpr double TurnSeconds = 20, TypingExtra = 15, NpcPause = 1.5;
-// The initiative bar fills in real time: at DEX 50 (a gain of 11) in twenty seconds.
-constexpr double MeterPerSecond = 100.0 / (11 * 20);
+// The initiative bar fills in real time: at DEX 50 (a gain of 11) in twenty-five seconds.
+constexpr double MeterPerSecond = 100.0 / (11 * 25);
+// Resting a turn (no move): the stamina back at the next turn, this many times over.
+constexpr double RestFactor = 2;
+// Combat injuries (doc 38): a bite or sword blow this hard bleeds (damage a turn, for turns); any blow this hard
+// staggers (the bar set back).
+constexpr double BleedFrom = 18, BleedDamage = 2, StaggerFrom = 25, StaggerSetback = 20;
+constexpr int BleedTurns = 3;
 constexpr int AwayAfter = 3;
 // A move is walked a tile at a time (slower hurt: the injury factor), a crawl slower still.
 constexpr double StepSeconds = .45, SprintStepSeconds = .2, CrawlStepSeconds = 1.0;   // At a walk; at a sprint.

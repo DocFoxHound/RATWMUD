@@ -144,7 +144,7 @@ A player who wants to watch can enter a fight as a bodiless observer. Observers 
 ## Turns and initiative
 
 Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf and on their card:
-about twenty seconds at DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
+about twenty-five seconds at DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
 each on their own clock. Nobody waits in a queue, so a fight of twenty takes about as long as a fight of two. Ending a
 turn early starts your bar again at once, so quick decisions win you more turns.
 
@@ -153,12 +153,13 @@ hours. Turns that overlap keep each player's own rhythm (charge, act, charge) wh
 dodging a charging attack possible (below).
 
 ```text
-bar per second       = (6 + DEX / 10) × 100 / 220       // DEX 50 → full in 20 s, DEX 100 → in 13.8 s
+bar per second       = (6 + DEX / 10) × 100 / 275       // DEX 50 → full in 25 s, DEX 100 → in 17.2 s
 move range (tiles)   = floor((3 + DEX / 25) × injury factor × pace factor), minimum 1
 pace factor          = 0.5 + pace / 10                  // walk (0) 0.5, trot (5) 1, sprint (10) 1.5: DEX 50 → 2, 5, 7
 running stamina      = (pace − 3) × 0.6 a tile, above a trot of 3   // sprint: 4.2 a tile; walking is free
 bar after a turn     = 0, +20 if you did not move, +20 if you did not act, − the action's weight
-stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×0.75 Wounded, ×0.5 Badly hurt or worse
+stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×0.75 Wounded, ×0.5 Badly hurt or worse;
+                       twice that after a turn of Rest
 ```
 
 **On your turn** you may move up to your range and take one action, in either order. Actions are Bite, Sword, a spell,
@@ -185,7 +186,11 @@ strikes. There is no WASD in a fight (pressing it says how to move).
 stamina for every tile run; the lit tiles reach only as far as your stamina pays for. Physical attacks cost stamina too
 (Bite 8, Sword 14), and stamina comes back only a little at the start of each of your turns, by strength: a wolf that
 sprints and bites every turn runs out. An exhausted wolf (stamina 0, until 20) can only walk, and can't bite or swing.
-NPCs fight at a run (6).
+NPCs fight at a run (6). In a fight the pace strip and stamina bar stay in view under the fighter cards, with how far a
+move goes at this pace, what a tile costs and what comes back next turn.
+
+**Rest** (R) gives up this turn's move for twice the stamina back at the start of the next. It is chosen each turn it is
+wanted, before moving; the wolf may still act. A resting wolf's card says so.
 
 **NPC turns** resolve on their own, 1.5 s after their bar fills, so players can follow what happened.
 
@@ -199,6 +204,10 @@ map says whether it is your turn.
 **The fighter cards** on the right are in the order turns come: those acting now on top (ACTING NOW), then the rest
 (COMING UP) in the order their bars will fill. Each card has the fighter's health, stamina, mana if they have a Gift, and
 their initiative bar, with the seconds to their turn (or left in it). Pointing at a wolf on the map lights its card.
+Each bar explains itself on hover: what fills it or drains it, by which stats (one's own stats shown on one's own card)
+and what is affecting it now. **Injuries show on the card**, named, as chips under the name (Bleeding, Staggered,
+Burning, Winded, Wounded, Badly hurt, Limping, Down), each saying on hover what it does. Nothing is drawn on the wolf
+or its portrait: uploaded portraits differ in shape, and a name reads plainly.
 
 **Facing is yours to choose.** A player's wolf faces the way it walks, unless they turn it by hand after the move began,
 which stands; attacking never turns it. On
