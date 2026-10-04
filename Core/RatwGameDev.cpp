@@ -4,9 +4,11 @@
 // console suggests from as one types ({"type": "devCommands", "commands": [[name, help], ...]}). Nobody else may use
 // it, whatever the page sends.
 #include "RatwGame.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 
 namespace ratw::game
 {
@@ -22,6 +24,8 @@ constexpr DevCommand DevCommands[] = {
     {"help", "Lists these commands."},
     {"fight-test-1", "A fight where you stand: one weak bandit on the far side of the arena, with a clear way to you."},
     {"fight-end-myself", "Ends the fight you are in, as a draw."},
+    {"give", "give <item id> [count]: wearables from the catalog into your own purse (doc 35), to try on."},
+    {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
 };
 } // namespace
 
@@ -70,6 +74,43 @@ void Game::devCommand(Connection* c, const json::Value& j)
         result = world_.testFight(id);
     else if (command == "fight-end-myself")
         result = world_.endFightInDraw(id);
+    else if (command.rfind("give ", 0) == 0)
+    {
+        std::string item;
+        int count = 1;
+        {
+            const auto rest = command.substr(5);
+            const auto space = rest.find(' ');
+            item = rest.substr(0, space);
+            if (space != std::string::npos)
+                count = std::clamp(std::atoi(rest.c_str() + space + 1), 1, 20);
+        }
+        const auto* piece = items::wearable(item);
+        result = !piece ? Result{false, "No wearable " + item + ". Try /wearables.", {}}
+                 : world_.society().create(id, item, count, "dev console")
+                     ? Result{true, "Given " + std::to_string(count) + " " + piece->name + ". Wear it from your status.", {}}
+                     : Result{false, "Your purse can't take it.", {}};
+    }
+    else if (command == "wearables" || command.rfind("wearables ", 0) == 0)
+    {
+        const auto word = command.size() > 10 ? command.substr(10) : std::string();
+        std::string text;
+        int shown = 0;
+        for (const auto& piece : items::wearables())
+        {
+            std::string name = piece.name;
+            std::transform(name.begin(), name.end(), name.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+            if (!word.empty() && piece.id.find(word) == std::string::npos && name.find(word) == std::string::npos)
+                continue;
+            if (++shown > 60)
+            {
+                text += "\n...";
+                break;
+            }
+            text += "\n" + piece.id + " (" + piece.slot + "): " + piece.name;
+        }
+        result = {shown > 0, shown > 0 ? "Wearables:" + text : "No wearable matches.", {}};
+    }
     else
         result = {false, "No such command: /" + command + ". Try /help.", {}};
 

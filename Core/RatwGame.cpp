@@ -3,6 +3,7 @@
 #include "RatwCellPrefetch.h"
 #include "RatwMotionCore.h"
 #include "RatwWire.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <chrono>
@@ -1254,9 +1255,9 @@ void Game::applyExternalNpcStates()
                 treasury->second.cash -= delta;
             }
             if (const auto& stock = j["stock"]; stock.isObject())
-                for (const char* item : {"herbs", "meal", "sword"})
-                    if (stock[item].isNumber())
-                        account->second.stock[item] = int(std::clamp(stock.number(item), 0.0, 10000.0));
+                for (const auto& [item, count] : stock.fields())
+                    if (itemValid(item) && count.isNumber() && account->second.stock.size() < MaxGoodsKinds)
+                        account->second.stock[item] = int(std::clamp(count.asNumber(), 0.0, 10000.0));
         }
         ++applied;
     }
@@ -1545,6 +1546,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         player.description = "A road-worn quadrupedal wolf with a small shoulder satchel. Their coat and history are yours to imagine.";
         player.speakingColor = int(characters_.size() * 9) % 32;
     }
+    world_.fitWorn(actor);                          // Nothing worn or held that the purse no longer has (doc 35).
     player.input = {};
     player.velocity = {};
     player.path.clear();
@@ -2261,6 +2263,26 @@ void Game::sendSnapshot(Connection* c)
         self.set("fightingSkill", std::round(me->fightingSkill));
         if (!me->mouth.empty())
             self.set("mouth", me->mouth);
+        // What is worn (doc 35): slot to item id, and each piece of jewellery as [spot, item id]; names are in the inventory.
+        if (!me->worn.empty())
+        {
+            auto worn = Value::object();
+            for (const auto& [slot, item] : me->worn)
+                worn.add(slot, item);
+            self.set("worn", std::move(worn));
+        }
+        if (!me->jewellery.empty())
+        {
+            auto jewellery = Value::array();
+            for (const auto& [spot, item] : me->jewellery)
+            {
+                auto piece = Value::array();
+                piece.push(spot);
+                piece.push(item);
+                jewellery.push(std::move(piece));
+            }
+            self.set("jewellery", std::move(jewellery));
+        }
         if (me->dungeonMaster)
             self.set("dungeonMaster", true);       // The Dev Console is theirs (RatwGameDev.cpp).
         if (!me->gift.empty())
@@ -2672,7 +2694,7 @@ void Game::sendSnapshot(Connection* c)
         i.add("quantity", quantity);
         inventory.push(i);
     };
-    item("satchel", "Shoulder satchel", "bag", "A small travel bag made for a wolf's shoulders.", true, 1);
+    item("starter_satchel", "Shoulder satchel", "bag", "A small travel bag made for a wolf's shoulders.", true, 1);
     if (purse)
     {
         const int herbs = Society::stock(*purse, "herbs"), meals = Society::stock(*purse, "meal");
@@ -2685,6 +2707,33 @@ void Game::sendSnapshot(Connection* c)
                  "An old bronze blade, its edge long gone, carried in the jaws. In a fight it reaches two tiles and hits hard, "
                  "but tires you.",
                  view.self.mouth == "sword", swords);
+        // Wearables (doc 35): where each can go, and how many are worn.
+        for (const auto& [itemId, quantity] : purse->stock)
+            if (const auto* piece = quantity > 0 ? items::wearable(itemId) : nullptr)
+            {
+                const auto* me = world_.entity(id);
+                const int worn = me ? World::wornCount(*me, itemId) : 0;
+                auto i = Value::object();
+                i.add("id", itemId);
+                i.add("name", piece->name);
+                i.add("icon", piece->slot == "jewelry" ? "jewel" : piece->slot == "sling" || piece->slot == "harness" ? "bag" : "wear");
+                i.add("description", piece->desc);
+                i.add("equipped", worn > 0);
+                i.add("quantity", quantity);
+                i.add("worn", worn);
+                i.add("slot", piece->slot);
+                auto places = Value::array();
+                for (const auto& p : piece->slot == "jewelry" ? piece->spots : items::slotsFor(*piece))
+                    places.push(p);
+                i.add("places", std::move(places));
+                if (piece->status > 0)
+                    i.add("status", piece->status);
+                if (piece->warmth > 0)
+                    i.add("warmth", piece->warmth);
+                if (piece->protect > 0)
+                    i.add("protect", piece->protect);
+                inventory.push(std::move(i));
+            }
     }
     item("token", "Wooden token", "token", "A smooth keepsake carved with a branch.", false, 1);
     root.add("inventory", inventory);
@@ -3362,7 +3411,11 @@ void Game::command(Connection* c, const std::string& raw)
         Result refusal;
         const auto* purse = world_.society().account(id);
         const std::int64_t before = purse ? purse->cash : 0;
-        result = qty >= 1 && qty <= 99 && qty == std::floor(qty) && buy && buy->isBool()
+        const auto* seller = world_.entity(id);
+        const bool wearing = buy && buy->isBool() && !buy->asBool() && purse && seller && qty >= 1 &&
+                             Society::stock(*purse, j.string("item")) - World::wornCount(*seller, j.string("item")) < qty;
+        result = wearing ? Result{false, "You are wearing or holding it: take it off first.", {}}
+               : qty >= 1 && qty <= 99 && qty == std::floor(qty) && buy && buy->isBool()
                      ? (!factionTrade(id, j.string("target"), buy->asBool(), refusal)
                             ? refusal
                             : world_.trade(id, j.string("target"), j.string("item"), int(qty), buy->asBool()))
@@ -3372,7 +3425,10 @@ void Game::command(Connection* c, const std::string& raw)
                 afterFactionTrade(id, j.string("target"), before - after->cash);
         report = true;
         if (result.ok)
+        {
+            world_.fitWorn(id);
             record(Economy | Character, id);
+        }
     }
     else if (type == "gather" || type == "eat")
     {
@@ -3591,6 +3647,16 @@ void Game::command(Connection* c, const std::string& raw)
             if (done.ok)
                 record(Economy | Character, id);
         }
+        else if (action == "wear" || action == "take off")
+        {
+            // Doc 35: "wear" targets "<item>" or "<item>@<slot or fur spot>"; "take off" targets "<slot>" or "<spot>@<item>".
+            const auto at = target.find('@');
+            const auto first = target.substr(0, at), second = at == std::string::npos ? std::string() : target.substr(at + 1);
+            const auto done = action == "wear" ? world_.wear(id, first, second) : world_.takeOff(id, first, second);
+            system(c, done.message);
+            if (done.ok)
+                record(Character, id);
+        }
         else if (action == "struggle" || action == "tend")
         {
             const auto done = action == "struggle" ? world_.struggleUp(id) : world_.tendWounds(id, target);
@@ -3721,7 +3787,10 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("description", described);
             e.add("posture", other->posture);
             e.add("state", other->state);
-            e.add("text", described + " Current posture: " + other->posture + ". " + other->state);
+            const auto wearing = World::wornWords(*other);   // (Doc 35: what they wear and where their jewellery is.)
+            if (!wearing.empty())
+                e.add("wearing", wearing);
+            e.add("text", described + (wearing.empty() ? "" : " " + wearing) + " Current posture: " + other->posture + ". " + other->state);
             send(c, e);
         }
         else

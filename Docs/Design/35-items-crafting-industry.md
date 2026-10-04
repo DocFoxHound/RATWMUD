@@ -42,10 +42,24 @@ All numbers are *placeholders* for a later balance pass. Prices are in silver pe
 
 **Not built:**
 
-- **The game still knows only three goods:** herbs, meals and swords (`Core/RatwSociety.cpp:10`). Nothing reads
-  `Data/Items` yet.
+- **The game knows herbs, meals, swords and the catalog's wearables** (`Core/RatwItems.cpp` reads `Data/Items`). The
+  rest of the catalog (materials, food, tools, the other mouth weapons) isn't in the game yet.
 - **Stations are not yet objects in the engine.** Each is drawn with an existing tile that stands in for it (Part 5).
-- No equipping, crafting, carrying weight, wear or industry demand. These are the phases at the end.
+- No crafting, carrying weight, wear and tear or industry demand. These are the phases at the end.
+
+**Built 2026-10-04 (Phase 4, first part, with part of Phase 2):**
+
+- **Wearing.** The slots and fur spots of 1.1, `wear` and `take off` (not in a fight), saved with the character. What is
+  worn stays in the purse, so it can't be sold off one's back; anything worn that the purse no longer has is let go of
+  on joining and after a trade. The held sword, sold, is let go of the same way.
+- **What others see.** A closer look says what one wears and where the jewellery is.
+- **Shops.** A shopkeeper whose work label matches a business's `match` words (tailor, weaver, jeweller,
+  harness-maker, tanner, armourer) sells that business's wearables, and makes one more of whatever is sold out while
+  at work, as the smith forges blades *(placeholder until crafting takes materials)*. Prices are the catalog's.
+- **The Dev Console:** `/give <item> [count]` and `/wearables [word]` for Dungeon Masters.
+- **The status screen** shows the slots around one's portrait, the fur spots on a wolf in outline, and belongings to
+  put on, clip on and take off.
+- **Not yet:** harness loops, warmth and rain with the weather, jingle, scent, armour in fights, weight.
 
 ## Principles
 
@@ -65,17 +79,24 @@ All numbers are *placeholders* for a later balance pass. Prices are in silver pe
 
 ### 1.1 Wear slots
 
+Settled with the user on 2026-10-04 (catalog slot names in brackets):
+
 | Slot | How many | What goes there |
 |---|---|---|
-| **Mouth** | 1 | A weapon, a tool, a lantern, a basket, a letter, or fang caps. Holding something stops Bite and muffles speech (doc 33). |
-| **Head** | 1 | A hat, hood or helm. Every one has ear slits or ear sleeves. |
-| **Throat** | 1 | A gorget or neck guard. Wolves bite for the throat, so this is the armour that matters most. |
-| **Body** | 1 | A vest, coat or barding, worn under the harness. |
-| **Harness** | 1 | The carrying frame. Its **loops** (0 to 6) take a sheath, pouch, panniers (two loops), lantern hook or tool roll. |
-| **Shoulders** | 1 | A shawl, cape or mantle, worn over the harness. |
-| **Slings** | 2 | Sling bags, scabbard slings, water skins, bandoliers, crossed over the body. They need no harness. |
-| **Paws** | 1 set | Paw wraps, boots, claw caps or leg guards. One item covers all four paws. |
-| **Jewellery** | No limit | Fur clips, ruff beads, ear cuffs, tail rings, charms, decorative collars. |
+| **Muzzle** [`mouth`] | 1 | For holding: a weapon, a tool, a lantern, a basket or a letter. Holding something stops Bite and muffles speech (doc 33). |
+| **Head** [`head`] | 1 | A hat, hood or helm. Every one has ear slits or ear sleeves. |
+| **Neck** [`throat`] | 1 | A scarf, neckerchief, leather wrap, gorget or neck guard. Wolves bite for the throat, so the armoured ones matter most. |
+| **Body** [`body`] | 1 | A vest, coat or barding. |
+| **Harness** [`harness`] | 1 | The carrying frame around the chest, worn under the sides. Its **loops** (0 to 6) take a sheath, pouch, panniers (two loops), lantern hook or tool roll. |
+| **Chest, left** and **Chest, right** [`sling`] | 1 each | A satchel, sling bag, scabbard sling, water skin or bandolier on each side, over the harness. They need no harness. |
+| **Back** [`shoulders`] | 1 | A shawl, cape or mantle, worn over everything. |
+| **Paws** [`paws`] | 1 set | Wraps, bindings, boots, claw caps or leg guards. One item covers all four paws. |
+| **Jewellery** [`jewelry`] | No limit | Clipped to the fur at a **spot** (below). Bracelets go on the legs, above the paws. |
+
+**Fur spots.** Each piece of jewellery is clipped at one spot: ears, crown, ruff, chest, back, left foreleg, right
+foreleg, left hind leg, right hind leg or tail. A spot takes any number of pieces. An item's `spots` in the catalog say
+where it can go (`any` for fur clips, charms and bells; `ears` for ear cuffs; `tail` for tail rings; the legs for
+bracelets; the ruff for collars and beads). The status screen shows the spots as markers on the wolf.
 
 Drawing a sheathed weapon is free outside a fight. In a fight it costs the move, not the action (a guard harness
 makes it free). *(placeholder)*

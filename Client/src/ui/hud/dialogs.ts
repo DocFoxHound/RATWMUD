@@ -18,6 +18,8 @@ export class Dialogs {
     private key = '';
     private aliasInput: HTMLInputElement;
     private noteInput: HTMLInputElement;
+    private chosen = '';                        // The belonging picked out in the status screen,
+    private spot = '';                          // and the fur spot.
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -51,7 +53,8 @@ export class Dialogs {
         }
         // What the open sheet shows; it is built again only when this changes (a trade's stock, a new colour...).
         const self = obj(s.snapshot, 'self');
-        const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork') : '';
+        const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork')
+            : m === 'status' ? this.ownArtwork(self) : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
@@ -64,6 +67,7 @@ export class Dialogs {
         this.key = key;
         const typing = document.activeElement === this.aliasInput;      // (Kept, and kept focused, as the sheet is rebuilt.)
         this.panel.replaceChildren();
+        setClass(this.panel, 'wide', m === 'status');
         const close = button('×', 'close', this.panel, () => this.act('close'));
         close.title = 'Close (Esc)';
         if (m === 'character') this.character(self);
@@ -397,19 +401,28 @@ export class Dialogs {
         this.belongings(self);
     }
 
-    /** One's status (doc 33): health, stamina and mana and what drives them; what is wrong; stats; and belongings, to
-     * equip and use. Opened from one's own card in a fight, or one's health and stamina out of one. */
+    /** One's status (doc 33), laid out as an equipment screen: vitals, attributes, senses and skills on the left; the
+     * wolf and what it wears (doc 35's slots) in the middle; what is wrong and where one stands on the right; and
+     * belongings below, a click on one showing it and what can be done with it. Opened from one's own card in a fight,
+     * or one's health and stamina out of one. */
     private status(self: Json | null) {
         const s = this.s, b = s.battle && !s.battle.observer ? s.battle : null;
         const me = b?.fighters.find(f => f.id === s.selfId);
-        this.heading('STATUS / EQUIPMENT', str(self, 'name', 'You'));
-        el('div', 'label muted', this.panel, b ? 'IN A FIGHT' : 'IN THE WORLD');
-        const vitals = el('div', 'status-vitals', this.panel);
+        this.heading(b ? 'STATUS / EQUIPMENT · IN A FIGHT' : 'STATUS / EQUIPMENT', str(self, 'name', 'You'));
+        el('div', 'label muted', this.panel, `AGE ${wholeCount(self, 'age', 18, 10000)}  ·  LEVEL ${Math.trunc(num(self, 'socialLevel', 1))} ` +
+            `${str(obj(self, 'social'), 'title', 'Stranger').toUpperCase()}  ·  ${postureLabel(self).toUpperCase()}`);
+        const screen = el('div', 'rpg', this.panel);
+        const left = el('div', 'rpg-col', screen), doll = el('div', 'rpg-doll', screen), right = el('div', 'rpg-col', screen);
+
+        // Vitals: the bars, what drives each on hover.
+        const vitals = this.box(left, 'VITALS');
         const meter = (name: string, value: number, max: number, cls: string, why: string) => {
-            const row = el('div', 'status-meter', vitals);
-            el('div', 'label gold', row, `${name} · ${Math.round(value)} / ${max}`);
+            const row = el('div', 'rpg-meter', vitals);
+            row.title = why;
+            const head = el('div', 'rpg-meter-head', row);
+            el('span', 'label', head, name);
+            el('span', 'rpg-num', head, `${Math.round(value)} / ${max}`);
             el('div', 'fill', el('div', `bar ${cls}`, row)).style.width = `${clamp(value / Math.max(1, max), 0, 1) * 100}%`;
-            el('p', 'muted small', row, why);
         };
         const health = num(self, 'health', 100);
         meter('HEALTH', health, 100, 'health', 'Out of a fight hurt heals, 50 an hour. Hurt shortens a move in a fight (by up to 60%) and slows you in ' +
@@ -424,9 +437,47 @@ export class Dialogs {
         if (num(self, 'manaMax') > 0)
             meter('MANA', num(self, 'mana'), num(self, 'manaMax'), 'mana', 'Most mana is 20 + WIS × 0.8. In a fight +2 at the start of each ' +
                 'turn, out of one slowly. Fire costs 25 (Quickened 40); with too little it burns you twice as much.');
+        el('div', 'muted small', vitals, 'Point at a bar to see what drives it.');
+
+        // Attributes.
+        const attributes = el('div', 'rpg-stats', this.box(left, 'ATTRIBUTES'));
+        const stat = (name: string, value: string, note = '', why = '') => {
+            const cell = el('div', 'rpg-stat', attributes);
+            if (why) cell.title = why;
+            el('div', 'label muted', cell, name);
+            el('div', 'rpg-stat-value', cell, value);
+            if (note) el('div', 'muted small', cell, note);
+        };
+        const dex = envNumber(self, 'dexterity', 0, 100, 50), effectiveDex = envNumber(self, 'effectiveDexterity', 0, 100, dex);
+        stat('STRENGTH', envNumber(self, 'strength', 0, 100, 50).toFixed(0), '', 'Stamina back each fight turn, what you can carry, how hard you hit.');
+        stat('DEXTERITY', dex.toFixed(0), Math.abs(effectiveDex - dex) >= 0.1 ? `${effectiveDex.toFixed(1)} now` : '',
+            'Speed and footing. Age, hurt and load change what it is now.');
+        stat('WISDOM', envNumber(self, 'wisdom', 0, 100, 50).toFixed(0), '', 'Mana, for the gifted.');
+        stat('FIGHTING', clamp(Math.trunc(num(self, 'fightingSkill', 50)), 0, 100).toFixed(0), '', 'How well you land and turn aside blows.');
+
+        // Senses and skills: each sense with the organ behind it, each skill out of 100.
+        const senses = this.box(left, 'SENSES & SKILLS');
+        const line = (name: string, value: number, note: string, cls = '') => {
+            const row = el('div', 'rpg-line', senses);
+            el('span', `label ${cls}`, row, name);
+            el('div', 'fill', el('div', 'bar thin', row)).style.width = `${clamp(value, 0, 100)}%`;
+            el('span', 'rpg-num', row, note);
+        };
+        const organ = (key: string) => clamp(num(self, key, 1), 0, 1);
+        const pct = (key: string) => Math.round(clamp(num(self, key, 1), 0, 2) * 100);
+        line('SIGHT', pct('vision'), `${pct('vision')}%${organ('eyeHealth') < 1 ? ` · eyes ${Math.round(organ('eyeHealth') * 100)}%` : ''}`);
+        line('HEARING', pct('hearing'), `${pct('hearing')}%${organ('earHealth') < 1 ? ` · ears ${Math.round(organ('earHealth') * 100)}%` : ''}`);
+        line('SCENT', pct('smell'), `${pct('smell')}%${organ('noseHealth') < 1 ? ` · nose ${Math.round(organ('noseHealth') * 100)}%` : ''}`, 'scent');
+        for (const [name, key] of [['SNEAK', 'sneakSkill'], ['LISTENING', 'hearingSkill'], ['TRACKING', 'scentSkill']]) {
+            const v = clamp(Math.trunc(num(self, key)), 0, 100);
+            line(name, v, `${v} / 100`);
+        }
+        el('div', 'label sage', senses, `PACE ${Math.trunc(num(self, 'pace'))}/10 ${str(self, 'paceName').toUpperCase()}  ·  TOP ${num(self, 'topSpeed').toFixed(1)} t/s`);
+
+        this.paperDoll(doll, self, b);
+
         // What is wrong: in a fight its injuries, named; out of one, what one's state says.
-        el('div', 'label gold', this.panel, 'CONDITION');
-        const list = el('div', 'status-conditions', this.panel);
+        const list = el('div', 'status-conditions', this.box(right, 'CONDITION'));
         const condition = (name: string, does: string) => {
             const row = el('div', 'status-condition', list);
             el('span', 'hurt', row, name);
@@ -445,13 +496,256 @@ export class Dialogs {
         const rest = restLabel(self).replace(/^\s*·\s*/, '');
         if (rest) condition('Resting', rest);
         if (!list.childElementCount) el('p', 'muted small', list, 'Nothing is wrong with you.');
-        const dex = envNumber(self, 'dexterity', 0, 100, 50);
-        el('div', 'label sage', this.panel, `STRENGTH ${envNumber(self, 'strength', 0, 100, 50).toFixed(0)}   DEXTERITY ${dex.toFixed(0)} ` +
-            `(${envNumber(self, 'effectiveDexterity', 0, 100, dex).toFixed(1)} effective)   WISDOM ${envNumber(self, 'wisdom', 0, 100, 50).toFixed(0)}   ` +
-            `·   PACE ${Math.trunc(num(self, 'pace'))}/10`);
-        el('div', 'label gold', this.panel, 'BELONGINGS / EQUIPMENT');
-        this.belongings(self);
+
+        const gift = str(self, 'gift');
+        if (gift) {
+            const box = this.box(right, 'GIFT');
+            el('div', 'big', box, gift.charAt(0).toUpperCase() + gift.slice(1));
+            el('p', 'muted small', box, bool(self, 'quickened') ? 'Quickened: stronger, and dearer in mana.' : 'Drawn on with mana.');
+        }
+
+        const standing = this.box(right, 'STANDING');
+        el('div', 'big', standing, `Level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
+        el('div', 'fill', el('div', 'bar', standing)).style.width = `${clamp(num(self, 'socialXp') / 100, 0, 1) * 100}%`;
+        el('div', 'sage small', standing, `${Math.trunc(num(self, 'socialXp'))} social experience`);
+        const chapter = obj(self, 'chapter');
+        if (str(chapter, 'name')) el('div', 'muted small', standing, `Of ${str(chapter, 'name')}`);
+        el('div', 'gold', standing, `PURSE · ${countText(self, 'cash')} silver pennies`);
+
+        this.pack(self, b);
         button('CHARACTER SHEET', '', el('div', 'sheet-actions', this.panel), () => this.act('character'));
+    }
+
+    /** One's uploaded portrait: the one waiting for a Dungeon Master (only one's self sees it), or the one others see. */
+    private ownArtwork(self: Json | null): string {
+        return str(self, 'artwork') || this.s.entities.get(this.s.selfId)?.artwork || '';
+    }
+
+    private box(parent: HTMLElement, title: string): HTMLElement {
+        const box = el('section', 'rpg-box', parent);
+        el('div', 'label gold', box, title);
+        return box;
+    }
+
+    /** The wolf and what it wears (doc 35, 1.1): its portrait between the wear slots, the muzzle beneath, and the fur
+     * spots where jewellery is clipped. A click on something worn takes it off. */
+    private paperDoll(parent: HTMLElement, self: Json | null, fight: GameState['battle']) {
+        const s = this.s;
+        const inventory = arr(s.snapshot, 'inventory').filter(isObject);
+        const nameOf = (id: string) => str(inventory.find(i => str(i, 'id') === id), 'name', id);
+        const worn = obj(self, 'worn');
+        const sides = el('div', 'rpg-doll-grid', parent);
+        const leftSlots = el('div', 'rpg-slots', sides);
+        const figure = el('div', 'rpg-figure', sides);
+        // One's own portrait, as on one's card: the uploaded picture where there is one, else the wolf as it looks.
+        const canvas = el('canvas', 'portrait', figure);
+        canvas.width = canvas.height = 420;
+        const c = canvas.getContext('2d');
+        if (c) drawPortrait(c, this.portraits, s.portraitAppearance(), s.portraitAge(), 0, 0, canvas.width, canvas.height,
+            this.ownArtwork(self) || undefined);
+        const rightSlots = el('div', 'rpg-slots', sides);
+        const slot = (parent: HTMLElement, name: string, holds: string, filled = '', onClick?: () => void, disabled = false, hint = '') => {
+            const box = el(onClick ? 'button' : 'div', `rpg-slot${filled ? ' filled' : ''}`, parent) as HTMLElement;
+            box.title = `${name}: ${holds}${hint ? `\n${hint}` : ''}`;
+            el('div', 'label muted', box, name);
+            el('div', filled ? 'rpg-slot-item' : 'rpg-slot-empty', box, filled || 'Empty');
+            if (onClick) {
+                box.addEventListener('click', onClick);
+                (box as HTMLButtonElement).disabled = disabled;
+            }
+            return box;
+        };
+        // The everyday satchel every wolf has sits on a free side of the chest.
+        const starter = inventory.find(i => str(i, 'id') === 'starter_satchel');
+        const starterSide = !starter ? '' : !str(worn, 'chest_left') ? 'chest_left' : !str(worn, 'chest_right') ? 'chest_right' : '';
+        const wear = (parent: HTMLElement, key: string, name: string, holds: string) => {
+            const item = str(worn, key);
+            if (!item && key === starterSide) return slot(parent, name, holds, str(starter, 'name'), undefined, false, 'The satchel every wolf has.');
+            return slot(parent, name, holds, item ? nameOf(item) : '', item ? () => this.act('take off', key) : undefined, !!fight,
+                item ? (fight ? 'Not in a fight.' : 'Click to take it off.') : 'Choose something below to wear it.');
+        };
+        wear(leftSlots, 'head', 'HEAD', 'a hat, hood or helm.');
+        wear(leftSlots, 'neck', 'NECK', 'a scarf, neckerchief, leather wrap, gorget or neck guard.');
+        wear(leftSlots, 'body', 'BODY', 'a vest, coat or barding.');
+        wear(leftSlots, 'back', 'BACK', 'a shawl, cape or mantle, over everything.');
+        wear(rightSlots, 'harness', 'HARNESS', 'the carrying frame around the chest, under the sides.');
+        wear(rightSlots, 'chest_left', 'CHEST · LEFT', 'a satchel, sling bag, water skin or bandolier.');
+        wear(rightSlots, 'chest_right', 'CHEST · RIGHT', 'a satchel, sling bag, water skin or bandolier.');
+        wear(rightSlots, 'paws', 'PAWS', 'wraps, bindings, boots or claw caps: one set for all four.');
+        // The muzzle: what is held, and taking up or putting away the sword.
+        const mouth = str(self, 'mouth');
+        const sword = this.swordAction(self, fight);
+        slot(el('div', 'rpg-doll-row', parent), 'MUZZLE', 'for holding: a weapon, tool, lantern, basket or letter. Holding something stops ' +
+            'Bite and muffles speech.', mouth ? nameOf(mouth) : '', sword?.run, sword?.disabled ?? false,
+            sword ? `${sword.label}${sword.why ? ` (${sword.why})` : ''}` : 'You have nothing to hold.');
+        this.furSpots(parent, self, fight, nameOf);
+    }
+
+    /** Jewellery at its fur spots (doc 35): a wolf in outline with a marker at each spot, how many pieces are there, and
+     * the chosen spot's pieces to unclip. */
+    private furSpots(parent: HTMLElement, self: Json | null, fight: GameState['battle'], nameOf: (id: string) => string) {
+        const pieces = arr(self, 'jewellery').filter(p => Array.isArray(p) && p.length === 2).map(p => ({spot: String((p as Json[])[0]), item: String((p as Json[])[1])}));
+        const box = this.box(parent, `JEWELLERY · ${pieces.length ? `${pieces.length} PIECE${pieces.length === 1 ? '' : 'S'}` : 'NONE'}`);
+        const wrap = el('div', 'rpg-fur', box);
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('viewBox', '0 0 300 150');
+        svg.setAttribute('class', 'rpg-fur-svg');
+        wrap.appendChild(svg);
+        const outline = document.createElementNS(ns, 'path');
+        // A wolf standing, facing right: tail, back, neck, head and ears, muzzle, chest, legs.
+        outline.setAttribute('d', 'M38 62 C22 70 14 92 20 104 C28 96 36 84 52 76 C70 66 96 58 140 58 C170 58 192 54 206 46 ' +
+            'L214 26 L222 40 L230 24 L236 44 C248 48 262 56 274 62 L276 70 C262 72 248 72 238 74 C232 86 224 96 214 102 ' +
+            'L214 140 L204 140 L202 106 C196 108 188 110 180 110 L178 140 L168 140 L168 108 C140 112 110 112 88 106 ' +
+            'L84 140 L74 140 L72 100 C66 96 62 92 60 86 L56 140 L46 140 L48 84 C46 76 44 70 38 62 Z');
+        outline.setAttribute('class', 'rpg-fur-wolf');
+        svg.appendChild(outline);
+        const at: Record<string, [number, number, string]> = {
+            ears: [226, 34, 'EARS'], crown: [240, 50, 'CROWN'], ruff: [214, 70, 'RUFF'], chest: [222, 92, 'CHEST'], back: [130, 62, 'BACK'],
+            foreleg_left: [208, 128, 'L FORE'], foreleg_right: [174, 128, 'R FORE'], hindleg_left: [80, 128, 'L HIND'],
+            hindleg_right: [52, 128, 'R HIND'], tail: [26, 92, 'TAIL'],
+        };
+        if (!at[this.spot]) this.spot = '';
+        for (const [spot, [x, y, label]] of Object.entries(at)) {
+            const count = pieces.filter(p => p.spot === spot).length;
+            const g = document.createElementNS(ns, 'g');
+            g.setAttribute('class', `rpg-fur-spot${count ? ' has' : ''}${spot === this.spot ? ' chosen' : ''}`);
+            const dot = document.createElementNS(ns, 'circle');
+            dot.setAttribute('cx', String(x));
+            dot.setAttribute('cy', String(y));
+            dot.setAttribute('r', count ? '8' : '5');
+            g.appendChild(dot);
+            if (count) {
+                const n = document.createElementNS(ns, 'text');
+                n.setAttribute('x', String(x));
+                n.setAttribute('y', String(y + 3.5));
+                n.textContent = String(count);
+                g.appendChild(n);
+            }
+            const title = document.createElementNS(ns, 'title');
+            title.textContent = `${label}${count ? `: ${pieces.filter(p => p.spot === spot).map(p => nameOf(p.item)).join(', ')}` : ': nothing'}`;
+            g.appendChild(title);
+            g.addEventListener('click', () => {
+                this.spot = this.spot === spot ? '' : spot;
+                this.key = '';
+                this.update();
+            });
+            svg.appendChild(g);
+        }
+        const list = el('div', 'rpg-fur-list', wrap);
+        if (!this.spot) {
+            el('p', 'muted small', list, pieces.length ? 'Click a spot to see what is clipped there.'
+                : 'Nothing clipped to your fur. Jewellery you own can be clipped on from your belongings below.');
+            return;
+        }
+        el('div', 'label gold', list, at[this.spot][2]);
+        const here = pieces.filter(p => p.spot === this.spot);
+        if (!here.length) el('p', 'muted small', list, 'Nothing clipped here.');
+        for (const p of here) {
+            const row = el('div', 'rpg-fur-row', list);
+            el('span', '', row, nameOf(p.item));
+            const off = button('UNCLIP', 'secondary', row, () => this.act('take off', `${p.spot}@${p.item}`));
+            off.disabled = !!fight;
+        }
+    }
+
+    /** Putting on a wearable (doc 35): at its slot, a side of the chest, or a fur spot it clips to; and taking it off. */
+    private wearActions(actions: HTMLElement, item: Json, self: Json | null, fight: GameState['battle']) {
+        const places = arr(item, 'places').map(p => String(p));
+        if (!places.length) return;
+        const id = str(item, 'id'), jewel = str(item, 'slot') === 'jewelry';
+        const free = wholeCount(item, 'quantity', 1) > wholeCount(item, 'worn', 0, 999);
+        const go = (label: string, run: () => void, enabled: boolean, why: string) => {
+            const b = button(label, 'primary', actions, run);
+            b.disabled = !enabled || !!fight;
+            b.title = fight ? 'Not in a fight.' : why;
+        };
+        const placeLabel = (p: string) => p.replace('_left', ' · left').replace('_right', ' · right').replace('hindleg', 'hind leg')
+            .replace('_', ' ').toUpperCase();
+        if (jewel) {
+            el('div', 'label muted', actions, 'CLIP TO');
+            for (const p of places) go(placeLabel(p), () => this.act('wear', `${id}@${p}`), free, free ? '' : 'Every one you have is worn.');
+        } else {
+            const worn = obj(self, 'worn');
+            for (const p of places) {
+                const here = str(worn, p) === id;
+                if (here) go(`TAKE OFF${places.length > 1 ? ` · ${placeLabel(p.replace('chest_', ''))}` : ''}`, () => this.act('take off', p), true, '');
+                else go(places.length > 1 ? `WEAR · ${placeLabel(p.replace('chest_', ''))} SIDE` : `WEAR · ${placeLabel(p)}`,
+                    () => this.act('wear', `${id}@${p}`), free, free ? (str(worn, p) ? 'Swaps it for what is there' : '') : 'Every one you have is worn.');
+            }
+        }
+    }
+
+    /** Taking up or putting away the sword: out of a fight at once, in one as the turn's action (doc 33). Null without one. */
+    private swordAction(self: Json | null, fight: GameState['battle']) {
+        const s = this.s;
+        if (s.inventoryQuantity('sword') <= 0) return null;
+        const held = str(self, 'mouth') === 'sword';
+        const label = held ? 'PUT THE SWORD AWAY' : 'HOLD THE SWORD IN YOUR JAWS';
+        if (!fight) return {label, why: '', disabled: false, run: () => this.act(held ? 'stow sword' : 'hold sword')};
+        const mine = fight.turn === s.selfId;
+        return {label: `${label} · YOUR ACTION`, why: !mine ? 'On your turn' : fight.acted ? 'You have acted this turn' : 'Uses this turn\'s action',
+            disabled: !mine || fight.acted, run: () => s.sendBattle(held ? 'stow' : 'hold')};
+    }
+
+    /** Belongings as a grid of tiles; the chosen one shown beside, with what can be done with it. */
+    private pack(self: Json | null, fight: GameState['battle']) {
+        const s = this.s;
+        const items = arr(s.snapshot, 'inventory').filter(isObject);
+        const section = this.box(this.panel, 'BELONGINGS');
+        const body = el('div', 'rpg-pack', section);
+        const grid = el('div', 'rpg-items', body);
+        if (!items.length) el('p', 'muted', grid, 'Your pack is empty. Objects you acquire will appear here.');
+        if (!items.some(i => str(i, 'id') === this.chosen)) this.chosen = '';
+        for (const item of items) {
+            const id = str(item, 'id');
+            const tile = el('button', `rpg-item${id === this.chosen ? ' chosen' : ''}${bool(item, 'equipped') ? ' equipped' : ''}`, grid);
+            tile.title = str(item, 'name');
+            el('div', `item-icon ${itemIcon(item)}`, tile);
+            el('div', 'rpg-item-name', tile, str(item, 'name'));
+            const quantity = wholeCount(item, 'quantity', 1);
+            if (quantity > 1) el('span', 'rpg-count', tile, `×${quantity}`);
+            if (bool(item, 'equipped')) el('span', 'rpg-worn', tile, 'E');
+            tile.addEventListener('click', () => {
+                this.chosen = this.chosen === id ? '' : id;
+                this.key = '';
+                this.update();
+            });
+        }
+        const detail = el('div', 'rpg-detail', body);
+        const item = items.find(i => str(i, 'id') === this.chosen);
+        if (!item) el('p', 'muted small', detail, 'Choose something to look at it.');
+        else {
+            el('div', 'item-name', detail, str(item, 'name'));
+            el('div', `label ${bool(item, 'equipped') ? 'sage' : 'muted'}`, detail,
+                `${str(item, 'id') === 'sword' && bool(item, 'equipped') ? 'IN YOUR JAWS' : bool(item, 'equipped') ? 'WORN' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
+                `${num(item, 'warmth') > 0 ? ` · WARMTH ${num(item, 'warmth')}` : ''}${num(item, 'protect') > 0 ? ` · PROTECTION ${num(item, 'protect')}` : ''}` +
+                `${num(item, 'status') > 0 ? ` · FINERY ${num(item, 'status')}` : ''}`);
+            el('p', 'muted small', detail, str(item, 'description'));
+            const actions = el('div', 'rpg-detail-actions', detail);
+            const id = str(item, 'id');
+            if (id === 'meal') {
+                const eat = button('EAT ONE', 'primary', actions, () => this.act('eat'));
+                eat.disabled = !!fight;
+                if (fight) eat.title = 'Not in a fight';
+            }
+            this.wearActions(actions, item, self, fight);
+            const sword = id === 'sword' ? this.swordAction(self, fight) : null;
+            if (sword) {
+                const go = button(sword.label, 'primary', actions, sword.run);
+                go.disabled = sword.disabled;
+                go.title = sword.why;
+            }
+        }
+        if (fight) return;                          // (Gathering and trading wait for the fight to end.)
+        const actions = el('div', 'sheet-actions', section);
+        const resource = s.visibleResource();
+        if (s.canGather()) button('GATHER HERBS', 'primary', actions, () => this.act('gather'));
+        else if (resource)
+            el('span', 'muted', actions, wholeCount(resource, 'remaining') > 0 ? 'Approach the herb patch to gather.' : 'The visible herb patch is depleted.');
+        const merchantId = str(obj(s.snapshot, 'merchant'), 'id');
+        if (merchantId)
+            button(merchantId === 'npc_keeper' ? 'TRADE WITH THE KEEPER' : 'TRADE WITH THE SHOPKEEPER', 'primary', actions, () => this.act('trade_open', merchantId));
     }
 
     /** What one carries, and what can be done with it: the purse, the items, equipping and using them. */
@@ -617,5 +911,7 @@ function itemIcon(item: Json): string {
     if (str(item, 'id') === 'herbs') return 'herbs';
     if (kind.includes('bowl') || kind.includes('food')) return 'bowl';
     if (kind.includes('knife') || kind.includes('weapon')) return 'knife';
+    if (kind === 'jewel') return 'jewel';
+    if (kind === 'wear') return 'wear';
     return 'thing';
 }

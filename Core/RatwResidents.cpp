@@ -543,6 +543,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (stock(wallet, "sword") < SmithSwords)
                 create(pair.first, "sword", 1, "forged");
         }
+        else if (task == "trade" && wares(pair.first).front() != "herbs")
+        {
+            // A tailor, jeweller, harness-maker or armourer at work (doc 35): one more piece of whatever is sold out,
+            // as the smith forges blades. (A placeholder until crafting takes materials, Phase 5.)
+            for (const auto& ware : wares(pair.first))
+                if (stock(wallet, ware) < 1)
+                {
+                    create(pair.first, ware, 1, "made");
+                    break;
+                }
+        }
         else if (task == "trade")
         {
             // From the town's own stores (the treasury, where there is one town): what the caravans have brought.

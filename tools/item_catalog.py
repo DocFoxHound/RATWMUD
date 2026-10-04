@@ -21,6 +21,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DIR = ROOT / 'Data/Items'
 GROUPS = ('@fuel', '@dye', '@gem')
 SLOTS = {'mouth', 'head', 'throat', 'body', 'harness', 'shoulders', 'sling', 'paws', 'jewelry', 'loop'}
+# Where jewellery clips to the fur (doc 35, 1.3); 'any' is all of them.
+SPOTS = {'ears', 'crown', 'ruff', 'chest', 'back', 'foreleg_left', 'foreleg_right', 'hindleg_left', 'hindleg_right', 'tail', 'any'}
 TIERS = ('hamlet', 'town', 'city', 'industrial')
 
 
@@ -94,6 +96,8 @@ def check():
     for i in ITEMS.values():
         if i.get('slot') and i['slot'] not in SLOTS:
             problems.append(f'{i["id"]}: unknown slot {i["slot"]}')
+        if i.get('slot') == 'jewelry' and (not i.get('spots') or any(p not in SPOTS for p in i['spots'])):
+            problems.append(f'{i["id"]}: jewellery needs spots from {sorted(SPOTS)}')
         if i['price'] < 0 or i['weight'] < 0:
             problems.append(f'{i["id"]}: negative price or weight')
         if not (made.get(i['id']) or i.get('source') or i.get('issued')):

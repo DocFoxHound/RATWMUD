@@ -1,4 +1,5 @@
 #include "RatwSociety.h"
+#include "RatwItems.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -8,7 +9,7 @@ namespace ratw
 {
 bool itemValid(const std::string& item)
 {
-    return item == "herbs" || item == "meal" || item == "sword";
+    return item == "herbs" || item == "meal" || item == "sword" || items::wearable(item);
 }
 
 bool playerAccountId(const std::string& id)
@@ -193,10 +194,17 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
 {
     if (smith(merchant))
         return {"sword"};
+    // A tailor, jeweller, harness-maker, tanner, weaver or armourer (doc 35): the wearables its kind of shop sells.
+    if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant))
+        if (const auto* business = items::businessFor(r->workLabel))
+            if (auto sold = items::wearablesSold(*business); !sold.empty())
+                return sold;
     return {"herbs", "meal"};
 }
 const char* Society::itemName(const std::string& id)
 {
+    if (const auto* worn = items::wearable(id))
+        return worn->name.c_str();
     return id == "herbs" ? "Cooking herbs" : id == "meal" ? "Prepared meal" : id == "sword" ? "Dull bronze sword" : "Unknown goods";
 }
 void Society::record(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
@@ -250,11 +258,12 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     const auto* to = account(buyer);
     const auto total = price * quantity;
     if (!from || !to || stock(*from, item) < quantity || to->cash < total || from->cash > MoneyLimit - total ||
-        stock(*to, item) > StockLimit - quantity)
+        stock(*to, item) > StockLimit - quantity || (!to->stock.count(item) && to->stock.size() >= MaxGoodsKinds))
         return false;
     auto& s = state_.accounts.at(seller);
     auto& b = state_.accounts.at(buyer);
-    s.stock[item] -= quantity;
+    if ((s.stock[item] -= quantity) == 0 && item != "herbs" && item != "meal" && item != "sword")
+        s.stock.erase(item);                                // (Room for other kinds; the old three keep their place.)
     b.stock[item] += quantity;
     b.cash -= total;
     s.cash += total;
@@ -273,8 +282,9 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
         return {false, "This trader has no use for those goods."};
     const auto& m = *account(seller);
     const auto& p = *account(player);
-    const int held = stock(m, item), cap = item == "meal" ? 24 : item == "sword" ? 4 : 20;
-    const int base = item == "meal" ? 6 : item == "sword" ? 40 : 2;
+    const auto* worn = items::wearable(item);
+    const int held = stock(m, item), cap = worn ? 4 : item == "meal" ? 24 : item == "sword" ? 4 : 20;
+    const int base = worn ? worn->price : item == "meal" ? 6 : item == "sword" ? 40 : 2;
     // What the trader has on hand, and what the town has in store (priceFactor): scarce goods cost more.
     const double demand = (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
@@ -351,7 +361,8 @@ void Society::furnishHomes(const std::set<std::string>& homeCells)
 bool Society::create(const std::string& accountId, const std::string& item, int quantity, const std::string& reason)
 {
     const auto found = state_.accounts.find(accountId);
-    if (found == state_.accounts.end() || !itemValid(item) || quantity < 1 || stock(found->second, item) > StockLimit - quantity)
+    if (found == state_.accounts.end() || !itemValid(item) || quantity < 1 || stock(found->second, item) > StockLimit - quantity ||
+        (!found->second.stock.count(item) && found->second.stock.size() >= MaxGoodsKinds))
         return false;
     found->second.stock[item] += quantity;
     record(reason, "made", accountId, item, quantity, 0);
@@ -830,7 +841,7 @@ bool Society::restore(const SocietyState& saved)
     for (const auto& a : s.accounts)
     {
         if (a.first.empty() || a.first.size() > 80 || a.second.cash < 0 || a.second.cash > MoneyLimit ||
-            a.second.stock.size() > 3)                 // Herbs, meals, swords.
+            a.second.stock.size() > MaxGoodsKinds)
             return false;
         if (a.first != "treasury" && !playerAccountId(a.first) && !facilityAccount(a.first) &&
             !fresh.state_.residents.count(a.first))

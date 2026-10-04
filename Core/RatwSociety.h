@@ -54,8 +54,10 @@ bool playerAccountId(const std::string& id);
 // The accounts of things rather than people (Phase 5): a town's stores ("stores:<town>"), a caravan's load
 // ("caravan:<id>"), a bandit camp's loot ("bandits:<id>"), a contract's reward held in trust ("contract:<id>").
 bool facilityAccount(const std::string& id);
-// Goods the economy knows (herbs and meals, for now).
+// Goods the economy knows: herbs, meals, the sword, and the catalog's wearables (doc 35).
 bool itemValid(const std::string& item);
+// The most kinds of goods one account holds (a wardrobe of clothes, a jeweller's counter).
+constexpr std::size_t MaxGoodsKinds = 64;
 
 struct Spot
 {

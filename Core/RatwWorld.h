@@ -229,6 +229,10 @@ struct Entity
     // fighting skill (0..100: NPCs' comes from their trade, a player's grows by fighting).
     // All saved. `lingering`: the player has gone but their body stays in a fight a while.
     std::string mouth, gift;
+    // What is worn (doc 35, 1.1): a wear slot ("head", "neck", "chest_left"...) to a catalog item, and each piece of
+    // jewellery with the fur spot it is clipped at. Saved. The goods stay in the purse; wearing marks them.
+    std::map<std::string, std::string> worn;
+    std::vector<std::pair<std::string, std::string>> jewellery;     // (spot, item)
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
     double mana = 0.0, fightingSkill = 50.0;
@@ -564,6 +568,15 @@ class World
     Result holdItem(const std::string& id, const std::string& item);
     Result stowItem(const std::string& id);
     Result takeItem(const std::string& id, const std::string& groundId);
+    // Wearing (doc 35, Phase 4): putting on a wearable one owns, at a wear slot or (jewellery) a fur spot (`where`
+    // empty: the first free place it fits), and taking it off again (`item` picks a piece at a fur spot). Not in a
+    // fight. How many of an item one wears (or holds), and letting go of what the purse no longer has.
+    Result wear(const std::string& id, const std::string& item, const std::string& where);
+    Result takeOff(const std::string& id, const std::string& where, const std::string& item);
+    static int wornCount(const Entity& e, const std::string& item);
+    // What others see one wearing, in a sentence or two ("" for nothing).
+    static std::string wornWords(const Entity& e);
+    void fitWorn(const std::string& id);
     const std::vector<GroundItem>& groundItems() const { return ground_; }
     // A Gift, given (the Dungeon Master or a developer: who has one is the setting's to decide).
     Result giveGift(const std::string& id, const std::string& gift, bool quickened);

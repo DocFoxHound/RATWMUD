@@ -1,4 +1,5 @@
 #include "RatwWire.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <cmath>
@@ -189,6 +190,25 @@ Value persistEntity(const Entity& e, double time)
     }
     if (!e.mouth.empty())
         o.add("mouth", e.mouth);
+    if (!e.worn.empty())
+    {
+        auto worn = Value::object();
+        for (const auto& [slot, item] : e.worn)
+            worn.add(slot, item);
+        o.add("worn", worn);
+    }
+    if (!e.jewellery.empty())
+    {
+        auto jewellery = Value::array();
+        for (const auto& [spot, item] : e.jewellery)
+        {
+            auto piece = Value::array();
+            piece.push(spot);
+            piece.push(item);
+            jewellery.push(piece);
+        }
+        o.add("jewellery", jewellery);
+    }
     if (!e.gift.empty())
     {
         o.add("gift", e.gift);
@@ -260,6 +280,18 @@ Entity readEntity(const Value& o)
     e.awaySince = strictNumber(o, "awaySince", -1.0);
     e.awayInBed = o.boolean("awayInBed");
     e.mouth = o.string("mouth");
+    // What is worn (doc 35): only what fits where it is said to be; whether the purse still has it is checked on joining.
+    for (const auto& [slot, item] : o.object("worn").fields())
+        if (const auto* piece = items::wearable(item.asString({})); piece && items::wearSlot(slot))
+        {
+            const auto fits = items::slotsFor(*piece);
+            if (std::find(fits.begin(), fits.end(), slot) != fits.end())
+                e.worn[slot] = piece->id;
+        }
+    for (const auto& piece : o.array("jewellery"))
+        if (piece.isArray() && piece.items().size() == 2 && e.jewellery.size() < items::MaxJewellery)
+            if (const auto* item = items::wearable(piece.items()[1].asString({})); item && items::spotAllowed(*item, piece.items()[0].asString({})))
+                e.jewellery.emplace_back(piece.items()[0].asString({}), item->id);
     if (!e.mouth.empty() && e.mouth != "sword")
         e.mouth.clear();
     e.gift = o.string("gift");
@@ -673,8 +705,8 @@ SocietyState readSociety(const Value& o)
             EconomyAccount account;
             account.cash = integer(a, "cash", 1e9);
             const auto& stock = a["stock"];
-            if (!a.isObject() || a.size() != 2 || !stock.isObject() || stock.size() > 3) valid = false;   // Herbs, meals, swords.
-            if (stock.isObject() && stock.size() <= 3)
+            if (!a.isObject() || a.size() != 2 || !stock.isObject() || stock.size() > MaxGoodsKinds) valid = false;
+            if (stock.isObject() && stock.size() <= MaxGoodsKinds)
                 for (const auto& [item, _] : stock.fields())
                     account.stock[item] = int(integer(stock, item.c_str(), 10000));
             s.accounts[id] = account;
