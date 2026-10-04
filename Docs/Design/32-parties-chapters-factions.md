@@ -1313,7 +1313,7 @@ Not yet:
     and read back on start. The checkpoint row keeps only counters and the Hold's offers.
   - The tools and the Dungeon Master can read them. Tested by the database tests, and by a real server on a
     scratch database whose delta saves matched its whole saves.
-  - Applied to DEV only.
+  - Applied to DEV and PROD (2026-10-04).
 - **A Chapters screen for the Dungeon Master** (the DM's new **Chapters** tab):
   - Every Chapter: its members, Hold, House, sworn residents and toll.
   - Its camps on the map: buildings drawn in the Chapter's colour, faint while being built.
@@ -1367,8 +1367,7 @@ Not yet:
   probe), and the DM's own actions on camps (repairing or removing a building).
 - **Factions:** a Trusted faction's Watch weighing members' word, gear from quartermasters (doc 35), and third-tier
   and story missions.
-- **Storage:** parties are still kept in the checkpoint row (they end when their players leave), and PROD hasn't
-  had migrations 0029 and 0030 yet.
+- **Storage:** parties are still kept in the checkpoint row (they end when their players leave).
 - **Names:** hearsay names, residents who see through aliases, and choosing aliases at character creation.
 - **Older tests that fail before and after this work:** Greyfen now has 11 residents, not 10, which breaks
   `Editor/src/model/content.test.mjs`, `tools/test_map_editor.py` and `tools/test_publish.py`. These came with the
