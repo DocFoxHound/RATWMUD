@@ -128,8 +128,8 @@ namespace battle
 constexpr int ArenaWidth = 64, ArenaHeight = 48;     // Twice a 32×24 map view at the default zoom.
 constexpr int GrowthFrom = 2;                        // Each fighter past these two adds a tile each way.
 constexpr double TurnSeconds = 10, TypingExtra = 10, NpcPause = 1.5;
-// The initiative bar fills in real time: at DEX 50 (a gain of 11) in five seconds.
-constexpr double MeterPerSecond = 100.0 / (11 * 5);
+// The initiative bar fills in real time: at DEX 50 (a gain of 11) in fifteen seconds.
+constexpr double MeterPerSecond = 100.0 / (11 * 15);
 constexpr int AwayAfter = 3;
 constexpr double BannerSeconds = 2.0, FadeSeconds = .5, SettleSeconds = 5;
 constexpr double ChallengeSeconds = 30, StartReach = 3.0;

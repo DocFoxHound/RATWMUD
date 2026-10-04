@@ -143,7 +143,7 @@ A player who wants to watch can enter a fight as a bodiless observer. Observers 
 
 ## Turns and initiative
 
-Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf: about five seconds at
+Each fighter has an initiative bar that fills in real time by dexterity, shown under their wolf: about fifteen seconds at
 DEX 50. The moment it is full, they take a turn, whoever else is taking one: several fighters may be acting at once,
 each on their own clock. Nobody waits in a queue, so a fight of twenty takes about as long as a fight of two. Ending a
 turn early starts your bar again at once, so quick decisions win you more turns.
@@ -153,7 +153,7 @@ hours. Turns that overlap keep each player's own rhythm (charge, act, charge) wh
 dodging a charging attack possible (below).
 
 ```text
-bar per second       = (6 + DEX / 10) × 100 / 55        // DEX 50 → full in 5 s, DEX 100 → in 3.4 s
+bar per second       = (6 + DEX / 10) × 100 / 165       // DEX 50 → full in 15 s, DEX 100 → in 10.3 s
 move range (tiles)   = floor((3 + DEX / 25) × injury factor), minimum 1   // DEX 50, unhurt → 5
 bar after a turn     = 0, +20 if you did not move, +20 if you did not act, − the action's weight
 stamina per turn     = +8 at the start of each of your own turns
@@ -260,7 +260,7 @@ Bite is the always-available baseline; Sword trades stamina and speed for reach 
 | Stamina cost | 8 | 14 |
 | Side effect | None in v1 | Can be knocked loose (below) |
 
-At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent in about 12 bite turns or 7 sword turns. With players taking around 15 s a turn, a one-on-one fight lasts about 3–4 minutes. Bite stamina breaks even with the +8 per turn; Sword runs a 6-per-turn deficit that only matters in long fights.
+At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent in about 12 bite turns or 7 sword turns. With a turn coming round every 20–25 s (a 15 s bar plus the turn itself), a one-on-one fight lasts about 4–5 minutes. Bite stamina breaks even with the +8 per turn; Sword runs a 6-per-turn deficit that only matters in long fights.
 
 **Stamina limits.** Below the attack's cost, the attack is refused with a short "too winded" message. Exhaustion (stamina 0 until it recovers to 20) blocks physical attacks too, reusing the existing hysteresis.
 
@@ -437,7 +437,7 @@ without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are ne
   - The arena is cut from the cell: 64×48 tiles (twice a 32×24 view) plus a tile each way per fighter past two, never
     past the cell's edges.
   - Fighters stand frozen in two facing lines in the world, where there is room.
-  - The initiative bar (6 + DEX/10, filling in real time: five seconds at DEX 50); starters begin full, joiners empty.
+  - The initiative bar (6 + DEX/10, filling in real time: fifteen seconds at DEX 50); starters begin full, joiners empty.
   - A turn is a move and one action (Bite, Tend, Flee, Struggle, Wait), with the next turn's head start when either is
     skipped.
   - Initiative bars that fill in real time; 10 s turns, plus 10 once while typing; end early to refill sooner; three
