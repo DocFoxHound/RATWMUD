@@ -1031,6 +1031,42 @@ class DungeonMaster:
                 self.audit(conn, who['username'], kind, ident, f'{target.upper()}: {words}' + (f' — {reason}' if reason else ''))
         return {'id': action, 'status': 'queued'}
 
+    # -- server health (Docs/Design/31-responsiveness.md, the health tracker) ----------------
+    def health(self, target, hours):
+        """How the game server has run: each minute's window as a compact series, the slowest ticks, and the players
+        with the worst ping (dm.health, migration 0032; written by the game server, tools/perf_report.py reads it too)."""
+        hours = max(0.25, min(float(hours), 24 * 14))
+        with self.connect(target) as conn:
+            world = conn.execute('SELECT id FROM world.worlds').fetchone()
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            if not conn.execute("SELECT to_regclass('dm.health') IS NOT NULL").fetchone()[0]:
+                return {'target': target, 'hours': hours, 'missing': True, 'windows': [], 'spikes': [], 'players': []}
+            rows = conn.execute('SELECT at, kind, body FROM dm.health WHERE world_id = %s AND at > now() - make_interval(secs => %s) '
+                                'ORDER BY at', (world[0], hours * 3600)).fetchall()
+        windows, spikes, worst = [], [], {}
+        for at, kind, body in rows:
+            b = body if isinstance(body, dict) else json.loads(body)
+            if kind == 'window':
+                tick, ping, backlog = b.get('tick', {}), b.get('ping', {}), b.get('backlog', {})
+                reporting = bool(ping.get('reporting'))
+                windows.append({'at': at.isoformat(), 'clients': b.get('clients', 0), 'mean': tick.get('mean', 0),
+                                'p99': tick.get('p99', 0), 'max': tick.get('max', 0), 'over50': tick.get('over50', 0),
+                                'ping': ping.get('p50', 0) if reporting else None,
+                                'ping95': ping.get('p95', 0) if reporting else None,
+                                'slow': backlog.get('slow', 0), 'outMbps': b.get('traffic', {}).get('outMbps', 0),
+                                'corrections': b.get('corrections', 0)})
+                who = ping.get('worstWho')
+                if who and ping.get('worst', 0) > worst.get(who, {}).get('ms', 0):
+                    worst[who] = {'name': who, 'ms': ping['worst'], 'at': at.isoformat()}
+            elif kind == 'spike':
+                parts = sorted(((ms, name) for name, ms in b.get('parts', {}).items() if ms >= 1), reverse=True)
+                spikes.append({'at': at.isoformat(), 'ms': b.get('ms', 0), 'clients': b.get('clients', 0),
+                               'parts': [[name, ms] for ms, name in parts[:4]], 'note': b.get('note', '')})
+        spikes.sort(key=lambda s: -s['ms'])
+        return {'target': target, 'hours': hours, 'missing': False, 'windows': windows, 'spikes': spikes[:25],
+                'players': sorted(worst.values(), key=lambda w: -w['ms'])[:10]}
+
     # -- the LIVE map (Docs/Design/34-dungeon-master-refresh.md, 1.1) ----------------
     WATCH_SECONDS = 60
     QUIET_EVENTS = ('economy', 'operator', 'conversation')
@@ -1215,6 +1251,12 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, {'ok': True})
             if method == 'GET' and path == '/api/players':
                 return self.reply(200, dm.players(self.target(query)))
+            if method == 'GET' and path == '/api/health':
+                try:
+                    hours = float((query.get('hours') or ['24'])[0])
+                except ValueError:
+                    hours = 24
+                return self.reply(200, dm.health(self.target(query), hours))
             if method == 'GET' and path == '/api/world':
                 return self.reply(200, dm.world_map(self.target(query), lean=query.get('lean') == ['1']))
             if method == 'GET' and path == '/api/ground':

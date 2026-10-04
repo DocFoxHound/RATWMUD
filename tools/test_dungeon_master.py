@@ -52,7 +52,7 @@ class Fixture(unittest.TestCase):
     def setUp(self):
         for target, name in self.names.items():
             with W.connect(target, 'owner', dbname=name) as owner:
-                owner.execute('TRUNCATE dm.admins, dm.sessions, dm.actions, dm.audit, dm.watchers, dm.watch CASCADE')
+                owner.execute('TRUNCATE dm.admins, dm.sessions, dm.actions, dm.audit, dm.watchers, dm.watch, dm.health CASCADE')
             with W.connect(target, 'game', dbname=name) as game:
                 save_with_player(game)
         with W.connect('prod', 'dm', dbname=self.names['prod']) as conn:
@@ -218,6 +218,28 @@ class DungeonMasterTests(Fixture):
         self.assertEqual(going[0], {'subject': 'player-ada', 'claim': 'stole a pie', 'holders': ['npc_a', 'npc_b', 'npc_c'], 'sure': .7},
                          'the most widely heard first, with everyone who has heard it')
         self.assertEqual(len(going), 2)
+
+    def test_the_servers_health(self):
+        viewer = self.sign_in('dm-viewer')
+        empty = self.dm.health('prod', 24)
+        self.assertFalse(empty['missing'])
+        self.assertEqual(empty['windows'], [], 'nothing recorded yet')
+        window = {'clients': 3, 'tick': {'mean': 18.5, 'p99': 41, 'max': 60, 'over50': 2},
+                  'ping': {'reporting': 2, 'p50': 35, 'p95': 90, 'worst': 140, 'worstWho': 'Ada'},
+                  'backlog': {'largestKB': 300, 'slow': 1, 'dropped': 0}, 'traffic': {'outMbps': 1.5}, 'corrections': 4}
+        spike = {'ms': 130, 'clients': 3, 'parts': {'world': 70, 'views': 40, 'saves': 0.5}, 'note': 'schedules=55'}
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:   # (As the game server writes them.)
+            game.execute("INSERT INTO dm.health (world_id, kind, body) VALUES ('greyfen', 'window', %s), ('greyfen', 'spike', %s)",
+                         (json.dumps(window), json.dumps(spike)))
+        seen = self.dm.health('prod', 24)
+        self.assertEqual(len(seen['windows']), 1)
+        w = seen['windows'][0]
+        self.assertEqual((w['clients'], w['mean'], w['p99'], w['ping'], w['ping95'], w['slow']), (3, 18.5, 41, 35, 90, 1))
+        self.assertEqual(seen['spikes'][0]['ms'], 130)
+        self.assertEqual(seen['spikes'][0]['parts'][0], ['world', 70], 'a spike says where its time went, the most first')
+        self.assertEqual(seen['players'], [{'name': 'Ada', 'ms': 140, 'at': w['at']}])
+        self.assertEqual(self.dm.health('dev', 24)['windows'], [], 'PROD and DEV are kept apart')
+        self.assertIsNotNone(viewer)
 
     def test_roles(self):
         viewer = self.sign_in('dm-viewer')

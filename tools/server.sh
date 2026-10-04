@@ -48,7 +48,11 @@ else
   [[ -n "$world" ]] && command+=(--world "$world")
 fi
 ratw_start_mind --database "$database"
-echo "RATW: players join at http://${RATW_BIND:-127.0.0.1}:$port/" >&2
+if [[ "$port" == 0 ]]; then
+  echo "RATW: the server takes a free port and prints it as it starts (\"listening on port N\")." >&2
+else
+  echo "RATW: players join at http://${RATW_BIND:-127.0.0.1}:$port/" >&2
+fi
 status=0
 "${command[@]}" "${ratw_mind_args[@]}" "${args[@]}" || status=$?
 exit "$status"

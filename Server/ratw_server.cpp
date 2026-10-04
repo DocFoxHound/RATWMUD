@@ -8,7 +8,12 @@
 //            --dm-directory DIR (the operator bridge), --dev-tools, --dev-identity,
 //            --full-snapshots, --for SECONDS (stop after, saving: for tests),
 //            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never),
-//            --workers N (threads finishing players' snapshots in parallel; by default the cores less two, 0 for none)
+//            --workers N (threads finishing players' snapshots in parallel; by default the cores less two, 0 for none),
+//            --port 0 (any free port, printed as it starts)
+//   --scratch: a scratch server (game::Options::scratch): it reads the world and its save but writes nothing, and
+//            needn't own the world (so it runs beside the real server). Whoever starts it stops it when done; it stops
+//            by itself after an hour unless --for says otherwise. --idle-exit SECONDS (any server) stops it once nobody
+//            has been connected that long. For sessions and tools that want a server of their own (tools/scratch.sh).
 //
 // Two threads (doc 31, Phase 4.11): the network thread owns the sockets (accepting, reading, the WebSocket and HTTP
 // parsing, the client's files, pings, writing); the game thread runs the game, taking each client's messages from a
@@ -40,6 +45,7 @@
 #include <netinet/tcp.h>
 #include <sys/epoll.h>
 #include <sstream>
+#include <set>
 #include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -522,7 +528,7 @@ void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
-                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N]\n";
+                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--scratch [--idle-exit SECONDS]]\n";
 }
 
 void blocking(int fd, bool on)
@@ -537,7 +543,7 @@ int main(int argc, char** argv)
     game::Options options;
     int port = 7788;
     std::string bind = "127.0.0.1", webRoot;
-    double runFor = -1, perfLog = 60;
+    double runFor = -1, perfLog = 60, idleExit = -1;
     int workers = -1;
     for (int i = 1; i < argc; ++i)
     {
@@ -567,6 +573,8 @@ int main(int argc, char** argv)
         else if (a == "--for") runFor = std::atof(next().c_str());
         else if (a == "--perf-log") perfLog = std::atof(next().c_str());
         else if (a == "--workers") workers = std::atoi(next().c_str());
+        else if (a == "--scratch") options.scratch = true;
+        else if (a == "--idle-exit") idleExit = std::atof(next().c_str());
         else
         {
             usage();
@@ -581,6 +589,8 @@ int main(int argc, char** argv)
     if (!options.database.empty())
         if (const char* url = std::getenv("RATW_DATABASE_URL"))
             options.conninfo = url;
+    if (options.scratch && runFor <= 0)
+        runFor = 3600;                              // A scratch server forgotten stops within the hour (--for to change it).
     options.connectionLabel = "Standalone server · 20 Hz";
     std::string problem;
     if (!sys::zlibAvailable(problem) || !sys::cryptoAvailable(problem))
@@ -611,6 +621,13 @@ int main(int argc, char** argv)
     {
         std::cerr << "RATW_WORLD_REJECTED: cannot listen on " << bind << ":" << port << ": " << std::strerror(errno) << '\n';
         return 2;
+    }
+    if (port == 0)
+    {
+        // Any free port: say which.
+        socklen_t length = sizeof addr;
+        if (::getsockname(listener, reinterpret_cast<sockaddr*>(&addr), &length) == 0)
+            port = ntohs(addr.sin_port);
     }
     blocking(listener, false);
     std::signal(SIGINT, stop);
@@ -660,8 +677,23 @@ int main(int argc, char** argv)
         g.disconnect(&c);
         std::cout << "RATW_DISCONNECT " << c.address << " (" << playing << " connected)" << std::endl;
     };
+    // The clients the game knows (for the health tracker's slow connections), and how many long ticks it has recorded
+    // this minute (at most SpikesAMinute: a stall that lasts doesn't fill the table).
+    std::set<std::shared_ptr<Client>> live;
+    constexpr int SpikesAMinute = 30;
+    int spikes = 0;
+    // When a client was last connected (or the server started): with --idle-exit, a server left idle stops.
+    auto lastPlayed = Clock::now();
+    bool idleStop = false;
     while (!stopping && g.exitRequested() < 0 && Clock::now() < until)
     {
+        if (playing > 0)
+            lastPlayed = Clock::now();
+        else if (idleExit > 0 && Clock::now() - lastPlayed > std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(idleExit)))
+        {
+            idleStop = true;
+            break;
+        }
         network.waitForGame(int(std::chrono::duration_cast<std::chrono::milliseconds>(nextTick - Clock::now()).count()));
         const auto woke = Clock::now();
         bool ticked = false;
@@ -670,13 +702,17 @@ int main(int argc, char** argv)
             auto& c = *m.client;
             if (m.type == Network::Message::Connected)
             {
+                live.insert(m.client);
                 c.playing = true;
                 ++playing;
                 std::cout << "RATW_CONNECT " << c.address << std::endl;
                 g.connect(&c);
             }
             else if (m.type == Network::Message::Gone)
+            {
                 letGo(c);
+                live.erase(m.client);
+            }
             else if (c.playing && !c.closing)
                 receive(c, m.kind, m.payload);
         }
@@ -697,15 +733,31 @@ int main(int argc, char** argv)
         if (ticked)
         {
             meter.pass(busy, true);
+            if (busy >= game::Game::SpikeMs && spikes < SpikesAMinute)
+            {
+                ++spikes;
+                g.healthSpike(meter.lastPass());
+            }
             busy = 0;
         }
         if (Clock::now() >= nextReport)
         {
             nextReport = Clock::now() + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(perfLog));
-            for (const auto& line : perf::report(meter.take(), playing))
+            const auto window = meter.take();
+            for (const auto& line : perf::report(window, playing))
                 std::cout << line << '\n';
             std::cout << perf::worldLine(g.world().tickProfile()) << std::endl;
+            game::Game::Backlog backlog;
+            for (const auto& c : live)
+            {
+                std::lock_guard<std::mutex> guard(c->lock);
+                backlog.largest = std::max(backlog.largest, c->out.size());
+                backlog.slow += c->out.size() > game::Game::Backlog::SlowBytes;
+                backlog.dropped += c->dropped.load();
+            }
+            g.healthWindow(window, playing, backlog);
             g.world().resetTickProfile();
+            spikes = 0;
         }
     }
     network.stopNow();
@@ -715,8 +767,10 @@ int main(int argc, char** argv)
     for (auto& c : network.remaining())
         letGo(*c);
     network.closeAll();
-    g.save();
+    g.save();                                       // (A scratch server's store keeps nothing.)
     ::close(listener);
+    if (idleStop)
+        std::cout << "RATW_IDLE nobody connected for " << idleExit << " s: stopping." << std::endl;
     std::cout << "RATW server stopped after " << ticks << " ticks; mean " << (ticks ? total / double(ticks) : 0)
               << " ms, slowest " << slowest << " ms" << std::endl;
     return g.exitRequested() >= 0 ? g.exitRequested() : 0;

@@ -11,11 +11,12 @@ import {LiveTab} from './LiveTab';
 import {useWorld} from './world';
 import {FactionsTab} from './FactionsTab';
 import {ChaptersTab} from './ChaptersTab';
+import {HealthTab} from './HealthTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {LifePanel} from './LifePanel';
 import {dmApi, signedIn, type Action, type Character, type Me, type Players, type Target} from './api';
 
-type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live';
+type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live' | 'health';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
 const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string}[] = [
     {id: 'live', label: 'LIVE', icon: '●', ready: true, blurb: ''},
@@ -26,6 +27,7 @@ const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string
     {id: 'stories', label: 'Story Creator', icon: '✦', ready: false,
         blurb: 'Build, save and load multi-phase world stories with triggers and actions; test on DEV, run on PROD. Coming in phase 5.'},
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
+    {id: 'health', label: 'Server Health', icon: '♥', ready: true, blurb: ''},
 ];
 
 export function DmApp() {
@@ -86,6 +88,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} />
             : tab === 'factions' ? <FactionsTab me={me} target={target} key={target} />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
+            : tab === 'health' ? <HealthTab target={target} key={target} />
             : current.ready ? <PlayersTab me={me} target={target} key={target} />
             : <div className="dm-center"><div className="empty-sheet"><h2>{current.icon} {current.label}</h2><p>{current.blurb}</p></div></div>}
     </div>;

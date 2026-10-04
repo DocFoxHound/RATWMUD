@@ -155,10 +155,10 @@ export class GroundPainter {
             c.lineCap = 'round';
             c.stroke();
         };
-        const contour = css(rgb(0xc9bf9a, 0.16)), contourOld = css(rgb(0xc9bf9a, 0.16 * 0.45));
-        const ramp = css(rgb(0xd8b877, 0.34)), rampOld = css(rgb(0xd8b877, 0.34 * 0.45));
-        const shadow = css(rgb(0x04070a, 0.4)), shadowOld = css(rgb(0x04070a, 0.4 * 0.45));
-        const rim = css(rgb(0xe9d2a0, 0.55)), rimOld = css(rgb(0xe9d2a0, 0.55 * 0.45));
+        const contour = css(rgb(0xc9bf9a, 0.16));
+        const ramp = css(rgb(0xd8b877, 0.34));
+        const shadow = css(rgb(0x04070a, 0.4));
+        const rim = css(rgb(0xe9d2a0, 0.55));
         for (let y = w.y0; y <= w.y1; ++y) {
             const row = s.tileRows[y];
             if (!row) continue;
@@ -171,18 +171,20 @@ export class GroundPainter {
                     const ha = s.heightAt(x, y), hb = s.heightAt(nx, ny), drop = Math.abs(ha - hb);
                     const cliff = infoA.kind === 'cliff' || infoB.kind === 'cliff';
                     if (drop < 0.01 && !cliff) continue;
-                    const remembered = s.visibilityRows[y][x] === '1' || s.visibilityRows[ny][nx] === '1';
+                    // Remembered ground comes without its heights (the server sends them for tiles in sight only), so an
+                    // edge touching it would be a false step tracing the edge of sight: none is drawn.
+                    if (s.visibilityRows[y][x] === '1' || s.visibilityRows[ny][nx] === '1') continue;
                     const cx = ox + nx * tile, cy = oy + ny * tile;
                     const end: Point = dx ? [cx, cy + tile] : [cx + tile, cy];
-                    if (drop <= 0.5 && !cliff) line([cx, cy], end, remembered ? contourOld : contour, 1);
-                    else if (drop <= 1.01 && (infoA.ramp || infoB.ramp) && !cliff) line([cx, cy], end, remembered ? rampOld : ramp, 1.3);
+                    if (drop <= 0.5 && !cliff) line([cx, cy], end, contour, 1);
+                    else if (drop <= 1.01 && (infoA.ramp || infoB.ramp) && !cliff) line([cx, cy], end, ramp, 1.3);
                     else {
                         // The shadow falls on the lower side; a level cliff edge shades its open side.
                         const lowAfter = hb < ha || (drop < 0.01 && infoA.kind === 'cliff');
                         const band = Math.min(6, tile * 0.28);
-                        c.fillStyle = remembered ? shadowOld : shadow;
+                        c.fillStyle = shadow;
                         c.fillRect(lowAfter ? cx : cx - dx * band, lowAfter ? cy : cy - dy * band, dx ? band : tile, dx ? tile : band);
-                        line([cx, cy], end, remembered ? rimOld : rim, 2.2);
+                        line([cx, cy], end, rim, 2.2);
                     }
                 }
         }

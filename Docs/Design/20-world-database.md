@@ -366,3 +366,40 @@ apart as they like. The steps:
      tile belongs to two edges) and take the nearest crossing, and cross only
      where their route leads out, so they no longer bounce between two cells.
 
+
+## One game server per world (2026-10-04)
+
+Two game servers on the same world would overwrite each other's saves and journals, and it was easy to leave a DEV
+server running and start another. Now a server owns the world it runs (`Core/RatwGameOwner.cpp`):
+
+- **A world in the database:** the server holds a session advisory lock (`pg_try_advisory_lock(1380013143, 1)`, on a
+  connection of its own, named `ratw_server pid N on HOST`) for as long as it runs. A second server on that database
+  stops at once with `RATW_WORLD_REJECTED: the dev world is already being run by ratw_server pid N on HOST (connected
+  from ADDRESS), running since TIME`, and exits with status 2. DEV and PROD are separate databases, so one of each may run.
+- **A crash lets go at once.** The lock lives exactly as long as the connection: a server that is killed or crashes
+  releases it with nothing to clean up.
+- **A dropped connection:** every half minute the owner checks it still holds the lock and takes it back if a database
+  restart dropped it. If another server took the world meanwhile, the first saves nothing more and exits.
+- **A world saved to a file:** an exclusive lock on `<save>.lock`, which notes the process holding it.
+- `tools/test_one_server.py` starts a server on a scratch database, is refused a second, kills the first outright, and
+  starts a third.
+
+## Scratch servers (2026-10-04)
+
+Several sessions at once may want a game server to look at something. A scratch server is one of their own: it runs
+beside the real server, writes nothing, and goes away by itself.
+
+- `bash tools/scratch.sh dev` (or `prod`, or `town` for Greyfen), or `ratw_server --scratch ...`.
+- **It writes nothing:** it reads the world and its latest save (and the journal since) as the real server would, but
+  its store keeps nothing: no saves, journal, events, DM actions taken (they wait for the real server), spawns
+  recorded, artwork, LIVE map frames, health rows or voice ledger. Its database session is read-only besides
+  (`default_transaction_read_only`), so anything that slipped through would be refused by PostgreSQL. A file world's
+  save is read and never written.
+- **It needs no ownership,** so any number run beside the real server and each other.
+- **Whoever starts it stops it.** A session may use one without ever connecting a character, so it doesn't stop for
+  want of players; it prints its pid as it starts. A forgotten one stops after an hour unless `--for` says otherwise.
+  `--idle-exit SECONDS` (any server) stops it once nobody has been connected that long, for those who want it.
+- **It stays out of the way:** any free port (`--port 0`), printed as it starts; NPCs use written lines (RATW_AI=off)
+  unless asked otherwise.
+- `tools/test_one_server.py`: a scratch server runs beside the owner on a scratch database, stops when asked to (with
+  `--idle-exit`), and leaves the checkpoint, journal, events, health and the DM's queued action exactly as they were.

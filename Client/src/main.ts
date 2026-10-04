@@ -8,6 +8,8 @@ import {FrontDoor} from './ui/frontDoor.ts';
 import {GameView} from './game/view.ts';
 import type {Json} from './game/json.ts';
 import {artCache} from './ui/artwork.ts';
+
+const NetReportEvery = 30000;      // ms: the page's pings told to the server.
 import {Walker} from './game/walker.ts';
 
 const app = document.getElementById('app')!;
@@ -42,6 +44,14 @@ const connection = new Connection(url, {
             game.netSample = () => connection.netSample();
             game.state.walker = walker;
             game.state.poseSender = (seq, x, y, facing, ix, iy) => connection.sendPose(seq, x, y, facing, ix, iy);
+            // The line to the server, every half minute, for its health tracker (Docs/Design/31-responsiveness.md).
+            const view = game;
+            setInterval(() => {
+                const net = connection.netSample();
+                if (net.pingP50 > 0)
+                    connection.submit({type: 'net', p50: Math.round(net.pingP50), p95: Math.round(net.pingP95), max: Math.round(net.pingMax),
+                        corrections: view.state.corrections});
+            }, NetReportEvery);
         }
     },
     snapshot: snapshot => game?.applySnapshot(snapshot),

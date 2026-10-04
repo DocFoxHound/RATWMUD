@@ -730,6 +730,36 @@ asking). Phase 1 measured about 1,400 ms a tick at 1,000 players.
 2. **Spread players' views.**
 3. **The fallback (splitting by space)** only once these are done, and only if gate 4 fails on the server hardware.
 
+## The health tracker (built 2026-10-04)
+
+A server left running keeps a record of how it ran, so lag can be traced after the fact: when, for whom, and why.
+
+- **Each minute** (each `--perf-log` window) the server records:
+  - tick mean, p99, worst, and how many ticks went over 50 ms;
+  - each part's mean and worst (commands, world, views, sight, motion, the rest, saves, compression...);
+  - the world's own parts (streaming, schedules, movement, separation, views) and its route searches;
+  - traffic out and in;
+  - players' ping, as their pages report it: how many reported, the middle player's middle ping, the 95th percentile
+    of their 95th percentiles, the worst and whose;
+  - corrections sent in the minute;
+  - slow connections: the most waiting to be sent to any one client, how many have more than 256 KB waiting, frames
+    dropped for clients too far behind;
+  - the five slowest ticks, with their parts and the world's own.
+- **Each tick over 100 ms** is recorded on its own, with where its time went (at most 30 a minute).
+- **The page** sends `{"type":"net"}` every 30 s: its ping's middle, 95th percentile and worst over the last minute,
+  and the corrections it has had. The network thread answers pings itself, so ping measures the line, not the game's
+  queue; the minute's tick times and slow connections show the game's side.
+- **Where it goes** (`Core/RatwHealth.h`, on its own thread): `dm.health` for a world in the database (migration 0032,
+  kept 14 days), else `<save>.health.jsonl` beside the save. A world in memory keeps nothing.
+- **Reading it:**
+  - `python3 tools/perf_report.py --database dev [--hours N]` (or `--file PATH`) prints the span in blocks (players,
+    tick mean, p99 and worst, ticks over budget, ping, slow connections), the slowest ticks and the worst pings by player.
+  - The Dungeon Master tool's **Server Health** tab charts tick times against the budget, players online and ping
+    over the last hour, six hours, day or week, and lists the slowest ticks and the worst pings by player.
+- **Checks:** `game_tests` (`healthIsKept`): a page's report, a minute's window and a long tick reach the file.
+  `test_dungeon_master` (`test_the_servers_health`): the game role writes to `dm.health`, the DM reads it back, PROD
+  and DEV apart.
+
 ## Hardware notes for the dedicated server
 
 - The simulation thread wants **high single-core speed**. The pool wants **many cores**. A current 16–32 core part

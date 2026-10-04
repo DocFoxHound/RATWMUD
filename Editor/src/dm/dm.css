@@ -118,3 +118,14 @@
 .live-feed.stale { color: var(--faint); }
 .dm-actions li.live-event { cursor: pointer; }
 .dm-actions li.live-event:hover { border-color: #3c5a3f; }
+/* Server Health (Docs/Design/31-responsiveness.md, the health tracker). */
+.dm-health { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; overflow: auto; }
+.dm-health .dm-sheet-bar button.on { background: #22301f; border-color: #3f5a3a; }
+.dm-health-charts { display: grid; gap: 14px; padding: 12px; }
+.dm-chart { margin: 0; }
+.dm-chart figcaption { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.dm-chart .legend { margin-left: 10px; }
+.dm-chart svg { width: 100%; height: 160px; background: #0d1513; border: 1px solid #1f2a26; border-radius: 6px; }
+.dm-health-tables { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px; padding: 0 12px 16px; }
+.dm-health-tables h3 { font-size: 13px; color: var(--muted); margin: 6px 0; }
+.dm-health-tables .dm-table tr { cursor: default; }

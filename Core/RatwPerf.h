@@ -136,9 +136,12 @@ class Meter
                     slow.pop_back();
             }
         }
+        last_ = {busyMs, passParts_, note_};
         passParts_ = {};
         note_.clear();
     }
+    // The pass last ended: its time, its parts and the world's note on it (for a host recording long ones).
+    const Window::Slow& lastPass() const { return last_; }
     void sent(std::size_t bytes)
     {
         bytesOut_.fetch_add(bytes, std::memory_order_relaxed);
@@ -163,6 +166,7 @@ class Meter
   private:
     static constexpr std::size_t Stack = 8, SlowestKept = 5;
     std::array<double, PartCount> passParts_{};
+    Window::Slow last_;
     std::string note_;
     struct Open
     {

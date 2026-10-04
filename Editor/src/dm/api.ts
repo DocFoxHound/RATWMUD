@@ -119,11 +119,24 @@ export interface Live {
     age: number | null; events: LiveEvent[]; actions: Action[];
 }
 
+/** The game server's health (Docs/Design/31-responsiveness.md, the health tracker): each minute, the slowest ticks, and the
+ *  players with the worst ping. Times in ms; ping is the middle player's as their pages report it (null with none). */
+export interface HealthWindow {
+    at: string; clients: number; mean: number; p99: number; max: number; over50: number;
+    ping: number | null; ping95: number | null; slow: number; outMbps: number; corrections: number;
+}
+export interface HealthSpike { at: string; ms: number; clients: number; parts: [string, number][]; note: string }
+export interface Health {
+    target: Target; hours: number; missing: boolean; windows: HealthWindow[]; spikes: HealthSpike[];
+    players: {name: string; ms: number; at: string}[];
+}
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
     me: () => call<Me>('api/me'),
     players: (target: Target) => call<Players>(`api/players?target=${target}`),
+    health: (target: Target, hours: number) => call<Health>(`api/health?target=${target}&hours=${hours}`),
     /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view (dm/world.ts). */
     world: (target: Target) => call<Project>(`api/world?target=${target}&lean=1`),
     ground: (target: Target, ids: string[]) =>

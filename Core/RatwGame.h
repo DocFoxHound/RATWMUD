@@ -26,6 +26,7 @@
 #include "RatwSections.h"
 #include "RatwSocialCore.h"
 #include "RatwWatch.h"
+#include "RatwHealth.h"
 #include "RatwWorld.h"
 
 #include <cstdint>
@@ -71,6 +72,10 @@ class Connection
     // script that drives the wolf by keys).
     bool keysWalking = false;
     std::uint8_t movementMode = 0;
+    // Its line to the server as its page last told it (doc 31, the health tracker: {"type":"net"} every 30 s): ping
+    // in ms, the middle, the 95th percentile and the worst of the last minute's; corrections ever received; when.
+    double netP50 = -1, netP95 = -1, netMax = -1, netAt = -1;
+    int netCorrections = 0, netCorrectionsCounted = 0;
 };
 
 // Where the game's save lives. The database (DbStore) for a world from the database; a file for a world from files.
@@ -101,6 +106,8 @@ std::unique_ptr<Store> databaseStore(const std::string& conninfo, const std::str
 std::unique_ptr<Store> fileStore(const std::string& path, std::string& error);
 // Kept in memory only: for tests.
 std::unique_ptr<Store> memoryStore();
+// A scratch server's store (Options::scratch): reads its save from `inner`, writes nothing anywhere.
+std::unique_ptr<Store> scratchStore(std::unique_ptr<Store> inner);
 
 struct Options
 {
@@ -125,6 +132,11 @@ struct Options
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
+    // A scratch server (Docs/Design/20-world-database.md, "Scratch servers"): the world and its save are read as usual,
+    // but nothing is ever written back: no saves, journal, DM actions taken, spawns recorded, artwork, LIVE map or
+    // health; its database session is read-only besides. It doesn't need to own the world, so it runs beside the
+    // real server and any number of other scratch servers.
+    bool scratch = false;
     // Snapshots of the world taken by a forked copy of the server, so the game never waits for one (doc 31, Phase 2).
     // For a database or file world; tests turn it off to snapshot in place.
     bool forkSnapshots = true;
@@ -150,6 +162,19 @@ class Game
     void useStore(std::unique_ptr<Store> store) { customStore_ = std::move(store); }
     // Loads the world and its save. False, with the problem, if the server must not run.
     bool start(std::string& problem);
+    // Server health (doc 31, the health tracker; Core/RatwHealth.h): a minute's window as the host's meter saw it, with
+    // the world's own parts, players' pings and slow connections; and one tick that ran long. Kept for a world in the
+    // database or saved to a file; nowhere for one in memory.
+    struct Backlog
+    {
+        std::size_t largest = 0;                    // Bytes waiting to go to the client with most waiting.
+        std::size_t slow = 0;                       // Clients with more than SlowBytes waiting.
+        std::size_t dropped = 0;                    // Frames dropped for a client too far behind, ever.
+        static constexpr std::size_t SlowBytes = 256 * 1024;
+    };
+    void healthWindow(const perf::Meter::Window& w, std::size_t clients, const Backlog& backlog);
+    void healthSpike(const perf::Meter::Window::Slow& pass);
+    static constexpr double SpikeMs = 100;
     // Where notes go (level: "info", "warning", "error"). Standard error until set.
     std::function<void(const char* level, const std::string& text)> log;
 
@@ -498,11 +523,20 @@ class Game
            releaseAccumulator_ = 0, dmAccumulator_ = 0, spawnAccumulator_ = 0, prefetchAccumulator_ = 0, streamLogAccumulator_ = 0;
     std::map<std::string, double> deadSince_, spawnBackoff_;
     PgClient worldDb_;
+    // One server per world (RatwGameOwner.cpp): the database lock's own connection, or the save's lock file.
+    std::unique_ptr<PgClient> ownerPg_;
+    int ownerFile_ = -1;
+    double ownerCheck_ = 0;
+    static constexpr double OwnerCheckSeconds = 30;
+    bool takeOwnership(std::string& problem);
+    void keepOwnership(double dt);
+    void letGoOfOwnership();
     perf::Meter* meter_ = nullptr;
     std::int64_t loadedBuild_ = 0, pendingRelease_ = 0;
     std::map<std::string, std::string> worldFiles_, cellHeaders_;
     std::map<std::string, std::pair<std::string, std::string>> exportCells_;   // A world export's cells: body, seams.
     std::string liveWorldId_;
+    std::unique_ptr<health::Recorder> health_;                         // Server health kept (RatwHealth.h).
     std::unique_ptr<watch::Feed> watch_;                               // The LIVE map's positions (doc 34); a database world only.
     double watchAccumulator_ = 0;
     bool streamedBuild_ = false, releaseAnnounced_ = false, storageReady_ = false;

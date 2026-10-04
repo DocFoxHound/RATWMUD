@@ -1,7 +1,7 @@
 // A real fight in the real page (Docs/Design/33-combat.md): three players (a browser each), a challenge, turns played
 // by clicking, an onlooker who watches, the end and the fade back. Screenshots go to artifacts/screenshots/fight/.
 //
-//   node tools/client/fight.mjs [OUT]          (the server from build-core and Client/dist, as tools/play.sh builds them)
+//   node tools/client/fight.mjs [OUT]          (on a scratch server of Greyfen: tools/scratch.sh town)
 import {spawn} from 'node:child_process';
 import {mkdirSync, mkdtempSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
@@ -12,16 +12,20 @@ import {Browser} from './browser.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const tmp = mkdtempSync(join(tmpdir(), 'ratw-fight-'));
 const OUT = process.argv[2] ?? `${root}/artifacts/screenshots/fight`;
-const binary = process.env.RATW_SERVER ?? `${root}/build-core/ratw_server`;
 mkdirSync(OUT, {recursive: true});
-const port = 7900 + Math.floor(Math.random() * 90);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const server = spawn(binary, ['--port', String(port), '--web', `${root}/Client/dist`, '--save', `${tmp}/fight-save.json`,
-    '--dev-identity', '--dev-tools'], {stdio: ['ignore', 'ignore', 'pipe']});
+// A scratch server (CLAUDE.md): Greyfen Crossing, read only, beside anyone else's; development identities and grants.
+const server = spawn('bash', [`${root}/tools/scratch.sh`, 'town', '--dev-identity', '--dev-tools', '--for', '900'],
+    {stdio: ['ignore', 'pipe', 'pipe'], detached: true});
 let log = '';
+server.stdout.on('data', d => { log += d; });
 server.stderr.on('data', d => { log += d; });
-await sleep(1500);
-const browsers = [];
+let port = 0;
+for (let i = 0; i < 600 && !port; ++i) {
+    port = Number(/listening on port (\d+)/.exec(log)?.[1] ?? 0);
+    await sleep(500);
+}
+if (!port) throw new Error('The scratch server did not start:\n' + log.slice(-2000));const browsers = [];
 const results = [];
 try {
     const open = async who => {
@@ -112,7 +116,7 @@ try {
     results.push(`page errors: ${errors.length ? errors.join(' | ') : 'none'}`);
 } finally {
     for (const b of browsers) await b.close();
-    server.kill();
+    try { process.kill(-server.pid, 'SIGTERM'); } catch {}
     rmSync(tmp, {recursive: true, force: true});
 }
 console.log(results.join('\n'));

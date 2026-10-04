@@ -542,6 +542,50 @@ void aRestartFromAFile()
 
 // A player session, not a development one: the sky, the clock, the lamps and the calendar are not theirs to change,
 // and a pace that isn't a whole step from 0 to 10 is refused.
+// The health tracker (doc 31): a page's pings, told every half minute, go into the minute's window; a long tick is
+// recorded on its own; for a world saved to a file, both go to a JSON-lines file beside the save.
+void healthIsKept()
+{
+    const std::string path = "/tmp/ratw-game-health-" + std::to_string(::getpid()) + ".json";
+    std::remove(path.c_str());
+    std::remove((path + ".health.jsonl").c_str());
+    {
+        game::Options o;
+        o.savePath = path;
+        o.devIdentity = true;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "starts with a file save: " + problem);
+        Client c;
+        c.id = 7;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "hello"}, {"id", "fern"}, {"name", "Fern"}}));
+        g.command(&c, cmd({{"type", "net"}, {"p50", 42}, {"p95", 80}, {"max", 120}, {"corrections", 3}}));
+        perf::Meter meter;
+        meter.add(perf::World, 12);
+        meter.pass(130, true);
+        g.healthSpike(meter.lastPass());
+        game::Game::Backlog backlog;
+        backlog.largest = 300 * 1024;
+        backlog.slow = 1;
+        g.healthWindow(meter.take(), 1, backlog);
+    }   // (The recorder writes what it holds as the game goes.)
+    std::ifstream in(path + ".health.jsonl");
+    std::string spike, window;
+    std::getline(in, spike);
+    std::getline(in, window);
+    expect(spike.find("\"kind\":\"spike\"") != std::string::npos && spike.find("\"ms\":130") != std::string::npos &&
+               spike.find("\"world\":12") != std::string::npos,
+           "A long tick is kept, with where its time went: " + spike);
+    expect(window.find("\"kind\":\"window\"") != std::string::npos && window.find("\"reporting\":1") != std::string::npos &&
+               window.find("\"p50\":42") != std::string::npos && window.find("\"worst\":120") != std::string::npos &&
+               window.find("\"worstWho\":\"Fern\"") != std::string::npos && window.find("\"corrections\":3") != std::string::npos &&
+               window.find("\"slow\":1") != std::string::npos,
+           "and each minute: players' pings as their pages told them, corrections, slow connections: " + window);
+    std::remove(path.c_str());
+    std::remove((path + ".health.jsonl").c_str());
+}
+
 void playersCannotRuleTheSky()
 {
     game::Options o;
@@ -1224,6 +1268,7 @@ int main()
         signingInNeverHoldsTheGame();
         freeMovementIsChecked();
         aRestartFromAFile();
+        healthIsKept();
         playersCannotRuleTheSky();
         othersSeeNoPrivateStats();
         unreadableSavesAreKept();

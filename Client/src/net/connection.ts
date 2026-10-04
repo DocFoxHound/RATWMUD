@@ -16,7 +16,9 @@ export interface ConnectionStats {
 /** What the latency overlay shows of the connection (Docs/Design/31-responsiveness.md, Phase 1). */
 export interface NetSample {
     ping: number;           // The latest round trip (ms); 0 before the first.
-    pingP50: number;        // The median of the last 30.
+    pingP50: number;        // The median of the last 30 (a minute's).
+    pingP95: number;        // Their 95th percentile.
+    pingMax: number;        // The worst of them.
     bytesPerSecond: number; // Received, over the last few seconds.
 }
 
@@ -105,6 +107,8 @@ export class Connection {
         return {
             ping: this.pings.length ? this.pings[this.pings.length - 1] : 0,
             pingP50: sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0,
+            pingP95: sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] : 0,
+            pingMax: sorted.length ? sorted[sorted.length - 1] : 0,
             bytesPerSecond: seconds > 0 ? (this.stats.bytes - first[1]) / seconds : 0,
         };
     }

@@ -138,6 +138,29 @@ class FileStore final : public Store
     std::string error() const override { return problem; }
 };
 
+class ScratchStoreImpl final : public Store
+{
+  public:
+    explicit ScratchStoreImpl(std::unique_ptr<Store> inner) : inner_(std::move(inner)) {}
+    std::unique_ptr<journal::Writer> writer = journal::memoryWriter(std::make_shared<std::vector<journal::Record>>());
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string& error) override
+    {
+        return inner_->journalAfter(after, out, error);     // The real server's journal, read to replay over its save.
+    }
+    bool database() const override { return false; }
+    std::string load() override { return inner_->load(); }
+    bool save(DbStore::Build, std::uint64_t) override { return true; }
+    bool saveInBackground(DbStore::Build, std::uint64_t) override { return true; }
+    bool flush() override { return true; }
+    void queueEvents(std::vector<WorldEvent>) override {}
+    std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return inner_->externalNpcStates(); }
+    std::string error() const override { return {}; }
+
+  private:
+    std::unique_ptr<Store> inner_;
+};
+
 class MemoryStoreImpl final : public Store
 {
   public:
@@ -192,6 +215,11 @@ std::string format(const char* fmt, double a, double b)
 }
 } // namespace
 
+std::unique_ptr<Store> scratchStore(std::unique_ptr<Store> inner)
+{
+    return inner ? std::make_unique<ScratchStoreImpl>(std::move(inner)) : nullptr;
+}
+
 std::unique_ptr<Store> databaseStore(const std::string& conninfo, const std::string& worldId, std::string& error)
 {
     auto store = std::make_unique<DatabaseStore>();
@@ -245,6 +273,7 @@ Game::~Game()
         if (auto* writer = store_->journal())
             writer->flush();
     }
+    letGoOfOwnership();                             // Last, once everything is written.
 }
 
 void Game::note(const char* level, const std::string& text)
@@ -288,18 +317,26 @@ bool Game::start(std::string& problem)
         else
             note("warn", "RATW_SCENES the scenes could not be read: " + trouble);
     }
-    if (!options_.voiceLog.empty())
+    if (!options_.voiceLog.empty() && !options_.scratch)    // (The ledger is the real server's.)
     {
         voiceLog_.open(options_.voiceLog, std::ios::app);
         if (!voiceLog_)
             note("warn", "RATW_VOICE the ledger " + options_.voiceLog + " cannot be written");
     }
+    // One server per world, before anything is loaded or written. A scratch server writes nothing: it needn't own it.
+    if (options_.scratch)
+        note("info", "RATW_SCRATCH a scratch server (pid " + std::to_string(::getpid()) +
+                         "): nothing it does is saved, and it runs beside any other server. Stop it when you're done.");
+    else if (!takeOwnership(problem))
+        return false;
     const bool live = !options_.database.empty();
     if (live)
     {
         if (!loadFromDatabase(problem))
             return false;
         store_ = databaseStore(options_.conninfo, liveWorldId_, problem);
+        if (options_.scratch)
+            store_ = scratchStore(std::move(store_));
         if (!store_)
         {
             problem = "the world database save is unavailable: " + problem;
@@ -333,10 +370,14 @@ bool Game::start(std::string& problem)
                 world_.cell(id)->region = "demo_reach";
         }
         store_ = customStore_ ? std::move(customStore_) : options_.savePath.empty() ? memoryStore() : fileStore(options_.savePath, problem);
+        if (options_.scratch && store_)
+            store_ = scratchStore(std::move(store_));
         if (!store_)
             return false;
     }
     storageReady_ = true;
+    if (!health_ && !options_.savePath.empty() && !options_.scratch)
+        health_ = health::Recorder::file(options_.savePath + ".health.jsonl");
     if (options_.workerThreads > 0)
     {
         pool_ = std::make_unique<Pool>(options_.workerThreads);
@@ -346,7 +387,8 @@ bool Game::start(std::string& problem)
     {
         // Uploaded portraits (doc 29, phase 9): beside the save, or in the database. Not needed to play.
         std::string trouble;
-        artwork_ = live ? art::databaseStore(options_.conninfo, liveWorldId_, trouble)
+        artwork_ = options_.scratch ? art::memoryStore()
+                   : live ? art::databaseStore(options_.conninfo, liveWorldId_, trouble)
                    : options_.savePath.empty() ? art::memoryStore() : art::folderStore(options_.savePath + ".art", trouble);
         if (artwork_)
             for (const auto& m : artwork_->all())
@@ -400,7 +442,9 @@ bool Game::start(std::string& problem)
     mind_.configure(options_.dialogueEndpoint);
     consolidate();
     prime(shadow_);
-    note("info", "RATW authoritative world ready; 20Hz; save=" + std::string(live ? options_.database + " database" : options_.savePath.empty() ? "memory" : options_.savePath) +
+    note("info", "RATW authoritative world ready; 20Hz; save=" +
+                     std::string(options_.scratch ? "none (scratch: read from " + (live ? options_.database + " database" : options_.savePath) + ")"
+                                 : live ? options_.database + " database" : options_.savePath.empty() ? "memory" : options_.savePath) +
                      "; dialogue=" + mind_.label());
     return true;
 }
@@ -422,6 +466,8 @@ bool Game::loadFromDatabase(std::string& problem)
         problem = "cannot reach the " + options_.database + " database: " + problem;
         return false;
     }
+    if (options_.scratch)
+        worldDb_.exec("SET default_transaction_read_only = on");   // Whatever slips through is refused by the database.
     const auto build = worldDb_.exec("SELECT w.id, b.id, coalesce(b.release, 0), b.files::text FROM world.worlds w "
                                      "JOIN world.builds b ON b.world_id = w.id ORDER BY b.id DESC LIMIT 1");
     if (!build.ok || build.rows.empty() || !build.rows[0][3])
@@ -450,7 +496,11 @@ bool Game::loadFromDatabase(std::string& problem)
     }
     worldFiles_["world.ratw"] = withoutPeople(worldFiles_["world.ratw"]);
     liveWorldId_ = *row[0];
-    watch_ = std::make_unique<watch::Feed>(options_.conninfo, liveWorldId_);
+    if (!options_.scratch)
+    {
+        watch_ = std::make_unique<watch::Feed>(options_.conninfo, liveWorldId_);
+        health_ = health::Recorder::database(options_.conninfo, liveWorldId_);
+    }
     loadedBuild_ = std::stoll(*row[1]);
     streamedBuild_ = worldFiles_["world.ratw"].rfind("RATW_WORLD 3", 0) == 0;
     cellHeaders_.clear();
@@ -665,6 +715,8 @@ void Game::watchReleases(double dt)
 
 void Game::applyDmActions(double dt)
 {
+    if (options_.scratch)
+        return;                                     // The DM's actions are for the real server.
     if (options_.database.empty() || (dmAccumulator_ += dt) < 1)
         return;
     dmAccumulator_ = 0;
@@ -987,7 +1039,7 @@ void Game::makeResidents()
 
 void Game::runSpawns(double dt)
 {
-    if (options_.database.empty() || (spawnAccumulator_ += dt) < 30)
+    if (options_.database.empty() || options_.scratch || (spawnAccumulator_ += dt) < 30)
         return;
     spawnAccumulator_ = 0;
     const double at = clock();
@@ -1783,6 +1835,7 @@ void Game::login(Connection* c, const Value& j)
 void Game::tick(double dt)
 {
     perf::Scope timed(meter_, perf::TickOther);
+    keepOwnership(dt);
     std::map<std::string, std::string> beforeCells;
     for (auto* c : clients_)
         if (const auto* e = world_.entity(c->entityId))
@@ -3185,6 +3238,16 @@ void Game::command(Connection* c, const std::string& raw)
         c->clientWalking = j.string("mode") == "client";
         c->clientSight = j.string("sight") == "client";
         world_.setClientWalks(id, c->clientWalking && c->movementMode == FreeMovement && !c->keysWalking);
+    }
+    else if (type == "net")
+    {
+        // The page's line to the server (doc 31, the health tracker), every half minute: kept for the next window.
+        const auto ms = [&](const char* key) { return std::clamp(num(key), 0.0, 60000.0); };
+        c->netP50 = ms("p50");
+        c->netP95 = ms("p95");
+        c->netMax = ms("max");
+        c->netCorrections = int(std::clamp(num("corrections"), 0.0, 1e9));
+        c->netAt = world_.time();
     }
     else if (type == "pose")
         pose(c, std::uint32_t(std::max(0.0, num("seq"))), num("x"), num("y"), num("facing"), num("ix"), num("iy"));
