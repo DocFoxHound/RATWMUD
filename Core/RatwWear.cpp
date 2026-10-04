@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <iterator>
 
 namespace ratw
@@ -157,5 +158,47 @@ void World::fitWorn(const std::string& id)
         w = wornCount(*e, w->second) > Society::stock(*purse, w->second) ? e->worn.erase(w) : std::next(w);
     if (!e->mouth.empty() && Society::stock(*purse, e->mouth) < 1)
         e->mouth.clear();
+}
+
+World::Load World::loadOf(const Entity& e) const
+{
+    Load l;
+    l.comfortable = 12 + .25 * std::clamp(e.strength, 0.0, 100.0);
+    if (const auto* purse = society_.account(e.id))
+        for (const auto& [item, count] : purse->stock)
+            if (const auto* good = items::good(item); good && count > 0)
+                l.carried += good->weight * count;
+    const double over = l.carried / l.comfortable;
+    if (over > 2)
+    {
+        l.state = "overloaded";
+        l.pace = 0;
+    }
+    else if (over > 1)
+    {
+        // A notch off the top pace for each quarter over (sprint 10 down to a run of 6), and running tiring up to half
+        // as much again. Placeholders for the balance pass.
+        l.state = "heavy";
+        l.pace = 10 - int(std::ceil((over - 1) / .25 - 1e-9));
+        l.drain = 1 + .5 * (over - 1);
+    }
+    return l;
+}
+
+void World::refreshLoad(Entity& e) const
+{
+    if (e.npc)
+        return;
+    const auto l = loadOf(e);
+    e.loadPace = l.pace;
+    e.loadDrain = l.drain;
+}
+
+std::string World::tooLoadedToFight(const std::string& id) const
+{
+    const auto* e = entity(id);
+    if (!e || e->npc || loadOf(*e).state != "overloaded")
+        return {};
+    return "You are carrying too much to fight. Put something down first.";
 }
 } // namespace ratw

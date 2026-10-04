@@ -33,3 +33,19 @@ test('social: a scene says what pay still needs, and warns when it goes quiet', 
     s.sendSocial({verb: 'leave', session: 'scene-7'});
     assert.deepEqual(commands.at(-1), {type: 'social', verb: 'leave', session: 'scene-7'});
 });
+
+test('carrying: the load in words, and what a heavy load costs (doc 35, 1.2)', async () => {
+    const {readLoad, loadLabel, loadCost, weightLabel} = await import('./labels.ts');
+    assert.equal(readLoad({}), null, 'nothing sent: nothing shown');
+    const light = readLoad({load: {carried: 6.5, comfortable: 24.5, state: 'comfortable', pace: 10, drain: 1}})!;
+    assert.equal(loadLabel(light), 'Load 6.5 lb of 24.5 lb · comfortable');
+    assert.equal(loadCost(light), '', 'comfortable costs nothing');
+    const heavy = readLoad({load: {carried: 40, comfortable: 24.5, state: 'heavy', pace: 7, drain: 1.32}})!;
+    assert.equal(loadCost(heavy), 'No faster than a run (pace 7), and running tires you 32% more.');
+    const over = readLoad({load: {carried: 60, comfortable: 24.5, state: 'overloaded', pace: 0, drain: 1}})!;
+    assert.match(loadCost(over), /Walking only, and no fighting/);
+    assert.equal(readLoad({load: {state: 'nonsense', pace: 99}})!.state, 'comfortable', 'an unknown state is read as comfortable');
+    assert.equal(readLoad({load: {state: 'heavy', pace: 99}})!.pace, 10, 'a pace beyond the wheel is held to it');
+    assert.equal(weightLabel(3), '3 lb');
+    assert.equal(weightLabel(0.25), '0.3 lb');
+});

@@ -3,6 +3,7 @@
 #include "RatwCheckpoint.h"
 #include "RatwItems.h"
 #include "RatwWire.h"
+#include "RatwStep.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -122,6 +123,55 @@ void manyKindsSave()
 }
 } // namespace
 
+// Carrying (doc 35, 1.2): what the purse weighs against 12 + STR/4, and what a heavy load or too much costs.
+void carrying()
+{
+    World w;
+    auto& ada = w.addPlayer("player-ada", "Ada");
+    auto& bo = w.addPlayer("player-bo", "Bo");
+    auto& soc = w.society();
+    ada.strength = 50;
+    const auto start = w.loadOf(ada);
+    expect(start.comfortable == 24.5 && start.state == "comfortable" && start.pace == 10 && start.drain == 1,
+           "STR 50 carries 24.5 lb in comfort, and a new wolf is well within it");
+    expect(soc.create("player-ada", "iron_bar", 4, "test"), "four iron bars (20 lb)");
+    const auto heavy = w.loadOf(ada);
+    const double over = heavy.carried / heavy.comfortable;
+    expect(heavy.carried == start.carried + 20 && heavy.state == (over > 1 ? "heavy" : "comfortable"), "the bars weigh");
+    expect(soc.create("player-ada", "iron_bar", 2, "test"), "two more");
+    const auto heavier = w.loadOf(ada);
+    expect(heavier.state == "heavy" && heavier.pace < 10 && heavier.pace >= 6 && heavier.drain > 1 && heavier.drain <= 1.5,
+           "heavy: the top pace falls, and running tires more (pace " + std::to_string(heavier.pace) + ")");
+    ada.pace = 10;
+    w.refreshLoad(ada);
+    expect(effectivePace(ada) == heavier.pace, "so a sprint is held to it");
+    expect(w.tooLoadedToFight("player-ada").empty(), "heavy is no bar to a fight");
+    double light = 100, laden = 100, rate = 0;
+    bool tired = false;
+    step::updateStamina(light, tired, rate, 10, 1, 1);
+    step::updateStamina(laden, tired, rate, 10, 1, 1, heavier.drain);
+    expect(laden < light, "a second's sprint costs more stamina laden");
+    expect(soc.create("player-ada", "mail_coat", 1, "test"), "and a mail coat");
+    const auto over2 = w.loadOf(ada);
+    expect(over2.state == "overloaded" && over2.pace == 0, "overloaded: a walk");
+    w.refreshLoad(ada);
+    expect(effectivePace(ada) == 0, "and only a walk");
+    expect(!w.tooLoadedToFight("player-ada").empty(), "no fighting so laden");
+    bo.position = {ada.position.x + 1, ada.position.y};
+    bo.cellId = ada.cellId;
+    const auto refused = w.challenge("player-ada", "player-bo", "yield");
+    expect(!refused.ok && refused.message.find("carrying too much") != std::string::npos, "she can't challenge: " + refused.message);
+    expect(w.challenge("player-bo", "player-ada", "yield").ok, "Bo may challenge her");
+    const auto answer = w.answerChallenge("player-ada", true);
+    expect(!answer.ok && answer.message.find("carrying too much") != std::string::npos, "but she can't accept, so laden");
+    ada.strength = 100;
+    expect(w.loadOf(ada).comfortable == 37, "a stronger wolf carries more in comfort");
+    ada.npc = true;
+    w.refreshLoad(ada);
+    ada.loadPace = 10;
+    expect(w.tooLoadedToFight("player-ada").empty(), "residents carry freely");
+}
+
 int main()
 {
     try
@@ -130,6 +180,7 @@ int main()
         shops();
         wearing();
         manyKindsSave();
+        carrying();
     }
     catch (const std::exception& e)
     {

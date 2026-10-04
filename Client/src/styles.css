@@ -142,6 +142,16 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .status { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .who { font-size: 16px; font-weight: 500; }
 .law { color: #e1aba2; }
+/* The load (doc 35, 1.2): a chip only when heavy or overloaded; a bar on the status screen and belongings. */
+.load-chip { color: var(--gold); }
+.load-chip.overloaded { color: #e1aba2; }
+.load-meter { display: flex; flex-direction: column; gap: 3px; margin: 4px 0 8px; }
+.load-bar { position: relative; }
+.load-mark { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--paper); opacity: .6; }
+.load-meter.heavy .fill { background: var(--gold); }
+.load-meter.overloaded .fill { background: #e0695e; }
+.load-cost { color: var(--gold); }
+.load-meter.overloaded .load-cost { color: #e1aba2; }
 .meter-head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; }
 .meter-head .tired { color: #e1aba2; }
 .note { font-size: 11px; color: var(--muted); }

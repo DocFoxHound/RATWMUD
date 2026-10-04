@@ -97,7 +97,8 @@ from `Game::refreshSocialViews`), a party's or a fight's beside the room's:
   at once, paid if they have the shape and another member has it too; the others carry on. Their part still counts
   toward the scene's two qualified members, they aren't paid again when it ends, and their later words there count
   for nothing (`Contribution::left`, saved). A fight's scene can't be left: it ends with the fight. The old
-  `session_end` action, which ends the scene for everyone, stays for scripts but has no button.
+  `session_end` action ends the scene for everyone; its "End scene" button left the actions row (2026-10-04), so one
+  player can't cut a scene short for the rest. It stays for scripts.
 
 Tests: `social_game_tests` `leavingAScene` and the snapshot's scenes; `checkpoint_tests` (who left survives a
 restart); `social.test.ts` (the words); `tools/client/scenes.mjs` (the real page: needs, on track, two scenes and a quiet

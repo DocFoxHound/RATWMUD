@@ -386,7 +386,7 @@ const char* paceName(int pace)
 
 int effectivePace(const Entity& actor)
 {
-    return step::effectivePace(actor.posture == "standing", actor.exhausted, actor.stamina, actor.pace);
+    return std::min(step::effectivePace(actor.posture == "standing", actor.exhausted, actor.stamina, actor.pace), actor.loadPace);
 }
 
 // A posture taken at once, without the timed rise only full simulation advances (for offstage NPCs).
@@ -2123,6 +2123,7 @@ std::vector<std::string> World::actions(const std::string& id, const std::string
 
 void World::integrate(Entity& a, double dt)
 {
+    refreshLoad(a);                                 // (What it carries, before how fast it may go.)
     if (a.stamina <= Epsilon)
         a.exhausted = true;
     const double elapsed = dt;
@@ -2322,7 +2323,7 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
 
 void World::updateStamina(Entity& a, double dt, double movedTime)
 {
-    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime);
+    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime, a.loadDrain);
 }
 
 namespace

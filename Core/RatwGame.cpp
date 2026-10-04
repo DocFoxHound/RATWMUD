@@ -2253,6 +2253,15 @@ void Game::sendSnapshot(Connection* c)
     if (const auto* me = world_.entity(id))
     {
         self.set("walkSpeed", paceSpeed(*me));
+        // What it carries (doc 35, 1.2): pounds against what is comfortable, and what the load costs.
+        const auto load = world_.loadOf(*me);
+        auto l = Value::object();
+        l.add("carried", std::round(load.carried * 10) / 10);
+        l.add("comfortable", std::round(load.comfortable * 10) / 10);
+        l.add("state", load.state);
+        l.add("pace", load.pace);
+        l.add("drain", std::round(load.drain * 100) / 100);
+        self.set("load", l);
         self.set("sightRange", world_.sightRange(*me));    // (For a client shading the terrain itself.)
         self.set("moveFactor", world_.environmentAt(me->cellId, me->position).movement);
     }
@@ -2736,8 +2745,26 @@ void Game::sendSnapshot(Connection* c)
                     i.add("protect", piece->protect);
                 inventory.push(std::move(i));
             }
+        // Any other good of the catalog it holds (bought at a shop, given): listed, since it weighs (doc 35, 1.2).
+        for (const auto& [itemId, quantity] : purse->stock)
+            if (const auto* good = quantity > 0 && itemId != "herbs" && itemId != "meal" && itemId != "sword" &&
+                                           !items::wearable(itemId) ? items::good(itemId) : nullptr)
+            {
+                auto i = Value::object();
+                i.add("id", itemId);
+                i.add("name", good->name);
+                i.add("icon", "goods");
+                i.add("description", good->desc);
+                i.add("equipped", false);
+                i.add("quantity", quantity);
+                inventory.push(std::move(i));
+            }
     }
     item("token", "Wooden token", "token", "A smooth keepsake carved with a branch.", false, 1);
+    // What each piece weighs (doc 35, 1.2): the catalog's, a pound a piece.
+    for (auto& i : inventory.items())
+        if (const auto* good = items::good(i.string("id")))
+            i.add("weight", good->weight);
     root.add("inventory", inventory);
     const Entity* trader = nullptr;
     double traderAt = 1e18;

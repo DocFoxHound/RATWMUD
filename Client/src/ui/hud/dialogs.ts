@@ -4,7 +4,7 @@ import {css} from '../color.ts';
 import {speakingColor} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {arr, bool, clamp, countText, envNumber, isObject, num, obj, str, wholeCount, type Json} from '../../game/json.ts';
-import {postureLabel, restLabel} from '../../game/labels.ts';
+import {postureLabel, restLabel, readLoad, loadLabel, loadCost, weightLabel} from '../../game/labels.ts';
 import type {GameState} from '../../game/state.ts';
 import {button, el, setClass} from './dom.ts';
 import {noRect} from './story.ts';
@@ -453,6 +453,16 @@ export class Dialogs {
         if (num(self, 'manaMax') > 0)
             meter('MANA', num(self, 'mana'), num(self, 'manaMax'), 'mana', 'Most mana is 20 + WIS × 0.8. In a fight +2 at the start of each ' +
                 'turn, out of one slowly. Fire costs 25 (Quickened 40); with too little it burns you twice as much.');
+        // Worn armour by hit zone (doc 33's "Armour, by hit zone"): a blow lands on one zone, and only the best piece
+        // worn there counts; the catalog slot says which zone a piece guards.
+        const zones: [string, string][] = [['head', 'HEAD'], ['throat', 'THROAT'], ['body', 'BODY'], ['paws', 'LEGS']];
+        const worn = arr(s.snapshot, 'inventory').filter(isObject).filter(i => wholeCount(i, 'worn', 0) > 0 && num(i, 'protect') > 0);
+        const guard = zones.map(([slot, name]) => [name, Math.max(0, ...worn.filter(i => str(i, 'slot') === slot).map(i => num(i, 'protect')))] as const);
+        if (guard.some(([, v]) => v > 0)) el('div', 'label sage', vitals, `ARMOUR · ${guard.map(([n, v]) => `${n} ${v || '—'}`).join(' · ')}`).title =
+            'What your armour takes off a blow where it lands: the best piece on that part of you, plus its extra against ' +
+            'cuts or thrusts, less what the weapon pierces. Head on, a blow may land on the face, throat, shoulder or a ' +
+            'foreleg; from the side mostly the flank; from behind the back, haunch or a hind leg. At least a quarter of a ' +
+            'blow always gets through; fire, burning and bleeding go round armour.';
         el('div', 'muted small', vitals, 'Point at a bar to see what drives it.');
 
         // Attributes.
@@ -511,6 +521,8 @@ export class Dialogs {
         if (downs > 0) condition(`Down ${downs}× without a full rest`, 'Each time you go down you stay down longer, until you sleep six hours in a bed.');
         const rest = restLabel(self).replace(/^\s*·\s*/, '');
         if (rest) condition('Resting', rest);
+        const load = readLoad(self);
+        if (load && load.state !== 'comfortable') condition(load.state === 'heavy' ? 'Heavy load' : 'Overloaded', loadCost(load));
         if (!list.childElementCount) el('p', 'muted small', list, 'Nothing is wrong with you.');
 
         const gift = str(self, 'gift');
@@ -753,6 +765,7 @@ export class Dialogs {
         const s = this.s;
         const items = arr(s.snapshot, 'inventory').filter(isObject);
         const section = this.box(this.panel, 'BELONGINGS');
+        this.loadMeter(section, self);
         const body = el('div', 'rpg-pack', section);
         const grid = el('div', 'rpg-items', body);
         if (!items.length) el('p', 'muted', grid, 'Your pack is empty. Objects you acquire will appear here.');
@@ -780,7 +793,8 @@ export class Dialogs {
             el('div', `label ${bool(item, 'equipped') ? 'sage' : 'muted'}`, detail,
                 `${str(item, 'id') === 'sword' && bool(item, 'equipped') ? 'IN YOUR JAWS' : bool(item, 'equipped') ? 'WORN' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
                 `${num(item, 'warmth') > 0 ? ` · WARMTH ${num(item, 'warmth')}` : ''}${num(item, 'protect') > 0 ? ` · PROTECTION ${num(item, 'protect')}` : ''}` +
-                `${num(item, 'status') > 0 ? ` · FINERY ${num(item, 'status')}` : ''}`);
+                `${num(item, 'status') > 0 ? ` · FINERY ${num(item, 'status')}` : ''}` +
+                `${num(item, 'weight') > 0 ? ` · ${weightLabel(num(item, 'weight')).toUpperCase()}${wholeCount(item, 'quantity', 1) > 1 ? ' EACH' : ''}` : ''}`);
             el('p', 'muted small', detail, str(item, 'description'));
             const actions = el('div', 'rpg-detail-actions', detail);
             const id = str(item, 'id');
@@ -808,11 +822,27 @@ export class Dialogs {
             button(merchantId === 'npc_keeper' ? 'TRADE WITH THE KEEPER' : 'TRADE WITH THE SHOPKEEPER', 'primary', actions, () => this.act('trade_open', merchantId));
     }
 
+    /** The load (doc 35, 1.2): a bar to twice what is comfortable, marked at comfortable, and what it costs. */
+    private loadMeter(parent: HTMLElement, self: Json | null) {
+        const load = readLoad(self);
+        if (!load) return;
+        const row = el('div', `load-meter ${load.state}`, parent);
+        row.title = `Comfortable up to ${weightLabel(load.comfortable)} (12 + STR ÷ 4). Up to twice that is heavy: slower, and ` +
+            'running tires you more. Beyond it you can only walk, and can\'t fight. Everything you hold weighs, worn or not.';
+        el('span', 'label', row, loadLabel(load).toUpperCase());
+        const bar = el('div', 'bar thin load-bar', row);
+        el('div', 'fill', bar).style.width = `${clamp(load.carried / (2 * load.comfortable), 0, 1) * 100}%`;
+        el('div', 'load-mark', bar);
+        const cost = loadCost(load);
+        if (cost) el('span', 'small load-cost', row, cost);
+    }
+
     /** What one carries, and what can be done with it: the purse, the items, equipping and using them. */
     private belongings(self: Json | null) {
         const s = this.s;
         const fight = s.battle && !s.battle.observer ? s.battle : null;
         el('div', 'gold', this.panel, `PURSE · ${countText(self, 'cash')} silver pennies`);
+        this.loadMeter(this.panel, self);
         const items = arr(s.snapshot, 'inventory').filter(isObject);
         const grid = el('div', 'items', this.panel);
         if (!items.length) el('p', 'muted', grid, 'Your pack is empty. Objects you acquire will appear here.');
@@ -822,7 +852,8 @@ export class Dialogs {
             const text = el('div', '', card);
             el('div', 'item-name', text, str(item, 'name'));
             el('div', `label ${bool(item, 'equipped') ? 'sage' : 'muted'}`, text,
-                `${bool(item, 'equipped') ? 'EQUIPPED' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}`);
+                `${bool(item, 'equipped') ? 'EQUIPPED' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
+                `${num(item, 'weight') > 0 ? ` · ${weightLabel(num(item, 'weight') * wholeCount(item, 'quantity', 1)).toUpperCase()}` : ''}`);
             el('p', 'muted small', text, str(item, 'description'));
         }
         const actions = el('div', 'sheet-actions', this.panel);

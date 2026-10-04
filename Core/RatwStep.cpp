@@ -71,12 +71,12 @@ double groundSpeed(double flatSpeed, double movementCost, bool crouching, bool n
     return speed * environment;
 }
 
-void updateStamina(double& stamina, bool& exhausted, double& rate, int pace, double dt, double movedTime)
+void updateStamina(double& stamina, bool& exhausted, double& rate, int pace, double dt, double movedTime, double drain)
 {
     if (dt <= 0.0)
         return;
     const double share = pace / 10.0;
-    const double grossDrain = SprintDrain * share * share;
+    const double grossDrain = SprintDrain * share * share * std::max(1.0, drain);
     const double before = stamina;
     stamina = std::clamp(before + StaminaRecovery * dt - grossDrain * std::clamp(movedTime, 0.0, dt), 0.0, 100.0);
     rate = (stamina - before) / dt;

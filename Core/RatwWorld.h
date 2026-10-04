@@ -203,6 +203,10 @@ struct Entity
     int age = 18;
     Appearance appearance;
     double strength = 50.0, wisdom = 30.0;
+    // What carrying asks of a player (doc 35, 1.2): the fastest pace its load allows and how much faster running tires
+    // it. Worked out from its purse every tick (World::refreshLoad); not saved. Residents carry freely.
+    int loadPace = 10;
+    double loadDrain = 1.0;
     double lastBirthdayDay = -1.0; // Legacy/new records anchor on first observation of the shared calendar.
     int ageNoticePending = 0;
     std::string posture = "standing", state, description, activity, leaderId;
@@ -586,6 +590,20 @@ class World
     Result wear(const std::string& id, const std::string& item, const std::string& where);
     Result takeOff(const std::string& id, const std::string& where, const std::string& item);
     static int wornCount(const Entity& e, const std::string& item);
+    // Carrying (doc 35, 1.2): everything in the purse weighs, worn or not. Comfortable up to 12 + STR/4 lb; up to twice
+    // that is heavy (the top pace falls a notch a quarter over, and running tires more); beyond, overloaded: a walk,
+    // and no starting or joining a fight.
+    struct Load
+    {
+        double carried = 0, comfortable = 0;
+        std::string state = "comfortable";            // "comfortable", "heavy" or "overloaded".
+        int pace = 10;                                // The fastest pace it allows.
+        double drain = 1.0;                           // Running's stamina cost, times this.
+    };
+    Load loadOf(const Entity& e) const;
+    void refreshLoad(Entity& e) const;
+    // Why a player may not start or join a fight for what they carry ("" if they may).
+    std::string tooLoadedToFight(const std::string& id) const;
     // What others see one wearing, in a sentence or two ("" for nothing).
     static std::string wornWords(const Entity& e);
     void fitWorn(const std::string& id);

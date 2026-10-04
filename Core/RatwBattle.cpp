@@ -268,6 +268,8 @@ Result World::attack(const std::string& attacker, const std::string& target, con
 {
     const auto* a = entity(attacker);
     const auto* t = entity(target);
+    if (const auto why = tooLoadedToFight(attacker); !why.empty())
+        return {false, why, target};                // (Carrying too much, doc 35.)
     if (a && t && !a->npc && !t->npc)
         return challenge(attacker, target, terms);  // Between players: only with the other's yes.
     return startBattle(attacker, target, false);
@@ -902,6 +904,8 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
         return {false, "No such character.", {}};
     if (!b || b->over)
         return {false, "That fight is over.", {}};
+    if (const auto why = tooLoadedToFight(id); !why.empty())
+        return {false, why, {}};
     if (side != 0 && side != 1)
         return {false, "Choose a side.", {}};
     if (e->downedLeft > 0)
@@ -1013,6 +1017,8 @@ Result World::challenge(const std::string& from, const std::string& to, const st
         return {false, "No such character.", {}};
     if (a->downedLeft > 0)
         return {false, "You are down.", {}};
+    if (const auto why = tooLoadedToFight(from); !why.empty())
+        return {false, why, to};
     if (t->downedLeft > 0)
         return {false, t->name + " is already down.", to};
     if (a->age < battle::YoungestFighter || t->age < battle::YoungestFighter)
@@ -1052,6 +1058,11 @@ Result World::answerChallenge(const std::string& player, bool accept)
     {
         notice(from, (p ? p->name : std::string("They")) + " declines your challenge.");
         return {true, "You decline.", from};
+    }
+    if (const auto why = tooLoadedToFight(player); !why.empty())
+    {
+        notice(from, (p ? p->name : std::string("They")) + " is carrying too much to fight.");
+        return {false, why, from};
     }
     auto r = startBattle(from, player, true);
     if (r.ok)

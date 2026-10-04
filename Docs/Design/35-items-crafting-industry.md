@@ -63,7 +63,29 @@ All numbers are *placeholders* for a later balance pass. Prices are in silver pe
 - **Armour and weapons at a glance:** every visible wolf's card (In Sight, and the fighter cards in a fight) carries a
   little wolf in outline with its armour shaded and a blade at the muzzle; pointing at it lists them. Others' equipment
   pages, from a closer look, are to look at only.
-- **Not yet:** harness loops, warmth and rain with the weather, jingle, scent, weight. (Armour in fights is built: Part 8.)
+- **Not yet:** harness loops, warmth and rain with the weather, jingle, scent. (Armour in fights is built: Part 8;
+  carrying, below.)
+
+**Built 2026-10-04: carrying** (1.2; `World::loadOf` in `Core/RatwWear.cpp`). Everything in a player's purse weighs, worn
+or not, at the catalog's weights; residents carry freely (a shopkeeper's stock is a shop's, not a load).
+
+- **Comfortable** up to 12 + STR ÷ 4 lb (24.5 at STR 50): no cost.
+- **Heavy**, up to twice that: the top pace falls a notch for each quarter over (sprint 10 down to a run of 6), and
+  running's stamina cost rises by up to half (×1 to ×1.5 across the band). *Placeholders for the balance pass.*
+- **Overloaded**, beyond twice: a walk only, and no starting, challenging, accepting or joining a fight ("You are
+  carrying too much to fight. Put something down first."). One already in a fight, or attacked, still fights.
+- The cap is the server's: `effectivePace` is held to `Entity::loadPace`, worked out each tick from the purse, so the
+  page's walking speed (`walkSpeed`) and top speed follow without a client rule.
+- **On the page:** the snapshot's `self.load` ({carried, comfortable, state, pace, drain}) and each belonging's
+  `weight`. A bar on the status screen and the Belongings sheet ("LOAD 41.2 LB OF 24.5 LB · HEAVY"), marked at
+  comfortable and filled to twice it, saying what the load costs; a "Heavy load" or "Overloaded" condition; and in the
+  status panel a chip only while heavy or overloaded. Each belonging shows its weight. Catalog goods other than herbs,
+  meals, the sword and wearables (bought at a shop, given) are now listed among belongings too, since they weigh.
+- **Worn armour** on the status screen, by hit zone (doc 33): "ARMOUR · HEAD 3 · THROAT 5 · BODY 4 · LEGS —", the best
+  piece worn on each.
+- Tests: `wear_tests` `carrying`; `social.test.ts` (the words); `tools/client/carrying.mjs` (the real page; screenshots
+  in `artifacts/screenshots/carrying/`). `world_check --simulate 12 13 --players 20` on DEV build 22: mean 11.1 ms, p99
+  22.7 ms a tick.
 
 ## Principles
 
@@ -519,6 +541,8 @@ Each phase passes `world_check --players 20`, with doc 15's money check througho
 3. **Upper Accord's businesses:** in Atlas by hand, or with an additive script that only places into empty lots?
 4. **Players as crafters:** can a player own a workshop, or only rent a station (a town forge for hire) or work at a
    master's?
+   **Decided (2026-10-04):** rent first, own later. Players rent a town station by the hour or work at a master's;
+   owning a workshop comes later, through Chapter halls or a rented place (doc 32's leases).
 5. **Gift crafting:** may a matching Gift help a trade a little (an Earth Wolf at the kiln, a Fire Wolf at the forge)?
    The bible says magic never replaces a trade.
 6. **Grain in a wolf's diet:** this plan treats bread and porridge as cheap filler that marks poverty.

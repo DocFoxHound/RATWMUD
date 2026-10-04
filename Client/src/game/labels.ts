@@ -163,3 +163,33 @@ export function sceneQuietLabel(scene: Maybe): string {
     const minutes = Math.max(1, Math.ceil(num(scene, 'endsIn') / 60));
     return `Quiet · ends in ${minutes} min unless someone speaks`;
 }
+
+// What one carries (doc 35, 1.2), in words: the load against what is comfortable, and what a heavy load costs.
+export interface LoadView {
+    carried: number;
+    comfortable: number;
+    state: 'comfortable' | 'heavy' | 'overloaded';
+    pace: number;
+    drain: number;
+}
+export function readLoad(self: Maybe): LoadView | null {
+    const load = obj(self, 'load');
+    if (!load) return null;
+    const state = str(load, 'state');
+    return {carried: Math.max(0, num(load, 'carried')), comfortable: Math.max(1, num(load, 'comfortable', 24.5)),
+        state: state === 'heavy' || state === 'overloaded' ? state : 'comfortable',
+        pace: clamp(Math.trunc(num(load, 'pace', 10)), 0, 10), drain: Math.max(1, num(load, 'drain', 1))};
+}
+const pounds = (n: number) => `${Number.isInteger(Math.round(n * 10) / 10) ? Math.round(n) : n.toFixed(1)} lb`;
+export function loadLabel(load: LoadView): string {
+    return `Load ${pounds(load.carried)} of ${pounds(load.comfortable)} · ${load.state}`;
+}
+// What it costs, or "" while comfortable.
+export function loadCost(load: LoadView): string {
+    if (load.state === 'overloaded') return 'Walking only, and no fighting. Put something down.';
+    if (load.state === 'heavy')
+        return `No faster than ${load.pace >= 9 ? 'a near sprint' : load.pace >= 6 ? 'a run' : 'a trot'} (pace ${load.pace}), ` +
+            `and running tires you ${Math.round((load.drain - 1) * 100)}% more.`;
+    return '';
+}
+export const weightLabel = (pound: number) => pounds(pound);

@@ -5,8 +5,7 @@ import {css, rgb} from '../color.ts';
 import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {bool, boundedNum, clamp, envNumber, num, obj, str} from '../../game/json.ts';
-import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel,
-    restLabel, scentLabel} from '../../game/labels.ts';
+import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel, restLabel, scentLabel, readLoad, loadCost} from '../../game/labels.ts';
 import type {EntityView, GameState} from '../../game/state.ts';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
@@ -79,6 +78,7 @@ export class Hud {
     private manaLabel: HTMLElement;
     private manaFill: HTMLElement;
     private senses: HTMLElement;
+    private load: HTMLElement;          // A heavy load or too much (doc 35, 1.2): only then.
     private who: HTMLElement;
     private posture: HTMLElement;
     private law: HTMLElement;
@@ -166,7 +166,6 @@ export class Hud {
         button('Wait', 'act', actions, () => act('wait'));
         button('Sit', 'act', actions, () => act('sit'));
         button('Lie down', 'act', actions, () => act('lay')).title = 'Rest: six hours lying in a bed is a full rest';
-        button('End scene', 'act', actions, () => act('session_end'));
 
         const side = el('aside', 'side', this.root);
         // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.
@@ -192,6 +191,7 @@ export class Hud {
         this.who = el('div', 'who', status);
         this.posture = el('div', 'muted small', status);
         this.law = el('div', 'law label', status);
+        this.load = el('div', 'load-chip small', status);
         const paceHead = el('div', 'meter-head', status);
         this.paceLabel = el('span', 'label', paceHead);
         this.paceNote = el('span', 'note', paceHead);
@@ -407,6 +407,12 @@ export class Hud {
         const law = lawLabel(self);
         setText(this.law, law);
         show(this.law, !!law);
+        const load = readLoad(self);
+        const laden = !!load && load.state !== 'comfortable';
+        setText(this.load, laden ? `${load.state === 'heavy' ? 'HEAVY LOAD' : 'OVERLOADED'} · ${loadCost(load)}` : '');
+        setClass(this.load, 'overloaded', load?.state === 'overloaded');
+        this.load.title = laden ? `Carrying ${load.carried.toFixed(1)} of a comfortable ${load.comfortable.toFixed(1)} lb. Open Belongings (I) to see what weighs.` : '';
+        show(this.load, laden);
         const pace = s.displayPace(), effective = Math.trunc(boundedNum(self, 'effectivePace', 0, 10));
         const exhausted = bool(self, 'exhausted');
         const stamina = boundedNum(self, 'stamina', 0, 100, 100), rate = boundedNum(self, 'staminaRate', -100, 100);
