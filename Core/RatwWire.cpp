@@ -197,6 +197,32 @@ Value persistEntity(const Entity& e, double time)
             worn.add(slot, item);
         o.add("worn", worn);
     }
+    if (!e.injuries.empty())
+    {
+        // Acute and lasting injuries (doc 38).
+        auto injuries = Value::array();
+        for (const auto& i : e.injuries)
+        {
+            auto j = Value::object();
+            j.add("id", i.id);
+            j.add("kind", i.kind);
+            j.add("type", i.type);
+            if (!i.side.empty())
+                j.add("side", i.side);
+            j.add("cause", i.cause);
+            if (!i.from.empty())
+                j.add("from", i.from);
+            j.add("severity", i.severity);
+            if (i.kind == "acute")
+            {
+                j.add("restLeft", i.restLeft);
+                j.add("restFull", i.restFull);
+            }
+            j.add("gotDay", i.gotDay);
+            injuries.push(j);
+        }
+        o.add("injuries", injuries);
+    }
     if (!e.jewellery.empty())
     {
         auto jewellery = Value::array();
@@ -294,6 +320,26 @@ Entity readEntity(const Value& o)
                 e.jewellery.emplace_back(piece.items()[0].asString({}), item->id);
     if (!e.mouth.empty() && e.mouth != "sword")
         e.mouth.clear();
+    // Injuries (doc 38): only known kinds, within bounds; anything else is dropped rather than refusing the save.
+    for (const auto& j : o.array("injuries"))
+    {
+        if (!j.isObject() || e.injuries.size() >= injury::MostKept)
+            continue;
+        Injury i;
+        i.id = j.string("id").substr(0, 96);
+        i.type = j.string("type");
+        i.kind = injury::lasting(i.type) ? "lasting" : "acute";
+        i.side = j.string("side") == "left" || j.string("side") == "right" ? j.string("side") : "";
+        i.cause = j.string("cause").substr(0, 16);
+        i.from = j.string("from").substr(0, 80);
+        i.severity = std::clamp(int(strictNumber(j, "severity", 1)), 1, 3);
+        i.restFull = std::clamp(strictNumber(j, "restFull", 0), 0.0, 24.0 * 60);
+        i.restLeft = std::clamp(strictNumber(j, "restLeft", 0), 0.0, i.restFull);
+        i.gotDay = std::max(0.0, strictNumber(j, "gotDay", 0));
+        if (i.id.empty() || !injury::known(i.type) || j.string("kind") != i.kind || (i.kind == "acute" && i.restLeft <= 0))
+            continue;
+        e.injuries.push_back(std::move(i));
+    }
     e.gift = o.string("gift");
     if (!e.gift.empty() && e.gift != "fire")
         e.gift.clear();

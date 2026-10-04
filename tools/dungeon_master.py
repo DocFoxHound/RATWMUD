@@ -46,7 +46,8 @@ MAX_FAILURES, LOCK_MINUTES = 5, 15
 MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
-ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'bandits.call': 'dm', 'npc.sync': 'dm',
+ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'character.injury': 'dm',
+           'bandits.call': 'dm', 'npc.sync': 'dm',
            'npc.kill': 'dm',
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
@@ -54,6 +55,11 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
+# Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
+INJURY_TYPES = ('torn_flank', 'bitten_foreleg', 'bitten_hindleg', 'torn_ear_acute', 'wrenched_neck', 'deep_gash', 'cut_foreleg',
+                'cut_muzzle', 'cut_shoulder', 'bruised_ribs', 'cracked_rib', 'sprained_foreleg', 'knocked_senseless', 'burned_paws',
+                'singed_coat', 'burned_muzzle', 'torn_ear', 'bent_tail', 'scarred_muzzle', 'scarred_flank', 'burn_scars',
+                'notched_nose', 'clouded_eye', 'permanent_limp', 'bad_back', 'stiff_shoulder')
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -206,6 +212,9 @@ class DungeonMaster:
                     'posture': data.get('posture', ''), 'activity': data.get('activity', ''),
                     # A Gift (doc 33): "fire" or "", Quickened or not.
                     'gift': data.get('gift', ''), 'quickened': bool(data.get('quickened')),
+                    # Injuries that outlast a fight (doc 38): kind, type, side, how bad, rest left.
+                    'injuries': [{k: i.get(k) for k in ('id', 'kind', 'type', 'side', 'severity', 'restLeft', 'restFull', 'from')}
+                                 for i in data.get('injuries', []) if isinstance(i, dict)][:24],
                     # Marked a Dungeon Master in the game: they have the Dev Console.
                     'dungeonMaster': bool(master),
                     'stats': {k: data.get(k) for k in ('strength', 'dexterity', 'wisdom', 'stamina')},
@@ -250,6 +259,20 @@ class DungeonMaster:
                 raise DMError('A Gift is {"gift": "fire" or "", "quickened": true or false}.')
             payload = {'gift': gift, 'quickened': bool(payload.get('quickened')) and gift == 'fire'}
             detail = ' — ' + ('no Gift' if not gift else 'Quickened: fire' if payload['quickened'] else 'Gifted: fire')
+        elif kind == 'character.injury':
+            # An injury given ({"add": type, "severity": 1..3, "side": "left" | "right" | ""}) or taken away ({"remove": id}).
+            p = payload if isinstance(payload, dict) else {}
+            if p.get('add') in INJURY_TYPES:
+                severity, side = p.get('severity', 2), p.get('side', '')
+                if not isinstance(severity, int) or isinstance(severity, bool) or not 1 <= severity <= 3 or side not in ('', 'left', 'right'):
+                    raise DMError('An injury is {"add": type, "severity": 1 to 3, "side": "left", "right" or ""}.')
+                payload = {'add': p['add'], 'severity': severity, 'side': side}
+                detail = f" — give {p['add'].replace('_', ' ')}" + (f' ({side})' if side else '')
+            elif isinstance(p.get('remove'), str) and 0 < len(p['remove']) <= 96:
+                payload = {'remove': p['remove']}
+                detail = ' — take an injury away'
+            else:
+                raise DMError('Say {"add": a known injury} or {"remove": its id}.')
         elif kind == 'character.dm':
             on = payload.get('dungeonMaster') if isinstance(payload, dict) else None
             if not isinstance(on, bool):

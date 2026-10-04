@@ -145,6 +145,7 @@ export class Dialogs {
         el('span', 'sage', skills, `Hearing ${clamp(Math.trunc(num(self, 'hearingSkill')), 0, 100)} / 100`);
         el('span', 'scent', skills, `Scent ${clamp(Math.trunc(num(self, 'scentSkill')), 0, 100)} / 100`);
         el('span', 'muted', skills, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`);
+        this.injuries(right, self);
         this.names(right, self);
         this.stories(right, self);
         this.reputation(right);
@@ -152,6 +153,27 @@ export class Dialogs {
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
         const actions = el('div', 'sheet-actions', this.panel);
         button('CHARACTER SELECTION', 'primary', actions, () => this.act('leave_character'));
+    }
+
+    /** Injuries that outlast a fight (doc 38): acute ones with how bad and how much rest is left, lasting ones with when
+     * and how they were got. Each says on hover what it does. */
+    private injuries(parent: HTMLElement, self: Json | null) {
+        const list = arr(self, 'injuries').filter(isObject);
+        el('div', 'label gold', parent, 'INJURIES');
+        if (!list.length) {
+            el('p', 'muted small', parent, 'None. Fights can leave them; rest heals the ones that heal.');
+            return;
+        }
+        const box = el('div', 'injury-list', parent);
+        for (const kind of ['acute', 'lasting']) {
+            for (const i of list.filter(x => str(x, 'kind') === kind)) {
+                const row = el('div', `injury ${kind}`, box);
+                el('span', 'injury-line', row, str(i, 'line'));
+                el('span', 'muted small', row, str(i, 'does'));
+                row.title = kind === 'acute' ? 'Heals with rest: fastest lying in a bed, slower resting anywhere else, a little while up and about. ' +
+                    'Fighting on it sets the healing back.' : 'A mark for life. Others may notice it when they look at you closely.';
+            }
+        }
     }
 
     /** Your names (doc 32): the true one, and up to three others you go by. Nobody knows any until you say it. */
@@ -523,6 +545,10 @@ export class Dialogs {
         if (rest) condition('Resting', rest);
         const load = readLoad(self);
         if (load && load.state !== 'comfortable') condition(load.state === 'heavy' ? 'Heavy load' : 'Overloaded', loadCost(load));
+        // Injuries that outlast a fight (doc 38): the acute ones, how bad and what they do; the lasting ones on the sheet.
+        for (const i of arr(self, 'injuries').filter(isObject).filter(x => str(x, 'kind') === 'acute'))
+            condition(str(i, 'name'), `${str(i, 'severity')} · ${str(i, 'does')} About ${Math.max(1, Math.round(num(i, 'daysLeft')))} ` +
+                `${Math.round(num(i, 'daysLeft')) === 1 ? 'day' : 'days'} of rest to heal.`);
         if (!list.childElementCount) el('p', 'muted small', list, 'Nothing is wrong with you.');
 
         const gift = str(self, 'gift');

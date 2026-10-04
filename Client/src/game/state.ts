@@ -803,7 +803,8 @@ export class GameState {
         if (eventId) this.seenPosts.add(eventId);
         if (type === 'inspect') {
             this.inspectedCharacter = e;
-            this.inspectedText = `${str(e, 'title')}\n\n${str(e, 'description', str(e, 'text'))}\n\n${str(e, 'state')}`;
+            this.inspectedText = `${str(e, 'title')}\n\n${str(e, 'description', str(e, 'text'))}\n\n${str(e, 'state')}` +
+                (str(e, 'injuries') ? `\n\nYou notice ${str(e, 'injuries')}.` : '');   // (What a closer look shows of injuries, doc 38.)
             this.modal = 'inspect';
             this.facingPreview = false;
             return;

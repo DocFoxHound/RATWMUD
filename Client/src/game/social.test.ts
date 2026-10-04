@@ -49,3 +49,11 @@ test('carrying: the load in words, and what a heavy load costs (doc 35, 1.2)', a
     assert.equal(weightLabel(3), '3 lb');
     assert.equal(weightLabel(0.25), '0.3 lb');
 });
+
+test('injuries: a closer look tells what it shows of them, and nothing when there are none (doc 38)', () => {
+    const {state: s} = testGame();
+    s.receiveEvent({type: 'inspect', id: 'npc_a', title: 'A dun wolf', description: 'Lean.', state: '', injuries: 'a torn left ear'});
+    assert.match(s.inspectedText, /You notice a torn left ear\.$/);
+    s.receiveEvent({type: 'inspect', id: 'npc_b', title: 'A grey wolf', description: 'Old.', state: ''});
+    assert.doesNotMatch(s.inspectedText, /You notice/);
+});

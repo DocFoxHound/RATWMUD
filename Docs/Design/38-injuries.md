@@ -1,7 +1,7 @@
 # Injuries: no death for players, and wounds that stay
 
-Status: **plan, drafted October 4, 2026; phase 1 (no death, the downed period, rest) built the same day** (see Build
-phases). It replaces the death rules in
+Status: **drafted October 4, 2026; phases 1 to 5 built the same day** (no death and rest; combat, acute and lasting
+injuries; the DM's tools: see Build phases and "As built"); balance (phase 6) is to come with play. It replaces the death rules in
 [33-combat.md](33-combat.md) ("Downed and death") for player characters. Doc 33 keeps the fight rules: health, the
 Downed state, struggling up and tending. All numbers are starting tuning, not final balance.
 
@@ -280,10 +280,53 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
    Staggered (a blow of 25 or more: the bar set back 20, at once or when the turn it came in ends) beside Burning and
    Winded; with Wounded, Badly hurt, Limping and Down, named on every fighter's card (one's own too) with what each does.
    `battle_tests` restAndCombatInjuries.
-3. **Acute injuries.** Triggers, the table, effects, rest hours, strain, healing steps; character sheet and story lines.
-4. **Lasting injuries.** Triggers, the one-per-fight rule, effects and caps, Look.
-5. **DM tools.** Add and remove injuries from the Players tab.
+3. **Acute injuries.** Built October 4, 2026 (`Core/RatwInjury.*`, hooks in `Core/RatwBattle.cpp` and
+   `Core/RatwWorld.cpp`). Triggers, the table, effects, rest hours, strain, healing steps; character sheet and story
+   lines. See "As built" below.
+4. **Lasting injuries.** Built October 4, 2026. Triggers, the one-per-fight rule, effects and caps, Look.
+5. **DM tools.** Built October 4, 2026. Add and remove injuries from the Players tab (`character.injury`).
 6. **Balance**, with play.
+
+## As built (phases 3 to 5, October 4, 2026)
+
+- **Players only.** Residents and other NPCs get no acute or lasting injuries (their lives are kept elsewhere); doc 33's
+  combat injuries still show on everyone in a fight.
+- **When.** A blow of 25 or more that doesn't down: 25% an acute injury. The downing blow: always one, and going down
+  sets every acute injury's healing back by half. Limping (75 hurt) at a fight's end without having gone down in it:
+  40%. Going into a fight sets healing back 10%. **A duel "until one yields"** ends at the yield, which is not a
+  downing: only the 25-damage roll applies, so a friendly duel rarely leaves more than a bruise.
+- **Lasting rolls** as the table: a hit of 40 or more 35%; a downing with overkill 25 or more 35%; the 3rd downing since a
+  full rest 30%, the 4th or later 60%; a downing whose acute injury lands on a part already severely hurt 50% (that
+  injury sets into its lasting form: a leg's into a permanent limp, ribs into a bad back, neck or shoulder into a stiff
+  shoulder, an ear into a torn ear, a muzzle into a scarred muzzle, burns into burn scars, a dazed head into a clouded
+  eye); a downing by fire 25% burn scars. Each +5 points a day without a full rest after the first, at most +25. One a
+  fight; one a body part (the two ears and flanks apart).
+- **The cause** is read from the blow: fire, a blunt strike (the watch's cudgel), a sword if the attacker held one in its
+  jaws, else a bite. The "from" of a lasting one is "a bandit", "a resident" or "another wolf" (names aren't known).
+- **Severity eases as it heals**: a severe injury reads severe for its first third of rest, moderate for the next,
+  minor for the last; a moderate one moderate for half. The same kind again (same side) grows a severity worse and starts
+  healing over.
+- **Effects** (`injury::effects`, from the list wherever it matters): the speed above a walk (`paceSpeed`), a severe
+  leg's slower walk, a fight move's range, stamina back in a fight (each turn) and out of one, an attack's breath (bite
+  and sword), bite and sword damage, the fight bar (knocked senseless), fire on the burned (burning and the Flamethrower),
+  and hearing, sight and smell wherever the world reads them (the saved organ health is left alone).
+- **Healing**, every tick (`World::restPlayers`): lying in a bed 1.5 rest hours a game hour, still anywhere else 0.75, up
+  and about 0.25, sprinting, fighting or down none; logged out 1.5 if they left lying in a bed, else 0.75.
+- **Told**: "You come away with an injury: Cracked rib: moderate, healing (about 4 more days of rest)." on the downing;
+  "That blow did harm: …" on a heavy hit; "That will leave a mark: a torn left ear. Hearing 10% less."; "Your cracked
+  rib has healed."
+- **Shown**: the character sheet's INJURIES (acute with severity and rest left, lasting with when and how; each with
+  what it does); the Status window's condition list (acute ones, with days of rest); Look at another wolf: "You notice a
+  torn left ear, and limping on a bitten foreleg." Nothing else shows them (decided).
+- **Saved** with the character (`injuries` in the entity's save; unknown kinds dropped on reading).
+- **DM tools**: the DM app's Players tab lists a character's injuries with **Take away**, and gives one of any kind at a
+  severity and side (`character.injury`, payload `{"add", "severity", "side"}` or `{"remove": id}`), online or offline.
+- **Not yet**: the strike previews' damage (`odds.damage`) doesn't take the attacker's own injuries off; the DM action's
+  application by the game server is tested only by its parts (the queue in `test_dungeon_master`, the world's
+  `addInjury`/`removeInjury` in `injury_tests`), as the Gift's is. Herbs and healers.
+- Tests: `injury_tests` (61 checks: the tables, effects, floors and caps, healing, strain, a real downing, saving, the DM's
+  add and remove); `test_dungeon_master` (the action and its payload); `social.test.ts` (Look's words);
+  `tools/client/injuries.mjs` (the sheet, the Status window and Look in the real page).
 
 ## Open questions
 

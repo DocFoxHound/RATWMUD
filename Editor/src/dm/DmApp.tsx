@@ -14,7 +14,7 @@ import {ChaptersTab} from './ChaptersTab';
 import {HealthTab} from './HealthTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {LifePanel} from './LifePanel';
-import {dmApi, signedIn, type Action, type Character, type Me, type Players, type Target} from './api';
+import {dmApi, signedIn, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target} from './api';
 
 type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live' | 'health';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
@@ -212,6 +212,16 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
+    // Injuries (doc 38, phase 5): a correction, or a storyline's wound; given or taken away, online or offline.
+    const [injuryType, setInjuryType] = useState('cracked_rib'), [injurySeverity, setInjurySeverity] = useState(2), [injurySide, setInjurySide] = useState('');
+    const injure = async (payload: {add: string; severity: number; side: string} | {remove: string}, words: string) => {
+        if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, 'character.injury', character.id, reason, payload); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    const injuryName = (i: Injury) => `${i.type.replace(/_acute$/, '').replace(/_/g, ' ')}${i.side ? ` (${i.side})` : ''}`;
     const pending = actions.some(a => a.status === 'queued');
     const stat = (label: string, v: number | null, digits = 0) => <div><b>{v === null || v === undefined ? '—' : v.toFixed(digits)}</b><span>{label}</span></div>;
     return <div className="dm-panel">
@@ -220,6 +230,10 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         <p className="meta">{character.place} · {character.x.toFixed(1)}, {character.y.toFixed(1)}{character.indoors ? ' (indoors)' : ''} · age {character.age ?? '—'} · {character.posture}{character.activity ? ` · ${character.activity}` : ''}</p>
         <div className="stats">{stat('strength', character.stats.strength)}{stat('dexterity', character.stats.dexterity)}{stat('wisdom', character.stats.wisdom)}{stat('stamina', character.stats.stamina)}</div>
         <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}</p>
+        <div className="meta">Injuries: {(character.injuries ?? []).length ? <ul className="dm-injuries">{(character.injuries ?? []).map(i =>
+            <li key={i.id}><b>{injuryName(i)}</b> · {i.kind === 'acute' ? `${['', 'minor', 'moderate', 'severe'][i.severity] ?? ''}, ${((i.restLeft ?? 0) / 24).toFixed(1)} days of rest left` : 'lasting'}
+                {i.from ? ` · from ${i.from}` : ''}
+                {canAct && <button className="small" disabled={busy || pending} onClick={() => void injure({remove: i.id}, `Take ${injuryName(i)} from ${character.name}`)}>Take away</button>}</li>)}</ul> : 'none'}</div>
         <p className="meta">Dungeon Master in the game: {character.dungeonMaster ? <b>yes</b> : 'no'}
             {character.dungeonMaster ? ' · has the Dev Console (the ` key in the game)' : ''}
             {pending && actions.some(a => a.kind === 'character.dm' && a.status === 'queued') ? ' · changing: waiting for the game server…' : ''}</p>
@@ -241,6 +255,17 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
                     title="A Dungeon Master in the game has the Dev Console (the ` key) for trying things out">
                     {character.dungeonMaster ? 'Unmake Dungeon Master' : 'Make Dungeon Master in game'}</button>
             </div>}
+            <div className="button-grid">
+                <select value={injuryType} onChange={e => setInjuryType(e.target.value)} aria-label="Injury">
+                    {InjuryTypes.map(([t, k]) => <option key={t} value={t}>{t.replace(/_acute$/, '').replace(/_/g, ' ')} ({k})</option>)}</select>
+                <select value={injurySeverity} onChange={e => setInjurySeverity(Number(e.target.value))} aria-label="Severity"
+                    disabled={InjuryTypes.find(([t]) => t === injuryType)?.[1] === 'lasting'}>
+                    <option value={1}>minor</option><option value={2}>moderate</option><option value={3}>severe</option></select>
+                <select value={injurySide} onChange={e => setInjurySide(e.target.value)} aria-label="Side">
+                    <option value="">either side</option><option value="left">left</option><option value="right">right</option></select>
+                <button disabled={busy || pending} onClick={() => void injure({add: injuryType, severity: injurySeverity, side: injurySide},
+                    `Give ${character.name} a ${injuryType.replace(/_acute$/, '').replace(/_/g, ' ')}`)}>Give injury</button>
+            </div>
             <div className="button-grid">
                 <button disabled={busy || pending || character.dead} onClick={() => void callBandits(1)}>Call a bandit near them</button>
                 <button disabled={busy || pending || character.dead} onClick={() => void callBandits(3)}>Call three bandits</button>

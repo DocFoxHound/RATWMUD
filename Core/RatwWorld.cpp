@@ -270,6 +270,7 @@ ScentDetection detectScent(const Entity& observer, const Entity& source, Wind wi
         !std::isfinite(observer.noseHealth) || !std::isfinite(observer.scentSkill))
         return {};
     const double sensitivity = std::max(0.0, observer.smell) * clamp01(observer.noseHealth) *
+                               (observer.injuries.empty() ? 1.0 : injury::effects(observer.injuries).smell) *
                                (1.0 + .75 * clamp01(observer.scentSkill / 100.0));
     if (sensitivity <= Epsilon)
         return {};
@@ -404,7 +405,10 @@ double paceSpeed(const Entity& actor)
     const bool limping = actor.hurt >= 75;
     const int pace = limping ? std::min(effectivePace(actor), 8) : effectivePace(actor);
     const double full = step::paceSpeed(clamp01(effectiveDexterity(actor) / 100.0), pace);
-    return (limping ? 2.0 : step::WalkSpeed) + (full - step::WalkSpeed) * battle::injuryFactor(std::clamp(actor.hurt, 0.0, 100.0));
+    // Injuries that outlast a fight (doc 38): a hurt leg takes off the speed above a walk, and a badly hurt one the walk.
+    const auto hurt = injury::effects(actor.injuries);
+    return (limping || hurt.slowWalk ? 2.0 : step::WalkSpeed) +
+           (full - step::WalkSpeed) * battle::injuryFactor(std::clamp(actor.hurt, 0.0, 100.0)) * hurt.sprint;
 }
 
 World::World()
@@ -964,7 +968,8 @@ bool World::lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const st
 
 double World::sightRange(const Entity& o) const
 {
-    return 27.0 * std::max(0.0, o.vision) * ageVisionFactor(o) * clamp01(o.eyeHealth) * environmentAt(o.cellId, o.position).sight;
+    return 27.0 * std::max(0.0, o.vision) * ageVisionFactor(o) * clamp01(o.eyeHealth) * environmentAt(o.cellId, o.position).sight *
+           (o.injuries.empty() ? 1.0 : injury::effects(o.injuries).vision);   // (Injuries, doc 38.)
 }
 bool World::visiblePoint(const Entity& o, Vec2 p) const
 {
@@ -2323,7 +2328,8 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
 
 void World::updateStamina(Entity& a, double dt, double movedTime)
 {
-    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime, a.loadDrain);
+    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime, a.loadDrain,
+                        a.injuries.empty() ? 1.0 : injury::effects(a.injuries).recovery);
 }
 
 namespace
@@ -3797,7 +3803,8 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
     if (o->id == s->id)
         return 1;
     const double sensitivity =
-        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0));
+        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0)) *
+        (o->injuries.empty() ? 1.0 : injury::effects(o->injuries).hearing);
     if (sensitivity <= Epsilon)
         return 0;
     double range = (voice == Voice::Whisper ? 2.0 : voice == Voice::Yell ? 32.0 : 16.0) * sensitivity;
@@ -3845,7 +3852,8 @@ double World::movementAudibility(const std::string& observerId, const std::strin
     if (!c)
         return 0.0;
     const double sensitivity =
-        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0));
+        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0)) *
+        (o->injuries.empty() ? 1.0 : injury::effects(o->injuries).hearing);
     const double sourceRange = s->posture == "crouching" ? 2.5 - 1.7 * clamp01(s->sneakSkill / 100.0) : 6.0;
     double range = sourceRange * sensitivity;
     range *= environmentAt(c->id, o->position).hearing;

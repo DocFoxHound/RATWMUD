@@ -638,6 +638,7 @@ void World::enterBattle(Battle& b, const std::string& id, int side, bool full)
     f.x = e ? int(std::floor(e->position.x)) : 0;
     f.y = e ? int(std::floor(e->position.y)) : 0;
     b.fighters.push_back(f);
+    strainOnEntering(id);                           // Fighting on an unhealed injury sets it back (doc 38).
 }
 
 void World::fitArena(Battle& b)
@@ -1112,7 +1113,8 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.resting = false;
     if (f.status == "fighting")
     {
-        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (rested ? battle::RestFactor : 1));
+        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (rested ? battle::RestFactor : 1) *
+                                             injury::effects(e->injuries).recovery);   // (Hurt ribs or burns, doc 38.)
         if (e->exhausted && e->stamina >= 20)
             e->exhausted = false;
         if (!e->gift.empty())
@@ -1120,8 +1122,9 @@ void World::beginTurn(Battle& b, BattleFighter& f)
         if (f.burning > 0)
         {
             --f.burning;
-            fightLine(b, f.id, {}, "burn", e->name + " burns (" + whole(battle::BurnDamage) + ").");
-            hurtFighter(b, f, battle::BurnDamage, battle::DownedFire, {}, true);
+            const double burn = battle::BurnDamage + injury::effects(e->injuries).fireExtra;   // (Burned before, doc 38.)
+            fightLine(b, f.id, {}, "burn", e->name + " burns (" + whole(burn) + ").");
+            hurtFighter(b, f, burn, battle::DownedFire, {}, true);
             if (f.status != "fighting")
             {
                 f.acting = false;
@@ -1221,7 +1224,7 @@ std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleF
 {
     // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
     const int pace = fightPace(e);
-    int range = battle::moveRange(effectiveDexterity(e), e.hurt, pace);
+    int range = battle::moveRange(effectiveDexterity(e), e.hurt, pace) - injury::effects(e.injuries).arenaMove;   // (A hurt leg, doc 38.)
     const int walking = battle::moveRange(effectiveDexterity(e), e.hurt, 0);
     while (range > walking && range * battle::tileStamina(pace) > stamina)
         --range;
@@ -1642,9 +1645,10 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
         return {false, "You can't bite with a " + e->mouth + " in your mouth.", target};
     if (tilesApart(f.x, f.y, t->x, t->y) != 1)
         return {false, "Get next to them first.", target};
-    if (e->exhausted || e->stamina < battle::BiteStamina)
+    const double biteCost = battle::BiteStamina + injury::effects(e->injuries).attackStamina;   // (Hurt ribs, doc 38.)
+    if (e->exhausted || e->stamina < biteCost)
         return {false, "You are too winded to bite.", target};
-    e->stamina -= battle::BiteStamina;
+    e->stamina -= biteCost;
     if (e->stamina <= 0)
     {
         e->stamina = 0;
@@ -1665,6 +1669,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     }
     const bool graze = r >= hit - .1;
     double damage = battle::BiteDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|" + f.id, key));
+    damage = std::max(1.0, damage - injury::effects(e->injuries).biteLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
     const auto landed = land(f, *t, *d, damage, "thrust", key);   // Teeth: a thrust, no pierce (doc 35, Part 8).
@@ -1693,6 +1698,7 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
                                                                                                           : battle::GetUpBite;
         e->downedLeft = std::min(battle::GetUpLongest,
                                  getUp * battle::getUpStretch(e->downsSinceRest) + overkill * battle::GetUpOverkillSeconds);
+        injureOnDown(b, f, overkill, base, by);     // And an injury that outlasts the fight (doc 38).
     }
     e->restRun = 0;
     e->state = "downed";
@@ -1840,6 +1846,7 @@ void World::leaveArena(Battle& b, BattleFighter& f, bool fleeing)
 
 void World::finishBattle(Battle& b)
 {
+    injureAtEnd(b);                                 // Limping at the end may leave an injury (doc 38).
     // Everyone fades back into the world where they stood in the arena.
     std::vector<std::string> players, bandits;
     for (auto& f : b.fighters)
@@ -2198,7 +2205,8 @@ void World::tendBattles(double dt)
             }
             if (f.acting)
                 continue;
-            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * dt);
+            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * dt *
+                                          injury::effects(e->injuries).initiative);   // (Knocked senseless, doc 38.)
             if (f.meter >= 100)
             {
                 f.readyAt = time_;
@@ -2408,6 +2416,13 @@ void World::restPlayers(double dt)
             e.fullRestDay = calendarDays_;          // (Characters from before rest was kept: counted from now.)
         const bool still = (e.posture == "lying" || e.posture == "sitting") && e.path.empty() &&
                            std::hypot(e.velocity.x, e.velocity.y) < .05;
+        if (!e.injuries.empty())
+        {
+            // Rest heals injuries (doc 38): lying in a bed fastest, still anywhere half that, up and about a little.
+            const bool fighting = e.downedLeft > 0 || (!battles_.empty() && inBattle(id));
+            const bool sprinting = effectivePace(e) >= 9 && std::hypot(e.velocity.x, e.velocity.y) > .05;
+            healInjuries(e, dt / battle::RestHourSeconds * (fighting || sprinting ? 0 : still ? (inBed(e) ? 1.5 : .75) : .25));
+        }
         if (!still || e.downedLeft > 0 || (!battles_.empty() && inBattle(id)))
         {
             e.restRun = e.bedRun = 0;
@@ -2464,6 +2479,7 @@ void World::returnFromAway(Entity& e)
         e.restRun = e.bedRun = 0;
         return;
     }
+    healInjuries(e, away / battle::RestHourSeconds * (bed ? 1.5 : .75));   // Time away heals as rest (doc 38).
     const double hours = away / battle::RestHourSeconds * battle::AwayRestRate;
     e.restRun += hours;
     if (!bed)
@@ -2638,6 +2654,7 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     if (!d || t.status != "fighting")
         return;
     d->hurt += damage;
+    injureOnBlow(b, t, damage, downedBase, by);     // A heavy blow can leave an injury that outlasts the fight (doc 38).
     if (d->npc)
         stop(t.id);
     // Combat injuries (doc 38): a hard bite or cut bleeds; a very hard blow staggers.
@@ -2788,9 +2805,10 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         if (!standable(b.cellId, {mx + .5, my + .5}))
             return {false, "Something is in the way.", target};
     }
-    if (e->exhausted || e->stamina < battle::SwordStamina)
+    const double swordCost = battle::SwordStamina + injury::effects(e->injuries).attackStamina;   // (Hurt ribs, doc 38.)
+    if (e->exhausted || e->stamina < swordCost)
         return {false, "You are too winded to swing.", target};
-    e->stamina -= battle::SwordStamina;
+    e->stamina -= swordCost;
     if (e->stamina <= 0)
     {
         e->stamina = 0;
@@ -2812,6 +2830,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     }
     const bool graze = r >= hit - .1;
     double damage = battle::SwordDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
+    damage = std::max(1.0, damage - injury::effects(e->injuries).swordLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
     const auto landed = land(f, *t, *d, damage, "cut", key);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
@@ -2943,7 +2962,8 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
             continue;
         const auto here = environmentAt(b.cellId, {t.x + .5, t.y + .5});
         const bool heavyRain = (here.weather == Weather::Rain || here.weather == Weather::Storm) && here.intensity >= .5;
-        double damage = spell.damage * (.5 + ce->wisdom / 100) * (.85 + .3 * chance(t.id + "|fire", key)) * (heavyRain ? battle::RainFactor : 1);
+        double damage = spell.damage * (.5 + ce->wisdom / 100) * (.85 + .3 * chance(t.id + "|fire", key)) * (heavyRain ? battle::RainFactor : 1) +
+                        injury::effects(d->injuries).fireExtra;   // (Burned before, doc 38.)
         const auto* tile = cell(b.cellId) ? cell(b.cellId)->tile(t.x, t.y) : nullptr;
         const bool water = tile && tile->terrain == Terrain::Water;
         fightLine(b, cast.caster, t.id, "burnt", d->name + " is caught in the fire (" + whole(damage) + ").");

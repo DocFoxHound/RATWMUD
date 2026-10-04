@@ -13,9 +13,19 @@ export interface Character {
     skills: Record<'sneakSkill' | 'hearingSkill' | 'scentSkill', number | null>;
     senses: Record<'hearing' | 'vision' | 'smell', number | null>;
     gift: string; quickened: boolean;            // A Gift (Docs/Design/33-combat.md): "fire" or "".
+    injuries?: Injury[];                         // Injuries that outlast a fight (Docs/Design/38-injuries.md).
     dungeonMaster: boolean;                      // Marked a Dungeon Master in the game: they have the Dev Console.
     saved: string;
 }
+export interface Injury { id: string; kind: 'acute' | 'lasting'; type: string; side?: string; severity: number; restLeft?: number; restFull?: number; from?: string }
+// The injuries a Dungeon Master may give (doc 38, phase 5): acute first, then lasting.
+export const InjuryTypes: [string, 'acute' | 'lasting'][] = [
+    ['torn_flank', 'acute'], ['bitten_foreleg', 'acute'], ['bitten_hindleg', 'acute'], ['torn_ear_acute', 'acute'], ['wrenched_neck', 'acute'],
+    ['deep_gash', 'acute'], ['cut_foreleg', 'acute'], ['cut_muzzle', 'acute'], ['cut_shoulder', 'acute'], ['bruised_ribs', 'acute'],
+    ['cracked_rib', 'acute'], ['sprained_foreleg', 'acute'], ['knocked_senseless', 'acute'], ['burned_paws', 'acute'], ['singed_coat', 'acute'],
+    ['burned_muzzle', 'acute'], ['torn_ear', 'lasting'], ['bent_tail', 'lasting'], ['scarred_muzzle', 'lasting'], ['scarred_flank', 'lasting'],
+    ['burn_scars', 'lasting'], ['notched_nose', 'lasting'], ['clouded_eye', 'lasting'], ['permanent_limp', 'lasting'], ['bad_back', 'lasting'],
+    ['stiff_shoulder', 'lasting']];
 export interface Action { id: number; kind: string; target: string; by: string; at: string; status: 'queued' | 'applied' | 'refused' | 'expired'; result: string }
 export interface Players { target: Target; world: {id: string; name: string} | null; characters: Character[]; actions: Action[] }
 

@@ -13,6 +13,7 @@
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwBattle.h"
+#include "RatwInjury.h"
 #include "RatwBonds.h"
 #include "RatwCrime.h"
 #include "RatwSchedules.h"
@@ -207,6 +208,9 @@ struct Entity
     // it. Worked out from its purse every tick (World::refreshLoad); not saved. Residents carry freely.
     int loadPace = 10;
     double loadDrain = 1.0;
+    // Acute and lasting injuries (Docs/Design/38-injuries.md, phases 3 and 4): players' only, saved with them. What they
+    // do is worked out from the list where it matters (injury::effects).
+    std::vector<Injury> injuries;
     double lastBirthdayDay = -1.0; // Legacy/new records anchor on first observation of the shared calendar.
     int ageNoticePending = 0;
     std::string posture = "standing", state, description, activity, leaderId;
@@ -604,6 +608,17 @@ class World
     void refreshLoad(Entity& e) const;
     // Why a player may not start or join a fight for what they carry ("" if they may).
     std::string tooLoadedToFight(const std::string& id) const;
+    // Injuries that outlast a fight (doc 38, phases 3 and 4; RatwInjury.cpp). From a blow that lands, from going down, and
+    // at a fight's end; fighting on hurt sets healing back; rest heals. Players only.
+    void injureOnBlow(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by);
+    void injureOnDown(Battle& b, BattleFighter& f, double overkill, double downedBase, const std::string& by);
+    void injureAtEnd(Battle& b);
+    void strainOnEntering(const std::string& id);
+    void healInjuries(Entity& e, double restHours);
+    // A Dungeon Master's correction or storyline (doc 38, phase 5): add an injury of a kind (acute at a severity), or
+    // take one away by its id.
+    Result addInjury(const std::string& id, const std::string& type, int severity, const std::string& side, const std::string& from);
+    Result removeInjury(const std::string& id, const std::string& injuryId);
     // What others see one wearing, in a sentence or two ("" for nothing).
     static std::string wornWords(const Entity& e);
     void fitWorn(const std::string& id);
@@ -1004,6 +1019,17 @@ class World
     void beaten(Entity& player, BanditCamp& camp);
     BanditCamp* campOf(const std::string& banditId);
     void notice(const std::string& player, std::string words) { notices_.push_back({player, std::move(words)}); }
+    // Injuries (doc 38): who went down in a fight, and who has had their one lasting injury from it.
+    struct FightMarks
+    {
+        std::set<std::string> downed, marked;
+    };
+    std::map<std::string, FightMarks> fightMarks_;
+    void giveLasting(Battle& b, Entity& e, const std::string& cause, const std::string& by, double chance, const Injury* from);
+    std::string injuryCause(double downedBase, const std::string& by) const;
+    std::string injurerWords(const std::string& by) const;
+    std::uint64_t nextInjury_ = 0;
+    std::string injuryId() { return "injury-" + std::to_string(std::int64_t(calendarDays_ * 14400)) + "-" + std::to_string(++nextInjury_) + "-"; }
     void tendPrices();
     void residentsTakeWork();
     void tradeBetweenTowns();

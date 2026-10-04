@@ -879,6 +879,49 @@ void Game::applyDmActions(double dt)
             else
                 outcome = {false, "No such character.", {}};
         }
+        else if (kind == "character.injury")
+        {
+            // A Dungeon Master's correction or storyline (doc 38, phase 5): payload {"add": type, "severity": 1..3, "side":
+            // "left" | "right" | ""} or {"remove": injury id}; online or offline.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const std::string add = payload.isObject() ? payload.string("add") : std::string();
+            const std::string remove = payload.isObject() ? payload.string("remove") : std::string();
+            const int severity = payload.isObject() ? int(wire::number(payload, "severity", 2)) : 2;
+            const std::string side = payload.isObject() ? payload.string("side") : std::string();
+            if (auto* online = world_.entity(target); online && !online->npc)
+            {
+                outcome = !add.empty() ? world_.addInjury(target, add, severity, side, "a Dungeon Master")
+                          : !remove.empty() ? world_.removeInjury(target, remove) : Result{false, "Add or remove an injury.", {}};
+                if (outcome.ok)
+                {
+                    if (auto* c = clientOf(target))
+                        system(c, !add.empty() ? "You find you have an injury: " + outcome.message + "." : "Your " + outcome.message + " is gone.");
+                    characters_[target] = *online;
+                    outcome.message = online->name + (!add.empty() ? ": " + outcome.message + " given." : ": " + outcome.message + " taken away.");
+                }
+            }
+            else if (auto saved = characters_.find(target); saved != characters_.end())
+            {
+                auto& e = saved->second;
+                if (!add.empty())
+                {
+                    auto i = injury::given(add, severity, side, "a Dungeon Master");
+                    i.id = "injury-dm-" + std::to_string(std::int64_t(world_.calendarDays() * 14400)) + "-" + e.id;
+                    i.gotDay = world_.calendarDays();
+                    outcome = injury::give(e.injuries, i) ? Result{true, e.name + ": " + injury::name(i) + " given (offline).", {}}
+                                                          : Result{false, i.type.empty() ? "No such injury." : "No room for another injury.", {}};
+                }
+                else if (const auto n = injury::takeAway(e.injuries, remove); !n.empty())
+                    outcome = {true, e.name + ": " + n + " taken away (offline).", {}};
+                else
+                    outcome = {false, "No such injury.", {}};
+            }
+            else
+                outcome = {false, "No such character.", {}};
+        }
         else if (kind == "character.kill" || kind == "character.resurrect")
         {
             const bool kill = kind == "character.kill";
@@ -2217,11 +2260,12 @@ void Game::sendSnapshot(Connection* c)
     if (auto camp = campView(id); !camp.isNull())
         self.set("camp", std::move(camp));            // Their Chapter's ground, where they stand (doc 32, 5.3).
     self.set("socialLevel", social_.level(id));
-    self.set("hearing", view.self.hearing * view.self.earHealth * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
+    const auto hurtSenses = injury::effects(view.self.injuries);     // (Injuries, doc 38.)
+    self.set("hearing", view.self.hearing * view.self.earHealth * hurtSenses.hearing * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
     self.set("sneakSkill", view.self.sneakSkill);
     self.set("hearingSkill", view.self.hearingSkill);
-    self.set("vision", view.self.vision * view.self.eyeHealth * ageVisionFactor(view.self));
-    self.set("smell", view.self.smell * view.self.noseHealth * (1.0 + 0.75 * view.self.scentSkill / 100.0));
+    self.set("vision", view.self.vision * view.self.eyeHealth * hurtSenses.vision * ageVisionFactor(view.self));
+    self.set("smell", view.self.smell * view.self.noseHealth * hurtSenses.smell * (1.0 + 0.75 * view.self.scentSkill / 100.0));
     self.set("scentSkill", view.self.scentSkill);
     self.set("noseHealth", view.self.noseHealth);
     wire::privatePace(self, *world_.entity(id));
@@ -2312,6 +2356,27 @@ void Game::sendSnapshot(Connection* c)
         // Rest (doc 38): downings since a full rest, and the rest under way (in a bed, toward a full one).
         if (me->downsSinceRest > 0)
             self.set("downsSinceRest", me->downsSinceRest);
+        // Injuries that outlast a fight (doc 38, phases 3 and 4): each as the sheet tells it, and what it does.
+        if (!me->injuries.empty())
+        {
+            auto list = Value::array();
+            for (const auto& i : me->injuries)
+            {
+                auto o = Value::object();
+                o.add("id", i.id);
+                o.add("kind", i.kind);
+                o.add("name", injury::name(i));
+                o.add("line", injury::describe(i));
+                o.add("does", injury::does(i));
+                if (i.kind == "acute")
+                {
+                    o.add("severity", injury::severityWord(injury::severityNow(i)));
+                    o.add("daysLeft", std::round(i.restLeft / 24 * 10) / 10);
+                }
+                list.push(o);
+            }
+            self.set("injuries", list);
+        }
         if (me->restRun > 0)
         {
             const bool bed = world_.inBed(*me);
@@ -3816,6 +3881,9 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("description", described);
             e.add("posture", other->posture);
             e.add("state", other->state);
+            // What a closer look shows of its injuries (doc 38: only Look shows them; decided 2026-10-04).
+            if (const auto hurts = injury::visible(other->injuries); !hurts.empty())
+                e.add("injuries", hurts);
             const auto wearing = World::wornWords(*other);   // (Doc 35: what they wear and where their jewellery is.)
             if (!wearing.empty())
                 e.add("wearing", wearing);

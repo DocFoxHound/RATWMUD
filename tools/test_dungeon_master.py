@@ -140,6 +140,20 @@ class DungeonMasterTests(Fixture):
         ada = self.dm.players('prod')['characters'][0]
         self.assertEqual((ada['gift'], ada['quickened']), ('', False), 'the sheet shows the Gift (none yet)')
 
+    def test_an_injury_is_given_or_taken_away(self):
+        # Injuries (Docs/Design/38-injuries.md, phase 5): a known kind at a severity and side, or one taken away by id.
+        master = self.sign_in('dm-master')
+        given = self.dm.request(master, 'prod', 'character.injury', 'player-ada', 'A storyline', {'add': 'cracked_rib', 'severity': 3})
+        taken = self.dm.request(master, 'prod', 'character.injury', 'player-ada', '', {'remove': 'injury-1-player-ada'})
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            rows = game.execute('SELECT id, payload FROM dm.actions WHERE kind = %s ORDER BY id', ('character.injury',)).fetchall()
+        self.assertEqual([r[1] for r in rows], [{'add': 'cracked_rib', 'severity': 3, 'side': ''}, {'remove': 'injury-1-player-ada'}])
+        self.assertEqual([r[0] for r in rows], [given['id'], taken['id']])
+        for bad in ({'add': 'broken_heart'}, {'add': 'cracked_rib', 'severity': 4}, {'add': 'torn_ear', 'side': 'up'}, {'remove': ''}, {}):
+            with self.assertRaises(D.DMError):
+                self.dm.request(master, 'prod', 'character.injury', 'player-ada', '', bad)
+        self.assertEqual(self.dm.players('prod')['characters'][0]['injuries'], [], 'the sheet lists injuries (none yet)')
+
     def test_a_player_is_made_a_dungeon_master_by_an_admin(self):
         master, admin = self.sign_in('dm-master'), self.sign_in('dm-admin')
         self.assertFalse(self.dm.players('prod')['characters'][0]['dungeonMaster'])

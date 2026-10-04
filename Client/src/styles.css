@@ -144,6 +144,12 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .law { color: #e1aba2; }
 /* The load (doc 35, 1.2): a chip only when heavy or overloaded; a bar on the status screen and belongings. */
 .load-chip { color: var(--gold); }
+/* Injuries on the character sheet (doc 38). */
+.injury-list { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; }
+.injury { display: flex; flex-direction: column; gap: 1px; padding-left: 8px; border-left: 2px solid #b0584f; }
+.injury.lasting { border-left-color: var(--muted); }
+.injury-line { color: #e1aba2; }
+.injury.lasting .injury-line { color: var(--paper); }
 .load-chip.overloaded { color: #e1aba2; }
 .load-meter { display: flex; flex-direction: column; gap: 3px; margin: 4px 0 8px; }
 .load-bar { position: relative; }
