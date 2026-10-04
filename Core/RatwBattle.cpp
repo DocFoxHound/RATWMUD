@@ -4,6 +4,7 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <deque>
 #include <limits>
@@ -28,12 +29,14 @@ int tilesApart(int ax, int ay, int bx, int by)
     return std::max(std::abs(ax - bx), std::abs(ay - by));
 }
 
-// ", the armour taking 4": what armour took off a blow, when it took a point or more.
-std::string armourWords(double bare, double through)
+// Where a blow from `f` lands on `t` (a hit zone rolled by the side it comes at), and what gets through the armour
+// there: the damage, and the words for the log (" on the throat, the steel gorget taking 4").
+struct Landed
 {
-    const long taken = std::lround(bare) - std::lround(through);
-    return taken >= 1 ? ", the armour taking " + std::to_string(taken) : std::string();
-}
+    double damage = 0;
+    std::string words;
+};
+Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key);
 
 std::string whole(double n)
 {
@@ -47,13 +50,43 @@ bool takesTurns(const BattleFighter& f)
 
 namespace battle
 {
-int armourAgainst(const Entity& e, const std::string& type)
+const std::vector<HitZone>& hitZones(int quarter)
 {
-    int total = 0;
+    // Placeholder weights (doc 35, Part 8). Head on: the face, the throat, a shoulder, a foreleg; from the side: the
+    // flank most; from behind: the back, the haunch, a hind leg, rarely the scruff.
+    static const std::vector<HitZone> front{{"head", "the face", 30}, {"throat", "the throat", 30}, {"body", "the shoulder", 25}, {"legs", "a foreleg", 15}};
+    static const std::vector<HitZone> side{{"head", "the head", 15}, {"throat", "the neck", 15}, {"body", "the flank", 45}, {"legs", "a leg", 25}};
+    static const std::vector<HitZone> back{{"throat", "the scruff", 10}, {"body", "the back", 30}, {"body", "the haunch", 20}, {"legs", "a hind leg", 40}};
+    return quarter >= 2 ? back : quarter == 1 ? side : front;
+}
+
+std::string armourZone(const std::string& catalogSlot)
+{
+    return catalogSlot == "paws" ? "legs" : catalogSlot == "throat" || catalogSlot == "head" || catalogSlot == "body" ? catalogSlot : std::string();
+}
+
+namespace
+{
+const items::Item* armourOn(const Entity& e, const std::string& zone)
+{
+    const items::Item* best = nullptr;
     for (const auto& [slot, id] : e.worn)
-        if (const auto* item = items::wearable(id); item && item->protect > 0)
-            total += item->protect + (type == "cut" ? item->vsCut : type == "thrust" ? item->vsThrust : type == "blunt" ? item->vsBlunt : 0);
-    return total;
+        if (const auto* item = items::wearable(id); item && item->protect > 0 && armourZone(item->slot) == zone && (!best || item->protect > best->protect))
+            best = item;
+    return best;
+}
+} // namespace
+
+int armourAt(const Entity& e, const std::string& zone, const std::string& type)
+{
+    const auto* item = armourOn(e, zone);
+    return !item ? 0 : item->protect + (type == "cut" ? item->vsCut : type == "thrust" ? item->vsThrust : type == "blunt" ? item->vsBlunt : 0);
+}
+
+std::string armourPieceAt(const Entity& e, const std::string& zone)
+{
+    const auto* item = armourOn(e, zone);
+    return item ? item->name : std::string();
 }
 
 int armourDex(const Entity& e)
@@ -65,10 +98,21 @@ int armourDex(const Entity& e)
     return dex;
 }
 
-double throughArmour(const Entity& target, double damage, const std::string& type, int pierce)
+double throughArmour(const Entity& target, const std::string& zone, double damage, const std::string& type, int pierce)
 {
-    const int armour = std::max(0, armourAgainst(target, type) - pierce);
+    const int armour = std::max(0, armourAt(target, zone, type) - pierce);
     return armour <= 0 ? damage : std::max(damage * ArmourFloor, damage - armour);
+}
+
+double expectedThrough(const Entity& target, int quarter, double damage, const std::string& type, int pierce)
+{
+    double sum = 0, weights = 0;
+    for (const auto& z : hitZones(quarter))
+    {
+        sum += z.weight * throughArmour(target, z.zone, damage, type, pierce);
+        weights += z.weight;
+    }
+    return weights > 0 ? sum / weights : damage;
 }
 
 int moveRange(double dexterity, double hurt, int pace)
@@ -118,6 +162,36 @@ Temperament temperament(const std::string& role, bool bandit, int age, bool npc)
     return t;
 }
 } // namespace battle
+
+namespace
+{
+Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key)
+{
+    const auto& zones = battle::hitZones(battle::quarterOf(battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y))));
+    double total = 0;
+    for (const auto& z : zones)
+        total += z.weight;
+    double roll = chance(f.id + "|zone|" + t.id, key) * total;
+    const battle::HitZone* hit = &zones.back();
+    for (const auto& z : zones)
+        if ((roll -= z.weight) < 0)
+        {
+            hit = &z;
+            break;
+        }
+    Landed out;
+    out.damage = battle::throughArmour(d, hit->zone, damage, type);
+    out.words = std::string(" on ") + hit->part;
+    if (const long taken = std::lround(damage) - std::lround(out.damage); taken >= 1)
+    {
+        auto piece = battle::armourPieceAt(d, hit->zone);
+        if (!piece.empty())
+            piece[0] = char(std::tolower(static_cast<unsigned char>(piece[0])));
+        out.words += ", the " + piece + " taking " + std::to_string(taken);
+    }
+    return out;
+}
+} // namespace
 
 // ------------------------------------------------------------------ Looking things up
 
@@ -1582,10 +1656,10 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     double damage = battle::BiteDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|" + f.id, key));
     if (graze)
         damage /= 2;
-    const double bare = damage;
-    damage = battle::throughArmour(*d, damage, "thrust");     // Teeth: a thrust, no pierce (doc 35, Part 8).
+    const auto landed = land(f, *t, *d, damage, "thrust", key);   // Teeth: a thrust, no pierce (doc 35, Part 8).
+    damage = landed.damage;
     const std::string how = graze ? " grazes " : " bites ";
-    fightLine(b, f.id, target, graze ? "graze" : "hit", e->name + how + d->name + armourWords(bare, damage) + " (" + whole(damage) + ").");
+    fightLine(b, f.id, target, graze ? "graze" : "hit", e->name + how + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
@@ -2729,10 +2803,9 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     double damage = battle::SwordDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
     if (graze)
         damage /= 2;
-    const double bare = damage;
-    damage = battle::throughArmour(*d, damage, "cut");        // The bit-sword: a cut, no pierce (doc 35, 2.1).
-    fightLine(b, f.id, target, graze ? "graze" : "slash",
-              e->name + (graze ? " nicks " : " cuts ") + d->name + armourWords(bare, damage) + " (" + whole(damage) + ").");
+    const auto landed = land(f, *t, *d, damage, "cut", key);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
+    damage = landed.damage;
+    fightLine(b, f.id, target, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")

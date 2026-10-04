@@ -21,6 +21,7 @@ export interface Float {
     color: 'hit' | 'heavy' | 'graze' | 'miss' | 'fire' | 'down' | 'heal';
     size: number;               // Relative: 1 a normal blow.
     alpha: number;
+    sub?: string;               // Under it, smaller: where the blow landed ("throat").
 }
 
 /** A ring bursting out from a tile (a fall). */
@@ -47,6 +48,7 @@ interface Effect {
     from: Tile | null;          // Where the actor and target stood.
     to: Tile | null;
     damage: number;             // The figure the line gave ("(12)"), 0 for none.
+    zone: string;               // Where it landed ("throat", "flank"), from the line's " on the throat".
 }
 
 const Strike = 0.25, Mark = 0.5, Flame = 1.0, Ash = 2.5, FloatTime = 1.1, Flash = 0.18, Shake = 0.32, Burst = 0.7;
@@ -106,11 +108,12 @@ export class FightEffects {
             return f ? [f.x, f.y] : null;
         };
         const damage = Number(/\((\d+)\)\.?$/.exec(line.text)?.[1] ?? 0);
+        const zone = / on (?:the|a) ([a-z]+)[,( ]/.exec(line.text)?.[1] ?? '';
         // Whom it befell: a line's target ("bites Bo", "tends Bo", "Bo is caught in the fire"), but its actor for what
         // happens to oneself ("Bo burns", "Bo goes down", "Bo dies", "Bo struggles back to their feet").
         const hurt = ['burn', 'down', 'death', 'rise'].includes(line.kind) ? line.actor : line.target;
         const effect: Effect = {kind: line.kind, actor: line.actor, target: hurt, tiles: line.tiles, at: clock, from: at(line.actor),
-            to: at(hurt), damage};
+            to: at(hurt), damage, zone};
         if (['hit', 'graze', 'slash', 'miss', 'burnt', 'burn', 'flame', 'down', 'death', 'tend', 'rise', 'shove'].includes(line.kind)) this.effects.push(effect);
         // A heavy blow, fire, or a fall shakes the view: more when it is oneself.
         const heavy = damage >= Heavy || line.kind === 'flame' || line.kind === 'down' || line.kind === 'death';
@@ -213,7 +216,7 @@ export class FightEffects {
                 out.push({x, y: y - rise * 0.6, text: e.kind === 'death' ? 'DEAD' : 'DOWN', color: 'down', size: 1.2, alpha});
             else if (e.kind === 'tend' || e.kind === 'rise') out.push({x, y: y - rise, text: 'up', color: 'heal', size: 0.9, alpha});
             else if (e.damage > 0)
-                out.push({x, y: y - rise, text: String(e.damage),
+                out.push({x, y: y - rise, text: String(e.damage), sub: e.zone || undefined,
                     color: e.kind === 'burnt' || e.kind === 'burn' ? 'fire' : e.kind === 'graze' ? 'graze' : e.damage >= Heavy ? 'heavy' : 'hit',
                     size: e.kind === 'graze' ? 0.8 : e.damage >= Heavy ? 1.35 : 1, alpha});
         }

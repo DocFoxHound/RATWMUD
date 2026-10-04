@@ -1112,36 +1112,53 @@ void guardAndShove()
     }
 }
 
-// Armour (doc 35, Part 8): a flat reduction by the kind of blow, never all of it; heavy armour slows the bar.
+// Armour by hit zone (doc 35, Part 8): a blow lands where the side it comes at allows, and only the armour there
+// counts; never all of it is stopped; heavy armour slows the bar.
 void armourInFights()
 {
     World w;
     auto& b = duel(w);
     auto* bo = w.entity("player-bo");
-    expect(battle::throughArmour(*bo, 12, "thrust") == 12, "No armour: the whole blow");
+    expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 12, "No armour: the whole blow");
+    bo->worn["neck"] = "steel_gorget";                          // Protect 5 on the throat.
+    expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 7, "a throat guard: a bite on the throat does 7");
+    expect(battle::throughArmour(*bo, "body", 12, "thrust") == 12 && battle::throughArmour(*bo, "head", 12, "thrust") == 12,
+           "but on the shoulder or the face, all 12");
+    expect(std::abs(battle::expectedThrough(*bo, 0, 12, "thrust") - 10.5) < 1e-9, "head on, a bite does 10.5 on average (the throat 30% of the time)");
+    expect(battle::expectedThrough(*bo, 2, 12, "thrust") > battle::expectedThrough(*bo, 0, 12, "thrust"), "from behind, the throat is rarely reached");
     bo->worn["body"] = "brigandine_coat";                      // Protect 6, +1 against thrusts, DEX −5.
-    expect(battle::armourAgainst(*bo, "thrust") == 7 && battle::armourAgainst(*bo, "cut") == 6, "a brigandine: 7 against a bite, 6 a cut");
-    expect(battle::throughArmour(*bo, 12, "thrust") == 5 && battle::throughArmour(*bo, 20, "cut") == 14, "a bite of 12 does 5, a cut of 20 does 14");
-    expect(battle::throughArmour(*bo, 12, "thrust", 5) == 10, "pierce goes through it");
-    bo->worn["neck"] = "steel_gorget";
-    bo->worn["head"] = "kettle_helm";
-    bo->worn["paws"] = "splinted_greaves";
-    expect(battle::throughArmour(*bo, 12, "thrust") == 3, "a full set: a quarter still gets through");
-    expect(battle::armourDex(*bo) == -8, "and it weighs on the bar: DEX −8");
-    // In the fight: the bite is told with what the armour took; Bo's bar fills slower.
+    expect(battle::armourAt(*bo, "body", "thrust") == 7 && battle::armourAt(*bo, "body", "cut") == 6, "a brigandine: 7 against a bite, 6 a cut");
+    expect(battle::throughArmour(*bo, "body", 20, "cut") == 14 && battle::throughArmour(*bo, "body", 12, "thrust", 5) == 10, "a cut does 14; pierce goes through");
+    expect(battle::throughArmour(*bo, "body", 8, "thrust") == 2, "a quarter always gets through");
+    expect(battle::armourPieceAt(*bo, "body") == "Brigandine coat" && battle::armourPieceAt(*bo, "legs").empty(), "the piece on each zone");
+    for (int q = 0; q < 3; ++q)
+    {
+        bool head = false;
+        for (const auto& z : battle::hitZones(q))
+            head = head || std::string(z.zone) == "head";
+        expect(head == (q < 2), "the head is struck from in front or the side, never from behind");
+    }
+    // In the fight: bites head on land on the throat (the gorget taking some) or elsewhere (all of it), and say where.
+    bo->worn.erase("body");
     auto* fb = b.fighter("player-bo");
     auto* fa = b.fighter("player-ad");
-    fb->facing = battle::octant(fa->x - fb->x, fa->y - fb->y);
-    const double hurt = bo->hurt;
-    for (int i = 0; i < 20 && bo->hurt == hurt; ++i)
+    bool throat = false, elsewhere = false;
+    for (int i = 0; i < 60 && !(throat && elsewhere); ++i)
     {
-        w.battleAct("player-ad", "bite", "player-bo");
+        fb->facing = battle::octant(fa->x - fb->x, fa->y - fb->y);
+        bo->hurt = 0;
         w.entity("player-ad")->stamina = 100;
         fa->acted = false;
+        w.battleAct("player-ad", "bite", "player-bo");
+        const auto& line = b.log.back().text;
+        throat = throat || line.find(" on the throat, the steel gorget taking ") != std::string::npos;
+        elsewhere = elsewhere || ((line.find(" on the face (") != std::string::npos || line.find(" on the shoulder (") != std::string::npos ||
+                                   line.find(" on a foreleg (") != std::string::npos));
     }
-    expect(bo->hurt > hurt && bo->hurt - hurt <= 4, "a bite on him does 3 or so: " + std::to_string(bo->hurt - hurt));
-    expect(std::any_of(b.log.begin(), b.log.end(), [](const BattleLine& l) { return l.text.find("the armour taking") != std::string::npos; }),
-           "and the log says the armour took some");
+    expect(throat && elsewhere, "bites land on the gorget, and where there is no armour");
+    bo->worn["body"] = "brigandine_coat";
+    bo->worn["paws"] = "splinted_greaves";
+    expect(battle::armourDex(*bo) == -8, "the armour weighs on the bar: DEX −8 (with the gorget's −1)");
     const double gain = fb->meter;
     w.tick(1);
     const double armoured = battle::meterGain(effectiveDexterity(*bo) - 8) * battle::MeterPerSecond;

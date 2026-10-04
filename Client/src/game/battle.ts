@@ -32,7 +32,7 @@ export interface FighterView {
     rate: number;
     acting: boolean;            // Taking a turn now (several may be at once: doc 33).
     turnLeft: number;           // Seconds left in it, when acting.
-    armour: {cut: number; thrust: number; dex: number} | null;   // Armour worn (doc 35): off a cut, off a bite; DEX off the bar.
+    armour: ArmourView | null;  // Armour worn (doc 35, Part 8), by hit zone; and what it takes off the bar's DEX.
     guarding: boolean;          // On guard (doc 37): harder to hit, turning to meet a blow, until their next turn.
     walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
@@ -46,6 +46,12 @@ export interface FighterView {
     injuries: InjuryView[];
     gear: GearView[];           // Armour and weapons, where they are (doc 35): the card's little doll.     // What is wrong with them, named (doc 38): on their card, never drawn on them.
     odds: StrikeOdds | null;    // A foe, as this wolf would strike them from where it stands now.
+}
+
+/** Armour by hit zone (doc 35, Part 8): on the head, throat, body or legs, the piece and what it takes off a cut and a bite. */
+export interface ArmourView {
+    dex: number;
+    zones: Array<{zone: string; piece: string; cut: number; thrust: number}>;
 }
 
 /** An injury or condition, named, with what it does. */
@@ -222,7 +228,8 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
             acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')), guarding: bool(f, 'guarding'),
-            armour: obj(f, 'armour') ? {cut: num(obj(f, 'armour'), 'cut'), thrust: num(obj(f, 'armour'), 'thrust'), dex: num(obj(f, 'armour'), 'dex')} : null,
+            armour: obj(f, 'armour') ? {dex: num(obj(f, 'armour'), 'dex'), zones: objects(obj(f, 'armour'), 'zones').map(z => ({zone: str(z, 'zone'),
+                piece: str(z, 'piece'), cut: num(z, 'cut'), thrust: num(z, 'thrust')}))} : null,
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
             regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),

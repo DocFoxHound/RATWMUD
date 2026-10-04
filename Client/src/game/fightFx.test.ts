@@ -91,3 +91,12 @@ test('others\' turns shown (doc 37, phase 5): a word under a wolf for what it do
     const bo = {...away.fighters[1], x: 3, walk: [[6, 2]] as Array<[number, number]>};
     assert.equal(moveWord(away, bo), 'falls back', 'away from the foe: "falls back"');
 });
+
+test('hit zones (doc 35, Part 8): the figure off the one struck says where it landed', () => {
+    const fx = new FightEffects();
+    fx.selfId = 'ada';
+    fx.update(readBattle(fight([])), 0);
+    fx.update(readBattle(fight([{seq: 1, kind: 'hit', actor: 'ada', target: 'bo', text: 'Ada bites Bo on the throat, the steel gorget taking 5 (7).'},
+        {seq: 2, kind: 'graze', actor: 'bo', target: 'ada', text: 'Bo grazes Ada on a foreleg (6).'}])), 1);
+    assert.deepEqual(fx.floats(1.4, false).map(f => [f.text, f.sub]), [['7', 'throat'], ['6', 'foreleg']]);
+});

@@ -353,17 +353,34 @@ At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent
 - **Guard** (the action): no blow this turn; until its next turn, blows at it are 20% less likely to land, and it turns to meet each one, so there is no side or back to strike. An NPC that isn't aggressive stands on guard when a foe is at its throat and it has no blow to give.
 - **Shove** (the action): an adjacent wolf (foe or friend) a tile straight back, out of a doorway, off a fallen friend or toward the edge rows. 8 stamina; it works on 60% + (your STR − theirs)%, between 20% and 90%, 20% less against one on guard. With nowhere for them to go (a wall, a wolf, a ledge) it is only a shove. A wolf shoved mid-walk stops there.
 
-**Armour** ([35-items-crafting-industry.md](35-items-crafting-industry.md), Part 8; built October 4, 2026). Every piece
-worn adds its protection, plus its extra against the kind of blow ("+1 vs cut"); the blow's pierce comes off that, and
-what is left comes off the blow, after a graze is halved. At least a quarter of a blow always gets through. A bite is a
-thrust of the teeth and the bit-sword a cut, neither with any pierce. Fire, burning and bleeding go round armour. All the
-pieces count against every blow until hit zones come (doc 35: throat, head, body, legs). The armour's DEX penalties
-(a brigandine −5, splinted greaves −2…) slow the initiative bar, not the dodge. The log tells it ("Ash bites Bo, the
-armour taking 10 (3)."), the odds on a foe's card and the map's previews give the blow through it ("~3"), and the card
-carries a breastplate mark saying what it takes off a cut and a bite.
+**Armour, by hit zone** ([35-items-crafting-industry.md](35-items-crafting-industry.md), Part 8; built October 4,
+2026). A blow that lands lands somewhere, rolled by the side of the body it comes at (from the defender's facing, as the
++10%/+20% to hit is):
+
+| Coming at | Head | Throat | Body | Legs |
+| --- | --- | --- | --- | --- |
+| Head on | the face 30% | the throat 30% | the shoulder 25% | a foreleg 15% |
+| The side | the head 15% | the neck 15% | the flank 45% | a leg 25% |
+| Behind | — | the scruff 10% | the back 30%, the haunch 20% | a hind leg 40% |
+
+Only the armour on that zone counts: a gorget guards the throat, a barding or brigandine the body, a helm or chamfron the
+head, greaves the legs (the piece's catalog slot says which; the heaviest piece on a zone if there are two). Its
+protection, plus its extra against the kind of blow ("+1 vs cut"), less the blow's pierce, comes off the blow, after a
+graze is halved; at least a quarter always gets through. So a wolf in only a throat guard, struck head on, takes a bite
+on the throat lessened and a bite on the face or shoulder whole. A bite is a thrust of the teeth and the bit-sword a
+cut, neither with any pierce. Fire, burning and bleeding go round armour. One on guard turns to meet a blow, so it is
+always struck head on. Armour's DEX penalties (a brigandine −5, splinted greaves −2…) slow the initiative bar, not the
+dodge.
+
+The log says where each blow landed and what the armour there took ("Ash bites Bo on the throat, the steel gorget taking
+5 (8)." / "Ash bites Bo on the face (11)."); the figure rising off the one struck carries the place under it ("8",
+"throat"); a foe's odds give the blow to expect from where one stands, the zones weighed ("~11"); and the card's
+breastplate mark lists each zone's piece and what it takes off a bite and a cut. Whether a player can aim for a zone is
+left open: for now where a blow lands is chance, by the side it comes at.
 
 ```text
-through   = max(blow × 0.25, blow − max(0, protection + extra vs its kind − pierce))
+zone      = rolled from the table, by the side the blow comes at
+through   = max(blow × 0.25, blow − max(0, that zone's protection + its extra vs the blow's kind − pierce))
 bar       = 6 + (DEX + the armour's DEX penalties) / 10      // a brigandine and greaves: DEX 50 fills as 43
 ```
 

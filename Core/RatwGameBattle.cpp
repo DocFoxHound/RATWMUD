@@ -196,14 +196,27 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         // What drives the bars, for their tooltips: stamina back a turn (doubled resting), the bar's fill time.
         o.add("regen", std::round(battle::staminaPerTurn(e->hurt, e->strength) * (f.resting ? battle::RestFactor : 1) * 10) / 10);
         o.add("fillSeconds", std::round(100 / (battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond)));
-        // Armour (doc 35, Part 8): what it takes off a cut and a thrust (a bite), and what it takes off the bar's DEX.
-        if (const int cut = battle::armourAgainst(*e, "cut"), thrust = battle::armourAgainst(*e, "thrust"); cut > 0 || thrust > 0)
+        // Armour (doc 35, Part 8), by hit zone: the piece, what it takes off a cut and a thrust (a bite); and what it all
+        // takes off the bar's DEX.
         {
-            auto armour = Value::object();
-            armour.add("cut", cut);
-            armour.add("thrust", thrust);
-            armour.add("dex", battle::armourDex(*e));
-            o.add("armour", armour);
+            auto zones = Value::array();
+            for (const char* zone : {"head", "throat", "body", "legs"})
+                if (const auto piece = battle::armourPieceAt(*e, zone); !piece.empty())
+                {
+                    auto z = Value::object();
+                    z.add("zone", std::string(zone));
+                    z.add("piece", piece);
+                    z.add("cut", battle::armourAt(*e, zone, "cut"));
+                    z.add("thrust", battle::armourAt(*e, zone, "thrust"));
+                    zones.push(std::move(z));
+                }
+            if (!zones.items().empty())
+            {
+                auto armour = Value::object();
+                armour.add("zones", std::move(zones));
+                armour.add("dex", battle::armourDex(*e));
+                o.add("armour", std::move(armour));
+            }
         }
         if (f.resting)
             o.add("resting", true);
@@ -273,8 +286,12 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 auto headOn = f;
                 headOn.facing = battle::octant(mine->x - f.x, mine->y - f.y);
                 odds.add("base", std::round(world_.strikeChance(*mine, headOn) * 100));
-                odds.add("damage", std::round(battle::throughArmour(*e, (sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125),
-                                                                   sword ? "cut" : "thrust")));    // (Through their armour.)
+                // A usual blow from here, through their armour where it would land (its zones weighed by the side it
+                // comes at).
+                const int quarter = battle::quarterOf(battle::octantGap(f.guarding ? battle::octant(mine->x - f.x, mine->y - f.y) : f.facing,
+                                                                        battle::octant(mine->x - f.x, mine->y - f.y)));
+                odds.add("damage", std::round(battle::expectedThrough(*e, quarter, (sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125),
+                                                                      sword ? "cut" : "thrust")));
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
                 o.add("odds", odds);
             }

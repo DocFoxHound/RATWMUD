@@ -766,6 +766,14 @@ export class GamePainter {
             c.strokeText(f.text, fx, fy);
             c.fillStyle = css(withAlpha(floatColors[f.color], f.alpha));
             c.fillText(f.text, fx, fy);
+            if (f.sub) {
+                // Where it landed (doc 35's hit zones), smaller, under the figure.
+                const small = Math.max(9, Math.round(size * 0.6));
+                c.font = font(small, true);
+                c.strokeText(f.sub, fx, fy + size * 0.8);
+                c.fillStyle = css(withAlpha(Muted, f.alpha));
+                c.fillText(f.sub, fx, fy + size * 0.8);
+            }
             c.restore();
         }
         // What the others just did, a word or two under each: "steps in", "bites".

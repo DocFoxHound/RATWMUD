@@ -191,16 +191,31 @@ constexpr double BiteDamage = 12, BiteStamina = 8;
 // Guard (doc 37): a blow's chance against one on guard, this much lower. Shove: its breath, and the odds of a push
 // (STR against STR), less against one on guard.
 constexpr double GuardDodge = .2, ShoveStamina = 8, ShoveOdds = .6;
-// Armour (doc 35, Part 8): a flat reduction, the protection worn (all of it, until hit zones) plus its extra against the
-// kind of blow, less the blow's pierce; at least this share of a blow still gets through. A bite is a thrust of the
-// teeth, a sword a cut, neither with any pierce.
+// Armour (doc 35, Part 8): a flat reduction by the armour on where the blow lands (its hit zone), its protection plus
+// its extra against the kind of blow, less the blow's pierce; at least this share of a blow still gets through. A bite
+// is a thrust of the teeth, a sword a cut, neither with any pierce.
 constexpr double ArmourFloor = .25;
-// What a wolf has on against a kind of blow ("cut", "thrust", "blunt"), all its armour together; and what its armour
-// takes off its dexterity for the initiative bar (0 or less: doc 35's weight).
-int armourAgainst(const Entity& e, const std::string& type);
+// Hit zones: where a blow lands, rolled by the side of the body it comes at (0 head on, 1 the side, 2 behind). Each is
+// a zone armour covers ("head", "throat", "body", "legs"), the part a fight's log names, and its weight among them.
+struct HitZone
+{
+    const char* zone;
+    const char* part;
+    double weight;
+};
+const std::vector<HitZone>& hitZones(int quarter);
+inline int quarterOf(int octantGap) { return octantGap >= 3 ? 2 : octantGap == 2 ? 1 : 0; }
+// The zone a piece of armour covers, from its catalog slot ("throat", "head", "body"; "paws" are the legs), or "".
+std::string armourZone(const std::string& catalogSlot);
+// What a wolf has on a zone against a kind of blow ("cut", "thrust", "blunt"), and the piece's name ("" for none); and
+// what all its armour takes off its dexterity for the initiative bar (0 or less: doc 35's weight).
+int armourAt(const Entity& e, const std::string& zone, const std::string& type);
+std::string armourPieceAt(const Entity& e, const std::string& zone);
 int armourDex(const Entity& e);
-// A blow of `damage` of `type` and `pierce` on `target`, after its armour.
-double throughArmour(const Entity& target, double damage, const std::string& type, int pierce = 0);
+// A blow of `damage` of `type` and `pierce` landing on `zone` of `target`, after the armour there.
+double throughArmour(const Entity& target, const std::string& zone, double damage, const std::string& type, int pierce = 0);
+// The blow to expect coming at `target` from a side (`quarter`), its zones weighed: for the page's preview.
+double expectedThrough(const Entity& target, int quarter, double damage, const std::string& type, int pierce = 0);
 constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;
 constexpr double DownedMinimum = .6, OverkillSeconds = 10;

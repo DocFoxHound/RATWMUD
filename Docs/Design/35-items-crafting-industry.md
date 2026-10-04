@@ -467,8 +467,10 @@ crafter, NPC or player fills a contract with real goods and is paid from the buy
   loose less often.
 - **Armour:** first a flat reduction, the summed protection minus the attack's pierce, with the per-type extras. Hit
   zones (throat, head, body, legs) come later: Bite aims for the throat, and leg hits add to lingering movement loss.
-  *Built October 4, 2026, as doc 33's "Armour": at least a quarter of a blow gets through; the DEX penalties slow the
-  initiative bar. The other weapons, hit zones, weight and medicine are still to come.*
+  *Built October 4, 2026, with hit zones, as doc 33's "Armour, by hit zone": where a blow lands is rolled by the side it
+  comes at (head on: the face, throat, shoulder or a foreleg), only the armour there counts, and at least a quarter
+  gets through; the DEX penalties slow the initiative bar. Aiming for a zone, Bite going for the throat, leg hits
+  slowing a wolf, the other weapons, weight and medicine are still to come.*
 - **Weight:** body armour's DEX penalty and a heavy load slow the initiative meter.
 - **Medicine as actions:** bandages and stitching kits make Tend wounds stronger; smelling salts wake a Downed ally.
 - **Emplacements:** a crossbow set up on a cell can be crewed in a fight that cell's arena copies (doc 33 Part 2).
