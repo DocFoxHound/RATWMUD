@@ -86,17 +86,18 @@ WET = ((380, 260), 680, 720)            # The rain coast around Ridgemere: centr
 GOLDEN = ((200, 1850), 820, 700)        # Ser Ferro's grain country: centre on the plan, reach in tiles.
 
 # Settlements, each inside one cell: id, name, kind, (x, y, w, h) on the canvas, {gate side: the point the gate faces},
-# and whether its wall follows the shore (keeping to the land inside the box) instead of the box.
+# and whether its wall follows the shore (keeping to the land inside the box) instead of the box. Saltreach, Westmarch
+# and Ser Ferro were widened 2026-10-04 (Lakeside, hemmed in by its lake, builds a pier instead) so all their buildings fit (Docs/Design/39).
 SETTLEMENTS = [
     ('ridgemere', 'Ridgemere', 'city', (262, 6, 244, 244), {'S': (480, 262), 'E': (512, 134)}, True),
-    ('ser_ferro', 'Ser Ferro', 'city', (12, 2316, 232, 232), {'N': (128, 2304), 'E': (256, 2430)}, True),
+    ('ser_ferro', 'Ser Ferro', 'city', (12, 2316, 240, 240), {'N': (128, 2304), 'E': (256, 2430)}, True),
     ('northern_fortress', 'The Northern Fortress', 'fortress', (1580, 156, 84, 84), {'S': None, 'E': None}, False),
     ('ghost_town', 'The Ghost Town', 'ghost', (2320, 100, 70, 56), {'S': None, 'W': None}, False),
-    ('saltreach', 'Saltreach', 'town', (150, 555, 70, 56), {'E': None}, True),
+    ('saltreach', 'Saltreach', 'town', (150, 555, 84, 66), {'E': None}, True),
     ('hollowmere_village', 'Hollowmere', 'village', (628, 1066, 60, 48), {'N': None, 'S': None}, False),
     ('lakeside', 'Lakeside', 'town', (1286, 1284, 120, 96), {'N': (1330, 1270), 'E': (1460, 1330)}, True),
     ('isle_fortress', 'The Isle Fortress', 'fortress', (1552, 1308, 84, 84), {'W': None}, False),
-    ('westmarch', 'Westmarch', 'town', (520, 1562, 70, 56), {'N': None, 'E': None}, False),
+    ('westmarch', 'Westmarch', 'town', (520, 1562, 84, 66), {'N': None, 'E': None}, False),
     ('accord_crossing', 'Accord Crossing', 'town', (1680, 954, 70, 56), {'N': None, 'S': None}, False),
     ('fenhollow', 'Fenhollow', 'town', (2330, 1984, 70, 56), {'E': None, 'W': None}, False),
     ('amberford', 'Amberford', 'town', (1630, 1960, 70, 56), {'N': None, 'W': None}, False),

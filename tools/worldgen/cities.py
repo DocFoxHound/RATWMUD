@@ -1118,6 +1118,9 @@ class SerFerro(City):
                                        'sick of the lower town in clean white wards.', 20, 12, 'lower_south', S))
         out['lower'].append(self.named('senate', "The Wool Guild Hall", 'Weavers, dyers and fullers argue here over '
                                        'the price of wool and the colour of the season.', 22, 13, 'lower', S))
+        # The dock tavern before the family houses: if the lower town runs short of room, a house gives way, not it.
+        out['lower'].append(self.a_tavern('The Muddy Oar', 'A tavern just above the wharf with a sagging floor, river mud on '
+                                          'every boot and the cheapest wine in the city.', 'lower_south', S))
         for i in range(50):
             out['lower'].append(self.a_house(f'{sf_family(i)} House',
                                              rng.choice(SERFERRO_HOUSE_PROSE), ['lower', 'lower_south'][i % 2], S,
@@ -1135,8 +1138,6 @@ class SerFerro(City):
                                           roof='['))
         out['wharf'].append(self.named('reading', 'The River Office', 'The harbourmaster tallies barges, tolls and '
                                        'berths, and complains about all three.', 14, 10, 'wharf_east', S, roof='['))
-        out['lower'].append(self.a_tavern('The Muddy Oar', 'A tavern just above the wharf with a sagging floor, river mud on '
-                                          'every boot and the cheapest wine in the city.', 'lower_south', S))
         for i in range(7):
             out['wharf'].append(self.a_house(SERFERRO_TENEMENTS[i], rng.choice(SERFERRO_TENEMENT_PROSE), 'wharf', S,
                                              rng.choice([5, 6]), kind='tenement'))

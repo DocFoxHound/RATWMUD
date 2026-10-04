@@ -51,6 +51,14 @@ Ser Ferro, the seven towns, Hollowmere, the three fortresses and the Ghost Town.
 - **No market square:** the middle of a town is a small crossroads with its well, not a square of stalls, and the
   server gives a place without built stalls no market day (below).
 - **Fewer houses:** shop families live over their shops, so a town builds one house fewer for every three shops.
+- **Walls widened** so everything fits (the user's choice): Saltreach and Westmarch from 70×56 to 84×66, Ser Ferro from
+  232 to 240 a side (`SETTLEMENTS`, `tools/worldgen/western.py`); Saltreach has a house more for its smokehouse hand.
+- **Lakeside's pier:** Lakeside can't widen (lake to the east and south, its cell's edge to the north and west), so it
+  builds out onto the lake (`pier_quarter`, for a town with `pier=True`): a timber deck off its shore, level with the
+  town and walled on the water's sides, a lane through the town wall down its middle, and on it what found no room in
+  the town (its tenement and smokehouse).
+- **Ser Ferro's dock tavern** (The Muddy Oar) is placed before the lower town's family houses: if room runs short, a
+  house gives way, not it (the user's choice).
 
 ## Cities: the market squares
 
@@ -82,18 +90,19 @@ for a tree), so nothing becomes walkable or blocked; heights, roads and building
 `artifacts/backups/`, then Upper Accord's city and people, the western world with its cities and towns (and the
 cities' newcomers), and the blend, validated and saved with DEV's revision checked.
 
-**Checked before the import (2026-10-04):** the rebuilt world validated by Atlas's checks; built by the game's exporter
-in a scratch database; `world_check` loaded all 854 places with no failures; `--simulate 7 7.2 --players 20`:
-1,346 residents, mean tick 14.8 ms, p99 23.8 ms after the first minute (DEV before: 1,063 residents, p99 29.2 ms over
-the whole run), within the 50 ms budget. 1,325 residents, 236 of them merchants.
+**In DEV (revision 13, 2026-10-04):** 1,339 residents (240 merchants), 756 interiors; DEV backed up first. The rebuild
+gave 704 newcomers IDs no earlier resident had and cleared the old residents' saved state (their bodies, DM state,
+bonds, rumours and memories); the server lets go of a save's word on places and doors the world no longer has
+(`World::restore`). Checked: Atlas's validation; the game's build (861 places, all loaded by `world_check` with no
+failures); `--simulate 7 7.2 --players 20`: mean tick 12.4 ms, p99 23.5 ms after the first minute, within the 50 ms
+budget (DEV before: 1,063 residents, p99 29.2 ms); a DEV server loads it over its save.
 
-**What found no room** (the generators report it): Saltreach's salt pans, Westmarch's harness-maker (The Strap and
-Buckle), a Lakeside tenement, two Ser Ferro family houses; and, as before this, The Muddy Oar, Tar and Tallow and the
-Mirrormere Smokehouse.
+**What found no room:** only three of Ser Ferro's lower-town family houses (Villa, Marotti and Serardi), which give way
+to The Muddy Oar as chosen. Everything else is placed, Saltreach's pans, Westmarch's harness-maker and Lakeside's
+tenement and smokehouse included.
 
 ## Open questions
 
 1. **Shops for the fortresses:** they have armouries and forges; should a garrison have a sutler (a provisioner)?
 2. **Goods beyond cheap:** when do shops carry dearer goods (doc 35, Phase 2's quality and weight)?
-3. **Industry left out:** Saltreach's pans and the harness-maker found no room inside or outside their walls this
-   time; give them room (a larger town box, or a fixed site outside), or leave them out?
+3. **Ser Ferro's three family houses:** widen the lower town further, or leave the city a little smaller?

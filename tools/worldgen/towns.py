@@ -104,7 +104,7 @@ TOWNS = {
             ('works', 'smokehouse', 'The Gullwharf Smokehouse', 'Herring split and hung by the thousand.'),
             ('shop', 'chandler', 'Tar and Tallow', 'Pitch for the boats, candles for the cottages, rope for everything.'),
         ],
-        houses=6, tenements=1,
+        houses=8, tenements=1,
         outside=[('fisher', 'fishes the grey coast', 4, 'shore'), ('salter', 'rakes the salt pans', 3, 'field')],
         farms=1, guards=2, field='0',
         heads=['Salt', 'Brine', 'Gull', 'Tide', 'Kelp', 'Net', 'Grey', 'Shingle', 'Wrack', 'Sound'],
@@ -180,7 +180,7 @@ TOWNS = {
                'thinks the downs are emptier every year and wants to know why', 'buried something under the chapel '
                'floor long ago']),
     'lakeside': dict(
-        prefix='tn_ls_', style='city', street='_', square='f', people=47, near=False, species=[4, 1, 3, 2, 1],
+        pier=True, prefix='tn_ls_', style='city', street='_', square='f', people=47, near=False, species=[4, 1, 3, 2, 1],
         about='a lake town of fishers and boatwrights on the shore of the Mirrormere',
         buildings=[
             ('inn', 'The Still Water', 'Low windows over the lake, smoked trout on every plate and boatmen\'s wagers in '
@@ -571,6 +571,7 @@ def place_buildings(place: Place, site: TownSite, cfg, street, square, centre, r
     open_ground = place.inside & ~street & ~square
     codes = place.canvas.codes
     open_ground &= ~np.isin(codes, [ord(ch) for ch in 'W~w'])
+    place.left_out = []                  # Buildings with no room (a lakeside town's pier may take them: pier_quarter).
     lots = Lots(open_ground, street | square, gap=1)
     wanted = [make(cfg, e, rng) for e in cfg['buildings']]
     # Shopkeepers' families live over their shops (Docs/Design/39), so a town needs a house fewer for every three shops.
@@ -587,6 +588,7 @@ def place_buildings(place: Place, site: TownSite, cfg, street, square, centre, r
                      if lots.clear(x0, y0, w, h)), None)
         if spot is None:
             missing.append(b.name)
+            place.left_out.append(b)
             continue
         x0, y0, facing, w, h = spot
         bid, outside = site.place(b, x0, y0, facing, place.sid, open_door=b.kind != 'house')
@@ -654,6 +656,23 @@ def farms(place: Place, cfg, site: TownSite, rng, families):
             continue
         fields.append([(x, y) for y in range(y0 + 1, y0 + fh - 1, 3) for x in range(x0 + 1, x0 + fw - 1, 3)])
     return fields
+
+
+def pier_attempt(place: Place, site: TownSite):
+    """Places a building, and takes it away again if any door can then no longer be walked to from the gate."""
+    c = place.canvas
+
+    def attempt(b, x0, y0, facing):
+        saved = (c.codes.copy(), c.heights.copy(), len(site.rooms), len(site.links), len(site.manifest))
+        site.place(b, x0, y0, facing, place.sid, open_door=b.kind != 'house')
+        site.manifest[-1]['town'] = place.sid
+        walk = reachable(c.codes, c.heights, place.gates[0]['in'])
+        if all(walk[m['door']['y'], m['door']['x']] for m in site.manifest):
+            return True
+        c.codes[:], c.heights[:] = saved[0], saved[1]
+        del site.rooms[saved[2]:], site.links[saved[3]:], site.manifest[saved[4]:]
+        return False
+    return attempt
 
 
 def place_industry(place: Place, site: TownSite, cfg, rng):
@@ -728,13 +747,89 @@ def outside_industry(place: Place, site: TownSite, rng, attempt):
                     best = (d, x0, y0, facing, fw, fh)
         if best is None:
             missing.append(b.name)
+            place.left_out.append(b)
             continue
         _, x0, y0, facing, fw, fh = best
         if not attempt(b, x0, y0, facing):
             missing.append(b.name)
+            place.left_out.append(b)
             continue
         taken[y0 - 6:y0 + fh + 6, x0 - 6:x0 + fw + 6] = True
     return missing
+
+
+def pier_quarter(place: Place, site: TownSite, cfg, rng, attempt):
+    """A town hemmed in by water builds out onto it (Docs/Design/39): a timber deck off its shore, walled on the water's
+    sides and level with the town, a lane down the middle through a gap in the town wall, and on it whatever found no
+    room in the town. Returns the names of any still left out."""
+    if not getattr(place, 'left_out', None):
+        return []
+    c, codes = place.canvas, place.canvas.codes
+    H, W = codes.shape
+    water = np.isin(codes, [ord(x) for x in 'W~w'])
+    level = float(np.median(c.heights[place.inside]))
+    wall_ch = max(WALLS, key=lambda ch: int((codes[place.walls] == ord(ch)).sum()))
+    built = ~np.isin(codes, [ord(t['code']) for t in catalog.TILES if t['category'] in ('ground', 'nature')])
+    # The lake's edge just beyond the town (past its wall, and any strip of beach).
+    shore = grow(place.inside | place.walls, 6) & ~place.inside & ~place.walls & water
+    ys, xs = np.nonzero(shore)
+    centre = place.square_centre
+    order = np.argsort((xs - centre[0]) ** 2 + (ys - centre[1]) ** 2)
+    need = sum(b.footprint[0] * b.footprint[1] for b in place.left_out)
+    across, out = max(30, int(math.sqrt(need * 2.2)) + 10), 26
+    for i in order[::7]:
+        sx, sy = int(xs[i]), int(ys[i])
+        win = water[max(0, sy - 8):sy + 9, max(0, sx - 8):sx + 9]
+        wy, wx = np.argwhere(win).mean(axis=0) - 8 if win.any() else (0, 0)
+        side = ('E' if wx > 0 else 'W') if abs(wx) >= abs(wy) else ('S' if wy > 0 else 'N')
+        if side in 'EW':
+            x0 = sx if side == 'E' else sx - out + 1
+            y0, w, h = sy - across // 2, out, across
+        else:
+            y0 = sy if side == 'S' else sy - out + 1
+            x0, w, h = sx - across // 2, across, out
+        if x0 < 4 or y0 < 4 or x0 + w + 4 >= W or y0 + h + 4 >= H:
+            continue
+        deck = np.zeros(codes.shape, dtype=bool)
+        deck[y0:y0 + h, x0:x0 + w] = True
+        deck &= ~place.inside & ~place.walls
+        # Over open water: not across a road, a causeway or anything built, and mostly lake.
+        if (deck & built & ~water).any() or water[deck].mean() < .85 or (grow(deck, 3) & np.isin(codes, [ord('8')]) & ~deck).any():
+            continue
+        saved = (c.codes.copy(), c.heights.copy(), len(site.rooms), len(site.links), len(site.manifest))
+        c.paint(deck, '8', level)
+        rim = deck & ~shrink(deck, 1) & ~grow(place.inside | place.walls, 1)
+        c.paint(rim, wall_ch, level)
+        # The lane: from just inside the town, through its wall, to the far end of the deck.
+        dx, dy = {'E': (1, 0), 'W': (-1, 0), 'S': (0, 1), 'N': (0, -1)}[side]
+        back = next((k for k in range(1, 14) if place.inside[sy - dy * k, sx - dx * k]), None)
+        if back is None:
+            continue                                                # No way into the town from here.
+        start = (sx - dx * (back + 1) + .5, sy - dy * (back + 1) + .5)
+        end = (sx + dx * (out - 2) + .5, sy + dy * (out - 2) + .5)
+        line = c.line_mask([start, end], 3)
+        lane = line & (deck | place.inside | place.walls | (grow(deck, 14) & ~built)) & ~(rim & ~grow(place.inside | place.walls, 14) &
+                                                                                         ~line)
+        c.paint(lane, cfg['street'] or '_', level)          # Through the town's wall, and the deck's own on the landward side.
+        floor = deck & ~rim & ~lane
+        lots = Lots(floor, lane, gap=1)
+        left = []
+        for b in place.left_out:
+            fw, fh = b.footprint
+            for _, bx, by, facing, bw, bh in lots.candidates(fw, fh, (sx, sy), limit=800):
+                if lots.clear(bx, by, bw, bh) and attempt(b, bx, by, facing):
+                    lots.take(bx, by, bw, bh)
+                    break
+            else:
+                left.append(b.name)
+        if len(left) == len(place.left_out):
+            c.codes[:], c.heights[:] = saved[0], saved[1]           # Nothing fitted here after all: undo the deck.
+            del site.rooms[saved[2]:], site.links[saved[3]:], site.manifest[saved[4]:]
+            continue
+        place.inside = place.inside | (deck & ~rim)
+        place.left_out = [b for b in place.left_out if b.name in left]
+        return left
+    return [b.name for b in place.left_out]
 
 
 def shore_spots(place: Place, rng, n=12):
@@ -1122,6 +1217,9 @@ def build(project, sid, cfg, reserved, seed=SEED):
     shore = shore_spots(place, rng)
     if cfg.get('industry') and not cfg.get('ruined'):
         missing += place_industry(place, site, cfg, random.Random(f'{seed}:{sid}:doc35'))
+    if cfg.get('pier') and getattr(place, 'left_out', None):
+        still = pier_quarter(place, site, cfg, random.Random(f'{seed}:{sid}:pier'), pier_attempt(place, site))
+        missing = [n for n in missing if n in still]
     # Every door must be reachable from a gate on foot, by the game's own rules.
     start = place.gates[0]['in']
     walk = reachable(place.canvas.codes, place.canvas.heights, start)
