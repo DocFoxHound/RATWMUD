@@ -78,6 +78,31 @@ Gold Stars, Stories, Story Stars, consent-reviewed recaps, tier diversity gates 
 the shadow evaluator are explicitly deferred. They must become separate typed
 metadata paths rather than generic “give social XP” commands.
 
+## The scene line (built 2026-10-04)
+
+The story column shows every scene the wolf is in (`Client/src/ui/hud/story.ts`; the snapshot's `self.social.scenes`,
+from `Game::refreshSocialViews`), a party's or a fight's beside the room's:
+
+- **Who and how far:** "PARTY SCENE with Bo · 2 turns".
+- **What pay still needs**, from the server's own counts, never guessed by the page: "To be paid: 1 more line of five
+  words or more · 12 more words · answer someone"; then "On track to be paid", or "You've said enough: waiting for
+  another to say as much" while no one else has. A fight's scene says "To be paid twice" (talking it through).
+- **Where one's next words count**, with two scenes: "← YOUR WORDS GO HERE", by the server's own rule (a fight's scene
+  while fighting; the party's while a party mate is in the place; else the room's). There is no choosing: the rule
+  decides, and the line says which.
+- **Quiet warnings:** after 15 minutes without a line the scene turns amber: "Quiet · ends in 14 min unless someone
+  speaks" (it ends at 30, pacing v2 of the source model). With five minutes left, one toast says so. Nothing else
+  interrupts.
+- **LEAVE** steps out of a scene (social verb `leave`, `SocialLedger::leave`), after a confirm. The leaver is settled
+  at once, paid if they have the shape and another member has it too; the others carry on. Their part still counts
+  toward the scene's two qualified members, they aren't paid again when it ends, and their later words there count
+  for nothing (`Contribution::left`, saved). A fight's scene can't be left: it ends with the fight. The old
+  `session_end` action, which ends the scene for everyone, stays for scripts but has no button.
+
+Tests: `social_game_tests` `leavingAScene` and the snapshot's scenes; `checkpoint_tests` (who left survives a
+restart); `social.test.ts` (the words); `tools/client/scenes.mjs` (the real page: needs, on track, two scenes and a quiet
+one, LEAVE; screenshots in `artifacts/screenshots/scenes/`).
+
 ## Verification and unresolved choices
 
 Tests prove that direct speech gives zero XP, A–B–A creates a scene without an
@@ -85,7 +110,7 @@ award, two qualified contributors receive a settled receipt, settlement replay
 cannot duplicate XP, repeated pairs decay, OOC is excluded, duplicates are
 suppressed and solo activity cannot qualify.
 
-Open: explicit UI for scenes and quiet warnings, multi-scene selection, public
+Open (the scene line, quiet warnings and showing which of two scenes a line counts toward were built 2026-10-04, above): public
 versus private speech weighting, account migration, moderation and appeal tooling,
 and owner-approved final tier thresholds. Reward numbers here implement the source
 prototype baseline for evaluation, not final balance.

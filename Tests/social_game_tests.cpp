@@ -122,6 +122,35 @@ void fightScenes()
            "only those who took their turns are paid for the fight");
 }
 
+void leavingAScene()
+{
+    SocialLedger l;
+    std::uint64_t event = 1;
+    double t = 1000;
+    const auto scene = converse(l, "ada", "bo", t, event);
+    // Cy says a few words in it and goes.
+    l.record({event++, t + 40, "cy", "tavern", 6, false, 77, {}, {}}, {"cy", "ada", "bo"});
+    expect(l.sessions[scene].members.count("cy"), "Cy is in the scene");
+    int paid = -1;
+    expect(l.leave("cy", scene, t + 45, &paid) && paid == 0 && l.paidFor("cy", scene) == 0, "Cy steps out with nothing");
+    expect(l.leave("ada", scene, t + 50, &paid) && paid == 20 && l.paidFor("ada", scene) == 20,
+           "Ada steps out, qualified with Bo: paid at once");
+    expect(l.sessions[scene].ended == 0, "the scene carries on without her");
+    expect(!l.leave("ada", scene, t + 51), "she can't step out twice");
+    const int words = l.sessions[scene].members["ada"].words;
+    l.record({event++, t + 60, "ada", "tavern", 21, false, 99, {}, {}}, {"ada", "bo"});
+    expect(l.sessions[scene].members["ada"].words == words, "her words count no more there");
+    l.settle(scene, t + 100);
+    expect(l.paidFor("bo", scene) == 20, "Bo is paid when it ends: Ada's part still counts for the scene");
+    int receipts = 0;
+    for (const auto& e : l.entries)
+        receipts += e.actor == "ada" && e.session == scene;
+    expect(receipts == 1, "and Ada isn't paid twice");
+    l.joinFight("b1", "tavern", "ada", t + 200);
+    expect(!l.leave("ada", SocialLedger::fightScene("b1"), t + 201), "no stepping out of a fight's scene");
+    expect(!l.leave("ada", "no-such-scene", t + 202), "nor out of one that isn't there");
+}
+
 void starsAndStories()
 {
     SocialLedger l;
@@ -272,6 +301,13 @@ void aSceneSeenAndStarred(const std::string& save)
         expect(scene.boolean("party") && scene.array("with").size() == 1 && scene.number("turns") >= 2,
                "Ada sees she is in her party's scene, with Bo: " + json::dump(t.ada.social()) + "\n" + t.ada.said());
         expect(t.ada.social().string("title") == "Stranger", "and her title");
+        const auto& scenes = t.ada.social().array("scenes");
+        expect(scenes.size() == 1 && scenes[0].boolean("next") && !scenes[0].boolean("fight") && !scenes[0].boolean("quiet") &&
+                   scenes[0].number("endsIn") > 1700 && scenes[0].number("needTurns") == 0 && scenes[0].number("needWords") == 0 &&
+                   !scenes[0].boolean("needReply") && scenes[0].number("othersShaped") == 1,
+               "the scenes she is in: where her words go, what she still needs, when it ends: " + json::dump(t.ada.social()));
+        t.g.command(&t.ada, cmd({{"type", "social"}, {"verb", "leave"}, {"session", "no-such-scene"}}));
+        expect(t.ada.said().find("You aren't in that scene.") != std::string::npos, "stepping out of a scene she isn't in");
         t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "session_end"}}));
         t.tick(2.2);
         expect(t.ada.said().find("The scene ends. +20 social.") != std::string::npos, "it ends, and pays:\n" + t.ada.said());
@@ -340,6 +376,7 @@ int main()
     {
         actionsAndPartyScenes();
         fightScenes();
+        leavingAScene();
         starsAndStories();
         aSceneSeenAndStarred("/tmp/ratw-social-test-" + std::to_string(::getpid()) + ".json");
     }

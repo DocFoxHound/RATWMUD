@@ -42,7 +42,8 @@ checkpoint::ServerState serverWith(const World& w)
     s.memories.record("npc_keeper", "player-ash", {3, 100, "player-ash", "A meal, please."});
     s.memories.summaries.push_back({"m1", "npc_keeper", "player-ash", "They ate well.", 10, 20, {1, 2}});
     s.social.entries.push_back({5, 50, "player-ash", "npc_keeper", "reply", 2, "s1"});
-    s.social.sessions["s1"] = {"s1", "tavern", 40, 60, 0, {{"player-ash", {2, 12, 1, 60, 40, {"npc_keeper"}}}}};
+    s.social.sessions["s1"] = {"s1", "tavern", 40, 60, 0, {{"player-ash", {2, 12, 1, 60, 40, {"npc_keeper"}}},
+                                                           {"player-bo", {1, 6, 0, 55, 45, {}, true}}}};
     s.commandReceipts["player-ash"] = {"c1", "c2"};
     s.responseReceipts["player-ash"]["c1"] = "{\"ok\":true}";
     return s;
@@ -137,6 +138,8 @@ int main()
                "the server's numbers and the accounts, as they were");
         expect(serverBack.memories.active.size() == 1 && serverBack.memories.summaries[0].sourceEvents.size() == 2,
                "conversations remembered");
+        expect(serverBack.social.sessions["s1"].members["player-bo"].left && !serverBack.social.sessions["s1"].members["player-ash"].left,
+               "who stepped out of a scene survives a restart");
         expect(serverBack.social.sessions["s1"].members["player-ash"].lastAudience == std::vector<std::string>{"npc_keeper"},
                "and who was listening");
         expect(serverBack.social.points["player-ash"] == 2, "social points counted from the ledger");

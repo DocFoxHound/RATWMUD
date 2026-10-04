@@ -92,7 +92,7 @@ on speed stay as in doc 33 and heal as now (50 per game hour, once out of the fi
 | **Staggered** | A single hit of 25 or more | Next bar starts 20 lower | The next turn |
 | **Winded** (built as exhaustion) | Stamina 0 | No physical attacks until stamina 20 | Recovery |
 
-They show in the fight panel and over the wolf in the arena, and the log says when one starts ("Bo is bleeding").
+They show as chips on the wolf's card in the fight panel (not on its arena token, which keeps only its health ring), and the log says when one starts ("Bo is bleeding").
 Combat injuries are how a fight feels in the moment. They never outlast it.
 
 ## Acute injuries
@@ -212,11 +212,10 @@ at most 25% off any one ability in total. A veteran wolf should look and feel li
 
 ### Seen by others
 
-Lasting injuries are part of how a wolf looks. They join the character's appearance and description: "a dun wolf with a
-torn left ear and a bent tail". They also join how strangers name a wolf they don't know (doc 32's veiled labels), so a
-torn ear becomes something people recognise you by.
-
-Acute injuries show while they last ("limping on a bitten foreleg"). Combat injuries show only in the fight.
+**Decided (2026-10-04): others see injuries only by looking closer.** Look at a wolf shows its lasting marks ("a torn
+left ear and a bent tail") and its acute injuries while they last ("limping on a bitten foreleg"). They do not join how
+strangers name a wolf (doc 32's veiled labels) or the In Sight list, and they are **never drawn**: the wolf picture and
+uploaded portraits stay as they are, and the words carry it. Combat injuries show only in the fight.
 
 ## No choice
 
@@ -250,7 +249,7 @@ rest)". The actions row has Sit and Lie down.
 - **The story** (doc 18) gets one line per new acute or lasting injury, and one when an acute injury heals.
 - **The fight panel** lists combat injuries. The Downed banner shows when you get up ("up in 2:30") and, after a
   second downing, says why it is longer ("Down 2 times without a full rest: it takes longer each time").
-- **Look** at another wolf shows its visible injuries.
+- **Look** at another wolf shows its visible injuries (and nothing else does: not its name, not its picture).
 
 ## Data
 
@@ -282,7 +281,7 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
    Winded; with Wounded, Badly hurt, Limping and Down, named on every fighter's card (one's own too) with what each does.
    `battle_tests` restAndCombatInjuries.
 3. **Acute injuries.** Triggers, the table, effects, rest hours, strain, healing steps; character sheet and story lines.
-4. **Lasting injuries.** Triggers, the one-per-fight rule, effects and caps, appearance and veiled labels, Look.
+4. **Lasting injuries.** Triggers, the one-per-fight rule, effects and caps, Look.
 5. **DM tools.** Add and remove injuries from the Players tab.
 6. **Balance**, with play.
 
@@ -293,5 +292,5 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
 | Do NPCs die? | Residents no, by the same rule. Hostile NPCs a DM calls up: a "mortal" flag, off by default. |
 | Does logged-out time count as rest anywhere? | **Decided:** as a partial rest anywhere; a full rest only if they left lying in a bed. |
 | Can a downed wolf be robbed or dragged off? | Not now. Worth a design of its own (captivity, ransom) later. |
-| Should acute injuries be given on every downing, or rolled? | Every downing. Losing is the main cost now that death is gone. |
-| Can lasting injuries ever be healed? | No, by design; a DM correction only. Magic that heals them could be a rare, late story reward. |
+| Should acute injuries be given on every downing, or rolled? | **Decided (2026-10-04):** every downing. Losing is the main cost now that death is gone. |
+| Can lasting injuries ever be healed? | **Decided (2026-10-04):** no; a DM correction only. |

@@ -107,6 +107,12 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .scene-bar { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; margin: 4px 0; border: 1px solid #34443e; border-radius: 3px;
     font-size: 13px; }
 .scene-ended { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* Each scene one is in, and a quiet one's warning (doc 08). */
+.scene-row { display: flex; flex-direction: column; gap: 2px; }
+.scene-row + .scene-row { border-top: 1px solid #2a3833; padding-top: 4px; }
+.scene-row .story-row { margin: 0; }
+.scene-row .story-row button { margin-left: auto; }
+.scene-quiet { color: var(--gold); }
 .story-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 3px 0; }
 /* The Chapter window (doc 32). */
 .swatch { width: 26px; height: 26px; border-radius: 3px; border: 2px solid transparent; }

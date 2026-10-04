@@ -428,6 +428,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
             auto k = Value::object();
             k.add("actor", actor); k.add("turns", m.turns); k.add("words", m.words); k.add("replies", m.replies);
             k.add("last", m.last); k.add("joined", m.joined);
+            if (m.left)
+                k.add("left", true);
             members.push(k);
         }
         j.add("members", members);
@@ -767,6 +769,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             Contribution m;
             m.turns = int(num(k, "turns")); m.words = int(num(k, "words")); m.replies = int(num(k, "replies"));
             m.last = num(k, "last"); m.joined = num(k, "joined");
+            m.left = k.boolean("left");
             s.members[k.string("actor")] = m;
         }
         c.social.sessions[s.id] = s;

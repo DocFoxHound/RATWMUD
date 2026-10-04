@@ -446,6 +446,8 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
         }
     auto Add = [&](SocialSession& S, const SocialPost& P) {
         auto& Member = S.members[P.actor];
+        if (Member.left)
+            return;                                  // (Stepped out: their words count no more here.)
         if (Member.joined == 0)
             Member.joined = P.at;
         S.last = P.at;
@@ -545,7 +547,7 @@ int SocialLedger::settle(const std::string& id, double now)
     Scene.ended = now;
     std::vector<std::string> Qualified;
     for (const auto& Pair : Scene.members)
-        if (Pair.second.turns >= 2 && Pair.second.words >= 35 && Pair.second.replies >= 1)
+        if (shaped(Pair.second))
             Qualified.push_back(Pair.first);
     if (Qualified.size() < 2)
         return 0;
@@ -555,56 +557,84 @@ int SocialLedger::settle(const std::string& id, double now)
     });
     int Total = 0;
     for (std::size_t Index = 0; Index < Qualified.size(); ++Index)
-    {
-        const auto& Actor = Qualified[Index];
-        int MostRepeated = 0, Today = 0, Count = 0;
-        for (const auto& Entry : entries)
-            if (Entry.actor == Actor && now - Entry.at < 86400)
-            {
-                Today += Entry.amount;
-                if (Entry.amount > 0)
-                    ++Count;
-            }
-        for (const auto& Peer : Qualified)
-            if (Peer != Actor)
-            {
-                int Repeat = 0;
-                for (const auto& Other : sessions)
-                {
-                    if (Other.first == id || Other.second.ended <= 0 || now - Other.second.ended >= 86400)
-                        continue;
-                    auto A = Other.second.members.find(Actor), B = Other.second.members.find(Peer);
-                    if (A != Other.second.members.end() && B != Other.second.members.end() && A->second.turns >= 2 &&
-                        A->second.words >= 35 && A->second.replies >= 1 && B->second.turns >= 2 &&
-                        B->second.words >= 35 && B->second.replies >= 1)
-                        ++Repeat;
-                }
-                MostRepeated = std::max(MostRepeated, Repeat);
-            }
-        int Amount = MostRepeated >= 4 || Count >= 8 ? 0 : (Index < 4 ? 20 : Index < 8 ? 12 : 5) / (1 << MostRepeated);
-        Amount = std::max(0, std::min(Amount, 100 - Today));
-        Amount = std::min(Amount, 2147483647 - points[Actor]);
-        std::string Partners;
-        for (const auto& Peer : Qualified)
-            if (Peer != Actor)
-            {
-                if (!Partners.empty())
-                    Partners += ",";
-                Partners += Peer;
-            }
-        LedgerEntry Entry;
-        Entry.event = static_cast<std::uint64_t>(Scene.started * 1000) + Index;
-        Entry.at = now;
-        Entry.actor = Actor;
-        Entry.partner = Partners;
-        Entry.reason = "qualified_session_settlement";
-        Entry.amount = Amount;
-        Entry.session = id;
-        entries.push_back(Entry);
-        points[Actor] += Amount;
-        Total += Amount;
-    }
+        if (!Scene.members[Qualified[Index]].left)      // (Those who stepped out were paid then.)
+            Total += payMember(Scene, Qualified, Index, now);
     return Total;
+}
+bool SocialLedger::leave(const std::string& actor, const std::string& session, double now, int* paid)
+{
+    auto It = sessions.find(session);
+    if (It == sessions.end() || It->second.ended > 0 || isFight(It->second))
+        return false;
+    auto& Scene = It->second;
+    auto Me = Scene.members.find(actor);
+    if (Me == Scene.members.end() || Me->second.left)
+        return false;
+    Me->second.left = true;
+    std::vector<std::string> Qualified;
+    for (const auto& Pair : Scene.members)
+        if (shaped(Pair.second))
+            Qualified.push_back(Pair.first);
+    std::sort(Qualified.begin(), Qualified.end(), [&](const std::string& A, const std::string& B) {
+        return Scene.members[A].joined == Scene.members[B].joined ? A < B
+                                                                  : Scene.members[A].joined < Scene.members[B].joined;
+    });
+    const auto Index = std::find(Qualified.begin(), Qualified.end(), actor) - Qualified.begin();
+    const int Amount = Qualified.size() >= 2 && Index < static_cast<std::ptrdiff_t>(Qualified.size())
+                           ? payMember(Scene, Qualified, static_cast<std::size_t>(Index), now)
+                           : 0;
+    if (paid)
+        *paid = Amount;
+    return true;
+}
+int SocialLedger::payMember(const SocialSession& Scene, const std::vector<std::string>& Qualified, std::size_t Index, double now)
+{
+    const auto& Actor = Qualified[Index];
+    int MostRepeated = 0, Today = 0, Count = 0;
+    for (const auto& Entry : entries)
+        if (Entry.actor == Actor && now - Entry.at < 86400)
+        {
+            Today += Entry.amount;
+            if (Entry.amount > 0)
+                ++Count;
+        }
+    for (const auto& Peer : Qualified)
+        if (Peer != Actor)
+        {
+            int Repeat = 0;
+            for (const auto& Other : sessions)
+            {
+                if (Other.first == Scene.id || Other.second.ended <= 0 || now - Other.second.ended >= 86400)
+                    continue;
+                auto A = Other.second.members.find(Actor), B = Other.second.members.find(Peer);
+                if (A != Other.second.members.end() && B != Other.second.members.end() && shaped(A->second) &&
+                    shaped(B->second))
+                    ++Repeat;
+            }
+            MostRepeated = std::max(MostRepeated, Repeat);
+        }
+    int Amount = MostRepeated >= 4 || Count >= 8 ? 0 : (Index < 4 ? 20 : Index < 8 ? 12 : 5) / (1 << MostRepeated);
+    Amount = std::max(0, std::min(Amount, 100 - Today));
+    Amount = std::min(Amount, 2147483647 - points[Actor]);
+    std::string Partners;
+    for (const auto& Peer : Qualified)
+        if (Peer != Actor)
+        {
+            if (!Partners.empty())
+                Partners += ",";
+            Partners += Peer;
+        }
+    LedgerEntry Entry;
+    Entry.event = static_cast<std::uint64_t>(Scene.started * 1000) + Index;
+    Entry.at = now;
+    Entry.actor = Actor;
+    Entry.partner = Partners;
+    Entry.reason = "qualified_session_settlement";
+    Entry.amount = Amount;
+    Entry.session = Scene.id;
+    entries.push_back(Entry);
+    points[Actor] += Amount;
+    return Amount;
 }
 void SocialLedger::joinFight(const std::string& fight, const std::string& cell, const std::string& member, double now)
 {
@@ -628,7 +658,6 @@ int SocialLedger::settleFight(const std::string& fight, const std::set<std::stri
         return 0;
     auto& Scene = It->second;
     Scene.ended = now;
-    const auto shaped = [](const Contribution& c) { return c.turns >= 2 && c.words >= 35 && c.replies >= 1; };
     std::vector<std::string> Talked, Paid;
     for (const auto& [who, c] : Scene.members)
         if (shaped(c))
@@ -693,7 +722,7 @@ int SocialLedger::endFor(const std::string& actor, double now)
 void SocialLedger::tick(double now)
 {
     for (auto& Pair : sessions)
-        if (Pair.second.ended == 0 && now - Pair.second.last >= (isFight(Pair.second) ? 10800 : 1800))
+        if (Pair.second.ended == 0 && now - Pair.second.last >= (isFight(Pair.second) ? FightEndSeconds : EndSeconds))
             settle(Pair.first, now);                // (A fight's scene ends with its fight: this only if that was lost.)
     // A Story nobody approved within a day closes without reward.
     for (auto& [id, st] : stories)

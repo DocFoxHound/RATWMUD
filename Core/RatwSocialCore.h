@@ -97,6 +97,7 @@ struct Contribution
     int turns = 0, words = 0, replies = 0;
     double last = 0, joined = 0;
     std::vector<std::string> lastAudience;
+    bool left = false;          // Stepped out of the scene (settled then if qualified); its words count no more here.
 };
 struct SocialSession
 {
@@ -169,10 +170,23 @@ class SocialLedger
     int settleFight(const std::string& fight, const std::set<std::string>& fought, double now);
     static constexpr int FightXP = 10, FightTalkFactor = 2;
     int endFor(const std::string& actor, double now);
+    // One member steps out of an open scene (not a fight's): paid at once if they have the shape and another member
+    // has it too; the others carry on. False if they are in no such scene.
+    bool leave(const std::string& actor, const std::string& session, double now, int* paid = nullptr);
     void tick(double now);
+    // The contribution a member needs to be paid (doc 08), and how long a scene may lie quiet (pacing v2).
+    static constexpr int ShapeTurns = 2, ShapeWords = 35, ShapeReplies = 1;
+    static constexpr double QuietSeconds = 900, EndSeconds = 1800, FightEndSeconds = 10800;
+    static bool shaped(const Contribution& c)
+    {
+        return c.turns >= ShapeTurns && c.words >= ShapeWords && c.replies >= ShapeReplies;
+    }
     int level(const std::string& actor) const;
 
   private:
+    // A qualified member's pay for a scene: by their place among those qualified (joined first, first), less for
+    // partners repeated today, within the daily limits; written as the settlement receipt.
+    int payMember(const SocialSession& scene, const std::vector<std::string>& qualified, std::size_t index, double now);
     int pay(const std::string& actor, const std::string& partner, const std::string& reason, const std::string& source,
             int requested, double now, std::uint64_t event);
     double pairDecay(const std::string& a, const std::string& b, double now) const;

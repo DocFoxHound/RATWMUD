@@ -210,24 +210,58 @@ void Game::refreshSocialViews(double dt)
             continue;
         auto v = Value::object();
         v.add("title", socialTitle(social_.level(id)));
-        // The scene they are in now.
+        // The scenes they are in now (a party's or a fight's beside the room's), each with what they still need to be
+        // paid, how long it has been quiet and when that ends it, and the one their next line counts toward (doc 08).
+        const auto* me = world_.entity(id);
+        const auto* fight = world_.battleOf(id);
+        const bool fighting = fight && !fight->over && fight->fighter(id) && fight->fighter(id)->status != "fled";
+        bool partyNear = false;
+        if (const auto* mine = parties_.of(id); mine && me)
+            for (const auto* other : clients_)
+                if (other != c && !other->entityId.empty() && parties_.together(id, other->entityId))
+                    if (const auto* e = world_.entity(other->entityId); e && e->cellId == me->cellId)
+                        partyNear = true;
+        auto scenes = Value::array();
         for (const auto& [sid, s] : social_.sessions)
         {
-            if (s.ended != 0 || !s.members.count(id))
+            const auto mine = s.members.find(id);
+            if (s.ended != 0 || mine == s.members.end() || mine->second.left)
                 continue;
+            const auto& m = mine->second;
+            const bool fightScene = SocialLedger::isFight(s);
             auto scene = Value::object();
             scene.add("id", sid);
-            scene.add("party", !s.party.empty());
+            scene.add("party", !s.party.empty() && !fightScene);
+            scene.add("fight", fightScene);
             auto with = Value::array();
-            for (const auto& [m, contribution] : s.members)
-                if (m != id)
-                    with.push(names::capitalised(labelFor(id, m)));
+            int othersShaped = 0;
+            for (const auto& [other, contribution] : s.members)
+                if (other != id && !contribution.left)
+                {
+                    with.push(names::capitalised(labelFor(id, other)));
+                    if (SocialLedger::shaped(contribution))
+                        ++othersShaped;
+                }
+                else if (other != id && SocialLedger::shaped(contribution))
+                    ++othersShaped;          // (Stepped out, but their part still counts for the scene.)
             scene.add("with", with);
-            scene.add("turns", s.members.at(id).turns);
-            scene.add("quiet", t - s.last >= 900);
-            v.add("scene", scene);
-            break;
+            scene.add("turns", m.turns);
+            scene.add("words", m.words);
+            scene.add("replies", m.replies);
+            scene.add("needTurns", std::max(0, SocialLedger::ShapeTurns - m.turns));
+            scene.add("needWords", std::max(0, SocialLedger::ShapeWords - m.words));
+            scene.add("needReply", m.replies < SocialLedger::ShapeReplies);
+            scene.add("othersShaped", othersShaped);
+            const double quiet = std::max(0.0, t - s.last);
+            scene.add("quiet", quiet >= SocialLedger::QuietSeconds);
+            if (!fightScene)
+                scene.add("endsIn", std::max(0.0, SocialLedger::EndSeconds - quiet));
+            scene.add("next", fightScene ? fighting : !fighting && (s.party.empty() ? !partyNear : partyNear));
+            scenes.push(scene);
         }
+        if (!scenes.items().empty())
+            v.add("scene", scenes.items().front());
+        v.add("scenes", scenes);
         // The last scene they finished, while it may still be starred (an hour).
         const SocialSession* last = nullptr;
         for (const auto& [sid, s] : social_.sessions)
@@ -335,6 +369,24 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
             if (auto* other = clientOf(target))
                 system(other, names::capitalised(labelFor(target, id)) + " gives you a Gold Star" +
                                   (r.amount > 0 ? " (+" + std::to_string(r.amount) + " social)." : "."));
+        }
+    }
+    else if (verb == "leave")
+    {
+        // Stepping out of a scene (doc 08): settled for oneself if qualified; the others carry on.
+        int paid = 0;
+        if (!social_.leave(id, j.string("session"), t, &paid))
+            result = {false, "You aren't in that scene.", {}};
+        else
+        {
+            const bool receipt = std::any_of(social_.entries.begin(), social_.entries.end(), [&](const LedgerEntry& e) {
+                return e.actor == id && e.session == j.string("session") && e.reason == "qualified_session_settlement";
+            });
+            result = {true, !receipt ? "You step out of the scene. You hadn't said enough with another to be paid for it."
+                            : paid > 0 ? "You step out of the scene: +" + std::to_string(paid) + " social."
+                                       : "You step out of the scene. You've had all the social pay there is today.", {}};
+            socialViewsDirty_ = true;
+            saveSoon();
         }
     }
     else if (verb == "propose")

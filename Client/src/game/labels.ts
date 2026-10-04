@@ -143,3 +143,23 @@ export function heightFromChar(c: string): number {
     const code = c.charCodeAt(0);
     return code >= 48 && code <= 112 ? (code - 48 - 32) / 2 : 0;
 }
+
+// A scene's pay, in words (doc 08): what one still needs, from the server's own counts, or that one is on track.
+export function sceneNeedsLabel(scene: Maybe): string {
+    const turns = num(scene, 'needTurns'), words = num(scene, 'needWords'), reply = bool(scene, 'needReply');
+    const needs: string[] = [];
+    if (turns > 0) needs.push(`${turns} more ${turns === 1 ? 'line' : 'lines'} of five words or more`);
+    if (words > 0) needs.push(`${words} more ${words === 1 ? 'word' : 'words'}`);
+    if (reply) needs.push('answer someone');
+    const fight = bool(scene, 'fight');
+    if (needs.length) return `${fight ? 'To be paid twice' : 'To be paid'}: ${needs.join(' · ')}`;
+    if (num(scene, 'othersShaped') < 1) return "You've said enough: waiting for another to say as much";
+    return fight ? 'Talked through: paid twice' : 'On track to be paid';
+}
+
+// A quiet scene's warning (doc 08): when it ends unless someone speaks; "" while it isn't quiet.
+export function sceneQuietLabel(scene: Maybe): string {
+    if (!bool(scene, 'quiet') || bool(scene, 'fight')) return '';
+    const minutes = Math.max(1, Math.ceil(num(scene, 'endsIn') / 60));
+    return `Quiet · ends in ${minutes} min unless someone speaks`;
+}

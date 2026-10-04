@@ -6,6 +6,7 @@ import type {GameState, Post} from '../../game/state.ts';
 import {inParty, withPlayers} from '../../game/party.ts';
 import {button, el, setClass, setText, show} from './dom.ts';
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
+import {sceneNeedsLabel, sceneQuietLabel} from '../../game/labels.ts';
 
 const MaxShown = 300;
 
@@ -110,17 +111,37 @@ export class StoryPanel {
     /** The scene this wolf is in, and the one just ended: its pay, stars to give, a Story to begin (doc 32, 1.1–1.2). */
     private updateScene() {
         const s = this.s, social = obj(obj(s.snapshot, 'self'), 'social');
-        const scene = obj(social, 'scene'), ended = obj(social, 'ended');
+        const ended = obj(social, 'ended');
+        const sceneList = arr(social, 'scenes').filter(isObject);
+        const scenes = sceneList.length ? sceneList : [obj(social, 'scene')].filter(isObject);
         const stories = arr(social, 'stories').filter(isObject);
-        const key = JSON.stringify([scene, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')])]);
+        this.warnQuiet(scenes);
+        // The quiet countdown in whole minutes, so the line is rebuilt once a minute, not on every snapshot.
+        const shown = scenes.map(sc => ({...sc, endsIn: Math.ceil(num(sc, 'endsIn') / 60)}));
+        const key = JSON.stringify([shown, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')])]);
         if (key === this.sceneKey) return;
         this.sceneKey = key;
         this.sceneBar.replaceChildren();
-        if (scene) {
+        for (const scene of scenes) {
+            // Each scene one is in (a party's beside the room's): who with, what pay still needs, and, with two, where
+            // one's next words count (doc 08).
+            const row = el('div', 'scene-row', this.sceneBar);
             const with_ = arr(scene, 'with').filter((w): w is string => typeof w === 'string');
-            el('span', 'label sage', this.sceneBar, bool(scene, 'party') ? 'PARTY SCENE' : 'IN A SCENE');
-            el('span', '', this.sceneBar, ` with ${with_.join(', ') || 'others'} · ${num(scene, 'turns')} turns` +
-                (bool(scene, 'quiet') ? ' · quiet' : ''));
+            const head = el('div', 'story-row', row);
+            el('span', 'label sage', head, bool(scene, 'fight') ? 'FIGHT SCENE' : bool(scene, 'party') ? 'PARTY SCENE' : 'IN A SCENE');
+            el('span', '', head, ` with ${with_.join(', ') || 'no one yet'} · ${num(scene, 'turns')} ${num(scene, 'turns') === 1 ? 'turn' : 'turns'}`);
+            if (scenes.length > 1 && bool(scene, 'next')) el('span', 'label gold', head, '← YOUR WORDS GO HERE').title =
+                'Said now, your words count toward this scene' + (bool(scene, 'party') ? ' (a party mate is here)' : '');
+            if (!bool(scene, 'fight')) {
+                const leave = button('LEAVE', 'small', head, () => {
+                    if (window.confirm('Step out of this scene? You are paid now if you have said enough; the others carry on.'))
+                        s.sendSocial({verb: 'leave', session: str(scene, 'id')});
+                });
+                leave.title = 'Step out of this scene: settled for you now, the others carry on';
+            }
+            el('span', 'muted small', row, sceneNeedsLabel(scene));
+            const quiet = sceneQuietLabel(scene);
+            if (quiet) el('span', 'scene-quiet small', row, quiet);
         }
         if (ended) {
             const row = el('div', 'scene-ended', this.sceneBar);
@@ -152,7 +173,21 @@ export class StoryPanel {
                 });
             }
         }
-        show(this.sceneBar, !!scene || !!ended);
+        show(this.sceneBar, scenes.length > 0 || !!ended);
+    }
+
+    private warned = new Set<string>();
+    /** A quiet scene with five minutes left says so once (doc 08); nothing else interrupts. */
+    private warnQuiet(scenes: readonly Record<string, unknown>[]) {
+        for (const scene of scenes) {
+            const id = str(scene, 'id');
+            if (bool(scene, 'quiet') && !bool(scene, 'fight') && num(scene, 'endsIn') <= 300) {
+                if (!this.warned.has(id)) {
+                    this.warned.add(id);
+                    this.s.showToast(`Your scene${scenes.length > 1 && bool(scene, 'party') ? ' with your party' : ''} has gone quiet: it ends in ${Math.max(1, Math.ceil(num(scene, 'endsIn') / 60))} min unless someone speaks.`);
+                }
+            } else if (!bool(scene, 'quiet')) this.warned.delete(id);
+        }
     }
 
     private targetsKey = '';
