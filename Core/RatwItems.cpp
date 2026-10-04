@@ -19,6 +19,7 @@ struct Catalog
     bool loaded = false;
     std::string error;
     std::vector<Item> wearables;
+    std::vector<Item> goods;                        // Every item, wearable or not, with its name, kind and price.
     std::vector<Business> businesses;
 };
 
@@ -75,6 +76,16 @@ Catalog build()
         return c;
     for (const auto& i : items.array("items"))
     {
+        Item good;
+        good.id = i.string("id");
+        good.name = i.string("name");
+        good.category = i.string("category");
+        good.slot = i.string("slot");
+        good.desc = i.string("desc");
+        good.weight = i.number("weight");
+        good.price = int(i.number("price"));
+        if (!good.id.empty() && !good.name.empty() && good.price >= 0 && good.price <= 100000)
+            c.goods.push_back(std::move(good));
         const auto slot = i.string("slot");
         if (slot.empty() || slot == "mouth" || slot == "loop")       // (The mouth stays the sword's; loops come later.)
             continue;
@@ -193,6 +204,25 @@ std::vector<std::string> wearablesSold(const Business& business)
     for (const auto& item : catalog().wearables)
         if (std::find(business.sells.begin(), business.sells.end(), item.id) != business.sells.end() ||
             std::find(business.sells.begin(), business.sells.end(), item.category) != business.sells.end())
+            out.push_back(item.id);
+    return out;
+}
+
+const Item* good(const std::string& id)
+{
+    for (const auto& item : catalog().goods)
+        if (item.id == id)
+            return &item;
+    return nullptr;
+}
+
+std::vector<std::string> goodsSold(const Business& business, int maxPrice)
+{
+    std::vector<std::string> out;
+    for (const auto& item : catalog().goods)
+        if (item.price >= 1 && item.price <= maxPrice &&
+            (std::find(business.sells.begin(), business.sells.end(), item.id) != business.sells.end() ||
+             std::find(business.sells.begin(), business.sells.end(), item.category) != business.sells.end()))
             out.push_back(item.id);
     return out;
 }

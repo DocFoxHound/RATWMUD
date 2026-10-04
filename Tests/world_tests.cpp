@@ -125,6 +125,24 @@ void dungeonMasterMoves()
                !w.entity("visitor_c"), "Or sent away sooner");
     expect(!w.sendVisitorAway(npc).ok && w.entity(npc), "Only visitors can be sent away");
 }
+// A world rebuilt since its save (Docs/Design/39): the save's word on places and doors the world no longer has is let
+// go, and the rest restores as ever.
+void restoreOverARebuiltWorld()
+{
+    World w;
+    auto saved = w.save();
+    saved.seasonalWeather["a_demolished_shop"] = false;
+    saved.weather["a_demolished_shop"] = Weather::Rain;
+    saved.lighting["a_demolished_shop"] = saved.lighting.empty() ? Lighting{} : saved.lighting.begin()->second;
+    saved.doorStates["a_demolished_shop_door"] = true;
+    const auto restored = w.restore(saved);
+    expect(restored.ok, "A save that mentions places since rebuilt still restores: " + restored.message);
+    const auto again = w.save();
+    expect(!again.seasonalWeather.count("a_demolished_shop") && !again.weather.count("a_demolished_shop") &&
+               !again.doorStates.count("a_demolished_shop_door"), "and what it said of them is let go");
+    saved.weather["tavern"] = static_cast<Weather>(99);
+    expect(!w.restore(saved).ok, "A bad entry for a place that is there is still refused");
+}
 void continuousMovement()
 {
     World w;
@@ -1258,7 +1276,8 @@ void windAndScentPersistence()
     reject(bad, "Reject outdoor-strength wind injected into a sheltered room");
     bad = saved;
     bad.winds["nonexistent"] = {};
-    reject(bad, "Reject wind records for unknown cells");
+    expect(restored.restore(bad).ok && !restored.save().winds.count("nonexistent"),
+           "Wind records for a place the world no longer has are let go (a rebuilt world: Docs/Design/39)");
     bad = saved;
     bad.players[0].smell = -1;
     reject(bad, "Reject negative persisted smell sensitivity");
@@ -1626,6 +1645,7 @@ int main()
         herbPatchReach();
         authoredWorld();
         continuousMovement();
+        restoreOverARebuiltWorld();
         dungeonMasterMoves();
         gradualFacing();
         postureMovement();

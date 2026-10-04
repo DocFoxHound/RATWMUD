@@ -328,11 +328,17 @@ class Society
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
-    // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals only
-    // in swords, starting with SmithSwords and forging another while it has fewer; every other merchant in herbs and meals.
+    // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals in
+    // swords, starting with SmithSwords and forging another while it has fewer.
     bool smith(const std::string& id) const;
+    // What a merchant sells (Docs/Design/39). A shop of a kind in Data/Items/businesses.json (found by its keeper's work
+    // label: "baker at The Amber Loaf") sells a handful of that kind's cheap goods, the same handful every day but not
+    // every shop of the kind the same; a smith adds swords; a shop of food adds meals, an herbalist herbs. Anyone else
+    // (an innkeeper, a market trader, the demo's keeper) deals in herbs and meals.
     std::vector<std::string> wares(const std::string& merchant) const;
     static constexpr int SmithSwords = 3;
+    static constexpr int CheapPrice = 6;              // A shop's goods cost at most this, for now (pennies).
+    static constexpr int GoodsKept = 4;               // How many of each good a shop keeps, making more as they sell.
     // Food to start with (doc 36): a new player's own meals; a new household's larder, meals for each who lives there,
     // and its chest, herbs for each. Placeholder amounts for the balance pass.
     static constexpr int StartingMeals = 3, LarderMealsEach = 3, ChestHerbsEach = 2;
@@ -356,6 +362,7 @@ class Society
     // spec() by resident ID, built on first use: every decision looks up every resident's spec. Anything that
     // adds, removes or replaces authored_.residents must call forgetSpecs().
     mutable std::unordered_map<std::string, std::size_t> specIndex_;
+    mutable std::unordered_map<std::string, std::pair<std::string, std::vector<std::string>>> waresCache_;   // id -> (label, wares)
     std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).
     std::unordered_map<std::string, std::size_t> positionIndex_;
     mutable std::unordered_map<std::string, std::string> heldBy_, learning_;   // resident -> position (cache).

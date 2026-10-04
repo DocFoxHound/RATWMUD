@@ -520,6 +520,9 @@ class World
     // bandit set on the far side of the arena with a clear way to them; and their fight ended now, as a draw. A test
     // bandit's camp ("camp_dmtest_") goes when the fight does, with no robbery, bounty or camp cleared.
     Result testFight(const std::string& player);
+    // The Dev Console's /fight-test-team-1: the player and two allies (passers-by, made up for it) against three weak
+    // bandits. Allies and bandits alike go with the fight when it ends.
+    Result testFightTeam(const std::string& player);
     Result endFightInDraw(const std::string& player);
     static bool testCamp(const std::string& camp) { return camp.rfind("camp_dmtest_", 0) == 0; }
     // A challenge between players, on its terms ("blood", "yield" or "death"; "" for yield).

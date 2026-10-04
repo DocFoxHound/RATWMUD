@@ -194,6 +194,7 @@ command (`Core/RatwGameDev.cpp`), and answers each in the console.
 | Command | Does |
 |---|---|
 | `/fight-test-1` | A fight where they stand against one weak bandit (skill 30, little health), set on the farthest tile of the arena they could walk to, with an open straight line to them. Its camp (`camp_dmtest_N`) goes when the fight ends: no robbery, bounty or camp cleared. |
+| `/fight-test-team-1` | `/fight-test-1`'s fight, three a side. Two more weak bandits (skill 25) join beside the first, across the arena. Two allies join beside the Dungeon Master on their side: passers-by made up for the fight, each with a random name and look, who fight like the watch (aggressive, skill 55). Allies and bandits alike go with the camp when the fight ends (`World::testFightTeam`). |
 | `/fight-end-myself` | Ends the fight they are in, as a draw (like a truce: nobody stays hostile). |
 | `/help` | Lists the commands. |
 

@@ -20,11 +20,36 @@ void expect(bool condition, const std::string& message)
         throw std::runtime_error(message);
 }
 // Greyfen on a given calendar day and hour, under a sky of our choosing.
-World at(int day, double hour, Weather sky = Weather::Clear)
+// Market stalls built in the street before Greyfen's shop (Docs/Design/39: only a place with stalls built has a
+// market): on open ground a few strides either side of where the shop's door lets out.
+void buildStalls(World& w)
+{
+    for (const auto& [id, d] : w.doors())
+        if (d.cellId == "shop" && d.targetCell == "town")
+        {
+            auto* town = w.cell("town");
+            int built = 0;
+            for (int dx : {-3, 3, -5, 5, -4, 4})
+                for (int dy : {-2, 2, -3, 3})
+                {
+                    auto* t = town->tile(int(std::floor(d.arrival.x)) + dx, int(std::floor(d.arrival.y)) + dy);
+                    if (built < 3 && t && !t->solid && t->glyph != '+')
+                    {
+                        t->glyph = 'u';
+                        t->solid = true;
+                        ++built;
+                    }
+                }
+            return;
+        }
+}
+World at(int day, double hour, Weather sky = Weather::Clear, bool stalls = true)
 {
     World w;
     const auto loaded = w.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw");
     expect(loaded.ok, "Town loads: " + loaded.message);
+    if (stalls)
+        buildStalls(w);
     expect(w.advanceCalendar(day - std::floor(w.calendarDays())).ok, "The calendar moves on");
     expect(w.setTimeOfDay(hour).ok, "The hour is set");
     for (const auto& [id, c] : w.cells())
@@ -82,6 +107,9 @@ void restday()
 
 void marketday()
 {
+    // A town with no stalls built has no market: its Marketday is an ordinary working day.
+    auto bare = at(5, 9, Weather::Clear, false);
+    expect(bare.dayPlan("greyfen").kind == "work" && bare.dayPlan("greyfen").stalls.empty(), "No stalls, no market day");
     auto w = at(5, 9);
     const auto plan = w.dayPlan("greyfen");
     expect(plan.kind == "market" && !plan.stalls.empty() && plan.crowd.size() > 10, "Marketday: stalls and room for a crowd");

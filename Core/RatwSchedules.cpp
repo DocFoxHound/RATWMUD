@@ -9,7 +9,8 @@ namespace ratw
 {
 namespace
 {
-constexpr int Stalls = 12, Crowd = 64;              // Spots worked out around each market square.
+constexpr int Stalls = 24, Crowd = 64;              // Spots worked out around each market square.
+constexpr int StallReach = 40;                      // How far from the market's middle its built stalls are looked for.
 constexpr int FestivalsKept = 64;
 // Each town has its own name for each season's festival: one of these, as its name falls.
 const char* const FestivalNames[4][3] = {
@@ -112,6 +113,32 @@ const World::MarketSquare& World::square(const std::string& community)
             homes.insert({int(std::floor(life.homeX)), int(std::floor(life.homeY))});
     const int cx = int(std::floor(where.x)), cy = int(std::floor(where.y));
     const int region = regionAt(*c, where);
+    // Its stalls are the ones built on the ground (Docs/Design/39): the open places beside each, where a stallholder
+    // doesn't already stand. A town has none, and so no market and no market day; a city has its square of them.
+    std::set<std::pair<int, int>> keepers;
+    for (const auto& p : society_.positions())
+        if (p.work.cell == at)
+            keepers.insert({int(std::floor(p.work.x)), int(std::floor(p.work.y))});
+    std::set<std::pair<int, int>> stallSpots;
+    for (int ty = std::max(0, cy - StallReach); ty <= std::min(c->height - 1, cy + StallReach); ++ty)
+        for (int tx = std::max(0, cx - StallReach); tx <= std::min(c->width - 1, cx + StallReach); ++tx)
+        {
+            const auto* stall = c->tile(tx, ty);
+            if (!stall || stall->glyph != 'u')
+                continue;
+            for (const auto [dx, dy] : {std::pair{0, 1}, std::pair{0, -1}, std::pair{1, 0}, std::pair{-1, 0}})
+            {
+                const int sx = tx + dx, sy = ty + dy;
+                const auto* t = c->tile(sx, sy);
+                const Vec2 p{sx + .5, sy + .5};
+                if (t && !t->solid && !keepers.count({sx, sy}) && !stallSpots.count({sx, sy}) && int(sq.stalls.size()) < Stalls &&
+                    !blockedByDoor(at, p) && (region < 0 || regionAt(*c, p) == region))
+                {
+                    stallSpots.insert({sx, sy});
+                    sq.stalls.push_back({at, p.x, p.y});
+                }
+            }
+        }
     for (int ring = 1; ring <= 8 && int(sq.crowd.size()) < Crowd; ++ring)
         for (int dy = -ring; dy <= ring; ++dy)
             for (int dx = -ring; dx <= ring; ++dx)
@@ -122,12 +149,9 @@ const World::MarketSquare& World::square(const std::string& community)
                 const auto* t = c->tile(tx, ty);
                 const Vec2 p{tx + .5, ty + .5};
                 if (!t || t->solid || homes.count({tx, ty}) || blockedByDoor(at, p) || nearPortal(at, p, 1.2) ||
-                    (region >= 0 && regionAt(*c, p) != region))
+                    (region >= 0 && regionAt(*c, p) != region) || stallSpots.count({tx, ty}) || keepers.count({tx, ty}))
                     continue;
-                // Stalls stand a tile apart in the inner rings; everyone else fills in around them.
-                if ((ring == 2 || ring == 3) && (tx + ty) % 2 == 0 && int(sq.stalls.size()) < Stalls)
-                    sq.stalls.push_back({at, p.x, p.y});
-                else if (int(sq.crowd.size()) < Crowd)
+                if (int(sq.crowd.size()) < Crowd)
                     sq.crowd.push_back({at, p.x, p.y});
             }
     return sq;
@@ -152,9 +176,11 @@ DayPlan World::dayPlan(const std::string& community)
         plan.kind = "market";
     else if (weekday == calendar::Restday)
         plan.kind = "rest";
-    // The square's stalls every day (some shopkeepers keep a food stall there each morning, doc 36); its crowd on a
-    // market or festival day.
+    // The square's built stalls (where its shopkeepers set up on Marketday), and its crowd on a market or festival
+    // day. A place with no stalls built has no market, and its Marketday is an ordinary working day (Docs/Design/39).
     const auto& sq = square(community);
+    if (plan.kind == "market" && sq.stalls.empty())
+        plan.kind = "work";
     if (sq.found)
     {
         plan.stalls = sq.stalls;

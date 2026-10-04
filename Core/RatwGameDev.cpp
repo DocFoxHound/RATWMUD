@@ -23,6 +23,7 @@ struct DevCommand
 constexpr DevCommand DevCommands[] = {
     {"help", "Lists these commands."},
     {"fight-test-1", "A fight where you stand: one weak bandit on the far side of the arena, with a clear way to you."},
+    {"fight-test-team-1", "A fight where you stand: you and two allies (passers-by, made up) against three weak bandits."},
     {"fight-end-myself", "Ends the fight you are in, as a draw."},
     {"give", "give <item id> [count]: wearables from the catalog into your own purse (doc 35), to try on."},
     {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
@@ -72,6 +73,8 @@ void Game::devCommand(Connection* c, const json::Value& j)
     }
     else if (command == "fight-test-1")
         result = world_.testFight(id);
+    else if (command == "fight-test-team-1")
+        result = world_.testFightTeam(id);
     else if (command == "fight-end-myself")
         result = world_.endFightInDraw(id);
     else if (command.rfind("give ", 0) == 0)

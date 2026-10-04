@@ -1622,11 +1622,12 @@ export class GameState {
             else if (verb === 'goal') this.send({type: 'party', verb, goal: h.target.slice('goal:'.length).trim()});
             else if (['accept', 'decline', 'leave', 'disband', 'stayout', 'remove', 'lead'].includes(verb))
                 this.send({type: 'party', verb, ...(rest ? {target: rest} : {})});
-        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window' || a === 'status') {
+        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window' || a === 'status' ||
+            ((a === 'their_equipment' || a === 'back_to_inspect') && this.inspectedCharacter)) {
             if (this.chat) this.setChat(false);
             this.heldKeys.clear();
             this.sendMove();
-            this.modal = a;
+            this.modal = a === 'back_to_inspect' ? 'inspect' : a;
             this.contextTarget = '';
         } else if (a === 'close') this.modal = '';
         else if (a === 'dev_console') this.toggleDevConsole();
@@ -1825,11 +1826,11 @@ export class GameState {
     }
 
     portraitAppearance(): Json | null {
-        return obj(this.modal === 'inspect' ? this.inspectedCharacter : obj(this.snapshot, 'self'), 'appearance');
+        return obj(this.modal === 'inspect' || this.modal === 'their_equipment' ? this.inspectedCharacter : obj(this.snapshot, 'self'), 'appearance');
     }
 
     portraitAge(): number {
-        if (this.modal !== 'inspect') return num(obj(this.snapshot, 'self'), 'age', 18);
+        if (this.modal !== 'inspect' && this.modal !== 'their_equipment') return num(obj(this.snapshot, 'self'), 'age', 18);
         // Inspecting another shows an age band, never their exact age.
         const stage = str(this.inspectedCharacter, 'lifeStage', 'adult');
         return stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18;

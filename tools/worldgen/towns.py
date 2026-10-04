@@ -22,7 +22,7 @@ import numpy as np
 
 import terrain_catalog as catalog
 from . import field
-from .buildings import TRADES, WORKS, WORKS_TRADE, Building, hall, house, shop, tavern, tenement, works
+from .buildings import TRADES, WORKS, WORKS_TRADE, Building, hall, house, keeper_label, keeper_word, shop_with_flat, tavern, tenement, works
 from .canvas import DEFAULT_HEIGHT, Canvas, code, reachable
 from .cities import fp, grow, shrink
 from .citizens import Folk
@@ -82,7 +82,7 @@ TOWNS = {
                'writes too rarely', 'thinks the toll is robbery and pays it every time', 'found something on the road '
                'that no one has come back for']),
     'saltreach': dict(
-        prefix='tn_sr_', style='ridgemere', street='_', square='f', people=28, near=True, species=[4, 0, 2, 3, 0],
+        prefix='tn_sr_', style='ridgemere', street='_', square='f', people=32, near=True, species=[4, 0, 2, 3, 0],
         about='a salt-and-fish town on the rain coast, in Ridgemere\'s long shadow',
         buildings=[
             ('inn', 'The Brine and Barrel', 'Wet coats steaming by the fire, the smell of tar and smoked fish, and '
@@ -95,6 +95,8 @@ TOWNS = {
             ('hall', 'warehouse', 'The Salt House', 'Salt in heaps to the rafters, kept dry against the damp at all costs.',
              18, 12),
             ('hall', 'guard', 'The Watch Post', 'Two bunks, a brazier and a view of the coast road.', 14, 9),
+            ('shop', 'general', 'Saltreach Sundries', 'Needles, salt-cod, lamp wicks and a barrel of everything else.'),
+            ('shop', 'smith', 'The Anchor Smithy', 'Boat nails, hooks and chain, and a smith who smells of the sea.'),
         ],
         industry=[  # Doc 35: built after everything else, from their own random sequence.
             ('tenement', 6, 'The Pan Hands\' House'),
@@ -113,7 +115,7 @@ TOWNS = {
                'saw lights out on the water one night and has told no one but the chapel',
                'wants to sail for Ser Ferro and never come back']),
     'cinderbrook': dict(
-        prefix='tn_cb_', style='serferro', street='_', square='f', people=29, near=True, species=[3, 2, 1, 3, 2],
+        prefix='tn_cb_', style='serferro', street='_', square='f', people=31, near=True, species=[3, 2, 1, 3, 2],
         about='a forge-and-mine town in the hills above Ser Ferro, red with ore and smoke',
         buildings=[
             ('tavern', 'The Hot Anvil', 'Miners\' boots by the door, ash in every crack, and the loudest arguments in '
@@ -126,6 +128,7 @@ TOWNS = {
             ('hall', 'healer', 'The Bonesetter\'s', 'Splints, poultices and a long bench for the hurt from the pits.',
              16, 10),
             ('hall', 'guard', 'The Watch Post', 'The Crown\'s two watchmen keep their spears and their quarrels here.', 14, 9),
+            ('shop', 'general', 'The Red Door Store', "Soap, salt, thread and tallow for the miners' wives, on credit till payday."),
         ],
         industry=[  # Doc 35: built after everything else, from their own random sequence.
             ('tenement', 6, 'Furnace Row'),
@@ -144,7 +147,7 @@ TOWNS = {
         hooks=['was trapped below for two days once and does not go down any more', 'sends half of every wage to a '
                'sister in Ser Ferro', 'thinks the Crown\'s ore price is theft', 'is sure the north seam is cursed']),
     'westmarch': dict(
-        prefix='tn_wm_', style='training', street='d', square='_', people=40, near=False, species=[5, 1, 2, 2, 1],
+        prefix='tn_wm_', style='training', street='d', square='_', people=42, near=False, species=[5, 1, 2, 2, 1],
         about='a frontier market town of the southern downs, far from any city and proud of it',
         buildings=[
             ('inn', 'The Last Lantern', 'The last good inn before the empty downs: travellers, drovers and traders '
@@ -158,6 +161,7 @@ TOWNS = {
             ('hall', 'guard', 'The Watch House', 'The frontier watch: a few beds, a rack of spears and a map of the downs.',
              16, 10),
             ('hall', 'warehouse', 'The Granary', 'The town\'s grain, against a hard winter.', 18, 12),
+            ('shop', 'baker', 'The Downs Oven', "Barley loaves and shepherds' pies, warm before the flocks go out."),
         ],
         industry=[  # Doc 35: built after everything else, from their own random sequence.
             ('works', 'stables', 'The Drovers\' Stables', 'Horses for plough and cart, traded on market day.', 2),
@@ -176,7 +180,7 @@ TOWNS = {
                'thinks the downs are emptier every year and wants to know why', 'buried something under the chapel '
                'floor long ago']),
     'lakeside': dict(
-        prefix='tn_ls_', style='city', street='_', square='f', people=45, near=False, species=[4, 1, 3, 2, 1],
+        prefix='tn_ls_', style='city', street='_', square='f', people=47, near=False, species=[4, 1, 3, 2, 1],
         about='a lake town of fishers and boatwrights on the shore of the Mirrormere',
         buildings=[
             ('inn', 'The Still Water', 'Low windows over the lake, smoked trout on every plate and boatmen\'s wagers in '
@@ -192,6 +196,7 @@ TOWNS = {
             ('hall', 'guard', 'The Watch House', 'The town watch keeps an eye on the jetties and the road.', 16, 10),
             ('hall', 'healer', 'The Healer\'s House', 'Clean beds, river-cold compresses and a healer who has seen '
              'every kind of hook wound.', 16, 10),
+            ('shop', 'smith', 'The Lakeside Smithy', 'Hooks, oarlocks and boat nails, and a forge that hisses when the spray reaches it.'),
         ],
         industry=[  # Doc 35: built after everything else, from their own random sequence.
             ('works', 'smokehouse', 'The Mirrormere Smokehouse', 'Trout and eel smoked over alder.'),
@@ -207,7 +212,7 @@ TOWNS = {
         hooks=['saw something huge move under the ice one winter', 'is courting someone on the Isle Fortress',
                'keeps a boat no one else is allowed to touch', 'drew a body from the lake that no one claimed']),
     'fenhollow': dict(
-        prefix='tn_fh_', style='training', street='d', square='d', people=36, near=False, species=[3, 2, 2, 3, 1],
+        prefix='tn_fh_', style='training', street='d', square='d', people=40, near=False, species=[3, 2, 2, 3, 1],
         about='a damp town of peat cutters and herbalists at the edge of the Mirelands',
         buildings=[
             ('tavern', 'The Peat Fire', 'Peat smoke, mud on every floor and a fire that has not gone out in a hundred '
@@ -219,6 +224,8 @@ TOWNS = {
             ('hall', 'chapel', 'The Stilt Chapel', 'A chapel raised on stones against the floods, with a bell for the mist.',
              14, 10),
             ('hall', 'guard', 'The Marsh Watch', 'A small watch for a town that rarely sees trouble but fears it.', 14, 9),
+            ('shop', 'baker', 'The Mossloaf Bakery', 'Dark rye and reed-seed bread, baked in an oven that never quite dries out.'),
+            ('shop', 'smith', 'The Bog Iron Forge', 'Bog iron worked into hooks, nails and the odd blade, slowly.'),
         ],
         industry=[  # Doc 35: built after everything else, from their own random sequence.
             ('tenement', 6, 'The Kiln Loft'),
@@ -267,11 +274,13 @@ TOWNS = {
                'nobody listens', 'has saved enough to buy a field and is waiting for the right one',
                'swears the steppe was greener in a grandmother\'s day']),
     'hollowmere_village': dict(
-        prefix='tn_hm_', style='training', street='d', square='d', people=12, near=False, species=[4, 1, 2, 2, 1],
+        prefix='tn_hm_', style='training', street='d', square='d', people=18, near=False, species=[4, 1, 2, 2, 1],
         about='a quiet hamlet of a few families in the Hollowmere valley',
         buildings=[
             ('tavern', 'The Hollow Cup', 'Barely a tavern: one room, one barrel, and the whole village on a good night.'),
             ('shop', 'general', 'The Hollowmere Shop', 'A counter in a front room selling what the carter last brought.'),
+            ('shop', 'baker', 'The Valley Oven', 'One oven for the whole village; everyone knows when the bread is in.'),
+            ('shop', 'smith', 'The Brookside Smithy', 'Shoes for the ponies, hinges for the gates, and mending for everything.'),
         ],
         industry=[  # Doc 35: built after everything else, from their own random sequence.
             ('shop', 'herbalist', 'Valley Remedies', 'Dried herbs and the old cures of the valley.'),
@@ -461,7 +470,8 @@ def lay_streets(place: Place, cfg, rng):
         i = int(np.argmin((xs - cx) ** 2 + (ys - cy) ** 2))
         cx, cy = int(xs[i]), int(ys[i])
     w, h = xs.max() - xs.min(), ys.max() - ys.min()
-    sw, sh = max(8, int(w * .2)), max(6, int(h * .18))
+    # A fortress's parade ground; a town's crossroads with its well (towns have no market square: Docs/Design/39).
+    sw, sh = (max(8, int(w * .2)), max(6, int(h * .18))) if cfg.get('fortress') else (7, 5)
     square = np.zeros(inside.shape, dtype=bool)
     square[cy - sh // 2:cy + sh // 2 + 1, cx - sw // 2:cx + sw // 2 + 1] = True
     square &= inside
@@ -496,11 +506,6 @@ def paint_ground(place: Place, cfg, street, square, centre, rng):
         c.paint(square, cfg['square'], level)
         cx, cy = centre
         c.stamp(cx, cy, ['U'], level)
-        if not cfg.get('fortress') and place.kind != 'village':
-            for dx in (-4, 4):
-                for dy in (-2, 2):
-                    if square[cy + dy, cx + dx]:
-                        c.stamp(cx + dx, cy + dy, ['u'], level)
     return level
 
 
@@ -512,10 +517,10 @@ def make(cfg, entry, rng, family_name=None):
     style = cfg['style']
     kind = entry[0]
     if kind == 'shop':
+        # A shop, and the flat above it where its keeper's family lives (Docs/Design/39).
         _, trade, name, text = entry
-        p = shop(rng, style, trade)
-        return Building('shop', name, style, fp(p.w, p.h), [p.room('', name, f'{name}, {TRADES[trade]["label"].lower()}. {text}')],
-                        district=cfg['prefix'], trade=trade)
+        rooms, stairs, (w, h) = shop_with_flat(rng, style, trade, name, text)
+        return Building('shop', name, style, fp(w, h), rooms, stairs, district=cfg['prefix'], trade=trade)
     if kind == 'works':
         _, works_kind, name, text = entry[:4]
         hands = entry[4] if len(entry) > 4 else 3
@@ -568,7 +573,9 @@ def place_buildings(place: Place, site: TownSite, cfg, street, square, centre, r
     open_ground &= ~np.isin(codes, [ord(ch) for ch in 'W~w'])
     lots = Lots(open_ground, street | square, gap=1)
     wanted = [make(cfg, e, rng) for e in cfg['buildings']]
-    for i in range(cfg['houses']):
+    # Shopkeepers' families live over their shops (Docs/Design/39), so a town needs a house fewer for every three shops.
+    shops = sum(1 for e in cfg['buildings'] + cfg.get('industry', []) if e[0] == 'shop')
+    for i in range(max(min(3, cfg['houses']), cfg['houses'] - shops // 3)):
         wanted.append(make(cfg, ('house', rng.choice([3, 3, 4, 4, 5])), rng, families[i]))
     for i in range(cfg['tenements']):
         wanted.append(make(cfg, ('tenement', 6, f'The {["Long", "Low", "Old", "Back", "Lane"][i % 5]} House'), rng))
@@ -759,10 +766,7 @@ def labels_for(record):
     """What a building's keeper is called, and what they do (workLabel, at most 40 characters)."""
     kind, name = record['kind'], record['name']
     if kind == 'shop':
-        trade = TRADES[record['trade']]['label'].lower()
-        word = {'smithy': 'smith', 'bakery': 'baker', 'tannery': 'tanner', 'stonemason': 'mason',
-                'general goods': 'shopkeeper', 'armorer': 'armourer'}.get(trade, trade)
-        return word, f'keeps {name}'[:40]
+        return keeper_word(record['trade']), keeper_label(record['trade'], name)
     if kind in ('inn', 'tavern'):
         return 'innkeeper' if kind == 'inn' else 'tavern keeper', f'keeps {name}'[:40]
     if kind == 'works':
@@ -799,10 +803,14 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
         x, y = g['out']
         return P.spot(place.cell['id'], x + rng.randint(-3, 3), y + rng.randint(-3, 3), share=True)
 
+    # Each shop's household first, in the flat above it: the keeper, often a partner who helps, and children or an
+    # elder in the beds left (Docs/Design/39). They come on top of the town's own count.
+    over_shops = shop_households(P, place, [b for b in mine if b['kind'] == 'shop'], rng, species, evening)
+    cap = cfg['people'] + over_shops
     # The work there is: each building's keeper (and helpers), the watch, and the work outside the walls.
     jobs = []
     for b in mine:
-        if b['kind'] in ('house', 'tenement') or b.get('farm') or b.get('fresh'):
+        if b['kind'] in ('house', 'tenement', 'shop') or b.get('farm') or b.get('fresh'):
             continue
         word, label = labels_for(b)
         if b['kind'] in ('shop', 'inn', 'tavern'):
@@ -856,12 +864,12 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
               age=rng.randint(28, 55) if first else rng.randint(19, 45), species=species(), paid=True)
     # Households: a head with a job, a partner (with work if there is any), then children and elders in the beds left.
     for b in homes:
-        if len(P.people) >= cfg['people']:
+        if len(P.people) >= cap:
             break
         family = None if b['kind'] == 'tenement' else b['name'].replace(' House', '').replace(' Farm', '')
         beds = P.beds(b)
         members = 0
-        while beds and len(P.people) < cfg['people']:
+        while beds and len(P.people) < cap:
             home = P.bed(b)
             if home is None:
                 break
@@ -886,7 +894,7 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
             members += 1
     # Work left with no house to sleep in (a garrison's quartermaster and cook): the watch's or garrison's beds.
     for b in [x for x in (watch, leader) if x]:
-        while jobs and len(P.people) < cfg['people'] + 4:
+        while jobs and len(P.people) < cap + 4:
             home = P.bed(b)
             if home is None:
                 break
@@ -894,6 +902,41 @@ def populate(project, place: Place, cfg, manifest, rng, fields, shore):
             P.add(role=job['role'], work_label=job['label'], home=home, work=work_place(job), evening=home,
                   hours=job['hours'], job=job['job'], age=rng.randint(24, 58), species=species())
     return P, jobs
+
+
+def shop_households(P, place: Place, shops, rng, species, evening):
+    """Each shop's family in its flat upstairs: the keeper (who sells there), a partner who helps in the shop most of
+    the time, and children or an elder in the beds left. Returns how many beyond the keepers moved in."""
+    extra = 0
+    for b in shops:
+        family = P.family()
+        word, label = labels_for(b)
+        home = P.bed(b)
+        if home is None:
+            continue
+        P.add(role='merchant', work_label=label, home=home, work=P.work(b), evening=evening(home), hours=(7, 18),
+              family=family, job=f'the {word} of {place.name}, who lives over the shop', age=rng.randint(26, 60),
+              species=species())
+        members = 1
+        while True:
+            bed = P.bed(b)
+            if bed is None:
+                break
+            if members == 1 and rng.random() < .8:
+                P.add(role='civilian', work_label=f'helps at {b["name"]}'[:40], home=bed,
+                      work=P.floor(b['rooms'][0]['id'], share=True), evening=evening(bed), hours=(8, 17), family=family,
+                      job=f'helping in the family\'s shop, {b["name"]}', age=rng.randint(24, 58), species=species())
+            elif rng.random() < .75:
+                P.add(role='civilian', work_label='plays about the town', home=bed,
+                      work=P.spot(place.cell['id'], *place.square_centre, share=True), evening=bed, hours=(9, 16),
+                      family=family, job='a child of the shop', age=rng.randint(6, 15), species=species())
+            else:
+                P.add(role='civilian', work_label='minds the shop\'s door', home=bed,
+                      work=P.floor(b['rooms'][0]['id'], share=True), evening=bed, hours=(10, 15), family=family,
+                      job='the eldest of the family', age=rng.randint(62, 82), species=species())
+            members += 1
+            extra += 1
+    return extra
 
 
 def staff_industry(P, place: Place, manifest, rng):
@@ -905,7 +948,7 @@ def staff_industry(P, place: Place, manifest, rng):
     rng.shuffle(homes)
     homes.sort(key=lambda b: not b.get('fresh'))
     jobs = []
-    for b in [b for b in mine if b.get('fresh')]:
+    for b in [b for b in mine if b.get('fresh') and b['kind'] != 'shop']:
         word, label = labels_for(b)
         jobs.append(dict(role='merchant', label=label, job=f'the {word} of {place.name}', b=b))
         if b['kind'] == 'works':
@@ -932,7 +975,7 @@ SF_HEADS = ['Bel', 'Cas', 'Lan', 'Fer', 'Ros', 'Mar', 'Val', 'Cor', 'Ten', 'Gal'
 SF_TAILS = ['landi', 'telli', 'zari', 'rari', 'setti', 'tini', 'enti', 'sini', 'doni', 'lieri', 'cotti', 'vesi', 'nucci']
 UA_REGIONS = {'upper_accord', 'concord_hall', 'training_grounds', 'warden_order'}
 NOT_HOMES = ('Inn', 'Lodge', 'Infirmary', 'Mending', 'Gaol', 'Kitchens', 'Armory', 'Armoury', 'Healer', 'Barracks',
-             'Guardhouse', 'Guard House', 'Watch House', 'Pup Den', 'Trainers', 'Saint Chi', 'upstairs')
+             'Guardhouse', 'Guard House', 'Watch House', 'Pup Den', 'Trainers', 'Saint Chi', 'upstairs', 'the flat above')
 # Work a city always has more hands for: (label, what they are, where: 'shop' is a shop floor, 'street' near where
 # others already work outdoors), and the share of the newcomers each takes.
 CITY_WORK = [

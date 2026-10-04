@@ -9,7 +9,7 @@ namespace ratw
 {
 bool itemValid(const std::string& item)
 {
-    return item == "herbs" || item == "meal" || item == "sword" || items::wearable(item);
+    return item == "herbs" || item == "meal" || item == "sword" || items::good(item);
 }
 
 bool playerAccountId(const std::string& id)
@@ -192,19 +192,67 @@ bool Society::smith(const std::string& id) const
 }
 std::vector<std::string> Society::wares(const std::string& merchant) const
 {
+    const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
+    if (!r)
+        return smith(merchant) ? std::vector<std::string>{"sword"} : std::vector<std::string>{"herbs", "meal"};
+    if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == r->workLabel)
+        return kept->second.second;
+    std::vector<std::string> out;
+    const auto* business = items::businessFor(r->workLabel);
+    if (business)
+    {
+        // A handful of the kind's cheap goods (or its cheapest few, where little of it is cheap), chosen by the shop.
+        auto cheap = items::goodsSold(*business, CheapPrice);
+        if (cheap.size() < 3)
+        {
+            auto all = items::goodsSold(*business, 1000000);
+            std::stable_sort(all.begin(), all.end(), [](const std::string& a, const std::string& b) {
+                return items::good(a)->price < items::good(b)->price;
+            });
+            all.resize(std::min<std::size_t>(all.size(), 3));
+            for (const auto& id : all)
+                if (std::find(cheap.begin(), cheap.end(), id) == cheap.end())
+                    cheap.push_back(id);
+        }
+        std::uint64_t h = 1469598103934665603ULL;
+        for (unsigned char ch : merchant)
+            h = (h ^ ch) * 1099511628211ULL;
+        const std::size_t want = std::min<std::size_t>(cheap.size(), 3 + h % 4);
+        std::vector<std::pair<std::uint64_t, std::string>> ranked;
+        for (const auto& id : cheap)
+        {
+            std::uint64_t k = h;
+            for (unsigned char ch : id)
+                k = (k ^ ch) * 1099511628211ULL;
+            ranked.push_back({k, id});
+        }
+        std::sort(ranked.begin(), ranked.end());
+        for (std::size_t i = 0; i < want; ++i)
+            out.push_back(ranked[i].second);
+        // In catalog order, as a shop's shelves read.
+        std::sort(out.begin(), out.end(), [&](const std::string& a, const std::string& b) {
+            return std::find(cheap.begin(), cheap.end(), a) < std::find(cheap.begin(), cheap.end(), b);
+        });
+        out.erase(std::remove_if(out.begin(), out.end(), [](const std::string& id) { return id == "meal" || id == "herbs"; }), out.end());
+    }
+    static const char* Food[] = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery"};
+    const bool food = business && std::find(std::begin(Food), std::end(Food), business->id) != std::end(Food);
     if (smith(merchant))
-        return {"sword"};
-    // A tailor, jeweller, harness-maker, tanner, weaver or armourer (doc 35): the wearables its kind of shop sells.
-    if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant))
-        if (const auto* business = items::businessFor(r->workLabel))
-            if (auto sold = items::wearablesSold(*business); !sold.empty())
-                return sold;
-    return {"herbs", "meal"};
+        out.insert(out.begin(), "sword");
+    if (!business || food)
+        out.push_back("meal");
+    if (!business || business->id == "herbalist" || business->id == "apothecary" || business->id == "general" || business->id == "stall")
+        out.push_back("herbs");
+    waresCache_[merchant] = {r->workLabel, out};
+    return out;
 }
 const char* Society::itemName(const std::string& id)
 {
     if (const auto* worn = items::wearable(id))
         return worn->name.c_str();
+    if (id != "herbs" && id != "meal" && id != "sword")
+        if (const auto* good = items::good(id))
+            return good->name.c_str();
     return id == "herbs" ? "Cooking herbs" : id == "meal" ? "Prepared meal" : id == "sword" ? "Dull bronze sword" : "Unknown goods";
 }
 void Society::record(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
@@ -283,8 +331,10 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     const auto& m = *account(seller);
     const auto& p = *account(player);
     const auto* worn = items::wearable(item);
-    const int held = stock(m, item), cap = worn ? 4 : item == "meal" ? 24 : item == "sword" ? 4 : 20;
-    const int base = worn ? worn->price : item == "meal" ? 6 : item == "sword" ? 40 : 2;
+    // Anything else of the catalog (Docs/Design/39): its own price, a few kept.
+    const auto* good = item == "meal" || item == "herbs" || item == "sword" ? nullptr : items::good(item);
+    const int held = stock(m, item), cap = worn ? 4 : good ? GoodsKept : item == "meal" ? 24 : item == "sword" ? 4 : 20;
+    const int base = worn ? worn->price : good ? std::max(1, good->price) : item == "meal" ? 6 : item == "sword" ? 40 : 2;
     // What the trader has on hand, and what the town has in store (priceFactor): scarce goods cost more.
     const double demand = (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.

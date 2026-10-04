@@ -43,7 +43,8 @@ All numbers are *placeholders* for a later balance pass. Prices are in silver pe
 **Not built:**
 
 - **The game knows herbs, meals, swords and the catalog's wearables** (`Core/RatwItems.cpp` reads `Data/Items`). The
-  rest of the catalog (materials, food, tools, the other mouth weapons) isn't in the game yet.
+  rest of the catalog (materials, food, tools, the other mouth weapons) isn't in the game yet. *Since doc 39
+  (2026-10-04)* every item's name and price are known, and shops sell a handful of their kind's cheap goods.
 - **Stations are not yet objects in the engine.** Each is drawn with an existing tile that stands in for it (Part 5).
 - No crafting, carrying weight, wear and tear or industry demand. These are the phases at the end.
 

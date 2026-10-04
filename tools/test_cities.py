@@ -28,6 +28,30 @@ class Kit(unittest.TestCase):
         self.assertEqual(len(B.villa(rng, 'serferro', 4, 2)[1].beds), 4)
         self.assertEqual(len(B.tenement(rng, 'ridgemere', 6).beds), 6)
 
+    def test_every_shop_has_a_flat_above_for_its_keeper(self):
+        # Docs/Design/39: the shop below (goods, counter, keeper's place, a street door), the family's flat above (beds,
+        # a hearth, no street door), and stairs between on the same tile of both floors.
+        for trade in B.TRADES:
+            rooms, stairs, (w, h) = B.shop_with_flat(random.Random(trade), 'city', trade, f'The {trade} shop', 'Goods.')
+            shop, flat = rooms
+            self.assertEqual((shop.key, flat.key, shop.z, flat.z), ('', 'flat', 0, 1), trade)
+            self.assertTrue(shop.work and not shop.beds, trade)
+            self.assertGreaterEqual(len(flat.beds), 2, trade)
+            self.assertEqual(sum(row.count('+') for row in flat.rows), 0, f'{trade}: no street door upstairs')
+            self.assertEqual(sum(row.count('+') for row in shop.rows), 1, trade)
+            ((ka, xa, ya), (kb, xb, yb)), = stairs
+            self.assertEqual(((ka, xa, ya), kb), (('', xb, yb), 'flat'))
+            self.assertEqual((shop.rows[ya][xa], flat.rows[yb][xb]), ('^', '^'), trade)
+            for row in shop.rows + flat.rows:
+                for ch in row:
+                    self.assertIn(ch, terrain_catalog.GLYPHS)
+        # The flat is the shop's own: the same shop gets the same flat, whatever came before it.
+        one = B.shop_with_flat(random.Random(1), 'city', 'baker', 'The Loaf', 'Bread.')[0][1].rows
+        two = B.shop_with_flat(random.Random(1), 'city', 'baker', 'The Loaf', 'Bread.')[0][1].rows
+        self.assertEqual(one, two)
+        self.assertEqual(B.keeper_label('general', 'Saltreach Sundries'), 'shopkeeper at Saltreach Sundries')
+        self.assertEqual(B.keeper_label('smith', 'The Gate Forge'), 'smith at The Gate Forge')
+
     def test_every_tile_the_kit_draws_is_in_the_catalog(self):
         rng = random.Random(2)
         plans = [B.works(rng, 'works', k, 4) for k in B.WORKS] + list(B.manor(rng, 'manor', 5, 4)[:3]) + \

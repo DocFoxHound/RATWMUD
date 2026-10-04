@@ -51,6 +51,18 @@ class TownsTest(unittest.TestCase):
             self.assertIsNotNone(room, f'{p["id"]} lives indoors')
             self.assertIn(room['terrain'][p['home']['y']][p['home']['x']], 'bz', 'in a bed')
         self.assertTrue(all(room['territory']['region'] == 'westmarch' for room in r['rooms']), 'the town is its own region')
+        # Docs/Design/39: the basics (a general store, a baker or provisioner, a smith, an inn or tavern); every shop's
+        # keeper lives in the flat above it, labelled by trade; no market stalls (a town has no market square).
+        shops = [m for m in r['manifest'] if m['kind'] == 'shop']
+        trades = {m['trade'] for m in shops}
+        self.assertTrue('general' in trades and 'smith' in trades and trades & {'baker', 'provisioner'}, trades)
+        self.assertTrue(any(m['kind'] in ('inn', 'tavern') for m in r['manifest']))
+        for m in shops:
+            flat = next(room['id'] for room in m['rooms'] if room['z'] == 1)
+            keeper = [p for p in r['people'] if p['home']['cell'] == flat and p['role'] == 'merchant']
+            self.assertEqual(len(keeper), 1, f'{m["name"]}: its keeper lives over it')
+            self.assertTrue(keeper[0]['workLabel'].endswith(f'at {m["name"]}'[:40][-12:]), keeper[0]['workLabel'])
+        self.assertFalse(any('u' in row for row in out['cells'][0]['terrain']), 'no market stalls in a town')
         # Outside the box and the farms, nothing changed; the project passed in is untouched.
         self.assertEqual(project, before)
         cell = out['cells'][0]

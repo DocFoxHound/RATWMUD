@@ -3790,6 +3790,31 @@ void Game::command(Connection* c, const std::string& raw)
             const auto wearing = World::wornWords(*other);   // (Doc 35: what they wear and where their jewellery is.)
             if (!wearing.empty())
                 e.add("wearing", wearing);
+            // And the same for their equipment page, to look at only: each slot's and spot's item, by id and name.
+            {
+                const auto named = [](const std::string& item) {
+                    auto piece = Value::object();
+                    piece.add("id", item);
+                    piece.add("name", Society::itemName(item));
+                    return piece;
+                };
+                auto worn = Value::object();
+                for (const auto& [slot, item] : other->worn)
+                    worn.add(slot, named(item));
+                auto jewellery = Value::array();
+                for (const auto& [spot, item] : other->jewellery)
+                {
+                    auto piece = named(item);
+                    piece.add("spot", spot);
+                    jewellery.push(std::move(piece));
+                }
+                auto equipment = Value::object();
+                equipment.add("worn", std::move(worn));
+                equipment.add("jewellery", std::move(jewellery));
+                if (!other->mouth.empty())
+                    equipment.add("mouth", named(other->mouth));
+                e.add("equipment", std::move(equipment));
+            }
             e.add("text", described + (wearing.empty() ? "" : " " + wearing) + " Current posture: " + other->posture + ". " + other->state);
             send(c, e);
         }

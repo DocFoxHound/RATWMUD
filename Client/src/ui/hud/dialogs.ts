@@ -10,6 +10,21 @@ import {button, el, setClass} from './dom.ts';
 import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 
+/** What a paper doll shows: names by slot and by fur spot, the portrait, and whether it can be changed (one's own). */
+interface Doll {
+    worn: Record<string, string>;
+    starterSide: string;
+    starterName: string;
+    jewellery: {spot: string; item: string; name: string}[];
+    mouth: string;
+    appearance: Json | null;
+    age: number;
+    artwork: string;
+    editable: boolean;
+    fight: GameState['battle'];
+    self: Json | null;
+}
+
 export class Dialogs {
     private s: GameState;
     private portraits: Portraits;
@@ -53,9 +68,9 @@ export class Dialogs {
         }
         // What the open sheet shows; it is built again only when this changes (a trade's stock, a new colour...).
         const self = obj(s.snapshot, 'self');
-        const art = m === 'inspect' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork')
+        const art = m === 'inspect' || m === 'their_equipment' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork')
             : m === 'status' ? this.ownArtwork(self) : '';
-        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'character' ? [self, s.reputation] : '',
+        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
@@ -75,6 +90,7 @@ export class Dialogs {
         else if (m === 'missions') this.missions();
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'status') this.status(self);
+        else if (m === 'their_equipment') this.theirEquipment();
         else if (m === 'trade') this.trade(self);
         else if (m === 'settings') this.settings();
         else if (m === 'leave_character') this.leave();
@@ -474,7 +490,7 @@ export class Dialogs {
         }
         el('div', 'label sage', senses, `PACE ${Math.trunc(num(self, 'pace'))}/10 ${str(self, 'paceName').toUpperCase()}  ·  TOP ${num(self, 'topSpeed').toFixed(1)} t/s`);
 
-        this.paperDoll(doll, self, b);
+        this.paperDoll(doll, this.ownDoll(self, b));
 
         // What is wrong: in a fight its injuries, named; out of one, what one's state says.
         const list = el('div', 'status-conditions', this.box(right, 'CONDITION'));
@@ -527,22 +543,53 @@ export class Dialogs {
         return box;
     }
 
-    /** The wolf and what it wears (doc 35, 1.1): its portrait between the wear slots, the muzzle beneath, and the fur
-     * spots where jewellery is clipped. A click on something worn takes it off. */
-    private paperDoll(parent: HTMLElement, self: Json | null, fight: GameState['battle']) {
+    /** One's own doll: what one wears, from one's own state; editable. */
+    private ownDoll(self: Json | null, fight: GameState['battle']): Doll {
         const s = this.s;
         const inventory = arr(s.snapshot, 'inventory').filter(isObject);
         const nameOf = (id: string) => str(inventory.find(i => str(i, 'id') === id), 'name', id);
-        const worn = obj(self, 'worn');
+        const worn: Record<string, string> = {};
+        for (const [slot, item] of Object.entries(obj(self, 'worn') ?? {})) if (typeof item === 'string') worn[slot] = nameOf(item);
+        // The everyday satchel every wolf has sits on a free side of the chest.
+        const starter = inventory.find(i => str(i, 'id') === 'starter_satchel');
+        const starterSide = !starter ? '' : !worn.chest_left ? 'chest_left' : !worn.chest_right ? 'chest_right' : '';
+        const mouth = str(self, 'mouth');
+        return {
+            worn, starterSide, starterName: str(starter, 'name'),
+            jewellery: arr(self, 'jewellery').filter(p => Array.isArray(p) && p.length === 2)
+                .map(p => ({spot: String((p as Json[])[0]), item: String((p as Json[])[1]), name: nameOf(String((p as Json[])[1]))})),
+            mouth: mouth ? nameOf(mouth) : '',
+            appearance: obj(self, 'appearance'), age: num(self, 'age', 18), artwork: this.ownArtwork(self),
+            editable: true, fight, self,
+        };
+    }
+
+    /** Another's doll, from what a closer look showed (the inspect event's equipment): to look at only. */
+    private theirDoll(inspected: Json | null): Doll {
+        const equipment = obj(inspected, 'equipment');
+        const worn: Record<string, string> = {};
+        for (const [slot, piece] of Object.entries(obj(equipment, 'worn') ?? {})) if (isObject(piece)) worn[slot] = str(piece, 'name');
+        const stage = str(inspected, 'lifeStage', 'adult');
+        return {
+            worn, starterSide: '', starterName: '',
+            jewellery: arr(equipment, 'jewellery').filter(isObject).map(p => ({spot: str(p, 'spot'), item: str(p, 'id'), name: str(p, 'name')})),
+            mouth: str(obj(equipment, 'mouth'), 'name'),
+            appearance: obj(inspected, 'appearance'), age: stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18,
+            artwork: str(inspected, 'artwork'), editable: false, fight: null, self: null,
+        };
+    }
+
+    /** The wolf and what it wears (doc 35, 1.1): its portrait (as on its card: the uploaded picture where there is one,
+     * else the wolf as it looks) between the wear slots, the muzzle beneath, and the fur spots where jewellery is
+     * clipped. One's own: a click on something worn takes it off. Another's: to look at only. */
+    private paperDoll(parent: HTMLElement, doll: Doll) {
         const sides = el('div', 'rpg-doll-grid', parent);
         const leftSlots = el('div', 'rpg-slots', sides);
         const figure = el('div', 'rpg-figure', sides);
-        // One's own portrait, as on one's card: the uploaded picture where there is one, else the wolf as it looks.
         const canvas = el('canvas', 'portrait', figure);
         canvas.width = canvas.height = 420;
         const c = canvas.getContext('2d');
-        if (c) drawPortrait(c, this.portraits, s.portraitAppearance(), s.portraitAge(), 0, 0, canvas.width, canvas.height,
-            this.ownArtwork(self) || undefined);
+        if (c) drawPortrait(c, this.portraits, doll.appearance, doll.age, 0, 0, canvas.width, canvas.height, doll.artwork || undefined);
         const rightSlots = el('div', 'rpg-slots', sides);
         const slot = (parent: HTMLElement, name: string, holds: string, filled = '', onClick?: () => void, disabled = false, hint = '') => {
             const box = el(onClick ? 'button' : 'div', `rpg-slot${filled ? ' filled' : ''}`, parent) as HTMLElement;
@@ -555,14 +602,12 @@ export class Dialogs {
             }
             return box;
         };
-        // The everyday satchel every wolf has sits on a free side of the chest.
-        const starter = inventory.find(i => str(i, 'id') === 'starter_satchel');
-        const starterSide = !starter ? '' : !str(worn, 'chest_left') ? 'chest_left' : !str(worn, 'chest_right') ? 'chest_right' : '';
         const wear = (parent: HTMLElement, key: string, name: string, holds: string) => {
-            const item = str(worn, key);
-            if (!item && key === starterSide) return slot(parent, name, holds, str(starter, 'name'), undefined, false, 'The satchel every wolf has.');
-            return slot(parent, name, holds, item ? nameOf(item) : '', item ? () => this.act('take off', key) : undefined, !!fight,
-                item ? (fight ? 'Not in a fight.' : 'Click to take it off.') : 'Choose something below to wear it.');
+            const item = doll.worn[key] ?? '';
+            if (!item && key === doll.starterSide) return slot(parent, name, holds, doll.starterName, undefined, false, 'The satchel every wolf has.');
+            if (!doll.editable) return slot(parent, name, holds, item);
+            return slot(parent, name, holds, item, item ? () => this.act('take off', key) : undefined, !!doll.fight,
+                item ? (doll.fight ? 'Not in a fight.' : 'Click to take it off.') : 'Choose something below to wear it.');
         };
         wear(leftSlots, 'head', 'HEAD', 'a hat, hood or helm.');
         wear(leftSlots, 'neck', 'NECK', 'a scarf, neckerchief, leather wrap, gorget or neck guard.');
@@ -572,19 +617,20 @@ export class Dialogs {
         wear(rightSlots, 'chest_left', 'CHEST · LEFT', 'a satchel, sling bag, water skin or bandolier.');
         wear(rightSlots, 'chest_right', 'CHEST · RIGHT', 'a satchel, sling bag, water skin or bandolier.');
         wear(rightSlots, 'paws', 'PAWS', 'wraps, bindings, boots or claw caps: one set for all four.');
-        // The muzzle: what is held, and taking up or putting away the sword.
-        const mouth = str(self, 'mouth');
-        const sword = this.swordAction(self, fight);
-        slot(el('div', 'rpg-doll-row', parent), 'MUZZLE', 'for holding: a weapon, tool, lantern, basket or letter. Holding something stops ' +
-            'Bite and muffles speech.', mouth ? nameOf(mouth) : '', sword?.run, sword?.disabled ?? false,
+        // The muzzle: what is held, and (one's own) taking up or putting away the sword.
+        const holds = 'for holding: a weapon, tool, lantern, basket or letter. Holding something stops Bite and muffles speech.';
+        const row = el('div', 'rpg-doll-row', parent);
+        const sword = doll.editable ? this.swordAction(doll.self, doll.fight) : null;
+        if (!doll.editable) slot(row, 'MUZZLE', holds, doll.mouth);
+        else slot(row, 'MUZZLE', holds, doll.mouth, sword?.run, sword?.disabled ?? false,
             sword ? `${sword.label}${sword.why ? ` (${sword.why})` : ''}` : 'You have nothing to hold.');
-        this.furSpots(parent, self, fight, nameOf);
+        this.furSpots(parent, doll);
     }
 
     /** Jewellery at its fur spots (doc 35): a wolf in outline with a marker at each spot, how many pieces are there, and
-     * the chosen spot's pieces to unclip. */
-    private furSpots(parent: HTMLElement, self: Json | null, fight: GameState['battle'], nameOf: (id: string) => string) {
-        const pieces = arr(self, 'jewellery').filter(p => Array.isArray(p) && p.length === 2).map(p => ({spot: String((p as Json[])[0]), item: String((p as Json[])[1])}));
+     * the chosen spot's pieces (one's own, to unclip). */
+    private furSpots(parent: HTMLElement, doll: Doll) {
+        const pieces = doll.jewellery;
         const box = this.box(parent, `JEWELLERY · ${pieces.length ? `${pieces.length} PIECE${pieces.length === 1 ? '' : 'S'}` : 'NONE'}`);
         const wrap = el('div', 'rpg-fur', box);
         const ns = 'http://www.w3.org/2000/svg';
@@ -607,23 +653,23 @@ export class Dialogs {
         };
         if (!at[this.spot]) this.spot = '';
         for (const [spot, [x, y, label]] of Object.entries(at)) {
-            const count = pieces.filter(p => p.spot === spot).length;
+            const here = pieces.filter(p => p.spot === spot);
             const g = document.createElementNS(ns, 'g');
-            g.setAttribute('class', `rpg-fur-spot${count ? ' has' : ''}${spot === this.spot ? ' chosen' : ''}`);
+            g.setAttribute('class', `rpg-fur-spot${here.length ? ' has' : ''}${spot === this.spot ? ' chosen' : ''}`);
             const dot = document.createElementNS(ns, 'circle');
             dot.setAttribute('cx', String(x));
             dot.setAttribute('cy', String(y));
-            dot.setAttribute('r', count ? '8' : '5');
+            dot.setAttribute('r', here.length ? '8' : '5');
             g.appendChild(dot);
-            if (count) {
+            if (here.length) {
                 const n = document.createElementNS(ns, 'text');
                 n.setAttribute('x', String(x));
                 n.setAttribute('y', String(y + 3.5));
-                n.textContent = String(count);
+                n.textContent = String(here.length);
                 g.appendChild(n);
             }
             const title = document.createElementNS(ns, 'title');
-            title.textContent = `${label}${count ? `: ${pieces.filter(p => p.spot === spot).map(p => nameOf(p.item)).join(', ')}` : ': nothing'}`;
+            title.textContent = `${label}: ${here.length ? here.map(p => p.name).join(', ') : 'nothing'}`;
             g.appendChild(title);
             g.addEventListener('click', () => {
                 this.spot = this.spot === spot ? '' : spot;
@@ -635,7 +681,8 @@ export class Dialogs {
         const list = el('div', 'rpg-fur-list', wrap);
         if (!this.spot) {
             el('p', 'muted small', list, pieces.length ? 'Click a spot to see what is clipped there.'
-                : 'Nothing clipped to your fur. Jewellery you own can be clipped on from your belongings below.');
+                : doll.editable ? 'Nothing clipped to your fur. Jewellery you own can be clipped on from your belongings below.'
+                    : 'Nothing clipped to their fur.');
             return;
         }
         el('div', 'label gold', list, at[this.spot][2]);
@@ -643,10 +690,23 @@ export class Dialogs {
         if (!here.length) el('p', 'muted small', list, 'Nothing clipped here.');
         for (const p of here) {
             const row = el('div', 'rpg-fur-row', list);
-            el('span', '', row, nameOf(p.item));
+            el('span', '', row, p.name);
+            if (!doll.editable) continue;
             const off = button('UNCLIP', 'secondary', row, () => this.act('take off', `${p.spot}@${p.item}`));
-            off.disabled = !!fight;
+            off.disabled = !!doll.fight;
         }
+    }
+
+    /** Another's equipment page (doc 35), from a closer look at them: what they wear and where, to look at only. */
+    private theirEquipment() {
+        const s = this.s, inspected = s.inspectedCharacter;
+        this.heading('EQUIPMENT · A CLOSER LOOK', str(inspected, 'title', str(inspected, 'name', 'Someone')));
+        el('div', 'label muted', this.panel, `${str(inspected, 'lifeStage', 'adult').toUpperCase()}  ·  ${str(inspected, 'posture', 'standing').toUpperCase()}` +
+            '  ·  WHAT YOU CAN SEE OF WHAT THEY WEAR');
+        const doll = el('div', 'rpg-doll rpg-doll-alone', el('div', 'rpg rpg-their', this.panel));
+        this.paperDoll(doll, this.theirDoll(inspected));
+        if (str(inspected, 'wearing')) el('p', 'muted', this.panel, str(inspected, 'wearing'));
+        button('BACK TO THE CLOSER LOOK', 'secondary', el('div', 'sheet-actions', this.panel), () => this.act('back_to_inspect'));
     }
 
     /** Putting on a wearable (doc 35): at its slot, a side of the chest, or a fur spot it clips to; and taking it off. */
@@ -893,6 +953,9 @@ export class Dialogs {
         // How they regard this wolf, and this wolf's own note on them (doc 32, 1.4).
         const inspected = s.inspectedCharacter, id = str(inspected, 'id');
         if (str(inspected, 'regard')) el('p', 'sage', this.panel, `They ${str(inspected, 'regard')}.`);
+        if (obj(inspected, 'equipment'))
+            button(id === s.selfId ? 'YOUR EQUIPMENT' : 'WHAT THEY WEAR', 'primary', el('div', 'sheet-actions', this.panel),
+                () => { this.spot = ''; this.act(id === s.selfId ? 'status' : 'their_equipment'); });
         if (id && id !== s.selfId) {
             el('div', 'label gold', this.panel, 'YOUR NOTE');
             const row = el('div', 'name-add', this.panel);

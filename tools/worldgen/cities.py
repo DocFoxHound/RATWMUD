@@ -21,7 +21,7 @@ import random
 import numpy as np
 
 from . import field
-from .buildings import (Building, TRADES, WORKS, cathedral, hall, house, manor, palace, shop, tavern, tenement,
+from .buildings import (Building, TRADES, WORKS, cathedral, hall, house, manor, palace, shop, shop_with_flat, tavern, tenement,
                         villa, works)
 from .canvas import half
 from .site import Lots, Site, footprint_size
@@ -288,11 +288,24 @@ class City:
         return Building(kind, name, style, fp(plans[0].w, plans[0].h, scale), rooms, list(stairs), district, roof, trade)
 
     def a_shop(self, trade, name, text, district, style, fresh=False):
-        p = shop(self.new_rng if fresh else self.rng, style, trade)
-        room = p.room('', name, f'{name}, {TRADES[trade]["label"].lower()}. {text}')
-        b = Building('shop', name, style, fp(p.w, p.h), [room], district=district, trade=trade)
+        # A shop, and the flat above it where its keeper's family lives (Docs/Design/39).
+        rooms, stairs, (w, h) = shop_with_flat(self.new_rng if fresh else self.rng, style, trade, name, text)
+        b = Building('shop', name, style, fp(w, h), rooms, stairs, district=district, trade=trade)
         b.fresh = fresh
         return b
+
+    def market_stalls(self, cx, cy, columns, rows, level):
+        """Rows of market stalls on a square (Docs/Design/39): two-tile stalls across the square in facing rows, with the
+        aisle between them; each stallholder's place behind their stall. Records the places in spots['stalls']."""
+        c = self.c
+        places = self.spots.setdefault('stalls', [])
+        for dy in rows:
+            behind = 1 if dy > 0 else -1
+            for dx in columns:
+                x, y = cx + dx, cy + dy
+                c.stamp(x, y, ['uu'], level)
+                places.append((x, y + behind))
+        return places
 
     def a_works(self, kind, name, text, district, style, hands=3, roof=''):
         """One of doc 35's workshops: its stations laid out, the trade recorded so its master and hands are found."""
@@ -426,8 +439,7 @@ class Ridgemere(City):
         c.paint(sump & ~avenues, '.', level)
         self.spots['market'] = (cx, cy)
         c.stamp(cx, cy, ['U'], level)
-        for dx, dy in ((-8, -6), (8, -6), (-8, 6), (8, 6), (0, -9), (0, 9)):
-            c.stamp(cx + dx, cy + dy, ['u'], level)
+        self.market_stalls(cx, cy, (-9, -4, 3, 8), (-5, 5), level)
         lots, _ = self.district(inner, avenues, lanes, self.old_city(), jitter=12)
         self.yards(lots.open & inner, '.', extra=(('x', .004), ('O', .003)))
         # The quay: a street along the wall outside, buildings on the waterside, piers into the harbour.
@@ -903,8 +915,7 @@ class SerFerro(City):
             c.stamp(plaza_c[0] + dx, plaza_c[1] - 8, ['S'], None)
         c.stamp(forecourt_c[0] - 1, forecourt_c[1] - 1, ['FFF', 'FSF', 'FFF'], None)
         c.stamp(market_c[0], market_c[1], ['U'], None)
-        for dx, dy in ((-9, -6), (9, -6), (-9, 6), (9, 6), (0, -7), (0, 7), (-5, 0), (5, 0)):
-            c.stamp(market_c[0] + dx, market_c[1] + dy, ['u'], None)
+        self.market_stalls(market_c[0], market_c[1], (-11, -6, 5, 10), (-5, 5), None)
         self.spots.update({'plaza': plaza_c, 'forecourt': forecourt_c, 'market': market_c})
         self.districts = {
             'palace': (226, 2366), 'heights': (176, 2360), 'rise': (122, 2386), 'rise_south': (130, 2448),

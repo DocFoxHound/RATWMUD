@@ -12,7 +12,9 @@ import random
 import re
 
 import terrain_catalog
+from . import city as C
 from . import upper_accord as UA
+from .buildings import keeper_label
 
 SEED = 4242
 FACTIONS = [
@@ -251,25 +253,39 @@ def populate(project, manifest, seed=SEED):
     rng.shuffle(city_houses)
     homes = iter(city_houses)
 
-    # Shopkeepers, innkeepers and their households.
+    # Innkeepers and their households, in a house; shopkeepers and theirs in the flat over the shop (Docs/Design/39).
+    families = {h['name'].replace(' House', '') for h in houses}
+
+    def new_family():
+        while True:
+            family = rng.choice(SURNAME_HEADS) + rng.choice(SURNAME_TAILS)
+            if family not in families:
+                families.add(family)
+                return family
+
     for shop in by_kind(manifest, 'shop', 'tavern', 'inn'):
-        house = next(homes)
-        family = house['name'].replace(' House', '')
+        over = shop['kind'] == 'shop'
+        house = shop if over else next(homes)
+        family = new_family() if over else house['name'].replace(' House', '')
         trade = shop['trade'] or shop['kind']
-        label = {'tavern': 'keeping the taproom', 'inn': 'keeping the inn'}.get(shop['kind'], f'keeping the {trade} shop'
-                                                                             if trade != 'general' else 'keeping shop')
+        label = keeper_label(trade, shop['name']) if over else \
+            {'tavern': 'keeping the taproom', 'inn': 'keeping the inn'}[shop['kind']]
         start = rng.choice([6, 7, 7, 8])
-        hours = (start, start + 12) if shop['kind'] == 'shop' else (11, 23.5)
-        P.add(role='merchant', work_label=label, family=family, home=P.bed(house), work=P.work(shop),
-              evening=P.spot(house['rooms'][0]['id'], *P.beds(house)[0][1:], share=True) if P.beds(house) else
-              P.floor(house['rooms'][0]['id'], share=True), hours=hours,
-              job=f'who keeps {shop["name"]}', greeting_line=f'This is {shop["name"]}. Herbs and meals, fair prices.')
-        # A partner and sometimes a youngster or an elder share the house.
-        for kin in range(rng.choice([0, 1, 1])):
+        hours = (start, start + 12) if over else (11, 23.5)
+        home = P.bed(house)
+        P.add(role='merchant', work_label=label, family=family, home=home, work=P.work(shop),
+              evening=home if over else (P.spot(house['rooms'][0]['id'], *P.beds(house)[0][1:], share=True)
+                                         if P.beds(house) else P.floor(house['rooms'][0]['id'], share=True)),
+              hours=hours, job=f'who keeps {shop["name"]}' + (' and lives over it' if over else ''),
+              greeting_line=f'This is {shop["name"]}. What can I find for you?' if over else
+              f'This is {shop["name"]}. Sit, and I\'ll bring you something.')
+        # A shop's family fills its flat: often a partner who helps, then youngsters or an elder. An innkeeper's house
+        # sometimes has one more.
+        for kin in range(8 if over else rng.choice([0, 1, 1])):
             bed = P.bed(house)
             if not bed:
                 break
-            young = rng.random() < .35
+            young = rng.random() < (.45 if over and kin > 0 else .35)
             if young:
                 P.add(role='civilian', work_label='playing in the plaza', family=family, age=rng.randint(4, 11),
                       home=bed, work=P.world(plaza[0] + rng.randint(-12, 12), plaza[1] + rng.randint(-9, 9)),
@@ -278,6 +294,16 @@ def populate(project, manifest, seed=SEED):
                 P.add(role='civilian', work_label=f'helping at {shop["name"]}'[:40], family=family, home=bed,
                       work=P.floor(shop['rooms'][0]['id']), evening=evening_out(), hours=(hours[0] + 1, hours[1] - 1),
                       job=f'who works beside family at {shop["name"]}')
+
+    # The plaza's stallholders, behind their stalls every day, selling food (Docs/Design/39).
+    foods = ['bread', 'pie', 'cheese', 'sausage', 'soup', 'nut', 'honey', 'egg', 'porridge', 'pickle', 'fruit', 'fish']
+    rng.shuffle(foods)
+    for i, (x, y) in enumerate(C.STALL_PLACES):
+        food = foods[i % len(foods)]
+        house = next(homes)
+        P.add(role='merchant', work_label=f'{food} stall on the plaza', family=house['name'].replace(' House', ''),
+              home=P.bed(house), work=P.world(x, y, share=False), evening=evening_out(), hours=(6, 16),
+              job=f'who keeps the {food} stall on the plaza', greeting_line=f'Fresh {food} from the plaza! Two pence.')
 
     # Craft and civic workers from other households.
     civic = {b['name']: b for b in manifest}

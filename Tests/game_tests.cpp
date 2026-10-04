@@ -1304,6 +1304,21 @@ void theDevConsole()
     expect(ash.last("devResult")->boolean("ok"), "and ends it as a draw");
     run(g, ash, 6);
     expect(!g.world().inBattle("player-ash"), "back in the world");
+    // The team fight: Ash and two allies against three weak bandits; ended the same way.
+    run(g, ash, 6);                                 // (Past the settling after a fight.)
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/fight-test-team-1"}}));
+    reply = ash.last("devResult");
+    expect(reply && reply->boolean("ok"), "a team fight starts: " + (reply ? reply->string("text") : ""));
+    const auto* team = g.world().battleOf("player-ash");
+    expect(team && team->fighters.size() == 6, "six in it: Ash, two allies, three bandits");
+    run(g, ash, .3);
+    int friends = 0, foes = 0;
+    for (const auto& f : ash.snapshots.back()["battle"].array("fighters"))
+        (f.number("side") == team->fighter("player-ash")->side ? friends : foes) += 1;
+    expect(friends == 3 && foes == 3, "her page shows three a side");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/fight-end-myself"}}));
+    run(g, ash, 6);
+    expect(!g.world().inBattle("player-ash"), "back in the world after it too");
     g.disconnect(&ash);
     const auto saved = g.characters().find("player-ash");
     expect(saved != g.characters().end() && saved->second.dungeonMaster, "the mark stays with the character");

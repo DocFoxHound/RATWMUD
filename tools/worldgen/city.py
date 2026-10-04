@@ -6,7 +6,7 @@ import random
 import numpy as np
 
 from . import field
-from .buildings import Building, TRADES, house, hall, shop, tavern
+from .buildings import Building, TRADES, house, hall, shop_with_flat, tavern
 from .names import HOUSE_PROSE, TRADE_PROSE, Namer
 from .site import Lots, Site
 
@@ -30,10 +30,10 @@ def footprint(w, h, scale=.72):
 
 
 def make_shop(rng, namer, trade, ward):
-    p = shop(rng, 'city', trade)
+    # A shop, and the flat above it where its keeper's family lives (Docs/Design/39).
     name = namer.shop(trade)
-    room = p.room('', name, f'{name}, {TRADES[trade]["label"].lower()}. {TRADE_PROSE[trade]}')
-    return Building('shop', name, 'city', footprint(p.w, p.h), [room], district=ward, roof='L', trade=trade)
+    rooms, stairs, (w, h) = shop_with_flat(rng, 'city', trade, name, TRADE_PROSE[trade])
+    return Building('shop', name, 'city', footprint(w, h), rooms, stairs, district=ward, roof='L', trade=trade)
 
 
 def make_house(rng, namer, ward, people):
@@ -86,13 +86,21 @@ def streets(c, inner):
     return street, plaza & inner
 
 
+# Where the plaza's stallholders stand (world tiles), behind every other stall (Docs/Design/39); filled by plaza_fixtures.
+STALL_PLACES: list[tuple[int, int]] = []
+
+
 def plaza_fixtures(c):
     px, py = PLAZA
     c.stamp(px - 1, py - 1, ['FFF', 'FSF', 'FFF'], 0.0)
+    STALL_PLACES.clear()
     for x in range(px - 13, px + 14, 3):
         for y in (py - 9, py - 6, py + 6, py + 9):
             if abs(x - px) > 3:
                 c.stamp(x, y, ['u'], 0.0)
+                # Each pair of rows faces an aisle between them; the stallholder stands on the far side.
+                if (x - px + 13) % 6 == 0:
+                    STALL_PLACES.append((x, y - 1 if y in (py - 9, py + 6) else y + 1))
     for x, y in ((px - 14, py - 3), (px + 14, py - 3), (px - 14, py + 3), (px + 14, py + 3)):
         c.stamp(x, y, ['Y'], 0.0)
     for x, y in ((px - 15, py - 11), (px + 15, py - 11), (px - 15, py + 11), (px + 15, py + 11)):

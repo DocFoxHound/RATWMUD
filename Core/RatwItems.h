@@ -1,6 +1,7 @@
 #pragma once
-// The item catalog in the game (Docs/Design/35-items-crafting-industry.md): what of Data/Items the server knows. For now
-// the wearables (Phase 4) and the shops that sell them; herbs, meals and the sword keep their old hard-coded ways.
+// The item catalog in the game (Docs/Design/35-items-crafting-industry.md): what of Data/Items the server knows. The
+// wearables (Phase 4), every good a shop may sell (its name, kind and price: Docs/Design/39), and the kinds of shop;
+// herbs, meals and the sword keep their old hard-coded ways.
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -46,6 +47,10 @@ bool spotAllowed(const Item& item, const std::string& spot);
 const Business* businessFor(const std::string& workLabel);
 // The wearables a business sells, by id or category, in catalog order.
 std::vector<std::string> wearablesSold(const Business& business);
+// Any item of the catalog (wearable or not), or null.
+const Item* good(const std::string& id);
+// What a business sells (by id or category) costing at most `maxPrice` pennies, in catalog order.
+std::vector<std::string> goodsSold(const Business& business, int maxPrice);
 // "the ruff", "the left foreleg"...: a fur spot or wear slot for a sentence.
 std::string placeName(const std::string& where);
 } // namespace ratw::items

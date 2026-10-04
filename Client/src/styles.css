@@ -164,7 +164,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .senses { color: var(--muted); line-height: 1.5; }
 /* The status screen (doc 33), laid out as an equipment screen: stats | the wolf and its slots | condition; belongings below. */
 .sheet.wide { width: min(1280px, 96vw); }
-.rpg { display: grid; grid-template-columns: minmax(250px, 1fr) minmax(320px, 1.35fr) minmax(230px, 1fr); gap: 16px; margin: 12px 0 14px; align-items: start; }
+.rpg { display: grid; grid-template-columns: minmax(240px, 0.9fr) minmax(400px, 1.6fr) minmax(220px, 0.9fr); gap: 16px; margin: 12px 0 14px; align-items: start; }
 .rpg-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .rpg-box { background: var(--ink); border: 1px solid #34443e; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .rpg-meter { cursor: help; }
@@ -178,17 +178,19 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .rpg-line { display: grid; grid-template-columns: 78px 1fr 112px; gap: 8px; align-items: center; }
 .bar.thin { height: 5px; margin: 0; }
 .rpg-doll { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.rpg-doll-grid { display: grid; grid-template-columns: 1fr minmax(0, 1.5fr) 1fr; gap: 8px; align-items: stretch; }
-.rpg-slots { display: flex; flex-direction: column; gap: 8px; justify-content: space-between; }
+.rpg-doll-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 210px) minmax(0, 1fr); gap: 10px; align-items: center; }
+.rpg-slots { display: flex; flex-direction: column; gap: 8px; justify-content: center; min-width: 0; }
 .rpg-figure { display: flex; align-items: center; justify-content: center; min-width: 0; }
-.rpg-doll-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rpg-figure .portrait { width: 100%; max-width: 210px; aspect-ratio: 1; height: auto; border-radius: 4px; }
+.rpg-doll-row { display: grid; grid-template-columns: 1fr; }
 .rpg-slot { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 7px 9px; min-height: 52px; background: var(--ink);
     border: 1px dashed #3a4a44; border-radius: 4px; color: var(--paper); font: inherit; cursor: help; }
 .rpg-slot.filled { border: 1px solid var(--gold); background: color-mix(in srgb, var(--gold) 10%, var(--ink)); }
 button.rpg-slot { cursor: pointer; }
 button.rpg-slot:hover:not(:disabled) { outline: 1px solid var(--sage); }
 button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
-.rpg-slot-item { font-size: 14px; color: var(--gold); }
+.rpg-slot-item { font-size: 14px; line-height: 1.25; color: var(--gold); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .rpg-slot-empty { font-size: 13px; color: #5d6c66; font-style: italic; }
 .rpg-pack { display: grid; grid-template-columns: 1fr minmax(240px, 320px); gap: 14px; align-items: start; }
 .rpg-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
@@ -204,7 +206,7 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .rpg-detail { background: var(--panel); border: 1px solid #34443e; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 6px; min-height: 120px; }
 .rpg-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .rpg-fur { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; align-items: center; }
-.rpg-fur-svg { width: 100%; height: auto; display: block; }
+.rpg-fur-svg { width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
 .rpg-fur-wolf { fill: #24302c; stroke: #4a5c55; stroke-width: 1.5; }
 .rpg-fur-spot { cursor: pointer; }
 .rpg-fur-spot circle { fill: var(--ink); stroke: #6b7c74; stroke-width: 1.5; }
@@ -217,14 +219,24 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .rpg-fur-row .secondary { padding: 4px 8px; font-size: 11px; }
 .rpg-detail-actions .label { width: 100%; }
 .rpg-detail-actions .primary { padding: 7px 10px; font-size: 12px; }
+/* Another's equipment page: the doll alone, centred. */
+.rpg.rpg-their { display: block; }
+.rpg-doll-alone { max-width: 760px; margin: 0 auto; }
+.rpg-doll-alone .rpg-doll-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 250px) minmax(0, 1fr); }
+.rpg-doll-alone .rpg-figure .portrait { max-width: 250px; }
 @media (max-width: 1100px) {
     .rpg { grid-template-columns: 1fr 1fr; }
-    .rpg-doll { grid-column: 1 / -1; order: -1; }
+    .rpg-doll { grid-column: 1 / -1; order: -1; max-width: 760px; width: 100%; justify-self: center; }
+    .rpg-doll-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 250px) minmax(0, 1fr); }
+    .rpg-figure .portrait { max-width: 250px; }
 }
 @media (max-width: 700px) {
-    .rpg, .rpg-pack { grid-template-columns: 1fr; }
+    .rpg, .rpg-pack, .rpg-fur { grid-template-columns: 1fr; }
+    /* The portrait on top, the slots in two columns beneath it. */
     .rpg-doll-grid { grid-template-columns: 1fr 1fr; }
     .rpg-figure { grid-column: 1 / -1; order: -1; }
+    .rpg-figure .portrait { max-width: 220px; }
+    .rpg-slot { min-height: 46px; padding: 6px 8px; }
 }
 
 .helpbar { grid-area: help; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 18px;

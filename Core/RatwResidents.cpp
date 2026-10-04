@@ -45,6 +45,10 @@ void Society::resetAuthored()
         state_.accounts[r.id] = account;
         if (smith(r.id))
             state_.accounts[r.id].stock["sword"] = SmithSwords;     // A smith's own work, for sale.
+        if (r.role == "merchant")
+            for (const auto& ware : wares(r.id))                      // A shop's own goods on its shelves (Docs/Design/39).
+                if (ware != "meal" && ware != "herbs" && ware != "sword")
+                    state_.accounts[r.id].stock[ware] = GoodsKept;
         state_.minted += account.cash;
         ResidentLife life;
         life.role = r.role;
@@ -153,21 +157,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     const auto pick = [](const std::vector<Spot>& spots, const std::string& id) -> const Spot* {
         return spots.empty() ? nullptr : &spots[std::hash<std::string>{}(id) % spots.size()];
     };
-    // Where a merchant trades now: a market stall on Marketday mornings (unless the weather is foul), else the shop.
-    // In a city (six shops or more) a third of them keep a food stall in the square each ordinary morning too
-    // (doc 36), so a city's food isn't all behind a few shop counters; a small town's market keeps to Marketday.
-    std::map<std::string, int> shopsIn;
-    if (day_.communityOf)
-        for (const auto& p : positions_)
-            if (p.role == "merchant")
-                ++shopsIn[day_.communityOf(p.work.cell)];
-    const auto dailyStall = [&](const Position& p, const std::string& holder) {
-        const auto shops = day_.communityOf ? shopsIn.find(day_.communityOf(p.work.cell)) : shopsIn.end();
-        return shops != shopsIn.end() && shops->second >= 6 && std::hash<std::string>{}(holder + "stall") % 3 == 0;
-    };
+    // Where a merchant trades now: a stall on the square on Marketday mornings (unless the weather is foul), else the
+    // shop. Only a city has stalls built (Docs/Design/39), and its own stallholders keep them every day; a town has
+    // none, and no market day.
     const auto tradingAt = [&](const Position& p, const std::string& holder) -> Spot {
         const auto& plan = planFor(p.work.cell);
-        if ((plan.kind == "market" || (plan.kind == "work" && dailyStall(p, holder))) && !plan.foul && hour >= 7 && hour < 14)
+        if (plan.kind == "market" && !plan.foul && hour >= 7 && hour < 14)
             if (const auto* stall = pick(plan.stalls, holder))
                 return *stall;
         return p.work;
@@ -537,35 +532,34 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (!seller || !transfer(*seller, pair.first, "meal", meals, price, "resident food purchase"))
                 life.reason = "Cannot buy food: the shop, its stock or the purse is unavailable.";
         }
-        else if (task == "trade" && smith(pair.first))
+        else if (task == "trade")
         {
+            const auto sold = wares(pair.first);
             // At the forge: another blade while there are fewer than a few on hand.
-            if (stock(wallet, "sword") < SmithSwords)
+            if (smith(pair.first) && stock(wallet, "sword") < SmithSwords)
                 create(pair.first, "sword", 1, "forged");
-        }
-        else if (task == "trade" && wares(pair.first).front() != "herbs")
-        {
-            // A tailor, jeweller, harness-maker or armourer at work (doc 35): one more piece of whatever is sold out,
-            // as the smith forges blades. (A placeholder until crafting takes materials, Phase 5.)
-            for (const auto& ware : wares(pair.first))
-                if (stock(wallet, ware) < 1)
+            // The shop's own goods (doc 35; Docs/Design/39): one more of whatever has run low, a piece at a time, as the
+            // smith forges blades. (A placeholder until crafting takes materials, doc 35 Phase 5.)
+            for (const auto& ware : sold)
+                if (ware != "meal" && ware != "herbs" && ware != "sword" && stock(wallet, ware) < GoodsKept)
                 {
                     create(pair.first, ware, 1, "made");
                     break;
                 }
-        }
-        else if (task == "trade")
-        {
+            const bool sellsMeals = std::find(sold.begin(), sold.end(), "meal") != sold.end();
+            const bool sellsHerbs = std::find(sold.begin(), sold.end(), "herbs") != sold.end();
+            if (!sellsMeals && !sellsHerbs)
+                continue;
             // From the town's own stores (the treasury, where there is one town): what the caravans have brought.
             const std::string& storeId = storeFor(job->work.cell);
             const auto& stores = *account(storeId);
             // A stall on Marketday carries more.
             const int carried = atStall_.count(pair.first) ? 20 : 12;
-            const int meals = std::min({3, carried - stock(wallet, "meal"), stock(stores, "meal"),
+            const int meals = !sellsMeals ? 0 : std::min({3, carried - stock(wallet, "meal"), stock(stores, "meal"),
                                         int(std::min<std::int64_t>(3, wallet.cash / 4))});
             if (meals > 0)
                 transfer(storeId, pair.first, "meal", meals, 4, "wholesale restock");
-            const int herbs = std::min({3, 8 - stock(wallet, "herbs"), stock(stores, "herbs"),
+            const int herbs = !sellsHerbs ? 0 : std::min({3, 8 - stock(wallet, "herbs"), stock(stores, "herbs"),
                                         int(std::min<std::int64_t>(3, wallet.cash))});
             if (herbs > 0)
                 transfer(storeId, pair.first, "herbs", herbs, 1, "wholesale restock");

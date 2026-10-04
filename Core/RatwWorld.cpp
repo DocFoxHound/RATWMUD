@@ -4364,8 +4364,27 @@ PersistedWorld World::save() const
     out.fronts = fronts_;
     return out;
 }
-Result World::restore(const PersistedWorld& state)
+Result World::restore(const PersistedWorld& saved)
 {
+    // A world rebuilt since the save (its settlements generated again: Docs/Design/39): what the save says of places and
+    // doors the world no longer has is let go, as a resident whose home is gone goes back to their authored bed.
+    // Everything else is checked as strictly as ever.
+    PersistedWorld state = saved;
+    const auto gone = [&](const std::string& id) { return !cell(id); };
+    for (auto* places : {&state.seasonalWeather})
+        for (auto it = places->begin(); it != places->end();)
+            it = gone(it->first) ? places->erase(it) : std::next(it);
+    for (auto it = state.weather.begin(); it != state.weather.end();)
+        it = gone(it->first) ? state.weather.erase(it) : std::next(it);
+    for (auto it = state.winds.begin(); it != state.winds.end();)
+        it = gone(it->first) ? state.winds.erase(it) : std::next(it);
+    for (auto it = state.lighting.begin(); it != state.lighting.end();)
+        it = gone(it->first) ? state.lighting.erase(it) : std::next(it);
+    for (auto& [observer, places] : state.memories)
+        for (auto it = places.begin(); it != places.end();)
+            it = gone(it->first) ? places.erase(it) : std::next(it);
+    for (auto it = state.doorStates.begin(); it != state.doorStates.end();)
+        it = !doors_.count(it->first) && it->first.rfind("seam_", 0) != 0 ? state.doorStates.erase(it) : std::next(it);
     // Beyond this bound double precision can no longer support useful frame
     // time and conversion of schedule epochs can overflow an integer.
     if (!std::isfinite(state.time) || state.time < 0 || state.time > 1e12)

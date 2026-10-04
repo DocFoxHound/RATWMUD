@@ -14,7 +14,7 @@ from __future__ import annotations
 import random
 
 from . import residents as R
-from .buildings import WORKS_STATIONS, WORKS_TRADE
+from .buildings import WORKS_STATIONS, WORKS_TRADE, keeper_label
 from .cities import HOUSES, ELITE_FAMILIES
 
 SEED = 5151
@@ -170,6 +170,52 @@ def household_of(P, b):
     return P.bed(b)
 
 
+def shop_household(P, b, rng, greeting, evening, play):
+    """A shop's family in its flat upstairs (Docs/Design/39): the keeper, who sells there; often a partner who helps in
+    the shop; then children (`play`: where they play) or an elder in the beds left."""
+    family = P.family()
+    home = P.bed(b)
+    if home is None:
+        return None
+    keeper = P.add(role='merchant', work_label=keeper_label(b['trade'], b['name']), home=home, work=P.work(b),
+                   family=family, evening=evening() or home, hours=(7, 19), job=f'who keeps {b["name"]} and lives over it',
+                   greeting_line=greeting)
+    first = True
+    while True:
+        bed = P.bed(b)
+        if bed is None:
+            break
+        if first and rng.random() < .8:
+            P.add(role='civilian', work_label=f'helping at {b["name"]}'[:40], family=family, home=bed,
+                  work=P.floor(b['rooms'][0]['id'], share=True), evening=evening() or bed, hours=(8, 18),
+                  job='who helps in the family shop')
+        elif rng.random() < .7:
+            P.add(role='civilian', work_label='playing in the streets', family=family, home=bed, work=play(),
+                  evening=bed, hours=(9, 16), age=rng.randint(5, 14), paid=False, purse=0, job='a child of the shop')
+        else:
+            P.add(role='civilian', work_label='minding the shop door', family=family, home=bed,
+                  work=P.floor(b['rooms'][0]['id'], share=True), evening=bed, hours=(10, 15), age=rng.randint(62, 82),
+                  job='the eldest of the family')
+        first = False
+    return keeper
+
+
+STALL_FOOD = ['bread', 'pie', 'fish', 'sausage', 'soup', 'cheese', 'nut', 'fruit', 'egg', 'porridge', 'honey', 'pickle']
+
+
+def stallholders(P, city, rng, home, square, greeting, evening):
+    """A stallholder for each of the square's market stalls (Docs/Design/39), selling food there every day: standing
+    behind the stall, living in the city's houses and tenements (`home()`: a bed)."""
+    foods = list(STALL_FOOD)
+    rng.shuffle(foods)
+    for i, place in enumerate(city.spots.get('stalls', [])):
+        food = foods[i % len(foods)]
+        bed = home()
+        P.add(role='merchant', work_label=f'{food} stall on {square}'[:40], home=bed, work=P.at(place, share=False),
+              evening=evening() or bed, hours=(6, 16), job=f'who keeps the {food} stall on {square}',
+              greeting_line=greeting(food), age=rng.randint(20, 66))
+
+
 def staff_works(P, manifest, city, rng, greeting):
     """Doc 35's buildings, staffed after everyone else (so the residents generated before keep their names, homes and
     work): a keeper for each new shop; a master and a hand or two for each new works. They sleep in doc 35's own
@@ -182,10 +228,8 @@ def staff_works(P, manifest, city, rng, greeting):
     def evening():
         return P.floor(rng.choice(rest)['rooms'][0]['id'], share=True) if rest and rng.random() < .5 else None
 
-    for b in [b for b in mine if b['kind'] in ('works', 'shop')]:
-        if b['kind'] == 'shop':
-            crew = [('merchant', f'keeping {b["name"]}'[:40], f'who keeps {b["name"]}')]
-        else:
+    for b in [b for b in mine if b['kind'] == 'works']:         # (Shops: their families live over them.)
+        if True:
             word = WORKS_TRADE[b['trade']]
             stations = sum(len(r['work']) for r in b['rooms'])
             crew = [('merchant', f'running {b["name"]}'[:40], f'the {word} who runs {b["name"]}')] + \
@@ -393,20 +437,13 @@ def ridgemere(project, manifest, city, world, rng):
         P.add(role='merchant', work_label=label, home=bed, work=P.work(B[building]),
               evening=P.floor(B[building]['rooms'][0]['id'], share=True), hours=(10, 23.5) if 'tap' in label else (6, 20),
               job=job, greeting_line=f'Dry yourself by the fire. {rain.split(".")[0]}.')
-    # Shopkeepers and their households.
-    for b in [b for b in manifest if b.get('city') == 'ridgemere' and b['kind'] == 'shop' and not b.get('fresh')]:
-        bed, house = home_in(homes)
-        keeper = P.add(role='merchant', work_label=f'keeping {b["name"]}'[:40], home=bed, work=P.work(b),
-                       family=family_of(house),
-                       evening=P.floor(house['rooms'][0]['id'], share=True), hours=(7, 19), job=f'who keeps {b["name"]}',
-                       greeting_line=f'{b["name"]}. Shut the door behind you, the rain gets in.')
-        if rng.random() < .5:
-            family = keeper['name'].split()[-1]
-            kin = P.bed(house)
-            if kin:
-                P.add(role='civilian', work_label=f'helping at {b["name"]}'[:40], family=family, home=kin,
-                      work=P.floor(b['rooms'][0]['id']), evening=evening(), hours=(8, 18),
-                      job=f'who helps in the family shop')
+    # Shopkeepers and their households, over their shops.
+    market = city.spots.get('market') or city.spots.get('plaza')
+    for b in [b for b in manifest if b.get('city') == 'ridgemere' and b['kind'] == 'shop']:
+        shop_household(P, b, rng, f'{b["name"]}. Shut the door behind you, the rain gets in.', evening,
+                       lambda: P.at((market[0] + rng.randint(-10, 10), market[1] + rng.randint(-10, 10)), share=True))
+    stallholders(P, city, rng, lambda: home_in(homes)[0], 'the Market Square',
+                 lambda food: f'Hot {food}, out of the rain! Two pence and it\'s yours.', evening)
     # The City Watch.
     watch_house = B['The Watch House']
     ring_pts = wall_walk(city)
@@ -649,27 +686,13 @@ def ser_ferro(project, manifest, city, world, rng):
         P.add(role='merchant', work_label=label, home=bed, work=P.work(B[building]),
               evening=P.floor(B[building]['rooms'][0]['id'], share=True), hours=(10, 23.5) if 'tap' in label else (6, 20),
               job=job, greeting_line='Sit, sit! Wine? Bread? Both?')
-    for b in [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'shop' and not b.get('fresh')]:
-        bed, house = home_in(houses)
-        keeper = P.add(role='merchant', work_label=f'keeping {b["name"]}'[:40], home=bed, work=P.work(b),
-                       family=family_of(house),
-                       evening=P.floor(house['rooms'][0]['id'], share=True), hours=(7, 19), job=f'who keeps {b["name"]}',
-                       greeting_line=f'Welcome to {b["name"]}! Everything here is the finest in the city.')
-        family = keeper['name'].split()[-1]
-        for _ in range(rng.choice([0, 1, 1, 2])):
-            kin = P.bed(house)
-            if not kin:
-                break
-            young = rng.random() < .35
-            if young:
-                P.add(role='civilian', work_label='playing by the fountain', family=family, home=kin,
-                      work=P.at((city.spots['plaza'][0] + rng.randint(-12, 12), city.spots['plaza'][1] + rng.randint(4, 9)),
-                                share=False), evening=kin, hours=(9, 16), age=rng.randint(5, 11), paid=False, purse=0,
-                      job='a child of the household')
-            else:
-                P.add(role='civilian', work_label=f'helping at {b["name"]}'[:40], family=family, home=kin,
-                      work=P.floor(b['rooms'][0]['id']), evening=evening(), hours=(8, 18), job='who helps in the '
-                      'family shop')
+    # Shopkeepers and their households, over their shops.
+    for b in [b for b in manifest if b.get('city') == 'ser_ferro' and b['kind'] == 'shop']:
+        shop_household(P, b, rng, f'Welcome to {b["name"]}! Everything here is the finest in the city.', evening,
+                       lambda: P.at((city.spots['plaza'][0] + rng.randint(-12, 12), city.spots['plaza'][1] + rng.randint(4, 9)),
+                                    share=True))
+    stallholders(P, city, rng, lambda: home_in(tenements + houses)[0], 'the Mercato',
+                 lambda food: f'Fresh {food}, fresh today! Come, taste.', evening)
     crafts = [('painting on the cathedral square', 'plaza', 'a painter who sells views of the cathedral'),
               ('playing the lute on the square', 'plaza', 'a street musician'),
               ('selling flowers on the square', 'plaza', 'a flower seller from the golden fields'),

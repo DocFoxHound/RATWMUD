@@ -207,6 +207,64 @@ def shop(rng, style, trade):
     return p
 
 
+def keeper_word(trade):
+    """What a shop's keeper is called ("baker", "shopkeeper"): the word the game server knows the shop by in their work
+    label (Data/Items/businesses.json `match`; Docs/Design/39)."""
+    label = TRADES[trade]['label'].lower()
+    return {'smithy': 'smith', 'bakery': 'baker', 'tannery': 'tanner', 'stonemason': 'mason', 'general goods': 'shopkeeper',
+            'armorer': 'armourer', 'printing house': 'printer', 'harness-maker': 'saddler'}.get(label, label)
+
+
+def keeper_label(trade, name):
+    """A shop keeper's work label: "baker at The Amber Loaf" (at most 40 characters, the trade word always kept)."""
+    word = keeper_word(trade)
+    return f'{word} at {name}'[:40]
+
+
+FLAT_PROSE = [
+    'The family\'s rooms over the shop: a hearth, a table worn smooth, and beds under the eaves; the smell of the '
+    'trade comes up the stairs.',
+    'Low rooms above the shop, warm from the hearth below, with the family\'s things crowded onto every shelf.',
+    'A home over the counter: beds along the walls, a pot on the fire, and the shop\'s ledgers on the table at night.',
+    'Up the stairs from the shop, the family keeps a plain room or two: hearth, table, chests and bedding.',
+]
+
+
+def flat_over(rng, style, below: Plan, people):
+    """The keeper's flat above a shop: a family home with no street door, reached by stairs from the shop's customer
+    floor (on the side away from the door and the counter). Returns the plan and the stair tile."""
+    s = STYLES[style]
+    w, h = below.w, below.h
+    up = Plan(w, h, s['wall'], s['home_floor'], rng)
+    up.g[h - 1][w // 2] = s['wall']                         # No street door upstairs.
+    up.keep = set()
+    sx, sy = w - 2, h - 4
+    stairs_between(below, up, sx, sy)
+    up.put(w // 2, 1, 'h')
+    up.run(w // 2 - 1, 4, 1, 0, 3, 'T')
+    for x, y in ((w // 2 - 1, 5), (w // 2 + 1, 5), (w // 2 - 1, 3)):
+        up.put(x, y, 'c')
+    spots = [(1, 1), (1, 3), (w - 2, 1), (1, 5), (3, 1), (w - 4, 1), (1, 7), (w - 2, 3)]
+    for x, y in spots[:people]:
+        up.bed(x, y)
+    up.put(1, h - 2, rng.choice('kxO'))
+    up.put(3, h - 2, 'k')
+    return up, (sx, sy)
+
+
+def shop_with_flat(rng, style, trade, name, text, people=None, flat_text=None):
+    """A shop and its keeper's flat upstairs, as rooms ('' the shop, 'flat' above it) and the stairs between.
+    Returns (rooms, stairs, (w, h)) for a Building."""
+    p = shop(rng, style, trade)
+    # The flat from its own sequence, so a settlement's layout doesn't shift for having flats in it.
+    own = random.Random(f'{name}:flat')
+    people = people or own.choice([2, 3, 3, 4])
+    up, (sx, sy) = flat_over(own, style, p, people)
+    rooms = [p.room('', name, f'{name}, {TRADES[trade]["label"].lower()}. {text}'),
+             up.room('flat', f'{name}, the flat above', flat_text or own.choice(FLAT_PROSE), z=1)]
+    return rooms, [(('', sx, sy), ('flat', sx, sy))], (p.w, p.h)
+
+
 def tavern(rng, style, inn=False):
     s = STYLES[style]
     w, h = (24, 16) if inn else (20, 14)

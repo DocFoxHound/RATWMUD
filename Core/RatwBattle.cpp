@@ -145,7 +145,9 @@ battle::Temperament World::temperamentOf(const Entity& e) const
 {
     const auto* job = society_.jobOf(e.id);
     const auto folk = folk_.find(e.id);
-    auto t = battle::temperament(job ? job->role : std::string(), folk != folk_.end() && folk->second.kind == "bandit", e.age, e.npc);
+    // A Dev Console fight's allies stand and fight like the watch.
+    const std::string role = folk != folk_.end() && folk->second.kind == "ally" ? "guard" : job ? job->role : std::string();
+    auto t = battle::temperament(role, folk != folk_.end() && folk->second.kind == "bandit", e.age, e.npc);
     if (folk != folk_.end() && folk->second.skill >= 0)
         t.skill = folk->second.skill;
     if (!e.npc)
@@ -264,6 +266,113 @@ Result World::testFight(const std::string& player)
         if (c.id == camp.id)
             c.x = far.first + .5, c.y = far.second + .5;
     return {true, "A ragged bandit comes at you from across the ground, " + std::to_string(best) + " strides off. A fight!", id};
+}
+
+Result World::testFightTeam(const std::string& player)
+{
+    // The one-bandit test fight first: its arena, its camp and its leader across the ground.
+    auto started = testFight(player);
+    if (!started.ok)
+        return started;
+    auto* b = battleFor(player);
+    auto* mine = b ? b->fighter(player) : nullptr;
+    auto* leader = b ? b->fighter(started.targetId) : nullptr;
+    const auto folk = folk_.find(started.targetId);
+    if (!b || !mine || !leader || folk == folk_.end())
+        return {false, "The fight could not be set up.", {}};
+    const std::string campId = folk->second.of;
+    const int ourSide = mine->side, theirSide = leader->side;
+    std::uint64_t seed = roll(player + "|" + campId, std::int64_t(time_ * 1000));
+    const auto pick = [&](std::size_t n) {
+        seed = seed * 6364136223846793005ULL + 1442695040888963407ULL;
+        return std::size_t((seed >> 33) % n);
+    };
+    // The nearest open tile to (x, y) in the arena, for one joining beside a friend.
+    const auto openNear = [&](int x, int y, const std::string& id) -> std::pair<int, int> {
+        for (int ring = 1; ring <= 6; ++ring)
+            for (int dy = -ring; dy <= ring; ++dy)
+                for (int dx = -ring; dx <= ring; ++dx)
+                    if (std::max(std::abs(dx), std::abs(dy)) == ring && arenaOpen(*b, x + dx, y + dy, id))
+                        return {x + dx, y + dy};
+        return {-1, -1};
+    };
+    const auto join = [&](const std::string& id, int side, int nearX, int nearY) -> bool {
+        const auto [x, y] = openNear(nearX, nearY, id);
+        if (x < 0)
+        {
+            removeRoadFolk(id);
+            return false;
+        }
+        auto* e = entity(id);
+        e->position = {x + .5, y + .5};
+        e->offstage = false;
+        enterBattle(*b, id, side, true);
+        auto& f = b->fighters.back();
+        f.x = x;
+        f.y = y;
+        f.lineupX = x + .5;
+        f.lineupY = y + .5;
+        stop(id);
+        return true;
+    };
+    const auto looks = [&](Entity& e) {
+        static const char* species[] = {"timber", "timber", "arctic", "red", "maned", "ethiopian"};
+        e.appearance.species = species[pick(6)];
+        e.appearance.sex = pick(2) ? "female" : "male";
+        e.appearance.stature = pick(3) == 0 ? "tall" : "average";
+        e.appearance.baseColor = int(pick(CoatColorCount));
+        e.appearance.markingColor = int(pick(CoatColorCount));
+        e.appearance.gradientColor = int(pick(CoatColorCount));
+    };
+    // Two more of the band, beside their leader: as weak as the first.
+    int bandits = 1;
+    for (int i = 1; i <= 2; ++i)
+    {
+        const auto id = "road:" + campId + ":" + std::to_string(i);
+        auto& e = addRoadFolk(id, i == 1 ? "a scrawny bandit" : "a limping bandit",
+                              i == 1 ? "All ribs and bluster, with a stolen knife held wrong." : "Favouring one leg, and hoping the others do the work.",
+                              b->cellId, Vec2{leader->x + .5, leader->y + .5}, "bandit", campId);
+        e.age = 19 + int(pick(15));
+        e.strength = 35;
+        e.dexterity = 40;
+        looks(e);
+        folk_[id].hp = 10;
+        folk_[id].skill = 25;
+        bandits += join(id, theirSide, leader->x, leader->y);
+    }
+    // Two passers-by who take the player's side: names and looks made up for the fight.
+    static const char* given[] = {"Bram", "Tamsin", "Rook", "Ysolde", "Hale", "Wren", "Corin", "Maren", "Oswin", "Sable", "Fenna", "Garrick"};
+    static const char* family[] = {"Ashcoat", "Thornridge", "Stonefell", "Larchwood", "Greymantle", "Copperfen", "Redbrook", "Holloway"};
+    std::vector<std::string> allies;
+    for (int i = 0; i < 2; ++i)
+    {
+        const auto id = "road:" + campId + ":ally" + std::to_string(i);
+        const std::string name = std::string(given[pick(12)]) + " " + family[pick(8)];
+        auto& e = addRoadFolk(id, name, "A passer-by who saw the bandits come at you, and chose your side.", b->cellId,
+                              Vec2{mine->x + .5, mine->y + .5}, "ally", campId);
+        e.age = 22 + int(pick(30));
+        e.strength = 55;
+        e.dexterity = 55;
+        looks(e);
+        folk_[id].skill = 55;
+        if (join(id, ourSide, mine->x, mine->y))
+            allies.push_back(name);
+    }
+    fitArena(*b);
+    for (auto& f : b->fighters)
+    {
+        // Each faces the nearest of the other side.
+        int best = std::numeric_limits<int>::max();
+        for (const auto& o : b->fighters)
+            if (o.side != f.side && tilesApart(f.x, f.y, o.x, o.y) < best)
+            {
+                best = tilesApart(f.x, f.y, o.x, o.y);
+                f.facing = battle::octant(o.x - f.x, o.y - f.y);
+            }
+    }
+    std::string with = allies.empty() ? "alone" : allies.size() == 1 ? "with " + allies[0] : "with " + allies[0] + " and " + allies[1];
+    fightLine(*b, {}, {}, "join", std::to_string(bandits) + " bandits against you, " + with + " at your side.");
+    return {true, std::to_string(bandits) + " weak bandits come at you, and you stand " + with + ". A fight!", started.targetId};
 }
 
 Result World::endFightInDraw(const std::string& player)
@@ -1421,8 +1530,13 @@ void World::finishBattle(Battle& b)
         return;
     if (testCamp(b.camp))
     {
-        // A Dev Console fight: its bandit and camp go with it; nobody is robbed, and no camp is cleared.
-        for (const auto& id : bandits)
+        // A Dev Console fight: its bandits, any allies made up for it, and its camp go with it; nobody is robbed, and no
+        // camp is cleared.
+        std::vector<std::string> ofCamp = bandits;
+        for (const auto& [id, folk] : folk_)
+            if (folk.of == b.camp)
+                ofCamp.push_back(id);
+        for (const auto& id : ofCamp)
             removeRoadFolk(id);
         endEncounter(b.camp, 0);
         roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& c) { return c.id == b.camp; }),

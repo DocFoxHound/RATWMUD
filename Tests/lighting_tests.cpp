@@ -232,8 +232,8 @@ void validationAndPersistence()
     }
     auto missingCell = saved;
     missingCell.lighting["nonexistent"] = Lighting{};
-    expect(!restarted.restore(missingCell).ok && equal(restarted.cell("tavern")->lighting, original),
-           "Unknown saved lighting targets cannot introduce ghost cells");
+    expect(restarted.restore(missingCell).ok && !restarted.cell("nonexistent") && !restarted.save().lighting.count("nonexistent"),
+           "Unknown saved lighting targets cannot introduce ghost cells: a place since rebuilt is let go (Docs/Design/39)");
 }
 struct Fixture
 {

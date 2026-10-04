@@ -73,7 +73,8 @@ All amounts are *placeholders* for the balance pass.
   nearest in their cell.
 - **Food stalls every morning in the cities.** Where a community has six shops or more, a third of its shopkeepers keep
   a stall in the market square from 7 to 14 on ordinary working days, as well as on Marketday. A small town's market
-  keeps to Marketday.
+  keeps to Marketday. *Replaced 2026-10-04 by doc 39:* cities have built stalls with their own stallholders every
+  day; towns have no market day.
 - **Coming to rest.** Two wolves going nowhere (no route, no keys) settle a little pressed together, four-fifths of a
   body's width apart, instead of pushing each other every step in a corner or a crowd. Anyone walking still nudges them
   a full body's width.

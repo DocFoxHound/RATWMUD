@@ -64,7 +64,7 @@ class GeneratedRegion(unittest.TestCase):
         world = R.apply(project, people)
         E.check_project(world, for_game=False)
         names = [p['name'] for p in world['people']]
-        self.assertTrue(140 <= len(names) <= 175, len(names))
+        self.assertTrue(200 <= len(names) <= 250, len(names))     # (Shop families and stallholders: Docs/Design/39.)
         self.assertEqual(len(set(names)), len(names))
         self.assertFalse([n for n in names if any(ch.isdigit() for ch in n)])
         roles = [p['role'] for p in world['people']]
@@ -78,6 +78,14 @@ class GeneratedRegion(unittest.TestCase):
         self.assertEqual(claims['the_grand_hall_of_concord_d1'] if 'the_grand_hall_of_concord_d1' in claims
                          else claims['the_concord_annex_d3'], ['concord'])
         self.assertFalse([r['name'] for r in world['rooms'] if re.fullmatch(r'House \d+', r['name'])])
+        # Every shop has its keeper's family in the flat above it, and the keeper's label says the trade; the plaza's
+        # stalls have their stallholders (Docs/Design/39).
+        flats = {room['id']: r for r in self.site.manifest if r['kind'] == 'shop' for room in r['rooms'] if room['z'] == 1}
+        self.assertEqual(len(flats), sum(1 for r in self.site.manifest if r['kind'] == 'shop'))
+        keepers = [p for p in world['people'] if p['home']['cell'] in flats and p['role'] == 'merchant']
+        self.assertEqual(len(keepers), len(flats), 'one keeper lives over each shop')
+        self.assertTrue(all(' at ' in p['workLabel'] for p in keepers), [p['workLabel'] for p in keepers][:5])
+        self.assertEqual(sum(1 for p in world['people'] if p['workLabel'].endswith('stall on the plaza')), 16)
         with self.assertRaises(ValueError):
             R.apply(world, people)                                   # Residents are not doubled up by accident.
 

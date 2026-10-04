@@ -806,12 +806,14 @@ void dodgingTheFire()
 
 void smiths()
 {
-    // Greyfen's smith, Brann, and the demo's, Ash: they sell dull bronze swords, and nothing else.
+    // Greyfen's smith, Brann, and the demo's, Ash: they sell dull bronze swords (and Brann a little cheap ironwork,
+    // Docs/Design/39), never meals.
     World town;
     expect(town.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok, "Greyfen loads");
     auto& soc = town.society();
     expect(soc.merchant("brann") && soc.smith("brann") && !soc.smith("wren"), "Brann is a smith; Wren is not");
-    expect(soc.wares("brann") == std::vector<std::string>{"sword"}, "a smith deals in swords");
+    const auto iron = soc.wares("brann");
+    expect(iron.front() == "sword" && std::find(iron.begin(), iron.end(), "meal") == iron.end(), "a smith deals in swords");
     expect(Society::stock(*soc.account("brann"), "sword") == Society::SmithSwords, "and has a few on hand");
     expect(std::string(Society::itemName("sword")) == "Dull bronze sword", "a dull bronze sword");
     auto& ada = town.addPlayer("player-ada", "Ada");
@@ -984,6 +986,65 @@ void rules()
 }
 } // namespace
 
+// The Dev Console's team fight (/fight-test-team-1): the player and two allies, made up for it, against three weak
+// bandits; the allies fight beside the player, and allies and bandits alike are gone once it is over.
+void devConsoleTeamFight()
+{
+    World w;
+    quiet(w);
+    auto& ada = wolf(w, "ada");
+    const auto started = w.testFightTeam("ada");
+    expect(started.ok, "A team fight starts where Ada stands: " + started.message);
+    auto* b = &fight(w, "ada");
+    const int side = b->fighter("ada")->side;
+    std::vector<std::string> allies, bandits;
+    for (const auto& f : b->fighters)
+        if (f.id != "ada")
+            (f.side == side ? allies : bandits).push_back(f.id);
+    expect(allies.size() == 2 && bandits.size() == 3, "Ada and two allies against three bandits: " + std::to_string(allies.size()) + " v " +
+                                                      std::to_string(bandits.size()));
+    for (const auto& id : bandits)
+    {
+        expect(w.hostile(id) && World::testCamp(b->camp), "each bandit, of the test camp: " + id);
+        expect(w.temperamentOf(*w.entity(id)).skill <= 30, "and weak");
+    }
+    for (const auto& id : allies)
+    {
+        const auto* e = w.entity(id);
+        expect(e && e->npc && !w.hostile(id) && !e->name.empty(), "each ally a named passer-by, not hostile: " + (e ? e->name : id));
+        expect(w.temperamentOf(*e).kind == "aggressive", "who stands and fights");
+        const auto* f = b->fighter(id);
+        expect(test::apart(f->x, f->y, b->fighter("ada")->x, b->fighter("ada")->y) <= 3, "beside Ada");
+    }
+    expect(!w.testFightTeam("ada").ok, "One test fight at a time");
+    // Ada waits: her allies fight the bandits.
+    bool alliesStruck = false;
+    for (int i = 0; i < 6000 && w.battleOf("ada") && !w.battleOf("ada")->over; ++i)
+    {
+        b = const_cast<Battle*>(w.battleOf("ada"));
+        for (const auto& line : b->log)
+            alliesStruck = alliesStruck || (std::find(allies.begin(), allies.end(), line.actor) != allies.end() &&
+                                            (line.kind == "hit" || line.kind == "graze" || line.kind == "miss"));
+        if (test::acting(b, "ada"))
+            w.battleAct("ada", "wait");
+        ada.hurt = 0;                               // (Not a test of Ada losing.)
+        w.tick(.1);
+    }
+    expect(alliesStruck, "Ada's allies go for the bandits");
+    expect(w.battleOf("ada") && w.battleOf("ada")->over, "and the fight comes to an end");
+    for (int i = 0; i < 100; ++i)
+        w.tick(.1);
+    expect(!w.inBattle("ada"), "Back in the world");
+    for (int i = 0; i < 60; ++i)
+        w.tick(.5);
+    for (const auto& id : allies)
+        expect(!w.entity(id), "the ally is gone with the fight: " + id);
+    for (const auto& id : bandits)
+        expect(!w.entity(id), "the bandit too: " + id);
+    for (const auto& c : w.roads().camps)
+        expect(!World::testCamp(c.id), "and the camp");
+}
+
 // The Dev Console's fights (a player marked Dungeon Master): one weak bandit on the far side of the arena, with a clear
 // way to the player; ended as a draw on the player's word; and nothing left of the bandit or its camp afterwards.
 void devConsoleFights()
@@ -1087,6 +1148,7 @@ int main()
         playtestFixes();
         dueTerms();
         devConsoleFights();
+        devConsoleTeamFight();
     }
     catch (const std::exception& e)
     {

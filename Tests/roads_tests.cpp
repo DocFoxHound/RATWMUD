@@ -1,5 +1,6 @@
 // The roads (RatwRoads.h): towns and their stores, caravans that carry real goods, bandits who take them, contracts,
 // and rumours. A strip of nine cells: the capital "east" at one end, "west" at the other, wild country between.
+#include "RatwItems.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
 
@@ -652,10 +653,59 @@ void rumoursSpread()
 }
 } // namespace
 
+// Shops (Docs/Design/39): each sells a handful of its kind's cheap goods, has them on its shelves from the start, and
+// makes more as they sell; food shops keep meals, a smith swords, an herbalist herbs.
+void shopsSellTheirGoods()
+{
+    auto f = strip("EE", resident("baker1", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 4.5, 1, 4.5) +
+                             resident("baker2", "Tilly Crust", "merchant", "baker at The Morning Oven", 0, 5.5, 1, 5.5) +
+                             resident("smith1", "Ivo Anvil", "merchant", "smith at The Gate Forge", 0, 6.5, 1, 6.5) +
+                             resident("herb1", "Sage Root", "merchant", "herbalist at Valley Remedies", 0, 7.5, 1, 7.5) +
+                             resident("inn1", "Mabel Cup", "merchant", "innkeeper at The Hollow Cup", 0, 8.5, 1, 8.5));
+    auto w = load(f);
+    const auto& soc = w.society();
+    const auto bread = soc.wares("baker1");
+    expect(std::find(bread.begin(), bread.end(), "meal") != bread.end(), "A baker keeps meals for the town to eat");
+    int goods = 0;
+    for (const auto& ware : bread)
+        if (ware != "meal")
+        {
+            ++goods;
+            const auto* good = items::good(ware);
+            expect(good && good->price <= Society::CheapPrice, "and sells only cheap goods: " + ware);
+            expect(stock(w, "baker1", ware) == Society::GoodsKept, "with some of each on the shelves from the start: " + ware);
+        }
+    expect(goods >= 1 && goods <= 6, "a handful of the bakery's goods (" + std::to_string(goods) + ")");
+    expect(soc.wares("baker1") == bread, "the same handful every day");
+    const auto iron = soc.wares("smith1");
+    expect(iron.front() == "sword" && iron.size() >= 3 && std::find(iron.begin(), iron.end(), "meal") == iron.end(),
+           "A smith sells swords and ironwork, and no meals");
+    const auto herbs = soc.wares("herb1");
+    expect(std::find(herbs.begin(), herbs.end(), "herbs") != herbs.end(), "An herbalist sells herbs");
+    expect(soc.wares("inn1") == std::vector<std::string>({"meal", "herbs"}), "An innkeeper deals in meals and herbs as ever");
+    // Bought, and made again at work.
+    std::string ware;
+    for (const auto& x : bread)
+        if (x != "meal")
+            ware = x;
+    auto& ada = w.addPlayer("player-ada", "Ada");
+    ada.cellId = f.cells.begin()->first;
+    if (const auto* baker = w.entity("baker1"))
+    {
+        ada.cellId = baker->cellId;
+        ada.position = {baker->position.x + 1, baker->position.y};
+    }
+    w.society().shift("treasury", "player-ada", "", 0, 50, "test: a purse");
+    const auto bought = w.trade("player-ada", "baker1", ware, 1, true);
+    expect(bought.ok && stock(w, "player-ada", ware) == 1, "A player buys one (" + bought.message + ")");
+    expect(std::string(Society::itemName(ware)) == items::good(ware)->name, "by its catalog name");
+}
+
 int main()
 {
     try
     {
+        shopsSellTheirGoods();
         townsAndCaravans();
         banditsAndContracts();
         anEscortWhoIsntThere();
