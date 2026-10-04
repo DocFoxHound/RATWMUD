@@ -1057,17 +1057,18 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
     }
     else if (action == "rest")
     {
-        // Catching one's breath: no move this turn, twice the stamina back at the next (doc 33). Each turn anew.
+        // Catching one's breath: a turn without moving or acting, for twice the stamina back at the next (doc 33).
+        // Each turn anew.
         if (f.status != "fighting")
             return {false, "You can't rest now.", {}};
-        if (f.moved)
-            return {false, "You have already moved this turn: rest instead of moving, before it.", {}};
+        if (f.moved || f.acted)
+            return {false, "You have already moved or acted this turn: rest instead, before either.", {}};
         if (f.casting)
             return {false, "You are gathering the fire.", {}};
-        f.moved = true;
+        f.moved = f.acted = true;
         f.resting = true;
         fightLine(*b, id, {}, "rest", e->name + " catches their breath.");
-        return {true, "You catch your breath: no moving this turn, and twice the stamina back at your next.", {}};
+        return {true, "You catch your breath: no moving or acting this turn, and twice the stamina back at your next.", {}};
     }
     else if (action == "roll")
     {

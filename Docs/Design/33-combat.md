@@ -189,8 +189,9 @@ sprints and bites every turn runs out. An exhausted wolf (stamina 0, until 20) c
 NPCs fight at a run (6). In a fight the pace strip and stamina bar stay in view under the fighter cards, with how far a
 move goes at this pace, what a tile costs and what comes back next turn.
 
-**Rest** (R) gives up this turn's move for twice the stamina back at the start of the next. It is chosen each turn it is
-wanted, before moving; the wolf may still act. A resting wolf's card says so.
+**Rest** (R) is a turn without moving or acting, for twice the stamina back at the start of the next. It is chosen each
+turn it is wanted, before moving or acting; the turn stays open for turning and writing until its time or End turn. A
+resting wolf's card says so.
 
 **NPC turns** resolve on their own, 1.5 s after their bar fills, so players can follow what happened.
 

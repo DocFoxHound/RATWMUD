@@ -510,13 +510,13 @@ export class CombatScreen {
                 tip: `Tend ${fallen.name}'s wounds (4): they stand at 20 health${near ? '' : ' · get next to them first'}`,
                 enabled: mine && !acted && near, kind: 'go', run: () => s.fightTarget(fallen.id)});
         }
-        // Resting: no move this turn, twice the stamina back at the next. Chosen anew each turn (doc 33).
+        // Resting: no move and no action this turn, twice the stamina back at the next. Chosen anew each turn (doc 33).
         if (me.status === 'fighting' && !b.casting)
             out.push({id: 'rest', key: 'R', icon: 'rest', label: b.resting ? 'Resting' : 'Rest', sub: `+${(b.resting ? me.regen : me.regen * 2).toFixed(0)} next`,
                 tip: b.resting ? 'Resting this turn: twice the stamina back at the start of your next'
-                    : `Rest (R): give up this turn's move to get twice the stamina back at your next (+${(me.regen * 2).toFixed(0)}). ` +
-                      `You can still act. Rest again each turn you mean to${b.moved ? ' · you have already moved' : ''}${notYet}`,
-                enabled: mine && !b.moved && !b.resting, kind: b.resting ? 'go' : '', run: () => s.sendBattle('rest')});
+                    : `Rest (R): a turn without moving or acting, for twice the stamina back at your next (+${(me.regen * 2).toFixed(0)}). ` +
+                      `You can still turn and write. Rest again each turn you mean to${b.moved || acted ? ' · you have already moved or acted' : ''}${notYet}`,
+                enabled: mine && !b.moved && !acted && !b.resting, kind: b.resting ? 'go' : '', run: () => s.sendBattle('rest')});
         if (b.burning > 0)
             out.push({id: 'roll', key: '5', icon: 'roll', label: 'Roll', sub: 'put out', tip: `Roll on the ground to put out the flames (5)${notYet}`,
                 enabled: mine && !acted, kind: 'go', run: () => s.sendBattle('roll')});

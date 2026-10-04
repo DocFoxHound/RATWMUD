@@ -654,9 +654,11 @@ void restAndCombatInjuries()
     auto* fb = b.fighter("player-bo");
     auto* ad = w.entity("player-ad");
     ad->stamina = 30;
-    expect(w.battleAct("player-ad", "rest").ok && fa->resting && fa->moved, "Ad rests: no move this turn");
+    expect(w.battleAct("player-ad", "rest").ok && fa->resting && fa->moved && fa->acted, "Ad rests: no move and no action this turn");
     expect(!w.battleMove("player-ad", fa->x + 1, fa->y).ok, "she can't move after resting");
-    expect(test::acting(&b, "player-ad"), "and her turn goes on (she might still act)");
+    expect(!w.battleAct("player-ad", "bite", "player-bo").ok, "nor bite");
+    expect(test::acting(&b, "player-ad") && w.battleFace("player-ad", (fa->facing + 1) % 8).ok,
+           "but her turn goes on: she can turn, and write, till its time or End turn");
     w.battleAct("player-ad", "wait");
     for (int i = 0; i < 600 && !fa->acting; ++i)
     {
