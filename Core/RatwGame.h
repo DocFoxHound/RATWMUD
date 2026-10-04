@@ -658,6 +658,8 @@ class Game
     const art::Meta* portraitOf(const std::string& character) const;
     // The portrait `viewer` may see of `character` ("" for none): approved, or their own.
     std::string visiblePortrait(const std::string& character, const std::string& viewer) const;
+    // Armour and weapons someone has on, for the cards' little dolls (doc 35): [{place, name, weapon?, protect?}].
+    json::Value gearView(const Entity& e) const;
     std::map<std::string, std::deque<std::string>> recentScenes_;   // By cell: scenes said there lately.
     std::map<std::string, double> barkLast_;                         // By cell: when someone last called out there.
     double barkLookIn_ = 0;

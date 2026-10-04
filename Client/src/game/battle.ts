@@ -3,6 +3,14 @@
 // decides a hit, a turn or a death.
 import {arr, bool, num, obj, objects, str, type Json} from './json.ts';
 
+/** A piece of armour or a weapon a fighter has on (doc 35): where (a wear slot or "mouth"), what, and how much it protects. */
+export interface GearView {
+    place: string;
+    name: string;
+    weapon: boolean;
+    protect: number;
+}
+
 export interface FighterView {
     id: string;
     name: string;
@@ -32,7 +40,8 @@ export interface FighterView {
     regen: number;              // Stamina back at the start of their next turn (doubled resting).
     fillSeconds: number;        // How long their initiative bar takes to fill from empty.
     resting: boolean;           // Resting this turn (no move): twice the stamina back at the next.
-    injuries: InjuryView[];     // What is wrong with them, named (doc 38): on their card, never drawn on them.
+    injuries: InjuryView[];
+    gear: GearView[];           // Armour and weapons, where they are (doc 35): the card's little doll.     // What is wrong with them, named (doc 38): on their card, never drawn on them.
     odds: StrikeOdds | null;    // A foe, as this wolf would strike them from where it stands now.
 }
 
@@ -193,6 +202,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             y: Math.trunc(num(f, 'y')), facing: Math.trunc(num(f, 'facing')), status: str(f, 'status', 'fighting'),
             npc: bool(f, 'npc'), away: bool(f, 'away'), label: str(f, 'label'), health: num(f, 'health'),
             downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
+            gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
             acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'),
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),

@@ -443,6 +443,20 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 .fcard.down { opacity: .7; }
 .fcard.down .fcard-face { filter: grayscale(.8); transform: rotate(-12deg); }
 .fcard-face { width: 76px; height: 52px; }
+.fcard-left { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+/* Armour and weapons on a little doll (doc 35), on fight cards and In Sight rows: shaded where worn; pointed at, listed. */
+.gear-doll { cursor: help; border-radius: 3px; flex: none; }
+.gear-doll:hover { background: rgba(255, 255, 255, .06); }
+.gear-doll svg { width: 100%; height: 100%; display: block; }
+.gear-doll .gear-wolf { fill: #1f2a27; stroke: #5d6f67; stroke-width: 4; }
+.gear-doll.bare .gear-wolf { stroke: #3c4a44; }
+.gear-doll .gear-armour { fill: #a9b4bd; stroke: #e0e6ea; stroke-width: 3; opacity: .9; }
+.gear-doll .gear-weapon { fill: var(--gold); stroke: #fff1cf; stroke-width: 2; }
+.fcard-gear { width: 76px; height: 38px; }
+.sight-gear { width: 48px; height: 24px; }
+.gear-tip { position: fixed; z-index: 60; display: none; max-width: 340px; padding: 7px 10px; white-space: pre-line; pointer-events: none;
+    background: var(--ink); border: 1px solid var(--gold); border-radius: 4px; color: var(--paper); font: 12px/1.45 'RATW Mono', monospace;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
 .fcard-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .fcard-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 .fcard-name { font-weight: 500; font-size: 14px; color: var(--c); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

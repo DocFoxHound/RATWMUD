@@ -2472,6 +2472,8 @@ void Game::sendSnapshot(Connection* c)
         if (!e.npc)
             if (const auto portrait = visiblePortrait(e.id, id); !portrait.empty())
                 j.set("artwork", portrait);         // Approved portraits only (doc 29, phase 9).
+        if (auto gear = gearView(e); !gear.items().empty())
+            j.set("gear", std::move(gear));         // Armour and weapons, plain to see (doc 35): the card's little doll.
         auto actions = Value::array();
         actions.push("inspect");
         if (e.transient)

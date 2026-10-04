@@ -7,7 +7,7 @@ import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
 import {apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
-    type ChallengeView, type FightSquare, type GroundView} from './battle.ts';
+    type ChallengeView, type FightSquare, type GroundView, type GearView} from './battle.ts';
 import {FightEffects} from './fightFx.ts';
 
 /** One entry in the story per fight (Docs/Design/18-combat-presentation.md): the latest, and all of it when expanded. */
@@ -70,6 +70,7 @@ export interface EntityView {
     appearance: Json | null;
     lifeStage: string;
     artwork: string;            // An uploaded portrait this player may see ('' for none).
+    gear: GearView[];           // Armour and weapons they have on, plain to see (doc 35).
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -432,7 +433,7 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: ''};
+                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: []};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
@@ -446,6 +447,7 @@ export class GameState {
             view.appearance = obj(e, 'appearance');
             view.lifeStage = str(e, 'lifeStage', 'adult');
             view.artwork = str(e, 'artwork');
+            view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
             this.applyPose(view, e, poseTime);

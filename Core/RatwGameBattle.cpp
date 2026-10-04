@@ -1,6 +1,7 @@
 // Fights as players see and drive them (Docs/Design/33-combat.md; the rules are the world's, RatwBattle.cpp): the
 // arena in a fighter's or watcher's snapshot, the red squares onlookers see, and the fight commands.
 #include "RatwGame.h"
+#include "RatwItems.h"
 #include "RatwWire.h"
 
 #include <algorithm>
@@ -8,6 +9,28 @@
 
 namespace ratw::game
 {
+json::Value Game::gearView(const Entity& e) const
+{
+    auto gear = json::Value::array();
+    const auto piece = [&](const std::string& place, const std::string& name, bool weapon, int protect) {
+        auto g = json::Value::object();
+        g.add("place", place);
+        g.add("name", name);
+        if (weapon)
+            g.add("weapon", true);
+        if (protect > 0)
+            g.add("protect", protect);
+        gear.push(std::move(g));
+    };
+    if (!e.mouth.empty())
+        piece("mouth", Society::itemName(e.mouth), true, 0);
+    for (const char* slot : items::WearSlots)
+        if (const auto found = e.worn.find(slot); found != e.worn.end())
+            if (const auto* item = items::wearable(found->second); item && (item->protect > 0 || item->category == "weapon"))
+                piece(slot, item->name, item->category == "weapon", item->protect);
+    return gear;
+}
+
 using json::Value;
 
 namespace
@@ -177,6 +200,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         o.add("health", std::round(100 - e->hurt));
         if (!e->mouth.empty())
             o.add("mouth", e->mouth);
+        if (auto gear = gearView(*e); !gear.items().empty())
+            o.add("gear", std::move(gear));     // Their armour and weapons at a glance, for the card's little doll (doc 35).
         if (f.burning > 0)
             o.add("burning", f.burning);
         if (f.casting)

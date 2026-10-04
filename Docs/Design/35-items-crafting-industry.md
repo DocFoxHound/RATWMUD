@@ -60,6 +60,9 @@ All numbers are *placeholders* for a later balance pass. Prices are in silver pe
 - **The Dev Console:** `/give <item> [count]` and `/wearables [word]` for Dungeon Masters.
 - **The status screen** shows the slots around one's portrait, the fur spots on a wolf in outline, and belongings to
   put on, clip on and take off.
+- **Armour and weapons at a glance:** every visible wolf's card (In Sight, and the fighter cards in a fight) carries a
+  little wolf in outline with its armour shaded and a blade at the muzzle; pointing at it lists them. Others' equipment
+  pages, from a closer look, are to look at only.
 - **Not yet:** harness loops, warmth and rain with the weather, jingle, scent, armour in fights, weight.
 
 ## Principles

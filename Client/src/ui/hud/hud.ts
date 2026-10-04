@@ -12,6 +12,7 @@ import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
 import {MapRenderer, MapScales} from '../../game/minimap.ts';
 import {artCache} from '../artwork.ts';
+import {drawGear, gearDoll} from './gear.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
@@ -37,6 +38,8 @@ interface SightRow {
     detail: HTMLElement;
     where: HTMLElement;
     drawn: string;              // The look last drawn into the portrait.
+    gear: HTMLElement;          // Their armour and weapons on a little doll (doc 35), shown when they have any.
+    gearKey: string;
 }
 
 export class Hud {
@@ -345,6 +348,12 @@ export class Hud {
                 const arrow = Arrows[((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8];
                 setText(r.where, d < 1.5 ? 'here' : `${arrow} ${d.toFixed(0)}`);
             }
+            const gearKey = JSON.stringify(e.gear);
+            if (gearKey !== r.gearKey) {
+                r.gearKey = gearKey;
+                drawGear(r.gear, e.gear);
+                show(r.gear, e.gear.length > 0);
+            }
             const look = JSON.stringify([e.appearance, e.lifeStage, e.artwork, !!artCache.get(e.artwork)]);
             if (r.drawn !== look) {
                 const c = r.portrait.getContext('2d');
@@ -371,6 +380,7 @@ export class Hud {
         const text = el('div', 'sight-text', row);
         const name = el('div', 'sight-name', text);
         const detail = el('div', 'sight-detail', text);
+        const gear = gearDoll(row, 'sight-gear');
         const where = el('div', 'sight-where', row);
         row.addEventListener('mouseenter', () => (s.highlight = e.id));
         row.addEventListener('mouseleave', () => {
@@ -383,7 +393,7 @@ export class Hud {
             ev.preventDefault();
             s.openContextAt(e.id, [ev.clientX, ev.clientY]);
         });
-        const r: SightRow = {row, portrait, name, detail, where, drawn: ''};
+        const r: SightRow = {row, portrait, name, detail, where, drawn: '', gear, gearKey: '-'};
         this.rows.set(e.id, r);
         return r;
     }

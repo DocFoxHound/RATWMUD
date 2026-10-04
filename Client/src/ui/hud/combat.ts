@@ -10,6 +10,7 @@ import {drawPortrait, type Portraits} from '../portrait.ts';
 import {icon} from '../icons.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {noRect} from './story.ts';
+import {drawGear, gearDoll} from './gear.ts';
 
 const ageOf = (stage: string) => (stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18);
 
@@ -93,6 +94,8 @@ interface Card {
     oddsKey: string;
     clock: HTMLElement;
     lastHealth: number;
+    gear: HTMLElement;              // Armour and weapons on a little doll (doc 35), told on hover.
+    gearKey: string;
 }
 
 export class CombatScreen {
@@ -317,6 +320,11 @@ export class CombatScreen {
                     m.title = tip;
                 }
             }
+            const gearKey = JSON.stringify(f.gear);
+            if (gearKey !== c.gearKey) {
+                c.gearKey = gearKey;
+                drawGear(c.gear, f.gear);
+            }
             // How this wolf would fare against a foe, from where it stands.
             const oddsKey = f.odds && !b.observer && !b.over ? `${f.odds.hit}|${f.odds.damage}|${f.odds.reach}|${b.mouth}` : '';
             if (oddsKey !== c.oddsKey) {
@@ -357,7 +365,9 @@ export class CombatScreen {
         if (found) return found;
         const s = this.s;
         const root = el('div', 'fcard');
-        const face = new Face(root, 'fcard-face', 96, 66);
+        const left = el('div', 'fcard-left', root);
+        const face = new Face(left, 'fcard-face', 96, 66);
+        const gear = gearDoll(left, 'fcard-gear');
         const body = el('div', 'fcard-body', root);
         const top = el('div', 'fcard-top', body);
         const name = el('span', 'fcard-name', top);
@@ -394,7 +404,7 @@ export class CombatScreen {
             else if (now.side === me.side && now.status === 'downed' && myTurn(b, s.selfId)) s.fightTarget(f.id);
         });
         const card: Card = {root, face, name, marks, marksKey: '-', health, healthFill, healthText, stamina, staminaFill, hurts, hurtsKey: '-', init, initFill, initText, mana, manaFill, odds,
-            oddsKey: '-', clock, lastHealth: -1};
+            oddsKey: '-', clock, lastHealth: -1, gear, gearKey: '-'};
         this.cardList.set(f.id, card);
         return card;
     }
