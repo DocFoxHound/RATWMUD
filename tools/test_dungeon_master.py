@@ -140,6 +140,23 @@ class DungeonMasterTests(Fixture):
         ada = self.dm.players('prod')['characters'][0]
         self.assertEqual((ada['gift'], ada['quickened']), ('', False), 'the sheet shows the Gift (none yet)')
 
+    def test_a_player_is_made_a_dungeon_master_by_an_admin(self):
+        master, admin = self.sign_in('dm-master'), self.sign_in('dm-admin')
+        self.assertFalse(self.dm.players('prod')['characters'][0]['dungeonMaster'])
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.request(master, 'prod', 'character.dm', 'player-ada', '', {'dungeonMaster': True})
+        self.assertEqual(raised.exception.status, 403, 'only an admin hands out the Dev Console')
+        queued = self.dm.request(admin, 'prod', 'character.dm', 'player-ada', 'Testing fights', {'dungeonMaster': True})
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute('SELECT kind, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(row, ('character.dm', {'dungeonMaster': True}))
+        for wrong in (None, {}, {'dungeonMaster': 'yes'}, {'dungeonMaster': 1}):
+            with self.assertRaises(D.DMError):
+                self.dm.request(admin, 'prod', 'character.dm', 'player-ada', '', wrong)
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            game.execute("UPDATE game.characters SET data = data || '{\"dungeonMaster\": true}' WHERE key = 'player-ada'")
+        self.assertTrue(self.dm.players('prod')['characters'][0]['dungeonMaster'], 'the sheet shows who is one')
+
     def test_bandits_are_called_with_a_count(self):
         master = self.sign_in('dm-master')
         queued = self.dm.request(master, 'prod', 'bandits.call', 'player-ada', '', {'count': 2})

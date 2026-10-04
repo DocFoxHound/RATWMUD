@@ -175,6 +175,23 @@ Positions do not exist anywhere DM can read today. Players are saved only as the
   written by a thread of its own on its own connection, so the tick never waits on the database.
 - The feed never carries chat or what anyone said.
 
+### 1.1b Dungeon Masters in the game: the Dev Console (built 2026-10-04)
+
+A player character can be marked a **Dungeon Master in the game**, from the Players tab (*Make Dungeon Master in
+game*; admins only, the `character.dm` action, online or offline). The mark is saved with the character
+(`Entity::dungeonMaster`), never shown to other players, and gives them the **Dev Console**: the ` key, or Settings →
+*Open the Dev Console*. Commands are typed there or in the chat box starting with `/` (a Dungeon Master's slash
+command is never said aloud). The server checks the mark on every command (`Core/RatwGameDev.cpp`) and answers each
+in the console's log.
+
+| Command | Does |
+|---|---|
+| `/fight-test-1` | A fight where they stand against one weak bandit (skill 30, little health), set on the farthest tile of the arena they could walk to, with an open straight line to them. Its camp (`camp_dmtest_N`) goes when the fight ends: no robbery, bounty or camp cleared. |
+| `/fight-end-myself` | Ends the fight they are in, as a draw (like a truce: nobody stays hostile). |
+| `/help` | Lists the commands. |
+
+New commands go in `Core/RatwGameDev.cpp` and the console's list in `Client/src/ui/hud/dialogs.ts`.
+
 ### 1.2 Workspaces
 
 The curated tools, one level down from LIVE, each a map with an explorer, inspector and command palette, as

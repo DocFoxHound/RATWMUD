@@ -188,6 +188,12 @@ void Game::partyTick(double dt)
     std::set<std::string> live;
     for (const auto& b : world_.battles())
     {
+        if (b.over && (b.truced || (b.pvp && b.terms != "death")))
+            for (const auto& f : b.fighters)        // Peace made, or a duel fairly settled: they are not foes any more.
+                if (auto found = foes_.find(f.id); found != foes_.end())
+                    for (const auto& g : b.fighters)
+                        if (g.side != f.side)
+                            found->second.erase(g.id);
         if (b.over)
             continue;
         live.insert(b.id);

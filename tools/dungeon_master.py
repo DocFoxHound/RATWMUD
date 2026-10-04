@@ -51,7 +51,9 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
            'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm',
-           'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm'}
+           'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
+           # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
+           'character.dm': 'admin'}
 # What else a role may do here (not live actions for the game server).
 WRITES = {'story.write': 'dm'}
 STORIES_PER_HOUR = 30
@@ -196,6 +198,8 @@ class DungeonMaster:
                     'posture': data.get('posture', ''), 'activity': data.get('activity', ''),
                     # A Gift (doc 33): "fire" or "", Quickened or not.
                     'gift': data.get('gift', ''), 'quickened': bool(data.get('quickened')),
+                    # Marked a Dungeon Master in the game: they have the Dev Console.
+                    'dungeonMaster': bool(data.get('dungeonMaster')),
                     'stats': {k: data.get(k) for k in ('strength', 'dexterity', 'wisdom', 'stamina')},
                     'skills': {k: data.get(k) for k in ('sneakSkill', 'hearingSkill', 'scentSkill')},
                     'senses': {k: data.get(k) for k in ('hearing', 'vision', 'smell')},
@@ -238,6 +242,12 @@ class DungeonMaster:
                 raise DMError('A Gift is {"gift": "fire" or "", "quickened": true or false}.')
             payload = {'gift': gift, 'quickened': bool(payload.get('quickened')) and gift == 'fire'}
             detail = ' — ' + ('no Gift' if not gift else 'Quickened: fire' if payload['quickened'] else 'Gifted: fire')
+        elif kind == 'character.dm':
+            on = payload.get('dungeonMaster') if isinstance(payload, dict) else None
+            if not isinstance(on, bool):
+                raise DMError('Say {"dungeonMaster": true or false}.')
+            payload = {'dungeonMaster': on}
+            detail = ' — ' + ('made a Dungeon Master in the game' if on else 'no longer a Dungeon Master in the game')
         elif kind == 'bandits.call':
             count = payload.get('count', 1) if isinstance(payload, dict) else 1
             if not isinstance(count, int) or isinstance(count, bool) or not 1 <= count <= 6:

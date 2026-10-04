@@ -149,7 +149,7 @@ void downedAndBackToTheWorld()
     auto& bo = wolf(w, "bo", 1.2);
     ada.dexterity = 90;
     ada.strength = 90;
-    w.attack("ada", "bo");
+    w.attack("ada", "bo", "death");                  // (To the death: doc 33's Downed and dying.)
     w.answerChallenge("bo", true);
     bo.hurt = 95;
     auto* b = &fight(w, "ada");
@@ -208,7 +208,7 @@ void gettingUpInAFight()
     auto& cy = wolf(w, "cy", -1.2);
     ada.dexterity = 90;
     ada.strength = 100;
-    w.attack("ada", "bo");
+    w.attack("ada", "bo", "death");
     w.answerChallenge("bo", true);
     auto& b = fight(w, "ada");
     expect(w.joinBattle("cy", b.id, 1).ok, "Cy joins on Bo's side: anyone may join");
@@ -254,7 +254,7 @@ void restAndRepeatedDowns()
     {
         bo.hurt = 95;
         bo.recoveryUsed = std::floor(w.calendarDays());   // (No struggling up: each time down is waited out.)
-        expect(w.attack("ada", "bo").ok && w.answerChallenge("bo", true).ok, "a fight, round " + std::to_string(round));
+        expect(w.attack("ada", "bo", "death").ok && w.answerChallenge("bo", true).ok, "a fight, round " + std::to_string(round));
         for (int i = 0; i < 3000 && bo.downedLeft <= 0; ++i)
         {
             test::playTurn(w, "ada");
@@ -423,7 +423,6 @@ void downedIsSaved()
     expect(back.downsSinceRest == 3 && back.restRun == 2.5 && back.bedRun == 1.5 && back.fullRestDay == 12.25 &&
                back.awaySince == 13.5 && back.awayInBed,
            "and rest: downings since a full rest, the rest run, the last full rest, time away (doc 38)");
-
     expect(back.downedLeft == 321 && back.recoveryUsed == 4 && back.hurt == 100, "Downed, and the day's getting-up, are saved");
     expect(back.mouth == "sword" && back.gift == "fire" && back.quickened && back.mana == 33 && back.fightingSkill == 61,
            "and the sword in the jaws, the Gift, its mana, and fighting skill");
@@ -439,7 +438,7 @@ Battle& duel(World& w)
     bo.position = {ad.position.x + 1.2, ad.position.y};
     ad.dexterity = 90;
     bo.dexterity = 40;
-    w.attack("player-ad", "player-bo");
+    w.attack("player-ad", "player-bo", "death");     // (doc 33's rules: these tests go down and die.)
     w.answerChallenge("player-bo", true);
     auto* b = const_cast<Battle*>(w.battleOf("player-ad"));
     expect(b, "a duel");
@@ -614,9 +613,9 @@ void barsFillInRealTime()
     for (int i = 0; i < 100 && !fb->acting; ++i)
         w.tick(.1);
     expect(fb->acting, "Bo's bar full: his turn, at once");
-    for (int i = 0; i < 105; ++i)
+    for (int i = 0; i < int(battle::TurnSeconds * 10) + 5; ++i)
         w.tick(.1);
-    expect(!fb->acting && fb->timeouts == 1, "A turn lasts ten seconds");
+    expect(!fb->acting && fb->timeouts == 1, "A turn lasts its fifteen seconds");
 }
 
 void dodgingTheFire()
@@ -691,6 +690,132 @@ void smiths()
            "In the demo world, Ash keeps a forge too");
 }
 
+// From the playtest of October 4 (doc 33, "Playtest fixes").
+void playtestFixes()
+{
+    World w;
+    quiet(w);
+    auto& ada = wolf(w, "ada");
+    std::string resident;
+    for (const auto& [id, e] : w.entities())
+        if (e.npc && !e.transient && e.cellId == ada.cellId && e.age >= battle::YoungestFighter)
+        {
+            resident = id;
+            break;
+        }
+    expect(!resident.empty(), "a resident to try it on");
+    auto* npc = w.entity(resident);
+    npc->leaderId.clear();
+    ada.position = {npc->position.x - 1, npc->position.y};
+    auto r = w.attack("ada", resident);
+    expect(r.ok, "Ada goes for them: " + r.message);
+    auto& b = fight(w, "ada");
+    // The one who starts it strikes first: those set on wait out her first turn, however long she takes.
+    for (int i = 0; i < 60; ++i)
+        w.tick(.1);
+    expect(test::acting(&b, "ada") && ada.hurt == 0, "Six seconds in, nobody has struck at her before her first turn");
+    expect(b.opening == "ada", "She has the opening");
+    expect(w.battleAct("ada", "wait").ok && b.opening.empty(), "Her first turn done, the opening is gone");
+    // The flee message says which way out.
+    for (int i = 0; i < 400 && !test::acting(&b, "ada"); ++i)
+        w.tick(.1);
+    if (test::acting(&b, "ada") && !b.onEdge(b.fighter("ada")->x, b.fighter("ada")->y))
+    {
+        r = w.battleAct("ada", "flee");
+        expect(!r.ok && r.message.find("tiles to the") != std::string::npos, "Not at the edge: told how far, and which way: " + r.message);
+    }
+    // Gone and back: her turns are hers again, not skipped as away.
+    w.linger("ada");
+    expect(b.fighter("ada")->away, "Gone from the world, she is away");
+    w.stopLingering("ada");
+    expect(!b.fighter("ada")->away && !ada.lingering, "Back again, she is not");
+    // An away player says they're back.
+    b.fighter("ada")->away = true;
+    r = w.battleAct("ada", "back");
+    expect(r.ok && !b.fighter("ada")->away, "\"I'm back\" brings an away player back: " + r.message);
+    // Injury slows a wolf in the world too: the speed above a walk, and badly hurt, the walk itself.
+    Entity well;
+    well.pace = 10;
+    well.stamina = 100;
+    Entity hurt = well;
+    hurt.hurt = 50;
+    Entity limping = well;
+    limping.hurt = 80;
+    expect(paceSpeed(hurt) < paceSpeed(well) - 1, "Hurt, a wolf runs slower");
+    well.pace = hurt.pace = limping.pace = 0;
+    expect(paceSpeed(hurt) == paceSpeed(well) && paceSpeed(limping) < paceSpeed(well), "Limping, it walks slower too");
+}
+
+// A duel on terms (doc 37): first blood, until one yields, or to the death; yielding at any time; a fight left.
+Battle& duelOn(World& w, const std::string& terms)
+{
+    quiet(w);
+    auto& ad = w.addPlayer("player-ad", "Ad");
+    auto& bo = w.addPlayer("player-bo", "Bo");
+    bo.cellId = ad.cellId;
+    bo.position = {ad.position.x + 1.2, ad.position.y};
+    expect(w.attack("player-ad", "player-bo", terms).ok && w.challengeTo("player-bo")->terms == (terms.empty() ? "yield" : terms),
+           "a challenge on its terms");
+    w.answerChallenge("player-bo", true);
+    auto* b = const_cast<Battle*>(w.battleOf("player-ad"));
+    expect(b && b->terms == (terms.empty() ? "yield" : terms), "a duel on them");
+    w.tick(.05);
+    return *b;
+}
+
+void dueTerms()
+{
+    {
+        // Until one yields (the default): a blow that would down Bo has him yield instead, on his feet, not bleeding.
+        World w;
+        auto& b = duelOn(w, "");
+        auto* bo = w.entity("player-bo");
+        bo->hurt = 99.5;
+        w.hurtFighter(b, *b.fighter("player-bo"), 12, battle::DownedBite, "player-ad", true);
+        expect(b.fighter("player-bo")->status == "yielded" && bo->downedLeft <= 0 && bo->hurt < 100, "Bo yields instead of going down");
+        expect(b.over && b.banner.find("Bo yields") == 0, "and the fight is over: " + b.banner);
+    }
+    {
+        // First blood: the first wound ends it.
+        World w;
+        auto& b = duelOn(w, "blood");
+        w.hurtFighter(b, *b.fighter("player-bo"), 6, battle::DownedBite, "player-ad", true);
+        expect(b.fighter("player-bo")->status == "yielded" && b.over && b.banner.find("First blood") == 0, "First blood: " + b.banner);
+    }
+    {
+        // To the death: doc 33's rules.
+        World w;
+        auto& b = duelOn(w, "death");
+        w.entity("player-bo")->hurt = 95;
+        w.hurtFighter(b, *b.fighter("player-bo"), 12, battle::DownedBite, "player-ad", true);
+        expect(b.fighter("player-bo")->status == "downed" && w.entity("player-bo")->downedLeft > 0, "To the death, Bo goes down and bleeds");
+    }
+    {
+        // Yielding at any time: offered, then accepted or refused by a player on the other side; silence is a no.
+        World w;
+        auto& b = duelOn(w, "death");
+        auto r = w.battleAct("player-bo", "yield");
+        expect(r.ok && b.yieldBy == "player-bo", "Bo offers to yield, his turn or not: " + r.message);
+        expect(!w.answerYield("player-bo", true).ok, "it isn't his to answer");
+        expect(w.answerYield("player-ad", false).ok && b.yieldBy.empty() && !b.over, "Ad presses on");
+        w.battleAct("player-bo", "yield");
+        for (int i = 0; i < int(battle::YieldSeconds * 10) + 5; ++i)
+            w.tick(.1);
+        expect(b.yieldBy.empty() && !b.over, "unanswered, the offer lapses");
+        w.battleAct("player-bo", "yield");
+        expect(w.answerYield("player-ad", true).ok && b.over && b.fighter("player-bo")->status == "yielded", "Ad spares him: " + b.banner);
+    }
+    {
+        // Every player in it away, and no NPC to fight on: the fight lapses after a while.
+        World w;
+        auto& b = duelOn(w, "");
+        b.fighter("player-ad")->away = b.fighter("player-bo")->away = true;
+        for (int i = 0; i < int(battle::LapseSeconds * 10) + 20 && !b.over; ++i)
+            w.tick(.1);
+        expect(b.over && b.truced, "it lapses: " + b.banner);
+    }
+}
+
 void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
@@ -705,6 +830,57 @@ void rules()
     expect(battle::temperament("bandit", true, 30, true).kind == "aggressive", "Bandits are aggressive");
 }
 } // namespace
+
+// The Dev Console's fights (a player marked Dungeon Master): one weak bandit on the far side of the arena, with a clear
+// way to the player; ended as a draw on the player's word; and nothing left of the bandit or its camp afterwards.
+void devConsoleFights()
+{
+    World w;
+    quiet(w);
+    auto& ada = wolf(w, "ada");
+    expect(!w.endFightInDraw("ada").ok, "No fight to end yet");
+    const auto started = w.testFight("ada");
+    expect(started.ok, "A test fight starts where Ada stands: " + started.message);
+    const auto bandit = started.targetId;
+    auto* b = &fight(w, "ada");
+    expect(b->fighters.size() == 2 && b->fighter(bandit) && b->fighter(bandit)->side != b->fighter("ada")->side,
+           "Ada against one bandit, and nobody else");
+    expect(World::testCamp(b->camp), "a test camp's bandit");
+    const auto* me = b->fighter("ada");
+    const auto* them = b->fighter(bandit);
+    const int start = test::apart(me->x, me->y, them->x, them->y);
+    expect(start > int(battle::StartReach) + 2, "on the far side of the arena: " + std::to_string(start) + " tiles off");
+    expect(!w.testFight("ada").ok, "One test fight at a time");
+    // A clear way: waiting, Ada is reached (round the tavern's tables, by the way there is).
+    int closest = start;
+    for (int i = 0; i < 3000 && closest > 1; ++i)
+    {
+        if ((b = const_cast<Battle*>(w.battleOf("ada"))) == nullptr || b->over)
+            break;
+        if (test::acting(b, "ada"))
+            w.battleAct("ada", "wait");
+        w.tick(.1);
+        if ((b = const_cast<Battle*>(w.battleOf("ada"))) && b->fighter(bandit))
+            closest = std::min(closest, test::apart(b->fighter("ada")->x, b->fighter("ada")->y, b->fighter(bandit)->x, b->fighter(bandit)->y));
+    }
+    expect(closest <= 1, "The bandit closes the distance to Ada (closest " + std::to_string(closest) + ")");
+    // Ended as a draw, on Ada's word.
+    ada.hurt = 0;
+    expect(w.endFightInDraw("ada").ok, "Ada calls it a draw");
+    b = &fight(w, "ada");
+    expect(b->over && b->truced && b->banner.find("draw") != std::string::npos, "The fight is over, a draw: " + b->banner);
+    expect(!w.endFightInDraw("ada").ok, "and can't be ended twice");
+    for (int i = 0; i < 100; ++i)
+        w.tick(.1);
+    expect(!w.inBattle("ada"), "Back in the world");
+    for (int i = 0; i < 60; ++i)
+        w.tick(.5);
+    expect(!w.entity(bandit), "The test bandit is gone with its fight");
+    for (const auto& c : w.roads().camps)
+        expect(!World::testCamp(c.id), "and so is its camp");
+    expect(ada.downedLeft <= 0 && !ada.dead, "Ada is none the worse");
+    expect(w.testFight("ada").ok, "Another can be started");
+}
 
 int main()
 {
@@ -725,6 +901,9 @@ int main()
         smiths();
         barsFillInRealTime();
         dodgingTheFire();
+        playtestFixes();
+        dueTerms();
+        devConsoleFights();
     }
     catch (const std::exception& e)
     {

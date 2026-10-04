@@ -285,6 +285,8 @@ class Game
     json::Value battleView(const Battle& b, const std::string& viewer) const;
     json::Value fightsInView(const Entity& self) const;
     bool battleCommand(Connection* c, const json::Value& j, Result& result);
+    // The Dev Console's commands, for a player marked Dungeon Master (RatwGameDev.cpp): answered with a "devResult".
+    void devCommand(Connection* c, const json::Value& j);
     std::map<std::string, double> lingering_;      // Players gone mid-fight, their bodies kept until then (doc 33).
     void releaseLingering();
     // Parties (RatwGameParty.cpp; doc 32, Part 2): the "party" commands (false: not one of them), an invitation, the
@@ -331,7 +333,13 @@ class Game
     std::string lookOf(const std::string& id, const std::map<std::string, int>* trades) const;
     void refreshLabels(double dt);
     std::map<std::string, std::string> veilMap(const std::string& viewer) const;
+    // What this wolf calls each stranger round it (its cell, and any fight it is in or watches): how they look, and
+    // where two look alike a number, in a fixed order ("a dun wolf (2)"). The In Sight list, the fight's log and
+    // the red squares all use it, so the same wolf is called the same everywhere.
+    std::map<std::string, std::string> strangerNames(const std::string& viewer) const;
     std::map<std::string, std::string> labels_;                          // How each wolf looks to a stranger.
+    std::map<std::string, std::map<std::string, std::string>> strangers_; // Each player's strangerNames, a second old.
+    std::map<std::string, std::string> nameStrangers(const std::string& viewer) const;
     double labelsAccumulator_ = 1;
     std::string labelFor(const std::string& viewer, const std::string& id) const;
     std::string veilFor(const std::string& viewer, const std::string& text) const;

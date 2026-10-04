@@ -23,21 +23,21 @@ std::string Game::regardWords(const std::string& holder, const std::string& othe
 {
     const auto* b = world_.bonds().find(holder, other);
     if (!b || b->familiarity < 3)
-        return "doesn't know you";
+        return "don't know you";
     std::vector<std::string> parts;
-    parts.push_back(b->familiarity >= 50 ? "knows you well" : b->familiarity >= 15 ? "knows you" : "knows you a little");
+    parts.push_back(b->familiarity >= 50 ? "know you well" : b->familiarity >= 15 ? "know you" : "know you a little");
     if (b->affinity >= 10)
-        parts.push_back(std::string("likes you") + degree(b->affinity, " a little", "", " a great deal"));
+        parts.push_back(std::string("like you") + degree(b->affinity, " a little", "", " a great deal"));
     else if (b->affinity <= -10)
-        parts.push_back(std::string("dislikes you") + degree(-b->affinity, " a little", "", " intensely"));
+        parts.push_back(std::string("dislike you") + degree(-b->affinity, " a little", "", " intensely"));
     if (b->trust >= 10)
-        parts.push_back(std::string("trusts you") + degree(b->trust, " a little", "", " completely"));
+        parts.push_back(std::string("trust you") + degree(b->trust, " a little", "", " completely"));
     else if (b->trust <= -10)
-        parts.push_back(std::string("distrusts you") + degree(-b->trust, " a little", "", " entirely"));
+        parts.push_back(std::string("distrust you") + degree(-b->trust, " a little", "", " entirely"));
     if (b->fear >= 20)
-        parts.push_back("is afraid of you");
+        parts.push_back("are afraid of you");
     if (b->respect >= 30)
-        parts.push_back("respects you");
+        parts.push_back("respect you");
     std::string out;
     for (std::size_t i = 0; i < parts.size(); ++i)
         out += (i == 0 ? "" : i + 1 == parts.size() ? " and " : ", ") + parts[i];

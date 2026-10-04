@@ -3,6 +3,7 @@
 #include "RatwGame.h"
 #include "RatwMotionCore.h"
 #include "RatwStep.h"
+#include "RatwWire.h"
 
 #include <chrono>
 #include <cmath>
@@ -1179,6 +1180,18 @@ void fightsThroughTheGame()
            "with its ground, a row a tile");
     expect(fight.string("turn") == ada.entityId && !fight.array("reach").empty(), "Her turn, and where she may go");
     expect(fight.array("fighters").size() == 2, "the fighters, with their bars");
+    // For the fight screen (doc 37): how each looks; her own breath; her odds against Bo, and not his against her.
+    for (const auto& f : fight.array("fighters"))
+    {
+        expect(f.has("appearance") && !f.string("lifeStage").empty(), "each fighter's look, for a portrait");
+        const bool her = f.string("id") == ada.entityId;
+        expect(her == f.has("stamina"), "breath shown for her own side only");
+        expect(her != f.has("odds"), "odds against the foe only");
+        if (!her)
+            expect(f["odds"].number("hit") >= 20 && f["odds"].number("hit") <= 95 && f["odds"].number("damage") > 0 &&
+                       f["odds"].number("base") <= f["odds"].number("hit"),
+                   "a chance and a blow: " + json::dump(f["odds"]));
+    }
     expect(ada.lastMotion.number("mode") == game::Game::Fighting, "No walking in the arena");
     const auto before = a->position;
     g.command(&ada, cmd({{"type", "move"}, {"x", 1.0}, {"y", 0.0}}));
@@ -1254,11 +1267,56 @@ void swordsMuffleAndBodiesLinger()
     expect(!g.world().inBattle(bo.entityId), "and the fight, with no one against Bo, is over");
 }
 
+// The Dev Console (a player marked Dungeon Master): nobody else may use it; its commands are answered in its own
+// replies; the mark is saved with the character.
+void theDevConsole()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash;
+    ash.id = 1;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    run(g, ash, .2);
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/fight-test-1"}}));
+    const auto* reply = ash.last("devResult");
+    expect(reply && !reply->boolean("ok") && reply->string("text").find("Only a Dungeon Master") != std::string::npos,
+           "a player who isn't a Dungeon Master has no console");
+    expect(!g.world().inBattle("player-ash"), "and no fight");
+    expect(!ash.snapshots.back()["self"].boolean("dungeonMaster"), "nor is told they have one");
+
+    g.world().entity("player-ash")->dungeonMaster = true;      // (As the Dungeon Master app's character.dm does.)
+    run(g, ash, .3);
+    expect(ash.snapshots.back()["self"].boolean("dungeonMaster"), "a Dungeon Master's page is told");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/help"}}));
+    reply = ash.last("devResult");
+    expect(reply && reply->boolean("ok") && reply->string("text").find("/fight-end-myself") != std::string::npos, "/help lists the commands");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/fly"}}));
+    expect(!ash.last("devResult")->boolean("ok"), "an unknown command is refused");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", " /Fight-Test-1 "}}));
+    reply = ash.last("devResult");
+    expect(reply && reply->boolean("ok") && reply->string("command") == "/fight-test-1", "a test fight starts: " + (reply ? reply->string("text") : ""));
+    expect(g.world().inBattle("player-ash"), "Ash is in it");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/fight-end-myself"}}));
+    expect(ash.last("devResult")->boolean("ok"), "and ends it as a draw");
+    run(g, ash, 6);
+    expect(!g.world().inBattle("player-ash"), "back in the world");
+    g.disconnect(&ash);
+    const auto saved = g.characters().find("player-ash");
+    expect(saved != g.characters().end() && saved->second.dungeonMaster, "the mark stays with the character");
+    expect(wire::readEntity(wire::persistEntity(saved->second, 0)).dungeonMaster, "and is saved");
+    expect(!wire::entity(saved->second, 0).has("dungeonMaster"), "but never shown to others");
+}
+
 int main()
 {
     try
     {
         aDevelopmentSession();
+        theDevConsole();
         residentsTalkWhereAPlayerCanHear();
         talkTargets();
         residentsTalkFromWrittenScenes();

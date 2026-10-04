@@ -15,6 +15,7 @@ import {artCache} from '../artwork.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
+import {CombatScreen} from './combat.ts';
 import {PartyPanel} from './party.ts';
 import {PlacePanel} from './place.ts';
 import {CampPanel} from './camp.ts';
@@ -23,6 +24,9 @@ import {noRect, StoryPanel} from './story.ts';
 const HostileRed = rgb(0xe0695e);
 const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
+/** Menu entries that aren't their own action's name: a challenge's terms (doc 37). */
+const MenuWords: Record<string, string> = {'challenge:yield': 'Duel until one yields', 'challenge:blood': 'Duel to first blood',
+    'challenge:death': 'Fight until one goes down'};
 
 /** One row of the In Sight list. */
 interface SightRow {
@@ -85,6 +89,8 @@ export class Hud {
     private connection: HTMLElement;
     private resizer: HTMLElement;
     private fight: FightPanel;
+    private combat: CombatScreen;
+    private help: HTMLElement;
     private party: PartyPanel;
     private place: PlacePanel;
     private camp: CampPanel;
@@ -189,8 +195,7 @@ export class Hud {
         this.senses = el('div', 'senses small', status);
 
         const help = el('footer', 'helpbar', this.root);
-        el('span', 'label muted', help,
-            'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
+        this.help = el('span', 'label muted', help);
         this.connection = el('span', 'sage small', help);
         this.menu = el('div', 'menu', this.root);
         this.toast = el('div', 'toast', this.root);
@@ -199,6 +204,9 @@ export class Hud {
         this.tipWhy = el('div', 'why', this.tooltip);
         show(this.tooltip, false);
         this.dialogs = new Dialogs(this.root, state, portraits);
+        // The fight screen (doc 37): its parts sit in the map, the side, under the map and above the composer.
+        this.combat = new CombatScreen(state, portraits, {map: this.mapWrap, side, center, before: this.looking, story: this.story.root,
+            storyBefore: this.story.root.querySelector('.composer-bar') as HTMLElement});
         show(this.menu, false);
         show(this.toast, false);
     }
@@ -222,6 +230,13 @@ export class Hud {
         this.updateStatus(self);
         this.updateMenu();
         this.updateLook();
+        // In a fight the screen is about the fight: what isn't steps aside (styles.css, .fight-mode).
+        const fighting = !!s.battle;
+        setClass(this.root, 'fight-mode', fighting);
+        setText(this.help, fighting && s.battle?.observer ? 'WATCHING A FIGHT · ENTER write'
+            : fighting ? 'CLICK a lit tile to move · CLICK a foe to strike · 1–8 actions · SPACE end turn · Q / E turn · ENTER write'
+            : 'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
+        this.combat.update();
         this.fight.update();
         this.party.update();
         this.place.update();
@@ -258,7 +273,7 @@ export class Hud {
         setText(this.lookWhat, look ? look.what : '');
         setText(this.lookWhy, look ? (look.why ? `  —  ${look.why}` : '') : 'Point at anything on the map to see what it is.');
         // Beside the pointer too, after a moment's rest, unless a menu or sheet is open or the player turned it off.
-        const tip = !!look && !pointed && s.hoverTooltips && !s.modal && !s.contextTarget && s.clock - this.lookSince >= 0.15;
+        const tip = !!look && !pointed && !s.battle && s.hoverTooltips && !s.modal && !s.contextTarget && s.clock - this.lookSince >= 0.15;
         show(this.tooltip, tip);
         if (!tip || !look) return;
         setText(this.tipWhat, look.what);
@@ -386,13 +401,15 @@ export class Hud {
             this.menuKey = '';
             return;
         }
-        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextActions, s.contextPage, s.contextPoint]);
+        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextActions, s.contextPage, s.contextPoint, s.armed]);
         if (key === this.menuKey) return;
         this.menuKey = key;
         this.menu.replaceChildren();
         el('div', 'menu-title', this.menu, s.contextName);
         s.contextActions.forEach((action, i) =>
-            button(`${i + 1}  ${upperFirst(action)}`, 'menu-item', this.menu, () => s.activate({rect: noRect, action: 'context', target: action})));
+            button(`${i + 1}  ${s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)' : MenuWords[action] ?? upperFirst(action)}`,
+                `menu-item${s.armed === `${action}|${s.contextTarget}` ? ' armed' : ''}`, this.menu,
+                () => s.activate({rect: noRect, action: 'context', target: action})));
         // On the map, beside what was clicked; from a panel, at the pointer. Kept on screen either way.
         let x: number, y: number;
         if (s.contextPage) [x, y] = s.contextPage;

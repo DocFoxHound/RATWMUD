@@ -7,7 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {coneTiles, meterNow, myTurn, type BattleView} from './battle.ts';
+import {apart, chanceFrom, coneTiles, myTurn, octantGap, pathTo, quarter, stepToward, type BattleView, type FighterView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 
@@ -436,7 +436,7 @@ export class GamePainter {
     /** A glyph of what just happened, or of how the fight stands (fx.ts). */
     private drawMark(m: Mark, ox: number, oy: number, tile: number) {
         const colors: Record<Mark['color'], Color> = {hit: rgb(0xf3e3c3), graze: rgb(0xd9c08c), miss: Muted, fire: rgb(0xff8a3c),
-            smoke: Muted, burn: rgb(0xff6a2c), charge: rgb(0xffb35c), item: Paper};
+            smoke: Muted, burn: rgb(0xff6a2c), charge: rgb(0xffb35c), item: Paper, ash: rgb(0x8a8279)};
         const color = m.glyph === '*' && m.color === 'fire' ? rgb(0xd4483c) : colors[m.color];
         const size = m.color === 'fire' ? Math.max(11, Math.round(this.s.tileSize * 0.7)) : 12;
         this.turnedText(ox + (m.x + 0.5) * tile, oy + (m.y + 0.5) * tile, m.glyph, size, withAlpha(color, m.alpha), 0);
@@ -465,158 +465,360 @@ export class GamePainter {
         }
     }
 
-    /** Inside a fight: the arena, where this wolf may move, and the fighters on their tiles. */
+    /**
+     * Inside a fight (doc 37, phase 2): the arena, built to be read. The world outside it is dimmed and its own ground
+     * quietened, so the wolves and what they do stand out; each wolf is a round token in its side's colour with a
+     * health ring and a wedge where it faces; one's reach is an outline; pointing at a tile shows the way there,
+     * pointing at a foe the blow (its chance, from where it would come) and where they are weak.
+     */
     private drawArena(b: BattleView, ox: number, oy: number, tile: number) {
         const s = this.s, p = this.p, c = p.ctx;
         const {x: ax, y: ay, w: aw, h: ah} = b.arena;
-        p.frame(ox + ax * tile, oy + ay * tile, aw * tile, ah * tile, withAlpha(rgb(0xd4483c), 0.75));
-        p.frame(ox + ax * tile + 1, oy + ay * tile + 1, aw * tile - 2, ah * tile - 2, withAlpha(rgb(0xd4483c), 0.45));
+        const red = rgb(0xd4483c), foeRed = rgb(0xe0695e);
+        const map = s.mapRect;
+        const left = ox + ax * tile, top = oy + ay * tile, right = left + aw * tile, bottom = top + ah * tile;
+        // The world outside the arena, dimmed; the ground inside it, quietened, with a faint grid when there's room.
+        c.save();
+        c.beginPath();
+        c.rect(map.left, map.top, map.right - map.left, map.bottom - map.top);
+        c.rect(left, top, aw * tile, ah * tile);
+        c.fillStyle = css(withAlpha(Ink, 0.66));
+        c.fill('evenodd');
+        c.restore();
+        p.box(left, top, aw * tile, ah * tile, withAlpha(Ink, 0.6));
+        if (tile >= 18) {
+            c.save();
+            c.beginPath();
+            const x0 = Math.max(ax, Math.floor((map.left - ox) / tile)), x1 = Math.min(ax + aw, Math.ceil((map.right - ox) / tile));
+            const y0 = Math.max(ay, Math.floor((map.top - oy) / tile)), y1 = Math.min(ay + ah, Math.ceil((map.bottom - oy) / tile));
+            for (let x = x0; x <= x1; ++x) {
+                c.moveTo(ox + x * tile + 0.5, oy + y0 * tile);
+                c.lineTo(ox + x * tile + 0.5, oy + y1 * tile);
+            }
+            for (let y = y0; y <= y1; ++y) {
+                c.moveTo(ox + x0 * tile, oy + y * tile + 0.5);
+                c.lineTo(ox + x1 * tile, oy + y * tile + 0.5);
+            }
+            c.strokeStyle = css(withAlpha(Paper, 0.045));
+            c.lineWidth = 1;
+            c.stroke();
+            c.restore();
+        }
+        p.frame(left, top, aw * tile, ah * tile, withAlpha(red, 0.8));
+        const me = b.observer ? undefined : b.fighters.find(f => f.id === s.selfId);
+        const mine = myTurn(b, s.selfId);
+        // The edge rows, where one can flee from: a faint band, with arrows out at the middle of each side.
+        if (me && !b.over && me.status === 'fighting') {
+            const band = withAlpha(red, 0.1);
+            p.box(left, top, aw * tile, 2 * tile, band);
+            p.box(left, bottom - 2 * tile, aw * tile, 2 * tile, band);
+            p.box(left, top + 2 * tile, 2 * tile, (ah - 4) * tile, band);
+            p.box(right - 2 * tile, top + 2 * tile, 2 * tile, (ah - 4) * tile, band);
+            const out = withAlpha(red, 0.55), size = clamp(Math.round(tile * 0.6), 10, 18);
+            for (const [x, y, angle] of [[(left + right) / 2, top + tile, -Math.PI / 2], [(left + right) / 2, bottom - tile, Math.PI / 2],
+                [left + tile, (top + bottom) / 2, Math.PI], [right - tile, (top + bottom) / 2, 0]] as const)
+                this.turnedText(x, y, '➜', size, out, angle);
+        }
         // Spells gathering: their cones, locked, outlined in red for everyone to see (the tell), deepening as the
         // countdown runs out; the seconds left over the cone.
         for (const cast of b.casts) {
-            const left = Math.max(0, cast.left - (s.clock - s.battleAt));
-            const near = cast.of > 0 ? 1 - left / cast.of : 0;
+            const remaining = Math.max(0, cast.left - (s.clock - s.battleAt));
+            const near = cast.of > 0 ? 1 - remaining / cast.of : 0;
             let cx = 0, cy = 0;
             for (const [x, y] of cast.tiles) {
-                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.1 + 0.3 * near));
-                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xd4483c), 0.7));
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(red, 0.12 + 0.35 * near));
+                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(red, 0.75));
                 cx += x;
                 cy += y;
             }
             if (cast.tiles.length) {
-                const words = `${left.toFixed(1)}s`;
+                const words = `${remaining.toFixed(1)}s`;
                 const [ww] = p.measure(words, 12, true);
                 const tx = ox + (cx / cast.tiles.length + 0.5) * tile, ty = oy + (cy / cast.tiles.length + 0.5) * tile;
                 p.box(tx - ww / 2 - 4, ty - 9, ww + 8, 16, withAlpha(Ink, 0.85));
                 p.text(tx - ww / 2, ty - 8, words, 12, rgb(0xff9a3c), true);
             }
         }
-        const meFighter = b.fighters.find(f => f.id === s.selfId);
         // Aiming fire: where it would go.
-        if (s.aiming === 'flame' && b.flame && meFighter) {
+        if (s.aiming === 'flame' && b.flame && me) {
             const tx = Math.floor((s.hover[0] - ox) / tile), ty = Math.floor((s.hover[1] - oy) / tile);
-            for (const [x, y] of coneTiles(b, meFighter.x, meFighter.y, tx, ty, b.flame.length, b.flame.angle))
-                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xff9a3c), 0.28));
-        }
-        // Where this wolf can go this turn: lit plainly, the tile under the pointer brighter.
-        const mine = myTurn(b, s.selfId);
-        if (mine && s.aiming !== 'flame') {
-            const hx = Math.floor((s.hover[0] - ox) / tile), hy = Math.floor((s.hover[1] - oy) / tile);
-            const pulse = 0.08 * Math.abs(Math.sin(s.clock * 2.5));
-            for (const [x, y] of b.reach) {
-                const under = x === hx && y === hy;
-                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, (under ? 0.5 : 0.24) + pulse));
-                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(Amber, under ? 1 : 0.6));
+            for (const [x, y] of coneTiles(b, me.x, me.y, tx, ty, b.flame.length, b.flame.angle)) {
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xff9a3c), 0.3));
+                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xff9a3c), 0.7));
             }
         }
-        const me = b.fighters.find(f => f.id === s.selfId);
+        const hx = Math.floor((s.hover[0] - ox) / tile), hy = Math.floor((s.hover[1] - oy) / tile);
+        const centre = (x: number, y: number): Point => [ox + (x + 0.5) * tile, oy + (y + 0.5) * tile];
+        // The wolf under the pointer, worked out first: what is drawn below depends on it.
+        const reachOf = Math.max(14, clamp(tile * 0.38, 8, 16) + 4);
+        s.hoveredEntity = b.fighters.find(f => f.status !== 'fled' &&
+            Math.hypot(centre(f.x, f.y)[0] - s.hover[0], centre(f.x, f.y)[1] - s.hover[1]) < reachOf)?.id ?? '';
+        const pointedFoe = me ? b.fighters.find(f => f.id === s.hoveredEntity && f.side !== me.side && f.status === 'fighting') : undefined;
+        const range = b.mouth === 'sword' ? 2 : 1;
+        // Where this wolf can go: an outline round the lit tiles. The aimed-at foe's strike tiles
+        // among them are marked, brighter where the blow is likelier (their side and back).
+        if (me && mine && !b.moved && s.aiming !== 'flame' && b.reach.length) {
+            const lit = new Set(b.reach.map(([x, y]) => `${x},${y}`));
+            lit.add(`${me.x},${me.y}`);              // One's own tile is inside the outline, not a hole in it.
+            const occupied = new Set(b.fighters.filter(f => f.status !== 'fled').map(f => `${f.x},${f.y}`));
+            c.save();
+            c.beginPath();
+            for (const [x, y] of [...b.reach, [me.x, me.y] as [number, number]]) {
+                const x0 = ox + x * tile, y0 = oy + y * tile;
+                if (!lit.has(`${x},${y - 1}`)) { c.moveTo(x0, y0); c.lineTo(x0 + tile, y0); }
+                if (!lit.has(`${x},${y + 1}`)) { c.moveTo(x0, y0 + tile); c.lineTo(x0 + tile, y0 + tile); }
+                if (!lit.has(`${x - 1},${y}`)) { c.moveTo(x0, y0); c.lineTo(x0, y0 + tile); }
+                if (!lit.has(`${x + 1},${y}`)) { c.moveTo(x0 + tile, y0); c.lineTo(x0 + tile, y0 + tile); }
+            }
+            c.strokeStyle = css(withAlpha(Amber, 0.75));
+            c.lineWidth = 1.5;
+            c.stroke();
+            c.restore();
+            const aimed = b.fighters.find(f => f.id === s.fightTargetId());
+            for (const [x, y] of b.reach) {
+                if (aimed && !b.acted && !occupied.has(`${x},${y}`) && apart(x, y, aimed.x, aimed.y) <= range) {
+                    const chance = chanceFrom(aimed, x, y);
+                    p.box(ox + x * tile + 2, oy + y * tile + 2, tile - 4, tile - 4, withAlpha(foeRed, 0.08 + (chance - 20) / 75 * 0.3));
+                }
+            }
+            // Pointing at a lit tile: the way there, and oneself there (a ghost), with the chance of a blow from it.
+            if (lit.has(`${hx},${hy}`) && !(hx === me.x && hy === me.y) && !pointedFoe && !s.faceDrag) {
+                p.box(ox + hx * tile + 1, oy + hy * tile + 1, tile - 2, tile - 2, withAlpha(Amber, 0.22));
+                const path = pathTo(b, [me.x, me.y], [hx, hy]).map(([x, y]) => centre(x, y));
+                c.save();
+                c.setLineDash([4, 4]);
+                p.lines(path, withAlpha(Amber, 0.8), 2);
+                c.restore();
+                this.drawToken({...me, x: hx, y: hy}, centre(hx, hy), tile, Amber, 0.4, false);
+                if (aimed && !b.acted && apart(hx, hy, aimed.x, aimed.y) <= range)
+                    this.chanceBadge(centre(hx, hy), tile, chanceFrom(aimed, hx, hy), quarter(aimed, hx, hy));
+            }
+        }
         const mySide = me ? me.side : 0;
-        const wolfFont = clamp(Math.round(tile * 0.55), 10, 13);
-        const reach = Math.min(13, tile * 0.55);
-        let hovered = '';
         const reduced = s.reducedMotion;
-        // On one's own turn: eight arrows round the wolf, one for each way it can face (the bright one, where it does).
-        // Drawn first, so a click on a wolf standing next to it still goes to that wolf.
-        if (me && mine && me.status === 'fighting' && s.aiming !== 'flame') {
-            const x = ox + (me.x + 0.5) * tile, y = oy + (me.y + 0.5) * tile;
-            for (let dir = 0; dir < 8; ++dir) {
-                const angle = dir * Math.PI / 4, r = Math.max(22, tile * 0.95);
-                const ax2 = x + Math.cos(angle) * r, ay2 = y + Math.sin(angle) * r;
-                const now = dir === me.facing;
-                const near = Math.hypot(ax2 - s.hover[0], ay2 - s.hover[1]) < 9;
-                p.box(ax2 - 7, ay2 - 7, 14, 14, withAlpha(Ink, now || near ? 0.85 : 0.6));
-                this.turnedText(ax2, ay2, '>', now ? 14 : 12, withAlpha(now ? Amber : Paper, now ? 1 : near ? 1 : 0.7), angle);
-                s.hits.push({rect: rect(ax2 - 8, ay2 - 8, ax2 + 8, ay2 + 8), action: 'face', target: String(dir)});
+        // Names go where they don't cover another's (above, below, then beside).
+        const placed: Rect[] = [];
+        const overlaps = (r: Rect) => placed.some(o => r.left < o.right && r.right > o.left && r.top < o.bottom && r.bottom > o.top);
+        const radius = clamp(tile * 0.38, 8, 16);
+        for (const f of b.fighters) {
+            const [x, y] = centre(f.x, f.y);
+            placed.push(rect(x - radius - 4, y - radius - 4, x + radius + 4, y + radius + 4));
+        }
+        // Pointing at a foe on one's turn: the blow. From here if they're in reach; else from the tile a click would
+        // step to (shown as a ghost), or "out of reach".
+        if (me && mine && !b.acted && pointedFoe && s.aiming !== 'flame') {
+            const step = apart(me.x, me.y, pointedFoe.x, pointedFoe.y) <= range ? {x: me.x, y: me.y, reaches: true}
+                : stepToward(b, me, pointedFoe, range);
+            const foeAt = centre(pointedFoe.x, pointedFoe.y);
+            if (step) {
+                const from = centre(step.x, step.y);
+                if (step.x !== me.x || step.y !== me.y) {
+                    c.save();
+                    c.setLineDash([4, 4]);
+                    p.lines(pathTo(b, [me.x, me.y], [step.x, step.y]).map(([x, y]) => centre(x, y)), withAlpha(Amber, 0.7), 2);
+                    c.restore();
+                    this.drawToken({...me, x: step.x, y: step.y}, from, tile, Amber, 0.4, false);
+                }
+                if (step.reaches) {
+                    p.lines([from, foeAt], withAlpha(foeRed, 0.8), 2);
+                    this.chanceBadge(foeAt, tile, chanceFrom(pointedFoe, step.x, step.y), quarter(pointedFoe, step.x, step.y), placed);
+                } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
+            } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
+        }
+        const colorOf = (f: FighterView) => (f.id === s.selfId ? Amber : f.side === mySide ? Blue : foeRed);
+        // The wolf pointed at (not oneself): where it is weak, as a ring of three: front, sides, back.
+        const pointed = b.fighters.find(f => f.id === (s.hoveredEntity || s.highlight) && f.id !== s.selfId && f.status === 'fighting');
+        if (pointed) {
+            const [x, y] = centre(pointed.x, pointed.y);
+            for (let k = 0; k < 8; ++k) {
+                const gap = octantGap(pointed.facing, k);
+                const color = gap >= 3 ? withAlpha(foeRed, 0.85) : gap === 2 ? withAlpha(Amber, 0.6) : withAlpha(Paper, 0.18);
+                c.beginPath();
+                c.arc(x, y, radius + 9, (k - 0.5) * Math.PI / 4 + 0.04, (k + 0.5) * Math.PI / 4 - 0.04);
+                c.strokeStyle = css(color);
+                c.lineWidth = 4;
+                c.stroke();
             }
         }
         for (const f of b.fighters) {
+            if (f.status === 'fled') continue;
             // A lunge, a recoil, a sidestep, a gathering caster's tremble: offsets for the eye only.
             const [mx, my] = s.fx.offset(f.id, s.clock, reduced);
             const [tx, ty] = s.fx.tremble(f.id, b, s.clock, reduced);
             const x = ox + (f.x + 0.5 + mx + tx) * tile, y = oy + (f.y + 0.5 + my + ty) * tile;
             const self = f.id === s.selfId;
-            const color = self ? Amber : f.side === mySide ? Blue : rgb(0xe0695e);
+            const color = colorOf(f);
             if (f.acting && !b.over) {
                 c.beginPath();
-                c.arc(x, y, 16, 0, Math.PI * 2);
-                c.strokeStyle = css(withAlpha(Amber, 0.5 + 0.4 * Math.abs(Math.sin(s.clock * 3))));
+                c.arc(x, y, radius + 5, 0, Math.PI * 2);
+                c.strokeStyle = css(withAlpha(Amber, 0.35 + 0.45 * Math.abs(Math.sin(s.clock * 3))));
                 c.lineWidth = 2;
                 c.stroke();
             }
-            if (f.status === 'downed' || f.status === 'dead') this.turnedText(x, y, 'W', wolfFont, this.fallenColor(f.status), Math.PI / 2);
-            else {
-                const [ww, wh] = p.measure('W', wolfFont, true);
-                p.text(x - ww * 0.5, y - wh * 0.5, 'W', wolfFont, withAlpha(color, f.away ? 0.5 : 1), true);
-                const angle = f.facing * Math.PI / 4;
-                this.turnedText(x + Math.cos(angle) * reach, y + Math.sin(angle) * reach, '>', 10, color, angle);
-                if (f.mouth === 'sword')
-                    this.turnedText(x + Math.cos(angle + 0.9) * reach, y + Math.sin(angle + 0.9) * reach, '†', 10, Paper, angle + Math.PI / 2);
+            // Turning by dragging: the way it will face, shown as the drag goes.
+            const facing = self && s.faceDrag && s.faceDragDir >= 0 ? s.faceDragDir : f.facing;
+            this.drawToken({...f, facing}, [x, y], tile, color, f.status === 'yielded' ? 0.4 : f.away ? 0.55 : 1, true, s.fx.flash(f.id, s.clock),
+                s.fx.lagHealth(f.id, f.health, s.clock));
+            // Its name (not one's own: the gold token is oneself), where it fits.
+            if (!self) {
+                const label = f.name;
+                const size = tile >= 24 ? 11 : 10;
+                const [nw] = p.measure(label, size, true);
+                const spots: [number, number][] = [[x - nw / 2, y - radius - 22], [x - nw / 2, y + radius + 8], [x + radius + 10, y - 7],
+                    [x - radius - 10 - nw, y - 7], [x - nw / 2, y - radius - 36], [x - nw / 2, y + radius + 22]];
+                const spot = spots.find(([lx, ly]) => !overlaps(rect(lx - 3, ly, lx + nw + 3, ly + 14))) ?? spots[0];
+                placed.push(rect(spot[0] - 3, spot[1], spot[0] + nw + 3, spot[1] + 14));
+                p.box(spot[0] - 3, spot[1], nw + 6, 14, withAlpha(Ink, 0.7));
+                p.text(spot[0], spot[1], label, size, withAlpha(color, f.status === 'fighting' ? 0.95 : 0.6), true);
             }
-            // Everyone's name, and their initiative bar: filling until their turn, full and waiting, or (theirs now) the
-            // time left in it.
-            const label = self ? 'You' : f.name;
-            const [nw] = p.measure(label, 10, true);
-            const crowded = b.fighters.some(o => o !== f && o.y === f.y - 1 && Math.abs(o.x - f.x) <= 1);
-            const ly = crowded ? y + 21 : y - 31;
-            p.box(x - nw * 0.5 - 3, ly, nw + 6, 13, withAlpha(Ink, 0.75));
-            p.text(x - nw * 0.5, ly, label, 10, withAlpha(color, 0.95), true);
-            if (f.status === 'fighting' || f.status === 'downed') {
-                const bw = 28, bx = x - bw / 2, by = y + 15;
-                p.box(bx, by, bw, 4, withAlpha(Ink, 0.85));
-                if (f.acting && !b.over) {
-                    const left = clamp((f.turnLeft - (s.clock - s.battleAt)) / 10, 0, 1);
-                    p.box(bx, by, bw * (f.id === s.selfId || !f.npc ? left : 1), 4, Amber);
-                } else {
-                    const full = meterNow(f, s.clock - s.battleAt);
-                    const ready = full >= 1;
-                    p.box(bx, by, bw * full, 4, ready ? withAlpha(Paper, 0.6 + 0.4 * Math.abs(Math.sin(s.clock * 4))) : withAlpha(color, 0.85));
+            // Pointed at from the fight screen (a card or the turn order), or the foe its actions aim at: ringed.
+            if (s.highlight === f.id || (s.fightFocus === f.id && f.status === 'fighting')) {
+                c.beginPath();
+                c.arc(x, y, radius + 5, 0, Math.PI * 2);
+                c.setLineDash(s.highlight === f.id ? [] : [4, 3]);
+                c.strokeStyle = css(withAlpha(s.highlight === f.id ? Paper : color, 0.9));
+                c.lineWidth = 2;
+                c.stroke();
+                c.setLineDash([]);
+            }
+            const hit = Math.max(14, radius + 4);
+            s.hits.push({rect: rect(x - hit, y - hit, x + hit, y + hit), action: 'fighter', target: f.id});
+        }
+        // On one's own turn, one's own tile turns the wolf: split three by three, each of its eight outer parts faces
+        // that way. Shown when the pointer is on it (a drag from it turns the wolf too); a click on any tile or wolf
+        // round it still moves or strikes there. Pushed last, so it wins over one's own wolf.
+        if (me && mine && me.status === 'fighting' && s.aiming !== 'flame') {
+            const x0 = ox + me.x * tile, y0 = oy + me.y * tile, third = tile / 3;
+            const over = hx === me.x && hy === me.y;
+            for (let dir = 0; dir < 8; ++dir) {
+                const angle = dir * Math.PI / 4;
+                const gx = Math.round(Math.cos(angle)), gy = Math.round(Math.sin(angle));
+                const r = rect(x0 + (gx + 1) * third, y0 + (gy + 1) * third, x0 + (gx + 2) * third, y0 + (gy + 2) * third);
+                if (over && !s.faceDrag) {
+                    const near = contains(r, s.hover[0], s.hover[1]);
+                    if (near) p.box(r.left, r.top, third, third, withAlpha(Amber, 0.35));
+                    this.turnedText((r.left + r.right) / 2, (r.top + r.bottom) / 2, '>', Math.max(8, Math.round(third * 0.8)),
+                        withAlpha(dir === me.facing ? Amber : Paper, dir === me.facing || near ? 1 : 0.6), angle);
                 }
-                p.frame(bx - 0.5, by - 0.5, bw + 1, 5, withAlpha(color, 0.35));
+                s.hits.push({rect: r, action: 'face', target: String(dir)});
             }
-            s.hits.push({rect: rect(x - 14, y - 14, x + 14, y + 14), action: 'fighter', target: f.id});
-            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = f.id;
         }
-        s.hoveredEntity = hovered;
+        // Fire filling its cone: a glow under the flames.
+        for (const t of s.fx.fire(s.clock))
+            p.box(ox + t.x * tile + 1, oy + t.y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0xff7a2c), 0.15 + 0.4 * t.heat));
         for (const m of s.fx.marks(b, s.clock, reduced)) this.drawMark(m, ox, oy, tile);
-        // Whose turn it is, said plainly at the top of the map: a headline, and on one's own turn what to do.
-        if (!b.over) {
-            const map = s.mapRect;
-            const left = Math.max(0, Math.ceil(b.turnLeft - (s.clock - s.battleAt)));
-            const others = b.fighters.filter(f => f.acting && f.id !== s.selfId).map(f => f.name);
-            const filling = b.observer ? 'WATCHING' : b.status === 'downed' || b.status === 'fighting' ? 'YOUR BAR IS FILLING' : '';
-            const head = mine ? `YOUR TURN · ${left}s`
-                : [others.length ? `ACTING: ${others.join(', ').toUpperCase()}` : '', filling].filter(Boolean).join(' · ') || 'BARS FILLING';
-            const hint = !mine ? ''
-                : b.status === 'downed' ? 'You are down: click a lit tile to crawl, or Struggle up'
-                : s.aiming === 'flame' ? 'Aim the fire: click where it goes · Esc to cancel'
-                : [b.moved ? '' : 'Click a lit tile to move', b.acted ? '' : 'click a foe to attack', 'click an arrow to face', 'End turn when done']
-                    .filter(Boolean).join(' · ');
-            const room = map.right - map.left - 40;
-            const fit = (words: string, size: number) => {
-                let w = words;
-                while (w.length > 4 && p.measure(w, size, false)[0] > room) w = w.slice(0, -2);
-                return w === words ? w : w.trimEnd() + '…';
-            };
-            const h1 = fit(head, 14), h2 = hint ? fit(hint, 11) : '';
-            const w1 = p.measure(h1, 14, true)[0], w2 = h2 ? p.measure(h2, 11, false)[0] : 0;
-            const bw = Math.max(w1, w2) + 24, bh = h2 ? 40 : 24, cx = (map.left + map.right) / 2, ty = map.top + 8;
-            p.box(cx - bw / 2, ty, bw, bh, withAlpha(Panel, 0.92));
-            p.frame(cx - bw / 2, ty, bw, bh, withAlpha(mine ? Amber : Muted, mine ? 0.8 : 0.4));
-            p.text(cx - w1 / 2, ty + 3, h1, 14, mine ? Amber : Paper, true);
-            if (h2) p.text(cx - w2 / 2, ty + 22, h2, 11, Paper, false);
+        // A fall: rings bursting out from where they went down.
+        for (const ring of s.fx.rings(s.clock, reduced)) {
+            const [rx, ry] = centre(ring.x, ring.y);
+            c.beginPath();
+            c.arc(rx, ry, ring.radius * tile, 0, Math.PI * 2);
+            c.strokeStyle = css(withAlpha(rgb(0xff9a3c), 0.8 * ring.alpha));
+            c.lineWidth = 3;
+            c.stroke();
         }
-        // Over: the banner, then the arena fades out.
+        // The figures rising off the wolves: what each blow did.
+        const floatColors = {hit: Paper, heavy: rgb(0xfff0c8), graze: rgb(0xb8ad98), miss: Muted, fire: rgb(0xff9a3c), down: rgb(0xff6a4c),
+            heal: rgb(0x9fd08f)};
+        for (const f of s.fx.floats(s.clock, reduced)) {
+            const [fx, fy] = centre(f.x, f.y);
+            const size = Math.round(clamp(tile * 0.5, 12, 18) * f.size);
+            c.save();
+            c.font = font(size, true);
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.lineWidth = 3;
+            c.strokeStyle = css(withAlpha(Ink, 0.9 * f.alpha));
+            c.strokeText(f.text, fx, fy);
+            c.fillStyle = css(withAlpha(floatColors[f.color], f.alpha));
+            c.fillText(f.text, fx, fy);
+            c.restore();
+        }
+        // Over: the arena fades out (how it ended is the fight screen's result card: combat.ts).
         if (b.over) {
-            const map = s.mapRect;
             const fade = clamp((s.clock - s.battleOverSeenAt - 2) / 0.5, 0, 1);
             if (fade > 0) p.box(map.left, map.top, map.right - map.left, map.bottom - map.top, withAlpha(Ink, fade));
-            const words = b.banner || 'The fight is over';
-            const [bw] = p.measure(words, 16, true);
-            const cx = (map.left + map.right) / 2, cy = (map.top + map.bottom) / 2;
-            p.box(cx - bw / 2 - 18, cy - 22, bw + 36, 40, withAlpha(Panel, 0.92));
-            p.frame(cx - bw / 2 - 18, cy - 22, bw + 36, 40, withAlpha(Amber, 0.6));
-            p.text(cx - bw / 2, cy - 12, words, 16, Paper, true);
         }
+    }
+
+    /**
+     * A fighter's token: a dark disc rimmed in its side's colour, its `W`, a wedge on the rim where it faces, and a
+     * ring round it for its health. Downed, it lies on its side and pulses; dead, grey. `ring` false for a ghost.
+     */
+    private drawToken(f: FighterView, [x, y]: Point, tile: number, color: Color, alpha: number, ring: boolean, flash = 0, was = f.health) {
+        const c = this.p.ctx;
+        const r = clamp(tile * 0.38, 8, 16);
+        const fallen = f.status === 'downed' || f.status === 'dead';
+        const rim = fallen ? this.fallenColor(f.status) : color;
+        c.save();
+        c.globalAlpha = alpha;
+        c.beginPath();
+        c.arc(x, y, r, 0, Math.PI * 2);
+        c.fillStyle = css(withAlpha(Ink, 0.92));
+        c.fill();
+        c.strokeStyle = css(rim);
+        c.lineWidth = 2;
+        c.stroke();
+        if (ring && f.status !== 'dead') {
+            const share = Math.max(0, Math.min(1, f.health / 100));
+            c.beginPath();
+            c.arc(x, y, r + 3, -Math.PI / 2, Math.PI * 1.5);
+            c.strokeStyle = css(withAlpha(Ink, 0.8));
+            c.lineWidth = 3;
+            c.stroke();
+            // What the last blow took, draining away (light), ahead of what is left.
+            const before = Math.max(share, Math.min(1, was / 100));
+            if (before > share) {
+                c.beginPath();
+                c.arc(x, y, r + 3, -Math.PI / 2 + share * Math.PI * 2, -Math.PI / 2 + before * Math.PI * 2);
+                c.strokeStyle = css(withAlpha(Paper, 0.85));
+                c.stroke();
+            }
+            if (share > 0) {
+                c.beginPath();
+                c.arc(x, y, r + 3, -Math.PI / 2, -Math.PI / 2 + share * Math.PI * 2);
+                c.strokeStyle = css(share > 0.5 ? withAlpha(rgb(0x9fd08f), 0.9) : share > 0.25 ? withAlpha(Amber, 0.95) : withAlpha(rgb(0xe0695e), 0.95));
+                c.stroke();
+            }
+        }
+        if (flash > 0) {
+            // Struck: a flash of white over the disc.
+            c.beginPath();
+            c.arc(x, y, r, 0, Math.PI * 2);
+            c.fillStyle = css(withAlpha(rgb(0xfff4dc), 0.85 * flash));
+            c.fill();
+        }
+        if (!fallen) {
+            // The wedge: where it faces.
+            const a = f.facing * Math.PI / 4;
+            c.beginPath();
+            c.moveTo(x + Math.cos(a) * (r + 7), y + Math.sin(a) * (r + 7));
+            c.lineTo(x + Math.cos(a + 0.42) * (r - 1), y + Math.sin(a + 0.42) * (r - 1));
+            c.lineTo(x + Math.cos(a - 0.42) * (r - 1), y + Math.sin(a - 0.42) * (r - 1));
+            c.closePath();
+            c.fillStyle = css(color);
+            c.fill();
+        }
+        c.restore();
+        const size = Math.round(r * 1.15);
+        if (fallen) this.turnedText(x, y, 'W', size, rim, Math.PI / 2);
+        else {
+            this.turnedText(x, y, 'W', size, withAlpha(color, alpha), 0);
+            if (f.mouth === 'sword') this.turnedText(x + r * 0.95, y - r * 0.95, '†', Math.max(9, Math.round(r * 0.9)), withAlpha(Paper, alpha), 0.6);
+        }
+    }
+
+    /** A blow's chance in a badge beside a foe ("81%", and "side" or "behind" when it helps); −1: out of reach. */
+    private chanceBadge([x, y]: Point, tile: number, chance: number, from: 'front' | 'side' | 'back', placed?: Rect[]) {
+        const p = this.p;
+        const words = chance < 0 ? 'out of reach' : `${Math.round(chance)}%${from === 'back' ? ' · behind' : from === 'side' ? ' · side' : ''}`;
+        const size = 12;
+        const [w] = p.measure(words, size, true);
+        const r = clamp(tile * 0.38, 8, 16);
+        const bx = x + r + 6, by = y - r - 18;
+        p.box(bx - 4, by - 1, w + 8, 17, withAlpha(Ink, 0.92));
+        p.frame(bx - 4, by - 1, w + 8, 17, withAlpha(chance < 0 ? Muted : Amber, 0.8));
+        p.text(bx, by, words, size, chance < 0 ? Muted : Amber, true);
+        placed?.push(rect(bx - 4, by - 1, bx + w + 4, by + 16));
     }
 
     /** A character drawn turned, centred on a point (the facing arrows). */
@@ -635,6 +837,42 @@ export class GamePainter {
 
     // ------------------------------------------------------------------ The local map
 
+    private fightView: {cx: number; cy: number; tile: number} | null = null;
+
+    /**
+     * In a fight the view frames the fight, not the wolf's frozen place in the lineup: oneself (where one stands in
+     * the arena), everyone within a dozen tiles and at least the nearest foe, with the tiles one can reach, zoomed in
+     * as close as that allows. It eases from frame to frame, so a step doesn't jolt it.
+     */
+    private fightFrame(mapW: number, mapH: number): {cx: number; cy: number; tile: number} | null {
+        const s = this.s, b = s.battle;
+        if (!b) {
+            this.fightView = null;
+            return null;
+        }
+        const standing = b.fighters.filter(f => f.status !== 'fled');
+        const me = standing.find(f => f.id === s.selfId);
+        let group = standing;
+        if (me) {
+            const apart = (f: {x: number; y: number}) => Math.max(Math.abs(f.x - me.x), Math.abs(f.y - me.y));
+            group = standing.filter(f => apart(f) <= 12);
+            const foe = standing.filter(f => f.side !== me.side && f.status === 'fighting').sort((a, c) => apart(a) - apart(c))[0];
+            if (foe && !group.includes(foe)) group.push(foe);
+        }
+        const tiles: [number, number][] = group.map(f => [f.x, f.y]);
+        if (me && myTurn(b, s.selfId)) tiles.push(...b.reach);
+        if (!tiles.length) tiles.push([b.arena.x + b.arena.w / 2, b.arena.y + b.arena.h / 2]);
+        const xs = tiles.map(t => t[0]), ys = tiles.map(t => t[1]);
+        const x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, y0 = Math.min(...ys), y1 = Math.max(...ys) + 1;
+        // Room round the edge for names and bars, and at the top for the turn banner.
+        const tile = clamp(Math.min(mapW * 0.95 / (x1 - x0 + 6), mapH * 0.95 / (y1 - y0 + 8)), 12, 34);
+        const want = {cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 - 1, tile};
+        const v = this.fightView;
+        const ease = (a: number, c: number) => Math.abs(c - a) < 0.01 ? c : a + (c - a) * 0.15;
+        this.fightView = !v ? want : {cx: ease(v.cx, want.cx), cy: ease(v.cy, want.cy), tile: ease(v.tile, want.tile)};
+        return this.fightView;
+    }
+
     private drawLocal() {
         const s = this.s, p = this.p;
         const map = s.mapRect;
@@ -642,6 +880,8 @@ export class GamePainter {
         // A small room fills the map (up to 28 pixels a tile); anything larger shows at the chosen zoom.
         const fit = Math.min(mapW * 0.92 / s.cellWidth, mapH * 0.9 / s.cellHeight);
         s.tileSize = Math.max(ZoomTiles[s.zoom] ?? 22, Math.min(28, fit));
+        const fight = this.fightFrame(mapW, mapH);
+        if (fight) s.tileSize = fight.tile;
         // A cell that fits is centred; a larger one follows the wolf, stopping at its edges so no empty canvas
         // shows. Shift/Ctrl + wheel look around (mapPan) until the wolf next moves.
         const viewX = (map.left + map.right) / 2, viewY = (map.top + map.bottom) / 2;
@@ -651,8 +891,10 @@ export class GamePainter {
             if (span <= high - low || !me) return center - span * 0.5;
             return clamp(center - self * s.tileSize, high - span, low);
         };
-        s.mapOrigin = [axis(viewX, map.left, map.right, s.cellWidth, me?.x ?? 0) + s.mapPan[0],
-            axis(viewY, map.top, map.bottom, s.cellHeight, me?.y ?? 0) + s.mapPan[1]];
+        const [shakeX, shakeY] = fight ? s.fx.shake(s.clock, s.reducedMotion) : [0, 0];
+        s.mapOrigin = fight ? [viewX - fight.cx * s.tileSize + s.mapPan[0] + shakeX, viewY - fight.cy * s.tileSize + s.mapPan[1] + shakeY]
+            : [axis(viewX, map.left, map.right, s.cellWidth, me?.x ?? 0) + s.mapPan[0],
+                axis(viewY, map.top, map.bottom, s.cellHeight, me?.y ?? 0) + s.mapPan[1]];
         // A crossing keeps the wolf where it was on screen for a moment, then the view slides to where it belongs.
         const cellKey = `${s.cellId}|${s.cellGeneration}`;
         if (me) {
@@ -779,8 +1021,10 @@ export class GamePainter {
         // Words on the map, kept to its corners: wind and height top left, travel and turning along the bottom.
         const L = map.left + 14, T = map.top + 12, B = map.bottom;
         p.text(L, T, 'N ^', 10, Muted, true);
-        p.text(L + 46, T, windLabel(s.outdoors, s.windStrength, s.windDirection, s.windVariable), 9, Muted);
-        p.text(L, T + 18, elevationLabel(s.selfHeight()), 8, Muted, true);
+        if (!s.battle) {                                            // (In a fight, the turn order has the top.)
+            p.text(L + 46, T, windLabel(s.outdoors, s.windStrength, s.windDirection, s.windVariable), 9, Muted);
+            p.text(L, T + 18, elevationLabel(s.selfHeight()), 8, Muted, true);
+        }
         const travel = obj(s.snapshot, 'travel');
         if (bool(travel, 'active') || bool(travel, 'paused')) {
             const w = mapW - 28;

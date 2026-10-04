@@ -13,7 +13,7 @@ export interface FighterView {
     status: string;             // "fighting", "downed", "dead".
     npc: boolean;
     away: boolean;
-    label: string;              // "Scratched", "Wounded", "Badly hurt", "Limping", "Downed", "Dead".
+    label: string;              // "Unhurt", "Scratched", "Wounded", "Badly hurt", "Limping", "Downed", "Dead".
     health: number;
     downedLeft: number;         // Seconds, for one's own side's Downed; 0 otherwise.
     mouth: string;              // "sword" when one is held in the jaws.
@@ -24,9 +24,26 @@ export interface FighterView {
     rate: number;
     acting: boolean;            // Taking a turn now (several may be at once: doc 33).
     turnLeft: number;           // Seconds left in it, when acting.
+    appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
+    lifeStage: string;
+    stamina: number;            // One's own side only (−1 for the other side's).
+    mana: number;               // One's own side's Gifted (−1 otherwise), out of manaMax.
+    manaMax: number;
+    odds: StrikeOdds | null;    // A foe, as this wolf would strike them from where it stands now.
+}
+
+/** A blow from where this wolf stands now: the chance it lands (percent), its usual damage, and whether it reaches. */
+export interface StrikeOdds {
+    hit: number;
+    base: number;               // The chance head on; from the side +10, from behind +20 (doc 33), within 20–95.
+    damage: number;
+    reach: boolean;
 }
 
 export type Tile = [number, number];
+
+/** A player's turn, in seconds (battle::TurnSeconds); typing a line adds as much again, once. */
+export const TurnSeconds = 15;
 
 export interface CastView {
     caster: string;
@@ -51,6 +68,9 @@ export interface BattleView {
     over: boolean;
     banner: string;
     pvp: boolean;
+    terms: string;              // "blood", "yield" or "death" (doc 37).
+    crime: boolean;             // A resident set on: the watch will hear.
+    yieldBy: string;            // Who offers to yield, awaiting an answer.
     arena: {x: number; y: number; w: number; h: number};
     rows: string[];             // The arena's ground, a row a tile, from its top left.
     observer: boolean;
@@ -112,6 +132,12 @@ export interface ChallengeView {
     from: string;
     name: string;
     left: number;
+    terms: string;
+}
+
+/** A fight's terms, in words: "to first blood", "until one yields", "until one goes down" (no player dies: doc 38). */
+export function termsWords(terms: string): string {
+    return terms === 'blood' ? 'to first blood' : terms === 'yield' ? 'until one yields' : 'until one goes down';
 }
 
 export function readBattle(snapshot: Json | null): BattleView | null {
@@ -127,6 +153,9 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         over: bool(b, 'over'),
         banner: str(b, 'banner'),
         pvp: bool(b, 'pvp'),
+        terms: str(b, 'terms', 'death'),
+        crime: bool(b, 'crime'),
+        yieldBy: str(b, 'yieldBy'),
         arena: {x: Math.trunc(num(arena, 'x')), y: Math.trunc(num(arena, 'y')), w: Math.trunc(num(arena, 'w')), h: Math.trunc(num(arena, 'h'))},
         rows: arr(b, 'rows').filter((r): r is string => typeof r === 'string'),
         observer: bool(you, 'observer', true),
@@ -147,6 +176,10 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
             acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'),
+            appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
+            stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
+            odds: obj(f, 'odds') ? {hit: num(obj(f, 'odds'), 'hit'), base: num(obj(f, 'odds'), 'base', num(obj(f, 'odds'), 'hit')),
+                damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach')} : null,
         })),
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
         log: objects(b, 'log').map(l => ({seq: num(l, 'seq'), kind: str(l, 'kind'), text: str(l, 'text'), actor: str(l, 'actor'),
@@ -208,7 +241,7 @@ export function readFights(snapshot: Json | null): FightSquare[] {
 
 export function readChallenge(snapshot: Json | null): ChallengeView | null {
     const c = obj(snapshot, 'challenge');
-    return c ? {from: str(c, 'from'), name: str(c, 'name'), left: num(c, 'left')} : null;
+    return c ? {from: str(c, 'from'), name: str(c, 'name'), left: num(c, 'left'), terms: str(c, 'terms', 'yield')} : null;
 }
 
 /** Whether a fighter's own turn is now, and they may still do something with it. */
@@ -251,6 +284,77 @@ export function arenaSight(width: number, height: number, b: BattleView): string
 /** How full a fighter's initiative bar is now (0..1), from what was sent and the time since. */
 export function meterNow(f: FighterView, since: number): number {
     return Math.max(0, Math.min(100, f.meter + f.rate * Math.max(0, since))) / 100;
+}
+
+/** How far apart two facings are, 0..4 eighths. */
+export function octantGap(a: number, b: number): number {
+    const d = (((a - b) % 8) + 8) % 8;
+    return Math.min(d, 8 - d);
+}
+
+/** Where a blow from (x, y) comes at a wolf from: 'front', 'side' or 'back' of how it faces. */
+export function quarter(foe: FighterView, x: number, y: number): 'front' | 'side' | 'back' {
+    const gap = octantGap(foe.facing, octant(x - foe.x, y - foe.y));
+    return gap >= 3 ? 'back' : gap === 2 ? 'side' : 'front';
+}
+
+/** The chance (percent) of a blow at `foe` from tile (x, y), by the rules the server rolls with. */
+export function chanceFrom(foe: FighterView, x: number, y: number): number {
+    if (!foe.odds) return 0;
+    const q = quarter(foe, x, y);
+    return Math.max(20, Math.min(95, foe.odds.base + (q === 'back' ? 20 : q === 'side' ? 10 : 0)));
+}
+
+/** Tiles apart, diagonals counting one (as reach is counted). */
+export function apart(x: number, y: number, tx: number, ty: number): number {
+    return Math.max(Math.abs(x - tx), Math.abs(y - ty));
+}
+
+/**
+ * Where clicking a foe out of reach would step to: the lit tile nearest them (the nearer to oneself on a tie), and
+ * whether a blow reaches from there. Null when one can't move now.
+ */
+export function stepToward(b: BattleView, me: FighterView, foe: FighterView, range: number): {x: number; y: number; reaches: boolean} | null {
+    if (b.moved || !b.reach.length) return null;
+    let best: [number, number] | null = null;
+    for (const [x, y] of b.reach)
+        if (!best || apart(x, y, foe.x, foe.y) < apart(best[0], best[1], foe.x, foe.y) || (apart(x, y, foe.x, foe.y) === apart(best[0], best[1], foe.x, foe.y) &&
+            apart(x, y, me.x, me.y) < apart(best[0], best[1], me.x, me.y)))
+            best = [x, y];
+    return best ? {x: best[0], y: best[1], reaches: apart(best[0], best[1], foe.x, foe.y) <= range} : null;
+}
+
+/** A path from one's tile to a lit one, through lit tiles (eight ways), for showing where a move goes. */
+export function pathTo(b: BattleView, from: Tile, to: Tile): Tile[] {
+    const lit = new Set(b.reach.map(([x, y]) => `${x},${y}`));
+    lit.add(`${from[0]},${from[1]}`);
+    const back = new Map<string, string>();
+    const start = `${from[0]},${from[1]}`, goal = `${to[0]},${to[1]}`;
+    const queue = [start];
+    back.set(start, '');
+    while (queue.length) {
+        const at = queue.shift()!;
+        if (at === goal) break;
+        const [x, y] = at.split(',').map(Number);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+            const next = `${x + dx},${y + dy}`;
+            if (lit.has(next) && !back.has(next)) {
+                back.set(next, at);
+                queue.push(next);
+            }
+        }
+    }
+    if (!back.has(goal)) return [from, to];
+    const out: Tile[] = [];
+    for (let at = goal; at; at = back.get(at) ?? '') out.unshift(at.split(',').map(Number) as Tile);
+    return out;
+}
+
+/** Seconds until a fighter's bar is full (0 when it is, or they are acting). */
+export function secondsToTurn(f: FighterView, since: number): number {
+    if (f.acting) return 0;
+    const now = meterNow(f, since) * 100;
+    return f.rate > 0 ? Math.max(0, (100 - now) / f.rate) : now >= 100 ? 0 : Infinity;
 }
 
 /** Seconds as m:ss. */

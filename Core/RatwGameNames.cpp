@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 namespace ratw::game
 {
@@ -51,6 +52,10 @@ void Game::refreshLabels(double dt)
     labels_.clear();
     for (const auto& [id, e] : world_.entities())
         labels_[id] = lookOf(id, &trades);
+    strangers_.clear();
+    for (const auto* c : clients_)
+        if (!c->entityId.empty())
+            strangers_[c->entityId] = nameStrangers(c->entityId);
 }
 
 std::string Game::lookOf(const std::string& id, const std::map<std::string, int>* trades) const
@@ -76,7 +81,7 @@ std::string Game::lookOf(const std::string& id, const std::map<std::string, int>
                 for (const auto& p : world_.society().positions())
                     if (p.title == job->title && world_.communityOf(p.work.cell) == community && ++same > 1)
                         break;
-            return same > 1 || job->role == "guard" ? names::article(title) + " " + title : "the " + title;
+            return names::byTrade(title, same > 1 || job->role == "guard");
         }
     return names::describe(e->appearance, e->age);
 }
@@ -100,17 +105,57 @@ std::string Game::veilFor(const std::string& viewer, const std::string& text) co
     return names::veil(text, veilMap(viewer));
 }
 
+std::map<std::string, std::string> Game::strangerNames(const std::string& viewer) const
+{
+    // Worked out once a second for each player (refreshLabels), so views built in parallel only read them.
+    if (const auto found = strangers_.find(viewer); found != strangers_.end())
+    {
+        auto called = found->second;
+        for (auto it = called.begin(); it != called.end();)
+            it = knowsName(viewer, it->first) ? called.erase(it) : std::next(it);   // Introduced since: by name.
+        return called;
+    }
+    return nameStrangers(viewer);
+}
+
+std::map<std::string, std::string> Game::nameStrangers(const std::string& viewer) const
+{
+    std::map<std::string, std::string> called;
+    if (!options_.hiddenNames || viewer.empty())
+        return called;
+    std::set<std::string> ids;
+    if (const auto* me = world_.entity(viewer))
+        for (const Entity* e : world_.entitiesIn(me->cellId))
+            ids.insert(e->id);
+    for (const auto* b : {world_.battleOf(viewer), world_.watching(viewer)})
+        if (b)
+            for (const auto& f : b->fighters)
+                ids.insert(f.id);
+    std::map<std::string, std::vector<std::string>> alike;
+    for (const auto& id : ids)                      // (A set: in order of id.)
+        if (id != viewer && !knowsName(viewer, id))
+            alike[called[id] = strangerLabel(id)].push_back(id);
+    for (const auto& [label, same] : alike)
+        for (std::size_t n = 1; n < same.size(); ++n)
+            called[same[n]] = label + " (" + std::to_string(n + 1) + ")";
+    return called;
+}
+
 std::map<std::string, std::string> Game::veilMap(const std::string& viewer) const
 {
     std::map<std::string, std::string> labels;
     if (!options_.hiddenNames || viewer.empty())
         return labels;
     const auto* me = world_.entity(viewer);
+    const auto called = strangerNames(viewer);
     const auto consider = [&](const std::string& id) {
         if (id == viewer)
             return;
         if (const auto* e = world_.entity(id); e && !e->name.empty() && !knowsName(viewer, id))
-            labels.emplace(e->name, strangerLabel(id));
+        {
+            const auto found = called.find(id);
+            labels.emplace(e->name, found != called.end() ? found->second : strangerLabel(id));
+        }
         else if (e && !e->name.empty() && options_.hiddenNames)
             if (const auto name = known_.nameFor(viewer, id); !name.empty() && name != e->name)
                 labels.emplace(e->name, name);        // Known only by an alias: the alias.

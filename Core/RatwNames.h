@@ -28,6 +28,12 @@ std::string aliasProblem(const std::string& alias, const std::string& trueName, 
 
 // How a stranger looks, in a few words: "a tall young grey wolf with white socks". Lower case; "a"/"an" fitted.
 std::string describe(const Appearance& a, int age);
+// A resident called by their post, lower case: "the innkeeper", or "a guard" where there are `several`. A post
+// written as what the wolf does reads as such: "a wolf who carries loads for hire", "the wolf on patrol".
+std::string byTrade(const std::string& title, bool several);
+// A written description whose kind of wolf carries a colour ("a grey timber wolf") said in the coat's own colour
+// ("a sandy timber wolf"): the generator wrote the kind and drew the coat apart, and the eye should win.
+std::string fitCoat(const std::string& text, const Appearance& a);
 // "a" or "an" before a word.
 std::string article(const std::string& word);
 // The first letter in upper case (for a label opening a sentence).

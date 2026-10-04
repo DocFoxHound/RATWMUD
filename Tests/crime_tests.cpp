@@ -177,6 +177,33 @@ void unpaidMeansGaol()
     expect(w.society().conserved(), "Money is conserved");
 }
 
+// A wanted wolf lying Downed isn't asked to pay: the watch binds their wounds and carries them in (playtest,
+// October 4: a downed player was left to bleed out in the cell).
+void theFallenAreCarriedIn()
+{
+    auto w = town();
+    w.addPlayer("player-ada", "Ada");
+    beside(w, "player-ada", "wren");
+    beside(w, "sloe", "wren", -1, 2);
+    stealUntilSeen(w, "player-ada", "wren");
+    expect(w.warrantFor("player-ada"), "Wanted");
+    auto* p = w.entity("player-ada");
+    p->hurt = 100;
+    p->downedLeft = 600;
+    p->posture = "lying";
+    std::vector<WorldEvent> seen;
+    bool asked = false;
+    for (int i = 0; i < 60 && !w.custodyOf("player-ada"); ++i)
+    {
+        w.tick(.5);
+        asked = asked || hasEvent(w, "stopped by the watch", seen);
+    }
+    expect(w.custodyOf("player-ada"), "Down, they are taken in");
+    expect(!asked, "without being asked to pay");
+    expect(p->downedLeft == 0 && std::abs(p->hurt - (100 - battle::TendedHealth)) < 1e-9 && p->posture == "standing",
+           "their wounds bound: up again, hurt but not bleeding");
+}
+
 // A guard who chases a wanted resident and reaches them takes them in, and the chase ends cleanly. (Taking them in
 // ended the chase under the loop's feet: the server hung on a simulated week's third day.)
 void residentChasedDown()
@@ -221,13 +248,17 @@ void assaultBeatsDown()
     };
     expect(assaults() == 1, "It is an assault");
     expect(w.bonds().find("wren", "player-ada") && w.bonds().find("wren", "player-ada")->fear > 0, "Wren fears Ada now");
+    std::vector<WorldEvent> seen;
+    bool stoppedMidFight = false;
     for (int i = 0; i < 4000 && w.inBattle("player-ada"); ++i)
     {
         w.entity("player-ada")->hurt = 0;           // (Not a test of losing.)
         test::playTurn(w, "player-ada");
         w.tick(.25);
+        stoppedMidFight = stoppedMidFight || (w.inBattle("player-ada") && hasEvent(w, "stopped by the watch", seen));
     }
     expect(!w.inBattle("player-ada"), "The fight ends");
+    expect(!stoppedMidFight, "The watch doesn't stop her in the middle of it (doc 37): it waits for the end");
     const auto* wren = w.entity("wren");
     expect(wren->downedLeft > 0 || wren->hurt > 0, "Wren is hurt, or down");
     expect(!wren->dead, "and lives");
@@ -361,6 +392,7 @@ int main()
         refusals();
         theftBeforeTheWatch();
         unpaidMeansGaol();
+        theFallenAreCarriedIn();
         residentChasedDown();
         assaultBeatsDown();
         downedAndUp();

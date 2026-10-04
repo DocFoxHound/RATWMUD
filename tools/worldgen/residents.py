@@ -36,6 +36,10 @@ MALE = ['Harl', 'Rook', 'Birch', 'Fennel', 'Vetch', 'Odo', 'Rusk', 'Harrow', 'Al
         'Brand', 'Corrie', 'Dray', 'Edric', 'Frey', 'Gorse', 'Heath', 'Kite', 'Loam', 'Slate']
 SPECIES_WORDS = {'timber': 'grey timber wolf', 'maned': 'long-legged maned wolf', 'arctic': 'pale arctic wolf',
                  'red': 'rust-red wolf', 'ethiopian': 'slender russet Ethiopian wolf'}
+# The coat palette's colours in words (Core/RatwNames.cpp colourWord), and each kind of wolf without a colour.
+COAT_WORDS = ['cream', 'silver', 'grey', 'dun', 'brown', 'black', 'russet', 'sandy']
+KIND_WORDS = {'timber': 'timber wolf', 'maned': 'long-legged maned wolf', 'arctic': 'arctic wolf', 'red': 'red wolf',
+              'ethiopian': 'slender Ethiopian wolf'}
 BUILDS = {'short': ['compact', 'stocky', 'small, quick'], 'average': ['lean', 'steady', 'rangy', 'solid'],
           'tall': ['tall', 'broad-shouldered', 'long-limbed']}
 MARKS = ['a notched left ear', 'a grey-frosted muzzle', 'a white blaze down the chest', 'one torn ear', 'a crooked tail',
@@ -182,6 +186,8 @@ class People:
         who = 'she' if sex == 'female' else 'he'
         description = (f'A {rng.choice(BUILDS[stature])} {SPECIES_WORDS[species]} with {rng.choice(MARKS)}, '
                        f'{job or work_label}.')
+        # The kind's colour is the coat's own (the game says the same: names::fitCoat).
+        description = description.replace(SPECIES_WORDS[species], COAT_WORDS[look['baseColor']] + ' ' + KIND_WORDS[species], 1)
         personality = (f'{traits[0].capitalize()} and {traits[1]}; {who} {rng.choice(QUIRKS)}.')
         backstory = f'{name.split()[0]} {hook or rng.choice(HOOKS)}.'
         self.voice = (self.voice + 7) % 32

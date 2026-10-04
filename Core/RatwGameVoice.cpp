@@ -94,6 +94,10 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     const auto intent = voices_.intent(heard, npc->name);
     if (intent.id.empty())
         return {};
+    // A wolf lying hurt, or held in the gaol, isn't met with a doorstep greeting: a model answers what they said.
+    if ((player->downedLeft > 0 || player->hurt >= 50 || world_.custodyOf(playerId)) &&
+        (intent.id == "greet" || intent.id == "thanks" || intent.id == "bye"))
+        return {};
     std::map<std::string, std::string> facts{{"name", npc->name}};
     if (identified && knowsName(npcId, playerId))
         facts["player"] = labelFor(npcId, playerId);     // Only a name they were given (doc 32).

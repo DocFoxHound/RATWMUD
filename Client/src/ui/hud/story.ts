@@ -183,6 +183,7 @@ export class StoryPanel {
         const posts = s.posts.slice(-MaxShown);
         for (const post of posts) {
             if (!post.system && (s.channel === 'party' ? !post.party : s.channel === 'chapter' ? !post.chapter : post.channel !== s.channel)) continue;
+            if (post.encounter && s.battle && post.encounter.id === s.battle.id) continue;   // Told beside it, line by line (combat.ts).
             if (post.revealed === 0 && !post.system) {
                 ++waiting;
                 continue;
@@ -190,7 +191,7 @@ export class StoryPanel {
             keep.add(post);
             let shown = this.shown.get(post);
             if (!shown) {
-                const row = el('div', post.system ? 'post system' : post.party ? 'post party' : 'post');
+                const row = el('div', post.system ? 'post system' : post.faint ? 'post faint' : post.party ? 'post party' : 'post');
                 const color = css(post.system ? Muted : speakingColor(post.color));
                 row.style.setProperty('--voice', color);
                 const speaker = el('div', 'speaker', row, post.speaker.toUpperCase());

@@ -146,6 +146,8 @@ battle::Temperament World::temperamentOf(const Entity& e) const
     const auto* job = society_.jobOf(e.id);
     const auto folk = folk_.find(e.id);
     auto t = battle::temperament(job ? job->role : std::string(), folk != folk_.end() && folk->second.kind == "bandit", e.age, e.npc);
+    if (folk != folk_.end() && folk->second.skill >= 0)
+        t.skill = folk->second.skill;
     if (!e.npc)
         t.skill = e.fightingSkill;                  // A player's own, grown by fighting.
     return t;
@@ -153,13 +155,132 @@ battle::Temperament World::temperamentOf(const Entity& e) const
 
 // ------------------------------------------------------------------ Starting and joining
 
-Result World::attack(const std::string& attacker, const std::string& target)
+Result World::attack(const std::string& attacker, const std::string& target, const std::string& terms)
 {
     const auto* a = entity(attacker);
     const auto* t = entity(target);
     if (a && t && !a->npc && !t->npc)
-        return challenge(attacker, target);         // Between players: only with the other's yes.
+        return challenge(attacker, target, terms);  // Between players: only with the other's yes.
     return startBattle(attacker, target, false);
+}
+
+Result World::testFight(const std::string& player)
+{
+    auto* p = entity(player);
+    if (!p || p->npc || p->dead)
+        return {false, "No such character.", {}};
+    if (p->downedLeft > 0)
+        return {false, "You are down.", {}};
+    if (inBattle(player))
+        return {false, "You are already in a fight.", {}};
+    if (custodyOf(player))
+        return {false, "You are held in the gaol.", {}};
+    if (!ensureLoaded(p->cellId).ok || !cell(p->cellId))
+        return {false, "This place isn't loaded.", {}};
+    // The bandit starts beside them (a fight begins between two within reach), then goes to the far side.
+    Vec2 beside{-1, -1};
+    for (int ring = 1; ring <= 2 && beside.x < 0; ++ring)
+        for (int dy = -ring; dy <= ring && beside.x < 0; ++dy)
+            for (int dx = -ring; dx <= ring && beside.x < 0; ++dx)
+            {
+                const Vec2 at{std::floor(p->position.x) + dx + .5, std::floor(p->position.y) + dy + .5};
+                if (std::max(std::abs(dx), std::abs(dy)) == ring && passable(p->cellId, at))
+                    beside = at;
+            }
+    if (beside.x < 0)
+        return {false, "There is no open ground around you for a fight.", {}};
+    int n = 0;
+    for (const auto& c : roads_.camps)
+        n = std::max(n, testCamp(c.id) ? std::atoi(c.id.c_str() + 12) : 0);
+    BanditCamp camp{"camp_dmtest_" + std::to_string(n + 1), p->cellId, 1, 0, calendarDays_, true};
+    camp.x = beside.x;
+    camp.y = beside.y;
+    roads_.camps.push_back(camp);
+    const auto id = "road:" + camp.id + ":0";
+    auto& bandit = addRoadFolk(id, "a ragged bandit", "Thin, nervous and new to the road, with a rusted blade and more hunger than sense.",
+                               p->cellId, beside, "bandit", camp.id);
+    bandit.offstage = false;
+    bandit.age = 20;
+    folk_[id].hp = 10;
+    folk_[id].skill = 30;
+    const auto dropCamp = [&] {
+        removeRoadFolk(id);
+        roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& c) { return c.id == camp.id; }),
+                           roads_.camps.end());
+    };
+    const auto started = startBattle(id, player, false);
+    auto* b = started.ok ? battleFor(player) : nullptr;
+    auto* mine = b ? b->fighter(player) : nullptr;
+    auto* theirs = b ? b->fighter(id) : nullptr;
+    if (!b || !mine || !theirs)
+    {
+        if (b)
+            b->fighters.erase(std::remove_if(b->fighters.begin(), b->fighters.end(), [&](const BattleFighter& f) { return f.id == id; }),
+                              b->fighters.end());
+        dropCamp();
+        return started.ok ? Result{false, "The fight could not be set up.", {}} : started;
+    }
+    // The far side: the farthest tile the player could walk to whose straight line to them is open all the way (no
+    // corner cut), so the bandit, stepping toward them, has a clear way and has to close the distance.
+    const auto clearLine = [&](int x, int y) {
+        const int dx = std::abs(mine->x - x), dy = std::abs(mine->y - y), sx = mine->x > x ? 1 : -1, sy = mine->y > y ? 1 : -1;
+        int err = dx - dy;
+        while (x != mine->x || y != mine->y)
+        {
+            const int e2 = 2 * err, px = x, py = y;
+            if (e2 > -dy)
+                err -= dy, x += sx;
+            if (e2 < dx)
+                err += dx, y += sy;
+            if (x == mine->x && y == mine->y)
+                break;
+            if (!arenaOpen(*b, x, y, theirs->id) || (x != px && y != py && (!arenaOpen(*b, x, py, theirs->id) || !arenaOpen(*b, px, y, theirs->id))))
+                return false;
+        }
+        return true;
+    };
+    BattleFighter probe = *mine;
+    std::pair<int, int> far{theirs->x, theirs->y};
+    int best = tilesApart(mine->x, mine->y, far.first, far.second);
+    for (const auto& [x, y] : reachFrom(*b, probe, b->w + b->h))
+        if (const int d = tilesApart(mine->x, mine->y, x, y); d > best && clearLine(x, y))
+        {
+            best = d;
+            far = {x, y};
+        }
+    theirs->x = far.first;
+    theirs->y = far.second;
+    theirs->lineupX = far.first + .5;
+    theirs->lineupY = far.second + .5;
+    theirs->facing = battle::octant(mine->x - theirs->x, mine->y - theirs->y);
+    mine->facing = battle::octant(theirs->x - mine->x, theirs->y - mine->y);
+    if (auto* e = entity(id))
+    {
+        e->position = {far.first + .5, far.second + .5};
+        e->facing = theirs->facing * Pi / 4;
+        e->turnTarget = e->facing;
+    }
+    for (auto& c : roads_.camps)
+        if (c.id == camp.id)
+            c.x = far.first + .5, c.y = far.second + .5;
+    return {true, "A ragged bandit comes at you from across the ground, " + std::to_string(best) + " strides off. A fight!", id};
+}
+
+Result World::endFightInDraw(const std::string& player)
+{
+    auto* b = battleFor(player);
+    if (!b)
+        return {false, "You aren't in a fight.", {}};
+    if (b->over)
+        return {false, "The fight is already over.", {}};
+    b->over = true;
+    b->overAt = time_;
+    b->truced = true;                               // As after a truce: nobody stays hostile.
+    for (auto& f : b->fighters)
+        f.acting = false;
+    b->banner = "The fight is called a draw";
+    fightLine(*b, {}, {}, "over", b->banner + ".");
+    return {true, "You call the fight a draw.", {}};
 }
 
 Result World::startBattle(const std::string& attacker, const std::string& target, bool pvp)
@@ -277,6 +398,7 @@ Result World::startBattle(const std::string& attacker, const std::string& target
         if (const auto* e = entity(f.id); e && !e->npc && f.id != attacker && !(pvp && f.id == target))
             notice(f.id, a->name + " comes at " + (f.id == target ? std::string("you") : t->name) + ". You are in a fight!");
     }
+    b.opening = attacker;
     recordEvent({"fight", attacker, target, b.cellId, 0, 0, {}, 0, 0, b.id});
     fightLine(b, attacker, target, "start", a->name + " goes for " + t->name + ".");
     battles_.push_back(std::move(b));
@@ -385,6 +507,35 @@ std::vector<std::pair<int, int>> World::reachFrom(const Battle& b, const BattleF
             }
     }
     return out;
+}
+
+std::vector<int> World::stepsTo(const Battle& b, int tx, int ty, const std::string& mover) const
+{
+    std::vector<int> steps(std::size_t(std::max(0, b.w * b.h)), -1);
+    if (!b.inArena(tx, ty))
+        return steps;
+    const auto at = [&](int x, int y) -> int& { return steps[std::size_t((y - b.y0) * b.w + (x - b.x0))]; };
+    // Open to walk through: free ground, or the mover's own tile; the goal itself is where the walk ends.
+    const auto open = [&](int x, int y) { return b.inArena(x, y) && arenaOpen(b, x, y, mover); };
+    std::deque<std::pair<int, int>> queue{{tx, ty}};
+    at(tx, ty) = 0;
+    while (!queue.empty())
+    {
+        const auto [x, y] = queue.front();
+        queue.pop_front();
+        for (int dy = -1; dy <= 1; ++dy)
+            for (int dx = -1; dx <= 1; ++dx)
+            {
+                const int nx = x + dx, ny = y + dy;
+                if ((dx == 0 && dy == 0) || !open(nx, ny) || at(nx, ny) >= 0)
+                    continue;
+                if (dx != 0 && dy != 0 && (!open(x + dx, y) || !open(x, y + dy)) && !(x == tx && y == ty))
+                    continue;
+                at(nx, ny) = at(x, y) + 1;
+                queue.push_back({nx, ny});
+            }
+    }
+    return steps;
 }
 
 void World::lineUp(Battle& b)
@@ -544,8 +695,17 @@ Result World::leaveObserving(const std::string& id)
 
 // ------------------------------------------------------------------ Challenges between players
 
-Result World::challenge(const std::string& from, const std::string& to)
+namespace
 {
+std::string termsWords(const std::string& terms)
+{
+    return terms == "blood" ? "to first blood" : terms == "death" ? "until one goes down" : "until one yields";
+}
+} // namespace
+
+Result World::challenge(const std::string& from, const std::string& to, const std::string& asked)
+{
+    const std::string terms = asked == "blood" || asked == "death" ? asked : "yield";
     const auto* a = entity(from);
     const auto* t = entity(to);
     if (!a || !t || a->dead || t->dead)
@@ -573,9 +733,9 @@ Result World::challenge(const std::string& from, const std::string& to)
     challenges_.erase(std::remove_if(challenges_.begin(), challenges_.end(),
                                      [&](const Challenge& c) { return c.from == from || c.to == to; }),
                       challenges_.end());
-    challenges_.push_back({from, to, time_ + battle::ChallengeSeconds});
-    notice(to, a->name + " challenges you to a fight. Accept or decline (30 seconds).");
-    return {true, "You challenge " + t->name + ". They have 30 seconds to answer.", to};
+    challenges_.push_back({from, to, time_ + battle::ChallengeSeconds, terms});
+    notice(to, a->name + " challenges you to a fight " + termsWords(terms) + ". Accept or decline (30 seconds).");
+    return {true, "You challenge " + t->name + " to a fight " + termsWords(terms) + ". They have 30 seconds to answer.", to};
 }
 
 Result World::answerChallenge(const std::string& player, bool accept)
@@ -584,6 +744,7 @@ Result World::answerChallenge(const std::string& player, bool accept)
     if (it == challenges_.end())
         return {false, "Nobody has challenged you.", {}};
     const auto from = it->from;
+    const auto terms = it->terms;
     challenges_.erase(it);
     const auto* p = entity(player);
     if (!accept)
@@ -593,7 +754,11 @@ Result World::answerChallenge(const std::string& player, bool accept)
     }
     auto r = startBattle(from, player, true);
     if (r.ok)
-        notice(from, (p ? p->name : std::string("They")) + " accepts your challenge. A fight!");
+    {
+        if (auto* b = battleFor(from))
+            b->terms = terms;
+        notice(from, (p ? p->name : std::string("They")) + " accepts your challenge. A fight " + termsWords(terms) + "!");
+    }
     return {r.ok, r.ok ? "You accept. A fight!" : r.message, from};
 }
 
@@ -652,6 +817,8 @@ void World::beginTurn(Battle& b, BattleFighter& f)
 
 void World::endTurn(Battle& b, BattleFighter& f)
 {
+    if (f.id == b.opening)
+        b.opening.clear();
     f.meter = (f.moved ? 0 : 20) + (f.acted ? 0 : 20) - f.weight;   // Its bar starts again (a head start if it held back).
     f.readyAt = -1;
     f.acting = false;
@@ -720,8 +887,13 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         return {false, "The fight is over.", {}};
     auto& f = *b->fighter(id);
     auto* e = entity(id);
+    const bool wasAway = f.away;
     f.away = false;                                 // Any try brings an away player back.
     f.timeouts = 0;
+    if (action == "back")
+        return {true, wasAway ? "You're back in the fight: your next turn is yours." : std::string(), {}};
+    if (action == "yield")
+        return offerYield(id);                      // At any time, one's turn or not.
     if (!f.acting)
         return {false, "It isn't your turn.", {}};
     Result r{true, {}, target};
@@ -819,7 +991,14 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
     else if (action == "flee")
     {
         if (!b->onEdge(f.x, f.y))
-            return {false, "Get to the edge of the arena to flee.", {}};
+        {
+            // Which way out, and how far: the nearest of the arena's edge rows (lit on the map).
+            const int west = f.x - (b->x0 + 1), east = b->x0 + b->w - 2 - f.x, north = f.y - (b->y0 + 1), south = b->y0 + b->h - 2 - f.y;
+            const int nearest = std::min({west, east, north, south});
+            const char* way = nearest == north ? "north" : nearest == south ? "south" : nearest == west ? "west" : "east";
+            return {false, "You can only flee from the arena's edge: the nearest is " + std::to_string(nearest) +
+                               (nearest == 1 ? " tile" : " tiles") + " to the " + way + ".", {}};
+        }
         double best = -1;
         for (const auto& o : b->fighters)
             if (o.side != f.side && o.status == "fighting" && tilesApart(f.x, f.y, o.x, o.y) == 1)
@@ -851,6 +1030,20 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
     return r;
 }
 
+double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
+{
+    const auto* e = entity(f.id);
+    const auto* d = entity(t.id);
+    if (!e || !d)
+        return 0;
+    // From the side or behind is easier: how far the defender faces from where the blow comes.
+    const int gap = battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y));
+    const double angle = gap >= 3 ? .2 : gap == 2 ? .1 : 0;
+    return std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
+                          (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle,
+                      .2, .95);
+}
+
 Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
 {
     auto* t = b.fighter(target);
@@ -875,12 +1068,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     if (e->npc)
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
     f.acted = true;
-    // From the side or behind is easier: how far the defender faces from where the blow comes.
-    const int gap = battle::octantGap(t->facing, battle::octant(f.x - t->x, f.y - t->y));
-    const double angle = gap >= 3 ? .2 : gap == 2 ? .1 : 0;
-    const double hit = std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
-                                      (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle,
-                                  .2, .95);
+    const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|" + target, key);
     if (r >= hit)
@@ -969,6 +1157,7 @@ void World::checkOver(Battle& b)
         for (auto& o : b.fighters)
             o.acting = false;
         b.banner = "The fight ends in a truce";
+        b.truced = true;
         fightLine(b, {}, {}, "over", b.banner + ".");
         return;
     }
@@ -986,7 +1175,20 @@ void World::checkOver(Battle& b)
                 winner = e->name;
                 break;
             }
-    b.banner = winner.empty() ? "The fight is over" : "The fight is over · " + winner + "'s side stands";
+    // How it ended, in a few words: first blood, a yield, or the fight over.
+    const int losing = a > 0 ? 1 : 0;
+    bool yielded = false, allYielded = true;
+    std::string loser;
+    for (const auto& f : b.fighters)
+        if (f.side == losing && f.status != "fled")
+        {
+            yielded = yielded || f.status == "yielded";
+            allYielded = allYielded && f.status == "yielded";
+            if (const auto* e = entity(f.id); e && loser.empty())
+                loser = e->name;
+        }
+    const std::string how = yielded && allYielded ? (b.terms == "blood" ? "First blood" : loser + " yields") : "The fight is over";
+    b.banner = winner.empty() ? how : how + " · " + winner + "'s side stands";
     fightLine(b, {}, {}, "over", b.banner + ".");
 }
 
@@ -1075,6 +1277,16 @@ void World::finishBattle(Battle& b)
     recordEvent({"fight ends", {}, {}, b.cellId, 0, 0, {}, 0, 0, b.id});
     if (b.camp.empty())
         return;
+    if (testCamp(b.camp))
+    {
+        // A Dev Console fight: its bandit and camp go with it; nobody is robbed, and no camp is cleared.
+        for (const auto& id : bandits)
+            removeRoadFolk(id);
+        endEncounter(b.camp, 0);
+        roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& c) { return c.id == b.camp; }),
+                           roads_.camps.end());
+        return;
+    }
     auto* camp = [&]() -> BanditCamp* {
         for (const auto& id : bandits)
             if (auto* c = campOf(id))
@@ -1225,14 +1437,20 @@ void World::npcTurn(Battle& b, BattleFighter& f)
     const bool closeIn = temper.kind == "aggressive" || (temper.kind == "cautious" && tilesApart(f.x, f.y, mark->x, mark->y) <= 3);
     if (tilesApart(f.x, f.y, mark->x, mark->y) > 1 && closeIn)
     {
-        // Next to it, from its side or back where it can.
+        // Next to it, from its side or back where it can; getting there by the way there is, around walls and
+        // tables, not as the crow flies (where there is no way, as near as it can get).
+        const auto steps = stepsTo(b, mark->x, mark->y, f.id);
+        const auto walk = [&](int x, int y) {
+            const int s = b.inArena(x, y) ? steps[std::size_t((y - b.y0) * b.w + (x - b.x0))] : -1;
+            return s >= 0 ? s : 1000 + tilesApart(x, y, mark->x, mark->y);
+        };
         std::pair<int, int> best{f.x, f.y};
-        double bestScore = std::numeric_limits<double>::max();
+        double bestScore = walk(f.x, f.y) * 10.0;
         for (const auto& [x, y] : battleReach(f.id))
         {
             const int d = tilesApart(x, y, mark->x, mark->y);
             const int gap = battle::octantGap(mark->facing, battle::octant(x - mark->x, y - mark->y));
-            const double score = d * 10 - (d == 1 && temper.kind == "aggressive" ? gap : 0);
+            const double score = walk(x, y) * 10 - (d == 1 && temper.kind == "aggressive" ? gap : 0);
             if (score < bestScore)
             {
                 bestScore = score;
@@ -1308,6 +1526,38 @@ void World::tendBattles(double dt)
                 finishBattle(b);
             continue;
         }
+        // An offer to yield nobody answered is a no.
+        if (!b.yieldBy.empty() && time_ >= b.yieldUntil)
+        {
+            b.yieldBy.clear();
+            fightLine(b, {}, {}, "refuse", "No one answers the offer to yield. The fight goes on.");
+        }
+        // Every player still standing in it away, and no NPC to fight on: after a while the fight lapses.
+        {
+            bool players = false, allAway = true;
+            for (const auto& f : b.fighters)
+                if (f.status == "fighting")
+                    if (const auto* e = entity(f.id))
+                    {
+                        players = players || !e->npc;
+                        allAway = allAway && !e->npc && f.away;
+                    }
+            if (!players || !allAway)
+                b.allAwaySince = -1;
+            else if (b.allAwaySince < 0)
+                b.allAwaySince = time_;
+            else if (time_ - b.allAwaySince >= battle::LapseSeconds)
+            {
+                b.over = true;
+                b.overAt = time_;
+                b.truced = true;
+                for (auto& o : b.fighters)
+                    o.acting = false;
+                b.banner = "The fight lapses: no one is left fighting it";
+                fightLine(b, {}, {}, "over", b.banner + ".");
+                continue;
+            }
+        }
         // Real time (doc 33's initiative, as a bar): every bar fills but those taking a turn, and the Downed bleed. A
         // full bar is a turn at once: several fighters may be acting together, each on their own clock.
         for (auto& f : b.fighters)
@@ -1371,6 +1621,16 @@ void World::tendBattles(double dt)
             }
             if (e->npc)
             {
+                // The one who started it has the first blow: the others wait until that first turn is done.
+                if (!b.opening.empty() && f.id != b.opening)
+                {
+                    if (const auto* o = b.fighter(b.opening); o && o->acting && o->status == "fighting")
+                    {
+                        f.turnStarted = time_;
+                        continue;
+                    }
+                    b.opening.clear();
+                }
                 if (time_ >= f.turnStarted + battle::NpcPause)
                 {
                     npcTurn(b, f);
@@ -1580,7 +1840,6 @@ void World::returnFromAway(Entity& e)
         fullRest(e);
 }
 
-
 // ------------------------------------------------------------------ Facing, truces
 
 Result World::battleFace(const std::string& id, int dir)
@@ -1768,12 +2027,91 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     if (damage >= battle::KnockLooseFrom && d->mouth == "sword" &&
         chance(t.id + "|loose", std::int64_t(b.seq) * 13 + b.turns) < std::max(0.0, .2 - d->strength / 1000))
         dropItem(b, t);
+    // On a duel's terms (doc 37): the first wound ends a fight to first blood; to yield, who would go down yields.
+    if (b.terms != "death" && (d->hurt >= 100 || (b.terms == "blood" && damage > 0 && !by.empty())))
+    {
+        d->hurt = std::min(d->hurt, 99.0);
+        yieldFighter(b, t, by, b.terms == "blood" && d->hurt < 99 ? d->name + " is blooded, and yields." : d->name + " can fight no more, and yields.");
+        return;
+    }
     if (d->hurt >= 100)
     {
         const double overkill = d->hurt - 100;
         d->hurt = 100;
         downFighter(b, t, overkill, downedBase, by);
     }
+}
+
+void World::yieldFighter(Battle& b, BattleFighter& f, const std::string& to, const std::string& line)
+{
+    // Out of the fight, on their feet: they stay where they are until it ends, and walk away from it.
+    f.status = "yielded";
+    f.acting = false;
+    f.burning = 0;
+    if (f.casting)
+    {
+        f.casting = false;
+        b.casts.erase(std::remove_if(b.casts.begin(), b.casts.end(), [&](const BattleCast& c) { return c.caster == f.id; }), b.casts.end());
+    }
+    if (b.yieldBy == f.id)
+        b.yieldBy.clear();
+    fightLine(b, f.id, to, "yield", line);
+    checkOver(b);
+}
+
+Result World::offerYield(const std::string& id)
+{
+    auto* b = battleFor(id);
+    if (!b)
+        return {false, "You are not in a fight.", {}};
+    if (b->over)
+        return {false, "The fight is over.", {}};
+    auto& f = *b->fighter(id);
+    f.away = false;
+    f.timeouts = 0;
+    if (f.status != "fighting")
+        return {false, "You can't yield now.", {}};
+    if (!b->yieldBy.empty())
+        return {false, "Someone has already offered to yield.", {}};
+    const auto* e = entity(id);
+    // Is there anyone on the other side to answer? If only NPCs stand there, they accept.
+    bool asked = false;
+    for (const auto& o : b->fighters)
+        if (o.side != f.side && o.status == "fighting")
+            if (const auto* oe = entity(o.id); oe && !oe->npc)
+                asked = true;
+    if (!asked)
+    {
+        yieldFighter(*b, f, {}, e->name + " yields, and is let be.");
+        return {true, "You yield. They let you be.", {}};
+    }
+    b->yieldBy = id;
+    b->yieldUntil = time_ + battle::YieldSeconds;
+    fightLine(*b, id, {}, "yield", e->name + " offers to yield.");
+    return {true, "You offer to yield.", {}};
+}
+
+Result World::answerYield(const std::string& id, bool accept)
+{
+    auto* b = battleFor(id);
+    if (!b || b->over || b->yieldBy.empty())
+        return {false, "No one is offering to yield.", {}};
+    auto* f = b->fighter(id);
+    auto* y = b->fighter(b->yieldBy);
+    const auto* e = entity(id);
+    if (!f || !y || !e || f->side == y->side || f->status != "fighting")
+        return {false, "It isn't yours to answer.", {}};
+    f->away = false;
+    f->timeouts = 0;
+    const auto* ye = entity(y->id);
+    if (!accept)
+    {
+        b->yieldBy.clear();
+        fightLine(*b, id, y->id, "refuse", e->name + " will not take " + (ye ? ye->name : std::string("their")) + "'s yield. The fight goes on.");
+        return {true, "You fight on.", {}};
+    }
+    yieldFighter(*b, *y, id, (ye ? ye->name : std::string("They")) + " yields, and " + e->name + " lets them be.");
+    return {true, "You let them be.", {}};
 }
 
 Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target)
@@ -1807,10 +2145,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
     f.acted = true;
     f.weight = std::max(f.weight, battle::SwordWeight);
-    const int gap = battle::octantGap(t->facing, battle::octant(f.x - t->x, f.y - t->y));
-    const double hit = std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
-                                      (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + (gap >= 3 ? .2 : gap == 2 ? .1 : 0),
-                                  .2, .95);
+    const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|sword|" + target, key);
     if (r >= hit)
@@ -1934,6 +2269,18 @@ void World::linger(const std::string& id)
     e->typing = false;
     if (auto* f = b->fighter(id))
         f->away = true;
+}
+
+void World::stopLingering(const std::string& id)
+{
+    if (auto* e = entity(id))
+        e->lingering = false;
+    if (auto* b = battleFor(id))
+        if (auto* f = b->fighter(id))
+        {
+            f->away = false;
+            f->timeouts = 0;
+        }
 }
 
 void World::tendFightSurroundings(Battle& b)

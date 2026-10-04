@@ -498,6 +498,13 @@ void World::tendRoadFolk()
             placeOnStage(*wagon, stage);
         tendCaravan(c, *wagon, folk_[id], budget);
     }
+    // A Dev Console fight's camp outlives its fight only by a restart: then it goes.
+    roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(),
+                                      [&](const BanditCamp& c) {
+                                          return testCamp(c.id) && std::none_of(battles_.begin(), battles_.end(),
+                                                                                [&](const Battle& b) { return b.camp == c.id; });
+                                      }),
+                       roads_.camps.end());
     // Bandits, in person, only where someone is near to meet them.
     for (auto& camp : roads_.camps)
         tendCamp(camp, stage);

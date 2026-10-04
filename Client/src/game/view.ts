@@ -9,6 +9,7 @@ import {Sheets} from './weatherArt.ts';
 import {Painter} from '../ui/painter.ts';
 import {Portraits} from '../ui/portrait.ts';
 import {Hud} from '../ui/hud/hud.ts';
+import {Sound} from '../ui/sound.ts';
 import type {Json} from './json.ts';
 import type {MotionFrame} from '../net/motion.ts';
 import type {NetSample} from '../net/connection.ts';
@@ -102,8 +103,13 @@ export class GameView {
             const width = Number(localStorage.getItem('ratw.storyWidth'));
             if (width >= 300 && width <= 1400) this.state.storyWidth = width;
             this.state.perfOverlay = localStorage.getItem('ratw.perfOverlay') === '1';
+            const volume = localStorage.getItem('ratw.sound');
+            if (volume !== null && Number.isFinite(Number(volume))) this.state.soundVolume = Math.max(0, Math.min(1, Number(volume)));
         } catch { /* No storage here: the default width. */ }
         if (new URLSearchParams(location.search).has('perf')) this.state.perfOverlay = true;
+        // The fight's sounds (doc 37, phase 3), made in the browser as they're needed.
+        const sound = new Sound();
+        this.state.onCue = cue => sound.play(cue, this.state.soundVolume);
         this.hud = new Hud(this.root, this.state, portraits);
         this.canvas = this.hud.canvas;
         this.composer = composer = new TextareaComposer(this.hud.story.textarea, this.canvas);
@@ -182,6 +188,7 @@ export class GameView {
         });
         this.on(this.canvas, 'mousemove', e => s.mouseMove(this.point(e), e.altKey));
         this.on(this.canvas, 'mouseleave', () => s.mouseLeave());
+        this.on(window, 'mouseup', () => s.mouseUp());
         this.on(this.canvas, 'mousedown', e => {
             e.preventDefault();
             s.mouseDown(this.point(e), e.button === 0, e.altKey, e.ctrlKey);

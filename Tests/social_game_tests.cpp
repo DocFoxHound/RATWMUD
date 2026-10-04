@@ -269,8 +269,8 @@ void aSceneSeenAndStarred(const std::string& save)
         t.g.command(&t.ada, cmd({{"type", "social"}, {"verb", "note"}, {"target", npc}, {"text", "Owes me a favour."}}));
         t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "inspect"}, {"target", npc}}));
         const auto* look = t.ada.last("inspect");
-        expect(look && look->string("regard").find("knows you") != std::string::npos &&
-                   look->string("regard").find("likes you") != std::string::npos && look->string("note") == "Owes me a favour.",
+        expect(look && look->string("regard").find("know you") != std::string::npos &&
+                   look->string("regard").find("like you") != std::string::npos && look->string("note") == "Owes me a favour.",
                "Look says how they regard her, and shows her note: " + (look ? json::dump(*look) : t.ada.said()));
         // Her name about town.
         t.g.command(&t.ada, cmd({{"type", "social"}, {"verb", "reputation"}}));

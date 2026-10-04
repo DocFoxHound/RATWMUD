@@ -82,6 +82,15 @@ struct Battle
     std::vector<BattleCast> casts;
     std::vector<BattleDrop> drops;
     std::string truceBy;                // Who offered a truce now on the table ("" for none).
+    bool truced = false;                // It ended in a truce: no one stays hostile after it.
+    // Its terms (doc 37): "blood" (the first wound ends it), "yield" (who would go down yields instead: no one bleeds
+    // out), or "death" (doc 33's rules: the Downed bleed and may die). A challenge names them; other fights are to
+    // the death.
+    std::string terms = "death";
+    std::string yieldBy;                // Who offered to yield, awaiting an answer ("" for none), and until when.
+    double yieldUntil = 0;
+    double allAwaySince = -1;           // Since when every player standing in it has been away (it lapses after a while).
+    std::string opening;                // Who started it, until their first turn ends: NPCs wait for it.
     std::vector<std::pair<std::pair<int, int>, int>> smoke;   // Tiles of smoke and the round they clear.
     double lookedAround = -1;           // When it last looked for who can hear it.
 
@@ -120,6 +129,7 @@ struct Challenge
 {
     std::string from, to;
     double until = 0;               // World seconds; silence is a no.
+    std::string terms = "yield";    // "blood", "yield" or "death" (doc 37).
 };
 
 namespace battle
@@ -127,12 +137,13 @@ namespace battle
 // Placeholder numbers, to be tuned with play (doc 33).
 constexpr int ArenaWidth = 64, ArenaHeight = 48;     // Twice a 32×24 map view at the default zoom.
 constexpr int GrowthFrom = 2;                        // Each fighter past these two adds a tile each way.
-constexpr double TurnSeconds = 10, TypingExtra = 10, NpcPause = 1.5;
+constexpr double TurnSeconds = 15, TypingExtra = 15, NpcPause = 1.5;
 // The initiative bar fills in real time: at DEX 50 (a gain of 11) in fifteen seconds.
 constexpr double MeterPerSecond = 100.0 / (11 * 15);
 constexpr int AwayAfter = 3;
 constexpr double BannerSeconds = 2.0, FadeSeconds = .5, SettleSeconds = 5;
 constexpr double ChallengeSeconds = 30, StartReach = 3.0;
+constexpr double YieldSeconds = 20, LapseSeconds = 60;   // An offer to yield unanswered; a fight everyone left.
 constexpr double BiteDamage = 12, BiteStamina = 8;
 constexpr double TendStamina = 10, StruggleUpHealth = 15, TendedHealth = 20;
 constexpr double DownedBite = 15 * 60, DownedBlunt = 20 * 60, DownedFire = 12 * 60;

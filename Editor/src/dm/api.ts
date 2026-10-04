@@ -13,6 +13,7 @@ export interface Character {
     skills: Record<'sneakSkill' | 'hearingSkill' | 'scentSkill', number | null>;
     senses: Record<'hearing' | 'vision' | 'smell', number | null>;
     gift: string; quickened: boolean;            // A Gift (Docs/Design/33-combat.md): "fire" or "".
+    dungeonMaster: boolean;                      // Marked a Dungeon Master in the game: they have the Dev Console.
     saved: string;
 }
 export interface Action { id: number; kind: string; target: string; by: string; at: string; status: 'queued' | 'applied' | 'refused' | 'expired'; result: string }

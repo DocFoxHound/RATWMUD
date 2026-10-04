@@ -51,7 +51,9 @@ bool Game::takeOwnership(std::string& problem)
         const auto holder = ownerPg_->exec(std::string(
             "SELECT a.application_name, coalesce(host(a.client_addr), 'this computer'), to_char(a.backend_start, 'YYYY-MM-DD HH24:MI') "
             "FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid "
-            "WHERE l.locktype = 'advisory' AND l.classid = ") + OwnerSpace + " AND l.objid = " + OwnerKey + " AND l.objsubid = 2");
+            "WHERE l.locktype = 'advisory' AND l.classid = ") + OwnerSpace + " AND l.objid = " + OwnerKey + " AND l.objsubid = 2 "
+            // (Advisory locks are each database's own; DEV and PROD share a cluster, so ask about this one only.)
+            "AND l.database = (SELECT oid FROM pg_database WHERE datname = current_database())");
         std::string who = "another game server";
         if (holder.ok && !holder.rows.empty() && holder.rows[0][0])
             who = *holder.rows[0][0] + (holder.rows[0][1] ? " (connected from " + *holder.rows[0][1] + ")" : "") +

@@ -197,6 +197,8 @@ Value persistEntity(const Entity& e, double time)
     }
     if (e.fightingSkill != 50)
         o.add("fightingSkill", e.fightingSkill);
+    if (e.dungeonMaster)
+        o.add("dungeonMaster", true);
     return o;
 }
 
@@ -264,6 +266,7 @@ Entity readEntity(const Value& o)
     if (!e.gift.empty() && e.gift != "fire")
         e.gift.clear();
     e.quickened = o.boolean("quickened");
+    e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
     e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);
     e.postureTarget = o.string("postureTarget");

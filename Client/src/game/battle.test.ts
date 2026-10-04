@@ -3,7 +3,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
-import {arenaRows, arenaSight, clockLabel, fighterAt, meterNow, myTurn, readBattle, readFights} from './battle.ts';
+import {arenaRows, arenaSight, chanceFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
+    stepToward, termsWords} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
 
@@ -154,4 +155,85 @@ test('fights: arrows round your wolf to face, initiative bars that fill between 
     s.keyDown({code: 'KeyW'});
     assert.equal(commands.length, before, 'no WASD in a fight');
     assert.match(s.toast, /click a lit tile/, 'but a hint how to move');
+});
+
+test('the fight screen\'s data: looks, breath and mana for one\'s side, odds against a foe, time to the next turn (doc 37)', () => {
+    const b = readBattle({battle: {...battle, fighters: [
+        {id: 'self', name: 'Ada', side: 0, x: 2, y: 2, status: 'fighting', health: 90, stamina: 64, mana: 30, manaMax: 44,
+            appearance: {species: 'timber'}, lifeStage: 'adult'},
+        {id: 'bo', name: 'Bo', side: 1, x: 3, y: 2, status: 'fighting', health: 60, meter: 40, rate: 6, odds: {hit: 85, damage: 12, reach: true}},
+    ]}})!;
+    const [ada, bo] = b.fighters;
+    assert.equal(ada.stamina, 64);
+    assert.equal(ada.mana, 30);
+    assert.equal(ada.manaMax, 44);
+    assert.deepEqual(ada.appearance, {species: 'timber'});
+    assert.equal(bo.stamina, -1, "the other side's breath is not sent");
+    assert.deepEqual(bo.odds, {hit: 85, base: 85, damage: 12, reach: true}, 'no base sent: the hit itself');
+    assert.equal(ada.odds, null);
+    assert.equal(secondsToTurn(bo, 0), 10, 'from 40, at 6 a second: ten seconds');
+    assert.equal(secondsToTurn(bo, 4), 6, 'four seconds on: six');
+    assert.equal(secondsToTurn({...bo, acting: true}, 0), 0, 'acting now');
+});
+
+test('the arena preview (doc 37, phase 2): the chance from any tile, the step a click would take, the way there', () => {
+    // Bo at (5, 2) faces west (4): Ada comes at him from the front, his side, or behind.
+    const b = readBattle({battle: {...battle, fighters: [
+        {id: 'self', name: 'Ada', side: 0, x: 2, y: 2, facing: 0, status: 'fighting', health: 90},
+        {id: 'bo', name: 'Bo', side: 1, x: 5, y: 2, facing: 4, status: 'fighting', health: 60, odds: {hit: 75, base: 75, damage: 12, reach: false}},
+    ], reach: [[3, 2], [4, 2], [3, 1], [4, 1], [4, 3], [5, 1], [5, 3], [6, 2], [6, 1]]}})!;
+    const [ada, bo] = b.fighters;
+    assert.equal(octantGap(0, 4), 4);
+    assert.equal(octantGap(7, 1), 2);
+    assert.equal(quarter(bo, 4, 2), 'front');
+    assert.equal(quarter(bo, 5, 1), 'side');
+    assert.equal(quarter(bo, 6, 2), 'back');
+    assert.equal(chanceFrom(bo, 4, 2), 75, 'head on: the base');
+    assert.equal(chanceFrom(bo, 5, 1), 85, 'from the side: +10');
+    assert.equal(chanceFrom(bo, 6, 2), 95, 'from behind: +20, at most 95');
+    const step = stepToward(b, ada, bo, 1);
+    assert.deepEqual(step, {x: 4, y: 2, reaches: true}, 'a click on Bo steps to the nearest lit tile beside him');
+    const way = pathTo(b, [2, 2], [6, 2]);
+    assert.deepEqual(way[0], [2, 2]);
+    assert.deepEqual(way.at(-1), [6, 2]);
+    assert.ok(way.every(([x, y]) => (x === 2 && y === 2) || b.reach.some(([rx, ry]) => rx === x && ry === y)), 'only through lit tiles');
+    assert.ok(!way.some(([x, y]) => x === 5 && y === 2), 'never through Bo');
+});
+
+test('turning by dragging from one\'s own wolf (doc 37, phase 2); a plain click on it is still a click', () => {
+    const {state: s, commands, painter} = testGame();
+    s.applySnapshot(snapshot());
+    s.mapRect = rect(0, 0, 800, 600);
+    draw(painter, 'drawLocal');
+    const me = [s.mapOrigin[0] + 2.5 * s.tileSize, s.mapOrigin[1] + 2.5 * s.tileSize] as [number, number];
+    s.mouseDown(me, true, false, false);
+    assert.ok(s.faceDrag, 'pressing on her own wolf begins a drag');
+    s.mouseMove([me[0], me[1] - s.tileSize * 2], false);
+    assert.equal(s.faceDragDir, 6, 'pointing north');
+    s.mouseUp();
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'face', dir: 6}, 'let go: she faces north');
+    assert.equal(s.faceDrag, null);
+    // A press and release on the east edge of her tile, without moving: the arrow there, as before.
+    const before = commands.length;
+    s.mouseDown([me[0] + s.tileSize * 0.33, me[1]], true, false, false);
+    s.mouseUp();
+    assert.deepEqual(commands.slice(before), [{type: 'battle', verb: 'face', dir: 0}], 'the east arrow');
+});
+
+test('a challenge names its terms (doc 37, phase 4): the menu offers them, the default first; the fight carries them', () => {
+    const {state: s, commands} = testGame();
+    s.applySnapshot({self: {id: 'self', name: 'Ada', x: 5, y: 5}, cell: {id: 'plaza'},
+        entities: [{id: 'player-bo', kind: 'player', name: 'A dun wolf', x: 6, y: 5, actions: ['inspect', 'challenge']}]});
+    s.contextTarget = 'player-bo';
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'challenge'});
+    assert.deepEqual(s.contextActions, ['challenge:yield', 'challenge:blood', 'challenge:death'], 'the terms, until one yields first');
+    assert.ok(!commands.some(c => c.type === 'action'), 'nothing sent yet');
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'challenge:blood'});
+    assert.deepEqual(commands.at(-1), {type: 'action', action: 'challenge', target: 'player-bo', terms: 'blood'});
+    assert.equal(readChallenge({challenge: {from: 'player-bo', name: 'A dun wolf', left: 20, terms: 'death'}})!.terms, 'death');
+    const b = readBattle({battle: {...battle, terms: 'yield', crime: false, yieldBy: 'bo'}})!;
+    assert.equal(b.terms, 'yield');
+    assert.equal(b.yieldBy, 'bo');
+    assert.equal(termsWords('blood'), 'to first blood');
+    assert.equal(termsWords(readBattle({battle})!.terms), 'until one goes down', 'a fight without terms is until one goes down (doc 38)');
 });

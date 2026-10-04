@@ -6,6 +6,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 namespace ratw::names
 {
@@ -236,6 +237,41 @@ std::string describe(const Appearance& a, int age)
         const std::string hex = !shown->color.empty() ? shown->color : !a.markingTint.empty() ? a.markingTint : coatColorHex(a.markingColor);
         out += " with " + markingWords(*shown, colourWord(hex, false));
     }
+    return out;
+}
+
+std::string byTrade(const std::string& title, bool several)
+{
+    const auto space = title.find(' ');
+    if (space != std::string::npos)
+    {
+        const std::string first = title.substr(0, space);
+        static const std::array<const char*, 9> leads{"on", "at", "in", "by", "from", "with", "out", "off", "up"};
+        const bool led = std::find(leads.begin(), leads.end(), first) != leads.end();
+        const bool doing = first.size() > 4 && first.compare(first.size() - 3, 3, "ing") == 0;
+        // "carries", "plays", "sells" (not "glass", "bus", "his" nor a possessive "lord's").
+        const char before = first.size() > 1 ? first[first.size() - 2] : ' ';
+        const bool does = first.size() > 3 && first.back() == 's' && before != 's' && before != 'u' && before != 'i' && before != '\'';
+        if (doing || led)
+            return std::string(several ? "a" : "the") + " wolf " + title;
+        if (does)
+            return std::string(several ? "a" : "the") + " wolf who " + title;
+    }
+    return several ? article(title) + " " + title : "the " + title;
+}
+
+std::string fitCoat(const std::string& text, const Appearance& a)
+{
+    const std::string coat = colourWord(!a.coat.empty() ? a.coat : coatColorHex(a.baseColor), true);
+    static const std::array<std::pair<const char*, const char*>, 4> written{{{"grey timber wolf", "timber wolf"},
+        {"pale arctic wolf", "arctic wolf"}, {"rust-red wolf", "red wolf"}, {"russet Ethiopian wolf", "Ethiopian wolf"}}};
+    std::string out = text;
+    for (const auto& [said, kind] : written)
+        if (const auto at = out.find(said); at != std::string::npos)
+        {
+            out.replace(at, std::strlen(said), coat + " " + kind);
+            break;
+        }
     return out;
 }
 

@@ -456,6 +456,11 @@ void World::takeIntoCustody(const std::string& person, const std::string& townId
         return;
     c.until = calendarDays_ + (p->npc ? ResidentHours : PlayerHours) / 24;
     stop(person);
+    // The watch takes in a prisoner, not a corpse: whoever is down has their wounds bound first (it doesn't spend
+    // their own once-a-day recovery).
+    const bool bound = p->downedLeft > 0;
+    if (bound)
+        standUp(*p, battle::TendedHealth);
     if (!p->npc)
     {
         p->stamina = 0;
@@ -474,8 +479,9 @@ void World::takeIntoCustody(const std::string& person, const std::string& townId
     }
     recordEvent({"arrest", guard, person, c.cell, 0, 0, {}, 0, 0, "held by the watch of " + townId});
     if (!p->npc)
-        notice(person, "The watch drags you to the gaol. You will be held there for " +
-                           std::to_string(int(PlayerHours)) + " game hours.");
+        notice(person, std::string(bound ? "The watch binds your wounds and carries you to the gaol."
+                                         : "The watch drags you to the gaol.") +
+                           " You will be held there for " + std::to_string(int(PlayerHours)) + " game hours.");
     crime_.custody.push_back(std::move(c));
 }
 
@@ -503,6 +509,11 @@ void World::confront(const std::string& guard, const std::string& person)
     }
     if (confrontations_.count(person))
         return;
+    if (p->downedLeft > 0)
+    {
+        takeIntoCustody(person, w->town, guard);    // No use asking the fallen to pay: they are carried in.
+        return;
+    }
     std::string charges;
     for (const auto& id : w->incidents)
         if (const auto* inc = incident(id))
@@ -608,8 +619,8 @@ void World::tendCrime()
     for (const auto& w : crime_.warrants)
     {
         const auto* p = entity(w.person);
-        if (!p || p->dead || p->offstage || custodyOf(w.person))
-            continue;
+        if (!p || p->dead || p->offstage || custodyOf(w.person) || inBattle(w.person))
+            continue;                               // (Not in the middle of a fight: the watch waits for its end.)
         const bool chased = std::any_of(pursuits_.begin(), pursuits_.end(), [&](const auto& x) { return x.second == w.person; });
         if (chased)
             continue;
@@ -632,7 +643,7 @@ void World::tendCrime()
             it = pursuits_.erase(it);
             continue;
         }
-        if (between(g->position, p->position) <= 1.8)
+        if (between(g->position, p->position) <= 1.8 && !inBattle(it->second))
         {
             // Confronting a resident ends this pursuit, and perhaps others after it (takeIntoCustody): go on from
             // this guard's place in the map, not from an iterator that may be gone.
@@ -656,7 +667,7 @@ void World::tendCrime()
             continue;
         }
         const bool gone = g->cellId != p->cellId || between(g->position, p->position) > WalkAway;
-        if (time_ < it->second.deadline && !gone)
+        if ((time_ < it->second.deadline && !gone) || inBattle(person))
         {
             ++it;
             continue;

@@ -8,7 +8,7 @@ test('social: a name about town, a note, a star', () => {
     const {state: s, commands} = testGame();
     s.receiveEvent({type: 'reputation', lines: ['Ridgemere: known to 3 residents; well liked']});
     assert.deepEqual(s.reputation, ['Ridgemere: known to 3 residents; well liked']);
-    s.receiveEvent({type: 'inspect', id: 'npc_cook', title: 'The cook', regard: 'knows you a little', note: ''});
+    s.receiveEvent({type: 'inspect', id: 'npc_cook', title: 'The cook', regard: 'know you a little', note: ''});
     s.sendSocial({verb: 'note', target: 'npc_cook', text: 'Kind to strays.'});
     assert.deepEqual(commands.at(-1), {type: 'social', verb: 'note', target: 'npc_cook', text: 'Kind to strays.'});
     assert.equal(s.inspectedCharacter?.note, 'Kind to strays.', 'the open Look shows it at once');

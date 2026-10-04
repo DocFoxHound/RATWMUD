@@ -159,6 +159,8 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
     box-shadow: 5px 6px 0 rgba(0,0,0,.5); padding: 8px 7px; display: flex; flex-direction: column; gap: 2px; }
 .menu-title { font-weight: 500; padding: 4px 8px 8px; }
 .menu-item { text-align: left; padding: 7px 10px; color: var(--sage) !important; font-size: 14px; }
+.menu-item.armed { color: #e0695e !important; }
+.post.faint { opacity: 0.55; font-style: italic; }
 .toast { position: fixed; z-index: 25; left: 50%; bottom: 48px; transform: translateX(-50%); background: var(--panel);
     border: 1px solid #34443e; color: var(--gold); padding: 10px 16px; border-radius: 3px; max-width: 70vw; }
 .tooltip { position: fixed; z-index: 15; pointer-events: none; background: rgba(17,25,27,.94); border: 1px solid #34443e;
@@ -200,6 +202,15 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .dev { border-top: 1px solid #34443e; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .dev-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .dev-row .small { background: var(--raised); padding: 6px 10px; }
+.console-row { display: flex; gap: 6px; margin: 8px 0 12px; }
+.console-input { font-family: ui-monospace, monospace; }
+.console-commands { display: grid; gap: 6px; margin: 6px 0 12px; }
+.console-command { display: flex; gap: 10px; align-items: center; }
+.console-command .small { background: var(--raised); padding: 6px 10px; font-family: ui-monospace, monospace; min-width: 160px; text-align: left; }
+.console-log { display: grid; gap: 6px; max-height: 260px; overflow: auto; margin-top: 6px; }
+.console-entry { border-left: 3px solid #4f7a4a; padding: 4px 8px; background: var(--ink); }
+.console-entry.refused { border-left-color: #a5574a; }
+.console-entry pre { margin: 2px 0 0; white-space: pre-wrap; font: inherit; color: var(--paper); }
 .dev-row .active { color: var(--gold); }
 
 /* The front door: a 1440×940 layout scaled to the window. */
@@ -296,6 +307,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .fight-who { font-size: 12px; color: #8fb0d6; }
 .fight-who.foe { color: #e0695e; }
 .fight-who.fallen { color: #ff9a3c; }
+button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: pointer; }
 .fight-mana { color: #ff9a3c; font-size: 12px; }
 .post.encounter .words { color: var(--muted); }
 .encounter-lines { max-height: 160px; overflow-y: auto; font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -303,3 +315,164 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .fight-log { display: flex; flex-direction: column; gap: 1px; font-size: 12px; color: var(--muted); max-height: 92px; overflow-y: auto; }
 .fight-line.hit, .fight-line.down, .fight-line.death { color: var(--paper); }
 .fight-line.over { color: var(--gold); }
+
+/* The fight screen (Docs/Design/37-combat-feel.md, phase 1): while fighting or watching, the screen is about the fight. */
+.icon { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    vertical-align: -0.15em; flex: none; }
+.fight-mode .side > :not(.fight-cards), .fight-mode .center > .actions, .fight-mode .center > .looking,
+.fight-mode .map-head .tabs, .fight-mode .map-head .effects, .fight-mode .story .scene, .fight-mode .story .scene-bar { display: none !important; }
+.fight-mode .story .place { font-size: 18px; }
+.fight-mode .map { border-color: #6b3a33; box-shadow: inset 0 0 0 1px #2a1513; }
+.game { --self: #d9b67b; --friend: #8fb0d6; --foe: #e0695e; }
+
+/* Whose turn comes when: a row of faces along the top of the map. */
+.turn-strip { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+    padding: 6px 12px; background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid #34443e; border-radius: 28px;
+    pointer-events: auto; max-width: calc(100% - 16px); z-index: 2; }
+.strip-head { font-family: 'RATW Mono', monospace; font-size: 13px; letter-spacing: .08em; color: var(--muted); white-space: nowrap;
+    min-width: 132px; text-align: right; }
+.strip-head.mine { color: var(--gold); font-weight: 600; }
+.strip-chips { display: flex; gap: 8px; align-items: center; padding: 4px 2px; }
+.strip-chip { --c: var(--friend); --p: 0; position: relative; width: 42px; height: 42px; border-radius: 50%; padding: 3px; flex: none;
+    background: conic-gradient(var(--c) calc(var(--p) * 1turn), #2c3532 0); transition: transform .15s; }
+.strip-chip.self { --c: var(--self); }
+.strip-chip.foe { --c: var(--foe); }
+.strip-chip.acting { transform: scale(1.12); box-shadow: 0 0 0 2px var(--panel), 0 0 10px 1px var(--c); }
+.strip-chip.down { filter: grayscale(.7) brightness(.8); }
+.strip-chip.lit { box-shadow: 0 0 0 2px var(--paper); }
+.strip-face { width: 100%; height: 100%; border-radius: 50%; background: #11191b; display: block; }
+.strip-when { position: absolute; right: -4px; bottom: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+    background: var(--ink); border: 1px solid var(--c); color: var(--paper); font: 11px/16px 'RATW Mono', monospace; text-align: center; }
+.strip-when:empty { display: none; }
+.strip-note { white-space: nowrap; }
+
+/* The fighters: a card each, one's own side first. */
+.fight-cards { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; min-height: 0; flex: 1; }
+.cards-head { margin-top: 4px; }
+.fcard { --c: var(--friend); display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; padding: 8px;
+    background: var(--panel); border: 1px solid #34443e; border-left: 3px solid var(--c); border-radius: 4px; cursor: pointer; }
+.fcard.self { --c: var(--self); cursor: default; }
+.fcard.foe { --c: var(--foe); }
+.fcard.acting { box-shadow: 0 0 0 1px var(--c), 0 0 12px -2px var(--c); }
+.fcard.target { outline: 2px dashed var(--foe); outline-offset: 2px; }
+.fcard.lit { background: var(--raised); }
+.fcard.down { opacity: .7; }
+.fcard.down .fcard-face { filter: grayscale(.8); transform: rotate(-12deg); }
+.fcard-face { width: 76px; height: 52px; }
+.fcard-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.fcard-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.fcard-name { font-weight: 500; font-size: 14px; color: var(--c); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fcard-marks { display: flex; gap: 4px; color: #ffb35c; font-size: 15px; }
+.fcard-marks .away { color: var(--muted); }
+.fcard-marks .sword { color: var(--paper); }
+.fcard-marks .truce { color: var(--paper); }
+.meter { position: relative; height: 14px; background: #10171a; border: 1px solid #34443e; border-radius: 3px; overflow: hidden; }
+.meter .fill { position: absolute; inset: 0 auto 0 0; background: var(--c); transition: width .35s ease-out; }
+.meter.health .fill { background: color-mix(in srgb, var(--c) 80%, #000); }
+.meter-text { position: absolute; right: 5px; top: -1px; font: 11px/14px 'RATW Mono', monospace; color: var(--paper); text-shadow: 0 1px 2px #000; }
+.meter.thin { height: 5px; border-radius: 2px; }
+.meter.stamina .fill { background: #a8c2a6; }
+.meter.mana .fill { background: #9f8ad8; }
+.fcard-foot { display: flex; justify-content: space-between; align-items: center; min-height: 16px; }
+.odds { display: inline-flex; align-items: center; gap: 5px; color: var(--paper); font: 12px 'RATW Mono', monospace; }
+.odds .odds-hit { color: var(--gold); font-weight: 600; }
+.odds .odds-dmg { color: var(--muted); }
+.odds.far { opacity: .55; }
+.fcard-clock { font: 11px 'RATW Mono', monospace; color: var(--muted); }
+.fcard.down .fcard-clock { color: #ff9a3c; }
+
+/* What this wolf can do: icon buttons, its key in the corner, the odds or the cost beneath. */
+.action-bar { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background: var(--panel); border: 1px solid #34443e;
+    border-radius: 4px; }
+.bar-actions { display: flex; gap: 6px; align-items: stretch; flex-wrap: wrap; }
+.bar-banner { font-size: 16px; font-weight: 500; color: var(--gold); text-align: center; padding: 10px; }
+.bar-truce { display: flex; align-items: center; gap: 10px; color: var(--paper); font-size: 14px; }
+.bar-truce > .icon { font-size: 20px; }
+.game button.abtn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-width: 70px; padding: 6px 8px 5px; background: #1e2a28; border: 1px solid #3a4a43; border-radius: 5px; color: var(--paper); }
+.game button.abtn:hover:not(:disabled) { background: var(--raised); border-color: var(--gold); }
+.game button.abtn:disabled { opacity: .4; }
+.abtn-icon { width: 26px; height: 26px; }
+.abtn-label { font-size: 12px; white-space: nowrap; }
+.abtn-sub { font: 11px 'RATW Mono', monospace; color: var(--gold); min-height: 13px; white-space: nowrap; }
+.abtn-key { position: absolute; top: 2px; left: 4px; font: 10px 'RATW Mono', monospace; color: var(--muted); }
+.game button.abtn.small { min-width: 40px; padding: 6px 4px; }
+.game button.abtn.small .abtn-icon { width: 22px; height: 22px; }
+.game button.abtn.go { border-color: color-mix(in srgb, var(--gold) 60%, transparent); }
+.game button.abtn.warn .abtn-sub { color: #f0a08f; }
+.game button.abtn.armed { background: #3a2a1a; border-color: #ff9a3c; }
+.game button.abtn.end { margin-left: auto; min-width: 128px; overflow: hidden; border-color: var(--gold); }
+.game button.abtn.end:disabled { opacity: .75; border-color: #3a4a43; }
+.end-fill { position: absolute; inset: auto auto 0 0; height: 3px; background: var(--gold); transition: width .2s linear; }
+.bar-truce .abtn { flex-direction: row; min-width: 0; gap: 6px; padding: 5px 12px; }
+.bar-truce .abtn .abtn-icon { width: 18px; height: 18px; }
+
+/* The fight, told: above the composer, beside one's own words. */
+.fight-story { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #6b3a33; padding-top: 8px; max-height: 38%; min-height: 0; }
+.fight-lines { overflow-y: auto; display: flex; flex-direction: column; gap: 3px; padding-right: 6px; scrollbar-color: #34443e transparent; }
+.fline { display: flex; align-items: center; gap: 8px; font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+.fline.self { color: var(--self); }
+.fline.foe { color: var(--foe); }
+.fline.friend { color: var(--friend); }
+.fline.wait, .fline.timeout { opacity: .55; }
+.fline.miss { opacity: .75; }
+.fline.over, .fline.down, .fline.death { font-weight: 600; }
+.fline-icon { width: 15px; height: 15px; opacity: .9; }
+.fline-text { flex: 1; }
+.fline-num { font: 600 12px 'RATW Mono', monospace; color: var(--ink); background: currentColor; border-radius: 3px; padding: 0 5px; }
+.fline-num { background: none; color: var(--paper); border: 1px solid currentColor; }
+.fight-mode .toast { bottom: auto; top: 200px; }
+
+/* Feedback (doc 37, phase 3): what a blow took drains after it; a struck card shudders. */
+.meter .lag { position: absolute; inset: 0 auto 0 0; background: #f3e3c3; opacity: .55; transition: width .6s ease-in .35s; }
+.meter.health .fill { transition: width .12s ease-out; }
+.fcard.struck { animation: struck .4s ease-out; }
+@keyframes struck {
+    0% { transform: translateX(0); background: #4a2621; }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    100% { transform: translateX(0); background: var(--panel); }
+}
+
+/* The moments (doc 37, phase 4): who faces whom as it starts, one's turn, and how it ended. */
+.versus { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: radial-gradient(ellipse at center, #11191bcc 0%, #11191b99 60%, transparent 100%); pointer-events: none; z-index: 3;
+    animation: versus 2.2s ease-out forwards; }
+@keyframes versus { 0% { opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+.versus-card { display: flex; align-items: center; gap: 28px; }
+.versus-side { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.versus-side.self { --c: var(--self); animation: slideL .5s ease-out; }
+.versus-side.friend { --c: var(--friend); animation: slideL .5s ease-out; }
+.versus-side.foe { --c: var(--foe); animation: slideR .5s ease-out; }
+@keyframes slideL { from { transform: translateX(-60px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes slideR { from { transform: translateX(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+.versus-who { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 14px; background: var(--panel);
+    border: 1px solid var(--c); border-radius: 6px; box-shadow: 0 0 18px -6px var(--c); }
+.versus-face { width: 120px; height: 82px; }
+.versus-name { font-size: 16px; font-weight: 500; color: var(--c); }
+.versus-vs { font: 600 34px 'RATW Mono', monospace; color: var(--gold); letter-spacing: .1em; text-shadow: 0 0 14px #d9b67b66; }
+.versus-terms { font-family: 'RATW Mono', monospace; font-size: 13px; letter-spacing: .08em; color: var(--paper); text-transform: uppercase;
+    background: var(--panel); padding: 5px 12px; border-radius: 3px; border: 1px solid #34443e; }
+.turn-flash { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); font: 600 30px 'RATW Mono', monospace;
+    letter-spacing: .14em; color: var(--gold); text-shadow: 0 0 16px #d9b67b88, 0 2px 4px #000; pointer-events: none; z-index: 3; opacity: 0; }
+.turn-flash.go { animation: turnflash 1s ease-out forwards; }
+@keyframes turnflash { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.85); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -60%); } }
+.result-card { --c: var(--gold); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; min-width: 340px;
+    max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 22px 14px; background: var(--panel);
+    border: 1px solid var(--c); border-top: 3px solid var(--c); border-radius: 6px; box-shadow: 0 10px 40px #000a; animation: rise .35s ease-out; }
+.result-card.win { --c: #9fd08f; }
+.result-card.lose { --c: var(--foe); }
+.result-card.even { --c: var(--gold); }
+@keyframes rise { from { opacity: 0; transform: translate(-50%, -40%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+.result-title { font-size: 26px; font-weight: 500; color: var(--c); }
+.result-banner { color: var(--muted); font-size: 13px; text-align: center; }
+.result-stats { display: flex; gap: 22px; margin: 4px 0; }
+.result-stat { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.result-stat b { font: 600 16px 'RATW Mono', monospace; color: var(--paper); }
+.result-note { font-size: 13px; color: #f0a08f; text-align: center; }
+.result-next { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; justify-content: center; }
+.result-next .abtn { flex-direction: row; gap: 6px; min-width: 0; padding: 6px 12px; }
+.result-next .abtn .abtn-icon { width: 18px; height: 18px; }
+.map .versus canvas { position: static; inset: auto; }

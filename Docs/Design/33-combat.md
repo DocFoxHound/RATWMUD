@@ -61,7 +61,7 @@ Age already adjusts effective dexterity and senses, so old characters dodge less
    edge Join or        fullest initiative          flee from an edge tile;
    auto-join;          meter acts next;            can only observe after
    start at 0          move + one action,
-   initiative          10 s per player
+   initiative          15 s per player
                               |
                               v
                           Fight ends
@@ -163,9 +163,13 @@ stamina per turn     = +8 at the start of each of your own turns
 Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
 that sets it back (Sword 10).
 
-**Turn timer.** A player has 10 s per turn, shown counting down on their bar and in a banner at the top of the map.
-Typing a roleplay line extends it once by 10 s. Running out of time counts as ending the turn. After three timeouts in a
-row the player is marked away and their turns are skipped until they act again.
+**Turn timer.** A player has 15 s per turn, shown counting down on their bar and in a banner at the top of the map.
+Typing a roleplay line extends it once by 15 s. Running out of time counts as ending the turn. After three timeouts in a
+row the player is marked away and their turns are skipped until they act again; the fight panel says so, with an
+**I'm back** button. A player who leaves mid-fight is away too, and coming back makes their turns theirs again.
+
+**The first blow.** Whoever starts a fight has the first turn to themselves: the NPCs set on (and any who join with
+them) wait until it is over before they act.
 
 **Moving is by clicking.** On your turn the tiles you can reach are lit; click one to go there. There is no WASD in a
 fight (pressing it says how to move).
@@ -180,9 +184,13 @@ initiative bar; anyone acting is ringed, and their bar shows the time left in th
 map says whether it is your turn, and who is acting.
 
 **Facing is yours to choose.** A player's wolf faces only where they turn it: moving and attacking never turn it. On
-your turn eight arrows round your wolf let you pick any of eight ways, as often as you like, without spending the move or
+your turn eight small arrows on the rim of your wolf's own tile let you pick any of eight ways, as often as you like, without spending the move or
 the action (or Q and E, the ⟲ ⟳ buttons, or Alt/Ctrl+click a tile). Each fighter starts facing the nearest foe. NPCs turn
-as they act. Attacks from the side get +10% to hit and from behind +20%, so facing is how you guard your back.
+as they act. Attacks from the side get +10% to hit and from behind +20%, so facing is how you guard your back. The arrows stay
+inside your own tile so that a click on any tile or wolf around you still moves or strikes there.
+
+**Clicking a foe out of reach** on your turn, before you have moved, steps to the lit tile nearest them and strikes
+if that brings them into reach (1 tile for a bite, 2 for a sword), all in one click.
 
 **Range on the grid.** Bite reaches adjacent tiles (diagonals included), Sword reaches 2 tiles, and Flamethrower is a
 cone you aim in one of 8 directions. Attacks need line of sight; fixtures block it.
@@ -207,6 +215,8 @@ How well an NPC fights, and how willingly, comes from three things: its professi
 **What each temperament does on its turn:**
 
 - **Aggressive:** closes on the nearest enemy, prefers wounded targets, flanks to attack from the side or back.
+  NPCs close in by the way there is through the arena, around walls and tables (`World::stepsTo`, 2026-10-04), not
+  as the crow flies, which left them stuck behind furniture.
 - **Cautious:** attacks only targets already adjacent or in reach, keeps near allies, tends Downed allies when it can.
 - **Timid:** keeps distance, attacks only when cornered, and tries to flee as soon as it is hurt at all if no ally is close.
 
@@ -445,7 +455,7 @@ without). Sword and Flamethrower (phase 6) and the balance work (phase 7) are ne
   - The initiative bar (6 + DEX/10, filling in real time: fifteen seconds at DEX 50); starters begin full, joiners empty.
   - A turn is a move and one action (Bite, Tend, Flee, Struggle, Wait), with the next turn's head start when either is
     skipped.
-  - Initiative bars that fill in real time; 10 s turns, plus 10 once while typing; end early to refill sooner; three
+  - Initiative bars that fill in real time; 15 s turns, plus 15 once while typing; end early to refill sooner; three
     run out in a row and the player is away and skipped until they act again.
   - Facing gives +10% to hit from the side and +20% from behind.
   - Bite: 12 base damage, 8 stamina; stamina comes back +8 a turn, less when hurt; move range shrinks with injury.
@@ -543,8 +553,40 @@ Built after that:
   Each is a `character.gift` action, with payload `{"gift": "fire" | "", "quickened": bool}`, applied online or
   offline and audited. The sheet shows each character's Gift. The development command stays.
 
+Playtest fixes, October 4 (a player's playtest of fights with residents, a duel and an onlooker):
+- **Coming back mid-fight:** a player who left and returns within the minute is no longer left away with every turn
+  skipped (`World::stopLingering`). Away for any reason, the fight panel offers **I'm back** (battle verb `back`).
+- **The first blow** is the starter's: NPCs on the other side wait out that first turn (`Battle::opening`).
+- **15 s turns**, and 15 more once while typing (were 10 and 10): time to read the log, decide and write a line.
+- **The view frames the fight:** oneself, everyone within a dozen tiles and at least the nearest foe, with the lit
+  tiles, zoomed in as close as that allows (it followed the wolf's frozen place in the lineup, so a foe could be off
+  screen). Foes' names in the fight panel are buttons that strike them.
+- **Facing:** one's own tile, split three by three, its eight outer parts each a way to face, drawn on top of one's own
+  wolf (the arrows were under its click area and couldn't be clicked).
+- **Names round a fighter** go where they don't cover another's.
+- **Fleeing:** the arena's outer two rows are shown as a faint red band, and Flee away from them says how far the
+  nearest edge is and which way.
+- **Attacking a resident asks first:** the first Attack says it is a crime that brings the watch; the second does it.
+  Bandits and other foes are fought without asking. Youngsters (under 13) are not offered Attack.
+- **The watch carries in the fallen:** a wanted wolf lying Downed is not asked to pay; their wounds are bound (up at
+  20 health, without spending their own recovery) and they are carried to the gaol, where they would otherwise have
+  bled out. A guard doesn't greet a wolf lying hurt or held with "State your business": a model answers instead.
+- **Strangers told apart everywhere:** two who look alike are numbered the same way in the In Sight list, the fight's
+  log, the fight panel and the red squares' Join buttons ("A dun wolf (2)"), counting everyone in the cell in a fixed
+  order (`Game::strangerNames`).
+- **Residents by what they do:** a post written as an activity reads "a wolf who carries loads for hire", "the wolf on
+  patrol" (`names::byTrade`), not "a carries loads for hire".
+- **Health:** "Unhurt" at full health (it said "Scratched").
+- **Injury slows a wolf in the world** as this document says: the speed above a walk falls with the injury factor, and
+  from 75 hurt the walk is 2.0 and the last two notches of a sprint are gone (`paceSpeed`).
+- **A truce makes peace:** those who agreed are no longer shown as hostile ("fought you") afterwards.
+- Also: "They don't know you" (was "They doesn't"); a resident's written kind of wolf in their coat's own colour ("a
+  sandy timber wolf", `names::fitCoat`; worldgen now writes it so); a voice too far off to make out is one faint line,
+  not a row of "...", and one's own words appear at once instead of being written out again.
+
 Not yet:
 - Balance (phase 7): numbers tuned from simulator runs and playtests.
+- The arena is large for fleeing: from the middle, the edge is some twenty tiles (four or five turns) away.
 - Swords better than dull bronze.
 - Ground items kept across a restart.
 - Fire's light revealing the hidden. In the arena there is no one hidden; outside one, nothing burns yet.

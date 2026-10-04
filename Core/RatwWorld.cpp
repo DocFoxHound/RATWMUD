@@ -399,7 +399,12 @@ void settle(Entity& e, const char* posture)
 
 double paceSpeed(const Entity& actor)
 {
-    return step::paceSpeed(clamp01(effectiveDexterity(actor) / 100.0), effectivePace(actor));
+    // Injury takes off the speed above a walk (doc 33): a wolf who lost a fight limps away from it. Badly hurt
+    // (75+), the walk itself slows and the last two notches of a sprint are gone.
+    const bool limping = actor.hurt >= 75;
+    const int pace = limping ? std::min(effectivePace(actor), 8) : effectivePace(actor);
+    const double full = step::paceSpeed(clamp01(effectiveDexterity(actor) / 100.0), pace);
+    return (limping ? 2.0 : step::WalkSpeed) + (full - step::WalkSpeed) * battle::injuryFactor(std::clamp(actor.hurt, 0.0, 100.0));
 }
 
 World::World()

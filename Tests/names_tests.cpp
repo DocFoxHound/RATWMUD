@@ -81,6 +81,20 @@ void aliasesAndLooks()
     expect(names::veil("Ash's purse is light; Ash Hollow is near.", labels) == "A grey wolf's purse is light; Ash Hollow is near.",
            "a possessive is still them; a longer proper name is left alone");
     expect(names::veil("Rowanberry", labels) == "Rowanberry", "whole words only");
+    // Residents by their post: a trade's name, or what they do (playtest, October 4: "a carries loads for hire").
+    expect(names::byTrade("innkeeper", false) == "the innkeeper" && names::byTrade("guard", true) == "a guard", "a trade");
+    expect(names::byTrade("carries loads for hire", true) == "a wolf who carries loads for hire", "what they do");
+    expect(names::byTrade("playing in the plaza", true) == "a wolf playing in the plaza", "what they're doing");
+    expect(names::byTrade("on patrol", true) == "a wolf on patrol" && names::byTrade("holding the main gate", false) ==
+               "the wolf holding the main gate", "where they are, what they hold");
+    expect(names::byTrade("glass blower", false) == "the glass blower" && names::byTrade("lord's steward", false) == "the lord's steward",
+           "a trade that only looks like a verb");
+    // A written kind of wolf in the coat's own colour.
+    Appearance sandy;
+    sandy.baseColor = 7;
+    expect(names::fitCoat("A small, quick grey timber wolf with a scar.", sandy) == "A small, quick sandy timber wolf with a scar.",
+           "the coat wins: " + names::fitCoat("A small, quick grey timber wolf with a scar.", sandy));
+    expect(names::fitCoat("A charcoal wolf in a harness.", sandy) == "A charcoal wolf in a harness.", "no kind written: left alone");
 }
 
 void whoKnowsWhom()

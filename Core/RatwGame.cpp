@@ -946,6 +946,34 @@ void Game::applyDmActions(double dt)
             else
                 outcome = {false, kind == "npc.move" ? "No such NPC in the world." : "No such character.", {}};
         }
+        else if (kind == "character.dm")
+        {
+            // A player marked a Dungeon Master in the game, or no longer: payload {"dungeonMaster": bool}. They have the
+            // Dev Console while they are one.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const bool on = payload.isObject() && payload.boolean("dungeonMaster");
+            const auto told = [&](const Entity& e) {
+                return e.name + (on ? " is a Dungeon Master in the game." : " is no longer a Dungeon Master in the game.");
+            };
+            if (auto* online = world_.entity(target); online && !online->npc)
+            {
+                online->dungeonMaster = on;
+                characters_[target] = *online;
+                if (auto* c = clientOf(target))
+                    system(c, on ? "You are a Dungeon Master: the Dev Console is yours (the ` key)." : "You are no longer a Dungeon Master.");
+                outcome = {true, told(*online), {}};
+            }
+            else if (auto saved = characters_.find(target); saved != characters_.end())
+            {
+                saved->second.dungeonMaster = on;
+                outcome = {true, told(saved->second) + " (offline)", {}};
+            }
+            else
+                outcome = {false, "No such character.", {}};
+        }
         else if (kind == "visitor.add" || kind == "visitor.leave")
         {
             // Temporary folk from the LIVE map (doc 34), the target their new ID. Payload {"name", "description",
@@ -1504,7 +1532,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     const auto saved = characters_.find(actor);
     if (lingered)
     {
-        player.lingering = false;
+        world_.stopLingering(actor);
         lingering_.erase(actor);
     }
     else if (saved != characters_.end())
@@ -2232,6 +2260,8 @@ void Game::sendSnapshot(Connection* c)
         self.set("fightingSkill", std::round(me->fightingSkill));
         if (!me->mouth.empty())
             self.set("mouth", me->mouth);
+        if (me->dungeonMaster)
+            self.set("dungeonMaster", true);       // The Dev Console is theirs (RatwGameDev.cpp).
         if (!me->gift.empty())
         {
             self.set("gift", me->gift);
@@ -2380,23 +2410,10 @@ void Game::sendSnapshot(Connection* c)
     }
     // What this wolf calls each one it sees (doc 32): a name it was given, else how they look. Two strangers who look
     // alike are told apart by number, in a fixed order.
-    std::map<std::string, std::string> called;
-    {
-        std::map<std::string, std::vector<std::string>> alike;
-        for (const auto& e : view.entities)
-        {
+    std::map<std::string, std::string> called = strangerNames(id);
+    for (const auto& e : view.entities)
+        if (!called.count(e.id))
             called[e.id] = labelFor(id, e.id);
-            if (!knowsName(id, e.id))
-                alike[called[e.id]].push_back(e.id);
-        }
-        for (auto& [label, ids] : alike)
-            if (ids.size() > 1)
-            {
-                std::sort(ids.begin(), ids.end());
-                for (std::size_t n = 1; n < ids.size(); ++n)
-                    called[ids[n]] = label + " (" + std::to_string(n + 1) + ")";
-            }
-    }
     for (const auto& e : view.entities)
     {
         auto j = wire::entity(e, view.time);
@@ -2464,7 +2481,8 @@ void Game::sendSnapshot(Connection* c)
             if (!e.dead && reach && e.state != "beaten down" && e.downedLeft <= 0)
             {
                 actions.push("steal");
-                actions.push("attack");
+                if (e.age >= battle::YoungestFighter)
+                    actions.push("attack");             // Never a youngster (doc 33: they don't fight; they run).
             }
             if (guard && near(e) && !e.dead)
             {
@@ -2634,6 +2652,7 @@ void Game::sendSnapshot(Connection* c)
             o.add("from", from->id);
             o.add("name", names::capitalised(labelFor(id, from->id)));
             o.add("left", std::max(0.0, challenge->until - world_.time()));
+            o.add("terms", challenge->terms);
             root.add("challenge", o);
         }
     root.add("structures", structuresView(id, view.cell.id));   // Camps, Halls and Holds here (doc 32, 5.7).
@@ -2957,7 +2976,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         return context;
     context.npcId = npcId;
     context.name = npc->name;
-    context.description = npc->description + " Current age: " + std::to_string(npc->age) + " years.";
+    context.description = names::fitCoat(npc->description, npc->appearance) + " Current age: " + std::to_string(npc->age) + " years.";
     context.activity = npc->activity;
     if (const auto* spec = world_.society().spec(npcId))
     {
@@ -3436,6 +3455,8 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok)
             record(Economy | Character, id);
     }
+    else if (type == "dev")
+        devCommand(c, j);
     else if (type == "battle")
     {
         if (!battleCommand(c, j, result))
@@ -3548,7 +3569,7 @@ void Game::command(Connection* c, const std::string& raw)
         }
         else if (action == "attack" || action == "pay" || action == "challenge")
         {
-            const auto done = action == "pay" ? world_.payBandits(id, target) : world_.attack(id, target);
+            const auto done = action == "pay" ? world_.payBandits(id, target) : world_.attack(id, target, j.string("terms"));
             system(c, done.message);
             if (done.ok)
                 record(Economy | Crime | Roads | Character, id);
@@ -3687,7 +3708,7 @@ void Game::command(Connection* c, const std::string& raw)
                 e.add("artwork", portrait);
             e.add("lifeStage", lifeStageName(lifeStage(other->age)));
             e.add("shoulderHeightCm", shoulderHeightCm(other->appearance, other->age));
-            const auto described = veilFor(id, other->description);
+            const auto described = veilFor(id, other->npc ? names::fitCoat(other->description, other->appearance) : other->description);
             // How they regard this wolf, in words; and this wolf's own note on them (doc 32, 1.4).
             if (target != id)
             {

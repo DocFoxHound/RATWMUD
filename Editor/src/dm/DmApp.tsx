@@ -195,6 +195,14 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
+    // A Dungeon Master in the game: the player has the Dev Console (the ` key in the game), for trying things out.
+    const markDm = async (on: boolean) => {
+        if (target === 'prod' && !window.confirm(`${on ? 'Make' : 'Unmake'} ${character.name} a Dungeon Master in the game on PROD?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, 'character.dm', character.id, reason, {dungeonMaster: on}); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
     // Bandits called up near them (doc 33): a small camp a few strides off, for a fight that isn't with townsfolk.
     const callBandits = async (count: number) => {
         if (target === 'prod' && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} on PROD?`)) return;
@@ -210,7 +218,8 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
             <span className={character.dead ? 'dm-status dead' : 'dm-status'}>{character.dead ? '✝ dead' : 'alive'}</span></header>
         <p className="meta">{character.place} · {character.x.toFixed(1)}, {character.y.toFixed(1)}{character.indoors ? ' (indoors)' : ''} · age {character.age ?? '—'} · {character.posture}{character.activity ? ` · ${character.activity}` : ''}</p>
         <div className="stats">{stat('strength', character.stats.strength)}{stat('dexterity', character.stats.dexterity)}{stat('wisdom', character.stats.wisdom)}{stat('stamina', character.stats.stamina)}</div>
-        <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}</p>
+        <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}
+            {character.dungeonMaster && <> · <b>Dungeon Master in the game</b> (has the Dev Console)</>}</p>
         <div className="stats">{stat('sneak', character.skills.sneakSkill)}{stat('hearing skill', character.skills.hearingSkill)}{stat('scent skill', character.skills.scentSkill)}
             {stat('vision', character.senses.vision, 2)}</div>
         {canAct ? <>
@@ -224,6 +233,11 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
                 <button disabled={busy || pending || character.quickened} onClick={() => void gift('fire', true)}>Make Quickened</button>
                 <button disabled={busy || pending || !character.gift} onClick={() => void gift('', false)}>Take Gift away</button>
             </div>
+            {me.role === 'admin' && <div className="button-grid">
+                <button disabled={busy || pending} onClick={() => void markDm(!character.dungeonMaster)}
+                    title="A Dungeon Master in the game has the Dev Console (the ` key) for trying things out">
+                    {character.dungeonMaster ? 'Unmake Dungeon Master' : 'Make Dungeon Master in game'}</button>
+            </div>}
             <div className="button-grid">
                 <button disabled={busy || pending || character.dead} onClick={() => void callBandits(1)}>Call a bandit near them</button>
                 <button disabled={busy || pending || character.dead} onClick={() => void callBandits(3)}>Call three bandits</button>

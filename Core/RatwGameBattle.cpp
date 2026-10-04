@@ -1,6 +1,7 @@
 // Fights as players see and drive them (Docs/Design/33-combat.md; the rules are the world's, RatwBattle.cpp): the
 // arena in a fighter's or watcher's snapshot, the red squares onlookers see, and the fight commands.
 #include "RatwGame.h"
+#include "RatwWire.h"
 
 #include <algorithm>
 #include <cmath>
@@ -17,7 +18,7 @@ std::string healthLabel(double hurt, bool downed, bool dead)
         return "Dead";
     if (downed)
         return "Downed";
-    return hurt < 25 ? "Scratched" : hurt < 50 ? "Wounded" : hurt < 75 ? "Badly hurt" : "Limping";
+    return hurt < 1 ? "Unhurt" : hurt < 25 ? "Scratched" : hurt < 50 ? "Wounded" : hurt < 75 ? "Badly hurt" : "Limping";
 }
 } // namespace
 
@@ -26,8 +27,11 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     auto v = Value::object();
     v.add("id", b.id);
     v.add("over", b.over);
-    v.add("banner", b.banner);
+    v.add("banner", names::veil(b.banner, veilMap(viewer)));     // (Names as this wolf knows them.)
     v.add("pvp", b.pvp);
+    v.add("terms", b.terms);                        // "blood", "yield" or "death" (doc 37).
+    v.add("crime", !b.incident.empty());            // A resident set on: the watch will hear of it.
+    v.add("yieldBy", b.yieldBy);
     auto arena = Value::object();
     arena.add("x", b.x0);
     arena.add("y", b.y0);
@@ -89,6 +93,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("round", b.turns);
     v.add("watching", double(b.observers.size()));
     const auto veiled = veilMap(viewer);           // Names this wolf doesn't know, as the fighters look (doc 32).
+    const auto called = strangerNames(viewer);
     auto fighters = Value::array();
     for (const auto& f : b.fighters)
     {
@@ -99,7 +104,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             continue;
         auto o = Value::object();
         o.add("id", f.id);
-        o.add("name", names::capitalised(labelFor(viewer, f.id)));   // As this wolf knows them (doc 32).
+        const auto stranger = called.find(f.id);           // As this wolf knows them (doc 32).
+        o.add("name", names::capitalised(stranger != called.end() ? stranger->second : labelFor(viewer, f.id)));
         o.add("side", f.side);
         o.add("x", f.x);
         o.add("y", f.y);
@@ -115,7 +121,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
-        o.add("label", healthLabel(e->hurt, f.status == "downed", f.status == "dead"));
+        o.add("label", f.status == "yielded" ? std::string("Yielded") : healthLabel(e->hurt, f.status == "downed", f.status == "dead"));
         o.add("health", std::round(100 - e->hurt));
         if (!e->mouth.empty())
             o.add("mouth", e->mouth);
@@ -125,8 +131,33 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             o.add("casting", true);
         if (!b.truceBy.empty())
             o.add("truce", f.truce);
-        if (f.id == viewer)
+        // How they look, for the fight screen's portraits (doc 37); one's own side's breath and mana.
+        o.add("appearance", wire::appearance(e->appearance));
+        o.add("lifeStage", lifeStageName(lifeStage(e->age)));
+        if (!observer && mine->side == f.side)
+        {
             o.add("stamina", std::round(e->stamina));
+            if (!e->gift.empty())
+            {
+                o.add("mana", std::floor(e->mana));
+                o.add("manaMax", std::floor(battle::manaMax(e->wisdom, true)));
+            }
+        }
+        // A foe, as this wolf would strike them from where it stands now: the chance, the blow, and whether in reach.
+        if (!observer && mine->status == "fighting" && f.side != mine->side && f.status == "fighting")
+            if (const auto* me = world_.entity(viewer))
+            {
+                const bool sword = me->mouth == "sword";
+                auto odds = Value::object();
+                odds.add("hit", std::round(world_.strikeChance(*mine, f) * 100));
+                // Head on (no side or back to it): the page adds the bonus for a strike from any other tile.
+                auto headOn = f;
+                headOn.facing = battle::octant(mine->x - f.x, mine->y - f.y);
+                odds.add("base", std::round(world_.strikeChance(*mine, headOn) * 100));
+                odds.add("damage", std::round((sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125)));
+                odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
+                o.add("odds", odds);
+            }
         if (f.status == "downed" && mine && mine->side == f.side)
             o.add("downedLeft", std::round(e->downedLeft));   // Their own side sees how long they have.
         fighters.push(o);
@@ -203,6 +234,8 @@ Value Game::fightsInView(const Entity& self) const
 {
     // The red squares an onlooker sees: each fight in this cell they can see a fighter of, drawn around its lineup.
     auto out = Value::array();
+    std::map<std::string, std::string> called;
+    bool named = false;
     for (const auto& b : world_.battles())
     {
         if (b.cellId != self.cellId || b.fighter(self.id))
@@ -247,12 +280,21 @@ Value Game::fightsInView(const Entity& self) const
         if (!b.log.empty())
             o.add("latest", veilFor(self.id, b.log.back().text));
         // A name on each side, for "join X's side".
+        if (!named)
+        {
+            called = strangerNames(self.id);
+            named = true;
+        }
         for (int side = 0; side < 2; ++side)
             for (const auto& f : b.fighters)
                 if (f.side == side && f.status != "fled")
                     if (const auto* e = world_.entity(f.id))
                     {
-                        o.add(side == 0 ? "side0" : "side1", names::capitalised(labelFor(self.id, f.id)));
+                    {
+                        const auto stranger = called.find(f.id);
+                        o.add(side == 0 ? "side0" : "side1",
+                              names::capitalised(stranger != called.end() ? stranger->second : labelFor(self.id, f.id)));
+                    }
                         break;
                     }
         out.push(o);
@@ -288,6 +330,8 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
     }
     else if (verb == "agree" || verb == "refuse")
         result = world_.answerTruce(id, verb == "agree");
+    else if (verb == "spare" || verb == "press")
+        result = world_.answerYield(id, verb == "spare");   // A yield accepted (spare them), or not (press on).
     else if (verb == "join")
         result = world_.joinBattle(id, j.string("battle"), int(j.number("side", -1)));
     else if (verb == "observe")
@@ -295,7 +339,8 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
     else if (verb == "leave")
         result = world_.leaveObserving(id);
     else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||
-             verb == "roll" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce")
+             verb == "roll" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce" ||
+             verb == "back" || verb == "yield")
         result = world_.battleAct(id, verb, target);
     else
         return false;

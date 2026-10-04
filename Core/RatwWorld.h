@@ -230,6 +230,7 @@ struct Entity
     // All saved. `lingering`: the player has gone but their body stays in a fight a while.
     std::string mouth, gift;
     bool quickened = false;
+    bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
     double mana = 0.0, fightingSkill = 50.0;
     bool lingering = false;
     bool typing = false;
@@ -510,8 +511,15 @@ class World
     // Fights (Docs/Design/33-combat.md; RatwBattle.cpp). An attack starts a turn-based fight in an arena cut from the
     // cell, or joins the fight the target is already in. A player attacking a player challenges them instead: the
     // fight starts when they accept.
-    Result attack(const std::string& attacker, const std::string& target);
-    Result challenge(const std::string& from, const std::string& to);
+    Result attack(const std::string& attacker, const std::string& target, const std::string& terms = "");
+    // The Dev Console (a player marked Dungeon Master): a fight to try things out where they stand, against one weak
+    // bandit set on the far side of the arena with a clear way to them; and their fight ended now, as a draw. A test
+    // bandit's camp ("camp_dmtest_") goes when the fight does, with no robbery, bounty or camp cleared.
+    Result testFight(const std::string& player);
+    Result endFightInDraw(const std::string& player);
+    static bool testCamp(const std::string& camp) { return camp.rfind("camp_dmtest_", 0) == 0; }
+    // A challenge between players, on its terms ("blood", "yield" or "death"; "" for yield).
+    Result challenge(const std::string& from, const std::string& to, const std::string& terms = "");
     Result answerChallenge(const std::string& player, bool accept);
     const Challenge* challengeTo(const std::string& player) const;
     const std::vector<Battle>& battles() const { return battles_; }
@@ -529,6 +537,11 @@ class World
     Result battleAct(const std::string& id, const std::string& action, const std::string& target = {});
     // The tiles a fighter may move to now (none when it isn't their turn, or they have moved).
     std::vector<std::pair<int, int>> battleReach(const std::string& id) const;
+    // The chance a blow from `f` lands on `t` from where they stand now (hit or graze): dexterity, fighting skill and
+    // the side or back it comes from (doc 33). The same number the blow is rolled against, for the page's preview.
+    double strikeChance(const BattleFighter& f, const BattleFighter& t) const;
+    // A fighter hurt (by a blow, fire or burning): down, yielding or bloodied as the fight's terms say (doc 37).
+    void hurtFighter(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by, bool interrupt);
     // Coming into a fight from the edge of its square: as a fighter on a side, or to watch it.
     Result joinBattle(const std::string& id, const std::string& battleId, int side);
     Result observeBattle(const std::string& id, const std::string& battleId);
@@ -543,6 +556,9 @@ class World
     Result battleFace(const std::string& id, int dir);
     // A truce offered, and agreed to (or refused): every fighter still standing must agree.
     Result offerTruce(const std::string& id);
+    // Yielding (doc 37): offered at any time; a player on the other side accepts or refuses (an NPC side accepts).
+    Result offerYield(const std::string& id);
+    Result answerYield(const std::string& id, bool accept);
     Result answerTruce(const std::string& id, bool agree);
     // The mouth slot: holding a sword (one has one), putting it away; taking something lying on the ground.
     Result holdItem(const std::string& id, const std::string& item);
@@ -553,6 +569,8 @@ class World
     Result giveGift(const std::string& id, const std::string& gift, bool quickened);
     // A player gone from the world while fighting: the body stays, away, until the fight ends or a minute passes.
     void linger(const std::string& id);
+    // ...and back again in time: their turns are theirs once more, not skipped as away.
+    void stopLingering(const std::string& id);
     // Crime and law (RatwCrime.h, Phase 7). A theft from or an assault on a resident is an incident, known only to
     // those who perceived it; they tell the watch, which wants the offender once what it has heard is enough.
     // Players can't steal from or attack each other.
@@ -850,6 +868,7 @@ class World
     struct RoadFolk
     {
         std::string kind, of;               // "caravan" or "bandit"; the caravan's or camp's ID.
+        double skill = -1;                  // A fighting skill of their own (a test bandit's), else their kind's.
         double hp = 16, share = 1, nextSwing = 0, nextPath = 0;
         std::string lastCell;
         double enteredAt = 0;               // When it came into its cell (a wagon stuck that long is moved on).
@@ -877,7 +896,6 @@ class World
     Result swordStrike(Battle& b, BattleFighter& f, const std::string& target);
     Result castFlame(Battle& b, BattleFighter& f, int x, int y);
     void resolveCast(Battle& b, const BattleCast& cast);
-    void hurtFighter(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by, bool interrupt);
     void dropItem(Battle& b, BattleFighter& f);
     void tendFightSurroundings(Battle& b);
     void growSkill(Entity& e, double amount);
@@ -894,11 +912,15 @@ class World
     void npcTurn(Battle& b, BattleFighter& f);
     Result bite(Battle& b, BattleFighter& f, const std::string& target);
     void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);
+    void yieldFighter(Battle& b, BattleFighter& f, const std::string& to, const std::string& line);
     void fightLine(Battle& b, const std::string& actor, const std::string& target, const std::string& kind, std::string text);
     void checkOver(Battle& b);
     void finishBattle(Battle& b);
     void leaveArena(Battle& b, BattleFighter& f, bool fleeing);
     std::vector<std::pair<int, int>> reachFrom(const Battle& b, const BattleFighter& f, int range) const;
+    // Steps from each arena tile to (x, y), walking as fighters do (eight ways, no corner cut, around others but
+    // `mover`): row by row over the arena, -1 where there is no way.
+    std::vector<int> stepsTo(const Battle& b, int x, int y, const std::string& mover) const;
     void standUp(Entity& e, double health);
     void tendDowned(double dt);
     void fullRest(Entity& e);

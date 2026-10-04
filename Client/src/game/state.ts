@@ -6,7 +6,7 @@ import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
-import {arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, readChallenge, readFights, readGround, type BattleLine, type BattleView,
+import {apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
     type ChallengeView, type FightSquare, type GroundView} from './battle.ts';
 import {FightEffects} from './fightFx.ts';
 
@@ -37,6 +37,7 @@ export interface Post {
     chapter?: boolean;          // Said in character to the speaker's Chapter, and this player is in it.
     encounter?: EncounterView;  // The story's one entry for a fight (doc 18), kept up to date in place.
     muffled?: boolean;          // Said around a sword held in the jaws (doc 33).
+    faint?: boolean;            // A voice heard, not a word of it made out.
 }
 
 export interface Hit {
@@ -146,7 +147,22 @@ export class GameState {
     channel = 'ic';
     volume = 'speak';
     modal = '';
+    /** The Dev Console's log (a player marked Dungeon Master): each command run and the server's answer, newest last. */
+    devLog: {command: string; ok: boolean; text: string}[] = [];
     contextTarget = '';
+    /** Combat sound (doc 37, phase 3): 0 off, up to 1; Settings cycles it, and it is kept on this computer. */
+    soundVolume = 0.6;
+    /** Plays a fight's sound (set by the page: ui/sound.ts). */
+    onCue: ((cue: string) => void) | null = null;
+    /** Turning one's wolf by dragging from it (doc 37): where the drag began, and the way it points now (−1: not yet). */
+    faceDrag: [number, number] | null = null;
+    faceDragDir = -1;
+    /** The foe the fight screen's actions are aimed at (doc 37): chosen from their card, else the nearest. */
+    fightFocus = '';
+    /** The fight screen's own keys, while it shows (set by ui/hud/combat.ts): true when one was used. */
+    fightKeys: ((code: string) => boolean) | null = null;
+    /** "attack|<id>" once Attack has been chosen once on a resident: chosen again, it is done (a crime asks first). */
+    armed = '';
     contextName = '';
     contextKind = '';
     contextPoint: [number, number] = [0, 0];
@@ -450,7 +466,10 @@ export class GameState {
         this.challenge = readChallenge(this.snapshot);
         this.ground = readGround(this.snapshot);
         this.battleAt = this.clock;
+        this.fx.selfId = this.selfId;
         this.fx.update(this.battle, this.clock);
+        // One's own turn come round: a soft chime.
+        if (this.battle && !this.battle.over && myTurn(this.battle, this.selfId) && !(before && myTurn(before, this.selfId))) this.fx.cue('turn');
         this.updateEncounters(before);
         if (!this.battle || !this.battle.flame || !myTurn(this.battle, this.selfId)) this.aiming = '';
         this.party = readParty(obj(this.snapshot, 'self'));
@@ -557,8 +576,28 @@ export class GameState {
         const me = b.fighters.find(f => f.id === this.selfId);
         const f = b.fighters.find(o => o.id === id);
         if (!me || !f || f.id === me.id) return;
-        if (f.side !== me.side && f.status === 'fighting') this.sendBattle(b.mouth === 'sword' ? 'sword' : 'bite', {target: id});
+        if (f.side !== me.side && f.status === 'fighting') {
+            // Out of reach on one's turn: step to the tile in reach that is nearest, then strike, in one click.
+            const strike = b.mouth === 'sword' ? 'sword' : 'bite', range = strike === 'sword' ? 2 : 1;
+            if (apart(me.x, me.y, f.x, f.y) > range && myTurn(b, this.selfId)) {
+                const step = stepToward(b, me, f, range);
+                if (step) this.sendBattle('move', {x: step.x, y: step.y});
+                if (!step?.reaches) return;
+            }
+            this.sendBattle(strike, {target: id});
+        }
         else if (f.side === me.side && f.status === 'downed') this.sendBattle('tend', {target: id});
+    }
+
+    /** The foe the fight screen aims at: one pointed at (on the map or a card), else the one chosen, else the nearest. */
+    fightTargetId(): string {
+        const b = this.battle;
+        const me = b && !b.observer ? b.fighters.find(f => f.id === this.selfId) : undefined;
+        if (!b || !me) return '';
+        const foes = b.fighters.filter(f => f.side !== me.side && f.status === 'fighting');
+        for (const id of [this.hoveredEntity, this.highlight, this.fightFocus])
+            if (id && foes.some(f => f.id === id)) return id;
+        return foes.sort((a, c) => apart(a.x, a.y, me.x, me.y) - apart(c.x, c.y, me.x, me.y))[0]?.id ?? '';
     }
 
     /** A tile clicked in the arena: go there, if it's this wolf's turn and it can. */
@@ -691,6 +730,13 @@ export class GameState {
             this.reputation = arr(e, 'lines').filter((l): l is string => typeof l === 'string');
             return;
         }
+        if (type === 'devResult') {
+            // The Dev Console's answer (Core/RatwGameDev.cpp): kept in its log, and said in a toast.
+            this.devLog.push({command: str(e, 'command'), ok: bool(e, 'ok'), text: str(e, 'text')});
+            if (this.devLog.length > 30) this.devLog.splice(0, this.devLog.length - 30);
+            this.showToast(str(e, 'text').split('\n')[0]);
+            return;
+        }
         if (type === 'talkTarget') {
             this.addTarget(str(e, 'id'));
             return;
@@ -711,9 +757,18 @@ export class GameState {
             post.text = parts.join(' ');
         }
         if (!post.text) return;
+        // A voice too far off to make out a word of: said so once, not a row of "...".
+        if (bool(e, 'anonymous') && /^"?(\.\.\.|…|\s)+"?$/.test(post.text)) {
+            const last = this.posts.at(-1);
+            if (last?.faint && this.clock - last.postedAt < 20) return;
+            post.text = 'Words too far off to make out.';
+            post.faint = true;
+        }
         if (bool(e, 'muffled')) post.muffled = true;
         post.system = type === 'system' || type === 'error';
-        post.revealed = post.system || post.channel !== 'ic' ? post.text.length : 0;
+        // One's own words are already known: shown at once, not written out again.
+        const own = post.speaker === str(obj(this.snapshot, 'self'), 'name') && !bool(e, 'anonymous');
+        post.revealed = post.system || own || post.channel !== 'ic' ? post.text.length : 0;
         if (type === 'error') this.showToast(post.text);
         this.posts.push(post);
         if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);
@@ -727,6 +782,8 @@ export class GameState {
     /** Once a frame: `time` is seconds since the page opened, `delta` since the last frame. */
     tick(time: number, delta: number) {
         this.clock = time;
+        // The fight's sounds (doc 37, phase 3): played by the page's sound (ui/sound.ts), if it has one.
+        for (const cue of this.fx.takeCues()) this.onCue?.(cue);
         this.motionClock += Math.max(0, delta);
         const now = this.motionClock - this.motionOffset;
         for (const view of this.entities.values()) {
@@ -949,7 +1006,7 @@ export class GameState {
             this.inspectedCharacter = {...this.inspectedCharacter, note: fields.text};
     }
 
-    sendAction(action: string, target = '') {
+    sendAction(action: string, target = '', extra: Json = {}) {
         // An introduction is said aloud, so whoever hears it learns the name (doc 32): "I'm Kestrel."
         if (action === 'introduce' || action.startsWith('introduce as ')) {
             const name = action === 'introduce' ? str(obj(obj(this.snapshot, 'self'), 'names'), 'name') : action.slice('introduce as '.length);
@@ -958,7 +1015,7 @@ export class GameState {
                 ...(target ? {targets: [target]} : {})});
             return;
         }
-        this.send({type: 'action', action, target});
+        this.send({type: 'action', action, target, ...extra});
     }
 
     showToast(text: string) {
@@ -989,8 +1046,27 @@ export class GameState {
         }
     }
 
+    /** Marked a Dungeon Master by the Dungeon Master app: the Dev Console is theirs. */
+    isDungeonMaster() {
+        return bool(obj(this.snapshot, 'self'), 'dungeonMaster');
+    }
+
+    /** A Dev Console command ("/fight-test-1"), for the server to answer with a devResult. */
+    runDevCommand(command: string) {
+        const text = command.trim();
+        if (!text || !this.isDungeonMaster()) return;
+        this.send({type: 'dev', command: text.startsWith('/') ? text : `/${text}`});
+    }
+
     submitPost() {
         const text = this.composer.text.trim();
+        if (text.startsWith('/') && this.isDungeonMaster()) {
+            // A Dungeon Master's slash command goes to the Dev Console, never into the world as words.
+            this.composer.text = '';
+            this.runDevCommand(text);
+            this.setChat(false);
+            return;
+        }
         if (text) {
             const id = `post_${++this.nextRequestId}`;
             this.pendingDrafts.set(id, text);
@@ -1124,6 +1200,10 @@ export class GameState {
             this.setChat(true);
             return true;
         }
+        if (code === 'Backquote' && this.isDungeonMaster() && !this.chat) {
+            this.modal = this.modal === 'console' ? '' : 'console';           // The Dev Console (a Dungeon Master's).
+            return true;
+        }
         if (this.modal) return true;
         if (this.chat) return false;
         if (code === 'PageUp' || code === 'PageDown') {
@@ -1137,11 +1217,19 @@ export class GameState {
         if (this.contextTarget) {
             const choice = /^(?:Digit|Numpad)([1-6])$/.exec(code);
             if (choice && this.contextActions[+choice[1] - 1] !== undefined) {
+                const picked = this.contextActions[+choice[1] - 1];
+                if (picked === 'challenge' || picked.startsWith('challenge:')) {
+                    this.activate({rect: rect(0, 0, 0, 0), action: 'context', target: picked});
+                    return true;
+                }
+                if (this.askFirst(picked)) return true;
                 this.sendAction(this.contextActions[+choice[1] - 1], this.contextTarget);
                 this.contextTarget = '';
                 return true;
             }
         }
+        // The fight screen's keys (doc 37): 1–8 its actions, Space to end the turn (ui/hud/combat.ts).
+        if (this.battle && this.fightKeys?.(code)) return true;
         if (this.battle && (code === 'KeyQ' || code === 'KeyE')) {
             this.turnInFight(code === 'KeyQ' ? -1 : 1);                   // Q / E turn, on one's own turn.
             return true;
@@ -1252,6 +1340,22 @@ export class GameState {
         this.contextPage = page;
     }
 
+    /**
+     * Attacking a resident is a crime that brings the watch: the first choice of Attack says so and keeps the menu
+     * open; choosing it again goes for them. (Bandits and other foes are fought without asking.)
+     */
+    private askFirst(action: string): boolean {
+        const key = `${action}|${this.contextTarget}`;
+        const e = this.entities.get(this.contextTarget);
+        if (action !== 'attack' || !e || e.kind !== 'npc' || e.hostile || this.armed === key) {
+            this.armed = '';
+            return false;
+        }
+        this.armed = key;
+        this.showToast('Attacking a resident is a crime: whoever sees it tells the watch, and a guard on duty nearby joins in. Choose Attack again to go for them.');
+        return true;
+    }
+
     /** E: the nearest wolf, door or thing, as if clicked. */
     private targetNearest() {
         let sx = 0, sy = 0;
@@ -1288,6 +1392,36 @@ export class GameState {
     mouseMove(point: [number, number], alt: boolean) {
         this.hover = point;
         this.updateFacingPreview(point, alt);
+        if (this.faceDrag) {
+            const c = this.ownTokenCentre();
+            this.faceDragDir = c && Math.hypot(point[0] - c[0], point[1] - c[1]) > this.tileSize * 0.55
+                ? octant(point[0] - c[0], point[1] - c[1]) : -1;
+        }
+    }
+
+    /** One's own wolf on the screen, in a fight, on one's own turn (for turning it by dragging). */
+    private ownTokenCentre(): [number, number] | null {
+        const b = this.battle, me = b?.fighters.find(f => f.id === this.selfId);
+        if (!b || !me || !myTurn(b, this.selfId) || me.status !== 'fighting' || this.aiming) return null;
+        return [this.mapOrigin[0] + (me.x + 0.5) * this.tileSize, this.mapOrigin[1] + (me.y + 0.5) * this.tileSize];
+    }
+
+    /** The button let go: a drag from one's wolf turns it that way; a plain click on its tile is a click as ever. */
+    mouseUp() {
+        const start = this.faceDrag;
+        if (!start) return;
+        const dir = this.faceDragDir;
+        this.faceDrag = null;
+        this.faceDragDir = -1;
+        if (dir >= 0) {
+            this.sendBattle('face', {dir});
+            return;
+        }
+        for (let i = this.hits.length - 1; i >= 0; --i)
+            if (contains(this.hits[i].rect, start[0], start[1])) {
+                this.activate(this.hits[i]);
+                return;
+            }
     }
 
     mouseLeave() {
@@ -1328,6 +1462,13 @@ export class GameState {
     mouseDown(point: [number, number], left: boolean, alt: boolean, ctrl: boolean): 'composer' | 'map' {
         // Modifier clicks own map input, entities and doors included. An unavailable facing action must never fall
         // through into pathing, inspection or an action menu.
+        // In a fight, pressing on one's own wolf on one's turn begins a drag to turn it (let go: mouseUp).
+        const own = left && !alt && !ctrl ? this.ownTokenCentre() : null;
+        if (own && Math.hypot(point[0] - own[0], point[1] - own[1]) <= this.tileSize * 0.5) {
+            this.faceDrag = point;
+            this.faceDragDir = -1;
+            return 'map';
+        }
         if ((alt || ctrl) && this.battle && contains(this.mapRect, point[0], point[1])) {
             // In a fight, Alt/Ctrl+click turns to face that tile (free, on one's turn).
             this.arenaFace(Math.floor((point[0] - this.mapOrigin[0]) / this.tileSize), Math.floor((point[1] - this.mapOrigin[1]) / this.tileSize));
@@ -1415,6 +1556,7 @@ export class GameState {
             this.modal = a;
             this.contextTarget = '';
         } else if (a === 'close') this.modal = '';
+        else if (a === 'dev_console' && this.isDungeonMaster()) this.modal = 'console';
         else if (a === 'volume') this.volume = this.volume === 'speak' ? 'whisper' : this.volume === 'whisper' ? 'yell' : 'speak';
         else if (a === 'send') {
             if (this.chat) this.submitPost();
@@ -1429,6 +1571,14 @@ export class GameState {
         else if (a === 'projection') this.flatWorld = !this.flatWorld;
         else if (a === 'glyphs') this.plainGlyphs = !this.plainGlyphs;
         else if (a === 'tooltips') this.hoverTooltips = !this.hoverTooltips;
+        else if (a === 'sound') {
+            const steps = [0, 0.3, 0.6, 1];
+            this.soundVolume = steps[(steps.findIndex(v => Math.abs(v - this.soundVolume) < 0.05) + 1) % steps.length];
+            try {
+                localStorage.setItem('ratw.sound', String(this.soundVolume));
+            } catch { /* No storage here: for this visit only. */ }
+            if (this.soundVolume > 0) this.onCue?.('turn');            // A sample at the new level.
+        }
         else if (a === 'perf') {
             this.perfOverlay = !this.perfOverlay;
             try {
@@ -1498,6 +1648,17 @@ export class GameState {
         } else if (a === 'ground') {
             this.sendAction('take', h.target);
         } else if (a === 'context') {
+            if (this.askFirst(h.target)) return;
+            // A challenge names its terms (doc 37): the menu offers them, the default first.
+            if (h.target === 'challenge') {
+                this.contextActions = ['challenge:yield', 'challenge:blood', 'challenge:death'];
+                return;
+            }
+            if (h.target.startsWith('challenge:')) {
+                this.sendAction('challenge', this.contextTarget, {terms: h.target.slice('challenge:'.length)});
+                this.contextTarget = '';
+                return;
+            }
             if (h.target === 'trade') this.openTrade(this.contextTarget);
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});
             else this.sendAction(h.target, this.contextTarget);

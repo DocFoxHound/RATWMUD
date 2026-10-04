@@ -1,0 +1,681 @@
+// The fight screen (Docs/Design/37-combat-feel.md, phase 1). While this wolf fights or watches a fight the screen is
+// about the fight only: the order turns will come in along the top of the map, a card for each fighter on the right,
+// what this wolf can do as icon buttons under the map (keys 1–8, Space to end the turn), and the fight told line by
+// line above the composer. Everything else on the screen steps aside (hud.ts: the `fight-mode` class).
+import {clockLabel, myTurn, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
+import {lawLabel} from '../../game/labels.ts';
+import {obj} from '../../game/json.ts';
+import type {GameState} from '../../game/state.ts';
+import {drawPortrait, type Portraits} from '../portrait.ts';
+import {icon} from '../icons.ts';
+import {button, el, setClass, setStyle, setText, show} from './dom.ts';
+
+const ageOf = (stage: string) => (stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18);
+
+/** How a fight ended, as shown after it (doc 37, phase 4). */
+interface Ended {
+    title: string;
+    tone: 'win' | 'lose' | 'even';
+    banner: string;
+    dealt: number;
+    taken: number;
+    notes: string[];
+    fallen: Array<{id: string; name: string}>;
+    observer: boolean;
+    until: number;              // Shown until then (the page's clock), or closed.
+}
+
+/** One of this wolf's actions, as the bar shows it. */
+interface Action {
+    id: string;
+    key: string;                // "1"…"8", "Space", "Q", "E", or "" for none.
+    icon: string;
+    label: string;
+    sub: string;                // A number under the word: odds, a cost.
+    tip: string;                // What it does, its key, and why it can't be done now.
+    enabled: boolean;
+    kind: '' | 'go' | 'end' | 'small' | 'warn';
+    run: () => void;
+}
+
+/**
+ * A wolf's portrait, drawn again only when its look changes. `head` crops to the head and shoulders (the portrait is a
+ * side view facing right), for the round faces of the turn order.
+ */
+class Face {
+    readonly canvas: HTMLCanvasElement;
+    private drawn = '';
+    constructor(parent: HTMLElement, className: string, w: number, h: number, private head = false) {
+        this.canvas = el('canvas', className, parent);
+        this.canvas.width = w;
+        this.canvas.height = h;
+    }
+    draw(portraits: Portraits, f: FighterView) {
+        const key = JSON.stringify([f.appearance, f.lifeStage]);
+        if (key === this.drawn) return;
+        const c = this.canvas.getContext('2d');
+        if (!c) return;
+        c.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const w = this.canvas.width, h = this.canvas.height;
+        const drawn = this.head ? drawPortrait(c, portraits, f.appearance, ageOf(f.lifeStage), -w * 1.15, -h * 0.12, w * 2.3, h * 1.56)
+            : drawPortrait(c, portraits, f.appearance, ageOf(f.lifeStage), -w * 0.12, -h * 0.16, w * 1.24, h * 1.3);
+        if (drawn) this.drawn = key;
+    }
+}
+
+interface Chip {
+    root: HTMLElement;
+    face: Face;
+    when: HTMLElement;
+}
+
+interface Card {
+    root: HTMLElement;
+    face: Face;
+    name: HTMLElement;
+    marks: HTMLElement;
+    marksKey: string;
+    health: HTMLElement;
+    healthFill: HTMLElement;
+    healthText: HTMLElement;
+    stamina: HTMLElement;
+    staminaFill: HTMLElement;
+    mana: HTMLElement;
+    manaFill: HTMLElement;
+    odds: HTMLElement;
+    oddsKey: string;
+    clock: HTMLElement;
+    lastHealth: number;
+}
+
+export class CombatScreen {
+    private s: GameState;
+    private portraits: Portraits;
+    // Along the top of the map: whose turn comes when.
+    private strip: HTMLElement;
+    private stripHead: HTMLElement;
+    private stripChips: HTMLElement;
+    private stripNote: HTMLElement;
+    private chips = new Map<string, Chip>();
+    // On the right: the fighters.
+    private cards: HTMLElement;
+    private cardList = new Map<string, Card>();
+    private groupHeads: HTMLElement[] = [];
+    private cardsKey = '';
+    // Under the map: what this wolf can do.
+    private bar: HTMLElement;
+    private barKey = '';
+    private actions: Action[] = [];
+    private endFill: HTMLElement | null = null;
+    private endText: HTMLElement | null = null;
+    // Above the composer: the fight, told.
+    private log: HTMLElement;
+    private logKey = '';
+    // Over the map: the moments (doc 37, phase 4): who faces whom as it starts, one's turn coming, how it ended.
+    private versus: HTMLElement;
+    private versusUntil = 0;
+    private turnFlash: HTMLElement;
+    private wasMine = false;
+    private lastBattle = '';
+    private result: HTMLElement;
+    private ended: Ended | null = null;
+    private resultKey = '';
+
+    constructor(state: GameState, portraits: Portraits, parts: {map: HTMLElement; side: HTMLElement; center: HTMLElement; before: HTMLElement;
+        story: HTMLElement; storyBefore: HTMLElement}) {
+        this.s = state;
+        this.portraits = portraits;
+        this.strip = el('div', 'turn-strip', parts.map);
+        this.stripHead = el('div', 'strip-head', this.strip);
+        this.stripChips = el('div', 'strip-chips', this.strip);
+        this.stripNote = el('div', 'strip-note label muted', this.strip);
+        this.cards = el('section', 'panel fight-cards', parts.side);
+        this.bar = el('div', 'action-bar', parts.center);
+        parts.center.insertBefore(this.bar, parts.before);
+        this.log = el('div', 'fight-story', parts.story);
+        parts.story.insertBefore(this.log, parts.storyBefore);
+        this.versus = el('div', 'versus', parts.map);
+        this.turnFlash = el('div', 'turn-flash', parts.map, 'YOUR TURN');
+        this.result = el('div', 'result-card', parts.map);
+        for (const part of [this.strip, this.cards, this.bar, this.log, this.versus, this.turnFlash, this.result]) show(part, false);
+        state.fightKeys = code => this.key(code);
+    }
+
+    update() {
+        const s = this.s, b = s.battle;
+        this.updateMoments(b);
+        for (const part of [this.strip, this.cards, this.bar, this.log]) show(part, !!b);
+        if (!b) {
+            this.barKey = this.cardsKey = this.logKey = '';
+            this.actions = [];
+            return;
+        }
+        const since = s.clock - s.battleAt;
+        this.updateStrip(b, since);
+        this.updateCards(b, since);
+        this.updateBar(b, since);
+        this.updateLog(b);
+    }
+
+    // ------------------------------------------------------------------ Whose turn comes when
+
+    private updateStrip(b: BattleView, since: number) {
+        const s = this.s, me = this.me(b);
+        const order = b.fighters.filter(f => f.status === 'fighting' || f.status === 'downed')
+            .map(f => ({f, wait: secondsToTurn(f, since)}))
+            .sort((a, c) => (a.f.acting === c.f.acting ? a.wait - c.wait : a.f.acting ? -1 : 1));
+        const present = new Set<string>();
+        let before: Element | null = this.stripChips.firstElementChild;
+        for (const {f, wait} of order) {
+            present.add(f.id);
+            let chip = this.chips.get(f.id);
+            if (!chip) {
+                const root = el('div', 'strip-chip');
+                const face = new Face(root, 'strip-face', 64, 64, true);
+                const when = el('span', 'strip-when', root);
+                root.addEventListener('mouseenter', () => (s.highlight = f.id));
+                root.addEventListener('mouseleave', () => {
+                    if (s.highlight === f.id) s.highlight = '';
+                });
+                chip = {root, face, when};
+                this.chips.set(f.id, chip);
+            }
+            if (chip.root !== before) this.stripChips.insertBefore(chip.root, before);
+            before = chip.root.nextElementSibling;
+            chip.face.draw(this.portraits, f);
+            const self = f.id === s.selfId;
+            const foe = !!me && f.side !== me.side;
+            setClass(chip.root, 'self', self);
+            setClass(chip.root, 'foe', foe);
+            setClass(chip.root, 'friend', !self && !foe);
+            setClass(chip.root, 'acting', f.acting && !b.over);
+            setClass(chip.root, 'down', f.status === 'downed');
+            setClass(chip.root, 'lit', s.highlight === f.id || s.hoveredEntity === f.id);
+            const left = f.acting ? Math.max(0, f.turnLeft - since) : 0;
+            // The ring: a turn's time running out, or a bar filling toward one.
+            const ring = f.acting ? (f.npc ? 1 : Math.min(1, left / TurnSeconds)) : Math.min(1, Math.max(0, 1 - wait / 15));
+            setStyle(chip.root, '--p', ring.toFixed(3));
+            setText(chip.when, b.over ? '' : f.acting ? (f.npc ? '' : `${Math.ceil(left)}`) : Number.isFinite(wait) ? `${Math.ceil(wait)}` : '');
+            chip.root.title = `${self ? 'You' : f.name}${f.acting ? ' · acting now' : Number.isFinite(wait) ? ` · turn in ${Math.ceil(wait)} s` : ''}`;
+        }
+        for (const [id, chip] of this.chips)
+            if (!present.has(id)) {
+                chip.root.remove();
+                this.chips.delete(id);
+            }
+        // The headline: one's own state, in a word or two.
+        const mine = myTurn(b, s.selfId);
+        const wait = me ? secondsToTurn(me, since) : 0;
+        const head = b.over ? 'OVER' : b.observer ? 'WATCHING' : !me ? '' : me.status === 'downed' && !mine ? 'YOU ARE DOWN'
+            : mine ? 'YOUR TURN' : Number.isFinite(wait) ? `YOUR TURN IN ${Math.ceil(wait)}` : 'WAITING';
+        setText(this.stripHead, head);
+        setClass(this.stripHead, 'mine', mine);
+        setText(this.stripNote, [`ROUND ${Math.max(1, b.round)}`, b.watching > 0 ? `${b.watching} watching` : ''].filter(Boolean).join(' · '));
+    }
+
+    // ------------------------------------------------------------------ The fighters
+
+    private updateCards(b: BattleView, since: number) {
+        const s = this.s, me = this.me(b);
+        const mySide = me ? me.side : 0;
+        const shown = b.fighters.filter(f => f.status !== 'fled');
+        const groups = [shown.filter(f => f.side === mySide), shown.filter(f => f.side !== mySide)];
+        const key = JSON.stringify([b.observer, groups.map(g => g.map(f => f.id))]);
+        if (key !== this.cardsKey) {
+            this.cardsKey = key;
+            this.cards.replaceChildren();
+            this.groupHeads = [];
+            const names = [b.observer ? 'ONE SIDE' : 'YOUR SIDE', b.observer ? 'THE OTHER' : 'AGAINST YOU'];
+            groups.forEach((group, i) => {
+                this.groupHeads.push(el('div', 'label muted cards-head', this.cards, names[i]));
+                for (const f of group) this.cards.append(this.card(f).root);
+            });
+            for (const id of [...this.cardList.keys()]) if (!shown.some(f => f.id === id)) this.cardList.delete(id);
+        }
+        const mine = myTurn(b, s.selfId);
+        const target = this.s.fightTargetId();
+        for (const f of shown) {
+            const c = this.card(f);
+            c.face.draw(this.portraits, f);
+            const self = f.id === s.selfId, foe = !b.observer && f.side !== mySide;
+            setText(c.name, self ? 'You' : f.name);
+            setClass(c.root, 'foe', foe || (b.observer && f.side !== mySide));
+            setClass(c.root, 'self', self);
+            setClass(c.root, 'acting', f.acting && !b.over);
+            setClass(c.root, 'down', f.status === 'downed' || f.status === 'dead' || f.status === 'yielded');
+            setClass(c.root, 'target', foe && f.id === target);
+            setClass(c.root, 'lit', s.highlight === f.id || s.hoveredEntity === f.id);
+            const health = Math.max(0, Math.min(100, f.health));
+            setStyle(c.healthFill, 'width', `${health}%`);
+            setStyle(c.health.firstElementChild as HTMLElement, 'width', `${health}%`);
+            if (c.lastHealth >= 0 && health < c.lastHealth && !s.reducedMotion) {
+                // Struck: the card shudders (the animation restarted each blow).
+                c.root.classList.remove('struck');
+                void c.root.offsetWidth;
+                c.root.classList.add('struck');
+            }
+            c.lastHealth = health;
+            setText(c.healthText, f.status === 'dead' ? 'dead' : f.status === 'downed' ? 'down' : `${Math.round(health)}`);
+            c.health.title = `${f.label} · ${Math.round(health)} health`;
+            show(c.stamina, f.stamina >= 0);
+            if (f.stamina >= 0) {
+                setStyle(c.staminaFill, 'width', `${Math.max(0, Math.min(100, f.stamina))}%`);
+                c.stamina.title = `Breath ${Math.round(f.stamina)} · a bite takes 8, a sword 14; +8 at the start of each turn`;
+            }
+            show(c.mana, f.mana >= 0 && f.manaMax > 0);
+            if (f.mana >= 0 && f.manaMax > 0) {
+                setStyle(c.manaFill, 'width', `${Math.max(0, Math.min(100, (f.mana / f.manaMax) * 100))}%`);
+                c.mana.title = `Mana ${Math.floor(f.mana)} of ${f.manaMax} · +2 a turn`;
+            }
+            // Little marks for what is going on with them.
+            const marks: [string, string][] = [];
+            if (f.burning > 0) marks.push(['fire', `Burning: ${f.burning} more turn${f.burning === 1 ? '' : 's'}`]);
+            if (f.casting) marks.push(['fire', 'Gathering fire']);
+            if (f.mouth === 'sword') marks.push(['sword', 'A sword in their jaws']);
+            if (f.away) marks.push(['away', 'Away: their turns are skipped']);
+            if (f.truce) marks.push(['truce', 'Agreed to the truce']);
+            const marksKey = marks.map(m => m[0]).join();
+            if (marksKey !== c.marksKey) {
+                c.marksKey = marksKey;
+                c.marks.replaceChildren();
+                for (const [name, tip] of marks) {
+                    const m = el('span', `mark ${name}`, c.marks);
+                    m.append(icon(name));
+                    m.title = tip;
+                }
+            }
+            // How this wolf would fare against a foe, from where it stands.
+            const oddsKey = f.odds && !b.observer && !b.over ? `${f.odds.hit}|${f.odds.damage}|${f.odds.reach}|${b.mouth}` : '';
+            if (oddsKey !== c.oddsKey) {
+                c.oddsKey = oddsKey;
+                c.odds.replaceChildren();
+                if (f.odds) {
+                    c.odds.append(icon(b.mouth === 'sword' ? 'sword' : 'bite'));
+                    el('span', 'odds-hit', c.odds, `${f.odds.hit}%`);
+                    el('span', 'odds-dmg', c.odds, `~${f.odds.damage}`);
+                    c.odds.title = f.odds.reach ? `In reach: ${f.odds.hit}% to land a blow of about ${f.odds.damage}`
+                        : `Out of reach: you would step in first. ${f.odds.hit}% from here`;
+                }
+            }
+            show(c.odds, !!oddsKey);
+            setClass(c.odds, 'far', !!f.odds && !f.odds.reach);
+            const left = f.acting ? Math.max(0, f.turnLeft - since) : 0;
+            const clock = f.status === 'downed' && f.downedLeft > 0 ? `${f.npc ? 'bleeding' : 'up in'} · ${clockLabel(Math.max(0, f.downedLeft - since))}`
+                : f.acting && !f.npc && !b.over ? `${Math.ceil(left)} s` : '';
+            setText(c.clock, clock);
+            c.root.title = self ? '' : foe ? (mine ? 'Click to aim at them' : 'Click to aim at them on your turn')
+                : f.status === 'downed' && mine ? 'Click to tend their wounds' : '';
+        }
+    }
+
+    private card(f: FighterView): Card {
+        const found = this.cardList.get(f.id);
+        if (found) return found;
+        const s = this.s;
+        const root = el('div', 'fcard');
+        const face = new Face(root, 'fcard-face', 96, 66);
+        const body = el('div', 'fcard-body', root);
+        const top = el('div', 'fcard-top', body);
+        const name = el('span', 'fcard-name', top);
+        const marks = el('span', 'fcard-marks', top);
+        const health = el('div', 'meter health', body);
+        el('div', 'lag', health);                       // What a blow took, draining after it (styles.css).
+        const healthFill = el('div', 'fill', health);
+        const healthText = el('span', 'meter-text', health);
+        const stamina = el('div', 'meter thin stamina', body);
+        const staminaFill = el('div', 'fill', stamina);
+        const mana = el('div', 'meter thin mana', body);
+        const manaFill = el('div', 'fill', mana);
+        const foot = el('div', 'fcard-foot', body);
+        const odds = el('span', 'odds', foot);
+        const clock = el('span', 'fcard-clock', foot);
+        root.addEventListener('mouseenter', () => (s.highlight = f.id));
+        root.addEventListener('mouseleave', () => {
+            if (s.highlight === f.id) s.highlight = '';
+        });
+        root.addEventListener('mousedown', e => e.preventDefault());
+        root.addEventListener('click', () => {
+            const b = s.battle, me = b && this.me(b), now = b?.fighters.find(o => o.id === f.id);
+            if (!b || !me || !now || b.observer) return;
+            if (now.side !== me.side && now.status === 'fighting') s.fightFocus = f.id;
+            else if (now.side === me.side && now.status === 'downed' && myTurn(b, s.selfId)) s.fightTarget(f.id);
+        });
+        const card: Card = {root, face, name, marks, marksKey: '-', health, healthFill, healthText, stamina, staminaFill, mana, manaFill, odds,
+            oddsKey: '-', clock, lastHealth: -1};
+        this.cardList.set(f.id, card);
+        return card;
+    }
+
+    // ------------------------------------------------------------------ What this wolf can do
+
+    private updateBar(b: BattleView, since: number) {
+        const s = this.s, me = this.me(b), mine = myTurn(b, s.selfId);
+        const target = b.fighters.find(f => f.id === this.s.fightTargetId());
+        this.actions = this.actionsFor(b, me, mine, target);
+        const key = JSON.stringify([b.over, b.banner, this.actions.map(a => [a.id, a.label, a.sub, a.enabled, a.tip, a.kind]),
+            b.truceBy, b.agreed, b.observer, b.yieldBy]);
+        if (key !== this.barKey) {
+            this.barKey = key;
+            this.bar.replaceChildren();
+            this.endFill = this.endText = null;
+            if (b.over) el('div', 'bar-banner', this.bar, b.banner || 'The fight is over');
+            // A truce on the table: answered here, whoever offered it.
+            if (!b.over && b.truceBy && !b.observer && me?.status === 'fighting') {
+                const t = el('div', 'bar-truce', this.bar);
+                t.append(icon('truce'));
+                const who = b.truceBy === s.selfId ? 'You offer a truce' : `${b.fighters.find(f => f.id === b.truceBy)?.name ?? 'Someone'} offers a truce`;
+                el('span', '', t, who);
+                if (!b.agreed) {
+                    this.button(t, {id: 'agree', key: '', icon: 'yes', label: 'Agree', sub: '', tip: 'Agree to end the fight here',
+                        enabled: true, kind: 'go', run: () => s.sendBattle('agree')});
+                    this.button(t, {id: 'refuse', key: '', icon: 'no', label: 'Refuse', sub: '', tip: 'Fight on', enabled: true, kind: '',
+                        run: () => s.sendBattle('refuse')});
+                } else el('span', 'muted small', t, 'Everyone standing must agree');
+            }
+            // An offer to yield: the other side answers it here.
+            const yielder = b.fighters.find(f => f.id === b.yieldBy);
+            if (!b.over && yielder && !b.observer && me) {
+                const t = el('div', 'bar-truce', this.bar);
+                t.append(icon('yield'));
+                if (yielder.id === s.selfId) el('span', '', t, 'You offer to yield · waiting for an answer');
+                else if (yielder.side === me.side) el('span', '', t, `${yielder.name} offers to yield`);
+                else {
+                    el('span', '', t, `${yielder.name} offers to yield`);
+                    if (me.status === 'fighting') {
+                        this.button(t, {id: 'spare', key: '', icon: 'yes', label: 'Spare them', sub: '', tip: 'Let them out of the fight, on their feet',
+                            enabled: true, kind: 'go', run: () => s.sendBattle('spare')});
+                        this.button(t, {id: 'press', key: '', icon: 'no', label: 'Press on', sub: '', tip: 'Refuse: the fight goes on', enabled: true, kind: '',
+                            run: () => s.sendBattle('press')});
+                    }
+                }
+            }
+            const row = el('div', 'bar-actions', this.bar);
+            for (const a of this.actions) {
+                const btn = this.button(row, a);
+                if (a.kind === 'end') {
+                    this.endFill = el('span', 'end-fill', btn);
+                    btn.prepend(this.endFill);
+                    this.endText = btn.querySelector('.abtn-sub');
+                }
+            }
+        }
+        // The turn's time, running down inside End turn; or one's bar filling toward the next.
+        if (this.endFill && me) {
+            const left = mine ? Math.max(0, b.turnLeft - since) : 0;
+            const wait = secondsToTurn(me, since);
+            const share = mine ? Math.min(1, left / TurnSeconds) : Number.isFinite(wait) ? Math.max(0, 1 - wait / 15) : 0;
+            setStyle(this.endFill, 'width', `${(share * 100).toFixed(1)}%`);
+            if (this.endText) setText(this.endText, mine ? `${Math.ceil(left)} s` : Number.isFinite(wait) ? `in ${Math.ceil(wait)} s` : '');
+        }
+    }
+
+    private actionsFor(b: BattleView, me: FighterView | undefined, mine: boolean, target: FighterView | undefined): Action[] {
+        const s = this.s;
+        const out: Action[] = [];
+        if (b.over) return out;
+        if (b.observer || !me) {
+            out.push({id: 'leave', key: '', icon: 'watch', label: 'Stop watching', sub: '', tip: 'Back to the world', enabled: true, kind: '',
+                run: () => s.sendBattle('leave')});
+            return out;
+        }
+        if (me.away) {
+            out.push({id: 'back', key: 'Space', icon: 'rise', label: "I'm back", sub: '', tip: 'Your turns are being skipped while you are away',
+                enabled: true, kind: 'go', run: () => s.sendBattle('back')});
+            return out;
+        }
+        const notYet = mine ? '' : ' (on your turn)';
+        const end: Action = {id: 'end', key: 'Space', icon: 'end', label: mine ? 'End turn' : 'Waiting', sub: '',
+            tip: mine ? 'End your turn now (Space): your bar starts filling again at once, sooner if you held back' : 'Your bar is filling',
+            enabled: mine, kind: 'end', run: () => s.sendBattle('wait')};
+        if (me.status === 'downed') {
+            out.push({id: 'struggle', key: '1', icon: 'rise', label: 'Struggle up', sub: b.canStruggle ? 'once a day' : 'spent',
+                tip: b.canStruggle ? 'Spend your turn to rise at the start of the next, if nothing hits you (1)'
+                    : 'You have no strength left to rise: only someone tending your wounds can get you up',
+                enabled: mine && b.canStruggle && !b.struggling, kind: 'go', run: () => s.sendBattle('struggle')});
+            out.push(end);
+            return out;
+        }
+        const acted = b.acted, odds = target?.odds;
+        const why = (more: string) => (!mine ? `Not your turn yet` : acted ? 'You have acted this turn' : more);
+        const blow = odds ? `${odds.hit}% · ${odds.damage}` : '';
+        const who = target ? ` ${target.name}` : '';
+        // 1: the bite, or 2: the sword, at the foe aimed at (stepping in first if they're out of reach).
+        if (b.mouth !== 'sword')
+            out.push({id: 'bite', key: '1', icon: 'bite', label: 'Bite', sub: blow,
+                tip: `Bite${who} (1): 8 breath${odds && !odds.reach ? ', stepping in first' : ''}${!target ? ' · no one to bite' : ''}${!mine || acted ? ` · ${why('')}` : ''}`,
+                enabled: mine && !acted && !!target, kind: '', run: () => target && s.fightTarget(target.id)});
+        if (b.mouth === 'sword')
+            out.push({id: 'sword', key: '2', icon: 'sword', label: 'Sword', sub: blow,
+                tip: `Strike${who} with the sword (2): reaches two tiles, 14 breath, slows your next turn${!mine || acted ? ` · ${why('')}` : ''}`,
+                enabled: mine && !acted && !!target, kind: '', run: () => target && s.fightTarget(target.id)});
+        else if (b.swords > 0)
+            out.push({id: 'hold', key: '2', icon: 'sword', label: 'Take sword', sub: 'action', tip: `Take a sword in your jaws (2): uses your action${notYet}`,
+                enabled: mine && !acted, kind: '', run: () => s.sendBattle('hold')});
+        if (b.flame)
+            out.push({id: 'fire', key: '3', icon: 'fire', label: 'Fire', sub: `${b.flame.mana} mana`, kind: b.mana < b.flame.mana ? 'warn' : '',
+                tip: `Flamethrower (3): aim a cone; it gathers for a few seconds (everyone sees where), costs breath and singes you${b.mana < b.flame.mana ? ' · too little mana: it will burn you twice as much' : ''}${notYet}`,
+                enabled: mine && !acted, run: () => (s.aiming = s.aiming === 'flame' ? '' : 'flame')});
+        const fallen = b.fighters.find(f => f.side === me.side && f.id !== me.id && f.status === 'downed');
+        if (fallen) {
+            const near = Math.max(Math.abs(fallen.x - me.x), Math.abs(fallen.y - me.y)) <= 1;
+            out.push({id: 'tend', key: '4', icon: 'tend', label: 'Tend', sub: near ? '10 breath' : 'too far',
+                tip: `Tend ${fallen.name}'s wounds (4): they stand at 20 health${near ? '' : ' · get next to them first'}`,
+                enabled: mine && !acted && near, kind: 'go', run: () => s.fightTarget(fallen.id)});
+        }
+        if (b.burning > 0)
+            out.push({id: 'roll', key: '5', icon: 'roll', label: 'Roll', sub: 'put out', tip: `Roll on the ground to put out the flames (5)${notYet}`,
+                enabled: mine && !acted, kind: 'go', run: () => s.sendBattle('roll')});
+        if (b.drops.length && !b.mouth)
+            out.push({id: 'pickup', key: '6', icon: 'pickup', label: 'Pick up', sub: 'sword', tip: `Pick up the sword beside you (6)${notYet}`,
+                enabled: mine && !acted, kind: '', run: () => s.sendBattle('pickup')});
+        if (b.mouth === 'sword')
+            out.push({id: 'stow', key: '', icon: 'pickup', label: 'Stow', sub: 'action', tip: `Put the sword away${notYet}`,
+                enabled: mine && !acted, kind: 'small', run: () => s.sendBattle('stow')});
+        if (!b.truceBy)
+            out.push({id: 'truce', key: '7', icon: 'truce', label: 'Truce', sub: '', tip: 'Offer a truce (7): the fight ends if everyone standing agrees',
+                enabled: mine && !acted, kind: '', run: () => s.sendBattle('truce')});
+        out.push({id: 'flee', key: '8', icon: 'flee', label: 'Flee', sub: '', kind: '',
+            tip: `Flee (8): from the arena's edge only (the red band), out of this fight for good${notYet}`,
+            enabled: mine && !acted, run: () => s.sendBattle('flee')});
+        if (!b.yieldBy)
+            out.push({id: 'yield', key: '9', icon: 'yield', label: 'Yield', sub: '', kind: '',
+                tip: 'Yield (9), at any time: you are out of the fight on your feet, if the other side lets you be (residents and the watch do)',
+                enabled: true, run: () => s.sendBattle('yield')});
+        out.push({id: 'left', key: 'Q', icon: 'left', label: '', sub: '', tip: 'Turn left (Q): free, on your turn', enabled: mine, kind: 'small',
+            run: () => s.turnInFight(-1)});
+        out.push({id: 'right', key: 'E', icon: 'right', label: '', sub: '', tip: 'Turn right (E): free, on your turn', enabled: mine, kind: 'small',
+            run: () => s.turnInFight(1)});
+        out.push(end);
+        return out;
+    }
+
+    private button(parent: HTMLElement, a: Action): HTMLButtonElement {
+        const b = button('', `abtn${a.kind ? ` ${a.kind}` : ''}${this.s.aiming === 'flame' && a.id === 'fire' ? ' armed' : ''}`, parent, () => {
+            if (a.enabled) a.run();
+        });
+        b.disabled = !a.enabled;
+        b.title = a.tip;
+        if (a.key && a.key !== 'Q' && a.key !== 'E') el('span', 'abtn-key', b, a.key === 'Space' ? '␣' : a.key);
+        b.append(icon(a.icon, 'abtn-icon'));
+        if (a.label) el('span', 'abtn-label', b, a.label);
+        if (a.sub || a.kind === 'end') el('span', 'abtn-sub', b, a.sub);
+        return b;
+    }
+
+    /** A key on the map while the fight screen shows: true when it was one of its actions. */
+    private key(code: string): boolean {
+        if (!this.s.battle) return false;
+        const pressed = code === 'Space' ? 'Space' : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
+        if (!pressed) return false;
+        const a = this.actions.find(x => x.key === pressed);
+        if (a?.enabled) a.run();
+        return true;
+    }
+
+    // ------------------------------------------------------------------ The moments
+
+    private updateMoments(b: BattleView | null) {
+        const s = this.s;
+        // As it starts: who faces whom, and on what terms; for a moment, while the arena takes the view.
+        if (b && b.id !== this.lastBattle) {
+            this.lastBattle = b.id;
+            this.ended = null;
+            this.resultKey = '';
+            show(this.result, false);
+            if (!b.over) {
+                this.buildVersus(b);
+                this.versusUntil = s.clock + 2.2;
+            }
+        }
+        show(this.versus, !!b && s.clock < this.versusUntil);
+        // One's own turn come round: a word in the middle, briefly (and a chime: fightFx.ts).
+        const mine = !!b && myTurn(b, s.selfId);
+        if (mine && !this.wasMine && !b!.over && s.clock >= this.versusUntil - 0.6) {
+            show(this.turnFlash, true);
+            this.turnFlash.classList.remove('go');
+            void this.turnFlash.offsetWidth;
+            this.turnFlash.classList.add('go');
+        }
+        if (!mine) show(this.turnFlash, false);
+        this.wasMine = mine;
+        // As it ends: how it went, what it cost, what follows, and what one might do now.
+        if (b && b.over && !this.ended) this.ended = this.summarise(b);
+        const ended = this.ended;
+        const showing = !!ended && s.clock < ended.until;
+        show(this.result, showing);
+        if (!showing || !ended) return;
+        const key = JSON.stringify([ended.until, !!b, ended.fallen.length]);
+        if (key === this.resultKey) return;
+        this.resultKey = key;
+        this.buildResult(ended, !b);
+    }
+
+    private buildVersus(b: BattleView) {
+        const s = this.s, me = this.me(b);
+        const mySide = me ? me.side : 0;
+        this.versus.replaceChildren();
+        const card = el('div', 'versus-card', this.versus);
+        const side = (fighters: FighterView[], cls: string) => {
+            const col = el('div', `versus-side ${cls}`, card);
+            for (const f of fighters.slice(0, 3)) {
+                const who = el('div', 'versus-who', col);
+                new Face(who, 'versus-face', 120, 82).draw(this.portraits, f);
+                el('div', 'versus-name', who, f.id === s.selfId ? 'You' : f.name);
+            }
+            if (fighters.length > 3) el('div', 'muted small', col, `and ${fighters.length - 3} more`);
+        };
+        side(b.fighters.filter(f => f.side === mySide), b.observer ? 'friend' : 'self');
+        el('div', 'versus-vs', card, 'VS');
+        side(b.fighters.filter(f => f.side !== mySide), 'foe');
+        const terms = b.pvp ? `A duel ${termsWords(b.terms)}` : b.crime ? 'An assault: the watch will hear of it' : `A fight ${termsWords(b.terms)}`;
+        el('div', 'versus-terms', this.versus, b.observer ? `Watching · ${terms}` : terms);
+    }
+
+    /** How the fight went, from this wolf's side: a word for it, what it dealt and took, and what follows. */
+    private summarise(b: BattleView): Ended {
+        const s = this.s, me = this.me(b);
+        const lines = s.encounters.get(b.id)?.lines ?? b.log;
+        let dealt = 0, taken = 0;
+        for (const line of lines) {
+            const n = Number(/\((\d+)\)\.?$/.exec(line.text)?.[1] ?? 0);
+            if (!n) continue;
+            const blow = ['hit', 'graze', 'slash', 'burnt'].includes(line.kind);
+            if (blow && line.actor === s.selfId) dealt += n;
+            if ((blow && line.target === s.selfId) || (line.kind === 'burn' && line.actor === s.selfId)) taken += n;
+        }
+        const even = /truce|lapses/i.test(b.banner);
+        const won = !!me && b.fighters.some(f => f.side === me.side && f.status === 'fighting');
+        const title = !me ? 'The fight is over' : even ? (/lapses/i.test(b.banner) ? 'It lapses' : 'Truce')
+            : won ? (me.status === 'fighting' ? 'You stand' : 'Your side stands')
+            : me.status === 'yielded' ? 'You yield' : me.status === 'downed' ? 'You are down' : me.status === 'dead' ? 'You die' : 'Beaten';
+        const notes: string[] = [];
+        if (me?.status === 'downed') notes.push('Bleeding: struggle up, or wait for someone to tend your wounds.');
+        const law = lawLabel(obj(s.snapshot, 'self'));
+        if (law) notes.push(law.charAt(0) + law.slice(1).toLowerCase());
+        else if (b.crime && me) notes.push('The watch will hear of this.');
+        const fallen = me?.status === 'fighting' || won
+            ? b.fighters.filter(f => f.id !== s.selfId && f.status === 'downed').map(f => ({id: f.id, name: f.name})) : [];
+        return {title, tone: !me || even ? 'even' : won ? 'win' : 'lose', banner: b.banner, dealt, taken, notes, fallen, observer: !me,
+            until: s.clock + 16};
+    }
+
+    private buildResult(ended: Ended, back: boolean) {
+        const s = this.s;
+        this.result.replaceChildren();
+        this.result.className = `result-card ${ended.tone}`;
+        el('div', 'result-title', this.result, ended.title);
+        el('div', 'result-banner', this.result, ended.banner);
+        if (!ended.observer) {
+            const stats = el('div', 'result-stats', this.result);
+            const stat = (iconName: string, n: number, words: string) => {
+                const st = el('span', 'result-stat', stats);
+                st.append(icon(iconName));
+                el('b', '', st, String(n));
+                el('span', 'muted', st, words);
+            };
+            stat('bite', ended.dealt, 'dealt');
+            stat('down', ended.taken, 'taken');
+        }
+        for (const note of ended.notes) el('div', 'result-note', this.result, note);
+        const next = el('div', 'result-next', this.result);
+        // Back in the world: the fallen may be tended (their timer runs), and the scene written.
+        for (const f of ended.fallen)
+            this.button(next, {id: `tend-${f.id}`, key: '', icon: 'tend', label: `Tend ${f.name}`, sub: back ? '' : 'in a moment',
+                tip: 'Tend their wounds: walk to them; it takes ten seconds', enabled: back, kind: 'go', run: () => s.sendAction('tend', f.id)});
+        this.button(next, {id: 'write', key: '', icon: 'start', label: 'Write', sub: '', tip: 'Write what happens next (Enter)', enabled: true, kind: '',
+            run: () => s.setChat(true)});
+        this.button(next, {id: 'close', key: '', icon: 'no', label: 'Close', sub: '', tip: 'Close this', enabled: true, kind: 'small',
+            run: () => {
+                if (this.ended) this.ended.until = 0;
+            }});
+    }
+
+    // ------------------------------------------------------------------ The fight, told
+
+    private updateLog(b: BattleView) {
+        const s = this.s, me = this.me(b);
+        const lines = s.encounters.get(b.id)?.lines ?? b.log;
+        const shown = lines.slice(-40);
+        const key = `${b.id}|${lines.length}|${shown.at(-1)?.seq ?? 0}`;
+        if (key === this.logKey) return;
+        this.logKey = key;
+        this.log.replaceChildren();
+        el('div', 'label gold fight-story-head', this.log, 'THE FIGHT');
+        const list = el('div', 'fight-lines', this.log);
+        const sideOf = (id: string) => b.fighters.find(f => f.id === id)?.side;
+        for (const line of shown) {
+            const row = el('div', `fline ${line.kind}`, list);
+            const who = line.actor === s.selfId ? 'self' : me && sideOf(line.actor) !== undefined && sideOf(line.actor) !== me.side ? 'foe'
+                : sideOf(line.actor) !== undefined ? 'friend' : '';
+            if (who) row.classList.add(who);
+            const blade = / (nicks|swings at) /.test(line.text);      // A sword's graze or miss, not a bite's.
+            row.append(icon(blade ? 'sword' : LineIcons[line.kind] ?? 'start', 'fline-icon'));
+            this.lineText(row, line);
+        }
+        list.scrollTop = list.scrollHeight;
+    }
+
+    /** A line's words, with its number ("(12)") drawn out as a figure. */
+    private lineText(row: HTMLElement, line: BattleLine) {
+        const text = el('span', 'fline-text', row);
+        const m = /^(.*?)\s*\((\d+)\)\.?$/.exec(line.text);
+        if (!m) {
+            text.textContent = line.text;
+            return;
+        }
+        text.textContent = m[1];
+        el('span', 'fline-num', row, m[2]);
+    }
+
+    // ------------------------------------------------------------------ Helpers
+
+    private me(b: BattleView): FighterView | undefined {
+        return b.observer ? undefined : b.fighters.find(f => f.id === this.s.selfId);
+    }
+}
+
+const LineIcons: Record<string, string> = {
+    start: 'start', join: 'start', hit: 'bite', graze: 'bite', miss: 'miss', slash: 'sword', charge: 'fire', flame: 'fire', burn: 'fire',
+    burnt: 'fire', roll: 'roll', down: 'down', death: 'down', rise: 'rise', struggle: 'rise', tend: 'tend', wait: 'wait', timeout: 'wait',
+    flee: 'flee', truce: 'truce', over: 'truce', yield: 'yield', refuse: 'no', hold: 'sword', drop: 'sword', pickup: 'pickup', break: 'no',
+};

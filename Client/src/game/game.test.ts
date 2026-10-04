@@ -1008,3 +1008,62 @@ test('the map of the country: places where they truly are and as large as they a
     assert.deepEqual(boxes[1], [200 + 64, 150 - 64, 128, 64], 'east: beside it, as wide and as tall as it is');
     assert.equal(boxes.length, 2, 'a place never seen is not drawn');
 });
+
+test('playtest fixes: attacking a resident asks first; faint voices once; one\'s own words at once', () => {
+    const {state: s, commands} = testGame();
+    s.applySnapshot({self: {id: 'self', name: 'Oriel', x: 5, y: 5}, cell: {id: 'plaza'},
+        entities: [{id: 'npc_porter', kind: 'npc', name: 'A wolf who carries loads for hire', x: 6, y: 5, actions: ['inspect', 'attack']},
+            {id: 'bandit_1', kind: 'npc', name: 'Bandit', hostile: true, x: 4, y: 5, actions: ['inspect', 'attack']}]});
+    s.contextTarget = 'npc_porter';
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'attack'});
+    assert.ok(!commands.some(c => c.action === 'attack'), 'the first Attack on a resident only asks');
+    assert.equal(s.contextTarget, 'npc_porter', 'and the menu stays open');
+    assert.equal(s.armed, 'attack|npc_porter');
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'attack'});
+    assert.ok(commands.some(c => c.action === 'attack' && c.target === 'npc_porter'), 'the second goes for them');
+    commands.length = 0;
+    s.contextTarget = 'bandit_1';
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'attack'});
+    assert.ok(commands.some(c => c.action === 'attack' && c.target === 'bandit_1'), 'a bandit is fought without asking');
+    const before = s.posts.length;
+    s.receiveEvent({type: 'roleplay', id: '1', speaker: 'A voice', anonymous: true, text: '"..."', channel: 'ic'});
+    s.receiveEvent({type: 'roleplay', id: '2', speaker: 'A voice', anonymous: true, text: '"..."', channel: 'ic'});
+    assert.equal(s.posts.length, before + 1, 'a voice too far off is said once');
+    assert.equal(s.posts.at(-1)!.text, 'Words too far off to make out.');
+    s.receiveEvent({type: 'roleplay', id: '3', speaker: 'Oriel', text: 'Oriel circles, breath ragged.', channel: 'ic'});
+    assert.equal(s.posts.at(-1)!.revealed, s.posts.at(-1)!.text.length, 'one\'s own words are not written out again');
+});
+
+test('the Dev Console: only a Dungeon Master has it; slash commands go to it, never into the world as words', () => {
+    const {state: s, commands, composer} = testGame();
+    s.snapshot = {self: {name: 'Ada'}};
+    s.keyDown({code: 'Backquote'});
+    assert.equal(s.modal, '', 'a player who is not a Dungeon Master has no console');
+    s.runDevCommand('/fight-test-1');
+    assert.equal(commands.length, 0, 'and sends no console commands');
+    s.keyDown({code: 'Enter'});
+    composer.text = '/fight-test-1';
+    s.composerKey({code: 'Enter'});
+    assert.ok(commands.some(c => c.type === 'chat' && c.text === '/fight-test-1'), 'their slash is only words');
+
+    commands.length = 0;
+    s.snapshot = {self: {name: 'Ada', dungeonMaster: true}};
+    s.keyDown({code: 'Backquote'});
+    assert.equal(s.modal, 'console', '` opens the console');
+    s.keyDown({code: 'Backquote'});
+    assert.equal(s.modal, '', 'and closes it');
+    s.activate({rect: rect(0, 0, 0, 0), action: 'dev_console', target: ''});
+    assert.equal(s.modal, 'console', 'Settings opens it too');
+    s.modal = '';
+    s.keyDown({code: 'Enter'});
+    composer.text = '/fight-test-1';
+    s.composerKey({code: 'Enter'});
+    assert.deepEqual(commands.filter(c => c.type === 'dev' || c.type === 'chat'), [{type: 'dev', command: '/fight-test-1'}],
+        "a Dungeon Master's slash command goes to the console");
+    assert.ok(!s.chat && composer.text === '', 'and leaves the chat box empty');
+    s.runDevCommand('fight-end-myself');
+    assert.deepEqual(commands.at(-1), {type: 'dev', command: '/fight-end-myself'}, 'typed without its slash, it gets one');
+    s.receiveEvent({type: 'devResult', command: '/fight-end-myself', ok: false, text: "You aren't in a fight."});
+    assert.deepEqual(s.devLog, [{command: '/fight-end-myself', ok: false, text: "You aren't in a fight."}], 'the answer goes to its log');
+    assert.equal(s.posts.length, 0, 'not into the story');
+});
