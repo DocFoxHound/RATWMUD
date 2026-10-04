@@ -103,6 +103,7 @@ export class GameView {
             const width = Number(localStorage.getItem('ratw.storyWidth'));
             if (width >= 300 && width <= 1400) this.state.storyWidth = width;
             this.state.perfOverlay = localStorage.getItem('ratw.perfOverlay') === '1';
+            this.state.fightTips = localStorage.getItem('ratw.fightTips') !== '0';
             const volume = localStorage.getItem('ratw.sound');
             if (volume !== null && Number.isFinite(Number(volume))) this.state.soundVolume = Math.max(0, Math.min(1, Number(volume)));
         } catch { /* No storage here: the default width. */ }

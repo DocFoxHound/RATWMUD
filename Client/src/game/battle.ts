@@ -424,3 +424,17 @@ export function clockLabel(seconds: number): string {
     const s = Math.max(0, Math.round(seconds));
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/** The tips that fit the fight as it stands, first first (doc 37, phase 7): where each sits over the map. */
+export function fightTips(b: BattleView, me: FighterView, mine: boolean): Array<{id: string; where: 'top' | 'right' | 'bottom'; text: string}> {
+    const out: Array<{id: string; where: 'top' | 'right' | 'bottom'; text: string}> = [];
+    if (me.status !== 'fighting') return out;
+    const foes = b.fighters.some(f => f.side !== me.side && f.status === 'fighting');
+    if (mine) out.push({id: 'turn', where: 'top', text: 'Your turn: click a tile inside the outline to move, and a foe to strike, or use the bar below. Q and E turn you.'});
+    if (mine && !b.acted && foes)
+        out.push({id: 'odds', where: 'right', text: 'Point at a foe, or their card, to see your chance: from their side it is better, from behind better still.'});
+    if (mine && (b.moved || b.acted)) out.push({id: 'end', where: 'bottom', text: 'End turn (Space) ends it sooner: your bar starts filling again at once.'});
+    if (!mine && b.planning)
+        out.push({id: 'plan', where: 'top', text: 'While your bar fills, plan your turn: click where to go and whom to strike. It plays as your turn comes.'});
+    return out;
+}

@@ -1,7 +1,7 @@
 # Combat feel: a fight screen that reads at a glance
 
-Status: **plan, drafted October 4, 2026**, from a playtest of the built combat (doc 33) after its playtest fixes. Phases
-1–6 were built the same day (see [Built](#built)); 7 is to come. Decisions taken the same day are marked **Decided**. Doc 33 keeps the rules; doc 18 keeps the encounter log. This
+Status: **plan, drafted October 4, 2026**, from a playtest of the built combat (doc 33) after its playtest fixes. All
+seven phases were built the same day (see [Built](#built)). Decisions taken the same day are marked **Decided**. Doc 33 keeps the rules; doc 18 keeps the encounter log. This
 document is about how a fight looks, feels and flows.
 
 ## What a fight is like today
@@ -448,3 +448,49 @@ with a recorded playtest (screenshots and timings, as for this document) before 
     "shoves";
   - in the browser: a sword taken up and struck with in one turn, Guard by its key (the foe's odds fell to the
     head-on 55%), a shove planned while waiting and played as the turn came ("bo shoves ash back"), the bar one row.
+
+**Phase 7, October 4, 2026: learning by doing** (`Client/src/ui/hud/combat.ts` `updateTip`, `game/battle.ts`
+`fightTips`; Settings in `ui/hud/dialogs.ts`).
+- **Tips for the first fights,** over the map near what they are about, one at a time:
+  - "Your turn: click a tile inside the outline to move, and a foe to strike, or use the bar below. Q and E turn you."
+    (top, on one's first turn);
+  - "Point at a foe, or their card, to see your chance: from their side it is better, from behind better still."
+    (beside the cards, on a turn not yet acted in);
+  - "End turn (Space) ends it sooner: your bar starts filling again at once." (by End turn, once one has moved or
+    acted);
+  - "While your bar fills, plan your turn: click where to go and whom to strike. It plays as your turn comes." (top,
+    while waiting: phase 5's planning).
+  - Each shows for about seven seconds, until closed (×), or until what it is about has passed. Then it is seen, and
+    never shown to that character again: kept on this computer for each character (`ratw.tipsSeen.<id>`). Watchers
+    and the Downed get none, and none show under the versus card.
+  - Settings → **Fight tips: On/Off** (kept on this computer). Turned on again, they are shown again.
+- **Tooltips:** every action button already said its key, its cost and why it can't be done (phases 1 and 6); the
+  cards' bars, marks, injuries and odds, the turn order's faces and the "» ×2.5" note all have theirs. The help line
+  under the map lists the fight's keys, Guard and Shove among them.
+- **Tested:** `Client/src/game/battle.test.ts`: which tips fit when (one's turn, moved, waiting, none Downed), seen once
+  per character, and the setting off and on again (shown again).
+
+**The playtest against this document's goals** (October 4, after phase 7; a new character's first duel in the browser,
+two players, scratch Greyfen):
+1. *Readable at a glance:* whose turn is the strip's headline and the gold ring; health is a ring on each token and a
+   bar on each card; what one can do is the icon bar, greyed with its reason; what a blow would do is the badge on the
+   foe ("75% · side"). Met.
+2. *Hits feel like hits:* the figure off the one struck, the flash, the shake, the sound; the word under the striker.
+   Met.
+3. *Every second yours:* waiting plans the next turn; the bars hasten with no one deciding. Met.
+4. *Real choices, few buttons:* move, facing (now shown and dragged), Guard, Shove, the sword with the move; the bar is
+   one row of icons. Met.
+5. *A beginning and an end:* the versus card, "YOUR TURN", the result card with Tend, Write and Close. Met.
+6. *Still a roleplay game:* the composer stays under the fight's story; typing gives a turn 15 s more. Met.
+7. *Icons first, words second:* every control is an icon with its key; words are in tooltips and the log. Met.
+
+Measures:
+- *Through the first fight with no instruction text:* there is none in the fight panel; the four tips came in order
+  (your turn at 2 s, End turn at 9 s once she had bitten, planning at 12 s while waiting, the odds at 20 s on her next
+  turn), each once, and none again after a reload mid-fight. Met (a playtest with a real new player is still worth
+  doing).
+- *Median time between one's own turns:* 8.7 s with both deciding at once (phase 5); the target is about 10 s. Met.
+- *Who hit whom, and for how much, without the log:* the number rises off the one struck, and "bites"/"cuts" shows
+  under the one who did it. Met.
+- *No more than one panel that isn't about the fight:* in a fight, the panels shown are the fighter cards and the
+  status panel (health, stamina, pace: about the fight); the story column's nearby voices are the one other. Met.

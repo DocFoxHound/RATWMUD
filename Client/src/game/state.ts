@@ -203,6 +203,8 @@ export class GameState {
     highlight = '';             // A wolf pointed at in the In Sight list: ringed on the map.
     hoveredEntity = '';         // The wolf under the pointer on the map: lit in the list.
     hoverTooltips = true;       // Labels beside the pointer (the line under the map always shows).
+    /** The first fights' tips (doc 37, phase 7): on unless turned off in Settings; kept on this computer. */
+    fightTips = true;
     perfOverlay = false;        // The latency overlay (Settings, or ?perf): frames, ping, input to motion, traffic.
     /** From a key that sets a standing wolf walking to the first motion frame that shows it moved (ms), the last 30. */
     readonly inputToMotion: number[] = [];
@@ -587,6 +589,30 @@ export class GameState {
         const me = b?.fighters.find(f => f.id === this.selfId);
         if (!b || !me || !myTurn(b, this.selfId)) return;
         this.sendBattle('face', {dir: (me.facing + step + 8) % 8});
+    }
+
+    private seenTips: string[] | null = null;
+    private seenTipsOf = '';
+
+    /** The fight tips this character has seen (doc 37, phase 7), kept on this computer for each character. */
+    tipsSeen(): string[] {
+        if (this.seenTips && this.seenTipsOf === this.selfId) return this.seenTips;
+        this.seenTipsOf = this.selfId;
+        try {
+            const kept = JSON.parse(localStorage.getItem(`ratw.tipsSeen.${this.selfId}`) ?? '[]');
+            this.seenTips = Array.isArray(kept) ? kept.filter((t): t is string => typeof t === 'string') : [];
+        } catch {
+            this.seenTips = [];
+        }
+        return this.seenTips;
+    }
+
+    markTipSeen(id: string) {
+        const seen = this.tipsSeen();
+        if (!seen.includes(id)) seen.push(id);
+        try {
+            localStorage.setItem(`ratw.tipsSeen.${this.selfId}`, JSON.stringify(seen));
+        } catch { /* No storage here: for this visit only. */ }
     }
 
     /** A fight command: move, bite, tend, flee, struggle, wait, join, observe, leave. */
@@ -1668,6 +1694,14 @@ export class GameState {
         else if (a === 'projection') this.flatWorld = !this.flatWorld;
         else if (a === 'glyphs') this.plainGlyphs = !this.plainGlyphs;
         else if (a === 'tooltips') this.hoverTooltips = !this.hoverTooltips;
+        else if (a === 'fighttips') {
+            this.fightTips = !this.fightTips;
+            try {
+                localStorage.setItem('ratw.fightTips', this.fightTips ? '1' : '0');
+                if (this.fightTips) localStorage.removeItem(`ratw.tipsSeen.${this.selfId}`);     // On again: shown again.
+            } catch { /* No storage here: for this visit only. */ }
+            this.seenTips = [];
+        }
         else if (a === 'sound') {
             const steps = [0, 0.3, 0.6, 1];
             this.soundVolume = steps[(steps.findIndex(v => Math.abs(v - this.soundVolume) < 0.05) + 1) % steps.length];

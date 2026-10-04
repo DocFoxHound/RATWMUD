@@ -575,6 +575,14 @@ button.given { opacity: .6; }
 .versus-vs { font: 600 34px 'RATW Mono', monospace; color: var(--gold); letter-spacing: .1em; text-shadow: 0 0 14px #d9b67b66; }
 .versus-terms { font-family: 'RATW Mono', monospace; font-size: 13px; letter-spacing: .08em; color: var(--paper); text-transform: uppercase;
     background: var(--panel); padding: 5px 12px; border-radius: 3px; border: 1px solid #34443e; }
+/* The first fights' tips (doc 37, phase 7): a note over the map, near what it is about. */
+.fight-tip { position: absolute; z-index: 3; display: flex; align-items: flex-start; gap: 8px; max-width: 320px; padding: 9px 10px 9px 12px;
+    background: color-mix(in srgb, var(--panel) 95%, transparent); border: 1px solid var(--gold); border-radius: 6px; font-size: 13px;
+    line-height: 1.4; color: var(--paper); box-shadow: 0 4px 14px #0008; pointer-events: auto; }
+.fight-tip.at-top { top: 72px; left: 50%; transform: translateX(-50%); }
+.fight-tip.at-right { top: 30%; right: 12px; }
+.fight-tip.at-bottom { bottom: 12px; right: 12px; }
+.game button.fight-tip-close { padding: 0 4px; min-width: 0; background: none; border: none; color: var(--muted); font-size: 15px; line-height: 1; }
 .turn-flash { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); font: 600 30px 'RATW Mono', monospace;
     letter-spacing: .14em; color: var(--gold); text-shadow: 0 0 16px #d9b67b88, 0 2px 4px #000; pointer-events: none; z-index: 3; opacity: 0; }
 .turn-flash.go { animation: turnflash 1s ease-out forwards; }

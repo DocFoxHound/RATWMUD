@@ -903,6 +903,7 @@ export class Dialogs {
         toggle(s.flatWorld ? 'World: Always flat' : 'World: Automatic', 'projection');
         toggle(s.plainGlyphs ? 'Map: Plain ASCII' : 'Map: Unicode', 'glyphs');
         toggle(s.hoverTooltips ? 'Pointer labels: On' : 'Pointer labels: Off', 'tooltips');
+        toggle(s.fightTips ? 'Fight tips: On' : 'Fight tips: Off', 'fighttips');
         toggle(`Combat sound: ${s.soundVolume === 0 ? 'Off' : s.soundVolume < 0.45 ? 'Quiet' : s.soundVolume < 0.8 ? 'Normal' : 'Loud'}`, 'sound');
         toggle(s.perfOverlay ? 'Performance overlay: On' : 'Performance overlay: Off', 'perf');
         const width = s.storyWidth <= 360 ? 'Compact' : s.storyWidth <= 460 ? 'Balanced' : s.storyWidth <= 600 ? 'Wide' : 'Text-first';

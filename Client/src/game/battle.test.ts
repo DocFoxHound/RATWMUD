@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
-import {arenaRows, arenaSight, chanceFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
+import {arenaRows, arenaSight, chanceFrom, fightTips, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
     stepToward, termsWords} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
@@ -285,4 +285,22 @@ test('guard and shove (doc 37, phase 6): one on guard has no side or back to str
     assert.ok(bo.guarding && b.drew, 'on guard, and a sword drawn this turn, read');
     assert.equal(chanceFrom(bo, 2, 2), 55, 'from behind him, still only the head-on chance');
     assert.equal(chanceFrom({...bo, guarding: false}, 2, 2), 75, '(not on guard: +20 from behind)');
+});
+
+test('the first fights\' tips (doc 37, phase 7): which fit when, kept once per character, and off in Settings', () => {
+    const b = readBattle({battle})!;
+    const me = b.fighters[0];
+    assert.deepEqual(fightTips(b, me, true).map(t => t.id), ['turn', 'odds'], 'one\'s turn: the turn, then the odds');
+    assert.deepEqual(fightTips({...b, moved: true}, me, true).map(t => t.id), ['turn', 'odds', 'end'], 'moved: End turn ends it sooner');
+    assert.deepEqual(fightTips({...b, planning: true}, me, false).map(t => t.id), ['plan'], 'waiting: plan it');
+    assert.deepEqual(fightTips(b, {...me, status: 'downed'}, true), [], 'none for the Downed');
+    const {state: s} = testGame();
+    s.selfId = 'self';
+    assert.deepEqual(s.tipsSeen(), []);
+    s.markTipSeen('turn');
+    assert.deepEqual(s.tipsSeen(), ['turn'], 'seen once');
+    s.activate({rect: rect(0, 0, 0, 0), action: 'fighttips', target: ''});
+    assert.equal(s.fightTips, false, 'Settings: off');
+    s.activate({rect: rect(0, 0, 0, 0), action: 'fighttips', target: ''});
+    assert.ok(s.fightTips && s.tipsSeen().length === 0, 'and on again: shown again');
 });

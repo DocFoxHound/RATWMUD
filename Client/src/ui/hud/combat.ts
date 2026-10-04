@@ -2,7 +2,7 @@
 // about the fight only: the order turns will come in along the top of the map, a card for each fighter on the right,
 // what this wolf can do as icon buttons under the map (keys 1–8, Space to end the turn), and the fight told line by
 // line above the composer. Everything else on the screen steps aside (hud.ts: the `fight-mode` class).
-import {clockLabel, meterNow, myTurn, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
+import {clockLabel, fightTips, meterNow, myTurn, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
 import {lawLabel} from '../../game/labels.ts';
 import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
@@ -132,6 +132,11 @@ export class CombatScreen {
     private result: HTMLElement;
     private ended: Ended | null = null;
     private resultKey = '';
+    // Over the map: the first fights' tips (doc 37, phase 7), one at a time, each once per character.
+    private tip: HTMLElement;
+    private tipText: HTMLElement;
+    private tipShown = '';
+    private tipSince = 0;
 
     constructor(state: GameState, portraits: Portraits, parts: {map: HTMLElement; side: HTMLElement; center: HTMLElement; before: HTMLElement;
         story: HTMLElement; storyBefore: HTMLElement}) {
@@ -149,7 +154,10 @@ export class CombatScreen {
         this.versus = el('div', 'versus', parts.map);
         this.turnFlash = el('div', 'turn-flash', parts.map, 'YOUR TURN');
         this.result = el('div', 'result-card', parts.map);
-        for (const part of [this.strip, this.cards, this.bar, this.log, this.versus, this.turnFlash, this.result]) show(part, false);
+        this.tip = el('div', 'fight-tip', parts.map);
+        this.tipText = el('span', '', this.tip);
+        button('×', 'fight-tip-close', this.tip, () => this.tipSeen()).title = 'Got it';
+        for (const part of [this.strip, this.cards, this.bar, this.log, this.versus, this.turnFlash, this.result, this.tip]) show(part, false);
         state.fightKeys = code => this.key(code);
     }
 
@@ -167,6 +175,39 @@ export class CombatScreen {
         this.updateCards(b, since);
         this.updateBar(b, since);
         this.updateLog(b);
+        this.updateTip(b);
+    }
+
+    // ------------------------------------------------------------------ The first fights' tips
+
+    /**
+     * A tip for a new fighter (doc 37, phase 7), when it first fits: one at a time, for about seven seconds (or until
+     * closed, or what it is about has passed), and once per character. Settings → Fight tips turns them off, or on and
+     * shown again.
+     */
+    private updateTip(b: BattleView | null) {
+        const s = this.s, me = b ? this.me(b) : undefined;
+        const tips = !b || b.over || b.observer || !me || !s.fightTips || s.clock < this.versusUntil ? [] : fightTips(b, me, myTurn(b, s.selfId));
+        if (this.tipShown) {
+            const holds = tips.some(t => t.id === this.tipShown);
+            const shown = s.clock - this.tipSince;
+            if (shown > 7 || (!holds && shown > 1.5) || !b) this.tipSeen();
+            return;
+        }
+        const seen = s.tipsSeen();
+        const next = tips.find(t => !seen.includes(t.id));
+        if (!next) return;
+        this.tipShown = next.id;
+        this.tipSince = s.clock;
+        setText(this.tipText, next.text);
+        this.tip.className = `fight-tip at-${next.where}`;
+        show(this.tip, true);
+    }
+
+    private tipSeen() {
+        if (this.tipShown) this.s.markTipSeen(this.tipShown);
+        this.tipShown = '';
+        show(this.tip, false);
     }
 
     // ------------------------------------------------------------------ Whose turn comes when
@@ -814,3 +855,4 @@ const LineIcons: Record<string, string> = {
     flee: 'flee', truce: 'truce', over: 'truce', yield: 'yield', refuse: 'no', hold: 'sword', drop: 'sword', pickup: 'pickup', break: 'no',
     guard: 'guard', shove: 'shove', stow: 'sword',
 };
+
