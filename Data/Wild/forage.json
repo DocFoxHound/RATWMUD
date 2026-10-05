@@ -15,7 +15,7 @@
       {"item": "berries", "weight": 3, "count": 2, "seasons": [1, 2]}, {"item": "firewood", "weight": 1, "count": 1}]},
     {"id": "grass", "tiles": ",\";", "name": "the grass", "goods": [
       {"item": "herbs", "weight": 3, "count": 1, "seasons": [0, 1, 2]}, {"item": "yarrow", "weight": 1, "count": 1, "seasons": [0, 1, 2]},
-      {"item": "thyme", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},
+      {"item": "thyme", "weight": 1, "count": 1, "seasons": [0, 1, 2]}, {"item": "wormwood", "weight": 1, "count": 1, "seasons": [1, 2]}]},
     {"id": "flowers", "tiles": "3", "name": "the wildflowers", "goods": [
       {"item": "chamomile", "weight": 2, "count": 1, "seasons": [0, 1]}, {"item": "lavender", "weight": 1, "count": 1, "seasons": [1]},
       {"item": "herbs", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},

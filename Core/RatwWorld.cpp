@@ -3738,6 +3738,7 @@ void World::tick(double dt)
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
     tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
     tendWear();                                     // Clothes wearing with the days (RatwDurability.cpp).
+    tendMarks();                                    // Noses catching a maker's scent on stolen goods (RatwMarks.cpp).
     mark = Clock::now();
     // A player's map memory takes in what they see as they go. A view is thousands of sight rays, so it is taken
     // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
@@ -4080,6 +4081,8 @@ double World::scentClarity(const std::string& observerId, const std::string& sou
     const auto* source = entity(sourceId);
     if (!observer || !source || observer->cellId != source->cellId || observerId == sourceId)
         return 0;
+    if (scentMasked(*source))
+        return 0;                                   // Masking oil (RatwMarks.cpp).
     const auto* c = cell(observer->cellId);
     if (!c)
         return 0;

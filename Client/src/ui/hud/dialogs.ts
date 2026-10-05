@@ -830,6 +830,12 @@ export class Dialogs {
                 eat.disabled = !!fight;
                 if (fight) eat.title = 'Not in a fight';
             }
+            // Masking oil (doc 35): one's scent, and that of what one carries, hidden for a few hours.
+            if (id.split('~')[0] === 'masking_oil') {
+                const masked = num(obj(this.s.snapshot, 'self'), 'scentMasked');
+                const use = button(masked > 0 ? 'USE · MORE' : 'USE', 'primary', actions, () => this.s.send({type: 'mask'}));
+                use.title = masked > 0 ? `Masked for about ${Math.ceil(masked / 600)} more hours` : 'Hide your scent for a few hours';
+            }
             this.wearActions(actions, item, self, fight);
             const sword = id.split('~')[0] === 'sword' ? this.swordAction(self, fight) : null;
             if (sword) {

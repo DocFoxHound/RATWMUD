@@ -25,13 +25,14 @@
     {"id": "leather", "makers": ["tannery"], "seconds": 300, "in": {"hide": 1, "oak_bark": 2}, "out": {"leather": 2}},
     {"id": "cord", "makers": ["chandlery"], "seconds": 60, "in": {"hemp": 1}, "out": {"cord": 3}},
     {"id": "butcher_pig", "makers": ["butcher"], "seconds": 300, "in": {"pig": 1}, "out": {"raw_meat": 4, "bones": 1, "tallow": 2, "hide": 1}},
+    {"id": "masking_oil", "makers": ["apothecary", "perfumer"], "seconds": 180, "in": {"wormwood": 2, "resin": 1}, "out": {"masking_oil": 1}},
     {"id": "butcher_sheep", "makers": ["butcher"], "seconds": 240, "in": {"sheep": 1}, "out": {"raw_meat": 3, "bones": 1, "tallow": 1}}
   ],
   "producers": [
     {"id": "farm", "match": ["farms the", "works the crossing fields", "works the lakeside fields"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"wheat": 2, "oats": 1, "vegetables": 2, "straw": 1, "flax": 1, "hemp": 1, "apples": 1}},
     {"id": "sheep_pasture", "match": ["keeps sheep", "shepherd"], "seconds": 1800, "out": {"wool": 1, "milk": 2}},
     {"id": "fishing", "match": ["fishes the"], "seconds": 900, "out": {"fish": 2}},
-    {"id": "woodcutting", "match": ["cuts wood", "woodcutter"], "seconds": 900, "out": {"firewood": 3, "oak_bark": 1, "timber": 1}},
+    {"id": "woodcutting", "match": ["cuts wood", "woodcutter"], "seconds": 900, "out": {"firewood": 3, "oak_bark": 1, "timber": 1, "resin": 1}},
     {"id": "charcoal_burning", "match": ["burns charcoal", "charcoal kilns", "charcoal burns", "charcoal sheds"], "seconds": 1800, "out": {"charcoal": 1}},
     {"id": "quarry", "match": ["cutting stone"], "seconds": 1800, "out": {"stone": 1, "limestone": 1, "clay": 2}},
     {"id": "salt_pans", "match": ["raking salt", "rakes the salt"], "seconds": 1800, "out": {"salt": 2}},
@@ -56,6 +57,7 @@
     "provisioner": ["flour", "oats", "milk", "vegetables", "raw_meat", "fish", "apples", "firewood"],
     "general": ["flour", "oats", "firewood", "straw", "wool", "linen_cloth", "cord", "tallow", "clay"],
     "butcher": ["raw_meat", "bones", "tallow", "leather"],
-    "fishmonger": ["fish"]
+    "fishmonger": ["fish"],
+    "herbalist": ["wormwood"]
   }
 }

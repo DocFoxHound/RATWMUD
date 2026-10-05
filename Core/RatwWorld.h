@@ -244,6 +244,7 @@ struct Entity
     // much use each kind of gear in service has had (by item id: wear and tear, doc 35 phase 9). Saved.
     std::string swordKind;
     std::map<std::string, double> wear;
+    double scentMaskedUntil = 0;    // Masking oil (doc 35): its scent, and what it carries, hidden until then (world seconds). Saved.
     std::vector<std::pair<std::string, std::string>> jewellery;     // (spot, item)
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
@@ -486,6 +487,17 @@ class World
     Result leaveHunt(const std::string& player);     // Gives up the hunt, wherever one stands in it.
     // Wear and tear (doc 35; RatwDurability.cpp): how much use a good takes (0: it doesn't wear), how much is left of
     // the one in service (1 new, 0 worn out), which sword is in the jaws ("" for none), and mending at a shop.
+    // The nose (RatwMarks.cpp): how keen one is (the physical `smell`, its health and the skill; it sharpens with use),
+    // whether a wolf's scent is masked, masking it, and the masterworks a nose makes out on those near by.
+    static double noseAcuity(const Entity& e);
+    bool scentMasked(const Entity& e) const;
+    void trainNose(const std::string& id);
+    Result maskScent(const std::string& player);
+    struct MarkSmelt
+    {
+        std::string holder, item;                   // Who carries it, and the marked good ("sword~masterwork@sorrel").
+    };
+    std::vector<MarkSmelt> marksSmelt(const std::string& player) const;
     static int durabilityOf(const std::string& item);
     double conditionOf(const Entity& e, const std::string& item) const;
     static std::string swordHeld(const Entity& e);
@@ -1022,6 +1034,8 @@ class World
     std::uint64_t nextAnimal_ = 0;
     std::map<std::string, std::vector<Track>> tracks_;            // Wolf -> the trails it has found (not saved).
     double lastWearDay_ = -1;                                     // When clothes last wore with the days.
+    double nextMarkCheck_ = 0;                                    // When noses near thieves are next tried.
+    void tendMarks();
     void wearGear(Entity& e, const std::string& item, double amount);
     void wearArmourAt(Entity& e, const std::string& zone, double taken);
     void tendWear();

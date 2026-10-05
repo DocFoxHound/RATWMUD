@@ -183,8 +183,30 @@ Part 4's four qualities are in the game. Prices are *placeholders*.
     goods with their kind (`Society::kindsHeld`).
   - Its name reads "Masterwork bronze sword · Sorrel Brook's mark" to anyone who knows the maker (doc 32's
     introductions), "your own mark" to its maker, and "a maker's mark, and a scent you don't know" to anyone else.
-- **Not yet:** a good nose telling a stolen masterwork by its maker's scent (crime), masking oil, and repairs costing a
-  little of a piece's greatest durability.
+- **Mending never costs durability** (the user, 2026-10-04): a repair makes a piece whole, and it lasts as long as it
+  ever did.
+- **The nose** (built 2026-10-04, `Core/RatwMarks.cpp`): how keen a nose is
+  (`World::noseAcuity` = `smell` × nose health × (1 + 0.75 × tracking skill)) is a physical stat, `Entity::smell`.
+  - It sharpens with use (the user: "a physical stat that increases with level and/or usage"; characters have no level
+    yet). Every Smell grows it a little, slower as it nears 1.6 (*placeholder*), and the tracking skill with it.
+  - Smell also reports up to three masterworks carried near by, by the maker's scent on them: "A maker's scent reaches
+    you from something a lean grey wolf carries: Masterwork bronze sword · Sorrel Brook's mark". It needs the scent's
+    clarity × the nose's keenness ≥ 0.5, so a keen nose catches it farther off, and downwind.
+- **Stolen goods give themselves away:** a theft now and then lifts a masterwork (one in four, where the victim has one
+  not being worn). Every 10 s, an NPC who would know the work can catch the maker's scent on a thief still carrying it.
+  - Who would know it: the one robbed, its maker, or a guard on duty, in the same place.
+  - The chance per try is 0.15 × the scent's clarity × the nose's keenness² (*placeholder*).
+  - Caught, that NPC becomes a witness who knows the thief, believes they stole it ("smelt it"), and the crime takes
+    its course (doc 26 Phase 7; a cold case opens again). A player thief is told: "Wren sniffs the air near you, and
+    looks hard at what you carry."
+- **Masking oil:** used from the inventory (**USE**; the `mask` command), it hides one's scent, and that of what one
+  carries, for 4 game hours (a crude oil 0.6×, fine 1.5×, masterwork 2.5×; uses add up).
+  - While masked, no scent of the wolf reaches anyone (`scentClarity`): no scent cues, no stolen goods smelt out, no
+    marks read on it. Doc 40's sneaking checks `World::scentMasked` too.
+  - Apothecaries and perfumers make it from 2 wormwood and a resin. Herbalists supply wormwood. Woodcutters bring in
+    resin, and players forage both (wormwood in summer and autumn grass).
+- **Not yet:** masking against tracks (a hunter's own trail is not yet a thing), and a nose's keenness from a level when
+  levels exist.
 
 ### Workshops for the starter crafts (built 2026-10-04)
 

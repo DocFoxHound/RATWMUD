@@ -1,6 +1,7 @@
 // Crime and law (RatwCrime.h; Docs/Design/26-living-npcs.md, Phase 7). World members, kept here.
 #include "RatwCrime.h"
 #include "RatwWorld.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <cmath>
@@ -300,7 +301,14 @@ Result World::steal(const std::string& thief, const std::string& victimId)
     std::int64_t coins = 0;
     if (success)
     {
-        if (purse->cash > 0)
+        // Now and then a masterwork, marked with its maker's scent (doc 35): a prize that can give a thief away.
+        std::string prize;
+        for (const auto& [held, n] : purse->stock)
+            if (n > 0 && !items::makerOf(held).empty() && World::wornCount(*v, held) < n)
+                prize = held;
+        if (!prize.empty() && roll(thief + "|prize", at) % 4 == 0)
+            item = prize, quantity = 1;
+        else if (purse->cash > 0)
             coins = std::min<std::int64_t>(purse->cash, 1 + std::int64_t(roll(thief, at) % 5));
         else if (Society::stock(*purse, "meal") > 0)
             item = "meal", quantity = 1;
@@ -324,7 +332,9 @@ Result World::steal(const std::string& thief, const std::string& victimId)
     const bool caught = std::any_of(inc.witnesses.begin(), inc.witnesses.end(), [&](const Witness& w) { return w.id == victimId; });
     if (!success)
         return {true, v->name + " catches you at " + (v->npc ? "their" : "your") + " purse!", victimId};
-    const std::string took = coins > 0 ? pennies(coins) : "a " + std::string(item == "meal" ? "meal" : "bundle of herbs");
+    const auto* prized = items::good(item);
+    const std::string took = coins > 0 ? pennies(coins) : item == "meal" ? "a meal" : item == "herbs" ? "a bundle of herbs"
+                                                        : "a " + std::string(prized ? prized->name : "thing");
     return {true, "You lift " + took + " from " + v->name + (caught ? ", and they feel it." : " unnoticed."), victimId};
 }
 

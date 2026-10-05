@@ -1,6 +1,7 @@
 // Hunting and foraging (Docs/Design/41-hunting-and-foraging.md): a hunt is a fight against game found by the ground,
 // the game lives only in its hunt, the hardest blow decides the yield and fire spoils it, kills press on a place, only
 // friends may join, and foraging gives the ground's goods until a patch is picked over.
+#include "RatwCrime.h"
 #include "RatwItems.h"
 #include "RatwWild.h"
 #include "RatwWorld.h"
@@ -343,6 +344,83 @@ void gearWearsAndMends()
     expect(w.conditionOf(ada, "wool_scarf") == 1, "whole again");
     expect(!w.canRepair("wren", "sword"), "but a weaver doesn't mend swords");
 }
+void noseAndMarks()
+{
+    // The nose: a physical stat that sharpens with use, to a limit.
+    {
+        auto w = wilds();
+        auto& ada = hunter(w, "player-ada");
+        const double before = World::noseAcuity(ada);
+        for (int i = 0; i < 2000; ++i)
+            w.trainNose("player-ada");
+        expect(ada.smell > 1.4 && ada.smell <= 1.6 && World::noseAcuity(ada) > before, "the nose sharpens with use, to a limit");
+    }
+    // Masking oil hides a wolf's scent for a few hours.
+    {
+        auto w = wilds();
+        auto& ada = hunter(w, "player-ada", 11.5, 10.5);
+        expect(!w.maskScent("player-ada").ok, "no oil, no masking");
+        w.society().create("player-ada", "masking_oil", 1, "test");
+        expect(w.maskScent("player-ada").ok && w.scentMasked(ada), "masked");
+        expect(w.scentClarity("wren", "player-ada") == 0, "nobody smells a masked wolf");
+        for (int i = 0; i < 2500; ++i)
+            w.tick(1);
+        expect(!w.scentMasked(ada), "and it wears off in a few hours");
+    }
+    // Stolen goods give themselves away: the one robbed catches its maker's scent on the thief.
+    const auto robbed = [](bool masked) {
+        auto w = wilds();
+        auto& ada = hunter(w, "player-ada", 10.5, 10.5);    // West of the weaver: the wind carries her scent to him.
+        w.society().create("player-ada", "wool_scarf~masterwork@wren", 1, "test");
+        if (masked)
+        {
+            w.society().create("player-ada", "masking_oil", 3, "test");
+            w.maskScent("player-ada");
+            w.maskScent("player-ada");
+            w.maskScent("player-ada");
+        }
+        Incident inc;
+        inc.id = "inc-test";
+        inc.kind = "theft";
+        inc.offender = "player-ada";
+        inc.victim = "wren";
+        inc.cell = "wilds";
+        inc.item = "wool_scarf~masterwork@wren";
+        inc.quantity = 1;
+        w.crime().incidents.push_back(inc);
+        for (int i = 0; i < 1200; ++i)
+        {
+            w.entity("player-ada")->position = {10.5, 10.5};
+            w.tick(1);
+        }
+        (void)ada;
+        for (const auto& i : w.crime().incidents)
+            if (i.id == "inc-test")
+                for (const auto& wit : i.witnesses)
+                    if (wit.id == "wren" && wit.identified)
+                        return true;
+        return false;
+    };
+    expect(robbed(false), "the weaver smells her own work on the thief");
+    expect(!robbed(true), "but not through masking oil");
+    // A keen nose reads whose work someone carries.
+    {
+        auto w = wilds();
+        auto& ada = hunter(w, "player-ada", 4.5, 5.5);      // West of the gardener.
+        ada.smell = 1.6;
+        ada.scentSkill = 100;
+        w.society().create("sorrel", "wool_scarf~masterwork@wren", 1, "test");
+        bool found = false;
+        for (int i = 0; i < 20 && !found; ++i)
+        {
+            for (const auto& m : w.marksSmelt("player-ada"))
+                found = found || (m.holder == "sorrel" && items::makerOf(m.item) == "wren");
+            w.tick(1);
+            ada.position = {w.entity("sorrel")->position.x - 1, w.entity("sorrel")->position.y};
+        }
+        expect(found, "a keen nose knows the weaver's work on the gardener");
+    }
+}
 } // namespace
 
 int main()
@@ -358,6 +436,7 @@ int main()
         foraging();
         tracks();
         gearWearsAndMends();
+        noseAndMarks();
     }
     catch (const std::exception& error)
     {

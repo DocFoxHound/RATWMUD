@@ -353,8 +353,9 @@ class Society
     // Goods fetched from another community cost CartedIn times the price (they come a long way).
     static constexpr int ProducerKept = 20;
     static constexpr double CartedIn = 1.5;
-    // The current grant (SocietyState::craftingStocked): 1 the starter crafts, 2 the workshops (mills, tanneries...).
-    static constexpr int CraftingStock = 2;
+    // The current grant (SocietyState::craftingStocked): 1 the starter crafts, 2 the workshops (mills, tanneries...), 3
+    // masking oil (apothecaries' and perfumers' wormwood and resin, herbalists' wormwood).
+    static constexpr int CraftingStock = 3;
     // Food to start with (doc 36): a new player's own meals; a new household's larder, meals for each who lives there,
     // and its chest, herbs for each. Placeholder amounts for the balance pass.
     static constexpr int StartingMeals = 3, LarderMealsEach = 3, ChestHerbsEach = 2;

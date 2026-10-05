@@ -2273,6 +2273,8 @@ void Game::sendSnapshot(Connection* c)
     self.set("hearingSkill", view.self.hearingSkill);
     self.set("vision", view.self.vision * view.self.eyeHealth * hurtSenses.vision * ageVisionFactor(view.self));
     self.set("smell", view.self.smell * view.self.noseHealth * hurtSenses.smell * (1.0 + 0.75 * view.self.scentSkill / 100.0));
+    if (const double masked = view.self.scentMaskedUntil - world_.time(); masked > 0)
+        self.set("scentMasked", masked);           // Masking oil (doc 35): seconds its scent stays hidden.
     self.set("scentSkill", view.self.scentSkill);
     self.set("noseHealth", view.self.noseHealth);
     wire::privatePace(self, *world_.entity(id));
@@ -3605,6 +3607,14 @@ void Game::command(Connection* c, const std::string& raw)
             record(Economy | Character, id);
         }
     }
+    else if (type == "mask")
+    {
+        // Masking oil (doc 35): one's scent, and that of what one carries, hidden for a few hours.
+        result = world_.maskScent(id);
+        report = true;
+        if (result.ok)
+            record(Economy | Character, id);
+    }
     else if (type == "repair")
     {
         // Mending worn gear at a shop that deals in it (doc 35): the fee to the shop.
@@ -3760,6 +3770,13 @@ void Game::command(Connection* c, const std::string& raw)
                 // Out in the wild the nose finds game's trails too (doc 41), marked faintly on the map for a while.
                 if (const auto tracks = world_.smellTracks(id); tracks.ok)
                     system(c, tracks.message);
+                // Whose work the masterworks near by are, by the maker's scent on them (doc 35, Part 4).
+                int told = 0;
+                for (const auto& mark : world_.marksSmelt(id))
+                    if (told++ < 3)
+                        system(c, "A maker's scent reaches you from something " + labelFor(id, mark.holder) + " carries: " +
+                                      itemLabel(id, mark.item) + ".");
+                world_.trainNose(id);                   // The nose sharpens with use.
             }
             else if (action == "session_end")
             {
