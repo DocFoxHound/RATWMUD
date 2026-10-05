@@ -18,11 +18,7 @@ int advanceAge(Entity& actor, double day)
     if (elapsed + 1e-8 < calendar::DaysPerYear) return 0;
     const int years = int(std::min(10000. - actor.age, std::floor((elapsed + 1e-8) / calendar::DaysPerYear)));
     if (years < 1) return 0;
-    const int physicalYears = std::max(0, std::min(actor.age + years, 34) - std::min(actor.age, 34));
-    const int wisdomYears = years - physicalYears;
-    actor.strength = std::min(100., actor.strength + physicalYears);
-    actor.dexterity = std::min(100., actor.dexterity + physicalYears);
-    actor.wisdom = std::min(100., actor.wisdom + wisdomYears);
+    // No stats come with a birthday any more (doc 44: they outweighed levels); age still slows the old (above).
     actor.age += years;
     actor.lastBirthdayDay += years * calendar::DaysPerYear;
     if (!actor.npc) actor.ageNoticePending = std::min(10000, actor.ageNoticePending + years);

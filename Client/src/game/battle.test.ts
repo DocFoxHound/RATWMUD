@@ -4,7 +4,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
 import {arenaRows, arenaSight, chanceFrom, coverTile, fightTips, nextAim, placeAt, strikeFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
-    stepToward, termsWords} from './battle.ts';
+    stepToward, termsWords, giftArea, lineTiles} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
 
@@ -365,4 +365,63 @@ test('taking one\'s ground (doc 40): the half read, a green tile taken, a red or
     s.arenaClick(3, 3);
     assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'place', x: 3, y: 3}, 'a green one: taken');
     assert.deepEqual(fightTips(b, b.fighters[0], false).map(t => t.id), ['place'], 'the tip says how');
+});
+
+test('Gifts (doc 43): read from the fight, aimed by kind, and sent', () => {
+    const gifts = [
+        {id: 'freeze', name: 'Freeze', kind: 'instant', target: 'foe', range: 6, mana: 12, ready: true},
+        {id: 'wall_of_fire', name: 'Wall of Fire', kind: 'shape', target: 'shape', range: 10, tiles: 10, mana: 10, perTile: 3, ready: true},
+        {id: 'water_screen', name: 'Water Screen', kind: 'fightlong', target: 'self', range: 0, mana: 12, ready: true},
+        {id: 'slip', name: 'Slip', kind: 'reaction', target: 'self', range: 0, mana: 10, ready: true},
+        {id: 'crush', name: 'Crush', kind: 'channelled', target: 'foe', range: 5, mana: 12, perTurn: 6, ready: false, why: 'Too little mana.'},
+        {id: 'displace', name: 'Displace', kind: 'instant', target: 'foe+tile', range: 1, tiles: 4, mana: 18, ready: true},
+    ];
+    const withGifts = {...battle, you: {...(battle.you as Json), gift: 'water', quickened: true, mana: 30, gifts, channel: ''},
+        ground: [{x: 4, y: 2, kind: 'water'}], fighters: (battle.fighters as Json[]).map(f => (f.id === 'bo' ? {...f, gift: 'fire',
+            fx: [{id: 'frozen', name: 'Frozen', does: 'No move.', turns: 2}]} : f))};
+    const b = readBattle(snapshot({battle: withGifts}))!;
+    assert.equal(b.gifts.length, 6);
+    assert.equal(b.gifts[1].perTile, 3, 'a shape costs a tile');
+    assert.equal(b.ground[0].kind, 'water', 'what Gifts left on the ground');
+    assert.equal(b.fighters.find(f => f.id === 'bo')!.fx[0].name, 'Frozen', 'what is on a wolf');
+    assert.equal(b.fighters.find(f => f.id === 'bo')!.gift, 'fire');
+    assert.deepEqual(lineTiles(2, 2, 5, 2, 3), [[3, 2], [4, 2], [5, 2]], 'a line out');
+    assert.equal(giftArea(b, b.gifts[0], 2, 2, 5, 2).length, 1, 'a foe is one tile');
+    const {state: s, commands, painter} = testGame();
+    s.applySnapshot(snapshot({battle: withGifts}));
+    s.mapRect = rect(0, 0, 800, 600);
+    // A foe ability: chosen, then a click on the foe.
+    s.useGift('freeze');
+    assert.equal(s.aiming, 'gift:freeze');
+    s.arenaClick(5, 2);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'gift', ability: 'freeze', target: 'bo'});
+    assert.equal(s.aiming, '', 'aimed once');
+    // A shape: painted tile by tile, joined, then cast.
+    s.useGift('wall_of_fire');
+    s.arenaClick(3, 1);
+    s.arenaClick(5, 1);                              // (Not joined to the first: refused.)
+    s.arenaClick(4, 1);
+    assert.deepEqual(s.giftShape, [[3, 1], [4, 1]]);
+    s.keyDown({code: 'Enter'});
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'gift', ability: 'wall_of_fire', tiles: [[3, 1], [4, 1]]});
+    // On oneself: at once. A reaction: armed. One not ready: nothing.
+    s.useGift('water_screen');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'gift', ability: 'water_screen'});
+    s.useGift('slip');
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'react', ability: 'slip', on: true});
+    const before = commands.length;
+    s.useGift('crush');
+    assert.equal(commands.length, before, 'Crush is not ready');
+    // A foe, then where to: two clicks.
+    s.useGift('displace');
+    s.arenaClick(5, 2);
+    assert.equal(s.giftFoe, 'bo');
+    s.arenaClick(7, 1);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'gift', ability: 'displace', target: 'bo', x: 7, y: 1});
+    draw(painter, 'drawLocal');                      // (It draws, aiming and all.)
+    s.useGift('freeze');
+    draw(painter, 'drawLocal');
+    s.useGift('wall_of_fire');
+    s.arenaClick(3, 1);
+    draw(painter, 'drawLocal');
 });

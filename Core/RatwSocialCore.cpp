@@ -1,4 +1,5 @@
 #include "RatwSocialCore.h"
+#include "RatwLevels.h"
 
 #include <algorithm>
 #include <cmath>
@@ -733,14 +734,67 @@ void SocialLedger::tick(double now)
 int SocialLedger::level(const std::string& actor) const
 {
     const auto it = points.find(actor);
-    return 1 + (it == points.end() ? 0 : it->second / 100);
+    return levels::levelFor(it == points.end() ? 0 : it->second);
+}
+
+int SocialLedger::restedLeft(const std::string& actor, double now) const
+{
+    // The times it earned (not rested pay), newest first: the latest gap of a day or more between two is time away,
+    // and its rested pool runs from the return; what has been paid from it since, used up.
+    std::vector<double> times;
+    for (const auto& e : entries)
+        if (e.actor == actor && e.amount > 0 && e.reason != "rested_bonus")
+            times.push_back(e.at);
+    times.push_back(now);
+    std::sort(times.rbegin(), times.rend());
+    for (std::size_t i = 0; i + 1 < times.size(); ++i)
+        if (const double gap = times[i] - times[i + 1]; gap >= 86400)
+        {
+            const double back = times[i];
+            int pool = std::min(RestedMost, RestedPerDay * int(gap / 86400));
+            for (const auto& e : entries)
+                if (e.actor == actor && e.reason == "rested_bonus" && e.at >= back)
+                    pool -= e.amount;
+            return std::max(0, pool);
+        }
+    return 0;
+}
+
+int SocialLedger::award(const std::string& actor, const std::string& kind, const std::string& source, double now)
+{
+    // What each kind pays, and the most a rolling day (0: no limit of its own) (doc 44).
+    struct Kind
+    {
+        const char* name;
+        int amount, perDay;
+    };
+    static constexpr Kind Kinds[] = {{"work", 10, 30}, {"practice", 5, 15}, {"milestone", 10, 0}, {"discovery", 5, 25}, {"story", 25, 0}};
+    const Kind* k = nullptr;
+    for (const auto& c : Kinds)
+        if (kind == c.name)
+            k = &c;
+    if (!k || actor.empty() || source.empty())
+        return 0;
+    int today = 0;
+    for (const auto& e : entries)
+    {
+        if (e.actor == actor && e.reason == kind && e.session == source)
+            return 0;                               // (Once for each source.)
+        if (e.actor == actor && e.reason == kind && now - e.at < 86400)
+            today += e.amount;
+    }
+    const int wanted = k->perDay ? std::min(k->amount, std::max(0, k->perDay - today)) : k->amount;
+    if (wanted <= 0 || usedToday(actor, now) >= DailyCap)
+        return -1;                                  // Not today: no receipt, so it can still be paid another day.
+    return pay(actor, "", kind, source, wanted, now, 0);
 }
 
 // ------------------------------------------------------------------ Gold Stars and Stories (doc 32, 1.2)
 
 std::string socialTitle(int level)
 {
-    return level >= 12 ? "Notable" : level >= 8 ? "Respected" : level >= 5 ? "Familiar Face" : level >= 3 ? "Known" : "Stranger";
+    return level >= 25 ? "Legend" : level >= 18 ? "Renowned" : level >= 12 ? "Notable" : level >= 8 ? "Respected" : level >= 5 ? "Familiar Face"
+         : level >= 3 ? "Known" : "Stranger";
 }
 
 int SocialLedger::paidFor(const std::string& actor, const std::string& session) const
@@ -766,7 +820,7 @@ int SocialLedger::usedToday(const std::string& actor, double now) const
 {
     int n = 0;
     for (const auto& e : entries)
-        if (e.actor == actor && now - e.at < 86400)
+        if (e.actor == actor && now - e.at < 86400 && e.reason != "rested_bonus")   // (Rested XP is outside the cap.)
             n += e.amount;
     return n;
 }
@@ -784,7 +838,9 @@ double SocialLedger::pairDecay(const std::string& a, const std::string& b, doubl
 int SocialLedger::pay(const std::string& actor, const std::string& partner, const std::string& reason, const std::string& source,
                       int requested, double now, std::uint64_t event)
 {
-    int amount = std::max(0, std::min(requested, 100 - usedToday(actor, now)));
+    // Rested XP (doc 44): back after a day or more, what is earned is paid again from the rested pool, outside the cap.
+    const int rested = requested > 0 ? restedLeft(actor, now) : 0;
+    int amount = std::max(0, std::min(requested, DailyCap - usedToday(actor, now)));
     amount = std::min(amount, 2147483647 - points[actor]);
     LedgerEntry e;
     e.event = event;
@@ -796,6 +852,14 @@ int SocialLedger::pay(const std::string& actor, const std::string& partner, cons
     e.session = source;
     entries.push_back(e);                 // (A zero receipt too: the same source can't pay later.)
     points[actor] += amount;
+    if (const int bonus = std::min({rested, amount, 2147483647 - points[actor]}); bonus > 0)
+    {
+        e.reason = "rested_bonus";
+        e.amount = bonus;
+        entries.push_back(e);
+        points[actor] += bonus;
+        amount += bonus;
+    }
     return amount;
 }
 

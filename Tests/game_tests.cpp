@@ -283,8 +283,30 @@ void accountsAndARestart()
     const std::string id = lobby->array("characters")[0].string("id");
     g.command(&wren, cmd({{"type", "character_create"}, {"name", "Wren Reed"}, {"age", 24}, {"appearance", appearance}, {"commandId", "make-1"}}));
     expect(wren.last("lobby")->array("characters").size() == 1, "the same request again makes no second");
-    g.command(&wren, cmd({{"type", "character_enter"}, {"id", id}}));
-    expect(wren.entityId == id, "and enters the world");
+    expect(wren.last("lobby")->object("gifts").array("families").size() == 8, "the creator is sent the eight Gift families (doc 43)");
+    // A Gift chosen at creation (doc 43): checked, then given.
+    const auto gifted = [&](const std::string& tier, const std::string& family, const std::string& commandId) {
+        auto gift = json::Value::object();
+        gift.add("tier", tier);
+        if (!family.empty())
+            gift.add("family", family);
+        g.command(&wren, cmd({{"type", "character_create"}, {"name", "Wren " + commandId}, {"age", 24}, {"appearance", appearance},
+                              {"gift", gift}, {"commandId", commandId}}));
+        return wren.last("lobby")->boolean("ok");
+    };
+    expect(!gifted("gifted", "", "bad-1") && !gifted("quickened", "death_walker", "bad-2") && !gifted("normal", "fire", "bad-3") &&
+               !gifted("chosen", "water", "bad-4") && !gifted("gifted", "lightning", "bad-5"),
+           "a Gifted wolf needs a family, a playable one; a Normal wolf none");
+    expect(gifted("quickened", "blinker", "make-2") && gifted("gifted", "water", "make-3"), "a Quickened Blinker and a Gifted Water wolf");
+    std::map<std::string, std::string> made;
+    for (const auto& ch : wren.last("lobby")->array("characters"))
+        made[ch.string("name")] = ch.string("gift") + (ch.boolean("quickened") ? "+" : "");
+    expect(made["Wren make-2"] == "blinker+" && made["Wren make-3"] == "water" && made["Wren Reed"].empty(),
+           "the roster shows each Gift, and the first wolf has none");
+    for (const auto& [cid, ch] : g.characters())
+        if (ch.name == "Wren make-2")
+            expect(ch.gift == "blinker" && ch.quickened && ch.mana > 0, "and the character has it, with mana");
+    expect(!gifted("gifted", "seer", "make-2"), "the same request ID with another Gift is refused");
     g.command(&wren, cmd({{"type", "chat"}, {"text", "/sit"}}));
     run(g, wren, 1);
     g.command(&wren, cmd({{"type", "character_leave"}}));

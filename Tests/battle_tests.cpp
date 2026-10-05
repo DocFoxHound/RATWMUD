@@ -1,6 +1,7 @@
 // Turn-based fights in arenas (Core/RatwBattle.h; Docs/Design/33-combat.md), in the demo world.
 #include "RatwCheckpoint.h"
 #include "RatwWire.h"
+#include "RatwGifts.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
 
@@ -441,6 +442,34 @@ void downedIsSaved()
     expect(back.downedLeft == 321 && back.recoveryUsed == 4 && back.hurt == 100, "Downed, and the day's getting-up, are saved");
     expect(back.mouth == "sword" && back.gift == "fire" && back.quickened && back.mana == 33 && back.fightingSkill == 61,
            "and the sword in the jaws, the Gift, its mana, and fighting skill");
+    e.gift = "sound";
+    expect(wire::readEntity(wire::persistEntity(e, 0)).gift == "sound", "Any family of Data/Gifts is kept (doc 43)");
+    e.gift = "lightning";
+    expect(wire::readEntity(wire::persistEntity(e, 0)).gift.empty(), "and one that isn't, dropped");
+}
+
+// The eight families (doc 43): any may be given to a player but the Death Walker's, which is for NPCs only.
+void giftFamilies()
+{
+    std::string problem;
+    expect(gifts::load(&problem), "The Gifts catalog loads: " + problem);
+    const auto& catalog = gifts::creatorCatalog();
+    expect(catalog.array("families").size() == 8 && catalog.object("tiers").has("quickened"), "The creator gets eight families and the tiers");
+    for (const auto& f : catalog.array("families"))
+        expect(!f.object("gifted").array("abilities").empty() && !f.object("quickened").array("abilities").empty() &&
+                   !f.object("gifted").string("best").empty() && !f.object("quickened").string("tell").empty(),
+               f.string("id") + ": abilities, best-for and Tell at both tiers");
+    World w;
+    quiet(w);
+    auto& ad = w.addPlayer("player-ad", "Ad");
+    for (const auto* family : {"fire", "earth", "water", "wind", "sound", "blinker", "gravity", "seer"})
+        expect(w.giveGift("player-ad", family, true).ok && ad.gift == family && ad.quickened, std::string("A player may have ") + family);
+    expect(!w.giveGift("player-ad", "death_walker", false).ok && ad.gift == "seer", "but not the Death Walker's");
+    expect(!w.giveGift("player-ad", "lightning", false).ok, "nor one there's no such family of");
+    expect(w.giveGift("player-ad", "", false).ok && ad.gift.empty() && !ad.quickened && ad.mana == 0, "and it can be taken away");
+    auto& npc = w.addPlayer("npc-mourner", "Mourner");
+    npc.npc = true;
+    expect(w.giveGift("npc-mourner", "death_walker", false).ok, "An NPC may be a Death Walker");
 }
 
 // Two players in a fight, by challenge: "player-ad" goes first.
@@ -550,7 +579,10 @@ void theSword()
     const int before = Society::stock(*w.society().account("player-ad"), "sword");
     expect(w.takeItem("player-ad", g.id).ok && w.groundItems().empty(), "Ad picks it up");
     expect(Society::stock(*w.society().account("player-ad"), "sword") == before + 1, "and has it");
-    expect(w.entity("player-ad")->fightingSkill > 50, "Fighting taught her something");
+    expect(w.entity("player-ad")->fightingSkill == 50 && w.temperamentOf(*w.entity("player-ad")).skill == 50,
+           "Fighting doesn't raise her fighting skill: her level does (doc 44)");
+    w.levelOf = [](const std::string&) { return 25; };
+    expect(w.temperamentOf(*w.entity("player-ad")).skill == 62, "At level 25 it is 62");
 }
 
 void theFlame()
@@ -562,6 +594,8 @@ void theFlame()
     const auto r0 = w.battleAct("player-ad", "flame", "1,1");
     expect(!r0.ok, "No Gift, no fire");
     expect(w.giveGift("player-ad", "fire", false).ok && ad->mana == battle::manaMax(ad->wisdom, true), "Given the Gift of fire");
+    expect(!w.battleAct("player-ad", "flame", "1,1").ok, "A Gifted Fire wolf has no Flamethrower (doc 43)");
+    expect(w.giveGift("player-ad", "fire", true).ok && ad->quickened, "Quickened, she has");
     auto* fa = b.fighter("player-ad");
     auto* fb = b.fighter("player-bo");
     fb->x = fa->x + 2;
@@ -569,8 +603,8 @@ void theFlame()
     const double mana = ad->mana, stamina = ad->stamina;
     const auto r = w.battleAct("player-ad", "flame", std::to_string(fb->x) + "," + std::to_string(fb->y));
     expect(r.ok && fa->casting && b.casts.size() == 1, "She gathers the fire: " + r.message);
-    expect(mana - ad->mana == battle::GiftedFlame.mana && stamina - ad->stamina == battle::GiftedFlame.stamina, "Mana and breath");
-    expect(std::abs(ad->hurt - battle::GiftedFlame.self) < 1e-9, "and a singed muzzle");
+    expect(mana - ad->mana == battle::QuickenedFlame.mana && stamina - ad->stamina == battle::QuickenedFlame.stamina, "Mana and breath");
+    expect(std::abs(ad->hurt - battle::QuickenedFlame.self) < 1e-9, "and a singed muzzle");
     const auto& tiles = b.casts[0].tiles;
     expect(std::find(tiles.begin(), tiles.end(), std::pair<int, int>{fb->x, fb->y}) != tiles.end(), "The cone takes in Bo's tile");
     expect(test::acting(&b, "player-ad") && !w.battleMove("player-ad", fa->x + 1, fa->y).ok,
@@ -789,7 +823,7 @@ void dodgingTheFire()
     World w;
     auto& b = duel(w);
     auto* ad = w.entity("player-ad");
-    w.giveGift("player-ad", "fire", false);
+    w.giveGift("player-ad", "fire", true);
     auto* fa = b.fighter("player-ad");
     auto* fb = b.fighter("player-bo");
     w.entity("player-bo")->dexterity = 100;             // A quick wolf.
@@ -799,8 +833,8 @@ void dodgingTheFire()
     const auto r = w.battleAct("player-ad", "flame", std::to_string(fb->x) + "," + std::to_string(fb->y));
     expect(r.ok && b.casts.size() == 1, "Ad gathers fire at Bo: " + r.message);
     const double wait = b.casts[0].firesAt - b.casts[0].castAt;
-    expect(std::abs(wait - battle::GiftedFlame.charge / (1 + ad->wisdom / 200)) < 1e-9 && wait > 3 && wait < 4,
-           "It goes off in about three and a half seconds: " + std::to_string(wait));
+    expect(std::abs(wait - battle::QuickenedFlame.charge / (1 + ad->wisdom / 200)) < 1e-9 && wait > 2 && wait < 3,
+           "It goes off in about two and a half seconds: " + std::to_string(wait));
     for (int i = 0; i < 20 && !fb->acting; ++i)
         w.tick(.1);
     expect(fb->acting, "Bo's bar fills first");
@@ -1488,6 +1522,7 @@ void fightStart()
     dee.cellId = "wilds";
     dee.position = {50.5, 33.5};
     dee.posture = "crouching";
+    fb = b->fighter("bo");                          // (Cy's coming in moved the fighters: fetch Bo afresh.)
     expect(w.joinBattle("dee", b->id, fb->side).ok, "Dee joins later");
     expect(!b->fighter("dee")->stalking && !b->fighter("dee")->unseen, "and isn't sneaking: she is seen");
     // Cy strikes: found.
@@ -1645,7 +1680,7 @@ void devConsoleTeamFight()
         expect(e && e->npc && !w.hostile(id) && !e->name.empty(), "each ally a named passer-by, not hostile: " + (e ? e->name : id));
         expect(w.temperamentOf(*e).kind == "aggressive", "who stands and fights");
         const auto* f = b->fighter(id);
-        expect(test::apart(f->x, f->y, b->fighter("ada")->x, b->fighter("ada")->y) <= 3, "beside Ada");
+        expect(test::apart(f->x, f->y, b->fighter("ada")->x, b->fighter("ada")->y) <= 3, "beside Ada: " + std::to_string(test::apart(f->x, f->y, b->fighter("ada")->x, b->fighter("ada")->y)));
     }
     expect(!w.testFightTeam("ada").ok, "One test fight at a time");
     // Ada waits: her allies fight the bandits.
@@ -1772,6 +1807,7 @@ int main()
         facingAndTruce();
         theSword();
         theFlame();
+        giftFamilies();
         crawling();
         smiths();
         barsFillInRealTime();

@@ -3,22 +3,31 @@
 // a heavy blow shakes the view; a fall bursts; fire fills its cone and leaves ash; health drains with a lag so the size
 // of a blow shows. All of it is drawn from the fight's own log: the server's positions never move, and nothing here
 // decides an outcome. What should be heard is queued as cues (ui/sound.ts plays them).
-import {apart, type BattleLine, type BattleView, type FighterView, type Tile} from './battle.ts';
+import {apart, FamilyColours, type BattleLine, type BattleView, type FighterView, type Tile} from './battle.ts';
 
 export interface Mark {
     x: number;                  // Tile coordinates (centres), in the arena.
     y: number;
     glyph: string;
-    color: 'hit' | 'graze' | 'miss' | 'fire' | 'smoke' | 'burn' | 'charge' | 'item' | 'ash';
+    color: 'hit' | 'graze' | 'miss' | 'fire' | 'smoke' | 'burn' | 'charge' | 'item' | 'ash' | 'gift';
     alpha: number;
+    tint?: string;              // A Gift's own colour ("#rrggbb"), for color 'gift'.
+    size?: number;              // Relative to a tile (default a tile's glyph).
 }
+
+/** Each Gift family's glyphs (doc 43), for what its magic does on the arena. */
+export const FamilyGlyphs: Record<string, string> = {fire: '^*~', earth: '▲▪∴', water: '≈~°', wind: '≋~»', sound: ')(·', blinker: '✦·*',
+    gravity: '◎•○', seer: '◉✧·', death_walker: '†·.'};
+
+/** Lines a Gift's magic tells (doc 43): drawn with the family's glyphs, not as a blow. */
+const GiftKinds = ['gift', 'blink', 'crash', 'pulled', 'stumble', 'riposte', 'overreach', 'lost', 'still', 'break'];
 
 /** A figure rising off a wolf: the damage of a blow, "miss", "down". */
 export interface Float {
     x: number;                  // Tile coordinates (centre of the tile it rose from), already risen.
     y: number;
     text: string;
-    color: 'hit' | 'heavy' | 'graze' | 'miss' | 'fire' | 'down' | 'heal';
+    color: 'hit' | 'heavy' | 'graze' | 'miss' | 'fire' | 'down' | 'heal' | 'gift';
     size: number;               // Relative: 1 a normal blow.
     alpha: number;
     sub?: string;               // Under it, smaller: where the blow landed ("throat").
@@ -49,6 +58,7 @@ interface Effect {
     to: Tile | null;
     damage: number;             // The figure the line gave ("(12)"), 0 for none.
     zone: string;               // Where it landed ("throat", "flank"), from the line's " on the throat".
+    family: string;             // The Gift family of whoever did it (doc 43), for its magic's colour and glyphs.
 }
 
 const Strike = 0.25, Mark = 0.5, Flame = 1.0, Ash = 2.5, FloatTime = 1.1, Flash = 0.18, Shake = 0.32, Burst = 0.7;
@@ -60,7 +70,8 @@ const bump = (t: number, length: number) => (t < 0 || t > length ? 0 : Math.sin(
 
 /** What a fight line should sound like (ui/sound.ts), if anything. */
 const Cues: Record<string, string> = {hit: 'bite', graze: 'graze', slash: 'cut', miss: 'miss', flame: 'fire', charge: 'charge',
-    burn: 'burn', down: 'down', death: 'down', rise: 'rise', tend: 'rise', truce: 'truce', yield: 'truce', over: 'over', shove: 'graze'};
+    burn: 'burn', down: 'down', death: 'down', rise: 'rise', tend: 'rise', truce: 'truce', yield: 'truce', over: 'over', shove: 'graze',
+    gift: 'charge', blink: 'miss', crash: 'bite', riposte: 'cut', overreach: 'burn', pulled: 'graze'};
 
 export class FightEffects {
     private seen = new Map<string, number>();       // The last line seen of each fight.
@@ -112,9 +123,11 @@ export class FightEffects {
         // Whom it befell: a line's target ("bites Bo", "tends Bo", "Bo is caught in the fire"), but its actor for what
         // happens to oneself ("Bo burns", "Bo goes down", "Bo dies", "Bo struggles back to their feet").
         const hurt = ['burn', 'down', 'death', 'rise'].includes(line.kind) ? line.actor : line.target;
+        const family = b.fighters.find(f => f.id === line.actor)?.gift ?? '';
         const effect: Effect = {kind: line.kind, actor: line.actor, target: hurt, tiles: line.tiles, at: clock, from: at(line.actor),
-            to: at(hurt), damage, zone};
-        if (['hit', 'graze', 'slash', 'miss', 'burnt', 'burn', 'flame', 'down', 'death', 'tend', 'rise', 'shove'].includes(line.kind)) this.effects.push(effect);
+            to: at(hurt), damage, zone, family};
+        if (['hit', 'graze', 'slash', 'miss', 'burnt', 'burn', 'flame', 'down', 'death', 'tend', 'rise', 'shove', ...GiftKinds].includes(line.kind))
+            this.effects.push(effect);
         // A heavy blow, fire, or a fall shakes the view: more when it is oneself.
         const heavy = damage >= Heavy || line.kind === 'flame' || line.kind === 'down' || line.kind === 'death';
         if (heavy || (damage > 0 && hurt === this.selfId)) {
@@ -158,7 +171,8 @@ export class FightEffects {
         if (reduced) return [0, 0];
         let dx = 0, dy = 0;
         for (const e of this.effects) {
-            if (!e.from || !e.to || e.kind === 'burn' || e.kind === 'down' || e.kind === 'death' || e.kind === 'tend' || e.kind === 'rise') continue;
+            if (!e.from || !e.to || e.kind === 'burn' || e.kind === 'down' || e.kind === 'death' || e.kind === 'tend' || e.kind === 'rise' ||
+                (GiftKinds.includes(e.kind) && e.kind !== 'crash' && e.kind !== 'riposte')) continue;
             const t = clock - e.at;
             const len = Math.hypot(e.to[0] - e.from[0], e.to[1] - e.from[1]) || 1;
             const ux = (e.to[0] - e.from[0]) / len, uy = (e.to[1] - e.from[1]) / len;
@@ -215,6 +229,9 @@ export class FightEffects {
             else if (e.kind === 'down' || e.kind === 'death')
                 out.push({x, y: y - rise * 0.6, text: e.kind === 'death' ? 'DEAD' : 'DOWN', color: 'down', size: 1.2, alpha});
             else if (e.kind === 'tend' || e.kind === 'rise') out.push({x, y: y - rise, text: 'up', color: 'heal', size: 0.9, alpha});
+            else if (e.kind === 'overreach') out.push({x, y: y - rise, text: 'OVERREACH', color: 'down', size: 0.8, alpha});
+            else if (e.kind === 'lost') out.push({x, y: y - rise, text: '…', color: 'gift', size: 1.1, alpha});
+            else if (e.kind === 'riposte') out.push({x, y: y - rise, text: 'riposte', color: 'gift', size: 0.85, alpha});
             else if (e.damage > 0)
                 out.push({x, y: y - rise, text: String(e.damage), sub: e.zone || undefined,
                     color: e.kind === 'burnt' || e.kind === 'burn' ? 'fire' : e.kind === 'graze' ? 'graze' : e.damage >= Heavy ? 'heavy' : 'hit',
@@ -286,6 +303,10 @@ export class FightEffects {
                     for (const [x, y] of e.tiles) out.push({x, y, glyph: '·', color: 'ash', alpha: 0.6 * (1 - (t - Flame) / Ash)});
                 continue;
             }
+            if (GiftKinds.includes(e.kind)) {
+                this.giftMarks(e, t, clock, reduced, out);
+                continue;
+            }
             if (!e.to || fade <= 0) continue;
             const [x, y] = e.to;
             if (e.kind === 'hit' || e.kind === 'slash') out.push({x, y, glyph: e.kind === 'slash' ? ')' : '*', color: 'hit', alpha: fade});
@@ -305,6 +326,47 @@ export class FightEffects {
         return out;
     }
 
+    /**
+     * What a Gift does, drawn on the arena (doc 43): its tiles flicker with the family's glyphs and fade; a blink leaves a
+     * spark where it went from and where it came to, joined by a trail; a crash bursts.
+     */
+    private giftMarks(e: Effect, t: number, clock: number, reduced: boolean, out: Mark[]) {
+        const tint = FamilyColours[e.family] ?? '#c9a640';
+        const glyphs = FamilyGlyphs[e.family] ?? '*·.';
+        const life = e.kind === 'gift' ? 1.1 : 0.8;
+        if (t < 0 || t > life) return;
+        const alpha = t < 0.15 ? t / 0.15 : 1 - (t - 0.15) / (life - 0.15);
+        if (e.kind === 'blink' && e.tiles.length >= 2) {
+            const [[ax, ay], [bx, by]] = e.tiles;
+            const n = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) * 2));
+            for (let i = 1; i < n; ++i) {
+                const k = i / n;
+                if (!reduced && k > t / life * 1.5) break;
+                out.push({x: ax + (bx - ax) * k, y: ay + (by - ay) * k, glyph: '·', color: 'gift', tint, alpha: alpha * 0.7});
+            }
+            out.push({x: ax, y: ay, glyph: '✦', color: 'gift', tint, alpha: alpha * 0.6, size: 0.6});
+            out.push({x: bx, y: by, glyph: '✦', color: 'gift', tint, alpha, size: 0.9});
+            return;
+        }
+        if (e.kind === 'crash' && e.to) {
+            out.push({x: e.to[0], y: e.to[1], glyph: '✸', color: 'gift', tint: '#f3e3c3', alpha, size: 0.9});
+            return;
+        }
+        if (e.kind === 'stumble' && e.from) {
+            out.push({x: e.from[0], y: e.from[1] - 0.5, glyph: '?', color: 'gift', tint: '#d9c08c', alpha});
+            return;
+        }
+        if (e.kind === 'break' && e.from) {
+            out.push({x: e.from[0], y: e.from[1] - 0.6, glyph: '×', color: 'gift', tint, alpha});
+            return;
+        }
+        const tiles = e.tiles.length ? e.tiles : e.to ? [e.to] : e.from ? [e.from] : [];
+        tiles.forEach(([x, y], i) => {
+            const step = reduced ? 0 : Math.floor(clock * 10 + i * 2) % glyphs.length;
+            out.push({x, y, glyph: glyphs[step], color: 'gift', tint, alpha, size: 0.75});
+        });
+    }
+
     /** A gathering caster trembles where it stands. */
     tremble(id: string, b: BattleView, clock: number, reduced: boolean): [number, number] {
         if (reduced || !b.fighters.find(f => f.id === id)?.casting) return [0, 0];
@@ -320,7 +382,11 @@ export function captionOf(line: BattleLine): string {
         case 'graze': return t.includes(' nicks ') ? 'cuts' : 'bites';
         case 'slash': return 'cuts';
         case 'miss': return t.includes(' swings ') ? 'swings' : 'snaps';
-        case 'charge': return 'gathers fire';
+        case 'charge': return t.includes('heat shimmers') ? 'gathers fire' : 'gathers';
+        case 'gift': return 'Gift';
+        case 'blink': return 'blinks';
+        case 'riposte': return 'ripostes';
+        case 'overreach': return 'overreaches';
         case 'flame': return 'FIRE';
         case 'tend': return 'tends';
         case 'roll': return 'rolls';

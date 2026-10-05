@@ -16,14 +16,14 @@ int main()
         ratw::Entity e;
         check(ratw::advanceAge(e, .5) == 0, "Anchor without retroactive reward");
         check(ratw::advanceAge(e, 365.49) == 0, "Before birthday");
-        check(ratw::advanceAge(e, 365.5) == 1 && e.age == 19 && e.strength == 51 && e.dexterity == 51,
-              "First birthday");
+        check(ratw::advanceAge(e, 365.5) == 1 && e.age == 19 && e.strength == 50 && e.dexterity == 50,
+              "First birthday: older, and no stronger (no stats come with birthdays: doc 44)");
         check(e.ageNoticePending == 1, "Notice queued");
-        check(ratw::advanceAge(e, 365.5) == 0 && e.strength == 51, "Idempotent reward");
+        check(ratw::advanceAge(e, 365.5) == 0 && e.age == 19, "Idempotent");
         check(ratw::advanceAge(e, .5) == 0, "Clock rollback cannot replay rewards");
         check(ratw::advanceAge(e, 730.5) == 1 && e.age == 20, "Second birthday");
         e.age = 34;
-        check(ratw::advanceAge(e, 1095.5) == 1 && e.wisdom == 31, "Maturity gains wisdom");
+        check(ratw::advanceAge(e, 1095.5) == 1 && e.wisdom == 30, "Maturity: no wisdom from a birthday either");
         e.age = 64;
         check(ratw::ageVisionFactor(e) == 1 && ratw::ageHearingFactor(e) == 1, "No premature elder penalty");
         check(ratw::advanceAge(e, 1460.5) == 1 && e.age == 65, "Elder birthday");

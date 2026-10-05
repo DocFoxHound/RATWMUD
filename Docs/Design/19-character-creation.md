@@ -34,9 +34,10 @@ enter the world. Leaving a character returns to selection; logging out returns
 to the account screen. No account recovery or character deletion is implemented.
 
 Creation is authoritative and transactionally persisted. The client cannot
-choose an ID, inject attributes, grant magic eligibility, or assign earned
-Social XP. New characters receive ordinary base attributes and Normal-tier
-progression; selecting an older age does not claim retroactive annual rewards.
+choose an ID, inject attributes, or assign earned Social XP. The player may
+choose a Gift (Normal, Gifted or Quickened, and one of the eight families); the
+server checks it against `Data/Gifts/families.json` (doc 43). New characters
+receive ordinary base attributes and Normal-tier progression; selecting an older age does not claim retroactive annual rewards.
 Existing age-related sense and effective-dexterity rules still apply to old
 characters. The first future birthday is anchored to the shared world calendar.
 

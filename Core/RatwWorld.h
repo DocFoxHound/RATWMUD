@@ -237,6 +237,10 @@ struct Entity
     // fighting skill (0..100: NPCs' comes from their trade, a player's grows by fighting).
     // All saved. `lingering`: the player has gone but their body stays in a fight a while.
     std::string mouth, gift;
+    double wardenAttention = 0;     // Quickened magic others saw (doc 43): for the Wardens, later. Saved.
+    // Work Gifts in use (doc 43), until these world seconds: Lighten Load (carries half again), Carry (speech carries
+    // as a yell). Not saved: they are short.
+    double lightLoadUntil = 0, carryVoiceUntil = 0;
     // What is worn (doc 35, 1.1): a wear slot ("head", "neck", "chest_left"...) to a catalog item, and each piece of
     // jewellery with the fur spot it is clipped at. Saved. The goods stay in the purse; wearing marks them.
     std::map<std::string, std::string> worn;
@@ -609,6 +613,47 @@ class World
     // A fighter's turn: move to a tile (crawl one, when Downed), and act: "bite", "tend", "struggle", "flee", "wait".
     Result battleMove(const std::string& id, int x, int y);
     Result battleAct(const std::string& id, const std::string& action, const std::string& target = {});
+    // Gifts in a fight (Docs/Design/43-gifts.md, RatwMagic.cpp). Using one of one's family's fight abilities on one's
+    // turn: `target` a fighter's id, a tile "x,y", a way "x,y" (toward that tile), a fighter and a tile "id@x,y", or
+    // painted tiles "x,y;x,y;..."; arming a reaction (Slip, Interpose) or not; letting a channelled one go.
+    Result useGift(const std::string& id, const std::string& ability, const std::string& target);
+    Result armReaction(const std::string& id, const std::string& ability, bool on);
+    Result letGo(const std::string& id);
+    // What a fighter's Gift offers it now, for the fight screen: each fight ability, how it is aimed, and whether it can
+    // be used now (and why not).
+    struct GiftOption
+    {
+        std::string id, name, kind, target, why;
+        int range = 0, tiles = 0, cooldown = 0;
+        double mana = 0, perTurn = 0, perTile = 0;
+        bool ready = false, on = false;
+    };
+    std::vector<GiftOption> giftOptions(const std::string& id) const;
+    // A work ability used out of a fight (Mend, Shortcut, Lighten Load...).
+    Result useWorkGift(const std::string& id, const std::string& ability, const std::string& target);
+    // The effects on a fighter now, for its card: a short name, what it does, and turns left (-1: the fight).
+    struct GiftEffect
+    {
+        std::string id, name, does;
+        int turns = -1;
+    };
+    std::vector<GiftEffect> giftEffects(const Battle& b, const BattleFighter& f) const;
+    // How fast a fighter's bar fills in this fight (DEX, armour, injuries, Gifts), with the fight's haste.
+    double meterRate(const Battle& b, const BattleFighter& f, double haste) const;
+    // Whether a fighter's side can't be flanked (Heat Sense, Stone Armor, Water Screen, Critical Sight: doc 43).
+    bool unflankable(const BattleFighter& f) const;
+    // A player's level (doc 44: their XP is the game's social ledger): set by the game; level 1 without it.
+    std::function<int(const std::string& id)> levelOf;
+    // XP earned in the world (doc 44): a typed award ("work", "practice", "milestone", "discovery", "story") and what it
+    // was for (paid once for each), taken by the game into the ledger.
+    struct Award
+    {
+        std::string who, kind, source;
+    };
+    void award(const std::string& who, const std::string& kind, const std::string& source);
+    std::vector<Award> takeAwards();
+    // Whether a fighter could stand on an arena tile now: open ground no one stands on or walks to (but `except`).
+    bool arenaOpen(const Battle& b, int x, int y, const std::string& except = {}) const;
     // The tiles a fighter may move to now (none when it isn't their turn, or they have moved).
     std::vector<std::pair<int, int>> battleReach(const std::string& id) const;
     // Planning ahead while one's bar fills (doc 37): the tiles one's next turn could reach from here; a tile to go to
@@ -1094,6 +1139,36 @@ class World
     Result shove(Battle& b, BattleFighter& f, const std::string& target);
     Result castFlame(Battle& b, BattleFighter& f, int x, int y);
     void resolveCast(Battle& b, const BattleCast& cast);
+    // Gifts (RatwMagic.cpp): what happens at the start of a fighter's turn (false if the turn is lost); as it steps onto
+    // a tile; a gathered Gift going off; a blow coming at a wolf (Slip, Interpose, Riposte: true if it is dealt with);
+    // what gets through to it; a hit breaking a held Gift; what blocks a tile; the move's reach and breath; the senses.
+    bool magicTurnStart(Battle& b, BattleFighter& f);
+    void magicStep(Battle& b, BattleFighter& f);
+    void magicResolve(Battle& b, const BattleCast& cast);
+    bool magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std::string& weapon, Result& out);
+    void magicAfterBlow(Battle& b, BattleFighter& f, BattleFighter& t);
+    double magicDamage(const Battle& b, const BattleFighter& t, double damage, bool fire) const;
+    void magicHurt(Battle& b, BattleFighter& t);
+    bool magicBlocks(const Battle& b, int x, int y) const;
+    int magicRange(const Battle& b, const BattleFighter& f, int range) const;
+    double magicTileStamina(const Battle& b, const BattleFighter& f, double perTile) const;
+    void magicSenses(const Battle& b, const BattleFighter& o, const BattleFighter& t, battle::Senses& s) const;
+    double magicStrikeChance(const BattleFighter& f, const BattleFighter& t, double chance) const;
+    void magicFightStart(Battle& b);
+    bool npcGift(Battle& b, BattleFighter& f, const BattleFighter& mark);
+    void tendGiftSenses();                          // Danger Sense (Gifted Seers): hidden bandits nearby, told.
+    std::map<std::string, double> workGiftAt_;      // Player|ability -> when a work Gift was last used (world seconds).
+    std::map<std::string, double> mendedDay_;       // Injury id -> the day it was last Mended.
+    std::set<std::pair<std::string, std::string>> dangerTold_;   // Seer, bandit: already warned.
+    double giftSensesAt_ = 0;                       // When Danger Sense last looked.
+    std::vector<Award> awards_;                     // XP earned, for the game to take (doc 44).
+    std::map<std::string, double> awardSent_;       // Who|kind|source -> when last sent (the same one not again for a while).
+    double progressAt_ = 0;                         // When players' work, places and skills were last looked at.
+    void tendProgress();
+    std::string giftWhyNot(const Battle& b, const BattleFighter& f, const std::string& ability) const;
+    void overreach(Battle& b, BattleFighter& f, const std::string& family);
+    void wardensSee(Battle& b, const BattleFighter& caster);
+    bool throwFighter(Battle& b, BattleFighter& t, int dx, int dy, int tiles, const std::string& by, double crash);
     void dropItem(Battle& b, BattleFighter& f);
     void tendFightSurroundings(Battle& b);
     void growSkill(Entity& e, double amount);
@@ -1102,7 +1177,6 @@ class World
     Result startBattle(const std::string& attacker, const std::string& target, bool pvp);
     void enterBattle(Battle& b, const std::string& id, int side, bool full);
     void fitArena(Battle& b);
-    bool arenaOpen(const Battle& b, int x, int y, const std::string& except = {}) const;
     void lineUp(Battle& b);
     void tendBattles(double dt);
     void beginTurn(Battle& b, BattleFighter& f);

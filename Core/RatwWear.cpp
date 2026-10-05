@@ -166,7 +166,7 @@ void World::fitWorn(const std::string& id)
 World::Load World::loadOf(const Entity& e) const
 {
     Load l;
-    l.comfortable = 12 + .25 * std::clamp(e.strength, 0.0, 100.0);
+    l.comfortable = (12 + .25 * std::clamp(e.strength, 0.0, 100.0)) * (time_ < e.lightLoadUntil ? 1.5 : 1);   // (Lighten Load, doc 43.)
     if (const auto* purse = society_.account(e.id))
         for (const auto& [item, count] : purse->stock)
             if (const auto* good = items::good(item); good && count > 0)

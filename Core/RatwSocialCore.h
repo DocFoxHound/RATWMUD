@@ -181,7 +181,16 @@ class SocialLedger
     {
         return c.turns >= ShapeTurns && c.words >= ShapeWords && c.replies >= ShapeReplies;
     }
-    int level(const std::string& actor) const;
+    int level(const std::string& actor) const;     // By doc 44's curve (RatwLevels.h).
+    // XP for something other than a scene (doc 44), each kind a typed receipt: "work" (10, at most 30 a day),
+    // "practice" (5, 15 a day), "milestone" (10), "discovery" (5, 25 a day), "story" (25). Paid once for each `source`
+    // (a later one with the same source pays nothing). Returns what was paid (rested XP on top included), or -1 if the
+    // day's limits leave nothing for it now (no receipt: it may be paid another day).
+    int award(const std::string& actor, const std::string& kind, const std::string& source, double now);
+    // The XP a rolling day may pay (doc 44), across every kind; and rested XP: 50 a day away, 300 at most, paid again
+    // on top of what is earned (outside the cap) until it is used up.
+    static constexpr int DailyCap = 150, RestedPerDay = 50, RestedMost = 300;
+    int restedLeft(const std::string& actor, double now) const;
 
   private:
     // A qualified member's pay for a scene: by their place among those qualified (joined first, first), less for

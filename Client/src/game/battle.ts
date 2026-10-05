@@ -61,6 +61,46 @@ export interface FighterView {
     injuries: InjuryView[];
     gear: GearView[];           // Armour and weapons, where they are (doc 35): the card's little doll.     // What is wrong with them, named (doc 38): on their card, never drawn on them.
     odds: StrikeOdds | null;    // A foe, as this wolf would strike them from where it stands now.
+    fx: GiftFx[];               // What Gifts have put on them (doc 43), named, with what each does.
+    gift: string;               // Their Gift's family ("" for none), and whether Quickened.
+    quickened: boolean;
+    intent: PlanView | null;    // Read the Line (doc 43): where a foe means to go and whom to strike.
+}
+
+/** An effect a Gift has put on a fighter (doc 43): "frozen", "doomed", "Holding Crush"... and its turns left (-1 the fight). */
+export interface GiftFx {
+    id: string;
+    name: string;
+    does: string;
+    turns: number;
+}
+
+/**
+ * One of this wolf's Gift's fight abilities (doc 43): how it is aimed (`target`: "self", "foe", "ally", "downed", "any",
+ * "tile", "dir", "shape", "foe+tile", "passive"), how far, its mana, and whether it can be used now (`why` not).
+ */
+export interface GiftOption {
+    id: string;
+    name: string;
+    kind: string;               // "instant", "gathered", "channelled", "reaction", "fightlong", "passive", "shape", "twoturn".
+    target: string;
+    range: number;
+    tiles: number;              // A shape's most tiles; an area's size.
+    mana: number;
+    perTurn: number;
+    perTile: number;
+    ready: boolean;
+    why: string;
+    on: boolean;                // Held, armed, on for the fight, or always on.
+    cooldown: number;
+    summary: string;
+}
+
+/** What a Gift has left on the arena's ground (doc 43). */
+export interface GroundMark {
+    x: number;
+    y: number;
+    kind: string;               // "fire", "fissure", "wall", "loose", "slick", "water", "well".
 }
 
 /** Armour by hit zone (doc 35, Part 8): on the head, throat, body or legs, the piece and what it takes off a cut and a bite. */
@@ -92,6 +132,7 @@ export const TurnSeconds = 20;
 
 export interface CastView {
     caster: string;
+    spell: string;              // "flame", or the Gift's ability ("heat_lance", "wave"...).
     meter: number;
     quickened: boolean;
     tiles: Tile[];
@@ -169,6 +210,10 @@ export interface BattleView {
     casts: CastView[];
     drops: Array<{x: number; y: number; item: string}>;
     smoke: Tile[];
+    ground: GroundMark[];       // What Gifts have left on the ground (doc 43).
+    gifts: GiftOption[];        // This wolf's Gift's fight abilities.
+    channel: string;            // The ability it holds now ("" for none).
+    manaMax: number;
 }
 
 /** A turn planned ahead: a tile to go to (`move`), an action and its target (a fighter's id; fire, "x,y"). */
@@ -267,6 +312,8 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             injuries: objects(f, 'injuries').map(i => ({kind: str(i, 'kind'), name: str(i, 'name'), does: str(i, 'does')})),
             odds: obj(f, 'odds') ? {hit: num(obj(f, 'odds'), 'hit'), base: num(obj(f, 'odds'), 'base', num(obj(f, 'odds'), 'hit')),
                 damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach'), ambush: bool(obj(f, 'odds'), 'ambush')} : null,
+            fx: objects(f, 'fx').map(x => ({id: str(x, 'id'), name: str(x, 'name'), does: str(x, 'does'), turns: Math.trunc(num(x, 'turns', -1))})),
+            gift: str(f, 'gift'), quickened: bool(f, 'quickened'), intent: readPlan(obj(f, 'intent')),
         })),
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
         planning: bool(b, 'planning'),
@@ -286,7 +333,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         gift: str(you, 'gift'),
         quickened: bool(you, 'quickened'),
         mana: num(you, 'mana'),
-        flame: str(you, 'gift') === 'fire' ? {length: num(you, 'flameLength', 3), angle: num(you, 'flameAngle', 23), mana: num(you, 'flameMana', 25)}
+        flame: str(you, 'gift') === 'fire' && num(you, 'flameMana', 0) > 0 ? {length: num(you, 'flameLength', 3), angle: num(you, 'flameAngle', 23), mana: num(you, 'flameMana', 25)}
             : null,
         burning: Math.trunc(num(you, 'burning')),
         casting: bool(you, 'casting'),
@@ -298,10 +345,17 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             str: num(obj(you, 'stats'), 'str'), wis: num(obj(you, 'stats'), 'wis')} : null,
         agreed: bool(you, 'truce'),
         truceBy: str(b, 'truceBy'),
-        casts: objects(b, 'casts').map(c => ({caster: str(c, 'caster'), meter: num(c, 'meter'), quickened: bool(c, 'quickened'),
+        casts: objects(b, 'casts').map(c => ({caster: str(c, 'caster'), spell: str(c, 'spell', 'flame'), meter: num(c, 'meter'), quickened: bool(c, 'quickened'),
             tiles: tiles(arr(c, 'tiles')), left: num(c, 'left'), of: num(c, 'of')})),
         drops: objects(b, 'drops').map(d => ({x: Math.trunc(num(d, 'x')), y: Math.trunc(num(d, 'y')), item: str(d, 'item')})),
         smoke: tiles(arr(b, 'smoke')),
+        ground: objects(b, 'ground').map(g => ({x: Math.trunc(num(g, 'x')), y: Math.trunc(num(g, 'y')), kind: str(g, 'kind')})),
+        gifts: objects(you, 'gifts').map(g => ({id: str(g, 'id'), name: str(g, 'name'), kind: str(g, 'kind'), target: str(g, 'target'),
+            range: Math.trunc(num(g, 'range')), tiles: Math.trunc(num(g, 'tiles')), mana: num(g, 'mana'), perTurn: num(g, 'perTurn'),
+            perTile: num(g, 'perTile'), ready: bool(g, 'ready'), why: str(g, 'why'), on: bool(g, 'on'), cooldown: Math.trunc(num(g, 'cooldown')),
+            summary: str(g, 'summary')})),
+        channel: str(you, 'channel'),
+        manaMax: num(you, 'manaMax'),
     };
 }
 
@@ -514,4 +568,57 @@ export function placeAt(b: BattleView, x: number, y: number): '1' | '0' | '#' | 
     const row = b.placeRows[y - b.arena.y];
     const c = row?.[x - b.arena.x] ?? '';
     return c === '1' || c === '0' || c === '#' || c === '.' ? c : '';
+}
+
+/** The colour of a Gift family's magic (Data/Gifts/families.json's own): its spells, its marks on the ground. */
+export const FamilyColours: Record<string, string> = {fire: '#d8643a', earth: '#9a7a4e', water: '#3f86c4', wind: '#8fb8a8', sound: '#b07cc6',
+    blinker: '#6f7fd8', gravity: '#7a6a9a', seer: '#c9a640', death_walker: '#8a8a8a'};
+
+/** The family an ability belongs to, from its id (the fight's own spells: "flame" is fire). */
+export function familyOfSpell(b: BattleView, caster: string): string {
+    return b.fighters.find(f => f.id === caster)?.gift || 'fire';
+}
+
+/** The tiles in a line from (x, y) toward (tx, ty), out to `length` (the server's lineOut). */
+export function lineTiles(x: number, y: number, tx: number, ty: number, length: number): Tile[] {
+    const dx = tx - x, dy = ty - y, n = Math.max(Math.abs(dx), Math.abs(dy));
+    const out: Tile[] = [];
+    if (n < 1) return out;
+    for (let i = 1; i <= length; ++i) out.push([x + Math.round(dx / n * i), y + Math.round(dy / n * i)]);
+    return out;
+}
+
+/** The tiles a Gift aimed from (x, y) at (tx, ty) would cover, for the preview while aiming (the server locks its own). */
+export function giftArea(b: BattleView, g: GiftOption, x: number, y: number, tx: number, ty: number): Tile[] {
+    const id = g.id;
+    if (id === 'flamethrower') return coneTiles(b, x, y, tx, ty, 5, 35);
+    if (id === 'shatterhowl') return coneTiles(b, x, y, tx, ty, 5, 30);
+    if (id === 'heat_lance' || id === 'pressure_jet' || id === 'battering_gust') return lineTiles(x, y, tx, ty, g.range);
+    if (id === 'wave') {
+        const dx = Math.sign(tx - x), dy = Math.sign(ty - y), out: Tile[] = [];
+        if (!dx && !dy) return out;
+        for (let i = 1; i <= g.range; ++i) for (let w = -1; w <= 1; ++w) out.push([x + dx * i - dy * w, y + dy * i + dx * w]);
+        return out;
+    }
+    if (id === 'flood' || id === 'clear_the_air' || id === 'smother_to_smoke') {
+        const out: Tile[] = [];
+        for (let dy = -1; dy <= 1; ++dy) for (let dx = -1; dx <= 1; ++dx) out.push([tx + dx, ty + dy]);
+        return out;
+    }
+    if (id === 'pressure_drop') return [[tx, ty], [tx + 1, ty], [tx, ty + 1], [tx + 1, ty + 1]];
+    if (id === 'well') {
+        const out: Tile[] = [];
+        for (let dy = -3; dy <= 3; ++dy) for (let dx = -3; dx <= 3; ++dx) out.push([tx + dx, ty + dy]);
+        return out;
+    }
+    return [[tx, ty]];
+}
+
+/** The tiles around oneself a Gift used on oneself covers (Blastwave, Thunderclap...), for its preview. */
+export function selfArea(g: GiftOption, x: number, y: number): Tile[] {
+    const r = g.id === 'blastwave' || g.id === 'whirlwind' ? 1 : g.id === 'thunderclap' ? 2 : g.id === 'dread_note' ? 4 :
+        g.id === 'weightless' ? 5 : g.id === 'hush' ? 2 : g.id === 'steady_beat' || g.id === 'shared_sight' ? 3 : g.id === 'heat_sense' || g.id === 'feel_footfalls' ? 6 : 0;
+    const out: Tile[] = [];
+    for (let dy = -r; dy <= r; ++dy) for (let dx = -r; dx <= r; ++dx) if (dx || dy || !r) out.push([x + dx, y + dy]);
+    return out;
 }

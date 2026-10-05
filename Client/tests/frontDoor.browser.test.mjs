@@ -102,6 +102,39 @@ test('creating a character: an explicit review, one request, retried under its o
     assert.deepEqual([commands.at(-1).type, commands.at(-1).id], ['character_enter', 'owned_character_1']);
 });
 
+test('choosing a Gift: the tier, one of eight families, its abilities, and the choice sent (doc 43)', async () => {
+    const catalog = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'Data', 'Gifts', 'families.json'), 'utf8'));
+    const gifts = {tiers: catalog.tiers, families: catalog.families.filter(f => !f.npcOnly)};
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: [], gifts: ${JSON.stringify(gifts)}}))`);
+    await page.evaluate(`window.ratw.page('creator')`);
+    await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].find(b => b.textContent === 'Gift').click()`);
+    const count = selector => page.evaluate(`document.querySelectorAll(${JSON.stringify(selector)}).length`);
+    assert.equal(await count('.gift-card'), 3, 'Normal, Gifted, Quickened');
+    assert.equal(await count('.gift-family'), 0, 'a Normal wolf picks no family');
+    await page.evaluate(`document.querySelector('.gift-card[data-tier=gifted]').click()`);
+    assert.equal(await count('.gift-family'), 8, 'the eight families, no Death Walker');
+    await door(`(d.draftName = 'Rill', d.review())`);
+    assert.equal(await door('d.page'), 'creator', 'a Gifted wolf with no family is sent back to the Gift tab');
+    await page.evaluate(`document.querySelector('.gift-family[data-family=water]').click()`);
+    const water = catalog.families.find(f => f.id === 'water');
+    assert.equal(await count('.gift-ability'), water.gifted.abilities.length, 'every Gifted Water ability is listed');
+    assert.ok(await page.evaluate(`document.querySelector('.gift-details').textContent.includes('Mend')`), 'Mend among them');
+    assert.ok(await page.evaluate(`document.querySelector('.gift-details').textContent.includes('AT WORK')`), 'split into work and fight');
+    await page.evaluate(`document.querySelector('.gift-card[data-tier=quickened]').click()`);
+    assert.equal(await door('d.draftFamily'), 'water', 'switching tier keeps the family');
+    assert.ok(await page.evaluate(`document.querySelector('.gift-details').textContent.includes('Freeze')`), 'and shows its Quickened abilities');
+    await page.evaluate(`document.querySelector('.gift-family[data-family=blinker]').click()`);
+    assert.ok(await page.evaluate(`document.querySelector('.door-preview').textContent.includes('Quickened · Blinker')`), 'the preview says so');
+    await door('(d.review(), d.create())');
+    assert.deepEqual((await sent()).at(-1).gift, {tier: 'quickened', family: 'blinker'}, 'the Gift is sent with the creation');
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: [{id: 'w2', name: 'Rill', age: 18,
+        appearance: d.draftAppearance, gift: 'blinker', quickened: true}]}))`);
+    assert.ok(await page.evaluate(`document.querySelector('.slot').textContent.includes('Quickened · Blinker')`), 'and the roster shows it');
+    await page.evaluate(`window.ratw.page('creator')`);
+    await door(`(d.draftName = 'Plain', d.review(), d.create())`);
+    assert.equal((await sent()).at(-1).gift, undefined, 'a Normal wolf sends no Gift');
+});
+
 test('signing out forgets the roster and any draft', async () => {
     await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'login', ok: true, characters: []}))`);
     assert.equal(await door('d.characters.length'), 0);

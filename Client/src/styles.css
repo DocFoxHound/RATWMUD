@@ -394,6 +394,27 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .marking-row input[type=color] { width: 54px; height: 36px; padding: 0; border: none; background: none; }
 .door .marking-row .small { padding: 8px 0; background: var(--raised); color: var(--paper); }
 
+/* The Gift tab (doc 43): the classification, the eight families, and the chosen one's abilities. */
+.gift-heading { color: var(--gold); font-size: 15px; letter-spacing: .03em; margin: 4px 0 -6px !important; }
+.gift-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.gift-families { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.door .gift-card, .door .gift-family { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left;
+    background: var(--raised); color: var(--paper); font-weight: 400; padding: 12px 14px; }
+.door .gift-card strong, .door .gift-family strong { font-weight: 500; font-size: 18px; }
+.door .gift-card span, .door .gift-family span { font-size: 14px; line-height: 1.35; color: var(--muted); }
+.door .gift-family { border-left: 4px solid var(--family); }
+.door .gift-card.chosen, .door .gift-family.chosen { background: color-mix(in srgb, var(--gold) 16%, var(--raised)); outline: 2px solid var(--gold); }
+.door .gift-card.chosen span, .door .gift-family.chosen span { color: var(--paper); }
+.gift-details { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; background: var(--ink); border-left: 4px solid var(--family); }
+.door .gift-details p { margin: 0; }
+.gift-terms { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 4px 0; font-size: 16px; }
+.gift-terms dt { color: var(--gold); }
+.gift-terms dd { margin: 0; }
+.gift-ability { display: grid; grid-template-columns: 170px 1fr; gap: 2px 14px; padding: 6px 0; border-top: 1px solid var(--raised); font-size: 16px; }
+.gift-ability > .muted { grid-column: 2; }
+.gift-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.gift-chip { font-size: 13px; padding: 1px 8px; border-radius: 10px; background: var(--raised); color: var(--sage); }
+
 /* Fights (Docs/Design/33-combat.md): the panel under the map. */
 .fight-panel { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background: var(--panel);
     border: 1px solid color-mix(in srgb, #d4483c 55%, transparent); border-radius: 3px; }
@@ -546,6 +567,27 @@ button.given { opacity: .6; }
 .game button.abtn.armed { background: #3a2a1a; border-color: #ff9a3c; }
 .fcard.lost { opacity: .45; filter: grayscale(.6); }
 .game button.abtn.planned { border-color: var(--gold); border-style: dashed; background: color-mix(in srgb, var(--gold) 14%, transparent); }
+/* The Gift's row (doc 43): its abilities in the family's colour; held, armed or on, lit. */
+.bar-gifts { --family: var(--gold); display: flex; gap: 3px; align-items: stretch; flex-wrap: wrap; padding: 4px 0 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--family) 35%, transparent); }
+.bar-gifts.family-fire { --family: #e07a4a; } .bar-gifts.family-earth { --family: #b8956a; } .bar-gifts.family-water { --family: #5aa0d8; }
+.bar-gifts.family-wind { --family: #9fd0bc; } .bar-gifts.family-sound { --family: #c493d8; } .bar-gifts.family-blinker { --family: #8b99ec; }
+.bar-gifts.family-gravity { --family: #a294c4; } .bar-gifts.family-seer { --family: #dcbc58; }
+.gift-head { display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 96px; padding: 0 8px 0 2px; color: var(--family); }
+.gift-head-icon { width: 20px; height: 20px; }
+.gift-head-name { font: 10px 'RATW Mono', monospace; letter-spacing: .06em; }
+.gift-head-mana { font: 11px 'RATW Mono', monospace; color: var(--paper); }
+.gift-head-aim { flex-basis: 100%; order: 9; font-size: 12px; color: var(--family); }
+.bar-gifts .gift-head:has(.gift-head-aim) { max-width: 260px; }
+.bar-gifts .abtn .abtn-icon { color: var(--family); }
+.bar-gifts .abtn .abtn-sub { color: var(--family); }
+.game .bar-gifts button.abtn.go { border-color: var(--family); background: color-mix(in srgb, var(--family) 16%, #1e2a28); }
+.game .bar-gifts button.abtn.armed { border-color: var(--family); background: color-mix(in srgb, var(--family) 30%, #1e2a28); }
+.fcard-hurts .hurt.gift { border-color: #6f7fd8; color: #b8c2ff; background: #181c30; }
+.fcard-hurts .hurt.fx-frozen, .fcard-hurts .hurt.fx-soaked { border-color: #3f86c4; color: #a8d4ff; background: #12202c; }
+.fcard-hurts .hurt.fx-doomed, .fcard-hurts .hurt.fx-held, .fcard-hurts .hurt.fx-crushed, .fcard-hurts .hurt.fx-unmoored { border-color: #9a4a8a; color: #f0a8e0; background: #261424; }
+.fcard-hurts .hurt.fx-stone_armor, .fcard-hurts .hurt.fx-firm, .fcard-hurts .hurt.fx-anchored { border-color: #9a7a4e; color: #e6cfa4; background: #221c12; }
+.fcard-hurts .hurt.fx-forewarned, .fcard-hurts .hurt.fx-seen_opening, .fcard-hurts .hurt.fx-read { border-color: #c9a640; color: #f2dc8c; background: #241f10; }
 .game button.abtn.end { margin-left: auto; min-width: 104px; padding-right: 22px; overflow: hidden; border-color: var(--gold); }
 .game button.abtn.end:disabled { opacity: .75; border-color: #3a4a43; }
 .end-fill { position: absolute; inset: auto auto 0 0; height: 3px; background: var(--gold); transition: width .2s linear; }
@@ -650,3 +692,7 @@ button.given { opacity: .6; }
 .dev-console-suggestion { display: flex; gap: 14px; padding: 3px 10px 3px 26px; cursor: pointer; }
 .dev-console-suggestion b { color: #e6c481; min-width: 180px; font-weight: 600; }
 .dev-console-suggestion.chosen, .dev-console-suggestion:hover { background: #22301f; }
+/* The Gift's ways of working on the character sheet (doc 43). */
+.gift-work { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; align-items: center; padding: 4px 0; border-top: 1px solid #2c3a35; }
+.gift-work > .muted { grid-column: 1 / 3; grid-row: 2; }
+.gift-work > button, .gift-work > .sage { grid-column: 3; grid-row: 1 / 3; }

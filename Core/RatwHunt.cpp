@@ -642,7 +642,10 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
         const int got = whole(n * factor, odds(f.id + "|" + item, std::int64_t(calendarDays_ * 1000)));
         const auto kind = quality == 3 ? items::withMaker(items::withQuality(item, 3), killer) : items::withQuality(item, quality);
         if (got > 0 && entity(killer) && society_.create(killer, kind, got, "hunted"))
+        {
             taken.push_back(std::to_string(got) + " " + lower(Society::itemName(kind)));
+            award(killer, "practice", "hunt:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
+        }
         else if (fire > 0 && skinOf(item))
             spoilt.push_back(lower(Society::itemName(item)));
     }
@@ -965,11 +968,14 @@ Result World::forage(const std::string& player)
         day = calendarDays_;
     if (used >= data.picks)
         return {false, "This patch has been picked over lately; try further on.", {}};
-    if (!society_.create(player, pick->good->item, pick->good->count, "foraged"))
+    // Weathereye (a Gifted Seer, doc 43): it knew where the good pickings would be: a quarter more, one at least.
+    const int count = pick->good->count + (p->gift == "seer" && !p->quickened ? std::max(1, pick->good->count / 4) : 0);
+    if (!society_.create(player, pick->good->item, count, "foraged"))
         return {false, "You can't carry any more of that.", {}};
     ++used;
-    recordEvent({"forage", player, {}, p->cellId, 0, 0, pick->good->item, pick->good->count, 0, pick->ground->id});
-    return {true, "You gather " + std::to_string(pick->good->count) + " " + lower(Society::itemName(pick->good->item)) + " from " +
+    recordEvent({"forage", player, {}, p->cellId, 0, 0, pick->good->item, count, 0, pick->ground->id});
+    award(player, "practice", "forage:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
+    return {true, "You gather " + std::to_string(count) + " " + lower(Society::itemName(pick->good->item)) + " from " +
                       pick->ground->name + ".",
             {}};
 }

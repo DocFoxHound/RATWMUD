@@ -259,6 +259,10 @@ class Society
     // town's tithe). Nothing is made or lost; what the receiver can't hold stays put. False if nothing moved.
     bool shift(const std::string& from, const std::string& to, const std::string& item, int quantity, std::int64_t coins,
                const std::string& kind);
+    // A Gift lent to a maker (doc 43: a Gifted wolf's Forge Heat at a smithy, Clay Hand at a potter's...): its next batch
+    // made by `untilDay` scores `lift` more toward a better quality. Not saved.
+    void lendGift(const std::string& maker, double lift, double untilDay);
+    double giftLiftOf(const std::string& maker) const;
     // Goods used up (eaten by bandits, say): gone from the world, recorded as `kind`.
     int consume(const std::string& account, const std::string& item, int quantity, const std::string& kind);
     // A facility account (see facilityAccount), empty to begin with; closing one needs it empty.
@@ -419,6 +423,7 @@ class Society
     // Crafting (RatwCrafting.cpp): a maker at work makes a batch of whatever has run low, from their own materials,
     // buying more from a supplier in the same community first if they are running out. Never from nothing.
     std::unordered_map<std::string, double> craftNext_;    // Maker -> the game day they next look at their shelves.
+    std::unordered_map<std::string, std::pair<double, double>> giftLift_;   // Maker -> a lent Gift's lift, and until when (doc 43).
     // Maker -> the batch at work (Data/Items/crafts.json id), done at craftNext_. Not saved: after a restart the batch
     // is begun again, its materials taken only when it is done.
     std::unordered_map<std::string, std::string> craftAtWork_;

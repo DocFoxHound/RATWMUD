@@ -215,6 +215,8 @@ void World::settleContract(Contract& c, const std::string& status, const std::st
         society_.shift(escrow, paidTo.empty() ? c.poster : paidTo, "", 0, c.reward,
                        paidTo.empty() ? "reward returned" : "contract reward");
     society_.closeAccount(escrow);
+    if (const auto* who = entity(paidTo); who && !who->npc)
+        award(paidTo, "story", "contract:" + c.id);   // A contract fulfilled (doc 44).
     c.status = status;
     recordEvent({"contract " + status, paidTo.empty() ? c.poster : paidTo, c.target, {}, 0, 0, {}, 0, c.reward, c.kind + ": " + c.detail});
 }

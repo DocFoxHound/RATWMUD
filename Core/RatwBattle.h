@@ -71,12 +71,39 @@ struct BattleFighter
         bool begun = false;
         bool empty() const { return !move && act.empty(); }
     } plan;
+    // Its Gift in this fight (Docs/Design/43-gifts.md, RatwMagic.cpp).
+    struct Magic
+    {
+        std::string channel, channelOn;         // An ability held (channelled), and on whom or where ("" for itself).
+        std::map<std::string, int> fx;          // What is on it, by name: its own turns left (-1: the whole fight).
+        std::map<std::string, std::string> by;  // ...and who put it there, where that matters (Lighten, Crush, Slam).
+        std::map<std::string, int> cooldown;    // An ability resting: its own turns left.
+        std::set<std::string> armed;            // Reactions switched on (Slip, Interpose).
+        bool reacted = false;                   // A reaction fired since its last turn began: the other can't follow it.
+        std::string last;                       // The last ability it used, and on which of its turns (Overreach).
+        int lastTurn = -10;
+        int firmX = -1, firmY = -1;             // Firm Footing: the tile packed under it.
+        int movedTurn = -10;                    // The last of the fight's rounds it moved in (Feel Footfalls).
+        bool has(const std::string& name) const { return fx.count(name) > 0; }
+    } magic;
+};
+
+// What a Gift leaves on the arena's ground (doc 43): fire, a fissure, a stone wall, loose or slick or flooded ground, a
+// gravity well. Until the fight's round count reaches `until` (-1: the whole fight); a wall stands `hp` more damage.
+struct BattleGround
+{
+    int x = 0, y = 0;
+    std::string kind, owner;
+    int until = -1;
+    double hp = 0;
 };
 
 // A spell charging (the tell): it goes off when its meter fills, on the tiles locked when it began.
 struct BattleCast
 {
     std::string caster, spell;
+    std::string target;                     // A Gift's mark (Hurl Stone's wolf), and the tile it was aimed at.
+    int x = 0, y = 0;
     int dir = 0;
     std::vector<std::pair<int, int>> tiles;
     double meter = 0, gain = 10, mana = 0;
@@ -131,6 +158,14 @@ struct Battle
     double allAwaySince = -1;           // Since when every player standing in it has been away (it lapses after a while).
     std::string opening;                // Who started it, until their first turn ends: NPCs wait for it.
     std::vector<std::pair<std::pair<int, int>, int>> smoke;   // Tiles of smoke and the round they clear.
+    std::vector<BattleGround> ground;   // What Gifts have left on the ground (doc 43).
+    const BattleGround* groundAt(int x, int y, const std::string& kind) const
+    {
+        for (const auto& g : ground)
+            if (g.x == x && g.y == y && g.kind == kind)
+                return &g;
+        return nullptr;
+    }
     double lookedAround = -1;           // When it last looked for who can hear it.
     // Who has noticed whom (doc 40), observer to target: 0 unaware, from AwareSuspicious suspicious, from AwareAlert
     // alert. Only NPC and animal observers are kept; a pair not kept is alert, but game in a hunt starts unaware.

@@ -388,7 +388,7 @@ bar       = 6 + (DEX + the armour's DEX penalties) / 10      // a brigandine and
 
 ## Magic: Flamethrower
 
-Flamethrower is a Fire Gift, so only Gifted or Quickened Fire Wolves can use it. It is powerful, slow to start and costly in three ways: mana, stamina and the caster's own health. This keeps the setting bible's rule that magic is rare and limited, not casual spellcasting.
+Flamethrower is a Fire Gift, so only Fire Wolves can use it, and since doc 43 only Quickened ones (the Gifted column below is kept for the record). It is powerful, slow to start and costly in three ways: mana, stamina and the caster's own health. This keeps the setting bible's rule that magic is rare and limited, not casual spellcasting.
 
 **Scale by tier.** A Gifted caster produces a short sputtering gout. A Quickened caster produces a real blaze; this is the "enormous and frightening" moment the lore calls for.
 

@@ -554,8 +554,22 @@ export class Dialogs {
         const gift = str(self, 'gift');
         if (gift) {
             const box = this.box(right, 'GIFT');
-            el('div', 'big', box, gift.charAt(0).toUpperCase() + gift.slice(1));
-            el('p', 'muted small', box, bool(self, 'quickened') ? 'Quickened: stronger, and dearer in mana.' : 'Drawn on with mana.');
+            const family = gift === 'death_walker' ? 'Death Walker' : gift.charAt(0).toUpperCase() + gift.slice(1);
+            el('div', 'big', box, `${bool(self, 'quickened') ? 'Quickened' : 'Gifted'} · ${family}`);
+            el('p', 'muted small', box, bool(self, 'quickened') ? 'A Gift for fighting, at a frightening scale. Drawn on with mana.'
+                : 'A Gift for work and for helping your side. Drawn on with mana.');
+            el('div', 'small', box, `MANA · ${Math.floor(num(self, 'mana'))} / ${Math.floor(num(self, 'manaMax'))}`);
+            // Its ways of working (doc 43): lent to a workshop near by, or used on oneself (Mend, Shortcut, Lighten Load...).
+            for (const w of arr(self, 'giftWork').filter(isObject)) {
+                const row = el('div', 'gift-work', box);
+                el('span', 'gold', row, str(w, 'name'));
+                el('span', 'muted small', row, str(w, 'summary'));
+                if (bool(w, 'passive')) el('span', 'small sage', row, 'always');
+                else button(`USE · ${Math.round(num(w, 'mana'))}`, 'small', row, () => this.s.send({type: 'giftwork', ability: str(w, 'id')})).title =
+                    'Workshop Gifts are lent to the nearest workshop they help (within a few paces); the rest are for you.';
+            }
+            if (num(self, 'wardenAttention') > 0)
+                el('p', 'muted small', box, 'Others have seen your Quickened magic. Somewhere, it is being written down.');
         }
 
         const standing = this.box(right, 'STANDING');

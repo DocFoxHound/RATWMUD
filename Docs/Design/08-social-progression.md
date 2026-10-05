@@ -14,7 +14,7 @@ amount; it never contains the roleplay text.
 The local MVP has one character per development identity, so its social identity
 maps one-to-one onto that character. Production accounts must own progression
 across multiple characters; this prototype does not claim to implement that account
-service. Displayed social level is `1 + floor(XP / 100)`. Normal characters remain
+service. Displayed level follows doc 44's curve (level L to L + 1 costs 100 + 50 × (L − 1) XP); doc 44 also adds XP from work, practice, places and contracts, a daily cap of 150 and rested XP. Normal characters remain
 Normal regardless of this number: Gifted/Quickened eligibility and governance
 require later systems.
 

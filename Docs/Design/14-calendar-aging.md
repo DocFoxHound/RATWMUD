@@ -111,10 +111,9 @@ that actor's anchor, not simply when the world's year number changes. Annual
 rewards are server-owned and idempotent: replaying a checkpoint or asking for a
 snapshot again cannot award another stat point.
 
-The provisional curve awards +1 strength and +1 dexterity on birthdays through
-age 34. From the 35th birthday onward it awards +1 wisdom instead. Base
-statistics cap at 100. These milestones supplement, not replace, skill practice
-and roleplay progression. Age alone does not unlock Gifted or Quickened status.
+Birthdays award no statistics (doc 44, 2026-10-04: +1 strength and dexterity a
+year to 34, then +1 wisdom, outweighed a character's whole level curve in a
+fight). Gains already had are kept. Age alone does not unlock Gifted or Quickened status.
 
 From the 65th birthday, age affects effective capability without destructively
 rewriting the base statistic or injury state:

@@ -179,7 +179,14 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             const double craft = job ? skill(id, job->id) : 30;
             const double materials = used > 0 ? (qualities / used - 1) * 15 : 0;
             const double luck = (double(std::hash<std::string>{}(id + "|" + std::to_string(std::int64_t(absoluteDay * 86400))) % 1000) / 1000 - .5) * 40;
-            const double score = craft + materials + luck;
+            // A Gift lent to it (doc 43): the forge kept hot, the clay true, the flaws heard; once, for this batch.
+            double lifted = 0;
+            if (const auto lent = giftLift_.find(id); lent != giftLift_.end())
+            {
+                lifted = absoluteDay <= lent->second.second ? lent->second.first : 0;
+                giftLift_.erase(lent);
+            }
+            const double score = craft + materials + luck + lifted;
             // Masterwork is rare even for a master: a good day, and a further one in seven besides.
             const bool inspired = std::hash<std::string>{}(id + "|muse|" + std::to_string(std::int64_t(absoluteDay * 86400))) % 7 == 0;
             const int quality = craft >= 85 && score >= 100 && inspired ? 3 : craft >= 60 && score >= 85 ? 2 : score < 20 ? 0 : 1;
@@ -213,5 +220,18 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         break;
     }
     craftNext_[id] = absoluteDay + wait;
+}
+
+void Society::lendGift(const std::string& maker, double lift, double untilDay)
+{
+    auto& lent = giftLift_[maker];
+    lent.first = std::min(30.0, (lent.second >= untilDay - 1 ? lent.first : 0) + lift);   // (Several Gifts help, to a point.)
+    lent.second = untilDay;
+}
+
+double Society::giftLiftOf(const std::string& maker) const
+{
+    const auto lent = giftLift_.find(maker);
+    return lent == giftLift_.end() ? 0 : lent->second.first;
 }
 } // namespace ratw

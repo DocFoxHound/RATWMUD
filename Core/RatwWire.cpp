@@ -1,5 +1,6 @@
 #include "RatwWire.h"
 #include "RatwItems.h"
+#include "RatwGifts.h"
 
 #include <algorithm>
 #include <cmath>
@@ -254,6 +255,8 @@ Value persistEntity(const Entity& e, double time)
         o.add("quickened", e.quickened);
         o.add("mana", e.mana);
     }
+    if (e.wardenAttention > 0)
+        o.add("wardenAttention", e.wardenAttention);    // Quickened magic others saw (doc 43).
     if (e.fightingSkill != 50)
         o.add("fightingSkill", e.fightingSkill);
     if (e.dungeonMaster)
@@ -362,9 +365,10 @@ Entity readEntity(const Value& o)
         e.injuries.push_back(std::move(i));
     }
     e.gift = o.string("gift");
-    if (!e.gift.empty() && e.gift != "fire")
+    if (!e.gift.empty() && !gifts::known(e.gift))         // (A family in Data/Gifts: doc 43.)
         e.gift.clear();
     e.quickened = o.boolean("quickened");
+    e.wardenAttention = std::clamp(strictNumber(o, "wardenAttention", 0.0), 0.0, 1e9);
     e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
     e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);

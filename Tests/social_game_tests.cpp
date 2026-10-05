@@ -364,7 +364,8 @@ void aSceneSeenAndStarred(const std::string& save)
         }
         t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "inspect"}, {"target", npc}}));
         expect(t.ada.last("inspect") && t.ada.last("inspect")->string("note") == "Owes me a favour.", "and so does her note");
-        expect(t.bo.snapshots.back()["self"].number("socialXp") == 22, "and Bo's star");
+        // (22: his scene and Ada's star; and 5 for the first time in this place, doc 44.)
+        expect(t.bo.snapshots.back()["self"].number("socialXp") == 27, "and Bo's star: " + std::to_string(t.bo.snapshots.back()["self"].number("socialXp")));
     }
     std::remove(save.c_str());
 }

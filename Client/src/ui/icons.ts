@@ -53,6 +53,20 @@ const Paths: Record<string, string> = {
     armour: 'M7 4l5 2 5-2 3 4-3 2v7l-5 3-5-3v-7L4 8zM12 6v15',
     // Joining, starting.
     start: 'M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z',
+    // The Gift families (doc 43). Earth: a mountain on its ground.
+    earth: 'M3 19l6-10 3 5 3-3 6 8zM2 21h20',
+    // Water: two waves.
+    water: 'M3 10c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0',
+    // Wind: three gusts curling.
+    wind: 'M3 8h11a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 18h7',
+    // Sound: a mouth's arcs.
+    sound: 'M5 9v6h3l4 4V5L8 9zM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12',
+    // Blinker: a step, and where it lands.
+    blinker: 'M4 18l4-4M8 14l1 3M12 7l2-4 2 4 4 2-4 2-2 4-2-4-4-2z',
+    // Gravity: a weight pulled down.
+    gravity: 'M8 7h8l2 12H6zM10 7a2 2 0 1 1 4 0M12 21v1',
+    // Seer: an eye.
+    seer: 'M2 12c3-5 7-7 10-7s7 2 10 7c-3 5-7 7-10 7s-7-2-10-7zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z',
 };
 
 /** An icon as an element, sized by the CSS (1em by default) and coloured by `currentColor`. */

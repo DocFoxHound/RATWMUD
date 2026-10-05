@@ -1,5 +1,7 @@
 // Turn-based fights in arenas (RatwBattle.h; Docs/Design/33-combat.md). World members, kept here.
 #include "RatwBattle.h"
+#include "RatwGifts.h"
+#include "RatwLevels.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
 #include "RatwWild.h"
@@ -272,7 +274,7 @@ battle::Temperament World::temperamentOf(const Entity& e) const
     if (folk != folk_.end() && folk->second.skill >= 0)
         t.skill = folk->second.skill;
     if (!e.npc)
-        t.skill = e.fightingSkill;                  // A player's own, grown by fighting.
+        t.skill = levels::fightingSkill(levelOf ? levelOf(e.id) : 1);   // A player's: by their level alone (doc 44).
     return t;
 }
 
@@ -405,6 +407,9 @@ Result World::testFightTeam(const std::string& player)
         return {false, "The fight could not be set up.", {}};
     const std::string campId = folk->second.of;
     const int ourSide = mine->side, theirSide = leader->side;
+    // (Where each stands, kept: those joining below are added to the fighters, which can move them in memory.)
+    const int mineX = mine->x, mineY = mine->y, leaderX = leader->x, leaderY = leader->y;
+    mine = leader = nullptr;
     std::uint64_t seed = roll(player + "|" + campId, std::int64_t(time_ * 1000));
     const auto pick = [&](std::size_t n) {
         seed = seed * 6364136223846793005ULL + 1442695040888963407ULL;
@@ -454,14 +459,14 @@ Result World::testFightTeam(const std::string& player)
         const auto id = "road:" + campId + ":" + std::to_string(i);
         auto& e = addRoadFolk(id, i == 1 ? "a scrawny bandit" : "a limping bandit",
                               i == 1 ? "All ribs and bluster, with a stolen knife held wrong." : "Favouring one leg, and hoping the others do the work.",
-                              b->cellId, Vec2{leader->x + .5, leader->y + .5}, "bandit", campId);
+                              b->cellId, Vec2{leaderX + .5, leaderY + .5}, "bandit", campId);
         e.age = 19 + int(pick(15));
         e.strength = 35;
         e.dexterity = 40;
         looks(e);
         folk_[id].hp = 10;
         folk_[id].skill = 25;
-        bandits += join(id, theirSide, leader->x, leader->y);
+        bandits += join(id, theirSide, leaderX, leaderY);
     }
     // Two passers-by who take the player's side: names and looks made up for the fight.
     static const char* given[] = {"Bram", "Tamsin", "Rook", "Ysolde", "Hale", "Wren", "Corin", "Maren", "Oswin", "Sable", "Fenna", "Garrick"};
@@ -472,13 +477,13 @@ Result World::testFightTeam(const std::string& player)
         const auto id = "road:" + campId + ":ally" + std::to_string(i);
         const std::string name = std::string(given[pick(12)]) + " " + family[pick(8)];
         auto& e = addRoadFolk(id, name, "A passer-by who saw the bandits come at you, and chose your side.", b->cellId,
-                              Vec2{mine->x + .5, mine->y + .5}, "ally", campId);
+                              Vec2{mineX + .5, mineY + .5}, "ally", campId);
         e.age = 22 + int(pick(30));
         e.strength = 55;
         e.dexterity = 55;
         looks(e);
         folk_[id].skill = 55;
-        if (join(id, ourSide, mine->x, mine->y))
+        if (join(id, ourSide, mineX, mineY))
             allies.push_back(name);
     }
     fitArena(*b);
@@ -731,7 +736,7 @@ void World::fitArena(Battle& b)
 
 bool World::arenaOpen(const Battle& b, int x, int y, const std::string& except) const
 {
-    if (!b.inArena(x, y) || !standable(b.cellId, {x + .5, y + .5}))
+    if (!b.inArena(x, y) || !standable(b.cellId, {x + .5, y + .5}) || magicBlocks(b, x, y))   // (A Gift's wall or fissure: doc 43.)
         return false;
     for (const auto& f : b.fighters)
         if (f.id != except && f.status != "fled" &&
@@ -819,6 +824,7 @@ void World::walkFighters(Battle& b)
             f.y = ny;
             f.walk.erase(f.walk.begin());
             f.stepAt += stepSeconds(f);
+            magicStep(b, f);                        // (Ground a Gift changed: fire, loose or slick: doc 43.)
         }
     }
 }
@@ -1209,7 +1215,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
         if (f.burning > 0)
         {
             --f.burning;
-            const double burn = battle::BurnDamage + injury::effects(e->injuries).fireExtra;   // (Burned before, doc 38.)
+            const double burn = magicDamage(b, f, battle::BurnDamage + injury::effects(e->injuries).fireExtra, true);   // (Burned before, doc 38.)
             fightLine(b, f.id, {}, "burn", e->name + " burns (" + whole(burn) + ").");
             hurtFighter(b, f, burn, battle::DownedFire, {}, true);
             if (f.status != "fighting")
@@ -1234,6 +1240,12 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     }
     // Smoke clears after its rounds.
     b.smoke.erase(std::remove_if(b.smoke.begin(), b.smoke.end(), [&](const auto& s) { return b.turns >= s.second; }), b.smoke.end());
+    // ...and what Gifts left on the ground, after theirs (doc 43); a stone wall stands until broken or worn away.
+    b.ground.erase(std::remove_if(b.ground.begin(), b.ground.end(), [&](const BattleGround& g) { return g.until >= 0 && b.turns >= g.until; }),
+                   b.ground.end());
+    // The Gift's turn: held Gifts, effects running down, a turn lost (doc 43).
+    if (f.status == "fighting" && !magicTurnStart(b, f))
+        return;
     // Cut off from every foe (doc 40): put back, or, the last of its side, out.
     if (f.status == "fighting" && !reachesFoe(b, f))
         unstick(b, f);
@@ -1282,9 +1294,17 @@ Result World::battleMove(const std::string& id, int x, int y)
     if (auto* mover = entity(id))
     {
         // Running costs breath for every tile (doc 33); out of it, the wolf is exhausted.
-        mover->stamina = std::max(0.0, mover->stamina - double(walk.size()) * battle::tileStamina(fightPace(*mover)));
+        mover->stamina = std::max(0.0, mover->stamina - double(walk.size()) * magicTileStamina(*b, f, battle::tileStamina(fightPace(*mover))));
         if (mover->stamina <= 0)
             mover->exhausted = true;
+    }
+    // Moving lets a held Gift go, and spends a back breeze (doc 43).
+    f.magic.fx.erase("breeze");
+    if (!f.magic.channel.empty())
+    {
+        if (const auto* mover = entity(id))
+            fightLine(*b, id, {}, "break", mover->name + " moves, and lets the Gift go.");
+        letGo(id);
     }
     f.walk = std::move(walk);                       // Walked a tile at a time (walkFighters), facing the way it goes.
     f.stepAt = time_ + stepSeconds(f);
@@ -1315,9 +1335,11 @@ std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleF
 {
     // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
     const int pace = fightPace(e);
-    int range = battle::moveRange(effectiveDexterity(e), e.hurt, pace) - injury::effects(e.injuries).arenaMove;   // (A hurt leg, doc 38.)
-    const int walking = battle::moveRange(effectiveDexterity(e), e.hurt, 0);
-    while (range > walking && range * battle::tileStamina(pace) > stamina)
+    // (A hurt leg, doc 38; a Gift's weight, wind or water, doc 43.)
+    int range = magicRange(b, f, battle::moveRange(effectiveDexterity(e), e.hurt, pace) - injury::effects(e.injuries).arenaMove);
+    const int walking = std::min(range, battle::moveRange(effectiveDexterity(e), e.hurt, 0));
+    const double perTile = magicTileStamina(b, f, battle::tileStamina(pace));
+    while (range > walking && range * perTile > stamina)
         --range;
     if (f.stalking)
         range = std::max(1, int(range * battle::StalkRange));    // Stalking (doc 40): half as far.
@@ -1413,8 +1435,8 @@ Result World::planAct(const std::string& id, const std::string& action, const st
     }
     else if (action == "flame")
     {
-        if (!e || e->gift != "fire")
-            return {false, "You have no Gift of fire.", {}};
+        if (!e || !gifts::hasFlame(e->gift, e->quickened))           // (Quickened fire only: doc 43.)
+            return {false, e && e->gift == "fire" ? "Your Gift of fire is too small for that." : "You have no Gift of fire.", {}};
         if (target.find(',') == std::string::npos)
             return {false, "Aim it: which way?", {}};
     }
@@ -1591,6 +1613,11 @@ battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, con
         if (scentMasked(te))
             out.scent = 0;                          // Masking oil (doc 41's marks): no scent to catch.
     }
+    if (te.gift == "sound" && te.quickened)
+    {
+        out.scent = 0;                              // Battle Sense (doc 43): the rogue.
+        out.noise *= .2;
+    }
     return out;
 }
 
@@ -1602,8 +1629,10 @@ battle::Senses World::arenaSenses(const Battle& b, const BattleFighter& o, const
     if (!oe || !te || o.status != "fighting" || (t.status != "fighting" && t.status != "downed"))
         return {};
     const bool smoked = std::any_of(b.smoke.begin(), b.smoke.end(), [&](const auto& sm) { return sm.first == std::pair<int, int>{t.x, t.y}; });
-    return noticeSenses(*oe, {o.x + .5, o.y + .5}, o.facing * std::acos(-1.0) / 4, *te, {t.x + .5, t.y + .5}, t.stalking, moving, fightPace(*te),
-                        b.cellId, smoked);
+    auto senses = noticeSenses(*oe, {o.x + .5, o.y + .5}, o.facing * std::acos(-1.0) / 4, *te, {t.x + .5, t.y + .5}, t.stalking, moving,
+                               fightPace(*te), b.cellId, smoked);
+    magicSenses(b, o, t, senses);                   // (Hush, Turn the Wind, grit, deafness, Battle Sense: doc 43.)
+    return senses;
 }
 
 double World::arenaNotice(const Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving) const
@@ -1728,6 +1757,10 @@ bool World::ambushing(const Battle& b, const BattleFighter& f, const BattleFight
     const auto* te = entity(t.id);
     if (!fe || !te || (!fe->npc && !te->npc) || t.status != "fighting")
         return false;
+    for (const auto& o : b.fighters)                // Never Surprised (a Gifted Seer's side, doc 43).
+        if (o.side == t.side && o.status == "fighting")
+            if (const auto* oe = entity(o.id); oe && oe->gift == "seer" && !oe->quickened)
+                return false;
     return awareness(b, t.id, f.id) < battle::AwareAlert;
 }
 
@@ -1991,6 +2024,7 @@ void World::endPlacing(Battle& b)
             unstick(b, f);
     lineUp(b);
     fightLine(b, {}, {}, "begin", "The fight begins.");
+    magicFightStart(b);
     checkOver(b);
 }
 
@@ -2336,10 +2370,12 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     const auto* fight = battleOf(f.id);
     const bool unaware = fight && ambushing(*fight, f, t);
     const double aim = f.aim.empty() || unaware ? 0 : battle::AimPenalty;   // Aiming costs a little (doc 40).
-    const double angle = unaware ? .2 + battle::AmbushHit : t.guarding ? -battle::GuardDodge : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
-    return std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
-                          (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle - aim,
-                      .2, .95);
+    // No side or back to strike (doc 43's "no critical"): every blow as from the front.
+    const bool front = unflankable(t);
+    const double angle = unaware ? (front ? 0 : .2 + battle::AmbushHit) : t.guarding ? -battle::GuardDodge : front ? 0 : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
+    return magicStrikeChance(f, t, std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
+                                                  (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle - aim,
+                                              .2, .95));
 }
 
 Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
@@ -2355,7 +2391,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
         return {false, "You can't bite with a " + e->mouth + " in your mouth.", target};
     if (tilesApart(f.x, f.y, t->x, t->y) != 1)
         return {false, "Get next to them first.", target};
-    const double biteCost = battle::BiteStamina + injury::effects(e->injuries).attackStamina;   // (Hurt ribs, doc 38.)
+    const double biteCost = battle::BiteStamina + injury::effects(e->injuries).attackStamina + (f.magic.has("burdened") ? 4 : 0);   // (Hurt ribs, doc 38; Burden, 43.)
     if (e->exhausted || e->stamina < biteCost)
         return {false, "You are too winded to bite.", target};
     e->stamina -= biteCost;
@@ -2366,10 +2402,16 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     }
     if (e->npc)
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
+    f.acted = true;
+    if (Result dealt; magicBlow(b, f, t, "teeth", dealt))  // Slip, Interpose, Riposte (doc 43): the blow dealt with.
+    {
+        magicAfterBlow(b, f, *t);
+        return dealt;
+    }
+    d = entity(t->id);
     const bool ambush = ambushing(b, f, *t);             // Unaware of its attacker (doc 40): taken by surprise.
     if (t->guarding && !ambush)
         t->facing = battle::octant(f.x - t->x, f.y - t->y);     // On guard: it turns to meet the blow.
-    f.acted = true;
     const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|" + target, key);
@@ -2377,7 +2419,8 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
         sprungOn(b, f, *t);
     if (r >= hit)
     {
-        fightLine(b, f.id, target, "miss", e->name + " snaps at " + d->name + " and misses.");
+        magicAfterBlow(b, f, *t);
+        fightLine(b, f.id, t->id, "miss", e->name + " snaps at " + d->name + " and misses.");
         return {true, "You snap at " + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
@@ -2385,13 +2428,16 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     damage = std::max(1.0, damage - injury::effects(e->injuries).biteLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
-    if (ambush)
+    if (ambush && !unflankable(*t))
         damage *= battle::AmbushDamage;
+    if (f.magic.has("chain"))
+        damage *= .6;                               // (Chain Blink: each a little lighter.)
     const auto landed = land(f, *t, *d, damage, "thrust", key, ambush);   // Teeth: a thrust, no pierce (doc 35, Part 8).
     wearArmourAt(*d, landed.zone, damage - landed.damage);           // The armour there takes the wear (RatwDurability.cpp).
-    damage = landed.damage;
+    damage = magicDamage(b, *t, landed.damage, false);
+    magicAfterBlow(b, f, *t);
     const std::string how = graze ? " grazes " : " bites ";
-    fightLine(b, f.id, target, graze ? "graze" : "hit", e->name + how + d->name + landed.words + " (" + whole(damage) + ").");
+    fightLine(b, f.id, t->id, graze ? "graze" : "hit", e->name + how + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
@@ -2404,6 +2450,8 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     auto* e = entity(f.id);
     if (!e)
         return;
+    if (!f.magic.channel.empty())
+        letGo(f.id);                                // (Down, a held Gift goes: doc 43.)
     if (huntKill(b, f, by))
         return;                                     // An animal in a hunt dies, and is taken (doc 41).
     if (e->npc)
@@ -2822,6 +2870,12 @@ void World::npcTurn(Battle& b, BattleFighter& f)
     }
     if (b.over || !f.acting)
         return;
+    if (npcGift(b, f, *mark))                       // Its Gift, if it has one and the moment suits (doc 43).
+    {
+        if (!b.over && f.acting)
+            battleAct(f.id, "wait");
+        return;
+    }
     if (e->mouth == "sword" && tilesApart(f.x, f.y, mark->x, mark->y) <= battle::SwordReach && !e->exhausted &&
         e->stamina >= battle::SwordStamina)
         battleAct(f.id, "sword", mark->id);
@@ -2837,6 +2891,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
 
 void World::tendBattles(double dt)
 {
+    tendGiftSenses();                               // (Danger Sense: doc 43.)
+    tendProgress();                                 // (Work, places and skills earning XP: doc 44.)
     // Challenges nobody answered.
     for (auto it = challenges_.begin(); it != challenges_.end();)
         if (time_ >= it->until)
@@ -2954,8 +3010,7 @@ void World::tendBattles(double dt)
             }
             if (f.acting)
                 continue;
-            f.meter = std::min(100.0, f.meter + battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * dt *
-                                          injury::effects(e->injuries).initiative);   // (Knocked senseless, doc 38.)
+            f.meter = std::min(100.0, f.meter + meterRate(b, f, haste) * dt);   // (Knocked senseless, doc 38; Gifts, doc 43.)
             if (f.meter >= 100)
             {
                 f.readyAt = time_;
@@ -3396,18 +3451,19 @@ Result World::giveGift(const std::string& id, const std::string& gift, bool quic
     auto* e = entity(id);
     if (!e)
         return {false, "No such character.", {}};
-    if (!gift.empty() && gift != "fire")
-        return {false, "The only Gift known to the game is fire.", {}};
+    if (!gift.empty() && !(e->npc ? gifts::known(gift) : gifts::playable(gift)))   // (Death Walkers: NPCs only, doc 43.)
+        return {false, "No such Gift for " + e->name + ".", {}};
     e->gift = gift;
     e->quickened = !gift.empty() && quickened;
     e->mana = battle::manaMax(e->wisdom, !gift.empty());
-    return {true, gift.empty() ? e->name + " has no Gift." : e->name + (quickened ? " is Quickened: fire." : " is Gifted: fire."), id};
+    const auto family = gifts::name(gift);
+    return {true, gift.empty() ? e->name + " has no Gift." : e->name + (quickened ? " is Quickened: " : " is Gifted: ") + family + ".", id};
 }
 
-void World::growSkill(Entity& e, double amount)
+void World::growSkill(Entity&, double)
 {
-    if (!e.npc)
-        e.fightingSkill = std::min(100.0, e.fightingSkill + amount * (1 - e.fightingSkill / 120));
+    // Fighting no longer teaches fighting skill directly (doc 44): a fight earns XP like any other practice, and a
+    // player's skill comes from their level. (NPCs' is their trade's.)
 }
 
 // ------------------------------------------------------------------ Hurting
@@ -3448,6 +3504,8 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
             o.truce = false;
         fightLine(b, by, {}, "truce", "The truce is off.");
     }
+    if ((interrupt || !by.empty()) && damage > 0)
+        magicHurt(b, t);                            // A held Gift breaks when hit (doc 43).
     if (interrupt && t.casting)
     {
         // Hit while gathering the fire: it breaks off, and half the mana is lost.
@@ -3571,7 +3629,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         if (!standable(b.cellId, {mx + .5, my + .5}))
             return {false, "Something is in the way.", target};
     }
-    const double swordCost = battle::SwordStamina + injury::effects(e->injuries).attackStamina;   // (Hurt ribs, doc 38.)
+    const double swordCost = battle::SwordStamina + injury::effects(e->injuries).attackStamina + (f.magic.has("burdened") ? 4 : 0);   // (Hurt ribs, doc 38; Burden, 43.)
     if (e->exhausted || e->stamina < swordCost)
         return {false, "You are too winded to swing.", target};
     e->stamina -= swordCost;
@@ -3584,6 +3642,12 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
     f.acted = true;
     f.weight = std::max(f.weight, battle::SwordWeight);
+    if (Result dealt; magicBlow(b, f, t, "blade", dealt))  // Slip, Interpose, Riposte (doc 43): the blow dealt with.
+    {
+        magicAfterBlow(b, f, *t);
+        return dealt;
+    }
+    d = entity(t->id);
     const bool ambush = ambushing(b, f, *t);
     if (t->guarding && !ambush)
         t->facing = battle::octant(f.x - t->x, f.y - t->y);
@@ -3598,7 +3662,8 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     wearGear(*e, blade, 1);
     if (r >= hit)
     {
-        fightLine(b, f.id, target, "miss", e->name + " swings at " + d->name + " and misses.");
+        magicAfterBlow(b, f, *t);
+        fightLine(b, f.id, t->id, "miss", e->name + " swings at " + d->name + " and misses.");
         return {true, "You swing at " + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
@@ -3606,12 +3671,15 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     damage = std::max(1.0, damage - injury::effects(e->injuries).swordLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
-    if (ambush)
+    if (ambush && !unflankable(*t))
         damage *= battle::AmbushDamage;
+    if (f.magic.has("chain"))
+        damage *= .6;                               // (Chain Blink: each a little lighter.)
     const auto landed = land(f, *t, *d, damage, "cut", key, ambush);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
     wearArmourAt(*d, landed.zone, damage - landed.damage);
-    damage = landed.damage;
-    fightLine(b, f.id, target, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + landed.words + " (" + whole(damage) + ").");
+    damage = magicDamage(b, *t, landed.damage, false);
+    magicAfterBlow(b, f, *t);
+    fightLine(b, f.id, t->id, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
@@ -3647,6 +3715,11 @@ Result World::shove(Battle& b, BattleFighter& f, const std::string& target)
         fightLine(b, f.id, target, "shove", e->name + " shoves " + d->name + ", but there is nowhere for them to go.");
         return {true, "You shove " + d->name + ", but there is nowhere for them to go.", target};
     }
+    if (t->magic.has("anchored") || t->magic.has("firm"))
+    {
+        fightLine(b, f.id, target, "shove", e->name + " shoves at " + d->name + ", but " + d->name + " won't budge.");
+        return {true, d->name + " won't budge.", target};
+    }
     const double odds = std::clamp(battle::ShoveOdds + (e->strength - d->strength) / 100 - (t->guarding ? battle::GuardDodge : 0), .2, .9);
     if (chance(f.id + "|shove|" + target, std::int64_t(b.seq) * 7919 + b.turns) >= odds)
     {
@@ -3663,9 +3736,9 @@ Result World::shove(Battle& b, BattleFighter& f, const std::string& target)
 Result World::castFlame(Battle& b, BattleFighter& f, int x, int y)
 {
     auto* e = entity(f.id);
-    if (e->gift != "fire")
+    if (!gifts::hasFlame(e->gift, e->quickened))
         return {false, "You have no Gift of fire.", {}};
-    const auto& spell = e->quickened ? battle::QuickenedFlame : battle::GiftedFlame;
+    const auto& spell = battle::QuickenedFlame;
     if (x == f.x && y == f.y)
         return {false, "Aim it: which way?", {}};
     if (e->exhausted || e->stamina < spell.stamina)
@@ -3718,6 +3791,11 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
     auto* ce = entity(cast.caster);
     if (!cf || !ce || cf->status != "fighting")
         return;
+    if (cast.spell != "flame")
+    {
+        magicResolve(b, cast);                      // Another family's gathered Gift (doc 43).
+        return;
+    }
     cf->casting = false;
     const auto& spell = cast.quickened ? battle::QuickenedFlame : battle::GiftedFlame;
     fightLine(b, cast.caster, {}, "flame", ce->name + (cast.quickened ? " looses a roaring blaze!" : " breathes a gout of fire!"));
@@ -3740,6 +3818,7 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
         const bool heavyRain = (here.weather == Weather::Rain || here.weather == Weather::Storm) && here.intensity >= .5;
         double damage = spell.damage * (.5 + ce->wisdom / 100) * (.85 + .3 * chance(t.id + "|fire", key)) * (heavyRain ? battle::RainFactor : 1) +
                         injury::effects(d->injuries).fireExtra;   // (Burned before, doc 38.)
+        damage = magicDamage(b, t, damage, true);   // (A Water Screen: doc 43.)
         const auto* tile = cell(b.cellId) ? cell(b.cellId)->tile(t.x, t.y) : nullptr;
         const bool water = tile && tile->terrain == Terrain::Water;
         fightLine(b, cast.caster, t.id, "burnt", d->name + " is caught in the fire (" + whole(damage) + ").");
@@ -3747,7 +3826,7 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
         hurtFighter(b, t, damage, battle::DownedFire, cast.caster, true);
         if (t.status != "fighting")
             continue;
-        if (!water)
+        if (!water && !t.magic.has("soaked") && !b.groundAt(t.x, t.y, "water"))
             t.burning = battle::BurnTurns;
         if (d->npc && 100 - d->hurt < 50)
             t.scared = true;                        // Fear: it runs.

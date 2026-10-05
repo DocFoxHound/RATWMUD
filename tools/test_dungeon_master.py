@@ -131,8 +131,10 @@ class DungeonMasterTests(Fixture):
         with W.connect('prod', 'game', dbname=self.names['prod']) as game:
             row = game.execute("SELECT kind, target_id, payload FROM dm.actions WHERE kind = 'character.gift'").fetchone()
         self.assertEqual(row, ('character.gift', 'player-ada', {'gift': 'fire', 'quickened': True}), 'the game server reads the Gift')
-        with self.assertRaises(D.DMError):
-            self.dm.request(master, 'prod', 'character.gift', 'player-ada', '', {'gift': 'water'})
+        self.dm.request(master, 'prod', 'character.gift', 'player-ada', '', {'gift': 'water'})   # Any of the eight (doc 43)
+        for bad in ('lightning', 'death_walker'):
+            with self.assertRaises(D.DMError):
+                self.dm.request(master, 'prod', 'character.gift', 'player-ada', '', {'gift': bad})
         taken = self.dm.request(master, 'prod', 'character.gift', 'player-ada', '', {'gift': '', 'quickened': True})
         with W.connect('prod', 'game', dbname=self.names['prod']) as game:
             row = game.execute('SELECT payload FROM dm.actions WHERE id = %s', (taken['id'],)).fetchone()

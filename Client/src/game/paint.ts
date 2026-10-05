@@ -7,7 +7,8 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {apart, chanceFrom, coverTile, coneTiles, myTurn, octantGap, pathTo, placeAt, stepToward, strikeFrom, type BattleView, type FighterView} from './battle.ts';
+import {apart, chanceFrom, coverTile, coneTiles, FamilyColours, giftArea, myTurn, octantGap, pathTo, placeAt, stepToward, strikeFrom, type BattleView,
+    type FighterView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 
@@ -436,9 +437,9 @@ export class GamePainter {
     /** A glyph of what just happened, or of how the fight stands (fx.ts). */
     private drawMark(m: Mark, ox: number, oy: number, tile: number) {
         const colors: Record<Mark['color'], Color> = {hit: rgb(0xf3e3c3), graze: rgb(0xd9c08c), miss: Muted, fire: rgb(0xff8a3c),
-            smoke: Muted, burn: rgb(0xff6a2c), charge: rgb(0xffb35c), item: Paper, ash: rgb(0x8a8279)};
-        const color = m.glyph === '*' && m.color === 'fire' ? rgb(0xd4483c) : colors[m.color];
-        const size = m.color === 'fire' ? Math.max(11, Math.round(this.s.tileSize * 0.7)) : 12;
+            smoke: Muted, burn: rgb(0xff6a2c), charge: rgb(0xffb35c), item: Paper, ash: rgb(0x8a8279), gift: Paper};
+        const color = m.tint ? hexColor(m.tint) : m.glyph === '*' && m.color === 'fire' ? rgb(0xd4483c) : colors[m.color];
+        const size = m.size ? Math.max(10, Math.round(this.s.tileSize * m.size)) : m.color === 'fire' ? Math.max(11, Math.round(this.s.tileSize * 0.7)) : 12;
         this.turnedText(ox + (m.x + 0.5) * tile, oy + (m.y + 0.5) * tile, m.glyph, size, withAlpha(color, m.alpha), 0);
     }
 
@@ -567,15 +568,19 @@ export class GamePainter {
                 [left + tile, (top + bottom) / 2, Math.PI], [right - tile, (top + bottom) / 2, 0]] as const)
                 this.turnedText(x, y, '➜', size, out, angle);
         }
+        // What Gifts have left on the ground (doc 43): fire, fissures, walls, loose, slick or flooded ground, a well.
+        this.drawGiftGround(b, ox, oy, tile);
         // Spells gathering: their cones, locked, outlined in red for everyone to see (the tell), deepening as the
-        // countdown runs out; the seconds left over the cone.
+        // countdown runs out; the seconds left over the cone. Another family's Gift gathers in its own colour.
         for (const cast of b.casts) {
             const remaining = Math.max(0, cast.left - (s.clock - s.battleAt));
             const near = cast.of > 0 ? 1 - remaining / cast.of : 0;
+            const family = b.fighters.find(f => f.id === cast.caster)?.gift ?? 'fire';
+            const tint = cast.spell === 'flame' || family === 'fire' ? red : hexColor(FamilyColours[family] ?? '#d4483c');
             let cx = 0, cy = 0;
             for (const [x, y] of cast.tiles) {
-                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(red, 0.12 + 0.35 * near));
-                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(red, 0.75));
+                p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(tint, 0.12 + 0.35 * near));
+                p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(tint, 0.75));
                 cx += x;
                 cy += y;
             }
@@ -587,6 +592,8 @@ export class GamePainter {
                 p.text(tx - ww / 2, ty - 8, words, 12, rgb(0xff9a3c), true);
             }
         }
+        // Aiming a Gift (doc 43): where it reaches, and what it would take in.
+        if (s.aiming.startsWith('gift:') && me) this.drawGiftAim(b, me, ox, oy, tile);
         // Aiming fire: where it would go.
         if (s.aiming === 'flame' && b.flame && me) {
             const tx = Math.floor((s.hover[0] - ox) / tile), ty = Math.floor((s.hover[1] - oy) / tile);
@@ -607,7 +614,7 @@ export class GamePainter {
         // among them are marked, brighter where the blow is likelier (their side and back).
         // Waiting for one's turn (doc 37): the same, for the next turn, dashed; a click plans it.
         const planning = !!me && !mine && b.planning;
-        if (me && (mine || planning) && !b.moved && s.aiming !== 'flame' && b.reach.length) {
+        if (me && (mine || planning) && !b.moved && !s.aiming && b.reach.length) {
             const lit = new Set(b.reach.map(([x, y]) => `${x},${y}`));
             lit.add(`${me.x},${me.y}`);              // One's own tile is inside the outline, not a hole in it.
             const occupied = new Set(b.fighters.filter(f => f.status !== 'fled').map(f => `${f.x},${f.y}`));
@@ -657,7 +664,7 @@ export class GamePainter {
         }
         // Pointing at a foe on one's turn: the blow. From here if they're in reach; else from the tile a click would
         // step to (shown as a ghost), or "out of reach".
-        if (me && ((mine && !b.acted) || planning) && pointedFoe && s.aiming !== 'flame') {
+        if (me && ((mine && !b.acted) || planning) && pointedFoe && !s.aiming) {
             const step = apart(me.x, me.y, pointedFoe.x, pointedFoe.y) <= range ? {x: me.x, y: me.y, reaches: true}
                 : stepToward(b, me, pointedFoe, range);
             const foeAt = centre(pointedFoe.x, pointedFoe.y);
@@ -774,10 +781,12 @@ export class GamePainter {
             s.hits.push({rect: rect(x - hit, y - hit, x + hit, y + hit), action: 'fighter', target: f.id});
         }
         if (planned) say(planned.at, planned.word, Amber, 1, false);
+        // What Gifts have put on each wolf (doc 43): a glyph or two beside its token; a foe whose line is read, its intent.
+        this.drawGiftMarks(b, centre, tile, radius);
         // On one's own turn, one's own tile turns the wolf: split three by three, each of its eight outer parts faces
         // that way. Shown when the pointer is on it (a drag from it turns the wolf too); a click on any tile or wolf
         // round it still moves or strikes there. Pushed last, so it wins over one's own wolf.
-        if (me && (mine || b.placing) && me.status === 'fighting' && s.aiming !== 'flame') {
+        if (me && (mine || b.placing) && me.status === 'fighting' && !s.aiming) {
             const x0 = ox + me.x * tile, y0 = oy + me.y * tile, third = tile / 3;
             const over = hx === me.x && hy === me.y;
             for (let dir = 0; dir < 8; ++dir) {
@@ -808,7 +817,7 @@ export class GamePainter {
         }
         // The figures rising off the wolves: what each blow did.
         const floatColors = {hit: Paper, heavy: rgb(0xfff0c8), graze: rgb(0xb8ad98), miss: Muted, fire: rgb(0xff9a3c), down: rgb(0xff6a4c),
-            heal: rgb(0x9fd08f)};
+            heal: rgb(0x9fd08f), gift: rgb(0xc9b8ff)};
         for (const f of s.fx.floats(s.clock, reduced)) {
             const [fx, fy] = centre(f.x, f.y);
             const size = Math.round(clamp(tile * 0.5, 12, 18) * f.size);
@@ -1355,4 +1364,207 @@ export class GamePainter {
         } else p.text(left, 745, 'No teleporting. Closed doors require an explicit open action.', 11, Muted);
         p.text(left, 785, 'WASD or a local click takes over · choose a comfortable pace below', 9, Muted);
     }
+
+    // ------------------------------------------------------------------ Gifts (doc 43)
+
+    /** What Gifts have left on the arena's ground, as glyphs: fire, a fissure, a stone wall, loose, slick or flooded ground, a well. */
+    private drawGiftGround(b: BattleView, ox: number, oy: number, tile: number) {
+        const p = this.p, clock = this.s.clock, reduced = this.s.reducedMotion;
+        const size = Math.max(11, Math.round(tile * 0.7));
+        for (const g of b.ground) {
+            const x = ox + g.x * tile, y = oy + g.y * tile, cx = x + tile / 2, cy = y + tile / 2;
+            const flicker = reduced ? 0 : Math.floor(clock * 8 + g.x * 3 + g.y * 5) % 3;
+            switch (g.kind) {
+                case 'fire':
+                    p.box(x + 1, y + 1, tile - 2, tile - 2, withAlpha(rgb(0xff7a2c), 0.18 + (reduced ? 0 : 0.08 * Math.sin(clock * 9 + g.x))));
+                    this.turnedText(cx, cy, '^~*'[flicker], size, withAlpha(rgb(0xff8a3c), 0.9), 0);
+                    break;
+                case 'water':
+                    p.box(x, y, tile, tile, withAlpha(rgb(0x3f86c4), 0.28));
+                    this.turnedText(cx + (reduced ? 0 : Math.sin(clock * 2 + g.y) * tile * 0.08), cy, '≈', size, withAlpha(rgb(0x8fc4f0), 0.75), 0);
+                    break;
+                case 'fissure':
+                    p.box(x, y, tile, tile, withAlpha(Ink, 0.7));
+                    this.turnedText(cx, cy, '≀', size, withAlpha(rgb(0x8a6a3e), 0.95), Math.PI / 6);
+                    break;
+                case 'wall':
+                    p.box(x + 1, y + 1, tile - 2, tile - 2, withAlpha(rgb(0x6d665a), 0.92));
+                    p.frame(x + 1, y + 1, tile - 2, tile - 2, withAlpha(rgb(0x3d382f), 1));
+                    this.turnedText(cx, cy, '#', size, rgb(0xd8cfb8), 0);
+                    break;
+                case 'loose':
+                    this.turnedText(cx, cy, '∴', size, withAlpha(rgb(0xb8956a), 0.85), 0);
+                    break;
+                case 'slick':
+                    p.box(x + 1, y + 1, tile - 2, tile - 2, withAlpha(rgb(0x9fd0ff), 0.1));
+                    this.turnedText(cx, cy + tile * 0.15, '~', size, withAlpha(rgb(0xb8e0ff), 0.7), 0);
+                    break;
+                case 'well': {
+                    const c = p.ctx;
+                    for (let ring = 0; ring < 3; ++ring) {
+                        c.beginPath();
+                        const r = tile * (0.5 + ring + (reduced ? 0 : (clock * 0.8) % 1)) ;
+                        c.arc(cx, cy, Math.max(1, Math.min(r, tile * 3.5)), 0, Math.PI * 2);
+                        c.strokeStyle = css(withAlpha(rgb(0xa294c4), 0.5 * (1 - ring / 3)));
+                        c.lineWidth = 1.5;
+                        c.stroke();
+                    }
+                    this.turnedText(cx, cy, '@', size, rgb(0xc8b8f0), reduced ? 0 : -clock * 2);
+                    break;
+                }
+            }
+        }
+    }
+
+    /** A Gift being aimed (doc 43): its reach, whom it may be aimed at, and what it would take in from the tile pointed at. */
+    private drawGiftAim(b: BattleView, me: FighterView, ox: number, oy: number, tile: number) {
+        const s = this.s, p = this.p, c = p.ctx, g = s.aimedGift();
+        if (!g) return;
+        const tint = hexColor(FamilyColours[b.gift] ?? '#c9a640');
+        const hx = Math.floor((s.hover[0] - ox) / tile), hy = Math.floor((s.hover[1] - oy) / tile);
+        const shade = (x: number, y: number, alpha: number, frame = 0) => {
+            p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(tint, alpha));
+            if (frame) p.frame(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(tint, frame));
+        };
+        const inArena = (x: number, y: number) => x >= b.arena.x && y >= b.arena.y && x < b.arena.x + b.arena.w && y < b.arena.y + b.arena.h;
+        const ring = (f: FighterView) => {
+            const x = ox + (f.x + 0.5) * tile, y = oy + (f.y + 0.5) * tile;
+            c.save();
+            c.setLineDash([4, 3]);
+            c.beginPath();
+            c.arc(x, y, Math.max(10, tile * 0.5), 0, Math.PI * 2);
+            c.strokeStyle = css(withAlpha(tint, f.x === hx && f.y === hy ? 1 : 0.7));
+            c.lineWidth = f.x === hx && f.y === hy ? 3 : 2;
+            c.stroke();
+            c.restore();
+        };
+        const within = (x: number, y: number, r: number) => apart(x, y, me.x, me.y) <= Math.max(1, r);
+        // Its reach, faintly (not for the far-seeing).
+        if (g.range > 0 && g.range < 99 && g.target !== 'dir')
+            for (let y = me.y - g.range; y <= me.y + g.range; ++y)
+                for (let x = me.x - g.range; x <= me.x + g.range; ++x)
+                    if (inArena(x, y) && (x !== me.x || y !== me.y)) shade(x, y, 0.06);
+        const foes = b.fighters.filter(f => f.side !== me.side && f.status === 'fighting' && !f.hidden);
+        const allies = b.fighters.filter(f => f.side === me.side);
+        switch (g.target) {
+            case 'foe':
+                for (const f of foes) if (within(f.x, f.y, g.range)) ring(f);
+                break;
+            case 'ally':
+                for (const f of allies) if (f.status === 'fighting' && within(f.x, f.y, g.range)) ring(f);
+                break;
+            case 'downed':
+                for (const f of allies) if (f.status === 'downed' && within(f.x, f.y, g.range)) ring(f);
+                break;
+            case 'any':
+                for (const f of allies) if (f.status === 'fighting' && within(f.x, f.y, g.range)) ring(f);
+                if (within(hx, hy, g.range) && inArena(hx, hy)) for (const [x, y] of giftArea(b, g, me.x, me.y, hx, hy)) shade(x, y, 0.3, 0.8);
+                break;
+            case 'tile':
+                if (within(hx, hy, g.range) && inArena(hx, hy)) for (const [x, y] of giftArea(b, g, me.x, me.y, hx, hy)) shade(x, y, 0.3, 0.8);
+                break;
+            case 'dir':
+                if (inArena(hx, hy) && (hx !== me.x || hy !== me.y)) for (const [x, y] of giftArea(b, g, me.x, me.y, hx, hy)) if (inArena(x, y)) shade(x, y, 0.3, 0.75);
+                break;
+            case 'foe+tile': {
+                const chosen = b.fighters.find(f => f.id === s.giftFoe);
+                if (!chosen) {
+                    for (const f of foes) if (within(f.x, f.y, g.range)) ring(f);
+                } else {
+                    ring(chosen);
+                    for (let y = chosen.y - g.tiles; y <= chosen.y + g.tiles; ++y)
+                        for (let x = chosen.x - g.tiles; x <= chosen.x + g.tiles; ++x)
+                            if (inArena(x, y) && !b.fighters.some(f => f.x === x && f.y === y)) shade(x, y, 0.1);
+                    if (apart(hx, hy, chosen.x, chosen.y) <= g.tiles) {
+                        shade(hx, hy, 0.4, 1);
+                        p.lines([[ox + (chosen.x + 0.5) * tile, oy + (chosen.y + 0.5) * tile], [ox + (hx + 0.5) * tile, oy + (hy + 0.5) * tile]], withAlpha(tint, 0.8), 2);
+                    }
+                }
+                break;
+            }
+            case 'shape': {
+                // The tiles painted so far, numbered; the one pointed at, if it can join them.
+                s.giftShape.forEach(([x, y], i) => {
+                    shade(x, y, 0.45, 1);
+                    this.turnedText(ox + (x + 0.5) * tile, oy + (y + 0.5) * tile, String(i + 1), Math.max(9, Math.round(tile * 0.4)), Paper, 0);
+                });
+                const joins = !s.giftShape.length || s.giftShape.some(([x, y]) => apart(x, y, hx, hy) === 1);
+                if (inArena(hx, hy) && within(hx, hy, g.range) && joins && s.giftShape.length < g.tiles && !s.giftShape.some(([x, y]) => x === hx && y === hy))
+                    shade(hx, hy, 0.2, 0.9);
+                const cost = g.mana + g.perTile * s.giftShape.length;
+                const words = `${s.giftShape.length}/${g.tiles} tiles · ${cost} mana${s.giftShape.length ? ' · Enter' : ''}`;
+                const [w] = p.measure(words, 11, true);
+                p.box(s.hover[0] + 14, s.hover[1] + 8, w + 8, 16, withAlpha(Ink, 0.9));
+                p.text(s.hover[0] + 18, s.hover[1] + 9, words, 11, tint, true);
+                break;
+            }
+        }
+    }
+
+    /** Beside each wolf, a glyph for each thing a Gift has put on it (doc 43); a wolf holding a Gift wears a turning ring. */
+    private drawGiftMarks(b: BattleView, centre: (x: number, y: number) => Point, tile: number, radius: number) {
+        const s = this.s, c = this.p.ctx, reduced = s.reducedMotion;
+        for (const f of b.fighters) {
+            if (f.status === 'fled' || f.hidden || !f.fx.length) continue;
+            const [mx, my] = s.fx.offset(f.id, s.clock, reduced);
+            const [wx, wy] = s.walkOffset(f.id, f.x, f.y, s.clock);
+            const [x, y] = centre(f.x + mx + wx, f.y + my + wy);
+            let i = 0;
+            for (const fx of f.fx) {
+                if (fx.id === 'channel') {
+                    const tint = hexColor(FamilyColours[f.gift] ?? '#c9a640');
+                    const turn = reduced ? 0 : s.clock * 2;
+                    c.beginPath();
+                    c.arc(x, y, radius + 7, turn, turn + Math.PI * 1.3);
+                    c.strokeStyle = css(withAlpha(tint, 0.85));
+                    c.lineWidth = 2;
+                    c.stroke();
+                    continue;
+                }
+                const mark = FxGlyphs[fx.id];
+                if (!mark || i >= 4) continue;
+                const angle = -Math.PI / 4 + i * (Math.PI / 4.5);
+                const gx = x + Math.cos(angle) * (radius + 9), gy = y + Math.sin(angle) * (radius + 9);
+                this.turnedText(gx, gy, mark[0], Math.max(9, Math.round(tile * 0.38)), hexColor(mark[1]), 0);
+                ++i;
+            }
+        }
+        // Read the Line (doc 43): a foe's intent, a dashed gold line to whom it means to strike, and a ghost where it means to go.
+        for (const f of b.fighters) {
+            if (!f.intent || f.status !== 'fighting') continue;
+            const gold = hexColor('#e0c060');
+            const from = centre(f.x, f.y);
+            c.save();
+            c.setLineDash([2, 4]);
+            if (f.intent.move) {
+                const to = centre(f.intent.move[0], f.intent.move[1]);
+                this.p.lines([from, to], withAlpha(gold, 0.8), 2);
+                c.beginPath();
+                c.arc(to[0], to[1], radius * 0.7, 0, Math.PI * 2);
+                c.strokeStyle = css(withAlpha(gold, 0.8));
+                c.stroke();
+            }
+            const target = b.fighters.find(o => o.id === f.intent!.target);
+            if (target) this.p.lines([f.intent.move ? centre(f.intent.move[0], f.intent.move[1]) : from, centre(target.x, target.y)], withAlpha(gold, 0.9), 2);
+            c.restore();
+        }
+    }
 }
+
+/** A Gift's colour, from "#rrggbb". */
+function hexColor(hex: string): Color {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return rgb(Number.isFinite(n) ? n : 0xc9a640);
+}
+
+/** The glyph beside a wolf for each thing a Gift has put on it (doc 43), and its colour. */
+const FxGlyphs: Record<string, [string, string]> = {
+    frozen: ['*', '#a8d4ff'], soaked: ['≈', '#7fb8ea'], prone: ['v', '#d9c08c'], held: ['↑', '#c8b8f0'], crushed: ['▼', '#c8b8f0'],
+    burdened: ['▼', '#a294c4'], lightened: ['△', '#c8b8f0'], anchored: ['⚓', '#c8b8f0'], weightless: ['△', '#e0d8ff'],
+    doomed: ['☠', '#f0a8e0'], forewarned: ['!', '#f2dc8c'], seen_opening: ['◎', '#f2dc8c'], riposte: ['↺', '#f2dc8c'], read: ['◉', '#f2dc8c'],
+    splashed: ['~', '#7fb8ea'], dusted: ['∵', '#d9c08c'], deafened: ['♪', '#c493d8'], dread: ['!', '#c493d8'], breathless: ['o', '#9fd0bc'],
+    breeze: ['»', '#9fd0bc'], unmoored: ['?', '#8b99ec'], disoriented: ['?', '#8b99ec'], dizzy: ['@', '#8b99ec'], nausea: ['@', '#8b99ec'],
+    dissociated: ['?', '#8b99ec'], blackout: ['z', '#a294c4'], stone_armor: ['▣', '#d8cfb8'], water_screen: ['◌', '#7fb8ea'], firm: ['▪', '#b8956a'],
+    cracked: ['×', '#b8956a'], warmed: ['+', '#ffb35c'], washed: ['°', '#7fb8ea'], thirsty: ['°', '#5aa0d8'], dehydrated: ['°', '#5aa0d8'],
+    heavy: ['▾', '#a294c4'], double_vision: ['∞', '#dcbc58'], hoarse: ['·', '#c493d8'],
+};

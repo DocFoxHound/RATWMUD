@@ -1,6 +1,7 @@
 // Fights as players see and drive them (Docs/Design/33-combat.md; the rules are the world's, RatwBattle.cpp): the
 // arena in a fighter's or watcher's snapshot, the red squares onlookers see, and the fight commands.
 #include "RatwGame.h"
+#include "RatwGifts.h"
 #include "RatwWild.h"
 #include "RatwItems.h"
 #include "RatwWire.h"
@@ -128,10 +129,44 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 you.add("gift", e->gift);
                 you.add("quickened", e->quickened);
                 you.add("mana", std::floor(e->mana));
-                const auto& spell = e->quickened ? battle::QuickenedFlame : battle::GiftedFlame;
-                you.add("flameLength", spell.length);
-                you.add("flameAngle", spell.halfAngle);
-                you.add("flameMana", spell.mana);
+                if (gifts::hasFlame(e->gift, e->quickened))       // (Quickened fire only: doc 43.)
+                {
+                    const auto& spell = battle::QuickenedFlame;
+                    you.add("flameLength", spell.length);
+                    you.add("flameAngle", spell.halfAngle);
+                    you.add("flameMana", spell.mana);
+                }
+                // Its Gift's fight abilities (doc 43): how each is aimed, what it costs, whether it can be used now.
+                auto options = Value::array();
+                for (const auto& g : world_.giftOptions(viewer))
+                {
+                    auto o = Value::object();
+                    o.add("id", g.id);
+                    o.add("name", g.name);
+                    o.add("kind", g.kind);
+                    o.add("target", g.target);
+                    o.add("range", g.range);
+                    if (g.tiles)
+                        o.add("tiles", g.tiles);
+                    o.add("mana", g.mana);
+                    if (g.perTurn > 0)
+                        o.add("perTurn", g.perTurn);
+                    if (g.perTile > 0)
+                        o.add("perTile", g.perTile);
+                    o.add("ready", g.ready);
+                    if (!g.why.empty())
+                        o.add("why", g.why);
+                    if (g.on)
+                        o.add("on", true);
+                    if (g.cooldown > 0)
+                        o.add("cooldown", g.cooldown);
+                    if (const auto* a = gifts::ability(g.id))
+                        o.add("summary", a->summary);
+                    options.push(std::move(o));
+                }
+                you.add("gifts", std::move(options));
+                you.add("channel", mine->magic.channel);
+                you.add("manaMax", std::floor(battle::manaMax(e->wisdom, true)));
             }
         }
     }
@@ -233,9 +268,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             }
         // The initiative bar: how full, how fast it fills (a second), and whether it is full and waiting its turn.
         o.add("meter", std::round(std::max(0.0, f.meter) * 10) / 10);
-        o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed")
-                          ? 0.0
-                          : battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste);
+        o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed") ? 0.0 : world_.meterRate(b, f, haste));
         o.add("acting", f.acting);
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
@@ -325,6 +358,57 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             injury("wounded", "Wounded", "Moves a little less; three quarters of the stamina back a turn.");
         if (injured)
             o.add("injuries", injuries);
+        // What Gifts have put on it (doc 43): named, with what each does and the turns left.
+        if (const auto effects = world_.giftEffects(b, f); !effects.empty())
+        {
+            auto fx = Value::array();
+            for (const auto& g : effects)
+            {
+                auto i = Value::object();
+                i.add("id", g.id);
+                i.add("name", g.name);
+                i.add("does", g.does);
+                i.add("turns", g.turns);
+                fx.push(std::move(i));
+            }
+            o.add("fx", std::move(fx));
+        }
+        if (!e->gift.empty())
+        {
+            o.add("gift", e->gift);                 // (Its family shows on its card; and its spells' colour.)
+            o.add("quickened", e->quickened);
+        }
+        // Read the Line (doc 43): one read by this wolf's side shows where it means to go and whom it means to strike.
+        if (!observer && f.side != mine->side && f.magic.has("read") && f.magic.by.count("read") &&
+            f.magic.by.at("read") == std::to_string(mine->side))
+        {
+            auto intent = Value::object();
+            if (!f.plan.empty())
+            {
+                if (f.plan.move)
+                {
+                    intent.add("x", f.plan.x);
+                    intent.add("y", f.plan.y);
+                }
+                intent.add("act", f.plan.act);
+                intent.add("target", f.plan.target);
+            }
+            else
+            {
+                // An NPC's: the nearest foe it knows of.
+                const BattleFighter* best = nullptr;
+                for (const auto& t : b.fighters)
+                    if (t.side != f.side && t.status == "fighting" &&
+                        (!best || std::max(std::abs(t.x - f.x), std::abs(t.y - f.y)) < std::max(std::abs(best->x - f.x), std::abs(best->y - f.y))))
+                        best = &t;
+                if (best)
+                {
+                    intent.add("act", e->mouth == "sword" ? "sword" : "bite");
+                    intent.add("target", best->id);
+                }
+            }
+            o.add("intent", std::move(intent));
+        }
         o.add("label", f.status == "yielded" ? std::string("Yielded") : healthLabel(e->hurt, f.status == "downed", f.status == "dead"));
         o.add("health", std::round(100 - e->hurt));
         if (!e->mouth.empty())
@@ -406,6 +490,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             continue;
         auto o = Value::object();
         o.add("caster", cast.caster);
+        o.add("spell", cast.spell);
         o.add("left", std::max(0.0, cast.firesAt - world_.time()));      // The countdown everyone sees.
         o.add("of", cast.firesAt - cast.castAt);
         o.add("quickened", cast.quickened);
@@ -427,6 +512,17 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     for (const auto& s : b.smoke)
         smoke.push_back(s.first);
     v.add("smoke", tileList(smoke));
+    // What Gifts have left on the ground (doc 43): fire, fissures, walls, loose or slick ground, water, a well.
+    auto ground = Value::array();
+    for (const auto& g : b.ground)
+    {
+        auto o = Value::object();
+        o.add("x", g.x);
+        o.add("y", g.y);
+        o.add("kind", g.kind);
+        ground.push(o);
+    }
+    v.add("ground", ground);
     auto reach = Value::array();
     if (acting || planning)
         for (const auto& [x, y] : acting ? world_.battleReach(viewer) : world_.planReach(viewer))
@@ -555,6 +651,32 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
                      ? world_.battleAct(id, "flame", std::to_string(int(std::floor(x))) + "," + std::to_string(int(std::floor(y))))
                      : Result{false, "Aim it: which way?", {}};
     }
+    else if (verb == "gift")
+    {
+        // A Gift (doc 43): {"verb":"gift","ability":..} with "target" (a fighter), "x"/"y" (a tile, or a way), both
+        // (a fighter sent to a tile), "tiles": [[x,y],...] (painted), or "text" (Whisper Thread).
+        const std::string ability = j.string("ability");
+        std::string aim = target;
+        const double x = j.number("x", std::nan("")), y = j.number("y", std::nan(""));
+        const std::string at = std::isfinite(x) && std::isfinite(y) ? std::to_string(int(std::floor(x))) + "," + std::to_string(int(std::floor(y))) : std::string();
+        if (const auto* tiles = j.find("tiles"); tiles && tiles->isArray())
+        {
+            aim.clear();
+            for (const auto& t : tiles->items())
+                if (t.isArray() && t.items().size() == 2 && aim.size() < 400)
+                    aim += (aim.empty() ? "" : ";") + std::to_string(int(std::floor(t.items()[0].asNumber()))) + "," +
+                           std::to_string(int(std::floor(t.items()[1].asNumber())));
+        }
+        else if (!at.empty())
+            aim = aim.empty() ? at : aim + "@" + at;
+        if (const auto text = j.string("text"); !text.empty())
+            aim += "|" + text.substr(0, 400);
+        result = world_.useGift(id, ability, aim);
+    }
+    else if (verb == "react")
+        result = world_.armReaction(id, j.string("ability"), !j.has("on") || j.boolean("on"));
+    else if (verb == "letgo")
+        result = world_.letGo(id);
     else if (verb == "place")
     {
         // The positioning phase (doc 40): {"verb":"place","x":..,"y":..} takes that ground; {"verb":"ready","on":bool}.

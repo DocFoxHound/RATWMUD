@@ -335,13 +335,18 @@ export class CombatScreen {
             c.lastHealth = health;
             setText(c.healthText, f.status === 'dead' ? 'dead' : f.status === 'downed' ? 'down' : `${Math.round(health)}`);
             // What is wrong with them, named: chips under the name, each saying what it does (never drawn on the wolf).
-            const hurtsKey = f.injuries.map(i => `${i.kind}|${i.does}`).join();
+            const hurtsKey = f.injuries.map(i => `${i.kind}|${i.does}`).join() + '|' + f.fx.map(x => `${x.id}|${x.name}|${x.turns}`).join();
             if (hurtsKey !== c.hurtsKey) {
                 c.hurtsKey = hurtsKey;
                 c.hurts.replaceChildren();
                 for (const i of f.injuries) el('span', `hurt ${i.kind}`, c.hurts, i.name).title = `${i.name}: ${i.does}`;
+                // What Gifts have put on them (doc 43), in their own colour, with the turns left.
+                for (const x of f.fx) {
+                    const chip = el('span', `hurt gift fx-${x.id}`, c.hurts, x.turns > 0 ? `${x.name} ${x.turns}` : x.name);
+                    chip.title = `${x.name}: ${x.does}${x.turns > 0 ? ` (${x.turns} more ${x.turns === 1 ? 'turn' : 'turns'})` : ''}`;
+                }
             }
-            show(c.hurts, f.injuries.length > 0);
+            show(c.hurts, f.injuries.length > 0 || f.fx.length > 0);
             const stats = self ? b.stats : null;
             const hurtNames = f.injuries.map(i => i.name.toLowerCase()).join(', ');
             c.health.title = `Health ${Math.round(health)} of 100 · ${f.label}. Bites take about 12 (more with STR), a sword 20, fire more; ` +
@@ -480,7 +485,9 @@ export class CombatScreen {
         const s = this.s, me = this.me(b), mine = myTurn(b, s.selfId);
         const target = b.fighters.find(f => f.id === this.s.fightTargetId());
         this.actions = this.actionsFor(b, me, mine, target);
+        const gifts = b.over || b.observer || !me || b.placing && !b.gifts.some(g => g.kind === 'fightlong' || g.kind === 'reaction') ? [] : this.giftActions(b, mine);
         const key = JSON.stringify([b.over, b.banner, this.actions.map(a => [a.id, a.label, a.sub, a.enabled, a.tip, a.kind, a.planned]),
+            gifts.map(a => [a.id, a.label, a.sub, a.enabled, a.tip, a.kind]), s.giftShape.length, s.giftFoe,
             b.truceBy, b.agreed, b.observer, b.yieldBy, mine, b.moved, b.acted, b.faced, b.resting, s.aiming]);
         if (key !== this.barKey) {
             this.barKey = key;
@@ -516,6 +523,20 @@ export class CombatScreen {
                             run: () => s.sendBattle('press')});
                     }
                 }
+            }
+            // The Gift (doc 43): its fight abilities in a row of their own, in its family's colour.
+            if (gifts.length && me) {
+                const giftRow = el('div', `bar-gifts family-${b.gift}`, this.bar);
+                const head = el('div', 'gift-head', giftRow);
+                head.append(icon(b.gift, 'gift-head-icon'));
+                el('span', 'gift-head-name', head, `${b.quickened ? 'QUICKENED' : 'GIFTED'} · ${b.gift.toUpperCase()}`);
+                el('span', 'gift-head-mana', head, `${Math.floor(b.mana)}${b.manaMax ? `/${b.manaMax}` : ''} mana`);
+                const aimed = s.aimedGift();
+                if (aimed) el('span', 'gift-head-aim', head, aimed.target === 'shape'
+                    ? `Paint ${aimed.name}: click up to ${aimed.tiles} joined tiles within ${aimed.range} (${s.giftShape.length} so far), then Enter or its button · Esc cancels`
+                    : aimed.target === 'foe+tile' ? (s.giftFoe ? `${aimed.name}: now the tile to send them to (within ${aimed.tiles} of them)` : `${aimed.name}: choose a foe next to you`)
+                    : `${aimed.name}: ${aimHint(aimed)} · Esc cancels`);
+                for (const a of gifts) this.button(giftRow, a);
             }
             const row = el('div', 'bar-actions', this.bar);
             for (const a of this.actions) {
@@ -615,7 +636,7 @@ export class CombatScreen {
             out.push({id: 'hold', key: '2', icon: 'sword', label: 'Take sword', sub: 'move',
                 tip: `Take a sword in your jaws (2): part of your move, not your action (a tile off the move if taken before it)${b.drew ? ' · done this turn' : ''}${notYet}`,
                 enabled: (mine && !b.drew) || planning, kind: '', run: doOr('hold', () => s.sendBattle('hold')), planned: isPlanned('hold')});
-        if (b.flame)
+        if (b.flame && !b.gifts.length)                // (With the Gift row, the Flamethrower is there: doc 43.)
             out.push({id: 'fire', key: '3', icon: 'fire', label: 'Fire', sub: `${b.flame.mana} mana`, kind: b.mana < b.flame.mana ? 'warn' : '',
                 tip: `Flamethrower (3): aim a cone; it gathers for a few seconds (everyone sees where), costs breath and singes you${b.mana < b.flame.mana ? ' · too little mana: it will burn you twice as much' : ''}${notYet}`,
                 enabled: free, run: () => (s.aiming = s.aiming === 'flame' ? '' : 'flame'), planned: plan?.act === 'flame'});
@@ -690,8 +711,31 @@ export class CombatScreen {
         return out;
     }
 
+    /** The Gift's abilities as buttons (doc 43): each aimed, used, held, armed or always on; why not, when it can't be. */
+    private giftActions(b: BattleView, mine: boolean): Action[] {
+        const s = this.s;
+        return b.gifts.map(g => {
+            const mana = [g.mana > 0 ? `${g.mana}` : '', g.perTile > 0 ? `+${g.perTile}/tile` : '', g.perTurn > 0 ? `${g.mana > 0 ? '+' : ''}${g.perTurn}/turn` : '']
+                .filter(Boolean).join(' ');
+            const held = b.channel === g.id;
+            const kindWord = g.kind === 'channelled' ? 'held' : g.kind === 'gathered' || g.kind === 'shape' ? 'gathers' : g.kind === 'fightlong' ? 'whole fight'
+                : g.kind === 'reaction' ? 'reaction' : g.kind === 'passive' ? 'always' : g.kind === 'twoturn' ? 'two turns' : '';
+            const sub = g.kind === 'passive' ? 'always on' : g.on && g.kind !== 'reaction' ? (held ? 'holding' : 'on')
+                : g.kind === 'reaction' ? (g.cooldown ? `rests ${g.cooldown}` : g.on ? 'armed' : 'off') : g.cooldown ? `rests ${g.cooldown}` : mana ? `${mana} mana` : '';
+            const enabled = g.kind === 'reaction' || held || (g.ready && (mine || g.kind === 'fightlong'));
+            const overreach = b.quickened && g.mana + g.perTurn > b.mana && g.kind !== 'passive';
+            const why = !enabled && g.kind !== 'passive' ? ` · ${g.why || 'not your turn'}` : '';
+            const tip = `${g.name}${kindWord ? ` (${kindWord})` : ''}: ${g.summary}${mana ? ` · ${mana} mana` : ''}` +
+                (g.kind === 'reaction' ? ` · click to ${g.on ? 'switch it off' : 'arm it'}: it comes by itself when a blow comes, then rests three turns` : '') +
+                (held ? ' · click to let it go' : '') + (overreach ? ' · too little mana: it will overreach, at a cost' : '') + why;
+            return {id: `gift:${g.id}`, key: '', icon: b.gift, label: g.name, sub, tip, enabled,
+                kind: (g.on || held || s.aiming === `gift:${g.id}` ? 'go' : overreach ? 'warn' : '') as Action['kind'],
+                run: () => s.useGift(g.id)};
+        });
+    }
+
     private button(parent: HTMLElement, a: Action): HTMLButtonElement {
-        const b = button('', `abtn${a.kind ? ` ${a.kind}` : ''}${this.s.aiming === 'flame' && a.id === 'fire' ? ' armed' : ''}${a.planned ? ' planned' : ''}`, parent, () => {
+        const b = button('', `abtn${a.kind ? ` ${a.kind}` : ''}${(this.s.aiming === 'flame' && a.id === 'fire') || this.s.aiming === a.id ? ' armed' : ''}${a.planned ? ' planned' : ''}`, parent, () => {
             if (a.enabled) a.run();
         });
         b.disabled = !a.enabled;
@@ -907,3 +951,15 @@ const LineIcons: Record<string, string> = {
     guard: 'guard', shove: 'shove', stow: 'sword', ambush: 'stalk', suspect: 'watch', notice: 'watch',
 };
 
+/** How a Gift is aimed, in a few words, while it is (doc 43). */
+function aimHint(g: {target: string; range: number}): string {
+    switch (g.target) {
+        case 'foe': return g.range >= 99 ? 'click a foe' : g.range <= 1 ? 'click a foe next to you' : `click a foe within ${g.range} tiles`;
+        case 'ally': return g.range >= 99 ? 'click someone on your side' : g.range <= 1 ? 'click yourself or someone next to you' : `click yourself or someone within ${g.range} tiles`;
+        case 'downed': return `click someone on your side who is down, within ${g.range} tiles`;
+        case 'any': return `click someone on your side, or a tile, within ${g.range}`;
+        case 'tile': return `click a tile within ${g.range}`;
+        case 'dir': return 'click the way it goes';
+        default: return 'click where';
+    }
+}

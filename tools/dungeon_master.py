@@ -46,6 +46,12 @@ MAX_FAILURES, LOCK_MINUTES = 5, 15
 MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
 # Live actions this version knows, and who may request them.
+def gift_families():
+    """The Gift families a player may have (Data/Gifts/families.json, doc 43): all but the NPC-only ones."""
+    families = json.loads((ROOT / 'Data/Gifts/families.json').read_text(encoding='utf-8'))['families']
+    return [f['id'] for f in families if not f.get('npcOnly')]
+
+
 ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'character.injury': 'dm',
            'bandits.call': 'dm', 'npc.sync': 'dm',
            'npc.kill': 'dm',
@@ -210,7 +216,7 @@ class DungeonMaster:
                     'worldX': (place['x'] + (x if place['kind'] == 'cell' else 0)) if place else None,
                     'worldY': (place['y'] + (y if place['kind'] == 'cell' else 0)) if place else None,
                     'posture': data.get('posture', ''), 'activity': data.get('activity', ''),
-                    # A Gift (doc 33): "fire" or "", Quickened or not.
+                    # A Gift (docs 33, 43): a family or "", Quickened or not.
                     'gift': data.get('gift', ''), 'quickened': bool(data.get('quickened')),
                     # Injuries that outlast a fight (doc 38): kind, type, side, how bad, rest left.
                     'injuries': [{k: i.get(k) for k in ('id', 'kind', 'type', 'side', 'severity', 'restLeft', 'restFull', 'from')}
@@ -248,17 +254,17 @@ class DungeonMaster:
     # -- live actions -----------------------------------------------------------
     def request(self, who, target, kind, character_id, reason='', payload=None):
         """Queues a live action for the game server. Returns its ID; the server writes back the outcome. A Gift
-        (character.gift) carries {"gift": "fire" | "", "quickened": bool}."""
+        (character.gift) carries {"gift": a playable family | "", "quickened": bool} (doc 43)."""
         needed = ACTIONS.get(kind)
         if not needed:
             raise DMError(f'Unknown action: {kind}.')
         detail = ''
         if kind == 'character.gift':
             gift = payload.get('gift', '') if isinstance(payload, dict) else None
-            if gift not in ('', 'fire') or not isinstance(payload.get('quickened', False), bool):
-                raise DMError('A Gift is {"gift": "fire" or "", "quickened": true or false}.')
-            payload = {'gift': gift, 'quickened': bool(payload.get('quickened')) and gift == 'fire'}
-            detail = ' — ' + ('no Gift' if not gift else 'Quickened: fire' if payload['quickened'] else 'Gifted: fire')
+            if (gift != '' and gift not in gift_families()) or not isinstance(payload.get('quickened', False), bool):
+                raise DMError('A Gift is {"gift": one of ' + ', '.join(gift_families()) + ' or "", "quickened": true or false}.')
+            payload = {'gift': gift, 'quickened': bool(payload.get('quickened')) and bool(gift)}
+            detail = ' — ' + ('no Gift' if not gift else f'Quickened: {gift}' if payload['quickened'] else f'Gifted: {gift}')
         elif kind == 'character.injury':
             # An injury given ({"add": type, "severity": 1..3, "side": "left" | "right" | ""}) or taken away ({"remove": id}).
             p = payload if isinstance(payload, dict) else {}

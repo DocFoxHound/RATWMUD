@@ -7,7 +7,7 @@ import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
 import {placeAt, apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
-    type ChallengeView, type FightSquare, type GroundView, type GearView} from './battle.ts';
+    type ChallengeView, type FightSquare, type GroundView, type GearView, type GiftOption, type Tile} from './battle.ts';
 import {FightEffects} from './fightFx.ts';
 
 /** One entry in the story per fight (Docs/Design/18-combat-presentation.md): the latest, and all of it when expanded. */
@@ -258,7 +258,9 @@ export class GameState {
     battleOverSeenAt = -10;
     battleAt = 0;               // When the fight as last sent arrived (bars and timers run on from it).
     private lastWalkHint = -10;
-    aiming = '';                // Choosing where a spell goes ("flame"), until a tile is clicked or Escape.
+    aiming = '';                // Choosing where a spell goes ("flame", or "gift:<ability>"), until a tile is clicked or Escape.
+    giftShape: Tile[] = [];     // A Gift's painted tiles (doc 43: Wall of Fire, Fissure, Stone Wall), as they are clicked.
+    giftFoe = '';               // A Gift aimed at a foe and then a tile (Displace): the foe chosen first.
     ground: GroundView[] = [];  // Things lying in sight (a sword knocked loose).
     readonly fx = new FightEffects();
     readonly encounters = new Map<string, EncounterView>();
@@ -482,7 +484,12 @@ export class GameState {
         // One's own turn come round: a soft chime.
         if (this.battle && !this.battle.over && myTurn(this.battle, this.selfId) && !(before && myTurn(before, this.selfId))) this.fx.cue('turn');
         this.updateEncounters(before);
-        if (!this.battle || !this.battle.flame || !myTurn(this.battle, this.selfId)) this.aiming = '';
+        if (!this.battle || !myTurn(this.battle, this.selfId) || (this.aiming === 'flame' && !this.battle.flame) ||
+            (this.aiming.startsWith('gift:') && !this.aimedGift()?.ready)) this.aiming = '';
+        if (!this.aiming.startsWith('gift:')) {
+            this.giftShape = [];
+            this.giftFoe = '';
+        }
         this.party = readParty(obj(this.snapshot, 'self'));
         if ((this.channel === 'party' || this.channel === 'partyooc') && !inParty(this.party)) this.channel = 'ic';
         if ((this.channel === 'chapter' || this.channel === 'chapterooc') && !this.inChapter()) this.channel = 'ic';
@@ -682,10 +689,115 @@ export class GameState {
         return foes.sort((a, c) => apart(a.x, a.y, me.x, me.y) - apart(c.x, c.y, me.x, me.y))[0]?.id ?? '';
     }
 
+    /** The Gift ability being aimed now (doc 43), if any. */
+    aimedGift(): GiftOption | null {
+        if (!this.aiming.startsWith('gift:') || !this.battle) return null;
+        return this.battle.gifts.find(g => g.id === this.aiming.slice(5)) ?? null;
+    }
+
+    /**
+     * One of this wolf's Gift's abilities chosen on the fight screen (doc 43): a reaction armed or not, a held one let
+     * go, one on oneself used at once; anything aimed waits for its target (a wolf, a tile, a way, painted tiles).
+     */
+    useGift(id: string) {
+        const b = this.battle, g = b?.gifts.find(o => o.id === id);
+        if (!b || !g || g.target === 'passive') return;
+        if (g.kind === 'reaction') {
+            this.sendBattle('react', {ability: id, on: !g.on});
+            return;
+        }
+        if (g.kind === 'channelled' && b.channel === id) {
+            this.sendBattle('letgo');
+            return;
+        }
+        if (!g.ready) return;
+        if (g.target === 'self') {
+            this.aiming = '';
+            this.sendBattle('gift', {ability: id});
+            return;
+        }
+        if (this.aiming === `gift:${id}`) {
+            if (g.target === 'shape' && this.giftShape.length) this.castShape();
+            else this.aiming = '';
+            return;
+        }
+        this.aiming = `gift:${id}`;
+        this.giftShape = [];
+        this.giftFoe = '';
+    }
+
+    /** Sends the tiles painted for a shape Gift (Enter, or its button again). */
+    castShape() {
+        const g = this.aimedGift();
+        if (!g || !this.giftShape.length) return;
+        this.sendBattle('gift', {ability: g.id, tiles: this.giftShape.map(([x, y]) => [x, y])});
+        this.aiming = '';
+        this.giftShape = [];
+    }
+
+    /** A tile (or the wolf on it) clicked while a Gift is aimed. */
+    private giftClick(b: BattleView, g: GiftOption, tx: number, ty: number) {
+        const me = b.fighters.find(f => f.id === this.selfId);
+        if (!me) return;
+        const there = fighterAt(b, tx, ty);
+        const send = (extra: Json) => {
+            this.aiming = '';
+            this.giftFoe = '';
+            this.sendBattle('gift', {ability: g.id, ...extra});
+        };
+        const foe = there && there.side !== me.side && there.status === 'fighting' ? there : undefined;
+        const ally = there && there.side === me.side ? there : undefined;
+        switch (g.target) {
+            case 'foe':
+                if (foe) send({target: foe.id});
+                return;
+            case 'ally':
+                if (ally && ally.status === 'fighting') {
+                    if (g.id === 'whisper_thread') {
+                        const words = typeof window !== 'undefined' && window.prompt ? window.prompt(`Whisper to ${ally.name}, along a thread no one else hears:`) : '';
+                        if (words) send({target: ally.id, text: words.slice(0, 400)});
+                        else this.aiming = '';
+                        return;
+                    }
+                    send({target: ally.id});
+                }
+                return;
+            case 'downed':
+                if (ally && ally.status === 'downed') send({target: ally.id});
+                return;
+            case 'any':
+                if (ally && ally.status === 'fighting') send({target: ally.id});
+                else send({x: tx, y: ty});
+                return;
+            case 'tile':
+            case 'dir':
+                send({x: tx, y: ty});
+                return;
+            case 'foe+tile':
+                if (!this.giftFoe) {
+                    if (foe) this.giftFoe = foe.id;
+                } else if (!there) send({target: this.giftFoe, x: tx, y: ty});
+                return;
+            case 'shape': {
+                const at = this.giftShape.findIndex(([x, y]) => x === tx && y === ty);
+                if (at >= 0) this.giftShape.splice(at, 1);
+                else if (this.giftShape.length < g.tiles && apart(tx, ty, me.x, me.y) <= g.range &&
+                    (!this.giftShape.length || this.giftShape.some(([x, y]) => apart(x, y, tx, ty) === 1)))
+                    this.giftShape.push([tx, ty]);
+                return;
+            }
+        }
+    }
+
     /** A tile clicked in the arena: go there, if it's this wolf's turn and it can. */
     arenaClick(tx: number, ty: number) {
         const b = this.battle;
         if (!b) return;
+        const gift = this.aimedGift();
+        if (gift) {
+            this.giftClick(b, gift, tx, ty);
+            return;
+        }
         if (this.aiming === 'flame') {
             this.aiming = '';
             if (myTurn(b, this.selfId)) this.sendBattle('flame', {x: tx, y: ty});
@@ -1302,6 +1414,12 @@ export class GameState {
         const code = k.code;
         if (code === 'Escape' && this.aiming) {
             this.aiming = '';
+            this.giftShape = [];
+            this.giftFoe = '';
+            return true;
+        }
+        if ((code === 'Enter' || code === 'NumpadEnter') && this.aimedGift()?.target === 'shape' && this.giftShape.length) {
+            this.castShape();
             return true;
         }
         if (code === 'Escape') {
@@ -1778,7 +1896,7 @@ export class GameState {
                 this.contextActions = ['gather'];
             }
         } else if (a === 'fighter') {
-            if (this.aiming === 'flame') {
+            if (this.aiming) {
                 const f = this.battle?.fighters.find(o => o.id === h.target);
                 if (f) this.arenaClick(f.x, f.y);
             } else this.fightTarget(h.target);

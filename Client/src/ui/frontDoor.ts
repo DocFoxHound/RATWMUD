@@ -53,6 +53,26 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
     return e;
 }
 
+const KindNames: Record<string, string> = {work: 'Work', instant: 'Action', gathered: 'Gathered', channelled: 'Channelled', reaction: 'Reaction',
+    fightlong: 'Whole fight', passive: 'Passive', shape: 'Shape', twoturn: 'Two turns'};
+
+/** An ability's chips: its kind, and its mana (up front, while held, per painted tile). */
+export function abilityChips(a: Json): string[] {
+    const chips = [KindNames[str(a, 'kind')] ?? title(str(a, 'kind'))];
+    const mana = num(a, 'mana'), perTurn = num(a, 'perTurn'), perTile = num(a, 'perTile');
+    const parts = [...(mana > 0 ? [`${mana}`] : []), ...(perTurn > 0 ? [`${perTurn}/turn`] : []), ...(perTile > 0 ? [`${perTile}/tile`] : [])];
+    if (parts.length) chips.push(`${parts.join(' + ')} mana`);
+    return chips;
+}
+
+/** "Gifted · Water", after a separator, for a character with a Gift; nothing for a Normal one. */
+export function giftCaption(c: Json | null, gifts: Json | null, before: string): string {
+    const family = str(c, 'gift');
+    if (!family) return '';
+    const f = (Array.isArray(gifts?.families) ? (gifts!.families as Json[]) : []).find(x => str(x, 'id') === family);
+    return `${before}${c?.quickened === true ? 'Quickened' : 'Gifted'} · ${str(f, 'name', title(family))}`;
+}
+
 export class FrontDoor {
     readonly root: HTMLDivElement;
     stage: 'login' | 'characters' = 'login';
@@ -65,6 +85,10 @@ export class FrontDoor {
     draftName = '';
     draftAge = 18;
     draftAppearance: Json | null = null;
+    draftTier = 'normal';                    // The Gift (doc 43): normal, gifted or quickened, and a family.
+    draftFamily = '';
+    gifts: Json | null = null;               // The tiers and families, as the server describes them.
+    private showGiftDetails = false;
     private creationRequestId = '';
     private creationFingerprint = '';
     private sentAt = 0;
@@ -155,6 +179,7 @@ export class FrontDoor {
         this.setMessage(str(event, 'message'), !ok);
         if (this.password) this.password.value = '';
         if (next === 'characters') {
+            if (isObject(event.gifts)) this.gifts = event.gifts;
             this.characters = (Array.isArray(event.characters) ? event.characters : []).filter(isObject).slice(0, 6);
             if (!this.selected() && this.characters.length) this.selectedId = str(this.characters[0], 'id');
             if (ok && this.page === 'review')
@@ -249,7 +274,7 @@ export class FrontDoor {
             const age = num(c, 'age', 18);
             const b = el('button', {type: 'button', className: `slot${id && id === this.selectedId ? ' selected' : ''}`},
                 el('strong', {}, c ? str(c, 'name') : '+  Create a character'),
-                el('span', {}, c ? `Age ${age.toFixed(0)} · ${stageName(age)}` : `Empty slot ${i + 1} of 6`));
+                el('span', {}, c ? `Age ${age.toFixed(0)} · ${stageName(age)}${giftCaption(c, this.gifts, ' · ')}` : `Empty slot ${i + 1} of 6`));
             b.addEventListener('click', () => {
                 if (this.busy) return;
                 if (!id) this.startCreation();
@@ -272,7 +297,8 @@ export class FrontDoor {
         enter.disabled = !c;
         const detail = el('section', {className: 'door-card door-detail'},
             el('h2', {className: 'name'}, str(c, 'name', 'An unwritten story')),
-            el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf`
+            el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf` +
+                giftCaption(c, this.gifts, ' · ')
                 : 'Choose an empty slot to make your first wolf.'),
             canvas,
             c ? this.portraitControls(c) : el('p', {className: 'muted large'}, ''),
@@ -322,6 +348,8 @@ export class FrontDoor {
         if (this.busy || this.characters.length >= 6) return;
         this.draftName = '';
         this.draftAge = 18;
+        this.draftTier = 'normal';
+        this.draftFamily = '';
         this.creationRequestId = this.creationFingerprint = '';
         this.draftAppearance = {species: 'timber', sex: 'female', stature: 'average', pattern: 'solid', baseColor: 2, gradientColor: 0,
             markingColor: 5, gradientAmount: 0.35, patternAmount: 0.65};
@@ -351,7 +379,8 @@ export class FrontDoor {
     private describe(): string {
         const a = readAppearance(this.draftAppearance);
         return `${stageName(this.draftAge)} · age ${this.draftAge}\n${title(str(this.draftAppearance, 'stature'))} stature · ` +
-            `${a ? shoulderHeightCm(a, this.draftAge).toFixed(0) : '0'} cm at shoulder`;
+            `${a ? shoulderHeightCm(a, this.draftAge).toFixed(0) : '0'} cm at shoulder` +
+            giftCaption({gift: this.draftFamily, quickened: this.draftTier === 'quickened'}, this.gifts, '\n');
     }
 
     private creatorPage(reviewOnly: boolean): HTMLElement {
@@ -379,6 +408,7 @@ export class FrontDoor {
                     ? `Markings: ${(draft.markings as Json[]).map(m => MaskNames[str(m, 'mask')] ?? str(m, 'mask')).join(', ')}`
                     : `Markings: ${title(str(draft, 'pattern'))}, ${colour('markingColor')}`),
                 el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${str(draft, 'eyes') || 'amber'}`),
+                ...this.giftReview(),
                 el('p', {className: 'muted large'}, 'Creation saves this character to your account. You will return to character selection before ' +
                     'entering the world. Appearance does not grant free skill or stat bonuses.'));
         }
@@ -401,7 +431,8 @@ export class FrontDoor {
         const wrap = el('div', {className: 'creator'});
         const tabs = el('div', {className: 'creator-tabs'});
         const panel = el('div', {className: 'creator-panel'});
-        const tabNames: Array<[string, string]> = [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['name', 'Name & age']];
+        const tabNames: Array<[string, string]> = [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'],
+            ['name', 'Name & age']];
         const render = () => {
             tabs.replaceChildren(...tabNames.map(([id, label]) => {
                 const b = el('button', {type: 'button', className: id === this.creatorTab ? 'tab active' : 'tab', textContent: label});
@@ -479,6 +510,7 @@ export class FrontDoor {
             return [swatches('coat', 'COAT', CoatSwatches), swatches('gradientTint', 'BELLY AND LEGS', CoatSwatches),
                 amount('gradientAmount', 'HOW FAR THE BELLY COLOUR REACHES')];
         if (tab === 'eyes') return [swatches('eyes', 'EYES', EyeSwatches)];
+        if (tab === 'gift') return this.giftPanel(changed);
         if (tab === 'name') {
             const name = el('input', {type: 'text', value: this.draftName, placeholder: 'The name others will know', maxLength: 64});
             name.addEventListener('input', () => {
@@ -542,10 +574,115 @@ export class FrontDoor {
         return rows;
     }
 
+    /** The Gift tab (doc 43): Normal, Gifted or Quickened, then one of the eight families, with every ability it gives. */
+    private giftPanel(changed: () => void): HTMLElement[] {
+        const tiers = obj(this.gifts, 'tiers');
+        const families = Array.isArray(this.gifts?.families) ? (this.gifts!.families as Json[]).filter(isObject) : [];
+        const out: HTMLElement[] = [];
+        const tierRow = el('div', {className: 'gift-tiers'});
+        for (const tier of ['normal', 'gifted', 'quickened']) {
+            const t = obj(tiers, tier);
+            const b = el('button', {type: 'button', className: `gift-card${this.draftTier === tier ? ' chosen' : ''}`},
+                el('strong', {}, str(t, 'name', title(tier))), el('span', {}, str(t, 'best')));
+            b.dataset.tier = tier;
+            b.addEventListener('click', () => {
+                this.draftTier = tier;
+                if (tier === 'normal') this.draftFamily = '';
+                changed();
+            });
+            tierRow.append(b);
+        }
+        out.push(el('span', {className: 'gift-heading'}, 'CLASSIFICATION'), tierRow);
+        if (this.draftTier === 'normal') {
+            out.push(el('p', {className: 'muted'}, 'Most wolves have no Gift. Choose Gifted or Quickened to pick one of the eight Gift families.'));
+            return out;
+        }
+        if (!families.length) {
+            out.push(el('p', {className: 'gold'}, 'The Gift families have not arrived from the server yet.'));
+            return out;
+        }
+        const grid = el('div', {className: 'gift-families'});
+        for (const f of families) {
+            const id = str(f, 'id');
+            const b = el('button', {type: 'button', className: `gift-family${this.draftFamily === id ? ' chosen' : ''}`},
+                el('strong', {}, str(f, 'name')), el('span', {}, str(obj(f, this.draftTier), 'best')));
+            b.dataset.family = id;
+            b.style.setProperty('--family', str(f, 'colour', '#d9b67b'));
+            b.addEventListener('click', () => {
+                this.draftFamily = id;
+                this.showGiftDetails = true;
+                changed();
+            });
+            grid.append(b);
+        }
+        out.push(el('span', {className: 'gift-heading'}, 'GIFT FAMILY'), grid);
+        const chosen = families.find(f => str(f, 'id') === this.draftFamily);
+        if (chosen) {
+            const details = this.giftDetails(chosen);
+            out.push(details);
+            if (this.showGiftDetails) requestAnimationFrame(() => details.scrollIntoView({block: 'start'}));   // (A family just chosen.)
+            this.showGiftDetails = false;
+        }
+        else out.push(el('p', {className: 'muted'}, 'Choose a family to see what it gives.'));
+        return out;
+    }
+
+    /** One family at the chosen tier: what it is, how a foe spots it, what it costs, and each ability in a line. */
+    private giftDetails(f: Json): HTMLElement {
+        const t = obj(f, this.draftTier);
+        const quickened = this.draftTier === 'quickened';
+        const box = el('div', {className: 'gift-details'});
+        box.style.setProperty('--family', str(f, 'colour', '#d9b67b'));
+        box.append(el('p', {className: 'gold small'}, `${str(f, 'name').toUpperCase()} · ${quickened ? 'QUICKENED' : 'GIFTED'}`),
+            el('p', {className: 'large'}, str(t, 'best')),
+            el('p', {className: 'muted'}, str(f, 'domain')),
+            el('dl', {className: 'gift-terms'},
+                el('dt', {}, 'Tell'), el('dd', {}, str(t, 'tell')),
+                el('dt', {}, 'Cost'), el('dd', {}, str(t, 'cost')),
+                el('dt', {}, 'Limit'), el('dd', {}, str(t, 'limit')),
+                ...(str(t, 'overreach') ? [el('dt', {}, 'Overreach'), el('dd', {}, str(t, 'overreach'))] : [])));
+        const abilities = Array.isArray(t?.abilities) ? (t!.abilities as Json[]).filter(isObject) : [];
+        const atWork = (a: Json) => str(a, 'kind') === 'work' || a.work === true;
+        const list = (heading: string, items: Json[]) => {
+            if (!items.length) return;
+            box.append(el('p', {className: 'gift-heading'}, heading));
+            for (const a of items) {
+                const row = el('div', {className: 'gift-ability'},
+                    el('strong', {}, str(a, 'name')),
+                    el('span', {className: 'gift-chips'}, ...abilityChips(a).map(c => el('span', {className: 'gift-chip'}, c))),
+                    el('span', {className: 'muted'}, str(a, 'summary')));
+                row.dataset.ability = str(a, 'id');
+                box.append(row);
+            }
+        };
+        if (quickened) list('IN A FIGHT', abilities);
+        else {
+            list('AT WORK', abilities.filter(atWork));
+            list('IN A FIGHT', abilities.filter(a => !atWork(a)));
+        }
+        box.append(el('p', {className: 'muted'}, quickened
+            ? 'A Quickened wolf has none of the Gifted abilities: the Gifted stay the best at work. Quickened magic others see draws the Wardens.'
+            : 'Gifted abilities never deal damage: they help your side win. Each ability will be added to the game in turn.'));
+        return box;
+    }
+
+    /** The review's lines about the Gift. */
+    private giftReview(): HTMLElement[] {
+        if (this.draftTier === 'normal') return [el('p', {className: 'muted'}, 'Gift: none (Normal)')];
+        const f = (Array.isArray(this.gifts?.families) ? (this.gifts!.families as Json[]) : []).find(x => str(x, 'id') === this.draftFamily);
+        return [el('p', {className: 'gold'}, `Gift: ${title(this.draftTier)} · ${str(f, 'name', title(this.draftFamily))}`),
+            el('p', {className: 'muted'}, str(obj(f, this.draftTier), 'best'))];
+    }
+
     private review() {
         this.draftName = this.draftName.trim();
         if (this.draftName.length < 2 || this.draftName.length > 32)
             return this.setMessage('Choose a character name between 2 and 32 characters. The authority validates the final name.', true);
+        if (this.draftTier !== 'normal' && !this.draftFamily) {
+            this.creatorTab = 'gift';
+            this.show('creator');
+            return this.setMessage(`A ${title(this.draftTier)} wolf needs a Gift family: choose one of the eight.`, true);
+        }
         this.setMessage('Review your choices. Confirming creates a persistent character; it does not enter the world yet.');
         this.show('review');
     }
@@ -553,6 +690,7 @@ export class FrontDoor {
     private create() {
         if (this.busy || !this.draftAppearance || this.page !== 'review') return;
         const command: Json = {type: 'character_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance};
+        if (this.draftTier !== 'normal') command.gift = {tier: this.draftTier, family: this.draftFamily};
         // A timeout is an uncertain result, not a new creation: an unchanged draft keeps the same receipt key.
         const fingerprint = JSON.stringify(command);
         if (!this.creationRequestId || this.creationFingerprint !== fingerprint) {

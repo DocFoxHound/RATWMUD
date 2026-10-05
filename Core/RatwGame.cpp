@@ -3,6 +3,8 @@
 #include "RatwCellPrefetch.h"
 #include "RatwMotionCore.h"
 #include "RatwWire.h"
+#include "RatwGifts.h"
+#include "RatwLevels.h"
 #include "RatwItems.h"
 #include "RatwWild.h"
 
@@ -263,6 +265,7 @@ Game::Game(Options options) : options_(std::move(options)), random_(std::random_
 {
     // A Chapter's rented places are locked to all but its members and guests (doc 32, 5.2).
     world_.mayEnter = [this](const std::string& who, const std::string& cell) { return mayEnterPlace(who, cell); };
+    world_.levelOf = [this](const std::string& who) { return social_.level(who); };   // (A fighter's skill: doc 44.)
 }
 
 Game::~Game()
@@ -848,29 +851,30 @@ void Game::applyDmActions(double dt)
         }
         else if (kind == "character.gift")
         {
-            // A Gift given or taken away (doc 33: who has one is the setting's to decide, through the Dungeon Master).
-            // Payload: {"gift": "fire" | "", "quickened": bool}.
+            // A Gift given or taken away (docs 33, 43), through the Dungeon Master.
+            // Payload: {"gift": a playable family | "", "quickened": bool}.
             json::Value payload;
             std::string problem;
             if (row.size() > 4 && row[4])
                 json::parse(*row[4], payload, problem);
             const std::string gift = payload.isObject() ? payload.string("gift") : std::string();
             const bool quickened = payload.isObject() && payload.boolean("quickened");
+            const std::string family = gifts::name(gift);
             const auto told = [&](const Entity& e) {
                 return gift.empty() ? e.name + " no longer has a Gift."
-                                    : e.name + (quickened ? " is Quickened: the Gift of fire, enormous." : " has the Gift of fire.");
+                                    : e.name + (quickened ? " is Quickened: " + family + ", enormous." : " has the Gift: " + family + ".");
             };
-            if (!gift.empty() && gift != "fire")
-                outcome = {false, "The only Gift known to the game is fire.", {}};
+            if (!gift.empty() && !gifts::playable(gift))
+                outcome = {false, "No such Gift for a player.", {}};
             else if (auto* online = world_.entity(target); online && !online->npc)
             {
                 outcome = world_.giveGift(target, gift, quickened);
                 if (outcome.ok)
                 {
                     if (auto* c = clientOf(target))
-                        system(c, gift.empty() ? "The fire in you has gone quiet." : quickened
-                                                                                      ? "Fire wakes in you, vast and frightening: you are Quickened."
-                                                                                      : "Fire wakes in you: you have the Gift.");
+                        system(c, gift.empty() ? "Your Gift has gone quiet." : quickened
+                                                                                ? "Your Gift wakes, vast and frightening: you are Quickened (" + family + ")."
+                                                                                : "A Gift wakes in you: " + family + ".");
                     characters_[target] = *online;
                     outcome.message = told(*online);
                 }
@@ -1539,6 +1543,11 @@ void Game::lobby(Connection* c, bool ok, const std::string& message)
             item.add("name", character.name);
             item.add("age", character.age);
             item.add("appearance", wire::appearance(character.appearance));
+            if (!character.gift.empty())
+            {
+                item.add("gift", character.gift);
+                item.add("quickened", character.quickened);
+            }
             if (const auto* portrait = portraitOf(id))
             {
                 item.add("artwork", portrait->id);
@@ -1547,6 +1556,8 @@ void Game::lobby(Connection* c, bool ok, const std::string& message)
             roster.push(item);
         }
     e.add("characters", roster);
+    if (!c->accountUsername.empty())                // What the creator's Gift tab describes (doc 43).
+        e.add("gifts", gifts::creatorCatalog());
     send(c, e);
 }
 
@@ -1725,7 +1736,7 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
     if (type == "auth_register" || type == "auth_login")
         allowed.insert({"username", "password"});
     else if (type == "character_create")
-        allowed.insert({"name", "age", "appearance"});
+        allowed.insert({"name", "age", "appearance", "gift"});
     else if (type == "character_enter")
         allowed.insert("id");
     for (const auto& [key, v] : j.fields())
@@ -1817,10 +1828,33 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             lobby(c, false, "Choose a 2\xe2\x80\x93" "32 character name, a whole age from 6\xe2\x80\x93" "99, and a complete valid wolf appearance.");
             return true;
         }
+        // The Gift (doc 43): {"tier": "normal" | "gifted" | "quickened", "family": a playable family}; none is Normal.
+        std::string tier = "normal", family;
+        if (const auto* gift = j.find("gift"))
+        {
+            bool fine = gift->isObject() && gift->size() <= 2;
+            for (const auto& [key, v] : gift->fields())
+                fine = fine && (key == "tier" || key == "family") && v.isString();
+            tier = fine ? gift->string("tier") : std::string();
+            family = fine ? gift->string("family") : std::string();
+            if (!fine || (tier != "normal" && tier != "gifted" && tier != "quickened") || (tier == "normal") != family.empty() ||
+                (!family.empty() && !gifts::playable(family)))
+            {
+                lobby(c, false, "Choose Normal, or Gifted or Quickened with one of the eight Gift families.");
+                return true;
+            }
+        }
         auto canonical = Value::object();
         canonical.add("name", name);
         canonical.add("age", age);
         canonical.add("appearance", wire::appearance(appearance));
+        if (tier != "normal")                       // (Only then, so a Normal wolf's print is what it always was.)
+        {
+            auto gift = Value::object();
+            gift.add("tier", tier);
+            gift.add("family", family);
+            canonical.add("gift", gift);
+        }
         const std::string print = accounts::fingerprint(json::dump(canonical));
         bool conflict = false;
         const std::string previous = accounts_.createdCharacter(c->accountUsername, commandId, print, conflict);
@@ -1860,6 +1894,8 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
         player.lastBirthdayDay = world_.calendarDays();
         player.ageNoticePending = 0;
         player.appearance = appearance;
+        if (!family.empty())
+            world_.giveGift(newId, family, tier == "quickened");
         player.speakingColor = int(characters_.size() * 9) % 32;
         characters_[player.id] = player;
         world_.removePlayer(newId);
@@ -1945,6 +1981,31 @@ void Game::tick(double dt)
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
             system(c, words);
+    // XP earned in the world (doc 44): work, practice, places, skills, contracts; paid into the ledger, and said.
+    {
+        bool paid = false;
+        for (const auto& a : world_.takeAwards())
+        {
+            const int before = social_.level(a.who);
+            const int got = social_.award(a.who, a.kind, a.source, now());
+            if (got <= 0)
+                continue;
+            paid = true;
+            const std::string what = a.kind == "work" ? "work" : a.kind == "practice" ? "practice" : a.kind == "milestone" ? "a skill grown"
+                                   : a.kind == "discovery" ? "somewhere new" : "a contract fulfilled";
+            if (auto* c = clientOf(a.who))
+            {
+                system(c, "+" + std::to_string(got) + " experience (" + what + ").");
+                if (social_.level(a.who) > before)
+                    system(c, "You reach level " + std::to_string(social_.level(a.who)) + ".");
+            }
+        }
+        if (paid)
+        {
+            afterSocial();
+            saveSoon();
+        }
+    }
     for (const auto& [id, cell] : beforeCells)
         if (const auto* e = world_.entity(id); e && e->cellId != cell)
         {
@@ -2322,7 +2383,7 @@ void Game::sendSnapshot(Connection* c)
     if (const auto* me = world_.entity(id))
     {
         self.set("health", std::round(100 - me->hurt));
-        self.set("fightingSkill", std::round(me->fightingSkill));
+        self.set("fightingSkill", std::round(levels::fightingSkill(social_.level(id))));   // (By level: doc 44.)
         if (!me->mouth.empty())
             self.set("mouth", me->mouth);
         // What is worn (doc 35): slot to item id, and each piece of jewellery as [spot, item id]; names are in the inventory.
@@ -2355,6 +2416,22 @@ void Game::sendSnapshot(Connection* c)
             self.set("quickened", me->quickened);
             self.set("mana", std::floor(me->mana));
             self.set("manaMax", std::round(battle::manaMax(me->wisdom, true)));
+            // Its Gift's ways of working (doc 43), for the character sheet: what each does, and its mana.
+            auto work = Value::array();
+            for (const auto* a : gifts::abilities(me->gift, me->quickened))
+                if (a->work)
+                {
+                    auto w = Value::object();
+                    w.add("id", a->id);
+                    w.add("name", a->name);
+                    w.add("summary", a->summary);
+                    w.add("mana", a->mana);
+                    w.add("passive", a->kind == "passive");
+                    work.push(std::move(w));
+                }
+            self.set("giftWork", std::move(work));
+            if (me->wardenAttention > 0)
+                self.set("wardenAttention", std::round(me->wardenAttention));
         }
         if (const auto* purse = world_.society().account(id); purse && Society::stockAll(*purse, "sword") > 0)
             self.set("swords", Society::stockAll(*purse, "sword"));   // (Of any kind: doc 35, Part 4.)
@@ -3620,6 +3697,14 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok)
             record(Economy | Character, id);
     }
+    else if (type == "giftwork")
+    {
+        // A Gift at work (doc 43): lent to a workshop near by, or Mend, Shortcut, Lighten Load, Dowse, Echo, Carry.
+        result = world_.useWorkGift(id, j.string("ability"), j.string("target"));
+        report = true;
+        if (result.ok)
+            record(Economy | Character, id);
+    }
     else if (type == "repair")
     {
         // Mending worn gear at a shop that deals in it (doc 35): the fee to the shop.
@@ -4146,7 +4231,9 @@ void Game::command(Connection* c, const std::string& raw)
         if (post.hasState)
             player->state = post.state;
         const std::string volume = j.string("volume");
-        const Voice voice = volume == "whisper" ? Voice::Whisper : volume == "yell" ? Voice::Yell : Voice::Speak;
+        Voice voice = volume == "whisper" ? Voice::Whisper : volume == "yell" ? Voice::Yell : Voice::Speak;
+        if (voice == Voice::Speak && world_.time() < player->carryVoiceUntil)
+            voice = Voice::Yell;                    // Carry (a Gifted Sound wolf, doc 43): it is heard far off.
         const std::uint64_t event = sequence_;
         // Who is spoken to (Docs/Design/29, phase 4): the talk targets the player chose (up to four) who can hear it,
         // anyone named, a companion asked for their thoughts; with none of those, the one resident close enough to

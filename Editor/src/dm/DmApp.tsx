@@ -176,6 +176,9 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
     </div>;
 }
 
+// The families a player may have (Data/Gifts/families.json; Death Walkers are NPCs only).
+const GIFT_FAMILIES = ['fire', 'earth', 'water', 'wind', 'sound', 'blinker', 'gravity', 'seer'];
+
 function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target: Target; character: Character; actions: Action[]; onAct: () => void}) {
     const [reason, setReason] = useState(''), [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
     const canAct = me.role !== 'viewer';
@@ -187,9 +190,10 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
-    // A Gift (doc 33): the setting decides who has one, and here the Dungeon Master gives it, or takes it away.
-    const gift = async (kind: '' | 'fire', quickened: boolean) => {
-        const words = kind ? (quickened ? 'Make Quickened (fire)' : 'Give the Gift of fire to') : 'Take the Gift from';
+    // A Gift (docs 33, 43): chosen at creation, and here the Dungeon Master gives one, changes it, or takes it away.
+    const [family, setFamily] = useState(character.gift || 'fire');
+    const gift = async (kind: string, quickened: boolean) => {
+        const words = kind ? (quickened ? `Make Quickened (${kind})` : `Give the Gift (${kind}) to`) : 'Take the Gift from';
         if (target === 'prod' && !window.confirm(`${words} ${character.name} on PROD?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.gift', character.id, reason, {gift: kind, quickened}); setReason(''); onAct(); }
@@ -246,8 +250,11 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
                 <button disabled={busy || pending || !character.dead} onClick={() => void act('character.resurrect')}>Resurrect</button>
             </div>
             <div className="button-grid">
-                <button disabled={busy || pending || (character.gift === 'fire' && !character.quickened)} onClick={() => void gift('fire', false)}>Give fire Gift</button>
-                <button disabled={busy || pending || character.quickened} onClick={() => void gift('fire', true)}>Make Quickened</button>
+                <label className="field"><span>Gift family</span>
+                    <select value={family} onChange={e => setFamily(e.target.value)}>
+                        {GIFT_FAMILIES.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
+                <button disabled={busy || pending || (character.gift === family && !character.quickened)} onClick={() => void gift(family, false)}>Make Gifted</button>
+                <button disabled={busy || pending || (character.gift === family && character.quickened)} onClick={() => void gift(family, true)}>Make Quickened</button>
                 <button disabled={busy || pending || !character.gift} onClick={() => void gift('', false)}>Take Gift away</button>
             </div>
             {me.role === 'admin' && <div className="button-grid">

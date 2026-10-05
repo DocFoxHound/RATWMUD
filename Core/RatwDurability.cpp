@@ -152,7 +152,9 @@ std::int64_t World::repairCost(const Entity& e, const std::string& item) const
     const double worn = 1 - conditionOf(e, item);
     if (!good || worn <= 0)
         return 0;
-    return std::max<std::int64_t>(1, std::int64_t(std::ceil(good->price * worn * .5)));
+    // Ring True (a Gifted Sound wolf, doc 43): it hears where the flaws are, and the mending is a quarter cheaper.
+    const double ring = e.gift == "sound" && !e.quickened ? .75 : 1;
+    return std::max<std::int64_t>(1, std::int64_t(std::ceil(good->price * worn * .5 * ring)));
 }
 
 Result World::repairGear(const std::string& player, const std::string& merchant, const std::string& item)
@@ -176,6 +178,7 @@ Result World::repairGear(const std::string& player, const std::string& merchant,
     if (!society_.shift(player, merchant, "", 0, cost, "repair"))
         return {false, "The mending can't be paid for.", {}};
     e->wear.erase(item);
+    award(player, "practice", "repair:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
     const auto* good = items::good(item);
     return {true, "Your " + (good ? lowerName(good->name) : item) + " is mended, for " + std::to_string(cost) + "p.", {}};
 }
