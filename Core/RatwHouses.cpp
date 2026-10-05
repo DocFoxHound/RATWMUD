@@ -123,6 +123,8 @@ void Society::foundHouses()
             if (account(keeper)->cash > keep)
                 shift(keeper, till, "", 0, account(keeper)->cash - keep, "the shop's till");
         }
+        // Its starting money (2026-10-05): the till begins with its float, so filling it doesn't drain the house.
+        startingMoney(till, floatOf(p.id) - account(till)->cash);
     }
 }
 

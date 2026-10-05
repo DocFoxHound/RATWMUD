@@ -516,6 +516,22 @@ int householdReserve()
     return catalog().reserve;
 }
 
+bool seasonal(const std::string& item)
+{
+    if (!load())
+        return false;
+    bool any = false;
+    for (const auto& p : catalog().producers)
+        for (const auto& [made, n] : p.out)
+            if (made == item)
+            {
+                if (p.seasons.empty())
+                    return false;
+                any = true;
+            }
+    return any;
+}
+
 const Producer* producerFor(const std::string& workLabel)
 {
     std::string work = workLabel;

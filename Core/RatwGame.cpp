@@ -266,6 +266,7 @@ Game::Game(Options options) : options_(std::move(options)), random_(std::random_
     // A Chapter's rented places are locked to all but its members and guests (doc 32, 5.2).
     world_.mayEnter = [this](const std::string& who, const std::string& cell) { return mayEnterPlace(who, cell); };
     world_.levelOf = [this](const std::string& who) { return social_.level(who); };   // (A fighter's skill: doc 44.)
+    setSpeed(options_.speed);
 }
 
 Game::~Game()
@@ -1102,7 +1103,7 @@ void Game::makeResidents()
             "$8, $9::integer, $10::integer, $8, $9::integer, $10::integer, $8, $9::integer, $10::integer, 'runtime', NULL, NULL "
             "FROM live.npcs WHERE world_id = $1 AND id = $11",
             {liveWorldId_, id, request.name, description, child ? std::string("Born in the world, not written.") : std::string(),
-             std::to_string(request.age), child ? std::string("0") : std::string("20"), home.cell, x, y, request.templateId});
+             std::to_string(request.age), child ? std::string("0") : std::to_string(Society::AdultPurse), home.cell, x, y, request.templateId});
         World candidate;
         std::string problem;
         const bool loaded = made.ok && loadWithLivePeople(candidate, problem);
@@ -1955,10 +1956,22 @@ void Game::login(Connection* c, const Value& j)
 
 // --------------------------------------------------------------------------- The world, twenty times a second
 
+void Game::setSpeed(double speed)
+{
+    speed_ = std::isfinite(speed) ? std::clamp(speed, 1.0, MaxSpeed) : 1.0;
+}
+
 void Game::tick(double dt)
 {
     perf::Scope timed(meter_, perf::TickOther);
-    keepOwnership(dt);
+    // Fast-forward (setSpeed): the world's time is `dt`, real time `real`; what goes to the clients goes once a real
+    // twentieth of a second.
+    const double real = dt / speed_;
+    frameDebt_ += 1 / speed_;
+    const bool frame = frameDebt_ >= 1 - 1e-9;
+    if (frame)
+        frameDebt_ = std::max(0.0, frameDebt_ - 1);
+    keepOwnership(real);
     std::map<std::string, std::string> beforeCells;
     for (auto* c : clients_)
         if (const auto* e = world_.entity(c->entityId))
@@ -1975,9 +1988,9 @@ void Game::tick(double dt)
     }
     ++revision_;
     mind_.poll();                                   // NPC Mind answers that have arrived.
-    ambient(dt);
-    barks(dt);
-    sermons(dt);
+    ambient(real);                                  // (Voices look for something to say by real time.)
+    barks(real);
+    sermons(real);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
@@ -2019,17 +2032,18 @@ void Game::tick(double dt)
                 e->typing = false;
     companionTick(dt);                              // Residents travelling with a party (doc 32, Phase 3).
     partyTick(dt);
-    refreshSocialViews(dt);
+    refreshSocialViews(real);
     chapterTick(dt);
     factionTick(dt);
     estateTick(dt);
     campTick(dt);
     holdTick(dt);
-    refreshChapterViews(dt);
-    refreshLabels(dt);
-    snapshotAccumulator_ += dt;
+    refreshChapterViews(real);
+    refreshLabels(real);
+    snapshotAccumulator_ += real;
     // Small observer-filtered poses at simulation cadence; full snapshots five times a second, and at once on a
     // change of cell.
+    if (frame)
     {
         perf::Scope motion(meter_, perf::Motion);
         std::vector<Connection*> framed, arrived;
@@ -2062,8 +2076,8 @@ void Game::tick(double dt)
             for (auto* c : framed)
                 frameFor(c);
     }
-    saveAccumulator_ += dt;
-    ambientAccumulator_ += dt;
+    saveAccumulator_ += real;
+    ambientAccumulator_ += real;
     if (snapshotAccumulator_ >= 0.2)
     {
         snapshotAccumulator_ = 0;
@@ -2073,8 +2087,9 @@ void Game::tick(double dt)
         tendFightScenes();
     }
     // A quarter of the clients' snapshots in each tick (by a phase fixed per connection).
-    snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
+    if (frame)
     {
+        snapshotPhase_ = (snapshotPhase_ + 1) % SnapshotPhases;
         perf::Scope views(meter_, perf::Views);
         std::vector<Connection*> sending;
         for (auto* c : clients_)
@@ -2085,9 +2100,9 @@ void Game::tick(double dt)
             if (auto* e = world_.entity(c->entityId))
                 e->transitioned = false;
     }
-    watchReleases(dt);
-    applyDmActions(dt);
-    feedWatch(dt);
+    watchReleases(real);
+    applyDmActions(real);
+    feedWatch(real);
     runSpawns(dt);
     makeResidents();
     if (prefetching && (prefetchAccumulator_ += dt) >= 1)
@@ -2095,13 +2110,13 @@ void Game::tick(double dt)
         prefetchAccumulator_ = 0;
         prefetcher().Want(world_.cellsSoonNeeded());
     }
-    if (streamedBuild_ && (streamLogAccumulator_ += dt) >= 60)
+    if (streamedBuild_ && (streamLogAccumulator_ += real) >= 60)
     {
         streamLogAccumulator_ = 0;
         note("info", "RATW_STREAM loaded=" + std::to_string(world_.loadedCells()) + " of " + std::to_string(world_.cells().size()) +
                          " cells; " + std::to_string(prefetcher().HitCount()) + " loads found ready");
     }
-    if (saveSoonIn_ >= 0 && (saveSoonIn_ -= dt) < 0)
+    if (saveSoonIn_ >= 0 && (saveSoonIn_ -= real) < 0)
     {
         snapshotSaveAccumulator_ = 0;
         autosave();
@@ -2113,7 +2128,7 @@ void Game::tick(double dt)
         social_.tick(now());
         afterSocial();
     }
-    if ((snapshotSaveAccumulator_ += dt) >= SnapshotSeconds)
+    if ((snapshotSaveAccumulator_ += real) >= SnapshotSeconds)
     {
         snapshotSaveAccumulator_ = 0;
         autosave();
@@ -2131,7 +2146,7 @@ void Game::tick(double dt)
         for (auto* c : clients_)
             if (!c->entityId.empty())
                 online.insert(c->entityId);
-        director_.tick(dt, world_, characters_, online, operatorActivity_, revision_,
+        director_.tick(real, world_, characters_, online, operatorActivity_, revision_,
                        [this] { ++revision_; save(); return storageReady_; },
                        [this](const std::set<std::string>& targets, const std::string& text) {
                            for (auto* c : clients_)

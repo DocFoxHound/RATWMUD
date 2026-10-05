@@ -1331,6 +1331,43 @@ void swordsMuffleAndBodiesLinger()
 
 // The Dev Console (a player marked Dungeon Master): nobody else may use it; its commands are answered in its own
 // replies; the mark is saved with the character.
+// Fast-forward (Game::setSpeed): every tick is the world's usual 0.05 s, so nothing is skipped; the clients get their
+// frames by real time, a frame each `speed` ticks; a Dungeon Master sets it with /speed.
+void fastForward()
+{
+    game::Options o;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash;
+    ash.id = 1;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    run(g, ash, .2);
+    expect(g.speed() == 1, "the world runs at its own pace to begin with");
+    g.setSpeed(4);
+    const double before = g.world().time();
+    const auto motions = ash.motions;
+    run(g, ash, 4);                                 // 80 ticks: four real seconds' worth of the world.
+    expect(std::abs(g.world().time() - before - 4) < .051, "each tick is still the world's 0.05 s (" + std::to_string(g.world().time() - before) + ")");
+    expect(ash.motions - motions >= 18 && ash.motions - motions <= 22,
+           "a motion frame every fourth tick (" + std::to_string(ash.motions - motions) + ")");
+    g.setSpeed(5000);
+    expect(g.speed() == game::Game::MaxSpeed, "no faster than MaxSpeed");
+    g.setSpeed(0);
+    expect(g.speed() == 1, "nor slower than real time");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/speed 8"}}));
+    expect(!ash.last("devResult")->boolean("ok") && g.speed() == 1, "only a Dungeon Master sets the speed");
+    g.world().entity("player-ash")->dungeonMaster = true;
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/speed 8"}}));
+    expect(ash.last("devResult")->boolean("ok") && g.speed() == 8, "/speed 8: eight times as fast");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/speed 0"}}));
+    expect(!ash.last("devResult")->boolean("ok") && g.speed() == 8, "a speed out of range is refused");
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/speed"}}));
+    expect(ash.last("devResult")->string("text").find("8x") != std::string::npos, "/speed alone says the speed");
+}
+
 void theDevConsole()
 {
     game::Options o;
@@ -1445,6 +1482,7 @@ int main()
     {
         aDevelopmentSession();
         theDevConsole();
+        fastForward();
         residentsTalkWhereAPlayerCanHear();
         talkTargets();
         residentsTalkFromWrittenScenes();

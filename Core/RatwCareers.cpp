@@ -201,6 +201,13 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
     if (request.kind == "birth")
     {
         c.parents[id] = request.parents;
+        // A child's first pennies (starting money, 2026-10-05), from the better-off parent: given, never made.
+        const std::string* giver = nullptr;
+        for (const auto& parent : request.parents)
+            if (const auto* purse = account(parent); purse && (!giver || purse->cash > account(*giver)->cash))
+                giver = &parent;
+        if (giver)
+            shift(*giver, id, "", 0, std::min<std::int64_t>(ChildPurse, account(*giver)->cash), "a child's first pennies");
         forgetCareers();
         return {"birth", id, request.parents.empty() ? std::string() : request.parents[0],
                 request.parents.size() > 1 ? "child of " + request.parents[0] + " and " + request.parents[1] : std::string()};

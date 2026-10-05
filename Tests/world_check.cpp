@@ -1,15 +1,16 @@
 // Loads a streamed world export (python3 tools/world_build.py export DIR writes DEV's newest build) the way the game
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
-//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE] [--reckon]]
+//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon]]
 //
 // --reckon ends the run with the month's reckoning (doc 42), as if the month were up, and says where the money went.
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
 // --players N (default 1) adds walking players: the first at the spawn, the rest beside residents spread over the
 // world, each observed every tick and sent a view five times a second as the server does. --no-check skips loading
-// every place first (the check), which is slow and not needed to measure ticks. --full turns the simulation tiers
-// off, simulating every NPC in full wherever it is (as before tiers), for comparison.
+// every place first (the check), which is slow and not needed to measure ticks. --deterministic does the work by counts,
+// never the clock (World::setDeterministic), so a run repeats exactly. --full turns the simulation tiers off, simulating
+// every NPC in full wherever it is (as before tiers), for comparison.
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -102,6 +103,7 @@ int main(int argc, char** argv)
     int playerCount = 1;
     bool check = true;
     bool full = false;                              // --full: every NPC in full simulation (no tiers).
+    bool deterministic = false;                     // --deterministic: work by counts, never the clock (World::setDeterministic).
     bool reckon = false;                            // --reckon: the month's reckoning at the end.
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     bool usage = argc != 2 && !simulate;
@@ -116,6 +118,8 @@ int main(int argc, char** argv)
             reckon = true;
         else if (flag == "--full")
             full = true;
+        else if (flag == "--deterministic")
+            deterministic = true;
         else if (flag == "--events" && i + 1 < argc)
             eventsFile = argv[++i];
         else
@@ -123,7 +127,7 @@ int main(int argc, char** argv)
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE] [--reckon]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -221,6 +225,7 @@ int main(int argc, char** argv)
     moneyReport(server, "at the start");
     if (full)
         server.setTiered(false);
+    server.setDeterministic(deterministic);
     const double from = std::atof(argv[3]), to = std::atof(argv[4]);
     server.setTimeOfDay(from);
     // Players walking about, each of whose views is built five times a second as the server does for each client:

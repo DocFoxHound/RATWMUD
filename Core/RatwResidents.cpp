@@ -1,3 +1,4 @@
+#include "RatwItems.h"
 #include "RatwSociety.h"
 
 #include <algorithm>
@@ -214,6 +215,25 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     }
     std::map<std::string, std::string> reservations;
     std::map<std::string, int> routeWalkers;
+    // Each home's household (doc 42, the user: who keeps the house shops for it and minds its children).
+    std::map<std::string, int> householdSize;
+    std::set<std::string> withChildren;
+    for (const auto& [id, life] : state_.residents)
+        if (const auto body = bodies.find(id); body != bodies.end() && !life.homeCell.empty())
+        {
+            ++householdSize[life.homeCell];
+            if (body->second.age < 16)
+                withChildren.insert(life.homeCell);
+        }
+    const auto larderLow = [&](const std::string& home) {
+        const auto* store = account(homeStore(home, "larder"));
+        int held = 0;
+        if (store)
+            for (const auto& [item, n] : store->stock)
+                if (edible(item))
+                    held += n * nourishment(item);
+        return held < 50 * 2 * std::max(1, householdSize[home]);
+    };
     for (auto& pair : state_.residents)
     {
         const auto* r = spec(pair.first);
@@ -284,6 +304,25 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 job = &stand;
             }
         }
+        // A household's keeper stays home (RatwHouseholds.cpp); a poor household's homemaker goes out to labour.
+        const auto keeperOf = state_.memory.keeper.find(life.homeCell);
+        const bool keepsHouse = keeperOf != state_.memory.keeper.end() && keeperOf->second == pair.first && body.age >= 16;
+        const bool sentToWork = !keepsHouse && state_.memory.toWork.count(life.homeCell) && body.age >= 16 && body.age < RetireAge &&
+                                homemaking(job->title);
+        if (keepsHouse || sentToWork)
+        {
+            stand = Position{};
+            stand.role = "civilian";
+            stand.paid = sentToWork;
+            stand.startHour = 8;
+            stand.endHour = 18;
+            stand.title = keepsHouse ? "keeping the house" : LabourTitle;
+            stand.work = {life.homeCell, life.homeX, life.homeY};
+            if (sentToWork)
+                if (const auto* square = pick(planFor(life.homeCell).crowd, pair.first))
+                    stand.work = *square;
+            job = &stand;
+        }
         const bool guard = job->role == "guard", merchantRole = job->role == "merchant";
         // A house's manager (doc 42, Phase 5b): the shop's goods are its till's, so it feeds itself like anyone.
         const bool managed = merchantRole && tillOf(pair.first) != pair.first;
@@ -315,6 +354,21 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             for (const auto& [item, n] : spare)
                 if (n > 0)
                     shift(pair.first, larder, item, std::min(n, 99), 0, "put away in the larder");
+        }
+        // Rations (the user, 2026-10-05): a hungry guard eats from the watch's mess, a miner or quarryman from its works'
+        // bread, before spending its own pennies: the town bought them for it.
+        if (life.hunger >= 55 && bestFood(wallet).empty())
+        {
+            const auto community = day_.communityOf ? day_.communityOf(life.homeCell) : std::string();
+            const auto* producer = items::producerFor(job->title);
+            const std::string mess = community.empty() ? std::string()
+                                   : guard ? "town:" + community + ":watch"
+                                   : producer && producer->id == "mine" ? "town:" + community + ":mines"
+                                   : producer && producer->id == "quarry" ? "town:" + community + ":quarries"
+                                                                          : std::string();
+            if (const auto* rations = mess.empty() ? nullptr : account(mess))
+                if (const auto food = bestFood(*rations); !food.empty())
+                    shift(mess, pair.first, food, 1, 0, "rations");
         }
         const bool carriesFood = !bestFood(wallet).empty();
         const bool larderHasFood = larderAccount && !bestFood(*larderAccount).empty() && !travels;
@@ -406,11 +460,20 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             goal = larderSpot();
             reason = onDuty ? "A short meal break at home." : "Hungry; fetching a meal from the larder at home.";
         }
-        else if ((!merchantRole || managed) && life.hunger >= 55 && !carriesFood && wallet.cash >= 1 && shop)
+        // (A keeper whose own shelves hold nothing to eat buys a meal elsewhere too.) Only with the price of a meal.
+        else if (life.hunger >= 55 && !carriesFood && spendable(pair.first) >= 4 && shop)
         {
             task = "buy food";
             goal = *shop;
             reason = onDuty ? "A short meal break at the shop." : "Hungry; buying food at the shop.";
+        }
+        else if (life.hunger >= 55 && !carriesFood && !onDuty && shop && shop->cell != "")
+        {
+            // Hungry, with nothing to eat and not the price of a meal: alms, at the shop, the church paying (the user,
+            // 2026-10-05: no one starves with a church in town).
+            task = "seeking alms";
+            goal = *shop;
+            reason = "Hungry and penniless; asking alms, which the church pays for.";
         }
         else if (onDuty)
         {
@@ -482,6 +545,41 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             goal = r->evening;
             reason = "The shop is shut; tallying accounts.";
         }
+        else if (const auto* odd = guard ? nullptr
+                                         : oddJobFor(pair.first, *job,
+                                                     job == &stand || job->title == LabourTitle || outworkTitled(job->title) || idlePost(job->title),
+                                                     body.age, wallet.cash < 12 || (life.hunger >= 55 && !carriesFood), hour,
+                                                     // (What its own post pays a day, to weigh a better-paid hire against.)
+                                                     job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
+                                                         ? std::int64_t(PaidSpells) * (spendable(payerOf(pair.first, *job, body.age).account) > ComfortableTill ? 2 : 1)
+                                                         : 0))
+        {
+            // An odd job (RatwOddJobs.cpp): to where it begins, then to where it ends.
+            task = "odd job: " + odd->kind;
+            goal = odd->stage.at(pair.first) == 0 ? odd->from : odd->to;
+            reason = "An odd job: " + odd->what + ".";
+        }
+        else if (keepsHouse && onHours)
+        {
+            // Keeping the house: the household's food first, then the children, then a look about the town.
+            if (larderLow(life.homeCell) && wallet.cash >= 5 && shop)
+            {
+                task = "shopping for the household";
+                goal = *shop;
+                reason = "Laying in the household's food with the household purse.";
+            }
+            else if (withChildren.count(life.homeCell))
+            {
+                task = "minding the children";
+                reason = "Keeping the house and minding the children.";
+            }
+            else
+            {
+                task = "about the town";
+                goal = r->evening;
+                reason = "Keeping the house; out and about while the others work.";
+            }
+        }
         else if (onHours && travels)
         {
             task = job->title;
@@ -549,6 +647,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (task == "sleep")
                 reason = "Resting on the road; home is far behind.";
         }
+        // Children keep together (the user, 2026-10-05): at play and in the evenings a friend group meets at one place.
+        if (body.age < 16 && !learning && !guard && !merchantRole && (task == job->title || task == "socialize"))
+            if (const auto& group = friendGroup(pair.first); !group.empty())
+                if (const auto* meet = pick(plan.crowd, group))
+                {
+                    goal = *meet;
+                    reason = task == "socialize" ? "Out with friends for the evening." : "Playing with friends.";
+                }
         // A civilian with a wander area roams it during work hours and evenings, moving on every half hour.
         if (!r->wander.empty() && !guard && !merchantRole && (task == job->title || task == "socialize"))
         {
@@ -566,6 +672,39 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (!near(body, goal))
         {
             life.progress = 0;
+            continue;
+        }
+        if (task.rfind("odd job: ", 0) == 0)
+        {
+            advanceOddJob(pair.first);
+            continue;
+        }
+        if (task == "seeking alms")
+        {
+            const auto community = day_.communityOf ? day_.communityOf(life.homeCell) : std::string();
+            const auto church = churchOf(treasuryOf(community));
+            for (const auto& open : openShops)
+                if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
+                {
+                    const auto till = tillOf(open.first);
+                    if (const auto* shelves = account(till); shelves && account(church))
+                        if (const auto food = bestFood(*shelves); !food.empty())
+                            if (const auto price = shopPrice(open.first, food);
+                                account(church)->cash >= price && transfer(till, church, food, 1, price, "alms bought for the hungry"))
+                                shift(church, pair.first, food, 1, 0, "alms");
+                    break;
+                }
+            continue;
+        }
+        if (task == "shopping for the household")
+        {
+            // A trip's worth for everyone at home (the household's habit), put away in the larder once home.
+            for (const auto& open : openShops)
+                if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
+                {
+                    buyFood(pair.first, open.first, true);
+                    break;
+                }
             continue;
         }
         // At a festival the town's stores feed everyone once (goods only: nothing is bought).
@@ -587,15 +726,18 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (there != bodies.end() && there->second.cell == body.cell)
                 practise(pair.first, learning->id, .006);
         }
-        const std::string station = goal.cell + ":" + std::to_string(goal.x) + ":" + std::to_string(goal.y);
-        const bool exclusive = task == "sleep" || paidWork;
-        if (exclusive && reservations.count(station))
+        // (Out in the fields or on the water a producer's place is no one's alone: two fishers fish the same shore.)
+        if (task == "sleep" || (paidWork && !items::producerFor(job->title)))
         {
-            life.reason = "Waiting for an occupied work or rest place.";
-            continue;
-        }
-        if (exclusive)
+            // A place to work or rest is one wolf's (keyed only when it is: the key is dear to build).
+            const std::string station = goal.cell + ":" + std::to_string(goal.x) + ":" + std::to_string(goal.y);
+            if (reservations.count(station))
+            {
+                life.reason = "Waiting for an occupied work or rest place.";
+                continue;
+            }
             reservations[station] = pair.first;
+        }
         if (task == "sleep")
         {
             life.fatigue = std::max(0., life.fatigue - .012);
@@ -651,7 +793,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             produce(pair.first, absoluteDay);       // A farmer's, fisher's... yield (Data/Items/crafts.json).
             // Wages from whoever the work is for (doc 42, Phase 2): the shop, the town, the church, the house.
             const auto payer = payerOf(pair.first, *job, body.age);
-            if (!payer.account.empty() && life.wagesToday < 3)
+            if (!payer.account.empty() && life.wagesToday < PaidSpells)
             {
                 // A shop or a house pays what its takings bear (doc 42): 2p a spell from a comfortable till, 1p from a
                 // lean one; a town 1p from a treasury under LeanTreasury a head. The church pays 2p.
@@ -661,7 +803,18 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                                            : payer.account.rfind("stores:", 0) == 0 || payer.account == "treasury" ? treasuryLean(payer.account)
                                                                                                                     : false;
                 const std::int64_t wage = lean ? 1 : 2;
-                if (shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : job->title == LabourTitle ? "day labour" : "service wages"))
+                // An employer that can't pay: its town (or church) covers the wage if it has plenty, so the work goes on
+                // (the user, 2026-10-05).
+                std::string subsidy;
+                if (business && spendable(payer.account) < wage)
+                    subsidy = subsidiser(home);
+                if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage subsidised by the town"))
+                {
+                    ++life.wagesToday;
+                    state_.memory.revision += state_.memory.unpaidSince.erase(pair.first);
+                }
+                else if (spendable(payer.account) >= wage &&
+                    shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : job->title == LabourTitle ? "day labour" : "service wages"))
                 {
                     ++life.wagesToday;
                     if (job->title != LabourTitle && state_.memory.unpaidSince.erase(pair.first))
@@ -701,11 +854,11 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto till = tillOf(pair.first);   // The shop's shelves (its house's till, doc 42).
             const auto& shelves = state_.accounts.at(till);
             const int meals = !sellsMeals ? 0 : std::min({3, carried - stock(shelves, "meal"), stock(stores, "meal"),
-                                        int(std::min<std::int64_t>(3, shelves.cash / 4))});
+                                        int(std::min<std::int64_t>(3, spendable(till) / 4))});
             if (meals > 0)
                 transfer(storeId, till, "meal", meals, 4, "wholesale restock");
             const int herbs = !sellsHerbs ? 0 : std::min({3, 8 - stock(shelves, "herbs"), stock(stores, "herbs"),
-                                        int(std::min<std::int64_t>(3, shelves.cash))});
+                                        int(std::min<std::int64_t>(3, spendable(till)))});
             if (herbs > 0)
                 transfer(storeId, till, "herbs", herbs, 1, "wholesale restock");
         }

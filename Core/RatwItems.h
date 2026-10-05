@@ -83,6 +83,9 @@ struct Producer
 bool traded(const std::string& item);
 // The producer a resident is, from the words of their work label, or null.
 const Producer* producerFor(const std::string& workLabel);
+// Whether a good comes in only in some seasons (every producer that brings it in has its seasons: grapes, apples), so
+// those who work with it lay in a year's store at the harvest.
+bool seasonal(const std::string& item);
 // What households use up besides food (crafts.json `households`; doc 35, Part 7).
 struct HouseholdNeed
 {

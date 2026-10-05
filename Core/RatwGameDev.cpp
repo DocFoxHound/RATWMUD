@@ -8,7 +8,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
+#include <sstream>
 
 namespace ratw::game
 {
@@ -27,7 +29,8 @@ constexpr DevCommand DevCommands[] = {
     {"fight-end-myself", "Ends the fight you are in, as a draw."},
     {"give", "give <item id> [count]: wearables from the catalog into your own purse (doc 35), to try on."},
     {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
-    {"reckon", "The month's reckoning now (doc 42): every resident pays a tenth of its profit since the last to its town and its church."},
+    {"reckon", "The week's reckoning now (doc 42): every resident pays a tenth of its profit since the last to its town and its church."},
+    {"speed", "speed [N]: how fast the world runs, 1 (as ever) to 1000 times; nothing is skipped, it just runs faster. Without N, the speed now."},
 };
 } // namespace
 
@@ -114,6 +117,23 @@ void Game::devCommand(Connection* c, const json::Value& j)
             text += "\n" + piece.id + " (" + piece.slot + "): " + piece.name;
         }
         result = {shown > 0, shown > 0 ? "Wearables:" + text : "No wearable matches.", {}};
+    }
+    else if (command == "speed" || command.rfind("speed ", 0) == 0)
+    {
+        if (command.size() > 6)
+        {
+            const double asked = std::atof(command.c_str() + 6);
+            if (!(asked >= 1 && asked <= MaxSpeed))
+                result = {false, "A speed from 1 to " + std::to_string(int(MaxSpeed)) + ".", {}};
+            else
+                setSpeed(asked);
+        }
+        if (result.message.empty())
+        {
+            std::ostringstream said;
+            said << "The world runs at " << speed_ << "x" << (speed_ > 1 ? " (a game day in " + std::to_string(int(std::round(240 / speed_))) + " real minutes, if the machine keeps up)." : ", as ever.");
+            result = {true, said.str(), {}};
+        }
     }
     else if (command == "reckon")
     {

@@ -671,6 +671,24 @@ Value economyMemory(const EconomyMemory& m)
     for (const auto& [id, c] : m.condition)
         condition.add(id, c);
     o.add("condition", condition);
+    o.add("purses", double(m.purses));
+    auto keeper = Value::object(), comfort = Value::object(), toWork = Value::array(), improved = Value::object();
+    for (const auto& [home, who] : m.keeper)
+        keeper.add(home, who);
+    for (const auto& [home, days] : m.comfort)
+        comfort.add(home, double(days));
+    for (const auto& home : m.toWork)
+        toWork.push(home);
+    for (const auto& [pid, level] : m.improved)
+        improved.add(pid, double(level));
+    auto neglected = Value::object();
+    for (const auto& [pid, weeks] : m.neglected)
+        neglected.add(pid, double(weeks));
+    o.add("neglected", neglected);
+    o.add("keeper", keeper);
+    o.add("comfort", comfort);
+    o.add("toWork", toWork);
+    o.add("improved", improved);
     o.add("unpaidSince", unpaid);
     o.add("outgoing", outgoing);
     return o;
@@ -692,6 +710,23 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [id, v] : o.object("condition").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 100)
             m.condition[id] = v.asNumber();
+    if (const auto* p = o.find("purses"); p && p->isNumber() && p->asNumber() >= 0 && p->asNumber() <= 100)
+        m.purses = int(p->asNumber());           // (Saved before starting money: 0, so an older world gets it once.)
+    for (const auto& [home, v] : o.object("keeper").fields())
+        if (v.isString())
+            m.keeper[home] = v.asString();
+    for (const auto& [home, v] : o.object("comfort").fields())
+        if (v.isNumber() && std::abs(v.asNumber()) < 1e6)
+            m.comfort[home] = int(v.asNumber());
+    for (const auto& v : o.array("toWork"))
+        if (v.isString())
+            m.toWork.insert(v.asString());
+    for (const auto& [pid, v] : o.object("improved").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 10)
+            m.improved[pid] = int(v.asNumber());
+    for (const auto& [pid, v] : o.object("neglected").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 100)
+            m.neglected[pid] = int(v.asNumber());
     return m;
 }
 
@@ -906,7 +941,7 @@ SocietyState readSociety(const Value& o)
             if (!a.isObject() || (a.size() != 10 && a.size() != 16)) valid = false;
             r.role = text(a, "role"); r.task = text(a, "task"); r.reason = text(a, "reason"); r.goalCell = text(a, "goalCell");
             r.hunger = real(a, "hunger"); r.fatigue = real(a, "fatigue"); r.progress = real(a, "progress");
-            r.goalX = real(a, "goalX"); r.goalY = real(a, "goalY"); r.wagesToday = int(integer(a, "wagesToday", 3));
+            r.goalX = real(a, "goalX"); r.goalY = real(a, "goalY"); r.wagesToday = int(integer(a, "wagesToday", Society::PaidSpells));
             if (a.size() == 16)
             {
                 r.homeCell = text(a, "homeCell"); r.relocationCell = text(a, "relocationCell");

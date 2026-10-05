@@ -807,6 +807,14 @@ class World
     // cache waits a tick or two while it is searched, rather than the whole tick waiting on a long search. Off, the
     // search runs at once on the caller (tests, tools). A copy of the world starts with it off.
     void setRoutesOffThread(bool on);
+    // Work done by counts alone, never by the clock (for long headless runs): each half-hour's schedules finish in the
+    // step that begins them, and route planning stops at its count of searches and nodes, not at RouteBudgetMs. The same
+    // world then runs the same way on any machine, however loaded. Off (the server), slow work spreads over steps.
+    void setDeterministic(bool on) { deterministic_ = on; }
+    // The cells a traveller passes through from one to another (the first and the last among them), by the way routes
+    // go (firstSteps: along the roads where there are any); empty with no way.
+    std::vector<std::string> routeBetween(const std::string& from, const std::string& to) const;
+    bool deterministic() const { return deterministic_; }
     // Brings these players' views up to date together, on several threads at once (each view is thousands of sight
     // rays, and one player's doesn't depend on another's). observe() and snapshot() then find them ready. Changes
     // nothing they would have seen; call it from the thread that owns the world, between ticks.
@@ -947,6 +955,19 @@ class World
     CellSource source_;
     // A streamed world's cell graph through seams (explicit doors are always in doors_).
     std::map<std::string, std::set<std::string>> exits_;
+    // Roads between places (the user, 2026-10-05: travel between towns keeps to the roads, unless they are blocked).
+    // The seams that cross on a road (a dirt road, a street, flagstones) on both sides, and each cell's neighbours a
+    // road leads to. Worked out once at load from every cell's tiles (indexRoads), so a route never depends on which
+    // cells happen to be in memory. Routes count a step along a road as 1 and one overland as OverlandCost.
+    std::set<std::string> roadSeams_;
+    std::map<std::string, std::set<std::string>> roadExits_;
+    static constexpr int OverlandCost = 3;
+    void indexRoads();
+    bool roadLink(const std::string& from, const std::string& to) const
+    {
+        const auto found = roadExits_.find(from);
+        return found != roadExits_.end() && found->second.count(to) > 0;
+    }
     std::map<std::string, double> needed_;          // Game time each loaded cell was last in use.
     double streamCheck_ = 0.0;
     std::set<std::string> streamOccupied_;          // The cells characters stood in when stream() last looked.
@@ -1070,7 +1091,6 @@ class World
     void setupTowns();
     void tendRoads();
     void roadsDaily();
-    std::vector<std::string> routeBetween(const std::string& from, const std::string& to) const;
     void rumoursFromEvent(const WorldEvent& event);
     void contractsFromEvent(const WorldEvent& event);
     void settleContract(Contract& c, const std::string& status, const std::string& paidTo);
@@ -1152,6 +1172,16 @@ class World
     Market marketOf(const std::string& town) const;
     std::string traderOf(const Town& t) const;
     void tradeCaravans();
+    // Standing orders (RatwTrade.cpp): the price a piece agreed with a town now, those of a road due a delivery, and the
+    // porters sent to renegotiate them (chosen once a day among those free to go; done on arriving at the market).
+    std::int64_t orderPrice(const Town& from, const std::string& item) const;
+    void residentsRenegotiate(std::set<std::string>& busy);
+    void tendNegotiators();
+    // Food for the road for one going from `town` to `toCell` and back, paid by `payer` up to `budget`: a meal for every
+    // ten places of the way, two at least, bought at its town's shops; what can't be bought, the money for it. Returns
+    // what it cost. Never made.
+    std::int64_t provisionTraveller(const std::string& traveller, const std::string& payer, const std::string& town,
+                                    const std::string& toCell, std::int64_t budget);
     void recoverHoard(const BanditCamp& camp, const std::string& to, const std::string& kind);
     std::map<std::string, std::map<std::string, double>> marketPrices_;   // Store -> good -> price factor (tendPrices).
     std::int64_t marketPriceAt_ = -1;
@@ -1159,6 +1189,8 @@ class World
     void tradeCaravanArrived(Caravan& c);
     void tradeCaravanHome(Caravan& c);
     void residentsFillContracts(std::set<std::string>& busy);
+    // Food for the road for a carrier going to another town for a contract's goods (RatwProcure.cpp).
+    void provisionCarrier(Contract& k, int quantity);
     void tendContractCarriers();
   public:
     // The month's reckoning at once (the Dev Console's /reckon): what each town took in, as a line each.
@@ -1553,6 +1585,7 @@ class World
     };
     mutable RouteWorkerSlot routes_;
     mutable bool routeAsync_ = false, routePending_ = false;
+    bool deterministic_ = false;
     // The ground of each cell as the route thread reads it: a copy, kept while the ground (its checksum) is unchanged.
     mutable std::map<std::string, std::pair<std::uint64_t, std::shared_ptr<const Cell>>> routeCells_;
     void takeRoutes();

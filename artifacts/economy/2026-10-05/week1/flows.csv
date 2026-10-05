@@ -1,0 +1,1158 @@
+day,kind,from,to,entries,coins,goods
+0,"brought in","other","merchant",209,0,209
+0,"brought in","other","paid civilian",7427,0,11098
+0,"brought in","other","unpaid civilian",45,0,88
+0,"brought in and sold","merchant","paid civilian",4,6,6
+0,"caravan delivered","caravan","town treasury",24,0,260
+0,"caravan loaded","capital treasury","caravan",26,0,274
+0,"crafted","other","merchant",2987,0,5120
+0,"household provisions","other","home stores",886,0,6745
+0,"initial funding","outside","other",2,115401,0
+0,"materials bought","merchant","merchant",326,7156,3749
+0,"materials bought","merchant","paid civilian",1486,2706,2466
+0,"materials bought","merchant","unpaid civilian",15,76,40
+0,"put away in the larder","paid civilian","home stores",37,0,650
+0,"put away in the larder","unpaid civilian","home stores",2,0,32
+0,"reward set aside","capital treasury","contract",2,42,0
+0,"service wages","capital treasury","paid civilian",150,300,0
+0,"service wages","merchant","paid civilian",818,1323,0
+0,"service wages","merchant","unpaid civilian",9,18,0
+0,"service wages","paid civilian","paid civilian",54,90,0
+0,"service wages","town treasury","paid civilian",195,390,0
+0,"service wages","town treasury","unpaid civilian",12,24,0
+0,"service wages","unpaid civilian","paid civilian",60,120,0
+0,"service wages","unpaid civilian","unpaid civilian",12,24,0
+0,"starting materials","outside","merchant",198,0,0
+0,"starting money","outside","capital treasury",1,7608,0
+0,"starting money","outside","guard",36,247,0
+0,"starting money","outside","merchant",24,18218,0
+0,"starting money","outside","paid civilian",240,2213,0
+0,"starting money","outside","town treasury",13,26392,0
+0,"starting money","outside","unpaid civilian",73,628,0
+0,"stolen by bandits","caravan","other",2,0,14
+0,"stores stocked","capital treasury","town treasury",26,0,1217
+0,"town purse","capital treasury","town treasury",13,15608,0
+0,"used in crafting","merchant","other",4234,0,6410
+0,"watch wages","capital treasury","guard",99,198,0
+0,"watch wages","town treasury","guard",123,246,0
+0,"wholesale restock","merchant","capital treasury",8,31,10
+0,"wholesale restock","merchant","town treasury",9,39,12
+1,"a great house's fortune","outside","great house",6,18000,0
+1,"a penny for a beggar","merchant","paid civilian",11,11,0
+1,"a penny for a beggar","merchant","unpaid civilian",2,2,0
+1,"a penny for a beggar","paid civilian","paid civilian",9,9,0
+1,"a penny for a beggar","paid civilian","unpaid civilian",4,4,0
+1,"a penny for a beggar","unpaid civilian","paid civilian",4,4,0
+1,"a penny for a beggar","unpaid civilian","unpaid civilian",3,3,0
+1,"a standing order","merchant","caravan",13,268,113
+1,"bought by the Town Works","town works","house till",15,230,62
+1,"bought by the Town Works","town works","merchant",83,773,177
+1,"bought by the church","town church","house till",5,112,8
+1,"bought by the church","town church","merchant",24,249,58
+1,"bought by the docks","town docks","house till",6,36,11
+1,"bought by the docks","town docks","merchant",13,89,24
+1,"bought by the hall of records","town hall","house till",5,89,19
+1,"bought by the hall of records","town hall","merchant",8,158,40
+1,"bought by the mines","town mines","house till",2,16,5
+1,"bought by the mines","town mines","merchant",2,19,6
+1,"bought by the quarries","town quarries","house till",1,4,1
+1,"bought by the quarries","town quarries","merchant",1,4,1
+1,"bought by the watch","town watch","house till",12,392,78
+1,"bought by the watch","town watch","merchant",63,1225,290
+1,"bought for the road","caravan","merchant",4,78,29
+1,"bought for the road","caravan","paid civilian",22,175,155
+1,"brought in","other","house till",32,0,32
+1,"brought in","other","merchant",117,0,117
+1,"brought in","other","paid civilian",4458,0,5232
+1,"brought in","other","unpaid civilian",30,0,48
+1,"brought in and sold","merchant","paid civilian",3,3,3
+1,"caravan delivered","caravan","town treasury",17,0,150
+1,"caravan loaded","capital treasury","caravan",19,0,155
+1,"carted in by caravan","house till","caravan",3,72,19
+1,"carted in by caravan","merchant","caravan",3,40,14
+1,"carter delivery","outside","capital treasury",1,0,0
+1,"crafted","other","house till",187,0,316
+1,"crafted","other","merchant",470,0,883
+1,"eat","guard","other",97,0,97
+1,"eat","merchant","other",223,0,223
+1,"eat","paid civilian","other",932,0,932
+1,"eat","unpaid civilian","other",98,0,98
+1,"eaten at the house's feast","great house","other",8,0,40
+1,"eaten by the horses","house till","other",4,0,8
+1,"eaten by the horses","merchant","other",6,0,12
+1,"house takings","house till","great house",33,2169,0
+1,"household purchase","guard","merchant",26,60,26
+1,"household purchase","merchant","house till",20,49,20
+1,"household purchase","merchant","merchant",139,294,139
+1,"household purchase","paid civilian","house till",113,226,113
+1,"household purchase","paid civilian","merchant",333,668,333
+1,"household purchase","unpaid civilian","house till",7,27,7
+1,"household purchase","unpaid civilian","merchant",5,7,5
+1,"kept at the house","great house","other",8,0,16
+1,"kept at the keeper's home","merchant","other",4,0,9
+1,"manager's wage","house till","merchant",61,488,0
+1,"materials bought","house till","house till",50,1231,643
+1,"materials bought","house till","merchant",13,189,122
+1,"materials bought","house till","paid civilian",235,660,579
+1,"materials bought","house till","unpaid civilian",11,47,17
+1,"materials bought","merchant","house till",18,195,133
+1,"materials bought","merchant","merchant",73,769,412
+1,"materials bought","merchant","paid civilian",289,1466,1305
+1,"materials bought","merchant","unpaid civilian",3,25,19
+1,"money for the road","capital treasury","caravan",2,8,0
+1,"money for the road","town treasury","caravan",10,245,0
+1,"put away in the larder","merchant","home stores",41,0,45
+1,"put away in the larder","paid civilian","home stores",14,0,216
+1,"reward set aside","capital treasury","contract",6,136,0
+1,"reward set aside","town church","contract",23,361,0
+1,"reward set aside","town docks","contract",8,89,0
+1,"reward set aside","town hall","contract",3,72,0
+1,"reward set aside","town mines","contract",7,111,0
+1,"reward set aside","town quarries","contract",4,56,0
+1,"reward set aside","town watch","contract",35,1416,0
+1,"reward set aside","town works","contract",33,409,0
+1,"service wages","capital treasury","paid civilian",150,300,0
+1,"service wages","great house","paid civilian",39,78,0
+1,"service wages","great house","unpaid civilian",6,12,0
+1,"service wages","merchant","paid civilian",567,780,0
+1,"service wages","merchant","unpaid civilian",6,9,0
+1,"service wages","paid civilian","paid civilian",54,90,0
+1,"service wages","town church","paid civilian",69,138,0
+1,"service wages","town treasury","paid civilian",156,312,0
+1,"service wages","town treasury","unpaid civilian",6,12,0
+1,"service wages","unpaid civilian","paid civilian",60,120,0
+1,"service wages","unpaid civilian","unpaid civilian",12,24,0
+1,"starting money","outside","house till",26,1095,0
+1,"starting money","outside","town church",14,13450,0
+1,"starting money","outside","town docks",4,372,0
+1,"starting money","outside","town hall",3,581,0
+1,"starting money","outside","town mines",3,293,0
+1,"starting money","outside","town quarries",2,121,0
+1,"starting money","outside","town watch",13,5947,0
+1,"starting money","outside","town works",14,2756,0
+1,"stolen by bandits","caravan","other",4,0,41
+1,"surplus: a bonus from the house","great house","merchant",10,40,0
+1,"surplus: a bonus from the house","great house","paid civilian",16,64,0
+1,"surplus: a feast","great house","house till",1,1,1
+1,"surplus: a feast","great house","merchant",9,147,39
+1,"surplus: commissioned","great house","house till",4,131,12
+1,"surplus: commissioned","great house","merchant",4,19,4
+1,"surplus: goods for the keeper's home","merchant","merchant",4,26,9
+1,"surplus: the keeper's larder","merchant","merchant",1,5,5
+1,"surplus: the town's works","town treasury","house till",10,112,47
+1,"surplus: the town's works","town treasury","merchant",55,809,260
+1,"the shop's till","merchant","house till",582,15999,6423
+1,"tools for the work","paid civilian","house till",3,23,3
+1,"tools for the work","paid civilian","merchant",5,50,5
+1,"trade takings","caravan","capital treasury",2,16,0
+1,"trade takings","caravan","town treasury",8,368,0
+1,"unsold, back to the stores","town treasury","caravan",1,4,2
+1,"used at home","guard","other",26,0,26
+1,"used at home","merchant","other",201,0,201
+1,"used at home","paid civilian","other",446,0,446
+1,"used at home","unpaid civilian","other",12,0,12
+1,"used in crafting","house till","other",274,0,444
+1,"used in crafting","merchant","other",667,0,959
+1,"used in the town's works","town treasury","other",53,0,307
+1,"watch wages","capital treasury","guard",99,198,0
+1,"watch wages","town treasury","guard",123,246,0
+1,"wholesale restock","house till","capital treasury",2,8,2
+1,"wholesale restock","merchant","capital treasury",4,16,4
+1,"wholesale restock","merchant","town treasury",12,64,16
+1,"worn out at work","paid civilian","other",8,0,8
+2,"a penny for a beggar","merchant","paid civilian",10,10,0
+2,"a penny for a beggar","merchant","unpaid civilian",5,5,0
+2,"a penny for a beggar","paid civilian","paid civilian",8,8,0
+2,"a penny for a beggar","paid civilian","unpaid civilian",1,1,0
+2,"a penny for a beggar","unpaid civilian","paid civilian",6,6,0
+2,"a penny for a beggar","unpaid civilian","unpaid civilian",3,3,0
+2,"a standing order","house till","caravan",9,242,115
+2,"a standing order","merchant","caravan",52,1131,527
+2,"bought by the Town Works","town works","house till",11,86,31
+2,"bought by the Town Works","town works","merchant",26,165,52
+2,"bought by the church","town church","house till",1,26,2
+2,"bought by the church","town church","merchant",12,77,28
+2,"bought by the docks","town docks","house till",1,4,2
+2,"bought by the docks","town docks","merchant",2,7,3
+2,"bought by the hall of records","town hall","house till",3,27,7
+2,"bought by the hall of records","town hall","merchant",6,54,18
+2,"bought by the mines","town mines","house till",1,6,2
+2,"bought by the mines","town mines","merchant",1,9,3
+2,"bought by the watch","town watch","house till",6,178,53
+2,"bought by the watch","town watch","merchant",32,462,167
+2,"bought for the road","caravan","merchant",11,159,111
+2,"bought for the road","caravan","paid civilian",52,636,596
+2,"bought for the road","caravan","unpaid civilian",3,58,39
+2,"brought in","other","merchant",77,0,77
+2,"brought in","other","paid civilian",2646,0,3197
+2,"brought in","other","unpaid civilian",41,0,65
+2,"brought in and sold","merchant","paid civilian",3,5,5
+2,"caravan delivered","caravan","town treasury",24,0,199
+2,"caravan loaded","capital treasury","caravan",26,0,274
+2,"carrier's pay","contract","paid civilian",22,101,0
+2,"carted in by caravan","house till","caravan",2,50,17
+2,"carted in by caravan","merchant","caravan",5,104,39
+2,"carter delivery","outside","capital treasury",1,0,0
+2,"contract delivery","paid civilian","town docks",2,0,5
+2,"contract delivery","paid civilian","town mines",2,0,6
+2,"contract delivery","paid civilian","town quarries",2,0,4
+2,"contract delivery","paid civilian","town watch",3,0,15
+2,"contract delivery","paid civilian","town works",15,0,104
+2,"crafted","other","house till",209,0,321
+2,"crafted","other","merchant",462,0,819
+2,"eat","guard","other",97,0,97
+2,"eat","merchant","other",223,0,223
+2,"eat","paid civilian","other",956,0,956
+2,"eat","unpaid civilian","other",98,0,98
+2,"eaten at the house's feast","great house","other",8,0,38
+2,"eaten by the horses","house till","other",4,0,8
+2,"eaten by the horses","merchant","other",6,0,12
+2,"eaten on the road","caravan","other",2,0,4
+2,"goods for a contract","house till","paid civilian",7,0,38
+2,"goods for a contract","merchant","paid civilian",4,0,9
+2,"goods for a contract","paid civilian","paid civilian",13,0,87
+2,"guards for the road","great house","town treasury",2,12,0
+2,"house takings","house till","great house",15,817,0
+2,"household purchase","guard","merchant",16,27,16
+2,"household purchase","merchant","house till",22,65,22
+2,"household purchase","merchant","merchant",120,254,120
+2,"household purchase","paid civilian","house till",80,188,80
+2,"household purchase","paid civilian","merchant",331,781,331
+2,"household purchase","unpaid civilian","house till",10,49,10
+2,"household purchase","unpaid civilian","merchant",6,19,6
+2,"kept at the house","great house","other",9,0,22
+2,"kept at the keeper's home","merchant","other",21,0,44
+2,"manager's wage","house till","merchant",61,486,0
+2,"materials bought","house till","house till",27,456,153
+2,"materials bought","house till","merchant",24,337,173
+2,"materials bought","house till","paid civilian",216,603,468
+2,"materials bought","house till","unpaid civilian",13,55,19
+2,"materials bought","merchant","house till",32,416,211
+2,"materials bought","merchant","merchant",70,1032,487
+2,"materials bought","merchant","paid civilian",172,1163,1040
+2,"materials bought","merchant","unpaid civilian",2,17,14
+2,"money for the road","capital treasury","caravan",6,577,0
+2,"money for the road","contract","paid civilian",1,2,0
+2,"money for the road","great house","caravan",2,118,0
+2,"money for the road","town treasury","caravan",4,200,0
+2,"money for the road","town works","paid civilian",1,1,0
+2,"propped up by the house","great house","house till",4,204,0
+2,"provisions for the road","caravan","house till",1,2,2
+2,"provisions for the road","caravan","paid civilian",1,2,2
+2,"provisions for the road","town watch","house till",3,18,3
+2,"provisions for the road","town watch","merchant",3,18,3
+2,"provisions for the road","town watch","paid civilian",6,0,6
+2,"provisions for the road","town works","house till",10,60,10
+2,"provisions for the road","town works","merchant",1,6,1
+2,"provisions for the road","town works","paid civilian",11,0,11
+2,"put away in the larder","merchant","home stores",16,0,33
+2,"put away in the larder","paid civilian","home stores",19,0,233
+2,"resident food purchase","paid civilian","merchant",1,3,3
+2,"reward set aside","capital treasury","contract",1,33,0
+2,"reward set aside","town hall","contract",1,8,0
+2,"reward set aside","town watch","contract",1,21,0
+2,"reward set aside","town works","contract",6,44,0
+2,"service wages","capital treasury","paid civilian",150,300,0
+2,"service wages","great house","paid civilian",39,78,0
+2,"service wages","great house","unpaid civilian",6,12,0
+2,"service wages","merchant","paid civilian",621,873,0
+2,"service wages","merchant","unpaid civilian",6,7,0
+2,"service wages","paid civilian","paid civilian",54,90,0
+2,"service wages","town church","paid civilian",69,138,0
+2,"service wages","town treasury","paid civilian",156,312,0
+2,"service wages","town treasury","unpaid civilian",6,12,0
+2,"service wages","unpaid civilian","paid civilian",60,120,0
+2,"service wages","unpaid civilian","unpaid civilian",12,24,0
+2,"sold on a contract","contract","house till",6,112,0
+2,"sold on a contract","contract","merchant",4,51,0
+2,"sold on a contract","contract","paid civilian",13,150,0
+2,"stolen by bandits","caravan","other",4,0,119
+2,"surplus: a bonus from the house","great house","merchant",9,36,0
+2,"surplus: a bonus from the house","great house","paid civilian",14,56,0
+2,"surplus: a feast","great house","merchant",10,144,38
+2,"surplus: a share of the takings","merchant","paid civilian",10,20,0
+2,"surplus: commissioned","great house","house till",7,91,15
+2,"surplus: commissioned","great house","merchant",2,49,7
+2,"surplus: for the poor","town treasury","town church",1,19,0
+2,"surplus: goods for the keeper's home","merchant","house till",3,14,5
+2,"surplus: goods for the keeper's home","merchant","merchant",19,104,39
+2,"surplus: the keeper's larder","merchant","house till",1,1,1
+2,"surplus: the keeper's larder","merchant","merchant",15,52,32
+2,"surplus: the town's works","town treasury","house till",11,124,49
+2,"surplus: the town's works","town treasury","merchant",45,675,204
+2,"taken from the larder","home stores","guard",97,0,97
+2,"taken from the larder","home stores","merchant",61,0,61
+2,"taken from the larder","home stores","paid civilian",916,0,916
+2,"taken from the larder","home stores","unpaid civilian",97,0,97
+2,"tools for the work","paid civilian","house till",3,18,3
+2,"tools for the work","paid civilian","merchant",9,74,9
+2,"tools for the work","unpaid civilian","house till",1,10,1
+2,"town funds","capital treasury","town hall",1,103,0
+2,"town funds","capital treasury","town mines",1,47,0
+2,"town funds","capital treasury","town quarries",1,34,0
+2,"town funds","capital treasury","town watch",1,213,0
+2,"town funds","capital treasury","town works",1,221,0
+2,"town funds","town treasury","town docks",4,178,0
+2,"town funds","town treasury","town hall",2,216,0
+2,"town funds","town treasury","town mines",2,88,0
+2,"town funds","town treasury","town quarries",1,30,0
+2,"town funds","town treasury","town watch",9,835,0
+2,"town funds","town treasury","town works",10,892,0
+2,"trade takings","caravan","capital treasury",6,1144,0
+2,"trade takings","caravan","great house",1,67,0
+2,"trade takings","caravan","town treasury",4,358,0
+2,"unsold, back to the stores","capital treasury","caravan",2,4,4
+2,"used at home","guard","other",16,0,16
+2,"used at home","merchant","other",180,0,180
+2,"used at home","paid civilian","other",411,0,411
+2,"used at home","unpaid civilian","other",16,0,16
+2,"used by the Town Works","town works","other",45,0,104
+2,"used by the church","town church","other",13,0,26
+2,"used by the docks","town docks","other",3,0,5
+2,"used by the hall of records","town hall","other",10,0,27
+2,"used by the mines","town mines","other",2,0,5
+2,"used by the watch","town watch","other",34,0,245
+2,"used in crafting","house till","other",305,0,498
+2,"used in crafting","merchant","other",633,0,900
+2,"used in the town's works","town treasury","other",44,0,253
+2,"watch wages","capital treasury","guard",99,198,0
+2,"watch wages","town treasury","guard",123,246,0
+2,"wholesale restock","house till","town treasury",2,16,4
+2,"wholesale restock","merchant","capital treasury",5,20,5
+2,"wholesale restock","merchant","town treasury",14,72,18
+2,"worn out at work","paid civilian","other",12,0,12
+2,"worn out at work","unpaid civilian","other",1,0,1
+3,"a penny for a beggar","merchant","paid civilian",11,11,0
+3,"a penny for a beggar","merchant","unpaid civilian",3,3,0
+3,"a penny for a beggar","paid civilian","paid civilian",10,10,0
+3,"a penny for a beggar","paid civilian","unpaid civilian",3,3,0
+3,"a penny for a beggar","unpaid civilian","paid civilian",3,3,0
+3,"a penny for a beggar","unpaid civilian","unpaid civilian",3,3,0
+3,"a standing order","house till","caravan",7,191,91
+3,"a standing order","merchant","caravan",31,678,311
+3,"bought by the Town Works","town works","house till",10,50,15
+3,"bought by the Town Works","town works","merchant",12,55,19
+3,"bought by the church","town church","merchant",12,59,17
+3,"bought by the docks","town docks","house till",4,12,4
+3,"bought by the docks","town docks","merchant",6,28,6
+3,"bought by the hall of records","town hall","house till",2,17,5
+3,"bought by the hall of records","town hall","merchant",6,42,14
+3,"bought by the mines","town mines","house till",1,3,1
+3,"bought by the mines","town mines","merchant",1,3,1
+3,"bought by the watch","town watch","house till",5,96,38
+3,"bought by the watch","town watch","merchant",29,284,111
+3,"bought for the road","caravan","merchant",2,31,23
+3,"bought for the road","caravan","paid civilian",37,547,473
+3,"bought for the road","caravan","unpaid civilian",2,40,20
+3,"brought in","other","merchant",50,0,50
+3,"brought in","other","paid civilian",1626,0,2080
+3,"brought in","other","unpaid civilian",36,0,64
+3,"brought in and sold","merchant","paid civilian",2,4,4
+3,"caravan delivered","caravan","town treasury",26,0,274
+3,"caravan loaded","capital treasury","caravan",26,0,274
+3,"carrier's pay","contract","paid civilian",7,19,0
+3,"carted in by caravan","house till","caravan",3,69,18
+3,"carted in by caravan","merchant","caravan",4,52,26
+3,"carter delivery","outside","capital treasury",1,0,0
+3,"contract delivery","paid civilian","town hall",1,0,3
+3,"contract delivery","paid civilian","town watch",4,0,16
+3,"contract delivery","paid civilian","town works",3,0,14
+3,"contract reward","contract","guard",1,12,0
+3,"crafted","other","house till",213,0,356
+3,"crafted","other","merchant",343,0,624
+3,"eat","guard","other",97,0,97
+3,"eat","merchant","other",222,0,222
+3,"eat","paid civilian","other",938,0,938
+3,"eat","unpaid civilian","other",98,0,98
+3,"eaten at the house's feast","great house","other",7,0,35
+3,"eaten by the horses","house till","other",4,0,8
+3,"eaten by the horses","merchant","other",6,0,12
+3,"eaten on the road","caravan","other",2,0,4
+3,"goods for a contract","house till","paid civilian",1,0,2
+3,"goods for a contract","merchant","paid civilian",4,0,17
+3,"goods for a contract","paid civilian","paid civilian",3,0,14
+3,"guards for the road","great house","town treasury",3,18,0
+3,"house takings","house till","great house",12,364,0
+3,"household purchase","guard","house till",1,5,1
+3,"household purchase","guard","merchant",21,46,21
+3,"household purchase","merchant","house till",19,37,19
+3,"household purchase","merchant","merchant",125,276,125
+3,"household purchase","paid civilian","house till",106,252,106
+3,"household purchase","paid civilian","merchant",313,659,313
+3,"household purchase","unpaid civilian","house till",9,35,9
+3,"household purchase","unpaid civilian","merchant",10,24,10
+3,"kept at the house","great house","other",9,0,22
+3,"kept at the keeper's home","merchant","other",18,0,37
+3,"manager's wage","house till","merchant",61,485,0
+3,"materials bought","house till","house till",30,323,100
+3,"materials bought","house till","merchant",15,188,110
+3,"materials bought","house till","paid civilian",199,511,372
+3,"materials bought","house till","unpaid civilian",14,59,20
+3,"materials bought","merchant","house till",32,451,158
+3,"materials bought","merchant","merchant",32,579,309
+3,"materials bought","merchant","paid civilian",73,556,490
+3,"materials bought","merchant","unpaid civilian",1,17,17
+3,"money for the road","capital treasury","caravan",2,258,0
+3,"money for the road","great house","caravan",3,159,0
+3,"money for the road","town treasury","caravan",7,221,0
+3,"money for the road","town watch","paid civilian",1,4,0
+3,"propped up by the house","great house","house till",6,391,0
+3,"provisions for the road","caravan","merchant",1,2,2
+3,"provisions for the road","caravan","paid civilian",1,2,2
+3,"provisions for the road","town hall","merchant",3,18,3
+3,"provisions for the road","town hall","paid civilian",3,0,3
+3,"provisions for the road","town watch","merchant",8,48,8
+3,"provisions for the road","town watch","paid civilian",8,0,8
+3,"provisions for the road","town works","house till",8,48,8
+3,"provisions for the road","town works","paid civilian",8,0,8
+3,"put away in the larder","merchant","home stores",16,0,30
+3,"put away in the larder","paid civilian","home stores",20,0,271
+3,"resident food purchase","paid civilian","merchant",1,6,2
+3,"reward set aside","capital treasury","contract",1,12,0
+3,"reward set aside","town church","contract",1,21,0
+3,"reward set aside","town docks","contract",1,6,0
+3,"reward set aside","town mines","contract",2,14,0
+3,"reward set aside","town watch","contract",2,104,0
+3,"reward set aside","town works","contract",10,273,0
+3,"service wages","capital treasury","paid civilian",150,300,0
+3,"service wages","great house","paid civilian",39,78,0
+3,"service wages","great house","unpaid civilian",6,12,0
+3,"service wages","merchant","paid civilian",555,777,0
+3,"service wages","merchant","unpaid civilian",3,4,0
+3,"service wages","paid civilian","paid civilian",54,90,0
+3,"service wages","town church","paid civilian",69,138,0
+3,"service wages","town treasury","paid civilian",156,312,0
+3,"service wages","town treasury","unpaid civilian",6,12,0
+3,"service wages","unpaid civilian","paid civilian",60,120,0
+3,"service wages","unpaid civilian","unpaid civilian",12,24,0
+3,"sold on a contract","contract","house till",1,10,0
+3,"sold on a contract","contract","merchant",3,24,0
+3,"sold on a contract","contract","paid civilian",3,23,0
+3,"stolen","merchant","merchant",1,2,0
+3,"stolen by bandits","caravan","other",1,0,8
+3,"surplus: a bonus from the house","great house","merchant",8,32,0
+3,"surplus: a bonus from the house","great house","paid civilian",13,52,0
+3,"surplus: a feast","great house","merchant",8,128,35
+3,"surplus: a share of the takings","merchant","paid civilian",10,20,0
+3,"surplus: commissioned","great house","house till",6,79,15
+3,"surplus: commissioned","great house","merchant",3,47,7
+3,"surplus: for the poor","town treasury","town church",1,17,0
+3,"surplus: goods for the keeper's home","merchant","house till",2,15,5
+3,"surplus: goods for the keeper's home","merchant","merchant",19,114,32
+3,"surplus: the keeper's larder","merchant","house till",2,2,2
+3,"surplus: the keeper's larder","merchant","merchant",14,56,28
+3,"surplus: the town's works","town treasury","house till",9,103,33
+3,"surplus: the town's works","town treasury","merchant",38,320,118
+3,"taken from the larder","home stores","guard",97,0,97
+3,"taken from the larder","home stores","merchant",61,0,61
+3,"taken from the larder","home stores","paid civilian",919,0,919
+3,"taken from the larder","home stores","unpaid civilian",97,0,97
+3,"tools for the work","paid civilian","merchant",3,18,3
+3,"tools for the work","unpaid civilian","house till",1,2,1
+3,"town funds","capital treasury","town hall",1,27,0
+3,"town funds","capital treasury","town mines",1,9,0
+3,"town funds","capital treasury","town watch",1,207,0
+3,"town funds","capital treasury","town works",1,146,0
+3,"town funds","town treasury","town docks",3,47,0
+3,"town funds","town treasury","town hall",2,80,0
+3,"town funds","town treasury","town mines",2,17,0
+3,"town funds","town treasury","town watch",9,625,0
+3,"town funds","town treasury","town works",10,491,0
+3,"trade takings","caravan","capital treasury",2,426,0
+3,"trade takings","caravan","great house",3,289,0
+3,"trade takings","caravan","town treasury",6,365,0
+3,"unsold, back to the stores","capital treasury","caravan",4,40,34
+3,"unsold, back to the stores","town treasury","caravan",3,34,28
+3,"used at home","guard","other",22,0,22
+3,"used at home","merchant","other",184,0,184
+3,"used at home","paid civilian","other",419,0,419
+3,"used at home","unpaid civilian","other",19,0,19
+3,"used by the Town Works","town works","other",46,0,146
+3,"used by the church","town church","other",15,0,19
+3,"used by the docks","town docks","other",13,0,14
+3,"used by the hall of records","town hall","other",9,0,21
+3,"used by the mines","town mines","other",4,0,7
+3,"used by the quarries","town quarries","other",2,0,2
+3,"used by the watch","town watch","other",37,0,170
+3,"used in crafting","house till","other",305,0,449
+3,"used in crafting","merchant","other",439,0,599
+3,"used in the town's works","town treasury","other",37,0,151
+3,"watch wages","capital treasury","guard",99,198,0
+3,"watch wages","town treasury","guard",123,246,0
+3,"wholesale restock","merchant","capital treasury",5,20,5
+3,"wholesale restock","merchant","town treasury",15,80,20
+3,"worn out at work","paid civilian","other",3,0,3
+3,"worn out at work","unpaid civilian","other",1,0,1
+4,"a penny for a beggar","merchant","paid civilian",6,6,0
+4,"a penny for a beggar","merchant","unpaid civilian",3,3,0
+4,"a penny for a beggar","paid civilian","paid civilian",15,15,0
+4,"a penny for a beggar","paid civilian","unpaid civilian",3,3,0
+4,"a penny for a beggar","unpaid civilian","paid civilian",3,3,0
+4,"a penny for a beggar","unpaid civilian","unpaid civilian",3,3,0
+4,"a standing order","house till","caravan",17,483,219
+4,"a standing order","merchant","caravan",32,623,289
+4,"bought by the Town Works","town works","house till",11,47,14
+4,"bought by the Town Works","town works","merchant",22,70,30
+4,"bought by the church","town church","merchant",11,45,14
+4,"bought by the docks","town docks","house till",1,2,1
+4,"bought by the docks","town docks","merchant",3,7,3
+4,"bought by the hall of records","town hall","house till",2,19,4
+4,"bought by the hall of records","town hall","merchant",6,30,10
+4,"bought by the mines","town mines","house till",1,3,1
+4,"bought by the mines","town mines","merchant",1,6,2
+4,"bought by the watch","town watch","house till",6,108,39
+4,"bought by the watch","town watch","merchant",26,307,110
+4,"bought for the road","caravan","merchant",5,132,64
+4,"bought for the road","caravan","paid civilian",43,607,571
+4,"bought for the road","caravan","unpaid civilian",4,60,40
+4,"brought in","other","house till",7,0,7
+4,"brought in","other","merchant",66,0,66
+4,"brought in","other","paid civilian",1510,0,2024
+4,"brought in","other","unpaid civilian",40,0,65
+4,"brought in and sold","merchant","paid civilian",5,7,7
+4,"caravan delivered","caravan","town treasury",26,0,274
+4,"caravan loaded","capital treasury","caravan",26,0,274
+4,"carrier's pay","contract","paid civilian",17,103,0
+4,"carted in by caravan","house till","caravan",9,212,85
+4,"carted in by caravan","merchant","caravan",4,50,25
+4,"carter delivery","outside","capital treasury",1,0,0
+4,"contract delivery","paid civilian","town church",3,0,10
+4,"contract delivery","paid civilian","town hall",2,0,9
+4,"contract delivery","paid civilian","town mines",1,0,3
+4,"contract delivery","paid civilian","town watch",5,0,21
+4,"contract delivery","paid civilian","town works",10,0,85
+4,"crafted","other","house till",178,0,281
+4,"crafted","other","merchant",365,0,669
+4,"eat","guard","other",97,0,97
+4,"eat","merchant","other",223,0,223
+4,"eat","paid civilian","other",955,0,955
+4,"eat","unpaid civilian","other",98,0,98
+4,"eaten at the house's feast","great house","other",8,0,30
+4,"eaten by the horses","house till","other",4,0,8
+4,"eaten by the horses","merchant","other",6,0,12
+4,"eaten on the road","caravan","other",6,0,12
+4,"goods for a contract","house till","paid civilian",7,0,37
+4,"goods for a contract","merchant","paid civilian",8,0,29
+4,"goods for a contract","paid civilian","paid civilian",6,0,62
+4,"guards for the road","great house","town treasury",5,30,0
+4,"house takings","house till","great house",7,542,0
+4,"household purchase","guard","house till",7,34,7
+4,"household purchase","guard","merchant",23,42,23
+4,"household purchase","merchant","house till",17,40,17
+4,"household purchase","merchant","merchant",129,316,129
+4,"household purchase","paid civilian","house till",93,204,93
+4,"household purchase","paid civilian","merchant",364,821,364
+4,"household purchase","unpaid civilian","house till",1,3,1
+4,"household purchase","unpaid civilian","merchant",5,7,5
+4,"kept at the house","great house","other",10,0,21
+4,"kept at the keeper's home","merchant","other",21,0,45
+4,"manager's wage","house till","merchant",60,476,0
+4,"materials bought","house till","house till",22,257,84
+4,"materials bought","house till","merchant",13,173,109
+4,"materials bought","house till","paid civilian",101,389,300
+4,"materials bought","house till","unpaid civilian",9,33,9
+4,"materials bought","merchant","house till",24,354,118
+4,"materials bought","merchant","merchant",40,581,300
+4,"materials bought","merchant","paid civilian",57,657,588
+4,"materials bought","merchant","unpaid civilian",1,20,20
+4,"money for the road","capital treasury","caravan",2,439,0
+4,"money for the road","great house","caravan",5,250,0
+4,"money for the road","town treasury","caravan",3,263,0
+4,"propped up by the house","great house","house till",12,602,0
+4,"provisions for the road","caravan","house till",1,2,2
+4,"provisions for the road","caravan","merchant",2,4,4
+4,"provisions for the road","caravan","paid civilian",3,6,6
+4,"provisions for the road","town church","merchant",10,60,10
+4,"provisions for the road","town church","paid civilian",10,0,10
+4,"provisions for the road","town watch","house till",3,18,3
+4,"provisions for the road","town watch","merchant",6,36,6
+4,"provisions for the road","town watch","paid civilian",9,0,9
+4,"provisions for the road","town works","house till",5,30,5
+4,"provisions for the road","town works","paid civilian",5,0,5
+4,"put away in the larder","merchant","home stores",17,0,27
+4,"put away in the larder","paid civilian","home stores",22,0,270
+4,"resident food purchase","paid civilian","merchant",1,3,3
+4,"reward returned","contract","capital treasury",4,65,0
+4,"reward set aside","town docks","contract",1,6,0
+4,"reward set aside","town hall","contract",1,8,0
+4,"reward set aside","town quarries","contract",2,12,0
+4,"reward set aside","town watch","contract",3,32,0
+4,"reward set aside","town works","contract",6,122,0
+4,"service wages","capital treasury","paid civilian",150,300,0
+4,"service wages","great house","paid civilian",39,78,0
+4,"service wages","great house","unpaid civilian",6,12,0
+4,"service wages","merchant","paid civilian",556,777,0
+4,"service wages","merchant","unpaid civilian",3,3,0
+4,"service wages","paid civilian","paid civilian",49,85,0
+4,"service wages","town church","paid civilian",69,138,0
+4,"service wages","town treasury","paid civilian",156,312,0
+4,"service wages","town treasury","unpaid civilian",6,12,0
+4,"service wages","unpaid civilian","paid civilian",60,120,0
+4,"service wages","unpaid civilian","unpaid civilian",12,24,0
+4,"sold on a contract","contract","house till",5,110,0
+4,"sold on a contract","contract","merchant",7,101,0
+4,"sold on a contract","contract","paid civilian",6,116,0
+4,"surplus: a bonus from the house","great house","merchant",7,28,0
+4,"surplus: a bonus from the house","great house","paid civilian",11,44,0
+4,"surplus: a feast","great house","merchant",9,119,30
+4,"surplus: a share of the takings","merchant","paid civilian",10,20,0
+4,"surplus: commissioned","great house","house till",6,82,15
+4,"surplus: commissioned","great house","merchant",4,38,6
+4,"surplus: for the poor","town treasury","town church",1,15,0
+4,"surplus: goods for the keeper's home","merchant","house till",2,15,5
+4,"surplus: goods for the keeper's home","merchant","merchant",21,134,40
+4,"surplus: the keeper's larder","merchant","house till",1,1,1
+4,"surplus: the keeper's larder","merchant","merchant",17,60,26
+4,"surplus: the town's works","town treasury","house till",5,65,19
+4,"surplus: the town's works","town treasury","merchant",19,125,51
+4,"taken from the larder","home stores","guard",97,0,97
+4,"taken from the larder","home stores","merchant",61,0,61
+4,"taken from the larder","home stores","paid civilian",912,0,912
+4,"taken from the larder","home stores","unpaid civilian",97,0,97
+4,"tools for the work","paid civilian","merchant",7,38,7
+4,"town funds","capital treasury","town hall",1,21,0
+4,"town funds","capital treasury","town mines",1,11,0
+4,"town funds","capital treasury","town watch",1,175,0
+4,"town funds","capital treasury","town works",1,138,0
+4,"town funds","town treasury","town docks",3,46,0
+4,"town funds","town treasury","town hall",2,38,0
+4,"town funds","town treasury","town mines",1,9,0
+4,"town funds","town treasury","town watch",9,379,0
+4,"town funds","town treasury","town works",9,272,0
+4,"trade takings","caravan","capital treasury",2,725,0
+4,"trade takings","caravan","great house",5,409,0
+4,"trade takings","caravan","town treasury",3,453,0
+4,"unsold, back to the stores","capital treasury","caravan",4,44,44
+4,"unsold, back to the stores","town treasury","caravan",2,34,13
+4,"used at home","guard","other",30,0,30
+4,"used at home","merchant","other",181,0,181
+4,"used at home","paid civilian","other",457,0,457
+4,"used at home","unpaid civilian","other",6,0,6
+4,"used by the Town Works","town works","other",48,0,73
+4,"used by the church","town church","other",12,0,15
+4,"used by the docks","town docks","other",5,0,5
+4,"used by the hall of records","town hall","other",9,0,15
+4,"used by the mines","town mines","other",3,0,4
+4,"used by the quarries","town quarries","other",2,0,2
+4,"used by the watch","town watch","other",36,0,167
+4,"used in crafting","house till","other",248,0,394
+4,"used in crafting","merchant","other",461,0,613
+4,"used in the town's works","town treasury","other",20,0,70
+4,"watch wages","capital treasury","guard",96,192,0
+4,"watch wages","town treasury","guard",123,246,0
+4,"wholesale restock","merchant","capital treasury",8,32,8
+4,"wholesale restock","merchant","town treasury",17,96,24
+4,"worn out at work","paid civilian","other",7,0,7
+5,"a penny for a beggar","merchant","paid civilian",5,5,0
+5,"a penny for a beggar","merchant","unpaid civilian",1,1,0
+5,"a penny for a beggar","paid civilian","paid civilian",17,17,0
+5,"a penny for a beggar","paid civilian","unpaid civilian",5,5,0
+5,"a penny for a beggar","unpaid civilian","paid civilian",2,2,0
+5,"a penny for a beggar","unpaid civilian","unpaid civilian",3,3,0
+5,"a standing order","house till","caravan",8,254,113
+5,"a standing order","merchant","caravan",28,443,211
+5,"bought by the Town Works","town works","house till",10,69,20
+5,"bought by the Town Works","town works","merchant",14,63,25
+5,"bought by the church","town church","merchant",12,61,16
+5,"bought by the docks","town docks","house till",4,12,4
+5,"bought by the docks","town docks","merchant",8,35,9
+5,"bought by the hall of records","town hall","house till",2,17,5
+5,"bought by the hall of records","town hall","merchant",6,42,14
+5,"bought by the mines","town mines","house till",1,3,1
+5,"bought by the mines","town mines","merchant",1,3,1
+5,"bought by the watch","town watch","house till",7,117,40
+5,"bought by the watch","town watch","merchant",31,306,114
+5,"bought for the road","caravan","merchant",1,8,4
+5,"bought for the road","caravan","paid civilian",37,497,465
+5,"bought for the road","caravan","unpaid civilian",2,26,13
+5,"brought in","other","house till",7,0,7
+5,"brought in","other","merchant",12,0,12
+5,"brought in","other","paid civilian",1477,0,2220
+5,"brought in","other","unpaid civilian",31,0,52
+5,"brought in and sold","merchant","paid civilian",3,4,4
+5,"caravan delivered","caravan","town treasury",26,0,274
+5,"caravan loaded","capital treasury","caravan",26,0,274
+5,"carrier's pay","contract","paid civilian",14,53,0
+5,"carted in by caravan","house till","caravan",3,56,28
+5,"carted in by caravan","merchant","caravan",1,4,2
+5,"carter delivery","outside","capital treasury",1,0,0
+5,"contract delivery","paid civilian","town docks",2,0,4
+5,"contract delivery","paid civilian","town mines",1,0,2
+5,"contract delivery","paid civilian","town quarries",2,0,4
+5,"contract delivery","paid civilian","town watch",3,0,21
+5,"contract delivery","paid civilian","town works",7,0,43
+5,"crafted","other","house till",213,0,373
+5,"crafted","other","merchant",787,0,1925
+5,"eat","guard","other",114,0,114
+5,"eat","merchant","other",229,0,229
+5,"eat","paid civilian","other",1037,0,1037
+5,"eat","unpaid civilian","other",106,0,106
+5,"eaten at the house's feast","great house","other",8,0,27
+5,"eaten by the horses","house till","other",4,0,8
+5,"eaten by the horses","merchant","other",6,0,12
+5,"eaten on the road","caravan","other",4,0,8
+5,"fine","merchant","capital treasury",1,5,0
+5,"goods for a contract","house till","paid civilian",7,0,26
+5,"goods for a contract","merchant","paid civilian",2,0,13
+5,"goods for a contract","paid civilian","paid civilian",6,0,35
+5,"guards for the road","great house","town treasury",2,12,0
+5,"house takings","house till","great house",7,238,0
+5,"household purchase","guard","merchant",21,52,21
+5,"household purchase","merchant","house till",19,44,19
+5,"household purchase","merchant","merchant",124,308,124
+5,"household purchase","paid civilian","house till",86,211,86
+5,"household purchase","paid civilian","merchant",333,705,333
+5,"household purchase","unpaid civilian","house till",3,9,3
+5,"household purchase","unpaid civilian","merchant",8,16,8
+5,"kept at the house","great house","other",7,0,18
+5,"kept at the keeper's home","merchant","other",18,0,42
+5,"manager's wage","house till","merchant",60,473,0
+5,"materials bought","house till","house till",28,569,206
+5,"materials bought","house till","merchant",8,75,42
+5,"materials bought","house till","paid civilian",72,840,690
+5,"materials bought","house till","unpaid civilian",2,20,5
+5,"materials bought","merchant","house till",39,661,307
+5,"materials bought","merchant","merchant",110,1504,824
+5,"materials bought","merchant","paid civilian",133,1614,1072
+5,"materials bought","merchant","unpaid civilian",1,20,20
+5,"money for the road","capital treasury","caravan",5,504,0
+5,"money for the road","great house","caravan",2,26,0
+5,"money for the road","town docks","paid civilian",2,7,0
+5,"money for the road","town treasury","caravan",2,28,0
+5,"propped up by the house","great house","house till",9,480,0
+5,"provisions for the road","caravan","merchant",2,4,4
+5,"provisions for the road","caravan","paid civilian",2,4,4
+5,"provisions for the road","town docks","house till",1,6,1
+5,"provisions for the road","town docks","merchant",3,18,3
+5,"provisions for the road","town docks","paid civilian",4,0,4
+5,"provisions for the road","town watch","house till",3,18,3
+5,"provisions for the road","town watch","merchant",3,18,3
+5,"provisions for the road","town watch","paid civilian",6,0,6
+5,"provisions for the road","town works","house till",4,24,4
+5,"provisions for the road","town works","merchant",9,54,9
+5,"provisions for the road","town works","paid civilian",13,0,13
+5,"put away in the larder","guard","home stores",80,0,211
+5,"put away in the larder","merchant","home stores",53,0,94
+5,"put away in the larder","paid civilian","home stores",552,0,1366
+5,"put away in the larder","unpaid civilian","home stores",31,0,66
+5,"resident food purchase","guard","house till",4,60,12
+5,"resident food purchase","guard","merchant",90,1233,332
+5,"resident food purchase","merchant","house till",12,196,34
+5,"resident food purchase","merchant","merchant",38,477,122
+5,"resident food purchase","paid civilian","house till",86,1301,246
+5,"resident food purchase","paid civilian","merchant",519,7332,1818
+5,"resident food purchase","unpaid civilian","house till",9,103,20
+5,"resident food purchase","unpaid civilian","merchant",39,457,111
+5,"restitution","merchant","merchant",1,2,0
+5,"reward set aside","town church","contract",3,44,0
+5,"reward set aside","town hall","contract",1,21,0
+5,"reward set aside","town mines","contract",1,6,0
+5,"reward set aside","town watch","contract",2,84,0
+5,"reward set aside","town works","contract",12,204,0
+5,"service wages","capital treasury","paid civilian",150,300,0
+5,"service wages","great house","paid civilian",39,78,0
+5,"service wages","great house","unpaid civilian",6,12,0
+5,"service wages","merchant","paid civilian",515,748,0
+5,"service wages","merchant","unpaid civilian",3,5,0
+5,"service wages","paid civilian","paid civilian",46,82,0
+5,"service wages","town church","paid civilian",69,138,0
+5,"service wages","town treasury","paid civilian",156,312,0
+5,"service wages","town treasury","unpaid civilian",6,12,0
+5,"service wages","unpaid civilian","paid civilian",60,112,0
+5,"service wages","unpaid civilian","unpaid civilian",12,19,0
+5,"sold on a contract","contract","house till",6,69,0
+5,"sold on a contract","contract","merchant",2,21,0
+5,"sold on a contract","contract","paid civilian",6,61,0
+5,"surplus: a bonus from the house","great house","merchant",7,28,0
+5,"surplus: a bonus from the house","great house","paid civilian",11,44,0
+5,"surplus: a feast","great house","merchant",9,109,27
+5,"surplus: a share of the takings","merchant","paid civilian",9,18,0
+5,"surplus: commissioned","great house","house till",4,68,13
+5,"surplus: commissioned","great house","merchant",3,37,5
+5,"surplus: for the poor","town treasury","town church",1,13,0
+5,"surplus: goods for the keeper's home","merchant","house till",1,9,3
+5,"surplus: goods for the keeper's home","merchant","merchant",17,124,39
+5,"surplus: the keeper's larder","merchant","house till",1,1,1
+5,"surplus: the keeper's larder","merchant","merchant",14,58,26
+5,"surplus: the town's works","town treasury","merchant",12,72,32
+5,"taken from the larder","home stores","guard",31,0,31
+5,"taken from the larder","home stores","merchant",26,0,26
+5,"taken from the larder","home stores","paid civilian",468,0,468
+5,"taken from the larder","home stores","unpaid civilian",67,0,67
+5,"tools for the work","paid civilian","house till",5,48,5
+5,"tools for the work","paid civilian","merchant",4,38,4
+5,"town funds","capital treasury","town hall",1,15,0
+5,"town funds","capital treasury","town mines",1,6,0
+5,"town funds","capital treasury","town quarries",1,6,0
+5,"town funds","capital treasury","town watch",1,155,0
+5,"town funds","capital treasury","town works",1,93,0
+5,"town funds","town treasury","town docks",3,46,0
+5,"town funds","town treasury","town hall",2,42,0
+5,"town funds","town treasury","town mines",1,3,0
+5,"town funds","town treasury","town quarries",1,6,0
+5,"town funds","town treasury","town watch",9,320,0
+5,"town funds","town treasury","town works",9,226,0
+5,"trade takings","caravan","capital treasury",5,829,0
+5,"trade takings","caravan","great house",2,39,0
+5,"trade takings","caravan","town treasury",2,36,0
+5,"unsold, back to the stores","capital treasury","caravan",6,116,116
+5,"unsold, back to the stores","town treasury","caravan",1,12,12
+5,"used at home","guard","other",21,0,21
+5,"used at home","merchant","other",170,0,170
+5,"used at home","paid civilian","other",419,0,419
+5,"used at home","unpaid civilian","other",11,0,11
+5,"used by the Town Works","town works","other",42,0,107
+5,"used by the church","town church","other",15,0,24
+5,"used by the docks","town docks","other",12,0,13
+5,"used by the hall of records","town hall","other",11,0,29
+5,"used by the mines","town mines","other",3,0,4
+5,"used by the watch","town watch","other",40,0,176
+5,"used in crafting","house till","other",265,0,403
+5,"used in crafting","merchant","other",1088,0,1313
+5,"used in the town's works","town treasury","other",11,0,32
+5,"watch wages","capital treasury","guard",99,198,0
+5,"watch wages","town treasury","guard",123,246,0
+5,"wholesale restock","house till","capital treasury",49,568,142
+5,"wholesale restock","merchant","capital treasury",69,824,206
+5,"wholesale restock","merchant","town treasury",294,3284,821
+5,"worn out at work","paid civilian","other",9,0,9
+6,"a penny for a beggar","merchant","paid civilian",7,7,0
+6,"a penny for a beggar","merchant","unpaid civilian",2,2,0
+6,"a penny for a beggar","paid civilian","paid civilian",14,14,0
+6,"a penny for a beggar","paid civilian","unpaid civilian",3,3,0
+6,"a penny for a beggar","unpaid civilian","paid civilian",3,3,0
+6,"a penny for a beggar","unpaid civilian","unpaid civilian",4,4,0
+6,"a standing order","merchant","caravan",6,116,56
+6,"alms","town church","paid civilian",7,0,7
+6,"bought by the Town Works","town works","house till",10,53,16
+6,"bought by the Town Works","town works","merchant",13,45,19
+6,"bought by the church","town church","house till",2,42,4
+6,"bought by the church","town church","merchant",12,50,16
+6,"bought by the docks","town docks","house till",1,4,2
+6,"bought by the docks","town docks","merchant",1,2,1
+6,"bought by the hall of records","town hall","house till",2,19,4
+6,"bought by the hall of records","town hall","merchant",6,30,10
+6,"bought by the mines","town mines","house till",1,6,2
+6,"bought by the mines","town mines","merchant",1,6,2
+6,"bought by the watch","town watch","house till",7,113,34
+6,"bought by the watch","town watch","merchant",22,337,112
+6,"bought for the road","caravan","merchant",2,32,12
+6,"bought for the road","caravan","paid civilian",22,326,306
+6,"brought in","other","merchant",7,0,7
+6,"caravan delivered","caravan","town treasury",21,0,124
+6,"caravan loaded","capital treasury","caravan",13,0,117
+6,"caravan loaded","town treasury","caravan",18,0,118
+6,"carrier's pay","contract","paid civilian",16,76,0
+6,"carter delivery","outside","capital treasury",1,0,0
+6,"contract delivery","paid civilian","town hall",1,0,3
+6,"contract delivery","paid civilian","town mines",1,0,2
+6,"contract delivery","paid civilian","town watch",2,0,20
+6,"contract delivery","paid civilian","town works",12,0,68
+6,"crafted","other","house till",180,0,319
+6,"crafted","other","merchant",554,0,1232
+6,"eat","guard","other",112,0,112
+6,"eat","merchant","other",237,0,237
+6,"eat","paid civilian","other",1152,0,1152
+6,"eat","unpaid civilian","other",117,0,117
+6,"eaten at the house's feast","great house","other",7,0,26
+6,"eaten by the horses","house till","other",4,0,8
+6,"eaten by the horses","merchant","other",6,0,12
+6,"eaten on the road","caravan","other",2,0,4
+6,"goods for a contract","house till","paid civilian",4,0,28
+6,"goods for a contract","merchant","paid civilian",6,0,22
+6,"goods for a contract","paid civilian","paid civilian",5,0,37
+6,"goods for a contract","unpaid civilian","paid civilian",1,0,6
+6,"goods from cinderbrook","town treasury","town treasury",1,18,0
+6,"goods from dark_fortress","town treasury","town treasury",3,39,0
+6,"goods from fenhollow","town treasury","town treasury",1,36,0
+6,"goods from hollowmere_village","town treasury","town treasury",1,12,0
+6,"goods from isle_fortress","town treasury","town treasury",3,42,0
+6,"goods from lakeside","town treasury","town treasury",1,21,0
+6,"goods from ridgemere","town treasury","town treasury",2,72,0
+6,"goods from saltreach","town treasury","town treasury",1,18,0
+6,"goods from westmarch","town treasury","town treasury",1,24,0
+6,"guards for the road","great house","town treasury",1,6,0
+6,"house takings","house till","great house",19,693,0
+6,"household purchase","guard","house till",1,3,1
+6,"household purchase","guard","merchant",15,23,15
+6,"household purchase","merchant","house till",18,47,18
+6,"household purchase","merchant","merchant",114,238,114
+6,"household purchase","paid civilian","house till",71,144,71
+6,"household purchase","paid civilian","merchant",300,663,300
+6,"household purchase","unpaid civilian","house till",2,6,2
+6,"household purchase","unpaid civilian","merchant",7,13,7
+6,"kept at the house","great house","other",5,0,8
+6,"kept at the keeper's home","merchant","other",31,0,89
+6,"manager's wage","house till","merchant",61,488,0
+6,"market dues","house till","town treasury",2,7,0
+6,"market dues","merchant","capital treasury",28,180,0
+6,"market dues","merchant","town treasury",72,477,0
+6,"materials bought","house till","house till",19,299,59
+6,"materials bought","house till","merchant",16,200,119
+6,"materials bought","house till","paid civilian",48,584,401
+6,"materials bought","house till","unpaid civilian",3,54,24
+6,"materials bought","merchant","house till",26,369,222
+6,"materials bought","merchant","merchant",67,982,494
+6,"materials bought","merchant","paid civilian",53,833,632
+6,"materials bought","merchant","unpaid civilian",1,20,20
+6,"money for the road","capital treasury","caravan",2,285,0
+6,"money for the road","great house","caravan",1,45,0
+6,"money for the road","town treasury","caravan",3,34,0
+6,"money for the road","town works","paid civilian",1,4,0
+6,"propped up by the house","great house","house till",14,751,0
+6,"provisions for the road","caravan","merchant",1,2,2
+6,"provisions for the road","caravan","paid civilian",1,2,2
+6,"provisions for the road","town hall","merchant",3,18,3
+6,"provisions for the road","town hall","paid civilian",3,0,3
+6,"provisions for the road","town watch","merchant",6,54,6
+6,"provisions for the road","town watch","paid civilian",6,0,6
+6,"provisions for the road","town works","house till",5,40,5
+6,"provisions for the road","town works","merchant",5,32,5
+6,"provisions for the road","town works","paid civilian",10,0,10
+6,"put away in the larder","guard","home stores",3,0,7
+6,"put away in the larder","merchant","home stores",26,0,37
+6,"put away in the larder","paid civilian","home stores",167,0,506
+6,"put away in the larder","unpaid civilian","home stores",17,0,32
+6,"resident food purchase","guard","merchant",6,62,19
+6,"resident food purchase","merchant","house till",3,54,9
+6,"resident food purchase","paid civilian","house till",7,95,35
+6,"resident food purchase","paid civilian","merchant",182,2212,693
+6,"resident food purchase","unpaid civilian","house till",2,12,2
+6,"resident food purchase","unpaid civilian","merchant",24,141,55
+6,"reward returned","contract","capital treasury",1,35,0
+6,"reward set aside","capital treasury","contract",3,55,0
+6,"reward set aside","town docks","contract",1,6,0
+6,"reward set aside","town mines","contract",1,6,0
+6,"reward set aside","town watch","contract",4,61,0
+6,"reward set aside","town works","contract",8,177,0
+6,"sold on a contract","contract","house till",4,78,0
+6,"sold on a contract","contract","merchant",6,68,0
+6,"sold on a contract","contract","paid civilian",5,68,0
+6,"sold on a contract","contract","unpaid civilian",1,12,0
+6,"stolen by bandits","caravan","other",2,0,10
+6,"surplus: a bonus from the house","great house","merchant",7,28,0
+6,"surplus: a bonus from the house","great house","paid civilian",10,40,0
+6,"surplus: a feast","great house","house till",2,2,2
+6,"surplus: a feast","great house","merchant",6,95,24
+6,"surplus: a share of the takings","merchant","paid civilian",12,24,0
+6,"surplus: commissioned","great house","house till",3,84,6
+6,"surplus: commissioned","great house","merchant",2,12,2
+6,"surplus: for the poor","town treasury","town church",1,21,0
+6,"surplus: goods for the keeper's home","merchant","house till",4,56,18
+6,"surplus: goods for the keeper's home","merchant","merchant",32,223,71
+6,"surplus: the keeper's larder","merchant","house till",2,31,6
+6,"surplus: the keeper's larder","merchant","merchant",22,92,28
+6,"surplus: the town's works","town treasury","merchant",16,109,39
+6,"taken from the larder","home stores","guard",59,0,59
+6,"taken from the larder","home stores","merchant",28,0,28
+6,"taken from the larder","home stores","paid civilian",655,0,655
+6,"taken from the larder","home stores","unpaid civilian",65,0,65
+6,"the collection","merchant","town church",54,91,0
+6,"the collection","paid civilian","town church",243,326,0
+6,"the collection","unpaid civilian","town church",11,22,0
+6,"tools for the work","paid civilian","house till",2,8,2
+6,"tools for the work","paid civilian","merchant",5,39,5
+6,"town funds","capital treasury","town hall",1,42,0
+6,"town funds","capital treasury","town mines",1,9,0
+6,"town funds","capital treasury","town watch",1,200,0
+6,"town funds","capital treasury","town works",1,94,0
+6,"town funds","town treasury","town docks",4,47,0
+6,"town funds","town treasury","town hall",2,56,0
+6,"town funds","town treasury","town mines",1,3,0
+6,"town funds","town treasury","town watch",9,375,0
+6,"town funds","town treasury","town works",9,322,0
+6,"trade takings","caravan","town treasury",3,64,0
+6,"used at home","guard","other",16,0,16
+6,"used at home","merchant","other",163,0,163
+6,"used at home","paid civilian","other",371,0,371
+6,"used at home","unpaid civilian","other",9,0,9
+6,"used by the Town Works","town works","other",42,0,108
+6,"used by the church","town church","other",12,0,12
+6,"used by the docks","town docks","other",4,0,5
+6,"used by the hall of records","town hall","other",9,0,15
+6,"used by the mines","town mines","other",4,0,6
+6,"used by the quarries","town quarries","other",2,0,2
+6,"used by the watch","town watch","other",38,0,172
+6,"used in crafting","house till","other",239,0,374
+6,"used in crafting","merchant","other",752,0,908
+6,"used in the town's works","town treasury","other",15,0,39
+6,"watch wages","capital treasury","guard",96,192,0
+6,"watch wages","town treasury","guard",123,246,0
+6,"wholesale restock","house till","capital treasury",28,332,83
+6,"wholesale restock","house till","town treasury",1,8,2
+6,"wholesale restock","merchant","capital treasury",45,468,117
+6,"wholesale restock","merchant","town treasury",75,668,167
+6,"worn out at work","paid civilian","other",7,0,7
+7,"a penny for a beggar","merchant","paid civilian",13,13,0
+7,"a penny for a beggar","merchant","unpaid civilian",2,2,0
+7,"a penny for a beggar","paid civilian","paid civilian",11,11,0
+7,"a penny for a beggar","paid civilian","unpaid civilian",4,4,0
+7,"a penny for a beggar","unpaid civilian","unpaid civilian",3,3,0
+7,"a standing order","house till","caravan",12,256,106
+7,"a standing order","merchant","caravan",18,297,135
+7,"alms","town church","paid civilian",8,0,8
+7,"bought by the Town Works","town works","house till",11,76,20
+7,"bought by the Town Works","town works","merchant",15,59,24
+7,"bought by the church","town church","house till",1,13,1
+7,"bought by the church","town church","merchant",12,65,17
+7,"bought by the docks","town docks","house till",1,2,1
+7,"bought by the docks","town docks","merchant",2,5,2
+7,"bought by the hall of records","town hall","house till",2,27,5
+7,"bought by the hall of records","town hall","merchant",7,44,14
+7,"bought by the mines","town mines","house till",1,3,1
+7,"bought by the mines","town mines","merchant",1,3,1
+7,"bought by the watch","town watch","house till",6,121,39
+7,"bought by the watch","town watch","merchant",24,297,111
+7,"bought for the road","caravan","merchant",3,66,42
+7,"bought for the road","caravan","paid civilian",23,333,252
+7,"brought in","other","merchant",6,0,6
+7,"brought in","other","paid civilian",165,0,254
+7,"brought in","other","unpaid civilian",4,0,8
+7,"caravan delivered","caravan","town treasury",24,0,212
+7,"caravan loaded","capital treasury","caravan",13,0,117
+7,"caravan loaded","town treasury","caravan",19,0,150
+7,"carrier's pay","contract","paid civilian",4,14,0
+7,"carted in by caravan","house till","caravan",1,20,5
+7,"carter delivery","outside","capital treasury",1,0,0
+7,"contract delivery","paid civilian","town mines",1,0,2
+7,"contract delivery","paid civilian","town works",3,0,18
+7,"crafted","other","house till",74,0,135
+7,"crafted","other","merchant",113,0,260
+7,"eat","guard","other",18,0,18
+7,"eat","merchant","other",17,0,17
+7,"eat","paid civilian","other",147,0,147
+7,"eat","unpaid civilian","other",15,0,15
+7,"eaten at the house's feast","great house","other",5,0,18
+7,"eaten by the horses","house till","other",4,0,8
+7,"eaten by the horses","merchant","other",6,0,12
+7,"eaten on the road","caravan","other",4,0,8
+7,"fine","merchant","capital treasury",1,3,0
+7,"goods for a contract","house till","paid civilian",2,0,10
+7,"goods for a contract","paid civilian","paid civilian",3,0,12
+7,"goods from accord_crossing","town treasury","town treasury",1,9,0
+7,"goods from dark_fortress","town treasury","town treasury",1,9,0
+7,"goods from fenhollow","town treasury","town treasury",3,60,0
+7,"goods from isle_fortress","town treasury","town treasury",2,18,0
+7,"goods from northern_fortress","town treasury","town treasury",2,42,0
+7,"goods from ridgemere","town treasury","town treasury",4,144,0
+7,"goods from ser_ferro","town treasury","town treasury",2,72,0
+7,"guards for the road","great house","town treasury",1,6,0
+7,"house takings","house till","great house",9,402,0
+7,"household purchase","guard","house till",6,26,6
+7,"household purchase","guard","merchant",21,52,21
+7,"household purchase","merchant","house till",28,70,28
+7,"household purchase","merchant","merchant",97,190,97
+7,"household purchase","paid civilian","house till",75,152,75
+7,"household purchase","paid civilian","merchant",272,556,272
+7,"household purchase","unpaid civilian","house till",3,9,3
+7,"household purchase","unpaid civilian","merchant",10,24,10
+7,"kept at the house","great house","other",5,0,11
+7,"kept at the keeper's home","merchant","other",45,0,103
+7,"manager's wage","house till","merchant",60,468,0
+7,"materials bought","house till","house till",14,258,140
+7,"materials bought","house till","merchant",2,22,22
+7,"materials bought","house till","paid civilian",22,166,164
+7,"materials bought","house till","unpaid civilian",1,4,4
+7,"materials bought","merchant","house till",7,94,48
+7,"materials bought","merchant","merchant",29,516,191
+7,"materials bought","merchant","paid civilian",37,395,374
+7,"money for the road","capital treasury","caravan",3,193,0
+7,"money for the road","great house","caravan",1,48,0
+7,"money for the road","town treasury","caravan",3,189,0
+7,"propped up by the house","great house","house till",12,676,0
+7,"provisions for the road","caravan","merchant",2,4,4
+7,"provisions for the road","caravan","paid civilian",2,4,4
+7,"provisions for the road","town church","merchant",9,66,9
+7,"provisions for the road","town church","paid civilian",9,0,9
+7,"provisions for the road","town docks","merchant",3,18,3
+7,"provisions for the road","town docks","paid civilian",3,0,3
+7,"provisions for the road","town watch","house till",3,24,3
+7,"provisions for the road","town watch","paid civilian",3,0,3
+7,"provisions for the road","town works","house till",4,32,4
+7,"provisions for the road","town works","merchant",12,106,12
+7,"provisions for the road","town works","paid civilian",16,0,16
+7,"put away in the larder","guard","home stores",4,0,20
+7,"put away in the larder","merchant","home stores",29,0,55
+7,"put away in the larder","paid civilian","home stores",26,0,60
+7,"resident food purchase","guard","house till",6,35,22
+7,"resident food purchase","guard","merchant",1,18,3
+7,"resident food purchase","merchant","house till",4,41,16
+7,"resident food purchase","merchant","merchant",3,54,9
+7,"resident food purchase","paid civilian","house till",13,172,40
+7,"resident food purchase","paid civilian","merchant",15,313,63
+7,"resident food purchase","unpaid civilian","house till",4,15,4
+7,"reward returned","contract","capital treasury",2,42,0
+7,"reward set aside","capital treasury","contract",5,86,0
+7,"reward set aside","town docks","contract",1,6,0
+7,"reward set aside","town hall","contract",1,13,0
+7,"reward set aside","town mines","contract",1,6,0
+7,"reward set aside","town quarries","contract",1,6,0
+7,"reward set aside","town watch","contract",4,85,0
+7,"reward set aside","town works","contract",11,206,0
+7,"service wages","capital treasury","paid civilian",11,22,0
+7,"service wages","great house","paid civilian",13,26,0
+7,"service wages","great house","unpaid civilian",2,4,0
+7,"service wages","merchant","paid civilian",57,63,0
+7,"service wages","merchant","unpaid civilian",1,2,0
+7,"service wages","paid civilian","paid civilian",13,25,0
+7,"service wages","town church","paid civilian",11,22,0
+7,"service wages","town treasury","paid civilian",5,10,0
+7,"service wages","town treasury","unpaid civilian",1,2,0
+7,"service wages","unpaid civilian","paid civilian",11,21,0
+7,"sold on a contract","contract","house till",2,26,0
+7,"sold on a contract","contract","paid civilian",2,12,0
+7,"stolen","merchant","paid civilian",1,1,0
+7,"stolen by bandits","caravan","other",2,0,15
+7,"surplus: a bonus from the house","great house","merchant",4,16,0
+7,"surplus: a bonus from the house","great house","paid civilian",5,20,0
+7,"surplus: a feast","great house","merchant",6,71,18
+7,"surplus: a share of the takings","merchant","paid civilian",16,32,0
+7,"surplus: commissioned","great house","house till",4,66,10
+7,"surplus: commissioned","great house","merchant",1,5,1
+7,"surplus: for the poor","town treasury","town church",1,14,0
+7,"surplus: goods for the keeper's home","merchant","house till",4,51,15
+7,"surplus: goods for the keeper's home","merchant","merchant",46,273,88
+7,"surplus: the keeper's larder","merchant","house till",3,26,6
+7,"surplus: the keeper's larder","merchant","merchant",24,103,42
+7,"surplus: the town's works","town treasury","merchant",15,129,52
+7,"taken from the larder","home stores","guard",22,0,22
+7,"taken from the larder","home stores","merchant",9,0,9
+7,"taken from the larder","home stores","paid civilian",182,0,182
+7,"taken from the larder","home stores","unpaid civilian",21,0,21
+7,"tools for the work","paid civilian","house till",2,17,2
+7,"tools for the work","paid civilian","merchant",4,26,4
+7,"town funds","capital treasury","town hall",1,15,0
+7,"town funds","capital treasury","town mines",1,6,0
+7,"town funds","capital treasury","town watch",1,197,0
+7,"town funds","capital treasury","town works",1,193,0
+7,"town funds","town treasury","town docks",2,30,0
+7,"town funds","town treasury","town hall",2,34,0
+7,"town funds","town treasury","town mines",1,12,0
+7,"town funds","town treasury","town watch",9,335,0
+7,"town funds","town treasury","town works",10,224,0
+7,"trade takings","caravan","capital treasury",3,321,0
+7,"trade takings","caravan","great house",1,96,0
+7,"trade takings","caravan","town treasury",3,254,0
+7,"unsold, back to the stores","capital treasury","caravan",3,31,31
+7,"unsold, back to the stores","town treasury","caravan",2,44,17
+7,"used at home","guard","other",27,0,27
+7,"used at home","merchant","other",152,0,152
+7,"used at home","paid civilian","other",347,0,347
+7,"used at home","unpaid civilian","other",13,0,13
+7,"used by the Town Works","town works","other",47,0,91
+7,"used by the church","town church","other",8,0,11
+7,"used by the docks","town docks","other",5,0,5
+7,"used by the hall of records","town hall","other",9,0,22
+7,"used by the mines","town mines","other",4,0,4
+7,"used by the quarries","town quarries","other",1,0,1
+7,"used by the watch","town watch","other",32,0,161
+7,"used in crafting","house till","other",118,0,176
+7,"used in crafting","merchant","other",170,0,217
+7,"used in the town's works","town treasury","other",15,0,52
+7,"watch wages","capital treasury","guard",96,192,0
+7,"watch wages","town treasury","guard",116,232,0
+7,"wholesale restock","house till","capital treasury",8,96,24
+7,"wholesale restock","house till","town treasury",9,83,23
+7,"wholesale restock","merchant","capital treasury",32,308,77
+7,"wholesale restock","merchant","town treasury",17,165,45
+7,"worn out at work","paid civilian","other",6,0,6

@@ -8,6 +8,7 @@
 #include <iterator>
 #include <set>
 #include <sstream>
+#include <string_view>
 #include <tuple>
 
 namespace ratw
@@ -803,7 +804,83 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         candidate.society_.configure(roster);
     candidate.rebuildFixtureIndex();
     *this = std::move(candidate);
+    indexRoads();
     furnishHomes();                                 // Every home's stores, from the start (doc 36).
     return {true, "Authored world loaded atomically.", path};
+}
+
+void World::indexRoads()
+{
+    roadSeams_.clear();
+    roadExits_.clear();
+    stepsCache_.clear();
+    const auto road = [](char code) {
+        const auto* info = terrainInfo(code);
+        if (!info || info->solid || !info->name)
+            return false;
+        const std::string name = info->name;
+        return name.find("road") != std::string::npos || name.find("street") != std::string::npos ||
+               name.find("flagstones") != std::string::npos;
+    };
+    // Each seam whose own tile is a road, with the seam it pairs with on the far side.
+    std::map<std::string, std::pair<std::string, std::string>> onRoad;   // Seam -> (its cell, the far cell).
+    std::map<std::string, std::string> pairOf;
+    for (const auto& [id, c] : cells_)
+    {
+        if (c.loaded)
+        {
+            for (const Door* d : doorsIn(id))
+                if (d->boundary && d->passage)
+                {
+                    pairOf[d->id] = d->linkedDoor;
+                    if (const auto* t = c.tile(int(d->position.x), int(d->position.y)); t && road(t->glyph))
+                        onRoad[d->id] = {id, d->targetCell};
+                }
+            continue;
+        }
+        if (!source_.load)
+            continue;
+        // A streamed cell not in memory: its tiles and seams read from the build, never loaded.
+        std::string text, seams;
+        if (!source_.load(id, text, seams).empty())
+            continue;
+        const auto grid = text.find("grid:");
+        if (grid == std::string::npos)
+            continue;
+        std::vector<std::string_view> rows;
+        for (std::size_t at = text.find('\n', grid); at != std::string::npos && at + 1 < text.size();)
+        {
+            const auto next = text.find('\n', at + 1);
+            rows.emplace_back(std::string_view(text).substr(at + 1, (next == std::string::npos ? text.size() : next) - at - 1));
+            at = next;
+        }
+        // Its crossings are learned on the way, as moveOffstage would learn them by loading it: once, never fetched again
+        // for that.
+        std::istringstream lines(seams);
+        std::string line;
+        std::vector<Door> sides;
+        while (std::getline(lines, line))
+        {
+            std::istringstream fields(line);
+            std::string command;
+            Door d;
+            if (!(fields >> command) || command != "door" || !parseDoor(fields, d) || d.cellId != id || !d.boundary || !d.passage)
+                continue;
+            pairOf[d.id] = d.linkedDoor;
+            const int x = int(d.position.x), y = int(d.position.y);
+            if (y >= 0 && std::size_t(y) < rows.size() && x >= 0 && std::size_t(x) < rows[std::size_t(y)].size() &&
+                road(rows[std::size_t(y)][std::size_t(x)]))
+                onRoad[d.id] = {id, d.targetCell};
+            sides.push_back(std::move(d));
+        }
+        if (!seamAnchors_.count(id))
+            seamAnchors_[id] = std::move(sides);
+    }
+    for (const auto& [seam, link] : onRoad)
+        if (const auto other = pairOf.find(seam); other != pairOf.end() && onRoad.count(other->second))
+        {
+            roadSeams_.insert(seam);
+            roadExits_[link.first].insert(link.second);
+        }
 }
 } // namespace ratw

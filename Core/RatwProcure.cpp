@@ -116,7 +116,7 @@ Result World::churchCare(const std::string& player, const std::string& clergy)
 std::vector<std::string> World::noteReckonings()
 {
     std::vector<std::string> told;
-    // The month's reckoning (doc 42): each town's tax and tithes, told once.
+    // The reckoning (doc 42; weekly): each town's tax and tithes, told once.
     for (const auto& r : society_.takeReckonings())
     {
         const auto town = r.treasury == "treasury" ? society_.capital() : r.treasury.substr(r.treasury.find(':') + 1);
@@ -202,6 +202,65 @@ std::pair<std::string, int> World::sourceFor(const Contract& k) const
     return {best, std::min(bestSpare, left)};
 }
 
+std::int64_t World::provisionTraveller(const std::string& traveller, const std::string& payer, const std::string& town,
+                                      const std::string& toCell, std::int64_t budget)
+{
+    const auto* who = entity(traveller);
+    if (!who || budget <= 0)
+        return 0;
+    const auto route = routeBetween(who->cellId, toCell);
+    const int meals = std::max(2, int(std::ceil(double(route.empty() ? 20 : route.size()) * 2 / 10)));
+    std::int64_t spent = 0;
+    int got = 0;
+    for (const auto& p : society_.positions())
+    {
+        if (got >= meals)
+            break;
+        const auto* at = p.role == "merchant" ? townOf(p.work.cell) : nullptr;
+        const auto held = society_.state().careers.positions.find(p.id);
+        if (!at || at->id != town || held == society_.state().careers.positions.end() || held->second.holder.empty())
+            continue;
+        const auto& keeper = held->second.holder;
+        const auto till = society_.tillOf(keeper);
+        while (got < meals)
+        {
+            const auto* shelves = society_.account(till);
+            const auto food = shelves && till != payer ? Society::bestFood(*shelves) : std::string();
+            const auto* meal = food.empty() ? nullptr : items::good(food);
+            const auto price = std::int64_t(std::ceil(std::max(1, meal ? meal->price : 1) * society_.priceFactor(keeper, items::baseOf(food))));
+            if (food.empty() || spent + price > budget || !society_.sale(till, payer, food, 1, price, "provisions for the road") ||
+                !society_.shift(payer, traveller, food, 1, 0, "provisions for the road"))
+                break;
+            spent += price;
+            ++got;
+        }
+    }
+    if (const std::int64_t money = std::min<std::int64_t>(budget - spent, std::int64_t(meals - got) * 4);
+        money > 0 && society_.shift(payer, traveller, "", 0, money, "money for the road"))
+        spent += money;
+    return spent;
+}
+
+void World::provisionCarrier(Contract& k, int quantity)
+{
+    // Provisions for the road (the user, 2026-10-05): a carrier sent to another town for the goods is given food for
+    // the way by whoever wants them, from its own purse (or, if it has too little, out of the reward held for the
+    // contract, above the goods' own price).
+    const auto* job = society_.jobOf(k.source);
+    if (!job || residentTown(k.source) == k.town)
+        return;
+    const auto& at = job->role == "merchant" ? job->serve : job->work;
+    const auto* poster = society_.account(k.poster);
+    if (poster && poster->cash >= 20)
+        provisionTraveller(k.taker, k.poster, k.town, at.cell, poster->cash / 4);
+    else
+    {
+        const auto* good = items::good(k.item);
+        const auto above = k.reward - std::int64_t(std::max(1, good ? good->price : 1)) * quantity;
+        k.reward -= provisionTraveller(k.taker, "contract:" + k.id, k.town, at.cell, above);
+    }
+}
+
 void World::residentsFillContracts(std::set<std::string>& busy)
 {
     const auto today = std::int64_t(std::floor(calendarDays_));
@@ -239,6 +298,7 @@ void World::residentsFillContracts(std::set<std::string>& busy)
         k.carried = 0;
         busy.insert(chosen);
         recordEvent({"contract taken", chosen, k.poster, entity(chosen)->cellId, 0, 0, k.item, n, k.reward, k.kind + ": " + k.detail});
+        provisionCarrier(k, n);
     }
 }
 

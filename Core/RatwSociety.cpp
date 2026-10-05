@@ -300,7 +300,9 @@ void Society::record(const std::string& kind, const std::string& from, const std
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
-    if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business"))
+    if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
+                      kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||
+                      kind == "the household purse"))
     {
         auto& books = state_.books;
         if (books.start.count(from))
@@ -328,6 +330,16 @@ std::int64_t Society::moneySupply() const
         result += pair.second.cash;
     return result;
 }
+int Society::stockingDays(const std::string& homeCell)
+{
+    return 5 + int(std::hash<std::string>{}(homeCell + "|stocking") % 4);
+}
+
+int Society::startingLarderDays(const std::string& homeCell)
+{
+    return 2 + int(std::hash<std::string>{}(homeCell + "|larder") % 4);
+}
+
 bool Society::conserved() const
 {
     return moneySupply() == state_.minted - state_.sunk;
@@ -365,6 +377,8 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     b.stock[item] += quantity;
     b.cash -= total;
     s.cash += total;
+    if (seller.rfind("till:", 0) == 0 || merchant(seller))
+        takings_[seller] += total;                  // (A shop's day's takings: its help share them.)
     record(kind, buyer, seller, item, quantity, total);
     return true;
 }
@@ -458,7 +472,7 @@ void Society::furnishHomes(const std::set<std::string>& homeCells)
             for (; quantity > 0; quantity -= 99)            // (A ledger entry is at most 99 of anything.)
                 create(store, item, std::min(quantity, 99), "household provisions");
         };
-        stockUp(homeStore(home, "larder"), "meal", LarderMealsEach * n);
+        stockUp(homeStore(home, "larder"), "meal", startingLarderDays(home) * n);
         stockUp(homeStore(home, "chest"), "herbs", ChestHerbsEach * n);
         for (const auto& id : members)
             if (const auto* a = account(id); a && stock(*a, "meal") == 0)
@@ -527,10 +541,15 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             tendHouses(day);                           // Great houses' businesses: wages, takings, props (RatwHouses.cpp).
             spendSurpluses(day);                       // What the treasuries, churches and houses hold above need goes back out.
             householdShopping(day, season, bodies);    // Each household's errands for the day (RatwDemand.cpp).
+            tendHouseholds(day, bodies);               // The household purse, and who keeps the house (RatwHouseholds.cpp).
+            childrenAndStipends(day, bodies);          // The children's stipends, and what they spend them on.
+            wants(day, bodies);                        // And what the grown spend on things they just want.
             townBuyers(day, bodies);                   // And the town's own buyers'.
             tradeUpkeep(day, bodies);                  // Tools worn out, horses fed, beggars given a penny (doc 42).
         }
     }
+    if (roster_ == Roster::Authored && state_.memory.purses < PursesFounded)
+        foundPurses(bodies);                           // Everyone's starting money, once (RatwFounding.cpp).
     if (roster_ == Roster::Authored && state_.books.month < 0)
         reckon(day);                                   // The first month's books open at once (doc 42).
     if (roster_ == Roster::Authored)
@@ -976,7 +995,7 @@ bool Society::restore(const SocietyState& saved)
         if (!s.accounts.count(l.first) ||
             !fresh.state_.residents.count(l.first) || fresh.state_.residents.at(l.first).role != l.second.role ||
             !validNumber(l.second.hunger, 0, 100) || !validNumber(l.second.fatigue, 0, 100) ||
-            !validNumber(l.second.progress, 0, 1200) || l.second.wagesToday < 0 || l.second.wagesToday > 3 ||
+            !validNumber(l.second.progress, 0, 1200) || l.second.wagesToday < 0 || l.second.wagesToday > PaidSpells ||
             !validNumber(l.second.goalX, 0, 256) || !validNumber(l.second.goalY, 0, 256) || l.second.task.size() > 40 ||
             l.second.reason.size() > 256 || l.second.goalCell.size() > 80 ||
             l.second.homeCell.size() > 80 || l.second.relocationCell.size() > 80 ||

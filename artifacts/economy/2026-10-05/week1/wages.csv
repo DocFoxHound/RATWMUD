@@ -1,0 +1,3505 @@
+day,resident,title,coins
+0,"alder_coldborn_","helping at The Tight Weft",5
+0,"alder_hollowfang_","helping at The Stretched Hide",6
+0,"ash_","leading the Warden Order",6
+0,"ash_duskhide_","helping at The Cold Hammer",3
+0,"aster_marshbark_","copying the city rolls",6
+0,"aster_slateclaw_","helping at Needle & Nap",6
+0,"bramble_","debating in the Grand Hall",6
+0,"brand","holding the stair gate",6
+0,"briar","training",6
+0,"briar_brackenrun_","selling from a plaza stall",6
+0,"briar_stormfang_","helping at Pinecut Joinery",6
+0,"brisk_","coaching at the archery range",6
+0,"brock","on night patrol",6
+0,"brock_coldborn_","helping at The Tight Weft",5
+0,"clover","training",6
+0,"dawn","tending the scroll vaults",6
+0,"dawn_greyhide_","helping at The Straight Shaft",3
+0,"dray","holding the main gate",6
+0,"dray_hollowfang_","helping at The Stretched Hide",6
+0,"drift_frostwalker_","helping at Morning Rise Ovens",3
+0,"dun_","running sparring bouts",6
+0,"dun_pinewell_","copying the city rolls",6
+0,"elm_coldborn_","helping at The Tight Weft",5
+0,"elm_pinevale_","helping at Ridgeline Maps",6
+0,"eskar_","on night patrol",6
+0,"fallow","debating in the Grand Hall",6
+0,"fell_","drilling trainees on the square",6
+0,"fern_","holding the stair gate",6
+0,"fern_frostmark_","helping at Cinderpaw Forge",3
+0,"fern_greybark_","helping at Clayfoot Wares",6
+0,"gorse_","running the obstacle course",6
+0,"grist_hollowmere_","helping at Greywall Goods",6
+0,"harl_mossmere_","helping at Timberline Carpentry",6
+0,"harrow","hearing petitions",6
+0,"hazel","advising the leader",3
+0,"heath_","training",6
+0,"heather","on night watch",6
+0,"holly_","on patrol",6
+0,"ind_briar_smeltshaft","works at The Cinderbrook Smelter",3
+0,"ind_harl_cinderbrook","works at The Cinderbrook Smelter",3
+0,"ingram_","training",6
+0,"isla","on watch",6
+0,"jarl","on watch",6
+0,"jessamy","keeping the Annex",6
+0,"kell","carrying messages for the Concord",6
+0,"kell_ashfall_","hauling crates",6
+0,"kestrel_","hearing petitions",6
+0,"kindle","training",6
+0,"kindle_frostfoot_","selling from a plaza stall",6
+0,"kite","shelving in the upper stacks",6
+0,"knap_","on watch",6
+0,"laurel","drilling in the compound",6
+0,"laurel_ashwalker","helping at The Gatehouse Inn",3
+0,"lichen","advising the leader",3
+0,"loam_","drilling in the compound",6
+0,"marl_swiftwater","helping at The Howling Stair",3
+0,"marsh","on patrol",6
+0,"moor","drilling in the compound",6
+0,"moss_","on patrol",6
+0,"myrtle","on night watch",6
+0,"nell","training",6
+0,"nettle_ironbark_","drawing water at the plaza well",6
+0,"nightjar_windhollow_","tallying stores",6
+0,"nokk_","hearing petitions",6
+0,"oak_","on night patrol",6
+0,"orrin","carrying messages for the Concord",6
+0,"quarry","training",6
+0,"ridge","advising the leader",3
+0,"ridge_mossborn_","minding the stores",6
+0,"rm_ada_brineford","smoking fish",5
+0,"rm_aldric_mudhand_","helping at Collar and Trace",3
+0,"rm_ansel_brinewick","blowing glass",6
+0,"rm_beatha_rainmore_","helping at Greywool",4
+0,"rm_beatha_saltley","keeping the chambers",6
+0,"rm_berit_plankworth_","holding the south gate",6
+0,"rm_bertil_fogwick","stewarding Grayrock Hall",6
+0,"rm_bertil_millwick","keeping the chambers",6
+0,"rm_bertil_pitchgate","building ships",6
+0,"rm_bertil_wetridge_","helping at The Hook and Cleaver",6
+0,"rm_bo_gullstack","foreman of the quarry",6
+0,"rm_brand_mudstack","at the forge",3
+0,"rm_brand_saltgate_","helping at Wickham's Chandlery",4
+0,"rm_brand_saltwell_","holding the quay gate",6
+0,"rm_bryn_coalwell","working the saws",6
+0,"rm_bryn_kelpridge","boiling rags",6
+0,"rm_bryn_plankham_","on night patrol",6
+0,"rm_caspar_greyley","working the saws",6
+0,"rm_clemence_slagcot","keeping order in court",6
+0,"rm_corra_wickby_","commanding the Watch",6
+0,"rm_corwin_coalley_","on patrol",6
+0,"rm_corwin_pitchley_","works at The Rag Mill",6
+0,"rm_corwin_ropestack_","helping at Wetink Lane Scriveners",5
+0,"rm_corwin_rustham","serving in the hall",6
+0,"rm_dagfinn_ashmore","smoking fish",5
+0,"rm_dagfinn_tarton_","minding the shop door",3
+0,"rm_dirk_brinecot_","works at The Blue Vats",6
+0,"rm_dirk_dripford","keeping the gaol",6
+0,"rm_disa_gullhand_","works at Old Mother Tannery",3
+0,"rm_dunstan_wickworth_","minding the shop door",6
+0,"rm_ebba_sootmarsh","at the forge",3
+0,"rm_edda_rustmarsh_","helping at The Council Press",3
+0,"rm_edric_ashcombe","working the glass himself",6
+0,"rm_edric_greywell_","works at The Grayrock Foundry",6
+0,"rm_edric_raindale_","works at The Reach Foundry",6
+0,"rm_egil_coalmore_","works at The Fell Wagon Yard",6
+0,"rm_egil_fogton_","helping at Grist & Crust",3
+0,"rm_egil_wickham_","holding the east gate",6
+0,"rm_emmerich_foghand","serving in the hall",6
+0,"rm_emmerich_wetridge_","minding the shop door",6
+0,"rm_erland_sootham_","minding the shop door",1
+0,"rm_frida_millby","cooking for the House",3
+0,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",6
+0,"rm_gorm_kelpcot","tallying the Houses' dues",6
+0,"rm_greta_greymore_","works at The Ashcombe Tileworks",4
+0,"rm_grete_mudton_","minding the shop door",3
+0,"rm_grete_slagton_","works at The Brinewater Sail Loft",3
+0,"rm_gudrun_bilgeham","building ships",6
+0,"rm_gudrun_dripham","stewarding Ashcombe House",6
+0,"rm_gudrun_fell","keeping the Fell accounts",6
+0,"rm_gunnar_nailmarsh","twisting rope",6
+0,"rm_hakon_pitchstack","keeping the chambers",6
+0,"rm_halvard_pitchwell_","minding the shop door",6
+0,"rm_hester_coalgate","twisting rope",6
+0,"rm_hjalte_rustworth","working the saws",6
+0,"rm_hollis_tarwell_","works at The Reach Foundry",6
+0,"rm_hollis_wickworth_","helping at Sump Sundries",6
+0,"rm_ilse_greyby_","helping at Harbour Provisions",6
+0,"rm_ilse_saltworth","at the forge",3
+0,"rm_ingrid_grayrock","at her lessons in the Hall",6
+0,"rm_ingrid_nailwick","at the forge",3
+0,"rm_isolde_greycot_","unloading ships on the quay",6
+0,"rm_isolde_tarwick","presiding over the Council",6
+0,"rm_ivo_bilgeton_","unloading ships on the quay",6
+0,"rm_ivo_dripgate_","works at The Grayrock Arsenal",6
+0,"rm_ivo_pitchby_","works at The Grayrock Arsenal",6
+0,"rm_ivo_wickridge","smoking fish",6
+0,"rm_jarl_coalworth","smoking fish",6
+0,"rm_jasper_sootton_","works at The Rag Mill",6
+0,"rm_kari_cindermarsh_","on night patrol",6
+0,"rm_kari_millham_","minding the shop door",3
+0,"rm_kari_wickhand_","unloading ships on the quay",6
+0,"rm_kjell_plankstack","copying the rolls",6
+0,"rm_kjell_tarton_","helping at The Anchor Forge",6
+0,"rm_knut_rainley_","helping at The Pawn and Ledger",6
+0,"rm_lars_rainford_","on patrol",6
+0,"rm_lars_sootham_","minding the shop door",2
+0,"rm_leif_brinewater","walking the ropewalk",6
+0,"rm_leif_mudcot_","helping at The Wet Slab",3
+0,"rm_lothar_ashdale_","works at The Vesk Salt Pans",3
+0,"rm_lothar_brineridge","cooking for the House",3
+0,"rm_lotte_brinemarsh","serving in the hall",6
+0,"rm_magnus_mudgate","working the saws",6
+0,"rm_magnus_sootham_","helping at The Rivet and Rain",3
+0,"rm_magnus_vesk","counting the catch",6
+0,"rm_magnus_wickmore_","helping at Oilcloth & Wool",4
+0,"rm_maren_tarworth","serving in the hall",6
+0,"rm_moll_rustby_","on patrol",6
+0,"rm_nan_brineworth_","works at The Ashcombe Tileworks",4
+0,"rm_nan_rainton","keeping the chambers",6
+0,"rm_nessa_brinewater","learning the shipyard",6
+0,"rm_nils_ashridge_","helping at Nailers' Forge",3
+0,"rm_nils_wickley_","on patrol",6
+0,"rm_njal_fogdale","weighing bales",6
+0,"rm_oda_greyford_","works at Old Mother Tannery",3
+0,"rm_oda_rustwell","taxing the cargoes",6
+0,"rm_olaf_pitchcot_","unloading ships on the quay",6
+0,"rm_olaf_wetworth","stewarding Brinewater House",6
+0,"rm_orm_fogby_","works at The Grayrock Foundry",6
+0,"rm_orm_nailley","cooking for the House",6
+0,"rm_oskar_muddale","keeping the harbour",6
+0,"rm_oskar_rustmore_","picking rags",6
+0,"rm_osric_dripcot_","works at The Vesk Salt Pans",3
+0,"rm_ottilie_pitchmore","working the saws",6
+0,"rm_palle_ropeton","stewarding Fellhall",6
+0,"rm_piet_cindermore_","works at The Reach Tannery",3
+0,"rm_ragnar_millworth_","minding the shop door",3
+0,"rm_ragnar_plankgate","serving in the hall",6
+0,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",6
+0,"rm_rune_brineton_","minding the shop door",3
+0,"rm_signe_cinderham_","picking rags",6
+0,"rm_sigrun_bilgeby","building ships",6
+0,"rm_sigrun_sootby_","unloading ships on the quay",6
+0,"rm_silas_gullham","twisting rope",6
+0,"rm_silas_gullley_","works at The Brinewater Sail Loft",3
+0,"rm_soren_slagford","keeping the chambers",6
+0,"rm_soren_wetcot","stewarding Vesk Manor",6
+0,"rm_sten_vesk","running the salt pans",6
+0,"rm_tilde_wethand","cooking for the House",6
+0,"rm_tobias_grayrock","overseeing the ironworks",6
+0,"rm_tove_ropedale","hearing cases",6
+0,"rm_ulla_brinedale","cooking for the House",6
+0,"rm_vidar_kelpgate","at the forge",3
+0,"rm_vidar_ropewick_","works at The Blue Vats",6
+0,"rm_vidar_saltford_","unloading ships on the quay",6
+0,"rm_vigdis_millwell_","works at The Reach Tannery",3
+0,"rm_wynn_cinderton","building ships",6
+0,"rm_yrsa_mudmarsh","smoking fish",5
+0,"rm_yrsa_plankridge","blowing glass",6
+0,"rm_yrsa_wickdale","blowing glass",6
+0,"rmx_bo_wickham_","lights the lamps at dusk",6
+0,"rmx_egil_plankridge","lights the lamps at dusk",6
+0,"rmx_frida_brinewell_","lights the lamps at dusk",6
+0,"rmx_magnus_bilgeridge_","carries loads for hire",6
+0,"rmx_mathis_ropeton_","washes linen for hire",6
+0,"rmx_mogens_greymarsh_","carries loads for hire",6
+0,"rmx_nan_bilgedale_","washes linen for hire",6
+0,"rmx_njal_wetridge_","carries loads for hire",6
+0,"rmx_olaf_cindermarsh_","sweeps and fetches for a shop",6
+0,"rmx_osric_rustmore_","washes linen for hire",6
+0,"rmx_pim_dripham_","runs messages about the city",6
+0,"rmx_ragnar_brineford_","carries loads for hire",6
+0,"rmx_ragnar_saltwick","carries loads for hire",6
+0,"rmx_rika_nailcot_","washes linen for hire",6
+0,"rmx_roald_nailmore_","washes linen for hire",6
+0,"rmx_runa_ashton_","runs messages about the city",6
+0,"rmx_silas_saltstack_","sweeps and fetches for a shop",3
+0,"rmx_thyra_greycot_","runs messages about the city",6
+0,"rmx_tilde_bilgeford_","carries loads for hire",6
+0,"roan_","on patrol",6
+0,"sage_","debating in the Grand Hall",6
+0,"scree_","on patrol",6
+0,"sella","drilling in the compound",6
+0,"sf_achille_rivante","hauling for the warehouses",6
+0,"sf_agnese_castellane_","receiving guests",6
+0,"sf_alba_beluzzi","washing linen at the river stairs",6
+0,"sf_alba_casano","washing linen at the river stairs",6
+0,"sf_alba_galieri_","guarding the palace",6
+0,"sf_alessio_rosandi","helping at Ottone & Rame",3
+0,"sf_allegra_moresi","unloading barges",6
+0,"sf_amedeo_maresi","helping at Penna e Sigillo",5
+0,"sf_amedeo_orselli","helping at Dispensa del Porto",6
+0,"sf_aurelia_belano","unloading barges",6
+0,"sf_aurelio_marucci","presiding over the guild",6
+0,"sf_bastiano_orsesi_","serving the household",6
+0,"sf_beatrice_orselli","minding the shop door",6
+0,"sf_carlotta_lanano","helping at Seta Fina",5
+0,"sf_cassio_di_castellane","attending the court",6
+0,"sf_ciro_aldobrandi_","receiving guests",6
+0,"sf_clelia_benano","works at Tintoria Bellandi",3
+0,"sf_clelia_coruzzi","helping at La Forgia",3
+0,"sf_clelia_orsieri","minding the shop door",4
+0,"sf_cosima_ferucci","works at The Royal Arsenal",3
+0,"sf_cosima_morucci","holding the east gate",6
+0,"sf_cosimo_morone","helping at The Red Door",6
+0,"sf_dario_rivuzzi","mending nets on the wharf",6
+0,"sf_delia_rosetti","minding the shop door",3
+0,"sf_donatella_casari","helping at Marmi Ferrante",3
+0,"sf_donatella_rivari","mending nets on the wharf",6
+0,"sf_duccio_coretti_","serving the household",6
+0,"sf_duccio_valmonte_","receiving guests",6
+0,"sf_elena_lanucci","minding the shop door",3
+0,"sf_elena_rivetti","works at Fonderia delle Campane",6
+0,"sf_eliseo_colesi","works at Cartiera Bianca",3
+0,"sf_eliseo_salari","works at Carri Galli",3
+0,"sf_emilio_valieri","minding the shop door",6
+0,"sf_enzo_lucenti_","receiving guests",6
+0,"sf_fabrizio_benandi","grading fleeces",6
+0,"sf_fiora_rivano_","serving the household",6
+0,"sf_flavia_corano_","works at Tintoria Bellandi",4
+0,"sf_flavia_ferotti","works at Carri Galli",3
+0,"sf_flavia_galone","minding the shop door",3
+0,"sf_gemma_belini_","polishing the throne room",6
+0,"sf_gemma_salieri","unloading barges",6
+0,"sf_gemma_valieri","helping at Mappe del Fiume",6
+0,"sf_gemma_venale","minding the shop door",3
+0,"sf_giacomo_ferale_","keeping the royal apartments",6
+0,"sf_giacomo_toretti","works at La Concia",3
+0,"sf_gino_casandi_","guarding the palace",6
+0,"sf_gino_daruzzi","works at La Concia",3
+0,"sf_giulia_colari","tallying barges",6
+0,"sf_ilaria_palale_","gossiping at court",6
+0,"sf_ilario_coluzzi_","attending the Queen",6
+0,"sf_ilario_morieri","helping at Erbe di Campo",3
+0,"sf_isotta_nerale","on patrol",6
+0,"sf_isotta_palucci","helping at Profumi Lucenti",6
+0,"sf_isotta_salandi","works at The Royal Arsenal",3
+0,"sf_lapo_casuzzi","helping at Botti Ferrante",6
+0,"sf_lapo_orsenna_","receiving guests",6
+0,"sf_lavinia_belale","works at Fonderia delle Campane",6
+0,"sf_lavinia_nerandi","helping at Armeria del Leone",3
+0,"sf_leandro_casante","trading at the market",6
+0,"sf_leandro_valucci_","serving the household",6
+0,"sf_livia_di_castellane","receiving at court",6
+0,"sf_livia_galante_","announcing the court",6
+0,"sf_livia_lanotti_","guarding the palace",6
+0,"sf_livia_venucci","minding the shop door",3
+0,"sf_lorenzo_benone","hauling for the warehouses",6
+0,"sf_loretta_colotti_","guarding the palace",6
+0,"sf_loretta_valesi_","keeping the guild books",6
+0,"sf_lucia_colone_","arguing the price of wool",6
+0,"sf_lucia_nerucci","on patrol",6
+0,"sf_mafalda_lucenti_","receiving guests",6
+0,"sf_mafalda_marenzi_","receiving guests",6
+0,"sf_mafalda_palari_","serving the household",6
+0,"sf_marcello_galuzzi","helping at Il Forno d'Oro",5
+0,"sf_marcello_venale","helping at Bottega del Legno",3
+0,"sf_marzia_ferini_","serving the royal table",6
+0,"sf_marzia_orsenna_","receiving guests",6
+0,"sf_matteo_darone","selling flowers on the square",6
+0,"sf_mirella_rosotti_","lighting the candles",6
+0,"sf_nico_lanini_","serving the household",6
+0,"sf_nico_maretti","buying for a palazzo kitchen",6
+0,"sf_nico_palandi","works at The Red Tile Works",4
+0,"sf_nives_morini_","commanding the palace guard",6
+0,"sf_nives_salelli","on night patrol",6
+0,"sf_noemi_lanetti_","serving the household",6
+0,"sf_noemi_valmonte_","receiving guests",6
+0,"sf_orsino_belante","on patrol",6
+0,"sf_orsola_marano","on night patrol",6
+0,"sf_ottavia_lanza","hearing petitions",6
+0,"sf_ottavia_maruzzi","works at Mulino del Borgo",3
+0,"sf_ottavia_nerari","on patrol",6
+0,"sf_ottavia_salone","trading at the market",6
+0,"sf_ottone_marenzi_","receiving guests",6
+0,"sf_paola_rosieri","hauling for the warehouses",6
+0,"sf_pasquale_torone_","serving the household",6
+0,"sf_perla_belucci","on patrol",6
+0,"sf_piero_darotti_","guarding the palace",6
+0,"sf_piero_morone","minding the shop door",6
+0,"sf_renata_galini","works at Cartiera Bianca",3
+0,"sf_rocco_orsini","minding the shop door",6
+0,"sf_rosalba_belotti_","attending the King",6
+0,"sf_salvatore_venante","works at The Red Tile Works",4
+0,"sf_serafina_aldobrandi_","receiving guests",6
+0,"sf_serafina_di_castellane","at her studies in the palace",6
+0,"sf_serafina_ferelli_","running errands for the household",1
+0,"sf_serafina_lanone","commanding the city guard",6
+0,"sf_serafina_maresi","minding the shop door",3
+0,"sf_sveva_galucci","unloading barges",6
+0,"sf_taddeo_paluzzi","unloading barges",6
+0,"sf_teodora_beletti","unloading barges",6
+0,"sf_teodora_benucci","playing the lute on the square",6
+0,"sf_teodora_venone_","serving the household",6
+0,"sf_teodoro_lanesi","carrying water",6
+0,"sf_tommaso_benini_","serving the household",6
+0,"sf_tommaso_darandi_","serving the household",6
+0,"sf_ugo_casari","minding the shop door",3
+0,"sf_umberto_maresi","minding the shop door",3
+0,"sf_umberto_marieri","on night patrol",6
+0,"sf_valeria_toruzzi_","scrubbing the kitchens",1
+0,"sf_vasco_castellane_","receiving guests",6
+0,"sf_viola_darieri_","serving the household",6
+0,"sf_viola_galano","mending nets on the wharf",6
+0,"sf_vittore_nerone","holding the north gate",6
+0,"sf_vittoria_torucci_","copying the chapter's books",6
+0,"sfx_amedeo_venturi","lights the lamps at dusk",6
+0,"sfx_fabrizio_cascotti","lights the lamps at dusk",6
+0,"sfx_fausto_orsini","works at The La Riva Water Mill",3
+0,"sfx_lapo_donati","runs messages about the city",6
+0,"sfx_lapo_testa","washes linen for hire",6
+0,"sfx_lorenzo_galsetti","carries loads for hire",6
+0,"sfx_lorenzo_nerini","washes linen for hire",6
+0,"sfx_manfredi_pallotta","sweeps and fetches for a shop",3
+0,"sfx_marcello_bellandi","runs messages about the city",6
+0,"sfx_nando_martini","washes linen for hire",6
+0,"sfx_perla_toscani","washes linen for hire",6
+0,"sfx_primo_esposito","carries loads for hire",6
+0,"sfx_raffaele_monrari","runs messages about the city",6
+0,"sfx_raffaele_orsesi","runs messages about the city",6
+0,"sfx_renzo_darucci","lights the lamps at dusk",6
+0,"sfx_sveva_ferrante","runs messages about the city",6
+0,"sfx_teodoro_venturi","carries loads for hire",6
+0,"sfx_ugo_martini","washes linen for hire",6
+0,"sfx_valerio_albani","runs messages about the city",6
+0,"sfx_vittoria_vitale","runs messages about the city",6
+0,"sfx_zita_testa","carries loads for hire",6
+0,"skye_","holding the south gate",6
+0,"sloe","presiding over the Concord",6
+0,"tansy","keeping the training stores",6
+0,"tarn_","holding the south gate",6
+0,"thief","working",6
+0,"thistle_","on watch",6
+0,"thorn_screebark_","mending the old wall",6
+0,"tn_ac_bramble_gatewright","stands watch",6
+0,"tn_ac_elm_crosswright","minds the shop's door",3
+0,"tn_ac_flint_milestone","tends the carters' beasts",6
+0,"tn_ac_gale_crossley","works at The Wheelwright's Yard",3
+0,"tn_ac_heath_wheelmark","tends the carters' beasts",6
+0,"tn_ac_holly_gatepost","loads the caravan wagons",6
+0,"tn_ac_mara_dustcote","helps at Waystation Stores",3
+0,"tn_ac_quarry_gatepost","loads the caravan wagons",6
+0,"tn_ac_quill_tollwell","helps at The Gate Forge",3
+0,"tn_ac_ridge_mileward","keeps The Caravan Shed",6
+0,"tn_ac_ridge_waymark","helps at The Trace and Collar",3
+0,"tn_ac_rowan_cartpost","stands watch",6
+0,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",3
+0,"tn_ac_varg_mileward","loads the caravan wagons",6
+0,"tn_ac_wald_tollwell","minds the shop's door",3
+0,"tn_af_brand_strawacre","keeps the ford toll",6
+0,"tn_af_edric_sheaffield_","helps at Amberford Goods",6
+0,"tn_af_fallow_grainford_","minds the shop's door",6
+0,"tn_af_frey_wheatmow_","stands watch",6
+0,"tn_af_ivy_furrowstook_","keeps The Grain Barn",6
+0,"tn_af_ivy_strawacre_","grinds at the ford mill",6
+0,"tn_af_nell_furrowmow_","helps at The Amber Loaf",3
+0,"tn_af_tor_goldstead_","stands watch",6
+0,"tn_af_tor_grainfield_","helps at Ford Brewhouse",3
+0,"tn_af_umber_wheatley_","helps at Amberford Cooperage",6
+0,"tn_af_varg_harrowford","works at The Ford Mill",6
+0,"tn_cb_cairn_smeltshaft","works at The Cinderbrook Bloomery",6
+0,"tn_cb_fern_slaghollow_","helps at Cinderbrook Forge",2
+0,"tn_cb_hob_ashshaft_","stands watch",6
+0,"tn_cb_holly_smelthollow","works at The Cinderbrook Bloomery",6
+0,"tn_cb_nettle_rusthollow_","helps at The Lamp and Wick",3
+0,"tn_cb_opal_ironvein_","stands watch",6
+0,"tn_cb_pell_emberpit_","helps at The Red Door Store",6
+0,"tn_df_edric_darkguard_","stands watch",6
+0,"tn_df_garth_blackwatch_","stands watch",6
+0,"tn_df_heath_nightward_","garrison cook",6
+0,"tn_df_holt_blackward_","stands watch",6
+0,"tn_df_holt_deepward_","minds the shop's door",6
+0,"tn_df_iris_grimhold_","stands watch",6
+0,"tn_df_rusk_nightguard_","commands the garrison",6
+0,"tn_df_thistle_deepward_","helps at The Silent Forge",6
+0,"tn_fh_dray_bogmoor_","stands watch",6
+0,"tn_fh_dun_peatlode_","helps at Bogmyrtle's",3
+0,"tn_fh_fern_damplode_","helps at The Marsh Apothecary",3
+0,"tn_fh_flint_reedmere_","serves at The Peat Fire",3
+0,"tn_fh_harrow_peathollow_","helps at Fenhollow Store",6
+0,"tn_fh_isla_mudlode_","works at The Bog Brewery",3
+0,"tn_fh_ivy_dampditch_","stands watch",6
+0,"tn_fh_juniper_reedcarr_","helps at The Bog Iron Forge",4
+0,"tn_fh_lorn_rushditch_","helps at Rushlight Chandler",6
+0,"tn_fh_marl_damplode_","minds the shop's door",3
+0,"tn_fh_pike_boghollow_","works at The Bog Brewery",3
+0,"tn_fh_rusk_reedcarr_","minds the shop's door",3
+0,"tn_fh_thorn_peatcarr_","helps at The Mossloaf Bakery",3
+0,"tn_fh_wren_rushditch_","minds the shop's door",3
+0,"tn_hm_ash_hedgemere","helps at The Valley Oven",6
+0,"tn_hm_drift_hollowside","helps at Valley Remedies",3
+0,"tn_hm_reed_valemere","helps at The Hollowmere Shop",6
+0,"tn_if_alder_greywall_","helps at The Isle Forge",6
+0,"tn_if_bramble_greykeep_","garrison cook",6
+0,"tn_if_eskar_islewall_","stands watch",6
+0,"tn_if_harrow_towerguard_","stands watch",6
+0,"tn_if_holt_merewatch_","minds the shop's door",6
+0,"tn_if_iris_moatward_","stands watch",6
+0,"tn_if_isla_moatwall_","stands watch",6
+0,"tn_if_nettle_mereguard_","commands the garrison",6
+0,"tn_if_thistle_greywall_","minds the shop's door",6
+0,"tn_if_wolde_merewatch_","helps at The Armoury",6
+0,"tn_ls_aster_merereach_","stands watch",6
+0,"tn_ls_briar_stillside_","helps at Lakeside Goods",6
+0,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",3
+0,"tn_ls_frey_stillside_","minds the shop's door",6
+0,"tn_ls_heath_oarwade_","stands watch",6
+0,"tn_ls_hob_oarmere","works at The Mirrormere Smokehouse",3
+0,"tn_ls_ingram_pikemere_","helps at Netmaker's Loft",6
+0,"tn_ls_kindle_mistwade_","serves at The Still Water",1
+0,"tn_ls_opal_mistmere_","helps at The Boatwright's",6
+0,"tn_ls_varg_willowhythe_","minds the shop's door",6
+0,"tn_ls_yarrow_stillford","serves at The Drowned Oar",6
+0,"tn_nf_corrie_rimeward","stands watch",6
+0,"tn_nf_dun_frostward","stands watch",6
+0,"tn_nf_eskar_frosthold","works at The North Arsenal",6
+0,"tn_nf_holly_bleakguard","works at The North Arsenal",6
+0,"tn_nf_holly_rimeguard","minds the shop's door",6
+0,"tn_nf_odo_rimehelm","commands the garrison",6
+0,"tn_nf_yarrow_craghold","garrison cook",6
+0,"tn_sr_bram_greycove","helps at Gullwharf Fish",3
+0,"tn_sr_brand_shinglewater","stands watch",6
+0,"tn_sr_dray_tidemouth","minds the shop's door",3
+0,"tn_sr_gale_gullwick","serves at The Brine and Barrel",3
+0,"tn_sr_jory_tidemouth","helps at The Barrel Yard",3
+0,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",3
+0,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",6
+0,"tn_sr_lark_shingleshore","works at The Saltreach Pans",3
+0,"tn_sr_marl_kelpcove","stands watch",6
+0,"tn_sr_nab_wrackshore","helps at The Anchor Smithy",3
+0,"tn_sr_orrin_greymouth","works at The Gullwharf Smokehouse",6
+0,"tn_sr_tor_tideline","keeps The Salt House",6
+0,"tn_wm_ash_thornwell","keeps The Granary",6
+0,"tn_wm_bramble_westfold","stands watch",6
+0,"tn_wm_frey_larkacre","helps at The Hide Yard",3
+0,"tn_wm_hob_thornlea","stands watch",6
+0,"tn_wm_holly_sheepridge","helps at Drover's Block",6
+0,"tn_wm_holt_barrowmarch","helps at Downland Wool",3
+0,"tn_wm_isla_westridge","drives cattle to market",6
+0,"tn_wm_knap_barrowacre","drives cattle to market",6
+0,"tn_wm_linden_woldfold","helps at Westmarch Mercantile",3
+0,"tn_wm_orrin_haybarrow","minds the shop's door",5
+0,"tn_wm_quill_haybarrow","minds the shop's door",5
+0,"uax_ash_cragfoot_","carries loads for hire",6
+0,"uax_birch_frostwell_","sweeps and fetches for a shop",6
+0,"uax_brock_ashsong_","washes linen for hire",6
+0,"uax_brock_bramblefoot_","lights the lamps at dusk",6
+0,"uax_drift_birchhowl_","washes linen for hire",6
+0,"uax_elm_stormcoat_","carries loads for hire",6
+0,"uax_gorse_mosscoat_","runs messages about the city",6
+0,"uax_heath_mossborn_","washes linen for hire",6
+0,"uax_heather_birchhowl_","carries loads for hire",6
+0,"uax_heather_snowfoot_","washes linen for hire",6
+0,"uax_hob_brackenrun_","lights the lamps at dusk",6
+0,"uax_ingram_greymantle_","carries loads for hire",6
+0,"uax_ivy_stonecoat_","washes linen for hire",6
+0,"uax_juniper_heathheart_","runs messages about the city",6
+0,"uax_juniper_tarnmoor_","runs messages about the city",6
+0,"uax_kestrel_windmere_","washes linen for hire",6
+0,"uax_kindle_ashwalker_","washes linen for hire",6
+0,"uax_ludo_dusksong_","washes linen for hire",6
+0,"uax_mara_oakridge_","washes linen for hire",6
+0,"uax_nokk_ironbark_","lights the lamps at dusk",6
+0,"uax_pell_frostback_","carries loads for hire",6
+0,"uax_sella_heathrow_","runs messages about the city",6
+0,"uax_sella_mistvale_","washes linen for hire",6
+0,"uax_vale_pinecrest_","carries loads for hire",6
+0,"uax_vesper_frostborn_","lights the lamps at dusk",6
+0,"uax_wisp_duskfell_","sweeps and fetches for a shop",6
+0,"uax_yarrow_mossborn_","washes linen for hire",6
+0,"umber_ashsong_","hauling crates",6
+0,"willa","advising the leader",3
+0,"wisp_","reading in the deep archive",6
+0,"wolde","training",6
+0,"wren_","holding the main gate",6
+1,"alder_hollowfang_","helping at The Stretched Hide",6
+1,"ash_","leading the Warden Order",6
+1,"ash_duskhide_","helping at The Cold Hammer",6
+1,"aster_marshbark_","copying the city rolls",6
+1,"aster_slateclaw_","helping at Needle & Nap",6
+1,"bramble_","debating in the Grand Hall",6
+1,"brand","holding the stair gate",6
+1,"briar","training",6
+1,"briar_stormfang_","helping at Pinecut Joinery",6
+1,"brisk_","coaching at the archery range",6
+1,"brock","on night patrol",6
+1,"brock_coldborn_","helping at The Tight Weft",1
+1,"clover","training",6
+1,"dawn","tending the scroll vaults",6
+1,"dawn_greyhide_","helping at The Straight Shaft",3
+1,"dray","holding the main gate",6
+1,"dray_hollowfang_","helping at The Stretched Hide",6
+1,"drift_frostwalker_","helping at Morning Rise Ovens",3
+1,"dun_","running sparring bouts",6
+1,"dun_pinewell_","copying the city rolls",6
+1,"elm_pinevale_","helping at Ridgeline Maps",6
+1,"eskar_","on night patrol",6
+1,"fallow","debating in the Grand Hall",6
+1,"fell_","drilling trainees on the square",6
+1,"fern_","holding the stair gate",6
+1,"fern_frostmark_","helping at Cinderpaw Forge",6
+1,"fern_greybark_","helping at Clayfoot Wares",6
+1,"gorse_","running the obstacle course",6
+1,"grist_hollowmere_","helping at Greywall Goods",6
+1,"harl_mossmere_","helping at Timberline Carpentry",6
+1,"harrow","hearing petitions",6
+1,"hazel","advising the leader",3
+1,"heath_","training",6
+1,"heather","on night watch",6
+1,"holly_","on patrol",6
+1,"ind_briar_smeltshaft","works at The Cinderbrook Smelter",5
+1,"ind_harl_cinderbrook","works at The Cinderbrook Smelter",5
+1,"ingram_","training",6
+1,"ingram_harrowgate_","tending the sick",6
+1,"isla","on watch",6
+1,"ivy_pinewalker_","tending the sick",6
+1,"jarl","on watch",6
+1,"jessamy","keeping the Annex",6
+1,"kell","carrying messages for the Concord",6
+1,"kell_ashfall_","hauling crates",6
+1,"kestrel_","hearing petitions",6
+1,"kindle","training",6
+1,"kite","shelving in the upper stacks",6
+1,"knap_","on watch",6
+1,"lark_","keeping the chapel",6
+1,"laurel","drilling in the compound",6
+1,"lichen","advising the leader",3
+1,"loam_","drilling in the compound",6
+1,"marl_swiftwater","helping at The Howling Stair",3
+1,"marsh","on patrol",6
+1,"moor","drilling in the compound",6
+1,"moss_","on patrol",6
+1,"myrtle","on night watch",6
+1,"nell","training",6
+1,"nightjar_","keeping the crypt library",6
+1,"nightjar_windhollow_","tallying stores",6
+1,"nokk_","hearing petitions",6
+1,"oak_","on night patrol",6
+1,"orrin","carrying messages for the Concord",6
+1,"quarry","training",6
+1,"ridge","advising the leader",3
+1,"ridge_mossborn_","minding the stores",6
+1,"rm_ada_brineford","smoking fish",6
+1,"rm_aldric_mudhand_","helping at Collar and Trace",3
+1,"rm_ansel_brinewick","blowing glass",6
+1,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+1,"rm_aud_rustford_","running The Vesk Salt Pans",8
+1,"rm_beatha_rainmore_","helping at Greywool",3
+1,"rm_beatha_saltley","keeping the chambers",6
+1,"rm_berit_plankworth_","holding the south gate",6
+1,"rm_bertil_fogwick","stewarding Grayrock Hall",6
+1,"rm_bertil_millwick","keeping the chambers",6
+1,"rm_bertil_pitchgate","building ships",6
+1,"rm_bertil_wetridge_","helping at The Hook and Cleaver",6
+1,"rm_bo_gullstack","foreman of the quarry",6
+1,"rm_brand_mudstack","at the forge",2
+1,"rm_brand_saltgate_","helping at Wickham's Chandlery",3
+1,"rm_brand_saltwell_","holding the quay gate",6
+1,"rm_bryn_coalwell","working the saws",6
+1,"rm_bryn_kelpridge","boiling rags",6
+1,"rm_bryn_plankham_","on night patrol",6
+1,"rm_caspar_greyley","working the saws",6
+1,"rm_clemence_slagcot","keeping order in court",6
+1,"rm_corra_wickby_","commanding the Watch",6
+1,"rm_corwin_coalley_","on patrol",6
+1,"rm_corwin_pitchley_","works at The Rag Mill",3
+1,"rm_corwin_ropestack_","helping at Wetink Lane Scriveners",3
+1,"rm_corwin_rustham","serving in the hall",6
+1,"rm_dagfinn_ashmore","smoking fish",6
+1,"rm_dagfinn_tarton_","minding the shop door",3
+1,"rm_dagny_kelpmore_","running The Reach Tannery",8
+1,"rm_dirk_brinecot_","works at The Blue Vats",3
+1,"rm_dirk_dripford","keeping the gaol",6
+1,"rm_dirk_sootham_","armourer at The Rivet and Rain",8
+1,"rm_disa_gullhand_","works at Old Mother Tannery",3
+1,"rm_dunstan_wickworth_","minding the shop door",6
+1,"rm_ebba_bilgeworth_","running The Blue Vats",8
+1,"rm_ebba_sootmarsh","at the forge",2
+1,"rm_edda_rainby_","running The Rag Mill",8
+1,"rm_edda_rustmarsh_","helping at The Council Press",1
+1,"rm_edric_ashcombe","working the glass himself",6
+1,"rm_edric_greywell_","works at The Grayrock Foundry",3
+1,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+1,"rm_egil_coalmore_","works at The Fell Wagon Yard",3
+1,"rm_egil_fogton_","helping at Grist & Crust",3
+1,"rm_egil_wickham_","holding the east gate",6
+1,"rm_emmerich_foghand","serving in the hall",6
+1,"rm_emmerich_wetridge_","minding the shop door",6
+1,"rm_erland_sootham_","minding the shop door",3
+1,"rm_finn_ashridge_","smith at Nailers' Forge",8
+1,"rm_frida_millby","cooking for the House",3
+1,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",3
+1,"rm_gorm_coalstack_","running The Reach Foundry",8
+1,"rm_gorm_kelpcot","tallying the Houses' dues",6
+1,"rm_greta_greymore_","works at The Ashcombe Tileworks",3
+1,"rm_grete_mudton_","minding the shop door",3
+1,"rm_grete_slagton_","works at The Brinewater Sail Loft",3
+1,"rm_gudrun_bilgeham","building ships",6
+1,"rm_gudrun_dripham","stewarding Ashcombe House",6
+1,"rm_gudrun_fell","keeping the Fell accounts",6
+1,"rm_gunnar_nailmarsh","twisting rope",3
+1,"rm_hakon_mudton_","brewer at The Black Tun",8
+1,"rm_hakon_pitchstack","keeping the chambers",6
+1,"rm_halvard_pitchwell_","minding the shop door",6
+1,"rm_hester_coalgate","twisting rope",3
+1,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+1,"rm_hjalte_rustworth","working the saws",6
+1,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+1,"rm_hollis_bilgewick","tending the sick",6
+1,"rm_hollis_wickworth_","helping at Sump Sundries",6
+1,"rm_ilse_greyby_","helping at Harbour Provisions",6
+1,"rm_ilse_saltworth","at the forge",2
+1,"rm_ingrid_grayrock","at her lessons in the Hall",6
+1,"rm_ingrid_nailwick","at the forge",2
+1,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+1,"rm_isolde_tarwick","presiding over the Council",6
+1,"rm_ivo_dripgate_","works at The Grayrock Arsenal",3
+1,"rm_ivo_pitchby_","works at The Grayrock Arsenal",3
+1,"rm_ivo_wickridge","smoking fish",6
+1,"rm_jarl_coalworth","smoking fish",6
+1,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+1,"rm_jasper_sootton_","works at The Rag Mill",3
+1,"rm_kari_cindermarsh_","on night patrol",6
+1,"rm_kari_millham_","minding the shop door",3
+1,"rm_karin_mudham_","fish stall on the Market Square",8
+1,"rm_kjell_plankstack","copying the rolls",6
+1,"rm_kjell_tarton_","helping at The Anchor Forge",3
+1,"rm_knut_gulldale_","running The Grayrock Foundry",8
+1,"rm_knut_rainley_","helping at The Pawn and Ledger",6
+1,"rm_lars_rainford_","on patrol",6
+1,"rm_lars_sootham_","minding the shop door",3
+1,"rm_leif_brinewater","walking the ropewalk",3
+1,"rm_leif_mudcot_","helping at The Wet Slab",4
+1,"rm_lothar_ashdale_","works at The Vesk Salt Pans",3
+1,"rm_lothar_brineridge","cooking for the House",3
+1,"rm_lotte_brinemarsh","serving in the hall",6
+1,"rm_lotte_gullcot_","nut stall on the Market Square",8
+1,"rm_magnus_mudgate","working the saws",6
+1,"rm_magnus_sootham_","helping at The Rivet and Rain",3
+1,"rm_magnus_vesk","counting the catch",6
+1,"rm_magnus_wickmore_","helping at Oilcloth & Wool",3
+1,"rm_maren_fogton_","baker at Grist & Crust",8
+1,"rm_maren_ropewell","keeping the chapel",6
+1,"rm_maren_tarworth","serving in the hall",6
+1,"rm_moll_rustby_","on patrol",6
+1,"rm_nan_brineworth_","works at The Ashcombe Tileworks",3
+1,"rm_nan_rainton","keeping the chambers",6
+1,"rm_nessa_brinewater","learning the shipyard",6
+1,"rm_nils_wickley_","on patrol",6
+1,"rm_njal_fogdale","weighing bales",6
+1,"rm_oda_greyford_","works at Old Mother Tannery",3
+1,"rm_oda_rustwell","taxing the cargoes",6
+1,"rm_olaf_wetworth","stewarding Brinewater House",6
+1,"rm_orm_fogby_","works at The Grayrock Foundry",3
+1,"rm_orm_nailley","cooking for the House",6
+1,"rm_oskar_muddale","keeping the harbour",6
+1,"rm_osric_dripcot_","works at The Vesk Salt Pans",3
+1,"rm_ottilie_pitchmore","working the saws",6
+1,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+1,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+1,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+1,"rm_palle_ropeton","stewarding Fellhall",6
+1,"rm_piet_cindermore_","works at The Reach Tannery",3
+1,"rm_ragnar_millworth_","minding the shop door",3
+1,"rm_ragnar_plankgate","serving in the hall",6
+1,"rm_runa_gullton_","egg stall on the Market Square",8
+1,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",3
+1,"rm_rune_brineton_","minding the shop door",6
+1,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+1,"rm_sigrun_bilgeby","building ships",6
+1,"rm_silas_gullham","twisting rope",3
+1,"rm_silas_gullley_","works at The Brinewater Sail Loft",3
+1,"rm_soren_slagford","keeping the chambers",6
+1,"rm_soren_wetcot","stewarding Vesk Manor",6
+1,"rm_sten_vesk","running the salt pans",6
+1,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+1,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+1,"rm_tilde_wethand","cooking for the House",6
+1,"rm_tobias_grayrock","overseeing the ironworks",6
+1,"rm_tove_pitchworth","keeping the inn",8
+1,"rm_tove_ropedale","hearing cases",6
+1,"rm_ulla_brinedale","cooking for the House",6
+1,"rm_una_pitchwell_","runs Greywater Dairy",8
+1,"rm_vidar_kelpgate","at the forge",2
+1,"rm_vidar_ropewick_","works at The Blue Vats",3
+1,"rm_vigdis_millwell_","works at The Reach Tannery",3
+1,"rm_wenna_coalwick_","running The South Gate Stables",8
+1,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+1,"rm_wynn_cinderton","building ships",6
+1,"rm_yrsa_mudmarsh","smoking fish",6
+1,"rm_yrsa_plankridge","blowing glass",6
+1,"rm_yrsa_wickdale","blowing glass",6
+1,"rmx_egil_plankridge","lights the lamps at dusk",6
+1,"rmx_olaf_cindermarsh_","sweeps and fetches for a shop",6
+1,"rmx_pim_dripham_","runs messages about the city",6
+1,"rmx_rika_nailcot_","washes linen for hire",6
+1,"rmx_runa_ashton_","runs messages about the city",6
+1,"rmx_silas_saltstack_","sweeps and fetches for a shop",3
+1,"rmx_thyra_greycot_","runs messages about the city",6
+1,"roan_","on patrol",6
+1,"sage_","debating in the Grand Hall",6
+1,"scree_","on patrol",6
+1,"sella","drilling in the compound",6
+1,"sf_achille_rivante","hauling for the warehouses",1
+1,"sf_agnese_castellane_","receiving guests",6
+1,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+1,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+1,"sf_alba_galieri_","guarding the palace",6
+1,"sf_alessio_rosandi","helping at Ottone & Rame",6
+1,"sf_allegra_moresi","unloading barges",1
+1,"sf_amedeo_maresi","helping at Penna e Sigillo",3
+1,"sf_amedeo_orselli","helping at Dispensa del Porto",3
+1,"sf_aurelia_belano","unloading barges",1
+1,"sf_aurelio_marucci","presiding over the guild",6
+1,"sf_bastiano_orsesi_","serving the household",6
+1,"sf_beatrice_orselli","minding the shop door",3
+1,"sf_benedetto_albani","celebrating the Mass",6
+1,"sf_bruno_lanale","soup stall on the Mercato",8
+1,"sf_carlotta_lanano","helping at Seta Fina",6
+1,"sf_cassio_di_castellane","attending the court",6
+1,"sf_ciro_aldobrandi_","receiving guests",6
+1,"sf_ciro_marandi_","keeping the crypt",6
+1,"sf_clelia_benano","works at Tintoria Bellandi",3
+1,"sf_clelia_coruzzi","helping at La Forgia",6
+1,"sf_clelia_orsieri","minding the shop door",3
+1,"sf_corrado_marotti_","leading the choir",6
+1,"sf_corrado_morone","shopkeeper at The Red Door",8
+1,"sf_cosima_ferucci","works at The Royal Arsenal",3
+1,"sf_cosima_morucci","holding the east gate",6
+1,"sf_cosima_rivelli","running Mulino del Borgo",8
+1,"sf_cosimo_casari","mason at Marmi Ferrante",8
+1,"sf_cosimo_morone","helping at The Red Door",3
+1,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+1,"sf_dario_rivuzzi","mending nets on the wharf",1
+1,"sf_delia_rosetti","minding the shop door",3
+1,"sf_donatella_casari","helping at Marmi Ferrante",3
+1,"sf_donatella_rivari","mending nets on the wharf",1
+1,"sf_duccio_coretti_","serving the household",6
+1,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+1,"sf_duccio_valmonte_","receiving guests",6
+1,"sf_elena_lanucci","minding the shop door",3
+1,"sf_elena_rivetti","works at Fonderia delle Campane",3
+1,"sf_eliseo_colesi","works at Cartiera Bianca",3
+1,"sf_eliseo_salari","works at Carri Galli",3
+1,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+1,"sf_emilia_ferante_","keeping the Chapel Royal",6
+1,"sf_emilio_valieri","minding the shop door",6
+1,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+1,"sf_enzo_lucenti_","receiving guests",6
+1,"sf_fabrizio_benandi","grading fleeces",6
+1,"sf_fiora_belieri_","hearing confessions",6
+1,"sf_fiora_rivano_","serving the household",6
+1,"sf_flavia_corano_","works at Tintoria Bellandi",3
+1,"sf_flavia_ferotti","works at Carri Galli",3
+1,"sf_flavia_galone","minding the shop door",5
+1,"sf_gemma_belini_","polishing the throne room",6
+1,"sf_gemma_corieri","running Carri Galli",8
+1,"sf_gemma_salieri","unloading barges",1
+1,"sf_gemma_valieri","helping at Mappe del Fiume",6
+1,"sf_gemma_venale","minding the shop door",6
+1,"sf_giacomo_ferale_","keeping the royal apartments",6
+1,"sf_giacomo_toretti","works at La Concia",3
+1,"sf_gino_casandi_","guarding the palace",6
+1,"sf_gino_daruzzi","works at La Concia",3
+1,"sf_giulia_colari","tallying barges",6
+1,"sf_gualtiero_colini","running Fonderia delle Campane",8
+1,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+1,"sf_ilaria_palale_","gossiping at court",6
+1,"sf_ilario_coluzzi_","attending the Queen",6
+1,"sf_ilario_morieri","helping at Erbe di Campo",3
+1,"sf_isotta_nerale","on patrol",6
+1,"sf_isotta_palucci","helping at Profumi Lucenti",3
+1,"sf_isotta_salandi","works at The Royal Arsenal",3
+1,"sf_lapo_casuzzi","helping at Botti Ferrante",3
+1,"sf_lapo_orsenna_","receiving guests",6
+1,"sf_lapo_salesi","painting on the cathedral square",6
+1,"sf_lavinia_belale","works at Fonderia delle Campane",3
+1,"sf_lavinia_nerandi","helping at Armeria del Leone",3
+1,"sf_leandro_valucci_","serving the household",6
+1,"sf_livia_di_castellane","receiving at court",6
+1,"sf_livia_galante_","announcing the court",6
+1,"sf_livia_lanotti_","guarding the palace",6
+1,"sf_livia_torandi","porridge stall on the Mercato",8
+1,"sf_livia_venucci","minding the shop door",2
+1,"sf_lorenzo_benone","hauling for the warehouses",1
+1,"sf_loretta_colotti_","guarding the palace",6
+1,"sf_loretta_valesi_","keeping the guild books",6
+1,"sf_lucia_colone_","arguing the price of wool",6
+1,"sf_lucia_nerucci","on patrol",6
+1,"sf_mafalda_lucenti_","receiving guests",6
+1,"sf_mafalda_marenzi_","receiving guests",6
+1,"sf_mafalda_morotti","running Tintoria Bellandi",8
+1,"sf_mafalda_palari_","serving the household",6
+1,"sf_marcello_galuzzi","helping at Il Forno d'Oro",6
+1,"sf_marcello_morandi","running The Royal Arsenal",8
+1,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+1,"sf_marcello_venale","helping at Bottega del Legno",6
+1,"sf_marzia_ferini_","serving the royal table",6
+1,"sf_marzia_orsenna_","receiving guests",6
+1,"sf_marzia_rivucci_","nursing the sick",6
+1,"sf_matteo_lanante","runs Il Mulino Dairy",8
+1,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+1,"sf_matteo_salini","keeps the water mill at La Riva",8
+1,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+1,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+1,"sf_mirella_rosotti_","lighting the candles",6
+1,"sf_nico_lanini_","serving the household",6
+1,"sf_nico_palandi","works at The Red Tile Works",3
+1,"sf_nives_morini_","commanding the palace guard",6
+1,"sf_nives_salelli","on night patrol",6
+1,"sf_noemi_lanetti_","serving the household",6
+1,"sf_noemi_valmonte_","receiving guests",6
+1,"sf_orsino_belante","on patrol",6
+1,"sf_orsola_marano","on night patrol",6
+1,"sf_ottavia_lanza","hearing petitions",6
+1,"sf_ottavia_maruzzi","works at Mulino del Borgo",3
+1,"sf_ottavia_nerari","on patrol",6
+1,"sf_ottone_marenzi_","receiving guests",6
+1,"sf_paola_rosieri","hauling for the warehouses",1
+1,"sf_pasquale_torone_","serving the household",6
+1,"sf_perla_belucci","on patrol",6
+1,"sf_piero_darotti_","guarding the palace",6
+1,"sf_piero_morone","minding the shop door",3
+1,"sf_primo_benale_","cooking for the palace",8
+1,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+1,"sf_renata_galini","works at Cartiera Bianca",3
+1,"sf_renata_salini","weaver at Tessitura Bellandi",8
+1,"sf_renzo_corucci","running La Concia",8
+1,"sf_rocco_morano","keeping the inn",8
+1,"sf_rocco_orsini","minding the shop door",3
+1,"sf_rosalba_belotti_","attending the King",6
+1,"sf_salvatore_orsone","running Cartiera Bianca",8
+1,"sf_salvatore_venante","works at The Red Tile Works",3
+1,"sf_serafina_aldobrandi_","receiving guests",6
+1,"sf_serafina_ferelli_","running errands for the household",3
+1,"sf_serafina_lanone","commanding the city guard",6
+1,"sf_serafina_maresi","minding the shop door",3
+1,"sf_sveva_galucci","unloading barges",1
+1,"sf_taddeo_paluzzi","unloading barges",1
+1,"sf_teodora_beletti","unloading barges",1
+1,"sf_teodora_venone_","serving the household",6
+1,"sf_teodoro_palone","running The East Gate Stables",8
+1,"sf_tommaso_benini_","serving the household",6
+1,"sf_tommaso_darandi_","serving the household",6
+1,"sf_tullia_darari_","nursing the sick",6
+1,"sf_ugo_casari","minding the shop door",3
+1,"sf_umberto_maresi","minding the shop door",3
+1,"sf_umberto_marieri","on night patrol",6
+1,"sf_valeria_toruzzi_","scrubbing the kitchens",3
+1,"sf_valerio_casieri","running The Red Tile Works",8
+1,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+1,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+1,"sf_vasco_castellane_","receiving guests",6
+1,"sf_viola_darieri_","serving the household",6
+1,"sf_viola_galano","mending nets on the wharf",1
+1,"sf_vittore_nerone","holding the north gate",6
+1,"sf_vittoria_torucci_","copying the chapter's books",6
+1,"sfx_fausto_orsini","works at The La Riva Water Mill",3
+1,"sfx_manfredi_pallotta","sweeps and fetches for a shop",6
+1,"skye_","holding the south gate",6
+1,"sloe","presiding over the Concord",6
+1,"tansy","keeping the training stores",6
+1,"tarn_","holding the south gate",6
+1,"thief","working",6
+1,"thistle_","on watch",6
+1,"tn_ac_bramble_gatewright","stands watch",6
+1,"tn_ac_elm_crosswright","minds the shop's door",3
+1,"tn_ac_flint_milestone","tends the carters' beasts",6
+1,"tn_ac_gale_crossley","works at The Wheelwright's Yard",3
+1,"tn_ac_heath_wheelmark","tends the carters' beasts",6
+1,"tn_ac_holly_gatepost","loads the caravan wagons",6
+1,"tn_ac_mara_dustcote","helps at Waystation Stores",6
+1,"tn_ac_quarry_gatepost","loads the caravan wagons",6
+1,"tn_ac_quill_tollwell","helps at The Gate Forge",6
+1,"tn_ac_ridge_mileward","keeps The Caravan Shed",6
+1,"tn_ac_ridge_waymark","helps at The Trace and Collar",3
+1,"tn_ac_rowan_cartpost","stands watch",6
+1,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",3
+1,"tn_ac_varg_mileward","loads the caravan wagons",6
+1,"tn_ac_wald_tollwell","minds the shop's door",6
+1,"tn_af_brand_strawacre","keeps the ford toll",6
+1,"tn_af_edric_sheaffield_","helps at Amberford Goods",6
+1,"tn_af_fallow_grainford_","minds the shop's door",6
+1,"tn_af_frey_wheatmow_","stands watch",6
+1,"tn_af_ivy_furrowstook_","keeps The Grain Barn",6
+1,"tn_af_ivy_strawacre_","grinds at the ford mill",6
+1,"tn_af_nell_furrowmow_","helps at The Amber Loaf",3
+1,"tn_af_tor_goldstead_","stands watch",6
+1,"tn_af_tor_grainfield_","helps at Ford Brewhouse",3
+1,"tn_af_umber_wheatley_","helps at Amberford Cooperage",6
+1,"tn_af_varg_harrowford","works at The Ford Mill",6
+1,"tn_af_yarrow_furrowstook_","keeps The Harvest Chapel",6
+1,"tn_cb_brock_rustvein_","keeps The Shrine of the Iron Saint",6
+1,"tn_cb_cairn_smeltshaft","works at The Cinderbrook Bloomery",3
+1,"tn_cb_fern_slaghollow_","helps at Cinderbrook Forge",3
+1,"tn_cb_flint_rustvein_","healer",6
+1,"tn_cb_hob_ashshaft_","stands watch",6
+1,"tn_cb_holly_smelthollow","works at The Cinderbrook Bloomery",3
+1,"tn_cb_opal_ironvein_","stands watch",6
+1,"tn_cb_pell_emberpit_","helps at The Red Door Store",6
+1,"tn_df_edric_darkguard_","stands watch",6
+1,"tn_df_garth_blackwatch_","stands watch",6
+1,"tn_df_heath_nightward_","garrison cook",6
+1,"tn_df_holt_blackward_","stands watch",6
+1,"tn_df_holt_deepward_","minds the shop's door",6
+1,"tn_df_iris_grimhold_","stands watch",6
+1,"tn_df_rusk_nightguard_","commands the garrison",6
+1,"tn_df_thistle_deepward_","helps at The Silent Forge",6
+1,"tn_fh_dray_bogmoor_","stands watch",6
+1,"tn_fh_dun_peatlode_","helps at Bogmyrtle's",3
+1,"tn_fh_fern_damplode_","helps at The Marsh Apothecary",3
+1,"tn_fh_flint_reedmere_","serves at The Peat Fire",3
+1,"tn_fh_harrow_peathollow_","helps at Fenhollow Store",6
+1,"tn_fh_isla_mudlode_","works at The Bog Brewery",3
+1,"tn_fh_ivy_dampditch_","stands watch",6
+1,"tn_fh_juniper_reedcarr_","helps at The Bog Iron Forge",6
+1,"tn_fh_knap_peatditch_","keeps The Stilt Chapel",6
+1,"tn_fh_lorn_rushditch_","helps at Rushlight Chandler",6
+1,"tn_fh_marl_damplode_","minds the shop's door",3
+1,"tn_fh_pike_boghollow_","works at The Bog Brewery",3
+1,"tn_fh_rusk_reedcarr_","minds the shop's door",6
+1,"tn_fh_thorn_peatcarr_","helps at The Mossloaf Bakery",3
+1,"tn_fh_wren_rushditch_","minds the shop's door",6
+1,"tn_hm_ash_hedgemere","helps at The Valley Oven",6
+1,"tn_hm_drift_hollowside","helps at Valley Remedies",3
+1,"tn_hm_reed_valemere","helps at The Hollowmere Shop",6
+1,"tn_if_alder_greywall_","helps at The Isle Forge",6
+1,"tn_if_bramble_greykeep_","garrison cook",6
+1,"tn_if_eskar_islewall_","stands watch",6
+1,"tn_if_harrow_towerguard_","stands watch",6
+1,"tn_if_holt_merewatch_","minds the shop's door",6
+1,"tn_if_iris_moatward_","stands watch",6
+1,"tn_if_isla_moatwall_","stands watch",6
+1,"tn_if_nettle_mereguard_","commands the garrison",6
+1,"tn_if_thistle_greywall_","minds the shop's door",6
+1,"tn_if_wolde_merewatch_","helps at The Armoury",6
+1,"tn_ls_aster_merereach_","stands watch",6
+1,"tn_ls_briar_stillside_","helps at Lakeside Goods",6
+1,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",3
+1,"tn_ls_fern_eelford","healer",6
+1,"tn_ls_frey_stillside_","minds the shop's door",6
+1,"tn_ls_heath_oarwade_","stands watch",6
+1,"tn_ls_hob_oarmere","works at The Mirrormere Smokehouse",3
+1,"tn_ls_ingram_pikemere_","helps at Netmaker's Loft",6
+1,"tn_ls_opal_mistmere_","helps at The Boatwright's",6
+1,"tn_ls_slate_eelford","keeps The Mere Chapel",6
+1,"tn_ls_varg_willowhythe_","minds the shop's door",6
+1,"tn_ls_yarrow_stillford","serves at The Drowned Oar",3
+1,"tn_nf_corrie_rimeward","stands watch",6
+1,"tn_nf_dun_frostward","stands watch",6
+1,"tn_nf_eskar_frosthold","works at The North Arsenal",6
+1,"tn_nf_holly_bleakguard","works at The North Arsenal",6
+1,"tn_nf_holly_rimeguard","minds the shop's door",6
+1,"tn_nf_odo_rimehelm","commands the garrison",6
+1,"tn_nf_yarrow_craghold","garrison cook",6
+1,"tn_sr_bram_greycove","helps at Gullwharf Fish",3
+1,"tn_sr_brand_shinglewater","stands watch",6
+1,"tn_sr_dray_tidemouth","minds the shop's door",3
+1,"tn_sr_gale_gullwick","serves at The Brine and Barrel",3
+1,"tn_sr_jory_tidemouth","helps at The Barrel Yard",3
+1,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",3
+1,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",4
+1,"tn_sr_lark_shingleshore","works at The Saltreach Pans",3
+1,"tn_sr_marl_kelpcove","stands watch",6
+1,"tn_sr_nab_wrackshore","helps at The Anchor Smithy",6
+1,"tn_sr_orrin_greymouth","works at The Gullwharf Smokehouse",4
+1,"tn_sr_thorn_tideline","keeps The Tide Chapel",6
+1,"tn_sr_tor_tideline","keeps The Salt House",6
+1,"tn_wm_ash_thornwell","keeps The Granary",6
+1,"tn_wm_bramble_westfold","stands watch",6
+1,"tn_wm_frey_larkacre","helps at The Hide Yard",3
+1,"tn_wm_hob_thornlea","stands watch",6
+1,"tn_wm_holly_sheepridge","helps at Drover's Block",6
+1,"tn_wm_holt_barrowmarch","helps at Downland Wool",3
+1,"tn_wm_isla_westridge","drives cattle to market",6
+1,"tn_wm_knap_barrowacre","drives cattle to market",6
+1,"tn_wm_linden_woldfold","helps at Westmarch Mercantile",6
+1,"tn_wm_orrin_haybarrow","minds the shop's door",4
+1,"tn_wm_quill_haybarrow","minds the shop's door",4
+1,"tn_wm_vetch_thornwell","keeps The Down Chapel",6
+1,"uax_birch_frostwell_","sweeps and fetches for a shop",6
+1,"uax_brock_bramblefoot_","lights the lamps at dusk",2
+1,"uax_heather_birchhowl_","carries loads for hire",6
+1,"uax_heather_snowfoot_","washes linen for hire",6
+1,"uax_hob_brackenrun_","lights the lamps at dusk",2
+1,"uax_ingram_greymantle_","carries loads for hire",6
+1,"uax_juniper_heathheart_","runs messages about the city",6
+1,"uax_juniper_tarnmoor_","runs messages about the city",6
+1,"uax_kindle_ashwalker_","washes linen for hire",6
+1,"uax_mara_oakridge_","washes linen for hire",6
+1,"uax_nokk_ironbark_","lights the lamps at dusk",2
+1,"uax_vesper_frostborn_","lights the lamps at dusk",2
+1,"uax_wisp_duskfell_","sweeps and fetches for a shop",6
+1,"umber_ashsong_","hauling crates",6
+1,"willa","advising the leader",3
+1,"willa_fallowmark_","tending the hurt",6
+1,"wisp_","reading in the deep archive",6
+1,"wolde","training",6
+1,"wren_","holding the main gate",6
+2,"alder_coldborn_","helping at The Tight Weft",3
+2,"alder_hollowfang_","helping at The Stretched Hide",6
+2,"ash_","leading the Warden Order",6
+2,"ash_duskhide_","helping at The Cold Hammer",6
+2,"aster_marshbark_","copying the city rolls",6
+2,"aster_slateclaw_","helping at Needle & Nap",6
+2,"bramble_","debating in the Grand Hall",6
+2,"brand","holding the stair gate",6
+2,"briar","training",6
+2,"briar_brackenrun_","selling from a plaza stall",6
+2,"briar_stormfang_","helping at Pinecut Joinery",6
+2,"brisk_","coaching at the archery range",6
+2,"brock","on night patrol",6
+2,"brock_coldborn_","helping at The Tight Weft",3
+2,"clover","training",6
+2,"dawn","tending the scroll vaults",6
+2,"dawn_greyhide_","helping at The Straight Shaft",3
+2,"dray","holding the main gate",6
+2,"dray_hollowfang_","helping at The Stretched Hide",6
+2,"drift_frostwalker_","helping at Morning Rise Ovens",3
+2,"dun_","running sparring bouts",6
+2,"dun_pinewell_","copying the city rolls",6
+2,"elm_coldborn_","helping at The Tight Weft",3
+2,"elm_pinevale_","helping at Ridgeline Maps",6
+2,"eskar_","on night patrol",6
+2,"fallow","debating in the Grand Hall",6
+2,"fell_","drilling trainees on the square",6
+2,"fern_","holding the stair gate",6
+2,"fern_frostmark_","helping at Cinderpaw Forge",6
+2,"fern_greybark_","helping at Clayfoot Wares",6
+2,"gorse_","running the obstacle course",6
+2,"grist_hollowmere_","helping at Greywall Goods",6
+2,"harl_mossmere_","helping at Timberline Carpentry",6
+2,"harrow","hearing petitions",6
+2,"hazel","advising the leader",3
+2,"heath_","training",6
+2,"heather","on night watch",6
+2,"holly_","on patrol",6
+2,"ind_briar_smeltshaft","works at The Cinderbrook Smelter",3
+2,"ind_harl_cinderbrook","works at The Cinderbrook Smelter",3
+2,"ingram_","training",6
+2,"ingram_harrowgate_","tending the sick",6
+2,"isla","on watch",6
+2,"ivy_pinewalker_","tending the sick",6
+2,"jarl","on watch",6
+2,"jessamy","keeping the Annex",6
+2,"kell","carrying messages for the Concord",6
+2,"kell_ashfall_","hauling crates",6
+2,"kestrel_","hearing petitions",6
+2,"kindle","training",6
+2,"kindle_frostfoot_","selling from a plaza stall",6
+2,"kite","shelving in the upper stacks",6
+2,"knap_","on watch",6
+2,"lark_","keeping the chapel",6
+2,"laurel","drilling in the compound",6
+2,"laurel_ashwalker","helping at The Gatehouse Inn",3
+2,"lichen","advising the leader",3
+2,"loam_","drilling in the compound",6
+2,"marl_swiftwater","helping at The Howling Stair",1
+2,"marsh","on patrol",6
+2,"moor","drilling in the compound",6
+2,"moss_","on patrol",6
+2,"myrtle","on night watch",6
+2,"nell","training",6
+2,"nettle_ironbark_","drawing water at the plaza well",6
+2,"nightjar_","keeping the crypt library",6
+2,"nightjar_windhollow_","tallying stores",6
+2,"nokk_","hearing petitions",6
+2,"oak_","on night patrol",6
+2,"orrin","carrying messages for the Concord",6
+2,"quarry","training",6
+2,"ridge","advising the leader",3
+2,"ridge_mossborn_","minding the stores",6
+2,"rm_ada_brineford","smoking fish",4
+2,"rm_aldric_mudhand_","helping at Collar and Trace",3
+2,"rm_ansel_brinewick","blowing glass",6
+2,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+2,"rm_aud_rustford_","running The Vesk Salt Pans",8
+2,"rm_beatha_rainmore_","helping at Greywool",3
+2,"rm_beatha_saltley","keeping the chambers",6
+2,"rm_berit_plankworth_","holding the south gate",6
+2,"rm_bertil_fogwick","stewarding Grayrock Hall",6
+2,"rm_bertil_millwick","keeping the chambers",6
+2,"rm_bertil_pitchgate","building ships",6
+2,"rm_bertil_wetridge_","helping at The Hook and Cleaver",6
+2,"rm_bo_gullstack","foreman of the quarry",6
+2,"rm_brand_mudstack","at the forge",2
+2,"rm_brand_saltwell_","holding the quay gate",6
+2,"rm_bryn_coalwell","working the saws",6
+2,"rm_bryn_kelpridge","boiling rags",6
+2,"rm_bryn_plankham_","on night patrol",6
+2,"rm_caspar_greyley","working the saws",6
+2,"rm_clemence_slagcot","keeping order in court",6
+2,"rm_corra_wickby_","commanding the Watch",6
+2,"rm_corwin_coalley_","on patrol",6
+2,"rm_corwin_pitchley_","works at The Rag Mill",3
+2,"rm_corwin_ropestack_","helping at Wetink Lane Scriveners",3
+2,"rm_corwin_rustham","serving in the hall",6
+2,"rm_dagfinn_ashmore","smoking fish",4
+2,"rm_dagfinn_tarton_","minding the shop door",3
+2,"rm_dagny_kelpmore_","running The Reach Tannery",8
+2,"rm_dirk_brinecot_","works at The Blue Vats",3
+2,"rm_dirk_dripford","keeping the gaol",6
+2,"rm_dirk_sootham_","armourer at The Rivet and Rain",8
+2,"rm_disa_gullhand_","works at Old Mother Tannery",3
+2,"rm_dunstan_wickworth_","minding the shop door",6
+2,"rm_ebba_bilgeworth_","running The Blue Vats",8
+2,"rm_ebba_sootmarsh","at the forge",1
+2,"rm_edda_rainby_","running The Rag Mill",8
+2,"rm_edric_ashcombe","working the glass himself",6
+2,"rm_edric_greywell_","works at The Grayrock Foundry",3
+2,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+2,"rm_egil_coalmore_","works at The Fell Wagon Yard",3
+2,"rm_egil_fogton_","helping at Grist & Crust",3
+2,"rm_egil_wickham_","holding the east gate",6
+2,"rm_emmerich_foghand","serving in the hall",6
+2,"rm_emmerich_wetridge_","minding the shop door",6
+2,"rm_erland_sootham_","minding the shop door",3
+2,"rm_finn_ashridge_","smith at Nailers' Forge",8
+2,"rm_frida_millby","cooking for the House",3
+2,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",3
+2,"rm_gorm_coalstack_","running The Reach Foundry",8
+2,"rm_gorm_kelpcot","tallying the Houses' dues",6
+2,"rm_greta_greymore_","works at The Ashcombe Tileworks",3
+2,"rm_grete_mudton_","minding the shop door",3
+2,"rm_grete_slagton_","works at The Brinewater Sail Loft",3
+2,"rm_gudrun_bilgeham","building ships",6
+2,"rm_gudrun_dripham","stewarding Ashcombe House",6
+2,"rm_gudrun_fell","keeping the Fell accounts",6
+2,"rm_gunnar_nailmarsh","twisting rope",3
+2,"rm_hakon_mudton_","brewer at The Black Tun",8
+2,"rm_hakon_pitchstack","keeping the chambers",6
+2,"rm_halvard_pitchwell_","minding the shop door",6
+2,"rm_hester_coalgate","twisting rope",3
+2,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+2,"rm_hjalte_rustworth","working the saws",6
+2,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+2,"rm_hollis_bilgewick","tending the sick",6
+2,"rm_hollis_wickworth_","helping at Sump Sundries",6
+2,"rm_ilse_greyby_","helping at Harbour Provisions",6
+2,"rm_ilse_saltworth","at the forge",1
+2,"rm_ingrid_grayrock","at her lessons in the Hall",6
+2,"rm_ingrid_nailwick","at the forge",1
+2,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+2,"rm_isolde_tarwick","presiding over the Council",6
+2,"rm_ivo_dripgate_","works at The Grayrock Arsenal",3
+2,"rm_ivo_pitchby_","works at The Grayrock Arsenal",3
+2,"rm_ivo_wickridge","smoking fish",5
+2,"rm_jarl_coalworth","smoking fish",4
+2,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+2,"rm_jasper_sootton_","works at The Rag Mill",3
+2,"rm_kari_cindermarsh_","on night patrol",6
+2,"rm_kari_millham_","minding the shop door",3
+2,"rm_karin_mudham_","fish stall on the Market Square",8
+2,"rm_kjell_plankstack","copying the rolls",6
+2,"rm_kjell_tarton_","helping at The Anchor Forge",3
+2,"rm_knut_gulldale_","running The Grayrock Foundry",8
+2,"rm_knut_rainley_","helping at The Pawn and Ledger",3
+2,"rm_lars_rainford_","on patrol",6
+2,"rm_lars_sootham_","minding the shop door",3
+2,"rm_leif_brinewater","walking the ropewalk",3
+2,"rm_leif_mudcot_","helping at The Wet Slab",3
+2,"rm_lothar_ashdale_","works at The Vesk Salt Pans",3
+2,"rm_lothar_brineridge","cooking for the House",3
+2,"rm_lotte_brinemarsh","serving in the hall",6
+2,"rm_lotte_gullcot_","nut stall on the Market Square",8
+2,"rm_magnus_mudgate","working the saws",6
+2,"rm_magnus_sootham_","helping at The Rivet and Rain",3
+2,"rm_magnus_vesk","counting the catch",4
+2,"rm_magnus_wickmore_","helping at Oilcloth & Wool",3
+2,"rm_maren_fogton_","baker at Grist & Crust",8
+2,"rm_maren_ropewell","keeping the chapel",6
+2,"rm_maren_tarworth","serving in the hall",6
+2,"rm_moll_rustby_","on patrol",6
+2,"rm_nan_brineworth_","works at The Ashcombe Tileworks",3
+2,"rm_nan_rainton","keeping the chambers",6
+2,"rm_nessa_brinewater","learning the shipyard",6
+2,"rm_nils_wickley_","on patrol",6
+2,"rm_njal_fogdale","weighing bales",6
+2,"rm_oda_greyford_","works at Old Mother Tannery",3
+2,"rm_oda_rustwell","taxing the cargoes",6
+2,"rm_olaf_wetworth","stewarding Brinewater House",6
+2,"rm_orm_fogby_","works at The Grayrock Foundry",3
+2,"rm_orm_nailley","cooking for the House",6
+2,"rm_oskar_muddale","keeping the harbour",6
+2,"rm_osric_dripcot_","works at The Vesk Salt Pans",3
+2,"rm_ottilie_pitchmore","working the saws",6
+2,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+2,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+2,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+2,"rm_palle_ropeton","stewarding Fellhall",6
+2,"rm_piet_cindermore_","works at The Reach Tannery",3
+2,"rm_ragnar_millworth_","minding the shop door",3
+2,"rm_ragnar_plankgate","serving in the hall",6
+2,"rm_runa_gullton_","egg stall on the Market Square",8
+2,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",3
+2,"rm_rune_brineton_","minding the shop door",6
+2,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+2,"rm_sigrun_bilgeby","building ships",6
+2,"rm_silas_gullham","twisting rope",3
+2,"rm_silas_gullley_","works at The Brinewater Sail Loft",3
+2,"rm_soren_slagford","keeping the chambers",6
+2,"rm_soren_wetcot","stewarding Vesk Manor",6
+2,"rm_sten_vesk","running the salt pans",6
+2,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+2,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+2,"rm_tilde_wethand","cooking for the House",6
+2,"rm_tobias_grayrock","overseeing the ironworks",6
+2,"rm_tove_pitchworth","keeping the inn",8
+2,"rm_tove_ropedale","hearing cases",6
+2,"rm_ulla_brinedale","cooking for the House",6
+2,"rm_una_pitchwell_","runs Greywater Dairy",8
+2,"rm_vidar_kelpgate","at the forge",2
+2,"rm_vidar_ropewick_","works at The Blue Vats",3
+2,"rm_vigdis_millwell_","works at The Reach Tannery",3
+2,"rm_wenna_coalwick_","running The South Gate Stables",8
+2,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+2,"rm_wynn_cinderton","building ships",6
+2,"rm_yrsa_mudmarsh","smoking fish",4
+2,"rm_yrsa_plankridge","blowing glass",6
+2,"rm_yrsa_wickdale","blowing glass",6
+2,"rmx_egil_plankridge","lights the lamps at dusk",6
+2,"rmx_olaf_cindermarsh_","sweeps and fetches for a shop",6
+2,"rmx_pim_dripham_","runs messages about the city",6
+2,"rmx_rika_nailcot_","washes linen for hire",6
+2,"rmx_runa_ashton_","runs messages about the city",6
+2,"rmx_silas_saltstack_","sweeps and fetches for a shop",3
+2,"rmx_thyra_greycot_","runs messages about the city",6
+2,"roan_","on patrol",6
+2,"sage_","debating in the Grand Hall",6
+2,"scree_","on patrol",6
+2,"sella","drilling in the compound",6
+2,"sf_agnese_castellane_","receiving guests",6
+2,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+2,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+2,"sf_alba_galieri_","guarding the palace",6
+2,"sf_alessio_rosandi","helping at Ottone & Rame",6
+2,"sf_amedeo_maresi","helping at Penna e Sigillo",3
+2,"sf_amedeo_orselli","helping at Dispensa del Porto",3
+2,"sf_aurelia_belano","unloading barges",1
+2,"sf_aurelio_marucci","presiding over the guild",6
+2,"sf_bastiano_orsesi_","serving the household",6
+2,"sf_beatrice_orselli","minding the shop door",3
+2,"sf_benedetto_albani","celebrating the Mass",6
+2,"sf_bruno_lanale","soup stall on the Mercato",8
+2,"sf_carlotta_lanano","helping at Seta Fina",6
+2,"sf_cassio_di_castellane","attending the court",6
+2,"sf_ciro_aldobrandi_","receiving guests",6
+2,"sf_ciro_marandi_","keeping the crypt",6
+2,"sf_clelia_benano","works at Tintoria Bellandi",3
+2,"sf_clelia_coruzzi","helping at La Forgia",6
+2,"sf_clelia_orsieri","minding the shop door",1
+2,"sf_corrado_marotti_","leading the choir",6
+2,"sf_corrado_morone","shopkeeper at The Red Door",8
+2,"sf_cosima_ferucci","works at The Royal Arsenal",3
+2,"sf_cosima_morucci","holding the east gate",6
+2,"sf_cosima_rivelli","running Mulino del Borgo",8
+2,"sf_cosimo_casari","mason at Marmi Ferrante",8
+2,"sf_cosimo_morone","helping at The Red Door",3
+2,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+2,"sf_dario_rivuzzi","mending nets on the wharf",1
+2,"sf_delia_rosetti","minding the shop door",3
+2,"sf_donatella_casari","helping at Marmi Ferrante",3
+2,"sf_donatella_rivari","mending nets on the wharf",1
+2,"sf_duccio_coretti_","serving the household",6
+2,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+2,"sf_duccio_valmonte_","receiving guests",6
+2,"sf_elena_lanucci","minding the shop door",3
+2,"sf_elena_rivetti","works at Fonderia delle Campane",3
+2,"sf_eliseo_colesi","works at Cartiera Bianca",3
+2,"sf_eliseo_salari","works at Carri Galli",3
+2,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+2,"sf_emilia_ferante_","keeping the Chapel Royal",6
+2,"sf_emilio_valieri","minding the shop door",6
+2,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+2,"sf_enzo_lucenti_","receiving guests",6
+2,"sf_fabrizio_benandi","grading fleeces",6
+2,"sf_fiora_belieri_","hearing confessions",6
+2,"sf_fiora_rivano_","serving the household",6
+2,"sf_flavia_corano_","works at Tintoria Bellandi",3
+2,"sf_flavia_ferotti","works at Carri Galli",3
+2,"sf_flavia_galone","minding the shop door",3
+2,"sf_gemma_belini_","polishing the throne room",6
+2,"sf_gemma_corieri","running Carri Galli",8
+2,"sf_gemma_salieri","unloading barges",1
+2,"sf_gemma_valieri","helping at Mappe del Fiume",6
+2,"sf_gemma_venale","minding the shop door",6
+2,"sf_giacomo_ferale_","keeping the royal apartments",6
+2,"sf_giacomo_toretti","works at La Concia",3
+2,"sf_gino_casandi_","guarding the palace",6
+2,"sf_gino_daruzzi","works at La Concia",3
+2,"sf_giulia_colari","tallying barges",6
+2,"sf_gualtiero_colini","running Fonderia delle Campane",8
+2,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+2,"sf_ilaria_palale_","gossiping at court",6
+2,"sf_ilario_coluzzi_","attending the Queen",6
+2,"sf_ilario_morieri","helping at Erbe di Campo",3
+2,"sf_isotta_nerale","on patrol",6
+2,"sf_isotta_palucci","helping at Profumi Lucenti",3
+2,"sf_isotta_salandi","works at The Royal Arsenal",3
+2,"sf_lapo_casuzzi","helping at Botti Ferrante",3
+2,"sf_lapo_orsenna_","receiving guests",6
+2,"sf_lapo_salesi","painting on the cathedral square",6
+2,"sf_lavinia_belale","works at Fonderia delle Campane",3
+2,"sf_lavinia_nerandi","helping at Armeria del Leone",3
+2,"sf_leandro_valucci_","serving the household",6
+2,"sf_livia_di_castellane","receiving at court",6
+2,"sf_livia_galante_","announcing the court",6
+2,"sf_livia_lanotti_","guarding the palace",6
+2,"sf_livia_torandi","porridge stall on the Mercato",8
+2,"sf_livia_venucci","minding the shop door",3
+2,"sf_lorenzo_benone","hauling for the warehouses",1
+2,"sf_loretta_colotti_","guarding the palace",6
+2,"sf_loretta_valesi_","keeping the guild books",6
+2,"sf_lucia_colone_","arguing the price of wool",6
+2,"sf_lucia_nerucci","on patrol",6
+2,"sf_mafalda_lucenti_","receiving guests",6
+2,"sf_mafalda_marenzi_","receiving guests",6
+2,"sf_mafalda_morotti","running Tintoria Bellandi",8
+2,"sf_mafalda_palari_","serving the household",6
+2,"sf_marcello_galuzzi","helping at Il Forno d'Oro",3
+2,"sf_marcello_morandi","running The Royal Arsenal",8
+2,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+2,"sf_marcello_venale","helping at Bottega del Legno",6
+2,"sf_marzia_ferini_","serving the royal table",6
+2,"sf_marzia_orsenna_","receiving guests",6
+2,"sf_marzia_rivucci_","nursing the sick",6
+2,"sf_matteo_lanante","runs Il Mulino Dairy",8
+2,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+2,"sf_matteo_salini","keeps the water mill at La Riva",8
+2,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+2,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+2,"sf_mirella_rosotti_","lighting the candles",6
+2,"sf_nico_lanini_","serving the household",6
+2,"sf_nico_palandi","works at The Red Tile Works",3
+2,"sf_nives_morini_","commanding the palace guard",6
+2,"sf_nives_salelli","on night patrol",6
+2,"sf_noemi_lanetti_","serving the household",6
+2,"sf_noemi_valmonte_","receiving guests",6
+2,"sf_orsino_belante","on patrol",6
+2,"sf_orsola_marano","on night patrol",6
+2,"sf_ottavia_lanza","hearing petitions",6
+2,"sf_ottavia_maruzzi","works at Mulino del Borgo",3
+2,"sf_ottavia_nerari","on patrol",6
+2,"sf_ottone_marenzi_","receiving guests",6
+2,"sf_pasquale_torone_","serving the household",6
+2,"sf_perla_belucci","on patrol",6
+2,"sf_piero_darotti_","guarding the palace",6
+2,"sf_piero_morone","minding the shop door",3
+2,"sf_primo_benale_","cooking for the palace",8
+2,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+2,"sf_renata_galini","works at Cartiera Bianca",3
+2,"sf_renata_salini","weaver at Tessitura Bellandi",8
+2,"sf_renzo_corucci","running La Concia",8
+2,"sf_rocco_morano","keeping the inn",6
+2,"sf_rocco_orsini","minding the shop door",3
+2,"sf_rosalba_belotti_","attending the King",6
+2,"sf_salvatore_orsone","running Cartiera Bianca",8
+2,"sf_salvatore_venante","works at The Red Tile Works",3
+2,"sf_serafina_aldobrandi_","receiving guests",6
+2,"sf_serafina_ferelli_","running errands for the household",3
+2,"sf_serafina_lanone","commanding the city guard",6
+2,"sf_serafina_maresi","minding the shop door",3
+2,"sf_sveva_galucci","unloading barges",1
+2,"sf_taddeo_paluzzi","unloading barges",1
+2,"sf_teodora_venone_","serving the household",6
+2,"sf_teodoro_palone","running The East Gate Stables",8
+2,"sf_tommaso_benini_","serving the household",6
+2,"sf_tommaso_darandi_","serving the household",6
+2,"sf_tullia_darari_","nursing the sick",6
+2,"sf_ugo_casari","minding the shop door",3
+2,"sf_umberto_maresi","minding the shop door",3
+2,"sf_umberto_marieri","on night patrol",6
+2,"sf_valeria_toruzzi_","scrubbing the kitchens",3
+2,"sf_valerio_casieri","running The Red Tile Works",8
+2,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+2,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+2,"sf_vasco_castellane_","receiving guests",6
+2,"sf_viola_darieri_","serving the household",6
+2,"sf_viola_galano","mending nets on the wharf",1
+2,"sf_vittore_nerone","holding the north gate",6
+2,"sf_vittoria_torucci_","copying the chapter's books",6
+2,"sfx_fausto_orsini","works at The La Riva Water Mill",3
+2,"sfx_manfredi_pallotta","sweeps and fetches for a shop",6
+2,"skye_","holding the south gate",6
+2,"sloe","presiding over the Concord",6
+2,"tansy","keeping the training stores",6
+2,"tarn_","holding the south gate",6
+2,"thief","working",6
+2,"thistle_","on watch",6
+2,"thorn_screebark_","mending the old wall",6
+2,"tn_ac_bramble_gatewright","stands watch",6
+2,"tn_ac_elm_crosswright","minds the shop's door",3
+2,"tn_ac_flint_milestone","tends the carters' beasts",6
+2,"tn_ac_gale_crossley","works at The Wheelwright's Yard",3
+2,"tn_ac_heath_wheelmark","tends the carters' beasts",6
+2,"tn_ac_holly_gatepost","loads the caravan wagons",6
+2,"tn_ac_mara_dustcote","helps at Waystation Stores",6
+2,"tn_ac_quarry_gatepost","loads the caravan wagons",6
+2,"tn_ac_quill_tollwell","helps at The Gate Forge",6
+2,"tn_ac_ridge_mileward","keeps The Caravan Shed",6
+2,"tn_ac_ridge_waymark","helps at The Trace and Collar",3
+2,"tn_ac_rowan_cartpost","stands watch",6
+2,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",3
+2,"tn_ac_varg_mileward","loads the caravan wagons",6
+2,"tn_ac_wald_tollwell","minds the shop's door",6
+2,"tn_af_brand_strawacre","keeps the ford toll",6
+2,"tn_af_edric_sheaffield_","helps at Amberford Goods",6
+2,"tn_af_fallow_grainford_","minds the shop's door",6
+2,"tn_af_frey_wheatmow_","stands watch",6
+2,"tn_af_ivy_furrowstook_","keeps The Grain Barn",6
+2,"tn_af_ivy_strawacre_","grinds at the ford mill",6
+2,"tn_af_nell_furrowmow_","helps at The Amber Loaf",3
+2,"tn_af_tor_goldstead_","stands watch",6
+2,"tn_af_tor_grainfield_","helps at Ford Brewhouse",3
+2,"tn_af_umber_wheatley_","helps at Amberford Cooperage",6
+2,"tn_af_varg_harrowford","works at The Ford Mill",6
+2,"tn_af_yarrow_furrowstook_","keeps The Harvest Chapel",6
+2,"tn_cb_brock_rustvein_","keeps The Shrine of the Iron Saint",6
+2,"tn_cb_cairn_smeltshaft","works at The Cinderbrook Bloomery",1
+2,"tn_cb_fern_slaghollow_","helps at Cinderbrook Forge",1
+2,"tn_cb_flint_rustvein_","healer",6
+2,"tn_cb_hob_ashshaft_","stands watch",6
+2,"tn_cb_holly_smelthollow","works at The Cinderbrook Bloomery",2
+2,"tn_cb_nettle_rusthollow_","helps at The Lamp and Wick",3
+2,"tn_cb_opal_ironvein_","stands watch",6
+2,"tn_cb_pell_emberpit_","helps at The Red Door Store",6
+2,"tn_df_edric_darkguard_","stands watch",6
+2,"tn_df_garth_blackwatch_","stands watch",6
+2,"tn_df_heath_nightward_","garrison cook",6
+2,"tn_df_holt_blackward_","stands watch",6
+2,"tn_df_holt_deepward_","minds the shop's door",6
+2,"tn_df_iris_grimhold_","stands watch",6
+2,"tn_df_rusk_nightguard_","commands the garrison",6
+2,"tn_df_thistle_deepward_","helps at The Silent Forge",6
+2,"tn_fh_dray_bogmoor_","stands watch",6
+2,"tn_fh_dun_peatlode_","helps at Bogmyrtle's",3
+2,"tn_fh_fern_damplode_","helps at The Marsh Apothecary",3
+2,"tn_fh_flint_reedmere_","serves at The Peat Fire",3
+2,"tn_fh_harrow_peathollow_","helps at Fenhollow Store",6
+2,"tn_fh_isla_mudlode_","works at The Bog Brewery",3
+2,"tn_fh_ivy_dampditch_","stands watch",6
+2,"tn_fh_juniper_reedcarr_","helps at The Bog Iron Forge",6
+2,"tn_fh_knap_peatditch_","keeps The Stilt Chapel",6
+2,"tn_fh_lorn_rushditch_","helps at Rushlight Chandler",6
+2,"tn_fh_marl_damplode_","minds the shop's door",3
+2,"tn_fh_pike_boghollow_","works at The Bog Brewery",3
+2,"tn_fh_rusk_reedcarr_","minds the shop's door",6
+2,"tn_fh_thorn_peatcarr_","helps at The Mossloaf Bakery",3
+2,"tn_fh_wren_rushditch_","minds the shop's door",6
+2,"tn_hm_ash_hedgemere","helps at The Valley Oven",6
+2,"tn_hm_drift_hollowside","helps at Valley Remedies",3
+2,"tn_hm_reed_valemere","helps at The Hollowmere Shop",6
+2,"tn_if_alder_greywall_","helps at The Isle Forge",6
+2,"tn_if_bramble_greykeep_","garrison cook",6
+2,"tn_if_eskar_islewall_","stands watch",6
+2,"tn_if_harrow_towerguard_","stands watch",6
+2,"tn_if_holt_merewatch_","minds the shop's door",6
+2,"tn_if_iris_moatward_","stands watch",6
+2,"tn_if_isla_moatwall_","stands watch",6
+2,"tn_if_nettle_mereguard_","commands the garrison",6
+2,"tn_if_thistle_greywall_","minds the shop's door",6
+2,"tn_if_wolde_merewatch_","helps at The Armoury",6
+2,"tn_ls_aster_merereach_","stands watch",6
+2,"tn_ls_briar_stillside_","helps at Lakeside Goods",6
+2,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",3
+2,"tn_ls_fern_eelford","healer",6
+2,"tn_ls_frey_stillside_","minds the shop's door",6
+2,"tn_ls_heath_oarwade_","stands watch",6
+2,"tn_ls_hob_oarmere","works at The Mirrormere Smokehouse",3
+2,"tn_ls_ingram_pikemere_","helps at Netmaker's Loft",6
+2,"tn_ls_opal_mistmere_","helps at The Boatwright's",6
+2,"tn_ls_slate_eelford","keeps The Mere Chapel",6
+2,"tn_ls_varg_willowhythe_","minds the shop's door",6
+2,"tn_nf_corrie_rimeward","stands watch",6
+2,"tn_nf_dun_frostward","stands watch",6
+2,"tn_nf_eskar_frosthold","works at The North Arsenal",6
+2,"tn_nf_holly_bleakguard","works at The North Arsenal",6
+2,"tn_nf_holly_rimeguard","minds the shop's door",6
+2,"tn_nf_odo_rimehelm","commands the garrison",6
+2,"tn_nf_yarrow_craghold","garrison cook",6
+2,"tn_sr_bram_greycove","helps at Gullwharf Fish",3
+2,"tn_sr_brand_shinglewater","stands watch",6
+2,"tn_sr_dray_tidemouth","minds the shop's door",3
+2,"tn_sr_gale_gullwick","serves at The Brine and Barrel",3
+2,"tn_sr_jory_tidemouth","helps at The Barrel Yard",3
+2,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",3
+2,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",3
+2,"tn_sr_lark_shingleshore","works at The Saltreach Pans",3
+2,"tn_sr_marl_kelpcove","stands watch",6
+2,"tn_sr_nab_wrackshore","helps at The Anchor Smithy",6
+2,"tn_sr_orrin_greymouth","works at The Gullwharf Smokehouse",3
+2,"tn_sr_thorn_tideline","keeps The Tide Chapel",6
+2,"tn_sr_tor_tideline","keeps The Salt House",6
+2,"tn_wm_ash_thornwell","keeps The Granary",6
+2,"tn_wm_bramble_westfold","stands watch",6
+2,"tn_wm_frey_larkacre","helps at The Hide Yard",3
+2,"tn_wm_hob_thornlea","stands watch",6
+2,"tn_wm_holly_sheepridge","helps at Drover's Block",6
+2,"tn_wm_holt_barrowmarch","helps at Downland Wool",6
+2,"tn_wm_isla_westridge","drives cattle to market",6
+2,"tn_wm_knap_barrowacre","drives cattle to market",6
+2,"tn_wm_linden_woldfold","helps at Westmarch Mercantile",6
+2,"tn_wm_orrin_haybarrow","minds the shop's door",3
+2,"tn_wm_quill_haybarrow","minds the shop's door",3
+2,"tn_wm_vetch_thornwell","keeps The Down Chapel",6
+2,"uax_ash_cragfoot_","carries loads for hire",6
+2,"uax_birch_frostwell_","sweeps and fetches for a shop",6
+2,"uax_brock_ashsong_","washes linen for hire",6
+2,"uax_brock_bramblefoot_","lights the lamps at dusk",6
+2,"uax_drift_birchhowl_","washes linen for hire",6
+2,"uax_elm_stormcoat_","carries loads for hire",6
+2,"uax_gorse_mosscoat_","runs messages about the city",6
+2,"uax_heath_mossborn_","washes linen for hire",6
+2,"uax_heather_birchhowl_","carries loads for hire",6
+2,"uax_heather_snowfoot_","washes linen for hire",6
+2,"uax_hob_brackenrun_","lights the lamps at dusk",6
+2,"uax_ingram_greymantle_","carries loads for hire",6
+2,"uax_ivy_stonecoat_","washes linen for hire",6
+2,"uax_juniper_heathheart_","runs messages about the city",6
+2,"uax_juniper_tarnmoor_","runs messages about the city",6
+2,"uax_kestrel_windmere_","washes linen for hire",6
+2,"uax_kindle_ashwalker_","washes linen for hire",6
+2,"uax_ludo_dusksong_","washes linen for hire",6
+2,"uax_mara_oakridge_","washes linen for hire",6
+2,"uax_nokk_ironbark_","lights the lamps at dusk",6
+2,"uax_pell_frostback_","carries loads for hire",6
+2,"uax_sella_heathrow_","runs messages about the city",6
+2,"uax_sella_mistvale_","washes linen for hire",6
+2,"uax_vale_pinecrest_","carries loads for hire",6
+2,"uax_vesper_frostborn_","lights the lamps at dusk",6
+2,"uax_wisp_duskfell_","sweeps and fetches for a shop",6
+2,"uax_yarrow_mossborn_","washes linen for hire",6
+2,"umber_ashsong_","hauling crates",6
+2,"willa","advising the leader",3
+2,"willa_fallowmark_","tending the hurt",6
+2,"wisp_","reading in the deep archive",6
+2,"wolde","training",6
+2,"wren_","holding the main gate",6
+3,"alder_coldborn_","helping at The Tight Weft",3
+3,"alder_hollowfang_","helping at The Stretched Hide",6
+3,"ash_","leading the Warden Order",6
+3,"ash_duskhide_","helping at The Cold Hammer",6
+3,"aster_marshbark_","copying the city rolls",6
+3,"aster_slateclaw_","helping at Needle & Nap",6
+3,"bramble_","debating in the Grand Hall",6
+3,"brand","holding the stair gate",6
+3,"briar","training",6
+3,"briar_brackenrun_","selling from a plaza stall",6
+3,"briar_stormfang_","helping at Pinecut Joinery",5
+3,"brisk_","coaching at the archery range",6
+3,"brock","on night patrol",6
+3,"brock_coldborn_","helping at The Tight Weft",3
+3,"clover","training",6
+3,"dawn","tending the scroll vaults",6
+3,"dawn_greyhide_","helping at The Straight Shaft",3
+3,"dray","holding the main gate",6
+3,"dray_hollowfang_","helping at The Stretched Hide",6
+3,"drift_frostwalker_","helping at Morning Rise Ovens",6
+3,"dun_","running sparring bouts",6
+3,"dun_pinewell_","copying the city rolls",6
+3,"elm_coldborn_","helping at The Tight Weft",3
+3,"elm_pinevale_","helping at Ridgeline Maps",6
+3,"eskar_","on night patrol",6
+3,"fallow","debating in the Grand Hall",6
+3,"fell_","drilling trainees on the square",6
+3,"fern_","holding the stair gate",6
+3,"fern_frostmark_","helping at Cinderpaw Forge",6
+3,"fern_greybark_","helping at Clayfoot Wares",6
+3,"gorse_","running the obstacle course",6
+3,"grist_hollowmere_","helping at Greywall Goods",6
+3,"harl_mossmere_","helping at Timberline Carpentry",6
+3,"harrow","hearing petitions",6
+3,"hazel","advising the leader",3
+3,"heath_","training",6
+3,"heather","on night watch",6
+3,"holly_","on patrol",6
+3,"ingram_","training",6
+3,"ingram_harrowgate_","tending the sick",6
+3,"isla","on watch",6
+3,"ivy_pinewalker_","tending the sick",6
+3,"jarl","on watch",6
+3,"jessamy","keeping the Annex",6
+3,"kell","carrying messages for the Concord",6
+3,"kell_ashfall_","hauling crates",6
+3,"kestrel_","hearing petitions",6
+3,"kindle","training",6
+3,"kindle_frostfoot_","selling from a plaza stall",6
+3,"kite","shelving in the upper stacks",6
+3,"knap_","on watch",6
+3,"lark_","keeping the chapel",6
+3,"laurel","drilling in the compound",6
+3,"laurel_ashwalker","helping at The Gatehouse Inn",3
+3,"lichen","advising the leader",3
+3,"loam_","drilling in the compound",6
+3,"marsh","on patrol",6
+3,"moor","drilling in the compound",6
+3,"moss_","on patrol",6
+3,"myrtle","on night watch",6
+3,"nell","training",6
+3,"nettle_ironbark_","drawing water at the plaza well",6
+3,"nightjar_","keeping the crypt library",6
+3,"nightjar_windhollow_","tallying stores",6
+3,"nokk_","hearing petitions",6
+3,"oak_","on night patrol",6
+3,"orrin","carrying messages for the Concord",6
+3,"quarry","training",6
+3,"ridge","advising the leader",3
+3,"ridge_mossborn_","minding the stores",6
+3,"rm_ada_brineford","smoking fish",4
+3,"rm_aldric_mudhand_","helping at Collar and Trace",3
+3,"rm_ansel_brinewick","blowing glass",6
+3,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+3,"rm_aud_rustford_","running The Vesk Salt Pans",8
+3,"rm_beatha_rainmore_","helping at Greywool",3
+3,"rm_beatha_saltley","keeping the chambers",6
+3,"rm_berit_plankworth_","holding the south gate",6
+3,"rm_bertil_fogwick","stewarding Grayrock Hall",6
+3,"rm_bertil_millwick","keeping the chambers",6
+3,"rm_bertil_pitchgate","building ships",6
+3,"rm_bertil_wetridge_","helping at The Hook and Cleaver",6
+3,"rm_bo_gullstack","foreman of the quarry",6
+3,"rm_brand_saltwell_","holding the quay gate",6
+3,"rm_bryn_coalwell","working the saws",6
+3,"rm_bryn_kelpridge","boiling rags",6
+3,"rm_bryn_plankham_","on night patrol",6
+3,"rm_caspar_greyley","working the saws",6
+3,"rm_clemence_slagcot","keeping order in court",6
+3,"rm_corra_wickby_","commanding the Watch",6
+3,"rm_corwin_coalley_","on patrol",6
+3,"rm_corwin_pitchley_","works at The Rag Mill",3
+3,"rm_corwin_ropestack_","helping at Wetink Lane Scriveners",3
+3,"rm_corwin_rustham","serving in the hall",6
+3,"rm_dagfinn_ashmore","smoking fish",3
+3,"rm_dagny_kelpmore_","running The Reach Tannery",8
+3,"rm_dirk_brinecot_","works at The Blue Vats",3
+3,"rm_dirk_dripford","keeping the gaol",6
+3,"rm_dirk_sootham_","armourer at The Rivet and Rain",5
+3,"rm_disa_gullhand_","works at Old Mother Tannery",3
+3,"rm_dunstan_wickworth_","minding the shop door",6
+3,"rm_ebba_bilgeworth_","running The Blue Vats",8
+3,"rm_edda_rainby_","running The Rag Mill",8
+3,"rm_edric_ashcombe","working the glass himself",6
+3,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+3,"rm_egil_coalmore_","works at The Fell Wagon Yard",3
+3,"rm_egil_fogton_","helping at Grist & Crust",3
+3,"rm_egil_wickham_","holding the east gate",6
+3,"rm_emmerich_foghand","serving in the hall",6
+3,"rm_emmerich_wetridge_","minding the shop door",6
+3,"rm_erland_sootham_","minding the shop door",3
+3,"rm_finn_ashridge_","smith at Nailers' Forge",8
+3,"rm_frida_millby","cooking for the House",3
+3,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",3
+3,"rm_gorm_coalstack_","running The Reach Foundry",8
+3,"rm_gorm_kelpcot","tallying the Houses' dues",6
+3,"rm_greta_greymore_","works at The Ashcombe Tileworks",3
+3,"rm_grete_mudton_","minding the shop door",3
+3,"rm_grete_slagton_","works at The Brinewater Sail Loft",3
+3,"rm_gudrun_bilgeham","building ships",6
+3,"rm_gudrun_dripham","stewarding Ashcombe House",6
+3,"rm_gudrun_fell","keeping the Fell accounts",6
+3,"rm_hakon_mudton_","brewer at The Black Tun",8
+3,"rm_hakon_pitchstack","keeping the chambers",6
+3,"rm_halvard_pitchwell_","minding the shop door",3
+3,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+3,"rm_hjalte_rustworth","working the saws",6
+3,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+3,"rm_hollis_bilgewick","tending the sick",6
+3,"rm_hollis_wickworth_","helping at Sump Sundries",6
+3,"rm_ilse_greyby_","helping at Harbour Provisions",6
+3,"rm_ingrid_grayrock","at her lessons in the Hall",6
+3,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+3,"rm_isolde_tarwick","presiding over the Council",6
+3,"rm_ivo_dripgate_","works at The Grayrock Arsenal",3
+3,"rm_ivo_pitchby_","works at The Grayrock Arsenal",3
+3,"rm_ivo_wickridge","smoking fish",4
+3,"rm_jarl_coalworth","smoking fish",3
+3,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+3,"rm_jasper_sootton_","works at The Rag Mill",3
+3,"rm_kari_cindermarsh_","on night patrol",6
+3,"rm_kari_millham_","minding the shop door",3
+3,"rm_karin_mudham_","fish stall on the Market Square",8
+3,"rm_kjell_plankstack","copying the rolls",6
+3,"rm_kjell_tarton_","helping at The Anchor Forge",1
+3,"rm_knut_gulldale_","running The Grayrock Foundry",8
+3,"rm_knut_rainley_","helping at The Pawn and Ledger",3
+3,"rm_lars_rainford_","on patrol",6
+3,"rm_lars_sootham_","minding the shop door",3
+3,"rm_leif_mudcot_","helping at The Wet Slab",3
+3,"rm_lothar_ashdale_","works at The Vesk Salt Pans",3
+3,"rm_lothar_brineridge","cooking for the House",3
+3,"rm_lotte_brinemarsh","serving in the hall",6
+3,"rm_lotte_gullcot_","nut stall on the Market Square",8
+3,"rm_magnus_mudgate","working the saws",6
+3,"rm_magnus_sootham_","helping at The Rivet and Rain",3
+3,"rm_magnus_vesk","counting the catch",4
+3,"rm_maren_fogton_","baker at Grist & Crust",8
+3,"rm_maren_ropewell","keeping the chapel",6
+3,"rm_maren_tarworth","serving in the hall",6
+3,"rm_moll_rustby_","on patrol",6
+3,"rm_nan_brineworth_","works at The Ashcombe Tileworks",3
+3,"rm_nan_rainton","keeping the chambers",6
+3,"rm_nessa_brinewater","learning the shipyard",6
+3,"rm_nils_wickley_","on patrol",6
+3,"rm_njal_fogdale","weighing bales",6
+3,"rm_oda_greyford_","works at Old Mother Tannery",3
+3,"rm_oda_rustwell","taxing the cargoes",6
+3,"rm_olaf_wetworth","stewarding Brinewater House",6
+3,"rm_orm_nailley","cooking for the House",6
+3,"rm_oskar_muddale","keeping the harbour",6
+3,"rm_osric_dripcot_","works at The Vesk Salt Pans",3
+3,"rm_ottilie_pitchmore","working the saws",6
+3,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+3,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+3,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+3,"rm_palle_ropeton","stewarding Fellhall",6
+3,"rm_piet_cindermore_","works at The Reach Tannery",3
+3,"rm_ragnar_millworth_","minding the shop door",3
+3,"rm_ragnar_plankgate","serving in the hall",6
+3,"rm_runa_gullton_","egg stall on the Market Square",8
+3,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",3
+3,"rm_rune_brineton_","minding the shop door",6
+3,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+3,"rm_sigrun_bilgeby","building ships",6
+3,"rm_silas_gullley_","works at The Brinewater Sail Loft",3
+3,"rm_soren_slagford","keeping the chambers",6
+3,"rm_soren_wetcot","stewarding Vesk Manor",6
+3,"rm_sten_vesk","running the salt pans",6
+3,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+3,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+3,"rm_tilde_wethand","cooking for the House",6
+3,"rm_tobias_grayrock","overseeing the ironworks",6
+3,"rm_tove_pitchworth","keeping the inn",8
+3,"rm_tove_ropedale","hearing cases",6
+3,"rm_ulla_brinedale","cooking for the House",6
+3,"rm_una_pitchwell_","runs Greywater Dairy",8
+3,"rm_vidar_kelpgate","at the forge",1
+3,"rm_vidar_ropewick_","works at The Blue Vats",3
+3,"rm_vigdis_millwell_","works at The Reach Tannery",3
+3,"rm_wenna_coalwick_","running The South Gate Stables",8
+3,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+3,"rm_wynn_cinderton","building ships",6
+3,"rm_yrsa_mudmarsh","smoking fish",3
+3,"rm_yrsa_plankridge","blowing glass",6
+3,"rm_yrsa_wickdale","blowing glass",6
+3,"rmx_egil_plankridge","lights the lamps at dusk",6
+3,"rmx_olaf_cindermarsh_","sweeps and fetches for a shop",3
+3,"rmx_pim_dripham_","runs messages about the city",6
+3,"rmx_rika_nailcot_","washes linen for hire",6
+3,"rmx_runa_ashton_","runs messages about the city",6
+3,"rmx_silas_saltstack_","sweeps and fetches for a shop",3
+3,"rmx_thyra_greycot_","runs messages about the city",6
+3,"roan_","on patrol",6
+3,"sage_","debating in the Grand Hall",6
+3,"scree_","on patrol",6
+3,"sella","drilling in the compound",6
+3,"sf_agnese_castellane_","receiving guests",6
+3,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+3,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+3,"sf_alba_galieri_","guarding the palace",6
+3,"sf_alessio_rosandi","helping at Ottone & Rame",6
+3,"sf_amedeo_maresi","helping at Penna e Sigillo",3
+3,"sf_amedeo_orselli","helping at Dispensa del Porto",3
+3,"sf_aurelia_belano","unloading barges",1
+3,"sf_aurelio_marucci","presiding over the guild",6
+3,"sf_bastiano_orsesi_","serving the household",6
+3,"sf_beatrice_orselli","minding the shop door",3
+3,"sf_benedetto_albani","celebrating the Mass",6
+3,"sf_bruno_lanale","soup stall on the Mercato",8
+3,"sf_carlotta_lanano","helping at Seta Fina",6
+3,"sf_cassio_di_castellane","attending the court",6
+3,"sf_ciro_aldobrandi_","receiving guests",6
+3,"sf_ciro_marandi_","keeping the crypt",6
+3,"sf_clelia_benano","works at Tintoria Bellandi",3
+3,"sf_clelia_coruzzi","helping at La Forgia",6
+3,"sf_clelia_orsieri","minding the shop door",3
+3,"sf_corrado_marotti_","leading the choir",6
+3,"sf_corrado_morone","shopkeeper at The Red Door",8
+3,"sf_cosima_ferucci","works at The Royal Arsenal",3
+3,"sf_cosima_morucci","holding the east gate",6
+3,"sf_cosima_rivelli","running Mulino del Borgo",8
+3,"sf_cosimo_casari","mason at Marmi Ferrante",8
+3,"sf_cosimo_morone","helping at The Red Door",3
+3,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+3,"sf_dario_rivuzzi","mending nets on the wharf",1
+3,"sf_delia_rosetti","minding the shop door",3
+3,"sf_donatella_rivari","mending nets on the wharf",1
+3,"sf_duccio_coretti_","serving the household",6
+3,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+3,"sf_duccio_valmonte_","receiving guests",6
+3,"sf_elena_lanucci","minding the shop door",3
+3,"sf_elena_rivetti","works at Fonderia delle Campane",3
+3,"sf_eliseo_colesi","works at Cartiera Bianca",3
+3,"sf_eliseo_salari","works at Carri Galli",3
+3,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+3,"sf_emilia_ferante_","keeping the Chapel Royal",6
+3,"sf_emilio_valieri","minding the shop door",6
+3,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+3,"sf_enzo_lucenti_","receiving guests",6
+3,"sf_fabrizio_benandi","grading fleeces",6
+3,"sf_fiora_belieri_","hearing confessions",6
+3,"sf_fiora_rivano_","serving the household",6
+3,"sf_flavia_corano_","works at Tintoria Bellandi",3
+3,"sf_flavia_ferotti","works at Carri Galli",3
+3,"sf_flavia_galone","minding the shop door",3
+3,"sf_gemma_belini_","polishing the throne room",6
+3,"sf_gemma_corieri","running Carri Galli",8
+3,"sf_gemma_salieri","unloading barges",1
+3,"sf_gemma_valieri","helping at Mappe del Fiume",6
+3,"sf_gemma_venale","minding the shop door",3
+3,"sf_giacomo_ferale_","keeping the royal apartments",6
+3,"sf_gino_casandi_","guarding the palace",6
+3,"sf_giulia_colari","tallying barges",6
+3,"sf_gualtiero_colini","running Fonderia delle Campane",8
+3,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+3,"sf_ilaria_palale_","gossiping at court",6
+3,"sf_ilario_coluzzi_","attending the Queen",6
+3,"sf_ilario_morieri","helping at Erbe di Campo",5
+3,"sf_isotta_nerale","on patrol",6
+3,"sf_isotta_palucci","helping at Profumi Lucenti",3
+3,"sf_isotta_salandi","works at The Royal Arsenal",3
+3,"sf_lapo_casuzzi","helping at Botti Ferrante",3
+3,"sf_lapo_orsenna_","receiving guests",6
+3,"sf_lapo_salesi","painting on the cathedral square",6
+3,"sf_lavinia_belale","works at Fonderia delle Campane",3
+3,"sf_lavinia_nerandi","helping at Armeria del Leone",3
+3,"sf_leandro_valucci_","serving the household",6
+3,"sf_livia_di_castellane","receiving at court",6
+3,"sf_livia_galante_","announcing the court",6
+3,"sf_livia_lanotti_","guarding the palace",6
+3,"sf_livia_torandi","porridge stall on the Mercato",8
+3,"sf_livia_venucci","minding the shop door",3
+3,"sf_loretta_colotti_","guarding the palace",6
+3,"sf_loretta_valesi_","keeping the guild books",6
+3,"sf_lucia_colone_","arguing the price of wool",6
+3,"sf_lucia_nerucci","on patrol",6
+3,"sf_mafalda_lucenti_","receiving guests",6
+3,"sf_mafalda_marenzi_","receiving guests",6
+3,"sf_mafalda_morotti","running Tintoria Bellandi",8
+3,"sf_mafalda_palari_","serving the household",6
+3,"sf_marcello_galuzzi","helping at Il Forno d'Oro",3
+3,"sf_marcello_morandi","running The Royal Arsenal",8
+3,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+3,"sf_marcello_venale","helping at Bottega del Legno",3
+3,"sf_marzia_ferini_","serving the royal table",6
+3,"sf_marzia_orsenna_","receiving guests",6
+3,"sf_marzia_rivucci_","nursing the sick",6
+3,"sf_matteo_lanante","runs Il Mulino Dairy",8
+3,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+3,"sf_matteo_salini","keeps the water mill at La Riva",8
+3,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+3,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+3,"sf_mirella_rosotti_","lighting the candles",6
+3,"sf_nico_lanini_","serving the household",6
+3,"sf_nives_morini_","commanding the palace guard",6
+3,"sf_nives_salelli","on night patrol",6
+3,"sf_noemi_lanetti_","serving the household",6
+3,"sf_noemi_valmonte_","receiving guests",6
+3,"sf_orsino_belante","on patrol",6
+3,"sf_orsola_marano","on night patrol",6
+3,"sf_ottavia_lanza","hearing petitions",6
+3,"sf_ottavia_maruzzi","works at Mulino del Borgo",3
+3,"sf_ottavia_nerari","on patrol",6
+3,"sf_ottone_marenzi_","receiving guests",6
+3,"sf_paola_rosieri","hauling for the warehouses",1
+3,"sf_pasquale_torone_","serving the household",6
+3,"sf_perla_belucci","on patrol",6
+3,"sf_piero_darotti_","guarding the palace",6
+3,"sf_piero_morone","minding the shop door",3
+3,"sf_primo_benale_","cooking for the palace",8
+3,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+3,"sf_renata_galini","works at Cartiera Bianca",3
+3,"sf_renata_salini","weaver at Tessitura Bellandi",8
+3,"sf_renzo_corucci","running La Concia",8
+3,"sf_rocco_morano","keeping the inn",8
+3,"sf_rocco_orsini","minding the shop door",3
+3,"sf_rosalba_belotti_","attending the King",6
+3,"sf_salvatore_orsone","running Cartiera Bianca",8
+3,"sf_serafina_aldobrandi_","receiving guests",6
+3,"sf_serafina_ferelli_","running errands for the household",3
+3,"sf_serafina_lanone","commanding the city guard",6
+3,"sf_serafina_maresi","minding the shop door",3
+3,"sf_sveva_galucci","unloading barges",1
+3,"sf_taddeo_paluzzi","unloading barges",1
+3,"sf_teodora_venone_","serving the household",6
+3,"sf_teodoro_palone","running The East Gate Stables",8
+3,"sf_tommaso_benini_","serving the household",6
+3,"sf_tommaso_darandi_","serving the household",6
+3,"sf_tullia_darari_","nursing the sick",6
+3,"sf_umberto_maresi","minding the shop door",3
+3,"sf_umberto_marieri","on night patrol",6
+3,"sf_valeria_toruzzi_","scrubbing the kitchens",3
+3,"sf_valerio_casieri","running The Red Tile Works",8
+3,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+3,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+3,"sf_vasco_castellane_","receiving guests",6
+3,"sf_viola_darieri_","serving the household",6
+3,"sf_viola_galano","mending nets on the wharf",1
+3,"sf_vittore_nerone","holding the north gate",6
+3,"sf_vittoria_torucci_","copying the chapter's books",6
+3,"sfx_fausto_orsini","works at The La Riva Water Mill",3
+3,"sfx_manfredi_pallotta","sweeps and fetches for a shop",3
+3,"skye_","holding the south gate",6
+3,"sloe","presiding over the Concord",6
+3,"tansy","keeping the training stores",6
+3,"tarn_","holding the south gate",6
+3,"thief","working",6
+3,"thistle_","on watch",6
+3,"thorn_screebark_","mending the old wall",6
+3,"tn_ac_bramble_gatewright","stands watch",6
+3,"tn_ac_elm_crosswright","minds the shop's door",3
+3,"tn_ac_flint_milestone","tends the carters' beasts",6
+3,"tn_ac_gale_crossley","works at The Wheelwright's Yard",3
+3,"tn_ac_heath_wheelmark","tends the carters' beasts",6
+3,"tn_ac_holly_gatepost","loads the caravan wagons",6
+3,"tn_ac_mara_dustcote","helps at Waystation Stores",6
+3,"tn_ac_quarry_gatepost","loads the caravan wagons",6
+3,"tn_ac_quill_tollwell","helps at The Gate Forge",6
+3,"tn_ac_ridge_mileward","keeps The Caravan Shed",6
+3,"tn_ac_ridge_waymark","helps at The Trace and Collar",3
+3,"tn_ac_rowan_cartpost","stands watch",6
+3,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",3
+3,"tn_ac_varg_mileward","loads the caravan wagons",6
+3,"tn_ac_wald_tollwell","minds the shop's door",6
+3,"tn_af_brand_strawacre","keeps the ford toll",6
+3,"tn_af_edric_sheaffield_","helps at Amberford Goods",6
+3,"tn_af_fallow_grainford_","minds the shop's door",6
+3,"tn_af_frey_wheatmow_","stands watch",6
+3,"tn_af_ivy_furrowstook_","keeps The Grain Barn",6
+3,"tn_af_ivy_strawacre_","grinds at the ford mill",6
+3,"tn_af_nell_furrowmow_","helps at The Amber Loaf",3
+3,"tn_af_tor_goldstead_","stands watch",6
+3,"tn_af_umber_wheatley_","helps at Amberford Cooperage",6
+3,"tn_af_varg_harrowford","works at The Ford Mill",6
+3,"tn_af_yarrow_furrowstook_","keeps The Harvest Chapel",6
+3,"tn_cb_brock_rustvein_","keeps The Shrine of the Iron Saint",6
+3,"tn_cb_fern_slaghollow_","helps at Cinderbrook Forge",2
+3,"tn_cb_flint_rustvein_","healer",6
+3,"tn_cb_hob_ashshaft_","stands watch",6
+3,"tn_cb_nettle_rusthollow_","helps at The Lamp and Wick",1
+3,"tn_cb_opal_ironvein_","stands watch",6
+3,"tn_cb_pell_emberpit_","helps at The Red Door Store",6
+3,"tn_df_edric_darkguard_","stands watch",6
+3,"tn_df_garth_blackwatch_","stands watch",6
+3,"tn_df_heath_nightward_","garrison cook",6
+3,"tn_df_holt_blackward_","stands watch",6
+3,"tn_df_holt_deepward_","minds the shop's door",6
+3,"tn_df_iris_grimhold_","stands watch",6
+3,"tn_df_rusk_nightguard_","commands the garrison",6
+3,"tn_df_thistle_deepward_","helps at The Silent Forge",6
+3,"tn_fh_dray_bogmoor_","stands watch",6
+3,"tn_fh_dun_peatlode_","helps at Bogmyrtle's",3
+3,"tn_fh_fern_damplode_","helps at The Marsh Apothecary",3
+3,"tn_fh_flint_reedmere_","serves at The Peat Fire",3
+3,"tn_fh_harrow_peathollow_","helps at Fenhollow Store",3
+3,"tn_fh_isla_mudlode_","works at The Bog Brewery",2
+3,"tn_fh_ivy_dampditch_","stands watch",6
+3,"tn_fh_juniper_reedcarr_","helps at The Bog Iron Forge",6
+3,"tn_fh_knap_peatditch_","keeps The Stilt Chapel",6
+3,"tn_fh_marl_damplode_","minds the shop's door",3
+3,"tn_fh_pike_boghollow_","works at The Bog Brewery",3
+3,"tn_fh_rusk_reedcarr_","minds the shop's door",6
+3,"tn_fh_thorn_peatcarr_","helps at The Mossloaf Bakery",3
+3,"tn_hm_ash_hedgemere","helps at The Valley Oven",6
+3,"tn_hm_drift_hollowside","helps at Valley Remedies",3
+3,"tn_hm_reed_valemere","helps at The Hollowmere Shop",6
+3,"tn_if_alder_greywall_","helps at The Isle Forge",6
+3,"tn_if_bramble_greykeep_","garrison cook",6
+3,"tn_if_eskar_islewall_","stands watch",6
+3,"tn_if_harrow_towerguard_","stands watch",6
+3,"tn_if_holt_merewatch_","minds the shop's door",6
+3,"tn_if_iris_moatward_","stands watch",6
+3,"tn_if_isla_moatwall_","stands watch",6
+3,"tn_if_nettle_mereguard_","commands the garrison",6
+3,"tn_if_thistle_greywall_","minds the shop's door",6
+3,"tn_if_wolde_merewatch_","helps at The Armoury",6
+3,"tn_ls_aster_merereach_","stands watch",6
+3,"tn_ls_briar_stillside_","helps at Lakeside Goods",6
+3,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",3
+3,"tn_ls_fern_eelford","healer",6
+3,"tn_ls_frey_stillside_","minds the shop's door",6
+3,"tn_ls_heath_oarwade_","stands watch",6
+3,"tn_ls_hob_oarmere","works at The Mirrormere Smokehouse",3
+3,"tn_ls_ingram_pikemere_","helps at Netmaker's Loft",3
+3,"tn_ls_opal_mistmere_","helps at The Boatwright's",6
+3,"tn_ls_slate_eelford","keeps The Mere Chapel",6
+3,"tn_ls_varg_willowhythe_","minds the shop's door",6
+3,"tn_nf_corrie_rimeward","stands watch",6
+3,"tn_nf_dun_frostward","stands watch",6
+3,"tn_nf_eskar_frosthold","works at The North Arsenal",6
+3,"tn_nf_holly_bleakguard","works at The North Arsenal",6
+3,"tn_nf_holly_rimeguard","minds the shop's door",6
+3,"tn_nf_odo_rimehelm","commands the garrison",6
+3,"tn_nf_yarrow_craghold","garrison cook",6
+3,"tn_sr_bram_greycove","helps at Gullwharf Fish",3
+3,"tn_sr_brand_shinglewater","stands watch",6
+3,"tn_sr_dray_tidemouth","minds the shop's door",3
+3,"tn_sr_gale_gullwick","serves at The Brine and Barrel",3
+3,"tn_sr_jory_tidemouth","helps at The Barrel Yard",3
+3,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",3
+3,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",3
+3,"tn_sr_lark_shingleshore","works at The Saltreach Pans",3
+3,"tn_sr_marl_kelpcove","stands watch",6
+3,"tn_sr_nab_wrackshore","helps at The Anchor Smithy",6
+3,"tn_sr_orrin_greymouth","works at The Gullwharf Smokehouse",3
+3,"tn_sr_thorn_tideline","keeps The Tide Chapel",6
+3,"tn_sr_tor_tideline","keeps The Salt House",6
+3,"tn_wm_ash_thornwell","keeps The Granary",6
+3,"tn_wm_bramble_westfold","stands watch",6
+3,"tn_wm_frey_larkacre","helps at The Hide Yard",3
+3,"tn_wm_hob_thornlea","stands watch",6
+3,"tn_wm_holly_sheepridge","helps at Drover's Block",6
+3,"tn_wm_holt_barrowmarch","helps at Downland Wool",3
+3,"tn_wm_isla_westridge","drives cattle to market",6
+3,"tn_wm_knap_barrowacre","drives cattle to market",6
+3,"tn_wm_linden_woldfold","helps at Westmarch Mercantile",6
+3,"tn_wm_orrin_haybarrow","minds the shop's door",3
+3,"tn_wm_quill_haybarrow","minds the shop's door",3
+3,"tn_wm_vetch_thornwell","keeps The Down Chapel",6
+3,"uax_ash_cragfoot_","carries loads for hire",6
+3,"uax_birch_frostwell_","sweeps and fetches for a shop",6
+3,"uax_brock_ashsong_","washes linen for hire",6
+3,"uax_brock_bramblefoot_","lights the lamps at dusk",6
+3,"uax_drift_birchhowl_","washes linen for hire",6
+3,"uax_elm_stormcoat_","carries loads for hire",6
+3,"uax_gorse_mosscoat_","runs messages about the city",6
+3,"uax_heath_mossborn_","washes linen for hire",6
+3,"uax_heather_birchhowl_","carries loads for hire",6
+3,"uax_heather_snowfoot_","washes linen for hire",6
+3,"uax_hob_brackenrun_","lights the lamps at dusk",6
+3,"uax_ingram_greymantle_","carries loads for hire",6
+3,"uax_ivy_stonecoat_","washes linen for hire",6
+3,"uax_juniper_heathheart_","runs messages about the city",6
+3,"uax_juniper_tarnmoor_","runs messages about the city",6
+3,"uax_kestrel_windmere_","washes linen for hire",6
+3,"uax_kindle_ashwalker_","washes linen for hire",6
+3,"uax_ludo_dusksong_","washes linen for hire",6
+3,"uax_mara_oakridge_","washes linen for hire",6
+3,"uax_nokk_ironbark_","lights the lamps at dusk",6
+3,"uax_pell_frostback_","carries loads for hire",6
+3,"uax_sella_heathrow_","runs messages about the city",6
+3,"uax_sella_mistvale_","washes linen for hire",6
+3,"uax_vale_pinecrest_","carries loads for hire",6
+3,"uax_vesper_frostborn_","lights the lamps at dusk",6
+3,"uax_wisp_duskfell_","sweeps and fetches for a shop",6
+3,"uax_yarrow_mossborn_","washes linen for hire",6
+3,"umber_ashsong_","hauling crates",6
+3,"willa","advising the leader",3
+3,"willa_fallowmark_","tending the hurt",6
+3,"wisp_","reading in the deep archive",6
+3,"wolde","training",6
+3,"wren_","holding the main gate",6
+4,"alder_coldborn_","helping at The Tight Weft",3
+4,"alder_hollowfang_","helping at The Stretched Hide",6
+4,"ash_","leading the Warden Order",6
+4,"ash_duskhide_","helping at The Cold Hammer",6
+4,"aster_marshbark_","copying the city rolls",6
+4,"aster_slateclaw_","helping at Needle & Nap",6
+4,"bramble_","debating in the Grand Hall",6
+4,"brand","holding the stair gate",6
+4,"briar","training",6
+4,"briar_brackenrun_","selling from a plaza stall",6
+4,"briar_stormfang_","helping at Pinecut Joinery",3
+4,"brisk_","coaching at the archery range",6
+4,"brock","on night patrol",6
+4,"brock_coldborn_","helping at The Tight Weft",3
+4,"clover","training",6
+4,"dawn","tending the scroll vaults",6
+4,"dawn_greyhide_","helping at The Straight Shaft",3
+4,"dray","holding the main gate",6
+4,"dray_hollowfang_","helping at The Stretched Hide",6
+4,"drift_frostwalker_","helping at Morning Rise Ovens",6
+4,"dun_","running sparring bouts",6
+4,"dun_pinewell_","copying the city rolls",6
+4,"elm_coldborn_","helping at The Tight Weft",3
+4,"elm_pinevale_","helping at Ridgeline Maps",6
+4,"eskar_","on night patrol",6
+4,"fallow","debating in the Grand Hall",6
+4,"fell_","drilling trainees on the square",6
+4,"fern_","holding the stair gate",6
+4,"fern_frostmark_","helping at Cinderpaw Forge",6
+4,"fern_greybark_","helping at Clayfoot Wares",3
+4,"gorse_","running the obstacle course",6
+4,"grist_hollowmere_","helping at Greywall Goods",6
+4,"harl_mossmere_","helping at Timberline Carpentry",6
+4,"harrow","hearing petitions",6
+4,"hazel","advising the leader",3
+4,"heath_","training",6
+4,"heather","on night watch",6
+4,"holly_","on patrol",6
+4,"ind_briar_smeltshaft","works at The Cinderbrook Smelter",1
+4,"ind_harl_cinderbrook","works at The Cinderbrook Smelter",1
+4,"ingram_","training",6
+4,"ingram_harrowgate_","tending the sick",6
+4,"isla","on watch",6
+4,"ivy_pinewalker_","tending the sick",6
+4,"jarl","on watch",6
+4,"jessamy","keeping the Annex",6
+4,"kell","carrying messages for the Concord",6
+4,"kell_ashfall_","hauling crates",6
+4,"kestrel_","hearing petitions",6
+4,"kindle","training",6
+4,"kindle_frostfoot_","selling from a plaza stall",6
+4,"kite","shelving in the upper stacks",6
+4,"knap_","on watch",6
+4,"lark_","keeping the chapel",6
+4,"laurel","drilling in the compound",6
+4,"laurel_ashwalker","helping at The Gatehouse Inn",3
+4,"loam_","drilling in the compound",6
+4,"marsh","on patrol",6
+4,"moor","drilling in the compound",6
+4,"moss_","on patrol",6
+4,"myrtle","on night watch",6
+4,"nell","training",6
+4,"nettle_ironbark_","drawing water at the plaza well",6
+4,"nightjar_","keeping the crypt library",6
+4,"nightjar_windhollow_","tallying stores",6
+4,"nokk_","hearing petitions",6
+4,"oak_","on night patrol",6
+4,"orrin","carrying messages for the Concord",6
+4,"quarry","training",6
+4,"ridge","advising the leader",3
+4,"ridge_mossborn_","minding the stores",6
+4,"rm_ada_brineford","smoking fish",3
+4,"rm_aldric_mudhand_","helping at Collar and Trace",3
+4,"rm_ansel_brinewick","blowing glass",6
+4,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+4,"rm_aud_rustford_","running The Vesk Salt Pans",8
+4,"rm_beatha_saltley","keeping the chambers",6
+4,"rm_berit_plankworth_","holding the south gate",6
+4,"rm_bertil_fogwick","stewarding Grayrock Hall",6
+4,"rm_bertil_millwick","keeping the chambers",6
+4,"rm_bertil_pitchgate","building ships",6
+4,"rm_bertil_wetridge_","helping at The Hook and Cleaver",6
+4,"rm_bo_gullstack","foreman of the quarry",6
+4,"rm_brand_mudstack","at the forge",1
+4,"rm_brand_saltwell_","holding the quay gate",6
+4,"rm_bryn_coalwell","working the saws",6
+4,"rm_bryn_kelpridge","boiling rags",6
+4,"rm_bryn_plankham_","on night patrol",6
+4,"rm_caspar_greyley","working the saws",6
+4,"rm_clemence_slagcot","keeping order in court",6
+4,"rm_corra_wickby_","commanding the Watch",6
+4,"rm_corwin_coalley_","on patrol",6
+4,"rm_corwin_pitchley_","works at The Rag Mill",3
+4,"rm_corwin_ropestack_","helping at Wetink Lane Scriveners",3
+4,"rm_corwin_rustham","serving in the hall",6
+4,"rm_dagfinn_ashmore","smoking fish",3
+4,"rm_dagny_kelpmore_","running The Reach Tannery",8
+4,"rm_dirk_brinecot_","works at The Blue Vats",3
+4,"rm_dirk_dripford","keeping the gaol",6
+4,"rm_dirk_sootham_","armourer at The Rivet and Rain",6
+4,"rm_disa_gullhand_","works at Old Mother Tannery",3
+4,"rm_dunstan_wickworth_","minding the shop door",6
+4,"rm_ebba_bilgeworth_","running The Blue Vats",8
+4,"rm_ebba_sootmarsh","at the forge",1
+4,"rm_edda_rainby_","running The Rag Mill",8
+4,"rm_edric_ashcombe","working the glass himself",6
+4,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+4,"rm_egil_coalmore_","works at The Fell Wagon Yard",3
+4,"rm_egil_fogton_","helping at Grist & Crust",3
+4,"rm_egil_wickham_","holding the east gate",6
+4,"rm_emmerich_foghand","serving in the hall",6
+4,"rm_emmerich_wetridge_","minding the shop door",6
+4,"rm_erland_sootham_","minding the shop door",3
+4,"rm_finn_ashridge_","smith at Nailers' Forge",6
+4,"rm_frida_millby","cooking for the House",3
+4,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",3
+4,"rm_gorm_coalstack_","running The Reach Foundry",8
+4,"rm_gorm_kelpcot","tallying the Houses' dues",6
+4,"rm_greta_greymore_","works at The Ashcombe Tileworks",3
+4,"rm_grete_mudton_","minding the shop door",3
+4,"rm_grete_slagton_","works at The Brinewater Sail Loft",3
+4,"rm_gudrun_bilgeham","building ships",6
+4,"rm_gudrun_dripham","stewarding Ashcombe House",6
+4,"rm_gudrun_fell","keeping the Fell accounts",6
+4,"rm_hakon_mudton_","brewer at The Black Tun",8
+4,"rm_hakon_pitchstack","keeping the chambers",6
+4,"rm_halvard_pitchwell_","minding the shop door",3
+4,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+4,"rm_hjalte_rustworth","working the saws",6
+4,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+4,"rm_hollis_bilgewick","tending the sick",6
+4,"rm_hollis_wickworth_","helping at Sump Sundries",6
+4,"rm_ilse_greyby_","helping at Harbour Provisions",6
+4,"rm_ilse_saltworth","at the forge",1
+4,"rm_ingrid_grayrock","at her lessons in the Hall",6
+4,"rm_ingrid_nailwick","at the forge",1
+4,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+4,"rm_isolde_tarwick","presiding over the Council",6
+4,"rm_ivo_dripgate_","works at The Grayrock Arsenal",3
+4,"rm_ivo_pitchby_","works at The Grayrock Arsenal",3
+4,"rm_ivo_wickridge","smoking fish",3
+4,"rm_jarl_coalworth","smoking fish",3
+4,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+4,"rm_jasper_sootton_","works at The Rag Mill",3
+4,"rm_kari_cindermarsh_","on night patrol",6
+4,"rm_kari_millham_","minding the shop door",3
+4,"rm_karin_mudham_","fish stall on the Market Square",8
+4,"rm_kjell_plankstack","copying the rolls",6
+4,"rm_knut_rainley_","helping at The Pawn and Ledger",3
+4,"rm_lars_rainford_","on patrol",6
+4,"rm_lars_sootham_","minding the shop door",3
+4,"rm_leif_mudcot_","helping at The Wet Slab",3
+4,"rm_lothar_ashdale_","works at The Vesk Salt Pans",3
+4,"rm_lothar_brineridge","cooking for the House",3
+4,"rm_lotte_brinemarsh","serving in the hall",6
+4,"rm_lotte_gullcot_","nut stall on the Market Square",8
+4,"rm_magnus_mudgate","working the saws",6
+4,"rm_magnus_sootham_","helping at The Rivet and Rain",3
+4,"rm_magnus_vesk","counting the catch",3
+4,"rm_maren_fogton_","baker at Grist & Crust",8
+4,"rm_maren_ropewell","keeping the chapel",6
+4,"rm_maren_tarworth","serving in the hall",6
+4,"rm_moll_rustby_","on patrol",6
+4,"rm_nan_brineworth_","works at The Ashcombe Tileworks",3
+4,"rm_nan_rainton","keeping the chambers",6
+4,"rm_nessa_brinewater","learning the shipyard",6
+4,"rm_nils_wickley_","on patrol",6
+4,"rm_njal_fogdale","weighing bales",6
+4,"rm_oda_greyford_","works at Old Mother Tannery",3
+4,"rm_oda_rustwell","taxing the cargoes",6
+4,"rm_olaf_wetworth","stewarding Brinewater House",6
+4,"rm_orm_nailley","cooking for the House",6
+4,"rm_oskar_muddale","keeping the harbour",6
+4,"rm_osric_dripcot_","works at The Vesk Salt Pans",3
+4,"rm_ottilie_pitchmore","working the saws",6
+4,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+4,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+4,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+4,"rm_palle_ropeton","stewarding Fellhall",6
+4,"rm_piet_cindermore_","works at The Reach Tannery",3
+4,"rm_ragnar_millworth_","minding the shop door",3
+4,"rm_ragnar_plankgate","serving in the hall",6
+4,"rm_runa_gullton_","egg stall on the Market Square",8
+4,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",3
+4,"rm_rune_brineton_","minding the shop door",6
+4,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+4,"rm_sigrun_bilgeby","building ships",6
+4,"rm_silas_gullley_","works at The Brinewater Sail Loft",3
+4,"rm_soren_slagford","keeping the chambers",6
+4,"rm_soren_wetcot","stewarding Vesk Manor",6
+4,"rm_sten_vesk","running the salt pans",6
+4,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+4,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+4,"rm_tilde_wethand","cooking for the House",6
+4,"rm_tobias_grayrock","overseeing the ironworks",6
+4,"rm_tove_pitchworth","keeping the inn",8
+4,"rm_tove_ropedale","hearing cases",6
+4,"rm_ulla_brinedale","cooking for the House",6
+4,"rm_una_pitchwell_","runs Greywater Dairy",8
+4,"rm_vidar_kelpgate","at the forge",2
+4,"rm_vidar_ropewick_","works at The Blue Vats",3
+4,"rm_vigdis_millwell_","works at The Reach Tannery",3
+4,"rm_wenna_coalwick_","running The South Gate Stables",8
+4,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+4,"rm_wynn_cinderton","building ships",6
+4,"rm_yrsa_mudmarsh","smoking fish",3
+4,"rm_yrsa_plankridge","blowing glass",6
+4,"rm_yrsa_wickdale","blowing glass",6
+4,"rmx_egil_plankridge","lights the lamps at dusk",6
+4,"rmx_olaf_cindermarsh_","sweeps and fetches for a shop",5
+4,"rmx_pim_dripham_","runs messages about the city",6
+4,"rmx_rika_nailcot_","washes linen for hire",6
+4,"rmx_runa_ashton_","runs messages about the city",6
+4,"rmx_silas_saltstack_","sweeps and fetches for a shop",2
+4,"rmx_thyra_greycot_","runs messages about the city",6
+4,"roan_","on patrol",6
+4,"sage_","debating in the Grand Hall",6
+4,"sella","drilling in the compound",6
+4,"sf_achille_rivante","hauling for the warehouses",1
+4,"sf_agnese_castellane_","receiving guests",6
+4,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+4,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+4,"sf_alba_galieri_","guarding the palace",6
+4,"sf_alessio_rosandi","helping at Ottone & Rame",6
+4,"sf_amedeo_maresi","helping at Penna e Sigillo",3
+4,"sf_amedeo_orselli","helping at Dispensa del Porto",3
+4,"sf_aurelia_belano","unloading barges",1
+4,"sf_aurelio_marucci","presiding over the guild",6
+4,"sf_bastiano_orsesi_","serving the household",6
+4,"sf_beatrice_orselli","minding the shop door",3
+4,"sf_benedetto_albani","celebrating the Mass",6
+4,"sf_bruno_lanale","soup stall on the Mercato",8
+4,"sf_carlotta_lanano","helping at Seta Fina",6
+4,"sf_cassio_di_castellane","attending the court",6
+4,"sf_ciro_aldobrandi_","receiving guests",6
+4,"sf_ciro_marandi_","keeping the crypt",6
+4,"sf_clelia_benano","works at Tintoria Bellandi",3
+4,"sf_clelia_coruzzi","helping at La Forgia",6
+4,"sf_clelia_orsieri","minding the shop door",3
+4,"sf_corrado_marotti_","leading the choir",6
+4,"sf_corrado_morone","shopkeeper at The Red Door",8
+4,"sf_cosima_ferucci","works at The Royal Arsenal",3
+4,"sf_cosima_morucci","holding the east gate",6
+4,"sf_cosima_rivelli","running Mulino del Borgo",8
+4,"sf_cosimo_casari","mason at Marmi Ferrante",8
+4,"sf_cosimo_morone","helping at The Red Door",3
+4,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+4,"sf_dario_rivuzzi","mending nets on the wharf",1
+4,"sf_delia_rosetti","minding the shop door",3
+4,"sf_duccio_coretti_","serving the household",6
+4,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+4,"sf_duccio_valmonte_","receiving guests",6
+4,"sf_elena_lanucci","minding the shop door",3
+4,"sf_elena_rivetti","works at Fonderia delle Campane",3
+4,"sf_eliseo_colesi","works at Cartiera Bianca",3
+4,"sf_eliseo_salari","works at Carri Galli",3
+4,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+4,"sf_emilia_ferante_","keeping the Chapel Royal",6
+4,"sf_emilio_valieri","minding the shop door",6
+4,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+4,"sf_enzo_lucenti_","receiving guests",6
+4,"sf_fabrizio_benandi","grading fleeces",6
+4,"sf_fiora_belieri_","hearing confessions",6
+4,"sf_fiora_rivano_","serving the household",6
+4,"sf_flavia_corano_","works at Tintoria Bellandi",3
+4,"sf_flavia_ferotti","works at Carri Galli",3
+4,"sf_flavia_galone","minding the shop door",3
+4,"sf_gemma_belini_","polishing the throne room",6
+4,"sf_gemma_corieri","running Carri Galli",8
+4,"sf_gemma_salieri","unloading barges",1
+4,"sf_gemma_valieri","helping at Mappe del Fiume",6
+4,"sf_gemma_venale","minding the shop door",3
+4,"sf_giacomo_ferale_","keeping the royal apartments",6
+4,"sf_gino_casandi_","guarding the palace",6
+4,"sf_giulia_colari","tallying barges",6
+4,"sf_gualtiero_colini","running Fonderia delle Campane",8
+4,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+4,"sf_ilaria_palale_","gossiping at court",6
+4,"sf_ilario_coluzzi_","attending the Queen",6
+4,"sf_ilario_morieri","helping at Erbe di Campo",6
+4,"sf_isotta_nerale","on patrol",6
+4,"sf_isotta_palucci","helping at Profumi Lucenti",3
+4,"sf_isotta_salandi","works at The Royal Arsenal",3
+4,"sf_lapo_casuzzi","helping at Botti Ferrante",3
+4,"sf_lapo_orsenna_","receiving guests",6
+4,"sf_lapo_salesi","painting on the cathedral square",6
+4,"sf_lavinia_belale","works at Fonderia delle Campane",3
+4,"sf_lavinia_nerandi","helping at Armeria del Leone",3
+4,"sf_leandro_valucci_","serving the household",6
+4,"sf_livia_di_castellane","receiving at court",6
+4,"sf_livia_galante_","announcing the court",6
+4,"sf_livia_lanotti_","guarding the palace",6
+4,"sf_livia_torandi","porridge stall on the Mercato",8
+4,"sf_livia_venucci","minding the shop door",6
+4,"sf_loretta_colotti_","guarding the palace",6
+4,"sf_loretta_valesi_","keeping the guild books",6
+4,"sf_lucia_colone_","arguing the price of wool",6
+4,"sf_lucia_nerucci","on patrol",6
+4,"sf_mafalda_lucenti_","receiving guests",6
+4,"sf_mafalda_marenzi_","receiving guests",6
+4,"sf_mafalda_morotti","running Tintoria Bellandi",8
+4,"sf_mafalda_palari_","serving the household",6
+4,"sf_marcello_galuzzi","helping at Il Forno d'Oro",6
+4,"sf_marcello_morandi","running The Royal Arsenal",8
+4,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+4,"sf_marcello_venale","helping at Bottega del Legno",3
+4,"sf_marzia_ferini_","serving the royal table",6
+4,"sf_marzia_orsenna_","receiving guests",6
+4,"sf_marzia_rivucci_","nursing the sick",6
+4,"sf_matteo_lanante","runs Il Mulino Dairy",8
+4,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+4,"sf_matteo_salini","keeps the water mill at La Riva",8
+4,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+4,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+4,"sf_mirella_rosotti_","lighting the candles",6
+4,"sf_nico_lanini_","serving the household",6
+4,"sf_nives_morini_","commanding the palace guard",6
+4,"sf_nives_salelli","on night patrol",6
+4,"sf_noemi_lanetti_","serving the household",6
+4,"sf_noemi_valmonte_","receiving guests",6
+4,"sf_orsino_belante","on patrol",6
+4,"sf_orsola_marano","on night patrol",6
+4,"sf_ottavia_lanza","hearing petitions",6
+4,"sf_ottavia_maruzzi","works at Mulino del Borgo",3
+4,"sf_ottavia_nerari","on patrol",6
+4,"sf_ottone_marenzi_","receiving guests",6
+4,"sf_paola_rosieri","hauling for the warehouses",1
+4,"sf_pasquale_torone_","serving the household",6
+4,"sf_perla_belucci","on patrol",6
+4,"sf_piero_darotti_","guarding the palace",6
+4,"sf_piero_morone","minding the shop door",3
+4,"sf_primo_benale_","cooking for the palace",8
+4,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+4,"sf_renata_galini","works at Cartiera Bianca",3
+4,"sf_renata_salini","weaver at Tessitura Bellandi",8
+4,"sf_renzo_corucci","running La Concia",8
+4,"sf_rocco_morano","keeping the inn",8
+4,"sf_rocco_orsini","minding the shop door",3
+4,"sf_rosalba_belotti_","attending the King",6
+4,"sf_salvatore_orsone","running Cartiera Bianca",8
+4,"sf_serafina_aldobrandi_","receiving guests",6
+4,"sf_serafina_ferelli_","running errands for the household",3
+4,"sf_serafina_lanone","commanding the city guard",6
+4,"sf_serafina_maresi","minding the shop door",3
+4,"sf_sveva_galucci","unloading barges",1
+4,"sf_taddeo_paluzzi","unloading barges",1
+4,"sf_teodora_venone_","serving the household",6
+4,"sf_teodoro_palone","running The East Gate Stables",8
+4,"sf_tommaso_benini_","serving the household",6
+4,"sf_tommaso_darandi_","serving the household",6
+4,"sf_tullia_darari_","nursing the sick",6
+4,"sf_umberto_maresi","minding the shop door",3
+4,"sf_umberto_marieri","on night patrol",6
+4,"sf_valeria_toruzzi_","scrubbing the kitchens",3
+4,"sf_valerio_casieri","running The Red Tile Works",8
+4,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+4,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+4,"sf_vasco_castellane_","receiving guests",6
+4,"sf_viola_darieri_","serving the household",6
+4,"sf_viola_galano","mending nets on the wharf",1
+4,"sf_vittore_nerone","holding the north gate",6
+4,"sf_vittoria_torucci_","copying the chapter's books",6
+4,"sfx_fausto_orsini","works at The La Riva Water Mill",3
+4,"sfx_manfredi_pallotta","sweeps and fetches for a shop",3
+4,"skye_","holding the south gate",6
+4,"sloe","presiding over the Concord",6
+4,"tansy","keeping the training stores",6
+4,"tarn_","holding the south gate",6
+4,"thief","working",6
+4,"thistle_","on watch",6
+4,"thorn_screebark_","mending the old wall",6
+4,"tn_ac_bramble_gatewright","stands watch",6
+4,"tn_ac_elm_crosswright","minds the shop's door",3
+4,"tn_ac_flint_milestone","tends the carters' beasts",6
+4,"tn_ac_gale_crossley","works at The Wheelwright's Yard",3
+4,"tn_ac_heath_wheelmark","tends the carters' beasts",6
+4,"tn_ac_holly_gatepost","loads the caravan wagons",6
+4,"tn_ac_mara_dustcote","helps at Waystation Stores",6
+4,"tn_ac_quarry_gatepost","loads the caravan wagons",6
+4,"tn_ac_quill_tollwell","helps at The Gate Forge",6
+4,"tn_ac_ridge_mileward","keeps The Caravan Shed",6
+4,"tn_ac_ridge_waymark","helps at The Trace and Collar",3
+4,"tn_ac_rowan_cartpost","stands watch",6
+4,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",3
+4,"tn_ac_varg_mileward","loads the caravan wagons",6
+4,"tn_ac_wald_tollwell","minds the shop's door",6
+4,"tn_af_brand_strawacre","keeps the ford toll",6
+4,"tn_af_edric_sheaffield_","helps at Amberford Goods",6
+4,"tn_af_fallow_grainford_","minds the shop's door",6
+4,"tn_af_frey_wheatmow_","stands watch",6
+4,"tn_af_ivy_furrowstook_","keeps The Grain Barn",6
+4,"tn_af_ivy_strawacre_","grinds at the ford mill",6
+4,"tn_af_nell_furrowmow_","helps at The Amber Loaf",3
+4,"tn_af_tor_goldstead_","stands watch",6
+4,"tn_af_tor_grainfield_","helps at Ford Brewhouse",3
+4,"tn_af_umber_wheatley_","helps at Amberford Cooperage",6
+4,"tn_af_varg_harrowford","works at The Ford Mill",6
+4,"tn_af_yarrow_furrowstook_","keeps The Harvest Chapel",6
+4,"tn_cb_birch_ironhollow","serves at The Hot Anvil",3
+4,"tn_cb_brock_rustvein_","keeps The Shrine of the Iron Saint",6
+4,"tn_cb_fern_slaghollow_","helps at Cinderbrook Forge",1
+4,"tn_cb_flint_rustvein_","healer",6
+4,"tn_cb_hob_ashshaft_","stands watch",6
+4,"tn_cb_nettle_rusthollow_","helps at The Lamp and Wick",3
+4,"tn_cb_opal_ironvein_","stands watch",6
+4,"tn_cb_pell_emberpit_","helps at The Red Door Store",6
+4,"tn_df_edric_darkguard_","stands watch",6
+4,"tn_df_garth_blackwatch_","stands watch",6
+4,"tn_df_heath_nightward_","garrison cook",6
+4,"tn_df_holt_blackward_","stands watch",6
+4,"tn_df_holt_deepward_","minds the shop's door",6
+4,"tn_df_iris_grimhold_","stands watch",6
+4,"tn_df_rusk_nightguard_","commands the garrison",6
+4,"tn_df_thistle_deepward_","helps at The Silent Forge",6
+4,"tn_fh_dray_bogmoor_","stands watch",6
+4,"tn_fh_dun_peatlode_","helps at Bogmyrtle's",3
+4,"tn_fh_fern_damplode_","helps at The Marsh Apothecary",3
+4,"tn_fh_flint_reedmere_","serves at The Peat Fire",3
+4,"tn_fh_ivy_dampditch_","stands watch",6
+4,"tn_fh_juniper_reedcarr_","helps at The Bog Iron Forge",6
+4,"tn_fh_knap_peatditch_","keeps The Stilt Chapel",6
+4,"tn_fh_marl_damplode_","minds the shop's door",3
+4,"tn_fh_rusk_reedcarr_","minds the shop's door",6
+4,"tn_fh_thorn_peatcarr_","helps at The Mossloaf Bakery",3
+4,"tn_hm_ash_hedgemere","helps at The Valley Oven",3
+4,"tn_hm_drift_hollowside","helps at Valley Remedies",3
+4,"tn_hm_reed_valemere","helps at The Hollowmere Shop",6
+4,"tn_if_alder_greywall_","helps at The Isle Forge",6
+4,"tn_if_bramble_greykeep_","garrison cook",6
+4,"tn_if_eskar_islewall_","stands watch",6
+4,"tn_if_harrow_towerguard_","stands watch",6
+4,"tn_if_holt_merewatch_","minds the shop's door",6
+4,"tn_if_iris_moatward_","stands watch",6
+4,"tn_if_isla_moatwall_","stands watch",6
+4,"tn_if_nettle_mereguard_","commands the garrison",6
+4,"tn_if_thistle_greywall_","minds the shop's door",6
+4,"tn_if_wolde_merewatch_","helps at The Armoury",6
+4,"tn_ls_aster_merereach_","stands watch",6
+4,"tn_ls_briar_stillside_","helps at Lakeside Goods",6
+4,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",3
+4,"tn_ls_fern_eelford","healer",6
+4,"tn_ls_frey_stillside_","minds the shop's door",6
+4,"tn_ls_heath_oarwade_","stands watch",6
+4,"tn_ls_hob_oarmere","works at The Mirrormere Smokehouse",3
+4,"tn_ls_ingram_pikemere_","helps at Netmaker's Loft",3
+4,"tn_ls_opal_mistmere_","helps at The Boatwright's",6
+4,"tn_ls_slate_eelford","keeps The Mere Chapel",6
+4,"tn_ls_varg_willowhythe_","minds the shop's door",6
+4,"tn_nf_corrie_rimeward","stands watch",6
+4,"tn_nf_dun_frostward","stands watch",6
+4,"tn_nf_eskar_frosthold","works at The North Arsenal",6
+4,"tn_nf_holly_bleakguard","works at The North Arsenal",6
+4,"tn_nf_holly_rimeguard","minds the shop's door",6
+4,"tn_nf_odo_rimehelm","commands the garrison",6
+4,"tn_nf_yarrow_craghold","garrison cook",6
+4,"tn_sr_bram_greycove","helps at Gullwharf Fish",3
+4,"tn_sr_brand_shinglewater","stands watch",6
+4,"tn_sr_dray_tidemouth","minds the shop's door",3
+4,"tn_sr_gale_gullwick","serves at The Brine and Barrel",3
+4,"tn_sr_jory_tidemouth","helps at The Barrel Yard",3
+4,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",3
+4,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",3
+4,"tn_sr_lark_shingleshore","works at The Saltreach Pans",3
+4,"tn_sr_marl_kelpcove","stands watch",6
+4,"tn_sr_nab_wrackshore","helps at The Anchor Smithy",6
+4,"tn_sr_orrin_greymouth","works at The Gullwharf Smokehouse",3
+4,"tn_sr_thorn_tideline","keeps The Tide Chapel",6
+4,"tn_sr_tor_tideline","keeps The Salt House",6
+4,"tn_wm_ash_thornwell","keeps The Granary",6
+4,"tn_wm_bramble_westfold","stands watch",6
+4,"tn_wm_frey_larkacre","helps at The Hide Yard",3
+4,"tn_wm_hob_thornlea","stands watch",6
+4,"tn_wm_holly_sheepridge","helps at Drover's Block",6
+4,"tn_wm_holt_barrowmarch","helps at Downland Wool",3
+4,"tn_wm_isla_westridge","drives cattle to market",6
+4,"tn_wm_knap_barrowacre","drives cattle to market",6
+4,"tn_wm_linden_woldfold","helps at Westmarch Mercantile",6
+4,"tn_wm_orrin_haybarrow","minds the shop's door",3
+4,"tn_wm_quill_haybarrow","minds the shop's door",3
+4,"tn_wm_vetch_thornwell","keeps The Down Chapel",6
+4,"uax_ash_cragfoot_","carries loads for hire",6
+4,"uax_birch_frostwell_","sweeps and fetches for a shop",6
+4,"uax_brock_ashsong_","washes linen for hire",6
+4,"uax_brock_bramblefoot_","lights the lamps at dusk",6
+4,"uax_drift_birchhowl_","washes linen for hire",6
+4,"uax_elm_stormcoat_","carries loads for hire",6
+4,"uax_gorse_mosscoat_","runs messages about the city",6
+4,"uax_heath_mossborn_","washes linen for hire",6
+4,"uax_heather_birchhowl_","carries loads for hire",6
+4,"uax_heather_snowfoot_","washes linen for hire",6
+4,"uax_hob_brackenrun_","lights the lamps at dusk",6
+4,"uax_ingram_greymantle_","carries loads for hire",6
+4,"uax_ivy_stonecoat_","washes linen for hire",6
+4,"uax_juniper_heathheart_","runs messages about the city",6
+4,"uax_juniper_tarnmoor_","runs messages about the city",6
+4,"uax_kestrel_windmere_","washes linen for hire",6
+4,"uax_kindle_ashwalker_","washes linen for hire",6
+4,"uax_ludo_dusksong_","washes linen for hire",6
+4,"uax_mara_oakridge_","washes linen for hire",6
+4,"uax_nokk_ironbark_","lights the lamps at dusk",6
+4,"uax_pell_frostback_","carries loads for hire",6
+4,"uax_sella_heathrow_","runs messages about the city",6
+4,"uax_sella_mistvale_","washes linen for hire",6
+4,"uax_vale_pinecrest_","carries loads for hire",6
+4,"uax_vesper_frostborn_","lights the lamps at dusk",6
+4,"uax_wisp_duskfell_","sweeps and fetches for a shop",6
+4,"uax_yarrow_mossborn_","washes linen for hire",6
+4,"umber_ashsong_","hauling crates",6
+4,"willa","advising the leader",1
+4,"willa_fallowmark_","tending the hurt",6
+4,"wisp_","reading in the deep archive",6
+4,"wolde","training",6
+4,"wren_","holding the main gate",6
+5,"alder_coldborn_","helping at The Tight Weft",3
+5,"alder_hollowfang_","helping at The Stretched Hide",5
+5,"ash_","leading the Warden Order",6
+5,"ash_duskhide_","helping at The Cold Hammer",6
+5,"aster_marshbark_","copying the city rolls",6
+5,"aster_slateclaw_","helping at Needle & Nap",6
+5,"bramble_","debating in the Grand Hall",6
+5,"brand","holding the stair gate",6
+5,"briar","training",6
+5,"briar_brackenrun_","selling from a plaza stall",6
+5,"briar_stormfang_","helping at Pinecut Joinery",3
+5,"brisk_","coaching at the archery range",6
+5,"brock","on night patrol",6
+5,"brock_coldborn_","helping at The Tight Weft",3
+5,"clover","training",6
+5,"dawn","tending the scroll vaults",6
+5,"dawn_greyhide_","helping at The Straight Shaft",3
+5,"dray","holding the main gate",6
+5,"dray_hollowfang_","helping at The Stretched Hide",5
+5,"drift_frostwalker_","helping at Morning Rise Ovens",6
+5,"dun_","running sparring bouts",6
+5,"dun_pinewell_","copying the city rolls",6
+5,"elm_coldborn_","helping at The Tight Weft",3
+5,"elm_pinevale_","helping at Ridgeline Maps",3
+5,"eskar_","on night patrol",6
+5,"fallow","debating in the Grand Hall",6
+5,"fell_","drilling trainees on the square",6
+5,"fern_","holding the stair gate",6
+5,"fern_frostmark_","helping at Cinderpaw Forge",6
+5,"fern_greybark_","helping at Clayfoot Wares",3
+5,"gorse_","running the obstacle course",6
+5,"grist_hollowmere_","helping at Greywall Goods",6
+5,"harl_mossmere_","helping at Timberline Carpentry",3
+5,"harrow","hearing petitions",6
+5,"hazel","advising the leader",2
+5,"heath_","training",6
+5,"heather","on night watch",6
+5,"holly_","on patrol",6
+5,"ind_briar_smeltshaft","works at The Cinderbrook Smelter",1
+5,"ingram_","training",6
+5,"ingram_harrowgate_","tending the sick",6
+5,"isla","on watch",6
+5,"ivy_pinewalker_","tending the sick",6
+5,"jarl","on watch",6
+5,"jessamy","keeping the Annex",6
+5,"kell","carrying messages for the Concord",6
+5,"kell_ashfall_","hauling crates",6
+5,"kestrel_","hearing petitions",6
+5,"kindle","training",6
+5,"kindle_frostfoot_","selling from a plaza stall",6
+5,"kite","shelving in the upper stacks",6
+5,"knap_","on watch",6
+5,"lark_","keeping the chapel",6
+5,"laurel","drilling in the compound",6
+5,"laurel_ashwalker","helping at The Gatehouse Inn",3
+5,"lichen","advising the leader",2
+5,"loam_","drilling in the compound",6
+5,"marsh","on patrol",6
+5,"moor","drilling in the compound",6
+5,"moss_","on patrol",6
+5,"myrtle","on night watch",6
+5,"nell","training",6
+5,"nettle_ironbark_","drawing water at the plaza well",6
+5,"nightjar_","keeping the crypt library",6
+5,"nightjar_windhollow_","tallying stores",6
+5,"nokk_","hearing petitions",6
+5,"oak_","on night patrol",6
+5,"orrin","carrying messages for the Concord",6
+5,"quarry","training",6
+5,"ridge_mossborn_","minding the stores",6
+5,"rm_ada_brineford","smoking fish",5
+5,"rm_aldric_mudhand_","helping at Collar and Trace",3
+5,"rm_ansel_brinewick","blowing glass",6
+5,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+5,"rm_aud_rustford_","running The Vesk Salt Pans",8
+5,"rm_beatha_saltley","keeping the chambers",6
+5,"rm_berit_plankworth_","holding the south gate",6
+5,"rm_bertil_fogwick","stewarding Grayrock Hall",6
+5,"rm_bertil_millwick","keeping the chambers",6
+5,"rm_bertil_pitchgate","building ships",6
+5,"rm_bertil_wetridge_","helping at The Hook and Cleaver",6
+5,"rm_bo_gullstack","foreman of the quarry",6
+5,"rm_brand_saltwell_","holding the quay gate",6
+5,"rm_bryn_coalwell","working the saws",6
+5,"rm_bryn_kelpridge","boiling rags",6
+5,"rm_bryn_plankham_","on night patrol",6
+5,"rm_caspar_greyley","working the saws",6
+5,"rm_clemence_slagcot","keeping order in court",6
+5,"rm_corra_wickby_","commanding the Watch",6
+5,"rm_corwin_coalley_","on patrol",6
+5,"rm_corwin_pitchley_","works at The Rag Mill",3
+5,"rm_corwin_ropestack_","helping at Wetink Lane Scriveners",2
+5,"rm_corwin_rustham","serving in the hall",6
+5,"rm_dagfinn_ashmore","smoking fish",5
+5,"rm_dagny_kelpmore_","running The Reach Tannery",8
+5,"rm_dirk_brinecot_","works at The Blue Vats",1
+5,"rm_dirk_dripford","keeping the gaol",6
+5,"rm_dirk_sootham_","armourer at The Rivet and Rain",8
+5,"rm_disa_gullhand_","works at Old Mother Tannery",3
+5,"rm_dunstan_wickworth_","minding the shop door",6
+5,"rm_ebba_bilgeworth_","running The Blue Vats",8
+5,"rm_edda_rainby_","running The Rag Mill",8
+5,"rm_edric_ashcombe","working the glass himself",6
+5,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+5,"rm_egil_coalmore_","works at The Fell Wagon Yard",3
+5,"rm_egil_fogton_","helping at Grist & Crust",1
+5,"rm_egil_wickham_","holding the east gate",6
+5,"rm_emmerich_foghand","serving in the hall",6
+5,"rm_emmerich_wetridge_","minding the shop door",6
+5,"rm_erland_sootham_","minding the shop door",3
+5,"rm_frida_millby","cooking for the House",3
+5,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",3
+5,"rm_gorm_coalstack_","running The Reach Foundry",8
+5,"rm_gorm_kelpcot","tallying the Houses' dues",6
+5,"rm_greta_greymore_","works at The Ashcombe Tileworks",1
+5,"rm_grete_mudton_","minding the shop door",3
+5,"rm_grete_slagton_","works at The Brinewater Sail Loft",1
+5,"rm_gudrun_bilgeham","building ships",6
+5,"rm_gudrun_dripham","stewarding Ashcombe House",6
+5,"rm_gudrun_fell","keeping the Fell accounts",3
+5,"rm_hakon_mudton_","brewer at The Black Tun",8
+5,"rm_hakon_pitchstack","keeping the chambers",6
+5,"rm_halvard_pitchwell_","minding the shop door",3
+5,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+5,"rm_hjalte_rustworth","working the saws",6
+5,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+5,"rm_hollis_bilgewick","tending the sick",6
+5,"rm_hollis_wickworth_","helping at Sump Sundries",6
+5,"rm_ilse_greyby_","helping at Harbour Provisions",6
+5,"rm_ingrid_grayrock","at her lessons in the Hall",6
+5,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+5,"rm_isolde_tarwick","presiding over the Council",6
+5,"rm_ivo_dripgate_","works at The Grayrock Arsenal",1
+5,"rm_ivo_pitchby_","works at The Grayrock Arsenal",1
+5,"rm_ivo_wickridge","smoking fish",5
+5,"rm_jarl_coalworth","smoking fish",5
+5,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+5,"rm_jasper_sootton_","works at The Rag Mill",3
+5,"rm_kari_cindermarsh_","on night patrol",6
+5,"rm_kari_millham_","minding the shop door",3
+5,"rm_karin_mudham_","fish stall on the Market Square",8
+5,"rm_kjell_plankstack","copying the rolls",6
+5,"rm_knut_gulldale_","running The Grayrock Foundry",1
+5,"rm_knut_rainley_","helping at The Pawn and Ledger",3
+5,"rm_lars_rainford_","on patrol",6
+5,"rm_lars_sootham_","minding the shop door",3
+5,"rm_leif_mudcot_","helping at The Wet Slab",6
+5,"rm_lothar_ashdale_","works at The Vesk Salt Pans",3
+5,"rm_lothar_brineridge","cooking for the House",3
+5,"rm_lotte_brinemarsh","serving in the hall",4
+5,"rm_lotte_gullcot_","nut stall on the Market Square",8
+5,"rm_magnus_mudgate","working the saws",6
+5,"rm_magnus_sootham_","helping at The Rivet and Rain",3
+5,"rm_magnus_vesk","counting the catch",5
+5,"rm_maren_fogton_","baker at Grist & Crust",8
+5,"rm_maren_ropewell","keeping the chapel",6
+5,"rm_maren_tarworth","serving in the hall",6
+5,"rm_moll_rustby_","on patrol",6
+5,"rm_nan_brineworth_","works at The Ashcombe Tileworks",1
+5,"rm_nan_rainton","keeping the chambers",6
+5,"rm_nessa_brinewater","learning the shipyard",6
+5,"rm_nils_wickley_","on patrol",6
+5,"rm_njal_fogdale","weighing bales",6
+5,"rm_oda_greyford_","works at Old Mother Tannery",3
+5,"rm_oda_rustwell","taxing the cargoes",6
+5,"rm_olaf_wetworth","stewarding Brinewater House",6
+5,"rm_orm_nailley","cooking for the House",6
+5,"rm_oskar_muddale","keeping the harbour",6
+5,"rm_osric_dripcot_","works at The Vesk Salt Pans",3
+5,"rm_ottilie_pitchmore","working the saws",6
+5,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+5,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+5,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+5,"rm_palle_ropeton","stewarding Fellhall",4
+5,"rm_piet_cindermore_","works at The Reach Tannery",3
+5,"rm_ragnar_millworth_","minding the shop door",3
+5,"rm_ragnar_plankgate","serving in the hall",4
+5,"rm_runa_gullton_","egg stall on the Market Square",8
+5,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",3
+5,"rm_rune_brineton_","minding the shop door",3
+5,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+5,"rm_sigrun_bilgeby","building ships",6
+5,"rm_silas_gullley_","works at The Brinewater Sail Loft",1
+5,"rm_soren_slagford","keeping the chambers",6
+5,"rm_soren_wetcot","stewarding Vesk Manor",4
+5,"rm_sten_vesk","running the salt pans",4
+5,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+5,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+5,"rm_tilde_wethand","cooking for the House",6
+5,"rm_tobias_grayrock","overseeing the ironworks",6
+5,"rm_tove_pitchworth","keeping the inn",8
+5,"rm_tove_ropedale","hearing cases",6
+5,"rm_ulla_brinedale","cooking for the House",6
+5,"rm_una_pitchwell_","runs Greywater Dairy",8
+5,"rm_vidar_ropewick_","works at The Blue Vats",1
+5,"rm_vigdis_millwell_","works at The Reach Tannery",3
+5,"rm_wenna_coalwick_","running The South Gate Stables",8
+5,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+5,"rm_wynn_cinderton","building ships",6
+5,"rm_yrsa_mudmarsh","smoking fish",5
+5,"rm_yrsa_plankridge","blowing glass",6
+5,"rm_yrsa_wickdale","blowing glass",6
+5,"rmx_egil_plankridge","lights the lamps at dusk",6
+5,"rmx_olaf_cindermarsh_","sweeps and fetches for a shop",6
+5,"rmx_pim_dripham_","runs messages about the city",6
+5,"rmx_rika_nailcot_","washes linen for hire",6
+5,"rmx_runa_ashton_","runs messages about the city",6
+5,"rmx_silas_saltstack_","sweeps and fetches for a shop",2
+5,"rmx_thyra_greycot_","runs messages about the city",6
+5,"roan_","on patrol",6
+5,"sage_","debating in the Grand Hall",6
+5,"scree_","on patrol",6
+5,"sella","drilling in the compound",6
+5,"sf_achille_rivante","hauling for the warehouses",1
+5,"sf_agnese_castellane_","receiving guests",6
+5,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+5,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+5,"sf_alba_galieri_","guarding the palace",6
+5,"sf_alessio_rosandi","helping at Ottone & Rame",6
+5,"sf_amedeo_maresi","helping at Penna e Sigillo",3
+5,"sf_amedeo_orselli","helping at Dispensa del Porto",3
+5,"sf_aurelia_belano","unloading barges",1
+5,"sf_aurelio_marucci","presiding over the guild",6
+5,"sf_bastiano_orsesi_","serving the household",6
+5,"sf_beatrice_orselli","minding the shop door",3
+5,"sf_benedetto_albani","celebrating the Mass",6
+5,"sf_bruno_lanale","soup stall on the Mercato",8
+5,"sf_carlotta_lanano","helping at Seta Fina",6
+5,"sf_cassio_di_castellane","attending the court",6
+5,"sf_ciro_aldobrandi_","receiving guests",6
+5,"sf_ciro_marandi_","keeping the crypt",6
+5,"sf_clelia_benano","works at Tintoria Bellandi",1
+5,"sf_clelia_coruzzi","helping at La Forgia",6
+5,"sf_corrado_marotti_","leading the choir",6
+5,"sf_corrado_morone","shopkeeper at The Red Door",8
+5,"sf_cosima_ferucci","works at The Royal Arsenal",1
+5,"sf_cosima_morucci","holding the east gate",6
+5,"sf_cosima_rivelli","running Mulino del Borgo",8
+5,"sf_cosimo_casari","mason at Marmi Ferrante",8
+5,"sf_cosimo_morone","helping at The Red Door",2
+5,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+5,"sf_dario_rivuzzi","mending nets on the wharf",1
+5,"sf_delia_rosetti","minding the shop door",3
+5,"sf_duccio_coretti_","serving the household",6
+5,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+5,"sf_duccio_valmonte_","receiving guests",6
+5,"sf_elena_lanucci","minding the shop door",3
+5,"sf_elena_rivetti","works at Fonderia delle Campane",3
+5,"sf_eliseo_colesi","works at Cartiera Bianca",3
+5,"sf_eliseo_salari","works at Carri Galli",1
+5,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+5,"sf_emilia_ferante_","keeping the Chapel Royal",6
+5,"sf_emilio_valieri","minding the shop door",3
+5,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+5,"sf_enzo_lucenti_","receiving guests",6
+5,"sf_fabrizio_benandi","grading fleeces",6
+5,"sf_fiora_belieri_","hearing confessions",6
+5,"sf_fiora_rivano_","serving the household",6
+5,"sf_flavia_corano_","works at Tintoria Bellandi",1
+5,"sf_flavia_ferotti","works at Carri Galli",1
+5,"sf_flavia_galone","minding the shop door",3
+5,"sf_gemma_belini_","polishing the throne room",6
+5,"sf_gemma_corieri","running Carri Galli",8
+5,"sf_gemma_salieri","unloading barges",1
+5,"sf_gemma_valieri","helping at Mappe del Fiume",3
+5,"sf_gemma_venale","minding the shop door",3
+5,"sf_giacomo_ferale_","keeping the royal apartments",6
+5,"sf_gino_casandi_","guarding the palace",6
+5,"sf_giulia_colari","tallying barges",6
+5,"sf_gualtiero_colini","running Fonderia delle Campane",8
+5,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+5,"sf_ilaria_palale_","gossiping at court",6
+5,"sf_ilario_coluzzi_","attending the Queen",6
+5,"sf_ilario_morieri","helping at Erbe di Campo",6
+5,"sf_isotta_nerale","on patrol",6
+5,"sf_isotta_palucci","helping at Profumi Lucenti",3
+5,"sf_isotta_salandi","works at The Royal Arsenal",1
+5,"sf_lapo_casuzzi","helping at Botti Ferrante",3
+5,"sf_lapo_orsenna_","receiving guests",6
+5,"sf_lapo_salesi","painting on the cathedral square",6
+5,"sf_lavinia_belale","works at Fonderia delle Campane",3
+5,"sf_lavinia_nerandi","helping at Armeria del Leone",3
+5,"sf_leandro_casante","trading at the market",1
+5,"sf_leandro_valucci_","serving the household",6
+5,"sf_livia_di_castellane","receiving at court",6
+5,"sf_livia_galante_","announcing the court",6
+5,"sf_livia_lanotti_","guarding the palace",6
+5,"sf_livia_torandi","porridge stall on the Mercato",8
+5,"sf_livia_venucci","minding the shop door",6
+5,"sf_loretta_colotti_","guarding the palace",6
+5,"sf_loretta_valesi_","keeping the guild books",6
+5,"sf_lucia_colone_","arguing the price of wool",6
+5,"sf_lucia_nerucci","on patrol",6
+5,"sf_mafalda_lucenti_","receiving guests",6
+5,"sf_mafalda_marenzi_","receiving guests",6
+5,"sf_mafalda_morotti","running Tintoria Bellandi",8
+5,"sf_mafalda_palari_","serving the household",6
+5,"sf_marcello_galuzzi","helping at Il Forno d'Oro",6
+5,"sf_marcello_morandi","running The Royal Arsenal",8
+5,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+5,"sf_marcello_venale","helping at Bottega del Legno",3
+5,"sf_marzia_ferini_","serving the royal table",6
+5,"sf_marzia_orsenna_","receiving guests",6
+5,"sf_marzia_rivucci_","nursing the sick",6
+5,"sf_matteo_lanante","runs Il Mulino Dairy",8
+5,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+5,"sf_matteo_salini","keeps the water mill at La Riva",8
+5,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+5,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+5,"sf_mirella_rosotti_","lighting the candles",6
+5,"sf_nico_lanini_","serving the household",6
+5,"sf_nico_palandi","works at The Red Tile Works",1
+5,"sf_nives_morini_","commanding the palace guard",6
+5,"sf_nives_salelli","on night patrol",6
+5,"sf_noemi_lanetti_","serving the household",6
+5,"sf_noemi_valmonte_","receiving guests",6
+5,"sf_orsino_belante","on patrol",6
+5,"sf_orsola_marano","on night patrol",6
+5,"sf_ottavia_lanza","hearing petitions",6
+5,"sf_ottavia_maruzzi","works at Mulino del Borgo",3
+5,"sf_ottavia_nerari","on patrol",6
+5,"sf_ottone_marenzi_","receiving guests",6
+5,"sf_pasquale_torone_","serving the household",6
+5,"sf_perla_belucci","on patrol",6
+5,"sf_piero_darotti_","guarding the palace",6
+5,"sf_primo_benale_","cooking for the palace",8
+5,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+5,"sf_renata_galini","works at Cartiera Bianca",3
+5,"sf_renata_salini","weaver at Tessitura Bellandi",8
+5,"sf_renzo_corucci","running La Concia",8
+5,"sf_rocco_morano","keeping the inn",8
+5,"sf_rocco_orsini","minding the shop door",3
+5,"sf_rosalba_belotti_","attending the King",6
+5,"sf_salvatore_orsone","running Cartiera Bianca",8
+5,"sf_salvatore_venante","works at The Red Tile Works",1
+5,"sf_serafina_aldobrandi_","receiving guests",6
+5,"sf_serafina_ferelli_","running errands for the household",1
+5,"sf_serafina_lanone","commanding the city guard",6
+5,"sf_serafina_maresi","minding the shop door",3
+5,"sf_sveva_galucci","unloading barges",1
+5,"sf_taddeo_paluzzi","unloading barges",1
+5,"sf_teodora_venone_","serving the household",6
+5,"sf_teodoro_palone","running The East Gate Stables",8
+5,"sf_tommaso_benini_","serving the household",6
+5,"sf_tommaso_darandi_","serving the household",6
+5,"sf_tullia_darari_","nursing the sick",6
+5,"sf_umberto_maresi","minding the shop door",3
+5,"sf_umberto_marieri","on night patrol",6
+5,"sf_valeria_toruzzi_","scrubbing the kitchens",1
+5,"sf_valerio_casieri","running The Red Tile Works",8
+5,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+5,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+5,"sf_vasco_castellane_","receiving guests",6
+5,"sf_viola_darieri_","serving the household",6
+5,"sf_vittore_nerone","holding the north gate",6
+5,"sf_vittoria_torucci_","copying the chapter's books",6
+5,"sfx_fausto_orsini","works at The La Riva Water Mill",3
+5,"sfx_manfredi_pallotta","sweeps and fetches for a shop",3
+5,"sfx_sveva_ferrante","runs messages about the city",1
+5,"skye_","holding the south gate",6
+5,"sloe","presiding over the Concord",6
+5,"tansy","keeping the training stores",6
+5,"tarn_","holding the south gate",6
+5,"thief","working",6
+5,"thistle_","on watch",6
+5,"thorn_screebark_","mending the old wall",6
+5,"tn_ac_bramble_gatewright","stands watch",6
+5,"tn_ac_elm_crosswright","minds the shop's door",6
+5,"tn_ac_flint_milestone","tends the carters' beasts",6
+5,"tn_ac_gale_crossley","works at The Wheelwright's Yard",3
+5,"tn_ac_heath_wheelmark","tends the carters' beasts",6
+5,"tn_ac_holly_gatepost","loads the caravan wagons",6
+5,"tn_ac_mara_dustcote","helps at Waystation Stores",6
+5,"tn_ac_quarry_gatepost","loads the caravan wagons",6
+5,"tn_ac_quill_tollwell","helps at The Gate Forge",6
+5,"tn_ac_ridge_mileward","keeps The Caravan Shed",6
+5,"tn_ac_ridge_waymark","helps at The Trace and Collar",3
+5,"tn_ac_rowan_cartpost","stands watch",6
+5,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",3
+5,"tn_ac_varg_mileward","loads the caravan wagons",6
+5,"tn_ac_wald_tollwell","minds the shop's door",6
+5,"tn_af_brand_strawacre","keeps the ford toll",6
+5,"tn_af_edric_sheaffield_","helps at Amberford Goods",6
+5,"tn_af_fallow_grainford_","minds the shop's door",6
+5,"tn_af_frey_wheatmow_","stands watch",6
+5,"tn_af_ivy_furrowstook_","keeps The Grain Barn",6
+5,"tn_af_ivy_strawacre_","grinds at the ford mill",6
+5,"tn_af_nell_furrowmow_","helps at The Amber Loaf",6
+5,"tn_af_tor_goldstead_","stands watch",6
+5,"tn_af_tor_grainfield_","helps at Ford Brewhouse",3
+5,"tn_af_umber_wheatley_","helps at Amberford Cooperage",6
+5,"tn_af_varg_harrowford","works at The Ford Mill",6
+5,"tn_af_yarrow_furrowstook_","keeps The Harvest Chapel",6
+5,"tn_cb_birch_ironhollow","serves at The Hot Anvil",3
+5,"tn_cb_brock_rustvein_","keeps The Shrine of the Iron Saint",6
+5,"tn_cb_fern_slaghollow_","helps at Cinderbrook Forge",1
+5,"tn_cb_flint_rustvein_","healer",6
+5,"tn_cb_hob_ashshaft_","stands watch",6
+5,"tn_cb_opal_ironvein_","stands watch",6
+5,"tn_cb_pell_emberpit_","helps at The Red Door Store",6
+5,"tn_df_edric_darkguard_","stands watch",6
+5,"tn_df_garth_blackwatch_","stands watch",6
+5,"tn_df_heath_nightward_","garrison cook",6
+5,"tn_df_holt_blackward_","stands watch",6
+5,"tn_df_holt_deepward_","minds the shop's door",6
+5,"tn_df_iris_grimhold_","stands watch",6
+5,"tn_df_rusk_nightguard_","commands the garrison",6
+5,"tn_df_thistle_deepward_","helps at The Silent Forge",6
+5,"tn_fh_dray_bogmoor_","stands watch",6
+5,"tn_fh_dun_peatlode_","helps at Bogmyrtle's",3
+5,"tn_fh_fern_damplode_","helps at The Marsh Apothecary",3
+5,"tn_fh_flint_reedmere_","serves at The Peat Fire",3
+5,"tn_fh_harrow_peathollow_","helps at Fenhollow Store",3
+5,"tn_fh_ivy_dampditch_","stands watch",6
+5,"tn_fh_juniper_reedcarr_","helps at The Bog Iron Forge",6
+5,"tn_fh_knap_peatditch_","keeps The Stilt Chapel",6
+5,"tn_fh_lorn_rushditch_","helps at Rushlight Chandler",3
+5,"tn_fh_marl_damplode_","minds the shop's door",3
+5,"tn_fh_rusk_reedcarr_","minds the shop's door",6
+5,"tn_fh_thorn_peatcarr_","helps at The Mossloaf Bakery",6
+5,"tn_fh_wren_rushditch_","minds the shop's door",3
+5,"tn_hm_ash_hedgemere","helps at The Valley Oven",6
+5,"tn_hm_drift_hollowside","helps at Valley Remedies",3
+5,"tn_hm_reed_valemere","helps at The Hollowmere Shop",6
+5,"tn_if_alder_greywall_","helps at The Isle Forge",6
+5,"tn_if_bramble_greykeep_","garrison cook",6
+5,"tn_if_eskar_islewall_","stands watch",6
+5,"tn_if_harrow_towerguard_","stands watch",6
+5,"tn_if_holt_merewatch_","minds the shop's door",6
+5,"tn_if_iris_moatward_","stands watch",6
+5,"tn_if_isla_moatwall_","stands watch",6
+5,"tn_if_nettle_mereguard_","commands the garrison",6
+5,"tn_if_thistle_greywall_","minds the shop's door",6
+5,"tn_if_wolde_merewatch_","helps at The Armoury",6
+5,"tn_ls_aster_merereach_","stands watch",6
+5,"tn_ls_briar_stillside_","helps at Lakeside Goods",6
+5,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",3
+5,"tn_ls_fern_eelford","healer",6
+5,"tn_ls_frey_stillside_","minds the shop's door",6
+5,"tn_ls_heath_oarwade_","stands watch",6
+5,"tn_ls_hob_oarmere","works at The Mirrormere Smokehouse",3
+5,"tn_ls_ingram_pikemere_","helps at Netmaker's Loft",3
+5,"tn_ls_opal_mistmere_","helps at The Boatwright's",6
+5,"tn_ls_slate_eelford","keeps The Mere Chapel",6
+5,"tn_ls_varg_willowhythe_","minds the shop's door",6
+5,"tn_nf_corrie_rimeward","stands watch",6
+5,"tn_nf_dun_frostward","stands watch",6
+5,"tn_nf_eskar_frosthold","works at The North Arsenal",5
+5,"tn_nf_holly_bleakguard","works at The North Arsenal",6
+5,"tn_nf_holly_rimeguard","minds the shop's door",6
+5,"tn_nf_odo_rimehelm","commands the garrison",6
+5,"tn_nf_yarrow_craghold","garrison cook",6
+5,"tn_sr_bram_greycove","helps at Gullwharf Fish",3
+5,"tn_sr_brand_shinglewater","stands watch",6
+5,"tn_sr_dray_tidemouth","minds the shop's door",3
+5,"tn_sr_gale_gullwick","serves at The Brine and Barrel",3
+5,"tn_sr_jory_tidemouth","helps at The Barrel Yard",3
+5,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",5
+5,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",3
+5,"tn_sr_lark_shingleshore","works at The Saltreach Pans",5
+5,"tn_sr_marl_kelpcove","stands watch",6
+5,"tn_sr_nab_wrackshore","helps at The Anchor Smithy",6
+5,"tn_sr_orrin_greymouth","works at The Gullwharf Smokehouse",3
+5,"tn_sr_thorn_tideline","keeps The Tide Chapel",6
+5,"tn_sr_tor_tideline","keeps The Salt House",6
+5,"tn_wm_ash_thornwell","keeps The Granary",6
+5,"tn_wm_bramble_westfold","stands watch",6
+5,"tn_wm_frey_larkacre","helps at The Hide Yard",3
+5,"tn_wm_hob_thornlea","stands watch",6
+5,"tn_wm_holly_sheepridge","helps at Drover's Block",6
+5,"tn_wm_holt_barrowmarch","helps at Downland Wool",3
+5,"tn_wm_isla_westridge","drives cattle to market",6
+5,"tn_wm_knap_barrowacre","drives cattle to market",6
+5,"tn_wm_linden_woldfold","helps at Westmarch Mercantile",6
+5,"tn_wm_orrin_haybarrow","minds the shop's door",3
+5,"tn_wm_quill_haybarrow","minds the shop's door",3
+5,"tn_wm_vetch_thornwell","keeps The Down Chapel",6
+5,"uax_ash_cragfoot_","carries loads for hire",6
+5,"uax_birch_frostwell_","sweeps and fetches for a shop",6
+5,"uax_brock_ashsong_","washes linen for hire",6
+5,"uax_brock_bramblefoot_","lights the lamps at dusk",6
+5,"uax_drift_birchhowl_","washes linen for hire",6
+5,"uax_elm_stormcoat_","carries loads for hire",6
+5,"uax_gorse_mosscoat_","runs messages about the city",6
+5,"uax_heath_mossborn_","washes linen for hire",6
+5,"uax_heather_birchhowl_","carries loads for hire",6
+5,"uax_heather_snowfoot_","washes linen for hire",6
+5,"uax_hob_brackenrun_","lights the lamps at dusk",6
+5,"uax_ingram_greymantle_","carries loads for hire",6
+5,"uax_ivy_stonecoat_","washes linen for hire",6
+5,"uax_juniper_heathheart_","runs messages about the city",6
+5,"uax_juniper_tarnmoor_","runs messages about the city",6
+5,"uax_kestrel_windmere_","washes linen for hire",6
+5,"uax_kindle_ashwalker_","washes linen for hire",6
+5,"uax_ludo_dusksong_","washes linen for hire",6
+5,"uax_mara_oakridge_","washes linen for hire",6
+5,"uax_nokk_ironbark_","lights the lamps at dusk",6
+5,"uax_pell_frostback_","carries loads for hire",6
+5,"uax_sella_heathrow_","runs messages about the city",6
+5,"uax_sella_mistvale_","washes linen for hire",6
+5,"uax_vale_pinecrest_","carries loads for hire",6
+5,"uax_vesper_frostborn_","lights the lamps at dusk",6
+5,"uax_wisp_duskfell_","sweeps and fetches for a shop",6
+5,"uax_yarrow_mossborn_","washes linen for hire",6
+5,"umber_ashsong_","hauling crates",6
+5,"willa_fallowmark_","tending the hurt",6
+5,"wisp_","reading in the deep archive",6
+5,"wolde","training",6
+5,"wren_","holding the main gate",6
+6,"brand","holding the stair gate",6
+6,"brock","on night patrol",6
+6,"dray","holding the main gate",6
+6,"eskar_","on night patrol",6
+6,"fern_","holding the stair gate",6
+6,"heather","on night watch",6
+6,"holly_","on patrol",6
+6,"isla","on watch",6
+6,"jarl","on watch",6
+6,"knap_","on watch",6
+6,"marsh","on patrol",6
+6,"moss_","on patrol",6
+6,"myrtle","on night watch",6
+6,"oak_","on night patrol",6
+6,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+6,"rm_aud_rustford_","running The Vesk Salt Pans",8
+6,"rm_berit_plankworth_","holding the south gate",6
+6,"rm_brand_saltwell_","holding the quay gate",6
+6,"rm_bryn_plankham_","on night patrol",6
+6,"rm_corra_wickby_","commanding the Watch",6
+6,"rm_corwin_coalley_","on patrol",6
+6,"rm_dagny_kelpmore_","running The Reach Tannery",8
+6,"rm_dirk_sootham_","armourer at The Rivet and Rain",8
+6,"rm_ebba_bilgeworth_","running The Blue Vats",8
+6,"rm_edda_rainby_","running The Rag Mill",8
+6,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+6,"rm_egil_wickham_","holding the east gate",6
+6,"rm_finn_ashridge_","smith at Nailers' Forge",8
+6,"rm_gorm_coalstack_","running The Reach Foundry",8
+6,"rm_hakon_mudton_","brewer at The Black Tun",8
+6,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+6,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+6,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+6,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+6,"rm_kari_cindermarsh_","on night patrol",6
+6,"rm_karin_mudham_","fish stall on the Market Square",8
+6,"rm_knut_gulldale_","running The Grayrock Foundry",8
+6,"rm_lars_rainford_","on patrol",6
+6,"rm_lotte_gullcot_","nut stall on the Market Square",8
+6,"rm_maren_fogton_","baker at Grist & Crust",8
+6,"rm_moll_rustby_","on patrol",6
+6,"rm_nils_wickley_","on patrol",6
+6,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+6,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+6,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+6,"rm_runa_gullton_","egg stall on the Market Square",8
+6,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+6,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+6,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+6,"rm_tove_pitchworth","keeping the inn",8
+6,"rm_una_pitchwell_","runs Greywater Dairy",8
+6,"rm_wenna_coalwick_","running The South Gate Stables",8
+6,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+6,"roan_","on patrol",6
+6,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+6,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+6,"sf_alba_galieri_","guarding the palace",6
+6,"sf_bruno_lanale","soup stall on the Mercato",8
+6,"sf_corrado_morone","shopkeeper at The Red Door",8
+6,"sf_cosima_morucci","holding the east gate",6
+6,"sf_cosima_rivelli","running Mulino del Borgo",8
+6,"sf_cosimo_casari","mason at Marmi Ferrante",8
+6,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+6,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+6,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+6,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+6,"sf_gemma_corieri","running Carri Galli",8
+6,"sf_gino_casandi_","guarding the palace",6
+6,"sf_gualtiero_colini","running Fonderia delle Campane",8
+6,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+6,"sf_isotta_nerale","on patrol",6
+6,"sf_livia_lanotti_","guarding the palace",6
+6,"sf_livia_torandi","porridge stall on the Mercato",8
+6,"sf_loretta_colotti_","guarding the palace",6
+6,"sf_lucia_nerucci","on patrol",6
+6,"sf_mafalda_morotti","running Tintoria Bellandi",8
+6,"sf_marcello_morandi","running The Royal Arsenal",8
+6,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+6,"sf_matteo_lanante","runs Il Mulino Dairy",8
+6,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+6,"sf_matteo_salini","keeps the water mill at La Riva",8
+6,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+6,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+6,"sf_nives_morini_","commanding the palace guard",6
+6,"sf_nives_salelli","on night patrol",6
+6,"sf_orsino_belante","on patrol",6
+6,"sf_orsola_marano","on night patrol",6
+6,"sf_ottavia_nerari","on patrol",6
+6,"sf_perla_belucci","on patrol",6
+6,"sf_piero_darotti_","guarding the palace",6
+6,"sf_primo_benale_","cooking for the palace",8
+6,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+6,"sf_renata_salini","weaver at Tessitura Bellandi",8
+6,"sf_renzo_corucci","running La Concia",8
+6,"sf_rocco_morano","keeping the inn",8
+6,"sf_salvatore_orsone","running Cartiera Bianca",8
+6,"sf_serafina_lanone","commanding the city guard",6
+6,"sf_teodoro_palone","running The East Gate Stables",8
+6,"sf_umberto_marieri","on night patrol",6
+6,"sf_valerio_casieri","running The Red Tile Works",8
+6,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+6,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+6,"sf_vittore_nerone","holding the north gate",6
+6,"skye_","holding the south gate",6
+6,"tarn_","holding the south gate",6
+6,"thistle_","on watch",6
+6,"tn_ac_bramble_gatewright","stands watch",6
+6,"tn_ac_rowan_cartpost","stands watch",6
+6,"tn_af_frey_wheatmow_","stands watch",6
+6,"tn_af_tor_goldstead_","stands watch",6
+6,"tn_cb_hob_ashshaft_","stands watch",6
+6,"tn_cb_opal_ironvein_","stands watch",6
+6,"tn_df_edric_darkguard_","stands watch",6
+6,"tn_df_garth_blackwatch_","stands watch",6
+6,"tn_df_holt_blackward_","stands watch",6
+6,"tn_df_iris_grimhold_","stands watch",6
+6,"tn_df_rusk_nightguard_","commands the garrison",6
+6,"tn_fh_dray_bogmoor_","stands watch",6
+6,"tn_fh_ivy_dampditch_","stands watch",6
+6,"tn_if_eskar_islewall_","stands watch",6
+6,"tn_if_harrow_towerguard_","stands watch",6
+6,"tn_if_iris_moatward_","stands watch",6
+6,"tn_if_isla_moatwall_","stands watch",6
+6,"tn_if_nettle_mereguard_","commands the garrison",6
+6,"tn_ls_aster_merereach_","stands watch",6
+6,"tn_ls_heath_oarwade_","stands watch",6
+6,"tn_nf_corrie_rimeward","stands watch",6
+6,"tn_nf_dun_frostward","stands watch",6
+6,"tn_nf_odo_rimehelm","commands the garrison",6
+6,"tn_sr_brand_shinglewater","stands watch",6
+6,"tn_sr_marl_kelpcove","stands watch",6
+6,"tn_wm_bramble_westfold","stands watch",6
+6,"tn_wm_hob_thornlea","stands watch",6
+6,"wren_","holding the main gate",6
+7,"brand","holding the stair gate",6
+7,"brock","on night patrol",6
+7,"dray","holding the main gate",6
+7,"dun_","running sparring bouts",2
+7,"eskar_","on night patrol",6
+7,"fern_","holding the stair gate",6
+7,"heath_","training",2
+7,"heather","on night watch",6
+7,"holly_","on patrol",6
+7,"isla","on watch",6
+7,"jarl","on watch",6
+7,"kindle","training",2
+7,"knap_","on watch",6
+7,"lark_","keeping the chapel",2
+7,"loam_","drilling in the compound",2
+7,"marsh","on patrol",6
+7,"moor","drilling in the compound",2
+7,"moss_","on patrol",6
+7,"myrtle","on night watch",6
+7,"nell","training",2
+7,"oak_","on night patrol",6
+7,"quarry","training",2
+7,"rm_ada_brineford","smoking fish",2
+7,"rm_ansel_brinewick","blowing glass",2
+7,"rm_arne_brinewell_","running The Fell Wagon Yard",8
+7,"rm_aud_rustford_","running The Vesk Salt Pans",8
+7,"rm_beatha_saltley","keeping the chambers",2
+7,"rm_berit_plankworth_","holding the south gate",6
+7,"rm_bertil_fogwick","stewarding Grayrock Hall",2
+7,"rm_bertil_pitchgate","building ships",2
+7,"rm_bo_gullstack","foreman of the quarry",2
+7,"rm_brand_saltwell_","holding the quay gate",6
+7,"rm_bryn_coalwell","working the saws",2
+7,"rm_bryn_plankham_","on night patrol",6
+7,"rm_caspar_greyley","working the saws",2
+7,"rm_corra_wickby_","commanding the Watch",2
+7,"rm_corwin_coalley_","on patrol",6
+7,"rm_corwin_pitchley_","works at The Rag Mill",1
+7,"rm_corwin_rustham","serving in the hall",2
+7,"rm_dagfinn_ashmore","smoking fish",2
+7,"rm_dagny_kelpmore_","running The Reach Tannery",8
+7,"rm_dirk_brinecot_","works at The Blue Vats",1
+7,"rm_dirk_sootham_","armourer at The Rivet and Rain",1
+7,"rm_disa_gullhand_","works at Old Mother Tannery",1
+7,"rm_ebba_bilgeworth_","running The Blue Vats",8
+7,"rm_edda_rainby_","running The Rag Mill",8
+7,"rm_edric_ashcombe","working the glass himself",2
+7,"rm_edric_pitchton_","running The Ashcombe Tileworks",8
+7,"rm_egil_coalmore_","works at The Fell Wagon Yard",1
+7,"rm_egil_wickham_","holding the east gate",6
+7,"rm_emmerich_foghand","serving in the hall",2
+7,"rm_finn_ashridge_","smith at Nailers' Forge",3
+7,"rm_frida_millby","cooking for the House",1
+7,"rm_gerrit_kelpley_","works at The Fell Wagon Yard",1
+7,"rm_gorm_coalstack_","running The Reach Foundry",8
+7,"rm_grete_slagton_","works at The Brinewater Sail Loft",1
+7,"rm_gudrun_bilgeham","building ships",2
+7,"rm_gudrun_dripham","stewarding Ashcombe House",2
+7,"rm_hakon_mudton_","brewer at The Black Tun",8
+7,"rm_hakon_pitchstack","keeping the chambers",2
+7,"rm_hilde_kelpworth_","running The Brinewater Sail Loft",8
+7,"rm_hjalte_rustworth","working the saws",2
+7,"rm_hjalte_saltgate_","chandler at Wickham's Chandlery",8
+7,"rm_ingrid_tarcot_","running Old Mother Tannery",8
+7,"rm_ivo_dripgate_","works at The Grayrock Arsenal",1
+7,"rm_ivo_pitchby_","works at The Grayrock Arsenal",1
+7,"rm_ivo_wickridge","smoking fish",2
+7,"rm_jarl_coalworth","smoking fish",2
+7,"rm_jarl_gullmarsh_","pickle stall on the Market Square",8
+7,"rm_jasper_sootton_","works at The Rag Mill",1
+7,"rm_kari_cindermarsh_","on night patrol",6
+7,"rm_karin_mudham_","fish stall on the Market Square",8
+7,"rm_knut_gulldale_","running The Grayrock Foundry",8
+7,"rm_lars_rainford_","on patrol",6
+7,"rm_lothar_ashdale_","works at The Vesk Salt Pans",1
+7,"rm_lotte_gullcot_","nut stall on the Market Square",8
+7,"rm_magnus_mudgate","working the saws",2
+7,"rm_magnus_vesk","counting the catch",2
+7,"rm_maren_fogton_","baker at Grist & Crust",8
+7,"rm_moll_rustby_","on patrol",6
+7,"rm_nessa_brinewater","learning the shipyard",2
+7,"rm_nils_wickley_","on patrol",6
+7,"rm_oda_greyford_","works at Old Mother Tannery",1
+7,"rm_olaf_wetworth","stewarding Brinewater House",2
+7,"rm_orm_nailley","cooking for the House",2
+7,"rm_osric_dripcot_","works at The Vesk Salt Pans",1
+7,"rm_ottilie_pitchmore","working the saws",2
+7,"rm_ottilie_wetmarsh_","honey stall on the Market Square",8
+7,"rm_ottilie_wickmore_","tailor at Oilcloth & Wool",8
+7,"rm_palle_cinderhand_","running The Grayrock Lime Kilns",8
+7,"rm_piet_cindermore_","works at The Reach Tannery",1
+7,"rm_ragnar_plankgate","serving in the hall",1
+7,"rm_runa_gullton_","egg stall on the Market Square",8
+7,"rm_runa_rainwick_","works at The Grayrock Lime Kilns",1
+7,"rm_rune_millworth","runs The Rainwash Smokehouse",8
+7,"rm_sigrun_bilgeby","building ships",2
+7,"rm_silas_gullley_","works at The Brinewater Sail Loft",1
+7,"rm_soren_slagford","keeping the chambers",2
+7,"rm_tilde_brinestack_","running The Grayrock Arsenal",8
+7,"rm_tilde_ropestack_","scribe at Wetink Lane Scriveners",8
+7,"rm_tobias_grayrock","overseeing the ironworks",2
+7,"rm_tove_pitchworth","keeping the inn",8
+7,"rm_ulla_brinedale","cooking for the House",2
+7,"rm_una_pitchwell_","runs Greywater Dairy",8
+7,"rm_vidar_ropewick_","works at The Blue Vats",1
+7,"rm_vigdis_millwell_","works at The Reach Tannery",1
+7,"rm_wenna_coalwick_","running The South Gate Stables",8
+7,"rm_wenna_mudhand_","saddler at Collar and Trace",8
+7,"rm_wynn_cinderton","building ships",2
+7,"rm_yrsa_mudmarsh","smoking fish",2
+7,"rm_yrsa_plankridge","blowing glass",2
+7,"rm_yrsa_wickdale","blowing glass",2
+7,"roan_","on patrol",6
+7,"scree_","on patrol",6
+7,"sella","drilling in the compound",2
+7,"sf_agnese_orsotti","saddler at Cuoio Fino",8
+7,"sf_agnese_rivale","apothecary at Farmacia della Santa",8
+7,"sf_alba_beluzzi","washing linen at the river stairs",1
+7,"sf_alba_casano","washing linen at the river stairs",1
+7,"sf_alba_galieri_","guarding the palace",6
+7,"sf_allegra_moresi","unloading barges",1
+7,"sf_aurelia_belano","unloading barges",1
+7,"sf_bastiano_orsesi_","serving the household",2
+7,"sf_benedetto_albani","celebrating the Mass",2
+7,"sf_bruno_lanale","soup stall on the Mercato",8
+7,"sf_ciro_marandi_","keeping the crypt",2
+7,"sf_clelia_benano","works at Tintoria Bellandi",1
+7,"sf_corrado_marotti_","leading the choir",2
+7,"sf_corrado_morone","shopkeeper at The Red Door",8
+7,"sf_cosima_ferucci","works at The Royal Arsenal",1
+7,"sf_cosima_morucci","holding the east gate",6
+7,"sf_cosimo_casari","mason at Marmi Ferrante",8
+7,"sf_cosimo_orsini","glassblower at Vetro Chiaro",8
+7,"sf_dario_rivuzzi","mending nets on the wharf",1
+7,"sf_donatella_rivari","mending nets on the wharf",1
+7,"sf_duccio_coretti_","serving the household",2
+7,"sf_duccio_orselli","provisioner at Dispensa del Porto",8
+7,"sf_elena_rivetti","works at Fonderia delle Campane",1
+7,"sf_eliseo_colesi","works at Cartiera Bianca",1
+7,"sf_eliseo_salari","works at Carri Galli",1
+7,"sf_eliseo_valuzzi","fishmonger at Pesce del Fiume",8
+7,"sf_enzo_casuzzi","cooper at Botti Ferrante",8
+7,"sf_fiora_belieri_","hearing confessions",2
+7,"sf_fiora_rivano_","serving the household",2
+7,"sf_flavia_corano_","works at Tintoria Bellandi",1
+7,"sf_flavia_ferotti","works at Carri Galli",1
+7,"sf_gemma_belini_","polishing the throne room",2
+7,"sf_gemma_corieri","running Carri Galli",8
+7,"sf_gemma_salieri","unloading barges",1
+7,"sf_giacomo_ferale_","keeping the royal apartments",2
+7,"sf_gino_casandi_","guarding the palace",6
+7,"sf_gualtiero_colini","running Fonderia delle Campane",8
+7,"sf_gualtiero_rosetti","moneychanger at The Bank of the Red Roof",8
+7,"sf_isotta_nerale","on patrol",4
+7,"sf_isotta_salandi","works at The Royal Arsenal",1
+7,"sf_lavinia_belale","works at Fonderia delle Campane",1
+7,"sf_leandro_valucci_","serving the household",2
+7,"sf_livia_lanotti_","guarding the palace",6
+7,"sf_livia_torandi","porridge stall on the Mercato",8
+7,"sf_lorenzo_benone","hauling for the warehouses",1
+7,"sf_loretta_colotti_","guarding the palace",6
+7,"sf_lucia_nerucci","on patrol",6
+7,"sf_mafalda_morotti","running Tintoria Bellandi",8
+7,"sf_mafalda_palari_","serving the household",2
+7,"sf_marcello_morandi","running The Royal Arsenal",8
+7,"sf_marcello_palucci","perfumer at Profumi Lucenti",8
+7,"sf_marzia_ferini_","serving the royal table",2
+7,"sf_matteo_lanante","runs Il Mulino Dairy",8
+7,"sf_matteo_orsieri","butcher at Macelleria Rossi",8
+7,"sf_matteo_salini","keeps the water mill at La Riva",8
+7,"sf_matteo_valari","brewer at The Poggio Chiaro Press",8
+7,"sf_mauro_orsotti","runs The Le Api Brickworks",8
+7,"sf_mirella_rosotti_","lighting the candles",2
+7,"sf_nico_lanini_","serving the household",2
+7,"sf_nives_morini_","commanding the palace guard",2
+7,"sf_nives_salelli","on night patrol",6
+7,"sf_noemi_lanetti_","serving the household",2
+7,"sf_orsino_belante","on patrol",6
+7,"sf_orsola_marano","on night patrol",6
+7,"sf_ottavia_maruzzi","works at Mulino del Borgo",1
+7,"sf_ottavia_nerari","on patrol",6
+7,"sf_pasquale_torone_","serving the household",2
+7,"sf_perla_belucci","on patrol",6
+7,"sf_piero_darotti_","guarding the palace",6
+7,"sf_primo_benale_","cooking for the palace",8
+7,"sf_raffaele_rosetti","runs The Prato Verde Smokehouse",8
+7,"sf_renata_galini","works at Cartiera Bianca",1
+7,"sf_renata_salini","weaver at Tessitura Bellandi",8
+7,"sf_renzo_corucci","running La Concia",8
+7,"sf_rocco_morano","keeping the inn",8
+7,"sf_salvatore_orsone","running Cartiera Bianca",8
+7,"sf_serafina_ferelli_","running errands for the household",1
+7,"sf_serafina_lanone","commanding the city guard",2
+7,"sf_sveva_galucci","unloading barges",1
+7,"sf_taddeo_paluzzi","unloading barges",1
+7,"sf_teodora_beletti","unloading barges",1
+7,"sf_teodora_venone_","serving the household",2
+7,"sf_teodoro_palone","running The East Gate Stables",8
+7,"sf_tommaso_benini_","serving the household",2
+7,"sf_tommaso_darandi_","serving the household",2
+7,"sf_umberto_marieri","on night patrol",6
+7,"sf_valeria_toruzzi_","scrubbing the kitchens",1
+7,"sf_valerio_casieri","running The Red Tile Works",8
+7,"sf_valerio_nerandi","armourer at Armeria del Leone",8
+7,"sf_vasco_casotti_","runs Santa Lucia Dairy",8
+7,"sf_viola_darieri_","serving the household",2
+7,"sf_viola_galano","mending nets on the wharf",1
+7,"sf_vittore_nerone","holding the north gate",6
+7,"sf_vittoria_torucci_","copying the chapter's books",2
+7,"skye_","holding the south gate",6
+7,"tarn_","holding the south gate",6
+7,"tn_ac_bramble_gatewright","stands watch",6
+7,"tn_ac_gale_crossley","works at The Wheelwright's Yard",1
+7,"tn_ac_rowan_cartpost","stands watch",6
+7,"tn_ac_stone_wayrun","works at The Wheelwright's Yard",1
+7,"tn_af_frey_wheatmow_","stands watch",6
+7,"tn_af_ivy_strawacre_","grinds at the ford mill",1
+7,"tn_af_tor_goldstead_","stands watch",6
+7,"tn_af_varg_harrowford","works at The Ford Mill",2
+7,"tn_af_yarrow_furrowstook_","keeps The Harvest Chapel",2
+7,"tn_cb_brock_rustvein_","keeps The Shrine of the Iron Saint",2
+7,"tn_cb_hob_ashshaft_","stands watch",6
+7,"tn_cb_opal_ironvein_","stands watch",6
+7,"tn_df_edric_darkguard_","stands watch",6
+7,"tn_df_garth_blackwatch_","stands watch",6
+7,"tn_df_heath_nightward_","garrison cook",2
+7,"tn_df_holt_blackward_","stands watch",6
+7,"tn_df_iris_grimhold_","stands watch",6
+7,"tn_df_rusk_nightguard_","commands the garrison",6
+7,"tn_fh_dray_bogmoor_","stands watch",6
+7,"tn_fh_ivy_dampditch_","stands watch",6
+7,"tn_fh_knap_peatditch_","keeps The Stilt Chapel",2
+7,"tn_if_eskar_islewall_","stands watch",6
+7,"tn_if_harrow_towerguard_","stands watch",6
+7,"tn_if_iris_moatward_","stands watch",6
+7,"tn_if_isla_moatwall_","stands watch",6
+7,"tn_if_nettle_mereguard_","commands the garrison",6
+7,"tn_ls_aster_merereach_","stands watch",6
+7,"tn_ls_brisk_poolhythe","works at The Mirrormere Smokehouse",1
+7,"tn_ls_heath_oarwade_","stands watch",6
+7,"tn_ls_slate_eelford","keeps The Mere Chapel",2
+7,"tn_nf_corrie_rimeward","stands watch",6
+7,"tn_nf_dun_frostward","stands watch",6
+7,"tn_nf_eskar_frosthold","works at The North Arsenal",1
+7,"tn_nf_holly_bleakguard","works at The North Arsenal",1
+7,"tn_nf_odo_rimehelm","commands the garrison",6
+7,"tn_nf_yarrow_craghold","garrison cook",2
+7,"tn_sr_brand_shinglewater","stands watch",6
+7,"tn_sr_kestrel_soundwater","works at The Saltreach Pans",1
+7,"tn_sr_kindle_kelpline","works at The Gullwharf Smokehouse",1
+7,"tn_sr_lark_shingleshore","works at The Saltreach Pans",1
+7,"tn_sr_marl_kelpcove","stands watch",6
+7,"tn_sr_thorn_tideline","keeps The Tide Chapel",2
+7,"tn_wm_bramble_westfold","stands watch",6
+7,"tn_wm_hob_thornlea","stands watch",6
+7,"tn_wm_vetch_thornwell","keeps The Down Chapel",2
+7,"wolde","training",2
+7,"wren_","holding the main gate",6

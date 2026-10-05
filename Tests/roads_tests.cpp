@@ -630,9 +630,8 @@ void tradeAndPrices()
     const auto west = w.society().quote("player-ada", "wm", "meal", 1, true).unitPrice;
     expect(west > east, "Food costs more where the stores are empty (" + std::to_string(west) + " against " + std::to_string(east) + ")");
     (void)ada;
-    const int spare = stock(w, "treasury", "meal");
-    expect(w.society().shift("treasury", "stores:mid", "meal", std::min(40, spare), 0, "test: a good harvest"),
-           "Mid's good harvest (" + std::to_string(spare) + " to spare)");
+    // (Its own harvest: the capital's stores may be bought out by now, with everyone's starting money to spend.)
+    expect(w.society().create("stores:mid", "meal", 40, "test: a good harvest"), "Mid's good harvest");
     const auto midCash = w.society().account("stores:mid")->cash;
     nextMorning(w);
     const Caravan* trade = nullptr;
@@ -848,7 +847,7 @@ void townPursesAndTheReckoning()
     expect(church && church->cash > 0, "West's church was founded with a little from the town");
     // A month's doings: w1 does well, w2 inherits, w3 spends more than it earns.
     const auto& books = w.society().state().books;
-    expect(books.month == 0 && books.start.count("w1") && books.start.count("wm"), "The month's books are open");
+    expect(books.month == 0 && books.start.count("w1") && books.start.count("wm"), "The week's books are open");
     expect(w.society().shift("treasury", "w1", "", 0, 30, "test: paid for work"),
            "w1 is paid for some work");
     expect(w.society().operatorTransfer("treasury", "w2", "", 0, 300).ok, "w2 is left 300p (not earned)");
@@ -892,18 +891,18 @@ void townPursesAndTheReckoning()
     expect(again.restore(w.save()).ok && again.society().state().books.start == books.start &&
                again.society().state().books.month == books.month,
            "The books survive a restart");
-    // And the reckoning comes by itself on the 28th day.
+    // And the reckoning comes by itself each week (the user, 2026-10-05), on the 7th day.
     {
         auto saved = w.save();
-        saved.calendarDays = 28.3;
-        expect(w.restore(saved).ok, "Four weeks on");
+        saved.calendarDays = 7.3;
+        expect(w.restore(saved).ok, "A week on");
     }
     w.takeEvents();
     run(w, 2);
     bool reckoned = false;
     for (const auto& e : w.takeEvents())
         reckoned |= e.kind == "reckoning";
-    expect(reckoned && w.society().state().books.month == 1, "The month's reckoning comes on day 28");
+    expect(reckoned && w.society().state().books.month == 1, "The week's reckoning comes on day 7");
     expect(w.society().conserved(), "Money stays conserved");
 }
 
@@ -951,8 +950,22 @@ void whoPaysWages()
                 (e.actor == "em" ? fromShop : fromTown) += e.coins;
     }
     expect(fromShop > 0 && fromTown == 0, "The help is paid by the shop (" + std::to_string(fromShop) + "p)");
-    // The shop goes broke: the help waits on its wages, and after a week labours for the Town Works instead.
+    // The shop goes broke. Its town has plenty: it covers the help's wage, so the work goes on (the user, 2026-10-05).
     w.society().shift("em", "treasury", "", 0, w.society().account("em")->cash, "test: a bad week");
+    std::int64_t subsidised = 0;
+    for (int t = 0; t < 700; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            if (e.kind == "economy" && e.detail == "a wage subsidised by the town" && e.target == "help")
+                subsidised += e.coins;
+    }
+    expect(subsidised > 0, "A broke shop's help is paid by its town, which has plenty (" + std::to_string(subsidised) + "p)");
+    // A town (and church) with nothing to spare can't: the help waits on its wages, and after a week labours for the
+    // Town Works instead.
+    w.society().shift("treasury", "stores:west", "", 0, w.society().account("treasury")->cash - 100, "test: a lean year");
+    if (const auto* church = w.society().account("town:east:church"))
+        w.society().shift("town:east:church", "stores:west", "", 0, church->cash, "test: a lean year");
     run(w, 700);
     const auto* help = w.society().resident("help");
     expect(help->reason.find("Waiting on wages from Ember Oak") != std::string::npos, "Unpaid, the help says so: " + help->reason);
@@ -1184,6 +1197,303 @@ void noHoarding()
     expect(w.society().conserved(), "Money stays conserved");
 }
 
+// Travel keeps to the roads (the user, 2026-10-05): two rows of three cells, a road from the top left down and along
+// the bottom row and up to the top right, and none in the top middle. From the top left to the top right the road's way
+// (five cells) is taken over the straight one across open country (three); with no roads, the straight one.
+void travelKeepsToTheRoads()
+{
+    for (const bool roads : {true, false})
+    {
+        Fixture f;
+        const auto cellId = [](int x, int y) { return "g_" + std::to_string(x) + "_" + std::to_string(y); };
+        std::ostringstream m;
+        m << "RATW_WORLD 3\n";
+        std::map<std::string, std::set<std::string>> exits;
+        for (int y = 0; y < 2; ++y)
+            for (int x = 0; x < 3; ++x)
+            {
+                const char ground = roads && !(x == 1 && y == 0) ? 'd' : '.';
+                std::ostringstream cell;
+                cell << "id: " << cellId(x, y) << "\nname: Ground\ndescription: Open ground.\nworld: " << x * Side << ' ' << y * Side
+                     << " 0\noutdoors: true\nweather: clear\nsize: " << Side << ' ' << Side << "\ngrid:\n";
+                for (int row = 0; row < Side; ++row)
+                    cell << std::string(Side, ground) << '\n';
+                f.cells[cellId(x, y)] = cell.str();
+                m << "area \"" << cellId(x, y) << "\"\n";
+            }
+        int seam = 0;
+        const auto join = [&](int ax, int ay, int bx, int by) {
+            const bool across = bx > ax;            // East, else south.
+            for (int k = 0; k < Side; ++k)
+            {
+                const std::string a = "seam_" + std::to_string(seam) + "_a", b = "seam_" + std::to_string(seam) + "_b";
+                const double px = across ? Side - .5 : k + .5, py = across ? k + .5 : Side - .5;
+                const double qx = across ? .5 : k + .5, qy = across ? k + .5 : .5;
+                std::ostringstream one, two;
+                one << "door \"" << a << "\" \"Open boundary\" \"" << cellId(ax, ay) << "\" " << px << ' ' << py << " \"" << cellId(bx, by)
+                    << "\" " << qx << ' ' << qy << " \"" << b << "\" 1 0 1 1 \"" << (across ? 'E' : 'S') << "\"\n";
+                two << "door \"" << b << "\" \"Open boundary\" \"" << cellId(bx, by) << "\" " << qx << ' ' << qy << " \"" << cellId(ax, ay)
+                    << "\" " << px << ' ' << py << " \"" << a << "\" 1 0 1 1 \"" << (across ? 'W' : 'N') << "\"\n";
+                f.seams[cellId(ax, ay)] += one.str();
+                f.seams[cellId(bx, by)] += two.str();
+                ++seam;
+            }
+            exits[cellId(ax, ay)].insert(cellId(bx, by));
+            exits[cellId(bx, by)].insert(cellId(ax, ay));
+        };
+        for (int y = 0; y < 2; ++y)
+            for (int x = 0; x < 3; ++x)
+            {
+                if (x + 1 < 3)
+                    join(x, y, x + 1, y);
+                if (y + 1 < 2)
+                    join(x, y, x, y + 1);
+            }
+        for (const auto& [from, to] : exits)
+        {
+            m << "exits \"" << from << "\" " << to.size();
+            for (const auto& next : to)
+                m << " \"" << next << '"';
+            m << '\n';
+        }
+        m << "spawn \"" << cellId(0, 0) << "\" 8.5 8.5\n";
+        f.manifest = m.str();
+        auto w = load(f);
+        const auto route = w.routeBetween(cellId(0, 0), cellId(2, 0));
+        std::string seen;
+        for (const auto& c : route)
+            seen += c + " ";
+        if (roads)
+            expect(route == std::vector<std::string>{"g_0_0", "g_0_1", "g_1_1", "g_2_1", "g_2_0"},
+                   "Along the road, the long way round, rather than across open country: " + seen);
+        else
+            expect(route == std::vector<std::string>{"g_0_0", "g_1_0", "g_2_0"}, "With no road, straight across: " + seen);
+    }
+}
+
+// Standing orders (the user, 2026-10-05) are renegotiated: when one is due, a porter of the buyer's town walks to the
+// selling town's market, and there agrees it again at the price the goods fetch now, for four weeks more.
+void standingOrdersAreRenegotiated()
+{
+    auto f = strip("EE.....WW", resident("miller", "Flour Dust", "merchant", "keeps the water mill at Eastford", 0, 9.5, 1, 9.5) +
+                                    resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 7, 9.5, 8, 9.5) +
+                                    resident("porter", "Pell Strap", "civilian", "carries loads for hire", 7, 11.5, 7, 11.5));
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    const auto mill = w.society().tillOf("miller"), bakery = w.society().tillOf("baker");
+    w.society().create(mill, "flour", 60, "test: a good harvest");
+    for (const auto& kind : Society::kindsHeld(*w.society().account(bakery), "flour"))
+        w.society().consume(bakery, kind, Society::stock(*w.society().account(bakery), kind), "test: a bad week");
+    for (const auto& kind : Society::kindsHeld(*w.society().account("wm"), "flour"))
+        w.society().consume("wm", kind, Society::stock(*w.society().account("wm"), kind), "test: a bad week");
+    w.society().shift("treasury", bakery, "", 0, 200, "test: takings");
+    nextMorning(w);
+    auto order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.buyer == bakery; });
+    expect(order != w.roads().orders.end(), "The bakery has a standing order for flour from east");
+    const auto id = order->id;
+    order->review = 0;                             // (Due now.)
+    w.takeEvents();
+    nextMorning(w);
+    order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
+    expect(order != w.roads().orders.end() && order->negotiator == "porter", "West's porter is sent to renegotiate it");
+    bool provisioned = false, agreed = false;
+    for (const auto& e : w.takeEvents())
+        provisioned |= e.kind == "economy" && (e.detail == "provisions for the road" || e.detail == "money for the road") && e.target == "porter";
+    expect(provisioned, "with food for the road (or the money for it) from the bakery");
+    for (int t = 0; t < 6000 && !agreed; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            agreed |= (e.kind == "standing order renegotiated" || e.kind == "standing order ends") && e.target == bakery;
+    }
+    expect(agreed, "The porter reaches east's market and the order is agreed again");
+    order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
+    expect(order == w.roads().orders.end() || (order->negotiator.empty() && order->review > w.calendarDays()),
+           "for four weeks more");
+    expect(w.society().conserved(), "Money stays conserved");
+}
+
+// A shopkeeper doesn't hoard either (the user, 2026-10-05): one whose shop is its own and holds far more than it needs
+// shares its takings with its help and spends on its home; every Restday each shop pays its town market dues.
+void shopkeepersDontHoard()
+{
+    auto f = strip("EE.....WW", resident("cook", "Pell Ladle", "merchant", "keeps the cookshop", 7, 9.5, 8, 9.5) +
+                                    resident("help", "Tam Ladle", "civilian", "helping at the cookshop", 7, 10.5, 8, 10.5));
+    auto w = load(f);
+    w.tick(.6);
+    expect(w.society().tillOf("cook") == "cook", "The cookshop is its keeper's own");
+    w.society().shift("treasury", "cook", "", 0, 2000, "test: a fine year");
+    w.takeEvents();
+    bool shared = false, spent = false, dues = false;
+    for (int d = 0; d < 8 && !(shared && dues); ++d)
+    {
+        nextMorning(w);
+        run(w, 2);
+        for (const auto& e : w.takeEvents())
+        {
+            shared |= e.kind == "economy" && e.detail == "surplus: a share of the takings" && e.actor == "cook";
+            spent |= e.kind == "economy" && e.detail.rfind("surplus: ", 0) == 0 && e.actor == "cook" && e.detail != "surplus: a share of the takings";
+            dues |= e.kind == "economy" && e.detail == "market dues" && e.actor == "cook";
+        }
+    }
+    expect(shared, "The keeper shares its takings with its help");
+    expect(spent, "and spends on its home");
+    expect(dues, "and pays the town its market dues on Restday");
+    expect(w.society().conserved(), "Money stays conserved");
+}
+
+// Children's stipends (the user, 2026-10-05): a child living with grown family is given a little each day from the
+// household's purse, only what it can spare after a week's food for all at home and the week's tax and tithe; and
+// children spend freely.
+void childrensStipends()
+{
+    for (const bool comfortable : {true, false})
+    {
+        auto kid = resident("kid", "Pip Small", "civilian", "plays in the streets", 0, 9.5, 0, 9.5);
+        kid.replace(kid.find(" 30 "), 4, " 8 ");    // (Eight years old.)
+        auto f = strip("EE.....WW", kid + resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5));
+        auto w = load(f);
+        w.tick(.6);
+        if (comfortable)
+            w.society().shift("treasury", "e1", "", 0, 1000, "test: a good year");
+        else
+            for (const auto* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop"})   // (Everyone grown at home.)
+                w.society().shift(who, "treasury", "", 0, w.society().account(who)->cash, "test: a hard year");
+        w.takeEvents();
+        bool given = false, spent = false;
+        for (int d = 0; d < (comfortable ? 2 : 1); ++d)   // (The poor one's wages would soon let it spare a little.)
+        {
+            nextMorning(w);
+            run(w, 2);
+            for (const auto& e : w.takeEvents())
+            {
+                given |= e.kind == "economy" && e.detail == "a child's stipend" && e.target == "kid";
+                spent |= e.kind == "economy" && e.detail == "a child's spending" && e.actor == "kid";
+            }
+        }
+        if (comfortable)
+        {
+            expect(given, "A comfortable household gives its child a stipend");
+            expect(spent, "and the child spends some of it");
+        }
+        else
+            expect(!given, "A household with nothing to spare after food and tax gives none");
+        expect(w.society().conserved(), "Money stays conserved");
+    }
+}
+
+// Wants (the user, 2026-10-05): a grown wolf with money to spare buys things it simply wants (a treat, a drink, finery,
+// scent, a pastime); one with nothing to spare after food and tax doesn't.
+void grownWolvesBuyWhatTheyWant()
+{
+    auto f = strip("EE.....WW", resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
+                                    resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
+    auto w = load(f);
+    w.tick(.6);
+    w.society().shift("treasury", "e1", "", 0, 500, "test: a good year");
+    w.society().shift("e2", "treasury", "", 0, w.society().account("e2")->cash, "test: a hard year");
+    w.takeEvents();
+    bool rich = false, poor = false;
+    for (int d = 0; d < 3; ++d)
+    {
+        nextMorning(w);
+        run(w, 2);
+        for (const auto& e : w.takeEvents())
+            if (e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0)
+            {
+                rich |= e.actor == "e1";
+                poor |= e.actor == "e2" && d == 0;
+            }
+    }
+    expect(rich, "A well-off wolf buys something it wants");
+    expect(!poor, "A penniless one doesn't");
+    expect(w.society().conserved(), "Money stays conserved");
+}
+
+// Odd jobs (the user, 2026-10-05): a town with money to spare posts a day's menial work (deliveries, repairs, trips to
+// gather or hunt, scouting, a hand at a producer); a wolf without other work takes one, does it, and is paid.
+void oddJobs()
+{
+    auto k1 = resident("k1", "Kit One", "civilian", "plays in the streets", 7, 13.5, 7, 13.5);
+    auto k2 = resident("k2", "Kit Two", "civilian", "plays in the streets", 7, 14.5, 7, 14.5);
+    k1.replace(k1.find(" 30 "), 4, " 10 ");
+    k2.replace(k2.find(" 30 "), 4, " 10 ");
+    // (No grown wolf out of work here: children, who would rather not work, take what is left by noon.)
+    auto f = strip("EE.....WW", k1 + k2 +
+                                    resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 7, 10.5, 8, 9.5));
+    auto w = load(f);
+    w.tick(.6);
+    w.takeEvents();
+    bool posted = false, paid = false, together = false;
+    std::string kind;
+    // (This strip has no ground about it to gather from and its watch is fed, so its jobs are repairs, once its buildings
+    // have worn: a point a day.)
+    for (int d = 0; d < 10 && !(paid && together); ++d)
+    {
+        // Through the night to the next morning (it must sleep: children who don't are too tired to work).
+        const auto today = std::floor(w.calendarDays());
+        while (w.calendarDays() < today + 1.3)
+            w.tick(1);
+        posted |= !w.society().oddJobs().empty();
+        if (w.society().account("town:west:works") && Society::stockAll(*w.society().account("town:west:works"), "stone") == 0)
+            w.society().create("town:west:works", "stone", 10, "test: a quarry's load");
+        for (int t = 0; t < 6000 && !(paid && together); ++t)   // (To five in the afternoon: children look from noon.)
+        {
+            w.tick(1);
+            for (const auto& j : w.society().oddJobs())
+                together |= j.stage.count("k1") && j.stage.count("k2");
+            for (const auto& e : w.takeEvents())
+                if (e.kind == "economy" && e.detail.rfind("an odd job: ", 0) == 0 && (e.target == "idle" || e.target == "k1" || e.target == "k2"))
+                    paid = true, kind = e.detail;
+        }
+    }
+    expect(posted, "West, with money to spare, posts odd jobs");
+    expect(paid, "Wolves without work (here, two children) take them, do them and are paid: " + kind);
+    expect(!w.society().friendGroup("k1").empty() && w.society().friendGroup("k1") == w.society().friendGroup("k2"),
+           "Two children of an age are friends");
+    expect(together, "and take a job together");
+    expect(w.society().conserved(), "Money stays conserved");
+}
+
+// Households (the user, 2026-10-05): the grown members share one purse; a household comfortable for a week keeps one at
+// home (shopping, minding, about the town), and sends it back to work when money runs low.
+void householdsShareAndKeepHouse()
+{
+    auto f = strip("EE.....WW");
+    auto w = load(f);
+    w.tick(.6);
+    w.society().shift("treasury", "e1", "", 0, 3000, "test: a windfall");
+    nextMorning(w);
+    expect(w.society().account("e2")->cash > 300 && w.society().account("e1")->cash < 1500, "The household shares its purse (e1 " +
+               std::to_string(w.society().account("e1")->cash) + "p, e2 " + std::to_string(w.society().account("e2")->cash) + "p)");
+    std::string keeper;
+    for (int d = 0; d < 20 && keeper.empty(); ++d)   // (A day's skip here tends the households every other time.)
+    {
+        nextMorning(w);
+        const auto& kept = w.society().state().memory.keeper;
+        if (const auto found = kept.find(w.society().resident("e1")->homeCell); found != kept.end())
+            keeper = found->second;
+    }
+    expect(!keeper.empty(), "After a comfortable week one of them keeps the house");
+    {
+        auto saved = w.save();
+        saved.calendarDays = std::floor(saved.calendarDays) + 1.5;   // (Mid-morning.)
+        expect(w.restore(saved).ok, "To the morning");
+    }
+    run(w, 30);
+    const auto task = w.society().resident(keeper)->task;
+    expect(task == "shopping for the household" || task == "minding the children" || task == "about the town",
+           keeper + " keeps the house: " + task);
+    // The money runs low: back to work.
+    for (const auto* who : {"e1", "e2", "e3", "e4", "e5"})
+        w.society().shift(who, "treasury", "", 0, w.society().account(who)->cash, "test: a bad year");
+    for (int d = 0; d < 3 && w.society().state().memory.keeper.count(w.society().resident("e1")->homeCell); ++d)
+        nextMorning(w);
+    expect(!w.society().state().memory.keeper.count(w.society().resident("e1")->homeCell), "Money gone, it goes back to work");
+    expect(w.society().conserved(), "Money stays conserved");
+}
+
 // Residents fill contracts for goods (doc 42, Phase 4): after a day for the players, someone out of work in the town that
 // wants them fetches them from a shop that has them to spare (here, in another town), carries them back and hands them
 // in; the shop is paid its price from the reward, the carrier the rest.
@@ -1218,19 +1528,24 @@ void residentsFillContractsForGoods()
     expect(k && k->status == "taken" && !k->source.empty() && w.entity(k->taker) && !w.society().jobOf(k->taker),
            "A wolf out of work takes it on (" + (k ? k->taker + " from " + k->source : std::string()) + ")");
     const auto taker = k->taker;
-    const auto takerBefore = w.society().account(taker)->cash;
+    // Going to another town, it is given food for the road out of the reward (the user, 2026-10-05).
+    expect(!Society::bestFood(*w.society().account(taker)).empty() || w.society().account(taker)->cash > 0,
+           "and is given provisions for the road");
     w.roads().camps.clear();
-    bool done = false;
+    bool done = false, paid = false;
     for (int t = 0; t < 6000 && !done; ++t)
     {
         w.tick(1);
         for (const auto& e : w.takeEvents())
+        {
             done |= e.kind == "contract done" && e.detail.find("stone") != std::string::npos;
+            paid |= e.kind == "economy" && e.detail == "carrier's pay" && e.target == taker && e.coins > 0;
+        }
     }
     expect(done, "fetches the stone from the shop in the west and delivers it");
     expect(Society::stockAll(*w.society().account("town:east:works"), "stone") > 0, "The stone reaches the Town Works");
     expect(w.society().account("store")->cash > storeBefore, "the shop is paid its price");
-    expect(w.society().account(taker)->cash > takerBefore, "and the carrier the rest");
+    expect(paid, "and the carrier the rest");
     expect(w.society().conserved(), "Money stays conserved");
 }
 
@@ -1246,7 +1561,9 @@ void tradesWearAndCharity()
                                     resident("smith", "Anvil Ring", "merchant", "smith at The Gate Forge", 0, 14.5, 1, 12.5) +
                                     resident("ostler", "Hay Rake", "merchant", "keeps the stables at the gate", 0, 14.5, 1, 13.5) +
                                     resident("farmer", "Barley Field", "civilian", "farms the valley fields", 0, 9.5, 0, 9.5) +
-                                    unpaid(resident("beggar", "Poor Tom", "civilian", "begging in the market", 0, 8.5, 1, 4.5)));
+                                    unpaid(resident("beggar", "Poor Tom", "civilian", "begging in the market", 0, 8.5, 1, 4.5)) +
+                                    // (Alone at home in east's second cell: no household purse to share with.)
+                                    resident("lone", "Lone Wren", "civilian", "working", 1, 15.5, 1, 15.5));
     auto w = load(f);
     w.tick(.6);
     w.society().shift("treasury", "miner", "", 0, 60, "test: savings");
@@ -1273,10 +1590,14 @@ void tradesWearAndCharity()
     }
     expect(fed, "The stables' horses eat hay, bought from the farmer");
     expect(penny, "The beggar is given pennies");
-    // The church's bread goes to a hungry wolf with nothing.
-    w.society().shift("ex1", "treasury", "", 0, w.society().account("ex1")->cash, "test: penniless");
-    for (const auto& [item, n] : std::map<std::string, int>(w.society().account("ex1")->stock.begin(), w.society().account("ex1")->stock.end()))
-        w.society().consume("ex1", item, n, "test: nothing to eat");
+    // The church's bread goes to a hungry wolf with nothing (one living alone: a household would share its purse).
+    w.society().shift("lone", "treasury", "", 0, w.society().account("lone")->cash, "test: penniless");
+    for (const auto& [item, n] : std::map<std::string, int>(w.society().account("lone")->stock.begin(), w.society().account("lone")->stock.end()))
+        w.society().consume("lone", item, n, "test: nothing to eat");
+    for (const auto& kind : Society::StoreKinds)
+        if (const auto* store = w.society().account(Society::homeStore(w.society().resident("lone")->homeCell, kind)))
+            for (const auto& [item, n] : std::map<std::string, int>(store->stock.begin(), store->stock.end()))
+                w.society().consume(Society::homeStore(w.society().resident("lone")->homeCell, kind), item, n, "test: an empty larder");
     w.society().create("town:east:church", "bread", 10, "test: baked");
     bool alms = false;
     for (int d = 0; d < 3 && !alms; ++d)
@@ -1314,6 +1635,10 @@ void tradeCaravansCarryGoodsAndMoney()
         if (!c.trader.empty() && c.from == "east" && c.to == "west")
             trade = &c;
     expect(trade != nullptr, "A trader's caravan sets out from east for west");
+    // On a standing order (the user, 2026-10-05): the bakery buys flour from east week after week.
+    const auto order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(),
+                                    [&](const StandingOrder& o) { return o.buyer == bakery && o.item == "flour" && o.from == "east"; });
+    expect(order != w.roads().orders.end() && order->perWeek > 0 && order->price > 0, "on a standing order for flour, at an agreed price");
     const auto id = trade->id;
     expect(Society::stockAll(*w.society().account(trade->account), "flour") > 0, "carrying flour bought from the mill");
     const auto bakeryCash = w.society().account(bakery)->cash;
@@ -1324,7 +1649,8 @@ void tradeCaravansCarryGoodsAndMoney()
         w.tick(1);
         for (const auto& e : w.takeEvents())
         {
-            sold |= e.kind == "economy" && e.detail == "carted in by caravan" && e.target == trade->account && e.actor == bakery;
+            sold |= e.kind == "economy" && (e.detail == "a standing order" || e.detail == "carted in by caravan") &&
+                    e.target == trade->account && e.actor == bakery;
             if (e.kind == "economy" && e.detail == "trade takings")
                 takings += e.coins;
             home |= e.kind == "caravan home" && e.actor == id;
@@ -1398,6 +1724,13 @@ int main()
 {
     try
     {
+        travelKeepsToTheRoads();
+        standingOrdersAreRenegotiated();
+        shopkeepersDontHoard();
+        childrensStipends();
+        grownWolvesBuyWhatTheyWant();
+        oddJobs();
+        householdsShareAndKeepHouse();
         shopsSellTheirGoods();
         townsAndCaravans();
         banditsAndContracts();

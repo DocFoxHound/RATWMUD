@@ -148,6 +148,8 @@ struct Options
     bool hiddenNames = true;
     // The social level each of a Chapter's three founders needs (doc 32, 3.1; a placeholder). Tests lower it.
     int chapterFoundingLevel = 5;
+    // How fast the world runs (Game::setSpeed): 1 as ever, 16 sixteen times as fast.
+    double speed = 1;
 };
 
 class Game
@@ -184,7 +186,14 @@ class Game
     void acknowledge(Connection* c, double revision, bool missing);   // It applied that snapshot (or lacks a part).
     // A client walking its own wolf says where it is (link::Pose; the same as the "pose" command, without the JSON).
     void pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy);
-    void tick(double dt);                                     // 20 times a second (dt 0.05).
+    void tick(double dt);                                     // 20 times a second (dt 0.05), times the speed.
+    // Fast-forward: the server ticks `speed` times as often, each tick the same 0.05 s of the world as ever, so nothing
+    // is skipped; the world just runs faster than real time (as fast as the machine can, if it can't keep up). What
+    // belongs to real time keeps to it: frames and snapshots to the clients, saves, the database polls, the Dungeon
+    // Master's director and the NPC Mind's ambient voices (so no more model calls an hour). 1 to MaxSpeed.
+    static constexpr double MaxSpeed = 1000;
+    void setSpeed(double speed);
+    double speed() const { return speed_; }
     void save();                                              // Stored before returning.
     // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
     // tick does this as it goes, without waiting).
@@ -277,6 +286,7 @@ class Game
     // The worker pool, and whether the views due this tick are being built on it (they then only read the world).
     std::unique_ptr<Pool> pool_;
     std::uint64_t frameTick_ = 0;
+    double speed_ = 1, frameDebt_ = 0;              // (setSpeed: a frame to the clients each 1/speed of a tick.)
     bool batching_ = false;
     void finishSnapshot(Connection* c, json::Value root, double revision);
     void updateMovementModes();

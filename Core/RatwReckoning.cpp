@@ -1,5 +1,6 @@
-// Town purses and the month's reckoning (Docs/Design/42-money-in-circulation.md, Phase 1): each town keeps its own
-// treasury, and every MonthDays each resident pays a tenth of the month's profit to it and a tenth to its church.
+// Town purses and the reckoning (Docs/Design/42-money-in-circulation.md, Phase 1): each town keeps its own treasury, and
+// every ReckonDays (a week, the user's choice on 2026-10-05; it was the month) each resident pays a tenth of the week's
+// profit to it and a tenth to its church. Ground rents are still the month's.
 // Money only moves; nothing is made.
 #include "RatwSociety.h"
 
@@ -38,10 +39,11 @@ std::string Society::treasuryOfResident(const std::string& id) const
 void Society::reckon(std::int64_t day, bool force)
 {
     auto& books = state_.books;
-    const auto month = day / MonthDays;
+    const auto month = day / ReckonDays;             // (books.month counts reckonings: weeks now.)
     if (books.month >= 0 && (month > books.month || force))
     {
-        collectRents();                                 // Ground rents to the great houses first (doc 42, Phase 5b).
+        if (force || day % MonthDays < ReckonDays)
+            collectRents();                             // A month's ground rents to the great houses first (doc 42, 5b).
         std::map<std::string, Reckoning> towns;
         // Everyone, and the great houses (on their businesses' takings, doc 42 Phase 5b).
         std::vector<std::pair<std::string, std::string>> payers;    // Account -> its treasury.
@@ -63,7 +65,7 @@ void Society::reckon(std::int64_t day, bool force)
             town.church = churchOf(treasury);
             ++town.residents;
             if (profit < std::max(TaxShare, TitheShare))
-                continue;                               // A month at a loss (or of nothing much) pays nothing.
+                continue;                               // A week at a loss (or of nothing much) pays nothing.
             openAccount(town.church);
             const auto tax = profit / TaxShare, tithe = profit / TitheShare;
             const bool paid = shift(id, treasury, "", 0, tax, "town tax");
@@ -81,7 +83,7 @@ void Society::reckon(std::int64_t day, bool force)
     }
     if (books.month < 0 || month > books.month || force)
     {
-        // New books: everyone starts the month with what it has now.
+        // New books: everyone starts the week with what it has now.
         books.month = month;
         books.start.clear();
         books.unearned.clear();

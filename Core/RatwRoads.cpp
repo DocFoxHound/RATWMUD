@@ -397,6 +397,7 @@ void World::tendRoads()
         }
     }
     tendContractCarriers();                         // Residents fetching and delivering goods for contracts (doc 42).
+    tendNegotiators();                              // And renegotiating standing orders (RatwTrade.cpp).
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (today != roads_.day)
     {
@@ -859,6 +860,21 @@ Caravan* World::sendCaravan(const Town& from, const Town& to, const std::map<std
 bool World::errand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                    std::string& goalCell, Vec2& goal) const
 {
+    // A hungry traveller eats first (its provisions where it stands, else food bought or fetched), then goes on: the
+    // errand never starves it.
+    if (life.task == "eat" || ((life.task == "buy food" || life.task == "fetch food") && life.hunger >= 55))
+        return false;
+    // To another town's market, to renegotiate a standing order (RatwTrade.cpp); not by night.
+    for (const auto& o : roads_.orders)
+        if (o.negotiator == resident && life.task != "sleep")
+            if (const auto* from = town(o.from))
+            {
+                task = "renegotiating an order";
+                reason = "for " + o.item + ", at the market in " + o.from;
+                goalCell = from->market;
+                goal = {from->marketX, from->marketY + 1};
+                return true;
+            }
     for (const auto& k : roads_.contracts)
     {
         if (k.status != "taken" || k.taker != resident)
@@ -977,6 +993,7 @@ void World::residentsTakeWork()
         recordEvent({"contract taken", chosen, k.poster, entity(chosen)->cellId, 0, 0, {}, 0, k.reward, k.kind + ": " + k.detail});
     }
     residentsFillContracts(busy);                   // Contracts for goods, after a day for the players (doc 42).
+    residentsRenegotiate(busy);                     // Porters sent to renegotiate standing orders (RatwTrade.cpp).
 }
 
 void World::tradeBetweenTowns()

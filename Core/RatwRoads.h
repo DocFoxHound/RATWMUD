@@ -79,9 +79,24 @@ struct Belief
     std::string incident;                 // What it is about, when it is a crime someone saw or heard of (RatwCrime.h).
 };
 
+// A standing order between towns (the user, 2026-10-05): a shop that needs a good week after week that its own town
+// can't supply buys it from another town on a standing order, at an agreed price, carried by that road's weekly trade
+// caravan. Every four weeks (sooner if deliveries fall short) a porter of its town walks to the other to renegotiate
+// it: more or less a week as the shop's need shows, at the price the goods fetch there now.
+struct StandingOrder
+{
+    std::string id, buyer, town, item, from;     // buyer: its till; town: the buyer's; from: the selling town.
+    int perWeek = 0;
+    std::int64_t price = 0;                      // A piece, agreed.
+    double since = 0, review = 0;                // Calendar days: signed, and next renegotiated.
+    int delivered = 0, shortfall = 0;            // Since it was last agreed.
+    std::string negotiator;                      // A porter on the way to renegotiate it ("" for nobody).
+};
+
 struct RoadsState
 {
     std::vector<Caravan> caravans;
+    std::vector<StandingOrder> orders;
     std::vector<BanditCamp> camps;
     std::vector<Contract> contracts;
     std::vector<Belief> beliefs;

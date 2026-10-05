@@ -109,7 +109,7 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                         continue;
                     const int spare = stock(*from, sort) - (kind == 1 && sort == item ? GoodsKept : 0);
                     const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::ceil(sortGood->price * (local ? 1. : CartedIn))));
-                    const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, buyerNow->cash / price}));
+                    const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;
                     if (bought >= wanted)
@@ -132,7 +132,8 @@ bool Society::produce(const std::string& id, double absoluteDay)
                           std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end();
     if (!inSeason && producer->offSeason.empty())
         return false;                               // Nothing grows in the fields this season.
-    produceNext_[id] = absoluteDay + producer->seconds / 86400.;
+    const auto* job = jobOf(id);
+    produceNext_[id] = absoluteDay + producer->seconds / 86400. * (1 - ImprovementPace * (job ? improvement(job->id) : 0));
     bool any = false;
     // Out of season, what the work brings in instead (threshing the barn's grain in winter, doc 42).
     for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
@@ -216,13 +217,19 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         const bool low = stockAll(*account(till), made) < (supplied(made) || items::traded(made) ? SuppliesKept / 2 : GoodsKept);
         if (!low)
             continue;
+        // A seasonal good (grapes, apples) is laid in at the harvest, a store to last the year: SeasonalStore times as much.
         for (const auto& [item, count] : k->in)
-            if (const int held = stockAll(*account(till), item); held < count * MaterialsLow)
-                buyMaterials(id, workCell, item, count * MaterialBatches - held);
+        {
+            const int store = count * MaterialBatches * (items::seasonal(item) ? SeasonalStore : 1);
+            if (const int held = stockAll(*account(till), item); held < count * MaterialsLow || (store > count * MaterialBatches && held < store / 2))
+                buyMaterials(id, workCell, item, store - held);
+        }
         if (!has(*k))
             continue;                               // Short of materials, and nobody sells them: something else.
-        craftAtWork_[id] = k->id;                   // A batch begun: done after its working time.
-        wait = k->seconds / 86400.;
+        craftAtWork_[id] = k->id;                   // A batch begun: done after its working time (quicker in improved
+        wait = k->seconds / 86400.;                 // premises: RatwOddJobs.cpp).
+        if (const auto* job = jobOf(id))
+            wait *= 1 - ImprovementPace * improvement(job->id);
         break;
     }
     craftNext_[id] = absoluteDay + wait;

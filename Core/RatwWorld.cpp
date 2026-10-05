@@ -758,17 +758,29 @@ const std::map<std::string, std::string>& World::cachedSteps(const std::string& 
 
 std::map<std::string, std::string> World::firstSteps(const std::string& from) const
 {
+    // The cheapest way (indexRoads): a step through a door or along a road counts 1, one overland OverlandCost, so
+    // travellers keep to the roads unless one is blocked or none goes their way. Ties go the same way every time.
     std::map<std::string, std::string> first{{from, ""}};
-    std::queue<std::string> pending;
-    pending.push(from);
+    std::map<std::string, int> cost{{from, 0}};
+    std::set<std::string> done;
+    using Pending = std::pair<int, std::string>;
+    std::priority_queue<Pending, std::vector<Pending>, std::greater<Pending>> pending;
+    pending.push({0, from});
     while (!pending.empty())
     {
-        const auto current = pending.front(); pending.pop();
-        const auto visit = [&](const std::string& next) {
-            if (first.count(next) || deadEnds_.count({current, next}))
+        const auto [spent, current] = pending.top();
+        pending.pop();
+        if (!done.insert(current).second)
+            continue;
+        const auto visit = [&](const std::string& next, bool seam) {
+            if (done.count(next) || deadEnds_.count({current, next}))
                 return;
+            const int total = spent + (!seam || roadLink(current, next) ? 1 : OverlandCost);
+            if (const auto known = cost.find(next); known != cost.end() && known->second <= total)
+                return;
+            cost[next] = total;
             first[next] = current == from ? next : first[current];
-            pending.push(next);
+            pending.push({total, next});
         };
         // A streamed cell's seams are in its exits whether or not it is loaded; its loaded seam records are left
         // to them, so a route never depends on which cells happen to be in memory (and loading one changes none).
@@ -776,10 +788,10 @@ std::map<std::string, std::string> World::firstSteps(const std::string& from) co
         for (const auto* d : doorsIn(current))
             if (d->portal && !d->locked &&
                 !(d->passage && d->boundary && seams != exits_.end() && seams->second.count(d->targetCell)))
-                visit(d->targetCell);
+                visit(d->targetCell, d->passage && d->boundary);
         if (seams != exits_.end())
             for (const auto& next : seams->second)
-                visit(next);
+                visit(next, true);
     }
     return first;
 }
@@ -2805,18 +2817,23 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         const int wanted = way.targetCell == goalCell ? regionAt(*there, goal) : mainRegion(*there);
         return arrives >= 0 && wanted >= 0 && arrives != wanted;
     };
+    // Along a road into the next cell, its crossing on the road (indexRoads): the traveller keeps to the road.
+    const bool byRoad = roadLink(e.cellId, step->second);
     const auto nearest = [&]() -> const Door* {
         const Door* best = nullptr;
-        bool bestPocket = false;
+        bool bestPocket = false, bestRoad = false;
         const auto consider = [&](const Door& way) {
             if (!way.portal || way.locked || way.targetCell != step->second)
                 return;
             const bool inPocket = pocket(way);
-            if (!best || (bestPocket && !inPocket) ||
-                (bestPocket == inPocket && distance(e.position, way.position) < distance(e.position, best->position) - 1e-9))
+            const bool road = byRoad && roadSeams_.count(way.id) > 0;
+            if (!best || (bestPocket && !inPocket) || (bestPocket == inPocket && road && !bestRoad) ||
+                (bestPocket == inPocket && road == bestRoad &&
+                 distance(e.position, way.position) < distance(e.position, best->position) - 1e-9))
             {
                 best = &way;
                 bestPocket = inPocket;
+                bestRoad = road;
             }
         };
         for (const Door* way : doorsIn(e.cellId))
@@ -3085,7 +3102,9 @@ bool World::continueSchedules(double budgetMs)
 {
     using Clock = std::chrono::steady_clock;
     const auto begun = Clock::now();
-    const auto spent = [&] { return std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= budgetMs; };
+    const auto spent = [&] {
+        return !deterministic_ && std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= budgetMs;
+    };
     while (scheduleStage_ >= 0)
     {
         if (scheduleStage_ > 0 && spent())
@@ -3345,8 +3364,9 @@ Vec2 World::spotNear(const Entity& e, const std::string& goalCell, Vec2 target) 
     // The goal itself while nobody stands on it; else a spot of its own by it (a shop counter, a well, shared): one of
     // the places on two rings around it, chosen by who it is, the first from there it can stand on (and walk to: the
     // same region).
+    // (Whether anyone stands there first: it is cheap, and mostly nobody does, while the region map may be rebuilt.)
     const auto* c = cell(goalCell);
-    if (!c || !c->loaded || !regionMap(*c) || !spotTaken(e, goalCell, target))
+    if (!c || !c->loaded || !spotTaken(e, goalCell, target) || !regionMap(*c))
         return target;
     std::uint64_t h = 1469598103934665603ULL;
     for (const unsigned char ch : e.id)
@@ -3395,7 +3415,7 @@ void World::planWantedRoutes()
     for (std::size_t looked = 0, total = routeWanted_.size(); looked < total && !routeWanted_.empty(); ++looked)
     {
         if (budget.searches >= budget.maxSearches || searchExpanded_ - budget.expandedBefore >= budget.maxNodes ||
-            (budget.searches > 0 && std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= RouteBudgetMs))
+            (budget.searches > 0 && !deterministic_ && std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= RouteBudgetMs))
             break;
         if (it == routeWanted_.end())
             it = routeWanted_.begin();
@@ -3520,12 +3540,15 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
     };
     const Door* d = nullptr;
     int ranked = -1;
+    // Along a road, the crossing on the road first (indexRoads), of those landing as well.
+    const auto onRoad = [&](const Door* way) { return way && roadSeams_.count(way->id) > 0 && roadLink(e.cellId, way->targetCell); };
     const auto choose = [&] {
         d = nullptr;
         ranked = -1;
         for (const Door* way : doorsIn(e.cellId))
             if (usable(way) && way->targetCell == next && !next.empty())
-                if (const int lands = landing(*way); lands > ranked || (lands == ranked && nearer(way, d)))
+                if (const int lands = landing(*way);
+                    lands > ranked || (lands == ranked && (onRoad(way) > onRoad(d) || (onRoad(way) == onRoad(d) && nearer(way, d)))))
                     d = way, ranked = lands;
     };
     choose();

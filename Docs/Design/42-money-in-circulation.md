@@ -814,6 +814,212 @@ The user reassessed the list on 2026-10-04 and asked for every item to be solved
     9,477p (against 4,779p before). They propped up 10,314p, mostly the first day's filling of their new tills, and took
     in 2,609p. Money stayed conserved, with a mean tick of 2.4 ms.
 
+## Starting money (the user, 2026-10-05)
+
+"Everyone needs to have starting money." Every resident and every body that keeps a purse starts with a reasonable one
+(`Core/RatwFounding.cpp`, `Society::foundPurses`). It is made once, when the world is founded, or the first time an older
+save runs with this (`EconomyMemory::purses`). Like the world's first treasury and the houses' fortunes, it counts as
+money made, and it is kept out of the month's profit (`starting money`, unearned), so nobody is taxed on it. The amounts
+are placeholders (`RatwSociety.h`):
+
+- **Residents**, topped up to:
+  - a child: 5p, and half a penny a year of its age;
+  - a beggar or rag-picker: 10p;
+  - a grown wolf: 30p (some five days' food);
+  - one retired: 60p;
+  - a shopkeeper whose shop is its own: 80p, or its shop's float if more.
+- **A town's treasury** (the capital's too): 40p a resident who pays it. That is over `LeanTreasury`, so no town starts
+  lean.
+- **A church**: four weeks of its basket, or 10p a resident if more. Made at its founding, no longer taken from the
+  treasury.
+- **A town's buyers** (works, watch, docks, mines, quarries, hall): their working funds, at their founding.
+- **A great house's businesses**: each till starts with its float, so the house's 3,000p fortune isn't drained filling
+  them.
+- **Newcomers** arrive with 30p. **A child born** gets 5p from its better-off parent (given, never made).
+
+On DEV build 24 (two days, `econ_watch`):
+
+- Residents short of a day's food money: 82 → 6 to 10.
+- The poorest tenth's average: 5p → 13p.
+- Churches: 180p to 2,770p, against 15p to 250p before.
+- Houses kept 2,900p to 4,500p, against House Brinewater's 32p on the second day before.
+- About 98,000p was made in all, and money stayed conserved.
+- **Still open:** the treasuries' daily deficit (wages against takings), which starting money only delays.
+
+## The month's test, and what it changed (2026-10-05)
+
+The user asked for a month left to the residents alone, watched for stuck materials, wages, anything going broke and
+anything hoarding. `Tests/econ_watch.cpp` runs it (see doc 31, "Fast-forward").
+
+**A false start.** The first run looked like a collapse: by day 13, 524 residents were starving, porters were stranded
+in the wilds and 198 caravans were stuck on the road. Most of that was the tool's own fault: it threw away the cell
+files after loading. Nothing could load a cell nobody had loaded yet, so anyone entering one stopped there for good.
+With that fixed, the same week showed what was real:
+
+- After the starting larders ran out (day 5), residents spent far more than they earned. Wages were about 2,900p a day,
+  at most 6p a worker: three paid spells of a nine-hour day. Food was about 5,000 to 10,000p a day, two meals a wolf at
+  about 4p.
+- The difference piled up with independent shopkeepers, whom no rule sent back out. Residents short of a day's food
+  money went from 15 to 93 between days 5 and 7, and the Gini from 0.50 to 0.60.
+- A keeper's purse was its shop's till, so buying materials could spend its last penny. The Cinderbrook smelter's
+  keeper went broke and hungry, and iron bars stopped.
+- Goods piled up with producers while makers in other towns went short. Trade was one-off and daily, and stopped
+  whenever a wagon was on the road.
+
+What was built (the user's decisions are marked *user*):
+
+- **Roads** (*user*: travel between towns keeps to the roads unless they are blocked, where bandits wait):
+  - `World::indexRoads` finds, from every cell's tiles at load, the seams that cross on a road (dirt road, street,
+    flagstones) on both sides.
+  - Routes (`firstSteps`) count a step along a road as 1 and one overland as 3.
+  - Travellers onstage and off cross into the next cell on the road.
+  - Bandit camps follow, since they are placed along the routes between towns.
+  - From Ser Ferro to the Upper Accord quarry: 20 cells, all on roads, against 17 overland through the marshes.
+- **Porters' provisions** (*user*):
+  - A carrier sent to another town for a contract's goods gets food for the way: a meal for every ten places there and
+    back, bought at its town's shops by whoever posted the contract, or out of the reward if the poster has too little.
+  - What can't be bought, it gets the money for.
+  - A hungry traveller eats (or buys or fetches food) before going on with its errand.
+- **Standing orders** (*user*; `StandingOrder`, saved with the roads):
+  - A shop short of a good that its town can't spare signs a standing order with the town that has the most of it:
+    about what it is short, a week, at the catalog price times the road's markup times the seller's scarcity.
+  - Each road with orders sends its trader's caravan once a week (and at once when an order is new). On arrival it sells
+    each order's share at the agreed price, as far as the buyer can pay; the rest goes to whoever wants it.
+  - Every four weeks, or sooner if deliveries fall well short, a porter of the buyer's town walks (with provisions) to the
+    selling town's market and renegotiates. A quarter less if the shop holds more than two weeks' worth, a quarter more if
+    it went short or ran low, at the price there now. An order down to under 2 a week ends.
+- **A keeper's food money:** a keeper whose shop is its own never spends its last `KeeperReserve` (20p) on materials,
+  restocking or wages.
+- **Shopkeepers don't hoard:** above its food money and two floats, a keeper spends a tenth a day. Four tenths go to its
+  help as a share of the takings; a third of the rest buys food for its larder; the rest buys goods for its home.
+- **Market dues** (weekly, where money gathers): every Restday each shop's till pays its town a twentieth of what it holds
+  above its float.
+- **Seasonal goods:** makers lay in six times their usual store of a good that comes only in some seasons (grapes,
+  apples). Grapes were 0 in the test because it began in spring: the vineyards (Ser Ferro's Poggio Chiaro) yield in
+  summer and autumn.
+- **Rations:** the watch's bread, fish and cheese, and the mines' and quarries' bread, are no longer used up as a basket.
+  They are rations that a hungry guard, miner or quarryman takes before spending its own pennies.
+- **Paid for the hours worked:** wages are paid for up to `PaidSpells` (8) spells a day instead of 3, at 2p a spell (1p
+  from a lean shop or treasury). A town's treasury keeps a week's payroll (`PayrollDays` 7, at the new rate) before
+  funding its buyers.
+- **Weekly reckoning** (*user*, in place of the month's): every `ReckonDays` (7) each resident pays a tenth of the
+  week's profit in tax and a tenth in tithe, and towns send the capital a tenth of their tax. Ground rent to the great
+  houses stays monthly (the reckoning that opens a month). Treasuries no longer wait four weeks for their income.
+- **Food for the household** (*user*): a grown wolf stocking its larder buys food for everyone at home, so the children
+  eat from the larder, not their own pennies. How many days it buys is the household's own steady habit: 5 to 8
+  (`stockingDays`), as far as the purse goes. A new larder starts with 2 to 5 days' (`startingLarderDays`), so the
+  world's households don't all shop on the same day. A keeper whose shelves hold nothing to eat buys a meal
+  elsewhere, as anyone does.
+- **Children's stipends** (*user*, `Society::childrenAndStipends`, daily):
+  - Each child living with grown family is given a little from the household's purse (its grown members' together),
+    paid by the richest of them.
+  - Never a given (*user*): only what the purse can safely spare after two weeks' food for everyone at home (`FoodADay`
+    5p each), the tax and tithe owed on the week's profit so far, and its rent (households pay none yet); and none at all
+    while the household has lately been poor.
+  - The more to spare, the more: a penny a day for every two weeks' worth, up to `MostStipend` (3p) and a penny more for
+    every hundred to spare for each child (*user*: a rich family's children have plenty to spend frivolously).
+  - Booked as unearned, so it neither lowers the giver's tax nor raises the child's.
+  - Children spend freely: up to half of what they have each day, at their town's shops, on something cheap (3p or
+    less). A treat is eaten when hungry; a trinket is kept.
+- **Wants** (*user*, `Society::wants`, daily): a grown wolf with money to spare after a week's food and the tax and
+  tithe it owes spends a tenth of what is above that on something it simply wants, by its own taste and the day's
+  fancy: a treat or dish it fancies, a drink, jewellery, finery (a hat, a scarf, a shawl, paw wraps), soap and scent, a
+  pastime (a pipe, dice, a game board, a broadsheet, a book), or something for the home. Weapons and armour aren't
+  wants. Food is kept to eat, drink is drunk, a few pieces of finery are kept, and the rest is used. A keeper whose shop
+  is its own spends as a keeper instead (above).
+- **Odd jobs** (*user*, `Core/RatwOddJobs.cpp`):
+  - A town treasury or church with money to spare posts a day's menial work from its surplus spending, paid only when
+    the work is done. Each kind does something real:
+    - **Deliveries:** food bought at a shop for the watch's mess or the church's table, and carried there.
+    - **Repairs:** the Town Works' materials carried out and used about the town (its repair rises 1.5 a job).
+    - **Gathering and hunting trips:** a spell at the ground about the town. What it gives is sold cheaply to the town's
+      makers (a shop's buying price), and the proceeds go to the poster.
+    - **Scouting:** out to the wild ground and back.
+    - **A hand at a producer:** a farm, quarry or dairy with little of its yield in store gets a spell's yield worked for
+      it.
+  - **Who takes them:** wolves without other work (labourers, the out-of-work, those working out of town, idle posts),
+    the poor without a paid post, and children of 8 to 15, in the day. The poor and hungry may start at 8, the others at
+    10. Children don't hunt or work as hands.
+  - **Hands and pay:** a job takes 1 to 5 wolves (*user*). Trips take 2 to 5, repairs and scouting 1 to 3, deliveries and
+    hands 1 to 2. Each does its share and is paid its share of `OddJobPay` (4p) a hand. Jobs last the day and aren't
+    saved.
+  - **Funding moves with need** (*user*): a town puts half its surplus budget into jobs, or three quarters when more
+    than a tenth of its people are poor (under 12p). A church puts half of what it spends beyond alms into them. What
+    isn't posted goes on materials as before.
+- **Relief:** a town with many poor (over a tenth under 12p) that isn't lean funds odd jobs from up to a fiftieth of its
+  treasury a day, whether or not it is above its reserve.
+- **Alms at the shop:** a hungry wolf with no food, not the price of a meal (4p) and an empty larder asks alms at the
+  nearest open food shop, and its town's church pays the shop for a meal on the spot. Midnight alms found the small towns'
+  shops sold out; a family of salt rakers in Saltreach starved with a church in town. A wolf with a penny or two no
+  longer walks to the shop to buy what it can't afford.
+- **A keeper's food money, everywhere:** a business's hires, its upkeep, the children's stipends and the household's
+  larder are paid from what a keeper may spend (`spendable`), never its last `KeeperReserve`.
+- **The church feeds the hungry, every day:** surplus or not, each church buys a day's food for each wolf living in its
+  town (by home) with no food, no pennies and an empty larder, as alms, from the shops' last meals too if need be.
+- **A fair share at the shop:** a household laying in its store takes at most half of what the shop has left beyond
+  today's meal, so the next customer finds some too. (In the week's test, everyone's first big trips fell on days 4 to 6
+  and emptied Ridgemere's food shops.)
+- **Shared fields:** a producer's place (a field, a shore) is no one's alone. Two Lakeside fishers had starved waiting
+  for the one spot.
+- **Subsidies** (*user*: towns and churches keep industry turning): a business that can't pay a worker's wage has it paid
+  by its town's treasury, if that holds over twice the lean line a head, or else its church, if it holds over twice its
+  floor (`subsidiser`). Farms short of hands get hands posted as odd jobs (above).
+- **Children's friend groups** (*user*): each town's children (4 to 15), by age, in fours, rebuilt each day. At play and
+  in the evenings a group meets at one place on the square. On odd jobs a child joins a friend's job first, then one
+  with room for a party.
+- **Wages follow takings** (*user*): each day a shop shares `TakingsShare` (3) tenths of what it took in among its help,
+  on top of their wages, as far as its till can (keeping half its float; a keeper's own purse, its food money).
+  - Each help's share is at most `TakingsCap` (8p) a day. Past that, a busy shop takes on more hands, a week's hire from
+    those without work, rather than paying its few help ever more. The month's test had shares concentrating money in
+    the busiest shops' help while those without work ran dry.
+- **Churches stand by each other:** a church run dry (under 2p a head) is given what it lacks of 5p a head by the
+  richest church holding more than twice its floor ("from the mother church"). Saltreach's church spent itself out on
+  alms in the month's test.
+- **The larder errand:** each day a household's best-off grown member restocks the larder if it holds under two days'
+  food for everyone at home (one, where someone keeps the house and goes to the shop for it). So the children, the
+  apprentices and the others who earn nothing eat even when the earners eat elsewhere. In the month's first test,
+  starving children and apprentices with nothing in the larder were most of the starving.
+- **The household purse and keeping the house** (*user*, `Core/RatwHouseholds.cpp`, daily):
+  - A home's grown members share one purse: what they hold is evened out among them each day, booked as
+    unearned. A keeper's own purse, which is its shop's till, is kept apart.
+  - A household comfortable for a week (`ComfortDays`: four weeks' food for everyone in the purse) keeps one of two or
+    more working members at home ("keeping the house"). It shops for the household (walking to the shop with the
+    purse), minds the children, or goes about the town.
+  - It goes back to work when the purse holds under `KeeperDays` (10) days' food. A household poor for a week
+    (`PoorDays`: under a week's food) sends everyone who can to labour, homemakers too, until it isn't poor.
+  - The world records spouses only when they marry in play, so the purse is shared among all of a home's grown
+    members.
+- **Prices follow supply and demand** (*user*, `Society::shopPrice`): what the townsfolk pay is the catalog's price, times
+  the town's scarcity, times the shop's own: up to a fifth more when the shop is running short of the good (selling
+  faster than it is made), a fifth less with a glut. A shop flush with money (over four floats and 200p) sells cheaper,
+  a tenth off for each time over, down to three tenths: its surplus goes back to its customers. This covers food,
+  household goods, wants and the collectors' buying.
+- **Businesses put spare money to work** (*user*: something to sink it into that isn't charity, `businessSpends`). A
+  keeper with a surplus puts half its daily spending into it; a great house three tenths, into its least improved
+  business; a producer over 300p a tenth of the rest:
+  - **Hires:** a week's hire (`HireDays`) of 1 to 3 hands at its premises, a day's work (`HireSpells`: 4) paid by the
+    day. A workshop's next batch is begun at once; a field's yield is worked. Pay starts at `HirePay` (12p) a hand. Each
+    day a place goes unfilled it rises 2p (to 24p); filled, it eases (to 8p). A wolf whose own post pays less (16p a
+    day from a comfortable employer, 8p from a lean one) takes it, leaving its post unworked.
+  - **Improvements:** building materials bought from the town's makers and used, then two builders hired; 60p a level
+    (times the level) for up to `MostImprovement` (3). Each level makes its batches or yields 15% quicker.
+  - **Upkeep** (*user*): each Restday an improved business buys `UpkeepALevel` (5p) a level of materials to keep it up,
+    from its till or its house. Two weeks in a row without, and it loses a level. A business that does well and then
+    falls on hard times doesn't stay efficient for ever.
+- **Children would rather not work** (*user*): they look for odd jobs only from noon, and on one day in three unless
+  poor or hungry. Work not meant for them (a hand at a farm, a hunt) is theirs only when no grown wolf has taken it by
+  mid-afternoon.
+- **Public jobs pay by need** (*user*): a town's or church's odd job pays `OddJobPay` (4p) a hand, and up to three
+  times that from a poster with full coffers where many are poor (by the share of its townsfolk under 12p and how far
+  its purse stands above its floor).
+- **Shopkeepers' families:** checked on build 24. Of 223 keepers, 3 live alone and 86 share their home with children;
+  the other 134 share it with others but have no children.
+
+## Later (noted 2026-10-05)
+
+- **Skills from odd jobs and hires** (*user*): working a trade's odd jobs and hires should teach its skill, leading
+  toward apprenticeships and, in time, taking over a business. Not built: the jobs teach nothing yet.
+
 ## Open questions
 
 1. **Players:** do they pay the tax and tithe on what they earn in town (contracts, sales)? *Recommendation:* yes, the

@@ -138,6 +138,16 @@ Value roads(const RoadsState& r)
         contracts.push(j);
     }
     roads.add("caravans", caravans); roads.add("camps", camps); roads.add("contracts", contracts);
+    auto orders = Value::array();
+    for (const auto& o : r.orders)
+    {
+        auto j = Value::object();
+        j.add("id", o.id); j.add("buyer", o.buyer); j.add("town", o.town); j.add("item", o.item); j.add("from", o.from);
+        j.add("perWeek", o.perWeek); j.add("price", double(o.price)); j.add("since", o.since); j.add("review", o.review);
+        j.add("delivered", o.delivered); j.add("shortfall", o.shortfall); j.add("negotiator", o.negotiator);
+        orders.push(j);
+    }
+    roads.add("orders", orders);
     return roads;
 }
 
@@ -639,6 +649,17 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             k.source = j.string("source");
             k.carried = std::clamp(int(num(j, "carried")), 0, k.quantity);
             saved.roads.contracts.push_back(std::move(k));
+        }
+        for (const auto& j : roads.array("orders"))      // (Saved before standing orders: none.)
+        {
+            StandingOrder o;
+            o.id = j.string("id"); o.buyer = j.string("buyer"); o.town = j.string("town"); o.item = j.string("item");
+            o.from = j.string("from"); o.perWeek = std::clamp(int(num(j, "perWeek")), 0, 999);
+            o.price = std::clamp<std::int64_t>(std::int64_t(num(j, "price")), 0, 100000); o.since = num(j, "since");
+            o.review = num(j, "review"); o.delivered = std::max(0, int(num(j, "delivered")));
+            o.shortfall = std::max(0, int(num(j, "shortfall"))); o.negotiator = j.string("negotiator");
+            if (!o.id.empty() && !o.buyer.empty() && !o.item.empty() && o.perWeek > 0)
+                saved.roads.orders.push_back(std::move(o));
         }
     }
     for (const auto& j : root.array("beliefs"))

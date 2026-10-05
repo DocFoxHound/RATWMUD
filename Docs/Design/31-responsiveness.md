@@ -760,6 +760,37 @@ A server left running keeps a record of how it ran, so lag can be traced after t
   `test_dungeon_master` (`test_the_servers_health`): the game role writes to `dm.health`, the DM reads it back, PROD
   and DEV apart.
 
+## Fast-forward (built 2026-10-05)
+
+The user wants to put the game into fast-forward, to get through tests that take days or months of game time.
+
+- **`ratw_server --speed N`**, or `/speed N` in the Dev Console (a Dungeon Master's), runs the world N times as fast
+  (1 to 1000). `tools/scratch.sh dev --speed 16` passes it on.
+- **Nothing is skipped.** Every tick is still the world's 0.05 s; the server ticks N times as often, and as fast as the
+  machine can if it can't keep up.
+- **What belongs to real time keeps to it** (`Game::tick`'s `real`):
+  - motion frames and snapshots to the clients (a frame every N ticks);
+  - saves;
+  - the database polls;
+  - the Dungeon Master's director;
+  - the NPC Mind's ambient voices, so a fast world makes no more model calls an hour.
+- **`World::setDeterministic`** (`--deterministic` in `world_check` and `econ_watch`) has the schedules finish in the
+  step that begins them, and route planning stop by its counts rather than the clock. A run then repeats exactly. Before
+  this, the 3 ms budgets made three identical runs end three different ways.
+- Two savings found on the way, with the digest unchanged:
+  - `spotNear` asks whether anyone stands there before it rebuilds the region map;
+  - a resident's station key is built only when the station is its alone.
+
+**Measured** on DEV build 24 with nobody connected: 320 ticks a second at 16x (0.9 ms each). Flat out, about 1,600 a
+second, roughly 80x real time:
+
+- a game day in about 3 minutes;
+- a 28-day month in about 1.4 hours;
+- a year in about 18 hours.
+
+With a player connected a tick costs about 3 ms, so about 17x at most. Going faster takes cheaper ticks: the profile is
+now spread thin over residents' decisions (string keys, map lookups), or the work could be split over threads.
+
 ## Hardware notes for the dedicated server
 
 - The simulation thread wants **high single-core speed**. The pool wants **many cores**. A current 16–32 core part

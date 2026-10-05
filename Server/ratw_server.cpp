@@ -9,7 +9,9 @@
 //            --full-snapshots, --for SECONDS (stop after, saving: for tests),
 //            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never),
 //            --workers N (threads finishing players' snapshots in parallel; by default the cores less two, 0 for none),
-//            --port 0 (any free port, printed as it starts)
+//            --port 0 (any free port, printed as it starts),
+//            --speed N (fast-forward: N ticks where there was one, 1 to 1000; nothing is skipped, the world just runs
+//            faster, as fast as the machine can if it can't keep up; /speed in the Dev Console changes it; Game::setSpeed)
 //   --scratch: a scratch server (game::Options::scratch): it reads the world and its save but writes nothing, and
 //            needn't own the world (so it runs beside the real server). Whoever starts it stops it when done; it stops
 //            by itself after an hour unless --for says otherwise. --idle-exit SECONDS (any server) stops it once nobody
@@ -528,7 +530,7 @@ void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
-                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--scratch [--idle-exit SECONDS]]\n";
+                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N] [--scratch [--idle-exit SECONDS]]\n";
 }
 
 void blocking(int fd, bool on)
@@ -575,6 +577,7 @@ int main(int argc, char** argv)
         else if (a == "--workers") workers = std::atoi(next().c_str());
         else if (a == "--scratch") options.scratch = true;
         else if (a == "--idle-exit") idleExit = std::atof(next().c_str());
+        else if (a == "--speed") options.speed = std::atof(next().c_str());
         else
         {
             usage();
@@ -637,6 +640,8 @@ int main(int argc, char** argv)
     network.start();
     std::cout << "RATW server listening on port " << port << " (" << bind << "); ready in "
               << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() << " s" << std::endl;
+    if (g.speed() > 1)
+        std::cout << "RATW speed " << g.speed() << "x: the world runs " << g.speed() << " times as fast as real time" << std::endl;
 
     using Clock = std::chrono::steady_clock;
     auto nextTick = Clock::now();
@@ -725,7 +730,8 @@ int main(int argc, char** argv)
             slowest = std::max(slowest, took);
             total += took;
             ++ticks;
-            nextTick += std::chrono::milliseconds(50);
+            // 50 ms of real time a tick, less when the world is fast-forwarded (Game::setSpeed).
+            nextTick += std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(0.05 / g.speed()));
             if (Clock::now() - nextTick > std::chrono::seconds(1))
                 nextTick = Clock::now();            // Fell far behind (a stall): carry on from now, not in a rush.
         }
