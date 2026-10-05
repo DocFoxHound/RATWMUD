@@ -2,7 +2,7 @@
 // asked (Docs/Design/42-money-in-circulation.md: "a month-long run"). The world runs as world_check runs it (20 ticks a
 // second, simulation tiers on), and every coin and good that moves is tallied from the society's journal.
 //
-//   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic]
+//   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N]
 //
 // OUT_DIR gets, for each game day:
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
@@ -14,7 +14,10 @@
 //   events.csv      day, kind, detail: everything the world logged that wasn't a plain ledger entry.
 // A line a day goes to stdout, so a long run can be followed. --deterministic does the world's work by counts, never the
 // clock (World::setDeterministic): the run repeats exactly, and ends with a digest of where everyone is and what they do.
+// --threads N: how many threads the world's work is spread over (8 unless asked: four cores and their twins; 1, none but
+// the main one). The same run gives the same digest on any number.
 #include "RatwItems.h"
+#include "RatwPool.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -111,7 +114,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR]\n";
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -119,11 +122,14 @@ int main(int argc, char** argv)
     const fs::path out = argv[3];
     double from = 6;
     bool deterministic = false;
+    unsigned threads = 8;
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
         else if (std::string(argv[i]) == "--deterministic")
             deterministic = true;
+        else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
+            threads = unsigned(std::max(1, std::atoi(argv[++i])));
     fs::create_directories(out);
 
     std::map<std::string, std::string> files;
@@ -135,6 +141,9 @@ int main(int argc, char** argv)
         return it == files.end() ? nullptr : &it->second;
     };
     World server;
+    Pool pool(threads - 1);                         // (The main thread takes a share too.)
+    if (threads > 1)
+        server.setParallel([&](std::size_t count, const std::function<void(std::size_t)>& job) { pool.run(count, job); });
     server.setCellSource({
         [&](const std::string& id, std::string& header) {
             const auto* cell = find("cells/" + id + ".cell");
@@ -517,5 +526,14 @@ int main(int argc, char** argv)
     const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
     std::cout << "done: " << ticks << " ticks, " << wall / 60 << " min (" << wall * 1000 / double(ticks) << " ms a tick); digest "
               << std::hex << digest << std::dec << "\n";
+    // Where the ticks went (ms a tick): the world's parts, and the schedules by stage.
+    const auto& p = server.tickProfile();
+    const auto per = [&](double ms) { return ms / double(std::max<std::int64_t>(1, ticks)); };
+    std::cout << std::fixed << std::setprecision(4) << "ms a tick: streaming " << per(p.streaming.total) << ", schedules "
+              << per(p.schedules.total) << ", movement " << per(p.movement.total) << ", separation " << per(p.separation.total)
+              << ", views " << per(p.views.total) << "\nschedules: society " << per(p.stages[0]) << ", bonds " << per(p.stages[1])
+              << ", roads " << per(p.stages[2]) << ", crime " << per(p.stages[3]) << ", errands " << per(p.stages[4])
+              << ", streaming's wants " << per(p.stages[5]) << ", route planning " << per(p.stages[6]) << "\n"
+              << std::defaultfloat;
     return 0;
 }

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <deque>
+#include <unordered_map>
 
 namespace ratw
 {
@@ -34,10 +35,37 @@ bool Society::goesToChurch(const std::string& resident, std::int64_t day)
 
 bool Society::idlePost(const std::string& title)
 {
-    for (const char* idle : {"idling", "sits and", "loiter", "lounging", "dozing"})
-        if (title.find(idle) != std::string::npos)
-            return true;
-    return false;
+    // Asked of the same few titles every decision: each thread remembers.
+    thread_local std::unordered_map<std::string, bool> known;
+    if (const auto found = known.find(title); found != known.end())
+        return found->second;
+    bool idle = false;
+    for (const char* word : {"idling", "sits and", "loiter", "lounging", "dozing"})
+        idle = idle || title.find(word) != std::string::npos;
+    return known.emplace(title, idle).first->second;
+}
+
+void Society::rollOutwork() const
+{
+    if (state_.budgetDay != outworkDay_)
+    {
+        outwork_.clear();
+        outworkTaken_.clear();
+        outworkDay_ = state_.budgetDay;
+    }
+}
+
+const WorkGround* Society::outworkKnown(const std::string& resident, const std::string& community, bool& known) const
+{
+    known = true;
+    if (!day_.grounds)
+        return nullptr;
+    const auto found = day_.grounds->find(community);
+    if (found == day_.grounds->end() || found->second.empty())
+        return nullptr;
+    const auto had = outwork_.find(resident);
+    known = state_.budgetDay == outworkDay_ && had != outwork_.end();
+    return known && had->second < found->second.size() ? &found->second[had->second] : nullptr;
 }
 
 const WorkGround* Society::outworkOf(const std::string& resident, const std::string& community) const
@@ -48,12 +76,7 @@ const WorkGround* Society::outworkOf(const std::string& resident, const std::str
     if (found == day_.grounds->end() || found->second.empty())
         return nullptr;
     const auto& list = found->second;
-    if (state_.budgetDay != outworkDay_)
-    {
-        outwork_.clear();
-        outworkTaken_.clear();
-        outworkDay_ = state_.budgetDay;
-    }
+    rollOutwork();
     if (const auto had = outwork_.find(resident); had != outwork_.end())
         return had->second < list.size() ? &list[had->second] : nullptr;
     // Its own leaning (a steady per-wolf choice), then the next ground along with room.

@@ -18,6 +18,13 @@ std::string skillKey(const std::string& resident, const std::string& position)
 {
     return resident + "|" + position;
 }
+// skillKey, made in a buffer of the thread's own, for the lookups made every second (skill, practise).
+const std::string& skillKeyNow(const std::string& resident, const std::string& position)
+{
+    thread_local std::string key;
+    key.assign(resident).append(1, '|').append(position);
+    return key;
+}
 // Placeholder names for those born here and those who come from elsewhere, until naming is designed.
 const char* const FirstNames[] = {"Alder", "Briar", "Cinder", "Dusk", "Ember", "Fennel", "Gale", "Hazel", "Ivy", "Juniper",
                                   "Kestrel", "Linden", "Moss", "Nettle", "Oriel", "Pike", "Quill", "Rowan", "Sorrel",
@@ -77,6 +84,7 @@ bool Society::closeAccount(const std::string& id)
         if (count != 0)
             return false;
     state_.accounts.erase(found);
+    ++rosterRevision_;
     return true;
 }
 
@@ -228,6 +236,7 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
 
 void Society::buildPositions()
 {
+    ++rosterRevision_;
     employers_.clear();
     houses_.clear();
     housesKnown_ = false;
@@ -305,6 +314,7 @@ void Society::indexCareers() const
 {
     if (careersIndexed_)
         return;
+    ++rosterRevision_;
     heldBy_.clear();
     learning_.clear();
     for (const auto& [id, ps] : state_.careers.positions)
@@ -340,13 +350,21 @@ const Position* Society::apprenticedTo(const std::string& resident) const
 }
 double Society::skill(const std::string& resident, const std::string& positionId) const
 {
-    const auto found = state_.careers.skill.find(skillKey(resident, positionId));
+    const auto found = state_.careers.skill.find(skillKeyNow(resident, positionId));
     return found == state_.careers.skill.end() ? 0 : found->second;
 }
-void Society::practise(const std::string& resident, const std::string& positionId, double rate)
+double* Society::skillSlot(const std::string& resident, const std::string& positionId, bool make)
 {
-    auto& s = state_.careers.skill[skillKey(resident, positionId)];
+    if (make)
+        return &state_.careers.skill[skillKeyNow(resident, positionId)];
+    const auto found = state_.careers.skill.find(skillKeyNow(resident, positionId));
+    return found == state_.careers.skill.end() ? nullptr : &found->second;
+}
+double Society::practise(const std::string& resident, const std::string& positionId, double rate)
+{
+    auto& s = state_.careers.skill[skillKeyNow(resident, positionId)];
     s = std::min(100.0, s + rate * (1 - s / 100));
+    return s;
 }
 bool Society::household(const std::string& a, const std::string& b) const
 {

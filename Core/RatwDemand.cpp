@@ -38,15 +38,25 @@ int Society::nourishment(const std::string& item)
 
 std::string Society::bestFood(const EconomyAccount& account)
 {
-    std::string best;
+    const std::string* best = nullptr;
     int most = 0;
     for (const auto& [item, n] : account.stock)
-        if (n > 0 && edible(item) && nourishment(item) > most)
-        {
-            most = nourishment(item);
-            best = item;
-        }
-    return best;
+        if (n > 0)
+            if (const auto* good = items::good(item); good && !good->drink && good->nourish > most)
+            {
+                most = good->nourish;
+                best = &item;
+            }
+    return best ? *best : std::string();
+}
+
+bool Society::hasFood(const EconomyAccount& account)
+{
+    for (const auto& [item, n] : account.stock)
+        if (n > 0)
+            if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
+                return true;
+    return false;
 }
 
 bool Society::shopHasFood(const std::string& merchant) const
@@ -54,9 +64,16 @@ bool Society::shopHasFood(const std::string& merchant) const
     const auto* a = account(tillOf(merchant));       // (A house's business: its till, doc 42.)
     if (!a)
         return false;
-    const auto sold = wares(merchant);
+    // (Its wares as wares() keeps them, not a copy: asked of every open shop every second.)
+    std::vector<std::string> made;
+    const std::vector<std::string>* sold = nullptr;
+    if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant))
+        if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == r->workLabel)
+            sold = &kept->second.second;
+    if (!sold)
+        made = wares(merchant), sold = &made;
     for (const auto& [item, n] : a->stock)
-        if (n > 0 && edible(item) && std::find(sold.begin(), sold.end(), items::baseOf(item)) != sold.end())
+        if (n > 0 && edible(item) && std::find(sold->begin(), sold->end(), items::baseOf(item)) != sold->end())
             return true;
     return false;
 }
@@ -471,7 +488,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
             t.shops.push_back(r.id);
         if (const auto* p = items::producerFor(r.workLabel))
             ++t.workers[p->id];
-        if (const auto* purse = account(r.id); purse && purse->cash < 12 && bestFood(*purse).empty())
+        if (const auto* purse = account(r.id); purse && purse->cash < 12 && !hasFood(*purse))
             t.poor.push_back(r.id);
     }
     const double days = items::institutionDays();

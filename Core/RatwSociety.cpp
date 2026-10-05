@@ -1,6 +1,7 @@
 #include "RatwSociety.h"
 #include "RatwItems.h"
 #include <algorithm>
+#include <unordered_map>
 #include <cctype>
 #include <cmath>
 #include <limits>
@@ -57,6 +58,7 @@ void Society::reset(Roster roster)
 {
     roster_ = roster;
     state_ = {};
+    ++rosterRevision_;
     state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
     state_.minted = 1000;
@@ -181,6 +183,7 @@ const ResidentSpec* Society::spec(const std::string& id) const
         return nullptr;
     if (!specsIndexed_ || specIndex_.size() > authored_.residents.size())
     {
+        ++rosterRevision_;
         specIndex_.clear();
         for (std::size_t i = 0; i < authored_.residents.size(); ++i)
             specIndex_.emplace(authored_.residents[i].id, i);   // The first of a duplicated ID wins, as before.
@@ -205,9 +208,12 @@ bool Society::smith(const std::string& id) const
     const auto* r = spec(id);
     if (!r || r->role != "merchant")
         return false;
+    thread_local std::unordered_map<std::string, bool> known;   // By work label: asked of every shop, every decision.
+    if (const auto found = known.find(r->workLabel); found != known.end())
+        return found->second;
     std::string work = r->workLabel;
     std::transform(work.begin(), work.end(), work.begin(), [](unsigned char c) { return char(std::tolower(c)); });
-    return work.find("smith") != std::string::npos || work.find("forge") != std::string::npos;
+    return known.emplace(r->workLabel, work.find("smith") != std::string::npos || work.find("forge") != std::string::npos).first->second;
 }
 std::vector<std::string> Society::wares(const std::string& merchant) const
 {
@@ -511,9 +517,18 @@ void Society::tick(double seconds, double absoluteDay, int season, const std::ma
         decide(absoluteDay, season, bodies);
     }
 }
+bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) const
+{
+    if (!decidesWithin(seconds))
+        return false;
+    return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % UnseenStep == 0 ||
+           std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < PursesFounded || state_.books.month < 0;
+}
+
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
 {
     season_ = season;
+    unseenDecided_ = ++secondsDecided_ % UnseenStep == 0;
     const auto day = std::int64_t(std::floor(absoluteDay));
     if (day > state_.budgetDay)
     {
@@ -927,6 +942,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
 }
 bool Society::restore(const SocietyState& saved)
 {
+    ++rosterRevision_;
     // A checkpoint names its own population; World rejects one for another world.
     // A checkpoint is validated against this society's own population; a
     // society without one (None) accepts the legacy demo population.

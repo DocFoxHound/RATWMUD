@@ -273,6 +273,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.source_ = source_;
     candidate.tiered_ = tiered_;                    // A tier setting made before loading still holds.
     candidate.tieredSet_ = tieredSet_;
+    candidate.setParallel(parallel_);               // So do the threads (the world's and its residents').
     candidate.society_.reset(false);
     candidate.herbCell_.clear();
     AuthoredRoster roster;

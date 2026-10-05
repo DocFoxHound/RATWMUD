@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace ratw
 {
@@ -23,20 +26,58 @@ bool hasAny(const std::string& text, std::initializer_list<const char*> words)
             return true;
     return false;
 }
+// A hand at a trade's works (at the forge, working the saws, smoking fish): the words of its title, and the kinds of shop
+// that pay it (payerOf).
+const std::vector<std::pair<const char*, std::vector<const char*>>> trades = {
+    {"forge", {"smithy", "ironworks", "foundry"}}, {"saws", {"sawmill", "carpenter"}}, {"smoking fish", {"smokehouse", "fishmonger"}},
+    {"rope", {"ropewalk", "chandlery"}}, {"glass", {"glassworks"}}, {"kiln", {"brickworks", "pottery"}}, {"salt", {"saltworks"}},
+    {"tann", {"tannery"}}, {"brew", {"brewery"}}, {"dye", {"dyeworks"}}, {"ships", {}}, {"mill", {"mill"}}, {"cooper", {"cooperage"}},
+    {"the catch", {"fishmonger", "smokehouse"}}, {"foreman", {}}, {"overseeing", {}}};
+// What a position's title alone says of who pays it (payerOf), worked out once a title: each thread remembers.
+struct TitleWages
+{
+    bool household = false;                         // Work nobody pays a wage for.
+    bool church = false;                            // The clergy, and those who tend the sick.
+    int trade = -1;                                 // The first of `trades` its title names, or -1.
+};
+const TitleWages& titleWages(const std::string& title)
+{
+    thread_local std::unordered_map<std::string, TitleWages> known;
+    if (const auto found = known.find(title); found != known.end())
+        return found->second;
+    TitleWages w;
+    const auto t = lower(title);
+    w.household = hasAny(t, {"keeps the house", "keeping the house", "apprenticed", "sells from", "picks through", "sits ", "sits by",
+                             "telling stories", "plays", "beg"});
+    w.church = Society::clergy(title) || hasAny(t, {"the sick", "the hurt"});
+    for (std::size_t i = 0; i < trades.size() && w.trade < 0; ++i)
+        if (t.find(trades[i].first) != std::string::npos)
+            w.trade = int(i);
+    return known.emplace(title, w).first->second;
+}
 } // namespace
 
 bool Society::clergy(const std::string& title)
 {
-    return hasAny(lower(title), {"chapel", "priest", "acolyte", "cathedral", "choir", "prelate", "shrine", "chaplain", "sexton",
-                                 "deacon", "abbey", "temple", "church", "the mass", "confession", "the crypt", "healer"});
+    thread_local std::unordered_map<std::string, bool> known;      // (Asked of the same titles every decision.)
+    if (const auto found = known.find(title); found != known.end())
+        return found->second;
+    const bool is = hasAny(lower(title), {"chapel", "priest", "acolyte", "cathedral", "choir", "prelate", "shrine", "chaplain",
+                                          "sexton", "deacon", "abbey", "temple", "church", "the mass", "confession", "the crypt",
+                                          "healer"});
+    return known.emplace(title, is).first->second;
 }
 
 bool Society::houseHead(const std::string& title)
 {
     // The head of a great house (a lord, a lady, a hall's keeper): unpaid, living on the house's own money.
+    thread_local std::unordered_map<std::string, bool> known;      // (As clergy.)
+    if (const auto found = known.find(title); found != known.end())
+        return found->second;
     const auto t = lower(title);
-    return t.rfind("ruling ", 0) == 0 || t.rfind("holding court", 0) == 0 ||
-           (t.rfind("keeping ", 0) == 0 && hasAny(title, {" Hall", " House", " Manor"}));
+    const bool is = t.rfind("ruling ", 0) == 0 || t.rfind("holding court", 0) == 0 ||
+                    (t.rfind("keeping ", 0) == 0 && hasAny(title, {" Hall", " House", " Manor"}));
+    return known.emplace(title, is).first->second;
 }
 
 void Society::indexEmployers() const
@@ -64,13 +105,12 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
         return {treasuryOfResident(resident), "the Town Works"};
     if (const auto* r = spec(resident); r && items::producerFor(r->workLabel))
         return {"", "lives by what it brings in"};
-    const auto title = lower(job.title);
+    const auto& said = titleWages(job.title);
     // Work nobody pays a wage for (doc 42, 2026-10-05): keeping one's own house, learning a trade, hawking, scavenging,
     // sitting by the well. The household keeps them, or they live by what they sell.
-    if (hasAny(title, {"keeps the house", "keeping the house", "apprenticed", "sells from", "picks through", "sits ", "sits by",
-                       "telling stories", "plays", "beg"}))
+    if (said.household)
         return {"", "lives on the household"};
-    if (clergy(job.title) || hasAny(title, {"the sick", "the hurt"}))
+    if (said.church)
         return {churchOf(treasuryOfResident(resident)), "the church"};
     // Someone with a shop, or a great house, where it works: the first of them there who isn't itself.
     indexEmployers();
@@ -91,15 +131,9 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
             return {*master, "the house"};
     // A hand at a trade's works (at the forge, working the saws, smoking fish): paid by a keeper of that trade in its
     // town, or else by its town's richest great house, who own the industry.
-    static const std::vector<std::pair<const char*, std::vector<const char*>>> trades = {
-        {"forge", {"smithy", "ironworks", "foundry"}}, {"saws", {"sawmill", "carpenter"}}, {"smoking fish", {"smokehouse", "fishmonger"}},
-        {"rope", {"ropewalk", "chandlery"}}, {"glass", {"glassworks"}}, {"kiln", {"brickworks", "pottery"}}, {"salt", {"saltworks"}},
-        {"tann", {"tannery"}}, {"brew", {"brewery"}}, {"dye", {"dyeworks"}}, {"ships", {}}, {"mill", {"mill"}}, {"cooper", {"cooperage"}},
-        {"the catch", {"fishmonger", "smokehouse"}}, {"foreman", {}}, {"overseeing", {}}};
-    for (const auto& [word, kinds] : trades)
+    if (said.trade >= 0)
     {
-        if (title.find(word) == std::string::npos)
-            continue;
+        const auto& kinds = trades[std::size_t(said.trade)].second;
         for (const auto& p : positions_)
         {
             if (p.role != "merchant" || communityOfResident(p.founder) != town)
@@ -117,7 +151,6 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
                 most = purse->cash, house = h.id;
         if (!house.empty())
             return {house, "the house"};
-        break;
     }
     return {fortress ? std::string("treasury") : treasuryOfResident(resident), "the town"};
 }

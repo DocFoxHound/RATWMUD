@@ -24,6 +24,9 @@ struct LifeBody
     double x = 0, y = 0;
     bool companion = false;
     int age = 30;                                   // Their age now (the authored age is when they were written).
+    // Out of every player's sight (offstage, World::setTiered): it decides and does its day in steps of
+    // Society::UnseenStep seconds, each step a whole step's worth (Docs/Design/31, "Unseen residents").
+    bool unseen = false;
 };
 // The most residents a world may author: the world loader, the society and its saves all hold this many. With
 // simulation tiers (World::setTiered) a resident far from every player costs almost nothing per tick.
@@ -43,6 +46,8 @@ struct ResidentLife
     int wagesToday = 0;
     std::string homeCell, relocationCell;
     double homeX = 0, homeY = 0, relocationX = 0, relocationY = 0;
+    // When it last decided (the calendar day; -1 not yet), so a step is as long as the seconds since. Not saved.
+    double decidedAt = -1;
 };
 struct EconomyEntry
 {
@@ -303,7 +308,7 @@ class Society
     const Position* apprenticedTo(const std::string& resident) const;
     double skill(const std::string& resident, const std::string& position) const;
     // Work at a position makes one better at it, more slowly near mastery (rate: skill per call, before slowing).
-    void practise(const std::string& resident, const std::string& position, double rate);
+    double practise(const std::string& resident, const std::string& position, double rate);   // The skill now.
     // Family: the same household (home) and surname. Household: the same home.
     bool family(const std::string& a, const std::string& b) const;
     bool household(const std::string& a, const std::string& b) const;
@@ -358,7 +363,13 @@ class Society
     const std::map<std::string, std::map<std::string, Spot>>& homeStores() const { return homeStores_; }
     // Where each resident sleeps (the world gives each a place on a bed in their home, up to four to a bed); without
     // one, their home spot.
-    void setBeds(std::map<std::string, Spot> beds) { beds_ = std::move(beds); }
+    // The world's towns changed (World::setupTowns): what the residents' records keep of their communities is forgotten.
+    void forgetPlaces() { ++rosterRevision_; }
+    void setBeds(std::map<std::string, Spot> beds)
+    {
+        beds_ = std::move(beds);
+        ++rosterRevision_;                          // (The residents' records keep their beds.)
+    }
     const std::string& storeFor(const std::string& cell) const;
     // How dear goods are at each store's markets (1: as ever), set by the world from how much each town has; a
     // merchant's prices follow the store they restock from.
@@ -385,10 +396,23 @@ class Society
     // Sends a resident home to their authored bed (their saved home no longer exists). False without such a resident.
     bool rehome(const std::string& id);
     void tick(double seconds, double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies);
+    // Whether tick(seconds) would decide anything: the bodies it is given go unread otherwise.
+    bool decidesWithin(double seconds) const { return state_.enabled && state_.decisionRemainder + seconds + 1e-8 >= 1.; }
+    // Unseen residents decide every UnseenStep seconds, a step's worth at a time; those a player may see, every second.
+    static constexpr int UnseenStep = 5;
+    // Whether tick(seconds) at absoluteDay needs the bodies at all: anyone seen (`anySeen`), the unseen's step, a new day,
+    // or the society's first decisions. Otherwise it is given none, and nothing happens to anyone that second.
+    bool needsBodies(double seconds, double absoluteDay, bool anySeen) const;
+    // Whether the last decisions included the unseen residents' (their errands follow: World::continueSchedules).
+    bool unseenDecided() const { return unseenDecided_; }
     // The day's plans, for the decisions that follow (the world sets them before each tick; without, every day is
     // an ordinary working day under a fair sky).
     void setDay(LifeDay day) { day_ = std::move(day); }
     const LifeDay& day() const { return day_; }
+    // How the residents' deciding is spread over threads (the world's runner, World::setParallel): run(count, job) calls
+    // job(i) for every i below count and returns when all are done. Unset, the game thread decides alone, the same way.
+    using Parallel = std::function<void(std::size_t, const std::function<void(std::size_t)>&)>;
+    void setParallel(Parallel run) { parallel_ = std::move(run); }
     bool atStall(const std::string& merchant) const { return atStall_.count(merchant) > 0; }
     EconomyResult quote(const std::string& player, const std::string& merchant, const std::string& item,
                         int quantity, bool buy) const;
@@ -415,6 +439,7 @@ class Society
     static bool edible(const std::string& item);
     static int nourishment(const std::string& item);
     static std::string bestFood(const EconomyAccount& account);
+    static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
@@ -459,6 +484,44 @@ class Society
 
   private:
     LifeDay day_;
+    Parallel parallel_;
+    // Each resident by number (its place in ID order), and what its decisions every second reach through it, kept while
+    // nothing they rest on changes (refreshRecords): the roster, the careers, the specs, the positions, the accounts.
+    struct ResidentRecord
+    {
+        std::pair<const std::string, ResidentLife>* entry = nullptr;
+        const ResidentSpec* spec = nullptr;
+        EconomyAccount* wallet = nullptr;           // (Null: none.)
+        const Position* job = nullptr;              // jobOf, apprenticedTo.
+        const Position* learning = nullptr;
+        std::string home, larder, community;        // Its home as last seen, that home's larder and community,
+        const EconomyAccount* larderAccount = nullptr;   // and its account (null for none, yet).
+        double* skill = nullptr;                    // Its skill at `job`, once it has one.
+        const Spot* bed = nullptr;                  // Its place on a bed (doc 36), or null.
+    };
+    std::vector<ResidentRecord> records_;
+    std::unordered_map<std::string, std::size_t> recordOf_;   // A resident's number, by ID.
+    // The shops (merchant positions) with someone in the careers to keep them, and the keeper's number (or -1): kept
+    // with the records.
+    struct Shopkeeping
+    {
+        const Position* position;
+        const std::string* holder;                  // (Its holder now: "" while the shop has none.)
+    };
+    std::vector<Shopkeeping> shopkeeping_;
+    mutable std::uint64_t rosterRevision_ = 1;      // Moved on whenever something the records rest on changes.
+    std::uint64_t recordsRevision_ = 0;             // The revision records_ were made at,
+    const Society* recordsOf_ = nullptr;            // and by which society (a copy makes its own).
+    void refreshRecords();
+    // A resident's skill at a position, where it is kept (made, at 0, with `make`; else null for none yet).
+    double* skillSlot(const std::string& resident, const std::string& position, bool make);
+    std::int64_t secondsDecided_ = 0;               // Seconds decided since this society began (for UnseenStep; not saved).
+    bool unseenDecided_ = false;
+    // Each home's household (resident IDs), for the residents' deciding (RatwResidents.cpp): made again each day, and when
+    // residents come or go.
+    std::unordered_map<std::string, std::vector<std::string>> households_;
+    std::int64_t householdsDay_ = -1;
+    std::size_t householdsOf_ = 0;
     std::set<std::string> atStall_;                 // Merchants trading from a market stall right now.
     std::set<std::string> feasted_;                 // Fed at today's festival already.
     std::int64_t feastDay_ = -1;
@@ -673,6 +736,9 @@ class Society
     // Working out of town (doc 42, Phase 3b): the ground a grown wolf without a post works today, or null (it labours
     // for the Town Works instead). A ground takes OutworkRoom wolves; the choice is the wolf's own, steady day to day.
     const WorkGround* outworkOf(const std::string& resident, const std::string& community) const;
+    // outworkOf without choosing one: `known` is false while this resident hasn't been given its ground today.
+    const WorkGround* outworkKnown(const std::string& resident, const std::string& community, bool& known) const;
+    void rollOutwork() const;                       // A new day: everyone chooses its ground afresh.
     static constexpr int OutworkRoom = 2;
     static std::string outworkTitle(const std::string& trade);   // "gathering in the wild", "hunting"...
     static bool outworkTitled(const std::string& title);
@@ -763,11 +829,12 @@ class Society
   private:
     // Posts odd jobs worth up to `budget` for `payer` in `community`; returns their worth.
     std::int64_t postOddJobs(const std::string& payer, const std::string& community, std::int64_t budget);
-    // The odd job this resident holds, claiming one if it is free to (nullptr for none).
+    // The odd job this resident holds, claiming one if it is free to (nullptr for none). With `claims`, nothing is claimed:
+    // it is set if one would be (deciding at once, RatwResidents.cpp).
     const OddJob* oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
-                            std::int64_t ownDayPay = 0);
+                            std::int64_t ownDayPay = 0, bool* claims = nullptr);
     // Arrived where its odd job takes it: the work done there, and paid when finished.
-    void advanceOddJob(const std::string& id);
+    void advanceOddJob(const std::string& id, int seconds = 1);   // (A step's seconds of its work.)
     // Made into `account` as starting money: counted as made, and kept out of the month's profit.
     void startingMoney(const std::string& account, std::int64_t coins);
     // Tops every purse up to its starting money, once (EconomyMemory::purses).

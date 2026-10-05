@@ -73,7 +73,7 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
     };
     // Deliveries: food bought at a shop for the watch's mess (or the church's table), carried there.
     const auto buyer = church ? payer : "town:" + community + ":watch";
-    if (const auto* mess = account(buyer); mess && mess->cash >= 12 && bestFood(*mess).empty())
+    if (const auto* mess = account(buyer); mess && mess->cash >= 12 && !hasFood(*mess))
         for (const auto& p : positions_)
         {
             if (posted >= std::min(most, 3))
@@ -83,7 +83,7 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
                 communityOfResident(held->second.holder) != community)
                 continue;
             const auto* shelves = account(tillOf(held->second.holder));
-            if (!shelves || bestFood(*shelves).empty())
+            if (!shelves || !hasFood(*shelves))
                 continue;
             Spot to = church && !plan.pulpit.cell.empty() ? plan.pulpit : square(posted);
             if (!church)
@@ -283,7 +283,7 @@ const std::string& Society::friendGroup(const std::string& child) const
 }
 
 const Society::OddJob* Society::oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
-                                         std::int64_t ownDayPay)
+                                         std::int64_t ownDayPay, bool* claims)
 {
 
     // Its job under way (one whose share it has done no longer holds it: it may take another).
@@ -331,12 +331,17 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
             }
     if (!chosen)
         return nullptr;
+    if (claims)
+    {
+        *claims = true;                             // (Only asked: nothing is claimed.)
+        return nullptr;
+    }
     chosen->stage[id] = 0;
     chosen->progress[id] = 0;
     return chosen;
 }
 
-void Society::advanceOddJob(const std::string& id)
+void Society::advanceOddJob(const std::string& id, int seconds)
 {
     const auto it = std::find_if(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
         const auto mine = j.stage.find(id);
@@ -352,7 +357,7 @@ void Society::advanceOddJob(const std::string& id)
         // A spell's work (a business's hire: a day's, HireSpells).
         const int spells = j.until >= 0 ? HireSpells : 1;
         if ((j.kind == "a hand" || j.kind == "a hand at the shop" || j.kind == "building work" || j.kind == "gathering" ||
-             j.kind == "hunting") && ++j.progress[id] < 600 * spells)
+             j.kind == "hunting") && (j.progress[id] += seconds) < 600 * spells)
             return;
         if (j.kind == "a hand at the shop")
             craftNext_.erase(j.producer);           // (Its next batch is begun at once.)

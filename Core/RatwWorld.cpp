@@ -18,10 +18,12 @@
 #include <queue>
 #include <set>
 #include <sstream>
+#include <string_view>
 #include <thread>
 
 namespace ratw
 {
+using namespace std::string_view_literals;
 namespace
 {
 // Walking's own numbers live with walking (RatwStep.h), which the browser shares.
@@ -2742,7 +2744,7 @@ void World::nearCells(const Entity& e, std::set<std::string>& out) const
 std::set<std::string> World::stageCells() const
 {
     std::set<std::string> stage;
-    for (const auto& entry : entities_)
+    for (const auto& entry : entities_.inOrder())
         if (!entry.second.npc)
             nearCells(entry.second, stage);
     return stage;
@@ -2751,7 +2753,7 @@ std::set<std::string> World::stageCells() const
 void World::placeOnStage(Entity& e, const std::set<std::string>& stage)
 {
     // Companions go where their leader goes, always in full.
-    const bool off = e.leaderId.empty() && e.state != "following" && !stage.count(e.cellId);
+    const bool off = e.leaderId.empty() && e.state != "following"sv && !stage.count(e.cellId);
     if (off == e.offstage)
         return;
     // Either way the NPC stands where it is, which is a place it could stand: walking only ever reaches such
@@ -2765,7 +2767,7 @@ void World::placeOnStage(Entity& e, const std::set<std::string>& stage)
     e.input = {};
     e.velocity = {};
     e.turning = false;
-    if (e.posture == "rising")
+    if (e.posture == "rising"sv)
         settle(e, e.postureTarget.empty() ? "standing" : e.postureTarget.c_str());
     if (!off)
         ensureLoaded(e.cellId);
@@ -2778,10 +2780,12 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
     auto& leg = legs_[e.id];
     if (!leg.goalCell.empty() && (leg.goalCell != goalCell || distance(leg.goal, goal) > 1e-9))
         leg = {};
+    double setOff = time_;                          // When the next leg begins.
     if (!leg.goalCell.empty())
     {
         if (time_ < leg.arriveAt)
             return;
+        const bool there = !leg.crossing;           // (The last leg ends at the goal.)
         if (leg.crossing)
         {
             e.cellId = leg.intoCell;
@@ -2789,13 +2793,17 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         }
         else
             e.position = leg.to;
+        setOff = leg.arriveAt;
         leg = {};
-        return;
+        if (there)
+            return;
+        // Over the crossing, on at once from when it was reached: looked at only every few seconds (the unseen's
+        // step, Society::UnseenStep), a walker loses no time between legs.
     }
     const double speed = std::max(.5, paceSpeed(e));
     if (e.cellId == goalCell)
     {
-        leg = {goalCell, goal, false, {}, goal, {}, time_ + distance(e.position, goal) * Detour / speed};
+        leg = {goalCell, goal, false, {}, goal, {}, setOff + distance(e.position, goal) * Detour / speed};
         return;
     }
     const auto& steps = cachedSteps(e.cellId);
@@ -2854,7 +2862,7 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         return;
     }
     leg = {goalCell, goal, true, way->targetCell, way->position, way->arrival,
-           time_ + distance(e.position, way->position) * Detour / speed};
+           setOff + distance(e.position, way->position) * Detour / speed};
 }
 
 bool World::nearPortal(const std::string& cellId, Vec2 p, double within) const
@@ -2879,6 +2887,17 @@ bool World::nearPortal(const std::string& cellId, Vec2 p, double within) const
     return false;
 }
 
+void World::gatherAwake()
+{
+    awake_.clear();
+    for (auto& entry : entities_.inOrder())
+    {
+        const auto& e = entry.second;
+        if (e.dead || !e.offstage || !e.npc || !e.gift.empty() || e.tendUntil > 0 || e.downedLeft > 0)
+            awake_.push_back(&entry);
+    }
+}
+
 void World::separate(double dt)
 {
     // Bodies (step::BodyRadius): no two wolves in a cell stand closer than a body's width. Each step, every pair
@@ -2890,7 +2909,7 @@ void World::separate(double dt)
     constexpr double Body = step::BodyRadius * 2;
     auto& byCell = separateScratch_;
     byCell.clear();
-    for (auto& entry : entities_)
+    for (auto& entry : awake())
         if (!entry.second.offstage && !entry.second.dead && (battles_.empty() || !inBattle(entry.first)))
             byCell.push_back(&entry.second);        // (Nobody pushes a wolf frozen in a fight's lineup.)
     std::stable_sort(byCell.begin(), byCell.end(), [](const Entity* x, const Entity* y) { return x->cellId < y->cellId; });
@@ -3123,17 +3142,29 @@ bool World::continueSchedules(double budgetMs)
         {
             if (!homesReady_)
                 furnishHomes();
-            std::map<std::string, LifeBody> bodies;
-            for (auto& pair : entities_)
+            // Where everyone is, for the society, only when it has someone to decide for: anyone a player may see
+            // (onstage) every second, the unseen every Society::UnseenStep seconds.
+            bool anySeen = false;
+            for (auto& pair : entities_.inOrder())
             {
                 advanceAge(pair.second, calendarDays_);
-                const auto& e = pair.second;
-                if (e.dead)
-                    continue;                       // The dead keep no schedule: no work, no hunger, no walking.
-                bodies[pair.first] = {e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following", e.age};
+                anySeen = anySeen || (pair.second.npc && !pair.second.offstage && !pair.second.dead);
             }
+            std::map<std::string, LifeBody> bodies;
+            if (society_.needsBodies(.5, calendarDays_, anySeen))
+                for (const auto& pair : entities_.inOrder())
+                {
+                    const auto& e = pair.second;
+                    if (e.dead)
+                        continue;                   // The dead keep no schedule: no work, no hunger, no walking.
+                    bodies.emplace_hint(bodies.end(), pair.first,
+                                        LifeBody{e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following"sv,
+                                                 e.age, e.offstage});
+                }
             planDays();
+            const bool decided = society_.decidesWithin(.5);
             society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
+            unseenErrands_ = decided && society_.unseenDecided();   // (The unseen go about what they decided, below.)
             absorbJournal();
             ++scheduleStage_;
             break;
@@ -3159,6 +3190,42 @@ bool World::continueSchedules(double budgetMs)
             // the last step stopped.
             RouteBudget budget{0, searchExpanded_, 0, 0, true};
             int sinceCheck = 0;
+            if (errandCursor_.empty())
+            {
+                // First, who is on the stage (the cells near players) and who isn't: each by where it stands. Then the
+                // cells anyone on the stage stands in: elsewhere a goal is nobody else's (spotNear, spotTaken), and is
+                // not asked about.
+                if (tiered())
+                    for (auto& entry : entities_.inOrder())
+                        if (entry.second.npc)
+                            placeOnStage(entry.second, errandStage_);
+                standing_.clear();
+                errandsOnstage_ = false;
+                for (const auto& entry : entities_.inOrder())
+                    if (!entry.second.offstage && !entry.second.dead)
+                    {
+                        standing_.insert(entry.second.cellId);
+                        errandsOnstage_ = errandsOnstage_ || entry.second.npc;
+                    }
+            }
+            // Those keeping up with something that moves go about it every pass, seen or not: a caravan's escorts, the
+            // watch after someone, a thief after its mark.
+            following_.clear();
+            for (const auto& c : roads_.caravans)
+                if (c.status == "travelling"sv)
+                    following_.insert(c.escorts.begin(), c.escorts.end());
+            for (const auto& entry : pursuits_)
+                following_.insert(entry.first);
+            for (const auto& entry : marks_)
+                following_.insert(entry.first);
+            if (!unseenErrands_ && !errandsOnstage_ && following_.empty())
+            {
+                ++scheduleStage_;                   // (Nobody's errand this pass: no one on the stage, and not the unseen's step.)
+                break;
+            }
+            // (Each one's life, walked alongside: both go in ID order.)
+            const auto& lives = society_.state().residents;
+            auto lifeAt = lives.upper_bound(errandCursor_);
             for (auto it = entities_.upper_bound(errandCursor_); it != entities_.end(); ++it)
             {
                 if (++sinceCheck >= 32)
@@ -3169,33 +3236,47 @@ bool World::continueSchedules(double budgetMs)
                 }
                 errandCursor_ = it->first;
                 auto& e = it->second;
-                if (e.npc && tiered())
-                    placeOnStage(e, errandStage_);
+                if (e.offstage && !unseenErrands_ && !following_.count(it->first))
+                    continue;                       // Out of sight: on the unseen's step (Society::UnseenStep).
                 if (e.transient)
                     continue;                       // The road folk go their own ways (tendRoadFolk).
-                const auto* life = society_.resident(it->first);
-                if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following") continue;
-                if (e.state == "beaten down" || e.downedLeft > 0 || inBattle(it->first)) continue;   // Lying where they fell, or fighting.
-                std::string task = life->task, reason = life->reason, goalCell = life->goalCell;
+                while (lifeAt != lives.end() && lifeAt->first < it->first)
+                    ++lifeAt;
+                const auto* life = lifeAt != lives.end() && lifeAt->first == it->first ? &lifeAt->second : nullptr;
+                if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following"sv) continue;
+                if (e.state == "beaten down"sv || e.downedLeft > 0 || inBattle(it->first)) continue;   // Lying where they fell, or fighting.
+                // The watch and the gaol, then work on the road, come before the day's plan. (The plan's own words are
+                // read where they are; an errand's are its own.)
+                std::string errandTask, errandReason, errandCell;
                 Vec2 target{life->goalX, life->goalY};
-                // The watch and the gaol, then work on the road, come before the day's plan.
-                if (!crimeErrand(it->first, task, reason, goalCell, target))
-                    errand(it->first, *life, task, reason, goalCell, target);
-                const std::string activity = task + " — " + reason;
-                if (e.activity != activity) { stop(e.id); e.activity = activity; }
+                const bool onErrand = crimeErrand(it->first, errandTask, errandReason, errandCell, target) ||
+                                      errand(it->first, *life, errandTask, errandReason, errandCell, target);
+                const std::string& task = onErrand ? errandTask : life->task;
+                const std::string& reason = onErrand ? errandReason : life->reason;
+                const std::string& goalCell = onErrand ? errandCell : life->goalCell;
+                // "task — reason" (built only when it has changed).
+                static const std::string Dash = " — ";
+                if (e.activity.size() != task.size() + Dash.size() + reason.size() || e.activity.compare(0, task.size(), task) != 0 ||
+                    e.activity.compare(task.size(), Dash.size(), Dash) != 0 ||
+                    e.activity.compare(task.size() + Dash.size(), reason.size(), reason) != 0)
+                {
+                    stop(e.id);
+                    e.activity = task + Dash + reason;
+                }
                 // Bodies: no two stand on one point. Near the goal, someone else on it, they take a spot of their own
                 // beside it; and they are there once on either, or once near enough for the day's work (the society's
                 // 1.2 tiles) with the goal taken: a crowd at a counter stops pressing in.
+                const bool crowded = standing_.count(goalCell) > 0;   // (Anyone on the stage there to take its spot.)
                 const bool close = e.cellId == goalCell && distance(e.position, target) <= 3;
-                const Vec2 spot = close ? spotNear(e, goalCell, target) : target;
+                const Vec2 spot = close && crowded ? spotNear(e, goalCell, target) : target;
                 const bool arrived = e.cellId == goalCell &&
                                      (distance(e.position, target) <= .35 || distance(e.position, spot) <= .35 ||
-                                      (distance(e.position, target) <= 1.2 && spotTaken(e, goalCell, target)));
+                                      (distance(e.position, target) <= 1.2 && crowded && spotTaken(e, goalCell, target)));
                 if (arrived && !e.path.empty())
                     stop(e.id);
                 if (arrived)
                 {
-                    if (task == "sleep" && e.posture != "lying")
+                    if (task == "sleep"sv && e.posture != "lying"sv)
                     {
                         if (e.offstage)
                             settle(e, "lying");
@@ -3391,8 +3472,8 @@ Vec2 World::spotNear(const Entity& e, const std::string& goalCell, Vec2 target) 
 bool World::spotTaken(const Entity& e, const std::string& cellId, Vec2 spot) const
 {
     for (const Entity* other : entitiesIn(cellId))
-        if (other != &e && other->cellId == cellId && !other->offstage && !other->dead &&
-            distance(other->position, spot) < step::BodyRadius * 2)
+        if (!other->offstage && !other->dead && other != &e && other->cellId == cellId &&   // (The flags first: cheap,
+            distance(other->position, spot) < step::BodyRadius * 2)                           // and mostly offstage.)
             return true;
     return false;
 }
@@ -3692,6 +3773,7 @@ void World::tick(double dt)
     auto mark = Clock::now();
     stream();
     tickStreaming += since(mark);
+    bool regather = true;                           // (gatherAwake: at the first step, and after any schedules.)
     while (dt > Epsilon)
     {
         const double step = std::min(dt, 1.0 / 30.0);
@@ -3713,21 +3795,27 @@ void World::tick(double dt)
             continueSchedules(ScheduleBudgetMs);
             tickSchedules += since(mark);
             scheduleAccumulator_ = std::max(0., scheduleAccumulator_ - .5);
+            regather = true;
         }
         else if (scheduleStage_ >= 0)
         {
             mark = Clock::now();
             continueSchedules(ScheduleBudgetMs);
             tickSchedules += since(mark);
+            regather = true;
         }
         else if (!routeWanted_.empty())
         {
             mark = Clock::now();
             planWantedRoutes();
             tickSchedules += since(mark);
+            regather = true;
         }
         mark = Clock::now();
-        for (auto& entry : entities_)
+        if (regather)
+            gatherAwake();                          // (The schedules may have changed who; nothing below does.)
+        regather = false;
+        for (auto& entry : awake())
         {
             if (entry.second.dead)
             {
@@ -3769,7 +3857,7 @@ void World::tick(double dt)
     // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
     // exactly where the player stands, so everything a player is shown is remembered.
     std::vector<std::string> looking;
-    for (const auto& entry : entities_)
+    for (const auto& entry : entities_.inOrder())
         if (!entry.second.npc)
         {
             const auto& e = entry.second;
@@ -4675,6 +4763,7 @@ Result World::restore(const PersistedWorld& saved)
     clockOffsetHours_ = state.clockOffsetHours;
     calendarDays_ = restoredDays;
     society_ = std::move(restoredSociety);
+    society_.setParallel(parallel_);
     climateSlot_ = std::int64_t(std::floor(calendarDays_ * 4));
     fronts_ = state.fronts;
     for (const auto& f : fronts_)
@@ -5021,7 +5110,7 @@ void World::stream(double idle)
     // Runs every tick, so it only does real work when someone has changed cells or an unload check is due.
     // The cells characters are in; offstage NPCs need none (they travel without the ground in memory).
     std::set<std::string> occupied;
-    for (const auto& entry : entities_)
+    for (const auto& entry : entities_.inOrder())
         if (!entry.second.offstage)
             occupied.insert(entry.second.cellId);
     const bool due = time_ >= streamCheck_;

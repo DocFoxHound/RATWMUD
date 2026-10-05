@@ -602,7 +602,7 @@ void World::tendCrime()
         chooseMarks();
     }
     // The beaten get up again in time.
-    for (auto& [id, e] : entities_)
+    for (auto& [id, e] : entities_.inOrder())
         if (e.hurt > 0 && !e.dead && e.downedLeft <= 0 && !inBattle(id))  // Not while down, nor in a fight.
         {
             e.hurt = std::max(0.0, e.hurt - HealPerHour * .5 / (calendar::SecondsPerDay / 24));
@@ -628,7 +628,7 @@ void World::tendCrime()
     }
     // Witnesses tell a guard on duty they meet.
     std::vector<std::string> onDuty;
-    for (const auto& [id, e] : entities_)
+    for (const auto& [id, e] : entities_.inOrder())
         if (e.npc && !e.offstage && guardOnDuty(id))
             onDuty.push_back(id);
     for (auto& inc : crime_.incidents)

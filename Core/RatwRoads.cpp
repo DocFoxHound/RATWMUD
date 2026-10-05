@@ -59,13 +59,8 @@ const Town* World::town(const std::string& id) const
 
 const Town* World::townOf(const std::string& cellId) const
 {
-    const auto found = townOfCell_.find(cellId);
-    if (found == townOfCell_.end())
-        return nullptr;
-    for (const auto& t : towns_)
-        if (t.id == found->second)
-            return &t;
-    return nullptr;
+    const auto found = townIndex_.find(cellId);
+    return found == townIndex_.end() || found->second >= towns_.size() ? nullptr : &towns_[found->second];
 }
 
 std::vector<std::string> World::routeBetween(const std::string& from, const std::string& to) const
@@ -88,6 +83,8 @@ void World::setupTowns()
     townsReady_ = true;
     towns_.clear();
     townOfCell_.clear();
+    townIndex_.clear();
+    society_.forgetPlaces();
     roadRoutes_.clear();
     // A town is a region people live in with a market: residents counted by home, markets by merchants' work.
     std::map<std::string, int> living, guards;
@@ -156,6 +153,7 @@ void World::setupTowns()
             if (c.region == t.id)
             {
                 townOfCell_[cellId] = t.id;
+                townIndex_[cellId] = std::size_t(&t - towns_.data());
                 stores[cellId] = t.store;
             }
     society_.setStores(stores);

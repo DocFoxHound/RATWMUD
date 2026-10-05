@@ -791,6 +791,145 @@ second, roughly 80x real time:
 With a player connected a tick costs about 3 ms, so about 17x at most. Going faster takes cheaper ticks: the profile is
 now spread thin over residents' decisions (string keys, map lookups), or the work could be split over threads.
 
+### Cheaper ticks and threads (2026-10-05)
+
+The user's aim: a game year (105 million ticks) in one to two hours. It took about 24 hours (0.85 ms a tick, DEV build
+24's export, 1,350 residents, nobody connected). Two steps.
+
+**First, cheaper, with every result the same** (the digest and every `econ_watch` file unchanged):
+
+- What a work label or title says is worked out once per thread: `items::producerFor`, `businessFor`, `idlePost`,
+  `clergy`, `houseHead`, `smith`, and what pays a post (`payerOf`'s words).
+- `items::good` no longer copies the id to look it up. `Society::hasFood` answers "has it anything to eat?" without
+  building the name of the best.
+- The nearest open shop is found from an index (by cell, by town), not by walking every open shop for every resident.
+- A pass works out each cell's community and plan, each home's larder, once.
+- Maps keyed by resident are walked alongside the residents (both in ID order), not searched.
+- A work or rest place's key is numbers, not text.
+- The bodies the society reads are made only on the passes it decides.
+- The flags every tick's passes read (`npc`, `dead`, `offstage`...) are first in `Entity`.
+- `World::townOf` is indexed.
+- That made 0.55 ms a tick.
+
+**Then the user's choice: the same rules, results that may differ but still repeat exactly.**
+
+- **Deciding and doing.** `Society::decideAuthored` is two halves.
+  - Every resident decides at once, from where things stood as the second began, spread over the threads
+    (`Society::setParallel`, given the world's runner by `World::setParallel`).
+  - Then, in ID order, each does what it decided: eats, buys, works, is paid.
+  - One whose deciding would change something others see decides in its turn instead, as before: it would claim an odd
+    job, take the day's ground out of town, put food away, draw rations, or give up waiting on wages.
+  - The results don't depend on the number of threads.
+- **The ordered entity list.** `EntityMap` (the world's entities) keeps a list of them in ID order, made again after any
+  is added or taken away. The passes every tick (movement, bodies apart, streaming, sight, the Downed, rest, awareness)
+  walk it, not the tree. With everyone offstage each of these passes went from about 0.03 ms to 0.003.
+- **Errands.**
+  - The stage is settled first, and then which cells anyone on it stands in. Elsewhere a goal is nobody else's, and
+    `spotNear` isn't asked.
+  - A resident's plan is read where it is, not copied.
+  - The "task — reason" line is built only when it changes.
+- **Loading keeps the threads.** A loaded world (`loadWorldFiles`, a restore) keeps its runner. Before, a world loaded
+  after `setParallel` lost it.
+- **Threads.** `econ_watch` and `world_check` take `--threads N` (8 unless asked; 1 is the main thread alone). The
+  server uses its pool (`--workers`, as before).
+
+**Measured** (`econ_watch` on DEV build 24's export, a quarter day from 06:00, `--deterministic`):
+
+| Threads | 1 | 4 | 8 | 12 |
+| --- | --- | --- | --- | --- |
+| ms a tick | 0.33 | 0.21 | 0.20 | 0.20 |
+
+- That is about **4.3x** the 0.85 ms before, or **340x real time**:
+  - a game day in under a minute (about 56 s);
+  - a 28-day month in about 26 minutes;
+  - a year in about 5.7 hours.
+- More than eight threads gains nothing: what is left mostly runs in order.
+  - Doing what was decided: about 0.03 ms a tick.
+  - The errands: about 0.04.
+  - Finding the open shops, and the bodies: about 0.03.
+  - Roads, crime and the rest of the tick: about 0.04.
+- Waking sleeping threads costs 50–100 µs a round. Threads that spin while waiting would hide that, at the cost of
+  keeping the cores hot, so the pool's threads still sleep.
+- **Checked:**
+  - The quarter-day digest is unchanged by every step, on 1 to 16 threads.
+  - A week against the code before: every figure is the same for five days. From day 6 they differ by a few pennies
+    and one or two events. On day 7 there are 121,290 pennies in residents' purses against 121,326, and wages are the
+    same.
+  - ThreadSanitizer on eight threads (half a day, evening and night): nothing.
+  - All 45 tests pass.
+- **What would come next**, toward an hour or two a year:
+  - Residents nobody can see could decide and act in coarser steps: a tier of their own, as offstage walking already
+    is. Each step does several seconds' work; tasks take the same game time.
+  - The text keys under it all (residents, accounts, cells) could become numbers.
+  - The user chose both (below).
+
+### Unseen residents (2026-10-05)
+
+The user: nobody would notice residents out of sight taking a moment longer to decide. Residents a player may see
+(onstage) are as before. One out of every player's sight (offstage, `LifeBody::unseen`) lives in steps of
+`Society::UnseenStep` (5) seconds.
+
+- **A step is a step's worth.** Its decision stands for every second since its last (`ResidentLife::decidedAt`, not
+  saved): at most UnseenStep, at least one. A step's seconds are counted:
+  - in hunger and tiredness;
+  - in work done (`progress`; a step past a task's end carries on into the next, so work takes the game time it
+    always did);
+  - in skill practised, an odd job's progress, and sleep's rest.
+- **On the seconds between, nothing is decided for the unseen.** With nobody onstage the world doesn't even make the
+  bodies (`Society::needsBodies`); on a new day, or the society's first decisions, it does.
+- **Their errands keep the same beat** (`World::unseenErrands_`), except for those keeping up with something that
+  moves, every pass, seen or not (`following_`):
+  - a caravan's escorts;
+  - the watch after someone;
+  - a thief after its mark.
+- **An offstage walk loses no time.** The next leg sets off from when the last one ended, not from when it is next
+  looked at (`moveOffstage`).
+- **Measured** (`econ_watch`, DEV build 24, eight threads):
+  - 0.060 ms a tick over two game days, 14 times the 0.85 before;
+  - a game day in about 17 s, a 28-day month in about 8 minutes, a year in about 1.8 hours;
+  - a week took 2.2 minutes against 28.5.
+- **The economy over that week, against the code before every change here:**
+  - The same within a hair: median purses the same; the Gini within 0.002; wages within about 1% (day 6: 3.7% more).
+  - Three more residents of 1,350 broke by day 7 (17 against 14).
+  - Balancing that is left for a session on the economy.
+  - A run still repeats exactly, on any number of threads.
+
+### Residents by number, and the rest (2026-10-05)
+
+The user asked for the text keys to be replaced by numbers too, "even if the improvements are marginal". Where the
+deciding reaches a resident's things it now goes by number. The saved state keeps its names, so nothing outside the
+society changes.
+
+- **Residents by number** (`Society::ResidentRecord`, `refreshRecords`).
+  - Each resident's place in ID order is its number. Its record holds its life, purse, spec, post, apprenticeship,
+    bed, its home's larder and community, and its skill at its post.
+  - The records are made again only when something they rest on changes (`rosterRevision_`):
+    - the careers or specs reindexed;
+    - the positions rebuilt;
+    - an account closed, or a resident come or gone;
+    - a reset or restore, new beds, or the towns rebuilt (`Society::forgetPlaces`);
+    - or a copy of the society (it makes its own).
+  - A home's larder and community are looked at again when the home changes.
+- **By number in the pass.**
+  - Bodies are matched to residents by walking both in ID order.
+  - Shops are kept with their keepers' numbers.
+  - Practice goes straight to the skill.
+- **Fixed words** (`task == "sleep"sv`) are compared knowing their length, in the deciding, the errands and placing
+  on the stage. Most comparisons fail at once, on the length.
+- **The passes every tick go only over those they may have something to do for** (`World::gatherAwake`): anyone dead,
+  onstage, a player, with a Gift, tending someone or Downed. They are gathered after the schedules, the only thing in
+  a tick step that changes who:
+  - the movement, bodies apart, the Downed and rest walk that list;
+  - the crime pass and the stage's cells walk the ordered list.
+- **Measured** (two game days, eight threads): **0.042 ms a tick**, 20 times the 0.85 before.
+  - A game day in about 12 s, a 28-day month in about 6 minutes, a year in about 1.2 hours.
+  - A week in 1.5 minutes.
+  - The economy and digest are as with the unseen step alone. In the week's events, two caravans' arrivals come in
+    another order: escorts keep up every pass.
+- **Checked:** all 45 tests; ThreadSanitizer over a game day on eight threads.
+- **Fights** (`level_sim`) were already quick: about 1,000 duels a second over the machine's threads, each fight its
+  own small world. Nothing here changes them.
+
 ## Hardware notes for the dedicated server
 
 - The simulation thread wants **high single-core speed**. The pool wants **many cores**. A current 16–32 core part

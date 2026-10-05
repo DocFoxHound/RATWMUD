@@ -155,10 +155,10 @@ void Society::spendSurpluses(std::int64_t day)
         std::vector<std::string> hungry;
         for (const auto& [who, life] : state_.residents)
             if (const auto home = day_.communityOf ? day_.communityOf(life.homeCell) : std::string(); home == town)
-                if (const auto* p = account(who); p && p->cash < 6 && bestFood(*p).empty())
+                if (const auto* p = account(who); p && p->cash < 6 && !hasFood(*p))
                 {
                     const auto larder = homeStore(life.homeCell, "larder");
-                    if (!account(larder) || bestFood(*account(larder)).empty())
+                    if (!account(larder) || !hasFood(*account(larder)))
                         hungry.push_back(who);
                 }
         if (hungry.empty())
@@ -222,7 +222,7 @@ void Society::spendSurpluses(std::int64_t day)
             // Alms: bread (or whatever feeds most cheaply) for the town's poorest, given, not sold.
             std::vector<std::string> poor;
             for (const auto& who : folk[town])
-                if (const auto* p = account(who); p && p->cash < 12 && bestFood(*p).empty())
+                if (const auto* p = account(who); p && p->cash < 12 && !hasFood(*p))
                     poor.push_back(who);
             std::map<std::string, int> bread;
             const auto bought = buyForSurplus(id, here, [](const std::string& item) { return edible(item); }, budget * 7 / 10,

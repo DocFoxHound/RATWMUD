@@ -7,9 +7,11 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <set>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwBattle.h"
@@ -184,15 +186,27 @@ struct Letting
 
 struct Entity
 {
+    // (First, together: what every tick's passes over all entities look at, so a pass over a world of residents who
+    // are all offstage reads one cache line of each. Each is described where it was: below, by its neighbours.)
+    bool npc = false;
+    bool dead = false;                            // Dead characters lie where they fell and cannot move or act until
+                                                  // brought back (Dungeon Master).
+    // Simulation tier (see World::setTiered), never saved: an NPC far from every player lives its day in timed
+    // steps from one known-good place to the next instead of walking every tile.
+    bool offstage = false;
+    bool transient = false;                       // Folk of the road (a caravan's wagon, bandits), made from the roads'
+                                                  // state as needed and never saved themselves.
+    bool lingering = false;                       // (With the fights, below.)
+    bool clientWalks = false;                     // (With free movement, below.)
+    double hurt = 0.0, downedLeft = 0.0;          // (Described below, where `hurt` was.)
+    double struggleUntil = 0.0, tendUntil = 0.0;  // Getting up, and tending someone, out of a fight (not saved).
+    std::string gift;                             // (With `mouth`, below.)
     std::string id, name, cellId;
     Vec2 position, velocity;
     double facing = 0.0;
     // Stationary turns are authoritative, shortest-arc, and rate limited.
     double turnTarget = 0.0;
     bool turning = false;
-    bool npc = false;
-    // Dead characters lie where they fell and cannot move or act until brought back (Dungeon Master).
-    bool dead = false;
     double hearing = 1.0, vision = 1.0;
     double earHealth = 1.0, eyeHealth = 1.0;
     double sneakSkill = 0.0, hearingSkill = 0.0; // Skill values in [0, 100].
@@ -218,11 +232,9 @@ struct Entity
     double postureRemaining = 0.0;
     std::string postureTarget;
     int speakingColor = 0;
-    // How badly hurt (0..100): health is 100 − hurt. At 100 a character is Downed (Docs/Design/33-combat.md): lying,
-    // with `downedLeft` seconds until a player gets up (doc 38), or an NPC dies, unless they struggle up (once a game
-    // day) or someone tends them.
-    double hurt = 0.0;
-    double downedLeft = 0.0;
+    // `hurt` (at the top): how badly hurt (0..100): health is 100 − hurt. At 100 a character is Downed
+    // (Docs/Design/33-combat.md): lying, with `downedLeft` seconds until a player gets up (doc 38), or an NPC dies,
+    // unless they struggle up (once a game day) or someone tends them.
     double recoveryUsed = -1.0;               // The game day (whole) the self-recovery was last used; -1 never.
     // Rest (doc 38): a player's downings since their last full rest, which stretch the next one; the rest they have had
     // without a break, anywhere (`restRun`) and lying in a bed (`bedRun`), in game hours; the calendar day of their last
@@ -231,12 +243,11 @@ struct Entity
     int downsSinceRest = 0;
     double restRun = 0.0, bedRun = 0.0, fullRestDay = -1.0, awaySince = -1.0;
     bool awayInBed = false;
-    double struggleUntil = 0.0, tendUntil = 0.0;   // Getting up, and tending someone, out of a fight (not saved).
     std::string tending;
     // Fights (doc 33): what is held in the mouth ("" or "sword"); a Gift ("" or "fire"), Quickened or not, and its mana;
     // fighting skill (0..100: NPCs' comes from their trade, a player's grows by fighting).
     // All saved. `lingering`: the player has gone but their body stays in a fight a while.
-    std::string mouth, gift;
+    std::string mouth;
     double wardenAttention = 0;     // Quickened magic others saw (doc 43): for the Wardens, later. Saved.
     // Work Gifts in use (doc 43), until these world seconds: Lighten Load (carries half again), Carry (speech carries
     // as a yell). Not saved: they are short.
@@ -254,27 +265,126 @@ struct Entity
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
     double mana = 0.0, fightingSkill = 50.0;
-    bool lingering = false;
     bool typing = false;
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
     Vec2 input;
     // Set by an accepted transition; UI must release/reissue held movement.
     bool transitioned = false;
-    // Simulation tier (see World::setTiered), never saved: an NPC far from every player lives its day in timed
-    // steps from one known-good place to the next instead of walking every tile.
-    bool offstage = false;
-    // Folk of the road (a caravan's wagon, bandits), made from the roads' state as needed and never saved themselves.
-    bool transient = false;
-    // Free movement (Docs/Design/31-responsiveness.md, Phase 3), never saved: the player's client walks this wolf and
-    // says where it is (World::placeByClient), checked against walking's rules; the world no longer walks it.
-    bool clientWalks = false;
+    // Free movement (Docs/Design/31-responsiveness.md, Phase 3), never saved: `clientWalks` (at the top), the player's
+    // client walks this wolf and says where it is (World::placeByClient), checked against walking's rules; the world no
+    // longer walks it.
     double clientMoved = 0;                       // Distance accepted since the last tick (for stamina).
     double poseBudget = 0, poseRefilled = -1;     // How far poses may still go, refilled at walking speed.
     double lastPoseAt = -1;                       // When the last pose was accepted.
     int poseStrikes = 0;                          // Poses refused since the last one accepted.
     std::uint32_t poseSeq = 0;                    // The last pose accepted.
     std::uint32_t inputSeq = 0;                   // Held movement: the last input applied.
+};
+
+// The world's entities by ID: a std::map that also keeps a list of them in ID order, for the passes over all of them
+// every tick (World::tick; Docs/Design/31-responsiveness.md, "Fast-forward"). Walking a list of pointers is many times
+// quicker than walking the tree. The list is made again after anything is added or taken away, so a pass that adds or
+// takes away entities walks the map itself.
+class EntityMap : public std::map<std::string, Entity>
+{
+    using Base = std::map<std::string, Entity>;
+
+  public:
+    EntityMap() = default;
+    EntityMap(const EntityMap& other) : Base(other) {}
+    EntityMap(EntityMap&& other) noexcept : Base(std::move(other)) { other.stale_ = true; }
+    EntityMap& operator=(const EntityMap& other)
+    {
+        Base::operator=(other);
+        stale_ = true;
+        return *this;
+    }
+    EntityMap& operator=(EntityMap&& other) noexcept
+    {
+        Base::operator=(std::move(other));
+        stale_ = other.stale_ = true;
+        return *this;
+    }
+    Entity& operator[](const std::string& id)
+    {
+        const auto before = size();
+        auto& e = Base::operator[](id);
+        stale_ = stale_ || size() != before;
+        return e;
+    }
+    Entity& operator[](std::string&& id)
+    {
+        const auto before = size();
+        auto& e = Base::operator[](std::move(id));
+        stale_ = stale_ || size() != before;
+        return e;
+    }
+    template <class... Args>
+    auto emplace(Args&&... args)
+    {
+        stale_ = true;
+        return Base::emplace(std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    auto try_emplace(Args&&... args)
+    {
+        stale_ = true;
+        return Base::try_emplace(std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    auto insert(Args&&... args)
+    {
+        stale_ = true;
+        return Base::insert(std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    auto erase(Args&&... args)
+    {
+        stale_ = true;
+        return Base::erase(std::forward<Args>(args)...);
+    }
+    void clear() noexcept
+    {
+        Base::clear();
+        stale_ = true;
+    }
+    // Every entity in ID order, to walk like the map (`for (auto& [id, e] : entities_.inOrder())`), by a pass that
+    // neither adds nor takes away any.
+    struct InOrder
+    {
+        struct It
+        {
+            value_type* const* at;
+            value_type& operator*() const { return **at; }
+            It& operator++()
+            {
+                ++at;
+                return *this;
+            }
+            bool operator!=(const It& other) const { return at != other.at; }
+        };
+        value_type* const* first;
+        value_type* const* last;
+        It begin() const { return {first}; }
+        It end() const { return {last}; }
+    };
+    InOrder inOrder() const
+    {
+        if (stale_)
+        {
+            order_.clear();
+            order_.reserve(size());
+            for (auto& entry : const_cast<EntityMap&>(*this))
+                order_.push_back(&entry);
+            stale_ = false;
+        }
+        return {order_.data(), order_.data() + order_.size()};
+    }
+
+  private:
+    mutable std::vector<value_type*> order_;
+    mutable bool stale_ = true;
 };
 
 struct Door
@@ -434,7 +544,11 @@ class World
     // How work is spread over threads (the game's pool: doc 31, Phase 4): run(count, job) calls job(i) for every i
     // below count and returns when all are done. Unset, the world makes its own threads where it uses them.
     using Parallel = std::function<void(std::size_t, const std::function<void(std::size_t)>&)>;
-    void setParallel(Parallel run) { parallel_ = std::move(run); }
+    void setParallel(Parallel run)
+    {
+        parallel_ = std::move(run);
+        society_.setParallel(parallel_);            // (The residents decide on it too.)
+    }
     // observe() for several observers at once (on the parallel runner): each writes only its own memory and view.
     void observeAll(const std::vector<std::string>& observerIds);
     const std::map<std::string, Door>& doors() const
@@ -985,7 +1099,7 @@ class World
     std::map<std::string, FactionDefinition> factions_;
     std::map<std::string, ChapterDefinition> chapters_;
     std::map<std::string, Letting> lettings_;
-    std::map<std::string, Entity> entities_;
+    EntityMap entities_;
     TickProfile profile_;
     std::vector<WorldEvent> events_;
     Bonds bonds_;
@@ -993,6 +1107,17 @@ class World
     RoadsState roads_;
     std::vector<Town> towns_;
     std::map<std::string, std::string> townOfCell_;
+    std::unordered_map<std::string, std::size_t> townIndex_;   // Cell -> its town in towns_ (townOf, asked very often).
+    std::unordered_set<std::string> standing_;     // Cells anyone on the stage stands in, for the errands (continueSchedules).
+    bool unseenErrands_ = true;                     // Whether this pass's errands include the unseen's (Society::UnseenStep).
+    bool errandsOnstage_ = true;                    // Whether any resident is on the stage, this pass.
+    // Those the passes over everyone each tick may have something to do for (movement, bodies apart, the Downed, rest):
+    // anyone dead, onstage, a player, with a Gift, tending someone or Downed. Not a resident going about its day
+    // offstage. Gathered after the schedules (the last to change any of it), in ID order (gatherAwake).
+    std::vector<EntityMap::value_type*> awake_;
+    void gatherAwake();
+    EntityMap::InOrder awake() const { return {awake_.data(), awake_.data() + awake_.size()}; }
+    std::unordered_set<std::string> following_;     // Residents keeping up with something that moves, this pass.
     bool townsReady_ = false;
     // Home storage (Docs/Design/36-home-storage.md): every household's stores opened and stocked once (homesReady_),
     // and where each home's stand, placed when its interior is first in memory.

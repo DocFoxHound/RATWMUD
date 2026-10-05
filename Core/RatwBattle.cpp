@@ -1738,7 +1738,7 @@ void World::tendAwareness()
     for (auto it = lookings_.begin(); it != lookings_.end();)
         it = time_ >= it->second.until ? lookings_.erase(it) : std::next(it);
     std::vector<std::pair<std::string, std::string>> pairs;
-    for (const auto& [id, p] : entities_)
+    for (const auto& [id, p] : entities_.inOrder())
     {
         if (p.npc || p.dead || p.offstage || inBattle(id))
             continue;
@@ -3166,7 +3166,7 @@ Result World::tendWounds(const std::string& id, const std::string& target)
 
 void World::tendDowned(double dt)
 {
-    for (auto& [id, e] : entities_)
+    for (auto& [id, e] : awake())                   // (Those the tick's last gathering found: World::gatherAwake.)
     {
         if (e.dead || e.lingering)
             continue;                               // (A player gone from the world: their timer waits.)
@@ -3221,7 +3221,7 @@ void World::restPlayers(double dt)
 {
     // Rest (doc 38): lying or sitting still, out of a fight and not down, without a break, is a partial rest; six hours
     // of it lying in a bed is a full rest.
-    for (auto& [id, e] : entities_)
+    for (auto& [id, e] : awake())
     {
         if (e.npc || e.dead || e.lingering)
             continue;

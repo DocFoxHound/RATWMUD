@@ -1,7 +1,8 @@
 // Loads a streamed world export (python3 tools/world_build.py export DIR writes DEV's newest build) the way the game
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
-//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon]]
+//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon]
+//                                                       [--threads N]]
 //
 // --reckon ends the run with the month's reckoning (doc 42), as if the month were up, and says where the money went.
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
@@ -10,7 +11,10 @@
 // world, each observed every tick and sent a view five times a second as the server does. --no-check skips loading
 // every place first (the check), which is slow and not needed to measure ticks. --deterministic does the work by counts,
 // never the clock (World::setDeterministic), so a run repeats exactly. --full turns the simulation tiers off, simulating
-// every NPC in full wherever it is (as before tiers), for comparison.
+// every NPC in full wherever it is (as before tiers), for comparison. --threads N (default 8; 1: the main thread alone)
+// spreads the world's work over threads as the server's pool does (Docs/Design/31, "Fast-forward"); a deterministic run
+// ends the same on any number.
+#include "RatwPool.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -106,6 +110,7 @@ int main(int argc, char** argv)
     bool deterministic = false;                     // --deterministic: work by counts, never the clock (World::setDeterministic).
     bool reckon = false;                            // --reckon: the month's reckoning at the end.
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
+    unsigned threads = 8;                           // --threads N.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -122,12 +127,14 @@ int main(int argc, char** argv)
             deterministic = true;
         else if (flag == "--events" && i + 1 < argc)
             eventsFile = argv[++i];
+        else if (flag == "--threads" && i + 1 < argc)
+            threads = unsigned(std::max(1, std::atoi(argv[++i])));
         else
             usage = true;
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon] [--threads N]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -203,6 +210,9 @@ int main(int argc, char** argv)
 
     // A fresh world, as a server starts: only the cells someone is in or beside get loaded.
     World server;
+    Pool pool(threads - 1);                         // (The main thread takes a share too.)
+    if (threads > 1)
+        server.setParallel([&](std::size_t count, const std::function<void(std::size_t)>& job) { pool.run(count, job); });
     server.setCellSource({
         [&](const std::string& id, std::string& header) {
             const auto* cell = find("cells/" + id + ".cell");
@@ -459,7 +469,7 @@ int main(int argc, char** argv)
     std::cout << npcs() << " residents, " << players.size() << " player" << (players.size() == 1 ? "" : "s") << ", " << ticks << " ticks from " << from << ":00 to " << to << ":00 ("
               << total / 1000.0 << " s of work): mean " << total / ticks << " ms, p99 " << pct(.99) << " ms, p99.9 "
               << pct(.999) << " ms, worst " << sorted.back() << " ms; " << moved << " residents moved; at most "
-              << mostLoaded << " places in memory\n";
+              << mostLoaded << " places in memory; " << threads << " thread" << (threads == 1 ? "" : "s") << "\n";
     // Who is where their day says they should be, and who could find no way there.
     std::size_t arrived = 0, underway = 0;
     std::vector<std::string> lost;

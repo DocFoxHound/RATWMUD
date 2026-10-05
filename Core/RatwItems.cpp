@@ -352,13 +352,18 @@ bool spotAllowed(const Item& item, const std::string& spot)
 
 const Business* businessFor(const std::string& workLabel)
 {
+    // Asked for the same few work labels over and over (every resident, every decision): each thread remembers.
+    thread_local std::unordered_map<std::string, const Business*> known;
+    if (const auto found = known.find(workLabel); found != known.end())
+        return found->second;
+    const Business* matched = nullptr;
     std::string work = workLabel;
     std::transform(work.begin(), work.end(), work.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
     for (const auto& b : catalog().businesses)
         for (const auto& m : b.match)
-            if (!m.empty() && work.find(m) != std::string::npos)
-                return &b;
-    return nullptr;
+            if (!matched && !m.empty() && work.find(m) != std::string::npos)
+                matched = &b;
+    return known.emplace(workLabel, matched).first->second;
 }
 
 std::vector<std::string> wearablesSold(const Business& business)
@@ -374,7 +379,8 @@ std::vector<std::string> wearablesSold(const Business& business)
 const Item* good(const std::string& id)
 {
     const auto& index = catalog().goodIndex;
-    const auto found = index.find(unmarked(id));
+    const auto mark = id.find('@');                 // (Most ids carry no maker's mark: no copy to look them up.)
+    const auto found = mark == std::string::npos ? index.find(id) : index.find(id.substr(0, mark));
     return found == index.end() ? nullptr : found->second;
 }
 
@@ -534,13 +540,17 @@ bool seasonal(const std::string& item)
 
 const Producer* producerFor(const std::string& workLabel)
 {
+    thread_local std::unordered_map<std::string, const Producer*> known;   // (As businessFor.)
+    if (const auto found = known.find(workLabel); found != known.end())
+        return found->second;
+    const Producer* matched = nullptr;
     std::string work = workLabel;
     std::transform(work.begin(), work.end(), work.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
     for (const auto& p : catalog().producers)
         for (const auto& m : p.match)
-            if (work.find(m) != std::string::npos)
-                return &p;
-    return nullptr;
+            if (!matched && work.find(m) != std::string::npos)
+                matched = &p;
+    return known.emplace(workLabel, matched).first->second;
 }
 
 std::vector<const Craft*> craftsFor(const std::string& business)
