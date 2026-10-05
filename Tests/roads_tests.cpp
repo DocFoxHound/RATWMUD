@@ -4,6 +4,7 @@
 #include "RatwWorld.h"
 #include "battle_play.h"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -408,6 +409,53 @@ void banditsInPerson()
         expect(npc.id.rfind("road:", 0) != 0, "never saved as characters");
 }
 
+// Bandits creeping up on a traveller who hasn't seen them (doc 40): crouched, unseen, and the fight begins with her taken
+// unawares; downwind of them, she smells them, so they step out and ask instead.
+void banditsCreepUp()
+{
+    for (const bool downwind : {false, true})
+    {
+        auto f = strip();
+        auto w = load(f);
+        w.addPlayer("player-ada", "Ada");
+        w.tick(.6);
+        w.roads().caravans.clear();
+        w.roads().camps = {{"camp_mid", id(4), 9, 60, -100, true}};
+        if (auto* c = w.cell(id(4)))                            // Still air; or, the second time, blowing from them to her.
+            c->wind = downwind ? Wind{std::acos(-1.0), .6, false} : Wind{0, 0, false};
+        auto* ada = w.entity("player-ada");
+        ada->cellId = id(3);
+        ada->position = {8.5, 8.5};
+        run(w, 2);
+        ada->cellId = id(4);
+        const auto& camp = w.roads().camps[0];
+        ada->position = {camp.x - 9, camp.y};
+        ada->facing = std::acos(-1.0);                          // Facing west: her back to the camp.
+        w.takeNotices();
+        bool asked = false;
+        for (int i = 0; i < 400 && !w.inBattle("player-ada") && !asked; ++i)
+        {
+            ada->velocity = {};
+            ada->facing = std::acos(-1.0);
+            w.tick(.25);
+            for (const auto& [to, text] : w.takeNotices())
+                if (to == "player-ada")
+                    asked = asked || text.find("Your purse") != std::string::npos;
+        }
+        if (downwind)
+        {
+            expect(asked, "downwind of them, she has smelt them: they step out and ask for her purse");
+            continue;
+        }
+        expect(!asked, "her back to them: no one steps out to ask for her purse");
+        expect(w.inBattle("player-ada"), "the bandits reach her and the fight begins");
+        const auto* b = w.battleOf("player-ada");
+        const auto* her = b ? b->fighter("player-ada") : nullptr;
+        expect(her && her->meter < 10 && std::any_of(b->log.begin(), b->log.end(), [](const BattleLine& l) { return l.kind == "ambush"; }),
+               "never having seen them: taken unawares, her bar empty");
+    }
+}
+
 void aFight()
 {
     auto f = strip();
@@ -713,6 +761,7 @@ int main()
         couriersAndSupplies();
         rumoursSpread();
         banditsInPerson();
+        banditsCreepUp();
         aFight();
         beatenAndRobbed();
         banditsCalled();

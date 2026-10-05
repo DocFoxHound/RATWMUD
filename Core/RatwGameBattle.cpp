@@ -145,6 +145,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("faced", acting && mine->faced);           // The turn's third part (doc 33): all three, and it ends by itself.
     v.add("drew", acting && mine->drew);
     v.add("stalking", !observer && mine->stalking);
+    v.add("aim", observer ? std::string() : mine->aim);   // The hit zone this wolf aims for, "" for wherever (doc 40).
     {
         // The wind over the arena (doc 40: stalk with it in your face): its heading (east 0, south π/2) and strength.
         const auto wind = world_.windAt(b.cellId);
@@ -337,8 +338,13 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 const auto hurt = injury::effects(me->injuries);
                 const double blow = std::max(1.0, (sword ? battle::SwordDamage * items::qualityDamage(items::qualityOf(World::swordHeld(*me))) : battle::BiteDamage) * (.6 + me->strength / 125) -
                                                       (sword ? hurt.swordLess : hurt.biteLess));
-                odds.add("damage", std::round(battle::expectedThrough(*e, ambush ? 3 : quarter, blow * (ambush ? battle::AmbushDamage : 1),
-                                                                      sword ? "cut" : "thrust")));
+                // Aimed for a zone this side allows: through the armour there; else the zones weighed.
+                const int side = ambush ? 3 : quarter;
+                const bool aimable = !mine->aim.empty() && std::any_of(battle::hitZones(side).begin(), battle::hitZones(side).end(),
+                                                                      [&](const battle::HitZone& z) { return mine->aim == z.zone; });
+                const double struck = blow * (ambush ? battle::AmbushDamage : 1);
+                odds.add("damage", std::round(aimable ? battle::throughArmour(*e, mine->aim, struck, sword ? "cut" : "thrust")
+                                                      : battle::expectedThrough(*e, side, struck, sword ? "cut" : "thrust")));
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
                 o.add("odds", odds);
             }
@@ -542,7 +548,7 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
         result = world_.leaveObserving(id);
     else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||
              verb == "roll" || verb == "rest" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce" ||
-             verb == "back" || verb == "yield" || verb == "guard" || verb == "shove" || verb == "stalk" || verb == "rise")
+             verb == "back" || verb == "yield" || verb == "guard" || verb == "shove" || verb == "stalk" || verb == "rise" || verb == "aim")
         result = world_.battleAct(id, verb, target);
     else
         return false;

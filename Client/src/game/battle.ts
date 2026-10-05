@@ -137,6 +137,7 @@ export interface BattleView {
     planning: boolean;
     plan: PlanView | null;
     stalking: boolean;          // This wolf, stalking (doc 40).
+    aim: string;                // The hit zone this wolf aims for ("head", "throat", "body", "legs"), "" for wherever.
     wind: {dir: number; strength: number};  // Over the arena: heading (east 0, south π/2) and 0..1.
     haste: number;
     log: BattleLine[];
@@ -262,6 +263,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
         planning: bool(b, 'planning'),
         stalking: bool(b, 'stalking'),
+        aim: str(b, 'aim'),
         wind: {dir: num(obj(b, 'wind'), 'dir'), strength: num(obj(b, 'wind'), 'strength')},
         plan: readPlan(obj(you, 'plan')),
         haste: num(b, 'haste', 1),
@@ -481,4 +483,12 @@ export function strikeFrom(foe: FighterView, x: number, y: number): 'front' | 's
 /** Ground a stalker can hide in (doc 40): tall grass, ferns, reeds, a shrub, heather. */
 export function coverTile(glyph: string): boolean {
     return glyph === '"' || glyph === '&' || glyph === 'E' || glyph === 'B' || glyph === '5';
+}
+
+/** The hit zones one may aim for, in the order the Aim button steps through them (doc 40); "" is wherever it lands. */
+export const AimZones = ['', 'throat', 'head', 'body', 'legs'];
+
+/** The next zone to aim for after this one. */
+export function nextAim(aim: string): string {
+    return AimZones[(AimZones.indexOf(aim) + 1) % AimZones.length];
 }

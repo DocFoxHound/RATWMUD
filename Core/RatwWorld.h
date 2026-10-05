@@ -971,6 +971,7 @@ class World
         std::string cell;
         Vec2 at;
         double until = 0;
+        std::string task = "looking into a noise", reason = "something stirred";   // (Or backing away from a prowler.)
     };
     std::map<std::string, Looking> lookings_;
     void tendAwareness();
@@ -1022,6 +1023,11 @@ class World
         std::int64_t demand = 0;
         double since = 0;
         bool fighting = false;
+        // Creeping up instead of stepping out (doc 40): unseen yet; how much the traveller has noticed of them; whether
+        // they have heard something.
+        bool creeping = false;
+        double spotted = 0;
+        bool rustled = false;
     };
     std::vector<Encounter> encounters_;
     std::map<std::string, double> spared_;          // Players bandits leave alone until then (world seconds).

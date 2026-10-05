@@ -183,6 +183,14 @@ Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, dou
             hit = &z;
             break;
         }
+    // Aimed for a zone the side it comes at allows: there (doc 40).
+    if (!f.aim.empty())
+        for (const auto& z : zones)
+            if (f.aim == z.zone)
+            {
+                hit = &z;
+                break;
+            }
     Landed out;
     out.zone = hit->zone;
     out.damage = battle::throughArmour(d, hit->zone, damage, type);
@@ -620,13 +628,13 @@ Result World::startBattle(const std::string& attacker, const std::string& target
     // An ambush (doc 40, §3): those on the other side who hadn't noticed the attacker as it came in keep the way they
     // were facing, start with an empty bar, and are taken unawares by its first blow. Not between players.
     bool sprung = false;
-    if (auto* af = b.fighter(attacker); af && t->npc)
+    if (auto* af = b.fighter(attacker); af && (t->npc || a->npc))   // (Never between players.)
     {
         const bool moving = std::hypot(a->velocity.x, a->velocity.y) > 1e-6;
         for (auto& o : b.fighters)
         {
             const auto* oe = entity(o.id);
-            if (o.side == af->side || !oe || !oe->npc)
+            if (o.side == af->side || !oe || (!oe->npc && !a->npc))
                 continue;
             BattleFighter asWas = o;
             asWas.facing = ownFacing[o.id];
@@ -667,7 +675,7 @@ void World::enterBattle(Battle& b, const std::string& id, int side, bool full)
     f.lineupX = e ? e->position.x : 0;
     f.lineupY = e ? e->position.y : 0;
     f.facing = e ? battle::octant(std::cos(e->facing), std::sin(e->facing)) : 0;
-    f.stalking = e && e->posture == "crouching" && !e->npc;    // Crouched as it comes in: stalking (doc 40).
+    f.stalking = e && e->posture == "crouching";   // Crouched as it comes in: stalking (doc 40).
     f.x = e ? int(std::floor(e->position.x)) : 0;
     f.y = e ? int(std::floor(e->position.y)) : 0;
     b.fighters.push_back(f);
@@ -1604,7 +1612,13 @@ double World::senseInWorld(const std::string& resident, const std::string& playe
             lookings_[resident] = {oe->cellId, te->position, time_ + battle::LookSeconds};
         }
         else
-            notice(player, oe->name + " spots you creeping about, and keeps a wary eye on you.");
+        {
+            // Anyone else backs off a few strides, out of the prowler's way, for a moment.
+            const double d = std::max(.5, std::hypot(oe->position.x - te->position.x, oe->position.y - te->position.y));
+            const Vec2 away{oe->position.x + (oe->position.x - te->position.x) / d * 4, oe->position.y + (oe->position.y - te->position.y) / d * 4};
+            notice(player, oe->name + " spots you creeping about and backs away, watching you.");
+            lookings_[resident] = {oe->cellId, standable(oe->cellId, away) ? away : oe->position, time_ + 8, "backing away", "someone creeping about"};
+        }
     }
     // Unnoticed close by: the sneak learns (doc 40, §6).
     if (creeping && level < battle::AwareSuspicious && std::hypot(te->position.x - oe->position.x, te->position.y - oe->position.y) <= sightRange(*oe) / 2)
@@ -1640,7 +1654,7 @@ void World::tendAwareness()
         it = near ? std::next(it) : worldAware_.erase(it);
     }
     for (auto it = lookings_.begin(); it != lookings_.end();)
-        it = time_ >= it->second.until || !guardOnDuty(it->first) ? lookings_.erase(it) : std::next(it);
+        it = time_ >= it->second.until ? lookings_.erase(it) : std::next(it);
     std::vector<std::pair<std::string, std::string>> pairs;
     for (const auto& [id, p] : entities_)
     {
@@ -1800,6 +1814,14 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         return offerYield(id);                      // At any time, one's turn or not.
     if (action == "stalk" || action == "rise")
         return battleStalk(id, action == "stalk");  // At any time but mid-move (doc 40).
+    if (action == "aim")
+    {
+        // A hit zone to aim for, or none: free, at any time (doc 40).
+        if (!target.empty() && target != "head" && target != "throat" && target != "body" && target != "legs")
+            return {false, "Aim for the head, the throat, the body or the legs.", {}};
+        f.aim = target;
+        return {true, target.empty() ? "You strike wherever the blow lands." : "You aim for the " + target + ".", {}};
+    }
     if (!f.acting)
         return {false, "It isn't your turn.", {}};
     Result r{true, {}, target};
@@ -1977,9 +1999,11 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     const int gap = battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y));
     // Taken unawares (doc 40): as from behind, and likelier still, whatever the facing or guard.
     const auto* fight = battleOf(f.id);
-    const double angle = fight && ambushing(*fight, f, t) ? .2 + battle::AmbushHit : t.guarding ? -battle::GuardDodge : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
+    const bool unaware = fight && ambushing(*fight, f, t);
+    const double aim = f.aim.empty() || unaware ? 0 : battle::AimPenalty;   // Aiming costs a little (doc 40).
+    const double angle = unaware ? .2 + battle::AmbushHit : t.guarding ? -battle::GuardDodge : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
     return std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
-                          (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle,
+                          (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle - aim,
                       .2, .95);
 }
 

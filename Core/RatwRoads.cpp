@@ -1136,7 +1136,7 @@ bool World::hostile(const std::string& id) const
 std::int64_t World::banditDemand(const std::string& player) const
 {
     for (const auto& e : encounters_)
-        if (e.player == player)
+        if (e.player == player && !e.creeping)       // (Creeping up, they haven't asked yet.)
             return std::max<std::int64_t>(e.demand, e.fighting ? 1 : 0);
     return 0;
 }
@@ -1236,6 +1236,19 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
                 continue;
             }
             const std::int64_t demand = std::min<std::int64_t>(cash, 4 + std::llround(camp.strength * 2));
+            // A traveller who hasn't noticed them is crept up on instead, low through the grass, to be taken unawares
+            // (doc 40); one who has sees them step out.
+            double noticed = 0;
+            for (const auto* b : standing)
+                noticed = std::max(noticed, noticeSenses(e, e.position, e.facing, *b, b->position, false, false, 0, camp.cell).total());
+            if (noticed < battle::AwareSuspicious)
+            {
+                Encounter creep{camp.id, id, demand, time_, false};
+                creep.creeping = true;
+                encounters_.push_back(creep);
+                recordEvent({"bandits creep", camp.id, id, camp.cell, 0, 0, {}, 0, 0, "on the road"});
+                break;
+            }
             encounters_.push_back({camp.id, id, demand, time_, false});
             notice(id, "Bandits step out onto the road around you. \"Your purse, friend: " + pennies(demand) +
                            ", and you walk on.\" (Pay them, fight, or get clear of them.)");
@@ -1249,10 +1262,67 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
     auto* player = entity(enc->player);
     if (!player || player->dead || player->cellId != camp.cell || between(player->position, spot) > 26 || standing.empty())
     {
-        if (player && !player->dead && !standing.empty())
-            notice(enc->player, "You get clear of the bandits.");
+        if (player && !player->dead && !standing.empty() && !enc->creeping)
+            notice(enc->player, "You get clear of the bandits.");   // (Not of those it never knew were there.)
         endEncounter(camp.id, 60);
         return;
+    }
+    if (enc->creeping)
+    {
+        // Creeping up (doc 40): crouched, to a stride behind the traveller. What the traveller notices of them builds
+        // as in a fight; a rustle half noticed is told; noticed, they rise and rush; unnoticed within reach, the fight
+        // begins with the traveller taken unawares (startBattle's ambush). Too long at it, they give up.
+        if (time_ - enc->since > battle::CreepGiveUp)
+        {
+            for (auto* b : standing)
+                setPosture(b->id, "standing");
+            endEncounter(camp.id, 300);
+            return;
+        }
+        double most = 0;
+        for (auto* b : standing)
+            most = std::max(most, noticeSenses(*player, player->position, player->facing, *b, b->position, true,
+                                               std::hypot(b->velocity.x, b->velocity.y) > 1e-6, 0, camp.cell)
+                                      .total());
+        enc->spotted = most >= battle::NoticeFloor ? enc->spotted + most * battle::NoticeGain : std::max(0.0, enc->spotted - battle::Calm);
+        if (enc->spotted >= battle::AwareSuspicious && !enc->rustled)
+        {
+            enc->rustled = true;
+            notice(enc->player, "Something rustles low in the grass behind you.");
+        }
+        if (enc->spotted < battle::AwareAlert)
+        {
+            const Vec2 behind{player->position.x - std::cos(player->facing) * 1.5, player->position.y - std::sin(player->facing) * 1.5};
+            for (auto* b : standing)
+            {
+                if (b->posture != "crouching")
+                    setPosture(b->id, "crouching");
+                if (between(b->position, player->position) <= battle::StartReach * .9)
+                {
+                    stop(b->id);                    // Still a moment, then the spring: no pawstep gives it away.
+                    if (const auto started = startBattle(b->id, player->id, false); started.ok)
+                    {
+                        enc->creeping = false;
+                        enc->fighting = true;
+                        return;
+                    }
+                }
+                auto& f = folk_[b->id];
+                if (time_ >= f.nextPath)
+                {
+                    f.nextPath = time_ + 1.5;
+                    moveTo(b->id, behind.x, behind.y);
+                }
+            }
+            return;
+        }
+        // Seen: no more creeping. They rise and rush.
+        enc->creeping = false;
+        enc->fighting = true;
+        for (auto* b : standing)
+            setPosture(b->id, "standing");
+        notice(enc->player, "Bandits rise from the grass around you and rush you!");
+        recordEvent({"fight", camp.id, enc->player, camp.cell, 0, 0, {}, 0, 0, "bandits rush"});
     }
     if (!enc->fighting && time_ - enc->since > DemandSeconds)
     {

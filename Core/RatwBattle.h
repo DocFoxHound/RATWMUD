@@ -56,6 +56,8 @@ struct BattleFighter
     bool guarding = false, drew = false;
     // Stalking (doc 40): moving crouched, half as far and twice as slow, quiet, harder to see and helped by cover.
     bool stalking = false;
+    // A hit zone aimed for (doc 40/35: "head", "throat", "body", "legs"; "" for wherever it lands): kept until changed.
+    std::string aim;
     // A plan made while its bar fills (doc 37, phase 5): a tile to go to and an action (its target a fighter, or "x,y"
     // for fire), played out as its turn begins; the rest of the turn is still its own. `begun`: the move is under way.
     struct Plan
@@ -228,6 +230,9 @@ struct Senses
 constexpr double AmbushHit = .15, AmbushDamage = 1.5;
 // Sneaking skill grows with an ambush, and a little with each check one stays unnoticed close by.
 constexpr double SneakPerAmbush = .5, SneakUnnoticed = .05;
+// Aiming for a hit zone: the blow is this much less likely to land (none on one taken unawares), and lands there if the
+// side it comes at allows (no head from behind). Bandits creeping up give up after this long unseen-but-unready.
+constexpr double AimPenalty = .15, CreepGiveUp = 90;
 // In the open world (doc 40, §2): residents check what they notice of players near them this often (seconds), within
 // this many tiles; a sneak unnoticed close by learns this much a check; a guard who hears something goes to look for
 // this long. Noticing a stalker teaches a player's ears or nose this much.

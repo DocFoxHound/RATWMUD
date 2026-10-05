@@ -263,5 +263,39 @@ In `Core/RatwBattle.cpp` ("Sneaking"), with one change each to hunting's `animal
   7 7.2 --players 20` on DEV build 22) is unchanged: mean 12.6–12.8 ms against HEAD's 12.6, p99 after the first minute
   21.4 ms against 21.3–21.8.
 
-**Not yet:** a stalking NPC in the open world (bandits on the road creeping up), residents backing away from a prowler
-(they only keep an eye), and a player choosing a hit zone.
+## Built: phase 3, the last of it (2026-10-04)
+
+- **Bandits creep up in the open world** (`World::tendCamp`, `Core/RatwRoads.cpp`). A bold camp that sees a
+  traveller worth robbing who hasn't noticed them (the traveller's own notice of the bandits, by the same senses, under
+  suspicious) creeps up instead of stepping out: crouched (a sixth of a walk for an NPC), to a stride behind them.
+  - The traveller isn't asked for anything (`banditDemand` is 0 while they creep) and isn't told they got clear.
+  - What the traveller notices of them builds as in a fight: half noticed, "Something rustles low in the grass behind
+    you"; noticed, "Bandits rise from the grass around you and rush you!" and the fight comes as before.
+  - Unnoticed within reach, a bandit stops (no last pawstep to give it away) and springs: the fight begins with the
+    traveller taken unawares (startBattle's ambush now covers an NPC setting on a player: never player on player),
+    their bar empty, still facing away, and the first blow struck from hiding. "Ada never saw a gaunt highwayman coming."
+  - A traveller who has noticed the camp (in sight, or downwind of it) sees them step out and ask, as before.
+  - After 90 s at it unready, they give up and leave the traveller be for a while.
+  - NPCs crouched as a fight starts begin it stalking.
+- **Residents back away from a prowler:** one (not a guard) that spots a creeping wolf "backs away, watching you",
+  given an errand of 8 s to a spot four strides off from the prowler ("backing away", "someone creeping about"), the
+  same way a guard is sent to look.
+- **Aiming for a hit zone** (Z, battle verb `aim` with `target` "throat", "head", "body", "legs" or "" for wherever;
+  free, at any time, kept until changed):
+  - a blow aimed lands on that zone if the side it comes at allows it (no head or face from behind); otherwise where it
+    may;
+  - it is 15% less likely to land (`battle::AimPenalty`), but not on one taken unawares (an ambush is aimed anyway);
+  - the odds on a foe's card give the blow through the armour on that zone; the Aim button steps through the zones
+    and says the one chosen ("Aim: throat", −15%).
+- **The action bar:** with Aim, the move/action/facing marks moved into End turn (down its right edge, "✓M ✓A ·F"),
+  so the bar stays one row.
+- **Tested:** `Tests/roads_tests.cpp` `banditsCreepUp` (her back to them in still air: no demand, they creep, and the
+  fight opens with her taken unawares; downwind of them she smells them and they step out and ask instead);
+  `Tests/battle_tests.cpp` `aiming` (the throat, every time it lands; less likely; never the head from behind; no
+  aiming for a tail) and `sneak::inTheWorld` (a resident backs away). `Client/src/game/battle.test.ts`. In the browser:
+  an ambush in Greyfen, and the bar in one row.
+
+**Still open, for play:** the numbers (the notice gain, the calm, cover, scent's weight, the aim penalty, how long a
+camp creeps); whether players should notice an NPC sneaking in the open world (only bandits creep, and a player gets
+the rustle and the anonymous pawstep and scent cues); and doc 35's other leads on zones (a bite going for the throat,
+leg hits slowing a wolf).

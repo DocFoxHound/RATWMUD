@@ -2,7 +2,7 @@
 // about the fight only: the order turns will come in along the top of the map, a card for each fighter on the right,
 // what this wolf can do as icon buttons under the map (keys 1–8, Space to end the turn), and the fight told line by
 // line above the composer. Everything else on the screen steps aside (hud.ts: the `fight-mode` class).
-import {clockLabel, fightTips, meterNow, myTurn, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
+import {clockLabel, fightTips, meterNow, myTurn, nextAim, secondsToTurn, termsWords, TurnSeconds, type BattleLine, type BattleView, type FighterView} from '../../game/battle.ts';
 import {lawLabel} from '../../game/labels.ts';
 import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
@@ -516,19 +516,19 @@ export class CombatScreen {
             }
             const row = el('div', 'bar-actions', this.bar);
             for (const a of this.actions) {
-                // The turn's three parts, before End turn: used ones ticked; all three, and the turn ends by itself.
-                if (a.kind === 'end' && mine && me?.status === 'fighting') {
-                    const parts = el('div', 'turn-parts', row);
-                    parts.title = 'A turn is a move, an action (a bite, a strike, fire, tending, an item…) and a facing. ' +
-                        'With all three used it ends by itself; or end it sooner. Rest uses the move and the action.';
-                    for (const [name, used] of [['MOVE', b.moved], ['ACTION', b.acted], ['FACING', b.faced]] as const)
-                        el('span', `turn-part${used ? ' used' : ''}`, parts, `${used ? '✓' : '·'} ${name}`);
-                }
                 const btn = this.button(row, a);
                 if (a.kind === 'end') {
                     this.endFill = el('span', 'end-fill', btn);
                     btn.prepend(this.endFill);
                     this.endText = btn.querySelector('.abtn-sub');
+                    // The turn's three parts, in End turn's corner: used ones lit; all three, and the turn ends by itself.
+                    if (mine && me?.status === 'fighting') {
+                        const parts = el('span', 'turn-parts', btn);
+                        parts.title = 'A turn is a move, an action (a bite, a strike, fire, tending, an item…) and a facing. ' +
+                            'With all three used it ends by itself; or end it sooner. Rest uses the move and the action.';
+                        for (const [name, used] of [['MOVE', b.moved], ['ACTION', b.acted], ['FACING', b.faced]] as const)
+                            el('span', `turn-part${used ? ' used' : ''}`, parts, used ? `✓${name[0]}` : `·${name[0]}`).title = name.toLowerCase();
+                    }
                 }
             }
         }
@@ -629,6 +629,12 @@ export class CombatScreen {
                     : 'Stalk (C): move crouched — half as far, twice as slow, but quiet, and cover (tall grass, ferns, reeds, shrubs, heather) ' +
                       'hides you. Keep the wind in your face. A blow on one that hasn\'t noticed you is an ambush',
                 enabled: !(mine && b.moved), kind: b.stalking ? 'go' : '', run: () => s.sendBattle(b.stalking ? 'rise' : 'stalk')});
+        // Aim (Z), doc 40: a hit zone for one's blows, stepping through throat, head, body, legs and wherever; free.
+        if (me.status === 'fighting')
+            out.push({id: 'aim', key: 'Z', icon: 'aim', label: b.aim ? `Aim: ${b.aim}` : 'Aim', sub: b.aim ? '−15%' : 'anywhere',
+                tip: `Aim (Z): choose where your blows land — throat, head, body or legs — for 15% less chance to land (none on one taken unawares). ` +
+                     `From behind the head can't be reached. ${b.aim ? `Aiming for the ${b.aim}; press again for the next` : 'Now: wherever the blow lands'}`,
+                enabled: true, kind: b.aim ? 'go' : '', run: () => s.sendBattle('aim', {target: nextAim(b.aim)})});
         // Guard (G): no blow, harder to hit and turning to meet one, until one's next turn. Shove (F): the foe aimed at
         // (or anyone next to you) a tile straight back (doc 37).
         if (me.status === 'fighting') {
@@ -678,7 +684,7 @@ export class CombatScreen {
     /** A key on the map while the fight screen shows: true when it was one of its actions. */
     private key(code: string): boolean {
         if (!this.s.battle) return false;
-        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : code === 'KeyG' ? 'G' : code === 'KeyF' ? 'F' : code === 'KeyC' ? 'C'
+        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : code === 'KeyG' ? 'G' : code === 'KeyF' ? 'F' : code === 'KeyC' ? 'C' : code === 'KeyZ' ? 'Z'
             : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
         if (!pressed) return false;
         const a = this.actions.find(x => x.key === pressed);

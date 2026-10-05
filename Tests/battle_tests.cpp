@@ -1366,7 +1366,7 @@ void inTheWorld()
     ada.cellId = "wilds";
     ada.position = {28.5, 20.5};                                // Eight tiles in front of her, crouched in the open.
     ada.posture = "crouching";
-    bool asked = false;
+    bool asked = false, backed = false;
     for (int i = 0; i < 40 && w2.residentAwareness("sorrel", "ada") < battle::AwareAlert; ++i)
     {
         s2->position = {20.5, 20.5};
@@ -1376,10 +1376,16 @@ void inTheWorld()
         ada.velocity = {-.3, 0};
         w2.tick(.1);
         for (const auto& [who, text] : w2.takeNotices())
+        {
             asked = asked || (who == "ada" && text.find("Who's there?") != std::string::npos);
+            backed = backed || (who == "ada" && text.find("backs away") != std::string::npos);
+        }
     }
     expect(asked, "creeping up in front of her: \"Who's there?\"");
     expect(w2.residentAwareness("sorrel", "ada") >= battle::AwareAlert, "and then she sees her");
+    for (const auto& [who, text] : w2.takeNotices())
+        backed = backed || (who == "ada" && text.find("backs away") != std::string::npos);
+    expect(backed, "and backs away from a prowler");
 }
 
 void aBanditStalks()
@@ -1420,6 +1426,53 @@ void aBanditStalks()
     expect(lost, "and she loses sight of it (only where it was last seen)");
 }
 } // namespace sneak
+
+// Aiming for a hit zone (doc 40): there if the side allows (no head from behind), a little less likely to land.
+void aiming()
+{
+    World w;
+    auto& b = duel(w);
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    fb->facing = battle::octant(fa->x - fb->x, fa->y - fb->y);     // Head on.
+    w.entity("player-ad")->dexterity = 50;                         // (Not so quick the chance is at its cap.)
+    const double plain = w.strikeChance(*fa, *fb);
+    expect(!w.battleAct("player-ad", "aim", "tail").ok, "no aiming for the tail");
+    expect(w.battleAct("player-ad", "aim", "throat").ok && fa->aim == "throat", "Ad aims for the throat");
+    fa->aim.clear();
+    fa->aim = "throat";
+    expect(w.strikeChance(*fa, *fb) < plain || plain <= .2, "a little less likely to land");
+    int throat = 0, landed = 0;
+    for (int i = 0; i < 30; ++i)
+    {
+        fb->facing = battle::octant(fa->x - fb->x, fa->y - fb->y);
+        w.entity("player-bo")->hurt = 0;
+        w.entity("player-ad")->stamina = 100;
+        fa->acted = false;
+        w.battleAct("player-ad", "bite", "player-bo");
+        const auto& line = b.log.back().text;
+        if (line.find(" on ") != std::string::npos)
+        {
+            ++landed;
+            throat += line.find(" on the throat") != std::string::npos;
+        }
+    }
+    expect(landed > 0 && throat == landed, "every blow that lands, on the throat");
+    // From behind, the head can't be reached: it lands where it may.
+    expect(w.battleAct("player-ad", "aim", "head").ok, "Ad aims for the head");
+    bool head = false;
+    for (int i = 0; i < 30; ++i)
+    {
+        fb->facing = battle::octant(fb->x - fa->x, fb->y - fa->y);     // Bo's back to her.
+        w.entity("player-bo")->hurt = 0;
+        w.entity("player-ad")->stamina = 100;
+        fa->acted = false;
+        w.battleAct("player-ad", "bite", "player-bo");
+        head = head || b.log.back().text.find(" on the head") != std::string::npos || b.log.back().text.find(" on the face") != std::string::npos;
+    }
+    expect(!head, "from behind, never the head");
+    expect(w.battleAct("player-ad", "aim", "").ok && fa->aim.empty(), "and wherever it lands again");
+}
 
 void rules()
 {
@@ -1604,6 +1657,7 @@ int main()
         sneak::ambushAResident();
         sneak::inTheWorld();
         sneak::aBanditStalks();
+        aiming();
         devConsoleFights();
         devConsoleTeamFight();
     }

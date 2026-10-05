@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
-import {arenaRows, arenaSight, chanceFrom, coverTile, fightTips, strikeFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
+import {arenaRows, arenaSight, chanceFrom, coverTile, fightTips, nextAim, strikeFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
     stepToward, termsWords} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
@@ -341,4 +341,9 @@ test('a stalker lost from sight (doc 40): only where it was last seen, and never
     assert.ok(bo.hidden && bo.seenAgo === 3, 'lost, three seconds ago');
     s.fightFocus = 'bo';
     assert.equal(s.fightTargetId(), 'cy', 'actions aim at one in sight, not the lost');
+});
+
+test('aiming (doc 40): the Aim button steps through the zones and back to wherever', () => {
+    assert.deepEqual(['', 'throat', 'head', 'body', 'legs'].map(nextAim), ['throat', 'head', 'body', 'legs', '']);
+    assert.equal(readBattle({battle: {...battle, aim: 'throat'}})!.aim, 'throat');
 });

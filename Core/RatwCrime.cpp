@@ -567,9 +567,9 @@ bool World::crimeErrand(const std::string& resident, std::string& task, std::str
         }
     if (const auto look = lookings_.find(resident); look != lookings_.end())
     {
-        // Something half heard or glimpsed, a sneak creeping about (doc 40): the guard goes to look.
-        task = "looking into a noise";
-        reason = "something stirred";
+        // Something half heard or glimpsed, a sneak creeping about (doc 40): a guard goes to look; anyone else backs off.
+        task = look->second.task;
+        reason = look->second.reason;
         goalCell = look->second.cell;
         goal = look->second.at;
         return true;

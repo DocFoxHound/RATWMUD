@@ -269,7 +269,7 @@ export class Hud {
         const fighting = !!s.battle;
         setClass(this.root, 'fight-mode', fighting);
         setText(this.help, fighting && s.battle?.observer ? 'WATCHING A FIGHT · ENTER write'
-            : fighting ? 'CLICK a tile to move (waiting: to plan) · CLICK a foe to strike · WHEEL pace · 1–9 actions · C stalk · G guard · F shove · R rest · SPACE end turn · Q / E turn · ENTER write'
+            : fighting ? 'CLICK a tile to move (waiting: to plan) · CLICK a foe to strike · WHEEL pace · 1–9 actions · C stalk · Z aim · G guard · F shove · R rest · SPACE end turn · Q / E turn · ENTER write'
             : 'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
         this.combat.update();
         this.fight.update();
