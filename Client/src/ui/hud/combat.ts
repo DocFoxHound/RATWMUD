@@ -369,6 +369,7 @@ export class CombatScreen {
             if (f.armour)
                 marks.push(['armour', `Armour, where a blow lands: ${f.armour.zones.map(z => `${z.zone}, ${z.piece.toLowerCase()} (${z.thrust} off a bite, ${z.cut} off a cut)`).join(' · ')}. ` +
                     `Blows elsewhere get through whole; at least a quarter always does${f.armour.dex < 0 ? ` · its weight slows their bar as DEX −${-f.armour.dex}` : ''}`]);
+            if (f.stalking) marks.push(['stalk', 'Stalking: moving crouched, quiet and harder to see; half the move']);
             if (f.guarding) marks.push(['guard', 'On guard: harder to hit, and turns to meet a blow, until their next turn']);
             const marksKey = marks.map(m => m[0]).join();
             if (marksKey !== c.marksKey) {
@@ -619,6 +620,14 @@ export class CombatScreen {
         if (b.mouth === 'sword')
             out.push({id: 'stow', key: '', icon: 'pickup', label: 'Stow', sub: 'move', tip: `Put the sword away: part of your move, not your action${b.drew ? ' · done this turn' : ''}${notYet}`,
                 enabled: (mine && !b.drew) || planning, kind: 'small', run: doOr('stow', () => s.sendBattle('stow')), planned: isPlanned('stow')});
+        // Stalk (C), doc 40: moving crouched, half as far and twice as slow, quiet, harder to see in cover; toggled at any
+        // time but mid-move. With the wind in your face, game won't smell you.
+        if (me.status === 'fighting')
+            out.push({id: 'stalk', key: 'C', icon: 'stalk', label: b.stalking ? 'Stalking' : 'Stalk', sub: b.stalking ? 'on' : 'half move',
+                tip: b.stalking ? 'Stalking (C): crouched, quiet and harder to see; half the move. Press again to rise'
+                    : 'Stalk (C): move crouched — half as far, twice as slow, but quiet, and cover (tall grass, ferns, reeds, shrubs, heather) ' +
+                      'hides you. Keep the wind in your face. A blow on one that hasn\'t noticed you is an ambush',
+                enabled: !(mine && b.moved), kind: b.stalking ? 'go' : '', run: () => s.sendBattle(b.stalking ? 'rise' : 'stalk')});
         // Guard (G): no blow, harder to hit and turning to meet one, until one's next turn. Shove (F): the foe aimed at
         // (or anyone next to you) a tile straight back (doc 37).
         if (me.status === 'fighting') {
@@ -668,7 +677,7 @@ export class CombatScreen {
     /** A key on the map while the fight screen shows: true when it was one of its actions. */
     private key(code: string): boolean {
         if (!this.s.battle) return false;
-        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : code === 'KeyG' ? 'G' : code === 'KeyF' ? 'F'
+        const pressed = code === 'Space' ? 'Space' : code === 'KeyR' ? 'R' : code === 'KeyG' ? 'G' : code === 'KeyF' ? 'F' : code === 'KeyC' ? 'C'
             : /^(?:Digit|Numpad)([1-9])$/.exec(code)?.[1];
         if (!pressed) return false;
         const a = this.actions.find(x => x.key === pressed);
@@ -866,6 +875,6 @@ const LineIcons: Record<string, string> = {
     start: 'start', join: 'start', hit: 'bite', graze: 'bite', miss: 'miss', slash: 'sword', charge: 'fire', flame: 'fire', burn: 'fire',
     burnt: 'fire', roll: 'roll', down: 'down', death: 'down', rise: 'rise', struggle: 'rise', tend: 'tend', wait: 'wait', timeout: 'wait',
     flee: 'flee', truce: 'truce', over: 'truce', yield: 'yield', refuse: 'no', hold: 'sword', drop: 'sword', pickup: 'pickup', break: 'no',
-    guard: 'guard', shove: 'shove', stow: 'sword',
+    guard: 'guard', shove: 'shove', stow: 'sword', ambush: 'stalk', suspect: 'watch', notice: 'watch',
 };
 

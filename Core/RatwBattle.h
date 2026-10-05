@@ -5,6 +5,7 @@
 //
 // ("Encounter" is the bandits' hold-up on the road, RatwRoads.cpp; this is a Battle.)
 #include <cstdint>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -53,6 +54,8 @@ struct BattleFighter
     // Doc 37, phase 6: on guard until its next turn (harder to hit, and it turns to meet a blow); a sword taken up or
     // put away this turn (part of the move, not the action: once a turn, a tile off the move if before it).
     bool guarding = false, drew = false;
+    // Stalking (doc 40): moving crouched, half as far and twice as slow, quiet, harder to see and helped by cover.
+    bool stalking = false;
     // A plan made while its bar fills (doc 37, phase 5): a tile to go to and an action (its target a fighter, or "x,y"
     // for fire), played out as its turn begins; the rest of the turn is still its own. `begun`: the move is under way.
     struct Plan
@@ -124,6 +127,9 @@ struct Battle
     std::string opening;                // Who started it, until their first turn ends: NPCs wait for it.
     std::vector<std::pair<std::pair<int, int>, int>> smoke;   // Tiles of smoke and the round they clear.
     double lookedAround = -1;           // When it last looked for who can hear it.
+    // Who has noticed whom (doc 40), observer to target: 0 unaware, from AwareSuspicious suspicious, from AwareAlert
+    // alert. Only NPC and animal observers are kept; a pair not kept is alert, but game in a hunt starts unaware.
+    std::map<std::pair<std::string, std::string>, double> aware;
 
     const BattleFighter* fighter(const std::string& who) const
     {
@@ -196,7 +202,27 @@ constexpr double GuardDodge = .2, ShoveStamina = 8, ShoveOdds = .6;
 // its extra against the kind of blow, less the blow's pierce; at least this share of a blow still gets through. A bite
 // is a thrust of the teeth, a sword a cut, neither with any pierce.
 constexpr double ArmourFloor = .25;
-// Hit zones: where a blow lands, rolled by the side of the body it comes at (0 head on, 1 the side, 2 behind). Each is
+// Sneaking (doc 40), placeholders. Each notice adds (notice × NoticeGain) to an observer's awareness of a wolf; a check
+// with almost nothing to notice calms it by Calm. Alert, it is set to AwareKept, so it takes a few calm checks to lose.
+constexpr double AwareSuspicious = .3, AwareAlert = 1, AwareKept = 1.5, NoticeGain = 1.2, Calm = .25, NoticeFloor = .05;
+// Stalking: a move half as long and twice as slow; cover (tall grass, ferns, reeds, a shrub, heather, or a tree or
+// boulder between) hides a stalker to this share, one standing to that.
+constexpr double StalkRange = .5, StalkSlow = 2, CoverStalking = .5, CoverStanding = .8;
+// Scent counts for this share of a sense: noticed faintly at first, it takes a few checks to be sure.
+constexpr double ScentFaint = .6;
+// What one notices of another, by sense (0..1 each), and all of them together.
+struct Senses
+{
+    double sight = 0, noise = 0, scent = 0;
+    double total() const { return 1 - (1 - sight) * (1 - noise) * (1 - scent); }
+};
+// An ambush (§3): a first blow on a wolf unaware of its attacker is struck as from behind, this much likelier still,
+// and this much harder, aimed (hit zone table 3).
+constexpr double AmbushHit = .15, AmbushDamage = 1.5;
+// Sneaking skill grows with an ambush, and a little with each check one stays unnoticed close by.
+constexpr double SneakPerAmbush = .5, SneakUnnoticed = .05;
+// Hit zones: where a blow lands, rolled by the side of the body it comes at (0 head on, 1 the side, 2 behind; 3 an
+// ambush's aimed blow, doc 40: the throat, head and body over the legs). Each is
 // a zone armour covers ("head", "throat", "body", "legs"), the part a fight's log names, and its weight among them.
 struct HitZone
 {

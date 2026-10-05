@@ -7,7 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {apart, chanceFrom, coneTiles, myTurn, octantGap, pathTo, quarter, stepToward, type BattleView, type FighterView} from './battle.ts';
+import {apart, chanceFrom, coverTile, coneTiles, myTurn, octantGap, pathTo, stepToward, strikeFrom, type BattleView, type FighterView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 
@@ -505,6 +505,26 @@ export class GamePainter {
             c.restore();
         }
         p.frame(left, top, aw * tile, ah * tile, withAlpha(red, 0.8));
+        // Cover a stalker can hide in (doc 40): tall grass, ferns, reeds, shrubs, heather, faintly green.
+        {
+            const x0 = Math.max(ax, Math.floor((map.left - ox) / tile)), x1 = Math.min(ax + aw - 1, Math.ceil((map.right - ox) / tile));
+            const y0 = Math.max(ay, Math.floor((map.top - oy) / tile)), y1 = Math.min(ay + ah - 1, Math.ceil((map.bottom - oy) / tile));
+            for (let y = y0; y <= y1; ++y) {
+                const row = b.rows[y - ay] ?? '';
+                for (let x = x0; x <= x1; ++x)
+                    if (coverTile(row[x - ax] ?? '')) p.box(ox + x * tile + 1, oy + y * tile + 1, tile - 2, tile - 2, withAlpha(rgb(0x6f9a5a), 0.16));
+            }
+        }
+        // The wind over the arena (doc 40: stalk with it in your face), in its top right corner.
+        {
+            const wx = Math.min(right, map.right) - 46, wy = Math.max(top, map.top) + 56;
+            const still = b.wind.strength < 0.05;
+            const label = still ? 'still air' : 'wind';
+            const [lw] = p.measure(label, 10, true);
+            p.box(wx - 34, wy - 22, 68, 40, withAlpha(Ink, 0.75));
+            if (!still) this.turnedText(wx, wy - 6, '➜', clamp(Math.round(14 + b.wind.strength * 12), 12, 26), withAlpha(rgb(0x9fc4d8), 0.5 + b.wind.strength * 0.5), b.wind.dir);
+            p.text(wx - lw / 2, wy + 4, label, 10, Muted, true);
+        }
         const me = b.observer ? undefined : b.fighters.find(f => f.id === s.selfId);
         const mine = myTurn(b, s.selfId);
         // The edge rows, where one can flee from: a faint band, with arrows out at the middle of each side.
@@ -594,7 +614,7 @@ export class GamePainter {
                 c.restore();
                 this.drawToken({...me, x: hx, y: hy}, centre(hx, hy), tile, Amber, 0.4, false);
                 if (aimed && !b.acted && apart(hx, hy, aimed.x, aimed.y) <= range)
-                    this.chanceBadge(centre(hx, hy), tile, chanceFrom(aimed, hx, hy), quarter(aimed, hx, hy));
+                    this.chanceBadge(centre(hx, hy), tile, chanceFrom(aimed, hx, hy), strikeFrom(aimed, hx, hy));
             }
         }
         const mySide = me ? me.side : 0;
@@ -624,7 +644,7 @@ export class GamePainter {
                 }
                 if (step.reaches) {
                     p.lines([from, foeAt], withAlpha(foeRed, 0.8), 2);
-                    this.chanceBadge(foeAt, tile, chanceFrom(pointedFoe, step.x, step.y), quarter(pointedFoe, step.x, step.y), placed);
+                    this.chanceBadge(foeAt, tile, chanceFrom(pointedFoe, step.x, step.y), strikeFrom(pointedFoe, step.x, step.y), placed);
                 } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
             } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
         }
@@ -850,7 +870,9 @@ export class GamePainter {
         c.fill();
         c.strokeStyle = css(rim);
         c.lineWidth = 2;
+        if (f.stalking && !fallen) c.setLineDash([3, 3]);   // Stalking (doc 40): a broken rim, low to the ground.
         c.stroke();
+        c.setLineDash([]);
         if (ring && f.status !== 'dead') {
             const share = Math.max(0, Math.min(1, f.health / 100));
             c.beginPath();
@@ -907,15 +929,18 @@ export class GamePainter {
         if (fallen) this.turnedText(x, y, glyph, size, rim, Math.PI / 2);
         else {
             this.turnedText(x, y, glyph, size, withAlpha(tint, alpha), 0);
-            if (f.animal?.aware) this.turnedText(x + r * 0.95, y - r * 0.95, '!', Math.max(9, Math.round(r * 0.9)), withAlpha(Amber, alpha), 0);
+            // What it has made of you (doc 40, hunts): "?" half noticed, "!" alert.
+            const mark = f.animal ? (f.animal.notice >= 2 || (f.animal.aware && !f.animal.notice) ? '!' : f.animal.notice === 1 ? '?' : '') : '';
+            if (mark) this.turnedText(x + r * 0.95, y - r * 0.95, mark, Math.max(9, Math.round(r * 0.9)), withAlpha(Amber, alpha), 0);
             if (f.mouth === 'sword') this.turnedText(x + r * 0.95, y - r * 0.95, '†', Math.max(9, Math.round(r * 0.9)), withAlpha(Paper, alpha), 0.6);
         }
     }
 
     /** A blow's chance in a badge beside a foe ("81%", and "side" or "behind" when it helps); −1: out of reach. */
-    private chanceBadge([x, y]: Point, tile: number, chance: number, from: 'front' | 'side' | 'back', placed?: Rect[]) {
+    private chanceBadge([x, y]: Point, tile: number, chance: number, from: 'front' | 'side' | 'back' | 'ambush', placed?: Rect[]) {
         const p = this.p;
-        const words = chance < 0 ? 'out of reach' : `${Math.round(chance)}%${from === 'back' ? ' · behind' : from === 'side' ? ' · side' : ''}`;
+        const words = chance < 0 ? 'out of reach'
+            : `${Math.round(chance)}%${from === 'ambush' ? ' · ambush' : from === 'back' ? ' · behind' : from === 'side' ? ' · side' : ''}`;
         const size = 12;
         const [w] = p.measure(words, size, true);
         const r = clamp(tile * 0.38, 8, 16);

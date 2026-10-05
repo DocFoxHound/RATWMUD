@@ -143,7 +143,16 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("moved", acting && mine->moved);
     v.add("acted", acting && mine->acted);
     v.add("faced", acting && mine->faced);           // The turn's third part (doc 33): all three, and it ends by itself.
-    v.add("drew", acting && mine->drew);             // A sword taken up or put away this turn (part of the move: doc 37).
+    v.add("drew", acting && mine->drew);
+    v.add("stalking", !observer && mine->stalking);
+    {
+        // The wind over the arena (doc 40: stalk with it in your face): its heading (east 0, south π/2) and strength.
+        const auto wind = world_.windAt(b.cellId);
+        auto w = Value::object();
+        w.add("dir", wind.direction);
+        w.add("strength", wind.strength);
+        v.add("wind", w);
+    }             // A sword taken up or put away this turn (part of the move: doc 37).
     // Planning (doc 37): while its bar fills, a fighter on its feet sees where its next turn could reach (`reach`).
     const bool planning = !observer && !mine->acting && mine->status == "fighting" && !mine->casting && !b.over;
     v.add("planning", planning);
@@ -180,6 +189,12 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 animal.add("glyph", s->glyph);
                 animal.add("color", s->color);
                 animal.add("aware", !world_.animalUnaware(f.id));
+                // What it has made of this wolf (doc 40; shown in hunts): 0 nothing, 1 suspicious, 2 alert.
+                if (!observer)
+                {
+                    const double a = world_.awareness(b, f.id, viewer);
+                    animal.add("notice", a >= battle::AwareAlert ? 2 : a >= battle::AwareSuspicious ? 1 : 0);
+                }
                 o.add("animal", animal);
             }
         // The initiative bar: how full, how fast it fills (a second), and whether it is full and waiting its turn.
@@ -192,7 +207,9 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
         if (f.guarding)
-            o.add("guarding", true);            // On guard (doc 37): harder to hit, turning to meet a blow.
+            o.add("guarding", true);
+        if (f.stalking)
+            o.add("stalking", true);            // Crouched, moving quietly (doc 40).            // On guard (doc 37): harder to hit, turning to meet a blow.
         if (!f.walk.empty())
         {
             // Walking there (doc 37: a turn shown, not just run): the tiles still to go.
@@ -295,6 +312,9 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 const bool sword = me->mouth == "sword";
                 auto odds = Value::object();
                 odds.add("hit", std::round(world_.strikeChance(*mine, f) * 100));
+                const bool ambush = world_.ambushing(b, *mine, f);
+                if (ambush)
+                    odds.add("ambush", true);       // Unaware of this wolf: the first blow is an ambush (doc 40).
                 // Head on (no side or back to it): the page adds the bonus for a strike from any other tile.
                 auto headOn = f;
                 headOn.facing = battle::octant(mine->x - f.x, mine->y - f.y);
@@ -303,11 +323,12 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 // comes at).
                 const int quarter = battle::quarterOf(battle::octantGap(f.guarding ? battle::octant(mine->x - f.x, mine->y - f.y) : f.facing,
                                                                         battle::octant(mine->x - f.x, mine->y - f.y)));
-                // Less what one's own injuries take off a blow (doc 38), as a real blow has it.
+                // Less what one's own injuries take off a blow (doc 38), before an ambush's more, as a real blow has it.
                 const auto hurt = injury::effects(me->injuries);
                 const double blow = std::max(1.0, (sword ? battle::SwordDamage * items::qualityDamage(items::qualityOf(World::swordHeld(*me))) : battle::BiteDamage) * (.6 + me->strength / 125) -
                                                       (sword ? hurt.swordLess : hurt.biteLess));
-                odds.add("damage", std::round(battle::expectedThrough(*e, quarter, blow, sword ? "cut" : "thrust")));
+                odds.add("damage", std::round(battle::expectedThrough(*e, ambush ? 3 : quarter, blow * (ambush ? battle::AmbushDamage : 1),
+                                                                      sword ? "cut" : "thrust")));
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
                 o.add("odds", odds);
             }
@@ -511,7 +532,7 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
         result = world_.leaveObserving(id);
     else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||
              verb == "roll" || verb == "rest" || verb == "hold" || verb == "stow" || verb == "pickup" || verb == "truce" ||
-             verb == "back" || verb == "yield" || verb == "guard" || verb == "shove")
+             verb == "back" || verb == "yield" || verb == "guard" || verb == "shove" || verb == "stalk" || verb == "rise")
         result = world_.battleAct(id, verb, target);
     else
         return false;

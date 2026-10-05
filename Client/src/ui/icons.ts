@@ -45,6 +45,8 @@ const Paths: Record<string, string> = {
     // Guard (a shield) and Shove (a push against a bar), doc 37.
     guard: 'M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z',
     shove: 'M3 12h11M10 7l5 5-5 5M19 4v16',
+    // Stalking (doc 40): a pawprint, low.
+    stalk: 'M7 16c0-2 2.5-4 5-4s5 2 5 4-2 3-5 3-5-1-5-3zM5 10a1.5 2 0 1 0 3 0 1.5 2 0 1 0-3 0M9.5 7a1.5 2 0 1 0 3 0 1.5 2 0 1 0-3 0M14.5 7a1.5 2 0 1 0 3 0 1.5 2 0 1 0-3 0M18 10a1.5 2 0 1 0 3 0 1.5 2 0 1 0-3 0',
     // Armour worn (doc 35, Part 8): a breastplate.
     armour: 'M7 4l5 2 5-2 3 4-3 2v7l-5 3-5-3v-7L4 8zM12 6v15',
     // Joining, starting.

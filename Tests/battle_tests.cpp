@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <map>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -1165,6 +1167,158 @@ void armourInFights()
     expect(std::abs(fb->meter - gain - armoured) < .5, "his bar fills as DEX 8 lower");
 }
 
+// Sneaking (doc 40): noticing by sight in a field of view, noise by pace, scent down the wind and cover; stalking; an
+// ambush on game or a resident unaware of its attacker.
+namespace sneak
+{
+// An open wild cell (grass, a tree or shrub here and there, the wind blowing east), with a resident.
+World wilds()
+{
+    std::ostringstream cell;
+    cell << "id: wilds\nname: The Wilds\ndescription: Woods and meadow.\nworld: 0 0 0\nsize: 80 60\noutdoors: true\n"
+            "weather: clear\nwind: 0 0.5 0\nlighting: 1 1 warm\ngrid:\n";
+    for (int y = 0; y < 60; ++y)
+    {
+        std::string row;
+        for (int x = 0; x < 80; ++x)
+            row += x == 50 && y == 30 ? '"' : ',';
+        cell << row << '\n';
+    }
+    std::map<std::string, std::string> files;
+    files["cells/wilds.cell"] = cell.str();
+    files["world.ratw"] =
+        "RATW_WORLD 2\ncell \"wilds\" \"cells/wilds.cell\"\nterritory \"wilds\" \"wilds\" \"-\" 0\nspawn \"wilds\" 40.5 30.5\n"
+        "economy 1000 100 50 10 12\n"
+        "resident \"sorrel\" \"Sorrel\" \"civilian\" \"tending the herb garden\" \"A gardener.\" \"Hello.\" 38 \"timber\" \"female\" "
+        "\"average\" \"piebald\" 4 3 0 8 1 8 17 \"-\" 30 0 1 \"wilds\" 20.5 20.5 \"wilds\" 20.5 20.5 \"wilds\" 20.5 20.5\n";
+    World w;
+    const auto loaded = w.loadWorldFiles(files, "wilds");
+    expect(loaded.ok, "the wilds load: " + loaded.message);
+    return w;
+}
+
+void noticing()
+{
+    World w = wilds();
+    auto& ash = w.addPlayer("ash", "Ash");
+    ash.cellId = "wilds";
+    ash.position = {40.5, 30.5};
+    for (int i = 0; i < 40 && !w.inBattle("ash"); ++i)
+        if (!w.startHunt("ash").ok)
+            w.tick(1);
+    auto* b = const_cast<Battle*>(w.battleOf("ash"));
+    expect(b && b->hunt, "Ash goes hunting");
+    BattleFighter* game = nullptr;
+    for (auto& f : b->fighters)
+        if (!w.animalOf(f.id).empty())
+            game = &f;
+    expect(game, "game in the hunt");
+    auto* hunter = b->fighter("ash");
+    expect(w.awareness(*b, game->id, "ash") < battle::AwareSuspicious, "it starts unaware of her");
+    // Placed for the tests: the animal at 30,30; she five tiles off; the wind blows east.
+    game->x = 30;
+    game->y = 30;
+    const auto at = [&](int x, int y, int facing, bool stalking) {
+        hunter->x = x;
+        hunter->y = y;
+        game->facing = facing;
+        hunter->stalking = stalking;
+    };
+    at(35, 30, 4, false);                                       // East of it, behind it (it faces west), downwind, still.
+    expect(w.arenaNotice(*b, *game, *hunter, false) < .05, "behind it, still, the wind carrying her scent away: unnoticed");
+    at(25, 30, 0, false);                                       // West of it, behind it (it faces east), upwind.
+    expect(w.arenaNotice(*b, *game, *hunter, false) > .3, "behind it but upwind: it smells her");
+    at(35, 30, 0, false);                                       // East of it, in front, standing.
+    const double seen = w.arenaNotice(*b, *game, *hunter, false);
+    expect(seen > .5, "in front of it, standing: seen");
+    at(35, 30, 2, false);                                       // East of it, to its side (it faces south).
+    expect(w.arenaNotice(*b, *game, *hunter, false) < seen, "to its side: half as well");
+    hunter->x = 39;                                             // Nine tiles off, in front.
+    game->facing = 0;
+    hunter->stalking = false;
+    const double standing = w.arenaNotice(*b, *game, *hunter, false);
+    hunter->stalking = true;
+    expect(w.arenaNotice(*b, *game, *hunter, false) < standing, "stalking, a crouch is seen only closer");
+    at(35, 30, 4, false);                                       // Behind and downwind again: only noise can give her away.
+    w.entity("ash")->pace = 10;
+    expect(w.arenaNotice(*b, *game, *hunter, true) > .5, "sprinting, she is heard five tiles off");
+    hunter->stalking = true;
+    expect(w.arenaNotice(*b, *game, *hunter, true) < .05, "stalking, not");
+    // Cover: crouched in tall grass, against crouched on bare ground, both four tiles in front of it.
+    game->x = 46;
+    game->y = 30;
+    game->facing = 0;                                           // Facing her (east).
+    hunter->x = 50;
+    hunter->y = 30;                                             // In the tall grass at 50,30.
+    hunter->stalking = true;
+    const auto* c = w.cell("wilds");
+    expect(c && c->tile(50, 30)->glyph == '"', "(tall grass)");
+    const double covered = w.arenaNotice(*b, *game, *hunter, false);
+    hunter->y = 31;                                             // The same, on bare ground.
+    game->y = 31;
+    const double open = w.arenaNotice(*b, *game, *hunter, false);
+    expect(covered < open, "crouched in tall grass, less seen: " + std::to_string(open) + " → " + std::to_string(covered));
+    hunter->y = 30;
+    game->y = 30;
+    // Stalking: half the move, twice as slow.
+    hunter->stalking = false;
+    for (int i = 0; i < 400 && !hunter->acting; ++i)
+        w.tick(.1);
+    const auto full = w.battleReach("ash").size();
+    expect(w.battleAct("ash", "stalk").ok && hunter->stalking, "she drops to stalk, on her turn");
+    expect(w.battleReach("ash").size() < full, "and her move is shorter");
+    // An ambush: next to it, behind it and downwind, unnoticed; the first blow is struck from hiding.
+    game->x = hunter->x - 1;
+    game->y = hunter->y;
+    game->facing = 4;                                           // Facing west, away from her.
+    b->aware[{game->id, "ash"}] = 0;
+    expect(w.ambushing(*b, *hunter, *game), "it hasn't noticed her: an ambush");
+    auto headOn = *game;
+    headOn.facing = 0;
+    b->aware[{game->id, "ash"}] = battle::AwareKept;
+    const double plain = w.strikeChance(*hunter, *game);
+    b->aware[{game->id, "ash"}] = 0;
+    expect(w.strikeChance(*hunter, *game) > plain, "likelier to land than the same blow on one that knows");
+    w.entity("ash")->stamina = 100;
+    w.battleAct("ash", "bite", game->id);
+    expect(std::any_of(b->log.begin(), b->log.end(), [](const BattleLine& l) { return l.kind == "ambush"; }), "struck from hiding");
+    expect(b->over || w.awareness(*b, game->id, "ash") >= battle::AwareAlert, "and after it, it knows");
+}
+
+void ambushAResident()
+{
+    for (const bool behind : {true, false})
+    {
+        World w = wilds();
+        auto* sorrel = w.entity("sorrel");
+        expect(sorrel, "Sorrel lives here");
+        sorrel->position = {20.5, 20.5};
+        sorrel->facing = 0;                                     // Facing east.
+        sorrel->leaderId = "test-frozen";
+        auto& ash = w.addPlayer("ash", "Ash");
+        ash.cellId = "wilds";
+        ash.position = {behind ? 18.5 : 22.5, 20.5};            // Behind her (west, upwind: the wind blows east)… or before her.
+        ash.posture = "crouching";
+        if (auto* c = w.cell("wilds"))
+            c->wind = {0, 0, false};                            // (Still air, so only sight and noise count.)
+        const auto r = w.attack("ash", "sorrel", "");
+        expect(r.ok, "Ash goes for Sorrel: " + r.message);
+        const auto* b = w.battleOf("ash");
+        expect(b, "a fight");
+        const auto* s = b->fighter("sorrel");
+        expect(b->fighter("ash")->stalking, "crouched as she went in: stalking");
+        if (behind)
+        {
+            expect(s->meter == 0 && s->facing == 0, "from behind, Sorrel is taken unawares: her bar empty, still facing away");
+            expect(std::any_of(b->log.begin(), b->log.end(), [](const BattleLine& l) { return l.kind == "ambush"; }), "never saw her coming");
+            expect(w.ambushing(*b, *b->fighter("ash"), *s), "and Ash's first blow is an ambush");
+        }
+        else
+            expect(s->meter == 100 && !w.ambushing(*b, *b->fighter("ash"), *s), "in front of her, no ambush");
+    }
+}
+} // namespace sneak
+
 void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
@@ -1344,6 +1498,8 @@ int main()
         planningAhead();
         guardAndShove();
         armourInFights();
+        sneak::noticing();
+        sneak::ambushAResident();
         devConsoleFights();
         devConsoleTeamFight();
     }

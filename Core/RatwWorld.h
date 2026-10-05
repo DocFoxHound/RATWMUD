@@ -601,6 +601,16 @@ class World
     Result planMove(const std::string& id, int x, int y);
     Result planAct(const std::string& id, const std::string& action, const std::string& target);
     Result unplan(const std::string& id, const std::string& part);
+    // Sneaking (doc 40): how much one fighter notices another now (0..1: sight in its field of view, cover, a stalker's
+    // crouch, the noise of a move, scent down the wind, skill); what an observer has noticed of a target (0 unaware,
+    // battle::AwareSuspicious, battle::AwareAlert); whether a blow from `f` takes `t` unawares (an ambush); stalking.
+    double arenaNotice(const Battle& b, const BattleFighter& observer, const BattleFighter& target, bool moving) const;
+    // The same by sense, from any two places: for the arena and the open world alike.
+    battle::Senses noticeSenses(const Entity& observer, Vec2 at, double facing, const Entity& target, Vec2 targetAt, bool stalking, bool moving,
+                                int pace, const std::string& cellId, bool smoked = false) const;
+    double awareness(const Battle& b, const std::string& observer, const std::string& target) const;
+    bool ambushing(const Battle& b, const BattleFighter& f, const BattleFighter& t) const;
+    Result battleStalk(const std::string& id, bool on);
     // How fast the fight's bars fill now: battle::Haste with no player taking a turn and no fire gathering, else 1.
     double meterHaste(const Battle& b) const;
     // The chance a blow from `f` lands on `t` from where they stand now (hit or graze): dexterity, fighting skill and
@@ -1046,6 +1056,10 @@ class World
     void endTurn(Battle& b, BattleFighter& f);
     void npcTurn(Battle& b, BattleFighter& f);
     void playPlan(Battle& b, BattleFighter& f);
+    void senseOne(Battle& b, const BattleFighter& observer, const BattleFighter& target, bool moving);
+    void sensedBy(Battle& b, const BattleFighter& target);
+    void senseFoes(Battle& b, const BattleFighter& observer);
+    void sprungOn(Battle& b, const BattleFighter& f, const BattleFighter& t);
     std::vector<std::pair<int, int>> reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina, int less = 0) const;
     Result bite(Battle& b, BattleFighter& f, const std::string& target);
     void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);

@@ -1,6 +1,8 @@
 // Turn-based fights in arenas (RatwBattle.h; Docs/Design/33-combat.md). World members, kept here.
 #include "RatwBattle.h"
 #include "RatwItems.h"
+#include "RatwNames.h"
+#include "RatwWild.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -37,7 +39,7 @@ struct Landed
     std::string words;
     std::string zone;                   // Where it fell ("head", "throat", "body", "legs"): the armour there wears.
 };
-Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key);
+Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key, bool aimed);
 
 std::string whole(double n)
 {
@@ -58,7 +60,8 @@ const std::vector<HitZone>& hitZones(int quarter)
     static const std::vector<HitZone> front{{"head", "the face", 30}, {"throat", "the throat", 30}, {"body", "the shoulder", 25}, {"legs", "a foreleg", 15}};
     static const std::vector<HitZone> side{{"head", "the head", 15}, {"throat", "the neck", 15}, {"body", "the flank", 45}, {"legs", "a leg", 25}};
     static const std::vector<HitZone> back{{"throat", "the scruff", 10}, {"body", "the back", 30}, {"body", "the haunch", 20}, {"legs", "a hind leg", 40}};
-    return quarter >= 2 ? back : quarter == 1 ? side : front;
+    static const std::vector<HitZone> aimed{{"throat", "the throat", 40}, {"head", "the head", 20}, {"body", "the shoulder", 35}, {"legs", "a leg", 5}};
+    return quarter >= 3 ? aimed : quarter == 2 ? back : quarter == 1 ? side : front;
 }
 
 std::string armourZone(const std::string& catalogSlot)
@@ -166,9 +169,9 @@ Temperament temperament(const std::string& role, bool bandit, int age, bool npc)
 
 namespace
 {
-Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key)
+Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key, bool aimed)
 {
-    const auto& zones = battle::hitZones(battle::quarterOf(battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y))));
+    const auto& zones = battle::hitZones(aimed ? 3 : battle::quarterOf(battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y))));
     double total = 0;
     for (const auto& z : zones)
         total += z.weight;
@@ -600,6 +603,9 @@ Result World::startBattle(const std::string& attacker, const std::string& target
         }
     }
     lineUp(b);
+    std::map<std::string, int> ownFacing;          // As they stood, before turning to the fight (an ambush keeps it).
+    for (const auto& f : b.fighters)
+        ownFacing[f.id] = f.facing;
     for (auto& f : b.fighters)
     {
         // Each begins facing the nearest of the other side (after that a player turns only when they choose).
@@ -611,6 +617,28 @@ Result World::startBattle(const std::string& attacker, const std::string& target
                 f.facing = battle::octant(o.x - f.x, o.y - f.y);
             }
     }
+    // An ambush (doc 40, §3): those on the other side who hadn't noticed the attacker as it came in keep the way they
+    // were facing, start with an empty bar, and are taken unawares by its first blow. Not between players.
+    bool sprung = false;
+    if (auto* af = b.fighter(attacker); af && t->npc)
+    {
+        const bool moving = std::hypot(a->velocity.x, a->velocity.y) > 1e-6;
+        for (auto& o : b.fighters)
+        {
+            const auto* oe = entity(o.id);
+            if (o.side == af->side || !oe || !oe->npc)
+                continue;
+            BattleFighter asWas = o;
+            asWas.facing = ownFacing[o.id];
+            if (arenaNotice(b, asWas, *af, moving) >= battle::AwareSuspicious)
+                continue;
+            o.facing = asWas.facing;
+            o.meter = 0;
+            o.readyAt = -1;
+            b.aware[{o.id, attacker}] = 0;
+            sprung = sprung || o.id == target;
+        }
+    }
     for (const auto& f : b.fighters)
     {
         stop(f.id);
@@ -621,6 +649,8 @@ Result World::startBattle(const std::string& attacker, const std::string& target
     b.opening = attacker;
     recordEvent({"fight", attacker, target, b.cellId, 0, 0, {}, 0, 0, b.id});
     fightLine(b, attacker, target, "start", a->name + " goes for " + t->name + ".");
+    if (sprung)
+        fightLine(b, attacker, target, "ambush", t->name + " never saw " + a->name + " coming.");
     battles_.push_back(std::move(b));
     return {true, "You go for " + t->name + ". A fight!", target};
 }
@@ -637,6 +667,7 @@ void World::enterBattle(Battle& b, const std::string& id, int side, bool full)
     f.lineupX = e ? e->position.x : 0;
     f.lineupY = e ? e->position.y : 0;
     f.facing = e ? battle::octant(std::cos(e->facing), std::sin(e->facing)) : 0;
+    f.stalking = e && e->posture == "crouching" && !e->npc;    // Crouched as it comes in: stalking (doc 40).
     f.x = e ? int(std::floor(e->position.x)) : 0;
     f.y = e ? int(std::floor(e->position.y)) : 0;
     b.fighters.push_back(f);
@@ -736,7 +767,7 @@ double World::stepSeconds(const BattleFighter& f) const
         return battle::CrawlStepSeconds;
     const double pace = e ? fightPace(*e) / 10.0 : .5;
     return (battle::StepSeconds + (battle::SprintStepSeconds - battle::StepSeconds) * pace) /
-           std::max(.4, battle::injuryFactor(e ? e->hurt : 0));
+           std::max(.4, battle::injuryFactor(e ? e->hurt : 0)) * (f.stalking ? battle::StalkSlow : 1);   // (Stalking: doc 40.)
 }
 
 int World::fightPace(const Entity& e) const
@@ -1167,6 +1198,7 @@ void World::endTurn(Battle& b, BattleFighter& f)
     }
     f.readyAt = -1;
     f.acting = false;
+    sensedBy(b, f);                                 // What the other side made of that turn (doc 40).
     checkOver(b);
 }
 
@@ -1234,6 +1266,8 @@ std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleF
     const int walking = battle::moveRange(effectiveDexterity(e), e.hurt, 0);
     while (range > walking && range * battle::tileStamina(pace) > stamina)
         --range;
+    if (f.stalking)
+        range = std::max(1, int(range * battle::StalkRange));    // Stalking (doc 40): half as far.
     range -= less;
     if (range <= 0)
         return {};
@@ -1423,6 +1457,192 @@ void World::playPlan(Battle& b, BattleFighter& f)
         notice(id, "Your plan: " + r.message);
 }
 
+// ------------------------------------------------------------------ Sneaking (doc 40)
+
+namespace
+{
+// Full within `clear`, fading to nothing at twice that (as the world's senses fade).
+double fade(double d, double clear)
+{
+    if (clear <= 1e-9 || d >= clear * 2)
+        return 0;
+    return d <= clear ? 1 : std::clamp(2 - d / clear, 0.0, 1.0);
+}
+bool coverGlyph(char g) { return g == '"' || g == '&' || g == 'E' || g == 'B' || g == '5'; }   // Tall grass, ferns, reeds, a shrub, heather.
+bool screenGlyph(char g) { return g == 'P' || g == 'Y' || g == '$' || g == '2' || g == '7' || g == '!' || g == 'o'; }   // Trees, a boulder.
+} // namespace
+
+battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, const Entity& te, Vec2 tp, bool stalking, bool moving, int pace,
+                                   const std::string& cellId, bool smoked) const
+{
+    // How much `oe` (standing at op, facing `facing` radians) notices `te` (at tp) now (doc 40, §1), by sense: sight in
+    // its field of view (full ±60°, half to 120°, none behind), cut by a stalker's crouch, cover and smoke; the noise of
+    // a move by its pace; scent carried down the wind; the sneak's skill.
+    battle::Senses out;
+    const auto* c = cell(cellId);
+    if (!c)
+        return out;
+    double sightMul = 1, hearMul = 1, smellMul = 1;
+    if (const auto species = animalOf(oe.id); !species.empty())
+        if (const auto* s = wild::speciesById(species))
+        {
+            sightMul = s->sight;                    // A deer's nose is better than its eyes, a pheasant's eyes than its nose.
+            hearMul = s->hearing;
+            smellMul = s->smell;
+        }
+    const double d = std::hypot(tp.x - op.x, tp.y - op.y);
+    const double sneak = std::clamp(te.sneakSkill / 100, 0.0, 1.0);
+    const auto env = environmentAt(cellId, op);
+    const bool seenLine = lineOfSight(cellId, op, tp);
+    // Sight.
+    const double off = d < 1e-9 ? 0 : std::abs(std::remainder(std::atan2(tp.y - op.y, tp.x - op.x) - facing, 2 * std::acos(-1.0)));
+    const double field = off <= 1.05 ? 1 : off <= 2.1 ? .5 : 0;
+    if (field > 0 && seenLine && !smoked)
+    {
+        double range = sightRange(oe) * sightMul;
+        if (stalking)
+            range *= (7 - 4 * sneak) / 27;          // Crouched: seen only close (as in the world).
+        const int tx = int(std::floor(tp.x)), ty = int(std::floor(tp.y));
+        const auto* here = c->tile(tx, ty);
+        bool covered = here && coverGlyph(here->glyph);
+        for (int dy = -1; dy <= 1 && !covered; ++dy)
+            for (int dx = -1; dx <= 1 && !covered; ++dx)
+                if (const auto* n = c->tile(tx + dx, ty + dy); n && (dx || dy) && screenGlyph(n->glyph) && dx * (op.x - tp.x) + dy * (op.y - tp.y) > 0)
+                    covered = true;                 // A tree or boulder between them.
+        const double cover = covered ? (stalking ? battle::CoverStalking : battle::CoverStanding) : 1;
+        out.sight = fade(d, range) * field * cover * (1 - .3 * sneak);
+    }
+    // Noise: still is silent; a stalk is a crouch's pawsteps, a walk quiet, a trot carries, a sprint carries far.
+    if (moving)
+    {
+        const double carries = stalking ? 2.5 - 1.7 * sneak : pace <= 3 ? 3 : pace <= 7 ? 6 : 12;
+        double range = carries * std::max(0.0, oe.hearing) * std::clamp(oe.earHealth, 0.0, 1.0) *
+                       (1 + .75 * std::clamp(oe.hearingSkill / 100, 0.0, 1.0)) * hearMul * env.hearing;
+        if (!seenLine)
+            range *= .38;
+        out.noise = fade(d, range);
+    }
+    // Scent: down the wind to it (the air carrying the sneak's scent); in still air or across it, only close.
+    {
+        const auto wind = windAt(cellId);
+        const double nose = std::max(0.0, oe.smell) * std::clamp(oe.noseHealth, 0.0, 1.0) *
+                            (1 + .75 * std::clamp(oe.scentSkill / 100, 0.0, 1.0)) * smellMul * env.scent;
+        if (wind.strength < .05 || d < 1e-9)
+            out.scent = fade(d, 1.2 * nose);
+        else
+        {
+            const double along = (std::cos(wind.direction) * (op.x - tp.x) + std::sin(wind.direction) * (op.y - tp.y)) / d;
+            out.scent = along > .2 ? fade(d, (4 + 14 * wind.strength) * nose) * along : fade(d, 1.2 * nose);
+        }
+        out.scent *= battle::ScentFaint;            // A scent is noticed faintly at first (doc 40).
+    }
+    return out;
+}
+
+double World::arenaNotice(const Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving) const
+{
+    // In an arena: from the fighters' tiles and facings.
+    const auto* oe = entity(o.id);
+    const auto* te = entity(t.id);
+    if (!oe || !te || o.status != "fighting" || (t.status != "fighting" && t.status != "downed"))
+        return 0;
+    const bool smoked = std::any_of(b.smoke.begin(), b.smoke.end(), [&](const auto& sm) { return sm.first == std::pair<int, int>{t.x, t.y}; });
+    return noticeSenses(*oe, {o.x + .5, o.y + .5}, o.facing * std::acos(-1.0) / 4, *te, {t.x + .5, t.y + .5}, t.stalking, moving, fightPace(*te),
+                        b.cellId, smoked)
+        .total();
+}
+
+double World::awareness(const Battle& b, const std::string& observer, const std::string& target) const
+{
+    if (const auto found = b.aware.find({observer, target}); found != b.aware.end())
+        return found->second;
+    return b.hunt && !animalOf(observer).empty() ? 0 : battle::AwareKept;   // Game starts unaware; everyone else alert.
+}
+
+bool World::ambushing(const Battle& b, const BattleFighter& f, const BattleFighter& t) const
+{
+    // A blow on one unaware of its striker (doc 40, §3). Not between players: hiding only buys them position.
+    const auto* fe = entity(f.id);
+    const auto* te = entity(t.id);
+    if (!fe || !te || (!fe->npc && !te->npc) || t.status != "fighting")
+        return false;
+    return awareness(b, t.id, f.id) < battle::AwareAlert;
+}
+
+void World::senseOne(Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving)
+{
+    // An NPC's or an animal's notice of a foe, checked: it grows with what there is to notice, and calms without.
+    const auto* oe = entity(o.id);
+    if (!oe || !oe->npc || o.status != "fighting" || o.side == t.side || t.status == "fled" || t.status == "dead")
+        return;
+    const double before = awareness(b, o.id, t.id);
+    if (before >= battle::AwareAlert && !t.stalking)
+        return;                                     // (Alert to one not hiding: nothing to check.)
+    const double n = arenaNotice(b, o, t, moving);
+    double now = n >= battle::NoticeFloor ? before + n * battle::NoticeGain : std::max(0.0, before - battle::Calm);
+    if (now >= battle::AwareAlert)
+        now = std::max(now, before >= battle::AwareAlert ? std::min(before, battle::AwareKept) : battle::AwareKept);
+    now = std::min(now, battle::AwareKept);
+    b.aware[{o.id, t.id}] = now;
+    const auto* te = entity(t.id);
+    const bool animal = !animalOf(o.id).empty();
+    const auto who = names::capitalised(oe->name);
+    if (before < battle::AwareSuspicious && now >= battle::AwareSuspicious && now < battle::AwareAlert)
+        fightLine(b, o.id, t.id, "suspect", who + (animal ? " lifts its head." : " looks round, uneasy."));
+    else if (before < battle::AwareAlert && now >= battle::AwareAlert && !animal && te)
+        fightLine(b, o.id, t.id, "notice", who + " spots " + te->name + ".");
+    // Unnoticed close by: the stalker learns (doc 40, §6).
+    if (te && !te->npc && now < battle::AwareSuspicious && t.stalking &&
+        std::hypot(t.x - o.x, t.y - o.y) <= sightRange(*oe) / 2)
+        if (auto* learner = entity(t.id))
+            learner->sneakSkill = std::min(100.0, learner->sneakSkill + battle::SneakUnnoticed * (1 - learner->sneakSkill / 100));
+}
+
+void World::sensedBy(Battle& b, const BattleFighter& t)
+{
+    // A turn over: every NPC and animal on the other side checks what it noticed of it (doc 40, §4).
+    const std::string id = t.id;
+    for (std::size_t i = 0; i < b.fighters.size(); ++i)
+        if (const auto* who = b.fighter(id))
+            senseOne(b, b.fighters[i], *who, who->moved);
+}
+
+void World::senseFoes(Battle& b, const BattleFighter& o)
+{
+    // An NPC's or animal's turn: it looks and listens round before it acts.
+    for (std::size_t i = 0; i < b.fighters.size(); ++i)
+        senseOne(b, o, b.fighters[i], !b.fighters[i].walk.empty());
+}
+
+void World::sprungOn(Battle& b, const BattleFighter& f, const BattleFighter& t)
+{
+    // An ambush sprung (doc 40, §3): it is told, the one struck and its side now know where the striker is, and the
+    // striker learns from it.
+    if (const auto* e = entity(f.id))
+        fightLine(b, f.id, t.id, "ambush", e->name + " strikes from hiding.");
+    for (const auto& o : b.fighters)
+        if (o.side == t.side)
+            b.aware[{o.id, f.id}] = battle::AwareKept;
+    if (auto* e = entity(f.id); e && !e->npc)
+        e->sneakSkill = std::min(100.0, e->sneakSkill + battle::SneakPerAmbush * (1 - e->sneakSkill / 100));
+}
+
+Result World::battleStalk(const std::string& id, bool on)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    if (!b || !f)
+        return {false, "You are not in a fight.", {}};
+    if (b->over)
+        return {false, "The fight is over.", {}};
+    if (f->status != "fighting")
+        return {false, "You can't stalk from where you lie.", {}};
+    if (f->acting && (f->moved || !f->walk.empty()))
+        return {false, "You have already moved this turn: stalk on your next.", {}};
+    f->stalking = on;
+    return {true, on ? "You drop low and stalk: half as far, twice as slow, quiet and harder to see." : "You rise from your crouch.", {}};
+}
+
 double World::meterHaste(const Battle& b) const
 {
     // No dead air (doc 37): while no player is taking a turn and no fire is gathering, the bars fill faster.
@@ -1457,6 +1677,8 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         return {true, wasAway ? "You're back in the fight: your next turn is yours." : std::string(), {}};
     if (action == "yield")
         return offerYield(id);                      // At any time, one's turn or not.
+    if (action == "stalk" || action == "rise")
+        return battleStalk(id, action == "stalk");  // At any time but mid-move (doc 40).
     if (!f.acting)
         return {false, "It isn't your turn.", {}};
     Result r{true, {}, target};
@@ -1632,7 +1854,9 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     // From the side or behind is easier: how far the defender faces from where the blow comes.
     // One on guard turns to meet it, and is harder to hit (doc 37).
     const int gap = battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y));
-    const double angle = t.guarding ? -battle::GuardDodge : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
+    // Taken unawares (doc 40): as from behind, and likelier still, whatever the facing or guard.
+    const auto* fight = battleOf(f.id);
+    const double angle = fight && ambushing(*fight, f, t) ? .2 + battle::AmbushHit : t.guarding ? -battle::GuardDodge : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
     return std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
                           (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle,
                       .2, .95);
@@ -1662,12 +1886,15 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     }
     if (e->npc)
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
-    if (t->guarding)
+    const bool ambush = ambushing(b, f, *t);             // Unaware of its attacker (doc 40): taken by surprise.
+    if (t->guarding && !ambush)
         t->facing = battle::octant(f.x - t->x, f.y - t->y);     // On guard: it turns to meet the blow.
     f.acted = true;
     const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|" + target, key);
+    if (ambush)
+        sprungOn(b, f, *t);
     if (r >= hit)
     {
         fightLine(b, f.id, target, "miss", e->name + " snaps at " + d->name + " and misses.");
@@ -1678,7 +1905,9 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     damage = std::max(1.0, damage - injury::effects(e->injuries).biteLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
-    const auto landed = land(f, *t, *d, damage, "thrust", key);   // Teeth: a thrust, no pierce (doc 35, Part 8).
+    if (ambush)
+        damage *= battle::AmbushDamage;
+    const auto landed = land(f, *t, *d, damage, "thrust", key, ambush);   // Teeth: a thrust, no pierce (doc 35, Part 8).
     wearArmourAt(*d, landed.zone, damage - landed.damage);           // The armour there takes the wear (RatwDurability.cpp).
     damage = landed.damage;
     const std::string how = graze ? " grazes " : " bites ";
@@ -1945,6 +2174,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         endTurn(b, f);
         return;
     }
+    if (f.status == "fighting")
+        senseFoes(b, f);                            // It looks and listens round first (doc 40).
     if (animalTurn(b, f))
         return;                                     // An animal in a hunt (doc 41, RatwHunt.cpp).
     if (f.status == "downed")
@@ -1975,15 +2206,24 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         return;
     }
     std::vector<const BattleFighter*> enemies, downedAllies;
+    const BattleFighter* suspect = nullptr;             // Someone it half noticed (doc 40): it looks that way.
     for (const auto& o : b.fighters)
     {
         if (o.side != f.side && o.status == "fighting")
-            enemies.push_back(&o);
+        {
+            const double aware = awareness(b, f.id, o.id);
+            if (aware >= battle::AwareAlert)
+                enemies.push_back(&o);              // Only those it knows are there: a hidden stalker isn't one.
+            else if (aware >= battle::AwareSuspicious && (!suspect || aware > awareness(b, f.id, suspect->id)))
+                suspect = &o;
+        }
         if (o.side == f.side && o.id != f.id && o.status == "downed")
             downedAllies.push_back(&o);
     }
     if (enemies.empty())
     {
+        if (suspect)
+            f.facing = battle::octant(suspect->x - f.x, suspect->y - f.y);   // Turns toward what it half heard.
         battleAct(f.id, "wait");
         return;
     }
@@ -2847,11 +3087,14 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
     f.acted = true;
     f.weight = std::max(f.weight, battle::SwordWeight);
-    if (t->guarding)
+    const bool ambush = ambushing(b, f, *t);
+    if (t->guarding && !ambush)
         t->facing = battle::octant(f.x - t->x, f.y - t->y);
     const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|sword|" + target, key);
+    if (ambush)
+        sprungOn(b, f, *t);
     // The sword's kind (doc 35, Part 4): a finer blade cuts deeper; and every swing wears it (RatwDurability.cpp).
     const auto blade = swordHeld(*e);
     const double edge = items::qualityDamage(items::qualityOf(blade));
@@ -2866,7 +3109,9 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     damage = std::max(1.0, damage - injury::effects(e->injuries).swordLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
-    const auto landed = land(f, *t, *d, damage, "cut", key);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
+    if (ambush)
+        damage *= battle::AmbushDamage;
+    const auto landed = land(f, *t, *d, damage, "cut", key, ambush);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
     wearArmourAt(*d, landed.zone, damage - landed.damage);
     damage = landed.damage;
     fightLine(b, f.id, target, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + landed.words + " (" + whole(damage) + ").");

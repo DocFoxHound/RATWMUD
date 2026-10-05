@@ -326,6 +326,9 @@ export function captionOf(line: BattleLine): string {
         case 'roll': return 'rolls';
         case 'rest': return 'rests';
         case 'guard': return 'on guard';
+        case 'ambush': return t.includes('strikes from hiding') ? 'from hiding' : '';
+        case 'suspect': return '?';
+        case 'notice': return '!';
         case 'shove': return 'shoves';
         case 'hold': return 'takes a sword';
         case 'stow': return 'stows the sword';

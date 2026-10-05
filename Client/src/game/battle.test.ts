@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
-import {arenaRows, arenaSight, chanceFrom, fightTips, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
+import {arenaRows, arenaSight, chanceFrom, coverTile, fightTips, strikeFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
     stepToward, termsWords} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
@@ -180,7 +180,7 @@ test('the fight screen\'s data: looks, breath and mana for one\'s side, odds aga
     assert.equal(ada.manaMax, 44);
     assert.deepEqual(ada.appearance, {species: 'timber'});
     assert.equal(bo.stamina, -1, "the other side's breath is not sent");
-    assert.deepEqual(bo.odds, {hit: 85, base: 85, damage: 12, reach: true}, 'no base sent: the hit itself');
+    assert.deepEqual(bo.odds, {hit: 85, base: 85, damage: 12, reach: true, ambush: false}, 'no base sent: the hit itself');
     assert.equal(ada.odds, null);
     assert.equal(secondsToTurn(bo, 0), 10, 'from 40, at 6 a second: ten seconds');
     assert.equal(secondsToTurn(bo, 4), 6, 'four seconds on: six');
@@ -313,4 +313,19 @@ test('armour in fights (doc 35, Part 8): a fighter\'s armour by hit zone, and wh
     ]}})!;
     assert.deepEqual(b.fighters[0].armour, {dex: -1, zones: [{zone: 'throat', piece: 'Steel gorget', cut: 5, thrust: 5}]});
     assert.equal(b.fighters[1].armour, null, 'none worn');
+});
+
+test('sneaking (doc 40): stalking, the wind, what game has made of you, an ambush\'s chance and its badge', () => {
+    const b = readBattle({battle: {...battle, stalking: true, wind: {dir: 1.57, strength: 0.4}, fighters: [
+        {id: 'self', name: 'Ada', side: 0, x: 2, y: 2, facing: 0, status: 'fighting', stalking: true},
+        {id: 'deer', name: 'a roe deer', side: 1, x: 3, y: 2, facing: 0, status: 'fighting',
+            animal: {species: 'roe_deer', glyph: 'd', color: '#a07850', aware: false, notice: 1},
+            odds: {hit: 95, base: 60, damage: 18, reach: true, ambush: true}},
+    ]}})!;
+    assert.ok(b.stalking && b.fighters[0].stalking, 'stalking, read');
+    assert.deepEqual(b.wind, {dir: 1.57, strength: 0.4});
+    assert.equal(b.fighters[1].animal?.notice, 1, 'the deer half noticed her ("?")');
+    assert.equal(chanceFrom(b.fighters[1], 2, 2), 95, 'unaware: the ambush\'s chance, wherever she strikes from');
+    assert.equal(strikeFrom(b.fighters[1], 2, 2), 'ambush');
+    assert.ok(coverTile('"') && coverTile('B') && !coverTile(','), 'tall grass and shrubs are cover; bare grass isn\'t');
 });

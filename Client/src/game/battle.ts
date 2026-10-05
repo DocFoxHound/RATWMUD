@@ -17,6 +17,7 @@ export interface AnimalView {
     glyph: string;
     color: string;              // "#rrggbb".
     aware: boolean;
+    notice: number;             // What it has made of this wolf (doc 40, hunts): 0 nothing, 1 suspicious ("?"), 2 alert ("!").
 }
 
 export interface FighterView {
@@ -41,6 +42,7 @@ export interface FighterView {
     acting: boolean;            // Taking a turn now (several may be at once: doc 33).
     turnLeft: number;           // Seconds left in it, when acting.
     armour: ArmourView | null;  // Armour worn (doc 35, Part 8), by hit zone; and what it takes off the bar's DEX.
+    stalking: boolean;          // Moving crouched (doc 40): quiet, half the move, harder to see.
     guarding: boolean;          // On guard (doc 37): harder to hit, turning to meet a blow, until their next turn.
     walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
@@ -76,6 +78,7 @@ export interface StrikeOdds {
     base: number;               // The chance head on; from the side +10, from behind +20 (doc 33), within 20–95.
     damage: number;
     reach: boolean;
+    ambush: boolean;            // They haven't noticed this wolf (doc 40): the first blow is an ambush.
 }
 
 export type Tile = [number, number];
@@ -131,6 +134,8 @@ export interface BattleView {
     // comes), and how much faster the bars fill while no one is deciding (no dead air).
     planning: boolean;
     plan: PlanView | null;
+    stalking: boolean;          // This wolf, stalking (doc 40).
+    wind: {dir: number; strength: number};  // Over the arena: heading (east 0, south π/2) and 0..1.
     haste: number;
     log: BattleLine[];
     // This wolf's own means: what is in its jaws, swords carried, a Gift and its mana; burning, gathering fire.
@@ -238,20 +243,23 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             downedLeft: num(f, 'downedLeft'), mouth: str(f, 'mouth'), burning: Math.trunc(num(f, 'burning')),
             gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
-            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')), guarding: bool(f, 'guarding'),
+            acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')), guarding: bool(f, 'guarding'), stalking: bool(f, 'stalking'),
             armour: obj(f, 'armour') ? {dex: num(obj(f, 'armour'), 'dex'), zones: objects(obj(f, 'armour'), 'zones').map(z => ({zone: str(z, 'zone'),
                 piece: str(z, 'piece'), cut: num(z, 'cut'), thrust: num(z, 'thrust')}))} : null,
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
             animal: obj(f, 'animal') ? {species: str(obj(f, 'animal'), 'species'), glyph: str(obj(f, 'animal'), 'glyph', '?'),
-                color: str(obj(f, 'animal'), 'color', '#b89a74'), aware: bool(obj(f, 'animal'), 'aware')} : null,
+                color: str(obj(f, 'animal'), 'color', '#b89a74'), aware: bool(obj(f, 'animal'), 'aware'),
+                notice: num(obj(f, 'animal'), 'notice', bool(obj(f, 'animal'), 'aware') ? 2 : 0)} : null,
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
             regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),
             injuries: objects(f, 'injuries').map(i => ({kind: str(i, 'kind'), name: str(i, 'name'), does: str(i, 'does')})),
             odds: obj(f, 'odds') ? {hit: num(obj(f, 'odds'), 'hit'), base: num(obj(f, 'odds'), 'base', num(obj(f, 'odds'), 'hit')),
-                damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach')} : null,
+                damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach'), ambush: bool(obj(f, 'odds'), 'ambush')} : null,
         })),
         reach: arr(b, 'reach').map(pair).filter((p): p is [number, number] => p !== null),
         planning: bool(b, 'planning'),
+        stalking: bool(b, 'stalking'),
+        wind: {dir: num(obj(b, 'wind'), 'dir'), strength: num(obj(b, 'wind'), 'strength')},
         plan: readPlan(obj(you, 'plan')),
         haste: num(b, 'haste', 1),
         log: objects(b, 'log').map(l => ({seq: num(l, 'seq'), kind: str(l, 'kind'), text: str(l, 'text'), actor: str(l, 'actor'),
@@ -384,6 +392,7 @@ export function quarter(foe: FighterView, x: number, y: number): 'front' | 'side
 /** The chance (percent) of a blow at `foe` from tile (x, y), by the rules the server rolls with. */
 export function chanceFrom(foe: FighterView, x: number, y: number): number {
     if (!foe.odds) return 0;
+    if (foe.odds.ambush) return foe.odds.hit;          // Unaware of this wolf (doc 40): as from behind, wherever it comes from.
     if (foe.guarding) return foe.odds.base;            // On guard, they turn to meet it: no side or back (doc 37).
     const q = quarter(foe, x, y);
     return Math.max(20, Math.min(95, foe.odds.base + (q === 'back' ? 20 : q === 'side' ? 10 : 0)));
@@ -459,4 +468,14 @@ export function fightTips(b: BattleView, me: FighterView, mine: boolean): Array<
     if (!mine && b.planning)
         out.push({id: 'plan', where: 'top', text: 'While your bar fills, plan your turn: click where to go and whom to strike. It plays as your turn comes.'});
     return out;
+}
+
+/** Where a blow at a foe from a tile counts as coming from, for its badge: "ambush" when they haven't noticed (doc 40). */
+export function strikeFrom(foe: FighterView, x: number, y: number): 'front' | 'side' | 'back' | 'ambush' {
+    return foe.odds?.ambush ? 'ambush' : quarter(foe, x, y);
+}
+
+/** Ground a stalker can hide in (doc 40): tall grass, ferns, reeds, a shrub, heather. */
+export function coverTile(glyph: string): boolean {
+    return glyph === '"' || glyph === '&' || glyph === 'E' || glyph === 'B' || glyph === '5';
 }

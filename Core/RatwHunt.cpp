@@ -422,22 +422,11 @@ bool World::animalUnaware(const std::string& id) const
 
 bool World::animalNotices(const Battle& b, const BattleFighter& animal) const
 {
-    // A placeholder until doc 40 (Docs/Design/40-sneaking.md, "The seam hunting leaves"): a hunter within the species'
-    // alert distance (twice that for one at a sprint) is noticed, as is any hunter next to it.
-    const auto a = animals_.find(animal.id);
-    const auto* s = a == animals_.end() ? nullptr : wild::speciesById(a->second.species);
-    if (!s)
-        return true;
+    // Doc 40's noticing (RatwBattle.cpp, "Sneaking"): an animal looks and listens round at the start of its turn
+    // (World::senseFoes) and after each hunter's; here, whether it is now alert to any of them.
     for (const auto& f : b.fighters)
-    {
-        if (f.side == animal.side || f.status != "fighting")
-            continue;
-        const auto* e = entity(f.id);
-        const double reach = s->alert * (e && fightPace(*e) >= 8 ? 2 : 1);
-        const int d = apart(f.x, f.y, animal.x, animal.y);
-        if (d <= 1 || d <= reach)
+        if (f.side != animal.side && f.status == "fighting" && awareness(b, animal.id, f.id) >= battle::AwareAlert)
             return true;
-    }
     return false;
 }
 
@@ -480,6 +469,17 @@ bool World::animalTurn(Battle& b, BattleFighter& f)
     const auto key = std::int64_t(f.turnsTaken) * 131 + b.turns;
     if (!a->second.alert)
     {
+        // Half noticed something (doc 40): it freezes, head up, toward it, and doesn't graze.
+        const BattleFighter* suspect = nullptr;
+        for (const auto* o : hunters)
+            if (awareness(b, f.id, o->id) >= battle::AwareSuspicious && (!suspect || awareness(b, f.id, o->id) > awareness(b, f.id, suspect->id)))
+                suspect = o;
+        if (suspect)
+        {
+            f.facing = battle::octant(suspect->x - f.x, suspect->y - f.y);
+            endTurn(b, f);
+            return true;
+        }
         // Grazing: now and then a step or two, facing wherever it goes.
         if (!f.moved && odds(f.id + "|graze", key) < .4)
         {
