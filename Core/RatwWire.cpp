@@ -659,6 +659,42 @@ Value monthBooks(const MonthBooks& b)
     return o;
 }
 
+Value economyMemory(const EconomyMemory& m)
+{
+    auto o = Value::object(), unpaid = Value::object(), outgoing = Value::object();
+    o.add("revision", double(m.revision));
+    for (const auto& [id, day] : m.unpaidSince)
+        unpaid.add(id, day);
+    for (const auto& [id, avg] : m.outgoing)
+        outgoing.add(id, avg);
+    auto condition = Value::object();
+    for (const auto& [id, c] : m.condition)
+        condition.add(id, c);
+    o.add("condition", condition);
+    o.add("unpaidSince", unpaid);
+    o.add("outgoing", outgoing);
+    return o;
+}
+
+EconomyMemory readEconomyMemory(const Value& o)
+{
+    EconomyMemory m;
+    if (!o.isObject())
+        return m;
+    if (const auto* r = o.find("revision"); r && r->isNumber() && r->asNumber() >= 0 && r->asNumber() < 1e15)
+        m.revision = std::int64_t(r->asNumber());
+    for (const auto& [id, v] : o.object("unpaidSince").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e9)
+            m.unpaidSince[id] = v.asNumber();
+    for (const auto& [id, v] : o.object("outgoing").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e12)
+            m.outgoing[id] = v.asNumber();
+    for (const auto& [id, v] : o.object("condition").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 100)
+            m.condition[id] = v.asNumber();
+    return m;
+}
+
 Value houseState(const HouseState& h)
 {
     auto o = Value::object(), owner = Value::object(), propped = Value::object();
@@ -780,6 +816,7 @@ Value society(const SocietyState& s)
     o.add("careers", careers);
     o.add("books", monthBooks(s.books));
     o.add("houses", houseState(s.houses));
+    o.add("memory", economyMemory(s.memory));
     return o;
 }
 
@@ -826,7 +863,7 @@ SocietyState readSociety(const Value& o)
         return s;
     }
     // Twelve fields; careers since Phase 4; craftingStocked since crafting (doc 35, Phase 5).
-    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0) - (o.has("books") ? 1 : 0) - (o.has("houses") ? 1 : 0);
+    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0) - (o.has("books") ? 1 : 0) - (o.has("houses") ? 1 : 0) - (o.has("memory") ? 1 : 0);
     bool valid = fields == 12;
     const auto integer = [&](const Value& j, const char* key, double max) -> std::int64_t {
         const double n = strictNumber(j, key, -1);
@@ -844,7 +881,8 @@ SocietyState readSociety(const Value& o)
     s.herbPatch = int(integer(o, "herbPatch", 60)); s.decisionRemainder = real(o, "decisionRemainder");
     s.craftingStocked = o.has("craftingStocked") ? int(integer(o, "craftingStocked", 100)) : 0;   // Saved before crafting: 0.
     s.books = readMonthBooks(o["books"]);
-    s.houses = readHouseState(o["houses"]);       // Saved before doc 42's houses: none founded yet.         // Saved before doc 42: no books yet (they open at the next new day).
+    s.houses = readHouseState(o["houses"]);       // Saved before doc 42's houses: none founded yet.
+    s.memory = readEconomyMemory(o["memory"]);         // Saved before doc 42: no books yet (they open at the next new day).
     const auto& accounts = o["accounts"];
     const auto& residents = o["residents"];
     if (!accounts.isObject() || accounts.size() > MaxAccounts || !residents.isObject() || residents.size() > MaxResidents)

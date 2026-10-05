@@ -25,12 +25,13 @@ export function MoneyTab({target}: {target: Target}) {
         {data && <div className="dm-health-tables">
             <div>
                 <h3>Towns</h3>
-                <table className="dm-table"><thead><tr><th>Town</th><th>Residents</th><th>Treasury</th><th>Church</th><th>Its buyers</th></tr></thead>
+                <table className="dm-table"><thead><tr><th>Town</th><th>Residents</th><th>Treasury</th><th>Church</th><th title="Its buildings' repair, as the Town Works keeps them">Repair</th><th>Its buyers</th></tr></thead>
                     <tbody>
-                        <tr><td>The capital's treasury</td><td></td><td className="num">{p(data.capital)}</td><td></td><td></td></tr>
+                        <tr><td>The capital's treasury</td><td></td><td className="num">{p(data.capital)}</td><td></td><td></td><td></td></tr>
                         {Object.entries(data.towns).map(([id, t]) => <tr key={id}>
                             <td>{title(id)}</td><td className="num">{t.residents}</td><td className="num">{p(t.treasury)}</td>
                             <td className="num">{p(t.church)}</td>
+                            <td className="num">{t.condition === null || t.condition === undefined ? '—' : `${Math.round(t.condition)}%`}</td>
                             <td>{Object.entries(t.buyers).map(([b, cash]) => `${b} ${p(cash)}`).join(', ') || '—'}</td></tr>)}
                     </tbody></table>
             </div>

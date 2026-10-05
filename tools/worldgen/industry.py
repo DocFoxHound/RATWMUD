@@ -420,8 +420,8 @@ def build(project, report=print):
     """The project with the industry built and the people moved onto it (a copy)."""
     out = {**project, 'cells': [dict(c) for c in project['cells']], 'rooms': list(project['rooms']),
            'links': list(project['links']), 'people': [dict(p) for p in project.get('people', [])]}
-    if any(r['id'].startswith(PREFIX) for r in out['rooms']):
-        raise ValueError('industry already built (prefix ind_ in use)')
+    if any(r['name'] == f'{NAMES["upper_accord"][0]} Farmhouse' for r in out['rooms']):
+        raise ValueError('industry already built (High Terrace Farmhouse is there)')
     cells = {c['id']: c for c in out['cells'] if c['z'] == 0}
     centre = {s[0]: (s[3][0] + s[3][2] // 2 + OX, s[3][1] + s[3][3] // 2 + OY) for s in SETTLEMENTS}
     centre['upper_accord'] = (384, 384)
@@ -531,6 +531,207 @@ def build(project, report=print):
     return out, built, closed
 
 
+# ------------------------------------------------------------------------------------------------- Settling the sites
+# (doc 42's still-open list, 2026-10-05: nobody lived at the sites, the towns' sites had a hand or two, and the closed
+# shops stood empty.)
+
+LODGED = {'quarry', 'mine', 'logging', 'fishery', 'dairy', 'pasture', 'piggery', 'claypit', 'smelter'}
+TOWN_SITES = {'cinderbrook', 'accord_crossing', 'westmarch'}
+LET_RENT = 15                                       # A week's rent for a closed shop, to a Chapter (doc 32). Placeholder.
+
+
+def site_records(project):
+    """The sites already built: {(sid, kind, n): {'rooms': [room ids], 'workers': [people]}}, found by their buildings'
+    names and their workers' labels."""
+    rooms_by_name = defaultdict(list)
+    for r in project['rooms']:
+        rooms_by_name[r['name']].append(r['id'])
+    found = {}
+    for sid, names in NAMES.items():
+        for kind, spec in KINDS.items():
+            for n in names:
+                building = 'farmhouse' if spec['building'] == 'farmhouse' else None
+                bname = f'{n} Farmhouse' if building else spec.get('building_name', spec['name']).format(n=n)
+                if bname not in rooms_by_name:
+                    continue
+                label = spec['label'].format(n=n, site=spec['name'].format(n=n), building=bname)[:40]
+                keeper = spec.get('keeper', '').format(building=bname, n=n,
+                                                       second=spec.get('second', ('', ''))[1].format(n=n))[:40]
+                workers = [p for p in project['people'] if p['workLabel'] in (label, keeper)]
+                if not workers and kind not in TOWN_SITES and sid not in TOWN_SITES:
+                    continue
+                found[(sid, kind, n)] = {'rooms': rooms_by_name[bname], 'workers': workers, 'label': label, 'spec': spec,
+                                         'building': bname}
+    return found
+
+
+def bed_tiles(room):
+    return [(x, y) for y, row in enumerate(room['terrain']) for x, ch in enumerate(row) if ch in 'bz']
+
+
+def settle(project, backup, report=print):
+    """Lodging at the sites, more hands for the towns' sites, and the closed shops to let (a copy of the project)."""
+    from . import residents as R
+    from .buildings import tenement
+    from .towns import TOWNS
+    out = {**project, 'cells': [dict(c) for c in project['cells']], 'rooms': list(project['rooms']),
+           'links': list(project['links']), 'people': [dict(p) for p in project.get('people', [])]}
+    bunks = {f'{n} Bunkhouse' for names in NAMES.values() for n in names}
+    if any(r['name'] in bunks for r in out['rooms']):
+        raise ValueError('already settled (a site bunkhouse exists)')
+    cells = {c['id']: c for c in out['cells'] if c['z'] == 0}
+    rooms = {r['id']: r for r in out['rooms']}
+    reserved = {a['id'] for a in out['cells'] + out['rooms']}
+    centre = {s[0]: (s[3][0] + s[3][2] // 2 + OX, s[3][1] + s[3][3] // 2 + OY) for s in SETTLEMENTS}
+    centre['upper_accord'] = (384, 384)
+    sites = site_records(out)
+    region = {a['id']: a['territory']['region'] for a in out['cells'] + out['rooms']}
+    links = {l['b']['cell']: l for l in out['links'] if l['kind'] == 'door'}
+    plots = {}
+    lodging = {}                                     # site -> [(room id, x, y)] beds
+    rng = random.Random(f'{SEED}:settle')
+    for key, site in sites.items():
+        sid, kind, n = key
+        room_id = site['rooms'][0]
+        if site['spec']['building'] == 'farmhouse':
+            lodging[key] = [(room_id, x, y) for x, y in bed_tiles(rooms[room_id])]
+            continue
+        if kind not in LODGED:
+            continue
+        # A bunkhouse beside the site's building, in its cell.
+        door = links.get(room_id)
+        if not door or door['a']['cell'] not in cells:
+            continue
+        cid = door['a']['cell']
+        if cid not in plots:
+            plots[cid] = Plot(out, cells[cid], centre.get(sid, (0, 0)), reserved, sid)
+        plot = plots[cid]
+        plot.region = sid
+        plot.toward = (door['a']['x'], door['a']['y'])
+        p = tenement(rng, 'works' if STYLE[sid] != 'serferro' else 'serferro', 6)
+        name = f'{n} Bunkhouse'
+        b = Building('tenement', name, STYLE[sid], fp(p.w, p.h), [p.room('', name, 'Bunks in two rows, boots by the '
+                     'stove, and the smell of the day\'s work in everything.')], district=PREFIX)
+        placed = place_lone(plot, b, rng)
+        if not placed:
+            report(f'  {sid}: no room for a bunkhouse at {n}')
+            continue
+        lodging[key] = placed
+    for plot in plots.values():
+        if plot.changed:
+            plot.write_back()
+            new_rooms = [{**r, 'id': r['id'], 'worldX': r['worldX'] + plot.cell['x'], 'worldY': r['worldY'] + plot.cell['y']}
+                         for r in plot.site.rooms]
+            out['rooms'] += new_rooms
+            out['links'] += plot.site.links
+            for r in new_rooms:
+                rooms[r['id']] = r
+    # Bed tiles of the new bunkhouses (their rooms are in now).
+    for key, beds in list(lodging.items()):
+        if beds and isinstance(beds[0], str):
+            lodging[key] = [(rid, x, y) for rid in beds for x, y in bed_tiles(rooms[rid])]
+    # Who moves in: the site's own workers who have no family at home (no one there shares their surname).
+    by_home = defaultdict(list)
+    for p in out['people']:
+        by_home[p['home']['cell']].append(p)
+    surname = lambda p: p['name'].split()[-1] if ' ' in p['name'] else ''
+    moved = 0
+    for key, beds in lodging.items():
+        site = sites[key]
+        free = list(beds)
+        for p in sorted(site['workers'], key=lambda p: p['id']):
+            if not free:
+                break
+            family = [q for q in by_home[p['home']['cell']] if q is not p and surname(q) and surname(q) == surname(p)]
+            if family:
+                continue
+            cell, x, y = free.pop(0)
+            p['home'] = {'cell': cell, 'x': x, 'y': y}
+            p['evening'] = {'cell': cell, 'x': x, 'y': y}
+            moved += 1
+        site['free'] = free
+    report(f'{moved} workers moved to live at their sites')
+    # The towns' sites: hands short, newcomers who live there.
+    P = R.People(out, [], rng)
+    P.ids |= {p['id'] for p in out['people']}
+    P.names |= {p['name'] for p in out['people']}
+    made = 0
+    for key, site in sites.items():
+        sid, kind, n = key
+        if sid not in TOWN_SITES:
+            continue
+        spec = site['spec']
+        short = spec['hands'] + (1 if spec.get('keeper') else 0) - len(site['workers'])
+        free = site.get('free') or []
+        cfg = TOWNS.get(sid, {})
+        for i in range(max(0, short)):
+            if not free:
+                break
+            cell, x, y = free.pop(0)
+            home = {'cell': cell, 'x': x, 'y': y}
+            room = rooms[site['rooms'][0]]
+            spot = P.floor(room['id'], share=True)
+            work = spot if not spec.get('yard') else (site['workers'][0]['work'] if site['workers'] else spot)
+            family = rng.choice(cfg.get('heads', ['Hill'])) + rng.choice(cfg.get('tails', ['ford']))
+            person = P.add(role='civilian', work_label=site['label'], home=home, work=work, evening=home, hours=HOURS,
+                           family=family, job=site['label'], age=rng.randint(18, 50))
+            person['id'] = f'{PREFIX}{person["id"]}'[:48]
+            out['people'].append(person)
+            made += 1
+    report(f'{made} newcomers came to work the towns\' sites')
+    # The closed shops, to let: the shops a merchant kept before industry and nobody keeps now.
+    was = {p['work']['cell'] for p in backup.get('people', []) if p['role'] == 'merchant'}
+    now = {p['work']['cell'] for p in out['people'] if p['role'] == 'merchant'}
+    heads = {}
+    for p in out['people']:
+        if p['role'] == 'civilian' and p['workLabel'].startswith(('ruling ', 'keeping ')) and \
+                any(w in p['workLabel'] for w in ('House', 'Hall', 'Manor')):
+            heads.setdefault(region.get(p['home']['cell'], ''), p['id'])
+    let = 0
+    for rid in sorted(was - now):
+        r = rooms.get(rid)
+        if not r or r.get('outdoors') or r.get('letting'):
+            continue
+        town = region.get(rid, '')
+        r['letting'] = {'kind': 'hall', 'landlord': heads.get(town, 'treasury'), 'rent': LET_RENT, 'level': 2}
+        let += 1
+    report(f'{let} closed shops to let')
+    return out
+
+
+def place_lone(plot, b, rng):
+    """One building near plot.toward, on open ground, its door walkable; returns its rooms' ids, or None."""
+    c = plot.canvas
+    H, W = c.codes.shape
+    can, _ = suitable(plot, 'open')
+    fw, fh = b.footprint
+    tx, ty = plot.toward
+    tries = []
+    for _ in range(3000):
+        x0, y0 = tx + rng.randint(-60, 60), ty + rng.randint(-60, 60)
+        if x0 < 4 or y0 < 4 or x0 + fw + 4 >= W or y0 + fh + 4 >= H:
+            continue
+        area = (slice(y0 - 1, y0 + fh + 1), slice(x0 - 1, x0 + fw + 1))
+        if plot.taken[area].any() or can[area].mean() < .9:
+            continue
+        tries.append((math.hypot(x0 - tx, y0 - ty), x0, y0))
+    tries.sort()
+    for _, x0, y0 in tries[:20]:
+        saved = (c.codes.copy(), c.heights.copy(), len(plot.site.rooms), len(plot.site.links), len(plot.site.manifest))
+        _, outside = plot.site.place(b, x0, y0, 'S', plot.region, open_door=True)
+        rec = plot.site.manifest[-1]
+        walk = reachable(c.codes, c.heights, plot.start)
+        ox, oy = outside
+        if 0 <= ox < W and 0 <= oy < H and walk[oy, ox] and walk[rec['door']['y'], rec['door']['x']]:
+            plot.taken[max(0, y0 - 4):y0 + fh + 4, max(0, x0 - 4):x0 + fw + 4] = True
+            plot.walk = walk
+            plot.changed = True
+            return [r['id'] for r in rec['rooms']]
+        c.codes[:], c.heights[:] = saved[0], saved[1]
+        del plot.site.rooms[saved[2]:], plot.site.links[saved[3]:], plot.site.manifest[saved[4]:]
+    return None
+
+
 def main(argv=None):
     import map_editor
     import world_db
@@ -540,9 +741,16 @@ def main(argv=None):
     parser.add_argument('--dry-run', action='store_true', help='Build and check, but do not save to DEV')
     parser.add_argument('--out', type=Path, help='Write the project here as JSON')
     parser.add_argument('--preview', type=Path, help='Write a picture of each changed cell into this folder')
+    parser.add_argument('--settle', type=Path, metavar='BACKUP',
+                        help='Settle the sites already built: lodging, the towns\' hands, the closed shops to let (BACKUP: '
+                             'the project as it was before industry, for which shops were open)')
     args = parser.parse_args(argv)
     project, revision = dev_project()
-    merged, built, closed = build(project)
+    if args.settle:
+        merged = settle(project, json.loads(args.settle.read_text(encoding='utf-8')))
+        built = {}
+    else:
+        merged, built, closed = build(project)
     try:
         map_editor.check_project(merged, for_game=False)
         print('Atlas validation: OK')
@@ -564,7 +772,7 @@ def main(argv=None):
         return 0
     folder = Path(__file__).resolve().parents[2] / 'artifacts/backups'
     folder.mkdir(parents=True, exist_ok=True)
-    backup = folder / f'{project["id"]}_dev_r{revision}_before_industry_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
+    backup = folder / f'{project["id"]}_dev_r{revision}_before_{"settling" if args.settle else "industry"}_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
     backup.write_text(json.dumps(project, ensure_ascii=False), encoding='utf-8')
     print(f'DEV revision {revision} backed up to {backup}.')
     with world_db.connect('dev', 'editor') as conn:

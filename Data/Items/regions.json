@@ -4,11 +4,10 @@
  "about": "What each place brings in and what it lacks (doc 42, Phase 7), worked out by tools/supply_balance.py --regions from a world export: specialties are goods it brings in a quarter or more of the world's supply of; lacks, what its shops need that nobody there makes or brings in, which only caravans bring.",
  "places": {
   "accord_crossing": {
-   "residents": 42,
+   "residents": 45,
    "specialties": [],
    "brings_in": [
     "sheep",
-    "pig",
     "wheat",
     "vegetables",
     "straw",
@@ -17,14 +16,18 @@
     "hay",
     "flax",
     "apples",
+    "pig",
     "firewood"
    ],
    "lacks": [
     "bandages",
     "bread",
     "candle_tallow",
+    "charcoal",
     "cord",
     "fish",
+    "iron_bar",
+    "iron_ore",
     "milk",
     "peat",
     "raw_meat",
@@ -36,6 +39,7 @@
    "specialties": [],
    "brings_in": [
     "sheep",
+    "pig",
     "wheat",
     "vegetables",
     "straw",
@@ -43,17 +47,19 @@
     "hemp",
     "hay",
     "flax",
-    "pig",
     "apples",
     "firewood"
    ],
    "lacks": [
     "bandages",
     "candle_tallow",
+    "charcoal",
     "clay",
     "cord",
     "fish",
     "honey",
+    "iron_bar",
+    "iron_ore",
     "milk",
     "peat",
     "raw_meat",
@@ -63,16 +69,18 @@
    ]
   },
   "cinderbrook": {
-   "residents": 51,
+   "residents": 53,
    "specialties": [
-    "iron_ore",
+    "tin_ore",
     "copper_ore",
-    "charcoal"
+    "charcoal",
+    "iron_ore"
    ],
    "brings_in": [
-    "iron_ore",
+    "tin_ore",
     "copper_ore",
-    "charcoal"
+    "charcoal",
+    "iron_ore"
    ],
    "lacks": [
     "apples",
@@ -108,6 +116,7 @@
     "bandages",
     "bread",
     "candle_tallow",
+    "charcoal",
     "cheese",
     "cider",
     "cord",
@@ -115,6 +124,8 @@
     "fish",
     "flax",
     "flour",
+    "iron_bar",
+    "iron_ore",
     "linen_cloth",
     "meal",
     "milk",
@@ -141,12 +152,15 @@
    ],
    "lacks": [
     "apples",
+    "charcoal",
     "clay",
     "firewood",
     "flax",
     "flour",
     "hemp",
     "honey",
+    "iron_bar",
+    "iron_ore",
     "milk",
     "oats",
     "pig",
@@ -182,6 +196,7 @@
     "cord",
     "flour",
     "honey",
+    "iron_ore",
     "milk",
     "pig",
     "raw_meat",
@@ -197,6 +212,7 @@
     "bandages",
     "bread",
     "candle_tallow",
+    "charcoal",
     "cheese",
     "cider",
     "cord",
@@ -204,6 +220,8 @@
     "fish",
     "flax",
     "flour",
+    "iron_bar",
+    "iron_ore",
     "linen_cloth",
     "meal",
     "milk",
@@ -237,10 +255,13 @@
    "lacks": [
     "bandages",
     "candle_tallow",
+    "charcoal",
     "clay",
     "cord",
     "flour",
     "honey",
+    "iron_bar",
+    "iron_ore",
     "milk",
     "peat",
     "pig",
@@ -260,12 +281,14 @@
     "bandages",
     "bread",
     "candle_tallow",
+    "charcoal",
     "cheese",
     "cord",
     "firewood",
     "fish",
     "flax",
     "flour",
+    "iron_ore",
     "linen_cloth",
     "meal",
     "milk",
@@ -285,7 +308,8 @@
     "stone",
     "limestone",
     "salt",
-    "clay"
+    "clay",
+    "iron_ore"
    ],
    "brings_in": [
     "timber",
@@ -295,11 +319,11 @@
     "limestone",
     "salt",
     "clay",
+    "iron_ore",
     "firewood",
     "wool",
-    "iron_ore",
-    "copper_ore",
-    "fish"
+    "fish",
+    "sheep"
    ],
    "lacks": [
     "apples",
@@ -327,10 +351,13 @@
     "apples",
     "bandages",
     "bread",
+    "charcoal",
     "clay",
     "firewood",
     "flax",
     "hemp",
+    "iron_bar",
+    "iron_ore",
     "milk",
     "oats",
     "peat",
@@ -348,19 +375,19 @@
     "grapes",
     "honey",
     "beeswax",
-    "milk",
     "pig",
     "sheep",
-    "clay"
+    "clay",
+    "milk"
    ],
    "brings_in": [
     "grapes",
     "honey",
     "beeswax",
-    "milk",
     "pig",
     "sheep",
     "clay",
+    "milk",
     "apples",
     "wheat",
     "vegetables",
@@ -370,7 +397,6 @@
    "lacks": [
     "charcoal",
     "fish",
-    "honey",
     "iron_ore",
     "limestone",
     "peat",
@@ -388,8 +414,8 @@
     "limestone",
     "wool",
     "apples",
-    "milk",
-    "clay"
+    "clay",
+    "timber"
    ],
    "brings_in": [
     "honey",
@@ -398,10 +424,10 @@
     "limestone",
     "wool",
     "apples",
-    "milk",
     "clay",
-    "firewood",
     "timber",
+    "oak_bark",
+    "firewood",
     "wheat",
     "vegetables"
    ],
@@ -410,21 +436,21 @@
     "cheese",
     "fish",
     "flour",
-    "honey",
     "iron_bar",
     "peat"
    ]
   },
   "westmarch": {
-   "residents": 58,
+   "residents": 64,
    "specialties": [
-    "wool"
+    "wool",
+    "milk"
    ],
    "brings_in": [
     "wool",
+    "milk",
     "sheep",
     "pig",
-    "milk",
     "wheat",
     "vegetables",
     "straw",
@@ -436,11 +462,14 @@
    ],
    "lacks": [
     "candle_tallow",
+    "charcoal",
     "clay",
     "cord",
     "fish",
     "flour",
     "honey",
+    "iron_bar",
+    "iron_ore",
     "peat",
     "smoked_fish",
     "stone"

@@ -144,7 +144,9 @@ export interface Health {
 
 /** Where the money is (Docs/Design/42-money-in-circulation.md, Phase 8), from the last save. Pennies; null where an
  *  account doesn't exist yet. */
-export interface MoneyTown { residents: number; treasury: number | null; church: number | null; buyers: Record<string, number> }
+export interface MoneyTown { residents: number; treasury: number | null; church: number | null; buyers: Record<string, number>;
+    /** Its buildings' repair, 0 to 100, as the Town Works keeps them; null before its first day. */
+    condition: number | null }
 export interface MoneyGroup { count: number; total: number; median: number }
 export interface Money {
     target: Target; day: number | null; total: number; capital: number | null; month: number | null;

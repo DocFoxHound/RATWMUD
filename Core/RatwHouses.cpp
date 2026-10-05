@@ -82,6 +82,14 @@ void Society::foundHouses()
     {
         byTown[h.community].push_back(&h);
         openAccount(h.id);                          // (Even one that owns nothing yet: it may buy.)
+        // Its founding fortune (the user, 2026-10-05: houses start with large purses). Like the world's first treasury,
+        // money made once, at the founding, and counted as made.
+        if (auto& purse = state_.accounts.at(h.id); purse.cash == 0)
+        {
+            purse.cash = HouseFortune;
+            state_.minted += HouseFortune;
+            record("a great house's fortune", "outside", h.id, "", 0, HouseFortune);
+        }
     }
     for (const auto& p : positions_)
     {
@@ -189,6 +197,37 @@ void Society::tendHouses(std::int64_t day)
             if (buyer)
                 sellBusiness(pid, buyer->id, price);
         }
+    }
+}
+
+void Society::collectRents()
+{
+    // Each business in a town with great houses pays a house a month's rent for its ground (the user, 2026-10-05):
+    // one of the town's houses that doesn't own it, the same one month to month. A house's own businesses pay it
+    // nothing; another house's pay it like anyone's.
+    std::map<std::string, std::vector<const House*>> byTown;
+    for (const auto& h : houses())
+        byTown[h.community].push_back(&h);
+    for (const auto& p : positions_)
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto town = byTown.find(communityOfResident(p.founder));
+        if (town == byTown.end())
+            continue;
+        const auto owner = ownerOf(p.id);
+        std::vector<const House*> landlords;
+        for (const auto* h : town->second)
+            if (h->id != owner)
+                landlords.push_back(h);
+        const auto held = state_.careers.positions.find(p.id);
+        if (landlords.empty() || held == state_.careers.positions.end() || held->second.holder.empty())
+            continue;
+        const auto& landlord = *landlords[std::hash<std::string>{}(p.id + "|landlord") % landlords.size()];
+        const auto till = tillOf(held->second.holder);
+        openAccount(landlord.id);
+        if (const auto* purse = account(till); purse && purse->cash > 0)
+            shift(till, landlord.id, "", 0, std::min<std::int64_t>(MonthlyRent, purse->cash), "rent");
     }
 }
 } // namespace ratw

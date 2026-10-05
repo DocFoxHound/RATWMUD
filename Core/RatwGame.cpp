@@ -2672,6 +2672,8 @@ void Game::sendSnapshot(Connection* c)
                 if (e.age >= battle::YoungestFighter)
                     actions.push("attack");             // Never a youngster (doc 33: they don't fight; they run).
             }
+            if (near(e) && world_.churchCares(view.self.id, e.id))
+                actions.push("ask for the church's care");   // (Doc 42: free care for a poor wolf's wounds.)
             if (guard && near(e) && !e.dead)
             {
                 actions.push("report");
@@ -4012,6 +4014,11 @@ void Game::command(Connection* c, const std::string& raw)
         else if (action == "ask to join" || action.rfind("hire for ", 0) == 0)
         {
             result = askAlong(id, target, action != "ask to join");
+            report = true;
+        }
+        else if (action == "ask for the church's care")
+        {
+            result = world_.churchCare(id, target);
             report = true;
         }
         else if (action == "wait here" || action == "follow me" || action == "go home" || action == "dismiss")

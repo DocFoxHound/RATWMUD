@@ -416,6 +416,28 @@ void World::tendPrices()
         return;
     priceHour_ = hour;
     std::map<std::string, std::map<std::string, double>> factors;
+    // Every good, every six hours (doc 42, Phase 7): dearer where the town's makers and suppliers want more than its
+    // shops and producers have to spare, cheaper where there is plenty.
+    if (hour / 6 != marketPriceAt_ || marketPrices_.empty())
+    {
+        marketPriceAt_ = hour / 6;
+        marketPrices_.clear();
+        for (const auto& t : towns_)
+        {
+            const auto m = marketOf(t.id);
+            std::set<std::string> goods;
+            for (const auto& [item, n] : m.want)
+                goods.insert(item);
+            for (const auto& [item, n] : m.spare)
+                goods.insert(item);
+            for (const auto& item : goods)
+            {
+                const double want = m.want.count(item) ? m.want.at(item) : 0, spare = m.spare.count(item) ? m.spare.at(item) : 0;
+                marketPrices_[t.store][item] = std::clamp(1 + .5 * (want - spare) / (want + spare + 10), .8, 1.5);
+            }
+        }
+    }
+    factors = marketPrices_;
     for (const auto& t : towns_)
         if (const auto* store = society_.account(t.store))
             for (const auto& [item, each] : {std::pair<const char*, double>{"meal", .5}, {"herbs", .25}})
@@ -639,7 +661,8 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         for (const auto& who : c.escorts)
             guards += withCaravan(who, wagon) ? 2 : 0;
         const double bold = camp.strength * (1 + camp.hunger / 100);
-        const double odds = bold / (bold + guards * 5.0 + 10.0);
+        // (Doc 42, Phase 7: with traders' caravans on the roads too, a camp wins less easily than it did.)
+        const double odds = bold / (bold + guards * 8.0 + 20.0);
         if (chance(c.id, std::int64_t(c.leg)) >= odds)
         {
             recordEvent({"caravan passes", c.id, camp.id, cellId, 0, 0, {}, 0, 0, "the guards kept the bandits off"});
@@ -875,10 +898,11 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             const std::string what = good ? good->name : k.item;
             if (k.carried == 0)
             {
+                const auto& at = job->role == "merchant" ? job->serve : job->work;
                 task = "fetching goods";
                 reason = what + " for " + k.detail;
-                goalCell = job->serve.cell;
-                goal = {job->serve.x, job->serve.y};
+                goalCell = at.cell;
+                goal = {at.x, at.y};
             }
             else
             {
@@ -1021,6 +1045,7 @@ void World::roadsDaily()
         {
             camp.active = false;
             recordEvent({"bandits scattered", camp.id, {}, camp.cell, 0, 0, {}, 0, 0, "starved out"});
+            recoverHoard(camp, "treasury", "found in an abandoned camp");   // (Doc 42: not lost to the world.)
         }
     }
     if (today % 7 == 0)
@@ -1067,6 +1092,8 @@ void World::roadsDaily()
             {
                 camp->active = false;
                 settleContract(k, "done", std::string());      // The watch did it: the reward goes back.
+                if (town != towns_.end())
+                    recoverHoard(*camp, town->store, "recovered from the bandits");
                 recordEvent({"camp cleared", k.town, camp->id, camp->cell, 0, 0, {}, 0, 0, "by the watch"});
             }
         }
@@ -1437,6 +1464,14 @@ void World::beaten(Entity& player, BanditCamp& camp)
                 if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
                     believe(holder, camp.id, "robs travellers at " + camp.cell, "a traveller", .7);
     endEncounter(camp.id, (calendar::SecondsPerDay / 24));
+}
+
+void World::recoverHoard(const BanditCamp& camp, const std::string& to, const std::string& kind)
+{
+    // What a camp had taken goes back into the world, not into the ground (doc 42).
+    const auto loot = "bandits:" + camp.id;
+    if (const auto* takings = society_.account(loot); takings && takings->cash > 0)
+        society_.shift(loot, to, "", 0, takings->cash, kind);
 }
 
 void World::clearCamp(BanditCamp& camp, const std::string& by)

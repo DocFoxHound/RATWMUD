@@ -721,41 +721,87 @@ their profit goes to it, and each shop's manager is paid a wage.
   money, and money stays conserved. It can't be run a month at a time (`world_check` takes about 15 minutes a game
   day), so a short probe runs a reckoning straight away (`/reckon` in the Dev Console).
 
-## Still open (to reassess with the user)
+## Still open, and what was done (2026-10-05)
 
-Problems found while building, kept here until the user reassesses them:
+The user reassessed the list on 2026-10-04 and asked for every item to be solved overnight, with these decisions:
 
-1. **Far too much iron ore:** mines bring in about 600 ore a day. Phase 5's tools, hoops, wheels and axles want about
-   13. There are too many miners (DEV's 5 at Cinderbrook, 10 more at the new mines, and a few keepers) for what iron is
-   used for. Fewer miners, a smaller yield, or more uses (horseshoes, armour wearing out, weapons for the watch) are
-   for the user to choose.
-2. **The towns' new sites have one or two hands** (Cinderbrook's smelter, Accord Crossing's hay farm, Westmarch's
-   dairy).
-3. **Nobody lives at a site:** farmhouses and bunkhouses stand empty, and everyone walks out from town.
-4. **The closed shops stand empty**, not yet to let (doc 32's leases).
-5. **Milk is only just enough** (814 against 693 a day) and **honey short** (25 against 71; honey cakes are made only
-   when there is honey).
-6. **Players pay no tax or tithe** (open question 1).
-7. **A worker unpaid for a week** is remembered in memory only; a restart forgets it (Phase 3).
-8. **The reserve against hoarding** is a running average kept in memory only, so after a restart each collector's
-   reserve is its floor until it has spent for a few days.
-9. **DEV's running server** still has build 22 until it is restarted.
-10. **Buildings don't decay yet**, and **the sick poor aren't cared for** by the church (Phase 5).
-11. **Copper ore has no use** beyond bronze for swords (201 a day brought in).
-12. **Prices don't follow scarcity** for most goods yet (only meals and herbs), so a trader can't see where a good is
-    worth carrying beyond the shops' wants (Phase 7).
-13. **Makers short of something with no caravan coming wait**: in a world of towns the free "carted in" purchase is
-    gone (Phase 7). Watch for crafts stalling in towns far from what they need.
-14. **Shops may not afford their help.** On DEV build 23, a day with every phase built (6:00 to 8:00 the next morning;
-    money conserved, mean tick 2.6 ms) took merchants from 33,177p to 26,425p, mostly in wages to their help (paid
-    civilians rose from 46,942p to 52,524p). Unless food and goods sales bring it back, shops will soon stop paying
-    their help, who will then turn to day labour (Phase 3). This needs watching over several days, and wages or prices
-    may need balancing.
-15. **Bandits raid often:** 11 raids in that day, so traders' caravans lose goods and money (Phase 7).
-16. **Great houses have little money at first:** their tills start below their floats, so for the first days there
-    are no takings, no propping up and no surplus. The houses' heads' own purses could found them (Phase 5b).
-17. **Nobody took a contract for goods in that day:** 93 stood open, and residents take them only after a day open to
-    players (Phase 4). This needs a longer run.
+- players pay no tax;
+- smiths, armourers and the towns' repairs use iron;
+- great houses start with large purses;
+- houses don't collect rent from themselves, but may from other houses.
+
+1. **Too much iron ore.** *Done:*
+   - Mines yield one ore a spell. Copper and tin come only from the Bell Pit.
+   - Iron now has uses:
+     - smiths make steel, fittings, chain, rivets, buckles, cookpots, locks and iron swords;
+     - armourers make kettle helms, gorgets and greaves;
+     - households buy nails every 20 days and a cookpot every 60;
+     - the Town Works uses iron, fittings, chain and locks;
+     - the watch wears out rivets, swords and helms.
+   - The foundry casts bronze handbells for the church.
+   - On build 24: 165 ore a day brought in against 68 wanted.
+2. **The towns' sites had a hand or two.** *Done:* 11 newcomers came to work them (`worldgen.industry --settle`,
+   DEV revision 15), and they live at the sites.
+3. **Nobody lived at a site.** *Done:* 17 bunkhouses were built beside the quarries, mines, logging camps, fisheries,
+   dairies, folds, piggeries, clay pits and smelter. 37 site workers with no family at home moved into them or the
+   farmhouses. Four found no room nearby (Larkrise and Peakside in Upper Accord, Fornace Bassa in Ser Ferro, Rainwash
+   in Ridgemere).
+4. **The closed shops stood empty.** *Done:* 10 are now to let (doc 32's lettings, as a hall for a Chapter, 15p a week)
+   from the town's great house's head, or else the treasury. Found on the way: `world_store` never saved a letting
+   (its JSON column wasn't wrapped as JSON), now fixed.
+5. **Milk and honey were tight.** *Done:* a dairy herd yields 5 milk a spell, an apiary 3 honey (build 24: milk 968
+   against 693 a day).
+6. **Players pay no tax.** *Decided:* players pay neither tax nor tithe.
+7. and 8. **Unpaid workers and the reserves were remembered in memory only.** *Done:* saved with the society
+   (`EconomyMemory`: `unpaidSince`, `outgoing`, and the towns' repair `condition`).
+9. **DEV's running server** has an older build until it is restarted (not done: nobody asked for a restart).
+10. **Buildings didn't decay; the sick poor weren't cared for.** *Done:*
+    - **Repair:** each town's buildings have a condition (0 to 100) that wears a point a day (two in winter). The Town
+      Works mends it with what it actually uses of its basket, and a run-down town's basket grows to catch up. Falling
+      under 50 is logged (`town in disrepair`), and so is being mended. It shows in the Money tab.
+    - **Care:** a poor player (under 20p) with healing wounds may "ask for the church's care" of a priest or chapel
+      keeper. The church spends one of its bandages and takes a quarter off each wound's rest, never all of it, once a
+      day. The church's basket now buys bandages.
+11. **Copper had no use.** *Done:* see 1. Copper is now scarce (only the Bell Pit) and goes into bronze for bells and
+    swords.
+12. **Prices didn't follow scarcity.** *Done:* every six game hours each town prices every good by its market: up to
+    half again as dear where it is short, a fifth cheaper where plentiful. Trade caravans sell at the destination's
+    factor on top of their markup.
+13. **Makers waiting for caravans:** watched in the two-day run (below).
+14. **Shops may not afford their help.** *Done:* a shop (or a house) pays its help 2p a spell from a till over 150p, 1p
+    from a leaner one, so a quiet shop keeps its help and a busy one pays them well. See the two-day run.
+15. **Bandits raided often.** *Done:* a camp wins less easily (odds `bold / (bold + 8 × guards + 20)`). A trader's
+    caravan hires two more guards from its town (6p). A camp's hoard is no longer lost: the town recovers it when its
+    watch clears the camp, and the treasury when the camp starves out.
+16. **Great houses started poor.** *Done:* each is founded with a fortune of 3,000p, made once at the founding (counted
+    as money made, like the world's first treasury). **Ground rent:** each month, every business in a town with great
+    houses pays 20p to one of the houses that doesn't own it, never to its own.
+17. **Contracts for goods weren't taken.** *Done:* carriers can now be those out of work, day labourers, out-of-town
+    workers, and the town's porters, messengers and haulers. Producers holding the goods (a quarry's stone, a farm's
+    grain) count as sources as well as shops.
+18. **Found in the two-day run (2026-10-05): the towns paid people they shouldn't.** Of the towns' wages, the largest
+    single share went to homemakers ("keeps the house"), then household servants, industry hands whose employer
+    wasn't found, and fortress garrisons from their fortress's tiny purse. With tax coming in at a seventh of what the
+    towns paid out, the treasuries would have been empty within days. *Done (`payerOf`):*
+    - keeping one's own house, an apprenticeship, hawking, scavenging and sitting by the well earn no wage (the
+      household keeps them, or they live by what they sell);
+    - a household's servant is paid by the richest of the household whose home it works in;
+    - a hand at a trade's works (the forge, the saws, smoking fish, the ropewalk, the glassworks...) is paid by a keeper
+      of that trade in its town, or else by the town's richest great house;
+    - nursing the sick is the church's;
+    - a fortress's garrison is paid by the capital's treasury.
+    - palazzo staff are paid by the household whose house they work in (its rooms on any floor); Mass, confession, the
+      crypt and healing are the church's; counting a catch, a foreman's and an overseer's work is the trade's or the
+      town's great house's.
+19. **The towns' budget** (three days on build 24): wages of about 1,100p a day (watch 440, civic posts 680) against
+    about 800p of tax and trade takings. *Done:*
+    - A treasury keeps 14 days of its payroll before it funds its buyers (`PayrollDays`). Its buyers then get a
+      month's share a day of what is above that.
+    - A treasury with under 20p a head of its town (`LeanTreasury`) pays its posts 1p a spell instead of 2, as a lean
+      shop does.
+
+    So a poor town shows it (its buildings wear, its watch eats plainly, its posts are poorly paid) rather than going
+    broke.
 
 ## Open questions
 

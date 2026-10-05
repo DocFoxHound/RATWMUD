@@ -247,7 +247,18 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
         for (const auto& in : list)
         {
             const auto workers = in.perProducer.empty() ? 0 : town.workers.count(in.perProducer) ? town.workers.at(in.perProducer) : 0;
-            const double scale = !in.perProducer.empty() ? workers : in.perGuard ? town.guards : town.residents / 100.0;
+            double scale = !in.perProducer.empty() ? workers : in.perGuard ? town.guards : town.residents / 100.0;
+            // The Town Works keeps the town's buildings (doc 42, Phase 5): they wear a point a day (two in winter); a
+            // town fallen into disrepair needs more mending to catch up.
+            const bool works = in.id == "works";
+            double* condition = nullptr;
+            if (works)
+            {
+                condition = &state_.memory.condition.try_emplace(community, 100.0).first->second;
+                *condition = std::max(0.0, *condition - (season_ == 3 ? 2 : 1));
+                scale *= 1 + (100 - *condition) / 100;
+            }
+            double needed = 0, used = 0;
             if (scale <= 0 || town.residents < in.minResidents)
                 continue;
             const auto acct = "town:" + community + ":" + in.id;
@@ -270,16 +281,27 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     shift(treasuryId, acct, "", 0, std::min<std::int64_t>(std::int64_t(std::ceil(cost * MonthDays)), treasury.cash / 10),
                           "church foundation");
             }
-            else if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
-                                                               treasury.cash / 20);
-                     grant > 0)
-                shift(treasuryId, acct, "", 0, grant, "town funds");
+            else
+            {
+                // A town's budget (doc 42, 2026-10-05): its treasury first keeps PayrollDays of its wages (6p a day for each
+                // of its watch and its civic posts, roughly), and funds its buyers only from what is above that, a
+                // month's share a day. A poor town's buyers go short (its buildings wear, its watch eats plainly)
+                // rather than its wages going unpaid.
+                const auto reserve = std::int64_t(PayrollDays) * 6 * (town.guards + town.residents / 10);
+                const auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
+                if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
+                                                              spare);
+                    grant > 0)
+                    shift(treasuryId, acct, "", 0, grant, "town funds");
+            }
             for (const auto& [item, rate] : in.basket)
             {
                 const double daily = rate * scale;
                 // The day's use, from its stock (what it lacked waits, up to its days' worth).
                 auto& owed = owed_[acct + "|" + item];
                 owed = std::min(owed + daily, daily * days);
+                needed += daily;
+                const double owedBefore = owed;
                 for (const auto& kind : kindsHeld(*account(acct), item))
                 {
                     int n = std::min(int(owed), stock(*account(acct), kind));
@@ -296,6 +318,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     if (n > 0)
                         owed -= consume(acct, kind, n, "used by " + in.name);
                 }
+                used += std::max(0.0, owedBefore - owed);
                 // Stock back up to its days' worth, from the town's shops.
                 const int target = int(std::ceil(daily * days));
                 int want = target - stockAll(*account(acct), item);
@@ -322,6 +345,15 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 if (want >= std::max(2, target / 3))
                     if (const auto* good = items::good(item))
                         procurements_.push_back({acct, community, in.name, item, want, std::max(1, good->price)});
+            }
+            if (condition && needed > 0)
+            {
+                // Mended by what was used: a full day's materials mends two points (and a backlog more).
+                const double was = *condition;
+                *condition = std::min(100.0, *condition + 2 * used / needed * (1 + (100 - was) / 100));
+                if ((was >= 50) != (*condition >= 50))
+                    townNews_.push_back({community, *condition >= 50 ? "mended" : "disrepair"});
+                ++state_.memory.revision;
             }
         }
     }

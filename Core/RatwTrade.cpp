@@ -16,6 +16,7 @@ namespace
 constexpr double Markup = 1.4;                       // What carted goods sell for, against the catalog price.
 constexpr int MostOfAGood = 30, MostALoad = 80;      // A wagon's load (placeholders).
 constexpr int TradeCaravansADay = 12;
+constexpr std::int64_t GuardsHire = 6;               // Two guards for the road, paid to the town.
 }
 
 std::string World::residentTown(const std::string& id) const
@@ -170,6 +171,11 @@ void World::tradeCaravans()
             continue;
         c->trader = trader;
         society_.shift(trader, c->account, "", 0, cost, "money for the road");
+        // Two more guards for a load worth robbing, hired from the town's watch.
+        if (from->store != trader && society_.shift(trader, from->store, "", 0, GuardsHire, "guards for the road"))
+            c->guards += 2;
+        else if (from->store == trader)
+            c->guards += 2;
         int bought = 0;
         auto& fm = markets[from->id];
         for (const auto& [item, n] : order.load)
@@ -226,7 +232,12 @@ void World::tradeCaravanArrived(Caravan& c)
         const auto* good = items::good(item);
         if (n <= 0 || !good)
             continue;
-        const auto price = std::int64_t(std::ceil(std::max(1, good->price) * Markup));
+        // Dearer where the town is short of it (tendPrices' factors), on top of the road's markup.
+        double scarce = 1;
+        if (const auto store = marketPrices_.find(to->store); store != marketPrices_.end())
+            if (const auto f = store->second.find(base); f != store->second.end())
+                scarce = f->second;
+        const auto price = std::int64_t(std::ceil(std::max(1, good->price) * Markup * scarce));
         int left = n;
         for (auto& [buyer, want] : market.wanters[base])
         {

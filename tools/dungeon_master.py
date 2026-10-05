@@ -426,7 +426,7 @@ class DungeonMaster:
                 continue
             buyers = {k.split(':')[-1]: v for k, v in accounts.items() if k.startswith(f'town:{town}:') and not k.endswith(':church')}
             towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get(f'town:{town}:church'),
-                           'buyers': buyers}
+                           'buyers': buyers, 'condition': ((society.get('memory') or {}).get('condition') or {}).get(town)}
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
         purses = sorted(v for k, v in accounts.items() if k in people)

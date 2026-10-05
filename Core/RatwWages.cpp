@@ -28,7 +28,7 @@ bool hasAny(const std::string& text, std::initializer_list<const char*> words)
 bool Society::clergy(const std::string& title)
 {
     return hasAny(lower(title), {"chapel", "priest", "acolyte", "cathedral", "choir", "prelate", "shrine", "chaplain", "sexton",
-                                 "deacon", "abbey", "temple", "church"});
+                                 "deacon", "abbey", "temple", "church", "the mass", "confession", "the crypt", "healer"});
 }
 
 bool Society::houseHead(const std::string& title)
@@ -53,15 +53,24 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
 {
     if (age < 16)
         return {"", "a child"};
+    // A fortress's garrison is the crown's: paid from the capital's treasury, not the fortress's own small purse.
+    const auto town = communityOfResident(resident);
+    const bool fortress = town.find("fortress") != std::string::npos;
     if (job.role == "guard")
-        return {treasuryOfResident(resident), "the town"};
+        return {fortress ? std::string("treasury") : treasuryOfResident(resident), "the town"};
     if (outworkTitled(job.title))
         return {"", "lives by what it brings in"};
     if (job.title == LabourTitle)
         return {treasuryOfResident(resident), "the Town Works"};
     if (const auto* r = spec(resident); r && items::producerFor(r->workLabel))
         return {"", "lives by what it brings in"};
-    if (clergy(job.title))
+    const auto title = lower(job.title);
+    // Work nobody pays a wage for (doc 42, 2026-10-05): keeping one's own house, learning a trade, hawking, scavenging,
+    // sitting by the well. The household keeps them, or they live by what they sell.
+    if (hasAny(title, {"keeps the house", "keeping the house", "apprenticed", "sells from", "picks through", "sits ", "sits by",
+                       "telling stories", "plays", "beg"}))
+        return {"", "lives on the household"};
+    if (clergy(job.title) || hasAny(title, {"the sick", "the hurt"}))
         return {churchOf(treasuryOfResident(resident)), "the church"};
     // Someone with a shop, or a great house, where it works: the first of them there who isn't itself.
     indexEmployers();
@@ -75,6 +84,77 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
             const auto* employer = position(pid);
             return {held->second.holder, employer && employer->role == "merchant" ? "the shop" : "the house"};
         }
-    return {treasuryOfResident(resident), "the town"};
+    // A household's servant ("serving the household", "keeping the chambers"): paid by the richest of the household
+    // whose home it works in.
+    if (const auto own = state_.residents.find(resident); own == state_.residents.end() || own->second.homeCell != job.work.cell)
+        if (const auto* master = richestAt(job.work.cell, resident))
+            return {*master, "the house"};
+    // A hand at a trade's works (at the forge, working the saws, smoking fish): paid by a keeper of that trade in its
+    // town, or else by its town's richest great house, who own the industry.
+    static const std::vector<std::pair<const char*, std::vector<const char*>>> trades = {
+        {"forge", {"smithy", "ironworks", "foundry"}}, {"saws", {"sawmill", "carpenter"}}, {"smoking fish", {"smokehouse", "fishmonger"}},
+        {"rope", {"ropewalk", "chandlery"}}, {"glass", {"glassworks"}}, {"kiln", {"brickworks", "pottery"}}, {"salt", {"saltworks"}},
+        {"tann", {"tannery"}}, {"brew", {"brewery"}}, {"dye", {"dyeworks"}}, {"ships", {}}, {"mill", {"mill"}}, {"cooper", {"cooperage"}},
+        {"the catch", {"fishmonger", "smokehouse"}}, {"foreman", {}}, {"overseeing", {}}};
+    for (const auto& [word, kinds] : trades)
+    {
+        if (title.find(word) == std::string::npos)
+            continue;
+        for (const auto& p : positions_)
+        {
+            if (p.role != "merchant" || communityOfResident(p.founder) != town)
+                continue;
+            const auto* business = items::businessFor(p.title);
+            const auto held = state_.careers.positions.find(p.id);
+            if (business && std::find(kinds.begin(), kinds.end(), business->id) != kinds.end() &&
+                held != state_.careers.positions.end() && !held->second.holder.empty())
+                return {held->second.holder, "the shop"};
+        }
+        std::string house;
+        std::int64_t most = -1;
+        for (const auto& h : houses())
+            if (const auto* purse = account(h.id); purse && h.community == town && purse->cash > most)
+                most = purse->cash, house = h.id;
+        if (!house.empty())
+            return {house, "the house"};
+        break;
+    }
+    return {fortress ? std::string("treasury") : treasuryOfResident(resident), "the town"};
+}
+
+const std::string* Society::richestAt(const std::string& homeCell, const std::string& besides) const
+{
+    // The household living in a cell, by its richest grown member (cached for the day).
+    if (richestDay_ != state_.budgetDay)
+    {
+        richest_.clear();
+        richestDay_ = state_.budgetDay;
+        std::map<std::string, std::int64_t> most;
+        for (const auto& [id, life] : state_.residents)
+            if (const auto* purse = account(id); purse && !life.homeCell.empty() && (!most.count(life.homeCell) || purse->cash > most[life.homeCell]))
+                most[life.homeCell] = purse->cash, richest_[life.homeCell] = id;
+    }
+    // The room itself, or the house it is a room of (a palazzo's salon below its family's chambers: "villa_x",
+    // "villa_x_up").
+    for (const auto& cell : {homeCell, homeCell + "_up", homeCell.size() > 3 && homeCell.compare(homeCell.size() - 3, 3, "_up") == 0
+                                                            ? homeCell.substr(0, homeCell.size() - 3) : std::string()})
+        if (const auto found = richest_.find(cell); !cell.empty() && found != richest_.end() && found->second != besides)
+            return &found->second;
+    return nullptr;
+}
+
+bool Society::treasuryLean(const std::string& treasury) const
+{
+    // Under LeanTreasury pennies a head of its town (cached for the day): it pays its posts half (doc 42).
+    if (peopleDay_ != state_.budgetDay)
+    {
+        people_.clear();
+        peopleDay_ = state_.budgetDay;
+        for (const auto& [id, life] : state_.residents)
+            ++people_[treasuryOfResident(id)];
+    }
+    const auto* purse = account(treasury);
+    const auto n = people_.count(treasury) ? people_.at(treasury) : 0;
+    return !purse || purse->cash < std::int64_t(LeanTreasury) * n;
 }
 } // namespace ratw

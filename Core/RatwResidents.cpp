@@ -267,12 +267,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             }
             job = &stand;
         }
-        else if (const auto unpaid = unpaidSince_.find(pair.first); unpaid != unpaidSince_.end() && job->role == "civilian")
+        else if (const auto unpaid = state_.memory.unpaidSince.find(pair.first); unpaid != state_.memory.unpaidSince.end() && job->role == "civilian")
         {
             // A week without wages (doc 42, Phase 3): a week of day labour for the Town Works, then back to try again.
             const double since = absoluteDay - unpaid->second;
             if (since >= 14)
-                unpaidSince_.erase(unpaid);
+                state_.memory.unpaidSince.erase(unpaid), ++state_.memory.revision;
             else if (since >= 7 && body.age < RetireAge)
             {
                 stand = *job;
@@ -504,7 +504,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                      : job->title == "retired"   ? "Retired; spending the day in familiar company."
                      : job->paid                 ? "Daily work, for wages."
                                                  : "Spending the day in familiar company.";
-            if (unpaidSince_.count(pair.first) && job->title != LabourTitle)
+            if (state_.memory.unpaidSince.count(pair.first) && job->title != LabourTitle)
             {
                 const auto payer = payerOf(pair.first, *job, body.age);
                 const auto* boss = spec(payer.account);
@@ -653,14 +653,22 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto payer = payerOf(pair.first, *job, body.age);
             if (!payer.account.empty() && life.wagesToday < 3)
             {
-                if (shift(payer.account, pair.first, "", 0, 2, guard ? "watch wages" : job->title == LabourTitle ? "day labour" : "service wages"))
+                // A shop or a house pays what its takings bear (doc 42): 2p a spell from a comfortable till, 1p from a
+                // lean one; a town 1p from a treasury under LeanTreasury a head. The church pays 2p.
+                const bool business = payer.whom == "the shop" || payer.whom == "the house";
+                const auto* payerPurse = account(payer.account);
+                const bool lean = business ? payerPurse && payerPurse->cash <= ComfortableTill
+                                           : payer.account.rfind("stores:", 0) == 0 || payer.account == "treasury" ? treasuryLean(payer.account)
+                                                                                                                    : false;
+                const std::int64_t wage = lean ? 1 : 2;
+                if (shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : job->title == LabourTitle ? "day labour" : "service wages"))
                 {
                     ++life.wagesToday;
-                    if (job->title != LabourTitle)
-                        unpaidSince_.erase(pair.first);
+                    if (job->title != LabourTitle && state_.memory.unpaidSince.erase(pair.first))
+                        ++state_.memory.revision;
                 }
                 else
-                    unpaidSince_.emplace(pair.first, absoluteDay);
+                    state_.memory.revision += state_.memory.unpaidSince.emplace(pair.first, absoluteDay).second;
             }
         }
         else if (task == "buy food")

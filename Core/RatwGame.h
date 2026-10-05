@@ -713,6 +713,7 @@ class Game
         std::size_t ledgerSize = 0;
         std::int64_t books = -1;                    // The month's books' revision.
         std::int64_t houses = -1;                   // The great houses' state's revision.
+        std::int64_t memory = -1;                   // The economy's memory's revision (doc 42).
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
     };

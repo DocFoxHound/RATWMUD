@@ -132,6 +132,7 @@ void Game::prime(Shadow& s) const
     s.ledgerSize = society.ledger.size();
     s.books = society.books.revision;
     s.houses = society.houses.revision;
+    s.memory = society.memory.revision;
     s.ledgerLast = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);
     s.positions = society.careers.positions;
     s.roads = json::dump(checkpoint::roads(world_.roads()));
@@ -193,6 +194,11 @@ void Game::record(unsigned what, const std::string& character)
             set(path({"society", "decisionRemainder"}), society.decisionRemainder);
             set(path({"society", "craftingStocked"}), society.craftingStocked);
             shadow_.economy = now;
+        }
+        if (society.memory.revision != shadow_.memory)
+        {
+            set(path({"society", "memory"}), wire::economyMemory(society.memory));
+            shadow_.memory = society.memory.revision;
         }
         if (society.houses.revision != shadow_.houses)
         {

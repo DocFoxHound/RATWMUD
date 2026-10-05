@@ -41,6 +41,7 @@ void Society::reckon(std::int64_t day, bool force)
     const auto month = day / MonthDays;
     if (books.month >= 0 && (month > books.month || force))
     {
+        collectRents();                                 // Ground rents to the great houses first (doc 42, Phase 5b).
         std::map<std::string, Reckoning> towns;
         // Everyone, and the great houses (on their businesses' takings, doc 42 Phase 5b).
         std::vector<std::pair<std::string, std::string>> payers;    // Account -> its treasury.

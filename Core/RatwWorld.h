@@ -1152,6 +1152,10 @@ class World
     Market marketOf(const std::string& town) const;
     std::string traderOf(const Town& t) const;
     void tradeCaravans();
+    void recoverHoard(const BanditCamp& camp, const std::string& to, const std::string& kind);
+    std::map<std::string, std::map<std::string, double>> marketPrices_;   // Store -> good -> price factor (tendPrices).
+    std::int64_t marketPriceAt_ = -1;
+    std::map<std::string, std::int64_t> churchCared_;   // Player -> the day the church last tended them.
     void tradeCaravanArrived(Caravan& c);
     void tradeCaravanHome(Caravan& c);
     void residentsFillContracts(std::set<std::string>& busy);
@@ -1159,6 +1163,11 @@ class World
   public:
     // The month's reckoning at once (the Dev Console's /reckon): what each town took in, as a line each.
     std::string reckonNow();
+    // The church's care (doc 42, Phase 5): a priest or chapel keeper tends a poor wolf's healing wounds with the
+    // church's bandages, free, once a day: a quarter of each wound's rest. Poor: under PoorPurse.
+    static constexpr std::int64_t PoorPurse = 20;
+    bool churchCares(const std::string& player, const std::string& clergy) const;
+    Result churchCare(const std::string& player, const std::string& clergy);
   private:
     void tendMarks();
     void wearGear(Entity& e, const std::string& item, double amount);

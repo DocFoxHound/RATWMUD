@@ -83,7 +83,7 @@ TABLES = {
 WRITE_ORDER = ['world.areas', 'world.terrain_chunks', 'world.cells', 'world.interiors', 'world.links', 'world.resources',
                'live.factions', 'world.chapters', 'live.patrol_routes', 'live.patrol_posts', 'live.npcs',
                'live.profession_slots', 'live.economy']
-JSON_COLUMNS = {'heights', 'appearance'}
+JSON_COLUMNS = {'heights', 'appearance', 'letting'}
 
 
 def comparable(value):

@@ -1,5 +1,6 @@
 // Careers: positions, skill, apprentices, estates and succession (Docs/Design/26-living-npcs.md, Phase 4).
 #include "RatwSociety.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <cmath>
@@ -85,7 +86,9 @@ double Society::priceFactor(const std::string& merchant, const std::string& item
     const auto store = priceFactors_.find(storeFor(job ? job->work.cell : std::string()));
     if (store == priceFactors_.end())
         return 1;
-    const auto found = store->second.find(item);
+    auto found = store->second.find(item);
+    if (found == store->second.end())
+        found = store->second.find(items::baseOf(item));   // (A fine hide is dear where hides are scarce.)
     return found == store->second.end() || !std::isfinite(found->second) ? 1 : std::clamp(found->second, .5, 2.0);
 }
 

@@ -1,5 +1,6 @@
 #include "RatwWorld.h"
 
+#include "RatwInjury.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
 
@@ -72,6 +73,46 @@ std::string World::reckonNow()
     return text;
 }
 
+bool World::churchCares(const std::string& player, const std::string& clergy) const
+{
+    // A poor wolf with wounds still healing, before a priest or chapel keeper (doc 42, Phase 5: care for the poor).
+    const auto* p = entity(player);
+    const auto* c = entity(clergy);
+    const auto* post = society_.jobOf(clergy);
+    const auto* purse = society_.account(player);
+    if (!p || !c || p->npc || !c->npc || c->dead || !post || !Society::clergy(post->title) || !purse || purse->cash >= PoorPurse)
+        return false;
+    return std::any_of(p->injuries.begin(), p->injuries.end(), [](const Injury& i) { return i.kind == "acute" && i.restLeft > 1; });
+}
+
+Result World::churchCare(const std::string& player, const std::string& clergy)
+{
+    if (!churchCares(player, clergy))
+        return {false, "The church tends those who can't pay a healer, and whose wounds are still healing.", clergy};
+    auto* p = entity(player);
+    const auto* c = entity(clergy);
+    if (p->cellId != c->cellId || std::hypot(p->position.x - c->position.x, p->position.y - c->position.y) > 3)
+        return {false, "Come closer.", clergy};
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    if (const auto last = churchCared_.find(player); last != churchCared_.end() && last->second == today)
+        return {false, c->name + " has tended you today already. Rest now.", clergy};
+    const auto church = society_.churchOf(society_.treasuryOfResident(clergy));
+    const auto* stock = society_.account(church);
+    std::string bandage;
+    for (const auto& kind : stock ? Society::kindsHeld(*stock, "bandages") : std::vector<std::string>{})
+        bandage = kind;
+    if (bandage.empty())
+        return {false, c->name + " has no bandages left to spare; the church is waiting on the chandler and the apothecary.", clergy};
+    society_.consume(church, bandage, 1, "the church's care");
+    // A quarter of each wound's rest, never all of it: care speeds rest, it doesn't replace it (doc 38).
+    for (auto& i : p->injuries)
+        if (i.kind == "acute" && i.restLeft > 1)
+            i.restLeft = std::max(1.0, i.restLeft - i.restFull / 4);
+    churchCared_[player] = today;
+    recordEvent({"church care", clergy, player, c->cellId, 0, 0, "bandages", 1, 0, "tended a poor wolf's wounds"});
+    return {true, c->name + " cleans and binds your wounds, and asks nothing for it. Rest will do the rest, sooner now.", clergy};
+}
+
 std::vector<std::string> World::noteReckonings()
 {
     std::vector<std::string> told;
@@ -91,6 +132,16 @@ std::vector<std::string> World::noteReckonings()
         told.push_back(e.detail);
         recordEvent(std::move(e));
     }
+    // A town falling into disrepair, or mended again (doc 42, Phase 5).
+    for (const auto& n : society_.takeTownNews())
+    {
+        WorldEvent e;
+        e.kind = n.what == "mended" ? "town mended" : "town in disrepair";
+        e.actor = n.community;
+        e.detail = n.what == "mended" ? placeTitle(n.community) + "'s streets and roofs are mended again"
+                                      : placeTitle(n.community) + " is falling into disrepair: cracked plaster, missing tiles";
+        recordEvent(std::move(e));
+    }
     // What the treasuries, churches and houses spent of their surplus today (the rule against hoarding).
     for (const auto& s : society_.takeSpendings())
     {
@@ -108,7 +159,7 @@ std::vector<std::string> World::noteReckonings()
 
 namespace
 {
-constexpr double OpenToPlayersDays = 1;             // A contract for goods is the players' alone this long.
+constexpr double OpenToPlayersDays = .9;            // A contract for goods is the players' alone this long (about a day).
 // (As RatwRoads.cpp's: a steady lot, and a distance.)
 std::uint64_t lot(const std::string& a, std::int64_t b)
 {
@@ -135,13 +186,15 @@ std::pair<std::string, int> World::sourceFor(const Contract& k) const
     bool bestHome = false;
     for (const auto& r : society_.authored().residents)
     {
-        if (r.role != "merchant" || !society_.resident(r.id) || r.id == k.poster)
+        // A shop with it to spare, or someone who brings it in from the land (a quarry's stone, a farm's grain).
+        const auto* producer = items::producerFor(r.workLabel);
+        if ((r.role != "merchant" && !producer) || !society_.resident(r.id) || r.id == k.poster)
             continue;
         const auto* e = entity(r.id);
         const auto* shelves = society_.account(society_.tillOf(r.id));
         if (!e || e->dead || !shelves)
             continue;
-        const int spare = Society::stockAll(*shelves, k.item) - Society::GoodsKept;
+        const int spare = Society::stockAll(*shelves, k.item) - (r.role == "merchant" ? Society::GoodsKept : 0);
         const bool home = lawTown(r.home.cell) == k.town;
         if (spare > 0 && (home > bestHome || (home == bestHome && spare > bestSpare)))
             best = r.id, bestSpare = spare, bestHome = home;
@@ -165,8 +218,15 @@ void World::residentsFillContracts(std::set<std::string>& busy)
         for (const auto& [id, life] : society_.state().residents)
         {
             const auto* e = entity(id);
+            // Someone out of work, labouring for the Town Works, working out of town, or whose work is carrying
+            // (a porter, a messenger, a carter).
+            const auto* job = society_.jobOf(id);
+            const bool carries = job && job->role == "civilian" &&
+                                 (job->title.find("carries") != std::string::npos || job->title.find("carrying") != std::string::npos ||
+                                  job->title.find("hauling") != std::string::npos || job->title.find("messages") != std::string::npos ||
+                                  job->title.find("loads") != std::string::npos);
             if (!e || e->dead || e->transient || e->age < 16 || e->age >= Society::RetireAge || busy.count(id) ||
-                society_.jobOf(id) || society_.apprenticedTo(id) || lawTown(life.homeCell) != k.town)
+                (job && !carries) || society_.apprenticedTo(id) || lawTown(life.homeCell) != k.town)
                 continue;
             if (const auto drawn = lot(k.id + id, today); drawn < best)
                 best = drawn, chosen = id;
@@ -204,10 +264,12 @@ void World::tendContractCarriers()
         {
             // At the shop: the goods are handed over, on the contract's account (it is paid when they arrive).
             const auto* job = society_.jobOf(k.source);
-            if (!job || carrier->cellId != job->serve.cell || apart(carrier->position, {job->serve.x, job->serve.y}) > 3)
+            const auto at = job && job->role == "merchant" ? job->serve : job ? job->work : Spot{};
+            if (!job || carrier->cellId != at.cell || apart(carrier->position, {at.x, at.y}) > 3)
                 continue;
             const auto till = society_.tillOf(k.source);
-            int want = std::min(k.quantity - k.delivered, Society::stockAll(*society_.account(till), k.item) - Society::GoodsKept);
+            const bool shop = job->role == "merchant";
+            int want = std::min(k.quantity - k.delivered, Society::stockAll(*society_.account(till), k.item) - (shop ? Society::GoodsKept : 0));
             const auto kinds = Society::kindsHeld(*society_.account(till), k.item);
             for (const auto& kind : kinds)
             {

@@ -76,11 +76,12 @@ void Society::spendSurpluses(std::int64_t day)
         return;
     surplusDay_ = day;
     // How much each collector usually spends (a slow average of its days), for its reserve.
-    for (auto& [id, avg] : outgoing_)
+    for (auto& [id, avg] : state_.memory.outgoing)
         avg *= .8;
     for (const auto& [id, coins] : spentToday_)
-        outgoing_[id] += .2 * double(coins);
+        state_.memory.outgoing[id] += .2 * double(coins);
     spentToday_.clear();
+    ++state_.memory.revision;
     // The communities: who lives in each, and its shops.
     std::map<std::string, std::vector<std::string>> folk, shops;
     for (const auto& r : authored_.residents)
@@ -121,7 +122,7 @@ void Society::spendSurpluses(std::int64_t day)
                 if (owner == id)
                     floor += 2 * floatOf(pid);
         }
-        const auto reserve = std::max<std::int64_t>(floor, std::int64_t(MonthDays * (outgoing_.count(id) ? outgoing_.at(id) : 0)));
+        const auto reserve = std::max<std::int64_t>(floor, std::int64_t(MonthDays * (state_.memory.outgoing.count(id) ? state_.memory.outgoing.at(id) : 0)));
         const auto surplus = account(id)->cash - reserve;
         const auto budget = surplus / SurplusShare;
         if (budget < 10 || town.empty() || !folk.count(town))

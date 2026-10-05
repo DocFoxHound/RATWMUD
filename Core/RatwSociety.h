@@ -190,6 +190,16 @@ struct House
     std::string id, name, head, community;          // id: "house:fell"; head: the head's position.
 };
 
+// What the economy remembers from day to day (doc 42): who has gone unpaid since when (Phase 3), and each treasury's,
+// church's and house's usual spending a day, for its reserve (the rule against hoarding). Saved with the society.
+struct EconomyMemory
+{
+    std::map<std::string, double> unpaidSince;      // Worker -> the day its employer first couldn't pay.
+    std::map<std::string, double> outgoing;         // Collector -> a slow average of its days' spending.
+    std::map<std::string, double> condition;        // Community -> its buildings' repair, 0 to 100 (the Town Works).
+    std::int64_t revision = 0;
+};
+
 struct SocietyState
 {
     bool enabled = false;
@@ -205,6 +215,7 @@ struct SocietyState
     CareerState careers;
     MonthBooks books;
     HouseState houses;
+    EconomyMemory memory;
 };
 struct EconomyResult
 {
@@ -554,6 +565,11 @@ class Society
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";
+    static constexpr std::int64_t ComfortableTill = 150;   // A shop that has more pays its help full wages (doc 42).
+    static constexpr int PayrollDays = 14;         // Days of wages a town's treasury keeps before funding its buyers.
+    // A treasury with less than this a head of its town pays its posts 1p a spell, not 2 (doc 42, 2026-10-05).
+    static constexpr int LeanTreasury = 20;
+    bool treasuryLean(const std::string& treasury) const;
     static constexpr int RetireAge = 65;
     // Working out of town (doc 42, Phase 3b): the ground a grown wolf without a post works today, or null (it labours
     // for the Town Works instead). A ground takes OutworkRoom wolves; the choice is the wolf's own, steady day to day.
@@ -574,6 +590,10 @@ class Society
     // A manager's wage a day, the days of running costs a till keeps (its float), and how many of the last 28 days a
     // till may run low (propped up by its house, or not) before the house sells the business on. Placeholders.
     static constexpr int ManagerWage = 8, FloatDays = 7, ProppedDays = 10;
+    // A great house's founding fortune, and a month's rent a business pays a house for its ground. Placeholders.
+    static constexpr std::int64_t HouseFortune = 3000, MonthlyRent = 20;
+    // The month's rents (at the reckoning): each business in a town with great houses pays one that doesn't own it.
+    void collectRents();
     std::int64_t floatOf(const std::string& positionId) const;
     // Once a game day: the managers' wages, the takings above each till's float to its house, a struggling till propped
     // up, and a business that keeps losing sold to another house. Gives the houses their businesses the first time.
@@ -592,6 +612,17 @@ class Society
     static constexpr int SurplusShare = 10;
     void spendSurpluses(std::int64_t day);
     std::vector<Spending> takeSpendings();
+    // A town's buildings falling into disrepair (under 50) or mended again, since the world last asked.
+    struct TownNews
+    {
+        std::string community, what;                // what: "disrepair" or "mended".
+    };
+    std::vector<TownNews> takeTownNews() { std::vector<TownNews> out; out.swap(townNews_); return out; }
+    double condition(const std::string& community) const
+    {
+        const auto found = state_.memory.condition.find(community);
+        return found == state_.memory.condition.end() ? 100 : found->second;
+    }
     // Restday's service (doc 42, Phase 6): from ServiceStart to ServiceEnd a third of the town (a steady per-wolf share,
     // different week to week) sits in its church while its clergy preach; the plate goes round as it ends.
     static constexpr double ServiceStart = 9, ServiceEnd = 11;
@@ -604,9 +635,9 @@ class Society
     std::string capital_;
     bool tradeByCaravan_ = false;
     std::map<std::string, std::int64_t> spentToday_;       // Collector -> its ordinary spending today (not saved).
-    std::map<std::string, double> outgoing_;               // Collector -> a slow average of its days' spending.
     std::int64_t surplusDay_ = -1;
     std::vector<Spending> spendings_;
+    std::vector<TownNews> townNews_;
     void noteOutgoing(const std::string& from, const std::string& kind, std::int64_t coins);
     // Buys what `wanted` from the shops' tills, up to `budget`, never a shop's last few; what was got, by item.
     std::int64_t buyForSurplus(const std::string& buyer, const std::vector<std::string>& shops,
@@ -618,9 +649,13 @@ class Society
     mutable std::map<std::string, std::size_t> outwork_;   // Resident -> its ground's index in its community's list.
     mutable std::map<std::string, std::map<std::size_t, int>> outworkTaken_;   // Community -> ground -> how many.
     mutable std::int64_t outworkDay_ = -1;
-    std::map<std::string, double> unpaidSince_;
     std::set<std::string> offered_;                        // Who has put something on the plate this Restday.            // Worker -> the day its employer first couldn't pay (not saved).
     mutable std::unordered_map<std::string, std::vector<std::string>> employers_;   // Work cell -> shops' and houses' positions.
+    mutable std::map<std::string, std::string> richest_;    // Home cell -> its household's richest (for the day).
+    mutable std::int64_t richestDay_ = -1;
+    const std::string* richestAt(const std::string& homeCell, const std::string& besides) const;
+    mutable std::map<std::string, int> people_;              // Treasury -> residents who pay it (for the day).
+    mutable std::int64_t peopleDay_ = -1;
     void indexEmployers() const;
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.
