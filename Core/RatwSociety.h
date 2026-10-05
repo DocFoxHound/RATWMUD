@@ -589,7 +589,7 @@ class Society
     std::string ownerOf(const std::string& positionId) const;
     // A manager's wage a day, the days of running costs a till keeps (its float), and how many of the last 28 days a
     // till may run low (propped up by its house, or not) before the house sells the business on. Placeholders.
-    static constexpr int ManagerWage = 8, FloatDays = 7, ProppedDays = 10;
+    static constexpr int ManagerWage = 8, FloatDays = 3, ProppedDays = 10;
     // A great house's founding fortune, and a month's rent a business pays a house for its ground. Placeholders.
     static constexpr std::int64_t HouseFortune = 3000, MonthlyRent = 20;
     // The month's rents (at the reckoning): each business in a town with great houses pays one that doesn't own it.

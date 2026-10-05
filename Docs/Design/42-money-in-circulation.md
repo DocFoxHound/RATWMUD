@@ -803,6 +803,17 @@ The user reassessed the list on 2026-10-04 and asked for every item to be solved
     So a poor town shows it (its buildings wear, its watch eats plainly, its posts are poorly paid) rather than going
     broke.
 
+    *Measured* over three days on build 24:
+    - Wages out, about 520p a day: most towns pay half while their treasuries are lean.
+    - Buyers about 150p a day.
+    - Trade takings in, about 450p a day, and the month's tax about 340p a day.
+    - Treasuries 18,400p after the purse division, 16,300p after three days (the churches' foundations were most of
+      it). They are roughly steady.
+20. **The great houses' fortunes drained into their shops' tills** (13,000p in three days, propping tills up to a
+    week's float). *Done:* a till's float is three days of wages, not seven. Over two days on build 24 the houses held
+    9,477p (against 4,779p before). They propped up 10,314p, mostly the first day's filling of their new tills, and took
+    in 2,609p. Money stayed conserved, with a mean tick of 2.4 ms.
+
 ## Open questions
 
 1. **Players:** do they pay the tax and tithe on what they earn in town (contracts, sales)? *Recommendation:* yes, the

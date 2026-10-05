@@ -61,15 +61,15 @@ std::string Society::tillOf(const std::string& keeper) const
 
 std::int64_t Society::floatOf(const std::string& positionId) const
 {
-    // A week of the business's running: its manager's wage and its help's (the posts that work where it does), and its
-    // materials (placeholder).
+    // FloatDays of the business's running: its manager's wage and its help's (the posts that work where it does), and
+    // a little for materials (placeholders; three days since 2026-10-05, when a week drained the houses' fortunes).
     const auto* business = position(positionId);
     if (!business)
         return 0;
     int help = 0;
     for (const auto& p : positions_)
         help += p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell;
-    return FloatDays * (ManagerWage + 6 * help) + 60;
+    return FloatDays * (ManagerWage + 6 * help) + 30;
 }
 
 void Society::foundHouses()
