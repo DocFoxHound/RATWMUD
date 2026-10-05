@@ -269,14 +269,15 @@ export class CombatScreen {
         // The headline: one's own state, in a word or two.
         const mine = myTurn(b, s.selfId);
         const wait = me ? secondsToTurn(me, since) : 0;
-        const head = b.over ? 'OVER' : b.observer ? 'WATCHING' : !me ? '' : me.status === 'downed' && !mine ? 'YOU ARE DOWN'
+        const head = b.over ? 'OVER' : b.placing ? `TAKE YOUR GROUND · ${Math.ceil(Math.max(0, b.placingLeft - since))}${b.ready ? ' · READY' : ''}`
+            : b.observer ? 'WATCHING' : !me ? '' : me.status === 'downed' && !mine ? 'YOU ARE DOWN'
             : mine ? 'YOUR TURN' : Number.isFinite(wait) ? `YOUR TURN IN ${Math.ceil(wait)}${b.planning ? (b.plan ? ' · PLANNED' : ' · PLAN IT') : ''}` : 'WAITING';
         setText(this.stripHead, head);
         setClass(this.stripHead, 'mine', mine);
         // No one deciding, the bars fill faster (doc 37): said, so a quicker turn isn't a surprise.
-        setText(this.stripNote, [`ROUND ${Math.max(1, b.round)}`, b.haste > 1 && !b.over ? `» ×${b.haste}` : '',
+        setText(this.stripNote, [`ROUND ${Math.max(1, b.round)}`, b.haste > 1 && !b.over && !b.placing ? `» ×${b.haste}` : '',
             b.watching > 0 ? `${b.watching} watching` : ''].filter(Boolean).join(' · '));
-        const hasteTip = b.haste > 1 ? 'No one is deciding a turn: every bar fills faster until someone\'s turn comes' : '';
+        const hasteTip = b.haste > 1 && !b.placing ? 'No one is deciding a turn: every bar fills faster until someone\'s turn comes' : '';
         if (this.stripNote.title !== hasteTip) this.stripNote.title = hasteTip;
     }
 
@@ -371,6 +372,8 @@ export class CombatScreen {
                 marks.push(['armour', `Armour, where a blow lands: ${f.armour.zones.map(z => `${z.zone}, ${z.piece.toLowerCase()} (${z.thrust} off a bite, ${z.cut} off a cut)`).join(' · ')}. ` +
                     `Blows elsewhere get through whole; at least a quarter always does${f.armour.dex < 0 ? ` · its weight slows their bar as DEX −${-f.armour.dex}` : ''}`]);
             if (f.stalking) marks.push(['stalk', 'Stalking: moving crouched, quiet and harder to see; half the move']);
+            if (f.unseen) marks.push(['watch', 'Hidden: the other side hasn\'t noticed them yet, and can\'t see them']);
+            if (b.placing && f.ready) marks.push(['yes', 'Ready']);
             if (f.guarding) marks.push(['guard', 'On guard: harder to hit, and turns to meet a blow, until their next turn']);
             const marksKey = marks.map(m => m[0]).join();
             if (marksKey !== c.marksKey) {
@@ -533,7 +536,12 @@ export class CombatScreen {
             }
         }
         // The turn's time, running down inside End turn; or one's bar filling toward the next.
-        if (this.endFill && me) {
+        if (this.endFill && me && b.placing) {
+            // The positioning phase's time, running down inside Ready.
+            const left = Math.max(0, b.placingLeft - since);
+            setStyle(this.endFill, 'width', `${(Math.min(1, left / 30) * 100).toFixed(1)}%`);
+            if (this.endText) setText(this.endText, `${Math.ceil(left)} s`);
+        } else if (this.endFill && me) {
             const left = mine ? Math.max(0, b.turnLeft - since) : 0;
             const wait = secondsToTurn(me, since);
             const share = mine ? Math.min(1, left / TurnSeconds) : Number.isFinite(wait) ? Math.max(0, 1 - wait / 15) : 0;
@@ -554,6 +562,20 @@ export class CombatScreen {
         if (me.away) {
             out.push({id: 'back', key: 'Space', icon: 'rise', label: "I'm back", sub: '', tip: 'Your turns are being skipped while you are away',
                 enabled: true, kind: 'go', run: () => s.sendBattle('back')});
+            return out;
+        }
+        if (b.placing && me.status === 'fighting') {
+            // Taking one's ground (doc 40): click a green tile of your half; turn; crouch to stalk; then Ready.
+            out.push({id: 'stalk', key: 'C', icon: 'stalk', label: b.stalking ? 'Stalking' : 'Stalk', sub: b.stalking ? 'on' : 'off',
+                tip: 'Stalk (C): crouched from the start: quiet and harder to see. A wolf the other side hasn\'t noticed stays hidden from them',
+                enabled: true, kind: b.stalking ? 'go' : '', run: () => s.sendBattle(b.stalking ? 'rise' : 'stalk')});
+            out.push({id: 'left', key: 'Q', icon: 'left', label: '', sub: '', tip: 'Turn left (Q)', enabled: true, kind: 'small', run: () => s.turnInFight(-1)});
+            out.push({id: 'right', key: 'E', icon: 'right', label: '', sub: '', tip: 'Turn right (E)', enabled: true, kind: 'small', run: () => s.turnInFight(1)});
+            out.push({id: 'ready', key: 'Space', icon: b.ready ? 'yes' : 'end', label: b.ready ? 'Ready' : 'Ready?', sub: '',
+                tip: b.ready ? 'Ready: waiting for the others (press again to take a moment more)'
+                    : 'Take your ground: click a green tile on your side (red is cut off from the fight), turn, then Ready (Space). ' +
+                      'The fight begins when everyone is ready, or the time runs out',
+                enabled: true, kind: 'end', run: () => s.sendBattle('ready', {on: !b.ready})});
             return out;
         }
         // Waiting for one's turn, it can be planned (doc 37): chosen now, played as the turn comes.

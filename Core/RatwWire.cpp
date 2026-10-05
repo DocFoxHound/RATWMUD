@@ -194,6 +194,8 @@ Value persistEntity(const Entity& e, double time)
         o.add("swordKind", e.swordKind);
     if (e.scentMaskedUntil > 0)
         o.add("scentMaskedUntil", e.scentMaskedUntil);
+    if (e.noPvp)
+        o.add("noPvp", true);
     if (!e.wear.empty())
     {
         auto wear = Value::object();
@@ -335,6 +337,7 @@ Entity readEntity(const Value& o)
     if (const auto kind = o.string("swordKind"); e.mouth == "sword" && items::baseOf(kind) == "sword" && items::good(kind))
         e.swordKind = kind;
     e.scentMaskedUntil = std::max(0.0, strictNumber(o, "scentMaskedUntil", 0.0));
+    e.noPvp = !e.npc && o.boolean("noPvp");
     for (const auto& [item, used] : o.object("wear").fields())
         if (items::good(item) && used.asNumber(-1) >= 0 && used.asNumber(-1) <= 100000 && e.wear.size() < 64)
             e.wear[item] = used.asNumber(0);

@@ -15,6 +15,15 @@ inline int apart(int ax, int ay, int bx, int by)
     return std::max(std::abs(ax - bx), std::abs(ay - by));
 }
 
+// Every player in `id`'s fight ready, ending the positioning phase (doc 40) at the next moment, as players do.
+inline void takeGround(World& w, const std::string& id)
+{
+    if (const auto* b = w.battleOf(id))
+        for (const auto& f : b->fighters)
+            if (const auto* e = w.entity(f.id); e && !e->npc)
+                w.readyToFight(f.id, true);
+}
+
 // Whether `id` is taking a turn now (several may be at once: doc 33).
 inline bool acting(const Battle* b, const std::string& id)
 {

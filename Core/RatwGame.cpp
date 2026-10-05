@@ -2347,6 +2347,8 @@ void Game::sendSnapshot(Connection* c)
         }
         if (me->dungeonMaster)
             self.set("dungeonMaster", true);       // The Dev Console is theirs (RatwGameDev.cpp).
+        if (me->noPvp)
+            self.set("noPvp", true);               // Auto-decline fights with players (doc 40).
         if (!me->gift.empty())
         {
             self.set("gift", me->gift);
@@ -2628,8 +2630,8 @@ void Game::sendSnapshot(Connection* c)
         }
         // Fights (doc 33): a player close by may be challenged; anyone lying Downed close by (out of a fight) tended.
         const double apart = std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y);
-        if (!e.npc && e.id != view.self.id && !e.dead && e.downedLeft <= 0 && apart <= battle::StartReach)
-            actions.push("challenge");
+        if (!e.npc && e.id != view.self.id && !e.dead && e.downedLeft <= 0 && apart <= battle::StartReach && !e.noPvp)
+            actions.push("challenge");               // (Not one who auto-declines fights with players.)
         // Introductions (doc 32): to anyone close who doesn't know this wolf's name, by any of its names.
         if (options_.hiddenNames && e.id != view.self.id && !e.transient && !e.dead && apart <= 6 && !knowsName(e.id, view.self.id))
         {
@@ -3699,6 +3701,14 @@ void Game::command(Connection* c, const std::string& raw)
         if (!partyCommand(c, j, result))
             result = {false, "That isn't something a party does.", {}};
         report = true;
+    }
+    else if (type == "noPvp")
+    {
+        // Settings: auto-decline fights with players (doc 40's fight start), kept with the character.
+        result = world_.setNoPvp(id, j.boolean("on"));
+        report = true;
+        if (result.ok)
+            record(Character, id);
     }
     else if ((type == "gift" || type == "grant") && options_.devTools)
     {

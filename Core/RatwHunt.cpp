@@ -368,6 +368,7 @@ Result World::startHunt(const std::string& player)
             if (const auto* s = wild::speciesById(a->second.species))
                 seen.push_back(s->name);
     huntArrivals_[b.id] = {time_ + wild::population().arrivalSeconds, expected};
+    beginPlacing(b);                                // The hunters take their ground first (doc 40); game stays where it is.
     battles_.push_back(std::move(b));
     return {true, (followed.empty() ? std::string() : "You follow " + followed + "'s trail. ") + "You go out after game. Ahead: " +
                       listed(seen) + ", not yet aware of you.",

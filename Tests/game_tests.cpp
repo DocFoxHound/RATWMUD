@@ -1172,7 +1172,32 @@ void fightsThroughTheGame()
            "Bo is asked");
     g.command(&bo, cmd({{"type", "action"}, {"action", "accept"}}));
     run(g, ada, .3);
+    // First the sides take their ground (doc 40): Ada is shown her half, row by row; a tile there is hers to take.
+    {
+        const auto placing = ada.snapshots.back()["battle"];
+        expect(placing.boolean("placing") && placing.number("placingLeft") > 25 && !placing.boolean("ready"), "the sides take their ground first");
+        expect(placing.array("placeRows").size() == std::size_t(placing["arena"].number("h")), "her half, row by row");
+        expect(placing.string("turn").empty(), "no one's turn yet");
+    }
+    g.command(&ada, cmd({{"type", "battle"}, {"verb", "ready"}}));
+    g.command(&bo, cmd({{"type", "battle"}, {"verb", "ready"}}));
+    run(g, ada, .3);
     run(g, cy, .3);
+    {
+        // Hidden from her side (doc 40): Bo, sneaking in unseen, isn't sent to Ada at all; his own view has him, marked.
+        auto* hid = const_cast<Battle*>(g.world().battleOf(bo.entityId))->fighter(bo.entityId);
+        hid->unseen = true;
+        run(g, ada, .3);
+        run(g, bo, .3);
+        bool shown = false, own = false;
+        for (const auto& f : ada.snapshots.back()["battle"].array("fighters"))
+            shown = shown || f.string("id") == bo.entityId;
+        for (const auto& f : bo.snapshots.back()["battle"].array("fighters"))
+            own = own || (f.string("id") == bo.entityId && f.boolean("unseen"));
+        expect(!shown && own, "a wolf hidden from Ada's side isn't sent to her; his own view has him, marked");
+        hid->unseen = false;
+        run(g, ada, .3);
+    }
     const auto& seen = ada.snapshots.back();
     expect(seen.has("battle"), "Ada's snapshot carries the arena");
     const auto fight = seen["battle"];

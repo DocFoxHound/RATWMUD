@@ -58,6 +58,9 @@ struct BattleFighter
     bool stalking = false;
     // A hit zone aimed for (doc 40/35: "head", "throat", "body", "legs"; "" for wherever it lands): kept until changed.
     std::string aim;
+    // Doc 40's fight start: hidden from the other side (sneaking in unseen: no token, no card) until any of them notices
+    // it, or it strikes or is struck; and, in the positioning phase, done placing itself.
+    bool unseen = false, ready = false;
     // A plan made while its bar fills (doc 37, phase 5): a tile to go to and an action (its target a fighter, or "x,y"
     // for fire), played out as its turn begins; the rest of the turn is still its own. `begun`: the move is under way.
     struct Plan
@@ -139,6 +142,15 @@ struct Battle
         double at = 0;
     };
     std::map<std::pair<std::string, std::string>, Seen> seenAt;
+    // The positioning phase (doc 40's fight start): until when (world seconds; -1 once it is over); the line between the
+    // two sides' halves (a point on it, and the way from side 0 toward side 1); and the arena's open ground in connected
+    // parts (a label a tile, row by row, -1 where no one can stand), with the one that matters (`mainZone`: the part both
+    // sides can reach each other in).
+    double placingUntil = -1;
+    double midX = 0, midY = 0, dirX = 1, dirY = 0;
+    std::vector<int> zones;
+    int mainZone = -1;
+    bool placing() const { return placingUntil >= 0; }
 
     const BattleFighter* fighter(const std::string& who) const
     {
@@ -201,7 +213,9 @@ constexpr double PlanBeat = .5, Haste = 2.5;              // A turn with move, a
 constexpr double StepSeconds = .45, SprintStepSeconds = .2, CrawlStepSeconds = 1.0;   // At a walk; at a sprint.
 constexpr int NpcPace = 6;                                     // NPCs fight at a run.
 constexpr double BannerSeconds = 2.0, FadeSeconds = .5, SettleSeconds = 5;
-constexpr double ChallengeSeconds = 30, StartReach = 3.0;
+// A fight may be started (an attack, a challenge) on a wolf this far off (doc 40's fight start: from a distance); bandits
+// creeping up spring from closer, so as not to be heard.
+constexpr double ChallengeSeconds = 30, StartReach = 12.0, CreepSpring = 3.0;
 constexpr double YieldSeconds = 20, LapseSeconds = 60;   // An offer to yield unanswered; a fight everyone left.
 constexpr double BiteDamage = 12, BiteStamina = 8;
 // Guard (doc 37): a blow's chance against one on guard, this much lower. Shove: its breath, and the odds of a push
@@ -233,6 +247,9 @@ constexpr double SneakPerAmbush = .5, SneakUnnoticed = .05;
 // Aiming for a hit zone: the blow is this much less likely to land (none on one taken unawares), and lands there if the
 // side it comes at allows (no head from behind). Bandits creeping up give up after this long unseen-but-unready.
 constexpr double AimPenalty = .15, CreepGiveUp = 90;
+// Doc 40's fight start: each side places its wolves on its half of the arena for this long (seconds), unless all are
+// ready sooner.
+constexpr double PlacingSeconds = 30;
 // In the open world (doc 40, §2): residents check what they notice of players near them this often (seconds), within
 // this many tiles; a sneak unnoticed close by learns this much a check; a guard who hears something goes to look for
 // this long. Noticing a stalker teaches a player's ears or nose this much.

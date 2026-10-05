@@ -43,6 +43,8 @@ export interface FighterView {
     turnLeft: number;           // Seconds left in it, when acting.
     armour: ArmourView | null;  // Armour worn (doc 35, Part 8), by hit zone; and what it takes off the bar's DEX.
     stalking: boolean;          // Moving crouched (doc 40): quiet, half the move, harder to see.
+    unseen: boolean;            // Sneaking in unseen (doc 40): one's own side's wolf the other side hasn't noticed yet.
+    ready: boolean;             // Ready, in the positioning phase.
     hidden: boolean;            // A stalking foe this wolf has lost (doc 40): x, y are where it was last seen, seenAgo since.
     seenAgo: number;
     guarding: boolean;          // On guard (doc 37): harder to hit, turning to meet a blow, until their next turn.
@@ -138,6 +140,12 @@ export interface BattleView {
     plan: PlanView | null;
     stalking: boolean;          // This wolf, stalking (doc 40).
     aim: string;                // The hit zone this wolf aims for ("head", "throat", "body", "legs"), "" for wherever.
+    // The positioning phase (doc 40): on; seconds left; this wolf ready; its side's ground row by row ('1' may be taken,
+    // '0' its half but cut off from the fight, '#' no one can stand, '.' the other side's half).
+    placing: boolean;
+    placingLeft: number;
+    ready: boolean;
+    placeRows: string[];
     wind: {dir: number; strength: number};  // Over the arena: heading (east 0, south π/2) and 0..1.
     haste: number;
     log: BattleLine[];
@@ -247,7 +255,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
             acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')), guarding: bool(f, 'guarding'), stalking: bool(f, 'stalking'),
-            hidden: bool(f, 'hidden'), seenAgo: num(f, 'seenAgo'),
+            hidden: bool(f, 'hidden'), seenAgo: num(f, 'seenAgo'), unseen: bool(f, 'unseen'), ready: bool(f, 'ready'),
             armour: obj(f, 'armour') ? {dex: num(obj(f, 'armour'), 'dex'), zones: objects(obj(f, 'armour'), 'zones').map(z => ({zone: str(z, 'zone'),
                 piece: str(z, 'piece'), cut: num(z, 'cut'), thrust: num(z, 'thrust')}))} : null,
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
@@ -264,6 +272,10 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         planning: bool(b, 'planning'),
         stalking: bool(b, 'stalking'),
         aim: str(b, 'aim'),
+        placing: bool(b, 'placing'),
+        placingLeft: num(b, 'placingLeft'),
+        ready: bool(b, 'ready'),
+        placeRows: arr(b, 'placeRows').filter((r): r is string => typeof r === 'string'),
         wind: {dir: num(obj(b, 'wind'), 'dir'), strength: num(obj(b, 'wind'), 'strength')},
         plan: readPlan(obj(you, 'plan')),
         haste: num(b, 'haste', 1),
@@ -465,6 +477,10 @@ export function clockLabel(seconds: number): string {
 export function fightTips(b: BattleView, me: FighterView, mine: boolean): Array<{id: string; where: 'top' | 'right' | 'bottom'; text: string}> {
     const out: Array<{id: string; where: 'top' | 'right' | 'bottom'; text: string}> = [];
     if (me.status !== 'fighting') return out;
+    if (b.placing) {
+        out.push({id: 'place', where: 'top', text: 'Take your ground: click a green tile on your side (red is cut off from the fight), turn, and Ready.'});
+        return out;
+    }
     const foes = b.fighters.some(f => f.side !== me.side && f.status === 'fighting');
     if (mine) out.push({id: 'turn', where: 'top', text: 'Your turn: click a tile inside the outline to move, and a foe to strike, or use the bar below. Q and E turn you.'});
     if (mine && !b.acted && foes)
@@ -491,4 +507,11 @@ export const AimZones = ['', 'throat', 'head', 'body', 'legs'];
 /** The next zone to aim for after this one. */
 export function nextAim(aim: string): string {
     return AimZones[(AimZones.indexOf(aim) + 1) % AimZones.length];
+}
+
+/** Whether this wolf may take that tile in the positioning phase (doc 40): its own half, ground that reaches the fight. */
+export function placeAt(b: BattleView, x: number, y: number): '1' | '0' | '#' | '.' | '' {
+    const row = b.placeRows[y - b.arena.y];
+    const c = row?.[x - b.arena.x] ?? '';
+    return c === '1' || c === '0' || c === '#' || c === '.' ? c : '';
 }

@@ -299,3 +299,65 @@ In `Core/RatwBattle.cpp` ("Sneaking"), with one change each to hunting's `animal
 camp creeps); whether players should notice an NPC sneaking in the open world (only bandits creep, and a player gets
 the rustle and the anonymous pawstep and scent cues); and doc 35's other leads on zones (a bite going for the throat,
 leg hits slowing a wolf).
+
+## How a fight starts (decided and built 2026-10-04)
+
+The user's brief: when a fight is started, by a sneaking wolf or with one in its party, every sneaking wolf should enter
+the arena hidden, its card not appearing, until it is detected (heard, seen, or when it attacks), so groups can set up
+fights and hide their numbers. Fights should start at a distance; a sneaking wolf that joins a fight already under way
+shouldn't join sneaking; and each side should have 30 seconds (skippable when both are done) to place its wolves on
+its side of the arena, with unreachable ground made very apparent and refused, and a wolf that gets itself cut off
+dealt with.
+
+Decided: a fight starts on a wolf up to about **12 tiles** off; between players it stays an **agreement** (a challenge
+accepted), even from hiding, and a player may **auto-decline** them; a hidden wolf, once noticed, is shown to the **whole
+other side**; the **positioning phase** is for every fight (ambushes and hunts too: the ambushed still start unaware,
+their bars empty); a wolf cut off is **moved to the nearest open ground**, or, the last of its side, **loses** the fight
+for it; a hidden challenger is "someone you can't see"; the halves split across the gap between the two sides;
+auto-decline doesn't keep a player out of a fight their party joins.
+
+Built:
+- **From 12 tiles** (`battle::StartReach`): attacks and challenges, and the menu's Challenge and Attack, reach that far.
+  Bandits creeping up still spring from 3 (`battle::CreepSpring`), so as not to be heard.
+- **Auto-decline** (`Entity::noPvp`, saved; command `{"type":"noPvp","on":bool}`; Settings → "Fights with players:
+  Auto-decline / Open to challenges"): no one may challenge that player, and Challenge isn't offered on them; a
+  challenge waiting is withdrawn.
+- **The approach counts:** a resident already suspicious or alert to an attacker (from the open world, §2) isn't taken
+  unawares by it.
+- **Hidden at the start** (`BattleFighter::unseen`): every wolf crouched as a fight begins (its starter, or one coming
+  in while the sides take their ground: a party pulled in) that none of the other side notices is hidden from them, and
+  they are unaware of it. A wolf hidden from a side isn't sent to it at all: no token, no card, no face in the turn
+  order, none of its lines in the fight's story, no fire it gathers. Its own side sees it, marked "Hidden". It is
+  revealed to the whole other side when any of them notices it (as in §4: an NPC's or a player's checks), when it
+  strikes (a bite, a sword, fire or a shove: "Cy comes out of hiding"), or when it is struck. A hidden player striking a
+  player gets no ambush's bonus (decided earlier: hiding buys position between players).
+- **Joining:** while the sides take their ground, a joiner is placed on its side's half, and hidden if crouched and
+  unnoticed; once the fight is under way, a joiner comes in seen, not stalking.
+- **The positioning phase** (`Battle::placingUntil`, `battle::PlacingSeconds` = 30):
+  - the halves split across the gap between where the sides stood (`World::halfOf`); the arena's open ground mapped in
+    connected parts (`World::mapZones`, eight ways as a wolf walks, no climbing a ledge), and the one that matters is
+    the largest with ground on both halves;
+  - every wolf (not game) is first put on its own half on that ground, nearest where it stood; NPCs are ready at once;
+  - a player places itself (battle verb `place`, x, y: its half, that ground, free), turns (Q/E, the facing parts,
+    dragging), may Stalk, and says Ready (`ready`); nothing else happens meanwhile: no bars, no turns;
+  - it ends when every player in it is ready, or after 30 s; NPCs then face the nearest foe they know of (not those
+    taken unawares, nor game), and anyone cut off is dealt with;
+  - the page: "TAKE YOUR GROUND · 27" over the map; one's half faintly green, ground on it cut off from the fight
+    hatched red ("cut off from the fight" by the pointer), the other half darkened; a ghost of oneself where a click
+    would place; the bar is Stalk, the turns and **Ready** with the time running down in it; cards marked "Ready"; a
+    first-fight tip says how.
+  - The snapshot's `placing`, `placingLeft`, `ready` and `placeRows` (the ground row by row: '1' may be taken, '0' its
+    half but cut off, '#' no one can stand, '.' the other half).
+- **Cut off** (`World::reachesFoe`, `unstick`): at the end of the positioning phase and at the start of each turn, a
+  wolf on ground from which no foe can be reached is put on the nearest open ground that can ("finds a way back into
+  the fight"), or, the last of its side still standing, leaves it ("is cut off from the fight, with no way to reach
+  it"), and the other side has it.
+- **Fixed on the way:** a fight's ground map was stale after someone joined and the arena grew; it is mapped again.
+- **Tested:** `Tests/battle_tests.cpp` `sneak::fightStart` (fifteen tiles too far, ten not; auto-decline; each on its
+  half; one's own ground taken, the other side's and a walled pocket refused; turning while placing; no bars meanwhile;
+  a crouched party mate coming in hidden, on his half; all ready, it begins; a latecomer seen; a hidden wolf's blow
+  reveals it; a wolf walled in put back at its turn, and the last of a side walled in losing it) and
+  `sneak::sneakingInOnAResident`; `Tests/game_tests.cpp` (the positioning phase in the snapshot, ready by command, and a
+  hidden wolf not sent to the other side); `Client/src/game/battle.test.ts`. In the browser: a challenge from 8 tiles,
+  auto-decline taking Challenge away, the phase with its halves, a tile taken, both ready, and the fight begun.
+- Existing tests that start fights now mark their players ready, as a player would (`test::takeGround`).

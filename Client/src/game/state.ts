@@ -6,7 +6,7 @@ import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, Walker} from './walker.ts';
-import {apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
+import {placeAt, apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
     type ChallengeView, type FightSquare, type GroundView, type GearView} from './battle.ts';
 import {FightEffects} from './fightFx.ts';
 
@@ -579,7 +579,7 @@ export class GameState {
     arenaFace(tx: number, ty: number) {
         const b = this.battle;
         const me = b?.fighters.find(f => f.id === this.selfId);
-        if (!b || !me || !myTurn(b, this.selfId) || (tx === me.x && ty === me.y)) return;
+        if (!b || !me || !(myTurn(b, this.selfId) || b.placing) || (tx === me.x && ty === me.y)) return;
         this.sendBattle('face', {dir: octant(tx - me.x, ty - me.y)});
     }
 
@@ -587,7 +587,7 @@ export class GameState {
     turnInFight(step: number) {
         const b = this.battle;
         const me = b?.fighters.find(f => f.id === this.selfId);
-        if (!b || !me || !myTurn(b, this.selfId)) return;
+        if (!b || !me || !(myTurn(b, this.selfId) || b.placing)) return;     // (While taking their ground too: doc 40.)
         this.sendBattle('face', {dir: (me.facing + step + 8) % 8});
     }
 
@@ -690,6 +690,11 @@ export class GameState {
             this.aiming = '';
             if (myTurn(b, this.selfId)) this.sendBattle('flame', {x: tx, y: ty});
             else if (b.planning) this.sendBattle('plan', {act: 'flame', x: tx, y: ty});
+            return;
+        }
+        if (b.placing) {
+            // Taking one's ground (doc 40): a tile of one's own half that reaches the fight.
+            if (placeAt(b, tx, ty) === '1' && !fighterAt(b, tx, ty)) this.sendBattle('place', {x: tx, y: ty});
             return;
         }
         const there = fighterAt(b, tx, ty);
@@ -1524,7 +1529,7 @@ export class GameState {
     /** One's own wolf on the screen, in a fight, on one's own turn (for turning it by dragging). */
     private ownTokenCentre(): [number, number] | null {
         const b = this.battle, me = b?.fighters.find(f => f.id === this.selfId);
-        if (!b || !me || !myTurn(b, this.selfId) || me.status !== 'fighting' || this.aiming) return null;
+        if (!b || !me || !(myTurn(b, this.selfId) || b.placing) || me.status !== 'fighting' || this.aiming) return null;
         return [this.mapOrigin[0] + (me.x + 0.5) * this.tileSize, this.mapOrigin[1] + (me.y + 0.5) * this.tileSize];
     }
 
@@ -1696,6 +1701,7 @@ export class GameState {
         else if (a === 'projection') this.flatWorld = !this.flatWorld;
         else if (a === 'glyphs') this.plainGlyphs = !this.plainGlyphs;
         else if (a === 'tooltips') this.hoverTooltips = !this.hoverTooltips;
+        else if (a === 'nopvp') this.send({type: 'noPvp', on: !bool(obj(this.snapshot, 'self'), 'noPvp')});   // (Kept with the character: doc 40.)
         else if (a === 'fighttips') {
             this.fightTips = !this.fightTips;
             try {

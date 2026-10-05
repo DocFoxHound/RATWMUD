@@ -245,6 +245,7 @@ struct Entity
     std::string swordKind;
     std::map<std::string, double> wear;
     double scentMaskedUntil = 0;    // Masking oil (doc 35): its scent, and what it carries, hidden until then (world seconds). Saved.
+    bool noPvp = false;             // Auto-decline fights with players (doc 40's fight start): no one may challenge them. Saved.
     std::vector<std::pair<std::string, std::string>> jewellery;     // (spot, item)
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
@@ -629,6 +630,15 @@ class World
     double awareness(const Battle& b, const std::string& observer, const std::string& target) const;
     bool ambushing(const Battle& b, const BattleFighter& f, const BattleFighter& t) const;
     Result battleStalk(const std::string& id, bool on);
+    // Doc 40's fight start: the positioning phase (a wolf placing itself on its side's half, and ready), whether a tile
+    // may be placed on by a fighter, and the open ground's connected parts.
+    Result placeFighter(const std::string& id, int x, int y);
+    Result readyToFight(const std::string& id, bool ready);
+    bool placeable(const Battle& b, const BattleFighter& f, int x, int y) const;
+    int halfOf(const Battle& b, int x, int y) const;
+    bool reachesFoe(const Battle& b, const BattleFighter& f) const;    // On the same open ground as a foe still standing.
+    // Auto-decline fights with players: on, no player may challenge this one (fights with residents, bandits, game go on).
+    Result setNoPvp(const std::string& id, bool on);
     // How fast the fight's bars fill now: battle::Haste with no player taking a turn and no fire gathering, else 1.
     double meterHaste(const Battle& b) const;
     // The chance a blow from `f` lands on `t` from where they stand now (hit or graze): dexterity, fighting skill and
@@ -1098,6 +1108,12 @@ class World
     void sensedBy(Battle& b, const BattleFighter& target);
     void senseFoes(Battle& b, const BattleFighter& observer);
     void sprungOn(Battle& b, const BattleFighter& f, const BattleFighter& t);
+    void hideSneakers(Battle& b);
+    void revealFighter(Battle& b, BattleFighter& f, const std::string& line);
+    void beginPlacing(Battle& b);
+    void endPlacing(Battle& b);
+    void mapZones(Battle& b) const;
+    void unstick(Battle& b, BattleFighter& f);
     std::vector<std::pair<int, int>> reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina, int less = 0) const;
     Result bite(Battle& b, BattleFighter& f, const std::string& target);
     void downFighter(Battle& b, BattleFighter& f, double overkill, double base, const std::string& by);

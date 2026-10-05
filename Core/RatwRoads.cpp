@@ -1297,7 +1297,7 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
             {
                 if (b->posture != "crouching")
                     setPosture(b->id, "crouching");
-                if (between(b->position, player->position) <= battle::StartReach * .9)
+                if (between(b->position, player->position) <= battle::CreepSpring * .9)
                 {
                     stop(b->id);                    // Still a moment, then the spring: no pawstep gives it away.
                     if (const auto started = startBattle(b->id, player->id, false); started.ok)

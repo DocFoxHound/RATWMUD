@@ -81,6 +81,8 @@ Combat is turn-based, in the style of Final Fantasy Tactics. When a fight starts
 
 **What starts a fight.** A committed attack on an NPC, an NPC attacking (a guard arresting, bandits on the road), or a player-vs-player request that is accepted. There is no separate "enter combat" command.
 
+**From a distance, then each side takes its ground** (doc 40, "How a fight starts", 2026-10-04). A fight may be started on a wolf up to 12 tiles off (it was 3). Between players it is still a challenge the other must accept, and a player may set **Auto-decline** (Settings: "Fights with players"), so no one can challenge them. Every fight then opens with a **positioning phase**: 30 s in which each side places its wolves on its own half of the arena (the halves split across the gap between where the two sides stood), on ground from which the other side can be reached; ground cut off from the fight is shown hatched red and can't be taken. It ends sooner when every player in the fight is ready. Wolves sneaking in unseen enter hidden from the other side (doc 40). A wolf that later finds itself cut off from every foe is put back on the nearest open ground at its turn, or, if it is the last of its side, the fight ends in the other side's favour.
+
 **Arena size.** Twice the default map view in width and in height, centred on the fighters, cut from the cell. A cell smaller than that, like the 32×24 tavern, is used whole. The arena never extends past the cell's edges. The arena also grows with battle size: each fighter who enters past the first two adds room (for example, about 1 tile of width and height per extra fighter), so a large battle always has open tiles for everyone to arrive on and move into. It stops growing at the cell's edges; past that, fighters arriving at a full edge are placed at the nearest open tile.
 
 **What is copied.** Terrain, elevation, fixtures, doors (open or closed), light level and weather, as they were at the start. The copy is frozen; a storm starting outside does not reach a fight already underway.
@@ -111,7 +113,7 @@ In the real cell, the fighters stand frozen in two facing lines, one per side, w
 
 ## Joining a fight
 
-Anyone can join a fight by walking to the edge of the red square and choosing **Join fight**, then a side. They appear at the arena edge nearest where they stood, and wait for their first turn.
+Anyone can join a fight by walking to the edge of the red square and choosing **Join fight**, then a side. They appear at the arena edge nearest where they stood, and wait for their first turn. Joining while the sides still take their ground, they are placed on their side's half (and, crouched and unnoticed, hidden from the other side); joining a fight already under way, they come in seen, not sneaking (doc 40).
 
 **Initiative on entry.** Fighters present when the fight starts begin with a full initiative meter and act at once (highest dexterity first; ties go to whoever started the fight). Anyone who joins later starts at 0 and waits for the meter to fill, so a fast wolf gets in sooner than a slow one.
 

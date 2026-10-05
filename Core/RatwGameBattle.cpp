@@ -155,24 +155,57 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         v.add("wind", w);
     }             // A sword taken up or put away this turn (part of the move: doc 37).
     // Planning (doc 37): while its bar fills, a fighter on its feet sees where its next turn could reach (`reach`).
-    const bool planning = !observer && !mine->acting && mine->status == "fighting" && !mine->casting && !b.over;
+    const bool planning = !observer && !mine->acting && mine->status == "fighting" && !mine->casting && !b.over && !b.placing();
     v.add("planning", planning);
+    // The positioning phase (doc 40): how long it has left; whether this wolf is ready; and the ground row by row, for
+    // its own side: '1' it may take, '0' on its half but cut off from the fight, '#' no one can stand, '.' the other half.
+    v.add("placing", b.placing());
+    if (b.placing())
+    {
+        v.add("placingLeft", std::max(0.0, b.placingUntil - world_.time()));
+        if (!observer)
+        {
+            v.add("ready", mine->ready);
+            auto placeRows = Value::array();
+            for (int y = b.y0; y < b.y0 + b.h; ++y)
+            {
+                std::string row;
+                row.reserve(std::size_t(b.w));
+                for (int x = b.x0; x < b.x0 + b.w; ++x)
+                {
+                    const int zone = b.zones.empty() ? -1 : b.zones[std::size_t((y - b.y0) * b.w + (x - b.x0))];
+                    row += zone < 0 ? '#' : world_.halfOf(b, x, y) != mine->side ? '.' : zone == b.mainZone ? '1' : '0';
+                }
+                placeRows.push(row);
+            }
+            v.add("placeRows", placeRows);
+        }
+    }
     const double haste = world_.meterHaste(b);     // The bars filling faster, with no one deciding (no dead air).
     v.add("haste", haste);
     v.add("round", b.turns);
     v.add("watching", double(b.observers.size()));
     const auto veiled = veilMap(viewer);           // Names this wolf doesn't know, as the fighters look (doc 32).
     const auto called = strangerNames(viewer);
+    // Sneaking in unseen (doc 40): a wolf hidden from this one's side isn't sent at all: no token, no card, no turn.
+    const auto unseenBy = [&](const std::string& id) {
+        const auto* f = b.fighter(id);
+        return f && f->unseen && !observer && f->side != mine->side;
+    };
     auto fighters = Value::array();
     for (const auto& f : b.fighters)
     {
-        if (f.status == "fled")
+        if (f.status == "fled" || unseenBy(f.id))
             continue;
         const auto* e = world_.entity(f.id);
         if (!e)
             continue;
         auto o = Value::object();
         o.add("id", f.id);
+        if (f.unseen)
+            o.add("unseen", true);                  // (Its own side sees it, and that the other side doesn't.)
+        if (b.placing())
+            o.add("ready", f.ready);
         const auto stranger = called.find(f.id);           // As this wolf knows them (doc 32).
         o.add("name", names::capitalised(stranger != called.end() ? stranger->second : labelFor(viewer, f.id)));
         o.add("side", f.side);
@@ -369,6 +402,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     auto casts = Value::array();
     for (const auto& cast : b.casts)
     {
+        if (unseenBy(cast.caster))
+            continue;
         auto o = Value::object();
         o.add("caster", cast.caster);
         o.add("left", std::max(0.0, cast.firesAt - world_.time()));      // The countdown everyone sees.
@@ -406,6 +441,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     const std::size_t from = b.log.size() > 24 ? b.log.size() - 24 : 0;
     for (std::size_t i = from; i < b.log.size(); ++i)
     {
+        if (unseenBy(b.log[i].actor) || unseenBy(b.log[i].target))
+            continue;                               // (Nothing of one hidden from this side.)
         auto line = Value::object();
         line.add("seq", double(b.log[i].seq));
         line.add("kind", b.log[i].kind);
@@ -518,6 +555,15 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
                      ? world_.battleAct(id, "flame", std::to_string(int(std::floor(x))) + "," + std::to_string(int(std::floor(y))))
                      : Result{false, "Aim it: which way?", {}};
     }
+    else if (verb == "place")
+    {
+        // The positioning phase (doc 40): {"verb":"place","x":..,"y":..} takes that ground; {"verb":"ready","on":bool}.
+        const double x = j.number("x", -1), y = j.number("y", -1);
+        result = std::isfinite(x) && std::isfinite(y) ? world_.placeFighter(id, int(std::floor(x)), int(std::floor(y)))
+                                                      : Result{false, "Where?", {}};
+    }
+    else if (verb == "ready")
+        result = world_.readyToFight(id, !j.has("on") || j.boolean("on"));
     else if (verb == "plan")
     {
         // {"verb":"plan","x":..,"y":..}: a tile to go to; {"verb":"plan","act":..,"target":..} (fire: "x", "y"): an action.

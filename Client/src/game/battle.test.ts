@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {draw, testGame} from './testing.ts';
-import {arenaRows, arenaSight, chanceFrom, coverTile, fightTips, nextAim, strikeFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
+import {arenaRows, arenaSight, chanceFrom, coverTile, fightTips, nextAim, placeAt, strikeFrom, clockLabel, fighterAt, meterNow, myTurn, octantGap, pathTo, quarter, readBattle, readChallenge, readFights, secondsToTurn,
     stepToward, termsWords} from './battle.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
@@ -346,4 +346,23 @@ test('a stalker lost from sight (doc 40): only where it was last seen, and never
 test('aiming (doc 40): the Aim button steps through the zones and back to wherever', () => {
     assert.deepEqual(['', 'throat', 'head', 'body', 'legs'].map(nextAim), ['throat', 'head', 'body', 'legs', '']);
     assert.equal(readBattle({battle: {...battle, aim: 'throat'}})!.aim, 'throat');
+});
+
+test('taking one\'s ground (doc 40): the half read, a green tile taken, a red or the other side\'s refused, and its tip', () => {
+    const {state: s, commands} = testGame();
+    const placing: Json = {...battle, turn: '', placing: true, placingLeft: 24, ready: false,
+        placeRows: ['11110...', '11#0....', '1111....']};
+    s.applySnapshot(snapshot({battle: placing}));
+    const b = s.battle!;
+    assert.ok(b.placing && b.placingLeft === 24 && !b.ready, 'placing, 24 s left');
+    assert.equal(placeAt(b, 1, 1), '1', 'its own half, reaching the fight');
+    assert.equal(placeAt(b, 5, 1), '0', 'cut off');                // (The arena starts at 1,1.)
+    assert.equal(placeAt(b, 8, 1), '.', 'the other side\'s');
+    const before = commands.length;
+    s.arenaClick(5, 1);
+    s.arenaClick(8, 2);
+    assert.equal(commands.length, before, 'a cut-off tile or the other side\'s: nothing sent');
+    s.arenaClick(3, 3);
+    assert.deepEqual(commands.at(-1), {type: 'battle', verb: 'place', x: 3, y: 3}, 'a green one: taken');
+    assert.deepEqual(fightTips(b, b.fighters[0], false).map(t => t.id), ['place'], 'the tip says how');
 });

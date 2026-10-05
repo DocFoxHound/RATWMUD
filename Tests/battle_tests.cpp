@@ -82,6 +82,7 @@ void challengeAndTurns()
     auto r = w.attack("ada", "bo");
     expect(r.ok && !w.inBattle("ada") && w.challengeTo("bo"), "Attacking a player challenges them: " + r.message);
     r = w.answerChallenge("bo", true);
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     expect(r.ok && w.inBattle("ada") && w.inBattle("bo"), "Accepted, it is a fight: " + r.message);
     auto& b = fight(w, "ada");
     expect(b.pvp, "a fight between players");
@@ -160,6 +161,7 @@ void downedAndBackToTheWorld()
     ada.strength = 90;
     w.attack("ada", "bo", "death");                  // (To the death: doc 33's Downed and dying.)
     w.answerChallenge("bo", true);
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     bo.hurt = 95;
     auto* b = &fight(w, "ada");
     const std::string battleId = b->id;
@@ -219,6 +221,7 @@ void gettingUpInAFight()
     ada.strength = 100;
     w.attack("ada", "bo", "death");
     w.answerChallenge("bo", true);
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     auto& b = fight(w, "ada");
     expect(w.joinBattle("cy", b.id, 1).ok, "Cy joins on Bo's side: anyone may join");
     expect(b.fighter("cy")->meter == 0, "A joiner starts with an empty meter");
@@ -264,6 +267,7 @@ void restAndRepeatedDowns()
         bo.hurt = 95;
         bo.recoveryUsed = std::floor(w.calendarDays());   // (No struggling up: each time down is waited out.)
         expect(w.attack("ada", "bo", "death").ok && w.answerChallenge("bo", true).ok, "a fight, round " + std::to_string(round));
+        test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
         for (int i = 0; i < 3000 && bo.downedLeft <= 0; ++i)
         {
             test::playTurn(w, "ada");
@@ -338,6 +342,7 @@ void watchingJoiningFleeing()
     kit.age = 9;
     w.attack("ada", "bo");
     w.answerChallenge("bo", true);
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     auto& b = fight(w, "ada");
     // Watching: bodiless, and only ever watching after.
     expect(w.observeBattle("cy", b.id).ok && w.watching("cy") == &b, "Cy watches");
@@ -396,6 +401,7 @@ void aTimidResidentRuns()
         return;
     ada.position = {npc->position.x - 1, npc->position.y};
     const auto r = w.attack("ada", resident);
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     expect(r.ok && w.inBattle(resident), "A resident set on is in the fight: " + r.message);
     npc->hurt = 50;
     bool ran = false;
@@ -449,6 +455,7 @@ Battle& duel(World& w)
     bo.dexterity = 40;
     w.attack("player-ad", "player-bo", "death");     // (doc 33's rules: these tests go down and die.)
     w.answerChallenge("player-bo", true);
+    test::takeGround(w, "player-ad");   // (Everyone ready: past the positioning phase, doc 40.)
     auto* b = const_cast<Battle*>(w.battleOf("player-ad"));
     expect(b, "a duel");
     w.tick(.05);
@@ -869,6 +876,7 @@ void playtestFixes()
     ada.position = {npc->position.x - 1, npc->position.y};
     auto r = w.attack("ada", resident);
     expect(r.ok, "Ada goes for them: " + r.message);
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     auto& b = fight(w, "ada");
     // The one who starts it strikes first: those set on wait out her first turn, however long she takes.
     for (int i = 0; i < 60; ++i)
@@ -917,6 +925,7 @@ Battle& duelOn(World& w, const std::string& terms)
     expect(w.attack("player-ad", "player-bo", terms).ok && w.challengeTo("player-bo")->terms == (terms.empty() ? "yield" : terms),
            "a challenge on its terms");
     w.answerChallenge("player-bo", true);
+    test::takeGround(w, "player-ad");   // (Everyone ready: past the positioning phase, doc 40.)
     auto* b = const_cast<Battle*>(w.battleOf("player-ad"));
     expect(b && b->terms == (terms.empty() ? "yield" : terms), "a duel on them");
     w.tick(.05);
@@ -1172,7 +1181,7 @@ void armourInFights()
 namespace sneak
 {
 // An open wild cell (grass, a tree or shrub here and there, the wind blowing east), with a resident.
-World wilds()
+World wilds(bool pocket = false)
 {
     std::ostringstream cell;
     cell << "id: wilds\nname: The Wilds\ndescription: Woods and meadow.\nworld: 0 0 0\nsize: 80 60\noutdoors: true\n"
@@ -1181,7 +1190,7 @@ World wilds()
     {
         std::string row;
         for (int x = 0; x < 80; ++x)
-            row += x == 50 && y == 30 ? '"' : ',';
+            row += x == 50 && y == 30 ? '"' : pocket && x >= 31 && x <= 33 && y >= 26 && y <= 28 && !(x == 32 && y == 27) ? '#' : ',';
         cell << row << '\n';
     }
     std::map<std::string, std::string> files;
@@ -1208,6 +1217,7 @@ void noticing()
             w.tick(1);
     auto* b = const_cast<Battle*>(w.battleOf("ash"));
     expect(b && b->hunt, "Ash goes hunting");
+    test::takeGround(w, "ash");   // (Everyone ready: past the positioning phase, doc 40.)
     BattleFighter* game = nullptr;
     for (auto& f : b->fighters)
         if (!w.animalOf(f.id).empty())
@@ -1303,6 +1313,7 @@ void ambushAResident()
             c->wind = {0, 0, false};                            // (Still air, so only sight and noise count.)
         const auto r = w.attack("ash", "sorrel", "");
         expect(r.ok, "Ash goes for Sorrel: " + r.message);
+        test::takeGround(w, "ash");   // (Everyone ready: past the positioning phase, doc 40.)
         const auto* b = w.battleOf("ash");
         expect(b, "a fight");
         const auto* s = b->fighter("sorrel");
@@ -1399,6 +1410,7 @@ void aBanditStalks()
     ash.cellId = "wilds";
     ash.position = {40.5, 30.5};
     expect(w.testFight("ash").ok, "a bandit comes at Ash");
+    test::takeGround(w, "ash");   // (Everyone ready: past the positioning phase, doc 40.)
     auto* b = const_cast<Battle*>(w.battleOf("ash"));
     std::string bandit;
     for (const auto& f : b->fighters)
@@ -1424,6 +1436,121 @@ void aBanditStalks()
     }
     expect(stalked, "the bandit stalks up on her back");
     expect(lost, "and she loses sight of it (only where it was last seen)");
+}
+
+// How a fight starts (doc 40): from up to 12 tiles; auto-decline PvP; the sides take their ground (their own half, not
+// a walled-off pocket) until ready; a crouched wolf coming in unseen is hidden from the other side until it strikes;
+// a latecomer comes in seen; a wolf cut off is put back, or, the last of its side, loses it.
+void fightStart()
+{
+    World w = wilds(true);
+    if (auto* c = w.cell("wilds"))
+        c->wind = {0, 0, false};
+    auto& ada = w.addPlayer("ada", "Ada");
+    auto& bo = w.addPlayer("bo", "Bo");
+    for (auto* e : {&ada, &bo})
+        e->cellId = "wilds";
+    ada.position = {30.5, 30.5};
+    bo.position = {45.5, 30.5};
+    expect(!w.attack("ada", "bo").ok, "fifteen tiles off: too far to start a fight");
+    bo.position = {40.5, 30.5};
+    expect(w.setNoPvp("bo", true).ok && !w.attack("ada", "bo").ok, "Bo auto-declines: no challenge reaches him");
+    w.setNoPvp("bo", false);
+    expect(w.attack("ada", "bo").ok && w.answerChallenge("bo", true).ok, "ten tiles off, a challenge, accepted");
+    auto* b = const_cast<Battle*>(w.battleOf("ada"));
+    expect(b && b->placing(), "the sides take their ground first");
+    auto* fa = b->fighter("ada");
+    auto* fb = b->fighter("bo");
+    expect(w.halfOf(*b, fa->x, fa->y) == fa->side && w.halfOf(*b, fb->x, fb->y) == fb->side, "each on its own half");
+    expect(w.placeFighter("ada", 28, 31).ok && fa->x == 28 && fa->y == 31, "Ada takes her ground");
+    expect(!w.placeFighter("ada", 42, 30).ok, "not on the other side's");
+    expect(!w.placeFighter("ada", 32, 27).ok && !w.placeable(*b, *fa, 32, 27), "nor walled off where she couldn't reach the fight");
+    expect(w.battleFace("ada", 2).ok && fa->facing == 2, "she may turn while placing");
+    w.tick(.5);
+    expect(b->placing() && !fa->acting && fa->meter == 100, "no turns, no bars while they place");
+    // A party mate crouched far behind Bo, come in while they place: hidden from Ada.
+    auto& cy = w.addPlayer("cy", "Cy");
+    cy.cellId = "wilds";
+    cy.position = {52.5, 30.5};
+    cy.posture = "crouching";
+    expect(w.joinBattle("cy", b->id, fb->side).ok, "Cy comes in on Bo's side");
+    auto* fc = b->fighter("cy");
+    expect(fc->stalking && fc->unseen && w.awareness(*b, "ada", "cy") < battle::AwareSuspicious, "crouched, unnoticed: hidden from Ada");
+    expect(w.halfOf(*b, fc->x, fc->y) == fc->side, "and on his side's half");
+    // Ready: the fight begins.
+    w.readyToFight("ada", true);
+    w.readyToFight("bo", true);
+    w.readyToFight("cy", true);
+    w.tick(.1);
+    expect(!b->placing() && std::any_of(b->log.begin(), b->log.end(), [](const BattleLine& l) { return l.kind == "begin"; }), "all ready: it begins");
+    // A latecomer comes in seen, crouched or not.
+    auto& dee = w.addPlayer("dee", "Dee");
+    dee.cellId = "wilds";
+    dee.position = {50.5, 33.5};
+    dee.posture = "crouching";
+    expect(w.joinBattle("dee", b->id, fb->side).ok, "Dee joins later");
+    expect(!b->fighter("dee")->stalking && !b->fighter("dee")->unseen, "and isn't sneaking: she is seen");
+    // Cy strikes: found.
+    fc = b->fighter("cy");
+    fa = b->fighter("ada");
+    fc->x = fa->x + 1;
+    fc->y = fa->y;
+    fc->acting = true;
+    fc->moved = true;
+    w.entity("cy")->stamina = 100;
+    w.battleAct("cy", "bite", "ada");
+    expect(!fc->unseen && std::any_of(b->log.begin(), b->log.end(), [](const BattleLine& l) { return l.text.find("comes out of hiding") != std::string::npos; }),
+           "his first blow gives him away to her side");
+    // Cut off: Bo, placed in the walled pocket, is put back at his turn; Ada there, the last of hers, loses it.
+    for (const auto& id : {"ada", "bo", "cy", "dee"})
+        if (test::acting(b, id))
+            w.battleAct(id, "wait");                            // (Everyone's turn over: Bo's next one is the test.)
+    fb = b->fighter("bo");
+    fb->x = 32;
+    fb->y = 27;
+    expect(!w.reachesFoe(*b, *fb), "walled in, Bo can't reach a foe");
+    for (int i = 0; i < 600 && !(fb->acting); ++i)
+    {
+        w.tick(.1);
+        fb = b->fighter("bo");
+        for (const auto& id : {"ada", "cy", "dee"})
+            if (test::acting(b, id))
+                w.battleAct(id, "wait");
+    }
+    expect(w.reachesFoe(*b, *b->fighter("bo")) && !(b->fighter("bo")->x == 32 && b->fighter("bo")->y == 27), "at his turn he is put back into the fight");
+    if (test::acting(b, "ada"))
+        w.battleAct("ada", "wait");
+    fa = b->fighter("ada");
+    fa->x = 32;
+    fa->y = 27;
+    for (int i = 0; i < 600 && !b->over; ++i)
+    {
+        w.tick(.1);
+        for (const auto& id : {"bo", "cy", "dee"})
+            if (test::acting(b, id))
+                w.battleAct(id, "wait");
+    }
+    expect(b->over && b->fighter("ada")->status == "fled", "Ada, the last of her side and walled off, loses it: " + b->banner);
+}
+
+void sneakingInOnAResident()
+{
+    // An attacker sneaking up, crouched and unnoticed, is hidden from the resident: it doesn't go for what it hasn't seen.
+    World w = wilds();
+    if (auto* c = w.cell("wilds"))
+        c->wind = {0, 0, false};
+    auto* sorrel = w.entity("sorrel");
+    sorrel->leaderId = "test-frozen";
+    sorrel->position = {20.5, 20.5};
+    sorrel->facing = 0;                                         // Facing east.
+    auto& ash = w.addPlayer("ash", "Ash");
+    ash.cellId = "wilds";
+    ash.position = {12.5, 20.5};                                // Eight tiles behind her.
+    ash.posture = "crouching";
+    expect(w.attack("ash", "sorrel", "").ok, "Ash sets on her from eight tiles");
+    const auto* b = w.battleOf("ash");
+    expect(b && b->fighter("ash")->unseen, "unseen: hidden from Sorrel");
+    expect(w.awareness(*b, "sorrel", "ash") < battle::AwareSuspicious, "who has no idea she is there");
 }
 } // namespace sneak
 
@@ -1497,6 +1624,7 @@ void devConsoleTeamFight()
     quiet(w);
     auto& ada = wolf(w, "ada");
     const auto started = w.testFightTeam("ada");
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     expect(started.ok, "A team fight starts where Ada stands: " + started.message);
     auto* b = &fight(w, "ada");
     const int side = b->fighter("ada")->side;
@@ -1557,6 +1685,7 @@ void devConsoleFights()
     auto& ada = wolf(w, "ada");
     expect(!w.endFightInDraw("ada").ok, "No fight to end yet");
     const auto started = w.testFight("ada");
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     expect(started.ok, "A test fight starts where Ada stands: " + started.message);
     const auto bandit = started.targetId;
     auto* b = &fight(w, "ada");
@@ -1597,6 +1726,7 @@ void devConsoleFights()
         expect(!World::testCamp(c.id), "and so is its camp");
     expect(ada.downedLeft <= 0 && !ada.dead, "Ada is none the worse");
     expect(w.testFight("ada").ok, "Another can be started");
+    test::takeGround(w, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
 
     // On raised ground (a hillside, a valley floor above the sea): every tile two steps up, so nothing is at height 0.
     World hill;
@@ -1605,6 +1735,7 @@ void devConsoleFights()
     for (auto& t : hill.cell(bo.cellId)->tiles)
         t.height += 2;
     const auto onHill = hill.testFight("ada");
+    test::takeGround(hill, "ada");   // (Everyone ready: past the positioning phase, doc 40.)
     expect(onHill.ok, "A test fight starts on raised ground too: " + onHill.message);
     const auto* hb = hill.battleOf("ada");
     const auto* hm = hb ? hb->fighter("ada") : nullptr;
@@ -1658,6 +1789,8 @@ int main()
         sneak::inTheWorld();
         sneak::aBanditStalks();
         aiming();
+        sneak::fightStart();
+        sneak::sneakingInOnAResident();
         devConsoleFights();
         devConsoleTeamFight();
     }

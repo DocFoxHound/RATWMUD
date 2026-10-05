@@ -93,6 +93,8 @@ void setOut(World& w, const std::string& id)
             w.tick(1);
     }
     expect(w.inBattle(id), id + " finds game");
+    // Past the positioning phase (doc 40): the hunter ready, as a player does.
+    w.readyToFight(id, true);
 }
 
 void dataLoads()

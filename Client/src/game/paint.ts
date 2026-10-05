@@ -7,7 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
-import {apart, chanceFrom, coverTile, coneTiles, myTurn, octantGap, pathTo, stepToward, strikeFrom, type BattleView, type FighterView} from './battle.ts';
+import {apart, chanceFrom, coverTile, coneTiles, myTurn, octantGap, pathTo, placeAt, stepToward, strikeFrom, type BattleView, type FighterView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
 import {fitScale, MapRenderer, MapScales} from './minimap.ts';
 
@@ -527,6 +527,34 @@ export class GamePainter {
         }
         const me = b.observer ? undefined : b.fighters.find(f => f.id === s.selfId);
         const mine = myTurn(b, s.selfId);
+        // Taking one's ground (doc 40): one's own half that reaches the fight, faintly green; ground on it that is cut off
+        // from the fight, hatched red (it can't be taken); the other side's half, darkened.
+        if (b.placing && me && b.placeRows.length) {
+            const x0 = Math.max(ax, Math.floor((map.left - ox) / tile)), x1 = Math.min(ax + aw - 1, Math.ceil((map.right - ox) / tile));
+            const y0 = Math.max(ay, Math.floor((map.top - oy) / tile)), y1 = Math.min(ay + ah - 1, Math.ceil((map.bottom - oy) / tile));
+            const green = rgb(0x7fc47a), cut = rgb(0xe0503c);
+            for (let y = y0; y <= y1; ++y)
+                for (let x = x0; x <= x1; ++x) {
+                    const k = placeAt(b, x, y), px = ox + x * tile, py = oy + y * tile;
+                    if (k === '1') p.box(px + 1, py + 1, tile - 2, tile - 2, withAlpha(green, 0.12));
+                    else if (k === '.') p.box(px, py, tile, tile, withAlpha(Ink, 0.45));
+                    else if (k === '0') {
+                        p.box(px + 1, py + 1, tile - 2, tile - 2, withAlpha(cut, 0.32));
+                        p.lines([[px + 2, py + 2], [px + tile - 2, py + tile - 2]], withAlpha(cut, 0.9), 2);
+                        p.lines([[px + tile - 2, py + 2], [px + 2, py + tile - 2]], withAlpha(cut, 0.9), 2);
+                    }
+                }
+            const hxp = Math.floor((s.hover[0] - ox) / tile), hyp = Math.floor((s.hover[1] - oy) / tile);
+            if (placeAt(b, hxp, hyp) === '1' && !b.fighters.some(f => f.x === hxp && f.y === hyp)) {
+                p.frame(ox + hxp * tile + 1, oy + hyp * tile + 1, tile - 2, tile - 2, withAlpha(green, 0.9));
+                this.drawToken({...me, x: hxp, y: hyp}, [ox + (hxp + 0.5) * tile, oy + (hyp + 0.5) * tile], tile, Amber, 0.45, false);
+            } else if (placeAt(b, hxp, hyp) === '0') {
+                const words = 'cut off from the fight';
+                const [ww] = p.measure(words, 11, true);
+                p.box(s.hover[0] + 12, s.hover[1] - 8, ww + 8, 16, withAlpha(Ink, 0.9));
+                p.text(s.hover[0] + 16, s.hover[1] - 7, words, 11, cut, true);
+            }
+        }
         // The edge rows, where one can flee from: a faint band, with arrows out at the middle of each side.
         if (me && !b.over && me.status === 'fighting') {
             const band = withAlpha(red, 0.1);
@@ -749,7 +777,7 @@ export class GamePainter {
         // On one's own turn, one's own tile turns the wolf: split three by three, each of its eight outer parts faces
         // that way. Shown when the pointer is on it (a drag from it turns the wolf too); a click on any tile or wolf
         // round it still moves or strikes there. Pushed last, so it wins over one's own wolf.
-        if (me && mine && me.status === 'fighting' && s.aiming !== 'flame') {
+        if (me && (mine || b.placing) && me.status === 'fighting' && s.aiming !== 'flame') {
             const x0 = ox + me.x * tile, y0 = oy + me.y * tile, third = tile / 3;
             const over = hx === me.x && hy === me.y;
             for (let dir = 0; dir < 8; ++dir) {

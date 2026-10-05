@@ -6,6 +6,7 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cmath>
 #include <deque>
@@ -481,6 +482,8 @@ Result World::testFightTeam(const std::string& player)
             allies.push_back(name);
     }
     fitArena(*b);
+    if (!b->zones.empty())
+        mapZones(*b);                               // (Grown: its ground mapped again for the positioning phase.)
     for (auto& f : b->fighters)
     {
         // Each faces the nearest of the other side.
@@ -638,7 +641,8 @@ Result World::startBattle(const std::string& attacker, const std::string& target
                 continue;
             BattleFighter asWas = o;
             asWas.facing = ownFacing[o.id];
-            if (arenaNotice(b, asWas, *af, moving) >= battle::AwareSuspicious)
+            // Not one that noticed it on the way in (doc 40: the approach counts), nor one that notices it now.
+            if (residentAwareness(o.id, attacker) >= battle::AwareSuspicious || arenaNotice(b, asWas, *af, moving) >= battle::AwareSuspicious)
                 continue;
             o.facing = asWas.facing;
             o.meter = 0;
@@ -659,6 +663,8 @@ Result World::startBattle(const std::string& attacker, const std::string& target
     fightLine(b, attacker, target, "start", a->name + " goes for " + t->name + ".");
     if (sprung)
         fightLine(b, attacker, target, "ambush", t->name + " never saw " + a->name + " coming.");
+    hideSneakers(b);                                // Those sneaking in unseen stay hidden from the other side (doc 40).
+    beginPlacing(b);                                // Each side takes its ground first (doc 40).
     battles_.push_back(std::move(b));
     return {true, "You go for " + t->name + ". A fight!", target};
 }
@@ -972,6 +978,8 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
         return {false, "You are held in the gaol.", {}};
     enterBattle(*b, id, side, false);
     fitArena(*b);
+    if (!b->zones.empty())
+        mapZones(*b);                               // (The arena may have grown: its ground mapped again.)
     auto& f = b->fighters.back();
     // In at the arena's edge nearest where they stood.
     const int sx = std::clamp(int(std::floor(e->position.x)), b->x0, b->x0 + b->w - 1);
@@ -1000,6 +1008,38 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
                 f.facing = battle::octant(o.x - f.x, o.y - f.y);
             }
     }
+    if (b->placing())
+    {
+        // Come in while the sides take their ground: placed on its own half; crouched and unnoticed, hidden (doc 40).
+        int nearest = std::numeric_limits<int>::max(), px = f.x, py = f.y;
+        for (int y = b->y0; y < b->y0 + b->h; ++y)
+            for (int x = b->x0; x < b->x0 + b->w; ++x)
+                if (const int d = std::abs(x - f.x) + std::abs(y - f.y); d < nearest && placeable(*b, f, x, y))
+                {
+                    nearest = d;
+                    px = x;
+                    py = y;
+                }
+        f.x = px;
+        f.y = py;
+        f.ready = e->npc;
+        if (f.stalking)
+        {
+            double most = 0;
+            for (const auto& o : b->fighters)
+                if (o.side != f.side && o.status == "fighting")
+                    most = std::max(most, arenaNotice(*b, o, f, false));
+            if (most < battle::AwareSuspicious)
+            {
+                f.unseen = true;
+                for (const auto& o : b->fighters)
+                    if (o.side != f.side)
+                        b->aware[{o.id, f.id}] = 0;
+            }
+        }
+    }
+    else
+        f.stalking = false;                         // Joining a fight under way: no sneaking in (doc 40).
     stop(id);
     setClientWalks(id, false);
     lineUp(*b);
@@ -1069,6 +1109,8 @@ Result World::challenge(const std::string& from, const std::string& to, const st
         return {false, t->name + " is already down.", to};
     if (a->age < battle::YoungestFighter || t->age < battle::YoungestFighter)
         return {false, "Not with one so young.", to};
+    if (t->noPvp)
+        return {false, t->name + " isn't taking challenges.", to};   // (Auto-decline: doc 40's fight start.)
     if (a->cellId != t->cellId || std::hypot(a->position.x - t->position.x, a->position.y - t->position.y) > battle::StartReach)
         return {false, "Get closer first.", to};
     if (inBattle(from))
@@ -1192,6 +1234,9 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     }
     // Smoke clears after its rounds.
     b.smoke.erase(std::remove_if(b.smoke.begin(), b.smoke.end(), [&](const auto& s) { return b.turns >= s.second; }), b.smoke.end());
+    // Cut off from every foe (doc 40): put back, or, the last of its side, out.
+    if (f.status == "fighting" && !reachesFoe(b, f))
+        unstick(b, f);
 }
 
 void World::endTurn(Battle& b, BattleFighter& f)
@@ -1704,6 +1749,13 @@ void World::senseOne(Battle& b, const BattleFighter& o, const BattleFighter& t, 
         now = battle::AwareKept;
     now = std::min(now, battle::AwareKept);
     b.aware[{o.id, t.id}] = now;
+    if (now >= battle::AwareAlert && t.unseen)
+        if (auto* found = b.fighter(t.id))
+        {
+            const auto* who = entity(o.id);
+            const auto* hid = entity(t.id);
+            revealFighter(b, *found, (who ? who->name : o.id) + " spots " + (hid ? hid->name : t.id) + ".");   // The whole side knows.
+        }
     if (!oe->npc)
     {
         // A player: where they last had it, and an ear or nose sharpened by catching a stalker (doc 40, §6).
@@ -1760,6 +1812,287 @@ void World::sprungOn(Battle& b, const BattleFighter& f, const BattleFighter& t)
             b.aware[{o.id, f.id}] = battle::AwareKept;
     if (auto* e = entity(f.id); e && !e->npc)
         e->sneakSkill = std::min(100.0, e->sneakSkill + battle::SneakPerAmbush * (1 - e->sneakSkill / 100));
+}
+
+// ------------------------------------------------------------------ How a fight starts (doc 40)
+
+void World::mapZones(Battle& b) const
+{
+    // The arena's open ground in connected parts (eight ways, as a wolf walks, no climbing a ledge), and the part both
+    // sides can reach each other in: the largest that has ground on both halves (else the largest).
+    b.zones.assign(std::size_t(b.w * b.h), -1);
+    const auto at = [&](int x, int y) -> int& { return b.zones[std::size_t((y - b.y0) * b.w + (x - b.x0))]; };
+    std::vector<int> size;
+    std::vector<std::array<bool, 2>> halves;
+    for (int y = b.y0; y < b.y0 + b.h; ++y)
+        for (int x = b.x0; x < b.x0 + b.w; ++x)
+        {
+            if (at(x, y) >= 0 || !standable(b.cellId, {x + .5, y + .5}))
+                continue;
+            const int label = int(size.size());
+            size.push_back(0);
+            halves.push_back({false, false});
+            std::deque<std::pair<int, int>> queue{{x, y}};
+            at(x, y) = label;
+            while (!queue.empty())
+            {
+                const auto [cx, cy] = queue.front();
+                queue.pop_front();
+                ++size[std::size_t(label)];
+                halves[std::size_t(label)][std::size_t(halfOf(b, cx, cy))] = true;
+                for (int dy = -1; dy <= 1; ++dy)
+                    for (int dx = -1; dx <= 1; ++dx)
+                    {
+                        const int nx = cx + dx, ny = cy + dy;
+                        if ((dx || dy) && b.inArena(nx, ny) && at(nx, ny) < 0 && standable(b.cellId, {nx + .5, ny + .5}) &&
+                            stepBetween(b.cellId, cx, cy, nx, ny))
+                        {
+                            at(nx, ny) = label;
+                            queue.push_back({nx, ny});
+                        }
+                    }
+            }
+        }
+    b.mainZone = -1;
+    for (int pass = 0; pass < 2 && b.mainZone < 0; ++pass)
+        for (std::size_t i = 0; i < size.size(); ++i)
+            if ((pass == 1 || (halves[i][0] && halves[i][1])) && (b.mainZone < 0 || size[i] > size[std::size_t(b.mainZone)]))
+                b.mainZone = int(i);
+}
+
+int World::halfOf(const Battle& b, int x, int y) const
+{
+    return (x + .5 - b.midX) * b.dirX + (y + .5 - b.midY) * b.dirY < 0 ? 0 : 1;
+}
+
+bool World::placeable(const Battle& b, const BattleFighter& f, int x, int y) const
+{
+    // On its own side's half, on the ground both sides can reach, and free.
+    if (!b.inArena(x, y) || b.zones.empty() || b.zones[std::size_t((y - b.y0) * b.w + (x - b.x0))] != b.mainZone)
+        return false;
+    return halfOf(b, x, y) == f.side && arenaOpen(b, x, y, f.id);
+}
+
+void World::hideSneakers(Battle& b)
+{
+    // Sneaking in unseen (doc 40): a wolf crouched as the fight begins that none of the other side has noticed is hidden
+    // from them, token and card, until one does, or it strikes or is struck. Its own side sees it.
+    for (auto& f : b.fighters)
+    {
+        if (!f.stalking || f.status != "fighting")
+            continue;
+        double most = 0;
+        for (const auto& o : b.fighters)
+            if (o.side != f.side && o.status == "fighting")
+                most = std::max(most, arenaNotice(b, o, f, false));
+        if (most >= battle::AwareSuspicious)
+            continue;
+        f.unseen = true;
+        for (const auto& o : b.fighters)
+            if (o.side != f.side)
+                b.aware[{o.id, f.id}] = 0;
+    }
+}
+
+void World::revealFighter(Battle& b, BattleFighter& f, const std::string& line)
+{
+    // Noticed (heard, seen, or striking or struck): the whole other side knows of it now (doc 40's decision).
+    if (!f.unseen)
+        return;
+    f.unseen = false;
+    for (const auto& o : b.fighters)
+        if (o.side != f.side)
+        {
+            b.aware[{o.id, f.id}] = battle::AwareKept;
+            b.seenAt[{o.id, f.id}] = {f.x, f.y, time_};
+        }
+    if (!line.empty())
+        fightLine(b, f.id, {}, "notice", line);
+}
+
+void World::beginPlacing(Battle& b)
+{
+    // The positioning phase (doc 40): the halves split across the gap between where the two sides stood; the ground
+    // mapped; each wolf (not game) put on its own half where it can reach the other side, nearest where it stood; the
+    // players then have PlacingSeconds to place themselves, ready sooner if they like.
+    double sx[2] = {0, 0}, sy[2] = {0, 0};
+    int n[2] = {0, 0};
+    for (const auto& f : b.fighters)
+        if (f.status == "fighting" && (f.side == 0 || f.side == 1))
+        {
+            sx[f.side] += f.x + .5;
+            sy[f.side] += f.y + .5;
+            ++n[f.side];
+        }
+    if (n[0] && n[1])
+    {
+        const double ax = sx[0] / n[0], ay = sy[0] / n[0], bx = sx[1] / n[1], by = sy[1] / n[1];
+        const double len = std::hypot(bx - ax, by - ay);
+        b.midX = (ax + bx) / 2;
+        b.midY = (ay + by) / 2;
+        b.dirX = len > 1e-9 ? (bx - ax) / len : 1;
+        b.dirY = len > 1e-9 ? (by - ay) / len : 0;
+    }
+    else
+    {
+        b.midX = b.x0 + b.w / 2.0;
+        b.midY = b.y0 + b.h / 2.0;
+    }
+    mapZones(b);
+    for (auto& f : b.fighters)
+    {
+        f.ready = true;
+        const auto* e = entity(f.id);
+        if (!e || f.status != "fighting" || !animalOf(f.id).empty() || placeable(b, f, f.x, f.y))
+        {
+            if (e && !e->npc && f.status == "fighting")
+                f.ready = false;
+            continue;
+        }
+        int best = std::numeric_limits<int>::max(), bx = f.x, by = f.y;
+        for (int y = b.y0; y < b.y0 + b.h; ++y)
+            for (int x = b.x0; x < b.x0 + b.w; ++x)
+                if (const int d = std::abs(x - f.x) + std::abs(y - f.y); d < best && placeable(b, f, x, y))
+                {
+                    best = d;
+                    bx = x;
+                    by = y;
+                }
+        f.x = bx;
+        f.y = by;
+        if (!e->npc)
+            f.ready = false;                        // Players place themselves (game and NPCs are placed).
+    }
+    b.placingUntil = time_ + battle::PlacingSeconds;
+    fightLine(b, {}, {}, "place", "Each side takes its ground.");
+}
+
+void World::endPlacing(Battle& b)
+{
+    // The fight proper: NPCs (not those taken unawares, nor game) face the nearest foe they know of; anyone placed where
+    // it can't reach a foe is put right; the bars run.
+    b.placingUntil = -1;
+    for (auto& f : b.fighters)
+    {
+        const auto* e = entity(f.id);
+        if (!e || !e->npc || f.status != "fighting" || !animalOf(f.id).empty())
+            continue;
+        int best = std::numeric_limits<int>::max();
+        for (const auto& o : b.fighters)
+            if (o.side != f.side && o.status == "fighting" && awareness(b, f.id, o.id) >= battle::AwareAlert &&
+                tilesApart(f.x, f.y, o.x, o.y) < best)
+            {
+                best = tilesApart(f.x, f.y, o.x, o.y);
+                f.facing = battle::octant(o.x - f.x, o.y - f.y);
+            }
+    }
+    for (auto& f : b.fighters)
+        if (f.status == "fighting" && !reachesFoe(b, f))
+            unstick(b, f);
+    lineUp(b);
+    fightLine(b, {}, {}, "begin", "The fight begins.");
+    checkOver(b);
+}
+
+Result World::placeFighter(const std::string& id, int x, int y)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    if (!b || !f)
+        return {false, "You are not in a fight.", {}};
+    if (!b->placing())
+        return {false, "The fight has begun: move on your turn.", {}};
+    if (f->status != "fighting")
+        return {false, "You can't take your ground now.", {}};
+    if (!b->inArena(x, y) || b->zones[std::size_t((y - b->y0) * b->w + (x - b->x0))] != b->mainZone)
+        return {false, "You couldn't reach the fight from there.", {}};
+    if (halfOf(*b, x, y) != f->side)
+        return {false, "That is the other side's ground.", {}};
+    if (!arenaOpen(*b, x, y, id))
+        return {false, "There is no room there.", {}};
+    f->x = x;
+    f->y = y;
+    f->away = false;
+    return {true, {}, {}};
+}
+
+Result World::readyToFight(const std::string& id, bool ready)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    if (!b || !f || !b->placing())
+        return {false, "There is nothing to be ready for.", {}};
+    f->ready = ready;
+    f->away = false;
+    return {true, ready ? "You are ready." : "You take a moment more.", {}};
+}
+
+bool World::reachesFoe(const Battle& b, const BattleFighter& f) const
+{
+    // Whether it could walk to any foe still standing: on the same open ground (round walls, not up a ledge).
+    if (b.zones.empty())
+        return true;
+    const auto zone = [&](int x, int y) { return b.inArena(x, y) ? b.zones[std::size_t((y - b.y0) * b.w + (x - b.x0))] : -1; };
+    const int mine = zone(f.x, f.y);
+    bool any = false;
+    for (const auto& o : b.fighters)
+        if (o.side != f.side && o.status == "fighting")
+        {
+            any = true;
+            if (mine >= 0 && zone(o.x, o.y) == mine)
+                return true;
+        }
+    return !any;
+}
+
+void World::unstick(Battle& b, BattleFighter& f)
+{
+    // Cut off from the fight (doc 40): the last of its side so placed loses it for them; anyone else is put back on the
+    // nearest open ground a foe can be reached on.
+    const auto* e = entity(f.id);
+    const std::string name = e ? e->name : f.id;
+    if (b.standing(f.side) <= 1)
+    {
+        fightLine(b, f.id, {}, "flee", name + " is cut off from the fight, with no way to reach it.");
+        leaveArena(b, f, true);
+        f.acting = false;
+        checkOver(b);
+        return;
+    }
+    std::set<int> foeZones;
+    for (const auto& o : b.fighters)
+        if (o.side != f.side && o.status == "fighting" && b.inArena(o.x, o.y))
+            foeZones.insert(b.zones[std::size_t((o.y - b.y0) * b.w + (o.x - b.x0))]);
+    int best = std::numeric_limits<int>::max(), bx = f.x, by = f.y;
+    for (int y = b.y0; y < b.y0 + b.h; ++y)
+        for (int x = b.x0; x < b.x0 + b.w; ++x)
+            if (const int d = tilesApart(x, y, f.x, f.y); d < best && foeZones.count(b.zones[std::size_t((y - b.y0) * b.w + (x - b.x0))]) &&
+                                                          arenaOpen(b, x, y, f.id))
+            {
+                best = d;
+                bx = x;
+                by = y;
+            }
+    if (best == std::numeric_limits<int>::max())
+        return;
+    f.x = bx;
+    f.y = by;
+    f.walk.clear();
+    fightLine(b, f.id, {}, "rise", name + " finds a way back into the fight.");
+    if (e && !e->npc)
+        notice(f.id, "You were cut off from the fight; you find a way back into it.");
+}
+
+Result World::setNoPvp(const std::string& id, bool on)
+{
+    auto* e = entity(id);
+    if (!e || e->npc)
+        return {false, "No such player.", {}};
+    e->noPvp = on;
+    if (on)
+        challenges_.erase(std::remove_if(challenges_.begin(), challenges_.end(), [&](const Challenge& c) { return c.to == id; }),
+                          challenges_.end());
+    return {true, on ? "Fights with players: auto-decline. No one can challenge you." : "Fights with players: open to challenges.", {}};
 }
 
 Result World::battleStalk(const std::string& id, bool on)
@@ -1864,6 +2197,8 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
     }
     if (f.acted)
         return {false, "You have already acted this turn.", {}};
+    if ((action == "bite" || action == "sword" || action == "flame" || action == "shove") && f.unseen)
+        revealFighter(*b, f, e->name + " comes out of hiding.");   // Striking gives it away (doc 40).
     if (action == "bite")
         r = bite(*b, f, target);
     else if (action == "sword")
@@ -2541,6 +2876,19 @@ void World::tendBattles(double dt)
                 finishBattle(b);
             continue;
         }
+        // Taking their ground (doc 40): nothing else happens until the time is up, or every player in it is ready.
+        if (b.placing())
+        {
+            bool allReady = true;
+            for (const auto& f : b.fighters)
+                if (const auto* e = entity(f.id); e && !e->npc && f.status == "fighting" && !f.ready && !f.away)
+                    allReady = false;
+            if (time_ < b.placingUntil && !allReady)
+                continue;
+            endPlacing(b);                          // (And on with this moment: the bars run from now.)
+            if (b.over)
+                continue;
+        }
         // An offer to yield nobody answered is a no.
         if (!b.yieldBy.empty() && time_ >= b.yieldUntil)
         {
@@ -2903,7 +3251,7 @@ Result World::battleFace(const std::string& id, int dir)
     auto& f = *b->fighter(id);
     f.away = false;
     f.timeouts = 0;
-    if (!f.acting)
+    if (!f.acting && !b->placing())
         return {false, "You can turn only on your turn.", {}};
     if (f.status != "fighting")
         return {false, "You can't turn now.", {}};
@@ -3066,6 +3414,7 @@ void World::growSkill(Entity& e, double amount)
 
 void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by, bool interrupt)
 {
+    revealFighter(b, t, {});                        // Struck, it is found (doc 40).
     auto* d = entity(t.id);
     if (!d || t.status != "fighting")
         return;
