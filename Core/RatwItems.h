@@ -75,7 +75,8 @@ struct Producer
     std::vector<int> seasons;                       // 0 spring .. 3 winter; empty: all year.
     std::vector<std::pair<std::string, int>> out;
 };
-// Whether other trades buy this to work with: an ingredient of some craft, or something a shop supplies.
+// Whether other trades buy this to work with: an ingredient of some craft, or something a shop supplies; or, a staple,
+// something households or the town's own buyers use up every day or so (bread, candles: doc 35, Part 7).
 bool traded(const std::string& item);
 // The producer a resident is, from the words of their work label, or null.
 const Producer* producerFor(const std::string& workLabel);
@@ -87,6 +88,16 @@ struct HouseholdNeed
     bool perPerson = false;                         // For each grown wolf in the household.
 };
 const std::vector<HouseholdNeed>& householdNeeds();
+// A town's own buyers (crafts.json `institutions`; doc 35, Part 7): the Town Works, the watch, the church.
+struct Institution
+{
+    std::string id, name;
+    bool perGuard = false;                          // Its basket is per guard (else per 100 residents) a day.
+    std::vector<std::pair<std::string, double>> basket;
+};
+const std::vector<Institution>& institutions();
+double institutionDays();                           // Days of its basket an institution keeps in stock.
+double contractPremium();                           // A contract's reward against the goods' price.
 int householdReserve();                             // Pennies a head a household keeps back for food.
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);

@@ -2621,6 +2621,9 @@ void Game::sendSnapshot(Connection* c)
                     actions.push("ask for work");
                 for (std::size_t i = 0; i < work.size() && i < 3; ++i)
                     actions.push("take " + work[i]->id);
+                // Goods one has taken on to bring (doc 35, Part 7), handed in at any merchant of the town.
+                for (const auto* k : world_.deliverable(view.self.id))
+                    actions.push("hand in goods " + k->id);   // ("deliver" is a Chapter mission's.)
             }
             // Ask to learn their trade: close by, a master with no apprentice, and not already learning one.
             if (const auto* job = world_.society().jobOf(e.id);
@@ -3891,6 +3894,13 @@ void Game::command(Connection* c, const std::string& raw)
             for (const auto* k : world_.contractsNear(id))
                 list += "\n  " + k->id + "  " + k->detail + (k->reward ? " (" + std::to_string(k->reward) + " pennies)" : std::string());
             system(c, list.empty() ? "There is no work to be had here just now." : "Work to be had:" + list);
+        }
+        else if (action.rfind("hand in goods ", 0) == 0)
+        {
+            const auto done = world_.deliverContract(id, action.substr(14));
+            system(c, done.message);
+            if (done.ok)
+                record(Roads | Economy | Character, id);
         }
         else if (action.rfind("take ", 0) == 0)
         {

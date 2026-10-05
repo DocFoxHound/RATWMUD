@@ -383,6 +383,7 @@ void World::tendRoads()
         roads_.day = today;
         roadsDaily();
     }
+    postProcurements();                             // The town's own buyers' wants (doc 35, Part 7): contracts for goods.
     tendRoadFolk();
     absorbJournal();
 }

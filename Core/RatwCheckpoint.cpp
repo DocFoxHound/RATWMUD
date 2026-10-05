@@ -127,6 +127,10 @@ Value roads(const RoadsState& r)
         j.add("target", k.target); j.add("taker", k.taker); j.add("status", k.status);
         j.add("reward", double(k.reward)); j.add("created", k.created);
         j.add("due", k.due); j.add("detail", k.detail);
+        if (!k.item.empty())
+        {
+            j.add("item", k.item); j.add("quantity", k.quantity); j.add("delivered", k.delivered);
+        }
         contracts.push(j);
     }
     roads.add("caravans", caravans); roads.add("camps", camps); roads.add("contracts", contracts);
@@ -623,6 +627,9 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             k.town = j.string("town"); k.target = j.string("target"); k.taker = j.string("taker");
             k.status = j.string("status"); k.reward = std::int64_t(num(j, "reward"));
             k.created = num(j, "created"); k.due = num(j, "due"); k.detail = j.string("detail");
+            k.item = j.string("item");
+            k.quantity = std::clamp(int(num(j, "quantity")), 0, 999);
+            k.delivered = std::clamp(int(num(j, "delivered")), 0, k.quantity);
             saved.roads.contracts.push_back(std::move(k));
         }
     }

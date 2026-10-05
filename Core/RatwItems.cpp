@@ -31,6 +31,8 @@ struct Catalog
     std::unordered_map<std::string, const Item*> goodIndex, wearIndex;
     std::vector<Producer> producers;
     std::vector<HouseholdNeed> needs;
+    std::vector<Institution> institutions;
+    double institutionDays = 3, premium = 1.3;
     int reserve = 6;
     std::map<std::string, std::vector<std::string>> supplies, buys;
 };
@@ -202,6 +204,21 @@ Catalog build()
             need.perPerson = n.boolean("perPerson");
             if (!need.any.empty())
                 c.needs.push_back(std::move(need));
+        }
+        const auto& inst = crafts.object("institutions");
+        c.institutionDays = std::max(.5, inst.number("days", 3));
+        c.premium = std::max(1.0, inst.number("premium", 1.3));
+        for (const auto& n : inst.array("list"))
+        {
+            Institution in;
+            in.id = n.string("id");
+            in.name = n.string("name");
+            in.perGuard = n.string("per") == "guards";
+            for (const auto& [item, rate] : n.object("basket").fields())
+                if (known(item) && rate.asNumber(0) > 0)
+                    in.basket.push_back({item, rate.asNumber(0)});
+            if (!in.id.empty() && !in.basket.empty())
+                c.institutions.push_back(std::move(in));
         }
         for (const auto& [business, goods] : crafts.object("buys").fields())
             for (const auto& g : goods.items())
@@ -433,12 +450,34 @@ bool traded(const std::string& item)
     for (const auto& [business, goods] : catalog().supplies)
         if (std::find(goods.begin(), goods.end(), item) != goods.end())
             return true;
-    return false;
+    for (const auto& need : catalog().needs)
+        if (need.everyDays <= 7 && std::find(need.any.begin(), need.any.end(), item) != need.any.end())
+            return true;
+    for (const auto& in : catalog().institutions)
+        for (const auto& [want, rate] : in.basket)
+            if (want == item)
+                return true;
+    return item == "bread" || item == "porridge" || item == "meal";   // (What the hungry buy most.)
 }
 
 const std::vector<HouseholdNeed>& householdNeeds()
 {
     return catalog().needs;
+}
+
+const std::vector<Institution>& institutions()
+{
+    return catalog().institutions;
+}
+
+double institutionDays()
+{
+    return catalog().institutionDays;
+}
+
+double contractPremium()
+{
+    return catalog().premium;
 }
 
 int householdReserve()

@@ -668,8 +668,41 @@ The first buyers: the townsfolk themselves (`Core/RatwDemand.cpp`).
 - **Firewood:** farms now bring in 2 bundles with each yield (hedges and coppice), beside the one woodcutter.
 - Money only moves: food and goods are paid to the shop, which buys its materials from suppliers and producers, who are
   residents who buy food. Wages (the treasury) and market dues close the loop.
-- **Not yet:** food spoiling in larders (the catalog has `keeps`), the town's own buyers (Town Works, the garrison,
-  the church: the table below), and procurement contracts.
+- Food spoiling was left out on purpose (the user, 2026-10-04: not sure it's wanted).
+
+### The town's own buyers and contracts for goods (built 2026-10-04)
+
+- **The buyers** (`institutions` in `Data/Items/crafts.json`; `Society::townBuyers`, `Core/RatwDemand.cpp`): every
+  community of five or more has a Town Works, a watch and a church, each with its own account (`town:<town>:works`,
+  `:watch`, `:church`). Each uses up a basket a day (*placeholders*):
+
+  | Buyer | A day | Per |
+  |---|---|---|
+  | the Town Works | 2 stone, a timber, a limestone, a cord | 100 residents |
+  | the watch | 2 bread, half a smoked fish, a fifth of a bandage, a leather cap every month or so | guard |
+  | the church | 2 tallow candles, 3 bread (alms) | 100 residents |
+
+  - Each keeps 3 days of its basket in stock and buys from its town's shops (any quality).
+  - The treasury funds it, moving money, never making it: enough to keep twice its days' worth in hand, at most a
+    twentieth of the treasury a day.
+- **Contracts for goods** (`Core/RatwProcure.cpp`): what a buyer can't buy in town (a third of its stock or more, at
+  least 2) it asks for as a "procure" contract in that town.
+  - The contract names the good and how many ("The watch of Amberford wants 3 smoked fish"), for its price × 1.3, put
+    up in escrow from the buyer's funds. One standing contract per buyer per good. It lapses after 7 days, and the rest
+    of the reward goes back.
+  - A player hears of it from any merchant in town (*ask for work*, *take kN*, as for doc 26's contracts). They bring
+    the goods, any quality, and *hand in goods kN* at any merchant of that town. They can hand in a few at a time, are
+    paid by the piece, and get the rest of the reward with the last.
+  - `Contract` now has `item`, `quantity` and `delivered`, saved with the roads.
+- **Staples kept deeper:** makers keep up to 20 (not 4) of what households and the town's buyers use up every few days,
+  and of bread, porridge and meals (`items::traded`).
+- **On DEV, a night and a morning:**
+  - The treasury funded the buyers with 5,567p.
+  - The watches bought 397p of bread, smoked fish, bandages and leather caps; the Town Works 138p of stone and cord.
+  - 84 contracts for goods went up at midnight: timber and limestone (sold by no shop), bread the bakers hadn't baked
+    enough of, candles, bandages, smoked fish.
+- **Not yet:** NPCs filling contracts (only players do), and buyers for the rest of the table below (docks, mines,
+  administration, caravans).
 
 | Buyer | Uses up (placeholder baskets, scaled by population) | Paid from |
 |---|---|---|

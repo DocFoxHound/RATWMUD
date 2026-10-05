@@ -53,12 +53,16 @@ struct BanditCamp
 // ("contract:<id>") until it is paid, or returned.
 struct Contract
 {
-    std::string id, kind, poster, town;   // kind: "bounty", "escort", "supply", "courier".
+    std::string id, kind, poster, town;   // kind: "bounty", "escort", "supply", "courier", "procure".
     std::string target;                   // Bounty: the camp; courier: the recipient; escort/supply: the town.
     std::string taker, status = "open";   // "open", "taken", "done", "expired".
     std::int64_t reward = 0;
     double created = 0, due = 0;          // Calendar days.
     std::string detail;
+    // A contract for goods ("procure", doc 35 Part 7): what, how many, and how many delivered so far. The reward left in
+    // escrow is `reward` (it shrinks as deliveries are paid).
+    std::string item;
+    int quantity = 0, delivered = 0;
 };
 
 // Something one character has heard about another (or a place): a claim, how sure they are, and who told them.

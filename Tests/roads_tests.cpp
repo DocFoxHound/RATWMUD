@@ -750,6 +750,58 @@ void shopsSellTheirGoods()
     expect(std::string(Society::itemName(ware)) == items::good(ware)->name, "by its catalog name");
 }
 
+// A town's own buyers (doc 35, Part 7): funded by the treasury, they ask for what the market can't sell them, as
+// contracts for goods, and a player delivers, a few at a time, paid by the piece.
+void townBuyersAndContractsForGoods()
+{
+    // East with a hundred more townsfolk: a town big enough for its Town Works to want a cartload.
+    std::string folk;
+    for (int n = 0; n < 100; ++n)
+        folk += resident("ex" + std::to_string(n), "East Folk " + std::to_string(n), "civilian", "working", 0, 2.5 + n % 12, 0, 2.5 + n % 12);
+    auto f = strip("EE.....WW", folk);
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    std::string kid;
+    int quantity = 0;
+    std::int64_t reward = 0;
+    for (int d = 0; d < 4 && kid.empty(); ++d)
+    {
+        nextMorning(w);
+        run(w, 2);
+        for (const auto& c : w.roads().contracts)
+            if (c.kind == "procure" && c.status == "open" && c.town == "east" && c.item == "stone")
+            {
+                kid = c.id;
+                quantity = c.quantity;
+                reward = c.reward;
+            }
+    }
+    expect(!kid.empty(), "East's Town Works asks for the stone its market doesn't sell");
+    expect(w.society().account("town:east:works") && quantity >= 2 && reward >= quantity * 2, "a contract for goods, paid from its funds");
+    expect(w.society().conserved(), "money stays conserved");
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(0);
+    ada->position = {w.entity("em")->position.x + 1, w.entity("em")->position.y};
+    expect(w.takeContract("player-ada", kid).ok, "Ada takes it on");
+    expect(!w.deliverContract("player-ada", kid).ok, "with nothing to deliver, nothing is delivered");
+    const auto purse = w.society().account("player-ada")->cash;
+    w.society().create("player-ada", "stone", 1, "test: quarried");
+    w.tick(.6);
+    expect(w.deliverable("player-ada").size() == 1, "a merchant takes delivery");
+    auto r = w.deliverContract("player-ada", kid);
+    expect(r.ok && w.society().account("player-ada")->cash > purse, "one delivered, and paid for: " + r.message);
+    w.society().create("player-ada", "stone~fine", quantity, "test: quarried");
+    r = w.deliverContract("player-ada", kid);
+    expect(r.ok && w.society().account("player-ada")->cash == purse + reward, "the rest delivered (any quality): the whole reward");
+    expect(Society::stockAll(*w.society().account("player-ada"), "stone") == 1, "and only what was wanted is taken");
+    expect(Society::stockAll(*w.society().account("town:east:works"), "stone") >= quantity, "the stone goes to the Town Works");
+    for (const auto& c : w.roads().contracts)
+        if (c.id == kid)
+            expect(c.status == "done", "the work is done");
+    expect(w.society().conserved(), "money stays conserved");
+}
+
 int main()
 {
     try
@@ -767,6 +819,7 @@ int main()
         banditsCalled();
         residentsTakeWork();
         tradeAndPrices();
+        townBuyersAndContractsForGoods();
     }
     catch (const std::exception& error)
     {

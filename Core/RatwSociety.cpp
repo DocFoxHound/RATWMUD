@@ -509,6 +509,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
                 std::max(stock(stores, "herbs"), std::min(e.storeHerbs, stock(stores, "herbs") + e.dailyHerbs));
             record("carter delivery", "outside", "treasury", "", 0, 0);
             householdShopping(day, season, bodies);    // Each household's errands for the day (RatwDemand.cpp).
+            townBuyers(day, bodies);                   // And the town's own buyers'.
         }
     }
     if (roster_ == Roster::Authored)

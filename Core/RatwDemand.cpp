@@ -199,4 +199,105 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
         }
     }
 }
+
+std::vector<Society::Procurement> Society::takeProcurements()
+{
+    std::vector<Procurement> out;
+    out.swap(procurements_);
+    return out;
+}
+
+void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
+{
+    const auto& list = items::institutions();
+    if (list.empty() || roster_ != Roster::Authored)
+        return;
+    (void)day;
+    // Each community: how many live there, how many keep the watch, and its shops.
+    struct Town
+    {
+        int residents = 0, guards = 0;
+        std::vector<std::string> shops;
+    };
+    std::map<std::string, Town> towns;
+    for (const auto& r : authored_.residents)
+    {
+        if (!state_.residents.count(r.id) || !bodies.count(r.id))
+            continue;
+        const auto community = communityOfResident(r.id);
+        if (community.empty())
+            continue;
+        auto& t = towns[community];
+        ++t.residents;
+        t.guards += r.role == "guard";
+        if (r.role == "merchant")
+            t.shops.push_back(r.id);
+    }
+    const double days = items::institutionDays();
+    for (const auto& [community, town] : towns)
+    {
+        if (town.residents < 5)
+            continue;                                   // (A hamlet's needs are its households'.)
+        for (const auto& in : list)
+        {
+            const double scale = in.perGuard ? town.guards : town.residents / 100.0;
+            if (scale <= 0)
+                continue;
+            const auto acct = "town:" + community + ":" + in.id;
+            openAccount(acct);
+            if (!account(acct))
+                continue;
+            // A day's funds from the treasury: what its basket costs, never more than a twentieth of the treasury.
+            double cost = 0;
+            for (const auto& [item, rate] : in.basket)
+                if (const auto* good = items::good(item))
+                    cost += rate * scale * good->price;
+            // Funds from the treasury: enough to keep twice its days' worth in hand (to buy, and to put up a contract's
+            // reward), never more than a twentieth of the treasury a day.
+            const auto& treasury = *account("treasury");
+            const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
+                                                      treasury.cash / 20);
+            if (grant > 0)
+                shift("treasury", acct, "", 0, grant, "town funds");
+            for (const auto& [item, rate] : in.basket)
+            {
+                const double daily = rate * scale;
+                // The day's use, from its stock (what it lacked waits, up to its days' worth).
+                auto& owed = owed_[acct + "|" + item];
+                owed = std::min(owed + daily, daily * days);
+                for (const auto& kind : kindsHeld(*account(acct), item))
+                {
+                    const int n = std::min(int(owed), stock(*account(acct), kind));
+                    if (n > 0)
+                        owed -= consume(acct, kind, n, "used by " + in.name);
+                }
+                // Stock back up to its days' worth, from the town's shops.
+                const int target = int(std::ceil(daily * days));
+                int want = target - stockAll(*account(acct), item);
+                for (const auto& shop : town.shops)
+                {
+                    if (want <= 0)
+                        break;
+                    const auto sold = wares(shop);
+                    if (std::find(sold.begin(), sold.end(), item) == sold.end())
+                        continue;
+                    for (const auto& kind : kindsHeld(*account(shop), item))
+                    {
+                        const auto* good = items::good(kind);
+                        const std::int64_t price = std::max(1, good ? good->price : 1);
+                        const int n = int(std::min<std::int64_t>({want, stock(*account(shop), kind), 99, account(acct)->cash / price}));
+                        if (n > 0 && transfer(shop, acct, kind, n, price, "bought by " + in.name))
+                            want -= n;
+                        if (want <= 0)
+                            break;
+                    }
+                }
+                // What the town couldn't supply, it asks for: a contract for goods (the world posts it).
+                if (want >= std::max(2, target / 3))
+                    if (const auto* good = items::good(item))
+                        procurements_.push_back({acct, community, in.name, item, want, std::max(1, good->price)});
+            }
+        }
+    }
+}
 } // namespace ratw

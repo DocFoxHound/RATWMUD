@@ -448,6 +448,22 @@ class Society
     bool shopHasFood(const std::string& merchant) const;
     int buyFood(const std::string& resident, const std::string& seller, bool stocking);
     void householdShopping(std::int64_t day, int season, const std::map<std::string, LifeBody>& bodies);
+  public:
+    // A town's own buyers (RatwDemand.cpp): the Town Works, the watch and the church of each community ("town:<it>:works"),
+    // funded by the treasury, using up their baskets and buying from the town's shops; what they can't find, they ask
+    // for (takeProcurements: the world posts it as a contract for goods).
+    struct Procurement
+    {
+        std::string account, community, buyer, item;    // buyer: "the Town Works"; item: the common kind.
+        int quantity = 0;
+        std::int64_t price = 1;                          // A piece, as the catalog has it.
+    };
+    void townBuyers(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    std::vector<Procurement> takeProcurements();
+
+  private:
+    std::vector<Procurement> procurements_;                // Asked for since the world last took them.
+    std::map<std::string, double> owed_;                   // "account|item" -> a buyer's use not yet taken from stock.
     void record(const std::string& kind, const std::string& from, const std::string& to,
                 const std::string& item, int quantity, std::int64_t coins);
     bool transfer(const std::string& seller, const std::string& buyer, const std::string& item,

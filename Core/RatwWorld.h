@@ -565,6 +565,10 @@ class World
     std::vector<const Contract*> contractsNear(const std::string& player) const;
     Result takeContract(const std::string& player, const std::string& contractId);
     Result completeContract(const std::string& contractId, const std::string& by);
+    // A contract for goods (doc 35, Part 7; RatwProcure.cpp): the town's buyers' requests posted as contracts, and a
+    // taker delivering what they carry of it to a merchant of that town, paid by the piece.
+    Result deliverContract(const std::string& player, const std::string& contractId);
+    std::vector<const Contract*> deliverable(const std::string& player) const;   // Taken by them, for here, and carried.
     // Posts work, the reward set aside from the poster's purse at once (no reward if they can't pay).
     Contract& postContract(const std::string& kind, const std::string& poster, const std::string& town,
                            const std::string& target, std::int64_t reward, double days, const std::string& detail);
@@ -1069,6 +1073,7 @@ class World
     std::map<std::string, std::vector<Track>> tracks_;            // Wolf -> the trails it has found (not saved).
     double lastWearDay_ = -1;                                     // When clothes last wore with the days.
     double nextMarkCheck_ = 0;                                    // When noses near thieves are next tried.
+    void postProcurements();
     void tendMarks();
     void wearGear(Entity& e, const std::string& item, double amount);
     void wearArmourAt(Entity& e, const std::string& zone, double taken);

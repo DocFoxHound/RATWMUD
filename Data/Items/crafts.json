@@ -50,6 +50,16 @@
       {"any": ["cider"], "everyDays": 4}
     ]
   },
+  "institutions": {
+    "about": "A town's own buyers (doc 35, Part 7): each uses up its basket every day (per 100 residents, or per guard, of its community), keeps `days` of it in stock, buys from the town's shops, and posts a contract for goods for what it can't find (a reward of `premium` times the price, held in escrow; players deliver to any merchant in that town). The treasury funds each with what its basket costs, a day at a time, never more than a twentieth of its money. Numbers are placeholders.",
+    "days": 3,
+    "premium": 1.3,
+    "list": [
+      {"id": "works", "name": "the Town Works", "per": "residents", "basket": {"stone": 2, "timber": 1, "limestone": 1, "cord": 1}},
+      {"id": "watch", "name": "the watch", "per": "guards", "basket": {"bread": 2, "smoked_fish": 0.5, "bandages": 0.2, "leather_cap": 0.03}},
+      {"id": "church", "name": "the church", "per": "residents", "basket": {"candle_tallow": 2, "bread": 3}}
+    ]
+  },
   "buys": {
     "about": "What a kind of shop buys from players and sells on (gathered and hunted goods, doc 41), besides what it supplies: never stocked to start with.",
     "herbalist": ["herbs", "yarrow", "thyme", "chamomile", "lavender", "comfrey", "mint", "willow_bark", "valerian", "wormwood", "rose_petals"],
