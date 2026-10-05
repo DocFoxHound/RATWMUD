@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -72,10 +73,24 @@ struct DayPlan
     std::string name;                               // The festival's name.
     std::vector<Spot> stalls, crowd;                // Where merchants set up, and where the townsfolk stand.
     bool foul = false;                              // Too foul at the square for stalls or a gathering.
+    // Restday's service (doc 42, Phase 6): where the townsfolk sit in the church, and where its preacher stands.
+    std::vector<Spot> pews;
+    Spot pulpit;
 };
+// Ground out of town a wolf can make a living from (Docs/Design/42-money-in-circulation.md, Phase 3b): where to stand,
+// and the trade: "gathering", "hunting", "woodcutting" or "fishing". The world finds them, by community.
+struct WorkGround
+{
+    std::string trade, ground;                      // ground: doc 41's forage ground ("broadleaf"), or "" for hunting.
+    Spot spot;
+};
+// What a spell of work at a ground brings in, given by the world (from the same finite sources players use).
+using Harvest = std::function<std::vector<std::pair<std::string, int>>(const std::string& who, const WorkGround& ground, int season)>;
 struct LifeDay
 {
     std::map<std::string, DayPlan> plans;           // By community (a region).
+    std::shared_ptr<const std::map<std::string, std::vector<WorkGround>>> grounds;   // By community (doc 42, 3b).
+    Harvest harvest;
     std::function<std::string(const std::string& cell)> communityOf;
     std::function<int(const std::string& cell)> sky; // -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
 };
@@ -147,6 +162,34 @@ struct CareerWorld
     std::function<bool(const std::string& workCell, const std::string& homeCell)> near;
 };
 
+// The month's books (Docs/Design/42-money-in-circulation.md, Phase 1): what each resident had when the month began, and
+// what came in or went out since that was neither earned nor spent (an inheritance, a gift, last month's tax). Profit
+// is the difference less that. Every MonthDays, a tenth of a profit goes to the town and a tenth to its church.
+struct MonthBooks
+{
+    std::int64_t month = -1;                        // Which month (day / MonthDays) these are; -1: not begun.
+    std::map<std::string, std::int64_t> start;      // Resident -> cash when the month (or their time here) began.
+    std::map<std::string, std::int64_t> unearned;   // Resident -> money in less money out, neither earned nor spent.
+    std::int64_t revision = 0;                      // Counts changes, for the save's journal.
+};
+constexpr int MonthDays = 28;
+// Great houses and the businesses they own (Docs/Design/42-money-in-circulation.md, Phase 5b). A house is its head's
+// (a resident "ruling House Fell"); it owns some of its town's businesses, each with a till of its own
+// ("till:<position>") kept apart from its manager's purse. Which house owns which, and how often each till has been
+// propped up lately, are saved.
+struct HouseState
+{
+    bool founded = false;                           // Ownership has been given out (once).
+    std::map<std::string, std::string> owner;       // Position (a business) -> its house ("house:<id>").
+    std::map<std::string, std::vector<double>> propped;   // Position -> the days its till ran low lately.
+    std::int64_t day = -1;                          // The last day the houses were tended.
+    std::int64_t revision = 0;                      // Counts changes, for the save's journal.
+};
+struct House
+{
+    std::string id, name, head, community;          // id: "house:fell"; head: the head's position.
+};
+
 struct SocietyState
 {
     bool enabled = false;
@@ -160,6 +203,8 @@ struct SocietyState
     int craftingStocked = 0;
     double decisionRemainder = 0;
     CareerState careers;
+    MonthBooks books;
+    HouseState houses;
 };
 struct EconomyResult
 {
@@ -263,6 +308,15 @@ class Society
     // made by `untilDay` scores `lift` more toward a better quality. Not saved.
     void lendGift(const std::string& maker, double lift, double untilDay);
     double giftLiftOf(const std::string& maker) const;
+    // A sale: goods from `seller` to `buyer` at `price` each, paid at once (a caravan buying and selling, doc 42).
+    bool sale(const std::string& seller, const std::string& buyer, const std::string& item, int quantity, std::int64_t price,
+              const std::string& kind)
+    {
+        return transfer(seller, buyer, item, quantity, price, kind);
+    }
+    // Whether materials short at home come only by caravan (doc 42, Phase 7: a world of towns), or are bought from
+    // another community's shops at once, carted in (a world of one town, or a society alone).
+    void setTradeByCaravan(bool on) { tradeByCaravan_ = on; }
     // Goods used up (eaten by bandits, say): gone from the world, recorded as `kind`.
     int consume(const std::string& account, const std::string& item, int quantity, const std::string& kind);
     // A facility account (see facilityAccount), empty to begin with; closing one needs it empty.
@@ -453,6 +507,9 @@ class Society
     bool shopHasFood(const std::string& merchant) const;
     int buyFood(const std::string& resident, const std::string& seller, bool stocking);
     void householdShopping(std::int64_t day, int season, const std::map<std::string, LifeBody>& bodies);
+    // Once a game day (RatwDemand.cpp; doc 42, Phase 5): tools the trades wear out, businesses' upkeep (a stables'
+    // horses), and pennies for beggars.
+    void tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
   public:
     // A town's own buyers (RatwDemand.cpp): the Town Works, the watch and the church of each community ("town:<it>:works"),
     // funded by the treasury, using up their baskets and buying from the town's shops; what they can't find, they ask
@@ -466,7 +523,106 @@ class Society
     void townBuyers(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     std::vector<Procurement> takeProcurements();
 
+    // Town purses and the month's reckoning (Docs/Design/42-money-in-circulation.md, Phase 1; RatwReckoning.cpp).
+    // The capital is the community whose treasury is "treasury" (the world sets it; empty in a world of one town).
+    void setCapital(std::string community) { capital_ = std::move(community); }
+    const std::string& capital() const { return capital_; }
+    // A community's treasury: its own store's account ("stores:<it>"), or else the capital's ("treasury").
+    std::string treasuryOf(const std::string& community) const;
+    // The church a treasury's townsfolk tithe to: "town:<its town>:church".
+    std::string churchOf(const std::string& treasury) const;
+    // Where a resident pays its tax: the treasury of the community it works in (or lives in).
+    std::string treasuryOfResident(const std::string& id) const;
+    // What a town's reckoning brought in (for the world's event log).
+    struct Reckoning
+    {
+        std::string treasury, church;
+        int payers = 0, residents = 0;
+        std::int64_t tax = 0, tithes = 0, toCapital = 0;
+    };
+    // The month's reckoning, if one is due on `day` (at most once a month): every resident who made a profit pays a
+    // tenth to its town and a tenth to its church, and the towns send the capital a tenth of their tax; then new
+    // books are opened. `force` reckons now (the Dev Console). Residents without books yet get them.
+    void reckon(std::int64_t day, bool force = false);
+    std::vector<Reckoning> takeReckonings();
+    // Who pays a position's wages (doc 42, Phase 2; RatwWages.cpp): an account, and in words whom (an empty account:
+    // nobody, as for a child or a farmer, who lives by what it brings in).
+    struct Payer
+    {
+        std::string account, whom;
+    };
+    Payer payerOf(const std::string& resident, const Position& job, int age) const;
+    // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
+    static constexpr const char* LabourTitle = "labouring for the Town Works";
+    static constexpr int RetireAge = 65;
+    // Working out of town (doc 42, Phase 3b): the ground a grown wolf without a post works today, or null (it labours
+    // for the Town Works instead). A ground takes OutworkRoom wolves; the choice is the wolf's own, steady day to day.
+    const WorkGround* outworkOf(const std::string& resident, const std::string& community) const;
+    static constexpr int OutworkRoom = 2;
+    static std::string outworkTitle(const std::string& trade);   // "gathering in the wild", "hunting"...
+    static bool outworkTitled(const std::string& title);
+    static bool idlePost(const std::string& title);   // "idling in the square", "sits and watches": no work at all.
+    // Sells what a wolf brought in to a shop that buys it, at the price a player gets; returns the pennies it made.
+    std::int64_t sellBroughtIn(const std::string& resident, const std::string& shop);
+    bool carriesForSale(const std::string& resident) const;
+    bool sellsTo(const std::string& resident, const std::string& shop) const;   // The shop takes something it carries.
+    // Great houses (doc 42, Phase 5b; RatwHouses.cpp): the houses, each business's till (the keeper itself unless a house
+    // owns it), and the house that owns a position's business ("" for none).
+    const std::vector<House>& houses() const;
+    std::string tillOf(const std::string& keeper) const;
+    std::string ownerOf(const std::string& positionId) const;
+    // A manager's wage a day, the days of running costs a till keeps (its float), and how many of the last 28 days a
+    // till may run low (propped up by its house, or not) before the house sells the business on. Placeholders.
+    static constexpr int ManagerWage = 8, FloatDays = 7, ProppedDays = 10;
+    std::int64_t floatOf(const std::string& positionId) const;
+    // Once a game day: the managers' wages, the takings above each till's float to its house, a struggling till propped
+    // up, and a business that keeps losing sold to another house. Gives the houses their businesses the first time.
+    void tendHouses(std::int64_t day);
+    // A business changes hands (the Dungeon Master, or a sale): to `house`, for `price` from it to the old owner.
+    bool sellBusiness(const std::string& positionId, const std::string& house, std::int64_t price);
+    // The rule against hoarding (doc 42; RatwSurplus.cpp): once a game day, each town treasury, church and great house
+    // spends a SurplusShare-th of what it holds above its reserve (four weeks of its usual spending, at least a floor),
+    // hiring hands, buying and using up goods, giving alms. What each spent, for the event log:
+    struct Spending
+    {
+        std::string collector, community;
+        std::int64_t total = 0;
+        std::string detail;
+    };
+    static constexpr int SurplusShare = 10;
+    void spendSurpluses(std::int64_t day);
+    std::vector<Spending> takeSpendings();
+    // Restday's service (doc 42, Phase 6): from ServiceStart to ServiceEnd a third of the town (a steady per-wolf share,
+    // different week to week) sits in its church while its clergy preach; the plate goes round as it ends.
+    static constexpr double ServiceStart = 9, ServiceEnd = 11;
+    static bool goesToChurch(const std::string& resident, std::int64_t day);
+    static bool clergy(const std::string& title);     // A priest's, a chapel keeper's, an acolyte's work.
+    static bool houseHead(const std::string& title);  // The head of a great house: "ruling House Fell".
+    static constexpr int TaxShare = 10, TitheShare = 10, CapitalShare = 10;     // "a tenth": 1 / these.
+
   private:
+    std::string capital_;
+    bool tradeByCaravan_ = false;
+    std::map<std::string, std::int64_t> spentToday_;       // Collector -> its ordinary spending today (not saved).
+    std::map<std::string, double> outgoing_;               // Collector -> a slow average of its days' spending.
+    std::int64_t surplusDay_ = -1;
+    std::vector<Spending> spendings_;
+    void noteOutgoing(const std::string& from, const std::string& kind, std::int64_t coins);
+    // Buys what `wanted` from the shops' tills, up to `budget`, never a shop's last few; what was got, by item.
+    std::int64_t buyForSurplus(const std::string& buyer, const std::vector<std::string>& shops,
+                               const std::function<bool(const std::string& item)>& wanted, std::int64_t budget,
+                               const std::string& kind, std::map<std::string, int>* got);
+    mutable std::vector<House> houses_;                     // From the heads' positions (houses(), built on first use).
+    mutable bool housesKnown_ = false;
+    void foundHouses();
+    mutable std::map<std::string, std::size_t> outwork_;   // Resident -> its ground's index in its community's list.
+    mutable std::map<std::string, std::map<std::size_t, int>> outworkTaken_;   // Community -> ground -> how many.
+    mutable std::int64_t outworkDay_ = -1;
+    std::map<std::string, double> unpaidSince_;
+    std::set<std::string> offered_;                        // Who has put something on the plate this Restday.            // Worker -> the day its employer first couldn't pay (not saved).
+    mutable std::unordered_map<std::string, std::vector<std::string>> employers_;   // Work cell -> shops' and houses' positions.
+    void indexEmployers() const;
+    std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.
     std::map<std::string, double> owed_;                   // "account|item" -> a buyer's use not yet taken from stock.
     void record(const std::string& kind, const std::string& from, const std::string& to,

@@ -27,6 +27,7 @@ constexpr DevCommand DevCommands[] = {
     {"fight-end-myself", "Ends the fight you are in, as a draw."},
     {"give", "give <item id> [count]: wearables from the catalog into your own purse (doc 35), to try on."},
     {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
+    {"reckon", "The month's reckoning now (doc 42): every resident pays a tenth of its profit since the last to its town and its church."},
 };
 } // namespace
 
@@ -113,6 +114,11 @@ void Game::devCommand(Connection* c, const json::Value& j)
             text += "\n" + piece.id + " (" + piece.slot + "): " + piece.name;
         }
         result = {shown > 0, shown > 0 ? "Wearables:" + text : "No wearable matches.", {}};
+    }
+    else if (command == "reckon")
+    {
+        result = {true, world_.reckonNow(), {}};
+        record(Economy, "");
     }
     else
         result = {false, "No such command: /" + command + ". Try /help.", {}};

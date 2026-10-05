@@ -157,6 +157,43 @@ const World::MarketSquare& World::square(const std::string& community)
     return sq;
 }
 
+const World::Chapel& World::chapel(const std::string& community)
+{
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    if (today != chapelsDay_)
+    {
+        chapels_.clear();
+        chapelsDay_ = today;
+    }
+    if (const auto found = chapels_.find(community); found != chapels_.end())
+        return found->second;
+    auto& ch = chapels_[community];
+    if (community.empty())
+        return ch;
+    // The church is where the town's clergy work (a priest's, a chapel keeper's post): the first such indoors.
+    for (const auto& p : society_.positions())
+    {
+        if (!Society::clergy(p.title) || lawTown(p.work.cell) != community)
+            continue;
+        const auto* c = cell(p.work.cell);
+        if (!c || c->outdoors || !ensureLoaded(p.work.cell).ok)
+            continue;
+        c = cell(p.work.cell);
+        ch.found = true;
+        ch.pulpit = p.work;
+        // Its seats: open floor a few strides from the pulpit, up to sixty of them.
+        for (int y = 1; y < c->height - 1 && ch.pews.size() < 60; ++y)
+            for (int x = 1; x < c->width - 1 && ch.pews.size() < 60; ++x)
+            {
+                const Vec2 at{x + .5, y + .5};
+                if (std::hypot(at.x - p.work.x, at.y - p.work.y) >= 2.5 && passable(p.work.cell, at))
+                    ch.pews.push_back({p.work.cell, at.x, at.y});
+            }
+        break;
+    }
+    return ch;
+}
+
 DayPlan World::dayPlan(const std::string& community)
 {
     DayPlan plan;
@@ -188,6 +225,12 @@ DayPlan World::dayPlan(const std::string& community)
         if (plan.kind == "market" || plan.kind == "festival")
             plan.crowd = sq.crowd;
     }
+    if (plan.kind == "rest")
+        if (const auto& ch = chapel(community); ch.found)
+        {
+            plan.pews = ch.pews;
+            plan.pulpit = ch.pulpit;
+        }
     return plan;
 }
 
@@ -254,6 +297,10 @@ void World::planDays()
     }
     if (festivalsBegun_.size() > 4096)
         festivalsBegun_.clear();
+    if (!workGrounds_ && townsReady_)
+        findWorkGrounds();                          // The country each town works (doc 42, Phase 3b), once.
+    day.grounds = workGrounds_;
+    day.harvest = [this](const std::string& who, const WorkGround& at, int season) { return harvestAt(who, at, season); };
     day.communityOf = [this](const std::string& cellId) { return lawTown(cellId); };
     day.sky = [this](const std::string& cellId) { return skyOf(cellId); };
     society_.setDay(std::move(day));

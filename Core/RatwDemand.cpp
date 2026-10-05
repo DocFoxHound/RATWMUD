@@ -51,7 +51,7 @@ std::string Society::bestFood(const EconomyAccount& account)
 
 bool Society::shopHasFood(const std::string& merchant) const
 {
-    const auto* a = account(merchant);
+    const auto* a = account(tillOf(merchant));       // (A house's business: its till, doc 42.)
     if (!a)
         return false;
     const auto sold = wares(merchant);
@@ -63,7 +63,8 @@ bool Society::shopHasFood(const std::string& merchant) const
 
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking)
 {
-    const auto* shop = account(seller);
+    const auto till = tillOf(seller);
+    const auto* shop = account(till);
     if (!shop || !account(resident))
         return 0;
     const auto sold = wares(seller);
@@ -93,9 +94,9 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
         if (wanted <= 0)
             break;
         const auto* purse = account(resident);
-        const int have = stock(*account(seller), c.item);
+        const int have = stock(*account(till), c.item);
         const int n = int(std::min<std::int64_t>({(wanted + c.nourish - 1) / c.nourish, have, 20, purse ? purse->cash / c.price : 0}));
-        if (n > 0 && transfer(seller, resident, c.item, n, c.price, "resident food purchase"))
+        if (n > 0 && transfer(till, resident, c.item, n, c.price, "resident food purchase"))
         {
             bought += n;
             wanted -= n * c.nourish;
@@ -162,7 +163,7 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
                 {
                     if (got)
                         break;
-                    const auto* s = account(shop);
+                    const auto* s = account(tillOf(shop));
                     if (!s || shop == buyer)
                         continue;
                     const auto sold = wares(shop);
@@ -179,7 +180,7 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
                             const std::int64_t price = std::max(1, good->price);
                             if (purse->cash - price < std::int64_t(reserve) * std::int64_t(members.size()))
                                 continue;
-                            if (transfer(shop, buyer, kind, 1, price, "household purchase"))
+                            if (transfer(tillOf(shop), buyer, kind, 1, price, "household purchase"))
                             {
                                 consume(buyer, kind, 1, "used at home");
                                 got = true;
@@ -217,7 +218,8 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
     struct Town
     {
         int residents = 0, guards = 0;
-        std::vector<std::string> shops;
+        std::vector<std::string> shops, poor;         // poor: no food and under 12p, for the church's alms.
+        std::map<std::string, int> workers;           // By producer (a mine's, a fishery's... doc 42, Phase 5).
     };
     std::map<std::string, Town> towns;
     for (const auto& r : authored_.residents)
@@ -232,20 +234,26 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
         t.guards += r.role == "guard";
         if (r.role == "merchant")
             t.shops.push_back(r.id);
+        if (const auto* p = items::producerFor(r.workLabel))
+            ++t.workers[p->id];
+        if (const auto* purse = account(r.id); purse && purse->cash < 12 && bestFood(*purse).empty())
+            t.poor.push_back(r.id);
     }
     const double days = items::institutionDays();
-    for (const auto& [community, town] : towns)
+    for (auto& [community, town] : towns)
     {
         if (town.residents < 5)
             continue;                                   // (A hamlet's needs are its households'.)
         for (const auto& in : list)
         {
-            const double scale = in.perGuard ? town.guards : town.residents / 100.0;
-            if (scale <= 0)
+            const auto workers = in.perProducer.empty() ? 0 : town.workers.count(in.perProducer) ? town.workers.at(in.perProducer) : 0;
+            const double scale = !in.perProducer.empty() ? workers : in.perGuard ? town.guards : town.residents / 100.0;
+            if (scale <= 0 || town.residents < in.minResidents)
                 continue;
             const auto acct = "town:" + community + ":" + in.id;
-            openAccount(acct);
-            if (!account(acct))
+            const auto treasuryId = treasuryOf(community);      // The town's own purse (doc 42).
+            const bool founded = openAccount(acct);
+            if (!account(acct) || !account(treasuryId))
                 continue;
             // A day's funds from the treasury: what its basket costs, never more than a twentieth of the treasury.
             double cost = 0;
@@ -254,11 +262,18 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     cost += rate * scale * good->price;
             // Funds from the treasury: enough to keep twice its days' worth in hand (to buy, and to put up a contract's
             // reward), never more than a twentieth of the treasury a day.
-            const auto& treasury = *account("treasury");
-            const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
-                                                      treasury.cash / 20);
-            if (grant > 0)
-                shift("treasury", acct, "", 0, grant, "town funds");
+            const auto& treasury = *account(treasuryId);
+            if (in.tithes)
+            {
+                // The church lives on its tithes; the town gives it four weeks of its basket when it is founded.
+                if (founded)
+                    shift(treasuryId, acct, "", 0, std::min<std::int64_t>(std::int64_t(std::ceil(cost * MonthDays)), treasury.cash / 10),
+                          "church foundation");
+            }
+            else if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
+                                                               treasury.cash / 20);
+                     grant > 0)
+                shift(treasuryId, acct, "", 0, grant, "town funds");
             for (const auto& [item, rate] : in.basket)
             {
                 const double daily = rate * scale;
@@ -267,7 +282,17 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 owed = std::min(owed + daily, daily * days);
                 for (const auto& kind : kindsHeld(*account(acct), item))
                 {
-                    const int n = std::min(int(owed), stock(*account(acct), kind));
+                    int n = std::min(int(owed), stock(*account(acct), kind));
+                    // The church's bread goes to the hungry poor first, given (doc 42, Phase 5); the rest is eaten at
+                    // its table.
+                    if (in.tithes && edible(kind))
+                        for (auto& who : town.poor)
+                            if (n > 0 && !who.empty() && shift(acct, who, kind, 1, 0, "alms"))
+                            {
+                                --n;
+                                owed -= 1;
+                                who.clear();          // (One each.)
+                            }
                     if (n > 0)
                         owed -= consume(acct, kind, n, "used by " + in.name);
                 }
@@ -281,12 +306,13 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     const auto sold = wares(shop);
                     if (std::find(sold.begin(), sold.end(), item) == sold.end())
                         continue;
-                    for (const auto& kind : kindsHeld(*account(shop), item))
+                    const auto till = tillOf(shop);
+                    for (const auto& kind : kindsHeld(*account(till), item))
                     {
                         const auto* good = items::good(kind);
                         const std::int64_t price = std::max(1, good ? good->price : 1);
-                        const int n = int(std::min<std::int64_t>({want, stock(*account(shop), kind), 99, account(acct)->cash / price}));
-                        if (n > 0 && transfer(shop, acct, kind, n, price, "bought by " + in.name))
+                        const int n = int(std::min<std::int64_t>({want, stock(*account(till), kind), 99, account(acct)->cash / price}));
+                        if (n > 0 && transfer(till, acct, kind, n, price, "bought by " + in.name))
                             want -= n;
                         if (want <= 0)
                             break;
@@ -297,6 +323,99 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     if (const auto* good = items::good(item))
                         procurements_.push_back({acct, community, in.name, item, want, std::max(1, good->price)});
             }
+        }
+    }
+}
+
+void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
+{
+    if (roster_ != Roster::Authored)
+        return;
+    // The shops of each community, and who sells what.
+    std::map<std::string, std::vector<std::string>> shopsOf;
+    for (const auto& r : authored_.residents)
+        if (r.role == "merchant" && state_.residents.count(r.id))
+            shopsOf[communityOfResident(r.id)].push_back(r.id);
+    const auto buy = [&](const std::string& who, const std::string& item, const std::string& kind) {
+        const auto shops = shopsOf.find(communityOfResident(who));
+        if (shops == shopsOf.end())
+            return false;
+        for (const auto& shop : shops->second)
+        {
+            const auto sold = wares(shop);
+            if (shop == who || std::find(sold.begin(), sold.end(), item) == sold.end())
+                continue;
+            const auto till = tillOf(shop);
+            for (const auto& sort : kindsHeld(*account(till), item))
+            {
+                const auto* good = items::good(sort);
+                if (good && transfer(till, who, sort, 1, std::max(1, good->price), kind))
+                {
+                    consume(who, sort, 1, "worn out at work");
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    // Tools a trade wears out (crafts.json `tools`): every so often, out of the worker's own purse.
+    const auto& tools = items::toolNeeds();
+    for (const auto& r : authored_.residents)
+    {
+        if (tools.empty())
+            break;
+        const auto body = bodies.find(r.id);
+        const auto* p = items::producerFor(r.workLabel);
+        if (!p || body == bodies.end() || body->second.age < 16 || !state_.residents.count(r.id))
+            continue;
+        for (const auto& t : tools)
+        {
+            if (t.producer != p->id)
+                continue;
+            const double offset = unit(r.id + "|" + t.item) * t.everyDays;          // (Not everyone on the same day.)
+            const double at = double(day) + offset;
+            if (std::floor(at / t.everyDays) != std::floor((at - 1) / t.everyDays))
+                buy(r.id, t.item, "tools for the work");
+        }
+    }
+    // Businesses' upkeep (crafts.json `upkeep`): a stables' horses eat, from the till, bought like its materials.
+    for (const auto& r : authored_.residents)
+    {
+        if (r.role != "merchant" || !state_.residents.count(r.id))
+            continue;
+        const auto* business = items::businessFor(r.workLabel);
+        const auto* upkeep = business ? items::upkeepFor(business->id) : nullptr;
+        const auto* job = jobOf(r.id);
+        if (!upkeep || !job)
+            continue;
+        const auto till = tillOf(r.id);
+        for (const auto& [item, rate] : *upkeep)
+        {
+            auto& owed = owed_[till + "|upkeep|" + item];
+            owed += rate;
+            if (const int want = int(owed) - stockAll(*account(till), item); want > 0)
+                buyMaterials(r.id, job->work.cell, item, want + int(std::ceil(rate * 3)));
+            for (const auto& sort : kindsHeld(*account(till), item))
+                if (int(owed) > 0)
+                    owed -= consume(till, sort, std::min(int(owed), stock(*account(till), sort)), "eaten by the horses");
+            owed = std::min(owed, rate * 3);       // (What couldn't be had waits a few days, no more.)
+        }
+    }
+    // Beggars (doc 42, Phase 5): a few of their town's better-off spare them a penny each day.
+    std::map<std::string, std::vector<std::string>> wellOff;
+    for (const auto& r : authored_.residents)
+        if (const auto* purse = account(r.id); purse && purse->cash > 100 && state_.residents.count(r.id))
+            wellOff[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& r : authored_.residents)
+    {
+        if (r.workLabel.find("beg") == std::string::npos || !state_.residents.count(r.id))
+            continue;
+        const auto& givers = wellOff[communityOfResident(r.id)];
+        for (std::size_t k = 0; k < std::min<std::size_t>(3, givers.size()); ++k)
+        {
+            const auto& giver = givers[std::size_t(unit(r.id + std::to_string(day) + std::to_string(k)) * double(givers.size())) % givers.size()];
+            if (giver != r.id)
+                shift(giver, r.id, "", 0, 1, "a penny for a beggar");
         }
     }
 }

@@ -95,6 +95,7 @@ Value roads(const RoadsState& r)
     roads.add("day", double(r.day));
     roads.add("nextId", double(r.nextId));
     roads.add("stocked", r.stocked);
+    roads.add("purses", r.purses);
     auto caravans = Value::array(), camps = Value::array(), contracts = Value::array();
     for (const auto& t : r.caravans)
     {
@@ -110,6 +111,8 @@ Value roads(const RoadsState& r)
         for (const auto& [who, cells] : t.with)
             with.add(who, cells);
         j.add("with", with);
+        if (!t.trader.empty())
+            j.add("trader", t.trader);
         caravans.push(j);
     }
     for (const auto& b : r.camps)
@@ -130,6 +133,7 @@ Value roads(const RoadsState& r)
         if (!k.item.empty())
         {
             j.add("item", k.item); j.add("quantity", k.quantity); j.add("delivered", k.delivered);
+            if (!k.source.empty()) { j.add("source", k.source); j.add("carried", k.carried); }
         }
         contracts.push(j);
     }
@@ -601,6 +605,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         saved.roads.day = std::int64_t(num(roads, "day", -1));
         saved.roads.nextId = std::max<std::int64_t>(1, std::int64_t(num(roads, "nextId", 1)));
         saved.roads.stocked = roads.boolean("stocked");
+        saved.roads.purses = roads.boolean("purses");
         for (const auto& j : roads.array("caravans"))
         {
             Caravan t;
@@ -611,6 +616,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             t.status = j.string("status"); t.escorts = readStrings(j, "escorts"); t.letters = readStrings(j, "letters");
             t.cell = j.string("cell"); t.x = num(j, "x"); t.y = num(j, "y");
             t.waitUntil = num(j, "waitUntil");
+            t.trader = j.string("trader");
             for (const auto& [who, cells] : j.object("with").fields())
                 if (cells.isNumber())
                     t.with[who] = int(cells.asNumber());
@@ -630,6 +636,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             k.item = j.string("item");
             k.quantity = std::clamp(int(num(j, "quantity")), 0, 999);
             k.delivered = std::clamp(int(num(j, "delivered")), 0, k.quantity);
+            k.source = j.string("source");
+            k.carried = std::clamp(int(num(j, "carried")), 0, k.quantity);
             saved.roads.contracts.push_back(std::move(k));
         }
     }

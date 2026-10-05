@@ -298,6 +298,17 @@ void Society::record(const std::string& kind, const std::string& from, const std
                      int quantity, std::int64_t coins)
 {
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
+    noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
+    // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
+    if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business"))
+    {
+        auto& books = state_.books;
+        if (books.start.count(from))
+            books.unearned[from] -= coins;
+        if (books.start.count(to))
+            books.unearned[to] += coins;
+        ++books.revision;
+    }
     if (state_.ledger.size() > 128)
         state_.ledger.erase(state_.ledger.begin());
     journal_.push_back(state_.ledger.back());
@@ -368,7 +379,9 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     // A shop deals in its goods of every quality (doc 35, Part 4): a tanner takes a fine hide as well as a common one.
     if (!itemValid(item) || std::find(deals.begin(), deals.end(), items::baseOf(item)) == deals.end())
         return {false, "This trader has no use for those goods."};
-    const auto& m = *account(seller);
+    if (!account(tillOf(seller)))
+        return {false, "This trader is unavailable."};
+    const auto& m = *account(tillOf(seller));          // The shop's shelves and money (its house's till, doc 42).
     const auto& p = *account(player);
     const auto* worn = items::wearable(item);
     // Anything else of the catalog (Docs/Design/39): its own price, a few kept.
@@ -403,7 +416,8 @@ EconomyResult Society::trade(const std::string& player, const std::string& trade
     auto result = quote(player, trader, item, quantity, buy);
     if (!result.ok)
         return result;
-    result.ok = transfer(buy ? trader : player, buy ? player : trader, item, quantity, result.unitPrice, "local trade");
+    const auto till = tillOf(trader);
+    result.ok = transfer(buy ? till : player, buy ? player : till, item, quantity, result.unitPrice, "local trade");
     result.message = result.ok ? std::string(buy ? "Bought " : "Sold ") + std::to_string(quantity) + " " +
                                      itemName(item) + " for " + std::to_string(result.total) + " silver pennies."
                                : "The trade could not be completed.";
@@ -495,6 +509,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         state_.importsRemaining = 4;
         for (auto& resident : state_.residents)
             resident.second.wagesToday = 0;
+        offered_.clear();                              // (The Restday plate, doc 42.)
         const int recovery[] = {20, 30, 12, 4};
         state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
         if (roster_ == Roster::Authored)
@@ -508,10 +523,16 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             stores.stock["herbs"] =
                 std::max(stock(stores, "herbs"), std::min(e.storeHerbs, stock(stores, "herbs") + e.dailyHerbs));
             record("carter delivery", "outside", "treasury", "", 0, 0);
+            reckon(day);                               // The month's tax and tithes, when one is due (RatwReckoning.cpp).
+            tendHouses(day);                           // Great houses' businesses: wages, takings, props (RatwHouses.cpp).
+            spendSurpluses(day);                       // What the treasuries, churches and houses hold above need goes back out.
             householdShopping(day, season, bodies);    // Each household's errands for the day (RatwDemand.cpp).
             townBuyers(day, bodies);                   // And the town's own buyers'.
+            tradeUpkeep(day, bodies);                  // Tools worn out, horses fed, beggars given a penny (doc 42).
         }
     }
+    if (roster_ == Roster::Authored && state_.books.month < 0)
+        reckon(day);                                   // The first month's books open at once (doc 42).
     if (roster_ == Roster::Authored)
         return decideAuthored(absoluteDay, bodies);
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;

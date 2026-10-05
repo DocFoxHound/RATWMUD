@@ -1,0 +1,186 @@
+{
+  "format": "ratw-sermons",
+  "version": 1,
+  "about": "What preachers preach at the Restday service (Docs/Design/42-money-in-circulation.md, Phase 6): a line a minute from the pulpit, heard by everyone in the church. `places`: the communities a sermon belongs to (its own faith's: the Iron Saint in Ser Ferro, the Tide in Ridgemere, the First Oath in Upper Accord); none, any. A preacher doesn't repeat a sermon within four weeks. `{town}` is the town's name.",
+  "sermons": [
+    {
+      "id": "the_poor_box",
+      "title": "The Poor Box",
+      "theme": "charity",
+      "lines": [
+        "Sit, all of you. The benches are hard, and so is the year; we will be brief with one and kind about the other.",
+        "There is a box by the door. You know it. Most of you walk past it the way you walk past a beggar: with your eyes on the floor.",
+        "I will tell you what goes into that box. Bread, for the wolf who has none. Bandages, for the one who cannot pay a healer.",
+        "Not a penny of it sits. The tenth you give at the reckoning does not sleep in the church's chest; it walks out of this door on four feet.",
+        "A pack that lets its weakest starve is not a pack. It is a crowd that happens to be going the same way.",
+        "You do not give because the church asks. You give because, one winter, it may be your name on the list.",
+        "And if it is, come. Nobody here will ask how you came to be hungry. Only whether you have eaten.",
+        "Go out into {town} today with your eyes up. Look at the wolf on the steps. Then look at your own paws, and see that they are the same.",
+        "Rest well. Eat well. And mind the box on your way out."
+      ]
+    },
+    {
+      "id": "honest_weights",
+      "title": "Honest Weights",
+      "theme": "trade",
+      "lines": [
+        "Good morning. I see a great many shopkeepers this morning; I see a great many of you looking at the door already.",
+        "Today I speak about scales. Not the fish kind. The kind with two pans and a little brass weight in each.",
+        "Every one of you knows how to put a thumb on a scale. The question has never been whether you can.",
+        "A short measure of flour cheats the baker's customer once. It cheats the baker every day after, because nobody comes back.",
+        "The town runs on trust as a mill runs on water. Muddy it upstream, and everyone downstream drinks it.",
+        "When you sell, sell what you say you sell. When you buy, pay what you said you would pay. That is the whole of it.",
+        "There is no clever version of this sermon. There is no clever version of honesty.",
+        "Tomorrow the shops open and the scales come out. Let them hang level, and let {town} say so of you.",
+        "Go in peace, and go with your thumbs to yourselves."
+      ]
+    },
+    {
+      "id": "the_shared_hunt",
+      "title": "The Shared Hunt",
+      "theme": "the pack",
+      "lines": [
+        "Come in, come in. Close the door; the wind follows you like a debt.",
+        "Before there were towns, there was the hunt. Before there was coin, there was meat, and who got it.",
+        "No wolf brings down an elk alone. The one at the throat is only there because six others turned it.",
+        "And when it fell, the old ones ate. And the pups ate. And the one who went lame in the chase ate, though he caught nothing.",
+        "We have walls now, and shops, and ledgers. But the elk is still the elk. Your bread was turned by many paws before it reached yours.",
+        "The farmer who grew the wheat. The miller. The baker. The carter who brought the firewood. The guard who kept the road.",
+        "When you eat today, eat like a wolf who remembers the hunt: grateful, and leaving something for the one who could not run.",
+        "That is all the law there ever was. The rest is only the paperwork.",
+        "Rest, now. The hunt begins again at dawn tomorrow."
+      ]
+    },
+    {
+      "id": "for_the_dead",
+      "title": "For Those Who Have Gone",
+      "theme": "the dead",
+      "lines": [
+        "Sit. Today we keep a little quiet for the ones who are not on these benches anymore.",
+        "Some of you have an empty place at the table this year. Some of you set it anyway, out of habit, and then have to clear it again.",
+        "I will not tell you they are watching. I do not know that. Nobody who tells you so knows it either.",
+        "I will tell you what I do know: everything they taught you, they taught you. That does not go into the ground.",
+        "The way you hold a tool. The way you greet a stranger. The song you hum without knowing where you learned it.",
+        "Grief is only love that has nowhere to go. So give it somewhere. Give it to the living who loved them too.",
+        "If you were left an estate, spend some of it kindly. If you were left nothing, you were left them, for a while, and that was much.",
+        "Say their names today, out loud, to somebody in {town} who knew them.",
+        "Go gently. Rest is not forgetting."
+      ]
+    },
+    {
+      "id": "the_road",
+      "title": "The Road and Its Dangers",
+      "theme": "travel",
+      "lines": [
+        "Welcome. I see carters' dust on some of you, and I am glad you made it back to sit in it.",
+        "The road between towns is long and the woods beside it are not empty. You all know someone who did not come home.",
+        "There are those who say: stay inside the walls, then. Grow fat and safe and small.",
+        "But the salt comes from the coast and the iron from the hills. A town that will not travel will not eat.",
+        "So we send our carters out, and we pray for them, and we pay the escorts, and that is right.",
+        "But hear me: if you meet a stranger on the road who is hurt, you are the escort. There is nobody else coming.",
+        "And if you meet bandits, give them the purse and keep your throat. No penny in {town} is worth a widow.",
+        "Travel well this week, those who must. Come back to these benches. We will keep your seat.",
+        "Go in peace, and go armed, and go together."
+      ]
+    },
+    {
+      "id": "the_turning_year",
+      "title": "The Turning Year",
+      "theme": "the seasons",
+      "lines": [
+        "Good morning. Look out of the window as you leave today. Something in the light has changed; it always has, by now.",
+        "The year turns whether we notice or not. Planting, growing, harvest, and the long cold, and then planting again.",
+        "The farmer cannot hurry the wheat. The beekeeper cannot argue with the frost. They wait, and work, and wait.",
+        "We are poor at waiting. We want the harvest before the planting. We want the cure before the hurt.",
+        "But there is good in the slow things. The cheese ripens in the dark. The wine needs years. Friendships need more.",
+        "Put something by this season. A little grain, a little coin, a kindness someone will remember in the winter.",
+        "The barns of {town} were full once and will be again. Between the two lies the work.",
+        "Rest today. Tomorrow, the year goes on turning, and you with it.",
+        "Go well."
+      ]
+    },
+    {
+      "id": "the_tenth",
+      "title": "The Tenth",
+      "theme": "the tithe",
+      "lines": [
+        "Sit down, sit down. Yes, I am going to talk about money. No, the doors are not locked.",
+        "A tenth of what you made this month goes to the church. Another tenth to the town. You grumble at both; I would think less of you if you didn't.",
+        "But notice: it is a tenth of what you made. Not of what you took in. The month you lost, you paid nothing. Nobody asked you to.",
+        "And notice where it goes. The bread on the alms table was bought from your bakers. The candles from your chandler.",
+        "The wages of the hands mending the road came from it, and they spent those wages in your shops on Marketday.",
+        "Money is like water in a field. Dammed up, it rots. Let it run, and everything green along its ditch grows.",
+        "If you ever see this church sitting on a heap of coin, come and tell me. You will be right to.",
+        "Until then, give your tenth with a straight back, and watch where it goes. It goes back to {town}.",
+        "Go in peace. And yes, you may grumble on the way home."
+      ]
+    },
+    {
+      "id": "forgiveness",
+      "title": "On Forgiving",
+      "theme": "forgiveness",
+      "lines": [
+        "Good morning. Some of you are sitting a long way from someone you used to sit beside. I can see it from here.",
+        "Somebody wronged you. Perhaps badly. Perhaps it was a broken promise, or a word that should never have been said.",
+        "I am not going to tell you it did not matter. It mattered. That is why it still sits in your chest like a stone.",
+        "But a stone you carry long enough becomes part of your gait. You start to limp and forget why.",
+        "Forgiving is not saying it was fine. It is saying: I will not carry this any further. Here is where I put it down.",
+        "You do not have to say it to them. You do not even have to say it today. But you might look across the benches.",
+        "{town} is too small for feuds. Sooner or later you will need each other's help, and it is easier with the stone set down.",
+        "Rest, and think on it. That is all I ask.",
+        "Go in peace, and perhaps not alone."
+      ]
+    },
+    {
+      "id": "the_iron_saint",
+      "title": "The Saint at the Forge",
+      "theme": "the Iron Saint",
+      "places": ["ser_ferro"],
+      "lines": [
+        "Welcome, children of the Saint. Look up at her: iron in her paws, and no crown on her head.",
+        "You know the story. When the river rose and the old city drowned, she did not pray. She went to the forge.",
+        "She made nails for the new roofs. Hoops for the barrels that floated the grain across. Hinges for the doors of the poor first, and her own last.",
+        "That is why we call her the Iron Saint and not the Golden one. Gold sits. Iron works.",
+        "So I ask you: what is your iron? What do you make with your paws that others stand on, sleep under, eat from?",
+        "The vintner's cask. The brickmaker's tile on the red roofs of Ser Ferro. The farmer's furrow in the gold fields.",
+        "None of it is small. A city is only a great many small things that someone bothered to make well.",
+        "Go out and make something well this week, in her name.",
+        "The Saint's blessing on your work, and on your rest."
+      ]
+    },
+    {
+      "id": "the_tide",
+      "title": "What the Tide Takes",
+      "theme": "the Tide",
+      "places": ["ridgemere"],
+      "lines": [
+        "Sit, and listen to the rain. It has been listening to us all week.",
+        "The tide comes in twice a day, and twice a day it goes out, and it does not care how important you are.",
+        "It took the old quay. It took boats, and the wolves in them. And every morning it gives back the fish we live on.",
+        "That is the Tide's bargain: everything given is lent. The catch, the coin, the strength in your back. Lent.",
+        "The Houses own the land outside the walls, and the ships, and the ironworks. The Tide does not care. It is waiting for them too.",
+        "So hold things loosely. Pay your hands fairly. Mend your nets before they need it.",
+        "And when the sea gives you a good week, give something back before it asks.",
+        "The bell will ring for the boats at dawn. Be on them, or be on the quay to meet them.",
+        "Go with the Tide. It is going anyway."
+      ]
+    },
+    {
+      "id": "the_first_oath",
+      "title": "The First Oath",
+      "theme": "the First Oath",
+      "places": ["upper_accord"],
+      "lines": [
+        "Welcome to the Chapel of the First Oath. Every one of you is sitting under the words, whether you look up at them or not.",
+        "Before the Accord there were packs, and between the packs there was blood. Every border was a grave.",
+        "And then someone, whose name we have lost, stood between two packs and said: I will keep the peace between you, and ask nothing for it.",
+        "That was the First Oath. Not a law. A promise, made by one wolf, to strangers.",
+        "The Wardens keep it now with spears. The Concord keeps it with words. But it began with one wolf's word.",
+        "So keep yours. To your neighbour, to your trade, to the stranger in the market who trusted your price.",
+        "A promise kept is a brick in the wall around this crater. A promise broken is a brick taken out.",
+        "Go out into Upper Accord and keep your word this week. That is all the Oath has ever asked.",
+        "Peace be kept."
+      ]
+    }
+  ]
+}

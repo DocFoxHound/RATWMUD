@@ -1,10 +1,13 @@
 // The ambient director's voice (Docs/Design/26-living-npcs.md, Phase 10): the world picks an exchange worth hearing
 // (World::ambientPicks) where players are; here it is written (the NPC Mind, or authored lines past the hour's budget
 // or without one) and spoken a line at a time, as NPCs speak to players, to whoever can hear.
+#include "RatwSermons.h"
 #include "RatwGame.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <set>
 
 namespace ratw::game
 {
@@ -288,6 +291,65 @@ void Game::barks(double dt)
         publish(who->id, post, Voice::Speak);
         npcLastSpeech_[who->id] = now;
         voiced("bark", "scene", who->id);
+    }
+}
+
+void Game::sermons(double dt)
+{
+    if ((sermonLookIn_ += dt) < 2 || sermons::all().empty())
+        return;
+    sermonLookIn_ = 0;
+    const double now = world_.time();
+    const auto day = std::int64_t(std::floor(world_.calendarDays()));
+    std::set<std::string> watched;                    // Only where a player is: nobody preaches to an empty page.
+    for (const auto* c : clients_)
+        if (const auto* p = world_.entity(c->entityId); p && !p->dead)
+            watched.insert(p->cellId);
+    if (watched.empty())
+        return;
+    for (const auto& [id, e] : world_.entities())
+    {
+        if (!e.npc || e.dead || e.offstage || !watched.count(e.cellId))
+            continue;
+        const auto* life = world_.society().resident(id);
+        if (!life || life->task != "preaching" || e.cellId != life->goalCell ||
+            std::hypot(e.position.x - life->goalX, e.position.y - life->goalY) > 1.5)
+            continue;                                 // (Still on the way to the pulpit.)
+        const auto community = world_.communityOf(e.cellId);
+        auto& st = sermons_[id];
+        if (st.day != day)
+        {
+            const auto* sermon = sermons::forWeek(community, day / 7);
+            if (!sermon)
+                continue;
+            st = {sermon->id, 0, now, day};
+            logEvent("sermon", id, community, sermon->title);
+        }
+        if (now < st.nextAt)
+            continue;
+        const auto& all = sermons::all();
+        const auto found = std::find_if(all.begin(), all.end(), [&](const sermons::Sermon& s) { return s.id == st.sermon; });
+        if (found == all.end() || st.line >= found->lines.size())
+            continue;
+        // The town's name where the sermon says {town}.
+        std::string town = community;
+        for (std::size_t i = 0; i < town.size(); ++i)
+            if (town[i] == '_')
+                town[i] = ' ';
+        for (std::size_t i = 0; i < town.size(); ++i)
+            if (i == 0 || town[i - 1] == ' ')
+                town[i] = char(std::toupper(static_cast<unsigned char>(town[i])));
+        auto line = found->lines[st.line];
+        for (std::size_t at; (at = line.find("{town}")) != std::string::npos;)
+            line.replace(at, 6, town);
+        ParsedPost post;
+        post.ok = true;
+        post.speech = true;
+        post.segments.push_back({"speech", line});
+        publish(id, post, Voice::Yell);               // (From the pulpit, to the back of the church.)
+        npcLastSpeech_[id] = now;
+        ++st.line;
+        st.nextAt = now + 60;
     }
 }
 } // namespace ratw::game

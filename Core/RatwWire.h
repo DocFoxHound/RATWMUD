@@ -51,6 +51,8 @@ Value society(const SocietyState& s);
 Value economyAccount(const EconomyAccount& a);
 Value economyLedger(const std::vector<EconomyEntry>& entries);
 Value careerPosition(const PositionState& p);
+Value monthBooks(const MonthBooks& b);
+Value houseState(const HouseState& h);
 CareerState readCareers(const Value& o);
 // A malformed subtree invalidates the complete checkpoint (minted -1). Never silently refill purses.
 SocietyState readSociety(const Value& o);

@@ -721,5 +721,29 @@ class ChapterTests(Fixture):
         self.assertEqual(403, raised.exception.status)
 
 
+
+class MoneyTests(Fixture):
+    """The Money view (Docs/Design/42-money-in-circulation.md, Phase 8): where the money is, from the last save."""
+
+    def test_where_the_money_is(self):
+        someone = greyfen()['people'][0]['id']
+        society = {'accounts': {'treasury': {'cash': 500, 'stock': {}}, 'house:fell': {'cash': 40, 'stock': {}},
+                                'till:job:x': {'cash': 12, 'stock': {}}, 'caravan:cv1': {'cash': 7, 'stock': {}},
+                                someone: {'cash': 3, 'stock': {}}},
+                   'books': {'month': 1}}
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
+                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 30.2, 'society': society})))
+            game.execute('INSERT INTO game.events (world_id, game_time, kind, actor, target, cell, game_day, detail) '
+                         "VALUES ('greyfen', 1, 'reckoning', 'treasury', 'town:x:church', '', 28, %s)", ("X's reckoning",))
+        money = self.dm.money('dev')
+        self.assertEqual((562, 500, 1), (money['total'], money['capital'], money['month']))
+        self.assertEqual([{'id': 'house:fell', 'cash': 40}], money['houses'])
+        self.assertEqual({'count': 1, 'total': 12}, money['tills'])
+        self.assertEqual(7, money['road']['caravans'])
+        self.assertEqual((1, 1), (money['residents']['count'], money['residents']['shortOfFood']))
+        self.assertEqual(['reckoning'], [e['kind'] for e in money['events']])
+
+
 if __name__ == '__main__':
     unittest.main()

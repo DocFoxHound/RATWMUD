@@ -20,6 +20,7 @@ import argparse
 import getpass
 import hashlib
 import json
+from collections import Counter, defaultdict
 import os
 from pathlib import Path
 import re
@@ -393,6 +394,62 @@ class DungeonMaster:
                      'nextFestival': festival - int(day), 'festivalDate': C.date_label(festival)}
         return {'target': target, 'today': today, 'communities': communities, 'actions': actions,
                 'weekdays': list(C.WEEKDAYS)}
+
+    # -- where the money is (Docs/Design/42-money-in-circulation.md, Phase 8) -------------
+    MONEY_EVENTS = ('reckoning', 'surplus spent', 'trade caravan departs', 'trade caravan sells', 'sermon')
+
+    def money(self, target):
+        """The economy as last saved: each town's treasury, church and buyers; the great houses and their tills;
+        residents' purses by kind of work, the poorest and richest tenth and how many are short of a day's food money;
+        money on the road; and the latest reckonings, surplus spending, trade caravans and sermons."""
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            project, _ = S.load_world(conn, world)
+            row = conn.execute("SELECT payload::jsonb->'society', (payload::jsonb->>'calendarDays')::double precision "
+                               'FROM game.checkpoints WHERE world_id = %s', (world,)).fetchone()
+            events = [{'kind': r[0], 'actor': r[1], 'target': r[2], 'day': r[3], 'detail': r[4], 'at': r[5].isoformat()}
+                      for r in conn.execute('SELECT kind, actor, target, game_day, detail, recorded_at FROM game.events '
+                                            'WHERE world_id = %s AND kind = ANY(%s) ORDER BY id DESC LIMIT 60',
+                                            (world, list(self.MONEY_EVENTS))).fetchall()]
+        society = row[0] if row and row[0] else {}
+        if isinstance(society, str):
+            society = json.loads(society)
+        accounts = {k: int(v.get('cash', 0)) for k, v in (society.get('accounts') or {}).items()}
+        region = {a['id']: a.get('territory', {}).get('region', '') for a in project['cells'] + project['rooms']}
+        people = {p['id']: p for p in project.get('people', [])}
+        living = Counter(region.get(p['home']['cell'], '') for p in people.values())
+        towns = {}
+        for town, n in sorted(living.items(), key=lambda kv: -kv[1]):
+            if not town or n < 5:
+                continue
+            buyers = {k.split(':')[-1]: v for k, v in accounts.items() if k.startswith(f'town:{town}:') and not k.endswith(':church')}
+            towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get(f'town:{town}:church'),
+                           'buyers': buyers}
+        houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
+        tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
+        purses = sorted(v for k, v in accounts.items() if k in people)
+        by_role = defaultdict(list)
+        for k, v in accounts.items():
+            if k in people:
+                by_role[people[k]['role']].append(v)
+        tenth = max(1, len(purses) // 10)
+
+        def mean(xs):
+            return round(sum(xs) / len(xs), 1) if xs else None
+        residents = {'count': len(purses), 'total': sum(purses), 'median': purses[len(purses) // 2] if purses else None,
+                     'poorestTenth': mean(purses[:tenth]), 'richestTenth': mean(purses[-tenth:]),
+                     'shortOfFood': sum(1 for v in purses if v < 6),
+                     'byRole': {r: {'count': len(v), 'total': sum(v), 'median': sorted(v)[len(v) // 2]} for r, v in by_role.items()}}
+        road = {'caravans': sum(v for k, v in accounts.items() if k.startswith('caravan:')),
+                'contracts': sum(v for k, v in accounts.items() if k.startswith('contract:')),
+                'bandits': sum(v for k, v in accounts.items() if k.startswith('bandits:'))}
+        return {'target': target, 'day': row[1] if row else None, 'total': sum(accounts.values()),
+                'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
+                'tills': {'count': len(tills), 'total': sum(tills.values())}, 'residents': residents, 'road': road,
+                'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-'))),
+                'month': (society.get('books') or {}).get('month'), 'events': events}
 
     def call_festival(self, who, target, community, name='', in_days=0):
         """Asks the game server to hold a festival in a community today (from noon) or some days ahead."""
@@ -1329,6 +1386,8 @@ def make_server(port=8766, dm=None):
             if method == 'POST' and path == '/api/live/leave':
                 data = self.body()
                 return self.reply(200, dm.leave(who, str(data.get('target', 'prod')), str(data.get('id', ''))))
+            if method == 'GET' and path == '/api/money':
+                return self.reply(200, dm.money(self.target(query)))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':

@@ -1977,6 +1977,7 @@ void Game::tick(double dt)
     mind_.poll();                                   // NPC Mind answers that have arrived.
     ambient(dt);
     barks(dt);
+    sermons(dt);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
@@ -2963,7 +2964,7 @@ void Game::sendSnapshot(Connection* c)
     if (trader && purse && trader->posture != "lying" && (!traderLife || traderLife->task != "sleep") &&
         world_.visionClarity(id, trader->id) > 0 &&
         std::hypot(trader->position.x - view.self.position.x, trader->position.y - view.self.position.y) <= 2)
-        if (const auto* account = world_.society().account(trader->id))
+        if (const auto* account = world_.society().account(world_.society().tillOf(trader->id)))
         {
             auto m = Value::object();
             m.add("id", trader->id);

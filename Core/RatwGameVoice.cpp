@@ -114,7 +114,7 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     {
         if (society.merchant(npcId))
         {
-            const auto* stock = society.account(npcId);
+            const auto* stock = society.account(society.tillOf(npcId));
             std::vector<std::string> goods;
             for (const auto* item : {"meal", "herbs"})
             {

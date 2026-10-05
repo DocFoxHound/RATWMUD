@@ -2465,7 +2465,8 @@ void World::tendBonds()
             continue;
         const auto* life = society_.resident(id);
         const auto* spec = society_.spec(id);
-        if (life && (life->task == "festival" || life->task == "at the market" || life->task == "resting"))
+        if (life && (life->task == "festival" || life->task == "at the market" || life->task == "resting" ||
+                     life->task == "at church"))
             together["out " + e.cellId].push_back(&e);         // A crowd, or friends on a day off (Phase 9).
         else if (life && e.cellId == life->homeCell)
             together["home " + life->homeCell].push_back(&e);

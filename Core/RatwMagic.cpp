@@ -2064,7 +2064,7 @@ Result World::useWorkGift(const std::string& id, const std::string& ability, con
         spend();
         society_.lendGift(maker->id, l.lift, calendarDays_ + 1);
         award(id, "work", "lend:" + maker->id + ":" + std::to_string(std::int64_t(calendarDays_)));   // (Doc 44.)
-        const auto& till = maker->id;               // (The shop's own purse.)
+        const auto till = society_.tillOf(maker->id);
         const auto* purse = society_.account(till);
         const bool paid = purse && purse->cash >= 4 && society_.shift(till, id, "", 0, 4, "a Gift's help");
         return {true, "You lend " + maker->name + " your Gift: it " + l.words + ". Their next batch will be the better for it" +

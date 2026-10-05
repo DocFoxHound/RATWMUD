@@ -30,7 +30,7 @@ IMPERSONAL = {'caravan departs', 'caravan arrives', 'caravan home', 'caravan pas
               'bandits gather', 'bandits scattered', 'patrol'}
 # Ledger entries that move money and goods the same way (Society::shift); in a trade the goods go the other way.
 TRANSFERS = {'caravan delivered', 'caravan loaded', 'caravan turned back', 'caravan unloaded', 'inheritance',
-             'reward set aside', 'stores stocked', 'town tithe', 'gather', 'settlement welcome grant', 'initial funding'}
+             'reward set aside', 'stores stocked', 'town tithe', 'town purse', 'church foundation', 'gather', 'settlement welcome grant', 'initial funding'}
 # Ledger entries a crime or a road event already tells.
 TOLD_ELSEWHERE = {'stolen', 'fine', 'restitution', 'robbed by bandits', 'paid to bandits'}
 MAX_ROWS = 4000          # The latest events told one by one (the round is counted in the database, in full).

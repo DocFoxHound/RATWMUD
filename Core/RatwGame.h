@@ -667,6 +667,18 @@ class Game
     std::map<std::string, double> barkLast_;                         // By cell: when someone last called out there.
     double barkLookIn_ = 0;
     void barks(double dt);
+    // Restday sermons (doc 42, Phase 6): a preacher at the pulpit speaks this week's sermon, a line a minute, while a
+    // player is in the church to hear it.
+    struct SermonState
+    {
+        std::string sermon;
+        std::size_t line = 0;
+        double nextAt = 0;
+        std::int64_t day = -1;
+    };
+    std::map<std::string, SermonState> sermons_;   // By preacher.
+    double sermonLookIn_ = 0;
+    void sermons(double dt);
     // The players in a cell who can hear `speaker` say something (for the heard lists).
     std::vector<std::string> hearersOf(const std::string& speaker) const;
     scenes::Person scenePerson(const Entity& e) const;
@@ -699,6 +711,8 @@ class Game
         std::vector<std::int64_t> economy;          // Its counters, in a fixed order.
         std::uint64_t ledgerLast = 0;
         std::size_t ledgerSize = 0;
+        std::int64_t books = -1;                    // The month's books' revision.
+        std::int64_t houses = -1;                   // The great houses' state's revision.
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
     };

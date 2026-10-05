@@ -32,6 +32,8 @@ struct Catalog
     std::vector<Producer> producers;
     std::vector<HouseholdNeed> needs;
     std::vector<Institution> institutions;
+    std::vector<ToolNeed> tools;
+    std::map<std::string, std::vector<std::pair<std::string, double>>> upkeep;
     double institutionDays = 3, premium = 1.3;
     int reserve = 6;
     std::map<std::string, std::vector<std::string>> supplies, buys;
@@ -140,6 +142,7 @@ Catalog build()
         Business business;
         business.id = b.string("id");
         business.label = b.string("label");
+        business.kind = b.string("kind");
         for (const auto& s : b.array("sells"))
             business.sells.push_back(s.asString({}));
         for (const auto& m : b.array("match"))
@@ -186,6 +189,8 @@ Catalog build()
                     producer.match.push_back(m.asString({}));
             for (const auto& season : k.array("seasons"))
                 producer.seasons.push_back(int(season.asNumber(-1)));
+            if (k.has("offSeason"))
+                counts(k.object("offSeason"), producer.offSeason);
             if (!producer.id.empty() && !producer.match.empty() && producer.seconds > 0 && producer.seconds <= 86400 &&
                 counts(k.object("out"), producer.out) &&
                 std::all_of(producer.seasons.begin(), producer.seasons.end(), [](int s) { return s >= 0 && s <= 3; }))
@@ -214,12 +219,26 @@ Catalog build()
             in.id = n.string("id");
             in.name = n.string("name");
             in.perGuard = n.string("per") == "guards";
+            in.tithes = n.string("funds") == "tithes";
+            if (const auto per = n.string("per"); per.rfind("producer:", 0) == 0)
+                in.perProducer = per.substr(9);
+            in.minResidents = std::max(0, int(n.number("minResidents", 0)));
             for (const auto& [item, rate] : n.object("basket").fields())
                 if (known(item) && rate.asNumber(0) > 0)
                     in.basket.push_back({item, rate.asNumber(0)});
             if (!in.id.empty() && !in.basket.empty())
                 c.institutions.push_back(std::move(in));
         }
+        for (const auto& t : crafts.array("tools"))
+        {
+            ToolNeed need{t.string("producer"), t.string("item"), std::max(1.0, t.number("everyDays", 20))};
+            if (!need.producer.empty() && known(need.item))
+                c.tools.push_back(std::move(need));
+        }
+        for (const auto& [business, basket] : crafts.object("upkeep").fields())
+            for (const auto& [item, rate] : basket.fields())
+                if (known(item) && rate.asNumber(0) > 0)
+                    c.upkeep[business].push_back({item, rate.asNumber(0)});
         for (const auto& [business, goods] : crafts.object("buys").fields())
             for (const auto& g : goods.items())
                 if (known(g.asString({})))
@@ -468,6 +487,18 @@ const std::vector<HouseholdNeed>& householdNeeds()
 const std::vector<Institution>& institutions()
 {
     return catalog().institutions;
+}
+
+const std::vector<ToolNeed>& toolNeeds()
+{
+    return catalog().tools;
+}
+
+const std::vector<std::pair<std::string, double>>* upkeepFor(const std::string& business)
+{
+    const auto& u = catalog().upkeep;
+    const auto found = u.find(business);
+    return found == u.end() ? nullptr : &found->second;
 }
 
 double institutionDays()

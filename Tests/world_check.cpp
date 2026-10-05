@@ -1,8 +1,9 @@
 // Loads a streamed world export (python3 tools/world_build.py export DIR writes DEV's newest build) the way the game
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
-//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE]]
+//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE] [--reckon]]
 //
+// --reckon ends the run with the month's reckoning (doc 42), as if the month were up, and says where the money went.
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
 // --players N (default 1) adds walking players: the first at the spawn, the rest beside residents spread over the
@@ -38,6 +39,61 @@ std::string slurp(const fs::path& path)
     text << file.rdbuf();
     return text.str();
 }
+// Where the money is (doc 42): each kind of holder's total, how many hold it, and the median of the people among them.
+void moneyReport(const World& server, const char* when)
+{
+    struct Pile
+    {
+        std::int64_t total = 0;
+        std::vector<std::int64_t> each;
+    };
+    std::map<std::string, Pile> piles;
+    const auto& society = server.society();
+    for (const auto& [id, account] : society.state().accounts)
+    {
+        std::string kind;
+        if (id == "treasury")
+            kind = "capital's treasury";
+        else if (id.rfind("stores:", 0) == 0)
+            kind = "town treasuries";
+        else if (id.rfind("town:", 0) == 0)
+            kind = "town " + id.substr(id.rfind(':') + 1);
+        else if (id.rfind("home:", 0) == 0)
+            kind = "home stores";
+        else if (playerAccountId(id))
+            kind = "players";
+        else if (facilityAccount(id))
+            kind = id.substr(0, id.find(':'));
+        else if (const auto* spec = society.spec(id))
+        {
+            const auto* job = society.jobOf(id);
+            const auto* e = server.entity(id);
+            kind = job ? (job->role == "merchant" ? "merchants" : job->role == "guard" ? "guards"
+                          : job->paid ? "paid civilians" : "unpaid civilians")
+                 : society.apprenticedTo(id) ? "apprentices"
+                 : e && e->age < 16          ? "children"
+                                             : "adults without work";
+            (void)spec;
+        }
+        else
+            kind = "other";
+        auto& pile = piles[kind];
+        pile.total += account.cash;
+        pile.each.push_back(account.cash);
+    }
+    int short_ = 0;
+    for (const auto& [id, life] : society.state().residents)
+        if (const auto* a = society.account(id); a && a->cash < 6)
+            ++short_;
+    std::cout << "  money " << when << " (" << society.moneySupply() << "p in all; " << short_
+              << " residents short of a day's food money): holder, total, how many, median\n";
+    for (auto& [kind, pile] : piles)
+    {
+        std::sort(pile.each.begin(), pile.each.end());
+        std::cout << "    " << kind << ": " << pile.total << "p, " << pile.each.size() << ", " << pile.each[pile.each.size() / 2]
+                  << "p\n";
+    }
+}
 } // namespace
 
 int main(int argc, char** argv)
@@ -46,6 +102,7 @@ int main(int argc, char** argv)
     int playerCount = 1;
     bool check = true;
     bool full = false;                              // --full: every NPC in full simulation (no tiers).
+    bool reckon = false;                            // --reckon: the month's reckoning at the end.
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
@@ -55,6 +112,8 @@ int main(int argc, char** argv)
             playerCount = std::max(1, std::atoi(argv[++i]));
         else if (flag == "--no-check")
             check = false;
+        else if (flag == "--reckon")
+            reckon = true;
         else if (flag == "--full")
             full = true;
         else if (flag == "--events" && i + 1 < argc)
@@ -64,7 +123,7 @@ int main(int argc, char** argv)
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--events FILE] [--reckon]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -159,6 +218,7 @@ int main(int argc, char** argv)
         }});
     if (!server.loadWorldFiles(manifest, root.string()).ok)
         return 1;
+    moneyReport(server, "at the start");
     if (full)
         server.setTiered(false);
     const double from = std::atof(argv[3]), to = std::atof(argv[4]);
@@ -413,6 +473,12 @@ int main(int argc, char** argv)
     std::cout << "  " << server.offstageCount() << " residents offstage at the end; money "
               << (server.society().conserved() ? "conserved" : "NOT CONSERVED") << "; " << server.loadedCells()
               << " places in memory at the end; " << server.bonds().count() << " bonds between them\n";
+    moneyReport(server, "at the end");
+    if (reckon)
+    {
+        std::cout << "  " << server.reckonNow() << "\n";
+        moneyReport(server, "after the reckoning");
+    }
     {
         const auto& roads = server.roads();
         std::size_t travelling = 0, raided = 0, camps = 0, beliefs = 0, open = 0;

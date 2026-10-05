@@ -4,6 +4,7 @@
   "about": "What shopkeepers make now (doc 35, Phase 5, first part). Each craft is a whole batch from at most two ingredients, every ingredient sold by a supplying shop in town (supplies). makers: the businesses (businesses.json) whose keepers make it. seconds: game seconds of work for one batch. A shopkeeper makes nothing from nothing: a batch takes its ingredients from the keeper's own stock, bought from a supplier when it runs low. Workshop crafts (flour, linen cloth, leather, cord, butchering) make the suppliers' goods from what producers bring in. producers: residents whose work label holds one of `match` turn a spell of work (seconds) into `out` from the land (only in `seasons`, 0 spring to 3 winter, if given), keeping a few of each to sell to the town. recipes.json keeps the full chains for later phases.",
   "crafts": [
     {"id": "bread", "makers": ["bakery"], "seconds": 120, "in": {"flour": 1, "firewood": 1}, "out": {"bread": 6}},
+    {"id": "honey_cake", "makers": ["bakery"], "seconds": 120, "in": {"flour": 1, "honey": 1}, "out": {"honey_cake": 3}},
     {"id": "porridge", "makers": ["inn"], "seconds": 60, "in": {"oats": 1, "milk": 1}, "out": {"porridge": 4}},
     {"id": "stew", "makers": ["inn"], "seconds": 60, "in": {"raw_meat": 1, "vegetables": 1}, "out": {"meal": 1}},
     {"id": "smoked_fish", "makers": ["fishmonger", "provisioner"], "seconds": 180, "in": {"fish": 2, "firewood": 1}, "out": {"smoked_fish": 2}},
@@ -26,23 +27,85 @@
     {"id": "cord", "makers": ["chandlery"], "seconds": 60, "in": {"hemp": 1}, "out": {"cord": 3}},
     {"id": "butcher_pig", "makers": ["butcher"], "seconds": 300, "in": {"pig": 1}, "out": {"raw_meat": 4, "bones": 1, "tallow": 2, "hide": 1}},
     {"id": "masking_oil", "makers": ["apothecary", "perfumer"], "seconds": 180, "in": {"wormwood": 2, "resin": 1}, "out": {"masking_oil": 1}},
-    {"id": "butcher_sheep", "makers": ["butcher"], "seconds": 240, "in": {"sheep": 1}, "out": {"raw_meat": 3, "bones": 1, "tallow": 1}}
+    {"id": "butcher_sheep", "makers": ["butcher"], "seconds": 240, "in": {"sheep": 1}, "out": {"raw_meat": 3, "bones": 1, "tallow": 1}},
+    {"id": "iron_bar", "makers": ["ironworks", "foundry"], "seconds": 240, "in": {"iron_ore": 2, "charcoal": 1}, "out": {"iron_bar": 1}},
+    {"id": "copper_bar", "makers": ["foundry"], "seconds": 240, "in": {"copper_ore": 3, "charcoal": 1}, "out": {"copper_bar": 2}},
+    {"id": "tin_bar", "makers": ["foundry"], "seconds": 240, "in": {"tin_ore": 2, "charcoal": 1}, "out": {"tin_bar": 1}},
+    {"id": "bronze_bar", "makers": ["foundry"], "seconds": 240, "in": {"copper_bar": 1, "tin_bar": 1}, "out": {"bronze_bar": 2}},
+    {"id": "lime", "makers": ["brickworks", "mason"], "seconds": 240, "in": {"limestone": 2, "firewood": 1}, "out": {"lime": 3}},
+    {"id": "bricks", "makers": ["brickworks", "pottery"], "seconds": 240, "in": {"clay": 3, "firewood": 1}, "out": {"bricks": 2}},
+    {"id": "roof_tiles", "makers": ["brickworks"], "seconds": 300, "in": {"clay": 3, "firewood": 1}, "out": {"roof_tiles": 1}},
+    {"id": "planks", "makers": ["sawmill", "carpenter"], "seconds": 60, "in": {"timber": 1}, "out": {"planks": 4}},
+    {"id": "cheese", "makers": ["dairy"], "seconds": 240, "in": {"milk": 4}, "out": {"cheese": 1}},
+    {"id": "wine", "makers": ["brewery"], "seconds": 300, "in": {"grapes": 4}, "out": {"wine": 2}},
+    {"id": "candle_wax", "makers": ["chandlery"], "seconds": 120, "in": {"beeswax": 2, "cord": 1}, "out": {"candle_wax": 2}},
+    {"id": "smoked_fish_works", "makers": ["smokehouse"], "seconds": 180, "in": {"fish": 2, "firewood": 1}, "out": {"smoked_fish": 2}},
+    {"id": "mining_pick", "makers": ["smithy"], "seconds": 300, "in": {"iron_bar": 1, "timber": 1}, "out": {"mining_pick": 1}},
+    {"id": "sickle", "makers": ["smithy"], "seconds": 240, "in": {"iron_bar": 1}, "out": {"sickle": 2}},
+    {"id": "draw_saw", "makers": ["smithy", "tinker"], "seconds": 300, "in": {"iron_bar": 1}, "out": {"draw_saw": 1}},
+    {"id": "iron_hoops", "makers": ["smithy", "cooperage"], "seconds": 120, "in": {"iron_bar": 1}, "out": {"iron_hoops": 3}},
+    {"id": "barrel", "makers": ["cooperage"], "seconds": 300, "in": {"planks": 1, "iron_hoops": 1}, "out": {"barrel": 1}},
+    {"id": "rope", "makers": ["ropewalk", "chandlery"], "seconds": 180, "in": {"hemp": 2}, "out": {"rope": 1}},
+    {"id": "canvas", "makers": ["weaver", "ropewalk"], "seconds": 240, "in": {"hemp": 2}, "out": {"canvas": 1}},
+    {"id": "sack", "makers": ["weaver", "general"], "seconds": 120, "in": {"hemp": 1}, "out": {"sack": 2}},
+    {"id": "pitch", "makers": ["chandlery"], "seconds": 180, "in": {"resin": 1}, "out": {"pitch": 1}},
+    {"id": "fishing_net", "makers": ["chandlery", "ropewalk"], "seconds": 300, "in": {"cord": 3}, "out": {"fishing_net": 1}},
+    {"id": "lamp_oil", "makers": ["chandlery"], "seconds": 120, "in": {"tallow": 2}, "out": {"lamp_oil": 1}},
+    {"id": "sealing_wax", "makers": ["chandlery"], "seconds": 120, "in": {"beeswax": 1}, "out": {"sealing_wax": 2}},
+    {"id": "cart_wheel", "makers": ["cartwright", "carpenter"], "seconds": 600, "in": {"planks": 3, "iron_hoops": 1}, "out": {"cart_wheel": 1}},
+    {"id": "axle", "makers": ["cartwright"], "seconds": 300, "in": {"timber": 2, "iron_bar": 1}, "out": {"axle": 1}},
+    {"id": "paper", "makers": ["papermill", "scriptorium"], "seconds": 240, "in": {"linen_cloth": 1}, "out": {"paper": 3}},
+    {"id": "ink", "makers": ["scriptorium", "printing_house"], "seconds": 120, "in": {"charcoal": 1}, "out": {"ink": 2}},
+    {"id": "ledger", "makers": ["scriptorium", "printing_house"], "seconds": 600, "in": {"paper": 4, "leather": 1}, "out": {"ledger": 1}}
   ],
   "producers": [
-    {"id": "farm", "match": ["farms the", "works the crossing fields", "works the lakeside fields"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"wheat": 2, "oats": 1, "vegetables": 2, "straw": 1, "flax": 1, "hemp": 1, "apples": 1, "firewood": 2}},
-    {"id": "sheep_pasture", "match": ["keeps sheep", "shepherd"], "seconds": 1800, "out": {"wool": 1, "milk": 2}},
-    {"id": "fishing", "match": ["fishes the"], "seconds": 900, "out": {"fish": 2}},
+    {"id": "orchard", "match": ["tends the orchard", "orchard", "picks apples"], "seconds": 1800, "seasons": [1, 2], "out": {"apples": 4}, "offSeason": {"firewood": 2}},
+    {"id": "vineyard", "match": ["tends the vines", "vineyard", "vine rows"], "seconds": 1800, "seasons": [1, 2], "out": {"grapes": 3}, "offSeason": {"firewood": 1}},
+    {"id": "apiary", "match": ["keeps bees", "beekeeper", "apiary", "the hives"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"honey": 1, "beeswax": 1}},
+    {"id": "dairy_herd", "match": ["milks the", "cowherd", "herds the cows", "dairy herd"], "seconds": 1800, "out": {"milk": 4}},
+    {"id": "swineherd", "match": ["swineherd", "keeps pigs", "piggery"], "seconds": 3600, "out": {"pig": 1}},
+    {"id": "logging", "match": ["logging", "logger", "fells cedar", "fells timber", "hauling logs", "log yard"], "seconds": 1800, "out": {"timber": 2, "firewood": 4, "oak_bark": 1}},
+    {"id": "mine", "match": ["digs ore", "miner", "the workings", "the mine", " pit"], "seconds": 1800, "out": {"iron_ore": 3, "copper_ore": 1}},
+    {"id": "tin_streams", "match": ["tin streams", "digs tin"], "seconds": 1800, "out": {"tin_ore": 2}},
+    {"id": "clay_pit", "match": ["digs clay", "clay pit"], "seconds": 1800, "out": {"clay": 4}},
+    {"id": "peat", "match": ["cuts peat"], "seconds": 1800, "out": {"peat": 4}},
+    {"id": "reed_beds", "match": ["cuts reeds"], "seconds": 1800, "out": {"reeds": 3}},
+    {"id": "eel_traps", "match": ["traps eels"], "seconds": 1800, "out": {"fish": 2}},
+    {"id": "herb_gathering", "match": ["gathers marsh herbs", "gathers herbs"], "seconds": 1800, "out": {"herbs": 2, "wormwood": 1}},
+    {"id": "farm", "match": ["farms the", "works the crossing fields", "works the lakeside fields", "works the fields", "farm hand", "tends the terraces"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"wheat": 2, "oats": 1, "vegetables": 2, "straw": 1, "flax": 1, "hemp": 1, "apples": 1, "firewood": 2, "hay": 2}, "offSeason": {"wheat": 1, "oats": 1, "firewood": 2}},
+    {"id": "sheep_pasture", "match": ["keeps sheep", "shepherd", "goats", "goatherd"], "seconds": 1800, "out": {"wool": 1, "milk": 2}},
+    {"id": "fishing", "match": ["fishes the", "hauls the nets", "fishing boat"], "seconds": 900, "out": {"fish": 2}},
     {"id": "woodcutting", "match": ["cuts wood", "woodcutter"], "seconds": 900, "out": {"firewood": 3, "oak_bark": 1, "timber": 1, "resin": 1}},
     {"id": "charcoal_burning", "match": ["burns charcoal", "charcoal kilns", "charcoal burns", "charcoal sheds"], "seconds": 1800, "out": {"charcoal": 1}},
     {"id": "quarry", "match": ["cutting stone"], "seconds": 1800, "out": {"stone": 1, "limestone": 1, "clay": 2}},
     {"id": "salt_pans", "match": ["raking salt", "rakes the salt"], "seconds": 1800, "out": {"salt": 2}},
     {"id": "stock_breeding", "match": ["stables"], "seconds": 3600, "out": {"pig": 1, "sheep": 1}}
   ],
+  "toolsAbout": "Tools a trade wears out (doc 42, Phase 5): every `everyDays` a worker of `producer` buys `item` from a shop of its community, out of its own purse. upkeep: what a kind of business uses up a day to keep going (a stables' horses eat hay and oats), bought like its materials and paid from its till. Placeholders.",
+  "tools": [
+    {"producer": "mine", "item": "mining_pick", "everyDays": 15},
+    {"producer": "quarry", "item": "mining_pick", "everyDays": 20},
+    {"producer": "tin_streams", "item": "mining_pick", "everyDays": 20},
+    {"producer": "farm", "item": "sickle", "everyDays": 20},
+    {"producer": "logging", "item": "draw_saw", "everyDays": 20},
+    {"producer": "woodcutting", "item": "draw_saw", "everyDays": 25},
+    {"producer": "fishing", "item": "fishing_net", "everyDays": 30},
+    {"producer": "eel_traps", "item": "fishing_net", "everyDays": 40},
+    {"producer": "orchard", "item": "sickle", "everyDays": 40},
+    {"producer": "vineyard", "item": "sickle", "everyDays": 40},
+    {"producer": "dairy_herd", "item": "barrel", "everyDays": 20},
+    {"producer": "salt_pans", "item": "sack", "everyDays": 10},
+    {"producer": "charcoal_burning", "item": "sack", "everyDays": 10}
+  ],
+  "upkeep": {
+    "stables": {"hay": 3, "oats": 1},
+    "cartwright": {"cart_wheel": 0.1, "axle": 0.05}
+  },
   "households": {
     "about": "What a household uses up besides food (doc 35, Part 7): each need is bought once every `everyDays` (in winter every `winterDays`, if given), from a shop in its community that has it, by whoever in the household has the most money, and used up at home. `any`: one of these, whichever a shop has. `perPerson`: for each grown wolf in the household rather than once. A household keeps `reserve` pennies a head back for food. Numbers are placeholders.",
     "reserve": 6,
     "needs": [
-      {"any": ["firewood"], "everyDays": 1, "winterDays": 0.5},
+      {"any": ["firewood", "peat"], "everyDays": 1, "winterDays": 0.5},
       {"any": ["candle_tallow"], "everyDays": 2},
       {"any": ["clay_pot"], "everyDays": 30},
       {"any": ["wool_scarf", "straw_hat", "linen_neckerchief"], "everyDays": 25, "perPerson": true},
@@ -51,13 +114,17 @@
     ]
   },
   "institutions": {
-    "about": "A town's own buyers (doc 35, Part 7): each uses up its basket every day (per 100 residents, or per guard, of its community), keeps `days` of it in stock, buys from the town's shops, and posts a contract for goods for what it can't find (a reward of `premium` times the price, held in escrow; players deliver to any merchant in that town). The treasury funds each with what its basket costs, a day at a time, never more than a twentieth of its money. Numbers are placeholders.",
+    "about": "A town's own buyers (doc 35, Part 7): each uses up its basket every day (per 100 residents, or per guard, of its community), keeps `days` of it in stock, buys from the town's shops, and posts a contract for goods for what it can't find (a reward of `premium` times the price, held in escrow; players deliver to any merchant in that town). The town's own treasury funds each with what its basket costs, a day at a time, never more than a twentieth of its money; one with `funds: tithes` (the church) lives on the tithes instead (doc 42), given four weeks' basket by the town when it is founded. Numbers are placeholders.",
     "days": 3,
     "premium": 1.3,
     "list": [
-      {"id": "works", "name": "the Town Works", "per": "residents", "basket": {"stone": 2, "timber": 1, "limestone": 1, "cord": 1}},
-      {"id": "watch", "name": "the watch", "per": "guards", "basket": {"bread": 2, "smoked_fish": 0.5, "bandages": 0.2, "leather_cap": 0.03}},
-      {"id": "church", "name": "the church", "per": "residents", "basket": {"candle_tallow": 2, "bread": 3}}
+      {"id": "works", "name": "the Town Works", "per": "residents", "basket": {"stone": 2, "timber": 1, "limestone": 1, "cord": 1, "lime": 0.5, "planks": 1, "nails": 0.5, "bricks": 0.5, "roof_tiles": 0.3}},
+      {"id": "watch", "name": "the watch", "per": "guards", "basket": {"bread": 2, "smoked_fish": 0.5, "cheese": 0.2, "bandages": 0.2, "leather_cap": 0.03}},
+      {"id": "church", "name": "the church", "per": "residents", "funds": "tithes", "basket": {"candle_tallow": 2, "candle_wax": 0.5, "wine": 0.1, "bread": 3}},
+      {"id": "docks", "name": "the docks", "per": "producer:fishing", "basket": {"rope": 0.1, "pitch": 0.1, "canvas": 0.05, "barrel": 0.1, "planks": 0.2, "nails": 0.1, "salt": 0.3}},
+      {"id": "mines", "name": "the mines", "per": "producer:mine", "basket": {"rope": 0.05, "lamp_oil": 0.3, "timber": 0.2, "bread": 1}},
+      {"id": "quarries", "name": "the quarries", "per": "producer:quarry", "basket": {"rope": 0.05, "timber": 0.1, "bread": 1}},
+      {"id": "hall", "name": "the hall of records", "per": "residents", "minResidents": 150, "basket": {"paper": 1, "ink": 0.5, "sealing_wax": 0.5, "ledger": 0.02, "candle_tallow": 1}}
     ]
   },
   "buys": {
@@ -80,6 +147,7 @@
     "general": ["flour", "oats", "firewood", "straw", "wool", "linen_cloth", "cord", "tallow", "clay"],
     "butcher": ["raw_meat", "bones", "tallow", "leather"],
     "fishmonger": ["fish"],
+    "saltworks": ["salt"],
     "herbalist": ["wormwood"]
   }
 }

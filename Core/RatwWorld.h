@@ -1015,6 +1015,16 @@ class World
     std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
     std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
     const MarketSquare& square(const std::string& community);
+    // A community's church (doc 42, Phase 6): its clergy's place of work, its seats and its pulpit; worked out each day.
+    struct Chapel
+    {
+        bool found = false;
+        Spot pulpit;
+        std::vector<Spot> pews;
+    };
+    std::map<std::string, Chapel> chapels_;
+    std::int64_t chapelsDay_ = -1;
+    const Chapel& chapel(const std::string& community);
     int skyOf(const std::string& cellId) const;            // -1 indoors, 0 fair, 1 wet, 2 harsh.
     void planDays();
     std::int64_t crimeHour_ = -1;
@@ -1112,6 +1122,13 @@ class World
     std::map<std::string, std::pair<double, double>> huntArrivals_;   // Hunt -> when another may wander in, and how many it expects.
     mutable std::map<std::string, std::map<std::string, double>> groundCache_;   // Cell and block -> its ground (it doesn't change).
     std::map<std::string, std::pair<int, double>> forage_;      // Patch -> pickings taken, the day they were counted.
+    // Working out of town (doc 42, Phase 3b; RatwOutwork.cpp): the ground near each town, found once; each hunting
+    // ground's mix of country; a spell of work's yield; one picking from a forage patch (shared with players).
+    std::shared_ptr<const std::map<std::string, std::vector<WorkGround>>> workGrounds_;
+    std::map<std::string, std::map<std::string, double>> huntGround_;
+    void findWorkGrounds();
+    std::vector<std::pair<std::string, int>> harvestAt(const std::string& who, const WorkGround& at, int season);
+    bool takeFromPatch(const std::string& cellId, int x, int y);
     std::map<std::string, double> forageNext_;                  // Wolf -> when it may forage again (world seconds).
     std::function<bool(const std::string&, const std::string&)> friends_;
     std::uint64_t nextAnimal_ = 0;
@@ -1119,6 +1136,30 @@ class World
     double lastWearDay_ = -1;                                     // When clothes last wore with the days.
     double nextMarkCheck_ = 0;                                    // When noses near thieves are next tried.
     void postProcurements();
+    std::vector<std::string> noteReckonings(); // The month's reckoning in the event log (doc 42): each town's line.
+    // Residents filling contracts for goods (doc 42, Phase 4; RatwProcure.cpp): the shop with goods to spare for one
+    // (and how many), taking them on, and the carriers' fetching and delivering.
+    std::pair<std::string, int> sourceFor(const Contract& k) const;
+    // Trade between towns (doc 42, Phase 7; RatwTrade.cpp): a town's market (what its shops and producers have to
+    // spare and who holds it; what its makers and suppliers are short of and who), its trading house, the day's trade
+    // caravans, and a trade caravan's arrival and homecoming.
+    struct Market
+    {
+        std::map<std::string, int> spare, want;
+        std::map<std::string, std::vector<std::pair<std::string, int>>> holders, wanters;   // Account, how many.
+    };
+    std::string residentTown(const std::string& id) const;
+    Market marketOf(const std::string& town) const;
+    std::string traderOf(const Town& t) const;
+    void tradeCaravans();
+    void tradeCaravanArrived(Caravan& c);
+    void tradeCaravanHome(Caravan& c);
+    void residentsFillContracts(std::set<std::string>& busy);
+    void tendContractCarriers();
+  public:
+    // The month's reckoning at once (the Dev Console's /reckon): what each town took in, as a line each.
+    std::string reckonNow();
+  private:
     void tendMarks();
     void wearGear(Entity& e, const std::string& item, double amount);
     void wearArmourAt(Entity& e, const std::string& zone, double taken);

@@ -955,24 +955,14 @@ Result World::forage(const std::string& player)
             pick = &ch;
             break;
         }
-    // The patch it grows in: picked over for a while once its pickings are taken.
-    const auto patch = p->cellId + "|" + std::to_string(pick->x / data.patchTiles) + "|" + std::to_string(pick->y / data.patchTiles);
-    auto& [used, day] = forage_[patch];
-    const double regrown = (calendarDays_ - day) * 24 / data.regrowHours;
-    if (regrown >= 1)
-    {
-        used = std::max(0, used - int(regrown));
-        day = calendarDays_;
-    }
-    if (used == 0)
-        day = calendarDays_;
-    if (used >= data.picks)
+    // The patch it grows in: picked over for a while once its pickings are taken (by players and the wolves who
+    // gather for a living alike, doc 42).
+    if (!takeFromPatch(p->cellId, pick->x, pick->y))
         return {false, "This patch has been picked over lately; try further on.", {}};
     // Weathereye (a Gifted Seer, doc 43): it knew where the good pickings would be: a quarter more, one at least.
     const int count = pick->good->count + (p->gift == "seer" && !p->quickened ? std::max(1, pick->good->count / 4) : 0);
     if (!society_.create(player, pick->good->item, count, "foraged"))
         return {false, "You can't carry any more of that.", {}};
-    ++used;
     recordEvent({"forage", player, {}, p->cellId, 0, 0, pick->good->item, count, 0, pick->ground->id});
     award(player, "practice", "forage:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
     return {true, "You gather " + std::to_string(count) + " " + lower(Society::itemName(pick->good->item)) + " from " +

@@ -4,6 +4,10 @@
 #include "RatwWorld.h"
 
 #include <cmath>
+#include <sstream>
+#include <map>
+#include <fstream>
+#include <filesystem>
 #include <iostream>
 #include <set>
 #include <stdexcept>
@@ -90,6 +94,56 @@ void theWeek()
            "A town's festival names are its own, and stay so");
 }
 
+
+// Restday's service (Docs/Design/42-money-in-circulation.md, Phase 6): Greyfen with Maple keeping a chapel in the Long
+// House. From nine to eleven a third of the town sits there while she preaches; the plate goes round at the end.
+void restdayService()
+{
+    namespace fs = std::filesystem;
+    std::map<std::string, std::string> files;
+    const fs::path root = RATW_SOURCE_DIR "/Data/Worlds/Greyfen";
+    for (const auto& f : fs::recursive_directory_iterator(root))
+        if (f.is_regular_file() && (f.path().extension() == ".ratw" || f.path().extension() == ".cell"))
+        {
+            std::ifstream in(f.path(), std::ios::binary);
+            std::ostringstream text;
+            text << in.rdbuf();
+            files[fs::relative(f.path(), root).generic_string()] = text.str();
+        }
+    auto& manifest = files["world.ratw"];
+    const auto line = manifest.find("resident \"maple\"");
+    expect(line != std::string::npos, "Maple is in Greyfen");
+    const auto end = manifest.find('\n', line);
+    auto maple = manifest.substr(line, end - line);
+    maple.replace(maple.find("\"telling stories by the fountain\""), 33, "\"keeps the chapel\"");
+    const auto work = maple.find("\"town\" 33.5 20.5");
+    maple.replace(work, 17, "\"longhouse\" 17.5 9.5");
+    manifest.replace(line, end - line, maple);
+    World w;
+    const auto loaded = w.loadWorldFiles(files, "greyfen");
+    expect(loaded.ok, "Greyfen with a chapel loads: " + loaded.message);
+    expect(w.advanceCalendar(6 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(9.2).ok, "Restday morning");
+    run(w, 400);
+    expect(life(w, "maple").task == "preaching", "Maple preaches (" + life(w, "maple").task + ")");
+    int there = 0, folk = 0;
+    for (const auto& [id, r] : w.society().state().residents)
+    {
+        folk += r.role != "guard";
+        there += r.task == "at church";
+    }
+    expect(there >= 1 && there < folk, "Some of the town is at church, not all (" + std::to_string(there) + " of " + std::to_string(folk) + ")");
+    expect(w.setTimeOfDay(10.6).ok, "The service ends");
+    w.takeEvents();
+    run(w, 200);
+    bool plate = false;
+    for (const auto& e : w.takeEvents())
+        plate |= e.kind == "economy" && e.detail == "the collection";
+    expect(plate, "and the plate goes round");
+    expect(w.setTimeOfDay(12).ok, "Noon");
+    run(w, 30);
+    expect(life(w, "maple").task != "preaching", "The service is over by noon");
+}
+
 void restday()
 {
     auto w = at(6, 11);
@@ -99,10 +153,10 @@ void restday()
                    life(w, id).task == "sleep",
                id + " rests on Restday: " + life(w, id).task);
     expect(life(w, "sloe").task == "patrol", "The watch keeps its hours");
-    expect(life(w, "wren").task == "trade", "The shop opens the morning, so everyone can eat");
-    auto later = at(6, 13);
+    expect(life(w, "wren").task == "trade", "The shop opens after the morning service, so everyone can eat (doc 42)");
+    auto later = at(6, 16);
     run(later, 5);
-    expect(later.society().resident("wren")->task != "trade", "and shuts after noon");
+    expect(later.society().resident("wren")->task != "trade", "and shuts mid-afternoon");
 }
 
 void marketday()
@@ -219,6 +273,7 @@ int main()
     {
         theWeek();
         restday();
+        restdayService();
         marketday();
         festivals();
         weather();

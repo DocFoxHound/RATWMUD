@@ -130,6 +130,8 @@ void Game::prime(Shadow& s) const
     s.accounts = society.accounts;
     s.economy = counters(society);
     s.ledgerSize = society.ledger.size();
+    s.books = society.books.revision;
+    s.houses = society.houses.revision;
     s.ledgerLast = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);
     s.positions = society.careers.positions;
     s.roads = json::dump(checkpoint::roads(world_.roads()));
@@ -191,6 +193,16 @@ void Game::record(unsigned what, const std::string& character)
             set(path({"society", "decisionRemainder"}), society.decisionRemainder);
             set(path({"society", "craftingStocked"}), society.craftingStocked);
             shadow_.economy = now;
+        }
+        if (society.houses.revision != shadow_.houses)
+        {
+            set(path({"society", "houses"}), wire::houseState(society.houses));
+            shadow_.houses = society.houses.revision;
+        }
+        if (society.books.revision != shadow_.books)
+        {
+            set(path({"society", "books"}), wire::monthBooks(society.books));
+            shadow_.books = society.books.revision;
         }
         const std::uint64_t last = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);
         if (society.ledger.size() != shadow_.ledgerSize || last != shadow_.ledgerLast)

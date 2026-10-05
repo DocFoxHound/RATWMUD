@@ -35,6 +35,7 @@ struct Item
 struct Business
 {
     std::string id, label;
+    std::string kind;                               // "shop", "works" or "yard" (industry: a great house's first).
     std::vector<std::string> sells, match;          // match: words in a shopkeeper's work label that mark one.
 };
 
@@ -74,6 +75,8 @@ struct Producer
     double seconds = 1800;                          // Game seconds of work for one yield.
     std::vector<int> seasons;                       // 0 spring .. 3 winter; empty: all year.
     std::vector<std::pair<std::string, int>> out;
+    // Out of its seasons, what the work brings in instead (a farm threshing the barn's grain in winter), or nothing.
+    std::vector<std::pair<std::string, int>> offSeason;
 };
 // Whether other trades buy this to work with: an ingredient of some craft, or something a shop supplies; or, a staple,
 // something households or the town's own buyers use up every day or so (bread, candles: doc 35, Part 7).
@@ -93,8 +96,23 @@ struct Institution
 {
     std::string id, name;
     bool perGuard = false;                          // Its basket is per guard (else per 100 residents) a day.
+    bool tithes = false;                            // Lives on tithes (the church, doc 42), not the treasury.
+    std::string perProducer;                        // Its basket is per worker of this producer (crafts.json "per":
+                                                    // "producer:mine"; doc 42, Phase 5), not per resident.
+    int minResidents = 0;                           // Only in communities at least this big (a city's administration).
     std::vector<std::pair<std::string, double>> basket;
 };
+// Tools a trade wears out (crafts.json `tools`; doc 42, Phase 5): every so often a worker of `producer` buys `item` from
+// a shop of its community, out of its own purse, and wears it out at work.
+struct ToolNeed
+{
+    std::string producer, item;
+    double everyDays = 20;
+};
+const std::vector<ToolNeed>& toolNeeds();
+// What a kind of business uses up a day to keep going (crafts.json `upkeep`: a stables' horses eat hay and oats),
+// bought like its materials and paid from its till; null for none.
+const std::vector<std::pair<std::string, double>>* upkeepFor(const std::string& business);
 const std::vector<Institution>& institutions();
 double institutionDays();                           // Days of its basket an institution keeps in stock.
 double contractPremium();                           // A contract's reward against the goods' price.

@@ -645,6 +645,77 @@ Value careerPosition(const PositionState& p)
     return j;
 }
 
+Value monthBooks(const MonthBooks& b)
+{
+    auto o = Value::object(), start = Value::object(), unearned = Value::object();
+    o.add("month", double(b.month));
+    o.add("revision", double(b.revision));
+    for (const auto& [id, cash] : b.start)
+        start.add(id, double(cash));
+    for (const auto& [id, cash] : b.unearned)
+        unearned.add(id, double(cash));
+    o.add("start", start);
+    o.add("unearned", unearned);
+    return o;
+}
+
+Value houseState(const HouseState& h)
+{
+    auto o = Value::object(), owner = Value::object(), propped = Value::object();
+    o.add("founded", h.founded);
+    o.add("day", double(h.day));
+    o.add("revision", double(h.revision));
+    for (const auto& [pid, house] : h.owner)
+        owner.add(pid, house);
+    for (const auto& [pid, days] : h.propped)
+    {
+        auto list = Value::array();
+        for (const double d : days)
+            list.push(d);
+        propped.add(pid, list);
+    }
+    o.add("owner", owner);
+    o.add("propped", propped);
+    return o;
+}
+
+HouseState readHouseState(const Value& o)
+{
+    HouseState h;
+    if (!o.isObject())
+        return h;
+    if (o["founded"].isBool())
+        h.founded = o["founded"].asBool();
+    if (const auto* d = o.find("day"); d && d->isNumber() && d->asNumber() >= -1 && d->asNumber() < 1e9)
+        h.day = std::int64_t(d->asNumber());
+    if (const auto* r = o.find("revision"); r && r->isNumber() && r->asNumber() >= 0 && r->asNumber() < 1e15)
+        h.revision = std::int64_t(r->asNumber());
+    for (const auto& [pid, v] : o.object("owner").fields())
+        if (v.isString() && v.asString().rfind("house:", 0) == 0)
+            h.owner[pid] = v.asString();
+    for (const auto& [pid, list] : o.object("propped").fields())
+        for (const auto& d : list.items())
+            if (d.isNumber() && h.propped[pid].size() < 64)
+                h.propped[pid].push_back(d.asNumber());
+    return h;
+}
+
+MonthBooks readMonthBooks(const Value& o)
+{
+    MonthBooks b;
+    if (!o.isObject())
+        return b;
+    if (const auto* m = o.find("month"); m && m->isNumber() && m->asNumber() >= -1 && m->asNumber() < 1e8)
+        b.month = std::int64_t(m->asNumber());
+    if (const auto* r = o.find("revision"); r && r->isNumber() && r->asNumber() >= 0 && r->asNumber() < 1e15)
+        b.revision = std::int64_t(r->asNumber());
+    for (const auto& [id, v] : o.object("start").fields())
+        if (v.isNumber() && std::abs(v.asNumber()) < 1e12) b.start[id] = std::int64_t(v.asNumber());
+    for (const auto& [id, v] : o.object("unearned").fields())
+        if (v.isNumber() && std::abs(v.asNumber()) < 1e12) b.unearned[id] = std::int64_t(v.asNumber());
+    return b;
+}
+
 Value society(const SocietyState& s)
 {
     auto o = Value::object();
@@ -707,6 +778,8 @@ Value society(const SocietyState& s)
         births.add(key, n);
     careers.add("spouses", spouses); careers.add("parents", parents); careers.add("lastBirth", lastBirth); careers.add("births", births);
     o.add("careers", careers);
+    o.add("books", monthBooks(s.books));
+    o.add("houses", houseState(s.houses));
     return o;
 }
 
@@ -753,7 +826,7 @@ SocietyState readSociety(const Value& o)
         return s;
     }
     // Twelve fields; careers since Phase 4; craftingStocked since crafting (doc 35, Phase 5).
-    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0);
+    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0) - (o.has("books") ? 1 : 0) - (o.has("houses") ? 1 : 0);
     bool valid = fields == 12;
     const auto integer = [&](const Value& j, const char* key, double max) -> std::int64_t {
         const double n = strictNumber(j, key, -1);
@@ -770,6 +843,8 @@ SocietyState readSociety(const Value& o)
     s.importsRemaining = int(integer(o, "importsRemaining", 4));
     s.herbPatch = int(integer(o, "herbPatch", 60)); s.decisionRemainder = real(o, "decisionRemainder");
     s.craftingStocked = o.has("craftingStocked") ? int(integer(o, "craftingStocked", 100)) : 0;   // Saved before crafting: 0.
+    s.books = readMonthBooks(o["books"]);
+    s.houses = readHouseState(o["houses"]);       // Saved before doc 42's houses: none founded yet.         // Saved before doc 42: no books yet (they open at the next new day).
     const auto& accounts = o["accounts"];
     const auto& residents = o["residents"];
     if (!accounts.isObject() || accounts.size() > MaxAccounts || !residents.isObject() || residents.size() > MaxResidents)

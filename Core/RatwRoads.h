@@ -10,7 +10,7 @@
 namespace ratw
 {
 // A settlement: a region (cells' territory) with homes and a market. The capital's store is the treasury; each
-// other town has its own ("stores:<town>"), filled by caravans.
+// other town has its own ("stores:<town>"), filled by caravans, which is also its own treasury (doc 42).
 struct Town
 {
     std::string id, market, store;
@@ -35,6 +35,9 @@ struct Caravan
     double x = 0, y = 0;
     double waitUntil = 0;                 // Calendar day: it waits at the market this long for its escorts.
     std::map<std::string, int> with;      // Cells each escort entered alongside it: paid only for being there.
+    // A trade caravan (doc 42, Phase 7): the house or treasury whose money bought its load and to whom its takings go
+    // home. Empty for the capital's daily caravans.
+    std::string trader;
 };
 
 // Robbers in wild country along a road. Loot feeds them; hunger makes them bold; starving, they scatter.
@@ -63,6 +66,9 @@ struct Contract
     // escrow is `reward` (it shrinks as deliveries are paid).
     std::string item;
     int quantity = 0, delivered = 0;
+    // Taken by a resident (doc 42, Phase 4): the shop it fetches the goods from, and how many it carries now.
+    std::string source;
+    int carried = 0;
 };
 
 // Something one character has heard about another (or a place): a claim, how sure they are, and who told them.
@@ -81,5 +87,6 @@ struct RoadsState
     std::vector<Belief> beliefs;
     std::int64_t day = -1, nextId = 1;
     bool stocked = false;                 // The towns' stores have had their first share from the treasury.
+    bool purses = false;                  // ...and their share of its money, as their own treasuries (doc 42).
 };
 } // namespace ratw

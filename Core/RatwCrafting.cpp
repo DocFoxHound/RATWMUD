@@ -19,7 +19,7 @@ int Society::stockMaterials(const std::string& id)
 {
     const auto* r = spec(id);
     const auto* business = r && r->role == "merchant" ? items::businessFor(r->workLabel) : nullptr;
-    const auto found = state_.accounts.find(id);
+    const auto found = state_.accounts.find(tillOf(id));   // (A house's business: its till, doc 42.)
     if (!business || found == state_.accounts.end())
         return 0;
     auto& stockHeld = found->second.stock;
@@ -37,7 +37,7 @@ int Society::stockMaterials(const std::string& id)
     for (const auto& item : items::suppliesFor(business->id))
         topUp(item, SuppliesKept);
     if (added > 0)
-        record("starting materials", "outside", id, "", 0, 0);
+        record("starting materials", "outside", found->first, "", 0, 0);
     return added;
 }
 
@@ -59,6 +59,7 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
     const auto* good = items::good(item);
     if (!good || wanted < 1)
         return 0;
+    const auto till = tillOf(id);                   // The shop's money and shelves (its house's till, doc 42).
     if (suppliers_.empty())
         for (const auto& r : authored_.residents)
         {
@@ -86,15 +87,16 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
     if (here.empty())
         here = communityOfResident(id);
     int bought = 0;
-    // Close to home first, at the price; then anywhere, carted in.
+    // Close to home first, at the price; then anywhere, carted in (in a world of towns, only the caravans bring what a
+    // town lacks: doc 42, Phase 7).
     for (const bool local : {true, false})
-        for (int kind = forSupplier ? 1 : 0; kind <= 2 && bought < wanted; ++kind)
+        for (int kind = forSupplier ? 1 : 0; kind <= 2 && bought < wanted && (local || !tradeByCaravan_); ++kind)
             for (const auto& seller : found->second)
             {
                 if (seller.kind != kind || seller.id == id || (communityOfResident(seller.id) == here) != local)
                     continue;
-                const auto* from = account(seller.id);
-                const auto* buyer = account(id);
+                const auto from = account(tillOf(seller.id));
+                const auto* buyer = account(till);
                 if (!from || !buyer)
                     continue;
                 // Any quality it has (doc 35, Part 4), at that quality's price. A workshop keeps a few common ones for
@@ -102,13 +104,13 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                 for (const auto& sort : kindsHeld(*from, item))
                 {
                     const auto* sortGood = items::good(sort);
-                    const auto* buyerNow = account(id);
+                    const auto* buyerNow = account(till);
                     if (!sortGood || !buyerNow)
                         continue;
                     const int spare = stock(*from, sort) - (kind == 1 && sort == item ? GoodsKept : 0);
                     const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::ceil(sortGood->price * (local ? 1. : CartedIn))));
                     const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, buyerNow->cash / price}));
-                    if (n > 0 && transfer(seller.id, id, sort, n, price, local ? "materials bought" : "materials carted in"))
+                    if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;
                     if (bought >= wanted)
                         return bought;
@@ -121,18 +123,21 @@ bool Society::produce(const std::string& id, double absoluteDay)
 {
     const auto* r = spec(id);
     const auto* producer = r ? items::producerFor(r->workLabel) : nullptr;
-    if (!producer || !account(id))
+    const auto till = tillOf(id);
+    if (!producer || !account(till))
         return false;
     if (const auto next = produceNext_.find(id); next != produceNext_.end() && absoluteDay < next->second)
         return false;
-    if (!producer->seasons.empty() &&
-        std::find(producer->seasons.begin(), producer->seasons.end(), season_) == producer->seasons.end())
+    const bool inSeason = producer->seasons.empty() ||
+                          std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end();
+    if (!inSeason && producer->offSeason.empty())
         return false;                               // Nothing grows in the fields this season.
     produceNext_[id] = absoluteDay + producer->seconds / 86400.;
     bool any = false;
-    for (const auto& [item, count] : producer->out)
-        if (const int held = stock(*account(id), item); held < ProducerKept)
-            any = create(id, item, std::min(count, ProducerKept - held), "brought in") || any;
+    // Out of season, what the work brings in instead (threshing the barn's grain in winter, doc 42).
+    for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
+        if (const int held = stock(*account(till), item); held < ProducerKept)
+            any = create(till, item, std::min(count, ProducerKept - held), "brought in") || any;
     return any;
 }
 
@@ -140,7 +145,8 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
 {
     const auto* r = spec(id);
     const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
-    if (!r || !account(id))
+    const auto till = tillOf(id);                   // The shop's shelves (its house's till, doc 42).
+    if (!r || !account(till))
         return;
     if (const auto next = craftNext_.find(id); next != craftNext_.end() && absoluteDay < next->second)
         return;
@@ -148,7 +154,7 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     const auto& supplies = business ? items::suppliesFor(business->id) : std::vector<std::string>{};
     const auto supplied = [&](const std::string& item) { return std::find(supplies.begin(), supplies.end(), item) != supplies.end(); };
     const auto has = [&](const items::Craft& k) {
-        return std::all_of(k.in.begin(), k.in.end(), [&](const auto& i) { return stockAll(*account(id), i.first) >= i.second; });
+        return std::all_of(k.in.begin(), k.in.end(), [&](const auto& i) { return stockAll(*account(till), i.first) >= i.second; });
     };
     // A batch finished: its materials are used and its goods are on the shelf (if the materials are still there).
     if (const auto atWork = craftAtWork_.find(id); atWork != craftAtWork_.end())
@@ -163,9 +169,9 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             for (const auto& [item, count] : (*k)->in)
             {
                 int left = count;
-                for (const auto& sort : kindsHeld(*account(id), item))
+                for (const auto& sort : kindsHeld(*account(till), item))
                 {
-                    const int took = consume(id, sort, std::min(left, stock(*account(id), sort)), "used in crafting");
+                    const int took = consume(till, sort, std::min(left, stock(*account(till), sort)), "used in crafting");
                     qualities += took * items::qualityOf(sort);
                     used += took;
                     left -= took;
@@ -192,12 +198,12 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             const int quality = craft >= 85 && score >= 100 && inspired ? 3 : craft >= 60 && score >= 85 ? 2 : score < 20 ? 0 : 1;
             // A masterwork carries its maker's mark (doc 35, Part 4).
             for (const auto& [item, count] : (*k)->out)
-                create(id, quality == 3 ? items::withMaker(items::withQuality(item, 3), id) : items::withQuality(item, quality), count, "crafted");
+                create(till, quality == 3 ? items::withMaker(items::withQuality(item, 3), id) : items::withQuality(item, quality), count, "crafted");
         }
     }
     // A supplier's shelves: what has run below a quarter of its store is bought back up from workshops and producers.
     for (const auto& item : supplies)
-        if (const int held = stockAll(*account(id), item); held < SuppliesKept / 4)
+        if (const int held = stockAll(*account(till), item); held < SuppliesKept / 4)
             buyMaterials(id, workCell, item, SuppliesKept - held, true);
     // A shopkeeper who also brings goods in (a stables' stock-breeding) does so while at work.
     produce(id, absoluteDay);
@@ -207,11 +213,11 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         // Low, judged by what the batch is for (its first good; a butcher's meat, not the hides that come with it):
         // under the few a shop keeps, or, for what other trades work with (a mill's flour), under half a supplier's store.
         const auto& made = k->out.front().first;
-        const bool low = stockAll(*account(id), made) < (supplied(made) || items::traded(made) ? SuppliesKept / 2 : GoodsKept);
+        const bool low = stockAll(*account(till), made) < (supplied(made) || items::traded(made) ? SuppliesKept / 2 : GoodsKept);
         if (!low)
             continue;
         for (const auto& [item, count] : k->in)
-            if (const int held = stockAll(*account(id), item); held < count * MaterialsLow)
+            if (const int held = stockAll(*account(till), item); held < count * MaterialsLow)
                 buyMaterials(id, workCell, item, count * MaterialBatches - held);
         if (!has(*k))
             continue;                               // Short of materials, and nobody sells them: something else.

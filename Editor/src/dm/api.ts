@@ -142,12 +142,26 @@ export interface Health {
     players: {name: string; ms: number; at: string}[];
 }
 
+/** Where the money is (Docs/Design/42-money-in-circulation.md, Phase 8), from the last save. Pennies; null where an
+ *  account doesn't exist yet. */
+export interface MoneyTown { residents: number; treasury: number | null; church: number | null; buyers: Record<string, number> }
+export interface MoneyGroup { count: number; total: number; median: number }
+export interface Money {
+    target: Target; day: number | null; total: number; capital: number | null; month: number | null;
+    towns: Record<string, MoneyTown>; houses: {id: string; cash: number}[]; tills: {count: number; total: number};
+    residents: {count: number; total: number; median: number | null; poorestTenth: number | null; richestTenth: number | null;
+        shortOfFood: number; byRole: Record<string, MoneyGroup>};
+    road: {caravans: number; contracts: number; bandits: number}; players: number;
+    events: {kind: string; actor: string; target: string; day: number; detail: string; at: string}[];
+}
+
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
     me: () => call<Me>('api/me'),
     players: (target: Target) => call<Players>(`api/players?target=${target}`),
     health: (target: Target, hours: number) => call<Health>(`api/health?target=${target}&hours=${hours}`),
+    money: (target: Target) => call<Money>(`api/money?target=${target}`),
     /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view (dm/world.ts). */
     world: (target: Target) => call<Project>(`api/world?target=${target}&lean=1`),
     ground: (target: Target, ids: string[]) =>

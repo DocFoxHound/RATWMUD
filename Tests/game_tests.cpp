@@ -2,12 +2,14 @@
 // snapshots and events, NPC conversation, and a restart from the save.
 #include "RatwGame.h"
 #include "RatwMotionCore.h"
+#include "RatwSermons.h"
 #include "RatwStep.h"
 #include "RatwWire.h"
 
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -1386,6 +1388,57 @@ void theDevConsole()
     expect(!wire::entity(saved->second, 0).has("dungeonMaster"), "but never shown to others");
 }
 
+// Restday's sermon (Docs/Design/42-money-in-circulation.md, Phase 6): in Greyfen with Maple keeping a chapel in the Long
+// House, a player in the chapel on Restday morning hears this week's sermon from her, a line at a time.
+void aSermonOnRestday()
+{
+    namespace fs = std::filesystem;
+    const fs::path from = RATW_SOURCE_DIR "/Data/Worlds/Greyfen";
+    const fs::path dir = fs::temp_directory_path() / ("ratw-sermon-" + std::to_string(::getpid()));
+    fs::remove_all(dir);
+    fs::create_directories(dir / "cells");
+    for (const auto& f : fs::directory_iterator(from / "cells"))
+        fs::copy_file(f.path(), dir / "cells" / f.path().filename());
+    std::ifstream in(from / "world.ratw", std::ios::binary);
+    std::string manifest((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    const auto line = manifest.find("resident \"maple\"");
+    const auto end = manifest.find('\n', line);
+    auto maple = manifest.substr(line, end - line);
+    maple.replace(maple.find("\"telling stories by the fountain\""), 33, "\"keeps the chapel\"");
+    maple.replace(maple.find("\"town\" 33.5 20.5"), 17, "\"longhouse\" 17.5 9.5");
+    manifest.replace(line, end - line, maple);
+    std::ofstream(dir / "world.ratw", std::ios::binary) << manifest;
+    game::Options o;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    o.worldFile = (dir / "world.ratw").string();
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "Greyfen with a chapel starts: " + problem);
+    auto& w = g.world();
+    expect(w.advanceCalendar(6 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(9.2).ok, "Restday morning");
+    Client ada;
+    ada.id = 7;
+    g.connect(&ada);
+    g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+    auto* me = w.entity(ada.entityId);
+    expect(me != nullptr, "Ada is in Greyfen");
+    me->cellId = "longhouse";
+    me->position = {6.5, 6.5};
+    const auto week = std::int64_t(std::floor(w.calendarDays())) / 7;
+    const auto* sermon = sermons::forWeek(w.communityOf("longhouse"), week);
+    expect(sermon != nullptr, "there is a sermon for this week");
+    const auto first = sermon->lines.front().substr(0, 20);
+    bool heard = false;
+    for (int t = 0; t < 400 && !heard; ++t)
+    {
+        run(g, ada, 1);
+        heard = ada.said().find(first) != std::string::npos;
+    }
+    expect(heard, "Ada hears Maple begin \"" + sermon->title + "\" (" + w.society().resident("maple")->task + ")");
+    fs::remove_all(dir);
+}
+
 int main()
 {
     try
@@ -1409,6 +1462,7 @@ int main()
         theJournalKeepsWhatACrashWouldLose();
         fightsThroughTheGame();
         swordsMuffleAndBodiesLinger();
+        aSermonOnRestday();
     }
     catch (const std::exception& error)
     {

@@ -1,0 +1,450 @@
+{
+ "format": "ratw-regions",
+ "version": 1,
+ "about": "What each place brings in and what it lacks (doc 42, Phase 7), worked out by tools/supply_balance.py --regions from a world export: specialties are goods it brings in a quarter or more of the world's supply of; lacks, what its shops need that nobody there makes or brings in, which only caravans bring.",
+ "places": {
+  "accord_crossing": {
+   "residents": 42,
+   "specialties": [],
+   "brings_in": [
+    "sheep",
+    "pig",
+    "wheat",
+    "vegetables",
+    "straw",
+    "oats",
+    "hemp",
+    "hay",
+    "flax",
+    "apples",
+    "firewood"
+   ],
+   "lacks": [
+    "bandages",
+    "bread",
+    "candle_tallow",
+    "cord",
+    "fish",
+    "milk",
+    "peat",
+    "raw_meat",
+    "tallow"
+   ]
+  },
+  "amberford": {
+   "residents": 53,
+   "specialties": [],
+   "brings_in": [
+    "sheep",
+    "wheat",
+    "vegetables",
+    "straw",
+    "oats",
+    "hemp",
+    "hay",
+    "flax",
+    "pig",
+    "apples",
+    "firewood"
+   ],
+   "lacks": [
+    "bandages",
+    "candle_tallow",
+    "clay",
+    "cord",
+    "fish",
+    "honey",
+    "milk",
+    "peat",
+    "raw_meat",
+    "smoked_fish",
+    "stone",
+    "tallow"
+   ]
+  },
+  "cinderbrook": {
+   "residents": 51,
+   "specialties": [
+    "iron_ore",
+    "copper_ore",
+    "charcoal"
+   ],
+   "brings_in": [
+    "iron_ore",
+    "copper_ore",
+    "charcoal"
+   ],
+   "lacks": [
+    "apples",
+    "bandages",
+    "bread",
+    "candle_tallow",
+    "clay",
+    "cord",
+    "firewood",
+    "fish",
+    "flax",
+    "flour",
+    "hemp",
+    "lamp_oil",
+    "milk",
+    "oats",
+    "peat",
+    "pig",
+    "raw_meat",
+    "stone",
+    "tallow",
+    "timber",
+    "vegetables",
+    "wheat"
+   ]
+  },
+  "dark_fortress": {
+   "residents": 20,
+   "specialties": [],
+   "brings_in": [],
+   "lacks": [
+    "apples",
+    "bandages",
+    "bread",
+    "candle_tallow",
+    "cheese",
+    "cider",
+    "cord",
+    "firewood",
+    "fish",
+    "flax",
+    "flour",
+    "linen_cloth",
+    "meal",
+    "milk",
+    "pig",
+    "raw_meat",
+    "smoked_fish",
+    "tallow",
+    "vegetables",
+    "wheat"
+   ]
+  },
+  "fenhollow": {
+   "residents": 57,
+   "specialties": [
+    "wormwood",
+    "peat",
+    "herbs"
+   ],
+   "brings_in": [
+    "wormwood",
+    "peat",
+    "herbs",
+    "fish"
+   ],
+   "lacks": [
+    "apples",
+    "clay",
+    "firewood",
+    "flax",
+    "flour",
+    "hemp",
+    "honey",
+    "milk",
+    "oats",
+    "pig",
+    "raw_meat",
+    "smoked_fish",
+    "stone",
+    "tallow",
+    "vegetables",
+    "wheat"
+   ]
+  },
+  "hollowmere_village": {
+   "residents": 24,
+   "specialties": [
+    "resin"
+   ],
+   "brings_in": [
+    "resin",
+    "oak_bark",
+    "wheat",
+    "vegetables",
+    "straw",
+    "oats",
+    "hemp",
+    "hay",
+    "flax",
+    "firewood",
+    "apples",
+    "timber"
+   ],
+   "lacks": [
+    "candle_tallow",
+    "cord",
+    "flour",
+    "honey",
+    "milk",
+    "pig",
+    "raw_meat",
+    "tallow"
+   ]
+  },
+  "isle_fortress": {
+   "residents": 20,
+   "specialties": [],
+   "brings_in": [],
+   "lacks": [
+    "apples",
+    "bandages",
+    "bread",
+    "candle_tallow",
+    "cheese",
+    "cider",
+    "cord",
+    "firewood",
+    "fish",
+    "flax",
+    "flour",
+    "linen_cloth",
+    "meal",
+    "milk",
+    "pig",
+    "raw_meat",
+    "smoked_fish",
+    "tallow",
+    "vegetables",
+    "wheat"
+   ]
+  },
+  "lakeside": {
+   "residents": 60,
+   "specialties": [
+    "reeds",
+    "fish"
+   ],
+   "brings_in": [
+    "reeds",
+    "fish",
+    "wheat",
+    "vegetables",
+    "straw",
+    "oats",
+    "hemp",
+    "hay",
+    "flax",
+    "apples",
+    "firewood"
+   ],
+   "lacks": [
+    "bandages",
+    "candle_tallow",
+    "clay",
+    "cord",
+    "flour",
+    "honey",
+    "milk",
+    "peat",
+    "pig",
+    "raw_meat",
+    "salt",
+    "stone",
+    "tallow",
+    "timber"
+   ]
+  },
+  "northern_fortress": {
+   "residents": 19,
+   "specialties": [],
+   "brings_in": [],
+   "lacks": [
+    "apples",
+    "bandages",
+    "bread",
+    "candle_tallow",
+    "cheese",
+    "cord",
+    "firewood",
+    "fish",
+    "flax",
+    "flour",
+    "linen_cloth",
+    "meal",
+    "milk",
+    "pig",
+    "raw_meat",
+    "smoked_fish",
+    "vegetables",
+    "wheat"
+   ]
+  },
+  "ridgemere": {
+   "residents": 296,
+   "specialties": [
+    "timber",
+    "oak_bark",
+    "charcoal",
+    "stone",
+    "limestone",
+    "salt",
+    "clay"
+   ],
+   "brings_in": [
+    "timber",
+    "oak_bark",
+    "charcoal",
+    "stone",
+    "limestone",
+    "salt",
+    "clay",
+    "firewood",
+    "wool",
+    "iron_ore",
+    "copper_ore",
+    "fish"
+   ],
+   "lacks": [
+    "apples",
+    "beeswax",
+    "clay_pot",
+    "flour",
+    "honey",
+    "milk",
+    "oats",
+    "peat",
+    "pig",
+    "planks"
+   ]
+  },
+  "saltreach": {
+   "residents": 50,
+   "specialties": [
+    "salt"
+   ],
+   "brings_in": [
+    "salt",
+    "fish"
+   ],
+   "lacks": [
+    "apples",
+    "bandages",
+    "bread",
+    "clay",
+    "firewood",
+    "flax",
+    "hemp",
+    "milk",
+    "oats",
+    "peat",
+    "pig",
+    "planks",
+    "raw_meat",
+    "stone",
+    "tallow",
+    "vegetables"
+   ]
+  },
+  "ser_ferro": {
+   "residents": 289,
+   "specialties": [
+    "grapes",
+    "honey",
+    "beeswax",
+    "milk",
+    "pig",
+    "sheep",
+    "clay"
+   ],
+   "brings_in": [
+    "grapes",
+    "honey",
+    "beeswax",
+    "milk",
+    "pig",
+    "sheep",
+    "clay",
+    "apples",
+    "wheat",
+    "vegetables",
+    "straw",
+    "oats"
+   ],
+   "lacks": [
+    "charcoal",
+    "fish",
+    "honey",
+    "iron_ore",
+    "limestone",
+    "peat",
+    "stone",
+    "timber",
+    "wool"
+   ]
+  },
+  "upper_accord": {
+   "residents": 295,
+   "specialties": [
+    "honey",
+    "beeswax",
+    "stone",
+    "limestone",
+    "wool",
+    "apples",
+    "milk",
+    "clay"
+   ],
+   "brings_in": [
+    "honey",
+    "beeswax",
+    "stone",
+    "limestone",
+    "wool",
+    "apples",
+    "milk",
+    "clay",
+    "firewood",
+    "timber",
+    "wheat",
+    "vegetables"
+   ],
+   "lacks": [
+    "charcoal",
+    "cheese",
+    "fish",
+    "flour",
+    "honey",
+    "iron_bar",
+    "peat"
+   ]
+  },
+  "westmarch": {
+   "residents": 58,
+   "specialties": [
+    "wool"
+   ],
+   "brings_in": [
+    "wool",
+    "sheep",
+    "pig",
+    "milk",
+    "wheat",
+    "vegetables",
+    "straw",
+    "oats",
+    "hemp",
+    "hay",
+    "flax",
+    "apples"
+   ],
+   "lacks": [
+    "candle_tallow",
+    "clay",
+    "cord",
+    "fish",
+    "flour",
+    "honey",
+    "peat",
+    "smoked_fish",
+    "stone"
+   ]
+  }
+ }
+}

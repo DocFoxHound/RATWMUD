@@ -1,5 +1,6 @@
 // The roads between towns (RatwRoads.h; Docs/Design/26-living-npcs.md, Phase 5). World members, kept here.
 #include "RatwRoads.h"
+#include "RatwItems.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -131,6 +132,7 @@ void World::setupTowns()
     }
     if (towns_.size() < 2)
     {
+        society_.setCapital(towns_.empty() ? std::string() : towns_.front().id);
         towns_.clear();                            // One settlement: its store is the treasury, as ever.
         return;
     }
@@ -169,6 +171,20 @@ void World::setupTowns()
             society_.shift("treasury", towns_[i].store, "herbs", int(herbs * share), 0, "stores stocked");
         }
         roads_.stocked = true;
+    }
+    society_.setCapital(towns_.front().id);
+    society_.setTradeByCaravan(true);               // What a town lacks comes by caravan (doc 42, Phase 7).
+    if (!roads_.purses)
+    {
+        // Once (doc 42): each town keeps its own purse, its share of the treasury's money by how many live there.
+        const std::int64_t cash = society_.account("treasury") ? society_.account("treasury")->cash : 0;
+        for (std::size_t i = 1; i < towns_.size(); ++i)
+        {
+            const auto share = std::int64_t(double(cash) * towns_[i].residents / std::max(1, total));
+            if (share > 0)
+                society_.shift("treasury", towns_[i].store, "", 0, share, "town purse");
+        }
+        roads_.purses = true;
     }
     // The roads between every two towns; bandits camp in wild country along them (one in six such cells, to begin
     // with).
@@ -359,6 +375,7 @@ void World::tendRoads()
 {
     if (!townsReady_)
         setupTowns();
+    noteReckonings();
     if (towns_.size() < 2)
         return;
     tendPrices();
@@ -379,6 +396,7 @@ void World::tendRoads()
                 notice(c.taker, "You hand " + to->name + " the letter" + (c.reward ? " and are paid " + pennies(c.reward) : "") + ".");
         }
     }
+    tendContractCarriers();                         // Residents fetching and delivering goods for contracts (doc 42).
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (today != roads_.day)
     {
@@ -632,9 +650,16 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         }
         // Raided: the load is taken (and soon eaten), the guards give as good as they can, the town is short.
         int taken = 0;
-        for (const std::string item : {"meal", "herbs"})
-            if (const auto* load = society_.account(c.account))
-                taken += society_.consume(c.account, item, Society::stock(*load, item), "stolen by bandits");
+        if (const auto* load = society_.account(c.account))
+            for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
+                if (n > 0)
+                    taken += society_.consume(c.account, item, n, "stolen by bandits");
+        // A trader's money too (doc 42, Phase 7): into the camp's hoard.
+        if (const auto* load = society_.account(c.account); load && load->cash > 0)
+        {
+            society_.openAccount("bandits:" + camp.id);
+            society_.shift(c.account, "bandits:" + camp.id, "", 0, load->cash, "robbed by bandits");
+        }
         camp.hunger = std::max(0.0, camp.hunger - taken * 4.0);
         camp.strength = std::clamp(camp.strength + .5 - .3 * guards, 0.0, 20.0);
         camp.lastRaid = calendarDays_;
@@ -670,6 +695,8 @@ void World::caravanArrived(Caravan& c)
     const auto* wagon = entity("road:" + c.id);
     if (homeward(c))
     {
+        if (!c.trader.empty())
+            tradeCaravanHome(c);                    // A trader's: its takings home (doc 42, Phase 7).
         // Back where it set out: anything it still carries goes back into the stores, and it is done.
         const auto* home = town(c.from);
         if (const auto* load = society_.account(c.account); load && home)
@@ -688,6 +715,8 @@ void World::caravanArrived(Caravan& c)
         c.status = "returning";
         return;
     }
+    if (!c.trader.empty())
+        tradeCaravanArrived(c);                     // A trader's: sold to the shops that want it (doc 42, Phase 7).
     // The load into the town's stores. Between two towns' stores it is a sale, at a wholesale price, as far as the
     // buyer can pay; from the capital it is the town's share, as ever.
     std::int64_t owed = 0;
@@ -833,6 +862,33 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             }
             return true;
         }
+        if (k.kind == "procure" && !k.source.empty())
+        {
+            // Goods for a contract (doc 42, Phase 4): to the shop that has them, then to the market that wants them.
+            if (life.task == "sleep")
+                return false;
+            const auto* job = society_.jobOf(k.source);
+            const auto* dest = town(k.town);
+            if (!job || !dest)
+                return false;
+            const auto* good = items::good(k.item);
+            const std::string what = good ? good->name : k.item;
+            if (k.carried == 0)
+            {
+                task = "fetching goods";
+                reason = what + " for " + k.detail;
+                goalCell = job->serve.cell;
+                goal = {job->serve.x, job->serve.y};
+            }
+            else
+            {
+                task = "delivering goods";
+                reason = what + " to the market in " + dest->id;
+                goalCell = dest->market;
+                goal = {dest->marketX, dest->marketY + 1};
+            }
+            return true;
+        }
         if (k.kind == "escort")
             for (const auto& c : roads_.caravans)
                 if (c.status == "travelling" && std::find(c.escorts.begin(), c.escorts.end(), resident) != c.escorts.end())
@@ -896,6 +952,7 @@ void World::residentsTakeWork()
         busy.insert(chosen);
         recordEvent({"contract taken", chosen, k.poster, entity(chosen)->cellId, 0, 0, {}, 0, k.reward, k.kind + ": " + k.detail});
     }
+    residentsFillContracts(busy);                   // Contracts for goods, after a day for the players (doc 42).
 }
 
 void World::tradeBetweenTowns()
@@ -949,6 +1006,7 @@ void World::roadsDaily()
                                          {"herbs", std::max(1, int(std::lround(economy.dailyHerbs * share)))}});
     }
     tradeBetweenTowns();
+    tradeCaravans();                                // Traders' caravans: goods where they're wanted (doc 42, Phase 7).
     residentsTakeWork();
 
     // Bandits: hunger grows; starving camps dwindle and scatter; where a road has none, some gather now and then.
@@ -1060,11 +1118,6 @@ void World::roadsDaily()
         }
     }
 
-    // Once a week the towns send what their stores took in back to the treasury, which pays the wages.
-    if (today % 7 == 3)
-        for (std::size_t i = 1; i < towns_.size(); ++i)
-            if (const auto* store = society_.account(towns_[i].store); store && store->cash > 0)
-                society_.shift(towns_[i].store, "treasury", "", 0, store->cash, "town tithe");
 }
 BanditCamp* World::campOf(const std::string& banditId)
 {

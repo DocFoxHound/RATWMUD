@@ -211,7 +211,9 @@ void farmerBringsIn()
     auto winter = farmTown();
     double cold = 10. / 24;
     work(winter, 3600, cold, 3);
-    expect(held(winter, "farmer", "wheat") == 0, "nothing grows in winter");
+    // Nothing grows in winter, but the barn's grain is threshed (doc 42, Phase 3c: crafts.json `offSeason`).
+    expect(held(winter, "farmer", "wheat") >= 1 && held(winter, "farmer", "vegetables") == 0,
+           "in winter only the barn's grain is threshed, nothing grows");
 }
 
 void millGrindsForTheStall()

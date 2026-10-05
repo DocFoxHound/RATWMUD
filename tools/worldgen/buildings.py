@@ -564,6 +564,13 @@ WORKS = {  # kind: (size, what fills it)
     'weaving_shed': ((22, 12), 'looms in two rows, spinning wheels by the windows and the clack of shuttles'),
     'brewery': ((20, 12), 'brewing coppers, mash tuns and casks to the ceiling'),
     'stables': ((20, 11), 'stalls of heavy draught horses, hay to the rafters and harness on every peg'),
+    # Doc 42's industry outside the gates (worldgen.industry).
+    'dairy': ((16, 11), 'churns and cheese presses, and cool shelves of rounds ripening in the dark'),
+    'press_house': ((16, 11), 'a great screw press, treading vats and casks stacked along the walls'),
+    'mine_head': ((14, 10), 'the shaft head with its windlass, ore barrows, and lamps on pegs by the ladder'),
+    'fold': ((16, 10), 'pens of hurdles, a shearing floor and bales of fleece'),
+    'bee_shed': ((10, 8), 'straw skeps on shelves, smokers, and crocks of honey sealed with wax'),
+    'logging_camp': ((18, 10), 'axes, saws and wedges on the walls, bunks by the stove, and the smell of cedar'),
 }
 
 # Each new works kind: its stations in order of importance, and how many of each.
@@ -581,6 +588,12 @@ WORKS_STATIONS = {
     'weaving_shed': [('loom', 6), ('spinning_wheel', 3)],
     'brewery': [('brew_kettle', 4), ('press', 1), ('kiln', 1)],
     'stables': [],
+    'dairy': [('press', 2), ('workbench', 1)],
+    'press_house': [('press', 2)],
+    'mine_head': [('workbench', 2)],
+    'fold': [('workbench', 1)],
+    'bee_shed': [('workbench', 1)],
+    'logging_camp': [('workbench', 2)],
 }
 # What its keeper is called (towns use it for the work label) and the trade whose skill it uses.
 WORKS_TRADE = {
@@ -589,7 +602,8 @@ WORKS_TRADE = {
     'kilnhouse': 'charcoal burner', 'tannery': 'tanner', 'foundry': 'founder', 'dyeworks': 'dyer',
     'papermill': 'papermaker', 'brickworks': 'brickmaker', 'limeworks': 'lime burner', 'saltworks': 'salter',
     'mill': 'miller', 'arsenal': 'engineer', 'cartwright': 'cartwright', 'weaving_shed': 'weaver',
-    'brewery': 'brewer', 'stables': 'horse-dealer',
+    'brewery': 'brewer', 'stables': 'horse-dealer', 'dairy': 'dairy keeper', 'press_house': 'vintner',
+    'mine_head': 'mine captain', 'fold': 'shepherd', 'bee_shed': 'beekeeper', 'logging_camp': 'logging boss',
 }
 
 
