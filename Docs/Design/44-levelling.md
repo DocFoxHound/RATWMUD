@@ -37,14 +37,18 @@ So striking first is worth about seven or eight levels.
 
 ## Decisions
 
-1. **What a level does in a fight: +0.5 fighting skill, and nothing else.** A player's fighting skill is
-   50 + 0.5 × (level − 1): 50 at level 1, 62 at 25. It no longer grows by fighting. NPCs keep their trade's.
+1. **What a level does in a fight: +1.5 fighting skill, and nothing else** (doc 45; it was +0.5). A player's fighting
+   skill is 50 + 1.5 × (level − 1): 50 at level 1, 86 at 25. It no longer grows by fighting. NPCs keep their trade's.
+   The simulator's tables above were measured with the fight's dice badly mixed (doc 45): a roll moved only a little
+   round to round, so fights were streaky and every edge counted for more. Mixed properly, +0.5 a level made L25 vs L1
+   only 62%; +1.5 brings the level rows back (L25 vs L1 88%). **A Quickened wolf's** climbs to 100 at 25 (the user,
+   doc 45: 50 + 50/24 a level).
 2. **Fighting is practice like any other:** a fight earns XP (as now), into the same pool as everything else, under
    the same daily cap and the same lower pay for the same partner again. Fighting isn't punished, and grinding it
    doesn't pay.
 3. **No more stat gains on birthdays.** Age still slows the old (doc 14). Gains already had are kept.
 4. **The pace:** going from level L to L + 1 costs **100 + 50 × (L − 1)** XP. No hard cap: past 25 a level still
-   costs more each time but adds nothing more in a fight (the fighting skill stops at level 25's 62).
+   costs more each time but adds nothing more in a fight (the fighting skill stops at level 25's 86).
 
 | Level | 2 | 3 | 5 | 10 | 15 | 20 | 25 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -79,7 +83,7 @@ Gifts (doc 43) and numbers. The simulator is kept to check that they keep outwei
 ## Built (2026-10-04)
 
 - **The curve and the fight** (`Core/RatwLevels.h`): `levels::stepCost`, `xpFor`, `levelFor` (no cap) and
-  `fightingSkill` (50 + 0.5 a level to 62 at 25). `SocialLedger::level` uses it; `World::levelOf` (set by the game to
+  `fightingSkill` (50 + 1.5 a level to 86 at 25, doc 45; it was 0.5 to 62). `SocialLedger::level` uses it; `World::levelOf` (set by the game to
   the ledger's level) gives a player's fighting skill in `World::temperamentOf`; the character sheet's FIGHTING is it.
   `World::growSkill` does nothing now (a player's saved `fightingSkill` is no longer read). NPCs keep their trade's.
 - **Birthdays** (`advanceAge`) give no statistics; the age, notices and the old's slowing are as before.
@@ -98,7 +102,7 @@ Gifts (doc 43) and numbers. The simulator is kept to check that they keep outwei
   at most, less what has been paid from it since; `pay` adds it as a `rested_bonus` receipt outside the cap). Titles
   Renowned (18) and Legend (25).
 - Tests: `Tests/level_tests.cpp` (the curve, the fighting skill, every award kind, its limits, once each, the cap and
-  its waiting, rested XP); `battle_tests` (fighting doesn't raise fighting skill; level 25 is 62); `aging_tests` (no
+  its waiting, rested XP); `battle_tests` (fighting doesn't raise fighting skill; level 25 is 86); `aging_tests` (no
   stats on birthdays); `social_game_tests` (Bo's 5 for a place first visited).
 - A bug found on the way: the Dev Console's team test fight (`World::testFightTeam`) kept pointers into the fight's
   fighters while adding more to them, so its allies could be placed by freed memory (15 tiles off). It keeps their
@@ -119,3 +123,24 @@ Gifts (doc 43) and numbers. The simulator is kept to check that they keep outwei
 
   Levels count for a little; striking first, gear and numbers for much more. The sword (about 20 a blow and reach
   2, against a bite's 12) decides a fight between raw wolves almost alone: a matter for the gear's own balance.
+
+## Re-measured (2026-10-05, doc 45)
+
+The tables above were measured with the fight's dice badly mixed (`chance` in RatwBattle.cpp and RatwMagic.cpp: a
+plain sum, so a roll moved only about 3% when the fight's log grew by the same lines each round, and a wolf rolled the
+same hit zone and nearly the same odds round after round). Mixed properly (splitmix64's finish), with **+1.5 fighting
+skill a level** (the user's choice: bring the level feel back), 600 fights each:
+
+| Fight | First named wins | Before |
+| --- | --- | --- |
+| L5 / L10 / L25 vs L1 | 55% / 64% / 88% | 59% / 66% / 86% |
+| L10 vs L5 / L25 vs L20 / L25 vs L15 | 56% / 56% / 65% | 60% / 60% / 66% |
+| L1 vs L1, L5, L10, L25, the L1 striking first | 52%, 46%, 36%, 13% | 69%, 65%, 54%, 21% |
+| L1 in a leather kit vs L25 bare | 25% | 68% |
+| L1 with a sword vs L25 bare | 78% | 98% |
+| L1 with a sword and leather vs L25 the same | 19% | 41% |
+| Two L1 vs one L25 / two L5 vs one L15 | 100% / 100% | 100% / 100% |
+| Two L1 vs two L25 / three L1 vs two L25 | 6% / 98% | 16% / 91% |
+
+The level rows are back. Striking first is worth little now (about 52%: it was the streaky dice), and a leather kit
+counts for less than levels; both are open (doc 45).

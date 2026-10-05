@@ -21,7 +21,12 @@ namespace
 {
 std::uint64_t roll(const std::string& a, std::int64_t b)
 {
-    return std::hash<std::string>{}(a) * 1099511628211ULL + std::uint64_t(b) * 2654435761ULL;
+    // Mixed through (splitmix64's finish): a plain sum moved each roll only a little when the fight's sequence grew by
+    // the same steps each round, so a wolf rolled the same zone and nearly the same odds round after round (doc 45).
+    std::uint64_t x = std::hash<std::string>{}(a) ^ (std::uint64_t(b) * 0x9e3779b97f4a7c15ULL);
+    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+    return x ^ (x >> 31);
 }
 double chance(const std::string& a, std::int64_t b)
 {
@@ -58,8 +63,8 @@ struct Rule
 
 constexpr Rule Rules[] = {
     // Fire, Gifted: no damage, by touch.
-    {"cauterize", "ally", 1, 0, 0, 6, 1, 0},
-    {"flare", "foe", 1, 0, 0, 6, 1, 0},
+    {"cauterize", "ally", 1, 0, 0, 3, 1, 0},
+    {"flare", "foe", 1, 0, 0, 3, 0, 0},
     {"smother_to_smoke", "tile", 5, 0, 0, 6, 1, 0},
     {"warm_through", "ally", 1, 0, 0, 6, 1, 0},
     {"heat_sense", "self", 0, 6, 0, 4, 0, 0},
@@ -81,7 +86,7 @@ constexpr Rule Rules[] = {
     // Water, Gifted.
     {"douse", "any", 3, 0, 0, 2, 0, 0},
     {"slick", "tile", 5, 0, 0, 2, 0, 0},
-    {"splash_eyes", "foe", 1, 0, 0, 2, 0, 0},
+    {"splash_eyes", "foe", 3, 0, 0, 2, 0, 0},
     {"wash_out", "ally", 1, 0, 0, 2, 0, 0},
     // Water, Quickened.
     {"pressure_jet", "dir", 5, 0, 0, 4, 0, 10},
@@ -95,10 +100,10 @@ constexpr Rule Rules[] = {
     {"back_breeze", "ally", 3, 0, 0, 6, 0, 0},
     {"air_blast", "foe", 3, 0, 0, 6, 0, 0},
     // Wind, Quickened.
-    {"battering_gust", "dir", 5, 0, 0, 10, 0, 10},
+    {"battering_gust", "dir", 5, 0, 0, 5, 0, 10},
     {"pressure_drop", "tile", 6, 2, 2, 10, 0, 10},
     {"steal_breath", "foe", 4, 0, 0, 8, 0, 0},
-    {"whirlwind", "self", 1, 0, 0, 12, 0, 10},
+    {"whirlwind", "self", 1, 0, 0, 6, 0, 10},
     // Sound, Gifted.
     {"hush", "self", 0, 2, 0, 3, 0, 0},
     {"throw_voice", "tile", 8, 6, 0, 3, 0, 0},
@@ -158,10 +163,11 @@ struct Fx
 };
 constexpr Fx Effects[] = {
     {"dizzy", "Dizzy", "After a blink: 15% worse at hitting and at dodging."},
+    {"blinked", "Blink-dazed", "After a quick blink out of the way: 10% worse at hitting."},
     {"nausea", "Nauseous", "Blinking far: 10% worse at hitting."},
     {"double_vision", "Double vision", "After a glimpse ahead: 10% worse at hitting."},
     {"heavy", "Heavy", "After moving weight: a tile less to move."},
-    {"thirsty", "Thirsty", "After drawing water: half the stamina back a turn."},
+    {"thirsty", "Thirsty", "After drawing water: a quarter less stamina back a turn."},
     {"dehydrated", "Dehydrated", "After moving much water: no stamina back a turn."},
     {"hoarse", "Hoarse", "After a hum: can't whisper along a thread."},
     {"breathless", "Breathless", "Its breath stolen: loses stamina, and can't use a Gift that needs breath."},
@@ -170,6 +176,7 @@ constexpr Fx Effects[] = {
     {"dusted", "Grit in its eyes", "Sees half as far, and 10% worse at hitting, for the fight."},
     {"soaked", "Soaked", "Drenched: can't catch fire, but can be frozen anywhere."},
     {"frozen", "Frozen", "Frozen in place: no move on its next turn."},
+    {"pinned", "Held fast", "Frozen fast this turn: it can't move or blink."},
     {"prone", "Knocked down", "On the ground: no move on its next turn."},
     {"deafened", "Deafened", "Hears nothing."},
     {"dread", "Dread", "A low note's fear: 15% worse at hitting."},
@@ -177,21 +184,23 @@ constexpr Fx Effects[] = {
     {"disoriented", "Disoriented", "15% worse at hitting, and can't plan ahead."},
     {"dissociated", "Dissociated", "Blinked too far: loses its next turn."},
     {"blackout", "Blacked out", "Too much weight: loses its next turn."},
+    {"dazed", "Dazed", "Just lifted to its feet: loses its next turn."},
     {"cracked", "Cracked pads", "Too much stone: a tile less to move."},
     {"held", "Held aloft", "Lifted off the ground: loses its turns until dropped."},
     {"crushed", "Crushed", "Terribly heavy: hurt each turn, a tile at most to move."},
     {"burdened", "Burdened", "Everything heavier: a tile less, and more stamina for each tile and blow."},
     {"lightened", "Lightened", "Its load lighter: a tile more, half the stamina a tile."},
     {"anchored", "Anchored", "Can't be shoved, thrown or knocked down."},
-    {"firm", "Firm footing", "On packed ground: can't be shoved, and guards better."},
+    {"firm", "Firm footing", "On packed ground: can't be shoved, harder to hit, and guards better."},
     {"breeze", "Back breeze", "Its next move goes a tile further, for no stamina."},
     {"weightless", "Weightless", "This turn: 3 tiles further, for no stamina."},
     {"seen_opening", "Seen opening", "Its next blow can't miss, and finds the least armoured spot."},
     {"riposte", "Riposte", "The next blow at it misses, and it strikes back."},
     {"doomed", "Doomed", "Can't dodge: everyone hits it more easily."},
     {"warmed", "Warmed through", "Can't be soaked or frozen this fight."},
+    {"seared", "Seared", "Its wounds seared shut: it doesn't bleed."},
     {"washed", "Washed", "No scent to catch."},
-    {"stone_armor", "Stone armour", "Heavy stone on every side: no blow lands harder from the side or behind, and every blow does less. Slower."},
+    {"stone_armor", "Stone armour", "Heavy stone on every side: no blow lands harder from the side or behind, and every blow does less. A little slower."},
     {"water_screen", "Water screen", "No blow lands harder from the side or behind; fire does a quarter."},
     {"read", "Read", "Its next move is known to the other side."},
     {"warded", "Ward", "A Gift held on it."},
@@ -205,6 +214,10 @@ const Fx* fxOf(const std::string& id)
     return nullptr;
 }
 
+// Slip and Interpose share one rest, in the wolf's own turns (doc 45).
+constexpr int BlinkRest = 8;
+// Flare's knock to a foe's bar (doc 45).
+constexpr double FlareKnock = 20;
 // Effects that last only until the wolf's next turn has begun: kept for 2 of its turn starts.
 constexpr int NextTurn = 2;
 // Rounds of the fight (each turn taken by anyone) for "N turns" on the ground, as smoke counts them.
@@ -260,7 +273,9 @@ bool World::unflankable(const BattleFighter& f) const
     const auto* e = entity(f.id);
     if (!e)
         return false;
-    return (e->quickened && (e->gift == "fire" || e->gift == "seer")) || f.magic.has("stone_armor") || f.magic.has("water_screen");
+    // (A Seer with grit in its eyes doesn't see the blow from the side coming: doc 45.)
+    return (e->quickened && (e->gift == "fire" || (e->gift == "seer" && !f.magic.has("dusted")))) || f.magic.has("stone_armor") ||
+           f.magic.has("water_screen");
 }
 
 std::string World::giftWhyNot(const Battle& b, const BattleFighter& f, const std::string& ability) const
@@ -291,8 +306,12 @@ std::string World::giftWhyNot(const Battle& b, const BattleFighter& f, const std
     {
         if (!f.acting)
             return "It isn't your turn.";
-        if (f.acted)
+        // A Gifted wolf's help takes the turn's move, or its action once it has moved (doc 45); a Quickened Gift is the
+        // action.
+        if (e->quickened && f.acted)
             return "You have already acted this turn.";
+        if (!e->quickened && f.acted && f.moved)
+            return "You have already moved and acted this turn.";
         if (f.casting)
             return "You are gathering a Gift already.";
         if (a->kind == "channelled" && f.magic.channel == ability)
@@ -305,7 +324,12 @@ std::string World::giftWhyNot(const Battle& b, const BattleFighter& f, const std
     const bool breath = fam == "fire" || fam == "wind" || fam == "sound";
     if (breath && f.magic.has("breathless"))
         return "Your breath is stolen: you can't.";
-    if (fam == "blinker" && !e->quickened && (f.magic.has("prone") || f.magic.has("frozen") || f.magic.has("held") || f.magic.has("crushed")))
+    // A Blinker pinned (held aloft, crushed under its weight, frozen fast) can't blink: the Gifted's hop needs its feet
+    // free too, and the Quickened's blink, with no Tell, still needs the body loose (doc 45).
+    const bool pinned = f.magic.has("held") || f.magic.has("crushed") || f.magic.has("frozen") || f.magic.has("pinned");
+    if (fam == "blinker" && e->quickened && pinned && (ability == "blink_strike" || ability == "chain_blink" || ability == "extract"))
+        return "Pinned where you are: you can't blink.";
+    if (fam == "blinker" && !e->quickened && (f.magic.has("prone") || pinned))
         return "You can't hop: pinned where you are.";
     if (fam == "gravity" && (f.magic.has("held") || f.magic.has("frozen")))
         return "You can't tap your feet.";
@@ -340,6 +364,8 @@ std::string World::giftWhyNot(const Battle& b, const BattleFighter& f, const std
     }
     if (ability == "whisper_thread" && f.magic.has("hoarse"))
         return "Your voice is hoarse.";
+    if (ability == "riposte" && f.magic.has("dusted"))
+        return "Grit in your eyes: you can't see it coming.";
     if (ability == "stone_armor" && !e->quickened)
         return "That isn't your Gift.";
     // Mana: the Gifted need it all; the Quickened may overreach (doc 43).
@@ -407,11 +433,11 @@ double World::meterRate(const Battle& b, const BattleFighter& f, double haste) c
         return 0;
     double rate = battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * injury::effects(e->injuries).initiative;
     if (f.magic.has("stone_armor"))
-        rate *= .85;
+        rate *= .95;                                // (Doc 45: a sixth slower cost more than the stone gave.)
     for (const auto& o : b.fighters)
-        if (o.side == f.side && standing(o) && o.magic.channel == "steady_beat" && apart(o.x, o.y, f.x, f.y) <= 3)
+        if (o.side == f.side && o.id != f.id && standing(o) && o.magic.channel == "steady_beat" && apart(o.x, o.y, f.x, f.y) <= 3)
         {
-            rate *= 1.1;                            // Steady Beat (doc 43): the side's bars fill faster.
+            rate *= 1.3;                            // Steady Beat (doc 43): the rest of the side's bars fill faster (doc 45).
             break;
         }
     return rate;
@@ -431,7 +457,7 @@ int World::magicRange(const Battle& b, const BattleFighter& f, int range) const
     const auto& m = f.magic;
     if (e && e->gift == "wind" && e->quickened)
         range *= 2;                                 // Tailwind: twice as far as any other wolf.
-    range += (m.has("lightened") ? 1 : 0) + (m.has("breeze") ? 1 : 0) + (m.has("weightless") ? 3 : 0) - (m.has("stone_armor") ? 1 : 0) -
+    range += (m.has("lightened") ? 1 : 0) + (m.has("breeze") ? 1 : 0) + (m.has("weightless") ? 3 : 0) -
              (m.has("heavy") ? 1 : 0) - (m.has("cracked") ? 1 : 0) - (m.has("burdened") ? 1 : 0);
     if (m.has("crushed"))
         range = std::min(range, 1);
@@ -483,9 +509,9 @@ double World::magicStrikeChance(const BattleFighter& f, const BattleFighter& t, 
     const auto& d = t.magic;
     if (a.has("seen_opening"))
         return 1;                                   // Seen Opening: it can't miss.
-    c -= (a.has("splashed") ? .2 : 0) + (a.has("dusted") ? .1 : 0) + (a.has("dread") ? .15 : 0) + (a.has("dizzy") ? .15 : 0) +
+    c -= (a.has("splashed") ? .13 : 0) + (a.has("dusted") ? .1 : 0) + (a.has("dread") ? .15 : 0) + (a.has("dizzy") ? .15 : 0) + (a.has("blinked") ? .1 : 0) +
          (a.has("nausea") ? .1 : 0) + (a.has("double_vision") ? .1 : 0) + (a.has("disoriented") ? .15 : 0);
-    c += (d.has("dizzy") ? .15 : 0) - (d.has("forewarned") ? .25 : 0) - (d.has("firm") && t.guarding ? .1 : 0);
+    c += (d.has("dizzy") ? .15 : 0) - (d.has("forewarned") ? .3 : 0) - (d.has("firm") ? (t.guarding ? .2 : .1) : 0);
     if (d.has("doomed"))
         return std::max(.95, std::clamp(c + .15, .2, .95));   // Doom Mark: it can't dodge.
     return std::clamp(c, .2, .95);
@@ -497,16 +523,17 @@ double World::magicDamage(const Battle&, const BattleFighter& t, double damage, 
     if (fire && t.magic.has("water_screen"))
         damage *= .25;
     if (!fire && t.magic.has("stone_armor"))
-        damage = std::max(damage * battle::ArmourFloor, damage - 5);
-    if (e && e->gift == "seer" && e->quickened)
-        damage *= .85;                              // Critical Sight.
+        damage *= .88;                              // (Doc 45: a share of every blow, a sword's as much as a bite's.)
+    if (e && e->gift == "seer" && e->quickened && !t.magic.has("dusted"))
+        damage *= .97;                              // Critical Sight (not through grit: doc 45).
     return damage;
 }
 
 void World::magicHurt(Battle& b, BattleFighter& t)
 {
-    // A hit breaks a Gift held (doc 43): the channel ends; a wolf lifted for a Slam drops short.
-    if (t.magic.channel.empty())
+    // A hit breaks a Gift held (doc 43): the channel ends; a wolf lifted for a Slam drops short. (A Steady Beat is kept
+    // through blows: doc 45.)
+    if (t.magic.channel.empty() || t.magic.channel == "steady_beat")
         return;
     const auto held = t.magic.channel, on = t.magic.channelOn;
     t.magic.channel.clear();
@@ -526,7 +553,7 @@ void World::magicHurt(Battle& b, BattleFighter& t)
         if (auto* d = b.fighter(on); d && d->status == "fighting")
         {
             auto* de = entity(d->id);
-            const double dmg = 20 * (.5 + (e ? e->wisdom : 30) / 100);
+            const double dmg = 12 * (.5 + (e ? e->wisdom : 30) / 100);
             fightLine(b, t.id, d->id, "gift", (de ? de->name : std::string("They")) + " drops short as the hold breaks (" + whole(dmg) + ").");
             b.log.back().tiles = {{d->x, d->y}};
             hurtFighter(b, *d, dmg, battle::DownedBlunt, t.id, true);
@@ -560,7 +587,7 @@ void World::magicStep(Battle& b, BattleFighter& f)
             fightLine(b, f.id, {}, "stumble", e->name + " stumbles in the loose ground.");
         }
     }
-    if (b.groundAt(f.x, f.y, "slick") && !f.magic.has("anchored"))
+    if (b.groundAt(f.x, f.y, "slick") && !f.magic.steady())
     {
         const auto* c = cell(b.cellId);
         const auto* t = c ? c->tile(f.x, f.y) : nullptr;
@@ -584,14 +611,15 @@ bool World::magicTurnStart(Battle& b, BattleFighter& f)
     m.reacted = false;
     // Thirst (Water's Cost): stamina comes back slower, or not at all.
     if (m.has("thirsty") || m.has("dehydrated"))
-        e->stamina = std::max(0.0, e->stamina - battle::staminaPerTurn(e->hurt, e->strength) * (m.has("dehydrated") ? 1 : .5));
+        e->stamina = std::max(0.0, e->stamina - battle::staminaPerTurn(e->hurt, e->strength) * (m.has("dehydrated") ? 1 : .25));   // (Thirst: a quarter, doc 45.)
     // A turn lost: unmoored, blinked or weighed too far, or held aloft.
-    for (const char* lost : {"held", "unmoored", "dissociated", "blackout"})
+    for (const char* lost : {"held", "unmoored", "dissociated", "blackout", "dazed"})
         if (m.has(lost))
         {
             const std::string why = std::string(lost) == "held"        ? " hangs in the air, helpless."
                                     : std::string(lost) == "unmoored"  ? " stands empty-eyed, somewhere else."
                                     : std::string(lost) == "blackout"  ? " reels, blacked out."
+                                    : std::string(lost) == "dazed"     ? " finds their feet, dazed."
                                                                        : " sways, lost in themselves.";
             if (std::string(lost) != "held")
                 m.fx.erase(lost);
@@ -607,6 +635,8 @@ bool World::magicTurnStart(Battle& b, BattleFighter& f)
         {
             m.fx.erase(still);
             f.moved = true;
+            if (std::string(still) == "frozen")
+                m.fx["pinned"] = 2;                 // (Held fast in the ice for this turn: no blinking out, doc 45.)
             fightLine(b, f.id, {}, "still", e->name + (std::string(still) == "frozen" ? " is frozen fast." : " scrambles up off the ground."));
         }
     // Effects and rests run down (counted at the wolf's own turns).
@@ -639,12 +669,12 @@ bool World::magicTurnStart(Battle& b, BattleFighter& f)
             {
                 // The drop (doc 43): the second turn of a Slam.
                 auto* de = entity(d->id);
-                const double dmg = battle::throughArmour(*de, "body", 40 * power, "blunt");
+                const double dmg = battle::throughArmour(*de, "body", 12 * power, "blunt");
                 m.channel.clear();
                 m.channelOn.clear();
                 d->magic.fx.erase("held");
                 d->magic.by.erase("held");
-                if (!d->magic.has("anchored"))
+                if (!d->magic.steady())
                     d->magic.fx["prone"] = NextTurn;
                 fightLine(b, f.id, d->id, "gift", e->name + " slams " + de->name + " down (" + whole(dmg) + ").");
                 b.log.back().tiles = {{d->x, d->y}};
@@ -708,7 +738,7 @@ bool World::magicTurnStart(Battle& b, BattleFighter& f)
     if (b.groundAt(f.x, f.y, "fire") && f.burning <= 0 && !m.has("soaked") && !b.groundAt(f.x, f.y, "water"))
         f.burning = battle::BurnTurns;
     for (const auto& g : b.ground)
-        if (g.kind == "well" && apart(g.x, g.y, f.x, f.y) <= 3 && apart(g.x, g.y, f.x, f.y) > 0 && !m.has("anchored"))
+        if (g.kind == "well" && apart(g.x, g.y, f.x, f.y) <= 3 && apart(g.x, g.y, f.x, f.y) > 0 && !m.steady())
         {
             const int nx = f.x + (g.x > f.x) - (g.x < f.x), ny = f.y + (g.y > f.y) - (g.y < f.y);
             if (arenaOpen(b, nx, ny, f.id) && !magicBlocks(b, nx, ny))
@@ -733,7 +763,7 @@ bool World::magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std:
         return false;
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     // Riposte (Quickened Seer): the blow misses, and it strikes back.
-    if (t->magic.has("riposte"))
+    if (t->magic.has("riposte") && !t->magic.has("dusted"))   // (Grit in its eyes: it can't see it coming, doc 45.)
     {
         t->magic.fx.erase("riposte");
         if (t->magic.channel == "riposte")
@@ -757,41 +787,42 @@ bool World::magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std:
             continue;
         oe->mana -= a->mana;
         o.magic.reacted = true;
-        o.magic.cooldown["interpose"] = 3;
-        o.magic.fx["dizzy"] = NextTurn;
+        o.magic.cooldown["interpose"] = o.magic.cooldown["slip"] = BlinkRest;   // (One reflex blink between them, doc 45.)
+        o.magic.fx["blinked"] = NextTurn;           // (Doc 45: a reaction's blink leaves it a little off, not dizzy.)
         const std::pair<int, int> was{o.x, o.y};
         o.x = t->x;
         o.y = t->y;
         t->x = was.first;
         t->y = was.second;
-        o.guarding = true;
         o.facing = battle::octant(f.x - o.x, f.y - o.y);
-        fightLine(b, o.id, t->id, "blink", oe->name + " blinks in front of " + d->name + " and takes the blow on guard.");
+        fightLine(b, o.id, t->id, "blink", oe->name + " blinks in front of " + d->name + " and takes the blow.");
         b.log.back().tiles = {was, {o.x, o.y}};
         t = &o;
         return false;
     }
-    // Slip (Gifted Blinker): a tile back, and the blow misses.
+    // Slip (Gifted Blinker): a tile back, and the blow misses, if that takes it out of the weapon's reach (doc 45: a
+    // sword's longer reach follows a short hop).
     if (t->magic.armed.count("slip") && !t->magic.reacted && !t->magic.cooldown.count("slip") && !t->magic.has("prone") &&
         !t->magic.has("frozen") && !t->magic.has("held") && !t->magic.has("crushed"))
         if (const auto* a = gifts::ability("slip"); a && d->mana >= a->mana)
         {
             const int dx = (t->x > f.x) - (t->x < f.x), dy = (t->y > f.y) - (t->y < f.y);
+            const int reach = weapon == "blade" ? battle::SwordReach : 1;
             std::pair<int, int> to{-1, -1};
-            if (arenaOpen(b, t->x + dx, t->y + dy, t->id) && !magicBlocks(b, t->x + dx, t->y + dy))
+            if (apart(t->x + dx, t->y + dy, f.x, f.y) > reach && arenaOpen(b, t->x + dx, t->y + dy, t->id) &&
+                !magicBlocks(b, t->x + dx, t->y + dy))
                 to = {t->x + dx, t->y + dy};
-            for (int r = 1; r <= 2 && to.first < 0; ++r)
-                for (int oy = -r; oy <= r && to.first < 0; ++oy)
-                    for (int ox = -r; ox <= r && to.first < 0; ++ox)
-                        if (apart(t->x + ox, t->y + oy, f.x, f.y) > 1 && arenaOpen(b, t->x + ox, t->y + oy, t->id) &&
-                            !magicBlocks(b, t->x + ox, t->y + oy))
-                            to = {t->x + ox, t->y + oy};
+            for (int oy = -1; oy <= 1 && to.first < 0; ++oy)
+                for (int ox = -1; ox <= 1 && to.first < 0; ++ox)
+                    if (apart(t->x + ox, t->y + oy, f.x, f.y) > reach && arenaOpen(b, t->x + ox, t->y + oy, t->id) &&
+                        !magicBlocks(b, t->x + ox, t->y + oy))
+                        to = {t->x + ox, t->y + oy};
             if (to.first >= 0)
             {
                 d->mana -= a->mana;
                 t->magic.reacted = true;
-                t->magic.cooldown["slip"] = 3;
-                t->magic.fx["dizzy"] = NextTurn;
+                t->magic.cooldown["slip"] = t->magic.cooldown["interpose"] = BlinkRest;
+                t->magic.fx["blinked"] = NextTurn;
                 const std::pair<int, int> was{t->x, t->y};
                 t->x = to.first;
                 t->y = to.second;
@@ -809,7 +840,7 @@ bool World::magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std:
         std::string best;
         int least = std::numeric_limits<int>::max();
         for (const auto& z : battle::hitZones(quarter))
-            if (const int armour = battle::armourAt(*d, z.zone, weapon == "sword" ? "cut" : "thrust"); armour < least)
+            if (const int armour = battle::armourAt(*d, z.zone, weapon == "blade" ? "cut" : "thrust"); armour < least)
             {
                 least = armour;
                 best = z.zone;
@@ -837,7 +868,7 @@ bool World::throwFighter(Battle& b, BattleFighter& t, int dx, int dy, int tiles,
     // Thrown (doc 43: a gust, a hurl, a jet, a wave, a blast): along (dx, dy) a tile at a time until it would hit
     // something, which hurts. An anchored wolf stays put.
     auto* d = entity(t.id);
-    if (!d || t.status != "fighting" || t.magic.has("anchored") || (dx == 0 && dy == 0))
+    if (!d || t.status != "fighting" || t.magic.steady() || (dx == 0 && dy == 0))
         return false;
     int moved = 0;
     bool hit = false;
@@ -1073,6 +1104,10 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         if (int(shape.size()) > rule->tiles)
             return {false, std::to_string(rule->tiles) + " tiles at most.", {}};
     }
+    if ((ability == "forewarn" || ability == "firm_footing") && t == &f)
+        return {false, "That is for someone else on your side.", {}};   // (Doc 45: a Gifted wolf's help is for others.)
+    if (ability == "lift_up" && t && t->magic.has("lifted"))
+        return {false, entity(t->id)->name + " has been lifted once this fight already.", t->id};   // (Doc 45: once each.)
     // What it costs: mana (the Quickened may overreach), the Tell's breath and hurt, and the family's Cost.
     double mana = a->mana + a->perTile * double(shape.size());
     const double stamina = rule->stamina + (ability == "wall_of_fire" ? 1 : ability == "fissure" ? 1.5 : ability == "stone_wall" ? 2 : 0) * double(shape.size());
@@ -1088,7 +1123,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
             hurtFighter(*b, f, rule->self, battle::DownedFire, {}, false);
         const auto& fam = e->gift;
         if (fam == "water")
-            f.magic.fx[e->quickened ? "dehydrated" : "thirsty"] = NextTurn;
+            f.magic.fx["thirsty"] = NextTurn;           // (Doc 45: dehydration left a Quickened wolf no breath to swing.)
         else if (fam == "sound" && !e->quickened)
             f.magic.fx["hoarse"] = NextTurn;
         else if (fam == "blinker")
@@ -1108,7 +1143,10 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         wardensSee(*b, f);
     };
     const auto act = [&](double weight) {
-        f.acted = true;
+        if (!e->quickened && !f.moved && a->kind != "twoturn")
+            f.moved = f.magic.helped = true;        // (A Gifted wolf's help: the move while it's there, doc 45.)
+        else
+            f.acted = true;
         f.weight = std::max(f.weight, weight);
     };
     const auto line = [&](const std::string& lineKind, const std::string& to, const std::string& words, std::vector<std::pair<int, int>> tiles) {
@@ -1256,15 +1294,16 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     if (ability == "cauterize")
     {
         t->bleeding = 0;
-        t->meter = std::max(0.0, t->meter - 10);
+        t->magic.fx["seared"] = 4;                  // (Doc 45: seared shut, it can't bleed again for 3 of its turns.)
         line("gift", t->id, e->name + " sears " + name(t) + "'s wound shut.", {tileOf(t)});
     }
     else if (ability == "flare")
     {
+        // The flash knocks its bar back (doc 45), mid-turn too: its next bar starts that much lower.
         if (t->acting)
-            t->staggered = 1;
+            t->weight += FlareKnock;
         else
-            t->meter = std::max(0.0, t->meter - 20);
+            t->meter = std::max(0.0, t->meter - FlareKnock);
         line("gift", t->id, "A flash of flame in " + name(t) + "'s face.", {tileOf(t)});
     }
     else if (ability == "smother_to_smoke")
@@ -1300,7 +1339,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         for (auto& o : b->fighters)
             if (o.id != id && standing(o) && apart(o.x, o.y, f.x, f.y) == 1)
             {
-                const double dmg = magicDamage(*b, o, 20 * power * rnd(o.id), true);
+                const double dmg = magicDamage(*b, o, 16 * power * rnd(o.id), true);
                 tiles.push_back(tileOf(&o));
                 line("gift", o.id, name(&o) + " is blasted by the heat (" + whole(dmg) + ").", {tileOf(&o)});
                 hurtFighter(*b, o, dmg, battle::DownedFire, id, true);
@@ -1373,19 +1412,23 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         if (first)
         {
             auto* de = entity(first->id);
-            const double raw = (jet ? 28 : 15) * power * rnd(first->id);
-            const double dmg = magicDamage(*b, *first, battle::throughArmour(*de, "body", raw, "blunt"), false);
+            const double raw = (jet ? 12 : 15) * power * rnd(first->id);
+            // (A jet is water's weight, and armour takes it; a gust isn't a blow, and armour takes only half of what it would,
+            // stone half the rest: doc 45.)
+            const double through = battle::throughArmour(*de, "body", raw, "blunt");
+            const double dmg = magicDamage(*b, *first, jet ? through : (raw + through) / 2 * (first->magic.has("stone_armor") ? .5 : 1), false);
             line("gift", first->id, de->name + (jet ? " is struck by the water (" : " is hurled back by the wind (") + whole(dmg) + ").", {tileOf(first)});
             hurtFighter(*b, *first, dmg, battle::DownedBlunt, id, true);
             const int dx = (tile.first > f.x) - (tile.first < f.x), dy = (tile.second > f.y) - (tile.second < f.y);
-            throwFighter(*b, *first, dx, dy, jet ? 1 : 3, id, jet ? 0 : 10 * power);
+            throwFighter(*b, *first, dx, dy, jet ? 1 : 3, id, jet ? 0 : 12 * power);
             if (jet)
             {
                 first->burning = 0;
+                first->magic.fx["splashed"] = NextTurn;   // (Water in the eyes, doc 45: its next blow less likely.)
                 if (!first->magic.has("warmed"))
                     first->magic.fx["soaked"] = 4;
             }
-            else if (!first->magic.has("anchored"))
+            else if (!first->magic.steady())
                 first->magic.fx["prone"] = NextTurn;
         }
     }
@@ -1427,7 +1470,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     }
     else if (ability == "air_blast")
     {
-        t->magic.fx["dusted"] = -1;
+        t->magic.fx["dusted"] = 3;
         line("gift", t->id, e->name + " blasts grit into " + name(t) + "'s eyes.", {tileOf(t)});
     }
     else if (ability == "whirlwind")
@@ -1441,7 +1484,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         for (auto& o : b->fighters)
             if (o.side != f.side && standing(o) && apart(o.x, o.y, f.x, f.y) == 1)
             {
-                o.magic.fx["dusted"] = -1;
+                o.magic.fx["dusted"] = 4;               // (Doc 45: for 3 of its turns, not the fight.)
                 throwFighter(*b, o, (o.x > f.x) - (o.x < f.x), (o.y > f.y) - (o.y < f.y), 2, id, 6 * power);
             }
     }
@@ -1473,7 +1516,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         if (de->mouth == "sword")
         {
             wearGear(*de, swordHeld(*de), 60);
-            if (chance(t->id + "|ring", key) < .25)
+            if (chance(t->id + "|ring", key) < .5)
             {
                 dropItem(*b, *t);
                 line("gift", t->id, name(t) + "'s sword rings and leaps from their jaws.", tiles);
@@ -1482,7 +1525,14 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         for (const char* zone : {"head", "throat", "body", "legs"})
             if (!battle::armourPieceAt(*de, zone).empty())
                 wearArmourAt(*de, zone, 15);
-        const double dmg = magicDamage(*b, *t, 10 * power * rnd(t->id), false);
+        // Stone rings until it shatters (doc 45: Sound answers Earth): the Stone Armor falls away, in shards.
+        const bool stone = t->magic.has("stone_armor");
+        if (stone)
+        {
+            t->magic.fx.erase("stone_armor");
+            line("gift", t->id, name(t) + "'s stone armour rings, cracks and falls away.", tiles);
+        }
+        const double dmg = magicDamage(*b, *t, (stone ? 20 : 10) * power * rnd(t->id), false);
         line("gift", t->id, e->name + "'s note makes " + name(t) + "'s steel ring until it cracks (" + whole(dmg) + ").", tiles);
         hurtFighter(*b, *t, dmg, battle::DownedBlunt, id, true);
     }
@@ -1534,6 +1584,9 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     }
     else if (ability == "blink_strike" || ability == "chain_blink")
     {
+        // The nausea comes after the blink, not with it (doc 45): the strike itself lands clean.
+        const int sick = f.magic.fx.count("nausea") ? f.magic.fx["nausea"] : 0;
+        f.magic.fx.erase("nausea");
         std::vector<BattleFighter*> marks{t};
         if (ability == "chain_blink")
         {
@@ -1547,6 +1600,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
                     marks.push_back(o);
             f.magic.fx["chain"] = 1;
         }
+
         for (auto* m : marks)
         {
             if (!standing(*m) || f.status != "fighting")
@@ -1584,14 +1638,16 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
                 bite(*b, f, m->id);
         }
         f.magic.fx.erase("chain");
+        if (sick)
+            f.magic.fx["nausea"] = sick;
     }
     else if (ability == "displace")
     {
         if (apart(t->x, t->y, tile.first, tile.second) > rule->tiles || !arenaOpen(*b, tile.first, tile.second, t->id) ||
             magicBlocks(*b, tile.first, tile.second))
             return {false, "Send them to open ground within " + std::to_string(rule->tiles) + " tiles of them.", t->id};
-        if (t->magic.has("anchored"))
-            return {false, name(t) + " is anchored.", t->id};
+        if (t->magic.steady())
+            return {false, name(t) + " won't budge: anchored, or under stone.", t->id};
         const std::pair<int, int> was{t->x, t->y};
         t->x = tile.first;
         t->y = tile.second;
@@ -1637,15 +1693,17 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     else if (ability == "lift_up")
     {
         auto* te = entity(t->id);
-        standUp(*te, battle::GetUpHealth);
+        standUp(*te, battle::LiftedHealth);         // (Doc 45: on its feet, barely, and dazed for its next turn.)
+        t->magic.fx["lifted"] = -1;
+        t->magic.fx["dazed"] = 1;
         t->status = "fighting";
         t->struggling = false;
         line("rise", t->id, e->name + " lifts " + te->name + " to their feet from afar.", {tileOf(t)});
     }
     else if (ability == "hurl")
     {
-        if (t->magic.has("anchored"))
-            return {false, name(t) + " is anchored.", t->id};
+        if (t->magic.steady())
+            return {false, name(t) + " won't budge: anchored, or under stone.", t->id};
         const int dx = (t->x > f.x) - (t->x < f.x), dy = (t->y > f.y) - (t->y < f.y);
         const std::pair<int, int> was{t->x, t->y};
         throwFighter(*b, *t, dx || dy ? dx : 1, dy, rule->tiles, id, 15 * power);
@@ -1704,7 +1762,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     else
         return {false, "That Gift isn't ready yet.", {}};
     act(rule->weight);
-    if (e->npc && f.moved && !b->over && f.acting)
+    if (e->npc && f.moved && (e->quickened || f.acted) && !b->over && f.acting)
         endTurn(*b, f);
     else
         checkOver(*b);
@@ -1767,7 +1825,7 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
         if (first)
         {
             auto* d = entity(first->id);
-            const auto [dmg0, zone] = zoneHit(*first, 30 * power * rnd(first->id), "thrust");
+            const auto [dmg0, zone] = zoneHit(*first, 24 * power * rnd(first->id), "thrust");
             const double dmg = magicDamage(b, *first, dmg0, true);
             const bool metal = metalPiece(battle::armourPieceAt(*d, zone));
             line("burnt", first->id, d->name + " is pierced by the heat on the " + zone + " (" + whole(dmg) + ").", {{first->x, first->y}});
@@ -1795,11 +1853,11 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
         for (auto& o : b.fighters)
             if (o.id != cast.caster && o.status == "fighting" && inside(o))
             {
-                const auto [dmg, zone] = zoneHit(o, (s == "upheaval" ? 25 : 40) * power * rnd(o.id), "blunt");
+                const auto [dmg, zone] = zoneHit(o, (s == "upheaval" ? 18 : 17) * power * rnd(o.id), "blunt");
                 line("hit", o.id, entity(o.id)->name + (s == "upheaval" ? " is thrown by the ground on the " : " is struck by the stone on the ") + zone +
                                         " (" + whole(dmg) + ").", {{o.x, o.y}});
                 hurtFighter(b, o, dmg, battle::DownedBlunt, cast.caster, true);
-                if (s == "upheaval" && !o.magic.has("anchored"))
+                if (s == "upheaval" && !o.magic.steady())
                     o.magic.fx["prone"] = NextTurn;
             }
         if (s == "hurl_stone" && !cast.target.empty())
@@ -1817,7 +1875,7 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
                 const double dmg = magicDamage(b, o, 15 * power * rnd(o.id), false);
                 line("hit", o.id, entity(o.id)->name + " falls into the fissure (" + whole(dmg) + ").", {{o.x, o.y}});
                 hurtFighter(b, o, dmg, battle::DownedBlunt, cast.caster, true);
-                if (!o.magic.has("anchored"))
+                if (!o.magic.steady())
                     o.magic.fx["prone"] = NextTurn;
             }
         for (const auto& p : cast.tiles)
@@ -1850,7 +1908,7 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
                     line("hit", o.id, entity(o.id)->name + " is swept off their feet (" + whole(dmg) + ").", {{o.x, o.y}});
                     hurtFighter(b, o, dmg, battle::DownedBlunt, cast.caster, true);
                     throwFighter(b, o, dx, dy, 2, cast.caster, 0);
-                    if (!o.magic.has("anchored"))
+                    if (!o.magic.steady())
                         o.magic.fx["prone"] = NextTurn;
                 }
             }
@@ -1890,8 +1948,8 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
                 if (o.acting)
                     o.staggered = 1;
                 else
-                    o.meter = std::max(0.0, o.meter - 20);
-                const double dmg = magicDamage(b, o, 22 * power * rnd(o.id), false);
+                    o.meter = std::max(0.0, o.meter - 40);
+                const double dmg = magicDamage(b, o, 24 * power * rnd(o.id), false);
                 line("hit", o.id, entity(o.id)->name + " is battered by the howl (" + whole(dmg) + ").", {{o.x, o.y}});
                 hurtFighter(b, o, dmg, battle::DownedBlunt, cast.caster, true);
             }

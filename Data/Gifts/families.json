@@ -14,8 +14,8 @@
         "abilities": [
           {"id": "forge_heat", "name": "Forge Heat", "kind": "work", "mana": 6, "summary": "Keeps a forge, kiln or oven at working heat without fuel: better smithing, firing and cooking."},
           {"id": "kindle", "name": "Kindle", "kind": "work", "mana": 2, "summary": "Lights a fire on damp wood or in the rain."},
-          {"id": "cauterize", "name": "Cauterize", "kind": "instant", "mana": 10, "summary": "Stops an ally's bleeding, by touch. It hurts: their bar is set back a little."},
-          {"id": "flare", "name": "Flare", "kind": "instant", "mana": 6, "summary": "A flash in an adjacent foe's face knocks their bar back."},
+          {"id": "cauterize", "name": "Cauterize", "kind": "instant", "mana": 10, "summary": "Sears an ally's wound shut, by touch: no bleeding for 3 turns."},
+          {"id": "flare", "name": "Flare", "kind": "instant", "mana": 8, "summary": "A flash in an adjacent foe's face knocks their bar back."},
           {"id": "smother_to_smoke", "name": "Smother to Smoke", "kind": "instant", "mana": 8, "summary": "Turns a fire or brush into smoke that blocks sight for 2 turns."},
           {"id": "warm_through", "name": "Warm Through", "kind": "instant", "mana": 6, "summary": "Takes away an ally's cold and soaked penalties for the fight."},
           {"id": "heat_sense", "name": "Heat Sense", "kind": "channelled", "mana": 0, "perTurn": 4, "summary": "Senses body heat within 6 tiles: shows warm wolves, hidden or not."}
@@ -42,7 +42,7 @@
           {"id": "clay_hand", "name": "Clay Hand", "kind": "work", "mana": 6, "summary": "Better pottery and masonry."},
           {"id": "stone_sense", "name": "Stone Sense", "kind": "work", "mana": 6, "summary": "Finds ore seams, flawed stone and weak walls."},
           {"id": "loosen_ground", "name": "Loosen Ground", "kind": "instant", "mana": 8, "summary": "A tile turns soft: double stamina to cross, and a chance to stumble."},
-          {"id": "firm_footing", "name": "Firm Footing", "kind": "instant", "mana": 6, "summary": "Packs an ally's tile: they can't be shoved, and guard better on it."},
+          {"id": "firm_footing", "name": "Firm Footing", "kind": "instant", "mana": 6, "summary": "Packs an ally's tile: while they stay on it they can't be shoved, are harder to hit, and guard better."},
           {"id": "feel_footfalls", "name": "Feel Footfalls", "kind": "channelled", "mana": 0, "perTurn": 5, "summary": "Shows every wolf moving within 6 tiles, sneakers included."}
         ]
       },
@@ -54,7 +54,7 @@
           {"id": "hurl_stone", "name": "Hurl Stone", "kind": "gathered", "mana": 25, "summary": "Tears up a rock and throws it at a wolf up to 10 tiles away."},
           {"id": "fissure", "name": "Fissure", "kind": "shape", "mana": 12, "perTile": 3, "summary": "Paint up to 10 tiles of split ground: wolves on it are hurt and fall, and no one crosses for 2 turns."},
           {"id": "stone_wall", "name": "Stone Wall", "kind": "shape", "mana": 10, "perTile": 5, "summary": "Paint up to 5 tiles of wall that blocks movement and sight until broken."},
-          {"id": "stone_armor", "name": "Stone Armor", "kind": "fightlong", "mana": 15, "summary": "Heavy armour on every side for the fight: no blow lands harder from the side or behind. Slower."}
+          {"id": "stone_armor", "name": "Stone Armor", "kind": "fightlong", "mana": 15, "summary": "Heavy stone on every side for the fight: every blow does less, none lands harder from the side or behind, and nothing can throw or knock you down. A little slower."}
         ]
       }
     },
@@ -69,7 +69,7 @@
           {"id": "mend", "name": "Mend", "kind": "work", "mana": 10, "summary": "Tends an ally's injury so it heals half again as fast. Once a day per injury."},
           {"id": "douse", "name": "Douse", "kind": "instant", "mana": 5, "summary": "Puts out an ally's burning, or a burning tile."},
           {"id": "slick", "name": "Slick", "kind": "instant", "mana": 8, "summary": "Wets a tile: on stone or paving, a chance to slip."},
-          {"id": "splash_eyes", "name": "Splash Eyes", "kind": "instant", "mana": 7, "summary": "An adjacent foe's next attack is less likely to hit."},
+          {"id": "splash_eyes", "name": "Splash Eyes", "kind": "instant", "mana": 10, "summary": "Water in the eyes of a foe within 3 tiles: its next attack is less likely to hit."},
           {"id": "wash_out", "name": "Wash Out", "kind": "instant", "mana": 6, "summary": "Washes an ally's scent off and clears dust or smoke from their eyes."}
         ]
       },
@@ -96,7 +96,7 @@
           {"id": "turn_the_wind", "name": "Turn the Wind", "kind": "channelled", "mana": 0, "perTurn": 4, "summary": "Keeps your side's scent from enemy noses, or carries theirs to yours."},
           {"id": "clear_the_air", "name": "Clear the Air", "kind": "instant", "mana": 6, "summary": "Blows smoke or dust off a 3-tile area."},
           {"id": "back_breeze", "name": "Back Breeze", "kind": "instant", "mana": 6, "summary": "An ally's next move costs less stamina."},
-          {"id": "air_blast", "name": "Air Blast", "kind": "instant", "mana": 8, "summary": "Grit in a foe's eyes: they see less far for the rest of the fight."}
+          {"id": "air_blast", "name": "Air Blast", "kind": "instant", "mana": 18, "summary": "Grit in a foe's eyes: they see less far, and hit less often, for 2 turns."}
         ]
       },
       "quickened": {
@@ -106,7 +106,7 @@
           {"id": "battering_gust", "name": "Battering Gust", "kind": "instant", "mana": 18, "summary": "Throws the first wolf in 5 tiles up to 3 back and down; worse if it hits a wall or a wolf."},
           {"id": "pressure_drop", "name": "Pressure Drop", "kind": "gathered", "mana": 20, "summary": "A 2×2 area: hurt, ears damaged, and half a bar lost."},
           {"id": "steal_breath", "name": "Steal Breath", "kind": "channelled", "mana": 10, "perTurn": 5, "summary": "Drains a foe's stamina and stops any held breath or hum."},
-          {"id": "whirlwind", "name": "Whirlwind", "kind": "instant", "mana": 22, "summary": "Flings adjacent foes out, and the dust shortens their sight for the fight."},
+          {"id": "whirlwind", "name": "Whirlwind", "kind": "instant", "mana": 22, "summary": "Flings adjacent foes out, and the dust shortens their sight and aim for 3 turns."},
           {"id": "tailwind", "name": "Tailwind", "kind": "passive", "mana": 0, "summary": "Moves twice as far as any other wolf."}
         ]
       }
@@ -122,7 +122,7 @@
           {"id": "carry", "name": "Carry", "kind": "work", "mana": 4, "summary": "A herder's or crier's voice is heard far away."},
           {"id": "hush", "name": "Hush", "kind": "channelled", "mana": 0, "perTurn": 5, "summary": "Allies within 2 tiles make no noise."},
           {"id": "throw_voice", "name": "Throw Voice", "kind": "instant", "mana": 6, "summary": "A noise from a chosen tile draws a foe's attention and turns them."},
-          {"id": "steady_beat", "name": "Steady Beat", "kind": "channelled", "mana": 0, "perTurn": 6, "summary": "While you stay still, allies within 3 tiles fill their bars faster."},
+          {"id": "steady_beat", "name": "Steady Beat", "kind": "channelled", "mana": 0, "perTurn": 6, "summary": "While you stay still, the rest of your side within 3 tiles fill their bars faster. Blows don't break the beat."},
           {"id": "whisper_thread", "name": "Whisper Thread", "kind": "instant", "mana": 3, "summary": "Speak to one ally, unheard by anyone else."}
         ]
       },
@@ -145,8 +145,8 @@
         "tell": "A hop: never while pinned, rooted or down.", "cost": "Dizziness: worse aim and dodge next turn.", "limit": "2 to 3 tiles, itself only.",
         "abilities": [
           {"id": "shortcut", "name": "Shortcut", "kind": "work", "mana": 6, "summary": "Blinks across a wall, a gap or a doorway."},
-          {"id": "slip", "name": "Slip", "kind": "reaction", "mana": 10, "summary": "When attacked, blinks a tile back and the blow misses. Then rests 3 turns."},
-          {"id": "interpose", "name": "Interpose", "kind": "reaction", "mana": 12, "summary": "When an ally beside you is attacked, blinks in front and takes it on guard. Then rests 3 turns."},
+          {"id": "slip", "name": "Slip", "kind": "reaction", "mana": 20, "summary": "When attacked, blinks a tile back and the blow misses, if that takes you out of reach. Then it and Interpose rest 8 turns."},
+          {"id": "interpose", "name": "Interpose", "kind": "reaction", "mana": 24, "summary": "When an ally beside you is attacked, blinks in front and takes the blow for them. Then it and Slip rest 8 turns."},
           {"id": "blink", "name": "Blink", "kind": "instant", "mana": 10, "summary": "Blinks up to 3 tiles."}
         ]
       },
@@ -154,7 +154,7 @@
         "best": "The assassin: strikes from behind, scatters foes, unmoors minds.",
         "tell": "None.", "cost": "Nausea and nosebleeds.", "limit": "Others, at a touch; minds, at a price.", "overreach": "Dissociation: a turn lost.",
         "abilities": [
-          {"id": "blink_strike", "name": "Blink Strike", "kind": "instant", "mana": 15, "summary": "Blinks behind a foe up to 6 tiles away and strikes from behind."},
+          {"id": "blink_strike", "name": "Blink Strike", "kind": "instant", "mana": 18, "summary": "Blinks behind a foe up to 6 tiles away and strikes from behind."},
           {"id": "chain_blink", "name": "Chain Blink", "kind": "instant", "mana": 35, "summary": "Strikes up to 3 foes in one turn, each a little lighter."},
           {"id": "displace", "name": "Displace", "kind": "instant", "mana": 18, "summary": "Sends a foe you touch up to 4 tiles away."},
           {"id": "unmoor", "name": "Unmoor", "kind": "instant", "mana": 30, "summary": "Pulls a foe's mind loose: their next turn lost, then disoriented."},
@@ -173,7 +173,7 @@
           {"id": "lighten", "name": "Lighten", "kind": "channelled", "mana": 0, "perTurn": 4, "summary": "An ally's armour and load count lighter: further for less stamina."},
           {"id": "burden", "name": "Burden", "kind": "channelled", "mana": 0, "perTurn": 5, "summary": "A foe's weapon and armour count heavier: everything costs more stamina."},
           {"id": "anchor", "name": "Anchor", "kind": "channelled", "mana": 0, "perTurn": 4, "summary": "An ally can't be shoved or knocked down."},
-          {"id": "lift_up", "name": "Lift Up", "kind": "instant", "mana": 12, "summary": "Lifts a downed ally to their feet from 5 tiles away, without healing them."}
+          {"id": "lift_up", "name": "Lift Up", "kind": "instant", "mana": 22, "summary": "Lifts a downed ally to their feet from 5 tiles away, barely standing. Once for each ally a fight."}
         ]
       },
       "quickened": {
@@ -207,7 +207,7 @@
         "tell": "A flicker of the eyes.", "cost": "Headaches and double vision.", "limit": "Seconds ahead.", "overreach": "Losing track of now: worse aim, slower bar.",
         "abilities": [
           {"id": "seen_opening", "name": "Seen Opening", "kind": "instant", "mana": 15, "summary": "Your next attack can't miss and finds the least armoured spot."},
-          {"id": "riposte", "name": "Riposte", "kind": "channelled", "mana": 0, "perTurn": 6, "summary": "The next attack on you misses, and you strike back."},
+          {"id": "riposte", "name": "Riposte", "kind": "channelled", "mana": 24, "perTurn": 6, "summary": "The next attack on you misses, and you strike back."},
           {"id": "doom_mark", "name": "Doom Mark", "kind": "instant", "mana": 20, "summary": "For 3 turns a foe can't dodge, and everyone hits them more easily."},
           {"id": "shared_sight", "name": "Shared Sight", "kind": "channelled", "mana": 0, "perTurn": 6, "summary": "Allies within 3 tiles are forewarned every turn."},
           {"id": "critical_sight", "name": "Critical Sight", "kind": "passive", "mana": 0, "summary": "No blow lands harder from the side or behind, and you take less damage."}

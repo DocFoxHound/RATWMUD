@@ -84,7 +84,10 @@ struct BattleFighter
         int lastTurn = -10;
         int firmX = -1, firmY = -1;             // Firm Footing: the tile packed under it.
         int movedTurn = -10;                    // The last of the fight's rounds it moved in (Feel Footfalls).
+        bool helped = false;                    // Its move this turn went on a Gifted wolf's help (doc 45), not a step.
         bool has(const std::string& name) const { return fx.count(name) > 0; }
+        // Can't be shoved, thrown or knocked down: anchored, or under a Stone Armor's weight (doc 45).
+        bool steady() const { return has("anchored") || has("stone_armor"); }
     } magic;
 };
 
@@ -317,6 +320,7 @@ constexpr double DownedMinimum = .6, OverkillSeconds = 10;
 // A player is never killed (doc 38): they lie down for a while, longer for each downing since their last full rest, and
 // get up at GetUpHealth. The bases are for the cause, as above; the stretch is by downings, counting this one.
 constexpr double GetUpBite = 150, GetUpBlunt = 180, GetUpFire = 120, GetUpHealth = 10;
+constexpr double LiftedHealth = 5;                      // Lifted to its feet by a Gifted Gravity wolf (doc 45): barely.
 constexpr double GetUpOverkillSeconds = 2, GetUpLongest = 30 * 60;
 inline double getUpStretch(int downs) { return downs <= 1 ? 1 : downs == 2 ? 2 : downs == 3 ? 4 : downs == 4 ? 6 : 8; }
 // Rest (doc 38), in game hours: lying or sitting still, unbroken, is a partial rest; six hours of it lying in a bed is a
@@ -336,9 +340,11 @@ struct Spell
 };
 // `charge`: seconds the fire gathers, before wisdom (÷ (1 + WIS/200)): 3.5 s Gifted, 2.6 s Quickened at WIS 30.
 constexpr Spell GiftedFlame{4, 3, 23, 21, 25, 12, 3, 20};
-constexpr Spell QuickenedFlame{3, 5, 35, 45, 40, 20, 5, 10};
+constexpr Spell QuickenedFlame{3, 5, 35, 20, 40, 20, 5, 10};
 constexpr int BurnTurns = 3, SmokeRounds = 3;
+constexpr double FlameFlinch = 25;                      // A Quickened flame knocks the bar back (doc 45).
 constexpr double BurnDamage = 3, RainFactor = .6, ManaPerTurn = 2, ManaPerSecond = 1.0 / 6;
+constexpr double QuickenedManaPerTurn = 0;            // (Doc 45: a Quickened wolf's casts are few, from what it brings.)
 inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom * .8 : 0; }
 // Fighting skill grows with fighting, slower as it climbs.
 constexpr double SkillPerHit = .2, SkillPerFight = .5;

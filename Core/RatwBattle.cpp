@@ -23,7 +23,12 @@ const std::string GroundAccount = "ground:lost";    // Whatever lies on the grou
 
 std::uint64_t roll(const std::string& a, std::int64_t b)
 {
-    return std::hash<std::string>{}(a) * 1099511628211ULL + std::uint64_t(b) * 2654435761ULL;
+    // Mixed through (splitmix64's finish): a plain sum moved each roll only a little when the fight's sequence grew by
+    // the same steps each round, so a wolf rolled the same zone and nearly the same odds round after round (doc 45).
+    std::uint64_t x = std::hash<std::string>{}(a) ^ (std::uint64_t(b) * 0x9e3779b97f4a7c15ULL);
+    x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+    x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+    return x ^ (x >> 31);
 }
 double chance(const std::string& a, std::int64_t b)
 {
@@ -274,7 +279,7 @@ battle::Temperament World::temperamentOf(const Entity& e) const
     if (folk != folk_.end() && folk->second.skill >= 0)
         t.skill = folk->second.skill;
     if (!e.npc)
-        t.skill = levels::fightingSkill(levelOf ? levelOf(e.id) : 1);   // A player's: by their level alone (doc 44).
+        t.skill = levels::fightingSkill(levelOf ? levelOf(e.id) : 1, e.quickened);   // A player's: by their level (doc 44).
     return t;
 }
 
@@ -1184,6 +1189,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.turnStarted = time_;
     f.deadline = time_ + battle::TurnSeconds;
     f.moved = f.acted = f.extended = f.faced = false;
+    f.magic.helped = false;
     f.guarding = f.drew = false;                    // (On guard until now.)
     f.partsUsed = 0;
     f.partsAt = time_;
@@ -1211,7 +1217,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
         if (e->exhausted && e->stamina >= 20)
             e->exhausted = false;
         if (!e->gift.empty())
-            e->mana = std::min(battle::manaMax(e->wisdom, true), e->mana + battle::ManaPerTurn);
+            e->mana = std::min(battle::manaMax(e->wisdom, true), e->mana + (e->quickened ? battle::QuickenedManaPerTurn : battle::ManaPerTurn));
         if (f.burning > 0)
         {
             --f.burning;
@@ -1255,7 +1261,9 @@ void World::endTurn(Battle& b, BattleFighter& f)
 {
     if (f.id == b.opening)
         b.opening.clear();
-    f.meter = (f.moved ? 0 : 20) + (f.acted ? 0 : 20) - f.weight;   // Its bar starts again (a head start if it held back).
+    // Its bar starts again (a head start if it held back; help in place of a step holds back too, doc 45).
+    f.meter = (f.moved && !f.magic.helped ? 0 : 20) + (f.acted ? 0 : 20) - f.weight;
+    f.magic.helped = false;
     if (f.staggered == 1)
     {
         f.meter -= battle::StaggerSetback;          // Staggered in its own turn: the next bar starts lower (doc 38).
@@ -2870,7 +2878,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
     }
     if (b.over || !f.acting)
         return;
-    if (npcGift(b, f, *mark))                       // Its Gift, if it has one and the moment suits (doc 43).
+    // Its Gift, if it has one and the moment suits (doc 43); a Gifted one's help may leave it its blow (doc 45).
+    if (npcGift(b, f, *mark) && (e->quickened || f.acted || b.over || !f.acting))
     {
         if (!b.over && f.acting)
             battleAct(f.id, "wait");
@@ -3480,7 +3489,7 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     if (d->npc)
         stop(t.id);
     // Combat injuries (doc 38): a hard bite or cut bleeds; a very hard blow staggers.
-    if (!by.empty() && downedBase == battle::DownedBite && damage >= battle::BleedFrom && d->hurt < 100)
+    if (!by.empty() && downedBase == battle::DownedBite && damage >= battle::BleedFrom && d->hurt < 100 && !t.magic.has("seared"))
     {
         if (t.bleeding <= 0)
             fightLine(b, t.id, {}, "bleeding", d->name + " is bleeding.");
@@ -3715,7 +3724,7 @@ Result World::shove(Battle& b, BattleFighter& f, const std::string& target)
         fightLine(b, f.id, target, "shove", e->name + " shoves " + d->name + ", but there is nowhere for them to go.");
         return {true, "You shove " + d->name + ", but there is nowhere for them to go.", target};
     }
-    if (t->magic.has("anchored") || t->magic.has("firm"))
+    if (t->magic.steady() || t->magic.has("firm"))
     {
         fightLine(b, f.id, target, "shove", e->name + " shoves at " + d->name + ", but " + d->name + " won't budge.");
         return {true, d->name + " won't budge.", target};
@@ -3828,6 +3837,13 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
             continue;
         if (!water && !t.magic.has("soaked") && !b.groundAt(t.x, t.y, "water"))
             t.burning = battle::BurnTurns;
+        if (cast.quickened)
+        {
+            if (t.acting)
+                t.staggered = 1;                    // Flinching from the fire (doc 45): its bar knocked back.
+            else
+                t.meter = std::max(0.0, t.meter - battle::FlameFlinch);
+        }
         if (d->npc && 100 - d->hurt < 50)
             t.scared = true;                        // Fear: it runs.
     }

@@ -582,7 +582,7 @@ void theSword()
     expect(w.entity("player-ad")->fightingSkill == 50 && w.temperamentOf(*w.entity("player-ad")).skill == 50,
            "Fighting doesn't raise her fighting skill: her level does (doc 44)");
     w.levelOf = [](const std::string&) { return 25; };
-    expect(w.temperamentOf(*w.entity("player-ad")).skill == 62, "At level 25 it is 62");
+    expect(w.temperamentOf(*w.entity("player-ad")).skill == 86, "At level 25 it is 86");
 }
 
 void theFlame()

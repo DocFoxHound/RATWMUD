@@ -2384,7 +2384,7 @@ void Game::sendSnapshot(Connection* c)
     if (const auto* me = world_.entity(id))
     {
         self.set("health", std::round(100 - me->hurt));
-        self.set("fightingSkill", std::round(levels::fightingSkill(social_.level(id))));   // (By level: doc 44.)
+        self.set("fightingSkill", std::round(levels::fightingSkill(social_.level(id), me->quickened)));   // (By level: doc 44, 45.)
         if (!me->mouth.empty())
             self.set("mouth", me->mouth);
         // What is worn (doc 35): slot to item id, and each piece of jewellery as [spot, item id]; names are in the inventory.

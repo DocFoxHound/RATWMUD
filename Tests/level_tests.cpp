@@ -26,7 +26,9 @@ void curve()
     for (int l = 1; l <= 40; ++l)
         expect(levels::levelFor(levels::xpFor(l)) == l && levels::levelFor(levels::xpFor(l) - 1) == std::max(1, l - 1), "each level's start: " + std::to_string(l));
     expect(levels::levelFor(levels::xpFor(30)) == 30, "no cap");
-    expect(levels::fightingSkill(1) == 50 && levels::fightingSkill(25) == 62 && levels::fightingSkill(40) == 62, "fighting skill 50 to 62, no more past 25");
+    expect(levels::fightingSkill(1) == 50 && levels::fightingSkill(25) == 86 && levels::fightingSkill(40) == 86, "fighting skill 50 to 86, no more past 25");
+    expect(levels::fightingSkill(1, true) == 50 && levels::fightingSkill(25, true) == 100 && levels::fightingSkill(40, true) == 100,
+           "a Quickened wolf's 50 to 100 (doc 45)");
     expect(socialTitle(18) == "Renowned" && socialTitle(25) == "Legend" && socialTitle(12) == "Notable", "Renowned and Legend");
 }
 

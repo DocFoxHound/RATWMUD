@@ -23,7 +23,13 @@ inline int levelFor(long long xp)
         xp -= stepCost(level++);
     return level;
 }
-// What a level does in a fight, and nothing else: a player's fighting skill, 50 at level 1, +0.5 a level to 62 at 25.
+// What a level does in a fight, and nothing else: a player's fighting skill, 50 at level 1, +1.5 a level to 86 at 25
+// (doc 45: with the fight's dice mixed properly, +0.5 a level was worth far less than doc 44 measured). A Quickened
+// wolf's climbs to 100 at 25 (the user, doc 45).
 constexpr int FightingLevelCap = 25;
-inline double fightingSkill(int level) { return 50 + .5 * (std::clamp(level, 1, FightingLevelCap) - 1); }
+inline double fightingSkill(int level, bool quickened = false)
+{
+    const int past = std::clamp(level, 1, FightingLevelCap) - 1;
+    return quickened ? 50 + 50.0 * past / (FightingLevelCap - 1) : 50 + 1.5 * past;
+}
 }

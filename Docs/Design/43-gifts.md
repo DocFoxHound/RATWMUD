@@ -49,6 +49,13 @@ passive each.
 6. **Warden attention.** Quickened magic seen by a witness raises Warden attention on the caster. It is recorded now
    and used by a later Warden/Concord system. Gifted magic doesn't raise it.
 7. **Flamethrower becomes Quickened-only.**
+8. **A Gifted wolf's help takes the turn's move, or its action** (doc 45, the user's rule): the move while it hasn't
+   moved, so it can help and still strike; once it has moved, the action. A move spent on help keeps the bar's head
+   start (it hasn't stepped). Forewarn and Firm Footing are for others, not oneself. A Quickened Gift is the action.
+10. **A Blinker pinned can't blink** (doc 45): held aloft, crushed under its weight or frozen fast, neither the Gifted's
+   hop nor the Quickened's blink gets it out. (Gravity and Water answer the Blinker.)
+9. **A Quickened wolf's mana doesn't come back in a fight** (doc 45): it brings what it has, so a big cast is rare. A
+   Gifted wolf's still comes back 2 a turn.
 
 ### Kinds of ability
 
@@ -87,8 +94,8 @@ Mana costs below are against today's pool: about 44 at WIS 30. Range is in tiles
 | --- | --- | --- | --- |
 | Forge Heat | work | 6 | Keeps a forge, kiln or oven at working heat without fuel. Quality bonus to smithing, firing and cooking. |
 | Kindle | work | 2 | Lights a fire on damp wood or in the rain. |
-| Cauterize | instant, touch | 10 | Stops an ally's Bleeding. It hurts: the ally's bar is set back a little. |
-| Flare | instant, adjacent | 6 | A flash in a foe's face knocks their bar back about 20%. |
+| Cauterize | instant, touch | 10 | Sears an ally's (or one's own) wound shut: the Bleeding stops, and it can't bleed again for 3 turns (doc 45). |
+| Flare | instant, adjacent | 8 | A flash in a foe's face knocks their bar back 20% (doc 45; no health cost). |
 | Smother to Smoke | instant | 8 | Turns a fire or brush into smoke that blocks sight across 3 tiles for 2 turns. |
 | Warm Through | instant, touch | 6 | Removes an ally's cold and soaked penalties for the rest of the fight. |
 | Heat Sense | channelled | 4/turn | Senses body heat within 6 tiles and shows warm wolves, hidden or not. |
@@ -98,9 +105,9 @@ Mana costs below are against today's pool: about 44 at WIS 30. Range is in tiles
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Flamethrower | gathered | 40 | Doc 33's Quickened numbers: a 5-tile cone, 45 base, Burning. |
-| Heat Lance | gathered, 4-tile line | 20 | 30 base to the first wolf in the line. Metal armour on the zone it hits makes it worse: the wolf starts Burning as well. |
-| Blastwave | instant, around the caster | 15 | 20 base to everyone adjacent, allies included, and shoves them back 1 tile. |
+| Flamethrower | gathered | 40 | A 5-tile cone, 20 base (doc 45; was 45), Burning, and everyone caught has their bar knocked back 25%. |
+| Heat Lance | gathered, 4-tile line | 20 | 24 base (doc 45) to the first wolf in the line. Metal armour on the zone it hits makes it worse: the wolf starts Burning as well. |
+| Blastwave | instant, around the caster | 15 | 16 base (doc 45) to everyone adjacent, allies included, and shoves them back 1 tile. |
 | Wall of Fire | shape, up to 10 tiles | 10 + 3/tile | The tiles burn for 3 turns. Crossing or standing in them sets a wolf Burning. Stamina: 8 + 1/tile. |
 | Heat Sense | passive | — | Sees hidden wolves within 12 tiles, through smoke and sneaking. No critical. |
 
@@ -116,7 +123,7 @@ floor. *Cost:* stamina and aching paws. *Limit:* one tile, shallow.
 | Clay Hand | work | 6 | Quality bonus to pottery and masonry. |
 | Stone Sense | work | 6 | Finds ore seams, flawed stone and weak walls. |
 | Loosen Ground | instant, range 5 | 8 | One tile turns soft: crossing it costs double stamina, with a chance to stumble and lose the rest of the move. |
-| Firm Footing | instant, touch | 6 | Packs the ally's tile: they can't be shoved and get a bonus on guard while they stay on it. |
+| Firm Footing | instant, touch | 6 | Packs another's tile: while they stay on it they can't be shoved, are 10% harder to hit, 20% on guard (doc 45). |
 | Feel Footfalls | channelled | 5/turn | Shows every wolf moving within 6 tiles, sneakers included. A wolf standing still isn't felt. |
 
 **Quickened.** *Tell:* bracing paws, now through wraps, but still not on wood. *Cost:* heavy stamina and cracked pads
@@ -124,18 +131,18 @@ floor. *Cost:* stamina and aching paws. *Limit:* one tile, shallow.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Upheaval | gathered, range 6 | 18 | The tile erupts: 25 base, and the wolf on it is knocked down and loses their next move. |
-| Hurl Stone | gathered, range 10 | 25 | Tears up a rock and throws it at one wolf: 40 base. |
+| Upheaval | gathered, range 6 | 18 | The tile erupts: 18 base (doc 45), and the wolf on it is knocked down and loses their next move. |
+| Hurl Stone | gathered, range 10 | 25 | Tears up a rock and throws it at one wolf: 17 base (doc 45). |
 | Fissure | shape, up to 10 tiles | 12 + 3/tile | 15 base to wolves on it, who fall prone. The tiles can't be crossed for 2 turns. Stamina: 10 + 1.5/tile. |
 | Stone Wall | shape, up to 5 tiles | 10 + 5/tile | Raises a wall that blocks movement and sight until broken (about 30 damage a tile). Stamina: 10 + 2/tile. |
-| Stone Armor | fight-long | 15 | A large armour bonus on every zone. No critical. 1 tile less movement and the bar fills 15% slower. |
+| Stone Armor | fight-long | 15 | Every blow does 12% less, a gust half. No critical. Too heavy to shove, throw or knock down. The bar fills 5% slower (doc 45: the old flat 5 off a blow, a tile less and 15% slower cost more than it gave). Sound's Resonance cracks it off. |
 
 ### Water
 
 **Domain:** water and its motion.
 
 **Gifted.** *Tell:* needs free water within 2 tiles or an open waterskin. *Cost:* thirst, so stamina comes back
-slower. *Limit:* about a bucket at a time.
+a quarter slower (doc 45). *Limit:* about a bucket at a time.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
@@ -143,16 +150,17 @@ slower. *Limit:* about a bucket at a time.
 | Dowse | work | 6 | Finds water under the ground. |
 | Douse | instant, range 3 | 5 | Puts out an ally's Burning, or a burning tile. |
 | Slick | instant, range 5 | 8 | Wets a tile. On paving or stone it becomes slippery, with a chance to slip and lose the rest of the move. |
-| Splash Eyes | instant, adjacent | 7 | The foe's next attack gets −20% to hit. |
+| Splash Eyes | instant, range 3 | 10 | A foe's next attack gets −13% to hit (doc 45). |
 | Wash Out | instant, touch | 6 | Washes an ally's scent off (masking, doc 41) and clears dust or smoke from their eyes. |
 | Mend | work, touch | 10 | Tends an ally's acute injury so it heals 1.5× faster. Once a day per injury. |
 
-**Quickened.** *Tell:* water within reach, now within 4 tiles, including rain and wet ground. *Cost:* dehydration,
-so stamina stops coming back. *Overreach:* health loss.
+**Quickened.** *Tell:* water within reach, now within 4 tiles, including rain and wet ground. *Cost:* thirst, so
+stamina comes back a quarter slower (doc 45: dehydration, none back, left it no breath to swing). *Overreach:* health
+loss.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Pressure Jet | instant, 5-tile line | 18 | 28 base to the first wolf in the line, shoved back 1 tile. |
+| Pressure Jet | instant, 5-tile line | 18 | 12 base to the first wolf in the line, shoved back 1 tile, soaked, and water in its eyes (−12% to its next blow) (doc 45). |
 | Wave | gathered | 30 | A wave 3 tiles wide rolls 4 tiles forward: 15 base, everyone is shoved 2 tiles and knocked down, and it leaves shallow water behind. |
 | Freeze | instant, range 6 | 12 | Only on a wolf standing in shallow water: they lose the move part of their next turn but can still act. |
 | Flood | gathered, 3×3 within 6 | 20 | The area turns into shallow water for 5 turns: everyone in it except the caster moves slowly, and fire there is weakened. |
@@ -172,17 +180,17 @@ light things move.
 | Turn the Wind | channelled | 4/turn | Turns the local wind: the party's scent stays away from enemy noses, or the enemy's scent reaches the party's. |
 | Clear the Air | instant | 6 | Blows smoke or dust off a 3-tile area. |
 | Back Breeze | instant, touch | 6 | An ally's next move costs less stamina. |
-| Air Blast | instant, range 3 | 8 | A blast of grit into a foe's eyes cuts their sight range for the rest of the fight. |
+| Air Blast | instant, range 3 | 18 | Grit in a foe's eyes: half the sight and −10% to hit for 2 turns (doc 45; was the whole fight). |
 
 **Quickened.** *Tell:* a quick breath in and out. *Cost:* lightheadedness (stamina). *Overreach:* dizziness, or
 fainting and losing a turn.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Battering Gust | instant, 5-tile line | 18 | Throws the first wolf up to 3 tiles back and down: 15 base, +10 if they hit a wall or another wolf. |
+| Battering Gust | instant, 5-tile line | 18 | Throws the first wolf up to 3 tiles back and down: 15 base, armour taking half what it would (stone half the rest), +12 if they hit a wall or another wolf (doc 45). |
 | Pressure Drop | gathered, 2×2 within 6 | 20 | 12 base and ear damage (`earHealth`), and each wolf in it loses half its next bar. |
 | Steal Breath | channelled, range 4 | 10 + 5/turn | The foe loses 15 stamina a turn and can't hold a breath or hum: it breaks Fire and Sound Tells. |
-| Whirlwind | instant, 2 turns | 22 | Adjacent foes are flung 2 tiles out, and the dust cuts their sight range for the rest of the fight. |
+| Whirlwind | instant, 2 turns | 22 | Adjacent foes are flung 2 tiles out, and the dust cuts their sight and aim for 3 turns (doc 45: was the fight). Grit blinds a Seer's foresight. |
 | Tailwind | passive | — | The wolf moves twice as far as any other wolf. It does nothing for allies. |
 
 ### Sound (new family)
@@ -199,7 +207,7 @@ for a while) and ringing ears. *Limit:* a voice's worth of sound.
 | Carry | work | 4 | A herder's or crier's voice is heard far away. |
 | Hush | channelled | 5/turn | Allies within 2 tiles make no noise (doc 40 hearing). |
 | Throw Voice | instant, range 8 | 6 | A noise from a chosen tile draws an NPC's attention and turns their facing. |
-| Steady Beat | channelled | 6/turn | While the caster stays still, allies within 3 tiles fill their bars 10% faster. |
+| Steady Beat | channelled | 6/turn | While the caster stays still, the rest of the side within 3 tiles fill their bars 30% faster. Blows don't break it (doc 45). |
 | Whisper Thread | instant | 3 | Speaks to one ally without anyone else hearing. |
 
 **Quickened.** *Tell:* a barely audible hum. *Cost:* voice loss. *Overreach:* the wolf's own ears rupture, costing
@@ -207,8 +215,8 @@ for a while) and ringing ears. *Limit:* a voice's worth of sound.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Shatterhowl | gathered, 5-tile cone | 25 | 22 base, deafens, and knocks bars back 20%. |
-| Resonance | instant, range 5 | 18 | Makes a foe's sword or armour ring until it cracks: a large loss of durability and 10 damage to the wearer. A sword can break. Hardiness from Gifted Gravity's Settle helps an item hold out. |
+| Shatterhowl | gathered, 5-tile cone | 25 | 24 base, deafens, and knocks bars back 40% (doc 45). |
+| Resonance | instant, range 5 | 18 | Makes a foe's sword or armour ring until it cracks: a large loss of durability and 10 damage to the wearer. A sword can be shaken loose (50%), and Stone Armor cracks and falls away, with 20 damage (doc 45). Hardiness from Gifted Gravity's Settle helps an item hold out. |
 | Thunderclap | instant, within 2 | 20 | 10 base and −40% bar to everyone in it, allies included. The caster is deafened too. |
 | Dread Note | instant, within 4 | 15 | Foes only: NPCs below 50 health flee, and players get −15% to hit for 2 turns. |
 | Battle Sense | passive | — | The wolf gives off no scent and makes very little noise (×0.2), in the world and in fights. The rogue family. |
@@ -223,8 +231,8 @@ to dodge on the next turn. *Limit:* 2–3 tiles, self only.
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
 | Shortcut | work | 6 | Blinks across a wall, a gap or a doorway: couriers, burglars, escapes. |
-| Slip | reaction, 3-turn cooldown | 10 | When the wolf is attacked, it blinks 1 tile straight back (or to the nearest empty tile) and the attack misses. |
-| Interpose | reaction, 3-turn cooldown | 12 | When an adjacent ally is attacked, the wolf blinks in front and takes the blow on guard. |
+| Slip | reaction | 20 | When the wolf is attacked, it blinks 1 tile straight back (or to the nearest empty tile) and the attack misses, if that takes it out of the weapon's reach (a sword's reaches 2). Then it and Interpose rest 8 turns (doc 45). |
+| Interpose | reaction | 24 | When an adjacent ally is attacked, the wolf blinks in front and takes the blow. Then it and Slip rest 8 turns (doc 45). |
 | Blink | instant | 10 | Blinks up to 3 tiles. |
 
 **Slip and Interpose never chain.** When either fires, neither can fire again until the wolf's own next turn, so it
@@ -235,7 +243,7 @@ next turn.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Blink Strike | instant, range 6 | 15 | Blinks behind a foe and attacks in the same action, as from behind. |
+| Blink Strike | instant, range 6 | 18 | Blinks behind a foe and attacks in the same action, as from behind; the nausea comes after the blow (doc 45). |
 | Chain Blink | instant | 35 | Blink Strikes up to 3 different foes in one turn at 60% damage each. The heaviest nausea. |
 | Displace | instant, touch | 18 | Sends a foe up to 4 tiles away: into a Wall of Fire, or away from their side. |
 | Unmoor | instant, touch | 30 | Pulls a foe's mind loose from their body: they lose their next turn and then fight disoriented (no planning ahead, −hit) for 2 turns. |
@@ -255,7 +263,7 @@ afterwards (slower) and gets pressure headaches. *Limit:* one wolf or object, a 
 | Lighten | channelled, range 4 | 4/turn | An ally's armour and load count as lighter: further moves for less stamina. |
 | Burden | channelled, range 4 | 5/turn | A foe's weapon and armour count as heavier: each attack and move costs more stamina. |
 | Anchor | channelled, range 4 | 4/turn | An ally can't be shoved or knocked down. Unlike Earth's Firm Footing, it moves with the wolf. |
-| Lift Up | instant, range 5 | 12 | Lifts a Downed ally to their feet from a distance, as if tended: the downed period ends, and nothing is healed. |
+| Lift Up | instant, range 5 | 22 | Lifts a Downed ally to their feet from a distance with 5 health, dazed for a turn. Once for each ally a fight (doc 45). |
 
 **Quickened.** *Tell:* a faint tap of the feet. *Cost:* the wolf feels heavy (slower) and gets pressure headaches.
 *Overreach:* a blackout, so the wolf loses its next turn.
@@ -263,7 +271,7 @@ afterwards (slower) and gets pressure headaches. *Limit:* one wolf or object, a 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
 | Crush | channelled, range 5 | 12 + 6/turn | The foe weighs a great deal: 8 a turn, more in heavy armour, and they can't move more than 1 tile. |
-| Slam | two turns, range 5 | 30 | Turn one lifts the foe, and they lose their turns while held. Turn two drops them: 40 base and knocked down. A hit on the caster in between drops them early at half damage. |
+| Slam | two turns, range 5 | 30 | Turn one lifts the foe, and they lose their turns while held. Turn two drops them: 12 base and knocked down (doc 45). A hit on the caster in between drops them early (12 base). |
 | Well | gathered, range 6 | 25 | For 3 turns everyone within 3 tiles of a point is pulled 1 tile toward it at the start of each turn, allies included. |
 | Hurl | instant, range 4 | 18 | Makes a foe nearly weightless and throws them up to 4 tiles: 15 if they hit a wall or another wolf. |
 | Weightless | instant | 20 | For one turn, allies within 5 tiles move 3 tiles further and pay no stamina to move. |
@@ -280,7 +288,7 @@ of what the Seer can see, and blurry.
 | Weathereye | passive, work | — | Bigger harvests and forage amounts. |
 | Danger Sense | passive | — | Warns of an ambush ahead on the road. |
 | Read the Line | instant, in sight | 10 | Shows one foe's planned next move and target (the doc 37 ghost plan). |
-| Forewarn | instant, range 6 | 8 | An ally gets +25% to dodge the next attack on them. |
+| Forewarn | instant, range 6 | 8 | Another of the side gets +30% to dodge the next attack on them (doc 45). |
 | Never Surprised | passive | — | Hidden attackers don't get the opening on the Seer's side (doc 40). When the fight starts, one sneaking foe is shown. |
 | Glimpse the Order | instant | 5 | Shows the next few turns' order. |
 
@@ -290,10 +298,10 @@ of what the Seer can see, and blurry.
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
 | Seen Opening | instant | 15 | The Seer's next attack can't miss and lands on the foe's least armoured zone. |
-| Riposte | channelled stance | 6/turn | The next attack on the Seer misses and the Seer strikes back at once. Ends when it fires. |
+| Riposte | channelled stance | 24 + 6/turn | The next attack on the Seer misses and the Seer strikes back at once. Ends when it fires. Not with grit in its eyes (doc 45: 24 to take up; it was free). |
 | Doom Mark | instant, in sight | 20 | The Seer sees a foe's death: for 3 turns the foe can't dodge and everyone gets +15% to hit them. |
 | Shared Sight | channelled | 6/turn | Allies within 3 tiles get Forewarn every turn. |
-| Critical Sight | passive | — | No critical, and the Seer takes 15% less damage from everything. |
+| Critical Sight | passive | — | No critical, and the Seer takes 3% less damage from everything; neither with grit in its eyes (doc 45). |
 
 ## Registry entries for the new families
 
@@ -510,8 +518,8 @@ ability):
     rounds. `arenaOpen` treats walls and fissures as solid.
   - **Kinds:** instant; gathered (a cast on the Flamethrower's countdown and locked tiles: Heat Lance, Wall of Fire,
     Upheaval, Hurl Stone, Fissure, Stone Wall, Wave, Flood, Pressure Drop, Shatterhowl, Well); channelled (mana each turn
-    at its start; let go by moving, being hit, going down, running out of mana or Let go); reactions (Slip, Interpose:
-    armed at any time, fire by themselves, rest 3 turns, never chain: one fired, neither again until its own turn);
+    at its start; let go by moving, being hit (not a Steady Beat, doc 45), going down, running out of mana or Let go); reactions (Slip, Interpose:
+    armed at any time, fire by themselves, rest 6 turns (doc 45), never chain: one fired, neither again until its own turn);
     fight-long (Stone Armor, Water Screen: before or on one's first turn, no action spent); passives (Heat Sense,
     Tailwind, Battle Sense, Critical Sight, Never Surprised); Slam's two turns.
   - **Tells:** breath (Fire, Wind, Sound: none while Breathless), bare braced paws (Gifted Earth; never on wood: `8`
@@ -523,8 +531,8 @@ ability):
   - **No critical** (`World::unflankable`: Quickened Fire and Seer, Stone Armor, Water Screen): no side, back or
     ambush bonus to hit, and no ambush damage.
   - Damage: base × spell power (0.5 + WIS/100) × 0.85–1.15; stone and water blows through the armour where they land.
-    Water Screen cuts fire (and burning) to a quarter; Stone Armor takes 5 off a blow (at least a quarter gets through);
-    Critical Sight takes 15% off everything.
+    Water Screen cuts fire (and burning) to a quarter; Stone Armor takes 15% off a blow (doc 45);
+    Critical Sight takes 6% off everything (doc 45).
   - Senses (`magicSenses`): Hush (no noise within 2 of the hummer), Turn the Wind (the side's scent kept from noses),
     Washed (no scent), Battle Sense (no scent, a fifth of the noise, in the world too), grit (half the sight),
     deafness (no hearing). Never Surprised: a Gifted Seer's side can't be ambushed, and one sneaking foe is shown when

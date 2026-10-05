@@ -308,7 +308,7 @@ void downedAndUp()
         w.tick(1);
     if (canRise)
         expect(w.entity(guard)->downedLeft <= 0 && w.entity(guard)->hurt > 70 && w.entity(guard)->hurt <= 85, "The guard struggles up, hurt");
-    else
+    else if (w.entity(guard)->hurt >= 100)          // (Not if they struggled up mid-fight, used the day's rising, and stood.)
     {
         expect(w.entity(guard)->downedLeft > 0, "Down twice in a day: the guard stays down");
         for (int i = 0; i < 10; ++i)

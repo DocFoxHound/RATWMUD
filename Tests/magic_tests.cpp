@@ -144,12 +144,13 @@ void optionsAndTells()
         b2.ground.push_back({bo.x, bo.y, "water", "", -1, 0});
         expect(w2.useGift("player-ad", "splash_eyes", "player-bo").ok, "With water at hand, Splash Eyes");
     }
-    expect(b2.fighter("player-bo")->magic.has("splashed") && b2.fighter("player-ad")->acted, "Bo is splashed; it was Ad's action");
+    expect(b2.fighter("player-bo")->magic.has("splashed") && b2.fighter("player-ad")->moved && !b2.fighter("player-ad")->acted,
+           "Bo is splashed; it took Ad's move, and the blow is still Ad's (doc 45)");
     expect(b2.fighter("player-ad")->magic.has("thirsty"), "and Ad is thirsty (the Cost)");
     const double before = w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad"));
     b2.fighter("player-bo")->magic.fx.erase("splashed");
-    expect(std::abs(w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad")) - before - .2) < 1e-9 || before <= .2 + 1e-9,
-           "Splashed, Bo's next blow is 20% less likely");
+    expect(std::abs(w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad")) - before - .13) < 1e-9 || before <= .2 + 1e-9,
+           "Splashed, Bo's next blow is 13% less likely (doc 45)");
 }
 
 void fireGifted()
@@ -162,7 +163,7 @@ void fireGifted()
     expect(w.entity("player-ad")->hurt > 0, "and the held breath costs a little health");
     turn(w, b, "player-ad");
     b.fighter("player-bo")->meter = 50;
-    expect(w.useGift("player-ad", "flare", "player-bo").ok && b.fighter("player-bo")->meter == 30, "Flare knocks Bo's bar back 20");
+    expect(w.useGift("player-ad", "flare", "player-bo").ok && b.fighter("player-bo")->meter == 30, "Flare knocks Bo's bar back 20 (doc 45)");
     turn(w, b, "player-ad");
     expect(!w.useGift("player-ad", "flamethrower", "1,1").ok, "No Flamethrower for the Gifted");
     // Heat Sense: held, it finds a hidden wolf within 6 tiles at the start of each turn.
@@ -361,8 +362,20 @@ void blinker()
     const double hurt = w.entity("player-bo")->hurt;
     expect(w.battleAct("player-ad", "bite", "player-bo").ok && logHas(b, "finds air") && w.entity("player-bo")->hurt == hurt,
            "Ad bites: Bo blinks a step away and the blow misses");
-    expect(bo.magic.cooldown["slip"] == 3 && bo.magic.has("dizzy"), "Slip rests three turns, and Bo is dizzy");
-    // Interpose: an ally next to the one struck takes it on guard; then Slip can't follow it.
+    expect(bo.magic.cooldown["slip"] == 8 && bo.magic.cooldown["interpose"] == 8 && bo.magic.has("blinked"),
+           "Slip and Interpose rest eight turns together (doc 45), and Bo is blink-dazed");
+    // A sword reaches past a one-tile hop (doc 45): Slip doesn't fire against a blade from next to it.
+    {
+        World ws;
+        auto& bs = duel(ws, "", false, "blinker", false);
+        turn(ws, bs, "player-ad");
+        place(ws, bs, "player-bo", "player-ad", 1);
+        ws.entity("player-ad")->mouth = "sword";
+        ws.armReaction("player-bo", "slip", true);
+        ws.battleAct("player-ad", "sword", "player-bo");
+        expect(!logHas(bs, "finds air") && !bs.fighter("player-bo")->magic.cooldown.count("slip"), "A blade from beside it isn't slipped");
+    }
+    // Interpose: an ally next to the one struck takes it; then Slip can't follow it.
     World w2;
     auto& b2 = duel(w2, "", false, "blinker", false);
     auto& cy = w2.addPlayer("player-cy", "Cy");
@@ -381,7 +394,7 @@ void blinker()
         w2.armReaction("player-bo", "interpose", true);
         w2.entity("player-bo")->mana = 50;
         expect(w2.battleAct("player-ad", "bite", "player-cy").ok && logHas(b2, "blinks in front of Cy"), "Bo blinks in front of Cy");
-        expect(b2.fighter("player-bo")->magic.reacted && b2.fighter("player-bo")->magic.cooldown["interpose"] == 3, "Interpose rests three turns");
+        expect(b2.fighter("player-bo")->magic.reacted && b2.fighter("player-bo")->magic.cooldown["interpose"] == 8, "Interpose rests eight turns (doc 45)");
     }
     // Quickened: Blink Strike lands behind.
     World w3;
@@ -440,7 +453,8 @@ void gravity()
     b2.fighters.push_back(cf);
     turn(w2, b2, "player-ad");
     expect(w2.useGift("player-ad", "lift_up", "player-cy").ok && b2.fighter("player-cy")->status == "fighting", "Lift Up: Cy stands");
-    expect(std::abs(w2.entity("player-cy")->hurt - (100 - battle::GetUpHealth)) < 1e-9, "unhealed but for getting up");
+    expect(std::abs(w2.entity("player-cy")->hurt - (100 - battle::LiftedHealth)) < 1e-9 && b2.fighter("player-cy")->magic.has("dazed"),
+           "unhealed but for getting up, and dazed for a turn (doc 45)");
     turn(w2, b2, "player-ad");
     expect(w2.useGift("player-ad", "anchor", "player-ad").ok && b2.fighter("player-ad")->magic.has("anchored"), "Anchor on Ad");
     place(w2, b2, "player-bo", "player-ad", 1);
@@ -476,8 +490,9 @@ void seer()
     turn(w2, b2, "player-ad");
     place(w2, b2, "player-bo", "player-ad", 1);
     const double was = w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad"));
-    expect(w2.useGift("player-ad", "forewarn", "player-ad").ok, "Forewarn");
-    expect(w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad")) < was, "the next blow at Ad less likely");
+    expect(!w2.useGift("player-ad", "forewarn", "player-ad").ok, "Forewarn is for someone else on the side (doc 45)");
+    b2.fighter("player-ad")->magic.fx["forewarned"] = 2;
+    expect(w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad")) < was, "Forewarned, the next blow at one is less likely");
 }
 
 // Gifts at work (doc 43): out of a fight, for oneself or lent to a workshop.
@@ -553,6 +568,125 @@ void saved()
 }
 } // namespace
 
+// Doc 45's rules: a Gifted wolf's help takes the move (keeping the bar's head start), then the action; help is for
+// others; Lift Up once for each; a Steady Beat kept through blows; Firm Footing without a guard; Quickened mana kept
+// for the fight.
+void balance()
+{
+    {
+        World w;
+        auto& b = duel(w, "wind", false);
+        auto& ad = turn(w, b, "player-ad");
+        expect(w.useGift("player-ad", "air_blast", "player-bo").ok && ad.moved && !ad.acted, "Air Blast takes Ad's move, not the action");
+        expect(w.battleAct("player-ad", "bite", "player-bo").ok && ad.acted, "and Ad still bites");
+        expect(!w.useGift("player-ad", "air_blast", "player-bo").ok, "Moved and acted: no more help this turn");
+        w.battleAct("player-ad", "wait");
+        expect(std::abs(b.fighter("player-ad")->meter - 20) < 1e-9, "Help in place of a step keeps the bar's head start: " +
+                                                                        std::to_string(b.fighter("player-ad")->meter));
+        auto& again = turn(w, b, "player-ad");
+        expect(w.battleAct("player-ad", "bite", "player-bo").ok, "Ad bites first");
+        b.fighter("player-bo")->magic.fx.erase("dusted");
+        expect(w.useGift("player-ad", "air_blast", "player-bo").ok && again.moved, "then helps with the move left");
+    }
+    {
+        World w;
+        auto& b = duel(w, "gravity", false);
+        auto& cy = w.addPlayer("player-cy", "Cy");
+        cy.cellId = w.entity("player-ad")->cellId;
+        const auto spot = openNear(w, b, b.fighter("player-ad")->x, b.fighter("player-ad")->y);
+        BattleFighter f;
+        f.id = "player-cy";
+        f.side = b.fighter("player-ad")->side;
+        f.x = spot.first;
+        f.y = spot.second;
+        f.status = "downed";
+        cy.hurt = 100;
+        b.fighters.push_back(f);
+        turn(w, b, "player-ad");
+        expect(w.useGift("player-ad", "lift_up", "player-cy").ok && b.fighter("player-cy")->status == "fighting", "Lift Up stands Cy up");
+        b.fighter("player-cy")->status = "downed";
+        w.entity("player-cy")->hurt = 100;
+        turn(w, b, "player-ad");
+        expect(!w.useGift("player-ad", "lift_up", "player-cy").ok, "but only once a fight");
+    }
+    {
+        World w;
+        auto& b = duel(w, "sound", false);
+        turn(w, b, "player-ad");
+        expect(w.useGift("player-ad", "steady_beat", "").ok && b.fighter("player-ad")->magic.channel == "steady_beat", "Steady Beat is held");
+        w.battleAct("player-ad", "wait");
+        const double hp = w.entity("player-ad")->hurt;
+        for (int i = 0; i < 12 && w.entity("player-ad")->hurt == hp; ++i)
+        {
+            turn(w, b, "player-bo");
+            w.battleAct("player-bo", "bite", "player-ad");
+            w.battleAct("player-bo", "wait");
+        }
+        expect(w.entity("player-ad")->hurt > hp && b.fighter("player-ad")->magic.channel == "steady_beat", "and kept through a bite");
+    }
+    {
+        World w;
+        auto& b = duel(w, "earth", false);
+        turn(w, b, "player-ad");
+        expect(!w.useGift("player-ad", "firm_footing", "player-ad").ok, "Firm Footing is for someone else on the side");
+        const double was = w.strikeChance(*b.fighter("player-bo"), *b.fighter("player-ad"));
+        auto& ad = *b.fighter("player-ad");
+        ad.magic.fx["firm"] = -1;
+        ad.magic.firmX = ad.x;
+        ad.magic.firmY = ad.y;
+        expect(w.strikeChance(*b.fighter("player-bo"), ad) < was || was <= .2 + 1e-9, "On firm footing, harder to hit without a guard");
+    }
+    {
+        World w;
+        auto& b = duel(w, "fire", true, "fire", false);
+        w.entity("player-ad")->mana = 10;
+        w.entity("player-bo")->mana = 10;
+        nextTurnOf(w, b, "player-ad");
+        expect(std::abs(w.entity("player-ad")->mana - 10) < 1e-9, "A Quickened wolf's mana doesn't come back in a fight");
+        w.battleAct("player-ad", "wait");
+        nextTurnOf(w, b, "player-bo");
+        expect(w.entity("player-bo")->mana > 10, "a Gifted wolf's does");
+    }
+    // The counters (doc 45): Sound's Resonance cracks Stone Armor; grit blinds a Seer's foresight; stone is too heavy to
+    // throw; a pinned Blinker can't blink; Cauterize sears the wound.
+    {
+        World w;
+        auto& b = duel(w, "sound", true, "earth", true);
+        turn(w, b, "player-bo");
+        expect(w.useGift("player-bo", "stone_armor", "").ok && b.fighter("player-bo")->magic.steady(), "Bo's Stone Armor: too heavy to throw");
+        turn(w, b, "player-ad");
+        expect(w.useGift("player-ad", "resonance", "player-bo").ok && !b.fighter("player-bo")->magic.has("stone_armor") &&
+                   logHas(b, "cracks and falls away"),
+               "Resonance cracks Bo's stone armour away");
+    }
+    {
+        World w;
+        auto& b = duel(w, "seer", true);
+        auto& ad = turn(w, b, "player-ad");
+        expect(w.unflankable(ad), "A Quickened Seer can't be flanked");
+        ad.magic.fx["dusted"] = 3;
+        expect(!w.unflankable(ad) && !w.useGift("player-ad", "riposte", "").ok, "With grit in its eyes: flanked, and no Riposte");
+    }
+    {
+        World w;
+        auto& b = duel(w, "blinker", true, "gravity", true);
+        auto& ad = turn(w, b, "player-ad");
+        place(w, b, "player-bo", "player-ad", 3);
+        ad.magic.fx["crushed"] = -1;
+        expect(!w.useGift("player-ad", "blink_strike", "player-bo").ok, "Crushed under its own weight, a Blinker can't blink");
+        ad.magic.fx.erase("crushed");
+        expect(w.useGift("player-ad", "blink_strike", "player-bo").ok, "Free of it, it can");
+    }
+    {
+        World w;
+        auto& b = duel(w, "fire", false);
+        auto& ad = turn(w, b, "player-ad");
+        ad.bleeding = 2;
+        expect(w.useGift("player-ad", "cauterize", "player-ad").ok && ad.bleeding == 0 && ad.magic.has("seared"),
+               "Cauterize sears the wound: no bleeding for a while");
+    }
+}
+
 int main()
 {
     try
@@ -571,6 +705,7 @@ int main()
         seer();
         atWork();
         saved();
+        balance();
     }
     catch (const std::exception& error)
     {
