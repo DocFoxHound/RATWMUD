@@ -1535,21 +1535,124 @@ battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, con
             out.scent = along > .2 ? fade(d, (4 + 14 * wind.strength) * nose) * along : fade(d, 1.2 * nose);
         }
         out.scent *= battle::ScentFaint;            // A scent is noticed faintly at first (doc 40).
+        if (scentMasked(te))
+            out.scent = 0;                          // Masking oil (doc 41's marks): no scent to catch.
     }
     return out;
 }
 
-double World::arenaNotice(const Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving) const
+battle::Senses World::arenaSenses(const Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving) const
 {
     // In an arena: from the fighters' tiles and facings.
     const auto* oe = entity(o.id);
     const auto* te = entity(t.id);
     if (!oe || !te || o.status != "fighting" || (t.status != "fighting" && t.status != "downed"))
-        return 0;
+        return {};
     const bool smoked = std::any_of(b.smoke.begin(), b.smoke.end(), [&](const auto& sm) { return sm.first == std::pair<int, int>{t.x, t.y}; });
     return noticeSenses(*oe, {o.x + .5, o.y + .5}, o.facing * std::acos(-1.0) / 4, *te, {t.x + .5, t.y + .5}, t.stalking, moving, fightPace(*te),
-                        b.cellId, smoked)
-        .total();
+                        b.cellId, smoked);
+}
+
+double World::arenaNotice(const Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving) const
+{
+    return arenaSenses(b, o, t, moving).total();
+}
+
+// Out of a fight (doc 40, §2): residents' awareness of the players near them.
+
+double World::residentAwareness(const std::string& resident, const std::string& player) const
+{
+    const auto found = worldAware_.find({resident, player});
+    return found == worldAware_.end() ? 0 : found->second;
+}
+
+double World::senseInWorld(const std::string& resident, const std::string& player)
+{
+    // A resident checks what it notices of a player now, as in a fight (World::noticeSenses), from where they stand:
+    // a crouch is a stalk, moving makes noise by the pace. A creeping wolf half noticed gets a "Who's there?" and a guard
+    // comes to look; one spotted creeping is remembered by a guard as prowling (doc 40's decision: guards and the
+    // victims of theft remember).
+    auto* oe = entity(resident);
+    auto* te = entity(player);
+    if (!oe || !te || oe->cellId != te->cellId || oe->dead || te->dead)
+        return 0;
+    const bool creeping = te->posture == "crouching";
+    const bool moving = std::hypot(te->velocity.x, te->velocity.y) > 1e-6;
+    const auto senses = noticeSenses(*oe, oe->position, oe->facing, *te, te->position, creeping, moving, te->pace, oe->cellId);
+    const double n = senses.total();
+    double& level = worldAware_[{resident, player}];
+    const double before = level;
+    double now = n >= battle::NoticeFloor ? before + n * battle::NoticeGain : std::max(0.0, before - battle::Calm);
+    if (n >= battle::NoticeFloor && now >= battle::AwareAlert)
+        now = battle::AwareKept;                    // (Nothing to notice: it calms, alert or not.)
+    level = std::min(now, battle::AwareKept);
+    const bool guard = guardOnDuty(resident);
+    if (creeping && before < battle::AwareSuspicious && level >= battle::AwareSuspicious && level < battle::AwareAlert)
+    {
+        oe->facing = std::atan2(te->position.y - oe->position.y, te->position.x - oe->position.x);
+        notice(player, oe->name + " stops and turns your way: \"" + (guard ? "Who goes there?" : "Who's there?") + "\"");
+        if (guard)
+            lookings_[resident] = {oe->cellId, te->position, time_ + battle::LookSeconds};
+    }
+    else if (creeping && before < battle::AwareAlert && level >= battle::AwareAlert)
+    {
+        oe->facing = std::atan2(te->position.y - oe->position.y, te->position.x - oe->position.x);
+        if (guard)
+        {
+            notice(player, oe->name + " sees you: \"You there! What's all this creeping about?\"");
+            believe(resident, player, "was prowling about", "saw it", .6);
+            lookings_[resident] = {oe->cellId, te->position, time_ + battle::LookSeconds};
+        }
+        else
+            notice(player, oe->name + " spots you creeping about, and keeps a wary eye on you.");
+    }
+    // Unnoticed close by: the sneak learns (doc 40, §6).
+    if (creeping && level < battle::AwareSuspicious && std::hypot(te->position.x - oe->position.x, te->position.y - oe->position.y) <= sightRange(*oe) / 2)
+        te->sneakSkill = std::min(100.0, te->sneakSkill + battle::SneakUnnoticedWorld * (1 - te->sneakSkill / 100));
+    return level;
+}
+
+void World::heardVoice(const std::string& listener, const std::string& speaker)
+{
+    // A voice heard gives a sneak away (doc 40's decision; a whisper doesn't: the caller only calls for others): out
+    // of a fight, and in one.
+    const auto* l = entity(listener);
+    if (!l || !l->npc)
+        return;
+    worldAware_[{listener, speaker}] = battle::AwareKept;
+    if (auto* b = battleFor(speaker); b && b->fighter(listener))
+        b->aware[{listener, speaker}] = battle::AwareKept;
+}
+
+void World::tendAwareness()
+{
+    // A few times a second: every resident within reach of a player checks what it notices of them; pairs grown apart
+    // are let go, and guards done looking go back to their rounds.
+    if (awarenessAt_ >= 0 && time_ - awarenessAt_ < battle::AwareEvery)
+        return;
+    awarenessAt_ = time_;
+    for (auto it = worldAware_.begin(); it != worldAware_.end();)
+    {
+        const auto* o = entity(it->first.first);
+        const auto* t = entity(it->first.second);
+        const bool near = o && t && o->cellId == t->cellId &&
+                          std::hypot(o->position.x - t->position.x, o->position.y - t->position.y) <= battle::AwareReach + 10;
+        it = near ? std::next(it) : worldAware_.erase(it);
+    }
+    for (auto it = lookings_.begin(); it != lookings_.end();)
+        it = time_ >= it->second.until || !guardOnDuty(it->first) ? lookings_.erase(it) : std::next(it);
+    std::vector<std::pair<std::string, std::string>> pairs;
+    for (const auto& [id, p] : entities_)
+    {
+        if (p.npc || p.dead || p.offstage || inBattle(id))
+            continue;
+        for (const Entity* o : entitiesIn(p.cellId))
+            if (o && o->npc && !o->transient && !o->dead && !o->offstage && o->cellId == p.cellId && o->downedLeft <= 0 && o->posture != "lying" &&
+                !inBattle(o->id) && std::hypot(o->position.x - p.position.x, o->position.y - p.position.y) <= battle::AwareReach)
+                pairs.push_back({o->id, id});
+    }
+    for (const auto& [o, t] : pairs)
+        senseInWorld(o, t);
 }
 
 double World::awareness(const Battle& b, const std::string& observer, const std::string& target) const
@@ -1571,19 +1674,37 @@ bool World::ambushing(const Battle& b, const BattleFighter& f, const BattleFight
 
 void World::senseOne(Battle& b, const BattleFighter& o, const BattleFighter& t, bool moving)
 {
-    // An NPC's or an animal's notice of a foe, checked: it grows with what there is to notice, and calms without.
+    // A fighter's notice of a foe, checked: it grows with what there is to notice, and calms without. NPCs and animals
+    // notice everyone; a player only needs to, to keep track of a stalker (anyone else is plain to see).
     const auto* oe = entity(o.id);
-    if (!oe || !oe->npc || o.status != "fighting" || o.side == t.side || t.status == "fled" || t.status == "dead")
+    if (!oe || o.status != "fighting" || o.side == t.side || t.status == "fled" || t.status == "dead")
         return;
     const double before = awareness(b, o.id, t.id);
     if (before >= battle::AwareAlert && !t.stalking)
         return;                                     // (Alert to one not hiding: nothing to check.)
-    const double n = arenaNotice(b, o, t, moving);
+    const auto senses = arenaSenses(b, o, t, moving);
+    const double n = senses.total();
+    // Noticed: it grows, and alert is held at AwareKept; nothing to notice: it calms, so even alert fades (lost track).
     double now = n >= battle::NoticeFloor ? before + n * battle::NoticeGain : std::max(0.0, before - battle::Calm);
-    if (now >= battle::AwareAlert)
-        now = std::max(now, before >= battle::AwareAlert ? std::min(before, battle::AwareKept) : battle::AwareKept);
+    if (n >= battle::NoticeFloor && now >= battle::AwareAlert)
+        now = battle::AwareKept;
     now = std::min(now, battle::AwareKept);
     b.aware[{o.id, t.id}] = now;
+    if (!oe->npc)
+    {
+        // A player: where they last had it, and an ear or nose sharpened by catching a stalker (doc 40, §6).
+        if (now >= battle::AwareAlert)
+            b.seenAt[{o.id, t.id}] = {t.x, t.y, time_};
+        if (before < battle::AwareAlert && now >= battle::AwareAlert && t.stalking)
+            if (auto* learner = entity(o.id))
+            {
+                if (senses.noise >= senses.scent && senses.noise > senses.sight)
+                    learner->hearingSkill = std::min(100.0, learner->hearingSkill + battle::NoticeTeaches * (1 - learner->hearingSkill / 100));
+                else if (senses.scent > senses.sight)
+                    learner->scentSkill = std::min(100.0, learner->scentSkill + battle::NoticeTeaches * (1 - learner->scentSkill / 100));
+            }
+        return;
+    }
     const auto* te = entity(t.id);
     const bool animal = !animalOf(o.id).empty();
     const auto who = names::capitalised(oe->name);
@@ -2293,6 +2414,9 @@ void World::npcTurn(Battle& b, BattleFighter& f)
             mark = o;
         }
     }
+    // Creeping up (doc 40): an aggressive one coming at a foe's back from afar stalks, to strike unnoticed.
+    f.stalking = temper.kind == "aggressive" && tilesApart(f.x, f.y, mark->x, mark->y) > 2 &&
+                 battle::octantGap(mark->facing, battle::octant(f.x - mark->x, f.y - mark->y)) >= 2;
     const bool closeIn = temper.kind == "aggressive" || (temper.kind == "cautious" && tilesApart(f.x, f.y, mark->x, mark->y) <= 3);
     if (tilesApart(f.x, f.y, mark->x, mark->y) > 1 && closeIn)
     {

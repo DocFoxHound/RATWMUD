@@ -3737,6 +3737,7 @@ void World::tick(double dt)
     restPlayers(elapsed);                           // Lying or sitting still: rest (doc 38).
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
     tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
+    tendAwareness();                                // Residents noticing players near them (doc 40, RatwBattle.cpp).
     tendWear();                                     // Clothes wearing with the days (RatwDurability.cpp).
     tendMarks();                                    // Noses catching a maker's scent on stolen goods (RatwMarks.cpp).
     mark = Clock::now();
@@ -4666,6 +4667,8 @@ Result World::restore(const PersistedWorld& saved)
     ++festivalsChanged_;
     squaresDay_ = -1;
     pursuits_.clear();
+    worldAware_.clear();                            // (Sneaking, doc 40.)
+    lookings_.clear();
     confrontations_.clear();
     marks_.clear();
     fights_.clear();

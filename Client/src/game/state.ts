@@ -676,7 +676,7 @@ export class GameState {
         const b = this.battle;
         const me = b && !b.observer ? b.fighters.find(f => f.id === this.selfId) : undefined;
         if (!b || !me) return '';
-        const foes = b.fighters.filter(f => f.side !== me.side && f.status === 'fighting');
+        const foes = b.fighters.filter(f => f.side !== me.side && f.status === 'fighting' && !f.hidden);   // (Not one lost from sight.)
         for (const id of [this.hoveredEntity, this.highlight, this.fightFocus])
             if (id && foes.some(f => f.id === id)) return id;
         return foes.sort((a, c) => apart(a.x, a.y, me.x, me.y) - apart(c.x, c.y, me.x, me.y))[0]?.id ?? '';

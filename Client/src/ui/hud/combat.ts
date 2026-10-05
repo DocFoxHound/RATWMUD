@@ -313,6 +313,7 @@ export class CombatScreen {
             setText(c.name, self ? 'You' : f.name);
             setClass(c.root, 'foe', foe || (b.observer && f.side !== mySide));
             setClass(c.root, 'self', self);
+            setClass(c.root, 'lost', f.hidden);           // A stalker lost from sight (doc 40).
             setClass(c.root, 'acting', f.acting && !b.over);
             setClass(c.root, 'down', f.status === 'downed' || f.status === 'dead' || f.status === 'yielded');
             setClass(c.root, 'target', foe && f.id === target);
@@ -416,7 +417,7 @@ export class CombatScreen {
             const clock = f.status === 'downed' && f.downedLeft > 0 ? `${f.npc ? 'bleeding' : 'up in'} · ${clockLabel(Math.max(0, f.downedLeft - since))}`
                 : '';
             setText(c.clock, clock);
-            c.root.title = self ? 'You · click for your status, belongings and equipment' : foe ? (mine ? 'Click to aim at them' : 'Click to aim at them on your turn')
+            c.root.title = f.hidden ? 'Lost from sight: stalking somewhere near where you last saw it (the "?")' : self ? 'You · click for your status, belongings and equipment' : foe ? (mine ? 'Click to aim at them' : 'Click to aim at them on your turn')
                 : f.status === 'downed' && mine ? 'Click to tend their wounds' : '';
         }
     }

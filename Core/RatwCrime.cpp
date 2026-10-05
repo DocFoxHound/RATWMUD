@@ -161,7 +161,17 @@ void World::witness(Incident& inc, double sleight)
             continue;
         double clarity = 0;
         bool identified = false;
-        if (!off->offstage && !e.offstage)
+        if (!off->offstage && !e.offstage && e.npc && !off->npc)
+        {
+            // A resident names a player only if it noticed them (doc 40): alert, it saw who; only suspicious, it saw
+            // someone it couldn't make out; unaware, at most it heard the struggle.
+            const double aware = senseInWorld(id, inc.offender);
+            identified = aware >= battle::AwareAlert;
+            clarity = identified ? std::max(.6, visionClarity(id, inc.offender)) : aware >= battle::AwareSuspicious ? .5 : 0;
+            if (clarity <= 0 && inc.kind == "assault")
+                clarity = .5 * hearingClarity(id, inc.victim, Voice::Yell);   // The sounds of a struggle.
+        }
+        else if (!off->offstage && !e.offstage)
         {
             clarity = visionClarity(id, inc.offender);
             identified = clarity > 0;
@@ -292,7 +302,9 @@ Result World::steal(const std::string& thief, const std::string& victimId)
         return {false, "They carry nothing worth taking.", victimId};
     const auto at = std::int64_t(time_ * 1000);
     // A deft, quiet paw against a wary eye.
-    const double watchful = v->hurt >= DownAt ? 0 : t->offstage || v->offstage ? .3 : visionClarity(victimId, thief);
+    // How watchful: a resident by what it has noticed of the thief, checked now (doc 40); a player by sight.
+    const double watchful = v->hurt >= DownAt ? 0 : t->offstage || v->offstage ? .3
+                          : v->npc && !t->npc ? std::min(1.0, senseInWorld(victimId, thief)) : visionClarity(victimId, thief);
     const double odds = std::clamp(.35 + (effectiveDexterity(*t) - 50) / 200 + t->sneakSkill / 300 +
                                        (t->posture == "crouching" ? .1 : 0) - .3 * watchful, .05, .9);
     const bool success = chance(thief + victimId, at) < odds;
@@ -553,6 +565,15 @@ bool World::crimeErrand(const std::string& resident, std::string& task, std::str
             goal = p->position;
             return true;
         }
+    if (const auto look = lookings_.find(resident); look != lookings_.end())
+    {
+        // Something half heard or glimpsed, a sneak creeping about (doc 40): the guard goes to look.
+        task = "looking into a noise";
+        reason = "something stirred";
+        goalCell = look->second.cell;
+        goal = look->second.at;
+        return true;
+    }
     if (const auto mark = marks_.find(resident); mark != marks_.end())
         if (const auto* m = entity(mark->second))
         {
@@ -637,7 +658,9 @@ void World::tendCrime()
         for (const auto& g : onDuty)
         {
             const auto* ge = entity(g);
-            if (lawTown(ge->cellId) == w.town && !pursuits_.count(g) && ge->cellId == p->cellId && visionClarity(g, w.person) > 0)
+            // Seen, for a resident; noticed (doc 40: a sneak can slip past), for a player.
+            const bool seen = p->npc ? visionClarity(g, w.person) > 0 : residentAwareness(g, w.person) >= battle::AwareAlert;
+            if (lawTown(ge->cellId) == w.town && !pursuits_.count(g) && ge->cellId == p->cellId && seen)
             {
                 pursuits_[g] = w.person;
                 break;

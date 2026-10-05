@@ -206,6 +206,15 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         if (f.acting)
             o.add("turnLeft", std::max(0.0, f.deadline - world_.time()));
         o.add("away", f.away);
+        // A stalking foe this wolf has lost (doc 40): only where it was last seen, and how long ago.
+        if (!observer && f.side != mine->side && world_.awareness(b, viewer, f.id) < battle::AwareAlert)
+            if (const auto seen = b.seenAt.find({viewer, f.id}); seen != b.seenAt.end())
+            {
+                o.add("hidden", true);
+                o.add("seenAgo", world_.time() - seen->second.at);
+                o.set("x", seen->second.x);
+                o.set("y", seen->second.y);
+            }
         if (f.guarding)
             o.add("guarding", true);
         if (f.stalking)
@@ -306,7 +315,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             }
         }
         // A foe, as this wolf would strike them from where it stands now: the chance, the blow, and whether in reach.
-        if (!observer && mine->status == "fighting" && f.side != mine->side && f.status == "fighting")
+        if (!observer && mine->status == "fighting" && f.side != mine->side && f.status == "fighting" &&
+            world_.awareness(b, viewer, f.id) >= battle::AwareAlert)       // (Not one it has lost track of.)
             if (const auto* me = world_.entity(viewer))
             {
                 const bool sword = me->mouth == "sword";

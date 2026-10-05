@@ -43,6 +43,8 @@ export interface FighterView {
     turnLeft: number;           // Seconds left in it, when acting.
     armour: ArmourView | null;  // Armour worn (doc 35, Part 8), by hit zone; and what it takes off the bar's DEX.
     stalking: boolean;          // Moving crouched (doc 40): quiet, half the move, harder to see.
+    hidden: boolean;            // A stalking foe this wolf has lost (doc 40): x, y are where it was last seen, seenAgo since.
+    seenAgo: number;
     guarding: boolean;          // On guard (doc 37): harder to hit, turning to meet a blow, until their next turn.
     walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
@@ -244,6 +246,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             gear: objects(f, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')})),
             casting: bool(f, 'casting'), truce: bool(f, 'truce'), meter: num(f, 'meter'), rate: num(f, 'rate'),
             acting: bool(f, 'acting'), turnLeft: num(f, 'turnLeft'), walk: tiles(arr(f, 'walk')), guarding: bool(f, 'guarding'), stalking: bool(f, 'stalking'),
+            hidden: bool(f, 'hidden'), seenAgo: num(f, 'seenAgo'),
             armour: obj(f, 'armour') ? {dex: num(obj(f, 'armour'), 'dex'), zones: objects(obj(f, 'armour'), 'zones').map(z => ({zone: str(z, 'zone'),
                 piece: str(z, 'piece'), cut: num(z, 'cut'), thrust: num(z, 'thrust')}))} : null,
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),

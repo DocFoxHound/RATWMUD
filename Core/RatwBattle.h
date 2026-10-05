@@ -130,6 +130,13 @@ struct Battle
     // Who has noticed whom (doc 40), observer to target: 0 unaware, from AwareSuspicious suspicious, from AwareAlert
     // alert. Only NPC and animal observers are kept; a pair not kept is alert, but game in a hunt starts unaware.
     std::map<std::pair<std::string, std::string>, double> aware;
+    // Where a player last had sight of a stalking foe, and when (doc 40): a foe it has lost is shown only as a "?" there.
+    struct Seen
+    {
+        int x = 0, y = 0;
+        double at = 0;
+    };
+    std::map<std::pair<std::string, std::string>, Seen> seenAt;
 
     const BattleFighter* fighter(const std::string& who) const
     {
@@ -221,6 +228,10 @@ struct Senses
 constexpr double AmbushHit = .15, AmbushDamage = 1.5;
 // Sneaking skill grows with an ambush, and a little with each check one stays unnoticed close by.
 constexpr double SneakPerAmbush = .5, SneakUnnoticed = .05;
+// In the open world (doc 40, §2): residents check what they notice of players near them this often (seconds), within
+// this many tiles; a sneak unnoticed close by learns this much a check; a guard who hears something goes to look for
+// this long. Noticing a stalker teaches a player's ears or nose this much.
+constexpr double AwareEvery = .4, AwareReach = 30, SneakUnnoticedWorld = .01, LookSeconds = 20, NoticeTeaches = .3;
 // Hit zones: where a blow lands, rolled by the side of the body it comes at (0 head on, 1 the side, 2 behind; 3 an
 // ambush's aimed blow, doc 40: the throat, head and body over the legs). Each is
 // a zone armour covers ("head", "throat", "body", "legs"), the part a fight's log names, and its weight among them.

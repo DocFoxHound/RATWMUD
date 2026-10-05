@@ -617,6 +617,12 @@ class World
     // crouch, the noise of a move, scent down the wind, skill); what an observer has noticed of a target (0 unaware,
     // battle::AwareSuspicious, battle::AwareAlert); whether a blow from `f` takes `t` unawares (an ambush); stalking.
     double arenaNotice(const Battle& b, const BattleFighter& observer, const BattleFighter& target, bool moving) const;
+    battle::Senses arenaSenses(const Battle& b, const BattleFighter& observer, const BattleFighter& target, bool moving) const;
+    // Out of a fight (doc 40, §2): a resident's awareness of a player near them (kept for near pairs, checked a few times
+    // a second); a fresh check of it now (for a theft or a crime's witnesses); a voice heard giving a sneak away.
+    double residentAwareness(const std::string& resident, const std::string& player) const;
+    double senseInWorld(const std::string& resident, const std::string& player);
+    void heardVoice(const std::string& listener, const std::string& speaker);
     // The same by sense, from any two places: for the arena and the open world alike.
     battle::Senses noticeSenses(const Entity& observer, Vec2 at, double facing, const Entity& target, Vec2 targetAt, bool stalking, bool moving,
                                 int pace, const std::string& cellId, bool smoked = false) const;
@@ -956,6 +962,18 @@ class World
     std::map<std::string, double> stealReady_;              // When each may try again.
     std::map<std::string, std::pair<std::string, double>> fights_;   // "attacker|target": the incident, the last blow.
     std::map<std::string, std::string> pursuits_;           // Guard: whom they're going to stop.
+    // Sneaking (doc 40, §2): residents' awareness of players near them; when it was last checked; guards gone to look
+    // into something they half noticed (where, and until when).
+    std::map<std::pair<std::string, std::string>, double> worldAware_;
+    double awarenessAt_ = -1;
+    struct Looking
+    {
+        std::string cell;
+        Vec2 at;
+        double until = 0;
+    };
+    std::map<std::string, Looking> lookings_;
+    void tendAwareness();
     struct Confrontation
     {
         std::string guard;

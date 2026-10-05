@@ -1317,6 +1317,108 @@ void ambushAResident()
             expect(s->meter == 100 && !w.ambushing(*b, *b->fighter("ash"), *s), "in front of her, no ambush");
     }
 }
+
+// Phase 2 (doc 40): residents noticing players out of a fight; a voice giving a sneak away; a theft unnoticed; a
+// stalking bandit lost from a player's sight.
+void inTheWorld()
+{
+    World w = wilds();
+    if (auto* c = w.cell("wilds"))
+        c->wind = {0, 0, false};                                // (Still air: sight and noise only.)
+    auto* sorrel = w.entity("sorrel");
+    sorrel->leaderId = "test-frozen";
+    sorrel->position = {20.5, 20.5};
+    sorrel->facing = 0;                                         // Facing east.
+    auto& ash = w.addPlayer("ash", "Ash");
+    ash.cellId = "wilds";
+    const auto settle = [&] {
+        for (int i = 0; i < 12; ++i)
+        {
+            sorrel->position = {20.5, 20.5};
+            sorrel->facing = 0;
+            sorrel->velocity = {};
+            ash.velocity = {};
+            w.tick(.1);
+        }
+    };
+    // Crouched behind her, still: she never knows.
+    ash.position = {17.5, 20.5};
+    ash.posture = "crouching";
+    settle();
+    expect(w.residentAwareness("sorrel", "ash") < battle::AwareSuspicious, "crouched behind Sorrel, still: she doesn't know");
+    // A theft from there goes unnoticed: no one names her.
+    ash.position = {19.6, 20.5};
+    w.takeNotices();
+    w.steal("ash", "sorrel");
+    const auto* inc = w.crime().incidents.empty() ? nullptr : &w.crime().incidents.back();
+    expect(!inc || std::none_of(inc->witnesses.begin(), inc->witnesses.end(), [](const auto& x) { return x.identified; }),
+           "a theft from behind, unnoticed: no one can name her");
+    // Speaking aloud gives her away.
+    w.heardVoice("sorrel", "ash");
+    expect(w.residentAwareness("sorrel", "ash") >= battle::AwareAlert, "she speaks aloud: Sorrel knows she is there");
+    // Creeping about in front of her: "Who's there?", then seen.
+    World w2 = wilds();
+    if (auto* c = w2.cell("wilds"))
+        c->wind = {0, 0, false};
+    auto* s2 = w2.entity("sorrel");
+    s2->leaderId = "test-frozen";
+    auto& ada = w2.addPlayer("ada", "Ada");
+    ada.cellId = "wilds";
+    ada.position = {28.5, 20.5};                                // Eight tiles in front of her, crouched in the open.
+    ada.posture = "crouching";
+    bool asked = false;
+    for (int i = 0; i < 40 && w2.residentAwareness("sorrel", "ada") < battle::AwareAlert; ++i)
+    {
+        s2->position = {20.5, 20.5};
+        s2->facing = 0;
+        s2->velocity = {};
+        ada.position.x -= .1;                                   // Creeping closer.
+        ada.velocity = {-.3, 0};
+        w2.tick(.1);
+        for (const auto& [who, text] : w2.takeNotices())
+            asked = asked || (who == "ada" && text.find("Who's there?") != std::string::npos);
+    }
+    expect(asked, "creeping up in front of her: \"Who's there?\"");
+    expect(w2.residentAwareness("sorrel", "ada") >= battle::AwareAlert, "and then she sees her");
+}
+
+void aBanditStalks()
+{
+    // A bandit coming at a player's back stalks; the player may lose sight of it (a "?" where it was), and catching it
+    // again sharpens an ear or a nose.
+    World w = wilds();
+    if (auto* c = w.cell("wilds"))
+        c->wind = {0, 0, false};
+    auto& ash = w.addPlayer("ash", "Ash");
+    ash.cellId = "wilds";
+    ash.position = {40.5, 30.5};
+    expect(w.testFight("ash").ok, "a bandit comes at Ash");
+    auto* b = const_cast<Battle*>(w.battleOf("ash"));
+    std::string bandit;
+    for (const auto& f : b->fighters)
+        if (f.id != "ash")
+            bandit = f.id;
+    bool stalked = false, lost = false;
+    for (int i = 0; i < 1200 && !b->over; ++i)
+    {
+        auto* me = b->fighter("ash");
+        const auto* them = b->fighter(bandit);
+        if (!me || !them)
+            break;
+        if (me->acting)
+        {
+            me->facing = (battle::octant(them->x - me->x, them->y - me->y) + 4) % 8;   // Her back to it, still.
+            w.battleAct("ash", "wait");
+        }
+        stalked = stalked || them->stalking;
+        lost = lost || (w.awareness(*b, "ash", bandit) < battle::AwareAlert && b->seenAt.count({"ash", bandit}));
+        if (lost && stalked)
+            break;
+        w.tick(.1);
+    }
+    expect(stalked, "the bandit stalks up on her back");
+    expect(lost, "and she loses sight of it (only where it was last seen)");
+}
 } // namespace sneak
 
 void rules()
@@ -1500,6 +1602,8 @@ int main()
         armourInFights();
         sneak::noticing();
         sneak::ambushAResident();
+        sneak::inTheWorld();
+        sneak::aBanditStalks();
         devConsoleFights();
         devConsoleTeamFight();
     }

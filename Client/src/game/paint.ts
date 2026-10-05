@@ -571,7 +571,7 @@ export class GamePainter {
         const centre = (x: number, y: number): Point => [ox + (x + 0.5) * tile, oy + (y + 0.5) * tile];
         // The wolf under the pointer, worked out first: what is drawn below depends on it.
         const reachOf = Math.max(14, clamp(tile * 0.38, 8, 16) + 4);
-        s.hoveredEntity = b.fighters.find(f => f.status !== 'fled' &&
+        s.hoveredEntity = b.fighters.find(f => f.status !== 'fled' && !f.hidden &&
             Math.hypot(centre(f.x, f.y)[0] - s.hover[0], centre(f.x, f.y)[1] - s.hover[1]) < reachOf)?.id ?? '';
         const pointedFoe = me ? b.fighters.find(f => f.id === s.hoveredEntity && f.side !== me.side && f.status === 'fighting') : undefined;
         const range = b.mouth === 'sword' ? 2 : 1;
@@ -695,6 +695,13 @@ export class GamePainter {
         }
         for (const f of b.fighters) {
             if (f.status === 'fled') continue;
+            if (f.hidden) {
+                // Lost from sight (doc 40): only a "?" where it was last seen, fading over ten seconds.
+                const fade = clamp(1 - (f.seenAgo + s.clock - s.battleAt) / 10, 0.15, 1);
+                const [qx, qy] = centre(f.x, f.y);
+                this.turnedText(qx, qy, '?', Math.round(clamp(tile * 0.6, 12, 22)), withAlpha(foeRed, 0.8 * fade), 0);
+                continue;
+            }
             // A lunge, a recoil, a sidestep, a gathering caster's tremble: offsets for the eye only.
             const [mx, my] = s.fx.offset(f.id, s.clock, reduced);
             const [tx, ty] = s.fx.tremble(f.id, b, s.clock, reduced);

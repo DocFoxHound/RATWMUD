@@ -227,7 +227,41 @@ In `Core/RatwBattle.cpp` ("Sneaking"), with one change each to hunting's `animal
   from hiding", a bite on the shoulder of 19).
 - `hunt_tests` pass with animals noticing by these senses instead of by distance.
 
-**Not yet:** the open world (§2: residents' awareness of players out of a fight, stealing and witnesses by it, guards
-coming to look, a suspicious player's cues), players' awareness in an arena (a stalking NPC hidden from players, the
-"?" where it was last seen), NPCs choosing to stalk, `hearingSkill` and `scentSkill` growing (players don't yet roll to
-notice in an arena), and a voice giving a hidden wolf away.
+## Built: phase 2, the open world and the rest (2026-10-04)
+
+- **One notice core** (`World::noticeSenses`) from any two places, by sense (sight, noise, scent); the arena
+  (`arenaSenses`/`arenaNotice`) and the open world both use it. A wolf with masking oil on (doc 41's marks,
+  `World::scentMasked`) gives no scent.
+- **Residents notice players out of a fight** (`World::tendAwareness`, every 0.4 s): each resident awake and on its
+  feet within 30 tiles of a player checks, from where it stands and faces; a crouch counts as a stalk and moving makes
+  noise by the pace. Pairs drifting apart are let go. Awareness grows and calms as in a fight, and **alert fades** with
+  nothing to notice (fixed: it used to be held for good, in fights too, so a stalker could never be lost).
+  - A wolf creeping (crouched) half noticed: the resident turns its way, "Who's there?" (a guard: "Who goes there?"),
+    and a guard on duty **goes to look** (an errand to where it was, for 20 s: "looking into a noise").
+  - Spotted creeping: a guard says "You there! What's all this creeping about?", goes to look, and **remembers** it
+    ("was prowling about": doc 40's decision, guards and the victims of theft only); anyone else keeps a wary eye.
+  - **Guards** go after a wanted player only once alert to them, so a sneak can slip past the watch.
+  - **Stealing:** a resident's watchfulness is its awareness of the thief, checked at the moment, not its sight of
+    them. From behind and unheard, it is 0.
+  - **Witnesses:** a resident names a player only if alert to them; only suspicious, it saw "someone they couldn't make
+    out"; unaware, at most it heard the struggle. (Players witness by sight, as before.)
+  - Creeping unnoticed within half a resident's sight teaches `sneakSkill` a little.
+- **A voice gives a sneak away** (`World::heardVoice`): a resident who hears a player speak or yell (not whisper) is
+  alert to them, in the world and in a fight.
+- **Players lose sight of stalkers in a fight:** a player keeps track of a foe only while it stalks (anyone else is plain
+  to see). One it has lost is sent as `hidden`, at the tile where it was last seen and how long ago: drawn only as a
+  red "?" fading over ten seconds, its card greyed ("Lost from sight"), no odds, and actions don't aim at it.
+- **NPCs stalk:** an aggressive one coming at a foe's back from more than two tiles off stalks (half the move, quiet),
+  so a player who turns their back may lose it and be struck from hiding.
+- **Ears and noses learn:** a player catching a stalker again learns `hearingSkill` (if the noise gave it away) or
+  `scentSkill` (the scent), 0.3 a time, slower as it climbs.
+- **Players' cues** for what they half notice were already there: "You hear pawsteps nearby" and the scent sectors.
+- **Tested:** `Tests/battle_tests.cpp` `sneak::inTheWorld` (crouched behind a resident, still: never noticed, and a
+  theft from there names no one; speaking aloud gives her away; creeping up in front: "Who's there?", then seen) and
+  `sneak::aBanditStalks` (a bandit coming at a player's turned back stalks, and she loses sight of it). All 43 suites
+  pass; a clang ASan/UBSan build of the fight and crime suites finds nothing. The perf gate (`world_check --simulate
+  7 7.2 --players 20` on DEV build 22) is unchanged: mean 12.6–12.8 ms against HEAD's 12.6, p99 after the first minute
+  21.4 ms against 21.3–21.8.
+
+**Not yet:** a stalking NPC in the open world (bandits on the road creeping up), residents backing away from a prowler
+(they only keep an eye), and a player choosing a hit zone.

@@ -329,3 +329,16 @@ test('sneaking (doc 40): stalking, the wind, what game has made of you, an ambus
     assert.equal(strikeFrom(b.fighters[1], 2, 2), 'ambush');
     assert.ok(coverTile('"') && coverTile('B') && !coverTile(','), 'tall grass and shrubs are cover; bare grass isn\'t');
 });
+
+test('a stalker lost from sight (doc 40): only where it was last seen, and never aimed at', () => {
+    const {state: s} = testGame();
+    s.applySnapshot(snapshot({battle: {...battle, fighters: [
+        {id: 'self', name: 'Ada', side: 0, x: 2, y: 2, facing: 0, status: 'fighting'},
+        {id: 'bo', name: 'Bo', side: 1, x: 5, y: 2, facing: 4, status: 'fighting', hidden: true, seenAgo: 3, stalking: true},
+        {id: 'cy', name: 'Cy', side: 1, x: 4, y: 3, facing: 4, status: 'fighting'},
+    ]}}));
+    const bo = s.battle!.fighters.find(f => f.id === 'bo')!;
+    assert.ok(bo.hidden && bo.seenAgo === 3, 'lost, three seconds ago');
+    s.fightFocus = 'bo';
+    assert.equal(s.fightTargetId(), 'cy', 'actions aim at one in sight, not the lost');
+});

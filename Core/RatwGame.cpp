@@ -4166,6 +4166,8 @@ void Game::command(Connection* c, const std::string& raw)
             const bool named = namesWord(lower, mind::lower(e.name)) || invited || interject;
             const bool near = sense.hearing >= 0.5 && std::hypot(e.position.x - player->position.x, e.position.y - player->position.y) <= 6;
             hearers.push_back({npcId, perceived, sense, targeted, named, near});
+            if (voice != Voice::Whisper && sense.hearing >= .35)
+                world_.heardVoice(npcId, id);       // Speaking aloud gives a sneak away; a whisper stays a whisper (doc 40).
             {
                 std::string spoken;
                 for (const auto& segment : segments)
