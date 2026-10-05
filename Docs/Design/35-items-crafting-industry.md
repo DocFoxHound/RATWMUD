@@ -87,6 +87,158 @@ or not, at the catalog's weights; residents carry freely (a shopkeeper's stock i
   in `artifacts/screenshots/carrying/`). `world_check --simulate 12 13 --players 20` on DEV build 22: mean 11.1 ms, p99
   22.7 ms a tick.
 
+**Built 2026-10-04 (Phase 5, first part): shopkeepers craft from materials.** Nothing on a shop's shelf is made from
+nothing any more; the "one more of whatever is sold out" placeholder and the smith's free swords are gone.
+
+- **The starter crafts** (`Data/Items/crafts.json`): 17 whole-batch crafts, each from one or two ingredients, chosen
+  with the user to start the economy:
+
+  | Kind | Craft | Ingredients → batch | Makers |
+  |---|---|---|---|
+  | Food | bread | 1 flour + 1 firewood → 6 | bakery |
+  | Food | porridge | 1 oats + 1 milk → 4 | inn |
+  | Food | stew (the prepared meal) | 1 raw meat + 1 vegetables → 1 | inn |
+  | Food | smoked fish | 2 fish + 1 firewood → 2 | fishmonger, provisioner |
+  | Drink | cider | 2 apples → 1 | brewery, inn |
+  | Clothing | wool scarf | 1 wool → 1 | weaver |
+  | Clothing | straw hat | 1 straw → 2 | weaver, general store |
+  | Clothing | linen neckerchief | 1 linen cloth → 4 | tailor, weaver |
+  | Armour | quilted vest | 2 linen cloth + 1 wool → 1 | tailor, armoury |
+  | Armour | leather cap | 1 leather → 2 | tannery, armoury, saddlery |
+  | Paw wear | leather bindings | 1 leather → 2 | tannery, saddlery |
+  | Jewellery | fang charm | 1 bones + 1 cord → 4 | tinker, jeweller, general store |
+  | Household | tallow candle | 1 tallow + 1 cord → 2 | chandlery |
+  | Household | clay pot | 1 clay → 2 | pottery |
+  | Medicine | bandages | 1 linen cloth → 2 | apothecary, herbalist |
+  | Weapon | sword | 1 bronze bar + 1 charcoal → 1 | smithy |
+  | Hardware | nails | 1 iron bar + 1 charcoal → 6 | smithy, tinker |
+
+- **Suppliers** (`supplies` in the same file) sell the ingredients: stalls (flour, oats, milk, vegetables, apples),
+  provisioners (those, raw meat, fish and firewood), general stores (flour, oats, firewood, straw, wool, linen cloth,
+  cord, tallow, clay), butchers (raw meat, bones, tallow, leather) and fishmongers (fish).
+- **Inns and taverns** are now a business (`inn`, matched by "keeping the inn", "taproom", "refectory", "cooking
+  for"...), so innkeepers cook.
+- **What a shop sells:** a maker sells what it makes, a supplier what it supplies (plus meals and herbs as before). A
+  kind of shop that makes nothing yet (a scribe, a mason, a glassworks) keeps the handful of goods it had and sells
+  them down.
+- **The work** (`Core/RatwCrafting.cpp`): a maker at work whose shelf holds fewer than 4 of something it makes begins
+  a batch, and the goods appear when the batch's working time is done (bread 2 game minutes, a sword 15). The
+  materials are taken then, so a batch interrupted by a restart is simply begun again.
+- **Buying materials:** below 2 batches' worth of an ingredient, the maker buys back up to 8 batches' worth from a
+  supplier in the same community, at the catalog price. The money goes to the supplier, so it stays conserved.
+- **A good store to start with:** every maker starts with 8 batches' worth of its ingredients, and every supplier with
+  40 of each thing it supplies (*placeholders*). A save from before crafting gets this once, the first time it runs
+  (`craftingStocked` in the saved society).
+- **Not yet:** residents don't eat bread or porridge, or buy clothes, candles and the rest (only the meal), so shops
+  sell only to players for now and a town's makers soon have all they want on their shelves (doc 35 Part 7's
+  buyers). Bronze and iron have no source, so smiths have only their starting store. Quality is built (below). Players can't craft yet (decided:
+  rent a town station first, own a workshop later; the Craft panel comes with it).
+- `tools/item_catalog.py --crafts` lists the crafts with their cost and value, and checks them (one or two whole
+  ingredients, real makers, never at a loss; producers' goods; anything nothing supplies, makes or produces);
+  `Tests/crafting_tests.cpp` covers the work.
+
+### Quality (built 2026-10-04)
+
+Part 4's four qualities are in the game. Prices are *placeholders*.
+
+- **In the catalog** (`Core/RatwItems.cpp`): every good but herbs, meals, the sword and water has a crude, a fine and a
+  masterwork kind beside its common one. The id carries the quality (`hide~fine`), and the name says it ("Fine hide").
+  - Price: crude 0.6×, fine 1.6×, masterwork 3×.
+  - Wear: armour a quarter weaker (crude) or stronger (fine, at least +1), half as strong again for masterwork; status
+    one step down or up (two for masterwork); masterwork one warmer.
+  - `good()` and `wearable()` find every kind through an index (lookups are now hashed, not scanned). The catalog's
+    lists stay common goods only, so no shop's handful picks a fine one at random.
+  - Helpers: `items::baseOf`, `qualityOf`, `withQuality`, `kindsOf`.
+- **Made goods** (`Core/RatwCrafting.cpp`): a batch's quality comes from the maker's skill at their position (doc 26's
+  careers), the materials (a crude one drags it down, a fine one lifts it), and luck.
+  - Fine needs a skill of 60, and is common only past 75.
+  - Masterwork needs 85, a very good day, and a further one in seven.
+  - Crude comes when the score falls low (the unskilled, poor materials).
+  - Makers use any quality of a material, plain ones first, and buy any quality at its price.
+  - On DEV over a working morning: 237 common, 59 fine, 2 masterwork.
+- **Hunted goods** (doc 41): a clean kill is fine, masterwork if one blow did it before the animal knew (doc 40's
+  ambush), a ragged kill crude, and a fire-touched kill no better than common.
+- **Shops** deal in every quality of their goods: a tanner buys a fine hide at the fine price. The trade panel lists
+  each quality the shop or the player has, named ("Fine hide").
+- **Weapons** (built 2026-10-04): the sword has the four kinds too ("Fine bronze sword").
+  - A blow scales by quality: crude 0.85×, fine 1.15×, masterwork 1.3× (`items::qualityDamage`), and the fight screen's
+    damage preview shows it.
+  - The jaws still hold "sword" (`Entity::mouth`), and `Entity::swordKind` says which. Taking up a sword takes the best
+    one has. A sword knocked loose drops that very kind.
+- **Wear and tear** (built 2026-10-04, `Core/RatwDurability.cpp`): gear in service wears out.
+  - A sword wears a point with each swing.
+  - Armour wears with each blow that lands where it covers: a point, plus a quarter of what it kept off. `land()` now
+    says the hit zone.
+  - Clothes, harness and jewellery wear a point a game day while worn.
+  - How much use a piece takes is its catalog `durability`, × 0.6 crude, 1.5 fine, 2.5 masterwork.
+  - Wear is kept by item kind (`Entity::wear`, saved), so taking a piece off and on doesn't mend it.
+  - Worn out, it falls apart: one fewer in the purse, and a spare of the kind goes into service fresh. Without one, the
+    slot is empty. The player is told.
+  - **Mending:** a shop that sells, makes or deals in the kind of thing (a weaver a scarf, a smith or armourer a sword)
+    mends it, for half the good's price times how worn it is, paid to the shop (`repair` command; `World::repairGear`).
+    The inventory shows each piece's condition, and beside a shop that can mend it a **REPAIR · Np** button.
+- **The maker's mark** (built 2026-10-04): a masterwork carries its maker in its id (`sword~masterwork@sorrel`; a hunted
+  masterwork, the hunter's).
+  - `good()` and `wearable()` find it as the masterwork kind. Stock, crafting, buying and the trade panel count marked
+    goods with their kind (`Society::kindsHeld`).
+  - Its name reads "Masterwork bronze sword · Sorrel Brook's mark" to anyone who knows the maker (doc 32's
+    introductions), "your own mark" to its maker, and "a maker's mark, and a scent you don't know" to anyone else.
+- **Not yet:** a good nose telling a stolen masterwork by its maker's scent (crime), masking oil, and repairs costing a
+  little of a piece's greatest durability.
+
+### Workshops for the starter crafts (built 2026-10-04)
+
+The suppliers are refilled by work, not a starting store. Still in `Data/Items/crafts.json`:
+
+- **Producers** (`producers`): residents whose work label matches bring goods in from the land, one yield per spell of
+  work (`seconds`), keeping at most 20 of each (*placeholder*) for the town to buy. Crops only in spring, summer and
+  autumn. A producer working out in the country belongs to the town they live in.
+
+  | Producer | Matched by | One yield | Every |
+  |---|---|---|---|
+  | Farm | "farms the", "works the crossing/lakeside fields" | 2 wheat, 1 oats, 2 vegetables, 1 straw, 1 flax, 1 hemp, 1 apples | 30 min |
+  | Sheep pasture | "keeps sheep", "shepherd" | 1 wool, 2 milk | 30 min |
+  | Fishing | "fishes the" | 2 fish | 15 min |
+  | Woodcutting | "cuts wood", "woodcutter" | 3 firewood, 1 oak bark, 1 timber | 15 min |
+  | Charcoal burning | "burns charcoal", "charcoal kilns"... | 1 charcoal | 30 min |
+  | Quarry | "cutting stone" | 1 stone, 1 limestone, 2 clay | 30 min |
+  | Salt pans | "raking salt", "rakes the salt" | 2 salt | 30 min |
+  | Stock-breeding | "stables" (the stables' keepers) | 1 pig, 1 sheep | 1 hour |
+
+- **Workshop crafts** make the suppliers' goods: a mill grinds 2 wheat into 2 flour; a weaver weaves 2 flax into
+  linen cloth; a tannery makes 2 leather from a hide and 2 oak bark (lime and the 3-day pits come later); a chandler
+  spins a hemp into 3 cord; a butcher cuts a pig into 4 meat, a bone, 2 tallow and a hide, or a sheep into 3 meat, a
+  bone and a tallow. Mills (The Ford Mill, Mulino del Borgo, The Millers' Row), La Concia and the stables are now
+  known by their keepers' work.
+- **Who buys from whom:** a maker buys its ingredients from a supplier, else from a workshop or producer. A supplier
+  whose store of something is under a quarter buys back up to 40, from workshops and producers only. A workshop keeps
+  making what other trades use (judged by a batch's first good: a butcher's meat, not its hides) up to half a
+  supplier's store, and keeps 4 for its own shelf; suppliers and producers sell all they have.
+- **Carted in:** what a community can't find at home is bought from another at half as much again (*placeholder*),
+  the extra going to the seller. This feeds the cities, which have few farms, until caravans carry the goods.
+- **DEV, a working morning** (`world_check --simulate 9 13 --events`): farmers brought in 144 wheat and 144
+  vegetables, fishers 48 fish, the stables 32 pigs and 32 sheep; mills ground 48 flour, tanneries made 72 leather,
+  weavers 89 linen cloth; weavers in towns without flax had 67 carted in. The perf gate (`--players 20`) is unchanged
+  (12.4–12.6 ms mean either way).
+
+What is still missing, by ingredient:
+
+| Ingredient | Comes from now | Missing |
+|---|---|---|
+| Flour | mills, from farms' wheat | rye; mill keepers only where named so |
+| Oats, vegetables, straw, flax, hemp, apples | farms | orchards of their own; fields that run out |
+| Milk, wool | shepherds | a dairy herd; cattle |
+| Meat, bones, tallow, hides | butchers, from the stables' pigs and sheep | cattle (40p a head is more than its cuts are worth: a balance-pass item) |
+| Fish | fishers | — |
+| Firewood, oak bark, timber | the one woodcutter | more woodcutters (only Hollowmere has one, so most towns cart firewood in) |
+| Linen cloth | weavers, from flax | — |
+| Leather | tanneries, from hides and oak bark | lime and the 3-day wait |
+| Cord | chandlers, from hemp | the ropewalks' rope-twisters (they make rope, not cord) |
+| Clay | the quarry | a clay pit near the potters |
+| Charcoal | the burners | timber as its input |
+| Bronze bar | nothing | mines (copper, tin) and the foundries working |
+| Iron bar | nothing | iron mines and the ironworks working |
+
 ## Principles
 
 1. **Built for a wolf body.** Mouth grips (bits), paw straps, pull-cords, harness loops, low benches. Nothing is

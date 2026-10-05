@@ -155,6 +155,9 @@ struct SocietyState
     std::vector<EconomyEntry> ledger;
     std::int64_t minted = 0, sunk = 0, nextEntry = 1, budgetDay = 0;
     int exportsRemaining = 8, importsRemaining = 4, herbPatch = 40;
+    // Which grant of crafting materials the shopkeepers have had (doc 35, Phase 5): an older save's makers are given
+    // their starting materials once, when it is first run with crafting.
+    int craftingStocked = 0;
     double decisionRemainder = 0;
     CareerState careers;
 };
@@ -325,6 +328,9 @@ class Society
     // Takes patrol routes and every resident's wander area from `from` (a validated candidate society).
     void adoptLayers(const Society& from);
     static int stock(const EconomyAccount& account, const std::string& item);
+    // A good in every quality held (doc 35, Part 4): a maker's hides, common, crude, fine and masterwork together.
+    static int stockAll(const EconomyAccount& account, const std::string& base);
+    static std::vector<std::string> kindsHeld(const EconomyAccount& account, const std::string& base);
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
@@ -339,6 +345,16 @@ class Society
     static constexpr int SmithSwords = 3;
     static constexpr int CheapPrice = 6;              // A shop's goods cost at most this, for now (pennies).
     static constexpr int GoodsKept = 4;               // How many of each good a shop keeps, making more as they sell.
+    // Crafting (Data/Items/crafts.json; doc 35, Phase 5, first part). Placeholders for the balance pass: a maker keeps
+    // materials for MaterialBatches batches, buys more from the town's suppliers below MaterialsLow batches' worth, and
+    // a supplier starts with SuppliesKept of each ingredient it sells.
+    static constexpr int MaterialBatches = 8, MaterialsLow = 2, SuppliesKept = 40;
+    // A producer (a farmer, a fisher) keeps at most ProducerKept of each thing it brings in, for the town to buy.
+    // Goods fetched from another community cost CartedIn times the price (they come a long way).
+    static constexpr int ProducerKept = 20;
+    static constexpr double CartedIn = 1.5;
+    // The current grant (SocietyState::craftingStocked): 1 the starter crafts, 2 the workshops (mills, tanneries...).
+    static constexpr int CraftingStock = 2;
     // Food to start with (doc 36): a new player's own meals; a new household's larder, meals for each who lives there,
     // and its chest, herbs for each. Placeholder amounts for the balance pass.
     static constexpr int StartingMeals = 3, LarderMealsEach = 3, ChestHerbsEach = 2;
@@ -389,7 +405,37 @@ class Society
     static constexpr std::int64_t MoneyCap = 1000000000;
     static constexpr int StockCap = 10000;
     mutable bool specsIndexed_ = false;
-    void forgetSpecs() { specsIndexed_ = false; }
+    void forgetSpecs()
+    {
+        specsIndexed_ = false;
+        suppliers_.clear();
+    }
+    // Crafting (RatwCrafting.cpp): a maker at work makes a batch of whatever has run low, from their own materials,
+    // buying more from a supplier in the same community first if they are running out. Never from nothing.
+    std::unordered_map<std::string, double> craftNext_;    // Maker -> the game day they next look at their shelves.
+    // Maker -> the batch at work (Data/Items/crafts.json id), done at craftNext_. Not saved: after a restart the batch
+    // is begun again, its materials taken only when it is done.
+    std::unordered_map<std::string, std::string> craftAtWork_;
+    // Ingredient -> who has it to sell: suppliers, then workshops that make it, then producers (Seller's kind).
+    struct Seller
+    {
+        std::string id;
+        int kind = 0;                                // 0 supplier, 1 workshop, 2 producer.
+    };
+    mutable std::unordered_map<std::string, std::vector<Seller>> suppliers_;
+    std::unordered_map<std::string, double> produceNext_;   // Producer -> the game day of its next yield.
+    int season_ = 0;                                 // The season of the latest decision (0 spring .. 3 winter).
+    void craft(const std::string& id, const std::string& workCell, double absoluteDay);
+    // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in.
+    // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier.
+    int buyMaterials(const std::string& id, const std::string& workCell, const std::string& item, int wanted,
+                     bool forSupplier = false);
+    // A producer's spell of work done: what it brings in from the land, while it has fewer than ProducerKept.
+    bool produce(const std::string& id, double absoluteDay);
+    std::string communityOfResident(const std::string& id) const;
+    // Tops a shopkeeper's stock up to a good store of what they make things from and what they supply; returns how
+    // many goods were added.
+    int stockMaterials(const std::string& id);
     void record(const std::string& kind, const std::string& from, const std::string& to,
                 const std::string& item, int quantity, std::int64_t coins);
     bool transfer(const std::string& seller, const std::string& buyer, const std::string& item,

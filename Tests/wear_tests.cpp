@@ -51,7 +51,8 @@ void shops()
            "and sells scarves and paw wraps");
     expect(items::businessFor("keeps The Armoury") && items::businessFor("keeps The Armoury")->id == "armory", "The Armoury is an armourer's");
     expect(items::businessFor("keeping Cuoio Fino") && items::businessFor("keeping Cuoio Fino")->id == "tannery", "Cuoio Fino a tanner's");
-    expect(!items::businessFor("keeping the taproom"), "a taproom sells no wearables");
+    const auto* taproom = items::businessFor("keeping the taproom");
+    expect(taproom && taproom->id == "inn" && items::wearablesSold(*taproom).empty(), "a taproom is an inn, and sells no wearables");
 }
 
 void wearing()

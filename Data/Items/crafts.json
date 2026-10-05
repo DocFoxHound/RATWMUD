@@ -1,0 +1,61 @@
+{
+  "format": "ratw-crafts",
+  "version": 1,
+  "about": "What shopkeepers make now (doc 35, Phase 5, first part). Each craft is a whole batch from at most two ingredients, every ingredient sold by a supplying shop in town (supplies). makers: the businesses (businesses.json) whose keepers make it. seconds: game seconds of work for one batch. A shopkeeper makes nothing from nothing: a batch takes its ingredients from the keeper's own stock, bought from a supplier when it runs low. Workshop crafts (flour, linen cloth, leather, cord, butchering) make the suppliers' goods from what producers bring in. producers: residents whose work label holds one of `match` turn a spell of work (seconds) into `out` from the land (only in `seasons`, 0 spring to 3 winter, if given), keeping a few of each to sell to the town. recipes.json keeps the full chains for later phases.",
+  "crafts": [
+    {"id": "bread", "makers": ["bakery"], "seconds": 120, "in": {"flour": 1, "firewood": 1}, "out": {"bread": 6}},
+    {"id": "porridge", "makers": ["inn"], "seconds": 60, "in": {"oats": 1, "milk": 1}, "out": {"porridge": 4}},
+    {"id": "stew", "makers": ["inn"], "seconds": 60, "in": {"raw_meat": 1, "vegetables": 1}, "out": {"meal": 1}},
+    {"id": "smoked_fish", "makers": ["fishmonger", "provisioner"], "seconds": 180, "in": {"fish": 2, "firewood": 1}, "out": {"smoked_fish": 2}},
+    {"id": "cider", "makers": ["brewery", "inn"], "seconds": 180, "in": {"apples": 2}, "out": {"cider": 1}},
+    {"id": "wool_scarf", "makers": ["weaver"], "seconds": 300, "in": {"wool": 1}, "out": {"wool_scarf": 1}},
+    {"id": "straw_hat", "makers": ["weaver", "general"], "seconds": 300, "in": {"straw": 1}, "out": {"straw_hat": 2}},
+    {"id": "linen_neckerchief", "makers": ["tailor", "weaver"], "seconds": 120, "in": {"linen_cloth": 1}, "out": {"linen_neckerchief": 4}},
+    {"id": "quilted_vest", "makers": ["tailor", "armory"], "seconds": 600, "in": {"linen_cloth": 2, "wool": 1}, "out": {"quilted_vest": 1}},
+    {"id": "leather_cap", "makers": ["tannery", "armory", "saddlery"], "seconds": 240, "in": {"leather": 1}, "out": {"leather_cap": 2}},
+    {"id": "leather_bindings", "makers": ["tannery", "saddlery"], "seconds": 300, "in": {"leather": 1}, "out": {"leather_bindings": 2}},
+    {"id": "fang_charm", "makers": ["tinker", "jeweler", "general"], "seconds": 120, "in": {"bones": 1, "cord": 1}, "out": {"fang_charm": 4}},
+    {"id": "candle_tallow", "makers": ["chandlery"], "seconds": 120, "in": {"tallow": 1, "cord": 1}, "out": {"candle_tallow": 2}},
+    {"id": "clay_pot", "makers": ["pottery"], "seconds": 180, "in": {"clay": 1}, "out": {"clay_pot": 2}},
+    {"id": "bandages", "makers": ["apothecary", "herbalist"], "seconds": 120, "in": {"linen_cloth": 1}, "out": {"bandages": 2}},
+    {"id": "sword", "makers": ["smithy"], "seconds": 900, "in": {"bronze_bar": 1, "charcoal": 1}, "out": {"sword": 1}},
+    {"id": "nails", "makers": ["smithy", "tinker"], "seconds": 120, "in": {"iron_bar": 1, "charcoal": 1}, "out": {"nails": 6}},
+    {"id": "flour", "makers": ["mill"], "seconds": 60, "in": {"wheat": 2}, "out": {"flour": 2}},
+    {"id": "linen_cloth", "makers": ["weaver"], "seconds": 240, "in": {"flax": 2}, "out": {"linen_cloth": 1}},
+    {"id": "leather", "makers": ["tannery"], "seconds": 300, "in": {"hide": 1, "oak_bark": 2}, "out": {"leather": 2}},
+    {"id": "cord", "makers": ["chandlery"], "seconds": 60, "in": {"hemp": 1}, "out": {"cord": 3}},
+    {"id": "butcher_pig", "makers": ["butcher"], "seconds": 300, "in": {"pig": 1}, "out": {"raw_meat": 4, "bones": 1, "tallow": 2, "hide": 1}},
+    {"id": "butcher_sheep", "makers": ["butcher"], "seconds": 240, "in": {"sheep": 1}, "out": {"raw_meat": 3, "bones": 1, "tallow": 1}}
+  ],
+  "producers": [
+    {"id": "farm", "match": ["farms the", "works the crossing fields", "works the lakeside fields"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"wheat": 2, "oats": 1, "vegetables": 2, "straw": 1, "flax": 1, "hemp": 1, "apples": 1}},
+    {"id": "sheep_pasture", "match": ["keeps sheep", "shepherd"], "seconds": 1800, "out": {"wool": 1, "milk": 2}},
+    {"id": "fishing", "match": ["fishes the"], "seconds": 900, "out": {"fish": 2}},
+    {"id": "woodcutting", "match": ["cuts wood", "woodcutter"], "seconds": 900, "out": {"firewood": 3, "oak_bark": 1, "timber": 1}},
+    {"id": "charcoal_burning", "match": ["burns charcoal", "charcoal kilns", "charcoal burns", "charcoal sheds"], "seconds": 1800, "out": {"charcoal": 1}},
+    {"id": "quarry", "match": ["cutting stone"], "seconds": 1800, "out": {"stone": 1, "limestone": 1, "clay": 2}},
+    {"id": "salt_pans", "match": ["raking salt", "rakes the salt"], "seconds": 1800, "out": {"salt": 2}},
+    {"id": "stock_breeding", "match": ["stables"], "seconds": 3600, "out": {"pig": 1, "sheep": 1}}
+  ],
+  "buys": {
+    "about": "What a kind of shop buys from players and sells on (gathered and hunted goods, doc 41), besides what it supplies: never stocked to start with.",
+    "herbalist": ["herbs", "yarrow", "thyme", "chamomile", "lavender", "comfrey", "mint", "willow_bark", "valerian", "wormwood", "rose_petals"],
+    "apothecary": ["yarrow", "chamomile", "lavender", "comfrey", "willow_bark", "valerian", "wormwood", "resin"],
+    "general": ["firewood", "mushrooms", "berries", "resin", "reeds", "feathers", "oak_galls", "stone", "clay", "sand", "small_pelt"],
+    "provisioner": ["mushrooms", "berries", "raw_meat", "shellfish", "fish", "feathers"],
+    "stall": ["mushrooms", "berries", "shellfish", "raw_meat"],
+    "inn": ["raw_meat", "mushrooms", "berries", "vegetables"],
+    "butcher": ["raw_meat", "hide", "fat_scraps", "bones", "sinew", "antler", "horn", "bristles"],
+    "tannery": ["hide", "oak_bark", "small_pelt", "fox_pelt", "badger_pelt", "bear_pelt"],
+    "tailor": ["small_pelt", "fox_pelt", "badger_pelt"],
+    "chandlery": ["fat_scraps", "resin", "beeswax", "reeds"],
+    "fishmonger": ["shellfish", "fish"]
+  },
+  "supplies": {
+    "stall": ["flour", "oats", "milk", "vegetables", "apples"],
+    "provisioner": ["flour", "oats", "milk", "vegetables", "raw_meat", "fish", "apples", "firewood"],
+    "general": ["flour", "oats", "firewood", "straw", "wool", "linen_cloth", "cord", "tallow", "clay"],
+    "butcher": ["raw_meat", "bones", "tallow", "leather"],
+    "fishmonger": ["fish"]
+  }
+}

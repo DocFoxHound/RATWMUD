@@ -901,9 +901,13 @@ export class GamePainter {
         }
         c.restore();
         const size = Math.round(r * 1.15);
-        if (fallen) this.turnedText(x, y, 'W', size, rim, Math.PI / 2);
+        // Game in a hunt (doc 41) is its own glyph in its own colour; "!" once it has noticed the hunters.
+        const glyph = f.animal ? f.animal.glyph : 'W';
+        const tint = f.animal ? rgb(parseInt(f.animal.color.replace('#', ''), 16) || 0xb89a74) : color;
+        if (fallen) this.turnedText(x, y, glyph, size, rim, Math.PI / 2);
         else {
-            this.turnedText(x, y, 'W', size, withAlpha(color, alpha), 0);
+            this.turnedText(x, y, glyph, size, withAlpha(tint, alpha), 0);
+            if (f.animal?.aware) this.turnedText(x + r * 0.95, y - r * 0.95, '!', Math.max(9, Math.round(r * 0.9)), withAlpha(Amber, alpha), 0);
             if (f.mouth === 'sword') this.turnedText(x + r * 0.95, y - r * 0.95, '†', Math.max(9, Math.round(r * 0.9)), withAlpha(Paper, alpha), 0.6);
         }
     }
@@ -1045,6 +1049,29 @@ export class GamePainter {
                 const [lw] = p.measure(label, 9, false);
                 p.box(x + 10, y - 9, lw + 10, 18, Panel);
                 p.text(x + 15, y - 5, label, 9, Paper);
+            }
+        }
+        // Game's trails one has smelt out (doc 41): faint marks on their tiles in the animal's colour, fainter when old;
+        // pointing at one names it.
+        for (const track of objects(obj(s.snapshot, 'wild'), 'tracks')) {
+            const tint = rgb(parseInt(str(track, 'color', '#b89a74').replace('#', ''), 16) || 0xb89a74);
+            const fresh = bool(track, 'fresh');
+            let named = false;
+            for (const t of arr(track, 'tiles')) {
+                if (!Array.isArray(t) || t.length < 2) continue;
+                const tx = Number(t[0]), ty = Number(t[1]);
+                const x = ox + tx * tile, y = oy + ty * tile;
+                p.box(x + 1, y + 1, tile - 2, tile - 2, withAlpha(tint, fresh ? 0.16 : 0.08));
+                const size = clamp(Math.round(tile * 0.45), 8, 12);
+                const [gw, gh] = p.measure('∴', size, true);
+                p.text(x + tile / 2 - gw / 2, y + tile / 2 - gh / 2, '∴', size, withAlpha(tint, fresh ? 0.55 : 0.3), true);
+                if (!named && s.hover[0] >= x && s.hover[0] < x + tile && s.hover[1] >= y && s.hover[1] < y + tile) {
+                    named = true;
+                    const label = `${str(track, 'name', 'game')}'s trail · ${fresh ? 'fresh' : 'old'}`;
+                    const [lw] = p.measure(label, 9, false);
+                    p.box(x + tile, y - 4, lw + 10, 18, Panel);
+                    p.text(x + tile + 5, y, label, 9, Paper);
+                }
             }
         }
         const resource = s.visibleResource();

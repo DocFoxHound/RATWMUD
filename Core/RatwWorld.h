@@ -240,6 +240,10 @@ struct Entity
     // What is worn (doc 35, 1.1): a wear slot ("head", "neck", "chest_left"...) to a catalog item, and each piece of
     // jewellery with the fur spot it is clipped at. Saved. The goods stay in the purse; wearing marks them.
     std::map<std::string, std::string> worn;
+    // Which sword is in the jaws when `mouth` is "sword" (doc 35, Part 4: "sword~fine"; "" for the common one), and how
+    // much use each kind of gear in service has had (by item id: wear and tear, doc 35 phase 9). Saved.
+    std::string swordKind;
+    std::map<std::string, double> wear;
     std::vector<std::pair<std::string, std::string>> jewellery;     // (spot, item)
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
@@ -468,6 +472,44 @@ class World
     Result useSeasonalWeather(const std::string& cellId);
     Result trade(const std::string& player, const std::string& merchant, const std::string& item, int quantity, bool buy);
     Result gather(const std::string& player);
+    // Hunting and foraging (Docs/Design/41-hunting-and-foraging.md; RatwHunt.cpp). Out in the wild a wolf may forage
+    // the ground beside it, or set out to hunt: a fight in an arena whose other side is animals, found by the ground
+    // there, how hard it has been hunted lately and how many are playing. Only a hunter's party or Chapter may join.
+    struct WildHere
+    {
+        bool hunt = false, forage = false;
+        std::string huntWhy, forageWhat;            // Why not; what is to be foraged here ("the trees, the grass").
+    };
+    WildHere wildAround(const std::string& player) const;
+    Result startHunt(const std::string& player);
+    Result forage(const std::string& player);
+    Result leaveHunt(const std::string& player);     // Gives up the hunt, wherever one stands in it.
+    // Wear and tear (doc 35; RatwDurability.cpp): how much use a good takes (0: it doesn't wear), how much is left of
+    // the one in service (1 new, 0 worn out), which sword is in the jaws ("" for none), and mending at a shop.
+    static int durabilityOf(const std::string& item);
+    double conditionOf(const Entity& e, const std::string& item) const;
+    static std::string swordHeld(const Entity& e);
+    bool canRepair(const std::string& merchant, const std::string& item) const;
+    std::int64_t repairCost(const Entity& e, const std::string& item) const;
+    Result repairGear(const std::string& player, const std::string& merchant, const std::string& item);
+    // Tracks (doc 41): smelling the ground out in the wild finds game trails near by, as faint marks on the map, for a
+    // while. A hunt begun near a trail is likelier to find what made it (and, a fresh one, sure to).
+    struct Track
+    {
+        std::string cell, species;
+        std::vector<std::pair<int, int>> tiles;
+        bool fresh = false;
+        double until = 0;                           // World seconds.
+    };
+    Result smellTracks(const std::string& player);
+    std::vector<Track> tracksOf(const std::string& player) const;   // In the wolf's own cell, still to be seen.
+    // An animal in a hunt: its species ("" for anyone else), and whether it has yet to notice a hunter (doc 40's seam).
+    std::string animalOf(const std::string& id) const;
+    bool animalUnaware(const std::string& id) const;
+    // Who counts as a hunter's friend, to join their hunt (the game knows parties and Chapters).
+    void setFriends(std::function<bool(const std::string& a, const std::string& b)> friends) { friends_ = std::move(friends); }
+    // How hard a cell has been hunted lately: kills, fading over the days (doc 41).
+    double huntPressure(const std::string& cellId) const;
     Result eat(const std::string& player);
 
     void tick(double dt);
@@ -951,6 +993,40 @@ class World
     std::vector<GroundItem> ground_;
     std::uint64_t nextGround_ = 0;
     std::map<std::string, std::set<std::string>> heardFights_;   // Who has been told of a fight they could only hear.
+    // Hunting and foraging (RatwHunt.cpp). Animals live only in their hunt: nothing of them is saved.
+    struct HuntAnimal
+    {
+        std::string species, battle;
+        bool alert = false;
+        double best = 0, fire = 0, total = 0;       // The hardest blow, and the damage done in all and by fire.
+        std::string lastBy;                         // Who last struck it (for a kill by its burns).
+        bool struckUnaware = false;                 // Its hardest blow fell before it knew (doc 40's ambush): masterwork.
+    };
+    std::map<std::string, HuntAnimal> animals_;
+    std::map<std::string, std::vector<double>> huntKills_;      // Cell -> the game days of its kills.
+    std::map<std::string, std::pair<double, double>> huntArrivals_;   // Hunt -> when another may wander in, and how many it expects.
+    mutable std::map<std::string, std::map<std::string, double>> groundCache_;   // Cell and block -> its ground (it doesn't change).
+    std::map<std::string, std::pair<int, double>> forage_;      // Patch -> pickings taken, the day they were counted.
+    std::map<std::string, double> forageNext_;                  // Wolf -> when it may forage again (world seconds).
+    std::function<bool(const std::string&, const std::string&)> friends_;
+    std::uint64_t nextAnimal_ = 0;
+    std::map<std::string, std::vector<Track>> tracks_;            // Wolf -> the trails it has found (not saved).
+    double lastWearDay_ = -1;                                     // When clothes last wore with the days.
+    void wearGear(Entity& e, const std::string& item, double amount);
+    void wearArmourAt(Entity& e, const std::string& zone, double taken);
+    void tendWear();
+    bool animalNotices(const Battle& b, const BattleFighter& animal) const;
+    bool animalTurn(Battle& b, BattleFighter& f);
+    double huntBlow(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by);
+    bool huntKill(Battle& b, BattleFighter& f, const std::string& by);
+    void huntBanner(Battle& b);
+    void endHunt(Battle& b);
+    std::string huntJoinRefusal(const Battle& b, const std::string& id) const;
+    void tendHunts();
+    std::map<std::string, double> groundIn(const std::string& cellId, int x0, int y0, int w, int h) const;
+    double huntExpected(const std::string& cellId, const std::map<std::string, double>& ground) const;
+    bool addAnimal(Battle& b, const std::string& species, bool arriving);
+    int playersOnline() const;
     Result swordStrike(Battle& b, BattleFighter& f, const std::string& target);
     Result shove(Battle& b, BattleFighter& f, const std::string& target);
     Result castFlame(Battle& b, BattleFighter& f, int x, int y);

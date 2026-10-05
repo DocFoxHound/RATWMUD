@@ -42,7 +42,7 @@ bool samePosition(const PositionState& a, const PositionState& b)
 std::vector<std::int64_t> counters(const SocietyState& s)
 {
     return {s.minted, s.sunk, s.nextEntry, s.budgetDay, s.exportsRemaining, s.importsRemaining, s.herbPatch,
-            std::int64_t(s.decisionRemainder * 1e9)};
+            std::int64_t(s.decisionRemainder * 1e9), s.craftingStocked};
 }
 
 Value companionsOf(const std::map<std::string, std::string>& owners)
@@ -189,6 +189,7 @@ void Game::record(unsigned what, const std::string& character)
             set(path({"society", "importsRemaining"}), society.importsRemaining);
             set(path({"society", "herbPatch"}), society.herbPatch);
             set(path({"society", "decisionRemainder"}), society.decisionRemainder);
+            set(path({"society", "craftingStocked"}), society.craftingStocked);
             shadow_.economy = now;
         }
         const std::uint64_t last = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);

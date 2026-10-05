@@ -108,6 +108,7 @@ struct Battle
     bool pvp = false;
     std::string incident;               // An assault on a resident: the crime it is (RatwCrime.h).
     std::string camp;                   // Bandits from this camp (RatwRoads.h).
+    bool hunt = false;                  // A hunt (doc 41, RatwHunt.cpp): its other side is animals.
     int nextOrder = 0;
     std::vector<BattleCast> casts;
     std::vector<BattleDrop> drops;

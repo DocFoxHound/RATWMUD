@@ -678,8 +678,9 @@ void shopsSellTheirGoods()
     expect(goods >= 1 && goods <= 6, "a handful of the bakery's goods (" + std::to_string(goods) + ")");
     expect(soc.wares("baker1") == bread, "the same handful every day");
     const auto iron = soc.wares("smith1");
-    expect(iron.front() == "sword" && iron.size() >= 3 && std::find(iron.begin(), iron.end(), "meal") == iron.end(),
-           "A smith sells swords and ironwork, and no meals");
+    expect(iron.front() == "sword" && std::find(iron.begin(), iron.end(), "nails") != iron.end() &&
+               std::find(iron.begin(), iron.end(), "meal") == iron.end(),
+           "A smith sells the swords and nails it forges (Data/Items/crafts.json), and no meals");
     const auto herbs = soc.wares("herb1");
     expect(std::find(herbs.begin(), herbs.end(), "herbs") != herbs.end(), "An herbalist sells herbs");
     expect(soc.wares("inn1") == std::vector<std::string>({"meal", "herbs"}), "An innkeeper deals in meals and herbs as ever");

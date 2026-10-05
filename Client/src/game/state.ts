@@ -1631,7 +1631,8 @@ export class GameState {
     activate(h: Hit) {
         this.facingPreview = false;
         const a = h.action;
-        if (a === 'leave_character') this.modal = 'leave_character';
+        if (a === 'hunt' || a === 'forage' || a === 'leaveHunt') this.send({type: a});   // Out in the wild (doc 41).
+        else if (a === 'leave_character') this.modal = 'leave_character';
         else if (a === 'leave_confirm') this.leaveCharacter();
         else if (a === 'leave_cancel') this.modal = 'character';
         else if (a === 'local') {

@@ -105,6 +105,9 @@ export class Hud {
     private camp: CampPanel;
     private devConsole: DevConsole;
     private devButton: HTMLButtonElement;
+    private huntButton!: HTMLButtonElement;          // Out in the wild (doc 41): set out after game, forage, give up.
+    private forageButton!: HTMLButtonElement;
+    private leaveHuntButton!: HTMLButtonElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -166,6 +169,9 @@ export class Hud {
         button('Wait', 'act', actions, () => act('wait'));
         button('Sit', 'act', actions, () => act('sit'));
         button('Lie down', 'act', actions, () => act('lay')).title = 'Rest: six hours lying in a bed is a full rest';
+        this.forageButton = button('Forage', 'act', actions, () => act('forage'));
+        this.huntButton = button('Hunt', 'act', actions, () => act('hunt'));
+        this.leaveHuntButton = button('Give up hunt', 'act', actions, () => act('leaveHunt'));
 
         const side = el('aside', 'side', this.root);
         // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.
@@ -270,6 +276,16 @@ export class Hud {
         this.party.update();
         this.place.update();
         this.camp.update();
+        {
+            // Out in the wild (doc 41): hunting and foraging where the ground allows; giving up a hunt while in one.
+            const wild = obj(s.snapshot, 'wild');
+            const hunting = !!s.battle?.hunt && !s.battle.observer;
+            show(this.huntButton, !fighting && bool(wild, 'hunt'));
+            show(this.forageButton, !fighting && bool(wild, 'forage'));
+            show(this.leaveHuntButton, hunting && !s.battle?.over);
+            this.forageButton.title = 'Forage ' + str(wild, 'forageWhat');
+            this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
+        }
         show(this.devButton, s.isDungeonMaster());
         setClass(this.devButton, 'active', s.devConsole);
         this.devConsole.update();

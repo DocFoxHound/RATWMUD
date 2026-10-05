@@ -3,7 +3,9 @@
 // wearables (Phase 4), every good a shop may sell (its name, kind and price: Docs/Design/39), and the kinds of shop;
 // herbs, meals and the sword keep their old hard-coded ways.
 #include <cstddef>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ratw::items
@@ -25,6 +27,7 @@ struct Item
     int status = 0, warmth = 0, rain = 0, jingle = 0, protect = 0;
     // Armour (doc 35, Part 8): more protection against a kind of blow, and what it takes off dexterity (as a negative).
     int vsCut = 0, vsThrust = 0, vsBlunt = 0, dex = 0;
+    int durability = 0;                             // How much use it takes before it falls apart (0: it doesn't wear).
 };
 
 struct Business
@@ -53,6 +56,53 @@ std::vector<std::string> wearablesSold(const Business& business);
 const Item* good(const std::string& id);
 // What a business sells (by id or category) costing at most `maxPrice` pennies, in catalog order.
 std::vector<std::string> goodsSold(const Business& business, int maxPrice);
+// A starter craft (Data/Items/crafts.json; doc 35, Phase 5, first part): a whole batch from at most two ingredients.
+struct Craft
+{
+    std::string id;
+    std::vector<std::string> makers;                // Business ids whose keepers make it.
+    double seconds = 60;                            // Game seconds of work for one batch.
+    std::vector<std::pair<std::string, int>> in, out;
+};
+// Someone who brings goods in from the land (crafts.json `producers`): a farmer, a shepherd, a fisher, a stables.
+struct Producer
+{
+    std::string id;
+    std::vector<std::string> match;                 // Words in a resident's work label.
+    double seconds = 1800;                          // Game seconds of work for one yield.
+    std::vector<int> seasons;                       // 0 spring .. 3 winter; empty: all year.
+    std::vector<std::pair<std::string, int>> out;
+};
+// Whether other trades buy this to work with: an ingredient of some craft, or something a shop supplies.
+bool traded(const std::string& item);
+// The producer a resident is, from the words of their work label, or null.
+const Producer* producerFor(const std::string& workLabel);
+// What a kind of shop makes, in file order (none if it makes nothing yet).
+std::vector<const Craft*> craftsFor(const std::string& business);
+// The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.
+const std::vector<std::string>& suppliesFor(const std::string& business);
+// What a kind of shop buys from players and sells on (gathered and hunted goods, doc 41), or none.
+const std::vector<std::string>& buysFor(const std::string& business);
+// Quality (doc 35, Part 4): crude (0, 0.6× the price), common (1, the plain id), fine (2, 1.6×) and masterwork (3, 3×).
+// A good of a quality other than common is its id with "~crude", "~fine" or "~masterwork" ("hide~fine"); good() and
+// wearable() find those too, with their price, name and wear made over. Herbs, meals, the sword and water have no
+// qualities.
+// A masterwork carries its maker's mark (doc 35, Part 4): "sword~masterwork@sorrel". good() and wearable() find it as
+// the masterwork kind.
+std::string baseOf(const std::string& id);                  // "hide~fine" -> "hide".
+std::string makerOf(const std::string& id);                 // "sword~masterwork@sorrel" -> "sorrel"; "" for none.
+std::string withMaker(const std::string& id, const std::string& maker);
+std::string unmarked(const std::string& id);                // The id without its maker's mark.
+int qualityOf(const std::string& id);                       // 0..3; 1 for a plain id.
+std::string withQuality(const std::string& base, int quality);
+const char* qualityName(int quality);                       // "Crude", "Common", "Fine", "Masterwork".
+double qualityPrice(int quality);
+bool qualityApplies(const std::string& base);
+std::vector<std::string> kindsOf(const std::string& base);  // The good in every quality, common first (marks aside).
+// What a quality's use lasts, against the common kind's: crude 0.6, fine 1.5, masterwork 2.5.
+double qualityDurability(int quality);
+// A weapon's blow, against the common kind's (doc 33's damage): crude 0.85, fine 1.15, masterwork 1.3.
+double qualityDamage(int quality);
 // "the ruff", "the left foreleg"...: a fur spot or wear slot for a sentence.
 std::string placeName(const std::string& where);
 } // namespace ratw::items

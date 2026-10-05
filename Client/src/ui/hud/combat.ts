@@ -55,12 +55,22 @@ class Face {
         this.canvas.height = h;
     }
     draw(portraits: Portraits, f: FighterView) {
-        const key = JSON.stringify([f.appearance, f.lifeStage]);
+        const key = JSON.stringify([f.appearance, f.lifeStage, f.animal?.species ?? '']);
         if (key === this.drawn) return;
         const c = this.canvas.getContext('2d');
         if (!c) return;
         c.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const w = this.canvas.width, h = this.canvas.height;
+        if (f.animal) {
+            // Game (doc 41): no wolf's portrait, its glyph.
+            c.fillStyle = f.animal.color || '#b89a74';
+            c.font = `bold ${Math.round(h * 0.7)}px monospace`;
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.fillText(f.animal.glyph, w / 2, h / 2);
+            this.drawn = key;
+            return;
+        }
         const drawn = this.head ? drawPortrait(c, portraits, f.appearance, ageOf(f.lifeStage), -w * 1.15, -h * 0.12, w * 2.3, h * 1.56)
             : drawPortrait(c, portraits, f.appearance, ageOf(f.lifeStage), -w * 0.12, -h * 0.16, w * 1.24, h * 1.3);
         if (drawn) this.drawn = key;

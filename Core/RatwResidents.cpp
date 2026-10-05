@@ -58,6 +58,9 @@ void Society::resetAuthored()
         state_.residents[r.id] = life;
     }
     record("initial funding", "outside", "settlement", "", 0, state_.minted);
+    for (const auto& r : authored_.residents)
+        stockMaterials(r.id);                       // What the makers make things from, and the suppliers sell them.
+    state_.craftingStocked = CraftingStock;
     defaultCareers();
 }
 
@@ -140,6 +143,13 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     const bool night = hour < 6 || hour >= 22;
     const auto slot = std::int64_t(std::floor(absoluteDay * 96)); // Patrols move post every 15 game minutes.
     const auto today = std::int64_t(std::floor(absoluteDay));
+    if (state_.craftingStocked < CraftingStock)
+    {
+        // A world saved before crafting (doc 35, Phase 5): its makers and suppliers get their starting materials once.
+        for (const auto& r : authored_.residents)
+            stockMaterials(r.id);
+        state_.craftingStocked = CraftingStock;
+    }
     if (today != feastDay_)
     {
         feasted_.clear();
@@ -508,6 +518,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         else if (paidWork)
         {
+            produce(pair.first, absoluteDay);       // A farmer's, fisher's... yield (Data/Items/crafts.json).
             auto& treasury = state_.accounts.at("treasury");
             if (treasury.cash >= 2 && wallet.cash <= MoneyLimit - 2 && life.wagesToday < 3)
             {
@@ -535,17 +546,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (task == "trade")
         {
             const auto sold = wares(pair.first);
-            // At the forge: another blade while there are fewer than a few on hand.
-            if (smith(pair.first) && stock(wallet, "sword") < SmithSwords)
-                create(pair.first, "sword", 1, "forged");
-            // The shop's own goods (doc 35; Docs/Design/39): one more of whatever has run low, a piece at a time, as the
-            // smith forges blades. (A placeholder until crafting takes materials, doc 35 Phase 5.)
-            for (const auto& ware : sold)
-                if (ware != "meal" && ware != "herbs" && ware != "sword" && stock(wallet, ware) < GoodsKept)
-                {
-                    create(pair.first, ware, 1, "made");
-                    break;
-                }
+            // The shop's own goods (doc 35, Phase 5): a batch of whatever has run low, made from materials. A shop
+            // that makes nothing yet sells what it has.
+            craft(pair.first, job->work.cell, absoluteDay);
             const bool sellsMeals = std::find(sold.begin(), sold.end(), "meal") != sold.end();
             const bool sellsHerbs = std::find(sold.begin(), sold.end(), "herbs") != sold.end();
             if (!sellsMeals && !sellsHerbs)

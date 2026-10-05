@@ -23,7 +23,7 @@ std::string lower(std::string s)
 
 int World::wornCount(const Entity& e, const std::string& item)
 {
-    int n = e.mouth == item ? 1 : 0;
+    int n = (e.mouth == "sword" ? swordHeld(e) == item : e.mouth == item) ? 1 : 0;
     for (const auto& w : e.worn)
         n += w.second == item;
     for (const auto& j : e.jewellery)
@@ -156,8 +156,11 @@ void World::fitWorn(const std::string& id)
             e->jewellery.erase(e->jewellery.begin() + std::ptrdiff_t(j));
     for (auto w = e->worn.begin(); w != e->worn.end();)
         w = wornCount(*e, w->second) > Society::stock(*purse, w->second) ? e->worn.erase(w) : std::next(w);
-    if (!e->mouth.empty() && Society::stock(*purse, e->mouth) < 1)
+    if (!e->mouth.empty() && Society::stock(*purse, e->mouth == "sword" ? swordHeld(*e) : e->mouth) < 1)
+    {
         e->mouth.clear();
+        e->swordKind.clear();
+    }
 }
 
 World::Load World::loadOf(const Entity& e) const

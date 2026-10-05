@@ -817,7 +817,8 @@ export class Dialogs {
         else {
             el('div', 'item-name', detail, str(item, 'name'));
             el('div', `label ${bool(item, 'equipped') ? 'sage' : 'muted'}`, detail,
-                `${str(item, 'id') === 'sword' && bool(item, 'equipped') ? 'IN YOUR JAWS' : bool(item, 'equipped') ? 'WORN' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
+                `${str(item, 'id').split('~')[0] === 'sword' && bool(item, 'equipped') ? 'IN YOUR JAWS' : bool(item, 'equipped') ? 'WORN' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
+                `${item && 'condition' in item ? ` · CONDITION ${num(item, 'condition')}%` : ''}` +
                 `${num(item, 'warmth') > 0 ? ` · WARMTH ${num(item, 'warmth')}` : ''}${num(item, 'protect') > 0 ? ` · PROTECTION ${num(item, 'protect')}` : ''}` +
                 `${num(item, 'status') > 0 ? ` · FINERY ${num(item, 'status')}` : ''}` +
                 `${num(item, 'weight') > 0 ? ` · ${weightLabel(num(item, 'weight')).toUpperCase()}${wholeCount(item, 'quantity', 1) > 1 ? ' EACH' : ''}` : ''}`);
@@ -830,11 +831,18 @@ export class Dialogs {
                 if (fight) eat.title = 'Not in a fight';
             }
             this.wearActions(actions, item, self, fight);
-            const sword = id === 'sword' ? this.swordAction(self, fight) : null;
+            const sword = id.split('~')[0] === 'sword' ? this.swordAction(self, fight) : null;
             if (sword) {
                 const go = button(sword.label, 'primary', actions, sword.run);
                 go.disabled = sword.disabled;
                 go.title = sword.why;
+            }
+            // Worn gear mended at a shop that deals in it (doc 35): the fee to the shop.
+            if (str(item, 'repairBy')) {
+                const mend = button(`REPAIR · ${num(item, 'repairCost')}p`, 'small', actions,
+                    () => this.s.send({type: 'repair', target: str(item, 'repairBy'), item: id}));
+                mend.disabled = !!fight;
+                mend.title = fight ? 'Not in a fight' : 'Have the shop beside you mend it';
             }
         }
         if (fight) return;                          // (Gathering and trading wait for the fight to end.)

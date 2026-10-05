@@ -1,6 +1,7 @@
 // Fights as players see and drive them (Docs/Design/33-combat.md; the rules are the world's, RatwBattle.cpp): the
 // arena in a fighter's or watcher's snapshot, the red squares onlookers see, and the fight commands.
 #include "RatwGame.h"
+#include "RatwWild.h"
 #include "RatwItems.h"
 #include "RatwWire.h"
 
@@ -23,7 +24,7 @@ json::Value Game::gearView(const Entity& e) const
         gear.push(std::move(g));
     };
     if (!e.mouth.empty())
-        piece("mouth", Society::itemName(e.mouth), true, 0);
+        piece("mouth", Society::itemName(e.mouth == "sword" ? World::swordHeld(e) : e.mouth), true, 0);
     for (const char* slot : items::WearSlots)
         if (const auto found = e.worn.find(slot); found != e.worn.end())
             if (const auto* item = items::wearable(found->second); item && (item->protect > 0 || item->category == "weapon"))
@@ -52,6 +53,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("over", b.over);
     v.add("banner", names::veil(b.banner, veilMap(viewer)));     // (Names as this wolf knows them.)
     v.add("pvp", b.pvp);
+    v.add("hunt", b.hunt);                          // A hunt (doc 41): its other side is game.
     v.add("terms", b.terms);                        // "blood", "yield" or "death" (doc 37).
     v.add("crime", !b.incident.empty());            // A resident set on: the watch will hear of it.
     v.add("yieldBy", b.yieldBy);
@@ -120,7 +122,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 you.add("plan", plan);
             }
             if (const auto* purse = world_.society().account(viewer))
-                you.add("swords", Society::stock(*purse, "sword"));
+                you.add("swords", Society::stockAll(*purse, "sword"));
             if (!e->gift.empty())
             {
                 you.add("gift", e->gift);
@@ -169,6 +171,17 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
         o.add("facing", f.facing);
         o.add("status", f.status);
         o.add("npc", e->npc);
+        if (const auto species = world_.animalOf(f.id); !species.empty())
+            if (const auto* s = wild::speciesById(species))
+            {
+                // Game (doc 41): drawn as its own glyph, and whether it has noticed the hunters yet.
+                auto animal = Value::object();
+                animal.add("species", species);
+                animal.add("glyph", s->glyph);
+                animal.add("color", s->color);
+                animal.add("aware", !world_.animalUnaware(f.id));
+                o.add("animal", animal);
+            }
         // The initiative bar: how full, how fast it fills (a second), and whether it is full and waiting its turn.
         o.add("meter", std::round(std::max(0.0, f.meter) * 10) / 10);
         o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed")
@@ -292,7 +305,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                                                                         battle::octant(mine->x - f.x, mine->y - f.y)));
                 // Less what one's own injuries take off a blow (doc 38), as a real blow has it.
                 const auto hurt = injury::effects(me->injuries);
-                const double blow = std::max(1.0, (sword ? battle::SwordDamage : battle::BiteDamage) * (.6 + me->strength / 125) -
+                const double blow = std::max(1.0, (sword ? battle::SwordDamage * items::qualityDamage(items::qualityOf(World::swordHeld(*me))) : battle::BiteDamage) * (.6 + me->strength / 125) -
                                                       (sword ? hurt.swordLess : hurt.biteLess));
                 odds.add("damage", std::round(battle::expectedThrough(*e, quarter, blow, sword ? "cut" : "thrust")));
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));

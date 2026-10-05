@@ -99,6 +99,25 @@ int Society::stock(const EconomyAccount& account, const std::string& item)
     const auto it = account.stock.find(item);
     return it == account.stock.end() ? 0 : it->second;
 }
+int Society::stockAll(const EconomyAccount& account, const std::string& base)
+{
+    int n = 0;
+    for (const auto& kind : kindsHeld(account, base))
+        n += stock(account, kind);
+    return n;
+}
+std::vector<std::string> Society::kindsHeld(const EconomyAccount& account, const std::string& base)
+{
+    // Every kind of it in the purse: each quality, and masterworks under their makers' marks; plainest first.
+    const auto b = items::baseOf(base);
+    std::vector<std::string> out;
+    for (const auto& [item, n] : account.stock)
+        if (n > 0 && items::baseOf(item) == b)
+            out.push_back(item);
+    const auto rank = [](const std::string& id) { const int q = items::qualityOf(id); return q == 1 ? 0 : q == 0 ? 1 : q; };
+    std::stable_sort(out.begin(), out.end(), [&](const std::string& x, const std::string& y) { return rank(x) < rank(y); });
+    return out;
+}
 const EconomyAccount* Society::account(const std::string& id) const
 {
     const auto it = state_.accounts.find(id);
@@ -199,7 +218,21 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
         return kept->second.second;
     std::vector<std::string> out;
     const auto* business = items::businessFor(r->workLabel);
-    if (business)
+    const auto crafts = business ? items::craftsFor(business->id) : std::vector<const items::Craft*>{};
+    const auto& supplies = business ? items::suppliesFor(business->id) : std::vector<std::string>{};
+    if (!crafts.empty() || !supplies.empty())
+    {
+        // A maker sells what it makes (Data/Items/crafts.json), a supplier the ingredients it sells to the makers.
+        for (const auto* craft : crafts)
+            for (const auto& made : craft->out)
+                if (std::find(out.begin(), out.end(), made.first) == out.end())
+                    out.push_back(made.first);
+        for (const auto& item : supplies)
+            if (std::find(out.begin(), out.end(), item) == out.end())
+                out.push_back(item);
+        out.erase(std::remove_if(out.begin(), out.end(), [](const std::string& id) { return id == "meal" || id == "herbs"; }), out.end());
+    }
+    else if (business)
     {
         // A handful of the kind's cheap goods (or its cheapest few, where little of it is cheap), chosen by the shop.
         auto cheap = items::goodsSold(*business, CheapPrice);
@@ -235,13 +268,19 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
         });
         out.erase(std::remove_if(out.begin(), out.end(), [](const std::string& id) { return id == "meal" || id == "herbs"; }), out.end());
     }
-    static const char* Food[] = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery"};
+    // What it buys from players (gathered and hunted goods, doc 41), to sell on.
+    if (business)
+        for (const auto& item : items::buysFor(business->id))
+            if (item != "meal" && item != "herbs" && std::find(out.begin(), out.end(), item) == out.end())
+                out.push_back(item);
+    static const char* Food[] = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery", "inn"};
     const bool food = business && std::find(std::begin(Food), std::end(Food), business->id) != std::end(Food);
-    if (smith(merchant))
+    if (smith(merchant) && std::find(out.begin(), out.end(), "sword") == out.end())
         out.insert(out.begin(), "sword");
     if (!business || food)
         out.push_back("meal");
-    if (!business || business->id == "herbalist" || business->id == "apothecary" || business->id == "general" || business->id == "stall")
+    if (!business || business->id == "herbalist" || business->id == "apothecary" || business->id == "general" || business->id == "stall" ||
+        business->id == "inn")
         out.push_back("herbs");
     waresCache_[merchant] = {r->workLabel, out};
     return out;
@@ -326,14 +365,19 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     if (quantity < 1 || quantity > 99)
         return {false, "Choose a whole quantity from 1 to 99."};
     const auto deals = wares(seller);
-    if (!itemValid(item) || std::find(deals.begin(), deals.end(), item) == deals.end())
+    // A shop deals in its goods of every quality (doc 35, Part 4): a tanner takes a fine hide as well as a common one.
+    if (!itemValid(item) || std::find(deals.begin(), deals.end(), items::baseOf(item)) == deals.end())
         return {false, "This trader has no use for those goods."};
     const auto& m = *account(seller);
     const auto& p = *account(player);
     const auto* worn = items::wearable(item);
     // Anything else of the catalog (Docs/Design/39): its own price, a few kept.
     const auto* good = item == "meal" || item == "herbs" || item == "sword" ? nullptr : items::good(item);
-    const int held = stock(m, item), cap = worn ? 4 : good ? GoodsKept : item == "meal" ? 24 : item == "sword" ? 4 : 20;
+    // A supplier's or buyer's goods (crafts.json `supplies` and `buys`), a store's worth; anything else, a few.
+    const auto* business = spec(seller) ? items::businessFor(spec(seller)->workLabel) : nullptr;
+    const auto dealsIn = [&](const std::vector<std::string>& list) { return std::find(list.begin(), list.end(), items::baseOf(item)) != list.end(); };
+    const bool stocked = business && (dealsIn(items::suppliesFor(business->id)) || dealsIn(items::buysFor(business->id)));
+    const int held = stock(m, item), cap = stocked ? SuppliesKept : worn ? 4 : good ? GoodsKept : item == "meal" ? 24 : item == "sword" ? 4 : 20;
     const int base = worn ? worn->price : good ? std::max(1, good->price) : item == "meal" ? 6 : item == "sword" ? 40 : 2;
     // What the trader has on hand, and what the town has in store (priceFactor): scarce goods cost more.
     const double demand = (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
@@ -441,6 +485,7 @@ void Society::tick(double seconds, double absoluteDay, int season, const std::ma
 }
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
 {
+    season_ = season;
     const auto day = std::int64_t(std::floor(absoluteDay));
     if (day > state_.budgetDay)
     {
@@ -885,7 +930,8 @@ bool Society::restore(const SocietyState& saved)
         s.ledger.size() > 128 || s.minted < 0 || s.minted > MoneyLimit || s.sunk < 0 || s.sunk > s.minted ||
         s.nextEntry < 1 || s.nextEntry > 1000000000000LL || s.budgetDay < 0 || s.budgetDay > 365000000 ||
         s.exportsRemaining < 0 || s.exportsRemaining > 8 || s.importsRemaining < 0 || s.importsRemaining > 4 ||
-        s.herbPatch < 0 || s.herbPatch > 60 || !validNumber(s.decisionRemainder, 0, 1))
+        s.herbPatch < 0 || s.herbPatch > 60 || !validNumber(s.decisionRemainder, 0, 1) || s.craftingStocked < 0 ||
+        s.craftingStocked > 100)
         return false;
     std::int64_t sum = 0;
     for (const auto& a : s.accounts)

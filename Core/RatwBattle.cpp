@@ -35,6 +35,7 @@ struct Landed
 {
     double damage = 0;
     std::string words;
+    std::string zone;                   // Where it fell ("head", "throat", "body", "legs"): the armour there wears.
 };
 Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key);
 
@@ -180,6 +181,7 @@ Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, dou
             break;
         }
     Landed out;
+    out.zone = hit->zone;
     out.damage = battle::throughArmour(d, hit->zone, damage, type);
     out.words = std::string(" on ") + hit->part;
     if (const long taken = std::lround(damage) - std::lround(out.damage); taken >= 1)
@@ -905,6 +907,10 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
         return {false, "No such character.", {}};
     if (!b || b->over)
         return {false, "That fight is over.", {}};
+    if (b->hunt && side != 0)
+        return {false, "Join the hunters, not the game.", {}};
+    if (const auto why = huntJoinRefusal(*b, id); !why.empty())
+        return {false, why, {}};                    // Only a hunter's party or Chapter (doc 41).
     if (const auto why = tooLoadedToFight(id); !why.empty())
         return {false, why, {}};
     if (side != 0 && side != 1)
@@ -1673,6 +1679,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     if (graze)
         damage /= 2;
     const auto landed = land(f, *t, *d, damage, "thrust", key);   // Teeth: a thrust, no pierce (doc 35, Part 8).
+    wearArmourAt(*d, landed.zone, damage - landed.damage);           // The armour there takes the wear (RatwDurability.cpp).
     damage = landed.damage;
     const std::string how = graze ? " grazes " : " bites ";
     fightLine(b, f.id, target, graze ? "graze" : "hit", e->name + how + d->name + landed.words + " (" + whole(damage) + ").");
@@ -1688,6 +1695,8 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     auto* e = entity(f.id);
     if (!e)
         return;
+    if (huntKill(b, f, by))
+        return;                                     // An animal in a hunt dies, and is taken (doc 41).
     if (e->npc)
         e->downedLeft = std::max(base * battle::DownedMinimum, base - overkill * battle::OverkillSeconds);
     else
@@ -1788,6 +1797,7 @@ void World::checkOver(Battle& b)
     const std::string how = yielded && allYielded ? (b.terms == "blood" ? "First blood" : loser + " yields") : "The fight is over";
     b.banner = winner.empty() ? how : how + " · " + winner + "'s side stands";
     fightLine(b, {}, {}, "over", b.banner + ".");
+    huntBanner(b);                                  // A hunt says how it went (doc 41).
 }
 
 void World::standUp(Entity& e, double health)
@@ -1874,6 +1884,7 @@ void World::finishBattle(Battle& b)
             if (auto* e = entity(f.id))
                 growSkill(*e, battle::SkillPerFight);
     recordEvent({"fight ends", {}, {}, b.cellId, 0, 0, {}, 0, 0, b.id});
+    endHunt(b);                                     // A hunt's animals go with it (doc 41).
     if (b.camp.empty())
         return;
     if (testCamp(b.camp))
@@ -1934,6 +1945,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         endTurn(b, f);
         return;
     }
+    if (animalTurn(b, f))
+        return;                                     // An animal in a hunt (doc 41, RatwHunt.cpp).
     if (f.status == "downed")
     {
         if (!f.struggling && recoveryAvailable(*e))
@@ -2572,17 +2585,30 @@ Result World::holdItem(const std::string& id, const std::string& item)
     auto* e = entity(id);
     if (!e || e->dead)
         return {false, "No such character.", {}};
-    if (item != "sword")
+    if (items::baseOf(item) != "sword")
         return {false, "You can't hold that in your mouth.", {}};
     if (e->downedLeft > 0)
         return {false, "You are down.", {}};
     if (!e->mouth.empty())
         return {false, "Your mouth is already full.", {}};
     const auto* purse = society_.account(id);
-    if (!purse || Society::stock(*purse, item) < 1)
-        return {false, "You have no " + item + ".", {}};
-    e->mouth = item;
-    return {true, "You take the " + item + " in your jaws.", {}};
+    if (!purse)
+        return {false, "You have no sword.", {}};
+    // Any sword (doc 35, Part 4): the one named, else the best one has.
+    std::string kind = item != "sword" && Society::stock(*purse, item) > 0 ? item : std::string();
+    if (kind.empty())
+        for (const auto& [held, n] : purse->stock)
+            if (n > 0 && items::baseOf(held) == "sword" && (kind.empty() || items::qualityOf(held) > items::qualityOf(kind)))
+                kind = held;
+    if (kind.empty())
+        return {false, "You have no sword.", {}};
+    e->mouth = "sword";
+    e->swordKind = kind == "sword" ? std::string() : kind;
+    const auto* good = items::good(kind);
+    std::string name = good && kind != "sword" ? good->name : std::string("sword");
+    if (!name.empty())
+        name[0] = char(std::tolower(static_cast<unsigned char>(name[0])));
+    return {true, "You take the " + name + " in your jaws.", {}};
 }
 
 Result World::stowItem(const std::string& id)
@@ -2592,6 +2618,7 @@ Result World::stowItem(const std::string& id)
         return {false, "Your mouth is empty.", {}};
     const auto item = e->mouth;
     e->mouth.clear();
+    e->swordKind.clear();
     return {true, "You put the " + item + " away.", {}};
 }
 
@@ -2618,11 +2645,12 @@ void World::dropItem(Battle& b, BattleFighter& f)
     auto* e = entity(f.id);
     if (!e || e->mouth.empty())
         return;
-    const auto item = e->mouth;
+    const auto item = e->mouth == "sword" ? swordHeld(*e) : e->mouth;   // (That very sword, of its kind.)
     society_.openAccount(GroundAccount);
     if (!society_.shift(f.id, GroundAccount, item, 1, 0, "knocked loose in a fight"))
         return;
     e->mouth.clear();
+    e->swordKind.clear();
     b.drops.push_back({f.x, f.y, item, f.id});
     fightLine(b, f.id, {}, "drop", "The " + item + " is knocked from " + e->name + "'s jaws.");
 }
@@ -2653,6 +2681,7 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     auto* d = entity(t.id);
     if (!d || t.status != "fighting")
         return;
+    damage = huntBlow(b, t, damage, downedBase, by);   // An animal (doc 41): its own health, and the blow remembered.
     d->hurt += damage;
     injureOnBlow(b, t, damage, downedBase, by);     // A heavy blow can leave an injury that outlasts the fight (doc 38).
     if (d->npc)
@@ -2823,17 +2852,22 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     const double hit = strikeChance(f, *t);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|sword|" + target, key);
+    // The sword's kind (doc 35, Part 4): a finer blade cuts deeper; and every swing wears it (RatwDurability.cpp).
+    const auto blade = swordHeld(*e);
+    const double edge = items::qualityDamage(items::qualityOf(blade));
+    wearGear(*e, blade, 1);
     if (r >= hit)
     {
         fightLine(b, f.id, target, "miss", e->name + " swings at " + d->name + " and misses.");
         return {true, "You swing at " + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
-    double damage = battle::SwordDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
+    double damage = battle::SwordDamage * edge * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
     damage = std::max(1.0, damage - injury::effects(e->injuries).swordLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
     const auto landed = land(f, *t, *d, damage, "cut", key);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
+    wearArmourAt(*d, landed.zone, damage - landed.damage);
     damage = landed.damage;
     fightLine(b, f.id, target, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);

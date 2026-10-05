@@ -3736,6 +3736,8 @@ void World::tick(double dt)
     tendDowned(elapsed);                            // Down, out of a fight: the timer, getting up, being tended.
     restPlayers(elapsed);                           // Lying or sitting still: rest (doc 38).
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
+    tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
+    tendWear();                                     // Clothes wearing with the days (RatwDurability.cpp).
     mark = Clock::now();
     // A player's map memory takes in what they see as they go. A view is thousands of sight rays, so it is taken
     // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
@@ -3784,6 +3786,8 @@ double World::visionClarity(const Entity& o, const Entity& s, double range) cons
 {
     if (o.id == s.id)
         return 1;
+    if (s.transient && !animals_.empty() && animals_.count(s.id))
+        return 0;                                   // Game lives only in its hunt, seen there (doc 41), never in the world.
     if (o.cellId != s.cellId || !visiblePoint(o, s.position, range))
         return 0;
     if (s.posture == "crouching")

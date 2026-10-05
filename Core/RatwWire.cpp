@@ -190,6 +190,15 @@ Value persistEntity(const Entity& e, double time)
     }
     if (!e.mouth.empty())
         o.add("mouth", e.mouth);
+    if (!e.swordKind.empty())
+        o.add("swordKind", e.swordKind);
+    if (!e.wear.empty())
+    {
+        auto wear = Value::object();
+        for (const auto& [item, used] : e.wear)
+            wear.add(item, used);
+        o.add("wear", wear);
+    }
     if (!e.worn.empty())
     {
         auto worn = Value::object();
@@ -312,14 +321,20 @@ Entity readEntity(const Value& o)
         {
             const auto fits = items::slotsFor(*piece);
             if (std::find(fits.begin(), fits.end(), slot) != fits.end())
-                e.worn[slot] = piece->id;
+                e.worn[slot] = item.asString({});       // (As saved: a masterwork keeps its maker's mark.)
         }
     for (const auto& piece : o.array("jewellery"))
         if (piece.isArray() && piece.items().size() == 2 && e.jewellery.size() < items::MaxJewellery)
             if (const auto* item = items::wearable(piece.items()[1].asString({})); item && items::spotAllowed(*item, piece.items()[0].asString({})))
-                e.jewellery.emplace_back(piece.items()[0].asString({}), item->id);
+                e.jewellery.emplace_back(piece.items()[0].asString({}), piece.items()[1].asString({}));
     if (!e.mouth.empty() && e.mouth != "sword")
         e.mouth.clear();
+    // The sword's kind, if it is one; the wear on gear, for goods that exist, within bounds.
+    if (const auto kind = o.string("swordKind"); e.mouth == "sword" && items::baseOf(kind) == "sword" && items::good(kind))
+        e.swordKind = kind;
+    for (const auto& [item, used] : o.object("wear").fields())
+        if (items::good(item) && used.asNumber(-1) >= 0 && used.asNumber(-1) <= 100000 && e.wear.size() < 64)
+            e.wear[item] = used.asNumber(0);
     // Injuries (doc 38): only known kinds, within bounds; anything else is dropped rather than refusing the save.
     for (const auto& j : o.array("injuries"))
     {
@@ -632,6 +647,7 @@ Value society(const SocietyState& s)
     o.add("importsRemaining", s.importsRemaining);
     o.add("herbPatch", s.herbPatch);
     o.add("decisionRemainder", s.decisionRemainder);
+    o.add("craftingStocked", s.craftingStocked);
     auto accounts = Value::object();
     for (const auto& [id, a] : s.accounts)
         accounts.add(id, economyAccount(a));
@@ -726,7 +742,9 @@ SocietyState readSociety(const Value& o)
         s.minted = -1;
         return s;
     }
-    bool valid = o.size() == 12 || (o.size() == 13 && o.has("careers"));   // Twelve fields; careers since Phase 4.
+    // Twelve fields; careers since Phase 4; craftingStocked since crafting (doc 35, Phase 5).
+    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0);
+    bool valid = fields == 12;
     const auto integer = [&](const Value& j, const char* key, double max) -> std::int64_t {
         const double n = strictNumber(j, key, -1);
         if (n < 0 || n > max || n != std::floor(n)) { valid = false; return 0; }
@@ -741,6 +759,7 @@ SocietyState readSociety(const Value& o)
     s.exportsRemaining = int(integer(o, "exportsRemaining", 8));
     s.importsRemaining = int(integer(o, "importsRemaining", 4));
     s.herbPatch = int(integer(o, "herbPatch", 60)); s.decisionRemainder = real(o, "decisionRemainder");
+    s.craftingStocked = o.has("craftingStocked") ? int(integer(o, "craftingStocked", 100)) : 0;   // Saved before crafting: 0.
     const auto& accounts = o["accounts"];
     const auto& residents = o["residents"];
     if (!accounts.isObject() || accounts.size() > MaxAccounts || !residents.isObject() || residents.size() > MaxResidents)

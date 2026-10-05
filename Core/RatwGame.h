@@ -342,6 +342,9 @@ class Game
     std::map<std::string, std::string> nameStrangers(const std::string& viewer) const;
     double labelsAccumulator_ = 1;
     std::string labelFor(const std::string& viewer, const std::string& id) const;
+    // A good's name as this wolf sees it (doc 35, Part 4): with a masterwork's maker's mark, named if it knows them, else
+    // known only by the scent on it.
+    std::string itemLabel(const std::string& viewer, const std::string& item) const;
     std::string veilFor(const std::string& viewer, const std::string& text) const;
     bool willName(const std::string& npcId, const std::string& playerId) const;
     bool learnName(const std::string& knower, const std::string& known, const std::string& name, const std::string& how);

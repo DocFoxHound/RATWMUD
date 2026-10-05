@@ -1,0 +1,32 @@
+{
+  "format": "ratw-forage",
+  "version": 1,
+  "about": "What a wolf can forage from the ground beside it, outdoors (Docs/Design/41-hunting-and-foraging.md). Each kind of ground lists goods with a weight, how many one picking gives, and the seasons it can be found in (0 spring .. 3 winter; none: all year). A patch of ground (patchTiles square) gives `picks` pickings, and one comes back every `regrowHours` game hours. A wolf forages once every `seconds`. Numbers are placeholders.",
+  "patchTiles": 8, "picks": 4, "regrowHours": 2, "seconds": 4,
+  "ground": [
+    {"id": "broadleaf", "tiles": "Y", "name": "the trees", "goods": [
+      {"item": "firewood", "weight": 3, "count": 1}, {"item": "oak_bark", "weight": 2, "count": 1},
+      {"item": "mushrooms", "weight": 2, "count": 1, "seasons": [1, 2]}, {"item": "oak_galls", "weight": 1, "count": 1, "seasons": [2]}]},
+    {"id": "pine", "tiles": "P$1", "name": "the pines", "goods": [
+      {"item": "firewood", "weight": 3, "count": 1}, {"item": "resin", "weight": 2, "count": 1}]},
+    {"id": "deadwood", "tiles": "27", "name": "the deadwood", "goods": [
+      {"item": "firewood", "weight": 4, "count": 1}, {"item": "mushrooms", "weight": 2, "count": 1, "seasons": [0, 1, 2]}]},
+    {"id": "shrub", "tiles": "B", "name": "the scrub", "goods": [
+      {"item": "berries", "weight": 3, "count": 2, "seasons": [1, 2]}, {"item": "firewood", "weight": 1, "count": 1}]},
+    {"id": "grass", "tiles": ",\";", "name": "the grass", "goods": [
+      {"item": "herbs", "weight": 3, "count": 1, "seasons": [0, 1, 2]}, {"item": "yarrow", "weight": 1, "count": 1, "seasons": [0, 1, 2]},
+      {"item": "thyme", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},
+    {"id": "flowers", "tiles": "3", "name": "the wildflowers", "goods": [
+      {"item": "chamomile", "weight": 2, "count": 1, "seasons": [0, 1]}, {"item": "lavender", "weight": 1, "count": 1, "seasons": [1]},
+      {"item": "herbs", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},
+    {"id": "heather", "tiles": "5", "name": "the heather", "goods": [
+      {"item": "thyme", "weight": 2, "count": 1, "seasons": [0, 1, 2]}, {"item": "herbs", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},
+    {"id": "undergrowth", "tiles": "!&", "name": "the moss and ferns", "goods": [
+      {"item": "mushrooms", "weight": 2, "count": 1, "seasons": [0, 1, 2]}, {"item": "comfrey", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},
+    {"id": "reeds", "tiles": "E", "name": "the reeds", "goods": [{"item": "reeds", "weight": 1, "count": 2}]},
+    {"id": "mud", "tiles": "D", "name": "the mud", "goods": [{"item": "clay", "weight": 1, "count": 1}]},
+    {"id": "sand", "tiles": "0", "name": "the sand", "goods": [{"item": "sand", "weight": 1, "count": 1}]},
+    {"id": "shallows", "tiles": "~", "name": "the shallows", "goods": [
+      {"item": "shellfish", "weight": 1, "count": 1, "seasons": [0, 1, 2]}, {"item": "reeds", "weight": 1, "count": 1}]}
+  ]
+}

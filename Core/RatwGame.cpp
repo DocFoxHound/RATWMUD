@@ -4,6 +4,7 @@
 #include "RatwMotionCore.h"
 #include "RatwWire.h"
 #include "RatwItems.h"
+#include "RatwWild.h"
 
 #include <algorithm>
 #include <chrono>
@@ -377,6 +378,12 @@ bool Game::start(std::string& problem)
             return false;
     }
     storageReady_ = true;
+    // A hunt (doc 41) may be joined by a hunter's friends: their party, or their Chapter.
+    world_.setFriends([this](const std::string& a, const std::string& b) {
+        const auto* pa = parties_.of(a);
+        const auto* ca = chapters_.of(a);
+        return (pa && pa == parties_.of(b)) || (ca && ca == chapters_.of(b));
+    });
     if (!health_ && !options_.savePath.empty() && !options_.scratch)
         health_ = health::Recorder::file(options_.savePath + ".health.jsonl");
     if (options_.workerThreads > 0)
@@ -2345,8 +2352,8 @@ void Game::sendSnapshot(Connection* c)
             self.set("mana", std::floor(me->mana));
             self.set("manaMax", std::round(battle::manaMax(me->wisdom, true)));
         }
-        if (const auto* purse = world_.society().account(id); purse && Society::stock(*purse, "sword") > 0)
-            self.set("swords", Society::stock(*purse, "sword"));
+        if (const auto* purse = world_.society().account(id); purse && Society::stockAll(*purse, "sword") > 0)
+            self.set("swords", Society::stockAll(*purse, "sword"));   // (Of any kind: doc 35, Part 4.)
         if (me->downedLeft > 0)
         {
             self.set("downedLeft", std::round(me->downedLeft));
@@ -2791,7 +2798,7 @@ void Game::sendSnapshot(Connection* c)
                 const int worn = me ? World::wornCount(*me, itemId) : 0;
                 auto i = Value::object();
                 i.add("id", itemId);
-                i.add("name", piece->name);
+                i.add("name", itemLabel(id, itemId));
                 i.add("icon", piece->slot == "jewelry" ? "jewel" : piece->slot == "sling" || piece->slot == "harness" ? "bag" : "wear");
                 i.add("description", piece->desc);
                 i.add("equipped", worn > 0);
@@ -2816,11 +2823,12 @@ void Game::sendSnapshot(Connection* c)
                                            !items::wearable(itemId) ? items::good(itemId) : nullptr)
             {
                 auto i = Value::object();
+                const bool blade = items::baseOf(itemId) == "sword";     // A sword of another kind (doc 35, Part 4).
                 i.add("id", itemId);
-                i.add("name", good->name);
-                i.add("icon", "goods");
+                i.add("name", itemLabel(id, itemId));
+                i.add("icon", blade ? "weapon" : "goods");
                 i.add("description", good->desc);
-                i.add("equipped", false);
+                i.add("equipped", blade && world_.entity(id) && World::swordHeld(*world_.entity(id)) == itemId);
                 i.add("quantity", quantity);
                 inventory.push(std::move(i));
             }
@@ -2830,6 +2838,33 @@ void Game::sendSnapshot(Connection* c)
     for (auto& i : inventory.items())
         if (const auto* good = items::good(i.string("id")))
             i.add("weight", good->weight);
+    {
+        // Wear and tear (doc 35): how much is left of each piece in service, and, beside a shop that deals in it, what
+        // mending it would cost.
+        const auto* me = world_.entity(id);
+        const Entity* mender = nullptr;
+        double menderAt = 2.5;
+        for (const Entity* e : world_.entitiesIn(view.self.cellId))
+            if (e->cellId == view.self.cellId && world_.society().merchant(e->id))
+                if (const double d = std::hypot(e->position.x - view.self.position.x, e->position.y - view.self.position.y); d <= menderAt)
+                {
+                    mender = e;
+                    menderAt = d;
+                }
+        for (auto& i : inventory.items())
+        {
+            const auto itemId = i.string("id");
+            if (!me || World::durabilityOf(itemId) <= 0)
+                continue;
+            i.add("condition", std::round(world_.conditionOf(*me, itemId) * 100));
+            if (mender && world_.canRepair(mender->id, itemId))
+                if (const auto cost = world_.repairCost(*me, itemId); cost > 0)
+                {
+                    i.add("repairBy", mender->id);
+                    i.add("repairCost", cost);
+                }
+        }
+    }
     root.add("inventory", inventory);
     const Entity* trader = nullptr;
     double traderAt = 1e18;
@@ -2851,12 +2886,23 @@ void Game::sendSnapshot(Connection* c)
             m.add("name", names::capitalised(labelFor(id, trader->id)));
             m.add("cash", account->cash);
             auto goods = Value::array();
+            // Each of its goods, and any other quality of it the shop or this wolf has (doc 35, Part 4: "Fine hide").
+            std::vector<std::string> kinds;
             for (const auto& ware : world_.society().wares(trader->id))
             {
-                const char* itemId = ware.c_str();
+                kinds.push_back(ware);
+                for (const auto* holder : {account, purse})
+                    for (const auto& kind : Society::kindsHeld(*holder, ware))
+                        if (kind != ware && std::find(kinds.begin(), kinds.end(), kind) == kinds.end())
+                            kinds.push_back(kind);
+            }
+            for (const auto& kind : kinds)
+            {
+                const char* itemId = kind.c_str();
                 auto good = Value::object();
                 good.add("id", itemId);
-                good.add("name", Society::itemName(itemId));
+                good.add("quality", items::qualityName(items::qualityOf(kind)));
+                good.add("name", itemLabel(id, itemId));
                 good.add("stock", Society::stock(*account, itemId));
                 good.add("owned", Society::stock(*purse, itemId));
                 const auto buy = world_.society().quote(id, trader->id, itemId, 1, true);
@@ -2884,6 +2930,41 @@ void Game::sendSnapshot(Connection* c)
         resource.add("y", patch.y);
         resource.add("remaining", world_.society().state().herbPatch);
         root.add("resource", resource);
+    }
+    {
+        // Out in the wild (doc 41): whether one may hunt here, and what the ground beside one gives to forage.
+        const auto here = world_.wildAround(id);
+        auto wild = Value::object();
+        wild.add("hunt", here.hunt);
+        wild.add("huntWhy", here.huntWhy);
+        wild.add("forage", here.forage);
+        wild.add("forageWhat", here.forageWhat);
+        // Trails this wolf has smelt out here: faint marks on the map's tiles, each the animal's colour (doc 41).
+        auto tracks = Value::array();
+        for (const auto& t : world_.tracksOf(id))
+        {
+            auto track = Value::object();
+            track.add("species", t.species);
+            if (const auto* s = wild::speciesById(t.species))
+            {
+                track.add("name", s->name);
+                track.add("color", s->color);
+            }
+            track.add("fresh", t.fresh);
+            track.add("left", std::max(0.0, t.until - world_.time()));
+            auto tiles = Value::array();
+            for (const auto& [x, y] : t.tiles)
+            {
+                auto tile = Value::array();
+                tile.push(x);
+                tile.push(y);
+                tiles.push(tile);
+            }
+            track.add("tiles", tiles);
+            tracks.push(track);
+        }
+        wild.add("tracks", tracks);
+        root.add("wild", wild);
     }
     auto memory = Value::object();
     int turns = 0, count = 0;
@@ -3524,6 +3605,22 @@ void Game::command(Connection* c, const std::string& raw)
             record(Economy | Character, id);
         }
     }
+    else if (type == "repair")
+    {
+        // Mending worn gear at a shop that deals in it (doc 35): the fee to the shop.
+        result = world_.repairGear(id, j.string("target"), j.string("item"));
+        report = true;
+        if (result.ok)
+            record(Economy | Character, id);
+    }
+    else if (type == "hunt" || type == "forage" || type == "leaveHunt")
+    {
+        // Hunting and foraging (doc 41): out in the wild.
+        result = type == "hunt" ? world_.startHunt(id) : type == "forage" ? world_.forage(id) : world_.leaveHunt(id);
+        report = true;
+        if (result.ok && type == "forage")
+            record(Economy | Character, id);
+    }
     else if (type == "gather" || type == "eat")
     {
         result = type == "gather" ? world_.gather(id) : world_.eat(id);
@@ -3660,6 +3757,9 @@ void Game::command(Connection* c, const std::string& raw)
                     }
                     system(c, message);
                 }
+                // Out in the wild the nose finds game's trails too (doc 41), marked faintly on the map for a while.
+                if (const auto tracks = world_.smellTracks(id); tracks.ok)
+                    system(c, tracks.message);
             }
             else if (action == "session_end")
             {
@@ -4327,5 +4427,21 @@ void Game::load(const std::string& payload)
             responseReceipts_[actor][key] = value;
     note("info", "RATW_RESTORE characters=" + std::to_string(characters_.size()) + " summaries=" + std::to_string(memories_.summaries.size()) +
                      " ledger=" + std::to_string(social_.entries.size()));
+}
+std::string Game::itemLabel(const std::string& viewer, const std::string& item) const
+{
+    std::string name = Society::itemName(item);
+    const auto maker = items::makerOf(item);
+    if (maker.empty())
+        return name;
+    if (maker == viewer)
+        return name + " · your own mark";
+    const auto* who = world_.entity(maker);
+    const auto* spec = world_.society().spec(maker);
+    if (who && knowsName(viewer, maker))
+        return name + " · " + who->name + "'s mark";
+    if (!who && spec)
+        return name + " · " + spec->name + "'s mark";
+    return name + " · a maker's mark, and a scent you don't know";
 }
 } // namespace ratw::game

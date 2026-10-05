@@ -11,6 +11,14 @@ export interface GearView {
     protect: number;
 }
 
+/** An animal in a hunt (doc 41). */
+export interface AnimalView {
+    species: string;
+    glyph: string;
+    color: string;              // "#rrggbb".
+    aware: boolean;
+}
+
 export interface FighterView {
     id: string;
     name: string;
@@ -36,6 +44,7 @@ export interface FighterView {
     guarding: boolean;          // On guard (doc 37): harder to hit, turning to meet a blow, until their next turn.
     walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
+    animal?: AnimalView | null; // Game in a hunt (doc 41): drawn as its own glyph, and whether it has noticed the hunters.
     lifeStage: string;
     stamina: number;            // Everyone's (−1 if not sent).
     mana: number;               // The Gifted's (−1 otherwise), out of manaMax.
@@ -97,6 +106,7 @@ export interface BattleView {
     over: boolean;
     banner: string;
     pvp: boolean;
+    hunt: boolean;              // A hunt (doc 41): the other side is game.
     terms: string;              // "blood", "yield" or "death" (doc 37).
     crime: boolean;             // A resident set on: the watch will hear.
     yieldBy: string;            // Who offers to yield, awaiting an answer.
@@ -202,6 +212,7 @@ export function readBattle(snapshot: Json | null): BattleView | null {
         over: bool(b, 'over'),
         banner: str(b, 'banner'),
         pvp: bool(b, 'pvp'),
+        hunt: bool(b, 'hunt'),
         terms: str(b, 'terms', 'death'),
         crime: bool(b, 'crime'),
         yieldBy: str(b, 'yieldBy'),
@@ -231,6 +242,8 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             armour: obj(f, 'armour') ? {dex: num(obj(f, 'armour'), 'dex'), zones: objects(obj(f, 'armour'), 'zones').map(z => ({zone: str(z, 'zone'),
                 piece: str(z, 'piece'), cut: num(z, 'cut'), thrust: num(z, 'thrust')}))} : null,
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
+            animal: obj(f, 'animal') ? {species: str(obj(f, 'animal'), 'species'), glyph: str(obj(f, 'animal'), 'glyph', '?'),
+                color: str(obj(f, 'animal'), 'color', '#b89a74'), aware: bool(obj(f, 'animal'), 'aware')} : null,
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
             regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),
             injuries: objects(f, 'injuries').map(i => ({kind: str(i, 'kind'), name: str(i, 'name'), does: str(i, 'does')})),
