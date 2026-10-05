@@ -29,7 +29,7 @@
     {"id": "butcher_sheep", "makers": ["butcher"], "seconds": 240, "in": {"sheep": 1}, "out": {"raw_meat": 3, "bones": 1, "tallow": 1}}
   ],
   "producers": [
-    {"id": "farm", "match": ["farms the", "works the crossing fields", "works the lakeside fields"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"wheat": 2, "oats": 1, "vegetables": 2, "straw": 1, "flax": 1, "hemp": 1, "apples": 1}},
+    {"id": "farm", "match": ["farms the", "works the crossing fields", "works the lakeside fields"], "seconds": 1800, "seasons": [0, 1, 2], "out": {"wheat": 2, "oats": 1, "vegetables": 2, "straw": 1, "flax": 1, "hemp": 1, "apples": 1, "firewood": 2}},
     {"id": "sheep_pasture", "match": ["keeps sheep", "shepherd"], "seconds": 1800, "out": {"wool": 1, "milk": 2}},
     {"id": "fishing", "match": ["fishes the"], "seconds": 900, "out": {"fish": 2}},
     {"id": "woodcutting", "match": ["cuts wood", "woodcutter"], "seconds": 900, "out": {"firewood": 3, "oak_bark": 1, "timber": 1, "resin": 1}},
@@ -38,6 +38,18 @@
     {"id": "salt_pans", "match": ["raking salt", "rakes the salt"], "seconds": 1800, "out": {"salt": 2}},
     {"id": "stock_breeding", "match": ["stables"], "seconds": 3600, "out": {"pig": 1, "sheep": 1}}
   ],
+  "households": {
+    "about": "What a household uses up besides food (doc 35, Part 7): each need is bought once every `everyDays` (in winter every `winterDays`, if given), from a shop in its community that has it, by whoever in the household has the most money, and used up at home. `any`: one of these, whichever a shop has. `perPerson`: for each grown wolf in the household rather than once. A household keeps `reserve` pennies a head back for food. Numbers are placeholders.",
+    "reserve": 6,
+    "needs": [
+      {"any": ["firewood"], "everyDays": 1, "winterDays": 0.5},
+      {"any": ["candle_tallow"], "everyDays": 2},
+      {"any": ["clay_pot"], "everyDays": 30},
+      {"any": ["wool_scarf", "straw_hat", "linen_neckerchief"], "everyDays": 25, "perPerson": true},
+      {"any": ["bandages"], "everyDays": 20},
+      {"any": ["cider"], "everyDays": 4}
+    ]
+  },
   "buys": {
     "about": "What a kind of shop buys from players and sells on (gathered and hunted goods, doc 41), besides what it supplies: never stocked to start with.",
     "herbalist": ["herbs", "yarrow", "thyme", "chamomile", "lavender", "comfrey", "mint", "willow_bark", "valerian", "wormwood", "rose_petals"],

@@ -331,6 +331,11 @@ class Society
     // A good in every quality held (doc 35, Part 4): a maker's hides, common, crude, fine and masterwork together.
     static int stockAll(const EconomyAccount& account, const std::string& base);
     static std::vector<std::string> kindsHeld(const EconomyAccount& account, const std::string& base);
+    // Food (RatwDemand.cpp; doc 35, Part 7): anything of the catalog that feeds (drinks aside), how much, and the best
+    // an account holds to eat.
+    static bool edible(const std::string& item);
+    static int nourishment(const std::string& item);
+    static std::string bestFood(const EconomyAccount& account);
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
@@ -437,6 +442,12 @@ class Society
     // Tops a shopkeeper's stock up to a good store of what they make things from and what they supply; returns how
     // many goods were added.
     int stockMaterials(const std::string& id);
+    // What townsfolk buy (RatwDemand.cpp): whether a shop has food for sale; a hungry resident's purchase at it (enough
+    // for now, and a couple of days more with a larder), returning how many it bought; and each household's day of
+    // errands (firewood, candles, clothes... crafts.json `households`).
+    bool shopHasFood(const std::string& merchant) const;
+    int buyFood(const std::string& resident, const std::string& seller, bool stocking);
+    void householdShopping(std::int64_t day, int season, const std::map<std::string, LifeBody>& bodies);
     void record(const std::string& kind, const std::string& from, const std::string& to,
                 const std::string& item, int quantity, std::int64_t coins);
     bool transfer(const std::string& seller, const std::string& buyer, const std::string& item,

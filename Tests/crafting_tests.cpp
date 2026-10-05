@@ -334,6 +334,94 @@ void qualities()
     const auto common = t.quote("player-ada", "tanner", "hide", 1, false);
     expect(q.ok && q.unitPrice > common.unitPrice, "a tanner buys a fine hide, dearer than a common one: " + q.message);
 }
+// A baker, a general store, and a household of two who buy their bread and their firewood (doc 35, Part 7).
+Society folkTown()
+{
+    AuthoredRoster roster;
+    auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+    auto ash = person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian");
+    wren.meals = ash.meals = 0;
+    wren.purse = 60;
+    auto baker = person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5});
+    auto keeper = person("keeper", "shopkeeper at the general store", {"store", 2.5, 2.5});
+    baker.home = {"bakers_flat", 2.5, 2.5};
+    keeper.home = {"store_flat", 2.5, 2.5};
+    roster.residents = {baker, keeper, wren, ash};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    return s;
+}
+
+void townsfolkBuy()
+{
+    // A hungry wolf at the bakery buys bread (cheap filling) and eats it.
+    {
+        auto s = folkTown();
+        auto state = s.state();
+        state.residents.at("wren").hunger = 70;
+        expect(s.restore(state), "hungry wren restores");
+        std::map<std::string, LifeBody> bodies = atWork(s);
+        double day = 10. / 24;
+        const auto purse = s.account("wren")->cash;
+        bool ate = false;
+        for (int i = 0; i < 400 && !ate; ++i)
+        {
+            bodies["wren"] = {"bakery", 2.5, 2.5};     // At the counter.
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            expect(s.conserved(), "money stays conserved");
+            ate = s.resident("wren")->hunger < 60;
+        }
+        const auto journal = s.takeJournal();
+        expect(count(journal, "resident food purchase", "bread") > 0, "wren buys bread at the bakery");
+        expect(s.account("wren")->cash < purse && ate, "pays for it, and eats");
+    }
+    // Any food carried is eaten when hungry, by what it feeds.
+    {
+        auto s = folkTown();
+        auto state = s.state();
+        state.residents.at("ash").hunger = 70;
+        state.accounts.at("ash").stock["porridge"] = 1;
+        expect(s.restore(state), "ash with porridge restores");
+        double day = 10. / 24;
+        work(s, 60, day);
+        expect(Society::stock(*s.account("ash"), "porridge") == 0 && s.resident("ash")->hunger < 60, "ash eats the porridge");
+    }
+    // Each day the household buys what is due (firewood every day) from a shop in town, and uses it up.
+    {
+        auto s = folkTown();
+        const auto keeper = s.account("keeper")->cash;
+        const int wood = Society::stock(*s.account("keeper"), "firewood");
+        expect(wood > 0, "the general store has firewood");
+        s.takeJournal();
+        double day = 10. / 24;
+        for (int d = 0; d < 3; ++d)
+        {
+            day = std::floor(day) + 1 + 10. / 24;   // The next morning: the day's errands are run.
+            work(s, 5, day);
+        }
+        const auto journal = s.takeJournal();
+        expect(count(journal, "household purchase", "firewood") >= 2, "firewood bought, a bundle a day");
+        expect(count(journal, "used at home", "firewood") >= count(journal, "household purchase", "firewood"), "and burnt (the shopkeeper's own too)");
+        std::int64_t paid = 0;
+        for (const auto& e : journal)
+            if (e.kind == "household purchase" && e.to == "keeper")
+                paid += e.coins;
+        expect(paid > 0, "the shop is paid");
+        (void)keeper;
+        // Never past what the household keeps back for food.
+        auto st = s.state();
+        st.accounts.at("treasury").cash += st.accounts.at("wren").cash - 12 + st.accounts.at("ash").cash - 5;   // (Conserved.)
+        st.accounts.at("wren").cash = 12;
+        st.accounts.at("ash").cash = 5;
+        expect(s.restore(st), "a poor household restores");
+        day = std::floor(day) + 1 + 10. / 24;
+        s.takeJournal();
+        work(s, 5, day);
+        expect(count(s.takeJournal(), "household purchase", "firewood") == 0, "a poor household keeps its food money");
+    }
+}
 } // namespace
 
 int main()
@@ -350,6 +438,7 @@ int main()
         millGrindsForTheStall();
         cartedInFromAnotherTown();
         qualities();
+        townsfolkBuy();
     }
     catch (const std::exception& error)
     {

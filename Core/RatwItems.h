@@ -28,6 +28,8 @@ struct Item
     // Armour (doc 35, Part 8): more protection against a kind of blow, and what it takes off dexterity (as a negative).
     int vsCut = 0, vsThrust = 0, vsBlunt = 0, dex = 0;
     int durability = 0;                             // How much use it takes before it falls apart (0: it doesn't wear).
+    int nourish = 0;                                // Food: how much it feeds (a meal 50); 0 for anything not eaten.
+    bool drink = false;                             // Drunk rather than eaten (ale, cider): not for hunger.
 };
 
 struct Business
@@ -77,6 +79,15 @@ struct Producer
 bool traded(const std::string& item);
 // The producer a resident is, from the words of their work label, or null.
 const Producer* producerFor(const std::string& workLabel);
+// What households use up besides food (crafts.json `households`; doc 35, Part 7).
+struct HouseholdNeed
+{
+    std::vector<std::string> any;                   // One of these, whichever a shop has.
+    double everyDays = 1, winterDays = 0;           // How often; in winter (0: as ever).
+    bool perPerson = false;                         // For each grown wolf in the household.
+};
+const std::vector<HouseholdNeed>& householdNeeds();
+int householdReserve();                             // Pennies a head a household keeps back for food.
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);
 // The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.

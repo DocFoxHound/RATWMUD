@@ -30,6 +30,8 @@ struct Catalog
     std::vector<Item> goodVariants, wearVariants;
     std::unordered_map<std::string, const Item*> goodIndex, wearIndex;
     std::vector<Producer> producers;
+    std::vector<HouseholdNeed> needs;
+    int reserve = 6;
     std::map<std::string, std::vector<std::string>> supplies, buys;
 };
 
@@ -95,6 +97,8 @@ Catalog build()
         good.weight = i.number("weight");
         good.price = int(i.number("price"));
         good.durability = int(i.number("durability", 0));
+        good.nourish = int(i.object("food").number("nourish", 0));
+        good.drink = i.object("food").number("drink", 0) > 0;
         if (!good.id.empty() && !good.name.empty() && good.price >= 0 && good.price <= 100000)
             c.goods.push_back(std::move(good));
         const auto slot = i.string("slot");
@@ -184,6 +188,20 @@ Catalog build()
                 counts(k.object("out"), producer.out) &&
                 std::all_of(producer.seasons.begin(), producer.seasons.end(), [](int s) { return s >= 0 && s <= 3; }))
                 c.producers.push_back(std::move(producer));
+        }
+        const auto& households = crafts.object("households");
+        c.reserve = std::max(0, int(households.number("reserve", 6)));
+        for (const auto& n : households.array("needs"))
+        {
+            HouseholdNeed need;
+            for (const auto& g : n.array("any"))
+                if (known(g.asString({})))
+                    need.any.push_back(g.asString({}));
+            need.everyDays = std::max(.1, n.number("everyDays", 1));
+            need.winterDays = std::max(0.0, n.number("winterDays", 0));
+            need.perPerson = n.boolean("perPerson");
+            if (!need.any.empty())
+                c.needs.push_back(std::move(need));
         }
         for (const auto& [business, goods] : crafts.object("buys").fields())
             for (const auto& g : goods.items())
@@ -416,6 +434,16 @@ bool traded(const std::string& item)
         if (std::find(goods.begin(), goods.end(), item) != goods.end())
             return true;
     return false;
+}
+
+const std::vector<HouseholdNeed>& householdNeeds()
+{
+    return catalog().needs;
+}
+
+int householdReserve()
+{
+    return catalog().reserve;
 }
 
 const Producer* producerFor(const std::string& workLabel)

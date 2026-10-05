@@ -639,6 +639,38 @@ Crafting needs steady buyers who aren't players. These buyers each hold a real a
 on a schedule, and post **procurement contracts** when they run low (doc 26's supply contracts, doc 34's quests). A
 crafter, NPC or player fills a contract with real goods and is paid from the buyer's account.
 
+### Households (built 2026-10-04)
+
+The first buyers: the townsfolk themselves (`Core/RatwDemand.cpp`).
+
+- **Food is anything that feeds.** A hungry resident eats the best food it carries: a meal fills it (55 of hunger),
+  anything else by its `nourish` (× 1.1), and drinks don't count. It puts the rest in the larder at home, and fetches
+  from there first.
+- **Buying food:** a shop is open to the hungry while it has any food for sale (no longer only meals). There the
+  resident buys whatever gives the most nourishment for its money by its own taste (a steady per-wolf liking, ±40%), so
+  bread and porridge sell most and a meal or pie now and then. It buys enough for now (a meal's worth) and, with a larder
+  at home, two meals' worth more. It needs only a penny.
+- **Household errands:** once a game day, whoever in a household has the most money buys what is due from a shop in
+  its community that has it. Each is used up at home at once (`households` in `Data/Items/crafts.json`; all
+  *placeholders*):
+
+  | Need | How often |
+  |---|---|
+  | firewood | a bundle a day; two in winter |
+  | a tallow candle | every 2 days |
+  | cider | every 4 days |
+  | bandages | every 20 days |
+  | a scarf, a straw hat or a neckerchief | every 25 days, for each grown wolf |
+  | a clay pot | every 30 days |
+
+  Households don't all shop on the same day. A household always keeps 6p a head back for food. A shopkeeper's
+  household uses its own shop's stock first. What nobody in town has, it goes without that day.
+- **Firewood:** farms now bring in 2 bundles with each yield (hedges and coppice), beside the one woodcutter.
+- Money only moves: food and goods are paid to the shop, which buys its materials from suppliers and producers, who are
+  residents who buy food. Wages (the treasury) and market dues close the loop.
+- **Not yet:** food spoiling in larders (the catalog has `keeps`), the town's own buyers (Town Works, the garrison,
+  the church: the table below), and procurement contracts.
+
 | Buyer | Uses up (placeholder baskets, scaled by population) | Paid from |
 |---|---|---|
 | Households | Food, fuel, candles, soap, salt; clothes and wraps as they wear | Wages |
