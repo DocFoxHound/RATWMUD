@@ -203,6 +203,7 @@ constexpr Fx Effects[] = {
     {"stone_armor", "Stone armour", "Heavy stone on every side: no blow lands harder from the side or behind, and every blow does less. A little slower."},
     {"water_screen", "Water screen", "No blow lands harder from the side or behind; fire does a quarter."},
     {"read", "Read", "Its next move is known to the other side."},
+    {"trance", "Trance", "Its Gift rises to the odds: mana each turn, a quicker bar, a second wind, blows warded off. Fatigue after."},
     {"warded", "Ward", "A Gift held on it."},
 };
 
@@ -212,6 +213,40 @@ const Fx* fxOf(const std::string& id)
         if (id == f.id)
             return &f;
     return nullptr;
+}
+
+// A Trance (doc 45): a Quickened wolf may go into one at any time in a fight, for nothing. Its level is how far its side is
+// outnumbered, foes standing for each of its side standing (TranceFloor at least, TranceCap at most), taken again at each
+// of its turns: it rises as the fight turns against the side and falls as the foes do. At each of its turns it gives mana
+// (never past the pool). After the fight: Trance fatigue, by the highest level reached and the overreaches, until a full
+// rest.
+constexpr double TranceFloor = 2, TranceCap = 5, TranceMana = 10;
+// A depth of 1 (doc 45's table) fills the bar TranceHaste faster, gives TranceBreath more stamina back a turn
+// (RatwBattle.h), and takes TranceWard off every blow at the wolf (TranceWardMost at most, unless the family's says
+// otherwise).
+constexpr double TranceHaste = .5, TranceWard = .2, TranceWardMost = .85;
+// An overreach costs this much health more than the last, in a fight (doc 45).
+constexpr double OverreachHurt = 3;
+
+// How deep a Trance runs (doc 45), by family (the user: "not the same for every kind"): its degree at 3:1 and at 5:1, half
+// the 3:1 at 2:1, and in between along the way. A degree of 1 gives the bar TranceHaste faster, blows and Gifts
+// TranceMight harder, and blows at it TranceWard less (half at most).
+struct TranceDepth
+{
+    double at3, at5, at2 = -1, at4 = -1;            // (at2 below 0: half the 3:1; at4 below 0: halfway from 3:1 to 5:1.)
+    double wardMost = TranceWardMost;               // The most its Ward takes off a blow.
+};
+TranceDepth tranceDepth(const std::string& family)
+{
+    // (Tuned in Tests/level_sim.cpp, suite "trance": a Quickened wolf ten levels over plain ones wins about half its
+    // fights three to one and a quarter five to one, the Trance falling with the odds as foes fall. A Blinker's is as
+    // deep at two to one as at three, and its Ward nearly whole: alone, it has nothing for a crowd but its blinks.)
+    static const std::map<std::string, TranceDepth> by = {
+        {"fire", {3.88, 4.15}},  {"earth", {3.52, 8.67}}, {"water", {3.47, 3.98, -1, 3.88}},       {"wind", {2.71, 4.08}},
+        {"sound", {2.15, 2.83}}, {"seer", {2.35, 9.63}},  {"blinker", {2.79, 12, 2.79, -1, .97}}, {"gravity", {3.27, 8.00, -1, 3.95}}};
+    const auto k = by.find(family);
+    TranceDepth d = k == by.end() ? TranceDepth{1, 1} : k->second;
+    return d;
 }
 
 // Slip and Interpose share one rest, in the wolf's own turns (doc 45).
@@ -281,6 +316,17 @@ bool World::unflankable(const BattleFighter& f) const
 std::string World::giftWhyNot(const Battle& b, const BattleFighter& f, const std::string& ability) const
 {
     const auto* e = entity(f.id);
+    if (ability == "trance")
+    {
+        // A Trance (doc 45): any Quickened wolf, at any time in a fight, once.
+        if (!e || !e->quickened || e->gift.empty())
+            return "Only the Quickened go into a Trance.";
+        if (f.status != "fighting")
+            return "You can't, from where you lie.";
+        if (f.magic.trance > 0)
+            return "You are in a Trance.";
+        return {};
+    }
     const auto* a = gifts::ability(ability);
     const auto* rule = ruleOf(ability);
     if (!e || !a || a->family != e->gift || a->quickened != e->quickened || a->work)
@@ -364,6 +410,9 @@ std::string World::giftWhyNot(const Battle& b, const BattleFighter& f, const std
     }
     if (ability == "whisper_thread" && f.magic.has("hoarse"))
         return "Your voice is hoarse.";
+    if (e->quickened && injury::spent(e->injuries) &&
+        (e->mana + 1e-9 < a->mana + a->perTurn || (f.magic.last == ability && f.magic.lastTurn == f.turnsTaken - 1)))
+        return "Trance fatigue: rest fully before you push your Gift past its limits again.";
     if (ability == "riposte" && f.magic.has("dusted"))
         return "Grit in your eyes: you can't see it coming.";
     if (ability == "stone_armor" && !e->quickened)
@@ -406,6 +455,18 @@ std::vector<World::GiftOption> World::giftOptions(const std::string& id) const
         o.ready = o.why.empty();
         out.push_back(std::move(o));
     }
+    if (e->quickened)
+    {
+        GiftOption o;                               // (A Trance, doc 45: not one family's, every Quickened wolf's.)
+        o.id = "trance";
+        o.name = "Trance";
+        o.kind = "fightlong";
+        o.target = "self";
+        o.on = f->magic.trance > 0;
+        o.why = giftWhyNot(*b, *f, "trance");
+        o.ready = o.why.empty();
+        out.push_back(std::move(o));
+    }
     return out;
 }
 
@@ -434,6 +495,7 @@ double World::meterRate(const Battle& b, const BattleFighter& f, double haste) c
     double rate = battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * injury::effects(e->injuries).initiative;
     if (f.magic.has("stone_armor"))
         rate *= .95;                                // (Doc 45: a sixth slower cost more than the stone gave.)
+    rate *= 1 + tranceGain(f, TranceHaste);         // (A Trance: doc 45.)
     for (const auto& o : b.fighters)
         if (o.side == f.side && o.id != f.id && standing(o) && o.magic.channel == "steady_beat" && apart(o.x, o.y, f.x, f.y) <= 3)
         {
@@ -526,6 +588,8 @@ double World::magicDamage(const Battle&, const BattleFighter& t, double damage, 
         damage *= .88;                              // (Doc 45: a share of every blow, a sword's as much as a bite's.)
     if (e && e->gift == "seer" && e->quickened && !t.magic.has("dusted"))
         damage *= .97;                              // Critical Sight (not through grit: doc 45).
+    if (const auto* te = entity(t.id); te && t.magic.trance > 0)
+        damage *= 1 - std::min(tranceDepth(te->gift).wardMost, tranceGain(t, TranceWard));   // (A Trance: doc 45.)
     return damage;
 }
 
@@ -609,6 +673,14 @@ bool World::magicTurnStart(Battle& b, BattleFighter& f)
         return true;
     auto& m = f.magic;
     m.reacted = false;
+    // A Trance (doc 45): its level rises with the odds, and it gives mana.
+    if (m.trance > 0)
+    {
+        m.trance = tranceLevel(b, f);               // (With the odds as they are now, up or down: doc 45.)
+        m.tranceTop = std::max(m.tranceTop, m.trance);
+        // (Mana by the odds alone, not the family's depth: tied to the depth, a Gift's cost made a cliff of it.)
+        e->mana = std::min(manaPool(*e), e->mana + TranceMana * (m.trance - 1));
+    }
     // Thirst (Water's Cost): stamina comes back slower, or not at all.
     if (m.has("thirsty") || m.has("dehydrated"))
         e->stamina = std::max(0.0, e->stamina - battle::staminaPerTurn(e->hurt, e->strength) * (m.has("dehydrated") ? 1 : .25));   // (Thirst: a quarter, doc 45.)
@@ -901,6 +973,11 @@ void World::overreach(Battle& b, BattleFighter& f, const std::string& family)
     auto* e = entity(f.id);
     if (!e)
         return;
+    // Each overreach in a fight costs more than the last (doc 45): its health, 3 more each time.
+    ++f.magic.overreaches;
+    hurtFighter(b, f, OverreachHurt * f.magic.overreaches, battle::DownedBlunt, {}, false);
+    if (f.status != "fighting")
+        return;
     std::string what;
     if (family == "fire" || family == "water")
     {
@@ -1003,6 +1080,8 @@ Result World::letGo(const std::string& id)
 
 Result World::useGift(const std::string& id, const std::string& ability, const std::string& target)
 {
+    if (ability == "trance")
+        return enterTrance(id);
     auto* b = battleFor(id);
     if (!b)
         return {false, "You are not in a fight.", {}};
@@ -1112,6 +1191,8 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     double mana = a->mana + a->perTile * double(shape.size());
     const double stamina = rule->stamina + (ability == "wall_of_fire" ? 1 : ability == "fissure" ? 1.5 : ability == "stone_wall" ? 2 : 0) * double(shape.size());
     bool over = e->quickened && (e->mana + 1e-9 < mana || (f.magic.last == ability && f.magic.lastTurn == f.turnsTaken - 1));
+    if (over && injury::spent(e->injuries))
+        return {false, "Trance fatigue: rest fully before you push your Gift past its limits again.", {}};
     if (stamina > 0 && e->stamina < stamina && a->kind != "fightlong")
         return {false, "You haven't the breath for it.", {}};
     const auto pay = [&] {
@@ -1300,10 +1381,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
     else if (ability == "flare")
     {
         // The flash knocks its bar back (doc 45), mid-turn too: its next bar starts that much lower.
-        if (t->acting)
-            t->weight += FlareKnock;
-        else
-            t->meter = std::max(0.0, t->meter - FlareKnock);
+        knockBar(*t, FlareKnock, true);
         line("gift", t->id, "A flash of flame in " + name(t) + "'s face.", {tileOf(t)});
     }
     else if (ability == "smother_to_smoke")
@@ -1549,10 +1627,7 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
                 o.magic.fx["deafened"] = NextTurn + 1;
                 if (o.id == id)
                     continue;
-                if (o.acting)
-                    o.staggered = 1;
-                else
-                    o.meter = std::max(0.0, o.meter - 40);
+                knockBar(o, 40);
                 const double dmg = 10 * power;
                 hurtFighter(*b, o, dmg, battle::DownedBlunt, id, true);
             }
@@ -1929,10 +2004,7 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
                 auto* d = entity(o.id);
                 d->earHealth = std::max(.2, d->earHealth - .1);
                 o.magic.fx["deafened"] = NextTurn + 1;
-                if (o.acting)
-                    o.staggered = 1;
-                else
-                    o.meter = std::max(0.0, o.meter - 50);
+                knockBar(o, 50);
                 const double dmg = magicDamage(b, o, 12 * power * rnd(o.id), false);
                 line("hit", o.id, d->name + "'s ears pop and bleed (" + whole(dmg) + ").", {{o.x, o.y}});
                 hurtFighter(b, o, dmg, battle::DownedBlunt, cast.caster, true);
@@ -1945,10 +2017,7 @@ void World::magicResolve(Battle& b, const BattleCast& cast)
             if (o.id != cast.caster && o.status == "fighting" && inside(o))
             {
                 o.magic.fx["deafened"] = NextTurn + 1;
-                if (o.acting)
-                    o.staggered = 1;
-                else
-                    o.meter = std::max(0.0, o.meter - 40);
+                knockBar(o, 40);
                 const double dmg = magicDamage(b, o, 24 * power * rnd(o.id), false);
                 line("hit", o.id, entity(o.id)->name + " is battered by the howl (" + whole(dmg) + ").", {{o.x, o.y}});
                 hurtFighter(b, o, dmg, battle::DownedBlunt, cast.caster, true);
@@ -1984,6 +2053,87 @@ void World::magicFightStart(Battle& b)
     }
 }
 
+void World::magicFightEnd(Battle& b)
+{
+    // After a Trance (doc 45): fatigue, by how deep it went (and two overreaches in it, a degree more), until a full rest.
+    for (const auto& f : b.fighters)
+    {
+        auto* e = entity(f.id);
+        if (!e || !e->quickened || f.magic.trance <= 0 || e->dead)
+            continue;
+        const double top = std::max(f.magic.trance, f.magic.tranceTop);
+        const int severity = std::min(3, (top >= 4.5 ? 3 : top >= 3 ? 2 : 1) + f.magic.overreaches / 2);
+        auto i = injury::given("trance_fatigue", severity, "", "a Trance");
+        i.id = injuryId() + e->id;
+        i.gotDay = calendarDays_;
+        const auto& now = injury::addAcute(e->injuries, i);
+        e->mana = std::min(e->mana, manaPool(*e));
+        if (!e->npc)
+            notice(f.id, "The Trance leaves you: " + injury::describe(now) + ". A full rest will take it away.");
+    }
+}
+
+double World::tranceGain(const BattleFighter& f, double perDegree) const
+{
+    const auto* e = entity(f.id);
+    if (f.magic.trance <= 0 || !e)
+        return 0;
+    const auto d = tranceDepth(e->gift);
+    const double t = f.magic.trance;
+    const double at2 = d.at2 >= 0 ? d.at2 : d.at3 / 2, at4 = d.at4 >= 0 ? d.at4 : (d.at3 + d.at5) / 2;
+    const double degree = t <= 2   ? at2 * (t - 1)
+                          : t <= 3 ? at2 + (d.at3 - at2) * (t - 2)
+                          : t <= 4 ? d.at3 + (at4 - d.at3) * (t - 3)
+                                   : at4 + (d.at5 - at4) * (t - 4);
+    return perDegree * degree;
+}
+
+bool World::knockBar(BattleFighter& t, double amount, bool weight)
+{
+    // A Gift knocking a fighter's bar back (doc 45): once between its own turns, however many come at it; mid-turn, its
+    // next bar starts lower.
+    if (t.magic.has("shaken"))
+        return false;
+    if (t.acting)
+    {
+        if (weight)
+            t.weight += amount;
+        else
+            t.staggered = 1;
+    }
+    else
+        t.meter = std::max(0.0, t.meter - amount);
+    t.magic.fx["shaken"] = 1;
+    return true;
+}
+
+double World::tranceLevel(const Battle& b, const BattleFighter& f) const
+{
+    // Foes standing for each of the side standing (observers and the fallen don't count), 2 to 5.
+    const double mine = std::max(1, b.standing(f.side)), theirs = b.standing(1 - f.side);
+    return std::clamp(theirs / mine, TranceFloor, TranceCap);
+}
+
+double World::manaPool(const Entity& e) const
+{
+    return battle::manaMax(e.wisdom, !e.gift.empty()) * injury::effects(e.injuries).mana;   // (Less, Trance-fatigued: doc 45.)
+}
+
+Result World::enterTrance(const std::string& id)
+{
+    auto* b = battleFor(id);
+    auto* f = b ? b->fighter(id) : nullptr;
+    const auto* e = entity(id);
+    if (!b || !f || !e)
+        return {false, "You are not in a fight.", {}};
+    if (const auto why = giftWhyNot(*b, *f, "trance"); !why.empty())
+        return {false, why, {}};
+    f->magic.trance = f->magic.tranceTop = tranceLevel(*b, *f);
+    f->magic.fx["trance"] = -1;
+    fightLine(*b, id, {}, "gift", e->name + "'s eyes go far away: a Trance.");
+    return {true, "You go into a Trance. It will cost you after the fight, until a full rest.", {}};
+}
+
 bool World::npcGift(Battle& b, BattleFighter& f, const BattleFighter& mark)
 {
     // NPCs with a Gift use it (doc 43, phase 7), simply: the Quickened strike with theirs when the mark is in reach and
@@ -1993,6 +2143,8 @@ bool World::npcGift(Battle& b, BattleFighter& f, const BattleFighter& mark)
         return false;
     const int d = apart(f.x, f.y, mark.x, mark.y);
     const std::string at = std::to_string(mark.x) + "," + std::to_string(mark.y);
+    if (e->quickened && f.magic.trance <= 0 && b.standing(1 - f.side) > b.standing(f.side))
+        enterTrance(f.id);                          // (A Quickened NPC outnumbered goes into a Trance: doc 45. It costs no action.)
     const auto tryUse = [&](const std::string& ability, const std::string& target) {
         if (!giftWhyNot(b, f, ability).empty())
             return false;

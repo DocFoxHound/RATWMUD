@@ -299,3 +299,82 @@ Every family has a counter at 38% or worse bare and armed, and each makes sense.
 - Alone, the support-only Gifted (Earth, Gravity, Seer, Sound) are a plain wolf (48–52%): their help is for others.
 - Tests: `magic_tests` 194 checks (the counters, the pinned Blinker, the sword past Slip, seared wounds, Lift Up's daze),
   `level_tests` (a Quickened wolf's 100). All 45 pass.
+
+## Third pass: the Trance (2026-10-06)
+
+### The user's asks
+
+- A Quickened wolf ten levels over plain wolves should win **half its fights three to one, a quarter five to one**.
+  (Before: never, whatever the family or level; it seldom put even one of three down.)
+- Mana when outnumbered and smarter use of the Gift, with caps and drawbacks, together called a **Trance**:
+  - any Quickened wolf, and no other, may go into it in any fight, at any time, by choice;
+  - at 2:1 at least, even one on one; at most 5:1; for a party, by the ratio of the sides;
+  - it scales with the combatants standing (not observers), up as the side loses wolves and, after a first version
+    that only rose, **down as the foes fall**, the user's choice once the hold-the-peak version proved knife-edged;
+  - after it, **Trance Fatigue** by how deep it went, weakening the wolf in later fights until a full rest;
+  - its strength may differ by family.
+
+### The Trance as built (`Core/RatwMagic.cpp`, World::enterTrance, tranceLevel, tranceGain)
+
+- **Going in:** a Gift button for every Quickened wolf ("Trance", whole fight), at any time, for nothing; a Quickened NPC
+  goes into one when outnumbered.
+- **Its level:** foes standing for each of the side standing, 2 to 5, taken again at each of its turns.
+- **What it gives:**
+  - mana at each of its turns, 10 a level past 1, never past the pool;
+  - by its **depth** (by the level and the family: the table below, straight lines between 2:1, 3:1, 4:1 and 5:1),
+    a bar that fills 50% faster a depth, stamina back 50% faster a depth (a second wind), and 20% off every blow at it
+    a depth, 85% at most (a Blinker's 97%: it flickers out of a blow's way);
+  - overreaching still works, but each overreach in a fight now costs 3 health more than the last.
+- **After it, Trance Fatigue:** minor from a Trance at 2:1, moderate from 3:1, severe from 4.5:1, a degree worse for two
+  overreaches. Minor: mana pool −15%, bar −5%, stamina back −10%; moderate −30%, −10%, −20%; severe −45%, −15%,
+  −30%. No overreaching while it lasts. Only a full rest takes it away (doc 38).
+
+| Depth | 2:1 | 3:1 | 4:1 | 5:1 |
+| --- | --- | --- | --- | --- |
+| Fire | 1.94 | 3.88 | 4.02 | 4.15 |
+| Earth | 1.76 | 3.52 | 6.10 | 8.67 |
+| Water | 1.74 | 3.47 | 3.88 | 3.98 |
+| Wind | 1.36 | 2.71 | 3.40 | 4.08 |
+| Sound | 1.08 | 2.15 | 2.49 | 2.83 |
+| Blinker | 2.79 | 2.79 | 7.40 | 12 |
+| Gravity | 1.64 | 3.27 | 3.95 | 8.00 |
+| Seer | 1.18 | 2.35 | 5.99 | 9.63 |
+
+Sound and Seer need the least (their kits answer a crowd already); Blinker the most, and as deep at 2:1 as at 3:1 (it
+has nothing for a crowd but its blinks).
+
+### Rules found on the way
+
+- **A bar knocked back once** between a wolf's turns: Sound's howls and claps, stacked with Trance mana, held three foes'
+  bars down for good.
+- **Might** (blows hitting harder in a Trance) was tried and taken out: it pushed bites past the bleeding (18) and
+  staggering (25) lines, so a hair's change of strength flipped most fights.
+- **Mana by the odds, not the family's depth:** tied to the depth, a Gift's cost made a cliff (Fire's 40-mana
+  Flamethrower every turn at 36 mana a turn, not at 35.8).
+- The simulator's wolves now **take a moment to act** (0.2 to 1.5 s), so a Trance's haste doesn't lock into one rhythm,
+  and its plans: aim a cone at the most foes, focus the most hurt, Chain Blink only to finish, bite rather than blink or
+  unmoor when surrounded, spare a Gift that draws blood near the end, overreach twice at most.
+
+### Where it stands (a Quickened wolf at level N+10, Trance when outnumbered, 11 tiles apart, tactics, 400 fights)
+
+| N = 10 | Fire | Earth | Water | Wind | Sound | Blinker | Gravity | Seer | Mean |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1v1 (no Trance) | 85% | 90% | 89% | 88% | 90% | 84% | 88% | 90% | 88% |
+| 2v1 | 70% | 98% | 48% | 98% | 78% | 100% | 65% | 90% | 81% |
+| **3v1** | 46% | 51% | 46% | 51% | 51% | 55% | 51% | 50% | **50%** |
+| 4v1 | 34% | 38% | 30% | 27% | 31% | 31% | 30% | 37% | 32% |
+| **5v1** | 27% | 25% | 27% | 20% | 24% | 19% | 25% | 26% | **24%** |
+
+At N = 1 the 3v1 mean is 44% and 5v1 21%; at N = 15, 53% and 26%. Without a Trance the earlier yardsticks stand
+(Quickened vs a plain equal 74–81% bare, 66–80% armed; Gifted as the second pass; the Quickened-vs-Quickened table).
+
+### Open
+
+- **One on one in a Trance, a Quickened wolf wins every fight** (100%, equal level or ten up): the 2:1 floor is a lot
+  of Trance. Only the fatigue holds it back. A lighter floor alone, or a cost to go in, would settle it.
+- **2v1 runs 48–100%** by family (Earth, Wind, Blinker near certain): set only by the 3:1 tuning (2:1 is half its depth,
+  a Blinker's whole). A step-by-step tuning for 2v1 70% left the 5v1s unreachable.
+- **Parties** fare worse than a lone wolf at the same odds: a Quickened L20 and a plain L10 against four L10s wins 25%
+  (Wind 2%, Blinker 57%); against six, 7%. The plain friends have no Trance and fall first.
+- The win rate climbs steeply with depth (one against several snowballs once the first falls): the table is sensitive,
+  and gear, stats or a new Gift will want it re-run (`SIM_TACTICS=1 SIM_GAP=11 level_sim 400 trance`).

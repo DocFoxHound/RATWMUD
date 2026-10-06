@@ -54,6 +54,15 @@ passive each.
    start (it hasn't stepped). Forewarn and Firm Footing are for others, not oneself. A Quickened Gift is the action.
 10. **A Blinker pinned can't blink** (doc 45): held aloft, crushed under its weight or frozen fast, neither the Gifted's
    hop nor the Quickened's blink gets it out. (Gravity and Water answer the Blinker.)
+11. **A Trance** (doc 45): any Quickened wolf, and no other, may go into one at any time in a fight, for nothing (a
+   button among its Gifts). Its level is the odds: foes standing for each of its side standing, 2 at least (so even one
+   on one), 5 at most, taken again at each of its turns, so it rises as the side loses wolves and falls as the foes do.
+   It gives mana at each of its turns (10 a level past 1), a faster bar, a second wind and a ward against blows, each
+   by its level and by how deep the family's Trance runs (doc 45's table). After the fight, **Trance fatigue** (by the
+   highest level reached, and the overreaches): a smaller mana pool, a slower bar and breath, no overreaching, until a
+   full rest. It doesn't show.
+12. **An overreach costs more each time** in a fight: 3 health more than the last (doc 45), on top of the family's Cost.
+13. **A wolf's bar is knocked back once** between its own turns, whatever Gifts come at it (doc 45).
 9. **A Quickened wolf's mana doesn't come back in a fight** (doc 45): it brings what it has, so a big cast is rare. A
    Gifted wolf's still comes back 2 a turn.
 

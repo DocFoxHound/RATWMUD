@@ -744,6 +744,14 @@ class World
         bool ready = false, on = false;
     };
     std::vector<GiftOption> giftOptions(const std::string& id) const;
+    // A Trance (doc 45): a Quickened wolf's, at any time in a fight; its level (foes standing for each of its side's, 2 to
+    // 5); a Gift's mana pool (less, Trance-fatigued).
+    Result enterTrance(const std::string& id);
+    double tranceLevel(const Battle& b, const BattleFighter& f) const;
+    double manaPool(const Entity& e) const;
+    // A Gift knocking a fighter's bar back: once between its own turns (doc 45). False if it was already shaken.
+    bool knockBar(BattleFighter& t, double amount, bool weight = false);
+    double tranceGain(const BattleFighter& f, double perLevel) const;   // A Trance's part, by its level and the family.
     // A work ability used out of a fight (Mend, Shortcut, Lighten Load...).
     Result useWorkGift(const std::string& id, const std::string& ability, const std::string& target);
     // The effects on a fighter now, for its card: a short name, what it does, and turns left (-1: the fight).
@@ -1368,6 +1376,7 @@ class World
     void magicSenses(const Battle& b, const BattleFighter& o, const BattleFighter& t, battle::Senses& s) const;
     double magicStrikeChance(const BattleFighter& f, const BattleFighter& t, double chance) const;
     void magicFightStart(Battle& b);
+    void magicFightEnd(Battle& b);                  // (After a Trance: Trance fatigue, doc 45.)
     bool npcGift(Battle& b, BattleFighter& f, const BattleFighter& mark);
     void tendGiftSenses();                          // Danger Sense (Gifted Seers): hidden bandits nearby, told.
     std::map<std::string, double> workGiftAt_;      // Player|ability -> when a work Gift was last used (world seconds).

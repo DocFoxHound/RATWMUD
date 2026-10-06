@@ -1213,11 +1213,12 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     if (f.status == "fighting")
     {
         e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (rested ? battle::RestFactor : 1) *
-                                             injury::effects(e->injuries).recovery);   // (Hurt ribs or burns, doc 38.)
+                                             injury::effects(e->injuries).recovery *   // (Hurt ribs or burns, doc 38.)
+                                             (1 + tranceGain(f, battle::TranceBreath)));   // (A Trance's second wind, doc 45.)
         if (e->exhausted && e->stamina >= 20)
             e->exhausted = false;
         if (!e->gift.empty())
-            e->mana = std::min(battle::manaMax(e->wisdom, true), e->mana + (e->quickened ? battle::QuickenedManaPerTurn : battle::ManaPerTurn));
+            e->mana = std::min(manaPool(*e), e->mana + (e->quickened ? battle::QuickenedManaPerTurn : battle::ManaPerTurn));
         if (f.burning > 0)
         {
             --f.burning;
@@ -2622,6 +2623,7 @@ void World::leaveArena(Battle& b, BattleFighter& f, bool fleeing)
 void World::finishBattle(Battle& b)
 {
     injureAtEnd(b);                                 // Limping at the end may leave an injury (doc 38).
+    magicFightEnd(b);                               // A Gift pushed too far is spent (doc 45).
     // Everyone fades back into the world where they stood in the arena.
     std::vector<std::string> players, bandits;
     for (auto& f : b.fighters)
@@ -3170,8 +3172,8 @@ void World::tendDowned(double dt)
     {
         if (e.dead || e.lingering)
             continue;                               // (A player gone from the world: their timer waits.)
-        if (!e.gift.empty() && e.mana < battle::manaMax(e.wisdom, true) && (battles_.empty() || !inBattle(id)))
-            e.mana = std::min(battle::manaMax(e.wisdom, true), e.mana + battle::ManaPerSecond * dt);
+        if (!e.gift.empty() && e.mana < manaPool(e) && (battles_.empty() || !inBattle(id)))
+            e.mana = std::min(manaPool(e), e.mana + battle::ManaPerSecond * dt);
         // Tending someone, out of a fight: done after a while, if they're both still there.
         if (e.tendUntil > 0 && time_ >= e.tendUntil)
         {
@@ -3269,6 +3271,12 @@ bool World::inBed(const Entity& e) const
 
 void World::fullRest(Entity& e)
 {
+    // A full rest takes a Trance's fatigue away (doc 45).
+    const auto before = e.injuries.size();
+    e.injuries.erase(std::remove_if(e.injuries.begin(), e.injuries.end(), [](const Injury& i) { return i.type == "trance_fatigue"; }),
+                     e.injuries.end());
+    if (e.injuries.size() != before && !e.npc)
+        notice(e.id, "The Trance's fatigue has left you.");
     e.downsSinceRest = 0;
     e.recoveryUsed = -1;
     e.fullRestDay = calendarDays_;
@@ -3838,12 +3846,7 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
         if (!water && !t.magic.has("soaked") && !b.groundAt(t.x, t.y, "water"))
             t.burning = battle::BurnTurns;
         if (cast.quickened)
-        {
-            if (t.acting)
-                t.staggered = 1;                    // Flinching from the fire (doc 45): its bar knocked back.
-            else
-                t.meter = std::max(0.0, t.meter - battle::FlameFlinch);
-        }
+            knockBar(t, battle::FlameFlinch);       // Flinching from the fire (doc 45): its bar knocked back.
         if (d->npc && 100 - d->hurt < 50)
             t.scared = true;                        // Fear: it runs.
     }

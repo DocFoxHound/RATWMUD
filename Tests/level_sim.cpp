@@ -5,15 +5,20 @@
 //
 //   build-gifts/level_sim [fights] [suite]
 //
-// Suites: levels (the default: ungifted, doc 44), core (doc 45's yardsticks, bare and armed), wide (Quickened against
-// each other, higher levels, mixed teams, three a side), worth (what a head start in health or the first blow is
-// worth), gifts (the first broad sweep), naive, and the parts of gifts on their own (quickened, gifted, teams, gear,
-// gaps, adjacent). One row: "duel <side> <side> [level] [gap]", a side being wolves joined by commas, each "plain" or a
+// Suites: levels (the default: ungifted, doc 44), core (doc 45's yardsticks, bare and armed), gifted2 and quick2 (each
+// family alone and in a pair), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
+// (what a head start in health or the first blow is worth), trance (a Quickened wolf ten levels over one to five plain
+// ones: doc 45's Trance targets), parties, ladder and crowd (one Quickened against one, two or three), gifts (the first
+// broad sweep), naive, and the parts of gifts on their own (quickened, gifted, teams, gear, gaps, adjacent). One row: "duel <side> <side> [level] [gap]", a side being wolves joined by commas, each "plain" or a
 // family, with "q" for Quickened, "+" for a sword and leather, "!" for naive play: "duel fireq+ plain+ 10".
-// SIM_GAP sets how far apart the sides start (5 by default: there neither gains by waiting); SIM_DETAILS lists each
-// ability used; SIM_TRACE prints one fight's log.
+// SIM_GAP sets how far apart the sides start (5 by default: there neither gains by waiting; 11 for the Trance's runs);
+// SIM_TACTICS has every wolf play tactics (runs to close, focuses, flanks, spreads, steps back outnumbered, takes a
+// moment to act); SIM_TRANCE (never, outnumbered, always) when a Quickened wolf goes into a Trance; SIM_SKIP leaves
+// abilities unused; SIM_LEVEL one level for the trance suite; SIM_DETAILS lists each ability used; SIM_TRACE prints one
+// fight's log. A wolf may carry its own level: "fireq@20".
 #include "RatwBattle.h"
 #include "RatwGifts.h"
+#include "RatwInjury.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
 
@@ -23,6 +28,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <set>
 #include <mutex>
 #include <thread>
 #include <string>
@@ -53,10 +59,13 @@ std::map<std::string, int> usedAll;                 // ...over a row.
 std::mutex usedLock;
 bool tally = true;
 bool trace = false;
+bool tactics = false;                               // SIM_TACTICS: every wolf plays the fight's tactics (below).
 
 std::string at(int x, int y) { return std::to_string(x) + "," + std::to_string(y); }
 std::string at(const BattleFighter& o) { return at(o.x, o.y); }
 int apart(const BattleFighter& a, const BattleFighter& b) { return test::apart(a.x, a.y, b.x, b.y); }
+
+int standingOf(const Battle& b, int side);
 
 // One wolf's Gift on its turn, by its plan. True if its action went on it.
 struct Turn
@@ -149,9 +158,20 @@ struct Turn
             wanted = true;                          // (Held back for a better moment.)
             return false;
         }
+        // A Gift whose Tell draws blood (Fire's held breath, a Blinker's nosebleed) isn't paid for near the end of one's
+        // strength.
+        static const std::set<std::string> bloody = {"flamethrower", "heat_lance", "blastwave", "wall_of_fire", "blink_strike",
+                                                     "chain_blink", "unmoor", "displace", "extract"};
+        if (tactics && e->quickened && e->hurt > 65 && bloody.count(ability))
+            return false;
         // The Gifted keep breath for their blows: help only with stamina to spare (a Tell costs some, doc 43).
         if (!e->quickened && e->stamina < 35)
             return false;
+        // In a Trance, a Gift is worth pushing past its limits, when that costs no turn (Blinker and Gravity lose one) and the
+        // wolf isn't Trance-fatigued (doc 45).
+        if (e->quickened && me->magic.trance > 0 && me->magic.overreaches < 2 && e->gift != "blinker" && e->gift != "gravity" &&
+            !injury::spent(e->injuries))
+            overreach = true;                       // (Twice at most: each costs more than the last.)
         if (!overreach && e->quickened &&
             (e->mana + 1e-9 < cost || (me->magic.last == ability && me->magic.lastTurn == me->turnsTaken - 1)))
             return false;
@@ -196,7 +216,9 @@ struct Turn
         const auto g = gather.find(ability);
         if (g == gather.end())
             return true;
-        const double takes = g->second / (1 + e->wisdom / 200) + .5;
+        // (How much room it leaves differs from wolf to wolf, fight to fight: players differ in the risks they take.)
+        const double caution = double(std::hash<std::string>{}(id) % 1000) / 1000;
+        const double takes = g->second / (1 + e->wisdom / 200) + .1 + 1.2 * caution;
         const double haste = w.meterHaste(*b);
         for (const auto* o : foes)
         {
@@ -235,6 +257,24 @@ struct Turn
         }
         return false;
     }
+    // Foes within `within` already hurt this much or more (a Chain Blink can finish them).
+    int finishable(int within, double hurt) const
+    {
+        int n = 0;
+        for (const auto* o : foes)
+            n += apart(*me, *o) <= within && w.entity(o->id)->hurt >= hurt;
+        return n;
+    }
+    // With tactics, the Gift goes at the foe the side is on (the most hurt in reach), not just the nearest.
+    void focus(const std::string& markId)
+    {
+        for (const auto* o : foes)
+            if (o->id == markId)
+            {
+                mark = o;
+                d = apart(*me, *o);
+            }
+    }
     // Whether one of the side is fighting this foe (beside it): then it isn't shoved or thrown off them.
     bool engaged(const BattleFighter& foe) const
     {
@@ -257,6 +297,31 @@ struct Turn
                     return o.side == me->side;
         }
         return false;
+    }
+    // The foe to aim a cone or wave at so it takes the most foes (and no friend): its tile, and how many it takes.
+    std::pair<std::string, int> bestCone(int range, double half) const
+    {
+        std::pair<std::string, int> out{mark ? at(*mark) : std::string(), 0};
+        for (const auto* aim : foes)
+        {
+            if (apart(*me, *aim) > range || allyInCone(aim->x, aim->y, range, half))
+                continue;
+            const double a = std::atan2(double(aim->y - me->y), double(aim->x - me->x));
+            int n = 0;
+            for (const auto* o : foes)
+            {
+                const double dx = o->x - me->x, dy = o->y - me->y, far = std::hypot(dx, dy);
+                if (far < .5 || far > range + .5)
+                    continue;
+                double off = std::abs(std::atan2(dy, dx) - a) * 180 / 3.14159265358979323846;
+                if (off > 180)
+                    off = 360 - off;
+                n += off <= half;
+            }
+            if (n > out.second)
+                out = {at(*aim), n};
+        }
+        return out;
     }
     // The foe that matters most: the one hurting us most (nearest our most hurt ally), else the nearest.
     const BattleFighter* threat() const
@@ -306,7 +371,13 @@ bool smartBefore(Turn& t)
     {
         if (g == "fire")
         {
-            if (d >= 2 && d <= 5 && !t.allyInCone(m.x, m.y, 5, 30) && t.ok("flamethrower") && t.use("flamethrower", at(m)))
+            if (tactics)
+            {
+                const auto [aim, n] = t.bestCone(5, 33);
+                if (n >= 1 && (d >= 2 || n >= 2) && t.ok("flamethrower") && t.use("flamethrower", aim))
+                    return true;
+            }
+            else if (d >= 2 && d <= 5 && !t.allyInCone(m.x, m.y, 5, 30) && t.ok("flamethrower") && t.use("flamethrower", at(m)))
                 return true;
             if (d >= 2 && d <= 4 && !t.allyFirst(m.x, m.y, 4) && t.ok("heat_lance") && t.use("heat_lance", at(m)))
                 return true;
@@ -320,6 +391,9 @@ bool smartBefore(Turn& t)
         }
         if (g == "water")
         {
+            if (tactics)
+                if (const auto [aim, n] = t.bestCone(4, 25); n >= 2 && t.ok("wave") && t.use("wave", aim))
+                    return true;                    // (A wave into the pack: down and soaked, ready for Freeze.)
             if (d >= 2 && d <= 5 && !t.allyFirst(m.x, m.y, 5) && !t.engaged(m) && t.ok("pressure_jet") && t.use("pressure_jet", at(m)))
                 return true;
             // Freeze: only worth it on a foe that must step in to strike.
@@ -336,12 +410,18 @@ bool smartBefore(Turn& t)
         {
             if (d <= 5 && m.magic.has("stone_armor") && t.ok("resonance") && t.use("resonance", m.id))
                 return true;                        // (Its stone cracks first.)
-            if (d >= 2 && d <= 5 && !t.allyInCone(m.x, m.y, 5, 30) && t.ok("shatterhowl") && t.use("shatterhowl", at(m)))
+            if (tactics)
+            {
+                const auto [aim, n] = t.bestCone(5, 28);
+                if (n >= 1 && (d >= 2 || n >= 2) && t.ok("shatterhowl") && t.use("shatterhowl", aim))
+                    return true;
+            }
+            else if (d >= 2 && d <= 5 && !t.allyInCone(m.x, m.y, 5, 30) && t.ok("shatterhowl") && t.use("shatterhowl", at(m)))
                 return true;
         }
         if (g == "blinker")
         {
-            if (t.near(*t.me, 6, true) >= 2 && t.ok("chain_blink") && t.use("chain_blink", m.id))
+            if (t.finishable(6, 60) >= 2 && t.ok("chain_blink") && t.use("chain_blink", m.id))
                 return true;
             if (d >= 2 && d <= 6 && t.ok("blink_strike") && t.use("blink_strike", m.id))
                 return true;
@@ -473,11 +553,12 @@ bool smartAfter(Turn& t)
     }
     if (g == "blinker")
     {
-        if (t.near(*t.me, 6, true) >= 2 && t.ok("chain_blink") && t.use("chain_blink", m.id))
+        if (t.finishable(6, 60) >= 2 && t.ok("chain_blink") && t.use("chain_blink", m.id))
             return true;
-        if (t.ok("blink_strike") && t.use("blink_strike", m.id))
-            return true;
-        if (t.ok("unmoor") && t.use("unmoor", m.id))
+        if ((!tactics || t.foes.size() == 1) && t.ok("blink_strike") && t.use("blink_strike", m.id))
+            return true;                            // (Outnumbered, with tactics, a foe beside it is bitten: a blink costs blood.)
+        // Unmoor: a turn lost to one foe, for no blow and a nosebleed. Only worth it one on one (with tactics: doc 45).
+        if ((!tactics || t.foes.size() == 1) && t.ok("unmoor") && t.use("unmoor", m.id))
             return true;
     }
     if (g == "gravity")
@@ -545,6 +626,161 @@ bool naiveTurn(Turn& t)
     return t.use(pick.first, pick.second);
 }
 
+// ------------------------------------------------------------------ Tactics (SIM_TACTICS)
+//
+// What a sensible player does with the ground and the turn, on top of its Gift: runs to close a long gap and walks
+// once engaged (breath for the blows); goes for a foe gathering a Gift, else the most hurt it can reach (the side
+// focuses); strikes from the side or behind where it can; keeps apart from its friends when the foe has a Gift that
+// hits a crowd; and, outnumbered, stands where the fewest foes can reach it, striking and then stepping back.
+
+int reachOf(World& w, const std::string& id) { return w.entity(id)->mouth == "sword" ? battle::SwordReach : 1; }
+
+// How far a fighter could come and strike on its next turn, at a run.
+int threatRange(World& w, const BattleFighter& o)
+{
+    const auto* e = w.entity(o.id);
+    int move = battle::moveRange(e->dexterity, e->hurt, 7);
+    if (e->gift == "wind" && e->quickened)
+        move *= 2;                                  // (Tailwind.)
+    if (o.magic.has("crushed"))
+        move = std::min(move, 1);
+    if (o.magic.has("frozen") || o.magic.has("prone") || o.magic.has("held") || o.casting)
+        move = 0;
+    return move + reachOf(w, o.id);
+}
+
+// How many foes of `side` could strike (x, y) next turn.
+int threatsAt(World& w, const Battle& b, int side, int x, int y)
+{
+    int n = 0;
+    for (const auto& o : b.fighters)
+        if (o.side != side && o.status == "fighting" && !o.unseen && test::apart(o.x, o.y, x, y) <= threatRange(w, o))
+            ++n;
+    return n;
+}
+
+int standingOf(const Battle& b, int side)
+{
+    int n = 0;
+    for (const auto& o : b.fighters)
+        n += o.side == side && o.status == "fighting";
+    return n;
+}
+
+// The foe to go for: one gathering a Gift that can be reached and struck this turn; else the most hurt that can be;
+// else the nearest.
+std::string tacticalMark(World& w, const std::string& id)
+{
+    const auto* b = w.battleOf(id);
+    const auto* me = b->fighter(id);
+    const int reach = reachOf(w, id);
+    std::vector<std::pair<int, int>> from{{me->x, me->y}};
+    if (!me->moved)
+        for (const auto& t : w.battleReach(id))
+            from.push_back(t);
+    const BattleFighter *nearest = nullptr, *pick = nullptr;
+    double score = -1e9;
+    for (const auto& o : b->fighters)
+    {
+        if (o.side == me->side || o.status != "fighting" || o.unseen)
+            continue;
+        if (!nearest || test::apart(me->x, me->y, o.x, o.y) < test::apart(me->x, me->y, nearest->x, nearest->y))
+            nearest = &o;
+        bool can = false;
+        for (const auto& [x, y] : from)
+            can = can || test::apart(x, y, o.x, o.y) <= reach;
+        if (!can)
+            continue;
+        const double s = (o.casting ? 1000 : 0) + w.entity(o.id)->hurt - test::apart(me->x, me->y, o.x, o.y) * .1;
+        if (s > score)
+        {
+            score = s;
+            pick = &o;
+        }
+    }
+    return pick ? pick->id : nearest ? nearest->id : std::string();
+}
+
+// Runs to close a gap, walks once a foe can be struck after a walk.
+void tacticalPace(World& w, const std::string& id)
+{
+    // (Tried for real: at a walk, can a foe be struck from somewhere it can get to?)
+    const auto* b = w.battleOf(id);
+    const auto* me = b->fighter(id);
+    const auto* e = w.entity(id);
+    w.setPace(id, 0);
+    std::vector<std::pair<int, int>> tiles = w.battleReach(id);
+    tiles.push_back({me->x, me->y});
+    bool near = false;
+    for (const auto& [x, y] : tiles)
+        for (const auto& o : b->fighters)
+            near = near || (o.side != me->side && o.status == "fighting" && test::apart(x, y, o.x, o.y) <= reachOf(w, id));
+    w.setPace(id, near || e->stamina < 30 ? 0 : 7);
+}
+
+// Where to go this turn: a tile to strike the mark from (the side or back best), or as near it as can be; apart from
+// friends when the foe's Gift hits a crowd; outnumbered, where the fewest foes can reach. Moves there; true if it
+// moved.
+bool tacticalMove(World& w, const std::string& id, const std::string& markId, bool stepBack = false)
+{
+    const auto* b = w.battleOf(id);
+    const auto* me = b->fighter(id);
+    const auto* mark = b->fighter(markId);
+    if (!mark || me->moved)
+        return false;
+    const int side = me->side, reach = reachOf(w, id);
+    const int mine = standingOf(*b, side), theirs = standingOf(*b, 1 - side);
+    const bool lone = mine == 1 && theirs >= 2, outnumbered = mine < theirs;
+    bool crowd = false;                             // (A foe whose Gift hits several: keep apart.)
+    for (const auto& o : b->fighters)
+        crowd = crowd || (o.side != side && o.status == "fighting" && w.entity(o.id)->quickened);
+    std::vector<std::pair<int, int>> tiles = w.battleReach(id);
+    const std::pair<int, int> here{me->x, me->y};
+    tiles.push_back(here);
+    const int threatsHere = threatsAt(w, *b, side, me->x, me->y);
+    std::pair<int, int> best = here;
+    double top = -1e18;
+    for (const auto& [x, y] : tiles)
+    {
+        const int d = test::apart(x, y, mark->x, mark->y);
+        const int threats = threatsAt(w, *b, side, x, y);
+        int friends = 0;
+        for (const auto& o : b->fighters)
+            friends += o.side == side && o.id != id && o.status == "fighting" && test::apart(o.x, o.y, x, y) <= 1;
+        double s;
+        if (stepBack)
+            s = -threats * 100.0 + (std::pair<int, int>{x, y} == here ? 50 : 0);   // (After the blow: away from the most.)
+        else
+        {
+            if (d <= reach)
+            {
+                const int gap = battle::octantGap(mark->facing, battle::octant(x - mark->x, y - mark->y));
+                s = 1000 + 40.0 * (gap >= 3 ? 2 : gap == 2 ? 1 : 0);
+            }
+            else
+                s = -10.0 * d;
+            s -= threats * (lone ? 60.0 : outnumbered ? 25.0 : 3.0);
+            if (crowd)
+                s -= 15.0 * friends;
+            if (std::pair<int, int>{x, y} == here)
+                s += 15;                            // (Staying put keeps the bar's head start.)
+        }
+        if (s > top)
+        {
+            top = s;
+            best = {x, y};
+        }
+    }
+    if (stepBack && threatsAt(w, *b, side, best.first, best.second) >= threatsHere)
+        return false;
+    // Stuck (no way nearer, the fallen in the way): a step aside, to come round another way.
+    if (!stepBack && best == here && test::apart(me->x, me->y, mark->x, mark->y) > reach && tiles.size() > 1)
+        best = tiles[std::hash<std::string>{}(id + std::to_string(b->turns)) % (tiles.size() - 1)];
+    if (best == here)
+        return false;
+    return w.battleMove(id, best.first, best.second).ok;
+}
+
 // Ends a wolf's turn facing the nearest foe still standing (turning is free: doc 33), as a player would.
 void endTurn(World& w, const std::string& id)
 {
@@ -579,6 +815,21 @@ void play(World& w, const std::string& id)
     }
     const auto& wolf = wolves[id];
     const bool gift = !wolf.gift.empty();
+    // A player takes a moment to act, not the same each turn (with tactics): it blurs the turns' rhythm, as play does.
+    if (tactics && !me->moved && !me->acted && !me->casting)
+    {
+        const double think = .2 + 1.3 * double(std::hash<std::string>{}(id + "|" + std::to_string(me->turnsTaken)) % 1000) / 1000;
+        if (w.time() - me->turnStarted < think)
+            return;
+    }
+    if (tactics && !me->moved && !me->acted)
+        tacticalPace(w, id);
+    // A Quickened wolf goes into a Trance when the odds are against it (SIM_TRANCE: never, outnumbered, always).
+    static const std::string tranceWhen = std::getenv("SIM_TRANCE") ? std::getenv("SIM_TRANCE") : "outnumbered";
+    if (wolf.quickened && !wolf.naive && me->magic.trance <= 0 && tranceWhen != "never" &&
+        (tranceWhen == "always" || standingOf(*b, 1 - me->side) > standingOf(*b, me->side)))
+        w.enterTrance(id);
+
     if (gift && !wolf.quickened && !wolf.naive)
     {
         Turn t(w, id);
@@ -598,6 +849,8 @@ void play(World& w, const std::string& id)
     if (gift && !me->acted && !me->casting)
     {
         Turn t(w, id);
+        if (tactics && wolf.quickened && !wolf.naive)
+            t.focus(tacticalMark(w, id));
         const bool cast = wolf.naive ? naiveTurn(t) : smartBefore(t);
         // A Gifted wolf with a side still walks up to the fight after helping (a support Gift takes the action, not the
         // move), unless it holds a Gift that moving would break.
@@ -642,6 +895,12 @@ void play(World& w, const std::string& id)
             }
         }
     std::string markId = mark->id;
+    if (tactics)
+        if (const auto pick = tacticalMark(w, id); !pick.empty())
+        {
+            markId = pick;
+            mark = b->fighter(pick);
+        }
     // Holding Steady Beat (Gifted Sound): stay still, and strike only what comes.
     bool still = me->magic.channel == "steady_beat";
     if (still)
@@ -661,7 +920,13 @@ void play(World& w, const std::string& id)
             still = false;
         }
     }
-    if (test::apart(me->x, me->y, mark->x, mark->y) > reach && !me->moved && !me->casting && !still)
+    if (tactics && test::apart(me->x, me->y, mark->x, mark->y) > reach && !me->moved && !me->casting && !still)
+    {
+        tacticalMove(w, id, markId);
+        if ((b = w.battleOf(id)) && b->fighter(id) && !b->fighter(id)->walk.empty())
+            return;
+    }
+    else if (test::apart(me->x, me->y, mark->x, mark->y) > reach && !me->moved && !me->casting && !still)
     {
         // The tile in reach nearest any foe (the nearest is often walled in by the fallen); else, stuck, a step aside.
         std::pair<int, int> to{me->x, me->y};
@@ -686,6 +951,8 @@ void play(World& w, const std::string& id)
     if (gift && !wolf.naive && (b = w.battleOf(id)) && !b->over && test::acting(b, id))
     {
         Turn t(w, id);
+        if (tactics && wolf.quickened)
+            t.focus(markId);
         if (!t.me->acted && !t.me->casting)
         {
             if (wolf.quickened)
@@ -701,6 +968,15 @@ void play(World& w, const std::string& id)
         if (m && m->status == "fighting" && test::apart(me->x, me->y, m->x, m->y) <= reach)
             w.battleAct(id, sword ? "sword" : "bite", markId);
     }
+    if (tactics && (b = w.battleOf(id)) && !b->over && test::acting(b, id))
+    {
+        me = b->fighter(id);
+        const auto* e = w.entity(id);
+        const bool tailwind = e->gift == "wind" && e->quickened;
+        if (me->acted && !me->moved && !me->casting && me->magic.channel.empty() &&
+            (standingOf(*b, me->side) < standingOf(*b, 1 - me->side) || tailwind) && tacticalMove(w, id, markId, true))
+            return;                                 // (Struck, and stepping back out of the most foes' reach.)
+    }
     if ((b = w.battleOf(id)) && !b->over && test::acting(b, id))
         endTurn(w, id);
 }
@@ -711,6 +987,8 @@ struct Outcome
     int result = 0;                                 // 1 if A stands, -1 if B does, 0 if neither side went down.
     int turns = 0;
     double health = 0;                              // The winning side's health left, all told.
+    int downedB = 0;                                // Side B's wolves down at the end.
+    double hurtB = 0;                               // Side B's health lost, all told.
 };
 
 // One fight: side A against side B, `gap` tiles apart, the first of A (or of B) starting it and striking first.
@@ -827,6 +1105,12 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
                 hp[side] += 100 - e->hurt;
             }
     out.result = up[0] == up[1] ? 0 : up[0] ? 1 : -1;
+    for (const auto& id : ids[1])
+        if (const auto* e = w.entity(id))
+        {
+            out.downedB += e->hurt >= 100 || e->downedLeft > 0;
+            out.hurtB += std::min(100.0, e->hurt);
+        }
     out.health = out.result > 0 ? hp[0] : out.result < 0 ? hp[1] : 0;
     for (const auto& id : ids[0])
         if (const auto* bb = w.battleOf(id))
@@ -836,7 +1120,7 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
 
 struct Rate
 {
-    double win = 0, turns = 0, health = 0;
+    double win = 0, turns = 0, health = 0, downedB = 0, hurtB = 0;
     int undecided = 0;
 };
 
@@ -867,7 +1151,11 @@ Rate winRate(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int fights,
         r.undecided += o.result == 0;
         r.turns += o.turns;
         r.health += o.health;
+        r.downedB += o.downedB;
+        r.hurtB += o.hurtB;
     }
+    r.downedB /= std::max(1, fights);
+    r.hurtB /= std::max(1, fights);
     r.win = decided ? 100.0 * wins / decided : 0;
     r.turns /= std::max(1, fights);
     r.health /= std::max(1, decided);
@@ -877,7 +1165,7 @@ Rate winRate(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int fights,
 bool details = false;
 void row(const std::string& what, const Rate& r)
 {
-    std::printf("  %-58s %5.1f%%   %4.0f turns  %3.0f left%s\n", what.c_str(), r.win, r.turns, r.health,
+    std::printf("  %-58s %5.1f%%   %4.0f turns  %3.0f left  (B lost %3.0f)%s\n", what.c_str(), r.win, r.turns, r.health, r.hurtB,
                 r.undecided ? ("  (" + std::to_string(r.undecided) + " undecided)").c_str() : "");
     if (details && !usedAll.empty())
     {
@@ -912,8 +1200,15 @@ void vs(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int n, int gap =
     row(label(a) + " vs " + label(b), winRate(a, b, n, order, gap));
 }
 
-Wolf parseWolf(const std::string& s, int level)
+Wolf parseWolf(const std::string& given, int level)
 {
+    // "fireq@20": a level of its own.
+    std::string s = given;
+    if (const auto at = s.find('@'); at != std::string::npos)
+    {
+        level = std::atoi(s.c_str() + at + 1);
+        s = s.substr(0, at);
+    }
     if (s == "plain")
         return Wolf{level};
     std::string f = s;
@@ -968,6 +1263,7 @@ int main(int argc, char** argv)
     const std::string suite = argc > 2 ? argv[2] : "levels";
     details = std::getenv("SIM_DETAILS") != nullptr;
     trace = std::getenv("SIM_TRACE") != nullptr;
+    tactics = std::getenv("SIM_TACTICS") != nullptr;
     const int gap = std::getenv("SIM_GAP") ? std::atoi(std::getenv("SIM_GAP")) : 5;   // (5: neither side gains by waiting.)
     const auto has = [&](const char* s) { return suite == s || suite == "all"; };
     if (suite == "duel" || suite == "row")
@@ -1041,6 +1337,110 @@ int main(int argc, char** argv)
             vs({armed(gifted(f, 10))}, {armed(Wolf{10})}, n, gap);
             vs({Wolf{10}, gifted(f, 10)}, {Wolf{10}, Wolf{10}}, n, gap);
             vs({armed(Wolf{10}), armed(gifted(f, 10))}, {armed(Wolf{10}), armed(Wolf{10})}, n, gap);
+        }
+        return 0;
+    }
+    if (suite == "ladder")
+    {
+        // A Quickened wolf ten levels over plain ones, levels 1 to 15: one against one, then one against three.
+        for (int foes : {1, 3})
+        {
+            std::printf("\nA Quickened wolf at level N+10 against %s at level N: the Quickened wolf's wins (%d fights, %d tiles apart, bare)\n",
+                        foes == 1 ? "one plain wolf" : "three plain wolves", n, gap);
+            std::printf("  %-4s %8s", "N", "plain");
+            for (const auto& f : Families)
+                std::printf(" %8s", f.c_str());
+            std::printf("\n");
+            for (int level = 1; level <= 15; ++level)
+            {
+                const std::vector<Wolf> them(std::size_t(foes), Wolf{level});
+                std::printf("  %-4d %7.1f%%", level, winRate({Wolf{level + 10}}, them, n, 0, gap).win);
+                std::fflush(stdout);
+                for (const auto& f : Families)
+                {
+                    std::printf(" %7.1f%%", winRate({quick(f, level + 10)}, them, n, 0, gap).win);
+                    std::fflush(stdout);
+                }
+                std::printf("\n");
+            }
+        }
+        return 0;
+    }
+    if (suite == "trance")
+    {
+        // A Quickened wolf ten levels over plain wolves: one, three and five of them (doc 45's Trance targets: 3v1 50%, 5v1 25%).
+        std::printf("A Quickened wolf at level N+10 against plain wolves at level N (%d fights, %d tiles apart, bare; Trance %s)\n", n, gap,
+                    std::getenv("SIM_TRANCE") ? std::getenv("SIM_TRANCE") : "outnumbered");
+        std::printf("  %-12s", "");
+        for (const auto& f : Families)
+            std::printf(" %7s", f.substr(0, 7).c_str());
+        std::printf("    mean\n");
+        std::vector<int> levels = {1, 5, 10, 15};
+        if (const char* only = std::getenv("SIM_LEVEL"))
+            levels = {std::atoi(only)};
+        for (int foes : {1, 2, 3, 4, 5})
+            for (int level : levels)
+            {
+                std::printf("  %dv1, N=%-4d", foes, level);
+                double sum = 0;
+                for (const auto& f : Families)
+                {
+                    const double r = winRate({quick(f, level + 10)}, std::vector<Wolf>(std::size_t(foes), Wolf{level}), n, 0, gap).win;
+                    sum += r;
+                    std::printf(" %6.0f%%", r);
+                    std::fflush(stdout);
+                }
+                std::printf("  %5.1f%%\n", sum / Families.size());
+            }
+        return 0;
+    }
+    if (suite == "parties")
+    {
+        // A Quickened wolf in a party against more: its Trance by the odds (doc 45). L20 Quickened, L10 plain wolves.
+        std::printf("Parties: a Quickened L20 (Trance when outnumbered) and plain L10 friends against plain L10s (%d fights)\n", n);
+        std::printf("  %-22s", "");
+        for (const auto& f : Families)
+            std::printf(" %7s", f.substr(0, 7).c_str());
+        std::printf("    mean\n");
+        for (const auto& [mine, theirs] : std::vector<std::pair<int, int>>{{2, 4}, {2, 6}, {3, 6}, {2, 2}})
+        {
+            std::printf("  %d (Q + %d) vs %d%-9s", mine, mine - 1, theirs, "");
+            double sum = 0;
+            for (const auto& f : Families)
+            {
+                std::vector<Wolf> side{quick(f, 20)};
+                for (int i = 1; i < mine; ++i)
+                    side.push_back(Wolf{10});
+                const double r = winRate(side, std::vector<Wolf>(std::size_t(theirs), Wolf{10}), n, 0, gap).win;
+                sum += r;
+                std::printf(" %6.0f%%", r);
+                std::fflush(stdout);
+            }
+            std::printf("  %5.1f%%\n", sum / Families.size());
+        }
+        return 0;
+    }
+    if (suite == "crowd")
+    {
+        // A Quickened wolf ten levels over two or three plain ones: wins, foes it puts down, and the damage it deals.
+        for (int foes : {2, 3})
+        {
+            std::printf("\nA Quickened wolf at level N+10 against %d plain wolves at level N (%d fights, %d tiles apart, bare): "
+                        "wins / foes downed / damage dealt\n", foes, n, gap);
+            std::printf("  %-4s %16s", "N", "plain");
+            for (const auto& f : Families)
+                std::printf(" %16s", f.c_str());
+            std::printf("\n");
+            for (int level : {1, 5, 10, 15})
+            {
+                const std::vector<Wolf> them(std::size_t(foes), Wolf{level});
+                const auto cell = [&](const Rate& r) { std::printf(" %4.0f%% %4.1f %5.0f", r.win, r.downedB, r.hurtB); std::fflush(stdout); };
+                std::printf("  %-4d", level);
+                cell(winRate({Wolf{level + 10}}, them, n, 0, gap));
+                for (const auto& f : Families)
+                    cell(winRate({quick(f, level + 10)}, them, n, 0, gap));
+                std::printf("\n");
+            }
         }
         return 0;
     }

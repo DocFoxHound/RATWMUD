@@ -2,6 +2,7 @@
 // their Tells, costs and Overreach, what they leave on the ground, and how they meet the fight's own rules.
 #include "RatwBattle.h"
 #include "RatwGifts.h"
+#include "RatwInjury.h"
 #include "RatwItems.h"
 #include "RatwSociety.h"
 #include "RatwWire.h"
@@ -687,6 +688,82 @@ void balance()
     }
 }
 
+// A Trance (doc 45): any Quickened wolf's, at any time, at 2:1 at least, its level with the odds; mana each turn and a
+// quicker bar; Trance fatigue after (a smaller pool, no overreaching) that ordinary rest doesn't take away. And a bar
+// knocked back once between a wolf's turns.
+void trance()
+{
+    {
+        World w;
+        auto& b = duel(w, "seer", false);
+        turn(w, b, "player-ad");
+        expect(!w.enterTrance("player-ad").ok, "A Gifted wolf has no Trance");
+        const auto opts = w.giftOptions("player-ad");
+        expect(std::none_of(opts.begin(), opts.end(), [](const auto& o) { return o.id == "trance"; }), "nor is one offered");
+    }
+    World w;
+    auto& b = duel(w, "fire", true);
+    auto& ad = turn(w, b, "player-ad");
+    const auto opts = w.giftOptions("player-ad");
+    expect(std::any_of(opts.begin(), opts.end(), [](const auto& o) { return o.id == "trance" && o.ready; }), "A Quickened wolf is offered a Trance");
+    const double before = w.meterRate(b, ad, 1);
+    expect(w.enterTrance("player-ad").ok && std::abs(ad.magic.trance - 2) < 1e-9, "One on one, a Trance at 2:1");
+    expect(!w.enterTrance("player-ad").ok, "once a fight");
+    expect(w.meterRate(b, ad, 1) > before, "Its bar fills faster");
+    w.entity("player-ad")->mana = 0;
+    w.battleAct("player-ad", "wait");
+    nextTurnOf(w, b, "player-ad");
+    expect(std::abs(w.entity("player-ad")->mana - 10) < 1e-9, "Mana at its turn: " + std::to_string(w.entity("player-ad")->mana));
+    // Two more foes: 3:1 at its next turn; them down, back to 2:1.
+    for (const char* id : {"player-cy", "player-di"})
+    {
+        auto& o = w.addPlayer(id, id);
+        o.cellId = w.entity("player-ad")->cellId;
+        BattleFighter f;
+        f.id = id;
+        f.side = b.fighter("player-bo")->side;
+        const auto spot = openNear(w, b, b.fighter("player-bo")->x, b.fighter("player-bo")->y, 2);
+        f.x = spot.first;
+        f.y = spot.second;
+        b.fighters.push_back(f);
+    }
+    w.battleAct("player-ad", "wait");
+    nextTurnOf(w, b, "player-ad");
+    expect(std::abs(b.fighter("player-ad")->magic.trance - 3) < 1e-9, "Three to one: a Trance at 3");
+    for (const char* id : {"player-cy", "player-di"})
+        b.fighter(id)->status = "fled";             // (Gone from the fight: they don't count.)
+    w.battleAct("player-ad", "wait");
+    nextTurnOf(w, b, "player-ad");
+    expect(std::abs(b.fighter("player-ad")->magic.trance - 2) < 1e-9 && b.fighter("player-ad")->magic.tranceTop >= 3,
+           "As foes go it falls (and its highest is kept)");
+    // A bar knocked back once between turns.
+    auto& bo = *b.fighter("player-bo");
+    bo.acting = false;
+    bo.meter = 90;
+    expect(w.knockBar(bo, 40) && std::abs(bo.meter - 50) < 1e-9 && !w.knockBar(bo, 40) && std::abs(bo.meter - 50) < 1e-9,
+           "A bar is knocked back once until its next turn");
+    // The fight ends: Trance fatigue, by its highest.
+    w.battleAct("player-ad", "wait");
+    for (int i = 0; i < 20 && b.fighter("player-bo")->status == "fighting"; ++i)
+    {
+        turn(w, b, "player-ad");
+        place(w, b, "player-bo", "player-ad", 1);
+        w.entity("player-bo")->hurt = 99.5;
+        w.battleAct("player-ad", "bite", "player-bo");
+    }
+    for (int i = 0; i < 400 && w.inBattle("player-ad"); ++i)
+        w.tick(.05);
+    const auto* e = w.entity("player-ad");
+    expect(!w.inBattle("player-ad") && injury::spent(e->injuries), "After the fight: Trance fatigue");
+    const auto tired = std::find_if(e->injuries.begin(), e->injuries.end(), [](const Injury& i) { return i.type == "trance_fatigue"; });
+    expect(tired != e->injuries.end() && tired->severity == 2, "moderate, from a 3:1 Trance");
+    expect(w.manaPool(*e) < battle::manaMax(e->wisdom, true) * .75, "Its mana pool is smaller");
+    auto copy = e->injuries;
+    injury::heal(copy, 100);
+    expect(injury::spent(copy), "Rest hours don't take it away (a full rest does)");
+    expect(injury::visible(e->injuries).find("trance") == std::string::npos, "It doesn't show on the wolf");
+}
+
 int main()
 {
     try
@@ -706,6 +783,7 @@ int main()
         atWork();
         saved();
         balance();
+        trance();
     }
     catch (const std::exception& error)
     {

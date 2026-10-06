@@ -48,6 +48,8 @@ constexpr Kind Kinds[] = {
     {"burn_scars", "burns", "burn scars", "fire", true, false},
     {"notched_nose", "nose", "notched nose", "bite sword", true, false},
     {"clouded_eye", "eye", "clouded eye", "sword fire blunt", true, true},
+    // After a Trance (doc 45): only a full rest takes it away; never rolled from a blow.
+    {"trance_fatigue", "trance", "trance fatigue", "trance", false, false},
     // Set from a severe acute injury (never rolled from a cause).
     {"permanent_limp", "leg", "permanent limp", "", true, false},
     {"bad_back", "ribs", "bad back", "", true, false},
@@ -159,6 +161,12 @@ Effects effects(const std::vector<Injury>& injuries)
             else if (s == 2) initiativeOff += .10;
             else { initiativeOff += .20; visionOff += .25; }
         }
+        else if (p == "trance")
+        {
+            e.mana = s == 1 ? .85 : s == 2 ? .70 : .55;
+            recoveryOff += s == 1 ? .10 : s == 2 ? .20 : .30;
+            initiativeOff += s == 1 ? .05 : s == 2 ? .10 : .15;
+        }
         else if (p == "burns")
         {
             if (s == 1) e.fireExtra = std::max(e.fireExtra, 1.0);
@@ -199,6 +207,9 @@ std::string does(const Injury& i)
     if (p == "muzzle") return s == 1 ? "Smell 10% less." : s == 2 ? "Smell 25% less." : "Smell 40% less.";
     if (p == "ear") return s == 1 ? "Hearing 10% less." : s == 2 ? "Hearing 25% less." : "Hearing 40% less.";
     if (p == "head") return s == 1 ? "Sight 10% less." : s == 2 ? "Slower to act in a fight (10%)." : "Slower to act (20%); sight 25% less.";
+    if (p == "trance") return s == 1 ? "Until a full rest: mana 15% less, slower to act (5%), stamina back 10% slower; no overreaching."
+                              : s == 2 ? "Until a full rest: mana 30% less, slower to act (10%), stamina back 20% slower; no overreaching."
+                                       : "Until a full rest: mana 45% less, slower to act (15%), stamina back 30% slower; no overreaching.";
     if (p == "burns") return s == 1 ? "Fire hurts you 1 more." : s == 2 ? "Stamina comes back 10% slower."
                                                                         : "Stamina back 20% slower; fire hurts you 2 more.";
     return "";
@@ -226,6 +237,8 @@ std::string describe(const Injury& i)
         const auto when = dateWords(i.gotDay);
         return name(i) + ": " + how + (when.empty() ? "" : ", " + when);
     }
+    if (i.type == "trance_fatigue")
+        return name(i) + ": " + severityWord(i.severity) + ", until a full rest";
     const double days = i.restLeft / 24;
     const std::string left = days < .75 ? "nearly healed" : days < 1.5 ? "about a day more of rest"
                                                                        : "about " + std::to_string(int(std::lround(days))) + " more days of rest";
@@ -238,8 +251,8 @@ std::string visible(const std::vector<Injury>& injuries)
     std::vector<std::string> seen;
     for (const auto& i : injuries)
     {
-        if (i.kind != "acute")
-            continue;
+        if (i.kind != "acute" || part(i.type) == "trance")
+            continue;                               // (Trance fatigue doesn't show: doc 45.)
         const std::string p = part(i.type), n = name(i);
         std::string lower = n;
         if (!lower.empty())
@@ -346,9 +359,14 @@ Injury given(const std::string& type, int severity, const std::string& side, con
     if (i.kind == "acute")
     {
         i.severity = std::clamp(severity, 1, 3);
-        i.restFull = i.restLeft = (i.severity == 1 ? 1.5 : i.severity == 2 ? 4.5 : 10.5) * 24;
+        i.restFull = i.restLeft = type == "trance_fatigue" ? 1 : (i.severity == 1 ? 1.5 : i.severity == 2 ? 4.5 : 10.5) * 24;
     }
     return i;
+}
+
+bool spent(const std::vector<Injury>& injuries)
+{
+    return std::any_of(injuries.begin(), injuries.end(), [](const Injury& i) { return i.type == "trance_fatigue"; });
 }
 
 bool give(std::vector<Injury>& injuries, const Injury& i)
@@ -382,9 +400,9 @@ const Injury& addAcute(std::vector<Injury>& injuries, Injury i)
         if (had.kind == "acute" && had.type == i.type && had.side == i.side)
         {
             // The same again: a severity worse, and healing starts over.
-            had.severity = std::min(3, severityNow(had) + 1);
+            had.severity = std::min(3, std::max(severityNow(had) + 1, i.severity));
             const double days = had.severity == 2 ? 4.5 : 10.5;
-            had.restFull = had.restLeft = std::max(i.restFull, std::round(days * 24));
+            had.restFull = had.restLeft = i.type == "trance_fatigue" ? 1 : std::max(i.restFull, std::round(days * 24));
             had.cause = i.cause;
             had.from = i.from;
             had.gotDay = i.gotDay;
@@ -403,9 +421,9 @@ std::vector<std::string> heal(std::vector<Injury>& injuries, double hours)
         return healed;
     for (auto it = injuries.begin(); it != injuries.end();)
     {
-        if (it->kind != "acute")
+        if (it->kind != "acute" || it->type == "trance_fatigue")
         {
-            ++it;
+            ++it;                                   // (Trance fatigue: only a full rest, doc 45.)
             continue;
         }
         it->restLeft -= hours;

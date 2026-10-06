@@ -340,3 +340,12 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
 | Can a downed wolf be robbed or dragged off? | Not now. Worth a design of its own (captivity, ransom) later. |
 | Should acute injuries be given on every downing, or rolled? | **Decided (2026-10-04):** every downing. Losing is the main cost now that death is gone. |
 | Can lasting injuries ever be healed? | **Decided (2026-10-04):** no; a DM correction only. |
+
+## Trance fatigue (doc 45)
+
+After a Trance (doc 43, rule 11) a Quickened wolf carries **trance fatigue**, kept with its injuries but unlike them: it
+is not rolled from a blow, doesn't show on the wolf, and ordinary rest doesn't wear it down. Only a **full rest** (six
+hours lying in a bed, or the time away that counts as one) takes it away. Minor after a Trance at 2:1, moderate at 3:1
+or more, severe at 4.5:1 or more; two overreaches in the fight make it a degree worse, and a Trance while fatigued deepens
+it. Minor: the mana pool 15% smaller, the fight's bar 5% slower, stamina back 10% slower; moderate 30%, 10%, 20%; severe
+45%, 15%, 30%. While it lasts the wolf can't overreach.

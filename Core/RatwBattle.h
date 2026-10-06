@@ -85,6 +85,9 @@ struct BattleFighter
         int firmX = -1, firmY = -1;             // Firm Footing: the tile packed under it.
         int movedTurn = -10;                    // The last of the fight's rounds it moved in (Feel Footfalls).
         bool helped = false;                    // Its move this turn went on a Gifted wolf's help (doc 45), not a step.
+        double trance = 0;                      // In a Trance (doc 45): its level, 2 to 5, with the odds (0: not in one).
+        double tranceTop = 0;                   // ...the highest it reached this fight (its fatigue after).
+        int overreaches = 0;                    // This fight: each costs more than the last, and deepens a Trance's fatigue.
         bool has(const std::string& name) const { return fx.count(name) > 0; }
         // Can't be shoved, thrown or knocked down: anchored, or under a Stone Armor's weight (doc 45).
         bool steady() const { return has("anchored") || has("stone_armor"); }
@@ -345,6 +348,7 @@ constexpr int BurnTurns = 3, SmokeRounds = 3;
 constexpr double FlameFlinch = 25;                      // A Quickened flame knocks the bar back (doc 45).
 constexpr double BurnDamage = 3, RainFactor = .6, ManaPerTurn = 2, ManaPerSecond = 1.0 / 6;
 constexpr double QuickenedManaPerTurn = 0;            // (Doc 45: a Quickened wolf's casts are few, from what it brings.)
+constexpr double TranceBreath = .5;                     // A Trance's second wind: stamina back, more, a degree (doc 45).
 inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom * .8 : 0; }
 // Fighting skill grows with fighting, slower as it climbs.
 constexpr double SkillPerHit = .2, SkillPerFight = .5;

@@ -37,6 +37,7 @@ struct Effects
     double hearing = 1, vision = 1, smell = 1;
     double initiative = 1;           // The fight's bar fills times this.
     double fireExtra = 0;            // Fire hurts the burned this much more.
+    double mana = 1;                 // Of a Gift's mana pool, this much (Trance fatigue, doc 45).
     bool any() const;
 };
 Effects effects(const std::vector<Injury>& injuries);
@@ -66,6 +67,8 @@ Injury lastingFrom(const std::string& cause, const std::vector<Injury>& has, dou
 // An injury of a kind given outright (a Dungeon Master's, doc 38 phase 5): acute at a severity with the middle of its
 // healing time, or lasting. Its type is empty if the kind is unknown.
 Injury given(const std::string& type, int severity, const std::string& side, const std::string& from);
+// Trance fatigue (doc 45): whether it is on the wolf (no overreaching until a full rest).
+bool spent(const std::vector<Injury>& injuries);
 // Adds one given outright to a list (acute: as addAcute; lasting: unless the list is full). False if it couldn't.
 bool give(std::vector<Injury>& injuries, const Injury& i);
 // Takes one away by its id: its name, or "" if there was none.

@@ -162,11 +162,15 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                         o.add("cooldown", g.cooldown);
                     if (const auto* a = gifts::ability(g.id))
                         o.add("summary", a->summary);
+                    else if (g.id == "trance")
+                        o.add("summary", "Go into a Trance: the worse the odds, the more it gives (mana each turn, a quicker bar, a second "
+                                         "wind, blows warded off), from two to one even alone up to five to one, falling as foes fall. "
+                                         "Trance fatigue after, until a full rest.");
                     options.push(std::move(o));
                 }
                 you.add("gifts", std::move(options));
                 you.add("channel", mine->magic.channel);
-                you.add("manaMax", std::floor(battle::manaMax(e->wisdom, true)));
+                you.add("manaMax", std::floor(world_.manaPool(*e)));
             }
         }
     }
