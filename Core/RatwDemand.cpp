@@ -50,6 +50,114 @@ std::string Society::bestFood(const EconomyAccount& account)
     return best ? *best : std::string();
 }
 
+std::string Society::eatFirst(const EconomyAccount& account)
+{
+    const std::string* first = nullptr;
+    const items::Item* firstGood = nullptr;
+    const auto keeps = [](const items::Item* g) { return g->keeps > 0 ? g->keeps : 1e9; };
+    for (const auto& [item, n] : account.stock)
+        if (n > 0)
+            if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
+                if (!first || keeps(good) < keeps(firstGood) || (keeps(good) == keeps(firstGood) && good->nourish > firstGood->nourish))
+                {
+                    first = &item;
+                    firstGood = good;
+                }
+    return first ? *first : std::string();
+}
+
+std::string Society::eatFirst(const std::string& id, const EconomyAccount& account) const
+{
+    // What has the fewest days left before it spoils, by its oldest batch (Society::spoil keeps them, by the day they came
+    // in; what came in since is fresh); the most nourishing of those. What doesn't spoil comes last.
+    const auto lots = batches_.find(id);
+    const auto left = [&](const std::string& item, const items::Item* g) {
+        if (g->keeps <= 0)
+            return 1e9;
+        double age = 0;
+        if (lots != batches_.end())
+            if (const auto mine = lots->second.find(item); mine != lots->second.end() && !mine->second.empty())
+                age = double(state_.budgetDay - mine->second.front().first);
+        return g->keeps - age;
+    };
+    const std::string* first = nullptr;
+    const items::Item* firstGood = nullptr;
+    double firstLeft = 0;
+    for (const auto& [item, n] : account.stock)
+        if (n > 0)
+            if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
+                if (const double l = left(item, good); !first || l < firstLeft || (l == firstLeft && good->nourish > firstGood->nourish))
+                {
+                    first = &item;
+                    firstGood = good;
+                    firstLeft = l;
+                }
+    return first ? *first : std::string();
+}
+
+void Society::spoil(std::int64_t day)
+{
+    // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
+    // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.
+    for (const auto& [larder, taken] : larderTaken_)
+        larderUse_.try_emplace(larder, double(taken));
+    for (auto& [larder, use] : larderUse_)
+    {
+        const auto t = larderTaken_.count(larder) ? larderTaken_.at(larder) : 0;
+        use = .6 * use + .4 * t;
+        const auto* a = account(larder);
+        if (a && !hasFood(*a))
+        {
+            const auto cell = larder.substr(5, larder.size() - 5 - 7);   // ("home:<cell>:larder".)
+            const auto home = households_.find(cell);
+            const double full = 50. * double(home != households_.end() ? home->second.size() : 1);
+            use += .25 * std::max(0., full - use);
+        }
+    }
+    larderTaken_.clear();
+    for (const auto& [id, a] : state_.accounts)
+    {
+        if (playerAccountId(id) || id == "treasury" || id.rfind("stores:", 0) == 0)
+            continue;                               // (A town's stores are its granary: preserved provisions.)
+        std::vector<std::pair<std::string, int>> rotten;
+        auto& mine = batches_[id];
+        for (const auto& [item, n] : a.stock)
+        {
+            const auto* good = items::good(item);
+            if (!good || good->keeps <= 0 || good->nourish <= 0)
+                continue;
+            auto& lots = mine[item];
+            int known = 0;
+            for (const auto& lot : lots)
+                known += lot.second;
+            if (n > known)
+                lots.push_back({day, n - known});   // (Come in since: fresh today.)
+            for (int gone = known - n; gone > 0 && !lots.empty();)
+            {
+                const int take = std::min(gone, lots.front().second);
+                lots.front().second -= take;
+                gone -= take;
+                if (lots.front().second == 0)
+                    lots.pop_front();
+            }
+            int bad = 0;
+            while (!lots.empty() && double(day - lots.front().first) > good->keeps)   // (Its day in, and `keeps` more.)
+            {
+                bad += lots.front().second;
+                lots.pop_front();
+            }
+            if (bad > 0)
+                rotten.push_back({item, bad});
+        }
+        for (auto it = mine.begin(); it != mine.end();)
+            it = a.stock.count(it->first) ? std::next(it) : mine.erase(it);
+        for (const auto& [item, bad] : rotten)
+            consume(id, item, bad, "spoiled");
+    }
+    for (auto it = batches_.begin(); it != batches_.end();)
+        it = state_.accounts.count(it->first) ? std::next(it) : batches_.erase(it);
+}
+
 bool Society::hasFood(const EconomyAccount& account)
 {
     for (const auto& [item, n] : account.stock)
@@ -73,9 +181,66 @@ bool Society::shopHasFood(const std::string& merchant) const
     if (!sold)
         made = wares(merchant), sold = &made;
     for (const auto& [item, n] : a->stock)
-        if (n > 0 && edible(item) && std::find(sold->begin(), sold->end(), items::baseOf(item)) != sold->end())
+        if (n > 0 && sellsFood(merchant, item, *sold))
             return true;
     return false;
+}
+
+void Society::tendPrices(std::int64_t day)
+{
+    (void)day;
+    // Each town's food prices, by its townsfolk's median purse against the land's: a poor town's food is cheaper.
+    std::map<std::string, std::vector<std::int64_t>> purses;
+    std::vector<std::int64_t> all;
+    for (const auto& [id, life] : state_.residents)
+        if (const auto* p = account(id))
+        {
+            purses[day_.communityOf ? day_.communityOf(life.homeCell) : std::string()].push_back(p->cash);
+            all.push_back(p->cash);
+        }
+    const auto median = [](std::vector<std::int64_t>& v) {
+        if (v.empty())
+            return 0.;
+        std::nth_element(v.begin(), v.begin() + std::ptrdiff_t(v.size() / 2), v.end());
+        return double(v[v.size() / 2]);
+    };
+    const double land = std::max(1., median(all));
+    landMedian_ = std::int64_t(land);
+    townPrice_.clear();
+    for (auto& [town, v] : purses)
+        townPrice_[town] = std::clamp(.75 + .25 * median(v) / land, .8, 1.15);
+    // Each shop's meals sold a day (a running average: what it restocks, about two days' worth).
+    for (auto& [till, avg] : mealsSold_)
+        avg *= .7;
+    for (const auto& [till, n] : mealsToday_)
+        mealsSold_[till] += .3 * n;
+    mealsToday_.clear();
+    // Each shop's markdown, by what it took in today against a day's running; and its town (for the prices above).
+    shopTown_.clear();
+    for (const auto& p : positions_)
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto held = state_.careers.positions.find(p.id);
+        if (held == state_.careers.positions.end() || held->second.holder.empty())
+            continue;
+        const auto till = tillOf(held->second.holder);
+        shopTown_[till] = communityOfResident(held->second.holder);
+        const auto taken = takings_.count(till) ? takings_.at(till) : 0;
+        const auto running = std::max<std::int64_t>(1, floatOf(p.id) / FloatDays);
+        auto& m = markdown_.try_emplace(till, 1.).first->second;
+        if (taken * 2 < running)
+            m = std::max(Markdown, m * .95);        // Little sold: cheaper tomorrow.
+        else if (taken >= running)
+            m = std::min(1., m * 1.05);             // Selling: back toward its prices.
+    }
+}
+
+double Society::supplyFactor(const EconomyAccount& seller, const std::string& item) const
+{
+    // Against half a supplier's stock (SuppliesKept): with three times that, a fifth off; with a quarter, a fifth more.
+    const double r = double(stockAll(seller, items::baseOf(item))) / (SuppliesKept / 2.);
+    return r <= .5 ? 1.2 : r >= 3 ? .8 : 1.2 - .4 * (r - .5) / 2.5;
 }
 
 std::int64_t Society::shopPrice(const std::string& shop, const std::string& item) const
@@ -85,7 +250,15 @@ std::int64_t Society::shopPrice(const std::string& shop, const std::string& item
         return 1;
     const auto base = items::baseOf(item);
     double factor = priceFactor(shop, base);
-    if (const auto* a = account(tillOf(shop)))
+    const auto till = tillOf(shop);
+    // A shop marked down for want of sales; food cheaper in a poor town (tendPrices).
+    if (const auto m = markdown_.find(till); m != markdown_.end())
+        factor *= m->second;
+    if (good->nourish > 0)
+        if (const auto t = shopTown_.find(till); t != shopTown_.end())
+            if (const auto p = townPrice_.find(t->second); p != townPrice_.end())
+                factor *= p->second;
+    if (const auto* a = account(till))
     {
         const double kept = items::traded(base) ? SuppliesKept / 2 : GoodsKept;
         const double r = double(stockAll(*a, base)) / kept;
@@ -98,53 +271,99 @@ std::int64_t Society::shopPrice(const std::string& shop, const std::string& item
                 factor *= std::max(.7, 1 - .1 * std::min(3.0, flush));
         }
     }
-    return std::max<std::int64_t>(1, std::int64_t(std::ceil(good->price * factor)));
+    return std::max<std::int64_t>(1, std::int64_t(std::ceil(good->price * std::max(CostFloor, factor))));   // (Never at a loss.)
 }
 
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking)
 {
     const auto till = tillOf(seller);
     const auto* shop = account(till);
-    if (!shop || !account(resident))
+    const auto* mine = account(resident);
+    if (!shop || !mine)
         return 0;
     const auto sold = wares(seller);
     const bool stall = atStall_.count(seller) > 0;
-    // What the shop has to eat, best for the money by this wolf's taste (the same each day: some like their porridge).
+    // Who it buys for, and for how long (the user, 2026-10-06). A wolf eats about a meal's nourishment a day (hunger
+    // rises some 50 a day; a meal is 50). A grown wolf with a larder lays in for everyone at home, by the household's
+    // plan: its larder holds stockingDays (2 to 5, its own), fewer when a third of the purse buys fewer; and always
+    // enough to last until the shops are properly open again (over Restday and a festival, shutAhead). It lays in only
+    // when what the household holds (the larder and what its members carry) won't last until then: otherwise just a
+    // meal, if hungry. A child buys only for itself.
+    int household = 1, days = 0, perDay = 50;
+    const auto* me = state_.residents.count(resident) ? &state_.residents.at(resident) : nullptr;
+    const auto* r = spec(resident);
+    const bool grown = r && r->age >= 16;
+    const bool laysIn = stocking && me && !me->homeCell.empty() && grown;
+    if (laysIn)
+    {
+        if (const auto home = households_.find(me->homeCell); home != households_.end())
+            household = int(home->second.size());   // (The day's households: RatwResidents.cpp.)
+        household = std::clamp(household, 1, 8);
+    }
+    const auto need = std::max<std::int64_t>(1, householdNeed(std::size_t(household)));
+    // What the household holds, in nourishment: the larder and what its members carry (one bringing a trip's worth home
+    // hasn't put it away yet; not a keeper whose purse is its shop: those shelves are for sale).
+    int atHome = 0;
+    const auto count = [&](const EconomyAccount& a) {
+        for (const auto& [item, n] : a.stock)
+            if (const auto* good = n > 0 ? items::good(item) : nullptr; good && !good->drink && good->nourish > 0)
+                atHome += n * good->nourish;
+    };
+    const auto carried = [&](const std::string& member) {
+        const auto* m = spec(member);
+        if (const auto* a = account(member); a && !(m && m->role == "merchant" && tillOf(member) == member))
+            count(*a);
+    };
+    if (laysIn)
+    {
+        if (const auto* larder = account(homeStore(me->homeCell, "larder")))
+            count(*larder);
+        if (const auto home = households_.find(me->homeCell); home != households_.end())
+        {
+            for (const auto& member : home->second)
+                carried(member);
+        }
+        else
+            carried(resident);
+        const int shut = shutAhead(state_.budgetDay);
+        // (What the household eats from home a day: its larder's running average once it has one, at least a fifth of
+        // a meal each; at first, a meal each.)
+        const auto use = larderUse_.find(homeStore(me->homeCell, "larder"));
+        perDay = use != larderUse_.end() ? std::clamp(int(use->second), 10 * household, 50 * household) : 50 * household;
+        if (atHome < perDay * (1 + shut))
+        {
+            const int plan = int(std::min<std::int64_t>(stockingDays(me->homeCell), mine->cash / (3 * need)));
+            days = std::max(plan, 1 + shut);
+        }
+    }
+    // Today's meal: wanted by one who is hungry, or buying only for itself.
+    const bool hungry = !laysIn || !me || me->hunger >= 35;
+    // What the shop has to eat. Short of a week's food money, it buys what feeds most for the money; with more, by its
+    // taste too (the same each day: some like their porridge).
+    const bool tight = mine->cash < 7 * need;
     struct Choice
     {
         std::string item;
         int price = 1, nourish = 0;
-        double score = 0;
+        double keeps = 0, score = 0;
     };
     std::vector<Choice> choices;
     for (const auto& [item, n] : shop->stock)
     {
-        if (n <= 0 || !edible(item) || std::find(sold.begin(), sold.end(), items::baseOf(item)) == sold.end())
+        if (n <= 0 || !sellsFood(seller, item, sold))
             continue;
         const auto* good = items::good(item);
-        const auto asked = shopPrice(seller, item);   // (Supply and demand at this shop, the town's scarcity.)
+        const auto asked = shopPrice(seller, item);   // (Supply and demand at this shop, the town's scarcity, its markdown.)
         const int price = int(std::max<std::int64_t>(1, stall ? std::int64_t(std::floor(double(asked) * .9)) : asked));
-        const double taste = .6 + .8 * unit(resident + "|" + items::baseOf(item));
-        choices.push_back({item, price, good->nourish, double(good->nourish) / price * taste});
+        const double taste = tight ? 1 : .6 + .8 * unit(resident + "|" + items::baseOf(item));
+        choices.push_back({item, price, good->nourish, good->keeps, double(good->nourish) / price * taste});
     }
     std::sort(choices.begin(), choices.end(), [](const Choice& a, const Choice& b) { return a.score > b.score; });
-    // Enough for now (a meal's worth), and, where there is a larder to keep it in, the household's habit of days more
-    // (stockingDays: 5 to 8) for everyone at home, by a grown wolf (the user, 2026-10-05: the children eat from the
-    // larder, not their own pennies), as far as the purse goes. A child stocks only a couple of days for itself.
-    int household = 1, days = 2;
-    if (const auto* me = state_.residents.count(resident) ? &state_.residents.at(resident) : nullptr; stocking && me && !me->homeCell.empty())
-    {
-        const auto* r = spec(resident);
-        if (r && r->age >= 16)
-        {
-            household = 0;
-            for (const auto& [id, life] : state_.residents)
-                household += life.homeCell == me->homeCell;
-            household = std::clamp(household, 1, 8);
-            days = stockingDays(me->homeCell);
-        }
-    }
-    int wanted = 50 + (stocking ? 50 * days * household : 0), bought = 0;
+    // A meal now, and the days laid in, less what the larder holds already (another of the household may have stocked it
+    // today): of each food no more than the household eats before it spoils (Item::keeps).
+    int wanted = (hungry ? 1 : 0) + std::max(0, perDay * days - atHome), bought = 0;
+    std::string atCounter;                          // The meal, eaten at the counter.
+    int stocked = atHome;                           // Food at home and bought so far, in nourishment.
     for (const auto& c : choices)
     {
         if (wanted <= 0)
@@ -153,14 +372,31 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
         // Laying in a store takes at most half of what the shop has left beyond today's meal (the user, 2026-10-05: the
         // next customer finds some too).
         const int have = stock(*account(till), c.item);
-        const int meal = bought == 0 ? (50 + c.nourish - 1) / c.nourish : 0;
-        const int n = int(std::min<std::int64_t>({(wanted + c.nourish - 1) / c.nourish, std::min(have, meal + (have - meal) / 2), 99,
+        // (The meal: one, what it eats at a sitting; a hungry wolf eats one thing at a time, from 60 hunger to under it,
+        // and the rest would sit and spoil. The household's plan lays in the rest of the day's food.)
+        const int meal = bought == 0 && hungry ? 1 : 0;
+        // A food fills the larder only as far as it keeps, counting what is there and bought already (eaten first, it
+        // goes before the rest): three days' fresh fish, not three days each of fish, rabbit and mutton.
+        const double lasts = c.keeps > 0 ? std::min<double>(days, std::max(0., c.keeps - 1)) : days;
+        const int keepable = meal + std::max(0, int(std::ceil((double(perDay) * lasts - stocked) / c.nourish)));
+        const int n = int(std::min<std::int64_t>({(wanted + c.nourish - 1) / c.nourish, std::min(have, meal + (have - meal) / 2), keepable, 99,
                                                   purse ? purse->cash / c.price : 0}));
         if (n > 0 && transfer(till, resident, c.item, n, c.price, "resident food purchase"))
         {
+            if (meal > 0)
+                atCounter = c.item;
             bought += n;
             wanted -= n * c.nourish;
+            stocked += n * c.nourish;
+            if (items::baseOf(c.item) == "meal")
+                mealsToday_[till] += n;             // (How many it sells: what it restocks, RatwResidents.cpp.)
         }
+    }
+    // The hungry eat their meal there and then (a bowl of porridge at the counter): it isn't carried home to sit.
+    if (!atCounter.empty() && laysIn && consume(resident, atCounter, 1, "eat") > 0)
+    {
+        auto& life = state_.residents.at(resident);
+        life.hunger = std::max(0., life.hunger - nourishment(atCounter) * 1.1);
     }
     return bought;
 }
@@ -239,11 +475,15 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             const auto* purse = account(child);
             if (!purse || purse->cash < 2)
                 continue;
+            // (Food only when it is hungry and has nothing on it, and then one thing, eaten: a child doesn't stock the
+            // larder, the household's plan does. Otherwise a trinket.)
+            const auto* life = resident(child);
+            const bool peckish = life && life->hunger >= 55 && !hasFood(*purse);
             std::map<std::string, int> got;
-            buyForSurplus(child, shops[communityOfResident(child)], [](const std::string& item) {
+            buyForSurplus(child, shops[communityOfResident(child)], [&](const std::string& item) {
                 const auto* good = items::good(item);
-                return good && good->price <= 3;
-            }, purse->cash / 2, "a child's spending", &got);
+                return good && good->price <= 3 && (peckish || !edible(item));
+            }, peckish ? std::min<std::int64_t>(purse->cash / 2, 3) : purse->cash / 2, "a child's spending", &got);
             for (const auto& [item, n] : got)
                 if (!edible(item))
                     consume(child, item, n, "kept by a child");
@@ -301,7 +541,10 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             if (const double w = (.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|" + k.name); w > best)
                 best = w, fancy = &k;
         std::map<std::string, int> got;
-        buyForSurplus(id, shops[communityOfResident(id)], fancy->is, budget, std::string("a want: ") + fancy->name, &got);
+        // (A treat is one thing, a pastry or a dish, eaten at once; the rest of its fancies may cost what it can spare.)
+        const bool treat = std::string(fancy->name) == "a treat";
+        buyForSurplus(id, shops[communityOfResident(id)], fancy->is, treat ? std::min<std::int64_t>(budget, 9) : budget,
+                      std::string("a want: ") + fancy->name, &got);
         int finery = 0;
         for (const auto& [item, n] : account(id)->stock)
             if (const auto c = category(item); c == "jewelry" || c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear")
@@ -311,7 +554,13 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             const auto* good = items::good(item);
             const auto c = category(item);
             if (edible(item))
-                continue;                           // Kept, to eat.
+            {
+                // A treat is eaten there and then (it fills it a little): never laid in the larder to spoil.
+                consume(id, item, n, "eat");
+                auto& me = state_.residents.at(id);
+                me.hunger = std::max(0., me.hunger - nourishment(item) * 1.1 * n);
+                continue;
+            }
             if (good && good->drink)
                 consume(id, item, n, "drunk");
             else if ((c == "jewelry" || c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear") && finery <= 6)
@@ -375,7 +624,8 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
             // (A household with someone keeping the house sends it to the shop: RatwResidents.cpp; unless the larder is
             // all but bare.)
             const bool kept = state_.memory.keeper.count(home) > 0;
-            if (held < 50 * (kept ? 1 : 2) * int(members.size()))
+            // (buyFood lays in by the household's plan, only when it is running low: Society::buyFood.)
+            if (!kept || held < 50 * int(members.size()))
                 for (const auto& shop : shops->second)
                 {
                     if (shop == shopper || !shopHasFood(shop) || buyFood(shopper, shop, true) == 0)
@@ -492,6 +742,8 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
             t.poor.push_back(r.id);
     }
     const double days = items::institutionDays();
+    joinChurches();                                 // (An older save's churches' purses, into the one.)
+    bool churchFounded = false;                     // The land's church opened today: each town's founds it.
     for (auto& [community, town] : towns)
     {
         if (town.residents < 5)
@@ -513,9 +765,13 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
             double needed = 0, used = 0;
             if (scale <= 0 || town.residents < in.minResidents)
                 continue;
-            const auto acct = "town:" + community + ":" + in.id;
             const auto treasuryId = treasuryOf(community);      // The town's own purse (doc 42).
-            const bool founded = openAccount(acct);
+            // A buyer's goods are its own (a church's in its town's storehouse); a church's money is the land's (SharedChurch).
+            const auto acct = "town:" + community + ":" + in.id;
+            const auto payer = in.tithes ? churchOf(treasuryId) : acct;
+            bool founded = openAccount(acct);
+            if (in.tithes)
+                founded = churchFounded = openAccount(payer) || churchFounded;
             if (!account(acct) || !account(treasuryId))
                 continue;
             // A day's funds from the treasury: what its basket costs, never more than a twentieth of the treasury.
@@ -531,7 +787,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // The church lives on its tithes. It is founded with its starting money (RatwFounding.cpp): four weeks
                 // of its basket, or ChurchHead a resident if more.
                 if (founded)
-                    startingMoney(acct, std::max<std::int64_t>(std::int64_t(std::ceil(cost * MonthDays)), ChurchHead * town.residents));
+                    startingMoney(payer, std::max<std::int64_t>(std::int64_t(std::ceil(cost * MonthDays)), ChurchHead * town.residents));
             }
             else
             {
@@ -593,15 +849,20 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     {
                         const auto* good = items::good(kind);
                         const std::int64_t price = std::max(1, good ? good->price : 1);
-                        const int n = int(std::min<std::int64_t>({want, stock(*account(till), kind), 99, account(acct)->cash / price}));
-                        if (n > 0 && transfer(till, acct, kind, n, price, "bought by " + in.name))
+                        const int n = int(std::min<std::int64_t>({want, stock(*account(till), kind), 99, account(payer)->cash / price}));
+                        if (n > 0 && transfer(till, payer, kind, n, price, "bought by " + in.name))
+                        {
+                            if (payer != acct)
+                                shift(payer, acct, kind, n, 0, "to the church's storehouse");   // (Paid for by the land's purse.)
                             want -= n;
+                        }
                         if (want <= 0)
                             break;
                     }
                 }
-                // What the town couldn't supply, it asks for: a contract for goods (the world posts it).
-                if (want >= std::max(2, target / 3))
+                // What the town couldn't supply, it asks for: a contract for goods (the world posts it). (Not the church:
+                // its money is the land's, its goods its town's own.)
+                if (payer == acct && want >= std::max(2, target / 3))
                     if (const auto* good = items::good(item))
                         procurements_.push_back({acct, community, in.name, item, want, std::max(1, good->price)});
             }
@@ -613,6 +874,51 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 if ((was >= 50) != (*condition >= 50))
                     townNews_.push_back({community, *condition >= 50 ? "mended" : "disrepair"});
                 ++state_.memory.revision;
+            }
+        }
+    }
+}
+
+void Society::producersSell(std::int64_t day)
+{
+    // Food between towns starts at home (doc 42, the user, 2026-10-06: supply and demand): a farmer's, a fisher's, a
+    // dairy's food beyond what it keeps goes to its town's food shops, not only to the makers who need it, so what the
+    // land gives reaches the townsfolk. Each day from a different shop of the town, so none buys it all.
+    if (roster_ != Roster::Authored)
+        return;
+    std::map<std::string, std::vector<std::string>> shopsOf;
+    for (const auto& r : authored_.residents)
+        if (r.role == "merchant" && state_.residents.count(r.id) && foodShop(r.id))
+            shopsOf[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& r : authored_.residents)
+    {
+        if (!state_.residents.count(r.id) || !items::producerFor(r.workLabel))
+            continue;
+        const auto shops = shopsOf.find(communityOfResident(r.id));
+        const auto* purse = account(r.id);
+        if (shops == shopsOf.end() || shops->second.empty() || !purse)
+            continue;
+        const std::vector<std::pair<std::string, int>> held(purse->stock.begin(), purse->stock.end());
+        for (const auto& [item, n] : held)
+        {
+            const auto* good = items::good(item);
+            if (n <= ProduceKept || !good || good->drink || !edible(item))
+                continue;
+            int left = n - ProduceKept;
+            const auto& list = shops->second;
+            for (std::size_t k = 0; k < list.size() && left > 0; ++k)
+            {
+                const auto till = tillOf(list[(std::size_t(day) + k) % list.size()]);
+                const auto* shelves = account(till);
+                if (!shelves)
+                    continue;
+                // At a shop's buying price, less as the shop sells at a markdown and as the producer has plenty (the
+                // user, 2026-10-06: what doesn't sell drives the price down to the land).
+                const auto m = markdown_.count(till) ? markdown_.at(till) : 1.;
+                const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(good->price * .55 * m * std::min(1., supplyFactor(*purse, item)))));   // (A glut only.)
+                const int count = int(std::min<std::int64_t>({left, FoodShelf - stockAll(*shelves, item), 99, spendable(till) / price}));
+                if (count > 0 && transfer(r.id, till, item, count, price, "brought in and sold"))
+                    left -= count;
             }
         }
     }

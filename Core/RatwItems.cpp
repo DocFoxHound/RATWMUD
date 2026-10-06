@@ -103,6 +103,7 @@ Catalog build()
         good.durability = int(i.number("durability", 0));
         good.nourish = int(i.object("food").number("nourish", 0));
         good.drink = i.object("food").number("drink", 0) > 0;
+        good.keeps = std::max(0.0, i.number("keeps", 0));
         if (!good.id.empty() && !good.name.empty() && good.price >= 0 && good.price <= 100000)
             c.goods.push_back(std::move(good));
         const auto slot = i.string("slot");

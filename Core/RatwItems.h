@@ -29,6 +29,7 @@ struct Item
     int vsCut = 0, vsThrust = 0, vsBlunt = 0, dex = 0;
     int durability = 0;                             // How much use it takes before it falls apart (0: it doesn't wear).
     int nourish = 0;                                // Food: how much it feeds (a meal 50); 0 for anything not eaten.
+    double keeps = 0;                               // Food: the days it keeps before it spoils (items.json; 0: it keeps).
     bool drink = false;                             // Drunk rather than eaten (ale, cider): not for hunger.
 };
 

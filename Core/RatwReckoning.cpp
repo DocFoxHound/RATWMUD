@@ -4,6 +4,9 @@
 // Money only moves; nothing is made.
 #include "RatwSociety.h"
 
+#include <algorithm>
+#include <cstdlib>
+
 #include <cmath>
 
 namespace ratw
@@ -16,11 +19,53 @@ std::string Society::treasuryOf(const std::string& community) const
     return state_.accounts.count(own) ? own : std::string("treasury");
 }
 
+std::int64_t Society::houseFloor(const std::string& house) const
+{
+    std::int64_t floor = 100;                       // (And a float for each of its businesses.)
+    for (const auto& [pid, owner] : state_.houses.owner)
+        if (owner == house)
+            floor += floatOf(pid);
+    return floor;
+}
+
+bool Society::trial(const char* name)
+{
+    static const std::string on = [] {
+        const char* v = std::getenv("RATW_TRIAL");
+        return "," + std::string(v ? v : "") + ",";
+    }();
+    return on.find("," + std::string(name) + ",") != std::string::npos;
+}
+
+std::int64_t Society::wealthLine(const std::string& id) const
+{
+    if (id.rfind("house:", 0) == 0)
+        return houseFloor(id);
+    // (TRIAL tithe_relative: the line is at least twice the land's median purse, so a richer land isn't all tithed.)
+    const std::int64_t living = std::max<std::int64_t>(MonthDays * FoodADay, trial("tithe_relative") ? 2 * landMedian_ : 0);
+    if (const auto* job = jobOf(id); job && job->role == "merchant" && tillOf(id) == id)
+        return living + KeeperReserve + floatOf(job->id);
+    return living;
+}
+
 std::string Society::churchOf(const std::string& treasury) const
 {
-    if (treasury.rfind("stores:", 0) == 0)
-        return "town:" + treasury.substr(7) + ":church";
-    return "town:" + (capital_.empty() ? std::string("treasury") : capital_) + ":church";
+    (void)treasury;                                 // (Every town's church: one purse, SharedChurch.)
+    return SharedChurch;
+}
+
+void Society::joinChurches()
+{
+    std::vector<std::string> old;
+    for (const auto& [id, a] : state_.accounts)
+        if (id != SharedChurch && id.rfind("town:", 0) == 0 && id.size() > 12 && id.compare(id.size() - 7, 7, ":church") == 0 && a.cash > 0)
+            old.push_back(id);
+    for (const auto& id : old)
+        if (const auto cash = account(id)->cash; cash > 0)
+        {
+            openAccount(SharedChurch);
+            shift(id, SharedChurch, "", 0, cash, "the churches' purses joined");
+        }
 }
 
 std::string Society::treasuryOfResident(const std::string& id) const
@@ -67,7 +112,11 @@ void Society::reckon(std::int64_t day, bool force)
             if (profit < std::max(TaxShare, TitheShare))
                 continue;                               // A week at a loss (or of nothing much) pays nothing.
             openAccount(town.church);
-            const auto tax = profit / TaxShare, tithe = profit / TitheShare;
+            // (Progressive: a fifth of the part of the week's profit above TaxBand.)
+            // (The same rates for all (the user, 2026-10-06), but nothing from one under the poverty line.)
+            if (const auto* r = spec(id); r && purse->cash < PovertyLine)
+                continue;
+            const auto tax = profit / TaxShare + std::max<std::int64_t>(0, profit - TaxBand) / TaxShare, tithe = profit / TitheShare;
             const bool paid = shift(id, treasury, "", 0, tax, "town tax");
             const bool tithed = shift(id, town.church, "", 0, tithe, "tithe");
             town.tax += paid ? tax : 0;
@@ -78,6 +127,29 @@ void Society::reckon(std::int64_t day, bool force)
         for (auto& [treasury, town] : towns)
             if (treasury != "treasury" && town.tax >= CapitalShare && shift(treasury, "treasury", "", 0, town.tax / CapitalShare, "capital's share"))
                 town.toCapital = town.tax / CapitalShare;
+        // The wealth tithe: a WealthTitheShare-th of what anyone holds above its comfortable line, to the church.
+        openAccount(SharedChurch);
+        for (const auto& [id, treasury] : payers)
+            if (const auto* purse = account(id))
+                if (const auto due = (purse->cash - wealthLine(id)) / WealthTitheShare; due > 0 && shift(id, SharedChurch, "", 0, due, "a wealth tithe"))
+                    towns[treasury].wealthTithe += due;
+        // The capital shares what it holds above four weeks' spending: half of it, to the towns by how many of their folk
+        // are short of a week's food.
+        if (const auto* capital = account("treasury"))
+        {
+            const auto usual = state_.memory.outgoing.count("treasury") ? state_.memory.outgoing.at("treasury") : 0.;
+            const auto spare = (capital->cash - std::int64_t(MonthDays * usual)) / 2;
+            std::map<std::string, std::int64_t> short_;
+            std::int64_t all = 0;
+            for (const auto& [id, life] : state_.residents)
+                if (const auto* p = account(id); p && p->cash < 7 * FoodADay)
+                    if (const auto t = treasuryOfResident(id); t != "treasury")
+                        ++short_[t], ++all;
+            for (const auto& [treasury, n] : short_)
+                if (const auto part = spare > 0 && all > 0 ? spare * n / all : 0;
+                    part > 0 && account(treasury) && shift("treasury", treasury, "", 0, part, "from the capital, for the poor"))
+                    towns[treasury].fromCapital += part;
+        }
         for (auto& [treasury, town] : towns)
             reckonings_.push_back(std::move(town));
     }

@@ -610,9 +610,21 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (larderAccount && (!merchantRole || managed) && body.cell == life.homeCell)
         {
             const auto keep = bestFood(wallet);
+            // (Not what it brings in to sell: a rabbit farmer's rabbits, a fisher's catch go to the shops, doc 42.)
+            const auto* producer = items::producerFor(r->workLabel);
+            const auto forSale = [&](const std::string& item) {
+                if (!producer)
+                    return false;
+                const auto base = items::baseOf(item);
+                for (const auto* list : {&producer->out, &producer->offSeason})
+                    for (const auto& [made, n] : *list)
+                        if (made == base)
+                            return true;
+                return false;
+            };
             std::vector<std::pair<std::string, int>> spare;
             for (const auto& [item, n] : wallet.stock)
-                if (n > 0 && edible(item))
+                if (n > 0 && edible(item) && !forSale(item))
                     spare.push_back({item, item == keep ? n - 1 : n});
             for (const auto& [item, n] : spare)
                 if (n > 0)
@@ -1164,14 +1176,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         life.progress = step > 1 ? std::max(0., life.progress - duration) : 0;
         if (task == "fetch food"sv)
         {
-            const auto food = larderAccount ? bestFood(*larderAccount) : std::string();
+            const auto food = larderAccount ? eatFirst(larder, *larderAccount) : std::string();   // (What spoils soonest.)
             if (food.empty() || !shift(larder, pair.first, food, 1, 0, "taken from the larder"))
                 life.reason = "The larder is empty.";
+            else
+                larderTaken_[larder] += nourishment(food);
         }
         else if (task == "eat"sv)
         {
-            // The best it carries (doc 35, Part 7): a meal fills a wolf (55), a loaf less, by what each feeds.
-            const auto food = bestFood(wallet);
+            // What it carries that spoils soonest, the most nourishing of those (doc 35, Part 7: a meal fills a wolf, a
+            // loaf less, by what each feeds; doc 42, "Spoilage").
+            const auto food = eatFirst(pair.first, wallet);
             if (!food.empty())
             {
                 consume(pair.first, food, 1, "eat");
@@ -1209,12 +1224,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             {
                 // A shop or a house pays what its takings bear (doc 42): 2p a spell from a comfortable till, 1p from a
                 // lean one; a town 1p from a treasury under LeanTreasury a head. The church pays 2p.
+                // (By what the employer holds: wageFor.)
                 const bool business = payer.whom == "the shop"sv || payer.whom == "the house"sv;
-                const auto* payerPurse = account(payer.account);
-                const bool lean = business ? payerPurse && payerPurse->cash <= ComfortableTill
-                                           : payer.account.rfind("stores:", 0) == 0 || payer.account == "treasury"sv ? treasuryLean(payer.account)
-                                                                                                                    : false;
-                const std::int64_t wage = lean ? 1 : 2;
+                const std::int64_t wage = std::max<std::int64_t>(1, wageFor(payer));
                 // An employer that can't pay: its town (or church) covers the wage if it has plenty, so the work goes on
                 // (the user, 2026-10-05).
                 std::string subsidy;
@@ -1261,9 +1273,11 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             // From the town's own stores (the treasury, where there is one town): what the caravans have brought.
             const std::string& storeId = storeFor(job->work.cell);
             const auto& stores = *account(storeId);
-            // A stall on Marketday carries more.
-            const int carried = atStall_.count(pair.first) ? 20 : 12;
+            // A stall on Marketday carries more. Prepared meals keep three days: a shop carries about two days of what it
+            // sells (mealsSold_), at least three (doc 42, "Spoilage").
             const auto till = tillOf(pair.first);   // The shop's shelves (its house's till, doc 42).
+            const auto sells = mealsSold_.count(till) ? mealsSold_.at(till) : 6.;
+            const int carried = std::clamp(int(std::ceil(sells * 2)) + 1, 3, atStall_.count(pair.first) ? 20 : 12);
             const auto& shelves = state_.accounts.at(till);
             const int meals = !sellsMeals ? 0 : std::min({3, carried - stock(shelves, "meal"), stock(stores, "meal"),
                                         int(std::min<std::int64_t>(3, spendable(till) / 4))});

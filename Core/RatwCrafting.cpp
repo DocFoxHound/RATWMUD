@@ -108,7 +108,13 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                     if (!sortGood || !buyerNow)
                         continue;
                     const int spare = stock(*from, sort) - (kind == 1 && sort == item ? GoodsKept : 0);
-                    const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::ceil(sortGood->price * (local ? 1. : CartedIn))));
+                    // At its price, cheaper from a seller with plenty, dearer from one running short (supplyFactor), and
+                    // less still to a shop selling at a markdown (doc 42: what doesn't sell drives prices down the line).
+                    const auto m = markdown_.count(till) ? markdown_.at(till) : 1.;
+                    // (A producer holds little because it sells: only a glut makes its price, never "scarcity".)
+                    const double supply = seller.kind == 2 ? std::min(1., supplyFactor(*from, sort)) : supplyFactor(*from, sort);
+                    const std::int64_t price = std::max<std::int64_t>(
+                        1, std::int64_t(std::ceil(sortGood->price * (local ? 1. : CartedIn) * supply * m)));
                     const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;
@@ -154,8 +160,19 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     const auto crafts = business ? items::craftsFor(business->id) : std::vector<const items::Craft*>{};
     const auto& supplies = business ? items::suppliesFor(business->id) : std::vector<std::string>{};
     const auto supplied = [&](const std::string& item) { return std::find(supplies.begin(), supplies.end(), item) != supplies.end(); };
+    // Preserving (salting, smoking: doc 42, "Pressure"): a shop that sells a fresh food it also preserves keeps GoodsKept
+    // of it fresh on the counter, for hot meals and those who eat it the day they buy it; only what's over is cured.
+    const auto fresh = [&](const items::Craft& k, const std::string& item) {
+        const auto* in = items::good(item);
+        const auto* out = items::good(k.out.front().first);
+        if (!business || !in || !out || in->nourish <= 0 || in->keeps <= 0 || out->keeps <= in->keeps)
+            return 0;
+        const auto sold = items::goodsSold(*business, 1 << 20);
+        return std::find(sold.begin(), sold.end(), item) != sold.end() ? GoodsKept : 0;
+    };
     const auto has = [&](const items::Craft& k) {
-        return std::all_of(k.in.begin(), k.in.end(), [&](const auto& i) { return stockAll(*account(till), i.first) >= i.second; });
+        return std::all_of(k.in.begin(), k.in.end(),
+                           [&](const auto& i) { return stockAll(*account(till), i.first) >= i.second + fresh(k, i.first); });
     };
     // A batch finished: its materials are used and its goods are on the shelf (if the materials are still there).
     if (const auto atWork = craftAtWork_.find(id); atWork != craftAtWork_.end())
@@ -213,16 +230,23 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     {
         // Low, judged by what the batch is for (its first good; a butcher's meat, not the hides that come with it):
         // under the few a shop keeps, or, for what other trades work with (a mill's flour), under half a supplier's store.
+        // (What other trades work with and keeps (a mill's flour, not a baker's bread): a full store, so there is some to
+        // spare for other towns' makers, doc 42, "Food between towns". Their standing orders take what is over half.)
         const auto& made = k->out.front().first;
-        const bool low = stockAll(*account(till), made) < (supplied(made) || items::traded(made) ? SuppliesKept / 2 : GoodsKept);
+        const auto* madeGood = items::good(made);
+        const bool keeps = !madeGood || madeGood->keeps <= 0;
+        const bool low = stockAll(*account(till), made) < (items::traded(made) && keeps ? SuppliesKept
+                                                           : supplied(made) || items::traded(made) ? SuppliesKept / 2 : GoodsKept);
         if (!low)
             continue;
         // A seasonal good (grapes, apples) is laid in at the harvest, a store to last the year: SeasonalStore times as much.
         for (const auto& [item, count] : k->in)
         {
-            const int store = count * MaterialBatches * (items::seasonal(item) ? SeasonalStore : 1);
+            const int store = count * MaterialBatches * (items::seasonal(item) ? SeasonalStore : 1) + fresh(*k, item);
+            // (What it sells as a supplier too, a fishmonger's fish, it restocks as a supplier does, from the makers and
+            // the land, never from the town's other suppliers: they'd only buy it back, round and round.)
             if (const int held = stockAll(*account(till), item); held < count * MaterialsLow || (store > count * MaterialBatches && held < store / 2))
-                buyMaterials(id, workCell, item, store - held);
+                buyMaterials(id, workCell, item, store - held, supplied(item));
         }
         if (!has(*k))
             continue;                               // Short of materials, and nobody sells them: something else.

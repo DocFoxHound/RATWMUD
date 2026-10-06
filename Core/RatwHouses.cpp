@@ -168,8 +168,11 @@ void Society::tendHouses(std::int64_t day)
         const auto cash = account(till)->cash;
         auto& propped = state.propped[pid];
         propped.erase(std::remove_if(propped.begin(), propped.end(), [&](double d) { return d <= day - MonthDays; }), propped.end());
-        if (cash > floatCash)
-            shift(till, house, "", 0, cash - floatCash, "house takings");
+        // (TRIAL house_keeps: a shop keeps up to twice its float, paying its people more by it: Society::wageFor.)
+        // (TRIAL house_need: a house holding twice its floor leaves its shops three floats, to pay their people by.)
+        const bool rich = trial("house_need") && account(house) && account(house)->cash >= 2 * houseFloor(house);
+        if (const auto keeps = rich ? 3 * floatCash : trial("house_keeps") ? 2 * floatCash : floatCash; cash > keeps)
+            shift(till, house, "", 0, cash - keeps, "house takings");
         else if (cash < floatCash / 2)
         {
             // A struggling day, propped up or not (a house with nothing to spare can't).

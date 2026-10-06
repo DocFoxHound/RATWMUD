@@ -33,13 +33,15 @@ std::string World::residentTown(const std::string& id) const
 
 World::Market World::marketOf(const std::string& town) const
 {
-    // What a town's shops and producers have to spare, and what its makers and suppliers are short of.
+    // What a town's shops and producers have to spare, and what its makers and suppliers are short of; and, when its
+    // shops are running out of food, the food its food shops sell (Docs/Design/42, "Food between towns").
     Market m;
     for (const auto& r : society_.authored().residents)
     {
         const auto* e = entity(r.id);
         if (!e || e->dead || !society_.resident(r.id) || residentTown(r.id) != town)
             continue;
+        ++m.people;
         if (const auto* p = items::producerFor(r.workLabel))
         {
             const auto* purse = society_.account(r.id);
@@ -60,6 +62,11 @@ World::Market World::marketOf(const std::string& town) const
         const auto* shelves = society_.account(till);
         if (!business || !shelves)
             continue;
+        for (const auto& [item, count] : shelves->stock)
+            if (count > 0 && Society::edible(item))
+                m.food += count;
+        if (society_.foodShop(r.id))
+            m.foodShops.push_back(till);
         const auto& supplies = items::suppliesFor(business->id);
         for (const auto* k : items::craftsFor(business->id))
         {
@@ -122,6 +129,36 @@ void World::tradeCaravans()
     std::map<std::string, Market> markets;
     for (const auto& t : towns_)
         markets[t.id] = marketOf(t.id);
+    // Food between towns (doc 42, the user, 2026-10-06): a town whose shops hold under FoodDaysKept days' food for its
+    // people wants, for each of its food shops, FoodKept of each of the FoodsSent foods the other towns have most to spare,
+    // as a maker wants its materials; standing orders bring them.
+    for (const auto& to : towns_)
+    {
+        auto& m = markets[to.id];
+        if (m.food >= FoodDaysKept * m.people || m.foodShops.empty())
+            continue;
+        std::map<std::string, int> elsewhere;
+        for (const auto& from : towns_)
+            if (&from != &to)
+                for (const auto& [item, n] : markets[from.id].spare)
+                    if (const auto* good = items::good(item); good && !good->drink && Society::edible(item))
+                        elsewhere[item] += n - (markets[from.id].want.count(item) ? markets[from.id].want.at(item) : 0);
+        std::vector<std::pair<int, std::string>> foods;
+        for (const auto& [item, n] : elsewhere)
+            if (n > 0)
+                foods.push_back({n, item});
+        std::sort(foods.rbegin(), foods.rend());
+        for (std::size_t k = 0; k < foods.size() && k < std::size_t(FoodsSent); ++k)
+            for (const auto& till : m.foodShops)
+                if (const auto* shelves = society_.account(till))
+                    if (const int want = FoodKept - Society::stockAll(*shelves, foods[k].second); want > 0)
+                    {
+                        m.want[foods[k].second] += want;
+                        m.wanters[foods[k].second].push_back({till, want});
+                    }
+        for (auto& [item, who] : m.wanters)
+            std::sort(who.begin(), who.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
+    }
     // What standing orders already bring, by town and good: not wanted again.
     std::map<std::pair<std::string, std::string>, int> ordered;
     std::set<std::pair<std::string, std::string>> buyers;   // (till, good) with an order.

@@ -254,6 +254,18 @@ def paint_yard(plot: Plot, kind, x0, y0, w, h, rng):
     elif kind == 'clay':
         c.rect(x0, y0, w, h, 'D', keep)
         spots = [(x, y) for y in range(y0 + 1, y0 + h - 1, 3) for x in range(x0 + 1, x0 + w - 1, 3)]
+    elif kind == 'hutches':
+        # A rabbit farm's yard (worldgen.farms): rows of hutches (crates on straw) inside a fence, aisles between.
+        c.rect(x0, y0, w, h, ',', keep)
+        c.outline(x0 - 1, y0 - 1, w + 2, h + 2, '|')
+        c.codes[y0 + h // 2, x0 - 1] = code(',')
+        c.codes[y0 + h // 2, x0 + w] = code(',')
+        rows = list(range(y0 + 1, y0 + h - 1, 3))
+        for y in rows:
+            for x in range(x0 + 1, x0 + w - 1):
+                if (x - x0) % 7 != 0:                # (Gaps to walk between the hutches.)
+                    c.codes[y, x] = code('x' if (x - x0) % 2 else 'z')
+        spots = [(x, y + 1) for y in rows for x in range(x0 + 2, x0 + w - 2, 5) if y + 1 < y0 + h]
     return spots
 
 

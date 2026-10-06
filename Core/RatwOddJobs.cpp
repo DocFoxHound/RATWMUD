@@ -18,8 +18,9 @@ std::string Society::subsidiser(const std::string& community) const
         people += treasuryOfResident(id) == treasury;
     if (const auto* purse = account(treasury); purse && people > 0 && purse->cash > std::int64_t(LeanTreasury) * 2 * people)
         return treasury;
+    // The church, holding twice its floor (the land's: one purse for every town).
     const auto church = churchOf(treasury);
-    if (const auto* purse = account(church); purse && people > 0 && purse->cash > ChurchHead * 2 * people)
+    if (const auto* purse = account(church); purse && people > 0 && purse->cash > ChurchHead * 2 * std::int64_t(state_.residents.size()))
         return church;
     return {};
 }
@@ -38,7 +39,8 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
         }
     const bool churchPays = payer.rfind("town:", 0) == 0;
     const auto* coffers = account(payer);
-    const double floor = double(std::max<std::int64_t>(1, people)) * (churchPays ? ChurchHead : TreasuryHead);
+    const double floor = churchPays ? double(std::max<std::size_t>(1, state_.residents.size())) * ChurchHead   // (The land's.)
+                                    : double(std::max<std::int64_t>(1, people)) * TreasuryHead;
     const double richness = coffers ? std::clamp((double(coffers->cash) / floor - 1) / 3, 0.0, 1.0) : 0;
     const double poorShare = people ? double(poor) / double(people) : 0;
     const std::int64_t handPay = OddJobPay + std::int64_t(std::round(OddJobPay * 2 * richness * std::min(1.0, poorShare * 5)));

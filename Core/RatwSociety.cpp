@@ -1,4 +1,6 @@
 #include "RatwSociety.h"
+
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 #include <algorithm>
 #include <unordered_map>
@@ -215,6 +217,24 @@ bool Society::smith(const std::string& id) const
     std::transform(work.begin(), work.end(), work.begin(), [](unsigned char c) { return char(std::tolower(c)); });
     return known.emplace(r->workLabel, work.find("smith") != std::string::npos || work.find("forge") != std::string::npos).first->second;
 }
+bool Society::foodShop(const std::string& merchant) const
+{
+    static const std::vector<std::string> food = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery", "inn"};
+    const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
+    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    return business && std::find(food.begin(), food.end(), business->id) != food.end();
+}
+
+bool Society::sellsFood(const std::string& merchant, const std::string& item, const std::vector<std::string>& sold) const
+{
+    if (!edible(item))
+        return false;
+    if (std::find(sold.begin(), sold.end(), items::baseOf(item)) != sold.end())
+        return true;
+    const auto* good = items::good(item);
+    return good && !good->drink && foodShop(merchant);
+}
+
 std::vector<std::string> Society::wares(const std::string& merchant) const
 {
     const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
@@ -279,7 +299,7 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
         for (const auto& item : items::buysFor(business->id))
             if (item != "meal" && item != "herbs" && std::find(out.begin(), out.end(), item) == out.end())
                 out.push_back(item);
-    static const char* Food[] = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery", "inn"};
+    static const char* Food[] = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery", "inn"};   // (foodShop)
     const bool food = business && std::find(std::begin(Food), std::end(Food), business->id) != std::end(Food);
     if (smith(merchant) && std::find(out.begin(), out.end(), "sword") == out.end())
         out.insert(out.begin(), "sword");
@@ -308,7 +328,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
     if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
                       kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||
-                      kind == "the household purse"))
+                      kind == "the household purse" || kind == "the church's dole" || kind == "the church's share"))
     {
         auto& books = state_.books;
         if (books.start.count(from))
@@ -338,7 +358,18 @@ std::int64_t Society::moneySupply() const
 }
 int Society::stockingDays(const std::string& homeCell)
 {
-    return 5 + int(std::hash<std::string>{}(homeCell + "|stocking") % 4);
+    return 2 + int(std::hash<std::string>{}(homeCell + "|stocking") % 4);   // (2 to 5 days: the user, 2026-10-06.)
+}
+
+int Society::shutAhead(std::int64_t today)
+{
+    // The days from tomorrow when the shops aren't properly open: Restday (open only after the service) and a festival
+    // (work stops at noon). A household lays in to last over them.
+    int n = 0;
+    for (std::int64_t d = today + 1; n < 3; ++d, ++n)
+        if (calendar::weekdayOf(double(d) + .5) != calendar::Restday && !calendar::festivalDay(double(d) + .5))
+            break;
+    return n;
 }
 
 int Society::startingLarderDays(const std::string& homeCell)
@@ -522,7 +553,7 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
     if (!decidesWithin(seconds))
         return false;
     return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % UnseenStep == 0 ||
-           std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < PursesFounded || state_.books.month < 0;
+           std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < 1 || state_.books.month < 0;
 }
 
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
@@ -539,6 +570,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         for (auto& resident : state_.residents)
             resident.second.wagesToday = 0;
         offered_.clear();                              // (The Restday plate, doc 42.)
+        if (roster_ == Roster::Authored)
+            spoil(day);                                // Food older than it keeps goes bad (RatwDemand.cpp).
         const int recovery[] = {20, 30, 12, 4};
         state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
         if (roster_ == Roster::Authored)
@@ -561,9 +594,11 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             wants(day, bodies);                        // And what the grown spend on things they just want.
             townBuyers(day, bodies);                   // And the town's own buyers'.
             tradeUpkeep(day, bodies);                  // Tools worn out, horses fed, beggars given a penny (doc 42).
+            producersSell(day);                        // What the land gave, to the town's food shops.
+            worldMoney(bodies);                        // The world's money made up, once (RatwFounding.cpp).
         }
     }
-    if (roster_ == Roster::Authored && state_.memory.purses < PursesFounded)
+    if (roster_ == Roster::Authored && state_.memory.purses < 1)
         foundPurses(bodies);                           // Everyone's starting money, once (RatwFounding.cpp).
     if (roster_ == Roster::Authored && state_.books.month < 0)
         reckon(day);                                   // The first month's books open at once (doc 42).

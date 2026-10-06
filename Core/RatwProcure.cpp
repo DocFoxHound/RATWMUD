@@ -85,6 +85,16 @@ bool World::churchCares(const std::string& player, const std::string& clergy) co
     return std::any_of(p->injuries.begin(), p->injuries.end(), [](const Injury& i) { return i.kind == "acute" && i.restLeft > 1; });
 }
 
+std::string World::churchStoreOf(const std::string& clergy) const
+{
+    // Its town: where it works, else where it lives (as Society::communityOfResident).
+    const auto* r = society_.spec(clergy);
+    std::string town = r ? lawTown(r->work.cell) : std::string();
+    if (town.empty() && r)
+        town = lawTown(r->home.cell);
+    return Society::churchStore(town);
+}
+
 Result World::churchCare(const std::string& player, const std::string& clergy)
 {
     if (!churchCares(player, clergy))
@@ -96,7 +106,7 @@ Result World::churchCare(const std::string& player, const std::string& clergy)
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (const auto last = churchCared_.find(player); last != churchCared_.end() && last->second == today)
         return {false, c->name + " has tended you today already. Rest now.", clergy};
-    const auto church = society_.churchOf(society_.treasuryOfResident(clergy));
+    const auto church = churchStoreOf(clergy);      // (Its own bandages, its town's.)
     const auto* stock = society_.account(church);
     std::string bandage;
     for (const auto& kind : stock ? Society::kindsHeld(*stock, "bandages") : std::vector<std::string>{})

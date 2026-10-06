@@ -6,6 +6,8 @@
 #include "RatwSociety.h"
 
 #include <algorithm>
+#include <map>
+#include <vector>
 
 namespace ratw
 {
@@ -46,9 +48,9 @@ void Society::startingMoney(const std::string& id, std::int64_t coins)
 void Society::foundPurses(const std::map<std::string, LifeBody>& bodies)
 {
     auto& memory = state_.memory;
-    if (memory.purses >= PursesFounded)
+    if (memory.purses >= 1)
         return;
-    memory.purses = PursesFounded;
+    memory.purses = 1;
     ++memory.revision;
     std::map<std::string, std::int64_t> heads;      // Treasury -> the residents who pay it.
     for (const auto& [id, life] : state_.residents)
@@ -60,14 +62,17 @@ void Society::foundPurses(const std::map<std::string, LifeBody>& bodies)
             startingMoney(id, startingPurse(id, age) - purse->cash);
         ++heads[treasuryOfResident(id)];
     }
+    std::int64_t everyone = 0;
     for (const auto& [treasury, n] : heads)
     {
         if (const auto* purse = account(treasury))
             startingMoney(treasury, TreasuryHead * n - purse->cash);
-        // An older save's church, founded already (a new world's is founded with its own, RatwDemand.cpp).
-        if (const auto* church = account(churchOf(treasury)))
-            startingMoney(churchOf(treasury), ChurchHead * n - church->cash);
+        everyone += n;
     }
+    // An older save's church, founded already (a new world's is founded with its own, RatwDemand.cpp): one purse for the
+    // land, ChurchHead a resident.
+    if (const auto* church = account(SharedChurch))
+        startingMoney(SharedChurch, ChurchHead * everyone - church->cash);
     // An older save's great houses and their businesses (a new world's are founded with theirs, RatwHouses.cpp).
     for (const auto& h : houses())
         if (const auto* purse = account(h.id))
@@ -75,5 +80,44 @@ void Society::foundPurses(const std::map<std::string, LifeBody>& bodies)
     for (const auto& [pid, house] : state_.houses.owner)
         if (const auto* till = account("till:" + pid))
             startingMoney("till:" + pid, floatOf(pid) - till->cash);
+}
+
+void Society::worldMoney(const std::map<std::string, LifeBody>& bodies)
+{
+    // After the day's pass, so the town's buyers and the church have been founded with theirs.
+    if (state_.memory.purses != 1)
+        return;
+    state_.memory.purses = 2;
+    ++state_.memory.revision;
+    std::map<std::string, std::int64_t> heads;      // Treasury -> the residents who pay it.
+    std::vector<std::string> grown;
+    for (const auto& [id, life] : state_.residents)
+    {
+        const auto body = bodies.find(id);
+        const auto* r = spec(id);
+        if ((body != bodies.end() ? body->second.age : r ? r->age : 30) >= 16 && account(id))
+            grown.push_back(id);
+        ++heads[treasuryOfResident(id)];
+    }
+    const auto gap = WorldMoney - moneySupply();
+    if (gap <= 0 || grown.empty() || state_.residents.size() < WorldMoneyResidents)
+        return;
+    std::int64_t everyone = 0;
+    for (const auto& [treasury, n] : heads)
+        everyone += account(treasury) ? n : 0;
+    const auto toGrown = everyone > 0 ? gap * WorldGrownShare / 100 : gap;
+    const auto each = toGrown / std::int64_t(grown.size());
+    for (const auto& id : grown)
+        startingMoney(id, each);
+    // The rest (and the pennies the grown didn't split) to the treasuries, by their residents; the last takes the remainder.
+    auto left = gap - each * std::int64_t(grown.size());
+    for (auto it = heads.begin(); it != heads.end() && everyone > 0; ++it)
+        if (account(it->first))
+        {
+            const auto share = left * it->second / everyone;
+            startingMoney(it->first, std::next(it) == heads.end() ? left : share);
+            left -= share;
+            everyone -= it->second;
+        }
 }
 } // namespace ratw

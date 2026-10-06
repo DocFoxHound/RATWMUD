@@ -571,6 +571,9 @@ WORKS = {  # kind: (size, what fills it)
     'fold': ((16, 10), 'pens of hurdles, a shearing floor and bales of fleece'),
     'bee_shed': ((10, 8), 'straw skeps on shelves, smokers, and crocks of honey sealed with wax'),
     'logging_camp': ((18, 10), 'axes, saws and wedges on the walls, bunks by the stove, and the smell of cedar'),
+    # Doc 42's sheep and rabbit farms (worldgen.farms, the user, 2026-10-06).
+    'barn': ((18, 11), 'lambing pens of hurdles, a shearing floor, and hay to the rafters'),
+    'rabbitry': ((24, 14), 'rows of hutches stacked three high, straw and greens, and a skinning bench by the door'),
 }
 
 # Each new works kind: its stations in order of importance, and how many of each.
@@ -594,6 +597,8 @@ WORKS_STATIONS = {
     'fold': [('workbench', 1)],
     'bee_shed': [('workbench', 1)],
     'logging_camp': [('workbench', 2)],
+    'barn': [],
+    'rabbitry': [],
 }
 # What its keeper is called (towns use it for the work label) and the trade whose skill it uses.
 WORKS_TRADE = {
@@ -604,6 +609,7 @@ WORKS_TRADE = {
     'mill': 'miller', 'arsenal': 'engineer', 'cartwright': 'cartwright', 'weaving_shed': 'weaver',
     'brewery': 'brewer', 'stables': 'horse-dealer', 'dairy': 'dairy keeper', 'press_house': 'vintner',
     'mine_head': 'mine captain', 'fold': 'shepherd', 'bee_shed': 'beekeeper', 'logging_camp': 'logging boss',
+    'barn': 'shepherd', 'rabbitry': 'rabbit keeper',
 }
 
 
@@ -688,6 +694,21 @@ def laid_out(p: Plan, kind):
             p.put(x + 1, 2, '|')
         p.run(2, h - 3, 1, 0, 4, 'x')
         return [(w // 2, 4), (3, 4), (w - 4, 4)]
+    if kind == 'barn':
+        for x in range(2, w - 2, 4):          # Lambing pens along the back (straw behind hurdles), hay by the door.
+            p.put(x, 1, 'z')
+            p.put(x + 1, 1, 'z')
+            p.put(x + 2, 2, '|')
+        p.run(2, h - 3, 1, 0, 5, 'x')
+        return [(w // 2, 4), (3, 4), (w - 4, 4), (w // 2, h - 5)]
+    if kind == 'rabbitry':
+        # Rows of hutches (crates of straw, stacked) down the shed with aisles between, a skinning bench by the door.
+        rows = list(range(2, h - 4, 3))
+        for y in rows:
+            for x in range(2, w - 2):
+                p.put(x, y, 'x' if x % 3 else 'z')
+        p.put(w - 3, h - 3, 'T')
+        return [(x, y + 1) for y in rows for x in range(3, w - 3, 5)]
     places = [(x, 1) for x in range(2, w - 2, 3)] + [(1, y) for y in range(4, h - 4, 3)] + \
              [(w - 2, y) for y in range(4, h - 4, 3)] + [(x, h // 2) for x in range(4, w - 4, 4)]
     spots = []

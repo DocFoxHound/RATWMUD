@@ -210,9 +210,13 @@ void farmerBringsIn()
     expect(held(s, "farmer", "wheat") <= Society::ProducerKept, "never more than a farmer keeps");
     auto winter = farmTown();
     double cold = 10. / 24;
+    winter.takeJournal();
     work(winter, 3600, cold, 3);
-    // Nothing grows in winter, but the barn's grain is threshed (doc 42, Phase 3c: crafts.json `offSeason`).
-    expect(held(winter, "farmer", "wheat") >= 1 && held(winter, "farmer", "vegetables") == 0,
+    // Nothing grows in winter, but the barn's grain is threshed (doc 42, Phase 3c: crafts.json `offSeason`). (Counted as
+    // brought in: the mill, keeping a full store of flour, buys the wheat as it comes.)
+    const auto cold_ = winter.takeJournal();
+    expect(count(cold_, "brought in", "wheat") >= 1 && count(cold_, "brought in", "vegetables") == 0 &&
+               held(winter, "farmer", "vegetables") == 0,
            "in winter only the barn's grain is threshed, nothing grows");
 }
 
@@ -244,7 +248,8 @@ void cartedInFromAnotherTown()
     for (const auto& e : s.takeJournal())
         if (e.kind == "materials carted in" && e.item == "flour")
             paid += e.coins;
-    expect(paid == got * 3, "carted in, at half as much again (2p flour at 3p)");
+    expect(paid >= got * 3 && paid <= got * 4, "carted in, at half as much again, by the seller's supply (doc 42: 2p flour at 3p or "
+                                               "4p): " + std::to_string(paid) + "p for " + std::to_string(got));
 }
 void qualities()
 {

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <map>
 #include <memory>
@@ -439,6 +440,10 @@ class Society
     static bool edible(const std::string& item);
     static int nourishment(const std::string& item);
     static std::string bestFood(const EconomyAccount& account);
+    // What to eat first: the food that spoils soonest (Item::keeps), the most nourishing of those (doc 42, "Spoilage").
+    static std::string eatFirst(const EconomyAccount& account);
+    // The same by the age of what it holds (its oldest batch of each food): what an account eats first.
+    std::string eatFirst(const std::string& id, const EconomyAccount& account) const;
     static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
@@ -451,6 +456,28 @@ class Society
     // every shop of the kind the same; a smith adds swords; a shop of food adds meals, an herbalist herbs. Anyone else
     // (an innkeeper, a market trader, the demo's keeper) deals in herbs and meals.
     std::vector<std::string> wares(const std::string& merchant) const;
+    // A shop of food (a general store, a provisioner, a stall, a bakery, a butcher, a fishmonger, a brewery, an inn): it
+    // sells any wholesome food it has in, besides its own wares (Docs/Design/42, "Food between towns").
+    bool foodShop(const std::string& merchant) const;
+    bool sellsFood(const std::string& merchant, const std::string& item, const std::vector<std::string>& wares) const;
+    // Producers sell their town's food shops what food they bring in beyond ProduceKept, daily, a shop taking up to
+    // FoodShelf of a food, at a shop's buying price (doc 15: a little over half), as far as it can pay.
+    void producersSell(std::int64_t day);
+    // Spoilage (doc 42, the user, 2026-10-06): each account's food in batches by the day it came in; once a day, what has
+    // come in since is a batch of today, what has gone went from the oldest, and a batch older than its food keeps
+    // (Item::keeps) spoils. Goods bought are fresh to their buyer; on the road, in a caravan, they age. Players' packs
+    // don't spoil (not yet). The batches aren't saved: a loaded world's food is all fresh.
+    void spoil(std::int64_t day);
+    // Prices that move (doc 42, the user, 2026-10-06), worked out once a day (tendPrices) and only read when selling:
+    // - a shop whose day's takings fall under half its day's running (a float over FloatDays) marks its goods down a
+    //   twentieth, to Markdown at most, and back up as it sells again (markdown_);
+    // - food is cheaper where the townsfolk are poorer: by the town's median purse against the land's (townPrice_);
+    // - nothing is sold under CostFloor of its price (about what a shop pays for it);
+    // - a supplier or producer with plenty sells its materials cheaper, a scarce one dearer (supplyFactor).
+    void tendPrices(std::int64_t day);
+    double supplyFactor(const EconomyAccount& seller, const std::string& item) const;
+    static constexpr double Markdown = .6, CostFloor = .6;
+    static constexpr int ProduceKept = 10, FoodShelf = 30;
     static constexpr int SmithSwords = 3;
     static constexpr int CheapPrice = 6;              // A shop's goods cost at most this, for now (pennies).
     static constexpr int GoodsKept = 4;               // How many of each good a shop keeps, making more as they sell.
@@ -469,10 +496,11 @@ class Society
     // Food to start with (doc 36): a new player's own meals; a new household's larder, meals for each who lives there,
     // and its chest, herbs for each. Placeholder amounts for the balance pass.
     static constexpr int StartingMeals = 3, LarderMealsEach = 3, ChestHerbsEach = 2;
-    // How many days' food a household lays in on a trip (the user, 2026-10-05): 5 to 8, its own steady habit, so the
+    // How many days' food a household's larder holds (the user, 2026-10-06: 2 to 5), its own steady habit, so the
     // world's households don't all shop on the same day; and a new larder holds 2 to 5 days' to begin with (in place of
     // LarderMealsEach for everyone), so their first trips are spread out too.
     static int stockingDays(const std::string& homeCell);
+    static int shutAhead(std::int64_t today);       // Days from tomorrow the shops aren't properly open (Restday, a festival).
     static int startingLarderDays(const std::string& homeCell);
     static const char* itemName(const std::string& id);
     std::int64_t moneySupply() const;
@@ -485,6 +513,16 @@ class Society
   private:
     LifeDay day_;
     Parallel parallel_;
+    std::map<std::string, double> markdown_;        // A shop's till -> its markdown (1: none).
+    std::map<std::string, double> mealsSold_;       // A shop's till -> the meals it sells a day (a running average).
+    std::map<std::string, int> mealsToday_;         // A shop's till -> the meals it sold today.
+    std::map<std::string, double> townPrice_;       // A community -> its food prices against the land's.
+    std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (for townPrice_; made daily).
+    // What each larder gives its household a day (nourishment taken from it, a running average, Society::spoil): the
+    // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).
+    std::unordered_map<std::string, double> larderUse_;
+    std::unordered_map<std::string, int> larderTaken_;      // Today's, so far.
+    std::map<std::string, std::map<std::string, std::deque<std::pair<std::int64_t, int>>>> batches_;   // Account -> food -> (day, n).
     // Each resident by number (its place in ID order), and what its decisions every second reach through it, kept while
     // nothing they rest on changes (refreshRecords): the roster, the careers, the specs, the positions, the accounts.
     struct ResidentRecord
@@ -708,7 +746,22 @@ class Society
         std::string treasury, church;
         int payers = 0, residents = 0;
         std::int64_t tax = 0, tithes = 0, toCapital = 0;
+        std::int64_t wealthTithe = 0, fromCapital = 0;   // Its folk's wealth tithe; what the capital sent it, for its poor.
     };
+    // Money back out where it pools (Docs/Design/42, "Where money pools", the user, 2026-10-06):
+    // - the tax on a week's profit is a tenth, and a fifth of the part above TaxBand;
+    // - each week a WealthTitheShare-th of what anyone holds above a comfortable line goes to the church (wealthLine);
+    // - each week the capital sends the towns half of what it holds above four weeks' spending, by how many of their
+    //   folk are short of a week's food;
+    // - each day the church gives households short of a week's food DoleADay a member, in coins (the dole);
+    // - a great house keeps only its floor and spends a HouseSurplusShare-th of the rest a day; what it holds above that
+    //   floor raises the wages it pays (wageFor), rather than being given away.
+    static constexpr std::int64_t TaxBand = 70, DoleADay = 2;
+    static constexpr int WealthTitheShare = 20, HouseSurplusShare = 10, KeeperSurplusShare = 5;
+    // Above what a wealth tithe is paid: a resident's four weeks' food; a keeper whose purse is its shop's till, that, its
+    // food money and a float; a great house, its floor (100p and a float for each business: as for its surplus).
+    std::int64_t wealthLine(const std::string& id) const;
+    std::int64_t houseFloor(const std::string& house) const;
     // The month's reckoning, if one is due on `day` (at most once a month): every resident who made a profit pays a
     // tenth to its town and a tenth to its church, and the towns send the capital a tenth of their tax; then new
     // books are opened. `force` reckons now (the Dev Console). Residents without books yet get them.
@@ -721,6 +774,11 @@ class Society
         std::string account, whom;
     };
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
+    // A spell's wage from a payer (the user, 2026-10-06: the more an employer holds, the more it pays): 1p from a lean one,
+    // else 2p and a penny more for each time over its floor it holds, to MostWage. Its floor: a shop's float, a great
+    // house's floor (houseFloor), a town's TreasuryHead a resident, the church's ChurchHead a resident of the land.
+    std::int64_t wageFor(const Payer& payer) const;
+    static constexpr std::int64_t MostWage = 6;
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";
     static constexpr std::int64_t ComfortableTill = 150;   // A shop that has more pays its help full wages (doc 42).
@@ -775,6 +833,10 @@ class Society
         std::string detail;
     };
     static constexpr int SurplusShare = 10;
+    // TRIAL (doc 42, "Pressure", 2026-10-06; temporary): whether a named trial is on, from the RATW_TRIAL environment
+    // variable (names, comma separated), for econ_watch runs comparing ways of keeping money moving. Off in play.
+    static bool trial(const char* name);
+    std::int64_t landMedian_ = 0;                   // The land's median resident purse (tendPrices, daily).
     void spendSurpluses(std::int64_t day);
     std::vector<Spending> takeSpendings();
     // A town's buildings falling into disrepair (under 50) or mended again, since the world last asked.
@@ -795,6 +857,9 @@ class Society
     static bool clergy(const std::string& title);     // A priest's, a chapel keeper's, an acolyte's work.
     static bool houseHead(const std::string& title);  // The head of a great house: "ruling House Fell".
     static constexpr int TaxShare = 10, TitheShare = 10, CapitalShare = 10;     // "a tenth": 1 / these.
+    // The poverty line (the user, 2026-10-06: tax and tithe the same for all, unless in poverty): a resident holding less
+    // than two weeks' food money pays neither tax nor tithe that week.
+    static constexpr std::int64_t PovertyLine = 14 * FoodADay;
     // Starting money (the user, 2026-10-05; RatwFounding.cpp): every resident and every body that keeps a purse begins with
     // a reasonable one, made once when the world is founded (an older save: the first time it runs with this). Placeholders:
     // a child ChildPurse and half a penny a year of its age; a beggar PoorPurse; a grown wolf AdultPurse (some five days'
@@ -803,7 +868,25 @@ class Society
     // buyers their working funds, a great house's business its till's float.
     static constexpr std::int64_t ChildPurse = 5, PoorPurse = 10, AdultPurse = 30, ElderPurse = 60, KeeperPurse = 80;
     static constexpr std::int64_t TreasuryHead = 40, ChurchHead = 10;
-    static constexpr int PursesFounded = 1;
+    // One church across the land (the user, 2026-10-06): every town's church keeps one purse, shared at once, so what
+    // one takes in another can give (churchOf). Its floor is ChurchHead for every resident in the land. Each town's
+    // church still works for its own town: its alms, odd jobs, candles and clergy.
+    // Its goods (candles, bread for alms, bandages) are each town's church's own, in its storehouse (churchStore): bought
+    // at that town's shops with the shared money, given and used there.
+    static constexpr const char* SharedChurch = "town:all:church";
+    static std::string churchStore(const std::string& community) { return "town:" + community + ":church"; }
+    // Older saves' churches each kept money of their own: it goes into the shared purse (on the next day), their goods
+    // staying in their storehouses.
+    void joinChurches();
+    // The world's money (the user, 2026-10-06: "increase the world total monetary amount to 500,000p, and spread it
+    // evenly everywhere"): once the purses are founded, what the world holds is made up to WorldMoney, WorldGrownShare
+    // percent of it shared alike among the grown residents, the rest among the towns' treasuries by their residents.
+    // (The second grant: an older save gets it the first time it runs with this.) Only a land of WorldMoneyResidents or
+    // more: a village made for a test keeps its own starting money.
+    static constexpr std::int64_t WorldMoney = 500000;
+    static constexpr std::size_t WorldMoneyResidents = 500;
+    static constexpr int WorldGrownShare = 85;
+    static constexpr int PursesFounded = 2;          // (1: the purses; 2: the world made up to WorldMoney.)
     std::int64_t startingPurse(const std::string& resident, int age) const;
     // A keeper whose shop is its own (its purse is the till) never spends its last KeeperReserve on the business
     // (materials, restocking, help's wages): it keeps its food money (the user, 2026-10-05). What an account may spend so.
@@ -839,6 +922,8 @@ class Society
     void startingMoney(const std::string& account, std::int64_t coins);
     // Tops every purse up to its starting money, once (EconomyMemory::purses).
     void foundPurses(const std::map<std::string, LifeBody>& bodies);
+    // Makes what the world holds up to WorldMoney (once, at the end of the first day's pass after the purses are founded).
+    void worldMoney(const std::map<std::string, LifeBody>& bodies);
     std::string capital_;
     bool tradeByCaravan_ = false;
     std::map<std::string, std::int64_t> spentToday_;       // Collector -> its ordinary spending today (not saved).

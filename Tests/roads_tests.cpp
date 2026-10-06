@@ -822,8 +822,8 @@ void townPursesAndTheReckoning()
                                                std::to_string(westPurse) + "p of " + std::to_string(treasury) + "p)");
     expect(w.society().capital() == "east", "East is the capital");
     expect(w.society().treasuryOfResident("w1") == "stores:west" && w.society().treasuryOfResident("e1") == "treasury" &&
-               w.society().churchOf("stores:west") == "town:west:church" && w.society().churchOf("treasury") == "town:east:church",
-           "Each pays its own town and church");
+               w.society().churchOf("stores:west") == Society::SharedChurch && w.society().churchOf("treasury") == Society::SharedChurch,
+           "Each pays its own town, and every town's church keeps the land's one purse");
     // A working morning: west's wages come from west's purse.
     {
         auto saved = w.save();
@@ -843,8 +843,8 @@ void townPursesAndTheReckoning()
             }
     }
     expect(westWages > 0 && eastToWest == 0, "West's townsfolk are paid by west (" + std::to_string(westWages) + "p), not the capital");
-    const auto* church = w.society().account("town:west:church");
-    expect(church && church->cash > 0, "West's church was founded with a little from the town");
+    const auto* church = w.society().account(Society::SharedChurch);
+    expect(church && church->cash > 0, "The land's church was founded");
     // A month's doings: w1 does well, w2 inherits, w3 spends more than it earns.
     const auto& books = w.society().state().books;
     expect(books.month == 0 && books.start.count("w1") && books.start.count("wm"), "The week's books are open");
@@ -857,32 +857,46 @@ void townPursesAndTheReckoning()
     };
     const auto w1 = profit("w1"), w2 = profit("w2"), w3 = profit("w3");
     const auto w1Cash = w.society().account("w1")->cash, w2Cash = w.society().account("w2")->cash;
-    const auto westBefore = w.society().account("stores:west")->cash, churchBefore = w.society().account("town:west:church")->cash;
+    const auto westBefore = w.society().account("stores:west")->cash, churchBefore = w.society().account(Society::SharedChurch)->cash;
     expect(w1 >= 30 && w2 < 300 && w3 < 0, "Profits: w1 " + std::to_string(w1) + "p, w2 " + std::to_string(w2) + "p, w3 " + std::to_string(w3) + "p");
     w.takeEvents();
     const auto told = w.reckonNow();
-    std::int64_t tax = 0, tithes = 0, toCapital = 0;
+    std::int64_t tax = 0, tithes = 0, allTithes = 0, toCapital = 0, fromCapital = 0;
     bool w3Paid = false, logged = false;
     for (const auto& e : w.takeEvents())
     {
         if (e.kind == "economy" && e.detail == "town tax" && e.target == "stores:west")
             tax += e.coins;
-        if (e.kind == "economy" && e.detail == "tithe" && e.target == "town:west:church")
-            tithes += e.coins;
+        if (e.kind == "economy" && e.detail == "tithe" && e.target == Society::SharedChurch)
+        {
+            allTithes += e.coins;                   // (Every town's: the church's purse is the land's.)
+            tithes += e.actor.front() == 'w' ? e.coins : 0;
+        }
         if (e.kind == "economy" && e.detail == "capital's share" && e.actor == "stores:west")
             toCapital += e.coins;
+        if (e.kind == "economy" && e.detail == "a wealth tithe" && e.target == Society::SharedChurch)
+            allTithes += e.coins;                   // (To the church too.)
+        if (e.kind == "economy" && e.detail == "from the capital, for the poor" && e.target == "stores:west")
+            fromCapital += e.coins;
         w3Paid |= e.kind == "economy" && e.actor == "w3" && (e.detail == "town tax" || e.detail == "tithe");
         logged |= e.kind == "reckoning" && e.actor == "stores:west" && e.detail.find("West's reckoning") != std::string::npos;
     }
-    expect(w.society().account("w1")->cash == w1Cash - w1 / 10 - w1 / 10, "w1 pays a tenth of its profit in tax and a tenth in tithe");
-    expect(w.society().account("w2")->cash == w2Cash - std::max<std::int64_t>(0, w2 >= 10 ? w2 / 10 * 2 : 0),
-           "w2 pays nothing on what it inherited");
+    // (And each, a wealth tithe on what it holds above its comfortable line: Society::wealthLine.)
+    const auto wealthTithe = [&](std::int64_t cash, const std::string& who) {
+        return std::max<std::int64_t>(0, (cash - w.society().wealthLine(who)) / Society::WealthTitheShare);
+    };
+    const auto w1Taxed = w1Cash - w1 / 10 - std::max<std::int64_t>(0, w1 - Society::TaxBand) / 10 - w1 / 10;
+    expect(w.society().account("w1")->cash == w1Taxed - wealthTithe(w1Taxed, "w1"),
+           "w1 pays a tenth of its profit in tax (a fifth above the band) and a tenth in tithe");
+    const auto w2Taxed = w2Cash - std::max<std::int64_t>(0, w2 >= 10 ? w2 / 10 * 2 : 0);
+    expect(w.society().account("w2")->cash == w2Taxed - wealthTithe(w2Taxed, "w2") && wealthTithe(w2Taxed, "w2") > 0,
+           "w2 pays no tax on what it inherited, but a wealth tithe on what it holds above its line");
     expect(!w3Paid, "w3, at a loss, pays nothing");
     expect(tax > 0 && tithes == tax && toCapital == tax / 10, "West took in " + std::to_string(tax) + "p in tax and " +
                                                              std::to_string(tithes) + "p in tithes, and sent the capital a tenth");
-    expect(w.society().account("stores:west")->cash == westBefore + tax - toCapital &&
-               w.society().account("town:west:church")->cash == churchBefore + tithes,
-           "into its own purse and its church's");
+    expect(w.society().account("stores:west")->cash == westBefore + tax - toCapital + fromCapital &&
+               w.society().account(Society::SharedChurch)->cash == churchBefore + allTithes,
+           "into its own purse and the land's church's");
     expect(logged && told.find("West's reckoning") != std::string::npos, "The reckoning is told: " + told);
     expect(books.start.at("w1") == w.society().account("w1")->cash && books.unearned.empty(), "New books are opened");
     expect(w.society().conserved(), "Money stays conserved");
@@ -924,7 +938,7 @@ void whoPaysWages()
     const auto payer = [&](const std::string& who, int age = 30) { return soc.payerOf(who, *soc.jobOf(who), age); };
     expect(payer("help").account == "em" && payer("help").whom == "the shop", "A shop's help is paid by its keeper");
     expect(payer("watch1").account == "treasury", "the watch by the town");
-    expect(payer("chap").account == "town:east:church", "a chapel keeper by the church");
+    expect(payer("chap").account == Society::SharedChurch, "a chapel keeper by the church");
     expect(payer("farm").account.empty(), "a farmer lives by what it brings in");
     expect(payer("lamp").account == "treasury", "the lamplighter by the town");
     expect(payer("lamp", 12).account.empty(), "and a child draws no wages");
@@ -964,8 +978,8 @@ void whoPaysWages()
     // A town (and church) with nothing to spare can't: the help waits on its wages, and after a week labours for the
     // Town Works instead.
     w.society().shift("treasury", "stores:west", "", 0, w.society().account("treasury")->cash - 100, "test: a lean year");
-    if (const auto* church = w.society().account("town:east:church"))
-        w.society().shift("town:east:church", "stores:west", "", 0, church->cash, "test: a lean year");
+    if (const auto* church = w.society().account(Society::SharedChurch))
+        w.society().shift(Society::SharedChurch, "stores:west", "", 0, church->cash, "test: a lean year");
     run(w, 700);
     const auto* help = w.society().resident("help");
     expect(help->reason.find("Waiting on wages from Ember Oak") != std::string::npos, "Unpaid, the help says so: " + help->reason);
@@ -1164,6 +1178,70 @@ void greatHouses()
 
 // The rule against hoarding (doc 42): a church with more than it needs feeds the poor; a town hires hands for its
 // works; neither sits on its money. Money stays conserved.
+// One church (doc 42, "One church", the user, 2026-10-06): an older save's churches each kept money of their own; on the
+// next day it is all in the land's one purse, and nothing is made or lost.
+void oneChurch()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    s.openAccount("town:west:church");
+    expect(s.shift("stores:west", "town:west:church", "", 0, 120, "test: an older save's church purse"),
+           "An older save: West's church holds 120p of its own");
+    w.takeEvents();
+    nextMorning(w);
+    std::int64_t joined = 0;
+    for (const auto& e : w.takeEvents())
+        if (e.kind == "economy" && e.detail == "the churches' purses joined" && e.actor == "town:west:church" &&
+            e.target == Society::SharedChurch)
+            joined += e.coins;
+    expect(joined == 120 && s.account("town:west:church")->cash == 0, "The next day it is in the land's purse (" + std::to_string(joined) + "p)");
+    expect(s.conserved(), "Money stays conserved");
+}
+
+// The dole (doc 42, "Where money pools", the user, 2026-10-06): a household short of a week's food is given a little
+// in coins by the church each day, to spend at its own town's shops.
+void theDole()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    s.openAccount(Society::SharedChurch);
+    expect(s.shift("treasury", Society::SharedChurch, "", 0, std::min<std::int64_t>(3000, s.account("treasury")->cash / 2), "test: a full church"),
+           "The church is full");
+    s.shift("w1", "treasury", "", 0, s.account("w1")->cash, "test: penniless");
+    w.takeEvents();
+    nextMorning(w);
+    std::int64_t given = 0;
+    for (const auto& e : w.takeEvents())
+        if (e.kind == "economy" && e.detail == "the church's dole")
+            given += e.coins;
+    expect(given > 0, "The poor are given the dole (" + std::to_string(given) + "p)");
+    expect(s.conserved(), "Money stays conserved");
+}
+
+// Spoilage (doc 42, "Spoilage", the user, 2026-10-06): food keeps its days (items.json `keeps`; fresh fish three), then
+// spoils; what keeps (salt fish, months) doesn't.
+void spoilage()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    expect(s.openAccount("contract:larder-test"), "A store nobody draws on");
+    s.create("contract:larder-test", "fish", 6, "test: caught");
+    s.create("contract:larder-test", "salt_fish", 4, "test: salted");
+    for (int day = 0; day < 3; ++day)
+        nextMorning(w);
+    expect(Society::stock(*s.account("contract:larder-test"), "fish") == 6, "Fresh fish keeps three days");
+    nextMorning(w);
+    nextMorning(w);
+    expect(Society::stock(*s.account("contract:larder-test"), "fish") == 0, "then it spoils");
+    expect(Society::stock(*s.account("contract:larder-test"), "salt_fish") == 4, "Salt fish keeps");
+}
+
 void noHoarding()
 {
     auto f = strip("EE.....WW", resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 7, 9.5, 8, 9.5));
@@ -1171,11 +1249,11 @@ void noHoarding()
     w.tick(.6);
     nextMorning(w);
     run(w, 2);
-    // West's church is rich, and w1 is penniless with nothing to eat.
-    const auto church = "town:west:church";
-    expect(w.society().account(church) != nullptr, "West has a church");
+    // The church is rich, and w1 is penniless with nothing to eat.
+    const auto church = Society::SharedChurch;
+    expect(w.society().account(church) != nullptr, "The land has a church");
     expect(w.society().shift("stores:west", church, "", 0, std::min<std::int64_t>(800, w.society().account("stores:west")->cash - 50), "test: a generous month"),
-           "West's church is given a great deal");
+           "The church is given a great deal");
     w.society().shift("w1", "treasury", "", 0, w.society().account("w1")->cash, "test: penniless");
     for (const auto& [item, n] : std::map<std::string, int>(w.society().account("w1")->stock.begin(), w.society().account("w1")->stock.end()))
         w.society().consume("w1", item, n, "test: nothing to eat");
@@ -1677,7 +1755,7 @@ void theChurchCares()
     const auto before = w.entity("player-ada")->injuries.front().restLeft;
     w.society().shift("player-ada", "treasury", "", 0, w.society().account("player-ada")->cash - 5, "test: down to her last pennies");
     expect(w.churchCares("player-ada", "chap"), "Poor and hurt, she may ask the chapel keeper for care");
-    const auto church = w.society().churchOf(w.society().treasuryOfResident("chap"));
+    const auto church = w.churchStoreOf("chap");    // (Its town's church's storehouse: its goods are its own.)
     expect(!w.churchCare("player-ada", "chap").ok, "but not with no bandages in the church");
     w.society().openAccount(church);
     w.society().create(church, "bandages", 2, "test: the apothecary's");
@@ -1751,6 +1829,9 @@ int main()
         workingOutOfTown();
         greatHouses();
         noHoarding();
+        oneChurch();
+        theDole();
+        spoilage();
         residentsFillContractsForGoods();
         tradesWearAndCharity();
         tradeCaravansCarryGoodsAndMoney();

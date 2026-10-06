@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 namespace ratw
 {
@@ -16,8 +17,7 @@ namespace
 {
 bool collector(const std::string& id)
 {
-    return id == "treasury" || id.rfind("stores:", 0) == 0 || id.rfind("house:", 0) == 0 ||
-           (id.rfind("town:", 0) == 0 && id.size() > 7 && id.compare(id.size() - 7, 7, ":church") == 0);
+    return id == "treasury" || id.rfind("stores:", 0) == 0 || id.rfind("house:", 0) == 0 || id == Society::SharedChurch;
 }
 } // namespace
 
@@ -125,32 +125,16 @@ void Society::spendSurpluses(std::int64_t day)
     for (const auto& [id, a] : state_.accounts)
         if (collector(id) && a.cash > 0)
             collectors.push_back(id);
-    // Churches stand by each other (a diocese): one run dry (under 2p a head) is given what it lacks of 5p a head by the
-    // richest that holds more than twice its own floor.
+    // Each town's church feeds its town's poor every day, surplus or not (the user, 2026-10-05: no one starves with a church
+    // in town): a day's food each to those with no food and no pennies to buy it (a child whose larder is empty, an
+    // apprentice), hungry yet or not, bought at the town's shops with the land's purse (SharedChurch).
+    const std::string land = SharedChurch;
+    for (const auto& entry : folk)
     {
-        std::map<std::string, std::int64_t> heads;
-        for (const auto& [who, life] : state_.residents)
-            ++heads[day_.communityOf ? day_.communityOf(life.homeCell) : std::string()];
-        std::string richest;
-        double most = 0;
-        for (const auto& id : collectors)
-            if (id.rfind("town:", 0) == 0)
-                if (const auto n = heads[townOf(id)]; n > 0)
-                    if (const double spare = double(account(id)->cash) / double(n * ChurchHead); spare > 2 && spare > most)
-                        most = spare, richest = id;
-        for (const auto& [id, a] : state_.accounts)
-            if (id.rfind("town:", 0) == 0 && id.size() > 7 && id.compare(id.size() - 7, 7, ":church") == 0 && id != richest && !richest.empty())
-                if (const auto n = heads[townOf(id)]; n > 0 && a.cash < 2 * n)
-                    shift(richest, id, "", 0, std::min<std::int64_t>(5 * n - a.cash, account(richest)->cash / 10), "from the mother church");
-    }
-    // Each church feeds its town's poor every day, surplus or not (the user, 2026-10-05: no one starves with a church in
-    // town): a day's food each to those with no food and no pennies to buy it (a child whose larder is empty, an
-    // apprentice), hungry yet or not, bought at the town's shops.
-    for (const auto& id : collectors)
-    {
-        if (id.rfind("town:", 0) != 0)
-            continue;
-        const auto town = townOf(id);
+        if (!account(land))
+            break;
+        const auto& town = entry.first;
+        const auto& id = land;
         // Its town's by home (a salt raker who works out at the pans is still its own).
         std::vector<std::string> hungry;
         for (const auto& [who, life] : state_.residents)
@@ -174,35 +158,135 @@ void Society::spendSurpluses(std::int64_t day)
                     --n;
                     break;
                 }
+        // What is left, to its church's storehouse (its table and tomorrow's alms).
+        openAccount(churchStore(town));
+        for (const auto& [item, n] : bread)
+            if (n > 0)
+                shift(id, churchStore(town), item, n, 0, "to the church's storehouse");
     }
-    for (const auto& id : collectors)
+    // The dole (the user, 2026-10-06: money back out at the lowest level): each household short of a week's food is given
+    // DoleADay a member in coins, to its eldest, to spend at its own town's shops; the poorest households first, and never
+    // more than a thirtieth of the church's purse a day.
+    if (const auto* purse = account(land))
     {
-        const auto town = townOf(id);
-        const auto people = folk.count(town) ? folk.at(town).size() : 0;
-        const bool church = id.rfind("town:", 0) == 0, house = id.rfind("house:", 0) == 0;
-        // The reserve: four weeks of its usual spending, and never less than a floor by what it looks after.
-        std::int64_t floor = church ? 10 * std::int64_t(people) : 30 * std::int64_t(people);
-        if (house)
+        struct Household
         {
-            floor = 200;
-            for (const auto& [pid, owner] : state_.houses.owner)
-                if (owner == id)
-                    floor += 2 * floatOf(pid);
+            std::vector<std::string> members;
+            std::int64_t held = 0;
+        };
+        std::map<std::string, Household> homes;
+        for (const auto& [who, life] : state_.residents)
+            if (!life.homeCell.empty())
+                if (const auto* p = account(who))
+                {
+                    auto& h = homes[life.homeCell];
+                    h.members.push_back(who);
+                    h.held += p->cash;
+                }
+        std::vector<std::pair<double, const Household*>> short_;   // (Purse a head, household.)
+        for (const auto& [home, h] : homes)
+            if (h.held < 7 * householdNeed(h.members.size()))
+                short_.push_back({double(h.held) / double(h.members.size()), &h});
+        std::sort(short_.begin(), short_.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+        std::int64_t left = purse->cash / 30;
+        for (const auto& [perHead, h] : short_)
+        {
+            const auto dole = DoleADay * std::int64_t(h->members.size());
+            if (dole > left)
+                break;
+            const auto eldest = *std::max_element(h->members.begin(), h->members.end(), [&](const std::string& a, const std::string& b) {
+                const auto* ra = spec(a);
+                const auto* rb = spec(b);
+                return (ra ? ra->age : 0) < (rb ? rb->age : 0);
+            });
+            if (shift(land, eldest, "", 0, dole, "the church's dole"))
+                left -= dole;
         }
-        const auto reserve = std::max<std::int64_t>(floor, std::int64_t(MonthDays * (state_.memory.outgoing.count(id) ? state_.memory.outgoing.at(id) : 0)));
-        const auto surplus = account(id)->cash - reserve;
-        auto budget = surplus / SurplusShare;
-        // Relief (the user, 2026-10-05: funding follows need): a town with many poor (over a tenth under 12p) and not lean
-        // funds odd jobs from up to a fiftieth of its treasury a day, above its reserve or not.
-        int poorHere = 0;
+        // (TRIAL church_share: what the church holds above its floor, a tenth of it a day, to the households under the
+        // land's median purse a head, by how far under: money at the bottom, as much as comes in.)
+        if (trial("church_share") && landMedian_ > 0)
+        {
+            std::int64_t people = 0;
+            for (const auto& [home, h] : homes)
+                people += std::int64_t(h.members.size());
+            const auto spare = (account(land)->cash - ChurchHead * people) / 10;
+            std::vector<std::pair<double, const Household*>> under;     // (How far under, a head x members; household.)
+            double all = 0;
+            for (const auto& [home, h] : homes)
+                if (const double perHead = double(h.held) / double(h.members.size()); perHead < double(landMedian_))
+                {
+                    under.push_back({(double(landMedian_) - perHead) * double(h.members.size()), &h});
+                    all += under.back().first;
+                }
+            for (const auto& [weight, h] : under)
+                if (const auto part = std::int64_t(double(std::max<std::int64_t>(0, spare)) * weight / std::max(1., all)); part > 0)
+                {
+                    const auto eldest = *std::max_element(h->members.begin(), h->members.end(), [&](const std::string& a, const std::string& b) {
+                        const auto* ra = spec(a);
+                        const auto* rb = spec(b);
+                        return (ra ? ra->age : 0) < (rb ? rb->age : 0);
+                    });
+                    shift(land, eldest, "", 0, part, "the church's share");
+                }
+        }
+    }
+    // What each collector spends today, and in which town. The land's church spends in every town, each its share by need
+    // (its poor, and a little by its size): the poorest places get the most.
+    const auto poorIn = [&](const std::string& town) {
+        int n = 0;
         for (const auto& who : folk[town])
             if (const auto* p = account(who); p && p->cash < 12)
-                ++poorHere;
-        const bool relief = !church && !house && folk.count(town) && poorHere * 10 > int(folk[town].size()) && !treasuryLean(id);
+                ++n;
+        return n;
+    };
+    std::vector<std::tuple<std::string, std::string, std::int64_t>> work;   // Collector, town, budget.
+    for (const auto& id : collectors)
+    {
+        const bool church = id == SharedChurch, house = id.rfind("house:", 0) == 0;
+        const auto town = church ? std::string() : townOf(id);
+        std::size_t people = 0;
+        if (church)
+            for (const auto& [t, members] : folk)
+                people += members.size();
+        else
+            people = folk.count(town) ? folk.at(town).size() : 0;
+        // The reserve: four weeks of its usual spending, and never less than a floor by what it looks after.
+        std::int64_t floor = church ? ChurchHead * std::int64_t(people) : house ? houseFloor(id) : 30 * std::int64_t(people);
+        // (A great house keeps only its floor, its businesses' floats: what it props its shops with and sends on the road
+        // came back to it, and is no reason to keep more. It spends a HouseSurplusShare-th of the rest a day.)
+        // (TRIAL church_valve: the church keeps only its floor, not four weeks of what it spends, which grows as it does.)
+        const auto reserve = house || (church && trial("church_valve"))
+                                 ? floor
+                                 : std::max<std::int64_t>(floor, std::int64_t(MonthDays * (state_.memory.outgoing.count(id) ? state_.memory.outgoing.at(id) : 0)));
+        const auto surplus = account(id)->cash - reserve;
+        auto budget = surplus / (house ? HouseSurplusShare : SurplusShare);
+        if (church)
+        {
+            if (budget < 10)
+                continue;
+            std::map<std::string, double> need;
+            double all = 0;
+            for (const auto& [t, members] : folk)
+                if (!t.empty())
+                    all += need[t] = poorIn(t) + members.size() / 10.0;
+            for (const auto& [t, share] : need)
+                if (const auto part = std::int64_t(double(budget) * share / std::max(1.0, all)); part >= 10)
+                    work.emplace_back(id, t, part);
+            continue;
+        }
+        // Relief (the user, 2026-10-05: funding follows need): a town with many poor (over a tenth under 12p) and not lean
+        // funds odd jobs from up to a fiftieth of its treasury a day, above its reserve or not.
+        const int poorHere = poorIn(town);
+        const bool relief = !house && folk.count(town) && poorHere * 10 > int(folk[town].size()) && !treasuryLean(id);
         if (relief)
             budget = std::max(budget, account(id)->cash / 50);
         if (budget < 10 || town.empty() || !folk.count(town))
             continue;
+        work.emplace_back(id, town, budget);
+    }
+    for (const auto& [id, town, budget] : work)
+    {
+        const bool church = id == SharedChurch, house = id.rfind("house:", 0) == 0;
         Spending note{id, town, 0, {}};
         const auto& here = shops[town];
         const auto pay = [&](const std::vector<std::string>& to, std::int64_t pot, std::int64_t each, const std::string& kind) {
@@ -278,6 +362,7 @@ void Society::spendSurpluses(std::int64_t day)
                 if (least)
                     invested = businessSpends(id, manager, *least, budget * 3 / 10);
             }
+            // (What a house holds above its floor raises the wages it pays: Society::wageFor, the user, 2026-10-06.)
             const auto [bonus, hands] = pay(staff, (budget - invested) * 4 / 10, 4, "surplus: a bonus from the house");
             std::map<std::string, int> feast;
             const auto fed = buyForSurplus(id, here, [](const std::string& item) { return edible(item); }, (budget - invested - bonus) / 2,
@@ -358,9 +443,11 @@ void Society::spendSurpluses(std::int64_t day)
         if (const auto over = pot - each * std::int64_t(help.size()); over >= HirePay)
             businessSpends(till, keeper->second.holder, job, over);
     }
+    tendPrices(day);                                // (By today's takings: before they are forgotten.)
     takings_.clear();
-    // A shopkeeper whose shop is its own (the user, 2026-10-05: nothing hoards): above its food money and two floats for
-    // the shop, a tenth of what it holds goes out each day. Four tenths to the shop's help, a share of the takings (so
+    // A shopkeeper whose shop is its own (the user, 2026-10-05: nothing hoards): above its food money and a float for the
+    // shop, a KeeperSurplusShare-th of what it holds goes out each day (the user, 2026-10-06: where money pools, it goes
+    // back out; two floats and a tenth kept a third of the land's money on the keepers' counters). Four tenths to the shop's help, a share of the takings (so
     // wages follow what the shop takes in); a third of the rest on food for its own larder; the rest on goods from its
     // town's other shops, kept at home.
     for (const auto& r : authored_.residents)
@@ -369,8 +456,8 @@ void Society::spendSurpluses(std::int64_t day)
         const auto* purse = job ? account(r.id) : nullptr;
         if (!purse)
             continue;
-        const auto reserve = KeeperReserve + 2 * floatOf(job->id) + 50;
-        auto budget = (purse->cash - reserve) / SurplusShare;
+        const auto reserve = KeeperReserve + floatOf(job->id);
+        auto budget = (purse->cash - reserve) / KeeperSurplusShare;
         const auto town = communityOfResident(r.id);
         if (budget < 10 || town.empty())
             continue;

@@ -1288,10 +1288,15 @@ class World
     // Trade between towns (doc 42, Phase 7; RatwTrade.cpp): a town's market (what its shops and producers have to
     // spare and who holds it; what its makers and suppliers are short of and who), its trading house, the day's trade
     // caravans, and a trade caravan's arrival and homecoming.
+    // Food between towns (tradeCaravans): a town whose shops hold under FoodDaysKept days' food for its people sends for
+    // the foods other towns have most to spare (FoodsSent of them), FoodKept of each for each of its food shops.
+    static constexpr int FoodDaysKept = 2, FoodKept = 12, FoodsSent = 3;
     struct Market
     {
         std::map<std::string, int> spare, want;
         std::map<std::string, std::vector<std::pair<std::string, int>>> holders, wanters;   // Account, how many.
+        int people = 0, food = 0;                   // Who lives there; the food on its shops' shelves (meals' worth).
+        std::vector<std::string> foodShops;         // Its food shops' tills.
     };
     std::string residentTown(const std::string& id) const;
     Market marketOf(const std::string& town) const;
@@ -1325,6 +1330,8 @@ class World
     static constexpr std::int64_t PoorPurse = 20;
     bool churchCares(const std::string& player, const std::string& clergy) const;
     Result churchCare(const std::string& player, const std::string& clergy);
+    // The storehouse of a cleric's town's church (Society::churchStore): its bandages, bread and candles.
+    std::string churchStoreOf(const std::string& clergy) const;
   private:
     void tendMarks();
     void wearGear(Entity& e, const std::string& item, double amount);

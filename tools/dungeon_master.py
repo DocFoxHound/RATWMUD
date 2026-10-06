@@ -425,7 +425,8 @@ class DungeonMaster:
             if not town or n < 5:
                 continue
             buyers = {k.split(':')[-1]: v for k, v in accounts.items() if k.startswith(f'town:{town}:') and not k.endswith(':church')}
-            towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get(f'town:{town}:church'),
+            # Every town's church keeps one purse, the land's (doc 42, "One church"): 'church' is that purse, the same for all.
+            towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get('town:all:church', accounts.get(f'town:{town}:church')),
                            'buyers': buyers, 'condition': ((society.get('memory') or {}).get('condition') or {}).get(town)}
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}

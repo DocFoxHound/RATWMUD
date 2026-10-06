@@ -6,12 +6,25 @@
 //
 // OUT_DIR gets, for each game day:
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
-//                   tenth, Gini, shares), hunger, contracts, and whether money is conserved;
+//                   tenth, Gini, shares), hunger, contracts, each town's residents (held, median, short, broke, hungry,
+//                   starving), and whether money is conserved;
 //   flows.csv       day, kind, from-holder, to-holder: entries, coins, goods;
 //   wages.csv       day, resident, position title, wages received;
 //   materials.csv   day, good: maker-hours short of it, supplier-hours short of it, the stock held world-wide, brought
 //                   in, crafted, used in crafting, bought, carted in;
-//   events.csv      day, kind, detail: everything the world logged that wasn't a plain ledger entry.
+//   events.csv      day, kind, detail: everything the world logged that wasn't a plain ledger entry;
+//   food.csv        day, food: brought in, crafted, used in crafting, eaten, spoiled, bought by residents (counts);
+//   food_towns.csv  day, town, food: brought in, crafted, used, eaten, spoiled, bought by residents and what they paid
+//                   (a good made or used up where its holder is; a sale where its seller is);
+//   prices.csv      day, good, kind of sale: units and coins (the average price paid, against the catalog's);
+//   larders.csv     day, town: households, people, their days of food on hand (larder and pockets, at 50 a wolf a
+//                   day: mean, and how many households hold under 1, 1 to 2, 2 to 5, over 5), and the food (in
+//                   nourishment) on its shops' shelves and with its producers;
+//   food_moves.csv  day, kind, from-holder, to-holder, food: units (every movement of food, by why and between whom);
+//   town_flows.csv  day, town, kind, from-holder, to-holder: coins that move between two of one town's accounts;
+//   trade.csv       day, from-town, to-town, kind: entries, coins, goods, for coins that change towns (a resident's town
+//                   is its home's; a shop's, where its keeper works; the shared church, the capital's treasury, the great
+//                   houses and the roads count as places of their own).
 // A line a day goes to stdout, so a long run can be followed. --deterministic does the world's work by counts, never the
 // clock (World::setDeterministic): the run repeats exactly, and ends with a digest of where everyone is and what they do.
 // --threads N: how many threads the world's work is spread over (8 unless asked: four cores and their twins; 1, none but
@@ -91,8 +104,13 @@ std::string holder(const World& server, const std::string& id)
     {
         const auto* job = society.jobOf(id);
         const auto* e = server.entity(id);
-        return job ? (job->role == "merchant" ? "merchant" : job->role == "guard" ? "guard" : job->paid ? "paid civilian"
-                                                                                                        : "unpaid civilian")
+        // (A producer, bringing goods in from the land, apart from the rest of the paid: doc 42, "Pressure".)
+        const auto* r = society.spec(id);
+        return job ? (job->role == "merchant"                       ? "merchant"
+                      : job->role == "guard"                        ? "guard"
+                      : r && items::producerFor(r->workLabel)       ? "producer"
+                      : job->paid                                   ? "paid civilian"
+                                                                    : "unpaid civilian")
              : society.apprenticedTo(id) ? "apprentice"
              : e && e->age < 16          ? "child"
                                          : "adult without work";
@@ -175,11 +193,85 @@ int main(int argc, char** argv)
     const auto& society = server.society();
 
     std::ofstream daysOut(out / "days.jsonl"), flowsOut(out / "flows.csv"), wagesOut(out / "wages.csv"),
-        materialsOut(out / "materials.csv"), eventsOut(out / "events.csv");
+        materialsOut(out / "materials.csv"), eventsOut(out / "events.csv"), tradeOut(out / "trade.csv"),
+        foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
+        lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
+        foodMovesOut(out / "food_moves.csv");
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
     wagesOut << "day,resident,title,coins\n";
     materialsOut << "day,item,maker_hours_short,supplier_hours_short,held,brought_in,crafted,used,bought,carted_in\n";
     eventsOut << "day,kind,actor,target,coins,detail\n";
+    tradeOut << "day,from,to,kind,entries,coins,goods\n";
+    foodOut << "day,item,brought_in,crafted,used,eaten,spoiled,bought\n";
+    struct Food
+    {
+        std::int64_t in = 0, crafted = 0, used = 0, eaten = 0, spoiled = 0, bought = 0;
+    };
+    std::map<int, std::map<std::string, Food>> foods;
+    foodTownsOut << "day,town,item,brought_in,crafted,used,eaten,spoiled,bought,paid\n";
+    pricesOut << "day,item,kind,units,coins,catalog\n";
+    lardersOut << "day,town,households,people,mean_days,under_1,d1_2,d2_5,over_5,shop_food,producer_food\n";
+    townFlowsOut << "day,town,kind,from,to,entries,coins\n";
+    foodMovesOut << "day,kind,from,to,item,units\n";
+    std::map<int, std::map<std::tuple<std::string, std::string, std::string, std::string>, std::int64_t>> foodMoves;
+    struct TownFood
+    {
+        std::int64_t in = 0, crafted = 0, used = 0, eaten = 0, spoiled = 0, bought = 0, paid = 0;
+    };
+    std::map<int, std::map<std::pair<std::string, std::string>, TownFood>> townFoods;
+    std::map<int, std::map<std::pair<std::string, std::string>, std::pair<std::int64_t, std::int64_t>>> prices;
+    std::map<int, std::map<std::tuple<std::string, std::string, std::string, std::string>, Flow>> townFlows;
+
+    // Where each account is (refreshed each day's end): a resident's town, a till's, a town's own purses'.
+    std::map<std::string, std::string> places;
+    const auto refreshPlaces = [&] {
+        places.clear();
+        for (const auto& [id, life] : society.state().residents)
+            places[id] = server.communityOf(life.homeCell);
+        for (const auto& r : society.authored().residents)
+            if (r.role == "merchant" && society.state().residents.count(r.id))
+                places[society.tillOf(r.id)] = server.communityOf(r.work.cell);
+    };
+    const auto placeOf = [&](const std::string& id) -> std::string {
+        if (const auto found = places.find(id); found != places.end())
+            return found->second.empty() ? "(country)" : found->second;
+        if (id == Society::SharedChurch)
+            return "(church)";
+        if (id == "treasury")
+            return "(capital)";
+        if (id.rfind("stores:", 0) == 0)
+            return id.substr(7);
+        if (id.rfind("town:", 0) == 0)
+            return id.substr(5, id.find(':', 5) - 5);
+        if (id.rfind("house:", 0) == 0)
+            return "(houses)";
+        if (id.rfind("home:", 0) == 0 && id.rfind(':') > 5)
+        {
+            const auto town = server.communityOf(id.substr(5, id.rfind(':') - 5));
+            return town.empty() ? "(country)" : town;
+        }
+        if (id.rfind("caravan", 0) == 0 || id.rfind("contract", 0) == 0)
+            return "(road)";
+        return {};
+    };
+    refreshPlaces();
+    std::map<int, std::map<std::tuple<std::string, std::string, std::string>, Flow>> trade;
+    {
+        // roster.csv: who works at what, where (the producer or business their work makes them).
+        std::ofstream roster(out / "roster.csv");
+        roster << "resident,town,work_town,title,producer,business\n";
+        for (const auto& r : society.authored().residents)
+        {
+            if (!society.state().residents.count(r.id))
+                continue;
+            const auto* job = society.jobOf(r.id);
+            const auto* p = items::producerFor(r.workLabel);
+            const auto* b = r.role == "merchant" ? items::businessFor(r.workLabel) : nullptr;
+            roster << csv(r.id) << ',' << csv(placeOf(r.id)) << ',' << csv(server.communityOf(r.work.cell)) << ','
+                   << csv(job ? job->title : std::string()) << ',' << csv(p ? p->id : std::string()) << ','
+                   << csv(b ? b->id : std::string()) << '\n';
+        }
+    }
 
     // The day's tallies.
     // By the day each entry was made (the world stamps it), so the midnight's decisions (a month's reckoning) fall on
@@ -253,8 +345,66 @@ int main(int argc, char** argv)
                 ++f.entries;
                 f.coins += e.coins;
                 f.goods += e.quantity;
+                if (e.coins > 0)
+                    if (const auto a = placeOf(e.actor), b = placeOf(e.target); !a.empty() && !b.empty() && a != b)
+                    {
+                        auto& t = trade[d][{a, b, e.detail}];
+                        ++t.entries;
+                        t.coins += e.coins;
+                        t.goods += e.quantity;
+                    }
                 if (e.detail.find("wage") != std::string::npos && e.coins > 0 && society.spec(e.target))
                     wages[d][e.target] += e.coins;
+                if (!e.item.empty() && e.coins > 0 && e.quantity > 0)
+                {
+                    auto& pr = prices[d][{items::baseOf(e.item), e.detail}];
+                    pr.first += e.quantity;
+                    pr.second += e.coins;
+                }
+                if (e.coins > 0)
+                    if (const auto a = placeOf(e.actor); !a.empty() && a == placeOf(e.target))
+                    {
+                        auto& t = townFlows[d][{a, e.detail, holder(server, e.actor), holder(server, e.target)}];
+                        ++t.entries;
+                        t.coins += e.coins;
+                    }
+                if (!e.item.empty() && Society::edible(e.item))
+                    foodMoves[d][{e.detail, holder(server, e.actor), holder(server, e.target), items::baseOf(e.item)}] += e.quantity;
+                if (!e.item.empty() && Society::edible(e.item))
+                {
+                    // Where: the holder made or used up, else the seller (the target of a sale).
+                    const bool made = e.actor == "made" || e.actor == "outside";
+                    auto town = placeOf(made ? e.target : e.target == "consumed" ? e.actor : e.target);
+                    if (town.empty())
+                        town = placeOf(e.actor);
+                    auto& tf = townFoods[d][{town.empty() ? "(none)" : town, items::baseOf(e.item)}];
+                    const auto& k = e.detail;
+                    if (k == "brought in")
+                        tf.in += e.quantity;
+                    else if (k == "crafted")
+                        tf.crafted += e.quantity;
+                    else if (k == "used in crafting")
+                        tf.used += e.quantity;
+                    else if (k == "eat")
+                        tf.eaten += e.quantity;
+                    else if (k == "spoiled")
+                        tf.spoiled += e.quantity;
+                    else if (k == "resident food purchase")
+                        tf.bought += e.quantity, tf.paid += e.coins;
+                    auto& f = foods[d][items::baseOf(e.item)];
+                    if (k == "brought in")
+                        f.in += e.quantity;
+                    else if (k == "crafted")
+                        f.crafted += e.quantity;
+                    else if (k == "used in crafting")
+                        f.used += e.quantity;
+                    else if (k == "eat" || k == "eaten")
+                        f.eaten += e.quantity;
+                    else if (k == "spoiled")
+                        f.spoiled += e.quantity;
+                    else if (k == "resident food purchase")
+                        f.bought += e.quantity;
+                }
                 if (!e.item.empty())
                 {
                     const auto base = items::baseOf(e.item);
@@ -281,7 +431,72 @@ int main(int argc, char** argv)
     for (const auto& [id, a] : society.state().accounts)
         startCash[id] = a.cash;
 
+    // Each town's larders: how many days of food its households hold (larder and pockets, at 50 a wolf a day), and the
+    // food on its shops' shelves and with its producers (in nourishment).
+    const auto writeLarders = [&](int day) {
+        const auto nourishIn = [](const EconomyAccount& a) {
+            std::int64_t n = 0;
+            for (const auto& [item, q] : a.stock)
+                if (const auto* g = q > 0 ? items::good(item) : nullptr; g && !g->drink && g->nourish > 0)
+                    n += std::int64_t(q) * g->nourish;
+            return n;
+        };
+        struct Larders
+        {
+            int households = 0, people = 0, under1 = 0, d12 = 0, d25 = 0, over5 = 0;
+            double days = 0;
+            std::int64_t shop = 0, producer = 0;
+        };
+        std::map<std::string, Larders> towns;
+        std::map<std::string, std::vector<std::string>> homes;
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto* e = server.entity(id); e && !e->dead && !life.homeCell.empty())
+                homes[life.homeCell].push_back(id);
+        for (const auto& [home, members] : homes)
+        {
+            std::int64_t food = 0;
+            if (const auto* larder = society.account(Society::homeStore(home, "larder")))
+                food += nourishIn(*larder);
+            for (const auto& id : members)
+            {
+                const auto* r = society.spec(id);
+                if (const auto* a = society.account(id); a && !(r && r->role == "merchant" && society.tillOf(id) == id))
+                    food += nourishIn(*a);
+            }
+            const auto town = server.communityOf(home);
+            auto& t = towns[town.empty() ? "(country)" : town];
+            const double days = double(food) / (50. * double(members.size()));
+            ++t.households;
+            t.people += int(members.size());
+            t.days += days;
+            (days < 1 ? t.under1 : days < 2 ? t.d12 : days <= 5 ? t.d25 : t.over5) += 1;
+        }
+        for (const auto& r : society.authored().residents)
+        {
+            if (!society.state().residents.count(r.id))
+                continue;
+            const auto* e = server.entity(r.id);
+            if (!e || e->dead)
+                continue;
+            if (r.role == "merchant")
+            {
+                if (const auto* till = society.account(society.tillOf(r.id)))
+                    towns[placeOf(society.tillOf(r.id)).empty() ? "(country)" : placeOf(society.tillOf(r.id))].shop += nourishIn(*till);
+            }
+            else if (items::producerFor(r.workLabel))
+                if (const auto* a = society.account(r.id))
+                    towns[placeOf(r.id).empty() ? "(country)" : placeOf(r.id)].producer += nourishIn(*a);
+        }
+        for (const auto& [town, t] : towns)
+            lardersOut << day << ',' << csv(town) << ',' << t.households << ',' << t.people << ','
+                       << (t.households ? t.days / t.households : 0) << ',' << t.under1 << ',' << t.d12 << ',' << t.d25 << ','
+                       << t.over5 << ',' << t.shop << ',' << t.producer << '\n';
+        lardersOut.flush();
+    };
+
     const auto snapshot = [&](int day, const char* when) {
+        if (std::string(when) == "day end")
+            writeLarders(day);
         // Money by kind of holder, and every collector's and till's purse.
         std::map<std::string, std::pair<std::int64_t, std::int64_t>> byHolder;   // total, how many
         std::map<std::string, std::int64_t> purses;
@@ -390,7 +605,73 @@ int main(int argc, char** argv)
                     << ",\"home\":" << json(life.homeCell) << ",\"offstage\":" << (e->offstage ? "true" : "false") << "}";
             first = false;
         }
-        daysOut << "],\"condition\":{";
+        // Each town's residents by home (Docs/Design/42, "Where money pools"): how many, what they hold, the median, and
+        // how many are short (under 6p), broke, hungry and starving.
+        struct Town
+        {
+            std::vector<std::int64_t> purses;
+            int short_ = 0, broke = 0, hungry = 0, starving = 0;
+            int foodShops = 0, food = 0;            // Shops holding anything to eat, and how many meals' worth they hold.
+            std::int64_t producers = 0, keepers = 0, town = 0;   // Held by its producers, its shops' tills, the town.
+        };
+        std::map<std::string, Town> towns;
+        for (const auto& [id, life] : society.state().residents)
+        {
+            const auto* e = server.entity(id);
+            if (!e || e->dead)
+                continue;
+            const auto* a = society.account(id);
+            const std::int64_t cash = a ? a->cash : 0;
+            auto& t = towns[server.communityOf(life.homeCell)];
+            t.purses.push_back(cash);
+            t.short_ += cash < 6;
+            t.broke += cash <= 0;
+            t.hungry += life.hunger >= 70;
+            t.starving += life.hunger >= 90;
+            if (const auto* r = society.spec(id); r && items::producerFor(r->workLabel))
+                t.producers += cash;
+        }
+        refreshPlaces();
+        for (const auto& [id, a] : society.state().accounts)
+        {
+            const bool till = id.rfind("till:", 0) == 0 || (society.spec(id) && society.tillOf(id) == id &&
+                                                            society.jobOf(id) && society.jobOf(id)->role == "merchant");
+            const bool own = id.rfind("stores:", 0) == 0 || (id.rfind("town:", 0) == 0 && id != Society::SharedChurch);
+            if ((till || own) && places.count(id) + own > 0)
+            {
+                const auto where = own ? placeOf(id) : places.at(id);
+                (till ? towns[where].keepers : towns[where].town) += a.cash;
+            }
+        }
+        // And each town's shops' food (by where each keeper works).
+        for (const auto& r : society.authored().residents)
+            if (r.role == "merchant" && society.state().residents.count(r.id))
+                if (const auto* till = society.account(society.tillOf(r.id)))
+                {
+                    int meals = 0;
+                    for (const auto& [item, count] : till->stock)
+                        if (count > 0 && Society::edible(item))
+                            meals += count;
+                    auto& t = towns[server.communityOf(r.work.cell)];
+                    t.food += meals;
+                    t.foodShops += meals > 0;
+                }
+        daysOut << "],\"towns\":{";
+        first = true;
+        for (auto& [community, t] : towns)
+        {
+            std::sort(t.purses.begin(), t.purses.end());
+            std::int64_t held = 0;
+            for (const auto c : t.purses)
+                held += c;
+            daysOut << (first ? "" : ",") << json(community.empty() ? "(none)" : community) << ":{\"residents\":" << t.purses.size()
+                    << ",\"held\":" << held << ",\"median\":" << (t.purses.empty() ? 0 : t.purses[t.purses.size() / 2])
+                    << ",\"food_shops\":" << t.foodShops << ",\"food\":" << t.food << ",\"short\":" << t.short_
+                    << ",\"broke\":" << t.broke << ",\"hungry\":" << t.hungry << ",\"starving\":" << t.starving
+                    << ",\"producers_held\":" << t.producers << ",\"keepers_held\":" << t.keepers << ",\"town_held\":" << t.town << "}";
+            first = false;
+        }
+        daysOut << "},\"condition\":{";
         first = true;
         for (const auto& [community, c] : society.state().memory.condition)
         {
@@ -406,6 +687,39 @@ int main(int argc, char** argv)
         for (const auto& [key, f] : flows[day])
             flowsOut << day << ',' << csv(std::get<0>(key)) << ',' << csv(std::get<1>(key)) << ',' << csv(std::get<2>(key)) << ','
                      << f.entries << ',' << f.coins << ',' << f.goods << '\n';
+        for (const auto& [key, f] : trade[day])
+            tradeOut << day << ',' << csv(std::get<0>(key)) << ',' << csv(std::get<1>(key)) << ',' << csv(std::get<2>(key)) << ','
+                     << f.entries << ',' << f.coins << ',' << f.goods << '\n';
+        tradeOut.flush();
+        trade.erase(trade.begin(), trade.upper_bound(day));
+        for (const auto& [item, f] : foods[day])
+            foodOut << day << ',' << csv(item) << ',' << f.in << ',' << f.crafted << ',' << f.used << ',' << f.eaten << ','
+                    << f.spoiled << ',' << f.bought << '\n';
+        foodOut.flush();
+        foods.erase(foods.begin(), foods.upper_bound(day));
+        for (const auto& [key, f] : townFoods[day])
+            foodTownsOut << day << ',' << csv(key.first) << ',' << csv(key.second) << ',' << f.in << ',' << f.crafted << ','
+                         << f.used << ',' << f.eaten << ',' << f.spoiled << ',' << f.bought << ',' << f.paid << '\n';
+        for (const auto& [key, p] : prices[day])
+        {
+            const auto* good = items::good(key.first);
+            pricesOut << day << ',' << csv(key.first) << ',' << csv(key.second) << ',' << p.first << ',' << p.second << ','
+                      << (good ? good->price : 0) << '\n';
+        }
+        for (const auto& [key, f] : townFlows[day])
+            townFlowsOut << day << ',' << csv(std::get<0>(key)) << ',' << csv(std::get<1>(key)) << ',' << csv(std::get<2>(key)) << ','
+                         << csv(std::get<3>(key)) << ',' << f.entries << ',' << f.coins << '\n';
+        for (const auto& [key, q] : foodMoves[day])
+            foodMovesOut << day << ',' << csv(std::get<0>(key)) << ',' << csv(std::get<1>(key)) << ',' << csv(std::get<2>(key)) << ','
+                         << csv(std::get<3>(key)) << ',' << q << '\n';
+        foodMovesOut.flush();
+        foodMoves.erase(foodMoves.begin(), foodMoves.upper_bound(day));
+        foodTownsOut.flush();
+        pricesOut.flush();
+        townFlowsOut.flush();
+        townFoods.erase(townFoods.begin(), townFoods.upper_bound(day));
+        prices.erase(prices.begin(), prices.upper_bound(day));
+        townFlows.erase(townFlows.begin(), townFlows.upper_bound(day));
         for (const auto& [id, coins] : wages[day])
         {
             const auto* job = society.jobOf(id);

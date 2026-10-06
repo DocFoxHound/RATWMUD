@@ -1015,6 +1015,387 @@ What was built (the user's decisions are marked *user*):
 - **Shopkeepers' families:** checked on build 24. Of 223 keepers, 3 live alone and 86 share their home with children;
   the other 134 share it with others but have no children.
 
+## Where money pools, and getting it back out (2026-10-06)
+
+**The user's aims:**
+- Supply and demand drive money within and between the towns.
+- Every church shares one purse, so churches can put in much more if it comes to that.
+- An equilibrium where hunger is only seasonal, or comes when work changes, and never lasts.
+- Find where money pools, and send it back out at the lowest level.
+
+**The month, as it stood** (`econ_watch`, DEV build 24, 28 days from 06:00, eight threads; 212,489p in all):
+- The median purse fell from 50p to 19p and the Gini rose from 0.52 to 0.75. By day 28, 136 were broke and 247
+  starving.
+- **Where it pooled** (day 3 to 28):
+
+  | Holder | Change |
+  | --- | --- |
+  | Great houses | +17,200p |
+  | Shopkeepers' own purses | +18,000p |
+  | Guards' savings | +5,400p |
+  | Town treasuries | −18,600p |
+  | Churches | −7,600p |
+  | Workers without wages | −5,300p |
+
+- **Why the houses gained.** Their shops' takings (45,500p) and caravans' trade takings (7,400p) came to them. They kept
+  a reserve of four weeks of their spending, and propping up their shops counted as spending.
+- **Why the towns lost.** Their wages (about 34,000p) were far above their taxes and dues (about 14,000p).
+- **Why the churches lost.** Their alms grew with the poor.
+- **Why the reserves win.** The reserves that holders keep add up to more than most of the money there is: keepers'
+  two floats and 70p, the houses' two floats a business, the towns' and the church's. The residents had what was left.
+- **The capital's residents** ended with 50,700p, as much as the next two cities together.
+
+**What was built (the user chose all of it):**
+
+- **One church** (`Society::SharedChurch`, `town:all:church`).
+  - Every town's church draws on one purse: tithes, the collection, clergy's wages, alms, odd jobs, subsidies.
+  - Each town's church keeps its own goods: candles, bread for alms and bandages are in its storehouse
+    (`Society::churchStore`, `town:<town>:church`). It buys them at its own town's shops and gives and uses them there.
+  - The purse's floor is ChurchHead for everyone in the land. Its surplus is spent in every town, each its share by
+    need (its poor, and a tenth by its size).
+  - When the purse opens, every town founds it.
+  - An older save's churches' money joins it the next day (`joinChurches`).
+  - The "mother church" is gone: there is only one.
+- **The tax is progressive:** a tenth of the week's profit, and a fifth of the part above `TaxBand` (70p).
+- **A wealth tithe** goes to the church each week: a twentieth (`WealthTitheShare`) of what anyone holds above its
+  comfortable line (`Society::wealthLine`):
+  - a resident's line is four weeks' food;
+  - a keeper's (its purse its shop's till), that, its food money and a float;
+  - a great house's, its floor.
+- **The capital shares by need.** Each week it sends the towns half of what it holds above four weeks' spending, by how
+  many of their folk are short of a week's food ("from the capital, for the poor").
+- **The dole** ("the church's dole", unearned):
+  - Each day every household short of a week's food is given `DoleADay` (2p) a member in coins, to its eldest, the
+    poorest first.
+  - It is never more than a thirtieth of the church's purse a day.
+  - The coins are spent at the household's own town's shops: money in at the bottom.
+- **Great houses give back.**
+  - A house keeps only its floor: 100p and a float for each of its businesses (`houseFloor`). What it props its shops with
+    and sends on the road came back to it, and is no reason to keep more.
+  - It spends a fifth (`HouseSurplusShare`) of the rest a day: two tenths in its businesses, then four tenths as
+    **patronage**.
+  - Half of the patronage is odd jobs; half is food for its town's poorest (those with nothing to eat and under 12p:
+    "the house's charity").
+- **Shopkeepers keep less:** their food money and one float, and a fifth a day spent above that (`KeeperSurplusShare`).
+- **Food between towns.** A town whose shops hold under two days' food for its people (`FoodDaysKept`) wants, for each
+  of its food shops, 12 (`FoodKept`) of each of the three foods the other towns have most to spare. Standing orders
+  bring them, as a maker's materials come.
+- **Food shops sell any wholesome food** they have in, besides their own wares (`Society::foodShop`, `sellsFood`).
+- **Producers sell food to their town's food shops** (`producersSell`, daily):
+  - the food they bring in beyond 10 (`ProduceKept`);
+  - a shop takes up to 30 of a food (`FoodShelf`), at a shop's buying price, as far as it can pay;
+  - each day from a different shop of the town.
+- **`econ_watch` records each town each day:** its residents by home, what they hold, the median, its food shops and
+  their food, and how many are short, broke, hungry and starving.
+
+**The month, now:**
+
+| Day 28 | Before | Now |
+| --- | --- | --- |
+| Median purse | 19p | 34p |
+| Gini | 0.75 | 0.68 |
+| Broke | 136 | 47 |
+| Starving | 247 | 163 |
+| Great houses | 37,400p | 21,300p |
+| Shopkeepers | 51,700p | 37,700p |
+
+- Nobody starves until day 21. Ser Ferro and Westmarch have none starving at the end, Ridgemere 11.
+- Tests: `roads_tests` `oneChurch` (an older save's churches join the one purse) and `theDole`. The reckoning test
+  counts the progressive tax, the wealth tithe and the capital's share.
+
+**Still open** (2026-10-06):
+- **The last week still falls.** Starving goes from 0 to 163 between days 21 and 28, mostly after the Restdays. By then
+  the shops' food is gone: 5,300 at the start, 1,100 at the end.
+- **The small towns run out first.** Fenhollow, Saltreach, Cinderbrook, Lakeside and Amberford have 5 to 15 meals' worth
+  in their shops by day 28.
+- **Food piles up in larders, not in the shops.** About 1,900 fresh fish sit in households' larders after a week.
+  - A household takes its best food from the larder first, so the fish (15) is eaten last and never runs out.
+  - Nothing spoils: `items.json` gives each food how long it `keeps` (fresh fish: a day), but nothing reads it.
+- **Too few work the land** (open question 7): the shops and their help are almost half the working wolves.
+
+## Spoilage, buying, prices, wages, and more on the land (2026-10-06)
+
+The user, after the first pass:
+- Food should spoil, fresh fish keeping long enough for the road (three days).
+- Rebalance the jobs, with sheep farms (a pasture and a barn: mutton, a dear meat) and rabbit farms (a large farm of
+  hutches: rabbit, the cheapest meat), placed in Atlas and saved.
+- Move food-making materials between towns (flour and the like), not only food.
+- The more an employer holds, the higher the wages it pays, rather than giving money away.
+- Prices dynamic: cheaper food in poor places; shops that can't sell mark down (never at a loss), and that trickles back
+  to the makers and the land.
+- Wolves buy by their purse and their next pay, are choosy about price when poor, and don't keep a week's stock because
+  they are told to.
+- Everything in the design that keeps the simulation fast (doc 31).
+
+**Spoilage** (`Society::spoil`, daily; `Item::keeps` from `items.json`):
+- Each account's food is kept in batches by the day it came in. New stock is a batch of today; what has gone went from
+  the oldest. A batch spoils when it is older than its food keeps: its day in, then `keeps` more days.
+- Goods bought are fresh to their buyer; on the road, in a caravan, they age.
+- Fresh fish keeps three days. Raw meat and rabbit keep three, shellfish and offal two, bread four, cheese forty, salt
+  fish 120.
+- A town's stores (its granary) don't spoil, and nor do players' packs (not yet). The batches aren't saved: a loaded
+  world's food is all fresh.
+- **Eaten first:** a household eats what spoils soonest (`Society::eatFirst`), the most nourishing of those.
+- **Producers keep what they bring in to sell.** A rabbit farmer's rabbits, a shepherd's mutton and a fisher's catch go
+  to the shops, not into the family larder. Before this, 8,600 rabbits rotted in larders in two weeks.
+
+**Buying** (`Society::buyFood`):
+- **How long a grown wolf lays in for:** as many days as a third of its purse buys, at most its household's habit (5 to
+  8 days). One paid each day lays in at most three; a child at most two, for itself.
+- **Less what is at home:** the household's larder is counted, so two members don't both stock it.
+- **Never more of a food than the household eats before it spoils.**
+- **Short of a week's food money,** it buys what feeds most for the money; with more, by its taste too.
+- **A shop's meals:** about two days of what it sells (`mealsSold_`), not a fixed dozen.
+- The household's size comes from the day's household index, not a walk over everyone.
+
+**Prices** (`Society::tendPrices`, daily; read when selling):
+- **Markdowns:** a shop whose day's takings fall under half a day's running (a float over `FloatDays`) marks its goods
+  down a twentieth a day, to `Markdown` (0.6). As it sells again it marks them back up.
+- **Poorer towns:** food is cheaper by the town's median purse against the land's (0.8 to 1.15).
+- **Nothing sells under `CostFloor`** (0.6) of its price.
+- **Materials** come cheaper from a seller with plenty and dearer from a scarce one (`supplyFactor`). A producer's price
+  only falls, with a glut; holding little is how it sells.
+- **What a marked-down shop pays** its suppliers and producers is lower by its markdown: down the line to the land.
+- **Food shops sell any wholesome food** they get in (`sellsFood`). Producers sell their food beyond 10 to their town's
+  food shops (`producersSell`).
+
+**Wages by what the employer holds** (`Society::wageFor`):
+- A spell pays 1p from a lean employer. Otherwise it pays 2p, and a penny more for each time over its floor the employer
+  holds, to `MostWage` (6p).
+- The floors: a shop's float, a great house's floor, a town's `TreasuryHead` a resident, the church's `ChurchHead` a
+  resident of the land.
+- **The great houses' patronage is gone**, at the user's word: their wealth reaches their people as wages. Their surplus
+  share is back to a tenth.
+
+**Materials between towns:**
+- Standing orders already carried oats, milk, apples, vegetables, timber and the like. There was no flour: a mill made
+  only half a store, and other towns' orders take what is over half.
+- A maker of what other trades work with that keeps (a mill's flour, not a baker's bread) now makes a full store
+  (`SuppliesKept`), so there is flour to spare and order.
+
+**Jobs and farms** (`tools/worldgen/farms.py`; DEV revision 16, build 25):
+- **New building kinds** (`buildings.py`):
+  - `barn`: lambing pens of straw behind hurdles, hay by the door.
+  - `rabbitry`: three rows of hutches down a long shed, a skinning bench by the door.
+- **New yards:** a sheep farm's is a fenced pasture. A rabbit farm's (`hutches` in `industry.paint_yard`) is rows of
+  hutches in a fence, with gaps to walk between.
+- **New producers** (`crafts.json`):
+  - `sheep_farm` ("raises sheep at …"): mutton and wool.
+  - `rabbit_farm` ("keeps rabbits at …"): three rabbits and a small pelt.
+- **New goods:** mutton (6p, 35 nourishment, keeps three days), sold and bought by butchers. Rabbit is now 1p.
+- **Built:** 14 rabbit farms and 7 sheep farms, in the country around the three cities and eight towns; every door and
+  work spot is walkable from the road.
+- **The shops:** each settlement keeps a shop for about every 15 people (a city 10). It always keeps the first, nearest
+  the square, of each kind it needs (`ESSENTIAL`: a bakery, a general store, a provisioner, a fishmonger, a butcher, an
+  inn, a smithy). The rest close from the edge of town inwards: 33 closed.
+- **A closed shop becomes its family's house** ("The Dustcote House"): its counters are tables now.
+- **The people:** keepers and their help went out to the farms, then about half the towns' labourers where hands were
+  still short. 86 moved.
+  - Everyone kept their name, home, family and looks. Over 64, they retired.
+  - Some small towns' farms are a hand or two short.
+- Revision 15 is backed up under `artifacts/backups`.
+
+**Measured** (`econ_watch`, build 25, 28 days, eight threads; tick 0.055 ms):
+- Starving: 0 on day 7, 14 on day 14, 9 on day 21, then 145 by day 28 (179 before producers' prices only fell with a
+  glut; 246 before the producers kept their catch; 396 on build 24 with spoilage). The median purse ends at 38p.
+- Amberford, Westmarch and Lakeside end with one to three starving. Cinderbrook (31) and Ridgemere (21) are the worst;
+  shops' food falls from 4,500 to 900 over the month.
+- **Still open:** residents spend about twice on food (about 10,000p a day) what wages bring in (about 5,000p). Paid
+  workers average about 5p a day against 16p if they worked every paid spell. The money gathers with the producers who
+  sell to the makers (the richest tenth hold 48%), while the treasuries and the church drain.
+- Tests: `roads_tests` `spoilage`; the crafting tests count carted-in prices by the seller's supply, and winter's wheat as
+  brought in (the mill buys it as it comes).
+
+## Pressure: keeping money moving (2026-10-06)
+
+The user: money pools somewhere in every test (this time with the farms), not always in the same place. Build a
+pressure system: always a sink pulling money elsewhere. Farms should have something cities need, and cities something
+other cities need. First:
+- hides and wool from sheep farms, poorer hides from rabbit farms, bought and ordered by tanneries;
+- salting and smoking meat for keeping, with some kept fresh for hot meals;
+- 500,000p in the world, spread evenly.
+
+Then run tests of where money goes, with temporary goods, work and businesses, and 2 to 4 week runs, to learn what
+healthy circulation looks like before building anything permanent.
+
+**Built (permanent):**
+- **Hides:**
+  - Sheep farms bring in a sheepskin with their mutton and wool. Rabbit farms bring in two small pelts with their three
+    rabbits. Small pelts are now 1p.
+  - Tanneries buy both (`leather_sheepskin`: 2 sheepskins and bark make 2 leather; `leather_pelts`: 3 pelts and bark
+    make 1). They also sell sheepskin.
+  - Standing orders carry hides between towns like any other material, since a tannery wants what its crafts work with.
+- **Preserving:**
+  - Butchers and smokehouses smoke mutton (`smoked_mutton`, 8p, keeps 30 days) and rabbit (`smoked_rabbit`, 2p, keeps
+    20).
+  - Butchers and provisioners salt pork from raw meat and salt (`salt_pork`, keeps 90).
+  - Smokehouses and provisioners make jerky; fishmongers and provisioners salt fish.
+  - **Fresh kept back:** a shop that sells a fresh food it also cures keeps `GoodsKept` of it fresh on the counter and
+    cures only what is over (`Society::craft`, `fresh`).
+- **The world's money** (`Society::worldMoney`, `WorldMoney` = 500,000):
+  - Once, at the end of the first day's pass after the purses are founded, so the town buyers and the church have their
+    own first. Founding is now in two steps (`PursesFounded` = 2).
+  - What's missing is made up: 85% shared alike among the grown residents (about 290p each), the rest to the towns'
+    treasuries by their residents.
+  - Only a land of 500 residents or more (`WorldMoneyResidents`): test villages keep their own starting money.
+  - The DEV world gets it the first time it runs with this.
+- **Buying food, fixed for a rich land:**
+  - A food fills the household's stock only as far as it keeps, counting everything bought and at home: three days of
+    fresh fish, not three days each of fish, rabbit and mutton.
+  - The household's stock counts what its members carry home as well as the larder.
+  - The meal bought now is what the wolf will eat by its hunger: a wolf eats one bowl at a time.
+- **Watching** (`econ_watch`):
+  - `trade.csv` books coins that change towns. A resident counts in its home town and a shop where its keeper works;
+    the church, the capital, the houses and the road are places of their own.
+  - `food.csv` gives each food's daily brought in, crafted, used, eaten, spoiled and bought.
+  - `roster.csv` lists who works where.
+  - Each town's day line gives what its producers, shops and treasury hold, and producers are a holder kind of their own.
+
+**Trials (temporary):**
+- Switched on by the `RATW_TRIAL` environment variable (comma-separated names, `Society::trial`) and off in play. Each is
+  marked `TRIAL` in the code.
+- Trial goods come from a copied data directory (`RATW_DATA_DIR`), so the real data and world are untouched.
+
+| Trial | What it does |
+|---|---|
+| `church_valve` | The church keeps only its floor (`ChurchHead` a resident), not four weeks of its spending, which grows with what it's given. |
+| `church_share` | A tenth a day of what the church holds over its floor goes to households under the land's median purse a head, by how far under. |
+| `rates` | The tithe and each town's tax scale with what the collector holds against its need: double when empty, normal at its need, nothing from twice it. The church's need is its floor; a town's is its floor or four weeks of spending. |
+| `tithe_relative` | The wealth tithe's line is at least twice the land's median purse. |
+| `house_need` | A great house holding twice its floor leaves its shops three floats instead of one. |
+| `wages_up` | A house's shop pays by the house's wealth when that's more than its till's, with the cap raised to 12p. |
+| `markup` | A shop selling twice a day's running raises prices a twentieth a day, up to 1.25×. Its suppliers aren't paid more. |
+| goods `gear` | Farm gear (5p), made by the cities' tinkers from timber. Every producer wears one out every few days and buys it at the town's general store, which orders it from the cities. |
+| goods `wares` | Each town's general store becomes a trial store making its own town's ware from firewood. Every household wants each other town's ware every 11 days, so every store orders the others' wares. |
+
+**What the runs showed** (DEV build 25, 500,000p, 14 to 28 days):
+- **The money pools where an account's outflow is set by need but its inflow by activity.**
+  - The church takes a tenth of every weekly gain (about 14,500p a week) but could only spend on the hungry and the
+    poor, about 1,000p a day. With everyone well off, it grew 340% in four weeks.
+  - The great houses take every shop's takings above the float and spend a tenth of the excess, mostly back into their
+    own shops, which returns it. They grew 114%, nearly all of it in one house: the Court of Ser Ferro, while Ser Ferro
+    itself lost a fifth.
+  - Producers sell about 7,800p a day to the makers, but their costs are only their own living.
+- **Spending that scales with holdings stops the pools.** Four weeks, all valves on, against the plain run:
+
+| 28 days | Plain | Valves + gear + wares |
+|---|---|---|
+| Church | +338% (still +26% in week 4) | +86%, level in week 4 (−4%) |
+| Town treasuries | −28% | −7% (−4% in week 4) |
+| Great houses | +114% (+11% in week 4) | +91% (+14% in week 4) |
+| Workers | −18% | −11% (−1% in week 4) |
+| Producers | +16% | +14% (+4% a week) |
+| Average town swing | 17% | 12% |
+
+- **Taxes and tithes by need work.** The towns' budgets balance and the church levels off. The rest of the church's money
+  goes to households below the median.
+- **The great houses level off slowly** (week 4: +11 to +14%). Higher wages barely move them: their shops have few
+  staff.
+- **The farms still gain about 4% a week.** Farm gear moved 273p a day from producers into the shops and cities (base
+  50p). There were too few tinkers (three, all in cities), so the stores were short most of the time. Made by every
+  town's smithy too, gear gave the lowest inequality (Gini 0.42) and the narrowest town spread, but cut trade between
+  towns.
+- **Markups move money from farms to shops, but the workers and the house-owned shops pay.** Producers fell to −3%,
+  workers to −17%, the houses gained most, and hunger rose. Not a good trade.
+- **Town wares pulled about 1,000p a day between towns.** That's real but small against 500,000p. Three times as many
+  bought did no better (the caravans' weekly loads limit it).
+- **Food, not money, is now what goes short.** Even with full purses, 20 to 145 starve by days 14 to 28:
+  - About two items spoil for every three eaten, nearly all in household larders.
+  - Larders fill in waves (8,400 items put away on day 8) and rot by days 11 to 14.
+  - The buying fixes above didn't change it. The next step is finding what synchronises the waves.
+  - Farmers bring in nothing on Restday.
+- **Speed:** a week in 1.5 minutes at eight threads (0.045 ms a tick), as before. The trials cost about 1%.
+
+**What healthy circulation looks like, so far:**
+1. Every pool has an outflow that grows with what it holds over its need: rates, shares, wages.
+2. Every producer has costs that grow with its output, bought from the towns and cities: tools, feed, seed, hands.
+3. Every town has something the others want, steadily.
+4. Thresholds are relative (to the land's median purse, to an account's own need), not fixed pennies, so the system
+   works at any amount of money.
+
+## Steady taxes, smiths' gear, the household's food plan, and the ledger (2026-10-06)
+
+The user's decisions on the pressure trials:
+- Tax and tithe stay the same for everyone, except those below the poverty line.
+- Farm gear is good; it comes from the blacksmiths.
+- Feed would only be grain from farms, so it adds little.
+- Food spoiling on the same day means everyone buys more than they need. Wolves should plan by the meals they eat and by
+  how long food keeps:
+  - 2 to 5 days in the larder, a different number for each household;
+  - always enough to last over Restday and holidays.
+- Then track money and food in detail, to see where to adjust supply and demand.
+
+**Built:**
+- **Tax and tithe:**
+  - Steady for all. The `rates` trial and the `markup` trial are removed.
+  - A resident holding less than `PovertyLine` (two weeks' food, 70p) pays neither that week.
+- **Farm gear** (`items.json`, `crafts.json`):
+  - Made by smithies from 1 iron bar and 2 timber, six at a time, at 5p each.
+  - Every producer wears one out every 4 days, bought at its town's shops.
+  - Every town has a smithy; the iron comes from the foundries and the mines.
+- **The household's food plan** (`Society::buyFood`):
+  - A wolf eats one thing at a sitting, from 60 hunger to below it; a day's need is about 50 nourishment, a meal.
+  - A grown wolf lays in for its household only when what the household holds (larder plus members' pockets) won't last
+    until the shops are properly open again (`shutAhead`: Restday and festival days).
+  - It then buys up to the plan: `stockingDays`, 2 to 5 for each household, fewer if a third of the purse won't stretch,
+    and always enough to cover the shut days.
+  - Each food only up to the days it keeps, counting what's held already.
+  - The plan follows what the household actually eats from home (`larderUse_`, a running average of what its larder
+    gives), not a meal a member, since many eat out. A larder that ends the day bare moves its plan back up toward a
+    meal each.
+- **Eating and spending:**
+  - A hungry wolf buys one thing as its meal and eats it at the counter.
+  - Households eat whatever has the fewest days left, by each batch's age (`eatFirst(id, …)`).
+  - A treat is one thing, eaten at once.
+  - Children buy food only when hungry with nothing on them (one thing); otherwise trinkets.
+- **A loop closed** (`Society::craft`): a shop that both sells a good and works with it (a fishmonger's fish) restocks
+  it as a supplier, never from the town's other suppliers. They were selling the same fish back and forth, about
+  29,000 a week at 17,000p a day, and each sale made the fish fresh again.
+- **The ledger** (`econ_watch`):
+  - `food_towns.csv`, `prices.csv`, `larders.csv` (each town's households by days of food at home, and the food on its
+    shelves and with its producers), `town_flows.csv`, `food_moves.csv` (every movement of food, by why and between
+    whom).
+  - Scratchpad scripts `detail.py` and `build_report.py` read them. The report page is the artifact "Upper Accord
+    Ledger".
+
+**Measured** (28 days, DEV build 25, 500,000p; day 7 to 28):
+
+| | Before this round | Plain | With valve trials |
+|---|---|---|---|
+| Food spoiled, of what is eaten | 52% | 23% | 24% |
+| Starving on day 28 | 36–51 | 17 | 12 |
+| Gini | 0.47 | 0.44 | 0.44 |
+| Producers | +20% | +27% | +34% |
+| Town treasuries | −29% | −43% | −44% |
+| Church | +100% (valves) | +279% | +42% (−14% in week 4) |
+| Upper Accord | +15% | +23% | +34% |
+
+**What the ledger shows:**
+1. **The farms are the pool.**
+   - Producers take in about 6,800p a day from the shops and caravans and keep about 1,300p of it.
+   - They bought only 114p a day of gear: the smiths can't get iron.
+   - About 38 iron bars are made a day against some 5,500 maker-hours a day of smiths waiting for them, and charcoal is
+     short too.
+   - The farm → smithy → foundry → mine chain that would carry farm money to the mining towns is cut at the mine and
+     the kiln.
+2. **Upper Accord gathers it.** Its producers hold 42,000p, and the capital's wages are paid there.
+3. **Steady taxes leave town treasuries short:** about 1,100p a day more goes out in town wages and buyers than tax
+   brings in.
+4. **The land makes about what it eats.**
+   - About 62,500 nourishment a day is made and 62,700 eaten.
+   - With a quarter of it spoiling, larders run down: about 300 of 450 homes hold under a day by day 28.
+   - Fresh meat spoils most (rabbit 32%, mutton and fish 27%); cured foods lose nothing.
+5. **Scarcity shows in prices but nothing answers it.** Raw meat sells to makers at 5.8p (catalog 3p), a meal at 8.2p
+   (6p), smoked fish at 9.2p (5p).
+
+**Where to push next:**
+1. More iron and charcoal, so the gear flows.
+2. A quarter more food, or more of it cured.
+3. Town budgets set by their takings.
+4. A pull toward the small towns.
+
+Speed: unchanged, a week in 1.5 minutes at eight threads.
+
 ## Later (noted 2026-10-05)
 
 - **Skills from odd jobs and hires** (*user*): working a trade's odd jobs and hires should teach its skill, leading
