@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwOrchestrator.h"
@@ -877,6 +878,13 @@ class Society
     // town's fund; and how many were paid today by wage support, by town (for the orchestrator's snapshot).
     std::unordered_map<std::string, double> supportOwed_;
     std::map<std::string, int> supportedToday_;
+    // Reach (Phase 7; RatwOrchestrate.cpp): who is in the poorer half of households (by purse a head, made at each
+    // snapshot); each channel's week, what it paid and what reached them directly; what it paid each till; and each till's
+    // week, what it paid out and how much of it to the poorer half. Not saved: a restart starts the week's count afresh.
+    std::unordered_set<std::string> poorHalf_;
+    std::map<std::string, std::pair<double, double>> channelWeek_;   // Channel -> reached directly, paid.
+    std::unordered_map<std::string, std::map<std::string, double>> tillFrom_;   // Till -> channel -> coins.
+    std::unordered_map<std::string, std::pair<double, double>> tillWeek_;       // Till -> to the poorer half, paid out.
     void indexTills();                              // tills_ from the accounts (a reset, a restore).
     std::string ownTill(const std::string& positionId) const;   // Its till ("" for none, or a house's business).
     void foundTills();

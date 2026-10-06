@@ -160,6 +160,26 @@ void Society::noteForOrchestra(const std::string& kind, const std::string& from,
 {
     if (coins <= 0 || accountTown_.empty())
         return;
+    // Reach (Phase 7): what a channel's fund pays, and to whom; what a till pays out, and how much to the poorer half.
+    if (from.rfind("fund:", 0) == 0 && to.rfind("fund:", 0) != 0 && from != LandFund)
+        if (const auto second = from.find(':', 5); second != std::string::npos)
+        {
+            auto channel = from.substr(second + 1);
+            std::replace(channel.begin(), channel.end(), '_', ' ');
+            auto& week = channelWeek_[channel];
+            week.second += double(coins);
+            if (poorHalf_.count(to))
+                week.first += double(coins);
+            else if (to.rfind("till:", 0) == 0)
+                tillFrom_[to][channel] += double(coins);
+        }
+    if (from.rfind("till:", 0) == 0)
+    {
+        auto& week = tillWeek_[from];
+        week.second += double(coins);
+        if (poorHalf_.count(to))
+            week.first += double(coins);
+    }
     if (ordinarySpending(kind))
         if (const auto h = holderSpent_.find(from); h != holderSpent_.end())
             h->second += coins;
@@ -284,7 +304,8 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             homes[life.homeCell].push_back(&id);
         s.residents.push_back(std::move(r));
     }
-    // Households: what they hold, in purse and food.
+    // Households: what they hold, in purse and food; and the poorer half of them, by purse a head (Phase 7's reach).
+    std::vector<std::pair<double, const std::vector<const std::string*>*>> byHead;
     const auto nourishIn = [&](const EconomyAccount& a, const std::string& holder) {
         std::int64_t n = 0;
         for (const auto& [item, q] : a.stock)
@@ -308,7 +329,17 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
                     h.cash += a->cash;
                 h.nourishment += nourishIn(*a, *id);
             }
+        byHead.push_back({double(std::max<std::int64_t>(0, h.cash)) / std::max(1, h.members), &members});
         s.homes.push_back(std::move(h));
+    }
+    std::sort(byHead.begin(), byHead.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+    poorHalf_.clear();
+    for (const auto& [perHead, members] : byHead)
+    {
+        if (poorHalf_.size() * 2 >= everyone)
+            break;
+        for (const auto* id : *members)
+            poorHalf_.insert(*id);
     }
 
     // The holders, and each one's town.
@@ -462,6 +493,24 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             if (const auto floatCash = floatOf(p.id); till->cash < floatCash / 2)
                 if (const auto t = towns.find(p.role == "merchant" ? of(p.work.cell) : communityOfResident(p.founder)); t != towns.end())
                     t->second.rescueNeed += floatCash - till->cash;
+    for (auto& [town, t] : towns)
+        if (const auto* granary = account("town:" + town + ":granary"))
+            for (const auto& [item, n] : granary->stock)
+                t.granary += std::int64_t(n) * nourishment(item);
+    // A decision's day: each channel's week (Phase 7), what it paid and what reached the poorer half, directly or through
+    // the tills it paid (in the share of each till's outgoings that went to them). Then the week's count starts afresh.
+    if (s.decide)
+    {
+        for (const auto& [channel, week] : channelWeek_)
+            s.reach[channel] = week;
+        for (const auto& [till, channels] : tillFrom_)
+            if (const auto paid = tillWeek_.find(till); paid != tillWeek_.end() && paid->second.second > 0)
+                for (const auto& [channel, coins] : channels)
+                    s.reach[channel].first += coins * paid->second.first / paid->second.second;
+        channelWeek_.clear();
+        tillFrom_.clear();
+        tillWeek_.clear();
+    }
     for (auto it = state_.accounts.lower_bound("fund:"); it != state_.accounts.end() && it->first.rfind("fund:", 0) == 0; ++it)
         if (const auto second = it->first.find(':', 5); second != std::string::npos)
             if (const auto t = towns.find(it->first.substr(5, second - 5)); t != towns.end())

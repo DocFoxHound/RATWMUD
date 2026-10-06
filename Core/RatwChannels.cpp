@@ -198,9 +198,14 @@ void Society::runChannels(std::int64_t day)
         }
         else if (channel == "food")
         {
-            // Food bought from the town's farms at the land's price, into its granary.
+            // Food that keeps (a fortnight or more: salt fish and pork, jerky, cheese, smoked meats, ship's biscuit) into its
+            // granary (Phase 7): from its farms at the land's price, then from its shops at the town's, never a shop's last.
             const auto granary = "town:" + town + ":granary";
             openAccount(granary);
+            const auto keeps = [](const std::string& item) {
+                const auto* good = items::good(item);
+                return good && edible(item) && !good->drink && (good->keeps <= 0 || good->keeps >= 14);
+            };
             std::int64_t spent = 0;
             for (const auto& farm : farms[town])
             {
@@ -210,7 +215,7 @@ void Society::runChannels(std::int64_t day)
                     continue;
                 for (const auto& [item, n] : std::map<std::string, int>(stock->stock.begin(), stock->stock.end()))
                 {
-                    if (n <= ProduceKept || !edible(item) || spent >= budget)
+                    if (n <= ProduceKept || !keeps(item) || spent >= budget)
                         continue;
                     const auto price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(town, item))));
                     const int k = int(std::min<std::int64_t>({n - ProduceKept, (budget - spent) / price, 99}));
@@ -221,8 +226,13 @@ void Society::runChannels(std::int64_t day)
                     }
                 }
             }
+            std::map<std::string, int> got;
+            if (spent < budget)
+                spent += buyForSurplus(fund, foodShops[town], keeps, budget - spent, "orders: food for the granary", &got);
+            for (const auto& [item, n] : got)
+                shift(fund, granary, item, n, 0, "into the granary");
             note.total = spent;
-            note.detail = std::to_string(spent) + "p of food bought from its farms for the granary";
+            note.detail = std::to_string(spent) + "p of food that keeps bought for the granary";
         }
         else if (channel == "trade")
         {
@@ -331,7 +341,10 @@ void Society::runChannels(std::int64_t day)
                     if (n > 0)
                         onShelves += double(n) * nourishment(item);
         const double people = double(std::max<std::size_t>(1, folk[town]));
-        if (onShelves >= 3 * 50 * people)              // (Three days of food a head on its shelves: enough.)
+        // (Three days' food a head on its shelves: enough. In summer and autumn the store is kept for the winter, and goes
+        // out only below a day and a half's.)
+        const double enough = season_ == 1 || season_ == 2 ? 1.5 : 3;
+        if (onShelves >= enough * 50 * people)
             continue;
         const auto fund = fundOf(town, "food");
         openAccount(fund);

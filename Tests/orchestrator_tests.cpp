@@ -389,6 +389,51 @@ void itPressesItself()
     plan(week3, m);
     expect(m.autoPressure < 1.3 && m.autoPressure >= 1, "Their share back up: it eases, never below 1");
 }
+
+void itLearnsReach()
+{
+    // A week in which the hires reached the poorer half and commissions didn't: the hires weigh more, commissions less.
+    Memory m;
+    auto week = land(true);
+    week.reach["hires"] = {90, 100};
+    week.reach["commissions"] = {10, 100};
+    week.reach["trade"] = {1, 20};                   // (Too little paid to judge.)
+    const auto b = plan(week, m);
+    expect(std::abs(m.learned.at("hires") - 1.2) < 1e-9, "Hires that reached the poor at 90% (a target of 1.8) weigh a fifth more");
+    expect(std::abs(m.learned.at("commissions") - .875) < 1e-9, "commissions that reached them at 10% an eighth less");
+    expect(m.learned.at("trade") == 1 && !b.reach.count("trade"), "and a channel paid too little isn't judged");
+    expect(std::abs(b.reach.at("hires") - .9) < 1e-9, "The brief says what each reached");
+    // Weighed in the orders: with the same need, more to hires than before.
+    Memory fresh;
+    const auto plain = plan(land(true), fresh);
+    const auto sum = [](const Brief& br, const std::string& c) { return br.channels.count(c) ? br.channels.at(c) : 0; };
+    auto again = land(true);
+    again.day = 15;
+    const auto learned = plan(again, m);
+    expect(double(sum(learned, "hires")) / learned.pot > double(sum(plain, "hires")) / plain.pot, "and the hires get more of the pot");
+    expect(readState(stateJson(State{m, {}, 1, {}, {}})).memory.learned == m.learned, "What it learned is saved");
+}
+
+void theGranaryStores()
+{
+    // In summer a town with an empty granary is sent money to store food; in winter it isn't.
+    Memory m;
+    auto summer = land(true);
+    summer.season = 1;
+    const auto stored = plan(summer, m);
+    bool food = false;
+    for (const auto& o : stored.orders)
+        food |= o.channel == "food" && o.town == "wellby";
+    expect(food, "In summer the granaries are filled for the winter");
+    Memory n;
+    auto winter = land(true);
+    winter.season = 3;
+    winter.towns[0].granary = 0;
+    bool wellbyFood = false;
+    for (const auto& o : plan(winter, n).orders)
+        wellbyFood |= o.channel == "food" && o.town == "wellby";
+    expect(!wellbyFood, "In winter a well town's isn't");
+}
 } // namespace
 
 int main()
@@ -405,6 +450,8 @@ int main()
         theWageTable();
         growthGoesBackOut();
         itPressesItself();
+        itLearnsReach();
+        theGranaryStores();
     }
     catch (const std::exception& e)
     {

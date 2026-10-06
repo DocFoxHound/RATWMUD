@@ -107,6 +107,7 @@ struct TownSnap
                                                      // hires and odd jobs nobody took.
     int unpaid = 0, supported = 0;                   // Its workers owed wages; and paid today by wage support (Phase 6).
     std::int64_t rescueNeed = 0;                     // What its failing businesses lack of their floats (under half of it).
+    std::int64_t granary = 0;                        // Food (nourishment) in its granary (Phase 7).
     std::map<std::string, std::int64_t> funds;       // Channel -> what its fund holds.
 };
 
@@ -128,6 +129,12 @@ struct Dials
     // And the living floor (Phase 6): if the poorer half's share of the residents' money fell, it rises floorRaise times
     // (to floorMost); if it rose, it eases (autoEase, to 1).
     double floorRaise = 1.1, floorMost = 2;
+    // Learning reach (Phase 7): each channel's weight moves reachStep of the way toward its reach against a fair half (the
+    // poorer half's share of the people), between reachLeast and reachMost. A channel paid less than reachMinimum in the
+    // week isn't judged.
+    double reachStep = .25, reachLeast = .5, reachMost = 2, reachMinimum = 50;
+    // The granary (Phase 7): in summer and autumn each town stores granaryDays of food a head, of what keeps.
+    double granaryDays = 5;
     double distressComfortable = 1.5;                // The band's top at full distress (it falls toward this).
     double distressSpendBoost = 2;                   // And the share spent above it, times this at full distress.
     // (overShare and overShareAtCap are of a week: what a decision sends out over the week that follows it.)
@@ -173,6 +180,9 @@ struct Snapshot
     std::vector<TownSnap> towns;
     std::vector<Steer> steers;
     Dials dials;
+    // On a decision's day (Phase 7): each channel's week, what it paid and how much of it reached the poorer half (paid
+    // to them, or paid to a till in the share of its outgoings that went to them).
+    std::map<std::string, std::pair<double, double>> reach;   // Channel -> reached, paid.
 };
 
 // What the orchestrator remembers from day to day (saved with the society).
@@ -195,6 +205,7 @@ struct Memory
     double autoPressure = 1;                         // Its own pressure, from how that share moves.
     double bottomShare = -1, floorLift = 1;          // The poorer half's share of it; the living floor's lift (Phase 6).
     std::map<std::string, double> support;           // "town|item" -> price support: a staple's gap under its price (Phase 6).
+    std::map<std::string, double> learned;           // Channel -> its learned weight, from its reach (Phase 7; 1 to start).
 };
 
 struct TownReading
@@ -245,6 +256,8 @@ struct Brief
     std::vector<PriceSet> prices;                    // Every price it would set.
     std::map<std::string, std::map<std::string, double>> wages;   // Town -> kind -> a day's pay (the table in force).
     std::vector<Steer> steers;                       // The steers it weighed.
+    std::map<std::string, double> reach;             // Channel -> its reach this week (on a decision's day).
+    std::map<std::string, double> learned;           // Channel -> its learned weight.
 };
 
 // The channels (doc 46, Part 7), in a fixed order.

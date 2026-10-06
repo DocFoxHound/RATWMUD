@@ -123,6 +123,11 @@ bool readDials(const Value& doc, Dials& d, std::string& problem)
     num("autoEase", d.autoEase);
     num("autoMost", d.autoMost);
     num("floorRaise", d.floorRaise);
+    num("reachStep", d.reachStep);
+    num("reachLeast", d.reachLeast);
+    num("reachMost", d.reachMost);
+    num("reachMinimum", d.reachMinimum);
+    num("granaryDays", d.granaryDays);
     num("floorMost", d.floorMost);
     num("distressComfortable", d.distressComfortable);
     num("distressSpendBoost", d.distressSpendBoost);
@@ -649,13 +654,32 @@ Brief plan(const Snapshot& s, Memory& memory)
     double distressTotal = 0;
     for (const auto& [id, w] : byDistress)
         distressTotal += w;
+    // Learning reach (Phase 7): on a decision's day each channel judged by its week (paid to the poorer half, or through
+    // tills in their share), and its weight moved toward that against a fair half.
+    for (const auto& c : channelNames())
+        memory.learned.try_emplace(c, 1.0);
+    if (s.decide)
+        for (const auto& [channel, week] : s.reach)
+            if (week.second >= d.reachMinimum)
+            {
+                const double frac = week.first / week.second;
+                brief.reach[channel] = frac;
+                const double target = std::clamp(frac / .5, d.reachLeast, d.reachMost);
+                auto& w = memory.learned[channel];
+                w = std::clamp(w + (target - w) * d.reachStep, d.reachLeast, d.reachMost);
+            }
+    brief.learned = memory.learned;
     std::map<std::string, std::map<std::string, double>> fits;   // Town -> channel -> weight.
     for (const auto& [id, t] : towns)
     {
         auto f = fitFor(t.kind);
         for (auto& [c, w] : f)
+        {
             if (const auto cw = channelWeight.find(c); cw != channelWeight.end())
                 w *= cw->second;
+            if (const auto l = memory.learned.find(c); l != memory.learned.end())
+                w *= l->second;              // (What it has learned of the channel's reach.)
+        }
         // A channel favoured by a steer but not in the kind's list comes in at its strength.
         for (const auto& [c, w] : channelWeight)
             if (!f.count(c) && w > 1)
@@ -724,9 +748,16 @@ Brief plan(const Snapshot& s, Memory& memory)
                 if (g.town == id)
                     if (const auto gap = memory.support.find(id + "|" + g.item); gap != memory.support.end())
                         support += gap->second * g.rate * 7;
+            // The granary's store for the winter (Phase 7): in summer and autumn, granaryDays of food a head, of what keeps
+            // (about twice plain food's price).
+            const bool storing = s.season == 1 || s.season == 2;
+            const double store = storing ? std::max(0.0, d.granaryDays * t.people * d.nourishADay - double(ts.granary)) / d.nourishADay *
+                                               t.foodCost * 2
+                                         : 0;
             const std::pair<const char*, double> want[] = {{"wage support", double(ts.unpaid + ts.supported) * labour * 7},
                                                            {"price support", support},
-                                                           {"rescue", double(ts.rescueNeed)}};
+                                                           {"rescue", double(ts.rescueNeed)},
+                                                           {"food", store}};
             for (const auto& [channel, coins] : want)
             {
                 double n = coins - double(fundHeld(id, channel));
@@ -918,6 +949,13 @@ Value briefJson(const Brief& b, bool full)
     o.add("autoPressure", round3(b.autoPressure));
     o.add("bottomShare", round3(b.bottomShare));
     o.add("floorLift", round3(b.floorLift));
+    auto reach = Value::object(), learned = Value::object();
+    for (const auto& [c, v] : b.reach)
+        reach.add(c, round3(v));
+    for (const auto& [c, v] : b.learned)
+        learned.add(c, round3(v));
+    o.add("reach", reach);
+    o.add("learned", learned);
     auto towns = Value::array();
     for (const auto& t : b.towns)
     {
@@ -1038,6 +1076,10 @@ Brief readBrief(const Value& o)
     b.autoPressure = o.number("autoPressure", 1);
     b.bottomShare = o.number("bottomShare");
     b.floorLift = o.number("floorLift", 1);
+    for (const auto& [c, v] : o.object("reach").fields())
+        b.reach[c] = v.asNumber();
+    for (const auto& [c, v] : o.object("learned").fields())
+        b.learned[c] = v.asNumber();
     for (const auto& x : o.array("towns"))
     {
         TownReading t;
@@ -1142,6 +1184,10 @@ Value stateJson(const State& st)
     for (const auto& [k, v] : st.memory.support)
         support.add(k, v);
     memory.add("support", support);
+    auto learnedMemory = Value::object();
+    for (const auto& [k, v] : st.memory.learned)
+        learnedMemory.add(k, v);
+    memory.add("learned", learnedMemory);
     o.add("memory", memory);
     o.add("brief", briefJson(st.last, false));
     o.add("decision", briefJson(st.decision, false));
@@ -1221,6 +1267,9 @@ State readState(const Value& o)
     st.memory.autoPressure = std::clamp(m.number("autoPressure", 1), 1.0, 10.0);
     st.memory.bottomShare = m.number("bottomShare", -1);
     st.memory.floorLift = std::clamp(m.number("floorLift", 1), 1.0, 10.0);
+    for (const auto& [k, v] : m.object("learned").fields())
+        if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 100)
+            st.memory.learned[k] = v.asNumber();
     for (const auto& [k, v] : m.object("support").fields())
         if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 1e6)
             st.memory.support[k] = v.asNumber();

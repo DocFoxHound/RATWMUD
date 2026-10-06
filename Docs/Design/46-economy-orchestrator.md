@@ -780,6 +780,44 @@ town's need less what its fund still holds:
 - **The guards save:** paid well and fed at the mess, they keep it (the wealth tithe takes a twentieth above a month's
   living). They are residents, so it is their own business (the user's rule).
 
+## Phase 7: learning reach, and the granary (built 2026-10-06)
+
+**Reach** (`Society::noteForOrchestra`, the snapshot; `plan`):
+- Every penny a channel's fund pays is followed:
+  - paid to a resident, it counts as reaching the poorer half if the resident's household is in it (the poorer half by
+    purse a head, `poorHalf_`, made at each snapshot);
+  - paid to a till, it counts at the share of that till's outgoings in the week that went to the poorer half.
+- At each decision every channel paid 50p or more (`reachMinimum`) is judged: its weight moves a quarter of the way
+  (`reachStep`) toward its reach against a fair half (reach / 0.5), between half and twice (`reachLeast`, `reachMost`).
+  The learned weights multiply the channels' fit to each town's trouble, and are saved (`memory.learned`).
+- The brief shows each channel's reach and learned weight.
+
+**The granary through the seasons:**
+- **Only food that keeps** (a fortnight or more: salt fish and pork, jerky, cheese, smoked meats, ship's biscuit) goes
+  into a granary, from the town's farms at the land's price, then from its food shops at the town's. Fresh food no longer
+  rots there.
+- **Storing:** in summer and autumn each town's granary is a need, met first: `granaryDays` (5) of food a head, less what
+  it holds.
+- **Release:** the granary sells to the town's food shops when they hold under three days' food a head, and in summer and
+  autumn only under a day and a half (the store kept for the winter).
+
+**Measured** (35 days in spring, so no storing; the same start as Phases 5 and 6):
+
+| Decision | Day 8 | Day 15 | Day 22 | Day 29 |
+|---|---|---|---|---|
+| Reach: hires | | 0.68 | 0.37 | 0.55 |
+| Reach: rescue / wage support | | 0.35 / 0.35 | 0.38 / 0.27 | 0.34 / 0.37 |
+| Reach: works | | 0.19 | 0.31 | 0.29 |
+| Reach: commissions / trade / price support | | 0.21 / 0.06 / 0.09 | 0.30 / 0.12 / 0.10 | 0.09 / 0.02 / 0.10 |
+| Learned: hires / works / commissions | | 1.09 / 0.88 / 0.88 | 1.00 / 0.81 / 0.81 | 1.03 / 0.75 / 0.73 |
+| Poorer half's share (by household) | 0.36 | 0.33 | 0.29 | 0.25 |
+
+- **The learning works:** hires reach the poorer half best, trade and price support least, and the weights follow.
+- **The balance doesn't move.** Even the best channel reaches the poorer half with about half its money. The poorer
+  half are mostly households with few or no earners (children, the retired, those keeping house, large families on one
+  wage). Channels that pay for work can't reach wolves who don't work, and the living floor is under what posts pay.
+  *The user accepted the spread* (open question 9).
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -795,7 +833,7 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
 5. **Bands and channels** (built). Town works, hire grants, commissions, food purchase and trade orders. The surplus rules, house
    props and patronage, the capital's share and the trials are removed.
 6. **The rest of the channels** (built, but for opening). Price support, wage support, business rescue, opening.
-7. **Learning reach,** and the granary through the seasons.
+7. **Learning reach,** and the granary through the seasons (built).
 8. **Watching and steering:** scenarios, the full DM panel, and a look at the panel in the browser against a real save
    (the user, 2026-10-06: the panel's checks wait for this phase).
 9. **Clean-up:** every replaced rule and its constants removed from the code and from doc 42 (marked superseded there);
@@ -815,3 +853,16 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
    prices rise and the poor eat plainer.
 8. **Caravans and standing orders** stay with the towns and traders, and the orchestrator only adds trade orders as a
    channel? *Recommendation:* yes for now; revisit after Phase 7.
+9. **The poorer half: households with few earners** (found in Phases 6 and 7). The orchestrator holds the residents'
+   share of the land's money and nobody starves, but the poorer half of households keeps losing ground (0.36 to 0.25 in
+   four weeks). It is mostly households where few work. Ways forward:
+   - a *household wage*: the living floor reckoned for a worker's household (its members at home), so one wage keeps
+     a family; it binds where wages are lowest;
+   - a *household channel*: the church's dole made an orchestrator channel, by need, for households short of a week's
+     food (it is a handout, which the user kept for the dole);
+   - or accept the spread, so long as hunger stays seasonal.
+
+   *Recommendation:* the household wage first: it pays for work, and reaches the families of the poorest workers.
+
+   **Decided (the user, 2026-10-06): accept the spread.** Inequality is fine so long as hunger stays seasonal; the
+   orchestrator holds the residents' share and the needs, and nobody starves.
