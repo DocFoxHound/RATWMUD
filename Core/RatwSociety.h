@@ -444,6 +444,7 @@ class Society
     static std::string eatFirst(const EconomyAccount& account);
     // The same by the age of what it holds (its oldest batch of each food): what an account eats first.
     std::string eatFirst(const std::string& id, const EconomyAccount& account) const;
+    bool forSale(const std::string& id, const std::string& item) const;   // A producer's own goods, for the shops.
     static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
@@ -522,7 +523,11 @@ class Society
     // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).
     std::unordered_map<std::string, double> larderUse_;
     std::unordered_map<std::string, int> larderTaken_;      // Today's, so far.
-    std::map<std::string, std::map<std::string, std::deque<std::pair<std::int64_t, int>>>> batches_;   // Account -> food -> (day, n).
+    std::map<std::string, std::map<std::string, std::deque<std::pair<std::int64_t, int>>>> batches_;
+    // What each shop sells of each good a day, and the sales it missed for having none (a running average; Society::spoil
+    // keeps it daily): a maker short of materials makes first what is wanted (TRIAL make_what_sells, doc 42). Not saved.
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> sellRate_;
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
     // Each resident by number (its place in ID order), and what its decisions every second reach through it, kept while
     // nothing they rest on changes (refreshRecords): the roster, the careers, the specs, the positions, the accounts.
     struct ResidentRecord
@@ -931,6 +936,12 @@ class Society
     std::vector<Spending> spendings_;
     std::vector<TownNews> townNews_;
     void noteOutgoing(const std::string& from, const std::string& kind, std::int64_t coins);
+    // (TRIAL town_budget, doc 42: a treasury's extras, its buyers' funds, odd jobs and works, come only from what it takes
+    // in above its wages, by running averages; not from its savings.) Not saved.
+    void noteIncoming(const std::string& to, const std::string& kind, std::int64_t coins);
+    std::map<std::string, std::int64_t> incomeToday_, wagesToday_, budgetLeft_;
+    std::map<std::string, double> incomeAvg_, wagesAvg_;
+    std::int64_t townBudget(const std::string& treasury, std::int64_t wanted);   // What of `wanted` the budget allows (and takes).
     // Buys what `wanted` from the shops' tills, up to `budget`, never a shop's last few; what was got, by item.
     std::int64_t buyForSurplus(const std::string& buyer, const std::vector<std::string>& shops,
                                const std::function<bool(const std::string& item)>& wanted, std::int64_t budget,

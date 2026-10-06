@@ -27,6 +27,24 @@ void Society::noteOutgoing(const std::string& from, const std::string& kind, std
     // of a surplus.
     if (coins > 0 && collector(from) && kind.rfind("surplus: ", 0) != 0)
         spentToday_[from] += coins;
+    if (coins > 0 && (from == "treasury" || from.rfind("stores:", 0) == 0) && kind.find("wage") != std::string::npos)
+        wagesToday_[from] += coins;
+}
+
+void Society::noteIncoming(const std::string& to, const std::string& kind, std::int64_t coins)
+{
+    if (coins > 0 && (to == "treasury" || to.rfind("stores:", 0) == 0) && kind != "starting money")
+        incomeToday_[to] += coins;
+}
+
+std::int64_t Society::townBudget(const std::string& treasury, std::int64_t wanted)
+{
+    if (!trial("town_budget") || wanted <= 0)
+        return std::max<std::int64_t>(0, wanted);
+    auto& left = budgetLeft_[treasury];
+    const auto allowed = std::min(wanted, std::max<std::int64_t>(0, left));
+    left -= allowed;
+    return allowed;
 }
 
 std::vector<Society::Spending> Society::takeSpendings()
@@ -98,6 +116,20 @@ void Society::spendSurpluses(std::int64_t day)
     for (const auto& [id, coins] : spentToday_)
         state_.memory.outgoing[id] += .2 * double(coins);
     spentToday_.clear();
+    // Each treasury's takings and wages a day (running averages), and so today's budget for its extras: what it takes in
+    // above its wages (TRIAL town_budget).
+    for (auto [m, today] : {std::pair{&incomeAvg_, &incomeToday_}, std::pair{&wagesAvg_, &wagesToday_}})
+    {
+        for (const auto& [id, coins] : *today)
+            m->try_emplace(id, double(coins));       // (A first day: as if every day were like it.)
+        for (auto& [id, avg] : *m)
+            avg = .8 * avg + .2 * double(today->count(id) ? today->at(id) : 0);
+    }
+    incomeToday_.clear();
+    wagesToday_.clear();
+    budgetLeft_.clear();
+    for (const auto& [id, avg] : incomeAvg_)
+        budgetLeft_[id] = std::int64_t(std::max(0., avg - (wagesAvg_.count(id) ? wagesAvg_.at(id) : 0.)));
     ++state_.memory.revision;
     // The communities: who lives in each, and its shops.
     std::map<std::string, std::vector<std::string>> folk, shops;
@@ -278,8 +310,12 @@ void Society::spendSurpluses(std::int64_t day)
         // funds odd jobs from up to a fiftieth of its treasury a day, above its reserve or not.
         const int poorHere = poorIn(town);
         const bool relief = !house && folk.count(town) && poorHere * 10 > int(folk[town].size()) && !treasuryLean(id);
-        if (relief)
+        if (relief && !trial("town_budget"))
             budget = std::max(budget, account(id)->cash / 50);
+        // (TRIAL town_budget: a treasury's extras from what it takes in above its wages, whatever it holds.)
+        // (Its savings above its reserve still go out a tenth a day; relief comes from the budget.)
+        if (trial("town_budget") && !house)
+            budget = std::max<std::int64_t>(0, budget) + townBudget(id, relief ? account(id)->cash / 50 : 0);
         if (budget < 10 || town.empty() || !folk.count(town))
             continue;
         work.emplace_back(id, town, budget);

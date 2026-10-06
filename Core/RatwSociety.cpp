@@ -325,6 +325,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
 {
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
+    noteIncoming(to, kind, coins);
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
     if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
                       kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||
@@ -415,7 +416,10 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     b.cash -= total;
     s.cash += total;
     if (seller.rfind("till:", 0) == 0 || merchant(seller))
+    {
         takings_[seller] += total;                  // (A shop's day's takings: its help share them.)
+        soldToday_[seller][items::baseOf(item)] += quantity;
+    }
     record(kind, buyer, seller, item, quantity, total);
     return true;
 }

@@ -142,9 +142,11 @@ bool Society::produce(const std::string& id, double absoluteDay)
     produceNext_[id] = absoluteDay + producer->seconds / 86400. * (1 - ImprovementPace * (job ? improvement(job->id) : 0));
     bool any = false;
     // Out of season, what the work brings in instead (threshing the barn's grain in winter, doc 42).
+    // (TRIAL produce_more: works on until it holds twice as much, doc 42 "Pressure": the land was idle at 20.)
+    const int kept = trial("produce_more") ? 2 * ProducerKept : ProducerKept;
     for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
-        if (const int held = stock(*account(till), item); held < ProducerKept)
-            any = create(till, item, std::min(count, ProducerKept - held), "brought in") || any;
+        if (const int held = stock(*account(till), item); held < kept)
+            any = create(till, item, std::min(count, kept - held), "brought in") || any;
     return any;
 }
 
@@ -226,7 +228,19 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     // A shopkeeper who also brings goods in (a stables' stock-breeding) does so while at work.
     produce(id, absoluteDay);
     double wait = 1. / 96;                          // Nothing to make: look again in a quarter of an hour.
-    for (const auto* k : crafts)
+    // (TRIAL make_what_sells: what sells fastest first, so scarce materials (iron) go where they're wanted, not into
+    // goods that sit on the shelf; otherwise in file order.)
+    auto order = crafts;
+    if (trial("make_what_sells"))
+        if (const auto rates = sellRate_.find(till); rates != sellRate_.end())
+            std::stable_sort(order.begin(), order.end(), [&](const items::Craft* a, const items::Craft* b) {
+                const auto rate = [&](const items::Craft* k) {
+                    const auto r = rates->second.find(k->out.front().first);
+                    return r == rates->second.end() ? 0. : r->second;
+                };
+                return rate(a) > rate(b);
+            });
+    for (const auto* k : order)
     {
         // Low, judged by what the batch is for (its first good; a butcher's meat, not the hides that come with it):
         // under the few a shop keeps, or, for what other trades work with (a mill's flour), under half a supplier's store.
@@ -235,8 +249,14 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         const auto& made = k->out.front().first;
         const auto* madeGood = items::good(made);
         const bool keeps = !madeGood || madeGood->keeps <= 0;
+        // (TRIAL cure_more: a shop curing food (what keeps longer than what it's made from) keeps half a store of it,
+        // not a few: more fresh meat and fish cured before it spoils, more salt and firewood bought.)
+        const bool cures = trial("cure_more") && !k->in.empty() && madeGood && madeGood->nourish > 0 && [&] {
+            const auto* in = items::good(k->in.front().first);
+            return in && in->keeps > 0 && (madeGood->keeps <= 0 || madeGood->keeps > in->keeps);
+        }();
         const bool low = stockAll(*account(till), made) < (items::traded(made) && keeps ? SuppliesKept
-                                                           : supplied(made) || items::traded(made) ? SuppliesKept / 2 : GoodsKept);
+                                                           : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 : GoodsKept);
         if (!low)
             continue;
         // A seasonal good (grapes, apples) is laid in at the harvest, a store to last the year: SeasonalStore times as much.

@@ -1396,6 +1396,68 @@ The user's decisions on the pressure trials:
 
 Speed: unchanged, a week in 1.5 minutes at eight threads.
 
+## Iterating on the pressure (2026-10-06, after d3a0e43)
+
+The suggestions, tried in 28-day runs:
+1. More iron and charcoal.
+2. More food, or more of it cured.
+3. Town budgets from takings.
+4. A pull toward the small towns.
+
+**Fixes (permanent):**
+- **A producer's goods for sale stay out of the larder** (`Society::forSale`). The resident's own put-away already
+  skipped them, but a producer doing the household's daily shopping put everything edible it carried into the
+  larder: about 8,500 rabbits in three weeks, which rotted there.
+- Goods for sale don't count as the household's food when it plans its shopping.
+- **A missed sale counts as demand.** A producer who finds no gear in town adds to the shops that sell it, as a sale
+  missed (`soldToday_`, `sellRate_`).
+
+**Trials added (RATW_TRIAL):**
+
+| Trial | What it does |
+|---|---|
+| `produce_more` | A producer works on until it holds 40 of a thing (not 20) and keeps 5 (not 10) when it sells to the town's food shops. |
+| `make_what_sells` | A maker makes first what sells fastest at its shop, counting sales missed for having none. |
+| `cure_more` | A shop curing food (an output that keeps longer than its input) keeps half a store of it, not four. |
+| `town_budget` | A treasury's extras (its buyers' funds, relief odd jobs, wages it covers for others) come only from its takings above its wages, by running averages. Its savings above its reserve still go out a tenth a day. |
+| data: iron | Mines bring in 2 (or 3) ore and charcoal burners 2 (or 3) charcoal a spell (trial data directory). |
+| data: gear | Gear worn out every 2 days. |
+
+**Measured** (day 28; days 7 to 28):
+
+| | Plain (d3a0e43) | Produce more | Every trial, gear every 2 days |
+|---|---|---|---|
+| Starving / hungry | 17 / 220 | 1 / 98 | 0 / 64 |
+| Food made a day (nourishment) | 62,200 | 68,700 | 64,600 |
+| Spoiled, of eaten | 23% | 34% (before the larder fix) | 25% |
+| Average town swing | 17% | 14% | 8% |
+| Workers | −7% | −5% | +2% |
+| Producers | +27% | +25% | +31% (+6% a week) |
+| Great houses | +59% | +39% | +25% |
+| Church | +279% | +279% | +40% (−12% in week 4) |
+| Town treasuries | −43% | −45% | −36% |
+
+**What was learned:**
+- **The land was idle.** Producers stopped at 20 and kept 10: about 30% of what the rabbit farms could bring in.
+  Letting them work on ends starvation. Spoilage rises with the extra food, then falls back to a quarter once the
+  larder leak is fixed and shops cure more.
+- **Iron doubles or triples with the mines and kilns, but gear stays small** (100 to 146p a day).
+  - The smiths' iron goes where it sells fastest: nails, fittings and locks for the Town Works and for shops and houses
+    improving their premises.
+  - That flow is healthy (the rich spend surplus on city goods), but gear is too small a want to carry the farms'
+    money.
+  - Producers keep about 1,100 to 1,300p a day. To spend it in the towns they need costs of about 3 to 4p a day each,
+    three times what gear can be.
+- **The town budget only slows the treasuries' drain** (−36% against −45%). Their wages alone (about 1,450p a day)
+  nearly match the tax (about 1,600p). With the tax steady, the wage bill decides it.
+- **The valves keep the church level and the towns closest.** Saltreach loses most in every run (17 to 29%).
+  Cinderbrook gains with more iron (+7% at triple).
+
+**Next:**
+1. Larger farm running costs: hands at harvest, seed bought back from the mills, tools worn by output.
+2. Town wage bills by takings.
+3. Saltreach's salt into more cured food.
+
 ## Later (noted 2026-10-05)
 
 - **Skills from odd jobs and hires** (*user*): working a trade's odd jobs and hires should teach its skill, leading

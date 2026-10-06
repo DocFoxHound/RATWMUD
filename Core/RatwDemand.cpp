@@ -66,6 +66,22 @@ std::string Society::eatFirst(const EconomyAccount& account)
     return first ? *first : std::string();
 }
 
+bool Society::forSale(const std::string& id, const std::string& item) const
+{
+    // What a producer brings in to sell (a rabbit farmer's rabbits, a fisher's catch: doc 42) goes to the shops, not the
+    // family larder.
+    const auto* r = spec(id);
+    const auto* producer = r ? items::producerFor(r->workLabel) : nullptr;
+    if (!producer)
+        return false;
+    const auto base = items::baseOf(item);
+    for (const auto* list : {&producer->out, &producer->offSeason})
+        for (const auto& [made, n] : *list)
+            if (made == base)
+                return true;
+    return false;
+}
+
 std::string Society::eatFirst(const std::string& id, const EconomyAccount& account) const
 {
     // What has the fewest days left before it spoils, by its oldest batch (Society::spoil keeps them, by the day they came
@@ -97,6 +113,14 @@ std::string Society::eatFirst(const std::string& id, const EconomyAccount& accou
 
 void Society::spoil(std::int64_t day)
 {
+    // Each shop's sales of each good, into a running average (what it makes first, Society::craft).
+    for (auto& [till, goods] : sellRate_)
+        for (auto& [item, rate] : goods)
+            rate *= .7;
+    for (const auto& [till, goods] : soldToday_)
+        for (const auto& [item, n] : goods)
+            sellRate_[till][item] += .3 * n;
+    soldToday_.clear();
     // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
     // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.
     for (const auto& [larder, taken] : larderTaken_)
@@ -304,20 +328,22 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
     // What the household holds, in nourishment: the larder and what its members carry (one bringing a trip's worth home
     // hasn't put it away yet; not a keeper whose purse is its shop: those shelves are for sale).
     int atHome = 0;
-    const auto count = [&](const EconomyAccount& a) {
+    // (Nor what a producer carries to sell.)
+    const auto count = [&](const EconomyAccount& a, const std::string& holder) {
         for (const auto& [item, n] : a.stock)
-            if (const auto* good = n > 0 ? items::good(item) : nullptr; good && !good->drink && good->nourish > 0)
+            if (const auto* good = n > 0 ? items::good(item) : nullptr; good && !good->drink && good->nourish > 0 &&
+                                                                         (holder.empty() || !forSale(holder, item)))
                 atHome += n * good->nourish;
     };
     const auto carried = [&](const std::string& member) {
         const auto* m = spec(member);
         if (const auto* a = account(member); a && !(m && m->role == "merchant" && tillOf(member) == member))
-            count(*a);
+            count(*a, member);
     };
     if (laysIn)
     {
         if (const auto* larder = account(homeStore(me->homeCell, "larder")))
-            count(*larder);
+            count(*larder, std::string());
         if (const auto home = households_.find(me->homeCell); home != households_.end())
         {
             for (const auto& member : home->second)
@@ -633,7 +659,7 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
                     const auto keep = bestFood(*account(shopper));
                     std::vector<std::pair<std::string, int>> food;
                     for (const auto& [item, n] : account(shopper)->stock)
-                        if (n > 0 && edible(item))
+                        if (n > 0 && edible(item) && !forSale(shopper, item))
                             food.push_back({item, item == keep ? n - 1 : n});
                     for (const auto& [item, n] : food)
                         if (n > 0)
@@ -800,8 +826,8 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // watch eats plainly) rather than its wages going unpaid.
                 const auto reserve = std::int64_t(PayrollDays) * 2 * PaidSpells * (town.guards + town.residents / 10);
                 const auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
-                if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
-                                                              spare);
+                if (const auto grant = townBudget(treasuryId, std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
+                                                                                    spare));
                     grant > 0)
                     shift(treasuryId, acct, "", 0, grant, "town funds");
             }
@@ -899,12 +925,13 @@ void Society::producersSell(std::int64_t day)
         if (shops == shopsOf.end() || shops->second.empty() || !purse)
             continue;
         const std::vector<std::pair<std::string, int>> held(purse->stock.begin(), purse->stock.end());
+        const int keeps = trial("produce_more") ? ProduceKept / 2 : ProduceKept;   // (TRIAL produce_more: keeps 5.)
         for (const auto& [item, n] : held)
         {
             const auto* good = items::good(item);
-            if (n <= ProduceKept || !good || good->drink || !edible(item))
+            if (n <= keeps || !good || good->drink || !edible(item))
                 continue;
-            int left = n - ProduceKept;
+            int left = n - keeps;
             const auto& list = shops->second;
             for (std::size_t k = 0; k < list.size() && left > 0; ++k)
             {
@@ -953,6 +980,11 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
                 }
             }
         }
+        // None to be had: the want is counted at the shops that make it, as a sale missed (what they make first,
+        // Society::craft).
+        for (const auto& shop : shops->second)
+            if (const auto sold = wares(shop); shop != who && std::find(sold.begin(), sold.end(), item) != sold.end())
+                ++soldToday_[tillOf(shop)][item];
         return false;
     };
     // Tools a trade wears out (crafts.json `tools`): every so often, out of the worker's own purse.

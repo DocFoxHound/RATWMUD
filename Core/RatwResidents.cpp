@@ -610,21 +610,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (larderAccount && (!merchantRole || managed) && body.cell == life.homeCell)
         {
             const auto keep = bestFood(wallet);
-            // (Not what it brings in to sell: a rabbit farmer's rabbits, a fisher's catch go to the shops, doc 42.)
-            const auto* producer = items::producerFor(r->workLabel);
-            const auto forSale = [&](const std::string& item) {
-                if (!producer)
-                    return false;
-                const auto base = items::baseOf(item);
-                for (const auto* list : {&producer->out, &producer->offSeason})
-                    for (const auto& [made, n] : *list)
-                        if (made == base)
-                            return true;
-                return false;
-            };
             std::vector<std::pair<std::string, int>> spare;
             for (const auto& [item, n] : wallet.stock)
-                if (n > 0 && edible(item) && !forSale(item))
+                if (n > 0 && edible(item) && !forSale(id, item))
                     spare.push_back({item, item == keep ? n - 1 : n});
             for (const auto& [item, n] : spare)
                 if (n > 0)
@@ -1232,6 +1220,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 std::string subsidy;
                 if (business && spendable(payer.account) < wage)
                     subsidy = subsidiser(home);
+                // (TRIAL town_budget: a treasury covers wages only from its day's budget.)
+                if (!subsidy.empty() && subsidy.rfind("stores:", 0) == 0 && townBudget(subsidy, wage) < wage)
+                    subsidy.clear();
                 if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage subsidised by the town"))
                 {
                     ++life.wagesToday;

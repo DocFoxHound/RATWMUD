@@ -434,10 +434,12 @@ int main(int argc, char** argv)
     // Each town's larders: how many days of food its households hold (larder and pockets, at 50 a wolf a day), and the
     // food on its shops' shelves and with its producers (in nourishment).
     const auto writeLarders = [&](int day) {
-        const auto nourishIn = [](const EconomyAccount& a) {
+        // (A producer's goods for sale aren't its household's food.)
+        const auto nourishIn = [&](const EconomyAccount& a, const std::string& holder = std::string()) {
             std::int64_t n = 0;
             for (const auto& [item, q] : a.stock)
-                if (const auto* g = q > 0 ? items::good(item) : nullptr; g && !g->drink && g->nourish > 0)
+                if (const auto* g = q > 0 ? items::good(item) : nullptr; g && !g->drink && g->nourish > 0 &&
+                                                                          (holder.empty() || !society.forSale(holder, item)))
                     n += std::int64_t(q) * g->nourish;
             return n;
         };
@@ -461,7 +463,7 @@ int main(int argc, char** argv)
             {
                 const auto* r = society.spec(id);
                 if (const auto* a = society.account(id); a && !(r && r->role == "merchant" && society.tillOf(id) == id))
-                    food += nourishIn(*a);
+                    food += nourishIn(*a, id);
             }
             const auto town = server.communityOf(home);
             auto& t = towns[town.empty() ? "(country)" : town];
