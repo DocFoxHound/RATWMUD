@@ -144,7 +144,8 @@ Part 4's four qualities are in the game. Prices are *placeholders*.
 - **In the catalog** (`Core/RatwItems.cpp`): every good but herbs, meals, the sword and water has a crude, a fine and a
   masterwork kind beside its common one. The id carries the quality (`hide~fine`), and the name says it ("Fine hide").
   - Price: crude 0.6×, fine 1.6×, masterwork 3×.
-  - Wear: armour a quarter weaker (crude) or stronger (fine, at least +1), half as strong again for masterwork; status
+  - Wear: armour a quarter weaker (crude) or stronger (fine), half as strong again for masterwork, every figure of it and
+    in fractions (doc 47; it had been rounded, with fine at least +1, which made fine cloth a match for leather); status
     one step down or up (two for masterwork); masterwork one warmer.
   - `good()` and `wearable()` find every kind through an index (lookups are now hashed, not scanned). The catalog's
     lists stay common goods only, so no shop's handful picks a fine one at random.
@@ -160,9 +161,10 @@ Part 4's four qualities are in the game. Prices are *placeholders*.
   ambush), a ragged kill crude, and a fire-touched kill no better than common.
 - **Shops** deal in every quality of their goods: a tanner buys a fine hide at the fine price. The trade panel lists
   each quality the shop or the player has, named ("Fine hide").
-- **Weapons** (built 2026-10-04): the sword has the four kinds too ("Fine bronze sword").
-  - A blow scales by quality: crude 0.85×, fine 1.15×, masterwork 1.3× (`items::qualityDamage`), and the fight screen's
-    damage preview shows it.
+- **Weapons** (built 2026-10-04): the sword has the four kinds too ("Fine bronze sword"), and since doc 47 the iron and
+  steel blades (tiers: Basic, Professional, Exceptional, not qualities).
+  - A blow scales by quality: crude 0.92×, fine 1.05×, masterwork 1.1× (`items::qualityDamage`; doc 47: it was 0.85,
+    1.15 and 1.3, more than a tier's step), and the fight screen's damage preview shows it.
   - The jaws still hold "sword" (`Entity::mouth`), and `Entity::swordKind` says which. Taking up a sword takes the best
     one has. A sword knocked loose drops that very kind.
 - **Wear and tear** (built 2026-10-04, `Core/RatwDurability.cpp`): gear in service wears out.
@@ -385,41 +387,47 @@ smoking and drying valuable. Spectacles and ear trumpets offset the age-65+ pena
 
 A wolf's weapon is gripped by a **bit**, a padded bar across the back teeth with a lip guard. The blade or head comes
 out of the side of the mouth and is swung with the head and neck, so it must balance near the bit. Damage follows doc
-33's formula: the sword is 20 base, reach 2, turn weight 10 and 14 stamina. **Pierce** ignores that many points of
-armour.
+33's formula. The three blades a fight takes are doc 47's tiers (bronze, iron, steel: 14, 15 and 16 a blow); the rest of
+this table is not in fights yet, but the needle rapier (doc 47); the bit-axe and flanged mace were taken out. **Pierce** ignores that many points of armour.
 
 | Item | lb | p | Reach | Dmg | Type | Pierce | Turn wt | Stamina | Special |
 |---|---|---|---|---|---|---|---|---|---|
 | Fang knife | 1 | 12 | 1 | 12 | cut | 0 | 3 | 6 |  |
-| Iron bit-sword | 3 | 22 | 2 | 16 | cut | 0 | 10 | 14 | Cheap; bends rather than breaks |
-| Bit-sword | 3 | 40 | 2 | 20 | cut | 0 | 10 | 14 | The existing sword |
-| Needle rapier | 2.5 | 90 | 2 | 16 | thrust | 2 | 6 | 10 | Thrust only; +10 to hit |
+| Bronze bit-sword (`sword`) | 3 | 30 | 2 | 14 | cut | 0 | 4 | 10 | Basic (doc 47; it was 20, 10 and 14) |
+| Iron bit-sword | 3 | 45 | 2 | 15 | cut | 0 | 3 | 10 | Professional; bends rather than breaks |
+| Steel bit-sword | 3 | 90 | 2 | 16 | cut | 0 | 2 | 9 | Exceptional; armoury only |
+| Needle rapier | 2.5 | 90 | 2 | 14 | thrust | 1 | 2 | 9 | Exceptional (doc 47): thrust only; +5 to hit; best into armour |
 | Hook cleaver | 3.5 | 45 | 2 | 22 | cut | 0 | 12 | 16 | 25% to tear the target's weapon from its mouth |
-| Bit-axe | 4 | 35 | 1 | 24 | cut | 2 | 12 | 16 | +50% against leather |
 | War pick | 4 | 50 | 1 | 20 | thrust | 5 | 12 | 16 | Against mail and brigandine |
 | Weighted cudgel | 3 | 6 | 1 | 14 | blunt | 0 | 8 | 10 | Non-lethal: Downs, never kills (the watch) |
-| Flanged mace | 5 | 55 | 1 | 22 | blunt | 3 | 14 | 18 | Mail's bonus against cuts doesn't apply |
 | Mouth flail | 3 | 30 | 2 | 18 | blunt | 0 | 10 | 16 | +10 to hit; 10% to hit itself on a miss |
 | Leather cosh | 1 | 4 | 1 | 8 | blunt | 0 | 4 | 6 | From behind or unseen: stuns a turn |
 | Steel fang caps | 0.5 | 30 | 1 | +6 Bite | thrust | 1 | 0 | 0 | Worn in the mouth; can't be knocked loose |
 | Steel claw caps | 1 | 25 | 1 | 10 | cut | 0 | 6 | 8 | Paw slot: a rake usable with something in the mouth |
 
+Doc 47's tiers (2026-10-06): cloth Basic, leather Professional, steel Exceptional; the figures were higher before (a
+mail coat 5 and +3 vs cut, a steel gorget 5).
+
 | Item | Slot | Zone | lb | p | Protect | Extra | DEX | Special |
 |---|---|---|---|---|---|---|---|---|
-| Quilted vest | body | body | 5 | 18 | 2 |  | 0 | Warmth 2 |
-| Leather barding | body | body | 9 | 34 | 3 |  | 0 |  |
-| Boiled-leather barding | body | body | 12 | 60 | 4 | +1 vs cut | −2 |  |
-| Brigandine coat | body | body | 18 | 140 | 6 | +1 vs thrust | −5 |  |
-| Mail coat | body | body | 20 | 180 | 5 | +3 vs cut | −5 | Jingles |
-| Leather gorget | throat | throat | 1.5 | 10 | 2 |  | 0 |  |
-| Spiked collar | throat | throat | 3 | 40 | 3 |  | 0 | A Bite on the throat costs the biter 4 |
-| Mail neck guard | throat | throat | 3.5 | 60 | 4 | +2 vs cut | 0 |  |
-| Steel gorget | throat | throat | 4 | 80 | 5 |  | −1 |  |
-| Leather cap | head | head | 1 | 8 | 1 |  | 0 |  |
-| Kettle helm | head | head | 4 | 45 | 3 |  | 0 | Hearing −10% |
-| Chamfron | head | head | 4 | 60 | 3 | +1 vs cut | 0 |  |
-| Leg guards and paw boots | paws | legs | 3 | 25 | 2 |  | −1 | Count as paw boots |
-| Splinted greaves | paws | legs | 5 | 70 | 4 |  | −2 |  |
+| Quilted vest | body | body | 5 | 18 | 1 | +1 vs cut | 0 | Warmth 2 |
+| Padded collar | throat | throat | 1 | 6 | 1 | +1 vs cut | 0 | Warmth 1 |
+| Quilted hood | head | head | 1 | 6 | 1 | +1 vs cut | 0 | Warmth 1 |
+| Quilted leg wraps | paws | legs | 2 | 10 | 1 | +1 vs cut | 0 |  |
+| Leather barding | body | body | 9 | 34 | 2 | +1 vs cut | 0 |  |
+| Boiled-leather barding | body | body | 12 | 60 | 3 | +1 vs cut | −2 |  |
+| Brigandine coat | body | body | 18 | 140 | 3 | +1 vs thrust | −5 |  |
+| Mail coat | body | body | 20 | 180 | 3 | +1 vs cut | −5 | Jingles |
+| Leather gorget | throat | throat | 1.5 | 10 | 2 | +1 vs cut | 0 |  |
+| Leather neck wrap | throat | throat | 1 | 10 | 1 | +1 vs cut | 0 |  |
+| Spiked collar | throat | throat | 3 | 40 | 2 | +1 vs cut | 0 | A Bite on the throat costs the biter 4 (built, doc 47) |
+| Mail neck guard | throat | throat | 3.5 | 60 | 2 | +2 vs cut | 0 |  |
+| Steel gorget | throat | throat | 4 | 80 | 3 | +1 vs cut | −1 |  |
+| Leather cap | head | head | 1 | 8 | 1 | +1 vs cut | 0 |  |
+| Kettle helm | head | head | 4 | 45 | 2 | +1 vs cut | 0 | Hearing −10% (not built) |
+| Chamfron | head | head | 4 | 60 | 2 | +2 vs cut | 0 |  |
+| Leg guards and paw boots | paws | legs | 3 | 25 | 1 | +1 vs cut | −1 | Count as paw boots |
+| Splinted greaves | paws | legs | 5 | 70 | 2 | +1 vs cut | −2 |  |
 
 ### 2.2 Emplacement crossbows
 

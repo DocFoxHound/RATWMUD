@@ -2917,11 +2917,16 @@ void Game::sendSnapshot(Connection* c)
             item("herbs", "Cooking herbs", "herb", "Finite ingredients. Sell to a trader who needs supplies.", false, herbs);
         if (meals > 0)
             item("meal", "Prepared meal", "food", "Consume one to restore 10 stamina. Cooking uses real ingredients.", false, meals);
+        const auto* self = world_.entity(id);
         if (const int swords = Society::stock(*purse, "sword"); swords > 0)
+        {
             item("sword", "Dull bronze sword", "weapon",
-                 "An old bronze blade, its edge long gone, carried in the jaws. In a fight it reaches two tiles and hits hard, "
-                 "but tires you.",
-                 view.self.mouth == "sword", swords);
+                 "A cast-bronze bit-sword, carried in the jaws: a Basic blade. In a fight it reaches two tiles and cuts harder "
+                 "than a bite, but tires you more.",
+                 self && World::swordHeld(*self) == "sword", swords);
+            inventory.items().back().add("blade", true);      // (Any blade may be taken up: doc 47.)
+            inventory.items().back().add("tier", items::tierName(1));
+        }
         // Wearables (doc 35): where each can go, and how many are worn.
         for (const auto& [itemId, quantity] : purse->stock)
             if (const auto* piece = quantity > 0 ? items::wearable(itemId) : nullptr)
@@ -2946,7 +2951,9 @@ void Game::sendSnapshot(Connection* c)
                 if (piece->warmth > 0)
                     i.add("warmth", piece->warmth);
                 if (piece->protect > 0)
-                    i.add("protect", piece->protect);
+                    i.add("protect", std::round(piece->protect * 10) / 10);
+                if (piece->tier > 0)
+                    i.add("tier", items::tierName(piece->tier));   // (Doc 47: Basic, Professional, Exceptional.)
                 inventory.push(std::move(i));
             }
         // Any other good of the catalog it holds (bought at a shop, given): listed, since it weighs (doc 35, 1.2).
@@ -2955,12 +2962,16 @@ void Game::sendSnapshot(Connection* c)
                                            !items::wearable(itemId) ? items::good(itemId) : nullptr)
             {
                 auto i = Value::object();
-                const bool blade = items::baseOf(itemId) == "sword";     // A sword of another kind (doc 35, Part 4).
+                const bool blade = items::blade(itemId) != nullptr;      // A blade of any metal and make (doc 35, Part 4; 47).
                 i.add("id", itemId);
                 i.add("name", itemLabel(id, itemId));
                 i.add("icon", blade ? "weapon" : "goods");
                 i.add("description", good->desc);
                 i.add("equipped", blade && world_.entity(id) && World::swordHeld(*world_.entity(id)) == itemId);
+                if (blade)
+                    i.add("blade", true);
+                if (good->tier > 0)
+                    i.add("tier", items::tierName(good->tier));
                 i.add("quantity", quantity);
                 inventory.push(std::move(i));
             }

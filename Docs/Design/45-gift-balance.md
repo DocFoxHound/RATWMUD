@@ -329,16 +329,18 @@ Every family has a counter at 38% or worse bare and armed, and each makes sense.
   overreaches. Minor: mana pool −15%, bar −5%, stamina back −10%; moderate −30%, −10%, −20%; severe −45%, −15%,
   −30%. No overreaching while it lasts. Only a full rest takes it away (doc 38).
 
+Re-tuned the same day for doc 47 (below, "Re-tuned on fair ground"):
+
 | Depth | 2:1 | 3:1 | 4:1 | 5:1 |
 | --- | --- | --- | --- | --- |
-| Fire | 1.94 | 3.88 | 4.02 | 4.15 |
-| Earth | 1.76 | 3.52 | 6.10 | 8.67 |
-| Water | 1.74 | 3.47 | 3.88 | 3.98 |
-| Wind | 1.36 | 2.71 | 3.40 | 4.08 |
-| Sound | 1.08 | 2.15 | 2.49 | 2.83 |
-| Blinker | 2.79 | 2.79 | 7.40 | 12 |
-| Gravity | 1.64 | 3.27 | 3.95 | 8.00 |
-| Seer | 1.18 | 2.35 | 5.99 | 9.63 |
+| Fire | 1.94 | 3.88 | 3.89 | 3.90 |
+| Earth | 1.68 | 3.35 | 5.51 | 7.67 |
+| Water | 1.74 | 3.47 | 3.54 | 3.61 |
+| Wind | 1.25 | 2.50 | 3.37 | 4.23 |
+| Sound | 1.08 | 2.15 | 2.31 | 2.47 |
+| Blinker | 2.73 | 2.73 | 12 | 12 |
+| Gravity | 1.70 | 3.39 | 3.95 | 7.25 |
+| Seer | 1.20 | 2.40 | 6.02 | 9.63 |
 
 Sound and Seer need the least (their kits answer a crowd already); Blinker the most, and as deep at 2:1 as at 3:1 (it
 has nothing for a crowd but its blinks).
@@ -371,10 +373,28 @@ At N = 1 the 3v1 mean is 44% and 5v1 21%; at N = 15, 53% and 26%. Without a Tran
 ### Open
 
 - **One on one in a Trance, a Quickened wolf wins every fight** (100%, equal level or ten up): the 2:1 floor is a lot
-  of Trance. Only the fatigue holds it back. A lighter floor alone, or a cost to go in, would settle it.
+  of Trance. Only the fatigue holds it back. **The user's call (2026-10-06): keep it as it is.**
 - **2v1 runs 48–100%** by family (Earth, Wind, Blinker near certain): set only by the 3:1 tuning (2:1 is half its depth,
   a Blinker's whole). A step-by-step tuning for 2v1 70% left the 5v1s unreachable.
 - **Parties** fare worse than a lone wolf at the same odds: a Quickened L20 and a plain L10 against four L10s wins 25%
   (Wind 2%, Blinker 57%); against six, 7%. The plain friends have no Trance and fall first.
 - The win rate climbs steeply with depth (one against several snowballs once the first falls): the table is sensitive,
   and gear, stats or a new Gift will want it re-run (`SIM_TACTICS=1 SIM_GAP=11 level_sim 400 trance`).
+
+### Re-tuned on fair ground (2026-10-06, doc 47)
+
+Doc 47's gear work found the simulator unfair to side B: it always stood 11 tiles off the spot both sides came in, by
+the town's walls, and lost team fights it should have drawn (bare 5v5: 72% to side A). The crowds the Trance was tuned
+against were side B. With the sides' ground alternated, the Trance's 3v1 held (51%) but its 5v1 rose to 31% and the
+families spread (3v1 37–66%). Re-tuned family by family (the table above), 400 fights a cell:
+
+| 3v1 / 5v1 | Fire | Earth | Water | Wind | Sound | Blinker | Gravity | Seer | Mean |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| N = 1 | 46 / 22% | 42 / 18% | 46 / 20% | 47 / 18% | 47 / 23% | 38 / 14% | 43 / 22% | 44 / 21% | 44 / 20% |
+| N = 10 | 48 / 25% | 50 / 24% | 50 / 23% | 52 / 21% | 52 / 26% | 50 / 20% | 48 / 26% | 51 / 30% | **50 / 24%** |
+| N = 15 | 50 / 26% | 51 / 26% | 53 / 24% | 56 / 25% | 55 / 26% | 57 / 23% | 52 / 26% | 54 / 31% | 53 / 26% |
+
+At N = 10, 2v1 runs 48–100% (mean 80%) and 4v1 24–38% (mean 30%). A Blinker and a Seer stop gaining past a point (the
+Ward at its most; more depth only quickens the bar): the Blinker tops out about 20% at 5v1, since the simulator keeps
+its Blink Strikes for one on one (blinking into a crowd got it surrounded). The gear changes (doc 47) touched five
+Gifts; see doc 47 for those and the Gift yardsticks re-checked, armed now meaning the Professional kit.

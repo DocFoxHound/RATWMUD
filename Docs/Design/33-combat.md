@@ -170,7 +170,7 @@ stamina per turn     = (4 + STR / 10) at the start of each of your own turns, ×
 
 **On your turn** you may move up to your range and take one action, in either order. Actions are Bite, Sword, a spell,
 Guard, Shove, Tend wounds, Flee or Wait. Holding back the move or the action gives your bar a head start; heavy actions carry a weight
-that sets it back (Sword 10).
+that sets it back (a sword 2–4, by its metal: doc 47).
 
 **Planning ahead** (doc 37, phase 5): while your bar fills you can choose your next turn. Click a tile your next turn
 could reach (they are outlined, dashed), a foe to strike, a fallen friend to tend, or an action (fire, rest, roll, the
@@ -205,7 +205,7 @@ strikes. There is no WASD in a fight (pressing it says how to move).
 
 **Pace is the wheel**, as in the world, and sets how far a turn's move goes (the table above). Faster than a trot costs
 stamina for every tile run; the lit tiles reach only as far as your stamina pays for. Physical attacks cost stamina too
-(Bite 8, Sword 14), and stamina comes back only a little at the start of each of your turns, by strength: a wolf that
+(Bite 8, a sword 9 or 10: doc 47), and stamina comes back only a little at the start of each of your turns, by strength: a wolf that
 sprints and bites every turn runs out. An exhausted wolf (stamina 0, until 20) can only walk, and can't bite or swing.
 NPCs fight at a run (6). In a fight the pace strip and stamina bar stay in view under the fighter cards, with how far a
 move goes at this pace, what a tile costs and what comes back next turn.
@@ -339,16 +339,18 @@ Bite is the always-available baseline; Sword trades stamina and speed for reach 
 | --- | --- | --- |
 | Requires | Nothing | A sword in the mouth slot |
 | Range | Adjacent tile | 2 tiles |
-| Weight (delays next turn) | 0 | 10 |
-| Base damage | 12 | 20 |
-| Stamina cost | 8 | 14 |
+| Weight (delays next turn) | 0 | 4 bronze, 3 iron, 2 steel |
+| Base damage | 12 | 14 bronze, 15 iron, 16 steel |
+| Stamina cost | 8 | 10 bronze and iron, 9 steel |
 | Side effect | None in v1 | Can be knocked loose (below) |
 
-At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent in about 12 bite turns or 7 sword turns. A DEX 50 bar fills in 25 s, or 10 s while no one is deciding (doc 37's no dead air). With both players deciding quickly a turn comes round every 8–9 s (measured in a browser duel, doc 37, phase 5); with both taking their full 20 s, every 30–45 s. A one-on-one fight lasts a few minutes, longer when it is written through. Bite stamina breaks even with the +8 per turn; Sword runs a 6-per-turn deficit that only matters in long fights.
+The sword's numbers are its tier's (doc 47, 2026-10-06: Basic bronze, Professional iron, Exceptional steel; they were 20,
+10 and 14 for the one sword). At 100 health and 75% hit chance, a DEX 50 / STR 50 wolf downs an equal opponent in about
+12 bite turns or 9–10 sword turns. A DEX 50 bar fills in 25 s, or 10 s while no one is deciding (doc 37's no dead air). With both players deciding quickly a turn comes round every 8–9 s (measured in a browser duel, doc 37, phase 5); with both taking their full 20 s, every 30–45 s. A one-on-one fight lasts a few minutes, longer when it is written through. Bite stamina breaks even with the +8 per turn; a sword runs a deficit of one or two a turn that only matters in long fights.
 
 **Stamina limits.** Below the attack's cost, the attack is refused with a short "too winded" message. Exhaustion (stamina 0 until it recovers to 20) blocks physical attacks too, reusing the existing hysteresis.
 
-**The mouth slot.** A wolf holding a sword cannot bite or pick up another item until it drops or stows the sword. Speech while holding it stays allowed, but its IC text is marked as muffled. A hit dealing 18+ damage has a 20% − (STR / 10)% chance to knock the sword to the ground at the wielder's feet.
+**The mouth slot.** A wolf holding a sword cannot bite or pick up another item until it drops or stows the sword. Speech while holding it stays allowed, but its IC text is marked as muffled. A hit dealing 18+ damage has a 20% − (STR / 10)% chance (times the blade's `knockLoose`) to knock the sword to the ground at the wielder's feet.
 
 **Defence.** Dodge is passive and comes from dexterity (see the hit formula). Besides striking back, backing off or fleeing, a defender can (doc 37, phase 6):
 
@@ -370,7 +372,8 @@ head, greaves the legs (the piece's catalog slot says which; the heaviest piece 
 protection, plus its extra against the kind of blow ("+1 vs cut"), less the blow's pierce, comes off the blow, after a
 graze is halved; at least a quarter always gets through. So a wolf in only a throat guard, struck head on, takes a bite
 on the throat lessened and a bite on the face or shoulder whole. A bite is a thrust of the teeth and the bit-sword a
-cut, neither with any pierce. Fire, burning and bleeding go round armour. One on guard turns to meet a blow, so it is
+cut, neither with any pierce. Since doc 47 every piece has a tier, takes fractions (a quality's share), and most guard a
+little more against a cut than a bite. Fire, burning and bleeding go round armour. One on guard turns to meet a blow, so it is
 always struck head on. Armour's DEX penalties (a brigandine −5, splinted greaves −2…) slow the initiative bar, not the
 dodge.
 

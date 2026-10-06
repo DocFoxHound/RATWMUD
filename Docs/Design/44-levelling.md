@@ -144,3 +144,8 @@ skill a level** (the user's choice: bring the level feel back), 600 fights each:
 
 The level rows are back. Striking first is worth little now (about 52%: it was the streaky dice), and a leather kit
 counts for less than levels; both are open (doc 45).
+
+**With the gear tiers (doc 47, 2026-10-06; tactics, 11 tiles apart, 400 fights):** an L1 against a bare L25 wins 30%
+with a bronze blade, 43% with iron, 58% with steel; 15%, 21% and 31% in a cloth, leather or steel kit; 41% with bronze and
+cloth, 77% with steel and the steel kit. So a tier is worth a little more than 24 levels, and no longer the whole fight
+(the old sword alone won 98%).

@@ -104,7 +104,7 @@ Mana costs below are against today's pool: about 44 at WIS 30. Range is in tiles
 | Forge Heat | work | 6 | Keeps a forge, kiln or oven at working heat without fuel. Quality bonus to smithing, firing and cooking. |
 | Kindle | work | 2 | Lights a fire on damp wood or in the rain. |
 | Cauterize | instant, touch | 10 | Sears an ally's (or one's own) wound shut: the Bleeding stops, and it can't bleed again for 3 turns (doc 45). |
-| Flare | instant, adjacent | 8 | A flash in a foe's face knocks their bar back 20% (doc 45; no health cost). |
+| Flare | instant, 2 tiles | 8 | A flash in a foe's face knocks their bar back 20% (doc 45; no health cost). Two tiles, a blade's reach (doc 47: it had been adjacent). |
 | Smother to Smoke | instant | 8 | Turns a fire or brush into smoke that blocks sight across 3 tiles for 2 turns. |
 | Warm Through | instant, touch | 6 | Removes an ally's cold and soaked penalties for the rest of the fight. |
 | Heat Sense | channelled | 4/turn | Senses body heat within 6 tiles and shows warm wolves, hidden or not. |
@@ -132,7 +132,7 @@ floor. *Cost:* stamina and aching paws. *Limit:* one tile, shallow.
 | Clay Hand | work | 6 | Quality bonus to pottery and masonry. |
 | Stone Sense | work | 6 | Finds ore seams, flawed stone and weak walls. |
 | Loosen Ground | instant, range 5 | 8 | One tile turns soft: crossing it costs double stamina, with a chance to stumble and lose the rest of the move. |
-| Firm Footing | instant, touch | 6 | Packs another's tile: while they stay on it they can't be shoved, are 10% harder to hit, 20% on guard (doc 45). |
+| Firm Footing | instant, touch | 6 | Packs another's tile: while they stay on it they can't be shoved, are 8% harder to hit, 16% on guard (doc 47: it was 10 and 20; a sword-fighter strikes from two tiles and keeps its tile longer). |
 | Feel Footfalls | channelled | 5/turn | Shows every wolf moving within 6 tiles, sneakers included. A wolf standing still isn't felt. |
 
 **Quickened.** *Tell:* bracing paws, now through wraps, but still not on wood. *Cost:* heavy stamina and cracked pads
@@ -196,7 +196,7 @@ fainting and losing a turn.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Battering Gust | instant, 5-tile line | 18 | Throws the first wolf up to 3 tiles back and down: 15 base, armour taking half what it would (stone half the rest), +12 if they hit a wall or another wolf (doc 45). |
+| Battering Gust | instant, 5-tile line | 18 | Throws the first wolf up to 3 tiles back and down: 15 base, through the body armour as a jet (stone half the rest), +12 if they hit a wall or another wolf (doc 45; doc 47: armour had taken only half). |
 | Pressure Drop | gathered, 2×2 within 6 | 20 | 12 base and ear damage (`earHealth`), and each wolf in it loses half its next bar. |
 | Steal Breath | channelled, range 4 | 10 + 5/turn | The foe loses 15 stamina a turn and can't hold a breath or hum: it breaks Fire and Sound Tells. |
 | Whirlwind | instant, 2 turns | 22 | Adjacent foes are flung 2 tiles out, and the dust cuts their sight and aim for 3 turns (doc 45: was the fight). Grit blinds a Seer's foresight. |
@@ -252,7 +252,7 @@ next turn.
 
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
-| Blink Strike | instant, range 6 | 18 | Blinks behind a foe and attacks in the same action, as from behind; the nausea comes after the blow (doc 45). |
+| Blink Strike | instant, range 6 | 18 | Blinks behind a foe and attacks in the same action, as from behind, at the least armoured spot there and a fifth harder; the nausea comes after the blow (doc 45; doc 47). |
 | Chain Blink | instant | 35 | Blink Strikes up to 3 different foes in one turn at 60% damage each. The heaviest nausea. |
 | Displace | instant, touch | 18 | Sends a foe up to 4 tiles away: into a Wall of Fire, or away from their side. |
 | Unmoor | instant, touch | 30 | Pulls a foe's mind loose from their body: they lose their next turn and then fight disoriented (no planning ahead, −hit) for 2 turns. |
@@ -307,7 +307,7 @@ of what the Seer can see, and blurry.
 | Ability | Kind | Mana | Effect |
 | --- | --- | --- | --- |
 | Seen Opening | instant | 15 | The Seer's next attack can't miss and lands on the foe's least armoured zone. |
-| Riposte | channelled stance | 24 + 6/turn | The next attack on the Seer misses and the Seer strikes back at once. Ends when it fires. Not with grit in its eyes (doc 45: 24 to take up; it was free). |
+| Riposte | channelled stance | 24 + 6/turn | The next attack on the Seer misses and the Seer strikes back at once, with what is in its jaws, through the attacker's armour (doc 47). Ends when it fires. Not with grit in its eyes (doc 45: 24 to take up; it was free). |
 | Doom Mark | instant, in sight | 20 | The Seer sees a foe's death: for 3 turns the foe can't dodge and everyone gets +15% to hit them. |
 | Shared Sight | channelled | 6/turn | Allies within 3 tiles get Forewarn every turn. |
 | Critical Sight | passive | — | No critical, and the Seer takes 3% less damage from everything; neither with grit in its eyes (doc 45). |

@@ -26,6 +26,11 @@
 
 // Engine-independent, deterministic authoritative simulation. Positions are in
 // terrain-tile units, with x right and y down. Facing is radians, east == zero.
+namespace ratw::items
+{
+struct Item;
+}
+
 namespace ratw
 {
 
@@ -621,6 +626,11 @@ class World
     static int durabilityOf(const std::string& item);
     double conditionOf(const Entity& e, const std::string& item) const;
     static std::string swordHeld(const Entity& e);
+    // The blade in the jaws, as the catalog has it (doc 47: its blow, what a swing costs), or null with none held.
+    static const items::Item* bladeHeld(const Entity& e);
+    // The watch's issue (doc 47): a guard on the job wears the Professional kit, and in a fight holds an iron sword; one
+    // no longer of the watch gives it back. Not theirs: never in the purse, so never sold, looted or left on the ground.
+    void kitOut(Entity& e, bool fighting);
     bool canRepair(const std::string& merchant, const std::string& item) const;
     std::int64_t repairCost(const Entity& e, const std::string& item) const;
     Result repairGear(const std::string& player, const std::string& merchant, const std::string& item);

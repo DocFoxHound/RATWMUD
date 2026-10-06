@@ -47,7 +47,8 @@ struct Landed
     std::string words;
     std::string zone;                   // Where it fell ("head", "throat", "body", "legs"): the armour there wears.
 };
-Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key, bool aimed);
+Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key, bool aimed,
+           int pierce = 0);
 
 std::string whole(double n)
 {
@@ -89,10 +90,16 @@ const items::Item* armourOn(const Entity& e, const std::string& zone)
 }
 } // namespace
 
-int armourAt(const Entity& e, const std::string& zone, const std::string& type)
+double armourAt(const Entity& e, const std::string& zone, const std::string& type)
 {
     const auto* item = armourOn(e, zone);
     return !item ? 0 : item->protect + (type == "cut" ? item->vsCut : type == "thrust" ? item->vsThrust : type == "blunt" ? item->vsBlunt : 0);
+}
+
+double spikesAt(const Entity& e, const std::string& zone)
+{
+    const auto* item = armourOn(e, zone);
+    return item ? item->spikes : 0;
 }
 
 std::string armourPieceAt(const Entity& e, const std::string& zone)
@@ -112,7 +119,7 @@ int armourDex(const Entity& e)
 
 double throughArmour(const Entity& target, const std::string& zone, double damage, const std::string& type, int pierce)
 {
-    const int armour = std::max(0, armourAt(target, zone, type) - pierce);
+    const double armour = std::max(0.0, armourAt(target, zone, type) - pierce);
     return armour <= 0 ? damage : std::max(damage * ArmourFloor, damage - armour);
 }
 
@@ -177,7 +184,8 @@ Temperament temperament(const std::string& role, bool bandit, int age, bool npc)
 
 namespace
 {
-Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key, bool aimed)
+Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, double damage, const std::string& type, std::int64_t key, bool aimed,
+           int pierce)
 {
     const auto& zones = battle::hitZones(aimed ? 3 : battle::quarterOf(battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y))));
     double total = 0;
@@ -201,7 +209,7 @@ Landed land(const BattleFighter& f, const BattleFighter& t, const Entity& d, dou
             }
     Landed out;
     out.zone = hit->zone;
-    out.damage = battle::throughArmour(d, hit->zone, damage, type);
+    out.damage = battle::throughArmour(d, hit->zone, damage, type, pierce);
     out.words = std::string(" on ") + hit->part;
     if (const long taken = std::lround(damage) - std::lround(out.damage); taken >= 1)
     {
@@ -696,6 +704,8 @@ void World::enterBattle(Battle& b, const std::string& id, int side, bool full)
     f.y = e ? int(std::floor(e->position.y)) : 0;
     b.fighters.push_back(f);
     strainOnEntering(id);                           // Fighting on an unhealed injury sets it back (doc 38).
+    if (auto* fighter = entity(id); fighter && fighter->npc)
+        kitOut(*fighter, true);                     // A guard: the watch's kit, its sword taken up (doc 47).
 }
 
 void World::fitArena(Battle& b)
@@ -2378,7 +2388,8 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     // Taken unawares (doc 40): as from behind, and likelier still, whatever the facing or guard.
     const auto* fight = battleOf(f.id);
     const bool unaware = fight && ambushing(*fight, f, t);
-    const double aim = f.aim.empty() || unaware ? 0 : battle::AimPenalty;   // Aiming costs a little (doc 40).
+    // Aiming costs a little (doc 40); not a Blink Strike's gap (doc 47).
+    const double aim = f.aim.empty() || unaware || f.magic.has("gap") ? 0 : battle::AimPenalty;
     // No side or back to strike (doc 43's "no critical"): every blow as from the front.
     const bool front = unflankable(t);
     const double angle = unaware ? (front ? 0 : .2 + battle::AmbushHit) : t.guarding ? -battle::GuardDodge : front ? 0 : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
@@ -2441,6 +2452,8 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
         damage *= battle::AmbushDamage;
     if (f.magic.has("chain"))
         damage *= .6;                               // (Chain Blink: each a little lighter.)
+    if (f.magic.has("gap"))
+        damage *= battle::BlinkStrikeBlow;          // (A Blink Strike lands with the force of its arrival: doc 47.)
     const auto landed = land(f, *t, *d, damage, "thrust", key, ambush);   // Teeth: a thrust, no pierce (doc 35, Part 8).
     wearArmourAt(*d, landed.zone, damage - landed.damage);           // The armour there takes the wear (RatwDurability.cpp).
     damage = magicDamage(b, *t, landed.damage, false);
@@ -2449,6 +2462,12 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     fightLine(b, f.id, t->id, graze ? "graze" : "hit", e->name + how + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
+    // Spikes on the throat bitten (a spiked collar, doc 47): the biter pays for it.
+    if (const double spikes = battle::spikesAt(*d, landed.zone); spikes > 0 && f.status == "fighting")
+    {
+        fightLine(b, t->id, f.id, "spikes", d->name + "'s spikes bite back (" + whole(spikes) + ").");
+        hurtFighter(b, f, spikes, battle::DownedBite, t->id, false);
+    }
     if (t->status == "downed")
         return {true, "You bite " + d->name + ", and they go down.", target};
     return {true, std::string(graze ? "You graze " : "You bite ") + d->name + ".", target};
@@ -2631,6 +2650,8 @@ void World::finishBattle(Battle& b)
         if (f.status == "fled")
             continue;
         leaveArena(b, f, false);
+        if (auto* npc = entity(f.id); npc && npc->npc)
+            kitOut(*npc, false);                    // (The watch's sword put away again: doc 47.)
         if (const auto* e = entity(f.id))
         {
             if (!e->npc)
@@ -2887,8 +2908,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
             battleAct(f.id, "wait");
         return;
     }
-    if (e->mouth == "sword" && tilesApart(f.x, f.y, mark->x, mark->y) <= battle::SwordReach && !e->exhausted &&
-        e->stamina >= battle::SwordStamina)
+    if (const auto* blade = bladeHeld(*e); blade && tilesApart(f.x, f.y, mark->x, mark->y) <= battle::SwordReach && !e->exhausted &&
+        e->stamina >= blade->weapon.stamina)
         battleAct(f.id, "sword", mark->id);
     else if (e->mouth.empty() && tilesApart(f.x, f.y, mark->x, mark->y) == 1 && !e->exhausted && e->stamina >= battle::BiteStamina)
         battleAct(f.id, "bite", mark->id);
@@ -3393,7 +3414,7 @@ Result World::holdItem(const std::string& id, const std::string& item)
     auto* e = entity(id);
     if (!e || e->dead)
         return {false, "No such character.", {}};
-    if (items::baseOf(item) != "sword")
+    if (!items::blade(item))
         return {false, "You can't hold that in your mouth.", {}};
     if (e->downedLeft > 0)
         return {false, "You are down.", {}};
@@ -3402,11 +3423,12 @@ Result World::holdItem(const std::string& id, const std::string& item)
     const auto* purse = society_.account(id);
     if (!purse)
         return {false, "You have no sword.", {}};
-    // Any sword (doc 35, Part 4): the one named, else the best one has.
+    // Any blade (doc 35, Part 4; doc 47): the one named, else the best one has (the hardest blow, its make counted).
+    const auto blow = [](const std::string& k) { return items::blade(k)->weapon.damage * items::qualityDamage(items::qualityOf(k)); };
     std::string kind = item != "sword" && Society::stock(*purse, item) > 0 ? item : std::string();
     if (kind.empty())
         for (const auto& [held, n] : purse->stock)
-            if (n > 0 && items::baseOf(held) == "sword" && (kind.empty() || items::qualityOf(held) > items::qualityOf(kind)))
+            if (n > 0 && items::blade(held) && (kind.empty() || blow(held) > blow(kind)))
                 kind = held;
     if (kind.empty())
         return {false, "You have no sword.", {}};
@@ -3456,7 +3478,16 @@ void World::dropItem(Battle& b, BattleFighter& f)
     const auto item = e->mouth == "sword" ? swordHeld(*e) : e->mouth;   // (That very sword, of its kind.)
     society_.openAccount(GroundAccount);
     if (!society_.shift(f.id, GroundAccount, item, 1, 0, "knocked loose in a fight"))
+    {
+        // Not its own to lose (the watch's issue, doc 47): knocked away for the fight, and nothing left to pick up.
+        if (e->npc)
+        {
+            e->mouth.clear();
+            e->swordKind.clear();
+            fightLine(b, f.id, {}, "drop", "The sword is knocked from " + e->name + "'s jaws and skids away.");
+        }
         return;
+    }
     e->mouth.clear();
     e->swordKind.clear();
     b.drops.push_back({f.x, f.y, item, f.id});
@@ -3496,8 +3527,9 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     injureOnBlow(b, t, damage, downedBase, by);     // A heavy blow can leave an injury that outlasts the fight (doc 38).
     if (d->npc)
         stop(t.id);
-    // Combat injuries (doc 38): a hard bite or cut bleeds; a very hard blow staggers.
-    if (!by.empty() && downedBase == battle::DownedBite && damage >= battle::BleedFrom && d->hurt < 100 && !t.magic.has("seared"))
+    // Combat injuries (doc 38): a hard bite or cut bleeds (the harder, the likelier: doc 47); a very hard blow staggers.
+    if (!by.empty() && downedBase == battle::DownedBite && d->hurt < 100 && !t.magic.has("seared") &&
+        chance(t.id + "|bleed", std::int64_t(b.seq) * 31 + b.turns) < (damage - battle::BleedFrom) / (battle::BleedSure - battle::BleedFrom))
     {
         if (t.bleeding <= 0)
             fightLine(b, t.id, {}, "bleeding", d->name + " is bleeding.");
@@ -3537,8 +3569,8 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
         fightLine(b, t.id, {}, "break", d->name + "'s fire breaks off.");
     }
     // A hard blow can knock a sword from the jaws.
-    if (damage >= battle::KnockLooseFrom && d->mouth == "sword" &&
-        chance(t.id + "|loose", std::int64_t(b.seq) * 13 + b.turns) < std::max(0.0, .2 - d->strength / 1000))
+    if (const auto* held = bladeHeld(*d); damage >= battle::KnockLooseFrom && held &&
+        chance(t.id + "|loose", std::int64_t(b.seq) * 13 + b.turns) < std::max(0.0, .2 - d->strength / 1000) * held->weapon.knockLoose)
         dropItem(b, t);
     // On a duel's terms (doc 37): the first wound ends a fight to first blood; to yield, who would go down yields.
     if (b.terms != "death" && (d->hurt >= 100 || (b.terms == "blood" && damage > 0 && !by.empty())))
@@ -3646,7 +3678,10 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         if (!standable(b.cellId, {mx + .5, my + .5}))
             return {false, "Something is in the way.", target};
     }
-    const double swordCost = battle::SwordStamina + injury::effects(e->injuries).attackStamina + (f.magic.has("burdened") ? 4 : 0);   // (Hurt ribs, doc 38; Burden, 43.)
+    // The blade's kind (doc 47): its tier's blow and cost; and its make's edge (doc 35, Part 4).
+    const auto blade = swordHeld(*e);
+    const auto& kind = bladeHeld(*e)->weapon;
+    const double swordCost = kind.stamina + injury::effects(e->injuries).attackStamina + (f.magic.has("burdened") ? 4 : 0);   // (Hurt ribs, doc 38; Burden, 43.)
     if (e->exhausted || e->stamina < swordCost)
         return {false, "You are too winded to swing.", target};
     e->stamina -= swordCost;
@@ -3658,7 +3693,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     if (e->npc)
         f.facing = battle::octant(t->x - f.x, t->y - f.y);
     f.acted = true;
-    f.weight = std::max(f.weight, battle::SwordWeight);
+    f.weight = std::max(f.weight, kind.weight);
     if (Result dealt; magicBlow(b, f, t, "blade", dealt))  // Slip, Interpose, Riposte (doc 43): the blow dealt with.
     {
         magicAfterBlow(b, f, *t);
@@ -3668,23 +3703,23 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     const bool ambush = ambushing(b, f, *t);
     if (t->guarding && !ambush)
         t->facing = battle::octant(f.x - t->x, f.y - t->y);
-    const double hit = strikeChance(f, *t);
+    const double hit = std::min(.95, strikeChance(f, *t) + kind.hit / 100.0);
     const auto key = std::int64_t(b.seq) * 7919 + b.turns;
     const double r = chance(f.id + "|sword|" + target, key);
     if (ambush)
         sprungOn(b, f, *t);
-    // The sword's kind (doc 35, Part 4): a finer blade cuts deeper; and every swing wears it (RatwDurability.cpp).
-    const auto blade = swordHeld(*e);
+    // A finer blade cuts deeper; and every swing wears it (RatwDurability.cpp).
     const double edge = items::qualityDamage(items::qualityOf(blade));
     wearGear(*e, blade, 1);
+    const bool thrust = kind.type == "thrust";      // (A rapier lunges and stabs: doc 47.)
     if (r >= hit)
     {
         magicAfterBlow(b, f, *t);
-        fightLine(b, f.id, t->id, "miss", e->name + " swings at " + d->name + " and misses.");
-        return {true, "You swing at " + d->name + " and miss.", target};
+        fightLine(b, f.id, t->id, "miss", e->name + (thrust ? " lunges at " : " swings at ") + d->name + " and misses.");
+        return {true, std::string(thrust ? "You lunge at " : "You swing at ") + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
-    double damage = battle::SwordDamage * edge * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
+    double damage = kind.damage * edge * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
     damage = std::max(1.0, damage - injury::effects(e->injuries).swordLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
@@ -3692,16 +3727,19 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         damage *= battle::AmbushDamage;
     if (f.magic.has("chain"))
         damage *= .6;                               // (Chain Blink: each a little lighter.)
-    const auto landed = land(f, *t, *d, damage, "cut", key, ambush);      // The bit-sword: a cut, no pierce (doc 35, 2.1).
+    if (f.magic.has("gap"))
+        damage *= battle::BlinkStrikeBlow;          // (A Blink Strike lands with the force of its arrival: doc 47.)
+    const auto landed = land(f, *t, *d, damage, kind.type, key, ambush, kind.pierce);   // (The bit-swords cut: doc 35, 2.1.)
     wearArmourAt(*d, landed.zone, damage - landed.damage);
     damage = magicDamage(b, *t, landed.damage, false);
     magicAfterBlow(b, f, *t);
-    fightLine(b, f.id, t->id, graze ? "graze" : "slash", e->name + (graze ? " nicks " : " cuts ") + d->name + landed.words + " (" + whole(damage) + ").");
+    fightLine(b, f.id, t->id, graze ? "graze" : "slash",
+              e->name + (graze ? (thrust ? " pricks " : " nicks ") : (thrust ? " stabs " : " cuts ")) + d->name + landed.words + " (" + whole(damage) + ").");
     growSkill(*e, battle::SkillPerHit);
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
         return {true, "Your blade takes " + d->name + " down.", target};
-    return {true, std::string(graze ? "You nick " : "You cut ") + d->name + ".", target};
+    return {true, std::string(graze ? (thrust ? "You prick " : "You nick ") : (thrust ? "You stab " : "You cut ")) + d->name + ".", target};
 }
 
 Result World::shove(Battle& b, BattleFighter& f, const std::string& target)

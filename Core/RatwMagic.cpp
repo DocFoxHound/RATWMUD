@@ -64,7 +64,7 @@ struct Rule
 constexpr Rule Rules[] = {
     // Fire, Gifted: no damage, by touch.
     {"cauterize", "ally", 1, 0, 0, 3, 1, 0},
-    {"flare", "foe", 1, 0, 0, 3, 0, 0},
+    {"flare", "foe", 2, 0, 0, 3, 0, 0},              // (Two tiles: a blade's reach, doc 47.)
     {"smother_to_smoke", "tile", 5, 0, 0, 6, 1, 0},
     {"warm_through", "ally", 1, 0, 0, 6, 1, 0},
     {"heat_sense", "self", 0, 6, 0, 4, 0, 0},
@@ -239,11 +239,12 @@ struct TranceDepth
 TranceDepth tranceDepth(const std::string& family)
 {
     // (Tuned in Tests/level_sim.cpp, suite "trance": a Quickened wolf ten levels over plain ones wins about half its
-    // fights three to one and a quarter five to one, the Trance falling with the odds as foes fall. A Blinker's is as
-    // deep at two to one as at three, and its Ward nearly whole: alone, it has nothing for a crowd but its blinks.)
+    // fights three to one and a quarter five to one, the Trance falling with the odds as foes fall; re-tuned for doc 47,
+    // once the simulator stood both sides on fair ground. A Blinker's is as deep at two to one as at three, and at four
+    // as at five, and its Ward nearly whole: alone, it has nothing for a crowd but its blinks.)
     static const std::map<std::string, TranceDepth> by = {
-        {"fire", {3.88, 4.15}},  {"earth", {3.52, 8.67}}, {"water", {3.47, 3.98, -1, 3.88}},       {"wind", {2.71, 4.08}},
-        {"sound", {2.15, 2.83}}, {"seer", {2.35, 9.63}},  {"blinker", {2.79, 12, 2.79, -1, .97}}, {"gravity", {3.27, 8.00, -1, 3.95}}};
+        {"fire", {3.88, 3.90}},  {"earth", {3.35, 7.67}}, {"water", {3.47, 3.61}},                 {"wind", {2.50, 4.23}},
+        {"sound", {2.15, 2.47}}, {"seer", {2.40, 9.63}},  {"blinker", {2.73, 12, 2.73, 12, .97}}, {"gravity", {3.39, 7.25, -1, 3.95}}};
     const auto k = by.find(family);
     TranceDepth d = k == by.end() ? TranceDepth{1, 1} : k->second;
     return d;
@@ -573,7 +574,7 @@ double World::magicStrikeChance(const BattleFighter& f, const BattleFighter& t, 
         return 1;                                   // Seen Opening: it can't miss.
     c -= (a.has("splashed") ? .13 : 0) + (a.has("dusted") ? .1 : 0) + (a.has("dread") ? .15 : 0) + (a.has("dizzy") ? .15 : 0) + (a.has("blinked") ? .1 : 0) +
          (a.has("nausea") ? .1 : 0) + (a.has("double_vision") ? .1 : 0) + (a.has("disoriented") ? .15 : 0);
-    c += (d.has("dizzy") ? .15 : 0) - (d.has("forewarned") ? .3 : 0) - (d.has("firm") ? (t.guarding ? .2 : .1) : 0);
+    c += (d.has("dizzy") ? .15 : 0) - (d.has("forewarned") ? .3 : 0) - (d.has("firm") ? (t.guarding ? .16 : .08) : 0);
     if (d.has("doomed"))
         return std::max(.95, std::clamp(c + .15, .2, .95));   // Doom Mark: it can't dodge.
     return std::clamp(c, .2, .95);
@@ -840,7 +841,11 @@ bool World::magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std:
         t->magic.fx.erase("riposte");
         if (t->magic.channel == "riposte")
             t->magic.channel.clear();
-        const double back = battle::BiteDamage * (.6 + d->strength / 125) * (.85 + .3 * chance(t->id + "|riposte", key));
+        // With what is in its jaws, through the attacker's armour, head on (doc 47).
+        const auto* blade = bladeHeld(*d);
+        const double raw = (blade ? blade->weapon.damage * items::qualityDamage(items::qualityOf(swordHeld(*d))) : battle::BiteDamage) *
+                           (.6 + d->strength / 125) * (.85 + .3 * chance(t->id + "|riposte", key));
+        const double back = battle::expectedThrough(*e, 0, raw, blade ? blade->weapon.type : "thrust", blade ? blade->weapon.pierce : 0);
         fightLine(b, t->id, f.id, "riposte", d->name + " saw it coming: the blow misses, and " + d->name + " strikes back (" + whole(back) + ").");
         b.log.back().tiles = {{f.x, f.y}};
         hurtFighter(b, f, magicDamage(b, f, back, false), battle::DownedBite, t->id, true);
@@ -910,9 +915,9 @@ bool World::magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std:
     {
         const int quarter = battle::quarterOf(battle::octantGap(t->facing, battle::octant(f.x - t->x, f.y - t->y)));
         std::string best;
-        int least = std::numeric_limits<int>::max();
+        double least = std::numeric_limits<double>::max();
         for (const auto& z : battle::hitZones(quarter))
-            if (const int armour = battle::armourAt(*d, z.zone, weapon == "blade" ? "cut" : "thrust"); armour < least)
+            if (const double armour = battle::armourAt(*d, z.zone, weapon == "blade" ? "cut" : "thrust"); armour < least)
             {
                 least = armour;
                 best = z.zone;
@@ -1491,10 +1496,10 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
         {
             auto* de = entity(first->id);
             const double raw = (jet ? 12 : 15) * power * rnd(first->id);
-            // (A jet is water's weight, and armour takes it; a gust isn't a blow, and armour takes only half of what it would,
-            // stone half the rest: doc 45.)
+            // (A jet is water's weight, a gust the wind's: armour takes it; stone half the rest of a gust: doc 45. Doc 47: once
+            // armour took only half of a gust, when a sword cut deeper than any blade does now.)
             const double through = battle::throughArmour(*de, "body", raw, "blunt");
-            const double dmg = magicDamage(*b, *first, jet ? through : (raw + through) / 2 * (first->magic.has("stone_armor") ? .5 : 1), false);
+            const double dmg = magicDamage(*b, *first, jet ? through : through * (first->magic.has("stone_armor") ? .5 : 1), false);
             line("gift", first->id, de->name + (jet ? " is struck by the water (" : " is hurled back by the wind (") + whole(dmg) + ").", {tileOf(first)});
             hurtFighter(*b, *first, dmg, battle::DownedBlunt, id, true);
             const int dx = (tile.first > f.x) - (tile.first < f.x), dy = (tile.second > f.y) - (tile.second < f.y);
@@ -1707,10 +1712,34 @@ Result World::useGift(const std::string& id, const std::string& ability, const s
             f.facing = battle::octant(m->x - f.x, m->y - f.y);
             line("blink", m->id, e->name + " blinks behind " + name(m) + ".", {was, spot});
             f.acted = false;
+            // Behind it, the blow finds the gap: the least armoured spot there (doc 47), with no aim's cost; where every spot
+            // is armoured alike (or bare), wherever it falls.
+            const auto aimWas = f.aim;
+            if (const auto* me = entity(m->id))
+            {
+                const auto* blade = bladeHeld(*e);
+                double least = std::numeric_limits<double>::max(), most = 0;
+                std::string gap;
+                for (const auto& z : battle::hitZones(battle::quarterOf(battle::octantGap(m->facing, battle::octant(f.x - m->x, f.y - m->y)))))
+                {
+                    const double armour = battle::armourAt(*me, z.zone, blade ? blade->weapon.type : "thrust");
+                    most = std::max(most, armour);
+                    if (armour < least)
+                    {
+                        least = armour;
+                        gap = z.zone;
+                    }
+                }
+                if (least < most)
+                    f.aim = gap;
+            }
+            f.magic.fx["gap"] = 1;
             if (e->mouth == "sword")
                 swordStrike(*b, f, m->id);
             else
                 bite(*b, f, m->id);
+            f.magic.fx.erase("gap");
+            f.aim = aimWas;
         }
         f.magic.fx.erase("chain");
         if (sick)

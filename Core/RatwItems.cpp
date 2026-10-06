@@ -78,6 +78,11 @@ std::filesystem::path itemsDir()
 #endif
 }
 
+int tierOf(const std::string& name)
+{
+    return name == "basic" ? 1 : name == "professional" ? 2 : name == "exceptional" ? 3 : 0;
+}
+
 int wearNumber(const json::Value& item, const char* key)
 {
     return int(item.object("wear").number(key, 0));
@@ -104,6 +109,21 @@ Catalog build()
         good.nourish = int(i.object("food").number("nourish", 0));
         good.drink = i.object("food").number("drink", 0) > 0;
         good.keeps = std::max(0.0, i.number("keeps", 0));
+        good.tier = tierOf(i.string("tier"));
+        if (const auto& w = i.object("weapon"); i.has("weapon"))
+        {
+            good.weapon.kind = w.string("class");
+            good.weapon.type = w.string("type", "cut");
+            good.weapon.damage = std::max(0.0, w.number("damage", 0));
+            good.weapon.stamina = std::max(0.0, w.number("stamina", 0));
+            good.weapon.weight = std::max(0.0, w.number("turnWeight", 0));
+            good.weapon.knockLoose = std::max(0.0, w.number("knockLoose", 1));
+            good.weapon.reach = std::max(1, int(w.number("reach", 1)));
+            good.weapon.pierce = std::max(0, int(w.number("pierce", 0)));
+            good.weapon.hit = int(w.number("hitBonus", 0));
+            if (good.weapon.damage <= 0)
+                good.weapon.kind.clear();           // (No blow, no weapon a fight can use.)
+        }
         if (!good.id.empty() && !good.name.empty() && good.price >= 0 && good.price <= 100000)
             c.goods.push_back(std::move(good));
         const auto slot = i.string("slot");
@@ -128,12 +148,14 @@ Catalog build()
         item.warmth = wearNumber(i, "warmth");
         item.rain = wearNumber(i, "rain");
         item.jingle = wearNumber(i, "jingle");
-        item.protect = int(i.object("armor").number("protect", 0));
+        item.protect = std::max(0.0, i.object("armor").number("protect", 0));
         item.durability = int(i.number("durability", 0));
-        item.vsCut = int(i.object("armor").object("vs").number("cut", 0));
-        item.vsThrust = int(i.object("armor").object("vs").number("thrust", 0));
-        item.vsBlunt = int(i.object("armor").object("vs").number("blunt", 0));
+        item.vsCut = i.object("armor").object("vs").number("cut", 0);
+        item.vsThrust = i.object("armor").object("vs").number("thrust", 0);
+        item.vsBlunt = i.object("armor").object("vs").number("blunt", 0);
         item.dex = int(i.object("armor").number("dex", 0));
+        item.spikes = std::max(0.0, i.object("armor").number("spikes", 0));
+        item.tier = tierOf(i.string("tier"));
         if (item.id.empty() || item.name.empty() || item.price < 1 || item.price > 1000 || (slot == "jewelry" && item.spots.empty()))
             continue;
         c.wearables.push_back(std::move(item));
@@ -273,10 +295,12 @@ void addQualities(Catalog& c)
         v.name = std::string(qualityName(q)) + " " + (base.id == "sword" ? std::string("bronze sword") : lowerFirst(base.name));
         v.durability = int(std::lround(base.durability * qualityDurability(q)));
         v.price = std::max(1, int(std::lround(base.price * qualityPrice(q))));
-        // Better made wears better and looks it: armour a quarter stronger or weaker a step; status a step either way.
-        v.protect = std::max(0, int(std::lround(base.protect * (q == 0 ? .75 : q == 2 ? 1.25 : q == 3 ? 1.5 : 1))));
-        if (base.protect > 0 && q >= 2)
-            v.protect = std::max(v.protect, base.protect + 1);
+        // Better made wears better and looks it: armour protects by its quality (doc 47); status a step either way.
+        v.protect = base.protect * qualityGuard(q);
+        v.vsCut = base.vsCut * qualityGuard(q);
+        v.vsThrust = base.vsThrust * qualityGuard(q);
+        v.vsBlunt = base.vsBlunt * qualityGuard(q);
+        v.spikes = base.spikes * qualityGuard(q);
         v.status = base.status + (q == 0 ? -1 : q == 2 ? 1 : q == 3 ? 2 : 0);
         v.warmth = base.warmth + (q == 3 ? 1 : 0);
         return v;
@@ -388,6 +412,17 @@ const Item* good(const std::string& id)
     return found == index.end() ? nullptr : found->second;
 }
 
+const Item* blade(const std::string& id)
+{
+    const auto* g = good(id);
+    return g && g->weapon.kind == "blade" ? g : nullptr;
+}
+
+const char* tierName(int tier)
+{
+    return tier == 1 ? "Basic" : tier == 2 ? "Professional" : tier == 3 ? "Exceptional" : "";
+}
+
 std::string baseOf(const std::string& id)
 {
     return id.substr(0, id.find_first_of("~@"));
@@ -416,7 +451,13 @@ double qualityDurability(int quality)
 
 double qualityDamage(int quality)
 {
-    return quality == 0 ? .85 : quality == 2 ? 1.15 : quality == 3 ? 1.3 : 1;
+    // (Doc 47: a tier's step is a point or two of a blow, so a make's is less: a masterwork cuts about as the next metal.)
+    return quality == 0 ? .92 : quality == 2 ? 1.05 : quality == 3 ? 1.1 : 1;
+}
+
+double qualityGuard(int quality)
+{
+    return quality == 0 ? .75 : quality == 2 ? 1.25 : quality == 3 ? 1.5 : 1;
 }
 
 int qualityOf(const std::string& id)

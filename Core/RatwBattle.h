@@ -243,7 +243,9 @@ constexpr double MeterPerSecond = 100.0 / (11 * 25);
 constexpr double RestFactor = 2;
 // Combat injuries (doc 38): a bite or sword blow this hard bleeds (damage a turn, for turns); any blow this hard
 // staggers (the bar set back).
-constexpr double BleedFrom = 18, BleedDamage = 2, StaggerFrom = 25, StaggerSetback = 20;
+// A blow may bleed from BleedFrom, likelier the harder, and always from BleedSure (doc 47: a ramp, not one number a
+// blade's tier or make crosses or not).
+constexpr double BleedFrom = 14, BleedSure = 22, BleedDamage = 2, StaggerFrom = 25, StaggerSetback = 20;
 constexpr int BleedTurns = 3;
 constexpr int AwayAfter = 3;
 constexpr double PartsGrace = 1.5;
@@ -310,7 +312,9 @@ inline int quarterOf(int octantGap) { return octantGap >= 3 ? 2 : octantGap == 2
 std::string armourZone(const std::string& catalogSlot);
 // What a wolf has on a zone against a kind of blow ("cut", "thrust", "blunt"), and the piece's name ("" for none); and
 // what all its armour takes off its dexterity for the initiative bar (0 or less: doc 35's weight).
-int armourAt(const Entity& e, const std::string& zone, const std::string& type);
+double armourAt(const Entity& e, const std::string& zone, const std::string& type);
+// What the armour on a zone costs a wolf that bites it (a spiked collar's spikes: doc 47), 0 for none.
+double spikesAt(const Entity& e, const std::string& zone);
 std::string armourPieceAt(const Entity& e, const std::string& zone);
 int armourDex(const Entity& e);
 // A blow of `damage` of `type` and `pierce` landing on `zone` of `target`, after the armour there.
@@ -333,8 +337,8 @@ constexpr double RestHourSeconds = 600, FullRestHours = 6, AwayRestRate = 1.5;
 constexpr double StruggleSeconds = 20, TendSeconds = 10;   // Out of a fight.
 constexpr std::size_t BattleLogKept = 60;
 constexpr int YoungestFighter = 13;
-// The sword, held in the mouth.
-constexpr double SwordDamage = 20, SwordStamina = 14, SwordWeight = 10, KnockLooseFrom = 18;
+// A blade, held in the mouth: its blow, its cost and its weight are its own (Data/Items, doc 47); every blade reaches two.
+constexpr double KnockLooseFrom = 18;
 constexpr int SwordReach = 2;
 // Flamethrower, a Fire Gift (Gifted, Quickened).
 struct Spell
@@ -348,6 +352,7 @@ constexpr int BurnTurns = 3, SmokeRounds = 3;
 constexpr double FlameFlinch = 25;                      // A Quickened flame knocks the bar back (doc 45).
 constexpr double BurnDamage = 3, RainFactor = .6, ManaPerTurn = 2, ManaPerSecond = 1.0 / 6;
 constexpr double QuickenedManaPerTurn = 0;            // (Doc 45: a Quickened wolf's casts are few, from what it brings.)
+constexpr double BlinkStrikeBlow = 1.2;                 // A Blink Strike's blow, against an ordinary one (doc 47).
 constexpr double TranceBreath = .5;                     // A Trance's second wind: stamina back, more, a degree (doc 45).
 inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom * .8 : 0; }
 // Fighting skill grows with fighting, slower as it climbs.

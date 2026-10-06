@@ -466,7 +466,7 @@ export class Hud {
                 `  ·  +${me.regen} NEXT TURN${b.resting ? ' (RESTING)' : ''}`);
             this.staminaNote.title = 'Pace (the wheel) sets how far a move goes: half at a walk, as far as DEX allows at a trot, half again at ' +
                 'a sprint. Faster than a trot costs stamina a tile. Stamina comes back only at the start of each turn (4 + STR ÷ 10, less hurt; ' +
-                'twice that after a turn of rest). Bites cost 8, a sword 14.';
+                'twice that after a turn of rest). Bites cost 8, a sword 9 or 10.';
         } else {
             this.staminaNote.title = '';
             setText(this.staminaNote, rate < -0.01 ? `DRAINING ${(-rate).toFixed(1)}/s · ease pace for distance`

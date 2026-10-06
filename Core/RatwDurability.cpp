@@ -94,6 +94,14 @@ std::string World::swordHeld(const Entity& e)
     return e.swordKind.empty() ? std::string("sword") : e.swordKind;
 }
 
+const items::Item* World::bladeHeld(const Entity& e)
+{
+    if (e.mouth != "sword")
+        return nullptr;
+    const auto* kind = items::blade(swordHeld(e));
+    return kind ? kind : items::blade("sword");     // (A kind the catalog no longer has: as the bronze one.)
+}
+
 void World::tendWear()
 {
     // Clothes, harness and jewellery in service: a point a game day each (catalog durability is in days of wear).
@@ -109,6 +117,8 @@ void World::tendWear()
     lastWearDay_ = day;
     for (auto& [id, e] : entities_)
     {
+        if (e.npc)
+            kitOut(e, battleOf(id) != nullptr);     // The watch in its kit, and only the watch (doc 47).
         if (e.npc || e.dead)
             continue;
         std::vector<std::string> worn;

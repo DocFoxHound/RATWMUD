@@ -13,6 +13,9 @@
     {"id": "straw_hat", "makers": ["weaver", "general"], "seconds": 300, "in": {"straw": 1}, "out": {"straw_hat": 2}},
     {"id": "linen_neckerchief", "makers": ["tailor", "weaver"], "seconds": 120, "in": {"linen_cloth": 1}, "out": {"linen_neckerchief": 4}},
     {"id": "quilted_vest", "makers": ["tailor", "armory"], "seconds": 600, "in": {"linen_cloth": 2, "wool": 1}, "out": {"quilted_vest": 1}},
+    {"id": "padded_collar", "makers": ["tailor", "armory"], "seconds": 240, "in": {"linen_cloth": 1, "wool": 1}, "out": {"padded_collar": 2}},
+    {"id": "quilted_hood", "makers": ["tailor", "armory"], "seconds": 240, "in": {"linen_cloth": 1, "wool": 1}, "out": {"quilted_hood": 2}},
+    {"id": "quilted_leggings", "makers": ["tailor", "armory"], "seconds": 300, "in": {"linen_cloth": 1, "wool": 1}, "out": {"quilted_leggings": 1}},
     {"id": "leather_cap", "makers": ["tannery", "armory", "saddlery"], "seconds": 240, "in": {"leather": 1}, "out": {"leather_cap": 2}},
     {"id": "leather_bindings", "makers": ["tannery", "saddlery"], "seconds": 300, "in": {"leather": 1}, "out": {"leather_bindings": 2}},
     {"id": "fang_charm", "makers": ["tinker", "jeweler", "general"], "seconds": 120, "in": {"bones": 1, "cord": 1}, "out": {"fang_charm": 4}},
@@ -89,7 +92,8 @@
     {"id": "kettle_helm", "makers": ["armory"], "seconds": 600, "in": {"steel_bar": 1, "leather": 1}, "out": {"kettle_helm": 1}},
     {"id": "steel_gorget", "makers": ["armory"], "seconds": 600, "in": {"steel_bar": 1, "leather": 1}, "out": {"steel_gorget": 1}},
     {"id": "handbell", "makers": ["foundry"], "seconds": 600, "in": {"bronze_bar": 1}, "out": {"handbell": 1}},
-    {"id": "splinted_greaves", "makers": ["armory"], "seconds": 900, "in": {"steel_bar": 1, "leather": 2}, "out": {"splinted_greaves": 1}}
+    {"id": "splinted_greaves", "makers": ["armory"], "seconds": 900, "in": {"steel_bar": 1, "leather": 2}, "out": {"splinted_greaves": 1}},
+    {"id": "steel_sword", "makers": ["armory"], "seconds": 900, "in": {"steel_bar": 1, "leather": 1}, "out": {"steel_sword": 1}}
   ],
   "producers": [
     {"id": "sheep_farm", "match": ["raises sheep", "sheep farm"], "seconds": 1800, "out": {"mutton": 1, "wool": 1, "sheepskin": 1}},

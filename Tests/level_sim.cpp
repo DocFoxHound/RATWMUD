@@ -9,8 +9,12 @@
 // family alone and in a pair), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
 // (what a head start in health or the first blow is worth), trance (a Quickened wolf ten levels over one to five plain
 // ones: doc 45's Trance targets), parties, ladder and crowd (one Quickened against one, two or three), gifts (the first
-// broad sweep), naive, and the parts of gifts on their own (quickened, gifted, teams, gear, gaps, adjacent). One row: "duel <side> <side> [level] [gap]", a side being wolves joined by commas, each "plain" or a
-// family, with "q" for Quickened, "+" for a sword and leather, "!" for naive play: "duel fireq+ plain+ 10".
+// broad sweep), naive, and the parts of gifts on their own (quickened, gifted, teams, gear, gaps, adjacent); tiers
+// (doc 47's gear: armour, weapons, ladders and cross on their own), and bias (mirror fights, to see the sides are fair).
+// One row: "duel <side> <side> [level] [gap]", a side being wolves joined by commas, each "plain" or a family, with "q"
+// for Quickened, "!" for naive play, and gear after a "+": a blade (bronze, iron, steel) and a kit (cloth, leather,
+// plate: the steel kit), "~fine" and the like for a quality, a "+" alone for doc 45's armed (SIM_ARMED, iron and
+// leather by default): "duel fireq+ plain+ 10", "duel plain+steel~fine+plate plain+iron+leather 10 11".
 // SIM_GAP sets how far apart the sides start (5 by default: there neither gains by waiting; 11 for the Trance's runs);
 // SIM_TACTICS has every wolf play tactics (runs to close, focuses, flanks, spreads, steps back outnumbered, takes a
 // moment to act); SIM_TRANCE (never, outnumbered, always) when a Quickened wolf goes into a Trance; SIM_SKIP leaves
@@ -40,16 +44,35 @@ namespace
 struct Wolf
 {
     int level = 1;
-    bool sword = false, armour = false;     // A bit-sword; a leather kit (barding, gorget, cap, leg guards).
+    std::string blade, kit;                 // A blade ("sword": bronze, "iron_sword", "steel_sword"); a kit (Kits).
     std::string gift;                       // A family, or "" for none.
     bool quickened = false;
     bool naive = false;                     // Uses whatever of its Gift is ready, not a plan.
     double hurt = 0;                        // Starts the fight this hurt (a yardstick: what a head start in health is worth).
 };
 
-Wolf gifted(const std::string& family, int level = 1) { return {level, false, false, family, false}; }
-Wolf quick(const std::string& family, int level = 1) { return {level, false, false, family, true}; }
-Wolf armed(Wolf w) { w.sword = w.armour = true; return w; }
+Wolf gifted(const std::string& family, int level = 1) { return {level, "", "", family, false}; }
+Wolf quick(const std::string& family, int level = 1) { return {level, "", "", family, true}; }
+// Doc 45's yardstick, armed: the middle tier, an iron sword and leather (doc 47); SIM_ARMED another ("bronze+cloth").
+Wolf armed(Wolf w)
+{
+    static const std::string kit = std::getenv("SIM_ARMED") ? std::getenv("SIM_ARMED") : "iron+leather";
+    static const std::map<std::string, std::string> metals = {{"bronze", "sword"}, {"iron", "iron_sword"}, {"steel", "steel_sword"}};
+    const auto plus = kit.find('+');
+    w.blade = metals.count(kit.substr(0, plus)) ? metals.at(kit.substr(0, plus)) : "iron_sword";
+    w.kit = plus == std::string::npos ? "leather" : kit.substr(plus + 1);
+    return w;
+}
+Wolf geared(Wolf w, const std::string& blade, const std::string& kit) { w.blade = blade; w.kit = kit; return w; }
+
+// The armour kits, a tier each (doc 47): a piece for every hit zone.
+const std::map<std::string, std::vector<std::pair<std::string, std::string>>> Kits = {
+    {"cloth", {{"body", "quilted_vest"}, {"throat", "padded_collar"}, {"head", "quilted_hood"}, {"paws", "quilted_leggings"}}},
+    {"leather", {{"body", "leather_barding"}, {"throat", "leather_gorget"}, {"head", "leather_cap"}, {"paws", "leg_guards"}}},
+    {"plate", {{"body", "mail_coat"}, {"throat", "steel_gorget"}, {"head", "kettle_helm"}, {"paws", "splinted_greaves"}}},
+};
+// The blades by their metal, for a row's words.
+const std::map<std::string, std::string> Blades = {{"bronze", "sword"}, {"iron", "iron_sword"}, {"steel", "steel_sword"}, {"rapier", "rapier"}};
 Wolf naive(Wolf w) { w.naive = true; return w; }
 
 const std::vector<std::string> Families = {"fire", "earth", "water", "wind", "sound", "blinker", "gravity", "seer"};
@@ -472,7 +495,7 @@ bool giftedHelp(Turn& t, bool action = false)
             if (worth(*o) && apart(*t.me, *o) <= 1 && t.ok("cauterize") && t.use("cauterize", o->id))
                 return true;
         for (const auto* o : action ? std::vector<const BattleFighter*>{} : t.foes)   // Flare: at a foe about to act.
-            if (apart(*t.me, *o) <= 1 && (o->acting || o->meter >= 25) && t.ok("flare") && t.use("flare", o->id))
+            if (apart(*t.me, *o) <= 2 && (o->acting || o->meter >= 25) && t.ok("flare") && t.use("flare", o->id))
                 return true;
     }
     if (g == "water")
@@ -986,6 +1009,7 @@ struct Outcome
 {
     int result = 0;                                 // 1 if A stands, -1 if B does, 0 if neither side went down.
     int turns = 0;
+    double rounds = 0;                              // Turns each (turns over the wolves fighting).
     double health = 0;                              // The winning side's health left, all told.
     int downedB = 0;                                // Side B's wolves down at the end.
     double hurtB = 0;                               // Side B's health lost, all told.
@@ -1006,14 +1030,17 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
         const std::string id = std::string(side ? "player-b" : "player-a") + std::to_string(i) + "-" + std::to_string(trial);
         auto& e = w.addPlayer(id, id);
         level[id] = wolf.level;
-        if (wolf.sword)
+        if (!wolf.blade.empty())
+        {
             e.mouth = "sword";
+            e.swordKind = wolf.blade == "sword" ? std::string() : wolf.blade;
+        }
         e.hurt = wolf.hurt;
-        if (wolf.armour)
-            for (const auto& [slot, item] : {std::pair<const char*, const char*>{"body", "leather_barding"}, {"throat", "leather_gorget"},
-                                            {"head", "leather_cap"}, {"paws", "leg_guards"}})
-                if (std::string(slot) != "paws" || wolf.gift != "earth" || wolf.quickened)
-                    e.worn[slot] = item;            // (A Gifted Earth wolf braces bare paws: it goes without leg guards.)
+        const auto made = wolf.kit.find('~');       // ("leather~fine": every piece of that quality.)
+        if (const auto kit = Kits.find(wolf.kit.substr(0, made)); kit != Kits.end())
+            for (const auto& [slot, item] : kit->second)
+                if (slot != "paws" || wolf.gift != "earth" || wolf.quickened)
+                    e.worn[slot] = item + (made == std::string::npos ? std::string() : wolf.kit.substr(made));   // (A Gifted Earth wolf braces bare paws.)
         if (!wolf.gift.empty())
         {
             w.giveGift(id, wolf.gift, wolf.quickened);
@@ -1030,8 +1057,11 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
     auto* lead = make(a[0], 0, 0);
     auto* foe = make(b[0], 1, 0);
     foe->cellId = lead->cellId;
-    // Which side stands west of the other alternates too (the ground isn't the same both ways).
-    foe->position = {lead->position.x + ((trial / 2) % 2 ? -1 : 1) * (gap + .2), lead->position.y};
+    // Which side stands west of the other alternates too (the ground isn't the same both ways), and which stands where
+    // they came in (the other, a gap off it).
+    auto* stays = (trial / 4) % 2 ? foe : lead;
+    auto* steps = stays == lead ? foe : lead;
+    steps->position = {stays->position.x + ((trial / 2) % 2 ? -1 : 1) * (stays == lead ? 1 : -1) * (gap + .2), stays->position.y};
     const std::string first = aFirst ? ids[0][0] : ids[1][0];
     const std::string second = aFirst ? ids[1][0] : ids[0][0];
     const std::string cellId = lead->cellId;
@@ -1041,9 +1071,11 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
     if (!fightP)
         return {};
     // The rest of each side, beside (behind) their first (put in directly: a fight between players is one to one to begin).
-    for (int side = 0; side < 2; ++side)
-        for (std::size_t i = 1; i < (side ? b : a).size(); ++i)
+    for (std::size_t i = 1; i < std::max(a.size(), b.size()); ++i)
+        for (int side : {aFirst ? 0 : 1, aFirst ? 1 : 0})
         {
+            if (i >= (side ? b : a).size())
+                continue;
             auto* e = make((side ? b : a)[i], side, int(i));
             e->cellId = cellId;
             const auto* near = fightP->fighter(ids[side][0]);
@@ -1115,12 +1147,13 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
     for (const auto& id : ids[0])
         if (const auto* bb = w.battleOf(id))
             out.turns = bb->turns;
+    out.rounds = double(out.turns) / double(a.size() + b.size());
     return out;
 }
 
 struct Rate
 {
-    double win = 0, turns = 0, health = 0, downedB = 0, hurtB = 0;
+    double win = 0, turns = 0, health = 0, downedB = 0, hurtB = 0, rounds = 0;
     int undecided = 0;
 };
 
@@ -1150,6 +1183,7 @@ Rate winRate(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int fights,
         wins += o.result > 0;
         r.undecided += o.result == 0;
         r.turns += o.turns;
+        r.rounds += o.rounds;
         r.health += o.health;
         r.downedB += o.downedB;
         r.hurtB += o.hurtB;
@@ -1158,6 +1192,7 @@ Rate winRate(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int fights,
     r.hurtB /= std::max(1, fights);
     r.win = decided ? 100.0 * wins / decided : 0;
     r.turns /= std::max(1, fights);
+    r.rounds /= std::max(1, fights);
     r.health /= std::max(1, decided);
     return r;
 }
@@ -1165,7 +1200,7 @@ Rate winRate(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int fights,
 bool details = false;
 void row(const std::string& what, const Rate& r)
 {
-    std::printf("  %-58s %5.1f%%   %4.0f turns  %3.0f left  (B lost %3.0f)%s\n", what.c_str(), r.win, r.turns, r.health, r.hurtB,
+    std::printf("  %-58s %5.1f%%   %4.1f rounds  %3.0f left  (B lost %3.0f)%s\n", what.c_str(), r.win, r.rounds, r.health, r.hurtB,
                 r.undecided ? ("  (" + std::to_string(r.undecided) + " undecided)").c_str() : "");
     if (details && !usedAll.empty())
     {
@@ -1184,8 +1219,11 @@ std::string label(const Wolf& w)
     std::string s = w.gift.empty() ? "plain" : (w.quickened ? "Q-" : "G-") + w.gift;
     if (w.naive)
         s += "(naive)";
-    if (w.sword)
-        s += "+gear";
+    for (const auto& [word, id] : Blades)
+        if (w.blade.substr(0, w.blade.find('~')) == id)
+            s += "+" + word + (w.blade.find('~') == std::string::npos ? std::string() : w.blade.substr(w.blade.find('~')));
+    if (!w.kit.empty())
+        s += "+" + w.kit;
     return s + " L" + std::to_string(w.level);
 }
 std::string label(const std::vector<Wolf>& side)
@@ -1209,22 +1247,44 @@ Wolf parseWolf(const std::string& given, int level)
         level = std::atoi(s.c_str() + at + 1);
         s = s.substr(0, at);
     }
+    // Gear after a "+": "plain+iron+leather" (blades bronze, iron, steel; kits cloth, leather, plate); a "+" alone is a
+    // bronze sword and leather (doc 45's "armed").
+    std::string blade, kit;
+    if (const auto plus = s.find('+'); plus != std::string::npos)
+    {
+        const std::string gear = s.substr(plus);
+        s = s.substr(0, plus);
+        if (gear == "+")
+        {
+            const auto w = armed(Wolf{});
+            blade = w.blade, kit = w.kit;
+        }
+        for (std::size_t from = 1; from < gear.size();)
+        {
+            const auto next = std::min(gear.find('+', from), gear.size());
+            const auto word = gear.substr(from, next - from);
+            const auto made = word.find('~');       // ("iron~fine", "leather~masterwork": of that quality.)
+            const auto quality = made == std::string::npos ? std::string() : word.substr(made);
+            if (const auto b = Blades.find(word.substr(0, made)); b != Blades.end())
+                blade = b->second + quality;
+            else if (Kits.count(word.substr(0, made)))
+                kit = word;
+            from = next + 1;
+        }
+    }
     if (s == "plain")
-        return Wolf{level};
+        return geared(Wolf{level}, blade, kit);
     std::string f = s;
-    bool q = false, nv = false, g = false;
-    while (!f.empty() && (f.back() == 'q' || f.back() == '!' || f.back() == '+'))
+    bool q = false, nv = false;
+    while (!f.empty() && (f.back() == 'q' || f.back() == '!'))
     {
         if (f.back() == 'q' && f != "q")
             q = true;
         if (f.back() == '!')
             nv = true;
-        if (f.back() == '+')
-            g = true;
         f.pop_back();
     }
-    Wolf w{level, g, g, f == "plain" ? "" : f, q, nv};
-    return w;
+    return Wolf{level, blade, kit, f == "plain" ? "" : f, q, nv};
 }
 
 void levels(int n)
@@ -1245,10 +1305,10 @@ void levels(int n)
     row("L1 vs L10, L1 strikes first", winRate({L1}, {L10}, n, 1));
     row("L1 vs L25, L1 strikes first", winRate({L1}, {L25}, n, 1));
     std::printf("\nGear\n");
-    row("L1 in a leather kit vs L25 bare", winRate({{1, false, true}}, {L25}, n));
-    row("L1 with a sword vs L25 bare", winRate({{1, true, false}}, {L25}, n));
-    row("L1 with a sword and leather vs L25 bare", winRate({{1, true, true}}, {L25}, n));
-    row("L1 with a sword and leather vs L25 the same", winRate({{1, true, true}}, {{25, true, true}}, n));
+    row("L1 in a leather kit vs L25 bare", winRate({geared(L1, "", "leather")}, {L25}, n));
+    row("L1 with a sword vs L25 bare", winRate({geared(L1, "sword", "")}, {L25}, n));
+    row("L1 with a sword and leather vs L25 bare", winRate({armed(L1)}, {L25}, n));
+    row("L1 with a sword and leather vs L25 the same", winRate({armed(L1)}, {armed(L25)}, n));
     std::printf("\nNumbers\n");
     row("two L1 vs one L25", winRate({L1, L1}, {L25}, n));
     row("two L5 vs one L15", winRate({L5, L5}, {L15}, n));
@@ -1286,6 +1346,15 @@ int main(int argc, char** argv)
         };
         details = true;
         vs(side(argv[3]), side(argv[4]), n, g);
+        return 0;
+    }
+    if (suite == "bias")
+    {
+        const Wolf bare{10};
+        for (int k : {1, 3, 5})
+            for (int order : {0, 1, -1})
+                row(std::to_string(k) + "v" + std::to_string(k) + " order " + std::to_string(order),
+                    winRate(std::vector<Wolf>(k, bare), std::vector<Wolf>(k, bare), n, order, gap));
         return 0;
     }
     if (has("levels"))
@@ -1363,6 +1432,79 @@ int main(int argc, char** argv)
                 }
                 std::printf("\n");
             }
+        }
+        return 0;
+    }
+    // Gear tiers (doc 47): kits and blades against bare wolves and each other, one a side to five, at one level.
+    if (suite == "tiers" || suite == "armour" || suite == "weapons" || suite == "ladders" || suite == "cross")
+    {
+        const int at = std::getenv("SIM_LEVEL") ? std::atoi(std::getenv("SIM_LEVEL")) : 10;
+        const Wolf bare{at};
+        const auto team = [](const Wolf& w, int k) { return std::vector<Wolf>(std::size_t(k), w); };
+        const auto both = suite == "tiers";
+        std::printf("Gear tiers (doc 47): L%d on both sides, %d tiles apart%s; %d fights a row. Wins for the first named.\n", at, gap,
+                    tactics ? ", tactics" : "", n);
+        if (both || suite == "armour" || suite == "weapons")
+        {
+            std::printf("\nBare against bare\n");
+            for (int k = 1; k <= 5; ++k)
+                row(std::to_string(k) + "v" + std::to_string(k) + " bare", winRate(team(bare, k), team(bare, k), n, 0, gap));
+        }
+        if (both || suite == "armour")
+            for (const char* kit : {"cloth", "leather", "plate"})
+            {
+                std::printf("\nArmour only: %s (no blades)\n", kit);
+                for (int k = 1; k <= 5; ++k)
+                {
+                    const auto in = team(geared(bare, "", kit), k);
+                    row(std::to_string(k) + "v" + std::to_string(k) + " " + kit + " vs bare", winRate(in, team(bare, k), n, 0, gap));
+                    row(std::to_string(k) + "v" + std::to_string(k) + " " + kit + " vs " + kit, winRate(in, in, n, 0, gap));
+                }
+            }
+        if (both || suite == "weapons")
+            for (const char* metal : {"bronze", "iron", "steel"})
+            {
+                std::printf("\nBlades only: %s (no armour)\n", metal);
+                const auto blade = Blades.at(metal);
+                for (int k = 1; k <= 5; ++k)
+                {
+                    const auto in = team(geared(bare, blade, ""), k);
+                    row(std::to_string(k) + "v" + std::to_string(k) + " " + metal + " vs bare", winRate(in, team(bare, k), n, 0, gap));
+                    row(std::to_string(k) + "v" + std::to_string(k) + " " + metal + " vs " + metal, winRate(in, in, n, 0, gap));
+                }
+            }
+        if (both || suite == "ladders")
+        {
+            std::printf("\nA tier up (one a side; three a side)\n");
+            const std::vector<std::pair<Wolf, Wolf>> steps = {
+                {geared(bare, "iron_sword", ""), geared(bare, "sword", "")}, {geared(bare, "steel_sword", ""), geared(bare, "iron_sword", "")},
+                {geared(bare, "steel_sword", ""), geared(bare, "sword", "")}, {geared(bare, "", "leather"), geared(bare, "", "cloth")},
+                {geared(bare, "", "plate"), geared(bare, "", "leather")}, {geared(bare, "", "plate"), geared(bare, "", "cloth")},
+                {geared(bare, "iron_sword", "leather"), geared(bare, "sword", "cloth")},
+                {geared(bare, "steel_sword", "plate"), geared(bare, "iron_sword", "leather")},
+                {geared(bare, "steel_sword", "plate"), geared(bare, "sword", "cloth")}};
+            for (const auto& [up, down] : steps)
+                for (int k : {1, 3})
+                    vs(team(up, k), team(down, k), n, gap);
+        }
+        if (both || suite == "cross")
+        {
+            std::printf("\nA blade alone against armour alone, one a side\n");
+            for (const char* metal : {"bronze", "iron", "steel"})
+                for (const char* kit : {"cloth", "leather", "plate"})
+                    vs({geared(bare, Blades.at(metal), "")}, {geared(bare, "", kit)}, n, gap);
+            std::printf("\nBlades into armour, both armed, one a side: the blade's metal against the kit\n");
+            for (const char* metal : {"bronze", "iron", "steel"})
+                for (const char* kit : {"cloth", "leather", "plate"})
+                    vs({geared(bare, Blades.at(metal), kit)}, {geared(bare, Blades.at(metal), "")}, n, gap);
+            std::printf("\nA full kit, a tier each, against bare wolves and its own (one a side; three a side)\n");
+            for (const auto& [metal, kit] : std::vector<std::pair<std::string, std::string>>{{"bronze", "cloth"}, {"iron", "leather"}, {"steel", "plate"}})
+                for (int k : {1, 3})
+                {
+                    const auto in = team(geared(bare, Blades.at(metal), kit), k);
+                    vs(in, team(bare, k), n, gap);
+                    vs(in, in, n, gap);
+                }
         }
         return 0;
     }

@@ -468,7 +468,7 @@ export class Dialogs {
             'sooner if someone tends you or you struggle up (once a day).');
         const stamina = me && me.stamina >= 0 ? me.stamina : num(self, 'stamina', 100);
         meter('STAMINA', stamina, 100, '', b && me ? `In a fight it comes back only at the start of each of your turns: ${me.regen} next ` +
-            `(4 + STR ÷ 10, less hurt; twice after a turn of rest). A bite costs 8, a sword 14, running faster than a trot ` +
+            `(4 + STR ÷ 10, less hurt; twice after a turn of rest). A bite costs 8, a sword 9 or 10, running faster than a trot ` +
             `${b.tileStamina > 0 ? `${b.tileStamina.toFixed(1)} a tile at your pace` : 'by the tile'}. At 0 you are winded: walking only, no biting.`
             : 'Out of a fight it comes back 5 a second and drains when you run fast (the pace, on the wheel). At 0 you are exhausted ' +
               'and can only walk until it is back to 20.');
@@ -791,7 +791,7 @@ export class Dialogs {
     /** Taking up or putting away the sword: out of a fight at once, in one as the turn's action (doc 33). Null without one. */
     private swordAction(self: Json | null, fight: GameState['battle']) {
         const s = this.s;
-        if (s.inventoryQuantity('sword') <= 0) return null;
+        if (!arr(s.snapshot, 'inventory').filter(isObject).some(i => bool(i, 'blade') && wholeCount(i, 'quantity', 0) > 0)) return null;
         const held = str(self, 'mouth') === 'sword';
         const label = held ? 'PUT THE SWORD AWAY' : 'HOLD THE SWORD IN YOUR JAWS';
         if (!fight) return {label, why: '', disabled: false, run: () => this.act(held ? 'stow sword' : 'hold sword')};
@@ -831,7 +831,8 @@ export class Dialogs {
         else {
             el('div', 'item-name', detail, str(item, 'name'));
             el('div', `label ${bool(item, 'equipped') ? 'sage' : 'muted'}`, detail,
-                `${str(item, 'id').split('~')[0] === 'sword' && bool(item, 'equipped') ? 'IN YOUR JAWS' : bool(item, 'equipped') ? 'WORN' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
+                `${bool(item, 'blade') && bool(item, 'equipped') ? 'IN YOUR JAWS' : bool(item, 'equipped') ? 'WORN' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
+                `${str(item, 'tier') ? ` · ${str(item, 'tier').toUpperCase()}` : ''}` +
                 `${item && 'condition' in item ? ` · CONDITION ${num(item, 'condition')}%` : ''}` +
                 `${num(item, 'warmth') > 0 ? ` · WARMTH ${num(item, 'warmth')}` : ''}${num(item, 'protect') > 0 ? ` · PROTECTION ${num(item, 'protect')}` : ''}` +
                 `${num(item, 'status') > 0 ? ` · FINERY ${num(item, 'status')}` : ''}` +
@@ -851,7 +852,7 @@ export class Dialogs {
                 use.title = masked > 0 ? `Masked for about ${Math.ceil(masked / 600)} more hours` : 'Hide your scent for a few hours';
             }
             this.wearActions(actions, item, self, fight);
-            const sword = id.split('~')[0] === 'sword' ? this.swordAction(self, fight) : null;
+            const sword = bool(item, 'blade') ? this.swordAction(self, fight) : null;
             if (sword) {
                 const go = button(sword.label, 'primary', actions, sword.run);
                 go.disabled = sword.disabled;

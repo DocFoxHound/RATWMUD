@@ -270,6 +270,37 @@ void assaultBeatsDown()
     expect(w.warrantFor("player-ada"), "The victim's account, told to a guard, makes a warrant");
 }
 
+// The watch's issue (doc 47): a guard in the Professional kit, an iron sword taken up in a fight and put away after;
+// the town's, not the guard's, so none of it is in their purse or left on the ground.
+void theWatchsKit()
+{
+    auto w = town();
+    auto* sloe = w.entity("sloe");
+    auto* wren = w.entity("wren");
+    w.kitOut(*sloe, false);
+    w.kitOut(*wren, false);
+    expect(sloe->worn["body"] == "leather_barding" && sloe->worn["neck"] == "leather_gorget" && sloe->worn["head"] == "leather_cap" &&
+               sloe->worn["paws"] == "leg_guards" && sloe->mouth.empty(),
+           "Sloe of the watch wears leather, head to paws, the sword put up");
+    expect(Society::stock(*w.society().account("sloe"), "leather_barding") == 0 && Society::stock(*w.society().account("sloe"), "iron_sword") == 0,
+           "the watch's, not Sloe's: none of it in the purse");
+    expect(!wren->worn.count("body") || wren->worn["body"] != "leather_barding", "Wren keeps shop in her own clothes");
+    w.addPlayer("player-ada", "Ada");
+    beside(w, "player-ada", "sloe");
+    expect(w.attack("player-ada", "sloe").ok, "Ada goes for Sloe");
+    expect(sloe->mouth == "sword" && World::swordHeld(*sloe) == "iron_sword", "In the fight Sloe holds the watch's iron sword");
+    sloe->hurt = 99.5;
+    for (int i = 0; i < 4000 && w.inBattle("player-ada"); ++i)
+    {
+        w.entity("player-ada")->hurt = 0;
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
+    }
+    expect(!w.inBattle("player-ada") && sloe->mouth.empty(), "After the fight the sword is put away");
+    for (const auto& g : w.groundItems())
+        expect(g.item != "iron_sword", "and none lies on the ground for the taking");
+}
+
 void downedAndUp()
 {
     // A guard fights back, and goes down; a resident left Downed gets up again by itself (once a day).
@@ -396,6 +427,7 @@ int main()
         residentChasedDown();
         assaultBeatsDown();
         downedAndUp();
+        theWatchsKit();
         needMakesThieves();
         savedAndRestored();
     }

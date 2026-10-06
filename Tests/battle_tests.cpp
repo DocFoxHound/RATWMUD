@@ -2,6 +2,7 @@
 #include "RatwCheckpoint.h"
 #include "RatwWire.h"
 #include "RatwGifts.h"
+#include "RatwItems.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
 
@@ -537,8 +538,9 @@ void theSword()
     expect(w.battleAct("player-ad", "bite", "player-bo").ok == false, "No biting with a sword in the mouth");
     const double stamina = ad->stamina;
     const auto r = w.battleAct("player-ad", "sword", "player-bo");
-    expect(r.ok && std::abs(ad->stamina - (stamina - battle::SwordStamina)) < 1e-9, "A sword reaches two tiles: " + r.message);
-    expect(b.fighter("player-ad")->weight == battle::SwordWeight, "and is heavy: the next turn comes later");
+    const auto& bronze = items::blade("sword")->weapon;
+    expect(r.ok && std::abs(ad->stamina - (stamina - bronze.stamina)) < 1e-9, "A sword reaches two tiles: " + r.message);
+    expect(b.fighter("player-ad")->weight == bronze.weight && bronze.weight > 0, "and is heavy: the next turn comes later");
     // Bo goes down holding his own: it drops, and stays where it fell after the fight.
     bo->mouth = "sword";
     bo->hurt = 99.5;
@@ -583,6 +585,110 @@ void theSword()
            "Fighting doesn't raise her fighting skill: her level does (doc 44)");
     w.levelOf = [](const std::string&) { return 25; };
     expect(w.temperamentOf(*w.entity("player-ad")).skill == 86, "At level 25 it is 86");
+}
+
+// The tiers of blades and armour (doc 47): each metal and kit its own numbers, a tier not a quality, the best blade
+// taken up, and a swing at its own cost.
+void gearTiers()
+{
+    const auto* bronze = items::blade("sword");
+    const auto* iron = items::blade("iron_sword");
+    const auto* steel = items::blade("steel_sword");
+    expect(bronze && iron && steel && !items::blade("fang_knife") && !items::blade("quilted_vest"),
+           "Three blades a fight takes (the catalog's other weapons not yet)");
+    expect(bronze->tier == 1 && iron->tier == 2 && steel->tier == 3 && std::string(items::tierName(2)) == "Professional",
+           "Basic bronze, Professional iron, Exceptional steel");
+    expect(bronze->weapon.damage < iron->weapon.damage && iron->weapon.damage < steel->weapon.damage &&
+               steel->weapon.weight < iron->weapon.weight && iron->weapon.weight < bronze->weapon.weight &&
+               steel->weapon.stamina <= bronze->weapon.stamina,
+           "each cuts harder than the last, and swings lighter");
+    for (const auto* blade : {bronze, iron, steel})
+        expect(blade->weapon.reach == battle::SwordReach && blade->weapon.type == "cut" && blade->weapon.damage > battle::BiteDamage,
+               blade->id + " reaches two tiles and cuts harder than a bite");
+    expect(items::blade("iron_sword~fine") && items::blade("iron_sword~fine")->tier == 2, "A fine iron sword is still Professional");
+    expect(items::good("sword")->price < items::good("iron_sword")->price && items::good("iron_sword")->price < items::good("steel_sword")->price,
+           "Bronze costs less than iron, iron less than steel");
+    const auto* rapier = items::blade("rapier");
+    expect(rapier && rapier->tier == 3 && rapier->weapon.type == "thrust" && rapier->weapon.hit > 0, "The needle rapier: an Exceptional thrust");
+    expect(!items::good("mace") && !items::good("bit_axe"), "No mace or bit-axe any more");
+    // The kits: every piece of armour has a tier; a better kit protects more, and more again against a cut.
+    const auto* vest = items::wearable("quilted_vest");
+    const auto* barding = items::wearable("leather_barding");
+    const auto* mail = items::wearable("mail_coat");
+    expect(vest && barding && mail && vest->tier == 1 && barding->tier == 2 && mail->tier == 3, "Cloth, leather and steel: a tier each");
+    expect(vest->protect < barding->protect && barding->protect < mail->protect && vest->vsCut > 0 && mail->vsCut > 0,
+           "each protects more, and more against a cut");
+    for (const auto& piece : items::wearables())
+        if (piece.protect > 0)
+            expect(piece.tier >= 1 && piece.tier <= 3, piece.id + " has a tier");
+    for (const char* piece : {"padded_collar", "quilted_hood", "quilted_leggings"})
+        expect(items::wearable(piece) && items::wearable(piece)->tier == 1 && items::wearable(piece)->protect > 0, std::string(piece) + ": cloth, for a whole kit");
+    // The best blade one has is taken up; one named, that one.
+    World w;
+    auto& b = duel(w);
+    auto* ad = w.entity("player-ad");
+    for (const char* blade : {"sword", "iron_sword", "steel_sword"})
+        expect(w.society().create("player-ad", blade, 1, "test"), std::string("Ad has a ") + blade);
+    expect(w.holdItem("player-ad", "sword").ok && World::swordHeld(*ad) == "steel_sword" && World::bladeHeld(*ad) == steel,
+           "Taking up a sword, she takes the steel one");
+    expect(w.stowItem("player-ad").ok && w.holdItem("player-ad", "iron_sword").ok && World::swordHeld(*ad) == "iron_sword",
+           "or the iron one, by name");
+    w.stowItem("player-ad");
+    w.holdItem("player-ad", "steel_sword");
+    untilTurnOf(w, "player-ad", {"player-bo"});
+    auto* fa = b.fighter("player-ad");
+    auto* fb = b.fighter("player-bo");
+    fb->x = fa->x + 2;
+    fb->y = fa->y;
+    const double stamina = ad->stamina;
+    expect(w.battleAct("player-ad", "sword", "player-bo").ok && std::abs(ad->stamina - (stamina - steel->weapon.stamina)) < 1e-9 &&
+               b.fighter("player-ad")->weight == steel->weapon.weight,
+           "A steel swing costs steel's stamina, and sets her next turn back by steel's weight");
+    // A rapier lunges and stabs.
+    w.society().create("player-ad", "rapier", 1, "test");
+    w.battleAct("player-ad", "wait");
+    expect(w.stowItem("player-ad").ok && w.holdItem("player-ad", "rapier").ok && World::bladeHeld(*ad) == items::blade("rapier"), "Ad takes up the rapier");
+    untilTurnOf(w, "player-ad", {"player-bo"});
+    fb->x = fa->x + 2;
+    fb->y = fa->y;
+    const auto lunge = w.battleAct("player-ad", "sword", "player-bo");
+    expect(lunge.ok && (lunge.message.find("stab") != std::string::npos || lunge.message.find("prick") != std::string::npos ||
+                        lunge.message.find("lunge") != std::string::npos),
+           "and lunges: " + lunge.message);
+}
+
+// A spiked collar (doc 47): a bite on the throat costs the biter 4.
+void spikedCollar()
+{
+    World w;
+    auto& b = duel(w);
+    auto* ad = w.entity("player-ad");
+    auto* bo = w.entity("player-bo");
+    bo->worn["neck"] = "spiked_collar";
+    expect(battle::spikesAt(*bo, "throat") == 4 && battle::spikesAt(*bo, "body") == 0, "Spikes on the throat, none elsewhere");
+    bool bitten = false;
+    for (int tries = 0; tries < 30 && !bitten && !b.over; ++tries)
+    {
+        untilTurnOf(w, "player-ad", {"player-bo"});
+        auto* fa = b.fighter("player-ad");
+        auto* fb = b.fighter("player-bo");
+        fb->x = fa->x + 1;
+        fb->y = fa->y;
+        fa->aim = "throat";
+        ad->hurt = 0;
+        bo->hurt = 0;
+        const auto seen = b.log.size();
+        w.battleAct("player-ad", "bite", "player-bo");
+        for (std::size_t i = seen; i < b.log.size(); ++i)
+            if (b.log[i].text.find("on the throat") != std::string::npos)
+                bitten = true;
+        if (bitten)
+            expect(std::abs(ad->hurt - 4) < 1e-9 && std::any_of(b.log.begin(), b.log.end(), [](const auto& l) { return l.text.find("spikes bite back") != std::string::npos; }),
+                   "Ad bites Bo's throat, and the spikes bite back: 4 (" + std::to_string(ad->hurt) + ")");
+        if (test::acting(&b, "player-ad"))
+            w.battleAct("player-ad", "wait");
+    }
+    expect(bitten, "Ad bites Bo's throat at last");
 }
 
 void theFlame()
@@ -1165,16 +1271,16 @@ void armourInFights()
     auto& b = duel(w);
     auto* bo = w.entity("player-bo");
     expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 12, "No armour: the whole blow");
-    bo->worn["neck"] = "steel_gorget";                          // Protect 5 on the throat.
-    expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 7, "a throat guard: a bite on the throat does 7");
+    bo->worn["neck"] = "steel_gorget";                          // Protect 3 on the throat, 4 against a cut (doc 47).
+    expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 9, "a throat guard: a bite on the throat does 9");
     expect(battle::throughArmour(*bo, "body", 12, "thrust") == 12 && battle::throughArmour(*bo, "head", 12, "thrust") == 12,
            "but on the shoulder or the face, all 12");
-    expect(std::abs(battle::expectedThrough(*bo, 0, 12, "thrust") - 10.5) < 1e-9, "head on, a bite does 10.5 on average (the throat 30% of the time)");
+    expect(std::abs(battle::expectedThrough(*bo, 0, 12, "thrust") - 11.1) < 1e-9, "head on, a bite does 11.1 on average (the throat 30% of the time)");
     expect(battle::expectedThrough(*bo, 2, 12, "thrust") > battle::expectedThrough(*bo, 0, 12, "thrust"), "from behind, the throat is rarely reached");
-    bo->worn["body"] = "brigandine_coat";                      // Protect 6, +1 against thrusts, DEX −5.
-    expect(battle::armourAt(*bo, "body", "thrust") == 7 && battle::armourAt(*bo, "body", "cut") == 6, "a brigandine: 7 against a bite, 6 a cut");
-    expect(battle::throughArmour(*bo, "body", 20, "cut") == 14 && battle::throughArmour(*bo, "body", 12, "thrust", 5) == 10, "a cut does 14; pierce goes through");
-    expect(battle::throughArmour(*bo, "body", 8, "thrust") == 2, "a quarter always gets through");
+    bo->worn["body"] = "brigandine_coat";                      // Protect 3, +1 against thrusts, DEX −5.
+    expect(battle::armourAt(*bo, "body", "thrust") == 4 && battle::armourAt(*bo, "body", "cut") == 3, "a brigandine: 4 against a bite, 3 a cut");
+    expect(battle::throughArmour(*bo, "body", 20, "cut") == 17 && battle::throughArmour(*bo, "body", 12, "thrust", 2) == 10, "a cut does 17; pierce goes through");
+    expect(battle::throughArmour(*bo, "body", 4, "thrust") == 1, "a quarter always gets through");
     expect(battle::armourPieceAt(*bo, "body") == "Brigandine coat" && battle::armourPieceAt(*bo, "legs").empty(), "the piece on each zone");
     for (int q = 0; q < 3; ++q)
     {
@@ -1806,6 +1912,8 @@ int main()
         downedIsSaved();
         facingAndTruce();
         theSword();
+        gearTiers();
+        spikedCollar();
         theFlame();
         giftFamilies();
         crawling();

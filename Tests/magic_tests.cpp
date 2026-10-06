@@ -165,6 +165,14 @@ void fireGifted()
     turn(w, b, "player-ad");
     b.fighter("player-bo")->meter = 50;
     expect(w.useGift("player-ad", "flare", "player-bo").ok && b.fighter("player-bo")->meter == 30, "Flare knocks Bo's bar back 20 (doc 45)");
+    {
+        World w4;
+        auto& b4 = duel(w4, "fire", false);
+        turn(w4, b4, "player-ad");
+        place(w4, b4, "player-bo", "player-ad", 2);
+        b4.fighter("player-bo")->meter = 50;
+        expect(w4.useGift("player-ad", "flare", "player-bo").ok && b4.fighter("player-bo")->meter == 30, "Flare reaches two tiles, a blade's reach (doc 47)");
+    }
     turn(w, b, "player-ad");
     expect(!w.useGift("player-ad", "flamethrower", "1,1").ok, "No Flamethrower for the Gifted");
     // Heat Sense: held, it finds a hidden wolf within 6 tiles at the start of each turn.
@@ -407,6 +415,19 @@ void blinker()
            "Blink Strike: Ad is beside Bo");
     expect(battle::octantGap(4, battle::octant(ad3.x - b3.fighter("player-bo")->x, ad3.y - b3.fighter("player-bo")->y)) >= 3, "at his back");
     expect(ad3.acted && logHas(b3, "blinks behind Bo"), "and strikes");
+    {
+        // Behind him, the blow finds the gap in his armour (doc 47): his legs, bare under a mail coat and a gorget.
+        World w5;
+        auto& b5 = duel(w5, "blinker", true);
+        turn(w5, b5, "player-ad");
+        place(w5, b5, "player-bo", "player-ad", 4);
+        b5.fighter("player-bo")->facing = 4;
+        w5.entity("player-bo")->worn["body"] = "mail_coat";
+        w5.entity("player-bo")->worn["neck"] = "steel_gorget";
+        expect(w5.useGift("player-ad", "blink_strike", "player-bo").ok && (logHas(b5, "hind leg") || logHas(b5, "misses")) &&
+                   b5.fighter("player-ad")->aim.empty() && !b5.fighter("player-ad")->magic.has("gap"),
+               "A Blink Strike goes for the gap: a hind leg, not the mail");
+    }
     // Unmoor: Bo loses his next turn.
     turn(w3, b3, "player-ad");
     expect(w3.useGift("player-ad", "unmoor", "player-bo").ok, "Unmoor");
@@ -480,6 +501,23 @@ void seer()
     const double adHurt = w.entity("player-ad")->hurt, boHurt = w.entity("player-bo")->hurt;
     w.battleAct("player-bo", "bite", "player-ad");
     expect(w.entity("player-ad")->hurt == adHurt && w.entity("player-bo")->hurt > boHurt && logHas(b, "strikes back"), "Bo's bite misses; Ad strikes back");
+    {
+        // Through the attacker's armour (doc 47): Bo in steel takes less than a bare bite's most.
+        World w6;
+        auto& b6 = duel(w6, "seer", true);
+        turn(w6, b6, "player-ad");
+        place(w6, b6, "player-bo", "player-ad", 1);
+        for (const auto& [slot, piece] : {std::pair<const char*, const char*>{"body", "mail_coat"}, {"neck", "steel_gorget"}, {"head", "kettle_helm"},
+                                          {"paws", "splinted_greaves"}})
+            w6.entity("player-bo")->worn[slot] = piece;
+        expect(w6.useGift("player-ad", "riposte", "").ok, "Riposte held again");
+        turn(w6, b6, "player-bo");
+        const double was = w6.entity("player-bo")->hurt;
+        w6.battleAct("player-bo", "bite", "player-ad");
+        const double back = w6.entity("player-bo")->hurt - was;
+        expect(back > 0 && back < battle::BiteDamage * (.6 + w6.entity("player-ad")->strength / 125) * 1.15 - 2,
+               "and the strike back goes through Bo's steel: " + std::to_string(back));
+    }
     // Critical Sight: less from every blow.
     expect(w.unflankable(ad), "Critical Sight: no flank");
     // Seen Opening: the next blow can't miss.

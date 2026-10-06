@@ -14,14 +14,14 @@ namespace ratw::game
 json::Value Game::gearView(const Entity& e) const
 {
     auto gear = json::Value::array();
-    const auto piece = [&](const std::string& place, const std::string& name, bool weapon, int protect) {
+    const auto piece = [&](const std::string& place, const std::string& name, bool weapon, double protect) {
         auto g = json::Value::object();
         g.add("place", place);
         g.add("name", name);
         if (weapon)
             g.add("weapon", true);
         if (protect > 0)
-            g.add("protect", protect);
+            g.add("protect", std::round(protect * 10) / 10);   // (A quality's share: to a tenth, doc 47.)
         gear.push(std::move(g));
     };
     if (!e.mouth.empty())
@@ -316,8 +316,8 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                     auto z = Value::object();
                     z.add("zone", std::string(zone));
                     z.add("piece", piece);
-                    z.add("cut", battle::armourAt(*e, zone, "cut"));
-                    z.add("thrust", battle::armourAt(*e, zone, "thrust"));
+                    z.add("cut", std::round(battle::armourAt(*e, zone, "cut") * 10) / 10);
+                    z.add("thrust", std::round(battle::armourAt(*e, zone, "thrust") * 10) / 10);
                     zones.push(std::move(z));
                 }
             if (!zones.items().empty())
@@ -441,31 +441,35 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             world_.awareness(b, viewer, f.id) >= battle::AwareAlert)       // (Not one it has lost track of.)
             if (const auto* me = world_.entity(viewer))
             {
-                const bool sword = me->mouth == "sword";
+                const auto* blade = World::bladeHeld(*me);    // (Its own blow and aim: doc 47.)
+                const bool sword = blade != nullptr;
+                const double aimMore = blade ? blade->weapon.hit / 100.0 : 0;
                 auto odds = Value::object();
-                odds.add("hit", std::round(world_.strikeChance(*mine, f) * 100));
+                odds.add("hit", std::round(std::min(.95, world_.strikeChance(*mine, f) + aimMore) * 100));
                 const bool ambush = world_.ambushing(b, *mine, f);
                 if (ambush)
                     odds.add("ambush", true);       // Unaware of this wolf: the first blow is an ambush (doc 40).
                 // Head on (no side or back to it): the page adds the bonus for a strike from any other tile.
                 auto headOn = f;
                 headOn.facing = battle::octant(mine->x - f.x, mine->y - f.y);
-                odds.add("base", std::round(world_.strikeChance(*mine, headOn) * 100));
+                odds.add("base", std::round(std::min(.95, world_.strikeChance(*mine, headOn) + aimMore) * 100));
                 // A usual blow from here, through their armour where it would land (its zones weighed by the side it
                 // comes at).
                 const int quarter = battle::quarterOf(battle::octantGap(f.guarding ? battle::octant(mine->x - f.x, mine->y - f.y) : f.facing,
                                                                         battle::octant(mine->x - f.x, mine->y - f.y)));
                 // Less what one's own injuries take off a blow (doc 38), before an ambush's more, as a real blow has it.
                 const auto hurt = injury::effects(me->injuries);
-                const double blow = std::max(1.0, (sword ? battle::SwordDamage * items::qualityDamage(items::qualityOf(World::swordHeld(*me))) : battle::BiteDamage) * (.6 + me->strength / 125) -
-                                                      (sword ? hurt.swordLess : hurt.biteLess));
+                const double blow = std::max(1.0, (blade ? blade->weapon.damage * items::qualityDamage(items::qualityOf(World::swordHeld(*me))) : battle::BiteDamage) *
+                                                      (.6 + me->strength / 125) - (blade ? hurt.swordLess : hurt.biteLess));
                 // Aimed for a zone this side allows: through the armour there; else the zones weighed.
                 const int side = ambush ? 3 : quarter;
                 const bool aimable = !mine->aim.empty() && std::any_of(battle::hitZones(side).begin(), battle::hitZones(side).end(),
                                                                       [&](const battle::HitZone& z) { return mine->aim == z.zone; });
                 const double struck = blow * (ambush ? battle::AmbushDamage : 1);
-                odds.add("damage", std::round(aimable ? battle::throughArmour(*e, mine->aim, struck, sword ? "cut" : "thrust")
-                                                      : battle::expectedThrough(*e, side, struck, sword ? "cut" : "thrust")));
+                const std::string type = blade ? blade->weapon.type : "thrust";
+                const int pierce = blade ? blade->weapon.pierce : 0;
+                odds.add("damage", std::round(aimable ? battle::throughArmour(*e, mine->aim, struck, type, pierce)
+                                                      : battle::expectedThrough(*e, side, struck, type, pierce)));
                 odds.add("reach", std::max(std::abs(f.x - mine->x), std::abs(f.y - mine->y)) <= (sword ? battle::SwordReach : 1));
                 o.add("odds", odds);
             }

@@ -18,19 +18,37 @@ inline constexpr const char* FurSpots[] = {"ears", "crown", "ruff", "chest", "ba
 // The most pieces of jewellery a wolf wears at once (all spots together): no limit in the design, this one for safety.
 constexpr std::size_t MaxJewellery = 64;
 
+// A weapon's numbers (Data/Items, doc 47): its blow (against health 100), what a swing costs in stamina and how far
+// it sets back the next turn's bar, the kind of blow and how much armour it goes through, and its strike chance more.
+struct Weapon
+{
+    std::string kind;                               // "blade" (the bit-swords: the only kind a fight takes yet), or "".
+    std::string type = "cut";                       // "cut", "thrust" or "blunt".
+    double damage = 0, stamina = 0, weight = 0;
+    double knockLoose = 1;                          // How readily a hard blow knocks it from the jaws (1: a sword's).
+    int reach = 1, pierce = 0, hit = 0;             // hit: points on the strike chance (in hundredths).
+};
+
 struct Item
 {
     std::string id, name, category, slot, desc;    // slot: the catalog's ("throat", "sling", "jewelry"...).
     double weight = 0;
     int price = 0;
     std::vector<std::string> spots;                 // Jewellery: where it may go ("any" expanded).
-    int status = 0, warmth = 0, rain = 0, jingle = 0, protect = 0;
-    // Armour (doc 35, Part 8): more protection against a kind of blow, and what it takes off dexterity (as a negative).
-    int vsCut = 0, vsThrust = 0, vsBlunt = 0, dex = 0;
+    int status = 0, warmth = 0, rain = 0, jingle = 0;
+    // Armour (doc 35, Part 8): what it takes off every blow, more against a kind of blow, and what it takes off
+    // dexterity (as a negative). Fractions, for a quality's share (doc 47).
+    double protect = 0, vsCut = 0, vsThrust = 0, vsBlunt = 0;
+    double spikes = 0;                              // A spiked collar's: what a bite there costs the biter (doc 47).
+    int dex = 0;
     int durability = 0;                             // How much use it takes before it falls apart (0: it doesn't wear).
     int nourish = 0;                                // Food: how much it feeds (a meal 50); 0 for anything not eaten.
     double keeps = 0;                               // Food: the days it keeps before it spoils (items.json; 0: it keeps).
     bool drink = false;                             // Drunk rather than eaten (ale, cider): not for hunger.
+    // Weapons and armour (doc 47): 1 Basic, 2 Professional, 3 Exceptional (0: none). Not a quality: a bronze sword is
+    // Basic however well made.
+    int tier = 0;
+    Weapon weapon;                                  // A weapon's blow (weapon.kind empty for anything else).
 };
 
 struct Business
@@ -58,6 +76,10 @@ const Business* businessFor(const std::string& workLabel);
 std::vector<std::string> wearablesSold(const Business& business);
 // Any item of the catalog (wearable or not), or null.
 const Item* good(const std::string& id);
+// A blade (doc 47): a bit-sword of any metal and quality ("iron_sword~fine"), or null.
+const Item* blade(const std::string& id);
+// "Basic", "Professional", "Exceptional" (doc 47), or "" for no tier.
+const char* tierName(int tier);
 // What a business sells (by id or category) costing at most `maxPrice` pennies, in catalog order.
 std::vector<std::string> goodsSold(const Business& business, int maxPrice);
 // A starter craft (Data/Items/crafts.json; doc 35, Phase 5, first part): a whole batch from at most two ingredients.
@@ -146,8 +168,10 @@ bool qualityApplies(const std::string& base);
 std::vector<std::string> kindsOf(const std::string& base);  // The good in every quality, common first (marks aside).
 // What a quality's use lasts, against the common kind's: crude 0.6, fine 1.5, masterwork 2.5.
 double qualityDurability(int quality);
-// A weapon's blow, against the common kind's (doc 33's damage): crude 0.85, fine 1.15, masterwork 1.3.
+// A weapon's blow, against the common kind's (doc 33's damage: crude 0.92, fine 1.05, masterwork 1.1), and armour's
+// protection (0.75, 1.25, 1.5): within a tier (doc 47), a masterwork about the next tier's blade or kit.
 double qualityDamage(int quality);
+double qualityGuard(int quality);
 // "the ruff", "the left foreleg"...: a fur spot or wear slot for a sentence.
 std::string placeName(const std::string& where);
 } // namespace ratw::items

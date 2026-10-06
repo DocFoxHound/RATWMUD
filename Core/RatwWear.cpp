@@ -144,6 +144,43 @@ std::string World::wornWords(const Entity& e)
     return out;
 }
 
+namespace
+{
+// The watch's Professional kit (doc 47), by the slot it is worn in, and its blade.
+const std::pair<const char*, const char*> WatchKit[] = {
+    {"body", "leather_barding"}, {"neck", "leather_gorget"}, {"head", "leather_cap"}, {"paws", "leg_guards"}};
+constexpr const char* WatchBlade = "iron_sword";
+} // namespace
+
+void World::kitOut(Entity& e, bool fighting)
+{
+    if (!e.npc)
+        return;
+    const auto* job = society_.jobOf(e.id);
+    const bool guard = !e.dead && job && job->role == "guard";
+    const auto* purse = society_.account(e.id);
+    const auto owns = [&](const std::string& item) { return purse && Society::stock(*purse, item) > 0; };
+    for (const auto& [slot, item] : WatchKit)
+    {
+        const auto worn = e.worn.find(slot);
+        if (guard && worn == e.worn.end())
+            e.worn[slot] = item;                    // (Worn out, or never had: issued again.)
+        else if (!guard && worn != e.worn.end() && worn->second == item && !owns(item))
+            e.worn.erase(worn);
+    }
+    const bool issued = e.mouth == "sword" && e.swordKind == WatchBlade && !owns(WatchBlade);
+    if (guard && fighting && e.mouth.empty())
+    {
+        e.mouth = "sword";
+        e.swordKind = WatchBlade;
+    }
+    else if (issued && (!guard || !fighting))
+    {
+        e.mouth.clear();
+        e.swordKind.clear();
+    }
+}
+
 void World::fitWorn(const std::string& id)
 {
     auto* e = entity(id);

@@ -26,6 +26,13 @@ bool playerAccountId(const std::string& id)
 
 namespace
 {
+// The bronze sword's price: the catalog's (doc 47; it was 40 here, more than an iron one).
+double swordPrice()
+{
+    const auto* g = items::good("sword");
+    return g && g->price > 0 ? g->price : 30;
+}
+
 constexpr std::int64_t MoneyLimit = 1000000000;
 constexpr int StockLimit = 10000;
 bool near(const LifeBody& body, const std::string& cell, double x, double y)
@@ -458,7 +465,7 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     // them, and as the town's stores do (priceFactor).
     const bool catalog = worn || good;
     const double each = catalog ? townPrice(shopTown(seller), item)
-                                : (item == "meal" ? 6 : item == "sword" ? 40 : 2) * (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) *
+                                : (item == "meal" ? 6 : item == "sword" ? swordPrice() : 2) * (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) *
                                       priceFactor(seller, item);
     const double sells = catalog ? margin() : .55;
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.

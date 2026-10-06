@@ -88,7 +88,7 @@ on speed stay as in doc 33 and heal as now (50 per game hour, once out of the fi
 | Injury | Cause | Effect | Ends |
 | --- | --- | --- | --- |
 | **Burning** (built) | Fire | Damage at the start of each turn | Rolling, or after its turns |
-| **Bleeding** | A bite or sword hit for 18 or more | 2 damage at the start of each turn | 3 turns, or tended |
+| **Bleeding** | A bite or sword hit: a chance from 14, sure from 22 (doc 47; it was 18 or more, always) | 2 damage at the start of each turn | 3 turns, or tended |
 | **Staggered** | A single hit of 25 or more | Next bar starts 20 lower | The next turn |
 | **Winded** (built as exhaustion) | Stamina 0 | No physical attacks until stamina 20 | Recovery |
 
@@ -276,7 +276,7 @@ initiative. They are not stored as separate numbers, so healing or a DM correcti
    pending the open question); get up at 10 health, in a fight or out; the downings count and stretch; partial and
    full rest, a full one only in a bed; time away counts; "to the death" terms read "until one goes down"; the status
    panel shows rest, the actions row gains Lie down. `battle_tests` restAndRepeatedDowns and gettingUpInAFight.
-2. **Combat injuries.** Built October 4, 2026: Bleeding (a bite or sword blow of 18 or more: 2 a turn for 3 turns) and
+2. **Combat injuries.** Built October 4, 2026: Bleeding (a bite or sword blow of 18 or more: 2 a turn for 3 turns; since doc 47 a chance that grows from 14 to sure at 22) and
    Staggered (a blow of 25 or more: the bar set back 20, at once or when the turn it came in ends) beside Burning and
    Winded; with Wounded, Badly hurt, Limping and Down, named on every fighter's card (one's own too) with what each does.
    `battle_tests` restAndCombatInjuries.

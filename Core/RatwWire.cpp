@@ -338,7 +338,7 @@ Entity readEntity(const Value& o)
     if (!e.mouth.empty() && e.mouth != "sword")
         e.mouth.clear();
     // The sword's kind, if it is one; the wear on gear, for goods that exist, within bounds.
-    if (const auto kind = o.string("swordKind"); e.mouth == "sword" && items::baseOf(kind) == "sword" && items::good(kind))
+    if (const auto kind = o.string("swordKind"); e.mouth == "sword" && items::blade(kind))
         e.swordKind = kind;
     e.scentMaskedUntil = std::max(0.0, strictNumber(o, "scentMaskedUntil", 0.0));
     e.noPvp = !e.npc && o.boolean("noPvp");
