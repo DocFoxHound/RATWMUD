@@ -105,6 +105,9 @@ struct TownSnap
     int oddJobs = 0, oddJobSlots = 0;                // Odd jobs and hires posted, and how many hands they take.
     std::map<std::string, int> unfilled;             // Kind of post (wageKinds) -> places going begging: vacant posts,
                                                      // hires and odd jobs nobody took.
+    int unpaid = 0, supported = 0;                   // Its workers owed wages; and paid today by wage support (Phase 6).
+    std::int64_t rescueNeed = 0;                     // What its failing businesses lack of their floats (under half of it).
+    std::map<std::string, std::int64_t> funds;       // Channel -> what its fund holds.
 };
 
 // The orchestrator's dials (Data/Economy/orchestrator.json; doc 46). All placeholders for the balance pass.
@@ -122,6 +125,9 @@ struct Dials
     // Its own pressure (doc 46, Phase 5): at each decision, if the residents' share of the land's money fell over the week
     // by more than shareSlip, it presses autoRaise times harder (to autoMost); if it rose, it eases by autoEase (to 1).
     double shareSlip = .005, autoRaise = 1.3, autoEase = .85, autoMost = 3;
+    // And the living floor (Phase 6): if the poorer half's share of the residents' money fell, it rises floorRaise times
+    // (to floorMost); if it rose, it eases (autoEase, to 1).
+    double floorRaise = 1.1, floorMost = 2;
     double distressComfortable = 1.5;                // The band's top at full distress (it falls toward this).
     double distressSpendBoost = 2;                   // And the share spent above it, times this at full distress.
     // (overShare and overShareAtCap are of a week: what a decision sends out over the week that follows it.)
@@ -187,6 +193,8 @@ struct Memory
     std::map<std::string, std::int64_t> weekStart;   // Holder -> what it held after the last decision (for its week's gain).
     double residentShare = -1;                       // The residents' share of the land's money at the last decision.
     double autoPressure = 1;                         // Its own pressure, from how that share moves.
+    double bottomShare = -1, floorLift = 1;          // The poorer half's share of it; the living floor's lift (Phase 6).
+    std::map<std::string, double> support;           // "town|item" -> price support: a staple's gap under its price (Phase 6).
 };
 
 struct TownReading
@@ -218,6 +226,7 @@ struct PriceSet
     std::string town, item;
     std::int64_t catalog = 0;
     double now = 0, would = 0;
+    double support = 0;                              // Price support a piece (Phase 6), when it holds a staple under its price.
 };
 struct Brief
 {
@@ -226,6 +235,7 @@ struct Brief
     bool decided = false;                            // The week's decisions: the pot, orders, prices and margin (else 0).
     double landDistress = 0, margin = 0, gini = 0;
     double residentShare = 0, autoPressure = 1;      // The residents' share of the land's money; its own pressure.
+    double bottomShare = 0, floorLift = 1;           // The poorer half's share (by household, a head); the floor's lift.
     std::int64_t moneySupply = 0, pot = 0, median = 0;
     std::vector<TownReading> towns;
     std::vector<HolderBand> holders;                 // Every holder (the saved brief keeps only those over their band).

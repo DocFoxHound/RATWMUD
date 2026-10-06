@@ -447,6 +447,29 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             if (const int open = job.slots - int(job.stage.size()); open > 0)
                 t->second.unfilled[job.until >= 0 ? "hand" : "odd job"] += open;
         }
+    // Its workers owed wages, and those paid by wage support today (Phase 6); what its failing businesses lack of their
+    // floats; and what its funds hold.
+    for (const auto& [who, since] : state_.memory.unpaidSince)
+        if (const auto home = nextTown.find(who); home != nextTown.end())
+            if (const auto t = towns.find(home->second); t != towns.end())
+                ++t->second.unpaid;
+    for (const auto& [town, spells] : supportedToday_)
+        if (const auto t = towns.find(town); t != towns.end())
+            t->second.supported += (spells + PaidSpells - 1) / PaidSpells;
+    supportedToday_.clear();
+    for (const auto& p : positions_)
+        if (const auto till = account("till:" + p.id); till && (p.role == "merchant" || items::producerFor(p.title)))
+            if (const auto floatCash = floatOf(p.id); till->cash < floatCash / 2)
+                if (const auto t = towns.find(p.role == "merchant" ? of(p.work.cell) : communityOfResident(p.founder)); t != towns.end())
+                    t->second.rescueNeed += floatCash - till->cash;
+    for (auto it = state_.accounts.lower_bound("fund:"); it != state_.accounts.end() && it->first.rfind("fund:", 0) == 0; ++it)
+        if (const auto second = it->first.find(':', 5); second != std::string::npos)
+            if (const auto t = towns.find(it->first.substr(5, second - 5)); t != towns.end())
+            {
+                auto channel = it->first.substr(second + 1);
+                std::replace(channel.begin(), channel.end(), '_', ' ');
+                t->second.funds[channel] = it->second.cash;
+            }
     // Posts standing empty, by their kind of pay (the wage table, doc 46, Phase 4).
     for (const auto& p : positions_)
         if (const auto held = state_.careers.positions.find(p.id); held != state_.careers.positions.end() && held->second.holder.empty() && p.paid)

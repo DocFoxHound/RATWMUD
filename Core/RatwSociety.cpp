@@ -429,6 +429,12 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     b.stock[item] += quantity;
     b.cash -= total;
     s.cash += total;
+    // A staple held under its price (price support, doc 46, Phase 6): its till is owed the gap on what it sells.
+    if (!support_.empty() && seller.rfind("till:", 0) == 0 && buyer.rfind("till:", 0) != 0 && buyer.rfind("fund:", 0) != 0)
+        if (const auto town = shopTown_.find(seller); town != shopTown_.end())
+            if (const auto t = support_.find(town->second); t != support_.end())
+                if (const auto gap = t->second.find(items::baseOf(item)); gap != t->second.end())
+                    supportOwed_[seller] += gap->second * quantity;
     if (seller.rfind("till:", 0) == 0 || merchant(seller))
     {
         takings_[seller] += total;                  // (A shop's day's takings: its help share them.)

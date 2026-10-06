@@ -1221,17 +1221,20 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 auto& carry = wageCarry_[pair.first];
                 carry = std::min(carry + day / PaidSpells, day);
                 const std::int64_t wage = std::int64_t(std::floor(carry));
-                // An employer that can't pay: its town (or church) covers the wage if it has plenty, so the work goes on
-                // (the user, 2026-10-05).
+                // A payer that can't pay (a shop, a house, a lean treasury or church): its town's wage support covers it
+                // (the economy orchestrator's channel, doc 46, Phase 6), so the work goes on.
                 std::string subsidy;
-                if (wage > 0 && business && spendable(payer.account) < wage)
-                    subsidy = subsidiser(home);
+                if (wage > 0 && spendable(payer.account) < wage)
+                    if (const auto fund = fundOf(home, "wage support"); account(fund) && account(fund)->cash >= wage)
+                        subsidy = fund;
+                (void)business;
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage subsidised by the town"))
+                else if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage supported"))
                 {
                     ++life.wagesToday;
                     carry -= double(wage);
+                    ++supportedToday_[home];
                     state_.memory.revision += state_.memory.unpaidSince.erase(pair.first);
                 }
                 else if (spendable(payer.account) >= wage &&

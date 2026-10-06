@@ -13,6 +13,8 @@
   "autoRaise": 1.3,
   "autoEase": 0.85,
   "autoMost": 3,
+  "floorRaise": 1.1,
+  "floorMost": 2,
   "distressComfortable": 1.5,
   "distressSpendBoost": 2,
   "landShare": 0.25,

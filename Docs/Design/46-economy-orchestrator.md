@@ -730,6 +730,56 @@ which the towns couldn't spend.)
 **Fixed:** a farm's or site's float counted the other workers of the same ground as its help, so each farm worker's
 till was founded with up to 1,242p (125,000p in all, a quarter of the land's money). A producer's float has no help now.
 
+## Phase 6: the needs, and the poorer half (built 2026-10-06)
+
+Three more channels, met **by need** before anything is shared by distress. From what is pooled, at most half, each
+town's need less what its fund still holds:
+
+| Channel | Its need | What it does |
+|---|---|---|
+| wage support | (its workers owed wages + those it paid today) × the town's labour pay × 7 | A payer that can't pay (a shop, a house, a lean treasury or church) has the wage paid from the town's fund (`"a wage supported"`). It replaces the town's and church's covering of a broke shop's wages (`subsidiser`, gone) and now covers lean treasuries too. |
+| price support | each staple's gap under its price × its sales a day × 7 | Where the staple ceiling holds a food under its own price, every sale owes the shop the gap (`supportOwed_`, counted as it sells), paid the next day from the town's fund. |
+| rescue | what the town's failing businesses (under half their float) lack of their floats | A failing business is lent back up to its float; it repays from what it holds above two floats; a month on, what it owes is written off (`EconomyMemory::loans`, saved). A great house's business counts its days rescued, and a business rescued `ProppedDays` times in a month is sold on as before. |
+
+- **House props are gone:** a house no longer props its own businesses to keep the money in the family.
+- **Opening a shut business** is deferred: it needs the careers to fill a post, and isn't a channel yet.
+- **Steers:** a Dungeon Master's channel steer weighs these needs too (0 closes one).
+
+**The poorer half** (Phase 5's open issue):
+- At each decision it compares the poorer half's share of the residents' money with the week before.
+- If it fell by more than half a point, the living floor rises a tenth (`floorLift`, to twice at most); if it rose, the
+  floor eases back. The floor lifts the lowest pay first: labour, hands, odd jobs.
+
+**Not saved:** what staples owe their shops between a sale and the next day's pass (a restart loses up to a day's).
+
+**Measured** (35 days, as Phase 5's run):
+
+| | Day 2 | Day 8 | Day 15 | Day 22 | Day 29 | Day 35 |
+|---|---|---|---|---|---|---|
+| Residents' share (at the decisions) | | 0.594 | 0.581 | 0.581 | 0.574 | |
+| Poorer half's share of the residents' money | 0.368 | 0.336 | 0.300 | 0.259 | 0.222 | 0.203 |
+| Floor lift | | 1 | 1.1 | 1.21 | 1.33 | |
+| Residents' Gini | 0.213 | 0.251 | 0.294 | 0.346 | 0.395 | 0.418 |
+| Great houses | 21,169p | 27,068p | 31,702p | 35,811p | 36,025p | 36,345p |
+| Guards | 26,886p | 29,175p | 34,308p | 38,489p | 42,557p | 45,241p |
+| Town treasuries | 72,020p | 68,529p | 42,577p | 33,764p | 27,537p | 23,418p |
+| Grown short / starving | 0 / 0 | 1 / 0 | 1 / 0 | 2 / 0 | 8 / 0 | 2 / 0 |
+
+- **The needs are met each week:** wage support 5,741p to 12,060p, rescue 4,271p to 8,733p, price support 1,385p to
+  5,356p.
+- **The poorer half was measured wrongly at first.** Nearly 400 of the 1,350 residents are children, the retired and
+  others with no income, whose own purses are small because their households hold the money. It is measured by
+  household now: the households holding least a head, half of everyone living in them.
+- **By household it still falls** (a rerun: 0.39 on day 2, 0.36 at the first decision, 0.33, 0.29, 0.26). The floor
+  lift (to 1.33) can't move it: the living floor, about 7 to 13p a day, is under what nearly every post pays.
+- **Where the money goes on its way out:** the hires and the works' odd jobs pay wolves; commissions, trade and the
+  works' materials pay shops' tills, the very holders that are pooling. *Next (Phase 7):* learn each channel's reach
+  and weigh the channels by it.
+- **The great houses gain** (21,000 to 36,000p) now that they don't prop their businesses: half of each week's gain still
+  stays.
+- **The guards save:** paid well and fed at the mess, they keep it (the wealth tithe takes a twentieth above a month's
+  living). They are residents, so it is their own business (the user's rule).
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -744,7 +794,7 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
    the town wage scale.
 5. **Bands and channels** (built). Town works, hire grants, commissions, food purchase and trade orders. The surplus rules, house
    props and patronage, the capital's share and the trials are removed.
-6. **The rest of the channels.** Price support, wage support, business rescue, opening.
+6. **The rest of the channels** (built, but for opening). Price support, wage support, business rescue, opening.
 7. **Learning reach,** and the granary through the seasons.
 8. **Watching and steering:** scenarios, the full DM panel, and a look at the panel in the browser against a real save
    (the user, 2026-10-06: the panel's checks wait for this phase).

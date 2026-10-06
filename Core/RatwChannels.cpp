@@ -257,6 +257,65 @@ void Society::runChannels(std::int64_t day)
         if (note.total > 0)
             spendings_.push_back(std::move(note));
     }
+    // Price support (Phase 6): what each shop's staples owe it, the gap under their price, from its town's fund.
+    for (auto& [till, owed] : supportOwed_)
+    {
+        const auto town = shopTown_.find(till);
+        const auto coins = std::int64_t(std::floor(owed));
+        if (town == shopTown_.end() || coins <= 0)
+            continue;
+        const auto fund = fundOf(town->second, "price support");
+        if (const auto* purse = account(fund); purse && purse->cash > 0)
+        {
+            const auto paid = std::min(coins, purse->cash);
+            if (shift(fund, till, "", 0, paid, "price support"))
+                owed -= double(paid);
+        }
+    }
+    for (auto it = supportOwed_.begin(); it != supportOwed_.end();)
+        it = it->second < 1 ? supportOwed_.erase(it) : std::next(it);
+    // Business rescue (Phase 6): a business whose till has fallen under half its float is lent it back to its float from
+    // its town's rescue fund; it repays from what it holds above two floats; a month on, what it owes is written off. (A
+    // great house's business counts its days rescued, as its house's props did: ProppedDays of them in a month, and the
+    // house sells it on.)
+    auto& loans = state_.memory.loans;
+    for (const auto& p : positions_)
+    {
+        const auto till = "till:" + p.id;
+        const auto* purse = account(till);
+        if (!purse || !(p.role == "merchant" || items::producerFor(p.title)))
+            continue;
+        const auto floatCash = floatOf(p.id);
+        const auto town = p.role == "merchant" ? shopTown_.count(till) ? shopTown_.at(till) : communityOfResident(p.founder)
+                                               : communityOfResident(p.founder);
+        if (auto loan = loans.find(till); loan != loans.end())
+        {
+            if (const auto spare = purse->cash - 2 * floatCash; spare > 0)
+            {
+                const auto back = std::min(spare, loan->second.first);
+                const auto fund = fundOf(town, "rescue");
+                openAccount(fund);
+                if (shift(till, fund, "", 0, back, "a rescue repaid"))
+                    loan->second.first -= back;
+            }
+            if (loan->second.first <= 0 || day - loan->second.second >= MonthDays)
+                loans.erase(loan);
+        }
+        if (purse->cash >= floatCash / 2)
+            continue;
+        const auto fund = fundOf(town, "rescue");
+        const auto* rescue = account(fund);
+        const auto lend = rescue ? std::min(floatCash - purse->cash, rescue->cash) : 0;
+        if (lend > 0 && shift(fund, till, "", 0, lend, "a rescue: lent to keep it open"))
+        {
+            auto& loan = loans.try_emplace(till, std::pair<std::int64_t, std::int64_t>{0, day}).first->second;
+            loan.first += lend;
+            if (state_.houses.owner.count(p.id))
+                state_.houses.propped[p.id].push_back(double(day));
+            spendings_.push_back({fund, town, lend, std::to_string(lend) + "p lent to " + p.title.substr(0, 40) + " to keep it open"});
+        }
+    }
+    ++state_.memory.revision;
     // The granaries: food to the town's food shops when their shelves run low, at the land's price, the takings back
     // into the town's food fund.
     for (auto it = state_.accounts.lower_bound("town:"); it != state_.accounts.end() && it->first.rfind("town:", 0) == 0; ++it)

@@ -674,6 +674,15 @@ Value economyMemory(const EconomyMemory& m)
     o.add("condition", condition);
     o.add("purses", double(m.purses));
     o.add("tills", double(m.tills));
+    auto loans = Value::object();
+    for (const auto& [till, loan] : m.loans)
+    {
+        auto pair = Value::array();
+        pair.push(double(loan.first));
+        pair.push(double(loan.second));
+        loans.add(till, pair);
+    }
+    o.add("loans", loans);
     auto keeper = Value::object(), comfort = Value::object(), toWork = Value::array(), improved = Value::object();
     for (const auto& [home, who] : m.keeper)
         keeper.add(home, who);
@@ -716,6 +725,10 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [id, v] : o.object("condition").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 100)
             m.condition[id] = v.asNumber();
+    for (const auto& [till, v] : o.object("loans").fields())
+        if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() && v.items()[0].asNumber() > 0 &&
+            v.items()[0].asNumber() < 1e9)
+            m.loans[till] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
     if (const auto* t = o.find("tills"); t && t->isNumber() && t->asNumber() >= 0 && t->asNumber() <= 100)
         m.tills = int(t->asNumber());            // (Saved before doc 46's tills: 0, so an older world founds them once.)
     if (const auto* p = o.find("purses"); p && p->isNumber() && p->asNumber() >= 0 && p->asNumber() <= 100)

@@ -174,13 +174,8 @@ void Society::tendHouses(std::int64_t day)
         propped.erase(std::remove_if(propped.begin(), propped.end(), [&](double d) { return d <= day - MonthDays; }), propped.end());
         if (cash > floatCash)
             shift(till, house, "", 0, cash - floatCash, "house takings");
-        else if (cash < floatCash / 2)
-        {
-            // A struggling day, propped up or not (a house with nothing to spare can't).
-            if (account(house)->cash > 0)
-                shift(house, till, "", 0, std::min(floatCash - cash, account(house)->cash), "propped up by the house");
-            propped.push_back(double(day));
-        }
+        // (A struggling business is rescued by its town's rescue fund now, which counts its days in `propped`: doc 46,
+        // Phase 6. The house no longer props its own businesses to keep the money in the family.)
         if (propped.empty())
             state.propped.erase(pid);
         else if (int(propped.size()) >= ProppedDays)

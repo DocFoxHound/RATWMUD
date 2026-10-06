@@ -966,20 +966,29 @@ void whoPaysWages()
                 (e.actor == w.society().tillOf("em") ? fromShop : fromTown) += e.coins;   // (Its till, since doc 46.)
     }
     expect(fromShop > 0 && fromTown == 0, "The help is paid by the shop (" + std::to_string(fromShop) + "p)");
-    // The shop goes broke. Its town has plenty: it covers the help's wage, so the work goes on (the user, 2026-10-05).
+    // The shop goes broke. Its town's wage support (the economy orchestrator's, doc 46, Phase 6) covers the help's wage,
+    // so the work goes on.
     const auto emTill = w.society().tillOf("em");
     w.society().shift(emTill, "treasury", "", 0, w.society().account(emTill)->cash, "test: a bad week");
+    std::vector<std::string> supports;
+    for (const auto& t : w.towns())
+    {
+        supports.push_back(Society::fundOf(t.id, "wage support"));
+        w.society().openAccount(supports.back());
+        w.society().shift("treasury", supports.back(), "", 0, 200, "test: the orchestrator's orders");
+    }
     std::int64_t subsidised = 0;
     for (int t = 0; t < 700; ++t)
     {
         w.tick(1);
         for (const auto& e : w.takeEvents())
-            if (e.kind == "economy" && e.detail == "a wage subsidised by the town" && e.target == "help")
+            if (e.kind == "economy" && e.detail == "a wage supported" && e.target == "help")
                 subsidised += e.coins;
     }
-    expect(subsidised > 0, "A broke shop's help is paid by its town, which has plenty (" + std::to_string(subsidised) + "p)");
-    // A town (and church) with nothing to spare can't: the help waits on its wages, and after a week labours for the
-    // Town Works instead.
+    expect(subsidised > 0, "A broke shop's help is paid by its town's wage support (" + std::to_string(subsidised) + "p)");
+    // With nothing in it: the help waits on its wages, and after a week labours for the Town Works instead.
+    for (const auto& support : supports)
+        w.society().shift(support, "treasury", "", 0, w.society().account(support)->cash, "test: spent");
     w.society().shift("treasury", "stores:west", "", 0, w.society().account("treasury")->cash - 100, "test: a lean year");
     if (const auto* church = w.society().account(Society::SharedChurch))
         w.society().shift(Society::SharedChurch, "stores:west", "", 0, church->cash, "test: a lean year");
@@ -1149,9 +1158,16 @@ void greatHouses()
     expect(takings > 0 && soc.account(till)->cash <= soc.floatOf(pid) + 30, "The takings above the float go to the house (" +
                                                                          std::to_string(takings) + "p)");
     expect(wage == Society::ManagerWage, "The manager is paid its wage from the till");
-    // Bad days: the till runs dry and the house props it up, until it sells the business to the other house.
+    // Bad days: the till runs dry and its town's rescue fund (the economy orchestrator's, doc 46, Phase 6) lends it its
+    // float, until its house sells the business to the other house.
     const auto other = house == "house:vesk_manor" ? std::string("house:house_ash") : std::string("house:vesk_manor");
     expect(w.society().shift("treasury", other, "", 0, soc.floatOf(pid) * 2 + 10, "test: the other house's wealth"), "The other house is rich");
+    for (const auto& t : w.towns())
+    {
+        const auto rescue = Society::fundOf(t.id, "rescue");
+        w.society().openAccount(rescue);
+        w.society().shift("treasury", rescue, "", 0, soc.floatOf(pid) * (Society::ProppedDays + 2), "test: the orchestrator's orders");
+    }
     bool propped = false;
     for (int d = 0; d < Society::ProppedDays + 1 && soc.ownerOf(pid) == house; ++d)
     {
@@ -1160,9 +1176,9 @@ void greatHouses()
         nextMorning(w);
         run(w, 2);
         for (const auto& e : w.takeEvents())
-            propped |= e.kind == "economy" && e.detail == "propped up by the house" && e.actor == house;
+            propped |= e.kind == "economy" && e.detail == "a rescue: lent to keep it open" && e.target == till;
     }
-    expect(propped, "A till run dry is propped up by its house");
+    expect(propped, "A till run dry is rescued by its town's fund");
     expect(soc.ownerOf(pid) == other, "and a business that keeps losing is sold to the other house");
     expect(soc.state().books.start.count(house) && soc.state().books.start.count(other), "Houses keep books for the reckoning");
     // The month's rent: the tannery (now the other house's) pays the house that doesn't own it, never its own.
@@ -1950,6 +1966,43 @@ void theChannelsSpend()
     expect(s.conserved() && s.moneySupply() == supply, "Every penny is kept");
 }
 
+// Price support (doc 46, Phase 6): a staple the orchestrator holds under its price for the poor; each shop that sells it
+// is paid the gap from its town's fund the next day.
+void priceSupport()
+{
+    auto f = strip("EE.....WW", resident("baker1", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 4.5, 1, 4.5));
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    nextMorning(w);                                  // (A day's pass: each shop's town known.)
+    auto& s = w.society();
+    if (s.orchestratorDials().mode != "on")
+        return;
+    auto state = s.state();
+    state.orchestrator.memory.price["east|bread"] = 2;
+    state.orchestrator.memory.support["east|bread"] = 1.5;
+    expect(s.restore(state), "Bread held under its price in east restores");
+    const auto fund = Society::fundOf("east", "price support");
+    s.openAccount(fund);
+    s.shift("treasury", fund, "", 0, 50, "test: the orchestrator's orders");
+    s.shift("treasury", "player-ada", "", 0, 50, "test: a purse");
+    s.create(s.tillOf("baker1"), "bread", 4, "test: baked");
+    auto* ada = w.entity("player-ada");
+    const auto* baker = w.entity("baker1");
+    ada->cellId = baker->cellId;
+    ada->position = {baker->position.x + 1, baker->position.y};
+    const auto bought = s.trade("player-ada", "baker1", "bread", 2, true);
+    expect(bought.ok && bought.unitPrice == 2, "Ada buys two loaves at east's price: " + bought.message);
+    w.takeEvents();
+    run(w, 600 * 18);                                // (On to the next day's pass: what is owed isn't saved.)
+    std::int64_t support = 0;
+    for (const auto& e : w.takeEvents())
+        if (e.kind == "economy" && e.detail == "price support" && e.actor == fund && e.target == s.tillOf("baker1"))
+            support += e.coins;
+    expect(support == 3, "The bakery is paid the gap, 1.5p a loaf, from east's fund (" + std::to_string(support) + "p)");
+    expect(s.conserved(), "Money stays conserved");
+}
+
 int main()
 {
     try
@@ -1993,6 +2046,7 @@ int main()
         theOrchestratorWatches();
         oneTownPrice();
         theChannelsSpend();
+        priceSupport();
     }
     catch (const std::exception& error)
     {

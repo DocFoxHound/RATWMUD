@@ -10,21 +10,6 @@
 
 namespace ratw
 {
-std::string Society::subsidiser(const std::string& community) const
-{
-    const auto treasury = treasuryOf(community);
-    std::int64_t people = 0;
-    for (const auto& [id, life] : state_.residents)
-        people += treasuryOfResident(id) == treasury;
-    if (const auto* purse = account(treasury); purse && people > 0 && purse->cash > std::int64_t(LeanTreasury) * 2 * people)
-        return treasury;
-    // The church, holding twice its floor (the land's: one purse for every town).
-    const auto church = churchOf(treasury);
-    if (const auto* purse = account(church); purse && people > 0 && purse->cash > ChurchHead * 2 * std::int64_t(state_.residents.size()))
-        return church;
-    return {};
-}
-
 std::int64_t Society::postOddJobs(const std::string& payer, const std::string& community, std::int64_t budget)
 {
     // What a hand is paid: its town's table for a hand's share of an odd job (the wage table, doc 46, Phase 4).

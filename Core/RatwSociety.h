@@ -207,6 +207,9 @@ struct EconomyMemory
     std::map<std::string, double> condition;        // Community -> its buildings' repair, 0 to 100 (the Town Works).
     int purses = 0;                                 // The grant of starting money the world has had (Society::PursesFounded).
     int tills = 0;                                  // Owner-run businesses have tills of their own (Society::TillsFounded, doc 46).
+    // Business rescue (doc 46, Phase 6): a failing business's till -> what its town's rescue fund has lent it, and the day it
+    // was first lent. Repaid from what it holds above two floats; after MonthDays, written off.
+    std::map<std::string, std::pair<std::int64_t, std::int64_t>> loans;
     // Households (the user, 2026-10-05): who keeps the house in a comfortable one (home -> resident); each home's run of
     // comfortable days (counting up) or poor ones (down); and the poor homes whose stay-at-home members go to work.
     std::map<std::string, std::string> keeper;
@@ -559,7 +562,7 @@ class Society
     std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (made daily).
     // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; its wage table (town -> kind -> a day's
     // pay); and its margin.
-    std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_, wages_;
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_, wages_, support_;
     double margin_ = .55;
     // What each larder gives its household a day (nourishment taken from it, a running average, Society::spoil): the
     // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).
@@ -741,10 +744,7 @@ class Society
     const std::string& friendGroup(const std::string& child) const;
     static constexpr std::int64_t OddJobPay = 4;
     const std::vector<OddJob>& oddJobs() const { return oddJobs_; }
-    // Who covers a wage an employer can't pay, or posts work for the poor (the user, 2026-10-05: towns and churches
-    // subsidise industry so things keep turning): the town's treasury if it is well above lean, else its church if it
-    // has plenty; "" for neither.
-    std::string subsidiser(const std::string& community) const;
+
     static constexpr std::int64_t MostStipend = 3;  // A child's stipend a day, before a rich household's more (see below).
     // A household is comfortable with ComfortDays of food in its purse for everyone at home, poor under PoorDays'; it keeps
     // a member at home after a week comfortable, and sends it back under KeeperDays' (and everyone to work after a week poor).
@@ -873,6 +873,10 @@ class Society
     static std::string fundOf(const std::string& town, const std::string& channel);
     void applyOrders(const orchestra::Brief& brief);
     void runChannels(std::int64_t day);
+    // Price support (Phase 6): what a staple's sales owe each shop's till, the gap under its price, paid daily from its
+    // town's fund; and how many were paid today by wage support, by town (for the orchestrator's snapshot).
+    std::unordered_map<std::string, double> supportOwed_;
+    std::map<std::string, int> supportedToday_;
     void indexTills();                              // tills_ from the accounts (a reset, a restore).
     std::string ownTill(const std::string& positionId) const;   // Its till ("" for none, or a house's business).
     void foundTills();
