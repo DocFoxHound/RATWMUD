@@ -117,7 +117,7 @@ void readsDistress()
     expect(hurt.kind == "empty purses", "with food in its shop but none in its purses: " + hurt.kind);
     expect(hurt.hungry == .5 && hurt.starving == .2 && hurt.idle == 12, "Its sensors: half hungry, a fifth starving, twelve idle");
     expect(b.towns.front().id == "hungerford", "The towns come most in distress first");
-    expect(std::abs(well.foodCost - 4) < 1e-9 && well.wageFloor == 5, "A day's bread costs 4p in Wellby; the living wage 5p");
+    expect(std::abs(well.foodCost - 4) < 1e-9 && well.wageFloor == 8, "A day's bread costs 4p in Wellby; the living wage, a day's food for two, 8p");
 }
 
 void bandsAndTheWeek()
@@ -316,6 +316,39 @@ void savedState()
     expect(!readDialsText(R"({"mode": "loud"})", d, problem), "An unknown mode is refused");
     expect(!readDialsText(R"({"cap": 1})", d, problem), "and dials out of range");
 }
+
+void theWageTable()
+{
+    // Seeded at once from the dials' starts, never under the living floor.
+    Memory m;
+    auto s = land(false);
+    const auto first = plan(s, m);
+    expect(first.wages.at("wellby").at("help") == 16 && first.wages.at("wellby").at("guard") == 20, "Each town's table starts from the dials");
+    expect(first.wages.at("wellby").at("keeper") == 8 && first.wages.at("wellby").at("odd job") == 4, "and a keeper's and an odd job's");
+    // Posts going begging raise their pay at the week's decision; not on other days.
+    s.towns[0].unfilled["help"] = 2;
+    expect(plan(s, m).wages.at("wellby").at("help") == 16, "A day's measure moves no wage");
+    auto week = land(true);
+    week.towns[0].unfilled["help"] = 2;
+    const auto raised = plan(week, m);
+    expect(std::abs(raised.wages.at("wellby").at("help") - 17.6) < 1e-9, "Help going begging is paid a tenth more at the decision");
+    // Many idle and nothing begging: it eases, but not below the living floor.
+    expect(raised.wages.at("hungerford").at("labour") < 12 || town(raised, "hungerford").kind == "empty purses",
+           "Many idle: the town's labour pays less, unless it is in want of work or money");
+    Memory n;
+    auto lean = land(true);
+    lean.dials.wageStart["labour"] = 1;              // (A start under the floor.)
+    expect(plan(lean, n).wages.at("wellby").at("labour") == 8, "A wage is never under the living floor");
+    // Saved.
+    State st;
+    st.memory = m;
+    expect(readState(stateJson(st)).memory.wage == m.wage, "The table is saved");
+    Dials d;
+    std::string problem;
+    expect(readDialsText(R"({"wages": {"help": 20}, "wageRaise": 0.2})", d, problem) && d.wageStart.at("help") == 20 && d.wageRaise == .2 &&
+               d.wageStart.at("guard") == 20,
+           "Its starts and steps are dials");
+}
 } // namespace
 
 int main()
@@ -329,6 +362,7 @@ int main()
         pricesAndMargin();
         sameEveryTime();
         savedState();
+        theWageTable();
     }
     catch (const std::exception& e)
     {

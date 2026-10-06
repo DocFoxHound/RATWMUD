@@ -277,6 +277,7 @@ double Society::townFactor(const std::string& town, const std::string& item) con
 void Society::applyPrices()
 {
     prices_.clear();
+    wages_.clear();
     margin_ = .55;
     const auto& o = state_.orchestrator;
     if (orchestratorDials().mode != "on")
@@ -286,6 +287,9 @@ void Society::applyPrices()
             prices_[key.substr(0, bar)][key.substr(bar + 1)] = price;
     if (o.memory.margin > 0)
         margin_ = o.memory.margin;
+    for (const auto& [key, pay] : o.memory.wage)
+        if (const auto bar = key.find('|'); bar != std::string::npos && pay > 0)
+            wages_[key.substr(0, bar)][key.substr(bar + 1)] = pay;
 }
 
 std::int64_t Society::shopPrice(const std::string& shop, const std::string& item) const

@@ -63,6 +63,8 @@ void Society::reset(Roster roster)
     tills_.clear();
     forgetOrchestra();
     prices_.clear();
+    wages_.clear();
+    wageCarry_.clear();
     margin_ = .55;
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;

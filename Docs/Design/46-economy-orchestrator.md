@@ -580,6 +580,59 @@ and bands still only plan (Phase 5).
 paid the price times the margin, and an unpriced good goes at the catalog's. `orchestrator_tests`: a good is priced at
 once when first seen, then only at the week's decision.
 
+## Phase 4: the wage table (built 2026-10-06)
+
+Every town has a table of a day's pay for each kind of post, set by the orchestrator (`orchestra::wageKinds`):
+
+| Kind | Who | Starts at (a day) |
+|---|---|---|
+| help | a shop's or a house's help, a trade's hands, a household's servants | 16p |
+| guard | the watch | 20p |
+| labour | the town's own posts and its works | 12p |
+| clergy | priests, chapel keepers, acolytes | 16p |
+| keeper | an owner-run business's keeper, a house business's manager (their daily wage) | 8p |
+| hand | a business's or a farm's hire, a day | 12p |
+| odd job | a hand's share of a day's odd job | 4p |
+
+**How it moves:**
+- **The floor:** never under the living floor, a day's food at the town's prices for two (`wageFloorOverFood` 2), plus
+  lodging (0 for now); an odd job, a quarter of it.
+- **Seeded** at once for every town; **moved** at each week's decision:
+  - a tenth up for a kind with places going begging (vacant paid posts, hires and odd jobs nobody took by the evening);
+  - a twentieth down where a tenth or more of those able to work earned nothing lately and none of the kind go begging,
+    unless the town is in distress for want of work or money;
+  - at most three times its start.
+- Saved with the orchestrator (`memory.wage`), applied with its prices (`applyPrices`); every start and step is a dial
+  (`wages`, `wageRaise`, `wageEase`, `wageMost`, `lodgingADay`).
+
+**Paying it:**
+- **By the spell:** a worker is paid a `PaidSpells`-th of its kind's day pay for each spell of work, the fractions of a
+  penny carried to the next (`wageCarry_`).
+- **Who pays** is unchanged (`payerOf`): a shop or house that can't pay is covered by its town or church if it has
+  plenty (Phase 6's wage support will take this over); otherwise the hand goes unpaid and, after a week, labours for the
+  town.
+- **Hires and odd jobs** pay the table's hand and odd-job rates; a keeper's and a manager's daily wage is the keeper rate.
+- A wolf weighs a better-paid hire against its own post's pay from the table.
+
+**Measured** (15 days, against Phase 3):
+
+| Day 15 | Phase 3 | Phase 4 |
+|---|---|---|
+| Starving | 0 | 0 |
+| Grown short / broke | 1 / 4 | 1 / 1 |
+| Residents' Gini | 0.333 | 0.313 |
+| Median resident purse | 175p | 173p |
+
+At the second decision the fortresses paid more for odd jobs (theirs went begging) and less for other work (many
+idle); Upper Accord eased once, then held, in distress for want of work; the other towns kept their starting tables.
+
+**Removed:**
+- `wageFor`: pay by the employer's wealth, 1p from a lean payer;
+- the town wage scale by takings (`townWageScale_`);
+- shops' daily shares of their takings (`TakingsShare`, `TakingsCap`), and the hires they paid from them;
+- hire pay rising and falling by the business (`hirePay_`);
+- odd-job pay by the poster's richness and the town's poor.
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -590,7 +643,7 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
 2. **Every business its own till** (built). Tills for owner-run shops, farms and sites; keepers' and farmers' draw.
 3. **Prices and margins** (built). Town prices replace markdowns, flush discounts, food factors and market factors. The
    margin replaces 0.55.
-4. **Wages.** The wage table and the living floor replace wage shares, takings caps, hire pay, `wageFor` by wealth and
+4. **Wages** (built). The wage table and the living floor replace wage shares, takings caps, hire pay, `wageFor` by wealth and
    the town wage scale.
 5. **Bands and channels.** Town works, hire grants, commissions, food purchase and trade orders. The surplus rules, house
    props and patronage, the capital's share and the trials are removed.

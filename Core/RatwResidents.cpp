@@ -842,7 +842,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                                    body.age, wallet.cash < 12 || (hunger >= 55 && !carriesFood), hour,
                                    // (What its own post pays a day, to weigh a better-paid hire against.)
                                    job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
-                                       ? std::int64_t(PaidSpells) * (spendable(payerOf(id, *job, body.age).account) > ComfortableTill ? 2 : 1)
+                                       ? std::int64_t(dayWage(homePlace.community, wageKind(payerOf(id, *job, body.age), *job)))
                                        : 0,
                                    atOnce ? &claims : nullptr);
                      if (claims)
@@ -1214,28 +1214,34 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto payer = payerOf(pair.first, *job, body.age);
             if (!payer.account.empty() && life.wagesToday < PaidSpells)
             {
-                // A shop or a house pays what its takings bear (doc 42): 2p a spell from a comfortable till, 1p from a
-                // lean one; a town 1p from a treasury under LeanTreasury a head. The church pays 2p.
-                // (By what the employer holds: wageFor.)
+                // The town's wage table (doc 46, Phase 4): a day's pay for its kind of post, a PaidSpells-th of it a spell,
+                // the pennies' fractions carried to the next (never more than a day's owed).
                 const bool business = payer.whom == "the shop"sv || payer.whom == "the house"sv;
-                const std::int64_t wage = std::max<std::int64_t>(1, wageFor(payer));
+                const double day = dayWage(home, wageKind(payer, *job));
+                auto& carry = wageCarry_[pair.first];
+                carry = std::min(carry + day / PaidSpells, day);
+                const std::int64_t wage = std::int64_t(std::floor(carry));
                 // An employer that can't pay: its town (or church) covers the wage if it has plenty, so the work goes on
                 // (the user, 2026-10-05).
                 std::string subsidy;
-                if (business && spendable(payer.account) < wage)
+                if (wage > 0 && business && spendable(payer.account) < wage)
                     subsidy = subsidiser(home);
                 // (TRIAL town_budget: a treasury covers wages only from its day's budget.)
                 if (!subsidy.empty() && subsidy.rfind("stores:", 0) == 0 && townBudget(subsidy, wage) < wage)
                     subsidy.clear();
-                if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage subsidised by the town"))
+                if (wage <= 0)
+                    ++life.wagesToday;                   // (Under a penny this spell: carried.)
+                else if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage subsidised by the town"))
                 {
                     ++life.wagesToday;
+                    carry -= double(wage);
                     state_.memory.revision += state_.memory.unpaidSince.erase(pair.first);
                 }
                 else if (spendable(payer.account) >= wage &&
                     shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : job->title == LabourTitle ? "day labour" : "service wages"))
                 {
                     ++life.wagesToday;
+                    carry -= double(wage);
                     if (job->title != LabourTitle && state_.memory.unpaidSince.erase(pair.first))
                         ++state_.memory.revision;
                 }

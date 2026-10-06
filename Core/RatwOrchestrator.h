@@ -103,6 +103,8 @@ struct TownSnap
     std::string id;
     std::int64_t inflow = 0, outflow = 0;            // Coins into the town from elsewhere since the last snapshot, and out.
     int oddJobs = 0, oddJobSlots = 0;                // Odd jobs and hires posted, and how many hands they take.
+    std::map<std::string, int> unfilled;             // Kind of post (wageKinds) -> places going begging: vacant posts,
+                                                     // hires and odd jobs nobody took.
 };
 
 // The orchestrator's dials (Data/Economy/orchestrator.json; doc 46). All placeholders for the balance pass.
@@ -119,7 +121,13 @@ struct Dials
     // (overShare and overShareAtCap are of a week: what a decision sends out over the week that follows it.)
     double landShare = .25;                          // Of the pot, shared by people alone, not distress.
     double channelMostShare = .5;                    // No channel takes more than this of a town's share.
-    double wageFloorOverFood = 1.2;                  // The living wage: a day's food at the town's prices, times this.
+    // Wages (Part 5; doc 46, Phase 4): each town's table of a day's pay by kind of post, starting from these, never under
+    // the living floor (a day's food at the town's prices times wageFloorOverFood, and lodging; a quarter of it for an odd
+    // job's share), moved at each week's decision: up wageRaise where posts of the kind go unfilled, down wageEase where
+    // many are idle and none go begging, to at most wageMost times its start.
+    double wageFloorOverFood = 2, lodgingADay = 0, wageRaise = .10, wageEase = .05, wageMost = 3;
+    std::map<std::string, double> wageStart = {{"help", 16}, {"guard", 20}, {"labour", 12}, {"clergy", 16},
+                                               {"keeper", 8},  {"hand", 12},  {"odd job", 4}};
     double stapleIncomeShare = .5;                   // A day's plain food costs at most this of a lowest-quarter earner's day.
     double priceMove = .25;                          // The most a price may move at a decision (a week).
     double priceLow = .6, priceHigh = 1.6;           // Against the catalogue.
@@ -162,6 +170,7 @@ struct Memory
     std::map<std::string, double> distress;          // Town -> its distress, smoothed.
     std::map<std::string, double> price;             // "town|item" -> the price it last set (would set, in shadow).
     std::map<std::string, double> net;               // Town -> coins in less out a day, from other towns (a week's average).
+    std::map<std::string, double> wage;              // "town|kind" -> a day's pay for that kind of post (Phase 4).
     double margin = -1;                              // -1: not yet set.
     std::int64_t day = -1;                           // The day of its last plan.
     // The week's measures since the last decision: town -> the sum of its days' distress, and how many; "town|kind" -> the
@@ -213,11 +222,15 @@ struct Brief
     std::vector<Order> orders;
     std::map<std::string, std::int64_t> channels;    // Channel -> what the day's orders send through it.
     std::vector<PriceSet> prices;                    // Every price it would set.
+    std::map<std::string, std::map<std::string, double>> wages;   // Town -> kind -> a day's pay (the table in force).
     std::vector<Steer> steers;                       // The steers it weighed.
 };
 
 // The channels (doc 46, Part 7), in a fixed order.
 const std::vector<std::string>& channelNames();
+// The kinds of post the wage table pays (doc 46, Part 5): shop and house help, the watch, the town's labour, the clergy,
+// a business's keeper, a hired hand, and a hand's share of an odd job.
+const std::vector<std::string>& wageKinds();
 
 // The day's plan: pure, given the same snapshot and memory, the same brief and memory after.
 Brief plan(const Snapshot& snapshot, Memory& memory);

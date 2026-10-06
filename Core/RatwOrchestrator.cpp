@@ -43,6 +43,12 @@ const std::vector<std::string>& channelNames()
     return names;
 }
 
+const std::vector<std::string>& wageKinds()
+{
+    static const std::vector<std::string> kinds = {"help", "guard", "labour", "clergy", "keeper", "hand", "odd job"};
+    return kinds;
+}
+
 bool validSteer(const Steer& s, std::string& problem)
 {
     const auto within = [&](double lo, double hi) {
@@ -110,6 +116,13 @@ bool readDials(const Value& doc, Dials& d, std::string& problem)
     num("landShare", d.landShare);
     num("channelMostShare", d.channelMostShare);
     num("wageFloorOverFood", d.wageFloorOverFood);
+    num("lodgingADay", d.lodgingADay);
+    num("wageRaise", d.wageRaise);
+    num("wageEase", d.wageEase);
+    num("wageMost", d.wageMost);
+    for (const auto& [kind, v] : doc.object("wages").fields())
+        if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 1e4)
+            d.wageStart[kind] = v.asNumber();
     num("stapleIncomeShare", d.stapleIncomeShare);
     num("priceMove", d.priceMove);
     num("priceLow", d.priceLow);
@@ -318,6 +331,7 @@ Brief plan(const Snapshot& s, Memory& memory)
     }
     // A town's poorest earners' day (the lowest quarter of those who earned this week), for the staple ceiling.
     std::map<std::string, double> lowEarner;
+    std::map<std::string, double> idleShares;         // Town -> the share of those able to work who earned nothing lately.
     for (auto& [id, t] : towns)
     {
         const auto& residents = people[id];
@@ -358,7 +372,8 @@ Brief plan(const Snapshot& s, Memory& memory)
         const auto knownNet = memory.net.find(id);
         const double net = knownNet == memory.net.end() ? double(t.netInflow) : knownNet->second + (double(t.netInflow) - knownNet->second) / 7;
         memory.net[id] = net;
-        t.wageFloor = std::int64_t(std::ceil(t.foodCost * d.wageFloorOverFood));
+        t.wageFloor = std::int64_t(std::ceil(t.foodCost * d.wageFloorOverFood + d.lodgingADay));
+        idleShares[id] = workers && s.counted >= 3 ? double(idle) / workers : 0;
 
         // Distress: each sensor as a part of a crisis (0..1), weighed, and saturating (1 - e^-sum).
         const double cHungry = clamp01(t.hungry / .2), cStarving = clamp01(t.starving / .05), cShort = clamp01(t.short_ / .5),
@@ -600,6 +615,31 @@ Brief plan(const Snapshot& s, Memory& memory)
         memory.price[key] = would;
         brief.prices.push_back({g.town, g.item, g.catalog, g.price, would});
     }
+    // --- The wage table (Part 5): seeded at once, moved at the week's decision ----------------------------------------------
+    for (const auto& [id, t] : towns)
+    {
+        const auto snap = townSnaps.find(id);
+        const bool holdUp = t.distress >= .3 && (t.kind == "no work" || t.kind == "empty purses");
+        for (const auto& kind : wageKinds())
+        {
+            const double start = d.wageStart.count(kind) ? d.wageStart.at(kind) : 8;
+            const double floor = double(t.wageFloor) * (kind == "odd job" ? .25 : 1);
+            const auto key = id + "|" + kind;
+            auto known = memory.wage.find(key);
+            double w = known != memory.wage.end() ? known->second : std::max(start, floor);
+            if (s.decide && known != memory.wage.end())
+            {
+                const int begging = snap != townSnaps.end() && snap->second->unfilled.count(kind) ? snap->second->unfilled.at(kind) : 0;
+                if (begging > 0)
+                    w *= 1 + d.wageRaise;
+                else if (idleShares[id] > .1 && !holdUp)
+                    w *= 1 - d.wageEase;
+            }
+            w = std::clamp(w, floor, std::max(floor, d.wageMost * start));
+            memory.wage[key] = w;
+            brief.wages[id][kind] = w;
+        }
+    }
     // The margin: between the shops' tills and the farms, toward whichever is short.
     {
         double shops = 0, farms = 0;
@@ -715,6 +755,13 @@ Value briefJson(const Brief& b, bool full)
         x.add("netInflow", double(t.netInflow));
         x.add("wageFloor", double(t.wageFloor));
         x.add("share", double(t.share));
+        if (const auto w = b.wages.find(t.id); w != b.wages.end())
+        {
+            auto table = Value::object();
+            for (const auto& [kind, pay] : w->second)
+                table.add(kind, round3(pay));
+            x.add("wages", table);
+        }
         towns.push(x);
     }
     o.add("towns", towns);
@@ -818,6 +865,9 @@ Brief readBrief(const Value& o)
         t.netInflow = std::int64_t(x.number("netInflow"));
         t.wageFloor = std::int64_t(x.number("wageFloor"));
         t.share = std::int64_t(x.number("share"));
+        for (const auto& [kind, pay] : x.object("wages").fields())
+            if (pay.isNumber())
+                b.wages[t.id][kind] = pay.asNumber();
         b.towns.push_back(t);
     }
     for (const auto& x : o.array("holders"))
@@ -861,10 +911,13 @@ Value stateJson(const State& st)
         distress.add(k, v);
     for (const auto& [k, v] : st.memory.price)
         price.add(k, v);
-    auto net = Value::object();
+    auto net = Value::object(), wage = Value::object();
     for (const auto& [k, v] : st.memory.net)
         net.add(k, v);
+    for (const auto& [k, v] : st.memory.wage)
+        wage.add(k, v);
     memory.add("net", net);
+    memory.add("wage", wage);
     memory.add("spent", spent);
     memory.add("distress", distress);
     memory.add("price", price);
@@ -940,6 +993,9 @@ State readState(const Value& o)
     for (const auto& [k, v] : m.object("price").fields())
         if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 1e9)
             st.memory.price[k] = v.asNumber();
+    for (const auto& [k, v] : m.object("wage").fields())
+        if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 1e6)
+            st.memory.wage[k] = v.asNumber();
     for (const auto& [k, v] : m.object("net").fields())
         if (v.isNumber() && std::abs(v.asNumber()) < 1e12)
             st.memory.net[k] = v.asNumber();

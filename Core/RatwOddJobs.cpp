@@ -27,23 +27,8 @@ std::string Society::subsidiser(const std::string& community) const
 
 std::int64_t Society::postOddJobs(const std::string& payer, const std::string& community, std::int64_t budget)
 {
-    // What a hand is paid (the user, 2026-10-05): OddJobPay, and more, to three times it, from a poster with full coffers
-    // where many are poor: by the share of its townsfolk poor (under 12p) and how far above its floor its purse stands.
-    std::int64_t people = 0, poor = 0;
-    for (const auto& [id, life] : state_.residents)
-        if (communityOfResident(id) == community)
-        {
-            ++people;
-            if (const auto* p = account(id); p && p->cash < 12)
-                ++poor;
-        }
-    const bool churchPays = payer.rfind("town:", 0) == 0;
-    const auto* coffers = account(payer);
-    const double floor = churchPays ? double(std::max<std::size_t>(1, state_.residents.size())) * ChurchHead   // (The land's.)
-                                    : double(std::max<std::int64_t>(1, people)) * TreasuryHead;
-    const double richness = coffers ? std::clamp((double(coffers->cash) / floor - 1) / 3, 0.0, 1.0) : 0;
-    const double poorShare = people ? double(poor) / double(people) : 0;
-    const std::int64_t handPay = OddJobPay + std::int64_t(std::round(OddJobPay * 2 * richness * std::min(1.0, poorShare * 5)));
+    // What a hand is paid: its town's table for a hand's share of an odd job (the wage table, doc 46, Phase 4).
+    const std::int64_t handPay = std::max<std::int64_t>(1, std::int64_t(std::ceil(dayWage(community, "odd job") - 1e-9)));
     const int most = int(std::min<std::int64_t>(30, budget / handPay));
     static const DayPlan none;
     const auto& plan = day_.plans.count(community) ? day_.plans.at(community) : none;
@@ -187,7 +172,7 @@ std::int64_t Society::businessSpends(const std::string& payer, const std::string
     const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
         return j.payer == payer && j.producer == keeper && j.until >= surplusDay_ && (j.kind == "a hand" || j.kind == "a hand at the shop");
     });
-    auto& dayPay = hirePay_.try_emplace(keeper, HirePay).first->second;
+    const auto dayPay = std::int64_t(std::ceil(dayWage(community, "hand") - 1e-9));   // (The wage table: doc 46.)
     if (const int hands = int(std::min<std::int64_t>(3, budget * 4 / 10 / dayPay)); hands > 0 && !hiring)
     {
         hire(shop ? "a hand at the shop" : "a hand", "a hand at " + job.title.substr(0, 40) + ", hired for the week", hands);

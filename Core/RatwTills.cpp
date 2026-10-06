@@ -7,6 +7,7 @@
 #include "RatwSociety.h"
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <vector>
 
@@ -84,8 +85,9 @@ void Society::tendTills(std::int64_t day)
             continue;
         const auto& keeper = held->second.holder;
         const auto floatCash = floatOf(p.id);
-        // The keeper's wage first: what the till can spare above half its float, up to OwnerWage.
-        if (const auto wage = std::min<std::int64_t>(OwnerWage, account(till)->cash - floatCash / 2); wage > 0)
+        // The keeper's wage first (its town's table, doc 46, Phase 4): what the till can spare above half its float.
+        const auto ownWage = std::int64_t(std::ceil(dayWage(communityOfResident(keeper), "keeper") - 1e-9));
+        if (const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash - floatCash / 2); wage > 0)
             shift(till, keeper, "", 0, wage, "the keeper's wage");
         // (Until the orchestrator's channels: doc 46, Phase 5.) Above two floats, a KeeperSurplusShare-th a day goes out:
         // half on hands and its premises (RatwOddJobs.cpp), and four tenths of the rest to its help, a share of the

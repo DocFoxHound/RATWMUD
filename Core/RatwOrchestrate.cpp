@@ -441,7 +441,15 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         {
             ++t->second.oddJobs;
             t->second.oddJobSlots += job.slots;
+            // Places nobody took by the evening: a business's hire, or a hand's share of the day's odd job.
+            if (const int open = job.slots - int(job.stage.size()); open > 0)
+                t->second.unfilled[job.until >= 0 ? "hand" : "odd job"] += open;
         }
+    // Posts standing empty, by their kind of pay (the wage table, doc 46, Phase 4).
+    for (const auto& p : positions_)
+        if (const auto held = state_.careers.positions.find(p.id); held != state_.careers.positions.end() && held->second.holder.empty() && p.paid)
+            if (const auto t = towns.find(communityOfResident(p.founder)); t != towns.end())
+                ++t->second.unfilled[p.role == "guard" ? "guard" : p.role == "merchant" ? "keeper" : clergy(p.title) ? "clergy" : "help"];
     for (auto& [town, t] : towns)
         s.towns.push_back(t);
 

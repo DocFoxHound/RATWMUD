@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 
 namespace ratw
 {
@@ -162,7 +163,8 @@ void Society::tendHouses(std::int64_t day)
         // The manager's wage first.
         const auto& manager = state_.careers.positions[pid].holder;
         if (!manager.empty() && account(manager))
-            shift(till, manager, "", 0, std::min<std::int64_t>(ManagerWage, account(till)->cash), "manager's wage");
+            shift(till, manager, "", 0, std::min<std::int64_t>(std::int64_t(std::ceil(dayWage(communityOfResident(manager), "keeper") - 1e-9)),
+                                                               account(till)->cash), "manager's wage");   // (The wage table: doc 46.)
         // Then everything above the float to the house; or, run low, the house props it up.
         const auto floatCash = floatOf(pid);
         const auto cash = account(till)->cash;

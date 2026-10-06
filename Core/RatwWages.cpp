@@ -157,41 +157,25 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
     return {fortress ? std::string("treasury") : treasuryOfResident(resident), "the town"};
 }
 
-std::int64_t Society::wageFor(const Payer& payer) const
+double Society::dayWage(const std::string& town, const std::string& kind) const
 {
-    const auto* purse = account(payer.account);
-    if (!purse)
-        return 0;
-    const bool business = payer.whom == "the shop" || payer.whom == "the house";
-    const bool treasury = payer.account.rfind("stores:", 0) == 0 || payer.account == "treasury";
-    if (business ? purse->cash <= ComfortableTill : treasury && treasuryLean(payer.account))
-        return 1;                                   // (A lean one pays half: doc 42.)
-    // A town pays by what it takes in (the user, 2026-10-06): 2p a spell scaled so its wage bill follows its takings.
-    if (treasury)
-        if (const auto scale = townWageScale_.find(payer.account); scale != townWageScale_.end())
-            return std::clamp<std::int64_t>(std::int64_t(std::lround(2 * scale->second)), 1, MostWage);
-    std::int64_t floor = 0;
-    if (payer.account.rfind("house:", 0) == 0)
-        floor = houseFloor(payer.account);
-    else if (payer.account.rfind("till:", 0) == 0)
-        floor = floatOf(payer.account.substr(5));   // (A house's business: "till:" and its position.)
-    else if (const auto* job = jobOf(payer.account); business && job)
-        floor = floatOf(job->id);
-    else if (treasury)
-        floor = TreasuryHead * std::max(1, people_.count(payer.account) ? people_.at(payer.account) : 0);
-    else if (payer.account == SharedChurch)
-        floor = ChurchHead * std::int64_t(std::max<std::size_t>(1, state_.residents.size()));
-    if (floor <= 0)
-        return 2;
-    auto times = purse->cash / floor;
-    // (TRIAL wages_up: a great house's shop pays by what the house holds against its floor, if more than its till
-    // does, the house standing behind its shops' wages; and the richest pay up to twice MostWage.)
-    const bool up = trial("wages_up");
-    if (up && payer.account.rfind("till:", 0) == 0)
-        if (const auto owner = state_.houses.owner.find(payer.account.substr(5)); owner != state_.houses.owner.end())
-            if (const auto* house = account(owner->second))
-                times = std::max(times, house->cash / std::max<std::int64_t>(1, houseFloor(owner->second)));
-    return std::clamp<std::int64_t>(1 + times, 2, up ? 2 * MostWage : MostWage);
+    if (const auto t = wages_.find(town); t != wages_.end())
+        if (const auto w = t->second.find(kind); w != t->second.end() && w->second > 0)
+            return w->second;
+    const auto& start = orchestratorDials().wageStart;
+    const auto found = start.find(kind);
+    return found != start.end() ? found->second : 8;
+}
+
+std::string Society::wageKind(const Payer& payer, const Position& job) const
+{
+    if (job.role == "guard")
+        return "guard";
+    if (payer.whom == "the church")
+        return "clergy";
+    if (payer.whom == "the shop" || payer.whom == "the house")
+        return "help";
+    return "labour";                                 // (The town's own posts and its works.)
 }
 
 const std::string* Society::richestAt(const std::string& homeCell, const std::string& besides) const

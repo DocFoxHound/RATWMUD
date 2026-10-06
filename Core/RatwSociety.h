@@ -494,7 +494,7 @@ class Society
     std::string shopTown(const std::string& shop) const;   // The town a shop works in.
     // Meals, herbs and swords: priced by the town's stores (World::tendPrices), not the orchestrator, for now.
     static bool storePriced(const std::string& item) { return item == "meal" || item == "herbs" || item == "sword"; }
-    void applyPrices();                             // prices_ and margin_ from the orchestrator's memory, when it is on.
+    void applyPrices();                             // prices_, wages_ and margin_ from the orchestrator's memory, when on.
     // Daily: each shop's meals sold (what it restocks) and each shop's town.
     void tendPrices(std::int64_t day);
     static constexpr int ProduceKept = 5, FoodShelf = 30;     // (Keeps 5: doc 42, "Pressure".)
@@ -557,8 +557,9 @@ class Society
     std::map<std::string, double> mealsSold_;       // A shop's till -> the meals it sells a day (a running average).
     std::map<std::string, int> mealsToday_;         // A shop's till -> the meals it sold today.
     std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (made daily).
-    // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; and its margin.
-    std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_;
+    // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; its wage table (town -> kind -> a day's
+    // pay); and its margin.
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_, wages_;
     double margin_ = .55;
     // What each larder gives its household a day (nourishment taken from it, a running average, Society::spoil): the
     // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).
@@ -698,16 +699,7 @@ class Society
     std::int64_t householdNeed(std::size_t members) const { return FoodADay * std::int64_t(members); }
   public:
     static constexpr std::int64_t FoodADay = 5;     // A wolf's food a day, as a household reckons it (pennies).
-    // Wages follow takings (the user, 2026-10-05): each day a shop shares TakingsShare tenths of what it took in among its
-    // help, as far as its till can (keeping half its float; a keeper's own purse its food money).
-    static constexpr int TakingsShare = 3;
-    // A help's share of a day's takings is at most TakingsCap; past that, a busy shop takes on more hands (a week's hire,
-    // from those without work) rather than paying its few help ever more (the user, 2026-10-05: demand drives hiring).
-    static constexpr std::int64_t TakingsCap = 8;
-    // A shop's price to the townsfolk (the user, 2026-10-05: demand drives supply and price, as in a free market): the
-    // catalog's, as dear as the town finds the good (priceFactor), and as the shop's own shelves show supply against
-    // demand: up to a fifth more when it is running short of it, a fifth less with a glut; and a tenth off from a shop
-    // flush with money.
+    // A shop's price to the townsfolk: its town's (townPrice, the economy orchestrator's: doc 46, Phase 3).
     std::int64_t shopPrice(const std::string& shop, const std::string& item) const;
     // Improvements to premises (RatwOddJobs.cpp): a business's level (0 to MostImprovement); each makes its batches (a
     // workshop) or its yields (a producer) ImprovementPace quicker.
@@ -740,10 +732,9 @@ class Society
         std::int64_t until = -1;
     };
     static constexpr int HireDays = 7;
-    // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages: HirePay a hand to begin
-    // with. Demand for work sets it (the user, 2026-10-05): each day a hire's place goes unfilled its pay rises HireRaise (to
-    // MostHirePay); filled, it eases back (to LeastHirePay). A wolf whose own post pays less takes it.
-    static constexpr std::int64_t HirePay = 12, HireRaise = 2, MostHirePay = 24, LeastHirePay = 8;
+    // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
+    // hand (the wage table, doc 46, Phase 4). A wolf whose own post pays HireRaise less than a hire takes it.
+    static constexpr std::int64_t HireRaise = 2;
     static constexpr int HireSpells = 4;
     // Children's friend groups (the user, 2026-10-05): in each town its children, by age, in fours; they play together
     // and take odd jobs together. A child's group ("" for none).
@@ -820,14 +811,13 @@ class Society
         std::string account, whom;
     };
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
-    // A spell's wage from a payer (the user, 2026-10-06: the more an employer holds, the more it pays): 1p from a lean one,
-    // else 2p and a penny more for each time over its floor it holds, to MostWage. Its floor: a shop's float, a great
-    // house's floor (houseFloor), a town's TreasuryHead a resident, the church's ChurchHead a resident of the land.
-    std::int64_t wageFor(const Payer& payer) const;
-    static constexpr std::int64_t MostWage = 6;
+    // Wages (doc 46, Phase 4): each town's table of a day's pay by kind of post (orchestra::wageKinds), set by the
+    // economy orchestrator (the dials' starts until it has), paid a PaidSpells-th a spell of work. Every payer pays the
+    // table: a shop or house that can't is covered by its town (or church) if it has plenty, else its hand goes unpaid.
+    double dayWage(const std::string& town, const std::string& kind) const;
+    std::string wageKind(const Payer& payer, const Position& job) const;   // "help", "guard", "labour", "clergy".
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";
-    static constexpr std::int64_t ComfortableTill = 150;   // A shop that has more pays its help full wages (doc 42).
     static constexpr int PayrollDays = 7;          // Days of wages a town's treasury keeps before funding its buyers (a
                                                    // week's: the market dues come in weekly).
     // Spells of paid work a day (a spell: a game hour at the post): paid for the hours worked, up to a full day's
@@ -963,7 +953,6 @@ class Society
     // improved (materials bought from the town's makers, builders hired); returns what it committed.
     std::int64_t businessSpends(const std::string& payer, const std::string& keeper, const Position& job, std::int64_t budget);
     std::map<std::string, std::int64_t> improving_;     // Position -> what has gone into its next improvement (not saved).
-    std::map<std::string, std::int64_t> hirePay_;       // Business (its keeper) -> what its hires pay a hand a day (not saved).
     // Farmhands (doc 42, the user, 2026-10-06): every farm, orchard and vineyard hires hands for a few days when it has the
     // money, from its town or from any city; one from elsewhere lodges in the farm's bunkhouse (BunkBeds), fed from its
     // larder, which the farm stocks. A city: a community of CityResidents or more.
@@ -978,10 +967,7 @@ class Society
     void stockBunkhouses(std::int64_t day);
     // A farm's upkeep (crafts.json `farmUpkeep`): what it wears out a day, bought in its town, the fractions owed.
     std::unordered_map<std::string, std::map<std::string, double>> upkeepOwed_;
-    // Town wages by takings (the user, 2026-10-06): each treasury's wage scale, so its wage bill is TownWageShare percent
-    // of what it takes in (running averages, daily).
-    std::map<std::string, double> townWageScale_;
-    static constexpr int TownWageShare = 80;
+    std::unordered_map<std::string, double> wageCarry_;   // Worker -> the fraction of a penny its wages owe it (not saved).
     // Each Restday, every improved business keeps its premises up (the user, 2026-10-05): UpkeepALevel a level a week in
     // materials bought from its town's makers, from its till (or its house). Two weeks without, and it loses a level.
     void keepUpPremises();

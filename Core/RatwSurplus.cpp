@@ -94,19 +94,13 @@ void Society::spendSurpluses(std::int64_t day)
     if (roster_ != Roster::Authored || day == surplusDay_)
         return;
     surplusDay_ = day;
-    // Yesterday's odd jobs are over, but for businesses' hires still running: those who hold them come back to them.
-    // A hire with places left unfilled pays more tomorrow; one fully taken, a little less (demand for work sets its pay).
-    for (const auto& j : oddJobs_)
-        if (j.until >= 0 && !j.producer.empty() && j.slots > 0)
-        {
-            auto& dayPay = hirePay_.try_emplace(j.producer, HirePay).first->second;
-            dayPay = int(j.stage.size()) < j.slots ? std::min(MostHirePay, dayPay + HireRaise) : std::max(LeastHirePay, dayPay - 1);
-        }
+    // Yesterday's odd jobs are over, but for businesses' hires still running: those who hold them come back to them, at
+    // today's pay for a hand in its town (the wage table, doc 46, Phase 4).
     oddJobs_.erase(std::remove_if(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) { return j.until < day; }), oddJobs_.end());
     for (auto& j : oddJobs_)
     {
         if (j.until >= 0 && !j.producer.empty() && j.slots > 0)
-            j.pay = hirePay_[j.producer] * j.slots;   // (At today's pay.)
+            j.pay = std::int64_t(std::ceil(dayWage(j.community, "hand") - 1e-9)) * j.slots;
         for (auto& [who, stage] : j.stage)
             stage = 0, j.progress[who] = 0;
     }
@@ -130,14 +124,6 @@ void Society::spendSurpluses(std::int64_t day)
     budgetLeft_.clear();
     for (const auto& [id, avg] : incomeAvg_)
         budgetLeft_[id] = std::int64_t(std::max(0., avg - (wagesAvg_.count(id) ? wagesAvg_.at(id) : 0.)));
-    // Town wages by takings (the user, 2026-10-06): each treasury's wages move toward a bill of TownWageShare percent of
-    // what it takes in, a fifth at most a day (Society::wageFor).
-    for (const auto& [id, takings] : incomeAvg_)
-    {
-        auto& scale = townWageScale_.try_emplace(id, 1.).first->second;
-        if (const double bill = wagesAvg_.count(id) ? wagesAvg_.at(id) : 0.; bill > 0)
-            scale = std::clamp(scale * std::clamp(takings * TownWageShare / 100 / bill, .8, 1.25), .25, 3.);
-    }
     ++state_.memory.revision;
     // The communities: who lives in each, and its shops.
     std::map<std::string, std::vector<std::string>> folk, shops;
@@ -459,34 +445,7 @@ void Society::spendSurpluses(std::int64_t day)
         if (note.total > 0)
             spendings_.push_back(std::move(note));
     }
-    // Wages follow takings (the user, 2026-10-05): each shop shares a part of what it took in today among its help.
-    for (const auto& job : positions_)
-    {
-        if (job.role != "merchant")
-            continue;
-        const auto keeper = state_.careers.positions.find(job.id);
-        if (keeper == state_.careers.positions.end() || keeper->second.holder.empty())
-            continue;
-        const auto till = tillOf(keeper->second.holder);
-        const auto taken = takings_.count(till) ? takings_.at(till) : 0;
-        std::vector<std::string> help;
-        for (const auto& p : positions_)
-            if (p.id != job.id && p.role != "merchant" && p.work.cell == job.work.cell)
-                if (const auto held = state_.careers.positions.find(p.id); held != state_.careers.positions.end() && !held->second.holder.empty())
-                    help.push_back(held->second.holder);
-        const auto* purse = account(till);
-        if (help.empty() || taken <= 0 || !purse)
-            continue;
-        const auto keep = floatOf(job.id) / 2 + (till == keeper->second.holder ? KeeperReserve : 0);
-        const auto pot = std::min<std::int64_t>(taken * TakingsShare / 10, purse->cash - keep);
-        const auto each = std::min<std::int64_t>(TakingsCap, pot / std::int64_t(help.size()));
-        if (each > 0)
-            for (const auto& who : help)
-                shift(till, who, "", 0, each, "a share of the day's takings");
-        // More than its help can share: more hands, hired for the week (businessSpends puts it to hires and premises).
-        if (const auto over = pot - each * std::int64_t(help.size()); over >= HirePay)
-            businessSpends(till, keeper->second.holder, job, over);
-    }
+    // (Wages are the town's table now, doc 46, Phase 4: no more shares of a day's takings.)
     tendPrices(day);                                // (By today's takings: before they are forgotten.)
     takings_.clear();
     // A shopkeeper whose shop is its own (the user, 2026-10-05: nothing hoards): above its food money and a float for the
