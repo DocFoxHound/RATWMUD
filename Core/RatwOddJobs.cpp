@@ -42,6 +42,7 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
         j.pay = handPay * j.slots;
         posted += j.slots;
         oddJobs_.push_back(std::move(j));
+        ++oddVersion_;
     };
     // Deliveries: food bought at a shop for the watch's mess (or the church's table), carried there.
     const auto buyer = church ? payer : "town:" + community + ":watch";
@@ -152,6 +153,7 @@ std::int64_t Society::businessSpends(const std::string& payer, const std::string
         j.forChildren = kind == "a hand at the shop";
         committed += j.pay;
         oddJobs_.push_back(std::move(j));
+        ++oddVersion_;
     };
     // Hands: about four tenths of what it spends, hired for HireDays (unless its hire is running still).
     const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
@@ -254,14 +256,43 @@ const std::string& Society::friendGroup(const std::string& child) const
     return found == friendGroups_.end() ? none : found->second;
 }
 
+void Society::indexOddJobs()
+{
+    if (oddIndexed_ == oddVersion_)
+        return;
+    oddIndexed_ = oddVersion_;
+    oddHeld_.clear();
+    oddByTown_.clear();
+    oddFarmHires_.clear();
+    for (std::size_t i = 0; i < oddJobs_.size(); ++i)
+    {
+        const auto& j = oddJobs_[i];
+        for (const auto& [who, stage] : j.stage)
+            if (stage < 2)
+                oddHeld_.try_emplace(who, i);        // (The first it holds, as a search down the list finds.)
+        oddByTown_[j.community].push_back(i);
+        if (j.until >= 0 && j.kind == "a hand" && farmHire(j))
+            oddFarmHires_.push_back(i);
+    }
+}
+
 const Society::OddJob* Society::oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
                                          std::int64_t ownDayPay, bool* claims)
 {
-
+    if (!claims)
+        indexOddJobs();                              // (On the game thread: the threads' was made before they began.)
+    const bool indexed = oddIndexed_ == oddVersion_;
     // Its job under way (one whose share it has done no longer holds it: it may take another).
-    for (const auto& j : oddJobs_)
-        if (const auto mine = j.stage.find(id); mine != j.stage.end() && mine->second < 2)
-            return &j;
+    if (indexed)
+    {
+        if (const auto held = oddHeld_.find(id); held != oddHeld_.end() && held->second < oddJobs_.size())
+            if (const auto mine = oddJobs_[held->second].stage.find(id); mine != oddJobs_[held->second].stage.end() && mine->second < 2)
+                return &oddJobs_[held->second];
+    }
+    else
+        for (const auto& j : oddJobs_)
+            if (const auto mine = j.stage.find(id); mine != j.stage.end() && mine->second < 2)
+                return &j;
     // Who seeks them out: those without other work, and children (eight and up, not apprenticed), in the day; the poor
     // and hungry from eight, others from ten. Children would rather not work (the user, 2026-10-05): they look from noon,
     // on one day in three unless poor or hungry; and work that isn't for children (a hand at a farm, a hunt) is theirs only
@@ -270,16 +301,35 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     const bool child = age >= 8 && age < 16;
     if (child && (hour < 12 || (!poor && std::hash<std::string>{}(id + "|work|" + std::to_string(surplusDay_)) % 3 != 0)))
         return nullptr;
-    // A wolf with a post of its own looks, of a morning, for a business's hire paying it better (the user, 2026-10-05:
-    // unfilled work pulls workers off other employment).
-    const bool better = ownDayPay > 0 && hour >= 8 && hour < 10 &&
-                        std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
-                            return j.until >= 0 && j.slots > 0 && j.pay / j.slots >= ownDayPay + HireRaise &&
-                                   int(j.stage.size()) < j.slots && j.community == communityOfResident(id);
-                        });
-    if (hour >= 18 || hour < (poor ? 8 : 10) || job.role != "civilian" || !(jobless || child || better || (poor && !job.paid)))
+    if (hour >= 18 || hour < (poor ? 8 : 10) || job.role != "civilian")
         return nullptr;
     const auto community = communityOfResident(id);
+    // Its town's jobs, and the farms' hires (which anyone from a city may take), in the list's order.
+    static const std::vector<std::size_t> none;
+    const auto town = indexed ? oddByTown_.find(community) : oddByTown_.end();
+    const auto& here = town != oddByTown_.end() ? town->second : none;
+    std::vector<std::size_t> all;
+    const auto candidates = [&]() -> const std::vector<std::size_t>& {
+        if (!indexed)
+        {
+            all.resize(oddJobs_.size());
+            for (std::size_t i = 0; i < all.size(); ++i)
+                all[i] = i;
+            return all;
+        }
+        return here;
+    };
+    // A wolf with a post of its own looks, of a morning, for a business's hire paying it better (the user, 2026-10-05:
+    // unfilled work pulls workers off other employment).
+    const bool better = ownDayPay > 0 && hour >= 8 && hour < 10 && [&] {
+        for (const auto i : candidates())
+            if (const auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && j.pay / j.slots >= ownDayPay + HireRaise &&
+                                             int(j.stage.size()) < j.slots && j.community == community)
+                return true;
+        return false;
+    }();
+    if (!(jobless || child || better || (poor && !job.paid)))
+        return nullptr;
     const auto& group = child ? friendGroup(id) : std::string();
     // (A farm's hire may be taken by anyone living in a city too: RatwFarmhands.cpp.)
     const bool fromCity = !child && cities_.count(community) > 0;
@@ -287,18 +337,26 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         return (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHire(j))) &&
                int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14);
     };
+    // The places to look, in order: its town's, and a city wolf's the farms' hires too.
+    const auto* look = &candidates();
+    if (indexed && fromCity && !oddFarmHires_.empty())
+    {
+        std::merge(here.begin(), here.end(), oddFarmHires_.begin(), oddFarmHires_.end(), std::back_inserter(all));
+        all.erase(std::unique(all.begin(), all.end()), all.end());
+        look = &all;
+    }
     // A child joins a friend on a job first, then one with room for a party; anyone else, the first open one.
     OddJob* chosen = nullptr;
     if (child && !group.empty())
-        for (auto& j : oddJobs_)
-            if (open(j) && std::any_of(j.stage.begin(), j.stage.end(), [&](const auto& t) { return friendGroup(t.first) == group; }))
+        for (const auto i : *look)
+            if (auto& j = oddJobs_[i]; open(j) && std::any_of(j.stage.begin(), j.stage.end(), [&](const auto& t) { return friendGroup(t.first) == group; }))
             {
                 chosen = &j;
                 break;
             }
     for (int pass = child ? 0 : 1; !chosen && pass < 2; ++pass)
-        for (auto& j : oddJobs_)
-            if (open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay + HireRaise)))
+        for (const auto i : *look)
+            if (auto& j = oddJobs_[i]; open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay + HireRaise)))
             {
                 chosen = &j;
                 break;
@@ -312,6 +370,8 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     }
     chosen->stage[id] = 0;
     chosen->progress[id] = 0;
+    if (indexed)
+        oddHeld_.try_emplace(id, std::size_t(chosen - oddJobs_.data()));
     if (chosen->until >= 0 && farmHire(*chosen))
         lodgeHand(id, *chosen);                     // (From elsewhere: to the farm's bunkhouse.)
     return chosen;
@@ -319,10 +379,11 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
 
 void Society::advanceOddJob(const std::string& id, int seconds)
 {
-    const auto it = std::find_if(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
-        const auto mine = j.stage.find(id);
-        return mine != j.stage.end() && mine->second < 2;
-    });
+    indexOddJobs();
+    auto it = oddJobs_.end();
+    if (const auto held = oddHeld_.find(id); held != oddHeld_.end() && held->second < oddJobs_.size())
+        if (const auto mine = oddJobs_[held->second].stage.find(id); mine != oddJobs_[held->second].stage.end() && mine->second < 2)
+            it = oddJobs_.begin() + std::ptrdiff_t(held->second);
     if (it == oddJobs_.end())
         return;
     auto& j = *it;
@@ -392,5 +453,6 @@ void Society::advanceOddJob(const std::string& id, int seconds)
     if (spendable(j.payer) >= share)
         shift(j.payer, id, "", 0, share, "an odd job: " + j.kind);
     stage = 2;
+    ++oddVersion_;                                   // (Its share done: the next it holds, if any, or another.)
 }
 } // namespace ratw

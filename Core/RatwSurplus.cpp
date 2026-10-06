@@ -87,6 +87,7 @@ void Society::spendSurpluses(std::int64_t day)
     // Yesterday's odd jobs are over, but for businesses' hires still running: those who hold them come back to them, at
     // today's pay for a hand in its town (the wage table, doc 46, Phase 4).
     oddJobs_.erase(std::remove_if(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) { return j.until < day; }), oddJobs_.end());
+    ++oddVersion_;
     for (auto& j : oddJobs_)
     {
         if (j.until >= 0 && !j.producer.empty() && j.slots > 0)

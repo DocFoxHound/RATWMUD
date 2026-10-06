@@ -1491,6 +1491,11 @@ class World
     Caravan* sendCaravan(const Town& from, const Town& to, const std::map<std::string, int>& load);
     // Work on the road a resident has taken (a letter to carry, a caravan to guard): where it takes them now,
     // in place of the day's plan. False if they have none, or it waits (for the morning, say).
+    // Who has work on the roads (doc 46's speed pass): a resident's taken contracts and the standing orders it is sent to
+    // renegotiate, by their places in roads_ (in order), remade at each errand pass (indexErrands), so errand() needn't
+    // look through all the land's contracts for each resident.
+    std::unordered_map<std::string, std::vector<std::size_t>> errandContracts_, errandOrders_;
+    void indexErrands();
     bool errand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                 std::string& goalCell, Vec2& goal) const;
     // Walking (onstage) or hopping (offstage) toward a goal, through the cells in between: what residents do to

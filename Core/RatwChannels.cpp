@@ -178,6 +178,7 @@ void Society::runChannels(std::int64_t day)
                 j.forChildren = false;
                 j.until = day + HireDays - 1;
                 oddJobs_.push_back(std::move(j));
+        ++oddVersion_;
                 committed += pay * HireDays;
                 note.total += pay * HireDays;
                 ++posted;

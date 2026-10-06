@@ -3235,6 +3235,7 @@ bool World::continueSchedules(double budgetMs)
                 ++scheduleStage_;                   // (Nobody's errand this pass: no one on the stage, and not the unseen's step.)
                 break;
             }
+            indexErrands();                         // (Who has work on the roads, as things stand this pass.)
             // (Each one's life, walked alongside: both go in ID order.)
             const auto& lives = society_.state().residents;
             auto lifeAt = lives.upper_bound(errandCursor_);

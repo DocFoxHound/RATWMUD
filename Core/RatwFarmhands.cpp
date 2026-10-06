@@ -95,6 +95,7 @@ void Society::postFarmHires(std::int64_t day)
         j.forChildren = false;
         j.until = day + days - 1;
         oddJobs_.push_back(std::move(j));
+        ++oddVersion_;
     }
 }
 

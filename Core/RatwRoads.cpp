@@ -853,9 +853,11 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
     if (life.task == "eat" || ((life.task == "buy food" || life.task == "fetch food") && life.hunger >= 55))
         return false;
     // To another town's market, to renegotiate a standing order (RatwTrade.cpp); not by night.
-    for (const auto& o : roads_.orders)
-        if (o.negotiator == resident && life.task != "sleep")
-            if (const auto* from = town(o.from))
+    static const std::vector<std::size_t> none;
+    const auto ordersOf = errandOrders_.find(resident);
+    for (const auto i : ordersOf != errandOrders_.end() ? ordersOf->second : none)
+        if (i < roads_.orders.size() && roads_.orders[i].negotiator == resident && life.task != "sleep")
+            if (const auto& o = roads_.orders[i]; const auto* from = town(o.from))
             {
                 task = "renegotiating an order";
                 reason = "for " + o.item + ", at the market in " + o.from;
@@ -863,8 +865,12 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                 goal = {from->marketX, from->marketY + 1};
                 return true;
             }
-    for (const auto& k : roads_.contracts)
+    const auto contractsOf = errandContracts_.find(resident);
+    for (const auto i : contractsOf != errandContracts_.end() ? contractsOf->second : none)
     {
+        if (i >= roads_.contracts.size())
+            continue;
+        const auto& k = roads_.contracts[i];
         if (k.status != "taken" || k.taker != resident)
             continue;
         if (k.kind == "courier")
@@ -942,6 +948,18 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                 }
     }
     return false;
+}
+
+void World::indexErrands()
+{
+    errandContracts_.clear();
+    errandOrders_.clear();
+    for (std::size_t i = 0; i < roads_.contracts.size(); ++i)
+        if (roads_.contracts[i].status == "taken")
+            errandContracts_[roads_.contracts[i].taker].push_back(i);
+    for (std::size_t i = 0; i < roads_.orders.size(); ++i)
+        if (!roads_.orders[i].negotiator.empty())
+            errandOrders_[roads_.orders[i].negotiator].push_back(i);
 }
 
 void World::residentsTakeWork()

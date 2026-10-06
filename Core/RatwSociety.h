@@ -969,6 +969,14 @@ class Society
   private:
     std::vector<OddJob> oddJobs_;
     std::int64_t nextOddJob_ = 0;
+    // An index of the odd jobs (doc 46: the orchestrator's works post many): who holds one (resident -> its place in
+    // oddJobs_), each town's (places, in order), and the farms' hires (anyone from a city may take one). Remade when the
+    // list changes (oddVersion_, moved on wherever a job is posted or the day's are cleared), before residents decide.
+    std::unordered_map<std::string, std::size_t> oddHeld_;
+    std::unordered_map<std::string, std::vector<std::size_t>> oddByTown_;
+    std::vector<std::size_t> oddFarmHires_;
+    std::uint64_t oddVersion_ = 1, oddIndexed_ = 0;
+    void indexOddJobs();
     // What each shop's till took in today (wages follow takings: RatwSurplus.cpp). Not saved.
     std::map<std::string, std::int64_t> takings_;
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).

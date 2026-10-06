@@ -324,6 +324,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     (void)houses();
     (void)richestAt(std::string(), std::string());
     rollOutwork();
+    indexOddJobs();
     refreshRecords();                               // (Each resident by number: see ResidentRecord.)
     // Each one's body, by number: the bodies walked alongside the residents (both in ID order).
     std::vector<const LifeBody*> bodyOf(records_.size(), nullptr);

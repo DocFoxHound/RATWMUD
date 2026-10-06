@@ -826,6 +826,35 @@ int main(int argc, char** argv)
         if (const int now = int(std::floor(server.calendarDays())); now != day)
         {
             today = now;
+            // The day's own cost (ms a tick, by part and by stage of the schedules), to see what grows as days pass.
+            {
+                static World::TickProfile before;
+                static auto dayBegin = wallBegin;
+                static long ticksBefore = 0;
+                const auto& p = server.tickProfile();
+                const double n = double(std::max<long>(1, i - ticksBefore));
+                const double dayWall = std::chrono::duration<double>(std::chrono::steady_clock::now() - dayBegin).count();
+                std::cout << std::fixed << std::setprecision(4) << "  cost day " << now << ": " << dayWall * 1000 / n << " ms a tick (society "
+                          << (p.stages[0] - before.stages[0]) / n << ", roads " << (p.stages[2] - before.stages[2]) / n << ", errands "
+                          << (p.stages[4] - before.stages[4]) / n << ", movement " << (p.movement.total - before.movement.total) / n
+                          << ", views " << (p.views.total - before.views.total) / n << ", streaming " << (p.streaming.total - before.streaming.total) / n
+                          << ")\n" << std::defaultfloat;
+                // What the society holds, to see what accumulates: accounts, kinds of goods held in all and at most in one.
+                std::size_t kinds = 0, most = 0;
+                std::string mostAt;
+                for (const auto& [aid, a] : society.state().accounts)
+                {
+                    kinds += a.stock.size();
+                    if (a.stock.size() > most)
+                        most = a.stock.size(), mostAt = aid;
+                }
+                std::cout << "  holds day " << now << ": accounts " << society.state().accounts.size() << ", kinds " << kinds << ", most "
+                          << most << " (" << mostAt << "), odd jobs " << society.oddJobs().size() << ", residents "
+                          << society.state().residents.size() << ", ledger " << society.state().ledger.size() << "\n";
+                before = p;
+                dayBegin = std::chrono::steady_clock::now();
+                ticksBefore = i;
+            }
             // The orchestrator's briefs (doc 46): each in full, and its towns.
             for (const auto& b : server.society().takeBriefs())
             {

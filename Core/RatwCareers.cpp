@@ -127,7 +127,10 @@ int Society::consume(const std::string& account, const std::string& item, int qu
     const int used = std::min(quantity, stock(found->second, item));
     if (used <= 0)
         return 0;
-    found->second.stock[item] -= used;
+    // (The last of a good gone, its entry goes too, as in a sale: an account holds only what it has, and every look for food
+    // scans fewer. The old three keep their place.)
+    if ((found->second.stock[item] -= used) == 0 && item != "herbs" && item != "meal" && item != "sword")
+        found->second.stock.erase(item);
     record(kind, account, "consumed", item, std::min(used, 99), 0);
     return used;
 }
@@ -149,7 +152,8 @@ bool Society::shift(const std::string& from, const std::string& to, const std::s
     b->second.cash += std::max<std::int64_t>(0, coins);
     if (!item.empty() && quantity > 0)
     {
-        a->second.stock[item] -= quantity;
+        if ((a->second.stock[item] -= quantity) == 0 && item != "herbs" && item != "meal" && item != "sword")
+            a->second.stock.erase(item);           // (As in consume.)
         b->second.stock[item] += quantity;
     }
     record(kind, from, to, item, std::min(quantity, 99), std::max<std::int64_t>(0, coins));

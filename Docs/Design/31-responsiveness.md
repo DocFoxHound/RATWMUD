@@ -930,6 +930,31 @@ society changes.
 - **Fights** (`level_sim`) were already quick: about 1,000 duels a second over the machine's threads, each fight its
   own small world. Nothing here changes them.
 
+## A year still in an hour and a half, after the economy orchestrator (2026-10-06)
+
+The user: after doc 46's day of work, make sure a year still runs in one to two hours. A year is about 365 days of
+288,000 ticks: 0.034 to 0.069 ms a tick on average, the whole year through.
+
+**What was found** (`econ_watch` now prints each day's cost by part, and what the society holds):
+- **The cost grew with the days.** It rose from 0.04 ms a tick to 0.075 by day 45, about 0.0008 more each day; a year
+  would have taken some five hours. The game before doc 46 grew too (0.043 to 0.064 by day 15), so the hour-and-a-quarter
+  year measured on two days was optimistic.
+- **Stock entries at nought.** `consume` and `shift` left a good's entry in place when the last of it went, so every
+  account kept a nought for everything it ever held: 7,600 entries on day 1, 25,000 by day 14, and every look for food
+  (`hasFood`, `bestFood`) scanned them all. They now go as `transfer`'s do (meals, herbs and swords keep their place). This
+  also fixed two old bugs that leaned on the noughts: a town posted repair jobs when its works held only noughts, and the
+  job then took a nought and mended nothing; and spoilage kept a good's batches while its nought stood.
+- **Odd jobs scanned whole.** Every resident deciding looked through all the land's odd jobs up to three times, once
+  calling `communityOfResident` for each. The orchestrator's works post up to 60 a day in each town. They are indexed now
+  (`Society::indexOddJobs`: who holds one, each town's, the farms' hires), remade when the list changes, before residents
+  decide; results unchanged (the same digest).
+- **Errands scanned every contract.** `World::errand` looked through every contract and standing order (about 900) for each
+  resident on each errand pass. A pass now indexes who has taken what (`World::indexErrands`); results unchanged.
+
+**Measured** (DEV build 26 export, eight threads, a quiet machine): from day 9 the cost holds at about 0.048 to 0.052 ms a
+tick (0.039 to 0.043 on Restdays) through day 54. The roads stage grows with the contracts kept (done and expired ones for
+30 days) and levels off with them, at about 800, by day 35.
+
 ## Hardware notes for the dedicated server
 
 - The simulation thread wants **high single-core speed**. The pool wants **many cores**. A current 16–32 core part
