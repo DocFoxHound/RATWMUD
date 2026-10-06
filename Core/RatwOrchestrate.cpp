@@ -116,6 +116,7 @@ void Society::setOrchestratorThread(bool threaded)
         state_.orchestrator.last = pending->first;
         if (pending->first.decided)
             state_.orchestrator.decision = pending->first;
+        applyPrices();
         if (keepBriefs_)
             briefs_.push_back(pending->first);
     }
@@ -207,6 +208,7 @@ void Society::orchestrate(double absoluteDay, const std::map<std::string, LifeBo
             state_.orchestrator.last = brief;
             if (brief.decided)
                 state_.orchestrator.decision = brief;
+            applyPrices();                           // Its prices and margin, when it is on (doc 46, Phase 3).
             if (keepBriefs_)
                 briefs_.push_back(std::move(brief));
         }
@@ -387,7 +389,13 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             shop.takings = t->second;
         shop.running = floatOf(job->id) / FloatDays;
         s.shops.push_back(shop);
+        // What it sells: its wares, what it supplies to the makers, and any food it has in.
         auto sold = wares(r.id);
+        const auto* business = items::businessFor(r.workLabel);
+        const auto supplies = business ? items::suppliesFor(business->id) : std::vector<std::string>{};
+        for (const auto& item : supplies)
+            if (std::find(sold.begin(), sold.end(), item) == sold.end())
+                sold.push_back(item);
         for (const auto& [item, q] : a->stock)
             if (q > 0 && nourishment(item) > 0 && std::find(sold.begin(), sold.end(), item) == sold.end())
                 sold.push_back(item);
@@ -395,7 +403,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         for (const auto& item : sold)
         {
             const auto base = items::baseOf(item);
-            const auto* good = items::good(base);
+            const auto* good = storePriced(base) ? nullptr : items::good(base);
             if (!good || good->price <= 0)
                 continue;
             auto& g = goods[{town, base}];
@@ -405,6 +413,9 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             g.nourish = nourishment(base);
             g.staple = (g.nourish > 0 && good->price <= 3) || base == "firewood";
             g.stock += stockAll(*a, base);
+            // What it means to keep of it (Society::craft): a store of what it supplies or what is traded, else a few.
+            const bool store = items::traded(base) || std::find(supplies.begin(), supplies.end(), base) != supplies.end();
+            g.kept += store ? SuppliesKept / 2 : GoodsKept;
             if (rates != sellRate_.end())
                 if (const auto rate = rates->second.find(base); rate != rates->second.end())
                     g.rate += rate->second;

@@ -60,9 +60,9 @@ Snapshot land(bool decide = true)
     }
     s.shops.push_back({"till:bakery", "wellby", 40, 30});
     s.shops.push_back({"till:stall", "hungerford", 5, 30});
-    s.goods.push_back({"wellby", "bread", 60, 10, 2, 2, 25, true});
-    s.goods.push_back({"hungerford", "bread", 120, 10, 2, 2, 25, true});
-    s.goods.push_back({"wellby", "ring", 2, 1, 40, 40, 0, false});
+    s.goods.push_back({"wellby", "bread", 60, 40, 10, 2, 2, 25, true});
+    s.goods.push_back({"hungerford", "bread", 120, 40, 10, 2, 2, 25, true});
+    s.goods.push_back({"wellby", "ring", 2, 4, 1, 40, 40, 0, false});
     s.towns.push_back({"wellby", 300, 200, 0, 0});
     s.towns.push_back({"hungerford", 50, 300, 0, 0});
     s.holders.push_back({"house:gold", "wellby", HolderKind::House, 20000, 50, 100});
@@ -140,7 +140,9 @@ void bandsAndTheWeek()
     // A day that isn't a decision's measures, and sends nothing.
     Memory m2;
     const auto day = plan(land(false), m2);
-    expect(!day.decided && day.pot == 0 && day.orders.empty() && day.prices.empty(), "Other days only measure");
+    expect(!day.decided && day.pot == 0 && day.orders.empty(), "Other days only measure");
+    expect(day.prices.size() == 3, "but a good it sees for the first time is priced at once");
+    expect(plan(land(false), m2).prices.empty(), "and not again until the week's decision");
     expect(holder(day, "house:gold").band == "cap", "though the bands show where each stands");
     // Before a day is counted, no bands at all.
     auto first = land(false);

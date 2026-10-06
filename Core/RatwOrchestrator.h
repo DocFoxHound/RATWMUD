@@ -91,6 +91,7 @@ struct GoodSnap
 {
     std::string town, item;
     int stock = 0;                                   // In the town's shops.
+    int kept = 0;                                    // What its shops mean to keep of it, together.
     double rate = 0;                                 // Sold a day (missed sales counting), all its shops together.
     double price = 0;                                // The going price now (the shops' mean), and the catalogue's.
     std::int64_t catalog = 0;

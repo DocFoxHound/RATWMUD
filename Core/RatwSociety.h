@@ -481,15 +481,22 @@ class Society
     // (Item::keeps) spoils. Goods bought are fresh to their buyer; on the road, in a caravan, they age. Players' packs
     // don't spoil (not yet). The batches aren't saved: a loaded world's food is all fresh.
     void spoil(std::int64_t day);
-    // Prices that move (doc 42, the user, 2026-10-06), worked out once a day (tendPrices) and only read when selling:
-    // - a shop whose day's takings fall under half its day's running (a float over FloatDays) marks its goods down a
-    //   twentieth, to Markdown at most, and back up as it sells again (markdown_);
-    // - food is cheaper where the townsfolk are poorer: by the town's median purse against the land's (townPrice_);
-    // - nothing is sold under CostFloor of its price (about what a shop pays for it);
-    // - a supplier or producer with plenty sells its materials cheaper, a scarce one dearer (supplyFactor).
+    // Prices (Docs/Design/46-economy-orchestrator.md, Phase 3): one price for each good in each town, set by the economy
+    // orchestrator (a new good's at once, then once a week at its decision), and the margin: what a shop pays the land
+    // (a farm, a gatherer, a player selling) is the town's price times it. Every shop sells at the town's price, a good of
+    // a quality at its quality's share of it; shops buy from each other at it. A good the orchestrator hasn't priced (or
+    // with the orchestrator in shadow or off) goes at the catalog's price; meals and herbs by the town's stores, as before
+    // (World::tendPrices). These replace doc 42's markdowns, flush discounts, town food factors, shelf and supply factors.
+    double townPrice(const std::string& town, const std::string& item) const;   // Pennies a piece (quality counted).
+    double buyingPrice(const std::string& town, const std::string& item) const { return townPrice(town, item) * margin(); }
+    double margin() const { return margin_; }
+    double townFactor(const std::string& town, const std::string& item) const;   // townPrice against the catalog's.
+    std::string shopTown(const std::string& shop) const;   // The town a shop works in.
+    // Meals, herbs and swords: priced by the town's stores (World::tendPrices), not the orchestrator, for now.
+    static bool storePriced(const std::string& item) { return item == "meal" || item == "herbs" || item == "sword"; }
+    void applyPrices();                             // prices_ and margin_ from the orchestrator's memory, when it is on.
+    // Daily: each shop's meals sold (what it restocks) and each shop's town.
     void tendPrices(std::int64_t day);
-    double supplyFactor(const EconomyAccount& seller, const std::string& item) const;
-    static constexpr double Markdown = .6, CostFloor = .6;
     static constexpr int ProduceKept = 5, FoodShelf = 30;     // (Keeps 5: doc 42, "Pressure".)
     static constexpr int SmithSwords = 3;
     static constexpr int CheapPrice = 6;              // A shop's goods cost at most this, for now (pennies).
@@ -547,11 +554,12 @@ class Society
   private:
     LifeDay day_;
     Parallel parallel_;
-    std::map<std::string, double> markdown_;        // A shop's till -> its markdown (1: none).
     std::map<std::string, double> mealsSold_;       // A shop's till -> the meals it sells a day (a running average).
     std::map<std::string, int> mealsToday_;         // A shop's till -> the meals it sold today.
-    std::map<std::string, double> townPrice_;       // A community -> its food prices against the land's.
-    std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (for townPrice_; made daily).
+    std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (made daily).
+    // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; and its margin.
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_;
+    double margin_ = .55;
     // What each larder gives its household a day (nourishment taken from it, a running average, Society::spoil): the
     // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).
     std::unordered_map<std::string, double> larderUse_;

@@ -164,10 +164,9 @@ std::int64_t Society::sellBroughtIn(const std::string& resident, const std::stri
     std::int64_t made = 0;
     for (const auto& [item, n] : held)
     {
-        // At the price a player gets (doc 15: a shop buys at a little over half what it sells for), while it wants
-        // more and has the money.
-        const auto* good = items::good(item);
-        const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor((good ? good->price : 1) * .55)));
+        // At the town's buying price, as a player gets (doc 46, Phase 3: its price times the orchestrator's margin),
+        // while it wants more and has the money.
+        const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(shopTown(shop), item))));
         const int room = SuppliesKept - stock(*account(till), item);
         const int count = int(std::min<std::int64_t>({n, room, 99, account(till)->cash / price}));
         if (count > 0 && transfer(resident, till, item, count, price, "brought in and sold"))

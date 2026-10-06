@@ -567,14 +567,20 @@ Brief plan(const Snapshot& s, Memory& memory)
     for (auto& [id, t] : towns)
         t.share = townShare[id];
 
-    // --- Prices and the margin (Part 4): decided once a week ---------------------------------------------------------------
+    // --- Prices and the margin (Part 4): decided once a week; a good first seen is priced at once ------------------------
     for (const auto& g : s.goods)
     {
-        if (g.catalog <= 0 || !s.decide)
+        const auto key = g.town + "|" + g.item;
+        auto prev = memory.price.find(key);
+        if (g.catalog <= 0 || (!s.decide && prev != memory.price.end()))
             continue;
+        // Its shelves against what its shops mean to keep: a fifth dearer when they are bare, a fifth cheaper with three
+        // times as much; and dearer again when what is there would sell in under two days (sales missed counting).
+        const double r = double(g.stock) / std::max(1, g.kept);
+        const double shelf = r <= .5 ? 1.2 : r >= 3 ? .8 : 1.2 - .4 * (r - .5) / 2.5;
         const double days = double(g.stock) / std::max(.1, g.rate);
-        double target = days < 2 ? 1 + .3 * (2 - days) / 2 : days > 10 ? 1 - .04 * (days - 10) : 1;
-        target = std::clamp(target, d.priceLow, d.priceHigh) * double(g.catalog);
+        const double scarce = days < 2 ? 1 + .15 * (2 - days) / 2 : 1;
+        double target = std::clamp(shelf * scarce, d.priceLow, d.priceHigh) * double(g.catalog);
         for (const auto* key : {&g.town, static_cast<const std::string*>(nullptr)})
         {
             const auto shock = priceShock.find((key ? *key : std::string("*")) + "|" + g.item);
@@ -588,9 +594,8 @@ Brief plan(const Snapshot& s, Memory& memory)
             if (ceiling > 0)
                 target = std::min(target, std::max(ceiling, d.priceLow * double(g.catalog)));
         }
-        const auto key = g.town + "|" + g.item;
-        auto prev = memory.price.find(key);
-        const double from = prev != memory.price.end() ? prev->second : g.price > 0 ? g.price : double(g.catalog);
+        // A week's move at most; a good first seen goes straight to its price.
+        const double from = prev != memory.price.end() ? prev->second : target;
         const double would = std::clamp(target, from * (1 - d.priceMove), from * (1 + d.priceMove));
         memory.price[key] = would;
         brief.prices.push_back({g.town, g.item, g.catalog, g.price, would});

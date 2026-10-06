@@ -62,6 +62,8 @@ void Society::reset(Roster roster)
     state_ = {};
     tills_.clear();
     forgetOrchestra();
+    prices_.clear();
+    margin_ = .55;
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
@@ -449,13 +451,18 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     const auto dealsIn = [&](const std::vector<std::string>& list) { return std::find(list.begin(), list.end(), items::baseOf(item)) != list.end(); };
     const bool stocked = business && (dealsIn(items::suppliesFor(business->id)) || dealsIn(items::buysFor(business->id)));
     const int held = stock(m, item), cap = stocked ? SuppliesKept : worn ? 4 : good ? GoodsKept : item == "meal" ? 24 : item == "sword" ? 4 : 20;
-    const int base = worn ? worn->price : good ? std::max(1, good->price) : item == "meal" ? 6 : item == "sword" ? 40 : 2;
-    // What the trader has on hand, and what the town has in store (priceFactor): scarce goods cost more.
-    const double demand = (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
+    // A good of the catalog at its town's price (doc 46, Phase 3), and bought from a player at the town's buying price
+    // (its price times the orchestrator's margin); meals, herbs and swords as before: dearer as the trader runs short of
+    // them, and as the town's stores do (priceFactor).
+    const bool catalog = worn || good;
+    const double each = catalog ? townPrice(shopTown(seller), item)
+                                : (item == "meal" ? 6 : item == "sword" ? 40 : 2) * (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) *
+                                      priceFactor(seller, item);
+    const double sells = catalog ? margin() : .55;
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
-    const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(base * demand * .9)))
-                               : buy ? std::int64_t(std::ceil(base * demand))
-                                   : std::max<std::int64_t>(1, std::int64_t(std::floor(base * demand * .55)));
+    const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(each * .9)))
+                               : buy ? std::max<std::int64_t>(1, std::int64_t(std::ceil(each - 1e-9)))
+                                   : std::max<std::int64_t>(1, std::int64_t(std::floor(each * sells)));
     const std::int64_t total = price * quantity;
     if (!buy && held + quantity > cap)
         return {false, "The trader already has enough of those goods.", price, total};
@@ -1095,6 +1102,7 @@ bool Society::restore(const SocietyState& saved)
     state_ = s;
     indexTills();
     forgetOrchestra();
+    applyPrices();
     roster_ = roster;
     for (auto& life : state_.residents)
         if (roster_ == Roster::Demo) defaultHome(life.first, life.second);

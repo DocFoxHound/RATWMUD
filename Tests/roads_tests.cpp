@@ -1885,6 +1885,33 @@ void theOrchestratorWatches()
     expect(s.unsteer(o.steers.front().id) && s.orchestrator().steers.empty(), "and a steer can be ended early");
 }
 
+// One price for a good in a town (doc 46, Phase 3): the orchestrator's, the same at every shop of the town, a quality at
+// its share of it; and what the land is paid for it, that price times the orchestrator's margin.
+void oneTownPrice()
+{
+    auto f = strip("EE.....WW", resident("baker1", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 4.5, 1, 4.5) +
+                                    resident("baker2", "Tilly Crust", "merchant", "baker at The Morning Oven", 0, 5.5, 1, 5.5));
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    if (s.orchestratorDials().mode != "on")
+        return;                                      // (A data directory with the orchestrator off: catalog prices.)
+    auto state = s.state();
+    state.orchestrator.memory.price["east|bread"] = 5;
+    state.orchestrator.memory.price["west|bread"] = 2;
+    state.orchestrator.memory.margin = .5;
+    expect(s.restore(state), "The orchestrator's prices restore");
+    const auto* bread = items::good("bread");
+    const auto* fine = items::good("bread~fine");
+    expect(bread && fine, "Bread and fine bread are in the catalog");
+    expect(s.shopPrice("baker1", "bread") == 5 && s.shopPrice("baker2", "bread") == 5, "Both of east's bakeries sell bread at east's price");
+    expect(s.shopPrice("wm", "bread") == 2, "and west's shops at west's");
+    expect(s.shopPrice("baker1", "bread~fine") == std::int64_t(std::ceil(5. * fine->price / bread->price - 1e-9)),
+           "A fine loaf at its quality's share of it");
+    expect(std::abs(s.buyingPrice("east", "bread") - 2.5) < 1e-9, "The land is paid the price times the margin");
+    expect(s.townPrice("east", "nails") == items::good("nails")->price, "A good it hasn't priced goes at the catalog's");
+}
+
 int main()
 {
     try
@@ -1926,6 +1953,7 @@ int main()
         theChurchCares();
         townsWearAndAreMended();
         theOrchestratorWatches();
+        oneTownPrice();
     }
     catch (const std::exception& error)
     {

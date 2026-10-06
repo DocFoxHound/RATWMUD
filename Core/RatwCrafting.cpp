@@ -108,13 +108,11 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                     if (!sortGood || !buyerNow)
                         continue;
                     const int spare = stock(*from, sort) - (kind == 1 && sort == item ? GoodsKept : 0);
-                    // At its price, cheaper from a seller with plenty, dearer from one running short (supplyFactor), and
-                    // less still to a shop selling at a markdown (doc 42: what doesn't sell drives prices down the line).
-                    const auto m = markdown_.count(till) ? markdown_.at(till) : 1.;
-                    // (A producer holds little because it sells: only a glut makes its price, never "scarcity".)
-                    const double supply = seller.kind == 2 ? std::min(1., supplyFactor(*from, sort)) : supplyFactor(*from, sort);
-                    const std::int64_t price = std::max<std::int64_t>(
-                        1, std::int64_t(std::ceil(sortGood->price * (local ? 1. : CartedIn) * supply * m)));
+                    // At the seller's town's price (doc 46, Phase 3): a shop's or workshop's whole, a producer's times the
+                    // orchestrator's margin (what the land is paid); carted in from elsewhere, dearer.
+                    const auto sellerTown = communityOfResident(seller.id);
+                    const double each = seller.kind == 2 ? buyingPrice(sellerTown, sort) : townPrice(sellerTown, sort);
+                    const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::ceil(each * (local ? 1. : CartedIn) - 1e-9)));
                     const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;

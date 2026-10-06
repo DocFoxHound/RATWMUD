@@ -1314,8 +1314,6 @@ class World
     std::int64_t provisionTraveller(const std::string& traveller, const std::string& payer, const std::string& town,
                                     const std::string& toCell, std::int64_t budget);
     void recoverHoard(const BanditCamp& camp, const std::string& to, const std::string& kind);
-    std::map<std::string, std::map<std::string, double>> marketPrices_;   // Store -> good -> price factor (tendPrices).
-    std::int64_t marketPriceAt_ = -1;
     std::map<std::string, std::int64_t> churchCared_;   // Player -> the day the church last tended them.
     void tradeCaravanArrived(Caravan& c);
     void tradeCaravanHome(Caravan& c);

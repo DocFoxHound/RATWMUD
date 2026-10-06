@@ -213,33 +213,23 @@ bool Society::shopHasFood(const std::string& merchant) const
 void Society::tendPrices(std::int64_t day)
 {
     (void)day;
-    // Each town's food prices, by its townsfolk's median purse against the land's: a poor town's food is cheaper.
-    std::map<std::string, std::vector<std::int64_t>> purses;
+    // The land's median purse (for the trials that read it, until doc 46's Phase 5).
     std::vector<std::int64_t> all;
     for (const auto& [id, life] : state_.residents)
         if (const auto* p = account(id))
-        {
-            purses[day_.communityOf ? day_.communityOf(life.homeCell) : std::string()].push_back(p->cash);
             all.push_back(p->cash);
-        }
-    const auto median = [](std::vector<std::int64_t>& v) {
-        if (v.empty())
-            return 0.;
-        std::nth_element(v.begin(), v.begin() + std::ptrdiff_t(v.size() / 2), v.end());
-        return double(v[v.size() / 2]);
-    };
-    const double land = std::max(1., median(all));
-    landMedian_ = std::int64_t(land);
-    townPrice_.clear();
-    for (auto& [town, v] : purses)
-        townPrice_[town] = std::clamp(.75 + .25 * median(v) / land, .8, 1.15);
+    if (!all.empty())
+    {
+        std::nth_element(all.begin(), all.begin() + std::ptrdiff_t(all.size() / 2), all.end());
+        landMedian_ = std::max<std::int64_t>(1, all[all.size() / 2]);
+    }
     // Each shop's meals sold a day (a running average: what it restocks, about two days' worth).
     for (auto& [till, avg] : mealsSold_)
         avg *= .7;
     for (const auto& [till, n] : mealsToday_)
         mealsSold_[till] += .3 * n;
     mealsToday_.clear();
-    // Each shop's markdown, by what it took in today against a day's running; and its town (for the prices above).
+    // Each shop's town (shopTown).
     shopTown_.clear();
     for (const auto& p : positions_)
     {
@@ -248,54 +238,62 @@ void Society::tendPrices(std::int64_t day)
         const auto held = state_.careers.positions.find(p.id);
         if (held == state_.careers.positions.end() || held->second.holder.empty())
             continue;
-        const auto till = tillOf(held->second.holder);
-        shopTown_[till] = communityOfResident(held->second.holder);
-        const auto taken = takings_.count(till) ? takings_.at(till) : 0;
-        const auto running = std::max<std::int64_t>(1, floatOf(p.id) / FloatDays);
-        auto& m = markdown_.try_emplace(till, 1.).first->second;
-        if (taken * 2 < running)
-            m = std::max(Markdown, m * .95);        // Little sold: cheaper tomorrow.
-        else if (taken >= running)
-            m = std::min(1., m * 1.05);             // Selling: back toward its prices.
+        shopTown_[tillOf(held->second.holder)] = communityOfResident(held->second.holder);
     }
 }
 
-double Society::supplyFactor(const EconomyAccount& seller, const std::string& item) const
+std::string Society::shopTown(const std::string& shop) const
 {
-    // Against half a supplier's stock (SuppliesKept): with three times that, a fifth off; with a quarter, a fifth more.
-    const double r = double(stockAll(seller, items::baseOf(item))) / (SuppliesKept / 2.);
-    return r <= .5 ? 1.2 : r >= 3 ? .8 : 1.2 - .4 * (r - .5) / 2.5;
+    if (const auto found = shopTown_.find(tillOf(shop)); found != shopTown_.end())
+        return found->second;
+    return communityOfResident(shop);
 }
 
-std::int64_t Society::shopPrice(const std::string& shop, const std::string& item) const
+double Society::townPrice(const std::string& town, const std::string& item) const
 {
     const auto* good = items::good(item);
     if (!good)
         return 1;
+    if (storePriced(items::baseOf(item)))
+        return std::max(1, good->price);             // (Meals, herbs, swords: World::tendPrices's, through priceFactor.)
     const auto base = items::baseOf(item);
-    double factor = priceFactor(shop, base);
-    const auto till = tillOf(shop);
-    // A shop marked down for want of sales; food cheaper in a poor town (tendPrices).
-    if (const auto m = markdown_.find(till); m != markdown_.end())
-        factor *= m->second;
-    if (good->nourish > 0)
-        if (const auto t = shopTown_.find(till); t != shopTown_.end())
-            if (const auto p = townPrice_.find(t->second); p != townPrice_.end())
-                factor *= p->second;
-    if (const auto* a = account(till))
-    {
-        const double kept = items::traded(base) ? SuppliesKept / 2 : GoodsKept;
-        const double r = double(stockAll(*a, base)) / kept;
-        factor *= r <= .5 ? 1.2 : r >= 3 ? .8 : 1.2 - .4 * (r - .5) / 2.5;
-        // A shop flush with money sells cheaper, the more so the more it holds: its surplus back to its customers.
-        if (const auto* job = jobOf(shop))
-        {
-            const auto flush = double(a->cash) / double(4 * floatOf(job->id) + 200);
-            if (flush > 1)
-                factor *= std::max(.7, 1 - .1 * std::min(3.0, flush));
-        }
-    }
-    return std::max<std::int64_t>(1, std::int64_t(std::ceil(good->price * std::max(CostFloor, factor))));   // (Never at a loss.)
+    const auto* plain = items::good(base);
+    const double catalog = std::max(1, plain ? plain->price : good->price);
+    double price = catalog;
+    if (const auto t = prices_.find(town); t != prices_.end())
+        if (const auto p = t->second.find(base); p != t->second.end() && p->second > 0)
+            price = p->second;
+    // A quality's share of the plain good's price (crude 0.6, fine 1.6, a masterwork 3: the catalog's own).
+    return price * std::max(1, good->price) / catalog;
+}
+
+double Society::townFactor(const std::string& town, const std::string& item) const
+{
+    const auto base = items::baseOf(item);
+    const auto* plain = items::good(base);
+    return plain && plain->price > 0 ? townPrice(town, base) / plain->price : 1;
+}
+
+void Society::applyPrices()
+{
+    prices_.clear();
+    margin_ = .55;
+    const auto& o = state_.orchestrator;
+    if (orchestratorDials().mode != "on")
+        return;
+    for (const auto& [key, price] : o.memory.price)
+        if (const auto bar = key.find('|'); bar != std::string::npos && price > 0)
+            prices_[key.substr(0, bar)][key.substr(bar + 1)] = price;
+    if (o.memory.margin > 0)
+        margin_ = o.memory.margin;
+}
+
+std::int64_t Society::shopPrice(const std::string& shop, const std::string& item) const
+{
+    // The town's price (doc 46, Phase 3): the same at every shop of the town.
+    if (!items::good(item))
+        return 1;
+    return std::max<std::int64_t>(1, std::int64_t(std::ceil(townPrice(shopTown(shop), item) - 1e-9)));
 }
 
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking)
@@ -873,8 +871,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     const auto till = tillOf(shop);
                     for (const auto& kind : kindsHeld(*account(till), item))
                     {
-                        const auto* good = items::good(kind);
-                        const std::int64_t price = std::max(1, good ? good->price : 1);
+                        const std::int64_t price = shopPrice(shop, kind);   // (The town's price: doc 46.)
                         const int n = int(std::min<std::int64_t>({want, stock(*account(till), kind), 99, account(payer)->cash / price}));
                         if (n > 0 && transfer(till, payer, kind, n, price, "bought by " + in.name))
                         {
@@ -939,10 +936,8 @@ void Society::producersSell(std::int64_t day)
                 const auto* shelves = account(till);
                 if (!shelves)
                     continue;
-                // At a shop's buying price, less as the shop sells at a markdown and as the producer has plenty (the
-                // user, 2026-10-06: what doesn't sell drives the price down to the land).
-                const auto m = markdown_.count(till) ? markdown_.at(till) : 1.;
-                const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(good->price * .55 * m * std::min(1., supplyFactor(*purse, item)))));   // (A glut only.)
+                // At the town's buying price: its price times the orchestrator's margin (doc 46, Phase 3).
+                const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(shops->first, item))));
                 const int count = int(std::min<std::int64_t>({left, FoodShelf - stockAll(*shelves, item), 99, spendable(till) / price}));
                 if (count > 0 && transfer(farm, till, item, count, price, "brought in and sold"))
                     left -= count;
@@ -974,7 +969,7 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
             for (const auto& sort : kindsHeld(*account(till), item))
             {
                 const auto* good = items::good(sort);
-                if (good && transfer(till, payer, sort, 1, std::max(1, good->price), kind))
+                if (good && transfer(till, payer, sort, 1, shopPrice(shop, sort), kind))
                 {
                     consume(payer, sort, 1, "worn out at work");
                     return true;

@@ -425,29 +425,8 @@ void World::tendPrices()
     if (hour == priceHour_)
         return;
     priceHour_ = hour;
+    // (Every other good's price is the economy orchestrator's, doc 46, Phase 3: Society::townPrice.)
     std::map<std::string, std::map<std::string, double>> factors;
-    // Every good, every six hours (doc 42, Phase 7): dearer where the town's makers and suppliers want more than its
-    // shops and producers have to spare, cheaper where there is plenty.
-    if (hour / 6 != marketPriceAt_ || marketPrices_.empty())
-    {
-        marketPriceAt_ = hour / 6;
-        marketPrices_.clear();
-        for (const auto& t : towns_)
-        {
-            const auto m = marketOf(t.id);
-            std::set<std::string> goods;
-            for (const auto& [item, n] : m.want)
-                goods.insert(item);
-            for (const auto& [item, n] : m.spare)
-                goods.insert(item);
-            for (const auto& item : goods)
-            {
-                const double want = m.want.count(item) ? m.want.at(item) : 0, spare = m.spare.count(item) ? m.spare.at(item) : 0;
-                marketPrices_[t.store][item] = std::clamp(1 + .5 * (want - spare) / (want + spare + 10), .8, 1.5);
-            }
-        }
-    }
-    factors = marketPrices_;
     for (const auto& t : towns_)
         if (const auto* store = society_.account(t.store))
             for (const auto& [item, each] : {std::pair<const char*, double>{"meal", .5}, {"herbs", .25}})

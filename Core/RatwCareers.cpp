@@ -94,6 +94,14 @@ bool Society::closeAccount(const std::string& id)
 
 double Society::priceFactor(const std::string& merchant, const std::string& item) const
 {
+    // A good the orchestrator prices (doc 46, Phase 3): its town's price against the catalog's. Meals and herbs: by the
+    // town's stores (World::tendPrices).
+    if (const auto* plain = storePriced(item) ? nullptr : items::good(items::baseOf(item)); plain && plain->price > 0)
+    {
+        const auto town = shopTown(merchant);
+        if (const auto t = prices_.find(town); t != prices_.end() && t->second.count(items::baseOf(item)))
+            return townFactor(town, item);
+    }
     const auto* job = jobOf(merchant);
     const auto store = priceFactors_.find(storeFor(job ? job->work.cell : std::string()));
     if (store == priceFactors_.end())

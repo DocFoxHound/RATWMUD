@@ -517,6 +517,69 @@ result: the same digest with it as without.
 
 `crafting_tests` reads the shops' and farms' tills.
 
+## Phase 3: prices and the margin (built 2026-10-06)
+
+The orchestrator is **on** (`Data/Economy/orchestrator.json` `mode`): its prices and margin are applied. Its channels
+and bands still only plan (Phase 5).
+
+**Prices:**
+- **One price per good per town:** `Society::townPrice`. Every shop of the town sells at it (`shopPrice`); a good of a
+  quality at its quality's share (the catalog's crude, fine and masterwork prices against the plain good's).
+- **When it is set:**
+  - a good the orchestrator sees for the first time is priced at once, at any day's measure;
+  - after that, at the week's decision, moving at most a quarter.
+- **Its target:**
+  - the town's shelves against what its shops mean to keep of it (`GoodSnap::kept`: a store of what they supply or
+    trade, else a few). A fifth dearer when bare, a fifth cheaper at three times as much;
+  - dearer again (up to 15%) when what is there would sell in under two days, missed sales counting;
+  - within 0.6 to 1.6 of the catalog;
+  - staples under their ceiling (Part 4).
+- **What it reads:** every shop's wares, what it supplies to the makers, and any food it has in.
+- **What isn't priced yet:**
+  - a good it doesn't price goes at the catalog's;
+  - meals, herbs and swords keep their old pricing: by the town's stores (`World::tendPrices`), and to players dearer
+    as a trader runs short (`Society::storePriced`).
+
+**The margin:**
+- What the land is paid is the town's price times the orchestrator's margin (0.55 to start, 0.4 to 0.75, moved weekly
+  toward whichever of shops and farms is short). The land means:
+  - a farm selling food to the shops (`producersSell`);
+  - a maker buying from a producer (`buyMaterials`);
+  - a gatherer or hunter selling what it brought in (`sellBroughtIn`);
+  - a player selling to a shop (`quote`).
+- Shops buying from each other pay the town's price (carted in from elsewhere: `CartedIn` times the seller's town's).
+
+**Everything else at the town's price:**
+- the town's buyers, a farm's tools and upkeep, odd jobs' deliveries;
+- caravans: they buy at the selling town's price and sell at the buying town's price times the road's markup (1.4);
+- players buying, a tenth off at a stall.
+
+**Removed:**
+- the shops' markdowns (`markdown_`, `Markdown`) and the floor under them (`CostFloor`);
+- the flush discount;
+- the town food factor by median purse (`townPrice_`);
+- the shelf factor in `shopPrice`;
+- suppliers' and producers' `supplyFactor`;
+- the World's six-hourly market factors (`marketPrices_`).
+
+`priceFactor` now gives a good's town price against the catalog's; meals and herbs still come from the stores.
+
+**Measured** (DEV build 26 export, 15 days from 06:00, against Phase 2):
+
+| Day 15 | Phase 2 | Phase 3 |
+|---|---|---|
+| Starving | 0 | 0 (one wolf for a day, on day 7) |
+| Grown short / broke | 1 / 2 | 1 / 4 |
+| Residents' Gini | 0.335 | 0.333 |
+| Median resident purse | 169p | 175p |
+
+- **Speed:** run side by side under the same load (another session's work was on the machine), 6 days at four
+  threads: 0.0826 ms a tick against 0.0927 for the game before doc 46.
+
+**Tests:** `roads_tests` `oneTownPrice`: two bakeries of a town sell at its price, a fine loaf at its share, the land is
+paid the price times the margin, and an unpriced good goes at the catalog's. `orchestrator_tests`: a good is priced at
+once when first seen, then only at the week's decision.
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -525,8 +588,8 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
    and written to `orchestrator.jsonl`, **and not applied**. The old rules run as now. We see what it would do, and test that
    it is deterministic and cheap. The Dungeon Master's panel shows it, and steers already change the shadow brief.
 2. **Every business its own till** (built). Tills for owner-run shops, farms and sites; keepers' and farmers' draw.
-3. **Prices and margins.** Town prices replace markdowns, flush discounts, food factors and market factors. The margin
-   replaces 0.55.
+3. **Prices and margins** (built). Town prices replace markdowns, flush discounts, food factors and market factors. The
+   margin replaces 0.55.
 4. **Wages.** The wage table and the living floor replace wage shares, takings caps, hire pay, `wageFor` by wealth and
    the town wage scale.
 5. **Bands and channels.** Town works, hire grants, commissions, food purchase and trade orders. The surplus rules, house

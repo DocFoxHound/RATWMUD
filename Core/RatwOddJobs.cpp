@@ -387,8 +387,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         if (const auto* shop = account(tillOf(j.source)))
             if (const auto food = bestFood(*shop); !food.empty())
             {
-                const auto* good = items::good(food);
-                const std::int64_t price = std::max(1, good ? good->price : 1);
+                const std::int64_t price = shopPrice(j.source, food);   // (The town's price: doc 46.)
                 const int n = int(std::min<std::int64_t>({3, stock(*shop, food), account(j.buyer) ? account(j.buyer)->cash / price : 0}));
                 if (n > 0)
                     transfer(tillOf(j.source), j.buyer, food, n, price, "delivered on an odd job");
