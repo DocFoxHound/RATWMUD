@@ -43,8 +43,7 @@ std::int64_t Society::wealthLine(const std::string& id) const
         return houseFloor(id);
     if (id.rfind("till:", 0) == 0)
         return 2 * floatOf(id.substr(5));            // (An owner-run business's till: two floats, doc 46.)
-    // (TRIAL tithe_relative: the line is at least twice the land's median purse, so a richer land isn't all tithed.)
-    const std::int64_t living = std::max<std::int64_t>(MonthDays * FoodADay, trial("tithe_relative") ? 2 * landMedian_ : 0);
+    const std::int64_t living = MonthDays * FoodADay;
     if (const auto* job = jobOf(id); job && job->role == "merchant" && tillOf(id) == id)
         return living + KeeperReserve + floatOf(job->id);
     return living;
@@ -144,23 +143,7 @@ void Society::reckon(std::int64_t day, bool force)
             if (const auto* purse = account(id))
                 if (const auto due = (purse->cash - wealthLine(id)) / WealthTitheShare; due > 0 && shift(id, SharedChurch, "", 0, due, "a wealth tithe"))
                     towns[treasury].wealthTithe += due;
-        // The capital shares what it holds above four weeks' spending: half of it, to the towns by how many of their folk
-        // are short of a week's food.
-        if (const auto* capital = account("treasury"))
-        {
-            const auto usual = state_.memory.outgoing.count("treasury") ? state_.memory.outgoing.at("treasury") : 0.;
-            const auto spare = (capital->cash - std::int64_t(MonthDays * usual)) / 2;
-            std::map<std::string, std::int64_t> short_;
-            std::int64_t all = 0;
-            for (const auto& [id, life] : state_.residents)
-                if (const auto* p = account(id); p && p->cash < 7 * FoodADay)
-                    if (const auto t = treasuryOfResident(id); t != "treasury")
-                        ++short_[t], ++all;
-            for (const auto& [treasury, n] : short_)
-                if (const auto part = spare > 0 && all > 0 ? spare * n / all : 0;
-                    part > 0 && account(treasury) && shift("treasury", treasury, "", 0, part, "from the capital, for the poor"))
-                    towns[treasury].fromCapital += part;
-        }
+        // (The capital's share for the poor is the economy orchestrator's now: doc 46, Phase 5.)
         for (auto& [treasury, town] : towns)
             reckonings_.push_back(std::move(town));
     }

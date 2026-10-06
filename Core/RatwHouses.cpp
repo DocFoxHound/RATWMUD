@@ -67,9 +67,11 @@ std::int64_t Society::floatOf(const std::string& positionId) const
     const auto* business = position(positionId);
     if (!business)
         return 0;
+    // (A farm's or a site's workers work the same ground, each on its own account: none is another's help. Doc 46.)
     int help = 0;
-    for (const auto& p : positions_)
-        help += p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell;
+    if (business->role == "merchant")
+        for (const auto& p : positions_)
+            help += p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell;
     return FloatDays * (ManagerWage + 6 * help) + 30;
 }
 
@@ -170,11 +172,8 @@ void Society::tendHouses(std::int64_t day)
         const auto cash = account(till)->cash;
         auto& propped = state.propped[pid];
         propped.erase(std::remove_if(propped.begin(), propped.end(), [&](double d) { return d <= day - MonthDays; }), propped.end());
-        // (TRIAL house_keeps: a shop keeps up to twice its float, paying its people more by it: Society::wageFor.)
-        // (TRIAL house_need: a house holding twice its floor leaves its shops three floats, to pay their people by.)
-        const bool rich = trial("house_need") && account(house) && account(house)->cash >= 2 * houseFloor(house);
-        if (const auto keeps = rich ? 3 * floatCash : trial("house_keeps") ? 2 * floatCash : floatCash; cash > keeps)
-            shift(till, house, "", 0, cash - keeps, "house takings");
+        if (cash > floatCash)
+            shift(till, house, "", 0, cash - floatCash, "house takings");
         else if (cash < floatCash / 2)
         {
             // A struggling day, propped up or not (a house with nothing to spare can't).

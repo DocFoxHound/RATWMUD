@@ -633,6 +633,103 @@ idle); Upper Accord eased once, then held, in distress for want of work; the oth
 - hire pay rising and falling by the business (`hirePay_`);
 - odd-job pay by the poster's richness and the town's poor.
 
+## Phase 5: bands and channels (built 2026-10-06)
+
+The orchestrator now sends money out. Doc 42's surplus rules are gone, and so are the trials.
+
+**At the week's decision** (`Society::applyOrders`, when the day turns after the reckoning's evening):
+- Each holder sends what the brief says (never below what the plan has it keep).
+- What goes to its own town goes straight into that town's funds; the rest goes into the land's fund (`fund:land`) and
+  on to the towns by the orders.
+- **A fund still holding what it was last sent gets nothing more.** That order isn't sent, and its holder keeps the
+  money; what keeps growing there raises the pay of those who work for it (the wage table). Without this the funds
+  became the new pool: 75,000p after five weeks, a sixth of the land's money, because the towns couldn't spend it.
+
+**The growth rule** (added in this phase):
+- A holder above its floor (a till's float; a town's or the church's few pennies a head) that gained over the week sends
+  half the week's gain out (`gainShare`), more with the land's distress or a Dungeon Master's pressure, whatever its
+  band.
+- It is measured from what it kept after the last decision (`memory.weekStart`).
+- It catches the pool doc 42 kept finding: takings that grow with trade while spending is set by need. A shop's need,
+  14 days of its spending, is mostly materials, so a till could gain for weeks and still read *lean*.
+
+**Its own pressure** (added in this phase):
+- At each decision it compares the residents' share of the land's money with the week before.
+- If the share fell by more than half a point, it presses 1.3 times harder (to 3 at most): bands tighten and more of a
+  holder's week's gain goes out. If the share rose, it eases (to 1).
+- This is the ham-fisted part steered by the outcome, not by a rule for each holder. A Dungeon Master's pressure
+  multiplies it.
+
+**Wages follow their payers' books** (added to Phase 4's table):
+- Each kind's pay rises where its payers gained over the week (more than a fiftieth of what they hold): twice their gain
+  against what they hold, a tenth at least and a quarter at most. It eases a twentieth where they drained:
+  - help and keepers: the town's shop tills;
+  - labour and the watch: its treasury (not its buyers, whose gains are the treasury's funding);
+  - hired hands: its farms;
+  - clergy: the land's church.
+- So money that pools in tills goes back to those who work for them, and a draining treasury pays less rather than
+  running dry.
+- **This is the main road back.** Nearly every grown wolf already works. The channels' odd jobs and hires absorbed
+  about 4,000p a day, against pots of 30,000 to 70,000p a week. Wages carry the rest.
+
+**The channels** (`Core/RatwChannels.cpp`, `runChannels`, daily): each town's funds (`fund:<town>:<channel>`) spend a
+quarter of what they hold a day (at least 20p), through the game's own work:
+
+| Channel | What it does |
+|---|---|
+| works | Odd jobs for those without work (up to 60 a day), and materials for the town's works bought from its shops and used up |
+| hires | Hands hired for the week at the town's shops and farms, three a day at most, at the table's pay for a hand, paid as they work |
+| commissions | Goods ordered from the town's makers (not food), kept by those who ordered them |
+| food | Food bought from the town's farms at the land's price into its granary (`town:<town>:granary`); the granary sells to its food shops when they hold under three days' food a head, and its takings go back to the fund |
+| trade | The town's makers' and farms' spare goods bought (makers at the town's price, farms at the land's) and sent away |
+
+- Price support, wage support, business rescue and opening come in Phase 6 (`orchestra::channelLive`); until then the
+  plan sends nothing down them.
+- A well town's ordinary demand is works and hires first, then commissions and trade: work that pays wolves at once
+  before goods that pay them only through their tills.
+
+**Removed:**
+- the treasuries', the church's and the great houses' surplus spending (`spendSurpluses`'s collectors, relief, patronage,
+  feasts, candles, the house's bonuses);
+- the owner-keeper's surplus, the rich producer's investment, and the tills' interim surplus;
+- the capital's weekly share for the poor;
+- the town budget, and every `RATW_TRIAL` (`town_budget`, `church_share`, `church_valve`, `house_keeps`, `house_need`,
+  `tithe_relative`).
+
+**Kept:** the church's dole and food alms, farm hires, market dues, rent, the wealth tithe, house takings, and house props
+(until Phase 6's business rescue).
+
+**Measured** (DEV build 26 export, 35 days from 06:00; the final rules):
+
+| | Day 2 | Day 8 | Day 15 | Day 22 | Day 29 | Day 35 |
+|---|---|---|---|---|---|---|
+| Residents' share of the land's money (at the decisions) | | 0.606 | 0.592 | 0.601 | 0.601 | |
+| The week's pot | | 43,077p | 41,027p | 41,770p | 41,872p | |
+| Its own pressure | | 1 | 1.3 | 1.1 | 1.1 | |
+| Workers (paid civilians) | 160,210p | 145,341p | 140,287p | 141,659p | 139,397p | 131,745p |
+| Shop tills | 8,653p | 25,349p | 34,749p | 44,113p | 53,423p | 62,243p |
+| Town treasuries | 70,934p | 64,812p | 39,308p | 30,361p | 24,914p | 23,350p |
+| Guards | 26,886p | 29,389p | 34,599p | 38,472p | 41,959p | 43,254p |
+| The towns' funds | 0 | 0 | 17,224p | 11,254p | 9,941p | 11,164p |
+| Residents' Gini | 0.214 | 0.249 | 0.296 | 0.343 | 0.396 | 0.428 |
+| Grown short / starving | 0 / 0 | 1 / 0 | 1 / 0 | 2 / 0 | 8 / 0 | 5 / 1 |
+
+- **Holding:** the residents' share of the land's money holds at about 60%; the funds stay bounded; the pot is steady;
+  wages paid rose from about 10,000p to 17,000p a day as the wage table followed the tills.
+- **Not yet:**
+  - *Inside* the residents, money still spreads apart (Gini 0.25 to 0.43): guards and keepers gain; workers without
+    rising pay, and those without work, lose.
+  - The treasuries drain (their wages exceed their taxes: residents who lose money make no profit to tax).
+  - Shop tills keep growing, though half their weekly gain goes out.
+- **Next** (Phases 6 and 7): wage support for lean payers (the treasuries); the orchestrator's own pressure steered by
+  the bottom half's share as well as the residents'; and learning which channels reach the poor.
+
+(Before these rules, two tries: half a holder's gain kept half pooling in the tills; pressing harder filled the funds,
+which the towns couldn't spend.)
+
+**Fixed:** a farm's or site's float counted the other workers of the same ground as its help, so each farm worker's
+till was founded with up to 1,242p (125,000p in all, a quarter of the land's money). A producer's float has no help now.
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -645,7 +742,7 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
    margin replaces 0.55.
 4. **Wages** (built). The wage table and the living floor replace wage shares, takings caps, hire pay, `wageFor` by wealth and
    the town wage scale.
-5. **Bands and channels.** Town works, hire grants, commissions, food purchase and trade orders. The surplus rules, house
+5. **Bands and channels** (built). Town works, hire grants, commissions, food purchase and trade orders. The surplus rules, house
    props and patronage, the capital's share and the trials are removed.
 6. **The rest of the channels.** Price support, wage support, business rescue, opening.
 7. **Learning reach,** and the granary through the seasons.

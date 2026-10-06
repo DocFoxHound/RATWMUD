@@ -866,6 +866,13 @@ class Society
     static constexpr std::int64_t OwnerWage = ManagerWage;
     static constexpr int OwnersShare = 3, TillsFounded = 1;
     bool ownsTill(const Position& p) const;         // A business that keeps a till of its own (not a house's).
+    // The orchestrator's channels (doc 46, Phase 5; RatwChannels.cpp): each town's funds ("fund:<town>:<channel>"), filled
+    // at the week's decision from the holders over their band (through the land's fund, LandFund, for what goes to other
+    // towns), and spent each day through the game's own work.
+    static constexpr const char* LandFund = "fund:land";
+    static std::string fundOf(const std::string& town, const std::string& channel);
+    void applyOrders(const orchestra::Brief& brief);
+    void runChannels(std::int64_t day);
     void indexTills();                              // tills_ from the accounts (a reset, a restore).
     std::string ownTill(const std::string& positionId) const;   // Its till ("" for none, or a house's business).
     void foundTills();
@@ -995,12 +1002,8 @@ class Society
     std::vector<Spending> spendings_;
     std::vector<TownNews> townNews_;
     void noteOutgoing(const std::string& from, const std::string& kind, std::int64_t coins);
-    // (TRIAL town_budget, doc 42: a treasury's extras, its buyers' funds, odd jobs and works, come only from what it takes
-    // in above its wages, by running averages; not from its savings.) Not saved.
     void noteIncoming(const std::string& to, const std::string& kind, std::int64_t coins);
-    std::map<std::string, std::int64_t> incomeToday_, wagesToday_, budgetLeft_;
-    std::map<std::string, double> incomeAvg_, wagesAvg_;
-    std::int64_t townBudget(const std::string& treasury, std::int64_t wanted);   // What of `wanted` the budget allows (and takes).
+    std::map<std::string, std::int64_t> incomeToday_, wagesToday_;
     // Buys what `wanted` from the shops' tills, up to `budget`, never a shop's last few; what was got, by item.
     std::int64_t buyForSurplus(const std::string& buyer, const std::vector<std::string>& shops,
                                const std::function<bool(const std::string& item)>& wanted, std::int64_t budget,

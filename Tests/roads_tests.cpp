@@ -1272,9 +1272,9 @@ void noHoarding()
         if (e.kind == "surplus spent" && e.actor == church)
             spent = true, told = e.detail;
     }
-    (void)churchBefore;                            // (A rich town may hand its own surplus to the church the same day.)
-    expect(spent, "The church spends what it holds above its need: " + told);
-    expect(alms && !Society::bestFood(*w.society().account("w1")).empty(), "and penniless w1 is given food as alms");
+    (void)churchBefore;
+    (void)spent;                                     // (What it holds above its band is the orchestrator's: theChannelsSpend.)
+    expect(alms && !Society::bestFood(*w.society().account("w1")).empty(), "Penniless w1 is given food as alms by the church");
     expect(w.society().conserved(), "Money stays conserved");
 }
 
@@ -1412,7 +1412,7 @@ void shopkeepersDontHoard()
     w.society().shift("treasury", till, "", 0, 2000, "test: a fine year");
     w.takeEvents();
     bool shared = false, wage = false, dues = false, shareOfProfit = false;
-    for (int d = 0; d < 8 && !(shared && dues && wage); ++d)
+    for (int d = 0; d < 8 && !(dues && wage); ++d)
     {
         nextMorning(w);
         run(w, 2);
@@ -1425,8 +1425,8 @@ void shopkeepersDontHoard()
         }
     }
     expect(wage, "The till pays its keeper a wage");
-    expect(shared, "and shares its takings with its help");
     expect(dues, "and pays the town its market dues on Restday");
+    (void)shared;                                    // (What a till holds above its band is the orchestrator's: doc 46, Phase 5.)
     expect(w.society().conserved(), "Money stays conserved");
     (void)shareOfProfit;                             // (Only in a week the till makes a profit: see theOwnersShare.)
 }
@@ -1912,6 +1912,44 @@ void oneTownPrice()
     expect(s.townPrice("east", "nails") == items::good("nails")->price, "A good it hasn't priced goes at the catalog's");
 }
 
+// The orchestrator's channels (doc 46, Phase 5): the evening of the week's reckoning it decides what the holders over
+// their band send out; when the day turns their money goes into the towns' funds, and the funds spend it through work
+// (odd jobs and materials, hires, commissions, food for a granary, trade), never below a holder's need, every penny kept.
+void theChannelsSpend()
+{
+    auto f = strip("EE.....WW", resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 7, 9.5, 8, 9.5));
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    if (s.orchestratorDials().mode != "on")
+        return;
+    auto saved = w.save();
+    saved.calendarDays = 6 + 22. / 24;              // The evening before the week's reckoning (day 7).
+    expect(w.restore(saved).ok, "To the eve of the reckoning");
+    w.tick(.6);
+    expect(s.shift("treasury", "stores:west", "", 0, std::min<std::int64_t>(8000, s.account("treasury")->cash - 100), "test: a fat year"),
+           "West's treasury is far over its band");
+    const auto supply = s.moneySupply();
+    w.takeEvents();
+    run(w, 600 * 27);                                // (Past the reckoning's evening, and the turn of day 8, and its pass.)
+    const auto& decision = s.orchestrator().decision;
+    expect(decision.decided && decision.day == 8 && decision.pot > 0, "The week's decision sends money out (" + std::to_string(decision.pot) + "p)");
+    std::int64_t funded = 0, spentByFunds = 0;
+    for (const auto& e : w.takeEvents())
+    {
+        if (e.kind == "economy" && e.detail.rfind("orders: ", 0) == 0 && e.target.rfind("fund:", 0) == 0)
+            funded += e.coins;
+        if (e.kind == "surplus spent" && e.actor.rfind("fund:", 0) == 0)
+            spentByFunds += 1;
+    }
+    expect(funded > 0, "Its money goes into the towns' funds (" + std::to_string(funded) + "p)");
+    expect(spentByFunds > 0, "and the funds spend it through work the same day");
+    for (const auto& h : decision.holders)
+        if (h.id == "stores:west")
+            expect(s.account("stores:west")->cash >= h.need, "West's treasury keeps its need");
+    expect(s.conserved() && s.moneySupply() == supply, "Every penny is kept");
+}
+
 int main()
 {
     try
@@ -1954,6 +1992,7 @@ int main()
         townsWearAndAreMended();
         theOrchestratorWatches();
         oneTownPrice();
+        theChannelsSpend();
     }
     catch (const std::exception& error)
     {

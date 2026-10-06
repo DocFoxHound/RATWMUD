@@ -116,6 +116,12 @@ struct Dials
     double comfortable = 2, cap = 4;                 // The band's top, and the cap, in needs.
     double overShare = .40, overShareAtCap = .90;    // Of what is over the top, spent a week: just over, and near the cap.
     double capShareOfLand = .02;                     // Nobody holds over this share of the land's money.
+    // Growth (doc 46, Phase 5): a holder above its floor that gained over the week sends this share of the week's gain out
+    // at the decision, more as the land is in distress or pressed: what comes in with trade must go back out, not pool.
+    double gainShare = .5;
+    // Its own pressure (doc 46, Phase 5): at each decision, if the residents' share of the land's money fell over the week
+    // by more than shareSlip, it presses autoRaise times harder (to autoMost); if it rose, it eases by autoEase (to 1).
+    double shareSlip = .005, autoRaise = 1.3, autoEase = .85, autoMost = 3;
     double distressComfortable = 1.5;                // The band's top at full distress (it falls toward this).
     double distressSpendBoost = 2;                   // And the share spent above it, times this at full distress.
     // (overShare and overShareAtCap are of a week: what a decision sends out over the week that follows it.)
@@ -178,6 +184,9 @@ struct Memory
     std::map<std::string, std::pair<double, int>> week;
     std::map<std::string, double> weekKinds;
     std::int64_t decided = -1;                       // The day of its last decision.
+    std::map<std::string, std::int64_t> weekStart;   // Holder -> what it held after the last decision (for its week's gain).
+    double residentShare = -1;                       // The residents' share of the land's money at the last decision.
+    double autoPressure = 1;                         // Its own pressure, from how that share moves.
 };
 
 struct TownReading
@@ -197,6 +206,7 @@ struct HolderBand
     std::string id, town, band;                      // band: "lean", "comfortable", "over" or "cap".
     HolderKind kind = HolderKind::Till;
     std::int64_t cash = 0, need = 0, toSpend = 0;
+    std::int64_t gain = 0;                           // What it gained since the last decision (on a decision's day).
 };
 struct Order
 {
@@ -215,6 +225,7 @@ struct Brief
     std::string mode;
     bool decided = false;                            // The week's decisions: the pot, orders, prices and margin (else 0).
     double landDistress = 0, margin = 0, gini = 0;
+    double residentShare = 0, autoPressure = 1;      // The residents' share of the land's money; its own pressure.
     std::int64_t moneySupply = 0, pot = 0, median = 0;
     std::vector<TownReading> towns;
     std::vector<HolderBand> holders;                 // Every holder (the saved brief keeps only those over their band).
@@ -228,6 +239,9 @@ struct Brief
 
 // The channels (doc 46, Part 7), in a fixed order.
 const std::vector<std::string>& channelNames();
+// Whether a channel is built and spends (doc 46: Phase 5 the first five; price and wage support, rescue and opening in
+// Phase 6). The plan sends nothing down one that isn't.
+bool channelLive(const std::string& channel);
 // The kinds of post the wage table pays (doc 46, Part 5): shop and house help, the watch, the town's labour, the clergy,
 // a business's keeper, a hired hand, and a hand's share of an odd job.
 const std::vector<std::string>& wageKinds();

@@ -43,6 +43,12 @@ const std::vector<std::string>& channelNames()
     return names;
 }
 
+bool channelLive(const std::string& channel)
+{
+    static const std::vector<std::string> live = {"works", "hires", "commissions", "food", "trade"};
+    return std::find(live.begin(), live.end(), channel) != live.end();
+}
+
 const std::vector<std::string>& wageKinds()
 {
     static const std::vector<std::string> kinds = {"help", "guard", "labour", "clergy", "keeper", "hand", "odd job"};
@@ -111,6 +117,11 @@ bool readDials(const Value& doc, Dials& d, std::string& problem)
     num("overShare", d.overShare);
     num("overShareAtCap", d.overShareAtCap);
     num("capShareOfLand", d.capShareOfLand);
+    num("gainShare", d.gainShare);
+    num("shareSlip", d.shareSlip);
+    num("autoRaise", d.autoRaise);
+    num("autoEase", d.autoEase);
+    num("autoMost", d.autoMost);
     num("distressComfortable", d.distressComfortable);
     num("distressSpendBoost", d.distressSpendBoost);
     num("landShare", d.landShare);
@@ -182,17 +193,19 @@ double clamp01(double x) { return std::clamp(x, 0.0, 1.0); }
 // Channels that suit each kind of distress (doc 46, Part 7), before the steers and the cap on any one channel.
 std::map<std::string, double> fitFor(const std::string& kind)
 {
+    // (Work that pays wolves at once, the works and hires, first; goods ordered from its makers and farms, which pay
+    // wolves only through their tills, after.)
     if (kind == "empty shelves")
-        return {{"food", 3}, {"trade", 1}, {"works", 1}};
+        return {{"food", 3}, {"works", 1}, {"trade", 1}};
     if (kind == "empty purses")
-        return {{"works", 2}, {"hires", 2}, {"commissions", 1}, {"price support", 1}};
+        return {{"works", 3}, {"hires", 2}, {"commissions", 1}, {"price support", 1}};
     if (kind == "no work")
-        return {{"works", 2}, {"hires", 2}, {"opening", 1}};
+        return {{"works", 3}, {"hires", 3}, {"opening", 1}};
     if (kind == "failing trade")
-        return {{"commissions", 2}, {"trade", 2}, {"wage support", 1}, {"rescue", 1}};
+        return {{"hires", 2}, {"commissions", 2}, {"trade", 1}, {"wage support", 1}, {"rescue", 1}};
     if (kind == "draining")
-        return {{"trade", 3}, {"commissions", 1}};
-    return {{"commissions", 2}, {"trade", 2}, {"works", 1}};   // (A town that is well: ordinary demand.)
+        return {{"trade", 2}, {"works", 1}, {"commissions", 1}};
+    return {{"works", 2}, {"hires", 2}, {"commissions", 1}, {"trade", 1}};   // (A town that is well: ordinary demand.)
 }
 
 // Shares `amount` out by `weights` (each at most `most` of it, the rest going to the others), in whole pennies, the
@@ -435,6 +448,24 @@ Brief plan(const Snapshot& s, Memory& memory)
         brief.decided = true;
     }
 
+    // --- Its own pressure: from how the residents' share of the land's money moved over the week ----------------------------
+    {
+        double held = 0;
+        for (const auto& r : s.residents)
+            held += double(std::max<std::int64_t>(0, r.cash));
+        brief.residentShare = s.moneySupply > 0 ? held / double(s.moneySupply) : 0;
+        if (s.decide)
+        {
+            if (memory.residentShare >= 0 && brief.residentShare < memory.residentShare - d.shareSlip)
+                memory.autoPressure = std::min(d.autoMost, memory.autoPressure * d.autoRaise);
+            else if (memory.residentShare >= 0 && brief.residentShare > memory.residentShare + d.shareSlip)
+                memory.autoPressure = std::max(1.0, memory.autoPressure * d.autoEase);
+            memory.residentShare = brief.residentShare;
+        }
+        brief.autoPressure = memory.autoPressure;
+        pressure = std::clamp(pressure * memory.autoPressure, .5, 3.);
+    }
+
     // --- Bands (Part 6) ------------------------------------------------------------------------------------------------
     const double top = std::max(1.0, (d.comfortable - (d.comfortable - d.distressComfortable) * D) / std::sqrt(pressure));
     const double capNeeds = std::max(top + .5, d.cap / std::sqrt(pressure));
@@ -491,7 +522,24 @@ Brief plan(const Snapshot& s, Memory& memory)
             }
         }
         // Never below its need (squeezed), or below the band's top (not).
-        const double keep = squeezed ? double(b.need) : topLine;
+        double keep = squeezed ? double(b.need) : topLine;
+        // Growth: what it gained over the week, a share of it back out (whatever its band), keeping its floor (a till's
+        // float, a town's or church's few pennies a head): a business whose takings outrun its costs is pooling, however
+        // much of its need is turnover.
+        const auto start = memory.weekStart.find(h.id);
+        if (s.decide && start != memory.weekStart.end())
+            b.gain = h.cash - start->second;
+        if (s.decide && start != memory.weekStart.end() && h.cash > h.floor)
+            {
+                const double grown = double(std::max<std::int64_t>(0, b.gain)) * std::min(1.0, d.gainShare * (1 + D) * pressure);
+                if (grown > spend)
+                {
+                    spend = grown;
+                    keep = double(std::max<std::int64_t>(h.floor, 0));
+                    if (b.band == "comfortable" || b.band == "lean")
+                        b.band = "growing";
+                }
+            }
         // Only a decision sends money out: on other days the band is a measure.
         if (s.decide)
             b.toSpend = std::max<std::int64_t>(0, std::min<std::int64_t>(std::int64_t(std::floor(spend)), h.cash - std::int64_t(std::ceil(keep))));
@@ -500,12 +548,21 @@ Brief plan(const Snapshot& s, Memory& memory)
     }
     for (const auto& b : brief.holders)
         ++brief.bands[b.band];
+    // The week starts again after a decision: from what each holder will hold once it has spent.
+    if (s.decide)
+        for (const auto& b : brief.holders)
+            memory.weekStart[b.id] = b.cash - b.toSpend;
+    for (const auto& h : s.holders)
+        if (!memory.weekStart.count(h.id))
+            memory.weekStart[h.id] = h.cash;     // (First seen: its week starts now.)
     {
         std::set<std::string> present;
         for (const auto& h : s.holders)
             present.insert(h.id);
         for (auto it = memory.spent.begin(); it != memory.spent.end();)
             it = present.count(it->first) ? std::next(it) : memory.spent.erase(it);
+        for (auto it = memory.weekStart.begin(); it != memory.weekStart.end();)
+            it = present.count(it->first) ? std::next(it) : memory.weekStart.erase(it);
     }
 
     // --- Where the pot goes (Part 7) -----------------------------------------------------------------------------------
@@ -529,6 +586,11 @@ Brief plan(const Snapshot& s, Memory& memory)
         for (const auto& [c, w] : channelWeight)
             if (!f.count(c) && w > 1)
                 f[c] = w - 1;
+        // Only channels that are built spend; with none left (all closed by steers), ordinary demand: commissions.
+        for (auto it = f.begin(); it != f.end();)
+            it = channelLive(it->first) && it->second > 0 ? std::next(it) : f.erase(it);
+        if (f.empty())
+            f["commissions"] = 1;
         // Town works pay only as many hands as there are idle: two days' work for each, at the living wage.
         fits[id] = f;
     }
@@ -616,6 +678,27 @@ Brief plan(const Snapshot& s, Memory& memory)
         brief.prices.push_back({g.town, g.item, g.catalog, g.price, would});
     }
     // --- The wage table (Part 5): seeded at once, moved at the week's decision ----------------------------------------------
+    // Its payers' books (Phase 5): what each kind's payers gained or lost over the week, against what they hold. Help and a
+    // keeper's wage: the town's shops' tills; the watch and the town's labour: its treasury; hands: its farms;
+    // the clergy: the land's church.
+    std::map<std::string, std::map<std::string, std::pair<double, double>>> books;   // Town -> kind -> gain, held.
+    std::pair<double, double> church{0, 0};
+    for (const auto& b : brief.holders)
+    {
+        const auto add = [&](const std::string& kind) {
+            auto& g = books[b.town][kind];
+            g.first += double(b.gain);
+            g.second += double(b.cash);
+        };
+        if (b.kind == HolderKind::Till || b.kind == HolderKind::Keeper)
+            add("help"), add("keeper");
+        else if (b.kind == HolderKind::Treasury || b.kind == HolderKind::Capital)
+            add("labour"), add("guard");             // (Not its buyers: what they gain is the treasury's funding.)
+        else if (b.kind == HolderKind::Producer)
+            add("hand");
+        else if (b.kind == HolderKind::Church)
+            church.first += double(b.gain), church.second += double(b.cash);
+    }
     for (const auto& [id, t] : towns)
     {
         const auto snap = townSnaps.find(id);
@@ -630,9 +713,16 @@ Brief plan(const Snapshot& s, Memory& memory)
             if (s.decide && known != memory.wage.end())
             {
                 const int begging = snap != townSnaps.end() && snap->second->unfilled.count(kind) ? snap->second->unfilled.at(kind) : 0;
-                if (begging > 0)
+                // Its payers gaining (more than a fiftieth of what they hold in the week) pay more: what pools in their
+                // tills goes to those who work for them. Draining, they pay less, as far as the floor.
+                const auto paid = kind == "clergy" ? church : books.count(id) && books[id].count(kind) ? books[id][kind] : std::pair<double, double>{0, 0};
+                const double trend = paid.second > 0 ? paid.first / paid.second : 0;
+                // (In step with the books: payers that gained a tenth of what they hold raise pay a fifth, up to a quarter.)
+                if (trend > .02)
+                    w *= 1 + std::min(.25, std::max(d.wageRaise, 2 * trend));
+                else if (begging > 0)
                     w *= 1 + d.wageRaise;
-                else if (idleShares[id] > .1 && !holdUp)
+                else if (trend < -.02 || (idleShares[id] > .1 && !holdUp))
                     w *= 1 - d.wageEase;
             }
             w = std::clamp(w, floor, std::max(floor, d.wageMost * start));
@@ -733,6 +823,8 @@ Value briefJson(const Brief& b, bool full)
     o.add("margin", round3(b.margin));
     o.add("median", double(b.median));
     o.add("gini", round3(b.gini));
+    o.add("residentShare", round3(b.residentShare));
+    o.add("autoPressure", round3(b.autoPressure));
     auto towns = Value::array();
     for (const auto& t : b.towns)
     {
@@ -768,7 +860,7 @@ Value briefJson(const Brief& b, bool full)
     auto holders = Value::array();
     for (const auto& h : b.holders)
     {
-        if (!full && h.band != "over" && h.band != "cap" && h.band != "spared")
+        if (!full && h.band != "over" && h.band != "cap" && h.band != "spared" && h.band != "growing")
             continue;
         auto x = Value::object();
         x.add("id", h.id);
@@ -778,6 +870,8 @@ Value briefJson(const Brief& b, bool full)
         x.add("need", double(h.need));
         x.add("band", h.band);
         x.add("toSpend", double(h.toSpend));
+        if (h.gain != 0)
+            x.add("gain", double(h.gain));
         holders.push(x);
     }
     o.add("holders", holders);
@@ -845,6 +939,8 @@ Brief readBrief(const Value& o)
     b.margin = o.number("margin");
     b.median = std::int64_t(o.number("median"));
     b.gini = o.number("gini");
+    b.residentShare = o.number("residentShare");
+    b.autoPressure = o.number("autoPressure", 1);
     for (const auto& x : o.array("towns"))
     {
         TownReading t;
@@ -880,6 +976,7 @@ Brief readBrief(const Value& o)
         h.need = std::int64_t(x.number("need"));
         h.band = x.string("band");
         h.toSpend = std::int64_t(x.number("toSpend"));
+        h.gain = std::int64_t(x.number("gain"));
         b.holders.push_back(h);
     }
     for (const auto& [band, n] : o.object("bands").fields())
@@ -918,6 +1015,10 @@ Value stateJson(const State& st)
         wage.add(k, v);
     memory.add("net", net);
     memory.add("wage", wage);
+    auto weekStart = Value::object();
+    for (const auto& [k, v] : st.memory.weekStart)
+        weekStart.add(k, double(v));
+    memory.add("weekStart", weekStart);
     memory.add("spent", spent);
     memory.add("distress", distress);
     memory.add("price", price);
@@ -936,6 +1037,8 @@ Value stateJson(const State& st)
     memory.add("margin", st.memory.margin);
     memory.add("day", double(st.memory.day));
     memory.add("decided", double(st.memory.decided));
+    memory.add("residentShare", st.memory.residentShare);
+    memory.add("autoPressure", st.memory.autoPressure);
     o.add("memory", memory);
     o.add("brief", briefJson(st.last, false));
     o.add("decision", briefJson(st.decision, false));
@@ -993,6 +1096,9 @@ State readState(const Value& o)
     for (const auto& [k, v] : m.object("price").fields())
         if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 1e9)
             st.memory.price[k] = v.asNumber();
+    for (const auto& [k, v] : m.object("weekStart").fields())
+        if (v.isNumber() && std::abs(v.asNumber()) < 1e12)
+            st.memory.weekStart[k] = std::int64_t(v.asNumber());
     for (const auto& [k, v] : m.object("wage").fields())
         if (v.isNumber() && v.asNumber() > 0 && v.asNumber() < 1e6)
             st.memory.wage[k] = v.asNumber();
@@ -1008,6 +1114,8 @@ State readState(const Value& o)
     st.memory.margin = m.number("margin", -1);
     st.memory.day = std::int64_t(m.number("day", -1));
     st.memory.decided = std::int64_t(m.number("decided", -1));
+    st.memory.residentShare = m.number("residentShare", -1);
+    st.memory.autoPressure = std::clamp(m.number("autoPressure", 1), 1.0, 10.0);
     st.last = readBrief(o.object("brief"));
     st.decision = readBrief(o.object("decision"));
     return st;

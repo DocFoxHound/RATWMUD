@@ -209,6 +209,7 @@ void Society::orchestrate(double absoluteDay, const std::map<std::string, LifeBo
             if (brief.decided)
                 state_.orchestrator.decision = brief;
             applyPrices();                           // Its prices and margin, when it is on (doc 46, Phase 3).
+            applyOrders(brief);                      // And the week's orders: money into the channels' funds (Phase 5).
             if (keepBriefs_)
                 briefs_.push_back(std::move(brief));
         }
@@ -339,7 +340,8 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         else if (id.rfind("town:", 0) == 0)
         {
             const auto colon = id.find(':', 5);
-            if (colon != std::string::npos && id.compare(colon, std::string::npos, ":church") != 0)
+            if (colon != std::string::npos && id.compare(colon, std::string::npos, ":church") != 0 &&
+                id.compare(colon, std::string::npos, ":granary") != 0)
                 add(id, HolderKind::Buyer, id.substr(5, colon - 5), std::int64_t(dials.floorBuyer), a.cash);
         }
         else if (id.rfind("house:", 0) == 0)

@@ -89,32 +89,7 @@ void Society::tendTills(std::int64_t day)
         const auto ownWage = std::int64_t(std::ceil(dayWage(communityOfResident(keeper), "keeper") - 1e-9));
         if (const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash - floatCash / 2); wage > 0)
             shift(till, keeper, "", 0, wage, "the keeper's wage");
-        // (Until the orchestrator's channels: doc 46, Phase 5.) Above two floats, a KeeperSurplusShare-th a day goes out:
-        // half on hands and its premises (RatwOddJobs.cpp), and four tenths of the rest to its help, a share of the
-        // takings, as an owner-run shop's keeper did from its own purse before it had a till (doc 42).
-        auto budget = (account(till)->cash - 2 * floatCash) / KeeperSurplusShare;
-        const auto town = communityOfResident(keeper);
-        if (budget < 10 || town.empty())
-            continue;
-        Spending note{till, town, 0, {}};
-        const auto invested = businessSpends(till, keeper, p, budget / 2);
-        budget -= invested;
-        std::int64_t shared = 0;
-        int hands = 0;
-        for (const auto& other : positions_)
-        {
-            if (other.id == p.id || other.work.cell != p.work.cell || shared + 2 > budget * 4 / 10)
-                continue;
-            const auto help = state_.careers.positions.find(other.id);
-            if (help != state_.careers.positions.end() && !help->second.holder.empty() &&
-                shift(till, help->second.holder, "", 0, 2, "surplus: a share of the takings"))
-                shared += 2, ++hands;
-        }
-        note.total = invested + shared;
-        note.detail = std::to_string(invested) + "p in hands and its premises, " + std::to_string(shared) + "p shared with " +
-                      std::to_string(hands) + " of its help";
-        if (note.total > 0)
-            spendings_.push_back(std::move(note));
+        // (What it holds above its band is the economy orchestrator's to send out: doc 46, Phase 5.)
     }
 }
 

@@ -349,6 +349,46 @@ void theWageTable()
                d.wageStart.at("guard") == 20,
            "Its starts and steps are dials");
 }
+
+void growthGoesBackOut()
+{
+    // A treasury inside its band, but gaining week on week: half its week's gain goes out at the decision.
+    Memory m;
+    auto s = land(false);
+    s.holders[3].cash = 700;                         // (Wellby's treasury: need 600, so comfortable.)
+    plan(s, m);
+    auto week = land(true);
+    week.holders[3].cash = 900;                      // (200p more a week later: still under its band's top.)
+    const auto b = plan(week, m);
+    const auto& t = holder(b, "stores:wellby");
+    expect(t.gain == 200 && t.band == "growing", "A comfortable treasury that gained 200p in the week is growing (" + t.band + ")");
+    expect(t.toSpend >= 100 && t.cash - t.toSpend >= t.need, "and sends at least half its gain out, keeping its need");
+    expect(m.weekStart.at("stores:wellby") == t.cash - t.toSpend, "Its next week starts from what it keeps");
+    // One that lost doesn't.
+    auto lost = land(true);
+    lost.day = 15;
+    lost.holders[3].cash = 700;
+    expect(holder(plan(lost, m), "stores:wellby").toSpend == 0, "One that lost over the week sends nothing");
+}
+
+void itPressesItself()
+{
+    // The residents' share of the land's money falls over the week: it presses harder at the decision; rises, it eases.
+    Memory m;
+    auto week1 = land(true);
+    plan(week1, m);
+    expect(m.autoPressure == 1 && m.residentShare > 0, "Its first decision only notes the residents' share");
+    auto week2 = land(true);
+    week2.day = 15;
+    for (auto& r : week2.residents)
+        r.cash = r.cash * 8 / 10;                    // (A fifth less in their purses.)
+    const auto b = plan(week2, m);
+    expect(std::abs(m.autoPressure - 1.3) < 1e-9 && b.autoPressure == m.autoPressure, "Their share fell: it presses a third harder");
+    auto week3 = land(true);
+    week3.day = 22;
+    plan(week3, m);
+    expect(m.autoPressure < 1.3 && m.autoPressure >= 1, "Their share back up: it eases, never below 1");
+}
 } // namespace
 
 int main()
@@ -363,6 +403,8 @@ int main()
         sameEveryTime();
         savedState();
         theWageTable();
+        growthGoesBackOut();
+        itPressesItself();
     }
     catch (const std::exception& e)
     {

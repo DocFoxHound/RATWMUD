@@ -532,7 +532,7 @@ int main(int argc, char** argv)
             ++h.second;
             all.push_back({a.cash, id});
             if (id == "treasury" || id.rfind("stores:", 0) == 0 || id.rfind("town:", 0) == 0 || id.rfind("house:", 0) == 0 ||
-                id.rfind("till:", 0) == 0)
+                id.rfind("till:", 0) == 0 || id.rfind("fund:", 0) == 0)
                 purses[id] = a.cash;
         }
         for (const auto& [id, life] : society.state().residents)
@@ -836,7 +836,7 @@ int main(int argc, char** argv)
                                       << t.idle << ',' << t.shopFoodDays << ',' << t.takingsRatio << ',' << t.netInflow << ',' << t.wageFloor
                                       << ',' << t.share << '\n';
                 std::cout << "  orchestrator for day " << b.day << ": land distress " << std::fixed << std::setprecision(3) << b.landDistress
-                          << std::defaultfloat << ", pot " << b.pot << "p, margin " << b.margin << ", bands";
+                          << std::defaultfloat << ", pot " << b.pot << "p, margin " << b.margin << ", residents hold " << std::fixed << std::setprecision(3) << b.residentShare << std::defaultfloat << ", own pressure " << b.autoPressure << ", bands";
                 for (const auto& [band, n] : b.bands)
                     std::cout << " " << band << " " << n;
                 std::cout

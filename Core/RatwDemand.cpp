@@ -828,8 +828,8 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // watch eats plainly) rather than its wages going unpaid.
                 const auto reserve = std::int64_t(PayrollDays) * 2 * PaidSpells * (town.guards + town.residents / 10);
                 const auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
-                if (const auto grant = townBudget(treasuryId, std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
-                                                                                    spare));
+                if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
+                                                              spare);
                     grant > 0)
                     shift(treasuryId, acct, "", 0, grant, "town funds");
             }

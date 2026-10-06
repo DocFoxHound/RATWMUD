@@ -1226,9 +1226,6 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 std::string subsidy;
                 if (wage > 0 && business && spendable(payer.account) < wage)
                     subsidy = subsidiser(home);
-                // (TRIAL town_budget: a treasury covers wages only from its day's budget.)
-                if (!subsidy.empty() && subsidy.rfind("stores:", 0) == 0 && townBudget(subsidy, wage) < wage)
-                    subsidy.clear();
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
                 else if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage subsidised by the town"))
