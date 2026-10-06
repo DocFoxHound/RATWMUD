@@ -1458,6 +1458,73 @@ The suggestions, tried in 28-day runs:
 2. Town wage bills by takings.
 3. Saltreach's salt into more cured food.
 
+## Farmhands, farm upkeep, plaster, luxuries and town wages (2026-10-06, after 87cc2a2)
+
+The user:
+- Make `produce_more`, `make_what_sells` and `cure_more` permanent.
+- Farms (and vineyards) hire hands on contracts of a few days, city folk too, lodging in a farm bunkhouse of up to ten
+  beds with a larder the farm stocks.
+- Farm upkeep (nails, plaster…) bought from the towns and cities.
+- Plaster made in Ser Ferro from fur (the farms' pelts and sheepskins) and quicklime (from the mines).
+- Town wages scaled by what towns take in.
+- Luxury goods made and sold in the cities, wanted by those with money to spare, ordered by the towns by caravan.
+- Keep the tick time down.
+
+**Built (uncommitted):**
+- **Permanent:**
+  - `ProducerKept` 40, `ProduceKept` 5.
+  - Makers make what sells or is missed first.
+  - Shops keep half a store of cured food.
+- **Farmhands** (`RatwFarmhands.cpp`, daily):
+  - A farm worker (fields, orchard, vineyard, flock, herd, piggery, sheep or rabbit farm) with the whole hire to spare
+    above its wealth line hires a hand: 4–6 days in season, 2–3 out of it, at the going hire pay.
+  - City folk (communities of 150 or more) may take it as well as the farm's own town.
+  - A hand from elsewhere lodges in the farm's bunkhouse for the hire (`memory.lodging`, saved; home again when it
+    ends).
+  - The farm stocks the bunkhouse larder each day, from its own food first, then from the town's shops.
+- **Bunkhouses and the plaster works** (`tools/worldgen/bunkhouses.py`; DEV revision 17, build 26; r16 backed up):
+  - 34 ten-bed bunkhouses at the farm sites (8 had six-bed ones).
+  - The game pairs each farm worker with "<site> Bunkhouse".
+  - The Ser Ferro Plaster Works (`plasterworks`): plaster from 2 quicklime and a small pelt or a sheepskin. A keeper and
+    two hands from Ser Ferro's labourers.
+  - Mines bring in a quicklime with each ore.
+- **Farm upkeep** (`crafts.json` `farmUpkeep`):
+  - Nails, plaster and planks: a farm worker wears out 0.15, 0.1 and 0.15 a day, bought at its town's shops.
+  - General stores now sell and order nails, planks and plaster.
+- **Luxuries:**
+  - Glassworks: glass beads, glassware, mirrors.
+  - Jewellers: ear rings, charms, bracelets.
+  - Perfumer: cedar perfume, fine soap, fur oil.
+  - Printing houses: pamphlets, broadsheets.
+  - The general stores carry a few, ordered from the cities.
+- **Town wages by takings:** a treasury's wage scale moves each day toward a wage bill of 80% of what it takes in
+  (`townWageScale_`).
+
+**Measured** (build 26, 28 days, days 7 to 28; "plain" = these rules with no trials):
+
+| | Before (87cc2a2, every trial) | Plain | Plain + valves and town budget |
+|---|---|---|---|
+| Starving / hungry | 0 / 64 | 0 / 94 | 0 / 46 |
+| Producers | +31% | +14% | +29% |
+| Workers | +2% | −2% | +1% |
+| Coins between towns a day | 597 | 1,689 | 918 |
+| Average town swing | 8% | 13% | 8% |
+| Church | +40% | +276% | +50% |
+| Town treasuries | −36% | −42% | −39% |
+
+- **Hired hands are the big new flow:** producers paid about 1,490p a day for hands, and 297 hands lodged at farms.
+  With plain rules the producers' gain halves (+14%), and money between towns doubles (hands from the cities take it
+  home).
+- **Farm upkeep is small** (about 61p a day). Plaster reaches the farms (152 sold over three weeks).
+- **Quicklime from the mines sells well** (about 370p a day, mostly to premises being improved).
+- **Luxuries sell:** pamphlets about 440p a day as pastimes, cedar perfume about 145p, fine soap about 60p. That money
+  goes to the printing houses (Ridgemere, Ser Ferro) and the perfumer (Ser Ferro).
+- **Still open:**
+  - The church pools without its valve (tithe steady).
+  - Treasuries still drain (the wage scale has only started to bite).
+  - With the valves, producers kept more (+29%); worth a look.
+- **Speed:** 0.078 ms a tick at four threads, as before (0.076).
+
 ## Later (noted 2026-10-05)
 
 - **Skills from odd jobs and hires** (*user*): working a trade's odd jobs and hires should teach its skill, leading

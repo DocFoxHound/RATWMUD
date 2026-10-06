@@ -130,6 +130,14 @@ void Society::spendSurpluses(std::int64_t day)
     budgetLeft_.clear();
     for (const auto& [id, avg] : incomeAvg_)
         budgetLeft_[id] = std::int64_t(std::max(0., avg - (wagesAvg_.count(id) ? wagesAvg_.at(id) : 0.)));
+    // Town wages by takings (the user, 2026-10-06): each treasury's wages move toward a bill of TownWageShare percent of
+    // what it takes in, a fifth at most a day (Society::wageFor).
+    for (const auto& [id, takings] : incomeAvg_)
+    {
+        auto& scale = townWageScale_.try_emplace(id, 1.).first->second;
+        if (const double bill = wagesAvg_.count(id) ? wagesAvg_.at(id) : 0.; bill > 0)
+            scale = std::clamp(scale * std::clamp(takings * TownWageShare / 100 / bill, .8, 1.25), .25, 3.);
+    }
     ++state_.memory.revision;
     // The communities: who lives in each, and its shops.
     std::map<std::string, std::vector<std::string>> folk, shops;
@@ -537,6 +545,10 @@ void Society::spendSurpluses(std::int64_t day)
         if (note.total > 0)
             spendings_.push_back(std::move(note));
     }
+    // Farmhands (RatwFarmhands.cpp): hires ended and lodgers home, new hires posted, bunkhouse larders stocked.
+    endLodgings(day);
+    postFarmHires(day);
+    stockBunkhouses(day);
     // A producer doing well (a farmer, a quarryman with more than it needs) puts a tenth of its spare to work the same way:
     // hands for its fields, its ground improved.
     for (const auto& r : authored_.residents)

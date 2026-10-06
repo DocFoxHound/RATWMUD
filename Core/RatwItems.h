@@ -115,7 +115,8 @@ struct ToolNeed
 };
 const std::vector<ToolNeed>& toolNeeds();
 // What a kind of business uses up a day to keep going (crafts.json `upkeep`: a stables' horses eat hay and oats),
-// bought like its materials and paid from its till; null for none.
+// bought like its materials and paid from its till; null for none. "(farm)": what a farm worker wears out a day
+// (crafts.json `farmUpkeep`).
 const std::vector<std::pair<std::string, double>>* upkeepFor(const std::string& business);
 const std::vector<Institution>& institutions();
 double institutionDays();                           // Days of its basket an institution keeps in stock.

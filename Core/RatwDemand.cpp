@@ -925,13 +925,12 @@ void Society::producersSell(std::int64_t day)
         if (shops == shopsOf.end() || shops->second.empty() || !purse)
             continue;
         const std::vector<std::pair<std::string, int>> held(purse->stock.begin(), purse->stock.end());
-        const int keeps = trial("produce_more") ? ProduceKept / 2 : ProduceKept;   // (TRIAL produce_more: keeps 5.)
         for (const auto& [item, n] : held)
         {
             const auto* good = items::good(item);
-            if (n <= keeps || !good || good->drink || !edible(item))
+            if (n <= ProduceKept || !good || good->drink || !edible(item))
                 continue;
-            int left = n - keeps;
+            int left = n - ProduceKept;
             const auto& list = shops->second;
             for (std::size_t k = 0; k < list.size() && left > 0; ++k)
             {
@@ -1007,6 +1006,23 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
                 buy(r.id, t.item, "tools for the work");
         }
     }
+    // A farm's upkeep (crafts.json `farmUpkeep`, the user, 2026-10-06: nails, plaster, planks for its fences, barns and
+    // walls): what each farm worker wears out a day, bought whole when a whole one is owed, at its town's shops (which
+    // order from the cities what the town lacks). Out of its own purse.
+    if (const auto* farm = items::upkeepFor("(farm)"))
+        for (const auto& r : authored_.residents)
+        {
+            const auto* p = items::producerFor(r.workLabel);
+            const auto body = bodies.find(r.id);
+            if (!p || !farmWork(p->id) || body == bodies.end() || body->second.age < 16 || !state_.residents.count(r.id))
+                continue;
+            auto& owed = upkeepOwed_[r.id];
+            for (const auto& [item, rate] : *farm)
+                if ((owed[item] += rate) >= 1 && buy(r.id, item, "the farm's upkeep"))
+                    owed[item] -= 1;
+                else
+                    owed[item] = std::min(owed[item], 3.);   // (Gone without: owed, a few at most.)
+        }
     // Businesses' upkeep (crafts.json `upkeep`): a stables' horses eat, from the till, bought like its materials.
     for (const auto& r : authored_.residents)
     {

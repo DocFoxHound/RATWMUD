@@ -5,6 +5,7 @@
 #include "RatwSociety.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cctype>
 #include <unordered_map>
 #include <utility>
@@ -164,6 +165,10 @@ std::int64_t Society::wageFor(const Payer& payer) const
     const bool treasury = payer.account.rfind("stores:", 0) == 0 || payer.account == "treasury";
     if (business ? purse->cash <= ComfortableTill : treasury && treasuryLean(payer.account))
         return 1;                                   // (A lean one pays half: doc 42.)
+    // A town pays by what it takes in (the user, 2026-10-06): 2p a spell scaled so its wage bill follows its takings.
+    if (treasury)
+        if (const auto scale = townWageScale_.find(payer.account); scale != townWageScale_.end())
+            return std::clamp<std::int64_t>(std::int64_t(std::lround(2 * scale->second)), 1, MostWage);
     std::int64_t floor = 0;
     if (payer.account.rfind("house:", 0) == 0)
         floor = houseFloor(payer.account);

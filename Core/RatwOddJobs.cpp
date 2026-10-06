@@ -311,9 +311,11 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         return nullptr;
     const auto community = communityOfResident(id);
     const auto& group = child ? friendGroup(id) : std::string();
+    // (A farm's hire may be taken by anyone living in a city too: RatwFarmhands.cpp.)
+    const bool fromCity = !child && cities_.count(community) > 0;
     const auto open = [&](const OddJob& j) {
-        return j.community == community && int(j.stage.size()) < j.slots && !j.stage.count(id) &&
-               (!child || j.forChildren || hour >= 14);
+        return (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHire(j))) &&
+               int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14);
     };
     // A child joins a friend on a job first, then one with room for a party; anyone else, the first open one.
     OddJob* chosen = nullptr;
@@ -340,6 +342,8 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     }
     chosen->stage[id] = 0;
     chosen->progress[id] = 0;
+    if (chosen->until >= 0 && farmHire(*chosen))
+        lodgeHand(id, *chosen);                     // (From elsewhere: to the farm's bunkhouse.)
     return chosen;
 }
 

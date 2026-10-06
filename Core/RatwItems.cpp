@@ -240,6 +240,9 @@ Catalog build()
             for (const auto& [item, rate] : basket.fields())
                 if (known(item) && rate.asNumber(0) > 0)
                     c.upkeep[business].push_back({item, rate.asNumber(0)});
+        for (const auto& [item, rate] : crafts.object("farmUpkeep").fields())   // (Under "(farm)": upkeepFor.)
+            if (known(item) && rate.asNumber(0) > 0)
+                c.upkeep["(farm)"].push_back({item, rate.asNumber(0)});
         for (const auto& [business, goods] : crafts.object("buys").fields())
             for (const auto& g : goods.items())
                 if (known(g.asString({})))

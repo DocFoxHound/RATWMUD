@@ -208,6 +208,9 @@ struct EconomyMemory
     // Households (the user, 2026-10-05): who keeps the house in a comfortable one (home -> resident); each home's run of
     // comfortable days (counting up) or poor ones (down); and the poor homes whose stay-at-home members go to work.
     std::map<std::string, std::string> keeper;
+    // Farmhands lodging at a farm's bunkhouse while hired (doc 42, "Farmhands"): resident -> its own home and the last
+    // day of its hire ("cell|x|y|until").
+    std::map<std::string, std::string> lodging;
     std::map<std::string, int> comfort;
     std::set<std::string> toWork;
     // Improvements to a business's premises (position -> level, 0 to MostImprovement), and the weeks in a row each has
@@ -366,6 +369,12 @@ class Society
     // one, their home spot.
     // The world's towns changed (World::setupTowns): what the residents' records keep of their communities is forgotten.
     void forgetPlaces() { ++rosterRevision_; }
+    // Each farm worker's bunkhouse (the world finds them: a room "<site> Bunkhouse" for a worker "... at <site>").
+    static bool farmWork(const std::string& producer);   // A farm, orchard, vineyard, herd or flock (RatwFarmhands.cpp).
+    void setBunkhouses(std::map<std::string, Spot> byWorker)
+    {
+        bunkhouses_ = std::move(byWorker);
+    }
     void setBeds(std::map<std::string, Spot> beds)
     {
         beds_ = std::move(beds);
@@ -478,7 +487,7 @@ class Society
     void tendPrices(std::int64_t day);
     double supplyFactor(const EconomyAccount& seller, const std::string& item) const;
     static constexpr double Markdown = .6, CostFloor = .6;
-    static constexpr int ProduceKept = 10, FoodShelf = 30;
+    static constexpr int ProduceKept = 5, FoodShelf = 30;     // (Keeps 5: doc 42, "Pressure".)
     static constexpr int SmithSwords = 3;
     static constexpr int CheapPrice = 6;              // A shop's goods cost at most this, for now (pennies).
     static constexpr int GoodsKept = 4;               // How many of each good a shop keeps, making more as they sell.
@@ -489,7 +498,7 @@ class Society
     static constexpr int SeasonalStore = 6;         // A seasonal good's store, against an ordinary one (the harvest's).
     // A producer (a farmer, a fisher) keeps at most ProducerKept of each thing it brings in, for the town to buy.
     // Goods fetched from another community cost CartedIn times the price (they come a long way).
-    static constexpr int ProducerKept = 20;
+    static constexpr int ProducerKept = 40;          // (40, not 20: the land sat idle. Doc 42, "Pressure".)
     static constexpr double CartedIn = 1.5;
     // The current grant (SocietyState::craftingStocked): 1 the starter crafts, 2 the workshops (mills, tanneries...), 3
     // masking oil (apothecaries' and perfumers' wormwood and resin, herbalists' wormwood).
@@ -909,6 +918,24 @@ class Society
     std::int64_t businessSpends(const std::string& payer, const std::string& keeper, const Position& job, std::int64_t budget);
     std::map<std::string, std::int64_t> improving_;     // Position -> what has gone into its next improvement (not saved).
     std::map<std::string, std::int64_t> hirePay_;       // Business (its keeper) -> what its hires pay a hand a day (not saved).
+    // Farmhands (doc 42, the user, 2026-10-06): every farm, orchard and vineyard hires hands for a few days when it has the
+    // money, from its town or from any city; one from elsewhere lodges in the farm's bunkhouse (BunkBeds), fed from its
+    // larder, which the farm stocks. A city: a community of CityResidents or more.
+    bool farmHire(const OddJob& j) const;          // A hire posted by a farm (its producer works the land).
+    static constexpr int BunkBeds = 10;
+    static constexpr std::size_t CityResidents = 150;
+    std::map<std::string, Spot> bunkhouses_;
+    std::set<std::string> cities_;
+    void postFarmHires(std::int64_t day);
+    void lodgeHand(const std::string& id, const OddJob& job);
+    void endLodgings(std::int64_t day);
+    void stockBunkhouses(std::int64_t day);
+    // A farm's upkeep (crafts.json `farmUpkeep`): what it wears out a day, bought in its town, the fractions owed.
+    std::unordered_map<std::string, std::map<std::string, double>> upkeepOwed_;
+    // Town wages by takings (the user, 2026-10-06): each treasury's wage scale, so its wage bill is TownWageShare percent
+    // of what it takes in (running averages, daily).
+    std::map<std::string, double> townWageScale_;
+    static constexpr int TownWageShare = 80;
     // Each Restday, every improved business keeps its premises up (the user, 2026-10-05): UpkeepALevel a level a week in
     // materials bought from its town's makers, from its till (or its house). Two weeks without, and it loses a level.
     void keepUpPremises();

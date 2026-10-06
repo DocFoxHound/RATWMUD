@@ -1,4 +1,6 @@
 #include "RatwWorld.h"
+
+#include "RatwItems.h"
 #include "RatwSight.h"
 #include "RatwStep.h"
 
@@ -3323,6 +3325,24 @@ void World::furnishHomes()
         }
     society_.setHomeStores(homeStoreSpots_);
     society_.setBeds(beds_);
+    // Each farm worker's bunkhouse, for its hired hands (doc 42, "Farmhands"): the room "<site> Bunkhouse" for one who
+    // works "... at <site>".
+    std::map<std::string, const Cell*> bunkhouses;
+    for (const auto& [id, c] : cells_)
+        if (c.name.size() > 10 && c.name.compare(c.name.size() - 10, 10, " Bunkhouse") == 0)
+            bunkhouses[c.name.substr(0, c.name.size() - 10)] = &c;
+    std::map<std::string, Spot> byWorker;
+    for (const auto& r : society_.authored().residents)
+        if (const auto* p = items::producerFor(r.workLabel); p && Society::farmWork(p->id))
+            if (const auto at = r.workLabel.rfind(" at "); at != std::string::npos)
+            {
+                // (A work label is cut at 40 letters: the site's name may be the start of the bunkhouse's.)
+                const auto site = r.workLabel.substr(at + 4);
+                if (const auto found = bunkhouses.lower_bound(site);
+                    !site.empty() && found != bunkhouses.end() && found->first.compare(0, site.size(), site) == 0)
+                    byWorker[r.id] = {found->second->id, found->second->width / 2.0, found->second->height / 2.0};
+            }
+    society_.setBunkhouses(std::move(byWorker));
 }
 
 void World::placeBeds(const std::string& cellId)

@@ -685,6 +685,10 @@ Value economyMemory(const EconomyMemory& m)
     for (const auto& [pid, weeks] : m.neglected)
         neglected.add(pid, double(weeks));
     o.add("neglected", neglected);
+    auto lodging = Value::object();
+    for (const auto& [who, home] : m.lodging)
+        lodging.add(who, home);
+    o.add("lodging", lodging);
     o.add("keeper", keeper);
     o.add("comfort", comfort);
     o.add("toWork", toWork);
@@ -727,6 +731,9 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [pid, v] : o.object("neglected").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 100)
             m.neglected[pid] = int(v.asNumber());
+    for (const auto& [who, v] : o.object("lodging").fields())
+        if (v.isString() && v.asString().size() < 256)
+            m.lodging[who] = v.asString();
     return m;
 }
 

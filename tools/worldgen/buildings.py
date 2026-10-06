@@ -574,6 +574,9 @@ WORKS = {  # kind: (size, what fills it)
     # Doc 42's sheep and rabbit farms (worldgen.farms, the user, 2026-10-06).
     'barn': ((18, 11), 'lambing pens of hurdles, a shearing floor, and hay to the rafters'),
     'rabbitry': ((24, 14), 'rows of hutches stacked three high, straw and greens, and a skinning bench by the door'),
+    # Doc 42's plaster works (the user, 2026-10-06): Ser Ferro's, from the mines' quicklime and the farms' fur.
+    'plasterworks': ((20, 12), 'a lime kiln at the back, troughs of slaked lime, bales of combed fur and tubs of plaster '
+                     'by the door'),
 }
 
 # Each new works kind: its stations in order of importance, and how many of each.
@@ -599,6 +602,7 @@ WORKS_STATIONS = {
     'logging_camp': [('workbench', 2)],
     'barn': [],
     'rabbitry': [],
+    'plasterworks': [('lime_kiln', 2), ('mason_banker', 2)],
 }
 # What its keeper is called (towns use it for the work label) and the trade whose skill it uses.
 WORKS_TRADE = {
@@ -609,7 +613,7 @@ WORKS_TRADE = {
     'mill': 'miller', 'arsenal': 'engineer', 'cartwright': 'cartwright', 'weaving_shed': 'weaver',
     'brewery': 'brewer', 'stables': 'horse-dealer', 'dairy': 'dairy keeper', 'press_house': 'vintner',
     'mine_head': 'mine captain', 'fold': 'shepherd', 'bee_shed': 'beekeeper', 'logging_camp': 'logging boss',
-    'barn': 'shepherd', 'rabbitry': 'rabbit keeper',
+    'barn': 'shepherd', 'rabbitry': 'rabbit keeper', 'plasterworks': 'plasterer',
 }
 
 
