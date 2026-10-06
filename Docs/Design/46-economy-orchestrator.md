@@ -818,6 +818,52 @@ town's need less what its fund still holds:
   wage). Channels that pay for work can't reach wolves who don't work, and the living floor is under what posts pay.
   *The user accepted the spread* (open question 9).
 
+## Phase 8: watching and steering (built 2026-10-06)
+
+**Scenarios** (`Data/Economy/scenarios.json`): named bundles of steers a Dungeon Master starts with one click, on a town
+or a holder when the scenario needs one. The Dungeon Master's service expands a scenario into ordinary steers (`economy.steer`
+actions, noted "Scenario: <name>"); the game sees only those.
+
+| Scenario | Needs | Its steers |
+|---|---|---|
+| Hard winter | | Staples ×1.5 everywhere; pressure ×1.5; four weeks |
+| Famine in a town | a town | Its staples ×2; the town weighed ×2.5; the food channel ×2; three weeks |
+| Boom town | a town | Its distress weighed ×0.5; trade and commissions ×2; four weeks |
+| The miser | a holder | The holder spared; pressure ×1.3; four weeks |
+| Squeeze the rich | | Pressure ×2 for a week |
+| Work for all | a town | The town weighed ×1.5; works and hires ×2; two weeks |
+
+- An item of "staples" stands for every plain food (3p or less) and firewood, twelve at most.
+- A channel steer is the land's, not one town's (Part 10).
+
+**The panel** (the Money tab's Orchestrator) shows besides Phase 1's:
+- the residents' and the poorer half's shares, its own pressure and the floor lift;
+- each channel's share of the week's pot, its reach and its learned weight;
+- each town's wage table;
+- the towns' funds (and the land's) and granaries;
+- the holders' week's gain;
+- a form to start a scenario.
+
+`money()` reports `funds`, `landFund` and `granaries`; granaries aren't counted among a town's buyers.
+
+**Seen in the browser** (headless Chromium, `tools/client/browser.mjs`, the built Money tab served by a stub of the
+Dungeon Master's service fed with a 35-day run's real orchestrator output; not yet a live save):
+- Every section draws: the header's shares and pressures, the towns, the holders, where the pot went, the channels'
+  reach and learned weights, the prices, the wage table, the funds, the steers in force, the steer and scenario forms.
+- **Fixed:** hundreds of holders may be *growing*; the panel shows the 20 sending most, with the rest summed.
+- **Fixed, in the game:** shops rounded a price *up* to whole pennies, so a 1p good the orchestrator priced at 1.4p
+  sold for 2p, twice its catalog's (apples, oats, milk, vegetables: every cheap good). Prices now go to the nearest
+  penny, a penny at least (`Society::pennies`), everywhere a town's price becomes pennies.
+
+**Measured after the fix** (35 days, as Phase 7's run):
+
+| | Phase 7 | Phase 8 |
+|---|---|---|
+| Residents' share at the decisions (days 8, 15, 22, 29) | 0.593, 0.585, 0.582, 0.577 | 0.605, 0.599, 0.603, 0.613 |
+| Shop tills, day 35 | 56,161p | 47,057p |
+| Residents' Gini, day 35 | 0.419 | 0.411 |
+| Grown short / broke / starving, day 35 | 3 / 3 / 0 | 1 / 1 / 0 |
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -834,7 +880,7 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
    props and patronage, the capital's share and the trials are removed.
 6. **The rest of the channels** (built, but for opening). Price support, wage support, business rescue, opening.
 7. **Learning reach,** and the granary through the seasons (built).
-8. **Watching and steering:** scenarios, the full DM panel, and a look at the panel in the browser against a real save
+8. **Watching and steering** (built): scenarios, the full DM panel, and a look at the panel in the browser against a real save
    (the user, 2026-10-06: the panel's checks wait for this phase).
 9. **Clean-up:** every replaced rule and its constants removed from the code and from doc 42 (marked superseded there);
    month runs against the targets; balance pass.

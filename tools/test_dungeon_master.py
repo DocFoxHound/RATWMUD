@@ -836,5 +836,81 @@ class MoneyTests(Fixture):
         self.assertEqual(403, raised.exception.status)
 
 
+    def test_funds_and_granaries(self):
+        society = {'accounts': {'fund:greyfen:works': {'cash': 30, 'stock': {}},
+                                'fund:greyfen:price_support': {'cash': 12, 'stock': {}},
+                                'fund:saltreach:food': {'cash': 5, 'stock': {}},
+                                'fund:land': {'cash': 200, 'stock': {}},
+                                'town:greyfen:granary': {'cash': 40, 'stock': {'bread': 10, 'porridge': 4}},
+                                'town:greyfen:watch': {'cash': 9, 'stock': {}}}}
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
+                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 3.5, 'society': society})))
+        money = self.dm.money('dev')
+        self.assertEqual({'greyfen': {'price support': 12, 'works': 30}, 'saltreach': {'food': 5}}, money['funds'])
+        self.assertEqual(200, money['landFund'])
+        self.assertEqual({'greyfen': {'cash': 40, 'goods': 14}}, money['granaries'])
+        self.assertEqual({'watch': 9}, money['towns']['greyfen']['buyers'])          # The granary isn't a buyer.
+
+    def test_the_scenarios(self):
+        scenarios = self.dm.scenarios()
+        listed = json.loads((D.ROOT / 'Data/Economy/scenarios.json').read_text(encoding='utf-8'))['scenarios']
+        self.assertEqual([s['id'] for s in listed], [s['id'] for s in scenarios])
+        self.assertIn('famine', [s['id'] for s in scenarios])
+
+    def test_the_staples(self):
+        staples = self.dm.staples()
+        self.assertLessEqual(len(staples), D.DungeonMaster.STAPLES_MAX)
+        self.assertIn('bread', staples)
+        self.assertIn('firewood', staples)
+        for drink in ('water', 'ale', 'cider'):
+            self.assertNotIn(drink, staples)
+
+    def actions(self, ids):
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            return [r[0] for r in conn.execute('SELECT payload FROM dm.actions WHERE id = ANY(%s) ORDER BY id', (ids,)).fetchall()]
+
+    def test_starting_a_scenario(self):
+        self.save_orchestrator()
+        master = self.sign_in('dm-master')
+        famine = self.dm.start_scenario(master, 'dev', 'famine', town='greyfen')
+        self.assertEqual('famine', famine['scenario'])
+        staples = self.dm.staples()
+        rows = self.actions([q['id'] for q in famine['queued']])
+        self.assertEqual(len(staples) + 2, len(rows))
+        self.assertTrue(all(q['steer'] == f"steer-{q['id']}" for q in famine['queued']))
+        note = 'Scenario: Famine in a town (greyfen)'
+        self.assertEqual([{'kind': 'price', 'target': 'greyfen', 'item': good, 'strength': 2.0, 'days': 21, 'note': note}
+                          for good in staples], rows[:len(staples)])
+        self.assertEqual([{'kind': 'town', 'target': 'greyfen', 'item': '', 'strength': 2.5, 'days': 21, 'note': note},
+                          {'kind': 'channel', 'target': 'food', 'item': '', 'strength': 2.0, 'days': 21, 'note': note}],
+                         rows[len(staples):])
+        miser = self.dm.start_scenario(master, 'dev', 'the_miser', holder='house:fell')
+        note = 'Scenario: The miser (house:fell)'
+        self.assertEqual([{'kind': 'holder', 'target': 'house:fell', 'item': '', 'strength': 0.0, 'days': 28, 'note': note},
+                          {'kind': 'pressure', 'target': '', 'item': '', 'strength': 1.3, 'days': 28, 'note': note}],
+                         self.actions([q['id'] for q in miser['queued']]))
+        winter = self.dm.start_scenario(master, 'dev', 'hard_winter')
+        self.assertEqual(len(staples) + 1, len(winter['queued']))
+        self.assertEqual('*', self.actions([winter['queued'][0]['id']])[0]['target'])
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            before = conn.execute("SELECT count(*) FROM dm.actions WHERE kind = 'economy.steer'").fetchone()[0]
+        for bad in (lambda: self.dm.start_scenario(master, 'dev', 'famine'),
+                    lambda: self.dm.start_scenario(master, 'dev', 'famine', town='nowhere'),
+                    lambda: self.dm.start_scenario(master, 'dev', 'the_miser'),
+                    lambda: self.dm.start_scenario(master, 'dev', 'the_miser', holder='house fell'),
+                    lambda: self.dm.start_scenario(master, 'dev', 'drought'),
+                    lambda: self.dm.start_scenario(master, 'dev', None)):
+            with self.assertRaises(D.DMError):
+                bad()
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.start_scenario(master, 'dev', 'drought')
+        self.assertEqual(404, raised.exception.status)
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.start_scenario(self.sign_in('dm-viewer'), 'dev', 'squeeze_the_rich')
+        self.assertEqual(403, raised.exception.status)
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            self.assertEqual(before, conn.execute("SELECT count(*) FROM dm.actions WHERE kind = 'economy.steer'").fetchone()[0])
+
 if __name__ == '__main__':
     unittest.main()

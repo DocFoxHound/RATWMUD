@@ -475,9 +475,9 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
                                       priceFactor(seller, item);
     const double sells = catalog ? margin() : .55;
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
-    const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(each * .9)))
-                               : buy ? std::max<std::int64_t>(1, std::int64_t(std::ceil(each - 1e-9)))
-                                   : std::max<std::int64_t>(1, std::int64_t(std::floor(each * sells)));
+    const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(double(pennies(each)) * .9)))
+                               : buy ? pennies(each)
+                                   : pennies(each * sells);
     const std::int64_t total = price * quantity;
     if (!buy && held + quantity > cap)
         return {false, "The trader already has enough of those goods.", price, total};

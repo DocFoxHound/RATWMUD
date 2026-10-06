@@ -166,7 +166,7 @@ std::int64_t Society::sellBroughtIn(const std::string& resident, const std::stri
     {
         // At the town's buying price, as a player gets (doc 46, Phase 3: its price times the orchestrator's margin),
         // while it wants more and has the money.
-        const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(shopTown(shop), item))));
+        const std::int64_t price = pennies(buyingPrice(shopTown(shop), item));
         const int room = SuppliesKept - stock(*account(till), item);
         const int count = int(std::min<std::int64_t>({n, room, 99, account(till)->cash / price}));
         if (count > 0 && transfer(resident, till, item, count, price, "brought in and sold"))

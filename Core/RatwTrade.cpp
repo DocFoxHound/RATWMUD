@@ -115,7 +115,7 @@ std::string World::traderOf(const Town& t) const
 std::int64_t World::orderPrice(const Town& from, const std::string& item) const
 {
     // The selling town's price (the economy orchestrator's: doc 46, Phase 3), and the road's markup.
-    return std::max<std::int64_t>(1, std::int64_t(std::ceil(society_.townPrice(from.id, item) * Markup - 1e-9)));
+    return Society::pennies(society_.townPrice(from.id, item) * Markup);
 }
 
 void World::tradeCaravans()
@@ -237,7 +237,7 @@ void World::tradeCaravans()
         int total = 0;
         for (const auto& [item, n] : load)
             if (items::good(item) && from)
-                cost += std::int64_t(std::ceil(society_.townPrice(from->id, item) - 1e-9)) * n, total += n;
+                cost += Society::pennies(society_.townPrice(from->id, item)) * n, total += n;
         const auto trader = traderOf(*from);
         const auto* purse = society_.account(trader);
         if (cost <= 0 || !purse || purse->cash < cost)
@@ -266,7 +266,7 @@ void World::tradeCaravans()
                 {
                     const auto* good = items::good(sort);
                     const int k = std::min({left, spare, Society::stock(*society_.account(holder), sort), 99});
-                    const auto each = std::max<std::int64_t>(1, std::int64_t(std::ceil(society_.townPrice(from->id, sort) - 1e-9)));
+                    const auto each = Society::pennies(society_.townPrice(from->id, sort));
                     if (good && k > 0 && society_.sale(holder, c->account, sort, k, each, "bought for the road"))
                         left -= k, spare -= k, bought += k;
                     if (left <= 0 || spare <= 0)
@@ -277,7 +277,7 @@ void World::tradeCaravans()
         // Rations for the carters and feed for the horses, bought at home and eaten on the way (the trader's cost).
         for (const auto& [item, n] : std::map<std::string, int>{{"bread", 2}, {"hay", 2}})
             for (auto& [holder, spare] : fm.holders[item])
-                if (const auto each = std::max<std::int64_t>(1, std::int64_t(std::ceil(society_.townPrice(from->id, item) - 1e-9)));
+                if (const auto each = Society::pennies(society_.townPrice(from->id, item));
                     items::good(item) && spare >= n && society_.account(c->account)->cash >= each * n &&
                     society_.sale(holder, c->account, item, n, each, "provisions for the road"))
                 {
@@ -412,7 +412,7 @@ void World::tradeCaravanArrived(Caravan& c)
         if (n <= 0 || !good)
             continue;
         // The town's price (the orchestrator's, doc 46), on top of the road's markup: dearer where it is short.
-        const auto price = std::max<std::int64_t>(1, std::int64_t(std::ceil(society_.townPrice(to->id, item) * Markup - 1e-9)));
+        const auto price = Society::pennies(society_.townPrice(to->id, item) * Markup);
         int left = n;
         for (auto& [buyer, want] : market.wanters[base])
         {

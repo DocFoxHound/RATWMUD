@@ -112,7 +112,7 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                     // orchestrator's margin (what the land is paid); carted in from elsewhere, dearer.
                     const auto sellerTown = communityOfResident(seller.id);
                     const double each = seller.kind == 2 ? buyingPrice(sellerTown, sort) : townPrice(sellerTown, sort);
-                    const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::ceil(each * (local ? 1. : CartedIn) - 1e-9)));
+                    const std::int64_t price = pennies(each * (local ? 1. : CartedIn));
                     const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;

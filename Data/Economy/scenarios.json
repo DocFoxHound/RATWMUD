@@ -1,0 +1,67 @@
+{
+  "about": "Scenarios a Dungeon Master can start on the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10 and Phase 8): named bundles of steers. Each steer as in Part 10: kind (pressure, town, holder, channel, price), target, item, strength, days. In a target, $town is the town the Dungeon Master picks and $holder the holder; an item of \"staples\" means every plain food (catalog price 3p or less) and firewood. The Dungeon Master's service expands a scenario into ordinary steers; the game sees only those.",
+  "scenarios": [
+    {
+      "id": "hard_winter",
+      "name": "Hard winter",
+      "about": "Food dearer everywhere and the land pressed harder, for four weeks.",
+      "needs": [],
+      "steers": [
+        {"kind": "price", "target": "*", "item": "staples", "strength": 1.5, "days": 28},
+        {"kind": "pressure", "target": "", "strength": 1.5, "days": 28}
+      ]
+    },
+    {
+      "id": "famine",
+      "name": "Famine in a town",
+      "about": "Food twice as dear in the town; the town favoured, and food bought for its granary, for three weeks.",
+      "needs": ["town"],
+      "steers": [
+        {"kind": "price", "target": "$town", "item": "staples", "strength": 2, "days": 21},
+        {"kind": "town", "target": "$town", "strength": 2.5, "days": 21},
+        {"kind": "channel", "target": "food", "strength": 2, "days": 21}
+      ]
+    },
+    {
+      "id": "boom_town",
+      "name": "Boom town",
+      "about": "The town's makers and farms in demand: trade orders and commissions favoured, its distress weighed down, for four weeks.",
+      "needs": ["town"],
+      "steers": [
+        {"kind": "town", "target": "$town", "strength": 0.5, "days": 28},
+        {"kind": "channel", "target": "trade", "strength": 2, "days": 28},
+        {"kind": "channel", "target": "commissions", "strength": 2, "days": 28}
+      ]
+    },
+    {
+      "id": "the_miser",
+      "name": "The miser",
+      "about": "One holder (a great house, say) spared for four weeks to hoard, and the land pressed harder to make up for it.",
+      "needs": ["holder"],
+      "steers": [
+        {"kind": "holder", "target": "$holder", "strength": 0, "days": 28},
+        {"kind": "pressure", "target": "", "strength": 1.3, "days": 28}
+      ]
+    },
+    {
+      "id": "squeeze_the_rich",
+      "name": "Squeeze the rich",
+      "about": "The land pressed twice as hard for a week.",
+      "needs": [],
+      "steers": [
+        {"kind": "pressure", "target": "", "strength": 2, "days": 7}
+      ]
+    },
+    {
+      "id": "work_for_all",
+      "name": "Work for all",
+      "about": "The town's works and hires favoured, and the town weighed up, for two weeks.",
+      "needs": ["town"],
+      "steers": [
+        {"kind": "town", "target": "$town", "strength": 1.5, "days": 14},
+        {"kind": "channel", "target": "works", "strength": 2, "days": 14},
+        {"kind": "channel", "target": "hires", "strength": 2, "days": 14}
+      ]
+    }
+  ]
+}

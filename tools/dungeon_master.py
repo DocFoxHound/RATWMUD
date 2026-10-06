@@ -41,6 +41,7 @@ import world_store as S
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / 'Editor' / 'dist'
 ACCOUNTS_FILE = ROOT / 'Database' / 'dm-accounts.txt'
+SCENARIOS_FILE = ROOT / 'Data' / 'Economy' / 'scenarios.json'   # The orchestrator's scenarios (doc 46, Part 10).
 DEFAULT_ACCOUNTS = (('dm-admin', 'admin'), ('dm-master', 'dm'), ('dm-viewer', 'viewer'))
 SESSION_HOURS = 12
 MAX_FAILURES, LOCK_MINUTES = 5, 15
@@ -61,7 +62,7 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm',
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
            # Steering the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10).
-           'economy.steer': 'dm', 'economy.unsteer': 'dm',
+           'economy.steer': 'dm', 'economy.unsteer': 'dm', 'economy.scenario': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -432,10 +433,24 @@ class DungeonMaster:
         for town, n in sorted(living.items(), key=lambda kv: -kv[1]):
             if not town or n < 5:
                 continue
-            buyers = {k.split(':')[-1]: v for k, v in accounts.items() if k.startswith(f'town:{town}:') and not k.endswith(':church')}
+            buyers = {k.split(':')[-1]: v for k, v in accounts.items()
+                      if k.startswith(f'town:{town}:') and not k.endswith((':church', ':granary'))}
             # Every town's church keeps one purse, the land's (doc 42, "One church"): 'church' is that purse, the same for all.
             towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get('town:all:church', accounts.get(f'town:{town}:church')),
                            'buyers': buyers, 'condition': ((society.get('memory') or {}).get('condition') or {}).get(town)}
+        # The orchestrator's funds, each town's by channel (fund:<town>:<channel>, '_' for spaces) and the land's
+        # (fund:land), and the towns' granaries (doc 46, Phases 5 and 7).
+        funds = defaultdict(dict)
+        for k, v in accounts.items():
+            if k.startswith('fund:') and k != 'fund:land' and ':' in k[5:]:
+                town, channel = k[5:].rsplit(':', 1)
+                funds[town][channel.replace('_', ' ')] = v
+        granaries = {}
+        for k, a in (society.get('accounts') or {}).items():
+            if k.startswith('town:') and k.endswith(':granary') and len(k) > len('town::granary'):
+                stock = a.get('stock') if isinstance(a.get('stock'), dict) else {}
+                granaries[k[5:-8]] = {'cash': int(a.get('cash', 0)),
+                                      'goods': sum(int(n) for n in stock.values() if isinstance(n, (int, float)))}
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
         purses = sorted(v for k, v in accounts.items() if k in people)
@@ -459,6 +474,8 @@ class DungeonMaster:
                 'tills': {'count': len(tills), 'total': sum(tills.values())}, 'residents': residents, 'road': road,
                 'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-'))),
                 'month': (society.get('books') or {}).get('month'), 'events': events,
+                'funds': {t: dict(sorted(c.items())) for t, c in sorted(funds.items())}, 'landFund': accounts.get('fund:land'),
+                'granaries': dict(sorted(granaries.items())),
                 # The economy orchestrator's last plan (doc 46, Part 9); older saves have none.
                 'orchestrator': society.get('orchestrator') if isinstance(society.get('orchestrator'), dict) else None}
 
@@ -493,10 +510,15 @@ class DungeonMaster:
             return strength == 0 or 1.5 <= strength <= 4
         return (0.5 if kind in ('pressure', 'price') else 0) <= strength <= 3
 
-    def steer_economy(self, who, target, kind, target_id='', item='', strength=1.0, days=7, note=''):
-        """Queues a steer for the economy orchestrator: it changes what the orchestrator weighs from the next day's plan
-        for some days, and the orchestrator still decides. The game names it steer-<action id>."""
-        self.allowed(who, 'economy.steer')
+    def steer_towns(self, target):
+        """The towns a steer may name: the save's towns and the ones only the orchestrator's brief knows."""
+        money = self.money(target)
+        return set(money['towns']) | {t.get('id') for t in (((money.get('orchestrator') or {}).get('brief') or {}).get('towns') or [])
+                                      if isinstance(t, dict)}
+
+    def check_steer(self, target, kind, target_id='', item='', strength=1.0, days=7, note='', towns=None):
+        """Checks a steer and returns its payload and how the audit says it. `towns` (the towns a steer may name) is
+        looked up when needed and not given."""
         if kind not in STEER_KINDS:
             raise DMError('A steer is pressure, town, holder, channel or price.')
         target_id, item = ('' if target_id is None else target_id), ('' if item is None else item)
@@ -532,24 +554,85 @@ class DungeonMaster:
             if kind == 'price' and (not item or len(item) > 60 or not PLAIN_ID.fullmatch(item)):
                 raise DMError('Name the good whose price is shocked.')
             if not (kind == 'price' and target_id == '*'):
-                money = self.money(target)
-                towns = set(money['towns']) | {t.get('id') for t in (((money.get('orchestrator') or {}).get('brief') or {}).get('towns') or [])
-                                               if isinstance(t, dict)}
+                if towns is None:
+                    towns = self.steer_towns(target)
                 if not target_id or target_id not in towns:
                     raise DMError(f'No town called {target_id or "(none)"} in {target.upper()}.', 404)
         payload = {'kind': kind, 'target': target_id, 'item': item, 'strength': strength, 'days': days, 'note': note}
         what = {'pressure': 'pressure on the land', 'town': f'weigh {target_id}', 'holder': f'{"spare" if strength == 0 else "squeeze"} {target_id}',
                 'channel': f'channel {target_id}', 'price': f'price of {item} in {"every town" if target_id == "*" else target_id}'}[kind]
+        return payload, what
+
+    def queue_steer(self, conn, who, target, payload, what):
+        """Queues a checked steer (inside the caller's transaction) and audits it."""
+        target_id, strength, days, note = payload['target'], payload['strength'], payload['days'], payload['note']
+        action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
+                                 VALUES ('economy.steer', %s, %s, %s) RETURNING id''',
+                              (target_id or 'land', json.dumps(payload), who['username'])).fetchone()[0]
+        conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+        self.audit(conn, who['username'], 'economy.steer', target_id or 'land',
+                   f'{target.upper()}: steer the economy, {what} x{strength:g} for {days} day{"s" if days != 1 else ""}'
+                   + (f' — {note}' if note else ''))
+        return {'id': action, 'status': 'queued', 'steer': f'steer-{action}'}
+
+    def steer_economy(self, who, target, kind, target_id='', item='', strength=1.0, days=7, note=''):
+        """Queues a steer for the economy orchestrator: it changes what the orchestrator weighs from the next day's plan
+        for some days, and the orchestrator still decides. The game names it steer-<action id>."""
+        self.allowed(who, 'economy.steer')
+        payload, what = self.check_steer(target, kind, target_id, item, strength, days, note)
         with self.connect(target) as conn:
             with conn.transaction():
-                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
-                                         VALUES ('economy.steer', %s, %s, %s) RETURNING id''',
-                                      (target_id or 'land', json.dumps(payload), who['username'])).fetchone()[0]
-                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
-                self.audit(conn, who['username'], 'economy.steer', target_id or 'land',
-                           f'{target.upper()}: steer the economy, {what} x{strength:g} for {days} day{"s" if days != 1 else ""}'
-                           + (f' — {note}' if note else ''))
-        return {'id': action, 'status': 'queued', 'steer': f'steer-{action}'}
+                return self.queue_steer(conn, who, target, payload, what)
+
+    # -- scenarios: named bundles of steers (doc 46, Part 10 and Phase 8) --------------------------
+    STAPLES_MAX = 12          # A scenario's "staples" names at most this many goods, the cheapest.
+
+    @staticmethod
+    def scenarios():
+        """The scenarios a Dungeon Master can start (Data/Economy/scenarios.json)."""
+        data = json.loads(SCENARIOS_FILE.read_text(encoding='utf-8'))
+        return [s for s in data.get('scenarios', []) if isinstance(s, dict) and s.get('id')]
+
+    @classmethod
+    def staples(cls):
+        """The goods a scenario's "staples" means: every plain food (catalogue price 3p or less, not a drink) and
+        firewood, the cheapest STAPLES_MAX of them (by price, then id)."""
+        items = json.loads((ROOT / 'Data/Items/items.json').read_text(encoding='utf-8'))['items']
+        plain = [(i.get('price', 0), i['id']) for i in items
+                 if isinstance(i.get('food'), dict) and i.get('drink') is not True and not i['food'].get('drink')
+                 and i['food'].get('nourish', 0) > 0 and (i.get('price') or 0) <= 3]
+        plain += [(i.get('price', 0), i['id']) for i in items if i.get('id') == 'firewood']
+        return [item for _, item in sorted(set(plain))[:cls.STAPLES_MAX]]
+
+    def start_scenario(self, who, target, scenario_id, town='', holder=''):
+        """Starts a scenario: expands its steers ($town and $holder named; "staples" one price shock a good) and queues
+        them all, or none if any is wrong."""
+        self.allowed(who, 'economy.scenario')
+        scenario = next((s for s in self.scenarios() if s.get('id') == scenario_id), None)
+        if scenario is None or not isinstance(scenario_id, str):
+            raise DMError(f'No scenario called {scenario_id}.', 404)
+        needs = scenario.get('needs') or []
+        town = (town or '').strip() if isinstance(town, str) else ''
+        holder = (holder or '').strip() if isinstance(holder, str) else ''
+        towns = None
+        if 'town' in needs:
+            towns = self.steer_towns(target)
+            if not town or town not in towns:
+                raise DMError(f'{scenario.get("name", scenario_id)} needs a town: no town called {town or "(none)"} in {target.upper()}.', 404 if town else 422)
+        if 'holder' in needs and (not holder or len(holder) > 120 or not PLAIN_ID.fullmatch(holder)):
+            raise DMError(f'{scenario.get("name", scenario_id)} needs a holder: an account such as house:fell.')
+        note = f'Scenario: {scenario.get("name", scenario_id)}' + (f' ({town})' if 'town' in needs else '') + (f' ({holder})' if 'holder' in needs else '')
+        checked = []
+        for steer in scenario.get('steers') or []:
+            target_id = str(steer.get('target', '')).replace('$town', town).replace('$holder', holder)
+            item = steer.get('item', '') or ''
+            for good in (self.staples() if item == 'staples' else [item]):
+                checked.append(self.check_steer(target, steer.get('kind'), target_id, good, steer.get('strength', 1.0),
+                                                steer.get('days', 7), note, towns))
+        with self.connect(target) as conn:
+            with conn.transaction():
+                queued = [self.queue_steer(conn, who, target, payload, what) for payload, what in checked]
+        return {'scenario': scenario_id, 'queued': queued}
 
     def end_steer(self, who, target, steer_id):
         """Queues the end of a steer before its time."""
@@ -1493,6 +1576,12 @@ def make_server(port=8766, dm=None):
             if method == 'POST' and path == '/api/economy/unsteer':
                 data = self.body()
                 return self.reply(200, dm.end_steer(who, str(data.get('target', 'prod')), data.get('id')))
+            if method == 'GET' and path == '/api/economy/scenarios':
+                return self.reply(200, {'scenarios': dm.scenarios()})
+            if method == 'POST' and path == '/api/economy/scenario':
+                data = self.body()
+                return self.reply(200, dm.start_scenario(who, str(data.get('target', 'prod')), data.get('scenario'),
+                                                         data.get('town', ''), data.get('holder', '')))
             if method == 'GET' and path == '/api/artwork':
                 return self.reply(200, dm.artwork(self.target(query)))
             if method == 'POST' and path == '/api/artwork/review':

@@ -217,7 +217,7 @@ void Society::runChannels(std::int64_t day)
                 {
                     if (n <= ProduceKept || !keeps(item) || spent >= budget)
                         continue;
-                    const auto price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(town, item))));
+                    const auto price = pennies(buyingPrice(town, item));
                     const int k = int(std::min<std::int64_t>({n - ProduceKept, (budget - spent) / price, 99}));
                     if (k > 0 && transfer(till, fund, item, k, price, "orders: food for the granary"))
                     {
@@ -252,7 +252,7 @@ void Society::runChannels(std::int64_t day)
                     const int spare = n - (farm ? ProducerKept / 2 : SuppliesKept / 2);
                     if (spare <= 0 || spent >= budget || !items::good(item))
                         continue;
-                    const auto price = std::max<std::int64_t>(1, std::int64_t(std::floor(farm ? buyingPrice(town, item) : townPrice(town, item))));
+                    const auto price = pennies(farm ? buyingPrice(town, item) : townPrice(town, item));
                     const int k = int(std::min<std::int64_t>({spare, (budget - spent) / price, 99}));
                     if (k > 0 && transfer(till, fund, item, k, price, "orders: bought for trade"))
                     {
@@ -356,7 +356,7 @@ void Society::runChannels(std::int64_t day)
                 const auto* shelves = account(till);
                 if (n <= 0 || !shelves)
                     continue;
-                const auto price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(town, item))));
+                const auto price = pennies(buyingPrice(town, item));
                 const int k = int(std::min<std::int64_t>({n, FoodShelf - stockAll(*shelves, item), shelves->cash / price, 99}));
                 if (k > 0 && transfer(id, till, item, k, price, "from the granary"))
                     shift(id, fund, "", 0, account(id)->cash, "the granary's takings");

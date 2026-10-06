@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -492,6 +493,9 @@ class Society
     // with the orchestrator in shadow or off) goes at the catalog's price; meals and herbs by the town's stores, as before
     // (World::tendPrices). These replace doc 42's markdowns, flush discounts, town food factors, shelf and supply factors.
     double townPrice(const std::string& town, const std::string& item) const;   // Pennies a piece (quality counted).
+    // A price in whole pennies: to the nearest, a penny at least (doc 46, Phase 8: rounded up, a 1p good priced at 1.4p
+    // sold for 2p, twice its catalog's).
+    static std::int64_t pennies(double price) { return std::max<std::int64_t>(1, std::llround(price)); }
     double buyingPrice(const std::string& town, const std::string& item) const { return townPrice(town, item) * margin(); }
     double margin() const { return margin_; }
     double townFactor(const std::string& town, const std::string& item) const;   // townPrice against the catalog's.

@@ -301,7 +301,7 @@ std::int64_t Society::shopPrice(const std::string& shop, const std::string& item
     // The town's price (doc 46, Phase 3): the same at every shop of the town.
     if (!items::good(item))
         return 1;
-    return std::max<std::int64_t>(1, std::int64_t(std::ceil(townPrice(shopTown(shop), item) - 1e-9)));
+    return pennies(townPrice(shopTown(shop), item));
 }
 
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking)
@@ -945,7 +945,7 @@ void Society::producersSell(std::int64_t day)
                 if (!shelves)
                     continue;
                 // At the town's buying price: its price times the orchestrator's margin (doc 46, Phase 3).
-                const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(buyingPrice(shops->first, item))));
+                const std::int64_t price = pennies(buyingPrice(shops->first, item));
                 const int count = int(std::min<std::int64_t>({left, FoodShelf - stockAll(*shelves, item), 99, spendable(till) / price}));
                 if (count > 0 && transfer(farm, till, item, count, price, "brought in and sold"))
                     left -= count;
