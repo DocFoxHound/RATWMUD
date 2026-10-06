@@ -44,14 +44,15 @@ World::Market World::marketOf(const std::string& town) const
         ++m.people;
         if (const auto* p = items::producerFor(r.workLabel))
         {
-            const auto* purse = society_.account(r.id);
+            const auto farm = society_.tillOf(r.id);   // (Its yield is its till's: doc 46, Phase 2.)
+            const auto* purse = society_.account(farm);
             if (!purse)
                 continue;
             for (const auto& [item, n] : p->out)
                 if (const int held = Society::stockAll(*purse, item); held > 0)
                 {
                     m.spare[item] += held;
-                    m.holders[item].push_back({r.id, held});
+                    m.holders[item].push_back({farm, held});
                 }
             continue;
         }

@@ -2433,8 +2433,18 @@ void World::recordEvent(WorldEvent event)
     }
 }
 
-void World::bondsFromEvent(const WorldEvent& e)
+void World::bondsFromEvent(const WorldEvent& given)
 {
+    // A shop's till (doc 46, Phase 2) deals for its keeper: a sale to it, or a wage from it, is the keeper's dealing.
+    const auto keeperOf = [&](const std::string& id) {
+        if (given.kind != "economy" || id.rfind("till:", 0) != 0)
+            return id;
+        const auto held = society_.state().careers.positions.find(id.substr(5));
+        return held != society_.state().careers.positions.end() && !held->second.holder.empty() ? held->second.holder : id;
+    };
+    WorldEvent e = given;
+    e.actor = keeperOf(given.actor);
+    e.target = keeperOf(given.target);
     // Only between living characters: the treasury, "outside", the herb patch and the dead have no feelings.
     const auto* actor = entity(e.actor);
     const auto* target = entity(e.target);

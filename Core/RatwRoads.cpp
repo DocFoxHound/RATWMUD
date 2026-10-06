@@ -358,13 +358,24 @@ void World::contractsFromEvent(const WorldEvent& e)
     {
         if (c.kind != "supply" || c.status != "taken" || c.taker != e.target)
             continue;
-        const auto* merchant = entity(e.actor);
-        const auto* job = society_.jobOf(e.actor);
+        // (Sold to a shop's till since doc 46's Phase 2: the shop is its position, the merchant its keeper.)
+        std::string keeper = e.actor;
+        const Position* job = nullptr;
+        if (e.actor.rfind("till:", 0) == 0)
+        {
+            job = society_.position(e.actor.substr(5));
+            const auto held = society_.state().careers.positions.find(e.actor.substr(5));
+            keeper = held != society_.state().careers.positions.end() ? held->second.holder : std::string();
+        }
+        else
+            job = society_.jobOf(e.actor);
+        const auto* merchant = entity(keeper);
         const auto* town = job ? townOf(job->work.cell) : merchant ? townOf(merchant->cellId) : nullptr;
         if (town && town->id == c.town)
         {
             settleContract(c, "done", c.taker);
-            bonds_.change(e.actor, c.taker, {2, 3, 1, 0, 1}, calendarDays_);
+            if (!keeper.empty())
+                bonds_.change(keeper, c.taker, {2, 3, 1, 0, 1}, calendarDays_);
         }
     }
 }

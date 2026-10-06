@@ -548,6 +548,7 @@ class World
     {
         parallel_ = std::move(run);
         society_.setParallel(parallel_);            // (The residents decide on it too.)
+        society_.setOrchestratorThread(bool(parallel_));   // (And the economy orchestrator plans on a thread of its own.)
     }
     // observe() for several observers at once (on the parallel runner): each writes only its own memory and view.
     void observeAll(const std::vector<std::string>& observerIds);

@@ -41,6 +41,8 @@ std::int64_t Society::wealthLine(const std::string& id) const
 {
     if (id.rfind("house:", 0) == 0)
         return houseFloor(id);
+    if (id.rfind("till:", 0) == 0)
+        return 2 * floatOf(id.substr(5));            // (An owner-run business's till: two floats, doc 46.)
     // (TRIAL tithe_relative: the line is at least twice the land's median purse, so a richer land isn't all tithed.)
     const std::int64_t living = std::max<std::int64_t>(MonthDays * FoodADay, trial("tithe_relative") ? 2 * landMedian_ : 0);
     if (const auto* job = jobOf(id); job && job->role == "merchant" && tillOf(id) == id)
@@ -87,6 +89,7 @@ void Society::reckon(std::int64_t day, bool force)
     const auto month = day / ReckonDays;             // (books.month counts reckonings: weeks now.)
     if (books.month >= 0 && (month > books.month || force))
     {
+        reckonedDay_ = day;                          // (The economy orchestrator decides that evening: doc 46.)
         if (force || day % MonthDays < ReckonDays)
             collectRents();                             // A month's ground rents to the great houses first (doc 42, 5b).
         std::map<std::string, Reckoning> towns;
@@ -97,6 +100,11 @@ void Society::reckon(std::int64_t day, bool force)
         for (const auto& h : houses())
             if (account(h.id))
                 payers.push_back({h.id, treasuryOf(h.community)});
+        // And every owner-run business's till (doc 46, Phase 2), where it works.
+        for (const auto& p : positions_)
+            if (const auto till = ownTill(p.id); !till.empty())
+                payers.push_back({till, treasuryOf(communityOfResident(p.founder))});
+        std::map<std::string, std::int64_t> tillProfits;   // What each owner-run till made, after its tax and tithe.
         for (const auto& [id, treasury] : payers)
         {
             const auto start = books.start.find(id);
@@ -122,7 +130,10 @@ void Society::reckon(std::int64_t day, bool force)
             town.tax += paid ? tax : 0;
             town.tithes += tithed ? tithe : 0;
             town.payers += paid || tithed;
+            if (id.rfind("till:", 0) == 0)
+                tillProfits[id] = profit - (paid ? tax : 0) - (tithed ? tithe : 0);
         }
+        ownersShare(tillProfits);                   // Its keeper's share of what the business made (RatwTills.cpp).
         // The towns send the capital a tenth of what they took in.
         for (auto& [treasury, town] : towns)
             if (treasury != "treasury" && town.tax >= CapitalShare && shift(treasury, "treasury", "", 0, town.tax / CapitalShare, "capital's share"))
@@ -174,6 +185,9 @@ void Society::reckon(std::int64_t day, bool force)
         open(id);
     for (const auto& h : houses())
         open(h.id);
+    for (const auto& p : positions_)
+        if (const auto till = ownTill(p.id); !till.empty())
+            open(till);
 }
 
 std::vector<Society::Reckoning> Society::takeReckonings()

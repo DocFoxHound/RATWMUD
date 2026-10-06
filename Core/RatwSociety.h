@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 #include "RatwAppearance.h"
+#include "RatwOrchestrator.h"
 
 namespace ratw
 {
@@ -205,6 +206,7 @@ struct EconomyMemory
     std::map<std::string, double> outgoing;         // Collector -> a slow average of its days' spending.
     std::map<std::string, double> condition;        // Community -> its buildings' repair, 0 to 100 (the Town Works).
     int purses = 0;                                 // The grant of starting money the world has had (Society::PursesFounded).
+    int tills = 0;                                  // Owner-run businesses have tills of their own (Society::TillsFounded, doc 46).
     // Households (the user, 2026-10-05): who keeps the house in a comfortable one (home -> resident); each home's run of
     // comfortable days (counting up) or poor ones (down); and the poor homes whose stay-at-home members go to work.
     std::map<std::string, std::string> keeper;
@@ -235,6 +237,7 @@ struct SocietyState
     MonthBooks books;
     HouseState houses;
     EconomyMemory memory;
+    orchestra::State orchestrator;                  // The economy orchestrator's memory, steers and last brief (doc 46).
 };
 struct EconomyResult
 {
@@ -513,6 +516,27 @@ class Society
     static int shutAhead(std::int64_t today);       // Days from tomorrow the shops aren't properly open (Restday, a festival).
     static int startingLarderDays(const std::string& homeCell);
     static const char* itemName(const std::string& id);
+    // The economy orchestrator (Docs/Design/46-economy-orchestrator.md; RatwOrchestrate.cpp). Once a game day, at
+    // SnapshotHour, the society copies what the orchestrator reads (purses, food, work, prices, what each holder spent
+    // since yesterday, the Dungeon Master's steers) and hands it to the orchestrator's thread; when the day turns, before
+    // the day's pass, it takes the brief (waiting for it if need be), so a run repeats exactly. It measures every day and
+    // acts once a week (the user, 2026-10-06): the evening of the weekly reckoning, after the taxes and tithes, the brief
+    // also holds the week's decisions. Phase 1 (shadow): the briefs are kept and shown, and nothing in them is applied.
+    static constexpr double SnapshotHour = 23;
+    // Whether the orchestrator plans on a thread of its own (the world's runner turns it on with its threads); off, it
+    // plans on the game thread when the day turns: the same brief either way.
+    void setOrchestratorThread(bool threaded);
+    const orchestra::State& orchestrator() const { return state_.orchestrator; }
+    // The dials (Data/Economy/orchestrator.json, read once; RATW_ORCHESTRATOR=off|shadow overrides the mode), or a test's.
+    const orchestra::Dials& orchestratorDials() const;
+    void setOrchestratorDials(const orchestra::Dials& dials) { dialsOverride_ = std::make_shared<orchestra::Dials>(dials); }
+    // Every brief planned since the last call, in full (econ_watch); kept only while someone takes them.
+    std::vector<orchestra::Brief> takeBriefs();
+    void keepBriefs(bool keep) { keepBriefs_ = keep; }
+    // A Dungeon Master's steer (doc 46, Part 10), in force from tomorrow for `days` days; `id` names it ("steer-<n>" if
+    // empty). Steers are saved, and end by themselves.
+    EconomyResult steer(orchestra::Steer steer, int days);
+    bool unsteer(const std::string& id);
     std::int64_t moneySupply() const;
     bool conserved() const;
     // Every ledger entry recorded since the last call, oldest first (the saved ledger keeps only the latest 128).
@@ -835,6 +859,20 @@ class Society
     // Once a game day: the managers' wages, the takings above each till's float to its house, a struggling till propped
     // up, and a business that keeps losing sold to another house. Gives the houses their businesses the first time.
     void tendHouses(std::int64_t day);
+    // Every business its own till (doc 46, Phase 2; RatwTills.cpp): an owner-run shop, workshop, farm or site keeps
+    // "till:<position>" apart from its keeper's purse, as a house's business does (tillOf finds either). Its keeper draws
+    // OwnerWage a day from it (what it can spare above half its float) and, at the reckoning, an OwnersShare-th of the
+    // week's profit after the till's tax and tithe. Founded when a world first runs (an older save: the first time it runs
+    // with tills): its keepers move their shop's goods and money (all but a month's living) into it once (TillsFounded).
+    // A great house that takes a business on later (foundHouses, a sale) takes its till with it.
+    static constexpr std::int64_t OwnerWage = ManagerWage;
+    static constexpr int OwnersShare = 3, TillsFounded = 1;
+    bool ownsTill(const Position& p) const;         // A business that keeps a till of its own (not a house's).
+    void indexTills();                              // tills_ from the accounts (a reset, a restore).
+    std::string ownTill(const std::string& positionId) const;   // Its till ("" for none, or a house's business).
+    void foundTills();
+    void tendTills(std::int64_t day);               // Daily: the keepers' wages, and (until doc 46, Phase 5) surplus spending.
+    void ownersShare(const std::map<std::string, std::int64_t>& profits);   // At the reckoning: till -> its week's profit.
     // A business changes hands (the Dungeon Master, or a sale): to `house`, for `price` from it to the old owner.
     bool sellBusiness(const std::string& positionId, const std::string& house, std::int64_t price);
     // The rule against hoarding (doc 42; RatwSurplus.cpp): once a game day, each town treasury, church and great house
@@ -990,6 +1028,41 @@ class Society
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.
     std::map<std::string, double> owed_;                   // "account|item" -> a buyer's use not yet taken from stock.
+    // The orchestrator's side of the society (RatwOrchestrate.cpp): its runner, the day the last snapshot was for, and
+    // what it counts between snapshots (each holder's ordinary spending, coins between towns, what residents earn).
+    // (A copy of the society, a candidate checked before it is used, plans on its own: never on this one's thread.)
+    struct RunnerSlot
+    {
+        std::shared_ptr<orchestra::Runner> runner;
+        RunnerSlot() = default;
+        RunnerSlot(const RunnerSlot&) {}
+        RunnerSlot& operator=(const RunnerSlot&) { return *this; }
+        RunnerSlot(RunnerSlot&&) = default;
+        RunnerSlot& operator=(RunnerSlot&&) = default;
+        orchestra::Runner* operator->() const { return runner.get(); }
+        explicit operator bool() const { return bool(runner); }
+    };
+    RunnerSlot orchestraRunner_;
+    std::unordered_map<std::string, std::string> tills_;   // Position -> its business's till ("till:<position>"), for tillOf.
+    bool orchestraThreaded_ = false, keepBriefs_ = false;
+    std::shared_ptr<const orchestra::Dials> dialsOverride_;
+    std::int64_t snapshotDay_ = -1, countingFrom_ = -1;   // (countingFrom_: the day counting began.)
+    std::int64_t reckonedDay_ = -1;                  // The day of the last weekly reckoning (taxes and tithes).
+    std::unordered_map<std::string, std::string> accountTown_;   // Account -> its town, for the coins between towns.
+    std::unordered_map<std::string, std::int64_t> holderSpent_;  // Holder -> its ordinary outgoings since the snapshot.
+    std::map<std::string, std::pair<std::int64_t, std::int64_t>> townFlow_;   // Town -> coins in, out.
+    struct Earned
+    {
+        std::int64_t day[7] = {-1, -1, -1, -1, -1, -1, -1}, coins[7] = {};
+    };
+    std::unordered_map<std::string, Earned> earned_;             // Resident -> what it earned on each of the last 7 days.
+    std::vector<orchestra::Brief> briefs_;
+    bool orchestrating() const;
+    void forgetOrchestra();                          // A new or restored society: no snapshot taken, nothing counted.
+    bool wantsSnapshot(double absoluteDay) const;
+    void orchestrate(double absoluteDay, const std::map<std::string, LifeBody>& bodies);
+    orchestra::Snapshot orchestraSnapshot(std::int64_t forDay, const std::map<std::string, LifeBody>& bodies);
+    void noteForOrchestra(const std::string& kind, const std::string& from, const std::string& to, std::int64_t coins);
     void record(const std::string& kind, const std::string& from, const std::string& to,
                 const std::string& item, int quantity, std::int64_t coins);
     bool transfer(const std::string& seller, const std::string& buyer, const std::string& item,

@@ -32,7 +32,8 @@ std::int64_t Society::spendable(const std::string& id) const
     if (!purse)
         return 0;
     const auto* r = state_.residents.count(id) ? spec(id) : nullptr;
-    return r && r->role == "merchant" ? std::max<std::int64_t>(0, purse->cash - KeeperReserve) : purse->cash;
+    // (Only a keeper whose purse is its shop's till keeps back its food money: one with a till of its own spends its own.)
+    return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - KeeperReserve) : purse->cash;
 }
 
 void Society::startingMoney(const std::string& id, std::int64_t coins)

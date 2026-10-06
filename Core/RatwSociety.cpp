@@ -60,6 +60,8 @@ void Society::reset(Roster roster)
 {
     roster_ = roster;
     state_ = {};
+    tills_.clear();
+    forgetOrchestra();
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
@@ -326,6 +328,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
     noteIncoming(to, kind, coins);
+    noteForOrchestra(kind, from, to, coins);           // What the economy orchestrator counts (RatwOrchestrate.cpp).
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
     if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
                       kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||
@@ -557,7 +560,8 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
     if (!decidesWithin(seconds))
         return false;
     return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % UnseenStep == 0 ||
-           std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < 1 || state_.books.month < 0;
+           std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < 1 || state_.books.month < 0 ||
+           wantsSnapshot(absoluteDay);                 // (The orchestrator's snapshot: everyone, doc 46.)
 }
 
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
@@ -565,6 +569,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
     season_ = season;
     unseenDecided_ = ++secondsDecided_ % UnseenStep == 0;
     const auto day = std::int64_t(std::floor(absoluteDay));
+    orchestrate(absoluteDay, bodies);                  // The economy orchestrator's brief and snapshot (doc 46).
     if (day > state_.budgetDay)
     {
         // Missed days do not accumulate unbounded grants, orders or harvests.
@@ -591,6 +596,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             record("carter delivery", "outside", "treasury", "", 0, 0);
             reckon(day);                               // The month's tax and tithes, when one is due (RatwReckoning.cpp).
             tendHouses(day);                           // Great houses' businesses: wages, takings, props (RatwHouses.cpp).
+            tendTills(day);                            // Owner-run businesses' tills: their keepers' wages (RatwTills.cpp).
             spendSurpluses(day);                       // What the treasuries, churches and houses hold above need goes back out.
             householdShopping(day, season, bodies);    // Each household's errands for the day (RatwDemand.cpp).
             tendHouseholds(day, bodies);               // The household purse, and who keeps the house (RatwHouseholds.cpp).
@@ -602,6 +608,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             worldMoney(bodies);                        // The world's money made up, once (RatwFounding.cpp).
         }
     }
+    if (roster_ == Roster::Authored && state_.memory.tills < TillsFounded)
+        foundTills();                                  // Every business its own till, once (RatwTills.cpp, doc 46).
     if (roster_ == Roster::Authored && state_.memory.purses < 1)
         foundPurses(bodies);                           // Everyone's starting money, once (RatwFounding.cpp).
     if (roster_ == Roster::Authored && state_.books.month < 0)
@@ -1085,6 +1093,8 @@ bool Society::restore(const SocietyState& saved)
                 s.residents.at(life.first).role != life.second.role)
                 return false;
     state_ = s;
+    indexTills();
+    forgetOrchestra();
     roster_ = roster;
     for (auto& life : state_.residents)
         if (roster_ == Roster::Demo) defaultHome(life.first, life.second);

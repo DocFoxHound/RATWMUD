@@ -921,7 +921,8 @@ void Society::producersSell(std::int64_t day)
         if (!state_.residents.count(r.id) || !items::producerFor(r.workLabel))
             continue;
         const auto shops = shopsOf.find(communityOfResident(r.id));
-        const auto* purse = account(r.id);
+        const auto farm = tillOf(r.id);                 // (Its yield is its till's: doc 46, Phase 2.)
+        const auto* purse = account(farm);
         if (shops == shopsOf.end() || shops->second.empty() || !purse)
             continue;
         const std::vector<std::pair<std::string, int>> held(purse->stock.begin(), purse->stock.end());
@@ -943,7 +944,7 @@ void Society::producersSell(std::int64_t day)
                 const auto m = markdown_.count(till) ? markdown_.at(till) : 1.;
                 const std::int64_t price = std::max<std::int64_t>(1, std::int64_t(std::floor(good->price * .55 * m * std::min(1., supplyFactor(*purse, item)))));   // (A glut only.)
                 const int count = int(std::min<std::int64_t>({left, FoodShelf - stockAll(*shelves, item), 99, spendable(till) / price}));
-                if (count > 0 && transfer(r.id, till, item, count, price, "brought in and sold"))
+                if (count > 0 && transfer(farm, till, item, count, price, "brought in and sold"))
                     left -= count;
             }
         }
@@ -960,6 +961,7 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
         if (r.role == "merchant" && state_.residents.count(r.id))
             shopsOf[communityOfResident(r.id)].push_back(r.id);
     const auto buy = [&](const std::string& who, const std::string& item, const std::string& kind) {
+        const auto payer = tillOf(who);             // (A farm's tools and upkeep come out of its till: doc 46, Phase 2.)
         const auto shops = shopsOf.find(communityOfResident(who));
         if (shops == shopsOf.end())
             return false;
@@ -972,9 +974,9 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
             for (const auto& sort : kindsHeld(*account(till), item))
             {
                 const auto* good = items::good(sort);
-                if (good && transfer(till, who, sort, 1, std::max(1, good->price), kind))
+                if (good && transfer(till, payer, sort, 1, std::max(1, good->price), kind))
                 {
-                    consume(who, sort, 1, "worn out at work");
+                    consume(payer, sort, 1, "worn out at work");
                     return true;
                 }
             }

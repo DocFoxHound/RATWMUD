@@ -91,7 +91,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             : tab === 'factions' ? <FactionsTab me={me} target={target} key={target} />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : tab === 'health' ? <HealthTab target={target} key={target} />
-            : tab === 'money' ? <MoneyTab target={target} key={target} />
+            : tab === 'money' ? <MoneyTab target={target} key={target} me={me} />
             : current.ready ? <PlayersTab me={me} target={target} key={target} />
             : <div className="dm-center"><div className="empty-sheet"><h2>{current.icon} {current.label}</h2><p>{current.blurb}</p></div></div>}
     </div>;

@@ -3,12 +3,11 @@
 // richest tenth and how many are short of a day's food money; money on the road; and the latest reckonings, surplus
 // spending, trade caravans and sermons.
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Money, type Target} from './api';
+import {dmApi, type Me, type Money, type Target} from './api';
+import {OrchestratorPanel, p, title} from './OrchestratorPanel';
 
-const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
-const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
-export function MoneyTab({target}: {target: Target}) {
+/** `me` is optional: without it the Orchestrator panel asks the host who is signed in. */
+export function MoneyTab({target, me}: {target: Target; me?: Me}) {
     const [data, setData] = useState<Money | null>(null);
     const [problem, setProblem] = useState('');
     const load = useCallback(() => dmApi.money(target).then(d => { setData(d); setProblem(''); })
@@ -22,6 +21,7 @@ export function MoneyTab({target}: {target: Target}) {
             <button onClick={() => void load()}>Refresh</button>
         </div>
         {problem && <p className="error">{problem}</p>}
+        {data && <OrchestratorPanel money={data} target={target} me={me} onChanged={() => void load()} />}
         {data && <div className="dm-health-tables">
             <div>
                 <h3>Towns</h3>
@@ -49,7 +49,7 @@ export function MoneyTab({target}: {target: Target}) {
                 <h3>Great houses</h3>
                 <table className="dm-table"><tbody>
                     {data.houses.map(h => <tr key={h.id}><td>{title(h.id)}</td><td className="num">{p(h.cash)}</td></tr>)}
-                    <tr><td>Their businesses' tills ({data.tills.count})</td><td className="num">{p(data.tills.total)}</td></tr>
+                    <tr><td title="Every business keeps a till of its own (doc 46): the houses' and the owner-run shops' and farms'">Businesses' tills, all ({data.tills.count})</td><td className="num">{p(data.tills.total)}</td></tr>
                 </tbody></table>
                 <h3>On the road and elsewhere</h3>
                 <table className="dm-table"><tbody>

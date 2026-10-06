@@ -554,7 +554,8 @@ void Society::spendSurpluses(std::int64_t day)
     for (const auto& r : authored_.residents)
     {
         const auto* job = state_.residents.count(r.id) ? jobOf(r.id) : nullptr;
-        const auto* purse = job && items::producerFor(job->title) ? account(r.id) : nullptr;
+        // (Only one without a till of its own: a farm's till spends above its floats, RatwTills.cpp.)
+        const auto* purse = job && items::producerFor(job->title) && tillOf(r.id) == r.id ? account(r.id) : nullptr;
         if (purse && purse->cash > 300)
             businessSpends(r.id, r.id, *job, (purse->cash - 300) / SurplusShare);
     }

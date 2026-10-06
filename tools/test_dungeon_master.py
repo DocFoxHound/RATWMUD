@@ -743,6 +743,97 @@ class MoneyTests(Fixture):
         self.assertEqual(7, money['road']['caravans'])
         self.assertEqual((1, 1), (money['residents']['count'], money['residents']['shortOfFood']))
         self.assertEqual(['reckoning'], [e['kind'] for e in money['events']])
+        self.assertIsNone(money['orchestrator'])                                  # Older saves have none.
+
+    ORCHESTRATOR = {'mode': 'shadow', 'day': 12,
+                    'steers': [{'id': 'steer-17', 'kind': 'pressure', 'target': '', 'item': '', 'strength': 2.0,
+                                'from': 12, 'until': 19, 'note': 'why', 'by': 'dm-master'}],
+                    'memory': {}, 'brief': {'day': 12, 'landDistress': 0.12, 'pot': 3200,
+                                            'towns': [{'id': 'saltreach', 'people': 40, 'distress': 0.2, 'kind': 'no work'}],
+                                            'holders': [], 'orders': [], 'prices': []}}
+
+    def save_orchestrator(self):
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
+                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 12.5,
+                                                 'society': {'accounts': {}, 'orchestrator': self.ORCHESTRATOR}})))
+
+    def test_the_orchestrators_last_plan(self):
+        self.save_orchestrator()
+        self.assertEqual(self.ORCHESTRATOR, self.dm.money('dev')['orchestrator'])
+
+    def test_steering_the_orchestrator(self):
+        self.save_orchestrator()
+        master = self.sign_in('dm-master')
+        queued = [self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7, 'Squeeze the rich.'),
+                  self.dm.steer_economy(master, 'dev', 'town', 'greyfen', '', 1.5, 14),
+                  self.dm.steer_economy(master, 'dev', 'town', 'saltreach', '', 0, 1),      # A town only the brief knows.
+                  self.dm.steer_economy(master, 'dev', 'holder', 'house:fell', '', 0, 28, 'Saving for a war.'),
+                  self.dm.steer_economy(master, 'dev', 'channel', 'rescue', '', 0, 28),
+                  self.dm.steer_economy(master, 'dev', 'price', '*', 'bread', 2.5, 56)]
+        self.assertEqual(f"steer-{queued[0]['id']}", queued[0]['steer'])
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            rows = conn.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions WHERE id = ANY(%s) ORDER BY id',
+                                ([q['id'] for q in queued],)).fetchall()
+            audited = conn.execute("SELECT count(*) FROM dm.audit WHERE action = 'economy.steer'").fetchone()[0]
+        steer = lambda kind, target, item, strength, days, note='': {'kind': kind, 'target': target, 'item': item,
+                                                                     'strength': strength, 'days': days, 'note': note}
+        self.assertEqual([('economy.steer', 'land', steer('pressure', '', '', 2.0, 7, 'Squeeze the rich.'), 'dm-master'),
+                          ('economy.steer', 'greyfen', steer('town', 'greyfen', '', 1.5, 14), 'dm-master'),
+                          ('economy.steer', 'saltreach', steer('town', 'saltreach', '', 0.0, 1), 'dm-master'),
+                          ('economy.steer', 'house:fell', steer('holder', 'house:fell', '', 0.0, 28, 'Saving for a war.'), 'dm-master'),
+                          ('economy.steer', 'rescue', steer('channel', 'rescue', '', 0.0, 28), 'dm-master'),
+                          ('economy.steer', '*', steer('price', '*', 'bread', 2.5, 56), 'dm-master')], rows)
+        self.assertEqual(6, audited)
+        for bad in (lambda: self.dm.steer_economy(master, 'dev', 'drought', '', '', 1, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 0.4, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 3.5, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', True, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', '2', 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', float('nan'), 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', 'greyfen', '', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', 'bread', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 0),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 57),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7.0),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, True),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7, 'x' * 201),
+                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7, 'a\nb'),
+                    lambda: self.dm.steer_economy(master, 'dev', 'town', 'nowhere', '', 1, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'town', '*', '', 1, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'town', '', '', 1, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'town', 'greyfen', '', 3.5, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'holder', '', '', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house:' + 'f' * 120, '', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house fell', '', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house:fell', '', 1, 7),     # Neither spared nor squeezed.
+                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house:fell', '', 4.5, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'channel', 'bribes', '', 1, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'channel', 'works', '', 3.5, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'price', 'greyfen', '', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'price', 'greyfen', 'b' * 61, 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'price', 'nowhere', 'bread', 2, 7),
+                    lambda: self.dm.steer_economy(master, 'dev', 'price', '*', 'bread', 0.4, 7)):
+            with self.assertRaises(D.DMError):
+                bad()
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            self.assertEqual(6, conn.execute("SELECT count(*) FROM dm.actions WHERE kind = 'economy.steer'").fetchone()[0])
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.steer_economy(self.sign_in('dm-viewer'), 'dev', 'pressure', '', '', 2, 7)
+        self.assertEqual(403, raised.exception.status)
+
+    def test_ending_a_steer(self):
+        master = self.sign_in('dm-master')
+        queued = self.dm.end_steer(master, 'dev', 'steer-17')
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
+            row = conn.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(('economy.unsteer', 'steer-17', {}, 'dm-master'), row)
+        for bad in ('steer-', 'steer-x', '17', 'steer-17 ', 'steer-17\n', None, 17):
+            with self.assertRaises(D.DMError):
+                self.dm.end_steer(master, 'dev', bad)
+        with self.assertRaises(D.DMError) as raised:
+            self.dm.end_steer(self.sign_in('dm-viewer'), 'dev', 'steer-17')
+        self.assertEqual(403, raised.exception.status)
 
 
 if __name__ == '__main__':

@@ -108,6 +108,7 @@ void Society::resetAuthored()
         stockMaterials(r.id);                       // What the makers make things from, and the suppliers sell them.
     state_.craftingStocked = CraftingStock;
     defaultCareers();
+    foundTills();                                   // Every business its own till (RatwTills.cpp, doc 46).
 }
 
 bool Society::adoptResident(const Society& from, const std::string& id)
@@ -900,7 +901,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (state_.memory.unpaidSince.count(id) && job->title != LabourTitle)
             {
                 const auto payer = payerOf(id, *job, body.age);
-                const auto* boss = spec(payer.account);
+                // (A shop pays from its till: the one owed is its keeper, doc 46.)
+                const auto held = payer.account.rfind("till:", 0) == 0 ? state_.careers.positions.find(payer.account.substr(5))
+                                                                         : state_.careers.positions.end();
+                const auto* boss = spec(held != state_.careers.positions.end() ? held->second.holder : payer.account);
                 reason = "Waiting on wages from " + (boss ? boss->name : payer.whom) + ".";
             }
         }

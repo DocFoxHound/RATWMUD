@@ -834,6 +834,36 @@ void Game::applyDmActions(double dt)
                     if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
                         system(c, "Word goes round: " + outcome.message);
         }
+        else if (kind == "economy.steer" || kind == "economy.unsteer")
+        {
+            // A Dungeon Master's steer on the economy orchestrator (doc 46, Part 10): payload {"kind", "target", "item",
+            // "strength", "days", "note"}; its id is "steer-<the action's id>". Unsteer: the target is the steer's id.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            auto& society = world_.society();
+            if (kind == "economy.unsteer")
+                outcome = society.unsteer(target) ? Result{true, "The steer has ended.", target} : Result{false, "No such steer in force.", target};
+            else if (!payload.isObject())
+                outcome = {false, "The steer can't be read.", {}};
+            else
+            {
+                orchestra::Steer steer;
+                steer.id = "steer-" + *row[0];
+                steer.kind = payload.string("kind");
+                steer.target = payload.string("target");
+                steer.item = payload.string("item");
+                steer.strength = payload.number("strength", 1);
+                steer.note = payload.string("note");
+                steer.by = row[3] ? *row[3] : std::string();
+                const auto days = int(std::clamp(payload.number("days", 7), 0., 1000.));
+                const auto done = society.steer(steer, days);
+                outcome = {done.ok, done.ok ? "Steer " + steer.id + " set. " + done.message : done.message, steer.id};
+            }
+            if (outcome.ok)
+                saveSoon();
+        }
         else if (kind == "npc.kill" || kind == "npc.revive")
         {
             const auto* npc = world_.entity(target);

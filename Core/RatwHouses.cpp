@@ -50,13 +50,13 @@ std::string Society::ownerOf(const std::string& positionId) const
 
 std::string Society::tillOf(const std::string& keeper) const
 {
-    if (state_.houses.owner.empty())
-        return keeper;
+    // A business's till: a great house's (doc 42, Phase 5b) or, since doc 46's Phase 2, its own; the keeper's purse for one
+    // that has none (an older save not yet run with tills, a test's village).
     const auto* job = jobOf(keeper);
-    if (!job || !state_.houses.owner.count(job->id))
+    if (!job)
         return keeper;
-    const auto till = "till:" + job->id;
-    return state_.accounts.count(till) ? till : keeper;
+    const auto till = tills_.find(job->id);
+    return till != tills_.end() ? till->second : keeper;
 }
 
 std::int64_t Society::floatOf(const std::string& positionId) const

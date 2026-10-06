@@ -1,4 +1,5 @@
 #include "RatwWire.h"
+#include "RatwOrchestratorJson.h"
 #include "RatwItems.h"
 #include "RatwGifts.h"
 
@@ -672,6 +673,7 @@ Value economyMemory(const EconomyMemory& m)
         condition.add(id, c);
     o.add("condition", condition);
     o.add("purses", double(m.purses));
+    o.add("tills", double(m.tills));
     auto keeper = Value::object(), comfort = Value::object(), toWork = Value::array(), improved = Value::object();
     for (const auto& [home, who] : m.keeper)
         keeper.add(home, who);
@@ -714,6 +716,8 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [id, v] : o.object("condition").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() <= 100)
             m.condition[id] = v.asNumber();
+    if (const auto* t = o.find("tills"); t && t->isNumber() && t->asNumber() >= 0 && t->asNumber() <= 100)
+        m.tills = int(t->asNumber());            // (Saved before doc 46's tills: 0, so an older world founds them once.)
     if (const auto* p = o.find("purses"); p && p->isNumber() && p->asNumber() >= 0 && p->asNumber() <= 100)
         m.purses = int(p->asNumber());           // (Saved before starting money: 0, so an older world gets it once.)
     for (const auto& [home, v] : o.object("keeper").fields())
@@ -859,6 +863,7 @@ Value society(const SocietyState& s)
     o.add("books", monthBooks(s.books));
     o.add("houses", houseState(s.houses));
     o.add("memory", economyMemory(s.memory));
+    o.add("orchestrator", orchestra::stateJson(s.orchestrator));   // (Doc 46.)
     return o;
 }
 
@@ -905,7 +910,8 @@ SocietyState readSociety(const Value& o)
         return s;
     }
     // Twelve fields; careers since Phase 4; craftingStocked since crafting (doc 35, Phase 5).
-    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0) - (o.has("books") ? 1 : 0) - (o.has("houses") ? 1 : 0) - (o.has("memory") ? 1 : 0);
+    const std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("craftingStocked") ? 1 : 0) - (o.has("books") ? 1 : 0) - (o.has("houses") ? 1 : 0) - (o.has("memory") ? 1 : 0) -
+                              (o.has("orchestrator") ? 1 : 0);
     bool valid = fields == 12;
     const auto integer = [&](const Value& j, const char* key, double max) -> std::int64_t {
         const double n = strictNumber(j, key, -1);
@@ -925,6 +931,7 @@ SocietyState readSociety(const Value& o)
     s.books = readMonthBooks(o["books"]);
     s.houses = readHouseState(o["houses"]);       // Saved before doc 42's houses: none founded yet.
     s.memory = readEconomyMemory(o["memory"]);         // Saved before doc 42: no books yet (they open at the next new day).
+    s.orchestrator = orchestra::readState(o["orchestrator"]);   // Saved before doc 46: the orchestrator starts afresh.
     const auto& accounts = o["accounts"];
     const auto& residents = o["residents"];
     if (!accounts.isObject() || accounts.size() > MaxAccounts || !residents.isObject() || residents.size() > MaxResidents)

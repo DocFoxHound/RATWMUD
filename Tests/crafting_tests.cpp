@@ -83,16 +83,17 @@ std::map<std::string, LifeBody> atWork(const Society& s)
     return bodies;
 }
 
+// (A business's goods are its till's since doc 46's Phase 2: tillOf, the resident itself for anyone else.)
 int held(const Society& s, const std::string& id, const std::string& item)
 {
-    const auto* a = s.account(id);
+    const auto* a = s.account(s.tillOf(id));
     return a ? Society::stockAll(*a, item) : 0;     // Of any quality (doc 35, Part 4).
 }
 
 void set(Society& s, const std::string& id, const std::string& item, int count)
 {
     auto state = s.state();
-    state.accounts.at(id).stock[item] = count;
+    state.accounts.at(s.tillOf(id)).stock[item] = count;
     expect(s.restore(state), "the changed stock restores");
 }
 
@@ -153,13 +154,13 @@ void buysWhenShort()
     auto s = town();
     set(s, "baker", "bread", 0);
     set(s, "baker", "flour", 1);
-    const auto purse = s.account("baker")->cash;
+    const auto purse = s.account(s.tillOf("baker"))->cash;   // (The bakery's till, since doc 46.)
     double day = 10. / 24;
     work(s, 300, day);
     expect(held(s, "stall", "flour") == Society::SuppliesKept - (Society::MaterialBatches - 1),
            "the baker buys flour from the stall to make up the store");
     expect(held(s, "baker", "bread") > 0, "and bakes");
-    expect(s.account("baker")->cash < purse, "paying for it");
+    expect(s.account(s.tillOf("baker"))->cash < purse, "paying for it");
 }
 
 void nothingFromNothing()
@@ -191,7 +192,7 @@ void olderSavesGetTheirGrantOnce()
     auto s = town();
     auto state = s.state();
     state.craftingStocked = 0;
-    state.accounts.at("baker").stock.erase("flour");
+    state.accounts.at(s.tillOf("baker")).stock.erase("flour");
     expect(s.restore(state), "a save from before crafting restores");
     double day = 10. / 24;
     work(s, 1, day);
@@ -225,10 +226,17 @@ void millGrindsForTheStall()
     auto s = farmTown();
     set(s, "stall", "flour", 2);
     set(s, "miller", "wheat", 0);
-    const auto farmerPurse = s.account("farmer")->cash;
+    {
+        // (The stall's till: since doc 46 its keeper keeps a month's living, so a week's takings to buy with.)
+        auto state = s.state();
+        state.accounts.at("treasury").cash -= 200;
+        state.accounts.at(s.tillOf("stall")).cash += 200;
+        expect(s.restore(state), "the stall's takings restore");
+    }
+    const auto farmerPurse = s.account(s.tillOf("farmer"))->cash;   // (The farm's till, since doc 46.)
     double day = 10. / 24;
     work(s, 4 * 3600, day);
-    expect(s.account("farmer")->cash > farmerPurse, "the mill buys the farmer's wheat");
+    expect(s.account(s.tillOf("farmer"))->cash > farmerPurse, "the mill buys the farmer's wheat");
     expect(held(s, "stall", "flour") >= Society::SuppliesKept / 4, "and the stall buys the mill's flour");
     const auto journal = s.takeJournal();
     expect(count(journal, "crafted", "flour") > 0, "flour ground from wheat");
@@ -278,9 +286,9 @@ void qualities()
         for (const auto& p : s.positions())
             if (p.founder == "baker")
                 state.careers.skill["baker|" + p.id] = skill;
-        state.accounts.at("baker").stock["bread"] = 0;
-        state.accounts.at("baker").stock["flour"] = 200;
-        state.accounts.at("baker").stock["firewood"] = 200;
+        state.accounts.at(s.tillOf("baker")).stock["bread"] = 0;
+        state.accounts.at(s.tillOf("baker")).stock["flour"] = 200;
+        state.accounts.at(s.tillOf("baker")).stock["firewood"] = 200;
         expect(s.restore(state), "the baker's skill restores");
         double day = 10. / 24;
         int fineBread = 0, crudeBread = 0;
@@ -291,8 +299,8 @@ void qualities()
             set(s, "baker", "bread~crude", 0);
             set(s, "baker", "bread~masterwork", 0);
             work(s, 200, day);
-            fineBread += Society::stock(*s.account("baker"), "bread~fine");
-            crudeBread += Society::stock(*s.account("baker"), "bread~crude");
+            fineBread += Society::stock(*s.account(s.tillOf("baker")), "bread~fine");
+            crudeBread += Society::stock(*s.account(s.tillOf("baker")), "bread~crude");
             if (day - std::floor(day) > 16. / 24)
                 day = std::floor(day) + 1 + 10. / 24;
         }
@@ -305,17 +313,17 @@ void qualities()
         for (const auto& p : s.positions())
             if (p.founder == "baker")
                 state.careers.skill["baker|" + p.id] = 100;
-        state.accounts.at("baker").stock["flour"] = 400;
-        state.accounts.at("baker").stock["firewood"] = 400;
+        state.accounts.at(s.tillOf("baker")).stock["flour"] = 400;
+        state.accounts.at(s.tillOf("baker")).stock["firewood"] = 400;
         expect(s.restore(state), "the master baker restores");
         double day = 10. / 24;
         bool marked = false;
         for (int round = 0; round < 150 && !marked; ++round)
         {
-            for (const auto& [item, n] : s.account("baker")->stock)
+            for (const auto& [item, n] : s.account(s.tillOf("baker"))->stock)
                 marked = marked || (n > 0 && items::makerOf(item) == "baker" && items::qualityOf(item) == 3);
             auto st = s.state();
-            for (auto& [item, n] : st.accounts.at("baker").stock)
+            for (auto& [item, n] : st.accounts.at(s.tillOf("baker")).stock)
                 if (items::baseOf(item) == "bread")
                     n = 0;
             s.restore(st);
@@ -398,8 +406,8 @@ void townsfolkBuy()
     // Each day the household buys what is due (firewood every day) from a shop in town, and uses it up.
     {
         auto s = folkTown();
-        const auto keeper = s.account("keeper")->cash;
-        const int wood = Society::stock(*s.account("keeper"), "firewood");
+        const auto keeper = s.account(s.tillOf("keeper"))->cash;
+        const int wood = Society::stock(*s.account(s.tillOf("keeper")), "firewood");
         expect(wood > 0, "the general store has firewood");
         s.takeJournal();
         double day = 10. / 24;
@@ -413,7 +421,7 @@ void townsfolkBuy()
         expect(count(journal, "used at home", "firewood") >= count(journal, "household purchase", "firewood"), "and burnt (the shopkeeper's own too)");
         std::int64_t paid = 0;
         for (const auto& e : journal)
-            if (e.kind == "household purchase" && e.to == "keeper")
+            if (e.kind == "household purchase" && e.to == s.tillOf("keeper"))
                 paid += e.coins;
         expect(paid > 0, "the shop is paid");
         (void)keeper;
@@ -426,7 +434,11 @@ void townsfolkBuy()
         day = std::floor(day) + 1 + 10. / 24;
         s.takeJournal();
         work(s, 5, day);
-        expect(count(s.takeJournal(), "household purchase", "firewood") == 0, "a poor household keeps its food money");
+        // (Wren and Ash's: the baker, a keeper with a till of its own since doc 46, keeps its own house from its own purse.)
+        int poorBought = 0;
+        for (const auto& e : s.takeJournal())
+            poorBought += e.kind == "household purchase" && (e.from == "wren" || e.from == "ash");
+        expect(poorBought == 0, "a poor household keeps its food money");
     }
 }
 } // namespace

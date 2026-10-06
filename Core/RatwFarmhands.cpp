@@ -69,7 +69,8 @@ void Society::postFarmHires(std::int64_t day)
     {
         const auto* p = items::producerFor(r.workLabel);
         const auto* job = p && farmWork(p->id) && state_.residents.count(r.id) ? jobOf(r.id) : nullptr;
-        const auto* purse = job ? account(r.id) : nullptr;
+        const auto farm = tillOf(r.id);             // (Its till pays its hands: doc 46, Phase 2.)
+        const auto* purse = job ? account(farm) : nullptr;
         if (!purse || hiring.count(r.id))
             continue;
         // For as long as its work wants: four to six days in its season, two or three out of it.
@@ -78,11 +79,12 @@ void Society::postFarmHires(std::int64_t day)
         const int days = inSeason ? 4 + int(h % 3) : 2 + int(h % 2);
         const auto dayPay = hirePay_.try_emplace(r.id, HirePay).first->second;
         // Only with the whole hire to spare, above a comfortable month's living.
-        if (purse->cash - wealthLine(r.id) < dayPay * days)
+        if (purse->cash - wealthLine(farm) < dayPay * days)
             continue;
         OddJob j;
         j.id = "odd" + std::to_string(++nextOddJob_);
-        j.payer = j.producer = r.id;
+        j.producer = r.id;
+        j.payer = farm;
         j.community = communityOfResident(r.id);
         j.kind = "a hand";
         j.what = "a farmhand at " + job->title.substr(0, 40) + ", hired for " + std::to_string(days) + " days";
@@ -182,21 +184,22 @@ void Society::stockBunkhouses(std::int64_t day)
             if (wanted <= 0)
                 break;
             // Its own food first (a rabbit farm's rabbits, a dairy's milk), then bought at its town's shops.
-            if (const auto* own = account(farm))
+            const auto till = tillOf(farm);         // (The farm's till and yield: doc 46, Phase 2.)
+            if (const auto* own = account(till))
                 for (const auto& [item, n] : std::map<std::string, int>(own->stock.begin(), own->stock.end()))
                     if (wanted > 0 && n > 0 && edible(item))
                     {
                         const int give = std::min(n, (wanted + nourishment(item) - 1) / std::max(1, nourishment(item)));
-                        if (give > 0 && shift(farm, larder, item, give, 0, "food for the farmhands"))
+                        if (give > 0 && shift(till, larder, item, give, 0, "food for the farmhands"))
                             wanted -= give * nourishment(item);
                     }
             if (wanted <= 0)
                 break;
             std::map<std::string, int> got;
-            buyForSurplus(farm, shops[communityOfResident(farm)], [](const std::string& item) { return edible(item); },
+            buyForSurplus(till, shops[communityOfResident(farm)], [](const std::string& item) { return edible(item); },
                           std::max<std::int64_t>(2, wanted / 15), "food bought for the farmhands", &got);
             for (const auto& [item, n] : got)
-                if (n > 0 && shift(farm, larder, item, n, 0, "food for the farmhands"))
+                if (n > 0 && shift(till, larder, item, n, 0, "food for the farmhands"))
                     wanted -= n * nourishment(item);
         }
     }

@@ -123,7 +123,8 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
                 held->second.holder == resident || !account(held->second.holder))
                 continue;
             const auto* employer = position(pid);
-            return {held->second.holder, employer && employer->role == "merchant" ? "the shop" : "the house"};
+            // (A shop pays from its till: doc 46, Phase 2. Before, from its keeper's purse, even a house's manager's.)
+            return {tillOf(held->second.holder), employer && employer->role == "merchant" ? "the shop" : "the house"};
         }
     // A household's servant ("serving the household", "keeping the chambers"): paid by the richest of the household
     // whose home it works in.
@@ -143,7 +144,7 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
             const auto held = state_.careers.positions.find(p.id);
             if (business && std::find(kinds.begin(), kinds.end(), business->id) != kinds.end() &&
                 held != state_.careers.positions.end() && !held->second.holder.empty())
-                return {held->second.holder, "the shop"};
+                return {tillOf(held->second.holder), "the shop"};
         }
         std::string house;
         std::int64_t most = -1;

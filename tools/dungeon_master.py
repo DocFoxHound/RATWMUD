@@ -60,6 +60,8 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
            'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm',
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
+           # Steering the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10).
+           'economy.steer': 'dm', 'economy.unsteer': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -77,6 +79,12 @@ STANCES = ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
 MAX_FACTIONS = 64                                          # What the game's world loader accepts.
 ID = re.compile(r'^[a-z][a-z0-9_]{0,39}$')          # Within ratw_id (48), leaving room for suffixes.
 RANK = {'viewer': 0, 'dm': 1, 'admin': 2}
+# The orchestrator's steers (doc 46, Part 10): each kind's strength range, and the channels it may close or favour.
+STEER_KINDS = ('pressure', 'town', 'holder', 'channel', 'price')
+STEER_CHANNELS = ('works', 'hires', 'commissions', 'food', 'trade', 'price support', 'wage support', 'rescue', 'opening')
+STEER_DAYS = (1, 56)
+STEER_ID = re.compile(r'^steer-[0-9]{1,18}$')
+PLAIN_ID = re.compile(r'^[^\s\x00-\x1f\x7f]+$')       # An account or good id: no spaces or control characters.
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png',
         '.woff2': 'font/woff2', '.ico': 'image/x-icon'}
 
@@ -450,7 +458,9 @@ class DungeonMaster:
                 'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
                 'tills': {'count': len(tills), 'total': sum(tills.values())}, 'residents': residents, 'road': road,
                 'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-'))),
-                'month': (society.get('books') or {}).get('month'), 'events': events}
+                'month': (society.get('books') or {}).get('month'), 'events': events,
+                # The economy orchestrator's last plan (doc 46, Part 9); older saves have none.
+                'orchestrator': society.get('orchestrator') if isinstance(society.get('orchestrator'), dict) else None}
 
     def call_festival(self, who, target, community, name='', in_days=0):
         """Asks the game server to hold a festival in a community today (from noon) or some days ahead."""
@@ -473,6 +483,86 @@ class DungeonMaster:
                 when = 'today' if not in_days else f'in {in_days} day{"s" if in_days != 1 else ""}'
                 self.audit(conn, who['username'], 'festival.call', community,
                            f'{target.upper()}: a festival{" (" + name + ")" if name else ""} in {community}, {when}')
+        return {'id': action, 'status': 'queued'}
+
+    # -- steering the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10) -----------
+    @staticmethod
+    def steer_range(kind, strength):
+        """Whether a steer's strength is within its kind's range: a holder is spared (0) or squeezed (1.5 to 4)."""
+        if kind == 'holder':
+            return strength == 0 or 1.5 <= strength <= 4
+        return (0.5 if kind in ('pressure', 'price') else 0) <= strength <= 3
+
+    def steer_economy(self, who, target, kind, target_id='', item='', strength=1.0, days=7, note=''):
+        """Queues a steer for the economy orchestrator: it changes what the orchestrator weighs from the next day's plan
+        for some days, and the orchestrator still decides. The game names it steer-<action id>."""
+        self.allowed(who, 'economy.steer')
+        if kind not in STEER_KINDS:
+            raise DMError('A steer is pressure, town, holder, channel or price.')
+        target_id, item = ('' if target_id is None else target_id), ('' if item is None else item)
+        if not isinstance(target_id, str) or not isinstance(item, str) or not isinstance(note, str):
+            raise DMError('Malformed steer.')
+        target_id, item, note = target_id.strip(), item.strip(), note.strip()
+        if isinstance(strength, bool) or not isinstance(strength, (int, float)) or strength != strength or strength in (float('inf'), float('-inf')):
+            raise DMError('A steer\'s strength is a number.')
+        strength = float(strength)
+        if not self.steer_range(kind, strength):
+            raise DMError({'pressure': 'Pressure on the land is from 0.5 (gentle) to 3 (hard).',
+                           'town': 'A town is weighed from 0 to 3.',
+                           'holder': 'A holder is spared (0) or squeezed (1.5 to 4).',
+                           'channel': 'A channel is weighed from 0 (closed) to 3.',
+                           'price': 'A price shock is from 0.5 (cheaper) to 3 (dearer).'}[kind])
+        if not isinstance(days, int) or isinstance(days, bool) or not STEER_DAYS[0] <= days <= STEER_DAYS[1]:
+            raise DMError(f'A steer lasts {STEER_DAYS[0]} to {STEER_DAYS[1]} days.')
+        if len(note) > 200 or any(ord(c) < 32 or ord(c) == 127 for c in note):
+            raise DMError('A note is at most 200 plain characters.')
+        if kind != 'price' and item:
+            raise DMError('Only a price shock names a good.')
+        if kind == 'pressure':
+            if target_id not in ('', 'land'):
+                raise DMError('Pressure is on the whole land.')
+            target_id = ''
+        elif kind == 'holder':
+            if not target_id or len(target_id) > 120 or not PLAIN_ID.fullmatch(target_id):
+                raise DMError('Name the holder: an account such as house:fell or stores:ridgemere.')
+        elif kind == 'channel':
+            if target_id not in STEER_CHANNELS:
+                raise DMError('A channel is one of ' + ', '.join(STEER_CHANNELS) + '.')
+        else:                                     # town, price: a known town (or every town, for a price).
+            if kind == 'price' and (not item or len(item) > 60 or not PLAIN_ID.fullmatch(item)):
+                raise DMError('Name the good whose price is shocked.')
+            if not (kind == 'price' and target_id == '*'):
+                money = self.money(target)
+                towns = set(money['towns']) | {t.get('id') for t in (((money.get('orchestrator') or {}).get('brief') or {}).get('towns') or [])
+                                               if isinstance(t, dict)}
+                if not target_id or target_id not in towns:
+                    raise DMError(f'No town called {target_id or "(none)"} in {target.upper()}.', 404)
+        payload = {'kind': kind, 'target': target_id, 'item': item, 'strength': strength, 'days': days, 'note': note}
+        what = {'pressure': 'pressure on the land', 'town': f'weigh {target_id}', 'holder': f'{"spare" if strength == 0 else "squeeze"} {target_id}',
+                'channel': f'channel {target_id}', 'price': f'price of {item} in {"every town" if target_id == "*" else target_id}'}[kind]
+        with self.connect(target) as conn:
+            with conn.transaction():
+                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
+                                         VALUES ('economy.steer', %s, %s, %s) RETURNING id''',
+                                      (target_id or 'land', json.dumps(payload), who['username'])).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                self.audit(conn, who['username'], 'economy.steer', target_id or 'land',
+                           f'{target.upper()}: steer the economy, {what} x{strength:g} for {days} day{"s" if days != 1 else ""}'
+                           + (f' — {note}' if note else ''))
+        return {'id': action, 'status': 'queued', 'steer': f'steer-{action}'}
+
+    def end_steer(self, who, target, steer_id):
+        """Queues the end of a steer before its time."""
+        self.allowed(who, 'economy.unsteer')
+        if not isinstance(steer_id, str) or not STEER_ID.fullmatch(steer_id):
+            raise DMError('Name the steer to end (steer-<number>).')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
+                                         VALUES ('economy.unsteer', %s, '{}', %s) RETURNING id''',
+                                      (steer_id, who['username'])).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                self.audit(conn, who['username'], 'economy.unsteer', steer_id, f'{target.upper()}: end {steer_id}')
         return {'id': action, 'status': 'queued'}
 
     # -- uploaded portraits (Docs/Design/29-client-polish.md, phase 9) -------------
@@ -1395,6 +1485,14 @@ def make_server(port=8766, dm=None):
                 data = self.body()
                 return self.reply(200, dm.call_festival(who, str(data.get('target', 'prod')), data.get('community', ''),
                                                         data.get('name', ''), data.get('inDays', 0)))
+            if method == 'POST' and path == '/api/economy/steer':
+                data = self.body()
+                return self.reply(200, dm.steer_economy(who, str(data.get('target', 'prod')), data.get('kind'), data.get('targetId', ''),
+                                                        data.get('item', ''), data.get('strength'), data.get('days'),
+                                                        data.get('note', '')))
+            if method == 'POST' and path == '/api/economy/unsteer':
+                data = self.body()
+                return self.reply(200, dm.end_steer(who, str(data.get('target', 'prod')), data.get('id')))
             if method == 'GET' and path == '/api/artwork':
                 return self.reply(200, dm.artwork(self.target(query)))
             if method == 'POST' and path == '/api/artwork/review':

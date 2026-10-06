@@ -860,7 +860,7 @@ void smiths()
     expect(soc.merchant("brann") && soc.smith("brann") && !soc.smith("wren"), "Brann is a smith; Wren is not");
     const auto iron = soc.wares("brann");
     expect(iron.front() == "sword" && std::find(iron.begin(), iron.end(), "meal") == iron.end(), "a smith deals in swords");
-    expect(Society::stock(*soc.account("brann"), "sword") == Society::SmithSwords, "and has a few on hand");
+    expect(Society::stock(*soc.account(soc.tillOf("brann")), "sword") == Society::SmithSwords, "and has a few on hand (in its till)");
     expect(std::string(Society::itemName("sword")) == "Dull bronze sword", "a dull bronze sword");
     auto& ada = town.addPlayer("player-ada", "Ada");
     const auto* brann = town.entity("brann");

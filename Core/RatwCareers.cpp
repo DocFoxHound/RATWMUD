@@ -72,6 +72,8 @@ bool Society::openAccount(const std::string& id)
     if (!facilityAccount(id) || state_.accounts.count(id) || state_.accounts.size() >= MaxAccounts)
         return false;
     state_.accounts[id] = {};
+    if (id.rfind("till:", 0) == 0)
+        tills_[id.substr(5)] = id;                   // (A business's till, by its position: tillOf.)
     return true;
 }
 
@@ -84,6 +86,8 @@ bool Society::closeAccount(const std::string& id)
         if (count != 0)
             return false;
     state_.accounts.erase(found);
+    if (id.rfind("till:", 0) == 0)
+        tills_.erase(id.substr(5));
     ++rosterRevision_;
     return true;
 }

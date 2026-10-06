@@ -93,7 +93,13 @@ std::string holder(const World& server, const std::string& id)
     if (id.rfind("home:", 0) == 0)
         return "home stores";
     if (id.rfind("till:", 0) == 0)
-        return "house till";
+    {
+        // A great house's business's till, an owner-run shop's, or a farm's or site's (doc 46, Phase 2).
+        if (society.state().houses.owner.count(id.substr(5)))
+            return "house till";
+        const auto* p = society.position(id.substr(5));
+        return p && p->role != "merchant" ? "farm till" : "shop till";
+    }
     if (id.rfind("house:", 0) == 0)
         return "great house";
     if (playerAccountId(id))
@@ -132,7 +138,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N]\n";
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--steer FILE]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -141,6 +147,7 @@ int main(int argc, char** argv)
     double from = 6;
     bool deterministic = false;
     unsigned threads = 8;
+    std::vector<orchestra::ScriptedSteer> steers;   // (--steer FILE: the economy orchestrator steered by day, doc 46.)
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -148,6 +155,15 @@ int main(int argc, char** argv)
             deterministic = true;
         else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
+        else if (std::string(argv[i]) == "--steer" && i + 1 < argc)
+        {
+            std::string problem;
+            if (!orchestra::readSteerScript(slurp(argv[++i]), steers, problem))
+            {
+                std::cerr << "The steer script can't be read: " << problem << '\n';
+                return 2;
+            }
+        }
     fs::create_directories(out);
 
     std::map<std::string, std::string> files;
@@ -191,12 +207,14 @@ int main(int argc, char** argv)
     server.setTimeOfDay(from);
     server.setDeterministic(deterministic);
     const auto& society = server.society();
+    server.society().keepBriefs(true);
 
     std::ofstream daysOut(out / "days.jsonl"), flowsOut(out / "flows.csv"), wagesOut(out / "wages.csv"),
         materialsOut(out / "materials.csv"), eventsOut(out / "events.csv"), tradeOut(out / "trade.csv"),
         foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
         lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
-        foodMovesOut(out / "food_moves.csv");
+        foodMovesOut(out / "food_moves.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv");
+    orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,wage_floor,share\n";
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
     wagesOut << "day,resident,title,coins\n";
     materialsOut << "day,item,maker_hours_short,supplier_hours_short,held,brought_in,crafted,used,bought,carted_in\n";
@@ -808,6 +826,30 @@ int main(int argc, char** argv)
         if (const int now = int(std::floor(server.calendarDays())); now != day)
         {
             today = now;
+            // The orchestrator's briefs (doc 46): each in full, and its towns.
+            for (const auto& b : server.society().takeBriefs())
+            {
+                orchestraOut << orchestra::briefText(b, true) << '\n';
+                for (const auto& t : b.towns)
+                    orchestraTownsOut << b.day << ',' << csv(t.id) << ',' << t.people << ',' << t.distress << ',' << t.raw << ',' << csv(t.kind)
+                                      << ',' << t.foodCost << ',' << t.hungry << ',' << t.starving << ',' << t.short_ << ',' << t.poor << ','
+                                      << t.idle << ',' << t.shopFoodDays << ',' << t.takingsRatio << ',' << t.netInflow << ',' << t.wageFloor
+                                      << ',' << t.share << '\n';
+                std::cout << "  orchestrator for day " << b.day << ": land distress " << std::fixed << std::setprecision(3) << b.landDistress
+                          << std::defaultfloat << ", pot " << b.pot << "p, margin " << b.margin << ", bands";
+                for (const auto& [band, n] : b.bands)
+                    std::cout << " " << band << " " << n;
+                std::cout
+                          << ", steers " << b.steers.size() << "\n";
+            }
+            orchestraOut.flush();
+            orchestraTownsOut.flush();
+            for (const auto& st : steers)
+                if (st.day == now)
+                {
+                    const auto done = server.society().steer(st.steer, st.days);
+                    std::cout << "  steer " << st.steer.kind << " " << st.steer.target << ": " << done.message << "\n";
+                }
             const auto [wageTotal, makerShort] = writeDay(day);
             const auto [supply, conserved, median, gini, short_, broke, starving] = snapshot(now, "day end");
             const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
@@ -821,6 +863,8 @@ int main(int argc, char** argv)
     }
     absorb();
     writeDay(day);
+    for (const auto& b : server.society().takeBriefs())
+        orchestraOut << orchestra::briefText(b, true) << '\n';
     snapshot(int(std::floor(server.calendarDays())), "end");
     // As world_check's: where everyone ended up and what they were doing, and the money.
     std::uint64_t digest = 1469598103934665603ULL;

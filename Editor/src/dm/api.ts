@@ -155,6 +155,37 @@ export interface Money {
         shortOfFood: number; byRole: Record<string, MoneyGroup>};
     road: {caravans: number; contracts: number; bandits: number}; players: number;
     events: {kind: string; actor: string; target: string; day: number; detail: string; at: string}[];
+    /** The economy orchestrator's last plan (Docs/Design/46-economy-orchestrator.md, Part 9); null in saves before it ran. */
+    orchestrator?: Orchestrator | null;
+}
+
+/** The economy orchestrator, as last saved (doc 46). In shadow mode it plans but nothing it plans is applied yet. */
+export type SteerKind = 'pressure' | 'town' | 'holder' | 'channel' | 'price';
+export type EconomyChannel = 'works' | 'hires' | 'commissions' | 'food' | 'trade' | 'price support' | 'wage support' | 'rescue' | 'opening';
+/** What a Dungeon Master asks of it: `target` is "" for pressure, a town, an account, a channel, or a town or "*" for a price. */
+export interface SteerRequest { kind: SteerKind; targetId: string; item: string; strength: number; days: number; note: string }
+/** A steer in force: from and until are game days; `by` is the Dungeon Master who set it. */
+export interface Steer { id: string; kind: SteerKind; target: string; item: string; strength: number; from: number; until: number; note: string; by: string }
+/** Why a town is in distress: "" when it is well. */
+export type DistressKind = '' | 'empty shelves' | 'empty purses' | 'no work' | 'failing trade' | 'draining';
+export interface OrchestratorTown {
+    id: string; people: number; distress: number; week?: number; kind: DistressKind; foodCost: number; hungry: number; starving: number; short: number;
+    poor: number; idle: number; shopFoodDays: number; takingsRatio: number; netInflow: number; wageFloor: number; share: number;
+}
+export type Band = 'warming' | 'lean' | 'comfortable' | 'over' | 'cap' | 'spared';
+/** A holder over its band: what it holds, what it needs, and what the orchestrator has it spend. */
+export interface OrchestratorHolder { id: string; kind: string; town: string; cash: number; need: number; band: Band; toSpend: number }
+export interface OrchestratorBrief {
+    day: number; decided?: boolean; landDistress: number; moneySupply: number; pot: number; margin: number; median: number; gini: number;
+    towns: OrchestratorTown[]; holders: OrchestratorHolder[]; bands: Partial<Record<Band, number>>;
+    orders: {from: string; town: string; channel: string; coins: number}[];
+    channels: Partial<Record<string, number>>;
+    prices: {town: string; item: string; catalog: number; now: number; would: number}[];
+}
+/** It measures every day (`brief`, the latest day's) and decides once a week, the evening of the reckoning (`decision`). */
+export interface Orchestrator {
+    mode: 'shadow' | 'on' | 'off'; day: number; steers: Steer[]; memory?: unknown;
+    brief?: OrchestratorBrief | null; decision?: OrchestratorBrief | null;
 }
 
 export const dmApi = {
@@ -207,6 +238,10 @@ export const dmApi = {
     calendar: (target: Target) => call<WorldCalendar>(`api/calendar?target=${target}`),
     callFestival: (target: Target, community: string, name: string, inDays: number) =>
         call<{id: number}>('api/festivals/call', {target, community, name, inDays}),
+    /** Queues a steer for the economy orchestrator (doc 46, Part 10); the game names it steer-<id> at the next day's plan. */
+    steerEconomy: (target: Target, steer: SteerRequest) => call<{id: number; steer: string}>('api/economy/steer', {target, ...steer}),
+    /** Ends a steer before its time. */
+    endSteer: (target: Target, id: string) => call<{id: number}>('api/economy/unsteer', {target, id}),
     artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
     reviewArtwork: (target: Target, id: string, decision: 'approve' | 'reject', reason: string) =>
         call<{id: number}>('api/artwork/review', {target, id, decision, reason}),
