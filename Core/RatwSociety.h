@@ -568,6 +568,8 @@ class Society
     // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; its wage table (town -> kind -> a day's
     // pay); and its margin.
     std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_, wages_, support_;
+    // From its latest measures: each town's living floor (a day's pay) and its idle wolves (the long run's fixes).
+    std::unordered_map<std::string, std::int64_t> livingFloor_, idleHands_;
     double margin_ = .55;
     // What each larder gives its household a day (nourishment taken from it, a running average, Society::spoil): the
     // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).

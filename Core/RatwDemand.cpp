@@ -279,6 +279,8 @@ void Society::applyPrices()
     prices_.clear();
     wages_.clear();
     support_.clear();
+    livingFloor_.clear();
+    idleHands_.clear();
     margin_ = .55;
     const auto& o = state_.orchestrator;
     if (orchestratorDials().mode != "on")
@@ -291,6 +293,11 @@ void Society::applyPrices()
     for (const auto& [key, pay] : o.memory.wage)
         if (const auto bar = key.find('|'); bar != std::string::npos && pay > 0)
             wages_[key.substr(0, bar)][key.substr(bar + 1)] = pay;
+    for (const auto& t : o.last.towns)
+    {
+        livingFloor_[t.id] = t.wageFloor;
+        idleHands_[t.id] = std::max(0, t.idle);
+    }
     for (const auto& [key, gap] : o.memory.support)
         if (const auto bar = key.find('|'); bar != std::string::npos && gap > 0)
             support_[key.substr(0, bar)][key.substr(bar + 1)] = gap;

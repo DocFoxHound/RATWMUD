@@ -123,6 +123,17 @@ struct Dials
     // Growth (doc 46, Phase 5): a holder above its floor that gained over the week sends this share of the week's gain out
     // at the decision, more as the land is in distress or pressed: what comes in with trade must go back out, not pool.
     double gainShare = .5;
+    // And a holder that keeps growing week after week sends growthStep more of its gain for each week of it past the first
+    // (doc 46, the long run's fixes): half, then 0.75, then all of it.
+    double growthStep = .5;
+    // Jobs before raises (the long run's fixes): a town where more than wageIdleLimit of those able to work earned nothing
+    // lately raises no pay for its payers' gains, eases raised pay back, and weighs its hires and works double.
+    double wageIdleLimit = .10;
+    // A channel is sent at most one and a half times what it paid out last week, or channelFloor (land-wide) for one new or
+    // idle, less what its funds hold (the long run's fixes).
+    double channelFloor = 3000;
+    // Each town's price level, moved against its shops' week's gain (the long run's fixes), within these.
+    double priceLiftLeast = .6, priceLiftMost = 1.4;
     // Its own pressure (doc 46, Phase 5): at each decision, if the residents' share of the land's money fell over the week
     // by more than shareSlip, it presses autoRaise times harder (to autoMost); if it rose, it eases by autoEase (to 1).
     double shareSlip = .005, autoRaise = 1.3, autoEase = .85, autoMost = 3;
@@ -201,6 +212,8 @@ struct Memory
     std::map<std::string, double> weekKinds;
     std::int64_t decided = -1;                       // The day of its last decision.
     std::map<std::string, std::int64_t> weekStart;   // Holder -> what it held after the last decision (for its week's gain).
+    std::map<std::string, int> growing;              // Holder -> the weeks in a row it has gained.
+    std::map<std::string, double> priceLift;         // Town -> its price level, against its shops' books (1 to start).
     double residentShare = -1;                       // The residents' share of the land's money at the last decision.
     double autoPressure = 1;                         // Its own pressure, from how that share moves.
     double bottomShare = -1, floorLift = 1;          // The poorer half's share of it; the living floor's lift (Phase 6).

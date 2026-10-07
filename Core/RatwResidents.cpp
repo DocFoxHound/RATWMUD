@@ -1231,10 +1231,13 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 (void)business;
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if (!subsidy.empty() && shift(subsidy, pair.first, "", 0, wage, "a wage supported"))
+                else if (const auto floor = livingFloor_.count(home) ? livingFloor_.at(home) : 0,
+                         // (Wage support pays a living, the town's floor, not the post's whole pay: doc 46, the long run.)
+                         supported = floor > 0 ? std::min<std::int64_t>(wage, std::max<std::int64_t>(1, (floor + PaidSpells - 1) / PaidSpells)) : wage;
+                         !subsidy.empty() && shift(subsidy, pair.first, "", 0, supported, "a wage supported"))
                 {
                     ++life.wagesToday;
-                    carry -= double(wage);
+                    carry -= double(supported);
                     ++supportedToday_[home];
                     state_.memory.revision += state_.memory.unpaidSince.erase(pair.first);
                 }

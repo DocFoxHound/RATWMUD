@@ -14,7 +14,9 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
 {
     // What a hand is paid: its town's table for a hand's share of an odd job (the wage table, doc 46, Phase 4).
     const std::int64_t handPay = std::max<std::int64_t>(1, std::int64_t(std::ceil(dayWage(community, "odd job") - 1e-9)));
-    const int most = int(std::min<std::int64_t>(60, budget / handPay));
+    // As many as the town has idle wolves (its latest measure), sixty at least.
+    const auto idle = idleHands_.count(community) ? idleHands_.at(community) : 0;
+    const int most = int(std::min<std::int64_t>(std::max<std::int64_t>(60, idle), budget / handPay));
     static const DayPlan none;
     const auto& plan = day_.plans.count(community) ? day_.plans.at(community) : none;
     const bool church = payer.rfind("town:", 0) == 0;

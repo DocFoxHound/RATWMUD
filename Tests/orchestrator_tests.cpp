@@ -65,6 +65,7 @@ Snapshot land(bool decide = true)
     s.goods.push_back({"wellby", "ring", 2, 4, 1, 40, 40, 0, false});
     s.towns.push_back({"wellby", 300, 200, 0, 0});
     s.towns.push_back({"hungerford", 50, 300, 0, 0});
+    s.dials.channelFloor = 1e9;                      // (No spending history: let every channel take what it is sent.)
     s.holders.push_back({"house:gold", "wellby", HolderKind::House, 20000, 50, 100});
     s.holders.push_back({"till:stall", "hungerford", HolderKind::Till, 10, 10, 60});
     s.holders.push_back({"town:all:church", "", HolderKind::Church, 500, 20, 400});
@@ -434,6 +435,27 @@ void theGranaryStores()
         wellbyFood |= o.channel == "food" && o.town == "wellby";
     expect(!wellbyFood, "In winter a well town's isn't");
 }
+
+void noMoreThanChannelsSpend()
+{
+    // A channel is sent at most one and a half times what it paid last week, less what its funds hold; the givers keep
+    // the rest, and their weeks start from what they keep.
+    Memory m;
+    auto s = land(true);
+    s.dials.channelFloor = 0;
+    for (const auto& c : channelNames())
+        s.reach[c] = {0, 1000};                      // (Each paid 1,000p last week.)
+    s.towns[1].funds["works"] = 500;                 // (Hungerford's works still hold 500p.)
+    const auto b = plan(s, m);
+    for (const auto& [channel, coins] : b.channels)
+        expect(coins <= (channel == "works" ? 1000 : 1500), channel + " is sent no more than it can spend (" + std::to_string(coins) + "p)");
+    std::int64_t ordered = 0;
+    for (const auto& o : b.orders)
+        ordered += o.coins;
+    expect(ordered == b.pot, "and the pot is what is sent");
+    expect(m.weekStart.at("house:gold") == holder(b, "house:gold").cash - holder(b, "house:gold").toSpend,
+           "The house keeps the rest, and its week starts from it");
+}
 } // namespace
 
 int main()
@@ -452,6 +474,7 @@ int main()
         itPressesItself();
         itLearnsReach();
         theGranaryStores();
+        noMoreThanChannelsSpend();
     }
     catch (const std::exception& e)
     {

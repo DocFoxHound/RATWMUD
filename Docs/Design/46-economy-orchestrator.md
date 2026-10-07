@@ -864,6 +864,78 @@ Dungeon Master's service fed with a 35-day run's real orchestrator output; not y
 | Residents' Gini, day 35 | 0.419 | 0.411 |
 | Grown short / broke / starving, day 35 | 3 / 3 / 0 | 1 / 1 / 0 |
 
+## The long run: where it let go, and the fixes (2026-10-06)
+
+The user: "I really am interested to know where Orchestrator is failing to keep wolves fed and balance this out. A little
+poverty is fine, and a little starvation … but I'm worried that it'll just spiral out of control if we don't have the
+proper system in place for Orchestrator to handle it on its own."
+
+**What 112 days showed** (a year's run, stopped by the user to run the year themselves):
+
+| Day | 2 | 29 | 57 | 85 | 112 |
+|---|---|---|---|---|---|
+| Median purse | 268p | 220p | 169p | 125p | 105p |
+| Poorer half's share of the residents' money | 0.37 | 0.24 | 0.14 | 0.09 | 0.07 |
+| Grown short / broke / hungry | 0 / 0 / 0 | 4 / 0 / 0 | 13 / 12 / 0 | 27 / 14 / 0 | 31 / 13 / 25 |
+| Idle (able to work, nothing earned in three days) | | 148 | 264 | 284 | 257 |
+| Guards' savings | 26,912p | 43,692p | 52,012p | 60,452p | 64,276p |
+| Town treasuries / the capital's | 71,613p / 19,204p | 25,386p / 5,050p | 16,864p / 1p | 11,219p / 0p | 12,855p / 989p |
+
+**Where it failed:**
+1. **The wrong alarm.** It watched the residents' share of the land's money, which held at 0.60 to 0.63 throughout:
+   the guards and keepers saved what the workers lost. So it never pressed harder.
+2. **Raises for those with work, while the idle doubled.** Whenever payers gained, pay rose, whatever the idle. Help,
+   guards and clergy reached three times their start (48p, 60p, 48p a day) while 300 idle lived on 4p odd jobs.
+3. **The treasuries bled dry.** Their wages outran their taxes (a tax on profit, and the poor make none), so the Town
+   Works couldn't pay the unemployed: the last safety net failed.
+4. **Wage support paid the whole rate,** so it kept up the guards' 60p a day (4,200p in two weeks), which they banked:
+   fed at the mess, a guard's pay is savings.
+5. **Growing holders kept half of each week's gain,** so the shops' tills grew on (75,000p by day 112).
+
+**The fixes (the user chose all four):**
+- **Alarm on the poorer half:** its own pressure rises when the poorer half of households (by purse a head) loses share,
+  as well as when the residents do; it eases when neither fell and one rose. The living floor rises with the poorer
+  half's fall as before.
+- **Jobs before raises:** a town where more than a tenth of those able to work earned nothing lately (`wageIdleLimit`)
+  raises no pay for its payers' gains, and its hires and works weigh double in the pot's sharing. Pay rises with the
+  payers' books only where labour is short. (Pay is not cut for the idle: tried, it took a thousand pennies a day from
+  the keepers and gave the idle nothing.)
+- **Support at a living wage:** wage support pays at most the town's living floor (a day's, a `PaidSpells`-th a spell),
+  the rest owed as before, and its need is reckoned at the floor.
+- **Odd jobs that feed:** an odd job pays at least a day's food at the town's prices, and the works post as many as the
+  town has idle wolves (sixty at least).
+- **Growth that keeps on:** a holder gaining week after week sends half the first week's gain, then three quarters, then
+  all of it (`growthStep`, `memory.growing`).
+
+**The second round (the same day).** A 47-day run with the four fixes cut the idle from 158 to 68, but the pot rose to
+100,000p a week against channels that pay out some 5,000p a day, and the funds became the pool. So:
+- **No channel is sent more than it can spend:** one and a half times what it paid out last week (`channelFloor`, 3,000p,
+  for one new or idle), less what its funds still hold; but the works may always take a week of odd jobs at a day's food
+  for every idle wolf, half again (they keep a third for their own work). What a channel can't take stays with its givers.
+- **The idle limit is a tenth,** not a twentieth: at 5% almost every town counted as idle and no pay ever rose.
+- **Each town's prices move against its shops' books:** while its shops' tills gain over the week, its price level comes
+  down by twice their gain against what they hold (a tenth a week at most), and goes back up while they lose, between
+  `priceLiftLeast` 0.6 and `priceLiftMost` 1.4 (`memory.priceLift`). The tills' surplus goes back to every customer by
+  what they buy. It's the outlet the shops had lacked: capped channels and no raises left their money nowhere to go.
+- **Pay isn't cut for the idle** (tried: it took a thousand pennies a day from keepers and gave the idle nothing).
+
+**56 days, against the year's run (the old rules):**
+
+| Day | 13 | 27 | 41 | 55 |
+|---|---|---|---|---|
+| Residents' share: old / now | 0.61 / 0.59 | 0.63 / 0.54 | 0.65 / 0.55 | 0.65 / 0.58 |
+| Poorer half's share: old / now | 0.33 / 0.34 | 0.27 / 0.27 | 0.23 / 0.23 | 0.18 / 0.20 |
+| Median purse: old / now | 249p / 236p | 236p / 200p | 219p / 186p | 183p / 185p |
+| Idle: old / now | | 71 / 112 | | 330 / 85 |
+| Starving (day 42, 56): old / now | | | 17 / 0 | 18 / 0 |
+
+The residents' share turns back up after day 27 (the old run's held up only because the guards banked their pay), the
+idle stay under a hundred, nobody starves, and the median holds at 185p. The poorer half still loses ground, but slower
+each fortnight (−0.07, −0.04, −0.025): it looks to level out near 0.17, where the old run went on down to 0.07. What's
+left to watch in the year's run: the capital's treasury still runs dry (by day 55 in both runs), the town treasuries
+drain (36,000p to 23,500p in four weeks), the shops' tills and the farms still gain (71,000p and 55,000p), and its own
+pressure sits at its most (3) from day 40.
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
