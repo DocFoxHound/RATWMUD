@@ -378,6 +378,15 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
             days = std::max(plan, 1 + shut);
         }
     }
+    // One with no household to lay in for it (barracks, a bunkhouse, lodgings) buys, on the eve of a day the shops aren't
+    // properly open, what will last it over that day, and carries it (the user, 2026-10-07: barracks lay in too).
+    else if (grown && me && communalHome(me->homeCell))
+        if (const int shut = shutAhead(state_.budgetDay); shut > 0)
+        {
+            carried(resident);
+            if (atHome < 50 * (1 + shut))
+                days = 1 + shut;
+        }
     // Today's meal: wanted by one who is hungry, or buying only for itself.
     const bool hungry = !laysIn || !me || me->hunger >= 35;
     // What the shop has to eat. Short of a week's food money, it buys what feeds most for the money; with more, by its

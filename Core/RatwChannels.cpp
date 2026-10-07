@@ -260,10 +260,12 @@ void Society::runChannels(std::int64_t day)
             // bring it from the land's best-stocked food shops (those with more than two days' food a head), at their prices.
             if (spent < budget && (foodShops[town].empty() || shelfDays(town) < orchestratorDials().foodDaysLow))
             {
+                // (A town with no food shops at all takes from shops holding over a day: in winter few hold two.)
                 std::vector<std::pair<double, std::string>> elsewhere;
+                const double spare = foodShops[town].empty() ? 1 : 2;
                 for (const auto& [other, list] : foodShops)
                     if (other != town && !list.empty())
-                        if (const double d = shelfDays(other); d > 2)
+                        if (const double d = shelfDays(other); d > spare)
                             elsewhere.push_back({-d, other});
                 std::sort(elsewhere.begin(), elsewhere.end());
                 std::vector<std::string> sellers;
@@ -404,6 +406,31 @@ void Society::runChannels(std::int64_t day)
         }
         if (it->second.stock.empty())
             continue;
+        // A town with no food shops of its own (the fortresses) sells from its granary to those who live there: each
+        // morning a hungry wolf carrying no food buys a day's, at the town's price (the user, 2026-10-07).
+        if (foodShops[town].empty())
+        {
+            std::int64_t sold = 0;
+            for (const auto& [rid, life] : state_.residents)
+            {
+                const auto* purse = account(rid);
+                if (life.hunger < 40 || !purse || hasFood(*purse) || communityOfResident(rid) != town)
+                    continue;
+                for (const auto& [item, n] : std::map<std::string, int>(it->second.stock.begin(), it->second.stock.end()))
+                {
+                    const auto price = pennies(buyingPrice(town, item));
+                    if (n > 0 && edible(item) && purse->cash >= price && transfer(id, rid, item, 1, price, "bought from the granary"))
+                    {
+                        sold += price;
+                        break;
+                    }
+                }
+            }
+            if (sold > 0 && (account(fundOf(town, "food")) || openAccount(fundOf(town, "food"))))
+                shift(id, fundOf(town, "food"), "", 0, account(id)->cash, "the granary's takings");
+            if (it->second.stock.empty())
+                continue;
+        }
         // (The playbook's food security: the granary keeps its store. It fills the shelves to two days' food a head on the
         // eve of a Restday or a festival, when nobody cooks; in winter and spring whenever they hold under two days; and in
         // summer and autumn only for a shortage, under a day. Before, it sold whenever they held under a day and a half

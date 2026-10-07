@@ -757,6 +757,8 @@ class Society
     // a member at home after a week comfortable, and sends it back under KeeperDays' (and everyone to work after a week poor).
     static constexpr int ComfortDays = 28, PoorDays = 7, KeeperDays = 10, StreakDays = 7;
     static bool homemaking(const std::string& title);   // "keeps the house", "keeping the house".
+    // A barracks, a bunkhouse, quarters or lodgings: many under one roof who aren't a family (RatwHouseholds.cpp).
+    static bool communalHome(const std::string& home);
   private:
     // Once a game day (RatwDemand.cpp; doc 42, Phase 5): tools the trades wear out, businesses' upkeep (a stables'
     // horses), and pennies for beggars.

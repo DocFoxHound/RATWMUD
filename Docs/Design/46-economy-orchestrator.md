@@ -1067,6 +1067,10 @@ automate these things itself."
   town's eaters short).
 - **Food from elsewhere:** a town with no food shops of its own (the fortresses), or under `foodDaysLow`, has its granary's
   food brought by the carters from the land's best-stocked food shops (those with over two days' food a head).
+- **The granary sells to the hungry** in a town with no food shops: each morning a hungry wolf carrying no food buys a
+  day's from it, at the town's price. (Its food comes from shops elsewhere holding over a day.)
+- **Restday** (the user, 2026-10-07): food makers keep at it all afternoon after the service, and a wolf in barracks, a
+  bunkhouse or lodgings buys, on the eve of a day the shops aren't properly open, what will last it over that day.
 - **The messes from the granary:** the watch's, the mines' and the quarries' mess, with no food in it, draws a day's from
   its town's granary. (In the fortresses nobody carried food to the mess, and the barracks went hungry on Restdays.)
 
@@ -1090,6 +1094,23 @@ poorer half or the residents still fell, it steps up a rung (0 to 3); after four
 **5. The week's report.** Each decision lists what it found and did, town by town ("Upper Accord: shelves 0.6 days, the
 granary filled them for Restday, 2,300p of food bought for its store"; "the ladder: rung 2"), in the brief, on the Dungeon
 Master's Money tab and in `econ_watch`.
+
+## Next: the food at the bottom (the user, 2026-10-07; not yet designed)
+
+The year's runs left one thing the orchestrator can't mend: every starving day fell on a Restday or a festival, when nobody
+cooks. The Restday fixes above ease it; the user's answer is a deeper one: "families aren't cooking their own food. I think
+we may need to make a larger overhaul to the food system at the very bottom. We need to have homes be able to craft their
+own food, and for NPC's to know to stock enough materials to create food to last beyond rest day. That means we might need
+to convert at least one food stall into a supplies store that sells ingredients and have them be the local supplier for
+other food makers and every home. Food makers, themselves, should be making higher quality food. ... So basically we need
+to make it so that every house has a stove, that we have a general store and general store worker that sells food
+ingredients, and we may have to create new DESIREABLE set of foods that the food stalls make specifically, that offer some
+bonuses to players and are just more desireable for NPC's, but they can fall back to cooking on their own if they don't
+have money or just don't pass the desire level to go shopping for it."
+
+To design (a doc of its own): a stove in every home; a general store in each town selling ingredients, the supplier of
+homes and food makers; households laying in ingredients past Restday; finer foods from the food shops (bonuses for
+players, desirable to residents), home cooking the fallback. The user will come back to the economy later.
 
 ## Phases
 

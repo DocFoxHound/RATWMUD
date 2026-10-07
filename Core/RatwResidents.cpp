@@ -666,8 +666,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 resting = "Foul weather: outdoor work has stopped.";
             else if (festival)
                 resting = "Work stops for " + plan.name + ".";
-            else if (plan.kind == "rest"sv && !(merchantRole && hour >= ServiceEnd && hour < ServiceEnd + 4))
-                resting = "Restday: no work today.";   // Shops open after the service, so everyone can eat (doc 42).
+            // Shops open after the service, so everyone can eat (doc 42); those that make food keep at it all afternoon,
+            // so the shelves are stocked for the day (the user, 2026-10-07: food makers work Restday after service).
+            else if (plan.kind == "rest"sv && !(merchantRole && hour >= ServiceEnd && (hour < ServiceEnd + 4 || (foodShop(id) && onHours))))
+                resting = "Restday: no work today.";
             if (!resting.empty())
                 onHours = false;
         }

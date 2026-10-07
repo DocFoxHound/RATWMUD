@@ -9,6 +9,13 @@
 
 namespace ratw
 {
+bool Society::communalHome(const std::string& home)
+{
+    return home.find("barracks") != std::string::npos || home.find("bunkhouse") != std::string::npos ||
+           home.find("quarters") != std::string::npos || home.find("watch_house") != std::string::npos ||
+           home.find("lodging") != std::string::npos;
+}
+
 bool Society::homemaking(const std::string& title)
 {
     return title.find("keeps the house") != std::string::npos || title.find("keeping the house") != std::string::npos;
@@ -32,9 +39,7 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
         if (adults == grown.end() || adults->second.empty())
             continue;
         // A barracks, a bunkhouse, quarters or lodgings house many who aren't a family: no shared purse, nobody kept home.
-        if (adults->second.size() > 8 || home.find("barracks") != std::string::npos || home.find("bunkhouse") != std::string::npos ||
-            home.find("quarters") != std::string::npos || home.find("watch_house") != std::string::npos ||
-            home.find("lodging") != std::string::npos)
+        if (adults->second.size() > 8 || communalHome(home))
         {
             memory.keeper.erase(home);
             continue;
