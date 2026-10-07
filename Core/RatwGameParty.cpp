@@ -38,8 +38,8 @@ Result Game::partyInvite(const std::string& from, const std::string& to)
     // Only a wolf you can see, and only a player: companions who are NPCs come with Phase 3 (doc 32).
     if (!them || them->npc || them->dead || (to != from && world_.visionClarity(from, to) <= 0))
         return {false, "You can only invite a wolf you can see.", to};
-    if (!clientOf(to))
-        return {false, "They are not here to answer.", to};
+    if (!clientOf(to) || blocked(from, to))
+        return {false, "They are not here to answer.", to};   // (Blocked either way: the ordinary refusal, doc 50.)
     const auto outcome = parties_.invite(from, to, now());
     if (!outcome.ok)
         return {false, outcome.message, to};
@@ -167,10 +167,12 @@ void Game::partyChat(Connection* c, const Entity& speaker, const std::string& te
             readers.push_back(m);
     (void)c;
     for (const auto& m : readers)
-        if (auto* other = clientOf(m))
+        if (auto* other = clientOf(m); other && !hides(m, speaker.id))   // (Muted or blocked: doc 50.)
         {
             e.set("speaker", names::capitalised(labelFor(m, speaker.id)));
             send(other, e);
+            if (m != speaker.id)
+                heardLine(m, e.number("sequence"), speaker.id, channel, text);
         }
 }
 

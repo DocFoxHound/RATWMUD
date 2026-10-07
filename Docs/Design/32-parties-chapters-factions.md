@@ -97,7 +97,8 @@ Social Level stays `1 + XP/100`, with titles added. It unlocks standing *within 
 | 12 | Notable | Faction NPCs will discuss Chapter business with you by name. |
 
 The prototype's earned tiers (Regular, Gifted, Quickened) stay out. The setting bible says Quickened is not a
-level, and this plan does not reopen that.
+level, and this plan does not reopen that. *(Since 2026-10-06, doc 49: the user brought earned tiers back, per account
+and by several measures, not a level. Social level is the account's and counts roleplay alone.)*
 
 ### 1.4 Reputation with individuals
 

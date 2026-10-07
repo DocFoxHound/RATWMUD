@@ -63,7 +63,8 @@ double paceSpeed(double dexterity, int pace);
 // the weather's factor, 1 for none).
 double groundSpeed(double flatSpeed, double movementCost, bool crouching, bool npc, double environment);
 // Stamina after `dt` seconds, `movedTime` of them spent moving at that pace. Sets `exhausted` and the rate of change.
-// `drain`: running's cost times this (a heavy load, doc 35); `recovery`: what comes back, times this (injuries, doc 38).
+// `drain`: running's cost times this (a heavy load, doc 35; stamina the attribute, doc 49); `recovery`: what comes back,
+// times this (injuries, doc 38; stamina the attribute).
 void updateStamina(double& stamina, bool& exhausted, double& rate, int pace, double dt, double movedTime, double drain = 1.0,
                    double recovery = 1.0);
 } // namespace ratw::step

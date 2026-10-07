@@ -47,6 +47,51 @@ SESSION_HOURS = 12
 MAX_FAILURES, LOCK_MINUTES = 5, 15
 MAX_BODY = 64 * 1024
 TARGETS = ('prod', 'dev')
+
+
+def practice_skills():
+    """Every attribute and skill a wolf grows by practice, with its field and cap (Data/Progression/skills.json, doc 49):
+    [(id, name, field or None for a trade skill, start, cap)]. Empty if the catalog can't be read."""
+    try:
+        doc = json.loads((ROOT / 'Data/Progression/skills.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return []
+    return [(e['id'], e.get('name', e['id']), e.get('field') or None, e.get('start', 0), e.get('cap', 100))
+            for e in doc.get('attributes', []) + doc.get('skills', []) if isinstance(e, dict) and e.get('id')]
+
+
+def practised(data, skills):
+    """A saved character's attributes and skills with their caps (doc 49): {id: {name, value, cap}}. Trade skills come
+    from its `skills` map, and only once begun."""
+    trades = data.get('skills') if isinstance(data.get('skills'), dict) else {}
+    out = {}
+    for sid, name, field, start, cap in skills:
+        value = data.get(field, start) if field else trades.get(sid)
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and (field or value > 0):
+            out[sid] = {'name': name, 'value': value, 'cap': cap}
+    return out
+
+
+def person_view(row):
+    """An account as a person for the Players tab (doc 50): its handle, experience and hours played; None if unknown."""
+    if not isinstance(row, dict) or not row.get('account'):
+        return None
+    return {'handle': row.get('handle', ''), 'experience': row.get('experience', 'casual'),
+            'playedHours': round(float(row.get('playedSeconds', 0)) / 3600, 1)}
+
+
+def account_view(row):
+    """An account's standing for the Players tab (doc 49): its name, social level, each tier (who opened it, or None),
+    the hold and its measures; None if unknown."""
+    if not isinstance(row, dict) or not row.get('account'):
+        return None
+    measures = row.get('measures') if isinstance(row.get('measures'), dict) else {}
+    return {'name': row['account'], 'socialLevel': measures.get('socialLevel'), 'measures': measures,
+            'gifted': row.get('giftedBy') if row.get('giftedAt') is not None else None,
+            'quickened': row.get('quickenedBy') if row.get('quickenedAt') is not None else None,
+            'hold': bool(row.get('hold')), 'characters': [c for c in row.get('characters', []) if isinstance(c, str)]}
+
+
 # Live actions this version knows, and who may request them.
 def gift_families():
     """The Gift families a player may have (Data/Gifts/families.json, doc 43): all but the NPC-only ones."""
@@ -55,11 +100,12 @@ def gift_families():
 
 
 ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift': 'dm', 'character.injury': 'dm',
+           'account.unlock': 'dm',
            'bandits.call': 'dm', 'npc.sync': 'dm',
            'npc.kill': 'dm',
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
-           'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm',
+           'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm', 'report.decide': 'dm',
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
            # Steering the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10).
            'economy.steer': 'dm', 'economy.unsteer': 'dm', 'economy.scenario': 'dm',
@@ -211,6 +257,22 @@ class DungeonMaster:
                 SELECT DISTINCT ON (target_id) target_id, (payload->>'dungeonMaster')::boolean, done_at FROM dm.actions
                 WHERE kind = 'character.dm' AND status = 'applied' ORDER BY target_id, id DESC''').fetchall()}
             characters = []
+            skills = practice_skills()
+            # Each account as a person and each character's profile (doc 50, migration 0035): read only here.
+            persons, profiles = {}, {}
+            if conn.execute("SELECT to_regclass('game.account_profiles')").fetchone()[0]:
+                for (row,) in conn.execute('SELECT data FROM game.account_profiles WHERE world_id = %s', (world[0],)).fetchall():
+                    for cid in row.get('characters', []) if isinstance(row, dict) else []:
+                        persons[cid] = row
+                for key_, row in conn.execute('SELECT key, data FROM game.profiles WHERE world_id = %s', (world[0],)).fetchall():
+                    profiles[key_] = row
+            # Earned Gift tiers by account (doc 49, migration 0034): each character's account and its standing. (None
+            # until the migration is applied and the game server has saved since.)
+            standing = {}
+            if conn.execute("SELECT to_regclass('game.account_standing')").fetchone()[0]:
+                for (row,) in conn.execute('SELECT data FROM game.account_standing WHERE world_id = %s', (world[0],)).fetchall():
+                    for cid in row.get('characters', []) if isinstance(row, dict) else []:
+                        standing[cid] = row
             for key, data, saved, master in conn.execute('''SELECT key, data, updated_at, dungeon_master FROM game.characters
                                                             WHERE world_id = %s ORDER BY name''', (world[0],)).fetchall():
                 latest = made.get(key)
@@ -235,6 +297,15 @@ class DungeonMaster:
                     'dungeonMaster': bool(master),
                     'stats': {k: data.get(k) for k in ('strength', 'dexterity', 'wisdom', 'stamina')},
                     'skills': {k: data.get(k) for k in ('sneakSkill', 'hearingSkill', 'scentSkill')},
+                    # Each attribute and skill with its cap, and today's practice (doc 49).
+                    'practice': practised(data, skills),
+                    'account': account_view(standing.get(key)),
+                    'person': person_view(persons.get(key)),
+                    'profile': profiles.get(key) if isinstance(profiles.get(key), dict) else None,
+                    # How it was built (doc 49): grades that aren't plain, and its specialty.
+                    'grades': {k: v for k, v in (data.get('grades') or {}).items() if v in ('weak', 'strong')}
+                              if isinstance(data.get('grades'), dict) else {},
+                    'specialty': data.get('specialty', '') if isinstance(data.get('specialty'), str) else '',
                     'senses': {k: data.get(k) for k in ('hearing', 'vision', 'smell')},
                     'saved': saved.isoformat()})
             actions = [{'id': r[0], 'kind': r[1], 'target': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
@@ -289,6 +360,15 @@ class DungeonMaster:
                 detail = ' — take an injury away'
             else:
                 raise DMError('Say {"add": a known injury} or {"remove": its id}.')
+        elif kind == 'account.unlock':
+            # An account's earned Gift tiers (doc 49, Phase 5), against one of its characters: grant or revoke a tier,
+            # or hold and release new unlocks.
+            p = payload if isinstance(payload, dict) else {}
+            op, tier = p.get('op'), p.get('tier', '')
+            if op not in ('grant', 'revoke', 'hold', 'release') or (op in ('grant', 'revoke') and tier not in ('gifted', 'quickened')):
+                raise DMError('Say {"op": "grant" or "revoke", "tier": "gifted" or "quickened"}, or {"op": "hold" or "release"}.')
+            payload = {'op': op, 'tier': tier if op in ('grant', 'revoke') else ''}
+            detail = f' — {op}' + (f" {payload['tier']}" if payload['tier'] else '') + ' (their account)'
         elif kind == 'character.dm':
             on = payload.get('dungeonMaster') if isinstance(payload, dict) else None
             if not isinstance(on, bool):
@@ -697,6 +777,71 @@ class DungeonMaster:
                 conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
                 self.audit(conn, who['username'], 'artwork.review', art_id,
                            f'{target.upper()}: {decision} the portrait of {found[0]}' + (f' — {reason}' if reason else ''))
+        return {'id': action, 'status': 'queued'}
+
+    # -- players' reports (Docs/Design/50-player-card-friends-safety.md, Phase 2) ---
+    def reports(self, target):
+        """Reports, open ones first, each with its evidence, and each reported account's earlier reports and the decisions
+        on them; plus how many accounts block each reported account (a count, never who)."""
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
+            if not conn.execute("SELECT to_regclass('game.reports') IS NOT NULL").fetchone()[0]:
+                return {'target': target, 'ready': False, 'reports': [], 'actions': []}
+            names = dict(conn.execute('SELECT key, name FROM game.characters WHERE world_id = %s', (world,)).fetchall())
+            rows = conn.execute('''SELECT id, created_at, reporter_account, reporter_character, reported_account, reported_character, kind,
+                                          category, note, evidence, status, decided_by, decided_at, outcome, silence_hours
+                                   FROM game.reports WHERE world_id = %s
+                                   ORDER BY (status = 'open') DESC, created_at DESC LIMIT 200''', (world,)).fetchall()
+            earlier = {}
+            for r in rows:
+                earlier.setdefault(r[4], []).append({'id': r[0], 'status': r[10], 'category': r[7], 'outcome': r[13] or ''})
+            blocked_by = {}
+            if conn.execute("SELECT to_regclass('game.safety_marks') IS NOT NULL").fetchone()[0]:
+                blocked_by = dict(conn.execute('''SELECT target, count(*) FROM game.safety_marks WHERE world_id = %s AND kind = 'block'
+                                                  GROUP BY target''', (world,)).fetchall())
+            reports = [{'id': r[0], 'at': r[1].isoformat(), 'reporter': r[2], 'reporterName': names.get(r[3], r[3]),
+                        'reported': r[4], 'reportedName': names.get(r[5], r[5]), 'reportedCharacter': r[5], 'kind': r[6],
+                        'category': r[7], 'note': r[8], 'evidence': r[9] if isinstance(r[9], list) else [], 'status': r[10],
+                        'decidedBy': r[11] or '', 'decidedAt': r[12].isoformat() if r[12] else None, 'outcome': r[13] or '',
+                        'silenceHours': r[14], 'earlier': [e for e in earlier.get(r[4], []) if e['id'] != r[0]],
+                        'blockedBy': blocked_by.get(r[4], 0)} for r in rows]
+            actions = [{'id': a[0], 'target': a[1], 'payload': a[2], 'by': a[3], 'at': a[4].isoformat(), 'status': a[5], 'result': a[6]}
+                       for a in conn.execute('''SELECT id, target_id, payload, requested_by, requested_at, status, result
+                                                FROM dm.actions WHERE kind = 'report.decide' ORDER BY id DESC LIMIT 20''').fetchall()]
+        return {'target': target, 'ready': True, 'reports': reports, 'actions': actions}
+
+    def decide_report(self, who, target, report_id, decision, outcome='', hours=0, reason=''):
+        """Asks the game server to uphold or dismiss a report: an upheld one with a note, a warning, or a silence of 1, 6,
+        24 or 72 hours, which the game applies and confirms. Audited."""
+        self.allowed(who, 'report.decide')
+        report_id, decision, outcome, reason = str(report_id), str(decision), str(outcome or ''), str(reason or '').strip()
+        if decision not in ('uphold', 'dismiss'):
+            raise DMError('Uphold or dismiss.')
+        if decision == 'uphold' and outcome not in ('note', 'warning', 'silence'):
+            raise DMError('An upheld report ends in a note, a warning or a silence.')
+        if decision == 'uphold' and outcome == 'silence' and hours not in (1, 6, 24, 72):
+            raise DMError('A silence is 1, 6, 24 or 72 hours.')
+        if len(reason) > 400 or any(ord(c) < 32 for c in reason):
+            raise DMError('A reason is at most 400 plain characters.')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                found = conn.execute('SELECT reported_character, reported_account FROM game.reports WHERE world_id = %s AND id = %s',
+                                     (world, report_id)).fetchone() if world else None
+                if not found:
+                    raise DMError('No such report.', 404)
+                payload = {'report': report_id, 'decision': decision, 'outcome': outcome if decision == 'uphold' else '',
+                           'hours': hours if decision == 'uphold' and outcome == 'silence' else 0}
+                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
+                                         VALUES ('report.decide', %s, %s, %s) RETURNING id''',
+                                      (found[0], json.dumps(payload), who['username'])).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                self.audit(conn, who['username'], 'report.decide', report_id,
+                           f'{target.upper()}: {decision} the report against {found[1]}' +
+                           (f' ({outcome}{f", {hours} h" if outcome == "silence" else ""})' if decision == 'uphold' else '') +
+                           (f' — {reason}' if reason else ''))
         return {'id': action, 'status': 'queued'}
 
     # -- chronicles (Docs/Design/26-living-npcs.md, Phase 8) ----------------------
@@ -1588,6 +1733,15 @@ def make_server(port=8766, dm=None):
                 data = self.body()
                 return self.reply(200, dm.review_artwork(who, str(data.get('target', 'prod')), str(data.get('id', '')),
                                                          str(data.get('decision', '')), str(data.get('reason', ''))))
+            if method == 'GET' and path == '/api/reports':
+                return self.reply(200, dm.reports(self.target(query)))
+            if method == 'POST' and path == '/api/reports/decide':
+                data = self.body()
+                hours = data.get('hours', 0)
+                return self.reply(200, dm.decide_report(who, str(data.get('target', 'prod')), str(data.get('id', '')),
+                                                        str(data.get('decision', '')), str(data.get('outcome', '')),
+                                                        hours if isinstance(hours, int) and not isinstance(hours, bool) else 0,
+                                                        str(data.get('reason', ''))))
             if method == 'GET' and path == '/api/chronicle':
                 return self.reply(200, dm.chronicle(self.target(query), query.get('id', [''])[0]))
             if method == 'POST' and path == '/api/chronicle/story':

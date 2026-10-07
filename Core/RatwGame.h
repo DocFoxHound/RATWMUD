@@ -24,6 +24,9 @@
 #include "RatwPg.h"
 #include "RatwPool.h"
 #include "RatwSections.h"
+#include "RatwPeople.h"
+#include "RatwReports.h"
+#include "RatwStanding.h"
 #include "RatwSocialCore.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
@@ -148,6 +151,11 @@ struct Options
     bool hiddenNames = true;
     // The social level each of a Chapter's three founders needs (doc 32, 3.1; a placeholder). Tests lower it.
     int chapterFoundingLevel = 5;
+    // Earned Gift tiers (doc 49, Phase 5): with `openTiers` every account may make Gifted and Quickened wolves (tests,
+    // scratch servers: --open-tiers); `oneWolfPerAccount` keeps an account's wolves out of the world together, so
+    // nobody pays or stars themselves.
+    bool openTiers = false;
+    bool oneWolfPerAccount = true;
     // How fast the world runs (Game::setSpeed): 1 as ever, 16 sixteen times as fast.
     double speed = 1;
 };
@@ -219,6 +227,28 @@ class Game
     }
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
+    // A character's social standing is its account's (doc 49): the social XP of all the account's characters together
+    // (a development identity's wolf, with no account, its own), and the level that makes on standing.json's curve.
+    long long socialXp(const std::string& characterId) const;
+    int socialLevel(const std::string& characterId) const;
+    SocialLedger& ledger() { return social_; }               // The social ledger (doc 08), for tests and tools.
+    // Whether either wolf's account blocks the other's (doc 50, 7): the test docs 51-58 call before anything between two.
+    bool blocked(const std::string& a, const std::string& b) const;
+    // Every report kept (doc 50), by id: for tests and tools (the DM app reads game.reports itself).
+    const std::map<std::string, reports::Report>& reportsKept() const { return reportCache_; }
+    Result decideReport(const std::string& id, const std::string& decision, const std::string& outcome, int hours, const std::string& by);
+    // Upheld reports against an account in the last `days` days (doc 50): docs 49 and 52 ask.
+    int upheldReportsWithin(const std::string& account, int days) const;
+    // What a resident is told of a player it answers (doc 50): only what it could perceive of their profile.
+    std::string profileContext(const std::string& npc, const std::string& player) const;
+    // An account's earned Gift tiers (doc 49, Phase 5): the DM's account.unlock ("grant" or "revoke" a tier, "hold" or
+    // "release" new unlocks), and what is open and still needed.
+    Result unlockTier(const std::string& account, const std::string& tier, const std::string& op, const std::string& by);
+    const json::Value* tiersOf(const std::string& account) const
+    {
+        const auto it = tiersViews_.find(account);
+        return it == tiersViews_.end() ? nullptr : &it->second;
+    }
     // Factions in play (doc 32, Part 4): for tests and tools to define factions without a database.
     faction::Factions& factions() { return factions_; }
     chapter::Chapters& chapters() { return chapters_; }
@@ -404,6 +434,59 @@ class Game
     bool socialCommand(Connection* c, const json::Value& j, Result& result);
     json::Value notesSave() const;
     void notesLoad(const json::Value& saved);
+    // Earned Gift tiers (doc 49, Phase 5), by account: what is kept (when each tier opened, how, the DM's hold), what
+    // was last measured, and the tiers' view (open or what they still need) for the lobby and the sheet.
+    std::map<std::string, standing::Record> standing_;
+    std::map<std::string, standing::Measures> measures_;
+    std::map<std::string, json::Value> tiersViews_;
+    standing::Measures measuresOf(const std::string& account) const;
+    void checkUnlocks(const std::string& account);
+    json::Value tiersView(const std::string& account) const;
+    int upheldReports(const std::string& account) const;     // Doc 50's reports, when they exist: none until then.
+    json::Value standingSave() const;
+    void standingLoad(const json::Value& saved);
+    // People (doc 50, RatwGamePeople.cpp): each account as a person (handle, experience, played time, settings) by
+    // account ("dev:<id>" for a development identity), and each character's roleplay profile.
+    std::map<std::string, people::AccountRecord> people_;
+    std::map<std::string, people::Profile> profiles_;
+    double peopleAccumulator_ = 0;
+    std::string accountKey(const std::string& characterId) const;
+    std::string accountKey(const Connection* c) const;
+    people::AccountRecord& personOf(const std::string& account);
+    bool profileCommand(Connection* c, const json::Value& j, Result& result);
+    Result setHandle(const std::string& account, const std::string& username, const std::string& handle);
+    void sendProfile(Connection* c);
+    json::Value accountView(const std::string& account) const;
+    people::Viewer viewerFacts(const std::string& viewer, const std::string& target) const;
+    json::Value cardFor(const std::string& viewer, const std::string& target) const;
+    void tendPeople(double dt);
+    json::Value peopleSave() const;
+    void peopleLoad(const json::Value& saved);
+    // Mute, block and report (doc 50, Phase 2; RatwGameSafety.cpp). Marks by the holder's account: a mute aims at a
+    // character, a block at an account (found from the character pointed at, whose label is kept for the list).
+    struct SafetyMark
+    {
+        std::string kind, target, character, label;
+        double at = 0;
+    };
+    std::map<std::string, std::vector<SafetyMark>> safety_;
+    // The lines each connected player received lately (the last 60, within 30 minutes): a report's evidence. Never saved.
+    struct HeardLine
+    {
+        std::uint64_t seq = 0;
+        double at = 0;
+        std::string author, channel, text;
+    };
+    std::map<std::string, std::vector<HeardLine>> heard_;
+    std::unique_ptr<reports::Store> reports_;
+    std::map<std::string, reports::Report> reportCache_;   // Every report kept, by id (read from the store at start).
+    double reportsPurgedAt_ = 0;
+    bool hides(const std::string& listener, const std::string& author) const;   // Muted, or blocked, by the listener.
+    void heardLine(const std::string& listener, std::uint64_t seq, const std::string& author, const std::string& channel,
+                   const std::string& text);
+    bool safetyCommand(Connection* c, const json::Value& j, Result& result);
+    void sendSafety(Connection* c);
+    bool silenced(const std::string& characterId, std::string* until = nullptr) const;
     void onSettled(const LedgerEntry& entry);
     void markChapterStory(SocialStory& story);
     void onStoryClosed(const SocialStory& story);

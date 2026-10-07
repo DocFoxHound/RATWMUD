@@ -5,7 +5,8 @@
 //
 //   build-gifts/level_sim [fights] [suite]
 //
-// Suites: levels (the default: ungifted, doc 44), core (doc 45's yardsticks, bare and armed), gifted2 and quick2 (each
+// Suites: levels (the default: ungifted, doc 44; a level stands for the fighting skill it once gave), bands (doc 49:
+// wolves at fighting skill bands, new, seasoned and veteran, from Data/Progression/skills.json), core (doc 45's yardsticks, bare and armed), gifted2 and quick2 (each
 // family alone and in a pair), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
 // (what a head start in health or the first blow is worth), trance (a Quickened wolf ten levels over one to five plain
 // ones: doc 45's Trance targets), parties, ladder and crowd (one Quickened against one, two or three), gifts (the first
@@ -19,10 +20,15 @@
 // SIM_TACTICS has every wolf play tactics (runs to close, focuses, flanks, spreads, steps back outnumbered, takes a
 // moment to act); SIM_TRANCE (never, outnumbered, always) when a Quickened wolf goes into a Trance; SIM_SKIP leaves
 // abilities unused; SIM_LEVEL one level for the trance suite; SIM_DETAILS lists each ability used; SIM_TRACE prints one
-// fight's log. A wolf may carry its own level: "fireq@20".
+// fight's log. A wolf may carry its own level ("fireq@20", the skill that level gave), band ("fireq@seasoned") or
+// fighting skill ("fireq@s70"), and strengths and weaknesses after its kind ("plain^str_wis@seasoned": strong STR, weak
+// WIS; suite grades). Since doc 49 a player's fighting skill is their own, grown by fighting; no wolf grows
+// in these fights.
 #include "RatwBattle.h"
 #include "RatwGifts.h"
 #include "RatwInjury.h"
+#include "RatwLevels.h"
+#include "RatwPractice.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
 
@@ -43,12 +49,15 @@ namespace
 {
 struct Wolf
 {
-    int level = 1;
+    int level = 1;                          // Its fighting skill as a level would have given it (doc 44: "@20"), unless `skill`.
     std::string blade, kit;                 // A blade ("sword": bronze, "iron_sword", "steel_sword"); a kit (Kits).
     std::string gift;                       // A family, or "" for none.
     bool quickened = false;
     bool naive = false;                     // Uses whatever of its Gift is ready, not a plan.
     double hurt = 0;                        // Starts the fight this hurt (a yardstick: what a head start in health is worth).
+    double skill = -1;                      // Its fighting skill, set (doc 49: "@seasoned", "@s70"); -1: by `level`.
+    std::string band;                       // The band it was set by, for its label.
+    std::map<std::string, std::string> grades;   // Strengths and weaknesses (doc 49: "plain^str_wis": strong STR, weak WIS).
 };
 
 Wolf gifted(const std::string& family, int level = 1) { return {level, "", "", family, false}; }
@@ -1022,14 +1031,19 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
     for (const auto& e : w.entities())
         if (e.second.npc)
             w.entity(e.first)->leaderId = "test-frozen";
-    std::map<std::string, int> level;
-    w.levelOf = [&](const std::string& id) { const auto l = level.find(id); return l == level.end() ? 1 : l->second; };
+    w.practising = false;                           // (The rules are measured: no wolf grows mid-fight.)
     std::vector<std::string> ids[2];
     wolves.clear();
     const auto make = [&](const Wolf& wolf, int side, int i) {
         const std::string id = std::string(side ? "player-b" : "player-a") + std::to_string(i) + "-" + std::to_string(trial);
         auto& e = w.addPlayer(id, id);
-        level[id] = wolf.level;
+        if (!wolf.grades.empty())
+        {
+            practice::Build build;
+            build.grades = wolf.grades;
+            World::applyBuild(e, build);            // Each grade's starting attribute (doc 49).
+        }
+        e.fightingSkill = wolf.skill >= 0 ? wolf.skill : levels::fightingSkill(wolf.level, wolf.quickened);   // (Doc 49: a player's own.)
         if (!wolf.blade.empty())
         {
             e.mouth = "sword";
@@ -1224,7 +1238,11 @@ std::string label(const Wolf& w)
             s += "+" + word + (w.blade.find('~') == std::string::npos ? std::string() : w.blade.substr(w.blade.find('~')));
     if (!w.kit.empty())
         s += "+" + w.kit;
-    return s + " L" + std::to_string(w.level);
+    for (const auto& [a, g] : w.grades)
+        s += (g == "strong" ? "^" : "_") + a.substr(0, 3);
+    if (!w.band.empty())
+        return s + " @" + w.band;
+    return s + (w.skill >= 0 ? " @" + std::to_string(int(w.skill)) : " L" + std::to_string(w.level));
 }
 std::string label(const std::vector<Wolf>& side)
 {
@@ -1238,15 +1256,63 @@ void vs(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int n, int gap =
     row(label(a) + " vs " + label(b), winRate(a, b, n, order, gap));
 }
 
+// A fighting skill band (doc 49, Data/Progression/skills.json): "new" (the skill's start), "seasoned" and "veteran"
+// (shares of the way to the cap: a Quickened wolf's cap is higher).
+double bandSkill(const std::string& band, bool quickened)
+{
+    const auto* s = practice::skill("fighting");
+    if (!s)
+        return 50;
+    const auto& r = practice::rules();
+    const double share = band == "veteran" ? r.veteran : band == "seasoned" ? r.seasoned : 0;
+    return s->start + share * (practice::capFor(*s, quickened) - s->start);
+}
+
+Wolf withBand(Wolf w, const std::string& band)
+{
+    w.band = band;
+    w.skill = bandSkill(band, w.quickened);
+    return w;
+}
+
 Wolf parseWolf(const std::string& given, int level)
 {
-    // "fireq@20": a level of its own.
-    std::string s = given;
+    // "fireq@20": a level of its own (doc 44's tables); "fireq@seasoned" a band, "fireq@s70" a fighting skill (doc 49).
+    std::string s = given, band;
+    double skill = -1;
     if (const auto at = s.find('@'); at != std::string::npos)
     {
-        level = std::atoi(s.c_str() + at + 1);
+        const auto tail = s.substr(at + 1);
+        if (tail == "new" || tail == "seasoned" || tail == "veteran")
+            band = tail;
+        else if (!tail.empty() && tail[0] == 's')
+            skill = std::atof(tail.c_str() + 1);
+        else
+            level = std::atoi(tail.c_str() + (!tail.empty() && tail[0] == 'L' ? 1 : 0));
         s = s.substr(0, at);
     }
+    // "plain^str_wis": grades after the kind, ^ strong and _ weak, by the attribute's first three letters (doc 49).
+    std::map<std::string, std::string> grades;
+    if (const auto mark = s.find_first_of("^_"); mark != std::string::npos)
+    {
+        static const std::map<std::string, std::string> Short = {{"str", "strength"}, {"dex", "dexterity"}, {"wis", "wisdom"},
+                                                                 {"sta", "stamina"}, {"hea", "hearing"}, {"vis", "vision"}, {"sme", "smell"}};
+        for (std::size_t at = mark; at < s.size();)
+        {
+            const auto next = std::min(s.find_first_of("^_", at + 1), s.size());
+            if (const auto a = Short.find(s.substr(at + 1, next - at - 1)); a != Short.end())
+                grades[a->second] = s[at] == '^' ? "strong" : "weak";
+            at = next;
+        }
+        s = s.substr(0, mark);
+    }
+    const auto finish = [&](Wolf w) {
+        w.grades = grades;
+        if (!band.empty())
+            return withBand(w, band);
+        w.skill = skill;
+        return w;
+    };
     // Gear after a "+": "plain+iron+leather" (blades bronze, iron, steel; kits cloth, leather, plate); a "+" alone is a
     // bronze sword and leather (doc 45's "armed").
     std::string blade, kit;
@@ -1273,7 +1339,7 @@ Wolf parseWolf(const std::string& given, int level)
         }
     }
     if (s == "plain")
-        return geared(Wolf{level}, blade, kit);
+        return finish(geared(Wolf{level}, blade, kit));
     std::string f = s;
     bool q = false, nv = false;
     while (!f.empty() && (f.back() == 'q' || f.back() == '!'))
@@ -1284,10 +1350,75 @@ Wolf parseWolf(const std::string& given, int level)
             nv = true;
         f.pop_back();
     }
-    return Wolf{level, blade, kit, f == "plain" ? "" : f, q, nv};
+    Wolf w{level};
+    w.blade = blade;
+    w.kit = kit;
+    w.gift = f == "plain" ? "" : f;
+    w.quickened = q;
+    w.naive = nv;
+    return finish(w);
 }
 
-void levels(int n)
+void gradesSuite(int n)
+{
+    // Doc 49: each strength (and a weakness) against a plain wolf of the same band, bare and armed; then against a band
+    // gap, gear and a Gifted partner. Untuned, for the user's balance pass.
+    std::printf("Strengths and weaknesses (Data/Progression/creation.json), %d fights each. Wins for the first named.\n", n);
+    const auto graded = [](const char* grade, const char* attribute, const char* band) {
+        Wolf w;
+        w.grades[attribute] = grade;
+        return withBand(w, band);
+    };
+    for (const char* band : {"new", "seasoned", "veteran"})
+    {
+        std::printf("\nAt %s, against plain\n", band);
+        const Wolf plain = withBand(Wolf{}, band);
+        for (const char* a : {"strength", "dexterity", "stamina", "wisdom"})
+            vs({graded("strong", a, band)}, {plain}, n);
+        vs({graded("weak", "strength", band)}, {plain}, n);
+        vs({graded("weak", "dexterity", band)}, {plain}, n);
+        vs({armed(graded("strong", "strength", band))}, {armed(plain)}, n);
+    }
+    std::printf("\nA strength against a band, gear and a partner\n");
+    vs({graded("strong", "strength", "new")}, {withBand(Wolf{}, "seasoned")}, n);
+    vs({graded("strong", "dexterity", "new")}, {withBand(Wolf{}, "seasoned")}, n);
+    vs({graded("strong", "strength", "seasoned")}, {armed(withBand(Wolf{}, "seasoned"))}, n);
+    Wolf partner;
+    partner.gift = "seer";
+    vs({graded("strong", "strength", "seasoned")}, {withBand(Wolf{}, "seasoned"), withBand(partner, "seasoned")}, n);
+}
+
+void bands(int n)
+{
+    // Doc 49: fighting skill grows by fighting, so wolves differ by how much they have fought, not by level. The bands
+    // are shares of the way from the skill's start to its cap (Data/Progression/skills.json): untuned, for the user.
+    const Wolf N = withBand(Wolf{}, "new"), S = withBand(Wolf{}, "seasoned"), V = withBand(Wolf{}, "veteran");
+    std::printf("Ungifted wolves at fighting skill bands (new %.0f, seasoned %.0f, veteran %.0f); %d fights each. Wins for the first named.\n",
+                N.skill, S.skill, V.skill, n);
+    std::printf("\nBands\n");
+    row("new vs new", winRate({N}, {N}, n));
+    row("seasoned vs new", winRate({S}, {N}, n));
+    row("veteran vs new", winRate({V}, {N}, n));
+    row("veteran vs seasoned", winRate({V}, {S}, n));
+    std::printf("\nStriking first, gear and numbers against a band up\n");
+    row("new vs seasoned, new strikes first", winRate({N}, {S}, n, 1));
+    row("new vs veteran, new strikes first", winRate({N}, {V}, n, 1));
+    row("new armed vs veteran bare", winRate({armed(N)}, {V}, n));
+    row("new armed vs veteran armed", winRate({armed(N)}, {armed(V)}, n));
+    row("two new vs one veteran", winRate({N, N}, {V}, n));
+    row("two new vs one seasoned", winRate({N, N}, {S}, n));
+    std::printf("\nQuickened bands (cap %.0f) vs plain wolves of the same band\n", bandSkill("veteran", true) > 0 ? practice::capFor(*practice::skill("fighting"), true) : 0.0);
+    for (const char* band : {"new", "seasoned", "veteran"})
+        for (const char* f : {"fire", "earth"})
+        {
+            Wolf q;
+            q.gift = f;
+            q.quickened = true;
+            vs({withBand(q, band)}, {withBand(Wolf{}, band)}, n);
+        }
+}
+
+void levelSuite(int n)
 {
     const Wolf L1{1}, L5{5}, L10{10}, L15{15}, L20{20}, L25{25};
     std::printf("Ungifted wolves, to the ground; %d fights each, who starts alternated unless said. Wins for the first named.\n", n);
@@ -1358,7 +1489,11 @@ int main(int argc, char** argv)
         return 0;
     }
     if (has("levels"))
-        levels(n);
+        levelSuite(n);
+    if (has("bands"))
+        bands(n);
+    if (has("grades"))
+        gradesSuite(n);
     if (suite == "worth")
     {
         std::printf("What a head start in health is worth, L10, %d tiles apart\n", gap);

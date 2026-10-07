@@ -304,7 +304,7 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
             o.add("walk", walk);
         }
         // What drives the bars, for their tooltips: stamina back a turn (doubled resting), the bar's fill time.
-        o.add("regen", std::round(battle::staminaPerTurn(e->hurt, e->strength) * (f.resting ? battle::RestFactor : 1) * 10) / 10);
+        o.add("regen", std::round(battle::staminaPerTurn(e->hurt, e->strength, e->npc ? 50 : e->endurance) * (f.resting ? battle::RestFactor : 1) * 10) / 10);
         o.add("fillSeconds", std::round(100 / (battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond)));
         // Armour (doc 35, Part 8), by hit zone: the piece, what it takes off a cut and a thrust (a bite); and what it all
         // takes off the bar's DEX.

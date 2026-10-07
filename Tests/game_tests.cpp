@@ -8,6 +8,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <ctime>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -299,7 +300,29 @@ void accountsAndARestart()
     expect(!gifted("gifted", "", "bad-1") && !gifted("quickened", "death_walker", "bad-2") && !gifted("normal", "fire", "bad-3") &&
                !gifted("chosen", "water", "bad-4") && !gifted("gifted", "lightning", "bad-5"),
            "a Gifted wolf needs a family, a playable one; a Normal wolf none");
+    // Earned Gift tiers (doc 49, Phase 5): a fresh account sees both locked, with what each takes, and is refused them.
+    {
+        const auto& tiers = wren.last("lobby")->object("tiers");
+        expect(!tiers.object("gifted").boolean("open") && !tiers.object("quickened").boolean("open"), "a new account: Gifted and Quickened locked");
+        expect(tiers.object("gifted").array("progress").size() == 2 &&
+                   tiers.object("gifted").array("progress")[0].string("label") == "Social level 1 of 3",
+               "with what Gifted takes: " + tiers.object("gifted").array("progress")[0].string("label"));
+        expect(tiers.object("quickened").array("progress").size() == 4, "and what Quickened takes (level, stars, givers, Stories)");
+    }
+    expect(!gifted("gifted", "water", "lock-1") && wren.last("lobby")->string("message").find("Gifted isn't open to your account yet") == 0,
+           "a Gifted wolf refused: " + wren.last("lobby")->string("message"));
+    expect(!gifted("quickened", "blinker", "lock-2"), "and a Quickened one");
+    // The Dungeon Master opens them (here as the DM's account.unlock would).
+    expect(g.unlockTier("wren", "quickened", "grant", "dm:test").ok, "Quickened granted");
+    expect(!gifted("quickened", "blinker", "lock-3"), "but Quickened needs Gifted open first");
+    expect(g.unlockTier("wren", "gifted", "grant", "dm:test").ok && g.tiersOf("wren") && g.tiersOf("wren")->object("gifted").string("by") == "dm:test",
+           "Gifted granted, by the DM");
     expect(gifted("quickened", "blinker", "make-2") && gifted("gifted", "water", "make-3"), "a Quickened Blinker and a Gifted Water wolf");
+    expect(g.unlockTier("wren", "", "hold", "dm:test").ok && g.tiersOf("wren")->boolean("hold"), "the DM can hold an account's unlocks");
+    expect(g.unlockTier("wren", "quickened", "revoke", "dm:test").ok && !g.tiersOf("wren")->object("quickened").boolean("open"),
+           "and, held, revoke one");
+    expect(!g.unlockTier("wren", "chosen", "grant", "dm:test").ok && !g.unlockTier("nobody", "gifted", "grant", "dm:test").ok,
+           "no such tier, no such account");
     std::map<std::string, std::string> made;
     for (const auto& ch : wren.last("lobby")->array("characters"))
         made[ch.string("name")] = ch.string("gift") + (ch.boolean("quickened") ? "+" : "");
@@ -309,6 +332,42 @@ void accountsAndARestart()
         if (ch.name == "Wren make-2")
             expect(ch.gift == "blinker" && ch.quickened && ch.mana > 0, "and the character has it, with mana");
     expect(!gifted("gifted", "seer", "make-2"), "the same request ID with another Gift is refused");
+    // Strengths and weaknesses at creation (doc 49, Phase 4): within the budget, saved; a reused request ID with another
+    // build refused; no build, a plain wolf.
+    const auto built = [&](const std::string& buildJson, const std::string& commandId) {
+        json::Value build;
+        std::string error;
+        expect(json::parse(buildJson, build, error), "a build: " + error);
+        g.command(&wren, cmd({{"type", "character_create"}, {"name", "Wren " + commandId}, {"age", 24}, {"appearance", appearance},
+                              {"build", build}, {"commandId", commandId}}));
+        return wren.last("lobby")->boolean("ok");
+    };
+    expect(wren.last("lobby")->object("creation").array("presets").size() == 4, "the creator is sent the presets (doc 49)");
+    expect(!built(R"({"grades": {"strength": "strong", "dexterity": "strong", "wisdom": "strong"}})", "over-1"), "over the budget: refused");
+    expect(!built(R"({"specialty": "juggler"})", "over-2"), "no such specialty: refused");
+    expect(built(R"({"grades": {"strength": "strong", "dexterity": "strong", "stamina": "strong", "wisdom": "weak"}, "specialty": "fighter"})", "make-4"),
+           "a Brawler is made: " + wren.last("lobby")->string("message"));
+    for (const auto& [cid, ch] : g.characters())
+        if (ch.name == "Wren make-4")
+            expect(ch.strength == 60 && ch.endurance == 60 && ch.wisdom == 20 && ch.fightingSkill == 60 && ch.specialty == "fighter" &&
+                       ch.grades.size() == 4,
+                   "strong strength and stamina, weak wisdom, fighting started at 60");
+    expect(!built(R"({"grades": {"smell": "strong"}})", "make-4"), "the same request ID with another build is refused");
+    for (const auto& [cid, ch] : g.characters())
+        if (ch.name == "Wren Reed")
+            expect(ch.grades.empty() && ch.strength == 50 && ch.specialty.empty(), "the first wolf, made with no build, is plain");
+    // Social standing is the account's (doc 49): one character's social XP counts for all of them.
+    {
+        std::string other;
+        for (const auto& [cid, ch] : g.characters())
+            if (ch.name == "Wren make-3")
+                other = cid;
+        g.ledger().points[id] = 300;
+        expect(g.socialXp(other) == 300 && g.socialLevel(other) == 3 && g.socialLevel(id) == 3,
+               "300 social XP on one of Wren's wolves: every one of hers stands at social level 3");
+        expect(g.socialLevel("player-nobody") == 1, "a wolf with no account (a development identity) stands on its own");
+        g.ledger().points.erase(id);
+    }
     g.command(&wren, cmd({{"type", "chat"}, {"text", "/sit"}}));
     run(g, wren, 1);
     g.command(&wren, cmd({{"type", "character_leave"}}));
@@ -323,6 +382,80 @@ void accountsAndARestart()
     g.disconnect(&wren);
     g.save();
     expect(g.characters().count(id) && g.storageReady(), "saved, with the character offline");
+}
+
+// Earned Gift tiers (doc 49, Phase 5): counted from the ledger (scenes on Normal wolves, stars from other accounts'
+// wolves, closed Stories, the account's social level), opened as earned; and one wolf per account in the world.
+void earnedTiersAndOneWolf()
+{
+    game::Options o;
+    o.hiddenNames = false;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client ivy, ivy2;
+    ivy.id = 20;
+    ivy2.id = 21;
+    g.connect(&ivy);
+    g.connect(&ivy2);
+    g.command(&ivy, cmd({{"type", "auth_register"}, {"username", "Ivy"}, {"password", "a long enough password"}}));
+    g.settle();
+    auto appearance = json::Value::object();
+    appearance.add("species", "timber"); appearance.add("sex", "female"); appearance.add("stature", "average");
+    appearance.add("pattern", "solid"); appearance.add("baseColor", 3); appearance.add("gradientColor", 1);
+    appearance.add("markingColor", 5); appearance.add("gradientAmount", .5); appearance.add("patternAmount", .5);
+    for (const char* name : {"Ivy One", "Ivy Two"})
+        g.command(&ivy, cmd({{"type", "character_create"}, {"name", name}, {"age", 20}, {"appearance", appearance}, {"commandId", std::string("c-") + name[4]}}));
+    const auto roster = ivy.last("lobby")->array("characters");
+    expect(roster.size() == 2, "two wolves on one account");
+    const auto one = roster[0].string("id"), two = roster[1].string("id");
+    // One wolf per account in the world.
+    g.command(&ivy, cmd({{"type", "character_enter"}, {"id", one}}));
+    expect(ivy.entityId == one, "Ivy's first wolf enters");
+    g.command(&ivy2, cmd({{"type", "auth_login"}, {"username", "ivy"}, {"password", "a long enough password"}}));
+    g.settle();
+    g.command(&ivy2, cmd({{"type", "character_enter"}, {"id", two}}));
+    expect(ivy2.entityId.empty() && ivy2.last("lobby")->string("message") == "Another of your wolves is in the world. Leave them first.",
+           "her second can't join it: " + ivy2.last("lobby")->string("message"));
+    // Earned: ten paid scenes on a Normal wolf and social level 3 open Gifted, as earned.
+    auto& ledger = g.ledger();
+    const double now = double(std::time(nullptr));
+    for (int i = 0; i < 10; ++i)
+    {
+        LedgerEntry e;
+        e.actor = one;
+        e.reason = "qualified_session_settlement";
+        e.amount = 25;
+        e.at = now - 60 * i;
+        e.session = "s" + std::to_string(i);
+        ledger.entries.push_back(e);
+    }
+    ledger.points[one] = 250;
+    ledger.reindex();
+    expect(g.unlockTier("ivy", "", "release", "test").ok, "(the account looked at again)");
+    expect(g.tiersOf("ivy")->object("gifted").boolean("open") && g.tiersOf("ivy")->object("gifted").string("by") == "earned" &&
+               !g.tiersOf("ivy")->object("quickened").boolean("open"),
+           "ten scenes and social level 3: Gifted, earned; not Quickened");
+    // Quickened: social level 8, 100 stars from 30 different wolves' accounts, two closed Stories.
+    for (int i = 0; i < 100; ++i)
+        ledger.stars.push_back({"player-giver" + std::to_string(i % 30), two, "s", "gold", now, 2});
+    for (const char* story : {"story-1", "story-2"})
+    {
+        LedgerEntry e;
+        e.actor = two;
+        e.reason = "story_closure";
+        e.amount = 5;
+        e.at = now;
+        e.session = story;
+        ledger.entries.push_back(e);
+    }
+    ledger.points[two] = 1750 - 250;
+    ledger.reindex();
+    g.unlockTier("ivy", "", "release", "test");
+    expect(g.tiersOf("ivy")->object("quickened").boolean("open") && g.tiersOf("ivy")->object("quickened").string("by") == "earned",
+           "level 8, 100 stars from 30 wolves, two Stories: Quickened, earned");
+    g.disconnect(&ivy);
+    g.disconnect(&ivy2);
 }
 
 // Passwords are worked on off the game thread (doc 31): signing in costs the game almost nothing, the answer comes
@@ -544,7 +677,9 @@ void aRestartFromAFile()
         g.command(&c, cmd({{"type", "character_enter"}, {"id", id}}));
         g.settle();
         g.world().entity(id)->position.x += 2;
+        expect(g.unlockTier("moss", "gifted", "grant", "dm:test").ok, "Moss's account may make Gifted wolves");
         g.disconnect(&c);
+        g.save();                                  // (An unlock asks for a save soon; the test doesn't wait for it.)
     }
     game::Options o;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
@@ -553,6 +688,9 @@ void aRestartFromAFile()
     std::string problem;
     expect(again.start(problem), "a second server starts from the file: " + problem);
     expect(again.characters().count(id), "the character is still there");
+    expect(again.tiersOf("moss") && again.tiersOf("moss")->object("gifted").boolean("open") &&
+               again.tiersOf("moss")->object("gifted").string("by") == "dm:test" && !again.tiersOf("moss")->object("quickened").boolean("open"),
+           "and so is what the account has opened (doc 49)");
     Client c;
     c.id = 5;
     again.connect(&c);
@@ -1489,6 +1627,7 @@ int main()
         uploadedPortraits();
         theGameAnswersWhatItKnows();
         accountsAndARestart();
+    earnedTiersAndOneWolf();
         signingInNeverHoldsTheGame();
         freeMovementIsChecked();
         aRestartFromAFile();

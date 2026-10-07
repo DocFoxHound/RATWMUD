@@ -41,7 +41,8 @@ checkpoint::ServerState serverWith(const World& w)
     s.companions["npc_scout"] = "player-ash";
     s.memories.record("npc_keeper", "player-ash", {3, 100, "player-ash", "A meal, please."});
     s.memories.summaries.push_back({"m1", "npc_keeper", "player-ash", "They ate well.", 10, 20, {1, 2}});
-    s.social.entries.push_back({5, 50, "player-ash", "npc_keeper", "reply", 2, "s1"});
+    s.social.entries.push_back({5, 50, "player-ash", "npc_keeper", "qualified_session_settlement", 2, "s1"});
+    s.social.entries.push_back({6, 51, "player-ash", "", "discovery", 5, "visit:tavern"});   // (Old XP: history only, doc 49.)
     s.social.sessions["s1"] = {"s1", "tavern", 40, 60, 0, {{"player-ash", {2, 12, 1, 60, 40, {"npc_keeper"}}},
                                                            {"player-bo", {1, 6, 0, 55, 45, {}, true}}}};
     s.commandReceipts["player-ash"] = {"c1", "c2"};
@@ -142,7 +143,8 @@ int main()
                "who stepped out of a scene survives a restart");
         expect(serverBack.social.sessions["s1"].members["player-ash"].lastAudience == std::vector<std::string>{"npc_keeper"},
                "and who was listening");
-        expect(serverBack.social.points["player-ash"] == 2, "social points counted from the ledger");
+        expect(serverBack.social.points["player-ash"] == 2 && serverBack.social.entries.size() == 2,
+               "social points counted from the ledger's social receipts alone; old XP receipts kept as history (doc 49)");
         expect(serverBack.characters.size() == server.characters.size() && back.players.size() == server.characters.size(),
                "every character, and they are the world's players");
         expect(sameCharacter(serverBack.characters.at("player-ash"), server.characters.at("player-ash")) &&

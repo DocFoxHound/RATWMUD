@@ -16,6 +16,7 @@
 #include "RatwAppearance.h"
 #include "RatwBattle.h"
 #include "RatwInjury.h"
+#include "RatwPractice.h"
 #include "RatwBonds.h"
 #include "RatwCrime.h"
 #include "RatwSchedules.h"
@@ -285,6 +286,16 @@ struct Entity
     int poseStrikes = 0;                          // Poses refused since the last one accepted.
     std::uint32_t poseSeq = 0;                    // The last pose accepted.
     std::uint32_t inputSeq = 0;                   // Held movement: the last input applied.
+    // Practice (Docs/Design/49-characters-and-earned-gifts.md): a player's grades (an attribute to "weak" or "strong";
+    // plain when absent) and specialty, chosen at creation (its Phase 4); trade skills by family ("craft", "labour"...);
+    // stamina the attribute (`endurance`, which Phase 4 puts to work); which of the plan's migrations it has had; and
+    // what practice keeps (RatwPractice.h). Saved, but for the parts PracticeState says aren't.
+    std::map<std::string, std::string> grades;
+    std::string specialty;
+    std::map<std::string, double> skills;
+    double endurance = 50.0;
+    int progressVersion = 0;
+    PracticeState practice;
 };
 
 // The world's entities by ID: a std::map that also keeps a list of them in ID order, for the passes over all of them
@@ -775,16 +786,29 @@ class World
     double meterRate(const Battle& b, const BattleFighter& f, double haste) const;
     // Whether a fighter's side can't be flanked (Heat Sense, Stone Armor, Water Screen, Critical Sight: doc 43).
     bool unflankable(const BattleFighter& f) const;
-    // A player's level (doc 44: their XP is the game's social ledger): set by the game; level 1 without it.
-    std::function<int(const std::string& id)> levelOf;
-    // XP earned in the world (doc 44): a typed award ("work", "practice", "milestone", "discovery", "story") and what it
-    // was for (paid once for each), taken by the game into the ledger.
-    struct Award
-    {
-        std::string who, kind, source;
-    };
-    void award(const std::string& who, const std::string& kind, const std::string& source);
-    std::vector<Award> takeAwards();
+    // Practice (doc 49): the one way an attribute or skill grows, from a source in Data/Progression/skills.json
+    // ("nose.use", "sneak.ambush"...). `partner` is the wolf practised with or against (an ID) and `partnerKind`
+    // ("player", "resident", "animal", "fierce", "post") with `partnerValue` its skill if known; `occasion` names one
+    // occasion (a fight's ID; empty: what comes within a minute of the last is one); `teacher` a teacher by kind
+    // ("mentor", "trainer", "master"). Players only. A growth line goes to the player as a notice.
+    using PracticeContext = practice::Context;
+    void practise(const std::string& who, const std::string& source, const PracticeContext& context = {});
+    // A wolf's value of an attribute or skill, and its cap (nullptr/0 for one it can't have).
+    static double* practiceSlot(Entity& e, const practice::Skill& s);
+    static double practiceValue(const Entity& e, const practice::Skill& s);
+    static double practiceCap(const Entity& e, const practice::Skill& s);
+    // A new wolf's build (doc 49, Phase 4): its grades' starting attributes and its specialty's starting skill.
+    static void applyBuild(Entity& e, const practice::Build& build);
+    // Development and tests: set a skill's value and, if `today` >= 0, what it has gained today.
+    Result setPractice(const std::string& who, const std::string& skill, double value, double today = -1);
+    // Real seconds, for practice's rolling day and rested time (set by the game; the world's own time without it), and
+    // the account a character belongs to (set by the game; "" for none), so one account's wolves never teach each other.
+    std::function<double()> realClock;
+    // Off, nothing grows: simulations that measure the rules (Tests/level_sim.cpp) keep their wolves as made.
+    bool practising = true;
+    std::function<std::string(const std::string& id)> accountOf;
+    // Whether a player is at the keys now (set by the game): passive practice (an apprentice's hours) needs it.
+    std::function<bool(const std::string& id)> playerActive;
     // Whether a fighter could stand on an arena tile now: open ground no one stands on or walks to (but `except`).
     bool arenaOpen(const Battle& b, int x, int y, const std::string& except = {}) const;
     // The tiles a fighter may move to now (none when it isn't their turn, or they have moved).
@@ -1393,9 +1417,11 @@ class World
     std::map<std::string, double> mendedDay_;       // Injury id -> the day it was last Mended.
     std::set<std::pair<std::string, std::string>> dangerTold_;   // Seer, bandit: already warned.
     double giftSensesAt_ = 0;                       // When Danger Sense last looked.
-    std::vector<Award> awards_;                     // XP earned, for the game to take (doc 44).
-    std::map<std::string, double> awardSent_;       // Who|kind|source -> when last sent (the same one not again for a while).
-    double progressAt_ = 0;                         // When players' work, places and skills were last looked at.
+    double progressAt_ = 0;                         // When apprentices' practice was last looked at (doc 49).
+    std::map<std::string, std::pair<double, double>> teachers_;   // Who|skill -> (until, factor): a better player near (doc 49).
+    double teacherNear(const Entity& e, const practice::Skill& s, double now);
+    Result useGiftNow(const std::string& id, const std::string& ability, const std::string& target);   // (useGift's body.)
+    void practiseMoving(Entity& a, double movedTime);
     void tendProgress();
     std::string giftWhyNot(const Battle& b, const BattleFighter& f, const std::string& ability) const;
     void overreach(Battle& b, BattleFighter& f, const std::string& family);
@@ -1403,7 +1429,9 @@ class World
     bool throwFighter(Battle& b, BattleFighter& t, int dx, int dy, int tiles, const std::string& by, double crash);
     void dropItem(Battle& b, BattleFighter& f);
     void tendFightSurroundings(Battle& b);
-    void growSkill(Entity& e, double amount);
+    // Fighting skill grows by fighting (doc 49): a blow landed on a foe still able to fight, or standing to a fight's
+    // end, is practice of the `source` ("fight.blow", "fight.end"), the foe the partner and the fight the occasion.
+    void growSkill(Battle& b, const BattleFighter& learner, const BattleFighter* foe, const char* source);
     Battle* battleFor(const std::string& id);
     Battle* battleById(const std::string& battleId);
     Result startBattle(const std::string& attacker, const std::string& target, bool pvp);

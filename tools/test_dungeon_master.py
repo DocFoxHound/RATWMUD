@@ -142,6 +142,71 @@ class DungeonMasterTests(Fixture):
         ada = self.dm.players('prod')['characters'][0]
         self.assertEqual((ada['gift'], ada['quickened']), ('', False), 'the sheet shows the Gift (none yet)')
 
+    def test_an_account_unlock_is_queued_and_its_standing_shown(self):
+        # Earned Gift tiers (doc 49, Phase 5): account.unlock against one of the account's characters, and the account's
+        # standing (game.account_standing, migration 0034) on the Players tab.
+        master = self.sign_in('dm-master')
+        queued = self.dm.request(master, 'prod', 'account.unlock', 'player-ada', 'Testing', {'op': 'grant', 'tier': 'gifted'})
+        held = self.dm.request(master, 'prod', 'account.unlock', 'player-ada', '', {'op': 'hold', 'tier': 'quickened'})
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            rows = dict(game.execute("SELECT id, payload FROM dm.actions WHERE kind = 'account.unlock'").fetchall())
+        self.assertEqual(rows[queued['id']], {'op': 'grant', 'tier': 'gifted'}, 'the game server reads the unlock')
+        self.assertEqual(rows[held['id']], {'op': 'hold', 'tier': ''}, 'a hold is for the whole account')
+        for bad in ({'op': 'grant'}, {'op': 'grant', 'tier': 'chosen'}, {'op': 'erase', 'tier': 'gifted'}, None):
+            with self.assertRaises(D.DMError):
+                self.dm.request(master, 'prod', 'account.unlock', 'player-ada', '', bad)
+        self.assertIsNone(self.dm.players('prod')['characters'][0]['account'], 'no standing saved yet')
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            owner.execute('''INSERT INTO game.account_standing (world_id, key, position, data)
+                             SELECT id, 'ada', 0, %s FROM world.worlds''',
+                          (json.dumps({'account': 'ada', 'characters': ['player-ada'], 'giftedAt': 1, 'giftedBy': 'earned', 'hold': True,
+                                       'measures': {'socialLevel': 4, 'normalScenes': 12, 'stars': 7, 'starGivers': 3, 'closedStories': 1}}),))
+        account = self.dm.players('prod')['characters'][0]['account']
+        self.assertEqual((account['name'], account['socialLevel'], account['gifted'], account['quickened'], account['hold']),
+                         ('ada', 4, 'earned', None, True), 'the account, its social level, its tiers and its hold')
+
+    def test_a_handle_and_a_profile_are_shown_read_only(self):
+        # Doc 50, migration 0035: the account as a person and the character's profile, as the game server saves them.
+        self.assertIsNone(self.dm.players('prod')['characters'][0]['person'], 'nothing saved yet')
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            owner.execute('''INSERT INTO game.account_profiles (world_id, key, position, data) SELECT id, 'ada', 0, %s FROM world.worlds''',
+                          (json.dumps({'account': 'ada', 'characters': ['player-ada'], 'handle': 'Grey Fox', 'experience': 'guide',
+                                       'playedSeconds': 5400}),))
+            owner.execute('''INSERT INTO game.profiles (world_id, key, position, data) SELECT id, 'player-ada', 0, %s FROM world.worlds''',
+                          (json.dumps({'currently': 'mending nets', 'status': 'lfs'}),))
+        ada = self.dm.players('prod')['characters'][0]
+        self.assertEqual(ada['person'], {'handle': 'Grey Fox', 'experience': 'guide', 'playedHours': 1.5}, 'the handle and hours played')
+        self.assertEqual((ada['profile']['currently'], ada['profile']['status']), ('mending nets', 'lfs'), 'and the profile, to read')
+
+    def test_reports_are_listed_and_decided(self):
+        # Doc 50, Phase 2 (migration 0036): a report as the game server writes it, listed with its evidence and the block
+        # count; a decision queued as report.decide, validated and audited; viewers may read but not decide.
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            owner.execute('''INSERT INTO game.reports (world_id, id, reporter_account, reporter_character, reported_account, reported_character,
+                                                       kind, category, note, evidence)
+                             SELECT id, 'rep-1', 'cy', 'player-cy', 'bob', 'player-ada', 'speech', 'harassment', 'He keeps at it.', %s
+                             FROM world.worlds''', (json.dumps([{'seq': 7, 'at': 1, 'channel': 'ic', 'text': 'Get lost.'}]),))
+            owner.execute('''INSERT INTO game.safety_marks (world_id, key, position, data) SELECT id, 'cy|block|bob', 0, %s FROM world.worlds''',
+                          (json.dumps({'holder': 'cy', 'kind': 'block', 'target': 'bob', 'character': 'player-ada'}),))
+        listed = self.dm.reports('prod')
+        self.assertTrue(listed['ready'])
+        report = listed['reports'][0]
+        self.assertEqual((report['id'], report['status'], report['category'], report['blockedBy']), ('rep-1', 'open', 'harassment', 1))
+        self.assertEqual(report['evidence'][0]['text'], 'Get lost.', 'the evidence lines')
+        master = self.sign_in('dm-master')
+        for bad in (('uphold', 'ban', 0), ('uphold', 'silence', 5), ('punish', '', 0)):
+            with self.assertRaises(D.DMError):
+                self.dm.decide_report(master, 'prod', 'rep-1', *bad)
+        with self.assertRaises(D.DMError):
+            self.dm.decide_report(master, 'prod', 'rep-nope', 'dismiss')
+        queued = self.dm.decide_report(master, 'prod', 'rep-1', 'uphold', 'silence', 24, 'Repeated harassment.')
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            row = game.execute('SELECT kind, target_id, payload FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
+        self.assertEqual(row, ('report.decide', 'player-ada', {'report': 'rep-1', 'decision': 'uphold', 'outcome': 'silence', 'hours': 24}))
+        viewer = self.sign_in('dm-viewer')
+        with self.assertRaises(D.DMError):
+            self.dm.decide_report(viewer, 'prod', 'rep-1', 'dismiss')
+
     def test_an_injury_is_given_or_taken_away(self):
         # Injuries (Docs/Design/38-injuries.md, phase 5): a known kind at a severity and side, or one taken away by id.
         master = self.sign_in('dm-master')

@@ -165,10 +165,11 @@ class SocialLedger
     static bool isFight(const SocialSession& s) { return s.party.rfind("fight:", 0) == 0; }
     // A player in a fight: a member of its scene from the start, whether they talk or not.
     void joinFight(const std::string& fight, const std::string& cell, const std::string& member, double now);
-    // The fight is over: those in `fought` (who took their turns) are paid for the fight, and those who talked it
-    // through (the usual shape, with another who did) twice a scene's pay; the usual decay and daily caps after.
+    // The fight is over: those who talked it through (the usual shape, with another who did) are paid twice a scene's
+    // pay, the usual decay and daily caps after; those in `fought` who didn't talk get a zero receipt (so stars and
+    // Stories still take the fight as a scene). Fighting itself pays no social XP: it teaches fighting (doc 49).
     int settleFight(const std::string& fight, const std::set<std::string>& fought, double now);
-    static constexpr int FightXP = 10, FightTalkFactor = 2;
+    static constexpr int FightTalkFactor = 2;
     int endFor(const std::string& actor, double now);
     // One member steps out of an open scene (not a fight's): paid at once if they have the shape and another member
     // has it too; the others carry on. False if they are in no such scene.
@@ -181,16 +182,16 @@ class SocialLedger
     {
         return c.turns >= ShapeTurns && c.words >= ShapeWords && c.replies >= ShapeReplies;
     }
-    int level(const std::string& actor) const;     // By doc 44's curve (RatwLevels.h).
-    // XP for something other than a scene (doc 44), each kind a typed receipt: "work" (10, at most 30 a day),
-    // "practice" (5, 15 a day), "milestone" (10), "discovery" (5, 25 a day), "story" (25). Paid once for each `source`
-    // (a later one with the same source pays nothing). Returns what was paid (rested XP on top included), or -1 if the
-    // day's limits leave nothing for it now (no receipt: it may be paid another day).
-    int award(const std::string& actor, const std::string& kind, const std::string& source, double now);
-    // The XP a rolling day may pay (doc 44), across every kind; and rested XP: 50 a day away, 300 at most, paid again
-    // on top of what is earned (outside the cap) until it is used up.
-    static constexpr int DailyCap = 150, RestedPerDay = 50, RestedMost = 300;
-    int restedLeft(const std::string& actor, double now) const;
+    // One character's social level on the curve in Data/Progression/standing.json (doc 49: the game sums an account's
+    // characters; this is one character's own).
+    int level(const std::string& actor) const;
+    // The social XP a rolling day may pay (standing.json's dailyCap). Social XP is scenes, stars and Stories alone
+    // (doc 49): work, practice, places and contracts teach skills instead, and rested time is practice's.
+    static int dailyCap();
+    // Each actor's receipts, by position in `entries` (kept as receipts are written; rebuilt by reindex() after
+    // `entries` is replaced or filled from outside, as a load does), so a day's pay reads one actor's receipts.
+    void reindex();
+    const std::vector<std::size_t>& receiptsOf(const std::string& actor) const;
 
   private:
     // A qualified member's pay for a scene: by their place among those qualified (joined first, first), less for
@@ -198,6 +199,8 @@ class SocialLedger
     int payMember(const SocialSession& scene, const std::vector<std::string>& qualified, std::size_t index, double now);
     int pay(const std::string& actor, const std::string& partner, const std::string& reason, const std::string& source,
             int requested, double now, std::uint64_t event);
+    void add(const LedgerEntry& e);
+    std::map<std::string, std::vector<std::size_t>> byActor_;
     double pairDecay(const std::string& a, const std::string& b, double now) const;
 };
 // A title for a social level (doc 32, 1.3).

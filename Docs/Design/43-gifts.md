@@ -468,7 +468,7 @@ its phase lands.
 | Question | Note |
 | --- | --- |
 | Mana pools, regen and spell power by tier | Left for the stats pass. Today's pool (about 44) fits about one big Quickened spell per fight. |
-| Should anything limit choosing Quickened? | **Decided (the user, 2026-10-04): free for now.** It will later become part of the social levelling system (doc 08). |
+| Should anything limit choosing Quickened? | **Decided (the user, 2026-10-04): free for now.** It will later become part of the social levelling system (doc 08). **Changed (doc 49, Phase 5, built 2026-10-06, not committed):** Gift tiers are earned per account. Normal first; Gifted at social level 3 and 10 scenes on Normal wolves; Quickened with Gifted, social level 8, 100 stars from 30 different wolves, 2 closed Stories and no upheld reports (Data/Progression/standing.json). The creator shows locked tiers and what they take; a DM can grant, revoke or hold (account.unlock); `--open-tiers` opens every tier for tests and scratch servers. |
 | The Warden system that reads Warden attention | A later doc. |
 | Buffs to an ally's damage for some Gifted families | Acceptable later; left out of this first set. |
 | Should Tailwind and Battle Sense work outside fights? | Battle Sense yes (it is the rogue's sneaking); Tailwind assumed fights only. |

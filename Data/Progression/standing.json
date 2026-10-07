@@ -1,0 +1,21 @@
+{
+  "about": "Social standing (Docs/Design/49-characters-and-earned-gifts.md, Design 7): the social level curve, its titles, and which receipts count as social XP. A level is the account's social XP (summed over its characters) on this curve: level L to L + 1 costs stepBase + stepGrowth × (L − 1). Every number is a placeholder for the user's balance pass.",
+  "curve": {"stepBase": 100, "stepGrowth": 50},
+  "titles": [
+    {"level": 1, "title": "Stranger"},
+    {"level": 3, "title": "Known"},
+    {"level": 5, "title": "Familiar Face"},
+    {"level": 8, "title": "Respected"},
+    {"level": 12, "title": "Notable"},
+    {"level": 18, "title": "Renowned"},
+    {"level": 25, "title": "Legend"}
+  ],
+  "socialReasons": ["qualified_session_settlement", "gold_star", "story_star", "story_closure"],
+  "dailyCap": 150,
+  "unlocks": {
+    "about": "Earned Gift tiers, per account (doc 49, 9; the user's measures, 2026-10-06). Kept once earned.",
+    "gifted": {"socialLevel": 3, "normalScenes": 10},
+    "quickened": {"socialLevel": 8, "stars": 100, "starGivers": 30, "closedStories": 2, "reportDays": 30},
+    "givers": 64
+  }
+}

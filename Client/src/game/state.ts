@@ -38,6 +38,7 @@ export interface Post {
     encounter?: EncounterView;  // The story's one entry for a fight (doc 18), kept up to date in place.
     muffled?: boolean;          // Said around a sword held in the jaws (doc 33).
     faint?: boolean;            // A voice heard, not a word of it made out.
+    sequence?: number;          // The line's number, for muting, blocking or reporting its author (doc 50): never their id.
 }
 
 export interface Hit {
@@ -71,6 +72,9 @@ export interface EntityView {
     lifeStage: string;
     artwork: string;            // An uploaded portrait this player may see ('' for none).
     gear: GearView[];           // Armour and weapons they have on, plain to see (doc 35).
+    rp: string;                 // A player's status mark (doc 50): 'ooc', 'lfs', 'quill', or '' for in character.
+    currently: string;          // Their Currently line ("mending nets by the pier"), '' for none.
+    walkup: boolean;            // Fine to approach unannounced.
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -107,6 +111,13 @@ export class GameState {
     // What the screen is showing.
     snapshot: Json | null = null;
     inspectedCharacter: Json | null = null;
+    // One's own roleplay profile, one's account as a person, and the profile rules (doc 50), as the server last sent them.
+    profileOwn: Json | null = null;
+    account: Json | null = null;
+    profileRules: Json | null = null;
+    // One's mutes and blocks (doc 50), and the wolf or line a report or safety menu is about.
+    safetyMarks: Json[] = [];
+    reportTarget: {target?: string; line?: number; label: string} | null = null;
     reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
     missionBoard: Json | null = null;   // The last faction mission board asked for (doc 32, 4.5).
     posts: Post[] = [];
@@ -437,7 +448,7 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: []};
+                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: [], rp: '', currently: '', walkup: false};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
@@ -451,6 +462,9 @@ export class GameState {
             view.appearance = obj(e, 'appearance');
             view.lifeStage = str(e, 'lifeStage', 'adult');
             view.artwork = str(e, 'artwork');
+            view.rp = str(e, 'rp');
+            view.currently = str(e, 'currently');
+            view.walkup = bool(e, 'walkup');
             view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
@@ -915,9 +929,18 @@ export class GameState {
             this.applySnapshot(e);
             return;
         }
-        const eventId = str(e, 'id');
-        if (eventId && this.seenPosts.has(eventId)) return;
-        if (eventId) this.seenPosts.add(eventId);
+        if (type === 'safety') {
+            this.safetyMarks = objects(e, 'marks');
+            return;
+        }
+        if (type === 'profile') {
+            this.profileOwn = obj(e, 'own');
+            this.account = obj(e, 'account');
+            if (obj(e, 'rules')) this.profileRules = obj(e, 'rules');
+            return;
+        }
+        // (Before the duplicate check below: a closer look's `id` is the wolf looked at, not a post, and looking at the
+        // same wolf again must open the card again.)
         if (type === 'inspect') {
             this.inspectedCharacter = e;
             this.inspectedText = `${str(e, 'title')}\n\n${str(e, 'description', str(e, 'text'))}\n\n${str(e, 'state')}` +
@@ -926,6 +949,9 @@ export class GameState {
             this.facingPreview = false;
             return;
         }
+        const eventId = str(e, 'id');
+        if (eventId && this.seenPosts.has(eventId)) return;
+        if (eventId) this.seenPosts.add(eventId);
         if (type === 'missions') {
             // A faction's mission board (doc 32, 4.5).
             this.missionBoard = e;
@@ -960,6 +986,7 @@ export class GameState {
             speaker: str(e, 'speaker', str(e, 'name', type === 'system' ? 'THE WORLD' : 'A voice')),
             color: Math.trunc(num(e, 'color')), text: str(e, 'text'), postedAt: this.clock, revealed: 0, system: false,
             party: bool(e, 'party'), chapter: bool(e, 'chapter'),
+            ...(num(e, 'sequence', -1) >= 0 && (type === 'roleplay' || type === 'ooc') ? {sequence: num(e, 'sequence')} : {}),
         };
         const segments = objects(e, 'segments');
         if (segments.length) {
@@ -1213,6 +1240,23 @@ export class GameState {
     }
 
     /** The individual social game (doc 32, Part 1): stars, Stories, notes, a name about town. */
+    /** Mute, block or report (doc 50): a wolf by its id, or a line by its number (its author is found by the server). */
+    sendSafety(verb: string, extra: Json = {}) {
+        this.send({type: 'safety', verb, ...extra});
+    }
+
+    /** Opens the safety menu for a wolf or a line: mute, block, or report with a category and a note. */
+    openSafety(about: {target?: string; line?: number; label: string}) {
+        this.reportTarget = about;
+        this.modal = 'report';
+    }
+
+    /** One's roleplay profile (doc 50): a change of fields, or a verb ("status", "walkup", "handle", "experience",
+     * "settings", "get") with its value. The server answers with the profile as saved. */
+    sendProfile(verb: string, extra: Json = {}) {
+        this.send({type: 'profile', verb, ...extra});
+    }
+
     sendSocial(fields: Json) {
         this.send({type: 'social', ...fields});
         if (fields.verb === 'note' && this.inspectedCharacter && this.inspectedCharacter.id === fields.target)
@@ -1796,7 +1840,7 @@ export class GameState {
             else if (verb === 'goal') this.send({type: 'party', verb, goal: h.target.slice('goal:'.length).trim()});
             else if (['accept', 'decline', 'leave', 'disband', 'stayout', 'remove', 'lead'].includes(verb))
                 this.send({type: 'party', verb, ...(rest ? {target: rest} : {})});
-        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window' || a === 'status' ||
+        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window' || a === 'status' || a === 'profile' ||
             ((a === 'their_equipment' || a === 'back_to_inspect') && this.inspectedCharacter)) {
             if (this.chat) this.setChat(false);
             this.heldKeys.clear();

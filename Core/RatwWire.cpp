@@ -2,6 +2,7 @@
 #include "RatwOrchestratorJson.h"
 #include "RatwItems.h"
 #include "RatwGifts.h"
+#include "RatwStep.h"
 
 #include <algorithm>
 #include <cmath>
@@ -262,6 +263,45 @@ Value persistEntity(const Entity& e, double time)
         o.add("fightingSkill", e.fightingSkill);
     if (e.dungeonMaster)
         o.add("dungeonMaster", true);
+    // Practice (doc 49): grades, specialty, trade skills, stamina the attribute, migrations had, and the day's practice.
+    if (!e.grades.empty())
+    {
+        auto grades = Value::object();
+        for (const auto& [attribute, grade] : e.grades)
+            grades.add(attribute, grade);
+        o.add("grades", grades);
+    }
+    if (!e.specialty.empty())
+        o.add("specialty", e.specialty);
+    if (!e.skills.empty())
+    {
+        auto skills = Value::object();
+        for (const auto& [skill, value] : e.skills)
+            skills.add(skill, value);
+        o.add("skills", skills);
+    }
+    if (e.endurance != 50)
+        o.add("endurance", e.endurance);
+    if (e.progressVersion > 0)
+        o.add("progressVersion", double(e.progressVersion));
+    if (!e.practice.days.empty() || e.practice.rested > 0 || e.practice.lastGainAt >= 0)
+    {
+        auto practice = Value::object();
+        auto days = Value::object();
+        for (const auto& [skill, day] : e.practice.days)
+        {
+            auto row = Value::array();
+            row.push(day.start);
+            row.push(day.gained);
+            days.add(skill, row);
+        }
+        practice.add("days", days);
+        if (e.practice.rested > 0)
+            practice.add("rested", e.practice.rested);
+        if (e.practice.lastGainAt >= 0)
+            practice.add("lastGainAt", e.practice.lastGainAt);
+        o.add("practice", practice);
+    }
     return o;
 }
 
@@ -373,10 +413,62 @@ Entity readEntity(const Value& o)
     e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
     e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);
+    // Practice (doc 49): only known attributes and trade skills, within bounds; what doesn't fit is dropped rather than
+    // refusing the save.
+    for (const auto& [attribute, grade] : o.object("grades").fields())
+        if (const auto* s = practice::skill(attribute); s && s->attribute && (grade.asString({}) == "weak" || grade.asString({}) == "strong"))
+            e.grades[attribute] = grade.asString({});
+    e.specialty = o.string("specialty").substr(0, 32);
+    for (const auto& [skill, value] : o.object("skills").fields())
+        if (const auto* s = practice::skill(skill); s && !s->attribute && s->field.empty() && value.isNumber())
+            e.skills[skill] = std::clamp(value.asNumber(0), 0.0, 100.0);
+    e.endurance = std::clamp(strictNumber(o, "endurance", 50.0), 0.0, 100.0);
+    e.progressVersion = std::clamp(int(strictNumber(o, "progressVersion", 0.0)), 0, 1000);
+    const auto& practised = o.object("practice");
+    for (const auto& [skill, day] : practised.object("days").fields())
+        if (practice::skill(skill) && day.isArray() && day.items().size() == 2 && day.items()[0].isNumber() && day.items()[1].isNumber())
+            e.practice.days[skill] = {day.items()[0].asNumber(0), std::clamp(day.items()[1].asNumber(0), 0.0, 1e6)};
+    e.practice.rested = std::clamp(strictNumber(practised, "rested", 0.0), 0.0, 1e6);
+    e.practice.lastGainAt = strictNumber(practised, "lastGainAt", -1.0);
     e.postureTarget = o.string("postureTarget");
     e.postureRemaining = number(o, "postureRemaining");
     e.turnTarget = e.facing;                       // Input, paths and manual turn intents are never reloaded.
     return e;
+}
+
+void practiceView(Value& o, const Entity& e, double now)
+{
+    auto attributes = Value::array(), skills = Value::array();
+    const auto& rules = practice::rules();
+    for (const auto& s : practice::skills())
+    {
+        auto row = Value::object();
+        row.add("id", s.id);
+        row.add("name", s.name);
+        const double value = World::practiceValue(e, s), cap = World::practiceCap(e, s);
+        row.add("value", value);
+        row.add("cap", cap);
+        if (s.percent)
+            row.add("percent", true);
+        if (s.attribute)
+        {
+            row.add("short", s.shortName);
+            const auto grade = e.grades.find(s.id);
+            row.add("grade", grade == e.grades.end() ? std::string("plain") : grade->second);
+            attributes.push(row);
+            continue;
+        }
+        if (const auto* sp = practice::specialty(e.specialty); sp && sp->skill == s.id)
+            row.add("specialty", true);
+        // Easing off: today's gains have reached the soft limit (and the rolling day hasn't come round).
+        if (const auto day = e.practice.days.find(s.id); day != e.practice.days.end() && now - day->second.start < rules.softDay &&
+                                                          now >= day->second.start && day->second.gained >= s.softPerDay)
+            row.add("easing", true);
+        skills.push(row);
+    }
+    o.set("attributes", attributes);
+    o.set("skills", skills);
+    o.set("restedPractice", e.practice.rested);
 }
 
 void privatePace(Value& o, const Entity& e)
@@ -391,6 +483,7 @@ void privatePace(Value& o, const Entity& e)
     o.set("effectivePace", effectivePace(e));
     o.set("paceName", paceName(effectivePace(e)));
     o.set("staminaRate", e.staminaRate);
+    o.set("staminaRecovery", step::StaminaRecovery * (e.npc ? 1.0 : practice::staminaRecovery(e.endurance)));   // (A second: doc 49.)
     o.set("exhausted", e.exhausted);
     auto sprint = e;
     sprint.pace = 10;

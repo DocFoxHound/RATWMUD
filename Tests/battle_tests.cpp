@@ -581,10 +581,8 @@ void theSword()
     const int before = Society::stock(*w.society().account("player-ad"), "sword");
     expect(w.takeItem("player-ad", g.id).ok && w.groundItems().empty(), "Ad picks it up");
     expect(Society::stock(*w.society().account("player-ad"), "sword") == before + 1, "and has it");
-    expect(w.entity("player-ad")->fightingSkill == 50 && w.temperamentOf(*w.entity("player-ad")).skill == 50,
-           "Fighting doesn't raise her fighting skill: her level does (doc 44)");
-    w.levelOf = [](const std::string&) { return 25; };
-    expect(w.temperamentOf(*w.entity("player-ad")).skill == 86, "At level 25 it is 86");
+    expect(w.entity("player-ad")->fightingSkill > 50 && w.temperamentOf(*w.entity("player-ad")).skill == w.entity("player-ad")->fightingSkill,
+           "Fighting raises her own fighting skill, which is what a fight reads (doc 49)");
 }
 
 // The tiers of blades and armour (doc 47): each metal and kit its own numbers, a tier not a quality, the best blade

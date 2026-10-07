@@ -1,0 +1,23 @@
+{
+  "about": "The roleplay profile on the player card, statuses, experience and handles (Docs/Design/50-player-card-friends-safety.md, sections 1 to 3). Every number is a placeholder.",
+  "limits": {"description": 1200, "currently": 120, "pronouns": 24, "title": 40, "motto": 120, "oocNotes": 300, "history": 3000,
+             "glances": 5, "glanceTitle": 32, "glanceLine": 120, "otherLimits": 200, "residentDescription": 300},
+  "glanceIcons": ["scar", "eye", "nose", "ear", "paw", "fang", "coat", "collar", "tail", "heart", "star", "smoke", "flower", "bone", "feather", "moon", "drop", "flame"],
+  "senses": {"sight": {"name": "Seen"}, "scent": {"name": "Smelt", "reach": 3}, "sound": {"name": "Heard", "reach": 15}},
+  "sliders": [["Chaotic", "Lawful"], ["Chaste", "Lustful"], ["Forgiving", "Vindictive"], ["Altruistic", "Selfish"], ["Truthful", "Deceitful"],
+              ["Gentle", "Brutal"], ["Superstitious", "Rational"], ["Renegade", "Paragon"], ["Cautious", "Impulsive"], ["Ascetic", "Bon vivant"],
+              ["Valorous", "Spineless"]],
+  "consent": [{"id": "injury", "name": "Character injury"}, {"id": "death", "name": "Character death"}, {"id": "romance", "name": "Romance"},
+              {"id": "crime", "name": "Criminal activity"}, {"id": "control", "name": "Loss of control"}],
+  "consentAnswers": {"yes": "Yes", "no": "No", "ask": "Ask me first"},
+  "statuses": [{"id": "ic", "name": "In character"},
+               {"id": "ooc", "name": "Out of character", "mark": "ooc"},
+               {"id": "lfs", "name": "Looking for a scene", "mark": "lfs"},
+               {"id": "storyteller", "name": "Storyteller", "mark": "quill", "approvedOnly": true}],
+  "experience": [{"id": "newcomer", "name": "Newcomer"}, {"id": "casual", "name": "Casual"}, {"id": "experienced", "name": "Experienced"},
+                 {"id": "guide", "name": "Newcomer Guide"}],
+  "defaultExperience": "casual",
+  "pronouns": ["she/her", "he/him", "they/them"],
+  "handle": {"min": 3, "max": 24, "changeDays": 30},
+  "played": {"every": 60, "activeWithin": 300}
+}

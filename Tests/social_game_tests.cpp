@@ -104,10 +104,11 @@ void fightScenes()
     expect(talk == scene, "their words are the fight's scene, not a scene of their own");
     expect(l.endFor("ada", t + 50) == 0 && l.sessions[scene].ended == 0, "a fight's scene ends with the fight, not a scene-end");
     l.settleFight("b1", {"ada", "bo", "cy"}, t + 60);
-    const int talked = SocialLedger::FightXP + SocialLedger::FightTalkFactor * 20;
+    const int talked = SocialLedger::FightTalkFactor * 20;
     expect(l.paidFor("ada", scene) == talked && l.paidFor("bo", scene) == talked,
-           "talking it through: the fight, and twice a scene's pay: " + std::to_string(l.paidFor("ada", scene)));
-    expect(l.paidFor("cy", scene) == SocialLedger::FightXP, "fighting in silence: the fight's pay");
+           "talking it through: twice a scene's pay: " + std::to_string(l.paidFor("ada", scene)));
+    expect(l.paidFor("cy", scene) == 0 && l.receiptsOf("cy").size() == 1,
+           "fighting in silence pays no social XP (it teaches fighting: doc 49), but leaves a receipt, so stars still come");
     expect(l.settleFight("b1", {"ada"}, t + 70) == 0 && l.paidFor("ada", scene) == talked, "never paid twice");
     // Stars: one to each of the others, as many as took part.
     expect(l.star("cy", "ada", scene, t + 80).ok && l.star("cy", "bo", scene, t + 81).ok, "Cy stars both of them");
@@ -118,8 +119,7 @@ void fightScenes()
     m.joinFight("b2", "field", "di", t);
     m.joinFight("b2", "field", "ed", t);
     m.settleFight("b2", {"di"}, t + 30);
-    expect(m.paidFor("di", SocialLedger::fightScene("b2")) == SocialLedger::FightXP && m.paidFor("ed", SocialLedger::fightScene("b2")) == 0,
-           "only those who took their turns are paid for the fight");
+    expect(m.receiptsOf("di").size() == 1 && m.receiptsOf("ed").empty(), "only those who took their turns have the fight's receipt");
 }
 
 void leavingAScene()
@@ -364,8 +364,8 @@ void aSceneSeenAndStarred(const std::string& save)
         }
         t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "inspect"}, {"target", npc}}));
         expect(t.ada.last("inspect") && t.ada.last("inspect")->string("note") == "Owes me a favour.", "and so does her note");
-        // (22: his scene and Ada's star; and 5 for the first time in this place, doc 44.)
-        expect(t.bo.snapshots.back()["self"].number("socialXp") == 27, "and Bo's star: " + std::to_string(t.bo.snapshots.back()["self"].number("socialXp")));
+        // (22: his scene and Ada's star. A place first visited pays nothing any more: doc 49.)
+        expect(t.bo.snapshots.back()["self"].number("socialXp") == 22, "and Bo's star: " + std::to_string(t.bo.snapshots.back()["self"].number("socialXp")));
     }
     std::remove(save.c_str());
 }

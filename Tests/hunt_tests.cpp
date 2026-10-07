@@ -348,14 +348,16 @@ void gearWearsAndMends()
 }
 void noseAndMarks()
 {
-    // The nose: a physical stat that sharpens with use, to a limit.
+    // The nose: a physical stat that sharpens with use, to its cap (by practice: doc 49, Data/Progression/skills.json).
     {
         auto w = wilds();
+        double clock = 1e9;
+        w.realClock = [&clock] { return clock; };
         auto& ada = hunter(w, "player-ada");
-        const double before = World::noseAcuity(ada);
-        for (int i = 0; i < 2000; ++i)
+        const double before = World::noseAcuity(ada), cap = practice::skill("smell")->cap;
+        for (int i = 0; i < 4000; ++i, clock += 700)
             w.trainNose("player-ada");
-        expect(ada.smell > 1.4 && ada.smell <= 1.6 && World::noseAcuity(ada) > before, "the nose sharpens with use, to a limit");
+        expect(ada.smell > 1.4 && ada.smell <= cap && World::noseAcuity(ada) > before, "the nose sharpens with use, to its cap");
     }
     // Masking oil hides a wolf's scent for a few hours.
     {

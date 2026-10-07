@@ -285,8 +285,6 @@ struct Senses
 // An ambush (§3): a first blow on a wolf unaware of its attacker is struck as from behind, this much likelier still,
 // and this much harder, aimed (hit zone table 3).
 constexpr double AmbushHit = .15, AmbushDamage = 1.5;
-// Sneaking skill grows with an ambush, and a little with each check one stays unnoticed close by.
-constexpr double SneakPerAmbush = .5, SneakUnnoticed = .05;
 // Aiming for a hit zone: the blow is this much less likely to land (none on one taken unawares), and lands there if the
 // side it comes at allows (no head from behind). Bandits creeping up give up after this long unseen-but-unready.
 constexpr double AimPenalty = .15, CreepGiveUp = 90;
@@ -294,9 +292,9 @@ constexpr double AimPenalty = .15, CreepGiveUp = 90;
 // ready sooner.
 constexpr double PlacingSeconds = 30;
 // In the open world (doc 40, §2): residents check what they notice of players near them this often (seconds), within
-// this many tiles; a sneak unnoticed close by learns this much a check; a guard who hears something goes to look for
-// this long. Noticing a stalker teaches a player's ears or nose this much.
-constexpr double AwareEvery = .4, AwareReach = 30, SneakUnnoticedWorld = .01, LookSeconds = 20, NoticeTeaches = .3;
+// this many tiles; a guard who hears something goes to look for this long. (What sneaking and noticing teach is in
+// Data/Progression/skills.json: doc 49.)
+constexpr double AwareEvery = .4, AwareReach = 30, LookSeconds = 20;
 // Hit zones: where a blow lands, rolled by the side of the body it comes at (0 head on, 1 the side, 2 behind; 3 an
 // ambush's aimed blow, doc 40: the throat, head and body over the legs). Each is
 // a zone armour covers ("head", "throat", "body", "legs"), the part a fight's log names, and its weight among them.
@@ -355,8 +353,6 @@ constexpr double QuickenedManaPerTurn = 0;            // (Doc 45: a Quickened wo
 constexpr double BlinkStrikeBlow = 1.2;                 // A Blink Strike's blow, against an ordinary one (doc 47).
 constexpr double TranceBreath = .5;                     // A Trance's second wind: stamina back, more, a degree (doc 45).
 inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom * .8 : 0; }
-// Fighting skill grows with fighting, slower as it climbs.
-constexpr double SkillPerHit = .2, SkillPerFight = .5;
 constexpr double LingerSeconds = 60, NoiseReach = 30;
 
 // The meter a fighter gains each tick, and how far they may move in a turn (injury shortens it).
@@ -369,7 +365,7 @@ inline double paceFactor(int pace) { return .5 + .1 * pace; }
 inline double tileStamina(int pace) { return pace > 3 ? (pace - 3) * .6 : 0; }
 int moveRange(double dexterity, double hurt, int pace = 5);
 // Stamina back at the start of each of one's own turns: by strength, less hurt.
-double staminaPerTurn(double hurt, double strength = 40);
+double staminaPerTurn(double hurt, double strength = 40, double endurance = 50);
 // Eighths of a turn from east for a step (dx, dy); and how far apart two facings are (0..4).
 int octant(double dx, double dy);
 inline int octantGap(int a, int b)

@@ -12,10 +12,28 @@ export interface Character {
     stats: Record<'strength' | 'dexterity' | 'wisdom' | 'stamina', number | null>;
     skills: Record<'sneakSkill' | 'hearingSkill' | 'scentSkill', number | null>;
     senses: Record<'hearing' | 'vision' | 'smell', number | null>;
+    practice?: Record<string, {name: string; value: number; cap: number}>;   // Each attribute and skill with its cap (doc 49).
+    grades?: Record<string, 'weak' | 'strong'>;  // How it was built (doc 49): grades that aren't plain...
+    specialty?: string;                          // ...and its specialty.
+    account?: AccountStanding | null;            // Its account's earned Gift tiers (doc 49, Phase 5).
+    person?: {handle: string; experience: string; playedHours: number} | null;   // Its account as a person (doc 50).
+    profile?: Record<string, unknown> | null;    // Its roleplay profile, as saved (doc 50): read only.
     gift: string; quickened: boolean;            // A Gift (Docs/Design/33-combat.md): "fire" or "".
     injuries?: Injury[];                         // Injuries that outlast a fight (Docs/Design/38-injuries.md).
     dungeonMaster: boolean;                      // Marked a Dungeon Master in the game: they have the Dev Console.
     saved: string;
+}
+export interface PlayerReport {
+    id: string; at: string; reporter: string; reporterName: string; reported: string; reportedName: string; reportedCharacter: string;
+    kind: string; category: string; note: string; evidence: {seq: number; at: number; channel: string; text: string}[];
+    status: 'open' | 'upheld' | 'dismissed'; decidedBy: string; decidedAt: string | null; outcome: string; silenceHours: number;
+    earlier: {id: string; status: string; category: string; outcome: string}[]; blockedBy: number;
+}
+export interface Reports { target: Target; ready: boolean; reports: PlayerReport[]; actions: (Action & {payload?: unknown})[] }
+export interface AccountStanding {
+    name: string; socialLevel: number | null; hold: boolean; characters: string[];
+    gifted: string | null; quickened: string | null;   // Who opened each tier ("earned", "dm:<name>"), or null.
+    measures: {socialLevel?: number; normalScenes?: number; stars?: number; starGivers?: number; closedStories?: number};
 }
 export interface Injury { id: string; kind: 'acute' | 'lasting'; type: string; side?: string; severity: number; restLeft?: number; restFull?: number; from?: string }
 // The injuries a Dungeon Master may give (doc 38, phase 5): acute first, then lasting.
@@ -274,6 +292,10 @@ export const dmApi = {
     startScenario: (target: Target, start: {scenario: string; town?: string; holder?: string}) =>
         call<{scenario: string; queued: {id: number; steer: string}[]}>('api/economy/scenario', {target, ...start}),
     artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
+    reports: (target: Target) => call<Reports>(`api/reports?target=${target}`),
+    /** Upholds (with a note, a warning or a silence) or dismisses a player's report (doc 50). */
+    decideReport: (target: Target, id: string, decision: 'uphold' | 'dismiss', outcome: string, hours: number, reason: string) =>
+        call<{id: number}>('api/reports/decide', {target, id, decision, outcome, hours, reason}),
     reviewArtwork: (target: Target, id: string, decision: 'approve' | 'reject', reason: string) =>
         call<{id: number}>('api/artwork/review', {target, id, decision, reason}),
     chapters: (target: Target) => call<Chapters>(`api/chapters?target=${target}`),

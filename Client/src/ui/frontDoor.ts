@@ -30,7 +30,7 @@ function randomiseAppearance(d: Json) {
     if (count) d.markings = Array.from({length: count}, () => ({mask: pick(Masks), color: pick(CoatSwatches), opacity: 0.7 + Math.round(Math.random() * 3) / 10}));
     else delete d.markings;
 }
-import {isObject, num, obj, str, type Json} from '../game/json.ts';
+import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
 
 type Page = 'login' | 'register' | 'roster' | 'creator' | 'review';
@@ -88,6 +88,11 @@ export class FrontDoor {
     draftTier = 'normal';                    // The Gift (doc 43): normal, gifted or quickened, and a family.
     draftFamily = '';
     gifts: Json | null = null;               // The tiers and families, as the server describes them.
+    creation: Json | null = null;            // Strengths and weaknesses (doc 49): grades, budget, specialties, presets.
+    tiers: Json | null = null;               // Which Gift tiers the account has earned, and what the rest need (doc 49).
+    account: Json | null = null;             // The account as a person (doc 50): its handle, asked for when it has none.
+    draftGrades: Record<string, string> = {};   // An attribute to "weak" or "strong" (plain when absent).
+    draftSpecialty = '';
     private showGiftDetails = false;
     private creationRequestId = '';
     private creationFingerprint = '';
@@ -180,6 +185,9 @@ export class FrontDoor {
         if (this.password) this.password.value = '';
         if (next === 'characters') {
             if (isObject(event.gifts)) this.gifts = event.gifts;
+            if (isObject(event.creation)) this.creation = event.creation;
+            if (isObject(event.tiers)) this.tiers = event.tiers;
+            if (isObject(event.account)) this.account = event.account;
             this.characters = (Array.isArray(event.characters) ? event.characters : []).filter(isObject).slice(0, 6);
             if (!this.selected() && this.characters.length) this.selectedId = str(this.characters[0], 'id');
             if (ok && this.page === 'review')
@@ -285,6 +293,18 @@ export class FrontDoor {
             });
             slots.append(b);
         }
+        // The account's handle (doc 50): the name friends and circles see, never the sign-in name.
+        if (this.account && !str(this.account, 'handle')) {
+            const handle = el('input', {className: 'door-input', placeholder: 'Choose a handle (not your sign-in name)', maxLength: 24});
+            handle.dataset.handle = '1';
+            slots.append(el('div', {className: 'door-handle'},
+                el('p', {className: 'gold small'}, 'YOUR HANDLE'),
+                el('p', {className: 'muted small'}, 'Friends and circles will know you by it. It is never shown to strangers, and it can\'t be your sign-in name.'),
+                handle, this.button('Save handle', () => {
+                    this.setMessage('Saving your handle…');
+                    this.submit({type: 'account_handle', handle: handle.value});
+                })));
+        }
         slots.append(el('div', {className: 'grow'}), this.button('Sign out of account', () => {
             this.setMessage('Signing out…');
             this.submit({type: 'auth_logout'});
@@ -350,6 +370,8 @@ export class FrontDoor {
         this.draftAge = 18;
         this.draftTier = 'normal';
         this.draftFamily = '';
+        this.draftGrades = {};
+        this.draftSpecialty = '';
         this.creationRequestId = this.creationFingerprint = '';
         this.draftAppearance = {species: 'timber', sex: 'female', stature: 'average', pattern: 'solid', baseColor: 2, gradientColor: 0,
             markingColor: 5, gradientAmount: 0.35, patternAmount: 0.65};
@@ -409,6 +431,7 @@ export class FrontDoor {
                     : `Markings: ${title(str(draft, 'pattern'))}, ${colour('markingColor')}`),
                 el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${str(draft, 'eyes') || 'amber'}`),
                 ...this.giftReview(),
+                ...this.buildReview(),
                 el('p', {className: 'muted large'}, 'Creation saves this character to your account. You will return to character selection before ' +
                     'entering the world. Appearance does not grant free skill or stat bonuses.'));
         }
@@ -432,7 +455,7 @@ export class FrontDoor {
         const tabs = el('div', {className: 'creator-tabs'});
         const panel = el('div', {className: 'creator-panel'});
         const tabNames: Array<[string, string]> = [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'],
-            ['name', 'Name & age']];
+            ['strengths', 'Strengths'], ['name', 'Name & age']];
         const render = () => {
             tabs.replaceChildren(...tabNames.map(([id, label]) => {
                 const b = el('button', {type: 'button', className: id === this.creatorTab ? 'tab active' : 'tab', textContent: label});
@@ -511,6 +534,7 @@ export class FrontDoor {
                 amount('gradientAmount', 'HOW FAR THE BELLY COLOUR REACHES')];
         if (tab === 'eyes') return [swatches('eyes', 'EYES', EyeSwatches)];
         if (tab === 'gift') return this.giftPanel(changed);
+        if (tab === 'strengths') return this.strengthsPanel(changed);
         if (tab === 'name') {
             const name = el('input', {type: 'text', value: this.draftName, placeholder: 'The name others will know', maxLength: 64});
             name.addEventListener('input', () => {
@@ -582,8 +606,11 @@ export class FrontDoor {
         const tierRow = el('div', {className: 'gift-tiers'});
         for (const tier of ['normal', 'gifted', 'quickened']) {
             const t = obj(tiers, tier);
-            const b = el('button', {type: 'button', className: `gift-card${this.draftTier === tier ? ' chosen' : ''}`},
-                el('strong', {}, str(t, 'name', title(tier))), el('span', {}, str(t, 'best')));
+            // Earned Gift tiers (doc 49): a locked tier says what it takes; it can still be opened to read its families.
+            const locked = tier !== 'normal' && this.tierLocked(tier);
+            const b = el('button', {type: 'button', className: `gift-card${this.draftTier === tier ? ' chosen' : ''}${locked ? ' locked' : ''}`},
+                el('strong', {}, `${locked ? '🔒 ' : ''}${str(t, 'name', title(tier))}`), el('span', {}, str(t, 'best')),
+                ...(locked ? arr(obj(this.tiers, tier), 'progress').filter(isObject).map(p => el('small', {className: 'gift-progress'}, str(p, 'label'))) : []));
             b.dataset.tier = tier;
             b.addEventListener('click', () => {
                 this.draftTier = tier;
@@ -666,6 +693,116 @@ export class FrontDoor {
         return box;
     }
 
+    /** Points a build spends (doc 49): each strength costs, each weakness gives back, and the Gift tier its cost. */
+    private buildSpent(grades: Record<string, string> = this.draftGrades): number {
+        const c = this.creation;
+        let spent = num(obj(c, 'tierCost'), this.draftTier);
+        for (const g of Object.values(grades)) spent += g === 'strong' ? num(c, 'strongCost', 1) : g === 'weak' ? -num(c, 'weakRefund', 1) : 0;
+        return spent;
+    }
+
+    /** Whether a build is within the budget and the limits. */
+    private buildFits(grades: Record<string, string>): boolean {
+        const c = this.creation, values = Object.values(grades);
+        return this.buildSpent(grades) <= num(c, 'budget', 2) && values.filter(g => g === 'strong').length <= num(c, 'mostStrong', 3) &&
+            values.filter(g => g === 'weak').length <= num(c, 'mostWeak', 3);
+    }
+
+    /** The Strengths tab (doc 49): a preset or one's own build, each attribute weak, plain or strong (each with where it
+     * starts and how far it can grow), the points left, and one specialty. */
+    private strengthsPanel(changed: () => void): HTMLElement[] {
+        const c = this.creation;
+        if (!c) return [el('p', {className: 'gold'}, 'Strengths and weaknesses have not arrived from the server yet.')];
+        const out: HTMLElement[] = [];
+        const presets = arr(c, 'presets').filter(isObject);
+        const chips = el('div', {className: 'build-presets'});
+        const gradesOf = (p: Json) => {
+            const g: Record<string, string> = {};
+            for (const a of arr(p, 'strong')) if (typeof a === 'string') g[a] = 'strong';
+            for (const a of arr(p, 'weak')) if (typeof a === 'string') g[a] = 'weak';
+            return g;
+        };
+        const sameAs = (p: Json) => JSON.stringify(Object.entries(gradesOf(p)).sort()) === JSON.stringify(Object.entries(this.draftGrades).sort()) &&
+            str(p, 'specialty') === this.draftSpecialty;
+        for (const p of presets) {
+            const b = el('button', {type: 'button', className: `build-chip${sameAs(p) ? ' chosen' : ''}`, textContent: str(p, 'name')});
+            b.dataset.preset = str(p, 'id');
+            b.addEventListener('click', () => {
+                this.draftGrades = gradesOf(p);
+                this.draftSpecialty = str(p, 'specialty');
+                changed();
+            });
+            chips.append(b);
+        }
+        const own = el('button', {type: 'button', className: `build-chip${presets.some(sameAs) ? '' : ' chosen'}`, textContent: 'Build my own'});
+        own.addEventListener('click', () => {
+            this.draftGrades = {};
+            this.draftSpecialty = '';
+            changed();
+        });
+        chips.append(own);
+        out.push(el('span', {className: 'gift-heading'}, 'PRESETS'), chips);
+        const left = num(c, 'budget', 2) - this.buildSpent();
+        out.push(el('span', {className: 'gift-heading'}, `ATTRIBUTES · POINTS LEFT: ${left}`));
+        out.push(el('p', {className: 'muted small'}, 'A strength starts higher and can grow further; a weakness starts lower and stops sooner. ' +
+            'Everything grows by practice.'));
+        const rows = el('div', {className: 'build-rows'});
+        for (const a of arr(c, 'attributes').filter(isObject)) {
+            const id = str(a, 'id'), percent = bool(a, 'percent');
+            const shown = (v: unknown) => (typeof v === 'number' ? (percent ? `${Math.round(v * 100)}%` : `${Math.round(v)}`) : '—');
+            const row = el('div', {className: 'build-row'});
+            row.dataset.attribute = id;
+            row.append(el('strong', {}, str(a, 'name')));
+            const current = this.draftGrades[id] ?? 'plain';
+            for (const grade of ['weak', 'plain', 'strong']) {
+                const range = arr(a, grade);
+                const next = {...this.draftGrades};
+                if (grade === 'plain') delete next[id]; else next[id] = grade;
+                const fits = grade === current || this.buildFits(next);
+                const b = el('button', {type: 'button', className: `build-grade${grade === current ? ' chosen' : ''}`},
+                    el('span', {}, title(grade)), el('small', {}, `${shown(range[0])} → ${shown(range[1])}`));
+                b.dataset.grade = grade;
+                b.disabled = !fits;
+                if (!fits) b.title = 'Not enough points left, or too many of that kind.';
+                b.addEventListener('click', () => {
+                    this.draftGrades = next;
+                    changed();
+                });
+                row.append(b);
+            }
+            rows.append(row);
+        }
+        out.push(rows);
+        out.push(el('span', {className: 'gift-heading'}, 'SPECIALTY'));
+        const specs = el('div', {className: 'build-presets'});
+        for (const s of [{id: '', name: 'None'}, ...arr(c, 'specialties').filter(isObject).map(s => ({id: str(s, 'id'), name: str(s, 'name')}))]) {
+            const b = el('button', {type: 'button', className: `build-chip${this.draftSpecialty === s.id ? ' chosen' : ''}`, textContent: s.name});
+            b.dataset.specialty = s.id;
+            b.addEventListener('click', () => {
+                this.draftSpecialty = s.id;
+                changed();
+            });
+            specs.append(b);
+        }
+        out.push(specs, el('p', {className: 'muted small'}, 'Your specialty starts that skill higher.'));
+        return out;
+    }
+
+    /** The review's lines about strengths and weaknesses. */
+    private buildReview(): HTMLElement[] {
+        const names = new Map(arr(this.creation, 'attributes').filter(isObject).map(a => [str(a, 'id'), str(a, 'name')]));
+        const listed = (grade: string) => Object.entries(this.draftGrades).filter(([, g]) => g === grade).map(([a]) => names.get(a) ?? a).join(', ');
+        const spec = arr(this.creation, 'specialties').filter(isObject).find(s => str(s, 'id') === this.draftSpecialty);
+        return [el('p', {className: 'muted'}, `Strong: ${listed('strong') || 'none'} · Weak: ${listed('weak') || 'none'} · ` +
+            `Specialty: ${spec ? str(spec, 'name') : 'none'}`)];
+    }
+
+    /** Whether the account hasn't opened a Gift tier yet (doc 49; an older server sends no tiers: all open). */
+    private tierLocked(tier: string): boolean {
+        const t = obj(this.tiers, tier);
+        return !!t && t.open === false;
+    }
+
     /** The review's lines about the Gift. */
     private giftReview(): HTMLElement[] {
         if (this.draftTier === 'normal') return [el('p', {className: 'muted'}, 'Gift: none (Normal)')];
@@ -678,6 +815,16 @@ export class FrontDoor {
         this.draftName = this.draftName.trim();
         if (this.draftName.length < 2 || this.draftName.length > 32)
             return this.setMessage('Choose a character name between 2 and 32 characters. The authority validates the final name.', true);
+        if (this.creation && !this.buildFits(this.draftGrades)) {
+            this.creatorTab = 'strengths';
+            this.show('creator');
+            return this.setMessage('That build costs more points than there are (a Gift tier may cost some too).', true);
+        }
+        if (this.draftTier !== 'normal' && this.tierLocked(this.draftTier)) {
+            this.creatorTab = 'gift';
+            this.show('creator');
+            return this.setMessage(str(obj(this.tiers, this.draftTier), 'message', `${title(this.draftTier)} isn't open to your account yet.`), true);
+        }
         if (this.draftTier !== 'normal' && !this.draftFamily) {
             this.creatorTab = 'gift';
             this.show('creator');
@@ -691,6 +838,8 @@ export class FrontDoor {
         if (this.busy || !this.draftAppearance || this.page !== 'review') return;
         const command: Json = {type: 'character_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance};
         if (this.draftTier !== 'normal') command.gift = {tier: this.draftTier, family: this.draftFamily};
+        if (Object.keys(this.draftGrades).length || this.draftSpecialty)     // (A plain wolf sends no build: doc 49.)
+            command.build = {grades: {...this.draftGrades}, specialty: this.draftSpecialty};
         // A timeout is an uncertain result, not a new creation: an unchanged draft keeps the same receipt key.
         const fingerprint = JSON.stringify(command);
         if (!this.creationRequestId || this.creationFingerprint !== fingerprint) {

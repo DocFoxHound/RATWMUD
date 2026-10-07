@@ -642,10 +642,7 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
         const int got = whole(n * factor, odds(f.id + "|" + item, std::int64_t(calendarDays_ * 1000)));
         const auto kind = quality == 3 ? items::withMaker(items::withQuality(item, 3), killer) : items::withQuality(item, quality);
         if (got > 0 && entity(killer) && society_.create(killer, kind, got, "hunted"))
-        {
-            taken.push_back(std::to_string(got) + " " + lower(Society::itemName(kind)));
-            award(killer, "practice", "hunt:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
-        }
+            taken.push_back(std::to_string(got) + " " + lower(Society::itemName(kind)));   // (The kill taught through the fight: doc 49.)
         else if (fire > 0 && skinOf(item))
             spoilt.push_back(lower(Society::itemName(item)));
     }
@@ -873,7 +870,7 @@ Result World::smellTracks(const std::string& player)
     tracks_[player] = found;
     if (found.empty())
         return {true, "You nose the ground for game, and find no sign of any near by.", {}};
-    p->scentSkill = std::min(100.0, p->scentSkill + .3);   // Tracking comes with doing it.
+    practise(player, "track.found");                      // Tracking comes with doing it (by practice, doc 49).
     static const char* bearings[] = {"east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"};
     std::vector<std::string> said;
     for (const auto& t : found)
@@ -964,7 +961,7 @@ Result World::forage(const std::string& player)
     if (!society_.create(player, pick->good->item, count, "foraged"))
         return {false, "You can't carry any more of that.", {}};
     recordEvent({"forage", player, {}, p->cellId, 0, 0, pick->good->item, count, 0, pick->ground->id});
-    award(player, "practice", "forage:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
+    practise(player, "forage.pick");                    // Gathering is labour (by practice: doc 49).
     return {true, "You gather " + std::to_string(count) + " " + lower(Society::itemName(pick->good->item)) + " from " +
                       pick->ground->name + ".",
             {}};

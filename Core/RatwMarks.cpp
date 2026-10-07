@@ -8,7 +8,7 @@
 // The nose and the maker's mark (Docs/Design/35-items-crafting-industry.md, Part 4).
 //
 // A wolf's nose is a physical stat (`Entity::smell`), sharpened by using it: every time it noses about, it grows a
-// little, slower as it nears what a wolf's nose can be. A masterwork carries its maker's scent with their mark, so a
+// little, slower as it nears what a wolf's nose can be (by practice: doc 49). A masterwork carries its maker's scent with their mark, so a
 // good nose knows whose work a thing is, and stolen goods give themselves away: the one robbed, the maker, or a guard
 // on duty who catches the maker's scent on the thief still holding the thing knows it for stolen, and is a witness to
 // the theft. Masking oil hides a wolf's own scent, and the scent of what it carries, for a few hours.
@@ -16,8 +16,6 @@ namespace ratw
 {
 namespace
 {
-constexpr double SmellMost = 1.6;          // The keenest a wolf's nose grows (its stat; 1 at the start).
-constexpr double SmellGrowth = .004;        // Each use: this share of the way still to go.
 constexpr double MaskHours = 4;             // Masking oil: game hours (a game hour is 600 world seconds).
 constexpr double MarkCheckSeconds = 10;     // How often noses near a thief are tried.
 constexpr double MarkCatch = .15;           // A try's chance, × the scent's clarity × the nose's keenness².
@@ -43,11 +41,9 @@ bool World::scentMasked(const Entity& e) const
 
 void World::trainNose(const std::string& id)
 {
-    auto* e = entity(id);
-    if (!e || e->noseHealth <= 0)
-        return;
-    e->smell = std::min(SmellMost, e->smell + SmellGrowth * std::max(0.0, SmellMost - e->smell));
-    e->scentSkill = std::min(100.0, e->scentSkill + .1);
+    // How much, and how far it can go, is practice's (doc 49: "nose.use" in Data/Progression/skills.json).
+    if (const auto* e = entity(id); e && e->noseHealth > 0)
+        practise(id, "nose.use");
 }
 
 Result World::maskScent(const std::string& player)

@@ -21,6 +21,7 @@ struct Context
     std::string recollection;                  // The short form the authored replies quote (MemoryStore::recall).
     std::string environment, greeting, personality, backstory;
     std::string subjectId, relationship, mood;
+    std::string seen;                          // What it can see of the speaker, in their player's words (doc 50).
 };
 
 // Every field checked: the emotion one of a few words, the nudges -3..3, the notes short.

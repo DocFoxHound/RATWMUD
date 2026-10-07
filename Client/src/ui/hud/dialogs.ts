@@ -10,6 +10,18 @@ import {button, el, setClass} from './dom.ts';
 import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 
+/** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
+ * level's start to the next (an older server sends neither: then a hundred a level, as it was). */
+const SocialWhy = 'Social experience comes from roleplay alone: scenes, Gold Stars and Stories. It is your account\'s, shared by all your wolves. Skills grow by practice instead.';
+function socialShare(self: Json | null): number {
+    const xp = num(self, 'socialXp'), from = num(self, 'socialXpLevel', -1), to = num(self, 'socialXpNext', -1);
+    return from >= 0 && to > from ? clamp((xp - from) / (to - from), 0, 1) : clamp((xp % 100) / 100, 0, 1);
+}
+function socialLine(self: Json | null): string {
+    const xp = Math.trunc(num(self, 'socialXp')), to = num(self, 'socialXpNext', -1);
+    return to > xp ? `${xp} social experience · ${Math.trunc(to - xp)} to the next level` : `${xp} social experience`;
+}
+
 /** What a paper doll shows: names by slot and by fur spot, the portrait, and whether it can be changed (one's own). */
 interface Doll {
     worn: Record<string, string>;
@@ -70,7 +82,9 @@ export class Dialogs {
         const self = obj(s.snapshot, 'self');
         const art = m === 'inspect' || m === 'their_equipment' ? str(s.inspectedCharacter, 'artwork') : m === 'character' ? str(self, 'artwork')
             : m === 'status' ? this.ownArtwork(self) : '';
-        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? s.inspectedText : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
+        const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? [s.inspectedText, s.inspectedCharacter, this.inspectTab] : '',
+            m === 'profile' ? [s.profileOwn, s.account, s.safetyMarks] : '', m === 'report' ? [s.reportTarget, s.safetyMarks] : '',
+            m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
@@ -94,6 +108,8 @@ export class Dialogs {
         else if (m === 'trade') this.trade(self);
         else if (m === 'settings') this.settings();
         else if (m === 'leave_character') this.leave();
+        else if (m === 'profile') this.profileEditor();
+        else if (m === 'report') this.safetyMenu();
         else this.inspect();
         if (typing && this.aliasInput.isConnected) this.aliasInput.focus();
     }
@@ -136,14 +152,16 @@ export class Dialogs {
         el('p', 'muted', right, str(self, 'state', 'Set your current state with /me.'));
         el('p', 'sage small', right, '/lay then move to sneak. /stand to walk normally.');
         el('div', 'label gold', right, 'ROLEPLAY PROGRESSION');
-        el('div', 'big', right, `Level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
-        el('div', 'sage', right, `${Math.trunc(num(self, 'socialXp'))} social experience`);
+        el('div', 'big', right, `Social level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
+        el('div', 'sage', right, socialLine(self)).title = SocialWhy;
         const bar = el('div', 'bar', right);
-        el('div', 'fill', bar).style.width = `${clamp(num(self, 'socialXp') / 100, 0, 1) * 100}%`;
+        el('div', 'fill', bar).style.width = `${socialShare(self) * 100}%`;
         const skills = el('div', 'skills', right);
-        el('span', 'sage', skills, `Sneak ${clamp(Math.trunc(num(self, 'sneakSkill')), 0, 100)} / 100`);
-        el('span', 'sage', skills, `Hearing ${clamp(Math.trunc(num(self, 'hearingSkill')), 0, 100)} / 100`);
-        el('span', 'scent', skills, `Scent ${clamp(Math.trunc(num(self, 'scentSkill')), 0, 100)} / 100`);
+        // Each out of its cap (doc 49), or 100 from an older server.
+        const capOf = (id: string) => num(arr(self, 'skills').filter(isObject).find(r => str(r, 'id') === id) ?? null, 'cap', 100);
+        el('span', 'sage', skills, `Sneak ${clamp(Math.trunc(num(self, 'sneakSkill')), 0, 100)} / ${Math.trunc(capOf('sneak'))}`);
+        el('span', 'sage', skills, `Hearing ${clamp(Math.trunc(num(self, 'hearingSkill')), 0, 100)} / ${Math.trunc(capOf('listening'))}`);
+        el('span', 'scent', skills, `Scent ${clamp(Math.trunc(num(self, 'scentSkill')), 0, 100)} / ${Math.trunc(capOf('tracking'))}`);
         el('span', 'muted', skills, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`);
         this.injuries(right, self);
         this.names(right, self);
@@ -152,6 +170,8 @@ export class Dialogs {
         el('div', 'label gold', this.panel, 'DESCRIPTION');
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
         const actions = el('div', 'sheet-actions', this.panel);
+        button('YOUR PROFILE', 'secondary', actions, () => this.act('profile')).title =
+            'What others see of your wolf (a description, what you are doing, glances), your status, and your OOC notes, lines and veils.';
         button('CHARACTER SELECTION', 'primary', actions, () => this.act('leave_character'));
     }
 
@@ -447,7 +467,7 @@ export class Dialogs {
         const s = this.s, b = s.battle && !s.battle.observer ? s.battle : null;
         const me = b?.fighters.find(f => f.id === s.selfId);
         this.heading(b ? 'STATUS / EQUIPMENT · IN A FIGHT' : 'STATUS / EQUIPMENT', str(self, 'name', 'You'));
-        el('div', 'label muted', this.panel, `AGE ${wholeCount(self, 'age', 18, 10000)}  ·  LEVEL ${Math.trunc(num(self, 'socialLevel', 1))} ` +
+        el('div', 'label muted', this.panel, `AGE ${wholeCount(self, 'age', 18, 10000)}  ·  SOCIAL LEVEL ${Math.trunc(num(self, 'socialLevel', 1))} ` +
             `${str(obj(self, 'social'), 'title', 'Stranger').toUpperCase()}  ·  ${postureLabel(self).toUpperCase()}`);
         const screen = el('div', 'rpg', this.panel);
         const left = el('div', 'rpg-col', screen), doll = el('div', 'rpg-doll', screen), right = el('div', 'rpg-col', screen);
@@ -497,11 +517,21 @@ export class Dialogs {
             if (note) el('div', 'muted small', cell, note);
         };
         const dex = envNumber(self, 'dexterity', 0, 100, 50), effectiveDex = envNumber(self, 'effectiveDexterity', 0, 100, dex);
-        stat('STRENGTH', envNumber(self, 'strength', 0, 100, 50).toFixed(0), '', 'Stamina back each fight turn, what you can carry, how hard you hit.');
-        stat('DEXTERITY', dex.toFixed(0), Math.abs(effectiveDex - dex) >= 0.1 ? `${effectiveDex.toFixed(1)} now` : '',
-            'Speed and footing. Age, hurt and load change what it is now.');
-        stat('WISDOM', envNumber(self, 'wisdom', 0, 100, 50).toFixed(0), '', 'Mana, for the gifted.');
-        stat('FIGHTING', clamp(Math.trunc(num(self, 'fightingSkill', 50)), 0, 100).toFixed(0), '', 'How well you land and turn aside blows.');
+        // Each attribute's grade (doc 49: ▲ strong, ▼ weak) and how far it can grow, from the server's list.
+        const attribute = (id: string) => arr(self, 'attributes').filter(isObject).find(a => str(a, 'id') === id) ?? null;
+        const mark = (id: string) => ({strong: ' ▲', weak: ' ▼'} as Record<string, string>)[str(attribute(id), 'grade')] ?? '';
+        const capNote = (id: string) => (attribute(id) ? `of ${Math.round(num(attribute(id), 'cap'))}` : '');
+        stat(`STRENGTH${mark('strength')}`, envNumber(self, 'strength', 0, 100, 50).toFixed(0), capNote('strength'),
+            'Stamina back each fight turn, what you can carry, how hard you hit. Grows with shoves and heavy loads.');
+        stat(`DEXTERITY${mark('dexterity')}`, dex.toFixed(0), Math.abs(effectiveDex - dex) >= 0.1 ? `${effectiveDex.toFixed(1)} now` : capNote('dexterity'),
+            'Speed and footing. Age, hurt and load change what it is now. Grows with dodging and sneaking.');
+        stat(`WISDOM${mark('wisdom')}`, envNumber(self, 'wisdom', 0, 100, 50).toFixed(0), capNote('wisdom'), 'Mana, for the gifted. Grows with using a Gift.');
+        if (attribute('stamina'))
+            stat(`STAMINA${mark('stamina')}`, Math.round(num(attribute('stamina'), 'value', 50)).toString(), capNote('stamina'),
+                `How fast your breath comes back (${num(self, 'staminaRecovery', 5).toFixed(1)} a second) and how long you can run. Grows with running far.`);
+        const fightingCap = num(arr(self, 'skills').filter(isObject).find(r => str(r, 'id') === 'fighting') ?? null, 'cap', 100);
+        stat('FIGHTING', clamp(Math.trunc(num(self, 'fightingSkill', 50)), 0, 100).toFixed(0), `of ${Math.trunc(fightingCap)}`,
+            'How well you land and turn aside blows. It grows by fighting: blows landed and fights stood to the end (doc 49).');
 
         // Senses and skills: each sense with the organ behind it, each skill out of 100.
         const senses = this.box(left, 'SENSES & SKILLS');
@@ -513,13 +543,30 @@ export class Dialogs {
         };
         const organ = (key: string) => clamp(num(self, key, 1), 0, 1);
         const pct = (key: string) => Math.round(clamp(num(self, key, 1), 0, 2) * 100);
-        line('SIGHT', pct('vision'), `${pct('vision')}%${organ('eyeHealth') < 1 ? ` · eyes ${Math.round(organ('eyeHealth') * 100)}%` : ''}`);
-        line('HEARING', pct('hearing'), `${pct('hearing')}%${organ('earHealth') < 1 ? ` · ears ${Math.round(organ('earHealth') * 100)}%` : ''}`);
-        line('SCENT', pct('smell'), `${pct('smell')}%${organ('noseHealth') < 1 ? ` · nose ${Math.round(organ('noseHealth') * 100)}%` : ''}`, 'scent');
-        for (const [name, key] of [['SNEAK', 'sneakSkill'], ['LISTENING', 'hearingSkill'], ['TRACKING', 'scentSkill']]) {
-            const v = clamp(Math.trunc(num(self, key)), 0, 100);
-            line(name, v, `${v} / 100`);
+        line(`SIGHT${mark('vision')}`, pct('vision'), `${pct('vision')}%${organ('eyeHealth') < 1 ? ` · eyes ${Math.round(organ('eyeHealth') * 100)}%` : ''}`);
+        line(`HEARING${mark('hearing')}`, pct('hearing'), `${pct('hearing')}%${organ('earHealth') < 1 ? ` · ears ${Math.round(organ('earHealth') * 100)}%` : ''}`);
+        line(`SCENT${mark('smell')}`, pct('smell'), `${pct('smell')}%${organ('noseHealth') < 1 ? ` · nose ${Math.round(organ('noseHealth') * 100)}%` : ''}`, 'scent');
+        // Skills by practice (doc 49): each with its cap; "easing off" once today's practice in it reaches its soft
+        // limit; the trades once begun. (Fighting is with the attributes.) An older server sends the three alone.
+        const practised = arr(self, 'skills').filter(isObject).filter(r => str(r, 'id') !== 'fighting' &&
+            (['sneak', 'listening', 'tracking'].includes(str(r, 'id')) || num(r, 'value') > 0 || bool(r, 'specialty')));
+        if (!practised.length)
+            for (const [name, key] of [['SNEAK', 'sneakSkill'], ['LISTENING', 'hearingSkill'], ['TRACKING', 'scentSkill']]) {
+                const v = clamp(Math.trunc(num(self, key)), 0, 100);
+                line(name, v, `${v} / 100`);
+            }
+        for (const r of practised) {
+            const v = Math.max(0, num(r, 'value')), cap = Math.max(1, num(r, 'cap', 100));
+            line(`${str(r, 'name').toUpperCase()}${bool(r, 'specialty') ? ' ★' : ''}`, v / cap * 100, `${Math.trunc(v)} / ${Math.trunc(cap)}`);
+            senses.lastElementChild!.setAttribute('title', 'Grows by practice, faster beside someone better, slower near its cap.');
         }
+        const easing = practised.filter(r => bool(r, 'easing')).map(r => str(r, 'name'));
+        if (easing.length)
+            el('div', 'label muted', senses, `EASING OFF TODAY · ${easing.join(', ').toUpperCase()}`).title =
+                'Practised a lot today: these come slower until the day comes round.';
+        if (num(self, 'restedPractice') > 0)
+            el('div', 'label sage', senses, 'RESTED · PRACTICE COUNTS DOUBLE FOR A WHILE').title =
+                'Time away fills a pool of rested practice: each gain is doubled from it until it is spent.';
         el('div', 'label sage', senses, `PACE ${Math.trunc(num(self, 'pace'))}/10 ${str(self, 'paceName').toUpperCase()}  ·  TOP ${num(self, 'topSpeed').toFixed(1)} t/s`);
 
         this.paperDoll(doll, this.ownDoll(self, b));
@@ -573,9 +620,19 @@ export class Dialogs {
         }
 
         const standing = this.box(right, 'STANDING');
-        el('div', 'big', standing, `Level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
-        el('div', 'fill', el('div', 'bar', standing)).style.width = `${clamp(num(self, 'socialXp') / 100, 0, 1) * 100}%`;
-        el('div', 'sage small', standing, `${Math.trunc(num(self, 'socialXp'))} social experience`);
+        el('div', 'big', standing, `Social level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
+        el('div', 'fill', el('div', 'bar', standing)).style.width = `${socialShare(self) * 100}%`;
+        el('div', 'sage small', standing, socialLine(self)).title = SocialWhy;
+        // The next Gift tier the account hasn't opened, and what it still takes (doc 49).
+        for (const tier of ['gifted', 'quickened']) {
+            const t = obj(obj(self, 'tiers'), tier);
+            if (!t || t.open !== false) continue;
+            const still = arr(t, 'progress').filter(isObject).filter(p => num(p, 'have') < num(p, 'need')).map(p => str(p, 'label'));
+            el('div', 'muted small', standing, `NEXT · ${tier === 'gifted' ? 'GIFTED' : 'QUICKENED'} WOLVES: ${still.join(' · ') || 'Gifted first'}`).title =
+                'Your account may make Gifted wolves once it has roleplayed as a Normal wolf a while, and Quickened ones once ' +
+                'other wolves have shown they enjoy roleplaying with you.';
+            break;
+        }
         const chapter = obj(self, 'chapter');
         if (str(chapter, 'name')) el('div', 'muted small', standing, `Of ${str(chapter, 'name')}`);
         el('div', 'gold', standing, `PURSE · ${countText(self, 'cash')} silver pennies`);
@@ -1040,6 +1097,8 @@ export class Dialogs {
         } else el('p', 'pre', this.panel, s.inspectedText);
         // How they regard this wolf, and this wolf's own note on them (doc 32, 1.4).
         const inspected = s.inspectedCharacter, id = str(inspected, 'id');
+        const profile = obj(inspected, 'profile');
+        if (profile) this.profileCard(profile, id === s.selfId);
         if (str(inspected, 'regard')) el('p', 'sage', this.panel, `They ${str(inspected, 'regard')}.`);
         if (obj(inspected, 'equipment'))
             button(id === s.selfId ? 'YOUR EQUIPMENT' : 'WHAT THEY WEAR', 'primary', el('div', 'sheet-actions', this.panel),
@@ -1053,7 +1112,251 @@ export class Dialogs {
         }
         el('p', 'muted small', this.panel, 'Only information your character is allowed to perceive appears here.');
     }
+
+    /** Which tab of a closer look is open: 'look' or 'ooc' (doc 50). */
+    private inspectTab = 'look';
+
+    /** A player's roleplay profile on the card (doc 50): what this wolf may see of it, then the OOC tab, players only. */
+    private profileCard(p: Json, own: boolean) {
+        const tabs = el('div', 'creator-tabs', this.panel);
+        for (const [id, label] of [['look', 'LOOK'], ['ooc', 'PROFILE (OOC)']] as const) {
+            const b = button(label, id === this.inspectTab ? 'tab active' : 'tab', tabs, () => {
+                this.inspectTab = id;
+                this.key = '';
+            });
+            b.dataset.tab = id;
+        }
+        const box = el('div', 'profile-card', this.panel);
+        // Mute, block or report this wolf (doc 50).
+        if (!own) {
+            const id = str(this.s.inspectedCharacter, 'id'), label = str(this.s.inspectedCharacter, 'name');
+            const marked = (kind: string) => this.s.safetyMarks.some(m => str(m, 'kind') === kind && str(m, 'character') === id);
+            const row = el('div', 'profile-veils', box);
+            button(marked('mute') ? 'UNMUTE' : 'MUTE', 'small', row, () => this.s.sendSafety(marked('mute') ? 'unmute' : 'mute', {target: id}))
+                .title = 'You stop seeing their words. They are not told.';
+            button(marked('block') ? 'UNBLOCK' : 'BLOCK', 'small', row, () => this.s.sendSafety(marked('block') ? 'unblock' : 'block', {target: id}))
+                .title = 'You stop seeing their words, on any of their wolves, and they can\'t join your scenes, invite or challenge you. They are not told.';
+            button('REPORT', 'small', row, () => this.s.openSafety({target: id, label}));
+        }
+        if (this.inspectTab === 'look') {
+            if (str(p, 'title')) el('p', 'gold', box, `${str(p, 'title')}${str(p, 'motto') ? ` · “${str(p, 'motto')}”` : ''}`);
+            const facts = [StatusLabel[str(p, 'status', 'ic')] ?? '', bool(p, 'walkup') ? 'walk-up friendly' : '', str(p, 'pronouns'),
+                str(p, 'experience') ? `${ExperienceLabel[str(p, 'experience')] ?? str(p, 'experience')} roleplayer` : ''].filter(Boolean);
+            if (facts.length) el('p', 'sage small', box, facts.join(' · '));
+            if (str(p, 'currently')) el('p', '', box, `Currently: ${str(p, 'currently')}`);
+            if (bool(p, 'folded')) el('p', 'muted', box, 'This profile may have mature content. (Settings: show mature profiles.)');
+            for (const g of arr(p, 'glances').filter(isObject)) {
+                const row = el('div', 'profile-glance', box);
+                el('span', 'glance-icon', row, GlanceIcons[str(g, 'icon')] ?? '•');
+                el('strong', '', row, str(g, 'title'));
+                if (str(g, 'line')) el('span', 'muted', row, ` ${str(g, 'line')}`);
+                if (str(g, 'sense') !== 'sight') el('span', 'label muted', row, str(g, 'sense') === 'scent' ? ' · SMELT' : ' · HEARD');
+            }
+        } else {
+            const ooc = obj(p, 'ooc');
+            if (!ooc || !Object.keys(ooc).length) el('p', 'muted', box, own ? 'Nothing in your OOC tab yet.' : 'Nothing here.');
+            if (str(ooc, 'notes')) el('p', '', box, str(ooc, 'notes'));
+            const consent = obj(ooc, 'consent');
+            if (consent && Object.keys(consent).length) {
+                el('div', 'label gold', box, 'LINES AND VEILS');
+                for (const [flag, answer] of Object.entries(consent))
+                    el('p', 'small', box, `${ConsentLabel[flag] ?? flag}: ${answer === 'ask' ? 'ask me first' : answer}`);
+            }
+            if (str(ooc, 'otherLimits')) el('p', 'small', box, `Also: ${str(ooc, 'otherLimits')}`);
+            const sliders = obj(ooc, 'sliders');
+            if (sliders && Object.keys(sliders).length) {
+                el('div', 'label gold', box, 'PERSONALITY');
+                for (const [pair, n] of Object.entries(sliders)) {
+                    const [lo, hi] = pair.split('/');
+                    el('p', 'small', box, `${lo} ${'·'.repeat(Math.max(0, 10 + Math.min(0, Number(n))))}●${'·'.repeat(Math.max(0, 10 - Math.max(0, Number(n))))} ${hi}`);
+                }
+            }
+            if (str(ooc, 'history')) {
+                el('div', 'label gold', box, 'HISTORY (OOC: not for acting on unless your character has learned it)');
+                el('p', 'pre', box, str(ooc, 'history'));
+            }
+        }
+    }
+
+    /** One's own profile (doc 50): what others see, status and walk-up, the OOC tab, and the account's handle,
+     * experience and settings. Nothing is sent until SAVE (status, walk-up and the account's parts save at once). */
+    private profileEditor() {
+        const s = this.s, own = s.profileOwn ?? {}, account = s.account ?? {}, rules = s.profileRules ?? {};
+        const limits = obj(rules, 'limits') ?? {};
+        this.heading('YOUR PROFILE', 'What others see of your wolf');
+        el('p', 'muted small', this.panel, 'Strangers see your description, what you are doing and your glances. Your title and motto ' +
+            'show to wolves who know your name. Your OOC tab is for players only. Residents notice only what they could see.');
+        const field = (label: string, key: string, area = false) => {
+            const wrap = el('label', 'profile-field', this.panel);
+            const most = num(limits, key, 120);
+            const head = el('span', 'label gold', wrap, label);
+            const input = area ? el('textarea', 'profile-input', wrap) : el('input', 'profile-input', wrap);
+            input.value = str(own, key);
+            input.maxLength = most;
+            input.dataset.field = key;
+            const count = el('span', 'label muted', head, ` ${input.value.length}/${most}`);
+            input.addEventListener('input', () => (count.textContent = ` ${input.value.length}/${most}`));
+            return input;
+        };
+        const inputs: Record<string, HTMLInputElement | HTMLTextAreaElement> = {};
+        inputs.description = field('DESCRIPTION · what anyone sees of your wolf', 'description', true);
+        inputs.currently = field('CURRENTLY · what you are doing ("mending nets by the pier, happy to chat")', 'currently');
+        inputs.pronouns = field('PRONOUNS', 'pronouns');
+        inputs.title = field('TITLE · for wolves who know your name', 'title');
+        inputs.motto = field('MOTTO · for wolves who know your name', 'motto');
+        // Glances: up to five, each an icon, a title, a line and the sense it is caught by.
+        el('div', 'label gold', this.panel, 'GLANCES · what others notice at a glance');
+        const glances = arr(own, 'glances').filter(isObject);
+        const rows: Array<{icon: HTMLSelectElement; title: HTMLInputElement; line: HTMLInputElement; sense: HTMLSelectElement}> = [];
+        for (let i = 0; i < num(limits, 'glances', 5); ++i) {
+            const g = glances[i] ?? {};
+            const row = el('div', 'profile-glance-edit', this.panel);
+            const icon = el('select', '', row);
+            for (const name of arr(rules, 'glanceIcons').filter((x): x is string => typeof x === 'string'))
+                icon.append(new Option(`${GlanceIcons[name] ?? ''} ${name}`, name, false, name === str(g, 'icon', 'scar')));
+            const title = el('input', 'profile-input', row);
+            title.placeholder = 'A fresh scar';
+            title.maxLength = num(limits, 'glanceTitle', 32);
+            title.value = str(g, 'title');
+            const line = el('input', 'profile-input', row);
+            line.placeholder = 'over one eye';
+            line.maxLength = num(limits, 'glanceLine', 120);
+            line.value = str(g, 'line');
+            const sense = el('select', '', row);
+            for (const [id, label] of [['sight', 'seen'], ['scent', 'smelt (close)'], ['sound', 'heard']])
+                sense.append(new Option(label, id, false, id === str(g, 'sense', 'sight')));
+            rows.push({icon, title, line, sense});
+        }
+        // The OOC tab.
+        el('div', 'label gold', this.panel, 'PROFILE (OOC) · players only');
+        inputs.oocNotes = field('OOC NOTES', 'oocNotes', true);
+        const consent: Record<string, HTMLSelectElement> = {};
+        const veils = el('div', 'profile-veils', this.panel);
+        for (const c of arr(rules, 'consent').filter(isObject)) {
+            const wrap = el('label', '', veils);
+            el('span', 'small', wrap, `${str(c, 'name')} `);
+            const sel = el('select', '', wrap);
+            for (const [id, label] of [['', '—'], ['yes', 'yes'], ['no', 'no'], ['ask', 'ask me first']])
+                sel.append(new Option(label, id, false, id === str(obj(own, 'consent'), str(c, 'id'))));
+            consent[str(c, 'id')] = sel;
+        }
+        inputs.otherLimits = field('OTHER LIMITS', 'otherLimits');
+        inputs.history = field('HISTORY · optional, OOC', 'history', true);
+        const sliders: Record<string, HTMLInputElement> = {};
+        const sliderBox = el('div', 'profile-sliders', this.panel);
+        for (const pair of arr(rules, 'sliders')) {
+            if (!Array.isArray(pair) || pair.length !== 2) continue;
+            const key = `${pair[0]}/${pair[1]}`;
+            const wrap = el('label', 'profile-slider', sliderBox);
+            el('span', 'small', wrap, String(pair[0]));
+            const range = el('input', '', wrap);
+            range.type = 'range';
+            range.min = '-10';
+            range.max = '10';
+            const set = obj(own, 'sliders');
+            range.value = String(set && typeof set[key] === 'number' ? set[key] : 0);
+            range.dataset.set = set && typeof set[key] === 'number' ? '1' : '';
+            range.addEventListener('input', () => (range.dataset.set = '1'));
+            el('span', 'small', wrap, String(pair[1]));
+            sliders[key] = range;
+        }
+        const matureWrap = el('label', 'small', this.panel);
+        const mature = el('input', '', matureWrap);
+        mature.type = 'checkbox';
+        mature.checked = bool(own, 'mature');
+        matureWrap.append(' This profile may have mature content');
+        const actions = el('div', 'sheet-actions', this.panel);
+        button('SAVE PROFILE', 'primary', actions, () => {
+            const fields: Json = {};
+            for (const [key, input] of Object.entries(inputs)) fields[key] = input.value;
+            fields.glances = rows.filter(r => r.title.value.trim()).map(r => ({icon: r.icon.value, title: r.title.value, line: r.line.value, sense: r.sense.value}));
+            fields.consent = Object.fromEntries(Object.entries(consent).map(([k, sel]) => [k, sel.value]));
+            fields.sliders = Object.fromEntries(Object.entries(sliders).map(([k, r]) => [k, r.dataset.set ? Number(r.value) : null]));
+            fields.mature = mature.checked;
+            s.sendProfile('set', {fields});
+        });
+        // Status, walk-up and the account: saved at once.
+        el('div', 'label gold', this.panel, 'STATUS');
+        const statusRow = el('div', 'profile-veils', this.panel);
+        for (const [id, label] of [['ic', 'In character'], ['lfs', 'Looking for a scene'], ['ooc', 'Out of character']])
+            button(label, str(own, 'status', 'ic') === id ? 'small active' : 'small', statusRow, () => s.sendProfile('status', {value: id}));
+        const walk = button(bool(own, 'walkup') ? 'Walk-up friendly: yes' : 'Walk-up friendly: no', 'small', statusRow,
+            () => s.sendProfile('walkup', {on: !bool(own, 'walkup')}));
+        walk.title = 'Fine for others to approach you unannounced.';
+        el('div', 'label gold', this.panel, `YOUR ACCOUNT · ${num(account, 'playedHours').toFixed(1)} HOURS PLAYED`);
+        const handleRow = el('div', 'name-add', this.panel);
+        const handle = el('input', 'profile-input', handleRow);
+        handle.value = str(account, 'handle');
+        handle.placeholder = 'A handle friends and circles see (not your sign-in name)';
+        button('SAVE HANDLE', 'small', handleRow, () => s.sendProfile('handle', {handle: handle.value}));
+        const xpRow = el('div', 'profile-veils', this.panel);
+        for (const x of arr(rules, 'experience').filter(isObject))
+            button(str(x, 'name'), str(account, 'experience') === str(x, 'id') ? 'small active' : 'small', xpRow,
+                () => s.sendProfile('experience', {value: str(x, 'id')}));
+        const settings = obj(account, 'settings') ?? {};
+        const toggle = (label: string, key: string) => {
+            const wrap = el('label', 'small', this.panel);
+            const box = el('input', '', wrap);
+            box.type = 'checkbox';
+            box.checked = bool(settings, key);
+            box.addEventListener('change', () => s.sendProfile('settings', {settings: {[key]: box.checked}}));
+            wrap.append(` ${label}`);
+        };
+        toggle('Show profiles marked mature', 'showMature');
+        toggle('Write me scene recaps (what I perceived is sent to the model to summarise)', 'recaps');
+        // Who one has muted and blocked, by the wolf one pointed at.
+        el('div', 'label gold', this.panel, 'MUTED AND BLOCKED');
+        if (!s.safetyMarks.length) el('p', 'muted small', this.panel, 'No one. Mute or block a wolf from their card, or from a line they said (⚑).');
+        for (const m of s.safetyMarks) {
+            const row = el('div', 'profile-veils', this.panel);
+            el('span', '', row, `${str(m, 'label')} · ${str(m, 'kind') === 'block' ? 'blocked' : 'muted'}`);
+            button(str(m, 'kind') === 'block' ? 'UNBLOCK' : 'UNMUTE', 'small', row,
+                () => s.sendSafety(str(m, 'kind') === 'block' ? 'unblock' : 'unmute', {target: str(m, 'character')}));
+        }
+    }
+
+    /** Mute, block or report a wolf or a line's author (doc 50): a report goes to a Dungeon Master with the lines you
+     * received from them. */
+    private safetyMenu() {
+        const s = this.s, about = s.reportTarget;
+        if (!about) return;
+        this.heading('MUTE, BLOCK OR REPORT', about.label);
+        const which = about.line !== undefined ? {line: about.line} : {target: about.target};
+        const actions = el('div', 'profile-veils', this.panel);
+        button('MUTE', 'secondary', actions, () => { s.sendSafety('mute', which); this.act('close'); }).title = 'You stop seeing their words. They are not told.';
+        button('BLOCK', 'secondary', actions, () => { s.sendSafety('block', which); this.act('close'); }).title =
+            'You stop seeing their words on any of their wolves; they can\'t join your scenes, invite or challenge you. They are not told.';
+        el('div', 'label gold', this.panel, 'REPORT TO A DUNGEON MASTER');
+        el('p', 'muted small', this.panel, 'The lines you received from them lately go with it, as evidence. They are never told who reported them.');
+        const category = el('select', '', this.panel);
+        for (const [id, label] of [['harassment', 'Harassment'], ['hateful', 'Hateful content'], ['spam', 'Spam'], ['cheating', 'Cheating'], ['other', 'Other']])
+            category.append(new Option(label, id));
+        const kind = el('select', '', this.panel);
+        kind.append(new Option('What they said', 'speech'));
+        if (about.target) kind.append(new Option('Their profile', 'profile'));
+        const note = el('input', 'profile-input', this.panel);
+        note.placeholder = 'What happened (optional, 300 letters)';
+        note.maxLength = 300;
+        const alsoWrap = el('label', 'small', this.panel);
+        const also = el('input', '', alsoWrap);
+        also.type = 'checkbox';
+        also.checked = true;
+        alsoWrap.append(' Also block them');
+        const send = el('div', 'sheet-actions', this.panel);
+        button('SEND REPORT', 'primary', send, () => {
+            s.sendSafety('report', {...which, category: category.value, kind: kind.value, note: note.value, block: also.checked});
+            this.act('close');
+        });
+    }
 }
+
+/** Status, experience and consent in words; glance icons as signs (doc 50). */
+const StatusLabel: Record<string, string> = {ic: 'In character', ooc: 'Out of character', lfs: 'Looking for a scene', storyteller: 'Storyteller'};
+const ExperienceLabel: Record<string, string> = {newcomer: 'Newcomer', casual: 'Casual', experienced: 'Experienced', guide: 'Newcomer Guide'};
+const ConsentLabel: Record<string, string> = {injury: 'Character injury', death: 'Character death', romance: 'Romance', crime: 'Criminal activity',
+    control: 'Loss of control'};
+const GlanceIcons: Record<string, string> = {scar: '⚔', eye: '👁', nose: '◉', ear: '◗', paw: '🐾', fang: '▼', coat: '≋', collar: '◯', tail: '〜',
+    heart: '♥', star: '★', smoke: '☁', flower: '✿', bone: '⌇', feather: '❦', moon: '☾', drop: '💧', flame: '🔥'};
 
 /** A plain icon for an item, by its kind (drawn in CSS). */
 function itemIcon(item: Json): string {

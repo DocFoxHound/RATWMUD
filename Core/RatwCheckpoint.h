@@ -26,6 +26,8 @@ struct ServerState
     json::Value factions;                         // RatwFactions.h's save: standing, burdens, news, missions.
     json::Value chapters;                         // RatwChapters.h's save (doc 32, Part 3).
     json::Value notes;                            // Players' private notes on wolves they know (doc 32, 1.4).
+    json::Value standing;                         // Earned Gift tiers by account (doc 49, Phase 5).
+    json::Value people;                           // Accounts as people and characters' profiles (doc 50).
     json::Value acquaintances, aliases;           // RatwNames.h: who knows whom by what name; players' aliases (doc 32).
     // The NPC-to-NPC scenes each player character has heard, oldest first (doc 30): so a returning player hears new ones.
     std::map<std::string, std::vector<std::string>> scenesHeard;

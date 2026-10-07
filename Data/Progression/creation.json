@@ -1,0 +1,37 @@
+{
+  "about": "Building a wolf at creation (Docs/Design/49-characters-and-earned-gifts.md, Design 2 and 3): each attribute weak, plain or strong (start and cap), a small budget, one specialty, and presets. Every number is a placeholder for the user's balance pass. Checked by tools/progression_catalog.py.",
+  "grades": {
+    "strength":  {"weak": [40, 60], "plain": [50, 70], "strong": [60, 85]},
+    "dexterity": {"weak": [40, 60], "plain": [50, 70], "strong": [60, 85]},
+    "wisdom":    {"weak": [20, 45], "plain": [30, 55], "strong": [40, 70]},
+    "stamina":   {"weak": [40, 60], "plain": [50, 70], "strong": [60, 85]},
+    "hearing":   {"weak": [0.85, 1.15], "plain": [1.0, 1.3], "strong": [1.15, 1.5]},
+    "vision":    {"weak": [0.85, 1.15], "plain": [1.0, 1.3], "strong": [1.15, 1.5]},
+    "smell":     {"weak": [0.85, 1.3], "plain": [1.0, 1.45], "strong": [1.15, 1.6]}
+  },
+  "budget": 2,
+  "strongCost": 1,
+  "weakRefund": 1,
+  "mostStrong": 3,
+  "mostWeak": 3,
+  "specialties": [
+    {"id": "fighter", "name": "Fighter", "skill": "fighting", "about": "Starts fighting skill higher."},
+    {"id": "sneak", "name": "Sneak", "skill": "sneak", "about": "Starts sneaking higher."},
+    {"id": "tracker", "name": "Tracker", "skill": "tracking", "about": "Starts tracking higher."},
+    {"id": "trade:craft", "name": "Trade: craft", "skill": "craft", "about": "Smiths, weavers, potters, bakers."},
+    {"id": "trade:labour", "name": "Trade: labour", "skill": "labour", "about": "Hauling, digging, farming, fishing."},
+    {"id": "trade:commerce", "name": "Trade: commerce", "skill": "commerce", "about": "Keeping a shop, a stall or an inn."},
+    {"id": "trade:service", "name": "Trade: service", "skill": "service", "about": "Scribes, clerks, stewards, healers."},
+    {"id": "trade:travel", "name": "Trade: travel", "skill": "travel", "about": "Carters, couriers, scouts."},
+    {"id": "trade:watch", "name": "Trade: watch", "skill": "watch", "about": "Guards and the watch."}
+  ],
+  "capBonus": 0,
+  "presets": [
+    {"id": "hunter", "name": "Hunter", "strong": ["smell", "hearing", "dexterity"], "weak": ["wisdom"], "specialty": "tracker"},
+    {"id": "scholar", "name": "Scholar", "strong": ["wisdom", "hearing", "vision"], "weak": ["strength"], "specialty": "trade:service"},
+    {"id": "smiths_hand", "name": "Smith's hand", "strong": ["strength", "stamina", "dexterity"], "weak": ["smell"], "specialty": "trade:craft"},
+    {"id": "brawler", "name": "Brawler", "strong": ["strength", "dexterity", "stamina"], "weak": ["wisdom"], "specialty": "fighter"}
+  ],
+  "tierCost": {"normal": 0, "gifted": 0, "quickened": 0},
+  "stamina": {"about": "What the stamina attribute (Entity::endurance) does; each is 1 (no change) at 50.", "recoveryBase": 0.8, "recoveryPer": 0.004, "drainBase": 1.2, "drainPer": 0.004, "turnPer": 0.04}
+}

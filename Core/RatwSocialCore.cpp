@@ -1,5 +1,5 @@
 #include "RatwSocialCore.h"
-#include "RatwLevels.h"
+#include "RatwPractice.h"
 
 #include <algorithm>
 #include <cmath>
@@ -592,8 +592,8 @@ int SocialLedger::payMember(const SocialSession& Scene, const std::vector<std::s
 {
     const auto& Actor = Qualified[Index];
     int MostRepeated = 0, Today = 0, Count = 0;
-    for (const auto& Entry : entries)
-        if (Entry.actor == Actor && now - Entry.at < 86400)
+    for (const auto i : receiptsOf(Actor))
+        if (const auto& Entry = entries[i]; now - Entry.at < 86400)
         {
             Today += Entry.amount;
             if (Entry.amount > 0)
@@ -633,7 +633,7 @@ int SocialLedger::payMember(const SocialSession& Scene, const std::vector<std::s
     Entry.reason = "qualified_session_settlement";
     Entry.amount = Amount;
     Entry.session = Scene.id;
-    entries.push_back(Entry);
+    add(Entry);
     points[Actor] += Amount;
     return Amount;
 }
@@ -678,8 +678,8 @@ int SocialLedger::settleFight(const std::string& fight, const std::set<std::stri
     {
         const auto& Actor = Paid[Index];
         int Count = 0;
-        for (const auto& Entry : entries)
-            if (Entry.actor == Actor && now - Entry.at < 86400 && Entry.amount > 0)
+        for (const auto i : receiptsOf(Actor))
+            if (now - entries[i].at < 86400 && entries[i].amount > 0)
                 ++Count;
         // The same partners again and again pay less: the most repeated, over the scenes both were paid in today.
         int MostRepeated = 0;
@@ -693,7 +693,7 @@ int SocialLedger::settleFight(const std::string& fight, const std::set<std::stri
                         ++Repeat;
                 MostRepeated = std::max(MostRepeated, Repeat);
             }
-        int Amount = fought.count(Actor) ? FightXP : 0;
+        int Amount = 0;                             // (Fighting itself teaches fighting, not social XP: doc 49.)
         const auto talked = std::find(Talked.begin(), Talked.end(), Actor);
         if (talked != Talked.end())
         {
@@ -734,75 +734,47 @@ void SocialLedger::tick(double now)
 int SocialLedger::level(const std::string& actor) const
 {
     const auto it = points.find(actor);
-    return levels::levelFor(it == points.end() ? 0 : it->second);
+    return practice::levelFor(it == points.end() ? 0 : it->second);
 }
 
-int SocialLedger::restedLeft(const std::string& actor, double now) const
+int SocialLedger::dailyCap()
 {
-    // The times it earned (not rested pay), newest first: the latest gap of a day or more between two is time away,
-    // and its rested pool runs from the return; what has been paid from it since, used up.
-    std::vector<double> times;
-    for (const auto& e : entries)
-        if (e.actor == actor && e.amount > 0 && e.reason != "rested_bonus")
-            times.push_back(e.at);
-    times.push_back(now);
-    std::sort(times.rbegin(), times.rend());
-    for (std::size_t i = 0; i + 1 < times.size(); ++i)
-        if (const double gap = times[i] - times[i + 1]; gap >= 86400)
-        {
-            const double back = times[i];
-            int pool = std::min(RestedMost, RestedPerDay * int(gap / 86400));
-            for (const auto& e : entries)
-                if (e.actor == actor && e.reason == "rested_bonus" && e.at >= back)
-                    pool -= e.amount;
-            return std::max(0, pool);
-        }
-    return 0;
+    return practice::standing().dailyCap;
 }
 
-int SocialLedger::award(const std::string& actor, const std::string& kind, const std::string& source, double now)
+void SocialLedger::reindex()
 {
-    // What each kind pays, and the most a rolling day (0: no limit of its own) (doc 44).
-    struct Kind
-    {
-        const char* name;
-        int amount, perDay;
-    };
-    static constexpr Kind Kinds[] = {{"work", 10, 30}, {"practice", 5, 15}, {"milestone", 10, 0}, {"discovery", 5, 25}, {"story", 25, 0}};
-    const Kind* k = nullptr;
-    for (const auto& c : Kinds)
-        if (kind == c.name)
-            k = &c;
-    if (!k || actor.empty() || source.empty())
-        return 0;
-    int today = 0;
-    for (const auto& e : entries)
-    {
-        if (e.actor == actor && e.reason == kind && e.session == source)
-            return 0;                               // (Once for each source.)
-        if (e.actor == actor && e.reason == kind && now - e.at < 86400)
-            today += e.amount;
-    }
-    const int wanted = k->perDay ? std::min(k->amount, std::max(0, k->perDay - today)) : k->amount;
-    if (wanted <= 0 || usedToday(actor, now) >= DailyCap)
-        return -1;                                  // Not today: no receipt, so it can still be paid another day.
-    return pay(actor, "", kind, source, wanted, now, 0);
+    byActor_.clear();
+    for (std::size_t i = 0; i < entries.size(); ++i)
+        byActor_[entries[i].actor].push_back(i);
+}
+
+const std::vector<std::size_t>& SocialLedger::receiptsOf(const std::string& actor) const
+{
+    static const std::vector<std::size_t> none;
+    const auto it = byActor_.find(actor);
+    return it == byActor_.end() ? none : it->second;
+}
+
+void SocialLedger::add(const LedgerEntry& e)
+{
+    byActor_[e.actor].push_back(entries.size());
+    entries.push_back(e);
 }
 
 // ------------------------------------------------------------------ Gold Stars and Stories (doc 32, 1.2)
 
 std::string socialTitle(int level)
 {
-    return level >= 25 ? "Legend" : level >= 18 ? "Renowned" : level >= 12 ? "Notable" : level >= 8 ? "Respected" : level >= 5 ? "Familiar Face"
-         : level >= 3 ? "Known" : "Stranger";
+    return practice::titleFor(level);               // (Data/Progression/standing.json: doc 49.)
 }
 
 int SocialLedger::paidFor(const std::string& actor, const std::string& session) const
 {
     int n = 0;
-    for (const auto& e : entries)
-        if (e.actor == actor && e.session == session && e.reason == "qualified_session_settlement")
-            n += e.amount;
+    for (const auto i : receiptsOf(actor))
+        if (entries[i].session == session && entries[i].reason == "qualified_session_settlement")
+            n += entries[i].amount;
     return n;
 }
 
@@ -819,9 +791,9 @@ std::vector<std::string> SocialLedger::paidIn(const std::string& session) const
 int SocialLedger::usedToday(const std::string& actor, double now) const
 {
     int n = 0;
-    for (const auto& e : entries)
-        if (e.actor == actor && now - e.at < 86400 && e.reason != "rested_bonus")   // (Rested XP is outside the cap.)
-            n += e.amount;
+    for (const auto i : receiptsOf(actor))
+        if (now - entries[i].at < 86400 && practice::socialReason(entries[i].reason))
+            n += entries[i].amount;
     return n;
 }
 
@@ -838,9 +810,7 @@ double SocialLedger::pairDecay(const std::string& a, const std::string& b, doubl
 int SocialLedger::pay(const std::string& actor, const std::string& partner, const std::string& reason, const std::string& source,
                       int requested, double now, std::uint64_t event)
 {
-    // Rested XP (doc 44): back after a day or more, what is earned is paid again from the rested pool, outside the cap.
-    const int rested = requested > 0 ? restedLeft(actor, now) : 0;
-    int amount = std::max(0, std::min(requested, DailyCap - usedToday(actor, now)));
+    int amount = std::max(0, std::min(requested, dailyCap() - usedToday(actor, now)));
     amount = std::min(amount, 2147483647 - points[actor]);
     LedgerEntry e;
     e.event = event;
@@ -850,16 +820,8 @@ int SocialLedger::pay(const std::string& actor, const std::string& partner, cons
     e.reason = reason;
     e.amount = amount;
     e.session = source;
-    entries.push_back(e);                 // (A zero receipt too: the same source can't pay later.)
+    add(e);                               // (A zero receipt too: the same source can't pay later.)
     points[actor] += amount;
-    if (const int bonus = std::min({rested, amount, 2147483647 - points[actor]}); bonus > 0)
-    {
-        e.reason = "rested_bonus";
-        e.amount = bonus;
-        entries.push_back(e);
-        points[actor] += bonus;
-        amount += bonus;
-    }
     return amount;
 }
 
@@ -872,8 +834,8 @@ SocialResult SocialLedger::star(const std::string& giver, const std::string& rec
         return {false, "Not to yourself."};
     // Both must have qualified in it (a settlement receipt, even one capped to nothing).
     const auto qualified = [&](const std::string& who) {
-        for (const auto& e : entries)
-            if (e.actor == who && e.session == session && e.reason == "qualified_session_settlement")
+        for (const auto i : receiptsOf(who))
+            if (entries[i].session == session && entries[i].reason == "qualified_session_settlement")
                 return true;
         return false;
     };
@@ -1015,8 +977,8 @@ SocialResult SocialLedger::storyStar(const std::string& giver, const std::string
         return {false, "Only a closed Story can be starred."};
     auto& st = it->second;
     const auto closed = [&](const std::string& who) {
-        for (const auto& e : entries)
-            if (e.actor == who && e.session == id && e.reason == "story_closure")
+        for (const auto i : receiptsOf(who))
+            if (entries[i].session == id && entries[i].reason == "story_closure")
                 return true;
         return false;
     };

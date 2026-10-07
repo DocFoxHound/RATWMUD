@@ -27,6 +27,9 @@ Value persistEntity(const Entity& e, double time);
 Entity readEntity(const Value& o);
 // The self view's pace and body numbers (added to the observer's own entity).
 void privatePace(Value& o, const Entity& e);
+// The self view's attributes and skills (doc 49): each with its value and cap, its grade or specialty, whether today's
+// practice in it is easing off (at `now`, real seconds), and the rested practice waiting.
+void practiceView(Value& o, const Entity& e, double now);
 
 Value mapCell(const MapCell& m, bool includeGlyphs = true);
 Value travel(const TravelState& t);

@@ -188,7 +188,7 @@ Result World::repairGear(const std::string& player, const std::string& merchant,
     if (!society_.shift(player, society_.tillOf(merchant), "", 0, cost, "repair"))
         return {false, "The mending can't be paid for.", {}};
     e->wear.erase(item);
-    award(player, "practice", "repair:" + std::to_string(std::int64_t(calendarDays_)));   // (The first of the day: doc 44.)
+    // (A mending bought from a merchant isn't the wolf's own work: it teaches nothing. Doc 49.)
     const auto* good = items::good(item);
     return {true, "Your " + (good ? lowerName(good->name) : item) + " is mended, for " + std::to_string(cost) + "p.", {}};
 }

@@ -29,6 +29,9 @@ const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
 const MenuWords: Record<string, string> = {'challenge:yield': 'Duel until one yields', 'challenge:blood': 'Duel to first blood',
     'challenge:death': 'Fight until one goes down'};
 
+/** A player's status in words (doc 50): in character needs none. */
+export const StatusWords: Record<string, string> = {ooc: 'out of character', lfs: 'looking for a scene', quill: 'storyteller'};
+
 /** One row of the In Sight list. */
 interface SightRow {
     row: HTMLElement;
@@ -355,7 +358,8 @@ export class Hud {
                 : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
             setText(r.detail, [upperFirst(role), e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
-                e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
+                StatusWords[e.rp] ?? '', e.walkup ? 'walk-up friendly' : '', e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
+            r.row.title = e.currently ? `Currently: ${e.currently}` : '';
             setClass(r.row, 'hostile', e.hostile);
             setClass(r.row, 'targeted', s.talkTargets.includes(e.id));
             setClass(r.row, 'highlight', s.highlight === e.id || s.hoveredEntity === e.id);

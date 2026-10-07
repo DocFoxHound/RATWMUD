@@ -1,7 +1,11 @@
-// Levelling (Docs/Design/44-levelling.md): the curve, what a level does in a fight, XP from work, practice, places,
-// skills and contracts (typed, once each, within the day's limits), and rested XP.
+// Social standing (Docs/Design/49-characters-and-earned-gifts.md, Phase 3; it replaced doc 44's levels): the social
+// level curve and titles from Data/Progression/standing.json; social XP is scenes, stars and Stories alone (work,
+// practice, places, contracts and rested time teach skills instead); the day's cap; and the ledger's per-actor index.
+// (A level's old fighting skill, levels::fightingSkill, stays only for level_sim's "@20" rows.)
 #include "RatwLevels.h"
+#include "RatwPractice.h"
 #include "RatwSocialCore.h"
+#include "RatwStanding.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -20,63 +24,69 @@ void expect(bool ok, const std::string& what)
 
 void curve()
 {
-    expect(levels::levelFor(0) == 1 && levels::levelFor(99) == 1 && levels::levelFor(100) == 2, "100 XP for level 2");
-    expect(levels::xpFor(3) == 250 && levels::xpFor(5) == 700 && levels::xpFor(10) == 2700, "250 for 3, 700 for 5, 2,700 for 10");
-    expect(levels::xpFor(15) == 5950 && levels::xpFor(20) == 10450 && levels::xpFor(25) == 16200, "5,950, 10,450, 16,200 for 25");
+    expect(practice::levelFor(0) == 1 && practice::levelFor(99) == 1 && practice::levelFor(100) == 2, "100 social XP for level 2");
+    expect(practice::xpFor(3) == 250 && practice::xpFor(5) == 700 && practice::xpFor(8) == 1750 && practice::xpFor(10) == 2700,
+           "250 for 3, 700 for 5, 1,750 for 8, 2,700 for 10 (doc 44's curve, now in standing.json)");
     for (int l = 1; l <= 40; ++l)
-        expect(levels::levelFor(levels::xpFor(l)) == l && levels::levelFor(levels::xpFor(l) - 1) == std::max(1, l - 1), "each level's start: " + std::to_string(l));
-    expect(levels::levelFor(levels::xpFor(30)) == 30, "no cap");
-    expect(levels::fightingSkill(1) == 50 && levels::fightingSkill(25) == 86 && levels::fightingSkill(40) == 86, "fighting skill 50 to 86, no more past 25");
-    expect(levels::fightingSkill(1, true) == 50 && levels::fightingSkill(25, true) == 100 && levels::fightingSkill(40, true) == 100,
-           "a Quickened wolf's 50 to 100 (doc 45)");
-    expect(socialTitle(18) == "Renowned" && socialTitle(25) == "Legend" && socialTitle(12) == "Notable", "Renowned and Legend");
+        expect(practice::levelFor(practice::xpFor(l)) == l && practice::levelFor(practice::xpFor(l) - 1) == std::max(1, l - 1),
+               "each level's start: " + std::to_string(l));
+    expect(practice::titleFor(1) == "Stranger" && practice::titleFor(3) == "Known" && practice::titleFor(7) == "Familiar Face" &&
+               practice::titleFor(25) == "Legend" && socialTitle(12) == "Notable",
+           "titles from standing.json");
+    expect(levels::fightingSkill(1) == 50 && levels::fightingSkill(25) == 86, "a level's old fighting skill, for level_sim's \"@20\" alone");
 }
 
-void awards()
+void socialAlone()
 {
+    for (const char* r : {"qualified_session_settlement", "gold_star", "story_star", "story_closure"})
+        expect(practice::socialReason(r), std::string("social XP: ") + r);
+    for (const char* r : {"work", "practice", "milestone", "discovery", "story", "rested_bonus"})
+        expect(!practice::socialReason(r), std::string("not social XP any more: ") + r);
+    // An old ledger: what counts toward the day (and, on loading, toward the level) is the social receipts alone.
     SocialLedger L;
-    const double day = 86400;
-    double now = 1000 * day;
-    expect(L.award("ada", "discovery", "visit:town", now) == 5, "a place first visited: 5");
-    expect(L.award("ada", "discovery", "visit:town", now + 10) == 0, "and only once");
-    expect(L.award("ada", "story", "contract:1", now) == 25, "a contract: 25");
-    expect(L.award("ada", "chores", "x", now) == 0, "no such kind");
-    // Practice: 5 each, 15 a day; the fourth waits for tomorrow, and is paid then (no receipt was written).
-    for (const char* p : {"forage:1", "hunt:1", "repair:1"})
-        expect(L.award("ada", "practice", p, now) == 5, std::string("practice: ") + p);
-    expect(L.award("ada", "practice", "forage:2", now) == -1, "15 a day of practice");
-    expect(L.award("ada", "practice", "forage:2", now + day + 1) == 10, "paid the next day (5, and 5 rested: a day without earning)");
-    // Work: 10 each, 30 a day.
-    for (int i = 0; i < 3; ++i)
-        expect(L.award("bo", "work", "lend:" + std::to_string(i), now) == 10, "work");
-    expect(L.award("bo", "work", "lend:9", now) == -1, "30 a day of work");
-    // The daily cap: 150 across every kind.
-    SocialLedger C;
-    for (int i = 0; i < 6; ++i)
-        C.award("cy", "story", "contract:" + std::to_string(i), now);
-    expect(C.points["cy"] == 150, "150 a day at most: " + std::to_string(C.points["cy"]));
-    expect(C.award("cy", "story", "contract:9", now) == -1, "the next waits for tomorrow");
-    expect(C.level("cy") == 2, "150 XP is level 2");
+    const double now = 1000 * 86400.0;
+    for (const auto& [reason, amount] : std::initializer_list<std::pair<const char*, int>>{
+             {"qualified_session_settlement", 20}, {"gold_star", 2}, {"discovery", 5}, {"story", 25}, {"rested_bonus", 20}})
+    {
+        LedgerEntry e;
+        e.actor = "ada";
+        e.reason = reason;
+        e.amount = amount;
+        e.at = now;
+        L.entries.push_back(e);
+    }
+    L.reindex();
+    expect(L.receiptsOf("ada").size() == 5 && L.receiptsOf("bo").empty(), "the index finds each actor's receipts");
+    expect(L.usedToday("ada", now + 10) == 22, "today's social XP: the scene and the star, nothing else");
+    expect(SocialLedger::dailyCap() == 150, "the social day's cap, from standing.json");
 }
-
-void rested()
+void earnedTiers()
 {
-    // Back after three days away: 150 rested, paid again on top of what is earned, outside the cap, until used up.
-    SocialLedger L;
-    const double day = 86400;
-    double now = 2000 * day;
-    expect(L.award("dee", "discovery", "visit:a", now) == 5, "first XP: nothing rested yet");
-    expect(L.restedLeft("dee", now + 3 * day + 5) == 150, "three days away: 150 rested");
-    now += 3 * day + 5;
-    expect(L.award("dee", "story", "contract:1", now) == 50, "a contract pays 25, and 25 again rested");
-    expect(L.restedLeft("dee", now + 1) == 125, "125 rested left");
-    for (int i = 2; i <= 6; ++i)
-        L.award("dee", "story", "contract:" + std::to_string(i), now + i);
-    expect(L.restedLeft("dee", now + 10) == 0, "used up");
-    expect(L.usedToday("dee", now + 10) == 150, "the rested pay outside the day's cap");
-    expect(L.points["dee"] == 5 + 150 + 150, "150 earned and 150 rested: " + std::to_string(L.points["dee"]));
-    // Never more than 300, however long away.
-    expect(L.restedLeft("dee", now + 40 * day) == 300, "300 at most");
+    // Doc 49, Phase 5: the thresholds from standing.json, and what a locked tier says it still needs.
+    const auto& t = standing::thresholds();
+    expect(t.giftedLevel == 3 && t.giftedScenes == 10 && t.quickenedLevel == 8 && t.quickenedStars == 100 && t.quickenedGivers == 30 &&
+               t.quickenedStories == 2,
+           "the user's measures");
+    standing::Measures m;
+    m.socialLevel = 3;
+    m.normalScenes = 9;
+    expect(!standing::meetsGifted(m, t), "nine scenes isn't ten");
+    m.normalScenes = 10;
+    expect(standing::meetsGifted(m, t), "ten scenes and level 3: Gifted (no count of different wolves)");
+    m.socialLevel = 8;
+    m.stars = 62;
+    m.starGivers = 30;
+    m.closedStories = 1;
+    expect(!standing::meetsQuickened(m, t), "62 stars, one Story: not Quickened");
+    expect(standing::lockedMessage("quickened", m, t) == "Quickened isn't open to your account yet: Stars: 62 of 100; Stories closed: 1 of 2.",
+           standing::lockedMessage("quickened", m, t));
+    m.stars = 100;
+    m.closedStories = 2;
+    expect(standing::meetsQuickened(m, t), "100 stars from 30, two Stories, level 8: Quickened");
+    m.upheldReports = 1;
+    expect(!standing::meetsQuickened(m, t), "but not with a report upheld");
+    standing::Record r;
+    expect(standing::open(r, "normal") && !standing::open(r, "gifted"), "Normal is always open");
 }
 } // namespace
 
@@ -85,8 +95,8 @@ int main()
     try
     {
         curve();
-        awards();
-        rested();
+        socialAlone();
+        earnedTiers();
     }
     catch (const std::exception& error)
     {

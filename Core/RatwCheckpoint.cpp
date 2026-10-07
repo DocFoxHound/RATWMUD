@@ -1,4 +1,5 @@
 #include "RatwCheckpoint.h"
+#include "RatwPractice.h"
 
 #include "RatwSystemLibs.h"
 #include "RatwWire.h"
@@ -352,6 +353,10 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         root.add("aliases", c.aliases);
     if (!c.notes.isNull())
         root.add("notes", c.notes);
+    if (!c.standing.isNull())
+        root.add("standing", c.standing);
+    if (!c.people.isNull())
+        root.add("people", c.people);
     if (!c.chapters.isNull())
         root.add("chapters", c.chapters);
     if (!c.factions.isNull())
@@ -749,6 +754,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     c.acquaintances = root["acquaintances"];
     c.aliases = root.object("aliases");
     c.notes = root.object("notes");
+    c.standing = root.object("standing");
+    c.people = root.object("people");
     c.chapters = root.object("chapters");
     c.factions = root.object("factions");
     c.estates = root.object("estates");
@@ -783,7 +790,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         l.event = std::uint64_t(num(j, "event")); l.at = num(j, "at"); l.actor = j.string("actor"); l.partner = j.string("partner");
         l.reason = j.string("reason"); l.session = j.string("session"); l.amount = int(num(j, "amount"));
         c.social.entries.push_back(l);
-        c.social.points[l.actor] += l.amount;
+        if (practice::socialReason(l.reason))      // Social XP is scenes, stars and Stories alone (doc 49): old work,
+            c.social.points[l.actor] += l.amount;  // practice, place, contract and rested receipts are history only.
     }
     for (const auto& j : root.array("socialRecent"))
     {

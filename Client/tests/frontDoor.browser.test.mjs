@@ -135,6 +135,65 @@ test('choosing a Gift: the tier, one of eight families, its abilities, and the c
     assert.equal((await sent()).at(-1).gift, undefined, 'a Normal wolf sends no Gift');
 });
 
+test('strengths and weaknesses: a preset, the budget, a specialty, and the build sent (doc 49)', async () => {
+    // The creator's copy as the server builds it (practice::creationCatalog) from Data/Progression.
+    const data = name => JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'Data', 'Progression', name), 'utf8'));
+    const creationFile = data('creation.json'), skills = data('skills.json');
+    const creation = {...creationFile, attributes: skills.attributes.map(a => ({id: a.id, name: a.name, short: a.short,
+        ...(a.format === 'percent' ? {percent: true} : {}), ...creationFile.grades[a.id]}))};
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: [], creation: ${JSON.stringify(creation)}}))`);
+    await page.evaluate(`window.ratw.page('creator')`);
+    await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].find(b => b.textContent === 'Strengths').click()`);
+    const count = selector => page.evaluate(`document.querySelectorAll(${JSON.stringify(selector)}).length`);
+    assert.equal(await count('.build-row'), 7, 'seven attributes, each weak, plain or strong');
+    assert.ok(await page.evaluate(`document.body.innerText.includes('POINTS LEFT: 2')`), 'two points to spend');
+    await page.evaluate(`document.querySelector('.build-chip[data-preset=hunter]').click()`);
+    assert.deepEqual(await door('d.draftGrades'), {smell: 'strong', hearing: 'strong', dexterity: 'strong', wisdom: 'weak'}, 'the Hunter preset fills it');
+    assert.equal(await door('d.draftSpecialty'), 'tracker', 'with its specialty');
+    assert.ok(await page.evaluate(`document.body.innerText.includes('POINTS LEFT: 0')`), 'and spends the budget');
+    assert.ok(await page.evaluate(`document.querySelector('.build-row[data-attribute=strength] .build-grade[data-grade=strong]').disabled`),
+        'a fourth strength is out of reach');
+    assert.ok(await page.evaluate(`document.querySelector('.build-row[data-attribute=smell] .build-grade[data-grade=strong]').textContent.includes('115% → 160%')`),
+        'each grade says where it starts and how far it grows');
+    await page.evaluate(`document.querySelector('.build-row[data-attribute=strength] .build-grade[data-grade=weak]').click()`);
+    assert.ok(await page.evaluate(`document.body.innerText.includes('POINTS LEFT: 1')`), 'a weakness gives a point back');
+    await page.evaluate(`document.querySelector('.build-chip[data-specialty=fighter]').click()`);
+    await door(`(d.draftName = 'Brindle', d.review())`);
+    assert.ok(await page.evaluate(`document.body.innerText.includes('Specialty: Fighter')`), 'the review lists the build');
+    await door('d.create()');
+    const sentBuild = (await sent()).at(-1).build;
+    assert.equal(sentBuild.specialty, 'fighter', 'the build is sent with the creation');
+    assert.equal(sentBuild.grades.strength, 'weak');
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: []}))`);
+    await page.evaluate(`window.ratw.page('creator')`);
+    await door(`(d.draftName = 'Plain', d.review(), d.create())`);
+    assert.equal((await sent()).at(-1).build, undefined, 'a plain wolf sends no build');
+});
+
+test('earned Gift tiers: locked cards say what they take, and a locked choice is refused at review (doc 49)', async () => {
+    const catalog = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'Data', 'Gifts', 'families.json'), 'utf8'));
+    const gifts = {tiers: catalog.tiers, families: catalog.families.filter(f => !f.npcOnly)};
+    const tiers = {gifted: {open: false, progress: [{measure: 'socialLevel', have: 1, need: 3, label: 'Social level 1 of 3'},
+        {measure: 'normalScenes', have: 4, need: 10, label: 'Scenes as a Normal wolf: 4 of 10'}],
+        message: "Gifted isn't open to your account yet: Social level 1 of 3; Scenes as a Normal wolf: 4 of 10."},
+        quickened: {open: false, progress: [{measure: 'stars', have: 62, need: 100, label: 'Stars: 62 of 100'}],
+            message: "Gifted isn't open to your account yet: Social level 1 of 3."}};
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: [], gifts: ${JSON.stringify(gifts)},
+        tiers: ${JSON.stringify(tiers)}}))`);
+    await page.evaluate(`window.ratw.page('creator')`);
+    await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].find(b => b.textContent === 'Gift').click()`);
+    assert.equal(await page.evaluate(`document.querySelectorAll('.gift-card.locked').length`), 2, 'Gifted and Quickened locked');
+    assert.ok(await page.evaluate(`document.querySelector('.gift-card[data-tier=quickened]').textContent.includes('Stars: 62 of 100')`),
+        'a locked card says what it takes');
+    await page.evaluate(`document.querySelector('.gift-card[data-tier=gifted]').click()`);
+    assert.equal(await page.evaluate(`document.querySelectorAll('.gift-family').length`), 8, 'its families can still be read');
+    await page.evaluate(`document.querySelector('.gift-family[data-family=water]').click()`);
+    await door(`(d.draftName = 'Hopeful', d.review())`);
+    assert.equal(await door('d.page'), 'creator', 'a locked tier is refused at review');
+    assert.ok((await door('d.message')).startsWith("Gifted isn't open to your account yet"), 'and says why');
+    await door(`(d.tiers = null, d.draftTier = 'normal', d.draftFamily = '')`);
+});
+
 test('signing out forgets the roster and any draft', async () => {
     await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'login', ok: true, characters: []}))`);
     assert.equal(await door('d.characters.length'), 0);

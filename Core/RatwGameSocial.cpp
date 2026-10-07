@@ -2,8 +2,12 @@
 // are RatwSocialCore.cpp): the scene a player is in and how it settled, Gold Stars and Stories, a title for their
 // social level, how a wolf regards them in words, their name about a town (worked out when asked, never stored), and
 // private notes on wolves they know.
+#include "RatwWire.h"
+#include "RatwStanding.h"
+#include "RatwPractice.h"
 #include "RatwGame.h"
 
+#include <set>
 #include <algorithm>
 #include <cmath>
 
@@ -123,9 +127,12 @@ void Game::afterSocial()
 {
     // Scenes settled since last time: those who took part are told, and grow closer (doc 32, 1.4).
     const auto& entries = social_.entries;
+    std::set<std::string> touched;                  // Accounts whose earned Gift tiers to look at again (doc 49).
     for (; socialSeen_ < entries.size(); ++socialSeen_)
     {
         const auto& e = entries[socialSeen_];
+        if (practice::socialReason(e.reason))
+            touched.insert(accounts_.ownerOf(e.actor));
         if (e.reason != "qualified_session_settlement")
             continue;
         const bool fight = e.session.rfind("fight-", 0) == 0;
@@ -146,6 +153,8 @@ void Game::afterSocial()
         }
         onSettled(e);                             // (Chapters take their share: doc 32, Part 3.)
     }
+    for (const auto& account : touched)
+        checkUnlocks(account);
     socialViewsDirty_ = true;
 }
 
@@ -209,7 +218,7 @@ void Game::refreshSocialViews(double dt)
         if (id.empty())
             continue;
         auto v = Value::object();
-        v.add("title", socialTitle(social_.level(id)));
+        v.add("title", socialTitle(socialLevel(id)));
         // The scenes they are in now (a party's or a fight's beside the room's), each with what they still need to be
         // paid, how long it has been quiet and when that ends it, and the one their next line counts toward (doc 08).
         const auto* me = world_.entity(id);
@@ -491,6 +500,239 @@ void Game::notesLoad(const Value& saved)
         for (const auto& [who, text] : list.fields())
             if (text.isString() && notes_[owner].size() < 300)
                 notes_[owner][who] = text.asString().substr(0, 500);
+}
+
+long long Game::socialXp(const std::string& characterId) const
+{
+    const auto account = accounts_.ownerOf(characterId);
+    long long xp = 0;
+    for (const auto& id : account.empty() ? std::vector<std::string>{characterId} : accounts_.characters(account))
+        if (const auto it = social_.points.find(id); it != social_.points.end())
+            xp += it->second;
+    return xp;
+}
+
+int Game::socialLevel(const std::string& characterId) const
+{
+    return practice::levelFor(socialXp(characterId));
+}
+// ------------------------------------------------------------------ Earned Gift tiers (doc 49, Phase 5)
+
+int Game::upheldReports(const std::string& account) const
+{
+    return upheldReportsWithin(account, standing::thresholds().reportDays);   // (Reports: doc 50, Phase 2.)
+}
+
+standing::Measures Game::measuresOf(const std::string& account) const
+{
+    // Counted from the ledger: the account's social level; scenes paid on its Normal wolves; stars its wolves received
+    // from other accounts' wolves, and how many accounts gave them; Stories its wolves saw closed.
+    standing::Measures m;
+    const auto mine = accounts_.characters(account);
+    const auto ownWolf = [&](const std::string& id) { return std::find(mine.begin(), mine.end(), id) != mine.end(); };
+    const auto normal = [&](const std::string& id) {
+        if (const auto* e = world_.entity(id))
+            return e->gift.empty();
+        const auto saved = characters_.find(id);
+        return saved != characters_.end() && saved->second.gift.empty();
+    };
+    long long xp = 0;
+    std::set<std::string> stories;
+    for (const auto& id : mine)
+    {
+        if (const auto it = social_.points.find(id); it != social_.points.end())
+            xp += it->second;
+        const bool plain = normal(id);
+        for (const auto i : social_.receiptsOf(id))
+        {
+            const auto& e = social_.entries[i];
+            if (e.reason == "qualified_session_settlement" && e.amount > 0 && plain)
+                ++m.normalScenes;
+            else if (e.reason == "story_closure")
+                stories.insert(e.session);
+        }
+    }
+    std::set<std::string> givers;
+    for (const auto& st : social_.stars)
+        if (ownWolf(st.recipient) && !ownWolf(st.giver))
+        {
+            ++m.stars;
+            if (int(givers.size()) < standing::thresholds().givers)
+            {
+                const auto owner = accounts_.ownerOf(st.giver);
+                givers.insert(owner.empty() ? st.giver : owner);
+            }
+        }
+    m.socialLevel = practice::levelFor(xp);
+    m.starGivers = int(givers.size());
+    m.closedStories = int(stories.size());
+    m.upheldReports = upheldReports(account);
+    return m;
+}
+
+void Game::checkUnlocks(const std::string& account)
+{
+    // A tier met opens and stays open (doc 49, 9), unless the Dungeon Master holds the account's unlocks.
+    if (account.empty() || !accounts_.exists(account))
+        return;
+    auto& r = standing_[account];
+    r.account = account;
+    const auto m = measuresOf(account);
+    measures_[account] = m;
+    const auto& t = standing::thresholds();
+    std::vector<std::string> told;
+    if (!r.hold && r.giftedAt < 0 && standing::meetsGifted(m, t))
+    {
+        r.giftedAt = now();
+        r.giftedBy = "earned";
+        told.push_back("Wolves have noticed your roleplay. You may now create Gifted wolves.");
+    }
+    if (!r.hold && r.giftedAt >= 0 && r.quickenedAt < 0 && standing::meetsQuickened(m, t))
+    {
+        r.quickenedAt = now();
+        r.quickenedBy = "earned";
+        told.push_back("Your roleplay is spoken of far and wide. You may now create Quickened wolves.");
+    }
+    if (!told.empty())
+    {
+        for (const auto& id : accounts_.characters(account))
+            if (auto* c = clientOf(id))
+                for (const auto& line : told)
+                    system(c, line);
+        saveSoon();
+    }
+    tiersViews_[account] = tiersView(account);
+}
+
+Result Game::unlockTier(const std::string& account, const std::string& tier, const std::string& op, const std::string& by)
+{
+    // A Dungeon Master's word on an account's tiers: grant or revoke one, or hold and release new unlocks. Revoking is
+    // the one exception to "kept once earned" (for abuse), and stands only while the account is held: a release lets
+    // whatever is met open again.
+    if (account.empty() || !accounts_.exists(account))
+        return {false, "That character belongs to no account.", {}};
+    if ((op == "grant" || op == "revoke") && tier != "gifted" && tier != "quickened")
+        return {false, "Choose Gifted or Quickened.", {}};
+    if (op != "grant" && op != "revoke" && op != "hold" && op != "release")
+        return {false, "Grant, revoke, hold or release.", {}};
+    auto& r = standing_[account];
+    r.account = account;
+    double& at = tier == "quickened" ? r.quickenedAt : r.giftedAt;
+    std::string& how = tier == "quickened" ? r.quickenedBy : r.giftedBy;
+    if (op == "grant")
+    {
+        at = now();
+        how = by;
+    }
+    else if (op == "revoke")
+    {
+        at = -1;
+        how.clear();
+    }
+    else
+        r.hold = op == "hold";
+    checkUnlocks(account);
+    saveSoon();
+    return {true, "Account " + account + ": " + op + (tier.empty() || op == "hold" || op == "release" ? std::string() : " " + tier) + ".", {}};
+}
+
+json::Value Game::tiersView(const std::string& account) const
+{
+    // For the lobby and the sheet: each tier open or not (and how), and what it still needs, line by line.
+    auto view = Value::object();
+    const auto record = standing_.find(account);
+    const standing::Record r = record == standing_.end() ? standing::Record{} : record->second;
+    const auto known = measures_.find(account);
+    const auto m = known == measures_.end() ? measuresOf(account) : known->second;
+    for (const char* tier : {"gifted", "quickened"})
+    {
+        auto t = Value::object();
+        const bool open = options_.openTiers || standing::open(r, tier);
+        t.add("open", open);
+        if (standing::open(r, tier))
+            t.add("by", std::string(tier) == "gifted" ? r.giftedBy : r.quickenedBy);
+        auto lines = Value::array();
+        for (const auto& p : standing::progress(tier, m, standing::thresholds()))
+        {
+            auto line = Value::object();
+            line.add("measure", p.measure);
+            line.add("have", p.have);
+            line.add("need", p.need);
+            line.add("label", p.label);
+            lines.push(line);
+        }
+        t.add("progress", lines);
+        if (!open)
+            t.add("message", standing::lockedMessage(tier, m, standing::thresholds()));
+        view.add(tier, t);
+    }
+    if (r.hold)
+        view.add("hold", true);
+    return view;
+}
+
+json::Value Game::standingSave() const
+{
+    // One entry per account (game.account_standing, readable by the tools and the DM: it holds no verifiers).
+    auto list = Value::array();
+    for (const auto& [account, r] : standing_)
+    {
+        auto e = Value::object();
+        e.add("account", account);
+        auto ids = Value::array();
+        for (const auto& id : accounts_.characters(account))
+            ids.push(id);
+        e.add("characters", ids);
+        if (r.giftedAt >= 0)
+        {
+            e.add("giftedAt", r.giftedAt);
+            e.add("giftedBy", r.giftedBy);
+        }
+        if (r.quickenedAt >= 0)
+        {
+            e.add("quickenedAt", r.quickenedAt);
+            e.add("quickenedBy", r.quickenedBy);
+        }
+        if (r.hold)
+            e.add("hold", true);
+        if (const auto m = measures_.find(account); m != measures_.end())
+        {
+            auto measures = Value::object();
+            measures.add("socialLevel", m->second.socialLevel);
+            measures.add("normalScenes", m->second.normalScenes);
+            measures.add("stars", m->second.stars);
+            measures.add("starGivers", m->second.starGivers);
+            measures.add("closedStories", m->second.closedStories);
+            e.add("measures", measures);
+        }
+        list.push(e);
+    }
+    auto root = Value::object();
+    root.add("accounts", list);
+    return root;
+}
+
+void Game::standingLoad(const json::Value& saved)
+{
+    // What was kept, then every account counted again from the ledger (tiers already met open as earned).
+    standing_.clear();
+    measures_.clear();
+    tiersViews_.clear();
+    for (const auto& e : saved.array("accounts"))
+    {
+        const auto account = e.string("account");
+        if (account.empty() || !accounts_.exists(account))
+            continue;
+        auto& r = standing_[account];
+        r.account = account;
+        r.giftedAt = wire::strictNumber(e, "giftedAt", -1);
+        r.giftedBy = e.string("giftedBy").substr(0, 80);
+        r.quickenedAt = wire::strictNumber(e, "quickenedAt", -1);
+        r.quickenedBy = e.string("quickenedBy").substr(0, 80);
+        r.hold = e.boolean("hold");
+    }
+    for (const auto& account : accounts_.usernames())
+        checkUnlocks(account);
 }
 } // namespace ratw::game
 

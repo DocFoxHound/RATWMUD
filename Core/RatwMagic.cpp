@@ -1085,6 +1085,23 @@ Result World::letGo(const std::string& id)
 
 Result World::useGift(const std::string& id, const std::string& ability, const std::string& target)
 {
+    // A Gift used in a fight trains the mind by the mana it spent (doc 49: "gift.mana", per 10).
+    const auto* before = entity(id);
+    const double mana = before ? before->mana : 0;
+    auto r = useGiftNow(id, ability, target);
+    if (const auto* after = entity(id); r.ok && after && !after->npc && after->mana < mana)
+    {
+        PracticeContext context;
+        if (const auto* b = battleFor(id))
+            context.occasion = b->id;
+        context.amount = (mana - after->mana) / 10;
+        practise(id, "gift.mana", context);
+    }
+    return r;
+}
+
+Result World::useGiftNow(const std::string& id, const std::string& ability, const std::string& target)
+{
     if (ability == "trance")
         return enterTrance(id);
     auto* b = battleFor(id);
@@ -2302,7 +2319,7 @@ Result World::useWorkGift(const std::string& id, const std::string& ability, con
             return {false, "No workshop your " + a->name + " would help is close by.", {}};
         spend();
         society_.lendGift(maker->id, l.lift, calendarDays_ + 1);
-        award(id, "work", "lend:" + maker->id + ":" + std::to_string(std::int64_t(calendarDays_)));   // (Doc 44.)
+        practise(id, "gift.lend", {maker->id});      // A Gift lent to real work trains the mind (by practice: doc 49).
         const auto till = society_.tillOf(maker->id);
         const auto* purse = society_.account(till);
         const bool paid = purse && purse->cash >= 4 && society_.shift(till, id, "", 0, 4, "a Gift's help");

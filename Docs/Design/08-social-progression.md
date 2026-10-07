@@ -11,10 +11,11 @@ only when an eligible scene ends. AI neither judges the prose nor chooses an XP
 amount. The ledger contains actor/partner IDs, event/session IDs, time, reason and
 amount; it never contains the roleplay text.
 
-The local MVP has one character per development identity, so its social identity
-maps one-to-one onto that character. Production accounts must own progression
-across multiple characters; this prototype does not claim to implement that account
-service. Displayed level follows doc 44's curve (level L to L + 1 costs 100 + 50 × (L − 1) XP); doc 44 also adds XP from work, practice, places and contracts, a daily cap of 150 and rested XP. Normal characters remain
+*(Since doc 49, 2026-10-06: accounts own up to six characters, and social standing is the account's: the social XP of
+all its characters, from scenes, stars and Stories alone. Only a development identity's wolf stands on its own. Doc
+44's other XP became practice for skills, and Gifted and Quickened are earned per account (doc 49, Phase 5).)* The
+local MVP had one character per development identity, so its social identity
+mapped one-to-one onto that character. Displayed level follows doc 44's curve (level L to L + 1 costs 100 + 50 × (L − 1) XP); doc 44 also adds XP from work, practice, places and contracts, a daily cap of 150 and rested XP. Normal characters remain
 Normal regardless of this number: Gifted/Quickened eligibility and governance
 require later systems.
 

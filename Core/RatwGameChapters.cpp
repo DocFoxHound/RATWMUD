@@ -69,7 +69,7 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
                 scene = sid;
         }
         for (const auto& f : founders)
-            if (social_.level(f) < options_.chapterFoundingLevel)
+            if (socialLevel(f) < options_.chapterFoundingLevel)
             {
                 result = {false, "Each founder must be at social level " + std::to_string(options_.chapterFoundingLevel) + " or more.", {}};
                 return true;

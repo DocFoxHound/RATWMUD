@@ -13,6 +13,7 @@ const MaxShown = 300;
 export class StoryPanel {
     readonly root: HTMLElement;
     readonly textarea: HTMLTextAreaElement;
+    private statusChip: HTMLButtonElement;   // One's status (doc 50): in character, looking for a scene, out of character.
     readonly targets: HTMLElement;          // Talk targets (phase 4) sit above the composer.
     private s: GameState;
     private place: HTMLElement;
@@ -64,6 +65,12 @@ export class StoryPanel {
         this.mode = el('span', 'label', bar);
         this.queued = el('span', 'label gold', bar);
         this.recover = button('RECOVER PRIOR POST', 'small', bar, () => state.activate({rect: noRect, action: 'recover', target: ''}));
+        // One's status, a click away (doc 50): in character, looking for a scene, out of character, round again.
+        this.statusChip = button('IN CHARACTER', 'small status-chip', bar, () => {
+            const now = str(state.profileOwn, 'status', 'ic');
+            state.sendProfile('status', {value: now === 'ic' ? 'lfs' : now === 'lfs' ? 'ooc' : 'ic'});
+        });
+        this.statusChip.title = 'Your status, shown to others in In Sight and on hover: in character, looking for a scene, or out of character.';
         this.targets = el('div', 'talk-targets', this.root);
         const row = el('div', 'composer-row', this.root);
         this.volume = button('SPEAK', 'volume', row, () => state.activate({rect: noRect, action: 'volume', target: ''}));
@@ -77,6 +84,9 @@ export class StoryPanel {
     update() {
         const s = this.s;
         setText(this.place, s.cellName);
+        const status = str(s.profileOwn, 'status', 'ic');
+        setText(this.statusChip, status === 'lfs' ? 'LOOKING FOR A SCENE' : status === 'ooc' ? 'OUT OF CHARACTER' : status === 'storyteller' ? 'STORYTELLER' : 'IN CHARACTER');
+        setClass(this.statusChip, 'lfs', status === 'lfs');
         setText(this.scene, s.sceneDescription || (s.selfId ? 'No scene description has been authored yet.' : 'Connecting to the persistent world…'));
         setClass(this.ic, 'active', s.channel === 'ic');
         setClass(this.ooc, 'active', s.channel === 'ooc');
@@ -246,6 +256,12 @@ export class StoryPanel {
                 // Whom it was for: "→ you" stands out, so a reply meant for the player is never lost in a crowd.
                 if (post.to.length) el('span', post.to.includes('you') ? 'to you' : 'to', speaker, `  →  ${post.to.join(', ')}`);
                 if (post.muffled) el('span', 'muffled', speaker, '(muffled)');
+                // Another's line: mute, block or report its author (doc 50), by the line's number, never their id.
+                const ownLine = post.speaker === str(obj(this.s.snapshot, 'self'), 'name');
+                if (post.sequence !== undefined && !ownLine && !post.system) {
+                    const flag = button('⚑', 'act line-flag', speaker, () => this.s.openSafety({line: post.sequence, label: post.speaker}));
+                    flag.title = 'Mute, block or report whoever said this';
+                }
                 const text = el('div', 'words', row);
                 this.feed.append(row);
                 this.shown.set(post, shown = {row, text, revealed: -1});

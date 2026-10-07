@@ -139,9 +139,10 @@ int moveRange(double dexterity, double hurt, int pace)
     return std::max(1, int(std::floor((3 + dexterity / 25) * injuryFactor(hurt) * paceFactor(pace))));
 }
 
-double staminaPerTurn(double hurt, double strength)
+double staminaPerTurn(double hurt, double strength, double endurance)
 {
-    return (4 + strength / 10) * (hurt < 25 ? 1 : hurt < 50 ? .75 : .5);
+    // Stamina the attribute (doc 49) adds or takes a little; at 50, nothing.
+    return std::max(0.0, (4 + strength / 10 + practice::staminaPerTurnExtra(endurance)) * (hurt < 25 ? 1 : hurt < 50 ? .75 : .5));
 }
 
 int octant(double dx, double dy)
@@ -287,7 +288,7 @@ battle::Temperament World::temperamentOf(const Entity& e) const
     if (folk != folk_.end() && folk->second.skill >= 0)
         t.skill = folk->second.skill;
     if (!e.npc)
-        t.skill = levels::fightingSkill(levelOf ? levelOf(e.id) : 1, e.quickened);   // A player's: by their level (doc 44).
+        t.skill = e.fightingSkill;                  // A player's: their own, grown by fighting (doc 49).
     return t;
 }
 
@@ -1222,7 +1223,7 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.resting = false;
     if (f.status == "fighting")
     {
-        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (rested ? battle::RestFactor : 1) *
+        e->stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength, e->npc ? 50 : e->endurance) * (rested ? battle::RestFactor : 1) *
                                              injury::effects(e->injuries).recovery *   // (Hurt ribs or burns, doc 38.)
                                              (1 + tranceGain(f, battle::TranceBreath)));   // (A Trance's second wind, doc 45.)
         if (e->exhausted && e->stamina >= 20)
@@ -1378,7 +1379,7 @@ std::vector<std::pair<int, int>> World::planReach(const std::string& id) const
     if (!b || b->over || !f || !e || f->acting || f->status != "fighting" || f->casting)
         return {};
     // From where it stands, with the stamina it will have when the turn comes.
-    const double stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength) * (f->resting ? battle::RestFactor : 1));
+    const double stamina = std::min(100.0, e->stamina + battle::staminaPerTurn(e->hurt, e->strength, e->npc ? 50 : e->endurance) * (f->resting ? battle::RestFactor : 1));
     return reachWith(*b, *f, *e, stamina);
 }
 
@@ -1713,9 +1714,9 @@ double World::senseInWorld(const std::string& resident, const std::string& playe
             lookings_[resident] = {oe->cellId, standable(oe->cellId, away) ? away : oe->position, time_ + 8, "backing away", "someone creeping about"};
         }
     }
-    // Unnoticed close by: the sneak learns (doc 40, §6).
+    // Unnoticed close by: the sneak learns (doc 40, §6; by practice, doc 49).
     if (creeping && level < battle::AwareSuspicious && std::hypot(te->position.x - oe->position.x, te->position.y - oe->position.y) <= sightRange(*oe) / 2)
-        te->sneakSkill = std::min(100.0, te->sneakSkill + battle::SneakUnnoticedWorld * (1 - te->sneakSkill / 100));
+        practise(player, "sneak.world", {resident, "resident"});
     return level;
 }
 
@@ -1814,13 +1815,15 @@ void World::senseOne(Battle& b, const BattleFighter& o, const BattleFighter& t, 
         if (now >= battle::AwareAlert)
             b.seenAt[{o.id, t.id}] = {t.x, t.y, time_};
         if (before < battle::AwareAlert && now >= battle::AwareAlert && t.stalking)
-            if (auto* learner = entity(o.id))
-            {
-                if (senses.noise >= senses.scent && senses.noise > senses.sight)
-                    learner->hearingSkill = std::min(100.0, learner->hearingSkill + battle::NoticeTeaches * (1 - learner->hearingSkill / 100));
-                else if (senses.scent > senses.sight)
-                    learner->scentSkill = std::min(100.0, learner->scentSkill + battle::NoticeTeaches * (1 - learner->scentSkill / 100));
-            }
+        {
+            // (By practice, doc 49: the stalker is the partner, the fight the occasion.)
+            if (senses.noise >= senses.scent && senses.noise > senses.sight)
+                practise(o.id, "notice.sound", {t.id, {}, b.id});
+            else if (senses.scent > senses.sight)
+                practise(o.id, "notice.scent", {t.id, {}, b.id});
+            else
+                practise(o.id, "notice.sight", {t.id, {}, b.id});
+        }
         return;
     }
     const auto* te = entity(t.id);
@@ -1830,11 +1833,10 @@ void World::senseOne(Battle& b, const BattleFighter& o, const BattleFighter& t, 
         fightLine(b, o.id, t.id, "suspect", who + (animal ? " lifts its head." : " looks round, uneasy."));
     else if (before < battle::AwareAlert && now >= battle::AwareAlert && !animal && te)
         fightLine(b, o.id, t.id, "notice", who + " spots " + te->name + ".");
-    // Unnoticed close by: the stalker learns (doc 40, §6).
+    // Unnoticed close by: the stalker learns (doc 40, §6; by practice, doc 49).
     if (te && !te->npc && now < battle::AwareSuspicious && t.stalking &&
         std::hypot(t.x - o.x, t.y - o.y) <= sightRange(*oe) / 2)
-        if (auto* learner = entity(t.id))
-            learner->sneakSkill = std::min(100.0, learner->sneakSkill + battle::SneakUnnoticed * (1 - learner->sneakSkill / 100));
+        practise(t.id, "sneak.arena", {o.id, animal ? "animal" : "resident", b.id});
 }
 
 void World::sensedBy(Battle& b, const BattleFighter& t)
@@ -1862,8 +1864,7 @@ void World::sprungOn(Battle& b, const BattleFighter& f, const BattleFighter& t)
     for (const auto& o : b.fighters)
         if (o.side == t.side)
             b.aware[{o.id, f.id}] = battle::AwareKept;
-    if (auto* e = entity(f.id); e && !e->npc)
-        e->sneakSkill = std::min(100.0, e->sneakSkill + battle::SneakPerAmbush * (1 - e->sneakSkill / 100));
+    practise(f.id, "sneak.ambush", {t.id, {}, b.id});                    // (By practice, doc 49.)
 }
 
 // ------------------------------------------------------------------ How a fight starts (doc 40)
@@ -2441,6 +2442,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     {
         magicAfterBlow(b, f, *t);
         fightLine(b, f.id, t->id, "miss", e->name + " snaps at " + d->name + " and misses.");
+        practise(t->id, "fight.dodge", {f.id, {}, b.id});   // (Turning a blow aside teaches the paws: doc 49.)
         return {true, "You snap at " + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
@@ -2460,7 +2462,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     magicAfterBlow(b, f, *t);
     const std::string how = graze ? " grazes " : " bites ";
     fightLine(b, f.id, t->id, graze ? "graze" : "hit", e->name + how + d->name + landed.words + " (" + whole(damage) + ").");
-    growSkill(*e, battle::SkillPerHit);
+    growSkill(b, f, t, "fight.blow");
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     // Spikes on the throat bitten (a spiked collar, doc 47): the biter pays for it.
     if (const double spikes = battle::spikesAt(*d, landed.zone); spikes > 0 && f.status == "fighting")
@@ -2663,14 +2665,15 @@ void World::finishBattle(Battle& b)
                 bandits.push_back(f.id);
         }
     }
-    // What was dropped in the arena lies where it fell; those who stood to the end learned something.
+    // What was dropped in the arena lies where it fell; everyone who was in it to the end learned something, standing,
+    // yielded or knocked senseless (the user's call: doc 49) — but not one who ran.
     for (const auto& d : b.drops)
         ground_.push_back({"ground-" + std::to_string(++nextGround_), b.cellId, d.item, d.x + .5, d.y + .5});
     b.drops.clear();
-    for (const auto& f : b.fighters)
-        if (f.status == "fighting")
-            if (auto* e = entity(f.id))
-                growSkill(*e, battle::SkillPerFight);
+    if (b.turns >= 2)
+        for (const auto& f : b.fighters)
+            if (f.status != "fled" && f.status != "dead")
+                growSkill(b, f, nullptr, "fight.end");
     recordEvent({"fight ends", {}, {}, b.cellId, 0, 0, {}, 0, 0, b.id});
     endHunt(b);                                     // A hunt's animals go with it (doc 41).
     if (b.camp.empty())
@@ -3508,10 +3511,28 @@ Result World::giveGift(const std::string& id, const std::string& gift, bool quic
     return {true, gift.empty() ? e->name + " has no Gift." : e->name + (quickened ? " is Quickened: " : " is Gifted: ") + family + ".", id};
 }
 
-void World::growSkill(Entity&, double)
+void World::growSkill(Battle& b, const BattleFighter& learner, const BattleFighter* foe, const char* source)
 {
-    // Fighting no longer teaches fighting skill directly (doc 44): a fight earns XP like any other practice, and a
-    // player's skill comes from their level. (NPCs' is their trade's.)
+    // By practice (doc 49): players only (an NPC's skill is its trade's). A blow teaches only on a foe still able to
+    // fight, and by what it is: a player teaches most, a resident less, a fierce animal less again, game least, and a
+    // foe much weaker than the learner less still. The fight is the occasion; the same foe again today teaches less.
+    const auto* e = entity(learner.id);
+    if (!e || e->npc)
+        return;
+    PracticeContext context;
+    context.occasion = b.id;
+    if (foe)
+    {
+        const auto* d = entity(foe->id);
+        if (!d || foe->status != "fighting")
+            return;
+        const auto animal = animalOf(foe->id);
+        const auto* species = animal.empty() ? nullptr : wild::speciesById(animal);
+        context.partner = foe->id;
+        context.partnerKind = species ? (species->temper == "fierce" ? "fierce" : "animal") : d->npc ? "resident" : "player";
+        context.partnerValue = temperamentOf(*d).skill;
+    }
+    practise(learner.id, source, context);
 }
 
 // ------------------------------------------------------------------ Hurting
@@ -3716,6 +3737,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     {
         magicAfterBlow(b, f, *t);
         fightLine(b, f.id, t->id, "miss", e->name + (thrust ? " lunges at " : " swings at ") + d->name + " and misses.");
+        practise(t->id, "fight.dodge", {f.id, {}, b.id});
         return {true, std::string(thrust ? "You lunge at " : "You swing at ") + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
@@ -3735,7 +3757,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     magicAfterBlow(b, f, *t);
     fightLine(b, f.id, t->id, graze ? "graze" : "slash",
               e->name + (graze ? (thrust ? " pricks " : " nicks ") : (thrust ? " stabs " : " cuts ")) + d->name + landed.words + " (" + whole(damage) + ").");
-    growSkill(*e, battle::SkillPerHit);
+    growSkill(b, f, t, "fight.blow");
     hurtFighter(b, *t, damage, battle::DownedBite, f.id, true);
     if (t->status == "downed")
         return {true, "Your blade takes " + d->name + " down.", target};
@@ -3785,6 +3807,7 @@ Result World::shove(Battle& b, BattleFighter& f, const std::string& target)
     t->y = ny;
     t->walk.clear();                                // (A walk under way is stopped where it stands.)
     fightLine(b, f.id, target, "shove", e->name + " shoves " + d->name + " back.");
+    practise(f.id, "fight.shove", {target, {}, b.id});      // (Doc 49.)
     return {true, "You shove " + d->name + " back.", target};
 }
 
@@ -3877,7 +3900,8 @@ void World::resolveCast(Battle& b, const BattleCast& cast)
         const auto* tile = cell(b.cellId) ? cell(b.cellId)->tile(t.x, t.y) : nullptr;
         const bool water = tile && tile->terrain == Terrain::Water;
         fightLine(b, cast.caster, t.id, "burnt", d->name + " is caught in the fire (" + whole(damage) + ").");
-        growSkill(*ce, battle::SkillPerHit);
+        if (const auto* caster = b.fighter(cast.caster))
+            growSkill(b, *caster, &t, "fight.blow");
         hurtFighter(b, t, damage, battle::DownedFire, cast.caster, true);
         if (t.status != "fighting")
             continue;

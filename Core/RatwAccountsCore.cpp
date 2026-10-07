@@ -319,6 +319,30 @@ bool Accounts::owns(const std::string& username, const std::string& id) const
            std::find(found->second.characters.begin(), found->second.characters.end(), id) != found->second.characters.end();
 }
 
+void Accounts::removeAccount(const std::string& username)
+{
+    if (const auto found = accounts_.find(username); found != accounts_.end())
+    {
+        for (const auto& id : found->second.characters)
+            owners_.erase(id);
+        accounts_.erase(found);
+    }
+}
+
+std::string Accounts::ownerOf(const std::string& characterId) const
+{
+    const auto found = owners_.find(characterId);
+    return found == owners_.end() ? std::string() : found->second;
+}
+
+std::vector<std::string> Accounts::usernames() const
+{
+    std::vector<std::string> out;
+    for (const auto& [user, account] : accounts_)
+        out.push_back(user);
+    return out;
+}
+
 std::vector<std::string> Accounts::characters(const std::string& username) const
 {
     const auto found = accounts_.find(username);
@@ -335,10 +359,10 @@ bool Accounts::addCharacter(const std::string& username, const std::string& id, 
     if (account.characters.size() >= CharacterSlots || !characterId(id) || !validCommandId(commandId) ||
         account.creations.count(commandId) || requestFingerprint.size() != 64)
         return false;
-    for (const auto& [user, other] : accounts_)
-        if (std::find(other.characters.begin(), other.characters.end(), id) != other.characters.end())
-            return false;
+    if (owners_.count(id))
+        return false;
     account.characters.push_back(id);
+    owners_[id] = username;
     account.creations[commandId] = {id, requestFingerprint};
     return true;
 }
@@ -436,6 +460,10 @@ bool Accounts::restore(const json::Value& root)
         candidate[user] = std::move(account);
     }
     accounts_ = std::move(candidate);
+    owners_.clear();
+    for (const auto& [user, account] : accounts_)
+        for (const auto& id : account.characters)
+            owners_[id] = user;
     return true;
 }
 

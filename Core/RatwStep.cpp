@@ -76,9 +76,9 @@ void updateStamina(double& stamina, bool& exhausted, double& rate, int pace, dou
     if (dt <= 0.0)
         return;
     const double share = pace / 10.0;
-    const double grossDrain = SprintDrain * share * share * std::max(1.0, drain);
+    const double grossDrain = SprintDrain * share * share * std::max(.1, drain);
     const double before = stamina;
-    stamina = std::clamp(before + StaminaRecovery * std::clamp(recovery, 0.0, 1.0) * dt - grossDrain * std::clamp(movedTime, 0.0, dt), 0.0, 100.0);
+    stamina = std::clamp(before + StaminaRecovery * std::clamp(recovery, 0.0, 2.0) * dt - grossDrain * std::clamp(movedTime, 0.0, dt), 0.0, 100.0);
     rate = (stamina - before) / dt;
     if (stamina <= Epsilon)
     {

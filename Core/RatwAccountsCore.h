@@ -19,7 +19,7 @@ namespace ratw::accounts
 {
 constexpr int PasswordIterations = 600000;
 constexpr std::size_t CharacterSlots = 6;
-constexpr std::size_t AccountLimit = 128;
+constexpr std::size_t AccountLimit = 4096;   // (Doc 50: room for a thousand players and more.)
 
 bool normalizeUsername(const std::string& input, std::string& normalized);
 bool validPassword(const std::string& password);
@@ -58,10 +58,13 @@ class Accounts
     bool mayRegister(const std::string& username, std::string& error) const;
     PasswordJob signInJob(const std::string& username, const std::string& password) const;
     bool addRegistered(const std::string& username, const PasswordResult& done, std::string& error);
-    void removeAccount(const std::string& username) { accounts_.erase(username); }
+    void removeAccount(const std::string& username);
     bool exists(const std::string& username) const { return accounts_.count(username) > 0; }
     bool owns(const std::string& username, const std::string& characterId) const;
     std::vector<std::string> characters(const std::string& username) const;
+    // The account a character belongs to ("" for none: an NPC, or a development identity's wolf).
+    std::string ownerOf(const std::string& characterId) const;
+    std::vector<std::string> usernames() const;   // Every account, in name order.
     bool addCharacter(const std::string& username, const std::string& characterId, const std::string& commandId,
                       const std::string& requestFingerprint);
     // Empty for no matching receipt; `conflict` says the ID was used for different choices.
@@ -85,6 +88,7 @@ class Accounts
         std::map<std::string, Creation> creations;
     };
     std::map<std::string, Account> accounts_;
+    std::map<std::string, std::string> owners_;   // Character -> account, kept with `accounts_`.
 };
 
 // Runs password jobs on threads of its own; the game collects what is finished each tick.

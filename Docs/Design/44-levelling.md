@@ -2,6 +2,12 @@
 
 Agreed with the user 2026-10-04. Every number is a placeholder for play-testing.
 
+> **Replaced (doc 48 §2.2, agreed 2026-10-06; doc 49's phases 1–3 built, not committed):** there is no character level
+> any more. A player's fighting skill is their own, grown by fighting; the typed awards below became practice for
+> skills; social level counts roleplay alone (scenes, stars, Stories), summed over the account, on the curve now in
+> `Data/Progression/standing.json`. Strengths and weaknesses are chosen at creation, and Gift tiers are earned per account (doc 49, phases 4 and 5). This doc's typed
+> awards, daily limits and rested time carry over as practice. The user does the balance pass.
+
 The user's brief: player characters level by roleplay, work and practice as much as by fighting, with no grinding;
 a maximum around 25 is imagined; a level should help only a little in a fight, so a higher-level wolf can be fought,
 and tactics, gear, Gifts and numbers decide fights more than levels or level-stacked teams.

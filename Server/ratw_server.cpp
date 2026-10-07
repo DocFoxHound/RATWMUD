@@ -6,6 +6,7 @@
 //   ratw_server [--world MANIFEST] --save F  a world from files (or the built-in demo), saved to a private file
 //   options: --port 7788, --bind 127.0.0.1, --web DIR (the built browser client), --dialogue URL (the NPC Mind),
 //            --dm-directory DIR (the operator bridge), --dev-tools, --dev-identity,
+//            --open-tiers (every Gift tier open to every account: doc 49),
 //            --full-snapshots, --for SECONDS (stop after, saving: for tests),
 //            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never),
 //            --workers N (threads finishing players' snapshots in parallel; by default the cores less two, 0 for none),
@@ -529,7 +530,7 @@ bool readFile(const std::string& path, std::string& out)
 void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N] [--scratch [--idle-exit SECONDS]]\n";
 }
 
@@ -570,6 +571,7 @@ int main(int argc, char** argv)
         else if (a == "--voice-log") options.voiceLog = next();
         else if (a == "--dm-directory") options.directorDirectory = next();
         else if (a == "--dev-tools") options.devTools = true;
+        else if (a == "--open-tiers") options.openTiers = true;   // Every Gift tier open to every account (doc 49).
         else if (a == "--dev-identity") options.devIdentity = true;
         else if (a == "--full-snapshots") options.fullSnapshots = true;
         else if (a == "--for") runFor = std::atof(next().c_str());

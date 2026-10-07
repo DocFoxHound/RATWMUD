@@ -4,6 +4,7 @@
 #include "RatwMotionCore.h"
 #include "RatwWire.h"
 #include "RatwGifts.h"
+#include "RatwCreation.h"
 #include "RatwLevels.h"
 #include "RatwItems.h"
 #include "RatwWild.h"
@@ -265,7 +266,13 @@ Game::Game(Options options) : options_(std::move(options)), random_(std::random_
 {
     // A Chapter's rented places are locked to all but its members and guests (doc 32, 5.2).
     world_.mayEnter = [this](const std::string& who, const std::string& cell) { return mayEnterPlace(who, cell); };
-    world_.levelOf = [this](const std::string& who) { return social_.level(who); };   // (A fighter's skill: doc 44.)
+    world_.realClock = [] { return Game::now(); };                                  // (Practice's day: doc 49.)
+    world_.accountOf = [this](const std::string& who) { return accounts_.ownerOf(who); };
+    world_.playerActive = [this](const std::string& who) {   // (At the keys in the last five minutes: doc 49.)
+        const auto at = operatorActivity_.find(who);
+        const auto* e = world_.entity(who);              // An action or chat, or a step walked.
+        return (at != operatorActivity_.end() && now() - at->second < 300) || (e && e->lastPoseAt >= 0 && world_.time() - e->lastPoseAt < 300);
+    };
     setSpeed(options_.speed);
 }
 
@@ -407,6 +414,20 @@ bool Game::start(std::string& problem)
                 artworkMeta_[m.id] = m;
         else
             note("warn", "RATW_ARTWORK portraits can't be uploaded: " + trouble);
+    }
+    {
+        // Reports (doc 50, Phase 2): beside the save, or in the database; in memory where neither can keep them.
+        std::string trouble;
+        reports_ = options_.scratch ? reports::memoryStore()
+                   : live ? reports::databaseStore(options_.conninfo, liveWorldId_, trouble)
+                   : options_.savePath.empty() ? reports::memoryStore() : reports::folderStore(options_.savePath + ".reports", trouble);
+        if (!reports_)
+        {
+            note("warn", "RATW_REPORTS kept in memory only: " + trouble);
+            reports_ = reports::memoryStore();
+        }
+        for (const auto& r : reports_->all())
+            reportCache_[r.id] = r;
     }
     const std::string payload = store_->load();
     load(payload);
@@ -879,6 +900,31 @@ void Game::applyDmActions(double dt)
             const int count = payload.isObject() ? int(wire::number(payload, "count", 1)) : 1;
             outcome = world_.entity(target) ? world_.callBandits(target, count)
                                             : Result{false, "They aren't in the world: bandits come only where someone is.", {}};
+        }
+        else if (kind == "report.decide")
+        {
+            // A Dungeon Master's decision on a report (doc 50, Phase 2): payload {"report": id, "decision": "uphold" |
+            // "dismiss", "outcome": "note" | "warning" | "silence", "hours": 1 | 6 | 24 | 72}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            outcome = decideReport(payload.string("report"), payload.string("decision"), payload.string("outcome"), int(payload.number("hours", 0)),
+                                   "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+            outcome.targetId = target;
+        }
+        else if (kind == "account.unlock")
+        {
+            // An account's earned Gift tiers, by a Dungeon Master (doc 49, Phase 5), against one of its characters.
+            // Payload: {"tier": "gifted" | "quickened", "op": "grant" | "revoke" | "hold" | "release"}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const auto tier = payload.isObject() ? payload.string("tier") : std::string();
+            const auto op = payload.isObject() ? payload.string("op") : std::string();
+            outcome = unlockTier(accounts_.ownerOf(target), tier, op, "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+            outcome.targetId = target;
         }
         else if (kind == "character.gift")
         {
@@ -1589,6 +1635,12 @@ void Game::lobby(Connection* c, bool ok, const std::string& message)
     e.add("characters", roster);
     if (!c->accountUsername.empty())                // What the creator's Gift tab describes (doc 43).
         e.add("gifts", gifts::creatorCatalog());
+    if (!c->accountUsername.empty())                // And its Strengths tab: grades, budget, specialties, presets (doc 49).
+        e.add("creation", practice::creationCatalog());
+    if (!c->accountUsername.empty())                // Which Gift tiers the account has earned, and what the rest need.
+        e.add("tiers", tiersView(c->accountUsername));
+    if (!c->accountUsername.empty())                // The account as a person: its handle (asked for when it has none).
+        e.add("account", accountView(c->accountUsername));
     send(c, e);
 }
 
@@ -1600,6 +1652,14 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
             lobby(c, false, "That character is already connected. Leave it on the other client first.");
             return false;
         }
+    // One wolf per account in the world at a time (doc 49, Phase 5): two would let a player pay and star themselves.
+    if (const auto owner = accounts_.ownerOf(actor); options_.oneWolfPerAccount && !owner.empty())
+        for (auto* other : clients_)
+            if (other != c && !other->entityId.empty() && other->entityId != actor && accounts_.ownerOf(other->entityId) == owner)
+            {
+                lobby(c, false, "Another of your wolves is in the world. Leave them first.");
+                return false;
+            }
     // Undone exactly, if it fails, rather than by copying the whole world first (a 50 ms stall at every entry with
     // DEV's world: doc 31). Only this character changes: its entity and its saved record.
     const auto savedBefore = characters_.find(actor);
@@ -1677,6 +1737,8 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
                   ". Enter to write; Shift+Enter for a new line; Escape preserves your draft. "
                   "Dialogue is authored offline unless a local provider is configured.");
     sendSnapshot(c);
+    sendProfile(c);                                // Their profile and account as a person (doc 50).
+    sendSafety(c);                                 // And their mutes and blocks.
     note("info", "RATW_LOGIN " + c->entityId + " connected=" + std::to_string(clients_.size()));
     return true;
 }
@@ -1742,8 +1804,17 @@ void Game::releaseLingering()
 bool Game::accountCommand(Connection* c, const Value& j, const std::string& type)
 {
     if (type != "auth_register" && type != "auth_login" && type != "character_create" && type != "character_enter" &&
-        type != "character_leave" && type != "auth_logout")
+        type != "character_leave" && type != "auth_logout" && type != "account_handle")
         return false;
+    if (type == "account_handle")
+    {
+        // The roster asks an account without a handle for one (doc 50, 1): the name friends and circles see.
+        if (c->accountUsername.empty() || !c->entityId.empty())
+            return false;
+        const auto done = setHandle(c->accountUsername, c->accountUsername, j.string("handle"));
+        lobby(c, done.ok, done.message);
+        return true;
+    }
     if (type == "auth_logout" || type == "character_leave")
     {
         leaveCharacter(c);
@@ -1767,7 +1838,7 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
     if (type == "auth_register" || type == "auth_login")
         allowed.insert({"username", "password"});
     else if (type == "character_create")
-        allowed.insert({"name", "age", "appearance", "gift"});
+        allowed.insert({"name", "age", "appearance", "gift", "build"});   // (A build: doc 49.)
     else if (type == "character_enter")
         allowed.insert("id");
     for (const auto& [key, v] : j.fields())
@@ -1875,6 +1946,30 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
                 return true;
             }
         }
+        // Earned Gift tiers (doc 49, Phase 5): a tier the account hasn't opened is refused, with what it still needs.
+        if (tier != "normal" && !options_.openTiers)
+        {
+            const auto record = standing_.find(c->accountUsername);
+            const standing::Record r = record == standing_.end() ? standing::Record{} : record->second;
+            const bool open = standing::open(r, "gifted") && (tier == "gifted" || standing::open(r, "quickened"));
+            if (!open)
+            {
+                const auto m = measuresOf(c->accountUsername);
+                lobby(c, false, standing::lockedMessage(standing::open(r, "gifted") ? tier : "gifted", m, standing::thresholds()));
+                return true;
+            }
+        }
+        // The build (doc 49, Phase 4): grades and a specialty within the budget; none is a plain wolf with none.
+        practice::Build build;
+        if (const auto* given = j.find("build"))
+        {
+            std::string why;
+            if (!practice::checkBuild(*given, tier, build, why))
+            {
+                lobby(c, false, why);
+                return true;
+            }
+        }
         auto canonical = Value::object();
         canonical.add("name", name);
         canonical.add("age", age);
@@ -1885,6 +1980,16 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             gift.add("tier", tier);
             gift.add("family", family);
             canonical.add("gift", gift);
+        }
+        if (!build.grades.empty() || !build.specialty.empty())   // (Likewise: a plain wolf's print is unchanged.)
+        {
+            auto b = Value::object();
+            auto grades = Value::object();
+            for (const auto& [attribute, grade] : build.grades)
+                grades.add(attribute, grade);
+            b.add("grades", grades);
+            b.add("specialty", build.specialty);
+            canonical.add("build", b);
         }
         const std::string print = accounts::fingerprint(json::dump(canonical));
         bool conflict = false;
@@ -1925,6 +2030,9 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
         player.lastBirthdayDay = world_.calendarDays();
         player.ageNoticePending = 0;
         player.appearance = appearance;
+        World::applyBuild(player, build);
+        if (auto& person = personOf(c->accountUsername); person.firstCharacter.empty())
+            person.firstCharacter = newId;          // (The account's first wolf: doc 52's newcomers.)
         if (!family.empty())
             world_.giveGift(newId, family, tier == "quickened");
         player.speakingColor = int(characters_.size() * 9) % 32;
@@ -2025,31 +2133,6 @@ void Game::tick(double dt)
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
             system(c, words);
-    // XP earned in the world (doc 44): work, practice, places, skills, contracts; paid into the ledger, and said.
-    {
-        bool paid = false;
-        for (const auto& a : world_.takeAwards())
-        {
-            const int before = social_.level(a.who);
-            const int got = social_.award(a.who, a.kind, a.source, now());
-            if (got <= 0)
-                continue;
-            paid = true;
-            const std::string what = a.kind == "work" ? "work" : a.kind == "practice" ? "practice" : a.kind == "milestone" ? "a skill grown"
-                                   : a.kind == "discovery" ? "somewhere new" : "a contract fulfilled";
-            if (auto* c = clientOf(a.who))
-            {
-                system(c, "+" + std::to_string(got) + " experience (" + what + ").");
-                if (social_.level(a.who) > before)
-                    system(c, "You reach level " + std::to_string(social_.level(a.who)) + ".");
-            }
-        }
-        if (paid)
-        {
-            afterSocial();
-            saveSoon();
-        }
-    }
     for (const auto& [id, cell] : beforeCells)
         if (const auto* e = world_.entity(id); e && e->cellId != cell)
         {
@@ -2063,6 +2146,7 @@ void Game::tick(double dt)
     companionTick(dt);                              // Residents travelling with a party (doc 32, Phase 3).
     partyTick(dt);
     refreshSocialViews(real);
+    tendPeople(real);                               // Played time (doc 50).
     chapterTick(dt);
     factionTick(dt);
     estateTick(dt);
@@ -2362,8 +2446,13 @@ void Game::sendSnapshot(Connection* c)
         self.set("artworkStatus", portrait->status);
     }
     {
-        const auto points = social_.points.find(id);       // (Read only: views are built in parallel.)
-        self.set("socialXp", points == social_.points.end() ? 0 : points->second);
+        // The account's social standing (doc 49): its characters' social XP together, the level it makes, and where
+        // that level began and the next begins, for the bar. (Read only: views are built in parallel.)
+        const long long xp = socialXp(id);
+        const int level = practice::levelFor(xp);
+        self.set("socialXp", double(xp));
+        self.set("socialXpLevel", double(practice::xpFor(level)));
+        self.set("socialXpNext", double(practice::xpFor(level + 1)));
     }
     if (const auto view = socialViews_.find(id); view != socialViews_.end())
         self.set("social", view->second);             // Scene, stars, Stories, title (doc 32, Part 1).
@@ -2373,7 +2462,9 @@ void Game::sendSnapshot(Connection* c)
         self.set("place", std::move(place));          // A place to let, where they stand (doc 32, 5.2).
     if (auto camp = campView(id); !camp.isNull())
         self.set("camp", std::move(camp));            // Their Chapter's ground, where they stand (doc 32, 5.3).
-    self.set("socialLevel", social_.level(id));
+    self.set("socialLevel", socialLevel(id));
+    if (const auto tiers = tiersViews_.find(accounts_.ownerOf(id)); tiers != tiersViews_.end())
+        self.set("tiers", tiers->second);           // The account's earned Gift tiers (doc 49, Phase 5).
     const auto hurtSenses = injury::effects(view.self.injuries);     // (Injuries, doc 38.)
     self.set("hearing", view.self.hearing * view.self.earHealth * hurtSenses.hearing * ageHearingFactor(view.self) * (1.0 + 0.75 * view.self.hearingSkill / 100.0));
     self.set("sneakSkill", view.self.sneakSkill);
@@ -2384,6 +2475,7 @@ void Game::sendSnapshot(Connection* c)
         self.set("scentMasked", masked);           // Masking oil (doc 35): seconds its scent stays hidden.
     self.set("scentSkill", view.self.scentSkill);
     self.set("noseHealth", view.self.noseHealth);
+    wire::practiceView(self, view.self, now());     // Attributes and skills, with their caps (doc 49).
     wire::privatePace(self, *world_.entity(id));
     const auto* purse = world_.society().account(id);
     self.set("cash", purse ? purse->cash : 0);
@@ -2429,7 +2521,7 @@ void Game::sendSnapshot(Connection* c)
     if (const auto* me = world_.entity(id))
     {
         self.set("health", std::round(100 - me->hurt));
-        self.set("fightingSkill", std::round(levels::fightingSkill(social_.level(id), me->quickened)));   // (By level: doc 44, 45.)
+        self.set("fightingSkill", std::round(me->fightingSkill));   // Their own, grown by fighting (doc 49).
         if (!me->mouth.empty())
             self.set("mouth", me->mouth);
         // What is worn (doc 35): slot to item id, and each piece of jewellery as [spot, item id]; names are in the inventory.
@@ -2654,6 +2746,19 @@ void Game::sendSnapshot(Connection* c)
             if (options_.hiddenNames && !knowsName(id, e.id))
                 j.set("known", false);
         }
+        // A player's status mark, Currently line, walk-up and profile revision (doc 50), only when set.
+        if (!e.npc)
+            if (const auto p = profiles_.find(e.id); p != profiles_.end())
+            {
+                if (const auto mark = people::rules().statusMarks.find(p->second.status); mark != people::rules().statusMarks.end())
+                    j.set("rp", mark->second);
+                if (!p->second.currently.empty())
+                    j.set("currently", veilFor(id, p->second.currently));
+                if (p->second.walkup)
+                    j.set("walkup", true);
+                if (p->second.revision > 0)
+                    j.set("prev", p->second.revision);
+            }
         // Who they are to this wolf (doc 32): a party mate, a Chapter mate, or hostile (and why). Bandits always are.
         if (relations.mates.count(e.id))
             j.set("rel", "party");
@@ -2891,6 +2996,16 @@ void Game::sendSnapshot(Connection* c)
             o.add("name", names::capitalised(labelFor(id, from->id)));
             o.add("left", std::max(0.0, challenge->until - world_.time()));
             o.add("terms", challenge->terms);
+            // The challenger's lines and veils on injury and death (doc 50, 2): they inform; consent is the rules' already.
+            if (const auto p = profiles_.find(from->id); p != profiles_.end())
+            {
+                auto limits = Value::object();
+                for (const char* flag : {"injury", "death"})
+                    if (const auto a = p->second.consent.find(flag); a != p->second.consent.end())
+                        limits.add(flag, a->second);
+                if (limits.size() > 0)
+                    o.add("limits", limits);
+            }
             root.add("challenge", o);
         }
     root.add("structures", structuresView(id, view.cell.id));   // Camps, Halls and Holds here (doc 32, 5.7).
@@ -3155,13 +3270,16 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         if (c->entityId.empty())
             continue;
         const auto& listener = c->entityId;
+        if (hides(listener, author))
+            continue;                               // Muted or blocked by this listener (doc 50): never delivered.
         auto sense = world_.perceive(listener, author, voice);
         if (listener == author)
             sense = {1, 1, true};
         const auto segments = perceivePost(post, sense.hearing, sense.vision, event * 7919 + std::hash<std::string>{}(listener));
         if (segments.empty())
             continue;
-        heard.push_back(listener);
+        if (!blocked(author, listener))              // (No scene between two where either blocks the other: doc 50.)
+            heard.push_back(listener);
         auto e = Value::object();
         e.add("type", "roleplay");
         e.add("channel", "ic");
@@ -3188,6 +3306,8 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         }
         e.add("segments", output);
         e.add("text", text);
+        if (listener != author)
+            heardLine(listener, event, author, group.empty() ? "ic" : group, text);   // (A report's evidence: doc 50.)
         // An introduction heard ("I'm Kestrel"): the listener knows them by that name now (doc 32).
         {
             std::string spoken;
@@ -3383,6 +3503,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.subjectId = playerId;
         context.relationship = world_.bonds().describe(npcId, playerId, called);
     }
+    context.seen = profileContext(npcId, playerId);   // What it can see of them, in their player's words (doc 50).
     if (const auto mood = npcMood_.find(npcId); mood != npcMood_.end())
         context.mood = mood->second;
     if (const auto* grief = world_.society().mourning(npcId))
@@ -3849,6 +3970,22 @@ void Game::command(Connection* c, const std::string& raw)
             result = {false, "That isn't something a party does.", {}};
         report = true;
     }
+    else if (type == "safety")
+    {
+        // Mute, block and report (doc 50, Phase 2).
+        if (!safetyCommand(c, j, result))
+            result = {false, "That isn't something you can do.", {}};
+        report = !result.message.empty();
+    }
+    else if (type == "profile")
+    {
+        // The roleplay profile, status, walk-up, handle, experience and settings (doc 50, Phase 1).
+        if (!profileCommand(c, j, result))
+            result = {false, "That isn't something a profile does.", {}};
+        report = !result.message.empty();
+        if (result.ok)
+            record(Character, id);
+    }
     else if (type == "noPvp")
     {
         // Settings: auto-decline fights with players (doc 40's fight start), kept with the character.
@@ -3869,6 +4006,14 @@ void Game::command(Connection* c, const std::string& raw)
         report = true;
         if (result.ok)
             record(Economy | Character, id);
+    }
+    else if (type == "practice" && options_.devTools)
+    {
+        // Development only (doc 49): set a skill, and what it has gained today ("today": its soft limit eases it off).
+        result = world_.setPractice(id, j.string("skill"), j.number("value", -1), j.has("today") ? j.number("today", -1) : -1);
+        report = true;
+        if (result.ok)
+            record(Character, id);
     }
     else if (type == "dev" || type == "devCommands")
         devCommand(c, j);
@@ -3992,6 +4137,8 @@ void Game::command(Connection* c, const std::string& raw)
             if (done.ok)
                 record(Economy | Crime | Character, id);
         }
+        else if (action == "challenge" && blocked(id, target))
+            system(c, names::capitalised(labelFor(id, target)) + " isn't taking challenges.");   // (Blocked: the ordinary refusal, doc 50.)
         else if (action == "attack" || action == "pay" || action == "challenge")
         {
             const auto done = action == "pay" ? world_.payBandits(id, target) : world_.attack(id, target, j.string("terms"));
@@ -4164,7 +4311,12 @@ void Game::command(Connection* c, const std::string& raw)
                     if (const auto note = mine->second.find(other->id); note != mine->second.end())
                         e.add("note", note->second);
             }
-            e.add("description", described);
+            // The roleplay profile (doc 50): what this viewer may see of it; its description over the fixed line.
+            auto profile = cardFor(id, other->id);
+            const bool written = !other->npc && profile.has("description");
+            e.add("description", written ? profile.string("description") : described);
+            if (!other->npc)
+                e.add("profile", std::move(profile));
             e.add("posture", other->posture);
             e.add("state", other->state);
             // What a closer look shows of its injuries (doc 38: only Look shows them; decided 2026-10-04).
@@ -4198,7 +4350,7 @@ void Game::command(Connection* c, const std::string& raw)
                     equipment.add("mouth", named(other->mouth));
                 e.add("equipment", std::move(equipment));
             }
-            e.add("text", described + (wearing.empty() ? "" : " " + wearing) + " Current posture: " + other->posture + ". " + other->state);
+            e.add("text", (written ? e.string("description") : described) + (wearing.empty() ? "" : " " + wearing) + " Current posture: " + other->posture + ". " + other->state);
             send(c, e);
         }
         else
@@ -4245,6 +4397,11 @@ void Game::command(Connection* c, const std::string& raw)
         if (!world_.travelState(id).active)
             world_.stop(id);
         const std::string channel = j.string("channel");
+        if (std::string until; silenced(id, &until))
+        {
+            feedback(false, "A Dungeon Master has silenced your account for another " + until + ".");   // (Doc 50, 7.)
+            return;
+        }
         if ((channel == "party" || channel == "partyooc") && !parties_.of(id))
         {
             feedback(false, "You are not in a party.");
@@ -4270,10 +4427,12 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("text", text);
             e.add("color", player->speakingColor);
             for (auto* other : clients_)
-                if (const auto* actor = world_.entity(other->entityId); actor && actor->cellId == player->cellId)
+                if (const auto* actor = world_.entity(other->entityId); actor && actor->cellId == player->cellId && !hides(other->entityId, id))
                 {
                     e.set("speaker", names::capitalised(labelFor(other->entityId, id)));
                     send(other, e);
+                    if (other->entityId != id)
+                        heardLine(other->entityId, e.number("sequence"), id, "ooc", text);
                 }
             feedback(true, "");
             return;
@@ -4445,6 +4604,8 @@ DbStore::Build Game::capture()
     c->server.parties = parties_.save();
     c->server.acquaintances = known_.save();
     c->server.notes = notesSave();
+    c->server.standing = standingSave();
+    c->server.people = peopleSave();
     c->server.chapters = chapters_.save();
     c->server.factions = factions_.save();
     c->server.estates = estates_.save();
@@ -4597,6 +4758,7 @@ void Game::load(const std::string& payload)
             scenesHeard_[who].add(id);
     memories_ = state.memories;
     social_.entries = state.social.entries;
+    social_.reindex();
     social_.points = state.social.points;
     social_.recent = state.social.recent;
     social_.sessions = state.social.sessions;
@@ -4605,6 +4767,8 @@ void Game::load(const std::string& payload)
     social_.nextStory = state.social.nextStory;
     socialSeen_ = social_.entries.size();             // (Scenes settled before the restart were told then.)
     notesLoad(state.notes);
+    standingLoad(state.standing);                    // (After the accounts and the ledger: it counts from both.)
+    peopleLoad(state.people);                        // Handles, played time, profiles (doc 50).
     chapters_.load(state.chapters);
     factions_.load(state.factions);
     estates_.load(state.estates);

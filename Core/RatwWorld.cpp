@@ -2272,6 +2272,28 @@ void World::integrate(Entity& a, double dt)
     else if (a.cellId == originCell && elapsed > Epsilon)
         a.velocity = {(a.position.x - origin.x) / elapsed, (a.position.y - origin.y) / elapsed};
     updateStamina(a, elapsed, movedTime);
+    if (!a.npc && movedTime > 0)
+        practiseMoving(a, movedTime);
+}
+
+void World::practiseMoving(Entity& a, double movedTime)
+{
+    // Walking under a heavy load trains strength, running far stamina (doc 49): each 100 and 200 tiles, counted here.
+    const double tiles = paceSpeed(a) * movedTime;
+    if (a.loadDrain > 1)
+        a.practice.carried += tiles;
+    if (effectivePace(a) >= 7)
+        a.practice.ran += tiles;
+    if (a.practice.carried >= 100)
+    {
+        a.practice.carried -= 100;
+        practise(a.id, "load.carry");
+    }
+    if (a.practice.ran >= 200)
+    {
+        a.practice.ran -= 200;
+        practise(a.id, "run.far");
+    }
 }
 
 bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed, double travel, double speed, double& movedTime)
@@ -2344,8 +2366,11 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
 
 void World::updateStamina(Entity& a, double dt, double movedTime)
 {
-    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime, a.loadDrain,
-                        a.injuries.empty() ? 1.0 : injury::effects(a.injuries).recovery);
+    // Stamina the attribute (doc 49: `endurance`, 1 at 50) quickens the bar's return and eases running's drain.
+    const bool player = !a.npc;
+    step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime,
+                        a.loadDrain * (player ? practice::staminaDrain(a.endurance) : 1.0),
+                        (a.injuries.empty() ? 1.0 : injury::effects(a.injuries).recovery) * (player ? practice::staminaRecovery(a.endurance) : 1.0));
 }
 
 namespace

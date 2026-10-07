@@ -140,7 +140,7 @@ Result Game::askAlong(const std::string& playerId, const std::string& npcId, boo
     {
         // Out of friendship: they must like and trust you, and know you for someone worth following.
         c.reason = "friend";
-        if (social_.level(playerId) < 3 || !bond || bond->affinity < 40 || bond->trust < 30)
+        if (socialLevel(playerId) < 3 || !bond || bond->affinity < 40 || bond->trust < 30)
         {
             companionSays(npcId, !bond || bond->familiarity < 10 ? "I hardly know you." : "I don't know you well enough for that.");
             return {false, "They won't come along as a friend. Not yet.", npcId};

@@ -14,6 +14,7 @@ import {ChaptersTab} from './ChaptersTab';
 import {HealthTab} from './HealthTab';
 import {MoneyTab} from './MoneyTab';
 import {ArtworkPanel} from './ArtworkPanel';
+import {ReportsPanel} from './ReportsPanel';
 import {LifePanel} from './LifePanel';
 import {dmApi, signedIn, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target} from './api';
 
@@ -100,6 +101,9 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
 // --------------------------------------------------------------------------- Players
 
 type Column = {key: string; label: string; title?: string; get: (c: Character) => number | string | null; fixed?: number};
+// An attribute with its grade's mark (doc 49): "62 ▲" strong, "41 ▼" weak, the number alone plain.
+const graded = (c: Character, id: string, v: number | null) =>
+    v === null || v === undefined ? null : `${v.toFixed(0)}${c.grades?.[id] === 'strong' ? ' ▲' : c.grades?.[id] === 'weak' ? ' ▼' : ''}`;
 const COLUMNS: Column[] = [
     {key: 'name', label: 'Name', get: c => c.name},
     {key: 'status', label: 'Status', get: c => (c.dead ? 'dead' : 'alive')},
@@ -108,10 +112,15 @@ const COLUMNS: Column[] = [
     {key: 'place', label: 'Place', get: c => c.place},
     {key: 'x', label: 'X', get: c => c.x, fixed: 1},
     {key: 'y', label: 'Y', get: c => c.y, fixed: 1},
-    {key: 'str', label: 'STR', title: 'Strength', get: c => c.stats.strength, fixed: 0},
-    {key: 'dex', label: 'DEX', title: 'Dexterity', get: c => c.stats.dexterity, fixed: 0},
-    {key: 'wis', label: 'WIS', title: 'Wisdom', get: c => c.stats.wisdom, fixed: 0},
+    {key: 'str', label: 'STR', title: 'Strength (▲ strong, ▼ weak: doc 49)', get: c => graded(c, 'strength', c.stats.strength)},
+    {key: 'dex', label: 'DEX', title: 'Dexterity (▲ strong, ▼ weak: doc 49)', get: c => graded(c, 'dexterity', c.stats.dexterity)},
+    {key: 'wis', label: 'WIS', title: 'Wisdom (▲ strong, ▼ weak: doc 49)', get: c => graded(c, 'wisdom', c.stats.wisdom)},
     {key: 'sta', label: 'STA', title: 'Stamina', get: c => c.stats.stamina, fixed: 0},
+    {key: 'account', label: 'Account', title: 'The account the character belongs to (doc 49)', get: c => c.account?.name ?? null},
+    {key: 'handle', label: 'Handle', title: 'The account\'s public handle (doc 50): what friends and circles see', get: c => c.person?.handle || null},
+    {key: 'hours', label: 'Hours', title: 'Hours played on the account, while at the keys (doc 50)', get: c => c.person?.playedHours ?? null, fixed: 1},
+    {key: 'social', label: 'Social', title: 'The account\'s social level (roleplay alone: doc 49)', get: c => c.account?.socialLevel ?? null, fixed: 0},
+    {key: 'fight', label: 'Fight', title: 'Fighting skill: grown by fighting (doc 49)', get: c => c.practice?.fighting?.value ?? null, fixed: 0},
     {key: 'sneak', label: 'Sneak', get: c => c.skills.sneakSkill, fixed: 0},
     {key: 'listen', label: 'Hearing', title: 'Hearing skill', get: c => c.skills.hearingSkill, fixed: 0},
     {key: 'scent', label: 'Scent', title: 'Scent skill', get: c => c.skills.scentSkill, fixed: 0},
@@ -174,6 +183,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
             <WorldMap world={world} characters={data?.characters ?? []} selected={selected} onSelect={setSelected} />
             {chosen ? <CharacterPanel me={me} target={target} character={chosen} actions={data!.actions.filter(a => a.target === chosen.id)} onAct={load} />
                 : <p className="hint">Select a character in the table or on the map.</p>}
+            <ReportsPanel me={me} target={target} />
             <ArtworkPanel me={me} target={target} />
         </aside>
     </div>;
@@ -200,6 +210,14 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         if (target === 'prod' && !window.confirm(`${words} ${character.name} on PROD?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.gift', character.id, reason, {gift: kind, quickened}); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    // An account's earned Gift tiers (doc 49, Phase 5): grant or revoke a tier, or hold new unlocks (in place of reports).
+    const unlock = async (op: 'grant' | 'revoke' | 'hold' | 'release', tier: '' | 'gifted' | 'quickened', words: string) => {
+        if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, 'account.unlock', character.id, reason, {op, tier}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
@@ -236,6 +254,28 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
             <span className={character.dead ? 'dm-status dead' : 'dm-status'}>{character.dead ? '✝ dead' : 'alive'}</span></header>
         <p className="meta">{character.place} · {character.x.toFixed(1)}, {character.y.toFixed(1)}{character.indoors ? ' (indoors)' : ''} · age {character.age ?? '—'} · {character.posture}{character.activity ? ` · ${character.activity}` : ''}</p>
         <div className="stats">{stat('strength', character.stats.strength)}{stat('dexterity', character.stats.dexterity)}{stat('wisdom', character.stats.wisdom)}{stat('stamina', character.stats.stamina)}</div>
+        {character.account ? <div className="meta" title="Earned Gift tiers (doc 49): opened by roleplay, or by a Dungeon Master.">
+            Account <b>{character.account.name}</b> · social level {character.account.socialLevel ?? '—'}
+            {' '}· Gifted {character.account.gifted ? `open (${character.account.gifted})` : 'locked'}
+            {' '}· Quickened {character.account.quickened ? `open (${character.account.quickened})` : 'locked'}
+            {character.account.hold ? ' · unlocks held' : ''}
+            {' '}· {character.account.measures.normalScenes ?? 0} Normal scenes, {character.account.measures.stars ?? 0} stars from
+            {' '}{character.account.measures.starGivers ?? 0} wolves, {character.account.measures.closedStories ?? 0} Stories
+            {canAct && <div className="button-grid">
+                <button disabled={busy || pending || !!character.account.gifted} onClick={() => void unlock('grant', 'gifted', `Open Gifted to ${character.account!.name}`)}>Grant Gifted</button>
+                <button disabled={busy || pending || !!character.account.quickened} onClick={() => void unlock('grant', 'quickened', `Open Quickened to ${character.account!.name}`)}>Grant Quickened</button>
+                <button title="Stands while the account's unlocks are held: released, an earned tier opens again." disabled={busy || pending || !character.account.quickened} onClick={() => void unlock('revoke', 'quickened', `Take Quickened from ${character.account!.name}`)}>Revoke Quickened</button>
+                <button disabled={busy || pending} onClick={() => void unlock(character.account!.hold ? 'release' : 'hold', '', `${character.account!.hold ? 'Release' : 'Hold'} ${character.account!.name}'s unlocks`)}>
+                    {character.account.hold ? 'Release unlocks' : 'Hold unlocks'}</button>
+            </div>}
+        </div> : <p className="meta">Account: unknown (a development identity, or not saved since doc 49's migration 0034)</p>}
+        {character.profile && <details className="meta"><summary>Profile (read only, doc 50){character.person ? ` · ${character.person.handle || 'no handle'}, ${character.person.experience}, ${character.person.playedHours} h played` : ''}</summary>
+            {(['currently', 'description', 'pronouns', 'title', 'motto', 'oocNotes', 'history', 'otherLimits'] as const).map(k =>
+                typeof character.profile?.[k] === 'string' && character.profile[k] ? <p key={k}><b>{k}</b>: {String(character.profile[k])}</p> : null)}
+            {Array.isArray(character.profile.glances) && <p><b>glances</b>: {(character.profile.glances as Array<{title: string; line: string; sense: string}>)
+                .map(g => `${g.title}${g.line ? ` (${g.line})` : ''}${g.sense !== 'sight' ? ` [${g.sense}]` : ''}`).join('; ')}</p>}
+            <p><b>status</b>: {String(character.profile.status ?? 'ic')}{character.profile.walkup ? ' · walk-up friendly' : ''}{character.profile.mature ? ' · mature' : ''}</p>
+        </details>}
         <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}</p>
         <div className="meta">Injuries: {(character.injuries ?? []).length ? <ul className="dm-injuries">{(character.injuries ?? []).map(i =>
             <li key={i.id}><b>{injuryName(i)}</b> · {i.kind === 'acute' ? `${['', 'minor', 'moderate', 'severe'][i.severity] ?? ''}, ${((i.restLeft ?? 0) / 24).toFixed(1)} days of rest left` : 'lasting'}
@@ -246,6 +286,10 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
             {pending && actions.some(a => a.kind === 'character.dm' && a.status === 'queued') ? ' · changing: waiting for the game server…' : ''}</p>
         <div className="stats">{stat('sneak', character.skills.sneakSkill)}{stat('hearing skill', character.skills.hearingSkill)}{stat('scent skill', character.skills.scentSkill)}
             {stat('vision', character.senses.vision, 2)}</div>
+        <p className="meta">Build: {Object.entries(character.grades ?? {}).map(([a, g]) => `${g} ${a}`).join(', ') || 'plain'}
+            {character.specialty ? ` · specialty ${character.specialty}` : ''}</p>
+        {Object.keys(character.practice ?? {}).length > 0 && <p className="meta" title="Grown by practice (doc 49): each value out of its cap.">Practice: {
+            Object.values(character.practice ?? {}).map(p => `${p.name} ${p.value.toFixed(p.cap < 5 ? 2 : 0)} / ${p.cap < 5 ? p.cap.toFixed(2) : p.cap}`).join(' · ')}</p>}
         {canAct ? <>
             <label className="field"><span>Reason (for the audit log)</span><input value={reason} maxLength={500} onChange={e => setReason(e.target.value)} placeholder="Optional" /></label>
             <div className="button-grid">
