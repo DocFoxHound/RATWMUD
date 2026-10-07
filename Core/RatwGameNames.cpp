@@ -183,6 +183,7 @@ bool Game::learnName(const std::string& knower, const std::string& known, const 
 {
     if (!options_.hiddenNames || !known_.learn(knower, known, name, how, world_.calendarDays()))
         return false;
+    meet(knower, known, "name");                    // (On its Known wolves, a resident too: doc 50, 5.)
     saveSoon();
     return true;
 }

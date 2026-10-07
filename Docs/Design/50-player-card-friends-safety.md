@@ -799,3 +799,92 @@ None.
   - A private message goes to one connection.
   - Nothing runs in the tick except a purge every ten minutes over requests and the inbox. `world_check` doesn't
     exercise any of this, so it wasn't re-run.
+
+### Phase 4: known wolves and scene recaps (built 2026-10-07, not committed)
+
+- **Data:** `Data/Social/profile.json` gains `known` and `recaps`, all placeholders:
+  - `known`: 300 players and 100 residents, last met touched at most every 10 minutes a pair, 500-letter notes, custom
+    tags of 24 letters, and the six tags (Unfriendly, Neutral, Business, Friendly, Love, Family);
+  - `recaps`: 3 a wolf and 150 a character; a buffer of 120 lines or 6,000 characters; the model writes a recap only
+    with 6 lines over 5 minutes, at most 10 a day, each at most 600 characters.
+
+  `Core/RatwPeople.*` gains `KnownWolf` and `Recap`, save and load for both, `validTag`, `trimKnown` (past the caps,
+  the oldest met without a note, tag, tie or recap go first) and `trimRecaps` (a recap goes once every wolf in it has
+  three newer ones; then the oldest past 150).
+- **The game:** `Core/RatwGameKnown.cpp` (new).
+  - **Who goes on the list** (`meet`):
+    - players: from a shared scene (counted), from joining a party, from learning their name, or from hearing them
+      speak (only updates last met, at most every 10 minutes a pair);
+    - a resident: only once this wolf knows its name, notes it or tags it.
+  - Each entry keeps the label this wolf last knew them by, so a wolf who is away still shows as they were seen.
+  - Blocked wolves never go on each other's lists or into each other's recaps.
+- **Scene endings** (`tendScenes`), checked after each social tick and when someone steps out:
+  - a scene that ended, or a member who stepped out of one, is seen once; every member meets the others, and each
+    gets a recap;
+  - `seedScenes` marks scenes that were already over before a restart, so they aren't recapped twice.
+- **What a member perceived** (`perceivedLine`): `Game::publish` adds each line as it was delivered to that player:
+  "You" for their own lines, the speaker as they knew them, or "A voice". It's held in memory, capped at 120 lines or
+  6,000 characters, and only for players who let the model write their recaps.
+  - A recap's lines are those perceived in the scene's place from the start of the scene to its end for this member.
+    This is a change from the plan, which said from when they joined: Cy listened before he spoke, and his recap lost
+    the start of the scene.
+- **Recaps** (`endScene`):
+  - Written from the ledger alone: "You shared a scene with a dun wolf and Wren at The Bent Bough. It ran 40 minutes."
+  - Written by the model through the Mind's new `POST /recap`, but only when the Mind is configured, the player allows
+    it, the member perceived 6 lines or more over 5 minutes or more, and they've had fewer than 10 model recaps today.
+    A failure falls back to the written recap. Names the wolf doesn't know are veiled.
+  - `Options::recapModelSeconds` lowers the 5 minutes for tests.
+- **The Mind:**
+  - `mind::Client::recap` sends the place, the wolf's own name, the minutes and the newest lines within the Mind's
+    bounds.
+  - `tools/npc_mind.py` gains `/recap`: `RECAP_RULES` (second person, claims as claims, labels kept, nothing invented),
+    `clean_recap_request` (120 lines, 600 characters each, 8,000 in all), the small model, kind `recap` in the call
+    ledger, and a fixture reply. `tools/ai_cost.py` reports it without changes.
+- **Commands:** `known` takes `list` (newest first, each with its latest recap), `get` (one entry with all its recaps),
+  `tag`, `note`, `forget` (also deletes recaps that were only with them) and `unrecap`.
+  - The older `social` `note` verb now writes to the entry.
+  - The old private notes (`notes_`) are gone. As you asked, there's no data migration: old saves' notes aren't
+    carried over.
+- **Card and snapshot:**
+  - A closer look adds `known` (the entry, with all its recaps) and marks the profile read.
+  - The snapshot adds `noted` for a wolf with a note, and `unread` for a profile changed since this wolf last read it.
+- **Saving:** `people.known` and `people.recaps`. `Database/migrations/0038_known_wolves.sql` adds
+  `game.known_wolves` and `game.scene_recaps`, and takes read access to those two and to 0037's
+  `game.private_inbox` away from the DM, editor and publisher logins: they're for the game alone. **Not applied
+  yet.**
+- **Client:**
+  - FRIENDS gains a KNOWN WOLVES tab. Each row has search and a tag filter, then the name as known, "resident",
+    the tag, "profile changed", place, how long ago, scenes shared, the note, the latest recap, MORE (every recap with
+    Delete, and the tag and note editors) and FORGET.
+  - A player's card gains a YOU AND THEM tab: last met, scenes shared, tag (one of the six, or the player's own),
+    note, and recaps. A resident's card shows the same below the look.
+  - The old YOUR NOTE box is folded into YOU AND THEM.
+  - In Sight shows ✎ for a wolf with a note and • for a changed profile.
+- **Tests:**
+  - `Tests/known_tests.cpp` (1854 checks, most of them snapshot fills), with a stand-in Mind:
+    - a shared scene puts each member on the others' lists, counted, as strangers by their look; once introduced,
+      Bo goes by name;
+    - Ada's model recap is sent her own lines as "You", the whisper meant for her, Bo by his look, and nothing of Cy,
+      whom she had blocked; Cy's lines hold the speech but not the whisper out of his reach;
+    - with no Mind, the recap is written and names only what Ada knows;
+    - with Bo's recaps turned off, his recap is written and nothing of his goes to the Mind;
+    - notes, tags (one of the six, a custom one, a bad one), a resident tagged onto the list, the card's entry, the
+      noted and unread marks, deleting a recap, forgetting;
+    - the caps;
+    - a restart keeps everything and doesn't recap twice.
+    - The 10-a-day limit has no test.
+  - `tools/test_npc_mind.py`: `/recap` (bounds, the small model, nothing of the scene in the log, over HTTP).
+  - `tools/test_game_tables.py`: both lists become rows.
+  - `tools/test_dungeon_master.py`: the DM login can't read `known_wolves`, `scene_recaps` or `private_inbox`.
+  - `Client/src/game/people.test.ts`: 6 tests.
+  - `tools/client/scenes.mjs`: after Ash steps out, Bo is in her Known wolves with the recap, and under YOU AND THEM on
+    his card. Screenshots 6 and 7.
+  - `ctest` 51 of 51; client tests 104; `card`, `safety`, `friends`, `names` and `party` pass in a real page.
+  - The real model wasn't called: that costs money.
+- **Cost:**
+  - Per heard line: one map lookup to throttle last met, and an append to a buffer of at most 6,000 characters, about
+    6 MB at 1,000 players.
+  - Per scene ending: a scan of the member's buffer.
+  - Per recap: at most one call to the small model, capped at 10 a character a day.
+  - Each social tick: a pass over the ledger's scenes, which the ledger's own tick already makes.
+  - Nothing runs in the world's tick.

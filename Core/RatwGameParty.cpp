@@ -63,7 +63,16 @@ bool Game::partyCommand(Connection* c, const Value& j, Result& result)
         const auto outcome = parties_.accept(id, now());
         result = {outcome.ok, outcome.ok ? "You join " + nameOf(from) + "'s party." : outcome.message, {}};
         if (outcome.ok)
+        {
             tellParty(outcome.message, nameOf(id) + " joins the party.", id);
+            if (const auto* joined = parties_.of(id))      // (Party mates meet on each other's lists: doc 50, 5.)
+                for (const auto& m : joined->members)
+                    if (m != id)
+                    {
+                        meet(id, m, "party");
+                        meet(m, id, "party");
+                    }
+        }
     }
     else if (verb == "decline")
     {

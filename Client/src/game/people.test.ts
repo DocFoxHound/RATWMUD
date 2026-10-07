@@ -64,3 +64,25 @@ test('friends: a sharing friend\'s handle on the wolf', () => {
     assert.equal(s.entities.get('bo')?.handle, 'Bobbin');
     assert.equal(s.entities.get('cy')?.handle, '', 'a stranger shows none');
 });
+
+test('known wolves: the list, one entry opened with all its recaps, and onto an open card', () => {
+    const {state: s, commands} = testGame();
+    s.receiveEvent({type: 'known', wolves: [{id: 'bo', name: 'A russet wolf', scenes: 1, recaps: [{id: 'r2', text: 'Newest.'}], recapCount: 2},
+        {id: 'wren', name: 'Wren', resident: true, recaps: [], recapCount: 0}]});
+    assert.deepEqual(s.knownWolves.map(k => k.id), ['bo', 'wren']);
+    s.inspectedCharacter = {id: 'bo', name: 'A russet wolf'};
+    s.receiveEvent({type: 'known', entry: {id: 'bo', name: 'A russet wolf', note: 'Knows the mill.', recaps: [{id: 'r2', text: 'Newest.'}, {id: 'r1', text: 'Older.'}]}});
+    assert.equal((s.knownOpen?.recaps as unknown[]).length, 2, 'opened: every recap');
+    assert.equal((s.knownWolves[0].recaps as unknown[]).length, 1, 'the list keeps its latest only');
+    assert.equal(s.inspectedCharacter?.note, 'Knows the mill.', 'an open card takes the entry');
+    assert.ok(s.inspectedCharacter?.known);
+    s.sendKnown('tag', {target: 'bo', tag: 'friendly'});
+    assert.ok(commands.some(c => c.type === 'known' && c.verb === 'tag' && c.tag === 'friendly'));
+});
+
+test('known wolves: noted and unread marks on wolves in sight', () => {
+    const {state: s} = testGame();
+    s.receiveEvent({type: 'snapshot', revision: 1, time: 1, self: {id: 'me', name: 'Ada'}, entities: [
+        {id: 'me', name: 'Ada', x: 1, y: 1}, {id: 'bo', name: 'A russet wolf', x: 2, y: 1, noted: true, unread: true}]});
+    assert.ok(s.entities.get('bo')?.noted && s.entities.get('bo')?.unread);
+});

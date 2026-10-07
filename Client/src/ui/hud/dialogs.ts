@@ -6,7 +6,7 @@ import {drawPortrait, type Portraits} from '../portrait.ts';
 import {arr, bool, clamp, countText, envNumber, isObject, num, obj, str, wholeCount, type Json} from '../../game/json.ts';
 import {postureLabel, restLabel, readLoad, loadLabel, loadCost, weightLabel} from '../../game/labels.ts';
 import type {GameState} from '../../game/state.ts';
-import {button, el, setClass} from './dom.ts';
+import {button, el, setClass, show} from './dom.ts';
 import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 
@@ -44,16 +44,11 @@ export class Dialogs {
     private panel: HTMLElement;
     private key = '';
     private aliasInput: HTMLInputElement;
-    private noteInput: HTMLInputElement;
     private chosen = '';                        // The belonging picked out in the status screen,
     private spot = '';                          // and the fur spot.
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
-        this.noteInput = document.createElement('input');
-        this.noteInput.className = 'name-input';
-        this.noteInput.maxLength = 500;
-        this.noteInput.placeholder = 'Only you see this';
         this.aliasInput = document.createElement('input');
         this.aliasInput.className = 'name-input';
         this.aliasInput.addEventListener('keydown', e => {
@@ -84,7 +79,7 @@ export class Dialogs {
             : m === 'status' ? this.ownArtwork(self) : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? [s.inspectedText, s.inspectedCharacter, this.inspectTab] : '',
             m === 'profile' ? [s.profileOwn, s.account, s.safetyMarks] : '', m === 'report' ? [s.reportTarget, s.safetyMarks] : '',
-            m === 'people' ? [s.friends, s.friendRequestsIn, s.friendRequestsOut, s.account] : '',
+            m === 'people' ? [s.friends, s.friendRequestsIn, s.friendRequestsOut, s.account, s.peopleTab, s.knownWolves, s.knownOpen, this.knownFilter] : '',
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
@@ -1098,7 +1093,7 @@ export class Dialogs {
                 ? ` · ${num(inspected, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER` : ''));
             el('p', 'pre', el('div', 'sheet-col', cols), s.inspectedText);
         } else el('p', 'pre', this.panel, s.inspectedText);
-        // How they regard this wolf, and this wolf's own note on them (doc 32, 1.4).
+        // How they regard this wolf (doc 32, 1.4).
         const inspected = s.inspectedCharacter, id = str(inspected, 'id');
         const profile = obj(inspected, 'profile');
         if (profile) this.profileCard(profile, id === s.selfId);
@@ -1106,12 +1101,10 @@ export class Dialogs {
         if (obj(inspected, 'equipment'))
             button(id === s.selfId ? 'YOUR EQUIPMENT' : 'WHAT THEY WEAR', 'primary', el('div', 'sheet-actions', this.panel),
                 () => { this.spot = ''; this.act(id === s.selfId ? 'status' : 'their_equipment'); });
-        if (id && id !== s.selfId) {
-            el('div', 'label gold', this.panel, 'YOUR NOTE');
-            const row = el('div', 'name-add', this.panel);
-            this.noteInput.value = str(inspected, 'note');
-            row.append(this.noteInput);
-            button('SAVE', 'small', row, () => s.sendSocial({verb: 'note', target: id, text: this.noteInput.value}));
+        // What this wolf keeps on them (doc 50, 5): a player's under YOU AND THEM; a resident, having no profile tabs, here.
+        if (id && id !== s.selfId && !profile) {
+            el('div', 'label gold', this.panel, 'YOU AND THEM');
+            this.youAndThem(el('div', 'profile-card', this.panel));
         }
         el('p', 'muted small', this.panel, 'Only information your character is allowed to perceive appears here.');
     }
@@ -1122,7 +1115,7 @@ export class Dialogs {
     /** A player's roleplay profile on the card (doc 50): what this wolf may see of it, then the OOC tab, players only. */
     private profileCard(p: Json, own: boolean) {
         const tabs = el('div', 'creator-tabs', this.panel);
-        for (const [id, label] of [['look', 'LOOK'], ['ooc', 'PROFILE (OOC)']] as const) {
+        for (const [id, label] of [['look', 'LOOK'], ['ooc', 'PROFILE (OOC)'], ...(own ? [] : [['them', 'YOU AND THEM']] as const)] as const) {
             const b = button(label, id === this.inspectTab ? 'tab active' : 'tab', tabs, () => {
                 this.inspectTab = id;
                 this.key = '';
@@ -1158,6 +1151,8 @@ export class Dialogs {
                 if (str(g, 'line')) el('span', 'muted', row, ` ${str(g, 'line')}`);
                 if (str(g, 'sense') !== 'sight') el('span', 'label muted', row, str(g, 'sense') === 'scent' ? ' · SMELT' : ' · HEARD');
             }
+        } else if (this.inspectTab === 'them' && !own) {
+            this.youAndThem(box);
         } else {
             const ooc = obj(p, 'ooc');
             if (!ooc || !Object.keys(ooc).length) el('p', 'muted', box, own ? 'Nothing in your OOC tab yet.' : 'Nothing here.');
@@ -1327,6 +1322,18 @@ export class Dialogs {
      * playing if they share it, your own share switch, Message and Remove. No places. */
     private people() {
         const s = this.s;
+        const tabs = el('div', 'creator-tabs', this.panel);
+        for (const [id, label] of [['friends', 'FRIENDS'], ['known', 'KNOWN WOLVES']] as const) {
+            const b = button(label, id === s.peopleTab ? 'tab active' : 'tab', tabs, () => {
+                s.peopleTab = id;
+                if (id === 'known') s.sendKnown('list');
+            });
+            b.dataset.tab = id;
+        }
+        if (s.peopleTab === 'known') {
+            this.knownWolves();
+            return;
+        }
         this.heading('FRIENDS', 'Your friends, by handle: out of character, across all your wolves');
         if (!str(s.account, 'handle')) el('p', 'muted small', this.panel, 'Choose a handle in YOUR PROFILE first: friends know you by it.');
         const ask = el('div', 'profile-veils', this.panel);
@@ -1374,6 +1381,107 @@ export class Dialogs {
             wrap.title = 'When on, they see which wolf you are playing, and your handle under its label';
             button('REMOVE', 'small', row, () => s.sendFriends('remove', {handle: name}));
         }
+    }
+
+    /** What the Known wolves list is filtered by: a name, and a tag. */
+    private knownFilter = {text: '', tag: ''};
+
+    /** Known wolves (doc 50, 5): this wolf's list of the wolves it has met, newest first, each as it knows them, with
+     * where and when last met, scenes shared, its tag and note, and its latest recap; MORE shows them all. */
+    private knownWolves() {
+        const s = this.s, f = this.knownFilter;
+        this.heading('KNOWN WOLVES', 'The wolves this wolf has met, as it knows them');
+        const bar = el('div', 'profile-veils', this.panel);
+        const search = el('input', 'profile-input', bar);
+        search.placeholder = 'Search by name or note';
+        search.value = f.text;
+        search.dataset.field = 'known-search';
+        search.addEventListener('change', () => { f.text = search.value.trim().toLowerCase(); this.key = ''; });
+        const tags = el('select', '', bar);
+        tags.append(new Option('Every tag', ''));
+        for (const t of arr(obj(s.profileRules, 'known'), 'tags').filter(isObject))
+            tags.append(new Option(str(t, 'name'), str(t, 'id')));
+        tags.value = f.tag;
+        tags.addEventListener('change', () => { f.tag = tags.value; this.key = ''; });
+        const shown = s.knownWolves.filter(k => (!f.tag || str(k, 'tag') === f.tag) &&
+            (!f.text || `${str(k, 'name')} ${str(k, 'note')} ${str(k, 'tag')}`.toLowerCase().includes(f.text)));
+        if (!shown.length) el('p', 'muted small', this.panel, s.knownWolves.length ? 'No one matches.'
+            : 'No one yet. Wolves you share a scene with, join a party with or learn the name of come here; a resident, once you note or tag it.');
+        for (const k of shown) {
+            const id = str(k, 'id'), open = str(s.knownOpen, 'id') === id;
+            const row = el('div', 'known-row', this.panel);
+            row.dataset.known = id;
+            const head = el('div', 'profile-veils', row);
+            el('span', 'gold', head, str(k, 'name'));
+            if (bool(k, 'resident')) el('span', 'muted small', head, 'resident');
+            if (str(k, 'tag')) el('span', 'chip', head, tagName(s, k));
+            if (bool(k, 'unread')) el('span', 'sage small', head, 'profile changed').title = 'Their profile has changed since you last looked';
+            el('span', 'muted small', head, [str(k, 'place'), ago(num(k, 'lastMet')), num(k, 'scenes') ? `${num(k, 'scenes')} scene${num(k, 'scenes') === 1 ? '' : 's'} shared` : '']
+                .filter(Boolean).join(' · '));
+            button(open ? 'LESS' : 'MORE', 'small', head, () => { if (open) s.knownOpen = null; else s.sendKnown('get', {target: id}); this.key = ''; });
+            button('FORGET', 'small', head, () => s.sendKnown('forget', {target: id})).title = 'Take them off your list, with their recaps';
+            if (str(k, 'note')) el('p', 'small', row, `✎ ${str(k, 'note')}`);
+            if (str(k, 'tie')) el('p', 'sage small', row, str(k, 'tie'));
+            const recaps = arr(open ? s.knownOpen : k, 'recaps').filter(isObject);
+            for (const r of open ? recaps : recaps.slice(0, 1)) this.recapLine(row, r, id);
+            if (!open && num(k, 'recapCount') > 1) el('p', 'muted small', row, `${num(k, 'recapCount') - 1} more · MORE`);
+            if (open) this.youAndThemEdit(row, s.knownOpen ?? k, id);
+        }
+    }
+
+    /** One recap: when, where, how long, in its words; Delete. */
+    private recapLine(parent: HTMLElement, r: Json, target: string) {
+        const box = el('div', 'recap', parent);
+        el('div', 'muted small', box, [str(r, 'place'), ago(num(r, 'at')), num(r, 'minutes') ? `${num(r, 'minutes')} min` : '',
+            bool(r, 'model') ? 'recap' : 'written from the record'].filter(Boolean).join(' · '));
+        el('p', '', box, str(r, 'text'));
+        button('DELETE', 'small', box, () => {
+            this.s.sendKnown('unrecap', {recap: str(r, 'id')});
+            this.s.sendKnown('get', {target});
+        });
+    }
+
+    /** The tag and note this wolf keeps on another (doc 50, 5). */
+    private youAndThemEdit(parent: HTMLElement, k: Json, target: string) {
+        const s = this.s;
+        const row = el('div', 'profile-veils', parent);
+        el('span', 'label muted', row, 'TAG');
+        const tag = el('select', '', row);
+        tag.append(new Option('None', ''));
+        for (const t of arr(obj(s.profileRules, 'known'), 'tags').filter(isObject)) tag.append(new Option(str(t, 'name'), str(t, 'id')));
+        tag.append(new Option('Your own…', '*'));
+        tag.value = bool(k, 'customTag') ? '*' : str(k, 'tag');
+        const own = el('input', 'profile-input', row);
+        own.placeholder = 'Your own tag';
+        own.maxLength = 24;
+        own.value = bool(k, 'customTag') ? str(k, 'tag') : '';
+        show(own, tag.value === '*');
+        tag.addEventListener('change', () => {
+            show(own, tag.value === '*');
+            if (tag.value !== '*') s.sendKnown('tag', {target, tag: tag.value});
+        });
+        own.addEventListener('change', () => s.sendKnown('tag', {target, tag: own.value.trim(), custom: true}));
+        const noteRow = el('div', 'profile-veils', parent);
+        const note = el('input', 'profile-input', noteRow);
+        note.placeholder = 'A private note (only you see it)';
+        note.maxLength = 500;
+        note.value = str(k, 'note');
+        button('SAVE NOTE', 'small', noteRow, () => s.sendKnown('note', {target, text: note.value}));
+    }
+
+    /** "You and them" on a card (doc 50, 2 and 5): last met, scenes shared, your tag, and recaps of scenes together. */
+    private youAndThem(parent: HTMLElement) {
+        const s = this.s, inspected = s.inspectedCharacter, id = str(inspected, 'id'), k = obj(inspected, 'known');
+        if (!k) {
+            el('p', 'muted small', parent, 'You haven\'t shared a scene yet. Tag them to keep them in Known wolves.');
+            this.youAndThemEdit(parent, {}, id);
+            return;
+        }
+        el('p', 'small', parent, [str(k, 'place') ? `Last met at ${str(k, 'place')}` : '', ago(num(k, 'lastMet')),
+            num(k, 'scenes') ? `${num(k, 'scenes')} scene${num(k, 'scenes') === 1 ? '' : 's'} shared` : 'no scene shared yet'].filter(Boolean).join(' · '));
+        if (str(k, 'tie')) el('p', 'sage small', parent, str(k, 'tie'));
+        this.youAndThemEdit(parent, k, id);
+        for (const r of arr(k, 'recaps').filter(isObject)) this.recapLine(parent, r, id);
     }
 
     /** Mute, block or report a wolf or a line's author (doc 50): a report goes to a Dungeon Master with the lines you
@@ -1429,4 +1537,22 @@ function itemIcon(item: Json): string {
     if (kind === 'jewel') return 'jewel';
     if (kind === 'wear') return 'wear';
     return 'thing';
+}
+
+/** How long ago a moment was (Unix seconds), in plain words. */
+function ago(at: number): string {
+    if (!at) return '';
+    const minutes = Math.max(0, (Date.now() / 1000 - at) / 60);
+    if (minutes < 2) return 'just now';
+    if (minutes < 90) return `${Math.round(minutes)} minutes ago`;
+    if (minutes < 36 * 60) return `${Math.round(minutes / 60)} hours ago`;
+    const days = Math.round(minutes / 1440);
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+/** A known wolf's tag in words: one of the rules' own, or the player's. */
+function tagName(s: GameState, k: Json): string {
+    if (bool(k, 'customTag')) return str(k, 'tag');
+    const t = arr(obj(s.profileRules, 'known'), 'tags').filter(isObject).find(x => str(x, 'id') === str(k, 'tag'));
+    return t ? str(t, 'name') : str(k, 'tag');
 }

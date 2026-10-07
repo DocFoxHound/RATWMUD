@@ -155,6 +155,7 @@ void Game::afterSocial()
     }
     for (const auto& account : touched)
         checkUnlocks(account);
+    tendScenes();                                   // Known wolves and recaps for scenes over (doc 50, 5).
     socialViewsDirty_ = true;
 }
 
@@ -394,6 +395,7 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
             result = {true, !receipt ? "You step out of the scene. You hadn't said enough with another to be paid for it."
                             : paid > 0 ? "You step out of the scene: +" + std::to_string(paid) + " social."
                                        : "You step out of the scene. You've had all the social pay there is today.", {}};
+            tendScenes();                           // (Their recap, and those they were with: doc 50, 5.)
             socialViewsDirty_ = true;
             saveSoon();
         }
@@ -454,52 +456,16 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
     }
     else if (verb == "note")
     {
-        const auto target = j.string("target");
-        const auto text = mind::trim(j.string("text"));
-        if (text.size() > 500)
-            result = {false, "A note is at most 500 letters.", target};
-        else if (target.empty() || target == id || (!world_.entity(target) && !characters_.count(target)))
-            result = {false, "There is no one to note.", target};
-        else
-        {
-            if (text.empty())
-                notes_[id].erase(target);
-            else
-                notes_[id][target] = text;
-            if (notes_[id].size() > 300)
-                result = {false, "You keep too many notes already.", target};
-            else
-            {
-                result = {true, text.empty() ? "Note cleared." : "Noted.", target};
-                saveSoon();
-            }
-        }
+        // (The older way to note a wolf: kept in Known wolves now, doc 50, 5.)
+        auto k = Value::object();
+        k.add("verb", "note");
+        k.add("target", j.string("target"));
+        k.add("text", j.string("text"));
+        knownCommand(c, k, result);
     }
     else
         return false;
     return true;
-}
-
-Value Game::notesSave() const
-{
-    auto root = Value::object();
-    for (const auto& [owner, list] : notes_)
-    {
-        auto o = Value::object();
-        for (const auto& [who, text] : list)
-            o.add(who, text);
-        root.add(owner, o);
-    }
-    return root;
-}
-
-void Game::notesLoad(const Value& saved)
-{
-    notes_.clear();
-    for (const auto& [owner, list] : saved.fields())
-        for (const auto& [who, text] : list.fields())
-            if (text.isString() && notes_[owner].size() < 300)
-                notes_[owner][who] = text.asString().substr(0, 500);
 }
 
 long long Game::socialXp(const std::string& characterId) const

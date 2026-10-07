@@ -301,6 +301,28 @@ class MindTests(unittest.TestCase):
         with self.assertRaises(BridgeError):
             mind.Mind(mind.FixtureProvider(), audit=lambda e: None).summarize({"npc": "Wren", "turns": []})
 
+    def test_recaps(self):
+        # Doc 50, Phase 4: a scene recapped from the lines one player perceived, on the small model, as kind "recap".
+        entries = []
+        request = {"place": "The Wharf", "you": "Ada", "minutes": 40,
+                   "lines": [{"who": "You", "text": "The river runs high."}, {"who": "A grey wolf", "text": "The ford is gone."}]}
+        got = mind.Mind(mind.FixtureProvider(), audit=entries.append, models={"light": "small"}).recap(request)
+        self.assertIn("A grey wolf", got["recap"])
+        self.assertLessEqual(len(got["recap"]), mind.MAX_RECAP)
+        self.assertEqual(("recap", "light", "small"), (entries[0]["event"], entries[0]["tier"], entries[0]["model"]))
+        self.assertNotIn("ford", json.dumps(entries), "no line of the scene in the log")
+        self.assertIn("Report claims as claims", mind.RECAP_RULES)
+        self.assertIn("never give anyone another name", mind.RECAP_RULES)
+        for bad in ({**request, "lines": []}, {**request, "lines": [{"who": "x" * 81, "text": "hi"}]},
+                    {**request, "lines": [{"who": "A", "text": "x" * 601}]},
+                    {**request, "lines": [{"who": "A", "text": "x" * 600}] * 14},
+                    {**request, "lines": [{"who": "A", "text": "hi"}] * 121}, {**request, "place": "x" * 121}, "nonsense"):
+            with self.assertRaises(BridgeError):
+                mind.Mind(mind.FixtureProvider(), audit=lambda e: None).recap(bad)
+        with self.assertRaises(BridgeError):
+            mind.decode_recap({"recap": "", "extra": 1})
+        self.assertEqual(mind.MAX_RECAP, len(mind.decode_recap({"recap": "y" * 900})["recap"]), "a long one is cut")
+
     def test_the_fixture_makes_promises(self):
         got = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).dialogue(
             {**CONTEXT, "heard": "I promise to bring the flour tomorrow."})
@@ -338,6 +360,9 @@ class HttpTests(unittest.TestCase):
         self.assertEqual({"text", "emotion", "affinity", "trust", "remember", "promise"}, set(data))
         status, data = self.post("/summarize", {"npc": "Wren", "turns": [{"who": "Ash", "text": "Hello."}]})
         self.assertEqual((200, True), (status, "summary" in data))
+        status, data = self.post("/recap", {"place": "The Wharf", "you": "Ada", "lines": [{"who": "Wren", "text": "Hello."}]})
+        self.assertEqual((200, True), (status, "recap" in data))
+        self.assertEqual(400, self.post("/recap", {"place": "The Wharf", "lines": "no"})[0])
 
     def test_an_exchange_over_http(self):
         status, data = self.post("/exchange", {"a": {"name": "Wren"}, "b": {"name": "Sorrel"},

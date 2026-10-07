@@ -358,6 +358,11 @@ class DungeonMasterTests(Fixture):
                 conn.execute("UPDATE world.cells SET name = 'x'")
             with self.assertRaises(psycopg.errors.InsufficientPrivilege):
                 conn.execute('SELECT * FROM game.accounts')
+        # Players' notes, recaps and private messages are the game's alone (doc 50, migration 0038).
+        for table in ('known_wolves', 'scene_recaps', 'private_inbox'):
+            with W.connect('prod', 'dm', dbname=self.names['prod']) as conn:
+                with self.assertRaises(psycopg.errors.InsufficientPrivilege, msg=table):
+                    conn.execute(f'SELECT * FROM game.{table}')
         with W.connect('prod', 'game', dbname=self.names['prod']) as game:
             with self.assertRaises(psycopg.errors.InsufficientPrivilege):
                 game.execute('SELECT * FROM dm.admins')

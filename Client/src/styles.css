@@ -737,3 +737,8 @@ button.given { opacity: .6; }
 .chip.pick { cursor: pointer; border: 1px solid transparent; }
 .chip.pick.active { border-color: var(--gold); color: var(--gold); }
 .friend-row { align-items: center; gap: 8px; }
+
+/* Known wolves (doc 50, Phase 4). */
+.known-row { border-top: 1px solid var(--line, #2c3a33); padding: 8px 0; }
+.recap { margin: 6px 0 6px 12px; padding-left: 10px; border-left: 2px solid var(--sage, #8fb39a); }
+.recap p { margin: 2px 0; }

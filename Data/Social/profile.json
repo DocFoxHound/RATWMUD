@@ -21,5 +21,10 @@
   "handle": {"min": 3, "max": 24, "changeDays": 30},
   "played": {"every": 60, "activeWithin": 300},
   "friends": {"most": 200, "requestsWaiting": 20, "requestDays": 14, "shareByDefault": true},
-  "privateMessages": {"most": 2000, "inbox": 50, "inboxDays": 14}
+  "privateMessages": {"most": 2000, "inbox": 50, "inboxDays": 14},
+  "known": {"players": 300, "residents": 100, "metEvery": 600, "note": 500, "customTag": 24,
+            "tags": [{"id": "unfriendly", "name": "Unfriendly"}, {"id": "neutral", "name": "Neutral"}, {"id": "business", "name": "Business"},
+                     {"id": "friendly", "name": "Friendly"}, {"id": "love", "name": "Love"}, {"id": "family", "name": "Family"}]},
+  "recaps": {"perWolf": 3, "perCharacter": 150, "bufferLines": 120, "bufferCharacters": 6000, "modelLines": 6, "modelMinutes": 5,
+             "modelADay": 10, "most": 600}
 }

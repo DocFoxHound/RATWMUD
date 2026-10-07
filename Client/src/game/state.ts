@@ -80,6 +80,8 @@ export interface EntityView {
     currently: string;          // Their Currently line ("mending nets by the pier"), '' for none.
     walkup: boolean;            // Fine to approach unannounced.
     handle: string;             // A friend who shares their character with you: their handle ('' otherwise; doc 50).
+    noted: boolean;             // On one's Known wolves with a note (doc 50)...
+    unread: boolean;            // ...or with a profile changed since one last looked.
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -130,6 +132,11 @@ export class GameState {
     friendRequestsOut: Json[] = [];
     privateTo = '';
     unreadPrivate = 0;
+    // Known wolves (doc 50, 5): the list as last asked for, which tab of the FRIENDS sheet is open, and one entry opened
+    // with all its recaps.
+    knownWolves: Json[] = [];
+    knownOpen: Json | null = null;
+    peopleTab = 'friends';
     reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
     missionBoard: Json | null = null;   // The last faction mission board asked for (doc 32, 4.5).
     posts: Post[] = [];
@@ -460,7 +467,7 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: [], rp: '', currently: '', walkup: false, handle: ''};
+                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: [], rp: '', currently: '', walkup: false, handle: '', noted: false, unread: false};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
@@ -478,6 +485,8 @@ export class GameState {
             view.currently = str(e, 'currently');
             view.walkup = bool(e, 'walkup');
             view.handle = str(e, 'handle');
+            view.noted = bool(e, 'noted');
+            view.unread = bool(e, 'unread');
             view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
@@ -946,6 +955,18 @@ export class GameState {
             this.safetyMarks = objects(e, 'marks');
             return;
         }
+        if (type === 'known') {
+            // One's Known wolves (doc 50): the list, or one entry with all its recaps (also onto an open card).
+            if (Array.isArray(e.wolves)) this.knownWolves = objects(e, 'wolves');
+            const entry = obj(e, 'entry');
+            if (entry) {
+                this.knownOpen = entry;
+                this.knownWolves = this.knownWolves.map(k => (str(k, 'id') === str(entry, 'id') ? {...entry, recaps: arr(entry, 'recaps').slice(0, 1)} : k));
+                if (this.inspectedCharacter && str(this.inspectedCharacter, 'id') === str(entry, 'id'))
+                    this.inspectedCharacter = {...this.inspectedCharacter, known: entry, note: str(entry, 'note')};
+            } else if (!Array.isArray(e.wolves)) this.knownOpen = null;
+            return;
+        }
         if (type === 'friends') {
             this.friends = objects(e, 'friends');
             this.friendRequestsIn = objects(e, 'incoming');
@@ -1285,6 +1306,11 @@ export class GameState {
      * "share" (with `on`), each with the friend's handle. The server answers with the list. */
     sendFriends(verb: string, extra: Json = {}) {
         this.send({type: 'friends', verb, ...extra});
+    }
+
+    /** Known wolves (doc 50): "list", "get", "tag" (`tag`, `custom`), "note" (`text`), "forget", "unrecap" (`recap`). */
+    sendKnown(verb: string, extra: Json = {}) {
+        this.send({type: 'known', verb, ...extra});
     }
 
     /** Writes to a friend: the PRIVATE tab, with them chosen. */

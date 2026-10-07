@@ -245,6 +245,56 @@ void Client::summarize(const std::string& npcName, const std::vector<std::pair<s
           }});
 }
 
+void Client::recap(const std::string& place, const std::string& you, int minutes,
+                   const std::vector<std::pair<std::string, std::string>>& lines, std::function<void(const std::string&)> done)
+{
+    const std::string suffix = "/dialogue";
+    if (!live() || path_.size() < suffix.size() || path_.compare(path_.size() - suffix.size(), suffix.size(), suffix) != 0 ||
+        lines.empty())
+    {
+        done({});
+        return;
+    }
+    auto body = json::Value::object();
+    body.add("place", left(place, 120));
+    body.add("you", left(you, 80));
+    body.add("minutes", std::clamp(minutes, 0, 1440));
+    auto list = json::Value::array();
+    std::size_t total = 0;
+    // The newest lines that fit the Mind's bounds (120 lines, 8000 characters), in order.
+    std::size_t from = lines.size();
+    while (from > 0 && lines.size() - from < 120)
+    {
+        const auto size = left(lines[from - 1].second, 600).size();
+        if (total + size > 8000)
+            break;
+        total += size;
+        --from;
+    }
+    for (std::size_t i = from; i < lines.size(); ++i)
+    {
+        auto line = json::Value::object();
+        line.add("who", left(lines[i].first, 80));
+        line.add("text", left(lines[i].second, 600));
+        list.push(line);
+    }
+    if (list.items().empty())
+    {
+        done({});
+        return;
+    }
+    body.add("lines", list);
+    post({path_.substr(0, path_.size() - suffix.size()) + "/recap", json::dump(body), 20.0,
+          [done](int status, const std::string& text) {
+              std::string recap;
+              json::Value parsed;
+              std::string error;
+              if (status == 200 && text.size() < 16384 && json::parse(text, parsed, error))
+                  recap = trim(parsed.string("recap"));
+              done(left(recap, 601).size() <= left(recap, 600).size() ? recap : std::string());
+          }});
+}
+
 std::string firstPerson(std::string text, const std::string& teller)
 {
     if (teller.empty())

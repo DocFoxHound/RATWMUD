@@ -2738,6 +2738,7 @@ void Game::sendSnapshot(Connection* c)
     // alike are told apart by number, in a fixed order.
     std::map<std::string, std::string> called = strangerNames(id);
     const auto viewerAccount = accountKey(id);
+    const auto knownList = knownWolves_.find(id);
     for (const auto& e : view.entities)
         if (!called.count(e.id))
             called[e.id] = labelFor(id, e.id);
@@ -2762,6 +2763,16 @@ void Game::sendSnapshot(Connection* c)
                     j.set("walkup", true);
                 if (p->second.revision > 0)
                     j.set("prev", p->second.revision);
+            }
+        // Known wolves (doc 50, 5): a note kept on them, and a profile changed since this wolf last read it.
+        if (e.id != id && knownList != knownWolves_.end())
+            if (const auto k = knownList->second.find(e.id); k != knownList->second.end())
+            {
+                if (!k->second.note.empty())
+                    j.set("noted", true);
+                if (!e.npc)
+                    if (const auto p = profiles_.find(e.id); p != profiles_.end() && p->second.revision > k->second.readRevision)
+                        j.set("unread", true);
             }
         // A friend who shares their character with this one: their handle, under their label (doc 50, 4).
         if (!e.npc && e.id != id)
@@ -3316,6 +3327,11 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         e.add("text", text);
         if (listener != author)
             heardLine(listener, event, author, group.empty() ? "ic" : group, text);   // (A report's evidence: doc 50.)
+        // For a recap of the scene, as this wolf perceived it; and they have met (doc 50, 5).
+        perceivedLine(listener, listener == author ? std::string("You") : sense.identifiable ? names::capitalised(labelFor(listener, author))
+                                                                                             : std::string("A voice"), text);
+        if (listener != author && sense.identifiable)
+            meet(listener, author, "heard");
         // An introduction heard ("I'm Kestrel"): the listener knows them by that name now (doc 32).
         {
             std::string spoken;
@@ -3985,6 +4001,13 @@ void Game::command(Connection* c, const std::string& raw)
             result = {false, "That isn't something you can do.", {}};
         report = !result.message.empty();
     }
+    else if (type == "known")
+    {
+        // Known wolves: tags, notes, forgetting, recaps (doc 50, Phase 4).
+        if (!knownCommand(c, j, result))
+            result = {false, "That isn't something you can do.", {}};
+        report = !result.message.empty();
+    }
     else if (type == "friends")
     {
         // Friends: requests, answers, sharing (doc 50, Phase 3).
@@ -4322,9 +4345,14 @@ void Game::command(Connection* c, const std::string& raw)
             if (target != id)
             {
                 e.add("regard", regardWords(other->id, id));
-                if (const auto mine = notes_.find(id); mine != notes_.end())
-                    if (const auto note = mine->second.find(other->id); note != mine->second.end())
-                        e.add("note", note->second);
+                // What this wolf keeps on them (doc 50, 5): its note, tag, last met, shared scenes and recaps.
+                if (auto known = knownFor(id, other->id); known.isObject())
+                {
+                    if (known.has("note"))
+                        e.add("note", known.string("note"));
+                    e.add("known", std::move(known));
+                }
+                readProfile(id, other->id);
             }
             // The roleplay profile (doc 50): what this viewer may see of it; its description over the fixed line.
             auto profile = cardFor(id, other->id);
@@ -4627,7 +4655,6 @@ DbStore::Build Game::capture()
     c->server.companions = companionOwner_;
     c->server.parties = parties_.save();
     c->server.acquaintances = known_.save();
-    c->server.notes = notesSave();
     c->server.standing = standingSave();
     c->server.people = peopleSave();
     c->server.chapters = chapters_.save();
@@ -4790,9 +4817,9 @@ void Game::load(const std::string& payload)
     social_.stories = state.social.stories;
     social_.nextStory = state.social.nextStory;
     socialSeen_ = social_.entries.size();             // (Scenes settled before the restart were told then.)
-    notesLoad(state.notes);
     standingLoad(state.standing);                    // (After the accounts and the ledger: it counts from both.)
     peopleLoad(state.people);                        // Handles, played time, profiles (doc 50).
+    seedScenes();                                    // (Scenes over before the restart: recapped then, doc 50.)
     chapters_.load(state.chapters);
     factions_.load(state.factions);
     estates_.load(state.estates);

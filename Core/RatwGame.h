@@ -156,6 +156,9 @@ struct Options
     // nobody pays or stars themselves.
     bool openTiers = false;
     bool oneWolfPerAccount = true;
+    // Scene recaps (doc 50, 5): how long the lines a member perceived must span for the model to write their recap, in
+    // seconds; -1 for the rules' own (5 minutes). Tests lower it.
+    double recapModelSeconds = -1;
     // How fast the world runs (Game::setSpeed): 1 as ever, 16 sixteen times as fast.
     double speed = 1;
 };
@@ -236,6 +239,8 @@ class Game
     bool blocked(const std::string& a, const std::string& b) const;
     // Whether two wolves' accounts are friends (doc 50, 4): doc 51 shows friends the exact star count.
     bool areFriends(const std::string& a, const std::string& b) const;
+    // One character's entry on another, as it sees it (doc 50, 5: with all its recaps), or null: for tests and docs 52-56.
+    json::Value knownFor(const std::string& owner, const std::string& other) const;
     // Every report kept (doc 50), by id: for tests and tools (the DM app reads game.reports itself).
     const std::map<std::string, reports::Report>& reportsKept() const { return reportCache_; }
     Result decideReport(const std::string& id, const std::string& decision, const std::string& outcome, int hours, const std::string& by);
@@ -422,20 +427,50 @@ class Game
     std::string companionContext(const std::string& npcId) const;
     void adoptOldCompanions(const std::map<std::string, std::string>& owners);
     // The individual social game (RatwGameSocial.cpp; doc 32, Part 1): scenes as players see them, Gold Stars and
-    // Stories, titles, regard in words, a name about town, and private notes.
+    // Stories, titles, regard in words, and a name about town. (Private notes are in Known wolves now: doc 50.)
     std::size_t socialSeen_ = 0;
     bool socialViewsDirty_ = true;
     double socialViewsAccumulator_ = 0;
     std::map<std::string, json::Value> socialViews_;                 // By player: worked out on the game thread.
-    std::map<std::string, std::map<std::string, std::string>> notes_; // Owner → wolf → their private note.
     std::string regardWords(const std::string& holder, const std::string& other) const;
     std::vector<std::string> reputationLines(const std::string& playerId) const;
     void afterSocial();
     void tendFightScenes();                       // Each fight a scene: its players in it; settled when it ends.
     void refreshSocialViews(double dt);
     bool socialCommand(Connection* c, const json::Value& j, Result& result);
-    json::Value notesSave() const;
-    void notesLoad(const json::Value& saved);
+    // Known wolves and scene recaps (doc 50, Phase 4; RatwGameKnown.cpp): each character's list of the wolves it has
+    // met, by their id, and its recaps; what each player perceived lately (for recaps; in memory only, bounded); the
+    // scenes whose ending has been seen, and members seen stepping out; when each pair last met (a throttle); and each
+    // character's model recaps today.
+    std::map<std::string, std::map<std::string, people::KnownWolf>> knownWolves_;
+    std::map<std::string, std::vector<people::Recap>> recaps_;
+    struct PerceivedLine
+    {
+        double at = 0;
+        std::string cell, who, text;
+    };
+    struct Perceived
+    {
+        std::deque<PerceivedLine> lines;
+        std::size_t characters = 0;
+    };
+    std::map<std::string, Perceived> perceived_;
+    std::set<std::string> scenesDone_, scenesLeft_;
+    std::map<std::string, double> metAt_;
+    std::map<std::string, std::pair<std::int64_t, int>> modelRecaps_;
+    void meet(const std::string& owner, const std::string& other, const std::string& how);
+    void perceivedLine(const std::string& listener, const std::string& who, const std::string& text);
+    void tendScenes();
+    void seedScenes();
+    void endScene(const std::string& member, const SocialSession& s, double end);
+    void keepRecap(const std::string& member, people::Recap recap);
+    std::string knownName(const std::string& owner, const std::string& other) const;
+    json::Value knownView(const std::string& owner, const std::string& other, const people::KnownWolf& k, bool allRecaps) const;
+    void sendKnown(Connection* c, const std::string& only = {});
+    bool knownCommand(Connection* c, const json::Value& j, Result& result);
+    void readProfile(const std::string& owner, const std::string& other);
+    void knownSave(json::Value& root) const;
+    void knownLoad(const json::Value& saved);
     // Earned Gift tiers (doc 49, Phase 5), by account: what is kept (when each tier opened, how, the DM's hold), what
     // was last measured, and the tiers' view (open or what they still need) for the lobby and the sheet.
     std::map<std::string, standing::Record> standing_;

@@ -1,6 +1,7 @@
 // Scenes in the real page (Docs/Design/08-social-progression.md): two players in a party talk; the scene line says
 // what each still needs to be paid, then that both are on track; a quiet scene's countdown and two scenes at once are
-// shown from a snapshot set by hand (fifteen real minutes are too long to wait); Ash steps out with LEAVE and is paid.
+// shown from a snapshot set by hand (fifteen real minutes are too long to wait); Ash steps out with LEAVE and is paid;
+// Bo is then in her Known wolves with a recap of the scene (doc 50, Phase 4), and on his card under YOU AND THEM.
 // Screenshots go to artifacts/screenshots/scenes/.
 //
 //   node tools/client/scenes.mjs [OUT]         (RATW_SERVER: the server binary; RATW_WEB: the built page, Client/dist by default)
@@ -105,6 +106,22 @@ try {
     check(/PARTY SCENE/.test(await bar(bo)), 'Bo is still in the scene');
     await ash.screenshot(`${OUT}/4-left-ash.png`);
     await bo.screenshot(`${OUT}/5-carries-on-bo.png`);
+    // Known wolves (doc 50, Phase 4): Bo is on her list, with a recap of the scene from her side (written: no Mind here).
+    await act(ash, 'people');
+    await ash.waitFor(`document.querySelector('[data-tab="known"]') !== null`, 10);
+    await ash.evaluate(`[...document.querySelectorAll('[data-tab="known"]')][0].click()`);
+    check(await ash.waitFor(`${S}.knownWolves.some(k => k.id === ${JSON.stringify(boId)} && k.scenes === 1 && k.recaps?.[0]?.text?.startsWith('You shared a scene with'))`, 10)
+        .then(() => true).catch(() => false), 'Bo is in her Known wolves, one scene shared, with its recap');
+    check(await ash.waitFor(`document.body.innerText.includes('KNOWN WOLVES') && document.body.innerText.includes('You shared a scene with')`, 10)
+        .then(() => true).catch(() => false), 'shown in the Known wolves tab');
+    await ash.screenshot(`${OUT}/6-known-wolves-ash.png`);
+    await act(ash, 'close');
+    await ash.evaluate(`${S}.send({type: 'action', action: 'inspect', target: ${JSON.stringify(boId)}})`);
+    await ash.waitFor(`document.querySelector('[data-tab="them"]') !== null`, 10);
+    await ash.evaluate(`document.querySelector('[data-tab="them"]').click()`);
+    check(await ash.waitFor(`document.body.innerText.includes('scene shared') && document.body.innerText.includes('You shared a scene with')`, 10)
+        .then(() => true).catch(() => false), 'and on his card, under YOU AND THEM');
+    await ash.screenshot(`${OUT}/7-you-and-them-ash.png`);
     const errors = [...ash.console, ...bo.console].filter(l => /EXCEPTION|error/i.test(l));
     check(!errors.length, `page errors: ${errors.length ? errors.join(' | ') : 'none'}`);
 } catch (e) {

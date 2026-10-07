@@ -100,6 +100,23 @@ Rules build()
     r.messageMost = int(messages.number("most", r.messageMost));
     r.inboxMost = int(messages.number("inbox", r.inboxMost));
     r.inboxDays = int(messages.number("inboxDays", r.inboxDays));
+    const auto& known = doc.object("known");
+    r.knownPlayers = int(known.number("players", r.knownPlayers));
+    r.knownResidents = int(known.number("residents", r.knownResidents));
+    r.metEvery = known.number("metEvery", r.metEvery);
+    r.noteMost = int(known.number("note", r.noteMost));
+    r.customTagMost = int(known.number("customTag", r.customTagMost));
+    for (const auto& t : known.array("tags"))
+        r.tags.push_back(t.string("id"));
+    const auto& recaps = doc.object("recaps");
+    r.recapsPerWolf = int(recaps.number("perWolf", r.recapsPerWolf));
+    r.recapsPerCharacter = int(recaps.number("perCharacter", r.recapsPerCharacter));
+    r.bufferLines = int(recaps.number("bufferLines", r.bufferLines));
+    r.bufferCharacters = int(recaps.number("bufferCharacters", r.bufferCharacters));
+    r.modelLines = int(recaps.number("modelLines", r.modelLines));
+    r.modelMinutes = recaps.number("modelMinutes", r.modelMinutes);
+    r.modelADay = int(recaps.number("modelADay", r.modelADay));
+    r.recapMost = int(recaps.number("most", r.recapMost));
     r.catalog = doc;
     return r;
 }
@@ -544,5 +561,156 @@ PrivateMessage loadMessage(const json::Value& o)
     m.text = clean(o.string("text"), std::size_t(rules().messageMost), true);
     m.at = o.number("at");
     return m;
+}
+
+json::Value saveKnown(const KnownWolf& k)
+{
+    auto o = json::Value::object();
+    o.add("firstMet", k.firstMet);
+    o.add("lastMet", k.lastMet);
+    o.add("lastMetDay", k.lastMetDay);
+    if (!k.lastPlace.empty())
+        o.add("lastPlace", k.lastPlace);
+    if (!k.label.empty())
+        o.add("label", k.label);
+    if (k.scenes)
+        o.add("scenes", k.scenes);
+    if (!k.tag.empty())
+        o.add("tag", k.tag);
+    if (k.customTag)
+        o.add("customTag", true);
+    if (!k.note.empty())
+        o.add("note", k.note);
+    if (!k.tie.empty())
+        o.add("tie", k.tie);
+    if (k.readRevision)
+        o.add("readRevision", k.readRevision);
+    if (k.resident)
+        o.add("resident", true);
+    return o;
+}
+
+KnownWolf loadKnown(const json::Value& o)
+{
+    KnownWolf k;
+    k.firstMet = o.number("firstMet");
+    k.lastMet = o.number("lastMet");
+    k.lastMetDay = o.number("lastMetDay", -1);
+    k.lastPlace = o.string("lastPlace").substr(0, 80);
+    k.label = clean(o.string("label"), 120);
+    k.scenes = std::max(0, int(o.number("scenes")));
+    k.customTag = o.boolean("customTag");
+    std::string tag;
+    if (validTag(o.string("tag"), k.customTag, tag))
+        k.tag = tag;
+    k.note = clean(o.string("note"), std::size_t(rules().noteMost), true);
+    k.tie = clean(o.string("tie"), 600, true);
+    k.readRevision = std::max(0, int(o.number("readRevision")));
+    k.resident = o.boolean("resident");
+    return k;
+}
+
+json::Value saveRecap(const Recap& r)
+{
+    auto o = json::Value::object();
+    o.add("id", r.id);
+    o.add("session", r.session);
+    o.add("place", r.place);
+    o.add("text", r.text);
+    o.add("at", r.at);
+    o.add("minutes", r.minutes);
+    auto others = json::Value::array();
+    for (const auto& id : r.others)
+        others.push(id);
+    o.add("others", others);
+    o.add("model", r.model);
+    return o;
+}
+
+Recap loadRecap(const json::Value& o)
+{
+    Recap r;
+    r.id = o.string("id").substr(0, 80);
+    r.session = o.string("session").substr(0, 120);
+    r.place = clean(o.string("place"), 120);
+    r.text = clean(o.string("text"), std::size_t(std::max(rules().recapMost, 1200)), true);
+    r.at = o.number("at");
+    r.minutes = std::max(0, int(o.number("minutes")));
+    for (const auto& id : o.array("others"))
+        if (id.isString() && r.others.size() < 20)
+            r.others.push_back(id.asString().substr(0, 80));
+    r.model = o.boolean("model");
+    return r;
+}
+
+bool validTag(const std::string& tag, bool custom, std::string& cleaned)
+{
+    if (tag.empty())
+    {
+        cleaned.clear();
+        return true;
+    }
+    if (!custom)
+    {
+        cleaned = tag;
+        return has(rules().tags, tag);
+    }
+    cleaned = clean(tag, std::size_t(rules().customTagMost));
+    return !cleaned.empty();
+}
+
+std::vector<std::string> trimKnown(std::map<std::string, KnownWolf>& list, const std::vector<Recap>& recaps)
+{
+    std::vector<std::string> dropped;
+    for (const bool residents : {false, true})
+    {
+        const int most = residents ? rules().knownResidents : rules().knownPlayers;
+        std::vector<std::pair<std::string, const KnownWolf*>> these;
+        for (const auto& [id, k] : list)
+            if (k.resident == residents)
+                these.push_back({id, &k});
+        if (int(these.size()) <= most)
+            continue;
+        const auto kept = [&](const std::string& id, const KnownWolf& k) {
+            return !k.note.empty() || !k.tag.empty() || !k.tie.empty() ||
+                   std::any_of(recaps.begin(), recaps.end(),
+                               [&](const Recap& r) { return std::find(r.others.begin(), r.others.end(), id) != r.others.end(); });
+        };
+        // Unkept first, oldest met first; then the kept, oldest first.
+        std::sort(these.begin(), these.end(), [&](const auto& a, const auto& b) {
+            const bool ka = kept(a.first, *a.second), kb = kept(b.first, *b.second);
+            return ka != kb ? !ka : a.second->lastMet < b.second->lastMet;
+        });
+        std::vector<std::string> go;
+        for (std::size_t i = 0; i < these.size() - std::size_t(most); ++i)
+            go.push_back(these[i].first);
+        for (const auto& id : go)
+        {
+            list.erase(id);
+            dropped.push_back(id);
+        }
+    }
+    return dropped;
+}
+
+void trimRecaps(std::vector<Recap>& recaps)
+{
+    // Newest first: a recap stays while some wolf in it has fewer than its newest few shown before it.
+    std::sort(recaps.begin(), recaps.end(), [](const Recap& a, const Recap& b) { return a.at > b.at; });
+    std::map<std::string, int> shown;
+    std::vector<Recap> kept;
+    for (auto& r : recaps)
+    {
+        bool shows = r.others.empty();
+        for (const auto& id : r.others)
+            shows |= shown[id] < rules().recapsPerWolf;
+        if (!shows || int(kept.size()) >= rules().recapsPerCharacter)
+            continue;
+        for (const auto& id : r.others)
+            ++shown[id];
+        kept.push_back(std::move(r));
+    }
+    std::reverse(kept.begin(), kept.end());          // (Oldest first again, as they were made.)
+    recaps = std::move(kept);
 }
 } // namespace ratw::people

@@ -83,6 +83,10 @@ class Client
     // A finished conversation summarised from the NPC's point of view; "" if there is no such service or it failed.
     void summarize(const std::string& npcName, const std::vector<std::pair<std::string, std::string>>& turns,
                    std::function<void(const std::string&)> done);
+    // A scene recapped for one player (doc 50, Phase 4) from only the lines its wolf perceived, each by who as it knew
+    // them: 2-4 sentences in the second person; "" if there is no such service, it failed, or its budgets are spent.
+    void recap(const std::string& place, const std::string& you, int minutes,
+               const std::vector<std::pair<std::string, std::string>>& lines, std::function<void(const std::string&)> done);
     // Runs the completions of answers that have arrived (on the caller's thread: the game's).
     void poll();
     // Waits (at most `seconds`) until nothing is on its way, then runs what arrived: for tests and shutdown.

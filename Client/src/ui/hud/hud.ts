@@ -358,7 +358,9 @@ export class Hud {
             // Keep the list in order of distance without rebuilding it.
             if (r.row !== before) this.sightList.insertBefore(r.row, before);
             before = r.row.nextElementSibling;
-            setText(r.name, e.name || 'Someone');
+            // Known wolves (doc 50): ✎ for a note kept on them; • for a profile changed since one last looked.
+            setText(r.name, `${e.name || 'Someone'}${e.noted ? ' ✎' : ''}${e.unread ? ' •' : ''}`);
+            r.name.title = [e.noted ? 'You keep a note on them' : '', e.unread ? 'Their profile has changed since you last looked' : ''].filter(Boolean).join(' · ');
             setStyle(r.name, 'color', e.rel === 'chapter' && e.colour ? e.colour
                 : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';

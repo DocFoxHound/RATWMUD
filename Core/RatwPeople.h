@@ -70,6 +70,29 @@ struct PrivateMessage
     double at = 0;
 };
 
+// One wolf a character has met (doc 50, 5): when first and last (real seconds, and the game's calendar day), where
+// last, scenes shared, this character's tag and private note, a tie's story starter (doc 52), and the profile revision
+// it last read.
+struct KnownWolf
+{
+    double firstMet = 0, lastMet = 0, lastMetDay = -1;
+    std::string lastPlace, label;     // Where last; and how this character knew them then (shown while they're away).
+    int scenes = 0;
+    std::string tag, note, tie;
+    bool customTag = false;          // `tag` is one the player named, not one of the rules' own.
+    int readRevision = 0;
+    bool resident = false;
+};
+// A scene recapped for one character (doc 50, 5): what it perceived, by the model, or written from the ledger.
+struct Recap
+{
+    std::string id, session, place, text;
+    double at = 0;
+    int minutes = 0;
+    std::vector<std::string> others;   // The players it was with.
+    bool model = false;
+};
+
 struct Rules
 {
     std::map<std::string, int> limits;
@@ -85,6 +108,12 @@ struct Rules
     int friendsMost = 200, requestsWaiting = 20, requestDays = 14;
     bool shareByDefault = true;
     int messageMost = 2000, inboxMost = 50, inboxDays = 14;
+    int knownPlayers = 300, knownResidents = 100, noteMost = 500, customTagMost = 24;
+    double metEvery = 600;
+    std::vector<std::string> tags;
+    int recapsPerWolf = 3, recapsPerCharacter = 150, bufferLines = 120, bufferCharacters = 6000, modelLines = 6,
+        modelADay = 10, recapMost = 600;
+    double modelMinutes = 5;
     json::Value catalog = json::Value::object();                    // The file as the client is sent it.
 };
 const Rules& rules();
@@ -125,4 +154,16 @@ json::Value saveAccount(const AccountRecord& a);
 AccountRecord loadAccount(const json::Value& o);
 json::Value saveMessage(const PrivateMessage& m);
 PrivateMessage loadMessage(const json::Value& o);
+json::Value saveKnown(const KnownWolf& k);
+KnownWolf loadKnown(const json::Value& o);
+json::Value saveRecap(const Recap& r);
+Recap loadRecap(const json::Value& o);
+
+// A tag (Total RP 3's): "" for none, one of the rules' own, or (custom) one the player names. The cleaned tag, or false.
+bool validTag(const std::string& tag, bool custom, std::string& cleaned);
+// One character's list past its caps (300 players, 100 residents): the oldest met without a note, tag or recap go
+// first, then the oldest. Returns the ids dropped.
+std::vector<std::string> trimKnown(std::map<std::string, KnownWolf>& list, const std::vector<Recap>& recaps);
+// One character's recaps: those no known wolf would show (each shows its newest 3) go, then the oldest past 150.
+void trimRecaps(std::vector<Recap>& recaps);
 } // namespace ratw::people

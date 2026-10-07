@@ -54,7 +54,10 @@ def rich_payload():
                    'friends': [{'account': 'ada', 'friend': 'bea', 'since': 1, 'shares': True},
                                {'account': 'bea', 'friend': 'ada', 'since': 1, 'shares': False}],
                    'requests': [{'from': 'bea', 'to': 'cyd', 'at': 2}],
-                   'inbox': [{'id': 'pm-1', 'to': 'bea', 'from': 'ada', 'fromCharacter': 'player-ada', 'text': 'See you at dawn.', 'at': 3}]},
+                   'inbox': [{'id': 'pm-1', 'to': 'bea', 'from': 'ada', 'fromCharacter': 'player-ada', 'text': 'See you at dawn.', 'at': 3}],
+                   'known': [{'owner': 'player-ada', 'other': 'wren', 'firstMet': 1, 'lastMet': 2, 'note': 'Bakes well.'}],
+                   'recaps': [{'id': 'rcp-1', 'owner': 'player-ada', 'session': 's1', 'place': 'Shop', 'text': 'You talked.',
+                               'at': 4, 'minutes': 5, 'others': [], 'model': False}]},
         'text with escapes': 'line\nbreak "quoted" \\ back ☃',
     }
 
@@ -116,6 +119,8 @@ class GameTableTests(unittest.TestCase):
         self.assertEqual([r[0] for r in self.rows('friendships')], ['ada|bea', 'bea|ada'])
         self.assertEqual([r[0] for r in self.rows('friend_requests')], ['bea|cyd'])
         self.assertEqual(self.game.execute("SELECT recipient FROM game.private_inbox").fetchone()[0], 'bea')
+        self.assertEqual([r[0] for r in self.rows('known_wolves')], ['player-ada|wren'])
+        self.assertEqual([r[0] for r in self.rows('scene_recaps')], ['rcp-1'])
         stored = json.loads(self.game.execute("SELECT payload FROM game.checkpoints").fetchone()[0])
         for gone in ('players', 'npcs', 'mapMemories', 'ledger'):
             self.assertNotIn(gone, stored, 'lists live in their tables, not the checkpoint row')
