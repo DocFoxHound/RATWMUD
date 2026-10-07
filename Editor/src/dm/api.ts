@@ -18,6 +18,7 @@ export interface Character {
     account?: AccountStanding | null;            // Its account's earned Gift tiers (doc 49, Phase 5).
     person?: {handle: string; experience: string; playedHours: number} | null;   // Its account as a person (doc 50).
     profile?: Record<string, unknown> | null;    // Its roleplay profile, as saved (doc 50): read only.
+    circles?: {name: string; role: string; members: string[]}[];   // Its account's circles, members by handle (doc 50).
     gift: string; quickened: boolean;            // A Gift (Docs/Design/33-combat.md): "fire" or "".
     injuries?: Injury[];                         // Injuries that outlast a fight (Docs/Design/38-injuries.md).
     dungeonMaster: boolean;                      // Marked a Dungeon Master in the game: they have the Dev Console.

@@ -30,6 +30,8 @@ export class StoryPanel {
     private chapter: HTMLButtonElement;
     private chapterOoc: HTMLButtonElement;
     private private_: HTMLButtonElement;
+    private circleTabs: HTMLElement;
+    private circleKey = '';
     private mode: HTMLElement;
     private queued: HTMLElement;
     private volume: HTMLButtonElement;
@@ -55,6 +57,7 @@ export class StoryPanel {
         // Out of character, to friends anywhere (doc 50): not "tells", which are a Gifted wolf's.
         this.private_ = button('PRIVATE', 'tab', tabs, () => state.activate({rect: noRect, action: 'private', target: ''}));
         this.private_.title = 'Private messages with your friends, out of character, wherever they are';
+        this.circleTabs = el('span', 'circle-tabs', tabs);   // One tab a circle (doc 50).
         this.place = el('h2', 'place', this.root);
         this.scene = el('p', 'scene', this.root);
         this.sceneBar = el('div', 'scene-bar', this.root);
@@ -107,7 +110,9 @@ export class StoryPanel {
         show(this.private_, s.friends.length > 0 || s.channel === 'private' || s.posts.some(p => p.channel === 'private'));
         setText(this.private_, s.unreadPrivate > 0 ? `PRIVATE · ${s.unreadPrivate}` : 'PRIVATE');
         setClass(this.private_, 'unread', s.unreadPrivate > 0);
-        setText(this.feedLabel, FeedLabels[s.channel] ?? FeedLabels.ic);
+        this.updateCircleTabs();
+        const circle = s.channel.startsWith('circle:') ? s.circles.find(c => `circle:${str(c, 'id')}` === s.channel) : undefined;
+        setText(this.feedLabel, circle ? `${str(circle, 'name').toUpperCase()} · OUT OF CHARACTER · YOUR CIRCLE` : FeedLabels[s.channel] ?? FeedLabels.ic);
         setText(this.mode, s.chat ? 'WRITING  /  YOUR DRAFT IS PRIVATE' : 'NAVIGATION  /  ENTER TO WRITE');
         setClass(this.mode, 'sage', s.chat);
         setClass(this.mode, 'muted', !s.chat);
@@ -118,6 +123,7 @@ export class StoryPanel {
             : s.channel === 'chapter' ? 'SHIFT + ENTER newline · ESC keep draft · heard by your Chapter in earshot, and by anyone close'
             : s.channel === 'chapterooc' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · your Chapter, anywhere'
             : s.channel === 'private' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · to one friend, anywhere; kept 14 days if they\'re away'
+            : circle ? 'SHIFT + ENTER newline · ESC keep draft · out of character · every member in the world'
             : 'SHIFT + ENTER newline · ESC keep draft · visible to this cell only');
         show(this.recover, !!s.failedDraft);
         setClass(this.textarea, 'writing', s.chat);
@@ -206,6 +212,24 @@ export class StoryPanel {
                     this.s.showToast(`Your scene${scenes.length > 1 && bool(scene, 'party') ? ' with your party' : ''} has gone quiet: it ends in ${Math.max(1, Math.ceil(num(scene, 'endsIn') / 60))} min unless someone speaks.`);
                 }
             } else if (!bool(scene, 'quiet')) this.warned.delete(id);
+        }
+    }
+
+    /** A tab for each circle, with its unread count; rebuilt only when they change. */
+    private updateCircleTabs() {
+        const s = this.s;
+        const key = JSON.stringify([s.channel, s.circles.map(c => [str(c, 'id'), str(c, 'name')]), s.unreadCircles]);
+        if (key === this.circleKey) return;
+        this.circleKey = key;
+        this.circleTabs.replaceChildren();
+        for (const c of s.circles) {
+            const id = str(c, 'id'), unread = s.unreadCircles[id] ?? 0;
+            const tab = button(`${str(c, 'name').toUpperCase()}${unread ? ` · ${unread}` : ''}`, 'tab', this.circleTabs,
+                () => s.activate({rect: noRect, action: `circle:${id}`, target: ''}));
+            setClass(tab, 'active', s.channel === `circle:${id}`);
+            setClass(tab, 'unread', unread > 0);
+            tab.title = `${str(c, 'name')}: your circle, out of character`;
+            tab.dataset.circle = id;
         }
     }
 

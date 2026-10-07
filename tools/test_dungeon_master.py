@@ -177,6 +177,14 @@ class DungeonMasterTests(Fixture):
         ada = self.dm.players('prod')['characters'][0]
         self.assertEqual(ada['person'], {'handle': 'Grey Fox', 'experience': 'guide', 'playedHours': 1.5}, 'the handle and hours played')
         self.assertEqual((ada['profile']['currently'], ada['profile']['status']), ('mending nets', 'lfs'), 'and the profile, to read')
+        # Circles (doc 50, migration 0039): its account's circles, members by handle.
+        self.assertEqual(ada['circles'], [], 'no circles yet')
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            owner.execute('''INSERT INTO game.circles (world_id, key, position, data) SELECT id, 'circle-1', 0, %s FROM world.worlds''',
+                          (json.dumps({'id': 'circle-1', 'name': 'Moot Night', 'members': [
+                              {'account': 'ada', 'role': 'keeper'}, {'account': 'bob', 'role': 'member'}], 'nights': []}),))
+        self.assertEqual(self.dm.players('prod')['characters'][0]['circles'],
+                         [{'name': 'Moot Night', 'role': 'keeper', 'members': ['Grey Fox', 'bob']}], 'its circle, by handles')
 
     def test_reports_are_listed_and_decided(self):
         # Doc 50, Phase 2 (migration 0036): a report as the game server writes it, listed with its evidence and the block

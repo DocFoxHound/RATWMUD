@@ -888,3 +888,79 @@ None.
   - Per recap: at most one call to the small model, capped at 10 a character a day.
   - Each social tick: a pass over the ledger's scenes, which the ledger's own tick already makes.
   - Nothing runs in the world's tick.
+
+### Phase 5: circles (built 2026-10-07, not committed)
+
+- **Data:** `Data/Social/profile.json` gains `circles`: a 32-letter name, 10 circles an account, 50 members a circle,
+  10 nights a circle (an 80-letter place and a 160-letter line), invitations kept 14 days, and members not sharing
+  their wolf until they choose to. All are placeholders. `Core/RatwPeople.*` gains `Circle`, `CircleMember`,
+  `CircleNight`, their save and load, and `validCircleName`.
+- **The game:** `Core/RatwGameCircles.cpp` (new). `circleCommand` takes:
+  - `create`: needs a handle; the name is unique, any case; 10 circles an account.
+  - `invite`: by handle, from its keeper and officers only. Someone blocked either way gets the same refusal as an
+    unknown handle. The invitee is told, and the invitation counts toward the 50.
+  - `accept` and `decline`: whoever invited isn't told of a decline.
+  - `remove`: officers remove members, the keeper removes officers too, and nobody removes the keeper. Officers can
+    also withdraw an invitation still waiting.
+  - `officer`: the keeper names and unnames officers.
+  - `share`: per circle, off at first.
+  - `night` and `unnight`: officers plan nights within the coming year, kept in time order.
+  - `leave`: a keeper who leaves hands the circle to the longest-standing officer, else the longest-standing member.
+    The last to leave ends it.
+  - `disband` ("End it"): the keeper only.
+  - `list`.
+- **What each member sees** (`sendCircles`):
+  - the roster, by handle, here or away, with a member's wolf only where they share it with this circle;
+  - nights;
+  - for officers, the invitations still waiting;
+  - and their own invitations.
+
+  It's sent again to every member in the world when the circle changes or a member comes or goes.
+  `tendCircles` (every 10 minutes, with the friends' upkeep) drops invitations past 14 days and nights a day past.
+- **Circle chat** (`circleLine`, the `circle` channel with the circle's id): out of character, to every member in the
+  world, named by handle; the speaker gets their own copy.
+  - It never reaches a member who muted or blocked the speaker, and the speaker isn't told.
+  - Each line received is a heard line, so it can be reported by its line number.
+  - There's no inbox and no scene credit. Lines are at most 2000 characters, the same as private messages.
+- **Saving:** `people.circles`. `Database/migrations/0039_circles.sql` adds `game.circles`, which the DM may read
+  (members, never chat) and the editor and publisher may not. **Not applied yet.**
+- **DM app:** the Players tab shows each character's account's circles, with its rank and the members by handle
+  (`tools/dungeon_master.py`, `DmApp.tsx`).
+- **Client:**
+  - FRIENDS gains a CIRCLES tab:
+    - make a circle; invitations with Join and Decline;
+    - each circle with CHAT, "show this circle my wolf", Leave, and End it for its keeper;
+    - the roster with Make officer / Make member and Remove where allowed;
+    - invite by handle and withdraw, for officers;
+    - nights in the viewer's own time, and for officers "Plan a night" (a date and time, a place, a line) and Take off.
+  - Each circle has its own chat tab with an unread count.
+  - The FRIENDS button counts circle invitations with friend requests.
+  - The story's tabs now wrap onto a second row instead of running under the map.
+- **Tests:**
+  - `Tests/circles_tests.cpp` (730 checks, most of them snapshot fills), covering:
+    - making one: a handle needed, the name rules, unique names, 10 an account;
+    - invitations: by handle and announced; a member can't invite, plan or name officers; officers can, but can't
+      remove the keeper; a blocked pair refused;
+    - the roster showing a wolf only when shared;
+    - chat reaching members and the speaker's own copy, a blocked member's lines kept from the blocker (who isn't
+      told), nothing to or from one who left, and away shown on the roster;
+    - nights: in order, none in the past, a place needed, taking one off;
+    - a restart keeping members, ranks, sharing and nights;
+    - a keeper's leaving handing the circle on, only the keeper ending it, the last to leave ending it and freeing
+      its name;
+    - a night a day past dropped.
+    - The 50-member cap has no live test: it would need 50 accounts. Loading caps at 50.
+  - `Client/src/game/people.test.ts` (7).
+  - `tools/test_game_tables.py`: the circles become rows.
+  - `tools/test_dungeon_master.py`: an account's circles in the Players tab.
+  - `tools/client/friends.mjs` (32 checks; screenshots 6 and 7): Ada makes Moot Night, invites Bobbin, who sees it
+    counted and joins; a night planned in her own time reaches him; her line in its tab reaches him, counted unread;
+    Cy never sees it.
+    - Seven of eight runs passed in full. One dropped a single check I couldn't catch again, most likely timing in
+      the test.
+  - `ctest` 52 of 52; client tests 105; `card`, `safety`, `scenes`, `names` and `party` pass in a real page.
+- **Cost:**
+  - A circle line goes only to its members who are in the world.
+  - A member's arrival or departure resends the circles to its other members: at most 10 circles of 50.
+  - The 10-minute upkeep is a pass over the circles.
+  - Nothing runs in the world's tick.

@@ -293,8 +293,9 @@ export class Hud {
             this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
         }
         show(this.devButton, s.isDungeonMaster());
-        setText(this.friendsButton, s.friendRequestsIn.length ? `FRIENDS · ${s.friendRequestsIn.length}` : 'FRIENDS');
-        setClass(this.friendsButton, 'unread', s.friendRequestsIn.length > 0);
+        const waiting = s.friendRequestsIn.length + s.circleInvites.length;   // (Friend requests and circle invitations.)
+        setText(this.friendsButton, waiting ? `FRIENDS · ${waiting}` : 'FRIENDS');
+        setClass(this.friendsButton, 'unread', waiting > 0);
         setClass(this.devButton, 'active', s.devConsole);
         this.devConsole.update();
         this.drawMinimap();

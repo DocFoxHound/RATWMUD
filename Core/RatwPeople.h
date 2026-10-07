@@ -93,6 +93,28 @@ struct Recap
     bool model = false;
 };
 
+// A circle (doc 50, 6): an out-of-character group of accounts, with a keeper, officers, members (each choosing whether
+// the circle sees which wolf they're playing), invitations waiting, and planned nights.
+struct CircleMember
+{
+    std::string role = "member";      // "keeper", "officer" or "member".
+    bool shares = false;
+    double joined = 0;
+};
+struct CircleNight
+{
+    std::string id, place, line, by;
+    double at = 0;                    // Real seconds (each viewer sees it in their own time).
+};
+struct Circle
+{
+    std::string id, name;
+    double created = 0;
+    std::map<std::string, CircleMember> members;          // By account.
+    std::map<std::string, std::pair<std::string, double>> invited;   // Account -> (who invited them, when).
+    std::vector<CircleNight> nights;
+};
+
 struct Rules
 {
     std::map<std::string, int> limits;
@@ -114,6 +136,9 @@ struct Rules
     int recapsPerWolf = 3, recapsPerCharacter = 150, bufferLines = 120, bufferCharacters = 6000, modelLines = 6,
         modelADay = 10, recapMost = 600;
     double modelMinutes = 5;
+    int circleName = 32, circlesPerAccount = 10, circleMembers = 50, circleNights = 10, nightPlace = 80, nightLine = 160,
+        circleInviteDays = 14;
+    bool circleShareByDefault = false;
     json::Value catalog = json::Value::object();                    // The file as the client is sent it.
 };
 const Rules& rules();
@@ -158,6 +183,10 @@ json::Value saveKnown(const KnownWolf& k);
 KnownWolf loadKnown(const json::Value& o);
 json::Value saveRecap(const Recap& r);
 Recap loadRecap(const json::Value& o);
+json::Value saveCircle(const Circle& c);
+Circle loadCircle(const json::Value& o);
+// A circle's name (doc 50, 6): 1-32 letters, cleaned. Uniqueness is the game's. False, with the reason.
+bool validCircleName(const std::string& name, std::string& cleaned, std::string& error);
 
 // A tag (Total RP 3's): "" for none, one of the rules' own, or (custom) one the player names. The cleaned tag, or false.
 bool validTag(const std::string& tag, bool custom, std::string& cleaned);

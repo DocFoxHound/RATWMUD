@@ -276,6 +276,8 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
                 .map(g => `${g.title}${g.line ? ` (${g.line})` : ''}${g.sense !== 'sight' ? ` [${g.sense}]` : ''}`).join('; ')}</p>}
             <p><b>status</b>: {String(character.profile.status ?? 'ic')}{character.profile.walkup ? ' · walk-up friendly' : ''}{character.profile.mature ? ' · mature' : ''}</p>
         </details>}
+        {(character.circles ?? []).length > 0 && <p className="meta">Circles (doc 50): {(character.circles ?? []).map(c =>
+            `${c.name} (${c.role}; ${c.members.length} member${c.members.length === 1 ? '' : 's'}: ${c.members.join(', ')})`).join(' · ')}</p>}
         <p className="meta">Gift: {character.gift ? `${character.gift}${character.quickened ? ' · Quickened' : ' · Gifted'}` : 'none'}</p>
         <div className="meta">Injuries: {(character.injuries ?? []).length ? <ul className="dm-injuries">{(character.injuries ?? []).map(i =>
             <li key={i.id}><b>{injuryName(i)}</b> · {i.kind === 'acute' ? `${['', 'minor', 'moderate', 'severe'][i.severity] ?? ''}, ${((i.restLeft ?? 0) / 24).toFixed(1)} days of rest left` : 'lasting'}

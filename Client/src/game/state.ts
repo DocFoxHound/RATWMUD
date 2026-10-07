@@ -137,6 +137,11 @@ export class GameState {
     knownWolves: Json[] = [];
     knownOpen: Json | null = null;
     peopleTab = 'friends';
+    // Circles (doc 50, 6): one's circles and invitations as the server last sent them, and unread lines by circle id.
+    // A circle's chat is the channel "circle:<id>".
+    circles: Json[] = [];
+    circleInvites: Json[] = [];
+    unreadCircles: Record<string, number> = {};
     reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
     missionBoard: Json | null = null;   // The last faction mission board asked for (doc 32, 4.5).
     posts: Post[] = [];
@@ -967,6 +972,12 @@ export class GameState {
             } else if (!Array.isArray(e.wolves)) this.knownOpen = null;
             return;
         }
+        if (type === 'circles') {
+            this.circles = objects(e, 'circles');
+            this.circleInvites = objects(e, 'invites');
+            if (this.channel.startsWith('circle:') && !this.circles.some(c => `circle:${str(c, 'id')}` === this.channel)) this.channel = 'ic';
+            return;
+        }
         if (type === 'friends') {
             this.friends = objects(e, 'friends');
             this.friendRequestsIn = objects(e, 'incoming');
@@ -1030,6 +1041,13 @@ export class GameState {
             party: bool(e, 'party'), chapter: bool(e, 'chapter'),
             ...(num(e, 'sequence', -1) >= 0 && (type === 'roleplay' || type === 'ooc') ? {sequence: num(e, 'sequence')} : {}),
         };
+        if (post.channel === 'circle') {
+            // A circle's line (doc 50): its own tab, counted while another is open.
+            post.channel = `circle:${str(e, 'circle')}`;
+            post.outgoing = bool(e, 'outgoing');
+            if (!post.outgoing && this.channel !== post.channel)
+                this.unreadCircles[str(e, 'circle')] = (this.unreadCircles[str(e, 'circle')] ?? 0) + 1;
+        }
         if (post.channel === 'private') {
             // A private message (doc 50): whom it is with, one's own copy or not, kept while away, and when sent.
             post.with = str(e, 'with');
@@ -1313,6 +1331,12 @@ export class GameState {
         this.send({type: 'known', verb, ...extra});
     }
 
+    /** Circles (doc 50): "create" (`name`), "invite"/"remove"/"officer" (`handle`), "accept", "decline", "leave", "share" (`on`),
+     * "night" (`at`, `place`, `line`), "unnight" (`night`), "disband", each with the circle's id. */
+    sendCircle(verb: string, extra: Json = {}) {
+        this.send({type: 'circle', verb, ...extra});
+    }
+
     /** Writes to a friend: the PRIVATE tab, with them chosen. */
     messageFriend(handle: string) {
         this.privateTo = handle;
@@ -1427,7 +1451,8 @@ export class GameState {
             this.composer.text = '';
             this.send({type: 'chat', requestId: id, text, channel: this.channel, volume: this.volume,
                 ...(this.channel === 'ic' && this.talkTargets.length ? {targets: [...this.talkTargets]} : {}),
-                ...(this.channel === 'private' ? {to: this.privateTo} : {})});
+                ...(this.channel === 'private' ? {to: this.privateTo} : {}),
+                ...(this.channel.startsWith('circle:') ? {channel: 'circle', circle: this.channel.slice('circle:'.length)} : {})});
         }
         this.setChat(false);
     }
@@ -1900,11 +1925,16 @@ export class GameState {
         } else if (a === 'cancel_travel') {
             if (!this.chat && !this.modal) this.cancelTravel();
         } else if (a === 'ic' || a === 'ooc' || ((a === 'party' || a === 'partyooc') && inParty(this.party)) ||
-            ((a === 'chapter' || a === 'chapterooc') && this.inChapter()) || a === 'private') {
+            ((a === 'chapter' || a === 'chapterooc') && this.inChapter()) || a === 'private' ||
+            (a.startsWith('circle:') && this.circles.some(c => `circle:${str(c, 'id')}` === a))) {
             this.setTyping(false);
             this.channel = a;
             this.transcriptScroll = 0;
             if (a === 'private') this.unreadPrivate = 0;
+            if (a.startsWith('circle:')) {
+                this.unreadCircles[a.slice('circle:'.length)] = 0;
+                this.modal = '';
+            }
         } else if (a === 'private_to') {
             this.privateTo = h.target;
         } else if (a === 'name_add' || a === 'name_retire') {

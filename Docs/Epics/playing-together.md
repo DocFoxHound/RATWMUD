@@ -25,7 +25,7 @@ need each other.
 
 | Order | Doc | Plan | Carries out (doc 48) | Depends on | Status |
 |---|---|---|---|---|---|
-| 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Building: phases 1–4 of 5 built (1–3 pushed, last 2493451); migration 0038 not yet applied |
+| 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Built (5 of 5 phases; 1–4 pushed, last fb3a01c); migration 0039 not yet applied |
 | 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Drafted (6 phases) |
 | 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Drafted (5 phases) |
 | 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Drafted (7 phases) |
@@ -159,3 +159,6 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
     unread and noted marks, and scene recaps written from only what each member perceived (the small model through
     the Mind's /recap, or plainly from the ledger). Notes, recaps and private messages are kept from the DM's login.
     Not committed; migration 0038 not applied.
+  - Phase 4 pushed (fb3a01c); migration 0038 applied.
+  - Plan 50, phase 5 built: circles (keeper, officers, invitations by handle, a roster sharing wolves only by choice,
+    planned nights, a chat tab each, blocks held). Plan 50 is complete. Not committed; migration 0039 not applied.

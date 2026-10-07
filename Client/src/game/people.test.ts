@@ -86,3 +86,25 @@ test('known wolves: noted and unread marks on wolves in sight', () => {
         {id: 'me', name: 'Ada', x: 1, y: 1}, {id: 'bo', name: 'A russet wolf', x: 2, y: 1, noted: true, unread: true}]});
     assert.ok(s.entities.get('bo')?.noted && s.entities.get('bo')?.unread);
 });
+
+test('circles: the list and invitations, one chat tab a circle, unread counted, lines sent to it', () => {
+    const {state: s, commands, composer} = testGame();
+    s.receiveEvent({type: 'circles', circles: [{id: 'c1', name: 'Moot Night', role: 'keeper', members: [], nights: []}],
+        invites: [{circle: 'c2', name: 'Pack Night', from: 'Bobbin'}]});
+    assert.equal(s.circles.length, 1);
+    assert.equal(s.circleInvites.length, 1);
+    s.receiveEvent({type: 'ooc', channel: 'circle', circle: 'c1', circleName: 'Moot Night', sequence: 9, speaker: 'Bobbin', text: 'Tonight?'});
+    assert.equal(s.posts.at(-1)?.channel, 'circle:c1', 'its own channel');
+    assert.equal(s.unreadCircles.c1, 1, 'unread while another tab is open');
+    s.activate({rect: {left: 0, top: 0, right: 0, bottom: 0}, action: 'circle:c1', target: ''});
+    assert.equal(s.channel, 'circle:c1');
+    assert.equal(s.unreadCircles.c1, 0);
+    s.keyDown({code: 'Enter'});
+    composer.text = 'Yes, at the Wharf.';
+    s.composerKey({code: 'Enter'});
+    assert.ok(commands.some(c => c.type === 'chat' && c.channel === 'circle' && c.circle === 'c1' && c.text === 'Yes, at the Wharf.'));
+    s.activate({rect: {left: 0, top: 0, right: 0, bottom: 0}, action: 'circle:nope', target: ''});
+    assert.equal(s.channel, 'circle:c1', 'not a circle one is in');
+    s.receiveEvent({type: 'circles', circles: [], invites: []});
+    assert.equal(s.channel, 'ic', 'a circle left: back to the world');
+});

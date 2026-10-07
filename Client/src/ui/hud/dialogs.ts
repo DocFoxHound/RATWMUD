@@ -79,7 +79,8 @@ export class Dialogs {
             : m === 'status' ? this.ownArtwork(self) : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? [s.inspectedText, s.inspectedCharacter, this.inspectTab] : '',
             m === 'profile' ? [s.profileOwn, s.account, s.safetyMarks] : '', m === 'report' ? [s.reportTarget, s.safetyMarks] : '',
-            m === 'people' ? [s.friends, s.friendRequestsIn, s.friendRequestsOut, s.account, s.peopleTab, s.knownWolves, s.knownOpen, this.knownFilter] : '',
+            m === 'people' ? [s.friends, s.friendRequestsIn, s.friendRequestsOut, s.account, s.peopleTab, s.knownWolves, s.knownOpen, this.knownFilter,
+                s.circles, s.circleInvites] : '',
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
@@ -1323,7 +1324,7 @@ export class Dialogs {
     private people() {
         const s = this.s;
         const tabs = el('div', 'creator-tabs', this.panel);
-        for (const [id, label] of [['friends', 'FRIENDS'], ['known', 'KNOWN WOLVES']] as const) {
+        for (const [id, label] of [['friends', 'FRIENDS'], ['known', 'KNOWN WOLVES'], ['circles', 'CIRCLES']] as const) {
             const b = button(label, id === s.peopleTab ? 'tab active' : 'tab', tabs, () => {
                 s.peopleTab = id;
                 if (id === 'known') s.sendKnown('list');
@@ -1332,6 +1333,10 @@ export class Dialogs {
         }
         if (s.peopleTab === 'known') {
             this.knownWolves();
+            return;
+        }
+        if (s.peopleTab === 'circles') {
+            this.circles();
             return;
         }
         this.heading('FRIENDS', 'Your friends, by handle: out of character, across all your wolves');
@@ -1380,6 +1385,99 @@ export class Dialogs {
             wrap.append(' show them my wolf');
             wrap.title = 'When on, they see which wolf you are playing, and your handle under its label';
             button('REMOVE', 'small', row, () => s.sendFriends('remove', {handle: name}));
+        }
+    }
+
+    /** Circles (doc 50, 6): out-of-character groups. Make one; answer invitations; each circle's roster (a member's wolf
+     * only where they share it with the circle), nights in your own time, CHAT, your share switch, and for its keeper
+     * and officers: invite, remove, officers, plan nights. */
+    private circles() {
+        const s = this.s;
+        this.heading('CIRCLES', 'Out-of-character groups: a roleplay group, friends, a team');
+        const make = el('div', 'profile-veils', this.panel);
+        const name = el('input', 'profile-input', make);
+        name.placeholder = 'A new circle\'s name';
+        name.maxLength = 32;
+        name.dataset.field = 'circle-name';
+        button('MAKE A CIRCLE', 'small', make, () => { if (name.value.trim()) s.sendCircle('create', {name: name.value.trim()}); });
+        if (s.circleInvites.length) {
+            el('div', 'label gold', this.panel, 'INVITED');
+            for (const i of s.circleInvites) {
+                const row = el('div', 'profile-veils friend-row', this.panel);
+                el('span', '', row, `${str(i, 'name')} · from ${str(i, 'from')}`);
+                button('JOIN', 'small', row, () => s.sendCircle('accept', {circle: str(i, 'circle')}));
+                button('DECLINE', 'small', row, () => s.sendCircle('decline', {circle: str(i, 'circle')})).title = 'They are not told';
+            }
+        }
+        if (!s.circles.length) el('p', 'muted small', this.panel, 'You are in no circle yet.');
+        for (const c of s.circles) {
+            const id = str(c, 'id'), role = str(c, 'role'), officer = role === 'keeper' || role === 'officer';
+            const box = el('div', 'known-row', this.panel);
+            box.dataset.circle = id;
+            const head = el('div', 'profile-veils', box);
+            el('span', 'gold', head, str(c, 'name'));
+            el('span', 'muted small', head, role);
+            button('CHAT', 'small', head, () => s.activate({rect: noRect, action: `circle:${id}`, target: ''}));
+            const wrap = el('label', 'small', head);
+            const share = el('input', '', wrap);
+            share.type = 'checkbox';
+            share.checked = bool(c, 'shares');
+            share.addEventListener('change', () => s.sendCircle('share', {circle: id, on: share.checked}));
+            wrap.append(' show this circle my wolf');
+            button('LEAVE', 'small', head, () => s.sendCircle('leave', {circle: id}));
+            if (role === 'keeper') button('END IT', 'small', head, () => s.sendCircle('disband', {circle: id})).title = 'End the circle for everyone';
+            for (const m of arr(c, 'members').filter(isObject)) {
+                const row = el('div', 'profile-veils friend-row', box);
+                el('span', bool(m, 'online') ? 'sage' : 'muted', row, bool(m, 'online') ? '●' : '○');
+                el('span', '', row, str(m, 'handle'));
+                if (str(m, 'role') !== 'member') el('span', 'muted small', row, str(m, 'role'));
+                if (str(m, 'character')) el('span', 'small', row, `playing ${str(m, 'character')} (OOC)`);
+                if (bool(m, 'you')) continue;
+                if (role === 'keeper' && str(m, 'role') !== 'keeper')
+                    button(str(m, 'role') === 'officer' ? 'MAKE MEMBER' : 'MAKE OFFICER', 'small', row,
+                        () => s.sendCircle('officer', {circle: id, handle: str(m, 'handle'), on: str(m, 'role') !== 'officer'}));
+                if ((officer && str(m, 'role') === 'member') || (role === 'keeper' && str(m, 'role') === 'officer'))
+                    button('REMOVE', 'small', row, () => s.sendCircle('remove', {circle: id, handle: str(m, 'handle')}));
+            }
+            if (officer) {
+                const ask = el('div', 'profile-veils', box);
+                const handle = el('input', 'profile-input', ask);
+                handle.placeholder = 'Invite by handle';
+                handle.maxLength = 24;
+                handle.dataset.field = 'circle-invite';
+                button('INVITE', 'small', ask, () => { if (handle.value.trim()) s.sendCircle('invite', {circle: id, handle: handle.value.trim()}); });
+                for (const h of arr(c, 'invited').filter((x): x is string => typeof x === 'string')) {
+                    const row = el('div', 'profile-veils', box);
+                    el('span', 'muted small', row, `${h} · invited`);
+                    button('WITHDRAW', 'small', row, () => s.sendCircle('remove', {circle: id, handle: h}));
+                }
+            }
+            el('div', 'label muted', box, 'NIGHTS');
+            const nights = arr(c, 'nights').filter(isObject);
+            if (!nights.length) el('p', 'muted small', box, 'None planned.');
+            for (const n of nights) {
+                const row = el('div', 'profile-veils', box);
+                el('span', 'small', row, `${new Date(num(n, 'at') * 1000).toLocaleString([], {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})} · ${str(n, 'place')}${str(n, 'line') ? ` · ${str(n, 'line')}` : ''}`);
+                el('span', 'muted small', row, `by ${str(n, 'by')}`);
+                if (officer) button('TAKE OFF', 'small', row, () => s.sendCircle('unnight', {circle: id, night: str(n, 'id')}));
+            }
+            if (officer) {
+                const plan = el('div', 'profile-veils', box);
+                const when = el('input', 'profile-input', plan);
+                when.type = 'datetime-local';
+                when.dataset.field = 'night-when';
+                const where = el('input', 'profile-input', plan);
+                where.placeholder = 'Where ("the Wharf tavern")';
+                where.maxLength = 80;
+                where.dataset.field = 'night-where';
+                const line = el('input', 'profile-input', plan);
+                line.placeholder = 'A line (optional)';
+                line.maxLength = 160;
+                button('PLAN A NIGHT', 'small', plan, () => {
+                    const at = Date.parse(when.value) / 1000;      // (In this viewer's own time.)
+                    if (Number.isFinite(at) && where.value.trim()) s.sendCircle('night', {circle: id, at, place: where.value.trim(), line: line.value.trim()});
+                });
+            }
         }
     }
 

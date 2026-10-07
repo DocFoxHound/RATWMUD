@@ -547,6 +547,16 @@ class Game
     void tendFriends();
     void friendsSave(json::Value& root) const;
     void friendsLoad(const json::Value& saved);
+    // Circles (doc 50, Phase 5; RatwGameCircles.cpp): out-of-character groups of accounts, by id.
+    std::map<std::string, people::Circle> circles_;
+    std::vector<std::string> circlesOf(const std::string& account) const;
+    void sendCircles(const std::string& account);
+    void circleChanged(const people::Circle& circle);
+    bool circleCommand(Connection* c, const json::Value& j, Result& result);
+    Result circleLine(Connection* c, const std::string& circle, const std::string& text);
+    void tendCircles();
+    void circlesSave(json::Value& root) const;
+    void circlesLoad(const json::Value& saved);
     void onSettled(const LedgerEntry& entry);
     void markChapterStory(SocialStory& story);
     void onStoryClosed(const SocialStory& story);

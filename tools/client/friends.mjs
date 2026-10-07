@@ -1,7 +1,8 @@
 // Friends and private messages in the real page (Docs/Design/50-player-card-friends-safety.md, Phase 3): Ada asks Bo
 // to be friends by handle from FRIENDS; he sees the request counted on the menu and accepts; his handle then shows
 // under his wolf in Ada's In Sight but never in Cy's; he stops sharing and it goes; she writes to him from MESSAGE on
-// the PRIVATE tab and he reads it; he leaves, she writes again, and it reaches him when he comes back.
+// the PRIVATE tab and he reads it; he leaves, she writes again, and it reaches him when he comes back. Then a circle:
+// Ada makes one, invites him, plans a night, and writes in its tab; he reads it, and Cy never does.
 // Screenshots go to artifacts/screenshots/friends/.
 //
 //   node tools/client/friends.mjs [OUT]      (RATW_SERVER: the server binary; RATW_WEB: the built page, Client/dist by default)
@@ -105,6 +106,45 @@ try {
     await bo.evaluate(`${S}.activate({rect: {left: 0, top: 0, right: 0, bottom: 0}, action: 'private', target: ''})`);
     await sleep(500);
     await bo.screenshot(`${OUT}/5-kept-while-away.png`);
+    // A circle (doc 50, Phase 5): Ada makes one from CIRCLES, invites Bobbin, plans a night and writes in its tab.
+    await clickButton(ada, 'FRIENDS');
+    await until(ada, `document.querySelector('[data-tab="circles"]')`);
+    await ada.evaluate(`document.querySelector('[data-tab="circles"]').click()`);
+    await until(ada, `document.querySelector('[data-field="circle-name"]')`);
+    await ada.evaluate(`document.querySelector('[data-field="circle-name"]').value = 'Moot Night'`);
+    await clickButton(ada, 'MAKE A CIRCLE');
+    check(await until(ada, `${S}.circles.some(c => c.name === 'Moot Night' && c.role === 'keeper')`), 'Ada makes the circle Moot Night');
+    await until(ada, `document.querySelector('[data-field="circle-invite"]')`);
+    await ada.evaluate(`document.querySelector('[data-field="circle-invite"]').value = 'Bobbin'`);
+    await clickButton(ada, 'INVITE');
+    check(await until(bo, `${S}.circleInvites.some(i => i.name === 'Moot Night' && i.from === 'Adder')`), 'Bo is invited');
+    check(await until(bo, `[...document.querySelectorAll('button')].some(b => b.textContent === 'FRIENDS · 1')`), 'counted on his menu');
+    await clickButton(bo, 'FRIENDS · 1');
+    await until(bo, `document.querySelector('[data-tab="circles"]')`);
+    await bo.evaluate(`document.querySelector('[data-tab="circles"]').click()`);
+    await until(bo, `[...document.querySelectorAll('button')].some(b => b.textContent === 'JOIN')`);
+    await clickButton(bo, 'JOIN');
+    check(await until(ada, `${S}.circles[0]?.members?.some(m => m.handle === 'Bobbin' && m.online)`), 'he joins; her roster shows him here');
+    const soon = new Date(Date.now() + 2 * 3600 * 1000);
+    const local = new Date(soon.getTime() - soon.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    await until(ada, `document.querySelector('[data-field="night-when"]')`);
+    await ada.evaluate(`(() => { document.querySelector('[data-field="night-when"]').value = ${JSON.stringify(local)};
+        document.querySelector('[data-field="night-where"]').value = 'the Wharf tavern'; })()`);
+    await clickButton(ada, 'PLAN A NIGHT');
+    check(await until(bo, `${S}.circles[0]?.nights?.some(n => n.place === 'the Wharf tavern' && Math.abs(n.at - ${Math.floor(soon.getTime() / 60000) * 60}) < 61)`),
+        'a night planned, in Ada\'s own time, reaches Bo');
+    await bo.screenshot(`${OUT}/6-a-circle.png`);
+    await clickButton(ada, 'CHAT');
+    check(await until(ada, `${S}.channel.startsWith('circle:')`), 'CHAT opens its tab');
+    await ada.key('Enter');
+    await ada.type('Who is bringing the cider?');
+    await ada.key('Enter');
+    check(await until(bo, `${S}.posts.some(p => p.channel.startsWith('circle:') && p.text.includes('bringing the cider') && p.speaker === 'Adder')`),
+        'Bo reads her line, by handle');
+    check(await until(bo, `Object.values(${S}.unreadCircles).some(n => n === 1) && [...document.querySelectorAll('.circle-tabs .tab')].some(t => t.textContent === 'MOOT NIGHT · 1')`),
+        'counted on his Moot Night tab');
+    check(!(await cy.evaluate(`${S}.posts.some(p => p.text.includes('cider'))`)), 'Cy, not in it, never does');
+    await ada.screenshot(`${OUT}/7-circle-chat.png`);
     for (const page of [ada, bo, cy]) {
         const errors = page.console.filter(l => /EXCEPTION|error/i.test(l));
         check(!errors.length, `page errors: ${errors.length ? errors.join(' | ') : 'none'}`);

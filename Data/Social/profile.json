@@ -26,5 +26,7 @@
             "tags": [{"id": "unfriendly", "name": "Unfriendly"}, {"id": "neutral", "name": "Neutral"}, {"id": "business", "name": "Business"},
                      {"id": "friendly", "name": "Friendly"}, {"id": "love", "name": "Love"}, {"id": "family", "name": "Family"}]},
   "recaps": {"perWolf": 3, "perCharacter": 150, "bufferLines": 120, "bufferCharacters": 6000, "modelLines": 6, "modelMinutes": 5,
-             "modelADay": 10, "most": 600}
+             "modelADay": 10, "most": 600},
+  "circles": {"name": 32, "perAccount": 10, "members": 50, "nights": 10, "nightPlace": 80, "nightLine": 160, "inviteDays": 14,
+              "shareByDefault": false}
 }

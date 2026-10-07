@@ -179,8 +179,13 @@ void Game::cameOrWent(Connection* c, bool here)
     if (here)
     {
         sendFriends(account);
+        sendCircles(account);                         // (Their circles and invitations: doc 50, 6.)
         deliverInbox(c);
     }
+    for (const auto& id : circlesOf(account))         // (Their circles' rosters show them here or away.)
+        for (const auto& [who, m] : circles_[id].members)
+            if (who != account)
+                sendCircles(who);
     if (const auto mine = friends_.find(account); mine != friends_.end())
         for (const auto& [other, link] : mine->second)
             sendFriends(other, here && !handleOf(account).empty() ? handleOf(account) + " is here." : std::string());
@@ -407,6 +412,7 @@ void Game::tendFriends()
     if (now() - friendsTendedAt_ < FriendsTendSeconds)
         return;
     friendsTendedAt_ = now();
+    tendCircles();                                  // (Old invitations and nights past, too: doc 50, 6.)
     const auto& r = people::rules();
     const double requestsFrom = now() - r.requestDays * 86400.0, messagesFrom = now() - r.inboxDays * 86400.0;
     std::set<std::string> touched;

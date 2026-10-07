@@ -117,6 +117,15 @@ Rules build()
     r.modelMinutes = recaps.number("modelMinutes", r.modelMinutes);
     r.modelADay = int(recaps.number("modelADay", r.modelADay));
     r.recapMost = int(recaps.number("most", r.recapMost));
+    const auto& circles = doc.object("circles");
+    r.circleName = int(circles.number("name", r.circleName));
+    r.circlesPerAccount = int(circles.number("perAccount", r.circlesPerAccount));
+    r.circleMembers = int(circles.number("members", r.circleMembers));
+    r.circleNights = int(circles.number("nights", r.circleNights));
+    r.nightPlace = int(circles.number("nightPlace", r.nightPlace));
+    r.nightLine = int(circles.number("nightLine", r.nightLine));
+    r.circleInviteDays = int(circles.number("inviteDays", r.circleInviteDays));
+    r.circleShareByDefault = circles.boolean("shareByDefault", r.circleShareByDefault);
     r.catalog = doc;
     return r;
 }
@@ -641,6 +650,87 @@ Recap loadRecap(const json::Value& o)
             r.others.push_back(id.asString().substr(0, 80));
     r.model = o.boolean("model");
     return r;
+}
+
+json::Value saveCircle(const Circle& c)
+{
+    auto o = json::Value::object();
+    o.add("id", c.id);
+    o.add("name", c.name);
+    o.add("created", c.created);
+    auto members = json::Value::array();
+    for (const auto& [account, m] : c.members)
+    {
+        auto e = json::Value::object();
+        e.add("account", account);
+        e.add("role", m.role);
+        e.add("shares", m.shares);
+        e.add("joined", m.joined);
+        members.push(e);
+    }
+    o.add("members", members);
+    auto invited = json::Value::array();
+    for (const auto& [account, by] : c.invited)
+    {
+        auto e = json::Value::object();
+        e.add("account", account);
+        e.add("by", by.first);
+        e.add("at", by.second);
+        invited.push(e);
+    }
+    o.add("invited", invited);
+    auto nights = json::Value::array();
+    for (const auto& n : c.nights)
+    {
+        auto e = json::Value::object();
+        e.add("id", n.id);
+        e.add("at", n.at);
+        e.add("place", n.place);
+        e.add("line", n.line);
+        e.add("by", n.by);
+        nights.push(e);
+    }
+    o.add("nights", nights);
+    return o;
+}
+
+Circle loadCircle(const json::Value& o)
+{
+    const auto& r = rules();
+    Circle c;
+    c.id = o.string("id").substr(0, 80);
+    c.name = clean(o.string("name"), std::size_t(r.circleName));
+    c.created = o.number("created");
+    for (const auto& e : o.array("members"))
+        if (!e.string("account").empty() && int(c.members.size()) < r.circleMembers)
+        {
+            CircleMember m;
+            const auto role = e.string("role");
+            m.role = role == "keeper" || role == "officer" ? role : "member";
+            m.shares = e.boolean("shares");
+            m.joined = e.number("joined");
+            c.members[e.string("account").substr(0, 80)] = m;
+        }
+    for (const auto& e : o.array("invited"))
+        if (!e.string("account").empty())
+            c.invited[e.string("account").substr(0, 80)] = {e.string("by").substr(0, 80), e.number("at")};
+    for (const auto& e : o.array("nights"))
+        if (int(c.nights.size()) < r.circleNights)
+            c.nights.push_back({e.string("id").substr(0, 80), clean(e.string("place"), std::size_t(r.nightPlace)),
+                                clean(e.string("line"), std::size_t(r.nightLine)), e.string("by").substr(0, 80), e.number("at")});
+    return c;
+}
+
+bool validCircleName(const std::string& name, std::string& cleaned, std::string& error)
+{
+    cleaned = clean(name, std::size_t(rules().circleName) + 1);
+    if (cleaned.empty())
+        error = "A circle needs a name.";
+    else if (clean(name, std::size_t(rules().circleName)).size() < cleaned.size())
+        error = "A circle's name is at most " + std::to_string(rules().circleName) + " letters.";
+    else
+        return true;
+    return false;
 }
 
 bool validTag(const std::string& tag, bool custom, std::string& cleaned)

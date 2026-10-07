@@ -742,3 +742,7 @@ button.given { opacity: .6; }
 .known-row { border-top: 1px solid var(--line, #2c3a33); padding: 8px 0; }
 .recap { margin: 6px 0 6px 12px; padding-left: 10px; border-left: 2px solid var(--sage, #8fb39a); }
 .recap p { margin: 2px 0; }
+/* With private messages and a tab a circle, the story's tabs wrap onto a second row rather than run under the map. */
+.story-head { flex-wrap: wrap; gap: 4px; min-width: 0; }
+.story-head .tabs { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+.circle-tabs { display: contents; }

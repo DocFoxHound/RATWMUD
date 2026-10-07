@@ -266,6 +266,16 @@ class DungeonMaster:
                         persons[cid] = row
                 for key_, row in conn.execute('SELECT key, data FROM game.profiles WHERE world_id = %s', (world[0],)).fetchall():
                     profiles[key_] = row
+            # Circles (doc 50, migration 0039): each account's circles, with their members by handle; never their chat.
+            circles = {}
+            if persons and conn.execute("SELECT to_regclass('game.circles')").fetchone()[0]:
+                handles = {row.get('account'): row.get('handle') or row.get('account') for row in persons.values()}
+                for (row,) in conn.execute('SELECT data FROM game.circles WHERE world_id = %s', (world[0],)).fetchall():
+                    members = [m for m in row.get('members', []) if isinstance(m, dict)] if isinstance(row, dict) else []
+                    for m in members:
+                        circles.setdefault(m.get('account'), []).append({
+                            'name': row.get('name', ''), 'role': m.get('role', 'member'),
+                            'members': sorted(handles.get(x.get('account'), x.get('account', '')) for x in members)})
             # Earned Gift tiers by account (doc 49, migration 0034): each character's account and its standing. (None
             # until the migration is applied and the game server has saved since.)
             standing = {}
@@ -301,6 +311,7 @@ class DungeonMaster:
                     'practice': practised(data, skills),
                     'account': account_view(standing.get(key)),
                     'person': person_view(persons.get(key)),
+                    'circles': circles.get((persons.get(key) or {}).get('account'), []),
                     'profile': profiles.get(key) if isinstance(profiles.get(key), dict) else None,
                     # How it was built (doc 49): grades that aren't plain, and its specialty.
                     'grades': {k: v for k, v in (data.get('grades') or {}).items() if v in ('weak', 'strong')}

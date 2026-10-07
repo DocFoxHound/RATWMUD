@@ -286,6 +286,7 @@ json::Value Game::peopleSave() const
     root.add("safety", safety);
     friendsSave(root);                              // Friends, requests and kept private messages (doc 50, 4).
     knownSave(root);                                // Known wolves and recaps (doc 50, 5).
+    circlesSave(root);                              // Circles (doc 50, 6).
     return root;
 }
 
@@ -306,5 +307,6 @@ void Game::peopleLoad(const json::Value& saved)
                                                    e.string("label").substr(0, 80), e.number("at")});
     friendsLoad(saved);
     knownLoad(saved);
+    circlesLoad(saved);
 }
 } // namespace ratw::game

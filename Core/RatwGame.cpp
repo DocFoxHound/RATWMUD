@@ -4008,6 +4008,13 @@ void Game::command(Connection* c, const std::string& raw)
             result = {false, "That isn't something you can do.", {}};
         report = !result.message.empty();
     }
+    else if (type == "circle")
+    {
+        // Circles: making, inviting, roles, nights, sharing (doc 50, Phase 5).
+        if (!circleCommand(c, j, result))
+            result = {false, "That isn't something a circle does.", {}};
+        report = !result.message.empty();
+    }
     else if (type == "friends")
     {
         // Friends: requests, answers, sharing (doc 50, Phase 3).
@@ -4443,6 +4450,13 @@ void Game::command(Connection* c, const std::string& raw)
         if (std::string until; silenced(id, &until))
         {
             feedback(false, "A Dungeon Master has silenced your account for another " + until + ".");   // (Doc 50, 7.)
+            return;
+        }
+        if (channel == "circle")
+        {
+            // Out of character, to a circle's members in the world (doc 50, 6).
+            const auto sent = circleLine(c, j.string("circle"), text);
+            feedback(sent.ok, sent.ok ? std::string() : sent.message);
             return;
         }
         if (channel == "private")
