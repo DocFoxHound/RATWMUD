@@ -731,3 +731,9 @@ button.given { opacity: .6; }
 /* Mute, block or report a line's author (doc 50): a quiet flag that shows on hover. */
 .line-flag { opacity: .35; margin-left: 8px; padding: 0 4px; }
 .post:hover .line-flag, .line-flag:focus { opacity: 1; }
+
+/* Friends and private messages (doc 50, Phase 3). */
+.tab.unread, .top-actions .top.unread { color: var(--gold); }
+.chip.pick { cursor: pointer; border: 1px solid transparent; }
+.chip.pick.active { border-color: var(--gold); color: var(--gold); }
+.friend-row { align-items: center; gap: 8px; }

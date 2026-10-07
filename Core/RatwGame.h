@@ -234,6 +234,8 @@ class Game
     SocialLedger& ledger() { return social_; }               // The social ledger (doc 08), for tests and tools.
     // Whether either wolf's account blocks the other's (doc 50, 7): the test docs 51-58 call before anything between two.
     bool blocked(const std::string& a, const std::string& b) const;
+    // Whether two wolves' accounts are friends (doc 50, 4): doc 51 shows friends the exact star count.
+    bool areFriends(const std::string& a, const std::string& b) const;
     // Every report kept (doc 50), by id: for tests and tools (the DM app reads game.reports itself).
     const std::map<std::string, reports::Report>& reportsKept() const { return reportCache_; }
     Result decideReport(const std::string& id, const std::string& decision, const std::string& outcome, int hours, const std::string& by);
@@ -487,6 +489,29 @@ class Game
     bool safetyCommand(Connection* c, const json::Value& j, Result& result);
     void sendSafety(Connection* c);
     bool silenced(const std::string& characterId, std::string* until = nullptr) const;
+    bool blockedAccounts(const std::string& one, const std::string& two) const;
+    // Friends and private messages (doc 50, Phase 3; RatwGameFriends.cpp). Each account's side of each friendship, by
+    // the friend's account (when it began, whether this side shares its character); requests waiting; an offline
+    // friend's private messages, by the recipient's account; and each account's connection while it has a wolf here.
+    std::map<std::string, std::map<std::string, people::FriendLink>> friends_;
+    std::vector<people::FriendRequest> friendRequests_;
+    std::map<std::string, std::vector<people::PrivateMessage>> inbox_;
+    std::map<std::string, Connection*> online_;
+    double friendsTendedAt_ = 0;
+    Connection* onlineClient(const std::string& account) const;
+    std::string handleOf(const std::string& account) const;
+    std::string accountByHandle(const std::string& handle) const;
+    std::string sharedHandle(const std::string& viewerAccount, const std::string& target) const;
+    void befriend(const std::string& one, const std::string& two);
+    void unfriend(const std::string& one, const std::string& two);
+    bool friendsCommand(Connection* c, const json::Value& j, Result& result);
+    void sendFriends(const std::string& account, const std::string& toast = {});
+    void cameOrWent(Connection* c, bool here);
+    Result privateMessage(Connection* c, const std::string& to, const std::string& text);
+    void deliverInbox(Connection* c);
+    void tendFriends();
+    void friendsSave(json::Value& root) const;
+    void friendsLoad(const json::Value& saved);
     void onSettled(const LedgerEntry& entry);
     void markChapterStory(SocialStory& story);
     void onStoryClosed(const SocialStory& story);

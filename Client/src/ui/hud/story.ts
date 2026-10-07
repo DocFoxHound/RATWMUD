@@ -29,6 +29,7 @@ export class StoryPanel {
     private partyOoc: HTMLButtonElement;
     private chapter: HTMLButtonElement;
     private chapterOoc: HTMLButtonElement;
+    private private_: HTMLButtonElement;
     private mode: HTMLElement;
     private queued: HTMLElement;
     private volume: HTMLButtonElement;
@@ -51,6 +52,9 @@ export class StoryPanel {
         this.chapter = button('CHAPTER', 'tab', tabs, () => state.activate({rect: noRect, action: 'chapter', target: ''}));
         this.chapterOoc = button('CHAPTER OOC', 'tab', tabs, () => state.activate({rect: noRect, action: 'chapterooc', target: ''}));
         this.ooc = button('LOCAL OOC', 'tab', tabs, () => state.activate({rect: noRect, action: 'ooc', target: ''}));
+        // Out of character, to friends anywhere (doc 50): not "tells", which are a Gifted wolf's.
+        this.private_ = button('PRIVATE', 'tab', tabs, () => state.activate({rect: noRect, action: 'private', target: ''}));
+        this.private_.title = 'Private messages with your friends, out of character, wherever they are';
         this.place = el('h2', 'place', this.root);
         this.scene = el('p', 'scene', this.root);
         this.sceneBar = el('div', 'scene-bar', this.root);
@@ -99,6 +103,10 @@ export class StoryPanel {
         setClass(this.chapterOoc, 'active', s.channel === 'chapterooc');
         show(this.chapter, s.inChapter());
         show(this.chapterOoc, s.inChapter());
+        setClass(this.private_, 'active', s.channel === 'private');
+        show(this.private_, s.friends.length > 0 || s.channel === 'private' || s.posts.some(p => p.channel === 'private'));
+        setText(this.private_, s.unreadPrivate > 0 ? `PRIVATE · ${s.unreadPrivate}` : 'PRIVATE');
+        setClass(this.private_, 'unread', s.unreadPrivate > 0);
         setText(this.feedLabel, FeedLabels[s.channel] ?? FeedLabels.ic);
         setText(this.mode, s.chat ? 'WRITING  /  YOUR DRAFT IS PRIVATE' : 'NAVIGATION  /  ENTER TO WRITE');
         setClass(this.mode, 'sage', s.chat);
@@ -109,6 +117,7 @@ export class StoryPanel {
             : s.channel === 'partyooc' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · your party, anywhere'
             : s.channel === 'chapter' ? 'SHIFT + ENTER newline · ESC keep draft · heard by your Chapter in earshot, and by anyone close'
             : s.channel === 'chapterooc' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · your Chapter, anywhere'
+            : s.channel === 'private' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · to one friend, anywhere; kept 14 days if they\'re away'
             : 'SHIFT + ENTER newline · ESC keep draft · visible to this cell only');
         show(this.recover, !!s.failedDraft);
         setClass(this.textarea, 'writing', s.chat);
@@ -205,7 +214,8 @@ export class StoryPanel {
     private updateTargets() {
         const s = this.s;
         const {targets, nearby} = s.speakingTo();
-        const key = s.channel !== 'ic' ? s.channel : JSON.stringify([targets.map(t => [t.id, t.name]), nearby?.name ?? '']);
+        const key = s.channel === 'private' ? JSON.stringify([s.privateTo, s.friends.map(f => [str(f, 'handle'), bool(f, 'online')])])
+            : s.channel !== 'ic' ? s.channel : JSON.stringify([targets.map(t => [t.id, t.name]), nearby?.name ?? '']);
         if (key === this.targetsKey) return;
         this.targetsKey = key;
         this.targets.replaceChildren();
@@ -213,6 +223,18 @@ export class StoryPanel {
             el('span', 'label muted', this.targets, 'SPEAKING TO');
             el('span', 'party', this.targets, 'your party');
             el('span', 'muted small hint', this.targets, '· only those close enough to hear');
+        }
+        if (s.channel === 'private') {
+            // Which friend the next private message goes to: one chip each, here or away.
+            el('span', 'label muted', this.targets, 'TO');
+            if (!s.friends.length) el('span', 'muted small hint', this.targets, 'no friends yet · add them in FRIENDS');
+            for (const f of s.friends) {
+                const handle = str(f, 'handle');
+                const chip = button(`${bool(f, 'online') ? '●' : '○'} ${handle}`, handle === s.privateTo ? 'chip pick active' : 'chip pick', this.targets,
+                    () => s.activate({rect: noRect, action: 'private_to', target: handle}));
+                chip.title = bool(f, 'online') ? `${handle} is here` : `${handle} is away: it will reach them when they're next here`;
+            }
+            return;
         }
         if (s.channel !== 'ic') return;
         el('span', 'label muted', this.targets, targets.length ? 'TALKING TO' : 'SPEAKING TO');
@@ -256,8 +278,10 @@ export class StoryPanel {
                 // Whom it was for: "→ you" stands out, so a reply meant for the player is never lost in a crowd.
                 if (post.to.length) el('span', post.to.includes('you') ? 'to you' : 'to', speaker, `  →  ${post.to.join(', ')}`);
                 if (post.muffled) el('span', 'muffled', speaker, '(muffled)');
+                // A private message kept while one was away (doc 50): when it was sent.
+                if (post.kept) el('span', 'muffled', speaker, post.outgoing ? '(kept until they are here)' : `(while you were away · ${sentWhen(post.sentAt ?? 0)})`);
                 // Another's line: mute, block or report its author (doc 50), by the line's number, never their id.
-                const ownLine = post.speaker === str(obj(this.s.snapshot, 'self'), 'name');
+                const ownLine = post.speaker === str(obj(this.s.snapshot, 'self'), 'name') || !!post.outgoing;
                 if (post.sequence !== undefined && !ownLine && !post.system) {
                     const flag = button('⚑', 'act line-flag', speaker, () => this.s.openSafety({line: post.sequence, label: post.speaker}));
                     flag.title = 'Mute, block or report whoever said this';
@@ -312,6 +336,15 @@ const FeedLabels: Record<string, string> = {
     chapter: 'SAID TO YOUR CHAPTER · IN WORLD',
     chapterooc: 'OUT OF CHARACTER · YOUR CHAPTER',
     ooc: 'OUT OF CHARACTER · THIS CELL',
+    private: 'PRIVATE MESSAGES · OUT OF CHARACTER · YOUR FRIENDS',
 };
+
+/** When a kept private message was sent: "today 14:05", or the date. */
+function sentWhen(at: number): string {
+    if (!at) return 'earlier';
+    const d = new Date(at * 1000), now = new Date();
+    const time = d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    return d.toDateString() === now.toDateString() ? `today ${time}` : `${d.toLocaleDateString([], {day: 'numeric', month: 'short'})} ${time}`;
+}
 
 export const noRect = {left: 0, top: 0, right: 0, bottom: 0};

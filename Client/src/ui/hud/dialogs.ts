@@ -84,6 +84,7 @@ export class Dialogs {
             : m === 'status' ? this.ownArtwork(self) : '';
         const key = JSON.stringify([m, art, !!artCache.get(art), m === 'inspect' ? [s.inspectedText, s.inspectedCharacter, this.inspectTab] : '',
             m === 'profile' ? [s.profileOwn, s.account, s.safetyMarks] : '', m === 'report' ? [s.reportTarget, s.safetyMarks] : '',
+            m === 'people' ? [s.friends, s.friendRequestsIn, s.friendRequestsOut, s.account] : '',
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
@@ -110,6 +111,7 @@ export class Dialogs {
         else if (m === 'leave_character') this.leave();
         else if (m === 'profile') this.profileEditor();
         else if (m === 'report') this.safetyMenu();
+        else if (m === 'people') this.people();
         else this.inspect();
         if (typing && this.aliasInput.isConnected) this.aliasInput.focus();
     }
@@ -170,6 +172,7 @@ export class Dialogs {
         el('div', 'label gold', this.panel, 'DESCRIPTION');
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
         const actions = el('div', 'sheet-actions', this.panel);
+        button('FRIENDS', 'secondary', actions, () => this.act('people')).title = 'Your friends, requests and private messages (doc 50)';
         button('YOUR PROFILE', 'secondary', actions, () => this.act('profile')).title =
             'What others see of your wolf (a description, what you are doing, glances), your status, and your OOC notes, lines and veils.';
         button('CHARACTER SELECTION', 'primary', actions, () => this.act('leave_character'));
@@ -1137,6 +1140,9 @@ export class Dialogs {
             button(marked('block') ? 'UNBLOCK' : 'BLOCK', 'small', row, () => this.s.sendSafety(marked('block') ? 'unblock' : 'block', {target: id}))
                 .title = 'You stop seeing their words, on any of their wolves, and they can\'t join your scenes, invite or challenge you. They are not told.';
             button('REPORT', 'small', row, () => this.s.openSafety({target: id, label}));
+            // A friend request from the card (doc 50): it shows them your handle.
+            button('ADD AS A FRIEND', 'small', row, () => this.s.sendFriends('request', {target: id})).title =
+                'Ask to be friends: they see your handle, and if they accept, you see theirs';
         }
         if (this.inspectTab === 'look') {
             if (str(p, 'title')) el('p', 'gold', box, `${str(p, 'title')}${str(p, 'motto') ? ` · “${str(p, 'motto')}”` : ''}`);
@@ -1304,6 +1310,8 @@ export class Dialogs {
         };
         toggle('Show profiles marked mature', 'showMature');
         toggle('Write me scene recaps (what I perceived is sent to the model to summarise)', 'recaps');
+        toggle('Private messages from friends', 'messages');
+        toggle('Tell me when a friend comes into the world', 'toasts');
         // Who one has muted and blocked, by the wolf one pointed at.
         el('div', 'label gold', this.panel, 'MUTED AND BLOCKED');
         if (!s.safetyMarks.length) el('p', 'muted small', this.panel, 'No one. Mute or block a wolf from their card, or from a line they said (⚑).');
@@ -1312,6 +1320,59 @@ export class Dialogs {
             el('span', '', row, `${str(m, 'label')} · ${str(m, 'kind') === 'block' ? 'blocked' : 'muted'}`);
             button(str(m, 'kind') === 'block' ? 'UNBLOCK' : 'UNMUTE', 'small', row,
                 () => s.sendSafety(str(m, 'kind') === 'block' ? 'unblock' : 'unmute', {target: str(m, 'character')}));
+        }
+    }
+
+    /** Friends (doc 50, 4): ask by handle, answer requests, and each friend with whether they're here, the wolf they're
+     * playing if they share it, your own share switch, Message and Remove. No places. */
+    private people() {
+        const s = this.s;
+        this.heading('FRIENDS', 'Your friends, by handle: out of character, across all your wolves');
+        if (!str(s.account, 'handle')) el('p', 'muted small', this.panel, 'Choose a handle in YOUR PROFILE first: friends know you by it.');
+        const ask = el('div', 'profile-veils', this.panel);
+        const handle = el('input', 'profile-input', ask);
+        handle.placeholder = 'A friend\'s handle';
+        handle.maxLength = 24;
+        handle.dataset.field = 'friend-handle';
+        button('ASK TO BE FRIENDS', 'small', ask, () => {
+            if (handle.value.trim()) s.sendFriends('request', {handle: handle.value.trim()});
+        });
+        if (s.friendRequestsIn.length) {
+            el('div', 'label gold', this.panel, 'ASKING YOU');
+            for (const r of s.friendRequestsIn) {
+                const row = el('div', 'profile-veils friend-row', this.panel);
+                el('span', '', row, `${str(r, 'handle')}${str(r, 'wolf') ? ` · asked as ${str(r, 'wolf')}` : ''}`);
+                button('ACCEPT', 'small', row, () => s.sendFriends('accept', {handle: str(r, 'handle')}));
+                button('DECLINE', 'small', row, () => s.sendFriends('decline', {handle: str(r, 'handle')})).title = 'They are not told';
+            }
+        }
+        if (s.friendRequestsOut.length) {
+            el('div', 'label muted', this.panel, 'WAITING FOR AN ANSWER');
+            for (const r of s.friendRequestsOut) {
+                const row = el('div', 'profile-veils friend-row', this.panel);
+                el('span', 'muted', row, str(r, 'handle'));
+                button('WITHDRAW', 'small', row, () => s.sendFriends('cancel', {handle: str(r, 'handle')}));
+            }
+        }
+        el('div', 'label gold', this.panel, `FRIENDS · ${s.friends.length}`);
+        if (!s.friends.length) el('p', 'muted small', this.panel, 'No friends yet. Ask by handle above, or ADD AS A FRIEND on a wolf\'s card.');
+        for (const f of s.friends) {
+            const name = str(f, 'handle'), here = bool(f, 'online');
+            const row = el('div', 'profile-veils friend-row', this.panel);
+            row.dataset.friend = name;
+            el('span', here ? 'sage' : 'muted', row, here ? '●' : '○').title = here ? 'In the world' : 'Away';
+            el('span', 'gold', row, name);
+            if (str(f, 'was')) el('span', 'muted small', row, `(was ${str(f, 'was')})`);
+            if (here) el('span', 'small', row, str(f, 'character') ? `playing ${str(f, 'character')} (OOC)` : 'here');
+            button('MESSAGE', 'small', row, () => s.messageFriend(name)).title = here ? `Write to ${name}` : `${name} is away: it will wait for them, 14 days`;
+            const wrap = el('label', 'small', row);
+            const share = el('input', '', wrap);
+            share.type = 'checkbox';
+            share.checked = bool(f, 'shares');
+            share.addEventListener('change', () => s.sendFriends('share', {handle: name, on: share.checked}));
+            wrap.append(' show them my wolf');
+            wrap.title = 'When on, they see which wolf you are playing, and your handle under its label';
+            button('REMOVE', 'small', row, () => s.sendFriends('remove', {handle: name}));
         }
     }
 

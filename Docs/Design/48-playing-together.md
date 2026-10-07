@@ -275,7 +275,7 @@ profile.
 - Shows who is online, and **which character they're playing only if they choose to share it** (a per-friend
   setting, default on *(placeholder)*). Some players keep characters apart on purpose, and roleplay suffers when
   out-of-character knowledge leaks into the story.
-- OOC private messages ("tells") between friends, anywhere.
+- OOC private messages between friends, anywhere (not called "tells": that is a Gifted wolf's word).
 
 **Known wolves (character):**
 - Every wolf this character has met, newest first: the name *this character* knows (or the description), where and
@@ -980,7 +980,7 @@ minigame becomes a chore quickly. The bigger win is games that **put two players
 Only the DM can mute today, and that is a future phase (doc 21 Phase 6).
 
 - **Mute:** you stop seeing a wolf's speech and emotes. They aren't told.
-- **Block:** mute, plus they can't join your scenes, hunts, work or party, can't send you letters or tells, aren't
+- **Block:** mute, plus they can't join your scenes, hunts, work or party, can't send you letters or private messages, aren't
   suggested to you by matchmakers (7.5), and can't be tied to you (7.4). Blocks are **account-wide**, so they follow
   the player across characters, without telling you who the other characters are.
 - **Report:** sends the DM app a report with the recent lines you saw from that wolf. This is the one place speech is

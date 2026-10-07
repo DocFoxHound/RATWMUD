@@ -19,5 +19,7 @@
   "defaultExperience": "casual",
   "pronouns": ["she/her", "he/him", "they/them"],
   "handle": {"min": 3, "max": 24, "changeDays": 30},
-  "played": {"every": 60, "activeWithin": 300}
+  "played": {"every": 60, "activeWithin": 300},
+  "friends": {"most": 200, "requestsWaiting": 20, "requestDays": 14, "shareByDefault": true},
+  "privateMessages": {"most": 2000, "inbox": 50, "inboxDays": 14}
 }

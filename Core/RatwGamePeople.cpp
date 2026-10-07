@@ -45,6 +45,7 @@ json::Value Game::accountView(const std::string& account) const
     settings.add("showMature", a.settings.showMature);
     settings.add("recaps", a.settings.recaps);
     settings.add("toasts", a.settings.toasts);
+    settings.add("messages", a.settings.messages);
     o.add("settings", settings);
     return o;
 }
@@ -141,6 +142,7 @@ bool Game::profileCommand(Connection* c, const json::Value& j, Result& result)
         s.showMature = given.boolean("showMature", s.showMature);
         s.recaps = given.boolean("recaps", s.recaps);
         s.toasts = given.boolean("toasts", s.toasts);
+        s.messages = given.boolean("messages", s.messages);
         result = {true, "Settings saved.", {}};
     }
     else if (verb == "get")
@@ -223,6 +225,7 @@ void Game::tendPeople(double dt)
         for (const auto& kept : reports_->all())
             reportCache_[kept.id] = kept;
     }
+    tendFriends();                                  // Old friend requests and kept private messages go.
     peopleAccumulator_ += dt;
     if (peopleAccumulator_ < r.playedEvery)
         return;
@@ -281,6 +284,7 @@ json::Value Game::peopleSave() const
     root.add("accounts", accounts);
     root.add("profiles", profiles);
     root.add("safety", safety);
+    friendsSave(root);                              // Friends, requests and kept private messages (doc 50, 4).
     return root;
 }
 
@@ -299,5 +303,6 @@ void Game::peopleLoad(const json::Value& saved)
         if (const auto kind = e.string("kind"); (kind == "mute" || kind == "block") && !e.string("holder").empty() && !e.string("target").empty())
             safety_[e.string("holder")].push_back({kind, e.string("target").substr(0, 80), e.string("character").substr(0, 80),
                                                    e.string("label").substr(0, 80), e.number("at")});
+    friendsLoad(saved);
 }
 } // namespace ratw::game

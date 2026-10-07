@@ -1739,6 +1739,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     sendSnapshot(c);
     sendProfile(c);                                // Their profile and account as a person (doc 50).
     sendSafety(c);                                 // And their mutes and blocks.
+    cameOrWent(c, true);                           // Their friends, and private messages kept for them (doc 50, 4).
     note("info", "RATW_LOGIN " + c->entityId + " connected=" + std::to_string(clients_.size()));
     return true;
 }
@@ -1747,6 +1748,8 @@ void Game::leaveCharacter(Connection* c)
 {
     const auto id = c->entityId;
     const bool had = !id.empty();
+    if (had)
+        cameOrWent(c, false);                      // (Their friends' lists change: doc 50, 4.)
     if (auto* e = world_.entity(id))
     {
         e->typing = false;
@@ -2734,6 +2737,7 @@ void Game::sendSnapshot(Connection* c)
     // What this wolf calls each one it sees (doc 32): a name it was given, else how they look. Two strangers who look
     // alike are told apart by number, in a fixed order.
     std::map<std::string, std::string> called = strangerNames(id);
+    const auto viewerAccount = accountKey(id);
     for (const auto& e : view.entities)
         if (!called.count(e.id))
             called[e.id] = labelFor(id, e.id);
@@ -2759,6 +2763,10 @@ void Game::sendSnapshot(Connection* c)
                 if (p->second.revision > 0)
                     j.set("prev", p->second.revision);
             }
+        // A friend who shares their character with this one: their handle, under their label (doc 50, 4).
+        if (!e.npc && e.id != id)
+            if (const auto handle = sharedHandle(viewerAccount, e.id); !handle.empty())
+                j.set("handle", handle);
         // Who they are to this wolf (doc 32): a party mate, a Chapter mate, or hostile (and why). Bandits always are.
         if (relations.mates.count(e.id))
             j.set("rel", "party");
@@ -3977,6 +3985,13 @@ void Game::command(Connection* c, const std::string& raw)
             result = {false, "That isn't something you can do.", {}};
         report = !result.message.empty();
     }
+    else if (type == "friends")
+    {
+        // Friends: requests, answers, sharing (doc 50, Phase 3).
+        if (!friendsCommand(c, j, result))
+            result = {false, "That isn't something friends do.", {}};
+        report = !result.message.empty();
+    }
     else if (type == "profile")
     {
         // The roleplay profile, status, walk-up, handle, experience and settings (doc 50, Phase 1).
@@ -4400,6 +4415,15 @@ void Game::command(Connection* c, const std::string& raw)
         if (std::string until; silenced(id, &until))
         {
             feedback(false, "A Dungeon Master has silenced your account for another " + until + ".");   // (Doc 50, 7.)
+            return;
+        }
+        if (channel == "private")
+        {
+            // Out of character, to a friend anywhere, or kept for them (doc 50, 4).
+            const auto sent = privateMessage(c, j.string("to"), text);
+            if (sent.ok && !sent.message.empty())
+                system(c, sent.message);
+            feedback(sent.ok, sent.ok ? std::string() : sent.message);
             return;
         }
         if ((channel == "party" || channel == "partyooc") && !parties_.of(id))

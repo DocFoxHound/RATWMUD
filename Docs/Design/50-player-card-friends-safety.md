@@ -36,7 +36,7 @@ as evidence (Part 11, decision 34); scene summaries are for everyone (§3.2, dec
 | Known wolves | Missing | Nothing lists who a character has met, when or where, or how many scenes they shared. |
 | Scenes | Built | `SocialLedger` sessions with members and contributions; settlement entries carry the paid partners (`LedgerEntry::partner`). Speech is not kept anywhere once delivered: `Game::publish` works out what each listener perceived and sends it. |
 | Summaries | NPCs only | The Mind's `POST /summarize` (`tools/npc_mind.py`, light model) summarises a resident's finished conversation from its point of view (`Game::consolidate`, `mind::Client::summarize`). Nothing does this for players. |
-| Status, friends, circles, tells | Missing | Chat has `ic`, local `ooc` (same cell), `party`, `partyooc`, `chapter`, `chapterooc` (`Game::command`'s `chat` branch, `Game::partyChat`). No account-level channel. |
+| Status, friends, circles, private messages | Missing | Chat has `ic`, local `ooc` (same cell), `party`, `partyooc`, `chapter`, `chapterooc` (`Game::command`'s `chat` branch, `Game::partyChat`). No account-level channel. |
 | Mute, block, report | Missing | Players can report a portrait (`artwork_report`, `Core/RatwGameArtwork.cpp`), which the DM reviews in `Editor/src/dm/ArtworkPanel.tsx`. Nothing else. A DM mute is planned as doc 21 Phase 6 and not built. Fights between players already need consent, with auto-decline (`Entity::noPvp`, `World::challenge`). |
 | The DM app | Built | `Editor/src/dm/DmApp.tsx` (`PlayersTab`), served by `tools/dungeon_master.py`; DM decisions reach the game as `dm.actions` rows read by `Game` once a second. |
 | Model prices | Not set | Doc 48 says doc 28 has the prices. It doesn't: prices are entered by the operator in the Mind's config (`tools/ai_cost.py` reads them), and none are set yet. This plan costs recaps in tokens. |
@@ -49,7 +49,7 @@ This plan builds:
   lookup;
 - the **roleplay profile** on the card, and the parts residents may read;
 - **status** (In character, Out of character, Looking for a scene, Storyteller), **experience** and **walk-up**;
-- **friends**, handles shown to friends, and **tells**;
+- **friends**, handles shown to friends, and **private messages**;
 - **known wolves**, with notes, relationship tags and **scene recaps**;
 - **circles**;
 - **mute, block and report**, with reports in the DM app.
@@ -84,7 +84,7 @@ verifier and stays readable by the game server only.
 - **The account's social level:** the highest social level among its characters (`SocialLedger::level`) *(placeholder,
   until doc 49 moves social level to the account)*. One function, `Game::accountLevel`, so doc 49 changes one place.
 - **First character:** which character was the account's first, for doc 52.
-- **Settings** that belong to the player: tells from friends only or off; friend-online toasts; show mature profiles;
+- **Settings** that belong to the player: private messages from friends only or off; friend-online toasts; show mature profiles;
   write me scene recaps (on by default).
 - **Finding a character's account** in O(1): `Accounts::ownerOf(character)` (built by doc 49 phase 1), an index rebuilt on `restore` and kept by
   `addCharacter`. A development identity is the account `dev:<id>`, as portraits already treat it, so tests and the load
@@ -148,7 +148,7 @@ already need consent for a fight between players.
 - **Walk-up friendly**, per character, a yes/no, off by default *(placeholder)*: "fine to approach me unannounced". It
   shows on the card and in the hover, not on the map.
 
-### 4. Friends, handles and tells
+### 4. Friends, handles and private messages
 
 - **Mutual, by account** (agreed, doc 48 §3.2). A request goes by handle, or from a card ("Add as a friend"). Sending one
   shows the recipient your handle; accepting shows yours to them. Requests expire after 14 days *(placeholder)*. At most
@@ -160,10 +160,12 @@ already need consent for a fight between players.
 - **Handles above characters** (agreed, doc 48 §3.3): a friend who **shares their character with you** shows their
   handle, subdued, under their label on the map and in In Sight. A friend who doesn't share shows no handle, since a
   handle under a label would give away the very character they chose not to share.
-- **Tells:** out-of-character private messages between friends, anywhere (`chat` with `channel: "tell"` and the
-  friend's handle). Handles name the speakers. Online only *(placeholder)*: an offline friend gets "Not online now";
-  doc 55's letters are the in-world way to reach someone later. Rate as chat (0.5 s). Blocked either way: refused.
-- **Where handles appear:** the friends list, tells and circles. **Not** local OOC, party OOC or Chapter OOC: those come
+- **Private messages** (not "tells": a Gifted wolf's tells are something else, the user 2026-10-07): out-of-character
+  messages between friends, anywhere (`chat` with `channel: "private"` and the friend's handle). Handles name the
+  speakers. An offline friend's wait in an inbox, 50 at most, each kept 14 days, and are delivered when they next sign
+  in (the user). Doc 55's letters are the in-world mail, kept until the reader deletes them. Rate as chat (0.5 s).
+  Blocked either way: refused.
+- **Where handles appear:** the friends list, private messages and circles. **Not** local OOC, party OOC or Chapter OOC: those come
   from a wolf others can see, and a handle there would tie that wolf to its player for strangers, which §3.3 rules out.
   (Doc 48 §3.3 says "OOC channels"; this plan reads it as the account-level ones. See Decisions.)
 - Doc 51 shows friends the exact star count through `Game::areFriends`.
@@ -244,7 +246,7 @@ in-character organisation.
 - Held by the muter's **account**, so none of its characters hear that wolf; aimed at the one **character** muted
   *(placeholder)*. Block is the account-wide tool.
 - Filtered where lines are delivered: `Game::publish` (in-character speech, emotes and actions, party and Chapter
-  speech), local OOC, `Game::partyChat` (party and Chapter OOC), tells and circles. A muted wolf's lines don't count
+  speech), local OOC, `Game::partyChat` (party and Chapter OOC), private messages and circles. A muted wolf's lines don't count
   toward a scene with the muter, since the muter didn't perceive them (`SocialLedger::record` takes perceived listeners
   only).
 - Up to 200 mutes *(placeholder)*.
@@ -262,7 +264,7 @@ in-character organisation.
     one) never joins or opens a scene with them;
   - invite you to a party or be invited by you (`Game::partyInvite`), or challenge you (refused before
     `World::challenge`, with the auto-decline words, so it reads like any refusal);
-  - send you a friend request, a tell or a circle invitation;
+  - send you a friend request, a private message or a circle invitation;
   - join your hunts, work or crafts (doc 53), send you letters (doc 55), be pointed at you by matchmakers or tied to you
     (doc 52). Those plans call `Game::blocked(a, b)`, true if either account blocks the other.
 - The blocked player is never told. Their attempts get the ordinary refusal each action already has.
@@ -279,7 +281,7 @@ in-character organisation.
   connected player has a short record of the lines delivered to them: the last 60 lines within 30 minutes
   *(placeholders)*, with sequence, time, author, channel and the text as they received it. In memory only, never saved.
   A report copies the reported wolf's lines from it (up to 20) into the report.
-- **Kinds:** speech, profile (a copy of the reported profile's text), tell, circle. Portraits keep their own report.
+- **Kinds:** speech, profile (a copy of the reported profile's text), private message, circle. Portraits keep their own report.
 - **The report holds:** reporter account and character, reported account and character (resolved by the server), kind,
   a category (harassment, hateful content, spam, cheating, other), the reporter's note (300 characters), the evidence,
   status and the DM's decision.
@@ -289,7 +291,7 @@ in-character organisation.
   purge runs in SQL off the game thread.
 - **At most 5 reports an account a day** *(placeholder)*. Reporting also offers to block.
 - **The DM decides** (§11): uphold or dismiss, with an outcome: a note only, a warning (a message the player sees), or a
-  **silence** of 1, 6, 24 or 72 hours *(placeholders)*: the account can't speak in character or out of it, or send tells
+  **silence** of 1, 6, 24 or 72 hours *(placeholders)*: the account can't speak in character or out of it, or send private messages
   or circle lines, and is told until when. Kick and ban stay doc 21 Phase 6.
 - `Game::upheldReports(account, days)` answers docs 49 and 52.
 
@@ -327,7 +329,7 @@ Commands (each with the usual `commandId`):
 - `{"type":"profile","verb":"status","value":"ic"|"ooc"|"lfs"|"storyteller"}`, `{"verb":"walkup","on":bool}`,
   `{"verb":"handle","handle":"…"}`, `{"verb":"experience","value":"…"}`, `{"verb":"settings",...}`.
 - `{"type":"friends","verb":"request","handle"|"target"}`, `accept`, `decline`, `remove`, `share` (`handle`, `on`).
-- `{"type":"chat","channel":"tell","to":"<handle>","text":…}` and `{"type":"chat","channel":"circle","circle":id,…}`.
+- `{"type":"chat","channel":"private","to":"<handle>","text":…}` and `{"type":"chat","channel":"circle","circle":id,…}`.
 - `{"type":"circle","verb":"create"|"invite"|"accept"|"decline"|"leave"|"remove"|"officer"|"night"|"unnight"|"share"|
   "disband",…}`.
 - `{"type":"known","verb":"list"|"tag"|"note"|"forget"|"unrecap"|"read",…}`. The old `social` verb `note` keeps working.
@@ -335,7 +337,7 @@ Commands (each with the usual `commandId`):
   `{"type":"safety","verb":"report","target"|"line","kind","category","note"}`; `{"type":"safety","verb":"list"}`.
 
 Events: `friends`, `circles`, `known` and `safety` lists, each sent when it changes or is asked for (never every
-snapshot); `ooc` with `channel: "tell"` or `"circle"`.
+snapshot); `ooc` with `channel: "private"` or `"circle"`.
 
 The `inspect` event gains `profile`, filtered for the viewer by `Game::cardFor`. Each visible entity in the snapshot
 (the per-viewer loop in `Game::sendSnapshot`) gains, only when set: `rp` (`ooc`, `lfs`, `st`), `currently`, `walkup`,
@@ -352,9 +354,9 @@ cost bytes only when they change.
   walk-up switch. Marks by labels in `Client/src/game/paint.ts`, words in In Sight (`Client/src/ui/hud/hud.ts`),
   Currently in the map's hover (`Client/src/game/look.ts`).
 - **People panel** (new, `Client/src/ui/hud/people.ts`, logic in `Client/src/game/people.ts`): Friends (requests, list,
-  share switches, Tell), Known wolves (search, tag filter, recaps), Circles (roster, nights, settings), Muted and
+  share switches, Message), Known wolves (search, tag filter, recaps), Circles (roster, nights, settings), Muted and
   blocked.
-- **Chat tabs** (`story.ts`, `state.ts`): TELLS (one feed, with the friend picked in the composer) and one tab per
+- **Chat tabs** (`story.ts`, `state.ts`): PRIVATE (one feed, with the friend picked in the composer) and one tab per
   circle with unread counts. A chat line's menu gains Mute, Block and Report.
 - **Front door** (`Client/src/ui/frontDoor.ts`): the roster asks for a handle when the account has none.
 
@@ -378,7 +380,7 @@ cost bytes only when they change.
 - The heard-lines record: 60 lines a player, about 18 MB at 1,000 players *(estimate)*; trimmed as lines arrive.
 - Recap buffers: 6,000 characters a scene member at most, about 6 MB at 1,000 players in scenes; dropped at the end.
 - Lists (friends, known wolves, circles, safety) are rebuilt for one account when they change, never per tick.
-- Tells and circle lines go to their members only. Friends' online changes touch only that account's friends.
+- Private messages and circle lines go to their members only. Friends' online changes touch only that account's friends.
 - Nothing scans the world in the tick. Gate for every phase: `world_check --players 20` unchanged within noise.
 
 ## Phases
@@ -442,23 +444,25 @@ cost bytes only when they change.
   upheld with a silence the game applies.
 - **Cost:** a set lookup per listener per line; 18 MB of heard lines at 1,000 players; reports are rare writes.
 
-### Phase 3: friends, handles and tells
+### Phase 3: friends, handles and private messages
 
-- **Goal:** account friends, mutual, with per-friend sharing, handles under sharing friends' labels, and tells.
+- **Goal:** account friends, mutual, with per-friend sharing, handles under sharing friends' labels, and private messages
+  (an offline friend's kept in an inbox: 50, 14 days).
 - **Changes:**
   - Server: `Core/RatwPeople.*`: friendships, requests, expiry. `Core/RatwGamePeople.cpp`: `friendsCommand`,
     `Game::areFriends`, `Game::friendsView` (rebuilt for an account when one of its friends comes, goes or changes),
-    the `tell` channel. `Game::sendSnapshot`: `handle` for sharing friends.
+    the `private` channel and its inbox. `Game::sendSnapshot`: `handle` for sharing friends.
   - Data: `game.friendships` (sections).
-  - Client: Friends tab in the People panel, Add as a friend on the card, the TELLS tab, friend-online toasts.
+  - Client: Friends tab in the People panel, Add as a friend on the card, the PRIVATE tab, friend-online toasts.
 - **Tests:** `Tests/people_tests.cpp`: a request needs the other's accept; handles revealed only as §4 says; sharing off
-  hides the character in the list and the handle on the map; a tell reaches a friend anywhere and a non-friend never;
+  hides the character in the list and the handle on the map; a private message reaches a friend anywhere and a non-friend never; an offline friend's waits and arrives at
+  sign-in, at most 50, gone after 14 days;
   blocked either way, refused; requests expire. `Client/src/game/people.test.ts`. In a real page,
   `tools/client/friends.mjs` (new): Ash and Bo befriend; Bo sees Ash's handle under her label; she turns sharing off
-  and it goes; a tell crosses cells.
-- **Done when:** two players can befriend, see each other online with characters as shared, and send tells; strangers
+  and it goes; a private message crosses cells.
+- **Done when:** two players can befriend, see each other online with characters as shared, and send private messages; strangers
   never see a handle.
-- **Cost:** O(friends) when someone comes or goes; tells go to one connection.
+- **Cost:** O(friends) when someone comes or goes; private messages go to one connection.
 
 ### Phase 4: known wolves and scene recaps
 
@@ -547,7 +551,7 @@ Agreed (doc 48):
 New placeholder choices in this plan:
 
 7. The handle is separate from the sign-in username, unique, changeable every 30 days.
-8. Handles appear in the friends list, tells and circles, not in local, party or Chapter OOC.
+8. Handles appear in the friends list, private messages and circles, not in local, party or Chapter OOC.
 9. A friend's handle shows under their label only when they share their character with you.
 10. Experience is account-wide; status, walk-up, lines and veils and the mature flag are per character.
 11. In character needs no mark by the label; Out of character, Looking for a scene and Storyteller do.
@@ -557,7 +561,7 @@ New placeholder choices in this plan:
 15. Glances carry a sense: sight, scent (3 tiles, not masked) or sound (earshot).
 16. Mute is held by the account and aimed at one character; block is aimed at the account.
 17. A blocked wolf stays visible in the world.
-18. Tells are online only.
+18. Private messages are online only (replaced: answered 3).
 19. Upheld reports keep their record for good and their evidence 180 days; DM outcomes are a note, a warning or a
     silence of 1–72 hours.
 20. Recaps: model recaps for a member who perceived 6+ lines over 5+ minutes, 10 a day, written recaps otherwise; 3
@@ -570,8 +574,10 @@ New placeholder choices in this plan:
    status is In character, Out of character or Looking for a scene. This replaces decision 12.
 2. **No birthplace or residence on the profile** ("I don't want this on people's profile"). They are removed from §2;
    this replaces decision 14.
-3. **Tells are kept until the friend logs in**: an offline friend's tells wait in a small inbox *(placeholder: 50 a
-   recipient, 14 days)* and are delivered when they next sign in. This replaces decision 18.
+3. **Private messages are kept until the friend logs in**: an offline friend's wait in an inbox (50 a recipient, each
+   gone after 14 days: the user) and are delivered when they next sign in. This replaces decision 18.
+4. **Not "tells"**: that word is a Gifted wolf's tells. They are private messages, on the PRIVATE tab.
+5. **Letters are mail, kept until deleted** (doc 55): a different thing from private messages.
 
 ## Open questions
 
@@ -651,7 +657,7 @@ None.
   local OOC, and party and Chapter OOC (`Game::partyChat`).
   - A muted or blocked wolf's lines never reach the holder, and neither side is told.
   - When either wolf blocks the other, a line doesn't make the other a listener in the ledger, so no scene holds both.
-  - Tells and circles get the same filter when phases 3 and 5 build them.
+  - Private messages and circles get the same filter when phases 3 and 5 build them.
 - **Refusals in the ordinary words:** a party invite gets "They are not here to answer."; a challenge gets "… isn't
   taking challenges.".
 - **Evidence:** `Game::heard_` holds the last 60 lines each connected player received, within 30 minutes, with the
@@ -709,3 +715,87 @@ None.
   - `ctest`: 49 of 49. The client tests (98) and `card.mjs` (11) pass.
 - **Cost:** one set lookup per listener per line, inside loops `publish` already runs. Heard lines run to about 60 per
   player, trimmed as lines arrive. Reports are rare writes, and nothing touches the tick.
+
+### Phase 3: friends, handles and private messages (built 2026-10-07, not committed)
+
+- **Not "tells":** the user's word (2026-10-07). A Gifted wolf's tells are something else. They are **private
+  messages**: chat channel `private`, a PRIVATE tab. They are not doc 55's letters, which are mail and are kept until
+  the reader deletes them (doc 55 now says so).
+- **Data:** `Data/Social/profile.json` gains `friends` (200 at most, 20 requests waiting, 14 days, sharing on by
+  default) and `privateMessages` (2000 characters, 50 kept for an away friend, 14 days: the user's numbers).
+  `Core/RatwPeople.*` gains `FriendLink`, `FriendRequest`, `PrivateMessage` and the `messages` setting.
+- **The game:** `Core/RatwGameFriends.cpp` (new).
+  - Friends are mutual and by account. `friends_` holds each account's side of each friendship: when it began, and
+    whether this side shows the friend which wolf it is playing. A friendship is two sides.
+  - `friendsCommand` takes `request` (by handle, or by `target` from a card, which tells them which wolf asked),
+    `accept`, `decline` (the asker isn't told), `cancel`, `remove`, `share` and `list`.
+    - You need a handle of your own before you can ask.
+    - Asking someone who already asked you accepts their request.
+    - Someone who has blocked you, or whom you blocked, gets the same refusal as an unknown handle.
+  - `areFriends(a, b)` is public, for doc 51's exact star counts.
+  - `sendFriends` sends one account its list:
+    - each friend's handle (and the old one, for a week after a change);
+    - whether they're here;
+    - the wolf they're playing, only if they share it with you;
+    - your own share switch;
+    - requests both ways.
+
+    No places. The list is sent again only when something changes: a friend comes or goes, or a request or a share
+    changes. A friend's arrival comes with a toast, which can be turned off.
+  - `online_` maps each account to its connection while it has a wolf in the world, so "is here" is one lookup.
+- **Handles under labels:** each player in the snapshot carries `handle` only for a friend who shares their wolf with
+  this viewer (`sharedHandle`). The client shows it in In Sight and in the map's hover, which are where wolves' names
+  appear. The map itself draws no names.
+- **Private messages** (`privateMessage`): to a friend by handle, anywhere, out of character.
+  - Refused: to a stranger, to a blocked account, past 2000 characters, to a friend who has turned them off, and while
+    silenced by a DM.
+  - A friend who has muted the sender doesn't get it, and the sender isn't told.
+  - The sender gets their own copy.
+  - **An away friend's message waits** (`inbox_`). The sender is told, and it is refused once 50 are waiting.
+    `deliverInbox` hands them over, oldest first, when the friend next enters the world: each marked as kept, with
+    when it was sent, and followed by "N private messages came while you were away". Anything past 14 days is never
+    delivered, and the daily purge (`tendFriends`) clears it.
+  - Each one received is a heard line, so it can be reported by its line number like speech.
+  - A report or block from a private message names the sender by handle, the only name the reader had.
+    `safetyCommand` now knows a player whose wolf is away.
+- **A block ends a friendship** (`unfriend`), and any request between the two.
+- **Saving:** `people.friends`, `people.requests` and `people.inbox`. Loading keeps only friendships with both sides,
+  between accounts the game knows, and drops anything expired. `Database/migrations/0037_friends.sql` gives the three
+  their own tables (`game.friendships`, `game.friend_requests`, `game.private_inbox`). **Not applied to DEV or PROD
+  yet.**
+- **Client:**
+  - A FRIENDS sheet, from the top menu (which shows "FRIENDS · N" while requests wait) and from the character sheet:
+    - ask by handle;
+    - ASKING YOU, with Accept and Decline;
+    - WAITING FOR AN ANSWER, with Withdraw;
+    - each friend with here/away, the wolf they're playing (OOC), MESSAGE, "show them my wolf" and Remove.
+  - ADD AS A FRIEND on a player's card.
+  - The PRIVATE tab, which counts unread messages. Above the box, a chip for each friend picks whom to write to, and a
+    reply goes back to whoever wrote by default. Kept messages say when they were sent; your own say "kept until they
+    are here".
+  - YOUR PROFILE gains "Private messages from friends" and "Tell me when a friend comes into the world".
+- **Tests:**
+  - `Tests/friends_tests.cpp` (2330 checks, most of them snapshot fills), covering:
+    - requests: a handle is needed; unknown handles; any case; the accept; asking back; declining without telling;
+      asking from a card with the wolf named; withdrawing;
+    - a sharing friend's handle on the viewer's snapshot only, gone when sharing is turned off;
+    - online and away, and arrival toasts (and their switch);
+    - private messages: delivered, and to no one else; never from a stranger; 2000 characters; turned off; a mute; a
+      silence;
+    - a report by a private message's line, and a block that ends the friendship and refuses requests both ways;
+    - an away friend's message kept and delivered;
+    - 50 at most;
+    - a restart keeping friendships, sharing, requests and the inbox;
+    - 14 days dropping old messages and requests.
+  - `Client/src/game/people.test.ts` (4).
+  - `tools/test_game_tables.py`: the three lists become rows.
+  - `tools/client/friends.mjs` (23 checks; screenshots in `artifacts/screenshots/friends/`): asked by handle; accepted
+    from the counted menu; the handle in Ada's In Sight and never in Cy's; sharing off; MESSAGE to PRIVATE, read by Bo
+    with an unread count; Bo away, then the message reaching him when he comes back.
+  - `ctest` 50 of 50; client tests 102; `card.mjs` and `safety.mjs` pass.
+- **Cost:**
+  - Per snapshot, per visible player: one lookup in the viewer's friends, skipped at once for a viewer with none.
+  - A friend's arrival or departure: one list for each of their friends.
+  - A private message goes to one connection.
+  - Nothing runs in the tick except a purge every ten minutes over requests and the inbox. `world_check` doesn't
+    exercise any of this, so it wasn't re-run.

@@ -35,6 +35,7 @@ struct Profile
 struct Settings
 {
     bool showMature = false, recaps = true, toasts = true;
+    bool messages = true;                                           // Private messages from friends (doc 50, 4).
 };
 
 // An account as a person (doc 50, 1): beside the sign-in record, never holding a verifier.
@@ -49,6 +50,26 @@ struct AccountRecord
     double silencedUntil = -1;                                      // A DM's silence (doc 50, 7): real seconds.
 };
 
+// Friends (doc 50, 4): mutual, by account. Each side keeps its own link: when it began, and whether this side shows the
+// other which character it is playing.
+struct FriendLink
+{
+    double since = 0;
+    bool shares = true;
+};
+// A request waiting for an answer: from one account to another, and the wolf it was made from in person (a card), if any.
+struct FriendRequest
+{
+    std::string from, to, character;
+    double at = 0;
+};
+// A private message kept for an offline friend until they next come (doc 50, 4: 50 a recipient, 14 days).
+struct PrivateMessage
+{
+    std::string id, to, from, fromCharacter, text;
+    double at = 0;
+};
+
 struct Rules
 {
     std::map<std::string, int> limits;
@@ -61,6 +82,9 @@ struct Rules
     std::string defaultExperience = "casual";
     int handleMin = 3, handleMax = 24, handleChangeDays = 30;
     double playedEvery = 60, activeWithin = 300;
+    int friendsMost = 200, requestsWaiting = 20, requestDays = 14;
+    bool shareByDefault = true;
+    int messageMost = 2000, inboxMost = 50, inboxDays = 14;
     json::Value catalog = json::Value::object();                    // The file as the client is sent it.
 };
 const Rules& rules();
@@ -99,4 +123,6 @@ json::Value save(const Profile& p);
 Profile load(const json::Value& o);
 json::Value saveAccount(const AccountRecord& a);
 AccountRecord loadAccount(const json::Value& o);
+json::Value saveMessage(const PrivateMessage& m);
+PrivateMessage loadMessage(const json::Value& o);
 } // namespace ratw::people

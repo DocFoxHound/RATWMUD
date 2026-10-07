@@ -110,8 +110,10 @@ In-world writing (letters, notices, pacts) is kept in one store, apart from ever
   `template` and `facts`.
 - **Valuables:** writing a letter with an enclosure goes through the journal (doc 31) with its text, so a crash keeps
   both or neither. On load, an escrow account with no document goes back to its writer.
-- **Retention:** notices go at expiry (doc 54); a reader keeps up to 40 read letters and 10 kept ones
-  *(placeholders)*, oldest read first; unread letters stay (up to 100, then the courier refuses: "Their post is full").
+- **Retention:** notices go at expiry (doc 54). **Letters are mail, held until the reader deletes them** (the user,
+  2026-10-07: "Mail should be held indefinitely until the player deletes it"): read or unread, nothing is thrown out.
+  Only a flood is stopped: past 100 unread *(placeholder)* the courier refuses ("Their post is full"). They are not
+  doc 50's private messages, which are out of character and go after 14 days.
 - **Privacy:** the DM app shows a letter's metadata; its text only inside a report (doc 50) or through an audited
   admin read.
 

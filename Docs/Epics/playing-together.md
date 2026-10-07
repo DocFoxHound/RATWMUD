@@ -25,7 +25,7 @@ need each other.
 
 | Order | Doc | Plan | Carries out (doc 48) | Depends on | Status |
 |---|---|---|---|---|---|
-| 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Building: phases 1–2 of 5 built, not committed |
+| 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Building: phases 1–3 of 5 built (1–2 committed ab6ef1b); migration 0037 not yet applied |
 | 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Drafted (6 phases) |
 | 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Drafted (5 phases) |
 | 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Drafted (7 phases) |
@@ -72,7 +72,7 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
 - **49 Characters and earned Gifts:** all answered 2026-10-06. Nothing is migrated, since there are no real players
   yet; one wolf per account in the world; Quickened opens with the DM's hold standing in for reports.
 - **50 The player card:** all answered 2026-10-07: Storyteller only for approved storytellers (doc 58); no
-  birthplace or residence on profiles; tells kept for offline friends until they log in.
+  birthplace or residence on profiles; private messages (not "tells") kept for offline friends until they log in: 50, 14 days.
 - **51 Scenes and stars:** show the star rate? Talking a fight through pays half a scene, or nothing? Knock scenes on
   the minimap too?
 - **52 Newcomers:** may a first character skip the busiest-town rule (to join a friend)? Does vouching carry to the
@@ -142,10 +142,15 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
     per account in the world, the DM's account columns. **Plan 49 is built.** Not committed; migration 0034 waits to
     be applied to DEV and PROD.
 - **2026-10-07:**
-  - Plan 50's questions answered (Storyteller approved-only; no birthplace or residence; tells kept for offline friends).
+  - Plan 50's questions answered (Storyteller approved-only; no birthplace or residence; private messages kept for offline friends).
   - Plan 50, phase 1 built: handles, experience and played time on the account; the roleplay profile on the card (Look
     and OOC tabs, the YOUR PROFILE editor); status and walk-up; residents told what they perceive. Fixed a client bug
     where a second Look at the same wolf never opened. Not committed; migration 0035 waits with 0034.
   - Plan 50, phase 2 built: mute, block (account-wide, refusing scenes, invites and challenges) and report (with the
     lines received as evidence) in the page; the DM's Reports panel, with upheld silences the game applies. Not
     committed; migration 0036 waits with 0034–0035.
+  - Plans 49 and 50 (phases 1–2) committed and pushed (ab6ef1b); migrations 0034–0036 applied to DEV and PROD.
+  - "Tells" renamed private messages (a Gifted wolf's tells are something else); letters (doc 55) are mail, kept until
+    deleted.
+  - Plan 50, phase 3 built: friends by handle, sharing which wolf you play, handles under sharing friends' labels, and
+    private messages (an away friend's kept: 50, 14 days). Not committed; migration 0037 not applied.

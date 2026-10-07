@@ -108,6 +108,7 @@ export class Hud {
     private camp: CampPanel;
     private devConsole: DevConsole;
     private devButton: HTMLButtonElement;
+    private friendsButton: HTMLButtonElement;
     private huntButton!: HTMLButtonElement;          // Out in the wild (doc 41): set out after game, forage, give up.
     private forageButton!: HTMLButtonElement;
     private leaveHuntButton!: HTMLButtonElement;
@@ -131,6 +132,8 @@ export class Hud {
         button('CHARACTER', 'top', menu, () => act('character'));
         button('CHAPTER', 'top', menu, () => act('chapter_window'));
         button('INVENTORY', 'top', menu, () => act('inventory'));
+        // Friends (doc 50): the count of requests waiting, when there are any.
+        this.friendsButton = button('FRIENDS', 'top', menu, () => act('people'));
         button('SETTINGS', 'top', menu, () => act('settings'));
         // Only for a player marked Dungeon Master (the Dungeon Master app): the Dev Console, also the ` key.
         this.devButton = button('DEV CONSOLE', 'top dev', menu, () => act('dev_console'));
@@ -290,6 +293,8 @@ export class Hud {
             this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
         }
         show(this.devButton, s.isDungeonMaster());
+        setText(this.friendsButton, s.friendRequestsIn.length ? `FRIENDS · ${s.friendRequestsIn.length}` : 'FRIENDS');
+        setClass(this.friendsButton, 'unread', s.friendRequestsIn.length > 0);
         setClass(this.devButton, 'active', s.devConsole);
         this.devConsole.update();
         this.drawMinimap();
@@ -357,7 +362,8 @@ export class Hud {
             setStyle(r.name, 'color', e.rel === 'chapter' && e.colour ? e.colour
                 : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
-            setText(r.detail, [upperFirst(role), e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
+            // A friend who shares their wolf with you: their handle, subdued, under the name (doc 50).
+            setText(r.detail, [upperFirst(role), e.handle ? `friend · ${e.handle}` : '', e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
                 StatusWords[e.rp] ?? '', e.walkup ? 'walk-up friendly' : '', e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
             r.row.title = e.currently ? `Currently: ${e.currently}` : '';
             setClass(r.row, 'hostile', e.hostile);

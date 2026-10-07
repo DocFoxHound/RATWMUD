@@ -91,6 +91,15 @@ Rules build()
     r.handleChangeDays = int(doc.object("handle").number("changeDays", r.handleChangeDays));
     r.playedEvery = doc.object("played").number("every", r.playedEvery);
     r.activeWithin = doc.object("played").number("activeWithin", r.activeWithin);
+    const auto& friends = doc.object("friends");
+    r.friendsMost = int(friends.number("most", r.friendsMost));
+    r.requestsWaiting = int(friends.number("requestsWaiting", r.requestsWaiting));
+    r.requestDays = int(friends.number("requestDays", r.requestDays));
+    r.shareByDefault = friends.boolean("shareByDefault", r.shareByDefault);
+    const auto& messages = doc.object("privateMessages");
+    r.messageMost = int(messages.number("most", r.messageMost));
+    r.inboxMost = int(messages.number("inbox", r.inboxMost));
+    r.inboxDays = int(messages.number("inboxDays", r.inboxDays));
     r.catalog = doc;
     return r;
 }
@@ -489,6 +498,7 @@ json::Value saveAccount(const AccountRecord& a)
     settings.add("showMature", a.settings.showMature);
     settings.add("recaps", a.settings.recaps);
     settings.add("toasts", a.settings.toasts);
+    settings.add("messages", a.settings.messages);
     o.add("settings", settings);
     return o;
 }
@@ -508,6 +518,31 @@ AccountRecord loadAccount(const json::Value& o)
     a.settings.showMature = s.boolean("showMature", false);
     a.settings.recaps = s.boolean("recaps", true);
     a.settings.toasts = s.boolean("toasts", true);
+    a.settings.messages = s.boolean("messages", true);
     return a;
+}
+
+json::Value saveMessage(const PrivateMessage& m)
+{
+    auto o = json::Value::object();
+    o.add("id", m.id);
+    o.add("to", m.to);
+    o.add("from", m.from);
+    o.add("fromCharacter", m.fromCharacter);
+    o.add("text", m.text);
+    o.add("at", m.at);
+    return o;
+}
+
+PrivateMessage loadMessage(const json::Value& o)
+{
+    PrivateMessage m;
+    m.id = o.string("id").substr(0, 80);
+    m.to = o.string("to").substr(0, 80);
+    m.from = o.string("from").substr(0, 80);
+    m.fromCharacter = o.string("fromCharacter").substr(0, 80);
+    m.text = clean(o.string("text"), std::size_t(rules().messageMost), true);
+    m.at = o.number("at");
+    return m;
 }
 } // namespace ratw::people

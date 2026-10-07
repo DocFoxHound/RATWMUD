@@ -36,7 +36,11 @@ bool Game::hides(const std::string& listener, const std::string& author) const
 
 bool Game::blocked(const std::string& a, const std::string& b) const
 {
-    const auto one = accountKey(a), two = accountKey(b);
+    return blockedAccounts(accountKey(a), accountKey(b));
+}
+
+bool Game::blockedAccounts(const std::string& one, const std::string& two) const
+{
     if (one.empty() || two.empty() || one == two)
         return false;
     const auto held = [&](const std::string& holder, const std::string& target) {
@@ -122,7 +126,7 @@ bool Game::safetyCommand(Connection* c, const json::Value& j, Result& result)
     }
     // Who is meant: a wolf by id, or the author of a line this player received (found in their own record, so the page
     // never learns who wrote an anonymous line).
-    std::string target = j.string("target");
+    std::string target = j.string("target"), lineChannel;
     const bool byLine = j.has("line");
     if (byLine)
     {
@@ -131,10 +135,16 @@ bool Game::safetyCommand(Connection* c, const json::Value& j, Result& result)
         if (const auto lines = heard_.find(id); lines != heard_.end())
             for (const auto& l : lines->second)
                 if (l.seq == seq)
-                    target = l.author;
+                    target = l.author, lineChannel = l.channel;
     }
     const auto* them = world_.entity(target);
-    const bool known = them && !them->npc;
+    // (A private message's author may be away: a player character the game keeps is known too. Doc 50, 4.)
+    const bool known = (them && !them->npc) || (!them && !target.empty() && characters_.count(target));
+    // How the list names them: as this wolf knows them, or by handle for a private message (all one knew of them there).
+    const auto labelOf = [&]() {
+        const auto handle = handleOf(accountKey(target));
+        return lineChannel == "private" && !handle.empty() ? handle : names::capitalised(labelFor(id, target));
+    };
     if (verb == "unmute" || verb == "unblock")
     {
         auto& marks = safety_[mine];
@@ -166,7 +176,9 @@ bool Game::safetyCommand(Connection* c, const json::Value& j, Result& result)
             result = {false, "Your list is full.", {}};
         else
         {
-            marks.push_back({verb, aim, target, names::capitalised(labelFor(id, target)), now()});
+            marks.push_back({verb, aim, target, labelOf(), now()});
+            if (verb == "block")
+                unfriend(mine, aim);                // (A block ends a friendship, and any request between them.)
             // (A mute isn't told to anyone; nor is a block. Their lines simply stop reaching this account.)
             result = {true, verb == "mute" ? "Muted: you won't see their words." : "Blocked: you won't see their words, and they can't join you.", {}};
         }
@@ -225,7 +237,10 @@ bool Game::safetyCommand(Connection* c, const json::Value& j, Result& result)
                 {
                     auto& marks = safety_[mine];
                     if (std::none_of(marks.begin(), marks.end(), [&](const SafetyMark& m) { return m.kind == "block" && m.target == r.reportedAccount; }))
-                        marks.push_back({"block", r.reportedAccount, target, names::capitalised(labelFor(id, target)), now()});
+                    {
+                        marks.push_back({"block", r.reportedAccount, target, labelOf(), now()});
+                        unfriend(mine, r.reportedAccount);
+                    }
                     result.message += " And blocked.";
                 }
             }
