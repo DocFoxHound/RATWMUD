@@ -1,0 +1,17 @@
+{
+  "about": "Scenes and stars (Docs/Design/51-scenes-and-stars.md): every number is a placeholder the user tunes.",
+  "stars": {
+    "bands": [10, 25, 50, 100, 250, 500, 1000],
+    "giverBands": [5, 10, 30, 60, 100, 250],
+    "counting": {"giverADay": 10, "pairADay": 3, "pairIn30Days": 10},
+    "keptDays": 30,
+    "showRate": true,
+    "rateAfter": 20,
+    "rateWords": [[0.6, "most wolves who play with them leave a star"], [0.3, "many wolves who play with them leave a star"],
+                  [0.1, "some wolves who play with them leave a star"]],
+    "tags": [{"id": "storyteller", "name": "Storyteller"}, {"id": "packmate", "name": "Packmate"}, {"id": "goodfun", "name": "Good fun"},
+             {"id": "welcoming", "name": "Welcoming", "newcomersOnly": true}],
+    "tagWindow": 600,
+    "knownForAt": 50
+  }
+}

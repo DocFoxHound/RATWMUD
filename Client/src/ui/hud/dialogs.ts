@@ -17,6 +17,17 @@ function socialShare(self: Json | null): number {
     const xp = num(self, 'socialXp'), from = num(self, 'socialXpLevel', -1), to = num(self, 'socialXpNext', -1);
     return from >= 0 && to > from ? clamp((xp - from) / (to - from), 0, 1) : clamp((xp % 100) / 100, 0, 1);
 }
+/** A player's stars in words (doc 51): "★ 437 stars from 61 wolves", or in bands: "★ 250+ stars from 30+ wolves". */
+export function starsLine(stars: Json | null): string {
+    if (bool(stars, 'exact')) {
+        const total = Math.trunc(num(stars, 'total')), from = Math.trunc(num(stars, 'from'));
+        return total ? `★ ${total} star${total === 1 ? '' : 's'} from ${from} ${from === 1 ? 'wolf' : 'wolves'}` : '★ No stars yet';
+    }
+    const band = str(stars, 'band', 'a few'), from = str(stars, 'fromBand', 'a few');
+    return band === 'a few' ? '★ A few stars' : `★ ${band} stars from ${from === 'a few' ? 'a few' : from} wolves`;
+}
+const StarsWhy = 'Gold Stars and Story Stars, thanks from other players for roleplay, counted across all of a player\'s wolves. ' +
+    'A friend who sees which wolf is theirs sees the exact count; everyone else sees it in bands.';
 function socialLine(self: Json | null): string {
     const xp = Math.trunc(num(self, 'socialXp')), to = num(self, 'socialXpNext', -1);
     return to > xp ? `${xp} social experience · ${Math.trunc(to - xp)} to the next level` : `${xp} social experience`;
@@ -152,6 +163,8 @@ export class Dialogs {
         el('div', 'label gold', right, 'ROLEPLAY PROGRESSION');
         el('div', 'big', right, `Social level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
         el('div', 'sage', right, socialLine(self)).title = SocialWhy;
+        const stars = obj(obj(self, 'social'), 'stars');
+        if (stars) el('div', 'gold', right, starsLine(stars)).title = StarsWhy;
         const bar = el('div', 'bar', right);
         el('div', 'fill', bar).style.width = `${socialShare(self) * 100}%`;
         const skills = el('div', 'skills', right);
@@ -622,6 +635,7 @@ export class Dialogs {
         el('div', 'big', standing, `Social level ${Math.trunc(num(self, 'socialLevel', 1))} · ${str(obj(self, 'social'), 'title', 'Stranger')}`);
         el('div', 'fill', el('div', 'bar', standing)).style.width = `${socialShare(self) * 100}%`;
         el('div', 'sage small', standing, socialLine(self)).title = SocialWhy;
+        if (obj(obj(self, 'social'), 'stars')) el('div', 'gold small', standing, starsLine(obj(obj(self, 'social'), 'stars'))).title = StarsWhy;
         // The next Gift tier the account hasn't opened, and what it still takes (doc 49).
         for (const tier of ['gifted', 'quickened']) {
             const t = obj(obj(self, 'tiers'), tier);
@@ -1099,6 +1113,8 @@ export class Dialogs {
         const profile = obj(inspected, 'profile');
         if (profile) this.profileCard(profile, id === s.selfId);
         if (str(inspected, 'regard')) el('p', 'sage', this.panel, `They ${str(inspected, 'regard')}.`);
+        // Their player's stars (doc 51): exact for a friend who sees which wolf is theirs, in bands for everyone else.
+        if (obj(inspected, 'stars') && id !== s.selfId) el('p', 'gold', this.panel, starsLine(obj(inspected, 'stars'))).title = StarsWhy;
         if (obj(inspected, 'equipment'))
             button(id === s.selfId ? 'YOUR EQUIPMENT' : 'WHAT THEY WEAR', 'primary', el('div', 'sheet-actions', this.panel),
                 () => { this.spot = ''; this.act(id === s.selfId ? 'status' : 'their_equipment'); });

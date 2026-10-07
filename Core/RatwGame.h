@@ -27,6 +27,7 @@
 #include "RatwPeople.h"
 #include "RatwReports.h"
 #include "RatwStanding.h"
+#include "RatwStars.h"
 #include "RatwSocialCore.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
@@ -241,6 +242,11 @@ class Game
     bool areFriends(const std::string& a, const std::string& b) const;
     // One character's entry on another, as it sees it (doc 50, 5: with all its recaps), or null: for tests and docs 52-56.
     json::Value knownFor(const std::string& owner, const std::string& other) const;
+    // The star book (doc 51): every star by the receiving account, and what a viewer sees of a wolf's (exact for its
+    // own player and a friend who sees which wolf is theirs, bands for everyone else).
+    const stars::Book& starBook() const { return starBook_; }
+    stars::Book& starBook() { return starBook_; }            // (For tests and tools, as ledger() is.)
+    json::Value starsFor(const std::string& viewer, const std::string& target) const;
     // Every report kept (doc 50), by id: for tests and tools (the DM app reads game.reports itself).
     const std::map<std::string, reports::Report>& reportsKept() const { return reportCache_; }
     Result decideReport(const std::string& id, const std::string& decision, const std::string& outcome, int hours, const std::string& by);
@@ -549,6 +555,8 @@ class Game
     void friendsLoad(const json::Value& saved);
     // Circles (doc 50, Phase 5; RatwGameCircles.cpp): out-of-character groups of accounts, by id.
     std::map<std::string, people::Circle> circles_;
+    stars::Book starBook_;                        // (Doc 51, Phase 1; saved with the people.)
+    void recordStar(const std::string& kind, const std::string& source, const std::string& giver, const std::string& recipient, int xp);
     std::vector<std::string> circlesOf(const std::string& account) const;
     void sendCircles(const std::string& account);
     void circleChanged(const people::Circle& circle);

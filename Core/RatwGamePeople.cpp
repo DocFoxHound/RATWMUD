@@ -287,6 +287,9 @@ json::Value Game::peopleSave() const
     friendsSave(root);                              // Friends, requests and kept private messages (doc 50, 4).
     knownSave(root);                                // Known wolves and recaps (doc 50, 5).
     circlesSave(root);                              // Circles (doc 50, 6).
+    const auto book = starBook_.save();             // The star book (doc 51): tallies by account, the last 30 days' stars.
+    root.add("starTallies", book.array("tallies"));
+    root.add("stars", book.array("recent"));
     return root;
 }
 
@@ -308,5 +311,9 @@ void Game::peopleLoad(const json::Value& saved)
     friendsLoad(saved);
     knownLoad(saved);
     circlesLoad(saved);
+    auto book = Value::object();
+    book.add("tallies", saved.array("starTallies"));
+    book.add("recent", saved.array("stars"));
+    starBook_.load(book);
 }
 } // namespace ratw::game

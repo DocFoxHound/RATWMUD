@@ -177,7 +177,7 @@ export class StoryPanel {
                 // The fight's roleplay review (doc 33): a Gold Star to each who played it well, one each, as many as like.
                 el('span', 'label gold', row, `ROLEPLAY REVIEW · FIGHT OVER · +${num(ended, 'xp')} SOCIAL`);
                 el('span', 'muted small', row, bool(ended, 'talked') ? 'Paid for the fight, and twice for roleplaying it.'
-                    : 'Paid for the fight. Talk it through next time: roleplay in a fight pays twice.');
+                    : 'Paid for the fight. Talk it through next time: roleplay in a fight pays as a scene does, and stars are how it is thanked.');
                 if (targets.length || starred.length) el('span', 'muted small', row, 'Who roleplayed it well? Give each a Gold Star:');
             } else el('span', 'label gold', row, `SCENE ENDED · +${num(ended, 'xp')} SOCIAL`);
             for (const t of targets)

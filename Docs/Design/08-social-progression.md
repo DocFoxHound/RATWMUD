@@ -65,9 +65,9 @@ The client renders only confirmed totals from snapshots.
 
 **Fights are scenes** (doc 33). Each fight has its own scene from its start, with every player fighting in it a member
 whether they talk or not; fighters' words go to it (tagged as a party's are), not to the cell's scene, and leaving with
-the scene-end action doesn't end it: the fight's end does. Settling it pays each player who took two turns or more 10 XP
-for the fight, and those who talked it through (the qualifying shape above, with at least one other) twice the scene
-pay on top (40 for contributors 1–4). Repeated partners decay it as above (counted over scenes both were paid in
+the scene-end action doesn't end it: the fight's end does. Settling it pays those who talked it through (the qualifying
+shape above, with at least one other) a scene's ordinary pay (20 for contributors 1–4: the user, 2026-10-07, doc 51;
+it was twice that). Fighting itself pays no social XP since doc 49: it teaches fighting. Repeated partners decay it as above (counted over scenes both were paid in
 today), and the 8-scene and 100 XP daily limits apply. The receipt is the ordinary session receipt, so stars and Stories
 treat a fight as any scene.
 

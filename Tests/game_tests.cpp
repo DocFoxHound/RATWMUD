@@ -436,9 +436,19 @@ void earnedTiersAndOneWolf()
     expect(g.tiersOf("ivy")->object("gifted").boolean("open") && g.tiersOf("ivy")->object("gifted").string("by") == "earned" &&
                !g.tiersOf("ivy")->object("quickened").boolean("open"),
            "ten scenes and social level 3: Gifted, earned; not Quickened");
-    // Quickened: social level 8, 100 stars from 30 different wolves' accounts, two closed Stories.
+    // Quickened: social level 8, 100 stars from 30 different wolves' accounts, two closed Stories. (Stars count from
+    // the star book, doc 51: one a day from each giver, over four days, so the counting limits take every one.)
     for (int i = 0; i < 100; ++i)
-        ledger.stars.push_back({"player-giver" + std::to_string(i % 30), two, "s", "gold", now, 2});
+    {
+        stars::Star st;
+        st.id = "star-" + std::to_string(i);
+        st.kind = "gold";
+        st.giverAccount = "giver" + std::to_string(i % 30);
+        st.recipientAccount = "ivy";
+        st.recipientCharacter = two;
+        st.at = now - 86400.0 * (3 - i / 30);
+        g.starBook().record(st);
+    }
     for (const char* story : {"story-1", "story-2"})
     {
         LedgerEntry e;

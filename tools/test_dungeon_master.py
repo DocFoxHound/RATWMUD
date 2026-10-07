@@ -185,6 +185,12 @@ class DungeonMasterTests(Fixture):
                               {'account': 'ada', 'role': 'keeper'}, {'account': 'bob', 'role': 'member'}], 'nights': []}),))
         self.assertEqual(self.dm.players('prod')['characters'][0]['circles'],
                          [{'name': 'Moot Night', 'role': 'keeper', 'members': ['Grey Fox', 'bob']}], 'its circle, by handles')
+        # Stars (doc 51, migration 0040): the account's counted total and givers.
+        self.assertIsNone(self.dm.players('prod')['characters'][0]['stars'], 'no stars yet')
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            owner.execute('''INSERT INTO game.star_tallies (world_id, key, position, data) SELECT id, 'ada', 0, %s FROM world.worlds''',
+                          (json.dumps({'account': 'ada', 'total': 7, 'givers': ['bob', 'cy'], 'kinds': {'gold': 7}}),))
+        self.assertEqual(self.dm.players('prod')['characters'][0]['stars'], {'total': 7, 'from': 2, 'kinds': {'gold': 7}})
 
     def test_reports_are_listed_and_decided(self):
         # Doc 50, Phase 2 (migration 0036): a report as the game server writes it, listed with its evidence and the block

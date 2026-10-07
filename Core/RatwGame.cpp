@@ -4366,7 +4366,10 @@ void Game::command(Connection* c, const std::string& raw)
             const bool written = !other->npc && profile.has("description");
             e.add("description", written ? profile.string("description") : described);
             if (!other->npc)
+            {
                 e.add("profile", std::move(profile));
+                e.add("stars", starsFor(id, other->id));   // (Their account's stars, as this viewer may see them: doc 51.)
+            }
             e.add("posture", other->posture);
             e.add("state", other->state);
             // What a closer look shows of its injuries (doc 38: only Look shows them; decided 2026-10-04).

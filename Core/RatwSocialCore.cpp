@@ -729,6 +729,9 @@ void SocialLedger::tick(double now)
     for (auto& [id, st] : stories)
         if (st.state == "pending" && now - st.created > 86400)
             st.state = "expired";
+    // Stars past two days go (doc 51): duplicates, decay and the daily limit look back a day at most, Story Stars keep
+    // their own record (`starred`), and the account-bound record is the star book's.
+    stars.erase(std::remove_if(stars.begin(), stars.end(), [&](const SocialStar& s) { return now - s.at > 2 * 86400; }), stars.end());
 }
 
 int SocialLedger::level(const std::string& actor) const

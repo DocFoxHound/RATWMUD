@@ -1,6 +1,7 @@
 # 51. Scenes and stars: being thanked, being seen, and the gathering howl
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (§3.6, Part 4, §8.1 and §3.5's gathering howl). Nothing built.
+Drafted 2026-10-06 as an actionable plan for doc 48 (§3.6, Part 4, §8.1 and §3.5's gathering howl). Open questions
+answered 2026-10-07 (below); Phase 1 under way.
 Read doc 48 (Principles, §3.5, §3.6, Part 4, §8.1, Decisions) and docs 08 (scenes and "The scene line"), 32 (§1.1–1.2,
 §1.5 and Phase 4), 33 and 37 (the fight's end), 44 (XP awards), 29 (the minimap) and 31 (cost) first, with
 Docs/References/SOCIAL_PROGRESSION_ROLEPLAY_TRACKING.md §7.
@@ -503,8 +504,76 @@ Each phase passes `world_check --players 20` within noise before the next. None 
 19. Howl numbers: range 150 tiles; chorus within 8 s and 40 tiles, up to ×2; bond once a pair a game day.
 20. Every number lives in `Data/Social/social.json`.
 
+## Answered (the user, 2026-10-07)
+
+1. **The star rate is shown** ("players should see their star rate"): `stars.showRate` is on.
+2. **Talking a fight through pays a scene's ordinary pay** ("I think it should pay normally, why wouldn't it?"): not
+   half, as planned, and not twice, as before. This replaces §4 and decision 13. `FightTalkFactor` is 1.
+3. **Scenes on the minimap are off by default; each player may turn them on** in Settings. With it on, Open scenes
+   show, and **a Knock scene shows only when one of the player's friends is in it** (doc 50's friends); Private
+   scenes never. This changes §7's map rule and Phase 4.
+
+Also since this plan was drafted, plans 49 and 50 built `Accounts::ownerOf`, `Game::blocked`, `Game::areFriends`,
+the status and the card, so the stubs this plan expected aren't needed: "a friend who can see this character is
+theirs" is a friend who shares their wolf with the viewer (`Game::sharedHandle`).
+
 ## Open questions
 
-1. **The star rate** (doc 48, Open 1): show it? It is built and switched off.
-2. **The fight cut:** half a scene's pay, as planned, or nothing for talking a fight through?
-3. **Knock scenes on the minimap:** off, as planned, or shown as "knock to join"?
+None.
+
+## Built
+
+### Phase 1: the star book, bands and fight pay (built 2026-10-07, not committed)
+
+- **Data:** `Data/Social/social.json` (new) has the `stars` section, all placeholders:
+  - the bands (10+ … 1000+) and giver bands (5+ … 250+);
+  - the counting limits: the giver's 10 a day, a pair's 3 a day, a pair's 10 in 30 days;
+  - 30 days of stars kept, the rate on (the user's answer), shown after 20 chances, with its words;
+  - the four tags, a 10-minute tag window, and Known for at 50.
+- **The book:** `Core/RatwStars.h/.cpp` (new, pure, `ratw::stars`). `Book::record` decides whether a star counts:
+  - it must be within all three limits, counting either way round in time;
+  - it never counts from the recipient's own account.
+
+  Each account's `Tally` holds counted stars by kind and tag, the giver accounts, and Gold Stars received. `view`
+  gives the exact count or the bands; `band` puts a number in words; `prune` drops stars past 30 days, leaving the
+  tallies alone; and there's save and load.
+- **The game:**
+  - `recordStar` (in `RatwGameSocial.cpp`) records each Gold and Story Star against the receiving account, then looks
+    at the account's Gift tiers again.
+  - A star between one account's own wolves is refused ("Not one of your own wolves.").
+  - `starsFor(viewer, target)` is exact for the player themselves and for a friend they share their wolf with
+    (`sharedHandle`), and in bands for everyone else.
+  - `self.social.stars` carries the player's own count; a closer look at a player carries `stars`.
+  - Doc 49's Quickened gate now reads the book: counted stars, and the accounts that gave them.
+  - `SocialLedger::stars` is pruned to two days in its tick. The record that lasts is the book's.
+- **Fight pay:** talking a fight through pays a scene's ordinary pay (`FightTalkFactor` 1, the user's answer: 20 for
+  contributors 1–4, where it was 40). The result card and the scene line now say so, and doc 08 is updated.
+- **Saving:** `people.starTallies` and `people.stars`. `Database/migrations/0040_stars.sql` adds
+  `game.star_tallies` and `game.stars`, readable by the DM and not by the editor or publisher. **Not applied yet.**
+  - This differs from §10: `game.stars` holds the last 30 days, kept by the checkpoint like the other lists, not an
+    append-only history written by a `record_stars` function. The DM's Stars drawer and `stars.void` can read it
+    when they're built.
+  - Older stars aren't folded in, by the no-migration rule.
+- **DM app:** a Stars column on the Players tab (the counted total), from `game.star_tallies` through
+  `tools/dungeon_master.py`.
+- **Client:**
+  - The sheet shows "★ 437 stars from 61 wolves" (exact), beside the social line and in STANDING.
+  - A card shows the same, or in bands ("★ 250+ stars from 30+ wolves", "★ A few stars"), with a tooltip saying what
+    stars are and who sees the count.
+  - `starsLine` is exported for tests.
+- **Tests:**
+  - `Tests/stars_tests.cpp` (679 checks, most of them snapshot fills), covering:
+    - the book: a pair's 3 a day and 10 in 30 days, the giver's 10 a day, never one's own, a Story Star counting as
+      one, givers counted by account, the bands, exact against banded views, a round trip, the pruning;
+    - in the game: after a party scene, Bo stars Ada and her sheet shows one star from one wolf; Cy, a stranger,
+      sees "a few"; as a friend she shares her wolf with, Cy sees the count, and when she stops sharing, the band
+      again; Quickened counts from the book; Bo's second wolf can't star his first;
+    - the book across a restart.
+  - `social_game_tests` (fight pay: 20); `game_tests` (Quickened from book stars); `tools/test_game_tables.py`;
+    `tools/test_dungeon_master.py`; `Client/src/game/people.test.ts` (the star line's words).
+  - `ctest` 53 of 53; client tests 106; `card`, `scenes`, `safety` and `friends` pass in a real page (the card's
+    screenshot shows "★ A few stars").
+- **Cost:**
+  - A star: one pass over the last 30 days' stars to count it. Stars are rare.
+  - A card or the sheet: one map lookup.
+  - Nothing runs in the world's tick.

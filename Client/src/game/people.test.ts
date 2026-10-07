@@ -108,3 +108,12 @@ test('circles: the list and invitations, one chat tab a circle, unread counted, 
     s.receiveEvent({type: 'circles', circles: [], invites: []});
     assert.equal(s.channel, 'ic', 'a circle left: back to the world');
 });
+
+test('stars: in words, exact for oneself and a friend who sees, in bands for others', async () => {
+    const {starsLine} = await import('../ui/hud/dialogs.ts');
+    assert.equal(starsLine({exact: true, total: 437, from: 61}), '★ 437 stars from 61 wolves');
+    assert.equal(starsLine({exact: true, total: 1, from: 1}), '★ 1 star from 1 wolf');
+    assert.equal(starsLine({exact: true, total: 0, from: 0}), '★ No stars yet');
+    assert.equal(starsLine({exact: false, band: '250+', fromBand: '30+'}), '★ 250+ stars from 30+ wolves');
+    assert.equal(starsLine({exact: false, band: 'a few', fromBand: 'a few'}), '★ A few stars');
+});

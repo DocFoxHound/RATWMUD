@@ -162,7 +162,7 @@ void Game::afterSocial()
 void Game::tendFightScenes()
 {
     // Each fight is a scene of its own (doc 33): its players are in it from the start, talking or not; when it is over,
-    // those who took their turns are paid for it, and twice the usual for roleplaying it through.
+    // those who took their turns are paid for it, and a scene's ordinary pay for roleplaying it through (doc 51).
     bool settled = false;
     for (const auto& b : world_.battles())
     {
@@ -220,6 +220,7 @@ void Game::refreshSocialViews(double dt)
             continue;
         auto v = Value::object();
         v.add("title", socialTitle(socialLevel(id)));
+        v.add("stars", starsFor(id, id));              // (Their account's stars, exact: doc 51.)
         // The scenes they are in now (a party's or a fight's beside the room's), each with what they still need to be
         // paid, how long it has been quiet and when that ends it, and the one their next line counts toward (doc 08).
         const auto* me = world_.entity(id);
@@ -368,6 +369,12 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
             saveSoon();
         }
     };
+    // A star between one account's own wolves is refused (doc 51): stars are thanks from another player.
+    if ((verb == "star" || verb == "storystar") && !j.string("target").empty() && accountKey(id) == accountKey(j.string("target")))
+    {
+        result = {false, "Not one of your own wolves.", {}};
+        return true;
+    }
     if (verb == "star")
     {
         const auto target = j.string("target");
@@ -375,6 +382,7 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         said(r, "You give " + labelFor(id, target) + " a Gold Star.");
         if (r.ok)
         {
+            recordStar("gold", j.string("session"), id, target, r.amount);
             world_.bonds().change(target, id, {2, 1, 1, 0, 1}, world_.calendarDays());
             if (auto* other = clientOf(target))
                 system(other, names::capitalised(labelFor(target, id)) + " gives you a Gold Star" +
@@ -439,6 +447,8 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         const auto r = social_.storyStar(id, target, j.string("story"), t);
         said(r, "You give " + labelFor(id, target) + " a Story Star.");
         if (r.ok)
+            recordStar("story", j.string("story"), id, target, r.amount);
+        if (r.ok)
             if (auto* other = clientOf(target))
                 system(other, names::capitalised(labelFor(target, id)) + " gives you a Story Star" +
                                   (r.amount > 0 ? " (+" + std::to_string(r.amount) + " social)." : "."));
@@ -495,7 +505,6 @@ standing::Measures Game::measuresOf(const std::string& account) const
     // from other accounts' wolves, and how many accounts gave them; Stories its wolves saw closed.
     standing::Measures m;
     const auto mine = accounts_.characters(account);
-    const auto ownWolf = [&](const std::string& id) { return std::find(mine.begin(), mine.end(), id) != mine.end(); };
     const auto normal = [&](const std::string& id) {
         if (const auto* e = world_.entity(id))
             return e->gift.empty();
@@ -518,19 +527,13 @@ standing::Measures Game::measuresOf(const std::string& account) const
                 stories.insert(e.session);
         }
     }
-    std::set<std::string> givers;
-    for (const auto& st : social_.stars)
-        if (ownWolf(st.recipient) && !ownWolf(st.giver))
-        {
-            ++m.stars;
-            if (int(givers.size()) < standing::thresholds().givers)
-            {
-                const auto owner = accounts_.ownerOf(st.giver);
-                givers.insert(owner.empty() ? st.giver : owner);
-            }
-        }
+    // Stars from the star book (doc 51): counted stars, and how many accounts gave them.
+    if (const auto* tally = starBook_.tally(account))
+    {
+        m.stars = tally->total;
+        m.starGivers = int(tally->givers.size());
+    }
     m.socialLevel = practice::levelFor(xp);
-    m.starGivers = int(givers.size());
     m.closedStories = int(stories.size());
     m.upheldReports = upheldReports(account);
     return m;
@@ -700,5 +703,32 @@ void Game::standingLoad(const json::Value& saved)
     for (const auto& account : accounts_.usernames())
         checkUnlocks(account);
 }
-} // namespace ratw::game
 
+void Game::recordStar(const std::string& kind, const std::string& source, const std::string& giver, const std::string& recipient, int xp)
+{
+    // Into the star book, against the receiving account (doc 51, §1); whether it counts is the book's.
+    stars::Star star;
+    star.id = "star-" + guid().substr(0, 16);
+    star.kind = kind;
+    star.source = source;
+    star.giverAccount = accountKey(giver);
+    star.giverCharacter = giver;
+    star.recipientAccount = accountKey(recipient);
+    star.recipientCharacter = recipient;
+    star.at = now();
+    star.xp = xp;
+    starBook_.record(star);
+    if (accounts_.exists(star.recipientAccount))
+        checkUnlocks(star.recipientAccount);       // (Stars open Quickened: doc 49.)
+    saveSoon();
+}
+
+json::Value Game::starsFor(const std::string& viewer, const std::string& target) const
+{
+    // Exact for the player themselves and a friend who sees which wolf is theirs (doc 51, §1: an exact count on a
+    // stranger's card would tie the wolf to its player); bands for everyone else.
+    const auto mine = accountKey(viewer), theirs = accountKey(target);
+    const bool exact = mine == theirs || !sharedHandle(mine, target).empty();
+    return starBook_.view(theirs, exact);
+}
+} // namespace ratw::game

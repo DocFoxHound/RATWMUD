@@ -118,6 +118,7 @@ const COLUMNS: Column[] = [
     {key: 'sta', label: 'STA', title: 'Stamina', get: c => c.stats.stamina, fixed: 0},
     {key: 'account', label: 'Account', title: 'The account the character belongs to (doc 49)', get: c => c.account?.name ?? null},
     {key: 'handle', label: 'Handle', title: 'The account\'s public handle (doc 50): what friends and circles see', get: c => c.person?.handle || null},
+    {key: 'stars', label: 'Stars', title: 'The account\'s counted stars, and from how many accounts (doc 51)', get: c => c.stars?.total ?? null},
     {key: 'hours', label: 'Hours', title: 'Hours played on the account, while at the keys (doc 50)', get: c => c.person?.playedHours ?? null, fixed: 1},
     {key: 'social', label: 'Social', title: 'The account\'s social level (roleplay alone: doc 49)', get: c => c.account?.socialLevel ?? null, fixed: 0},
     {key: 'fight', label: 'Fight', title: 'Fighting skill: grown by fighting (doc 49)', get: c => c.practice?.fighting?.value ?? null, fixed: 0},

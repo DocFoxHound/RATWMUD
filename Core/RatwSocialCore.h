@@ -165,11 +165,11 @@ class SocialLedger
     static bool isFight(const SocialSession& s) { return s.party.rfind("fight:", 0) == 0; }
     // A player in a fight: a member of its scene from the start, whether they talk or not.
     void joinFight(const std::string& fight, const std::string& cell, const std::string& member, double now);
-    // The fight is over: those who talked it through (the usual shape, with another who did) are paid twice a scene's
-    // pay, the usual decay and daily caps after; those in `fought` who didn't talk get a zero receipt (so stars and
+    // The fight is over: those who talked it through (the usual shape, with another who did) are paid a scene's
+    // ordinary pay (FightTalkFactor), the usual decay and daily caps after; those in `fought` who didn't talk get a zero receipt (so stars and
     // Stories still take the fight as a scene). Fighting itself pays no social XP: it teaches fighting (doc 49).
     int settleFight(const std::string& fight, const std::set<std::string>& fought, double now);
-    static constexpr int FightTalkFactor = 2;
+    static constexpr int FightTalkFactor = 1;     // A scene's ordinary pay (the user, 2026-10-07: doc 51).
     int endFor(const std::string& actor, double now);
     // One member steps out of an open scene (not a fight's): paid at once if they have the shape and another member
     // has it too; the others carry on. False if they are in no such scene.

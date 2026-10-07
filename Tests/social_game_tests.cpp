@@ -87,8 +87,8 @@ void actionsAndPartyScenes()
     expect(joined, "someone answering the party joins its scene");
 }
 
-// A fight is a scene of its own (doc 33): its players are paid for the fight, twice the usual for talking it through,
-// and each may give a Gold Star to each of the others.
+// A fight is a scene of its own (doc 33): those who talk it through are paid a scene's ordinary pay (the user,
+// 2026-10-07, doc 51), and each may give a Gold Star to each of the others.
 void fightScenes()
 {
     SocialLedger l;
@@ -104,9 +104,9 @@ void fightScenes()
     expect(talk == scene, "their words are the fight's scene, not a scene of their own");
     expect(l.endFor("ada", t + 50) == 0 && l.sessions[scene].ended == 0, "a fight's scene ends with the fight, not a scene-end");
     l.settleFight("b1", {"ada", "bo", "cy"}, t + 60);
-    const int talked = SocialLedger::FightTalkFactor * 20;
+    const int talked = 20;
     expect(l.paidFor("ada", scene) == talked && l.paidFor("bo", scene) == talked,
-           "talking it through: twice a scene's pay: " + std::to_string(l.paidFor("ada", scene)));
+           "talking it through: a scene's ordinary pay: " + std::to_string(l.paidFor("ada", scene)));
     expect(l.paidFor("cy", scene) == 0 && l.receiptsOf("cy").size() == 1,
            "fighting in silence pays no social XP (it teaches fighting: doc 49), but leaves a receipt, so stars still come");
     expect(l.settleFight("b1", {"ada"}, t + 70) == 0 && l.paidFor("ada", scene) == talked, "never paid twice");

@@ -276,6 +276,13 @@ class DungeonMaster:
                         circles.setdefault(m.get('account'), []).append({
                             'name': row.get('name', ''), 'role': m.get('role', 'member'),
                             'members': sorted(handles.get(x.get('account'), x.get('account', '')) for x in members)})
+            # Stars by account (doc 51, migration 0040): the counted total and how many accounts gave them.
+            star_tallies = {}
+            if conn.execute("SELECT to_regclass('game.star_tallies')").fetchone()[0]:
+                for key_, row in conn.execute('SELECT key, data FROM game.star_tallies WHERE world_id = %s', (world[0],)).fetchall():
+                    if isinstance(row, dict):
+                        star_tallies[key_] = {'total': int(row.get('total', 0)), 'from': len(row.get('givers', []) or []),
+                                              'kinds': row.get('kinds', {}) if isinstance(row.get('kinds'), dict) else {}}
             # Earned Gift tiers by account (doc 49, migration 0034): each character's account and its standing. (None
             # until the migration is applied and the game server has saved since.)
             standing = {}
@@ -312,6 +319,7 @@ class DungeonMaster:
                     'account': account_view(standing.get(key)),
                     'person': person_view(persons.get(key)),
                     'circles': circles.get((persons.get(key) or {}).get('account'), []),
+                    'stars': star_tallies.get((persons.get(key) or {}).get('account')),
                     'profile': profiles.get(key) if isinstance(profiles.get(key), dict) else None,
                     # How it was built (doc 49): grades that aren't plain, and its specialty.
                     'grades': {k: v for k, v in (data.get('grades') or {}).items() if v in ('weak', 'strong')}

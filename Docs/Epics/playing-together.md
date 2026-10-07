@@ -25,8 +25,8 @@ need each other.
 
 | Order | Doc | Plan | Carries out (doc 48) | Depends on | Status |
 |---|---|---|---|---|---|
-| 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Built (5 of 5 phases; 1–4 pushed, last fb3a01c); migration 0039 not yet applied |
-| 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Drafted (6 phases) |
+| 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Built and pushed (5 of 5 phases, last 1a2f550); migrations applied |
+| 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Building: phase 1 of 6 built, not committed; migration 0040 not applied |
 | 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Drafted (5 phases) |
 | 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Drafted (7 phases) |
 | 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Drafted (7 phases) |
@@ -73,8 +73,9 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
   yet; one wolf per account in the world; Quickened opens with the DM's hold standing in for reports.
 - **50 The player card:** all answered 2026-10-07: Storyteller only for approved storytellers (doc 58); no
   birthplace or residence on profiles; private messages (not "tells") kept for offline friends until they log in: 50, 14 days.
-- **51 Scenes and stars:** show the star rate? Talking a fight through pays half a scene, or nothing? Knock scenes on
-  the minimap too?
+- **51 Scenes and stars:** all answered 2026-10-07: the star rate is shown; talking a fight through pays a scene's
+  ordinary pay; scenes on the minimap are off by default and a player may turn them on, with Knock scenes shown only
+  when a friend is in them.
 - **52 Newcomers:** may a first character skip the busiest-town rule (to join a friend)? Does vouching carry to the
   resident's household?
 - **53 Hunting and working together:** is ×1.8 each wolf's rate (as planned) or the pair's? Does any hunter turning
@@ -162,3 +163,7 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
   - Phase 4 pushed (fb3a01c); migration 0038 applied.
   - Plan 50, phase 5 built: circles (keeper, officers, invitations by handle, a roster sharing wolves only by choice,
     planned nights, a chat tab each, blocks held). Plan 50 is complete. Not committed; migration 0039 not applied.
+  - Plan 50 phase 5 pushed (1a2f550); migration 0039 applied. Plan 51's questions answered; Phase 1 begun.
+  - Plan 51, phase 1 built: the star book (stars by account, counting limits, bands for strangers, exact for oneself
+    and friends who see), Quickened reading it, and fight roleplay paid as a scene. Not committed; migration 0040 not
+    applied.

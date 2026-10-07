@@ -60,7 +60,10 @@ def rich_payload():
                                'at': 4, 'minutes': 5, 'others': [], 'model': False}],
                    'circles': [{'id': 'circle-1', 'name': 'Moot Night', 'created': 1,
                                 'members': [{'account': 'ada', 'role': 'keeper', 'shares': False, 'joined': 1}],
-                                'invited': [], 'nights': []}]},
+                                'invited': [], 'nights': []}],
+                   'starTallies': [{'account': 'ada', 'total': 12, 'givers': ['bea']}],
+                   'stars': [{'id': 'star-1', 'kind': 'gold', 'giverAccount': 'bea', 'recipientAccount': 'ada', 'at': 5,
+                              'counted': True}]},
         'text with escapes': 'line\nbreak "quoted" \\ back ☃',
     }
 
@@ -125,6 +128,8 @@ class GameTableTests(unittest.TestCase):
         self.assertEqual([r[0] for r in self.rows('known_wolves')], ['player-ada|wren'])
         self.assertEqual([r[0] for r in self.rows('scene_recaps')], ['rcp-1'])
         self.assertEqual(self.game.execute("SELECT name FROM game.circles").fetchone()[0], 'Moot Night')
+        self.assertEqual(self.game.execute("SELECT total FROM game.star_tallies").fetchone()[0], 12)
+        self.assertEqual(self.game.execute("SELECT recipient_account, giver_account FROM game.stars").fetchone(), ('ada', 'bea'))
         stored = json.loads(self.game.execute("SELECT payload FROM game.checkpoints").fetchone()[0])
         for gone in ('players', 'npcs', 'mapMemories', 'ledger'):
             self.assertNotIn(gone, stored, 'lists live in their tables, not the checkpoint row')
