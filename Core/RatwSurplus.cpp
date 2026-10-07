@@ -216,8 +216,9 @@ void Society::spendSurpluses(std::int64_t day)
             const auto* purse = account(till);
             const auto town = communityOfResident(held->second.holder);
             const auto due = purse ? (purse->cash - floatOf(p.id) - (till == held->second.holder ? KeeperReserve : 0)) / 20 : 0;
-            if (due > 0 && !town.empty())
-                shift(till, treasuryOf(town), "", 0, due, "market dues");
+            // (Times its town's tax level: money that stops, doc 46.)
+            if (const auto levied = std::min(purse ? purse->cash : 0, std::int64_t(double(due) * taxLevel(treasuryOf(town)))); levied > 0 && !town.empty())
+                shift(till, treasuryOf(town), "", 0, levied, "market dues");
         }
 }
 } // namespace ratw

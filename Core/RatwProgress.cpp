@@ -141,7 +141,7 @@ void World::practise(const std::string& who, const std::string& sourceId, const 
         const double room = practice::room(*value, cap, r);
         if (room <= 0)
             continue;
-        auto& day = e->practice.days[s->id];
+        auto& day = e->practice->days[s->id];
         const double soft = practice::soft(day, *s, now, r);
         // Variety (anti-macro): by skill, source and partner, or the 4×4 block of ground where there is no partner.
         const auto where = context.partner.empty()
@@ -182,7 +182,7 @@ Result World::setPractice(const std::string& who, const std::string& skillId, do
         return {false, "Not a value a skill can have.", {}};
     *slot = std::min(value, practiceCap(*e, *s));
     if (today >= 0)
-        e->practice.days[s->id] = {realClock ? realClock() : time_, today};
+        e->practice->days[s->id] = {realClock ? realClock() : time_, today};
     return {true, s->name + " set to " + std::to_string(*slot) + ".", {}};
 }
 } // namespace ratw

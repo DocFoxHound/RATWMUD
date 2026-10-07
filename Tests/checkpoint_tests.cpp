@@ -53,8 +53,8 @@ checkpoint::ServerState serverWith(const World& w)
 // Every field of a character the checkpoint keeps (not motion, typing or speech, which are never reloaded).
 bool sameCharacter(const Entity& a, const Entity& b)
 {
-    const auto& x = a.appearance;
-    const auto& y = b.appearance;
+    const Appearance& x = a.appearance;
+    const Appearance& y = b.appearance;
     return a.id == b.id && a.name == b.name && a.cellId == b.cellId && a.position.x == b.position.x &&
            a.position.y == b.position.y && a.facing == b.facing && a.npc == b.npc && a.dead == b.dead &&
            x.species == y.species && x.sex == y.sex && x.stature == y.stature && x.pattern == y.pattern &&

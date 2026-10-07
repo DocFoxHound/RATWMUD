@@ -121,18 +121,18 @@ void restedPractice()
     World w = field();
     auto& ada = wolf(w, "ada");
     w.practise("ada", "track.found");
-    expect(ada.practice.lastGainAt == clockNow && ada.practice.rested == 0, "a first gain: nothing rested yet");
+    expect(ada.practice->lastGainAt == clockNow && ada.practice->rested == 0, "a first gain: nothing rested yet");
     clockNow += 2 * 86400;                          // Two days away.
     const double before = ada.scentSkill;
     w.practise("ada", "track.found");
     const double gain = .3 * (100 - before) / 100;
     expect(near(ada.scentSkill - before, 2 * gain, 1e-9), "after two days away a gain is doubled");
-    expect(near(ada.practice.rested, 10 - gain, 1e-9), "from a pool of 5 a day away, spent by what it gave");
-    expect(near(ada.practice.days["tracking"].gained, gain, 1e-9), "and what it gave is outside the soft limit");
+    expect(near(ada.practice->rested, 10 - gain, 1e-9), "from a pool of 5 a day away, spent by what it gave");
+    expect(near(ada.practice->days["tracking"].gained, gain, 1e-9), "and what it gave is outside the soft limit");
     clockNow += 50 * 86400;
-    ada.practice.rested = 0;
+    ada.practice->rested = 0;
     w.practise("ada", "track.found");
-    expect(ada.practice.rested <= 30, "the pool holds 30 at most");
+    expect(ada.practice->rested <= 30, "the pool holds 30 at most");
 }
 
 void aBetterWolfNear()
@@ -254,9 +254,9 @@ void savedAndShown()
     e.skills = {{"craft", 12.5}};
     e.endurance = 61;
     e.progressVersion = 2;
-    e.practice.days["tracking"] = {100, 1.5};
-    e.practice.rested = 4;
-    e.practice.lastGainAt = 99;
+    e.practice->days["tracking"] = {100, 1.5};
+    e.practice->rested = 4;
+    e.practice->lastGainAt = 99;
     auto saved = wire::persistEntity(e, 0);
     {
         auto grades = json::Value::object();
@@ -274,8 +274,8 @@ void savedAndShown()
     expect(back.grades.size() == 2 && back.grades.at("strength") == "strong" && back.grades.at("wisdom") == "weak", "grades round trip; unknown ones dropped");
     expect(back.specialty == "tracker" && back.skills.size() == 1 && back.skills.at("craft") == 12.5, "the specialty and trade skills");
     expect(back.endurance == 61 && back.progressVersion == 2, "stamina the attribute, and the migrations had");
-    expect(back.practice.days.count("tracking") && back.practice.days.at("tracking").start == 100 &&
-               back.practice.days.at("tracking").gained == 1.5 && back.practice.rested == 4 && back.practice.lastGainAt == 99,
+    expect(back.practice->days.count("tracking") && back.practice->days.at("tracking").start == 100 &&
+               back.practice->days.at("tracking").gained == 1.5 && back.practice->rested == 4 && back.practice->lastGainAt == 99,
            "today's practice and the rested pool");
     Entity plain;
     plain.id = "wolf-bo";
@@ -284,11 +284,11 @@ void savedAndShown()
     for (const char* key : {"grades", "specialty", "skills", "endurance", "progressVersion", "practice"})
         expect(!quiet.has(key), std::string("a plain wolf saves no ") + key);
     const auto old = wire::readEntity(quiet);
-    expect(old.endurance == 50 && old.progressVersion == 0 && old.practice.lastGainAt == -1 && old.skills.empty(), "an old save reads as plain");
+    expect(old.endurance == 50 && old.progressVersion == 0 && old.practice->lastGainAt == -1 && old.skills.empty(), "an old save reads as plain");
 
     // The self view: every attribute and skill with its cap; easing off once today's practice reaches the soft limit.
     e.scentSkill = 20;
-    e.practice.days["tracking"] = {1000, 2};
+    e.practice->days["tracking"] = {1000, 2};
     auto self = json::Value::object();
     wire::practiceView(self, e, 1000 + 60);
     expect(self["attributes"].items().size() == 7 && self["skills"].items().size() == 10, "seven attributes and ten skills");
@@ -449,7 +449,7 @@ void movingTeaches()
     clockNow += 86400;
     World w = field();
     auto& ada = wolf(w, "ada");
-    ada.practice.ran = 199.9;
+    ada.practice->ran = 199.9;
     ada.pace = 10;
     ada.clientWalks = false;
     w.practise("ada", "run.far");
@@ -461,7 +461,7 @@ void forDevelopment()
     clockNow = 6e9;
     World w = field();
     auto& ada = wolf(w, "ada");
-    expect(w.setPractice("ada", "tracking", 60, 2).ok && ada.scentSkill == 60 && ada.practice.days["tracking"].gained == 2,
+    expect(w.setPractice("ada", "tracking", 60, 2).ok && ada.scentSkill == 60 && ada.practice->days["tracking"].gained == 2,
            "the Dev Console sets a skill and today's practice");
     expect(w.setPractice("ada", "fighting", 300).ok && ada.fightingSkill == 86, "never past the cap");
     expect(w.setPractice("ada", "craft", 10).ok && ada.skills["craft"] == 10, "a trade skill");

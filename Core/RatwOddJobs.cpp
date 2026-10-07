@@ -335,9 +335,15 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     const auto& group = child ? friendGroup(id) : std::string();
     // (A farm's hire may be taken by anyone living in a city too: RatwFarmhands.cpp.)
     const bool fromCity = !child && cities_.count(community) > 0;
+    // (A hand about the home is for another household: its own would be paying itself. Money that stops, doc 46.)
+    const auto ownHome = [&](const OddJob& j) {
+        const auto payer = state_.residents.find(j.payer), me = state_.residents.find(id);
+        return payer != state_.residents.end() && me != state_.residents.end() && payer->second.homeCell == me->second.homeCell;
+    };
     const auto open = [&](const OddJob& j) {
         return (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHire(j))) &&
-               int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14);
+               int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14) &&
+               (j.kind != "about the home" || !ownHome(j));
     };
     // The places to look, in order: its town's, and a city wolf's the farms' hires too.
     const auto* look = &candidates();
@@ -396,7 +402,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         // A spell's work (a business's hire: a day's, HireSpells).
         const int spells = j.until >= 0 ? HireSpells : 1;
         if ((j.kind == "a hand" || j.kind == "a hand at the shop" || j.kind == "building work" || j.kind == "gathering" ||
-             j.kind == "hunting") && (j.progress[id] += seconds) < 600 * spells)
+             j.kind == "hunting" || j.kind == "about the home") && (j.progress[id] += seconds) < 600 * spells)
             return;
         if (j.kind == "a hand at the shop")
             craftNext_.erase(j.producer);           // (Its next batch is begun at once.)

@@ -350,13 +350,13 @@ void persistTests()
     rejected("age", "23", with("age", "23").age < 0, "an age as a string");
     rejected("ageNoticePending", .5, with("ageNoticePending", .5).ageNoticePending < 0, "a fractional notice count");
     rejected("lastBirthdayDay", "0", with("lastBirthdayDay", "0").lastBirthdayDay < -1, "a birthday day as a string");
-    rejected("appearance", nullptr, with("appearance", nullptr).appearance.species.empty(), "a null appearance");
-    rejected("appearance", "timber", with("appearance", "timber").appearance.species.empty(), "an appearance as a string");
-    rejected("appearance", Value::object(), with("appearance", Value::object()).appearance.species.empty(),
+    rejected("appearance", nullptr, with("appearance", nullptr).appearance->species.empty(), "a null appearance");
+    rejected("appearance", "timber", with("appearance", "timber").appearance->species.empty(), "an appearance as a string");
+    rejected("appearance", Value::object(), with("appearance", Value::object()).appearance->species.empty(),
              "an empty appearance");
     auto stringColor = wire::appearance(unusualAppearance());
     stringColor.set("baseColor", "0");
-    rejected("appearance", stringColor, with("appearance", stringColor).appearance.species.empty(),
+    rejected("appearance", stringColor, with("appearance", stringColor).appearance->species.empty(),
              "an appearance with a palette index as a string");
 }
 

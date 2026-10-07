@@ -459,12 +459,12 @@ Result World::testFightTeam(const std::string& player)
     };
     const auto looks = [&](Entity& e) {
         static const char* species[] = {"timber", "timber", "arctic", "red", "maned", "ethiopian"};
-        e.appearance.species = species[pick(6)];
-        e.appearance.sex = pick(2) ? "female" : "male";
-        e.appearance.stature = pick(3) == 0 ? "tall" : "average";
-        e.appearance.baseColor = int(pick(CoatColorCount));
-        e.appearance.markingColor = int(pick(CoatColorCount));
-        e.appearance.gradientColor = int(pick(CoatColorCount));
+        e.appearance->species = species[pick(6)];
+        e.appearance->sex = pick(2) ? "female" : "male";
+        e.appearance->stature = pick(3) == 0 ? "tall" : "average";
+        e.appearance->baseColor = int(pick(CoatColorCount));
+        e.appearance->markingColor = int(pick(CoatColorCount));
+        e.appearance->gradientColor = int(pick(CoatColorCount));
     };
     // Two more of the band, beside their leader: as weak as the first.
     int bandits = 1;

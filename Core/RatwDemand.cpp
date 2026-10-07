@@ -282,6 +282,7 @@ void Society::applyPrices()
     livingFloor_.clear();
     idleHands_.clear();
     margin_ = .55;
+    taxLevel_.clear();
     const auto& o = state_.orchestrator;
     if (orchestratorDials().mode != "on")
         return;
@@ -293,6 +294,8 @@ void Society::applyPrices()
     for (const auto& [key, pay] : o.memory.wage)
         if (const auto bar = key.find('|'); bar != std::string::npos && pay > 0)
             wages_[key.substr(0, bar)][key.substr(bar + 1)] = pay;
+    for (const auto& [treasury, level] : o.memory.taxLevel)
+        taxLevel_[treasury] = level;
     for (const auto& t : o.last.towns)
     {
         livingFloor_[t.id] = t.wageFloor;
@@ -573,17 +576,21 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         const auto budget = (purse->cash - FoodADay * 7 - owed) / 10;
         if (budget < 2)
             continue;
-        // Today's fancy: the kind it likes best, as it feels today.
-        const Want* fancy = nullptr;
-        double best = -1;
+        // Today's fancies: the kinds it likes best, as it feels today; one that finds nothing on the shelves, the next
+        // (two more at most: money that stops, doc 46).
+        std::vector<std::pair<double, const Want*>> fancies;
         for (const auto& k : kinds)
-            if (const double w = (.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|" + k.name); w > best)
-                best = w, fancy = &k;
+            fancies.push_back({(.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|" + k.name), &k});
+        std::stable_sort(fancies.begin(), fancies.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
         std::map<std::string, int> got;
-        // (A treat is one thing, a pastry or a dish, eaten at once; the rest of its fancies may cost what it can spare.)
-        const bool treat = std::string(fancy->name) == "a treat";
-        buyForSurplus(id, shops[communityOfResident(id)], fancy->is, treat ? std::min<std::int64_t>(budget, 9) : budget,
-                      std::string("a want: ") + fancy->name, &got);
+        for (std::size_t f = 0; f < 3 && f < fancies.size() && got.empty(); ++f)
+        {
+            const Want* fancy = fancies[f].second;
+            // (A treat is one thing, a pastry or a dish, eaten at once; the rest of its fancies may cost what it can spare.)
+            const bool treat = std::string(fancy->name) == "a treat";
+            buyForSurplus(id, shops[communityOfResident(id)], fancy->is, treat ? std::min<std::int64_t>(budget, 9) : budget,
+                          std::string("a want: ") + fancy->name, &got);
+        }
         int finery = 0;
         for (const auto& [item, n] : account(id)->stock)
             if (const auto c = category(item); c == "jewelry" || c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear")

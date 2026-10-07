@@ -4,10 +4,21 @@
 // town and channel, the prices furthest from the catalogue), and the steers in force. A Dungeon Master steers it (never
 // drives it): a steer shows in the next day's measures and acts at the next week's decision, for 1 to 56 days. Phase 8 adds
 // the residents' and the poorer half's shares, each channel's reach and learned weight, the wage table, the funds and
-// granaries, and scenarios (named bundles of steers, Data/Economy/scenarios.json).
+// granaries, and scenarios (named bundles of steers, Data/Economy/scenarios.json). Money that stops adds each treasury's tax
+// level and each town's bank: its savers' savings, the coins it holds, and the week's grants to those short.
 import {useEffect, useMemo, useState} from 'react';
-import {dmApi, type EconomyChannel, type Me, type Money, type Orchestrator, type Role, type Scenario, type SteerKind, type Target,
-    WageKinds} from './api';
+import {dmApi, type EconomyChannel, type Me, type Money, type Orchestrator, type OrchestratorBrief, type Role, type Scenario,
+    type SteerKind, type Target, WageKinds} from './api';
+
+/** What money that stops adds to a brief (doc 46): treasury -> tax level; town -> its bank. */
+type BankBrief = OrchestratorBrief & {
+    taxLevels?: Partial<Record<string, number>>;
+    banks?: Partial<Record<string, {coins: number; saved: number}>>;
+    grants?: {from: string; to: string; coins: number}[];
+    actions?: {town: string; tool: string; detail: string}[];
+    ladder?: number;
+    depositShare?: number;
+};
 
 export const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 export const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -166,6 +177,8 @@ function Plan({o, money, target, canAct, onChanged}: {o: Orchestrator; money: Mo
                 </div>
                 <FundsTable money={money} />
             </div>
+            <BanksTable b={b as BankBrief} w={w as BankBrief | null} />
+            <WeekReport w={w as BankBrief | null} />
         </>}
         <div className="dm-health-tables" style={{padding: 0}}>
             <div>
@@ -187,6 +200,53 @@ function Plan({o, money, target, canAct, onChanged}: {o: Orchestrator; money: Mo
             </div>
         </div>
     </section>;
+}
+
+/** What it found and did at the last decision (doc 46, the playbook): its rung on the ladder, the banks' terms, and each
+ *  tool it used, town by town. */
+function WeekReport({w}: {w: BankBrief | null}) {
+    if (!w) return null;
+    const actions = w.actions ?? [];
+    return <div>
+        <h3>What it did this week</h3>
+        <p className="meta">
+            <span title="Rungs unlock harder tools when its own pressure is at its most and the shares still fall: 1 the channels take twice as much, 2 the living floor may lift to three times and the lowest pay rises even with many idle, 3 every holder keeps a quarter less">Ladder: rung {w.ladder ?? 0} of 3</span>
+            {' · '}<span title="The share of a saver's money above its line that the banks take each week">Banks' terms: {pct(w.depositShare)}</span>
+        </p>
+        {actions.length === 0 ? <p className="hint">Nothing beyond its usual sharing of the pot.</p> : <table className="dm-table"><thead><tr>
+            <th>Where</th><th>Tool</th><th>What</th></tr></thead>
+            <tbody>{actions.map((a, i) => <tr key={i}><td>{a.town ? title(a.town) : 'The land'}</td><td>{a.tool}</td>
+                <td style={{whiteSpace: 'normal'}}>{a.detail}</td></tr>)}</tbody></table>}
+    </div>;
+}
+
+/** Each treasury's tax level and each town's bank (money that stops, doc 46). */
+function BanksTable({b, w}: {b: BankBrief; w: BankBrief | null}) {
+    const levels = (w ?? b).taxLevels ?? {}, banks = b.banks ?? {};
+    const towns = useMemo(() => [...new Set([...Object.keys(levels).filter(id => id.startsWith('stores:')).map(id => id.slice(7)),
+        ...Object.keys(banks)])].sort(), [levels, banks]);
+    const grants = useMemo(() => [...(w?.grants ?? [])].sort((x, y) => y.coins - x.coins).slice(0, 12), [w]);
+    if (towns.length === 0 && levels.treasury === undefined) return null;
+    return <div className="dm-health-tables" style={{padding: 0}}>
+        <div>
+            <h3>Treasuries and banks</h3>
+            <div className="dm-table-wrap"><table className="dm-table"><thead><tr>
+                <th>Town</th><th title="What the town takes (its tax, market dues and levy), times this: rises while its treasury is short">Tax level</th>
+                <th title="What its savers have in">Saved</th><th title="The coins it holds: its reserve, a third of its savers', and anything not yet sent out">Coins</th></tr></thead>
+                <tbody>
+                    {levels.treasury !== undefined && <tr><td>The capital's treasury</td><td className="num">{times(levels.treasury)}</td><td></td><td></td></tr>}
+                    {towns.map(t => <tr key={t}><td>{title(t)}</td><td className="num">{times(levels[`stores:${t}`])}</td>
+                        <td className="num">{p(banks[t]?.saved)}</td><td className="num">{p(banks[t]?.coins)}</td></tr>)}
+                </tbody></table></div>
+        </div>
+        <div>
+            <h3>The week's grants from the banks</h3>
+            {grants.length === 0 ? <p className="hint">None at the last decision: the channels took what the banks sent.</p> : <table className="dm-table"><thead><tr>
+                <th>To</th><th>From</th><th>Given</th></tr></thead>
+                <tbody>{grants.map(g => <tr key={`${g.from}|${g.to}`}><td>{holderName(g.to)}</td><td>{title(g.from.slice(5))} bank</td>
+                    <td className="num">{p(g.coins)}</td></tr>)}</tbody></table>}
+        </div>
+    </div>;
 }
 
 /** The orchestrator's funds by town and channel, the land's fund, and each town's granary (doc 46, Phases 5 and 7). */

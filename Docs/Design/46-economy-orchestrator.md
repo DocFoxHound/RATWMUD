@@ -936,6 +936,161 @@ left to watch in the year's run: the capital's treasury still runs dry (by day 5
 drain (36,000p to 23,500p in four weeks), the shops' tills and the farms still gain (71,000p and 55,000p), and its own
 pressure sits at its most (3) from day 40.
 
+## Money that stops: the income side and the savers (the user, 2026-10-06)
+
+The user: "I'm afraid that orchestrator doesn't have the tools it needs yet to balance the economy out, especially if
+there are places that are still allocating wealth without a proper means to distribute it." Then, of the five options
+offered: "Do all five options."
+
+**Where it stops** (the last fortnight of the 56-day run, a coin followed in and out): the shops and farms balance now
+(+434p and +45p a day), but those who pay the land's wages run down what they hold (the great houses −556p a day, the
+capital −334p, the church −325p, the town treasuries −148p), and every kind of resident gains, the most a head those who
+earn more than they live on: the watch (+283p a day: fed at the mess, a guard's pay is savings), the keepers and farmers
+(a wage and a third of the profit). Their purses are their own, and nothing draws their savings out again. The money
+runs from the institutions to the steady earners' savings, and stops.
+
+The five tools, each where the orchestrator lacked one:
+
+**1. The orchestrator sets each treasury's tax level.** A treasury (and the capital's) is banded like any holder; at
+each week's decision its level rises `taxRaise` (×1.15) while it holds under its need and eases `taxEase` (×0.9) while it
+holds over its comfortable band, between `taxLeast` 0.5 and `taxMost` 3 (`memory.taxLevel`). The level multiplies
+everything the town takes: the tax on a week's profit, the market dues, the levy (2), and, for the capital, the towns'
+share sent to it. The rates themselves don't change (a tenth, and a fifth above the band): the level is the lever. (This
+answers open question 5 the other way: the orchestrator does touch what the towns take.)
+
+**2. The town levy.** At each reckoning, after the tax, the tithe and the wealth tithe, a resident pays its town
+`levyShare` (a fiftieth) of what it holds (in purse and at the bank) above `levyLine` wealth lines (two: two months'
+food), times the town's tax level: "a town levy". It reaches the savings the profit tax can't (a guard banks wages, which
+are no profit to tax). Tills, houses and the church aren't levied: their money is the orchestrator's to send already.
+
+**3. Things worth saving for** (the residents' own decisions, more of them for those who have the money):
+- A want that finds nothing on the shelves tries its next fancy (two more), where before it bought nothing.
+- **A hand about the home:** a resident holding more than `helpLine` wealth lines (one and a half) posts an odd job a
+  day at its home (fetching, mending, scrubbing), paid at its town's odd-job rate from its own purse: the idle work for
+  the comfortable, as wolves would. A town has as many as it has idle wolves, the best off posting first, and none is
+  taken by the poster's own household (it would be paying itself).
+- **A piece commissioned:** once a week (its own day of the week) a resident holding more than two levy lines buys a
+  costly piece (10p or more, not food) from its town's makers, up to a quarter of what it holds above the line.
+- **A feast:** on Restday a resident holding more than a levy line feeds its household from the town's food shops: a
+  treat for each member at home, eaten there and then.
+
+**4. The watch's pay reckons its board.** The wage table knows a guard is fed at the mess: its floor is the living
+floor less a day's food (`board`: guard 1), and its pay starts at 14p (was 20p), so the treasuries pay less and the
+guards bank less. (Miners and quarrymen eat the works' rations too, but their pay is labour's, already the lowest.)
+
+**5. A bank in each town** (`bank:<town>`), its savers' books saved with the orchestrator's state:
+- **Savings** (the residents' decision): at the reckoning, after its dues, a resident puts half of what it holds above
+  `depositLine` wealth lines (one) in its town's bank. A resident whose purse falls under a week's food draws back up to a
+  wealth line, as far as the bank has the coins ("drawn from the bank").
+- **The bank is a holder like the others:** it keeps a reserve (its floor: four weeks of what its savers draw, twice
+  over, and a tenth of what they have in at least; a third, at first, made the reserve a pool of its own) and the
+  orchestrator sends all the rest out at each week's decision, through its channels. No loans, nothing owed, no interest
+  (the user, 2026-10-07: "remove the loan system, at least we don't need to track it. We'll just use it as a black hole
+  for money to go into and then gets funneled out into places that Orchestrator says to"). Its coins may be less than its
+  savers have in: a saver short draws what the reserve allows.
+- **What the channels can't take** (they are capped at what they can spend) goes as **grants** to those in its town who
+  pay wages and are short: a treasury, the capital or a great house under its need, then a shop or a farm under half its
+  own, up to their need, owed by nobody ("from the bank's savings"). Without them the savings pooled in the banks: by the
+  fourth week they held 71% of what their savers had put in.
+- Savings count as their savers' money in every measure (the residents' share, the poorer half, the median), and the
+  levy and the wealth tithe reckon them (paid from the purse first, then drawn from the bank).
+
+(The first build lent the savings to those under their need, with interest to the savers; it was replaced the next day.
+The rescue channel's loans to failing businesses, from Phase 6, are another thing and stay.)
+
+The Dungeon Master's Money tab shows each treasury's tax level and each town's bank (what its savers have in, its coins); `econ_watch` reports the banks and the tax levels on each orchestrator line, and counts savings as their
+savers' money.
+
+**Built (2026-10-06), and 56 days** against the old rules' year run and the long run's fixes alone:
+
+| Day 55 | Old rules | Long-run fixes | And money that stops |
+|---|---|---|---|
+| Poorer half's share | 0.18 | 0.20 | 0.25 |
+| Its fall each fortnight | −0.04, −0.05 | −0.04, −0.025 | −0.025, −0.021 |
+| Median purse (day 56) | 170p | 174p | 222p |
+| Gini (day 56) | 0.51 | 0.47 | 0.43 |
+| Idle | 330 | 85 | 76 |
+| Starving / broke (day 56) | 18 / 11 | 0 / 4 | 0 / 4 |
+| The capital's treasury | 0p | 0p | 19,000p |
+
+What each did over the eight weeks: the savers put 178,000p in the banks and drew 8,400p back; the banks lent 110,000p
+(at first to the businesses, from the third week mostly to the great houses and the treasuries) and were repaid
+4,000p; interest paid the savers 2,600p. The hands about the home paid the idle some 250p a day, the feasts some 1,400p a
+week, the levy 5,300p in all, the commissions 2,800p. The tax levels split: eight towns at 0.5 and two near it (their
+treasuries full), the capital and Accord Crossing at 2.7 and Ser Ferro at 2.3, still climbing.
+
+Two things learned on the way: a bank lending only to treasuries left a third of the land's savings idle in its vaults
+(lending to shops and farms under half their need, and a bank that can't lend taking no more savings, fixed it); and
+a hand about the home for every comfortable wolf made 1,100 jobs a day for 150 idle (now as many as the town has idle).
+
+(Those 56 days ran with the first build's loans. **Without them** (the user, 2026-10-07), the banks keeping a third and
+the rest going out through the channels and as grants to those short, 56 days again: the poorer half 0.344, 0.296,
+0.271, 0.251, as with the loans; the median 218p; Gini 0.42 (the lowest yet); nobody starving; idle 81; the banks holding
+their third (48,600p of the 146,400p saved). The grants went to the shops' tills (31,000p), the houses' tills and farms
+(11,000p each), the town treasuries (8,600p), the great houses and the capital (6,500p each).)
+
+**To watch in the year's run:** whether the poorer half levels out (it looks to, near 0.22) or keeps sliding slowly. Whether
+the climbing tax levels reach their most (3) and stay there.
+
+## The playbook: tools it uses on its own (the user, 2026-10-07)
+
+The user, after the year's run: "Orchestrator should be handling a lot of these issues itself automatically and should be
+balancing out the economy. It needs to have the tools available and it needs to have the automation available to
+automate these things itself."
+
+**What the year showed** (365 days, `econ_watch`, the banks with grants): no spiral (the poorer half fell to 0.17 by day
+250 and held there), but four things it couldn't mend:
+1. **Starving on winter Restdays** (30 on day 70, 47 on day 343), with money in their purses. A big town's kitchens make
+   a little less than it eats in winter, so its shelves hold under a day; on Restday nobody cooks and those with money lay
+   in for it, and the shelves run bare. The granary didn't help: it sold to the shops whenever their shelves ran under a
+   day and a half, all summer, so it never kept a store, and by winter it had nothing (it bought 5,700p to 22,000p a month
+   from spring to autumn and released almost all of it).
+2. **Money the channels couldn't move stayed put:** the church grew from 19,000p to 53,000p, the banks to 88,000p.
+3. **The banks drained the savers:** half of what a saver held above a month's food went in each week; the residents' real
+   share of the land's money fell to about 0.40, while, counting the savings at their face, it read 0.75 (fixed: savings
+   now count at what their bank holds).
+4. **Its own pressure sat at its most** (3) from day 140 to day 330 and it had nothing harder to do.
+
+**The tools** (each week, at the decision; each logged in the week's report):
+
+**1. Food security.** Each town's food days (its shops' food and its granary's, a head):
+- **The granary keeps a store:** it sells to the shops only when their shelves hold under a day (a shortage) or on the
+  eve of a Restday or a festival (to fill them to two days), never down past its reserve in summer and autumn but for a
+  shortage. Its store's target is `granaryDays` (10) a head by the end of autumn, half that in spring.
+- **Food is a need,** like wage support: the plan sends the food channel what the granary lacks of its target, at the
+  town's prices, from what is pooled, in every season. The needs (food, wage and price support, rescue) aren't held to
+  what their channel spent last week: capped so, the food channel got 1,000p a week all year and the granaries never
+  filled.
+- **Hands to the food:** a town under `foodDaysLow` (two days) sends its hires to its farms, fishers and kitchens first.
+- **Only what is spare:** the store is bought from its farms' surplus, from its own shops only while their shelves hold
+  over `foodDaysLow` days a head, and from elsewhere only from shops holding more (bought off bare shelves, it left a
+  town's eaters short).
+- **Food from elsewhere:** a town with no food shops of its own (the fortresses), or under `foodDaysLow`, has its granary's
+  food brought by the carters from the land's best-stocked food shops (those with over two days' food a head).
+- **The messes from the granary:** the watch's, the mines' and the quarries' mess, with no food in it, draws a day's from
+  its town's granary. (In the fortresses nobody carried food to the mess, and the barracks went hungry on Restdays.)
+
+**2. An outlet for every pool.** What any holder over its band can't send because the channels are full goes as grants to
+those in its town who pay wages and are short (as the banks' did): a treasury, the capital or a great house under its need,
+then a shop or a farm under half of it. A holder nobody in its town needs: to the land's short. (Not a town's buyer: the watch's mess and the works keep what
+they buy with.) (The church's grants go
+to its clergy's towns, and to alms first: food for the hungry, bought from the town's shops.)
+
+**3. The bank's terms.** The share of a saver's money above its line that goes in each week (`depositShare`, 0.05 to 0.5,
+starting at 0.25) is the orchestrator's: down a fifth while the residents' real share falls, up a tenth while it rises and
+the land's holders are lean. (Saving is still each saver's own: the bank only offers.)
+
+**4. The ladder.** When its own pressure has been near its most (85% of it) for `ladderWeeks` (three) decisions and the
+poorer half or the residents still fell, it steps up a rung (0 to 3); after four decisions with neither falling, it steps down one:
+1. the channels may take twice what they paid last week (their cap doubled);
+2. the living floor may lift to three times (`floorMost` 2 to 3), and the lowest pay (odd jobs, hands, labour) rises with
+   its payers' books even while many are idle;
+3. the bands' cap and top come down a quarter: every holder keeps less.
+
+**5. The week's report.** Each decision lists what it found and did, town by town ("Upper Accord: shelves 0.6 days, the
+granary filled them for Restday, 2,300p of food bought for its store"; "the ladder: rung 2"), in the brief, on the Dungeon
+Master's Money tab and in `econ_watch`.
+
 ## Phases
 
 Each phase is measured with a 14 or 28 day `econ_watch` run against the plain run of 70db3a4.
@@ -965,7 +1120,8 @@ Each phase is measured with a 14 or 28 day `econ_watch` run against the plain ru
    a starting point.
 4. ~~Shop prices~~ **Decided:** one town price per good.
 5. **Taxes and tithes stay steady** (the user's decision of 2026-10-06), and the orchestrator doesn't touch the rates?
-   *Recommendation:* yes. It manages what holders do with what comes in.
+   *Recommendation:* yes. It manages what holders do with what comes in. **Changed (the user, 2026-10-06, "Do all
+   five options"):** the rates stay, but the orchestrator sets each town's tax level (money that stops).
 6. ~~Who issues the orders~~ **Decided:** nobody; invisible.
 7. **How much should the granary soften winter?** *Recommendation:* enough that nobody starves in a normal year, but
    prices rise and the poor eat plainer.

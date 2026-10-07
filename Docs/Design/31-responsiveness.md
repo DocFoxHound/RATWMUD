@@ -955,6 +955,32 @@ The user: after doc 46's day of work, make sure a year still runs in one to two 
 tick (0.039 to 0.043 on Restdays) through day 54. The roads stage grows with the contracts kept (done and expired ones for
 30 days) and levels off with them, at about 800, by day 35.
 
+## The entity's size, and a cost that grew all year (2026-10-07)
+
+The user: "I don't know why that keeps stacking up, but that concerns me. Because if I have to run this server for any
+length of time, it might eventually start bogging itself down."
+
+**What the year showed** (365 days, `econ_watch`): a tick cost 0.058 to 0.078 ms, and two things wrong with it:
+1. **From the first day, movement, views and streaming cost two to three times the year before.** Run side by side on
+   the same world (8467711, ab6ef1b, and the tree after it), the step is all in ab6ef1b (plans 49 and 50), and none of its
+   code is slow: it added a player's practice (two maps, a string, `PracticeState`) to every entity, from 1,408 bytes to
+   1,760. Padding 8467711's entity with 352 bytes of nothing made it exactly as slow (movement 0.0066 against 0.0068 ms,
+   views 0.0051 against 0.0052), wherever the padding went: the sweeps over all 1,500 entities each tick pay for every byte.
+   **Fixed:** an entity's appearance (344 bytes) and its practice (208) are kept out of line (`Cold<T>`, RatwCold.h: a
+   box that copies deeply, is never empty, and converts to the value, so only reading a part needs `->`). The entity is
+   1,224 bytes, and a tick 0.0425 ms against 0.057 (ab6ef1b) and 0.0435 (8467711); the same world, day for day.
+   *Rule from now on:* what only players use, or what a tick never reads, goes out of line.
+2. **Crime grew tenfold over the year** (0.0005 ms a tick at first; 0.005 averaged over the year): every tick asked every
+   witness of each of the 400 incidents kept whether it would now tell the watch, and a witness kept quiet by fear or
+   fondness was asked again forever. **Fixed:** a witness tells the watch within a week (`WitnessDays`), or not at all.
+
+What else was measured and found steady: contracts (pruned 30 days after due), caravans, accounts, the stock held, odd jobs,
+warrants (served as fast as issued). The roads' cost rose with trade (0.004 to 0.007 ms), not with time.
+
+**`econ_watch`'s daily cost line now names every part:** the schedules' stages (society, roads, errands, crime, bonds,
+wants, routes), movement, views, streaming and separation; the server's own time; what no part counts; and the watch's
+own bookkeeping. What grows over a long run shows by name.
+
 ## Hardware notes for the dedicated server
 
 - The simulation thread wants **high single-core speed**. The pool wants **many cores**. A current 16–32 core part

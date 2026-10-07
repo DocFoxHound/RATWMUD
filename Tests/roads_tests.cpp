@@ -863,10 +863,15 @@ void townPursesAndTheReckoning()
     expect(w1 >= 30 && w2 < 300 && w3 < 0, "Profits: w1 " + std::to_string(w1) + "p, w2 " + std::to_string(w2) + "p, w3 " + std::to_string(w3) + "p");
     w.takeEvents();
     const auto told = w.reckonNow();
-    std::int64_t tax = 0, tithes = 0, allTithes = 0, toCapital = 0, fromCapital = 0;
+    std::int64_t tax = 0, tithes = 0, allTithes = 0, toCapital = 0, fromCapital = 0, levyToWest = 0;
+    std::map<std::string, std::int64_t> levied, banked;   // (The town levy and the savers' deposits: doc 46.)
     bool w3Paid = false, logged = false;
     for (const auto& e : w.takeEvents())
     {
+        if (e.kind == "economy" && e.detail == "a town levy")
+            levied[e.actor] += e.coins, levyToWest += e.target == "stores:west" ? e.coins : 0;
+        if (e.kind == "economy" && e.detail == "saved at the bank")
+            banked[e.actor] += e.coins;
         if (e.kind == "economy" && e.detail == "town tax" && e.target == "stores:west")
             tax += e.coins;
         if (e.kind == "economy" && e.detail == "tithe" && e.target == Society::SharedChurch)
@@ -888,15 +893,16 @@ void townPursesAndTheReckoning()
         return std::max<std::int64_t>(0, (cash - w.society().wealthLine(who)) / Society::WealthTitheShare);
     };
     const auto w1Taxed = w1Cash - w1 / 10 - std::max<std::int64_t>(0, w1 - Society::TaxBand) / 10 - w1 / 10;
-    expect(w.society().account("w1")->cash == w1Taxed - wealthTithe(w1Taxed, "w1"),
+    expect(w.society().account("w1")->cash == w1Taxed - wealthTithe(w1Taxed, "w1") - levied["w1"] - banked["w1"],
            "w1 pays a tenth of its profit in tax (a fifth above the band) and a tenth in tithe");
     const auto w2Taxed = w2Cash - std::max<std::int64_t>(0, w2 >= 10 ? w2 / 10 * 2 : 0);
-    expect(w.society().account("w2")->cash == w2Taxed - wealthTithe(w2Taxed, "w2") && wealthTithe(w2Taxed, "w2") > 0,
-           "w2 pays no tax on what it inherited, but a wealth tithe on what it holds above its line");
+    expect(w.society().account("w2")->cash == w2Taxed - wealthTithe(w2Taxed, "w2") - levied["w2"] - banked["w2"] &&
+               wealthTithe(w2Taxed, "w2") > 0 && banked["w2"] > 0 && w.society().savedAtBank("w2") == banked["w2"],
+           "w2 pays no tax on what it inherited, but a wealth tithe on what it holds above its line, and saves half the rest");
     expect(!w3Paid, "w3, at a loss, pays nothing");
     expect(tax > 0 && tithes == tax && toCapital == tax / 10, "West took in " + std::to_string(tax) + "p in tax and " +
                                                              std::to_string(tithes) + "p in tithes, and sent the capital a tenth");
-    expect(w.society().account("stores:west")->cash == westBefore + tax - toCapital + fromCapital &&
+    expect(w.society().account("stores:west")->cash == westBefore + tax + levyToWest - toCapital + fromCapital &&
                w.society().account(Society::SharedChurch)->cash == churchBefore + allTithes,
            "into its own purse and the land's church's");
     expect(logged && told.find("West's reckoning") != std::string::npos, "The reckoning is told: " + told);
@@ -1526,22 +1532,34 @@ void grownWolvesBuyWhatTheyWant()
     auto w = load(f);
     w.tick(.6);
     w.society().shift("treasury", "e1", "", 0, 500, "test: a good year");
-    w.society().shift("e2", "treasury", "", 0, w.society().account("e2")->cash, "test: a hard year");
     w.takeEvents();
-    bool rich = false, poor = false;
+    bool rich = false;
     for (int d = 0; d < 3; ++d)
     {
         nextMorning(w);
         run(w, 2);
         for (const auto& e : w.takeEvents())
-            if (e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0)
-            {
-                rich |= e.actor == "e1";
-                poor |= e.actor == "e2" && d == 0;
-            }
+            rich |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e1";
     }
     expect(rich, "A well-off wolf buys something it wants");
+    // (They all share one household, whose purse passes money round: penniless, the whole household, in purse and at
+    // the bank: doc 46.)
+    auto hard = load(f);
+    hard.tick(.6);
+    for (const char* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop", "trinkets"})
+        if (hard.society().account(who))
+        {
+            hard.society().shift(who, "treasury", "", 0, hard.society().account(who)->cash, "test: a hard year");
+            hard.society().payDue(who, "treasury", hard.society().savedAtBank(who), "test: and its savings");
+        }
+    hard.takeEvents();
+    nextMorning(hard);
+    run(hard, 2);
+    bool poor = false;
+    for (const auto& e : hard.takeEvents())
+        poor |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e2";
     expect(!poor, "A penniless one doesn't");
+    expect(hard.society().conserved(), "Money stays conserved");
     expect(w.society().conserved(), "Money stays conserved");
 }
 

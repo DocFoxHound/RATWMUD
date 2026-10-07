@@ -16,6 +16,7 @@
 #include "RatwAppearance.h"
 #include "RatwBattle.h"
 #include "RatwInjury.h"
+#include "RatwCold.h"
 #include "RatwPractice.h"
 #include "RatwBonds.h"
 #include "RatwCrime.h"
@@ -222,7 +223,7 @@ struct Entity
     bool exhausted = false;                   // Recovery hysteresis; never a client speed override.
     double staminaRate = 0.0;                 // Last simulation step's net change per second.
     int age = 18;
-    Appearance appearance;
+    Cold<Appearance> appearance;              // (Out of line: RatwCold.h. `->` to read a part.)
     double strength = 50.0, wisdom = 30.0;
     // What carrying asks of a player (doc 35, 1.2): the fastest pace its load allows and how much faster running tires
     // it. Worked out from its purse every tick (World::refreshLoad); not saved. Residents carry freely.
@@ -295,7 +296,7 @@ struct Entity
     std::map<std::string, double> skills;
     double endurance = 50.0;
     int progressVersion = 0;
-    PracticeState practice;
+    Cold<PracticeState> practice;             // (Out of line: RatwCold.h.)
 };
 
 // The world's entities by ID: a std::map that also keeps a list of them in ID order, for the passes over all of them

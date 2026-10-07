@@ -54,6 +54,7 @@ enum class HolderKind
     Treasury,                                        // A town's ("stores:<town>").
     Capital,                                         // The capital's treasury ("treasury").
     Buyer,                                           // A town's buyer ("town:<town>:works", the watch, the docks...).
+    Bank,                                            // A town's bank ("bank:<town>": money that stops): its floor, its reserve.
 };
 const char* kindName(HolderKind kind);
 
@@ -134,6 +135,18 @@ struct Dials
     double channelFloor = 3000;
     // Each town's price level, moved against its shops' week's gain (the long run's fixes), within these.
     double priceLiftLeast = .6, priceLiftMost = 1.4;
+    // Money that stops (doc 46): each treasury's tax level rises taxRaise times while it holds under its need, eases
+    // taxEase times while over its comfortable band, between taxLeast and taxMost; it multiplies what its town takes.
+    double taxRaise = 1.15, taxEase = .9, taxLeast = .5, taxMost = 3;
+    // The town levy: levyShare a week of what a resident holds above levyLine wealth lines (times its tax level). A hand
+    // about the home over helpLine of them; savings put in the bank above depositLine.
+    double levyShare = .02, levyLine = 2, helpLine = 1.5, depositLine = 1;
+    // The playbook (doc 46): a town under foodDaysLow days of food a head sends its hires to its food first; the ladder
+    // steps up after ladderWeeks decisions at its most pressure with the shares still falling; the bank's terms (the
+    // share of a saver's money above its line it takes a week) move between depositShareLeast and depositShareMost.
+    double foodDaysLow = 2, ladderWeeks = 3, depositShareLeast = .05, depositShareMost = .5;
+    // Days of food a post's payer gives in kind each day (the watch's mess): off its living floor.
+    std::map<std::string, double> board = {{"guard", 1}};
     // Its own pressure (doc 46, Phase 5): at each decision, if the residents' share of the land's money fell over the week
     // by more than shareSlip, it presses autoRaise times harder (to autoMost); if it rose, it eases by autoEase (to 1).
     double shareSlip = .005, autoRaise = 1.3, autoEase = .85, autoMost = 3;
@@ -145,7 +158,7 @@ struct Dials
     // week isn't judged.
     double reachStep = .25, reachLeast = .5, reachMost = 2, reachMinimum = 50;
     // The granary (Phase 7): in summer and autumn each town stores granaryDays of food a head, of what keeps.
-    double granaryDays = 5;
+    double granaryDays = 10;
     double distressComfortable = 1.5;                // The band's top at full distress (it falls toward this).
     double distressSpendBoost = 2;                   // And the share spent above it, times this at full distress.
     // (overShare and overShareAtCap are of a week: what a decision sends out over the week that follows it.)
@@ -156,7 +169,7 @@ struct Dials
     // job's share), moved at each week's decision: up wageRaise where posts of the kind go unfilled, down wageEase where
     // many are idle and none go begging, to at most wageMost times its start.
     double wageFloorOverFood = 2, lodgingADay = 0, wageRaise = .10, wageEase = .05, wageMost = 3;
-    std::map<std::string, double> wageStart = {{"help", 16}, {"guard", 20}, {"labour", 12}, {"clergy", 16},
+    std::map<std::string, double> wageStart = {{"help", 16}, {"guard", 14}, {"labour", 12}, {"clergy", 16},
                                                {"keeper", 8},  {"hand", 12},  {"odd job", 4}};
     double stapleIncomeShare = .5;                   // A day's plain food costs at most this of a lowest-quarter earner's day.
     double priceMove = .25;                          // The most a price may move at a decision (a week).
@@ -194,6 +207,8 @@ struct Snapshot
     // On a decision's day (Phase 7): each channel's week, what it paid and how much of it reached the poorer half (paid
     // to them, or paid to a till in the share of its outgoings that went to them).
     std::map<std::string, std::pair<double, double>> reach;   // Channel -> reached, paid.
+    // The banks (money that stops, doc 46): town -> its coins and its savers' savings.
+    std::map<std::string, std::pair<std::int64_t, std::int64_t>> banks;
 };
 
 // What the orchestrator remembers from day to day (saved with the society).
@@ -214,6 +229,11 @@ struct Memory
     std::map<std::string, std::int64_t> weekStart;   // Holder -> what it held after the last decision (for its week's gain).
     std::map<std::string, int> growing;              // Holder -> the weeks in a row it has gained.
     std::map<std::string, double> priceLift;         // Town -> its price level, against its shops' books (1 to start).
+    std::map<std::string, double> taxLevel;          // Treasury -> its tax level, against its band (1 to start).
+    // The playbook: its rung on the ladder (0 to 3), the decisions at its most pressure with the shares falling, and those
+    // with neither falling; the bank's terms.
+    int ladder = 0, ladderWeeks = 0, calmWeeks = 0;
+    double depositShare = .25;
     double residentShare = -1;                       // The residents' share of the land's money at the last decision.
     double autoPressure = 1;                         // Its own pressure, from how that share moves.
     double bottomShare = -1, floorLift = 1;          // The poorer half's share of it; the living floor's lift (Phase 6).
@@ -245,6 +265,17 @@ struct Order
     std::string from, town, channel;
     std::int64_t coins = 0;
 };
+// What a bank's savings the channels can't take, given to one who pays wages and is short (money that stops, doc 46).
+struct Grant
+{
+    std::string from, to;
+    std::int64_t coins = 0;
+};
+// One thing it found and did at a decision (the week's report): a town ("" for the land), the tool, and what.
+struct Action
+{
+    std::string town, tool, detail;
+};
 struct PriceSet
 {
     std::string town, item;
@@ -271,6 +302,13 @@ struct Brief
     std::vector<Steer> steers;                       // The steers it weighed.
     std::map<std::string, double> reach;             // Channel -> its reach this week (on a decision's day).
     std::map<std::string, double> learned;           // Channel -> its learned weight.
+    std::map<std::string, double> taxLevels;         // Treasury -> its tax level (in force).
+    std::vector<Grant> grants;                       // The grants from what the channels couldn't take (a decision's).
+    std::vector<Action> actions;                     // The week's report (a decision's).
+    int ladder = 0;                                  // Its rung on the ladder.
+    double depositShare = .25;                       // The banks' terms.
+    // Town -> its bank's coins and its savers' savings (the day's measure).
+    std::map<std::string, std::pair<std::int64_t, std::int64_t>> banks;
 };
 
 // The channels (doc 46, Part 7), in a fixed order.
@@ -294,6 +332,10 @@ struct State
     std::int64_t nextSteer = 1;
     Brief last;                                      // The latest day's measures.
     Brief decision;                                  // The latest week's decisions.
+    // The banks' books (money that stops, doc 46), kept by the society (not the plan's memory, which its thread
+    // replaces): saver -> its town's bank and what it has in. (A bank keeps a reserve and the orchestrator sends the rest
+    // out: its coins may be less than its savers have in.)
+    std::map<std::string, std::pair<std::string, std::int64_t>> deposits;
 };
 // (Saved as JSON: RatwOrchestratorJson.h.) A brief as JSON text, in full or as saved.
 std::string briefText(const Brief& brief, bool full);

@@ -2281,17 +2281,17 @@ void World::practiseMoving(Entity& a, double movedTime)
     // Walking under a heavy load trains strength, running far stamina (doc 49): each 100 and 200 tiles, counted here.
     const double tiles = paceSpeed(a) * movedTime;
     if (a.loadDrain > 1)
-        a.practice.carried += tiles;
+        a.practice->carried += tiles;
     if (effectivePace(a) >= 7)
-        a.practice.ran += tiles;
-    if (a.practice.carried >= 100)
+        a.practice->ran += tiles;
+    if (a.practice->carried >= 100)
     {
-        a.practice.carried -= 100;
+        a.practice->carried -= 100;
         practise(a.id, "load.carry");
     }
-    if (a.practice.ran >= 200)
+    if (a.practice->ran >= 200)
     {
-        a.practice.ran -= 200;
+        a.practice->ran -= 200;
         practise(a.id, "run.far");
     }
 }

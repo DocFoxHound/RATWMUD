@@ -535,6 +535,7 @@ int main(int argc, char** argv)
                 id.rfind("till:", 0) == 0 || id.rfind("fund:", 0) == 0)
                 purses[id] = a.cash;
         }
+        const auto worths = society.bankWorths();
         for (const auto& [id, life] : society.state().residents)
         {
             const auto* e = server.entity(id);
@@ -542,8 +543,9 @@ int main(int argc, char** argv)
                 continue;
             const auto* a = society.account(id);
             const std::int64_t cash = a ? a->cash : 0;
-            people.push_back(cash);
-            residentTotal += cash;
+            const std::int64_t wealth = cash + society.savingsWorth(id, worths);   // (What its savings are worth: doc 46.)
+            people.push_back(wealth);
+            residentTotal += wealth;
             short_ += cash < 6;
             grownShort += cash < 6 && e->age >= 16;     // (Children spend their stipends freely; the larder feeds them.)
             broke += cash <= 0;
@@ -643,7 +645,7 @@ int main(int argc, char** argv)
             const auto* a = society.account(id);
             const std::int64_t cash = a ? a->cash : 0;
             auto& t = towns[server.communityOf(life.homeCell)];
-            t.purses.push_back(cash);
+            t.purses.push_back(cash + society.savingsWorth(id, worths));
             t.short_ += cash < 6;
             t.broke += cash <= 0;
             t.hungry += life.hunger >= 70;
@@ -795,9 +797,12 @@ int main(int argc, char** argv)
                 traced.push_back(id);
         }
     std::map<std::string, std::string> lastTrace;
+    double tickSeconds = 0;                         // (The server's own time in the day, apart from this watch's.)
     for (long i = 0; i < ticks; ++i)
     {
+        const auto tickBegin = std::chrono::steady_clock::now();
         server.tick(0.05);
+        tickSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - tickBegin).count();
         absorb();
         for (const auto& id : traced)
             if (const auto* e = server.entity(id))
@@ -834,11 +839,21 @@ int main(int argc, char** argv)
                 const auto& p = server.tickProfile();
                 const double n = double(std::max<long>(1, i - ticksBefore));
                 const double dayWall = std::chrono::duration<double>(std::chrono::steady_clock::now() - dayBegin).count();
+                // (Every part: the server's tick, its parts, what of it no part counts, and this watch's own bookkeeping.)
+                const auto part = [&](double now_, double then) { return (now_ - then) / n; };
+                const double server_ = tickSeconds * 1000 / n;
+                const double counted = part(p.schedules.total, before.schedules.total) + part(p.movement.total, before.movement.total) +
+                                       part(p.separation.total, before.separation.total) + part(p.views.total, before.views.total) +
+                                       part(p.streaming.total, before.streaming.total);
                 std::cout << std::fixed << std::setprecision(4) << "  cost day " << now << ": " << dayWall * 1000 / n << " ms a tick (society "
-                          << (p.stages[0] - before.stages[0]) / n << ", roads " << (p.stages[2] - before.stages[2]) / n << ", errands "
-                          << (p.stages[4] - before.stages[4]) / n << ", movement " << (p.movement.total - before.movement.total) / n
-                          << ", views " << (p.views.total - before.views.total) / n << ", streaming " << (p.streaming.total - before.streaming.total) / n
-                          << ")\n" << std::defaultfloat;
+                          << part(p.stages[0], before.stages[0]) << ", roads " << part(p.stages[2], before.stages[2]) << ", errands "
+                          << part(p.stages[4], before.stages[4]) << ", movement " << part(p.movement.total, before.movement.total)
+                          << ", views " << part(p.views.total, before.views.total) << ", streaming " << part(p.streaming.total, before.streaming.total)
+                          << "; crime " << part(p.stages[3], before.stages[3]) << ", bonds " << part(p.stages[1], before.stages[1])
+                          << ", wants " << part(p.stages[5], before.stages[5]) << ", routes " << part(p.stages[6], before.stages[6])
+                          << ", separation " << part(p.separation.total, before.separation.total) << "; server " << server_
+                          << ", uncounted " << server_ - counted << ", watch " << dayWall * 1000 / n - server_ << ")\n" << std::defaultfloat;
+                tickSeconds = 0;
                 // What the society holds, to see what accumulates: accounts, kinds of goods held in all and at most in one.
                 std::size_t kinds = 0, most = 0;
                 std::string mostAt;
@@ -868,8 +883,21 @@ int main(int argc, char** argv)
                           << std::defaultfloat << ", pot " << b.pot << "p, margin " << b.margin << ", residents hold " << std::fixed << std::setprecision(3) << b.residentShare << std::defaultfloat << ", own pressure " << b.autoPressure << ", bands";
                 for (const auto& [band, n] : b.bands)
                     std::cout << " " << band << " " << n;
-                std::cout
-                          << ", steers " << b.steers.size() << "\n";
+                // The banks and the tax levels (money that stops, doc 46).
+                std::int64_t saved = 0, coins = 0;
+                for (const auto& [id, d] : server.society().state().orchestrator.deposits)
+                    saved += d.second;
+                for (const auto& [town, bank] : b.banks)
+                    coins += bank.first;
+                double least = 9, most = 0;
+                for (const auto& [id, level] : b.taxLevels)
+                    least = std::min(least, level), most = std::max(most, level);
+                std::cout << ", steers " << b.steers.size() << ", banks saved " << saved << "p hold " << coins << "p, tax levels "
+                          << (b.taxLevels.empty() ? 1 : least) << " to " << (b.taxLevels.empty() ? 1 : most) << ", ladder " << b.ladder
+                          << ", banks' terms " << b.depositShare << "\n";
+                // The week's report (the playbook): what it found and did.
+                for (const auto& a : b.actions)
+                    std::cout << "    did: " << (a.town.empty() ? std::string("the land") : a.town) << ": " << a.tool << ": " << a.detail << "\n";
             }
             orchestraOut.flush();
             orchestraTownsOut.flush();

@@ -4,12 +4,15 @@
 // goods commissioned from its makers, food bought from its farms into its granary (sold on to its food shops when their
 // shelves run low), and its spare goods bought and sent away in trade. Every penny pays someone for work or goods; none is
 // handed to the poor, and none is made or lost.
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <map>
+#include <set>
 #include <vector>
 
 namespace ratw
@@ -110,6 +113,16 @@ void Society::runChannels(std::int64_t day)
         else if (items::producerFor(r.workLabel) && tillOf(r.id) != r.id)
             farms[town].push_back(r.id);
     }
+    // Each town's food on its shops' shelves, in days a head (the playbook's food security).
+    const auto shelfDays = [&](const std::string& town) {
+        double onShelves = 0;
+        for (const auto& shop : foodShops[town])
+            if (const auto* a = account(tillOf(shop)))
+                for (const auto& [item, n] : a->stock)
+                    if (n > 0)
+                        onShelves += double(n) * nourishment(item);
+        return onShelves / (orchestratorDials().nourishADay * double(std::max<std::size_t>(1, folk[town])));
+    };
     std::vector<std::pair<std::string, std::int64_t>> funds;
     for (auto it = state_.accounts.lower_bound("fund:"); it != state_.accounts.end() && it->first.rfind("fund:", 0) == 0; ++it)
         if (it->first != LandFund && it->second.cash > 0)
@@ -154,6 +167,15 @@ void Society::runChannels(std::int64_t day)
                     committed += j.pay * (j.until - day + 1);
             std::vector<std::string> places = shops[town];
             places.insert(places.end(), farms[town].begin(), farms[town].end());
+            // (A town short of food sends its hands to its food first: its food shops and the farms that grow food.)
+            if (shelfDays(town) < orchestratorDials().foodDaysLow)
+                std::stable_partition(places.begin(), places.end(), [&](const std::string& keeper) {
+                    if (foodShop(keeper))
+                        return true;
+                    const auto* sp = spec(keeper);
+                    const auto* producer = sp ? items::producerFor(sp->workLabel) : nullptr;
+                    return producer && !producer->out.empty() && edible(producer->out.front().first);
+                });
             int posted = 0;
             for (std::size_t k = 0; k < places.size() && posted < 3 && cash - committed >= pay * HireDays; ++k)
             {
@@ -227,11 +249,32 @@ void Society::runChannels(std::int64_t day)
                     }
                 }
             }
+            // (From its own shops only what they can spare: not while their shelves hold under foodDaysLow days a head. A
+            // store bought off bare shelves left Upper Accord's eaters short on the eve of a Restday: the playbook.)
             std::map<std::string, int> got;
-            if (spent < budget)
+            if (spent < budget && shelfDays(town) >= orchestratorDials().foodDaysLow)
                 spent += buyForSurplus(fund, foodShops[town], keeps, budget - spent, "orders: food for the granary", &got);
             for (const auto& [item, n] : got)
                 shift(fund, granary, item, n, 0, "into the granary");
+            // Food from elsewhere (the playbook): a town with no food shops of its own, or short of food, has the carters
+            // bring it from the land's best-stocked food shops (those with more than two days' food a head), at their prices.
+            if (spent < budget && (foodShops[town].empty() || shelfDays(town) < orchestratorDials().foodDaysLow))
+            {
+                std::vector<std::pair<double, std::string>> elsewhere;
+                for (const auto& [other, list] : foodShops)
+                    if (other != town && !list.empty())
+                        if (const double d = shelfDays(other); d > 2)
+                            elsewhere.push_back({-d, other});
+                std::sort(elsewhere.begin(), elsewhere.end());
+                std::vector<std::string> sellers;
+                for (const auto& [d, other] : elsewhere)
+                    sellers.insert(sellers.end(), foodShops[other].begin(), foodShops[other].end());
+                std::map<std::string, int> brought;
+                if (!sellers.empty())
+                    spent += buyForSurplus(fund, sellers, keeps, budget - spent, "orders: food brought in for the granary", &brought);
+                for (const auto& [item, n] : brought)
+                    shift(fund, granary, item, n, 0, "into the granary, brought by the carters");
+            }
             note.total = spent;
             note.detail = std::to_string(spent) + "p of food that keeps bought for the granary";
         }
@@ -335,18 +378,46 @@ void Society::runChannels(std::int64_t day)
         if (id.size() < 14 || id.compare(id.size() - 8, 8, ":granary") != 0 || it->second.stock.empty())
             continue;
         const auto town = id.substr(5, id.size() - 13);
-        double onShelves = 0;
-        for (const auto& shop : foodShops[town])
-            if (const auto* a = account(tillOf(shop)))
-                for (const auto& [item, n] : a->stock)
-                    if (n > 0)
-                        onShelves += double(n) * nourishment(item);
-        const double people = double(std::max<std::size_t>(1, folk[town]));
-        // (Three days' food a head on its shelves: enough. In summer and autumn the store is kept for the winter, and goes
-        // out only below a day and a half's.)
-        const double enough = season_ == 1 || season_ == 2 ? 1.5 : 3;
-        if (onShelves >= enough * 50 * people)
+        // The messes first (the playbook): the watch's, the mines' and the quarries', with no food in them, draw a day's
+        // from the granary (paid for as they can, at the land's price): where a town has no food shops of its own, nobody
+        // carries food to its mess, and its guards went hungry on Restdays.
+        for (const char* kind : {":watch", ":mines", ":quarries"})
+        {
+            const auto mess = "town:" + town + kind;
+            const auto* rations = account(mess);
+            if (!rations || hasFood(*rations))
+                continue;
+            int drawn = 0;
+            for (const auto& [item, n] : std::map<std::string, int>(it->second.stock.begin(), it->second.stock.end()))
+            {
+                const auto price = pennies(buyingPrice(town, item));
+                const int k = int(std::min<std::int64_t>({n, 12 - drawn, account(mess)->cash / std::max<std::int64_t>(1, price)}));
+                if (n <= 0 || k <= 0 || !edible(item))
+                    continue;
+                if (transfer(id, mess, item, k, price, "from the granary, for the mess"))
+                    drawn += k;
+                if (drawn >= 12)
+                    break;
+            }
+            if (drawn > 0 && (account(fundOf(town, "food")) || openAccount(fundOf(town, "food"))))
+                shift(id, fundOf(town, "food"), "", 0, account(id)->cash, "the granary's takings");
+        }
+        if (it->second.stock.empty())
             continue;
+        // (The playbook's food security: the granary keeps its store. It fills the shelves to two days' food a head on the
+        // eve of a Restday or a festival, when nobody cooks; in winter and spring whenever they hold under two days; and in
+        // summer and autumn only for a shortage, under a day. Before, it sold whenever they held under a day and a half
+        // all summer, and had nothing by winter.)
+        const bool eve = calendar::weekdayOf(double(day + 1) + .5) == calendar::Restday || calendar::festivalDay(double(day + 1) + .5);
+        const bool lean = season_ == 3 || season_ == 0;
+        const double days = shelfDays(town), enough = eve || lean ? 2 : 1;
+        if (days >= enough)
+            continue;
+        const double people = double(std::max<std::size_t>(1, folk[town]));
+        double onShelves = days * orchestratorDials().nourishADay * people;
+        const double wanted = enough * orchestratorDials().nourishADay * people;
+        if (eve && days < 2)
+            spendings_.push_back({id, town, 0, "the granary fills the shelves for the day nobody cooks"});
         const auto fund = fundOf(town, "food");
         openAccount(fund);
         for (const auto& shop : foodShops[town])
@@ -358,10 +429,275 @@ void Society::runChannels(std::int64_t day)
                 if (n <= 0 || !shelves)
                     continue;
                 const auto price = pennies(buyingPrice(town, item));
-                const int k = int(std::min<std::int64_t>({n, FoodShelf - stockAll(*shelves, item), shelves->cash / price, 99}));
+                const int fill = int(std::ceil(std::max(0.0, wanted - onShelves) / std::max(1, nourishment(item))));
+                const int k = int(std::min<std::int64_t>({n, FoodShelf - stockAll(*shelves, item), shelves->cash / price, 99, fill}));
                 if (k > 0 && transfer(id, till, item, k, price, "from the granary"))
+                {
                     shift(id, fund, "", 0, account(id)->cash, "the granary's takings");
+                    onShelves += double(k) * nourishment(item);
+                }
             }
+        }
+    }
+}
+
+// --- Money that stops (doc 46, "Money that stops": the user, 2026-10-06 and 07) --------------------------------------
+// Each town's bank ("bank:<town>"): its savers' savings, put in at the reckoning and drawn when they run short, its books
+// in the orchestrator's state. It keeps a reserve (a third of what its savers have in) and the orchestrator sends the rest
+// out through its channels each week, like any holder over its band: a black hole the savers' money goes into and comes
+// back out of where the orchestrator says (the user, 2026-10-07: no loans, nothing owed). Then the town levy, and what
+// the comfortable spend their savings on (a hand about the home, a piece commissioned, a feast). Nothing is made or lost.
+namespace
+{
+std::int64_t heldIn(const std::map<std::string, std::pair<std::string, std::int64_t>>& m, const std::string& id)
+{
+    const auto it = m.find(id);
+    return it == m.end() ? 0 : it->second.second;
+}
+}
+
+std::string Society::bankOf(const std::string& town)
+{
+    return "bank:" + town;
+}
+
+std::int64_t Society::savedAtBank(const std::string& resident) const
+{
+    return heldIn(state_.orchestrator.deposits, resident);
+}
+
+std::unordered_map<std::string, double> Society::bankWorths() const
+{
+    std::unordered_map<std::string, double> saved, worth;
+    for (const auto& [id, s] : state_.orchestrator.deposits)
+        saved[s.first] += double(s.second);
+    for (const auto& [town, in] : saved)
+        if (const auto* coins = account(bankOf(town)); coins && in > 0)
+            worth[town] = std::clamp(double(coins->cash) / in, 0.0, 1.0);
+    return worth;
+}
+
+std::int64_t Society::savingsWorth(const std::string& resident, const std::unordered_map<std::string, double>& worths) const
+{
+    const auto it = state_.orchestrator.deposits.find(resident);
+    if (it == state_.orchestrator.deposits.end())
+        return 0;
+    const auto w = worths.find(it->second.first);
+    return w == worths.end() ? 0 : std::int64_t(std::floor(double(it->second.second) * w->second));
+}
+
+double Society::taxLevel(const std::string& treasury) const
+{
+    const auto it = taxLevel_.find(treasury);
+    return it == taxLevel_.end() ? 1.0 : it->second;
+}
+
+std::int64_t Society::payDue(const std::string& from, const std::string& to, std::int64_t due, const std::string& why)
+{
+    const auto* purse = account(from);
+    if (due <= 0 || !purse)
+        return 0;
+    std::int64_t paid = 0;
+    if (const auto k = std::min(due, purse->cash); k > 0 && shift(from, to, "", 0, k, why))
+        paid += k;
+    // The rest from what it has at the bank, as far as its bank has the coins.
+    auto& deposits = state_.orchestrator.deposits;
+    if (const auto saved = deposits.find(from); paid < due && saved != deposits.end())
+    {
+        const auto bank = bankOf(saved->second.first);
+        const auto* coins = account(bank);
+        if (const auto k = std::min({due - paid, saved->second.second, coins ? coins->cash : 0}); k > 0 && shift(bank, to, "", 0, k, why + " (from the bank)"))
+        {
+            paid += k;
+            if ((saved->second.second -= k) <= 0)
+                deposits.erase(saved);
+        }
+    }
+    return paid;
+}
+
+void Society::applyGrants(const orchestra::Brief& brief)
+{
+    if (!brief.decided || orchestratorDials().mode != "on")
+        return;
+    for (const auto& g : brief.grants)
+        if (const auto* bank = account(g.from); bank && account(g.to))
+            if (const auto k = std::min(g.coins, bank->cash); k > 0)
+                shift(g.from, g.to, "", 0, k, "from the bank's savings");
+}
+
+void Society::bankReckoning(std::map<std::string, Reckoning>& towns)
+{
+    const auto& dials = orchestratorDials();
+    if (dials.mode != "on")
+        return;
+    auto& deposits = state_.orchestrator.deposits;
+    // The town levy: a share of what each resident holds (in purse and what its savings are worth) above its levy line,
+    // times its town's tax level, to its town.
+    const auto worths = bankWorths();
+    for (const auto& [id, life] : state_.residents)
+    {
+        const auto* purse = account(id);
+        if (!purse || (merchant(id) && tillOf(id) == id))
+            continue;                                   // (A keeper's purse that is its till: the orchestrator's already.)
+        const auto treasury = treasuryOfResident(id);
+        const auto line = std::int64_t(dials.levyLine * double(wealthLine(id)));
+        const auto held = purse->cash + savingsWorth(id, worths);
+        if (const auto due = std::int64_t(std::floor(double(held - line) * dials.levyShare * taxLevel(treasury))); due > 0)
+            towns[treasury].levy += payDue(id, treasury, due, "a town levy");
+    }
+    // Deposits (the savers' own decision): the bank's terms' share of what each holds above
+    // its deposit line (the orchestrator's: the playbook), into its town's bank.
+    for (const auto& [id, life] : state_.residents)
+    {
+        const auto* purse = account(id);
+        if (!purse || (merchant(id) && tillOf(id) == id))
+            continue;
+        auto town = communityOfResident(id);
+        if (town.empty())
+            town = capital_;
+        if (const auto known = deposits.find(id); known != deposits.end())
+            town = known->second.first;                 // (Its savings stay where it first put them.)
+        const auto line = std::int64_t(dials.depositLine * double(wealthLine(id)));
+        // (At the bank's terms: the orchestrator's, the playbook's.)
+        if (const auto put = std::int64_t(double(purse->cash - line) * state_.orchestrator.memory.depositShare); put > 0)
+        {
+            openAccount(bankOf(town));
+            if (shift(id, bankOf(town), "", 0, put, "saved at the bank"))
+            {
+                auto& saved = deposits[id];
+                saved.first = town;
+                saved.second += put;
+            }
+        }
+    }
+}
+
+void Society::tendBank(std::int64_t day)
+{
+    (void)day;
+    auto& deposits = state_.orchestrator.deposits;
+    std::map<std::string, std::int64_t> drawnToday;
+    for (auto it = deposits.begin(); it != deposits.end();)
+    {
+        const auto bank = bankOf(it->second.first);
+        const auto* coins = account(bank);
+        const auto* purse = account(it->first);
+        const bool gone = !state_.residents.count(it->first);
+        // A saver short of a week's food draws back up to its wealth line; one gone, its savings to its town.
+        const auto want = gone ? it->second.second : purse && purse->cash < FoodADay * 7 ? wealthLine(it->first) - purse->cash : 0;
+        const auto to = gone || !purse ? treasuryOf(it->second.first) : it->first;
+        if (const auto k = std::min({want, it->second.second, coins ? coins->cash : 0});
+            k > 0 && shift(bank, to, "", 0, k, gone ? "an unclaimed saving" : "drawn from the bank"))
+        {
+            it->second.second -= k;
+            drawnToday[it->second.first] += k;
+        }
+        it = it->second.second <= 0 ? deposits.erase(it) : std::next(it);
+    }
+    // (A slow average of what each bank's savers draw a day: its reserve, at the orchestrator's snapshot.)
+    for (const auto& [id, saved] : deposits)
+        bankDrawn_.try_emplace(saved.first, 0.0);
+    for (auto& [town, avg] : bankDrawn_)
+        avg += (double(drawnToday.count(town) ? drawnToday.at(town) : 0) - avg) / 14;
+}
+
+void Society::savers(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
+{
+    const auto& dials = orchestratorDials();
+    if (dials.mode != "on")
+        return;
+    std::map<std::string, std::vector<std::string>> makers, foodShops;
+    for (const auto& r : authored_.residents)
+        if (r.role == "merchant" && state_.residents.count(r.id))
+        {
+            const auto town = communityOfResident(r.id);
+            if (const auto* business = items::businessFor(r.workLabel); business && !items::craftsFor(business->id).empty())
+                makers[town].push_back(r.id);
+            if (foodShop(r.id))
+                foodShops[town].push_back(r.id);
+        }
+    std::map<std::string, std::vector<std::string>> homes;
+    for (const auto& [id, life] : state_.residents)
+        if (!life.homeCell.empty() && bodies.count(id))
+            homes[life.homeCell].push_back(id);
+    std::set<std::string> hiring;                       // (Who has a hand about the home posted already.)
+    std::map<std::string, std::int64_t> room;           // Town -> how many more: as many as it has idle wolves.
+    for (const auto& [town, idle] : idleHands_)
+        room[town] = idle;
+    for (const auto& j : oddJobs_)
+        if (j.kind == "about the home")
+            hiring.insert(j.payer), --room[j.community];
+    // (The best off first: they hire before the rest.)
+    std::vector<std::pair<std::int64_t, const std::string*>> order;
+    const auto worths = bankWorths();
+    for (const auto& [id, life] : state_.residents)
+        if (const auto* purse = account(id))
+            order.push_back({purse->cash + savingsWorth(id, worths), &id});
+    std::stable_sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
+    const bool restday = calendar::weekdayOf(double(day)) == calendar::Restday;
+    for (const auto& [wealth, who] : order)
+    {
+        const auto& id = *who;
+        const auto& life = state_.residents.at(id);
+        const auto body = bodies.find(id);
+        const auto* r = spec(id);
+        const auto* purse = account(id);
+        if (body == bodies.end() || body->second.age < 16 || !r || !purse || (merchant(id) && tillOf(id) == id))
+            continue;
+        const auto line = double(wealthLine(id));
+        const auto held = double(wealth);
+        const auto town = communityOfResident(id);
+        if (town.empty())
+            continue;
+        // A hand about the home: an odd job a day at its home, paid at its town's odd-job rate from its own purse.
+        const auto pay = std::max<std::int64_t>(1, std::int64_t(std::ceil(dayWage(town, "odd job") - 1e-9)));
+        if (held > dials.helpLine * line && purse->cash >= pay * 2 && !hiring.count(id) && !r->home.cell.empty() && room[town] > 0)
+        {
+            --room[town];
+            OddJob j;
+            j.id = "odd" + std::to_string(++nextOddJob_);
+            j.payer = id;
+            j.community = town;
+            j.kind = "about the home";
+            j.what = "a hand about the home: fetching, mending and scrubbing";
+            j.from = j.to = r->home;
+            j.slots = 1;
+            j.pay = pay;
+            oddJobs_.push_back(std::move(j));
+            ++oddVersion_;
+        }
+        // A piece commissioned: once a week (its own day), a costly piece from its town's makers.
+        const auto twoLines = 2 * dials.levyLine * line;
+        if (held > twoLines && std::hash<std::string>{}(id) % 7 == std::size_t(day % 7))
+        {
+            std::map<std::string, int> got;
+            const auto budget = std::min<std::int64_t>(purse->cash - std::int64_t(line), std::int64_t((held - twoLines) / 4));
+            if (budget >= 10)
+                buyForSurplus(id, makers[town], [](const std::string& item) {
+                    const auto* good = items::good(item);
+                    return good && !edible(item) && good->price >= 10;
+                }, budget, "a piece commissioned", &got);
+            for (const auto& [item, n] : got)
+                consume(id, item, n, "kept at home");
+        }
+        // A feast on Restday: a treat for each of its household at home, eaten there and then.
+        if (restday && held > dials.levyLine * line && !life.homeCell.empty())
+        {
+            const auto& members = homes[life.homeCell];
+            std::map<std::string, int> got;
+            buyForSurplus(id, foodShops[town], [](const std::string& item) {
+                const auto* good = items::good(item);
+                return good && edible(item) && !good->drink && good->price >= 3;
+            }, std::min<std::int64_t>(purse->cash - std::int64_t(line), std::int64_t(members.size()) * 9), "a feast", &got);
+            std::size_t next = 0;
+            for (const auto& [item, n] : got)
+                for (int k = 0; k < n && !members.empty(); ++k, ++next)
+                {
+                    consume(id, item, 1, "eat");
+                    auto& guest = state_.residents.at(members[next % members.size()]);
+                    guest.hunger = std::max(0., guest.hunger - nourishment(item) * 1.1);
+                }
         }
     }
 }

@@ -106,7 +106,7 @@ void dungeonMasterMoves()
     const auto& here = p.position;
     expect(w.addVisitor("visitor_a", "A messenger", "", look, p.cellId, here.x, here.y, 2).ok, "A visitor arrives on open ground");
     const auto* v = w.entity("visitor_a");
-    expect(v && v->npc && v->transient && v->appearance.baseColor == 3 && !v->description.empty(), "Looking as asked, a stranger by default");
+    expect(v && v->npc && v->transient && v->appearance->baseColor == 3 && !v->description.empty(), "Looking as asked, a stranger by default");
     expect(w.visitorLeaves("visitor_a") > w.worldTime() && w.visitorLeaves(npc) < 0, "Only visitors have a time to leave");
     expect(!w.addVisitor("visitor_a", "Again", "", look, p.cellId, here.x, here.y, 2).ok, "Never two with one ID");
     expect(!w.addVisitor("visitor_b", "Long", "", look, p.cellId, here.x, here.y, 24 * 60 + 1).ok &&

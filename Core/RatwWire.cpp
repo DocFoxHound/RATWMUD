@@ -284,11 +284,11 @@ Value persistEntity(const Entity& e, double time)
         o.add("endurance", e.endurance);
     if (e.progressVersion > 0)
         o.add("progressVersion", double(e.progressVersion));
-    if (!e.practice.days.empty() || e.practice.rested > 0 || e.practice.lastGainAt >= 0)
+    if (!e.practice->days.empty() || e.practice->rested > 0 || e.practice->lastGainAt >= 0)
     {
         auto practice = Value::object();
         auto days = Value::object();
-        for (const auto& [skill, day] : e.practice.days)
+        for (const auto& [skill, day] : e.practice->days)
         {
             auto row = Value::array();
             row.push(day.start);
@@ -296,10 +296,10 @@ Value persistEntity(const Entity& e, double time)
             days.add(skill, row);
         }
         practice.add("days", days);
-        if (e.practice.rested > 0)
-            practice.add("rested", e.practice.rested);
-        if (e.practice.lastGainAt >= 0)
-            practice.add("lastGainAt", e.practice.lastGainAt);
+        if (e.practice->rested > 0)
+            practice.add("rested", e.practice->rested);
+        if (e.practice->lastGainAt >= 0)
+            practice.add("lastGainAt", e.practice->lastGainAt);
         o.add("practice", practice);
     }
     return o;
@@ -427,9 +427,9 @@ Entity readEntity(const Value& o)
     const auto& practised = o.object("practice");
     for (const auto& [skill, day] : practised.object("days").fields())
         if (practice::skill(skill) && day.isArray() && day.items().size() == 2 && day.items()[0].isNumber() && day.items()[1].isNumber())
-            e.practice.days[skill] = {day.items()[0].asNumber(0), std::clamp(day.items()[1].asNumber(0), 0.0, 1e6)};
-    e.practice.rested = std::clamp(strictNumber(practised, "rested", 0.0), 0.0, 1e6);
-    e.practice.lastGainAt = strictNumber(practised, "lastGainAt", -1.0);
+            e.practice->days[skill] = {day.items()[0].asNumber(0), std::clamp(day.items()[1].asNumber(0), 0.0, 1e6)};
+    e.practice->rested = std::clamp(strictNumber(practised, "rested", 0.0), 0.0, 1e6);
+    e.practice->lastGainAt = strictNumber(practised, "lastGainAt", -1.0);
     e.postureTarget = o.string("postureTarget");
     e.postureRemaining = number(o, "postureRemaining");
     e.turnTarget = e.facing;                       // Input, paths and manual turn intents are never reloaded.
@@ -461,14 +461,14 @@ void practiceView(Value& o, const Entity& e, double now)
         if (const auto* sp = practice::specialty(e.specialty); sp && sp->skill == s.id)
             row.add("specialty", true);
         // Easing off: today's gains have reached the soft limit (and the rolling day hasn't come round).
-        if (const auto day = e.practice.days.find(s.id); day != e.practice.days.end() && now - day->second.start < rules.softDay &&
+        if (const auto day = e.practice->days.find(s.id); day != e.practice->days.end() && now - day->second.start < rules.softDay &&
                                                           now >= day->second.start && day->second.gained >= s.softPerDay)
             row.add("easing", true);
         skills.push(row);
     }
     o.set("attributes", attributes);
     o.set("skills", skills);
-    o.set("restedPractice", e.practice.rested);
+    o.set("restedPractice", e.practice->rested);
 }
 
 void privatePace(Value& o, const Entity& e)

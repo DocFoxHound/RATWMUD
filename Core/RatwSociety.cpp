@@ -624,6 +624,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             tendHouseholds(day, bodies);               // The household purse, and who keeps the house (RatwHouseholds.cpp).
             childrenAndStipends(day, bodies);          // The children's stipends, and what they spend them on.
             wants(day, bodies);                        // And what the grown spend on things they just want.
+            savers(day, bodies);                       // And the comfortable on their savings (doc 46, RatwChannels.cpp).
+            tendBank(day);                             // Savers short of food draw from the bank.
             townBuyers(day, bodies);                   // And the town's own buyers'.
             tradeUpkeep(day, bodies);                  // Tools worn out, horses fed, beggars given a penny (doc 42).
             producersSell(day);                        // What the land gave, to the town's food shops.

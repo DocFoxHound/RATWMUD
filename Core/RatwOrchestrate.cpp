@@ -230,6 +230,7 @@ void Society::orchestrate(double absoluteDay, const std::map<std::string, LifeBo
                 state_.orchestrator.decision = brief;
             applyPrices();                           // Its prices and margin, when it is on (doc 46, Phase 3).
             applyOrders(brief);                      // And the week's orders: money into the channels' funds (Phase 5).
+            applyGrants(brief);                      // And the banks' grants to those short (money that stops).
             if (keepBriefs_)
                 briefs_.push_back(std::move(brief));
         }
@@ -265,6 +266,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
     s.steers = steers;
 
     // Residents (the living: those the world gave a body), and where each lives.
+    const auto worths = bankWorths();
     std::unordered_map<std::string, std::string> nextTown;
     std::map<std::string, int> people;
     std::map<std::string, std::vector<const std::string*>> homes;
@@ -283,6 +285,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         r.hunger = life.hunger;
         if (const auto* a = account(id))
             r.cash = a->cash;
+        r.cash += savingsWorth(id, worths);          // (What its savings are worth is its money: money that stops.)
         const auto* job = jobOf(id);
         // (Not looking for work: a child, the retired, one keeping the house, or one in an unpaid post: a lord, a student.)
         r.dependent = r.age < 16 || r.age >= RetireAge || (job && (homemaking(job->title) || !job->paid));
@@ -326,7 +329,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             {
                 const bool till = merchant(*id) && tillOf(*id) == *id;
                 if (!till)
-                    h.cash += a->cash;
+                    h.cash += a->cash + savingsWorth(*id, worths);
                 h.nourishment += nourishIn(*a, *id);
             }
         byHead.push_back({double(std::max<std::int64_t>(0, h.cash)) / std::max(1, h.members), &members});
@@ -341,6 +344,12 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         for (const auto* id : *members)
             poorHalf_.insert(*id);
     }
+
+    // The banks (money that stops): each one's coins and its savers' savings.
+    for (auto it = state_.accounts.lower_bound("bank:"); it != state_.accounts.end() && it->first.rfind("bank:", 0) == 0; ++it)
+        s.banks[it->first.substr(5)].first = it->second.cash;
+    for (const auto& [id, saved] : state_.orchestrator.deposits)
+        s.banks[saved.first].second += saved.second;
 
     // The holders, and each one's town.
     std::unordered_map<std::string, std::int64_t> spentNext;
@@ -374,6 +383,16 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             if (colon != std::string::npos && id.compare(colon, std::string::npos, ":church") != 0 &&
                 id.compare(colon, std::string::npos, ":granary") != 0)
                 add(id, HolderKind::Buyer, id.substr(5, colon - 5), std::int64_t(dials.floorBuyer), a.cash);
+        }
+        else if (id.rfind("bank:", 0) == 0)
+        {
+            // A bank: its floor is its reserve: four weeks of what its savers draw, twice over, and a tenth of what they
+            // have in at least (money that stops; the playbook: a third kept a pool of its own, the savers drawing little).
+            const auto town = id.substr(5);
+            const auto bank = s.banks.find(town);
+            const double drawn = bankDrawn_.count(town) ? bankDrawn_.at(town) : 0;
+            const auto reserve = std::max<std::int64_t>(bank == s.banks.end() ? 0 : bank->second.second / 10, std::int64_t(std::ceil(drawn * 28 * 2)));
+            add(id, HolderKind::Bank, town, reserve, a.cash);
         }
         else if (id.rfind("house:", 0) == 0)
             add(id, HolderKind::House, houseTown[id], std::max<std::int64_t>(std::int64_t(dials.floorHouse), houseFloor(id)), a.cash);

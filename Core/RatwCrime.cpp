@@ -21,6 +21,7 @@ constexpr double ConfrontSeconds = 30, WalkAway = 8;         // To pay a guard; 
 constexpr double PlayerHours = 2, ResidentHours = 4;         // In the gaol (game hours).
 constexpr double DownAt = 100, UpBelow = 50, HealPerHour = 50;
 constexpr std::size_t IncidentsKept = 400;
+constexpr double WitnessDays = 7;                    // A witness tells the watch within a week, or not at all.
 
 std::uint64_t roll(const std::string& a, std::int64_t b)
 {
@@ -631,10 +632,12 @@ void World::tendCrime()
     for (const auto& [id, e] : entities_.inOrder())
         if (e.npc && !e.offstage && guardOnDuty(id))
             onDuty.push_back(id);
+    // (Not a crime more than WitnessDays old: one who kept quiet that long keeps quiet. Without this every tick asked every
+    // silent witness of the 400 incidents kept, and the cost grew all year: Docs/Design/31-responsiveness.md.)
     for (auto& inc : crime_.incidents)
         for (auto& w : inc.witnesses)
         {
-            if (w.reported || !willReport(w, inc))
+            if (w.reported || calendarDays_ - inc.day > WitnessDays || !willReport(w, inc))
                 continue;
             const auto* e = entity(w.id);
             if (!e || e->offstage)

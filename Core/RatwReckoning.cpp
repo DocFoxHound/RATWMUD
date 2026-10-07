@@ -123,7 +123,9 @@ void Society::reckon(std::int64_t day, bool force)
             // (The same rates for all (the user, 2026-10-06), but nothing from one under the poverty line.)
             if (const auto* r = spec(id); r && purse->cash < PovertyLine)
                 continue;
-            const auto tax = profit / TaxShare + std::max<std::int64_t>(0, profit - TaxBand) / TaxShare, tithe = profit / TitheShare;
+            // (Times its town's tax level, the orchestrator's: money that stops, doc 46.)
+            const auto tax = std::int64_t(double(profit / TaxShare + std::max<std::int64_t>(0, profit - TaxBand) / TaxShare) * taxLevel(treasury)),
+                       tithe = profit / TitheShare;
             const bool paid = shift(id, treasury, "", 0, tax, "town tax");
             const bool tithed = shift(id, town.church, "", 0, tithe, "tithe");
             town.tax += paid ? tax : 0;
@@ -135,14 +137,18 @@ void Society::reckon(std::int64_t day, bool force)
         ownersShare(tillProfits);                   // Its keeper's share of what the business made (RatwTills.cpp).
         // The towns send the capital a tenth of what they took in.
         for (auto& [treasury, town] : towns)
-            if (treasury != "treasury" && town.tax >= CapitalShare && shift(treasury, "treasury", "", 0, town.tax / CapitalShare, "capital's share"))
-                town.toCapital = town.tax / CapitalShare;
+            if (const auto share = std::int64_t(double(town.tax / CapitalShare) * taxLevel("treasury"));
+                treasury != "treasury" && share > 0 && shift(treasury, "treasury", "", 0, std::min(share, account(treasury)->cash), "capital's share"))
+                town.toCapital = share;
         // The wealth tithe: a WealthTitheShare-th of what anyone holds above its comfortable line, to the church.
         openAccount(SharedChurch);
+        const auto worths = bankWorths();
         for (const auto& [id, treasury] : payers)
             if (const auto* purse = account(id))
-                if (const auto due = (purse->cash - wealthLine(id)) / WealthTitheShare; due > 0 && shift(id, SharedChurch, "", 0, due, "a wealth tithe"))
-                    towns[treasury].wealthTithe += due;
+                // (What its savings are worth counts, and pays when its purse can't: money that stops, doc 46.)
+                if (const auto due = (purse->cash + savingsWorth(id, worths) - wealthLine(id)) / WealthTitheShare; due > 0)
+                    towns[treasury].wealthTithe += payDue(id, SharedChurch, due, "a wealth tithe");
+        bankReckoning(towns);                       // The town levy, the banks' interest, and the savers' deposits.
         // (The capital's share for the poor is the economy orchestrator's now: doc 46, Phase 5.)
         for (auto& [treasury, town] : towns)
             reckonings_.push_back(std::move(town));

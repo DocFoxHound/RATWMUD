@@ -791,6 +791,7 @@ class Society
         int payers = 0, residents = 0;
         std::int64_t tax = 0, tithes = 0, toCapital = 0;
         std::int64_t wealthTithe = 0, fromCapital = 0;   // Its folk's wealth tithe; what the capital sent it, for its poor.
+        std::int64_t levy = 0;                           // Its town levy (money that stops, doc 46).
     };
     // Money back out where it pools (Docs/Design/42, "Where money pools", the user, 2026-10-06):
     // - the tax on a week's profit is a tenth, and a fifth of the part above TaxBand;
@@ -880,6 +881,28 @@ class Society
     static std::string fundOf(const std::string& town, const std::string& channel);
     void applyOrders(const orchestra::Brief& brief);
     void runChannels(std::int64_t day);
+    // Money that stops (doc 46; RatwChannels.cpp): each town's bank ("bank:<town>"), its savers' books in the
+    // orchestrator's state; savings put in at the reckoning and drawn when short, the bank's coins above its reserve sent
+    // out by the orchestrator; the town levy; and what the comfortable spend their savings on (a hand about the home, a
+    // piece commissioned, a feast). Each treasury's tax level (the orchestrator's) multiplies what its town takes.
+    static std::string bankOf(const std::string& town);
+    std::int64_t savedAtBank(const std::string& resident) const;
+    // What its savings are worth: its share of what its bank holds (the bank sends the rest out, so a saver can't draw
+    // more). Each town's bank's coins against its savers' savings (at most 1), made once for a pass.
+    std::unordered_map<std::string, double> bankWorths() const;
+    std::int64_t savingsWorth(const std::string& resident, const std::unordered_map<std::string, double>& worths) const;
+    // Pays `due` from `from` to `to`: from its purse first, then from what it has at the bank (as far as the bank has
+    // the coins). What was paid.
+    std::int64_t payDue(const std::string& from, const std::string& to, std::int64_t due, const std::string& why);
+    void bankReckoning(std::map<std::string, Reckoning>& towns);
+    void applyGrants(const orchestra::Brief& brief);   // At a decision: the banks' grants.
+    void tendBank(std::int64_t day);
+    void savers(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    double taxLevel(const std::string& treasury) const;
+    std::unordered_map<std::string, double> taxLevel_;
+    // What each town's savers draw from its bank a day, a slow average (for its reserve; not saved: a restart starts it
+    // afresh, the reserve a tenth meanwhile).
+    std::map<std::string, double> bankDrawn_;
     // Price support (Phase 6): what a staple's sales owe each shop's till, the gap under its price, paid daily from its
     // town's fund; and how many were paid today by wage support, by town (for the orchestrator's snapshot).
     std::unordered_map<std::string, double> supportOwed_;

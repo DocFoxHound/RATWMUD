@@ -224,7 +224,7 @@ scenes::Person Game::scenePerson(const Entity& e) const
 {
     scenes::Person p;
     p.name = e.name;
-    p.sex = e.appearance.sex == "female" ? "female" : "male";
+    p.sex = e.appearance->sex == "female" ? "female" : "male";
     p.stage = lifeStageName(lifeStage(e.age));
     const auto* spec = world_.society().spec(e.id);
     const auto* post = world_.society().jobOf(e.id);
