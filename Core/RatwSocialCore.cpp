@@ -437,20 +437,15 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
     post.audience = listeners;
     acceptedEvents.insert(post.event);
     recent[post.actor] = post;
-    // A party's own scene, or the cell's (doc 32, 1.1): they don't merge.
-    SocialSession* Scene = nullptr;
-    for (auto& Pair : sessions)
-        if (Pair.second.cell == post.cell && Pair.second.ended == 0 && Pair.second.party == post.party)
-        {
-            Scene = &Pair.second;
-            break;
-        }
     auto Add = [&](SocialSession& S, const SocialPost& P) {
         auto& Member = S.members[P.actor];
         if (Member.left)
             return;                                  // (Stepped out: their words count no more here.)
         if (Member.joined == 0)
+        {
             Member.joined = P.at;
+            sceneOf_[P.actor].insert(S.id);
+        }
         S.last = P.at;
         if (P.words < 5)
             return;
@@ -468,46 +463,85 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
         Member.last = P.at;
         Member.lastAudience = P.audience;
     };
-    // Party mates in earshot of each other open their party's scene at once; no A-B-A needed.
-    if (!Scene && !post.party.empty())
+    const auto open = [&](SocialSession& S) {
+        sessions[S.id] = S;
+        openIn_[S.cell].insert(S.id);
+        for (const auto& [who, m] : S.members)
+            sceneOf_[who].insert(S.id);
+    };
+    // Routing (doc 51, §6). 1: the actor's own scene in this lane (their party's, or the room's). It counts only when
+    // another of its wolves hears them (or a party mate is near): words said to no one aren't the scene's.
+    if (const auto mine = sceneOf_.find(post.actor); mine != sceneOf_.end())
+        for (const auto& sid : mine->second)
+            if (auto it = sessions.find(sid); it != sessions.end() && it->second.ended == 0 && it->second.cell == post.cell &&
+                                              it->second.party == post.party)
+            {
+                bool heard = !post.party.empty();
+                for (const auto& Other : it->second.members)
+                    heard = heard || (Other.first != post.actor &&
+                                      std::find(listeners.begin(), listeners.end(), Other.first) != listeners.end());
+                if (heard)
+                    Add(it->second, post);
+                return 0;
+            }
+    const auto here = openIn_.find(post.cell);
+    std::vector<SocialSession*> inCell;
+    if (here != openIn_.end())
+        for (const auto& sid : here->second)
+            if (auto it = sessions.find(sid); it != sessions.end() && it->second.ended == 0 && !isFight(it->second))
+                inCell.push_back(&it->second);
+    // 2: a scene they pressed Join on, or were let in to, in the last two minutes: their line counts at once.
+    for (auto* S : inCell)
+        if (const auto let = S->admitted.find(post.actor); let != S->admitted.end() && let->second >= post.at)
+        {
+            S->admitted.erase(let);
+            Add(*S, post);
+            return 0;
+        }
+    // A party mate (or a fighter) is always part of their party's (or fight's) scene here; party mates in earshot open
+    // their party's scene at once, Private (doc 51, §5), with no A-B-A.
+    if (!post.party.empty() && here != openIn_.end())
+        for (const auto& sid : here->second)
+            if (auto it = sessions.find(sid); it != sessions.end() && it->second.ended == 0 && it->second.party == post.party)
+            {
+                Add(it->second, post);
+                return 0;
+            }
+    if (!post.party.empty())
     {
         SocialSession S;
         S.id = "scene-" + std::to_string(post.event);
         S.cell = post.cell;
         S.party = post.party;
         S.started = post.at;
+        S.openness = "private";
         Add(S, post);
-        sessions[S.id] = S;
+        open(S);
         return 0;
     }
-    // Someone outside answering a party's scene (they heard one of it, and it heard them) joins that scene.
-    if (post.party.empty())
-        for (auto& Pair : sessions)
-        {
-            auto& S = Pair.second;
-            if (S.ended != 0 || S.party.empty() || S.cell != post.cell)
-                continue;
-            for (const auto& Other : S.members)
-                if (Other.first != post.actor && post.at - Other.second.last <= 30 &&
-                    std::find(Other.second.lastAudience.begin(), Other.second.lastAudience.end(), post.actor) !=
-                        Other.second.lastAudience.end() &&
-                    std::find(post.audience.begin(), post.audience.end(), Other.first) != post.audience.end())
-                {
-                    Add(S, post);
-                    return 0;
-                }
-        }
-    if (Scene)
+    // 3: an Open scene takes one who joins in. A room scene: when a member hears them. A party's scene, made Open:
+    // when they answer a member (heard one in the last 30 s, and are heard by them). Knock and Private scenes never take
+    // outsiders by themselves.
+    for (auto* S : inCell)
     {
-        bool Participating = !post.party.empty();          // (A party mate in earshot: always part of the party's scene.)
-        for (const auto& Other : Scene->members)
-            if (Other.first != post.actor &&
-                std::find(listeners.begin(), listeners.end(), Other.first) != listeners.end())
-                Participating = true;
-        if (Participating)
-            Add(*Scene, post);
-        return 0;
+        if (S->openness != "open")
+            continue;
+        for (const auto& Other : S->members)
+        {
+            if (Other.first == post.actor || Other.second.left)
+                continue;
+            const bool hears = std::find(listeners.begin(), listeners.end(), Other.first) != listeners.end();
+            const bool answers = post.at - Other.second.last <= 30 &&
+                                 std::find(Other.second.lastAudience.begin(), Other.second.lastAudience.end(), post.actor) !=
+                                     Other.second.lastAudience.end();
+            if (hears && (S->party.empty() || answers))
+            {
+                Add(*S, post);
+                return 0;
+            }
+        }
     }
+    // 4: an A-B-A exchange between those in no scene here makes one (beside any others: several may share a place).
     auto& Pending = candidates[post.cell];
     Pending.erase(
         std::remove_if(Pending.begin(), Pending.end(), [&](const SocialPost& P) { return post.at - P.at > 30; }),
@@ -525,10 +559,11 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
             S.id = "scene-" + std::to_string(A.event);
             S.cell = post.cell;
             S.started = A.at;
+            S.openness = privatePlace && privatePlace(post.cell) ? "private" : "open";
             Add(S, A);
             Add(S, B);
             Add(S, post);
-            sessions[S.id] = S;
+            open(S);
             Pending.clear();
             return 0;
         }
@@ -539,6 +574,154 @@ int SocialLedger::record(SocialPost post, const std::vector<std::string>& listen
     return 0;
 }
 
+void SocialLedger::ended(const SocialSession& scene)
+{
+    if (const auto it = openIn_.find(scene.cell); it != openIn_.end())
+    {
+        it->second.erase(scene.id);
+        if (it->second.empty())
+            openIn_.erase(it);
+    }
+    for (const auto& [who, m] : scene.members)
+    {
+        if (const auto it = sceneOf_.find(who); it != sceneOf_.end())
+        {
+            it->second.erase(scene.id);
+            if (it->second.empty())
+                sceneOf_.erase(it);
+        }
+        endedOf_[who] = scene.id;                     // (One who stepped out sees it end too: their stars to give.)
+    }
+}
+
+const std::set<std::string>& SocialLedger::scenesOf(const std::string& actor) const
+{
+    static const std::set<std::string> none;
+    const auto it = sceneOf_.find(actor);
+    return it == sceneOf_.end() ? none : it->second;
+}
+
+const std::set<std::string>& SocialLedger::openIn(const std::string& cell) const
+{
+    static const std::set<std::string> none;
+    const auto it = openIn_.find(cell);
+    return it == openIn_.end() ? none : it->second;
+}
+
+std::string SocialLedger::lastEnded(const std::string& actor) const
+{
+    const auto it = endedOf_.find(actor);
+    return it == endedOf_.end() ? std::string() : it->second;
+}
+
+void SocialLedger::reindexScenes()
+{
+    sceneOf_.clear();
+    openIn_.clear();
+    endedOf_.clear();
+    std::map<std::string, double> latest;
+    for (const auto& [sid, s] : sessions)
+    {
+        if (s.ended == 0)
+        {
+            openIn_[s.cell].insert(sid);
+            for (const auto& [who, m] : s.members)
+                if (!m.left)
+                    sceneOf_[who].insert(sid);
+            continue;
+        }
+        for (const auto& [who, m] : s.members)
+            if (s.ended > latest[who])
+            {
+                latest[who] = s.ended;
+                endedOf_[who] = sid;
+            }
+    }
+}
+
+SocialResult SocialLedger::setOpenness(const std::string& member, const std::string& session, const std::string& value, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended != 0 || !it->second.members.count(member) || it->second.members.at(member).left)
+        return {false, "You aren't in that scene."};
+    auto& S = it->second;
+    if (isFight(S))
+        return {false, "A fight is no scene to open or close."};
+    if (value != "open" && value != "knock" && value != "private")
+        return {false, "Open, knock or private."};
+    if (S.openness == value)
+        return {true, {}};
+    if (now - S.opennessAt < OpennessSeconds)
+        return {false, "The scene's door was changed a moment ago."};
+    S.openness = value;
+    S.opennessAt = now;
+    if (value != "knock")
+        S.knocks.clear();
+    return {true, {}};
+}
+
+SocialResult SocialLedger::join(const std::string& actor, const std::string& session, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended != 0 || isFight(it->second))
+        return {false, "That scene is over."};
+    auto& S = it->second;
+    if (S.members.count(actor) && !S.members.at(actor).left)
+        return {false, "You're in that scene already."};
+    if (S.members.count(actor))
+        return {false, "You stepped out of that scene."};
+    if (S.openness != "open")
+        return {false, S.openness == "knock" ? "Knock to join that scene." : "That scene is private."};
+    S.admitted[actor] = now + JoinSeconds;
+    return {true, {}};
+}
+
+SocialResult SocialLedger::knock(const std::string& actor, const std::string& session, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended != 0 || isFight(it->second))
+        return {false, "That scene is over."};
+    auto& S = it->second;
+    if (S.members.count(actor))
+        return {false, S.members.at(actor).left ? "You stepped out of that scene." : "You're in that scene already."};
+    if (S.openness == "open")
+        return {false, "That scene is open: join it."};
+    if (S.openness != "knock")
+        return {false, "That scene is private."};
+    if (const auto r = S.refused.find(actor); r != S.refused.end() && r->second > now)
+        return {false, "They aren't taking anyone just now."};
+    if (const auto k = S.knocks.find(actor); k != S.knocks.end() && now - k->second < KnockSeconds)
+        return {false, "You've knocked already."};
+    S.knocks[actor] = now;
+    return {true, {}};
+}
+
+SocialResult SocialLedger::admit(const std::string& member, const std::string& session, const std::string& who, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended != 0 || !it->second.members.count(member) || it->second.members.at(member).left)
+        return {false, "You aren't in that scene."};
+    auto& S = it->second;
+    const auto k = S.knocks.find(who);
+    if (k == S.knocks.end() || now - k->second >= KnockSeconds)
+        return {false, "No one is knocking."};
+    S.knocks.erase(k);
+    S.admitted[who] = now + JoinSeconds;
+    return {true, {}};
+}
+
+SocialResult SocialLedger::refuse(const std::string& member, const std::string& session, const std::string& who, double now)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end() || it->second.ended != 0 || !it->second.members.count(member) || it->second.members.at(member).left)
+        return {false, "You aren't in that scene."};
+    auto& S = it->second;
+    if (!S.knocks.erase(who))
+        return {false, "No one is knocking."};
+    S.refused[who] = now + RefusedSeconds;
+    return {true, {}};
+}
+
 int SocialLedger::settle(const std::string& id, double now)
 {
     auto It = sessions.find(id);
@@ -546,6 +729,7 @@ int SocialLedger::settle(const std::string& id, double now)
         return 0;
     auto& Scene = It->second;
     Scene.ended = now;
+    ended(Scene);
     std::vector<std::string> Qualified;
     for (const auto& Pair : Scene.members)
         if (shaped(Pair.second))
@@ -572,6 +756,8 @@ bool SocialLedger::leave(const std::string& actor, const std::string& session, d
     if (Me == Scene.members.end() || Me->second.left)
         return false;
     Me->second.left = true;
+    if (const auto mine = sceneOf_.find(actor); mine != sceneOf_.end())
+        mine->second.erase(session);
     std::vector<std::string> Qualified;
     for (const auto& Pair : Scene.members)
         if (shaped(Pair.second))
@@ -647,9 +833,14 @@ void SocialLedger::joinFight(const std::string& fight, const std::string& cell, 
         S.party = fightTag(fight);
         S.started = now;
         S.last = now;
+        S.openness = "";                            // (Joining a fight is doc 33's.)
+        openIn_[cell].insert(S.id);
     }
     if (S.ended == 0 && !S.members.count(member))
+    {
         S.members[member].joined = now;
+        sceneOf_[member].insert(S.id);
+    }
 }
 
 int SocialLedger::settleFight(const std::string& fight, const std::set<std::string>& fought, double now)
@@ -659,6 +850,7 @@ int SocialLedger::settleFight(const std::string& fight, const std::set<std::stri
         return 0;
     auto& Scene = It->second;
     Scene.ended = now;
+    ended(Scene);
     std::vector<std::string> Talked, Paid;
     for (const auto& [who, c] : Scene.members)
         if (shaped(c))
@@ -729,6 +921,27 @@ void SocialLedger::tick(double now)
     for (auto& [id, st] : stories)
         if (st.state == "pending" && now - st.created > 86400)
             st.state = "expired";
+    // Scenes ended more than three days ago go (doc 51, Phase 3): stars and Stories look back a day at most.
+    for (auto it = sessions.begin(); it != sessions.end();)
+        if (it->second.ended > 0 && now - it->second.ended > KeepEndedSeconds)
+        {
+            for (const auto& [who, m] : it->second.members)
+                if (const auto e = endedOf_.find(who); e != endedOf_.end() && e->second == it->first)
+                    endedOf_.erase(e);
+            it = sessions.erase(it);
+        }
+        else
+            ++it;
+    // Knocks past two minutes, and refusals past five, go.
+    for (auto& [sid, sc] : sessions)
+    {
+        for (auto k = sc.knocks.begin(); k != sc.knocks.end();)
+            k = now - k->second >= KnockSeconds ? sc.knocks.erase(k) : std::next(k);
+        for (auto r = sc.refused.begin(); r != sc.refused.end();)
+            r = r->second <= now ? sc.refused.erase(r) : std::next(r);
+        for (auto a = sc.admitted.begin(); a != sc.admitted.end();)
+            a = a->second < now ? sc.admitted.erase(a) : std::next(a);
+    }
     // Stars past two days go (doc 51): duplicates, decay and the daily limit look back a day at most, Story Stars keep
     // their own record (`starred`), and the account-bound record is the star book's.
     stars.erase(std::remove_if(stars.begin(), stars.end(), [&](const SocialStar& s) { return now - s.at > 2 * 86400; }), stars.end());

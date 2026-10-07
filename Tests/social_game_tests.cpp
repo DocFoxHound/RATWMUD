@@ -78,13 +78,20 @@ void actionsAndPartyScenes()
     for (const auto& [id, s] : l.sessions)
         cellScenes += s.party.empty() && s.members.count("cy") && !s.members.count("ada");
     expect(cellScenes == 1 && !l.sessions.begin()->second.members.count("cy"), "the room's own scene forms apart from the party's");
-    // A stranger answering the party joins its scene.
+    // A party's scene starts Private (doc 51): a stranger answering the party doesn't join it.
+    std::string partyScene;
+    for (const auto& [id, s] : l.sessions)
+        if (s.party == "party-1")
+            partyScene = id;
+    expect(l.sessions[partyScene].openness == "private", "a party's scene starts private");
     l.record({event++, 112, "ada", "tavern", 12, false, 15, {}, "party-1"}, {"ada", "bo", "ed"});
     l.record({event++, 115, "ed", "tavern", 12, false, 16, {}, ""}, {"ed", "ada"});
-    bool joined = false;
-    for (const auto& [id, s] : l.sessions)
-        joined |= s.party == "party-1" && s.members.count("ed");
-    expect(joined, "someone answering the party joins its scene");
+    expect(!l.sessions[partyScene].members.count("ed"), "private: someone answering the party stays out of it");
+    // Made Open, it takes one who answers a member (heard them lately, and is heard by them).
+    expect(l.setOpenness("ada", partyScene, "open", 140).ok, "Ada opens it");
+    l.record({event++, 141, "ada", "tavern", 12, false, 17, {}, "party-1"}, {"ada", "bo", "fi"});
+    l.record({event++, 144, "fi", "tavern", 12, false, 18, {}, ""}, {"fi", "ada"});
+    expect(l.sessions[partyScene].members.count("fi"), "open: someone answering the party joins its scene");
 }
 
 // A fight is a scene of its own (doc 33): those who talk it through are paid a scene's ordinary pay (the user,
@@ -120,6 +127,63 @@ void fightScenes()
     m.joinFight("b2", "field", "ed", t);
     m.settleFight("b2", {"di"}, t + 30);
     expect(m.receiptsOf("di").size() == 1 && m.receiptsOf("ed").empty(), "only those who took their turns have the fight's receipt");
+}
+
+// Openness, joining and knocking (doc 51, Phase 3), in the ledger alone.
+void opennessJoiningAndKnocking()
+{
+    std::uint64_t event = 1;
+    const auto post = [&](SocialLedger& l, const std::string& who, double at, std::vector<std::string> hearers) {
+        l.record({event++, at, who, "tavern", 12, false, event * 7919, {}, ""}, hearers);
+    };
+    // A room scene starts Open; Join lets one in, and their next line counts at once, heard or not.
+    SocialLedger l;
+    const auto scene = converse(l, "ada", "bo", 1000, event);
+    expect(l.sessions[scene].openness == "open", "a room scene starts open");
+    expect(l.join("cy", scene, 1040).ok, "Cy joins it");
+    post(l, "cy", 1041, {"cy"});
+    expect(l.sessions[scene].members.count("cy"), "Join: the next line counts, with no A-B-A");
+    expect(l.scenesOf("cy").count(scene), "and the index has her in it");
+    // Knock: a line heard by its wolves doesn't join it; a knock let in does; turned away waits five minutes.
+    expect(!l.setOpenness("ada", scene, "ajar", 1050).ok, "open, knock or private");
+    expect(!l.setOpenness("di", scene, "private", 1050).ok, "only its wolves change it");
+    expect(l.setOpenness("ada", scene, "private", 1045).ok, "the first change, any time");
+    expect(!l.setOpenness("bo", scene, "knock", 1060).ok, "the next not within 30 s of it");
+    expect(l.setOpenness("ada", scene, "knock", 1076).ok && l.sessions[scene].openness == "knock", "Ada makes it knock to join");
+    expect(!l.join("di", scene, 1051).ok, "no Join on a Knock scene");
+    post(l, "di", 1052, {"di", "ada", "bo"});
+    expect(!l.sessions[scene].members.count("di"), "heard by its wolves, Di still isn't in it");
+    expect(l.knock("di", scene, 1053).ok && !l.knock("di", scene, 1054).ok, "Di knocks, once");
+    expect(l.refuse("bo", scene, "di", 1055).ok, "Bo: not now");
+    expect(!l.knock("di", scene, 1056).ok && !l.knock("di", scene, 1055 + 299).ok, "turned away: no knocking for five minutes");
+    expect(l.knock("di", scene, 1055 + 301).ok, "then a knock again");
+    expect(l.admit("ada", scene, "di", 1360).ok, "Ada lets her in");
+    post(l, "di", 1362, {"di", "ada"});
+    expect(l.sessions[scene].members.count("di"), "let in: her next line counts");
+    expect(l.knock("ed", scene, 1400).ok && !l.admit("ada", scene, "ed", 1400 + 121).ok, "a knock lapses after two minutes");
+    // Private: no Join, no knock, nobody by themselves.
+    expect(l.setOpenness("bo", scene, "private", 1500).ok, "Bo makes it private");
+    expect(!l.join("fi", scene, 1501).ok && !l.knock("fi", scene, 1502).ok, "private: no Join, no knock");
+    // Several scenes in one place: two strangers beside the private one make their own.
+    post(l, "fi", 1503, {"fi", "gu"});
+    post(l, "gu", 1506, {"gu", "fi"});
+    post(l, "fi", 1509, {"fi", "gu", "ada"});
+    int scenesHere = 0;
+    for (const auto& sid : l.openIn("tavern"))
+        scenesHere += l.sessions[sid].ended == 0;
+    expect(scenesHere == 2 && !l.sessions[scene].members.count("fi"), "two scenes in the tavern; the private one keeps to itself");
+    // A copy, as a load makes one: indexes rebuilt, routing as before.
+    SocialLedger copy;
+    copy.sessions = l.sessions;
+    copy.reindexScenes();
+    expect(copy.scenesOf("ada").count(scene) && copy.openIn("tavern").size() == 2, "indexes rebuilt from the scenes");
+    // Ended scenes are kept three days for stars and Stories, then let go; each member's last ended scene is known.
+    l.settle(scene, 2000);
+    expect(l.lastEnded("ada") == scene && !l.scenesOf("ada").count(scene) && !l.openIn("tavern").count(scene), "ended: out of the indexes");
+    l.tick(2000 + 3 * 86400 - 10);
+    expect(l.sessions.count(scene), "kept for three days");
+    l.tick(2000 + 3 * 86400 + 10);
+    expect(!l.sessions.count(scene) && l.lastEnded("ada").empty(), "then let go");
 }
 
 void leavingAScene()
@@ -378,6 +442,7 @@ int main()
         actionsAndPartyScenes();
         fightScenes();
         leavingAScene();
+        opennessJoiningAndKnocking();
         starsAndStories();
         aSceneSeenAndStarred("/tmp/ratw-social-test-" + std::to_string(::getpid()) + ".json");
     }

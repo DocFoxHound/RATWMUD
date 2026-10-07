@@ -278,6 +278,61 @@ void theBook()
     expect(back.recent().empty() && back.tally("ada")->total == 10, "old stars pruned, the total kept");
 }
 
+void tagsKnownForAndTheRate()
+{
+    // Tags: only the giver, once, within ten minutes, a real tag; Welcoming only from a newcomer.
+    stars::Book b;
+    const double t = 2e9;
+    const auto s1 = b.record(star("bob", "ada", t));
+    std::string why;
+    expect(!b.tag(s1.id, "cyd", "packmate", false, t + 1, why) && why == "That isn't a star you gave.", "only its giver tags it");
+    expect(!b.tag(s1.id, "bob", "nemesis", false, t + 1, why) && why == "Not a tag.", "a real tag");
+    expect(!b.tag(s1.id, "bob", "welcoming", false, t + 1, why) && why == "Only a newcomer gives that tag.", "Welcoming from newcomers only");
+    expect(b.openToTag("w-bob", t + 5).size() == 1, "open to a tag for ten minutes");
+    expect(b.tag(s1.id, "bob", "packmate", false, t + 5, why) && b.tally("ada")->tags.at("packmate") == 1, "tagged Packmate");
+    expect(!b.tag(s1.id, "bob", "goodfun", false, t + 6, why) && why == "That star is tagged already.", "once, for good");
+    expect(b.openToTag("w-bob", t + 7).empty(), "and no longer open");
+    const auto s2 = b.record(star("bob", "ada", t + 10));
+    expect(!b.tag(s2.id, "bob", "goodfun", false, t + 700, why) && why == "It's too late to tag that star." &&
+               b.openToTag("w-bob", t + 700).empty(),
+           "past ten minutes, too late");
+    expect(b.tag(s2.id, "bob", "welcoming", true, t + 11, why), "a newcomer may give Welcoming");
+    // Known for, from 50 counted stars: the most-given tag, both when tied; counts for the player, words for others.
+    stars::Book k;
+    for (int i = 0; i < 49; ++i)
+    {
+        const auto s = k.record(star("g" + std::to_string(i), "ada", t + i));
+        k.tag(s.id, "g" + std::to_string(i), i < 30 ? "storyteller" : i < 45 ? "packmate" : "goodfun", false, t + i, why);
+    }
+    expect(!k.view("ada", true).has("knownFor"), "49 stars: not yet Known for anything");
+    k.record(star("g49", "ada", t + 49));
+    const auto mine = k.view("ada", true), theirs = k.view("ada", false);
+    expect(mine.array("knownFor").size() == 1 && mine.array("knownFor")[0].asString() == "Storyteller", "50: Known for Storyteller");
+    expect(mine.array("tags")[0].number("count") == 30 && !mine.array("tags")[0].has("words"), "the player sees counts");
+    expect(theirs.array("tags")[0].string("words") == "mostly" && theirs.array("tags")[1].string("words") == "often" &&
+               !theirs.array("tags")[0].has("count") && theirs.array("knownFor")[0].asString() == "Storyteller",
+           "a stranger sees words: mostly Storyteller, often Packmate");
+    stars::Book tie;
+    for (int i = 0; i < 50; ++i)
+    {
+        const auto s = tie.record(star("g" + std::to_string(i), "ada", t + i));
+        tie.tag(s.id, "g" + std::to_string(i), i % 2 ? "packmate" : "goodfun", false, t + i, why);
+    }
+    expect(tie.view("ada", false).array("knownFor").size() == 2, "a tie shows both");
+    // The rate: Gold Stars received for chances, in words, once there have been 20 chances.
+    stars::Book r;
+    r.chances("ada", 19);
+    for (int i = 0; i < 12; ++i)
+        r.record(star("h" + std::to_string(i), "ada", t + i));
+    expect(!r.view("ada", false).has("rate"), "19 chances: no rate yet");
+    r.chances("ada", 1);
+    expect(r.view("ada", false).string("rate") == "most wolves who play with them leave a star" &&
+               r.view("ada", true).number("rateShare") == 0.6 && !r.view("ada", false).has("rateShare"),
+           "12 of 20: \"most wolves...\"; the share for the player only");
+    r.chances("ada", 30);
+    expect(r.view("ada", false).string("rate") == "some wolves who play with them leave a star", "12 of 50: \"some\"");
+}
+
 // A party scene between Ada and Bo, ended: its id.
 std::string scene(World3& w)
 {
@@ -319,6 +374,15 @@ void throughTheGame()
     expect(!sid.empty(), "a scene between Ada and Bo, ended");
     w.send(w.bo, "social", {{"verb", "star"}, {"session", sid}, {"target", w.adaId}});
     expect(w.bo.said("You give") && w.bo.said("a Gold Star"), "Bo stars Ada: " + std::string(w.bo.last("system") ? w.bo.last("system")->string("text") : ""));
+    // Bo may tag it for ten minutes: it's listed for him, and his tag reaches Ada's count.
+    w.tick(2.5);
+    const auto& given = w.bo.snapshots.back().object("self").object("social").array("starsGiven");
+    expect(given.size() == 1 && given[0].number("left") > 500 && !given[0].string("to").empty(), "Bo's star, open to a tag");
+    w.send(w.bo, "social", {{"verb", "startag"}, {"star", given[0].string("id")}, {"tag", "storyteller"}});
+    expect(w.bo.said("Tagged: Storyteller."), "tagged");
+    expect(w.g.starBook().tally("ada")->tags.at("storyteller") == 1, "Ada's Storyteller count");
+    expect(w.g.starBook().tally("ada")->chances == 1 && w.g.starBook().tally("bob")->chances == 1,
+           "each had one chance to be starred: one other qualified with them");
     w.tick(2.5);
     const auto* mine = myStars(w.ada);
     expect(mine && mine->boolean("exact") && mine->number("total") == 1 && mine->number("from") == 1,
@@ -372,6 +436,7 @@ int main()
     try
     {
         theBook();
+        tagsKnownForAndTheRate();
         throughTheGame();
         keptAcrossARestart();
     }

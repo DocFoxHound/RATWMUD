@@ -117,3 +117,12 @@ test('stars: in words, exact for oneself and a friend who sees, in bands for oth
     assert.equal(starsLine({exact: false, band: '250+', fromBand: '30+'}), '★ 250+ stars from 30+ wolves');
     assert.equal(starsLine({exact: false, band: 'a few', fromBand: 'a few'}), '★ A few stars');
 });
+
+test('stars: Known for, the tags and the rate in words', async () => {
+    const {starsDetail} = await import('../ui/hud/dialogs.ts');
+    assert.equal(starsDetail({exact: true, knownFor: ['Storyteller'], tags: [{name: 'Storyteller', count: 30}, {name: 'Packmate', count: 15}],
+        rate: 'most wolves who play with them leave a star'}), 'Known for: Storyteller · Storyteller 30, Packmate 15 · Most wolves who play with them leave a star');
+    assert.equal(starsDetail({exact: false, knownFor: ['Packmate', 'Good fun'], tags: [{name: 'Packmate', words: 'often'}]}),
+        'Known for: Packmate and Good fun · often Packmate');
+    assert.equal(starsDetail({exact: false, band: 'a few', tags: []}), '');
+});

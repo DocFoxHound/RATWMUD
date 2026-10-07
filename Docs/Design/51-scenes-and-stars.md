@@ -577,3 +577,119 @@ None.
   - A star: one pass over the last 30 days' stars to count it. Stars are rare.
   - A card or the sheet: one map lookup.
   - Nothing runs in the world's tick.
+
+### Phase 2: tags, Known for, the spread and the rate (built 2026-10-07, not committed)
+
+- **The book** (`Core/RatwStars.*`):
+  - `Book::tag`: only the star's giver may tag it, once, within the 10-minute window, with one of the tags. Welcoming
+    needs a newcomer. A tag on a counted star goes into the tally.
+  - `openToTag`: the giver's untagged stars still in the window, found by a short walk back from the newest.
+  - `chances`: chances to have been starred, for the rate.
+  - `view` now adds the tags (counts for the exact view; for everyone else each tag's share in words: "mostly",
+    "often", "sometimes", "now and then"), `knownFor` (from 50 counted stars, the most-given tag, both when tied),
+    and, with `showRate` on (the user's answer), the rate in words after 20 chances, with the share for the exact
+    view only.
+- **The game:**
+  - The social verb `startag {star, tag}`.
+  - `self.social.starsGiven` lists the stars this wolf may still tag, each with whom it went to, the seconds left,
+    and the tags it may give. Welcoming stays hidden until doc 52 says who's a newcomer.
+  - Chances are counted at each settlement in `afterSocial`, one for each other who qualified with them (the
+    entry's partners), so `SocialLedger` stays pure.
+- **Client:**
+  - After a star, the scene bar asks "★ Your star to … : what was it for?" with a chip for each tag; one click tags
+    it, and the chips go.
+  - This covers stars from a scene, a fight or a Story, since they all show in the story column.
+  - The sheet and a card show what the stars say beneath the count: "Known for: Storyteller · Storyteller 30,
+    Packmate 15 · Most wolves who play with them leave a star", or in words for strangers.
+  - The scene bar and the fight result card no longer say fight roleplay pays twice.
+- **Tests:**
+  - `Tests/stars_tests.cpp` (777 checks), covering:
+    - tags: only by the giver, real tags, Welcoming only from a newcomer, open for ten minutes, once, too late after;
+    - Known for: none at 49, Storyteller at 50, both on a tie;
+    - counts for the player and words for a stranger;
+    - the rate: none at 19 chances, "most…" at 12 of 20 (the share for the player only), "some…" at 12 of 50;
+    - in the game: Bo's star open to a tag, tagged Storyteller into Ada's count, and one chance each from their
+      scene.
+  - `Client/src/game/people.test.ts` (the words).
+  - `tools/client/stars.mjs` (new, 9 checks; screenshots in `artifacts/screenshots/stars/`): a scene ends; Bo stars
+    Ash from its card; the tag chips follow, he tags Storyteller, and they go; Ash's sheet shows "★ 1 star from 1
+    wolf" and "Storyteller 1"; Cy, a stranger, sees "★ A few stars".
+  - `ctest` 53 of 53; client tests 107; `card`, `scenes` and `friends` pass in a real page.
+- **Cost:**
+  - A tag: one walk back through the stars of the last ten minutes.
+  - The open stars, in each social view every two seconds: the same short walk.
+  - Chances: one counter per settlement.
+  - No new saving: tags and chances go in the tallies.
+
+### Phase 3: openness, joining and knocking (built 2026-10-07, not committed)
+
+- **Scenes** (`Core/RatwSocialCore.h`): `SocialSession` gains `openness` ("open", "knock", "private", or "" for a
+  fight's), `opennessAt` (the last change), and `admitted`, `knocks` and `refused` (who, until when). All are saved
+  in `socialSessions` (`Core/RatwCheckpoint.cpp`). Older scenes load Open; that table needed no migration.
+- **Routing** (`SocialLedger::record`, rewritten):
+  1. The actor's own scene in that lane (their party's or the room's) takes the line, and only when another of its
+     wolves hears them (or a party mate is near). Words said to no one stay out, as before.
+  2. A scene they joined or were let in to in the last two minutes takes the next line at once, heard or not, with no
+     A–B–A.
+  3. A party mate's line goes to their party's scene here, or opens one, Private.
+  4. An Open room scene takes one a member hears. An Open party scene takes one who answers a member.
+  5. Otherwise the A–B–A candidates, so two strangers make their own scene beside a Private one, and several scenes
+     share a place.
+
+  Knock and Private scenes never take an outsider by themselves. As planned, a stranger who answers a party member no
+  longer joins its (Private) scene.
+- **Indexes:** `scenesOf(actor)`, `openIn(cell)` and `lastEnded(actor)` are kept by `record`, `leave`, `settle` and
+  the fight's scenes. `reindexScenes()` rebuilds them after a load.
+  - Scenes that ended more than three days ago are let go in `tick`; Stories and stars look back a day at most.
+  - Knocks lapse after two minutes and refusals after five.
+- **Ledger rules:**
+  - `setOpenness`: members only; the first change any time, then at most one every 30 seconds.
+  - `join`: Open scenes only.
+  - `knock`: Knock scenes only; once; not again within five minutes of being turned away.
+  - `admit` and `refuse`: members, while a knock is under two minutes old.
+- **Where a scene starts Private:** a party's scene, and a room scene in a rented place (`Game` sets
+  `SocialLedger::privatePlace` from `estates_.lease`).
+  - This differs from §5: residents' homes are left out for now. The world can't tell a home from an inn or a shop
+    whose keeper lives there, and counting those would have made tavern scenes private.
+- **The game** (`socialCommand`): the verbs `openness`, `join`, `knock`, `admit` and `refuse`.
+  - Joining and knocking need the wolf to be in the scene's place and able to hear one of its wolves speaking.
+  - Anyone a member has blocked is refused: "You can't join that scene." or "No answer.", never who.
+  - Members are told of a change ("… made the scene private."), of a knock (a `knock` event and a line where they
+    write) and of who was let in. The knocker is told whether they were let in.
+- **The scene views** (`refreshSocialViews`) now walk each player's own scenes through the index, find their last
+  ended scene through `lastEnded`, and read receipts by actor. Before, they scanned every scene and every receipt
+  ever, for every player.
+  - Each scene carries `openness` and `knocks`, named as this wolf knows the knockers.
+  - `nearby` lists the Open and Knock scenes here that the player isn't in, could hear, and has no blocks with: how
+    many wolves and the openness, never names.
+- **Client** (`story.ts`):
+  - Each of one's scenes shows OPEN · KNOCK · PRIVATE, with the current one lit.
+  - A knock shows as "… is knocking · LET IN · NOT NOW".
+  - A scene here shows as "A SCENE HERE · OPEN / KNOCK TO JOIN · 2 wolves", with JOIN or KNOCK, or "knocked".
+  - The scene bar now also shows when one is in no scene but one is nearby, or a star is waiting for its tag. Before,
+    both stayed hidden.
+  - Doc 52's "new" mark waits for doc 52.
+- **Tests:**
+  - `Tests/social_game_tests.cpp` (584 checks):
+    - a party's scene starts Private and a stranger answering stays out; opened, one who answers joins;
+    - Join makes the next line count, heard or not;
+    - the 30-second limit and its first-change exception, bad values, non-members;
+    - Knock: no Join; heard but not in; knock once; turned away for five minutes; let in; a knock lapsing;
+    - Private: no Join, no knock;
+    - two scenes in one tavern; indexes rebuilt from a copy;
+    - an ended scene out of the indexes, kept three days, then let go.
+  - `Tests/scene_doors_tests.cpp` (new, 984 checks, most of them snapshot fills): through the game, a party's scene
+    unseen by Cy until Ada opens it; Cy sees "2 wolves · open" with no names, joins, and her line counts; a Knock scene
+    refuses Join and ignores her talk; her knock reaches both its wolves with a line, shows in Ada's scene line and as
+    "knocked" in hers; let in, her line counts; one who blocked her keeps the scene out of her list and refuses her
+    join and her knock, without saying who.
+    - While writing this file I first saved it over the existing `Tests/scenes_tests.cpp` (doc 30's ambient scenes,
+      which had no local changes). I restored it from git; it still passes its 260 checks.
+  - `tools/client/scenes.mjs` grows a knock: Bo makes his scene KNOCK; Cy sees "A SCENE HERE · KNOCK TO JOIN · 1 wolf"
+    and knocks; Bo sees it with LET IN and lets her in; her line counts. Screenshots 8 and 9.
+  - `ctest` 54 of 54; client tests 107; `card`, `stars`, `friends`, `safety`, `party` and `names` pass in a real page.
+- **Cost:**
+  - Routing is a lookup into the actor's own scenes, then the open scenes in that place, instead of every scene ever.
+  - The scene views are O(players × their own scenes), plus the open scenes in each player's place for `nearby`.
+  - Scenes are let go three days after ending.
+  - Nothing new runs in the world's tick.

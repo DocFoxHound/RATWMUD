@@ -103,6 +103,9 @@ void Game::tendScenes()
     }
     for (auto it = metAt_.begin(); it != metAt_.end();)
         it = now() - it->second >= people::rules().metEvery ? metAt_.erase(it) : std::next(it);
+    // Scenes the ledger has let go (three days after they ended: doc 51) are forgotten here too.
+    for (auto it = scenesDone_.begin(); it != scenesDone_.end();)
+        it = social_.sessions.count(*it) ? std::next(it) : scenesDone_.erase(it);
 }
 
 void Game::seedScenes()

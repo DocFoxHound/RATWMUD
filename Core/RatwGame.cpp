@@ -267,6 +267,9 @@ Game::Game(Options options) : options_(std::move(options)), random_(std::random_
     // A Chapter's rented places are locked to all but its members and guests (doc 32, 5.2).
     world_.mayEnter = [this](const std::string& who, const std::string& cell) { return mayEnterPlace(who, cell); };
     world_.realClock = [] { return Game::now(); };                                  // (Practice's day: doc 49.)
+    // A room scene starts Private in a rented place (doc 51, §5). (Residents' homes too, in the plan; but the world
+    // doesn't tell a home from an inn or a shop its keeper lives in, so a home's scene starts Open for now.)
+    social_.privatePlace = [this](const std::string& cell) { return estates_.lease(cell) != nullptr; };
     world_.accountOf = [this](const std::string& who) { return accounts_.ownerOf(who); };
     world_.playerActive = [this](const std::string& who) {   // (At the keys in the last five minutes: doc 49.)
         const auto at = operatorActivity_.find(who);
@@ -4610,7 +4613,7 @@ void Game::command(Connection* c, const std::string& raw)
             for (const auto& listener : heard)
                 if (listener != id && parties_.together(id, listener) && clientOf(listener))
                     partyScene = mine->id;
-        // A fighter's words are the fight's scene (doc 33): roleplaying it through pays twice.
+        // A fighter's words are the fight's scene (doc 33): roleplaying it through pays as a scene does (doc 51).
         if (const auto* fight = world_.battleOf(id); fight && !fight->over)
             if (const auto* me = fight->fighter(id); me && me->status != "fled")
                 partyScene = SocialLedger::fightTag(fight->id);
@@ -4830,6 +4833,7 @@ void Game::load(const std::string& payload)
     social_.points = state.social.points;
     social_.recent = state.social.recent;
     social_.sessions = state.social.sessions;
+    social_.reindexScenes();                          // (Who is in which open scene, and each one's last: doc 51.)
     social_.stars = state.social.stars;
     social_.stories = state.social.stories;
     social_.nextStory = state.social.nextStory;

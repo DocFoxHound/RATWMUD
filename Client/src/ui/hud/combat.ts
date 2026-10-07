@@ -874,7 +874,7 @@ export class CombatScreen {
         if (review) {
             const box = el('div', 'result-review', this.result);
             el('div', 'label gold', box, `ROLEPLAY REVIEW · +${num(review, 'xp')} SOCIAL`);
-            el('div', 'muted small', box, bool(review, 'talked') ? 'For the fight, and twice for roleplaying it.'
+            el('div', 'muted small', box, bool(review, 'talked') ? 'For the fight, and for roleplaying it, as a scene pays.'
                 : 'For the fight. Talk it through: roleplay in a fight pays as a scene does.');
             const targets = arr(review, 'starTargets').filter(isObject), starred = arr(review, 'starred').filter(isObject);
             const row = el('div', 'result-stars', box);

@@ -22,6 +22,8 @@ struct Rules
     bool showRate = true;
     std::vector<std::pair<double, std::string>> rateWords;
     std::vector<std::string> tags;                 // "storyteller", "packmate", "goodfun", "welcoming".
+    std::map<std::string, std::string> tagNames;   // "goodfun" -> "Good fun".
+    std::vector<std::string> newcomersOnly;        // Tags only a newcomer may give ("welcoming": doc 52).
     json::Value catalog = json::Value::object();   // The file, as the client is sent it.
 };
 const Rules& rules();
@@ -53,6 +55,14 @@ class Book
     Star record(Star star);
     const Tally* tally(const std::string& account) const;
     const std::vector<Star>& recent() const { return recent_; }   // The last 30 days', oldest first.
+    // Tags a star (§2): only its giver, once, within the tag window, with one of the tags (a newcomer-only tag only
+    // when `newcomer`). Counts toward the tally's tags when the star counted. False, with the reason.
+    bool tag(const std::string& starId, const std::string& giverAccount, const std::string& tag, bool newcomer, double now,
+             std::string& error);
+    // The giver's stars still open to a tag (given in the last tag window, untagged), newest first.
+    std::vector<const Star*> openToTag(const std::string& giverCharacter, double now) const;
+    // A chance to have been starred (§3): at each settlement, one for each other who qualified with them.
+    void chances(const std::string& account, int n);
     // Drops recent stars past 30 days (tallies keep their counts).
     void prune(double now);
     json::Value save() const;

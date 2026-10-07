@@ -143,10 +143,24 @@ export class StoryPanel {
         this.warnQuiet(scenes);
         // The quiet countdown in whole minutes, so the line is rebuilt once a minute, not on every snapshot.
         const shown = scenes.map(sc => ({...sc, endsIn: Math.ceil(num(sc, 'endsIn') / 60)}));
-        const key = JSON.stringify([shown, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')])]);
+        // Stars this wolf gave that it may still tag (doc 51): their ids only in the key, so the countdown doesn't rebuild it.
+        const given = arr(social, 'starsGiven').filter(isObject);
+        const nearby = arr(social, 'nearby').filter(isObject);
+        const key = JSON.stringify([shown, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')]),
+            given.map(g => str(g, 'id')), nearby]);
         if (key === this.sceneKey) return;
         this.sceneKey = key;
         this.sceneBar.replaceChildren();
+        for (const g of given) {
+            // "What was it for?" One more click tags the star, for good (optional).
+            const row = el('div', 'profile-veils star-tags', this.sceneBar);
+            el('span', 'gold small', row, `★ Your star to ${str(g, 'to')}: what was it for?`);
+            for (const t of arr(g, 'tags').filter(isObject)) {
+                const chip = button(str(t, 'name').toUpperCase(), 'small chip', row,
+                    () => this.s.send({type: 'social', verb: 'startag', star: str(g, 'id'), tag: str(t, 'id')}));
+                chip.dataset.tag = str(t, 'id');
+            }
+        }
         for (const scene of scenes) {
             // Each scene one is in (a party's beside the room's): who with, what pay still needs, and, with two, where
             // one's next words count (doc 08).
@@ -167,6 +181,35 @@ export class StoryPanel {
             el('span', 'muted small', row, sceneNeedsLabel(scene));
             const quiet = sceneQuietLabel(scene);
             if (quiet) el('span', 'scene-quiet small', row, quiet);
+            if (!bool(scene, 'fight') && str(scene, 'openness')) {
+                // Who may come in (doc 51): any of its wolves may change it, the one lit is how it stands.
+                const door = el('div', 'profile-veils scene-door', row);
+                for (const [value, label, tip] of [['open', 'OPEN', 'Anyone near may join in'], ['knock', 'KNOCK', 'Others knock, and one of you lets them in'],
+                    ['private', 'PRIVATE', 'Only its wolves']] as const) {
+                    const b = button(label, str(scene, 'openness') === value ? 'small active' : 'small', door,
+                        () => s.sendSocial({verb: 'openness', session: str(scene, 'id'), value}));
+                    b.title = tip;
+                    b.dataset.openness = value;
+                }
+                for (const k of arr(scene, 'knocks').filter(isObject)) {
+                    const knock = el('div', 'profile-veils scene-knock', row);
+                    el('span', 'gold small', knock, `${str(k, 'name')} is knocking`);
+                    button('LET IN', 'small', knock, () => s.sendSocial({verb: 'admit', session: str(scene, 'id'), who: str(k, 'id')}));
+                    button('NOT NOW', 'small', knock, () => s.sendSocial({verb: 'refuse', session: str(scene, 'id'), who: str(k, 'id')}));
+                }
+            }
+        }
+        for (const n of nearby) {
+            // A scene here one could join, or knock on (doc 51): how many wolves, never who.
+            const row = el('div', 'scene-row scene-nearby', this.sceneBar);
+            const open = str(n, 'openness') === 'open';
+            el('span', 'label muted', row, open ? 'A SCENE HERE · OPEN' : 'A SCENE HERE · KNOCK TO JOIN');
+            el('span', 'small', row, ` ${num(n, 'wolves')} ${num(n, 'wolves') === 1 ? 'wolf' : 'wolves'}`);
+            if (open) button('JOIN', 'small', row, () => s.sendSocial({verb: 'join', session: str(n, 'id')})).title =
+                'Join this scene: your next words count in it';
+            else if (bool(n, 'knocked')) el('span', 'muted small', row, ' · knocked');
+            else button('KNOCK', 'small', row, () => s.sendSocial({verb: 'knock', session: str(n, 'id')})).title =
+                'Ask to join: one of its wolves may let you in';
         }
         if (ended) {
             const row = el('div', 'scene-ended', this.sceneBar);
@@ -176,7 +219,7 @@ export class StoryPanel {
             if (fight) {
                 // The fight's roleplay review (doc 33): a Gold Star to each who played it well, one each, as many as like.
                 el('span', 'label gold', row, `ROLEPLAY REVIEW · FIGHT OVER · +${num(ended, 'xp')} SOCIAL`);
-                el('span', 'muted small', row, bool(ended, 'talked') ? 'Paid for the fight, and twice for roleplaying it.'
+                el('span', 'muted small', row, bool(ended, 'talked') ? 'Paid for the fight, and for roleplaying it, as a scene pays.'
                     : 'Paid for the fight. Talk it through next time: roleplay in a fight pays as a scene does, and stars are how it is thanked.');
                 if (targets.length || starred.length) el('span', 'muted small', row, 'Who roleplayed it well? Give each a Gold Star:');
             } else el('span', 'label gold', row, `SCENE ENDED · +${num(ended, 'xp')} SOCIAL`);
@@ -198,7 +241,7 @@ export class StoryPanel {
                 });
             }
         }
-        show(this.sceneBar, scenes.length > 0 || !!ended);
+        show(this.sceneBar, scenes.length > 0 || !!ended || nearby.length > 0 || given.length > 0);
     }
 
     private warned = new Set<string>();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -105,6 +106,12 @@ struct SocialSession
     double started = 0, last = 0, ended = 0;
     std::map<std::string, Contribution> members;
     std::string party = {};       // A party's own scene, apart from the cell's (doc 32, 1.1).
+    // Who may come in (doc 51, §5-6): "open" (anyone in earshot, by speaking or Join), "knock" (anyone let in) or
+    // "private" (members only); "" for a fight's (joining a fight is doc 33's). Who was let in, and until when; who is
+    // knocking, since when; who was turned away, and until when they may knock again.
+    std::string openness = "open";
+    double opennessAt = 0;                        // When it was last changed (0: never), for the 30-second limit.
+    std::map<std::string, double> admitted, knocks, refused;
 };
 // Gold Stars and Story Stars (doc 32, 1.2): binary thanks from one qualified participant to another.
 struct SocialStar
@@ -175,6 +182,27 @@ class SocialLedger
     // has it too; the others carry on. False if they are in no such scene.
     bool leave(const std::string& actor, const std::string& session, double now, int* paid = nullptr);
     void tick(double now);
+    // Openness, joining and knocking (doc 51, §5-6). The game checks who may hear whom, and blocks; these keep the
+    // scene's own rules: members change openness (at most every 30 s), Join lets one in to an Open scene, a knock on a
+    // Knock scene waits two minutes for a member to admit or refuse it, and one turned away waits five to knock again.
+    // One let in has two minutes to speak: their next line counts in the scene, with no A-B-A.
+    SocialResult setOpenness(const std::string& member, const std::string& session, const std::string& value, double now);
+    SocialResult join(const std::string& actor, const std::string& session, double now);
+    SocialResult knock(const std::string& actor, const std::string& session, double now);
+    SocialResult admit(const std::string& member, const std::string& session, const std::string& who, double now);
+    SocialResult refuse(const std::string& member, const std::string& session, const std::string& who, double now);
+    static constexpr double JoinSeconds = 120, KnockSeconds = 120, RefusedSeconds = 300, OpennessSeconds = 30,
+                            KeepEndedSeconds = 3 * 86400;
+    // Where a new room scene starts Private (a rented place, a home that is no one's workplace: doc 51, §5). Set by
+    // the game; unset, every room scene starts Open. A party's scene always starts Private.
+    std::function<bool(const std::string& cell)> privatePlace;
+    // The open scenes an actor is a member of (not stepped out of), the open scenes in a cell, and the last scene that
+    // ended for an actor: kept by record, leave, settle and the fight's scenes; rebuilt by reindexScenes() after
+    // `sessions` is replaced from outside, as a load does.
+    const std::set<std::string>& scenesOf(const std::string& actor) const;
+    const std::set<std::string>& openIn(const std::string& cell) const;
+    std::string lastEnded(const std::string& actor) const;
+    void reindexScenes();
     // The contribution a member needs to be paid (doc 08), and how long a scene may lie quiet (pacing v2).
     static constexpr int ShapeTurns = 2, ShapeWords = 35, ShapeReplies = 1;
     static constexpr double QuietSeconds = 900, EndSeconds = 1800, FightEndSeconds = 10800;
@@ -201,6 +229,9 @@ class SocialLedger
             int requested, double now, std::uint64_t event);
     void add(const LedgerEntry& e);
     std::map<std::string, std::vector<std::size_t>> byActor_;
+    std::map<std::string, std::set<std::string>> sceneOf_, openIn_;
+    std::map<std::string, std::string> endedOf_;
+    void ended(const SocialSession& scene);           // (Out of the indexes: its members' last ended scene.)
     double pairDecay(const std::string& a, const std::string& b, double now) const;
 };
 // A title for a social level (doc 32, 1.3).

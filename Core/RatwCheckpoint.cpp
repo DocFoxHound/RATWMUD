@@ -445,6 +445,21 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         j.add("id", s.id); j.add("cell", s.cell); j.add("started", s.started); j.add("last", s.last); j.add("ended", s.ended);
         if (!s.party.empty())
             j.add("party", s.party);
+        // Who may come in, and who was let in, is knocking or was turned away (doc 51, §5-6).
+        j.add("openness", s.openness);
+        j.add("opennessAt", s.opennessAt);
+        const auto times = [](const std::map<std::string, double>& m) {
+            auto o = Value::object();
+            for (const auto& [who, at] : m)
+                o.add(who, at);
+            return o;
+        };
+        if (!s.admitted.empty())
+            j.add("admitted", times(s.admitted));
+        if (!s.knocks.empty())
+            j.add("knocks", times(s.knocks));
+        if (!s.refused.empty())
+            j.add("refused", times(s.refused));
         auto members = Value::array();
         for (const auto& [actor, m] : s.members)
         {
@@ -808,6 +823,16 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         SocialSession s;
         s.id = j.string("id"); s.cell = j.string("cell"); s.started = num(j, "started"); s.last = num(j, "last"); s.ended = num(j, "ended");
         s.party = j.string("party");
+        s.openness = j.has("openness") ? j.string("openness") : (SocialLedger::isFight(s) ? "" : "open");
+        if (s.openness != "open" && s.openness != "knock" && s.openness != "private" && !SocialLedger::isFight(s))
+            s.openness = "open";
+        s.opennessAt = num(j, "opennessAt");
+        for (const auto& [who, at] : j.object("admitted").fields())
+            s.admitted[who] = at.asNumber(0);
+        for (const auto& [who, at] : j.object("knocks").fields())
+            s.knocks[who] = at.asNumber(0);
+        for (const auto& [who, at] : j.object("refused").fields())
+            s.refused[who] = at.asNumber(0);
         for (const auto& k : j.array("members"))
         {
             Contribution m;

@@ -26,6 +26,15 @@ export function starsLine(stars: Json | null): string {
     const band = str(stars, 'band', 'a few'), from = str(stars, 'fromBand', 'a few');
     return band === 'a few' ? '★ A few stars' : `★ ${band} stars from ${from === 'a few' ? 'a few' : from} wolves`;
 }
+/** What a player's stars say of them (doc 51): Known for, the tags (counts for oneself, words for others), the rate. */
+export function starsDetail(stars: Json | null): string {
+    const known = arr(stars, 'knownFor').filter((k): k is string => typeof k === 'string');
+    const tags = arr(stars, 'tags').filter(isObject).map(t =>
+        bool(stars, 'exact') ? `${str(t, 'name')} ${Math.trunc(num(t, 'count'))}` : `${str(t, 'words')} ${str(t, 'name')}`);
+    return [known.length ? `Known for: ${known.join(' and ')}` : '', tags.join(', '), str(stars, 'rate') ? upperFirst(str(stars, 'rate')) : '']
+        .filter(Boolean).join(' · ');
+}
+const upperFirst = (t: string) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 const StarsWhy = 'Gold Stars and Story Stars, thanks from other players for roleplay, counted across all of a player\'s wolves. ' +
     'A friend who sees which wolf is theirs sees the exact count; everyone else sees it in bands.';
 function socialLine(self: Json | null): string {
@@ -165,6 +174,7 @@ export class Dialogs {
         el('div', 'sage', right, socialLine(self)).title = SocialWhy;
         const stars = obj(obj(self, 'social'), 'stars');
         if (stars) el('div', 'gold', right, starsLine(stars)).title = StarsWhy;
+        if (stars && starsDetail(stars)) el('div', 'sage small', right, starsDetail(stars));
         const bar = el('div', 'bar', right);
         el('div', 'fill', bar).style.width = `${socialShare(self) * 100}%`;
         const skills = el('div', 'skills', right);
@@ -1114,7 +1124,10 @@ export class Dialogs {
         if (profile) this.profileCard(profile, id === s.selfId);
         if (str(inspected, 'regard')) el('p', 'sage', this.panel, `They ${str(inspected, 'regard')}.`);
         // Their player's stars (doc 51): exact for a friend who sees which wolf is theirs, in bands for everyone else.
-        if (obj(inspected, 'stars') && id !== s.selfId) el('p', 'gold', this.panel, starsLine(obj(inspected, 'stars'))).title = StarsWhy;
+        if (obj(inspected, 'stars') && id !== s.selfId) {
+            el('p', 'gold', this.panel, starsLine(obj(inspected, 'stars'))).title = StarsWhy;
+            if (starsDetail(obj(inspected, 'stars'))) el('p', 'sage small', this.panel, starsDetail(obj(inspected, 'stars')));
+        }
         if (obj(inspected, 'equipment'))
             button(id === s.selfId ? 'YOUR EQUIPMENT' : 'WHAT THEY WEAR', 'primary', el('div', 'sheet-actions', this.panel),
                 () => { this.spot = ''; this.act(id === s.selfId ? 'status' : 'their_equipment'); });

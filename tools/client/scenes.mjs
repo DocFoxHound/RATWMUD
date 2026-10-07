@@ -1,7 +1,8 @@
 // Scenes in the real page (Docs/Design/08-social-progression.md): two players in a party talk; the scene line says
 // what each still needs to be paid, then that both are on track; a quiet scene's countdown and two scenes at once are
 // shown from a snapshot set by hand (fifteen real minutes are too long to wait); Ash steps out with LEAVE and is paid;
-// Bo is then in her Known wolves with a recap of the scene (doc 50, Phase 4), and on his card under YOU AND THEM.
+// Bo is then in her Known wolves with a recap of the scene (doc 50, Phase 4), and on his card under YOU AND THEM; Bo
+// makes his scene knock to join, Cy knocks, and he lets her in (doc 51, Phase 3).
 // Screenshots go to artifacts/screenshots/scenes/.
 //
 //   node tools/client/scenes.mjs [OUT]         (RATW_SERVER: the server binary; RATW_WEB: the built page, Client/dist by default)
@@ -122,6 +123,24 @@ try {
     check(await ash.waitFor(`document.body.innerText.includes('scene shared') && document.body.innerText.includes('You shared a scene with')`, 10)
         .then(() => true).catch(() => false), 'and on his card, under YOU AND THEM');
     await ash.screenshot(`${OUT}/7-you-and-them-ash.png`);
+    // Knock to join (doc 51, Phase 3): Bo makes his scene KNOCK; Cy, nearby, knocks; Bo lets her in; her line counts.
+    const cy = await open('cy');
+    await bo.evaluate(`document.querySelector('.scene-door [data-openness="knock"]').click()`);
+    check(await bo.waitFor(`document.querySelector('.scene-door [data-openness="knock"]')?.classList.contains('active')`, 10)
+        .then(() => true).catch(() => false), 'Bo makes his scene knock to join');
+    check(await cy.waitFor(`document.querySelector('.scene-bar')?.offsetParent !== null && /A SCENE HERE · KNOCK TO JOIN/.test(document.querySelector('.scene-bar')?.innerText ?? '')`, 10)
+        .then(() => true).catch(() => false), 'Cy sees a scene here, knock to join, with how many wolves and no names');
+    await cy.screenshot(`${OUT}/8-a-scene-here-cy.png`);
+    await cy.evaluate(`[...document.querySelectorAll('.scene-nearby button')].find(b => b.textContent === 'KNOCK').click()`);
+    check(await bo.waitFor(`/is knocking/.test(document.querySelector('.scene-knock')?.innerText ?? '')`, 10)
+        .then(() => true).catch(() => false), 'Bo sees her knocking, with LET IN and NOT NOW');
+    await bo.screenshot(`${OUT}/9-knocking-bo.png`);
+    await bo.evaluate(`[...document.querySelectorAll('.scene-knock button')].find(b => b.textContent === 'LET IN').click()`);
+    check(await cy.waitFor(`${S}.posts.some(p => p.text.includes("You're let in"))`, 10).then(() => true).catch(() => false), 'she is let in');
+    await act(cy, 'ic');
+    await say(cy, '"Thank you. The rain has been at me since the ford, and the fire looked too good to pass by."');
+    check(await cy.waitFor(`/PARTY SCENE|IN A SCENE/.test(document.querySelector('.scene-bar')?.innerText ?? '')`, 10)
+        .then(() => true).catch(() => false), 'her line counts: she is in the scene');
     const errors = [...ash.console, ...bo.console].filter(l => /EXCEPTION|error/i.test(l));
     check(!errors.length, `page errors: ${errors.length ? errors.join(' | ') : 'none'}`);
 } catch (e) {

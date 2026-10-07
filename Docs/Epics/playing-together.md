@@ -26,7 +26,7 @@ need each other.
 | Order | Doc | Plan | Carries out (doc 48) | Depends on | Status |
 |---|---|---|---|---|---|
 | 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Built and pushed (5 of 5 phases, last 1a2f550); migrations applied |
-| 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Building: phase 1 of 6 built, not committed; migration 0040 not applied |
+| 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Building: phases 1–3 of 6 built (1 pushed, 9f556ed; 2–3 not committed) |
 | 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Drafted (5 phases) |
 | 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Drafted (7 phases) |
 | 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Drafted (7 phases) |
@@ -167,3 +167,9 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
   - Plan 51, phase 1 built: the star book (stars by account, counting limits, bands for strangers, exact for oneself
     and friends who see), Quickened reading it, and fight roleplay paid as a scene. Not committed; migration 0040 not
     applied.
+  - Plan 51 phase 1 pushed (9f556ed); migration 0040 applied.
+  - Plan 51, phase 2 built: tags on stars (a chip after giving one), Known for at 50, tag shares in words for
+    strangers, and the star rate in words. Not committed.
+  - Plan 51, phase 3 built: Open / Knock / Private scenes (party scenes and rented places start Private), Join,
+    knocking with LET IN / NOT NOW, nearby scenes by count, several scenes in one place, and the scene views reading
+    indexes instead of every scene ever. Not committed.

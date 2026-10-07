@@ -36,6 +36,8 @@ Rules build()
 {
     Rules r;
     r.tags = {"storyteller", "packmate", "goodfun", "welcoming"};
+    r.tagNames = {{"storyteller", "Storyteller"}, {"packmate", "Packmate"}, {"goodfun", "Good fun"}, {"welcoming", "Welcoming"}};
+    r.newcomersOnly = {"welcoming"};
     std::ifstream in(socialFile(), std::ios::binary);
     std::stringstream text;
     text << in.rdbuf();
@@ -69,7 +71,12 @@ Rules build()
     {
         r.tags.clear();
         for (const auto& t : s.array("tags"))
+        {
             r.tags.push_back(t.string("id"));
+            r.tagNames[t.string("id")] = t.string("name", t.string("id"));
+            if (t.boolean("newcomersOnly"))
+                r.newcomersOnly.push_back(t.string("id"));
+        }
     }
     r.catalog = s;
     return r;
@@ -133,6 +140,49 @@ const Tally* Book::tally(const std::string& account) const
     return it == tallies_.end() ? nullptr : &it->second;
 }
 
+bool Book::tag(const std::string& starId, const std::string& giverAccount, const std::string& tag, bool newcomer, double now,
+               std::string& error)
+{
+    const auto& r = rules();
+    const auto it = std::find_if(recent_.rbegin(), recent_.rend(), [&](const Star& s) { return s.id == starId; });
+    const bool known = std::find(r.tags.begin(), r.tags.end(), tag) != r.tags.end();
+    const bool newcomers = std::find(r.newcomersOnly.begin(), r.newcomersOnly.end(), tag) != r.newcomersOnly.end();
+    if (it == recent_.rend() || it->giverAccount != giverAccount)
+        error = "That isn't a star you gave.";
+    else if (!it->tag.empty())
+        error = "That star is tagged already.";
+    else if (now - it->at > r.tagWindow)
+        error = "It's too late to tag that star.";
+    else if (!known)
+        error = "Not a tag.";
+    else if (newcomers && !newcomer)
+        error = "Only a newcomer gives that tag.";
+    else
+    {
+        it->tag = tag;
+        if (it->counted)
+            ++tallies_[it->recipientAccount].tags[tag];
+        return true;
+    }
+    return false;
+}
+
+std::vector<const Star*> Book::openToTag(const std::string& giverCharacter, double now) const
+{
+    // (Newest first, from the end: the list is in time order, so the window is a short walk back.)
+    std::vector<const Star*> out;
+    for (auto it = recent_.rbegin(); it != recent_.rend() && now - it->at <= rules().tagWindow; ++it)
+        if (it->giverCharacter == giverCharacter && it->tag.empty())
+            out.push_back(&*it);
+    return out;
+}
+
+void Book::chances(const std::string& account, int n)
+{
+    if (n > 0 && !account.empty())
+        tallies_[account].chances += n;
+}
+
 void Book::prune(double now)
 {
     const double from = now - rules().keptDays * 86400.0;
@@ -157,6 +207,53 @@ json::Value Book::view(const std::string& account, bool exact) const
     }
     o.add("band", band(tl.total));
     o.add("fromBand", band(int(tl.givers.size()), true));
+    const auto& r = rules();
+    // Tags (§2): counts for the exact view; for everyone else each tag's share in words, never a number.
+    int tagged = 0, most = 0;
+    for (const auto& [t, n] : tl.tags)
+        tagged += n, most = std::max(most, n);
+    auto tags = json::Value::array();
+    for (const auto& id : r.tags)
+    {
+        const auto it = tl.tags.find(id);
+        if (it == tl.tags.end() || it->second <= 0)
+            continue;
+        auto row = json::Value::object();
+        row.add("tag", id);
+        row.add("name", r.tagNames.count(id) ? r.tagNames.at(id) : id);
+        if (exact)
+            row.add("count", it->second);
+        else
+        {
+            const double share = double(it->second) / tagged;
+            row.add("words", share >= .5 ? "mostly" : share >= .25 ? "often" : share >= .1 ? "sometimes" : "now and then");
+        }
+        tags.push(row);
+    }
+    o.add("tags", tags);
+    // Known for (§2): from 50 counted stars, the most-given tag (both, when tied).
+    if (tl.total >= r.knownForAt && most > 0)
+    {
+        auto known = json::Value::array();
+        for (const auto& id : r.tags)
+            if (const auto it = tl.tags.find(id); it != tl.tags.end() && it->second == most)
+                known.push(r.tagNames.count(id) ? r.tagNames.at(id) : id);
+        o.add("knownFor", known);
+    }
+    // The star rate (§3; shown, the user's answer): Gold Stars received for the chances to be starred, in words, once
+    // there have been enough chances.
+    if (r.showRate && tl.chances >= r.rateAfter)
+    {
+        const double rate = double(tl.goldReceived) / tl.chances;
+        for (const auto& [floor, words] : r.rateWords)
+            if (rate >= floor)
+            {
+                o.add("rate", words);
+                break;
+            }
+        if (exact)
+            o.add("rateShare", std::round(std::min(1.0, rate) * 100) / 100);
+    }
     return o;
 }
 
