@@ -30,8 +30,8 @@ need each other.
 | 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Built (5 of 5 phases; pushed 6071c37); migrations 0042 and 0043 applied |
 | 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Built (7 of 7, pushed 6071c37; Phase 7 part B waits on doc 35's Craft panel) |
 | 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Built (7 of 7; pushed a9fe13d); migration 0044 applied |
-| 6 | [54](../Design/54-gathering-places.md) | Gathering places | Part 5 (taverns, markets, notice boards, festivals, venues and renting), Part 10 (tavern games, library) | 50, 51 | Built (7 of 7; not committed); questions answered 2026-10-08; migration 0045 written, not applied |
-| 7 | [56](../Design/56-fame-and-memory.md) | Fame and memory | 3.7 (deeds, nicknames), 8.4–8.6 (chronicle, unfinished business, welcome back), festival criers | 50; 54 for criers | Drafted (6 phases) |
+| 6 | [54](../Design/54-gathering-places.md) | Gathering places | Part 5 (taverns, markets, notice boards, festivals, venues and renting), Part 10 (tavern games, library) | 50, 51 | Built (7 of 7; pushed c313ad3); migration 0045 applied |
+| 7 | [56](../Design/56-fame-and-memory.md) | Fame and memory | 3.7 (deeds, nicknames), 8.4–8.6 (chronicle, unfinished business, welcome back), festival criers | 50; 54 for criers | Built (6 of 6; pushed); migration 0046 applied |
 | 8 | [57](../Design/57-changing-the-world.md) | Changing the world | Part 1 (residents' troubles, town projects, the economy's visibility) | 56, 53 | Drafted (6 phases) |
 | 9 | [58](../Design/58-player-storytellers.md) | Player storytellers and personal stories | Part 9, 8.2, 8.3, 6.8 | 51; doc 34's story planner | Drafted (6 phases) |
 | Alongside | [49](../Design/49-characters-and-earned-gifts.md) | Characters without levels, and earned Gifts | 2.1, 2.2 | Its own phases 1–3 before earned Gifts (phase 5) | Built (5 of 5 phases), not committed; migration 0034 not yet applied |
@@ -89,8 +89,8 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
   the caps; towns add to festival pots.
 - **55 Letters, gifts and favours:** answered 2026-10-08: Well-groomed lasts 24 game hours or until the next full
   rest; residents never groom players; players don't write to residents for now.
-- **56 Fame and memory:** do criers call deeds by look when no one knows the name? Does a deed warm a resident to the
-  doer once (+5 liking)?
+- **56 Fame and memory:** answered 2026-10-08: criers call only deeds that travel under a name; a notable deed warms a
+  resident +5 liking, once; nicknames stay short (no "the wolf who …" form); the tourney is yield spars.
 - **57 Changing the world:** should the economy's own works appear as open projects? Should residents get ailments
   and tools that matter (so those troubles can exist)? A "deck" structure so bridges can be built? Which later lever
   first (introducing two residents recommended)?
@@ -246,3 +246,6 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
     - weddings and funerals with invitations and witnesses, and shared meals;
     - lending, letters carried by friends, pacts, and Chapter sponsors.
     Migration 0044 (`game.documents`) is written and not applied. Not committed.
+  - 2026-10-08: plan 56 built (all six phases: the deed ledger, travelling deeds, nicknames, festival criers, the
+    chronicle, unfinished business and welcome back) and pushed with the tourney's yield spars; nicknames kept short
+    (the user); migration 0046 applied to DEV and PROD.

@@ -1,0 +1,12 @@
+{
+  "format": "ratw-criers",
+  "about": "What a festival's crier calls at the square (Docs/Design/56-fame-and-memory.md, 7): an opening, up to `deedsMost` deeds from the town's word since the last festival (heaviest first; only deeds that travel under a name: the user, 2026-10-08), the nicknames coined in town that season, and a closing, a line a minute. Blanks: {town}, {festival}, {name} (the name the deed travels under), {deed} (what was done, after 'who'), {nickname}. One line of each list is chosen by hash. A legendary deed is called in every town at noon the day after.",
+  "deedsMost": 6,
+  "seasonDays": 92,
+  "opening": ["Hear ye, folk of {town}! At {festival}, the town remembers its own!", "Gather round, gather round! {festival}, and the deeds of the season!", "Hear ye! Before the night is out, {town} would have you know who did it proud!"],
+  "notable": ["{name}, who {deed}! Remember the name!", "Hear it told: {name} {deed}!", "Raise a cup to {name}, who {deed}!"],
+  "great": ["Hear ye, all! {name} {deed}! {town} will not forget it!", "Let it be sung: {name} {deed}!", "Mark it well: {name} {deed}, and {town} owes them!"],
+  "legendary": ["Hear ye, hear ye! Word from far and wide: {name} {deed}!", "Let every town know it: {name} {deed}!"],
+  "nickname": ["And {name}, whom folk now call {nickname}!", "{name}: {nickname}, they're calling them now!", "Say it with me: {nickname}! That's {name}!"],
+  "closing": ["That's the season's tale. Eat, drink, and be glad of each other!", "So ends the calling. Good night to you, {town}!", "Remember them! And now, the night is yours."]
+}

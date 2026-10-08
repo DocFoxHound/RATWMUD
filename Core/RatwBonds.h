@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,9 @@ class Bonds
     // A day's fading: acquaintance fades without contact, strong feelings cool, fear passes. Trust, respect and
     // debts stay. A bond with nothing left in it is forgotten.
     void fade(double day);
+    // Characters away (logged out): nobody's regard for them fades while they are gone (doc 56, 10; Principle 7).
+    void setAway(const std::string& id, bool away) { if (away) away_.insert(id); else away_.erase(id); }
+    bool away(const std::string& id) const { return away_.count(id) > 0; }
     // Someone who no longer exists (a resident who left the world).
     void forget(const std::string& id);
     // A few words for a conversation: how holder regards other, e.g. "You know Ash well, like them, and trust them a
@@ -62,6 +66,7 @@ class Bonds
     bool restore(const std::vector<SavedBond>& saved);
 
   private:
+    std::set<std::string> away_;
     std::map<std::string, std::map<std::string, Bond>> bonds_;
     void trim(std::map<std::string, Bond>& mine, const std::string& keep);
 };

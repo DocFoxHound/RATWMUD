@@ -1,0 +1,15 @@
+{
+  "format": "ratw-nicknames",
+  "about": "The nicknames residents coin for a wolf's deeds (Docs/Design/56-fame-and-memory.md, 4), by the deed's family. One form is chosen by hash: an epithet or a possessive ({name}: the name the coiner knows the wolf by; never used for a wolf it knows only by look). Nicknames stay short: a \"deed\" list of forms ({deed}, a phrase such as \"the wolf who drove the bandits off the road\") is read if given, but none is (user, 2026-10-08). A nickname another wolf in the town already wears isn't used. Players can't pick their own.",
+  "when": {"notable": true, "smallOfAFamily": 3, "withinDays": 92},
+  "coiner": {"affinity": 20, "familiarity": 15, "innkeeperAtReach": 0.5},
+  "most": 3,
+  "families": {
+    "road": {"epithets": ["the Roadwarden", "the Bandit-Breaker", "Waywolf", "the Lantern"], "possessive": ["{name} of the Road", "{name} the Ward"]},
+    "healer": {"epithets": ["the Mender", "Soft-Paw", "the Kind"], "possessive": ["{name} the Gentle", "Good {name}"]},
+    "honest": {"epithets": ["True-Tongue", "the Steadfast", "Word-Keeper"], "possessive": ["{name} the True", "Honest {name}"]},
+    "watch": {"epithets": ["Sharp-Eye", "the Watcher", "Thief-Catcher"], "possessive": ["{name} the Keen", "{name} of the Watch"]},
+    "festival": {"epithets": ["the Champion", "Fleet-Foot", "the Victor"], "possessive": ["{name} the Swift", "Lucky {name}"]},
+    "hero": {"epithets": ["the Brave", "the Bold", "Stormbreaker"], "possessive": ["{name} the Brave", "{name}'s Luck"]}
+  }
+}

@@ -33,6 +33,8 @@
 #include "RatwDocuments.h"
 #include "RatwSocialCore.h"
 #include "RatwTavernGames.h"
+#include "RatwFame.h"
+#include "RatwChronicle.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
 #include "RatwWorld.h"
@@ -141,6 +143,7 @@ struct Options
     int letterModelCallsPerHour = 0;
     // Performing (doc 54, 1): how long a performer may be quiet, and perform at most (real seconds). Tests shorten them.
     double performQuietSeconds = 120, performLongestSeconds = 1800;
+    double awayBreakSeconds = 3 * 86400;   // A break, for welcome back (doc 56, 10): three real days.
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
@@ -870,6 +873,57 @@ class Game
     Result holdPlace(const std::string& cell, double days, const std::string& reason);
     void lodgingsSave(json::Value& root) const;
     void lodgingsLoad(const json::Value& saved);
+    // Fame (doc 56; RatwGameFame.cpp): good deeds recorded from the world's events (a camp broken, a wolf tended, a
+    // promise kept, a letter carried, a caravan escorted, a thief reported and caught, a festival won) and the DM's
+    // awards, with their witnesses and the names each knew the doers by. Witnesses, the one it was done for and its
+    // household believe it ("deed:<id>"); a notable deed warms each resident once, the first time it ties it to the doer.
+    fame::Ledger fame_;
+    std::map<std::string, std::vector<std::string>> reportedBy_;   // A crime's incident -> the wolves who told the watch.
+    double fameDay_ = -1;
+  public:
+    // A deed of `kind` (Data/Fame/deeds.json) by these player characters, for `beneficiary` (a resident, "town:<id>" or
+    // ""), where `cell` is; `weight` -1 for the kind's own. Its id, or "" if none was made (a kind capped, no doers).
+    std::string recordDeed(const std::string& kind, const std::vector<std::string>& doers, const std::string& beneficiary,
+                           const std::string& cell, const std::string& source, const std::string& detail = {}, int weight = -1);
+    bool revokeDeed(const std::string& id);
+    const fame::Ledger& deeds() const { return fame_; }
+    // How a resident would speak of a wolf's best-known deed ("the one who broke the camp on the east road"), by name or
+    // look, or "" (doc 56, 5: for introductions).
+    std::string fameLine(const std::string& knower, const std::string& wolf);
+    // What a resident knows of a wolf's deeds, for the Mind (doc 56, 5): at most 400 letters, "" if nothing.
+    std::string fameBriefing(const std::string& npc, const std::string& wolf, bool note = true);
+    // Nicknames (doc 56, 4): what `npc` calls `wolf` (from the heaviest, newest deed it can tie to them; "" none), and
+    // whether it coined it; a wolf asking folk not to use one (true if it was theirs and in use).
+    std::string nicknameFor(const std::string& npc, const std::string& wolf, bool* coined = nullptr);
+    bool dropNickname(const std::string& wolf, const std::string& id);
+    std::string awayBriefingFor(const std::string& npc, const std::string& wolf) { return awayBriefing(npc, wolf, false); }
+
+  private:
+    // Doc 56, Phase 2: deeds travel and are recognised.
+    struct Recognition
+    {
+        const fame::Deed* deed = nullptr;
+        bool byName = false;
+        std::string how;                            // "you saw it", "the town's talk", "Wren told you"...
+        double sure = 0;
+    };
+    std::vector<Recognition> recognise(const std::string& npc, const std::string& wolf, bool warm);
+    bool townHeard(const std::string& npc, const fame::Deed& d) const;
+    void spreadDeed(fame::Deed& d);
+    void fameJoin(const std::string& listener, const std::string& wolf);
+    World::DeedWords fameWords(const std::string& teller, const std::string& claim, const std::string& subject);
+    std::map<std::string, double> fameMentioned_;   // "npc|deed": the day it spoke of it.
+    std::map<std::string, std::string> fameRealised_;   // "npc|wolf": a deed it has just joined to the wolf's name.
+    std::map<std::string, double> fameGreeted_;     // "npc|wolf": when its game greeting last named a deed.
+    std::map<std::string, double> escortedTo_;      // Town: when a player's escorted caravan last arrived (world seconds).
+    void tryNickname(const std::string& deedId);
+    bool coinNickname(fame::Deed& d, const std::string& coiner);
+    json::Value nicknamesView(const std::string& wolf);
+    void fameFromEvent(const WorldEvent& e);
+    void tendFame();
+    std::string deedPhrase(const std::string& viewer, const fame::Deed& d) const;
+    void fameSave(json::Value& root) const;
+    void fameLoad(const json::Value& saved);
     // The library and the archive (doc 54, 7; RatwArchive.cpp): work where a keeper of records is at its post (posts from
     // Data/Lore/archives.json): sorting six records by their clues (the server keeps the order and checks it; three
     // tries), or copying at a desk for five minutes, sitting. 2p a task from the town, 4 a game day; each finished task
@@ -912,7 +966,10 @@ class Game
         std::map<std::string, long> pulledBeat;     // A hauler's last pull on the beat.
         std::map<std::string, std::string> cheered; // Howling: who each cheerer cheered.
         std::map<std::string, std::set<std::string>> givers;   // Storytelling: each teller's star givers.
-        std::vector<std::string> bracket;           // The tourney's wolves still in it.
+        std::vector<std::string> bracket, through; // The tourney's wolves in this round, and those through it.
+        std::size_t bout = 0;                       // The bout under way (or next) in the round.
+        double boutAt = -1;                         // When it began (world seconds); -1 not begun.
+        std::string lastLoser;
         std::vector<Spot> marks;                    // The race's marks.
         std::size_t turn = 0;
         long beat = 0;
@@ -941,7 +998,39 @@ class Game
     void festivalStar(const std::string& giver, const std::string& recipient);
     void festivalSay(const std::string& community, const std::vector<std::string>& also, const std::function<std::string(const std::string&)>& line);
     std::string festivalBriefing(const std::string& npc, const std::string& player);
-    std::string festivalCrier(const std::string&) const { return {}; }   // Doc 56's slot at 8: nothing until then.
+    // Festival criers (doc 56, 7; RatwGameFame.cpp): the town's crier sent to the square to call the season's deeds and
+    // nicknames, a line a minute where a player can hear; a legendary deed called in every town at noon the next day.
+    struct CrierCall
+    {
+        std::string community, crier, cell;
+        std::vector<std::string> lines;
+        std::size_t next = 0;
+        double nextAt = 0;
+    };
+    // The chronicle (doc 56, 8): asked for by the social verb `chronicle` (once in 30 s a character), read from
+    // game.events on its own thread where there is a database, else from what is in memory (and said to be partial).
+    chronicle::Reader chronicleReader_;
+    std::map<std::string, double> chronicleAsked_;  // Character -> when it last asked (real seconds).
+    bool chronicleCommand(Connection* c, Result& result);
+    void tendChronicle();
+    void sendChronicle(const std::string& owner, std::vector<chronicle::Row> rows, bool partial);
+    // Welcome back and unfinished business (doc 56, 9-10; RatwGameFame.cpp).
+    struct Absence
+    {
+        double realDays = 0, leftDay = 0, leftAt = 0;   // How long, the calendar day they left, and when (Unix).
+        std::map<std::string, double> unseen;       // Residents who last saw them before the break, and when (until they speak).
+    };
+    std::map<std::string, Absence> absences_;       // Characters back from a break, this session.
+    std::map<std::string, std::pair<double, json::Value>> unfinished_;   // Character -> (built at, the list).
+    json::Value unfinishedView(const std::string& id);
+    std::string awayBriefing(const std::string& npc, const std::string& wolf, bool note = true);
+    void sendWelcome(const std::string& id, const std::vector<chronicle::Row>& events);
+    std::map<std::string, CrierCall> criers_;       // By community.
+    double criedDay_ = -1;
+    void festivalCrier(const std::string& community, const std::string& festival);
+    void cryLegends();
+    void tendCriers();
+    std::string crierOf(const std::string& community);
     // Tavern games (doc 54, 5; RatwGameTables.cpp; the rules in RatwTavernGames.cpp): at a table (`T`) in a common room
     // or an opened venue, within 1.5 tiles. One starts a game, others join or a resident is asked from the room (awake,
     // not at work, 14 or more, 16 for stakes); the game begins with 2 or more. Liar's Bones may be played for 0 to 5p

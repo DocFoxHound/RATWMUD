@@ -112,6 +112,11 @@ void Bonds::fade(double day)
         for (auto it = mine.begin(); it != mine.end();)
         {
             auto& b = it->second;
+            if (away_.count(it->first))
+            {
+                ++it;                               // (Away: picked up where it was left, doc 56, 10.)
+                continue;
+            }
             if (day - b.lastContact > 3)
                 b.familiarity = std::max(0.0, b.familiarity - .5);
             b.affinity *= .99;

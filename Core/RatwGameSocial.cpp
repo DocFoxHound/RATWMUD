@@ -637,6 +637,15 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         result = {false, "Not one of your own wolves.", {}};
         return true;
     }
+    if (verb == "chronicle")
+        return chronicleCommand(c, result);         // (The chronicle: doc 56, 8.)
+    if (verb == "dropnickname")
+    {
+        // Doc 56, 4: asking residents not to use a nickname: at once, and never coined again from that deed.
+        const bool dropped = dropNickname(id, j.string("id"));
+        result = {dropped, dropped ? "You let it be known you'd rather not be called that." : "That isn't a name folk call you.", {}};
+        return true;
+    }
     if (verb == "star")
     {
         const auto target = j.string("target");

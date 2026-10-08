@@ -22,6 +22,8 @@ struct Context
     std::string environment, greeting, personality, backstory;
     std::string subjectId, relationship, mood;
     std::string seen;                          // What it can see of the speaker, in their player's words (doc 50).
+    std::string fame;                          // What it knows of the speaker's deeds, and how sure (doc 56): ≤ 400.
+    std::string away;                          // The speaker is back after a long while, and when it last saw them: ≤ 200.
 };
 
 // Every field checked: the emotion one of a few words, the nudges -3..3, the notes short.

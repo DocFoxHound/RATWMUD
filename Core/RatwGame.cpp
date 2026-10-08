@@ -401,7 +401,13 @@ bool Game::start(std::string& problem)
     // Hunting together (doc 53): no one blocked by a hunter may join or ask (doc 50's block).
     world_.setBlocked([this](const std::string& a, const std::string& b) { return blocked(a, b); });
     world_.setPartnered([this](const std::string& a, const std::string& b) { return parties_.together(a, b); });
-    world_.setEventWatcher([this](const WorldEvent& e) { watchEvent(e); });   // (Deeds a resident may thank for: doc 55, 5.)
+    world_.setEventWatcher([this](const WorldEvent& e) { watchEvent(e); });
+    world_.setNamer([this](const std::string& knower, const std::string& subject) {   // (Talk speaks only names given: doc 56.)
+        return knowsName(knower, subject) ? labelFor(knower, subject) : std::string();
+    });
+    world_.setDeedWords([this](const std::string& teller, const std::string& claim, const std::string& subject) {
+        return fameWords(teller, claim, subject);
+    });   // (Deeds a resident may thank for: doc 55, 5.)
     world_.setBedRight([this](const std::string& id, const std::string& cell) { return hasBedRight(id, cell); });   // (Doc 54, 1.)
     if (!health_ && !options_.savePath.empty() && !options_.scratch)
         health_ = health::Recorder::file(options_.savePath + ".health.jsonl");
@@ -799,6 +805,43 @@ void Game::applyDmActions(double dt)
             }
             else
                 outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+        }
+        else if (kind == "deed.award" || kind == "deed.revoke")
+        {
+            // Fame (doc 56): a deed awarded (target the doer; payload {kind, weight, cell, beneficiary, detail}), or one
+            // revoked (target the deed's id).
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            if (kind == "deed.revoke")
+                outcome = revokeDeed(target) ? Result{true, "Revoked.", target} : Result{false, "No such deed.", target};
+            else if (const auto* doer = world_.entity(target); !doer || doer->npc)
+                outcome = {false, "Award deeds to player characters.", target};
+            else
+            {
+                const auto weight = fame::weightOf(payload.string("weight", "great"));
+                const auto id = recordDeed(payload.string("kind", "award"), {target}, payload.string("beneficiary"),
+                                           payload.string("cell", doer->cellId), "dm", payload.string("detail").substr(0, 160), weight);
+                outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
+            }
+            saveSoon();
+        }
+        else if (kind == "nickname.drop" || kind == "nickname.restore")
+        {
+            // Doc 56, 4: a nickname out of use, or back in it (target its id).
+            auto* n = fame_.nickname(target);
+            if (!n)
+                outcome = {false, "No such nickname.", target};
+            else
+            {
+                n->dropped = kind == "nickname.drop";
+                if (auto* d = fame_.find(n->deed))
+                    d->noNickname = n->dropped;
+                record(Character, n->wolf);
+                outcome = {true, n->dropped ? "Dropped." : "Restored.", target};
+            }
+            saveSoon();
         }
         else if (kind == "estate.hold" || kind == "estate.release")
         {
@@ -1771,6 +1814,17 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     }
     else if (saved != characters_.end())
     {
+        // How long they were gone (read before returnFromAway resets it): three real days or more is a break (doc 56).
+        if (saved->second.leftAt > 0 && now() - saved->second.leftAt >= options_.awayBreakSeconds)
+        {
+            auto& away = absences_[actor];
+            away = {(now() - saved->second.leftAt) / 86400, saved->second.awaySince, saved->second.leftAt, {}};
+            for (const auto& [resident, life] : world_.society().state().residents)
+                if (const auto* bond = world_.bonds().find(resident, actor); bond && bond->lastContact > 0 && bond->lastContact < away.leftDay)
+                    away.unseen[resident] = bond->lastContact;   // (Who hasn't seen them since: greeted as long gone, once.)
+        }
+        else
+            absences_.erase(actor);
         player = saved->second;
         world_.returnFromAway(player);             // Down or resting while away (doc 38).
     }
@@ -1779,6 +1833,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         player.description = "A road-worn quadrupedal wolf with a small shoulder satchel. Their coat and history are yours to imagine.";
         player.speakingColor = int(characters_.size() * 9) % 32;
     }
+    world_.bonds().setAway(actor, false);           // (Their regard fades again from now: doc 56, 10.)
     world_.fitWorn(actor);                          // Nothing worn or held that the purse no longer has (doc 35).
     player.input = {};
     player.velocity = {};
@@ -1822,6 +1877,21 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     tiesOnEnter(actor);                            // A tie made while they were away (doc 52, 4).
     sendSafety(c);                                 // And their mutes and blocks.
     cameOrWent(c, true);                           // Their friends, and private messages kept for them (doc 50, 4).
+    if (const auto away = absences_.find(actor); away != absences_.end())
+    {
+        // Back after a break (doc 56, 10): what happened while they were gone, from the log where there is a database.
+        std::string problem;
+        if (store_ && !options_.conninfo.empty() && !liveWorldId_.empty() && chronicleReader_.start(options_.conninfo, liveWorldId_, problem))
+            chronicleReader_.askSince(actor, away->second.leftDay);
+        else
+        {
+            std::vector<chronicle::Row> rows;
+            for (const auto& e : world_.recentEvents())
+                if (e.day >= away->second.leftDay)
+                    rows.push_back({e.day, e.kind, e.actor, e.target, e.cell, e.item, e.detail, e.quantity, e.coins});
+            sendWelcome(actor, rows);
+        }
+    }
     note("info", "RATW_LOGIN " + c->entityId + " connected=" + std::to_string(clients_.size()));
     return true;
 }
@@ -1840,6 +1910,8 @@ void Game::leaveCharacter(Connection* c)
             e->postTown = here;                     // (Its letters wait where it left: doc 55.)
         characters_[e->id] = *e;
         characters_[e->id].awaySince = world_.calendarDays();   // Away time counts as rest (doc 38).
+        characters_[e->id].leftAt = now();          // (How long they were gone, for welcome back: doc 56, 10.)
+        world_.bonds().setAway(e->id, true);
         characters_[e->id].awayInBed = world_.bedIsTheirs(*e);   // (Only a bed it has a right to rests it fully: doc 54.)
         characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0 || (lodgingOf(e->id) && innUpstairs(e->cellId) && lodgingOf(e->id)->cell == e->cellId);
         logEvent("departure", id);
@@ -1880,6 +1952,8 @@ void Game::releaseLingering()
             e->lingering = false;
             characters_[e->id] = *e;
             characters_[e->id].awaySince = world_.calendarDays();
+            characters_[e->id].leftAt = now();
+            world_.bonds().setAway(e->id, true);
             characters_[e->id].awayInBed = world_.bedIsTheirs(*e);
             characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0;
             world_.removePlayer(e->id);
@@ -2764,6 +2838,10 @@ void Game::sendSnapshot(Connection* c)
                 archive.add("copied", std::round(std::min(1., (world_.time() - task->second.begun) / 300) * 100));
             self.set("archive", archive);
         }
+        if (const auto open = unfinishedView(id); !open.items().empty())
+            self.set("unfinished", open);           // (Open threads, never a nag: doc 56, 9.)
+        if (const auto nicknames = nicknamesView(id); !nicknames.items().empty())
+            self.set("nicknames", nicknames);       // (What residents call them, and who first did: doc 56, 4.)
         if (const auto festival = festivalSelf(id); !festival.isNull())
             self.set("festival", festival);         // (A festival today or soon: its programme, and what one does now: doc 54, 6.)
         if (const auto table = tableSelf(id); !table.isNull())
@@ -3868,7 +3946,11 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     saveSoon();
     std::weak_ptr<bool> alive = alive_;
     // What the game can answer itself (a greeting, a price, the hours, a way: doc 28) it does, without a model.
-    if (const auto answer = gameAnswer(npcId, playerId, heardText, identified); !answer.empty())
+    const auto answer = gameAnswer(npcId, playerId, heardText, identified);
+    if (!context.away.empty())
+        if (auto away = absences_.find(playerId); away != absences_.end())
+            away->second.unseen.erase(npcId);       // (Greeted as long gone, by the game's line or the model's: once.)
+    if (!answer.empty())
     {
         if (!mind_.live() || polishOffUntil_ > world_.time())
         {
@@ -3945,6 +4027,8 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
     {
         context.subjectId = playerId;
         context.relationship = world_.bonds().describe(npcId, playerId, called);
+        context.fame = fameBriefing(npcId, playerId);   // (What it has heard of their deeds: doc 56, 5.)
+        context.away = awayBriefing(npcId, playerId, false);   // (Back after a long while: doc 56, 10; used up below.)
     }
     context.seen = profileContext(npcId, playerId);   // What it can see of them, in their player's words (doc 50).
     context.activity += tieBriefing(npcId, playerId);   // (A tie with this wolf: doc 52, 4.)
@@ -4678,6 +4762,19 @@ void Game::command(Connection* c, const std::string& raw)
         result = {true, "Social level " + std::to_string(level) + ".", {}};
         report = true;
         saveSoon();
+    }
+    else if (type == "deed" && options_.devTools)
+    {
+        // Development only (doc 56): a deed of `kind` by one's wolf here, for its town, seen by whoever is near; with
+        // `coin`, the nearest resident who saw it coins its nickname at once.
+        const auto made = recordDeed(j.string("kind", "broke_camp"), {id}, "town:" + world_.lawTown(player->cellId), player->cellId, "dev",
+                                     j.string("detail"));
+        if (auto* d = made.empty() ? nullptr : fame_.find(made); d && j.boolean("coin") && d->nickname.empty())
+            for (const auto& w : d->witnesses)
+                if (const auto* e = world_.entity(w.id); e && e->npc && coinNickname(*d, w.id))
+                    break;
+        result = made.empty() ? Result{false, "No such kind of deed.", {}} : Result{true, "A deed: " + made + ".", {}};
+        report = true;
     }
     else if (type == "acquaint" && options_.devTools)
     {
@@ -5502,6 +5599,8 @@ void Game::load(const std::string& payload)
     for (const auto& [actor, entries] : state.responseReceipts)
         for (const auto& [key, value] : entries)
             responseReceipts_[actor][key] = value;
+    for (const auto& [id, saved] : characters_)
+        world_.bonds().setAway(id, !world_.entity(id));   // (Nobody's regard fades for a wolf who is away: doc 56, 10.)
     note("info", "RATW_RESTORE characters=" + std::to_string(characters_.size()) + " summaries=" + std::to_string(memories_.summaries.size()) +
                      " ledger=" + std::to_string(social_.entries.size()));
 }

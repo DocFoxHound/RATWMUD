@@ -85,8 +85,11 @@ void Game::ambient(double dt)
     context.facts = pick.topic.facts;
     if (const auto* place = world_.cell(a->cellId))
         context.scene = mind::left(place->description, 1200);
-    if (const auto* subject = world_.entity(pick.topic.subject))
-        context.subjectName = subject->name;
+    // The subject as the teller knows them: a player by a name they were given, else by look (doc 56, 6).
+    if (const auto found = pick.topic.blanks.find("subject"); found != pick.topic.blanks.end())
+        context.subjectName = found->second;
+    else if (const auto* subject = world_.entity(pick.topic.subject))
+        context.subjectName = subject->npc || knowsName(a->id, subject->id) ? labelFor(a->id, subject->id) : strangerLabel(subject->id);
     context.claim = pick.topic.claim;
     if (!pick.topic.facts.empty())
         context.news = pick.topic.facts.front().substr(0, pick.topic.facts.front().find_last_not_of(". ") + 1);

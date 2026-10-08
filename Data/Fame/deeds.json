@@ -1,0 +1,88 @@
+{
+  "format": "ratw-deeds",
+  "about": "Kinds of good deed (Docs/Design/56-fame-and-memory.md, 1): each kind's weight (small, notable, great, legendary: how far word of it travels), its family (for nicknames), and its phrase, filled in when someone hears or tells of it ({beneficiary}: as the teller knows them; {place}: where; {detail}: what the source says). `perSeason` caps how many such deeds one wolf makes for one beneficiary in a season (0: no cap). Paid work is a deed only where a kind here says so. Deeds pay nothing.",
+  "kinds": [
+    {
+      "id": "broke_camp",
+      "weight": "notable",
+      "family": "road",
+      "phrase": "drove the bandits off the road at {place}"
+    },
+    {
+      "id": "tended",
+      "weight": "small",
+      "family": "healer",
+      "phrase": "tended {beneficiary} when they were down",
+      "perSeason": 3
+    },
+    {
+      "id": "kept_promise",
+      "weight": "small",
+      "family": "honest",
+      "phrase": "kept their word to {beneficiary}",
+      "perSeason": 2
+    },
+    {
+      "id": "carried_letter",
+      "weight": "small",
+      "family": "road",
+      "phrase": "carried a letter for {beneficiary}",
+      "perSeason": 2
+    },
+    {
+      "id": "escorted_caravan",
+      "weight": "small",
+      "family": "road",
+      "phrase": "saw a caravan safely through to {place}"
+    },
+    {
+      "id": "report_thief",
+      "weight": "notable",
+      "family": "watch",
+      "phrase": "helped the watch catch a thief in {place}"
+    },
+    {
+      "id": "festival_won",
+      "weight": "small",
+      "family": "festival",
+      "phrase": "won {detail}"
+    },
+    {
+      "id": "award",
+      "weight": "great",
+      "family": "hero",
+      "phrase": "{detail}"
+    }
+  ],
+  "liveDays": {
+    "small": 30,
+    "notable": 184,
+    "great": 730,
+    "legendary": -1
+  },
+  "witnessesMost": 8,
+  "warmth": 5,
+  "word": {
+    "about": "How far a notable or greater deed has got round its town (doc 56, 2): its reach starts at `start` and is all over town in `days`; carried by a caravan it starts at `caravanStart` and grows at half speed; a legendary one starts at `legendStart` everywhere. It holds fresh for `fresh` days, then fades to nothing over `fade`. A town's word holds at most `most` deeds. `ears`: how much more (or less) than others each sort of resident hears.",
+    "start": 0.25,
+    "days": 3,
+    "caravanStart": 0.15,
+    "legendStart": 0.5,
+    "fresh": {
+      "notable": 92,
+      "great": 365
+    },
+    "fade": {
+      "notable": 92,
+      "great": 365
+    },
+    "most": 40,
+    "ears": {
+      "merchant": 1.5,
+      "guard": 1.5,
+      "clergy": 1.5,
+      "child": 0.6
+    }
+  },
+  "greetEveryDays": 1
+}

@@ -1,0 +1,51 @@
+# Talk about a good deed (doc 56, topic deed). One of the two has heard of it and the other hasn't. {subject} is how the
+# teller names the doer: a name they were given (known=yes), or how the doer looked (known=no: "a grey wolf with a torn
+# ear"), so it sits mid-sentence. {deed} is what was done, as a phrase after "who" or "they" ("drove the bandits off the
+# road at the ford"). Speak of the doer as "they". Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- By name
+
+scene dd_heard_named
+when topic=deed known=yes
+a : Have you heard? {subject} {deed}. | Word is {subject} {deed}. | You know {subject}? They {deed}.
+b : Did they now. | {subject}? Good for them. | I hadn't heard that.
+a : So they say. | It's all round the market. | I had it from someone who saw.
+
+scene dd_named_doubt
+when topic=deed known=yes
+a : They're saying {subject} {deed}. | {subject} {deed}, apparently. | Heard {subject} {deed}.
+b[guard] : We heard something of it at the watch-house.
+b[old] : In my day nobody did a thing like that for free.
+b : I'll believe it when I hear it twice. | Is that so? | Well, well.
+a : You'll hear it twice by supper. | It is. | It's true, I tell you.
+
+scene dd_named_merchant
+when topic=deed known=yes place=market
+a : {subject} came through here, you know. They {deed}. | Sold {subject} bread last week. Turns out they {deed}. | {subject}, the one who {deed}. I've served them.
+b[merchant] : Then give them a good price next time.
+b : Fancy that. | A good customer, then. | Small world.
+a : I will. | The best kind. | Isn't it.
+
+# ---------------------------------------------------------------- By look
+
+scene dd_heard_look
+when topic=deed known=no
+a : Heard about the one who {deed}? | Someone {deed}, so they say. | Have you heard? Some wolf {deed}.
+b : Who was it? | No. Who? | Go on.
+a : Nobody knows the name. {subject}, they said. | {subject}, by the sound of it. Never gave a name. | A stranger. {subject}.
+b : Keep an eye out, then. | I'd like to buy them a drink. | Funny, not leaving a name.
+
+scene dd_look_watch
+when topic=deed known=no
+a : Did you hear someone {deed}? | Somebody {deed}, I hear. | There's talk someone {deed}.
+b[child] : Was it a hero? Did they have a sword?
+b[guard] : We'd like a word with them. A thank-you, I mean.
+b : Who? | Never heard. | Who'd do that?
+a : {subject}, apparently. | They say {subject}. | {subject}, no name given.
+
+scene dd_look_curious
+when topic=deed known=no place=tavern
+a : They say {subject} {deed}. Came in here after, too. | {subject} sat right there, the night after they {deed}. | You remember {subject}? They {deed}.
+b[innkeeper] : I poured them a drink. Never said a word about it.
+b : Never! | Which one was that? | I'd not have guessed.
+a : Quiet ones often are. | By the hearth. | Neither would I.

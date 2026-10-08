@@ -145,6 +145,11 @@ export type LivePerson = [string, string, 'p' | 'o' | 'n' | 'r' | 't', string, n
 export type LiveWeather = [string, string, number, number, number, number];
 /** A rumour going round: who it is about, what is said, who has heard it, and how sure they are on average. */
 export interface Rumour { subject: string; claim: string; holders: string[]; sure: number }
+/** A good deed (doc 56): who did it, who saw it (with the name each knew them by), and how far it has got round each town. */
+export interface FameDeed {
+    id: string; kind: string; weight: string; phrase: string; doers: string[]; beneficiary: string; town: string; cell: string; day: number;
+    names: Record<string, string[]>; witnesses: {id: string; as: Record<string, string>}[]; towns: {town: string; carrier: string; reach: number}[];
+}
 export type LiveShop = [string, string, string, string, number, number, boolean];
 export interface LiveEvent { id: number; kind: string; actor: string; target: string; cell: string; day: number; detail: string; at: string }
 export interface Live {
@@ -261,6 +266,7 @@ export const dmApi = {
         call<{id: number; visitor: string}>('api/live/visit', {target, name, cell: place.cell, x: place.x, y: place.y, minutes, like}),
     leave: (target: Target, id: string) => call<{id: number}>('api/live/leave', {target, id}),
     rumours: (target: Target) => call<{target: Target; rumours: Rumour[]}>(`api/live/rumours?target=${target}`),
+    fame: (target: Target) => call<{target: Target; day: number; deeds: FameDeed[]}>(`api/live/fame?target=${target}`),
     saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
     deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),
     npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>('api/npcs/life', {target, id, dead}),

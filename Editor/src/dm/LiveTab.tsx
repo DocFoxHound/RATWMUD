@@ -12,10 +12,10 @@ import {useWorld} from './world';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
-import {dmApi, type Action, type Chapters, type Factions, type Live, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
+import {dmApi, type Action, type Chapters, type Factions, type FameDeed, type Live, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
-type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'weather';
+type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'fame' | 'weather';
 const LAYERS: {id: LayerId; label: string; icon: string; color: string}[] = [
     {id: 'players', label: 'Players', icon: '☺', color: '#7fc8f8'},
     {id: 'npcs', label: 'NPCs', icon: '☻', color: '#a8c7ad'},
@@ -26,11 +26,12 @@ const LAYERS: {id: LayerId; label: string; icon: string; color: string}[] = [
     {id: 'routes', label: 'Routes & areas', icon: '⤳', color: '#e0b85a'},
     {id: 'events', label: 'Events', icon: '!', color: '#d98b5f'},
     {id: 'rumours', label: 'Rumours', icon: '“', color: '#b9a3e0'},
+    {id: 'fame', label: 'Fame', icon: '★', color: '#e8c35a'},
     {id: 'weather', label: 'Weather', icon: '☁', color: '#9db9d6'},
 ];
 // Layers whose systems aren't built yet (doc 34 phases 3 and 5): shown, so the DM knows they are coming.
 const LATER = ['Stories', 'Quests'];
-const ROAD = '#d98b5f', OFFLINE = '#7d8a85', VISITOR = '#d6d98f', HEARD = '#b9a3e0';
+const ROAD = '#d98b5f', OFFLINE = '#7d8a85', VISITOR = '#d6d98f', HEARD = '#b9a3e0', FAME = '#e8c35a';
 const WEATHER: Record<string, string> = {rain: '#6f9fd6', fog: '#c7ccd1', snow: '#f2f5f7', overcast: '#9aa3ab', storm: '#7b6fd6', sandstorm: '#d6b06f'};
 const CRIMES = new Set(['theft', 'attempted theft', 'warrant', 'arrest', 'reported', 'raid', 'fine paid', 'released']);
 const POLL_MS = 2000;
@@ -49,6 +50,8 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const [showVisitors, setShowVisitors] = useState(true);
     const [rumours, setRumours] = useState<Rumour[] | null>(null);
     const [rumour, setRumour] = useState(-1);         // Which rumour the Rumours layer follows (an index), -1 none.
+    const [deeds, setDeeds] = useState<FameDeed[] | null>(null);
+    const [deed, setDeed] = useState(-1);             // Which deed the Fame layer follows (an index), -1 none.
     const [npcRole, setNpcRole] = useState('');
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState<string | null>(null);
@@ -88,6 +91,14 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         return () => clearInterval(t);
     }, [on, target]);
 
+    useEffect(() => {                                 // Deeds and their reach change as the world saves (doc 56).
+        if (!on.has('fame')) return;
+        const read = () => dmApi.fame(target).then(r => setDeeds(r.deeds)).catch(e => setProblem((e as Error).message));
+        void read();
+        const t = setInterval(read, 30000);
+        return () => clearInterval(t);
+    }, [on, target]);
+
     const toggle = (id: LayerId) => setOn(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
     const surface = useMemo(() => (world ? surfaceFor(world, view as never) : null), [world, view]);
     const rooms = useMemo(() => new Map((world?.rooms ?? []).map(r => [r.id, r])), [world]);
@@ -115,6 +126,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         return on.has('npcs') && (p[2] !== 'r' || showRoad) && (!npcRole || (npcRole === 'other' ? !(p[7] in ROLE_INFO) : p[7] === npcRole)) && matches(p);
     }), [people, on, showOffline, showRoad, showDead, showVisitors, npcRole, q]); // eslint-disable-line react-hooks/exhaustive-deps
     const followed = on.has('rumours') && rumours && rumour >= 0 ? rumours[rumour] ?? null : null;
+    const famed = on.has('fame') && deeds && deed >= 0 ? deeds[deed] ?? null : null;
 
     const markers = useMemo((): Marker[] => {
         const out: Marker[] = [];
@@ -150,8 +162,18 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                 else if (holders.has(p[0]) && !shown.has(p[0])) push(`r:${p[0]}`, at(p[3], p[4], p[5]), HEARD, '“', `${p[1]} · has heard it`);
             }
         }
+        if (famed) {                                   // The deed followed: its doers, and those who saw it, where they are now.
+            const saw = new Map(famed.witnesses.map(w => [w.id, w.as]));
+            for (const p of people) {
+                if (famed.doers.includes(p[0])) push(`f:${p[0]}`, at(p[3], p[4], p[5]), '#e07a6a', '★', `${p[1]} · did it`);
+                else if (saw.has(p[0]) && !shown.has(p[0])) {
+                    const as = Object.values(saw.get(p[0]) ?? {}).filter(Boolean);
+                    push(`f:${p[0]}`, at(p[3], p[4], p[5]), FAME, '★', `${p[1]} · saw it${as.length ? ` (knew them as ${as.join(', ')})` : ' (by look)'}`);
+                }
+            }
+        }
         return out;
-    }, [on, world, view, at, centre, placeName, chapters, live, shownPeople, followed, people, canAct]);
+    }, [on, world, view, at, centre, placeName, chapters, live, shownPeople, followed, famed, people, canAct]);
 
     const overlay = useMemo((): Overlay => {
         const out: Overlay = {tiles: [], rects: [], paths: [], circles: []};
@@ -272,7 +294,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const layerCount: Partial<Record<LayerId, string>> = {
         players: `${counts.online} on · ${counts.offline} off`, npcs: String(counts.npcs + counts.road),
         shops: live?.frame ? String(live.frame.shops.length) : undefined, events: live ? String(live.events.length) : undefined,
-        rumours: rumours ? String(rumours.length) : undefined, weather: live?.frame?.weather ? String(live.frame.weather.length) : undefined,
+        rumours: rumours ? String(rumours.length) : undefined, fame: deeds ? String(deeds.length) : undefined, weather: live?.frame?.weather ? String(live.frame.weather.length) : undefined,
     };
     const found = q ? people.filter(matches).slice(0, 40) : [];
     const stale = !live?.frame || live.age === null || live.age > 10;
@@ -316,6 +338,14 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                         {(rumours ?? []).map((r, i) => <option key={i} value={i}>{rumourLine(r, nameOf)} ({r.holders.length})</option>)}
                     </select></label>
                     {followed && <span>{followed.holders.length} have heard it, {Math.round(followed.sure * 100)}% sure on average.</span>}
+                </div>}
+                {on.has('fame') && <div className="live-filters">
+                    <label>Follow <select value={deed} onChange={e => setDeed(Number(e.target.value))}>
+                        <option value={-1}>{deeds ? (deeds.length ? 'a deed…' : 'no deeds yet') : 'Loading…'}</option>
+                        {(deeds ?? []).map((d, i) => <option key={d.id} value={i}>{d.doers.map(nameOf).join(' and ')} {d.phrase} ({d.weight})</option>)}
+                    </select></label>
+                    {famed && <span>{famed.witnesses.length} saw it · {famed.towns.map(t => `${t.town.replace(/_/g, ' ')} ${Math.round(t.reach * 100)}%` +
+                        (t.carrier.startsWith('caravan') ? ' (by caravan)' : '')).join(' · ') || 'not in any town\'s talk'}</span>}
                 </div>}
                 {(on.has('players') || on.has('npcs')) && <div className="live-filters">
                     <label><input type="checkbox" checked={showDead} onChange={e => setShowDead(e.target.checked)} /> The dead</label>

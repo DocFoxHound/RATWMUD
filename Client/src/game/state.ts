@@ -203,6 +203,8 @@ export class GameState {
     giveTarget = '';                                // (The wolf the Give sheet gives to: doc 55.)
     archiveTask: Json | null = null;                // (Records to sort: doc 54, 7.)
     journalView: Json | null = null;                // (The journal: lore, bestiary, herbarium, places.)
+    chronicleView: Json | null = null;              // (The chronicle: doc 56.)
+    welcomeView: Json | null = null;                // (While you were away: doc 56, 10; kept until the next logout.)
     boardView: Json | null = null;                  // (A notice board as last read: doc 54.)                         // (Bumped when the page, not the player's typing, changes the draft.)
     /** The Dev Console (a player marked Dungeon Master; ui/hud/devConsole.ts): open or not, the commands the server
      *  offers ([name, help], as it last said), and each command run with the server's answer, newest last. */
@@ -1081,6 +1083,16 @@ export class GameState {
         if (type === 'archive') {
             this.archiveTask = e;                   // (Records to sort: doc 54, 7.)
             this.modal = 'archive';
+            return;
+        }
+        if (type === 'welcome') {
+            this.welcomeView = e;                   // (Back after a break: doc 56, 10.)
+            this.modal = 'welcome';
+            return;
+        }
+        if (type === 'chronicle') {
+            this.chronicleView = e;                 // (Doc 56, 8.)
+            this.modal = 'chronicle';
             return;
         }
         if (type === 'journal') {
@@ -2318,6 +2330,7 @@ export class GameState {
     }
 
     leaveCharacter() {
+        this.welcomeView = null;                    // (Kept on the sheet until the next logout: doc 56, 10.)
         this.setTyping(false);
         this.heldKeys.clear();
         this.sendMove();

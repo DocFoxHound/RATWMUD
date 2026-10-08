@@ -390,8 +390,11 @@ void Game::finishBook(books::Book& b)
         afterSocial();
     }
     for (const auto& w : b.wolves)
+    {
         if (auto* c = clientOf(w))
             system(c, "\"" + b.title + "\" is finished.");
+        logEvent("story told", w, {}, b.title);     // (For the chronicle: doc 56, 8.)
+    }
     const auto& r = books::rules();
     const auto day = std::int64_t(now() / 86400);
     auto& today = modelBooks_[b.keeper];

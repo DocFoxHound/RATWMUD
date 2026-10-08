@@ -1,0 +1,30 @@
+{
+  "format": "ratw-chronicle",
+  "about": "The chronicle's lines (Docs/Design/56-fame-and-memory.md, 8): a character's life read from the ledgers, told in the second person, never stored prose. `told` lines are one an event (blanks: {other}, the other wolf as the owner knows them; {detail}; {place}); `first` kinds are told only the first time (per other wolf where there is one). `folded` kinds make one line a season.",
+  "told": {
+    "character created": {"actor": "You came into the world."},
+    "arrival": {"actor": "You first set foot in {place}."},
+    "introduced": {"actor": "You told {other} your name.", "target": "{Other} told you their name."},
+    "story told": {"actor": "\"{detail}\" was told, with you in it."},
+    "deed": {"actor": "You {detail}."},
+    "nickname": {"actor": "{Other} first called you {detail}."},
+    "nickname dropped": {"actor": "You asked folk not to call you {detail}."},
+    "festival won": {"actor": "You won {contest} at {detail}."},
+    "pact sealed": {"actor": "You sealed a pact.", "target": "{Other} sealed a pact with you."},
+    "vouch": {"actor": "You vouched for {other} to the Wardens.", "target": "{Other} vouched for you to the Wardens."},
+    "tie ended": {"actor": "Your tie with {other} ended.", "target": "Your tie with {other} ended."},
+    "camp cleared": {"actor": "You broke a bandit camp."},
+    "letter delivered": {"target": "A letter reached you."},
+    "lease": {"actor": "You took lodgings in {place}."}
+  },
+  "first": ["character created", "arrival", "introduced"],
+  "folded": {
+    "conversation": "talked with {n} {wolves}",
+    "hunted": "brought down {n} {beasts}",
+    "forage": "foraged {n} {times}",
+    "table game": "played {n} table {games}",
+    "archive work": "worked {n} {times} at the archive",
+    "stall sale": "sold {n} {things} from a stall",
+    "arrival": "came to {n} new {places}"
+  }
+}

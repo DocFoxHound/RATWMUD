@@ -1,6 +1,7 @@
 # 56. Fame and memory: deeds, nicknames, the chronicle, and being welcomed back
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (§3.7, §5.6's festival criers, §8.4, §8.5, §8.6). Nothing built.
+Drafted 2026-10-06 as an actionable plan for doc 48 (§3.7, §5.6's festival criers, §8.4, §8.5, §8.6). Open questions
+answered 2026-10-08 (see "Open questions"); all six phases built the same day (see "Built"); committed with migration 0046 applied (2026-10-08).
 Read doc 48 (Principles, §3.7, Part 8 and the Decisions) and docs 26 (Phases 3, 5, 7, 8 and 10), 32 (§1.4, §1.5,
 §4.2b), 30 (Phase 6), 28 and 09 first.
 
@@ -210,7 +211,8 @@ Three carriers, by weight. None scans every resident.
   chosen by hash:
   - an epithet ("the Ferryman");
   - a possessive ("Hale's Luck");
-  - a deed phrase ("the wolf who pulled the miller's pup from the river");
+  - a deed phrase ("the wolf who pulled the miller's pup from the river"): **dropped** (user, 2026-10-08: short
+    nicknames only; the code still reads a family's `deed` forms if any are written);
   - a look form for a wolf known only by look ("the torn-eared grey").
 
   A nickname already worn by another wolf in the town isn't used.
@@ -543,6 +545,255 @@ as someone long gone, sees what happened while away, and finds every resident's 
 **Cost:** `self.unfinished` is rebuilt only when dirty, from per-player lists; one query per long-absent login; `fade`
 gains a set lookup per bond, once a day.
 
+## Built
+
+### Phase 1 (2026-10-08): the deed ledger
+
+- **The record** (`Core/RatwFame.{h,cpp}`, new): `fame::Deed` as §1 has it, plus the doers' `names`, the place's
+  name, a `detail` (a DM award's or a festival's words) and the residents it has `warmed`. `fame::Ledger` keeps them
+  with a by-doer index, prunes those past their life (`liveDays`: 30 / 184 / 730 days / always), and saves them.
+- **Kinds** in `Data/Fame/deeds.json` (new), each with a weight, family, phrase and an optional per-season cap per
+  beneficiary:
+  - `broke_camp` (notable);
+  - `tended`, `kept_promise`, `carried_letter` (small, capped 3, 2 and 2 a season);
+  - `escorted_caravan` (small);
+  - `report_thief` (notable);
+  - `festival_won` (small: doc 54's contests);
+  - `award` (the DM's, great by default).
+- **Made from the world's events** (`Game::fameFromEvent`, from `Game::watchEvent`, `Core/RatwGameFame.cpp`), so the
+  world needed no deed queue and the game fills in names:
+  - `camp cleared`, `tended`, `promise kept` and `festival won`;
+  - `contract done` for courier and escort contracts;
+  - a player's `reported` followed by a `warrant` for the same crime.
+- **`Game::recordDeed`** (public, for docs 55, 57 and 58):
+  - **Witnesses:** the one it was done for, then whoever stood within 12 tiles in the cell, nearest first (at most
+    8). Each witness carries the name it knew each doer by, or nothing.
+  - **Looks and names:** each doer's look at the time, and the names the deed travels under (those witnesses knew;
+    a DM award credits the wolf by its own name).
+  - **Beliefs:** witnesses (0.9) and the beneficiary's household (0.8) believe `deed:<id>`.
+  - **Records:** a `deed` row in `game.events`, whose detail is the deed's phrase and id.
+  - **Warmth** (the user's answer, 2026-10-08): a notable deed or greater gives each resident who ties it to the doer
+    +5 liking, once.
+- **`Belief::as`** (`RatwRoads.h`, saved in the checkpoint's beliefs): the name the holder knows the subject by. It
+  passes on with daily gossip, carters and ambient talk.
+- **`World::clearCamp`** no longer makes every merchant believe and warm at once; the deed travels instead.
+- **The "promise kept" bug:** the event is now recorded through `recordEvent` (queued while an event is being
+  recorded), so the "keeps promises" rumour forms and the deed is made.
+- **Saved:** the people root's `deeds` list, its own table by migration `0046_deeds.sql` (written, not applied), which
+  also makes `game.nicknames` for Phase 3.
+- **The DM:** `deed.award` (target the doer; payload kind, weight, cell, beneficiary, detail) and `deed.revoke`
+  (target the id: out of every town's word, every belief dropped, kept as revoked) in the game and in the tool's
+  `ACTIONS`. `tools/chronicle.py` reads `deed` and `deed revoked` rows.
+- **Until Phase 2,** deed claims were kept out of ambient gossip and the Mind's rumour lines (`rumoursAbout`).
+- **Tests:**
+  - `Tests/fame_tests.cpp` `ledger` (new):
+    - a camp broken: one notable deed, the keeper holding it as Ash, the innkeeper by look;
+    - the keeper warmed by 5; no word in other towns;
+    - a promise kept: a small deed and the rumour;
+    - the per-season cap; a DM award and a revoke;
+    - all of it across a restart.
+  - `roads_tests`: the west market no longer hears at once; the event is recorded.
+  - `test_dungeon_master.py`, `test_chronicle.py`.
+
+### Phase 2 (2026-10-08): deeds travel and are recognised
+
+- **The town's word** (`fame::reach`, read from `deeds.json`'s `word`):
+  - A notable deed or greater starts in its town's word at reach 0.25 and is all over town in 3 game days.
+  - It holds fresh 92 days (a great one 365), then fades over as long; at most 40 a town.
+  - A resident has heard it when its hash draw is under 1000 × reach × ear. The ear is 1.5 for merchants, the watch
+    and clergy, 0.6 for children, else 1. The answer is the same every time, and more residents have heard as days
+    pass.
+  - The daily pass (`tendFame`) drops what has faded and what is past the cap.
+- **Between towns** (from the `caravan arrives` event):
+  - Great deeds join the next town's word with any caravan, at 0.15, growing at half speed.
+  - Notable deeds cross only with a caravan a player escorted (its `contract done` for escort just before).
+  - Legendary deeds join every town's word at 0.5 at once.
+  - Personal beliefs still travel as any rumour does, with carters and gossip.
+- **Recognition** (`Game::recognise`):
+  - **By name:** the resident knows the wolf by a name the deed travels under, or holds it under the name it knows.
+  - **By look:** the deed's look still matches and is distinctive, meaning it names a marking ("… with a white
+    blaze"). Lasting injuries aren't part of a look yet, so only a change of markings breaks a match.
+  - Heaviest first, then newest.
+- **Joining up** (`Game::fameJoin`, from `noticeIntroduction`): a resident who knew a deed by a distinctive look and
+  is told the wolf's name holds it under that name, and the deed travels under it (at most 4 names). Its next reply is
+  briefed "You have just realised this is the wolf who …". An alias joins nothing a plain look couldn't have.
+- **The Mind's `fame` field** (`mind::Context::fame`, at most 400 letters; `tools/npc_mind.py`'s limit and rule): up
+  to two deeds with how the NPC knows them ("you saw it", "the town's talk", "Wren told you") and how sure. By look it
+  says it only thinks it might be them. It notes "(You have spoken of it to them before: …)" once it has.
+- **The game's own greeting** (`router.json`'s `famous` and `famous_look` bands): at most once a game day a pair, for a
+  notable deed, by name ("Ash! Heard you drove the bandits off the road at the ford.") or unsure by look ("You're not
+  the one who …, are you?").
+- **`Game::fameLine(knower, wolf)`** for doc 52's introductions.
+- **Ambient talk:**
+  - A `deed` topic (score 3.2 and up) when one of a pair holds a fresh deed the other doesn't. It is told from
+    `Data/Voice/scenes/common/deeds.scene` (new; the scenes now know the `deed` topic and the `deed` and `nickname`
+    blanks), naming the doer as the teller knows them, by name or by look.
+  - The listener believes it under the name it heard.
+- **The name leak, fixed** (`World::setNamer`): gossip, the traveller-nearby topic and the ambient voicing's subject
+  name a player only by a name the speaker was given, else by look.
+- **The DM:**
+  - `GET /api/live/fame`, and a Fame layer on the LIVE tab: follow a deed to see its doers and witnesses on the map
+    (with the names each knew them by) and each town's reach.
+  - The Rumours layer now tells deeds in their own words.
+- **Tests:**
+  - `fame_tests` `travels` (38 checks with Phase 1):
+    - the reach (a quarter, then all after 3 days);
+    - u1 ties a deed to Ash by name, the same every time; u2, with no name, can't for a plain look but can, unsure,
+      for a distinctive one, and not after the look changes;
+    - joining up at an introduction; an alias doesn't connect;
+    - a great deed carried by a caravan, a notable one only by a guarded one;
+    - the keeper tells the innkeeper of a fresh deed naming her as Ash;
+    - gossip by a wolf who never heard her name never says it;
+    - u1 greets her by a deed.
+  - `scenes_tests` (the new file loads), `test_npc_mind.py` (`fame` cut at 400), `test_dungeon_master.py` (the Fame
+    endpoint, deeds in the rumours).
+
+### Phase 3 (2026-10-08): nicknames
+
+- **The record:** `fame::Nickname` (id, wolf, text, family, deed, coinedBy, town, day, dropped), kept beside the deeds
+  and saved as the people root's `nicknames` (migration 0046's `game.nicknames`). Each coining is a `nickname` row in
+  `game.events`, and each drop a `nickname dropped` row.
+- **Forms** in `Data/Fame/nicknames.json` (new), by the deed's family (road, healer, honest, watch, festival, hero):
+  - epithets ("the Lantern");
+  - possessives ("{name} of the Road"), only for a coiner who knows a name;
+  - deed phrases ("the wolf who {deed}"): read if written, but none are (user, 2026-10-08: short nicknames only).
+
+  One is chosen by hash; one another wolf of the town wears is passed over. The plan's look form ("the torn-eared
+  grey") wasn't built: an epithet serves a wolf known only by look.
+- **When:** at a notable deed or greater, or at the third small deed of one family by a wolf in one town within 92
+  days.
+- **Who coins it:** the witness (or the one it was done for) who likes the doer best, with liking 20+ and familiarity
+  15+. Failing that, the town's innkeeper, once the deed's word is half round town (the daily pass).
+- **Using it:**
+  - Whoever can tie the deed to the wolf knows its nickname; residents use the one from the heaviest, newest deed.
+  - The Mind's `fame` field says "Folk call them 'X'.", or "You were the first to call them 'X'." to the coiner.
+  - The famous greeting's lines with `{nickname}` are used when there is one.
+  - Deed talk carries it.
+  - Three a wolf at most.
+- **Asking folk not to use it** (the `social` verb `dropnickname`; WHAT FOLK CALL YOU on the character sheet, with
+  ASK FOLK NOT TO USE IT): residents stop at once, and that deed never coins again. The player is told "You let it be
+  known you'd rather not be called that." The nickname stays in the record, marked dropped.
+- **Also:**
+  - `self.nicknames` in the snapshot (text, who first said it as the player knows them, the town, dropped);
+  - the DM's `nickname.drop` and `nickname.restore`;
+  - `tools/chronicle.py`'s `nickname` lines;
+  - a dev-tools `deed` command (a deed here, with `coin` to coin at once) for trying it out.
+- **Recognition widened:** a resident who saw a deed done (or had it done for them) knows the wolf again by any look
+  that still matches, distinctive or not, and joins a name it learns to it. Only hearsay needs a distinctive look.
+- **Tests:**
+  - `fame_tests` `nicknames` (58 checks in all):
+    - coined by the fondest witness, who is told it coined it; the other witness knows it;
+    - two small deeds of a family coin nothing, the third does;
+    - the innkeeper coins one when word is half round town;
+    - no two wolves of a town share one; three a wolf;
+    - a drop ends it in briefings, prevents a re-coin, and shows on the sheet;
+    - a restart.
+  - `Client/src/game/fame.test.ts`.
+  - `tools/client/fame.mjs` (the real page): a deed through the dev console coins a nickname; the keeper greets her
+    by the deed; the sheet shows the nickname and who first said it; ASK FOLK NOT TO USE IT drops it.
+
+### Phase 4 (2026-10-08): festival criers
+
+- **Who:** the town's official, else the innkeeper nearest the square, else its priest (`Game::crierOf`). The crier is
+  sent to the square's middle (`World::seatResident`), and let go after the last line.
+- **When:** doc 54's slot at 20:00 on a festival day, in every town keeping one, whether a player is there or not
+  (`Game::festivalCrier`, from `tendFestivals`).
+- **What** (`Data/Fame/criers.json`, new; one line of each list by hash):
+  - an opening;
+  - up to 6 deeds from the town's word in the last 92 days, heaviest first. Only deeds that travel under a name are
+    called (the user: none by look);
+  - the nicknames coined in the town that season;
+  - a closing.
+
+  The one a deed was done for is named by role, never a true name.
+- **How:** a line a minute, yelled like a sermon (`publish`, `Voice::Yell`), heard by perception. Lines are spoken
+  only while a player is in the square's cell; with none there, they pass unheard.
+- **What it does,** heard or not: each called deed is all over its town at once, and residents at the square believe
+  it under the name they heard. Joining up needs nothing new: a resident told that name later ties the deed to it.
+- **Legendary deeds:** every town's crier calls them at noon the day after (`cryLegends`, once a deed: `Deed::cried`).
+- **Tests:**
+  - `fame_tests` `criers` (68 checks in all):
+    - at 20:00 the innkeeper calls Ash's deed and her nickname, but not a deed nobody can name;
+    - the called deed is at full reach, and a resident at the square believes it of Ash;
+    - Ser Ferro's crier, with no player there, sets its deed's reach all the same;
+    - a legendary deed is called at Upper Accord's square at noon the next day.
+  - `schedules_tests` and `gathering_tests` pass unchanged.
+
+### Phase 5 (2026-10-08): the chronicle
+
+- **`Core/RatwChronicle.{h,cpp}`** (new):
+  - **`compile` (pure):** rows of `game.events` where the character is actor or target, a lens that names everyone
+    only as the owner knows them, and the templates in `Data/Fame/chronicle.json` (new).
+  - **Told one by one, in the second person:** coming into the world and the first arrival; first meetings, once per
+    wolf, by the owner's names, so a wolf never introduced appears by look; Stories told; deeds; nicknames and their
+    coiners; nicknames dropped; festivals won; pacts; vouches; ties ended; camps broken; letters received; lodgings.
+  - **Folded into one line a season:** wolves talked with, beasts brought down, foraging, table games, archive work,
+    stall sales and new places.
+  - Dated by the game's calendar ("Summer 9, Year 1").
+- **The read** (`chronicle::Reader`): its own thread and connection, the character's newest 2,000 rows. Migration
+  0046 grants `ratw_game` `SELECT` on `game.events`.
+  - **Without a database** (tests, file worlds), it is built from the events in memory and says it is partial.
+  - Either way, the ledger's deeds and nicknames are added where the log lacks them.
+- **New event kinds:** `introduced` (the registered name given, never chat; `noticeIntroduction`) and `story told`
+  (each wolf of a finished book).
+- **Asking:** the `social` verb `chronicle`, once in 30 s a character, answered by a `chronicle` event. The page has a
+  CHRONICLE button on the character sheet and a CHRONICLE page, which notes when it is partial.
+- **The DM** reads the same rows through `tools/chronicle.py` (`deed`, `nickname`, `nickname dropped`).
+- **Not done:** milestones of skills, lasting injuries and Chapter moments, which have no event rows yet.
+- **Tests:**
+  - `Tests/chronicle_tests.cpp` (new, pure, 12 checks):
+    - the first arrival told once;
+    - a meeting once by the owner's name, and a wolf whose name wasn't given by look;
+    - the deed without its id, the nickname and who said it, a Story, a festival;
+    - the season folded;
+    - nothing that isn't theirs; the game's dates.
+  - `fame_tests` (70 checks): a chronicle from memory, partial, with the deed; once in 30 s.
+  - `tools/client/fame.mjs`: the page draws. The query was checked against DEV's schema with `EXPLAIN`;
+    `pg_tests` runs only against a scratch database.
+
+### Phase 6 (2026-10-08): unfinished business, and welcome back
+
+- **Unfinished business** (`Game::unfinishedView`; `self.unfinished`, rebuilt at most every 2 seconds): soonest due
+  first, at most 8. Nothing nags: no toasts, no reminders.
+  - promises the wolf made to residents and residents made it, with when they fall due;
+  - contracts taken and not done ("3 of 5 handed in");
+  - a Story waiting for its word on finishing;
+  - letters unread.
+
+  The page shows UNFINISHED BUSINESS on the character sheet, and BEFORE YOU GO on the leaving page, built from the
+  snapshot, so leaving never waits.
+- **How long they were gone:** `Entity::leftAt` (Unix seconds, saved) is set at leaving; on entering it is read before
+  `returnFromAway`. A break is 3 real days or more (`Options::awayBreakSeconds`; the server's `--away-break` for
+  trying it).
+- **Who hasn't seen them since** is worked out at login: residents whose last contact was before the break, and when.
+  This has to be done then, because hearing a greeting moves a resident's last contact on before it answers.
+- **The Mind's `away` field** (at most 200 letters; `npc_mind.py`'s limit and rule): "You last saw this wolf about
+  three weeks ago, in spring. Greet them as someone back after a long while." It is in game time, and used up by
+  whichever reply is given, the game's line or the model's.
+- **The game's own greeting** (`router.json`'s `returning` band): "Haven't seen you since spring!", once a resident.
+- **Never punished for absence:** `Bonds::fade` skips bonds toward a character who is away (`Bonds::setAway`, set at
+  logout and restore, cleared on entering). Bonds pick up where they were left.
+- **The welcome card** (event `welcome`, shown once on entering after a break; kept on the sheet as WHILE YOU WERE
+  AWAY until the next logout):
+  - letters waiting;
+  - marriages, deaths, apprenticeships, new posts and moves among the 12 residents who know the wolf best (from
+    `game.events` since the break, on the chronicle reader's thread; without a database, from memory);
+  - the talk of the towns it knows: deeds in their word since it left, by others;
+  - rested time waiting.
+- **Not done:**
+  - Chapter news and doc 57's projects in the card;
+  - the "promise kept" event was already fixed in Phase 1.
+- **Tests:**
+  - `fame_tests` `welcomeBack` (80 checks in all):
+    - an open promise and a half-done procure contract are listed, and leave when settled;
+    - away 40 game days, the keeper knows her as well as ever, while Bo, who stayed and never came by, is less known;
+    - the welcome card;
+    - the keeper is briefed that she is back after a long while (and the innkeeper, who met her since, isn't), greets
+      her so, and is briefed so only once.
+  - `bonds_tests` `notWhileAway`; `Client/src/game/fame.test.ts`.
+  - `tools/client/fame.mjs`: the leaving page; back after a (two-second) break to the welcome card, kept on the
+    sheet.
+
 ## Depends on and feeds
 
 **Depends on:**
@@ -611,7 +862,8 @@ guarded caravans carrying fame, chronicle and welcome rows); doc 58 (great and l
 
 ## Open questions
 
-1. **Should criers call deeds by look** ("a grey wolf with a torn ear, whose name nobody knows")? It makes a moment when
-   the wolf steps forward, but points at them. *Recommendation:* yes, notable and up only.
-2. **Should a deed warm a resident to the doer** the first time they connect it (say +5 liking, once)? It makes fame
-   count in trade and first meetings. *Recommendation:* yes, notable and up, once per resident per deed.
+Answered by the user, 2026-10-08:
+1. **Criers call deeds by look?** No. A crier calls only deeds that travel under a name; a deed whose doer nobody can
+   name isn't called (residents may still recognise them by look in conversation, §3).
+2. **A deed warms a resident to the doer?** Yes, for notable deeds and up: +5 liking the first time a resident ties a
+   deed to the wolf, once per resident per deed.

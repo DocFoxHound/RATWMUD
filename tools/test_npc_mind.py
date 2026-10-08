@@ -66,7 +66,7 @@ class DecodingTests(unittest.TestCase):
 
     def test_context_is_checked(self):
         for bad in ({**CONTEXT, "heard": ""}, {**CONTEXT, "npc": " "}, {**CONTEXT, "relationship": "x" * 2000},
-                    {**CONTEXT, "mood": 3}, []):
+                    {**CONTEXT, "fame": "x" * 401}, {**CONTEXT, "mood": 3}, []):
             with self.assertRaises(BridgeError):
                 mind.clean_dialogue_context(bad)
 
@@ -81,6 +81,9 @@ class MindTests(unittest.TestCase):
             self.assertIn(lasting, call["system"])
         self.assertEqual("Thank you for the bread.", call["user"]["heard"])
         self.assertEqual("You know Ash and like them.", call["user"]["relationship"])
+        famed = provider.calls and mind.Mind(provider, audit=lambda e: None).dialogue(
+            {**CONTEXT, "fame": "You have heard (the town's talk; fairly sure) that this wolf broke the camp."})
+        self.assertIn("broke the camp", provider.calls[-1]["user"]["fame"])   # (Doc 56: what the NPC has heard of their deeds.)
         for kept_out in ("backstory", "personality", "description", "npcId", "subjectId"):
             self.assertNotIn(kept_out, call["user"])
         self.assertEqual("Mind the crust.", got["text"])

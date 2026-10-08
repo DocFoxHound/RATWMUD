@@ -51,6 +51,23 @@ void feelingsGrowAndFade()
     expect(!b.find("ash", "wren") && !b.find("wren", "ash"), "Someone who has left is forgotten by all");
 }
 
+void notWhileAway()
+{
+    // Doc 56, 10: nobody's regard fades for a wolf who is away; it picks up where it was left.
+    Bonds b;
+    b.change("fennel", "player-ada", {30, 20, 40, 0, 0}, 0);
+    b.change("fennel", "player-bo", {30, 20, 40, 0, 0}, 0);
+    b.setAway("player-ada", true);
+    for (double day = 1; day <= 40; ++day)
+        b.fade(day);
+    const auto* ada = b.find("fennel", "player-ada");
+    expect(ada && ada->familiarity == 40 && ada->affinity == 30, "Ada, away forty days: just as she was");
+    expect(!b.find("fennel", "player-bo") || b.find("fennel", "player-bo")->familiarity < 40, "Bo, who stayed and never came by, is less known");
+    b.setAway("player-ada", false);
+    b.fade(45);
+    expect(b.find("fennel", "player-ada")->familiarity < 40, "back, and the days count again");
+}
+
 void aCrowdKeepsTheStrongest()
 {
     Bonds b;
@@ -202,6 +219,7 @@ int main()
     try
     {
         feelingsGrowAndFade();
+        notWhileAway();
         aCrowdKeepsTheStrongest();
         describedInWords();
         savedAndRestored();

@@ -171,6 +171,11 @@ def describe(row: dict, v: Voice) -> tuple[int, str] | None:
         'bandit falls': (NOTABLE, f'{A} struck down a bandit' + (f', {d}' if d else '')),
         'bandits flee': (NOTABLE, f'bandits fled from {T}'),
         'camp cleared': (NOTABLE, f'{A} cleared a bandit camp'),
+        # Deeds (doc 56): the detail is the deed's phrase, then its id in brackets.
+        'deed': (NOTABLE, f'{A} {d.rsplit(" (", 1)[0] or "did a good turn"}'),
+        'deed revoked': (NOTABLE, f'the Dungeon Master struck a deed ({d}) from the record'),
+        'nickname': (NOTABLE, f'{T} first called {A} "{d.rsplit(" (", 1)[0]}"'),
+        'nickname dropped': (NOTABLE, f'{A} asked folk not to call them "{d.rsplit(" (", 1)[0]}"'),
         'operator': (NOTABLE, f'the Dungeon Master acted on {T}' + (f' ({d})' if d else '')),
         'quarrel': (NOTABLE, f'{A} quarrelled with {T}'),
     }

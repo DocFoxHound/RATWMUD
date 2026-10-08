@@ -319,6 +319,7 @@ json::Value Game::peopleSave() const
     loansSave(root);                                // Loans (doc 55, 8).
     lodgingsSave(root);                             // Lodgings and holds (doc 54, 4).
     stallsSave(root);                               // Market stalls (doc 54, 3).
+    fameSave(root);                                 // Deeds (doc 56).
     return root;
 }
 
@@ -351,5 +352,6 @@ void Game::peopleLoad(const json::Value& saved)
     loansLoad(saved);
     lodgingsLoad(saved);
     stallsLoad(saved);
+    fameLoad(saved);
 }
 } // namespace ratw::game

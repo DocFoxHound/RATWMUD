@@ -9,7 +9,7 @@ namespace ratw::scenes
 {
 const std::set<std::string> Topics{
     "smalltalk", "work", "family", "weather", "lore", "prices", "caravan", "bandits", "crime", "life", "festival",
-    "newcomer", "player", "gossip", "news", "quarrel", "friends", "day", "bark"};
+    "newcomer", "player", "gossip", "news", "quarrel", "friends", "day", "bark", "deed"};   // (deed: doc 56.)
 const std::set<std::string> Places{"street", "market", "tavern", "home", "work", "chapel", "barracks", "gate", "field",
                                    "shore", "wild", "hall"};
 const std::set<std::string> Bands{"strangers", "acquaintances", "friends", "rivals", "family", "spouses", "apprentice"};
@@ -25,9 +25,9 @@ const std::set<std::string> Jobs{"merchant", "smith", "baker", "brewer", "innkee
                                  "woodcutter", "official", "none"};
 const std::set<std::string> Roles{"merchant", "guard", "civilian"};
 const std::set<std::string> Blanks{"a", "b", "subject", "claim", "news", "item", "price", "other", "place", "town",
-                                   "weekday", "season", "festival", "victim", "a_job", "b_job"};
+                                   "weekday", "season", "festival", "victim", "a_job", "b_job", "deed", "nickname"};
 // The tags a topic may set, and the values each may take ("*": any word).
-const std::set<std::string> TopicTags{"item", "dir", "kind", "when", "known"};
+const std::set<std::string> TopicTags{"item", "dir", "kind", "when", "known", "nickname"};
 namespace
 {
 const std::map<std::string, std::set<std::string>> TagValues{
@@ -36,7 +36,8 @@ const std::map<std::string, std::set<std::string>> TagValues{
     {"kind", {"arrived", "left", "late", "raided", "camp", "theft", "assault", "arrest", "marriage", "death", "birth",
               "apprentice", "succession", "crime", "loss", "work"}},
     {"when", {"today", "soon"}},
-    {"known", {"yes", "no"}}};
+    {"known", {"yes", "no"}},
+    {"nickname", {"yes", "no"}}};
 const std::set<std::string> Regions{"upper_accord", "ridgemere", "ser_ferro", "accord_crossing", "saltreach",
                                     "cinderbrook", "westmarch", "lakeside", "fenhollow", "amberford",
                                     "hollowmere_village", "ghost_town", "northern_fortress", "isle_fortress",

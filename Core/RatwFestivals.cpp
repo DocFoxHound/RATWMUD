@@ -12,8 +12,9 @@
 //     marker moves by the difference; 3 tiles or a minute decides it.
 //   - 15:00 howling: in turn, 15 s each; a howl's carry from stamina and howling skill, times a roll, and the crowd's
 //     cheers (+5% each, at most +30%; one cheer a wolf).
-//   - 16:00 the sparring tourney: a bracket of bouts to a yield, a round every half minute, decided from strength,
-//     dexterity and a roll: nothing lasting (not yet real duels).
+//   - 16:00 the sparring tourney: a bracket of up to 8, bouts one at a time, each a spar to a yield in the ring at the
+//     square's middle (World::tourneyBout: doc 53's spar, bruises at worst). Entering agrees to the bouts; a wolf not
+//     at the square within a minute of its bout's call forfeits it.
 //   - 12:00-17:00 the hunting contest: an entrant's best single kill, the species' health × how clean it was.
 //   - 19:00 storytelling: entrants take the middle in turn, 5 minutes each; the winner is starred (doc 51's stars) by
 //     the most different wolves at the square, none counting themself. No stars, no winner.
@@ -37,7 +38,7 @@ namespace
 {
 constexpr std::int64_t Entry = 1, TownPerEntrant = 2, TownMost = 10, ResidentPurseLeast = 10;
 constexpr double SquareReach = 12, RaceSeconds = 180, BeatSeconds = 1.2, BeatSlack = .35, TugSeconds = 60, TugWins = 3,
-                 HowlSeconds = 15, BoutSeconds = 30, TellSeconds = 300, StarsSeconds = 120;
+                 HowlSeconds = 15, TellSeconds = 300, StarsSeconds = 120;
 
 struct Slot
 {
@@ -277,7 +278,7 @@ void Game::beginContest(Fair& f, Contest& c)
         });
         if (c.bracket.size() > 8)
             c.bracket.resize(8);
-        how = "Bouts to a yield, a round every half minute.";
+        how = "Spars to a yield in the ring, one bout at a time.";
     }
     else if (c.kind == "hunt")
     {
@@ -416,35 +417,87 @@ void Game::runContest(Fair& f, Contest& c)
     }
     else if (c.kind == "tourney")
     {
-        if (world_.time() - c.turnAt < BoutSeconds)
-            return;
-        c.turnAt = world_.time();
-        // A round: pairs in the bracket's order, an odd one out through by itself.
-        std::vector<std::string> through;
-        std::string lastLoser;
-        for (std::size_t i = 0; i + 1 < c.bracket.size(); i += 2)
+        // Bouts one at a time, each a spar to a yield in the ring at the square's middle (World::tourneyBout).
+        const auto name = [&](const std::string& viewer, const std::string& who) {
+            return who == viewer ? std::string("you") : labelFor(viewer, who);
+        };
+        if (c.bout * 2 + 1 >= c.bracket.size())
         {
-            const auto &a = c.bracket[i], &b = c.bracket[i + 1];
+            // The round is over: an odd one out goes through by itself.
+            if (c.bracket.size() % 2)
+                c.through.push_back(c.bracket.back());
+            c.bracket = c.through;
+            c.through.clear();
+            c.bout = 0;
+            c.turnAt = world_.time();
+            if (c.bracket.size() <= 1)
+            {
+                endContest(f, c, c.bracket.empty() ? std::vector<std::string>{} : std::vector<std::string>{c.bracket[0], c.lastLoser});
+                return;
+            }
+        }
+        const auto a = c.bracket[c.bout * 2], b = c.bracket[c.bout * 2 + 1];
+        const auto advance = [&](const std::string& winner, const std::string& loser, const std::string& how) {
+            c.through.push_back(winner);
+            c.lastLoser = loser;
+            ++c.bout;
+            c.boutAt = -1;
+            c.turnAt = world_.time();
+            festivalSay(f.community, c.entrants, [&](const std::string& viewer) {
+                return how == "yield" ? "In the ring: " + names::capitalised(name(viewer, loser)) + (loser == viewer ? " yield" : " yields") + " to " +
+                                            name(viewer, winner) + "."
+                                      : names::capitalised(name(viewer, loser)) + (loser == viewer ? " aren't" : " isn't") + " at the ring: " +
+                                            name(viewer, winner) + (winner == viewer ? " go" : " goes") + " through.";
+            });
+        };
+        if (c.boutAt < 0)
+        {
+            // Both at the square (a resident is fetched to it), out of any fight; a wolf who doesn't come within a minute
+            // forfeits the bout.
+            const auto ready = [&](const std::string& id) {
+                const auto* e = world_.entity(id);
+                return e && !e->dead && e->downedLeft <= 0 && !world_.inBattle(id) && (e->npc || (clientOf(id) && atSquare(*e, f.community)));
+            };
+            const bool ra = ready(a), rb = ready(b);
+            if (!(ra && rb))
+            {
+                if (world_.time() - c.turnAt > 60)
+                    advance(ra || !rb ? a : b, ra || !rb ? b : a, "absent");
+                return;
+            }
+            const auto* mid = world_.marketSpot(f.community);
+            if (const auto r = world_.tourneyBout(a, b, *mid); r.ok)
+            {
+                c.boutAt = world_.time();
+                festivalSay(f.community, c.entrants, [&](const std::string& viewer) {
+                    return "The tourney: " + names::capitalised(name(viewer, a)) + " against " + name(viewer, b) + ", a spar to a yield.";
+                });
+            }
+            else if (world_.time() - c.turnAt > 60)
+                advance(a, b, "absent");
+            return;
+        }
+        // The bout under way: over when either is out of it.
+        const auto* bt = world_.battleOf(a);
+        if (!bt)
+            bt = world_.battleOf(b);
+        const auto standing = [&](const std::string& id) {
+            const auto* fa = bt ? bt->fighter(id) : nullptr;
+            return fa && fa->status == "fighting";
+        };
+        if (bt && !bt->over)
+            return;
+        const bool aStands = standing(a), bStands = standing(b);
+        if (aStands != bStands)
+            advance(aStands ? a : b, aStands ? b : a, "yield");
+        else
+        {
+            // Neither or both standing when it ended (a truce, or it ended unseen): the one less hurt goes through.
             const auto* ea = world_.entity(a);
             const auto* eb = world_.entity(b);
-            const auto roll = [&](const Entity* e, const std::string& id) {
-                return e ? (e->strength + e->dexterity) / 2 + 50 * unit(id + "|bout|" + std::to_string(c.bracket.size()) + std::to_string(f.day)) : 0.;
-            };
-            const bool aWins = roll(ea, a) >= roll(eb, b);
-            const auto& winner = aWins ? a : b;
-            const auto& loser = aWins ? b : a;
-            through.push_back(winner);
-            lastLoser = loser;
-            festivalSay(f.community, c.entrants, [&](const std::string& viewer) {
-                return "In the ring: " + names::capitalised(loser == viewer ? std::string("you yield") : labelFor(viewer, loser) + " yields") + " to " +
-                       (winner == viewer ? std::string("you") : labelFor(viewer, winner)) + ".";
-            });
+            const bool aBetter = !eb || (ea && ea->hurt <= eb->hurt);
+            advance(aBetter ? a : b, aBetter ? b : a, "yield");
         }
-        if (c.bracket.size() % 2)
-            through.push_back(c.bracket.back());
-        c.bracket = through;
-        if (c.bracket.size() <= 1)
-            endContest(f, c, c.bracket.empty() ? std::vector<std::string>{} : std::vector<std::string>{c.bracket[0], lastLoser});
     }
     else if (c.kind == "hunt")
     {
@@ -509,6 +562,19 @@ void Game::tendFestivals(double dt)
         if (c)
             if (const auto* e = world_.entity(c->entityId))
                 fairToday(world_.lawTown(e->cellId));
+    // The crier's slot at 8 (doc 56, 7): in every town keeping a festival, players there or not (lines are spoken only
+    // where one hears; the town hears of the deeds either way).
+    if (hour >= 20 && std::floor(days) != criedDay_)
+    {
+        criedDay_ = std::floor(days);
+        std::set<std::string> towns;
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto town = world_.lawTown(life.homeCell); !town.empty())
+                towns.insert(town);
+        for (const auto& town : towns)
+            if (const auto name = festivalOn(town, today); !name.empty())
+                festivalCrier(town, name);
+    }
     // Kills on hunts, for the hunting contest.
     const auto kills = world_.takeHunted();
     for (auto it = fairs_.begin(); it != fairs_.end();)

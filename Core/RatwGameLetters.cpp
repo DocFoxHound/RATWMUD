@@ -330,7 +330,10 @@ void Game::tendLetters(double dt)
     tendStalls();
     tendTables(1);
     tendFestivals(1);
-    tendArchive();                                  // Copying at a desk; places been (doc 54, 7).                               // The festival's feast and contests (doc 54, 6).                                  // Tavern games: residents' turns, forfeits (doc 54, 5).                                   // Market stalls clear at 2, or in foul weather (doc 54, 3).
+    tendArchive();
+    tendFame();                                     // Deeds past their life go (doc 56).
+    tendCriers();                                   // Criers calling deeds at the square (doc 56, 7).
+    tendChronicle();                                // Chronicles read from the database, sent (doc 56, 8).                                  // Copying at a desk; places been (doc 54, 7).                               // The festival's feast and contests (doc 54, 6).                                  // Tavern games: residents' turns, forfeits (doc 54, 5).                                   // Market stalls clear at 2, or in foul weather (doc 54, 3).
     if (const double hour = std::floor(world_.calendarDays() * 24); hour != noticesHour_)
     {
         noticesHour_ = hour;

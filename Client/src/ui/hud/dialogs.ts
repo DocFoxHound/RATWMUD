@@ -11,7 +11,8 @@ import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 import {renderLetters} from './letters.ts';
 import {renderBoard} from './board.ts';
-import {renderArchive, renderJournal} from './archive.ts';
+import {renderArchive, renderChronicle, renderJournal, renderWelcome} from './archive.ts';
+import {nicknameLine, unfinishedLine} from '../../game/fame.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
  * level's start to the next (an older server sends neither: then a hundred a level, as it was). */
@@ -109,6 +110,7 @@ export class Dialogs {
             m === 'missions' ? s.missionBoard : '', m === 'letters' ? [s.lettersCase, s.letterDraftVersion, obj(self, 'names'), arr(s.snapshot, 'inventory')] : '',
             m === 'give' || m === 'lend' ? [s.giveTarget, arr(s.snapshot, 'inventory'), countText(self, 'cash')] : '',
             m === 'board' ? s.boardView : '', m === 'archive' ? s.archiveTask : '', m === 'journal' ? s.journalView : '',
+            m === 'chronicle' ? s.chronicleView : '', m === 'welcome' ? s.welcomeView : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'), arr(self, 'loans'),
                 obj(s.snapshot, 'resource')] : '',
@@ -130,6 +132,8 @@ export class Dialogs {
         else if (m === 'board') renderBoard(this.panel, s);
         else if (m === 'archive') renderArchive(this.panel, s);
         else if (m === 'journal') renderJournal(this.panel, s);
+        else if (m === 'chronicle') renderChronicle(this.panel, s);
+        else if (m === 'welcome') renderWelcome(this.panel, s);
         else if (m === 'lend') this.giveSheet(true);
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'status') this.status(self);
@@ -200,6 +204,9 @@ export class Dialogs {
         el('span', 'muted', skills, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`);
         this.injuries(right, self);
         this.names(right, self);
+        this.nicknames(right, self);
+        this.unfinished(right, self);
+        this.welcome(right);
         // Stories are books now (doc 51, Phase 7): the bookshelf.
         button('STORIES', 'secondary', el('div', 'sheet-actions', right), () => this.s.openShelf('shelf', 'all')).title =
             'Your Stories, as books on a shelf: newest first; and your friends\', circles\' and Chapter\'s'
@@ -211,6 +218,8 @@ export class Dialogs {
         const post = obj(self, 'letters');
         button(num(post, 'unread') ? `LETTERS (${num(post, 'unread')})` : 'LETTERS', 'secondary', actions, () => this.s.openLetters()).title =
             num(post, 'waiting') ? `${num(post, 'waiting')} waiting at the inns of ${str(post, 'waitingAt')}` : 'Your letter case (doc 55)';
+        button('CHRONICLE', 'secondary', actions, () => this.s.send({type: 'social', verb: 'chronicle'})).title =
+            'Your life so far, from what the world remembers (doc 56)';
         button('JOURNAL', 'secondary', actions, () => this.s.send({type: 'journal'})).title =
             'Lore read at archives, beasts brought down, plants found, places been (doc 54)';
         button('YOUR PROFILE', 'secondary', actions, () => this.act('profile')).title =
@@ -236,6 +245,40 @@ export class Dialogs {
                 row.title = kind === 'acute' ? 'Heals with rest: fastest lying in a bed, slower resting anywhere else, a little while up and about. ' +
                     'Fighting on it sets the healing back.' : 'A mark for life. Others may notice it when they look at you closely.';
             }
+        }
+    }
+
+    /** Open threads (doc 56, 9): promises, work taken, a Story waiting for your word, letters unread. Never a nag. */
+    private unfinished(parent: HTMLElement, self: Json | null) {
+        const open = arr(self, 'unfinished').filter(isObject);
+        if (!open.length) return;
+        el('div', 'label gold', parent, 'UNFINISHED BUSINESS');
+        for (const t of open) el('div', 'small', parent, unfinishedLine(t));
+    }
+
+    /** While you were away (doc 56, 10): kept on the sheet until you next leave. */
+    private welcome(parent: HTMLElement) {
+        const w = this.s.welcomeView;
+        if (!w) return;
+        el('div', 'label gold', parent, num(w, 'days') >= 1 ? `WHILE YOU WERE AWAY (${num(w, 'days')} ${num(w, 'days') === 1 ? 'DAY' : 'DAYS'})` : 'WHILE YOU WERE AWAY');
+        const lines = arr(w, 'lines').map(String);
+        if (!lines.length) el('div', 'muted small', parent, 'All much as you left it.');
+        for (const l of lines) el('div', 'small', parent, l);
+    }
+
+    /** What residents call you for your deeds (doc 56): who first said it, and asking folk not to use one. */
+    private nicknames(parent: HTMLElement, self: Json | null) {
+        const list = arr(self, 'nicknames').filter(isObject);
+        if (!list.length) return;
+        el('div', 'label gold', parent, 'WHAT FOLK CALL YOU');
+        for (const n of list) {
+            const row = el('div', 'story-row', parent);
+            el('span', bool(n, 'dropped') ? 'muted small' : 'small', row, nicknameLine(n));
+            if (!bool(n, 'dropped'))
+                button('ASK FOLK NOT TO USE IT', 'small', row, () => {
+                    if (window.confirm(`Ask folk not to call you "${str(n, 'text')}"? They stop at once, and it won't come back.`))
+                        this.s.send({type: 'social', verb: 'dropnickname', id: str(n, 'id')});
+                }).title = 'Residents stop using it at once, and that deed never earns it again';
         }
     }
 
@@ -1335,6 +1378,12 @@ export class Dialogs {
         this.heading('RETURN TO YOUR CHARACTERS', 'Leave this character?');
         el('p', 'muted', this.panel, "Your character remains saved. Returning to selection ends this play session. Unsent drafts and this session's " +
             'local transcript are not kept when switching characters.');
+        // Before you go (doc 56, 9): the open threads, from the snapshot, so leaving never waits. Nothing is asked of you.
+        const open = arr(obj(this.s.snapshot, 'self'), 'unfinished').filter(isObject);
+        if (open.length) {
+            el('div', 'label gold', this.panel, 'BEFORE YOU GO');
+            for (const t of open) el('div', 'small', this.panel, unfinishedLine(t));
+        }
         const actions = el('div', 'sheet-actions', this.panel);
         button('RETURN TO SELECTION', 'primary', actions, () => this.act('leave_confirm'));
         button('KEEP PLAYING', 'secondary', actions, () => this.act('leave_cancel'));

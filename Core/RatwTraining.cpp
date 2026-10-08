@@ -133,6 +133,26 @@ Result World::sparWithTrainer(const std::string& player, const std::string& trai
     return started;
 }
 
+Result World::tourneyBout(const std::string& a, const std::string& b, const Spot& at)
+{
+    auto* ea = entity(a);
+    auto* eb = entity(b);
+    if (!ea || !eb || ea->dead || eb->dead || ea->downedLeft > 0 || eb->downedLeft > 0)
+        return {false, "Not fit to fight.", {}};
+    if (inBattle(a) || inBattle(b))
+        return {false, "Already in a fight.", {}};
+    for (auto* e : {ea, eb})
+    {
+        e->cellId = at.cell;
+        e->position = {at.x + (e == ea ? 0. : 1.), at.y};   // (Side by side: a timid one never closes in.)
+        e->path.clear();
+        e->velocity = {};
+    }
+    // A player starts it (as with a trainer's spar); two residents, the first of them.
+    const bool swap = ea->npc && !eb->npc;
+    return startBattle(swap ? b : a, swap ? a : b, !ea->npc && !eb->npc, "spar");
+}
+
 Result World::practiseAtPost(const std::string& player)
 {
     const auto* p = entity(player);

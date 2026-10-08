@@ -333,7 +333,7 @@ Result World::completeContract(const std::string& contractId, const std::string&
 }
 
 void World::believe(const std::string& holder, const std::string& subject, const std::string& claim,
-                    const std::string& source, double confidence, const std::string& incident)
+                    const std::string& source, double confidence, const std::string& incident, const std::string& as)
 {
     if (holder.empty() || subject.empty() || holder == subject || claim.empty() || !(confidence > .05))
         return;
@@ -342,12 +342,20 @@ void World::believe(const std::string& holder, const std::string& subject, const
         if (b.subject == subject && b.claim == claim)
         {
             if (confidence > b.confidence)
-                b = {holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident};
+                b = {holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident, as.empty() ? b.as : as};
+            else if (b.as.empty())
+                b.as = as;
             return;
         }
-    mine.push_back({holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident});
+    mine.push_back({holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident, as});
     if (mine.size() > BeliefsKept)
         mine.erase(std::min_element(mine.begin(), mine.end(), [](const Belief& a, const Belief& b) { return a.confidence < b.confidence; }));
+}
+
+void World::forgetClaim(const std::string& claim)
+{
+    for (auto& [holder, mine] : beliefs_)
+        mine.erase(std::remove_if(mine.begin(), mine.end(), [&](const Belief& b) { return b.claim == claim; }), mine.end());
 }
 
 const std::vector<Belief>* World::beliefsOf(const std::string& holder) const
@@ -361,7 +369,7 @@ std::string World::rumoursAbout(const std::string& npc, const std::string& subje
     std::string out;
     if (const auto* mine = beliefsOf(npc))
         for (const auto& b : *mine)
-            if (b.subject == subject)
+            if (b.subject == subject && b.claim.rfind("deed:", 0) != 0)   // (Deeds are told in their own words: doc 56.)
             {
                 const auto* from = entity(b.source);
                 out += (out.empty() ? "" : " ") + std::string("You have heard that ") + subjectName + " " + b.claim + " (" +
@@ -825,7 +833,7 @@ void World::caravanArrived(Caravan& c)
         if (p.role == "merchant" && townOf(p.work.cell) == to)
             if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
                 for (std::size_t i = 0; i < told.size() && i < 8; ++i)
-                    believe(holder, told[i].subject, told[i].claim, "a carter from " + from->id, told[i].confidence * .6);
+                    believe(holder, told[i].subject, told[i].claim, "a carter from " + from->id, told[i].confidence * .6, {}, told[i].as);
     recordEvent({"caravan arrives", c.id, c.to, c.cell, 0, 0, {}, 0, 0, "from " + c.from});
     // Home again, empty.
     c.status = "returning";
@@ -1598,13 +1606,8 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
         }
     const auto* who = entity(by);
     recordEvent({"camp cleared", by, camp.id, camp.cell, 0, 0, {}, 0, 0, "by " + (who ? who->name : by)});
-    for (const auto& p : society_.positions())
-        if (p.role == "merchant" && townOf(p.work.cell))
-            if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
-            {
-                believe(holder, by, "drove the bandits off the road at " + camp.cell, "the carters", .8);
-                bonds_.change(holder, by, {3, 2, 1, 0, 6}, calendarDays_);
-            }
+    // (Word of it travels as a notable deed, from its witnesses and the town's talk: doc 56. Every merchant no longer
+    // hears of it at once.)
     notice(by, words);
     endEncounter(camp.id, 0);
 }
@@ -1635,7 +1638,7 @@ void World::gossip()
         for (std::size_t l = 0; l < listeners.size() && l < 3; ++l)
             for (const auto* b : best)
                 if (listeners[l].second != b->subject)
-                    telling.push_back({listeners[l].second, {listeners[l].second, b->subject, b->claim, holder, b->confidence * .7, calendarDays_, b->incident}});
+                    telling.push_back({listeners[l].second, {listeners[l].second, b->subject, b->claim, holder, b->confidence * .7, calendarDays_, b->incident, b->as}});
     }
     for (auto& [holder, mine] : beliefs_)
     {
@@ -1644,7 +1647,7 @@ void World::gossip()
         mine.erase(std::remove_if(mine.begin(), mine.end(), [](const Belief& b) { return b.confidence < .1; }), mine.end());
     }
     for (const auto& [listener, b] : telling)
-        believe(listener, b.subject, b.claim, b.source, b.confidence, b.incident);
+        believe(listener, b.subject, b.claim, b.source, b.confidence, b.incident, b.as);
 
 }
 

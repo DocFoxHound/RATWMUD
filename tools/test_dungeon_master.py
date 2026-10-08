@@ -343,6 +343,26 @@ class DungeonMasterTests(Fixture):
                          'the most widely heard first, with everyone who has heard it')
         self.assertEqual(len(going), 2)
 
+        # Doc 56: deeds on the LIVE map's Fame layer, and a deed going round told in its own words.
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            deed = {'id': 'deed-1', 'kind': 'broke_camp', 'weight': 1, 'doers': ['player-ada'], 'town': 'greyfen', 'cell': town,
+                    'day': 10, 'names': {'player-ada': ['Ada']}, 'witnesses': [{'id': 'npc_a', 'as': {'player-ada': 'Ada'}}],
+                    'towns': [{'town': 'greyfen', 'carrier': 'here', 'since': 10, 'reach': 0}]}
+            game.execute('INSERT INTO game.deeds (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'deed-1', 0, json.dumps(deed)))
+            game.execute('INSERT INTO game.events (world_id, game_time, game_day, kind, actor, cell, detail) VALUES '
+                         "('greyfen', 0, 13, 'deed', 'player-ada', %s, 'drove the bandits off the road at the ford (deed-1)')", (town,))
+            game.execute('INSERT INTO game.beliefs (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'npc_a|player-ada|deed:deed-1', 4,
+                          json.dumps({'holder': 'npc_a', 'subject': 'player-ada', 'claim': 'deed:deed-1', 'as': 'Ada'})))
+        fame = self.dm.fame('prod')
+        self.assertEqual(fame['deeds'][0]['phrase'], 'drove the bandits off the road at the ford')
+        self.assertEqual(fame['deeds'][0]['towns'], [{'town': 'greyfen', 'carrier': 'here', 'reach': 1.0}], 'all over town after 3 days')
+        self.assertEqual(fame['deeds'][0]['witnesses'], [{'id': 'npc_a', 'as': {'player-ada': 'Ada'}}])
+        self.assertIn('drove the bandits off the road at the ford', [r['claim'] for r in self.dm.rumours('prod')['rumours']])
+        self.assertAlmostEqual(D.deed_reach({'carrier': 'here', 'since': 0}, 1, 0), .25)
+        self.assertAlmostEqual(D.deed_reach({'carrier': 'caravan', 'since': 0}, 2, 3), .15 + .85 * .5)
+
     def test_the_servers_health(self):
         viewer = self.sign_in('dm-viewer')
         empty = self.dm.health('prod', 24)
@@ -462,7 +482,7 @@ class NpcTests(NpcFixture):
     def test_board_and_estate_actions_are_for_dungeon_masters(self):
         # Doc 54: a notice taken down, and places set to let or cleared, by a Dungeon Master; never by a viewer.
         master, viewer = self.sign_in('dm-master'), self.sign_in('dm-viewer')
-        for kind in ('board.remove', 'estate.set', 'estate.clear'):
+        for kind in ('board.remove', 'estate.set', 'estate.clear', 'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore'):
             self.dm.allowed(master, kind)
             with self.assertRaises(D.DMError):
                 self.dm.allowed(viewer, kind)

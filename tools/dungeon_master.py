@@ -138,6 +138,9 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # Notice boards and places to let (Docs/Design/54-gathering-places.md): a notice taken down; a place set to let,
            # or no longer (the game handled these already; the tool couldn't send them).
            'board.remove': 'dm', 'estate.set': 'dm', 'estate.clear': 'dm', 'estate.hold': 'dm', 'estate.release': 'dm',
+           # Fame (Docs/Design/56-fame-and-memory.md): a deed awarded to a player character (target the doer; payload kind,
+           # weight, cell, beneficiary, detail), or revoked (target the deed's id).
+           'deed.award': 'dm', 'deed.revoke': 'dm', 'nickname.drop': 'dm', 'nickname.restore': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -1650,13 +1653,35 @@ class DungeonMaster:
 
     def rumours(self, target):
         """What is going round: each rumour (who it is about, and what is said), with everyone who has heard it, most
-        widely heard first (game.beliefs, as last saved)."""
+        widely heard first (game.beliefs, as last saved). A deed (doc 56) is told in its own words."""
         with self.connect(target) as conn:
             rows = conn.execute('''SELECT subject, data->>'claim', array_agg(holder ORDER BY holder), avg((data->>'confidence')::float)
                                      FROM game.beliefs WHERE subject IS NOT NULL GROUP BY 1, 2
                                      ORDER BY count(*) DESC LIMIT 60''').fetchall()
-        return {'target': target, 'rumours': [{'subject': r[0], 'claim': r[1] or '', 'holders': r[2], 'sure': round(r[3] or 0, 2)}
+            words = deed_words(conn, [r[1][5:] for r in rows if (r[1] or '').startswith('deed:')])
+        claim = lambda c: words.get(c[5:], 'did a good deed') if (c or '').startswith('deed:') else (c or '')
+        return {'target': target, 'rumours': [{'subject': r[0], 'claim': claim(r[1]), 'holders': r[2], 'sure': round(r[3] or 0, 2)}
                                               for r in rows]}
+
+    def fame(self, target):
+        """Good deeds (doc 56): each live deed, its doers and witnesses, and how far word of it has got round each town
+        (the game's own rule, from Data/Fame/deeds.json), heaviest and newest first."""
+        with self.connect(target) as conn:
+            rows = [r[0] for r in conn.execute("SELECT data FROM game.deeds WHERE NOT coalesce((data->>'revoked')::boolean, false)").fetchall()]
+            now = conn.execute('SELECT max(game_day) FROM game.events').fetchone()[0] or 0
+            words = deed_words(conn, [d.get('id', '') for d in rows])
+        out = []
+        for d in rows:
+            weight = int(d.get('weight') or 0)
+            out.append({'id': d.get('id'), 'kind': d.get('kind'), 'weight': WEIGHTS[min(max(weight, 0), 3)],
+                        'phrase': words.get(d.get('id', ''), d.get('kind', '')), 'doers': d.get('doers') or [],
+                        'beneficiary': d.get('beneficiary') or '', 'town': d.get('town') or '', 'cell': d.get('cell') or '',
+                        'day': d.get('day') or 0, 'names': d.get('names') or {},
+                        'witnesses': [{'id': w.get('id'), 'as': w.get('as') or {}} for w in d.get('witnesses') or []],
+                        'towns': [{'town': t.get('town'), 'carrier': t.get('carrier'), 'reach': round(deed_reach(t, weight, now), 2)}
+                                  for t in d.get('towns') or []]})
+        out.sort(key=lambda d: (-WEIGHTS.index(d['weight']), -d['day']))
+        return {'target': target, 'day': now, 'deeds': out}
 
     def action(self, target, action_id):
         with self.connect(target) as conn:
@@ -1664,6 +1689,47 @@ class DungeonMaster:
         if not row:
             raise DMError('No such action.', 404)
         return {'id': int(action_id), 'status': row[0], 'result': row[1], 'doneAt': row[2].isoformat() if row[2] else None}
+
+
+# --------------------------------------------------------------------------- Fame (doc 56)
+
+WEIGHTS = ['small', 'notable', 'great', 'legendary']
+
+
+def fame_rules() -> dict:
+    try:
+        return json.loads((ROOT / 'Data/Fame/deeds.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+
+
+def deed_reach(word: dict, weight: int, now: float, rules: dict | None = None) -> float:
+    """How far word of a deed has got round a town (0..1): the game's RatwFame.cpp `reach`, from the same data."""
+    w = (rules or fame_rules()).get('word', {})
+    carrier = word.get('carrier') or ''
+    caravan, legend = carrier.startswith('caravan'), carrier == 'legend'
+    start = w.get('legendStart', .5) if legend else w.get('caravanStart', .15) if caravan else w.get('start', .25)
+    days = max(.01, w.get('days', 3)) * (2 if caravan else 1)
+    age = max(0.0, now - float(word.get('since') or 0))
+    grown = min(1.0, start + (1 - start) * age / days)
+    if weight >= 3:
+        return grown
+    name = WEIGHTS[min(max(weight, 0), 3)]
+    fresh, fade = w.get('fresh', {}).get(name, 92), max(.01, w.get('fade', {}).get(name, 92))
+    return grown * max(0.0, 1 - (age - fresh) / fade) if age > fresh else grown
+
+
+def deed_words(conn, ids: list[str]) -> dict:
+    """Each deed's phrase, as its game.events row tells it ("drove the bandits off the road at the ford (deed-3)")."""
+    if not ids:
+        return {}
+    rows = conn.execute("SELECT detail FROM game.events WHERE kind = 'deed' AND detail LIKE ANY(%s)",
+                        ([f'% ({i})' for i in ids],)).fetchall()
+    out = {}
+    for (detail,) in rows:
+        phrase, _, rest = (detail or '').rpartition(' (')
+        out[rest.rstrip(')')] = phrase
+    return out
 
 
 # --------------------------------------------------------------------------- HTTP
@@ -1761,6 +1827,8 @@ def make_server(port=8766, dm=None):
                                                str(data.get('cell', '')), data.get('x'), data.get('y'), str(data.get('reason', ''))))
             if method == 'GET' and path == '/api/live/rumours':
                 return self.reply(200, dm.rumours(self.target(query)))
+            if method == 'GET' and path == '/api/live/fame':
+                return self.reply(200, dm.fame(self.target(query)))
             if method == 'POST' and path == '/api/live/visit':
                 data = self.body()
                 return self.reply(200, dm.visit(who, str(data.get('target', 'prod')), data.get('name', ''), str(data.get('cell', '')),

@@ -276,6 +276,7 @@ struct Entity
     int downsSinceRest = 0;
     double restRun = 0.0, bedRun = 0.0, fullRestDay = -1.0, awaySince = -1.0;
     bool awayInBed = false;
+    double leftAt = 0;                              // When its player last left the world (Unix seconds; doc 56, 10). Saved.
     std::string tending;
     // Fights (doc 33): what is held in the mouth ("" or "sword"); a Gift ("" or "fire"), Quickened or not, and its mana;
     // fighting skill (0..100: NPCs' comes from their trade, a player's grows by fighting).
@@ -850,6 +851,20 @@ class World
     void recordEvent(WorldEvent event);
     // A host's watcher, told of every event as it is recorded (doc 55: residents' letters come from deeds, not scans).
     void setEventWatcher(std::function<void(const WorldEvent&)> watcher) { eventWatcher_ = std::move(watcher); }
+    // Names (doc 56, 6): the name `knower` holds for a player character, or "" (the game's: the world doesn't keep
+    // names). Talk never speaks a player's true name unless the speaker was given it.
+    void setNamer(std::function<std::string(const std::string& knower, const std::string& subject)> namer) { namer_ = std::move(namer); }
+    // Deeds in talk (doc 56, 5): for a deed claim ("deed:<id>") a teller holds about `subject`: {how the teller names
+    // them (a name or a look), the deed's phrase, a nickname or ""}; an empty phrase when there is nothing to tell.
+    struct DeedWords
+    {
+        std::string subject, phrase, nickname;
+        bool byName = false;
+    };
+    void setDeedWords(std::function<DeedWords(const std::string& teller, const std::string& claim, const std::string& subject)> words)
+    {
+        deedWords_ = std::move(words);
+    }
     // How everyone regards everyone else (see RatwBonds.h). The world moves them by rule, from the events it records
     // and from time spent together; a host may add a conversation's small, clamped nudge.
     const Bonds& bonds() const { return bonds_; }
@@ -887,7 +902,9 @@ class World
     // What someone has heard: a claim about a subject, from a source, this sure (0..1). Rumours spread along bonds
     // each day, losing confidence, and between towns with the caravans.
     void believe(const std::string& holder, const std::string& subject, const std::string& claim,
-                 const std::string& source, double confidence, const std::string& incident = {});
+                 const std::string& source, double confidence, const std::string& incident = {}, const std::string& as = {});
+    // Every belief of this claim dropped (a deed revoked: doc 56).
+    void forgetClaim(const std::string& claim);
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
     // What an NPC has heard about someone, in words for a conversation (empty if nothing).
     std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;
@@ -912,6 +929,9 @@ class World
     bool trainingGround(const std::string& cellId) const;
     bool trainer(const std::string& id) const;
     Result sparWithTrainer(const std::string& player, const std::string& trainerId);
+    // A festival tourney's bout (doc 54, 6): the two step into the ring (`at` and the tile beside it) and spar to a
+    // yield. Entering the tourney agreed to it, so a wolf who declines challenges still fights its bouts.
+    Result tourneyBout(const std::string& a, const std::string& b, const Spot& at);
     Result practiseAtPost(const std::string& player);
     Result answerChallenge(const std::string& player, bool accept);
     const Challenge* challengeTo(const std::string& player) const;
@@ -1422,6 +1442,8 @@ class World
         double day = 0;
     };
     void noteFound(const std::string& player, const std::string& item, const std::string& ground);   // (The herbarium.)
+    // The events recorded since they were last taken for saving (the chronicle's in-memory part: doc 56).
+    const std::vector<WorldEvent>& recentEvents() const { return events_; }
     std::vector<HuntedNote> takeHunted()
     {
         auto out = std::move(hunted_);
@@ -1572,6 +1594,9 @@ class World
     std::map<std::string, std::set<std::pair<std::string, std::string>>> huntPairs_;
     std::function<bool(const std::string& a, const std::string& b)> blocked_, partnered_;
     std::function<void(const WorldEvent&)> eventWatcher_;
+    std::vector<WorldEvent> pendingEvents_;         // Events an event gave rise to, recorded after it (a promise kept).
+    std::function<std::string(const std::string&, const std::string&)> namer_;
+    std::function<DeedWords(const std::string&, const std::string&, const std::string&)> deedWords_;
     std::function<bool(const std::string& id, const std::string& cell)> bedRight_;
     std::map<std::string, std::pair<std::string, double>> talkFacing_;   // Resident -> the wolf it faces, until when.
     std::map<std::string, double> groomBondDay_;    // "a|b" -> the game day their grooming last warmed them (doc 55).

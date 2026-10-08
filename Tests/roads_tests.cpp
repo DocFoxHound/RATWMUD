@@ -557,8 +557,13 @@ void aFight()
     for (const auto& k : w.roads().contracts)
         paid |= k.id == bountyId && k.status == "done";
     expect(paid && w.society().account("player-ada")->cash >= purse + 30, "The bounty is hers");
-    expect(w.rumoursAbout("wm", "player-ada", "Ada").find("drove the bandits off") != std::string::npos,
-           "and the west market hears of it: " + w.rumoursAbout("wm", "player-ada", "Ada"));
+    // (Word of it travels as a deed, from those who saw it: doc 56. The west market doesn't hear of it at once.)
+    expect(w.rumoursAbout("wm", "player-ada", "Ada").find("drove the bandits off") == std::string::npos,
+           "and the west market doesn't hear of it at once: " + w.rumoursAbout("wm", "player-ada", "Ada"));
+    bool recorded = false;
+    for (const auto& e : w.takeEvents())
+        recorded |= e.kind == "camp cleared" && e.actor == "player-ada";
+    expect(recorded, "the camp's breaking is recorded, for the game's deed");
     expect(w.society().conserved(), "Money is conserved");
 }
 

@@ -265,6 +265,39 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
             return {};                              // Recognised, but nothing true to say: a model answers.
         facts["answer"] = answer;
     }
+    // Back after a long while, and not seen since (doc 56, 10): "Haven't seen you since the spring!"
+    if (const auto away = absences_.find(playerId); intent.id == "greet" && identified && away != absences_.end())
+        if (const auto last_ = away->second.unseen.find(npcId); last_ != away->second.unseen.end())
+        {
+            auto known = facts;
+            known["since"] = calendar::seasonName(calendar::calendarAt(last_->second).season);
+            away->second.unseen.erase(last_);       // (Once: after this they have spoken.)
+            if (const auto line = voices_.line("greet", "returning", tone, known, seed, last.line); !line.empty())
+                return remember(line, line);
+        }
+    // A wolf whose notable deed it has heard of, greeted by it: at most once a game day a pair (doc 56, 5).
+    if (intent.id == "greet" && identified)
+    {
+        const auto pair = npcId + "|" + playerId;
+        const auto greeted = fameGreeted_.find(pair);
+        if (greeted == fameGreeted_.end() || world_.calendarDays() - greeted->second >= fame::rules().greetEveryDays)
+            for (const auto& r : recognise(npcId, playerId, true))
+            {
+                if (r.deed->weight < fame::Notable || (r.byName && !facts.count("player")))
+                    continue;
+                auto known = facts;
+                known["deed"] = deedPhrase(npcId, *r.deed);
+                if (const auto nick = nicknameFor(npcId, playerId); !nick.empty())
+                    known["nickname"] = nick;           // (Lines with {nickname} are used only when there is one.)
+                if (const auto line = voices_.line("greet", r.byName ? "famous" : "famous_look", tone, known, seed, last.line); !line.empty())
+                {
+                    fameGreeted_[pair] = world_.calendarDays();
+                    fameMentioned_.emplace(npcId + "|" + r.deed->id, world_.calendarDays());
+                    return remember(line, line);
+                }
+                break;
+            }
+    }
     const auto line = voices_.line(intent.id, band, tone, facts, seed, last.line);
     return line.empty() ? std::string() : remember(answer.empty() ? line : answer, line);
 }

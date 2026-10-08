@@ -208,8 +208,8 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
             for (const auto& belief : *heard)
             {
                 if (belief.subject == teller || belief.subject == listener || belief.confidence < .45 ||
-                    calendarDays_ - belief.day > GossipDays)
-                    continue;
+                    calendarDays_ - belief.day > GossipDays || belief.claim.rfind("deed:", 0) == 0)
+                    continue;                       // (Deeds are talked of in their own words: doc 56.)
                 bool known = false;
                 if (const auto* theirs = beliefsOf(listener))
                     for (const auto& other : *theirs)
@@ -217,6 +217,13 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 if (known)
                     continue;
                 const auto* about = entity(belief.subject);
+                // A player is named only as the teller knows them, else by look (doc 56, 6).
+                const auto subjectName = [&]() -> std::string {
+                    if (!about || about->npc)
+                        return name(belief.subject);
+                    const auto known = namer_ ? namer_(teller, belief.subject) : about->name;
+                    return known.empty() ? strangerWords(about->appearance) : known;
+                }();
                 AmbientTopic t;
                 t.kind = "gossip";
                 t.subject = belief.subject;
@@ -225,14 +232,54 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.incident = belief.incident;
                 t.confidence = belief.confidence;
                 t.score = 3 + belief.confidence + (about && !about->npc ? .5 : 0);
-                t.facts.push_back(name(teller) + " has heard that " + name(belief.subject) + " " + belief.claim + " (" +
+                t.blanks["subject"] = subjectName;
+                t.facts.push_back(name(teller) + " has heard that " + subjectName + " " + belief.claim + " (" +
                                   (belief.source == "saw it" ? name(teller) + " saw it"
                                                              : "from " + name(belief.source)) + "), and tells " +
                                   name(listener) + ".");
                 if (about)
-                    t.facts.push_back(name(belief.subject) + " is " + (about->npc ? "someone they know of" : "a traveller") + ".");
+                    t.facts.push_back(subjectName + " is " + (about->npc ? "someone they know of" : "a traveller") + ".");
                 consider(std::move(t));
             }
+    // A deed one has heard of and the other hasn't (doc 56, 5): told in its own words, the doer named as the teller
+    // knows them.
+    if (deedWords_)
+        for (const auto& [teller, listener] : {std::pair{a, b}, std::pair{b, a}})
+            if (const auto* heard = beliefsOf(teller))
+                for (const auto& belief : *heard)
+                {
+                    if (belief.claim.rfind("deed:", 0) != 0 || belief.subject == listener || belief.confidence < .45 ||
+                        calendarDays_ - belief.day > GossipDays)
+                        continue;
+                    bool known = false;
+                    if (const auto* theirs = beliefsOf(listener))
+                        for (const auto& other : *theirs)
+                            known |= other.claim == belief.claim;
+                    if (known)
+                        continue;
+                    const auto words = deedWords_(teller, belief.claim, belief.subject);
+                    if (words.phrase.empty())
+                        continue;
+                    AmbientTopic t;
+                    t.kind = "deed";
+                    t.subject = belief.subject;
+                    t.claim = belief.claim;
+                    t.source = teller;
+                    t.confidence = belief.confidence;
+                    t.score = 3.2 + belief.confidence * .3;
+                    t.tags["known"] = words.byName ? "yes" : "no";
+                    t.tags["nickname"] = words.nickname.empty() ? "no" : "yes";
+                    if (words.byName)
+                        t.tags["as"] = words.subject;
+                    t.blanks["subject"] = words.subject;
+                    t.blanks["deed"] = words.phrase;
+                    if (!words.nickname.empty())
+                        t.blanks["nickname"] = words.nickname;
+                    t.facts.push_back(name(teller) + " has heard that " + words.subject + " " + words.phrase +
+                                      (words.nickname.empty() ? "" : ", and folk call them " + words.nickname) + "; " + name(teller) +
+                                      " tells " + name(listener) + ".");
+                    consider(std::move(t));
+                }
     // News from one's own life, told to the other.
     for (const auto& [teller, listener] : {std::pair{a, b}, std::pair{b, a}})
         if (const auto found = news_.find(teller); found != news_.end())
@@ -264,7 +311,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.facts.push_back("How " + name(h) + " sees it: " + words);
             if (const auto* heard = beliefsOf(h))
                 for (const auto& belief : *heard)
-                    if (belief.subject == o && belief.confidence >= .35)
+                    if (belief.subject == o && belief.confidence >= .35 && belief.claim.rfind("deed:", 0) != 0)
                         t.facts.push_back(name(h) + " believes " + name(o) + " " + belief.claim + ".");
         }
         consider(std::move(t));
@@ -466,8 +513,10 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             auto t = topic("player", 1.6 + jitter(7) * .5);
             const auto* bond = bonds_.find(a, id);
             const bool knows = bond && bond->familiarity >= 5;
-            t.tags["known"] = knows ? "yes" : "no";
-            t.blanks["subject"] = knows ? e.name : strangerWords(e.appearance);
+            // (Named only if the speaker was given the name: doc 56, 6.)
+            const auto given = knows ? (namer_ ? namer_(a, id) : e.name) : std::string();
+            t.tags["known"] = !given.empty() ? "yes" : "no";
+            t.blanks["subject"] = !given.empty() ? given : strangerWords(e.appearance);
             consider(std::move(t));
             break;
         }
@@ -553,9 +602,10 @@ void World::ambientSpoken(const AmbientPick& pick)
         it = time_ - it->second > 3600 ? ambientLast_.erase(it) : std::next(it);
     // What talk does (the words only perform it): gossip passed on is believed, a grudge aired sours, friends warm.
     const auto& t = pick.topic;
-    if (t.kind == "gossip")
+    if (t.kind == "gossip" || t.kind == "deed")
     {
-        believe(pick.listener, t.subject, t.claim, pick.teller, t.confidence * .7, t.incident);
+        const auto as = t.tags.count("as") ? t.tags.at("as") : std::string();   // (A deed told by a name: doc 56.)
+        believe(pick.listener, t.subject, t.claim, pick.teller, t.confidence * .7, t.incident, as);
         bonds_.change(pick.listener, pick.teller, {.3, 0, 1, 0, 0}, calendarDays_);
     }
     else if (t.kind == "quarrel")

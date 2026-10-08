@@ -141,7 +141,7 @@ struct Town
 {
     game::Game g;
     Client ash, bo, cy;
-    Town(const std::string& world, const std::string& save, double performQuiet = 120) : g([&] {
+    Town(const std::string& world, const std::string& save, double performQuiet = 120, bool voice = false, double awayBreak = 3 * 86400) : g([&] {
           game::Options o;
           o.hiddenNames = true;
           o.devIdentity = true;
@@ -150,6 +150,11 @@ struct Town
           o.worldExport = world;
           o.savePath = save;
           o.performQuietSeconds = performQuiet;
+          o.awayBreakSeconds = awayBreak;
+#ifdef RATW_SOURCE_DIR
+          if (voice)
+              o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";   // (The router and the written scenes.)
+#endif
           return o;
       }())
     {

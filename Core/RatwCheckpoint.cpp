@@ -306,6 +306,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         j.add("source", h.source); j.add("confidence", h.confidence); j.add("day", h.day);
         if (!h.incident.empty())
             j.add("incident", h.incident);
+        if (!h.as.empty())
+            j.add("as", h.as);                     // (The name the holder knows the subject by: doc 56.)
         beliefs.push(j);
     }
     root.add("beliefs", beliefs);
@@ -713,7 +715,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),
-                                       num(j, "confidence"), num(j, "day"), j.string("incident")});
+                                       num(j, "confidence"), num(j, "day"), j.string("incident"), j.string("as").substr(0, 64)});
     for (const auto& j : root.array("festivals"))
         saved.festivals.push_back({j.string("community"), j.string("name"), std::int64_t(num(j, "day"))});
     if (const auto& crime = root["crime"]; crime.isObject())

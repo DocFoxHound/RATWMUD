@@ -76,3 +76,29 @@ export function renderJournal(panel: HTMLElement, s: GameState) {
     section('PLACES', arr(j, 'places').filter(isObject), r => `${str(r, 'town')}: ${num(r, 'count')} ${num(r, 'count') === 1 ? 'place' : 'places'}`,
         'Nowhere yet.');
 }
+
+/** The chronicle (doc 56, 8): a character's life as the world remembers it, dated, oldest first. */
+export function renderChronicle(panel: HTMLElement, s: GameState) {
+    const c = s.chronicleView;
+    el('div', 'label gold', panel, 'THE CHRONICLE');
+    el('h1', '', panel, 'Your life so far');
+    if (!c) {
+        el('p', 'muted', panel, 'Writing it out…');
+        return;
+    }
+    const entries = arr(c, 'entries').filter(isObject);
+    if (!entries.length) el('p', 'muted', panel, 'Nothing yet: the world hasn\'t noticed you. It will.');
+    for (const e of entries) el('p', 'small', panel, str(e, 'text'));
+    if (c.partial) el('p', 'muted small', panel, 'Only what the world remembers lately: the older pages are elsewhere.');
+}
+
+/** While you were away (doc 56, 10): a card shown once on coming back after a break, closed with ×. */
+export function renderWelcome(panel: HTMLElement, s: GameState) {
+    const w = s.welcomeView;
+    el('div', 'label gold', panel, 'WELCOME BACK');
+    el('h1', '', panel, w && num(w, 'days') >= 1 ? `${num(w, 'days')} ${num(w, 'days') === 1 ? 'day' : 'days'} away` : 'Back after a while');
+    const lines = arr(w, 'lines').map(String);
+    if (!lines.length) el('p', 'muted', panel, 'All much as you left it. Folk will be glad to see you.');
+    for (const l of lines) el('p', 'small', panel, l);
+    el('p', 'muted small', panel, 'This stays on your character sheet until you next leave.');
+}

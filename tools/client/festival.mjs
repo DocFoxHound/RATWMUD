@@ -100,7 +100,7 @@ try {
     check(!!await ash.waitFor(`${S}.snapshot?.self?.festival?.inDays === 0`, 10), 'the festival panel: today');
     // Into the market cell, to the square.
     let fed = false;
-    for (let i = 0; i < 20 && !fed; ++i) {
+    for (let i = 0; i < 40 && !fed; ++i) {        // (The walk there can take a while when routes are busy.)
         const cell = await ash.evaluate(`${S}.snapshot?.cell?.id ?? ''`);
         await ash.evaluate(`${S}.send({type: 'path', x: 15.5, y: 8.5})`);
         if (cell === 'c_1_0') await ash.evaluate(`${S}.send({type: 'path', x: 9.5, y: 9.5})`);

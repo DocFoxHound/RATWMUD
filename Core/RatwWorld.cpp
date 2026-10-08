@@ -2465,6 +2465,13 @@ void World::recordEvent(WorldEvent event)
         events_.erase(events_.begin(), events_.begin() + std::ptrdiff_t(excess));
         droppedEvents_ += excess;
     }
+    if (!pendingEvents_.empty())
+    {
+        auto more = std::move(pendingEvents_);    // (A promise kept, say: its rumour and its deed, doc 56.)
+        pendingEvents_.clear();
+        for (auto& m : more)
+            recordEvent(std::move(m));
+    }
 }
 
 void World::bondsFromEvent(const WorldEvent& given)
@@ -2492,7 +2499,7 @@ void World::bondsFromEvent(const WorldEvent& given)
             {
                 p.status = "kept";
                 bonds_.change(p.to, p.by, {2, 6, 1, 0, 1}, day);
-                events_.push_back({"promise kept", p.by, p.to, e.cell, time_, day, {}, 0, 0, p.what});
+                pendingEvents_.push_back({"promise kept", p.by, p.to, e.cell, 0, 0, {}, 0, 0, p.what});   // (Recorded below: doc 56.)
             }
     // First impressions (doc 55, 7): a resident who hardly knows a Well-groomed wolf (familiarity under 25) warms a
     // quarter faster (an eighth if self-groomed).

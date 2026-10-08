@@ -532,7 +532,7 @@ bool readFile(const std::string& path, std::string& out)
 void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N] [--scratch [--idle-exit SECONDS]]\n";
 }
 
@@ -574,6 +574,7 @@ int main(int argc, char** argv)
         else if (a == "--voice-log") options.voiceLog = next();
         else if (a == "--dm-directory") options.directorDirectory = next();
         else if (a == "--dev-tools") options.devTools = true;
+        else if (a == "--away-break") options.awayBreakSeconds = std::max(1.0, std::atof(next().c_str()));   // (Doc 56: for trying welcome back.)
         else if (a == "--open-tiers") options.openTiers = true;   // Every Gift tier open to every account (doc 49).
         else if (a == "--dev-identity") options.devIdentity = true;
         else if (a == "--full-snapshots") options.fullSnapshots = true;

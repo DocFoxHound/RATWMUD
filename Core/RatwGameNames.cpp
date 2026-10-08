@@ -204,6 +204,9 @@ void Game::noticeIntroduction(const std::string& author, const std::string& list
     if (!learnName(listener, author, name, "introduced"))
         return;
     introducedTo_[author].push_back(listener);
+    logEvent("introduced", author, listener, name);   // (A registered name given, never chat: the chronicle, doc 56.)
+    if (!a->npc)
+        fameJoin(listener, author);                 // (A deed it knew by look is now known by this name: doc 56, 3.)
     // In a scene they share, a moment of it (doc 51, §8): "Kestrel told Ash and Wren their name."
     for (const auto& sid : social_.scenesOf(author))
         if (social_.scenesOf(listener).count(sid))

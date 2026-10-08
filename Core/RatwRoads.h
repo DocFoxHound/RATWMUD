@@ -80,6 +80,7 @@ struct Belief
     std::string holder, subject, claim, source;
     double confidence = 1, day = 0;
     std::string incident;                 // What it is about, when it is a crime someone saw or heard of (RatwCrime.h).
+    std::string as;                       // The name the holder knows the subject by ("" none: by look). Doc 56.
 };
 
 // A standing order between towns (the user, 2026-10-05): a shop that needs a good week after week that its own town

@@ -804,8 +804,11 @@ The server decides; the model only speaks. New lines in `Game::dialogueContext`'
     decides it.
   - **Howling (15:00):** in turn, 15 s each. A howl's carry comes from stamina and howling skill (`gameSkills["howl"]`,
     grown by howling), times a roll. The crowd's cheers add 5% each, at most 30%, one cheer a wolf, never for itself.
-  - **The sparring tourney (16:00):** a bracket of up to 8, a round every half minute, each bout decided from strength,
-    dexterity and a roll, with a line for each yield. **Not real duels yet:** players in the tourney don't fight it out.
+  - **The sparring tourney (16:00):** a bracket of up to 8, bouts one at a time. Each bout is a real spar to a yield
+    (doc 53's spar terms, bruises at worst): the two step into the ring at the square's middle, side by side
+    (`World::tourneyBout`), and whoever yields, goes down or flees loses (the user, 2026-10-08: "keep it to yield").
+    Entering agrees to the bouts, even for a wolf who declines challenges. A wolf not at the square within a minute of
+    its bout's call forfeits it; a resident entrant is fetched to the ring.
   - **The hunting contest (12:00 to 17:00):** an entrant's best kill, read from a new hook in `World::huntKill`
     (`World::takeHunted`). Its worth is the species' health × how clean it was: clean 1.5, good 1, rough 0.8, ragged
     0.6. The plan's quality grades (crude to masterwork) aren't what a kill carries. Residents' kills are rolled.
@@ -816,24 +819,24 @@ The server decides; the model only speaks. New lines in `Game::dialogueContext`'
   - **20:00 the crier:** doc 56's slot (`festivalCrier`), empty.
   - **21:00 games at the inn:** the tables (Phase 5), with no tournament bracket.
 - **Tests:**
-  - `gathering_tests` `festivals` (now 110 checks), on a festival called for today:
+  - `gathering_tests` `festivals` (now 127 checks with Phase 7), on a festival called for today:
     - the programme; sign-ups, once each; the feast once; rested time;
     - Ash runs the race round its marks home and the winner is called; the tug decided on the beat; the howling with
       cheers;
-    - the tourney and the hunt among residents;
+    - the tourney: Ash spars a resident in the ring to a yield, then residents spar it out; the hunt among residents;
     - the storytelling: Cy and Bo star Ash, one star a wolf, not one's own; Ash wins and is paid, with the town's share;
     - money conserved throughout.
   - `Client/src/game/festival.test.ts`.
   - `tools/client/festival.mjs` (the real page): the calendar moved to the festival day at noon; Ash walks to the
     square, is fed, sees the programme and enters the race from the panel.
 - **Not done:**
-  - **real yield duels in the tourney;**
   - **festival goods:** the crafting session's `crafts.json` flag;
   - **Chapter banners** at a stall spot;
   - **the festival quest** (docs 34 and 58);
   - **a tavern-game bracket;**
   - **the DM's Calendar panel;**
-  - **foul weather:** contests run whatever the weather, though residents keep indoors on a foul festival.
+  - (Decided by the user, 2026-10-08: contests run whatever the weather, though residents keep indoors on a foul
+    festival.)
 
 ### Phase 7 (2026-10-08): the library, the archive and exploration
 

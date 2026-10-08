@@ -288,6 +288,8 @@ Value persistEntity(const Entity& e, double time)
         o.add("wardenStanding", e.wardenStanding);
     if (!e.postTown.empty())
         o.add("postTown", e.postTown);              // (Where its letters wait: doc 55.)
+    if (e.leftAt > 0)
+        o.add("leftAt", e.leftAt);                 // (When its player last left: doc 56, 10.)
     if (!e.lore.empty())
     {
         auto lore = Value::array();                // The journal (doc 54, 7).
@@ -528,6 +530,7 @@ Entity readEntity(const Value& o)
     e.vouchedFor = o.string("vouchedFor").substr(0, 128);
     e.wardenStanding = std::clamp(strictNumber(o, "wardenStanding", 0.0), -100.0, 100.0);
     e.postTown = o.string("postTown").substr(0, 128);
+    e.leftAt = std::max(0.0, strictNumber(o, "leftAt", 0));
     for (const auto& id : o.array("lore"))
         if (id.isString() && e.lore.size() < 500)
             e.lore.push_back(id.asString().substr(0, 64));

@@ -600,7 +600,7 @@ void festivals()
     const auto treasury = society.treasuryOf(community);
     auto view = t.selfOf(t.ash).object("festival");
     expect(view.string("name") == "Test Fair" && view.array("programme").size() == 9, "the programme: " + json::dump(view));
-    for (const char* k : {"race", "tug", "howl", "story"})
+    for (const char* k : {"race", "tug", "howl", "tourney", "story"})
         expect(contains(fest(t.ash, {{"verb", "enter"}, {"contest", k}}), "You enter"), std::string("Ash enters ") + k);
     fest(t.bo, {{"verb", "enter"}, {"contest", "howl"}});
     fest(t.bo, {{"verb", "enter"}, {"contest", "story"}});
@@ -659,7 +659,16 @@ void festivals()
     expect(programme[3].string("state") == "done" && programme[3].has("winner"), "the howling done, with a winner");
     // 16:00 the tourney and 17:00 the hunt: residents only.
     toHour(16.01);
-    t.run(150);
+    t.ash.events.clear();
+    std::string ring;
+    for (int i = 0; i < 60 && t.selfOf(t.ash).object("festival").array("programme")[4].string("state") != "done"; ++i)
+    {
+        t.run(10);
+        ring += t.ash.said();
+        t.ash.events.clear();
+    }
+    expect(contains(ring, "You yield to") || contains(ring, "yields to you"), "Ash fights a bout in the ring, to a yield: " + ring);
+    expect(contains(ring, "yield"), "bouts end at a yield");
     toHour(17.01);
     t.run(2);
     programme = t.selfOf(t.ash).object("festival").array("programme");
