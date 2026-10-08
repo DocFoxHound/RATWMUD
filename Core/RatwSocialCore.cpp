@@ -614,6 +614,22 @@ std::string SocialLedger::lastEnded(const std::string& actor) const
     return it == endedOf_.end() ? std::string() : it->second;
 }
 
+std::string SocialLedger::routeFor(const std::string& actor, const std::string& cell, const std::string& party, double now) const
+{
+    if (const auto mine = sceneOf_.find(actor); mine != sceneOf_.end())
+        for (const auto& lane : {party, std::string()})
+            for (const auto& sid : mine->second)
+                if (const auto it = sessions.find(sid); it != sessions.end() && it->second.ended == 0 && it->second.cell == cell &&
+                                                        it->second.party == lane)
+                    return sid;
+    if (const auto here = openIn_.find(cell); here != openIn_.end())
+        for (const auto& sid : here->second)
+            if (const auto it = sessions.find(sid); it != sessions.end() && it->second.ended == 0)
+                if (const auto let = it->second.admitted.find(actor); let != it->second.admitted.end() && let->second >= now)
+                    return sid;
+    return {};
+}
+
 void SocialLedger::reindexScenes()
 {
     sceneOf_.clear();
@@ -637,6 +653,29 @@ void SocialLedger::reindexScenes()
                 endedOf_[who] = sid;
             }
     }
+    // One who stepped out of a scene still going: it ended for them then.
+    for (const auto& [sid, s] : sessions)
+        if (s.ended == 0)
+            for (const auto& [who, m] : s.members)
+                if (m.left && m.leftAt > latest[who])
+                {
+                    latest[who] = m.leftAt;
+                    endedOf_[who] = sid;
+                }
+}
+
+void SocialLedger::moment(const std::string& session, const SceneMoment& m)
+{
+    const auto it = sessions.find(session);
+    if (it == sessions.end())
+        return;
+    auto& list = it->second.moments;
+    if (list.size() >= MostMoments)
+        return;
+    for (const auto& had : list)
+        if (had.kind == m.kind && had.actor == m.actor && had.target == m.target && had.detail == m.detail)
+            return;
+    list.push_back(m);
 }
 
 SocialResult SocialLedger::setOpenness(const std::string& member, const std::string& session, const std::string& value, double now)
@@ -756,8 +795,10 @@ bool SocialLedger::leave(const std::string& actor, const std::string& session, d
     if (Me == Scene.members.end() || Me->second.left)
         return false;
     Me->second.left = true;
+    Me->second.leftAt = now;
     if (const auto mine = sceneOf_.find(actor); mine != sceneOf_.end())
         mine->second.erase(session);
+    endedOf_[actor] = session;                      // (It has ended for them: their card, doc 51.)
     std::vector<std::string> Qualified;
     for (const auto& Pair : Scene.members)
         if (shaped(Pair.second))
@@ -843,9 +884,41 @@ void SocialLedger::joinFight(const std::string& fight, const std::string& cell, 
     }
 }
 
+void SocialLedger::joinWork(const std::string& work, const std::string& cell, const std::string& member, double now)
+{
+    auto& S = sessions[workScene(work)];
+    if (S.id.empty())
+    {
+        S.id = workScene(work);
+        S.cell = cell;
+        S.party = workTag(work);
+        S.started = now;
+        S.last = now;
+        S.openness = "open";                        // (Open by default, as any scene: doc 51.)
+        openIn_[cell].insert(S.id);
+    }
+    S.last = std::max(S.last, now);                 // (Alive while the work goes on.)
+    if (S.ended == 0 && !S.members.count(member))
+    {
+        S.members[member].joined = now;
+        sceneOf_[member].insert(S.id);
+    }
+}
+
+int SocialLedger::settleWork(const std::string& work, double now)
+{
+    // Working isn't roleplay: only those who talked it through are paid (two talkers at least), as for a fight.
+    return settleScene(workScene(work), {}, now);
+}
+
 int SocialLedger::settleFight(const std::string& fight, const std::set<std::string>& fought, double now)
 {
-    auto It = sessions.find(fightScene(fight));
+    return settleScene(fightScene(fight), fought, now);
+}
+
+int SocialLedger::settleScene(const std::string& sceneId, const std::set<std::string>& fought, double now)
+{
+    auto It = sessions.find(sceneId);
     if (It == sessions.end() || It->second.ended > 0)
         return 0;
     auto& Scene = It->second;
@@ -921,7 +994,8 @@ void SocialLedger::tick(double now)
     for (auto& [id, st] : stories)
         if (st.state == "pending" && now - st.created > 86400)
             st.state = "expired";
-    // Scenes ended more than three days ago go (doc 51, Phase 3): stars and Stories look back a day at most.
+    // Scenes ended more than eight days ago go (doc 51; players are told seven, so a day's grace is theirs). Stars and
+    // Stories look back a day at most; Story books (Phase 7) take scenes for the seven days players are told.
     for (auto it = sessions.begin(); it != sessions.end();)
         if (it->second.ended > 0 && now - it->second.ended > KeepEndedSeconds)
         {

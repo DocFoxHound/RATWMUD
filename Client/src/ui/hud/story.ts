@@ -2,7 +2,8 @@
 // real text, so wrapping, selecting and scrolling are the browser's.
 import {css} from '../color.ts';
 import {Muted, speakingColor} from '../theme.ts';
-import type {GameState, Post} from '../../game/state.ts';
+import {keptByMyScene, type GameState, type Post} from '../../game/state.ts';
+import {drawPortrait, type Portraits} from '../portrait.ts';
 import {inParty, withPlayers} from '../../game/party.ts';
 import {button, el, setClass, setText, show} from './dom.ts';
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
@@ -31,6 +32,8 @@ export class StoryPanel {
     private chapterOoc: HTMLButtonElement;
     private private_: HTMLButtonElement;
     private circleTabs: HTMLElement;
+    private sceneFilter: HTMLButtonElement;
+    private filtered = false;
     private circleKey = '';
     private mode: HTMLElement;
     private queued: HTMLElement;
@@ -41,8 +44,11 @@ export class StoryPanel {
     private channel = '';
     private stick = true;                   // Following the newest post (until the reader scrolls up).
 
-    constructor(parent: HTMLElement, state: GameState) {
+    private portraits?: Portraits;
+
+    constructor(parent: HTMLElement, state: GameState, portraits?: Portraits) {
         this.s = state;
+        this.portraits = portraits;
         this.root = el('section', 'story', parent);
         const head = el('div', 'story-head', this.root);
         el('span', 'label gold', head, 'THE STORY');
@@ -61,7 +67,11 @@ export class StoryPanel {
         this.place = el('h2', 'place', this.root);
         this.scene = el('p', 'scene', this.root);
         this.sceneBar = el('div', 'scene-bar', this.root);
-        this.feedLabel = el('div', 'label muted feed-label', this.root);
+        const feedHead = el('div', 'feed-head', this.root);
+        this.feedLabel = el('div', 'label muted feed-label', feedHead);
+        // One's own scenes only (doc 51, §7): their lines, one's own, the world's, and anything meant for one.
+        this.sceneFilter = button('MY SCENE ONLY', 'small scene-filter', feedHead, () => state.activate({rect: noRect, action: 'my_scene', target: ''}));
+        this.sceneFilter.title = 'Show only your scenes\' lines (and your own, the world\'s, and anything said to you)';
         this.feed = el('div', 'feed', this.root);
         this.empty = el('p', 'feed-empty', this.feed,
             'The scene is yours to enter. Listen to the room, approach someone, or press Enter to begin a conversation.');
@@ -113,6 +123,8 @@ export class StoryPanel {
         this.updateCircleTabs();
         const circle = s.channel.startsWith('circle:') ? s.circles.find(c => `circle:${str(c, 'id')}` === s.channel) : undefined;
         setText(this.feedLabel, circle ? `${str(circle, 'name').toUpperCase()} · OUT OF CHARACTER · YOUR CIRCLE` : FeedLabels[s.channel] ?? FeedLabels.ic);
+        show(this.sceneFilter, s.channel === 'ic');
+        setClass(this.sceneFilter, 'active', s.mySceneOnly);
         setText(this.mode, s.chat ? 'WRITING  /  YOUR DRAFT IS PRIVATE' : 'NAVIGATION  /  ENTER TO WRITE');
         setClass(this.mode, 'sage', s.chat);
         setClass(this.mode, 'muted', !s.chat);
@@ -146,8 +158,10 @@ export class StoryPanel {
         // Stars this wolf gave that it may still tag (doc 51): their ids only in the key, so the countdown doesn't rebuild it.
         const given = arr(social, 'starsGiven').filter(isObject);
         const nearby = arr(social, 'nearby').filter(isObject);
+        // Howls one may still join (doc 51): their direction and distance, never who.
+        const calls = [...s.howls.entries()].filter(([, h]) => h.canJoin && h.until > s.clock);
         const key = JSON.stringify([shown, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')]),
-            given.map(g => str(g, 'id')), nearby]);
+            given.map(g => str(g, 'id')), nearby, calls.map(([id, h]) => [id, h.wolves]), this.adding, s.shelf.open, [...this.openLogs].map(id => [id, s.fightLogs.get(id)?.length ?? -1])]);
         if (key === this.sceneKey) return;
         this.sceneKey = key;
         this.sceneBar.replaceChildren();
@@ -199,10 +213,32 @@ export class StoryPanel {
                 }
             }
         }
+        for (const [, h] of calls) {
+            const row = el('div', 'scene-row howl-call', this.sceneBar);
+            const toward = ['NORTH', 'NORTH-EAST', 'EAST', 'SOUTH-EAST', 'SOUTH', 'SOUTH-WEST', 'WEST', 'NORTH-WEST'][Math.floor(((h.bearing + 22.5) % 360) / 45)];
+            el('span', 'label gold', row, `A HOWL TO THE ${toward} · ${h.band.toUpperCase()}${h.wolves > 1 ? ` · ${h.wolves} WOLVES` : ''}`);
+            if (h.status) el('span', 'muted small', row, ` ${h.status}`);
+            button('JOIN THE HOWL', 'small', row, () => s.activate({rect: noRect, action: 'howl', target: ''})).title = 'Howl with them: a chorus carries further';
+        }
         for (const n of nearby) {
             // A scene here one could join, or knock on (doc 51): how many wolves, never who.
             const row = el('div', 'scene-row scene-nearby', this.sceneBar);
             const open = str(n, 'openness') === 'open';
+            // Who is in it, on hover (the user, 2026-10-07): each wolf's portrait and name as this wolf knows them,
+            // scrolling when there are many.
+            const who = el('div', 'scene-who', row);
+            el('div', 'label muted', who, 'IN THIS SCENE');
+            for (const w of arr(n, 'who').filter(isObject)) {
+                const line = el('div', 'scene-who-wolf', who);
+                const face = el('canvas', 'scene-who-face', line);
+                face.width = face.height = 40;
+                const c = face.getContext('2d');
+                const stage = str(w, 'lifeStage');
+                if (c && this.portraits)
+                    drawPortrait(c, this.portraits, obj(w, 'appearance'), stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18,
+                        0, 0, 40, 40, str(w, 'artwork') || undefined);
+                el('span', '', line, str(w, 'name'));
+            }
             el('span', 'label muted', row, open ? 'A SCENE HERE · OPEN' : 'A SCENE HERE · KNOCK TO JOIN');
             el('span', 'small', row, ` ${num(n, 'wolves')} ${num(n, 'wolves') === 1 ? 'wolf' : 'wolves'}`);
             if (open) button('JOIN', 'small', row, () => s.sendSocial({verb: 'join', session: str(n, 'id')})).title =
@@ -222,7 +258,24 @@ export class StoryPanel {
                 el('span', 'muted small', row, bool(ended, 'talked') ? 'Paid for the fight, and for roleplaying it, as a scene pays.'
                     : 'Paid for the fight. Talk it through next time: roleplay in a fight pays as a scene does, and stars are how it is thanked.');
                 if (targets.length || starred.length) el('span', 'muted small', row, 'Who roleplayed it well? Give each a Gold Star:');
-            } else el('span', 'label gold', row, `SCENE ENDED · +${num(ended, 'xp')} SOCIAL`);
+            } else el('span', 'label gold', row, `THE SCENE${str(ended, 'place') ? ` AT ${str(ended, 'place').toUpperCase()}` : ''}` +
+                `${num(ended, 'minutes') ? ` · ${Math.trunc(num(ended, 'minutes'))} MIN` : ''} · +${num(ended, 'xp')} SOCIAL`);
+            // The scene's card (doc 51, Phase 5): who was in it, and what happened, never word or turn counts.
+            const with_ = arr(ended, 'with').filter((w): w is string => typeof w === 'string');
+            if (with_.length) el('span', 'muted small', row, `With ${with_.join(', ')}.`);
+            if (bool(ended, 'goingOn')) el('span', 'muted small', row, 'You stepped out; the others carry on. Stars when it ends.');
+            const tally = obj(ended, 'tally');
+            if (tally) {
+                const parts = [['landed', 'landed'], ['raised', 'raised'], ['covered', 'covered'], ['guarded', 'on guard'], ['dealt', 'dealt'], ['taken', 'taken']]
+                    .filter(([k]) => num(tally, k) > 0).map(([k, w]) => `${Math.trunc(num(tally, k))} ${w}`);
+                if (parts.length) el('span', 'small', row, parts.join(' · '));
+            }
+            const moments = el('div', 'scene-moments', row);
+            for (const m of arr(ended, 'moments').filter(isObject)) {
+                const line = el('div', 'small', moments, str(m, 'text'));
+                if (str(m, 'fight')) this.fightLog(line, str(m, 'fight'));
+            }
+            if (num(ended, 'logLines') > 0) this.fightLog(moments, session);
             for (const t of targets)
                 button(`★ ${str(t, 'name')}`, 'small', row, () => s.sendSocial({verb: 'star', session, target: str(t, 'id')})).title =
                     `Give ${str(t, 'name')} a Gold Star for this ${fight ? 'fight' : 'scene'}`;
@@ -231,17 +284,27 @@ export class StoryPanel {
                 given.disabled = true;
                 given.title = `You gave ${str(t, 'name')} a Gold Star`;
             }
-            if (bool(ended, 'storyable')) {
-                const mine = stories.find(st => bool(st, 'mine') && str(st, 'state') === 'active');
-                if (mine)
-                    button(`ADD TO "${str(mine, 'name')}"`, 'small', row, () => s.sendSocial({verb: 'extend', story: str(mine, 'id'), session}));
-                button('MAKE IT A STORY', 'small', row, () => {
-                    const name = window.prompt('A name for the Story');
-                    if (name?.trim()) s.sendSocial({verb: 'propose', session, name: name.trim()});
+            // Into a Story (doc 51, Phase 7: books are the one kind of Story): one of one's open books, or a new one.
+            if (this.adding !== session)
+                button('ADD TO A STORY', 'small', row, () => {
+                    this.adding = session;
+                    s.sendBook('shelf', {tab: 'shelf', filter: 'all', offset: 0});
+                    this.sceneKey = '';
+                }).title = 'Put this scene in one of your Story books, or begin one with it';
+            else {
+                const pick = el('div', 'profile-veils add-to-story', row);
+                for (const b of s.shelf.open)
+                    button(`INTO "${str(b, 'title')}"`, 'small', pick, () => { s.sendBook('link', {book: str(b, 'id'), session}); this.adding = ''; });
+                const title = el('input', 'profile-input', pick);
+                title.placeholder = 'Or a new book\'s title';
+                title.maxLength = 80;
+                button('START A BOOK', 'small', pick, () => {
+                    if (title.value.trim()) s.sendBook('start', {title: title.value.trim(), session});
+                    this.adding = '';
                 });
             }
         }
-        show(this.sceneBar, scenes.length > 0 || !!ended || nearby.length > 0 || given.length > 0);
+        show(this.sceneBar, scenes.length > 0 || !!ended || nearby.length > 0 || given.length > 0 || calls.length > 0);
     }
 
     private warned = new Set<string>();
@@ -275,6 +338,27 @@ export class StoryPanel {
             tab.dataset.circle = id;
         }
     }
+
+    /** A fight's log, blow by blow (doc 51): asked for when first opened, then shown under its moment. */
+    private fightLog(parent: HTMLElement, session: string) {
+        const s = this.s;
+        const lines = s.fightLogs.get(session);
+        const open = this.openLogs.has(session);
+        button(open ? 'HIDE THE FIGHT' : 'THE FIGHT, BLOW BY BLOW', 'small fight-log-toggle', parent, () => {
+            if (open) this.openLogs.delete(session);
+            else {
+                this.openLogs.add(session);
+                if (!lines) s.sendSocial({verb: 'fightlog', session});
+            }
+            this.sceneKey = '';
+        });
+        if (open && lines) {
+            const box = el('div', 'fight-log', parent);
+            for (const l of lines) el('div', 'fight-line', box, l);
+        }
+    }
+    private openLogs = new Set<string>();
+    private adding = '';                    // The ended scene being put into a Story (doc 51).
 
     private targetsKey = '';
     /** Above the composer: whom the next words go to, each chosen wolf a chip with ×. */
@@ -319,8 +403,10 @@ export class StoryPanel {
 
     private updateFeed() {
         const s = this.s;
-        if (this.channel !== s.channel) {
+        const filtered = s.channel === 'ic' && s.mySceneOnly;
+        if (this.channel !== s.channel || this.filtered !== filtered) {
             this.channel = s.channel;
+            this.filtered = filtered;
             for (const {row} of this.shown.values()) row.remove();
             this.shown.clear();
             this.stick = true;
@@ -331,6 +417,8 @@ export class StoryPanel {
         for (const post of posts) {
             if (!post.system && (s.channel === 'party' ? !post.party : s.channel === 'chapter' ? !post.chapter : post.channel !== s.channel)) continue;
             if (post.encounter && s.battle && post.encounter.id === s.battle.id) continue;   // Told beside it, line by line (combat.ts).
+            // My scene only: its lines, one's own, the world's, and anything meant for one ("→ you").
+            if (filtered && !keptByMyScene(post, str(obj(s.snapshot, 'self'), 'name'))) continue;
             if (post.revealed === 0 && !post.system) {
                 ++waiting;
                 continue;
@@ -341,10 +429,18 @@ export class StoryPanel {
                 const row = el('div', post.system ? 'post system' : post.faint ? 'post faint' : post.party ? 'post party' : 'post');
                 const color = css(post.system ? Muted : speakingColor(post.color));
                 row.style.setProperty('--voice', color);
+                // Its scene (doc 51, §7): one's own scene's lines carry its colour as a bar; an open or knock scene
+                // nearby, its bar and a tag. Everything else, Private scenes' talk included, reads normally, never faded.
+                if (post.scene) {
+                    row.classList.add(post.scene.mine ? 'scene-mine' : 'scene-other');
+                    row.style.setProperty('--scene', post.scene.colour);
+                }
                 const speaker = el('div', 'speaker', row, post.speaker.toUpperCase());
                 // Whom it was for: "→ you" stands out, so a reply meant for the player is never lost in a crowd.
                 if (post.to.length) el('span', post.to.includes('you') ? 'to you' : 'to', speaker, `  →  ${post.to.join(', ')}`);
                 if (post.muffled) el('span', 'muffled', speaker, '(muffled)');
+                if (post.scene && !post.scene.mine && post.scene.openness)
+                    el('span', 'scene-tag', speaker, `scene${post.scene.place ? ` at ${post.scene.place}` : ''} · ${post.scene.openness === 'open' ? 'open' : 'knock to join'}`);
                 // A private message kept while one was away (doc 50): when it was sent.
                 if (post.kept) el('span', 'muffled', speaker, post.outgoing ? '(kept until they are here)' : `(while you were away · ${sentWhen(post.sentAt ?? 0)})`);
                 // Another's line: mute, block or report its author (doc 50), by the line's number, never their id.

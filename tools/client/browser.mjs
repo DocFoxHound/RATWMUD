@@ -107,6 +107,11 @@ class Page {
             await this.send('Input.dispatchMouseEvent', {type, x, y, button: 'left', clickCount: 1, modifiers});
     }
 
+    /** The pointer moved to a point of the page in CSS pixels (for :hover). */
+    async hover(x, y) {
+        await this.send('Input.dispatchMouseEvent', {type: 'mouseMoved', x, y});
+    }
+
     async screenshot(path) {
         const {data} = await this.send('Page.captureScreenshot', {format: 'png'});
         writeFileSync(path, Buffer.from(data, 'base64'));

@@ -42,6 +42,14 @@ struct BattleFighter
     double stepAt = 0;
     bool turned = false;
     int turnsTaken = 0;             // Turns begun: two or more and a player is paid for the fight (doc 33).
+    // What it did in this fight (doc 51, Phase 5's end screen), counted where it happens: blows that landed, damage
+    // dealt and taken, allies got up from Downed (a tend, or a Gift's rise), blows taken for another (Interpose), and
+    // turns ended on guard.
+    struct Tally
+    {
+        int landed = 0, raised = 0, covered = 0, guarded = 0;
+        double dealt = 0, taken = 0;
+    } tally;
     bool resting = false;           // Rested this turn (no move): twice the stamina back at the next.
     // A turn's three parts (doc 33): the move, the action and the facing. With all three used it ends by itself, a
     // moment after the last (`partsAt`: when the last was used; another turn of the head puts it off).
@@ -143,6 +151,7 @@ struct Battle
     int turns = 0;                      // Turns taken, for the round count the square shows.
     std::uint32_t seq = 0;
     std::vector<BattleLine> log;        // The most recent lines (BattleLogKept).
+    std::vector<std::string> told;      // Every line's words, as they happened, up to 200: kept with the fight's scene (doc 51).
     bool over = false;
     double overAt = 0;
     std::string banner;                 // "The fight is over · Bracken's side stands".
@@ -156,8 +165,8 @@ struct Battle
     std::string truceBy;                // Who offered a truce now on the table ("" for none).
     bool truced = false;                // It ended in a truce: no one stays hostile after it.
     // Its terms (doc 37): "blood" (the first wound ends it), "yield" (who would go down yields instead: no one bleeds
-    // out), or "death" (doc 33's rules: the Downed bleed and may die). A challenge names them; other fights are to
-    // the death.
+    // out), "spar" (as yield, and nothing bleeds or burns, a blade strikes blunted, bruises at worst: doc 53, 5), or
+    // "death" (doc 33's rules: the Downed bleed and may die). A challenge names them; other fights are to the death.
     std::string terms = "death";
     std::string yieldBy;                // Who offered to yield, awaiting an answer ("" for none), and until when.
     double yieldUntil = 0;

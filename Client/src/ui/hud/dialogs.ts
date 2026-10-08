@@ -101,6 +101,7 @@ export class Dialogs {
             m === 'profile' ? [s.profileOwn, s.account, s.safetyMarks] : '', m === 'report' ? [s.reportTarget, s.safetyMarks] : '',
             m === 'people' ? [s.friends, s.friendRequestsIn, s.friendRequestsOut, s.account, s.peopleTab, s.knownWolves, s.knownOpen, this.knownFilter,
                 s.circles, s.circleInvites] : '',
+            m === 'stories' ? [s.shelf] : '', m === 'book' ? [s.bookOpen, s.circles] : '',
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
@@ -108,7 +109,7 @@ export class Dialogs {
                 obj(s.snapshot, 'resource')] : '',
             m === 'status' ? [self, s.battle && !s.battle.observer ? [s.battle.fighters.find(f => f.id === s.selfId), s.battle.acted, s.battle.turn] : null] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
-                bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume] : '']);
+                bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume, s.mapScenes, s.howlMarks] : '']);
         if (key === this.key) return;
         this.key = key;
         const typing = document.activeElement === this.aliasInput;      // (Kept, and kept focused, as the sheet is rebuilt.)
@@ -128,6 +129,8 @@ export class Dialogs {
         else if (m === 'profile') this.profileEditor();
         else if (m === 'report') this.safetyMenu();
         else if (m === 'people') this.people();
+        else if (m === 'stories') this.bookshelf();
+        else if (m === 'book') this.book();
         else this.inspect();
         if (typing && this.aliasInput.isConnected) this.aliasInput.focus();
     }
@@ -186,7 +189,9 @@ export class Dialogs {
         el('span', 'muted', skills, `Nose ${Math.round(clamp(num(self, 'noseHealth', 1), 0, 1) * 100)}%`);
         this.injuries(right, self);
         this.names(right, self);
-        this.stories(right, self);
+        // Stories are books now (doc 51, Phase 7): the bookshelf.
+        button('STORIES', 'secondary', el('div', 'sheet-actions', right), () => this.s.openShelf('shelf', 'all')).title =
+            'Your Stories, as books on a shelf: newest first; and your friends\', circles\' and Chapter\'s'
         this.reputation(right);
         el('div', 'label gold', this.panel, 'DESCRIPTION');
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
@@ -450,22 +455,175 @@ export class Dialogs {
         el('p', 'muted small', this.panel, 'Deliveries and letters are handed over from the recipient\'s menu; a watch is kept by staying there.');
     }
 
-    /** Their Stories (doc 32, 1.2): agree to one, tell one, give a Story Star. */
-    private stories(parent: HTMLElement, self: Json | null) {
-        const stories = arr(obj(self, 'social'), 'stories').filter(isObject);
-        if (!stories.length) return;
-        el('div', 'label gold', parent, 'STORIES');
-        for (const st of stories) {
-            const row = el('div', 'story-row', parent);
-            const id = str(st, 'id'), state = str(st, 'state');
-            el('span', '', row, `"${str(st, 'name')}" · ${state} · ${num(st, 'scenes')} scene${num(st, 'scenes') === 1 ? '' : 's'}` +
-                (bool(st, 'chapter') ? ' · a Chapter Story' : ''));
-            if (state === 'pending' && !bool(st, 'approved'))
-                button('AGREE', 'small', row, () => this.s.sendSocial({verb: 'approve', story: id}));
-            if (state === 'active' && bool(st, 'mine') && num(st, 'scenes') >= 2)
-                button('TELL IT', 'small', row, () => this.s.sendSocial({verb: 'close', story: id})).title = 'Close the Story and be paid for it';
-            for (const t of arr(st, 'starTargets').filter(isObject))
-                button(`★ ${str(t, 'name')}`, 'small', row, () => this.s.sendSocial({verb: 'storystar', story: id, target: str(t, 'id')}));
+    /** The bookshelf (doc 51, Phase 7): Stories as books, newest at the top, scrolling down through every one; filtered
+     * by shelf; Unaffiliated for those one isn't in that one's friends, circles and Chapter share. */
+    private bookshelf() {
+        const s = this.s, shelf = s.shelf;
+        this.heading('STORIES', 'Your Stories, as books on a shelf');
+        const tabs = el('div', 'creator-tabs', this.panel);
+        for (const [id, label] of [['shelf', 'YOUR SHELF'], ['unaffiliated', 'UNAFFILIATED']] as const) {
+            const b = button(label, shelf.tab === id ? 'tab active' : 'tab', tabs, () => s.openShelf(id, 'all'));
+            b.dataset.tab = id;
+        }
+        const filters = el('div', 'profile-veils', this.panel);
+        for (const [id, label] of [['all', 'ALL'], ['world', 'WORLD'], ['chapter', 'CHAPTER'], ['circle', 'CIRCLE'], ['friend', 'FRIEND'],
+            shelf.tab === 'unaffiliated' ? ['everyone', 'EVERYONE'] : ['other', 'OTHER']] as const) {
+            const b = button(label, shelf.filter === id ? 'small active' : 'small', filters, () => s.openShelf(shelf.tab, id));
+            b.dataset.filter = id;
+        }
+        if (shelf.tab === 'shelf') {
+            const start = el('div', 'profile-veils', this.panel);
+            const title = el('input', 'profile-input', start);
+            title.placeholder = 'A new book\'s title';
+            title.maxLength = 80;
+            title.dataset.field = 'book-title';
+            button('START A BOOK', 'small', start, () => { if (title.value.trim()) s.sendBook('start', {title: title.value.trim()}); s.modal = 'book'; });
+        }
+        const case_ = el('div', 'bookshelf', this.panel);
+        if (!shelf.books.length) el('p', 'muted small', case_, shelf.tab === 'shelf'
+            ? 'No books yet. Start one here, or ADD TO A STORY from a scene\'s card.' : 'Nothing your friends, circles or Chapter share that you aren\'t in.');
+        // Shelves of eight spines; the newest on the top shelf.
+        for (let i = 0; i < shelf.books.length; i += 8) {
+            const row = el('div', 'shelf-row', case_);
+            for (const b of shelf.books.slice(i, i + 8)) {
+                const spine = button('', `spine kind-${str(b, 'kind')}${str(b, 'state') === 'finished' ? ' finished' : ''}`, row, () => s.openBook(str(b, 'id')));
+                el('span', 'spine-title', spine, str(b, 'title'));
+                if (bool(b, 'official')) el('span', 'spine-mark', spine, '★');
+                spine.title = `${str(b, 'title')} · ${num(b, 'chapters')} chapter${num(b, 'chapters') === 1 ? '' : 's'}` +
+                    `${str(b, 'state') === 'finished' ? ' · finished' : ''}${str(b, 'flavour') ? `\n${str(b, 'flavour')}` : ''}`;
+                spine.dataset.book = str(b, 'id');
+            }
+        }
+        if (shelf.more) button('MORE BOOKS', 'small', case_, () => s.openShelf(shelf.tab, shelf.filter, true));
+        case_.addEventListener('scroll', () => {
+            if (shelf.more && case_.scrollTop + case_.clientHeight >= case_.scrollHeight - 40) s.openShelf(shelf.tab, shelf.filter, true);
+        });
+    }
+
+    /** A book opened (doc 51, Phase 7): its summary or flavour, wolves, volume, and its chapters as a timeline; for its
+     * wolves, what they may do with it. */
+    private book() {
+        const s = this.s, b = s.bookOpen;
+        if (!b) {
+            el('p', 'muted', this.panel, 'Opening the book…');
+            return;
+        }
+        const id = str(b, 'id'), mine = bool(b, 'mine'), keeper = bool(b, 'keeperIsMe'), finished = str(b, 'state') === 'finished';
+        button('← STORIES', 'small', this.panel, () => s.openShelf());
+        this.heading(finished ? 'A FINISHED BOOK' : 'A BOOK', str(b, 'title'));
+        el('p', 'muted small', this.panel, [`Kept by ${str(b, 'keeper')}`, `${num(b, 'chapters')} chapter${num(b, 'chapters') === 1 ? '' : 's'}`,
+            bool(b, 'official') ? 'official' : '', str(b, 'storyline') ? `of the world's storyline "${str(b, 'storyline')}"` : '',
+            `shared with ${{members: 'its wolves only', friends: 'friends', circle: str(b, 'circleName') || 'a circle', chapter: str(b, 'chapterName') || 'a Chapter', everyone: 'everyone'}[str(b, 'sharing')] ?? 'its wolves'}`]
+            .filter(Boolean).join(' · '));
+        if (finished && str(b, 'flavour')) el('p', 'gold', this.panel, str(b, 'flavour'));
+        if (str(b, 'summary')) el('p', '', this.panel, `${str(b, 'summary')}${str(b, 'summaryBy') ? ` (${str(b, 'summaryBy')})` : ''}`);
+        el('p', 'small', this.panel, `Its wolves: ${arr(b, 'wolves').filter((w): w is string => typeof w === 'string').join(', ')}`);
+        const volume = arr(b, 'volume').filter(isObject);
+        if (volume.length) {
+            el('div', 'label gold', this.panel, 'ITS VOLUME');
+            for (const v of volume) button(`${str(v, 'kind').toUpperCase()}: ${str(v, 'title')}`, 'small', this.panel, () => s.openBook(str(v, 'id'))).title = str(v, 'flavour');
+        }
+        if (str(b, 'privateWarning') && !finished) el('p', 'muted small', this.panel, str(b, 'privateWarning'));
+        const f = obj(b, 'finishing');
+        if (f) {
+            const row = el('div', 'profile-veils', this.panel);
+            el('span', 'gold small', row, `Finishing: ${num(f, 'agreed')} of ${num(f, 'of')} agree${bool(f, 'objected') ? ' · someone objects' : ` · or done in ${Math.ceil(num(f, 'quietLeft') / 86400)} days unless someone objects`}`);
+            if (mine && !bool(f, 'youAgreed')) button('AGREE', 'small', row, () => s.sendBook('agree', {book: id}));
+            if (mine) button('OBJECT', 'small', row, () => s.sendBook('object', {book: id}));
+        }
+        // Official (books are the one kind of Story): agreeing, and Story Stars once told.
+        if (str(b, 'storyState') === 'pending' && mine && !bool(b, 'approved'))
+            button('AGREE TO MAKE IT OFFICIAL', 'small', this.panel, () => s.sendBook('approve', {book: id}));
+        for (const t of arr(b, 'starTargets').filter(isObject))
+            button(`★ ${str(t, 'name')}`, 'small', this.panel, () => s.sendSocial({verb: 'storystar', story: str(b, 'story'), target: str(t, 'id')})).title =
+                'A Story Star for how they told it';
+        el('div', 'label gold', this.panel, 'CHAPTERS');
+        const chapters = arr(b, 'chapterList').filter(isObject);
+        if (!chapters.length) el('p', 'muted small', this.panel, 'No chapters yet: add a scene below.');
+        chapters.forEach((c, i) => {
+            const box = el('div', 'book-chapter', this.panel);
+            box.dataset.chapter = str(c, 'id');
+            el('div', 'gold', box, `${i + 1}. ${str(c, 'title')}`);
+            el('div', 'muted small', box, [str(c, 'place'), num(c, 'at') ? new Date(num(c, 'at') * 1000).toLocaleDateString([], {day: 'numeric', month: 'short'}) : '',
+                num(c, 'minutes') ? `${num(c, 'minutes')} min` : (num(c, 'ended') ? '' : 'going on'), bool(c, 'private') ? 'a private scene' : '',
+                arr(c, 'wolves').filter((w): w is string => typeof w === 'string').join(', ')].filter(Boolean).join(' · '));
+            if (bool(c, 'sealed')) el('p', 'muted small', box, 'A private scene: its summary once the book is finished.');
+            else if (str(c, 'summary')) storyText(box, str(c, 'summary'), str(c, 'by') ? ` (${str(c, 'by')})` : '');
+            if (mine && !finished) {
+                const edit = el('div', 'profile-veils', box);
+                const t = el('input', 'profile-input', edit);
+                t.value = str(c, 'title');
+                t.maxLength = 60;
+                const text = el('textarea', 'profile-input', edit);
+                text.placeholder = 'What happened in it';
+                text.maxLength = 7000;
+                text.rows = 4;
+                text.value = bool(c, 'sealed') ? '' : str(c, 'summary');
+                button('SAVE', 'small', edit, () => s.sendBook('chapter', {book: id, chapter: str(c, 'id'), title: t.value, text: text.value}));
+                button('FROM MY RECAP', 'small', edit, () => s.sendBook('summarise', {book: id, chapter: str(c, 'id')})).title =
+                    'Use your recap of this scene as its summary (with chapters before it, the model tells it on from them)';
+                if (i > 0) button('↑', 'small', edit, () => s.sendBook('move', {book: id, chapter: str(c, 'id'), to: i - 1}));
+                if (i + 1 < chapters.length) button('↓', 'small', edit, () => s.sendBook('move', {book: id, chapter: str(c, 'id'), to: i + 1}));
+                button('TAKE OUT', 'small', edit, () => s.sendBook('remove', {book: id, chapter: str(c, 'id')}));
+            }
+        });
+        if (!mine) return;
+        el('div', 'label gold', this.panel, 'YOUR PART IN IT');
+        if (!finished) {
+            const scenes = arr(b, 'scenes').filter(isObject);
+            const add = el('div', 'profile-veils', this.panel);
+            const pick = el('select', '', add);
+            for (const sc of scenes)
+                pick.append(new Option(`${str(sc, 'place')}${bool(sc, 'fight') ? ' (a fight)' : ''}${num(sc, 'ended') ? '' : ' · going on'} · with ${arr(sc, 'with').filter((w): w is string => typeof w === 'string').join(', ') || 'no one'}`, str(sc, 'session')));
+            const after = el('select', '', add);
+            after.append(new Option('at the end', String(chapters.length - 1)));
+            after.append(new Option('at the start', '-1'));
+            chapters.forEach((c, i) => after.append(new Option(`after ${i + 1}. ${str(c, 'title')}`, String(i))));
+            button('ADD THIS SCENE', 'small', add, () => { if (pick.value) s.sendBook('link', {book: id, session: pick.value, after: Number(after.value)}); });
+            if (!scenes.length) el('span', 'muted small', add, 'No scenes of yours from the last 7 days to add.');
+            const nextWrap = el('label', 'small', this.panel);
+            const next = el('input', '', nextWrap);
+            next.type = 'checkbox';
+            next.checked = bool(b, 'nextScene');
+            next.addEventListener('change', () => s.sendBook('next', {book: id, on: next.checked}));
+            nextWrap.append(' My next scene goes into this book');
+            const summary = el('div', 'profile-veils', this.panel);
+            const text = el('input', 'profile-input', summary);
+            text.placeholder = 'The book\'s summary';
+            text.maxLength = 1200;
+            text.value = str(b, 'summary');
+            button('SAVE SUMMARY', 'small', summary, () => s.sendBook('summary', {book: id, text: text.value}));
+            button('WRITE IT FOR ME', 'small', summary, () => s.sendBook('summarise', {book: id})).title = 'The model writes it from the chapters';
+        }
+        const actions = el('div', 'profile-veils', this.panel);
+        if (keeper && !finished) {
+            const share = el('select', '', actions);
+            for (const [v, label] of [['members', 'Its wolves only'], ['friends', 'Friends'], ['chapter', 'My Chapter'], ['everyone', 'Everyone']])
+                share.append(new Option(label, v));
+            for (const c of s.circles) share.append(new Option(`Circle: ${str(c, 'name')}`, `circle:${str(c, 'id')}`));
+            share.value = str(b, 'sharing') === 'circle' ? share.value : str(b, 'sharing');
+            share.addEventListener('change', () => share.value.startsWith('circle:')
+                ? s.sendBook('share', {book: id, sharing: 'circle', circle: share.value.slice(7)}) : s.sendBook('share', {book: id, sharing: share.value}));
+            if (str(b, 'state') === 'open') button('FINISH', 'small', actions, () => s.sendBook('finish', {book: id})).title =
+                'Propose finishing it: a majority of its recent wolves, or three days with no objection';
+            if (!str(b, 'story')) button('MAKE IT OFFICIAL', 'small', actions, () => s.sendBook('official', {book: id})).title =
+                'Official books pay their tellers when finished, as Stories do; two thirds of its wolves must agree';
+        }
+        const hideWrap = el('label', 'small', actions);
+        const hide = el('input', '', hideWrap);
+        hide.type = 'checkbox';
+        hide.checked = bool(b, 'hidden');
+        hide.addEventListener('change', () => s.sendBook('hide', {book: id, on: hide.checked}));
+        hideWrap.append(' Hide me from its readers');
+        const others = arr(b, 'finishedBooks').filter(isObject);
+        if (finished && others.length) {
+            const link = el('div', 'profile-veils', this.panel);
+            const which = el('select', '', link);
+            for (const o of others) which.append(new Option(str(o, 'title'), str(o, 'id')));
+            const kind = el('select', '', link);
+            for (const k of ['sequel', 'prequel', 'related']) kind.append(new Option(k, k));
+            button('LINK INTO A VOLUME', 'small', link, () => s.sendBook('volume', {book: id, other: which.value, kind: kind.value})).title =
+                'Readers see the whole volume at once';
         }
     }
 
@@ -1069,8 +1227,15 @@ export class Dialogs {
         toggle(s.flatWorld ? 'World: Always flat' : 'World: Automatic', 'projection');
         toggle(s.plainGlyphs ? 'Map: Plain ASCII' : 'Map: Unicode', 'glyphs');
         toggle(s.hoverTooltips ? 'Pointer labels: On' : 'Pointer labels: Off', 'tooltips');
+        toggle(s.howlMarks ? 'Howl marks: On' : 'Howl marks: Off', 'howl_marks').title =
+            'Mark the way howls come from on the map for a minute (you still hear them)';
+        toggle(s.mapScenes ? 'Scenes on the map: On · open ones near you' : 'Scenes on the map: Off', 'map_scenes').title =
+            'Show open scenes near you on the minimap and World Map (and knock-to-join ones with a friend in them)';
         toggle(s.fightTips ? 'Fight tips: On' : 'Fight tips: Off', 'fighttips');
         toggle(bool(obj(s.snapshot, 'self'), 'noPvp') ? 'Fights with players: Auto-decline' : 'Fights with players: Open to challenges', 'nopvp');
+        toggle(bool(obj(s.snapshot, 'self'), 'noHuntPartners') ? 'Hunting partners: Only those I invite' : 'Hunting partners: Anyone may join', 'huntpartners').title =
+            'Whether anyone may join a hunt you start (your party and Chapter always may; you can invite anyone near)';
+        toggle(bool(obj(s.snapshot, 'self'), 'noWorkPartners') ? 'Work partners: Only those I invite' : 'Work partners: Anyone may join', 'workpartners');
         toggle(`Combat sound: ${s.soundVolume === 0 ? 'Off' : s.soundVolume < 0.45 ? 'Quiet' : s.soundVolume < 0.8 ? 'Normal' : 'Loud'}`, 'sound');
         toggle(s.perfOverlay ? 'Performance overlay: On' : 'Performance overlay: Off', 'perf');
         const width = s.storyWidth <= 360 ? 'Compact' : s.storyWidth <= 460 ? 'Balanced' : s.storyWidth <= 600 ? 'Wide' : 'Text-first';
@@ -1169,7 +1334,10 @@ export class Dialogs {
         }
         if (this.inspectTab === 'look') {
             if (str(p, 'title')) el('p', 'gold', box, `${str(p, 'title')}${str(p, 'motto') ? ` · “${str(p, 'motto')}”` : ''}`);
-            const facts = [StatusLabel[str(p, 'status', 'ic')] ?? '', bool(p, 'walkup') ? 'walk-up friendly' : '', str(p, 'pronouns'),
+            const facts = [bool(p, 'newcomer') ? 'new to these parts' : '',
+                str(p, 'mentor') ? `Mentor${str(p, 'mentor') === 'busy' ? ' (busy)' : ''}${num(p, 'guided') ? ` · guided ${num(p, 'guided')} newcomer${num(p, 'guided') === 1 ? '' : 's'}` : ''}` : '',
+                StatusLabel[str(p, 'status', 'ic')] ?? '',
+                bool(p, 'walkup') ? 'walk-up friendly' : '', str(p, 'pronouns'),
                 str(p, 'experience') ? `${ExperienceLabel[str(p, 'experience')] ?? str(p, 'experience')} roleplayer` : ''].filter(Boolean);
             if (facts.length) el('p', 'sage small', box, facts.join(' · '));
             if (str(p, 'currently')) el('p', '', box, `Currently: ${str(p, 'currently')}`);
@@ -1232,7 +1400,6 @@ export class Dialogs {
         const inputs: Record<string, HTMLInputElement | HTMLTextAreaElement> = {};
         inputs.description = field('DESCRIPTION · what anyone sees of your wolf', 'description', true);
         inputs.currently = field('CURRENTLY · what you are doing ("mending nets by the pier, happy to chat")', 'currently');
-        inputs.pronouns = field('PRONOUNS', 'pronouns');
         inputs.title = field('TITLE · for wolves who know your name', 'title');
         inputs.motto = field('MOTTO · for wolves who know your name', 'motto');
         // Glances: up to five, each an icon, a title, a line and the sense it is caught by.
@@ -1324,6 +1491,37 @@ export class Dialogs {
         for (const x of arr(rules, 'experience').filter(isObject))
             button(str(x, 'name'), str(account, 'experience') === str(x, 'id') ? 'small active' : 'small', xpRow,
                 () => s.sendProfile('experience', {value: str(x, 'id')}));
+        // Mentoring newcomers (doc 52): opting in (social level 5, no upheld report lately), available or busy.
+        const mentor = obj(account, 'mentor') ?? {};
+        el('div', 'label gold', this.panel, `MENTORING${num(mentor, 'guided') ? ` · GUIDED ${num(mentor, 'guided')}` : ''}`);
+        const mentorRow = el('div', 'profile-veils', this.panel);
+        mentorRow.dataset.mentor = bool(mentor, 'on') ? (bool(mentor, 'available') ? 'available' : 'busy') : 'off';
+        if (bool(mentor, 'on')) {
+            button('Available', bool(mentor, 'available') ? 'small active' : 'small', mentorRow, () => s.send({type: 'mentor', verb: 'available'}));
+            button('Busy', !bool(mentor, 'available') ? 'small active' : 'small', mentorRow, () => s.send({type: 'mentor', verb: 'busy'}));
+            button('Stop mentoring', 'small', mentorRow, () => s.send({type: 'mentor', verb: 'optout'}));
+            if (num(mentor, 'restingFor')) el('span', 'muted small', mentorRow, `resting after a tie, about ${num(mentor, 'restingFor')} h`);
+        } else if (bool(mentor, 'may'))
+            button('Mentor newcomers', 'small', mentorRow, () => s.send({type: 'mentor', verb: 'optin'})).title =
+                'Newcomers see you as a mentor, and when you are available, a mark over you on their map';
+        else el('span', 'muted small', mentorRow, str(mentor, 'why', 'Mentors are social level 5 or more.'));
+        // One's tie (doc 52): the starter from this side, with whom, how it stands; End (a newcomer) or Release (a mentor).
+        const tie = obj(obj(s.snapshot, 'self'), 'tie');
+        if (tie) {
+            el('div', 'label gold', this.panel, 'YOUR TIE');
+            const box = el('div', 'tie-box', this.panel);
+            box.dataset.tie = str(tie, 'state');
+            el('p', '', box, str(tie, 'line'));
+            el('p', 'muted small', box, str(tie, 'state') === 'active'
+                ? [`with ${str(tie, 'other')}${bool(tie, 'resident') ? ' (a resident)' : ''}`, `${num(tie, 'scenes')} of 3 scenes together`,
+                    `lapses in ${num(tie, 'lapsesInDays')} day${num(tie, 'lapsesInDays') === 1 ? '' : 's'}`,
+                    obj(tie, 'marker') ? `the spot is marked on your map: ${str(obj(tie, 'marker'), 'place')}` : ''].filter(Boolean).join(' · ')
+                : 'Someone is being found for you: a mentor first, else someone who lives here.');
+            if (bool(tie, 'newcomer')) button('End tie', 'small', box, () => s.send({type: 'tie', verb: 'end'})).title =
+                'End it early: what you have begun with them goes on as you like';
+            else button('Release', 'small', box, () => s.send({type: 'mentor', verb: 'release'})).title =
+                'Let it go: they are given a resident instead, and you rest a day';
+        }
         const settings = obj(account, 'settings') ?? {};
         const toggle = (label: string, key: string) => {
             const wrap = el('label', 'small', this.panel);
@@ -1336,6 +1534,7 @@ export class Dialogs {
         toggle('Show profiles marked mature', 'showMature');
         toggle('Write me scene recaps (what I perceived is sent to the model to summarise)', 'recaps');
         toggle('Private messages from friends', 'messages');
+        toggle('Residents may point others to me, and me to others', 'matchmaking');
         toggle('Tell me when a friend comes into the world', 'toasts');
         // Who one has muted and blocked, by the wolf one pointed at.
         el('div', 'label gold', this.panel, 'MUTED AND BLOCKED');
@@ -1561,7 +1760,7 @@ export class Dialogs {
         const box = el('div', 'recap', parent);
         el('div', 'muted small', box, [str(r, 'place'), ago(num(r, 'at')), num(r, 'minutes') ? `${num(r, 'minutes')} min` : '',
             bool(r, 'model') ? 'recap' : 'written from the record'].filter(Boolean).join(' · '));
-        el('p', '', box, str(r, 'text'));
+        storyText(box, str(r, 'text'));
         button('DELETE', 'small', box, () => {
             this.s.sendKnown('unrecap', {recap: str(r, 'id')});
             this.s.sendKnown('get', {target});
@@ -1667,6 +1866,13 @@ function itemIcon(item: Json): string {
 }
 
 /** How long ago a moment was (Unix seconds), in plain words. */
+/** A story's text (a scene told, a chapter): its paragraphs, scrolling past a few; `after` ends the last one. */
+function storyText(parent: HTMLElement, text: string, after = '') {
+    const box = el('div', 'story-text', parent);
+    const paragraphs = text.split(/\n\s*\n|\n/).map((p) => p.trim()).filter(Boolean);
+    paragraphs.forEach((p, i) => el('p', '', box, i + 1 === paragraphs.length ? p + after : p));
+}
+
 function ago(at: number): string {
     if (!at) return '';
     const minutes = Math.max(0, (Date.now() / 1000 - at) / 60);

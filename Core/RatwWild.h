@@ -13,6 +13,10 @@ struct Species
     std::string id, name, glyph, color, temper;     // temper: "flee", "cornered" or "fierce".
     std::map<std::string, double> habitats;         // Ground kind -> weight.
     double rarity = 1, health = 10, dex = 50, strength = 30, alert = 8, sight = 1, hearing = 1, smell = 1, bite = 0;
+    // Doc 53: how near a wolf it has noticed may come before it bolts (tiles; half of `alert` when unset), and its
+    // knack for dodging a bite, in points added to the dodge (a hare +5, a badger −5).
+    double flight = 4, dodge = 0;
+    bool flees() const { return temper != "fierce"; }
     std::vector<std::pair<std::string, int>> yield;
 };
 
@@ -20,6 +24,10 @@ struct Population
 {
     double expected = 3, capacity = 6, recoveryDays = 2, perPlayers = 50, most = 2, arrivalSeconds = 30;
     int atOnce = 6;
+    // Doc 53, 1.6: more hunters, more game: each extra hunter adds this much to the arrival chance and this many to
+    // how many may be in at once, and a hunter joining brings in this share of the hunt's expected count.
+    double perHunter = .75, joinerBrings = .5;
+    int atOncePerHunter = 2;
     double wildFrom = .5;                           // The share of an arena that must be natural ground to hunt in.
     int nearestStart = 10;                          // Animals begin at least this many tiles from a hunter.
 };

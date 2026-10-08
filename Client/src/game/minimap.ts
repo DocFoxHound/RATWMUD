@@ -128,6 +128,9 @@ export class MapRenderer {
      * Draws the map into a box of `c` (in its own units): centred on the wolf (plus `pan`, in tiles), `scale` pixels a
      * tile. With `labels`, places are named.
      */
+    /** Where the last draw put open scenes' marks (box pixels), and what each says: for the pointer. */
+    sceneMarks: {x: number; y: number; text: string}[] = [];
+
     draw(c: CanvasRenderingContext2D, s: GameState, box: {x: number; y: number; w: number; h: number}, scale: number,
         pan: [number, number] = [0, 0], labels = false) {
         const places = placesOf(s.snapshot);
@@ -225,6 +228,60 @@ export class MapRenderer {
             c.strokeStyle = '#11191b';
             c.stroke();
         }
+        // Open scenes near (doc 51, §7), when the player has turned them on: a small speech mark in the scene's colour
+        // with how many wolves, at their middle or at the door into the place they're in.
+        this.sceneMarks = [];
+        if (s.mapScenes)
+            for (const o of arr(obj(obj(s.snapshot, 'self'), 'social'), 'openNear').filter(isObject)) {
+                const place = places.find(p => p.id === str(o, 'cell'));
+                if (!place) continue;
+                const x = toX(place.x + num(o, 'x')), y = toY(place.y + num(o, 'y')), n = Math.trunc(num(o, 'wolves'));
+                c.fillStyle = str(o, 'colour', '#8796a3');
+                c.strokeStyle = '#11191b';
+                c.beginPath();
+                c.roundRect(x - 7, y - 13, 14, 10, 3);
+                c.moveTo(x - 2, y - 3.5);
+                c.lineTo(x, y);
+                c.lineTo(x + 2, y - 3.5);
+                c.fill();
+                c.stroke();
+                c.fillStyle = '#11191b';
+                c.font = 'bold 8px sans-serif';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText(String(n), x, y - 8);
+                c.textAlign = 'start';
+                this.sceneMarks.push({x, y: y - 8, text: `${n} ${n === 1 ? 'wolf' : 'wolves'} at ${str(o, 'place')} · ${str(o, 'openness') === 'open' ? 'open'
+                    : 'knock to join (a friend is in it)'}`});
+            }
+        // Where one's tie was when it was made (doc 52), while its marker lasts: a sage ring.
+        const tieMark = obj(obj(obj(s.snapshot, 'self'), 'tie'), 'marker');
+        const tiePlace = tieMark ? places.find(p => p.id === str(tieMark, 'cell')) : undefined;
+        if (tieMark && tiePlace) {
+            const x = toX(tiePlace.x + num(tieMark, 'x')), y = toY(tiePlace.y + num(tieMark, 'y'));
+            c.strokeStyle = 'rgba(143,179,154,0.9)';
+            c.lineWidth = 1.5;
+            c.beginPath();
+            c.arc(x, y, 5, 0, Math.PI * 2);
+            c.stroke();
+            this.sceneMarks.push({x, y, text: `where your tie was${str(tieMark, 'place') ? `, at ${str(tieMark, 'place')}` : ''}`});
+        }
+        // Howls heard (doc 51, Phase 6), for their minute: a faint arrow at the map's edge, the way the sound came.
+        if (s.howlMarks)
+            for (const [, h] of s.howls) {
+                if (h.until <= s.clock) continue;
+                const a = h.bearing * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a);
+                const half = Math.min(box.w, box.h) / 2 - 10;
+                const x = box.x + box.w / 2 + dx * half, y = box.y + box.h / 2 + dy * half;
+                c.fillStyle = `rgba(217,182,123,${(0.35 + 0.5 * Math.min(1, (h.until - s.clock) / 20)).toFixed(2)})`;
+                c.beginPath();
+                c.moveTo(x + dx * 8, y + dy * 8);
+                c.lineTo(x - dy * 5, y + dx * 5);
+                c.lineTo(x + dy * 5, y - dx * 5);
+                c.closePath();
+                c.fill();
+                this.sceneMarks.push({x, y, text: `a howl${h.wolves > 1 ? ` of ${h.wolves} wolves` : ''}${h.status ? ` · ${h.status}` : ''} · ${h.band}`});
+            }
         if (me) {
             const x = toX(ox + me.x), y = toY(oy + me.y), r = 6;
             c.fillStyle = '#d9b67b';

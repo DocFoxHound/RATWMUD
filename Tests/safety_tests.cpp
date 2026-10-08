@@ -164,6 +164,7 @@ game::Options options()
     o.hiddenNames = false;
     o.forkSnapshots = false;
     o.oneWolfPerAccount = true;
+    o.tiesOptional = true;                      // (Ties: doc 52, tested in newcomer_tests.)
     return o;
 }
 

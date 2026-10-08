@@ -339,7 +339,7 @@ std::vector<std::pair<std::string, int>> World::harvestAt(const std::string& who
     return out;
 }
 
-bool World::takeFromPatch(const std::string& cellId, int x, int y)
+bool World::takeFromPatch(const std::string& cellId, int x, int y, int extra)
 {
     const auto& data = wild::forage();
     const auto patch = cellId + "|" + std::to_string(x / data.patchTiles) + "|" + std::to_string(y / data.patchTiles);
@@ -352,7 +352,7 @@ bool World::takeFromPatch(const std::string& cellId, int x, int y)
     }
     if (used == 0)
         day = calendarDays_;
-    if (used >= data.picks)
+    if (used >= data.picks + extra)
         return false;
     ++used;
     return true;

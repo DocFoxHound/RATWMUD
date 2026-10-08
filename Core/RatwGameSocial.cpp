@@ -163,6 +163,25 @@ void Game::afterSocial()
     socialViewsDirty_ = true;
 }
 
+void Game::tendWorkScenes()
+{
+    // Each joint at work is a scene of its own (doc 53, 2.2): its players in it from the start, kept alive while the
+    // work goes on; when the work ends, those who talked through it are paid.
+    bool settled = false;
+    for (const auto& [id, j] : world_.joints())
+        for (const auto& m : j.members)
+            if (const auto* e = world_.entity(m.id); e && !e->npc)
+                social_.joinWork(id, j.cellId, m.id, now());
+    for (auto& [sid, s] : social_.sessions)
+        if (s.ended == 0 && SocialLedger::isWork(s) && !world_.joints().count(s.party.substr(5)))
+        {
+            social_.settleWork(s.party.substr(5), now());
+            settled = true;
+        }
+    if (settled)
+        afterSocial();
+}
+
 void Game::tendFightScenes()
 {
     // Each fight is a scene of its own (doc 33): its players are in it from the start, talking or not; when it is over,
@@ -170,16 +189,56 @@ void Game::tendFightScenes()
     bool settled = false;
     for (const auto& b : world_.battles())
     {
+        const auto fightId = SocialLedger::fightScene(b.id);
         if (!b.over)
         {
             for (const auto& f : b.fighters)
                 if (const auto* e = world_.entity(f.id); e && !e->npc && f.status != "fled")
                     social_.joinFight(b.id, b.cellId, f.id, now());
+            // A fight that breaks out in a scene is part of it (the user, 2026-10-07; doc 51): the scene its players
+            // were in here keeps it as a moment, stays alive while it lasts, and its log goes with it.
+            if (auto it = social_.sessions.find(fightId); it != social_.sessions.end())
+            {
+                auto& fs = it->second;
+                if (fs.parent.empty())
+                    for (const auto& f : b.fighters)
+                    {
+                        for (const auto& sid : social_.scenesOf(f.id))
+                            if (const auto p = social_.sessions.find(sid); p != social_.sessions.end() && !SocialLedger::isFight(p->second) &&
+                                                                           p->second.cell == b.cellId && p->second.ended == 0)
+                            {
+                                fs.parent = sid;
+                                break;
+                            }
+                        if (!fs.parent.empty())
+                        {
+                            social_.moment(fs.parent, {"fight", fightId, {}, {}, now()});
+                            break;
+                        }
+                    }
+                if (const auto p = social_.sessions.find(fs.parent); p != social_.sessions.end() && p->second.ended == 0)
+                    p->second.last = std::max(p->second.last, now());
+                if (fs.log.size() != b.told.size())
+                    fs.log = b.told;
+            }
             continue;
         }
-        const auto scene = social_.sessions.find(SocialLedger::fightScene(b.id));
+        const auto scene = social_.sessions.find(fightId);
         if (scene == social_.sessions.end() || scene->second.ended > 0)
             continue;
+        // What each did, kept with their part in the fight's scene (it outlives the battle), and the whole log.
+        for (const auto& f : b.fighters)
+            if (const auto m = scene->second.members.find(f.id); m != scene->second.members.end())
+            {
+                auto& c = m->second;
+                c.landed = f.tally.landed;
+                c.raised = f.tally.raised;
+                c.covered = f.tally.covered;
+                c.guarded = f.tally.guarded;
+                c.dealt = int(std::lround(f.tally.dealt));
+                c.taken = int(std::lround(f.tally.taken));
+            }
+        scene->second.log = b.told;
         std::set<std::string> fought;
         for (const auto& f : b.fighters)
             if (f.turnsTaken >= 2)
@@ -217,6 +276,17 @@ void Game::refreshSocialViews(double dt)
     socialViewsDirty_ = false;
     socialViews_.clear();
     const double t = now();
+    // The door into each place indoors that has an open scene, from outside: found once a refresh, for the map.
+    std::map<std::string, std::pair<std::string, Vec2>> entrance;
+    for (const auto& [where, ids] : social_.openScenes())
+        if (const auto* place = world_.cell(where); place && !place->outdoors)
+            for (const auto& [did, d] : world_.doors())
+                if (d.targetCell == where)
+                    if (const auto* outside = world_.cell(d.cellId); outside && outside->outdoors)
+                    {
+                        entrance[where] = {d.cellId, d.position};
+                        break;
+                    }
     for (const auto* c : clients_)
     {
         const auto& id = c->entityId;
@@ -343,6 +413,23 @@ void Game::refreshSocialViews(double dt)
                 auto n = Value::object();
                 n.add("id", sid);
                 n.add("wolves", wolves);
+                // Who is in it, for the window on hover (the user, 2026-10-07): each as this wolf knows them, with what
+                // draws their portrait. At most 48: the window scrolls.
+                auto who = Value::array();
+                for (const auto& [member, m] : s.members)
+                    if (!m.left && who.items().size() < 48)
+                        if (const auto* wolf = world_.entity(member))
+                        {
+                            auto w = Value::object();
+                            w.add("id", member);
+                            w.add("name", names::capitalised(labelFor(id, member)));
+                            w.add("appearance", wire::appearance(wolf->appearance));
+                            w.add("lifeStage", lifeStageName(lifeStage(wolf->age)));
+                            if (const auto art = visiblePortrait(member, id); !art.empty())
+                                w.add("artwork", art);
+                            who.push(w);
+                        }
+                n.add("who", who);
                 n.add("openness", s.openness);
                 n.add("party", !s.party.empty());
                 if (const auto k = s.knocks.find(id); k != s.knocks.end() && t - k->second < SocialLedger::KnockSeconds)
@@ -350,10 +437,84 @@ void Game::refreshSocialViews(double dt)
                 nearby.push(n);
             }
         v.add("nearby", nearby);
+        v.add("howlIn", std::ceil(howlCooldownLeft(id)));   // (Seconds until this wolf may howl again: doc 51.)
+        // Open scenes within reach, for the map (doc 51, §7; shown only when the player turns it on: the user,
+        // 2026-10-07). Knock scenes only when a friend is in one; never Private ones, fights, or one's own. Each at its
+        // wolves' middle, or for a scene indoors, at the door into it from outdoors; how many wolves, never who.
+        auto openNear = Value::array();
+        if (me)
+            if (const auto* myCell = world_.cell(me->cellId))
+            {
+                const double mx = myCell->worldX + me->position.x, my = myCell->worldY + me->position.y;
+                for (const auto& [where, ids] : social_.openScenes())
+                {
+                    const auto* place = world_.cell(where);
+                    if (!place)
+                        continue;
+                    for (const auto& sid : ids)
+                    {
+                        const auto found = social_.sessions.find(sid);
+                        if (found == social_.sessions.end())
+                            continue;
+                        const auto& sc = found->second;
+                        if (sc.ended != 0 || SocialLedger::isFight(sc) || sc.openness == "private" || sc.members.count(id))
+                            continue;
+                        int wolves = 0;
+                        bool friendIn = false, blockedHere = false;
+                        double sx = 0, sy = 0;
+                        int placed = 0;
+                        for (const auto& [who, m] : sc.members)
+                            if (!m.left)
+                            {
+                                ++wolves;
+                                friendIn |= areFriends(id, who);
+                                blockedHere |= blocked(id, who);
+                                if (const auto* wolf = world_.entity(who); wolf && wolf->cellId == where)
+                                    sx += wolf->position.x, sy += wolf->position.y, ++placed;
+                            }
+                        if (!wolves || !placed || blockedHere || (sc.openness == "knock" && !friendIn))
+                            continue;
+                        // Where it shows: the place itself outdoors, else the door into it from outside.
+                        std::string mapCell = where;
+                        double x = sx / placed, y = sy / placed;
+                        if (!place->outdoors)
+                        {
+                            const auto door = entrance.find(where);
+                            if (door == entrance.end())
+                                continue;
+                            mapCell = door->second.first;
+                            x = door->second.second.x, y = door->second.second.y;
+                        }
+                        const auto* shown = world_.cell(mapCell);
+                        if (!shown || std::hypot(shown->worldX + x - mx, shown->worldY + y - my) > stars::rules().mapRange)
+                            continue;
+                        auto o = Value::object();
+                        o.add("id", sid);
+                        o.add("cell", mapCell);
+                        o.add("x", std::round(x * 10) / 10);
+                        o.add("y", std::round(y * 10) / 10);
+                        o.add("wolves", wolves);
+                        o.add("openness", sc.openness);
+                        o.add("place", place->name);
+                        o.add("colour", stars::sceneColour(sid));
+                        if (sc.openness == "knock")
+                            o.add("friend", true);
+                        openNear.push(o);
+                    }
+                }
+            }
+        v.add("openNear", openNear);
         // The last scene they finished, while it may still be starred (an hour).
+        // (Or the one they stepped out of: it ended for them then, doc 51.)
         const SocialSession* last = nullptr;
-        if (const auto ended = social_.sessions.find(social_.lastEnded(id)); ended != social_.sessions.end() && t - ended->second.ended < 3600)
-            last = &ended->second;
+        double endedAt = 0;
+        if (const auto ended = social_.sessions.find(social_.lastEnded(id)); ended != social_.sessions.end())
+        {
+            const auto mine = ended->second.members.find(id);
+            endedAt = ended->second.ended > 0 ? ended->second.ended : mine != ended->second.members.end() && mine->second.left ? mine->second.leftAt : 0;
+            if (endedAt > 0 && t - endedAt < 3600)
+                last = &ended->second;
+        }
         const auto settledIn = [&](const std::string& who, const std::string& session) {
             for (const auto i : social_.receiptsOf(who))
                 if (social_.entries[i].session == session && social_.entries[i].reason == "qualified_session_settlement")
@@ -372,7 +533,7 @@ void Game::refreshSocialViews(double dt)
                 auto targets = Value::array(), starredNames = Value::array();
                 std::set<std::string> listed;
                 for (const auto& [other, m] : last->members)
-                    if (other != id && settledIn(other, last->id) && listed.insert(other).second)
+                    if (last->ended > 0 && other != id && settledIn(other, last->id) && listed.insert(other).second)
                     {
                         const bool starred = std::any_of(social_.stars.begin(), social_.stars.end(), [&](const SocialStar& st) {
                             return st.kind == "gold" && st.source == last->id && st.giver == id && st.recipient == other;
@@ -387,12 +548,34 @@ void Game::refreshSocialViews(double dt)
                     }
                 ended.add("starTargets", targets);
                 ended.add("starred", starredNames);
+                // The scene's card (doc 51, §8): where, how long, who was in it, and what happened, as this wolf knows it.
+                if (const auto* where = world_.cell(last->cell))
+                    ended.add("place", where->name);
+                ended.add("minutes", int(std::max(0.0, endedAt - std::max(last->started, last->members.at(id).joined)) / 60 + .5));
+                if (last->ended == 0)
+                    ended.add("goingOn", true);      // (Stepped out: the others carry on; stars once it ends.)
+                auto with = Value::array();
+                for (const auto& [other, m] : last->members)
+                    if (other != id)
+                        with.push(names::capitalised(labelFor(id, other)));
+                ended.add("with", with);
+                ended.add("moments", sceneMoments(id, *last));
                 if (SocialLedger::isFight(*last))
                 {
-                    // A fight: paid for talking it through, as a scene is (doc 51).
+                    // A fight: paid for talking it through, as a scene is (doc 51); what this wolf did in it; its log on asking.
                     const auto& me = last->members.at(id);
                     ended.add("fight", true);
                     ended.add("talked", me.turns >= 2 && me.words >= 35 && me.replies >= 1);
+                    auto tally = Value::object();
+                    tally.add("landed", me.landed);
+                    tally.add("dealt", me.dealt);
+                    tally.add("taken", me.taken);
+                    tally.add("raised", me.raised);
+                    tally.add("covered", me.covered);
+                    tally.add("guarded", me.guarded);
+                    ended.add("tally", tally);
+                    if (!last->log.empty())
+                        ended.add("logLines", int(last->log.size()));
                 }
                 // May it begin or carry on a Story?
                 const auto paid = social_.paidIn(last->id);
@@ -494,6 +677,7 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         if (r.ok)
             if (const auto found = social_.stories.find(r.message); found != social_.stories.end())
             {
+                social_.moment(j.string("session"), {"story", id, {}, found->second.name, t});   // (Doc 51, §8.)
                 markChapterStory(found->second);
                 for (const auto& m : found->second.members)
                     if (m != id)
@@ -505,7 +689,13 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
     else if (verb == "approve")
         said(social_.approve(id, j.string("story"), t), "You agree to the Story.");
     else if (verb == "extend")
-        said(social_.extend(id, j.string("story"), j.string("session"), t), "The Story goes on.");
+    {
+        const auto r = social_.extend(id, j.string("story"), j.string("session"), t);
+        said(r, "The Story goes on.");
+        if (r.ok)
+            if (const auto found = social_.stories.find(j.string("story")); found != social_.stories.end())
+                social_.moment(j.string("session"), {"story", id, "carried", found->second.name, t});
+    }
     else if (verb == "close")
     {
         const auto r = social_.close(id, j.string("story"), t);
@@ -577,6 +767,8 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
             {
                 const auto r = social_.join(id, sid, t);
                 result = {r.ok, r.ok ? "You join the scene: your next words count in it." : r.message, {}};
+                if (r.ok)
+                    social_.moment(sid, {"joined", id, {}, {}, t});
             }
         }
         else if (verb == "knock")
@@ -612,6 +804,8 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
             result = {r.ok, r.ok ? std::string(verb == "admit" ? "Let in." : "Not now.") : r.message, {}};
             if (r.ok)
             {
+                if (verb == "admit")
+                    social_.moment(sid, {"admitted", id, who, {}, t});
                 if (auto* them = clientOf(who))
                     system(them, verb == "admit" ? "You're let in: your next words count in the scene." : "No one lets you in just now.");
                 if (verb == "admit")
@@ -624,6 +818,30 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         {
             socialViewsDirty_ = true;
             saveSoon();
+        }
+    }
+    else if (verb == "fightlog")
+    {
+        // A fight's log, blow by blow (doc 51), for one who was in it or in the scene it broke out in; names as this
+        // wolf knows them.
+        const auto it = social_.sessions.find(j.string("session"));
+        const auto inIt = [&](const std::string& sid) {
+            const auto found = social_.sessions.find(sid);
+            return found != social_.sessions.end() && found->second.members.count(id);
+        };
+        if (it == social_.sessions.end() || !SocialLedger::isFight(it->second) || (!inIt(it->first) && !inIt(it->second.parent)))
+            result = {false, "No such fight to read.", {}};
+        else
+        {
+            auto e = Value::object();
+            e.add("type", "fightLog");
+            e.add("session", it->first);
+            auto lines = Value::array();
+            for (const auto& l : it->second.log)
+                lines.push(veilFor(id, l));
+            e.add("lines", lines);
+            send(c, e);
+            result = {true, {}, {}};
         }
     }
     else if (verb == "startag")
@@ -931,5 +1149,75 @@ json::Value Game::starsFor(const std::string& viewer, const std::string& target)
     const auto mine = accountKey(viewer), theirs = accountKey(target);
     const bool exact = mine == theirs || !sharedHandle(mine, target).empty();
     return starBook_.view(theirs, exact);
+}
+
+json::Value Game::sceneMoments(const std::string& viewer, const SocialSession& scene) const
+{
+    // What happened in a scene, in words for this viewer (doc 51, §8): the names it knows ("you" for itself), at most
+    // eight; then what it noticed for itself when the scene ended.
+    const auto who = [&](const std::string& x) { return x == viewer ? std::string("you") : labelFor(viewer, x); };
+    auto out = Value::array();
+    const auto add = [&](const std::string& kind, const std::string& text, const std::string& fight = {}) {
+        if (out.items().size() >= 8)
+            return;
+        auto o = Value::object();
+        o.add("kind", kind);
+        o.add("text", names::capitalised(text));
+        if (!fight.empty())
+            o.add("fight", fight);
+        out.push(o);
+    };
+    std::map<std::string, std::vector<std::string>> told;     // Introductions, by who told their name.
+    for (const auto& m : scene.moments)
+    {
+        if (m.kind == "joined")
+            add(m.kind, who(m.actor) + " joined the scene.");
+        else if (m.kind == "admitted")
+            add(m.kind, who(m.actor) + " let " + who(m.target) + " in.");
+        else if (m.kind == "introduced")
+            told[m.actor].push_back(m.target);
+        else if (m.kind == "story")
+            add(m.kind, std::string(m.target == "carried" ? "It carried on the Story \"" : "It began the Story \"") + m.detail + "\".");
+        else if (m.kind == "chorus")
+        {
+            const bool mine = ("," + m.detail + ",").find("," + viewer + ",") != std::string::npos;
+            const auto count = std::count(m.detail.begin(), m.detail.end(), ',') + 1;
+            add(m.kind, mine ? "You howled together, " + std::to_string(count) + " of you." : std::to_string(count) + " wolves howled together.");
+        }
+        else if (m.kind == "fight")
+        {
+            const auto fight = social_.sessions.find(m.actor);
+            if (fight == social_.sessions.end())
+                continue;
+            std::string text = "A fight broke out, " + std::to_string(fight->second.members.size()) + " of you in it.";
+            if (const auto mine = fight->second.members.find(viewer); mine != fight->second.members.end())
+            {
+                std::vector<std::string> did;
+                if (mine->second.landed)
+                    did.push_back(std::to_string(mine->second.landed) + " landed");
+                if (mine->second.raised)
+                    did.push_back(std::to_string(mine->second.raised) + " raised");
+                if (mine->second.covered)
+                    did.push_back(std::to_string(mine->second.covered) + " covered");
+                std::string joined;
+                for (std::size_t i = 0; i < did.size(); ++i)
+                    joined += (i ? " · " : "") + did[i];
+                if (!joined.empty())
+                    text += " You: " + joined + ".";
+            }
+            add(m.kind, text, m.actor);
+        }
+    }
+    for (const auto& [teller, heard] : told)
+    {
+        std::string to;
+        for (std::size_t i = 0; i < heard.size(); ++i)
+            to += (i == 0 ? "" : i + 1 == heard.size() ? " and " : ", ") + who(heard[i]);
+        add("introduced", who(teller) + (teller == viewer ? " told " + to + " your name." : " told " + to + " their name."));
+    }
+    if (const auto notes = endedNotes_.find(viewer); notes != endedNotes_.end() && notes->second.first == scene.id)
+        for (const auto& n : notes->second.second)
+            add("noticed", n);
+    return out;
 }
 } // namespace ratw::game

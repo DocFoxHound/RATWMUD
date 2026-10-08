@@ -28,6 +28,8 @@
 #include "RatwReports.h"
 #include "RatwStanding.h"
 #include "RatwStars.h"
+#include "RatwBooks.h"
+#include "RatwNewcomers.h"
 #include "RatwSocialCore.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
@@ -157,6 +159,9 @@ struct Options
     // nobody pays or stars themselves.
     bool openTiers = false;
     bool oneWolfPerAccount = true;
+    // Ties (doc 52, 4): a new account's first wolf must take one; tests of other things make wolves without.
+    bool tiesOptional = false;
+    double tieLapseSeconds = -1, tieOfferSeconds = -1;        // -1: the rules' own (7 days, 3 minutes). Tests shorten them.
     // Scene recaps (doc 50, 5): how long the lines a member perceived must span for the model to write their recap, in
     // seconds; -1 for the rules' own (5 minutes). Tests lower it.
     double recapModelSeconds = -1;
@@ -242,6 +247,22 @@ class Game
     bool areFriends(const std::string& a, const std::string& b) const;
     // One character's entry on another, as it sees it (doc 50, 5: with all its recaps), or null: for tests and docs 52-56.
     json::Value knownFor(const std::string& owner, const std::string& other) const;
+    // Newcomers (doc 52): whether an account is still new (15 hours played or social level 3 ends it, for good), and
+    // the start towns this world has, the busiest first-character choice among them, and each one's recent mean.
+    bool isNewcomer(const std::string& account) const;
+    std::vector<std::string> startTowns() const;
+    std::string suggestedStart() const;
+    double startTownMean(const std::string& town) const { return townCounts_.mean(town); }
+    // Mentors (doc 52, 3): whether an account may mentor (and why not), and a Dungeon Master turning it off or back on.
+    bool mayMentor(const std::string& account, std::string& why) const;
+    Result revokeMentor(const std::string& account, bool revoke, const std::string& by);
+    // Ties (doc 52, 4): every tie by its id, for tests and tools; a Dungeon Master ending a character's tie.
+    const std::map<std::string, newcomers::Tie>& ties() const { return ties_; }
+    const std::map<std::string, newcomers::Vouch>& vouches() const { return vouches_; }
+    Result endTieOf(const std::string& character, const std::string& by);
+    // Story books (doc 51, Phase 7): every book, for tests and tools; a DM's tie of one to a world storyline.
+    const std::map<std::string, books::Book>& storyBooks() const { return books_; }
+    Result tieBookToStoryline(const std::string& book, const std::string& storyline, const std::string& by);
     // The star book (doc 51): every star by the receiving account, and what a viewer sees of a wolf's (exact for its
     // own player and a friend who sees which wolf is theirs, bands for everyone else).
     const stars::Book& starBook() const { return starBook_; }
@@ -464,6 +485,12 @@ class Game
     std::set<std::string> scenesDone_, scenesLeft_;
     std::map<std::string, double> metAt_;
     std::map<std::string, std::pair<std::int64_t, int>> modelRecaps_;
+    // A scene's end card (doc 51, §8): what each wolf noticed for itself when its last scene ended (a first scene
+    // with someone, how someone regards it now), by its id and that scene's; the regard it last saw, to tell a change;
+    // and the moments in words for a viewer.
+    std::map<std::string, std::pair<std::string, std::vector<std::string>>> endedNotes_;
+    std::map<std::string, std::string> regardSeen_;
+    json::Value sceneMoments(const std::string& viewer, const SocialSession& scene) const;
     void meet(const std::string& owner, const std::string& other, const std::string& how);
     void perceivedLine(const std::string& listener, const std::string& who, const std::string& text);
     void tendScenes();
@@ -502,6 +529,7 @@ class Game
     json::Value accountView(const std::string& account) const;
     people::Viewer viewerFacts(const std::string& viewer, const std::string& target) const;
     json::Value cardFor(const std::string& viewer, const std::string& target) const;
+    std::string pronounsOf(const std::string& id) const;
     void tendPeople(double dt);
     json::Value peopleSave() const;
     void peopleLoad(const json::Value& saved);
@@ -556,6 +584,116 @@ class Game
     // Circles (doc 50, Phase 5; RatwGameCircles.cpp): out-of-character groups of accounts, by id.
     std::map<std::string, people::Circle> circles_;
     stars::Book starBook_;                        // (Doc 51, Phase 1; saved with the people.)
+    // The gathering howl (doc 51, Phase 6; RatwGameHowl.cpp): choruses still open (where, when they close, who howled,
+    // who has heard), when each wolf last howled (world time; not saved), the game day each pair last grew closer for
+    // a chorus, and each town's latest howl, remembered a while for its residents to tell of.
+    struct Chorus
+    {
+        std::string id, cell;
+        double wx = 0, wy = 0, wz = 0, started = 0, closes = 0;
+        std::vector<std::string> howlers;
+        bool indoors = false;
+        std::set<std::string> heard;
+    };
+    std::vector<Chorus> choruses_;
+    std::map<std::string, double> howledAt_, chorusBondDay_;
+    std::map<std::string, std::pair<double, std::string>> recentHowls_;
+    Result howl(const std::string& id);
+    double howlCooldownLeft(const std::string& id) const;
+    void sendHowl(Chorus& chorus);
+    void residentsHear(const Chorus& chorus);
+    void tendHowls();
+    void tendWorkScenes();
+    // Newcomers (doc 52; RatwGameNewcomers.cpp): active wolves counted in each start town once a minute (in memory
+    // only), and accounts that have stopped being new marked so.
+    newcomers::Counts townCounts_;
+    double newcomersAccumulator_ = 0;
+    void tendNewcomers(double dt);
+    json::Value startsView() const;
+    double mentorsCheckedAt_ = 0;
+    int accountSocialLevel(const std::string& account) const;
+    bool mentorCommand(Connection* c, const json::Value& j, Result& result);
+    void mentorOff(const std::string& account, const std::string& why);
+    void tellAccount(const std::string& account, const std::string& words);
+    json::Value mentorView(const std::string& account) const;
+    bool availableMentor(const std::string& account) const;
+    // Ties (doc 52, 4; RatwGameNewcomers.cpp): every tie by its id; each character's open tie (seeking, offered or
+    // active) as the newcomer, and the tie each mentor or resident holds; offers asked once a second, lapses once a
+    // minute. (A mentor may still have its own newcomer's tie while it holds one for someone else.)
+    std::map<std::string, newcomers::Tie> ties_;
+    std::map<std::string, std::string> tieOfCharacter_, heldTieOf_;
+    double tiesAccumulator_ = 0, tiesLapsedAt_ = 0;
+    void startTie(const std::string& newcomer, const std::string& account, const std::string& starter, const std::string& town,
+                  const std::string& arrivalCell);
+    void tendTies(double dt);
+    bool offerTie(newcomers::Tie& t);
+    void tieToResident(newcomers::Tie& t);
+    void makeTie(newcomers::Tie& t, const std::string& other, const std::string& otherAccount, bool resident);
+    void tellTie(newcomers::Tie& t);
+    void closeTie(newcomers::Tie& t, const std::string& state, bool rest);
+    void tieKnown(const std::string& owner, const std::string& other, const std::string& line);
+    void reindexTies();
+    int tieScenes(const newcomers::Tie& t) const;
+    std::string lookOfCharacter(const std::string& viewer, const std::string& id) const;
+    json::Value tieView(const std::string& character) const;
+    std::string tieBriefing(const std::string& npc, const std::string& player) const;
+    bool tieCommand(Connection* c, const json::Value& j, Result& result);
+    void tiesOnEnter(const std::string& character);
+    void tiesSave(json::Value& root) const;
+    void tiesLoad(const json::Value& saved);
+    // Residents as matchmakers (doc 52, 5; RatwGameNewcomers.cpp): each town's active players (the minute's count), a
+    // pointer waiting to be said by each matchmaker, and the limits (by game hour).
+    struct PendingMatch
+    {
+        std::string player, other, who, where, reason;
+    };
+    std::map<std::string, std::vector<std::string>> townRoster_;
+    std::map<std::string, PendingMatch> matchPending_;
+    std::map<std::string, std::int64_t> matchedHour_;
+    std::map<std::string, std::pair<std::int64_t, int>> matchmakerHour_, pointedHour_;
+    std::string jobCategoryOf(const std::string& npc) const;
+    bool isMatchmaker(const std::string& npc) const;
+    std::string matchmake(const std::string& npc, const std::string& player, const std::string& heard);
+    std::string sayMatch(const std::string& npc, const std::string& text, bool modelSaid);
+    // A newcomer's first evenings at an inn (doc 52, 6): each character's evenings tried, the last, and done; checked
+    // every five seconds. Vouches (doc 52, 7) by id, and how far through the crime incidents they have been followed.
+    struct Evening
+    {
+        int tries = 0;
+        double lastDay = -1;
+        bool done = false;
+    };
+    std::map<std::string, Evening> evenings_;
+    double eveningsAt_ = 0;
+    std::map<std::string, newcomers::Vouch> vouches_;
+    std::int64_t vouchCursor_ = 0;
+    void tendEvenings();
+    std::map<std::string, double> welcomedAt_;
+    void welcomeAtInn(const std::vector<std::string>& newcomers, const std::string& innkeeper, const std::vector<std::string>& others);
+    bool vouchCommand(Connection* c, const json::Value& j, Result& result);
+    void tendVouches();
+    void breakVouch(newcomers::Vouch& v);
+    std::string vouchBriefing(const std::string& npc, const std::string& player);
+    void vouchesSave(json::Value& root) const;
+    void vouchesLoad(const json::Value& saved);
+    // Story books (doc 51, Phase 7; RatwGameBooks.cpp): every book by its id, and each character's model calls for
+    // books today.
+    std::map<std::string, books::Book> books_;
+    std::map<std::string, std::pair<std::int64_t, int>> modelBooks_;
+    bool canRead(const std::string& viewer, const books::Book& b) const;
+    std::string shelfKind(const std::string& viewer, const books::Book& b) const;
+    json::Value bookSpine(const std::string& viewer, const books::Book& b) const;
+    json::Value bookView(const std::string& viewer, const books::Book& b) const;
+    void sendBook(Connection* c, const std::string& id);
+    void sendShelf(Connection* c, const std::string& tab, const std::string& filter, int offset);
+    Result linkScene(const std::string& who, books::Book& b, const std::string& session, int after);
+    void booksSceneEnded(const std::string& member, const SocialSession& s);
+    void finishBook(books::Book& b);
+    void syncStory(const books::Book& b);
+    void tendBooks();
+    bool bookCommand(Connection* c, const json::Value& j, Result& result);
+    void booksSave(json::Value& root) const;
+    void booksLoad(const json::Value& saved);
     void recordStar(const std::string& kind, const std::string& source, const std::string& giver, const std::string& recipient, int xp);
     std::vector<std::string> circlesOf(const std::string& account) const;
     void sendCircles(const std::string& account);

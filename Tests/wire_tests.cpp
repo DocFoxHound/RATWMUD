@@ -573,6 +573,22 @@ void commandTests()
 }
 } // namespace
 
+void partnersSaved()
+{
+    // Doc 53: Allow hunting partners and Allow work partners, on unless turned off, kept with the character.
+    Entity e;
+    e.id = "player-ada";
+    e.name = "Ada";
+    expect(!wire::persistEntity(e, 0).has("noHuntPartners") && !wire::persistEntity(e, 0).has("noWorkPartners"), "on: nothing written");
+    e.noHuntPartners = true;
+    e.noWorkPartners = true;
+    const auto back = wire::readEntity(wire::persistEntity(e, 0));
+    expect(back.noHuntPartners && back.noWorkPartners, "off: kept, and read back");
+    Entity npc = e;
+    npc.npc = true;
+    expect(!wire::readEntity(wire::persistEntity(npc, 0)).noHuntPartners, "a resident has no such setting");
+}
+
 int main()
 {
     try
@@ -587,6 +603,7 @@ int main()
         sensesAndMapTests();
         societyTests();
         commandTests();
+        partnersSaved();
     }
     catch (const std::exception& error)
     {

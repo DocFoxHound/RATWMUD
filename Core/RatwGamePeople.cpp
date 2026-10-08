@@ -46,7 +46,9 @@ json::Value Game::accountView(const std::string& account) const
     settings.add("recaps", a.settings.recaps);
     settings.add("toasts", a.settings.toasts);
     settings.add("messages", a.settings.messages);
+    settings.add("matchmaking", a.settings.matchmaking);
     o.add("settings", settings);
+    o.add("mentor", mentorView(account));           // (Doc 52, 3.)
     return o;
 }
 
@@ -143,6 +145,7 @@ bool Game::profileCommand(Connection* c, const json::Value& j, Result& result)
         s.recaps = given.boolean("recaps", s.recaps);
         s.toasts = given.boolean("toasts", s.toasts);
         s.messages = given.boolean("messages", s.messages);
+        s.matchmaking = given.boolean("matchmaking", s.matchmaking);
         result = {true, "Settings saved.", {}};
     }
     else if (verb == "get")
@@ -191,14 +194,24 @@ json::Value Game::cardFor(const std::string& viewer, const std::string& target) 
     // The profile part of a closer look (doc 50, 2), names veiled as everywhere (doc 32, 1.5), with the owner's
     // experience in words.
     const auto it = profiles_.find(target);
-    const people::Profile p = it == profiles_.end() ? people::Profile{} : it->second;
+    people::Profile p = it == profiles_.end() ? people::Profile{} : it->second;
+    p.pronouns = pronounsOf(target);
     auto card = people::cardFor(p, viewerFacts(viewer, target));
     for (const char* key : {"description", "currently", "title", "motto"})
         if (card.has(key))
             card.set(key, veilFor(viewer, card.string(key)));
     if (const auto* e = world_.entity(target); e && !e->npc)
+    {
         if (const auto person = people_.find(accountKey(target)); person != people_.end())
             card.add("experience", person->second.experience);
+        if (isNewcomer(accountKey(target)))
+            card.add("newcomer", true);             // "New to these parts" (doc 52, 2).
+        if (const auto person = people_.find(accountKey(target)); person != people_.end() && person->second.mentor.on)
+        {
+            card.add("mentor", person->second.mentor.available ? "available" : "busy");   // (Doc 52, 3.)
+            card.add("guided", person->second.mentor.guided);
+        }
+    }
     return card;
 }
 
@@ -208,7 +221,16 @@ std::string Game::profileContext(const std::string& npc, const std::string& play
     const auto it = profiles_.find(player);
     if (it == profiles_.end())
         return {};
-    return veilFor(npc, people::residentContext(it->second, viewerFacts(npc, player)));
+    auto p = it->second;
+    p.pronouns = pronounsOf(player);
+    return veilFor(npc, people::residentContext(p, viewerFacts(npc, player)));
+}
+
+std::string Game::pronounsOf(const std::string& id) const
+{
+    // A character is male or female (the user), and its pronouns follow; "" for one not in the world.
+    const auto* e = world_.entity(id);
+    return !e ? std::string() : e->appearance->sex == "female" ? "she/her" : "he/him";
 }
 
 void Game::tendPeople(double dt)
@@ -290,6 +312,9 @@ json::Value Game::peopleSave() const
     const auto book = starBook_.save();             // The star book (doc 51): tallies by account, the last 30 days' stars.
     root.add("starTallies", book.array("tallies"));
     root.add("stars", book.array("recent"));
+    booksSave(root);                                // Story books (doc 51, Phase 7).
+    tiesSave(root);                                 // Ties (doc 52, 4).
+    vouchesSave(root);                              // Vouches and first evenings (doc 52, 6 and 7).
     return root;
 }
 
@@ -315,5 +340,8 @@ void Game::peopleLoad(const json::Value& saved)
     book.add("tallies", saved.array("starTallies"));
     book.add("recent", saved.array("stars"));
     starBook_.load(book);
+    booksLoad(saved);
+    tiesLoad(saved);
+    vouchesLoad(saved);
 }
 } // namespace ratw::game

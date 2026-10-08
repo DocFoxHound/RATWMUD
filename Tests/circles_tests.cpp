@@ -117,6 +117,7 @@ game::Options options(const std::string& save = {})
     o.hiddenNames = false;
     o.forkSnapshots = false;
     o.oneWolfPerAccount = true;
+    o.tiesOptional = true;                      // (Ties: doc 52, tested in newcomer_tests.)
     if (!save.empty())
         o.savePath = save;
     return o;

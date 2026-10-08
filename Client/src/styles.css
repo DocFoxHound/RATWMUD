@@ -742,6 +742,8 @@ button.given { opacity: .6; }
 .known-row { border-top: 1px solid var(--line, #2c3a33); padding: 8px 0; }
 .recap { margin: 6px 0 6px 12px; padding-left: 10px; border-left: 2px solid var(--sage, #8fb39a); }
 .recap p { margin: 2px 0; }
+.story-text { max-height: 260px; overflow-y: auto; padding-right: 4px; }
+.story-text p { margin: 0 0 6px; line-height: 1.45; }
 /* With private messages and a tab a circle, the story's tabs wrap onto a second row rather than run under the map. */
 .story-head { flex-wrap: wrap; gap: 4px; min-width: 0; }
 .story-head .tabs { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
@@ -749,3 +751,48 @@ button.given { opacity: .6; }
 /* A scene's door (doc 51): how it stands, lit. */
 .scene-door .active { color: var(--gold); box-shadow: inset 0 -2px var(--gold); }
 .scene-knock, .scene-nearby { align-items: center; }
+/* Who is in a scene nearby, on hover (doc 51): portraits and names, scrolling when many. */
+.scene-nearby { position: relative; }
+.scene-who { display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 30; max-height: 220px; overflow-y: auto;
+    background: var(--panel); border: 1px solid #34443e; border-radius: 3px; padding: 6px 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+.scene-nearby:hover .scene-who, .scene-who:hover { display: block; }
+.scene-who-wolf { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.scene-who-face { width: 40px; height: 40px; background: #121b1c; border-radius: 3px; flex: none; }
+/* Scenes in the log (doc 51, §7): one's own scene's lines barred in its colour; an open scene nearby barred and tagged. */
+.post.scene-mine { border-left: 3px solid var(--scene); }
+.post.scene-other { border-left: 2px dashed var(--scene); }
+.post.party.scene-mine { border-left-color: var(--gold); }    /* (Said to one's party: its gold stays.) */
+.scene-tag { margin-left: 8px; font-size: 10px; letter-spacing: .04em; color: var(--scene, var(--muted)); text-transform: none; }
+.feed-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.scene-filter.active { color: var(--gold); box-shadow: inset 0 -2px var(--gold); }
+/* A scene's card (doc 51, Phase 5): what happened, and a fight's log blow by blow. */
+.scene-moments { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.fight-log { max-height: 220px; overflow-y: auto; border-left: 2px solid #34443e; padding-left: 8px; margin: 4px 0; }
+.fight-log .fight-line { font-size: 12px; color: var(--muted); }
+/* The bookshelf (doc 51, Phase 7): books as spines on shelves, newest at the top; coloured by shelf; gilded when done. */
+.bookshelf { max-height: 52vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 6px 2px; }
+.shelf-row { display: flex; align-items: flex-end; gap: 6px; min-height: 150px; padding: 0 8px 6px;
+    border-bottom: 6px solid #3b2f22; box-shadow: 0 4px 0 #261e15; }
+.spine { position: relative; width: 38px; height: 140px; padding: 6px 2px !important; border: 1px solid #1d2422 !important;
+    border-radius: 2px 2px 0 0 !important; background: #4a5a52; color: var(--paper); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.spine:nth-child(3n) { height: 128px; }
+.spine:nth-child(4n) { height: 146px; width: 34px; }
+.spine-title { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 11px; letter-spacing: .04em; overflow: hidden;
+    max-height: 118px; text-overflow: ellipsis; white-space: nowrap; }
+.spine-mark { font-size: 10px; color: var(--gold); }
+.spine.kind-world { background: #5a4a6e; }
+.spine.kind-chapter { background: #6e4a3e; }
+.spine.kind-circle { background: #3e5a6e; }
+.spine.kind-friend { background: #4e6a44; }
+.spine.kind-other, .spine.kind-everyone { background: #5a5a52; }
+.spine.finished { border: 2px solid var(--gold) !important; box-shadow: inset 0 0 0 2px rgba(217, 182, 123, .35); }
+.book-chapter { border-left: 2px solid #34443e; padding: 4px 0 4px 10px; margin: 6px 0; }
+.profile-veils .small.active { color: var(--gold); box-shadow: inset 0 -2px var(--gold); }
+
+/* Ties (doc 52): the creator's list of story starters, and one's tie in the profile panel. */
+.tie-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tie-current { margin-bottom: 8px; }
+.tie-box { margin: 4px 0 8px; padding-left: 10px; border-left: 2px solid var(--sage, #8fb39a); }
+.tie-box p { margin: 2px 0; }
+.tie-alert { color: var(--sage, #8fb39a); font-weight: 600; }

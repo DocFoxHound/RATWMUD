@@ -72,12 +72,34 @@ def practised(data, skills):
     return out
 
 
+def newcomer_hours():
+    """How many hours played end an account's newcomer days (Data/Social/newcomers.json, doc 52)."""
+    try:
+        return float(json.loads((ROOT / 'Data' / 'Social' / 'newcomers.json').read_text())['newcomer']['hours'])
+    except (OSError, ValueError, KeyError, TypeError):
+        return 15.0
+
+
+def tie_view(row, names):
+    """A tie for the Players tab's Ties list (doc 52): its state, starter, the two, when made and when it lapses."""
+    return {'id': row.get('id', ''), 'state': row.get('state', ''), 'starter': row.get('starter', ''), 'town': row.get('town', ''),
+            'newcomer': row.get('newcomer', ''), 'newcomerName': names.get(row.get('newcomer', ''), row.get('newcomer', '')),
+            'other': row.get('other', ''), 'otherName': names.get(row.get('other', ''), row.get('other', '')),
+            'resident': bool(row.get('resident')), 'made': row.get('made', 0) or 0, 'lapsesAt': row.get('lapsesAt', 0) or 0}
+
+
 def person_view(row):
-    """An account as a person for the Players tab (doc 50): its handle, experience and hours played; None if unknown."""
+    """An account as a person for the Players tab (doc 50): its handle, experience, hours played and whether it is
+    still new (doc 52: until it graduates, by hours played or social level); None if unknown."""
     if not isinstance(row, dict) or not row.get('account'):
         return None
+    played = float(row.get('playedSeconds', 0))
+    m = row.get('mentor') if isinstance(row.get('mentor'), dict) else {}
+    mentor = 'revoked' if m.get('revoked') else ('available' if m.get('available', True) else 'busy') if m.get('on') else ''
     return {'handle': row.get('handle', ''), 'experience': row.get('experience', 'casual'),
-            'playedHours': round(float(row.get('playedSeconds', 0)) / 3600, 1)}
+            'playedHours': round(played / 3600, 1),
+            'newcomer': not row.get('graduated', False) and played < newcomer_hours() * 3600,
+            'mentor': mentor, 'guided': int(m.get('guided', 0) or 0)}
 
 
 def account_view(row):
@@ -106,6 +128,10 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'npc.revive': 'dm',
            'layers.sync': 'dm', 'factions.sync': 'dm', 'festival.call': 'dm',
            'artwork.review': 'dm', 'treaty.decide': 'dm', 'house.decide': 'dm', 'report.decide': 'dm',
+           # Tying a player's Story book to a world storyline (Docs/Design/51-scenes-and-stars.md, Phase 7).
+           'book.storyline': 'dm',
+           # Turning an account's mentoring off until restored, and restoring it (Docs/Design/52-newcomers.md, Phase 2).
+           'mentor.revoke': 'dm', 'mentor.restore': 'dm', 'tie.end': 'dm',
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
            # Steering the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10).
            'economy.steer': 'dm', 'economy.unsteer': 'dm', 'economy.scenario': 'dm',
@@ -330,7 +356,15 @@ class DungeonMaster:
             actions = [{'id': r[0], 'kind': r[1], 'target': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
                        for r in conn.execute('''SELECT id, kind, target_id, requested_by, requested_at, status, result
                                                 FROM dm.actions ORDER BY id DESC LIMIT 50''').fetchall()]
-        return {'target': target, 'world': {'id': world[0], 'name': world[1]}, 'characters': characters, 'actions': actions}
+            # Ties (doc 52, migration 0042): newest first, with the two by name (a resident by its id).
+            ties = []
+            if conn.execute("SELECT to_regclass('game.ties')").fetchone()[0]:
+                names = {c['id']: c['name'] for c in characters}
+                rows = [row for (row,) in conn.execute('SELECT data FROM game.ties WHERE world_id = %s', (world[0],)).fetchall()]
+                ties = [tie_view(row, names) for row in sorted((r for r in rows if isinstance(r, dict)),
+                                                               key=lambda r: -float(r.get('created', 0) or 0))[:200]]
+        return {'target': target, 'world': {'id': world[0], 'name': world[1]}, 'characters': characters, 'actions': actions,
+                'ties': ties}
 
     def world_map(self, target, lean=False):
         """The world for plotting positions: the editor's project (terrain, cells, interiors). Lean, each world cell
@@ -388,6 +422,14 @@ class DungeonMaster:
                 raise DMError('Say {"op": "grant" or "revoke", "tier": "gifted" or "quickened"}, or {"op": "hold" or "release"}.')
             payload = {'op': op, 'tier': tier if op in ('grant', 'revoke') else ''}
             detail = f' — {op}' + (f" {payload['tier']}" if payload['tier'] else '') + ' (their account)'
+        elif kind == 'book.storyline':
+            # A player's Story book tied to one of the world's storylines (doc 51, Phase 7: the World shelf), or untied.
+            p = payload if isinstance(payload, dict) else {}
+            book, storyline = p.get('book', character_id), p.get('storyline', '')
+            if not isinstance(book, str) or not book.startswith('book-') or not isinstance(storyline, str) or len(storyline) > 120:
+                raise DMError('Say {"book": "book-…", "storyline": "a storyline\'s name, or empty to untie it"}.')
+            payload = {'book': book, 'storyline': storyline.strip()}
+            detail = f" — tied to {payload['storyline']}" if payload['storyline'] else ' — untied from any storyline'
         elif kind == 'character.dm':
             on = payload.get('dungeonMaster') if isinstance(payload, dict) else None
             if not isinstance(on, bool):

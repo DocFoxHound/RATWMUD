@@ -182,9 +182,14 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             // The materials, plain ones first (common, then crude, then the better), and how good they were on the whole.
             double qualities = 0;
             int used = 0;
+            // A paw lent (doc 53, 3): one batch in four, one input of its first material isn't used up.
+            bool saved = false;
+            if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay - 1)
+                saved = std::hash<std::string>{}(id + (*k)->id + std::to_string(std::int64_t(absoluteDay * 1440))) % 4 == 0;
             for (const auto& [item, count] : (*k)->in)
             {
-                int left = count;
+                int left = count - (saved ? 1 : 0);
+                saved = false;
                 for (const auto& sort : kindsHeld(*account(till), item))
                 {
                     const int took = consume(till, sort, std::min(left, stock(*account(till), sort)), "used in crafting");
@@ -269,6 +274,8 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         wait = k->seconds / 86400.;                 // premises: RatwOddJobs.cpp).
         if (const auto* job = jobOf(id))
             wait *= 1 - ImprovementPace * improvement(job->id);
+        if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay)
+            wait /= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
         break;
     }
     craftNext_[id] = absoluteDay + wait;
@@ -279,6 +286,11 @@ void Society::lendGift(const std::string& maker, double lift, double untilDay)
     auto& lent = giftLift_[maker];
     lent.first = std::min(30.0, (lent.second >= untilDay - 1 ? lent.first : 0) + lift);   // (Several Gifts help, to a point.)
     lent.second = untilDay;
+}
+
+void Society::lendPaw(const std::string& maker, double rate, double untilDay)
+{
+    pawLent_[maker] = {rate, untilDay};
 }
 
 double Society::giftLiftOf(const std::string& maker) const

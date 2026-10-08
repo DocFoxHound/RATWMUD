@@ -104,6 +104,9 @@ export class GameView {
             if (width >= 300 && width <= 1400) this.state.storyWidth = width;
             this.state.perfOverlay = localStorage.getItem('ratw.perfOverlay') === '1';
             this.state.fightTips = localStorage.getItem('ratw.fightTips') !== '0';
+            this.state.mySceneOnly = localStorage.getItem('ratw.feed.myScene') === '1';     // (Doc 51: off unless chosen.)
+            this.state.mapScenes = localStorage.getItem('ratw.map.scenes') === '1';
+            this.state.howlMarks = localStorage.getItem('ratw.map.howls') !== '0';         // (Doc 51: on unless turned off.)
             const volume = localStorage.getItem('ratw.sound');
             if (volume !== null && Number.isFinite(Number(volume))) this.state.soundVolume = Math.max(0, Math.min(1, Number(volume)));
         } catch { /* No storage here: the default width. */ }

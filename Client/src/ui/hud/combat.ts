@@ -402,7 +402,7 @@ export class CombatScreen {
                 c.odds.replaceChildren();
                 if (f.odds) {
                     c.odds.append(icon(b.mouth === 'sword' ? 'sword' : 'bite'));
-                    el('span', 'odds-hit', c.odds, `${f.odds.hit}%`);
+                    el('span', 'odds-hit', c.odds, `${f.odds.hit}%${f.odds.why ? ` · ${f.odds.why}` : ''}`);   // (Game's dodge: doc 53.)
                     el('span', 'odds-dmg', c.odds, `~${f.odds.damage}`);
                     c.odds.title = f.odds.reach ? `In reach: ${f.odds.hit}% to land a blow of about ${f.odds.damage}`
                         : `Out of reach: you would step in first. ${f.odds.hit}% from here`;
@@ -857,6 +857,9 @@ export class CombatScreen {
         this.result.className = `result-card ${ended.tone}`;
         el('div', 'result-title', this.result, ended.title);
         el('div', 'result-banner', this.result, ended.banner);
+        // What this wolf did (doc 51, Phase 5): the server's count once the fight's scene settles, every blow counted
+        // however long the fight; until then, summed from the log the page has.
+        const settled = this.review(ended), tally = settled ? obj(settled, 'tally') : null;
         if (!ended.observer) {
             const stats = el('div', 'result-stats', this.result);
             const stat = (iconName: string, n: number, words: string) => {
@@ -865,9 +868,14 @@ export class CombatScreen {
                 el('b', '', st, String(n));
                 el('span', 'muted', st, words);
             };
-            stat('bite', ended.dealt, 'dealt');
-            stat('down', ended.taken, 'taken');
+            if (tally && num(tally, 'landed')) stat('bite', Math.trunc(num(tally, 'landed')), 'landed');
+            stat('bite', tally ? Math.trunc(num(tally, 'dealt')) : ended.dealt, 'dealt');
+            stat('down', tally ? Math.trunc(num(tally, 'taken')) : ended.taken, 'taken');
+            if (tally && num(tally, 'raised')) stat('rise', Math.trunc(num(tally, 'raised')), 'raised');
+            if (tally && num(tally, 'covered')) stat('blinker', Math.trunc(num(tally, 'covered')), 'covered');
+            if (tally && num(tally, 'guarded')) stat('guard', Math.trunc(num(tally, 'guarded')), 'on guard');
         }
+        for (const m of arr(settled, 'moments').filter(isObject)) el('div', 'result-note', this.result, str(m, 'text'));
         for (const note of ended.notes) el('div', 'result-note', this.result, note);
         // The roleplay review: a Gold Star to each who played it well, one each (doc 33).
         const review = this.review(ended);

@@ -346,6 +346,9 @@ class Society
     // made by `untilDay` scores `lift` more toward a better quality. Not saved.
     void lendGift(const std::string& maker, double lift, double untilDay);
     double giftLiftOf(const std::string& maker) const;
+    // A paw lent to a maker (doc 53, 3): a player handing at a resident's workshop. Its batches begun by `untilDay` take
+    // their time divided by `rate` (the joint's), and now and then one input isn't used up. Not saved.
+    void lendPaw(const std::string& maker, double rate, double untilDay);
     // A sale: goods from `seller` to `buyer` at `price` each, paid at once (a caravan buying and selling, doc 42).
     bool sale(const std::string& seller, const std::string& buyer, const std::string& item, int quantity, std::int64_t price,
               const std::string& kind)
@@ -663,6 +666,7 @@ class Society
     // buying more from a supplier in the same community first if they are running out. Never from nothing.
     std::unordered_map<std::string, double> craftNext_;    // Maker -> the game day they next look at their shelves.
     std::unordered_map<std::string, std::pair<double, double>> giftLift_;   // Maker -> a lent Gift's lift, and until when (doc 43).
+    std::unordered_map<std::string, std::pair<double, double>> pawLent_;    // Maker -> a lent paw's rate, and until when (doc 53).
     // Maker -> the batch at work (Data/Items/crafts.json id), done at craftNext_. Not saved: after a restart the batch
     // is begun again, its materials taken only when it is done.
     std::unordered_map<std::string, std::string> craftAtWork_;

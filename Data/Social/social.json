@@ -13,5 +13,25 @@
              {"id": "welcoming", "name": "Welcoming", "newcomersOnly": true}],
     "tagWindow": 600,
     "knownForAt": 50
+  },
+  "scenes": {
+    "colours": ["#5fb3a8", "#9b88c9", "#7fb0d6", "#93ad6a", "#c98aa0", "#8796a3"],
+    "mapRange": 60
+  },
+  "howl": {
+    "range": 150, "heightLimit": 30, "indoorsHowler": 0.4, "indoorsListener": 0.5,
+    "cooldown": 600, "markSeconds": 60, "jitter": 12,
+    "chorusRange": 40, "chorusWindow": 8, "chorusExtend": 4, "chorusMost": 20, "chorusCarry": 0.25, "chorusCarryMost": 2,
+    "sneakRange": 32, "residentRange": 60, "residentsTurn": 6, "residentsSpeak": 2, "rememberedSeconds": 600,
+    "lines": {
+      "day": ["Hear that? Someone's calling.", "Howling, at this hour? Something's afoot.", "That's a wolf calling for company."],
+      "nightTown": ["Must they howl at night? Some of us sleep.", "Go to bed, the lot of you!", "Howling again. Every night, it seems."],
+      "night": ["A howl, out there in the dark.", "Someone's calling under the moon."]
+    }
+  },
+  "books": {
+    "title": 80, "chapterTitle": 60, "summary": 7000, "bookSummary": 1200, "flavour": 300,
+    "linkDays": 7, "activeDays": 30, "quietDays": 3, "modelADay": 10,
+    "openBooks": 20, "chapters": 200, "wolves": 100
   }
 }

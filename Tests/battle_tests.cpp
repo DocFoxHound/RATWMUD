@@ -1123,6 +1123,87 @@ void dueTerms()
     }
 }
 
+// A spar (doc 53, 5): ends at yield; nothing bleeds or burns; a blade strikes blunted; a hard blow leaves a minor bruise
+// at worst and never a lasting mark; it can't be joined, only watched.
+void sparring()
+{
+    {
+        World w;
+        auto& b = duelOn(w, "spar");
+        auto* bo = w.entity("player-bo");
+        auto& fb = *b.fighter("player-bo");
+        // Forty hard blows' worth of injury rolls: one minor bruise at most, nothing lasting.
+        for (int k = 0; k < 40; ++k)
+        {
+            b.seq = std::uint64_t(k);
+            w.injureOnBlow(b, fb, 40, battle::DownedBite, "player-ad");
+        }
+        int lasting = 0, acute = 0;
+        bool minor = true;
+        for (const auto& i : bo->injuries)
+            if (i.kind == "lasting")
+                ++lasting;
+            else
+            {
+                ++acute;
+                minor = minor && i.type == "bruised_ribs" && i.severity == 1;
+            }
+        expect(lasting == 0 && acute == 1 && minor, "40-damage blows in a spar: one minor bruise, nothing lasting (" + std::to_string(acute) + " acute, " +
+                                                        std::to_string(lasting) + " lasting)");
+        // The same rolls in a duel until one yields leave a lasting mark.
+        World y;
+        auto& d = duelOn(y, "");
+        for (int k = 0; k < 40; ++k)
+        {
+            d.seq = std::uint64_t(k);
+            y.injureOnBlow(d, *d.fighter("player-bo"), 40, battle::DownedBite, "player-ad");
+        }
+        bool marked = false;
+        for (const auto& i : y.entity("player-bo")->injuries)
+            marked = marked || i.kind == "lasting";
+        expect(marked, "(where a duel would leave a lasting mark)");
+        // No bleeding from a hard bite; a blade's blow halved.
+        w.hurtFighter(b, fb, 30, battle::DownedBite, "player-ad", true);
+        expect(fb.bleeding == 0 && std::abs(bo->hurt - 30) < 1e-6, "a hard bite: no bleeding");
+        w.entity("player-ad")->mouth = "sword";
+        w.hurtFighter(b, fb, 20, battle::DownedBite, "player-ad", true);
+        expect(std::abs(bo->hurt - 40) < 1e-6, "a blade strikes blunted: half: " + std::to_string(bo->hurt));
+        // Burning goes out at the turn's start without a burn.
+        fb.burning = 3;
+        const double before = bo->hurt;
+        if (test::acting(&b, "player-bo"))
+            w.battleAct("player-bo", "wait");
+        for (int i = 0; i < 3000 && !test::acting(&b, "player-bo"); ++i)
+        {
+            if (test::acting(&b, "player-ad"))
+                w.battleAct("player-ad", "wait");
+            w.tick(.1);
+        }
+        expect(fb.burning == 0 && std::abs(bo->hurt - before) < 1e-6, "nothing burns in a spar: burning " + std::to_string(fb.burning) + ", hurt " + std::to_string(bo->hurt) + " from " + std::to_string(before) + (test::acting(&b, "player-bo") ? " (his turn)" : " (not his turn)"));
+        // A third may watch, not join.
+        auto& cy = w.addPlayer("player-cy", "Cy");
+        cy.cellId = bo->cellId;
+        cy.position = {bo->position.x, bo->position.y + 1.5};
+        expect(w.observeBattle("player-cy", b.id).ok, "Cy watches");
+        expect(!w.joinBattle("player-cy", b.id, 0).ok, "but may not join a spar");
+        // At 100 it ends at yield, on his feet.
+        bo->hurt = 95;
+        w.hurtFighter(b, fb, 12, battle::DownedBite, "player-ad", true);
+        expect(fb.status == "yielded" && bo->downedLeft <= 0 && b.over, "Bo yields, on his feet: " + b.banner);
+    }
+    {
+        // Auto-decline (doc 40) declines spars too.
+        World w;
+        quiet(w);
+        auto& ad = w.addPlayer("player-ad", "Ad");
+        auto& bo = w.addPlayer("player-bo", "Bo");
+        bo.cellId = ad.cellId;
+        bo.position = {ad.position.x + 1.2, ad.position.y};
+        bo.noPvp = true;
+        expect(!w.challenge("player-ad", "player-bo", "spar").ok, "one who auto-declines declines a spar");
+    }
+}
+
 // Pace (doc 37, phase 5): no dead air, and planning one's turn while one's bar fills.
 void planningAhead()
 {
@@ -1896,6 +1977,45 @@ void devConsoleFights()
     expect(near <= 1, "and it reaches Ada up there (closest " + std::to_string(near) + ")");
 }
 
+// The end screen's figures (doc 51, Phase 5): counted where things happen, so a fight longer than its 60-line log still
+// counts every blow, and its whole log (up to 200 lines) goes with its scene.
+void fightTally()
+{
+    World w;
+    quiet(w);
+    auto& ada = wolf(w, "ada");
+    wolf(w, "bo", 1.2);
+    ada.dexterity = 90;
+    w.attack("ada", "bo", "death");
+    w.answerChallenge("bo", true);
+    test::takeGround(w, "ada");
+    auto& b = fight(w, "ada");
+    auto& bo = *w.entity("bo");
+    int guards = 0;
+    for (int i = 0; i < 4000 && !b.over && b.told.size() < 90; ++i)
+    {
+        test::playTurn(w, "ada");
+        if (w.battleOf("bo") && test::acting(w.battleOf("bo"), "bo"))
+        {
+            w.battleAct("bo", "guard");
+            ++guards;
+        }
+        bo.hurt = std::min(bo.hurt, 50.0);         // (Keep him up: a long fight.)
+        w.tick(.1);
+    }
+    expect(b.told.size() > battle::BattleLogKept && b.log.size() <= battle::BattleLogKept,
+           "a long fight: its whole log kept beside the last 60: " + std::to_string(b.told.size()));
+    int bites = 0;
+    for (const auto& line : b.told)
+        bites += line.find(" bites ") != std::string::npos || line.find(" grazes ") != std::string::npos;
+    const auto* a = b.fighter("ada");
+    const auto* d = b.fighter("bo");
+    expect(a->tally.landed == bites && bites > 0, "every blow that landed counted, past the log's 60 lines: " +
+           std::to_string(a->tally.landed) + " of " + std::to_string(bites));
+    expect(std::abs(a->tally.dealt - d->tally.taken) < 1e-6 && d->tally.taken > 0, "what she dealt is what he took");
+    expect(d->tally.guarded > 0 && d->tally.guarded <= guards, "his turns on guard counted");
+}
+
 int main()
 {
     try
@@ -1923,6 +2043,7 @@ int main()
         dodgingTheFire();
         playtestFixes();
         dueTerms();
+        sparring();
         planningAhead();
         guardAndShove();
         armourInFights();
@@ -1934,6 +2055,7 @@ int main()
         sneak::fightStart();
         sneak::sneakingInOnAResident();
         devConsoleFights();
+        fightTally();
         devConsoleTeamFight();
     }
     catch (const std::exception& e)

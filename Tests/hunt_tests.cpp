@@ -7,6 +7,7 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -168,7 +169,8 @@ void aCleanKillAndAFireKill()
 
 void aRaggedKillYieldsLess()
 {
-    // Many small blows, the hardest a tenth of its health: over many animals, less than clean kills would give.
+    // Many small blows, the hardest a tenth of its health: over many boars (game that runs dies to one bite, doc 53;
+    // boars and bears keep their health), less than clean kills would give.
     int got = 0, clean = 0;
     for (int attempt = 0; attempt < 40 && clean < 30; ++attempt)
     {
@@ -176,7 +178,8 @@ void aRaggedKillYieldsLess()
         hunter(w, "player-ada");
         for (int k = 0; k < attempt * 7; ++k)
             w.tick(1);                              // (Another moment, another hunt.)
-        setOut(w, "player-ada");
+        expect(w.startHunt("player-ada", {"boar", "boar"}).ok, "a hunt with boars");
+        w.readyToFight("player-ada", true);
         auto& b = huntOf(w, "player-ada");
         for (const auto& id : animalsIn(w, b))
         {
@@ -207,8 +210,9 @@ void gameGetsAwayAndTheHuntEnds()
     for (std::size_t i = 1; i < animals.size(); ++i)
         w.hurtFighter(b, *b.fighter(animals[i]), 500, battle::DownedBite, "player-ada", true);
     const auto& runner = animals.front();
-    w.hurtFighter(b, *b.fighter(runner), .01, battle::DownedBite, "player-ada", false);   // Hurt, it knows.
+    w.hurtFighter(b, *b.fighter(runner), .01, battle::DownedBlunt, "player-ada", false);   // Hurt, it knows (not bitten: a bite kills).
     expect(!w.animalUnaware(runner), "a hurt animal is alert");
+    expect(w.animalState(runner).empty() || w.animalState(runner) == "fleeing", "and game that runs bolts from whoever hurt it");
     for (double t = 0; t < 400 && w.battleOf("player-ada") && !w.battleOf("player-ada")->over; t += .1)
     {
         if (const auto* bb = w.battleOf("player-ada"); bb && bb->fighter("player-ada") && bb->fighter("player-ada")->acting)
@@ -221,22 +225,6 @@ void gameGetsAwayAndTheHuntEnds()
         w.tick(.1);
     for (const auto& id : animals)
         expect(!w.entity(id), "the game goes with the hunt: " + id);
-}
-
-void onlyFriendsJoin()
-{
-    auto w = wilds();
-    hunter(w, "player-ada");
-    hunter(w, "player-bo", 41.5, 30.5);
-    setOut(w, "player-ada");
-    const auto id = huntOf(w, "player-ada").id;
-    expect(!w.joinBattle("player-bo", id, 0).ok, "a stranger may not join someone's hunt");
-    w.setFriends([](const std::string& a, const std::string& b) { return (a == "player-ada" && b == "player-bo") || (a == "player-bo" && b == "player-ada"); });
-    expect(!w.joinBattle("player-bo", id, 1).ok, "nor join the game's side");
-    const auto r = w.joinBattle("player-bo", id, 0);
-    expect(r.ok, "a friend may: " + r.message);
-    expect(w.leaveHunt("player-ada").ok, "one may give up a hunt");
-    expect(!w.battleOf("player-ada") || w.battleOf("player-ada")->fighter("player-ada")->status == "fled", "and is out of it");
 }
 
 void foraging()
@@ -427,6 +415,432 @@ void noseAndMarks()
 }
 } // namespace
 
+// ------------------------------------------------------------------ Game that runs (doc 53, Phase 1)
+
+// A hunt with just this game, the hunter ready; each animal and the hunter placed (tiles in the arena).
+Battle& chosenHunt(World& w, const std::vector<std::string>& game)
+{
+    const auto started = w.startHunt("player-ada", game);
+    expect(started.ok, "a hunt with chosen game: " + started.message);
+    w.readyToFight("player-ada", true);
+    w.tick(.2);
+    return huntOf(w, "player-ada");
+}
+
+void put(Battle& b, const std::string& id, int dx, int dy)
+{
+    auto* f = b.fighter(id);
+    f->x = b.x0 + dx;
+    f->y = b.y0 + dy;
+    f->walk.clear();
+}
+
+// Ticks until it is `id`'s turn (or a while passes); true if it is.
+bool turnOf(World& w, const std::string& id, double most = 60)
+{
+    for (double t = 0; t < most; t += .1)
+    {
+        const auto* b = w.battleOf(id);
+        if (b && b->fighter(id) && b->fighter(id)->acting && b->fighter(id)->walk.empty())
+            return true;
+        w.tick(.1);
+    }
+    return false;
+}
+
+void watchingAndBolting()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    auto& b = chosenHunt(w, {"roe_deer"});
+    const auto deer = animalsIn(w, b).front();
+    const auto* s = wild::speciesById("roe_deer");
+    expect(s->flight == 6 && s->flees(), "a roe deer runs, and bolts from a wolf within 6 tiles");
+    put(b, deer, 30, 20);
+    put(b, "player-ada", 18, 20);                   // Twelve tiles off: further than its flight distance.
+    expect(w.animalState(deer) == "grazing", "unaware, it grazes");
+    expect(turnOf(w, "player-ada"), "Ada's turn");
+    b.aware[{deer, "player-ada"}] = battle::AwareKept;   // It has seen her.
+    w.battleAct("player-ada", "wait");
+    expect(w.animalState(deer) == "watching" && w.animalWatching(deer) == "player-ada", "a far wolf it sees: it watches her");
+    // Within its flight distance at the end of her turn: it bolts, its bar full.
+    expect(turnOf(w, "player-ada"), "Ada's next turn");
+    put(b, "player-ada", 26, 20);
+    b.aware[{deer, "player-ada"}] = battle::AwareKept;
+    w.battleAct("player-ada", "wait");
+    expect(w.animalState(deer) == "fleeing" && b.fighter(deer)->meter >= 100, "within its flight distance: it bolts at once");
+    const int before = std::max(std::abs(b.fighter(deer)->x - b.fighter("player-ada")->x), std::abs(b.fighter(deer)->y - b.fighter("player-ada")->y));
+    const int fromX = b.fighter(deer)->x, fromY = b.fighter(deer)->y;
+    for (double t = 0; t < 30 && (b.fighter(deer)->turnsTaken == 0 || b.fighter(deer)->acting || !b.fighter(deer)->walk.empty()); t += .1)
+        w.tick(.1);
+    const auto* d = b.fighter(deer);
+    const int ran = std::max(std::abs(d->x - fromX), std::abs(d->y - fromY));
+    const auto* ada = w.entity("player-ada");
+    const int sprint = battle::moveRange(ada->dexterity, 0, 10);
+    expect(d->status == "fled" || ran > sprint, "it runs further than her sprint: " + std::to_string(ran) + " > " + std::to_string(sprint));
+    expect(d->status == "fled" || (d->x - fromX) > 0, "directly away from her (she was to the west)");
+    expect(d->status == "fled" || std::max(std::abs(d->x - b.fighter("player-ada")->x), std::abs(d->y - b.fighter("player-ada")->y)) > before,
+           "and further from her");
+}
+
+// Throw Voice drives (doc 53, 4): a noise thrown within a deer's flight distance makes it bolt away from that tile, though
+// no wolf is near it; one further off only watches that way.
+void throwVoiceDrives()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    expect(w.giveGift("player-ada", "sound", false).ok, "Ada is Gifted: Sound");
+    auto& b = chosenHunt(w, {"roe_deer"});
+    const auto deer = animalsIn(w, b).front();
+    put(b, deer, 30, 20);
+    put(b, "player-ada", 20, 20);                   // Ten tiles off: further than its flight distance of 6.
+    expect(turnOf(w, "player-ada"), "Ada's turn");
+    w.entity("player-ada")->mana = 100;
+    const int fromX = b.fighter(deer)->x;
+    const auto thrown = w.useGift("player-ada", "throw_voice", std::to_string(b.x0 + 27) + "," + std::to_string(b.y0 + 20));
+    expect(thrown.ok && w.animalState(deer) == "fleeing", "a noise three tiles from it: it bolts: " + thrown.message);
+    for (double t = 0; t < 30 && (b.fighter(deer)->turnsTaken == 0 || b.fighter(deer)->acting || !b.fighter(deer)->walk.empty()); t += .1)
+    {
+        if (b.fighter("player-ada")->acting)
+            w.battleAct("player-ada", "wait");
+        w.tick(.1);
+    }
+    const auto* d = b.fighter(deer);
+    expect(d->status == "fled" || d->x > fromX, "away from the noise (to its west): east");
+}
+
+void aHiddenPartnerDoesntTurnIt()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    hunter(w, "player-bo", 41.5, 30.5);
+    w.setFriends([](const std::string&, const std::string&) { return true; });
+    auto& b = chosenHunt(w, {"roe_deer"});
+    const auto deer = animalsIn(w, b).front();
+    expect(w.joinBattle("player-bo", b.id, 0).ok, "Bo joins");
+    w.readyToFight("player-bo", true);
+    put(b, deer, 30, 20);
+    put(b, "player-ada", 26, 20);                   // West of it, close.
+    put(b, "player-bo", 36, 22);                    // East of it, beside its line, unseen.
+    b.aware[{deer, "player-ada"}] = battle::AwareKept;
+    b.aware[{deer, "player-bo"}] = 0;
+    expect(turnOf(w, "player-ada"), "Ada's turn");
+    b.aware[{deer, "player-ada"}] = battle::AwareKept;
+    b.aware[{deer, "player-bo"}] = 0;
+    w.battleAct("player-ada", "wait");
+    expect(w.animalState(deer) == "fleeing", "it bolts from Ada");
+    for (double t = 0; t < 30 && b.fighter(deer)->turnsTaken == 0; t += .1)
+    {
+        b.aware[{deer, "player-bo"}] = 0;
+        w.tick(.1);
+    }
+    for (double t = 0; t < 10 && !b.fighter(deer)->walk.empty(); t += .1)
+        w.tick(.1);
+    const auto* d = b.fighter(deer);
+    expect(d->status == "fled" || (d->x > 30 && std::abs(d->y - (b.y0 + 20)) <= 2), "straight on east, past Bo, whom it never noticed");
+}
+
+void calming()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    auto& b = chosenHunt(w, {"red_deer"});
+    const auto deer = animalsIn(w, b).front();
+    put(b, deer, 20, 20);
+    put(b, "player-ada", 18, 20);
+    expect(turnOf(w, "player-ada"), "Ada's turn");
+    b.aware[{deer, "player-ada"}] = battle::AwareKept;
+    w.battleAct("player-ada", "wait");
+    expect(w.animalState(deer) == "fleeing", "it bolts");
+    // She drops out of its senses: two of its turns later it calms, then goes back to grazing.
+    bool calmed = false;
+    for (double t = 0; t < 200 && b.fighter(deer)->status == "fighting" && w.animalState(deer) != "grazing"; t += .1)
+    {
+        b.aware[{deer, "player-ada"}] = 0;
+        if (const auto* me = b.fighter("player-ada"); me && me->acting && me->walk.empty())
+            w.battleAct("player-ada", "wait");
+        w.tick(.1);
+        calmed = calmed || w.animalState(deer) == "calming";
+    }
+    expect(b.fighter(deer)->status != "fighting" || (calmed && w.animalState(deer) == "grazing"), "it calms, then grazes");
+}
+
+void theDodge()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    hunter(w, "player-bo", 41.5, 30.5);
+    w.setFriends([](const std::string&, const std::string&) { return true; });
+    auto& b = chosenHunt(w, {"roe_deer", "hare"});
+    const auto ids = animalsIn(w, b);
+    const auto deer = w.animalOf(ids[0]) == "roe_deer" ? ids[0] : ids[1], hare = deer == ids[0] ? ids[1] : ids[0];
+    expect(w.joinBattle("player-bo", b.id, 0).ok, "Bo joins");
+    auto* ada = w.entity("player-ada");
+    ada->dexterity = 50;
+    const auto& me = *b.fighter("player-ada");
+    std::string why;
+    b.aware[{deer, "player-ada"}] = 0;
+    expect(std::abs(w.huntDodge(me, *b.fighter(deer), &why) - .05) < 1e-9 && why == "unaware", "grazing, unaware of her: 5%");
+    b.aware[{deer, "player-ada"}] = (battle::AwareSuspicious + battle::AwareAlert) / 2;
+    expect(std::abs(w.huntDodge(me, *b.fighter(deer)) - .325) < 1e-9, "half noticing her: between 5% and 60%");
+    b.aware[{deer, "player-ada"}] = battle::AwareKept;
+    expect(std::abs(w.huntDodge(me, *b.fighter(deer), &why) - .6) < 1e-9 && why == "watching you", "alert to her: 60%");
+    b.aware[{hare, "player-ada"}] = 0;
+    expect(std::abs(w.huntDodge(me, *b.fighter(hare)) - .10) < 1e-9, "a hare dodges five points better");
+    ada->dexterity = 70;
+    b.aware[{deer, "player-ada"}] = 0;
+    expect(std::abs(w.huntDodge(me, *b.fighter(deer)) - .02) < 1e-9, "a quick wolf: less, but never under 2%");
+}
+
+void drivenPast()
+{
+    // Driven: fleeing Bo, never having noticed Ada (crouched far off from the first): 15%; to Bo, whom it flees: 75%.
+    auto w = wilds();
+    hunter(w, "player-ada");
+    hunter(w, "player-bo", 41.5, 30.5);
+    w.setFriends([](const std::string&, const std::string&) { return true; });
+    w.entity("player-ada")->posture = "crouching";
+    w.entity("player-ada")->dexterity = 50;
+    auto& b = chosenHunt(w, {"roe_deer"});
+    const auto deer = animalsIn(w, b).front();
+    expect(w.joinBattle("player-bo", b.id, 0).ok, "Bo joins");
+    w.readyToFight("player-bo", true);
+    put(b, deer, 30, 20);
+    put(b, "player-ada", 2, 2);
+    put(b, "player-bo", 28, 20);
+    for (double t = 0; t < 60; t += .1)
+    {
+        b.aware[{deer, "player-ada"}] = 0;
+        if (const auto* bo = b.fighter("player-bo"); bo && bo->acting && bo->walk.empty())
+        {
+            b.aware[{deer, "player-bo"}] = battle::AwareKept;
+            w.battleAct("player-bo", "wait");
+            break;
+        }
+        if (const auto* ada = b.fighter("player-ada"); ada && ada->acting && ada->walk.empty())
+            w.battleAct("player-ada", "wait");
+        w.tick(.1);
+    }
+    expect(w.animalState(deer) == "fleeing", "it bolts from Bo");
+    std::string why;
+    expect(std::abs(w.huntDodge(*b.fighter("player-ada"), *b.fighter(deer), &why) - .15) < 1e-9 && why == "driven",
+           "driven past Ada, who it never saw: 15% (" + why + ")");
+    expect(std::abs(w.huntDodge(*b.fighter("player-bo"), *b.fighter(deer)) - .75) < 1e-9, "to the one it flees: 75%");
+}
+
+void oneBiteAndQuality()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    auto& b = chosenHunt(w, {"red_deer", "red_deer", "boar"});
+    std::vector<std::string> deer, boar;
+    for (const auto& id : animalsIn(w, b))
+        (w.animalOf(id) == "boar" ? boar : deer).push_back(id);
+    const auto* account = w.society().account("player-ada");
+    const auto meat = [&](int quality) {
+        return Society::stock(*w.society().account("player-ada"), quality == 3 ? items::withMaker(items::withQuality("raw_meat", 3), "player-ada")
+                                                                                : items::withQuality("raw_meat", quality));
+    };
+    (void)account;
+    // A bite's worth on a red deer that never saw her: dead, masterwork.
+    const int master = meat(3);
+    w.hurtFighter(b, *b.fighter(deer[0]), 12, battle::DownedBite, "player-ada", true);
+    expect(b.fighter(deer[0])->status == "dead", "one landed bite kills a red deer");
+    expect(meat(3) > master, "never having seen her: masterwork");
+    // One that has seen her: fine.
+    expect(turnOf(w, "player-ada"), "Ada's turn");
+    b.aware[{deer[1], "player-ada"}] = battle::AwareKept;
+    w.battleAct("player-ada", "wait");          // (It notices her at the end of her turn.)
+    const int fine = meat(2);
+    w.hurtFighter(b, *b.fighter(deer[1]), 12, battle::DownedBite, "player-ada", true);
+    expect(b.fighter(deer[1])->status == "dead" && meat(2) > fine, "one that saw her: fine, not masterwork");
+    // A boar keeps its health.
+    w.hurtFighter(b, *b.fighter(boar[0]), 12, battle::DownedBite, "player-ada", true);
+    expect(b.fighter(boar[0])->status == "fighting", "a boar takes more than one bite");
+}
+
+void aDodgeSendsItOff()
+{
+    // A watching deer, bitten at from beside it: killed, or it dodges and flees the biter. (A new hunter each time,
+    // so each bite's roll is its own.)
+    bool dodged = false;
+    int bites = 0;
+    for (int attempt = 0; attempt < 40 && !dodged; ++attempt)
+    {
+        auto w = wilds();
+        const std::string id = "player-a" + std::to_string(attempt);
+        hunter(w, id);
+        const auto started = w.startHunt(id, {"roe_deer"});
+        expect(started.ok, "a hunt: " + started.message);
+        w.readyToFight(id, true);
+        w.tick(.2);
+        auto& b = huntOf(w, id);
+        const auto deer = animalsIn(w, b).front();
+        if (!turnOf(w, id) || b.fighter(deer)->status != "fighting")
+            continue;
+        put(b, deer, 30, 20);
+        put(b, id, 29, 20);
+        b.aware[{deer, id}] = battle::AwareKept;
+        w.battleAct(id, "bite", deer);
+        ++bites;
+        if (b.fighter(deer)->status == "fighting")
+        {
+            dodged = true;
+            expect(w.animalState(deer) == "fleeing", "a dodge sends it fleeing, from the biter");
+            expect(std::abs(w.huntDodge(*b.fighter(id), *b.fighter(deer)) - .75) < 1e-9, "and it flees the biter now");
+        }
+    }
+    expect(dodged, "some bites are dodged (" + std::to_string(bites) + " tried)");
+}
+
+void lyingInWait()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    auto& b = chosenHunt(w, {"roe_deer"});
+    const auto deer = animalsIn(w, b).front();
+    put(b, deer, 40, 10);
+    put(b, "player-ada", 30, 21);
+    b.aware[{deer, "player-ada"}] = 0;
+    expect(turnOf(w, "player-ada"), "Ada's turn");
+    w.battleAct("player-ada", "stalk");
+    w.battleAct("player-ada", "wait");
+    expect(w.huntWaiting("player-ada"), "crouched at the end of her turn without biting: she lies in wait");
+    // The deer steps past her.
+    auto* d = b.fighter(deer);
+    d->x = b.x0 + 28, d->y = b.y0 + 20;
+    d->walk = {{b.x0 + 29, b.y0 + 20}, {b.x0 + 30, b.y0 + 20}, {b.x0 + 31, b.y0 + 20}};
+    d->stepAt = 0;
+    w.tick(.05);
+    bool sprang = false;
+    for (const auto& line : b.log)
+        sprang = sprang || line.text.find("springs from hiding") != std::string::npos;
+    expect(sprang && !w.huntWaiting("player-ada"), "she springs as it passes");
+    expect(d->status == "dead" || d->walk.empty(), "it dies, or swerves and stops");
+}
+
+void whoMayJoin()
+{
+    // Doc 53, 1.4: anyone may join while the hunt's starter allows hunting partners; only the starter's setting counts;
+    // a closed hunt may be asked into, or a wolf near invited; never one a hunter has blocked; never the game's side.
+    auto w = wilds();
+    hunter(w, "player-ada");
+    hunter(w, "player-bo", 41.5, 30.5);
+    hunter(w, "player-cy", 42.5, 30.5);
+    hunter(w, "player-di", 43.5, 30.5);
+    hunter(w, "player-ed", 44.5, 30.5);
+    setOut(w, "player-ada");
+    const auto id = huntOf(w, "player-ada").id;
+    expect(w.huntStarterOf(id) == "player-ada", "Ada started it");
+    expect(!w.joinBattle("player-bo", id, 1).ok, "never the game's side");
+    expect(w.mayJoinHunt(huntOf(w, "player-ada"), "player-bo") && w.joinBattle("player-bo", id, 0).ok, "open: a stranger joins");
+    // Bo turns his own setting off: it isn't his hunt, so it stays open.
+    expect(w.setPartners("player-bo", "hunt", false).ok && w.entity("player-bo")->noHuntPartners, "Bo: no hunting partners");
+    expect(w.mayJoinHunt(huntOf(w, "player-ada"), "player-cy"), "only the starter's setting counts (the user)");
+    // Ada turns hers off: closed to strangers.
+    w.setPartners("player-ada", "hunt", false);
+    expect(!w.mayJoinHunt(huntOf(w, "player-ada"), "player-cy") && !w.joinBattle("player-cy", id, 0).ok, "the starter closes it");
+    expect(w.mayAskHunt(huntOf(w, "player-ada"), "player-cy"), "Cy may ask");
+    expect(w.askToJoinHunt("player-cy", id).ok && !w.askToJoinHunt("player-cy", id).ok, "Cy asks, once");
+    expect(w.huntAsks().size() == 1 && w.huntAsks().front().from == "player-cy", "the ask waits");
+    const auto let = w.answerHuntAsk("player-ada", "player-cy", true);
+    expect(let.ok && w.battleOf("player-cy") && w.battleOf("player-cy")->id == id, "let in, Cy joins: " + let.message);
+    // Asked and refused; then a wolf near invited.
+    expect(w.askToJoinHunt("player-di", id).ok && w.answerHuntAsk("player-bo", "player-di", false).ok && !w.battleOf("player-di"),
+           "Not now: Di stays out");
+    expect(w.inviteToHunt("player-ada", "player-di").ok && w.mayJoinHunt(huntOf(w, "player-ada"), "player-di") && w.joinBattle("player-di", id, 0).ok,
+           "invited: Di joins");
+    // Blocked by a hunter: neither joins nor asks, even if the hunt were open.
+    w.setBlocked([](const std::string& a, const std::string& b) { return (a == "player-ada" && b == "player-ed") || (a == "player-ed" && b == "player-ada"); });
+    w.setPartners("player-ada", "hunt", true);
+    expect(!w.mayJoinHunt(huntOf(w, "player-ada"), "player-ed") && !w.mayAskHunt(huntOf(w, "player-ada"), "player-ed"), "a blocked wolf is shut out");
+    expect(w.leaveHunt("player-ada").ok, "one may give up a hunt");
+    expect(!w.battleOf("player-ada") || w.battleOf("player-ada")->fighter("player-ada")->status == "fled", "and is out of it");
+}
+
+void sharing()
+{
+    // Doc 53, 1.5: a kill shared equally among those taking part, nothing made or lost; one idle gets nothing; the one
+    // who made the kill always shares; Give my share moves it.
+    auto w = wilds();
+    hunter(w, "player-ada");
+    hunter(w, "player-bo", 41.5, 30.5);
+    hunter(w, "player-cy", 42.5, 30.5);
+    auto& b = chosenHunt(w, {"red_deer", "red_deer"});
+    expect(w.joinBattle("player-bo", b.id, 0).ok && w.joinBattle("player-cy", b.id, 0).ok, "Bo and Cy join");
+    w.readyToFight("player-bo", true);
+    w.readyToFight("player-cy", true);
+    // Ada and Bo each take a turn that does something (they crouch); Cy idles.
+    for (const auto* who : {"player-ada", "player-bo"})
+    {
+        expect(turnOf(w, who), std::string(who) + "'s turn");
+        w.battleAct(who, "stalk");
+        w.battleAct(who, "wait");
+    }
+    const auto deer = animalsIn(w, b);
+    const auto meat = [&](const std::string& id) { return held(w, id, "raw_meat"); };
+    const int adaBefore = meat("player-ada"), boBefore = meat("player-bo"), cyBefore = meat("player-cy");
+    w.hurtFighter(b, *b.fighter(deer[0]), 12, battle::DownedBite, "player-ada", true);
+    const int adaGot = meat("player-ada") - adaBefore, boGot = meat("player-bo") - boBefore, cyGot = meat("player-cy") - cyBefore;
+    expect(adaGot + boGot == 8 && std::abs(adaGot - boGot) <= 1, "8 raw meat split between Ada and Bo, no more, no less: " +
+                                                                     std::to_string(adaGot) + " and " + std::to_string(boGot));
+    expect(cyGot == 0, "Cy, idle, gets nothing");
+    const int hides = held(w, "player-ada", "hide") + held(w, "player-bo", "hide");
+    expect(hides == 1, "the one hide to one of them, by chance");
+    // Give my share: Bo's to Ada, to carry.
+    const auto* share = w.huntShareOf("player-bo");
+    expect(share && std::find(share->hunters.begin(), share->hunters.end(), "player-ada") != share->hunters.end(), "Bo has a share to give, to Ada");
+    expect(w.giveHuntShare("player-bo", "player-cy").ok == false, "not to one who didn't share it");
+    const int adaNow = meat("player-ada");
+    expect(w.giveHuntShare("player-bo", "player-ada").ok && meat("player-bo") == boBefore && meat("player-ada") == adaNow + boGot,
+           "Bo's share is Ada's to carry");
+}
+
+void moreGameAndCompanions()
+{
+    // Doc 53, 1.6: a hunter joining brings game in with them (half the expected count, by chance: some of the time).
+    int brought = 0;
+    for (int attempt = 0; attempt < 12 && brought == 0; ++attempt)
+    {
+        auto w = wilds();
+        hunter(w, "player-ada");
+        const std::string joiner = "player-j" + std::to_string(attempt);
+        hunter(w, joiner, 41.5, 30.5);
+        setOut(w, "player-ada");
+        auto& b = huntOf(w, "player-ada");
+        const auto before = animalsIn(w, b).size();
+        expect(w.joinBattle(joiner, b.id, 0).ok, "a joiner");
+        brought += int(animalsIn(w, b).size() - before);
+    }
+    expect(brought > 0, "a joiner brings game in");
+    // Doc 53, 1.8: a companion lies in wait beside its stalking leader, instead of charging the game.
+    auto w = wilds();
+    hunter(w, "player-ada");
+    auto& fern = w.addPlayer("npc-fern", "Fern");
+    fern.npc = true;
+    fern.leaderId = "player-ada";
+    fern.cellId = "wilds";
+    fern.position = {41.5, 30.5};
+    auto& b = chosenHunt(w, {"roe_deer"});
+    expect(w.joinBattle("npc-fern", b.id, 0).ok, "Fern comes along");
+    const auto deer = animalsIn(w, b).front();
+    put(b, deer, 40, 20);
+    put(b, "player-ada", 20, 20);
+    put(b, "npc-fern", 21, 21);
+    b.fighter("player-ada")->stalking = true;
+    for (double t = 0; t < 60 && b.fighter("npc-fern")->turnsTaken == 0; t += .1)
+    {
+        if (const auto* me = b.fighter("player-ada"); me && me->acting && me->walk.empty())
+            w.battleAct("player-ada", "wait");
+        w.tick(.1);
+    }
+    for (double t = 0; t < 10 && b.fighter("npc-fern")->acting; t += .1)
+        w.tick(.1);
+    expect(w.huntWaiting("npc-fern") && b.fighter("npc-fern")->stalking, "Fern crouched and lies in wait");
+    expect(std::max(std::abs(b.fighter("npc-fern")->x - b.fighter("player-ada")->x), std::abs(b.fighter("npc-fern")->y - b.fighter("player-ada")->y)) <= 3,
+           "beside her stalking leader, not charging off at the deer");
+}
+
 int main()
 {
     try
@@ -436,7 +850,18 @@ int main()
         aCleanKillAndAFireKill();
         aRaggedKillYieldsLess();
         gameGetsAwayAndTheHuntEnds();
-        onlyFriendsJoin();
+        whoMayJoin();
+        sharing();
+        moreGameAndCompanions();
+        watchingAndBolting();
+        throwVoiceDrives();
+        aHiddenPartnerDoesntTurnIt();
+        calming();
+        theDodge();
+        drivenPast();
+        oneBiteAndQuality();
+        aDodgeSendsItOff();
+        lyingInWait();
         foraging();
         tracks();
         gearWearsAndMends();

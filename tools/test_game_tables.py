@@ -63,7 +63,8 @@ def rich_payload():
                                 'invited': [], 'nights': []}],
                    'starTallies': [{'account': 'ada', 'total': 12, 'givers': ['bea']}],
                    'stars': [{'id': 'star-1', 'kind': 'gold', 'giverAccount': 'bea', 'recipientAccount': 'ada', 'at': 5,
-                              'counted': True}]},
+                              'counted': True}],
+                   'books': [{'id': 'book-1', 'title': 'The Drowned Bell', 'keeper': 'player-ada', 'state': 'open', 'chapters': []}]},
         'text with escapes': 'line\nbreak "quoted" \\ back ☃',
     }
 
@@ -130,6 +131,7 @@ class GameTableTests(unittest.TestCase):
         self.assertEqual(self.game.execute("SELECT name FROM game.circles").fetchone()[0], 'Moot Night')
         self.assertEqual(self.game.execute("SELECT total FROM game.star_tallies").fetchone()[0], 12)
         self.assertEqual(self.game.execute("SELECT recipient_account, giver_account FROM game.stars").fetchone(), ('ada', 'bea'))
+        self.assertEqual(self.game.execute("SELECT title, state FROM game.story_books").fetchone(), ('The Drowned Bell', 'open'))
         stored = json.loads(self.game.execute("SELECT payload FROM game.checkpoints").fetchone()[0])
         for gone in ('players', 'npcs', 'mapMemories', 'ledger'):
             self.assertNotIn(gone, stored, 'lists live in their tables, not the checkpoint row')

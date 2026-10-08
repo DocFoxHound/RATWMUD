@@ -175,7 +175,19 @@ class DungeonMasterTests(Fixture):
             owner.execute('''INSERT INTO game.profiles (world_id, key, position, data) SELECT id, 'player-ada', 0, %s FROM world.worlds''',
                           (json.dumps({'currently': 'mending nets', 'status': 'lfs'}),))
         ada = self.dm.players('prod')['characters'][0]
-        self.assertEqual(ada['person'], {'handle': 'Grey Fox', 'experience': 'guide', 'playedHours': 1.5}, 'the handle and hours played')
+        self.assertEqual(ada['person'], {'handle': 'Grey Fox', 'experience': 'guide', 'playedHours': 1.5, 'newcomer': True,
+                                         'mentor': '', 'guided': 0}, 'the handle, hours played, and still a newcomer (doc 52)')
+        self.assertEqual(('busy', 3), (lambda p: (p['mentor'], p['guided']))(
+            D.person_view({'account': 'x', 'mentor': {'on': True, 'available': False, 'guided': 3}})), 'a busy mentor who guided 3')
+        self.assertEqual('revoked', D.person_view({'account': 'x', 'mentor': {'revoked': True}})['mentor'], 'revoked by a DM')
+        self.assertEqual('dm', D.ACTIONS['mentor.revoke'], 'revoking and restoring are for Dungeon Masters')
+        tie = D.tie_view({'id': 'tie-1', 'state': 'active', 'starter': 'river', 'newcomer': 'w1', 'other': 'fen', 'resident': True,
+                          'made': 5}, {'w1': 'Nell'})
+        self.assertEqual(('Nell', 'fen', True, 'active'), (tie['newcomerName'], tie['otherName'], tie['resident'], tie['state']),
+                         'a tie with the newcomer by name, a resident by its id')
+        self.assertEqual('dm', D.ACTIONS['tie.end'], 'ending a tie is for Dungeon Masters')
+        self.assertFalse(D.person_view({'account': 'x', 'graduated': True})['newcomer'], 'graduated: no longer new')
+        self.assertFalse(D.person_view({'account': 'x', 'playedSeconds': 15 * 3600})['newcomer'], '15 hours: no longer new')
         self.assertEqual((ada['profile']['currently'], ada['profile']['status']), ('mending nets', 'lfs'), 'and the profile, to read')
         # Circles (doc 50, migration 0039): its account's circles, members by handle.
         self.assertEqual(ada['circles'], [], 'no circles yet')
@@ -362,6 +374,11 @@ class DungeonMasterTests(Fixture):
         master = self.sign_in('dm-master')
         with self.assertRaises(D.DMError):
             self.dm.request(master, 'prod', 'character.explode', 'player-ada')
+        # A Story book tied to a world storyline (doc 51, Phase 7): checked, then queued for the game.
+        with self.assertRaises(D.DMError):
+            self.dm.request(master, 'prod', 'book.storyline', 'player-ada', payload={'book': 'nope', 'storyline': 'x'})
+        queued = self.dm.request(master, 'prod', 'book.storyline', 'player-ada', payload={'book': 'book-1', 'storyline': 'The Bandit Winter'})
+        self.assertEqual(queued['status'], 'queued')
         with self.assertRaises(D.DMError):
             self.dm.request(master, 'prod', 'character.kill', 'nobody')
 

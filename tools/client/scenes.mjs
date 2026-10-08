@@ -2,7 +2,8 @@
 // what each still needs to be paid, then that both are on track; a quiet scene's countdown and two scenes at once are
 // shown from a snapshot set by hand (fifteen real minutes are too long to wait); Ash steps out with LEAVE and is paid;
 // Bo is then in her Known wolves with a recap of the scene (doc 50, Phase 4), and on his card under YOU AND THEM; Bo
-// makes his scene knock to join, Cy knocks, and he lets her in (doc 51, Phase 3).
+// makes his scene knock to join, Cy knocks, and he lets her in (doc 51, Phase 3); their lines are barred in the
+// scene's colour, MY SCENE ONLY takes them out of a stranger's log, and opened, the scene shows on her map (Phase 4).
 // Screenshots go to artifacts/screenshots/scenes/.
 //
 //   node tools/client/scenes.mjs [OUT]         (RATW_SERVER: the server binary; RATW_WEB: the built page, Client/dist by default)
@@ -103,6 +104,13 @@ try {
     await ash.evaluate(`[...document.querySelectorAll('.scene-row button')].find(b => b.textContent === 'LEAVE')?.click()`);
     await ash.waitFor(`${S}.posts.some(p => /You step out of the scene: \\+20 social/.test(p.text))`, 10);
     check(true, 'Ash steps out and is paid at once');
+    // The scene's card (doc 51, Phase 5): where, how long, who was in it, what happened; no word or turn counts.
+    check(await ash.waitFor(`/THE SCENE AT .* · \\+20 SOCIAL/.test(document.querySelector('.scene-ended')?.innerText ?? '') &&
+        /With /.test(document.querySelector('.scene-ended')?.innerText ?? '') &&
+        /shared a scene for the first time/.test(document.querySelector('.scene-ended')?.innerText ?? '')`, 10).then(() => true).catch(() => false),
+        'her card: the scene at the place, its pay, who was in it, a first scene together');
+    check(!/turns|words/.test(await ash.evaluate(`document.querySelector('.scene-ended')?.innerText ?? ''`)), 'and no word or turn counts');
+    await ash.screenshot(`${OUT}/4b-the-scene-card-ash.png`);
     await ash.waitFor(`document.querySelector('.scene-row') === null`, 10);
     check(/PARTY SCENE/.test(await bar(bo)), 'Bo is still in the scene');
     await ash.screenshot(`${OUT}/4-left-ash.png`);
@@ -129,8 +137,15 @@ try {
     check(await bo.waitFor(`document.querySelector('.scene-door [data-openness="knock"]')?.classList.contains('active')`, 10)
         .then(() => true).catch(() => false), 'Bo makes his scene knock to join');
     check(await cy.waitFor(`document.querySelector('.scene-bar')?.offsetParent !== null && /A SCENE HERE · KNOCK TO JOIN/.test(document.querySelector('.scene-bar')?.innerText ?? '')`, 10)
-        .then(() => true).catch(() => false), 'Cy sees a scene here, knock to join, with how many wolves and no names');
+        .then(() => true).catch(() => false), 'Cy sees a scene here, knock to join, with how many wolves');
+    // Pointing at it shows who is in it: each wolf's portrait and name as Cy knows them (the user, 2026-10-07).
+    const box = await cy.evaluate(`(() => { const r = document.querySelector('.scene-nearby').getBoundingClientRect(); return [r.left + 20, r.top + 8]; })()`);
+    await cy.hover(box[0], box[1]);
+    check(await cy.waitFor(`getComputedStyle(document.querySelector('.scene-who')).display !== 'none' &&
+        document.querySelectorAll('.scene-who-wolf').length === 1 && document.querySelector('.scene-who-wolf').innerText.trim().length > 0`, 10)
+        .then(() => true).catch(() => false), 'pointing at it shows who is in it, with a portrait and a name');
     await cy.screenshot(`${OUT}/8-a-scene-here-cy.png`);
+    await cy.hover(5, 995);
     await cy.evaluate(`[...document.querySelectorAll('.scene-nearby button')].find(b => b.textContent === 'KNOCK').click()`);
     check(await bo.waitFor(`/is knocking/.test(document.querySelector('.scene-knock')?.innerText ?? '')`, 10)
         .then(() => true).catch(() => false), 'Bo sees her knocking, with LET IN and NOT NOW');
@@ -141,6 +156,41 @@ try {
     await say(cy, '"Thank you. The rain has been at me since the ford, and the fire looked too good to pass by."');
     check(await cy.waitFor(`/PARTY SCENE|IN A SCENE/.test(document.querySelector('.scene-bar')?.innerText ?? '')`, 10)
         .then(() => true).catch(() => false), 'her line counts: she is in the scene');
+    // Scenes in the log and on the map (doc 51, Phase 4).
+    await sleep(2200);
+    await say(bo, '"Sit by the fire, then. The innkeeper will bring you something warm, if you ask him nicely."');
+    check(await cy.waitFor(`[...document.querySelectorAll('.post.scene-mine')].some(r => r.innerText.includes('innkeeper will bring'))`, 10)
+        .then(() => true).catch(() => false), "Bo's line is barred in their scene's colour for Cy");
+    await cy.screenshot(`${OUT}/10-scene-lines-cy.png`);
+    // Di, a stranger out of it: MY SCENE ONLY hides it, and shows it again.
+    const di = await open('di');
+    await sleep(2200);
+    await say(bo, '"And mind the cat by the hearth; she bites anyone who takes her place by the fire."');
+    check(await di.waitFor(`[...document.querySelectorAll('.post')].some(r => r.innerText.includes('mind the cat'))`, 10)
+        .then(() => true).catch(() => false), 'Di, nearby, hears it');
+    await di.evaluate(`document.querySelector('.scene-filter').click()`);
+    check(await di.waitFor(`![...document.querySelectorAll('.post')].some(r => r.innerText.includes('mind the cat')) &&
+        document.querySelector('.scene-filter').classList.contains('active')`, 10).then(() => true).catch(() => false),
+        'MY SCENE ONLY: a scene she is not in leaves her log');
+    await di.screenshot(`${OUT}/11-my-scene-only-di.png`);
+    await di.evaluate(`document.querySelector('.scene-filter').click()`);
+    check(await di.waitFor(`[...document.querySelectorAll('.post')].some(r => r.innerText.includes('mind the cat'))`, 10)
+        .then(() => true).catch(() => false), 'off again, it is back');
+    // Open, it shows on Di's map once she turns scenes on in Settings.
+    let opened = false;
+    for (let i = 0; i < 40 && !opened; ++i) {
+        await bo.evaluate(`document.querySelector('.scene-door [data-openness="open"]')?.click()`);
+        await sleep(1000);
+        opened = await bo.evaluate(`!!document.querySelector('.scene-door [data-openness="open"]')?.classList.contains('active')`);
+    }
+    check(opened, 'Bo opens the scene (once 30 s have passed since the last change)');
+    check(await di.waitFor(`(${S}.snapshot?.self?.social?.openNear ?? []).length === 1`, 10).then(() => true).catch(() => false),
+        'an open scene near Di, for her map');
+    await act(di, 'map_scenes');
+    check(await di.evaluate(`${S}.mapScenes`), 'she turns scenes on the map on');
+    await sleep(800);
+    await di.screenshot(`${OUT}/12-a-scene-on-the-map-di.png`);
+    await act(di, 'map_scenes');
     const errors = [...ash.console, ...bo.console].filter(l => /EXCEPTION|error/i.test(l));
     check(!errors.length, `page errors: ${errors.length ? errors.join(' | ') : 'none'}`);
 } catch (e) {

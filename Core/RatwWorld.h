@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include "RatwTogether.h"
+
 #include <functional>
 #include <iosfwd>
 #include <limits>
@@ -31,6 +33,10 @@
 namespace ratw::items
 {
 struct Item;
+}
+namespace ratw::wild
+{
+struct Species;
 }
 
 namespace ratw
@@ -256,6 +262,15 @@ struct Entity
     // All saved. `lingering`: the player has gone but their body stays in a fight a while.
     std::string mouth;
     double wardenAttention = 0;     // Quickened magic others saw (doc 43): for the Wardens, later. Saved.
+    // Keeping the secret (doc 53, 4): Quickened wolves whose magic this wolf saw as a partner (the wolf to the day last
+    // seen), those it has told the Wardens of (once each), and the day it last vouched for one. Saved; IDs only.
+    std::map<std::string, double> witnessed;
+    std::set<std::string> toldWardens;
+    double vouchedDay = -1e9;
+    // Vouching's risk (doc 53, 4; doc 52's shape): whom it last vouched for, and its standing with the Wardens, which
+    // falls if that wolf draws their attention again within the month. At -2 they no longer take its word. Saved.
+    std::string vouchedFor;
+    double wardenStanding = 0;
     // Work Gifts in use (doc 43), until these world seconds: Lighten Load (carries half again), Carry (speech carries
     // as a yell). Not saved: they are short.
     double lightLoadUntil = 0, carryVoiceUntil = 0;
@@ -268,6 +283,8 @@ struct Entity
     std::map<std::string, double> wear;
     double scentMaskedUntil = 0;    // Masking oil (doc 35): its scent, and what it carries, hidden until then (world seconds). Saved.
     bool noPvp = false;             // Auto-decline fights with players (doc 40's fight start): no one may challenge them. Saved.
+    // Doc 53: "Allow hunting partners" and "Allow work partners" off (on by default). Saved.
+    bool noHuntPartners = false, noWorkPartners = false;
     std::vector<std::pair<std::string, std::string>> jewellery;     // (spot, item)
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
@@ -538,6 +555,13 @@ class World
   public:
     World();
     Entity& addPlayer(const std::string& id, const std::string& name);
+    // A new player placed at a given cell and spot instead of the spawn (doc 52's start towns).
+    Entity& addPlayer(const std::string& id, const std::string& name, const std::string& cell, Vec2 position);
+    // Where a new character arrives in a town (doc 52, 1): the spawn for the town that holds it; else beside the town's
+    // market merchant; else `cell` and `position` (the data file's) where someone could stand there. False if none
+    // will do, or there is no such town: then the spawn.
+    bool arrivalIn(const std::string& townId, std::string& cellOut, Vec2& positionOut, const std::string& cell = {},
+                   Vec2 position = {});
     bool removePlayer(const std::string& id);
     Entity* entity(const std::string& id);
     const Entity* entity(const std::string& id) const;
@@ -619,7 +643,82 @@ class World
         std::string huntWhy, forageWhat;            // Why not; what is to be foraged here ("the trees, the grass").
     };
     WildHere wildAround(const std::string& player) const;
-    Result startHunt(const std::string& player);
+    // `only`: the game to find (species ids), for the Dev Console's /hunt and tests; empty, what the ground gives.
+    Result startHunt(const std::string& player, const std::vector<std::string>& only = {});
+    // Hunting together (Docs/Design/53-hunting-and-working-together.md, Phase 2). Anyone may join a hunt while its
+    // starter allows hunting partners (the user: only the starter's setting counts); its party, Chapter and companions
+    // always; never one blocked by a hunter. A closed hunt may be asked into (30 s for a hunter to let them in), and a
+    // hunter may invite a wolf within 20 tiles. A kill is shared equally among those taking part.
+    struct HuntAsk
+    {
+        std::string battle, from;
+        double until = 0;
+    };
+    struct HuntShare                                // One's share of one's last hunt, for Give my share (the end card).
+    {
+        std::string battle;
+        std::map<std::string, int> goods;
+        std::vector<std::string> hunters;           // The others who took part, to give it to.
+        double until = 0;
+    };
+    bool mayJoinHunt(const Battle& b, const std::string& id) const;
+    bool mayAskHunt(const Battle& b, const std::string& id) const;
+    Result askToJoinHunt(const std::string& id, const std::string& battleId);
+    Result answerHuntAsk(const std::string& hunter, const std::string& asker, bool letIn);
+    Result inviteToHunt(const std::string& hunter, const std::string& target);
+    Result giveHuntShare(const std::string& from, const std::string& to);
+    Result setPartners(const std::string& id, const std::string& kind, bool on);
+    void setBlocked(std::function<bool(const std::string& a, const std::string& b)> blocked) { blocked_ = std::move(blocked); }
+    // Party mates (doc 32), wired by Game: partners who see a Quickened wolf's magic keep its secret (doc 53, 4).
+    void setPartnered(std::function<bool(const std::string& a, const std::string& b)> partnered) { partnered_ = std::move(partnered); }
+    bool partners(const std::string& a, const std::string& b) const;
+    // At a resident of the Warden Order (Game checks who): tell the Wardens of a Quickened wolf one saw (+3 attention, once
+    // a witness and wolf), or vouch for it (-1, once a game month a witness).
+    Result tellWardens(const std::string& witness, const std::string& wolf);
+    Result vouchToWardens(const std::string& witness, const std::string& wolf);
+    // A Quickened wolf's Warden attention rose: whoever vouched for it within the month loses standing with them.
+    void attentionRose(const std::string& wolf);
+    const std::vector<HuntAsk>& huntAsks() const { return huntAsks_; }
+    std::vector<std::string> huntNearby(const std::string& hunter) const;
+    std::string huntStarterOf(const std::string& battleId) const;
+    int huntTaken(const Battle& b) const;
+    const HuntShare* huntShareOf(const std::string& id) const;
+    bool huntInvited(const std::string& battleId, const std::string& id) const;
+    // Working together (doc 53, 2; RatwTogether.cpp): a wolf at work (foraging lately, or in a joint) may be lent a paw
+    // by one within 6 tiles while its Allow work partners is on, or when it asked them; never between a blocked pair.
+    // Each member works at the joint's rate (together::rate) and the goods are shared exactly.
+    Result lendAPaw(const std::string& helper, const std::string& worker, const std::string& role = {});
+    Result askToLend(const std::string& worker, const std::string& target);
+    Result leaveWork(const std::string& id);
+    bool atWork(const std::string& id) const;
+    bool mayLend(const std::string& helper, const std::string& worker) const;
+    bool askedToLend(const std::string& worker, const std::string& helper) const;
+    const together::JointWork* jointOf(const std::string& id) const;
+    double workRate(const std::string& id) const;
+    double workLabour(const std::string& jointId) const;
+    const std::map<std::string, together::JointWork>& joints() const { return joints_; }
+    // Farm work (doc 53, 2.6): the work a resident farmer is at in its post this season (the harvest in autumn,
+    // threshing in winter), or null; a player near starts or joins it beside the farmer; each beat (a spell) a player
+    // who was there brings in its rate times a share of a spell's yield for the farm and is paid the town's hand wage a
+    // spell times its rate, from the farm's till. No work when the till can't pay or the barn is full.
+    const together::Activity* residentWorkAt(const std::string& farmer) const;
+    Result helpAtWork(const std::string& player, const std::string& farmer);
+    // A player did something (moved, spoke, any command): farm work, paid by the beat, needs a hand who is there.
+    void noteActive(const std::string& player);
+    // Gifted and Quickened at work (doc 53, 4): a work Gift the joint's activity takes (Winnow and Dry at threshing)
+    // lifts it for a beat, on an angle of its own; Keep watch, in a joint in the wild, is an angle any wolf may take
+    // (a Quickened wolf's): a creeping bandit must get past the watcher too, and it can't be taken unawares.
+    bool jointTakesGift(const std::string& id, const std::string& ability) const;
+    Result giftOnJoint(const std::string& id, const std::string& ability);
+    Result keepWatch(const std::string& id, bool on);
+    bool keepingWatch(const std::string& id) const;
+    // Talker and doer (doc 53, 4): a resident a wolf talks to faces it until `seconds` after the last line, standing
+    // still; so a partner behind the resident goes unseen (a theft's watchfulness, doc 40's cone).
+    void faceTalker(const std::string& resident, const std::string& talker, double seconds = 20);
+    std::string facingTalker(const std::string& resident) const;
+    void tendTalkers();
+    // The wolves keeping watch over `id` (in its joint), itself first if it is one.
+    std::vector<std::string> watchersOver(const std::string& id) const;
     Result forage(const std::string& player);
     Result leaveHunt(const std::string& player);     // Gives up the hunt, wherever one stands in it.
     // Wear and tear (doc 35; RatwDurability.cpp): how much use a good takes (0: it doesn't wear), how much is left of
@@ -660,6 +759,12 @@ class World
     // An animal in a hunt: its species ("" for anyone else), and whether it has yet to notice a hunter (doc 40's seam).
     std::string animalOf(const std::string& id) const;
     bool animalUnaware(const std::string& id) const;
+    // Doc 53: an animal's state ("grazing", "watching", "fleeing", "calming"; "" for none), whom it watches, and the
+    // chance it dodges a bite from this wolf (or −1 for one that doesn't run: the fight's own odds), with why in words.
+    std::string animalState(const std::string& id) const;
+    std::string animalWatching(const std::string& id) const;
+    double huntDodge(const BattleFighter& biter, const BattleFighter& animal, std::string* why = nullptr) const;
+    bool huntWaiting(const std::string& hunter) const;
     // Who counts as a hunter's friend, to join their hunt (the game knows parties and Chapters).
     void setFriends(std::function<bool(const std::string& a, const std::string& b)> friends) { friends_ = std::move(friends); }
     // How hard a cell has been hunted lately: kills, fading over the days (doc 41).
@@ -735,6 +840,13 @@ class World
     static bool testCamp(const std::string& camp) { return camp.rfind("camp_dmtest_", 0) == 0; }
     // A challenge between players, on its terms ("blood", "yield" or "death"; "" for yield).
     Result challenge(const std::string& from, const std::string& to, const std::string& terms = "");
+    // Training grounds (doc 53, 5; Data/Together/training.json): the Warden Training Grounds and the barracks yards.
+    // There a resident trainer (a guard on duty, or one whose post trains) spars with a player who asks (no assault),
+    // and a wolf with no partner practises at the post.
+    bool trainingGround(const std::string& cellId) const;
+    bool trainer(const std::string& id) const;
+    Result sparWithTrainer(const std::string& player, const std::string& trainerId);
+    Result practiseAtPost(const std::string& player);
     Result answerChallenge(const std::string& player, bool accept);
     const Challenge* challengeTo(const std::string& player) const;
     const std::vector<Battle>& battles() const { return battles_; }
@@ -1044,6 +1156,9 @@ class World
                            Voice voice = Voice::Speak) const;
     bool lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const;
     double hearingClarity(const std::string& observerId, const std::string& sourceId, Voice voice = Voice::Speak) const;
+    // How keen a wolf's hearing is (1 a healthy adult's): its hearing, age, ears, skill and injuries (the factor
+    // hearingClarity scales its range by; doc 51's howl uses it too).
+    double hearingSensitivity(const Entity& e) const;
     double visionClarity(const std::string& observerId, const std::string& sourceId) const;
     // The same with the observer's sight range already known (sightRange): for a view or a motion frame, which ask it
     // of every wolf in the cell (doc 31, Phase 4: the range was worked out three times a wolf).
@@ -1305,7 +1420,49 @@ class World
         double best = 0, fire = 0, total = 0;       // The hardest blow, and the damage done in all and by fire.
         std::string lastBy;                         // Who last struck it (for a kill by its burns).
         bool struckUnaware = false;                 // Its hardest blow fell before it knew (doc 40's ambush): masterwork.
+        // Doc 53, Phase 1: "grazing", "watching" (a wolf it noticed, further than its flight distance), "fleeing" (from
+        // one that came too close, or bit at it), "calming"; whom it watches and flees; its turns calming; every wolf it
+        // has been alert to (masterwork only from one it never saw).
+        std::string state = "grazing", watching, from;
+        int calm = 0;
+        std::set<std::string> saw;
+        int noiseX = -1, noiseY = -1;               // Fleeing a noise (Throw Voice, doc 53, 4), not a wolf: from this tile.
     };
+    // A hunter in a hunt (doc 53): its last turn that did something (moved, stalked, bit), and whether it lies in wait
+    // (it ended its turn crouched without biting: it springs on an animal stepping beside it).
+    struct HuntHunter
+    {
+        int lastActive = -1;
+        bool waiting = false;
+    };
+    std::map<std::string, HuntHunter> huntHunters_;
+    // Working together (doc 53, 2): the joints at work and each member's, who each worker has asked to lend a paw, and
+    // when each wolf last worked (foraged); never saved.
+    std::map<std::string, together::JointWork> joints_;
+    std::map<std::string, std::string> jointOf_;
+    std::map<std::string, std::set<std::string>> lendAsked_;
+    std::map<std::string, double> lastWorked_;
+    double jointsAccumulator_ = 0;
+    std::uint64_t jointNext_ = 1;
+    void tendJoints(double dt);
+    std::string joinJoint(const std::string& jointId, const std::string& helper, const std::string& role);
+    void workBeat(together::JointWork& joint);
+    void endJoint(const std::string& id);
+    void dropFromJoint(const std::string& id);
+    // Hunting together (doc 53, Phase 2): each hunt's starter, who was let in or invited, asks waiting, each player's
+    // share of its last hunt, the parts the hunters played, the pairs who shared a kill.
+    std::map<std::string, std::string> huntStarter_;
+    std::map<std::string, std::set<std::string>> huntInvited_;
+    std::vector<HuntAsk> huntAsks_;
+    std::map<std::string, HuntShare> huntShares_;
+    std::map<std::string, std::map<std::string, std::set<std::string>>> huntRoles_;
+    std::map<std::string, std::set<std::pair<std::string, std::string>>> huntPairs_;
+    std::function<bool(const std::string& a, const std::string& b)> blocked_, partnered_;
+    std::map<std::string, std::pair<std::string, double>> talkFacing_;   // Resident -> the wolf it faces, until when.
+    bool huntHelperTurn(Battle& b, BattleFighter& f);
+    void huntJoined(Battle& b, const std::string& id);
+    std::vector<std::string> huntSharers(const Battle& b, const std::string& killer) const;
+    std::string pickHuntSpecies(const Battle& b, const std::string& salt) const;
     std::map<std::string, HuntAnimal> animals_;
     std::map<std::string, std::vector<double>> huntKills_;      // Cell -> the game days of its kills.
     std::map<std::string, std::pair<double, double>> huntArrivals_;   // Hunt -> when another may wander in, and how many it expects.
@@ -1317,7 +1474,7 @@ class World
     std::map<std::string, std::map<std::string, double>> huntGround_;
     void findWorkGrounds();
     std::vector<std::pair<std::string, int>> harvestAt(const std::string& who, const WorkGround& at, int season);
-    bool takeFromPatch(const std::string& cellId, int x, int y);
+    bool takeFromPatch(const std::string& cellId, int x, int y, int extra = 0);   // extra: pickings more (doc 53).
     std::map<std::string, double> forageNext_;                  // Wolf -> when it may forage again (world seconds).
     std::function<bool(const std::string&, const std::string&)> friends_;
     std::uint64_t nextAnimal_ = 0;
@@ -1381,7 +1538,23 @@ class World
     void tendWear();
     bool animalNotices(const Battle& b, const BattleFighter& animal) const;
     bool animalTurn(Battle& b, BattleFighter& f);
+    // Doc 53, Phase 1: what an animal that runs makes of the wolves it notices (watching, bolting, calming); a dodge
+    // that sends it off; the long run of one bolting; one lying in wait springing on it as it steps past.
+    void huntReact(Battle& b, BattleFighter& animal, const BattleFighter* after);
+    bool fleeingTurn(Battle& b, BattleFighter& f, HuntAnimal& a, const wild::Species& s, const std::vector<const BattleFighter*>& hunters);
+    void huntBolt(Battle& b, BattleFighter& animal, HuntAnimal& a, const std::string& from);
+    // A noise at a tile in a hunt (Throw Voice drives, doc 53, 4): game within its flight distance of it flees from the
+    // tile; further off within `reach`, it watches that way. How many it moved.
+    int huntNoise(Battle& b, int x, int y, int reach);
+    void huntAfterTurn(Battle& b, BattleFighter& f);
+    void huntMissed(Battle& b, const BattleFighter& biter, BattleFighter& animal);
+    void huntStep(Battle& b, BattleFighter& animal);
+    int huntReach(const Battle& b, const BattleFighter& f) const;
     double huntBlow(Battle& b, BattleFighter& t, double damage, double downedBase, const std::string& by);
+    // Spars (doc 53, 5; RatwTraining.cpp): a blade's blow blunted; what a blow teaches, by partner and ground.
+    double sparBlow(const Battle& b, double damage, const std::string& by) const;
+    double sparPractice(const Battle& b, const BattleFighter* foe) const;
+    std::map<std::string, double> postNext_;       // When each wolf may next practise at the post.
     bool huntKill(Battle& b, BattleFighter& f, const std::string& by);
     void huntBanner(Battle& b);
     void endHunt(Battle& b);
@@ -1435,7 +1608,8 @@ class World
     void growSkill(Battle& b, const BattleFighter& learner, const BattleFighter* foe, const char* source);
     Battle* battleFor(const std::string& id);
     Battle* battleById(const std::string& battleId);
-    Result startBattle(const std::string& attacker, const std::string& target, bool pvp);
+    // `terms`: a spar with a resident trainer (doc 53, 5) is no assault.
+    Result startBattle(const std::string& attacker, const std::string& target, bool pvp, const std::string& terms = {});
     void enterBattle(Battle& b, const std::string& id, int side, bool full);
     void fitArena(Battle& b);
     void lineUp(Battle& b);

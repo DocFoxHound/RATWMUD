@@ -414,6 +414,7 @@ void Game::tendFriends()
     friendsTendedAt_ = now();
     tendCircles();                                  // (Old invitations and nights past, too: doc 50, 6.)
     starBook_.prune(now());                         // (Stars past 30 days leave the recent list: doc 51.)
+    tendBooks();                                    // (Books finished after three quiet days: doc 51, Phase 7.)
     const auto& r = people::rules();
     const double requestsFrom = now() - r.requestDays * 86400.0, messagesFrom = now() - r.inboxDays * 86400.0;
     std::set<std::string> touched;

@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <tuple>
 #include <iostream>
 #include <map>
 #include <iterator>
@@ -97,6 +98,7 @@ void run(game::Game& g, Client& c, double seconds)
 void aDevelopmentSession()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     o.devTools = true;
@@ -154,6 +156,7 @@ void aDevelopmentSession()
 void residentsTalkWhereAPlayerCanHear()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -208,6 +211,7 @@ void theGameAnswersWhatItKnows()
     const std::string ledger = "/tmp/ratw-voices-" + std::to_string(::getpid()) + ".jsonl";
     std::remove(ledger.c_str());
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
@@ -264,6 +268,7 @@ void theGameAnswersWhatItKnows()
 void accountsAndARestart()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     game::Game g(o);
     std::string problem;
@@ -389,6 +394,7 @@ void accountsAndARestart()
 void earnedTiersAndOneWolf()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;
     game::Game g(o);
     std::string problem;
@@ -473,6 +479,7 @@ void earnedTiersAndOneWolf()
 void signingInNeverHoldsTheGame()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     game::Game g(o);
     std::string problem;
@@ -524,6 +531,7 @@ void signingInNeverHoldsTheGame()
 void freeMovementIsChecked()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -667,6 +675,7 @@ void aRestartFromAFile()
     std::string id;
     {
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
@@ -692,6 +701,7 @@ void aRestartFromAFile()
         g.save();                                  // (An unlock asks for a save soon; the test doesn't wait for it.)
     }
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.savePath = path;
     game::Game again(o);
@@ -724,6 +734,7 @@ void healthIsKept()
     std::remove((path + ".health.jsonl").c_str());
     {
         game::Options o;
+        o.tiesOptional = true;
         o.savePath = path;
         o.devIdentity = true;
         game::Game g(o);
@@ -762,6 +773,7 @@ void healthIsKept()
 void playersCannotRuleTheSky()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -812,6 +824,7 @@ void playersCannotRuleTheSky()
 void othersSeeNoPrivateStats()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -881,6 +894,7 @@ void unreadableSavesAreKept()
         writeFile(path, text);
         {
             game::Options o;
+            o.tiesOptional = true;
             o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
             o.savePath = path;
             game::Game g(o);
@@ -890,6 +904,7 @@ void unreadableSavesAreKept()
         }
         expect(readFile(path) == text, std::string("and leaves ") + what + " as it was");
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         o.requireStorage = false;
@@ -932,6 +947,7 @@ void theJournalKeepsWhatACrashWouldLose()
     int gathered = 0;
     {
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         o.devIdentity = true;
@@ -965,6 +981,7 @@ void theJournalKeepsWhatACrashWouldLose()
     }
     {
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         o.devIdentity = true;
@@ -994,6 +1011,7 @@ void theJournalKeepsWhatACrashWouldLose()
     }
     {
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
@@ -1009,6 +1027,7 @@ void mismatchedOwnersAreRefused()
     std::remove(path.c_str());
     {
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
@@ -1035,6 +1054,7 @@ void mismatchedOwnersAreRefused()
     expect(good.array("players").size() == 1, "with its one character");
     {
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
@@ -1052,6 +1072,7 @@ void mismatchedOwnersAreRefused()
         const auto text = json::dump(document);
         writeFile(path, text);
         game::Options o;
+        o.tiesOptional = true;
         o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
         o.savePath = path;
         game::Game g(o);
@@ -1070,6 +1091,7 @@ void mismatchedOwnersAreRefused()
 void residentsTalkFromWrittenScenes()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";
@@ -1139,6 +1161,7 @@ std::string base64(const std::string& in)
 void uploadedPortraits()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -1219,6 +1242,7 @@ void uploadedPortraits()
 void talkTargets()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -1309,6 +1333,7 @@ void fightsThroughTheGame()
     // Docs/Design/33-combat.md, through commands and snapshots: a challenge, the arena in the snapshot, turns, and an
     // onlooker who sees a red square and watches.
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -1427,6 +1452,7 @@ void swordsMuffleAndBodiesLinger()
 {
     // Doc 33: words around a sword in the jaws are muffled; a player who leaves mid-fight leaves their body in it.
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;   // (Written before names were hidden: doc 32.)
     o.devIdentity = true;
     game::Game g(o);
@@ -1484,6 +1510,7 @@ void swordsMuffleAndBodiesLinger()
 void fastForward()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -1519,6 +1546,7 @@ void fastForward()
 void theDevConsole()
 {
     game::Options o;
+    o.tiesOptional = true;
     o.devIdentity = true;
     game::Game g(o);
     std::string problem;
@@ -1594,6 +1622,7 @@ void aSermonOnRestday()
     manifest.replace(line, end - line, maple);
     std::ofstream(dir / "world.ratw", std::ios::binary) << manifest;
     game::Options o;
+    o.tiesOptional = true;
     o.hiddenNames = false;
     o.devIdentity = true;
     o.worldFile = (dir / "world.ratw").string();
@@ -1624,6 +1653,210 @@ void aSermonOnRestday()
     fs::remove_all(dir);
 }
 
+// Hunting together through the game (Docs/Design/53-hunting-and-working-together.md, Phase 2): what an onlooker sees of
+// a hunt, joining it while it is open, the starter closing it, an ask let in, an invitation, the setting kept.
+void huntsTogether()
+{
+    namespace fs = std::filesystem;
+    const auto dir = fs::temp_directory_path() / ("ratw-hunt-game-" + std::to_string(::getpid()));
+    fs::create_directories(dir / "cells");
+    {
+        std::ofstream cell(dir / "cells" / "wilds.cell");
+        cell << "id: wilds\nname: The Wilds\ndescription: Woods and meadow.\nworld: 0 0 0\nsize: 80 60\noutdoors: true\n"
+                "weather: clear\nwind: 0 0.5 1\nlighting: 1 1 warm\ngrid:\n";
+        for (int y = 0; y < 60; ++y)
+        {
+            std::string row;
+            for (int x = 0; x < 80; ++x)
+                row += (x * 7 + y * 13) % 11 == 0 ? 'Y' : (x * 3 + y * 5) % 17 == 0 ? 'B' : x == 70 ? '~' : ',';
+            cell << row << '\n';
+        }
+        std::ofstream(dir / "world.ratw") << "RATW_WORLD 2\ncell \"wilds\" \"cells/wilds.cell\"\nterritory \"wilds\" \"wilds\" \"-\" 0\n"
+                                              "spawn \"wilds\" 40.5 30.5\neconomy 1000 100 50 10 12\n";
+    }
+    game::Options o;
+    o.tiesOptional = true;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    o.forkSnapshots = false;
+    o.worldFile = (dir / "world.ratw").string();
+    o.savePath = (dir / "save.json").string();
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the wilds start: " + problem);
+    Client ash, bo, cy;
+    int n = 1;
+    for (auto [c, id, name] : {std::tuple{&ash, "ash", "Ash"}, {&bo, "bo", "Bo"}, {&cy, "cy", "Cy"}})
+    {
+        c->id = n++;
+        g.connect(c);
+        g.command(c, cmd({{"type", "hello"}, {"id", id}, {"name", name}}));
+        auto* e = g.world().entity(c->entityId);
+        expect(e != nullptr, std::string("entered: ") + name);
+        e->cellId = "wilds";
+        e->position = {38.5 + n, 30.5};
+    }
+    const auto all = [&](double seconds) {
+        for (double t = 0; t < seconds; t += .05)
+        {
+            g.tick(.05);
+            for (auto* c : {&ash, &bo, &cy})
+                if (!c->snapshots.empty())
+                    g.acknowledge(c, c->snapshots.back().number("revision"), false);
+        }
+    };
+    for (int i = 0; i < 40 && !g.world().inBattle("player-ash"); ++i)
+    {
+        g.command(&ash, cmd({{"type", "hunt"}}));
+        all(1);
+    }
+    expect(g.world().inBattle("player-ash"), "Ash goes out after game");
+    const auto huntId = g.world().battleOf("player-ash")->id;
+    all(.5);
+    const auto square = [&](Client& c) -> json::Value {
+        for (const auto& f : c.snapshots.back().array("fights"))
+            if (f.string("id") == huntId)
+                return f;
+        return {};
+    };
+    auto seen = square(bo);
+    expect(seen.boolean("hunt") && seen.string("starter") == "Ash" && seen.number("hunters") == 1 && seen.boolean("canJoin") && !seen.boolean("canAsk"),
+           "Bo sees Ash's hunt, open to him: " + json::dump(seen));
+    // Ash closes it (the setting, kept with her): Bo may only ask.
+    g.command(&ash, cmd({{"type", "partners"}, {"kind", "hunt"}, {"on", false}}));
+    all(.5);
+    expect(g.world().entity("player-ash")->noHuntPartners && ash.snapshots.back()["self"].boolean("noHuntPartners"), "the setting kept, and shown");
+    seen = square(bo);
+    expect(!seen.boolean("canJoin") && seen.boolean("canAsk"), "closed: Bo may ask");
+    g.command(&bo, cmd({{"type", "battle"}, {"verb", "ask"}, {"battle", huntId}}));
+    all(.5);
+    const auto panel = ash.snapshots.back()["battle"].object("huntPanel");
+    expect(panel.array("asks").size() == 1 && panel.array("asks")[0].string("id") == "player-bo", "Ash sees Bo's ask: " + json::dump(panel));
+    g.command(&ash, cmd({{"type", "battle"}, {"verb", "letIn"}, {"target", "player-bo"}}));
+    all(.5);
+    expect(g.world().battleOf("player-bo") && g.world().battleOf("player-bo")->id == huntId, "let in: Bo hunts with her");
+    // Cy, near: Ash invites her; she may join.
+    bool near = false;
+    for (const auto& w : ash.snapshots.back()["battle"].object("huntPanel").array("nearby"))
+        near = near || w.string("id") == "player-cy";
+    expect(near, "Cy is near enough to invite");
+    g.command(&ash, cmd({{"type", "battle"}, {"verb", "invite"}, {"target", "player-cy"}}));
+    all(.5);
+    expect(square(cy).boolean("canJoin"), "invited: Cy may join");
+    fs::remove_all(dir);
+}
+
+// Working together (doc 53, Phase 3): Lend a paw in the menu of a wolf foraging; the work block for both, with the rate
+// and the roles; a picking shared; Ask to lend a paw; Leave.
+void worksTogether()
+{
+    namespace fs = std::filesystem;
+    const auto dir = fs::temp_directory_path() / ("ratw-work-game-" + std::to_string(::getpid()));
+    fs::create_directories(dir / "cells");
+    {
+        std::ofstream cell(dir / "cells" / "wilds.cell");
+        cell << "id: wilds\nname: The Wilds\ndescription: Woods and meadow.\nworld: 0 0 0\nsize: 80 60\noutdoors: true\n"
+                "weather: clear\nwind: 0 0.5 1\nlighting: 1 1 warm\ngrid:\n";
+        for (int y = 0; y < 60; ++y)
+        {
+            std::string row;
+            for (int x = 0; x < 80; ++x)
+                row += (x * 7 + y * 13) % 11 == 0 ? 'Y' : (x * 3 + y * 5) % 17 == 0 ? 'B' : x == 70 ? '~' : ',';
+            cell << row << '\n';
+        }
+        std::ofstream(dir / "world.ratw") << "RATW_WORLD 2\ncell \"wilds\" \"cells/wilds.cell\"\nterritory \"wilds\" \"wilds\" \"-\" 0\n"
+                                              "spawn \"wilds\" 40.5 30.5\neconomy 1000 100 50 10 12\n";
+    }
+    game::Options o;
+    o.tiesOptional = true;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    o.forkSnapshots = false;
+    o.worldFile = (dir / "world.ratw").string();
+    o.savePath = (dir / "save.json").string();
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the wilds start: " + problem);
+    Client ash, bo, cy;
+    int n = 1;
+    for (auto [c, id, name] : {std::tuple{&ash, "ash", "Ash"}, {&bo, "bo", "Bo"}, {&cy, "cy", "Cy"}})
+    {
+        c->id = n++;
+        g.connect(c);
+        g.command(c, cmd({{"type", "hello"}, {"id", id}, {"name", name}}));
+        auto* e = g.world().entity(c->entityId);
+        expect(e != nullptr, std::string("entered: ") + name);
+        e->cellId = "wilds";
+        e->position = {38.5 + n, 30.5};
+    }
+    const auto all = [&](double seconds) {
+        for (double t = 0; t < seconds; t += .05)
+        {
+            g.tick(.05);
+            for (auto* c : {&ash, &bo, &cy})
+                if (!c->snapshots.empty())
+                    g.acknowledge(c, c->snapshots.back().number("revision"), false);
+        }
+    };
+    const auto offers = [&](Client& c, const std::string& of, const std::string& action) {
+        for (const auto& e : c.snapshots.back().array("entities"))
+            if (e.string("id") == of)
+                for (const auto& a : e.array("actions"))
+                    if (a.asString() == action)
+                        return true;
+        return false;
+    };
+    all(.5);
+    expect(!offers(bo, "player-ash", "lend a paw"), "Ash idle: nothing to lend a paw to");
+    g.command(&ash, cmd({{"type", "forage"}}));
+    all(.5);
+    expect(offers(bo, "player-ash", "lend a paw"), "Ash foraging: Bo may lend a paw");
+    expect(offers(ash, "player-cy", "ask to lend a paw"), "and Ash may ask Cy to");
+    g.command(&bo, cmd({{"type", "action"}, {"action", "lend a paw"}, {"target", "player-ash"}}));
+    all(.5);
+    const auto work = ash.snapshots.back()["self"].object("work");
+    expect(work.string("kind") == "forage" && std::abs(work.number("rate") - 1.8) < 1e-9 && work.array("members").size() == 2,
+           "Ash's work block: foraging at 1.8, two: " + json::dump(work));
+    expect(work.array("members")[0].string("name") == "you" && work.array("members")[0].string("role") == "dig" &&
+               work.array("members")[1].string("role") == "carries and sorts",
+           "Ash digs, Bo carries and sorts");
+    expect(bo.snapshots.back()["self"].object("work").array("members").size() == 2, "Bo sees it too");
+    // A picking, shared.
+    const auto stockOf = [&](const std::string& who) {
+        int k = 0;
+        if (const auto* a = g.world().society().account(who))
+            for (const auto& [item, count] : a->stock)
+                if (item != "sword")
+                    k += count;
+        return k;
+    };
+    const int bothBefore = stockOf("player-ash") + stockOf("player-bo");
+    all(4.2);
+    g.command(&ash, cmd({{"type", "forage"}}));
+    all(.2);
+    expect(stockOf("player-ash") + stockOf("player-bo") > bothBefore && g.world().jointOf("player-ash")->members[0].beats == 1,
+           "Ash's picking, a beat of the joint's, shared out");
+    // Cy, asked, joins as a third.
+    g.command(&ash, cmd({{"type", "action"}, {"action", "ask to lend a paw"}, {"target", "player-cy"}}));
+    g.command(&cy, cmd({{"type", "work"}, {"verb", "lend"}, {"with", "player-ash"}}));
+    all(.5);
+    expect(std::abs(ash.snapshots.back()["self"].object("work").number("rate") - 2.2) < 1e-9, "three: 2.2");
+    // Talk while working is the work's scene (doc 53, 2.2).
+    const auto workScene = SocialLedger::workScene(g.world().jointOf("player-ash")->id);
+    g.command(&ash, cmd({{"type", "chat"}, {"text", "\"Mind the roots there, they snap if you pull them straight up.\""}, {"commandId", "w1"}}));
+    g.command(&bo, cmd({{"type", "chat"}, {"text", "\"I have them. Pass me the basket and I'll sort the bitter ones out.\""}, {"commandId", "w2"}}));
+    all(.3);
+    const auto& sessions = g.ledger().sessions;
+    expect(sessions.count(workScene) && sessions.at(workScene).members.size() == 3 && sessions.at(workScene).members.at("player-ash").turns > 0 &&
+               sessions.at(workScene).members.at("player-bo").turns > 0,
+           "their words are the work's scene, all three in it");
+    g.command(&bo, cmd({{"type", "work"}, {"verb", "leave"}}));
+    g.command(&cy, cmd({{"type", "work"}, {"verb", "leave"}}));
+    all(.5);
+    expect(!ash.snapshots.back()["self"].has("work") && !g.world().jointOf("player-ash"), "both leave: the joint ends");
+    fs::remove_all(dir);
+}
+
 int main()
 {
     try
@@ -1650,6 +1883,8 @@ int main()
         fightsThroughTheGame();
         swordsMuffleAndBodiesLinger();
         aSermonOnRestday();
+        huntsTogether();
+        worksTogether();
     }
     catch (const std::exception& error)
     {

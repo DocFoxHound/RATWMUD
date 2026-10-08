@@ -1,7 +1,7 @@
 // The fight panel under the map (Docs/Design/33-combat.md), out of a fight: a challenge to answer, being Downed, and the
 // fights in sight to join or watch. Rebuilt only when what it shows changes. In a fight, the fight screen (combat.ts).
 import {clockLabel, termsWords} from '../../game/battle.ts';
-import {bool, num, obj} from '../../game/json.ts';
+import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
 import {button, el, show} from './dom.ts';
 
@@ -25,8 +25,10 @@ export class FightPanel {
             return;
         }
         const downedLeft = num(self, 'downedLeft');
+        const share = obj(self, 'huntShare');
+        const work = obj(self, 'work');
         const key = JSON.stringify([s.challenge && [s.challenge.name, Math.ceil(s.challenge.left)], downedLeft > 0 && [Math.ceil(downedLeft),
-            bool(self, 'canStruggle'), bool(self, 'struggling')], s.fights]);
+            bool(self, 'canStruggle'), bool(self, 'struggling')], s.fights, share, work]);
         if (key === this.key) return;
         this.key = key;
         this.root.replaceChildren();
@@ -38,6 +40,34 @@ export class FightPanel {
             el('span', 'fight-alert', r, `${s.challenge.name} challenges you to a fight ${termsWords(s.challenge.terms)} · ${Math.ceil(s.challenge.left)} s`);
             button('Accept', 'act fight-go', r, () => s.sendAction('accept'));
             button('Decline', 'act', r, () => s.sendAction('decline'));
+        }
+        // Working together (doc 53): "Foraging with Bo · ×1.8", who does what, and Leave.
+        if (work) {
+            any = true;
+            const r = row();
+            r.classList.add('work-row');
+            const others = arr(work, 'members').filter(isObject).filter(m => str(m, 'name') !== 'you');
+            // Farm work (doc 53, 2.6) also says what it has paid, and when the next spell is counted.
+        const farm = str(work, 'farmer') !== '';
+        const left = Math.max(0, Math.round(num(work, 'nextBeat')));
+        const pay = farm ? ` · ${num(work, 'earned')}p earned · next spell in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : '';
+        el('span', 'label', r, `${str(work, 'name')} with ${others.map(m => str(m, 'name')).join(', ')} · ×${num(work, 'rate').toFixed(1)}${pay}`);
+            el('span', 'muted small', r, arr(work, 'members').filter(isObject).map(m => `${str(m, 'name')} ${str(m, 'role')}`).join(' · '));
+            // Keep watch (doc 53, 4): out in the wild, one may watch over the others instead of working.
+        if (str(work, 'kind') === 'forage') {
+            const watching = bool(obj(s.snapshot, 'self'), 'keepingWatch');
+            button(watching ? 'Back to work' : 'Keep watch', 'act', r, () => s.send({type: 'work', verb: 'watch', on: !watching})).title =
+                'Watch over the others: a creeping bandit must get past you too';
+        }
+        button('Leave', 'act', r, () => s.send({type: 'work', verb: 'leave'}));
+        }
+        // One's share of the last hunt (doc 53): Give my share to another who hunted with you, to carry.
+        if (share && arr(share, 'hunters').length) {
+            any = true;
+            const r = row();
+            el('span', 'label', r, `Your share of the hunt: ${arr(share, 'goods').filter((g): g is string => typeof g === 'string').join(', ')}`);
+            for (const h of arr(share, 'hunters').filter(isObject))
+                button(`Give my share to ${str(h, 'name')}`, 'act', r, () => s.sendBattle('giveShare', {target: str(h, 'id')}));
         }
         if (downedLeft > 0) {
             any = true;
@@ -52,8 +82,17 @@ export class FightPanel {
         for (const f of s.fights) {
             any = true;
             const r = row();
+            if (f.hunt) {
+                // A hunt (doc 53): Join hunt, or Ask to join when it is closed; never a button for the game.
+                el('span', 'label', r, `${f.starter ? `${f.starter}'s hunt` : 'A hunt'} · ${f.hunters} hunting · ${f.taken} taken`);
+                if (f.canJoin) button('Join hunt', 'act', r, () => s.sendBattle('join', {battle: f.id, side: 0}));
+                else if (f.canAsk) button('Ask to join', 'act', r, () => s.sendBattle('ask', {battle: f.id})).title =
+                    'Its hunters may let you in';
+                continue;
+            }
             const sides = f.names[0] && f.names[1] ? `${f.names[0]} v ${f.names[1]}` : 'A fight';
-            el('span', 'label', r, `${sides} · ${f.standing[0]} v ${f.standing[1]} standing · round ${f.round}`);
+            el('span', 'label', r, f.spar ? `${sides} · a spar · round ${f.round} · ${f.watchers} watching`
+                : `${sides} · ${f.standing[0]} v ${f.standing[1]} standing · round ${f.round}`);
             if (f.canJoin) {
                 if (f.names[0]) button(`Join ${f.names[0]}`, 'act', r, () => s.sendBattle('join', {battle: f.id, side: 0}));
                 if (f.names[1]) button(`Join ${f.names[1]}`, 'act', r, () => s.sendBattle('join', {battle: f.id, side: 1}));

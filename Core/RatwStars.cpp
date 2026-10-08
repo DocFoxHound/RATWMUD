@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -79,6 +80,30 @@ Rules build()
         }
     }
     r.catalog = s;
+    const auto& scenes = doc.object("scenes");
+    if (!scenes.array("colours").empty())
+    {
+        r.sceneColours.clear();
+        for (const auto& c : scenes.array("colours"))
+            r.sceneColours.push_back(c.asString("#8796a3"));
+    }
+    r.mapRange = scenes.number("mapRange", r.mapRange);
+    const auto& h = doc.object("howl");
+    auto& w = r.howl;
+    for (auto [key, field] : std::initializer_list<std::pair<const char*, double*>>{
+             {"range", &w.range}, {"heightLimit", &w.heightLimit}, {"indoorsHowler", &w.indoorsHowler},
+             {"indoorsListener", &w.indoorsListener}, {"cooldown", &w.cooldown}, {"markSeconds", &w.markSeconds},
+             {"jitter", &w.jitter}, {"chorusRange", &w.chorusRange}, {"chorusWindow", &w.chorusWindow},
+             {"chorusExtend", &w.chorusExtend}, {"chorusMost", &w.chorusMost}, {"chorusCarry", &w.chorusCarry},
+             {"chorusCarryMost", &w.chorusCarryMost}, {"sneakRange", &w.sneakRange}, {"residentRange", &w.residentRange},
+             {"rememberedSeconds", &w.rememberedSeconds}})
+        *field = h.number(key, *field);
+    w.residentsTurn = int(h.number("residentsTurn", w.residentsTurn));
+    w.residentsSpeak = int(h.number("residentsSpeak", w.residentsSpeak));
+    for (const auto& [when, list] : h.object("lines").fields())
+        for (const auto& line : list.items())
+            if (line.isString())
+                w.lines[when].push_back(line.asString());
     return r;
 }
 } // namespace
@@ -87,6 +112,15 @@ const Rules& rules()
 {
     static const Rules r = build();
     return r;
+}
+
+std::string sceneColour(const std::string& session)
+{
+    std::uint32_t h = 2166136261u;
+    for (const unsigned char ch : session)
+        h = (h ^ ch) * 16777619u;
+    const auto& palette = rules().sceneColours;
+    return palette.empty() ? std::string("#8796a3") : palette[h % palette.size()];
 }
 
 std::string band(int n, bool givers)

@@ -594,6 +594,62 @@ void atWork()
     expect(w.society().giftLiftOf("maker") == 30, "Two Gifts lent lift a batch, at most 30");
 }
 
+// Keeping the secret (doc 53, 4): a partner (Cy, on Ad's side) who sees Quickened magic adds no Warden attention and
+// keeps a witness record; a foe still counts. Telling the Wardens adds 3, once; vouching takes 1, once a month.
+void keepingTheSecret()
+{
+    const auto lance = [](bool partner) {
+        World w;
+        auto& b = duel(w, "fire", true);
+        auto& cy = w.addPlayer("player-cy", "Cy");
+        cy.cellId = w.entity("player-ad")->cellId;
+        cy.position = {w.entity("player-ad")->position.x - 1.2, w.entity("player-ad")->position.y};
+        if (partner)
+            expect(w.joinBattle("player-cy", b.id, 0).ok, "Cy fights at Ad's side");
+        turn(w, b, "player-ad");
+        place(w, b, "player-bo", "player-ad", 2);
+        const auto& bo = *b.fighter("player-bo");
+        expect(w.useGift("player-ad", "heat_lance", at(bo.x, bo.y)).ok, "Heat Lance");
+        for (int i = 0; i < 80 && !b.casts.empty(); ++i)
+            w.tick(.05);
+        return std::pair<double, bool>{w.entity("player-ad")->wardenAttention, w.entity("player-cy")->witnessed.count("player-ad") > 0};
+    };
+    const auto alone = lance(false), withCy = lance(true);
+    expect(alone.first > 0 && std::abs(withCy.first - alone.first) < 1e-9, "Cy, a partner, adds nothing to it (Bo, a foe, still does): " +
+                                                                              std::to_string(withCy.first) + " against " + std::to_string(alone.first));
+    expect(withCy.second && !alone.second, "and Cy remembers what she saw");
+    // At the Wardens.
+    World w;
+    auto& ad = w.addPlayer("player-ad", "Ad");
+    auto& cy = w.addPlayer("player-cy", "Cy");
+    w.addPlayer("player-bo", "Bo");
+    ad.quickened = true;
+    ad.wardenAttention = 2;
+    cy.witnessed["player-ad"] = w.calendarDays();
+    expect(!w.tellWardens("player-bo", "player-ad").ok, "Bo saw nothing: nothing to tell");
+    expect(w.tellWardens("player-cy", "player-ad").ok && std::abs(w.entity("player-ad")->wardenAttention - 5) < 1e-9, "Cy tells: +3");
+    expect(!w.tellWardens("player-cy", "player-ad").ok && std::abs(w.entity("player-ad")->wardenAttention - 5) < 1e-9, "only once");
+    expect(w.vouchToWardens("player-cy", "player-ad").ok && std::abs(w.entity("player-ad")->wardenAttention - 4) < 1e-9, "Cy vouches: -1");
+    expect(!w.vouchToWardens("player-cy", "player-ad").ok, "not again this month");
+    expect(!w.vouchToWardens("player-bo", "player-ad").ok, "Bo can't vouch for a Gift he never saw");
+    // Vouching's risk: Di, who also saw, tells within the month; Cy's word is weighed less, once.
+    auto& di = w.addPlayer("player-di", "Di");
+    di.witnessed["player-ad"] = w.calendarDays();
+    w.takeNotices();
+    expect(w.tellWardens("player-di", "player-ad").ok && w.entity("player-cy")->wardenStanding == -1, "Ad drew their eye again: Cy's standing falls");
+    bool told = false;
+    for (const auto& [to, text] : w.takeNotices())
+        told = told || (to == "player-cy" && text.find("whom you vouched for") != std::string::npos);
+    expect(told && w.entity("player-cy")->vouchedFor.empty(), "she is told, and it counts once a vouch");
+    w.entity("player-cy")->wardenStanding = -2;
+    w.entity("player-cy")->vouchedDay = -1e9;
+    expect(!w.vouchToWardens("player-cy", "player-ad").ok, "at -2 the Wardens no longer take her word");
+    // Saved, IDs only.
+    const auto back = wire::readEntity(wire::persistEntity(*w.entity("player-cy"), 0));
+    expect(back.witnessed.count("player-ad") && back.toldWardens.count("player-ad") && back.wardenStanding == -2,
+           "the witness record and the standing are saved");
+}
+
 void saved()
 {
     Entity e;
@@ -820,6 +876,7 @@ int main()
         seer();
         atWork();
         saved();
+        keepingTheSecret();
         balance();
         trance();
     }

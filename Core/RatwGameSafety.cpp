@@ -295,6 +295,8 @@ Result Game::decideReport(const std::string& id, const std::string& decision, co
     }
     if (accounts_.exists(r.reportedAccount))
         checkUnlocks(r.reportedAccount);           // (An upheld report holds Quickened back: doc 49.)
+    if (r.status == "upheld")                       // (And stops mentoring at once: doc 52, 3.)
+        mentorOff(r.reportedAccount, "a report about you was upheld.");
     saveSoon();
     return {true, "Report " + id + " " + r.status + (r.outcome.empty() ? "" : ": " + r.outcome) + ".", {}};
 }

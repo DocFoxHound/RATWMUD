@@ -173,6 +173,7 @@ game::Options options(const std::string& mind = {}, const std::string& save = {}
     o.hiddenNames = true;
     o.forkSnapshots = false;
     o.oneWolfPerAccount = true;
+    o.tiesOptional = true;                      // (Ties: doc 52, tested in newcomer_tests.)
     o.recapModelSeconds = 0;
     o.dialogueEndpoint = mind;
     if (!save.empty())
@@ -308,7 +309,13 @@ void aSceneAndItsRecaps()
     std::string adaLines;
     for (const auto& l : asked.array("lines"))
         adaLines += l.string("who") + ": " + l.string("text") + "\n";
-    expect(adaLines.find("You: ") != std::string::npos && adaLines.find("river runs high") != std::string::npos, "her own lines, as You");
+    expect(adaLines.find(asked.string("you") + ": ") != std::string::npos && adaLines.find("river runs high") != std::string::npos,
+           "her own lines, by her name: " + adaLines);
+    expect(adaLines.find("\"") != std::string::npos, "speech in quotes, so the model can tell it from what was done: " + adaLines);
+    const auto wolves = asked.array("wolves");
+    expect(!wolves.empty() && wolves[0].string("who") == asked.string("you"), "her own wolf first among the wolves: " + json::dump(asked));
+    expect(std::all_of(wolves.begin(), wolves.end(), [](const json::Value& v) { return v.string("pronouns") == "she/her"; }),
+           "each wolf's pronouns, from its sex, go to the model: " + json::dump(asked));
     expect(adaLines.find("third stone") != std::string::npos, "the whisper meant for her");
     expect(adaLines.find("I know that mill") == std::string::npos, "but nothing of Cy, whom she blocked");
     expect(adaLines.find("Bo:") == std::string::npos && adaLines.find(adaOnBo.string("name") + ": ") != std::string::npos,
@@ -385,6 +392,8 @@ void notesTagsAndMarks()
     expect(card && card->string("note") == "Knows the mill." && card->object("known").string("tag") == "River guide" &&
                card->object("known").array("recaps").size() == 1,
            "her card on Bo: note, tag, recaps");
+    // Pronouns follow the character's sex, and aren't a profile setting (the user: male or female, nothing else).
+    expect(card && card->object("profile").string("pronouns") == "she/her", "Bo was made female: she/her on his card");
     w.tick(1.0);
     expect(w.ada.seen(w.boId) && w.ada.seen(w.boId)->boolean("noted"), "noted, on the map");
     // Unread: Bo changes his profile; it's marked until Ada looks again.

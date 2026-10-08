@@ -1,0 +1,14 @@
+{
+  "about": "Newcomers (Docs/Design/52-newcomers.md). The three start towns in order (the first wins a tie), each with a line for the creator and, optionally, an arrival cell and tile; how long an account stays a newcomer; how often active wolves are counted in each town and over how many counts the mean is taken; who may mentor (social level, and no upheld report within so many days); a newcomer's first evenings at an inn (the hours, how many evenings it is tried, how many wolves are pointed out, how well known a regular is); vouching (the bond a voucher needs with the resident, how little it may distrust the one vouched for, the share of trust and liking carried and the most, familiarity given, vouches a voucher may hold, how many game days one lasts, the household's share, and the hit if it goes bad).",
+  "starts": [
+    {"id": "upper_accord", "name": "Upper Accord", "line": "The walled capital in its crater between three peaks: the Concord Hall, the Warden Order and the road west."},
+    {"id": "ser_ferro", "name": "Ser Ferro", "line": "A bright city of white walls and red roofs, climbing in tiers from the great river and its wharf."},
+    {"id": "ridgemere", "name": "Ridgemere", "line": "A rain-soaked harbour city of houses and workshops, where the Council of Houses sits in the Rain Hall."}
+  ],
+  "newcomer": {"hours": 15, "socialLevel": 3},
+  "sampling": {"every": 60, "window": 30, "activeWithin": 300},
+  "mentors": {"socialLevel": 5, "reportDays": 30},
+  "evenings": {"from": 17, "to": 23, "tries": 3, "lines": 4, "regular": 30},
+  "vouching": {"trust": 30, "liking": 20, "distrust": -20, "trustShare": 0.3, "trustMost": 15, "likingShare": 0.2, "likingMost": 10,
+               "familiarity": 10, "perVoucher": 5, "days": 30, "householdShare": 0.5, "householdMost": 8, "hitTrust": 2, "hitLiking": 5}
+}

@@ -27,6 +27,7 @@ constexpr DevCommand DevCommands[] = {
     {"fight-test-1", "A fight where you stand: one weak bandit on the far side of the arena, with a clear way to you."},
     {"fight-test-team-1", "A fight where you stand: you and two allies (passers-by, made up) against three weak bandits."},
     {"fight-end-myself", "Ends the fight you are in, as a draw."},
+    {"hunt", "hunt <animal> [animal...]: a hunt where you stand with just that game (ids: rabbit, hare, roe_deer, red_deer, boar...; doc 53)."},
     {"give", "give <item id> [count]: wearables from the catalog into your own purse (doc 35), to try on."},
     {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
     {"reckon", "The week's reckoning now (doc 42): every resident pays a tenth of its profit since the last to its town and its church."},
@@ -81,6 +82,15 @@ void Game::devCommand(Connection* c, const json::Value& j)
         result = world_.testFightTeam(id);
     else if (command == "fight-end-myself")
         result = world_.endFightInDraw(id);
+    else if (command == "hunt" || command.rfind("hunt ", 0) == 0)
+    {
+        // Doc 53: try the game's new ways on a chosen animal or two, out in the wild.
+        std::vector<std::string> game;
+        std::istringstream words(command.size() > 5 ? command.substr(5) : std::string());
+        for (std::string w; words >> w && game.size() < 6;)
+            game.push_back(w);
+        result = game.empty() ? Result{false, "Name the game: /hunt roe_deer, or /hunt rabbit hare.", {}} : world_.startHunt(id, game);
+    }
     else if (command.rfind("give ", 0) == 0)
     {
         std::string item;

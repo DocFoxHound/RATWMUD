@@ -57,6 +57,35 @@ const Town* World::town(const std::string& id) const
     return nullptr;
 }
 
+bool World::arrivalIn(const std::string& townId, std::string& cellOut, Vec2& positionOut, const std::string& cell,
+                      Vec2 position)
+{
+    const auto spawnTown = townOf(spawnCell_);
+    if (spawnTown && spawnTown->id == townId)
+    {
+        cellOut = spawnCell_, positionOut = spawnPosition_;
+        return true;
+    }
+    const auto town = std::find_if(towns_.begin(), towns_.end(), [&](const Town& t) { return t.id == townId; });
+    if (town == towns_.end())
+        return false;
+    // Beside the market's merchant: the tiles around where it stands, the nearest first, where someone could stand.
+    if (cells_.count(town->market) && ensureLoaded(town->market).ok)
+        for (const Vec2 step : {Vec2{0, 1}, Vec2{1, 0}, Vec2{-1, 0}, Vec2{0, -1}, Vec2{1, 1}, Vec2{-1, 1}, Vec2{1, -1}, Vec2{-1, -1},
+                                Vec2{0, 2}, Vec2{2, 0}, Vec2{-2, 0}, Vec2{0, -2}})
+            if (const Vec2 at{town->marketX + step.x, town->marketY + step.y}; standable(town->market, at))
+            {
+                cellOut = town->market, positionOut = at;
+                return true;
+            }
+    if (!cell.empty() && cells_.count(cell) && ensureLoaded(cell).ok && standable(cell, position))
+    {
+        cellOut = cell, positionOut = position;
+        return true;
+    }
+    return false;
+}
+
 const Town* World::townOf(const std::string& cellId) const
 {
     const auto found = townIndex_.find(cellId);
@@ -1347,6 +1376,10 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
             double noticed = 0;
             for (const auto* b : standing)
                 noticed = std::max(noticed, noticeSenses(e, e.position, e.facing, *b, b->position, false, false, 0, camp.cell).total());
+            for (const auto& w : watchersOver(id))       // (One keeping watch over it notices too: doc 53, 4.)
+                if (const auto* we = entity(w); we && w != id)
+                    for (const auto* b : standing)
+                        noticed = std::max(noticed, noticeSenses(*we, we->position, we->facing, *b, b->position, false, false, 0, camp.cell).total());
             if (noticed < battle::AwareSuspicious)
             {
                 Encounter creep{camp.id, id, demand, time_, false};
@@ -1390,6 +1423,12 @@ void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
             most = std::max(most, noticeSenses(*player, player->position, player->facing, *b, b->position, true,
                                                std::hypot(b->velocity.x, b->velocity.y) > 1e-6, 0, camp.cell)
                                       .total());
+        for (const auto& w : watchersOver(enc->player))  // (And past whoever keeps watch over the traveller: doc 53, 4.)
+            if (const auto* we = entity(w); we && w != enc->player)
+                for (auto* b : standing)
+                    most = std::max(most, noticeSenses(*we, we->position, we->facing, *b, b->position, true,
+                                                       std::hypot(b->velocity.x, b->velocity.y) > 1e-6, 0, camp.cell)
+                                              .total());
         enc->spotted = most >= battle::NoticeFloor ? enc->spotted + most * battle::NoticeGain : std::max(0.0, enc->spotted - battle::Calm);
         if (enc->spotted >= battle::AwareSuspicious && !enc->rustled)
         {

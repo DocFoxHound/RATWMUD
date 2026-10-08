@@ -1,6 +1,6 @@
 // The game screen's state and rules: SRatwGame (UI/SRatwGame.cpp) without its drawing. The client is a projection of
 // observer-filtered server data; no simulation lives here. paint.ts draws it; view.ts connects it to the page.
-import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, num, obj, objects, str, wholeCount, type Json} from './json.ts';
+import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, isObject, num, obj, objects, str, wholeCount, type Json} from './json.ts';
 import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
@@ -42,6 +42,9 @@ export interface Post {
     outgoing?: boolean;         // ...whether it is one's own copy...
     kept?: boolean;             // ...or was kept for one while away (or, one's own, kept for a friend away)...
     sentAt?: number;            // ...and when it was sent (Unix seconds).
+    // The scene a line belongs to (doc 51, §7), as far as this player may know: their own, or an Open or Knock scene's
+    // door and place, with its colour. Absent for ordinary talk, a Private scene's included.
+    scene?: {mine: boolean; colour: string; openness: string; place: string};
     sequence?: number;          // The line's number, for muting, blocking or reporting its author (doc 50): never their id.
 }
 
@@ -82,6 +85,9 @@ export interface EntityView {
     handle: string;             // A friend who shares their character with you: their handle ('' otherwise; doc 50).
     noted: boolean;             // On one's Known wolves with a note (doc 50)...
     unread: boolean;            // ...or with a profile changed since one last looked.
+    nc: boolean;                // New to these parts: a newcomer's account (doc 52).
+    mentor: boolean;            // Mentors newcomers (doc 52)...
+    mentorFree: boolean;        // ...and, for a newcomer's eyes, is free to take one now: marked on the map.
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -112,6 +118,11 @@ export const DevWeathers = ['clear', 'overcast', 'rain', 'storm', 'fog', 'snow',
 function defaultEnvironment(): EnvironmentView {
     return {weather: 'clear', intensity: 1, phase: 'day', lightingTone: 'neutral', lightSource: 'daylight', hour: 12, daylight: 1,
         illumination: 1, artificialLight: 0, daylightAccess: 1, glowStrength: 0, sight: 1, hearing: 1, scent: 1, movement: 1};
+}
+
+/** Whether "my scene only" (doc 51, §7) keeps a line: its own scene's, one's own, the world's, or one meant for them. */
+export function keptByMyScene(post: Post, selfName: string): boolean {
+    return post.system || !!post.scene?.mine || !!post.outgoing || post.speaker === selfName || post.to.includes('you');
 }
 
 export class GameState {
@@ -240,6 +251,22 @@ export class GameState {
     hoverTooltips = true;       // Labels beside the pointer (the line under the map always shows).
     /** The first fights' tips (doc 37, phase 7): on unless turned off in Settings; kept on this computer. */
     fightTips = true;
+    // Doc 51, §7: the IN WORLD feed showing only one's own scenes (and what is meant for one), and open scenes on the
+    // map. Both off by default (the map's: the user, 2026-10-07); kept in the browser.
+    mySceneOnly = false;
+    mapScenes = false;
+    // Where the map drew open scenes, for its pointer (the minimap's title).
+    mapSceneMarks: {x: number; y: number; text: string}[] = [];
+    // A fight's log, blow by blow, as last asked for (doc 51): by its scene's id.
+    fightLogs = new Map<string, string[]>();
+    // Howls heard (doc 51, Phase 6), by their chorus: a direction (degrees from north, clockwise), a distance in words,
+    // the howler's status, how many howl, whether one may join, and until when its mark shows. Marks may be turned off.
+    howls = new Map<string, {bearing: number; band: string; status: string; wolves: number; canJoin: boolean; until: number}>();
+    howlMarks = true;
+    // Story books (doc 51, Phase 7): the shelf as last asked for (its tab, filter, spines, whether there are more, and
+    // the open books one may add a scene to), and the book open.
+    shelf: {tab: string; filter: string; books: Json[]; more: boolean; open: Json[]} = {tab: 'shelf', filter: 'all', books: [], more: false, open: []};
+    bookOpen: Json | null = null;
     perfOverlay = false;        // The latency overlay (Settings, or ?perf): frames, ping, input to motion, traffic.
     /** From a key that sets a standing wolf walking to the first motion frame that shows it moved (ms), the last 30. */
     readonly inputToMotion: number[] = [];
@@ -287,6 +314,10 @@ export class GameState {
     strikeOnArrival: {target: string; verb: string; x: number; y: number; range: number} | null = null;
     fights: FightSquare[] = [];
     challenge: ChallengeView | null = null;
+    // A tie offered to this wolf as a mentor (doc 52): the newcomer's look, the starter, the town, until when.
+    tieOffer: {tie: string; look: string; starter: string; town: string; until: number} | null = null;
+    // An innkeeper pointing one out (or the wolves here out to one, a newcomer): introduce oneself? (Doc 52, 6.)
+    introducePrompt: {target: string; text: string; until: number} | null = null;
     // The party (doc 32): who is in it and where, an invitation waiting, a party mate's fight calling.
     party: PartyView | null = null;
     fightEndedAt = -10;
@@ -472,7 +503,7 @@ export class GameState {
             if (!view) {
                 view = {id, name: '', kind: 'player', state: '', actions: [], x: 0, y: 0, facing: 0, motion: new MotionBuffer(),
                     color: 0, self: false, typing: false, speaking: false, moving: false, spokenAt: -100, work: '', hostile: false,
-                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: [], rp: '', currently: '', walkup: false, handle: '', noted: false, unread: false};
+                    rel: '', why: '', colour: '', appearance: null, lifeStage: 'adult', artwork: '', gear: [], rp: '', currently: '', walkup: false, handle: '', noted: false, unread: false, nc: false, mentor: false, mentorFree: false};
                 this.entities.set(id, view);
             }
             view.name = str(e, 'name');
@@ -492,6 +523,9 @@ export class GameState {
             view.handle = str(e, 'handle');
             view.noted = bool(e, 'noted');
             view.unread = bool(e, 'unread');
+            view.nc = bool(e, 'nc');
+            view.mentor = bool(e, 'mentor');
+            view.mentorFree = bool(e, 'mentorFree');
             view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
@@ -972,6 +1006,37 @@ export class GameState {
             } else if (!Array.isArray(e.wolves)) this.knownOpen = null;
             return;
         }
+        if (type === 'shelf') {
+            const books = objects(e, 'books');
+            this.shelf = {tab: str(e, 'tab', 'shelf'), filter: str(e, 'filter', 'all'),
+                books: num(e, 'offset') > 0 ? [...this.shelf.books, ...books] : books, more: bool(e, 'more'), open: objects(e, 'open')};
+            return;
+        }
+        if (type === 'book') {
+            this.bookOpen = obj(e, 'book');
+            return;
+        }
+        if (type === 'introducePrompt') {
+            this.introducePrompt = {target: str(e, 'target'), text: str(e, 'text'), until: this.clock + num(e, 'seconds', 120)};
+            return;
+        }
+        if (type === 'tieOffer') {
+            this.tieOffer = {tie: str(e, 'tie'), look: str(e, 'look', 'a newcomer'), starter: str(e, 'starter'), town: str(e, 'town'),
+                until: this.clock + num(e, 'seconds', 180)};
+            this.toast = 'A tie is offered to you: see under the map.';
+            return;
+        }
+        if (type === 'howl') {
+            const id = str(e, 'id'), heard = this.howls.has(id);
+            this.howls.set(id, {bearing: num(e, 'bearing'), band: str(e, 'band'), status: str(e, 'status'), wolves: Math.trunc(num(e, 'wolves', 1)),
+                canJoin: bool(e, 'canJoin'), until: this.clock + num(e, 'until', 60)});
+            if (!heard) this.onCue?.(str(e, 'band') === 'near' ? 'howl' : 'howlFar');     // (The sound is in the world: always.)
+            return;
+        }
+        if (type === 'fightLog') {
+            this.fightLogs.set(str(e, 'session'), arr(e, 'lines').filter((l): l is string => typeof l === 'string'));
+            return;
+        }
         if (type === 'circles') {
             this.circles = objects(e, 'circles');
             this.circleInvites = objects(e, 'invites');
@@ -1041,6 +1106,9 @@ export class GameState {
             party: bool(e, 'party'), chapter: bool(e, 'chapter'),
             ...(num(e, 'sequence', -1) >= 0 && (type === 'roleplay' || type === 'ooc') ? {sequence: num(e, 'sequence')} : {}),
         };
+        const scene = obj(e, 'scene');
+        if (scene) post.scene = {mine: bool(scene, 'mine'), colour: str(scene, 'colour', '#8796a3'), openness: str(scene, 'openness'),
+            place: str(scene, 'place')};
         if (post.channel === 'circle') {
             // A circle's line (doc 50): its own tab, counted while another is open.
             post.channel = `circle:${str(e, 'circle')}`;
@@ -1337,6 +1405,39 @@ export class GameState {
         this.send({type: 'circle', verb, ...extra});
     }
 
+    /** Story books (doc 51): "start", "link", "next", "title", "summary", "chapter", "summarise", "move", "remove",
+     * "share", "hide", "finish", "agree", "object", "official", "approve", "volume", "open", "shelf". */
+    /** The innkeeper's prompt answered (doc 52): introduce oneself (to the newcomer, or aloud to the room), or not now. */
+    answerIntroduce(introduce: boolean) {
+        if (!this.introducePrompt) return;
+        if (introduce) this.sendAction('introduce', this.introducePrompt.target);
+        this.introducePrompt = null;
+    }
+
+    /** A tie offered to this wolf as a mentor (doc 52): taken, or passed to the next. */
+    answerTie(verb: 'accept' | 'pass') {
+        if (!this.tieOffer) return;
+        this.send({type: 'mentor', verb, tie: this.tieOffer.tie});
+        this.tieOffer = null;
+    }
+
+    sendBook(verb: string, extra: Json = {}) {
+        this.send({type: 'book', verb, ...extra});
+    }
+
+    /** The bookshelf: a tab ("shelf" or "unaffiliated") and a filter, from the top (or the next forty). */
+    openShelf(tab = this.shelf.tab, filter = this.shelf.filter, more = false) {
+        this.sendBook('shelf', {tab, filter, offset: more ? this.shelf.books.length : 0});
+        if (!more) this.shelf = {...this.shelf, tab, filter, books: [], more: false};
+        this.modal = 'stories';
+    }
+
+    /** A book, opened. */
+    openBook(id: string) {
+        this.sendBook('open', {book: id});
+        this.modal = 'book';
+    }
+
     /** Writes to a friend: the PRIVATE tab, with them chosen. */
     messageFriend(handle: string) {
         this.privateTo = handle;
@@ -1439,6 +1540,13 @@ export class GameState {
             this.runDevCommand(text);
             this.setChat(false);
             this.toggleDevConsole(true);          // Where the answer is.
+            return;
+        }
+        if (text === '/howl') {
+            // The gathering howl (doc 51): a command, not words.
+            this.composer.text = '';
+            this.send({type: 'howl'});
+            this.setChat(false);
             return;
         }
         if (text && this.channel === 'private' && !this.privateTo) {
@@ -1900,6 +2008,7 @@ export class GameState {
         this.facingPreview = false;
         const a = h.action;
         if (a === 'hunt' || a === 'forage' || a === 'leaveHunt') this.send({type: a});   // Out in the wild (doc 41).
+        if (a === 'post') this.send({type: 'post'});   // A training ground's practice post (doc 53).
         else if (a === 'leave_character') this.modal = 'leave_character';
         else if (a === 'leave_confirm') this.leaveCharacter();
         else if (a === 'leave_cancel') this.modal = 'character';
@@ -1972,7 +2081,23 @@ export class GameState {
         else if (a === 'projection') this.flatWorld = !this.flatWorld;
         else if (a === 'glyphs') this.plainGlyphs = !this.plainGlyphs;
         else if (a === 'tooltips') this.hoverTooltips = !this.hoverTooltips;
+        else if (a === 'howl') this.send({type: 'howl'});
+        else if (a === 'howl_marks') {
+            this.howlMarks = !this.howlMarks;
+            try {
+                localStorage.setItem('ratw.map.howls', this.howlMarks ? '1' : '0');
+            } catch { /* No storage here: for this visit only. */ }
+        }
+        else if (a === 'my_scene' || a === 'map_scenes') {
+            if (a === 'my_scene') this.mySceneOnly = !this.mySceneOnly;
+            else this.mapScenes = !this.mapScenes;
+            try {
+                localStorage.setItem(a === 'my_scene' ? 'ratw.feed.myScene' : 'ratw.map.scenes', (a === 'my_scene' ? this.mySceneOnly : this.mapScenes) ? '1' : '0');
+            } catch { /* No storage here: for this visit only. */ }
+        }
         else if (a === 'nopvp') this.send({type: 'noPvp', on: !bool(obj(this.snapshot, 'self'), 'noPvp')});   // (Kept with the character: doc 40.)
+        else if (a === 'huntpartners' || a === 'workpartners')         // (Doc 53: kept with the character; on by default.)
+            this.send({type: 'partners', kind: a === 'huntpartners' ? 'hunt' : 'work', on: bool(obj(this.snapshot, 'self'), a === 'huntpartners' ? 'noHuntPartners' : 'noWorkPartners')});
         else if (a === 'fighttips') {
             this.fightTips = !this.fightTips;
             try {
@@ -2061,7 +2186,32 @@ export class GameState {
             if (this.askFirst(h.target)) return;
             // A challenge names its terms (doc 37): the menu offers them, the default first.
             if (h.target === 'challenge') {
-                this.contextActions = ['challenge:yield', 'challenge:blood', 'challenge:death'];
+                this.contextActions = ['challenge:yield', 'challenge:blood', 'challenge:spar', 'challenge:death'];
+                return;
+            }
+            // Vouching (doc 52): for which wolf in sight, to this resident.
+            if (h.target === 'vouch') {
+                this.contextActions = [...this.entities.values()].filter(e => e.kind !== 'npc' && !e.self).slice(0, 8).map(e => `vouch:${e.id}`);
+                if (!this.contextActions.length) this.showToast('There is no one here to vouch for.');
+                return;
+            }
+            // The Wardens (doc 53, 4): of which Quickened partner whose magic one saw.
+            if (h.target === 'tell the wardens' || h.target === 'vouch to the wardens') {
+                const verb = h.target.startsWith('tell') ? 'tell' : 'vouch';
+                const seen = arr(obj(this.snapshot, 'self'), 'witnessed').filter(isObject).filter(w => verb === 'vouch' || !bool(w, 'told'));
+                this.contextActions = seen.map(w => `wardens-${verb}:${str(w, 'id')}`);
+                if (!this.contextActions.length) this.showToast(verb === 'tell' ? 'You have told them all you saw.' : 'There is no one to vouch for.');
+                return;
+            }
+            if (h.target.startsWith('wardens-')) {
+                const [verb, about] = h.target.slice('wardens-'.length).split(':');
+                this.send({type: 'wardens', verb, about, at: this.contextTarget});
+                this.contextTarget = '';
+                return;
+            }
+            if (h.target.startsWith('vouch:')) {
+                this.send({type: 'vouch', resident: this.contextTarget, for: h.target.slice('vouch:'.length)});
+                this.contextTarget = '';
                 return;
             }
             if (h.target.startsWith('challenge:')) {

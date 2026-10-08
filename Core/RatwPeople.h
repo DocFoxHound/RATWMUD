@@ -20,7 +20,10 @@ struct Glance
 // One character's profile (doc 50, 2). Status and walk-up are its too.
 struct Profile
 {
-    std::string description, currently, pronouns, title, motto;   // What others may see (title and motto: by name).
+    std::string description, currently, title, motto;   // What others may see (title and motto: by name).
+    // From the character's sex, she/her or he/him (the user: characters are male or female, and nothing else is
+    // offered): filled in by the game for a card or a resident's context, never set by the player or saved.
+    std::string pronouns;
     std::vector<Glance> glances;
     std::string oocNotes, history, otherLimits;                     // The OOC tab: players only.
     std::map<std::string, int> sliders;                             // "Chaotic/Lawful" -> -10..10 (absent: off).
@@ -36,6 +39,7 @@ struct Settings
 {
     bool showMature = false, recaps = true, toasts = true;
     bool messages = true;                                           // Private messages from friends (doc 50, 4).
+    bool matchmaking = true;                                        // Residents may point others to me, and me to others (doc 52, 5).
 };
 
 // An account as a person (doc 50, 1): beside the sign-in record, never holding a verifier.
@@ -48,6 +52,16 @@ struct AccountRecord
     std::string firstCharacter;
     Settings settings;
     double silencedUntil = -1;                                      // A DM's silence (doc 50, 7): real seconds.
+    bool graduated = false;                                         // No longer a newcomer, for good (doc 52, 2).
+    // Mentoring (doc 52, 3): opted in, available (else busy), turned off by a Dungeon Master until restored; resting
+    // after a tie until (real seconds), the tie it is on, ties that ended with a shared scene, the last tie's time.
+    struct Mentor
+    {
+        bool on = false, available = true, revoked = false;
+        double restingUntil = -1, lastTieAt = -1;
+        std::string tie;
+        int guided = 0;
+    } mentor;
 };
 
 // Friends (doc 50, 4): mutual, by account. Each side keeps its own link: when it began, and whether this side shows the
@@ -134,7 +148,7 @@ struct Rules
     double metEvery = 600;
     std::vector<std::string> tags;
     int recapsPerWolf = 3, recapsPerCharacter = 150, bufferLines = 120, bufferCharacters = 6000, modelLines = 6,
-        modelADay = 10, recapMost = 600;
+        modelADay = 10, recapMost = 7000;
     double modelMinutes = 5;
     int circleName = 32, circlesPerAccount = 10, circleMembers = 50, circleNights = 10, nightPlace = 80, nightLine = 160,
         circleInviteDays = 14;

@@ -55,6 +55,35 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
     v.add("banner", names::veil(b.banner, veilMap(viewer)));     // (Names as this wolf knows them.)
     v.add("pvp", b.pvp);
     v.add("hunt", b.hunt);                          // A hunt (doc 41): its other side is game.
+    // For a hunter (doc 53): wolves asking to join, and wolves near enough to invite.
+    if (const auto* mine = b.fighter(viewer); b.hunt && !b.over && mine && mine->side == 0 && mine->status != "fled")
+    {
+        auto panel = Value::object();
+        auto asks = Value::array();
+        for (const auto& a : world_.huntAsks())
+            if (a.battle == b.id && world_.entity(a.from))
+            {
+                auto row = Value::object();
+                row.add("id", a.from);
+                row.add("name", names::capitalised(labelFor(viewer, a.from)));
+                row.add("left", std::max(0.0, std::ceil(a.until - world_.time())));
+                asks.push(row);
+            }
+        panel.add("asks", asks);
+        auto near = Value::array();
+        for (const auto& id : world_.huntNearby(viewer))
+            if (!world_.huntInvited(b.id, id))
+            {
+                auto row = Value::object();
+                row.add("id", id);
+                row.add("name", names::capitalised(labelFor(viewer, id)));
+                near.push(row);
+            }
+        panel.add("nearby", near);
+        panel.add("starter", world_.huntStarterOf(b.id) == viewer);
+        panel.add("taken", world_.huntTaken(b));
+        v.add("huntPanel", panel);
+    }
     v.add("terms", b.terms);                        // "blood", "yield" or "death" (doc 37).
     v.add("crime", !b.incident.empty());            // A resident set on: the watch will hear of it.
     v.add("yieldBy", b.yieldBy);
@@ -268,8 +297,23 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                     const double a = world_.awareness(b, f.id, viewer);
                     animal.add("notice", a >= battle::AwareAlert ? 2 : a >= battle::AwareSuspicious ? 1 : 0);
                 }
+                // Game that runs (doc 53): grazing, watching (and whom), fleeing or calming, and how near a wolf it
+                // watches may come before it bolts (the page draws where it would run).
+                if (const auto state = world_.animalState(f.id); !state.empty())
+                {
+                    animal.add("state", state);
+                    animal.add("flight", s->flight);
+                    if (const auto watched = world_.animalWatching(f.id); !watched.empty())
+                    {
+                        animal.add("watching", watched);
+                        animal.add("watchingYou", watched == viewer);
+                    }
+                }
                 o.add("animal", animal);
             }
+        // One's own side lying in wait (doc 53): it springs on game stepping beside it.
+        if (!observer && f.side == mine->side && world_.huntWaiting(f.id))
+            o.add("waiting", true);
         // The initiative bar: how full, how fast it fills (a second), and whether it is full and waiting its turn.
         o.add("meter", std::round(std::max(0.0, f.meter) * 10) / 10);
         o.add("rate", f.acting || f.meter >= 100 || (f.status != "fighting" && f.status != "downed") ? 0.0 : world_.meterRate(b, f, haste));
@@ -445,7 +489,15 @@ Value Game::battleView(const Battle& b, const std::string& viewer) const
                 const bool sword = blade != nullptr;
                 const double aimMore = blade ? blade->weapon.hit / 100.0 : 0;
                 auto odds = Value::object();
-                odds.add("hit", std::round(std::min(.95, world_.strikeChance(*mine, f) + aimMore) * 100));
+                std::string why;
+                if (const double dodge = world_.huntDodge(*mine, f, &why); dodge >= 0)
+                {
+                    // Game that runs (doc 53): one minus its dodge, named ("95% · unaware", "85% · driven").
+                    odds.add("hit", std::round((1 - dodge) * 100));
+                    odds.add("why", why);
+                }
+                else
+                    odds.add("hit", std::round(std::min(.95, world_.strikeChance(*mine, f) + aimMore) * 100));
                 const bool ambush = world_.ambushing(b, *mine, f);
                 if (ambush)
                     odds.add("ambush", true);       // Unaware of this wolf: the first blow is an ambush (doc 40).
@@ -602,10 +654,29 @@ Value Game::fightsInView(const Entity& self) const
         o.add("round", b.turns);
         o.add("over", b.over);
         const bool locked = b.fled.count(self.id) || b.observed.count(self.id);
-        o.add("canJoin", !b.over && !locked && !self.dead && self.downedLeft <= 0 && self.age >= battle::YoungestFighter &&
-                             !world_.inBattle(self.id));
+        const bool able = !b.over && !locked && !self.dead && self.downedLeft <= 0 && self.age >= battle::YoungestFighter && !world_.inBattle(self.id);
+        if (b.hunt)
+        {
+            // A hunt (doc 53): whose, how many hunt, how many taken; Join hunt if one may, Ask to join if it is closed.
+            // Never a button for the game's side.
+            o.add("hunt", true);
+            int hunters = 0;
+            for (const auto& f : b.fighters)
+                hunters += f.side == 0 && f.status == "fighting";
+            o.add("hunters", hunters);
+            o.add("taken", world_.huntTaken(b));
+            o.add("canAsk", able && world_.mayAskHunt(b, self.id));
+            if (const auto starter = world_.huntStarterOf(b.id); !starter.empty() && world_.entity(starter))
+                o.add("starter", names::capitalised(labelFor(self.id, starter)));
+        }
+        o.add("canJoin", able && b.terms != "spar" && (!b.hunt || world_.mayJoinHunt(b, self.id)));
         o.add("canObserve", !b.over && !world_.inBattle(self.id));
         o.add("watching", b.observers.count(self.id) > 0);
+        if (b.terms == "spar")
+        {
+            o.add("spar", true);                    // A spar (doc 53, 5): its card says how many watch.
+            o.add("watchers", double(b.observers.size()));
+        }
         // For the story's one entry per fight (doc 18): how much has happened, and the latest of it.
         o.add("actions", double(b.seq));
         if (!b.log.empty())
@@ -720,6 +791,14 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
         result = world_.joinBattle(id, j.string("battle"), int(j.number("side", -1)));
     else if (verb == "observe")
         result = world_.observeBattle(id, j.string("battle"));
+    else if (verb == "ask")
+        result = world_.askToJoinHunt(id, j.string("battle"));   // A closed hunt (doc 53, 1.4).
+    else if (verb == "letIn" || verb == "notNow")
+        result = world_.answerHuntAsk(id, target, verb == "letIn");
+    else if (verb == "invite")
+        result = world_.inviteToHunt(id, target);
+    else if (verb == "giveShare")
+        result = world_.giveHuntShare(id, target);
     else if (verb == "leave")
         result = world_.leaveObserving(id);
     else if (verb == "bite" || verb == "tend" || verb == "flee" || verb == "struggle" || verb == "wait" || verb == "sword" ||

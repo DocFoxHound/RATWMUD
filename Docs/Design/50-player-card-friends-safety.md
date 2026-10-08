@@ -118,7 +118,8 @@ The card shows names exactly as Look does today.
 
 **The card** is today's closer look, grown into tabs:
 
-- **Look:** today's panel, with the description, Currently, glances, pronouns, status, walk-up and experience. Title,
+- **Look:** today's panel, with the description, Currently, glances, pronouns (from the character's sex since
+  2026-10-07: characters are male or female, the user; not a setting), status, walk-up and experience. Title,
   motto, birthplace and residence appear under the name for wolves who know it. Doc 51's star band and doc 52's
   newcomer and mentor marks go here.
 - **Profile (OOC):** OOC notes, history, sliders, lines and veils, mature. Players only.
@@ -205,7 +206,8 @@ already need consent for a fight between players.
 - **At the end** (settlement, or the member leaving the scene), a member who perceived 6 lines or more over 5 minutes
   or more *(placeholders)* gets a model recap: a new Mind endpoint, `POST /recap`, on the light model, given the buffer,
   the place, the member's own name and the labels, and asked for 2–4 sentences in the second person, 600 characters at
-  most, reporting claims as claims and inventing nothing. Everyone else, and every failure or budget refusal, gets the
+  most, reporting claims as claims and inventing nothing. *(Changed 2026-10-07, the user: it is now a short story, on the story
+  model, from each wolf's card as the member could see it; see doc 51, "Scenes told as stories".)* Everyone else, and every failure or budget refusal, gets the
   **written recap** from the ledger alone: "You shared a scene with a grey wolf with a torn ear and Wren at the Wharf
   tavern. It ran 40 minutes." The buffer is then dropped.
 - **Narrative storage, not a ledger** (doc 08), like residents' conversation memories. Kept per character

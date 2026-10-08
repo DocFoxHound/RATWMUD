@@ -26,9 +26,9 @@ need each other.
 | Order | Doc | Plan | Carries out (doc 48) | Depends on | Status |
 |---|---|---|---|---|---|
 | 1 | [50](../Design/50-player-card-friends-safety.md) | The player card, friends and safety | 3.1–3.5 (profile, status, friends, known wolves, circles, account names), Part 11 (mute, block, report) | — | Built and pushed (5 of 5 phases, last 1a2f550); migrations applied |
-| 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl | 50 | Building: phases 1–3 of 6 built (1 pushed, 9f556ed; 2–3 not committed) |
-| 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Drafted (5 phases) |
-| 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Drafted (7 phases) |
+| 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl; Story books and the bookshelf (Phase 7, the user's) | 50 | Built (7 of 7 phases; 1–3 pushed, last f4257c4; 4–7 not committed); migrations 0040 and 0041 applied |
+| 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Built (5 of 5 phases; not committed); migrations 0042 and 0043 applied |
+| 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Built (7 of 7, Phase 7 part B waiting on doc 35's Craft panel; not committed) |
 | 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Drafted (7 phases) |
 | 6 | [54](../Design/54-gathering-places.md) | Gathering places | Part 5 (taverns, markets, notice boards, festivals, venues and renting), Part 10 (tavern games, library) | 50, 51 | Drafted (7 phases) |
 | 7 | [56](../Design/56-fame-and-memory.md) | Fame and memory | 3.7 (deeds, nicknames), 8.4–8.6 (chronicle, unfinished business, welcome back), festival criers | 50; 54 for criers | Drafted (6 phases) |
@@ -76,11 +76,15 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
 - **51 Scenes and stars:** all answered 2026-10-07: the star rate is shown; talking a fight through pays a scene's
   ordinary pay; scenes on the minimap are off by default and a player may turn them on, with Knock scenes shown only
   when a friend is in them.
-- **52 Newcomers:** may a first character skip the busiest-town rule (to join a friend)? Does vouching carry to the
-  resident's household?
-- **53 Hunting and working together:** is ×1.8 each wolf's rate (as planned) or the pair's? Does any hunter turning
-  partners off close the hunt, or only the one who started it? Does a landed blade kill a fleeing animal, or only a
-  bite?
+  Phase 7 (Story books and the bookshelf, added by the user): answered 2026-10-07: finishing by a majority of the
+  recently active or unopposed after no activity; Private scenes may be linked, with a warning on finishing, and read
+  by all once finished; finished books link into volumes (related, sequel, prequel); "World" is the DM's world
+  storylines; books are the one kind of Story, and "official" is a book two thirds of its wolves agreed to (it pays as
+  today's Stories do).
+- **52 Newcomers:** all answered 2026-10-07: a first character may choose its start town (the busiest preselected);
+  vouching carries to the resident's household at half the share.
+- **53 Hunting and working together:** all answered 2026-10-07: ×1.8 is each wolf's rate (kept, balanced later); only
+  the hunt's starter controls whether strangers may join; a landed blade kills a fleeing animal.
 - **54 Gathering places:** must a full rest be in a bed the wolf has a right to? Should residents gamble with players?
   Festival prizes from entrants' pots, or funded by towns?
 - **55 Letters, gifts and favours:** should Well-groomed last at least 2 game hours when given late in the day? Do
@@ -173,3 +177,61 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
   - Plan 51, phase 3 built: Open / Knock / Private scenes (party scenes and rented places start Private), Join,
     knocking with LET IN / NOT NOW, nearby scenes by count, several scenes in one place, and the scene views reading
     indexes instead of every scene ever. Not committed.
+  - Plan 51 phases 2–3 pushed (f4257c4). The user asked for wolves' names and portraits when hovering over A SCENE HERE
+    (a scrolling list), and added Phase 7: Story books (scenes linked into player-driven Stories at any time, shared
+    with friends, circles, Chapters or the World) on a bookshelf, newest first, with filters, an Unaffiliated tab,
+    chapter timelines, and finishing with flavour text.
+  - Scenes are now kept 8 days, and players are told 7 (the user). Phase 7 questions answered, except books against
+    official Stories.
+  - Books are the one kind of Story (the user). Plan 51, phase 4 built: each line says its scene (colour bar for one's
+    own, a tag for an open one nearby), MY SCENE ONLY, and open scenes on the minimap behind a setting (Knock ones
+    only with a friend in them). Not committed (the user: commit and push at the end).
+  - Plan 51, phase 5 built: end screens (where, how long, who, moments in each viewer's names, a fight's figures) and,
+    at the user's request, fights as part of their scenes: the scene keeps the fight as a moment, stays alive through
+    it, and keeps its blow-by-blow log, readable from the card and part of recaps. Not committed.
+  - Plan 51, phase 6 built: the gathering howl (a direction and a distance, never a name; a chorus carries further;
+    residents turn and speak; the town remembers; howling together brings wolves closer). Not committed.
+  - Plan 51, phase 7 built: Story books (scenes linked before, during or after; chapters outliving their scenes;
+    summaries by hand or from recaps; sharing; finishing by majority or quiet days with the private-scene warning;
+    volumes; official books driving the ledger's Story) on a bookshelf, newest first, with filters and Unaffiliated.
+    Plan 51 is complete. Not committed; migration 0041 applied (DEV and PROD) on 2026-10-07.
+  - 2026-10-07, at the user's request: scenes told as short stories (up to about 1,000 words) from the wolves' cards
+    and the lines with their actions and speech marked; a book's later chapters carry on from the earlier ones without
+    describing the same wolves again; stories on `gpt-5.6-luna` (`story_model`), which now costs about what nano does.
+    Tried on the real model (doc 51, "Scenes told as stories"). Not committed.
+  - 2026-10-07: plan 52's open questions answered (a first character may choose its start town; vouching carries to
+    the household at half). Phase 1 built: the newcomer flag and the three start towns, with the creator's Arrival
+    tab. Not committed.
+  - 2026-10-07: plan 52, Phase 2 built: mentors (social level 5, no upheld report in 30 days; available or busy; the
+    newcomer's ✦; turned off by an upheld report or a Dungeon Master). Not committed.
+  - 2026-10-07: plan 52, Phase 3 built: ties (doc 48's eight starters; mentors first, each offered in turn, then a
+    resident who fits; told where to find each other, a marker for 20 minutes; lapsing at 7 days or 3 scenes, the
+    mentor resting a day). Migration 0042 written, not applied. Not committed.
+  - 2026-10-07: plan 52, Phase 4 built: residents as matchmakers (innkeepers, priests and market merchants point a
+    player at a wolf they know in town, for a reason the server chose, by the look the player knows; a written line
+    without the Mind). Not committed.
+  - 2026-10-07: plan 52, Phase 5 built: a newcomer's first evening at an inn (welcomed with the other newcomers there,
+    the wolves pointed out as each listener knows them, Introduce prompts) and vouching (a share of trust, half to the
+    household, the voucher's standing at risk). Plan 52 is complete. Migration 0043 written, not applied. Not committed.
+  - 2026-10-07: migration 0043 applied. Plan 53's questions answered (×1.8 each wolf's rate, kept; only the hunt's
+    starter controls joining; blades kill fleeing game). Phase 1 built: game freezes, watches, bolts directly away,
+    calms; one bite or blade kills; the dodge by what it knew; lying in wait; the hunt sim. Not committed.
+  - 2026-10-07: plan 53, Phase 2 built: open hunts (only the starter's setting counts), asks and invites, equal shares
+    and Give my share, more game per hunter, companions that lie in wait, roles named. The 1.5× pair target isn't met
+    in the sim; left for the balance pass the user asked for later. Not committed.
+  - 2026-10-07: plan 53, Phase 3 built: the joint activity (`together::rate`, joints kept by World, leaving at 8 tiles
+    from the others or 60 s idle, the bond), foraging together (each of a pair 1.79× a lone forager, a patch 5 then 6
+    pickings), Lend a paw and Ask to lend a paw in the menu, work as a scene (talk while working pays), the work row.
+    Not committed.
+  - 2026-10-07: names always start with a capital (the user). Plan 53, Phase 4 built: Help with the harvest (autumn)
+    and the threshing (winter) beside a resident farmer at its post; a spell's yield share and piece-rate pay from the
+    farm's till (×1.4 alone, ×2.0 each for two); no work when the till can't pay or the barn is full; no hunk in the
+    economy session's files. Not committed.
+  - 2026-10-08: plan 53, Phases 5-7A built.
+    - Phase 5: spars, bruises at worst; training grounds as data; trainers; the practice post.
+    - Phase 6: Winnow and Dry lifts threshing; Lighten Load over a joint; Weathereye at the harvest; Throw Voice drives
+      game; Keep watch; residents face their talkers; partners keep a Quickened wolf's secret; tell and vouch at a
+      Warden.
+    - Phase 7A: a paw at a resident's bench, its batches faster and thriftier (one declaration and two hunks in the
+      economy session's `RatwSociety.h` / `RatwCrafting.cpp`).
+    - Part B waits for doc 35's player Craft panel. Not committed.

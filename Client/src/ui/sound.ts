@@ -85,6 +85,15 @@ export class Sound {
 }
 
 const Recipes: Record<string, (s: Sound, ctx: Ctx, at: number) => void> = {
+    // A wolf's howl, heard (doc 51, Phase 6): rising, held, falling; fainter from far off.
+    howl: (s, ctx, at) => {
+        s.tone(ctx, at, 0.7, 0.22, 330, 520, 'sine', 0.25);
+        s.tone(ctx, at + 0.65, 1.0, 0.2, 520, 380, 'sine', 0.05);
+    },
+    howlFar: (s, ctx, at) => {
+        s.tone(ctx, at, 0.8, 0.08, 330, 500, 'sine', 0.3);
+        s.tone(ctx, at + 0.75, 1.1, 0.07, 500, 370, 'sine', 0.05);
+    },
     // A snap of teeth and a thump of the body.
     bite: (s, ctx, at) => {
         s.hiss(ctx, at + 0.05, 0.07, 0.5, 'bandpass', [2400, 1400], 1.4);

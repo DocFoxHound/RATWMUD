@@ -129,6 +129,27 @@ void fightScenes()
     expect(m.receiptsOf("di").size() == 1 && m.receiptsOf("ed").empty(), "only those who took their turns have the fight's receipt");
 }
 
+// Working together is a scene of its own (doc 53, 2.2): its members in it from the start; those who talk it through are
+// paid when the work ends, and working in silence pays nothing.
+void workScenes()
+{
+    SocialLedger l;
+    std::uint64_t event = 1;
+    const double t = 7000;
+    for (const char* who : {"ada", "bo", "cy"})
+        l.joinWork("j1", "wilds", who, t);
+    const auto scene = SocialLedger::workScene("j1");
+    expect(l.sessions.count(scene) && l.sessions[scene].members.size() == 3 && SocialLedger::isWork(l.sessions[scene]) &&
+               l.sessions[scene].openness == "open",
+           "the work's scene, open, with its members in it from the start");
+    const auto talk = converse(l, "ada", "bo", t + 1, event, "wilds", SocialLedger::workTag("j1"));
+    expect(talk == scene, "their words while working are the work's scene");
+    l.settleWork("j1", t + 60);
+    expect(l.paidFor("ada", scene) == 20 && l.paidFor("bo", scene) == 20, "talking it through pays: " + std::to_string(l.paidFor("ada", scene)));
+    expect(l.paidFor("cy", scene) == 0, "working in silence pays nothing");
+    expect(l.settleWork("j1", t + 70) == 0 && l.paidFor("ada", scene) == 20, "never paid twice");
+}
+
 // Openness, joining and knocking (doc 51, Phase 3), in the ledger alone.
 void opennessJoiningAndKnocking()
 {
@@ -177,12 +198,12 @@ void opennessJoiningAndKnocking()
     copy.sessions = l.sessions;
     copy.reindexScenes();
     expect(copy.scenesOf("ada").count(scene) && copy.openIn("tavern").size() == 2, "indexes rebuilt from the scenes");
-    // Ended scenes are kept three days for stars and Stories, then let go; each member's last ended scene is known.
+    // Ended scenes are kept eight days (players are told seven), then let go; each member's last ended scene is known.
     l.settle(scene, 2000);
     expect(l.lastEnded("ada") == scene && !l.scenesOf("ada").count(scene) && !l.openIn("tavern").count(scene), "ended: out of the indexes");
-    l.tick(2000 + 3 * 86400 - 10);
-    expect(l.sessions.count(scene), "kept for three days");
-    l.tick(2000 + 3 * 86400 + 10);
+    l.tick(2000 + 8 * 86400 - 10);
+    expect(l.sessions.count(scene), "kept for eight days");
+    l.tick(2000 + 8 * 86400 + 10);
     expect(!l.sessions.count(scene) && l.lastEnded("ada").empty(), "then let go");
 }
 
@@ -441,6 +462,7 @@ int main()
     {
         actionsAndPartyScenes();
         fightScenes();
+        workScenes();
         leavingAScene();
         opennessJoiningAndKnocking();
         starsAndStories();

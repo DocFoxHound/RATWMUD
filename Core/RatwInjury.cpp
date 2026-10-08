@@ -520,6 +520,23 @@ void World::injureOnBlow(Battle& b, BattleFighter& t, double damage, double down
     auto* e = entity(t.id);
     if (!e || e->npc || by.empty() || damage <= 0)
         return;
+    if (b.terms == "spar")
+    {
+        // A spar (doc 53, 5): a hard blow leaves a minor bruise at worst, and never a lasting mark.
+        const std::string key = b.id + "|" + t.id + "|spar|" + std::to_string(b.seq);
+        bool bruised = false;
+        for (const auto& i : e->injuries)
+            bruised = bruised || (i.kind == "acute" && i.type == "bruised_ribs");
+        if (!bruised && damage >= 25 && roll(key) < .25)
+        {
+            auto i = injury::given("bruised_ribs", 1, "", injurerWords(by));
+            i.id = injuryId() + e->id;
+            i.gotDay = calendarDays_;
+            injury::give(e->injuries, i);
+            notice(t.id, "That one will bruise: " + injury::describe(i) + ".");
+        }
+        return;
+    }
     const std::string cause = injuryCause(downedBase, by);
     const bool down = e->hurt >= 100 && b.terms == "death";   // (Going down: downFighter gives that one.)
     const std::string key = b.id + "|" + t.id + "|blow|" + std::to_string(b.seq);

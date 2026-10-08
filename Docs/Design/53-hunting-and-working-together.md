@@ -1,6 +1,8 @@
 # 53. Hunting and working together
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (§§6.1–6.7, 6.9 and 5.3). Nothing built. Read doc 48 (Principles,
+Drafted 2026-10-06 as an actionable plan for doc 48 (§§6.1–6.7, 6.9 and 5.3). Open questions answered 2026-10-07;
+Phases 1 to 4 built the same day; 5, 6 and Phase 7's part A the next (see "Built"). Phase 7's part B waits for doc 35's
+player Craft panel. Read doc 48 (Principles,
 Part 6, §5.3 and the Decisions) and docs 41, 40, 33, 37, 35, 43, 42, 26, 38, 44 and 31 first.
 
 Marks: **(agreed)** is the user's decision, with its place in doc 48; *(placeholder)* is one constant to change.
@@ -136,8 +138,8 @@ Each animal that flees (every species but the `fierce` ones) is in one state, ke
 #### 1.2 One bite, and the dodge
 
 - **A landed bite kills any animal that flees** (agreed): rabbits to roe deer, red deer, elk, fox, badger and mountain
-  goat. A blade's landed blow counts the same *(placeholder; Open question 3)*. Fire and other Gift blows keep doc 41's
-  health rule.
+  goat. A blade's landed blow counts the same (the user, 2026-10-07). Fire and other Gift blows keep doc 41's health
+  rule.
 - The bite's chance is **1 − dodge**, replacing `strikeChance` for these animals:
 
   | The animal… | Dodge *(placeholders, agreed shape)* |
@@ -171,9 +173,9 @@ animal's own turn, so:
 #### 1.4 Joining (agreed)
 
 - The hunt's square shows **Join hunt** to anyone who can see it, as Join fight does.
-- Who may join: the hunters' party or Chapter and companions (as now), and **anyone at all while every hunter in it
-  has Allow hunting partners on** *(placeholder: any hunter turning it off closes the hunt to strangers; Open question
-  2)*. No one blocked by any hunter (doc 50) may join or see the button.
+- Who may join: the hunters' party or Chapter and companions (as now), and **anyone at all while the hunter who started
+  it has Allow hunting partners on**. Only the starter's setting counts (the user, 2026-10-07: "only the one who started
+  it should have control"). No one blocked by any hunter (doc 50) may join or see the button.
 - **A closed hunt** shows **Ask to join**: the hunters get "Bo asks to join your hunt" (Let in / Not now, 30 s
   *(placeholder)*). Their hunt panel lists wolves within 20 tiles of the square *(placeholder)* with **Invite**. So a
   hunter with the setting off can still invite (agreed).
@@ -248,7 +250,8 @@ alone**. Counting players first (in the order they joined) and resident hands af
 - **Patterns and activities are data** (`Data/Together/patterns.json`): each activity names its pattern, its two roles
   and their words ("digs" / "carries and sorts"), its `most`, its beat in seconds, the skill each role practises, and
   the Gifts that add an angle (Phase 6).
-- A wolf leaves by **Leave**, by going 8 tiles off, or after 60 s idle *(placeholders)*. With no player left it ends.
+- A wolf leaves by **Leave**, by going 8 tiles off from all the others (so a pair may range patch to patch together),
+  or after 60 s idle *(placeholders)*. With no player left it ends.
 - Ending: every pair of players who worked 2 beats together gains bond (+1 affinity, +0.5 trust, +2 familiarity
   *(placeholder)*), a resident partner more (+2 affinity, +2 trust: residents remember who helped), and a ledger event
   of IDs (`together`) for docs 51 and 56.
@@ -553,6 +556,405 @@ only this plan's hunks.
 - **Done when:** A: a player hands for a smith and the batch comes sooner. B: two players make steel.
 - **Cost:** one lookup per batch.
 
+## Built
+
+### Phase 1 (2026-10-07): animals that freeze and flee, and one-bite kills
+
+- **Data** (`Data/Wild/animals.json`, read by `Core/RatwWild.*`):
+  - every species but the fierce ones has `flight`, half its `alert` (a rabbit 3.5, a roe deer 6, a red deer 7);
+  - `dodge` adds points to its dodge (a hare +5, a badger and an elk −5);
+  - `Species::flees()` is every temper but `fierce`, so "cornered" kinds run too, biting once only when they have
+    nowhere further to go.
+- **The four states** (`Core/RatwHunt.cpp`):
+  - `HuntAnimal` gains `state`, `watching`, `from`, `calm` and `saw`, the wolves it has been alert to.
+  - `World::huntReact` runs at the end of each hunter's turn (after doc 40's noticing) and at the start of the animal's
+    own. A noticed wolf further off than the flight distance is watched. One within it makes the animal bolt
+    (`huntBolt`), its bar filling at once. So does a missed bite (`huntMissed`), or any hurt short of death.
+  - A fleeing animal calms after two of its turns without the wolf in its senses, takes one ordinary-paced turn away,
+    then watches or grazes.
+  - Only wolves it has noticed count, so a driven animal runs past a hidden partner.
+  - `World::fleeingTurn` runs directly away from the wolf it flees: the tile furthest along that line, a little against
+    straying sideways, off the edge to get away. Its run (`huntReach`) is 1.5 × the fastest hunter's sprint and costs it
+    no stamina.
+- **One bite** (`huntBlow`): a landed bite or blade (both land as `DownedBite`) kills any animal that runs, cleanly
+  (the user: blades too). Fire and other Gifts' blows keep doc 41's health rule. Boars and bears are unchanged.
+- **The dodge** (`World::huntDodge`, replacing `strikeChance` for game that runs):
+  - 5% unaware, rising to 60% while it half notices the biter;
+  - 15% driven past a wolf it never noticed;
+  - 60% when it watches the biter;
+  - 75% when it flees the biter.
+
+  Then the species' points are added, 0.2 points come off per point of the biter's DEX and fighting skill over 50, and
+  the result is clamped to 2%–90%. The battle view's odds carry it as `hit` with `why` ("95% · unaware", "85% ·
+  driven"), from any side.
+- **Quality** (`huntKill`): masterwork when the animal never saw the killer, fine otherwise; fire still caps it at common.
+- **Lying in wait:**
+  - A hunter that ends its turn crouched without biting lies in wait (`huntHunters_`, cleared when its turn comes
+    again).
+  - An animal stepping beside it (`huntStep`, after each step in `walkFighters`) gets a bite at once, out of turn
+    ("Ada springs from hiding!"). A dodge stops the animal where it is.
+  - Each hunter's last active turn is kept for Phase 2's sharing.
+- **Combat hooks:** one line each in `RatwBattle.cpp`: `beginTurn`, `walkFighters`, `endTurn`, `reachWith`,
+  `battleMove` (no stamina for a bolting animal), `strikeChance`, and the bite's and sword's misses.
+- **The page:**
+  - Over game: "?" while it half notices you, "!" watching, "»" fleeing, "~" calming.
+  - A faint line runs from the wolf a watching animal watches, through it and on: where it will run.
+  - The odds badge and card name the dodge.
+  - One's own wolves lying in wait carry "⋯".
+  - `animal.state`, `flight`, `watching`, `watchingYou`, the fighter's `waiting`, and `odds.why` are sent
+    (`RatwGameBattle.cpp`).
+- **Dev Console:** `/hunt <animal> [animal…]` starts a hunt where one stands with just that game. `World::startHunt`
+  gains an optional list of species, which tests use too.
+- **The sim** (`Tests/hunt_sim.cpp`, a CMake target, not a test; `Tests/hunt_play.h`): a lone stalker over seeded runs
+  of fixed game time, for 40 runs of 30 minutes:
+
+  | | kills / hunter-hour | goods | pennies of goods | masterwork |
+  |---|---|---|---|---|
+  | Before (doc 41's rules) | 1.85 | 15.8 | 63 | 8% |
+  | Now | 1.05 | 12.1 | 56 | 9% |
+
+  The new stalker crouches throughout, prefers unaware game and rushes a watching animal from close; the old run used
+  a plainer stalker. A lone wolf now catches fewer, mostly by staying unseen, which leaves the room Phase 2's pairs need
+  (the target is 1.5× a lone wolf's goods each).
+- **Tests:**
+  - `Tests/hunt_tests.cpp`, now 179 checks:
+    - a far wolf it sees: it watches her;
+    - within its flight distance: it bolts at once, runs further than her sprint, directly away;
+    - a hidden partner beside its line doesn't turn it;
+    - it calms, then grazes;
+    - the dodge row by row, with the hare's points and the clamp;
+    - driven past a wolf it never saw: 15%;
+    - one bite kills a red deer, masterwork unseen, fine once seen;
+    - a boar keeps its health;
+    - a dodge sends it fleeing the biter;
+    - lying in wait, she springs as it passes.
+  - The ragged-kill test now uses boars, and the runner is startled by a blunt blow (a bite kills).
+  - `Client/src/game/battle.test.ts` covers the state, the watcher, the dodge from any side, and the waiting mark.
+- **Not done:** a look on a scratch DEV server (`/hunt roe_deer`). The Dev Console needs a character marked Dungeon
+  Master, and the behaviour is exercised in the tests instead.
+
+### Phase 2 (2026-10-07): hunting together
+
+- **The settings:**
+  - `Entity::noHuntPartners` and `noWorkPartners` are saved only when off (`RatwWire.cpp`).
+  - The command is `{"type": "partners", "kind": "hunt" | "work", "on": bool}`, with Settings toggles ("Hunting
+    partners: Anyone may join / Only those I invite").
+  - The snapshot's `self` shows them.
+- **Who may join** (`World::huntJoinRefusal`, `mayJoinHunt`):
+  - never one blocked by a hunter (`World::setBlocked`, wired to doc 50's block);
+  - always a hunter's companion, party or Chapter, or one let in or invited;
+  - anyone else while the hunt's starter (`huntStarterOf`) allows hunting partners. Only the starter's setting counts
+    (the user).
+- **A closed hunt:**
+  - `askToJoinHunt` holds the ask for 30 s; the hunters are told.
+  - `answerHuntAsk` lets them in (they join at once) or says not now.
+  - `inviteToHunt` lets in a wolf within 20 tiles (`huntNearby`).
+  - The hunters' battle view has a `huntPanel` (asks, wolves near enough to invite), shown under the map with Let in,
+    Not now and Invite.
+- **Shares** (`huntKill`, `huntSharers`):
+  - A kill is split equally among the hunters still in the hunt who did something in their last ten turns; the killer
+    always shares.
+  - Each item gives everyone the whole part, and the remainder goes one by one to sharers drawn by chance, so nothing is
+    made or lost.
+  - Masterwork keeps the killer's mark. A companion's share goes to its leader.
+  - Each sharer is told "… shared among 2. Your share: …".
+  - The snapshot's `huntShare` (for ten minutes) gives the end card's Give my share to … (`giveHuntShare`, one
+    `Society::shift` each, kind "a hunt's share"); the one given it is the carrier.
+- **Bonds and roles** (`endHunt`):
+  - Pairs who shared a kill gain bond once a hunt (`Bonds::mutual` +1 affinity, +1 trust, +2 familiarity).
+  - `huntRole` events name each part: tracker (their trail brought the game), driver (it fled them into a partner's
+    jaws), ambusher (took one fleeing another, or sprang), carrier.
+- **More game per hunter** (`tendHunts`, `huntJoined`):
+  - Arrivals' chance grows by `perHunter` (0.75) a share per extra hunter, and how many may be in at once by
+    `atOncePerHunter` (2).
+  - A hunter joining brings in `joinerBrings` (0.5) of the expected count, rolled.
+  - The numbers are now in `animals.json`'s `population`.
+- **Companions** (`World::huntHelperTurn`, one line in `npcTurn`):
+  - in a hunt a companion bites an animal beside it that hasn't noticed it;
+  - otherwise it stalks, beside a stalking leader or round to the far side of the animal its leader goes at, and lies
+    in wait, instead of charging.
+- **The page:**
+  - A hunt in sight reads "A dun wolf's hunt · 2 hunting · 1 taken", with Join hunt, or Ask to join when it is closed to
+    one. There is never a button for the game's side (this fixes the bug noted under "Where we stand").
+  - The DM's watch frame flags hunters (16) and says "hunting".
+  - Joining says "joins the hunt".
+- **The sim** (`Tests/hunt_sim.cpp`, `Tests/hunt_play.h`):
+  - suites lone, pair, three, four and companion, each staying in one place and roaming between three;
+  - the wolves trot (pace 7), as a player closing on game would; at a walk the lone stalker barely catches anything;
+  - a pack member (`packTurn`) stalks unaware game, weighing game by its worth. An animal watching a packmate it hasn't
+    noticed, it circles round and lies in wait for; one watching itself, it holds off until a packmate is round, then
+    steps in to drive it.
+
+  Measured, 12 runs of 30 game minutes, per wolf per hunter-hour, the placeholders as built:
+
+  | Suite | Ground | Kills (all) | Goods | Pennies | Masterwork | Deer taken |
+  |---|---|---|---|---|---|---|
+  | Lone | stay | 10.7 | 27.5 | 118 | 22% | 0 |
+  | Lone | roam | 17.7 | 43.7 | 210 | 39% | 0 (1 elk) |
+  | Pair | stay | 15.0 | 23.2 | 112 | 41% | 4 |
+  | Pair | roam | 18.8 | 26.8 | 124 | 43% | 2 |
+  | Three | stay | 20.8 | 23.9 | 138 | 54% | 17 |
+  | Three | roam | 20.3 | 22.7 | 127 | 54% | 13 |
+  | Four | stay | 21.5 | 16.2 | 81 | 46% | 6 |
+  | Four | roam | 22.7 | 21.5 | 128 | 63% | 19 |
+  | With a companion | stay | 11.3 | 31.2 | 124 | 23% | 1 |
+  | With a companion | roam | 15.7 | 46.7 | 194 | 20% | 4 |
+- **The target isn't met yet.** The agreed target is each wolf of a pair at 1.5× a lone wolf's goods. Measured, a pair
+  comes to about a lone wolf's goods each staying in one place, and less roaming.
+  - Packs catch deer that lone wolves never do, and more masterwork.
+  - A lone wolf at a trot already takes about ten small animals an hour unseen, so two wolves must bring in three times
+    that between them.
+  - Doubling game per hunter barely moved it (the hunters' pace is the limit, not the game).
+  - A companion is worth about a little over a lone wolf's goods staying put (its share goes to its leader), and about
+    the same roaming.
+  - The plan's next levers are flight distance, the bolting run, the 15% driven dodge and a spring from two tiles. The
+    user asked for hunting's balance to come later (2026-10-07), so they are left for that pass, with the sim ready for
+    it.
+- **Tests:**
+  - `Tests/hunt_tests.cpp`, now 219 checks.
+    - `whoMayJoin` replaces `onlyFriendsJoin`: a stranger joins an open hunt; another hunter's setting doesn't close it;
+      the starter's does; one asks once and is let in; one is refused, then invited; a blocked wolf can neither join
+      nor ask; never the game's side.
+    - `sharing`: 8 raw meat split 4 and 4 between the two who took part, the one hide to one of them, nothing to the one
+      who idled, Give my share moving it (not to one who didn't share).
+    - `moreGameAndCompanions`: a joiner brings game in; a companion lies in wait beside its stalking leader.
+  - `Tests/game_tests.cpp` `huntsTogether`: the hunt square seen by a stranger, the setting kept and shown, the ask
+    round trip, the invitation.
+  - `Tests/wire_tests.cpp` `partnersSaved`.
+  - `Client/src/game/battle.test.ts`: the hunt square.
+  - `tools/client/hunt.mjs` (its own wild world): Bo joins Ash's hunt from the square; Ash closes it; Cy asks; Ash lets
+    her in. Screenshots in `artifacts/screenshots/hunt/`.
+
+### Phase 3 (2026-10-07): the joint activity, foraging together, Lend a paw
+
+- **The mechanism** (`Core/RatwTogether.h` / `.cpp`, new, in `ratw_core`):
+  - `together::rate` as in 2.1 (players first, a step halved while all so far share one role, halved for a resident
+    hand); `together::split` shares a count exactly, the remainder one by one in an order drawn by chance.
+  - `JointWork` kept by World (`joints_`, `jointOf_`), never saved. `World::lendAPaw` makes or joins the joint, the
+    free role first (a role may be named); `askToLend`, `leaveWork`, `dropFromJoint`, `endJoint`, `workRate`,
+    `workLabour`, `atWork` (in a joint, or foraged within the last 60 s).
+  - `tendJoints` runs once a second over live joints only. A member has left when it is 8 tiles off from **all the
+    others** (not from where the work began: foraging moves patch to patch, and a fixed spot ended every pair's joint
+    at the next patch), idle 60 s, down, in a fight, or elsewhere. A joint with fewer than two, or no player, ends.
+  - Ending: each pair who worked 2 beats together gains bond (+1 affinity, +0.5 trust, +2 familiarity; a resident
+    +2/+2) and a `together` ledger event of IDs.
+  - `Data/Together/patterns.json` (new): the steps, distances, bond, the seven patterns and the `forage` activity
+    (roles "digs" / "carries and sorts", with "dig" / "carry and sort" for oneself; most 4; beat 4 s).
+  - `shareOut` stayed where it was: the hunt's shares are per item and per sharer's activity, foraging's per picking;
+    they share only `split`'s idea, written once in each.
+- **Foraging together** (`World::forage`): a member's picking gives `count × rate` (the fraction by chance), split
+  exactly among the members, each told their share ("Together you gather 2 cooking herbs from the grass; your share is
+  1."). The patch gives one more picking for each extra member, up to two (`takeFromPatch(…, extra)`; the outwork's calls
+  unchanged). Each picking is a beat; a beat counts toward the bond with every member who worked in the last minute.
+  Practice is foraging's own (`forage.pick`, each picking).
+- **Lend a paw** (`World::mayLend`): within 6 tiles of a player at work, not blocked either way, and the worker's
+  Allow work partners on (`Entity::noWorkPartners`, Phase 2's setting and toggle) or the worker asked. In the menu:
+  "Lend a paw", or "Ask to lend a paw" of a player near who isn't at work. The command is
+  `{"type": "work", "verb": "lend" | "ask" | "leave", "with" | "to": id}`.
+- **A scene**: `SocialLedger::workScene` / `workTag` / `isWork` / `joinWork` / `settleWork` (fights and work now share
+  `settleScene`). `Game::tendWorkScenes` keeps every joint's members in its scene (open, as any scene) and settles it
+  when the work ends. A wolf's words while in a joint carry the work's tag (unless it is fighting), so talking it
+  through is paid as a fight's talkers are; working in silence pays nothing.
+- **The page**: the snapshot's `self.work` (kind, name, rate, members with their role words and beats); a row under the
+  map, "Foraging with A dun wolf · ×1.8 · you dig · A dun wolf carries and sorts · Leave". The DM's watch frame flags
+  joint workers (32) and says "Foraging together".
+- **Measured** (`together_tests`): 40 rounds of two pickings each, moving to a fresh patch every round: alone 80 goods;
+  a pair 144 and 142, each 1.79× a lone forager. A patch gives 4 pickings alone, 5 for two, 6 for three.
+- **Tests:**
+  - `Tests/together_tests.cpp` (new, 39 checks): `rate` in every case of 2.1, six wolves, and the activity's most;
+    `split`; Lend a paw refused when not at work, when the worker's setting is off (until asked) and when blocked; the
+    free role; going off ends the joint; idle a minute leaves; each of a pair at about 1.8×, shared evenly; 4, 5 and 6
+    pickings a patch; the bond and the `together` event.
+  - `Tests/game_tests.cpp` `worksTogether`: Lend a paw in Bo's menu only once Ash forages, Ask to lend a paw in hers;
+    the work block (1.8, dig / carries and sorts) for both; a picking shared; Cy asked and joining (2.2); their words in
+    the work's scene; both leaving ends it.
+  - `Tests/social_game_tests.cpp` `workScenes`: the scene open with its members from the start; talkers paid 20 each,
+    the silent worker nothing, never twice.
+  - `tools/client/together.mjs` (new, its own wild world): Ash forages; Bo opens her menu and lends a paw; both see the
+    row; a picking is shared; Bo leaves. Screenshots in `artifacts/screenshots/together/`.
+- **Noticed, then fixed in Phase 4 (names always start with a capital):** a notice naming another wolf ("Bo lends you a paw", "Bo asks to join your
+  hunt", "Your share of what Bo gathers") is veiled for a reader who doesn't know the name only where the name starts
+  with a capital (`names::veil`). Character names may start lower case (`accounts::validDisplayName`), so a wolf
+  named "bo" is shown by name to strangers in every such notice, not only this plan's. Capitalising names at creation,
+  or notices carrying IDs that are labelled for each reader, would close it.
+
+### Phase 4 (2026-10-07): farm work at harvest and threshing
+
+- **When and where** (`World::residentWorkAt`): a resident farmer at work at its post (its task is its post's title, in
+  its hours, and it stands within 1.5 tiles of its spot), whose producer (`Data/Items/crafts.json`) an activity in
+  season names:
+  - the harvest in autumn at farms, orchards and vineyards;
+  - threshing in winter at farms only (an orchard's or vineyard's winter firewood isn't threshing).
+  - In its menu, within 6 tiles: **Help with the harvest** / **Help with the threshing**. The command is also
+    `{"type": "work", "verb": "start", "at": id}`.
+- **The joint** (`World::helpAtWork`):
+  - The farmer is a resident member in the second role, so a player alone works at ×1.4.
+  - Other players join by Lend a paw on a player in it, or by helping the farmer too. The free role is counted among
+    players only, so two players take both angles beside the farmer's and work at ×2.0 each.
+  - Refused when the farm's till can't pay two spells' wages ("Hale can't pay for more hands today."), or its barn holds
+    `ProducerKept` of everything the work brings in ("The barn is full; …").
+- **The beat** (`World::workBeat`, from `tendJoints`): a spell, 300 s (30 game minutes). For each player who did
+  anything in the spell (`World::noteActive`, called on every command, so talking while working counts):
+  - **Goods:** its rate × a third of a spell's yield (the producer's `out`, or `offSeason` for threshing), the fractions
+    by chance, into the farm's till up to `ProducerKept` ("brought in by a hand").
+  - **Pay:** the town's hand wage a spell (`dayWage(town, "hand") / PaidSpells`) × its rate, from the farm's till by
+    `Society::shift` (kind "farm work"), fractions of a penny carried in the member.
+  - A spell it came part of the way through counts in part. Without that, a player who joined two seconds after a spell
+    began was paid nothing for the whole five minutes.
+  - It is told: "A spell's threshing beside Hale: 1 wheat (measure), 1 firewood (bundle) brought in; you are paid 3p
+    (3p so far)." The ledger gets a `farm work` event.
+  - Beats with the farmer and each other count toward the bond at the end (a resident +2 affinity, +2 trust).
+- **Leaving:** a player idle for a whole spell has left. The joint ends when the farmer stops (its hours end, the
+  weather, Restday), when the till can't pay, or when the barn fills ("Hale stops work, and so do you.").
+- **No hunk in the economy session's files.** Everything needed is public on `Society` (`spec`, `jobOf`, `resident`,
+  `tillOf`, `account`, `stock`, `create`, `shift`, `spendable`, `dayWage`), so `Society::handBeat` wasn't added and
+  `RatwSociety.h` is untouched. The pay from a till is seen by the orchestrator through `shift`'s
+  `noteForOrchestra`, as a till's spending.
+- **The page:** the work block adds `farmer`, `earned` and `nextBeat`; the row reads "Threshing with Hale · ×1.4 ·
+  3p earned · next spell in 4:55". The DM's watch says "Threshing at Hale's". A dev calendar step `{"type":
+  "calendar", "value": "season"}` goes to the next season's first day (`RatwWire.cpp`).
+- **Measured** (`together_tests`, against the same world without the hand): four spells of threshing beside Hale paid
+  8p (2.1p a spell at ×1.4, carried) from his till, and put 7 more goods in his barn than he brought in alone. With Bo
+  too, at ×2.0, each was paid 3p a spell.
+- **Tests:**
+  - `Tests/together_tests.cpp` `farmWork` (now 62 checks): nothing in spring, the harvest in autumn, threshing in
+    winter; ×1.4 alone, ×2.0 each with Bo; four spells' pay exact, from the till; money across all accounts moving
+    exactly as in the world without the hand (doc 15); more in the barn; Bo's part spell; idle a spell leaves; a full
+    barn ends the work and refuses a new start; an empty till refuses; not from afar.
+  - `tools/client/farm.mjs` (new; its own field with Hale; `--speed 10`, so a spell is half a minute): winter at
+    midday by the dev calendar and clock; Ash helps with the threshing from Hale's menu; the row at ×1.4; Bo lends a paw
+    at ×2.0; a spell later Ash is paid and the row says so. Screenshots in `artifacts/screenshots/farm/`.
+- **Also this phase:** names always start with a capital (the user, 2026-10-07): at creation, for dev identities, on
+  entering the world (older characters too), and as the player types. So a name is veiled wherever it is written
+  (`names::veil` looks for capitalised names). Tested in `newcomer_tests`.
+
+### Phase 5 (2026-10-08): training grounds and sparring
+
+- **Spar, a duel's fourth term** (`challenge(…, "spar")`; "as a spar (bruises only)"):
+  - It ends at yield as `yield` does.
+  - Nothing bleeds: the bleed roll skips spars, and at each turn's start a spar puts out burning and stops bleeding.
+  - A blade strikes blunted: `World::sparBlow` halves a sword's blow (`bladeBlunted` 0.5).
+  - `injureOnBlow` in a spar gives at most one minor bruise (`bruised_ribs`, severity 1, through `injury::given`; not a
+    second, which `addAcute` would make moderate) and never a lasting mark. `injury::bruise` wasn't needed.
+  - Doc 38's strain from fighting on an unhealed injury stays. Auto-decline declines spars.
+- **Watching:** a spar can't be joined, only watched ("A spar is between those who agreed to it; you may watch.").
+  So the `observed` lock never matters for it. The fight square says "Ad v Bo · a spar · round 3 · 2 watching"
+  (`spar`, `watchers`).
+- **Training grounds** (`Data/Together/training.json`, `World::trainingGround`): a cell whose region is
+  `training_grounds`, whose id is `barracks` (Greyfen's), or whose id holds "barracks", "training", "drill_yard" or
+  "guardhouse". Nothing edits terrain. There:
+  - **A resident trainer** (`World::trainer`: a guard on duty there, or one whose post's title trains or drills)
+    offers **Ask to spar** (`sparWithTrainer`). `startBattle` takes the terms, so a spar is never an assault: no
+    incident, no lost liking, no guard comes in.
+  - **Practise at the post** (an ACTIONS button shown where `self.trainingGround`; the `post` command): practice
+    `spar.post` (new in `skills.json`, +0.2 fighting) × 0.3 × 1.5, once every 20 s.
+- **Practice:** `growSkill` weighs a spar's blows by `sparPractice`: × 1.5 on a training ground. A trainer teaches less
+  than a player only by the practice engine's own weight for a resident partner. The plan's extra × 0.6 was built, then
+  taken out: the user (2026-10-08) didn't want the two to stack.
+- **The DM:** watch flag 64, doing "sparring".
+- **Tests:**
+  - `battle_tests` `sparring`: forty 40-damage injury rolls leave one minor bruise and nothing lasting, where the same
+    rolls in a duel leave a lasting mark; no bleeding; a blade halved; nothing burns at the turn's start; a watcher
+    can't join; yield at 100 on his feet; auto-decline declines a spar.
+  - `together_tests` `training` (now 76 checks): a cell named for training trains; Tam is a trainer there and not
+    elsewhere; a trainer spar has no incident, no lost liking, nobody joins; the post, its wait, fighting growing.
+  - `tools/client/spar.mjs` (new; its own training yard with Tam): Practise at the post shows; Ash challenges Bo,
+    choosing Spar (bruises only); Bo is asked and accepts; the fight reads "A duel as a spar (bruises only)"; Cy works
+    at the post, then asks Tam to spar, with no assault. Screenshots in `artifacts/screenshots/spar/`.
+  - Greyfen's barracks itself wasn't tried in the browser; the yard stands in for it.
+
+### Phase 6 (2026-10-08): Gifted and Quickened angles, and the rest of the patterns
+
+- **Work Gifts on a joint** (`World::jointTakesGift`, `giftOnJoint`; one hook in `useWorkGift`, after its checks):
+  - A Gift the joint's activity lists (`patterns.json` `gifts`; so far Winnow and Dry at threshing) spends its mana
+    and wait as ever. It then holds to the end of the beat (a minute for work without beats).
+  - While it holds, the member is on an angle of its own (`gift:<ability>` to the scaling) and every member works
+    0.2 faster (`together::rateOf`; `GiftLift`). Ash threshing beside Hale: ×1.4, winnowing ×1.6; with Bo too, ×2.2.
+  - The row names the Gift ("you hold the flail · Winnow and Dry").
+  - **Lighten Load** now lightens every player in the caster's joint.
+  - **Weathereye** brings in a quarter more at the harvest, as it does at foraging (no new Gift use: it is passive).
+  - The user (2026-10-08) asked for the other work Gifts to help the group too. Each activity's `gifts`:
+    - the harvest: Draw Water and Carry;
+    - threshing: Winnow and Dry and Carry;
+    - foraging: Shortcut (in a joint it lifts the foraging instead of blinking);
+    - a maker's bench: Forge Heat, Kindle, Clay Hand, Bellows, Ring True, Settle, Draw Water, Winnow and Dry. A Gift
+      that helps the maker's trade (doc 43's lend table) also lifts its next batch's quality, as lent.
+  - Stone Sense, Dowse and Echo have no group work yet (doc 57's quarries, wells and mines). Mend was left alone.
+- **Throw Voice drives** (`World::huntNoise`, one line in its fight effect): in a hunt, game within its flight
+  distance of the noise's tile bolts away from that tile (`HuntAnimal::noiseX/noiseY`; the fleeing move runs from the
+  tile when there is no wolf to run from), and calms two turns later. Game further off within the Gift's reach
+  watches that way.
+- **Keep watch** (`World::keepWatch`, `watchersOver`; the work verb `watch`; a Keep watch / Back to work button on a
+  foraging row):
+  - A role any wolf may take in a joint in the wild, on an angle of its own: two diggers ×1.4, a digger and a watcher
+    ×1.8. A watcher is never dropped for being idle.
+  - `tendCamp`: the bandits' creep must get past each watcher's notice as well as the traveller's, both before they
+    creep and while they creep. Noticed, they step out and ask, or rise and rush, instead of springing an ambush.
+  - `startBattle`: the watcher itself is never taken unawares. Those it watches over are protected by its notice, not
+    outright.
+- **Talker and doer** (`World::faceTalker`, `tendTalkers`; called from `Game::talk`): a resident a wolf talks to turns
+  to it and keeps facing it, standing, until 20 s after the last line. Doc 40's vision cone does the rest: a partner
+  behind the resident is out of its sight when stealing (`World::steal`'s watchfulness). Theft is still a pickpocket's
+  from the resident's own purse; there is no stall theft yet.
+- **Keeping the secret** (`World::wardensSee`):
+  - A partner who sees Quickened magic adds no attention: a fighter on its side, a member of its joint, or a party
+    mate (`World::setPartnered`, wired to doc 32's parties). Foes, bodiless watchers and resident onlookers still count.
+  - Each partner keeps a witness record on its own character: `Entity::witnessed`, the wolf to the day. Saved, IDs only,
+    with `toldWardens` and `vouchedDay`.
+  - **At a Warden of the Order** (a resident whose faction is `warden_order`, within 3 tiles), a wolf with records
+    sees **Tell the Wardens** and **Vouch to the Wardens** in its menu, then a list of the wolves it saw (the snapshot's
+    `self.witnessed`, by its own names for them). The command is `{"type": "wardens", "verb": "tell" | "vouch",
+    "about": id, "at": warden}`.
+    - Tell: +3 attention, once a witness and wolf, and a `told the wardens` ledger event. The wolf isn't told who told.
+    - Vouch: −1, once a game month (28 days) a witness, and a `vouched to the wardens` event.
+    - **Vouching's risk** (the user, 2026-10-08; doc 52's shape): the voucher's word rides on it for the month
+      (`Entity::vouchedFor`, `wardenStanding`, saved).
+      - If that wolf draws the Wardens' attention again in that time, by being seen or by someone telling,
+        `World::attentionRose` lowers the voucher's standing by 1, once a vouch, and tells it so.
+      - At −2 the Wardens no longer take its word.
+- **Tests:**
+  - `together_tests` `anglesOfTheGifts` (now 96 checks): Winnow and Dry lifts threshing 1.4 → 1.6 for the spell, then
+    back; Keep watch is an angle (1.4 → 1.8), watching over Ash, never idle; a resident faces the talker, and is free
+    20 s later.
+  - `magic_tests` `keepingTheSecret`: a partner adds no attention where a foe does, and keeps the record; tell +3 once;
+    vouch −1, not again that month; neither without a record; another's telling lowers the voucher's standing once, and
+    she is told; at −2 no more vouching; all saved.
+  - `together_tests` also: Carry lifts threshing; Winnow and Dry at a bakery's bench lifts the joint and the batch.
+  - `hunt_tests` `throwVoiceDrives`: a noise three tiles from a deer ten from Ada makes it bolt, away from the noise.
+  - `roads_tests` `aWatcherCatchesTheCreep`: Ada forages with her back to a camp while Bo keeps watch facing it, and
+    she isn't taken unawares. Beside her but not keeping watch, she is.
+  - `tools/client/farm.mjs` gains the lift: Ash, made Gifted (Wind) by the dev command, winnows; the row reads ×2.2
+    and names Winnow and Dry. Screenshot `2a-winnow-and-dry.png`.
+  - Not tried in the browser: the Wardens' menu (no Warden in a test world yet) and a theft behind a talking keeper.
+
+### Phase 7, part A (2026-10-08): a player's paw at a resident's bench
+
+- **Lend a paw at the workshop:** a resident maker at work at its post, whose business crafts (any season), offers
+  **Lend a paw at the workshop**.
+  - It is the same joint as farm work (`at: "workshop"` in `patterns.json`; `World::residentWorkAt`, `helpAtWork` and
+    `workBeat`, renamed from the farm names since they now serve both).
+  - The maker leads ("works the craft") and players take the other role ("hold and fetch"): a player alone works at
+    ×1.4.
+  - Each spell, a player there is paid the hand wage × the rate from the shop's till (kind "a hand at the bench"), and
+    practises `apprentice.craft` beside the maker as teacher (a spell's worth, 60 units). A farm hand likewise
+    practises `apprentice.labour` beside the farmer.
+- **The economy hunk** (the economy session's files; one declaration and two small hunks):
+  - `Society::lendPaw(maker, rate, untilDay)`, kept in `pawLent_`, not saved. Lent when a player sets to work and again
+    each spell, for a spell and a half.
+  - `Society::craft` divides a batch's time by the rate while it holds.
+  - At a batch's end, one batch in four doesn't use up one of its first material.
+- **Measured** (`crafting_tests` `aPawLent`): an hour at the bakery, 29 batches alone (29 flour), 59 with a paw at ×2.0
+  (44 flour). Money stays conserved throughout.
+- **Tests:**
+  - `crafting_tests` `aPawLent`: batches at least 1.5 times as many, and fewer inputs used than batches.
+  - `together_tests` `benchWork`: the baker offers the workshop; Ash hands while Tam leads; ×1.4; two spells paid
+    exactly what the ledger's `bench work` events say.
+  - `tools/client/bench.mjs` (new; its own bakery with Bea; `--speed 10`): Lend a paw at the workshop from Bea's menu;
+    the row "Work at the bench with … · ×1.4"; a spell later Ash is paid. Screenshots in `artifacts/screenshots/bench/`.
+- **Not done, part B:** player-led crafting, `helper` recipes refusing without a hand, quality by the lead and speed by
+  the hand, and hired resident hands. There is no player Craft panel yet (doc 35 Phase 5's second part), and the
+  `helper` recipes are in `recipes.json`, the player catalog the residents don't use.
+
 ## Depends on and feeds
 
 - **Depends on:** docs 41 and 40 (built); doc 50 for block and the settings panel (soft: hooks until then); doc 49 for
@@ -599,12 +1001,13 @@ only this plan's hunks.
 
 **New placeholder choices in this plan:**
 
-10. ×1.8 is each wolf's rate, not the team's (Design 2.1; Open question 1).
+10. ×1.8 is each wolf's rate, not the team's (Design 2.1). Kept by the user, 2026-10-07, to be balanced later.
 11. Animals react at the end of a hunter's turn, not at each step, so a rush is possible; a bolting animal's bar fills.
 12. Lying in wait: a hunter ending its turn crouched without biting springs on an animal stepping beside it.
-13. A hunt closes to strangers if any hunter in it turns the setting off.
+13. A hunt is open to strangers while its starter has the setting on; only the starter's setting counts (the user,
+    2026-10-07).
 14. More game per hunter: arrivals × (1 + 0.75 per extra), `atOnce` + 2, a joiner brings half the expected count.
-15. A blade's landed blow on a fleeing animal kills too; Gift blows keep doc 41's health rule.
+15. A blade's landed blow on a fleeing animal kills too (the user, 2026-10-07); Gift blows keep doc 41's health rule.
 16. A companion's share goes to its leader; companions in hunts lie in wait instead of charging.
 17. Every joint member contributes its rate whatever its role; outputs are shared exactly.
 18. Farm work at harvest (autumn) and threshing (winter) only, piece-rate pay from the farm's till.
@@ -614,7 +1017,6 @@ only this plan's hunks.
 
 ## Open questions
 
-1. **×1.8:** each wolf's rate (this plan) or the pair's together? The team reading makes partners earn less than lone
-   wolves, which conflicts with Decision 5 and the hunting target.
-2. **Closing a hunt:** any hunter's setting off closes it to strangers (this plan), or only the starter's?
-3. **Blades on fleeing game:** one landed blow kills (this plan), or bites only, with blades on doc 41's health rule?
+None: all three answered by the user on 2026-10-07 (decisions 10, 13 and 15). ×1.8 is each wolf's rate, to be
+balanced later; only the starter's Allow hunting partners opens or closes a hunt; a landed blade kills a fleeing animal
+as a bite does.

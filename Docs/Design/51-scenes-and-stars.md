@@ -206,7 +206,11 @@ words form or join a room scene instead), and Knock or Private scenes never take
   blocked by any member gets "No answer."
 - **A newcomer who joins** carries a small "new" mark on the members' scene line (agreed, doc 48 §4.2).
 - **Nearby scenes:** `self.social.nearby` lists Open and Knock scenes in the viewer's cell that they could hear: place,
-  number of wolves, openness, colour. **Counts, never names.** The scene line offers JOIN or KNOCK.
+  number of wolves, openness, colour. The scene line offers JOIN or KNOCK.
+  - **Who is in it, on hover** (the user, 2026-10-07, replacing "counts, never names"): pointing at A SCENE HERE opens a
+    small window listing each wolf in it with its portrait and its name **as the viewer knows it** (a stranger by their
+    look, as everywhere: doc 32 §1.5), as a scrolling list when there are many.
+  - Private scenes are still never listed, and a scene with anyone who has blocked the viewer isn't offered at all.
 
 ### 7. Seeing scenes: the log, the filter and the map (agreed, doc 48 §4.2)
 
@@ -446,6 +450,131 @@ Each phase passes `world_check --players 20` within noise before the next. None 
 - **Cost:** one howl is O(clients) distance checks plus O(cells in range) for residents, at most once per wolf per 10
   minutes: under two a second even with 1,000 players all howling. Per tick, only closing open choruses.
 
+### Phase 7: Story books and the bookshelf (added by the user, 2026-10-07)
+
+The user: "scenes should be linkable. Like if players start a new scene they should be able to link it (after the fact,
+before, or during) to other scenes in a player-driven Story. These don't need to be official stories, they can be
+shared through Circles and Chapters and Friends." Their Stories sit as books on a bookshelf, newest at the top.
+
+**A book** is a player-driven Story: an ordered list of scenes (its chapters), with a title, a summary, its wolves, who
+it's shared with, and whether it's finished.
+
+- **The one kind of Story** (answered below): doc 32's official Stories become books. A book needs no agreement to
+  exist; one agreed by two thirds of its wolves is **official** and pays as a Story does today when it is finished.
+- **Linking a scene, any time:**
+  - **Before:** "my next scene goes into …" from the book's page. The next scene the wolf is in joins it.
+  - **During:** ADD TO A STORY on the scene line.
+  - **After:** from the ended scene's card, or the book's page: a scene the wolf was in, for **seven days** (what
+    players are told; scenes are kept eight, the user's rule, so the last day is grace).
+  - Any wolf who was in a scene may link it to a book they're in. A wolf who was in a linked scene but not the book
+    becomes one of its wolves.
+- **Where it goes:** linking a scene asks where it falls in the book's timeline (after which chapter), newest last by
+  default. The book's wolves may reorder its chapters later.
+- **A chapter** keeps what the book needs even after the scene itself is let go, eight days on:
+  - when and where it was, and who was in it;
+  - a title (player-written, 60 letters *(placeholder)*);
+  - a summary, either player-written (600 letters *(placeholder)*) or written by the small model from the linking
+    wolf's own recap of it (doc 50 §5: only what that wolf perceived). It is marked as the model's, and any of the
+    book's wolves may rewrite it.
+- **The book's own summary:** player-written, or the model's from the chapters' titles and summaries.
+- **Finishing a book** (agreed, the user, 2026-10-07): its keeper (who started it) proposes FINISH. It is finished once
+  a majority of its recently active wolves (in a chapter in the last 30 days *(placeholder)*) agree, or, with no
+  activity, after three days without an objection *(placeholder)*. Finished, the model writes a line or two of
+  flavour text from its chapters. The book shows as complete on every shelf, a bound, gilded spine, and takes no more
+  chapters.
+- **Private scenes** (agreed): any of a scene's wolves may link a Private scene into a book, whoever the book is shared
+  with.
+  - Until the book is finished, a Private scene's chapter shows its readers only its title and date. Its summary is
+    for that scene's own wolves.
+  - Proposing FINISH warns, on the proposal and on every agreement: "This book has private scenes. Once it is
+    finished, anyone who can read the book can read their summaries."
+  - Once finished, anyone who can read the book can read every chapter's summary, private scenes' included. The scene's
+    lines never are: the summary is the linker's own words, or the model's from their own recap.
+- **Volumes** (agreed): a finished book can be linked to another as **related**, **sequel** or **prequel**, by its
+  keeper or any of its wolves. A reader opening one sees the whole volume at once: the books in order (prequels before,
+  sequels after, related beside), each with its flavour text, and can read straight through.
+- **Sharing:** each book is shared with Members only, Friends, a Circle (which), a Chapter, or Everyone. Its keeper
+  chooses, and each wolf may hide themselves from it. Names are always shown as each viewer knows the wolf.
+
+**The bookshelf** (a STORIES view, from the character sheet and the FRIENDS sheet):
+
+- **Books as spines** on shelves, coloured by kind. The view opens at the top shelf with the newest books and scrolls
+  all the way down through every book the player's wolves have been in.
+- **Filters** (the user's), worked out for each viewer:
+  - **World:** the Dungeon Master's world storylines (the user, 2026-10-07; doc 34's story planner, doc 58's
+    storytellers): books the DM has tied to a world storyline, and the storylines as volumes;
+  - **Chapter:** shared with, or mostly made of, the viewer's Chapter;
+  - **Circle:** shared with one of their circles;
+  - **Friend:** with one of their friends in it;
+  - **Other:** books they were in with no official tie to any of the other wolves.
+- **Unaffiliated** (a separate tab): books they **aren't** in that their friends, circles or Chapter are in and have
+  shared with them, books shared with Everyone, and the world's storylines they haven't joined: stories to find, and
+  perhaps join.
+- **A book, opened:** its title, summary (or flavour text, once finished), its wolves, its volume (related, prequels,
+  sequels), then a timeline of its chapters: title, date and place, summary, and who wrote it (or "the model"). Its
+  wolves get Add a scene, Reorder, Edit, Finish and, once finished, Link to another book.
+
+**Changes:**
+
+- **Server:** `Core/RatwBooks.h/.cpp` (pure: books, chapters, ordering, sharing, finishing, the shelf's categories for a
+  viewer) and `Core/RatwGameBooks.cpp` (the `book` command, linking from scenes, the views, `self.social` hooks for
+  "next scene into …").
+- **The Mind:** `/chapter` (a scene summary from a recap) and `/book` (a book's summary, and its flavour text when
+  finished), on the small model, kind `book` in the call ledger, a fixture for tests. These cost money; their budgets
+  sit beside recaps' (10 a day a character *(placeholder)*), and the player-written way always works.
+- **Data:** a migration for `game.story_books` (sections; the DM reads them); `Data/Social/social.json` gains the
+  books' numbers.
+- **Client:** the STORIES bookshelf (spines, filters, the Unaffiliated tab, infinite scroll), the book page and
+  timeline, ADD TO A STORY on the scene line and the ended card, and the placement picker.
+
+**Tests:** `Tests/books_tests.cpp`:
+
+- linking before, during and after, and the placement;
+- a chapter outliving its scene;
+- reordering; summaries written, by the model (fixture), and rewritten;
+- finishing: a majority of the recently active, three quiet days, an objection, the private-scene warning, flavour
+  text;
+- a private scene's summary hidden from readers until the book is finished, then shown;
+- volumes: related, sequel, prequel, read in order;
+- sharing and each filter for a viewer; Unaffiliated;
+- names as each viewer knows them; a hidden wolf;
+- across a restart.
+
+`tools/client/books.mjs`: two wolves make a book from a scene, link a second one before it starts, finish it, and see
+it gilded at the top of the shelf, while a friend sees it under Unaffiliated.
+
+**Done when:** players can link scenes into a Story at any point, find every Story they've been part of on a shelf
+newest first, filter it, read a book's chapters as a timeline, finish it with flavour text, and discover their
+friends', circles' and Chapter's Stories.
+
+**Cost:** a book is read when the shelf or the book is opened, never per tick. Model calls are capped per character per
+day.
+
+**Answered (the user, 2026-10-07):** finishing by a majority of the recently active, or unopposed after no activity;
+Private scenes may be linked, with a warning on finishing, and their summaries readable by all the book's readers once
+it is finished; finished books link into volumes (related, sequel, prequel); "World" means the DM's world storylines.
+
+**Books are the one kind of Story** (the user, 2026-10-07: "make books one kind"). Doc 32's official Stories become
+books:
+
+- **"Official"** is a book that two thirds of its wolves agreed to, as today's proposal is agreed. An official book pays
+  as a closed Story does now when it is finished: social XP for its tellers, Story Stars, Chapter renown for a Chapter
+  Story, and the closed Stories that doc 49's Quickened gate counts.
+- **An unofficial book** works the same in every other way: linking, chapters, sharing, the shelf, volumes. It pays
+  nothing; it is for telling and sharing.
+- **What moves:** `SocialLedger`'s Stories (`propose`, `approve`, `extend`, `close`, `storyStar`, `SocialStory`) and
+  the character sheet's STORIES list move into the book code and the bookshelf. MAKE IT A STORY and ADD TO become
+  "Start a book" and ADD TO A STORY. Making a book official is one more step, AGREE, with today's rules (two thirds,
+  within a day).
+- **Today's limits carry over** to official books: 32 scenes and 48 wolves, 8 open at once. Telling pays as now:
+  members paid in two or more of its scenes get a quarter of what those scenes paid, plus one per scene past the first,
+  at most 5. Unofficial books get their own, roomier limits *(placeholders in `Data/Social/social.json`)*.
+- **Nothing to migrate:** the test world's Stories can be dropped, by the no-migration rule.
+- **Tests** gain: an unofficial book made official by agreement; a finished official book paying its tellers and
+  Story Stars, and counting for Quickened and Chapter renown; an unofficial one paying nothing.
+
+**Open questions for Phase 7:** none.
+
 ## Depends on and feeds
 
 - **Depends on doc 50** (friends and `friendSeesCharacter`, `blocks`, `statusOf`, the card), **doc 52**
@@ -640,7 +769,9 @@ None.
   longer joins its (Private) scene.
 - **Indexes:** `scenesOf(actor)`, `openIn(cell)` and `lastEnded(actor)` are kept by `record`, `leave`, `settle` and
   the fight's scenes. `reindexScenes()` rebuilds them after a load.
-  - Scenes that ended more than three days ago are let go in `tick`; Stories and stars look back a day at most.
+  - Scenes that ended more than eight days ago are let go in `tick` (the user, 2026-10-07: "Make scenes live for 8
+    days before being deleted, but tell the users it only lasts for 7"; `KeepEndedDaysTold` is the seven players
+    see). Stories and stars look back a day at most.
   - Knocks lapse after two minutes and refusals after five.
 - **Ledger rules:**
   - `setOpenness`: members only; the first change any time, then at most one every 30 seconds.
@@ -661,11 +792,13 @@ None.
   ever, for every player.
   - Each scene carries `openness` and `knocks`, named as this wolf knows the knockers.
   - `nearby` lists the Open and Knock scenes here that the player isn't in, could hear, and has no blocks with: how
-    many wolves and the openness, never names.
+    many wolves, the openness, and (added the same day, the user's request) who is in them, for a window on hover.
+    Each wolf comes named as the viewer knows them, with its look and any portrait it may see, at most 48.
 - **Client** (`story.ts`):
   - Each of one's scenes shows OPEN · KNOCK · PRIVATE, with the current one lit.
   - A knock shows as "… is knocking · LET IN · NOT NOW".
   - A scene here shows as "A SCENE HERE · OPEN / KNOCK TO JOIN · 2 wolves", with JOIN or KNOCK, or "knocked".
+    Pointing at it opens IN THIS SCENE: each wolf's portrait and name, scrolling past about five.
   - The scene bar now also shows when one is in no scene but one is nearby, or a star is waiting for its tag. Before,
     both stayed hidden.
   - Doc 52's "new" mark waits for doc 52.
@@ -677,19 +810,386 @@ None.
     - Knock: no Join; heard but not in; knock once; turned away for five minutes; let in; a knock lapsing;
     - Private: no Join, no knock;
     - two scenes in one tavern; indexes rebuilt from a copy;
-    - an ended scene out of the indexes, kept three days, then let go.
+    - an ended scene out of the indexes, kept eight days, then let go.
   - `Tests/scene_doors_tests.cpp` (new, 984 checks, most of them snapshot fills): through the game, a party's scene
-    unseen by Cy until Ada opens it; Cy sees "2 wolves · open" with no names, joins, and her line counts; a Knock scene
+    unseen by Cy until Ada opens it; Cy sees "2 wolves · open", and who is in it by the names she knows; she joins,
+    and her line counts; a Knock scene
     refuses Join and ignores her talk; her knock reaches both its wolves with a line, shows in Ada's scene line and as
     "knocked" in hers; let in, her line counts; one who blocked her keeps the scene out of her list and refuses her
     join and her knock, without saying who.
     - While writing this file I first saved it over the existing `Tests/scenes_tests.cpp` (doc 30's ambient scenes,
       which had no local changes). I restored it from git; it still passes its 260 checks.
   - `tools/client/scenes.mjs` grows a knock: Bo makes his scene KNOCK; Cy sees "A SCENE HERE · KNOCK TO JOIN · 1 wolf"
-    and knocks; Bo sees it with LET IN and lets her in; her line counts. Screenshots 8 and 9.
+    and points at it, which shows him in a window with his portrait; she knocks; Bo sees it with LET IN and lets her in;
+    her line counts. Screenshots 8 and 9.
   - `ctest` 54 of 54; client tests 107; `card`, `stars`, `friends`, `safety`, `party` and `names` pass in a real page.
 - **Cost:**
   - Routing is a lookup into the actor's own scenes, then the open scenes in that place, instead of every scene ever.
   - The scene views are O(players × their own scenes), plus the open scenes in each player's place for `nearby`.
-  - Scenes are let go three days after ending.
+  - Scenes are let go eight days after ending.
   - Nothing new runs in the world's tick.
+
+### Phase 4: seeing scenes in the log and on the map (built 2026-10-07, not committed)
+
+- **Colours:** `Data/Social/social.json` gains `scenes`: a palette of six (teal, violet, sky, moss, rose, slate, with no
+  red and no party gold) and the map's reach, 60 world tiles. `stars::sceneColour(id)` hashes a scene's id into the
+  palette, the same colour for everyone.
+- **Lines carry their scene:**
+  - `SocialLedger::routeFor(actor, cell, party, now)` finds the scene a line will go to before it is said: the
+    speaker's own scene in their party's or fight's lane, else the room's, else one they joined or were let in to.
+  - `Game::publish` adds `scene` to each listener's copy:
+    - `{mine, colour}` for the scene's wolves, and for the speaker's own copy (so a wolf just let in sees their first
+      line as their scene's);
+    - `{openness, place, colour}` for anyone else, when the scene is Open or Knock;
+    - nothing for a Private scene's or a fight's lines, which read as ordinary talk.
+  - Never an id, so an anonymous voice stays anonymous.
+  - Lines that join an Open scene by being heard, or begin one by A–B–A, aren't tagged (§7 allowed that). Residents'
+    lines aren't tagged either.
+- **Open scenes on the map:** `self.social.openNear` lists, within 60 world tiles:
+  - Open scenes;
+  - Knock scenes only when one of the player's friends is in them (the user's answer);
+  - never Private scenes, fights, scenes the player is or was in, or scenes with someone who blocked them.
+
+  Each comes with its wolves' middle, or for a scene indoors, the door into it from outside (found once a refresh,
+  not once a player), plus how many wolves, its openness, the place's name and its colour. The server always sends
+  the list (counts and places, never names); the page shows it only when the player turns it on.
+- **Client:**
+  - **Feed:** a line from one's own scene has its left edge in the scene's colour (party lines keep their gold). An
+    open or knock scene's line nearby has a dashed edge and the tag "scene at The Bent Bough · open" or "· knock to
+    join". Nothing is faded.
+  - **MY SCENE ONLY** beside the IN WORLD feed's label keeps one's own scenes' lines, one's own words, the world's
+    lines and anything said to the player (`keptByMyScene`). It's kept in the browser (`ratw.feed.myScene`), off by
+    default.
+  - **Settings:** "Scenes on the map", off by default (the user's answer), kept in the browser (`ratw.map.scenes`).
+    When on, the minimap and the World Map show a small speech mark in the scene's colour with how many wolves.
+    Pointing at one on the minimap says "3 wolves at the Wharf tavern · open", or "· knock to join (a friend is in
+    it)".
+- **Tests:**
+  - `Tests/scene_doors_tests.cpp` (1539 checks), covering:
+    - a Private scene's line is "mine" with its colour for its wolves, and plain for an onlooker; it isn't on the map;
+    - opened, an onlooker's copy says open and where, never the id, in the same colour as the wolves' copies; it is on
+      Cy's map with how many wolves, not who, and never on a member's;
+    - a Knock scene isn't on Cy's map until her friend Ada is in it;
+    - a wolf let in sees her own first line as her scene's.
+  - `Client/src/game/people.test.ts`: a line keeps its scene; `keptByMyScene` keeps one's own scene, one's own words,
+    the world and "→ you", and drops the rest; the toggle.
+  - `tools/client/scenes.mjs` (23 checks; screenshots 10–12): Bo's line barred in their scene's colour for Cy; Di, a
+    stranger, hears it, and MY SCENE ONLY takes it out of her log and puts it back; Bo opens the scene; it's in Di's
+    open scenes, and with "Scenes on the map" on, its mark shows at the tavern's door with "2".
+  - `ctest` 54 of 54; client tests 108; `stars`, `friends`, `card` and `safety` pass in a real page.
+- **Cost:**
+  - A line: one `routeFor` (lookups into the speaker's own scenes and the scenes here), then a membership check per
+    listener inside the loop `publish` already runs.
+  - Every two seconds: `openNear` for each player is O(open scenes × their wolves), with the doors into indoor scenes
+    found once.
+  - Nothing runs in the world's tick.
+
+### Phase 5: end screens, and fights as part of their scenes (built 2026-10-07, not committed)
+
+- **Fights are part of scenes** (the user, 2026-10-07: "make sure that fights become part of Scenes, or at least the
+  action-by-action log of the fight"):
+  - A fight's scene finds the scene its players were in at that place (`SocialSession::parent`) and becomes one of its
+    moments.
+  - While the fight lasts, that scene stays alive, so it can't go quiet and end under them.
+  - The fight's action-by-action log (`Battle::told`: every line's words, up to 200, beyond the 60 the page keeps) is
+    kept with the fight's scene (`SocialSession::log`), saved, and outlives the battle.
+  - The scene's card links to it. A member's recap (doc 50) includes it, as that wolf would read the names.
+  - `fightlog {session}` sends it, veiled for the reader, to one who was in the fight or in the scene it broke out in.
+- **A fight's figures:** `BattleFighter::Tally`:
+  - `landed` and `guarded` are counted in `World::fightLine` by line kind ("hit", "graze" and "slash"; "guard");
+  - `raised` counts a tend or a Gift's rise;
+  - `dealt` and `taken` are counted in `World::hurtFighter`, where all damage lands;
+  - `covered` is an Interpose, counted where it happens.
+  - At settlement each player's tally is copied into their part of the fight's scene, so it's saved.
+  - This narrows §8: "covered" counts Interposes only, not blows taken on guard beside a Downed ally.
+- **Moments** (`SocialSession::moments`, at most 24, ids only, saved):
+  - "joined" (Join), "admitted" (a knock let in), "introduced" (an introduction between two wolves in one scene),
+    "story" (began or carried on a Story), "fight".
+  - `Game::sceneMoments(viewer, scene)` puts them in words for the viewer, at most eight, in the names it knows ("you"
+    for itself; introductions gathered: "Cy told you and Bo One their name.").
+  - Then what the wolf noticed for itself when the scene ended (`endedNotes_`): "You and Wren shared a scene for the
+    first time." (from Known wolves) and "How Wren regards you now: they know you a little." (only when it changed
+    since it last saw it).
+  - The `bond` wording differs from §8's example, so it reads right for any name. The chorus, storyline steps,
+    gifts, grooming and deeds are hooks for Phase 6 and docs 55, 56 and 58.
+- **The card** (`self.social.ended`) gains `place`, `minutes`, `with` and `moments`; a fight's adds its `tally` and
+  `logLines`.
+  - A wolf who steps out of a scene now gets its card at once (`Contribution::leftAt`, saved), marked "goingOn", with
+    stars once the scene really ends. Before, it showed only when the whole scene ended.
+  - No word or turn counts anywhere.
+- **Client:**
+  - The scene's card reads "THE SCENE AT THE BENT BOUGH · 40 MIN · +20 SOCIAL", then "With …", a fight's figures
+    ("9 landed · 1 raised · 2 on guard · 40 dealt · 22 taken"), the moments, and THE FIGHT, BLOW BY BLOW (the log,
+    fetched when first opened, in a scrolling box).
+  - The fight's result card (`combat.ts`) uses the server's tally once the fight's scene settles (landed, dealt, taken,
+    raised, covered, on guard), falling back on summing the page's log until then, with the moments beneath.
+- **Tests:**
+  - `Tests/battle_tests.cpp` (`fightTally`): a fight past 90 lines keeps its whole log beside the last 60; every blow
+    that landed is counted; what one dealt is what the other took; turns on guard.
+  - `Tests/scene_doors_tests.cpp` (`endCards`, 2002 checks in all):
+    - Cy joins Ada and Bo's open scene and tells them her name;
+    - Ada and Bo fight: the fight's scene belongs to theirs and is one of its moments;
+    - a truce ends it, its log is kept, and their scene goes on;
+    - Cy reads the log;
+    - the scene ends, and Ada's card has the place and who was in it, "Cy joined the scene.", "Cy told you … their
+      name.", "A fight broke out" (linked to its log), "You and Cy shared a scene for the first time.", and no word or
+      turn counts.
+  - `Client/src/game/people.test.ts`: the fight log kept.
+  - `tools/client/scenes.mjs` (25 checks): when Ash steps out, her card shows the place, its pay, who was in it and a
+    first scene together, with no counts (screenshot 4b).
+  - `ctest` 54 of 54; client tests 109; `stars`, `friends`, `card`, `safety` and `party` pass in a real page.
+  - `tools/client/fight.mjs` is still the stale one noted earlier, so the fight result card has no real-page check.
+- **Cost:**
+  - A few integers per fighter, and a fight's lines kept once.
+  - Each fight's scene finds its parent once; while the fight lasts, one lookup keeps the parent alive.
+  - Moments are recorded at events, and put in words only for each player's last scene during the hour its card
+    shows.
+  - A fight's log goes only when asked for.
+
+### Phase 6: the gathering howl and chorus (built 2026-10-07, not committed)
+
+- **Data:** `Data/Social/social.json` gains `howl` (all placeholders, read into `stars::rules().howl`):
+  - a range of 150 world tiles, a height limit of 30, and ×0.4 for a howler indoors, ×0.5 for a listener indoors;
+  - a ten-minute cooldown, a one-minute mark, and ±12° of jitter;
+  - the chorus: within 40 tiles and 8 s, +4 s for each joiner, 20 s at most, carrying +25% a wolf up to ×2;
+  - residents: a sneak given away within 32 tiles; up to 6 near (60 tiles) turn toward it and 2 speak; a town
+    remembers it for 600 s;
+  - residents' lines by "day", "night" and "nightTown".
+- **The game** (`Core/RatwGameHowl.cpp`, new; the `howl` command):
+  - **Refused** in a fight or a hunt, Downed or dead, held by the watch, with something in the mouth, or within ten
+    minutes of the last howl. `howledAt_` uses world time, so fast-forward shortens it, and isn't saved.
+  - **A chorus:** a howl within 40 tiles and 8 s of an open chorus joins it ("You join the howl.") and keeps it open
+    longer, to 20 s at most.
+  - **A real sound:** residents within 32 tiles of a sneaking howler hear it (`World::heardVoice`), as with a yell.
+  - **Who hears it** (`sendHowl`): players within range, scaled by the listener's hearing (`World::hearingSensitivity`,
+    taken out of `hearingClarity` so both use it), the weather where they are, indoors on either side, and the
+    chorus's carry. Not across 30 of height, not the howlers themselves, and nobody who muted or blocked a howler.
+    - Each gets a `howl` event: the chorus's id, a jittered bearing, a band (near, far, very far), the first howler's
+      status ("Looking for a scene", "Out of character"), how many howl, `canJoin` (within 40 tiles, rested, still
+      open) and how long the mark lasts.
+    - Never a name or a place.
+    - The first time, a line: "A howl rises to the north-east, far off. You could join it."; later, "More wolves join
+      the howl to the north-east: 3 now.".
+  - **Residents** (`residentsHear`, at a chorus's first howl): up to six nearest within 60 tiles turn toward it, and up
+    to two say an authored line: curious by day, grumbling at night in a town. No model call. Festivals' cheering
+    waits for doc 54.
+  - **When a chorus closes** (`tendHowls`, five times a second):
+    - each pair of players in it gains a little familiarity and affinity, once a pair a game day;
+    - it becomes a "chorus" moment of every scene its howlers are in ("You howled together, 2 of you.");
+    - the town where it rose remembers it for a game hour. `dialogueContext` tells residents there "A little while
+      ago, 2 wolves howled together near the Bent Bough."; the game says what happened, and the Mind only mentions it.
+  - Choruses and towns' memories are in memory only. Animals reacting is doc 53's.
+  - `self.social.howlIn` gives the seconds until the wolf may howl again.
+- **Client:**
+  - **Howl** among the actions (resting, with the minutes in its tooltip), and `/howl` in the composer.
+  - The `howl` event plays a howl, quieter from far off, the first time a chorus is heard.
+  - **The mark:** a faint arrow at the edge of the minimap (and the World Map, which shares its drawing) for a minute,
+    the way the sound came. Pointing at it says "a howl of 2 wolves · Looking for a scene · far".
+  - **JOIN THE HOWL** on a row in the scene bar ("A HOWL TO THE SOUTH-EAST · NEAR") while one may.
+  - **Settings:** "Howl marks: On / Off". The sound always plays, being in the world.
+  - This narrows §9: no line drawn from the wolf on the World Map, and no panning of the sound by bearing.
+- **Tests:**
+  - `Tests/howl_tests.cpp` (new, 750 checks, most of them snapshot fills), covering:
+    - Bo hears Ada's howl near, could join, from the west within the jitter, with no name or place, and a line;
+    - deaf Cy hears nothing;
+    - a resident near says one of the lines;
+    - a second howl must wait;
+    - not with a sword in the jaws;
+    - a chorus: Bo joins, Cy has one mark now of two wolves and is told; when it closes Ada and Bo are closer, and it
+      is a moment of their scene;
+    - Cy, who blocked Ada, hears nothing of her howl, while Bo does.
+  - `Client/src/game/people.test.ts`: one mark per chorus, its count updated, the sound once, `/howl` sent as a
+    command and never said.
+  - `tools/client/howl.mjs` (new, 10 checks; screenshots in `artifacts/screenshots/howl/`): Ash howls from the button;
+    Bo hears it with a line and JOIN THE HOWL, and joins; Cy sees one mark of two wolves; Ash's Howl button rests.
+  - `ctest` 55 of 55; client tests 110; `scenes`, `stars`, `friends`, `card` and `safety` pass in a real page.
+- **Cost:**
+  - A howl: one pass over the players to decide who hears it, and one over the places (by world position) for
+    residents near. At most one a wolf every ten minutes.
+  - Five times a second: a check of the open choruses, which last 20 s at most.
+  - Nothing else in the tick.
+
+### Phase 7: Story books and the bookshelf (built 2026-10-07, not committed)
+
+- **Data:** `Data/Social/social.json` gains `books`, all placeholders:
+  - lengths: title 80, chapter title 60, a chapter summary 600, a book's 1200, flavour text 300;
+  - time: scenes may be added for 7 days (what players are told; scenes are kept 8); 30 days counts as "recently
+    active"; 3 quiet days finish a book;
+  - limits: 10 model calls a day, 20 open books a keeper, 200 chapters and 100 wolves a book.
+- **The rules:** `Core/RatwBooks.h/.cpp` (new, pure, `ratw::books`) define `Book`, `Chapter` and `Link`, and provide:
+  - `recentlyActive` and `finishes`: a majority of the wolves in a chapter in the last 30 days, or three days after
+    the proposal with no objection;
+  - `inverse` (sequel ↔ prequel), sharing and link checks, and save and load.
+- **The game:** `Core/RatwGameBooks.cpp` (new; the `book` command):
+  - **Linking a scene, any time** (`linkScene`):
+    - *during*: an open scene;
+    - *after*: one ended within 7 days, from the book or ADD TO A STORY on its card;
+    - *before*: "next", whose next scene goes in when it ends (`booksSceneEnded`, from `endScene`).
+
+    Only a wolf who was in the scene may link it. It goes after the chapter chosen (or at the start, or at the end),
+    and its wolves join the book.
+  - **A chapter keeps** its scene's place, time and wolves, and whether it was Private, so it outlives the scene. Its
+    end and wolves are filled in when the scene ends.
+  - **Titles and summaries:** any of the book's wolves may write them. FROM MY RECAP uses the wolf's own recap of the
+    scene (doc 50), marked the model's when the recap was. *(Since 2026-10-07: with chapters before it, `/book` mode
+    `chapter` tells it on from them; see "Scenes told as stories".)*
+  - The book's summary is written by hand, or by WRITE IT FOR ME: the small model through the Mind's new `/book`
+    ("summary"), within 10 a day, else written from the chapters' titles.
+  - **Reorder** (any wolf); **take out** (the keeper or whoever added it, before finishing).
+  - **Sharing** (the keeper): its wolves only, friends, one of the keeper's circles, the keeper's Chapter, or everyone.
+    **Hide me from its readers** (each wolf).
+  - **Finishing** (the user's rule):
+    - the keeper proposes, with the warning about private scenes on the proposal and on every agreement;
+    - it's finished once a majority of the recently active wolves agree, or after three days with no objection
+      (`tendBooks`, with the friends' ten-minute upkeep);
+    - finished, it gets flavour text: written at once, and the model's (`/book` "flavour") when it comes;
+    - its private scenes' summaries open to every reader; before that, readers see only those chapters' titles and
+      dates.
+  - **Volumes:** two finished books link as related, sequel or prequel, both ways. A reader sees the whole volume,
+    as far as they may read it.
+  - **Official** (books are the one kind of Story):
+    - MAKE IT OFFICIAL proposes the ledger's Story from the book's first ended scene;
+    - AGREE approves it;
+    - once it's agreed, the book carries its Story on with every ended chapter (`syncStory`, as far as the ledger's
+      rules allow: an ended scene that paid two of them);
+    - finishing tells it, which pays as doc 32's Stories do (social XP, Chapter renown, Quickened's count);
+    - Story Stars are given from the finished book.
+  - **The shelf** (`sendShelf`, forty spines at a time, newest first):
+    - YOUR SHELF is the books the wolf is in, filtered World / Chapter / Circle / Friend / Other;
+    - UNAFFILIATED is books it isn't in that its friends, circles or Chapter share with it, books shared with
+      everyone, and the world's storylines, filtered the same way, with Everyone in place of Other.
+  - **World** is the DM's world storylines (the user's answer). `tieBookToStoryline`, the DM action `book.storyline`
+    (validated and queued by `tools/dungeon_master.py`), ties a book to one. The DM app has no button for it yet.
+  - **A book's view** (`bookView`) gives names as each viewer knows them and leaves hidden wolves out. For its wolves
+    it adds the scenes they may add (the last 7 days) and, once it's finished, their other finished books to link it
+    to.
+- **Saving:** `people.books`. `Database/migrations/0041_story_books.sql` adds `game.story_books`, which the DM may read
+  and the editor and publisher may not. **Not applied yet.**
+- **Client:**
+  - **STORIES** (from the character sheet, in place of the old Stories list) is the bookshelf:
+    - books as spines on wooden shelves, coloured by shelf (World, Chapter, Circle, Friend, Other), gilded when
+      finished, ★ when official;
+    - the newest shelf at the top, scrolling down, more loaded at the bottom;
+    - the two tabs and the filters, and START A BOOK.
+  - **A book**:
+    - its flavour (finished) and summary, its wolves, its volume, and the private-scene warning;
+    - finishing progress with AGREE and OBJECT, AGREE TO MAKE IT OFFICIAL, and ★ Story Stars;
+    - the chapters as a timeline: number, title, place, date, length, private, wolves, and summary or sealed;
+    - for its wolves: edit, FROM MY RECAP, ↑ ↓, TAKE OUT, ADD THIS SCENE (with "at the end", "at the start" or
+      "after 2. …"), "My next scene goes into this book", the summary with WRITE IT FOR ME, sharing, FINISH, MAKE IT
+      OFFICIAL, "Hide me from its readers", and LINK INTO A VOLUME once finished.
+  - **The scene's card**: ADD TO A STORY (any scene, not only paid ones) offers the open books ("INTO …") or START A
+    BOOK, in place of MAKE IT A STORY and ADD TO.
+- **Tests:**
+  - `Tests/books_tests.cpp` (new, 715 checks, most of them snapshot fills), covering:
+    - the pure rules: a majority, three quiet days, an objection, both ways for volumes, a round trip;
+    - through the game:
+      - a book begun from a scene under way (private, both wolves); Bo's next scene going into it;
+      - a chapter summarised from Ada's recap, one titled by hand, reordering;
+      - members only, then shared with friends: Cy finds it under Unaffiliated (a friend's) and reads it with its
+        private scene sealed; it's on Ada's shelf under Other;
+      - made official and agreed;
+      - after a restart: finishing with the warning and Bo asked, a majority, flavour, an official book paying, Cy
+        reading the private scene; no more chapters;
+      - a second book finished only with both its recent wolves; linked as a sequel, its volume showing the first as
+        its prequel;
+      - tied to a world storyline and on the World shelf.
+  - `tools/test_npc_mind.py`: `/book` (summary and flavour, bounds, the small model, nothing of the chapters in the
+    log, over HTTP).
+  - `tools/test_game_tables.py`: the books become rows.
+  - `tools/test_dungeon_master.py`: `book.storyline` checked and queued.
+  - `Client/src/game/people.test.ts`: the shelf appended forty at a time, a book opened, the commands.
+  - `tools/client/books.mjs` (new, 14 checks; screenshots in `artifacts/screenshots/books/`):
+    - Ash begins a book from the scene's card;
+    - its spine is on her shelf; opened, it has one chapter;
+    - Bo's next scene goes into it;
+    - shared with friends, proposed with the warning, Bo agrees from the book, and it's finished;
+    - gilded at the top of Ash's shelf;
+    - Cy finds it under Unaffiliated and reads it with its private scenes open.
+  - `ctest` 56 of 56; client tests 111; `scenes`, `stars`, `friends`, `card`, `safety` and `howl` pass in a real page.
+  - The real model wasn't called: that costs money.
+- **Cost:**
+  - Books are read only when a shelf or a book is opened.
+  - A scene ending checks the books for its chapters and "next" flags. That is a pass over the books; an index by
+    scene would be the next step if books number in the thousands.
+  - A model call for a book's summary or flavour, at most 10 a character a day.
+  - Ten-minutely: a check of the books being finished.
+  - Nothing runs in the world's tick.
+
+#### The real model, tried (2026-10-07, with the user's leave)
+
+Five calls through the Mind's `/recap` and `/book` on the small model (`gpt-5.4-nano`):
+
+- **Two scene recaps:**
+  - the bandit tale at the Bent Bough, with a fight's log;
+  - Bo and Wren at the pier.
+
+  Both are in the second person, with every wolf by its label and no invented names. Claims are reported as claims
+  ("claimed they'd seen bandits", "the ferryman said the cable was frayed").
+  - The first try gave the grey wolf "she", which the lines never said. `RECAP_RULES` and `BOOK_RULES` now say to use
+    "they" unless the lines do; the retry used "they".
+  - One slip remains: the small model read "Forgive me" as "you said you'd forgiven them". Recaps are marked as the
+    model's, and each player may delete theirs.
+- **A book's summary** (590 characters) and **its flavour text** (260 characters, "At dawn, they rang the drowned bell
+  from the water's edge…"): both use only the chapters, within their limits.
+- **Cost, in tokens:**
+  - a recap: about 500 in and 120 out;
+  - a book's summary: about 380 in and 130 out;
+  - flavour text: about 380 in and 70 out.
+
+  The plan's estimate for recaps was 1,250 in and 150 out, so they come in well under. Each call took 2–3 seconds.
+- The Mind's ready line now lists `/recap` and `/book` too.
+
+#### Scenes told as stories (2026-10-07, the user)
+
+The user asked for the model to see the wolves' profiles instead of guessing pronouns, for a scene to be written up as
+a story of up to about 1,000 words, and for a book's later chapters to carry on from the earlier ones instead of
+describing the same wolves again. They also asked for a better model than mini for stories.
+
+- **What the model is given:**
+  - *The lines as the wolf perceived them, with their markup.* Every in-character post that reached the wolf, whole:
+    what was done in `*asterisks*` and what was said in `"quotes"`. Before this the game joined a post's pieces as
+    bare text, so the model couldn't tell action from speech. The wolf's own lines go by its name, not "You". A
+    fight's log follows as "The fight".
+  - *The wolves, as this wolf could see them.* Each one's label, pronouns and description, with "Currently:" added,
+    from its card as this wolf may see it (`Game::cardFor`). A mature description folded for this viewer stays out, and
+    so does the out-of-character tab. Pronouns follow the character's sex (see below). Up to 12 wolves, the player's own
+    first.
+  - *In a book, what came before.* The book's title and its latest eight chapters before this one (each cut to 1,500
+    characters), leaving out a private chapter this wolf wasn't in until the book is finished. The Mind marks any wolf
+    those chapters already name as `met` and leaves out its description, so it isn't described all over again.
+- **What it writes (`RECAP_RULES`):**
+  - fiction, not a summary: third person, past tense, close to the player's wolf, in paragraphs;
+  - it opens on the place and the wolves (only those not met), then tells the scene beat by beat, quoting the lines
+    that matter;
+  - its length follows the scene, at most 1,000 words (the Mind cuts at 1,000 words or 7,000 characters);
+  - claims stay claims, nothing is invented, and labels are kept.
+
+  A later chapter is told just as fully; it only leaves out what the earlier chapters described.
+- **Into the book:**
+  - *A scene linked before or during it.* When it ends, its story is written with the book's earlier chapters, and
+    fills that chapter's summary if no one has written one.
+  - *A scene linked after it.* FROM MY RECAP takes the wolf's story at once. If there are chapters before it and the
+    story was the model's, `/book` mode `chapter` then tells it again as the next chapter. That is within the book's
+    daily limit, and only if no one has edited the chapter meanwhile.
+- **Male or female (the user, 2026-10-07):** characters are created male or female, with no other options offered.
+  Pronouns are no longer a profile setting: `Game::pronounsOf` gives she/her or he/him from the character's sex for
+  its card, a resident's context and a story. The profile editor's PRONOUNS box and the "they/them" choice are gone; a
+  profile change naming pronouns is refused, and a saved one is skipped when a save loads. The model uses "they" only
+  for a voice no one saw.
+- **The story model:** a new config setting, `story_model` (the main voice when unset), writes scene stories and every
+  `/book` call. It is set to `gpt-5.6-luna` (doc 28). Story calls have their own two slots and a 50-second time limit
+  (the game waits 60), so a long story never holds up a resident's answer.
+- **Limits raised:**
+  - a recap (`recaps.most`) and a chapter's summary (`books.summary`) are 7,000 characters;
+  - the chapter box is a text area;
+  - stories show in paragraphs and scroll past 260 pixels.
+- **Tried on the real model** (`gpt-5.6-luna`, two scenes, about $0.001 each):
+  - *Chapter one.* A 24-line scene at the Lantern between Ada (she/her) and Bram (he/him), with a scarred brown wolf
+    and a short fight. It came out as 495 words in 6.6 seconds, 1,458 tokens in and 738 out. It opens on both
+    wolves from their descriptions, quotes the dialogue, and tells the fight's log as prose.
+  - *A first draft of the rules gave a 125-word report.* The rules now insist on fiction.
+  - *Chapter two.* The next day at the weir, in the book "The Salt Road", with chapter one before it. It came out as
+    300 words in 5.1 seconds. Ada and Bram are not described again, the new red wolf is, and every line is there. A
+    middle draft left the descriptions out but squeezed the scene into a summary; the rules now say a later chapter is
+    told in full.

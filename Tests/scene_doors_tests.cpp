@@ -1,8 +1,9 @@
 // Scenes' openness, joining and knocking through the game (Docs/Design/51-scenes-and-stars.md, Phase 3): a party's scene
-// starts Private and nobody nearby sees it; opened, a wolf in earshot sees it as "2 wolves · open" (never names) and
-// joins with one click, and their next line counts; a Knock scene tells its wolves who knocks, and one let in counts at
+// starts Private and nobody nearby sees it; opened, a wolf in earshot sees it as "2 wolves · open" (and, pointing at
+// it, who is in it, by the names it knows) and joins with one click, and their next line counts; a Knock scene tells its wolves who knocks, and one let in counts at
 // once; a member who blocked someone keeps them out of it, without saying who.
 #include "RatwGame.h"
+#include "battle_play.h"
 
 #include <cstdio>
 #include <fstream>
@@ -115,6 +116,7 @@ game::Options options(const std::string& save = {})
     o.hiddenNames = false;
     o.forkSnapshots = false;
     o.oneWolfPerAccount = true;
+    o.tiesOptional = true;                      // (Ties: doc 52, tested in newcomer_tests.)
     if (!save.empty())
         o.savePath = save;
     return o;
@@ -251,15 +253,23 @@ void joining()
     expect(w.ada.said("The scene is open") && w.bo.said("opened the scene."), "Ada opens it; Bo is told");
     w.tick(2.5);
     const auto& near = social(w.cy).array("nearby");
-    expect(near.size() == 1 && near[0].string("id") == sid && near[0].number("wolves") == 2 && near[0].string("openness") == "open" &&
-               !near[0].has("with") && !near[0].has("names"),
-           "Cy sees it: 2 wolves, open, no names: " + json::dump(social(w.cy)));
+    expect(near.size() == 1 && near[0].string("id") == sid && near[0].number("wolves") == 2 && near[0].string("openness") == "open",
+           "Cy sees it: 2 wolves, open: " + json::dump(social(w.cy)));
+    // Who is in it, for the window on hover (the user, 2026-10-07): each by name as Cy knows them, with a look to draw.
+    const auto& who = near[0].array("who");
+    expect(who.size() == 2 && who[0].object("appearance").has("species") && !who[0].string("name").empty(), "who is in it, to point at");
+    bool namedRight = true;
+    for (const auto& wolf : who)
+        namedRight &= wolf.string("name") == (wolf.string("id") == w.adaId ? "Ada" : "Bo One");
+    expect(namedRight, "named as Cy knows them");
     expect(social(w.ada).array("scenes")[0].string("openness") == "open", "its wolves see it open");
     w.send(w.cy, "social", {{"verb", "join"}, {"session", sid}});
     expect(w.cy.said("You join the scene"), "Cy joins");
     say(w, w.cy, "\"Mind if I sit with you? I came in out of the rain.\"");
     expect(w.g.ledger().sessions.at(sid).members.count(w.cyId), "her next line counts in it");
 }
+
+const json::Value* line(Client& c, const std::string& text);
 
 void knocking()
 {
@@ -286,6 +296,8 @@ void knocking()
     ::usleep(2100000);                              // (The ledger takes a wolf's line every two real seconds.)
     say(w, w.cy, "\"Thank you. The rain shows no sign of stopping.\"");
     expect(w.g.ledger().sessions.at(sid).members.count(w.cyId), "her next line counts");
+    const auto* first = line(w.cy, "no sign of stopping");
+    expect(first && first->object("scene").boolean("mine"), "and her own copy of it is her scene's (doc 51, Phase 4)");
 }
 
 void blocksKeepOut()
@@ -302,6 +314,124 @@ void blocksKeepOut()
     w.send(w.cy, "social", {{"verb", "knock"}, {"session", sid}});
     expect(w.cy.said("No answer.") && !w.ada.last("knock"), "a knock goes unheard");
 }
+// The last roleplay line a player received with this text in it.
+const json::Value* line(Client& c, const std::string& text)
+{
+    for (auto it = c.events.rbegin(); it != c.events.rend(); ++it)
+        if (it->string("type") == "roleplay" && it->string("text").find(text) != std::string::npos)
+            return &*it;
+    return nullptr;
+}
+
+// Doc 51, Phase 4: each line says its scene, as far as the listener may know it; open scenes show on the map.
+void seeingScenes()
+{
+    World3 w(options());
+    const auto sid = partyScene(w);
+    // Private: its wolves see their own scene's lines; Cy's copy carries nothing.
+    w.send(w.ada, "chat", {{"text", "\"Keep your voice down, the innkeeper is listening.\""}, {"channel", "party"}});
+    w.tick(1.0);
+    const auto* mine = line(w.bo, "innkeeper is listening");
+    expect(mine && mine->object("scene").boolean("mine") && mine->object("scene").string("colour").rfind("#", 0) == 0,
+           "a member's copy: their own scene, with its colour");
+    const auto* theirs = line(w.cy, "innkeeper is listening");
+    expect(theirs && !theirs->has("scene"), "a private scene's line to an onlooker: ordinary talk");
+    w.tick(2.5);
+    expect(social(w.cy).array("openNear").empty(), "a private scene isn't on the map");
+    // Open: an onlooker's copy names the door and the place, never the scene's id.
+    w.send(w.ada, "social", {{"verb", "openness"}, {"session", sid}, {"value", "open"}});
+    ::usleep(2100000);
+    w.send(w.ada, "chat", {{"text", "\"Come and sit, anyone who likes; the fire is warm.\""}, {"channel", "party"}});
+    w.tick(1.0);
+    const auto* open = line(w.cy, "the fire is warm");
+    expect(open && open->object("scene").string("openness") == "open" && !open->object("scene").string("place").empty() &&
+               !open->object("scene").boolean("mine") && !open->object("scene").has("id"),
+           "an open scene's line to an onlooker: open, and where");
+    expect(open->object("scene").string("colour") == line(w.bo, "the fire is warm")->object("scene").string("colour"),
+           "the same colour for everyone");
+    w.tick(2.5);
+    const auto& map = social(w.cy).array("openNear");
+    expect(map.size() == 1 && map[0].number("wolves") == 2 && map[0].string("openness") == "open" && !map[0].has("who"),
+           "an open scene on Cy's map: how many wolves, not who: " + json::dump(social(w.cy).array("openNear")));
+    expect(social(w.ada).array("openNear").empty(), "never one's own scene");
+    // Knock: on the map only for one with a friend in it.
+    w.g.ledger().sessions.at(sid).openness = "knock";
+    w.tick(2.5);
+    expect(social(w.cy).array("openNear").empty(), "a knock scene with no friend in it isn't on Cy's map");
+    w.handles();
+    w.friends(w.cy, {{"verb", "request"}, {"handle", "Adder"}});
+    w.friends(w.ada, {{"verb", "accept"}, {"handle", "Cypress"}});
+    w.tick(2.5);
+    const auto& withFriend = social(w.cy).array("openNear");
+    expect(withFriend.size() == 1 && withFriend[0].string("openness") == "knock" && withFriend[0].boolean("friend"),
+           "with her friend Ada in it, it is");
+}
+// Doc 51, Phase 5: a fight that breaks out in a scene is part of it (the user, 2026-10-07); the scene's card says what
+// happened, in the names each viewer knows.
+void endCards()
+{
+    auto o = options();
+    o.hiddenNames = true;
+    World3 w(o);
+    const auto sid = partyScene(w);
+    w.send(w.ada, "social", {{"verb", "openness"}, {"session", sid}, {"value", "open"}});
+    w.send(w.cy, "social", {{"verb", "join"}, {"session", sid}});
+    const auto line = [&](Client& c, const std::string& text, const char* channel = "") {
+        ::usleep(2100000);
+        w.send(c, "chat", {{"text", text}, {"channel", channel}});
+        w.tick(1.0);
+    };
+    line(w.cy, "\"Mind if I sit with you both? I came in out of the rain, and the fire looks warmer than the road I left behind.\"");
+    line(w.ada, "\"Sit, and welcome; we were only talking about the ford, and how the river took the lower bridge in the night, so that everyone coming from the south must now go the long way round by the mill.\"", "party");
+    line(w.cy, "\"I'm Cy. I crossed at the old mill myself, though the miller's grey dog followed me most of the way to the crossroads.\"");
+    line(w.bo, "\"That dog follows everyone. It thinks the whole valley is its own, and nobody has ever had the heart to tell it otherwise.\"", "party");
+    // A fight breaks out between Ada and Bo: it is part of their scene, which stays alive while it lasts.
+    auto& world = w.g.world();
+    expect(world.attack(w.adaId, w.bo1).ok && world.answerChallenge(w.bo1, true).ok, "Ada and Bo fight");
+    w.tick(1.0);
+    std::string fight;
+    for (const auto& [id, sc] : w.g.ledger().sessions)
+        if (SocialLedger::isFight(sc) && sc.ended == 0)
+            fight = id;
+    expect(!fight.empty() && w.g.ledger().sessions.at(fight).parent == sid, "the fight's scene belongs to the scene it broke out in");
+    bool momentKept = false;
+    for (const auto& m : w.g.ledger().sessions.at(sid).moments)
+        momentKept |= m.kind == "fight" && m.actor == fight;
+    expect(momentKept, "and is one of its moments");
+    test::takeGround(world, w.adaId);              // (Past the positioning phase: doc 40.)
+    for (int i = 0; i < 400 && !test::acting(world.battleOf(w.adaId), w.adaId); ++i)
+        w.tick(.05);
+    const auto offered = world.offerTruce(w.adaId);
+    expect(offered.ok, "a truce offered: " + offered.message);
+    const auto agreed = world.answerTruce(w.bo1, true);
+    expect(agreed.ok, "and agreed: " + agreed.message);
+    w.tick(1.0);
+    expect(w.g.ledger().sessions.at(fight).ended > 0 && !w.g.ledger().sessions.at(fight).log.empty(),
+           "the fight is over; its log, blow by blow, kept with its scene");
+    expect(w.g.ledger().sessions.at(sid).ended == 0, "the scene it broke out in goes on");
+    // Cy, who watched, may read it, in the names she knows.
+    w.send(w.cy, "social", {{"verb", "fightlog"}, {"session", fight}});
+    const auto* log = w.cy.last("fightLog");
+    expect(log && log->string("session") == fight && !log->array("lines").empty(), "Cy reads the fight's log");
+    // The scene ends: its card.
+    w.send(w.ada, "action", {{"action", "session_end"}, {"target", ""}});
+    w.tick(2.5);
+    const auto& ended = social(w.ada).object("ended");
+    expect(ended.string("id") == sid && !ended.string("place").empty() && ended.array("with").size() == 2,
+           "Ada's card: where, and who was in it: " + json::dump(ended));
+    std::string said;
+    for (const auto& m : ended.array("moments"))
+        said += m.string("text") + "\n";
+    expect(said.find("Cy joined the scene.") != std::string::npos, "Cy joined, by the name Ada learnt:\n" + said);
+    expect(said.find("Cy told you") != std::string::npos && said.find("their name.") != std::string::npos, "Cy told her name");
+    expect(said.find("A fight broke out") != std::string::npos, "the fight, part of it");
+    expect(said.find("You and Cy shared a scene for the first time.") != std::string::npos, "her first scene with Cy");
+    bool fightLinked = false;
+    for (const auto& m : ended.array("moments"))
+        fightLinked |= m.string("kind") == "fight" && m.string("fight") == fight;
+    expect(fightLinked, "with the fight's log to read from the card");
+    expect(said.find("words") == std::string::npos && said.find("turns") == std::string::npos, "and no word or turn counts");
+}
 } // namespace
 
 int main()
@@ -311,6 +441,8 @@ int main()
         joining();
         knocking();
         blocksKeepOut();
+        seeingScenes();
+        endCards();
     }
     catch (const std::exception& e)
     {

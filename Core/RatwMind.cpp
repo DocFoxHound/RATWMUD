@@ -246,7 +246,8 @@ void Client::summarize(const std::string& npcName, const std::vector<std::pair<s
 }
 
 void Client::recap(const std::string& place, const std::string& you, int minutes,
-                   const std::vector<std::pair<std::string, std::string>>& lines, std::function<void(const std::string&)> done)
+                   const std::vector<std::pair<std::string, std::string>>& lines, const std::vector<RecapWolf>& wolves,
+                   const RecapStory& story, std::function<void(const std::string&)> done)
 {
     const std::string suffix = "/dialogue";
     if (!live() || path_.size() < suffix.size() || path_.compare(path_.size() - suffix.size(), suffix.size(), suffix) != 0 ||
@@ -284,14 +285,84 @@ void Client::recap(const std::string& place, const std::string& you, int minutes
         return;
     }
     body.add("lines", list);
-    post({path_.substr(0, path_.size() - suffix.size()) + "/recap", json::dump(body), 20.0,
+    auto seen = json::Value::array();
+    for (std::size_t i = 0; i < wolves.size() && i < 12; ++i)
+    {
+        auto w = json::Value::object();
+        w.add("who", left(wolves[i].who, 80));
+        w.add("pronouns", left(wolves[i].pronouns, 24));
+        w.add("description", left(wolves[i].description, 1400));
+        seen.push(w);
+    }
+    body.add("wolves", seen);
+    if (!story.book.empty())
+    {
+        // The latest eight chapters before it, each cut to 1500 characters.
+        auto before = json::Value::array();
+        for (std::size_t i = story.before.size() > 8 ? story.before.size() - 8 : 0; i < story.before.size(); ++i)
+        {
+            auto c = json::Value::object();
+            c.add("title", left(story.before[i].first, 60));
+            c.add("summary", left(story.before[i].second, 1500));
+            before.push(c);
+        }
+        auto o = json::Value::object();
+        o.add("book", left(story.book, 80));
+        o.add("before", before);
+        body.add("story", o);
+    }
+    post({path_.substr(0, path_.size() - suffix.size()) + "/recap", json::dump(body), 60.0,
           [done](int status, const std::string& text) {
               std::string recap;
               json::Value parsed;
               std::string error;
-              if (status == 200 && text.size() < 16384 && json::parse(text, parsed, error))
+              if (status == 200 && text.size() < 65536 && json::parse(text, parsed, error))
                   recap = trim(parsed.string("recap"));
-              done(left(recap, 601).size() <= left(recap, 600).size() ? recap : std::string());
+              done(left(recap, 7001).size() <= left(recap, 7000).size() ? recap : std::string());
+          }});
+}
+
+void Client::book(const std::string& mode, const std::string& title, const std::vector<std::pair<std::string, std::string>>& chapters,
+                  std::function<void(const std::string&)> done)
+{
+    const std::string suffix = "/dialogue";
+    if (!live() || path_.size() < suffix.size() || path_.compare(path_.size() - suffix.size(), suffix.size(), suffix) != 0 ||
+        chapters.empty() || (mode != "summary" && mode != "flavour" && mode != "chapter") ||
+        (mode == "chapter" && chapters.size() < 2))
+    {
+        done({});
+        return;
+    }
+    auto body = json::Value::object();
+    body.add("mode", mode);
+    body.add("title", left(title, 80));
+    auto list = json::Value::array();
+    std::size_t total = 0;
+    // For a chapter: the latest eight before it (1500 characters each) and the scene's whole story; else each chapter's
+    // first 600 characters.
+    const std::size_t from = mode == "chapter" && chapters.size() > 9 ? chapters.size() - 9 : 0;
+    for (std::size_t i = from; i < chapters.size(); ++i)
+    {
+        const auto& [t, summary] = chapters[i];
+        const auto cut = left(summary, mode != "chapter" ? 600 : i + 1 == chapters.size() ? 7000 : 1500);
+        if (list.items().size() >= 200 || total + cut.size() > 24000)
+            break;
+        total += cut.size();
+        auto c = json::Value::object();
+        c.add("title", left(t, 60));
+        c.add("summary", cut);
+        list.push(c);
+    }
+    body.add("chapters", list);
+    const std::size_t most = mode == "summary" ? 1200 : mode == "chapter" ? 7000 : 300;
+    post({path_.substr(0, path_.size() - suffix.size()) + "/book", json::dump(body), mode == "chapter" ? 60.0 : 20.0,
+          [done, most](int status, const std::string& text) {
+              std::string out;
+              json::Value parsed;
+              std::string error;
+              if (status == 200 && text.size() < 65536 && json::parse(text, parsed, error))
+                  out = trim(parsed.string("text"));
+              done(left(out, most + 1).size() <= left(out, most).size() ? out : std::string());
           }});
 }
 

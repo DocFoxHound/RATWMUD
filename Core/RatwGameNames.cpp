@@ -204,6 +204,10 @@ void Game::noticeIntroduction(const std::string& author, const std::string& list
     if (!learnName(listener, author, name, "introduced"))
         return;
     introducedTo_[author].push_back(listener);
+    // In a scene they share, a moment of it (doc 51, §8): "Kestrel told Ash and Wren their name."
+    for (const auto& sid : social_.scenesOf(author))
+        if (social_.scenesOf(listener).count(sid))
+            social_.moment(sid, {"introduced", author, listener, {}, now()});
     const auto* l = world_.entity(listener);
     if (l && !l->npc)
         if (auto* c = clientOf(listener))

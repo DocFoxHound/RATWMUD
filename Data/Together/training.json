@@ -1,0 +1,10 @@
+{
+  "about": "Training grounds (Docs/Design/53-hunting-and-working-together.md, 5): where wolves spar and practise, as data over the ground that is there (nothing edits terrain). A cell is a training ground if its region is one of `regions`, its id is one of `cells`, or its id holds one of `cellWords`. Practice from a spar's blows: as from any fight's (a resident trainer teaches less by the practice engine's own weight for a resident partner, doc 49, and nothing more is taken off here); at the post x`post`; on a training ground x`ground`. `postSeconds`: how often a wolf may work at the post. `bladeBlunted`: what a blade's blow does in a spar. All numbers are placeholders.",
+  "regions": ["training_grounds"],
+  "cells": ["barracks"],
+  "cellWords": ["barracks", "training", "drill_yard", "guardhouse"],
+  "post": 0.3,
+  "ground": 1.5,
+  "postSeconds": 20,
+  "bladeBlunted": 0.5
+}

@@ -1,0 +1,39 @@
+{
+  "about": "Residents as matchmakers (Docs/Design/52-newcomers.md, 5): who matchmakes (job categories; each town's market merchant too), how well a matchmaker must know a wolf to point at it, the limits, the reasons in the order they are tried (the first that fits wins), the asks a player's words may match (on the speech router's normalised text) and what meets each, and the words: the briefing for the Mind, the written line said when no model answers, and the quiet line the other wolf sees.",
+  "matchmakers": ["innkeeper", "priest"],
+  "marketMerchant": true,
+  "knowsFamiliarity": 10,
+  "wellKnownScenes": 2,
+  "perPlayerHours": 1,
+  "perMatchmakerHour": 6,
+  "pointedPerHour": 3,
+  "sharedRootsDays": 7,
+  "order": ["newcomer", "tie", "looking", "need", "roots"],
+  "reasons": {
+    "newcomerToHelper": "{who} is glad to show newcomers about",
+    "helperToNewcomer": "{who} is new to these parts and could use someone to show them about",
+    "tie": "the two of you share a tie and haven't yet met",
+    "looking": "you're both looking for a scene to share",
+    "need": "{who} {meets}",
+    "roots": "you both came into {town} this past week"
+  },
+  "asks": [
+    {"id": "work", "patterns": ["looking for work", "need work", "any work", "need a job", "looking for a job", "want work", "find work"],
+     "resident": "apprentice", "meets": "is a master with an apprentice place to fill"},
+    {"id": "teacher", "patterns": ["need a teacher", "teach me", "want to learn", "learn a trade", "looking for a teacher", "take an apprentice"],
+     "resident": "apprentice", "meets": "is a master who could teach a trade"},
+    {"id": "mend", "patterns": ["mend this", "repair this", "fix this", "can mend", "can repair", "who mends", "who repairs"],
+     "jobs": ["smith", "crafter"], "meets": "mends things for a living"},
+    {"id": "company", "patterns": ["hunt with", "anyone to hunt", "someone to hunt", "looking for company", "someone to talk to", "anyone to talk to"],
+     "player": "looking", "meets": "is looking for company too"}
+  ],
+  "briefing": "If it fits the talk, point this wolf to {who}, {where}: {reason}. Call them only \"{who}\" and give them no other name.",
+  "line": "Try {who}, {where}: {reason}.",
+  "quiet": "{matchmaker} nods your way while talking with {other}.",
+  "welcome": "Welcome, friend. New in town? Find yourself a seat by the fire.",
+  "pointOut": "That's {who} there: {what}.",
+  "facts": {"regular": "a regular here", "sometimes": "in now and then", "looking": "looking for company tonight",
+            "guide": "always glad to show a newcomer about"},
+  "promptPointed": "{innkeeper} is pointing you out to a newcomer. Introduce yourself?",
+  "promptNewcomer": "{innkeeper} has pointed out the wolves here. Introduce yourself?"
+}

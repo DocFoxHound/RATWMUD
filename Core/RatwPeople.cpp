@@ -39,7 +39,7 @@ Rules build()
 {
     Rules r;
     // Defaults, if the file can't be read: the plan's numbers.
-    r.limits = {{"description", 1200}, {"currently", 120}, {"pronouns", 24}, {"title", 40}, {"motto", 120}, {"oocNotes", 300},
+    r.limits = {{"description", 1200}, {"currently", 120}, {"title", 40}, {"motto", 120}, {"oocNotes", 300},
                 {"history", 3000}, {"glances", 5}, {"glanceTitle", 32}, {"glanceLine", 120}, {"otherLimits", 200}, {"residentDescription", 300}};
     r.statuses = {"ic", "ooc", "lfs", "storyteller"};
     r.statusMarks = {{"ooc", "ooc"}, {"lfs", "lfs"}, {"storyteller", "quill"}};
@@ -194,7 +194,7 @@ bool applyFields(Profile& p, const json::Value& fields, std::string& error)
     }
     Profile next = p;
     static const std::vector<std::pair<const char*, bool>> Texts = {
-        {"description", true}, {"currently", false}, {"pronouns", false}, {"title", false}, {"motto", false},
+        {"description", true}, {"currently", false}, {"title", false}, {"motto", false},
         {"oocNotes", true},    {"history", true},    {"otherLimits", false}};
     for (const auto& [key, v] : fields.fields())
     {
@@ -209,8 +209,8 @@ bool applyFields(Profile& p, const json::Value& fields, std::string& error)
                     return false;
                 }
                 std::string* target = key == "description" ? &next.description : key == "currently" ? &next.currently
-                                    : key == "pronouns"    ? &next.pronouns    : key == "title"     ? &next.title
-                                    : key == "motto"       ? &next.motto       : key == "oocNotes"  ? &next.oocNotes
+                                    : key == "title"       ? &next.title       : key == "motto"     ? &next.motto
+                                    : key == "oocNotes"    ? &next.oocNotes
                                     : key == "history"     ? &next.history     : &next.otherLimits;
                 *target = clean(v.asString({}), std::size_t(limit(field)), multiline);
             }
@@ -439,7 +439,6 @@ json::Value save(const Profile& p)
     };
     text("description", p.description);
     text("currently", p.currently);
-    text("pronouns", p.pronouns);
     text("title", p.title);
     text("motto", p.motto);
     text("oocNotes", p.oocNotes);
@@ -489,7 +488,7 @@ Profile load(const json::Value& o)
     // Through applyFields, so a save can't hold what a command couldn't set.
     Profile p;
     auto fields = json::Value::object();
-    for (const char* key : {"description", "currently", "pronouns", "title", "motto", "oocNotes", "history", "otherLimits", "glances",
+    for (const char* key : {"description", "currently", "title", "motto", "oocNotes", "history", "otherLimits", "glances",
                             "sliders", "consent", "mature"})
         if (o.has(key))
             fields.add(key, o[key]);
@@ -520,11 +519,26 @@ json::Value saveAccount(const AccountRecord& a)
         o.add("firstCharacter", a.firstCharacter);
     if (a.silencedUntil > 0)
         o.add("silencedUntil", a.silencedUntil);
+    if (a.graduated)
+        o.add("graduated", true);
+    if (a.mentor.on || a.mentor.revoked || a.mentor.guided > 0 || !a.mentor.tie.empty())
+    {
+        auto m = json::Value::object();
+        m.add("on", a.mentor.on);
+        m.add("available", a.mentor.available);
+        m.add("revoked", a.mentor.revoked);
+        m.add("restingUntil", a.mentor.restingUntil);
+        m.add("lastTieAt", a.mentor.lastTieAt);
+        m.add("tie", a.mentor.tie);
+        m.add("guided", a.mentor.guided);
+        o.add("mentor", m);
+    }
     auto settings = json::Value::object();
     settings.add("showMature", a.settings.showMature);
     settings.add("recaps", a.settings.recaps);
     settings.add("toasts", a.settings.toasts);
     settings.add("messages", a.settings.messages);
+    settings.add("matchmaking", a.settings.matchmaking);
     o.add("settings", settings);
     return o;
 }
@@ -540,11 +554,21 @@ AccountRecord loadAccount(const json::Value& o)
     a.playedSeconds = std::max(0.0, o.number("playedSeconds", 0));
     a.firstCharacter = o.string("firstCharacter").substr(0, 80);
     a.silencedUntil = o.number("silencedUntil", -1);
+    a.graduated = o.boolean("graduated", false);
+    const auto& m = o.object("mentor");
+    a.mentor.on = m.boolean("on", false);
+    a.mentor.available = m.boolean("available", true);
+    a.mentor.revoked = m.boolean("revoked", false);
+    a.mentor.restingUntil = m.number("restingUntil", -1);
+    a.mentor.lastTieAt = m.number("lastTieAt", -1);
+    a.mentor.tie = m.string("tie").substr(0, 80);
+    a.mentor.guided = std::max(0, int(m.number("guided", 0)));
     const auto& s = o.object("settings");
     a.settings.showMature = s.boolean("showMature", false);
     a.settings.recaps = s.boolean("recaps", true);
     a.settings.toasts = s.boolean("toasts", true);
     a.settings.messages = s.boolean("messages", true);
+    a.settings.matchmaking = s.boolean("matchmaking", true);
     return a;
 }
 

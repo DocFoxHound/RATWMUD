@@ -16,7 +16,7 @@ import {MoneyTab} from './MoneyTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {LifePanel} from './LifePanel';
-import {dmApi, signedIn, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target} from './api';
+import {dmApi, signedIn, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
 
 type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'money';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
@@ -120,6 +120,8 @@ const COLUMNS: Column[] = [
     {key: 'handle', label: 'Handle', title: 'The account\'s public handle (doc 50): what friends and circles see', get: c => c.person?.handle || null},
     {key: 'stars', label: 'Stars', title: 'The account\'s counted stars, and from how many accounts (doc 51)', get: c => c.stars?.total ?? null},
     {key: 'hours', label: 'Hours', title: 'Hours played on the account, while at the keys (doc 50)', get: c => c.person?.playedHours ?? null, fixed: 1},
+    {key: 'newcomer', label: 'New', title: 'A newcomer\'s account: until 15 hours played or social level 3 (doc 52)', get: c => c.person?.newcomer ? 'new' : null},
+    {key: 'mentor', label: 'Mentor', title: 'Mentoring newcomers (doc 52): available, busy, or revoked by a Dungeon Master; how many guided', get: c => c.person?.mentor ? `${c.person.mentor}${c.person.guided ? ` · ${c.person.guided}` : ''}` : null},
     {key: 'social', label: 'Social', title: 'The account\'s social level (roleplay alone: doc 49)', get: c => c.account?.socialLevel ?? null, fixed: 0},
     {key: 'fight', label: 'Fight', title: 'Fighting skill: grown by fighting (doc 49)', get: c => c.practice?.fighting?.value ?? null, fixed: 0},
     {key: 'sneak', label: 'Sneak', get: c => c.skills.sneakSkill, fixed: 0},
@@ -182,8 +184,10 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
         </section>
         <aside className="dm-side">
             <WorldMap world={world} characters={data?.characters ?? []} selected={selected} onSelect={setSelected} />
-            {chosen ? <CharacterPanel me={me} target={target} character={chosen} actions={data!.actions.filter(a => a.target === chosen.id)} onAct={load} />
+            {chosen ? <CharacterPanel me={me} target={target} character={chosen} actions={data!.actions.filter(a => a.target === chosen.id)} onAct={load}
+                tie={(data?.ties ?? []).find(t => (t.newcomer === chosen.id || t.other === chosen.id) && ['seeking', 'offered', 'active'].includes(t.state))} />
                 : <p className="hint">Select a character in the table or on the map.</p>}
+            <TiesPanel ties={data?.ties ?? []} onSelect={setSelected} />
             <ReportsPanel me={me} target={target} />
             <ArtworkPanel me={me} target={target} />
         </aside>
@@ -193,7 +197,21 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
 // The families a player may have (Data/Gifts/families.json; Death Walkers are NPCs only).
 const GIFT_FAMILIES = ['fire', 'earth', 'water', 'wind', 'sound', 'blinker', 'gravity', 'seer'];
 
-function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target: Target; character: Character; actions: Action[]; onAct: () => void}) {
+// Ties (doc 52): newest first; a click selects the newcomer.
+function TiesPanel({ties, onSelect}: {ties: Tie[]; onSelect: (id: string) => void}) {
+    if (!ties.length) return null;
+    const when = (t: number) => t ? new Date(t * 1000).toLocaleDateString([], {day: 'numeric', month: 'short'}) : '—';
+    return <details className="dm-panel" open>
+        <summary>Ties ({ties.filter(t => t.state === 'active').length} active of {ties.length})</summary>
+        <table className="dm-table"><thead><tr><th>State</th><th>Starter</th><th>Newcomer</th><th>With</th><th>Made</th><th>Lapses</th></tr></thead>
+            <tbody>{ties.map(t => <tr key={t.id} onClick={() => onSelect(t.newcomer)}>
+                <td>{t.state}</td><td>{t.starter.replace(/_/g, ' ')}</td><td>{t.newcomerName}</td>
+                <td>{t.otherName ? `${t.otherName}${t.resident ? ' (resident)' : ' (mentor)'}` : '—'}</td>
+                <td>{when(t.made)}</td><td>{t.state === 'active' ? when(t.lapsesAt) : '—'}</td></tr>)}</tbody></table>
+    </details>;
+}
+
+function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; target: Target; character: Character; actions: Action[]; onAct: () => void; tie?: Tie}) {
     const [reason, setReason] = useState(''), [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
     const canAct = me.role !== 'viewer';
     const act = async (kind: 'character.kill' | 'character.resurrect') => {
@@ -219,6 +237,23 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
         if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'account.unlock', character.id, reason, {op, tier}); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    // Mentoring (doc 52): turned off for the account until restored (an upheld report also turns it off), or restored.
+    const mentor = async (revoke: boolean) => {
+        const words = `${revoke ? 'Turn off' : 'Restore'} mentoring for ${character.account?.name ?? character.name}`;
+        if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, revoke ? 'mentor.revoke' : 'mentor.restore', character.id, reason); setReason(''); onAct(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    // A tie (doc 52): ended for them, as the newcomer or the mentor.
+    const endTie = async () => {
+        if (target === 'prod' && !window.confirm(`End ${character.name}'s tie on PROD?`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.act(target, 'tie.end', character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
@@ -268,6 +303,11 @@ function CharacterPanel({me, target, character, actions, onAct}: {me: Me; target
                 <button title="Stands while the account's unlocks are held: released, an earned tier opens again." disabled={busy || pending || !character.account.quickened} onClick={() => void unlock('revoke', 'quickened', `Take Quickened from ${character.account!.name}`)}>Revoke Quickened</button>
                 <button disabled={busy || pending} onClick={() => void unlock(character.account!.hold ? 'release' : 'hold', '', `${character.account!.hold ? 'Release' : 'Hold'} ${character.account!.name}'s unlocks`)}>
                     {character.account.hold ? 'Release unlocks' : 'Hold unlocks'}</button>
+                <button title="Mentoring newcomers (doc 52): off until restored" disabled={busy || pending || character.person?.mentor === 'revoked'}
+                    onClick={() => void mentor(true)}>Revoke mentoring</button>
+                <button disabled={busy || pending || character.person?.mentor !== 'revoked'} onClick={() => void mentor(false)}>Restore mentoring</button>
+                <button title={tie ? `Their tie (${tie.starter.replace(/_/g, ' ')}, ${tie.state}) with ${tie.newcomer === character.id ? tie.otherName || 'no one yet' : tie.newcomerName}` : 'No tie'}
+                    disabled={busy || pending || !tie} onClick={() => void endTie()}>End tie</button>
             </div>}
         </div> : <p className="meta">Account: unknown (a development identity, or not saved since doc 49's migration 0034)</p>}
         {character.profile && <details className="meta"><summary>Profile (read only, doc 50){character.person ? ` · ${character.person.handle || 'no handle'}, ${character.person.experience}, ${character.person.playedHours} h played` : ''}</summary>

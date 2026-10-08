@@ -91,6 +91,12 @@ export class FrontDoor {
     creation: Json | null = null;            // Strengths and weaknesses (doc 49): grades, budget, specialties, presets.
     tiers: Json | null = null;               // Which Gift tiers the account has earned, and what the rest need (doc 49).
     account: Json | null = null;             // The account as a person (doc 50): its handle, asked for when it has none.
+    starts: Json[] = [];                     // Where a new wolf may arrive (doc 52): each town, the busiest preselected.
+    firstCharacter = false;                  // The account's first wolf: told why it arrives where it does.
+    draftStart = '';
+    ties: Json[] = [];                       // Story starters for a tie (doc 52), and whether this wolf must take one.
+    tieRequired = false;
+    draftTie = '';
     draftGrades: Record<string, string> = {};   // An attribute to "weak" or "strong" (plain when absent).
     draftSpecialty = '';
     private showGiftDetails = false;
@@ -188,6 +194,10 @@ export class FrontDoor {
             if (isObject(event.creation)) this.creation = event.creation;
             if (isObject(event.tiers)) this.tiers = event.tiers;
             if (isObject(event.account)) this.account = event.account;
+            if (Array.isArray(event.starts)) this.starts = event.starts.filter(isObject);
+            if (Array.isArray(event.ties)) this.ties = event.ties.filter(isObject);
+            this.tieRequired = event.tieRequired === true;
+            this.firstCharacter = event.firstCharacter === true;
             this.characters = (Array.isArray(event.characters) ? event.characters : []).filter(isObject).slice(0, 6);
             if (!this.selected() && this.characters.length) this.selectedId = str(this.characters[0], 'id');
             if (ok && this.page === 'review')
@@ -372,6 +382,8 @@ export class FrontDoor {
         this.draftFamily = '';
         this.draftGrades = {};
         this.draftSpecialty = '';
+        this.draftStart = str(this.starts.find(t => t.suggested === true) ?? this.starts[0], 'id');
+        this.draftTie = this.randomTie('');          // (A suggestion, different for every character: the user.)
         this.creationRequestId = this.creationFingerprint = '';
         this.draftAppearance = {species: 'timber', sex: 'female', stature: 'average', pattern: 'solid', baseColor: 2, gradientColor: 0,
             markingColor: 5, gradientAmount: 0.35, patternAmount: 0.65};
@@ -432,6 +444,8 @@ export class FrontDoor {
                 el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${str(draft, 'eyes') || 'amber'}`),
                 ...this.giftReview(),
                 ...this.buildReview(),
+                ...(this.draftStart ? [el('p', {className: 'muted'}, `Arrives in: ${this.startName(this.draftStart)}`)] : []),
+                ...(this.ties.length ? [el('p', {className: 'muted'}, `Tie: ${this.draftTie ? this.tieLine(this.draftTie) : 'none'}`)] : []),
                 el('p', {className: 'muted large'}, 'Creation saves this character to your account. You will return to character selection before ' +
                     'entering the world. Appearance does not grant free skill or stat bonuses.'));
         }
@@ -455,7 +469,8 @@ export class FrontDoor {
         const tabs = el('div', {className: 'creator-tabs'});
         const panel = el('div', {className: 'creator-panel'});
         const tabNames: Array<[string, string]> = [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'],
-            ['strengths', 'Strengths'], ['name', 'Name & age']];
+            ['strengths', 'Strengths'], ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []),
+            ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : []), ['name', 'Name & age']];
         const render = () => {
             tabs.replaceChildren(...tabNames.map(([id, label]) => {
                 const b = el('button', {type: 'button', className: id === this.creatorTab ? 'tab active' : 'tab', textContent: label});
@@ -535,9 +550,18 @@ export class FrontDoor {
         if (tab === 'eyes') return [swatches('eyes', 'EYES', EyeSwatches)];
         if (tab === 'gift') return this.giftPanel(changed);
         if (tab === 'strengths') return this.strengthsPanel(changed);
+        if (tab === 'arrival') return this.arrivalPanel(changed);
+        if (tab === 'tie') return this.tiePanel(changed);
         if (tab === 'name') {
             const name = el('input', {type: 'text', value: this.draftName, placeholder: 'The name others will know', maxLength: 64});
             name.addEventListener('input', () => {
+                // A name always starts with a capital (the server makes it so too).
+                const capital = name.value.charAt(0).toUpperCase() + name.value.slice(1);
+                if (capital !== name.value) {
+                    const at = name.selectionStart;
+                    name.value = capital;
+                    name.setSelectionRange(at, at);
+                }
                 this.draftName = name.value.slice(0, 64);
                 nameHeading.textContent = this.draftName || 'Your wolf';
             });
@@ -797,6 +821,83 @@ export class FrontDoor {
             `Specialty: ${spec ? str(spec, 'name') : 'none'}`)];
     }
 
+    /** The Arrival tab (doc 52): the three start towns, the busiest lately preselected; any may be chosen (a first
+     *  character too, say to join a friend: the user). */
+    private arrivalPanel(changed: () => void): HTMLElement[] {
+        const suggested = this.starts.find(t => t.suggested === true);
+        const out: HTMLElement[] = [];
+        if (this.firstCharacter && suggested)
+            out.push(el('p', {className: 'sage'}, `Your first wolf arrives in ${str(suggested, 'name')}: the busiest of the start towns lately, ` +
+                'where you are likeliest to meet others. You may choose another, say to join a friend.'));
+        else out.push(el('p', {className: 'muted'}, 'Choose where your wolf arrives.'));
+        const row = el('div', {className: 'gift-tiers arrival-towns'});
+        for (const t of this.starts) {
+            const id = str(t, 'id'), wolves = Math.round(num(t, 'wolves'));
+            const b = el('button', {type: 'button', className: `gift-card${this.draftStart === id ? ' chosen' : ''}`},
+                el('strong', {}, `${str(t, 'name', title(id))}${t.suggested === true ? ' · busiest' : ''}`), el('span', {}, str(t, 'line')),
+                el('small', {className: 'gift-progress'}, wolves > 0 ? `Lately: about ${wolves} ${wolves === 1 ? 'wolf' : 'wolves'} about` : 'Lately: quiet'));
+            b.dataset.start = id;
+            b.addEventListener('click', () => {
+                this.draftStart = id;
+                changed();
+            });
+            row.append(b);
+        }
+        out.push(el('span', {className: 'gift-heading'}, 'WHERE YOU ARRIVE'), row);
+        return out;
+    }
+
+    /** The Tie tab (doc 52): a story starter linking this wolf to a mentor or a resident: one suggested at random,
+     *  Reroll, or any from the list; a first wolf must take one (the user), later ones may take none. */
+    private tiePanel(changed: () => void): HTMLElement[] {
+        const out: HTMLElement[] = [el('p', {className: 'sage'}, this.tieRequired
+            ? 'Your first wolf arrives with a tie: a story that links them to someone here, a mentor if one is free, else someone who lives in town. ' +
+              'You are both told, and where to find each other.'
+            : 'A tie links your wolf to someone here: a mentor if one is free, else someone who lives in town. Take one, or none.')];
+        const current = el('div', {className: 'gift-card chosen tie-current'}, el('strong', {}, this.draftTie ? this.tieLine(this.draftTie) : 'No tie'));
+        const reroll = el('button', {type: 'button', className: 'secondary', textContent: 'Reroll'});
+        reroll.addEventListener('click', () => {
+            this.draftTie = this.randomTie(this.draftTie);
+            changed();
+        });
+        out.push(el('span', {className: 'gift-heading'}, 'YOUR TIE'), current, reroll, el('span', {className: 'gift-heading'}, 'OR PICK ONE'));
+        const list = el('div', {className: 'tie-list'});
+        for (const t of this.ties) {
+            const id = str(t, 'id');
+            const b = el('button', {type: 'button', className: `gift-card${this.draftTie === id ? ' chosen' : ''}`}, el('span', {}, str(t, 'line')));
+            b.dataset.tie = id;
+            b.addEventListener('click', () => {
+                this.draftTie = id;
+                changed();
+            });
+            list.append(b);
+        }
+        if (!this.tieRequired) {
+            const none = el('button', {type: 'button', className: `gift-card${this.draftTie ? '' : ' chosen'}`}, el('span', {}, 'No tie'));
+            none.dataset.tie = '';
+            none.addEventListener('click', () => {
+                this.draftTie = '';
+                changed();
+            });
+            list.append(none);
+        }
+        out.push(list);
+        return out;
+    }
+
+    private tieLine(id: string): string {
+        return str(this.ties.find(t => str(t, 'id') === id), 'line', id);
+    }
+
+    private randomTie(not: string): string {
+        const pool = this.ties.map(t => str(t, 'id')).filter(id => id && id !== not);
+        return pool.length ? pool[Math.floor(Math.random() * pool.length)] : not;
+    }
+
+    private startName(id: string): string {
+        return str(this.starts.find(t => str(t, 'id') === id), 'name', title(id));
+    }
+
     /** Whether the account hasn't opened a Gift tier yet (doc 49; an older server sends no tiers: all open). */
     private tierLocked(tier: string): boolean {
         const t = obj(this.tiers, tier);
@@ -825,6 +926,11 @@ export class FrontDoor {
             this.show('creator');
             return this.setMessage(str(obj(this.tiers, this.draftTier), 'message', `${title(this.draftTier)} isn't open to your account yet.`), true);
         }
+        if (this.tieRequired && !this.draftTie) {
+            this.creatorTab = 'tie';
+            this.show('creator');
+            return this.setMessage('Your first wolf takes a tie: pick a story starter, or keep the one suggested.', true);
+        }
         if (this.draftTier !== 'normal' && !this.draftFamily) {
             this.creatorTab = 'gift';
             this.show('creator');
@@ -838,6 +944,8 @@ export class FrontDoor {
         if (this.busy || !this.draftAppearance || this.page !== 'review') return;
         const command: Json = {type: 'character_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance};
         if (this.draftTier !== 'normal') command.gift = {tier: this.draftTier, family: this.draftFamily};
+        if (this.draftStart && this.starts.some(t => str(t, 'id') === this.draftStart)) command.start = this.draftStart;
+        if (this.draftTie) command.tie = this.draftTie;
         if (Object.keys(this.draftGrades).length || this.draftSpecialty)     // (A plain wolf sends no build: doc 49.)
             command.build = {grades: {...this.draftGrades}, specialty: this.draftSpecialty};
         // A timeout is an uncertain result, not a new creation: an unchanged draft keeps the same receipt key.

@@ -24,7 +24,7 @@ void Game::feedWatch(double dt)
 //  "shops": [[merchant, name, label, cell, x, y, at a stall], ...]}
 // kind: "p" a player in the world, "o" a player character not in it (where they were saved), "n" an NPC, "r" folk of
 // the road (a caravan's wagon, bandits: made as needed, never saved), "t" a temporary visitor (World::addVisitor).
-// flags: 1 dead, 2 downed, 4 off stage, 8 in a fight. "weather": the systems over the world (below).
+// flags: 1 dead, 2 downed, 4 off stage, 8 in a fight, 16 hunting, 32 working together, 64 sparring (doc 53). "weather": the systems over the world (below).
 std::string Game::watchFrame() const
 {
     using json::Value;
@@ -45,10 +45,22 @@ std::string Game::watchFrame() const
     };
     for (const auto& [id, e] : world_.entities())
     {
-        const int flags = (e.dead ? 1 : 0) | (e.downedLeft > 0 ? 2 : 0) | (e.offstage ? 4 : 0) | (world_.inBattle(id) ? 8 : 0);
+        const auto* fight = world_.battleOf(id);
+        const bool hunting = fight && fight->hunt && !fight->over && fight->fighter(id) && fight->fighter(id)->side == 0;
+        const auto* joint = world_.jointOf(id);
+        const bool sparring = fight && !fight->over && fight->terms == "spar";
+        const int flags = (e.dead ? 1 : 0) | (e.downedLeft > 0 ? 2 : 0) | (e.offstage ? 4 : 0) | (world_.inBattle(id) ? 8 : 0) | (hunting ? 16 : 0) |
+                          (joint ? 32 : 0) | (sparring ? 64 : 0);
         if (!e.npc)
         {
-            row(e, "p", flags, "", e.activity.empty() ? e.state : e.activity);
+            std::string doing = hunting ? "hunting" : sparring ? "sparring" : e.activity.empty() ? e.state : e.activity;
+            if (joint)
+                if (const auto* act = together::activity(joint->kind))
+                {
+                    const auto* farmer = act->byBeat() ? world_.entity(joint->target) : nullptr;
+                    doing = farmer ? act->name + " beside " + farmer->name : act->name + " together";   // "Threshing beside Hale".
+                }
+            row(e, "p", flags, "", doing);
             continue;
         }
         const auto* spec = society.spec(id);

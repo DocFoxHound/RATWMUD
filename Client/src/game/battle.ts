@@ -18,6 +18,12 @@ export interface AnimalView {
     color: string;              // "#rrggbb".
     aware: boolean;
     notice: number;             // What it has made of this wolf (doc 40, hunts): 0 nothing, 1 suspicious ("?"), 2 alert ("!").
+    // Game that runs (doc 53): 'grazing', 'watching', 'fleeing' or 'calming' ('' for one that fights); how near a
+    // watched wolf may come before it bolts; whom it watches, and whether that is this wolf.
+    state: string;
+    flight: number;
+    watching: string;
+    watchingYou: boolean;
 }
 
 export interface FighterView {
@@ -51,6 +57,7 @@ export interface FighterView {
     walk: Tile[];               // Walking there: the tiles still to go (doc 37: a turn shown, not just run).
     appearance: Json | null;    // How they look, for the fight screen's portraits (doc 37).
     animal?: AnimalView | null; // Game in a hunt (doc 41): drawn as its own glyph, and whether it has noticed the hunters.
+    waiting?: boolean;          // One's own side lying in wait (doc 53): it springs on game stepping beside it.
     lifeStage: string;
     stamina: number;            // Everyone's (−1 if not sent).
     mana: number;               // The Gifted's (−1 otherwise), out of manaMax.
@@ -123,6 +130,7 @@ export interface StrikeOdds {
     damage: number;
     reach: boolean;
     ambush: boolean;            // They haven't noticed this wolf (doc 40): the first blow is an ambush.
+    why: string;                // Game that runs (doc 53): what its dodge is by ("unaware", "driven", "watching you"...).
 }
 
 export type Tile = [number, number];
@@ -246,6 +254,15 @@ export interface FightSquare {
     watching: boolean;
     actions: number;
     latest: string;
+    // A hunt (doc 53): whose, how many hunt, how many taken; Ask to join when it is closed to one.
+    hunt: boolean;
+    starter: string;
+    hunters: number;
+    taken: number;
+    canAsk: boolean;
+    // A spar (doc 53, 5): how many watch it.
+    spar: boolean;
+    watchers: number;
 }
 
 export interface ChallengeView {
@@ -257,7 +274,8 @@ export interface ChallengeView {
 
 /** A fight's terms, in words: "to first blood", "until one yields", "until one goes down" (no player dies: doc 38). */
 export function termsWords(terms: string): string {
-    return terms === 'blood' ? 'to first blood' : terms === 'yield' ? 'until one yields' : 'until one goes down';
+    return terms === 'blood' ? 'to first blood' : terms === 'yield' ? 'until one yields' : terms === 'spar' ? 'as a spar (bruises only)'
+        : 'until one goes down';
 }
 
 export function readBattle(snapshot: Json | null): BattleView | null {
@@ -306,12 +324,16 @@ export function readBattle(snapshot: Json | null): BattleView | null {
             appearance: obj(f, 'appearance'), lifeStage: str(f, 'lifeStage', 'adult'),
             animal: obj(f, 'animal') ? {species: str(obj(f, 'animal'), 'species'), glyph: str(obj(f, 'animal'), 'glyph', '?'),
                 color: str(obj(f, 'animal'), 'color', '#b89a74'), aware: bool(obj(f, 'animal'), 'aware'),
-                notice: num(obj(f, 'animal'), 'notice', bool(obj(f, 'animal'), 'aware') ? 2 : 0)} : null,
+                notice: num(obj(f, 'animal'), 'notice', bool(obj(f, 'animal'), 'aware') ? 2 : 0), state: str(obj(f, 'animal'), 'state'),
+                flight: num(obj(f, 'animal'), 'flight'), watching: str(obj(f, 'animal'), 'watching'),
+                watchingYou: bool(obj(f, 'animal'), 'watchingYou')} : null,
+            waiting: bool(f, 'waiting'),
             stamina: num(f, 'stamina', -1), mana: num(f, 'mana', -1), manaMax: num(f, 'manaMax', 0),
             regen: num(f, 'regen'), fillSeconds: num(f, 'fillSeconds'), resting: bool(f, 'resting'),
             injuries: objects(f, 'injuries').map(i => ({kind: str(i, 'kind'), name: str(i, 'name'), does: str(i, 'does')})),
             odds: obj(f, 'odds') ? {hit: num(obj(f, 'odds'), 'hit'), base: num(obj(f, 'odds'), 'base', num(obj(f, 'odds'), 'hit')),
-                damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach'), ambush: bool(obj(f, 'odds'), 'ambush')} : null,
+                damage: num(obj(f, 'odds'), 'damage'), reach: bool(obj(f, 'odds'), 'reach'), ambush: bool(obj(f, 'odds'), 'ambush'),
+                why: str(obj(f, 'odds'), 'why')} : null,
             fx: objects(f, 'fx').map(x => ({id: str(x, 'id'), name: str(x, 'name'), does: str(x, 'does'), turns: Math.trunc(num(x, 'turns', -1))})),
             gift: str(f, 'gift'), quickened: bool(f, 'quickened'), intent: readPlan(obj(f, 'intent')),
         })),
@@ -398,6 +420,8 @@ export function readFights(snapshot: Json | null): FightSquare[] {
         names: [str(f, 'side0'), str(f, 'side1')],
         round: Math.trunc(num(f, 'round')), over: bool(f, 'over'), canJoin: bool(f, 'canJoin'),
         canObserve: bool(f, 'canObserve'), watching: bool(f, 'watching'), actions: Math.trunc(num(f, 'actions')), latest: str(f, 'latest'),
+        hunt: bool(f, 'hunt'), starter: str(f, 'starter'), hunters: Math.trunc(num(f, 'hunters')), taken: Math.trunc(num(f, 'taken')),
+        canAsk: bool(f, 'canAsk'), spar: bool(f, 'spar'), watchers: Math.trunc(num(f, 'watchers')),
     }));
 }
 
@@ -463,6 +487,7 @@ export function quarter(foe: FighterView, x: number, y: number): 'front' | 'side
 /** The chance (percent) of a blow at `foe` from tile (x, y), by the rules the server rolls with. */
 export function chanceFrom(foe: FighterView, x: number, y: number): number {
     if (!foe.odds) return 0;
+    if (foe.odds.why) return foe.odds.hit;             // Game that runs (doc 53): its dodge, from any side.
     if (foe.odds.ambush) return foe.odds.hit;          // Unaware of this wolf (doc 40): as from behind, wherever it comes from.
     if (foe.guarding) return foe.odds.base;            // On guard, they turn to meet it: no side or back (doc 37).
     const q = quarter(foe, x, y);

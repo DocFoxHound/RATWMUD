@@ -649,7 +649,7 @@ export class GamePainter {
                 c.restore();
                 this.drawToken({...me, x: hx, y: hy}, centre(hx, hy), tile, Amber, 0.4, false);
                 if (aimed && !b.acted && apart(hx, hy, aimed.x, aimed.y) <= range)
-                    this.chanceBadge(centre(hx, hy), tile, chanceFrom(aimed, hx, hy), strikeFrom(aimed, hx, hy));
+                    this.chanceBadge(centre(hx, hy), tile, chanceFrom(aimed, hx, hy), strikeFrom(aimed, hx, hy), undefined, aimed.odds?.why ?? '');
             }
         }
         const mySide = me ? me.side : 0;
@@ -679,11 +679,22 @@ export class GamePainter {
                 }
                 if (step.reaches) {
                     p.lines([from, foeAt], withAlpha(foeRed, 0.8), 2);
-                    this.chanceBadge(foeAt, tile, chanceFrom(pointedFoe, step.x, step.y), strikeFrom(pointedFoe, step.x, step.y), placed);
+                    this.chanceBadge(foeAt, tile, chanceFrom(pointedFoe, step.x, step.y), strikeFrom(pointedFoe, step.x, step.y), placed,
+                        pointedFoe.odds?.why ?? '');
                 } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
             } else this.chanceBadge(foeAt, tile, -1, 'front', placed);
         }
         const colorOf = (f: FighterView) => (f.id === s.selfId ? Amber : f.side === mySide ? Blue : foeRed);
+        // Game watching a wolf (doc 53): a faint line from that wolf, through it and on: where it will run if it bolts.
+        for (const f of b.fighters) {
+            const watched = f.animal?.state === 'watching' ? b.fighters.find(o => o.id === f.animal!.watching) : undefined;
+            if (!watched || f.status !== 'fighting') continue;
+            const dx = f.x - watched.x, dy = f.y - watched.y, len = Math.max(1e-6, Math.hypot(dx, dy)), run = Math.max(3, f.animal!.flight * 1.5);
+            c.save();
+            c.setLineDash([2, 5]);
+            p.lines([centre(watched.x, watched.y), centre(f.x, f.y), centre(f.x + dx / len * run, f.y + dy / len * run)], withAlpha(Paper, 0.25), 1.5);
+            c.restore();
+        }
         // Others walking (doc 37: a turn shown, not just run): the way they are going, and where it ends.
         for (const f of b.fighters) {
             if (!f.walk.length || f.id === s.selfId || f.status === 'fled') continue;
@@ -973,17 +984,23 @@ export class GamePainter {
         if (fallen) this.turnedText(x, y, glyph, size, rim, Math.PI / 2);
         else {
             this.turnedText(x, y, glyph, size, withAlpha(tint, alpha), 0);
-            // What it has made of you (doc 40, hunts): "?" half noticed, "!" alert.
-            const mark = f.animal ? (f.animal.notice >= 2 || (f.animal.aware && !f.animal.notice) ? '!' : f.animal.notice === 1 ? '?' : '') : '';
+            // What it has made of you (doc 40, hunts): "?" half noticed, "!" alert; game that runs (doc 53): "!" watching,
+            // "»" fleeing, "~" calming, and grazing its glyph alone ("?" when it half notices you).
+            const st = f.animal?.state ?? '';
+            const mark = !f.animal ? '' : st === 'fleeing' ? '»' : st === 'calming' ? '~' : st === 'watching' ? '!'
+                : st === 'grazing' ? (f.animal.notice === 1 ? '?' : '')
+                : f.animal.notice >= 2 || (f.animal.aware && !f.animal.notice) ? '!' : f.animal.notice === 1 ? '?' : '';
             if (mark) this.turnedText(x + r * 0.95, y - r * 0.95, mark, Math.max(9, Math.round(r * 0.9)), withAlpha(Amber, alpha), 0);
             if (f.mouth === 'sword') this.turnedText(x + r * 0.95, y - r * 0.95, '†', Math.max(9, Math.round(r * 0.9)), withAlpha(Paper, alpha), 0.6);
+            if (f.waiting) this.turnedText(x, y + r * 1.25, '⋯', Math.max(9, Math.round(r * 0.9)), withAlpha(Amber, alpha), 0);   // Lying in wait (doc 53).
         }
     }
 
     /** A blow's chance in a badge beside a foe ("81%", and "side" or "behind" when it helps); −1: out of reach. */
-    private chanceBadge([x, y]: Point, tile: number, chance: number, from: 'front' | 'side' | 'back' | 'ambush', placed?: Rect[]) {
+    private chanceBadge([x, y]: Point, tile: number, chance: number, from: 'front' | 'side' | 'back' | 'ambush', placed?: Rect[], why = '') {
         const p = this.p;
         const words = chance < 0 ? 'out of reach'
+            : why ? `${Math.round(chance)}% · ${why}`       // (Game that runs: its dodge, by what it knew of you: doc 53.)
             : `${Math.round(chance)}%${from === 'ambush' ? ' · ambush' : from === 'back' ? ' · behind' : from === 'side' ? ' · side' : ''}`;
         const size = 12;
         const [w] = p.measure(words, size, true);
@@ -1178,6 +1195,8 @@ export class GamePainter {
             if (view.rel === 'party') p.box(x - 2, y + 11, 4, 3, color);
             else if (view.rel === 'chapter') p.box(x - 6, y + 12, 12, 1.5, color);     // A Chapter mate: underlined.
             else if (view.hostile && !view.self) p.text(x - 3, y - 25, '!', 12, color, true);
+            // A mentor free to take a newcomer, as a newcomer sees them (doc 52): a small star over their shoulder.
+            if (view.mentorFree && !view.hostile) p.text(x + 7, y - 26, '✦', 11, withAlpha(Sage, fadeIn), true);
             if (view.self && s.facingPreview && s.canFaceAt(s.hover))
                 this.turnedText(x + Math.cos(s.previewFacing) * reach, y + Math.sin(s.previewFacing) * reach, '>', 10, withAlpha(color, 0.32),
                     s.previewFacing);
@@ -1212,6 +1231,20 @@ export class GamePainter {
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
         }
         s.hoveredEntity = hovered;
+        // Where one's tie was when it was made (doc 52), for a while: a faint ring, never where they've gone since.
+        const tieMark = obj(obj(obj(s.snapshot, 'self'), 'tie'), 'marker');
+        if (tieMark && str(tieMark, 'cell') === s.cellId && !s.battle) {
+            const x = ox + num(tieMark, 'x') * tile, y = oy + num(tieMark, 'y') * tile, c = p.ctx;
+            c.save();
+            c.setLineDash?.([3, 4]);
+            c.beginPath();
+            c.arc(x, y, 22, 0, Math.PI * 2);
+            c.strokeStyle = css(withAlpha(Sage, 0.6));
+            c.lineWidth = 1.5;
+            c.stroke();
+            c.restore();
+            p.text(x - 22, y + 24, 'your tie', 9, withAlpha(Sage, 0.8));
+        }
         if (s.battle) this.drawArena(s.battle, ox, oy, tile);
         else this.drawFights(ox, oy, tile);
         this.drawEnvironment(true);

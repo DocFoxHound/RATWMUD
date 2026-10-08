@@ -166,3 +166,15 @@ Reviewed with `tools/ai_review.py` against `gpt-5.6-luna` (the main voice), on t
 - **Decided 2026-10-02:** `gpt-5.4-mini` is the main voice for now (`model` and `fallback_model`), so it answers
   players, writes the Dungeon Master's life stories and Atlas's generated characters; `gpt-5.4-nano` keeps summaries
   and overheard exchanges. `gpt-5.6-luna` is kept back for other uses later.
+- **Prices, 2026-10-07** (OpenAI's standard tier, dollars per million tokens: input / cached input / output), now in the
+  local config's `prices`:
+
+  | Model | Input | Cached | Output |
+  |---|---|---|---|
+  | `gpt-5.6-luna` | 0.20 | 0.02 | 1.20 |
+  | `gpt-5.4-mini` | 0.75 | 0.075 | 4.50 |
+  | `gpt-5.4-nano` | 0.20 | 0.02 | 1.25 |
+
+  `gpt-5.6-luna` has come down to the small model's price, about a quarter of mini's.
+- **Stories (2026-10-07, the user):** a fourth setting, `story_model`, writes scenes as stories and Story books'
+  summaries (doc 51, "Scenes told as stories"). It is set to `gpt-5.6-luna`.

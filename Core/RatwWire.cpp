@@ -1,6 +1,7 @@
 #include "RatwWire.h"
 #include "RatwOrchestratorJson.h"
 #include "RatwItems.h"
+#include "RatwCalendar.h"
 #include "RatwGifts.h"
 #include "RatwStep.h"
 
@@ -199,6 +200,10 @@ Value persistEntity(const Entity& e, double time)
         o.add("scentMaskedUntil", e.scentMaskedUntil);
     if (e.noPvp)
         o.add("noPvp", true);
+    if (e.noHuntPartners)
+        o.add("noHuntPartners", true);              // (Doc 53: missing means on.)
+    if (e.noWorkPartners)
+        o.add("noWorkPartners", true);
     if (!e.wear.empty())
     {
         auto wear = Value::object();
@@ -259,6 +264,26 @@ Value persistEntity(const Entity& e, double time)
     }
     if (e.wardenAttention > 0)
         o.add("wardenAttention", e.wardenAttention);    // Quickened magic others saw (doc 43).
+    if (!e.witnessed.empty())
+    {
+        auto w = Value::object();                      // Keeping the secret (doc 53, 4): IDs and days only.
+        for (const auto& [wolf, day] : e.witnessed)
+            w.add(wolf, day);
+        o.add("witnessed", w);
+    }
+    if (!e.toldWardens.empty())
+    {
+        auto t = Value::array();
+        for (const auto& wolf : e.toldWardens)
+            t.push(wolf);
+        o.add("toldWardens", t);
+    }
+    if (e.vouchedDay > -1e8)
+        o.add("vouchedDay", e.vouchedDay);
+    if (!e.vouchedFor.empty())
+        o.add("vouchedFor", e.vouchedFor);
+    if (e.wardenStanding != 0)
+        o.add("wardenStanding", e.wardenStanding);
     if (e.fightingSkill != 50)
         o.add("fightingSkill", e.fightingSkill);
     if (e.dungeonMaster)
@@ -382,6 +407,8 @@ Entity readEntity(const Value& o)
         e.swordKind = kind;
     e.scentMaskedUntil = std::max(0.0, strictNumber(o, "scentMaskedUntil", 0.0));
     e.noPvp = !e.npc && o.boolean("noPvp");
+    e.noHuntPartners = !e.npc && o.boolean("noHuntPartners");
+    e.noWorkPartners = !e.npc && o.boolean("noWorkPartners");
     for (const auto& [item, used] : o.object("wear").fields())
         if (items::good(item) && used.asNumber(-1) >= 0 && used.asNumber(-1) <= 100000 && e.wear.size() < 64)
             e.wear[item] = used.asNumber(0);
@@ -410,6 +437,15 @@ Entity readEntity(const Value& o)
         e.gift.clear();
     e.quickened = o.boolean("quickened");
     e.wardenAttention = std::clamp(strictNumber(o, "wardenAttention", 0.0), 0.0, 1e9);
+    for (const auto& [wolf, day] : o.object("witnessed").fields())
+        if (day.isNumber() && wolf.size() <= 128 && e.witnessed.size() < 500)
+            e.witnessed[wolf] = day.asNumber(0);
+    for (const auto& wolf : o.array("toldWardens"))
+        if (wolf.isString() && e.toldWardens.size() < 500)
+            e.toldWardens.insert(wolf.asString());
+    e.vouchedDay = strictNumber(o, "vouchedDay", -1e9);
+    e.vouchedFor = o.string("vouchedFor").substr(0, 128);
+    e.wardenStanding = std::clamp(strictNumber(o, "wardenStanding", 0.0), -100.0, 100.0);
     e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
     e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);
@@ -682,8 +718,19 @@ Result environmentCommand(World& world, const std::string& cellId, const std::st
     if (!devTools)
         return {false, "Environment controls are available only in development sessions.", cellId};
     if (type == "calendar")
+    {
+        if (value == "season")
+        {
+            // To the first day of the next season (farm work's seasons, doc 53, are tried this way).
+            const auto now = calendar::calendarAt(world.calendarDays()).season;
+            Result step{false, "Unknown calendar step.", cellId};
+            for (int day = 0; day < 120 && calendar::calendarAt(world.calendarDays()).season == now; ++day)
+                step = world.advanceCalendar(1);
+            return step;
+        }
         return value == "day" ? world.advanceCalendar(1) : value == "year" ? world.advanceCalendar(365)
                                                                             : Result{false, "Unknown calendar step.", cellId};
+    }
     if (type == "weather" && value == "seasonal")
         return world.useSeasonalWeather(cellId);
     if (type == "lighting")

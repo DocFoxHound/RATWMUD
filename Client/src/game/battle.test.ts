@@ -180,7 +180,7 @@ test('the fight screen\'s data: looks, breath and mana for one\'s side, odds aga
     assert.equal(ada.manaMax, 44);
     assert.deepEqual(ada.appearance, {species: 'timber'});
     assert.equal(bo.stamina, -1, "the other side's breath is not sent");
-    assert.deepEqual(bo.odds, {hit: 85, base: 85, damage: 12, reach: true, ambush: false}, 'no base sent: the hit itself');
+    assert.deepEqual(bo.odds, {hit: 85, base: 85, damage: 12, reach: true, ambush: false, why: ''}, 'no base sent: the hit itself');
     assert.equal(ada.odds, null);
     assert.equal(secondsToTurn(bo, 0), 10, 'from 40, at 6 a second: ten seconds');
     assert.equal(secondsToTurn(bo, 4), 6, 'four seconds on: six');
@@ -237,7 +237,7 @@ test('a challenge names its terms (doc 37, phase 4): the menu offers them, the d
         entities: [{id: 'player-bo', kind: 'player', name: 'A dun wolf', x: 6, y: 5, actions: ['inspect', 'challenge']}]});
     s.contextTarget = 'player-bo';
     s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'challenge'});
-    assert.deepEqual(s.contextActions, ['challenge:yield', 'challenge:blood', 'challenge:death'], 'the terms, until one yields first');
+    assert.deepEqual(s.contextActions, ['challenge:yield', 'challenge:blood', 'challenge:spar', 'challenge:death'], 'the terms, until one yields first');
     assert.ok(!commands.some(c => c.type === 'action'), 'nothing sent yet');
     s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'challenge:blood'});
     assert.deepEqual(commands.at(-1), {type: 'action', action: 'challenge', target: 'player-bo', terms: 'blood'});
@@ -424,4 +424,31 @@ test('Gifts (doc 43): read from the fight, aimed by kind, and sent', () => {
     s.useGift('wall_of_fire');
     s.arenaClick(3, 1);
     draw(painter, 'drawLocal');
+});
+
+test('hunts: game that runs shows its state, whom it watches, and its dodge whatever the side; one lying in wait is marked', () => {
+    const hunt: Json = {...battle, fighters: [
+        {id: 'self', name: 'Ada', side: 0, x: 2, y: 2, facing: 0, status: 'fighting', npc: false, label: '', health: 100, waiting: true},
+        {id: 'deer', name: 'A roe deer', side: 1, x: 6, y: 2, facing: 4, status: 'fighting', npc: true, label: '', health: 100,
+            animal: {species: 'roe_deer', glyph: 'd', color: '#b89a74', aware: true, notice: 2, state: 'watching', flight: 6, watching: 'self',
+                watchingYou: true},
+            odds: {hit: 40, base: 40, damage: 12, reach: false, ambush: false, why: 'watching you'}},
+    ]};
+    const b = readBattle({battle: hunt})!;
+    const deer = b.fighters.find(f => f.id === 'deer')!;
+    assert.equal(deer.animal?.state, 'watching');
+    assert.equal(deer.animal?.flight, 6);
+    assert.ok(deer.animal?.watchingYou && deer.animal?.watching === 'self', 'it watches Ada');
+    assert.equal(deer.odds?.why, 'watching you');
+    assert.equal(chanceFrom(deer, 7, 2), 40, 'from behind it, still its dodge: no side or back for game that runs');
+    assert.ok(b.fighters.find(f => f.id === 'self')!.waiting, 'Ada lies in wait');
+});
+
+test('hunts together: a hunt in sight says whose it is, how many hunt and have taken, and Join hunt or Ask to join', () => {
+    const [open, closed] = readFights({fights: [
+        {id: 'h1', x0: 1, y0: 1, x1: 4, y1: 4, standing0: 2, standing1: 3, side0: 'Ash', side1: 'A rabbit', canJoin: true, hunt: true, starter: 'Ash',
+            hunters: 2, taken: 1},
+        {id: 'h2', x0: 1, y0: 1, x1: 4, y1: 4, standing0: 1, standing1: 2, canJoin: false, canAsk: true, hunt: true, starter: 'Bo', hunters: 1, taken: 0}]});
+    assert.ok(open.hunt && open.canJoin && open.starter === 'Ash' && open.hunters === 2 && open.taken === 1);
+    assert.ok(closed.hunt && !closed.canJoin && closed.canAsk, 'closed to this wolf: it may ask');
 });

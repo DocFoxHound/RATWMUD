@@ -536,7 +536,7 @@ Result World::endFightInDraw(const std::string& player)
     return {true, "You call the fight a draw.", {}};
 }
 
-Result World::startBattle(const std::string& attacker, const std::string& target, bool pvp)
+Result World::startBattle(const std::string& attacker, const std::string& target, bool pvp, const std::string& terms)
 {
     auto* a = entity(attacker);
     auto* t = entity(target);
@@ -573,7 +573,10 @@ Result World::startBattle(const std::string& attacker, const std::string& target
     b.id = "fight-" + std::to_string(++nextBattle_);
     b.cellId = a->cellId;
     b.pvp = pvp;
-    // A bandit set on (or setting on): the camp's fight. A resident set on: an assault, a crime (RatwCrime.cpp).
+    if (!terms.empty())
+        b.terms = terms;                            // (A spar with a trainer: doc 53, 5.)
+    // A bandit set on (or setting on): the camp's fight. A resident set on: an assault, a crime (RatwCrime.cpp); a
+    // trainer asked to spar is no assault.
     if (auto* camp = campOf(target) ? campOf(target) : campOf(attacker))
     {
         b.camp = camp->id;
@@ -584,7 +587,7 @@ Result World::startBattle(const std::string& attacker, const std::string& target
         else
             enc->fighting = true;
     }
-    else if (t->npc && !a->npc)
+    else if (t->npc && !a->npc && b.terms != "spar")
     {
         auto& inc = openIncident("assault", attacker, target);
         recordEvent({"assault", attacker, target, inc.cell, 0, 0, {}, 0, 0, inc.id});
@@ -660,8 +663,10 @@ Result World::startBattle(const std::string& attacker, const std::string& target
                 continue;
             BattleFighter asWas = o;
             asWas.facing = ownFacing[o.id];
-            // Not one that noticed it on the way in (doc 40: the approach counts), nor one that notices it now.
-            if (residentAwareness(o.id, attacker) >= battle::AwareSuspicious || arenaNotice(b, asWas, *af, moving) >= battle::AwareSuspicious)
+            // Not one that noticed it on the way in (doc 40: the approach counts), nor one that notices it now, nor one
+            // keeping watch (doc 53, 4: those it watches over are warned by its notice, in tendCamp).
+            if (residentAwareness(o.id, attacker) >= battle::AwareSuspicious || arenaNotice(b, asWas, *af, moving) >= battle::AwareSuspicious ||
+                keepingWatch(o.id))
                 continue;
             o.facing = asWas.facing;
             o.meter = 0;
@@ -841,6 +846,7 @@ void World::walkFighters(Battle& b)
             f.walk.erase(f.walk.begin());
             f.stepAt += stepSeconds(f);
             magicStep(b, f);                        // (Ground a Gift changed: fire, loose or slick: doc 43.)
+            huntStep(b, f);                         // (Game passing one lying in wait: it springs, doc 53.)
         }
     }
 }
@@ -990,6 +996,8 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
         return {false, "You are already in that fight.", {}};
     if (b->fled.count(id))
         return {false, "You fled from that fight. You may only watch it now.", {}};
+    if (b->terms == "spar")
+        return {false, "A spar is between those who agreed to it; you may watch.", {}};
     if (b->observed.count(id))
         return {false, "You have watched this fight. You may only watch it now.", {}};
     if (inBattle(id))
@@ -1073,11 +1081,12 @@ Result World::joinBattle(const std::string& id, const std::string& battleId, int
                 sideOf = o->name;
                 break;
             }
-    fightLine(*b, id, {}, "join", e->name + " joins the fight" + (sideOf.empty() ? "." : " on " + sideOf + "'s side."));
+    fightLine(*b, id, {}, "join", e->name + (b->hunt ? " joins the hunt." : " joins the fight" + (sideOf.empty() ? std::string(".") : " on " + sideOf + "'s side.")));
     for (const auto& other : b->fighters)
         if (const auto* o = entity(other.id); o && !o->npc && other.id != id && other.status != "fled")
-            notice(other.id, e->name + " joins the fight.");
-    return {true, "You join the fight.", {}};
+            notice(other.id, e->name + (b->hunt ? " joins the hunt." : " joins the fight."));
+    huntJoined(*b, id);                             // (A hunter joining brings more game in: doc 53.)
+    return {true, b->hunt ? "You join the hunt." : "You join the fight.", {}};
 }
 
 Result World::observeBattle(const std::string& id, const std::string& battleId)
@@ -1112,13 +1121,13 @@ namespace
 {
 std::string termsWords(const std::string& terms)
 {
-    return terms == "blood" ? "to first blood" : terms == "death" ? "until one goes down" : "until one yields";
+    return terms == "blood" ? "to first blood" : terms == "death" ? "until one goes down" : terms == "spar" ? "as a spar (bruises only)" : "until one yields";
 }
 } // namespace
 
 Result World::challenge(const std::string& from, const std::string& to, const std::string& asked)
 {
-    const std::string terms = asked == "blood" || asked == "death" ? asked : "yield";
+    const std::string terms = asked == "blood" || asked == "death" || asked == "spar" ? asked : "yield";
     const auto* a = entity(from);
     const auto* t = entity(to);
     if (!a || !t || a->dead || t->dead)
@@ -1188,6 +1197,18 @@ Result World::answerChallenge(const std::string& player, bool accept)
 
 void World::fightLine(Battle& b, const std::string& actor, const std::string& target, const std::string& kind, std::string text)
 {
+    // What each did, for the end screen (doc 51, Phase 5): counted here, where every action passes.
+    if (auto* f = b.fighter(actor))
+    {
+        if (kind == "hit" || kind == "graze" || kind == "slash")
+            ++f->tally.landed;
+        else if (kind == "tend" || kind == "rise")
+            ++f->tally.raised;
+        else if (kind == "guard")
+            ++f->tally.guarded;
+    }
+    if (b.told.size() < 200)
+        b.told.push_back(text);
     b.log.push_back({++b.seq, time_, actor, target, kind, std::move(text), {}});
     if (b.log.size() > battle::BattleLogKept)
         b.log.erase(b.log.begin());
@@ -1200,6 +1221,8 @@ void World::beginTurn(Battle& b, BattleFighter& f)
     f.turnStarted = time_;
     f.deadline = time_ + battle::TurnSeconds;
     f.moved = f.acted = f.extended = f.faced = false;
+    if (const auto lying = huntHunters_.find(f.id); lying != huntHunters_.end())
+        lying->second.waiting = false;              // (Its own turn again: no longer lying in wait, doc 53.)
     f.magic.helped = false;
     f.guarding = f.drew = false;                    // (On guard until now.)
     f.partsUsed = 0;
@@ -1230,6 +1253,8 @@ void World::beginTurn(Battle& b, BattleFighter& f)
             e->exhausted = false;
         if (!e->gift.empty())
             e->mana = std::min(manaPool(*e), e->mana + (e->quickened ? battle::QuickenedManaPerTurn : battle::ManaPerTurn));
+        if (b.terms == "spar")
+            f.burning = f.bleeding = 0;             // (A spar: nothing burns or bleeds, doc 53, 5.)
         if (f.burning > 0)
         {
             --f.burning;
@@ -1284,6 +1309,7 @@ void World::endTurn(Battle& b, BattleFighter& f)
     f.readyAt = -1;
     f.acting = false;
     sensedBy(b, f);                                 // What the other side made of that turn (doc 40).
+    huntAfterTurn(b, f);                            // What the game makes of a hunter's turn: watch, bolt (doc 53).
     checkOver(b);
 }
 
@@ -1311,7 +1337,7 @@ Result World::battleMove(const std::string& id, int x, int y)
     auto walk = walkTo(*b, f, x, y);
     if (walk.empty())
         return {false, "You can't get there this turn.", {}};
-    if (auto* mover = entity(id))
+    if (auto* mover = entity(id); mover && animalState(id) != "fleeing")   // (Game bolting runs free: doc 53.)
     {
         // Running costs breath for every tile (doc 33); out of it, the wolf is exhausted.
         mover->stamina = std::max(0.0, mover->stamina - double(walk.size()) * magicTileStamina(*b, f, battle::tileStamina(fightPace(*mover))));
@@ -1353,6 +1379,8 @@ std::vector<std::pair<int, int>> World::battleReach(const std::string& id) const
 
 std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleFighter& f, const Entity& e, double stamina, int less) const
 {
+    if (const int run = huntReach(b, f); run > 0)
+        return reachFrom(b, f, run);                // Game bolting: faster than any wolf (doc 53).
     // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
     const int pace = fightPace(e);
     // (A hurt leg, doc 38; a Gift's weight, wind or water, doc 43.)
@@ -2383,6 +2411,8 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     const auto* d = entity(t.id);
     if (!e || !d)
         return 0;
+    if (const double dodge = huntDodge(f, t); dodge >= 0)
+        return 1 - dodge;                           // Game that runs: its dodge, by what it knew of the biter (doc 53).
     // From the side or behind is easier: how far the defender faces from where the blow comes.
     // One on guard turns to meet it, and is harder to hit (doc 37).
     const int gap = battle::octantGap(t.facing, battle::octant(f.x - t.x, f.y - t.y));
@@ -2442,6 +2472,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
     {
         magicAfterBlow(b, f, *t);
         fightLine(b, f.id, t->id, "miss", e->name + " snaps at " + d->name + " and misses.");
+        huntMissed(b, f, *t);                       // (Game dodging: it bolts from the biter, doc 53.)
         practise(t->id, "fight.dodge", {f.id, {}, b.id});   // (Turning a blow aside teaches the paws: doc 49.)
         return {true, "You snap at " + d->name + " and miss.", target};
     }
@@ -2740,6 +2771,8 @@ void World::npcTurn(Battle& b, BattleFighter& f)
         senseFoes(b, f);                            // It looks and listens round first (doc 40).
     if (animalTurn(b, f))
         return;                                     // An animal in a hunt (doc 41, RatwHunt.cpp).
+    if (huntHelperTurn(b, f))
+        return;                                     // A companion in a hunt follows its leader's lead (doc 53).
     if (f.status == "downed")
     {
         if (!f.struggling && recoveryAvailable(*e))
@@ -3521,6 +3554,7 @@ void World::growSkill(Battle& b, const BattleFighter& learner, const BattleFight
         return;
     PracticeContext context;
     context.occasion = b.id;
+    context.amount = sparPractice(b, foe);          // (A spar: by its partner and ground, doc 53, 5.)
     if (foe)
     {
         const auto* d = entity(foe->id);
@@ -3544,12 +3578,16 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
     if (!d || t.status != "fighting")
         return;
     damage = huntBlow(b, t, damage, downedBase, by);   // An animal (doc 41): its own health, and the blow remembered.
+    damage = sparBlow(b, damage, by);               // A spar (doc 53, 5): a blade strikes blunted.
     d->hurt += damage;
+    t.tally.taken += damage;                        // (The end screen's figures: doc 51.)
+    if (auto* striker = b.fighter(by))
+        striker->tally.dealt += damage;
     injureOnBlow(b, t, damage, downedBase, by);     // A heavy blow can leave an injury that outlasts the fight (doc 38).
     if (d->npc)
         stop(t.id);
     // Combat injuries (doc 38): a hard bite or cut bleeds (the harder, the likelier: doc 47); a very hard blow staggers.
-    if (!by.empty() && downedBase == battle::DownedBite && d->hurt < 100 && !t.magic.has("seared") &&
+    if (!by.empty() && downedBase == battle::DownedBite && d->hurt < 100 && !t.magic.has("seared") && b.terms != "spar" &&
         chance(t.id + "|bleed", std::int64_t(b.seq) * 31 + b.turns) < (damage - battle::BleedFrom) / (battle::BleedSure - battle::BleedFrom))
     {
         if (t.bleeding <= 0)
@@ -3737,6 +3775,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
     {
         magicAfterBlow(b, f, *t);
         fightLine(b, f.id, t->id, "miss", e->name + (thrust ? " lunges at " : " swings at ") + d->name + " and misses.");
+        huntMissed(b, f, *t);
         practise(t->id, "fight.dodge", {f.id, {}, b.id});
         return {true, std::string(thrust ? "You lunge at " : "You swing at ") + d->name + " and miss.", target};
     }

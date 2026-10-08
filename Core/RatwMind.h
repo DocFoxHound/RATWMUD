@@ -83,10 +83,28 @@ class Client
     // A finished conversation summarised from the NPC's point of view; "" if there is no such service or it failed.
     void summarize(const std::string& npcName, const std::vector<std::pair<std::string, std::string>>& turns,
                    std::function<void(const std::string&)> done);
-    // A scene recapped for one player (doc 50, Phase 4) from only the lines its wolf perceived, each by who as it knew
-    // them: 2-4 sentences in the second person; "" if there is no such service, it failed, or its budgets are spent.
+    // A wolf in a scene as the player's wolf could see it: its label, its pronouns and its look, in its player's words.
+    struct RecapWolf
+    {
+        std::string who, pronouns, description;
+    };
+    // A scene in a book: the book's title and its latest chapters before this one (title, summary).
+    struct RecapStory
+    {
+        std::string book;
+        std::vector<std::pair<std::string, std::string>> before;
+    };
+    // A scene told as a short story for one player (doc 50, Phase 4; doc 51) from only the lines its wolf perceived, each
+    // by who as it knew them, with the wolves' looks and pronouns and, in a book, what came before: at most 1000 words;
+    // "" if there is no such service, it failed, or its budgets are spent.
     void recap(const std::string& place, const std::string& you, int minutes,
-               const std::vector<std::pair<std::string, std::string>>& lines, std::function<void(const std::string&)> done);
+               const std::vector<std::pair<std::string, std::string>>& lines, const std::vector<RecapWolf>& wolves,
+               const RecapStory& story, std::function<void(const std::string&)> done);
+    // A Story book's summary ("summary") or its flavour text once finished ("flavour"), from its chapters' titles and
+    // summaries (doc 51, Phase 7); or ("chapter") its last chapter, a scene's story, told again as the next chapter of
+    // the ones before it. "" if there is no such service, it failed, or its budgets are spent.
+    void book(const std::string& mode, const std::string& title, const std::vector<std::pair<std::string, std::string>>& chapters,
+              std::function<void(const std::string&)> done);
     // Runs the completions of answers that have arrived (on the caller's thread: the game's).
     void poll();
     // Waits (at most `seconds`) until nothing is on its way, then runs what arrived: for tests and shutdown.

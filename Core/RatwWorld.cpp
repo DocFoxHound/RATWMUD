@@ -632,15 +632,21 @@ bool World::blockedByDoor(const std::string& cellId, Vec2 point) const
 
 Entity& World::addPlayer(const std::string& id, const std::string& name)
 {
+    return addPlayer(id, name, spawnCell_, spawnPosition_);
+}
+
+Entity& World::addPlayer(const std::string& id, const std::string& name, const std::string& cell, Vec2 position)
+{
     auto existing = entities_.find(id);
     if (existing != entities_.end())
         return existing->second;
-    ensureLoaded(spawnCell_);
+    const bool there = cells_.count(cell) > 0;
+    ensureLoaded(there ? cell : spawnCell_);
     Entity e;
     e.id = id;
     e.name = name;
-    e.cellId = spawnCell_;
-    e.position = spawnPosition_;
+    e.cellId = there ? cell : spawnCell_;
+    e.position = there ? position : spawnPosition_;
     e.description = "A wolf whose story is still being written.";
     e.lastBirthdayDay = calendarDays_;
     society_.addPlayer(id);
@@ -3905,6 +3911,9 @@ void World::tick(double dt)
     restPlayers(elapsed);                           // Lying or sitting still: rest (doc 38).
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
     tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
+    tendJoints(elapsed);                            // Wolves working together: who has left, joints ended (doc 53).
+    if (!talkFacing_.empty())
+        tendTalkers();                              // Residents facing whom they talk with (doc 53, 4).
     tendAwareness();                                // Residents noticing players near them (doc 40, RatwBattle.cpp).
     tendWear();                                     // Clothes wearing with the days (RatwDurability.cpp).
     tendMarks();                                    // Noses catching a maker's scent on stolen goods (RatwMarks.cpp).
@@ -3968,6 +3977,12 @@ double World::visionClarity(const Entity& o, const Entity& s, double range) cons
     }
     return clarity(distance(o.position, s.position), range * .5);
 }
+double World::hearingSensitivity(const Entity& o) const
+{
+    return std::max(0.0, o.hearing) * ageHearingFactor(o) * clamp01(o.earHealth) * (1.0 + .75 * clamp01(o.hearingSkill / 100.0)) *
+           (o.injuries.empty() ? 1.0 : injury::effects(o.injuries).hearing);
+}
+
 double World::hearingClarity(const std::string& observerId, const std::string& sourceId, Voice voice) const
 {
     const auto* o = entity(observerId);
@@ -3976,9 +3991,7 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
         return 0;
     if (o->id == s->id)
         return 1;
-    const double sensitivity =
-        std::max(0.0, o->hearing) * ageHearingFactor(*o) * clamp01(o->earHealth) * (1.0 + .75 * clamp01(o->hearingSkill / 100.0)) *
-        (o->injuries.empty() ? 1.0 : injury::effects(o->injuries).hearing);
+    const double sensitivity = hearingSensitivity(*o);
     if (sensitivity <= Epsilon)
         return 0;
     double range = (voice == Voice::Whisper ? 2.0 : voice == Voice::Yell ? 32.0 : 16.0) * sensitivity;

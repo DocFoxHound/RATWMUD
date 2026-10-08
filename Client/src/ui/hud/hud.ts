@@ -4,7 +4,7 @@
 import {css, rgb} from '../color.ts';
 import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
-import {bool, boundedNum, clamp, envNumber, num, obj, str} from '../../game/json.ts';
+import {arr, bool, boundedNum, clamp, envNumber, isObject, num, obj, str} from '../../game/json.ts';
 import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel, restLabel, scentLabel, readLoad, loadCost} from '../../game/labels.ts';
 import type {EntityView, GameState} from '../../game/state.ts';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
@@ -15,6 +15,7 @@ import {drawGear, gearDoll} from './gear.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
+import {TiePanel} from './tie.ts';
 import {CombatScreen} from './combat.ts';
 import {PartyPanel} from './party.ts';
 import {PlacePanel} from './place.ts';
@@ -27,7 +28,15 @@ const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
 /** Menu entries that aren't their own action's name: a challenge's terms (doc 37). */
 const MenuWords: Record<string, string> = {'challenge:yield': 'Duel until one yields', 'challenge:blood': 'Duel to first blood',
-    'challenge:death': 'Fight until one goes down'};
+    'challenge:spar': 'Spar (bruises only)', 'challenge:death': 'Fight until one goes down'};
+
+/** "Tell of Ash" / "Vouch for Ash": the Wardens' menu (doc 53, 4), by the names the wolf knows them by. */
+function wardensWords(s: GameState, action: string): string {
+    const [verb, id] = action.slice('wardens-'.length).split(':');
+    const seen = arr(obj(s.snapshot, 'self'), 'witnessed').filter(isObject).find(w => str(w, 'id') === id);
+    const name = seen ? str(seen, 'name') : 'them';
+    return verb === 'tell' ? `Tell the Wardens of ${name}` : `Vouch for ${name} to the Wardens`;
+}
 
 /** A player's status in words (doc 50): in character needs none. */
 export const StatusWords: Record<string, string> = {ooc: 'out of character', lfs: 'looking for a scene', quill: 'storyteller'};
@@ -101,6 +110,7 @@ export class Hud {
     private connection: HTMLElement;
     private resizer: HTMLElement;
     private fight: FightPanel;
+    private tie: TiePanel;
     private combat: CombatScreen;
     private help: HTMLElement;
     private party: PartyPanel;
@@ -109,9 +119,11 @@ export class Hud {
     private devConsole: DevConsole;
     private devButton: HTMLButtonElement;
     private friendsButton: HTMLButtonElement;
+    private howlButton: HTMLButtonElement;
     private huntButton!: HTMLButtonElement;          // Out in the wild (doc 41): set out after game, forage, give up.
     private forageButton!: HTMLButtonElement;
     private leaveHuntButton!: HTMLButtonElement;
+    private postButton!: HTMLButtonElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -141,7 +153,7 @@ export class Hud {
         show(this.devButton, false);
         this.live = el('span', 'live label', top, '…');
 
-        this.story = new StoryPanel(this.root, state);
+        this.story = new StoryPanel(this.root, state, portraits);
         this.resizer = el('div', 'resizer', this.root);
         this.resizer.title = 'Drag to widen the story or the map';
         this.dragToResize();
@@ -163,6 +175,7 @@ export class Hud {
         this.canvas.tabIndex = 0;
         this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write.');
         this.fight = new FightPanel(center, state);
+        this.tie = new TiePanel(center, state);
         this.looking = el('div', 'looking muted', center);
         el('span', 'label muted', this.looking, 'LOOKING AT  ');
         this.lookWhat = el('span', 'what', this.looking);
@@ -175,9 +188,13 @@ export class Hud {
         button('Wait', 'act', actions, () => act('wait'));
         button('Sit', 'act', actions, () => act('sit'));
         button('Lie down', 'act', actions, () => act('lay')).title = 'Rest: six hours lying in a bed is a full rest';
+        // The gathering howl (doc 51): call others from across the country; resting between howls.
+        this.howlButton = button('Howl', 'act', actions, () => act('howl'));
         this.forageButton = button('Forage', 'act', actions, () => act('forage'));
         this.huntButton = button('Hunt', 'act', actions, () => act('hunt'));
         this.leaveHuntButton = button('Give up hunt', 'act', actions, () => act('leaveHunt'));
+        // A training ground (doc 53): practice with no partner.
+        this.postButton = button('Practise at the post', 'act', actions, () => act('post'));
 
         const side = el('aside', 'side', this.root);
         // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.
@@ -186,6 +203,12 @@ export class Hud {
         this.minimap.title = 'The country around · wheel to zoom · click for the World Map';
         this.minimap.addEventListener('mousedown', e => e.preventDefault());
         this.minimap.addEventListener('click', () => act('world'));
+        // Pointing at an open scene's mark says what it is (doc 51): "3 wolves at the Wharf tavern · open".
+        this.minimap.addEventListener('mousemove', e => {
+            const r = this.minimap.getBoundingClientRect();
+            const near = this.mapRenderer.sceneMarks.find(m => Math.hypot(m.x - (e.clientX - r.left), m.y - (e.clientY - r.top)) < 9);
+            this.minimap.title = near ? near.text : 'The country around · wheel to zoom · click for the World Map';
+        });
         this.minimap.addEventListener('wheel', e => {
             e.preventDefault();
             state.miniZoom = Math.max(0, Math.min(MapScales.length - 1, state.miniZoom + (e.deltaY < 0 ? 1 : -1)));
@@ -279,6 +302,7 @@ export class Hud {
             : 'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
         this.combat.update();
         this.fight.update();
+        this.tie.update();
         this.party.update();
         this.place.update();
         this.camp.update();
@@ -289,11 +313,15 @@ export class Hud {
             show(this.huntButton, !fighting && bool(wild, 'hunt'));
             show(this.forageButton, !fighting && bool(wild, 'forage'));
             show(this.leaveHuntButton, hunting && !s.battle?.over);
+            show(this.postButton, !fighting && bool(obj(s.snapshot, 'self'), 'trainingGround'));
             this.forageButton.title = 'Forage ' + str(wild, 'forageWhat');
             this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
         }
         show(this.devButton, s.isDungeonMaster());
         const waiting = s.friendRequestsIn.length + s.circleInvites.length;   // (Friend requests and circle invitations.)
+        const howlIn = num(obj(obj(s.snapshot, 'self'), 'social'), 'howlIn');
+        this.howlButton.disabled = howlIn > 0;
+        this.howlButton.title = howlIn > 0 ? `Your voice needs a rest: ${Math.ceil(howlIn / 60)} min` : 'Howl: call others from across the country (/howl)';
         setText(this.friendsButton, waiting ? `FRIENDS · ${waiting}` : 'FRIENDS');
         setClass(this.friendsButton, 'unread', waiting > 0);
         setClass(this.devButton, 'active', s.devConsole);
@@ -360,14 +388,16 @@ export class Hud {
             if (r.row !== before) this.sightList.insertBefore(r.row, before);
             before = r.row.nextElementSibling;
             // Known wolves (doc 50): ✎ for a note kept on them; • for a profile changed since one last looked.
-            setText(r.name, `${e.name || 'Someone'}${e.noted ? ' ✎' : ''}${e.unread ? ' •' : ''}`);
-            r.name.title = [e.noted ? 'You keep a note on them' : '', e.unread ? 'Their profile has changed since you last looked' : ''].filter(Boolean).join(' · ');
+            setText(r.name, `${e.name || 'Someone'}${e.nc ? ' ✧' : ''}${e.noted ? ' ✎' : ''}${e.unread ? ' •' : ''}`);
+            r.name.title = [e.nc ? 'New to these parts' : '', e.noted ? 'You keep a note on them' : '',
+                e.unread ? 'Their profile has changed since you last looked' : ''].filter(Boolean).join(' · ');
             setStyle(r.name, 'color', e.rel === 'chapter' && e.colour ? e.colour
                 : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
             const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
             // A friend who shares their wolf with you: their handle, subdued, under the name (doc 50).
             setText(r.detail, [upperFirst(role), e.handle ? `friend · ${e.handle}` : '', e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
-                StatusWords[e.rp] ?? '', e.walkup ? 'walk-up friendly' : '', e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
+                e.mentor ? (e.mentorFree ? 'mentor · free' : 'mentor') : '', StatusWords[e.rp] ?? '', e.walkup ? 'walk-up friendly' : '',
+                e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
             r.row.title = e.currently ? `Currently: ${e.currently}` : '';
             setClass(r.row, 'hostile', e.hostile);
             setClass(r.row, 'targeted', s.talkTargets.includes(e.id));
@@ -504,7 +534,10 @@ export class Hud {
         this.menu.replaceChildren();
         el('div', 'menu-title', this.menu, s.contextName);
         s.contextActions.forEach((action, i) =>
-            button(`${i + 1}  ${s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)' : MenuWords[action] ?? upperFirst(action)}`,
+            button(`${i + 1}  ${s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)'
+                : action.startsWith('vouch:') ? `Vouch for ${s.entities.get(action.slice(6))?.name ?? 'them'}`
+                : action.startsWith('wardens-') ? wardensWords(s, action)
+                : action === 'vouch' ? 'Vouch for…' : MenuWords[action] ?? upperFirst(action)}`,
                 `menu-item${s.armed === `${action}|${s.contextTarget}` ? ' armed' : ''}`, this.menu,
                 () => s.activate({rect: noRect, action: 'context', target: action})));
         // On the map, beside what was clicked; from a panel, at the pointer. Kept on screen either way.

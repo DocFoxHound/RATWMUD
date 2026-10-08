@@ -45,7 +45,7 @@ try {
     const adaId = await ada.evaluate(`${S}.selfId`);
     // Ada writes her profile.
     await ada.evaluate(`${S}.sendProfile('set', {fields: {description: 'A lean grey wolf with salt in her fur and a net-mender\\'s calm.',
-        currently: 'mending nets by the pier, happy to chat', title: 'the Ferryman', motto: 'Across, and back.', pronouns: 'she/her',
+        currently: 'mending nets by the pier, happy to chat', title: 'the Ferryman', motto: 'Across, and back.',
         oocNotes: 'Walk up any time.', consent: {injury: 'ask', death: 'no'},
         glances: [{icon: 'scar', title: 'A fresh scar', line: 'over one eye', sense: 'sight'}, {icon: 'smoke', title: 'Woodsmoke', line: 'clinging to her coat', sense: 'scent'}]}})`);
     check(await until(ada, `${S}.profileOwn?.title === 'the Ferryman'`), 'Ada’s profile is saved');

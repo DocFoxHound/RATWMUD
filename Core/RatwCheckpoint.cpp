@@ -460,6 +460,22 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
             j.add("knocks", times(s.knocks));
         if (!s.refused.empty())
             j.add("refused", times(s.refused));
+        // What happened in it; a fight's scene, the scene it broke out in and its log (doc 51, §8).
+        if (!s.moments.empty())
+        {
+            auto moments = Value::array();
+            for (const auto& m : s.moments)
+            {
+                auto o = Value::object();
+                o.add("kind", m.kind); o.add("actor", m.actor); o.add("target", m.target); o.add("detail", m.detail); o.add("at", m.at);
+                moments.push(o);
+            }
+            j.add("moments", moments);
+        }
+        if (!s.parent.empty())
+            j.add("parent", s.parent);
+        if (!s.log.empty())
+            j.add("log", strings(s.log));
         auto members = Value::array();
         for (const auto& [actor, m] : s.members)
         {
@@ -467,7 +483,17 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
             k.add("actor", actor); k.add("turns", m.turns); k.add("words", m.words); k.add("replies", m.replies);
             k.add("last", m.last); k.add("joined", m.joined);
             if (m.left)
+            {
                 k.add("left", true);
+                k.add("leftAt", m.leftAt);
+            }
+            if (m.landed || m.dealt || m.taken || m.raised || m.covered || m.guarded)
+            {
+                auto tally = Value::object();
+                tally.add("landed", m.landed); tally.add("dealt", m.dealt); tally.add("taken", m.taken);
+                tally.add("raised", m.raised); tally.add("covered", m.covered); tally.add("guarded", m.guarded);
+                k.add("tally", tally);
+            }
             members.push(k);
         }
         j.add("members", members);
@@ -833,12 +859,23 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             s.knocks[who] = at.asNumber(0);
         for (const auto& [who, at] : j.object("refused").fields())
             s.refused[who] = at.asNumber(0);
+        for (const auto& o : j.array("moments"))
+            if (s.moments.size() < SocialLedger::MostMoments)
+                s.moments.push_back({o.string("kind"), o.string("actor"), o.string("target"), o.string("detail"), num(o, "at")});
+        s.parent = j.string("parent");
+        for (const auto& line : j.array("log"))
+            if (line.isString() && s.log.size() < SocialLedger::MostFightLog)
+                s.log.push_back(line.asString().substr(0, 400));
         for (const auto& k : j.array("members"))
         {
             Contribution m;
             m.turns = int(num(k, "turns")); m.words = int(num(k, "words")); m.replies = int(num(k, "replies"));
             m.last = num(k, "last"); m.joined = num(k, "joined");
             m.left = k.boolean("left");
+            m.leftAt = num(k, "leftAt");
+            const auto& tally = k.object("tally");
+            m.landed = int(num(tally, "landed")); m.dealt = int(num(tally, "dealt")); m.taken = int(num(tally, "taken"));
+            m.raised = int(num(tally, "raised")); m.covered = int(num(tally, "covered")); m.guarded = int(num(tally, "guarded"));
             s.members[k.string("actor")] = m;
         }
         c.social.sessions[s.id] = s;

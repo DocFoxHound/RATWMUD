@@ -65,6 +65,8 @@ class Config:
     polish: bool = False
     # Who answers players once the main voice's share is spent (the small model when unset).
     fallback_model: str = ""
+    # Who writes the stories: scenes told for a player, and Story books' summaries (the main voice when unset).
+    story_model: str = ""
 
     @property
     def light(self) -> str:
@@ -73,6 +75,10 @@ class Config:
     @property
     def fallback(self) -> str:
         return self.fallback_model or self.light
+
+    @property
+    def story(self) -> str:
+        return self.story_model or self.model
 
 
 def valid_model(model: object) -> bool:
@@ -97,14 +103,15 @@ def load_config(path: Path) -> Config:
         if not valid_model(model):
             raise BridgeError("invalid_model")
         light, fallback = data.get("light_model", ""), data.get("fallback_model", "")
-        if any(m not in ("", None) and not valid_model(m) for m in (light, fallback)):
+        story = data.get("story_model", "")
+        if any(m not in ("", None) and not valid_model(m) for m in (light, fallback, story)):
             raise BridgeError("invalid_model")
         mode = data.get("cost_mode", "balanced")
         polish = data.get("polish", False)
         if mode not in COST_MODES or not isinstance(polish, bool):
             raise BridgeError("invalid_config")
         return Config(model=model, api_key=key, light_model=light or "", cost_mode=mode, polish=polish,
-                      fallback_model=fallback or "")
+                      fallback_model=fallback or "", story_model=story or "")
     except BridgeError:
         raise
     except (OSError, ValueError, TypeError):

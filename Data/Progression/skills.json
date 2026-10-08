@@ -35,6 +35,7 @@
     {"id": "gift.mana", "grows": {"wisdom": 0.02}, "about": "Each 10 mana a Gift spends in a fight (doc 43)."},
     {"id": "track.found", "grows": {"tracking": 0.3}, "about": "Smell finds a game trail in the wild (doc 41)."},
     {"id": "fight.blow", "grows": {"fighting": 0.2}, "byPartner": true, "partnerDecay": true, "about": "A bite, cut or fire that lands on a foe still able to fight (not Downed, not yielded); the foe is the partner, the fight the occasion."},
+    {"id": "spar.post", "grows": {"fighting": 0.2}, "about": "Bites, feints and footwork at a training ground's post, with no partner (doc 53, 5); weighed by training.json's post and ground."},
     {"id": "fight.end", "grows": {"fighting": 0.5}, "about": "Being in a fight of two turns or more to its end: standing, yielded or Downed (the user: learning happens even if the wolf isn't conscious at the end), never fled."},
     {"id": "forage.pick", "grows": {"labour": 0.2}, "about": "Every foraging that yields (doc 41)."},
     {"id": "contract.done", "grows": {"commerce": 0.5}, "about": "A contract fulfilled (doc 26); its pay is unchanged."},

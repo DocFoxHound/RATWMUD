@@ -458,6 +458,64 @@ void banditsCreepUp()
     }
 }
 
+// Keep watch (doc 53, 4): Ada forages with her back to the camp while Bo keeps watch facing it; the creeping bandits
+// must get past him too. He sees them, so they can't take her unawares.
+void aWatcherCatchesTheCreep()
+{
+    for (const bool watching : {true, false})
+    {
+        auto f = strip();
+        auto w = load(f);
+        w.addPlayer("player-ada", "Ada");
+        w.addPlayer("player-bo", "Bo");
+        w.tick(.6);
+        w.roads().caravans.clear();
+        w.roads().camps = {{"camp_mid", id(4), 9, 60, -100, true}};
+        auto* c = w.cell(id(4));
+        c->wind = Wind{0, 0, false};
+        auto* ada = w.entity("player-ada");
+        auto* bo = w.entity("player-bo");
+        ada->cellId = bo->cellId = id(3);
+        ada->position = bo->position = {8.5, 8.5};
+        run(w, 2);
+        const auto& camp = w.roads().camps[0];
+        ada->cellId = bo->cellId = id(4);
+        ada->position = {camp.x - 9, camp.y};
+        bo->position = {camp.x - 8.5, camp.y + 1.5};
+        for (int dy = -2; dy <= 2; ++dy)                // (Grass to forage where she stands.)
+            for (int dx = -2; dx <= 2; ++dx)
+                if (auto* t = const_cast<Tile*>(c->tile(int(ada->position.x) + dx, int(ada->position.y) + dy)))
+                    t->glyph = ',';
+        expect(w.forage("player-ada").ok && w.lendAPaw("player-bo", "player-ada").ok, "Ada forages, Bo lends a paw");
+        if (watching)
+            expect(w.keepWatch("player-bo", true).ok && w.watchersOver("player-ada") == std::vector<std::string>{"player-bo"}, "and keeps watch over her");
+        w.takeNotices();
+        bool asked = false;
+        for (int i = 0; i < 400 && !w.inBattle("player-ada") && !asked; ++i)
+        {
+            ada->velocity = bo->velocity = {};
+            ada->facing = std::acos(-1.0);              // Her back to the camp;
+            bo->facing = 0;                             // his eyes on it.
+            if (i % 16 == 0)
+                w.forage("player-ada");
+            w.tick(.25);
+            for (const auto& [to, text] : w.takeNotices())
+                if (to == "player-ada")
+                    asked = asked || text.find("Your purse") != std::string::npos;
+        }
+        // Seen creeping, they rise and rush (or, seen before, step out and ask): either way, not taken unawares.
+        const auto* b = w.battleOf("player-ada");
+        const bool ambushed = b && std::any_of(b->log.begin(), b->log.end(), [](const BattleLine& l) { return l.kind == "ambush"; });
+        if (!watching)
+        {
+            expect(ambushed, "(not keeping watch, his eyes count for nothing: she is taken unawares)");
+            continue;
+        }
+        expect((asked || b) && !ambushed, std::string("Bo saw them coming: she isn't taken unawares (asked ") + (asked ? "yes" : "no") + ", fight " +
+                                              (b ? "yes" : "no") + ", ambushed " + (ambushed ? "yes" : "no") + ")");
+    }
+}
+
 void aFight()
 {
     auto f = strip();
@@ -2041,6 +2099,7 @@ int main()
         rumoursSpread();
         banditsInPerson();
         banditsCreepUp();
+        aWatcherCatchesTheCreep();
         aFight();
         beatenAndRobbed();
         banditsCalled();

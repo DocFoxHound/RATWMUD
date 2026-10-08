@@ -16,7 +16,8 @@ export interface Character {
     grades?: Record<string, 'weak' | 'strong'>;  // How it was built (doc 49): grades that aren't plain...
     specialty?: string;                          // ...and its specialty.
     account?: AccountStanding | null;            // Its account's earned Gift tiers (doc 49, Phase 5).
-    person?: {handle: string; experience: string; playedHours: number} | null;   // Its account as a person (doc 50).
+    person?: {handle: string; experience: string; playedHours: number; newcomer?: boolean;   // Its account as a person (doc 50);
+              mentor?: '' | 'available' | 'busy' | 'revoked'; guided?: number} | null;     // newcomer and mentor: doc 52.
     profile?: Record<string, unknown> | null;    // Its roleplay profile, as saved (doc 50): read only.
     circles?: {name: string; role: string; members: string[]}[];   // Its account's circles, members by handle (doc 50).
     stars?: {total: number; from: number; kinds: Record<string, number>} | null;   // Its account's stars (doc 51).
@@ -47,7 +48,9 @@ export const InjuryTypes: [string, 'acute' | 'lasting'][] = [
     ['burn_scars', 'lasting'], ['notched_nose', 'lasting'], ['clouded_eye', 'lasting'], ['permanent_limp', 'lasting'], ['bad_back', 'lasting'],
     ['stiff_shoulder', 'lasting']];
 export interface Action { id: number; kind: string; target: string; by: string; at: string; status: 'queued' | 'applied' | 'refused' | 'expired'; result: string }
-export interface Players { target: Target; world: {id: string; name: string} | null; characters: Character[]; actions: Action[] }
+export interface Tie { id: string; state: string; starter: string; town: string; newcomer: string; newcomerName: string;   // Doc 52.
+    other: string; otherName: string; resident: boolean; made: number; lapsesAt: number }
+export interface Players { target: Target; world: {id: string; name: string} | null; characters: Character[]; actions: Action[]; ties?: Tie[] }
 
 const KEY = 'ratw-dm-session';
 let token = (() => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { return ''; } })();

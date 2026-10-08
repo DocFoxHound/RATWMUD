@@ -1,0 +1,30 @@
+{
+  "about": "Working together (Docs/Design/53-hunting-and-working-together.md, 2): the two-angle patterns (doc 48, 6.2), and the activities that use them. Each activity names its pattern, its two roles and their words (of another, and of oneself), the most wolves who may work it together, its beat (seconds), and the practice each role is (doc 49). Farm work (doc 53, 2.6) also names the menu verb, the season it is done in (0 spring .. 3 winter), the producers (Data/Items/crafts.json) it is done at, and the share of one of their spells' yield each beat brings in at a rate of 1; its beat is a spell (300 s, 30 game minutes), and pay is the town's hand wage a spell times the rate, from the farm's till. `gifts`: the work Gifts that lift it for a beat (doc 53, 4: each on an angle of its own, every member 0.2 faster while it holds). Work beside a resident names where (`at`: farm or workshop) and the role the resident takes (`residentRole`, its index); at a workshop (doc 53, 3) the maker leads and a player's paw makes its batches go faster by the joint's rate (and now and then saves an input), paid from the shop's till. steps: what each member past the first adds to every member's rate (the 2nd, 3rd, 4th, 5th and 6th), halved when all so far share one role and halved for a resident hand. leaveTiles: how far from all the others a wolf may go before it has left (they may range together, patch to patch); idleSeconds: how long without working before it has; lendTiles: how near one must be to lend a paw; bond: what working two beats or more together does between two players, and with a resident hand. All numbers are placeholders.",
+  "steps": [0.8, 0.4, 0.25, 0.1, 0.1],
+  "leaveTiles": 8,
+  "idleSeconds": 60,
+  "lendTiles": 6,
+  "bond": {"affinity": 1, "trust": 0.5, "familiarity": 2, "residentAffinity": 2, "residentTrust": 2, "beats": 2},
+  "patterns": [
+    {"id": "holder-worker", "name": "Holder and worker", "how": "One holds or steadies, the other works: threshing, foraging, crafts."},
+    {"id": "finder-taker", "name": "Finder and taker", "how": "One finds, the other takes: hunting's tracker; a Gift that finds."},
+    {"id": "driver-ambusher", "name": "Driver and ambusher", "how": "One drives game, the other lies in wait for it (doc 53, 1)."},
+    {"id": "worker-guard", "name": "Worker and guard", "how": "One works, the other keeps watch in the wild."},
+    {"id": "team-haul", "name": "Team haul", "how": "Not yet: carts and sleds are in the catalog, not the game."},
+    {"id": "many-paws", "name": "Many paws", "how": "More wolves, more done: harvests, town projects."},
+    {"id": "talker-doer", "name": "Talker and doer", "how": "One keeps a resident talking while the other acts."}
+  ],
+  "activities": [
+    {"id": "forage", "name": "Foraging", "pattern": "holder-worker", "most": 4, "beat": 4, "gifts": ["shortcut"],
+     "roles": [{"id": "dig", "words": "digs", "yours": "dig", "practice": "forage.pick"}, {"id": "sort", "words": "carries and sorts", "yours": "carry and sort", "practice": "forage.pick"}]},
+    {"id": "harvest", "name": "The harvest", "verb": "help with the harvest", "at": "farm", "pattern": "many-paws", "most": 6, "beat": 300,
+     "season": 2, "producers": ["farm", "orchard", "vineyard"], "share": 0.3333, "gifts": ["draw_water", "carry"],
+     "roles": [{"id": "cut", "words": "cuts and picks", "yours": "cut and pick"}, {"id": "bind", "words": "gathers and binds", "yours": "gather and bind"}]},
+    {"id": "threshing", "name": "Threshing", "verb": "help with the threshing", "at": "farm", "pattern": "holder-worker", "most": 4, "beat": 300,
+     "season": 3, "producers": ["farm"], "share": 0.3333, "gifts": ["winnow_and_dry", "carry"],
+     "roles": [{"id": "flail", "words": "holds the flail", "yours": "hold the flail"}, {"id": "sort", "words": "gathers and sorts", "yours": "gather and sort"}]},
+    {"id": "workshop", "name": "Work at the bench", "verb": "lend a paw at the workshop", "at": "workshop", "pattern": "holder-worker", "most": 3, "beat": 300,
+     "residentRole": 0, "gifts": ["forge_heat", "kindle", "clay_hand", "bellows", "ring_true", "settle", "draw_water", "winnow_and_dry"],
+     "roles": [{"id": "lead", "words": "works the craft", "yours": "work the craft"}, {"id": "hand", "words": "holds and fetches", "yours": "hold and fetch"}]}
+  ]
+}

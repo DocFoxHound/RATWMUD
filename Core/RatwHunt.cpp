@@ -238,8 +238,11 @@ bool World::addAnimal(Battle& b, const std::string& speciesId, bool arriving)
     return true;
 }
 
-Result World::startHunt(const std::string& player)
+Result World::startHunt(const std::string& player, const std::vector<std::string>& only)
 {
+    for (const auto& id : only)
+        if (!wild::speciesById(id))
+            return {false, "No such animal: " + id + ".", {}};
     auto* p = entity(player);
     if (!p || p->npc || p->dead)
         return {false, "No such character.", {}};
@@ -342,7 +345,9 @@ Result World::startHunt(const std::string& player)
                 count = std::max(count, 1);
             followed = s->name;
         }
-    if (count == 0 || weights.empty())
+    if (!only.empty())
+        count = int(only.size()), follow = nullptr, followed.clear();   // (The game asked for, and only that.)
+    if (count == 0 || (weights.empty() && only.empty()))
     {
         const bool hunted = huntPressure(p->cellId) >= 1;
         return {false, hunted ? "You cast about, but this ground has been hunted lately: no game shows itself."
@@ -350,12 +355,14 @@ Result World::startHunt(const std::string& player)
                 {}};
     }
     for (int i = 0; i < count; ++i)
-        addAnimal(b, i == 0 && follow && follow->fresh ? follow->species : pickSpecies(i), false);
+        addAnimal(b, !only.empty() ? only[std::size_t(i)] : i == 0 && follow && follow->fresh ? follow->species : pickSpecies(i), false);
     if (follow)
     {
         auto& mine = tracks_[player];
         mine.erase(std::remove_if(mine.begin(), mine.end(), [&](const Track& t) { return &t == follow; }), mine.end());
+        huntRoles_[b.id][player].insert("tracker");   // (Their trail brought the game in: doc 53, 1.7.)
     }
+    huntStarter_[b.id] = player;
     lineUp(b);
     stop(player);
     setClientWalks(player, false);
@@ -377,9 +384,14 @@ Result World::startHunt(const std::string& player)
 
 std::string World::huntJoinRefusal(const Battle& b, const std::string& id) const
 {
+    // Doc 53, 1.4: never one blocked by a hunter; always a hunter's companion, party or Chapter, or one let in or
+    // invited; anyone else while the hunt's starter allows hunting partners (only the starter's setting counts).
     if (!b.hunt)
         return {};
     const auto* e = entity(id);
+    for (const auto& f : b.fighters)
+        if (f.side == 0 && f.status != "fled" && blocked_ && blocked_(f.id, id))
+            return "You can't join that hunt.";
     for (const auto& f : b.fighters)
         if (f.side == 0 && f.status != "fled")
         {
@@ -388,7 +400,13 @@ std::string World::huntJoinRefusal(const Battle& b, const std::string& id) const
             if (friends_ && friends_(f.id, id))
                 return {};
         }
-    return "That is someone else's hunt: only their party or Chapter may join it.";
+    if (huntInvited(b.id, id))
+        return {};
+    const auto starter = huntStarterOf(b.id);
+    const auto* s = entity(starter);
+    if (!s || !s->noHuntPartners)
+        return {};
+    return "That hunt is closed to strangers: ask to join it.";
 }
 
 Result World::leaveHunt(const std::string& player)
@@ -455,6 +473,8 @@ bool World::animalTurn(Battle& b, BattleFighter& f)
         endTurn(b, f);                  // (Quietly: game doesn't announce its waiting.)
         return true;
     }
+    if (s->flees())
+        return fleeingTurn(b, f, a->second, *s, hunters);
     if (!a->second.alert && animalNotices(b, f))
     {
         a->second.alert = true;
@@ -500,8 +520,7 @@ bool World::animalTurn(Battle& b, BattleFighter& f)
             endTurn(b, f);                  // (Quietly: game doesn't announce its waiting.)
         return true;
     }
-    const bool cornered = nearest(f.x, f.y) <= 1 || e->hurt > 0;
-    const bool fights = s->temper == "fierce" || (s->temper == "cornered" && cornered);
+    const bool fights = s->temper == "fierce";       // (Every other kind runs: fleeingTurn, doc 53.)
     if (fights)
     {
         // At the nearest hunter.
@@ -571,6 +590,18 @@ double World::huntBlow(Battle& b, BattleFighter& t, double damage, double downed
     const auto* s = wild::speciesById(a->second.species);
     if (!s)
         return damage;
+    // Game that runs (doc 53): a landed bite or blade kills it outright, a clean kill. Fire and other Gifts' blows keep
+    // its health (doc 41).
+    if (s->flees() && downedBase == battle::DownedBite && damage > 0)
+    {
+        a->second.best = std::max(a->second.best, s->health);
+        a->second.struckUnaware = !a->second.alert;
+        a->second.total += s->health;
+        if (!by.empty())
+            a->second.lastBy = by;
+        a->second.alert = true;
+        return 100;
+    }
     // The hardest single blow, and how much was fire: they decide what of it is worth taking (huntKill).
     if (downedBase == battle::DownedFire)
         a->second.fire += damage;
@@ -583,6 +614,8 @@ double World::huntBlow(Battle& b, BattleFighter& t, double damage, double downed
     if (!by.empty())
         a->second.lastBy = by;
     a->second.alert = true;                         // Hurt, it knows.
+    if (s->flees() && !by.empty() && b.fighter(by))
+        huntBolt(b, t, a->second, by);              // (Hurt and not killed, game that runs bolts from whoever did it: doc 53.)
     return damage * 100 / s->health;                // Its own health, on the fighters' scale of 100.
 }
 
@@ -631,9 +664,16 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
     // And of what quality (doc 35, Part 4): a clean kill is fine, masterwork if one blow did it before it knew; a ragged
     // one crude; a fire-touched kill no better than common.
     int quality = clean >= 1 ? (a->second.struckUnaware && fire <= 0 ? 3 : 2) : clean >= .25 ? 1 : 0;
+    if (s->flees() && clean >= 1)
+        quality = a->second.saw.count(killer) ? 2 : 3;   // (Doc 53: masterwork only from a wolf it never saw.)
     if (fire > 0)
         quality = std::min(quality, 1);
-    std::vector<std::string> taken, spoilt;
+    // Shared equally among those taking part (doc 53, 1.5): each gets the whole part, the rest goes one by one to
+    // sharers drawn by chance, so nothing is made or lost; a companion's share goes to the wolf it follows.
+    const auto sharers = huntSharers(b, killer);
+    std::map<std::string, std::vector<std::string>> takenBy;
+    std::vector<std::string> spoilt;
+    int takenKinds = 0;
     for (const auto& [item, n] : s->yield)
     {
         double factor = share;
@@ -641,21 +681,72 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
             factor *= skinOf(item) ? std::max(0.0, 1 - 2 * fire) : item == "raw_meat" ? 1 - fire / 2 : 1;
         const int got = whole(n * factor, odds(f.id + "|" + item, std::int64_t(calendarDays_ * 1000)));
         const auto kind = quality == 3 ? items::withMaker(items::withQuality(item, 3), killer) : items::withQuality(item, quality);
-        if (got > 0 && entity(killer) && society_.create(killer, kind, got, "hunted"))
-            taken.push_back(std::to_string(got) + " " + lower(Society::itemName(kind)));   // (The kill taught through the fight: doc 49.)
+        if (got > 0 && !sharers.empty())
+        {
+            const int count = int(sharers.size());
+            std::vector<int> parts(std::size_t(count), got / count);
+            std::vector<std::size_t> order(static_cast<std::size_t>(count));
+            for (std::size_t i = 0; i < order.size(); ++i)
+                order[i] = i;
+            std::sort(order.begin(), order.end(), [&](std::size_t x, std::size_t y) {
+                return odds(f.id + "|" + item + "|" + sharers[x] + std::to_string(x), 1) < odds(f.id + "|" + item + "|" + sharers[y] + std::to_string(y), 1);
+            });
+            for (int r = 0; r < got % count; ++r)
+                ++parts[order[std::size_t(r)]];
+            std::map<std::string, int> byWolf;
+            for (std::size_t i = 0; i < parts.size(); ++i)
+                byWolf[sharers[i]] += parts[i];
+            for (const auto& [who, part] : byWolf)
+                if (part > 0 && entity(who) && society_.create(who, kind, part, "hunted"))
+                {
+                    takenBy[who].push_back(std::to_string(part) + " " + lower(Society::itemName(kind)));
+                    auto& mine = huntShares_[who];
+                    if (mine.battle != b.id)
+                        mine = {b.id, {}, {}, 0};
+                    mine.goods[kind] += part;
+                    mine.until = time_ + 600;
+                }
+            ++takenKinds;
+        }
         else if (fire > 0 && skinOf(item))
             spoilt.push_back(lower(Society::itemName(item)));
     }
     const std::string name = names::capitalised(s->name);
     fightLine(b, f.id, killer, "death", name + " falls: " + grade + (fire >= .5 ? ", burnt." : "."));
-    recordEvent({"hunted", killer, a->second.species, b.cellId, 0, 0, {}, int(taken.size()), 0, grade});
-    if (!killer.empty() && entity(killer) && !entity(killer)->npc)
+    recordEvent({"hunted", killer, a->second.species, b.cellId, 0, 0, {}, takenKinds, 0, grade});
+    // Driven into a partner (doc 53, 1.7): the one it fled drove it, the one who took it lay in wait for it.
+    if (a->second.state == "fleeing" && !a->second.from.empty() && a->second.from != killer)
     {
-        std::string words = "You bring down " + s->name + ": " + grade + ". ";
-        words += taken.empty() ? "Nothing of it is worth taking." : "You take " + listed(taken) + ".";
+        huntRoles_[b.id][a->second.from].insert("driver");
+        huntRoles_[b.id][killer].insert("ambusher");
+    }
+    std::set<std::string> players;
+    for (const auto& who : sharers)
+        if (entity(who) && !entity(who)->npc)
+            players.insert(who);
+    for (const auto& x : players)
+        for (const auto& y : players)
+            if (x < y)
+                huntPairs_[b.id].insert({x, y});
+    for (const auto& who : players)
+    {
+        auto& mine = huntShares_[who];
+        mine.hunters.clear();
+        for (const auto& other : players)
+            if (other != who)
+                mine.hunters.push_back(other);
+        const auto got = takenBy.find(who);
+        std::string words;
+        if (players.size() <= 1)
+            words = "You bring down " + s->name + ": " + grade + ". " +
+                    (got == takenBy.end() ? "Nothing of it is worth taking." : "You take " + listed(got->second) + ".");
+        else
+            words = (who == killer ? "You bring down " : (entity(killer) ? entity(killer)->name : std::string("Another")) + " brings down ") +
+                    s->name + ": " + grade + ", shared among " + std::to_string(players.size()) + ". " +
+                    (got == takenBy.end() ? "Your share: nothing worth taking." : "Your share: " + listed(got->second) + ".");
         if (!spoilt.empty())
             words += " The fire has spoilt the " + listed(spoilt) + ".";
-        notice(killer, words);
+        notice(who, words);
     }
     return true;
 }
@@ -684,6 +775,17 @@ void World::endHunt(Battle& b)
 {
     if (!b.hunt)
         return;
+    // Doc 53: those who shared a kill grow closer (once a hunt); the parts each played, for the end screen and deeds.
+    for (const auto& [a, c] : huntPairs_[b.id])
+        bonds_.mutual(a, c, {1, 1, 2, 0, 0}, calendarDays_);
+    for (const auto& [id, roles] : huntRoles_[b.id])
+        for (const auto& role : roles)
+            recordEvent({"huntRole", id, role, b.cellId, 0, 0, {}, 0, 0, b.id});
+    huntPairs_.erase(b.id);
+    huntRoles_.erase(b.id);
+    huntInvited_.erase(b.id);
+    huntStarter_.erase(b.id);
+    huntAsks_.erase(std::remove_if(huntAsks_.begin(), huntAsks_.end(), [&](const HuntAsk& a) { return a.battle == b.id; }), huntAsks_.end());
     std::vector<std::string> gone;
     for (const auto& [id, a] : animals_)
         if (a.battle == b.id)
@@ -693,6 +795,8 @@ void World::endHunt(Battle& b)
         entities_.erase(id);
         animals_.erase(id);
     }
+    for (const auto& f : b.fighters)
+        huntHunters_.erase(f.id);
     index_.dirty = true;
     huntArrivals_.erase(b.id);
 }
@@ -705,6 +809,9 @@ void World::tendHunts()
         list.erase(std::remove_if(list.begin(), list.end(), [&](const Track& t) { return t.until <= time_; }), list.end());
         it = list.empty() ? tracks_.erase(it) : std::next(it);
     }
+    huntAsks_.erase(std::remove_if(huntAsks_.begin(), huntAsks_.end(), [&](const HuntAsk& a) { return a.until <= time_; }), huntAsks_.end());
+    for (auto it = huntShares_.begin(); it != huntShares_.end();)
+        it = it->second.until <= time_ ? huntShares_.erase(it) : std::next(it);   // (The end card's Give my share lapses.)
     if (animals_.empty() && huntArrivals_.empty())
         return;
     const auto& pop = wild::population();
@@ -716,11 +823,16 @@ void World::tendHunts()
         if (arrival == huntArrivals_.end() || time_ < arrival->second.first)
             continue;
         arrival->second.first = time_ + pop.arrivalSeconds;
-        int standing = 0;
+        int standing = 0, hunters = 0;
         for (const auto& f : b.fighters)
+        {
             standing += animals_.count(f.id) && f.status == "fighting";
-        if (standing == 0 || standing >= pop.atOnce ||
-            odds(b.id + "|arrive", std::int64_t(time_)) >= arrival->second.second / 6)
+            hunters += f.side == 0 && f.status == "fighting";
+        }
+        // More hunters, more game (doc 53, 1.6): the chance and how many at once both grow with each extra hunter.
+        const int extra = std::max(0, hunters - 1);
+        if (standing == 0 || standing >= pop.atOnce + pop.atOncePerHunter * extra ||
+            odds(b.id + "|arrive", std::int64_t(time_)) >= arrival->second.second / 6 * (1 + pop.perHunter * extra))
             continue;
         const auto ground = groundIn(b.cellId, b.x0, b.y0, b.w, b.h);
         std::vector<std::pair<std::string, double>> weights;
@@ -954,16 +1066,664 @@ Result World::forage(const std::string& player)
         }
     // The patch it grows in: picked over for a while once its pickings are taken (by players and the wolves who
     // gather for a living alike, doc 42).
-    if (!takeFromPatch(p->cellId, pick->x, pick->y))
+    // Foraging together (doc 53, 2.5): a patch gives one more picking for each extra wolf, up to two more.
+    auto* joint = jointOf_.count(player) ? &joints_[jointOf_[player]] : nullptr;
+    if (joint && joint->kind != "forage")
+        joint = nullptr;
+    const int extra = joint ? std::min(2, int(joint->members.size()) - 1) : 0;
+    if (!takeFromPatch(p->cellId, pick->x, pick->y, extra))
         return {false, "This patch has been picked over lately; try further on.", {}};
+    lastWorked_[player] = time_;                         // (At work: others may lend a paw, doc 53.)
     // Weathereye (a Gifted Seer, doc 43): it knew where the good pickings would be: a quarter more, one at least.
     const int count = pick->good->count + (p->gift == "seer" && !p->quickened ? std::max(1, pick->good->count / 4) : 0);
-    if (!society_.create(player, pick->good->item, count, "foraged"))
-        return {false, "You can't carry any more of that.", {}};
-    recordEvent({"forage", player, {}, p->cellId, 0, 0, pick->good->item, count, 0, pick->ground->id});
+    const auto item = pick->good->item;
     practise(player, "forage.pick");                    // Gathering is labour (by practice: doc 49).
-    return {true, "You gather " + std::to_string(count) + " " + lower(Society::itemName(pick->good->item)) + " from " +
+    if (joint && joint->members.size() >= 2)
+    {
+        // Each picking brings in its count at the joint's rate (fractions by chance), shared exactly among its members.
+        const double rate = workRate(player);
+        const int total = whole(count * rate, odds(player + "|together", std::int64_t(time_ * 1000)));
+        std::vector<int> order(joint->members.size());
+        for (std::size_t i = 0; i < order.size(); ++i)
+            order[i] = int(i);
+        std::sort(order.begin(), order.end(), [&](int x, int y) {
+            return odds(joint->members[std::size_t(x)].id + item, std::int64_t(time_ * 1000)) < odds(joint->members[std::size_t(y)].id + item, std::int64_t(time_ * 1000));
+        });
+        const auto parts = together::split(total, int(joint->members.size()), order);
+        int mine = 0;
+        for (std::size_t i = 0; i < parts.size(); ++i)
+        {
+            const auto& m = joint->members[i];
+            if (parts[i] > 0 && entity(m.id))
+                society_.create(m.id, item, parts[i], "foraged together");
+            if (m.id == player)
+                mine = parts[i];
+            else if (parts[i] > 0)
+                notice(m.id, "Your share of what " + p->name + " gathers: " + std::to_string(parts[i]) + " " + lower(Society::itemName(item)) + ".");
+        }
+        // A beat: this wolf worked, and with whoever else is working. The work is where it was last done.
+        joint->x = pick->x + .5;
+        joint->y = pick->y + .5;
+        for (auto& m : joint->members)
+            if (m.id == player)
+            {
+                m.lastActed = time_;
+                ++m.beats;
+            }
+        for (const auto& m : joint->members)
+            if (m.id != player && time_ - m.lastActed <= together::rules().idleSeconds)
+                ++joint->beatsTogether[player < m.id ? player + "|" + m.id : m.id + "|" + player];
+        recordEvent({"forage", player, {}, p->cellId, 0, 0, item, total, 0, pick->ground->id});
+        return {true, "Together you gather " + std::to_string(total) + " " + lower(Society::itemName(item)) + " from " + pick->ground->name +
+                          "; your share is " + std::to_string(mine) + ".",
+                {}};
+    }
+    if (!society_.create(player, item, count, "foraged"))
+        return {false, "You can't carry any more of that.", {}};
+    recordEvent({"forage", player, {}, p->cellId, 0, 0, item, count, 0, pick->ground->id});
+    return {true, "You gather " + std::to_string(count) + " " + lower(Society::itemName(item)) + " from " +
                       pick->ground->name + ".",
             {}};
+}
+
+// ------------------------------------------------------------------ Game that runs (doc 53, Phase 1)
+//
+// Every animal but the fierce ones: grazing until it notices a wolf; watching one it has noticed further off than its
+// flight distance, frozen and facing it; bolting directly away, faster than any wolf, from one that comes within it
+// (or bites at it and misses); calming once it has lost that wolf for two of its turns. Only wolves it has noticed
+// count, so one driven can run past a hidden partner. A landed bite or blade kills it; its dodge depends on what it
+// knew of the biter. A hunter that ends its turn crouched without biting lies in wait, and springs on one stepping
+// beside it.
+
+std::string World::animalState(const std::string& id) const
+{
+    const auto found = animals_.find(id);
+    if (found == animals_.end())
+        return {};
+    const auto* s = wild::speciesById(found->second.species);
+    return s && s->flees() ? found->second.state : std::string();
+}
+
+std::string World::animalWatching(const std::string& id) const
+{
+    const auto found = animals_.find(id);
+    return found == animals_.end() || found->second.state != "watching" ? std::string() : found->second.watching;
+}
+
+bool World::huntWaiting(const std::string& hunter) const
+{
+    const auto found = huntHunters_.find(hunter);
+    return found != huntHunters_.end() && found->second.waiting;
+}
+
+double World::huntDodge(const BattleFighter& biter, const BattleFighter& animal, std::string* why) const
+{
+    const auto a = animals_.find(animal.id);
+    if (a == animals_.end())
+        return -1;
+    const auto* s = wild::speciesById(a->second.species);
+    const auto* b = battleOf(animal.id);
+    const auto* e = entity(biter.id);
+    if (!s || !s->flees() || !b || !b->hunt || !e)
+        return -1;
+    const double aw = awareness(*b, animal.id, biter.id);
+    double dodge = .05;
+    std::string words = "unaware";
+    const auto& st = a->second.state;
+    if ((st == "fleeing" || st == "calming") && a->second.from == biter.id)
+        dodge = .75, words = "fleeing you";
+    else if (st == "fleeing" || st == "calming")
+    {
+        if (!a->second.saw.count(biter.id) && aw < battle::AwareAlert)
+            dodge = .15, words = "driven";
+        else
+            dodge = .6, words = "watching you";
+    }
+    else if (aw >= battle::AwareAlert)
+        dodge = .6, words = "watching you";
+    else if (aw >= battle::AwareSuspicious)
+        dodge = .05 + .55 * (aw - battle::AwareSuspicious) / (battle::AwareAlert - battle::AwareSuspicious), words = "wary";
+    // A little by the kind (a hare dodges better, a badger worse), the biter's dexterity and its fighting skill.
+    dodge += s->dodge / 100 - std::max(0.0, effectiveDexterity(*e) - 50) * .002 - std::max(0.0, temperamentOf(*e).skill - 50) * .002;
+    if (why)
+        *why = words;
+    return std::clamp(dodge, .02, .9);
+}
+
+int World::huntReach(const Battle& b, const BattleFighter& f) const
+{
+    // A bolting animal's run: half again the fastest hunter's sprint.
+    const auto a = animals_.find(f.id);
+    if (!b.hunt || a == animals_.end() || a->second.state != "fleeing")
+        return 0;
+    int fastest = 0;
+    for (const auto& o : b.fighters)
+        if (o.side != f.side && o.status == "fighting")
+            if (const auto* e = entity(o.id))
+                fastest = std::max(fastest, battle::moveRange(effectiveDexterity(*e), e->hurt, 10));
+    return fastest > 0 ? int(std::ceil(fastest * 1.5)) : 0;
+}
+
+int World::huntNoise(Battle& b, int x, int y, int reach)
+{
+    int moved = 0;
+    for (auto& f : b.fighters)
+    {
+        const auto found = animals_.find(f.id);
+        const auto* s = found == animals_.end() ? nullptr : wild::speciesById(found->second.species);
+        if (!s || !s->flees() || f.status != "fighting")
+            continue;
+        auto& a = found->second;
+        const double gap = std::max(std::abs(f.x - x), std::abs(f.y - y));
+        if (gap <= s->flight)
+        {
+            huntBolt(b, f, a, {});
+            a.noiseX = x;
+            a.noiseY = y;
+            ++moved;
+        }
+        else if (gap <= reach && a.state != "fleeing")
+        {
+            a.state = "watching";
+            a.watching.clear();
+            f.facing = battle::octant(x - f.x, y - f.y);
+            ++moved;
+        }
+    }
+    return moved;
+}
+
+void World::huntBolt(Battle& b, BattleFighter& animal, HuntAnimal& a, const std::string& from)
+{
+    const bool already = a.state == "fleeing" && a.from == from;
+    a.state = "fleeing";
+    a.from = from;
+    if (!from.empty())
+        a.noiseX = a.noiseY = -1;
+    a.calm = 0;
+    a.alert = true;
+    if (!animal.acting)
+        animal.meter = 100;                         // It bolts: its bar fills at once.
+    if (!already)
+        if (const auto* s = wild::speciesById(a.species))
+            fightLine(b, animal.id, from, "bolt", names::capitalised(s->name) + " bolts.");
+}
+
+void World::huntReact(Battle& b, BattleFighter& animal, const BattleFighter* after)
+{
+    // At the end of a hunter's turn (`after`), and at the start of the animal's own (null).
+    const auto it = animals_.find(animal.id);
+    if (it == animals_.end() || animal.status != "fighting")
+        return;
+    auto& a = it->second;
+    const auto* s = wild::speciesById(a.species);
+    if (!s || !s->flees())
+        return;
+    const BattleFighter* nearest = nullptr;
+    int nearestGap = std::numeric_limits<int>::max();
+    for (const auto& o : b.fighters)
+    {
+        if (o.side == animal.side || o.status != "fighting")
+            continue;
+        if (awareness(b, animal.id, o.id) < battle::AwareAlert)
+            continue;                               // (Only wolves it has noticed count.)
+        a.saw.insert(o.id);
+        a.alert = true;
+        const int gap = std::max(std::abs(o.x - animal.x), std::abs(o.y - animal.y));
+        if (gap < nearestGap)
+            nearestGap = gap, nearest = &o;
+    }
+    if (after)
+    {
+        if (a.state != "grazing" && a.state != "watching")
+            return;
+        const bool sees = awareness(b, animal.id, after->id) >= battle::AwareAlert;
+        const int gap = std::max(std::abs(after->x - animal.x), std::abs(after->y - animal.y));
+        if (sees && gap <= s->flight)
+            huntBolt(b, animal, a, after->id);
+        else if (nearest && a.state == "grazing")
+            a.state = "watching", a.watching = nearest->id;
+        return;
+    }
+    if (a.state == "fleeing")
+    {
+        const auto* from = b.fighter(a.from);
+        if (!from || from->status != "fighting" || awareness(b, animal.id, a.from) < battle::AwareSuspicious)
+            ++a.calm;
+        else
+            a.calm = 0;
+        if (a.calm >= 2)
+            a.state = "calming";
+        return;
+    }
+    if (a.state == "calming")
+        return;
+    if (nearest && nearestGap <= s->flight)
+        huntBolt(b, animal, a, nearest->id);
+    else if (nearest)
+        a.state = "watching", a.watching = nearest->id;
+    else
+        a.state = "grazing", a.watching.clear();
+}
+
+bool World::fleeingTurn(Battle& b, BattleFighter& f, HuntAnimal& a, const wild::Species& s, const std::vector<const BattleFighter*>& hunters)
+{
+    if (!f.moved && f.walk.empty())
+        huntReact(b, f, nullptr);
+    const auto key = std::int64_t(f.turnsTaken) * 131 + b.turns;
+    const auto finish = [&] {
+        if (!b.over && f.acting)
+        {
+            if (a.state == "calming")
+            {
+                // One turn at its ordinary pace, still away; then watching whoever it notices, or grazing.
+                const BattleFighter* seen = nullptr;
+                for (const auto* o : hunters)
+                    if (awareness(b, f.id, o->id) >= battle::AwareAlert)
+                        seen = o;
+                a.state = seen ? "watching" : "grazing";
+                a.watching = seen ? seen->id : std::string();
+            }
+            endTurn(b, f);                          // (Quietly: game doesn't announce its waiting.)
+        }
+        return true;
+    };
+    if (a.state == "grazing")
+    {
+        // Half noticed something (doc 40): head up, toward it, and no grazing.
+        const BattleFighter* suspect = nullptr;
+        for (const auto* o : hunters)
+            if (awareness(b, f.id, o->id) >= battle::AwareSuspicious && (!suspect || awareness(b, f.id, o->id) > awareness(b, f.id, suspect->id)))
+                suspect = o;
+        if (suspect)
+        {
+            f.facing = battle::octant(suspect->x - f.x, suspect->y - f.y);
+            return finish();
+        }
+        if (!f.moved && odds(f.id + "|graze", key) < .4)
+        {
+            std::vector<std::pair<int, int>> near;
+            for (const auto& [x, y] : battleReach(f.id))
+                if (apart(x, y, f.x, f.y) <= 2 && (x != f.x || y != f.y))
+                    near.push_back({x, y});
+            if (!near.empty())
+            {
+                const auto& to = near[mix(f.id + "|to", key) % near.size()];
+                battleMove(f.id, to.first, to.second);
+            }
+            if (!f.walk.empty())
+                return true;
+        }
+        return finish();
+    }
+    if (a.state == "watching")
+    {
+        if (const auto* w = b.fighter(a.watching))
+            f.facing = battle::octant(w->x - f.x, w->y - f.y);
+        return finish();
+    }
+    // Fleeing (or calming): directly away from the one it fled, the tile furthest along that line, a little against
+    // straying sideways; off the edge, it gets away.
+    const auto* from = b.fighter(a.from);
+    const bool noise = !from && a.noiseX >= 0;      // (Or from a noise: doc 53, 4.)
+    if (!f.moved && f.walk.empty() && (from || noise) && !b.onEdge(f.x, f.y))
+    {
+        const int sx = from ? from->x : a.noiseX, sy = from ? from->y : a.noiseY;
+        const double dx = f.x - sx, dy = f.y - sy, len = std::max(1e-6, std::hypot(dx, dy));
+        const double ux = dx / len, uy = dy / len;
+        std::pair<int, int> best{f.x, f.y};
+        double bestScore = 0;
+        for (const auto& [x, y] : battleReach(f.id))
+        {
+            const double mx = x - f.x, my = y - f.y;
+            const double along = mx * ux + my * uy, side = std::abs(mx * uy - my * ux);
+            if (const double score = along - .5 * side; score > bestScore)
+                bestScore = score, best = {x, y};
+        }
+        if (best != std::pair<int, int>{f.x, f.y})
+            battleMove(f.id, best.first, best.second);
+        else if (from && std::max(std::abs(from->x - f.x), std::abs(from->y - f.y)) == 1)
+        {
+            // Nowhere further to go: it bites the wolf beside it once.
+            auto* e = entity(f.id);
+            if (e && !e->exhausted && e->stamina >= battle::BiteStamina)
+                battleAct(f.id, "bite", from->id);
+        }
+        if (!f.walk.empty())
+            return true;
+    }
+    if (!b.over && f.acting && b.onEdge(f.x, f.y))
+    {
+        fightLine(b, f.id, {}, "flee", names::capitalised(s.name) + " gets away.");
+        battleAct(f.id, "flee");
+    }
+    return finish();
+}
+
+void World::huntAfterTurn(Battle& b, BattleFighter& f)
+{
+    if (!b.hunt || animals_.count(f.id))
+        return;
+    // The hunter: whether it did anything (for sharing a kill, doc 53 Phase 2), and whether it now lies in wait.
+    auto& h = huntHunters_[f.id];
+    if (f.moved || f.acted || f.stalking)
+        h.lastActive = f.turnsTaken;
+    h.waiting = f.stalking && !f.acted && f.status == "fighting";
+    for (auto& o : b.fighters)
+        if (animals_.count(o.id))
+            huntReact(b, o, &f);
+}
+
+void World::huntMissed(Battle& b, const BattleFighter& biter, BattleFighter& animal)
+{
+    const auto it = animals_.find(animal.id);
+    if (!b.hunt || it == animals_.end() || animal.status != "fighting")
+        return;
+    const auto* s = wild::speciesById(it->second.species);
+    if (s && s->flees())
+        huntBolt(b, animal, it->second, biter.id);  // A dodge sends it off, away from the biter.
+}
+
+void World::huntStep(Battle& b, BattleFighter& animal)
+{
+    // An animal stepping beside a wolf lying in wait: the wolf springs, a bite at once, out of its turn.
+    if (!b.hunt || !animals_.count(animal.id) || animal.status != "fighting")
+        return;
+    for (auto& o : b.fighters)
+    {
+        if (o.side == animal.side || o.status != "fighting" || std::max(std::abs(o.x - animal.x), std::abs(o.y - animal.y)) != 1)
+            continue;
+        const auto h = huntHunters_.find(o.id);
+        if (h == huntHunters_.end() || !h->second.waiting)
+            continue;
+        h->second.waiting = false;
+        huntRoles_[b.id][o.id].insert("ambusher");
+        if (const auto* e = entity(o.id))
+            fightLine(b, o.id, animal.id, "spring", e->name + " springs from hiding!");
+        bite(b, o, animal.id);
+        if (animal.status == "fighting")
+            animal.walk.clear();                    // Dodged: it swerves, and stops where it is.
+        return;
+    }
+}
+
+// ------------------------------------------------------------------ Hunting together (doc 53, Phase 2)
+
+std::string World::huntStarterOf(const std::string& battleId) const
+{
+    const auto found = huntStarter_.find(battleId);
+    return found == huntStarter_.end() ? std::string() : found->second;
+}
+
+bool World::huntInvited(const std::string& battleId, const std::string& id) const
+{
+    const auto found = huntInvited_.find(battleId);
+    return found != huntInvited_.end() && found->second.count(id);
+}
+
+bool World::mayJoinHunt(const Battle& b, const std::string& id) const
+{
+    return b.hunt && !b.over && huntJoinRefusal(b, id).empty();
+}
+
+bool World::mayAskHunt(const Battle& b, const std::string& id) const
+{
+    if (!b.hunt || b.over || mayJoinHunt(b, id))
+        return false;
+    for (const auto& f : b.fighters)
+        if (f.side == 0 && f.status != "fled" && blocked_ && blocked_(f.id, id))
+            return false;
+    return std::none_of(huntAsks_.begin(), huntAsks_.end(), [&](const HuntAsk& a) { return a.battle == b.id && a.from == id; });
+}
+
+int World::huntTaken(const Battle& b) const
+{
+    int taken = 0;
+    for (const auto& f : b.fighters)
+        taken += animals_.count(f.id) && f.status == "dead";
+    return taken;
+}
+
+const World::HuntShare* World::huntShareOf(const std::string& id) const
+{
+    const auto found = huntShares_.find(id);
+    return found == huntShares_.end() || found->second.goods.empty() ? nullptr : &found->second;
+}
+
+std::vector<std::string> World::huntNearby(const std::string& hunter) const
+{
+    // Wolves near enough to invite: within 20 tiles of the hunter, in the same place, not in a fight, not blocked.
+    std::vector<std::string> out;
+    const auto* me = entity(hunter);
+    if (!me)
+        return out;
+    for (const auto* o : entitiesIn(me->cellId))
+        if (!o->npc && !o->dead && o->id != hunter && !inBattle(o->id) && std::hypot(o->position.x - me->position.x, o->position.y - me->position.y) <= 20 &&
+            !(blocked_ && blocked_(hunter, o->id)))
+            out.push_back(o->id);
+    return out;
+}
+
+Result World::setPartners(const std::string& id, const std::string& kind, bool on)
+{
+    auto* e = entity(id);
+    if (!e || e->npc)
+        return {false, "No such character.", {}};
+    if (kind == "hunt")
+        e->noHuntPartners = !on;
+    else if (kind == "work")
+        e->noWorkPartners = !on;
+    else
+        return {false, "Hunting or work partners?", {}};
+    return {true, std::string(kind == "hunt" ? "Hunting partners: " : "Work partners: ") +
+                      (on ? "anyone may join you." : "only those you invite (and your party and Chapter)."),
+            {}};
+}
+
+Result World::askToJoinHunt(const std::string& id, const std::string& battleId)
+{
+    auto* b = battleById(battleId);
+    const auto* e = entity(id);
+    if (!e || e->npc)
+        return {false, "No such character.", {}};
+    if (!b || !b->hunt || b->over)
+        return {false, "That hunt is over.", {}};
+    if (inBattle(id))
+        return {false, "You are already in a fight.", {}};
+    if (e->cellId != b->cellId)
+        return {false, "That hunt is somewhere else.", {}};
+    if (mayJoinHunt(*b, id))
+        return {false, "You may join that hunt as you are.", {}};
+    if (!mayAskHunt(*b, id))
+        return {false, "You can't ask to join that hunt.", {}};
+    huntAsks_.push_back({battleId, id, time_ + 30});
+    for (const auto& f : b->fighters)
+        if (const auto* h = entity(f.id); h && !h->npc && f.side == 0 && f.status != "fled")
+            notice(f.id, e->name + " asks to join your hunt.");
+    return {true, "You ask to join the hunt.", {}};
+}
+
+Result World::answerHuntAsk(const std::string& hunter, const std::string& asker, bool letIn)
+{
+    const auto* b = battleOf(hunter);
+    const auto* f = b ? b->fighter(hunter) : nullptr;
+    if (!b || !b->hunt || !f || f->side != 0)
+        return {false, "You are not hunting.", {}};
+    const auto ask = std::find_if(huntAsks_.begin(), huntAsks_.end(), [&](const HuntAsk& a) { return a.battle == b->id && a.from == asker; });
+    if (ask == huntAsks_.end())
+        return {false, "No one is asking that now.", {}};
+    const auto battleId = b->id;
+    huntAsks_.erase(ask);
+    if (!letIn)
+    {
+        notice(asker, "They'd rather hunt without company just now.");
+        return {true, "Not now.", {}};
+    }
+    huntInvited_[battleId].insert(asker);
+    const auto joined = joinBattle(asker, battleId, 0);
+    if (!joined.ok)
+        notice(asker, "You are let into the hunt, but can't join it: " + joined.message);
+    return {true, joined.ok ? "You let them in." : "You let them in, but they can't join: " + joined.message, {}};
+}
+
+Result World::inviteToHunt(const std::string& hunter, const std::string& target)
+{
+    const auto* b = battleOf(hunter);
+    const auto* f = b ? b->fighter(hunter) : nullptr;
+    if (!b || !b->hunt || b->over || !f || f->side != 0)
+        return {false, "You are not hunting.", {}};
+    const auto near = huntNearby(hunter);
+    if (std::find(near.begin(), near.end(), target) == near.end())
+        return {false, "They aren't near enough to invite.", {}};
+    huntInvited_[b->id].insert(target);
+    if (const auto* h = entity(hunter))
+        notice(target, h->name + " invites you to join their hunt.");
+    return {true, "You invite them to join the hunt.", {}};
+}
+
+Result World::giveHuntShare(const std::string& from, const std::string& to)
+{
+    // At the end card (doc 53, 1.5): one's share of the last hunt to another who took part, to carry.
+    const auto found = huntShares_.find(from);
+    if (found == huntShares_.end() || found->second.goods.empty())
+        return {false, "You have no share to give.", {}};
+    auto& share = found->second;
+    if (std::find(share.hunters.begin(), share.hunters.end(), to) == share.hunters.end() || !entity(to))
+        return {false, "Give it to someone who hunted with you.", {}};
+    int moved = 0;
+    for (const auto& [kind, n] : share.goods)
+    {
+        const auto* account = society_.account(from);
+        const int have = account ? Society::stockAll(*account, kind) : 0;
+        if (const int give = std::min(n, have); give > 0 && society_.shift(from, to, kind, give, 0, "a hunt's share"))
+            moved += give;
+    }
+    const auto battleId = share.battle;
+    huntShares_.erase(found);
+    if (moved == 0)
+        return {false, "You no longer have it.", {}};
+    recordEvent({"huntRole", to, "carrier", entity(to)->cellId, 0, 0, {}, 0, 0, battleId});
+    if (const auto* e = entity(from))
+        notice(to, e->name + " gives you their share of the hunt to carry.");
+    return {true, "You give them your share.", {}};
+}
+
+std::vector<std::string> World::huntSharers(const Battle& b, const std::string& killer) const
+{
+    // Those taking part: still in the hunt, having done something in their last ten turns; the one who made the kill
+    // always. A companion's share goes to the wolf it follows.
+    std::vector<std::string> out;
+    bool killerIn = false;
+    for (const auto& f : b.fighters)
+    {
+        if (f.side != 0 || f.status != "fighting")
+            continue;
+        const auto* e = entity(f.id);
+        const auto h = huntHunters_.find(f.id);
+        const bool active = f.id == killer || (h != huntHunters_.end() && h->second.lastActive >= 0 && f.turnsTaken - h->second.lastActive <= 10);
+        if (!active || !e)
+            continue;
+        const auto to = e->npc && !e->leaderId.empty() ? e->leaderId : f.id;
+        if (entity(to) && !entity(to)->npc)
+            out.push_back(to);
+        killerIn = killerIn || f.id == killer;
+    }
+    if (!killerIn && !killer.empty() && entity(killer) && !entity(killer)->npc)
+        out.push_back(killer);
+    return out;
+}
+
+std::string World::pickHuntSpecies(const Battle& b, const std::string& salt) const
+{
+    const auto ground = groundIn(b.cellId, b.x0, b.y0, b.w, b.h);
+    std::vector<std::pair<std::string, double>> weights;
+    double total = 0;
+    for (const auto& s : wild::species())
+    {
+        double w = 0;
+        for (const auto& [g, hw] : s.habitats)
+            if (const auto at = ground.find(g); at != ground.end())
+                w += hw * at->second;
+        if (w > 0)
+        {
+            weights.push_back({s.id, w * s.rarity});
+            total += w * s.rarity;
+        }
+    }
+    double r = odds(b.id + "|" + salt, std::int64_t(time_ * 10)) * total;
+    for (const auto& [id, w] : weights)
+        if ((r -= w) <= 0)
+            return id;
+    return weights.empty() ? std::string() : weights.back().first;
+}
+
+void World::huntJoined(Battle& b, const std::string& id)
+{
+    // A hunter joining brings game in with them: half the hunt's expected count, rolled, unaware at the edge.
+    const auto* e = entity(id);
+    const auto arrival = huntArrivals_.find(b.id);
+    if (!b.hunt || !e || e->npc || arrival == huntArrivals_.end())
+        return;
+    int count = 0;
+    for (double left = arrival->second.second * 2 * wild::population().joinerBrings, i = 0; left > 0; left -= 1, ++i)
+        count += odds(b.id + "|joined|" + id, std::int64_t(time_ * 1000) + std::int64_t(i)) < std::min(1.0, left) / 2;
+    for (int i = 0; i < count; ++i)
+        if (const auto species = pickHuntSpecies(b, id + std::to_string(i)); !species.empty())
+            addAnimal(b, species, true);
+}
+
+bool World::huntHelperTurn(Battle& b, BattleFighter& f)
+{
+    // A companion in a hunt follows its leader's lead instead of charging the game: crouched beside a stalking leader,
+    // or round to the far side of the animal its leader goes at; and lies in wait there.
+    if (!b.hunt || f.side != 0 || f.status != "fighting")
+        return false;
+    const auto* e = entity(f.id);
+    if (!e || !e->npc || e->leaderId.empty())
+        return false;
+    const auto* leader = b.fighter(e->leaderId);
+    if (!leader || leader->status != "fighting")
+        return false;
+    if (b.over || !f.acting || !f.walk.empty())
+        return true;
+    // An animal beside it that hasn't noticed it: a bite (its best odds).
+    for (const auto& o : b.fighters)
+        if (!f.acted && animals_.count(o.id) && o.status == "fighting" && apart(f.x, f.y, o.x, o.y) == 1 &&
+            awareness(b, o.id, f.id) < battle::AwareAlert && !e->exhausted && e->stamina >= battle::BiteStamina)
+        {
+            battleAct(f.id, "bite", o.id);
+            break;
+        }
+    if (b.over || !f.acting)
+        return true;
+    const BattleFighter* game = nullptr;
+    for (const auto& o : b.fighters)
+        if (animals_.count(o.id) && o.status == "fighting" &&
+            (!game || apart(leader->x, leader->y, o.x, o.y) < apart(leader->x, leader->y, game->x, game->y)))
+            game = &o;
+    if (!f.moved && !f.acted)
+    {
+        if (!f.stalking)
+            battleAct(f.id, "stalk");
+        double gx = leader->x, gy = leader->y;
+        if (game && !leader->stalking)
+        {
+            const double dx = game->x - leader->x, dy = game->y - leader->y, len = std::max(1.0, std::hypot(dx, dy));
+            gx = game->x + dx / len * 2.5;
+            gy = game->y + dy / len * 2.5;
+        }
+        std::pair<int, int> best{f.x, f.y};
+        double bestD = std::hypot(f.x - gx, f.y - gy);
+        for (const auto& [x, y] : battleReach(f.id))
+            if (const double d = std::hypot(x - gx, y - gy); d < bestD && !(x == leader->x && y == leader->y))
+                bestD = d, best = {x, y};
+        if (best != std::pair<int, int>{f.x, f.y})
+            battleMove(f.id, best.first, best.second);
+        if (!f.walk.empty())
+            return true;
+    }
+    if (!b.over && f.acting)
+        battleAct(f.id, "wait");                    // (Crouched and not having bitten: it lies in wait.)
+    return true;
 }
 } // namespace ratw

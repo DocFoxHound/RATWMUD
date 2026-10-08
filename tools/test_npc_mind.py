@@ -306,13 +306,41 @@ class MindTests(unittest.TestCase):
         entries = []
         request = {"place": "The Wharf", "you": "Ada", "minutes": 40,
                    "lines": [{"who": "You", "text": "The river runs high."}, {"who": "A grey wolf", "text": "The ford is gone."}]}
-        got = mind.Mind(mind.FixtureProvider(), audit=entries.append, models={"light": "small"}).recap(request)
+        got = mind.Mind(mind.FixtureProvider(), audit=entries.append, models={"light": "small", "story": "strong"}).recap(request)
         self.assertIn("A grey wolf", got["recap"])
         self.assertLessEqual(len(got["recap"]), mind.MAX_RECAP)
-        self.assertEqual(("recap", "light", "small"), (entries[0]["event"], entries[0]["tier"], entries[0]["model"]))
+        self.assertEqual(("recap", "story", "strong"), (entries[0]["event"], entries[0]["tier"], entries[0]["model"]))
+        timeouts = []
+
+        class Timed(mind.FixtureProvider):
+            def complete(self, *args, **kwargs):
+                timeouts.append(args[5])
+                return super().complete(*args, **kwargs)
+        mind.Mind(Timed(), audit=lambda e: None).recap(request)
+        self.assertEqual([mind.STORY_TIMEOUT], timeouts, "a story has longer to be written than an NPC's answer")
         self.assertNotIn("ford", json.dumps(entries), "no line of the scene in the log")
-        self.assertIn("Report claims as claims", mind.RECAP_RULES)
-        self.assertIn("never give anyone another name", mind.RECAP_RULES)
+        self.assertIn("Report claims as claims", " ".join(mind.RECAP_RULES.split()))
+        self.assertIn("never give anyone another name", " ".join(mind.RECAP_RULES.split()))
+        self.assertIn("every wolf is male or female", " ".join(mind.RECAP_RULES.split()))
+        self.assertIn("never more than 1000 words", " ".join(mind.RECAP_RULES.split()))
+        with_wolves = {**request, "wolves": [{"who": "A grey wolf", "pronouns": "he/him", "description": "Lean, grey, torn ear."}]}
+        self.assertTrue(mind.Mind(mind.FixtureProvider(), audit=lambda e: None).recap(with_wolves)["recap"], "wolves' looks and pronouns go too")
+        with self.assertRaises(BridgeError):
+            mind.Mind(mind.FixtureProvider(), audit=lambda e: None).recap({**request, "wolves": [{"who": "A", "description": "x" * 1401}]})
+        story = {"book": "The Drowned Bell", "before": [{"title": "At the ford", "summary": "Ada, a pale wolf, met him."}]}
+        told = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).recap({**with_wolves, "story": story})["recap"]
+        self.assertTrue(told.startswith("Again in The Drowned Bell"), "the book's earlier chapters go too")
+        sent = mind.clean_recap_request({**with_wolves, "wolves": with_wolves["wolves"] + [{"who": "Ada", "description": "Pale."}],
+                                         "story": story})["wolves"]
+        self.assertEqual([("A grey wolf", False, "Lean, grey, torn ear."), ("Ada", True, "")],
+                         [(w["who"], w.get("met", False), w["description"]) for w in sent], "one met before isn't described again")
+        self.assertIn("never describing again", " ".join(mind.RECAP_RULES.split()))
+        for bad in ({"book": "x" * 81, "before": []}, {"book": "B", "before": [{"title": "t", "summary": "s"}] * 9},
+                    {"book": "B", "before": [{"title": "t", "summary": "s" * 1501}]}, "nonsense"):
+            with self.assertRaises(BridgeError):
+                mind.Mind(mind.FixtureProvider(), audit=lambda e: None).recap({**request, "story": bad})
+        long = mind.decode_recap({"recap": " ".join(["word"] * 1500)})["recap"]
+        self.assertEqual(1000, len(long.rstrip("…").split()), "cut at 1000 words")
         for bad in ({**request, "lines": []}, {**request, "lines": [{"who": "x" * 81, "text": "hi"}]},
                     {**request, "lines": [{"who": "A", "text": "x" * 601}]},
                     {**request, "lines": [{"who": "A", "text": "x" * 600}] * 14},
@@ -321,7 +349,31 @@ class MindTests(unittest.TestCase):
                 mind.Mind(mind.FixtureProvider(), audit=lambda e: None).recap(bad)
         with self.assertRaises(BridgeError):
             mind.decode_recap({"recap": "", "extra": 1})
-        self.assertEqual(mind.MAX_RECAP, len(mind.decode_recap({"recap": "y" * 900})["recap"]), "a long one is cut")
+        self.assertEqual(mind.MAX_RECAP, len(mind.decode_recap({"recap": "y" * 9000})["recap"]), "a long one is cut")
+
+    def test_books(self):
+        # Doc 51, Phase 7: a Story book's summary, and its flavour text once finished, from its chapters; kind "book".
+        entries = []
+        request = {"mode": "summary", "title": "The Drowned Bell",
+                   "chapters": [{"title": "At the ford", "summary": "The river rose."}, {"title": "The mill", "summary": "A dog."}]}
+        got = mind.Mind(mind.FixtureProvider(), audit=entries.append, models={"light": "small"}).book(request)
+        self.assertIn("At the ford", got["text"])
+        self.assertEqual(("book", "story"), (entries[0]["event"], entries[0]["tier"]))
+        self.assertNotIn("The river rose", json.dumps(entries), "no chapter text in the log")
+        flavour = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).book({**request, "mode": "flavour"})
+        self.assertLessEqual(len(flavour["text"]), mind.MAX_BOOK["flavour"])
+        for bad in ({**request, "mode": "poem"}, {**request, "chapters": []}, {**request, "title": "x" * 81},
+                    {**request, "chapters": [{"title": "t" * 61, "summary": "s"}]},
+                    {**request, "chapters": [{"title": "t", "summary": "s" * 7001}]},
+                    {**request, "mode": "chapter", "chapters": request["chapters"][:1]}, "nonsense"):
+            with self.assertRaises(BridgeError):
+                mind.Mind(mind.FixtureProvider(), audit=lambda e: None).book(bad)
+        self.assertEqual(300, len(mind.decode_book({"text": "y" * 500}, "flavour")["text"]), "a long one is cut")
+        # A scene's story told again as the book's next chapter (the user: no describing the same wolves again).
+        self.assertIn("never describe again", " ".join(mind.BOOK_RULES.split()))
+        chapter = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).book({**request, "mode": "chapter"})
+        self.assertIn("Again, after At the ford", chapter["text"])
+        self.assertEqual(1000, len(mind.decode_book({"text": " ".join(["w"] * 1200)}, "chapter")["text"].rstrip("…").split()))
 
     def test_the_fixture_makes_promises(self):
         got = mind.Mind(mind.FixtureProvider(), audit=lambda e: None).dialogue(
@@ -363,6 +415,8 @@ class HttpTests(unittest.TestCase):
         status, data = self.post("/recap", {"place": "The Wharf", "you": "Ada", "lines": [{"who": "Wren", "text": "Hello."}]})
         self.assertEqual((200, True), (status, "recap" in data))
         self.assertEqual(400, self.post("/recap", {"place": "The Wharf", "lines": "no"})[0])
+        status, data = self.post("/book", {"mode": "flavour", "title": "T", "chapters": [{"title": "A", "summary": "B"}]})
+        self.assertEqual((200, True), (status, "text" in data))
 
     def test_an_exchange_over_http(self):
         status, data = self.post("/exchange", {"a": {"name": "Wren"}, "b": {"name": "Sorrel"},

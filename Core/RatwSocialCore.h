@@ -20,6 +20,9 @@ struct ParsedPost
     std::string error, posture, state;
     bool hasState = false, speech = false;
     std::vector<Segment> segments;
+    // Names in it heard as each listener knows the wolves named: by name, or by look (a resident pointing wolves out:
+    // doc 52). Set by the game, never by a player's post.
+    bool veilNames = false;
 };
 ParsedPost parsePost(const std::string& text);
 struct SocialEvidence
@@ -99,6 +102,16 @@ struct Contribution
     double last = 0, joined = 0;
     std::vector<std::string> lastAudience;
     bool left = false;          // Stepped out of the scene (settled then if qualified); its words count no more here.
+    double leftAt = 0;          // When (doc 51: their end card shows from then).
+    // In a fight's scene (doc 51, Phase 5): what this wolf did in the fight, counted where it happened.
+    int landed = 0, dealt = 0, taken = 0, raised = 0, covered = 0, guarded = 0;
+};
+// Something that happened in a scene (doc 51, §8), by ids only: its words are made for each viewer when shown, with the
+// names that viewer knows. Kinds: "joined", "admitted", "introduced", "story", "fight" (a fight that broke out in it).
+struct SceneMoment
+{
+    std::string kind, actor, target, detail;
+    double at = 0;
 };
 struct SocialSession
 {
@@ -112,6 +125,12 @@ struct SocialSession
     std::string openness = "open";
     double opennessAt = 0;                        // When it was last changed (0: never), for the 30-second limit.
     std::map<std::string, double> admitted, knocks, refused;
+    // What happened in it (doc 51, §8), at most 24. A fight's scene: the scene it broke out in (`parent`), and its
+    // action-by-action log as it happened (the user, 2026-10-07: "make sure that fights become part of Scenes, or at least
+    // the action-by-action log of the fight"), at most 200 lines, in true names (veiled for each viewer when shown).
+    std::vector<SceneMoment> moments;
+    std::string parent;
+    std::vector<std::string> log;
 };
 // Gold Stars and Story Stars (doc 32, 1.2): binary thanks from one qualified participant to another.
 struct SocialStar
@@ -169,6 +188,14 @@ class SocialLedger
     // A fight is a scene of its own (doc 33): its scene's id, and the tag its fighters' words carry (as a party's do).
     static std::string fightScene(const std::string& fight) { return "fight-" + fight; }
     static std::string fightTag(const std::string& fight) { return "fight:" + fight; }
+    // Working together (doc 53, 2.2): each joint a scene of its own, open as any scene is; its members in it from the
+    // start, talking or not; when the work ends, those who talked through it are paid as a fight's talkers are.
+    static std::string workScene(const std::string& work) { return "work-" + work; }
+    static std::string workTag(const std::string& work) { return "work:" + work; }
+    static bool isWork(const SocialSession& s) { return s.party.rfind("work:", 0) == 0; }
+    void joinWork(const std::string& work, const std::string& cell, const std::string& member, double now);
+    int settleScene(const std::string& sceneId, const std::set<std::string>& fought, double now);
+    int settleWork(const std::string& work, double now);
     static bool isFight(const SocialSession& s) { return s.party.rfind("fight:", 0) == 0; }
     // A player in a fight: a member of its scene from the start, whether they talk or not.
     void joinFight(const std::string& fight, const std::string& cell, const std::string& member, double now);
@@ -191,8 +218,12 @@ class SocialLedger
     SocialResult knock(const std::string& actor, const std::string& session, double now);
     SocialResult admit(const std::string& member, const std::string& session, const std::string& who, double now);
     SocialResult refuse(const std::string& member, const std::string& session, const std::string& who, double now);
+    // A moment in a scene (doc 51, §8): kept while there is room (24), the first of each kind and actor and target.
+    void moment(const std::string& session, const SceneMoment& m);
+    static constexpr std::size_t MostMoments = 24, MostFightLog = 200;
     static constexpr double JoinSeconds = 120, KnockSeconds = 120, RefusedSeconds = 300, OpennessSeconds = 30,
-                            KeepEndedSeconds = 3 * 86400;
+                            KeepEndedSeconds = 8 * 86400;   // (Players are told seven: the user, 2026-10-07.)
+    static constexpr int KeepEndedDaysTold = 7;
     // Where a new room scene starts Private (a rented place, a home that is no one's workplace: doc 51, §5). Set by
     // the game; unset, every room scene starts Open. A party's scene always starts Private.
     std::function<bool(const std::string& cell)> privatePlace;
@@ -203,6 +234,12 @@ class SocialLedger
     const std::set<std::string>& openIn(const std::string& cell) const;
     std::string lastEnded(const std::string& actor) const;
     void reindexScenes();
+    // Every place with an open scene, and those scenes (for the map's open scenes: doc 51, §7).
+    const std::map<std::string, std::set<std::string>>& openScenes() const { return openIn_; }
+    // The scene a line would go to, before it is said (doc 51, §7: so each listener's copy can carry it): the actor's
+    // own scene in `party`'s lane (a party's or fight's tag), else in the room's, else one they joined or were let in
+    // to here. "" for a line that would join an Open scene by being heard, or begin one by A-B-A: those aren't tagged.
+    std::string routeFor(const std::string& actor, const std::string& cell, const std::string& party, double now) const;
     // The contribution a member needs to be paid (doc 08), and how long a scene may lie quiet (pacing v2).
     static constexpr int ShapeTurns = 2, ShapeWords = 35, ShapeReplies = 1;
     static constexpr double QuietSeconds = 900, EndSeconds = 1800, FightEndSeconds = 10800;

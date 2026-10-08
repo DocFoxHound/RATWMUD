@@ -100,6 +100,8 @@ Data build()
         s.hearing = a.number("hearing", 1);
         s.smell = a.number("smell", 1);
         s.bite = a.number("bite", 0);
+        s.flight = a.number("flight", s.alert / 2);
+        s.dodge = a.number("dodge", 0);
         for (const auto& [item, n] : a.object("yield").fields())
             if (n.asNumber(0) >= 1)
                 s.yield.push_back({item, int(n.asNumber(0))});
@@ -114,6 +116,9 @@ Data build()
     d.population.most = std::max(1.0, p.number("most", 2));
     d.population.arrivalSeconds = std::max(1.0, p.number("arrivalSeconds", 30));
     d.population.atOnce = std::max(1, int(p.number("atOnce", 6)));
+    d.population.perHunter = std::max(0.0, p.number("perHunter", .75));
+    d.population.atOncePerHunter = std::max(0, int(p.number("atOncePerHunter", 2)));
+    d.population.joinerBrings = std::max(0.0, p.number("joinerBrings", .5));
     d.population.wildFrom = p.number("wildFrom", .5);
     d.population.nearestStart = std::max(1, int(p.number("nearestStart", 10)));
     d.forage.patchTiles = std::max(1, int(forage.number("patchTiles", 8)));

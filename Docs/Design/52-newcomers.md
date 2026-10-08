@@ -1,6 +1,7 @@
 # 52. Newcomers
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (Part 7, §7.1–7.6, and §3.9's vouching). Nothing built. Read doc 48
+Drafted 2026-10-06 as an actionable plan for doc 48 (Part 7, §7.1–7.6, and §3.9's vouching). All five phases built
+2026-10-07 (see "Built"). Read doc 48
 (Principles, Part 7, §3.9, Plans and Decisions), doc 50 (accounts, known wolves, block) and docs 32 (§1.5 names and
 introductions), 26 (the Mind, bonds, residents' jobs, crime), 23, 24 and 25 (the three start towns), 28 and 31 first.
 
@@ -77,6 +78,8 @@ Left to other plans:
 - **A new account's first character** arrives in Upper Accord unless Ser Ferro or Ridgemere has a higher mean. Then it
   arrives in whichever of the three has the highest. A tie between them goes to Upper Accord, then the order in the
   data file.
+- **The first character may choose too** (the user, 2026-10-07): the busiest town is preselected with the reason,
+  and the player may pick either of the others, so no one is split from a friend on their first day.
 - **Later characters** choose any of the three in the creator. Each town shows a line about it and "lately: about N
   wolves about" from its mean.
 - The choice is made at creation (`character_create` gains `start`, part of the request's fingerprint), and the new
@@ -248,6 +251,8 @@ A wolf with a good bond to a resident introduces a friend: "She's with me."
 - **A share of the voucher's trust carries over** (doc 48): the resident's trust in the newcomer rises by 30% of its
   trust in the voucher, at most 15; liking by 20% of its liking, at most 10; familiarity by 10 *(placeholders)*. The
   resident's briefing says who vouched for them.
+- **The household gets half** (the user, 2026-10-07): each other member of the resident's household gets half of what
+  the resident got (trust, liking and familiarity), and loses it again if the vouch goes bad.
 - **The voucher's bond takes the hit** (doc 48): if, while the vouch lasts (30 game days *(placeholder)*), the one
   vouched for robs or assaults that resident, is named by it as a witness to a crime, or is charged in its town (doc 26
   Phase 7's incidents and warrants), the resident's trust in the voucher falls by twice what it gave and its liking by
@@ -420,6 +425,317 @@ The town counts, town rosters and matchmaking timers are kept in memory only; a 
   carries trust and its risk.
 - **Cost:** checks on entering a place for newcomers' first evenings only; vouches follow new incidents only.
 
+## Built
+
+### Phase 1 (2026-10-07): the newcomer flag, and where new wolves arrive
+
+- **The rules:**
+  - `Core/RatwNewcomers.h/.cpp` (`ratw::newcomers`, pure) holds the rules, `Counts` (each start town's last 30 counts
+    and their mean), `busiest` (a tie goes to the earlier town in the data file) and `graduates`.
+  - `Data/Social/newcomers.json` holds the three towns (Upper Accord first), each with a line for the creator; new
+    until 15 hours or social level 3; a count every 60 s, a mean over 30, active within 300 s.
+  - In DEV the world's towns are `upper_accord`, `ser_ferro` and `ridgemere`, matching the data file. Cinderbrook is
+    a town of its own, so Ser Ferro's count doesn't include it (the Risk noted below).
+- **The game (`Core/RatwGameNewcomers.cpp`):**
+  - `Game::tendNewcomers` runs once a minute from the tick, next to played time. It counts connected players at the
+    keys in each start town (`World::townOf`), in memory only, and marks an account `graduated` once it passes either
+    threshold (saved on the account record, `game.account_profiles`; never undone).
+  - `Game::isNewcomer(account)` is true while the account isn't graduated and has under 15 hours. An account with
+    nothing recorded yet counts as new.
+  - `startTowns()` gives the data file's towns this world has. A world of one settlement has none, so everyone starts
+    at its spawn as before.
+- **Arriving:**
+  - `character_create` takes `start`. A town this world doesn't offer is refused; with no `start`, the busiest town is
+    used. `start` goes into the request's fingerprint only when named, so older clients' prints are unchanged.
+  - `World::arrivalIn` places the wolf: the spawn for the town that holds it; else the first open tile beside the
+    market merchant's stall; else the data file's cell and tile; else the spawn.
+  - `World::addPlayer` gains a placed form. The spawn and the capital never move.
+  - The lobby sends `starts` (name, line, recent wolves, `suggested`) and `firstCharacter`.
+- **Shown:**
+  - Entities carry `nc`, so In Sight shows a ✧ after the name ("New to these parts" on hover), and the look line says
+    "new to these parts".
+  - The card (`inspect`'s profile) has `newcomer`, shown as "new to these parts".
+  - Residents' briefing adds: "This wolf is new to these parts. Be patient with them; if it fits, tell them where the
+    inn and the notice board are."
+  - **The creator** has an Arrival tab: three cards, each with its line and "Lately: about N wolves about", the busiest
+    preselected and marked. A first wolf is told why ("the busiest of the start towns lately… You may choose another,
+    say to join a friend": decision 19). The review says "Arrives in: …".
+  - **The DM app:** the Players tab has a New column (`person.newcomer` from the account record).
+- **The server:** `--world-export DIR` plays a world build exported as files, for tests and for trying a build
+  offline.
+- **Tests:**
+  - `Tests/newcomer_tests.cpp` (423 checks). The rules and means: equal counts go to Upper Accord, a steady crowd in
+    Ser Ferro wins, one busy minute doesn't, only the last 30 count. A one-town world: no towns offered, a named one
+    refused, arrival at the spawn.
+  - On a strip of three towns (as `world.ratw` files): the lobby's towns with Upper Accord preselected; a forged town
+    refused; the first wolf at the spawn; another first wolf choosing Ridgemere and placed beside its merchant; the
+    mark, the card and the briefing; a crowd in Ser Ferro making it the suggestion for the next account, who arrives
+    at its market; the capital unmoved; graduating at social level 3 for good, kept across a restart.
+  - `tools/test_dungeon_master.py` covers the New column's rule.
+  - `tools/client/newcomer.mjs` runs on its own server on the same strip, with screenshots in
+    `artifacts/screenshots/newcomers/`: the Arrival tab for a first wolf, choosing Ser Ferro, and the newcomer's ✧
+    and card.
+- **Cost:** a once-a-minute pass over connected players; two map lookups per player in view.
+- **Not built (later):** the towns' recent means in the DM app. They live in memory only, so the DM host can't read
+  them yet; the watch frame could carry them when the LIVE tab wants them.
+
+### Phase 2 (2026-10-07): mentors
+
+- **Who may mentor:** `newcomers::mayMentor` (pure) refuses, with the reason in words, an account that is:
+  - revoked by a Dungeon Master;
+  - silenced;
+  - itself a newcomer;
+  - under social level 5;
+  - holding a report upheld within 30 days.
+
+  The numbers are in `newcomers.json`'s `mentors`. The account's social level is its wolves' social XP together
+  (`Game::accountSocialLevel`).
+- **On the account record** (`AccountRecord::mentor`, saved in `game.account_profiles`): on, available, revoked,
+  resting until, the current tie, guided, the last tie's time. The tie and resting fields wait for Phase 3.
+- **Commands:**
+  - `{"type": "mentor", "verb": "optin" | "optout" | "available" | "busy"}`.
+  - Opting in sets the account's experience to Newcomer Guide.
+  - The owner's account view (the profile panel) carries `mentor`: on, available, revoked, may, why, guided, and
+    resting hours.
+- **Turned off:**
+  - An upheld report (`decideReport`) turns mentoring off at once; every wolf of the account in the world is told why
+    (`Game::tellAccount`).
+  - A daily pass turns off anyone who may no longer mentor (silenced, say).
+  - `mentor.revoke` and `mentor.restore` (DM actions against a character, applied to its account) turn it off until
+    restored, and back. The revoke is saved, so it holds through a restart.
+- **Shown:**
+  - Entities carry `mentor` for everyone, so In Sight says "mentor".
+  - Only in a newcomer's view, `mentorFree` marks a mentor who is available, on no tie and not resting. The local map
+    draws a small ✦ over their shoulder, In Sight says "mentor · free", and hovering says "a mentor, free to show you
+    around".
+  - The card carries `mentor` ("available" or "busy") and `guided`: "Mentor (busy) · guided 3 newcomers".
+- **The client:**
+  - The profile panel has a MENTORING row: Mentor newcomers (or the reason one may not); once on, Available, Busy and
+    Stop mentoring, and "resting after a tie" when it applies.
+  - `people.test.ts` covers the marks, the words and the command.
+- **The DM app:** a Mentor column (available, busy or revoked, with the number guided), and Revoke mentoring and
+  Restore mentoring buttons on a character's account.
+- **Tests:** `Tests/newcomer_tests.cpp`, now 629 checks:
+  - the rules in each case;
+  - through the game, level 4 refused and level 5 accepted (as a Newcomer Guide);
+  - only the newcomer sees the free mark, and busy takes it away;
+  - the card says busy;
+  - an upheld report turns mentoring off, tells her why and bars opting in again;
+  - the DM's revoke holds through a restart and restore lifts it.
+
+  A report older than 30 days isn't counted by `upheldReportsWithin`; the pure test covers that case, since the test
+  can't age a report.
+- **Cost:** nothing in the tick. Checks happen at opt-in, when a report is upheld and once a day; snapshots do one
+  more map lookup per player in view.
+
+### Phase 3 (2026-10-07): ties
+
+- **The starters** (`Data/Social/ties.json`): doc 48's eight. For each, the newcomer's line and the other side's;
+  whether a mentor may take it; what a resident must be (job categories, ages, a free apprentice place); a bond to
+  start from; a debt (the debt starter: 4 pennies, recorded with `Bonds::addOwed`, no money moves); names for the
+  cousins only. "Show you around" is the fallback.
+  - The timings live there too: an offer stands 180 s; a tie lapses at 7 days or 3 scenes; the mentor rests a day; the
+    marker lasts 20 minutes; mentors within 2 cells count as near.
+  - The pure side (`Core/RatwNewcomers.*`): `Starter`, `TieRules`, `Tie` (saved and loaded), `mentorOrder` (the one
+    longest without a tie first, never-tied first of all, ties broken by a seed), `residentFits` and `lapsed`.
+- **At creation:**
+  - `character_create` takes `tie` (a starter id, part of the fingerprint). A new account's first wolf is refused
+    without one; later wolves may go without.
+  - `Options::tiesOptional` lets the other suites' wolves be made without one; `newcomer_tests` exercises the
+    requirement.
+  - The lobby sends `ties` and `tieRequired`. The tie starts seeking at once, while the player is still on the
+    character screen.
+- **Seeking (`Game::tendTies`, once a second over open ties):**
+  - Each mentor is offered it in turn, the one longest without a tie first. A mentor qualifies when they are:
+    - online, available, eligible, holding no tie and not resting;
+    - not Out of character, not on the newcomer's account, and not blocked either way;
+    - in the start town or within 2 cells of the arrival (`World::routeBetween`).
+  - The offer (`tieOffer`: the newcomer's look, the starter from the mentor's side, the town, the seconds) shows under
+    the mentor's map with Accept and Pass. A pass or a time-out asks the next mentor.
+  - Then a resident in town who fits, awake (one asleep only if none is awake), not following anyone, chosen at random.
+  - If no resident fits, the starter becomes "show you around", with the innkeeper nearest the arrival, else the
+    nearest grown resident.
+- **Made (`Game::makeTie`):**
+  - Both are told the starter and where to look ("Look for a dun wolf near Stretch 0. The spot is marked on your map
+    for a while."). Anyone still on the character screen or offline is told on entering.
+  - The starter goes on both known-wolves lists as the tie note (`KnownWolf::tie`, already in doc 50), even before the
+    newcomer enters.
+  - With a resident: the starter's bond, debt and names. The resident's briefing says "You and this wolf share a tie: …".
+  - The snapshot's `self.tie` carries the starter from that side, the other as known, scenes shared and days left, and
+    for the newcomer the marker (where the other was when it was made). The local map draws it as a dashed ring with
+    "your tie", and the minimap as a sage ring.
+- **Ending:**
+  - A tie lapses at its time (checked every second) or at 3 shared scenes (once a minute, from the known-wolves
+    count). The mentor's claim ends and they rest a day; a tie that ended with a scene shared counts once in "guided".
+  - The newcomer may end it early (`{"type": "tie", "verb": "end"}`), and the mentor doesn't rest.
+  - A mentor may release it (`mentor` verb `release`): they rest the day, and the newcomer is given a resident.
+  - A Dungeon Master's `tie.end` ends it.
+  - Closed ties are let go after 30 days. A mentor can still have its own newcomer's tie while holding one for someone
+    else, so the two are indexed apart.
+- **Saved:** the people root's `ties`, as `game.ties` through `game.sections` (migration `0042_ties.sql`).
+- **The client:**
+  - The creator's **Tie** tab: the suggestion (random for every wolf), Reroll, the eight to pick from, and No tie only
+    when allowed. The review says "Tie: …".
+  - The mentor's offer panel under the map (in sage, not the fight alert's red).
+  - YOUR TIE in the profile panel, with End tie (a newcomer) or Release (a mentor), and the map and minimap markers.
+  - `people.test.ts` covers the offer.
+- **The DM app:** a **Ties** list on the Players tab (state, starter, the two, made, lapses; a click selects the
+  newcomer) and **End tie** on a character.
+- **Development:** `{"type": "socialLevel", "level": N}` (only with `--dev-tools`) sets one's account to a social level,
+  to try mentoring offline.
+- **A newcomer's level:** an account past social level 3 stops showing as new at once (`isNewcomer` checks the level
+  itself), not only at the minute's count.
+- **Tests:**
+  - `Tests/newcomer_tests.cpp`, now 1,236 checks. The rules: the eight starters, the miller (a farmer) for the debt, a
+    master with a free place, the order, the lapse rules, a tie saved and read back. On the strip, with four mentors:
+    - the first wolf refused without a tie;
+    - an offer to one of the two in town, with its look, starter, town and seconds;
+    - a pass and a time-out each move on, then the fisher for the river (bond and known-wolf note, told on entering,
+      the snapshot's marker, the briefing);
+    - an accepted tie on both lists, and a mentor holding a tie never asked;
+    - the one longest without a tie asked first;
+    - a lapse resting the mentor, so the other is asked;
+    - the far and Out of character mentors never asked, though Ridgemere's own mentor is asked for a Ridgemere newcomer;
+    - Ser Ferro's innkeeper showing one around, a Ridgemere master taking an apprentice, a debt of 4 to someone with a
+      trade;
+    - ties kept across a restart.
+  - Ties are timed by the real clock, so the test shortens the offer and the lapse (`Options::tieOfferSeconds` and
+    `tieLapseSeconds`) and waits a few real seconds.
+  - Not exercised through the game: a mentor on the newcomer's own account (a new account can't be a mentor), and a
+    blocked mentor; both are single checks in `offerTie`. The 3-scene lapse is covered by the pure test.
+  - `tools/client/newcomer.mjs` gains Bo, a mentor, who is offered Ash's tie under his map and accepts; Ash is told
+    where to find him, with the marker. Screenshots 5–7: the Tie tab, the offer, and Ash told.
+- **Cost:** offers look only at open ties, once a second; lapses compare a time each second and count scenes once a
+  minute.
+- **Applied** 2026-10-07: migration 0042, on DEV and PROD.
+
+### Phase 4 (2026-10-07): residents as matchmakers
+
+- **The rules** (`Data/Social/matchmaking.json`):
+  - matchmakers are innkeepers and priests, and each town's market merchant (the one at the market's stall);
+  - a matchmaker knows a wolf at familiarity 10;
+  - "known well" is 2 shared scenes;
+  - the limits: once a game hour a player, six an hour a matchmaker, three times an hour pointed at;
+  - "the same start town" means within 7 days;
+  - the reasons in order: a newcomer and a helper, a tie not yet met, both looking, a need and who meets it, the same
+    start town;
+  - the asks: work, a teacher, mending, company;
+  - the words: the briefing, the written line ("Try {who}, {where}: {reason}.") and the quiet nod.
+
+  The pure side is in `Core/RatwNewcomers.*`: `MatchRules`, `askIn` (on the speech router's normalised words,
+  `voice::Rules::normalise`), `pickPairing` (the first reason someone fits, one of those by a seed) and `fill`.
+- **Who may be pointed at** (`Game::matchmake`, called from `Game::talk` for an identified speaker): players in the
+  town's roster (the active players at the minute's count, kept by `tendNewcomers`, and still in town) whom the
+  matchmaker knows, and for an ask, residents it knows who meet it (a master with an apprentice place, or the trade
+  asked for). Never anyone who is:
+  - Out of character, or with the setting off (and a player with it off gets no pointers either);
+  - blocked either way, or a party mate;
+  - known well already;
+  - pointed at three times this hour.
+- **Helpers:** an available mentor, or a self-declared Newcomer Guide who isn't a mentor. A busy mentor isn't sent
+  newcomers, as Busy promises.
+- **Said:**
+  - The briefing names the other as the player sees them in In Sight, lookalikes numbered ("a dun wolf (2)"), with
+    where ("just over there", "over at …") and why. It tells the model to use no other name.
+  - The reply is checked: any registered name of theirs the player doesn't know becomes that look (`Game::sayMatch`).
+  - Without a model (the router, a written line, an unavailable Mind), the written line follows the reply.
+  - The other wolf, if it can see the matchmaker, gets "The wolf who serves at the inn nods your way while talking
+    with …".
+  - Each pointer is logged as a `matchmaking` event (the matchmaker, the player, the reason and the other's id), for
+    the DM's LIVE feed.
+- **The setting:** "Residents may point others to me, and me to others" in Settings (on by default), on the account
+  like the other settings.
+- **Development:** `{"type": "acquaint", "npc": id, "familiarity": N}` (only with `--dev-tools`) makes a resident know
+  one's wolf, for trying matchmaking offline.
+- **Tests:**
+  - `Tests/newcomer_tests.cpp`, now 2,327 checks. The rules: the ask, the picker in its order, exclusions, the blanks.
+  - At Upper Accord's inn, with a stand-in Mind:
+    - Nell (new) is pointed at Mo, an available mentor, by his numbered look, in the written line, and Mo sees the nod;
+    - never Otto (Out of character), Opal (setting off), Bea (blocked by Nell; then busy);
+    - not again within the game hour;
+    - two more newcomers are pointed at Mo, but not a fourth that hour;
+    - Vic's "looking for work" goes to the master next door;
+    - with the model answering, the briefing names Mo by his look, and the "Mo" the model wrote comes out as his look.
+  - `tools/client/newcomer.mjs`, with the Mind off: Ash, his tie ended, asks the innkeeper and is pointed at Bo by his
+    look, and Bo sees the nod. Screenshot 8.
+  - Not exercised through the game: the matchmaker's six-an-hour limit, party mates and known-well wolves (single
+    checks in `matchmake`), and the same-start-town reason.
+- **Cost:** only when a matchmaker answers a player, at most once a game hour each, reading one town's roster and the
+  matchmaker's bonds.
+- **Not built:** the sixth reason, "two angles", waits for docs 53 and 57.
+
+### Phase 5 (2026-10-07): innkeeper introductions and vouching
+
+- **First evenings** (`Game::tendEvenings`, every five seconds, only for connected newcomers):
+  - A newcomer's first evening counts between 17:00 and 23:00, in a place where an innkeeper is at work (its post's
+    place) and awake.
+  - The others there must not be Out of character, must not be blocked either way, and must have matchmaking on.
+  - Once a character. An evening with no one else there counts as tried, three at most (`newcomers.json`'s
+    `evenings`).
+  - Newcomers present together are welcomed together, so a room with several hears one welcome. An innkeeper welcomes
+    no one again for ten minutes.
+- **The welcome** (`Game::welcomeAtInn`; the lines in `matchmaking.json`):
+  - The innkeeper says the welcome aloud to the newcomers, and the room hears it.
+  - Then it gives a line for each of up to four wolves it knows: "That's {who} there: a regular here and looking for
+    company tonight." The facts are a regular (familiarity 30) or in now and then, Looking for a scene, and a Newcomer
+    Guide or available mentor.
+  - **Each listener hears the wolves as it knows them.** The innkeeper speaks names, and a post marked `veilNames`
+    (new on `ParsedPost`, set only by the game) is veiled for each listener. A name is never passed on as hearsay, and
+    lookalikes keep each listener's own numbering. The matchmaker's written line now does the same when the wolf
+    pointed at is in the player's place.
+  - Each wolf pointed out, and each newcomer, gets an `introducePrompt` under the map ("The wolf who serves at the inn
+    is pointing you out to a newcomer. Introduce yourself?"). Introduce yourself sends their introduction: to the
+    newcomer, or to the room for the newcomer.
+- **Vouching** (`{"type": "vouch", "resident": id, "for": id}`; the numbers in `newcomers.json`'s `vouching`):
+  - Who may vouch: the resident's trust in the voucher must be at least 30 and its liking at least 20 (the resident's
+    menu then offers **Vouch for…**, listing the wolves in sight).
+  - The one vouched for must be in earshot of the resident, not distrusted (trust above −20), and not blocked either
+    way. There is one vouch per pair, and a voucher may hold five at once.
+  - The voucher says "They're with me. I'll vouch for them." aloud.
+  - The resident gets 30% of its trust (at most 15), 20% of its liking (at most 10), and 10 familiarity. **Each of its
+    household gets half** (a household is residents with the same home, at most 8; the user, decision 20).
+  - It lasts 30 game days, and its share stays after that.
+  - The resident's briefing says who vouched.
+- **Gone bad** (`Game::tendVouches`, following new crime incidents): within the vouch, the one vouched for robs or
+  assaults the resident, is seen at a crime by it, or commits one in its town (the incident's law town). Then:
+  - the resident's trust in the voucher falls by twice the share, and its liking by 5;
+  - the share is taken back from the resident and its household, and the vouch is broken;
+  - the voucher is told, and the resident brings it up the next time they talk (once).
+
+  A crime elsewhere, against someone else, changes nothing.
+- **Saved:**
+  - vouches as `game.vouches` through `game.sections` (migration `0043_vouches.sql`, not applied);
+  - each character's evenings in the people root (`evenings`).
+- **The client:**
+  - the Introduce prompt under the map, beside a tie offer (`hud/tie.ts`);
+  - "Vouch for…" in a resident's menu, then "Vouch for {wolf}";
+  - `people.test.ts` covers both.
+- **Tests:**
+  - `Tests/newcomer_tests.cpp`, now 2,637 checks. The rules: the share and its limits, who may vouch, a vouch saved and
+    read back.
+  - At Upper Accord's inn at 19:00, Nell (new):
+    - is welcomed aloud, and the room hears it;
+    - Vic and Val are pointed out by her look for them (Val as a regular looking for company), and Val hears the same
+      line with her own name for Vic;
+    - Otto (Out of character) and Bea (blocked) are not;
+    - Vic, Val and Nell get prompts, and the welcome comes once;
+    - Pip, alone three evenings at Ser Ferro's inn, isn't welcomed on the fourth.
+  - Vouching:
+    - Vic isn't trusted enough and is told why;
+    - the menu offers Vouch for… to Mo;
+    - Mo's vouch is said aloud and moves the innkeeper's trust by the share, and a household member's by half;
+    - one vouch a pair;
+    - a theft in Ser Ferro by another wolf vouched for leaves that vouch standing;
+    - Nell's theft from the innkeeper breaks hers: Mo's standing falls by twice the share, the share comes back from
+      her and the household, Mo is told, and the innkeeper raises it when Mo next speaks.
+  - `tools/client/newcomer.mjs` gains the evening: Cara arrives, dusk falls (`--dev-tools`' time), and the innkeeper
+    welcomes her and the other newcomers together. It points out Bo by look; Cara and Bo are prompted, and Bo
+    introduces himself. Screenshot 9.
+  - Not exercised through the game: five vouches at once (the pure test covers it) and the 30-day end.
+- **Cost:** a five-second look at connected newcomers in the evening; vouches follow only new incidents.
+- **To note:** an innkeeper's post in the worlds as built is 8–17 by default; "at work" here means in its post's place
+  and awake, whatever the hour, so a welcome happens wherever the innkeeper keeps the evening.
+
 ## Depends on and feeds
 
 - **Depends on:**
@@ -484,8 +800,12 @@ New placeholder choices in this plan:
     30 game days; twice the trust given lost on misbehaviour.
 18. The limits and numbers in §1–§7.
 
+Answered by the user, 2026-10-07:
+
+19. A first character may choose its start town too: the busiest is preselected, and any of the three may be picked.
+20. Vouching carries to the resident's household at half the resident's share, and is taken back from them too if the
+    vouch goes bad.
+
 ## Open questions
 
-1. Should a newcomer whose first character skips the busiest town (say a friend waits in Ridgemere) be allowed to
-   choose too, or is the busiest-town rule fixed for first characters?
-2. Should vouching carry to the resident's household, or only to the resident (as planned)?
+None: both answered 2026-10-07 (decisions 19 and 20).

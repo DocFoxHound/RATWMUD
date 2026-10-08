@@ -25,8 +25,24 @@ struct Rules
     std::map<std::string, std::string> tagNames;   // "goodfun" -> "Good fun".
     std::vector<std::string> newcomersOnly;        // Tags only a newcomer may give ("welcoming": doc 52).
     json::Value catalog = json::Value::object();   // The file, as the client is sent it.
+    // Scenes (doc 51, §7), from the same file: each scene's colour, by its id, from a small palette with no red (hostile)
+    // and no party gold; and how far off open scenes show on the map, in world tiles.
+    std::vector<std::string> sceneColours{"#5fb3a8", "#9b88c9", "#7fb0d6", "#93ad6a", "#c98aa0", "#8796a3"};
+    double mapRange = 60;
+    // The gathering howl (doc 51, §9), from the same file: how far it carries, its cooldown and mark, the chorus, and
+    // residents' reactions and lines (by "day", "night" and "nightTown").
+    struct Howl
+    {
+        double range = 150, heightLimit = 30, indoorsHowler = .4, indoorsListener = .5, cooldown = 600, markSeconds = 60,
+               jitter = 12, chorusRange = 40, chorusWindow = 8, chorusExtend = 4, chorusMost = 20, chorusCarry = .25,
+               chorusCarryMost = 2, sneakRange = 32, residentRange = 60, rememberedSeconds = 600;
+        int residentsTurn = 6, residentsSpeak = 2;
+        std::map<std::string, std::vector<std::string>> lines;
+    } howl;
 };
 const Rules& rules();
+// A scene's colour (doc 51, §7): its id hashed into the palette, the same for everyone.
+std::string sceneColour(const std::string& session);
 
 // One star: who gave it to whom (account and character), what for, its tag, when, the social XP it paid, and whether
 // it counts toward the recipient's total.

@@ -103,7 +103,7 @@ void Game::tendScenes()
     }
     for (auto it = metAt_.begin(); it != metAt_.end();)
         it = now() - it->second >= people::rules().metEvery ? metAt_.erase(it) : std::next(it);
-    // Scenes the ledger has let go (three days after they ended: doc 51) are forgotten here too.
+    // Scenes the ledger has let go (eight days after they ended: doc 51) are forgotten here too.
     for (auto it = scenesDone_.begin(); it != scenesDone_.end();)
         it = social_.sessions.count(*it) ? std::next(it) : scenesDone_.erase(it);
 }
@@ -129,13 +129,24 @@ void Game::endScene(const std::string& member, const SocialSession& s, double en
     const auto* me = world_.entity(member);
     if (!me || me->npc)
         return;
-    std::vector<std::string> others;
+    booksSceneEnded(member, s);                     // (Its chapters, and "my next scene goes into …": doc 51, Phase 7.)
+    std::vector<std::string> others, notes;
     for (const auto& [other, c] : s.members)
         if (other != member && !blocked(member, other))   // (Never on the list of one who blocked them: doc 50, 7.)
         {
             others.push_back(other);
             meet(member, other, "scene");
+            // For the end card (doc 51, §8): a first scene together, and how they regard this wolf now, if that changed.
+            if (const auto list = knownWolves_.find(member); list != knownWolves_.end())
+                if (const auto k = list->second.find(other); k != list->second.end() && k->second.scenes == 1)
+                    notes.push_back("You and " + knownName(member, other) + " shared a scene for the first time.");
+            const auto regard = regardWords(other, member);
+            auto& seen = regardSeen_[member + "|" + other];
+            if (regard != seen && regard != "don't know you")
+                notes.push_back("How " + knownName(member, other) + " regards you now: they " + regard + ".");
+            seen = regard;
         }
+    endedNotes_[member] = {s.id, notes};
     if (others.empty())
         return;
     const auto& r = people::rules();
@@ -169,8 +180,15 @@ void Game::endScene(const std::string& member, const SocialSession& s, double en
                 if (lines.empty())
                     first = l.at;
                 last = l.at;
-                lines.push_back({l.who, l.text});
+                lines.push_back({l.who == "You" ? names::capitalised(labelFor(member, member)) : l.who, l.text});
             }
+    // A fight that broke out in it is part of it (the user; doc 51): its log goes into the recap, as this wolf would
+    // read the names.
+    for (const auto& m : s.moments)
+        if (m.kind == "fight")
+            if (const auto fight = social_.sessions.find(m.actor); fight != social_.sessions.end())
+                for (const auto& l : fight->second.log)
+                    lines.push_back({"The fight", veilFor(member, l)});
     const auto person = people_.find(accountKey(member));
     const bool allowed = person == people_.end() || person->second.settings.recaps;
     const auto day = std::int64_t(now() / 86400);
@@ -186,15 +204,59 @@ void Game::endScene(const std::string& member, const SocialSession& s, double en
         return;
     }
     ++today.second;
+    // The wolves as this one saw them (the user): each one's look and pronouns (from its sex) from its card, as this
+    // wolf may see it, never its out-of-character side.
+    std::vector<mind::Client::RecapWolf> wolves;
+    std::vector<std::string> everyone{member};
+    everyone.insert(everyone.end(), others.begin(), others.end());
+    for (const auto& w : everyone)
+    {
+        if (wolves.size() >= 12)
+            break;
+        const auto card = cardFor(member, w);
+        mind::Client::RecapWolf wolf{w == member ? names::capitalised(labelFor(member, member)) : names::capitalised(knownName(member, w)),
+                                     card.string("pronouns"), card.string("description")};
+        if (const auto currently = card.string("currently"); !currently.empty())
+            wolf.description += (wolf.description.empty() ? "" : " ") + std::string("Currently: ") + currently;
+        wolves.push_back(std::move(wolf));
+    }
+    // A scene in one of its books (linked before it ended): the chapters before it, so the story carries on from them
+    // instead of describing the same wolves again (the user); its story becomes that chapter's summary if it has none.
+    mind::Client::RecapStory story;
+    std::string bookId, chapterId;
+    for (const auto& [id, b] : books_)
+    {
+        if (!books::hasWolf(b, member))
+            continue;
+        const auto at = std::find_if(b.chapters.begin(), b.chapters.end(), [&](const books::Chapter& c) { return c.session == s.id; });
+        if (at == b.chapters.end())
+            continue;
+        story = {b.title, {}};
+        for (auto c = b.chapters.begin(); c != at; ++c)
+            if (!c->summary.empty() && (!c->privateScene || b.state == "finished" ||
+                                        std::find(c->wolves.begin(), c->wolves.end(), member) != c->wolves.end()))
+                story.before.push_back({c->title, veilFor(member, c->summary)});
+        bookId = id, chapterId = at->id;
+        break;
+    }
     std::weak_ptr<bool> alive = alive_;
-    mind_.recap(place, names::capitalised(labelFor(member, member)), minutes, lines,
-                [this, alive, member, recap](const std::string& text) mutable {
+    mind_.recap(place, names::capitalised(labelFor(member, member)), minutes, lines, wolves, story,
+                [this, alive, member, recap, bookId, chapterId](const std::string& text) mutable {
                     if (alive.expired())
                         return;
                     if (!text.empty())
                     {
                         recap.text = veilFor(member, text);   // (Any name this wolf doesn't know, as it would see them.)
                         recap.model = true;
+                        if (const auto b = books_.find(bookId); b != books_.end() && b->second.state != "finished")
+                            for (auto& c : b->second.chapters)
+                                if (c.id == chapterId && c.summary.empty())
+                                {
+                                    c.summary = people::clean(recap.text, std::size_t(books::rules().summary), true);
+                                    c.summaryBy = member;
+                                    c.model = true;
+                                    saveSoon();
+                                }
                     }
                     keepRecap(member, std::move(recap));
                 });

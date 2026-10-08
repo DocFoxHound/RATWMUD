@@ -149,6 +149,39 @@ void bakesFromMaterials()
     expect(held(s, "baker", "firewood") == Society::MaterialBatches - made / 6, "and a bundle of firewood");
 }
 
+// A paw lent (doc 53, 3): a player handing at the bakery makes its batches come sooner by the joint's rate, and now and
+// then one input isn't used up. Money only moves.
+void aPawLent()
+{
+    const auto bake = [](bool paw, int& batches, int& flourUsed) {
+        auto s = town();
+        double day = 10. / 24;
+        batches = flourUsed = 0;
+        for (int chunk = 0; chunk < 40; ++chunk)
+        {
+            if (paw)
+                s.lendPaw("baker", 2.0, day + .05);
+            set(s, "baker", "bread", 0);             // (Sold as it comes: it always wants another batch.)
+            set(s, "baker", "flour", 20);
+            set(s, "baker", "firewood", 20);
+            s.takeJournal();
+            work(s, 90, day);
+            const auto journal = s.takeJournal();
+            batches += count(journal, "crafted", "bread") / 6;
+            flourUsed += 20 - held(s, "baker", "flour");
+        }
+    };
+    int alone = 0, aloneFlour = 0, helped = 0, helpedFlour = 0;
+    bake(false, alone, aloneFlour);
+    bake(true, helped, helpedFlour);
+    std::cout << "  the bakery, an hour: " << alone << " batches alone (" << aloneFlour << " flour), " << helped << " with a paw at x2.0 (" << helpedFlour
+              << " flour)\n";
+    expect(alone > 0 && helped >= alone * 3 / 2, "with a paw at x2.0 the batches come sooner: " + std::to_string(helped) + " against " +
+                                                    std::to_string(alone));
+    expect(aloneFlour == alone && helpedFlour < helped, "and now and then one input isn't used up: " + std::to_string(helpedFlour) +
+                                                            " flour for " + std::to_string(helped) + " batches");
+}
+
 void buysWhenShort()
 {
     auto s = town();
@@ -449,6 +482,7 @@ int main()
     {
         startingMaterials();
         bakesFromMaterials();
+        aPawLent();
         buysWhenShort();
         nothingFromNothing();
         smithForges();

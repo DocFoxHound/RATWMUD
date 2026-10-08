@@ -873,6 +873,7 @@ bool World::magicBlow(Battle& b, BattleFighter& f, BattleFighter*& t, const std:
         t->y = was.second;
         o.facing = battle::octant(f.x - o.x, f.y - o.y);
         fightLine(b, o.id, t->id, "blink", oe->name + " blinks in front of " + d->name + " and takes the blow.");
+        ++o.tally.covered;                          // (A blow taken for another: doc 51's end screen.)
         b.log.back().tiles = {was, {o.x, o.y}};
         t = &o;
         return false;
@@ -1031,15 +1032,30 @@ void World::wardensSee(Battle& b, const BattleFighter& caster)
     auto* e = entity(caster.id);
     if (!e || !e->quickened)
         return;
-    int seen = int(b.observers.size());
+    // A partner who sees it (a fighter on its side, one it works with, a party mate) keeps its secret: it adds nothing,
+    // and remembers what it saw (doc 53, 4). Foes, watchers and resident onlookers still count.
+    int seen = 0;
+    const auto saw = [&](const std::string& who) {
+        if (partners(caster.id, who) || (b.fighter(who) && b.fighter(who)->side == caster.side))
+        {
+            if (auto* w = entity(who); w && !w->npc)
+                w->witnessed[caster.id] = calendarDays_;
+            return;
+        }
+        ++seen;
+    };
+    for (const auto& id : b.observers)
+        saw(id);
     for (const auto& o : b.fighters)
         if (o.id != caster.id && (o.status == "fighting" || o.status == "downed"))
-            seen += 1;
+            saw(o.id);
     for (const auto* o : entitiesIn(b.cellId))
         if (o && o->npc && !b.fighter(o->id) && std::hypot(o->position.x - e->position.x, o->position.y - e->position.y) <= battle::NoiseReach &&
             visionClarity(o->id, caster.id) > 0)
             ++seen;
     e->wardenAttention += std::min(5, seen);
+    if (seen > 0)
+        attentionRose(caster.id);                   // (Whoever vouched for it pays for it: doc 53, 4.)
 }
 
 // ------------------------------------------------------------------ Using a Gift
@@ -1598,6 +1614,8 @@ Result World::useGiftNow(const std::string& id, const std::string& ability, cons
                     o.facing = battle::octant(tile.first - o.x, tile.second - o.y);
                     ++turned;
                 }
+        if (b->hunt)
+            turned = std::max(turned, huntNoise(*b, tile.first, tile.second, rule->tiles));   // Game driven by it (doc 53, 4).
         line("gift", {}, "A noise from over there.", {tile});
         said = turned ? "The noise turns " + std::to_string(turned) + (turned == 1 ? " head." : " heads.") : "No one turns.";
     }
@@ -2296,6 +2314,19 @@ Result World::useWorkGift(const std::string& id, const std::string& ability, con
         e->mana -= a->mana;
         workGiftAt_[key] = time_;
     };
+    if (jointTakesGift(id, ability))
+    {
+        // At work with others: an angle of its own (doc 53, 4); at a maker's bench, a Gift that helps its trade lifts
+        // its next batch's quality too, as lent to it.
+        spend();
+        if (const auto* j = jointOf(id); j && lend)
+            if (const auto* spec = society_.spec(j->target))
+                if (const auto* business = items::businessFor(spec->workLabel))
+                    for (const auto& l : lends())
+                        if (ability == l.ability && std::find(l.trades.begin(), l.trades.end(), business->id) != l.trades.end())
+                            society_.lendGift(j->target, l.lift, calendarDays_ + 1);
+        return giftOnJoint(id, ability);
+    }
     if (lend)
     {
         // Lent to a workshop near by: its next batch is the better for it, and it pays a little for the help.
@@ -2372,7 +2403,19 @@ Result World::useWorkGift(const std::string& id, const std::string& ability, con
         spend();
         e->lightLoadUntil = time_ + 600;
         refreshLoad(*e);
-        return {true, "Your load grows light: you can carry half again as much for a while.", {}};
+        // Over the whole joint one works in (doc 53, 4).
+        int others = 0;
+        if (const auto* j = jointOf(id))
+            for (const auto& m : j->members)
+                if (auto* o = entity(m.id); o && m.id != id && !o->npc)
+                {
+                    o->lightLoadUntil = time_ + 600;
+                    refreshLoad(*o);
+                    notice(m.id, e->name + "'s Gift lightens your load too.");
+                    ++others;
+                }
+        return {true, others ? "Your loads grow light: you and those you work with can carry half again as much for a while."
+                             : "Your load grows light: you can carry half again as much for a while.", {}};
     }
     if (ability == "carry")
     {
