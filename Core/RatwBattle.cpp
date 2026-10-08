@@ -3294,7 +3294,7 @@ void World::restPlayers(double dt)
             // Rest heals injuries (doc 38): lying in a bed fastest, still anywhere half that, up and about a little.
             const bool fighting = e.downedLeft > 0 || (!battles_.empty() && inBattle(id));
             const bool sprinting = effectivePace(e) >= 9 && std::hypot(e.velocity.x, e.velocity.y) > .05;
-            healInjuries(e, dt / battle::RestHourSeconds * (fighting || sprinting ? 0 : still ? (inBed(e) ? 1.5 : .75) : .25) *
+            healInjuries(e, dt / battle::RestHourSeconds * (fighting || sprinting ? 0 : still ? restRate(e) : .25) *
                                 (1 + .1 * groomedFactor(e)) * (1 + .05 * fedFactor(e)));   // (Well-groomed a tenth faster, fed 5%: doc 55.)
         }
         if (!still || e.downedLeft > 0 || (!battles_.empty() && inBattle(id)))
@@ -3304,7 +3304,7 @@ void World::restPlayers(double dt)
         }
         const double hours = dt / battle::RestHourSeconds;
         e.restRun += hours;
-        if (!inBed(e))
+        if (!bedIsTheirs(e))                        // (A full rest needs a bed it has a right to: doc 54.)
         {
             e.bedRun = 0;
             continue;
@@ -3343,6 +3343,33 @@ void World::fullRest(Entity& e)
         e.groomedUntil = calendarDays_;             // (Well-groomed lasts until the next full rest: doc 55, 7.)
 }
 
+const World::CommonRoom* World::commonRoom(const std::string& cell) const
+{
+    const auto found = commonRooms_.find(cell);
+    return found == commonRooms_.end() ? nullptr : &found->second;
+}
+
+double World::companyFactor(const Entity& e) const
+{
+    const auto* room = commonRoom(e.cellId);
+    if (!room)
+        return 0;
+    if (room->performer)
+        return 1.3;
+    const int others = int(room->active.size()) - int(room->active.count(e.id));
+    return 1 + .1 * std::min(3, std::max(0, others));
+}
+
+double World::restRate(const Entity& e) const
+{
+    // A bed it has a right to 1.5; a common room 1.25, more in company; anywhere else still (another's bed too) 0.75.
+    if (bedIsTheirs(e))
+        return 1.5;
+    if (const double company = companyFactor(e); company > 0)
+        return 1.25 * company;
+    return .75;
+}
+
 void World::returnFromAway(Entity& e)
 {
     if (e.awaySince < 0)
@@ -3367,6 +3394,13 @@ void World::returnFromAway(Entity& e)
     }
     // Time away heals as rest (doc 38); a tenth faster for the part of it Well-groomed lasted (doc 55, 7).
     healInjuries(e, away / battle::RestHourSeconds * (bed ? 1.5 : .75) * (1 + .1 * awayGroomed));
+    // Away at an inn (doc 54, 1): rested practice built half again as fast for the time away, within its most.
+    if (e.awayAtInn && !e.npc)
+    {
+        const auto& r = practice::rules();
+        e.practice->rested = std::min(r.restedMost, e.practice->rested + .5 * r.restedPerDay * away / 86400);
+        e.awayAtInn = false;
+    }
     const double hours = away / battle::RestHourSeconds * battle::AwayRestRate;
     e.restRun += hours;
     if (!bed)

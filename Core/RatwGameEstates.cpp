@@ -79,6 +79,9 @@ void Game::refreshEstates()
 
 bool Game::mayEnterPlace(const std::string& who, const std::string& cell) const
 {
+    // A whole place a wolf rents (doc 54, 4): its renter, its guests, or anyone on a night it is opened.
+    if (const auto* l = wholeLodgingAt(cell))
+        return l->holder == who || l->guests.count(who) || l->open;
     const auto* lease = estates_.lease(cell);
     if (!lease)
         return true;
@@ -98,6 +101,7 @@ void Game::estateTick(double dt)
         refreshEstates();
         estateRefresh_ = 300;
     }
+    tendLodgings();                                 // Individuals' lodgings (doc 54, 4).
     const double day = world_.calendarDays();
     for (const auto& d : estates_.due(day))
     {

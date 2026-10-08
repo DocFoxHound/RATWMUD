@@ -303,6 +303,9 @@ struct Entity
     std::string groomedBy;
     // Meals (doc 55, 6), in calendar days: Fed until (2 game hours, 4 for a shared meal), and when it last ate. Saved.
     double fedUntil = -1, ateAt = -1;
+    // Away at an inn (doc 54, 1): it left the world in an inn's common room or a bed it has there; rested practice
+    // builds half again as fast for that absence. Saved.
+    bool awayAtInn = false;
     // Work Gifts in use (doc 43), until these world seconds: Lighten Load (carries half again), Carry (speech carries
     // as a yell). Not saved: they are short.
     double lightLoadUntil = 0, carryVoiceUntil = 0;
@@ -313,6 +316,13 @@ struct Entity
     // much use each kind of gear in service has had (by item id: wear and tear, doc 35 phase 9). Saved.
     std::string swordKind;
     std::map<std::string, double> wear;
+    std::map<std::string, double> gameSkills;  // Tavern games (doc 54, 5): 0..100 a game, grown by playing. Saved.
+    // The journal (doc 54, 7): lore fragments read at archives, in order; species brought down (first day, count);
+    // forage goods found (first day, "season, ground"); the cells it has been in. Saved.
+    std::vector<std::string> lore;
+    std::map<std::string, std::pair<double, int>> bestiary;
+    std::map<std::string, std::pair<double, std::string>> herbarium;
+    std::set<std::string> places;
     double scentMaskedUntil = 0;    // Masking oil (doc 35): its scent, and what it carries, hidden until then (world seconds). Saved.
     bool noPvp = false;             // Auto-decline fights with players (doc 40's fight start): no one may challenge them. Saved.
     // Doc 53: "Allow hunting partners" and "Allow work partners" off (on by default). Saved.
@@ -1376,6 +1386,53 @@ class World
     std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
     std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
     const MarketSquare& square(const std::string& community);
+    std::map<std::string, Spot> boards_;            // By community: its notice board (doc 54, 2), placed once.
+
+  public:
+    // A town's notice board (doc 54, 2): on open ground 2 to 4 tiles from its square's market point, off its stall spots,
+    // the same place every time; null for a community with no square.
+    const Spot* boardSpot(const std::string& community);
+    // Market stalls (doc 54, 3): a square's built stall spots, and those let to players today ("cell|x|y", by whole
+    // tiles), which merchants leave to them: Marketday's plan sends merchants only to the others.
+    const std::vector<Spot>& stallSpots(const std::string& community) { return square(community).stalls; }
+    // A square's middle (null for a community with none) and where a crowd stands around it (doc 54, 6's festivals).
+    const Spot* marketSpot(const std::string& community)
+    {
+        const auto& sq = square(community);
+        return sq.found ? &sq.at : nullptr;
+    }
+    const std::vector<Spot>& crowdSpots(const std::string& community) { return square(community).crowd; }
+    void setLetStalls(std::set<std::string> keys);
+    static std::string stallKey(const Spot& s);
+    // Tavern games (doc 54, 5): a resident seated at a table stays at its seat until it is let go (an errand before its
+    // day's plan; a hungry resident still goes to eat).
+    struct Seat
+    {
+        std::string cell;
+        double x = 0, y = 0;
+        std::string reason;
+    };
+    void seatResident(const std::string& id, Seat seat) { seated_[id] = std::move(seat); }
+    void unseatResident(const std::string& id) { seated_.erase(id); }
+    bool seatedResident(const std::string& id) const { return seated_.count(id) > 0; }
+    // Kills on hunts since last asked (doc 54, 6: a festival's hunting contest reads them): who, what, how cleanly.
+    struct HuntedNote
+    {
+        std::string killer, species, grade;
+        double day = 0;
+    };
+    void noteFound(const std::string& player, const std::string& item, const std::string& ground);   // (The herbarium.)
+    std::vector<HuntedNote> takeHunted()
+    {
+        auto out = std::move(hunted_);
+        hunted_.clear();
+        return out;
+    }
+
+  private:
+    std::set<std::string> letStalls_;
+    std::map<std::string, Seat> seated_;
+    std::vector<HuntedNote> hunted_;
     // A community's church (doc 42, Phase 6): its clergy's place of work, its seats and its pulpit; worked out each day.
     struct Chapel
     {
@@ -1515,6 +1572,7 @@ class World
     std::map<std::string, std::set<std::pair<std::string, std::string>>> huntPairs_;
     std::function<bool(const std::string& a, const std::string& b)> blocked_, partnered_;
     std::function<void(const WorldEvent&)> eventWatcher_;
+    std::function<bool(const std::string& id, const std::string& cell)> bedRight_;
     std::map<std::string, std::pair<std::string, double>> talkFacing_;   // Resident -> the wolf it faces, until when.
     std::map<std::string, double> groomBondDay_;    // "a|b" -> the game day their grooming last warmed them (doc 55).
     std::map<std::string, double> mealBondDay_;     // "a|b" -> the game day a shared meal last warmed them (doc 55).
@@ -1716,6 +1774,29 @@ class World
     void returnFromAway(Entity& e);
     // Lying on a bed or straw (doc 36's `b` and `z` tiles): where a full rest is had (doc 38).
     bool inBed(const Entity& e) const;
+    // Taverns (doc 54, 1): a full rest needs a bed the wolf has a right to (its lodging, a paid inn bed, its Chapter's
+    // place: the user, 2026-10-08), set by Game; without the check (no game), any bed. A common room (set by Game every
+    // few seconds: its active players and whether a performer is there) heals 1.25 rest hours an hour, +10% for each
+    // other active player up to +30%, or +30% with a performer; a partial rest.
+    void setBedRight(std::function<bool(const std::string& id, const std::string& cell)> right) { bedRight_ = std::move(right); }
+    bool bedIsTheirs(const Entity& e) const { return inBed(e) && (!bedRight_ || bedRight_(e.id, e.cellId)); }
+    struct CommonRoom
+    {
+        std::set<std::string> active;
+        bool performer = false;
+    };
+    void setCommonRooms(std::map<std::string, CommonRoom> rooms) { commonRooms_ = std::move(rooms); }
+    const CommonRoom* commonRoom(const std::string& cell) const;
+    double companyFactor(const Entity& e) const;    // 1 alone; up to 1.3 (0 outside a common room).
+    double restRate(const Entity& e) const;         // Rest hours an hour where it stands, if still (doc 38, doc 54).
+    // Renting (doc 54, 4): a cell's bed tiles, and those of a home nobody of the household sleeps on (spare beds).
+    std::vector<std::pair<int, int>> bedTiles(const std::string& cellId) const;
+    std::vector<std::pair<int, int>> spareBeds(const std::string& cellId) const;
+
+  private:
+    std::map<std::string, CommonRoom> commonRooms_;
+
+  public:
     int fightPace(const Entity& e) const;           // The pace a fighter moves at: theirs, an NPC's run, or a walk.
 
   private:

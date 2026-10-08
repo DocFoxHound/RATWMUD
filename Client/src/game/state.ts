@@ -200,7 +200,10 @@ export class GameState {
     lettersCase: Json | null = null;
     letterDraft: LetterDraft = {to: '', text: '', sign: '', replyTo: ''};
     letterDraftVersion = 0;
-    giveTarget = '';                                // (The wolf the Give sheet gives to: doc 55.)                         // (Bumped when the page, not the player's typing, changes the draft.)
+    giveTarget = '';                                // (The wolf the Give sheet gives to: doc 55.)
+    archiveTask: Json | null = null;                // (Records to sort: doc 54, 7.)
+    journalView: Json | null = null;                // (The journal: lore, bestiary, herbarium, places.)
+    boardView: Json | null = null;                  // (A notice board as last read: doc 54.)                         // (Bumped when the page, not the player's typing, changes the draft.)
     /** The Dev Console (a player marked Dungeon Master; ui/hud/devConsole.ts): open or not, the commands the server
      *  offers ([name, help], as it last said), and each command run with the server's answer, newest last. */
     devConsole = false;
@@ -1073,6 +1076,27 @@ export class GameState {
                 (str(e, 'injuries') ? `\n\nYou notice ${str(e, 'injuries')}.` : '');   // (What a closer look shows of injuries, doc 38.)
             this.modal = 'inspect';
             this.facingPreview = false;
+            return;
+        }
+        if (type === 'archive') {
+            this.archiveTask = e;                   // (Records to sort: doc 54, 7.)
+            this.modal = 'archive';
+            return;
+        }
+        if (type === 'journal') {
+            this.journalView = e;
+            this.modal = 'journal';
+            return;
+        }
+        if (type === 'lore') {
+            this.archiveTask = null;
+            if (this.modal === 'archive') this.modal = '';
+            this.showToast(`In your journal: ${str(e, 'topic')}`);
+            return;
+        }
+        if (type === 'board') {
+            this.boardView = e;                     // (A notice board: doc 54.)
+            this.modal = 'board';
             return;
         }
         if (type === 'letters') {
@@ -2040,6 +2064,13 @@ export class GameState {
         if (a === 'hunt' || a === 'forage' || a === 'leaveHunt') this.send({type: a});   // Out in the wild (doc 41).
         if (a === 'post') this.send({type: 'post'});   // A training ground's practice post (doc 53).
         if (a === 'groomSelf') this.send({type: 'groom', target: 'self'});   // Grooming oneself (doc 55, 7).
+        if (a === 'board') this.send({type: 'board', verb: 'read'});   // The notice board (doc 54).
+        if (a === 'perform') {
+            // Performing (doc 54): an instrument carried if any, else a song; again to stop.
+            const self = obj(this.snapshot, 'self');
+            const instrument = ['hurdy_gurdy', 'paw_drum', 'handbell', 'mouth_pipe'].find(i => this.inventoryQuantity(i) > 0);
+            this.send(str(self, 'performing') ? {type: 'perform', verb: 'stop'} : {type: 'perform', verb: 'start', kind: instrument ?? 'sing'});
+        }
         else if (a === 'leave_character') this.modal = 'leave_character';
         else if (a === 'leave_confirm') this.leaveCharacter();
         else if (a === 'leave_cancel') this.modal = 'character';
@@ -2224,6 +2255,12 @@ export class GameState {
             if (h.target === 'vouch') {
                 this.contextActions = [...this.entities.values()].filter(e => e.kind !== 'npc' && !e.self).slice(0, 8).map(e => `vouch:${e.id}`);
                 if (!this.contextActions.length) this.showToast('There is no one here to vouch for.');
+                return;
+            }
+            // Lodging (doc 54): ask this resident for its spare bed.
+            if (h.target === 'ask to lodge') {
+                this.send({type: 'lodge', verb: 'ask', target: this.contextTarget});
+                this.contextTarget = '';
                 return;
             }
             // Grooming (doc 55, 7): asked of this wolf.

@@ -48,6 +48,11 @@ struct Document
     // A pact (doc 55, 8): its id (shared by every copy), the other party, and who has sealed it (parties and witnesses).
     std::string pact, party;
     std::vector<std::string> seals, witnesses;
+    // A notice on a board (doc 54, 2): the board ("board:<community>"), its kind (seeking, offering, event, lost,
+    // other), what it seeks or offers ("item:<id>", "apprenticeship:<business>", "room", "partner"), when it comes down,
+    // and the resident who answered it (and how: "has", "takes", "apprentice").
+    std::string board, noticeKind, what, answeredBy, answeredHow;
+    double expires = 0;
 };
 json::Value save(const Document& d);
 Document load(const json::Value& v);
@@ -66,6 +71,7 @@ class Store
     int unread(const std::string& reader) const;
     int writtenSince(const std::string& author, double day) const;
     std::vector<const Document*> fromAuthor(const std::string& author) const;
+    std::vector<const Document*> onBoard(const std::string& board) const;
     // Those due by `now` (still travelling), in order of arrival.
     std::vector<std::string> due(double now) const;
     void rescheduled(const std::string& id, double was);    // (After deliverAt changed.)
@@ -74,7 +80,7 @@ class Store
 
   private:
     std::map<std::string, Document> docs_;
-    std::multimap<std::string, std::string> byReader_, byAuthor_;
+    std::multimap<std::string, std::string> byReader_, byAuthor_, byBoard_;
     std::set<std::pair<double, std::string>> queue_;
 };
 } // namespace ratw::documents

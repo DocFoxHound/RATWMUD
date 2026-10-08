@@ -1122,6 +1122,43 @@ export class GamePainter {
             p.text(x - gw / 2, y - gh / 2, str(st, 'glyph', '?'), size, withAlpha(base, alpha), true);
             if (!bool(st, 'built')) p.frame(x - tile * 0.45, y - tile * 0.45, tile * 0.9, tile * 0.9, withAlpha(base, 0.3));
         }
+        // The town's notice board (doc 54): a post with notices pinned to it; pointing at it says how many.
+        for (const bd of objects(s.snapshot, 'boards')) {
+            const x = ox + num(bd, 'x') * tile, y = oy + num(bd, 'y') * tile;
+            const size = clamp(Math.round(tile * 0.7), 11, 17);
+            const [gw, gh] = p.measure('¶', size, true);
+            p.text(x - gw / 2, y - gh / 2, '¶', size, withAlpha(Paper, 0.85), true);
+            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 14) {
+                const label = `Notice board · ${num(bd, 'notices')} ${num(bd, 'notices') === 1 ? 'notice' : 'notices'}`;
+                const [lw] = p.measure(label, 9, false);
+                p.box(x + 10, y - 9, lw + 10, 18, Panel);
+                p.text(x + 15, y - 5, label, 9, Paper);
+            }
+        }
+        // The festival race's next mark (doc 54, 6), for a wolf running it.
+        {
+            const now = obj(obj(obj(s.snapshot, 'self'), 'festival'), 'now');
+            if (now && str(now, 'kind') === 'race') {
+                const x = ox + num(now, 'x') * tile, y = oy + num(now, 'y') * tile;
+                const size = clamp(Math.round(tile * 0.8), 12, 18);
+                const [gw, gh] = p.measure('⚐', size, true);
+                p.text(x - gw / 2, y - gh / 2, '⚐', size, withAlpha(Amber, 1), true);
+                p.frame(x - tile * 0.6, y - tile * 0.6, tile * 1.2, tile * 1.2, withAlpha(Amber, 0.6));
+            }
+        }
+        // Players' market stalls (doc 54): a pennant over the spot; pointing at it says how many wares.
+        for (const sl of objects(s.snapshot, 'stalls')) {
+            const x = ox + num(sl, 'x') * tile, y = oy + num(sl, 'y') * tile;
+            const size = clamp(Math.round(tile * 0.6), 10, 15);
+            const [gw, gh] = p.measure('⚑', size, true);
+            p.text(x - gw / 2, y - tile * 0.55 - gh / 2, '⚑', size, withAlpha(Amber, 0.9), true);
+            if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 14) {
+                const label = `A wolf's stall · ${num(sl, 'wares')} ${num(sl, 'wares') === 1 ? 'ware' : 'wares'}`;
+                const [lw] = p.measure(label, 9, false);
+                p.box(x + 10, y - 9, lw + 10, 18, Panel);
+                p.text(x + 15, y - 5, label, 9, Paper);
+            }
+        }
         // A home's stores (doc 36): larder, chest, wardrobe, woodpile; whose and what's in it when the pointer is near.
         for (const st of objects(s.snapshot, 'stores')) {
             const x = ox + num(st, 'x') * tile, y = oy + num(st, 'y') * tile;

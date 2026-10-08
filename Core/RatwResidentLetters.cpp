@@ -347,7 +347,7 @@ void Game::inviteToOccasions()
             std::string others;
             for (const auto& h : o->hosts)
                 if (h != host)
-                    if (const auto* e = world_.entity(h))
+                    if (world_.entity(h))
                         others = names::capitalised(labelFor(player, h));
             const auto* subject = world_.entity(o->id.substr(o->id.find(':') + 1));
             const int hour = int(std::lround((o->start - std::floor(o->start)) * 24));

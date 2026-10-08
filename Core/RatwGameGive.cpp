@@ -233,14 +233,16 @@ void Game::moveScents(const std::string& from, const std::string& to, const std:
         t->scents.erase(t->scents.begin());
 }
 
-std::string Game::scentOfItem(const std::string& viewer, const std::string& owner, const std::string& item) const
+std::string Game::scentOfItem(const std::string& viewer, const std::string& owner, const std::string& item, int held) const
 {
-    // The newest record within what is held: its giver's scent for 7 days, else its maker's for 28.
+    // The newest record within what is held (or `held`, for goods out on a stall): its giver's scent for 7 days, else
+    // its maker's for 28.
     const auto* e = world_.entity(owner);
     const auto* a = world_.society().account(owner);
     if (!e || !a)
         return {};
-    int held = Society::stock(*a, item);
+    if (held < 0)
+        held = Society::stock(*a, item);
     const double now = world_.calendarDays();
     for (auto it = e->scents.rbegin(); it != e->scents.rend() && held > 0; ++it)
     {

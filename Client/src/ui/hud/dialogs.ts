@@ -10,6 +10,8 @@ import {button, el, setClass, show} from './dom.ts';
 import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 import {renderLetters} from './letters.ts';
+import {renderBoard} from './board.ts';
+import {renderArchive, renderJournal} from './archive.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
  * level's start to the next (an older server sends neither: then a hundred a level, as it was). */
@@ -106,6 +108,7 @@ export class Dialogs {
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '', m === 'letters' ? [s.lettersCase, s.letterDraftVersion, obj(self, 'names'), arr(s.snapshot, 'inventory')] : '',
             m === 'give' || m === 'lend' ? [s.giveTarget, arr(s.snapshot, 'inventory'), countText(self, 'cash')] : '',
+            m === 'board' ? s.boardView : '', m === 'archive' ? s.archiveTask : '', m === 'journal' ? s.journalView : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'), arr(self, 'loans'),
                 obj(s.snapshot, 'resource')] : '',
@@ -124,6 +127,9 @@ export class Dialogs {
         else if (m === 'missions') this.missions();
         else if (m === 'letters') renderLetters(this.panel, s);
         else if (m === 'give') this.giveSheet();
+        else if (m === 'board') renderBoard(this.panel, s);
+        else if (m === 'archive') renderArchive(this.panel, s);
+        else if (m === 'journal') renderJournal(this.panel, s);
         else if (m === 'lend') this.giveSheet(true);
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'status') this.status(self);
@@ -205,6 +211,8 @@ export class Dialogs {
         const post = obj(self, 'letters');
         button(num(post, 'unread') ? `LETTERS (${num(post, 'unread')})` : 'LETTERS', 'secondary', actions, () => this.s.openLetters()).title =
             num(post, 'waiting') ? `${num(post, 'waiting')} waiting at the inns of ${str(post, 'waitingAt')}` : 'Your letter case (doc 55)';
+        button('JOURNAL', 'secondary', actions, () => this.s.send({type: 'journal'})).title =
+            'Lore read at archives, beasts brought down, plants found, places been (doc 54)';
         button('YOUR PROFILE', 'secondary', actions, () => this.act('profile')).title =
             'What others see of your wolf (a description, what you are doing, glances), your status, and your OOC notes, lines and veils.';
         button('CHARACTER SELECTION', 'primary', actions, () => this.act('leave_character'));

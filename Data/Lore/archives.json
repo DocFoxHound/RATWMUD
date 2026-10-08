@@ -1,0 +1,9 @@
+{
+  "format": "ratw-archives",
+  "about": "Where archive work is given (Docs/Design/54-gathering-places.md, 7): a place where a resident holds one of these posts (matched, in lower case, within its work label), while that keeper is there. The work pays from the town's treasury.",
+  "posts": ["copying the city rolls", "keeping the annex", "shelving in the upper stacks", "tending the scroll vaults", "reading in the deep archive", "keeping the crypt library", "hall of records", "archive", "record clerk"],
+  "pay": 2,
+  "perDay": 4,
+  "copySeconds": 300,
+  "scholarAfter": 10
+}

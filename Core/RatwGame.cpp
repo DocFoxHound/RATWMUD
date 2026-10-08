@@ -402,6 +402,7 @@ bool Game::start(std::string& problem)
     world_.setBlocked([this](const std::string& a, const std::string& b) { return blocked(a, b); });
     world_.setPartnered([this](const std::string& a, const std::string& b) { return parties_.together(a, b); });
     world_.setEventWatcher([this](const WorldEvent& e) { watchEvent(e); });   // (Deeds a resident may thank for: doc 55, 5.)
+    world_.setBedRight([this](const std::string& id, const std::string& cell) { return hasBedRight(id, cell); });   // (Doc 54, 1.)
     if (!health_ && !options_.savePath.empty() && !options_.scratch)
         health_ = health::Recorder::file(options_.savePath + ".health.jsonl");
     if (options_.workerThreads > 0)
@@ -799,6 +800,38 @@ void Game::applyDmActions(double dt)
             else
                 outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
         }
+        else if (kind == "estate.hold" || kind == "estate.release")
+        {
+            // Held for a story (doc 54, 4): the target a cell; payload {"days", "reason"}.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            if (!world_.cell(target))
+                outcome = {false, "No such place.", target};
+            else if (kind == "estate.release")
+            {
+                holds_.erase(target);
+                outcome = {true, "No longer held.", target};
+            }
+            else
+                outcome = holdPlace(target, wire::number(payload, "days", 7), payload.string("reason"));
+            saveSoon();
+        }
+        else if (kind == "board.remove")
+        {
+            // A notice taken down by a Dungeon Master (doc 54, 2): the target its id. Audited, as every DM action is.
+            const auto* d = documents_.find(target);
+            if (!d || d->kind != "notice")
+                outcome = {false, "No such notice.", target};
+            else
+            {
+                world_.recordEvent({"notice removed", d->author, {}, {}, 0, 0, {}, 0, 0, target});
+                documents_.erase(target);
+                saveSoon();
+                outcome = {true, "The notice is taken down.", target};
+            }
+        }
         else if (kind == "artwork.review")
         {
             // A Dungeon Master's decision on an uploaded portrait: payload {"decision": "approve"|"reject", "reason"}.
@@ -841,7 +874,8 @@ void Game::applyDmActions(double dt)
                 const int level = std::clamp(int(wire::number(payload, "level", 2)), 2, 5);
                 estates_.define({target, payload.string("name", cell->name), payload.string("kind", "hall"), payload.string("landlord", "treasury"),
                                  payload.string("faction", cell->factionClaims.empty() ? std::string() : cell->factionClaims.front()),
-                                 std::clamp<std::int64_t>(rent, 1, 100000), level});
+                                 std::clamp<std::int64_t>(rent, 1, 100000), level, payload.boolean("individuals"),
+                                 std::clamp<std::int64_t>(std::int64_t(wire::number(payload, "night", 0)), 0, 100000)});   // (Individuals too: doc 54, 4.)
                 estates_.markAuthored(target);
                 saveSoon();
                 outcome = {true, cell->name + " is to let.", target};
@@ -1722,6 +1756,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     const auto* stayed = world_.entity(actor);
     const bool lingered = stayed && stayed->lingering;
     auto& player = world_.addPlayer(actor, names::capitalised(name));   // (Older characters too.)
+    lastActiveReal_[actor] = now();                 // (Just come in: active, for a common room's company: doc 54.)
     if (!world_.society().account(actor))
     {
         undo();
@@ -1805,7 +1840,8 @@ void Game::leaveCharacter(Connection* c)
             e->postTown = here;                     // (Its letters wait where it left: doc 55.)
         characters_[e->id] = *e;
         characters_[e->id].awaySince = world_.calendarDays();   // Away time counts as rest (doc 38).
-        characters_[e->id].awayInBed = world_.inBed(*e);
+        characters_[e->id].awayInBed = world_.bedIsTheirs(*e);   // (Only a bed it has a right to rests it fully: doc 54.)
+        characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0 || (lodgingOf(e->id) && innUpstairs(e->cellId) && lodgingOf(e->id)->cell == e->cellId);
         logEvent("departure", id);
         if (const auto* fight = world_.battleOf(id); fight && !fight->over)
         {
@@ -1844,7 +1880,8 @@ void Game::releaseLingering()
             e->lingering = false;
             characters_[e->id] = *e;
             characters_[e->id].awaySince = world_.calendarDays();
-            characters_[e->id].awayInBed = world_.inBed(*e);
+            characters_[e->id].awayInBed = world_.bedIsTheirs(*e);
+            characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0;
             world_.removePlayer(e->id);
             record(Character, it->first);
             ++revision_;
@@ -2711,6 +2748,33 @@ void Game::sendSnapshot(Connection* c)
             if (!loans.items().empty())
                 self.set("loans", loans);
         }
+        // A common room (doc 54, 1): one is in it, its company while resting, and whether one performs.
+        if (const auto lodging = lodgingView(id); !lodging.isNull())
+            self.set("lodging", lodging);           // (Beds, nights and one's lodging: doc 54, 4.)
+        if (!boardNear(id).empty())
+            self.set("nearBoard", true);            // (Read the board: doc 54, 2.)
+        if (const auto stall = stallSelf(id); !stall.isNull())
+            self.set("stall", stall);               // (One's market stall, one within reach, or a spot to rent: doc 54, 3.)
+        if (archiveKeeperHere(me->cellId))
+        {
+            auto archive = Value::object();          // (A keeper of records here: archive work, doc 54, 7.)
+            const auto task = archiveTasks_.find(id);
+            archive.add("task", task == archiveTasks_.end() ? std::string() : task->second.kind);
+            if (task != archiveTasks_.end() && task->second.kind == "copy")
+                archive.add("copied", std::round(std::min(1., (world_.time() - task->second.begun) / 300) * 100));
+            self.set("archive", archive);
+        }
+        if (const auto festival = festivalSelf(id); !festival.isNull())
+            self.set("festival", festival);         // (A festival today or soon: its programme, and what one does now: doc 54, 6.)
+        if (const auto table = tableSelf(id); !table.isNull())
+            self.set("table", table);               // (A game at a table, one to watch, or a table to play at: doc 54, 5.)
+        if (innCells_.count(me->cellId))
+        {
+            self.set("commonRoom", true);
+            self.set("company", std::round(world_.companyFactor(*me) * 100) / 100);
+        }
+        if (performers_.count(id))
+            self.set("performing", performers_.at(id).kind);
         if (me->fedUntil > world_.calendarDays())
             self.set("fedHours", std::round((me->fedUntil - world_.calendarDays()) * 24 * 10) / 10);   // (Fed: doc 55, 6.)
         if (const auto ask = groomOffers_.find(id); ask != groomOffers_.end() && ask->second.until > world_.time())
@@ -2846,11 +2910,16 @@ void Game::sendSnapshot(Connection* c)
         }
         if (me->restRun > 0)
         {
-            const bool bed = world_.inBed(*me);
+            const bool bed = world_.bedIsTheirs(*me);   // (A bed it has a right to: doc 54.)
             auto rest = Value::object();
             rest.add("hours", std::floor((bed ? me->bedRun : me->restRun) * 10) / 10);
             rest.add("bed", bed);
             rest.add("full", battle::FullRestHours);
+            rest.add("rate", std::round(world_.restRate(*me) * 100) / 100);
+            if (world_.inBed(*me) && !bed)
+                rest.add("notYours", true);         // ("Not your bed: a partial rest.")
+            if (world_.companyFactor(*me) > 0)
+                rest.add("room", true);
             self.set("rest", std::move(rest));
         }
     }
@@ -3216,6 +3285,10 @@ void Game::sendSnapshot(Connection* c)
                 actions.push("tell the wardens");
                 actions.push("vouch to the wardens");
             }
+        // Lodging (doc 54, 4): ask a resident with a home for its spare bed, if one has none yet.
+        if (e.npc && !e.dead && apart <= 3 && !lodgingOf(view.self.id))
+            if (const auto* life = world_.society().resident(e.id); life && !life->homeCell.empty())
+                actions.push("ask to lodge");
         // Grooming (doc 55, 7): a wolf within 1.5 tiles, both out of a fight.
         if (e.id != view.self.id && !e.dead && apart <= 1.5 && !world_.inBattle(view.self.id) && !world_.inBattle(e.id) && !e.transient)
             actions.push("groom");
@@ -3325,6 +3398,8 @@ void Game::sendSnapshot(Connection* c)
         }
     root.add("structures", structuresView(id, view.cell.id));   // Camps, Halls and Holds here (doc 32, 5.7).
     root.add("stores", storesView(view.cell.id));                // A home's larder, chest, wardrobe and woodpile (doc 36).
+    root.add("boards", boardsView(view.cell.id));                // The town's notice board (doc 54, 2).
+    root.add("stalls", stallsView(view.cell.id));                // Players' market stalls (doc 54, 3).
     root.add("isometric", view.isometric);
     root.add("connection", options_.connectionLabel);
     root.add("dialogueProvider", mind_.label());
@@ -3777,6 +3852,8 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
         context.activity += matchmake(npcId, playerId, heardText);   // (A resident as matchmaker: doc 52, 5.)
         context.activity += vouchBriefing(npcId, playerId);          // (Vouched for, or a vouch gone bad: doc 52, 7.)
         context.activity += residentLetterBriefing(npcId, playerId); // (Letters it wrote them: doc 55, 5.)
+        context.activity += festivalBriefing(npcId, playerId);       // (Today's festival winners: doc 54, 6.)
+        context.activity += scholarBriefing(npcId, playerId);        // (A wolf who has read the town's records: doc 54, 7.)
     }
     if (!alsoHeard.empty())
         context.scene += " Others were spoken to at the same time, and just answered: " + mind::left(alsoHeard, 600);
@@ -4098,6 +4175,10 @@ void Game::command(Connection* c, const std::string& raw)
         return;
     }
     world_.noteActive(id);                          // (Farm work pays a hand who is there: doc 53, 2.6.)
+    lastActiveReal_[id] = now();                    // (Company in a common room counts the active: doc 54, 1.)
+    if (type == "chat")
+        if (const auto p = performers_.find(id); p != performers_.end())
+            p->second.lastSaid = now();             // (A performer keeping at it.)
     const std::string commandId = j.string("commandId");
     if (commandId.size() > 128)
     {
@@ -4403,6 +4484,46 @@ void Game::command(Connection* c, const std::string& raw)
     {
         // The gathering howl (doc 51, Phase 6): a howl, or joining one near.
         result = howl(id);
+        report = true;
+    }
+    else if (type == "board")
+    {
+        boardCommand(c, j, result);                 // Notice boards (doc 54, 2).
+        report = !result.message.empty();
+    }
+    else if (type == "lodge")
+    {
+        lodgeCommand(c, j, result);                 // Renting by individuals (doc 54, 4).
+        report = true;
+    }
+    else if (type == "archive")
+    {
+        archiveCommand(c, j, result);               // Archive work (doc 54, 7).
+        report = !result.message.empty();
+    }
+    else if (type == "journal")
+    {
+        sendJournal(c);                             // Lore, bestiary, herbarium, places (doc 54, 7).
+        return;
+    }
+    else if (type == "festival")
+    {
+        festivalCommand(c, j, result);              // Festivals' contests (doc 54, 6).
+        report = !result.message.empty();
+    }
+    else if (type == "table")
+    {
+        tableCommand(c, j, result);                 // Tavern games (doc 54, 5).
+        report = !result.message.empty();
+    }
+    else if (type == "stall")
+    {
+        stallCommand(c, j, result);                 // Market stalls (doc 54, 3).
+        report = !result.message.empty();
+    }
+    else if (type == "perform")
+    {
+        performCommand(c, j, result);               // Performing in a common room (doc 54, 1).
         report = true;
     }
     else if (type == "pact")

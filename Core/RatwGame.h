@@ -32,6 +32,7 @@
 #include "RatwNewcomers.h"
 #include "RatwDocuments.h"
 #include "RatwSocialCore.h"
+#include "RatwTavernGames.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
 #include "RatwWorld.h"
@@ -138,6 +139,8 @@ struct Options
     int ambientModelCallsPerHour = 0;
     // Residents' letters (doc 55, 5) polished by the light model: at most this many an hour; 0 (the default): templates.
     int letterModelCallsPerHour = 0;
+    // Performing (doc 54, 1): how long a performer may be quiet, and perform at most (real seconds). Tests shorten them.
+    double performQuietSeconds = 120, performLongestSeconds = 1800;
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
@@ -218,6 +221,8 @@ class Game
     // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
     // tick does this as it goes, without waiting).
     void settle();
+    // Held for a story (doc 54, 4): what a DM's estate.hold does, for tools and tests.
+    Result holdForStory(const std::string& cell, double days, const std::string& reason) { return holdPlace(cell, days, reason); }
     // A character held still by the host (tests): no walking of any kind until released. A fighter in an arena, and
     // anyone Downed, are held so by the world's fights (doc 33) without it.
     void setFighting(const std::string& id, bool fighting);
@@ -729,7 +734,7 @@ class Game
     // resident or a till; read newest first, within what is held.
     void moveScents(const std::string& from, const std::string& to, const std::string& item, int quantity, bool giverScent);
     void addScent(const std::string& who, const std::string& item, int quantity, const std::string& maker, const std::string& giver);
-    std::string scentOfItem(const std::string& viewer, const std::string& owner, const std::string& item) const;
+    std::string scentOfItem(const std::string& viewer, const std::string& owner, const std::string& item, int held = -1) const;
     // The maker's scent (doc 55, 4): a good bought from a shop whose business makes it carries its keeper's scent.
     void makersScent(const std::string& buyer, const std::string& seller, const std::string& item, int quantity);
     // Grooming (doc 55, 7; RatwGameFavours.cpp): asked of a wolf within 1.5 tiles, both still and out of a fight; a
@@ -819,6 +824,199 @@ class Game
     std::set<std::string> carried_;                 // Letters in a friend's keeping, by id.
     std::uint64_t nextPact_ = 1;
     bool pactCommand(Connection* c, const json::Value& j, Result& result);
+    // Taverns (doc 54, 1; RatwTaverns.cpp): common rooms (the inns' cells) with their company counted every 5 s for the
+    // world's rest; performing (sing, a tale, an instrument carried) while the performer keeps at it every 2 minutes, up
+    // to 30, then 10 to rest; one performer a room. A full rest needs a bed the wolf has a right to (World::setBedRight).
+    struct Performance
+    {
+        std::string cell, kind;
+        double started = 0, lastSaid = 0;
+    };
+    std::map<std::string, Performance> performers_;
+    std::map<std::string, double> performRestUntil_, lastActiveReal_;
+    double tavernsAccumulator_ = 0;
+    bool performCommand(Connection* c, const json::Value& j, Result& result);
+    void tendTaverns(double dt);
+    bool hasBedRight(const std::string& id, const std::string& cell) const;
+    // Renting by individuals (doc 54, 4; RatwLodgings.cpp): a bed upstairs at an inn (a night to noon, or a week, rent
+    // to the inn's till); a lodger's spare bed in a resident's home (a week, to the head's purse); the inn's whole
+    // upstairs for a night (to 06:00); a place listed for individuals (a night or a week). Each with a small chest
+    // (`let:<id>`). Held for a story, new lodgings are refused and running ones get a week's notice, the rest refunded
+    // or owed. A renter of a whole place may open its doors for a night.
+    struct Lodging
+    {
+        std::string id, holder, cell, kind, landlord, account, period, town;
+        int x = -1, y = -1;                         // The bed (a bed or a lodger's); -1 for a whole place.
+        std::int64_t rent = 0;
+        double paidTo = 0, noticeUntil = -1;
+        bool open = false;
+        std::set<std::string> guests;
+    };
+    struct Hold
+    {
+        double until = 0;
+        std::string reason;
+    };
+    std::vector<Lodging> lodgings_;
+    std::map<std::string, Hold> holds_;             // By cell.
+    std::uint64_t nextLodging_ = 1;
+    bool lodgeCommand(Connection* c, const json::Value& j, Result& result);
+    json::Value lodgingView(const std::string& viewer);
+    void tendLodgings();
+    void endLodging(std::size_t index, const std::string& why, std::int64_t refund);
+    const Lodging* lodgingOf(const std::string& holder) const;
+    const Lodging* wholeLodgingAt(const std::string& cell) const;
+    const estate::Property* innUpstairs(const std::string& cell) const;
+    Result holdPlace(const std::string& cell, double days, const std::string& reason);
+    void lodgingsSave(json::Value& root) const;
+    void lodgingsLoad(const json::Value& saved);
+    // The library and the archive (doc 54, 7; RatwArchive.cpp): work where a keeper of records is at its post (posts from
+    // Data/Lore/archives.json): sorting six records by their clues (the server keeps the order and checks it; three
+    // tries), or copying at a desk for five minutes, sitting. 2p a task from the town, 4 a game day; each finished task
+    // shows the next lore fragment of the archive's town (Data/Lore/fragments.json), else a shared one. The journal:
+    // lore, bestiary, herbarium and places; a wolf who has read a town's records is known to its residents as a scholar.
+    struct ArchiveTask
+    {
+        std::string kind, cell, rule;
+        std::vector<std::pair<std::string, std::string>> records;   // (id, words), as shown: shuffled.
+        std::vector<std::string> answer;             // The ids in order: never sent.
+        double begun = 0;                            // World seconds.
+        int tries = 0;
+    };
+    std::map<std::string, ArchiveTask> archiveTasks_;   // By character.
+    std::map<std::string, int> archiveToday_;        // "who|day": tasks done today.
+    std::map<std::string, std::vector<std::string>> archiveKeepers_;   // By cell: residents holding a records post there.
+    double archivesAt_ = -1;
+    bool archiveCommand(Connection* c, const json::Value& j, Result& result);
+    void tendArchive();
+    void refreshArchives();
+    bool archiveKeeperHere(const std::string& cell);
+    void sendArchiveTask(Connection* c, const ArchiveTask& t);
+    void finishArchiveTask(Connection* c, const ArchiveTask& t, std::int64_t pay, const std::string& how);
+    void sendJournal(Connection* c);
+    std::string scholarBriefing(const std::string& npc, const std::string& player);
+    // Festivals that draw players (doc 54, 6; RatwFestivals.cpp): on a town's festival day, the feast from noon (a meal
+    // from the town's store, once), rested time for each hour at the square, and the programme's contests: races at 1,
+    // tug-of-war at 2, howling at 3, the sparring tourney at 4, the hunting contest from noon to 5, storytelling at 7.
+    // Entry 1p into the contest's pot (`fest:<town>:<day>:<contest>`), two or three residents entering too, and the
+    // town adding to the pot from its own purse (the user, 2026-10-08); two thirds to the winner, a third to the second.
+    struct Contest
+    {
+        std::string kind;
+        std::vector<std::string> entrants;
+        std::map<std::string, std::int64_t> paid;   // Entry pennies, by who paid ("" the town's share).
+        bool begun = false, done = false;
+        double begunAt = 0, turnAt = 0, marker = 0; // World seconds; a tug's marker (tiles toward team 0).
+        std::map<std::string, double> score;        // What ranks them: a race's time, a howl's carry, a kill's worth.
+        std::map<std::string, int> mark, team;      // A racer's next mark; a hauler's team (0 or 1).
+        std::map<std::string, long> pulledBeat;     // A hauler's last pull on the beat.
+        std::map<std::string, std::string> cheered; // Howling: who each cheerer cheered.
+        std::map<std::string, std::set<std::string>> givers;   // Storytelling: each teller's star givers.
+        std::vector<std::string> bracket;           // The tourney's wolves still in it.
+        std::vector<Spot> marks;                    // The race's marks.
+        std::size_t turn = 0;
+        long beat = 0;
+        std::vector<std::string> winners;           // First, then second.
+        std::string result;
+    };
+    struct Fair
+    {
+        std::string community, name;
+        std::int64_t day = 0;
+        std::map<std::string, Contest> contests;
+        std::set<std::string> fed, rested;          // Fed at the feast; "who|hour" given rested time.
+    };
+    std::map<std::string, Fair> fairs_;             // "community|day".
+    double fairsAccumulator_ = 0;
+    bool festivalCommand(Connection* c, const json::Value& j, Result& result);
+    void tendFestivals(double dt);
+    json::Value festivalSelf(const std::string& viewer);
+    json::Value festivalBoard(const std::string& community);
+    std::string festivalOn(const std::string& community, std::int64_t day) const;
+    Fair* fairToday(const std::string& community);
+    bool atSquare(const Entity& e, const std::string& community);
+    void beginContest(Fair& f, Contest& c);
+    void runContest(Fair& f, Contest& c);
+    void endContest(Fair& f, Contest& c, const std::vector<std::string>& ranked, const std::vector<std::string>& losers = {});
+    void festivalStar(const std::string& giver, const std::string& recipient);
+    void festivalSay(const std::string& community, const std::vector<std::string>& also, const std::function<std::string(const std::string&)>& line);
+    std::string festivalBriefing(const std::string& npc, const std::string& player);
+    std::string festivalCrier(const std::string&) const { return {}; }   // Doc 56's slot at 8: nothing until then.
+    // Tavern games (doc 54, 5; RatwGameTables.cpp; the rules in RatwTavernGames.cpp): at a table (`T`) in a common room
+    // or an opened venue, within 1.5 tiles. One starts a game, others join or a resident is asked from the room (awake,
+    // not at work, 14 or more, 16 for stakes); the game begins with 2 or more. Liar's Bones may be played for 0 to 5p
+    // each, held in `table:<id>` and paid to the winner less a penny to the house (the inn's till). Residents stake only
+    // from 30p or more, 3 staked games a game day, a twentieth of the purse at most. Moves show to the table and
+    // watchers within 4 tiles; playing sharpens a wolf's skill at the game.
+    struct Table
+    {
+        std::string id, cell, game, house;
+        double x = 0, y = 0;                        // The table's tile.
+        std::int64_t stake = 0;
+        std::vector<std::string> seats;
+        bool begun = false;
+        double made = 0, lastMove = 0;              // World seconds.
+        tavern::Rng rng;
+        tavern::Knucklebones knuckles;
+        tavern::WolvesAndDeer board;
+        tavern::LiarsGame liars;
+        std::map<std::string, double> awaySince;    // A seated wolf gone from the table, since.
+        std::vector<std::pair<std::string, std::string>> log;   // Who (named as each viewer knows them) and what.
+    };
+    std::map<std::string, Table> tables_;           // By the table's tile ("cell|x|y").
+    std::map<std::string, int> stakedToday_;        // "resident|day": staked games today.
+    double tablesAccumulator_ = 0;
+    bool tableCommand(Connection* c, const json::Value& j, Result& result);
+    void tendTables(double dt);
+    json::Value tableSelf(const std::string& viewer);
+    std::string tableNear(const Entity& e, int& tx, int& ty);
+    void tableSay(Table& t, const std::string& who, const std::string& what);   // "<who><what>" ("" who: as written).
+    void endTable(Table& t, int winner, const std::string& why);
+    void leaveTable(Table& t, const std::string& who, const std::string& why);
+    void residentTurn(Table& t);
+    std::string seatName(const std::string& viewer, const std::string& who) const;
+    // Market stalls (doc 54, 3; RatwStalls.cpp): on Marketday from 7 to 2 in fair weather, a free stall spot on a city's
+    // square rented for the morning (3p to the town); at most 6 a square (half its spots in a small one), one a wolf.
+    // Wares go into the stall (`stall:<id>`), so nothing listed is sold elsewhere, given or eaten, each with a price.
+    // A sale only while the keeper stands by it and has stirred in the last 10 minutes; at 2 (or in foul weather, the
+    // fee returned) the stall clears and its goods go home.
+    struct Stall
+    {
+        std::string id, keeper, community, cell;
+        double x = 0, y = 0, day = 0;
+        std::int64_t fee = 0, takings = 0;
+        std::map<std::string, std::int64_t> prices;  // Each ware's price apiece; the goods themselves in `stall:<id>`.
+        bool closed = false;                        // Cleared, with goods still to go home (a full purse).
+    };
+    std::vector<Stall> stalls_;
+    std::uint64_t nextStall_ = 1;
+    bool stallCommand(Connection* c, const json::Value& j, Result& result);
+    json::Value stallsView(const std::string& cellId);
+    json::Value stallSelf(const std::string& viewer);
+    void tendStalls();
+    // Residents at players' stalls (doc 54, 3, its second part): once a game hour, grown townsfolk near a kept stall buy
+    // one thing a day there if it is something a household wants and no dearer than in the town's shops.
+    std::set<std::string> stallBuyers_;             // "resident|day": bought at a stall today.
+    double stallBuyersHour_ = -1;
+    void residentsAtStalls();
+    void clearStall(Stall& st, const std::string& why, bool refund);
+    bool marketOpen(const std::string& community);
+    bool keeperPresent(const Stall& st);
+    void stallsSave(json::Value& root) const;
+    void stallsLoad(const json::Value& saved);
+    // Notice boards (doc 54, 2; RatwBoards.cpp): one by each town's square. The work side (the town's contracts) is built
+    // when read; the public side holds players' notices (documents of kind "notice"), a penny to the town, seven game
+    // days, three a writer and thirty a board; residents answer a seeking (or offering) notice's structured `what`, never
+    // its words.
+    std::string boardNear(const std::string& player);          // The community whose board is within 2 tiles, or "".
+    json::Value boardsView(const std::string& cellId);
+    bool boardCommand(Connection* c, const json::Value& j, Result& result);
+    void sendBoard(Connection* c, const std::string& community);
+    void answerNotice(documents::Document& d);
+    std::string noticeAnswerWords(const std::string& viewer, const documents::Document& d) const;
+    std::string whatWords(const std::string& what) const;
+    double noticesDay_ = -1, noticesHour_ = -1;
+    void tendNotices();
     void lettersSave(json::Value& root) const;
     void lettersLoad(const json::Value& saved);
     // Story books (doc 51, Phase 7; RatwGameBooks.cpp): every book by its id, and each character's model calls for

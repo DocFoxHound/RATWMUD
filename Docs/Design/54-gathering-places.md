@@ -1,7 +1,7 @@
 # 54. Gathering places
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (Part 5 except §5.3's training grounds, and Part 10). Nothing
-built. Read doc 48 (Part 5, Part 10 and the Decisions) and docs 38 (rest), 44 (rested time), 42 (town purses, wages),
+Drafted 2026-10-06 as an actionable plan for doc 48 (Part 5 except §5.3's training grounds, and Part 10). Open
+questions answered 2026-10-08 (see "Open questions"); all seven phases built the same day (see "Built"; not yet committed). Read doc 48 (Part 5, Part 10 and the Decisions) and docs 38 (rest), 44 (rested time), 42 (town purses, wages),
 26 (festivals, contracts, residents), 32 (Part 5 and Phase 7: renting), 39 (shops and stalls), 36 (homes), 35 (items),
 30 (towns and talk), 14 (the calendar) and 31 (cost) first. Doc 55 comes before this one: its document store holds
 the notices.
@@ -534,6 +534,357 @@ The server decides; the model only speaks. New lines in `Game::dialogueContext`'
 - **Done when:** a player sorts records in Upper Accord, is paid, reads a fragment, and finds it in their journal.
 - **Cost:** commands only.
 
+## Built
+
+### Phase 1 (2026-10-08): taverns
+
+- **Common rooms** are the inns' cells: where a post of the `inn` business works, the same list doc 55's letters use
+  (`Game::innCells_`, refreshed every five minutes).
+- **Company:** every 5 s (`Game::tendTaverns`, new `Core/RatwTaverns.cpp`) the game tells the world
+  (`World::setCommonRooms`) which common rooms have players in them, which of those were active in the last 10 real
+  minutes (any command; entering counts), and whether a performer is there. Residents never count.
+- **Rest** (`World::restRate`, now read by `restPlayers` in place of the literals):
+  - a bed the wolf has a right to: 1.5;
+  - a common room: 1.25 × `companyFactor` (+10% for each other active player, up to +30%; a performer gives the full
+    +30%), so at best 1.625;
+  - anywhere else still, another's bed included: 0.75.
+  - The common room is a partial rest: no full rest there.
+- **A full rest needs a bed the wolf has a right to** (the user): `World::setBedRight`, wired to `Game::hasBedRight`.
+  For now that is its Chapter's own rented place; Phase 3 adds lodgings and paid inn beds. Without a game (World
+  alone), any bed counts, so the world's own tests stand. Away time counts as a bed rest only in such a bed
+  (`awayInBed` is now `bedIsTheirs`).
+- **Performing** (`perform` with `start` and `stop`; a Perform / Stop performing button shown in a common room):
+  - Sing, tell a tale, or play an instrument carried (mouth pipe, paw drum, hurdy-gurdy, handbell).
+  - One performer a room; the room is told ("Bo begins to sing. The room settles to listen.").
+  - The performer keeps it up by saying or doing anything at least every 2 real minutes, up to 30, then rests 10
+    (`Options::performQuietSeconds` and `performLongestSeconds`, so tests can shorten them). It earns nothing, and a
+    `performance` event is recorded.
+- **Rested time at an inn:**
+  - A wolf leaving the world in a common room is marked `awayAtInn` (saved). On its return (`returnFromAway`) its
+    rested practice gains half again what the time away gave (`0.5 × restedPerDay × time away`), within `restedMost`.
+  - This is doc 49's practice pool (5 a day, at most 30), which replaced doc 44's 50-a-day pool the plan was written
+    against. So ×1.5 means 7.5 a day.
+- **Shown:** the rest label reads "resting in the common room · 1.25", "· 1.63 with company", or "resting (not your
+  bed: a partial rest)" (`self.rest` gains `rate`, `room`, `notYours`). `self.commonRoom`, `company` and `performing`
+  are sent too.
+- **Tests:**
+  - `Tests/gathering_tests.cpp` (new, 15 checks; the three-town fixture now shared with `letters_tests` through
+    `Tests/town_fixture.h`):
+    - 1.25 × 1.2 with two others active, and 1.625 with three; the status shows it;
+    - 0.75 in the street; 1.25 with only residents about; a performer's +30%;
+    - one performer a room, and not in the street; a performer quiet too long trails off;
+    - another's bed in the room gives the room's rest and no full rest, while a world with no game takes any bed;
+    - away a day at the inn: half again the rested practice.
+  - `Client/src/game/taverns.test.ts`: the rest labels.
+  - `tools/client/tavern.mjs` (new): alone 1.25; Perform shows; with Bo, 1.38 with company; Bo sings and the room is
+    told; 1.63 with company. Screenshots in `artifacts/screenshots/tavern/`.
+
+### Phase 2 (2026-10-08): notice boards
+
+- **One by each square** (`World::boardSpot`, new `Core/RatwBoards.cpp`): the nearest open tile 2 to 4 tiles from the
+  square's market point, off its stall spots and doorways, chosen the same way every time and kept. It is sent in the
+  snapshot like home stores (`boards`: id, place, town, how many notices) and drawn as a `¶`. Pointing at it says how
+  many notices are up.
+- **Reading** within 2 tiles (`self.nearBoard`, a Read the board button; the `board` command with `read`, `take`,
+  `post` and `unpost`; a `board` event, shown in `Client/src/ui/hud/board.ts`):
+  - **The work side:** the town's open contracts by `contractsNear`'s rule, with TAKE IT ON (`World::takeContract`).
+    Contracts offered by letter to someone else (doc 55) are left off until their days are out.
+  - **The public side:** players' notices.
+- **Notices** (documents of kind `notice` in doc 55's store, `board` "board:<community>", indexed by board):
+  - The kind (seeking, offering, event, lost and found, other); the text (1 to 280 letters); signed with one's own
+    names or not.
+  - For seeking or offering, a **what** from a fixed list: a good from the catalog (by name or id; `items::allGoods`,
+    new), an apprenticeship in a trade (`items::businesses`, `items::business`, new), a room, or a partner.
+  - A penny to the board's own town (`treasuryOf(community)`, not the capital); 7 game days, taken down once a game
+    hour; at most 3 a writer and 30 a board ("Every pin is taken. Try tomorrow.").
+  - The writer's scent, read as a letter's (doc 55); masked, none. The writer may take it down. A blocked wolf's notices
+    are hidden from the one who blocked them.
+- **Residents answer** the structured *what*, never the text, on posting and again once a game day; one answer a
+  notice; a `notice answered` event.
+  - A good sought: a shop in town whose till has it ("The stall keeper has honey (pot).").
+  - A good offered: a maker in town who uses it.
+  - An apprenticeship: a master of that trade in town who trusts the writer (30) ("… would take on an apprentice; ask
+    at the workshop.").
+  - The answer names the resident as each reader knows it.
+- **The DM:** `board.remove` (a notice taken down, recorded as `notice removed`). `estate.set` and `estate.clear` were
+  handled by the game but missing from the DM tool's `ACTIONS`, the epic's logged bug; all three are now in it.
+- **Not done:**
+  - faction missions on the board (they stay with officials);
+  - rooms answered by households (renting is Phase 3), and the festival programme (Phase 6);
+  - Chapter boards moving into the store (they stay as they were);
+  - a DM screen for boards (the action exists; the app has no panel yet).
+- **Tests:**
+  - `gathering_tests` `boards` (now 31 checks): Ser Ferro's board placed, the same every time; not from across town; the
+    status says it's near; the town's contract listed and taken from the board; a notice pinned with a penny to Ser
+    Ferro, not the capital; read with an unknown scent and "honey"; the stall answers a second notice; the innkeeper
+    would take on an apprentice who has its trust; three a writer; a masked writer leaves no scent; seven days on, the
+    board is bare; money conserved.
+  - `tools/test_dungeon_master.py`: the three actions are for DMs, not viewers.
+  - `tools/client/board.mjs` (new): Ash walks to Upper Accord's board and pins a notice seeking honey; Bo reads it, with
+    its scent line. Screenshots in `artifacts/screenshots/board/`.
+
+### Phase 3 (2026-10-08): renting by individuals, and venues
+
+- **Lodgings** (`Core/RatwLodgings.cpp`, new; the `lodge` command; a LODGINGS / TO LET panel, `lodging.ts`; "Ask to
+  lodge" in a resident's menu). Chapters keep doc 32's leases as they were; individuals' lodgings are their own list
+  (`Game::Lodging`), and the two never share a place.
+  - **A bed upstairs at an inn** (a cell named "<inn>, upstairs", whose landlord is a keeper): a night (to noon) 2p, or a
+    week 10p, to the inn's till; the nearest bed nobody has (`World::bedTiles`, new).
+  - **The whole upstairs for a night** (to 06:00), 8p, to the till: not while a bed there is let, nor the other way round.
+  - **A lodger's bed:** a spare bed in a resident's home, one the household doesn't sleep on (`World::spareBeds`, new).
+    A week, 6p, to the head's own purse. Refused by a head with liking or trust below 0.
+  - **A place listed for individuals:** `estate::Property` gains `individuals` and `night` (saved, and set through
+    `estate.set`'s payload), taken for a night or a week.
+  - One lodging a wolf. Nothing else is offered, so seats of power, churches, guardhouses and lived-in places never are.
+  - Rent is a `Society::shift` (kind "rent"). A week renews from the renter's purse at its end, or ends; a night ends at
+    its hour.
+  - **The chest** (`let:<id>`, a new facility prefix): 10 kinds and 20 lb. At the end its goods go to the renter, or to
+    the landlord if they won't fit (the plan's 28 days' wait wasn't built).
+- **Rights:** a lodging's bed (or any bed in a whole place) is a bed the wolf has a right to (`hasBedRight`), so it gives
+  a full rest, and leaving the world in an inn's bed counts as away at the inn (rested ×1.5). Letters go to the
+  lodging's town first (doc 55's post town).
+- **Venues:** a renter of a whole place or the upstairs may OPEN THE DOORS for the night (`mayEnterPlace` lets anyone
+  in) and keep 3 guests. An opened place counts as a common room (company, and performing there).
+- **Held for a story** (DM actions `estate.hold` with days and a reason, and `estate.release`; `Game::holdForStory` for
+  tools and tests):
+  - New lodgings there are refused ("The landlord has promised it to someone.").
+  - Running ones get a week's notice, then end with the rest of the rent returned from the landlord, or owed
+    (`Bonds::addOwed`) if it can't pay.
+- **Saved** in the people root (`lodgings`, `holds`). Migration `0045_lodgings.sql` gives lodgings their own table; it is
+  written, not applied.
+- **Tests:** `gathering_tests` `lodgings` (now 46 checks; the fixture gains an optional upstairs room with beds):
+  - three offers upstairs; a bed for the night for 2p; the whole upstairs refused while a bed is let;
+  - her bed rests her fully (1.5) and isn't Bo's;
+  - a meal in her chest; back from a night away in her own bed, fully rested;
+  - the night over, the lodging ends and the meal comes home;
+  - a resident lets its spare bed for 6p to its own purse; a head who dislikes Bo won't;
+  - held for a story: a week's notice, ended, no new lodging there; money conserved.
+- **Not done:**
+  - a lodger's notice when the household grows (no birth event yet);
+  - the profile's residence line, and landlords' briefing lines;
+  - the DM app's Places panel (the actions exist);
+  - a browser check (the test world's upstairs room isn't walkable).
+
+### Phase 4 (2026-10-08): market stalls
+
+- **Renting** (`Core/RatwStalls.cpp`, new; the `stall` command; a MARKET STALL panel, `stall.ts`; a pennant over a let
+  stall on the map):
+  - On Marketday from 7 to 2, in fair weather, a wolf standing at a stall spot on a city's square (`World::stallSpots`,
+    the built stalls' spots) sees RENT THIS STALL FOR TODAY · 3p, paid to the town's treasury.
+  - At most 6 a square (half its spots, if it has fewer than 12), one a wolf, one wolf a spot.
+- **Merchants and let spots:** a let spot is left out of Marketday's plan (`World::setLetStalls`, filtered in
+  `World::dayPlan`), so merchants set up at the others. Two may share a spot, as before.
+  - `RatwResidents.cpp` needed no change: `tradingAt` already picks only from the plan's spots.
+  - This differs from the plan's rule ("free spots are those no merchant is sent to"). A player may take any spot no
+    player has, and a merchant whose spot it was picks another. Under the plan's rule, a busy square would have had
+    almost no free spots.
+- **Wares:**
+  - Goods from the purse (not worn, nor lent: `spareOf`), up to 10 kinds, each with a price apiece from 1 to 999p.
+  - They move into the stall (`stall:<id>`, a new facility prefix) rather than being "reserved" in the purse. The
+    effect is the same: what is listed can't be sold to a merchant, given or eaten until it's taken off.
+  - The keeper may change a price, or take wares off, while within 3 tiles; PACK UP ends the day early (no refund).
+- **Buying:**
+  - A wolf within 2 tiles sees the wares, prices and scent (doc 55's records stay with the keeper and pass to the
+    buyer). BUY works only while the keeper stands within 3 tiles and has stirred in the last 10 minutes.
+  - Goods and coins move at once (`Society::shift`, "stall sale", refused past 64 kinds; undone if the coins fail).
+  - The keeper is told who bought what.
+- **Residents buying** (the plan's second part; built in `RatwStalls.cpp` alone, with no change to the economy
+  session's files): once a game hour, grown residents of the stall's own town within 6 tiles of a kept stall look its
+  wares over, once a market day each, and about one in three buy one thing. They buy only:
+  - a treat (food at 3p or more), a household need, finery, care, a pastime or something for the home;
+  - at no more than the town's price (`Society::townPrice`);
+  - within a tenth of what they hold beyond a week's food.
+
+  Three buyers a stall an hour at most. Food goes in the purse, to be eaten as residents eat what they carry; anything
+  else is used.
+- **The end:** at 2 the stall clears and its goods go home. Foul weather clears it too, and the fee comes back from the
+  town. A purse too full to take everything back leaves the rest waiting in the stall until there's room.
+- **Saved** in the people root (`stalls`), with the let spots restored on load. No migration: a stall lasts a morning.
+- **Tests:**
+  - `gathering_tests` `stalls` (now 71 checks):
+    - no stall on another day;
+    - the offer at a free spot; rented for 3p to the town; the spot out of the merchants' plan, and the merchant not
+      sent there; one wolf a spot;
+    - three meals listed, none left to give or eat; Bo sees them with Ash present and buys one; refused with her away;
+    - the 64-kinds refusal; townsfolk buying a household need at 1p;
+    - cleared at 2 with the goods home and the spot back in the plan;
+    - a storm clears the next week's stall with the fee returned, and no stall in a storm; money conserved.
+  - `tools/client/stall.mjs` (the real page, Marketday noon):
+    - Ash rents a stall from the panel and lays out a meal at 4p;
+    - Bo comes up, sees BUY · 4p and buys it; Ash is told.
+- **Not done:** stall takings in the DM's Money tab.
+
+### Phase 5 (2026-10-08): tavern games
+
+- **The rules** (`Core/RatwTavernGames.{h,cpp}`, new, pure, with a seeded random source):
+  - **Knucklebones** as the plan wrote it: 90% at ones to 50% at fives, plus DEX ÷ 400 and skill ÷ 400, capped at
+    98%. Bank or go on; a miss loses what wasn't banked; the first through fives wins.
+  - **Wolves and Deer** on the 33-point cross: two wolves at the top, 13 deer on the bottom three rows, the deer
+    first. Moves go across and down only; the plan's "along the lines" diagonals weren't built. Jumps chain, with
+    STOP JUMPING to end one early. The pack wins at 7 deer taken or when the deer can't move. The herd wins by penning
+    both wolves, or by holding out 200 moves.
+  - **Liar's Bones:** five bones each; bids raise the count, or the face at the same count; a call shows all the bones,
+    and whoever was wrong loses a bone and starts the next round; the last with bones wins. No wild ones.
+  - **Residents' play:** Knucklebones banks by how much is at risk. Wolves and Deer weighs every move: the pack by
+    jumps, threats and room to move, the herd by never leaving a deer to be taken and by closing in. Liar's Bones calls
+    a bid well past what the resident believes, else raises on its best face.
+  - **Skill:** a resident's comes from its age and id (`residentSkill`), so some are sharp. A duller player's
+    reckoning wanders more, rather than making random moves. Tuned by simulation, the pack wins 45 to 53% at any equal
+    skill (53% in the test's 400 games).
+- **The tables** (`Core/RatwGameTables.cpp`, new; the `table` command; an AT THE TABLE panel, `table.ts` and
+  `tableGames.ts`):
+  - **Where:** a `T` tile in a common room (`innCells_`) or an opened venue, within 1.5 tiles.
+  - **Seating:** SET OUT a game; others JOIN (4 seats; Wolves and Deer 2), or are asked by a private message
+    (`invite`). ASK THE ROOM seats the nearest resident who is awake, not at work, not in a fight, and 14 or more
+    (16 for stakes). BEGIN starts the game with two or more.
+  - **A seated resident keeps its seat:** a new errand before its day's plan (`World::seatResident`, read in
+    `World::errand`), let go at the end. A hungry or sleepy resident still goes; gone two minutes, it forfeits.
+  - **Turns:** a resident takes its turn after 2 world seconds.
+  - **What the room sees:** every move goes to the table and to watchers within 4 tiles, and into the table's log,
+    each wolf named as the viewer knows it. Talk is ordinary talk, so it counts toward scenes.
+- **Stakes** (Liar's Bones, 0 to 5p each):
+  - Held in `table:<id>` (a new facility prefix), and paid to the winner less a penny to the house: the inn's till, a
+    venue's landlord, else the town.
+  - Residents stake only from purses of 30p or more, at most 3 staked games a game day, never more than a twentieth
+    of the purse.
+  - **Forfeits:** a wolf gone from the table a minute, or idle ten on its turn, forfeits its stake. With one player
+    left, that one wins; with more, the game breaks up and the pot goes back to those who stayed.
+- **Practice:** `Entity::gameSkills` (0 to 100 a game, saved) grows by 1 each game, or 2 against a better player,
+  slowing near the top: "Your knucklebones sharpened (31)."
+  - Skill affects Knucklebones' catches only.
+  - Against residents, a sharp Liar's Bones player now and then sees a bluffer's tell ("…'s ear twitches."), with a
+    chance of the player's skill ÷ 200 on a bluff.
+- **Tests:**
+  - `tavern_games_tests` (new, 26 checks): the catch chances; banking and misses; the board, deer never stepping back;
+    a chain of jumps; a pen; the balance simulation; Liar's Bones' raises, a call and the last with bones.
+  - `gathering_tests` `tables` (now 88 checks):
+    - Knucklebones between two wolves, played to a winner, with practice;
+    - Liar's Bones for 3p: a resident with no money refused, another seated; 6p in the pot; the winner up 2p and the
+      loser down 3p; the house's penny to the inn's till; the resident kept to its seat, then let go; money conserved;
+    - a wolf leaving Wolves and Deer hands the other the win.
+  - `Client/src/game/tableGames.test.ts`.
+  - `tools/client/tables.mjs` (the real page): at dusk Ash sets out Knucklebones, asks the room, a regular takes a
+    seat, and they play it out to a winner.
+- **Not done:**
+  - Wolves and Deer for 2 against 2;
+  - the ambient director leaving players alone (a seated resident may still talk to others; it doesn't leave);
+  - stakes in the DM's Money tab;
+  - mentors teaching a game (doc 52), and festival tournaments (Phase 6 uses the race, tug, howl and the rest instead).
+
+### Phase 6 (2026-10-08): festivals that draw players
+
+- **The programme** (`Core/RatwFestivals.cpp`, new; the `festival` command; a FESTIVAL panel, `festival.ts`) runs on a
+  town's festival day: the season's 46th, or one a DM called (`Game::festivalOn`, World's own rule). A fair is made when
+  a wolf is in the town that day (`Game::fairs_`).
+  - The panel shows a festival 1 to 3 days ahead, then the day's programme: each slot's state and winner, ENTER · 1p
+    while a contest is open, and what to do now.
+  - The board carries the programme from three days before (`festivalBoard`).
+- **The feast:** from noon, a wolf at the square (within 12 tiles of its middle) is given a meal from the town's store,
+  once.
+- **Rested time:** each game hour at the square from 12 to 23 adds half a day's rested practice (2.5), within its most
+  (30). The plan's "15 an hour" was in doc 44's old units, and would fill the pool in two hours.
+- **Signing up and pots:**
+  - Sign up at the square, the board or the inn until the contest begins: 1p into its pot (`fest:<town>:<day>:<contest>`,
+    a new facility prefix).
+  - Two or three residents of the town enter each contest except the storytelling: grown, awake, not on watch, from
+    purses of 10p or more. Off-duty guards go first into the tourney.
+  - **The town adds to the pot** (the user's answer): 2p an entrant, up to 10p, from its own treasury.
+  - Two thirds of the pot to the winner, a third to the second; a tug's teams share their parts.
+  - With fewer than two entrants, no winner, or the day ending first, every penny goes back to whoever put it in
+    (the town's share to the town).
+- **Winners:** called by "the steward" to everyone at the square and every entrant, recorded as `festival won`, shown in
+  the programme, and known to the town's residents that day (`festivalBriefing`, in the Mind's activity: "At today's
+  Midsummer: a grey wolf won the race.").
+- **The contests:**
+  - **Races (13:00):** four marks, the farthest crowd spot in each quarter round the square, then back to the middle.
+    Racers are timed from where the server has them; residents are timed from DEX and age. Three minutes. The next
+    mark is drawn on the map (⚐).
+  - **Tug-of-war (14:00):** two teams, players spread between them. PULL counts on the beat (every 1.2 s, ±0.35 s) as
+    STR × stamina; each resident pulls on three beats in four. The marker moves by the difference; 3 tiles or a minute
+    decides it.
+  - **Howling (15:00):** in turn, 15 s each. A howl's carry comes from stamina and howling skill (`gameSkills["howl"]`,
+    grown by howling), times a roll. The crowd's cheers add 5% each, at most 30%, one cheer a wolf, never for itself.
+  - **The sparring tourney (16:00):** a bracket of up to 8, a round every half minute, each bout decided from strength,
+    dexterity and a roll, with a line for each yield. **Not real duels yet:** players in the tourney don't fight it out.
+  - **The hunting contest (12:00 to 17:00):** an entrant's best kill, read from a new hook in `World::huntKill`
+    (`World::takeHunted`). Its worth is the species' health × how clean it was: clean 1.5, good 1, rough 0.8, ragged
+    0.6. The plan's quality grades (crude to masterwork) aren't what a kill carries. Residents' kills are rolled.
+  - **Storytelling (19:00):** entrants take the middle in turn, 5 minutes each, then two minutes for stars.
+    - Each wolf at the square gives one star to one teller other than itself: the festival's STAR, a doc 51 star of
+      the kind "festival" counting as stars do. A star given the ordinary way during the contest counts too.
+    - The most different givers wins. With none: "Too quiet a crowd this year."
+  - **20:00 the crier:** doc 56's slot (`festivalCrier`), empty.
+  - **21:00 games at the inn:** the tables (Phase 5), with no tournament bracket.
+- **Tests:**
+  - `gathering_tests` `festivals` (now 110 checks), on a festival called for today:
+    - the programme; sign-ups, once each; the feast once; rested time;
+    - Ash runs the race round its marks home and the winner is called; the tug decided on the beat; the howling with
+      cheers;
+    - the tourney and the hunt among residents;
+    - the storytelling: Cy and Bo star Ash, one star a wolf, not one's own; Ash wins and is paid, with the town's share;
+    - money conserved throughout.
+  - `Client/src/game/festival.test.ts`.
+  - `tools/client/festival.mjs` (the real page): the calendar moved to the festival day at noon; Ash walks to the
+    square, is fed, sees the programme and enters the race from the panel.
+- **Not done:**
+  - **real yield duels in the tourney;**
+  - **festival goods:** the crafting session's `crafts.json` flag;
+  - **Chapter banners** at a stall spot;
+  - **the festival quest** (docs 34 and 58);
+  - **a tavern-game bracket;**
+  - **the DM's Calendar panel;**
+  - **foul weather:** contests run whatever the weather, though residents keep indoors on a foul festival.
+
+### Phase 7 (2026-10-08): the library, the archive and exploration
+
+- **Archive work** (`Core/RatwArchive.cpp`, new; the `archive` command; ARCHIVE WORK and COPY A PAGE in the actions row
+  where a keeper is; a sorting sheet, `archive.ts`):
+  - **Where:** wherever a resident holding a records post is there and awake. The posts are in
+    `Data/Lore/archives.json` (new): the Hall of Records' "copying the city rolls", the Concord Annex's four keepers,
+    the Warden crypt's librarian, and any label with "archive" or "record clerk".
+  - **Sorting:** six records with clues, to be put in order by one of three rules: a year of the old count ("the
+    123rd winter"), a roll's number in old numerals ("Roll XIV"), or the time of year ("taken in late autumn"). The
+    server keeps the order and checks it ("4 of 6 in the right place"); three tries, then the keeper takes them back.
+    The page never has the answer.
+  - **Copying:** five minutes sitting at a desk in the archive; the clock stops when the copier stands. A scholarship
+    check counts the slips: none or one, full pay; more, half.
+  - **Pay:** 2p a task from the town's treasury (`archive work`), 4 a game day. Leaving the archive drops the work.
+    Each finished task grows scholarship (`gameSkills["scholarship"]`).
+- **Lore:**
+  - `Data/Lore/fragments.json` (new): 36 hand-written fragments, a first set for review. Ten are Upper Accord's (the
+    First Oath, the Hall of Concord, the hearings, the Warden Order, the Annex, the Watch, the fountain), eight each
+    are Ser Ferro's and Ridgemere's, and ten are shared by every town. They build only on what worldgen already says,
+    and their dates are "the old count", never the game's calendar.
+  - A finished task shows the next fragment of the archive's own town not yet read (its `after` read first), else a
+    shared one. An archive with nothing new still pays.
+  - Fragments read are kept on the character (`Entity::lore`, saved).
+  - The plan's drafting tool (`tools/lore_library.py`) wasn't built; the fragments were written by hand.
+- **Scholars:** a wolf who has read 10 of a town's fragments (or all it has) gets a line in that town's residents'
+  briefings ("This wolf has read the old records of Ridgemere (the lake, the ice and the pier); you might ask them about
+  the town's history.").
+- **The journal** (a JOURNAL button on the character page; the `journal` command and event):
+  - **Lore:** what has been read, with its topic and town.
+  - **Bestiary:** each species brought down, with the first day and a count (from `World::huntKill`).
+  - **Herbarium:** each forage good the first time it is found, with the season and ground (`World::noteFound`, from
+    `World::forage`).
+  - **Places:** the cells a wolf has been in, counted by town (`Entity::places`, new: doc 44's discovery count went
+    with the levels).
+  - All of these are saved on the character.
+- **Not done:**
+  - **Maps** revealing their region on the travel map (the travel map doesn't read `places`);
+  - **the bestiary's "seen":** only kills are counted;
+  - **the chronicle** (doc 56).
+- **Tests:**
+  - `gathering_tests` `archive` (now 124 checks):
+    - no work away from a keeper; six records, and no answer sent;
+    - the test solves them from the words alone; a wrong order counted; the right one paid 2p by the town, with
+      Upper Accord's first fragment;
+    - four tasks, then "enough for one day"; copying, sitting for five minutes, paid; leaving drops the work;
+    - the journal's lore, herbarium and places; money conserved.
+  - `Client/src/game/archive.test.ts`.
+  - `tools/client/archive.mjs` (the real page): Ash goes to the clerk, asks for work, sorts the records in the sheet
+    with ▲, hands them in, is paid, reads the fragment, and opens the journal.
+
 ## Depends on and feeds
 
 - **Depends on:** doc 55's document store (notices) and scent table (Phases 2 to 4); doc 51's stars and howl
@@ -590,8 +941,9 @@ New placeholder choices in this plan:
 
 ## Open questions
 
-1. **Beds anywhere:** today any bed tile gives a full rest, a resident's own included. Should a full rest need a bed the
-   wolf has a right to (its lodging, a paid inn bed, a camp), so that inns matter more?
-2. **Resident stakes:** should residents gamble with players at all, or should stakes be between players only?
-3. **Festival purses:** are the entrants' pots enough, or should towns fund prizes now (from their purses through the
-   orchestrator, doc 46)?
+All answered by the user, 2026-10-08:
+1. **Beds:** yes. A full rest needs a bed the wolf has a right to: its lodging, a paid inn bed, its Chapter's place, or
+   a camp. Others' beds give a partial rest only.
+2. **Resident stakes:** yes, within the caps (a purse of 30p or more, 3 staked games a game day, a twentieth of the
+   purse at most).
+3. **Festival purses:** towns add to the pot from their own purses, beside the entrants' pennies.

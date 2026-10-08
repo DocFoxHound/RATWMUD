@@ -3403,6 +3403,36 @@ void World::furnishHomes()
     society_.setBunkhouses(std::move(byWorker));
 }
 
+std::vector<std::pair<int, int>> World::bedTiles(const std::string& cellId) const
+{
+    std::vector<std::pair<int, int>> out;
+    const auto* c = cell(cellId);
+    if (!c || !c->loaded)
+        return out;
+    for (int y = 0; y < c->height; ++y)
+        for (int x = 0; x < c->width; ++x)
+            if (const auto* t = c->tile(x, y); t && !t->solid && (t->glyph == 'b' || t->glyph == 'z'))
+                out.push_back({x, y});
+    return out;
+}
+
+std::vector<std::pair<int, int>> World::spareBeds(const std::string& cellId) const
+{
+    // A home's beds nobody of the household is given (placeBeds): what its head may let (doc 54, 4).
+    std::set<std::pair<int, int>> taken;
+    for (const auto& [id, spot] : beds_)
+        if (spot.cell == cellId)
+            taken.insert({int(std::floor(spot.x)), int(std::floor(spot.y))});
+    for (const auto& [id, life] : society_.state().residents)
+        if (life.homeCell == cellId)
+            taken.insert({int(std::floor(life.homeX)), int(std::floor(life.homeY))});
+    std::vector<std::pair<int, int>> out;
+    for (const auto& t : bedTiles(cellId))
+        if (!taken.count(t))
+            out.push_back(t);
+    return out;
+}
+
 void World::placeBeds(const std::string& cellId)
 {
     // Up to four to a bed (doc 36). Each sleeps on the bed their home spot is on while it has room, else on the

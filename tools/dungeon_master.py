@@ -135,6 +135,9 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
            # Steering the economy orchestrator (Docs/Design/46-economy-orchestrator.md, Part 10).
            'economy.steer': 'dm', 'economy.unsteer': 'dm', 'economy.scenario': 'dm',
+           # Notice boards and places to let (Docs/Design/54-gathering-places.md): a notice taken down; a place set to let,
+           # or no longer (the game handled these already; the tool couldn't send them).
+           'board.remove': 'dm', 'estate.set': 'dm', 'estate.clear': 'dm', 'estate.hold': 'dm', 'estate.release': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).

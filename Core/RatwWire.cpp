@@ -288,6 +288,51 @@ Value persistEntity(const Entity& e, double time)
         o.add("wardenStanding", e.wardenStanding);
     if (!e.postTown.empty())
         o.add("postTown", e.postTown);              // (Where its letters wait: doc 55.)
+    if (!e.lore.empty())
+    {
+        auto lore = Value::array();                // The journal (doc 54, 7).
+        for (const auto& id : e.lore)
+            lore.push(id);
+        o.add("lore", lore);
+    }
+    if (!e.bestiary.empty())
+    {
+        auto b = Value::object();
+        for (const auto& [species, seen] : e.bestiary)
+        {
+            auto s = Value::array();
+            s.push(seen.first);
+            s.push(seen.second);
+            b.add(species, s);
+        }
+        o.add("bestiary", b);
+    }
+    if (!e.herbarium.empty())
+    {
+        auto h = Value::object();
+        for (const auto& [item, found] : e.herbarium)
+        {
+            auto f = Value::array();
+            f.push(found.first);
+            f.push(found.second);
+            h.add(item, f);
+        }
+        o.add("herbarium", h);
+    }
+    if (!e.places.empty())
+    {
+        auto p = Value::array();
+        for (const auto& cell : e.places)
+            p.push(cell);
+        o.add("places", p);
+    }
+    if (!e.gameSkills.empty())
+    {
+        auto skills = Value::object();             // Tavern games (doc 54, 5).
+        for (const auto& [game, skill] : e.gameSkills)
+            skills.add(game, skill);
+        o.add("gameSkills", skills);
+    }
     if (e.groomedUntil > 0)
     {
         o.add("groomedUntil", e.groomedUntil);     // Grooming (doc 55, 7).
@@ -299,6 +344,8 @@ Value persistEntity(const Entity& e, double time)
         o.add("groomedOtherDay", e.groomedOtherDay);
     if (e.fedUntil > 0)
         o.add("fedUntil", e.fedUntil), o.add("ateAt", e.ateAt);   // (Meals: doc 55, 6.)
+    if (e.awayAtInn)
+        o.add("awayAtInn", true);                   // (Away at an inn: doc 54, 1.)
     if (e.groomedSelfDay > -1e8)
         o.add("groomedSelfDay", e.groomedSelfDay);
     if (!e.scents.empty())
@@ -481,6 +528,21 @@ Entity readEntity(const Value& o)
     e.vouchedFor = o.string("vouchedFor").substr(0, 128);
     e.wardenStanding = std::clamp(strictNumber(o, "wardenStanding", 0.0), -100.0, 100.0);
     e.postTown = o.string("postTown").substr(0, 128);
+    for (const auto& id : o.array("lore"))
+        if (id.isString() && e.lore.size() < 500)
+            e.lore.push_back(id.asString().substr(0, 64));
+    for (const auto& [species, seen] : o.object("bestiary").fields())
+        if (seen.isArray() && seen.items().size() == 2 && e.bestiary.size() < 200)
+            e.bestiary[species.substr(0, 64)] = {seen.items()[0].asNumber(), int(seen.items()[1].asNumber())};
+    for (const auto& [item, found] : o.object("herbarium").fields())
+        if (found.isArray() && found.items().size() == 2 && e.herbarium.size() < 200)
+            e.herbarium[item.substr(0, 64)] = {found.items()[0].asNumber(), found.items()[1].asString(std::string()).substr(0, 96)};
+    for (const auto& cell : o.array("places"))
+        if (cell.isString() && e.places.size() < 5000)
+            e.places.insert(cell.asString().substr(0, 128));
+    for (const auto& [game, skill] : o.object("gameSkills").fields())
+        if (skill.isNumber() && e.gameSkills.size() < 8 && game.size() <= 32)
+            e.gameSkills[game] = std::clamp(skill.asNumber(), 0., 100.);
     e.groomedUntil = strictNumber(o, "groomedUntil", -1);
     e.groomScentUntil = strictNumber(o, "groomScentUntil", -1);
     e.groomHalf = o.boolean("groomHalf");
@@ -488,6 +550,7 @@ Entity readEntity(const Value& o)
     e.groomedOtherDay = strictNumber(o, "groomedOtherDay", -1e9);
     e.groomedSelfDay = strictNumber(o, "groomedSelfDay", -1e9);
     e.fedUntil = strictNumber(o, "fedUntil", -1);
+    e.awayAtInn = o.boolean("awayAtInn");
     e.ateAt = strictNumber(o, "ateAt", -1);
     for (const auto& s : o.array("scents"))
         if (s.isObject() && e.scents.size() < 60 && !s.string("item").empty() && s.number("count") > 0)

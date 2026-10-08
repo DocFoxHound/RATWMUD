@@ -1136,6 +1136,7 @@ void Game::recordStar(const std::string& kind, const std::string& source, const 
     star.at = now();
     star.xp = xp;
     starBook_.record(star);
+    festivalStar(giver, recipient);                // (The storytelling contest's stars: doc 54, 6.)
     socialViewsDirty_ = true;                      // (The giver's tag chips: doc 51, §2.)
     if (accounts_.exists(star.recipientAccount))
         checkUnlocks(star.recipientAccount);       // (Stars open Quickened: doc 49.)

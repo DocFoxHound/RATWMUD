@@ -19,6 +19,10 @@ import {TiePanel} from './tie.ts';
 import {CombatScreen} from './combat.ts';
 import {PartyPanel} from './party.ts';
 import {PlacePanel} from './place.ts';
+import {LodgingPanel} from './lodging.ts';
+import {StallPanel} from './stall.ts';
+import {TablePanel} from './table.ts';
+import {FestivalPanel} from './festival.ts';
 import {CampPanel} from './camp.ts';
 import {DevConsole} from './devConsole.ts';
 import {noRect, StoryPanel} from './story.ts';
@@ -115,6 +119,10 @@ export class Hud {
     private help: HTMLElement;
     private party: PartyPanel;
     private place: PlacePanel;
+    private lodging!: LodgingPanel;
+    private stall!: StallPanel;
+    private table!: TablePanel;
+    private festival!: FestivalPanel;
     private camp: CampPanel;
     private devConsole: DevConsole;
     private devButton: HTMLButtonElement;
@@ -124,6 +132,10 @@ export class Hud {
     private forageButton!: HTMLButtonElement;
     private leaveHuntButton!: HTMLButtonElement;
     private postButton!: HTMLButtonElement;
+    private performButton!: HTMLButtonElement;
+    private boardButton!: HTMLButtonElement;
+    private archiveButton!: HTMLButtonElement;
+    private copyButton!: HTMLButtonElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
@@ -195,6 +207,14 @@ export class Hud {
         this.leaveHuntButton = button('Give up hunt', 'act', actions, () => act('leaveHunt'));
         // A training ground (doc 53): practice with no partner.
         this.postButton = button('Practise at the post', 'act', actions, () => act('post'));
+        // The town's notice board (doc 54): read it from beside it.
+        this.boardButton = button('Read the board', 'act', actions, () => act('board'));
+        this.archiveButton = button('Archive work', 'act', actions, () => state.send({type: 'archive', verb: 'ask'}));
+        this.archiveButton.title = 'Ask the keeper of records for records to sort (2p, four a day)';
+        this.copyButton = button('Copy a page', 'act', actions, () => state.send({type: 'archive', verb: 'ask', kind: 'copy'}));
+        this.copyButton.title = 'Five minutes sitting at a desk here (2p)';
+        // Performing in a common room (doc 54): those resting there rest better for it.
+        this.performButton = button('Perform', 'act', actions, () => act('perform'));
         // Grooming oneself (doc 55, 7): once a game day, half of every effect for two hours.
         button('Groom yourself', 'act', actions, () => act('groomSelf')).title =
             'Once a game day: for two hours a little less scent, and half of what a grooming by another does';
@@ -218,6 +238,10 @@ export class Hud {
         }, {passive: false});
         this.party = new PartyPanel(side, state);
         this.place = new PlacePanel(side, state);
+        this.lodging = new LodgingPanel(side, state);
+        this.stall = new StallPanel(side, state);
+        this.table = new TablePanel(side, state);
+        this.festival = new FestivalPanel(side, state);
         this.camp = new CampPanel(side, state);
         const sight = el('section', 'panel in-sight', side);
         const sightHead = el('div', 'panel-head', sight);
@@ -308,6 +332,10 @@ export class Hud {
         this.tie.update();
         this.party.update();
         this.place.update();
+        this.lodging.update();
+        this.stall.update();
+        this.table.update();
+        this.festival.update();
         this.camp.update();
         {
             // Out in the wild (doc 41): hunting and foraging where the ground allows; giving up a hunt while in one.
@@ -317,6 +345,17 @@ export class Hud {
             show(this.forageButton, !fighting && bool(wild, 'forage'));
             show(this.leaveHuntButton, hunting && !s.battle?.over);
             show(this.postButton, !fighting && bool(obj(s.snapshot, 'self'), 'trainingGround'));
+            show(this.performButton, !fighting && bool(obj(s.snapshot, 'self'), 'commonRoom'));
+            show(this.boardButton, !fighting && bool(obj(s.snapshot, 'self'), 'nearBoard'));
+            const archive = obj(obj(s.snapshot, 'self'), 'archive');
+            show(this.archiveButton, !fighting && !!archive && !str(archive, 'task'));
+            const copying = str(archive, 'task') === 'copy';
+            show(this.copyButton, !fighting && !!archive && (!str(archive, 'task') || copying));
+            this.copyButton.disabled = copying;
+            this.copyButton.textContent = copying ? `Copying · ${num(archive, 'copied')}% (sit to work)` : 'Copy a page';
+            this.performButton.textContent = str(obj(s.snapshot, 'self'), 'performing') ? 'Stop performing' : 'Perform';
+            this.performButton.title = 'Sing, tell a tale, or play an instrument you carry; keep at it (say or do something every two minutes). ' +
+                'Those resting in the room rest better.';
             this.forageButton.title = 'Forage ' + str(wild, 'forageWhat');
             this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
         }

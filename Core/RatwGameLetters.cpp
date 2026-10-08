@@ -112,6 +112,8 @@ std::string Game::postTownOf(const std::string& id) const
             e = &found->second;
     if (!e)
         return {};
+    if (const auto* l = lodgingOf(id); l && !l->town.empty())
+        return l->town;                             // (Its lodgings' town first: doc 54, 4.)
     if (!e->postTown.empty())
         return e->postTown;
     if (auto here = townFor(e->cellId); !here.empty())
@@ -324,6 +326,16 @@ void Game::tendLetters(double dt)
     tendGrooming();
     tendResidentLetters();
     tendLoans();
+    tendTaverns(1);
+    tendStalls();
+    tendTables(1);
+    tendFestivals(1);
+    tendArchive();                                  // Copying at a desk; places been (doc 54, 7).                               // The festival's feast and contests (doc 54, 6).                                  // Tavern games: residents' turns, forfeits (doc 54, 5).                                   // Market stalls clear at 2, or in foul weather (doc 54, 3).
+    if (const double hour = std::floor(world_.calendarDays() * 24); hour != noticesHour_)
+    {
+        noticesHour_ = hour;
+        tendNotices();                              // Notices come down; unanswered ones looked at again (doc 54, 2).
+    }
     // A letter holding something, unread for 56 game days, goes back to its writer with it (doc 55, 3).
     std::vector<std::string> stale;
     if (const double hour = std::floor(world_.calendarDays() * 24); hour != staleCheckedHour_)   // (Once a game hour.)

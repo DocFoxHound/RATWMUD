@@ -901,6 +901,15 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
     // errand never starves it.
     if (life.task == "eat" || ((life.task == "buy food" || life.task == "fetch food") && life.hunger >= 55))
         return false;
+    // At a tavern game (doc 54, 5): in its seat until the game is done.
+    if (const auto seat = seated_.find(resident); seat != seated_.end() && life.task != "sleep")
+    {
+        task = "playing";
+        reason = seat->second.reason;
+        goalCell = seat->second.cell;
+        goal = {seat->second.x, seat->second.y};
+        return true;
+    }
     // An occasion it hosts (doc 55, 6): a wedding, a funeral, from a little before the hour to its end.
     for (const auto& o : occasions_)
         if (calendarDays_ >= o.start - 1. / 48 && calendarDays_ < o.end && std::find(o.hosts.begin(), o.hosts.end(), resident) != o.hosts.end())

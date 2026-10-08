@@ -459,6 +459,14 @@ class NpcTests(NpcFixture):
                 attempt()
             self.assertEqual(raised.exception.status, 403)
 
+    def test_board_and_estate_actions_are_for_dungeon_masters(self):
+        # Doc 54: a notice taken down, and places set to let or cleared, by a Dungeon Master; never by a viewer.
+        master, viewer = self.sign_in('dm-master'), self.sign_in('dm-viewer')
+        for kind in ('board.remove', 'estate.set', 'estate.clear'):
+            self.dm.allowed(master, kind)
+            with self.assertRaises(D.DMError):
+                self.dm.allowed(viewer, kind)
+
     def test_kill_and_revive_reach_a_running_server_and_the_next_start(self):
         master = self.sign_in('dm-master')
         self.dm.npc_life(master, 'prod', 'sloe', True)

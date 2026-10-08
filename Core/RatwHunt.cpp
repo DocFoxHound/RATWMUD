@@ -715,6 +715,13 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
     const std::string name = names::capitalised(s->name);
     fightLine(b, f.id, killer, "death", name + " falls: " + grade + (fire >= .5 ? ", burnt." : "."));
     recordEvent({"hunted", killer, a->second.species, b.cellId, 0, 0, {}, takenKinds, 0, grade});
+    if (hunted_.size() < 256)
+        hunted_.push_back({killer, a->second.species, grade, calendarDays_});   // (For a festival's hunting contest: doc 54, 6.)
+    if (auto* k = entity(killer); k && !k->npc && k->bestiary.size() < 200)
+    {
+        auto& seen = k->bestiary.try_emplace(a->second.species, calendarDays_, 0).first->second;   // (The bestiary: doc 54, 7.)
+        ++seen.second;
+    }
     // Driven into a partner (doc 53, 1.7): the one it fled drove it, the one who took it lay in wait for it.
     if (a->second.state == "fleeing" && !a->second.from.empty() && a->second.from != killer)
     {
@@ -1018,6 +1025,16 @@ std::vector<World::Track> World::tracksOf(const std::string& player) const
 
 // ------------------------------------------------------------------ Foraging
 
+void World::noteFound(const std::string& player, const std::string& item, const std::string& ground)
+{
+    // The herbarium (doc 54, 7): each forage good the first time it is found, with the season and the ground.
+    auto* e = entity(player);
+    if (!e || e->npc || e->herbarium.count(item) || e->herbarium.size() >= 200)
+        return;
+    static const char* const Seasons[] = {"spring", "summer", "autumn", "winter"};
+    e->herbarium[item] = {calendarDays_, std::string(Seasons[std::clamp(int(calendar::calendarAt(calendarDays_).season), 0, 3)]) + ", " + ground};
+}
+
 Result World::forage(const std::string& player)
 {
     auto* p = entity(player);
@@ -1114,6 +1131,7 @@ Result World::forage(const std::string& player)
         for (const auto& m : joint->members)
             if (m.id != player && time_ - m.lastActed <= together::rules().idleSeconds)
                 ++joint->beatsTogether[player < m.id ? player + "|" + m.id : m.id + "|" + player];
+        noteFound(player, item, pick->ground->name);
         recordEvent({"forage", player, {}, p->cellId, 0, 0, item, total, 0, pick->ground->id});
         return {true, "Together you gather " + std::to_string(total) + " " + lower(Society::itemName(item)) + " from " + pick->ground->name +
                           "; your share is " + std::to_string(mine) + ".",
@@ -1121,6 +1139,7 @@ Result World::forage(const std::string& player)
     }
     if (!society_.create(player, item, count, "foraged"))
         return {false, "You can't carry any more of that.", {}};
+    noteFound(player, item, pick->ground->name);
     recordEvent({"forage", player, {}, p->cellId, 0, 0, item, count, 0, pick->ground->id});
     return {true, "You gather " + std::to_string(count) + " " + lower(Society::itemName(item)) + " from " +
                       pick->ground->name + ".",

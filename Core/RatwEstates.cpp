@@ -122,6 +122,8 @@ Value Estates::save() const
             auto j = Value::object();
             j.add("id", p->id); j.add("name", p->name); j.add("kind", p->kind); j.add("landlord", p->landlord);
             j.add("faction", p->faction); j.add("rent", double(p->rent)); j.add("level", p->level);
+            if (p->individuals)
+                j.add("individuals", true), j.add("night", double(p->night));
             authored.push(j);
         }
     root.add("authored", authored);
@@ -164,7 +166,7 @@ void Estates::load(const Value& saved)
         return;
     const auto place = [](const Value& k) {
         return Property{k.string("id"), k.string("name"), k.string("kind", "hall"), k.string("landlord", "treasury"), k.string("faction"),
-                        std::int64_t(k.number("rent")), int(k.number("level", 2))};
+                        std::int64_t(k.number("rent")), int(k.number("level", 2)), k.boolean("individuals"), std::int64_t(k.number("night"))};
     };
     for (const auto& k : saved.array("authored"))
     {

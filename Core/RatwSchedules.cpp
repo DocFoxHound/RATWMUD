@@ -221,6 +221,10 @@ DayPlan World::dayPlan(const std::string& community)
     if (sq.found)
     {
         plan.stalls = sq.stalls;
+        if (plan.kind == "market" && !letStalls_.empty())   // (Spots let to players: doc 54, 3.)
+            plan.stalls.erase(std::remove_if(plan.stalls.begin(), plan.stalls.end(),
+                                             [&](const Spot& s) { return letStalls_.count(stallKey(s)) > 0; }),
+                              plan.stalls.end());
         plan.foul = skyOf(sq.at.cell) == 2;
         if (plan.kind == "market" || plan.kind == "festival")
             plan.crowd = sq.crowd;
@@ -232,6 +236,19 @@ DayPlan World::dayPlan(const std::string& community)
             plan.pulpit = ch.pulpit;
         }
     return plan;
+}
+
+std::string World::stallKey(const Spot& s)
+{
+    return s.cell + "|" + std::to_string(int(std::floor(s.x))) + "|" + std::to_string(int(std::floor(s.y)));
+}
+
+void World::setLetStalls(std::set<std::string> keys)
+{
+    if (keys == letStalls_)
+        return;
+    letStalls_ = std::move(keys);
+    ++festivalsChanged_;                            // (Plans made again: merchants set up at the spots left.)
 }
 
 std::string World::dayLabel(const std::string& cellId)

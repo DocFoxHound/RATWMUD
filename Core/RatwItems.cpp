@@ -350,6 +350,24 @@ const std::vector<Item>& wearables()
     return catalog().wearables;
 }
 
+const std::vector<Item>& allGoods()
+{
+    return catalog().goods;
+}
+
+const std::vector<Business>& businesses()
+{
+    return catalog().businesses;
+}
+
+const Business* business(const std::string& id)
+{
+    for (const auto& b : catalog().businesses)
+        if (b.id == id)
+            return &b;
+    return nullptr;
+}
+
 std::vector<std::string> slotsFor(const Item& item)
 {
     if (item.slot == "head" || item.slot == "body" || item.slot == "harness" || item.slot == "paws")

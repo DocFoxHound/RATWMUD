@@ -317,6 +317,8 @@ json::Value Game::peopleSave() const
     vouchesSave(root);                              // Vouches and first evenings (doc 52, 6 and 7).
     lettersSave(root);                              // The document store: letters (doc 55).
     loansSave(root);                                // Loans (doc 55, 8).
+    lodgingsSave(root);                             // Lodgings and holds (doc 54, 4).
+    stallsSave(root);                               // Market stalls (doc 54, 3).
     return root;
 }
 
@@ -347,5 +349,7 @@ void Game::peopleLoad(const json::Value& saved)
     vouchesLoad(saved);
     lettersLoad(saved);
     loansLoad(saved);
+    lodgingsLoad(saved);
+    stallsLoad(saved);
 }
 } // namespace ratw::game

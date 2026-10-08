@@ -72,6 +72,10 @@ bool furSpot(const std::string& spot);
 bool spotAllowed(const Item& item, const std::string& spot);
 // The kind of shop a shopkeeper keeps, from the words of their work label ("keeping the tailor shop"), or null.
 const Business* businessFor(const std::string& workLabel);
+// Every good in the catalog, every business, and a business by its id (null if none): for players' notices (doc 54).
+const std::vector<Item>& allGoods();
+const std::vector<Business>& businesses();
+const Business* business(const std::string& id);
 // The wearables a business sells, by id or category, in catalog order.
 std::vector<std::string> wearablesSold(const Business& business);
 // Any item of the catalog (wearable or not), or null.

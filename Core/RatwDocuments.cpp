@@ -115,6 +115,16 @@ json::Value save(const Document& d)
         o.add("contract", d.contract);
     if (!d.occasion.empty())
         o.add("occasion", d.occasion), o.add("answer", d.answer);
+    if (!d.board.empty())
+    {
+        o.add("board", d.board);
+        o.add("noticeKind", d.noticeKind);
+        if (!d.what.empty())
+            o.add("what", d.what);
+        o.add("expires", d.expires);
+        if (!d.answeredBy.empty())
+            o.add("answeredBy", d.answeredBy), o.add("answeredHow", d.answeredHow);
+    }
     if (!d.pact.empty())
     {
         o.add("pact", d.pact);
@@ -167,6 +177,12 @@ Document load(const json::Value& v)
     d.occasion = v.string("occasion").substr(0, 128);
     d.answer = std::clamp(int(v.number("answer")), -1, 1);
     d.pact = v.string("pact").substr(0, 64);
+    d.board = v.string("board").substr(0, 128);
+    d.noticeKind = v.string("noticeKind").substr(0, 16);
+    d.what = v.string("what").substr(0, 128);
+    d.expires = v.number("expires");
+    d.answeredBy = v.string("answeredBy").substr(0, 128);
+    d.answeredHow = v.string("answeredHow").substr(0, 32);
     d.party = v.string("party").substr(0, 128);
     for (const auto& s : v.array("seals"))
         if (s.isString() && d.seals.size() < 8)
@@ -191,7 +207,10 @@ Document& Store::add(Document d)
         d.id = "doc-" + std::to_string(next++);
     erase(d.id);
     auto& at = docs_[d.id] = std::move(d);
-    byReader_.emplace(at.to, at.id);
+    if (at.board.empty())
+        byReader_.emplace(at.to, at.id);
+    else
+        byBoard_.emplace(at.board, at.id);
     byAuthor_.emplace(at.author, at.id);
     if (at.state == "travelling")
         queue_.insert({at.deliverAt, at.id});
@@ -229,6 +248,7 @@ void Store::erase(const std::string& id)
     };
     drop(byReader_, it->second.to);
     drop(byAuthor_, it->second.author);
+    drop(byBoard_, it->second.board);
     queue_.erase({it->second.deliverAt, id});
     docs_.erase(it);
 }
@@ -238,6 +258,7 @@ void Store::clear()
     docs_.clear();
     byReader_.clear();
     byAuthor_.clear();
+    byBoard_.clear();
     queue_.clear();
 }
 
@@ -278,6 +299,16 @@ std::vector<const Document*> Store::fromAuthor(const std::string& author) const
     for (auto [a, b] = byAuthor_.equal_range(author); a != b; ++a)
         if (const auto* d = find(a->second))
             out.push_back(d);
+    return out;
+}
+
+std::vector<const Document*> Store::onBoard(const std::string& board) const
+{
+    std::vector<const Document*> out;
+    for (auto [a, b] = byBoard_.equal_range(board); a != b; ++a)
+        if (const auto* d = find(a->second))
+            out.push_back(d);
+    std::sort(out.begin(), out.end(), [](const Document* x, const Document* y) { return x->written > y->written; });
     return out;
 }
 

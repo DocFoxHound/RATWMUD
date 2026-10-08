@@ -22,6 +22,9 @@ export function restLabel(self: Maybe): string {
     const rest = obj(self, 'rest');
     if (!rest) return '';
     const hours = num(rest, 'hours'), full = num(rest, 'full', 6);
+    // A common room (doc 54): its rate with company; another's bed: a partial rest only.
+    if (bool(rest, 'room')) return `  ·  resting in the common room · ${num(rest, 'rate').toFixed(2)}${num(rest, 'rate') > 1.25 ? ' with company' : ''}`;
+    if (bool(rest, 'notYours')) return '  ·  resting (not your bed: a partial rest)';
     if (!bool(rest, 'bed')) return '  ·  resting (no bed: a partial rest)';
     return hours >= full ? '  ·  fully rested' : `  ·  resting in a bed · ${hours.toFixed(1)} of ${full} h`;
 }

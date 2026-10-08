@@ -24,6 +24,9 @@ struct Property
     std::string faction;                          // Who claims it ("" for none).
     std::int64_t rent = 0;                        // Pennies a game week.
     int level = 2;                                // The Chapter level it needs (doc 32, 3.4).
+    // To let to individuals too (doc 54, 4): a wolf may take it by the week (`rent`) or the night (`night`).
+    bool individuals = false;
+    std::int64_t night = 0;
 };
 
 struct Notice
