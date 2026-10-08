@@ -1648,8 +1648,9 @@ battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, con
     // Scent: down the wind to it (the air carrying the sneak's scent); in still air or across it, only close.
     {
         const auto wind = windAt(cellId);
+        // (A groomed wolf is smelt from less far: its scent scale, doc 55, 7.)
         const double nose = std::max(0.0, oe.smell) * std::clamp(oe.noseHealth, 0.0, 1.0) *
-                            (1 + .75 * std::clamp(oe.scentSkill / 100, 0.0, 1.0)) * smellMul * env.scent;
+                            (1 + .75 * std::clamp(oe.scentSkill / 100, 0.0, 1.0)) * smellMul * env.scent * std::max(scentScale(te), .0);
         if (wind.strength < .05 || d < 1e-9)
             out.scent = fade(d, 1.2 * nose);
         else
@@ -3293,7 +3294,8 @@ void World::restPlayers(double dt)
             // Rest heals injuries (doc 38): lying in a bed fastest, still anywhere half that, up and about a little.
             const bool fighting = e.downedLeft > 0 || (!battles_.empty() && inBattle(id));
             const bool sprinting = effectivePace(e) >= 9 && std::hypot(e.velocity.x, e.velocity.y) > .05;
-            healInjuries(e, dt / battle::RestHourSeconds * (fighting || sprinting ? 0 : still ? (inBed(e) ? 1.5 : .75) : .25));
+            healInjuries(e, dt / battle::RestHourSeconds * (fighting || sprinting ? 0 : still ? (inBed(e) ? 1.5 : .75) : .25) *
+                                (1 + .1 * groomedFactor(e)) * (1 + .05 * fedFactor(e)));   // (Well-groomed a tenth faster, fed 5%: doc 55.)
         }
         if (!still || e.downedLeft > 0 || (!battles_.empty() && inBattle(id)))
         {
@@ -3337,6 +3339,8 @@ void World::fullRest(Entity& e)
     e.downsSinceRest = 0;
     e.recoveryUsed = -1;
     e.fullRestDay = calendarDays_;
+    if (e.groomedUntil > calendarDays_)
+        e.groomedUntil = calendarDays_;             // (Well-groomed lasts until the next full rest: doc 55, 7.)
 }
 
 void World::returnFromAway(Entity& e)
@@ -3345,6 +3349,10 @@ void World::returnFromAway(Entity& e)
         return;
     const double away = std::max(0.0, (calendarDays_ - e.awaySince) * calendar::SecondsPerDay);
     const bool bed = e.awayInBed;
+    const double awaySpan = std::max(1e-9, calendarDays_ - e.awaySince);
+    const double awayGroomed = e.groomedUntil > e.awaySince
+                                   ? (e.groomHalf ? .5 : 1.) * std::clamp((std::min(e.groomedUntil, calendarDays_) - e.awaySince) / awaySpan, 0., 1.)
+                                   : 0.;
     e.awaySince = -1;
     e.awayInBed = false;
     // Down when they left: the time away counts it down, and none of it is rest.
@@ -3357,7 +3365,8 @@ void World::returnFromAway(Entity& e)
         e.restRun = e.bedRun = 0;
         return;
     }
-    healInjuries(e, away / battle::RestHourSeconds * (bed ? 1.5 : .75));   // Time away heals as rest (doc 38).
+    // Time away heals as rest (doc 38); a tenth faster for the part of it Well-groomed lasted (doc 55, 7).
+    healInjuries(e, away / battle::RestHourSeconds * (bed ? 1.5 : .75) * (1 + .1 * awayGroomed));
     const double hours = away / battle::RestHourSeconds * battle::AwayRestRate;
     e.restRun += hours;
     if (!bed)

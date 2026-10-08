@@ -1,0 +1,54 @@
+{
+  "format": "ratw-letters",
+  "about": "Residents' letters (Docs/Design/55-letters-gifts-favours.md, 5): the rules decide who writes, why, and what comes with it; these are the words, by kind and by how warmly the resident feels (warm: liking 70 or more; plain: 40 or more; brief: a resident who trusts more than it likes). Blanks: {to} the player as the resident knows them; {deed} what they did; {gift} the gift's line or nothing; {from} the signature; {place} where a letter goes; {reward} the pennies; {days} how long it is held for them; invitations (wedding, funeral): {when} {place} {couple} {deceased}. The light model may only polish them (Options::letterModelCallsPerHour), keeping every name, number and place.",
+  "thanks": {
+    "warm": [
+      "{to},\n\nI keep coming back to {deed}. You didn't have to, and you did, and I won't forget it.{gift}\n\nWith thanks,\n{from}",
+      "{to},\n\nA line to say thank you, properly, for {deed}. It meant more than I let on at the time.{gift}\n\nWarmly,\n{from}"
+    ],
+    "plain": [
+      "{to},\n\nThank you for {deed}. It was good of you.{gift}\n\n{from}",
+      "{to},\n\nI wanted you to know I was grateful for {deed}.{gift}\n\n{from}"
+    ],
+    "brief": [
+      "{to},\n\nFor {deed}: thank you. I don't say it often.{gift}\n\n{from}"
+    ]
+  },
+  "gift": [
+    " I've put {gift} in with this. It isn't much.",
+    " There's {gift} with this, for your trouble."
+  ],
+  "request": {
+    "warm": [
+      "{to},\n\nI have a letter that needs carrying to {place}, and I'd sooner it went with you than with a stranger off the board. {reward} pennies, if you'll take it on. I'll hold it for you {days} days before it goes up for anyone.\n\n{from}"
+    ],
+    "plain": [
+      "{to},\n\nThere's a letter of mine to go to {place}: {reward} pennies for carrying it. You're the one I'd ask first; it's yours for {days} days, then it goes on the board.\n\n{from}"
+    ],
+    "brief": [
+      "{to},\n\nA letter to {place}. {reward} pennies. Yours for {days} days if you want it.\n\n{from}"
+    ]
+  },
+  "wedding": {
+    "warm": [
+      "{to},\n\nWe're to be married, {couple} and I, on {when}, at {place}. It wouldn't feel right without you there. Will you come and stand witness?\n\n{from}"
+    ],
+    "plain": [
+      "{to},\n\n{couple} and I are marrying on {when}, at {place}. You'd be welcome.\n\n{from}"
+    ],
+    "brief": [
+      "{to},\n\nA wedding: mine, {when}, {place}. Come if you can.\n\n{from}"
+    ]
+  },
+  "funeral": {
+    "warm": [
+      "{to},\n\nWe're laying {deceased} to rest on {when}, at {place}. You knew how much they meant. I'd be glad of you there.\n\n{from}"
+    ],
+    "plain": [
+      "{to},\n\n{deceased} is to be buried on {when}, at {place}. You'd be welcome among us.\n\n{from}"
+    ],
+    "brief": [
+      "{to},\n\n{deceased}'s burial: {when}, {place}.\n\n{from}"
+    ]
+  }
+}

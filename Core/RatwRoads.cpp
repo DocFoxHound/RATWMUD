@@ -289,12 +289,32 @@ Result World::takeContract(const std::string& player, const std::string& contrac
                 {
                     if (c.poster == player)
                         return {false, "That is your own contract.", c.id};
+                    if (!c.offeredTo.empty() && c.offeredTo != player && c.offeredUntil > calendarDays_)
+                        return {false, "That work has been offered to someone else for now.", c.id};
                     c.status = "taken";
                     c.taker = player;
                     recordEvent({"contract taken", player, c.poster, {}, 0, 0, {}, 0, c.reward, c.kind + ": " + c.detail});
                     return {true, "You take on: " + c.detail + (c.reward ? " (" + std::to_string(c.reward) + " pennies)" : "") + ".", c.id};
                 }
     return {false, "There is no such work to be had here.", contractId};
+}
+
+Result World::takeOfferedContract(const std::string& player, const std::string& contractId)
+{
+    // Offered by letter (doc 55, 5): the one it was offered to takes it on from wherever they are, while it holds.
+    for (auto& c : roads_.contracts)
+        if (c.id == contractId)
+        {
+            if (c.status != "open")
+                return {false, "Someone has taken that work already, or it is done.", c.id};
+            if (c.offeredTo != player)
+                return {false, "That work wasn't offered to you.", c.id};
+            c.status = "taken";
+            c.taker = player;
+            recordEvent({"contract taken", player, c.poster, {}, 0, 0, {}, 0, c.reward, c.kind + ": " + c.detail});
+            return {true, "You take on: " + c.detail + (c.reward ? " (" + std::to_string(c.reward) + " pennies)" : "") + ".", c.id};
+        }
+    return {false, "That work is gone.", contractId};
 }
 
 Result World::completeContract(const std::string& contractId, const std::string& by)
@@ -881,6 +901,17 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
     // errand never starves it.
     if (life.task == "eat" || ((life.task == "buy food" || life.task == "fetch food") && life.hunger >= 55))
         return false;
+    // An occasion it hosts (doc 55, 6): a wedding, a funeral, from a little before the hour to its end.
+    for (const auto& o : occasions_)
+        if (calendarDays_ >= o.start - 1. / 48 && calendarDays_ < o.end && std::find(o.hosts.begin(), o.hosts.end(), resident) != o.hosts.end())
+        {
+            const auto at = std::size_t(std::find(o.hosts.begin(), o.hosts.end(), resident) - o.hosts.begin());
+            task = o.kind == "wedding" ? "at a wedding" : o.kind == "funeral" ? "at a funeral" : "at a gathering";
+            reason = o.kind == "wedding" ? "Their wedding, at the church." : "Mourning, at the church.";
+            goalCell = o.cell;
+            goal = {o.x + double(at % 3) - 1, o.y + 1 + double(at / 3)};
+            return true;
+        }
     // To another town's market, to renegotiate a standing order (RatwTrade.cpp); not by night.
     static const std::vector<std::size_t> none;
     const auto ordersOf = errandOrders_.find(resident);

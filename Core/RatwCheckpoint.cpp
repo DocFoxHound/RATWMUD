@@ -135,6 +135,7 @@ Value roads(const RoadsState& r)
         {
             j.add("item", k.item); j.add("quantity", k.quantity); j.add("delivered", k.delivered);
             if (!k.source.empty()) { j.add("source", k.source); j.add("carried", k.carried); }
+            if (!k.offeredTo.empty()) { j.add("offeredTo", k.offeredTo); j.add("offeredUntil", k.offeredUntil); }   // (Doc 55, 5.)
         }
         contracts.push(j);
     }
@@ -694,6 +695,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             k.delivered = std::clamp(int(num(j, "delivered")), 0, k.quantity);
             k.source = j.string("source");
             k.carried = std::clamp(int(num(j, "carried")), 0, k.quantity);
+            k.offeredTo = j.string("offeredTo");
+            k.offeredUntil = num(j, "offeredUntil");
             saved.roads.contracts.push_back(std::move(k));
         }
         for (const auto& j : roads.array("orders"))      // (Saved before standing orders: none.)

@@ -29,7 +29,7 @@ need each other.
 | 2 | [51](../Design/51-scenes-and-stars.md) | Scenes and stars | 3.6 (star totals, bands, tags), Part 4 (scene openness, joining), 8.1 (end screens), the gathering howl; Story books and the bookshelf (Phase 7, the user's) | 50 | Built (7 of 7 phases; pushed, last 6071c37); migrations 0040 and 0041 applied |
 | 3 | [52](../Design/52-newcomers.md) | Newcomers | Part 7 (start town, newcomer flag, mentors, ties, residents as matchmakers), vouching | 50, 51 | Built (5 of 5 phases; pushed 6071c37); migrations 0042 and 0043 applied |
 | 4 | [53](../Design/53-hunting-and-working-together.md) | Hunting and working together | Part 6 (hunting, lend a paw, crafts for two, Gifted and Quickened roles), 5.3 (training grounds) | 50 | Built (7 of 7, pushed 6071c37; Phase 7 part B waits on doc 35's Craft panel) |
-| 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Drafted (7 phases) |
+| 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Built (7 of 7; not committed); migration 0044 written, not applied |
 | 6 | [54](../Design/54-gathering-places.md) | Gathering places | Part 5 (taverns, markets, notice boards, festivals, venues and renting), Part 10 (tavern games, library) | 50, 51 | Drafted (7 phases) |
 | 7 | [56](../Design/56-fame-and-memory.md) | Fame and memory | 3.7 (deeds, nicknames), 8.4–8.6 (chronicle, unfinished business, welcome back), festival criers | 50; 54 for criers | Drafted (6 phases) |
 | 8 | [57](../Design/57-changing-the-world.md) | Changing the world | Part 1 (residents' troubles, town projects, the economy's visibility) | 56, 53 | Drafted (6 phases) |
@@ -87,8 +87,8 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
   the hunt's starter controls whether strangers may join; a landed blade kills a fleeing animal.
 - **54 Gathering places:** must a full rest be in a bed the wolf has a right to? Should residents gamble with players?
   Festival prizes from entrants' pots, or funded by towns?
-- **55 Letters, gifts and favours:** should Well-groomed last at least 2 game hours when given late in the day? Do
-  close residents ever groom players? May players write to residents (a paid model call each)?
+- **55 Letters, gifts and favours:** answered 2026-10-08: Well-groomed lasts 24 game hours or until the next full
+  rest; residents never groom players; players don't write to residents for now.
 - **56 Fame and memory:** do criers call deeds by look when no one knows the name? Does a deed warm a resident to the
   doer once (+5 liking)?
 - **57 Changing the world:** should the economy's own works appear as open projects? Should residents get ailments
@@ -235,3 +235,14 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
     - Phase 7A: a paw at a resident's bench, its batches faster and thriftier (one declaration and two hunks in the
       economy session's `RatwSociety.h` / `RatwCrafting.cpp`).
     - Part B waits for doc 35's player Craft panel. Not committed.
+  - 2026-10-08: plan 55's questions answered: Well-groomed lasts 24 game hours or until the next full rest; residents
+    never groom players; players don't write to residents for now. All seven phases built:
+    - the document store and letters between players (couriers with travel time, post towns, inns, scent, anonymous
+      replies);
+    - giving, enclosures and the giver's scent (`Society::shift` now refuses past 64 kinds);
+    - grooming;
+    - the maker's scent;
+    - residents' thanks and courier offers by letter;
+    - weddings and funerals with invitations and witnesses, and shared meals;
+    - lending, letters carried by friends, pacts, and Chapter sponsors.
+    Migration 0044 (`game.documents`) is written and not applied. Not committed.

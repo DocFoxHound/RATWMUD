@@ -197,6 +197,26 @@ struct Letting
     int level = 2;
 };
 
+// Who made or gave a player's goods (Docs/Design/55-letters-gifts-favours.md, 3 and 4): beside the stack, not in the
+// item's id. `count` of `item` came from `maker` (made `madeDay`) and/or `giver` (given `givenDay`); "" for none.
+// An occasion residents host (doc 55, 6): a wedding, a funeral; where and when, its hosts, the players invited, who
+// said they'd come, and who stood witness. Hosts are sent there by errand (World::errand).
+struct Occasion
+{
+    std::string id, kind, community, cell;
+    double x = 0, y = 0, start = 0, end = 0;        // Calendar days.
+    std::vector<std::string> hosts;
+    std::set<std::string> invited, coming, witnesses;
+    bool invitesSent = false;
+};
+
+struct ScentRecord
+{
+    std::string item, maker, giver;
+    int count = 0;
+    double madeDay = -1, givenDay = -1;
+};
+
 struct Entity
 {
     // (First, together: what every tick's passes over all entities look at, so a pass over a world of residents who
@@ -271,6 +291,18 @@ struct Entity
     // falls if that wolf draws their attention again within the month. At -2 they no longer take its word. Saved.
     std::string vouchedFor;
     double wardenStanding = 0;
+    // Where its letters wait (doc 55, 2): the town it last left the world in or had a full rest in. Saved.
+    std::string postTown;
+    // Whose scent its goods carry (doc 55, 3 and 4): at most 60 records, newest last; players only. Saved.
+    std::vector<ScentRecord> scents;
+    // Grooming (doc 55, 7), in calendar days: Well-groomed until (24 game hours, or the next full rest), whether at half
+    // (self-groomed: 2 game hours), its lesser scent until (2 game hours), by whom; the day it last groomed another and
+    // itself. Saved.
+    double groomedUntil = -1, groomScentUntil = -1, groomedOtherDay = -1e9, groomedSelfDay = -1e9;
+    bool groomHalf = false;
+    std::string groomedBy;
+    // Meals (doc 55, 6), in calendar days: Fed until (2 game hours, 4 for a shared meal), and when it last ate. Saved.
+    double fedUntil = -1, ateAt = -1;
     // Work Gifts in use (doc 43), until these world seconds: Lighten Load (carries half again), Carry (speech carries
     // as a yell). Not saved: they are short.
     double lightLoadUntil = 0, carryVoiceUntil = 0;
@@ -727,6 +759,27 @@ class World
     // whether a wolf's scent is masked, masking it, and the masterworks a nose makes out on those near by.
     static double noseAcuity(const Entity& e);
     bool scentMasked(const Entity& e) const;
+    // Grooming's effects (doc 55, 7): 1 groomed by another, 0.5 self-groomed, 0 not; and the wolf's scent scale (0
+    // masked, 0.6 groomed by another, 0.8 self-groomed, else 1), which multiplies how far it is smelt.
+    double groomedFactor(const Entity& e) const;
+    // A scent record on a player's goods (doc 55, 3 and 4): `quantity` of `item` made by `maker` and/or given by
+    // `giver`; at most 60, oldest dropped. Residents keep none.
+    void addScent(const std::string& who, const std::string& item, int quantity, const std::string& maker, const std::string& giver);
+    // Meals (doc 55, 6): Fed (stamina back a tenth faster, rest healing 5% faster); shared with a wolf within 2 tiles who
+    // ate in the last 10 game minutes, it lasts twice as long, and the two grow closer once a game day.
+    double fedFactor(const Entity& e) const { return e.fedUntil > calendarDays_ ? 1. : 0.; }
+    void fed(Entity& e);
+    // Occasions (doc 55, 6; RatwOccasions.cpp): planned from a marriage (the next Restday, 11:00 at the church) or a death
+    // (the next morning, 10:00); invitations are Game's; the invited present at the hour stand witness (the hosts warm
+    // to them by 5).
+    const std::vector<Occasion>& occasions() const { return occasions_; }
+    Occasion* occasion(const std::string& id);
+    void planOccasion(const std::string& kind, const std::vector<std::string>& hosts, const std::string& about);
+    void tendOccasions(double dt);
+    double scentScale(const Entity& e) const;
+    // A grooming done: `groomer` groomed `groomed` (or itself). Well-groomed, the lesser scent, a severe acute injury
+    // licked clean, and the bond for both (once a pair a game day).
+    void applyGrooming(const std::string& groomer, const std::string& groomed);
     void trainNose(const std::string& id);
     Result maskScent(const std::string& player);
     struct MarkSmelt
@@ -785,6 +838,8 @@ class World
     // last call, oldest first. Uncollected, at most EventsKept are kept (the oldest are dropped and counted).
     static constexpr std::size_t EventsKept = 50000;
     void recordEvent(WorldEvent event);
+    // A host's watcher, told of every event as it is recorded (doc 55: residents' letters come from deeds, not scans).
+    void setEventWatcher(std::function<void(const WorldEvent&)> watcher) { eventWatcher_ = std::move(watcher); }
     // How everyone regards everyone else (see RatwBonds.h). The world moves them by rule, from the events it records
     // and from time spent together; a host may add a conversation's small, clamped nudge.
     const Bonds& bonds() const { return bonds_; }
@@ -810,6 +865,7 @@ class World
     // the camp; the Dungeon Master, for now). Couriers, escorts and supply runs are finished by doing them.
     std::vector<const Contract*> contractsNear(const std::string& player) const;
     Result takeContract(const std::string& player, const std::string& contractId);
+    Result takeOfferedContract(const std::string& player, const std::string& contractId);
     Result completeContract(const std::string& contractId, const std::string& by);
     // A contract for goods (doc 35, Part 7; RatwProcure.cpp): the town's buyers' requests posted as contracts, and a
     // taker delivering what they carry of it to a merchant of that town, paid by the piece.
@@ -1458,7 +1514,13 @@ class World
     std::map<std::string, std::map<std::string, std::set<std::string>>> huntRoles_;
     std::map<std::string, std::set<std::pair<std::string, std::string>>> huntPairs_;
     std::function<bool(const std::string& a, const std::string& b)> blocked_, partnered_;
+    std::function<void(const WorldEvent&)> eventWatcher_;
     std::map<std::string, std::pair<std::string, double>> talkFacing_;   // Resident -> the wolf it faces, until when.
+    std::map<std::string, double> groomBondDay_;    // "a|b" -> the game day their grooming last warmed them (doc 55).
+    std::map<std::string, double> mealBondDay_;     // "a|b" -> the game day a shared meal last warmed them (doc 55).
+    std::vector<Occasion> occasions_;
+    std::uint64_t nextOccasion_ = 1;
+    double occasionsAccumulator_ = 0;
     bool huntHelperTurn(Battle& b, BattleFighter& f);
     void huntJoined(Battle& b, const std::string& id);
     std::vector<std::string> huntSharers(const Battle& b, const std::string& killer) const;

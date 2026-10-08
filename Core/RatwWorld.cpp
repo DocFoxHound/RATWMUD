@@ -2376,7 +2376,8 @@ void World::updateStamina(Entity& a, double dt, double movedTime)
     const bool player = !a.npc;
     step::updateStamina(a.stamina, a.exhausted, a.staminaRate, effectivePace(a), dt, movedTime,
                         a.loadDrain * (player ? practice::staminaDrain(a.endurance) : 1.0),
-                        (a.injuries.empty() ? 1.0 : injury::effects(a.injuries).recovery) * (player ? practice::staminaRecovery(a.endurance) : 1.0));
+                        (a.injuries.empty() ? 1.0 : injury::effects(a.injuries).recovery) * (player ? practice::staminaRecovery(a.endurance) : 1.0) *
+                            (1 + .1 * fedFactor(a)));   // (Fed: a tenth faster, doc 55, 6.)
 }
 
 namespace
@@ -2455,6 +2456,8 @@ void World::recordEvent(WorldEvent event)
     rumoursFromEvent(event);
     noteNews(event);
     contractsFromEvent(event);
+    if (eventWatcher_)
+        eventWatcher_(event);
     events_.push_back(std::move(event));
     if (events_.size() > EventsKept + EventsKept / 4)   // Trimmed in batches, not one at a time off the front.
     {
@@ -2491,13 +2494,26 @@ void World::bondsFromEvent(const WorldEvent& given)
                 bonds_.change(p.to, p.by, {2, 6, 1, 0, 1}, day);
                 events_.push_back({"promise kept", p.by, p.to, e.cell, time_, day, {}, 0, 0, p.what});
             }
+    // First impressions (doc 55, 7): a resident who hardly knows a Well-groomed wolf (familiarity under 25) warms a
+    // quarter faster (an eighth if self-groomed).
+    const auto impressed = [&](double affinity, double trust) {
+        for (const auto& [resident, wolf] : {std::pair{actor, target}, std::pair{target, actor}})
+            if (resident->npc && !wolf->npc)
+                if (const double f = groomedFactor(*wolf); f > 0)
+                    if (const auto* bond = bonds_.find(resident->id, wolf->id); !bond || bond->familiarity < 25)
+                        bonds_.change(resident->id, wolf->id, {affinity * .25 * f, trust * .25 * f, 0, 0, 0}, day);
+    };
     if (e.kind == "economy")
     {
         // A sale or a wage honestly paid: they know each other a little better and trust a little more.
         bonds_.mutual(e.actor, e.target, {.5, .5, 1, 0, 0}, day);
+        impressed(.5, .5);
     }
     else if (e.kind == "conversation")
+    {
         bonds_.mutual(e.actor, e.target, {.2, 0, .5, 0, 0}, day);
+        impressed(.2, 0);
+    }
     else if (e.kind == "help" || e.kind == "gift")
         bonds_.change(e.target, e.actor, {5, 3, 2, 0, 1}, day);        // The one helped warms to the helper.
     else if (e.kind == "harm")
@@ -3912,6 +3928,8 @@ void World::tick(double dt)
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
     tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
     tendJoints(elapsed);                            // Wolves working together: who has left, joints ended (doc 53).
+    if (!occasions_.empty())
+        tendOccasions(elapsed);                     // Weddings and funerals: who stands witness (doc 55, 6).
     if (!talkFacing_.empty())
         tendTalkers();                              // Residents facing whom they talk with (doc 53, 4).
     tendAwareness();                                // Residents noticing players near them (doc 40, RatwBattle.cpp).
@@ -4214,6 +4232,7 @@ Result World::eat(const std::string& player)
     {
         p->stamina = std::min(100., p->stamina + 10.);
         if (p->stamina >= step::ExhaustionRecovery) p->exhausted = false;
+        fed(*p);                                    // Fed, and perhaps a shared meal (doc 55, 6).
     }
     return {result.ok, result.message, {}};
 }
@@ -4269,7 +4288,8 @@ double World::scentClarity(const std::string& observerId, const std::string& sou
     if (!c)
         return 0;
     AirRoutes air(*c, doorsIn(c->id), observer->position);
-    return detectScent(*observer, *source, windAt(c->id), environmentAt(c->id, observer->position).scent, air).clarity;
+    return detectScent(*observer, *source, windAt(c->id), environmentAt(c->id, observer->position).scent, air).clarity *
+           scentScale(*source);                     // (Groomed: less of it, doc 55, 7.)
 }
 std::vector<ScentCue> World::scentCues(const std::string& observerId) const
 {
@@ -4289,9 +4309,12 @@ std::vector<ScentCue> World::scentCues(const std::string& observerId) const
         if (entry.first == observerId || entry.second.cellId != observer->cellId ||
             visionClarity(observerId, entry.first) > 0)
             continue;
+        if (scentMasked(entry.second))
+            continue;                               // (Masking oil: nothing to smell. Doc 55 found it missing here.)
         if (!air)
             air.emplace(*c, doorsIn(c->id), observer->position);
-        const auto scent = detectScent(*observer, entry.second, wind, scentFactor, *air);
+        auto scent = detectScent(*observer, entry.second, wind, scentFactor, *air);
+        scent.clarity *= scentScale(entry.second);  // (Groomed: less of it, doc 55, 7.)
         if (scent.clarity <= 0)
             continue;
         const double angle = std::atan2(scent.bearing.y, scent.bearing.x);

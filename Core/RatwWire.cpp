@@ -240,6 +240,8 @@ Value persistEntity(const Entity& e, double time)
                 j.add("restFull", i.restFull);
             }
             j.add("gotDay", i.gotDay);
+            if (i.cleaned)
+                j.add("cleaned", true);             // (Licked clean: doc 55.)
             injuries.push(j);
         }
         o.add("injuries", injuries);
@@ -284,6 +286,37 @@ Value persistEntity(const Entity& e, double time)
         o.add("vouchedFor", e.vouchedFor);
     if (e.wardenStanding != 0)
         o.add("wardenStanding", e.wardenStanding);
+    if (!e.postTown.empty())
+        o.add("postTown", e.postTown);              // (Where its letters wait: doc 55.)
+    if (e.groomedUntil > 0)
+    {
+        o.add("groomedUntil", e.groomedUntil);     // Grooming (doc 55, 7).
+        o.add("groomScentUntil", e.groomScentUntil);
+        o.add("groomHalf", e.groomHalf);
+        o.add("groomedBy", e.groomedBy);
+    }
+    if (e.groomedOtherDay > -1e8)
+        o.add("groomedOtherDay", e.groomedOtherDay);
+    if (e.fedUntil > 0)
+        o.add("fedUntil", e.fedUntil), o.add("ateAt", e.ateAt);   // (Meals: doc 55, 6.)
+    if (e.groomedSelfDay > -1e8)
+        o.add("groomedSelfDay", e.groomedSelfDay);
+    if (!e.scents.empty())
+    {
+        auto list = Value::array();                // Whose scent its goods carry (doc 55): ids and days.
+        for (const auto& r : e.scents)
+        {
+            auto s = Value::object();
+            s.add("item", r.item);
+            if (!r.maker.empty())
+                s.add("maker", r.maker), s.add("madeDay", r.madeDay);
+            if (!r.giver.empty())
+                s.add("giver", r.giver), s.add("givenDay", r.givenDay);
+            s.add("count", r.count);
+            list.push(s);
+        }
+        o.add("scents", list);
+    }
     if (e.fightingSkill != 50)
         o.add("fightingSkill", e.fightingSkill);
     if (e.dungeonMaster)
@@ -428,6 +461,7 @@ Entity readEntity(const Value& o)
         i.restFull = std::clamp(strictNumber(j, "restFull", 0), 0.0, 24.0 * 60);
         i.restLeft = std::clamp(strictNumber(j, "restLeft", 0), 0.0, i.restFull);
         i.gotDay = std::max(0.0, strictNumber(j, "gotDay", 0));
+        i.cleaned = j.boolean("cleaned");
         if (i.id.empty() || !injury::known(i.type) || j.string("kind") != i.kind || (i.kind == "acute" && i.restLeft <= 0))
             continue;
         e.injuries.push_back(std::move(i));
@@ -446,6 +480,19 @@ Entity readEntity(const Value& o)
     e.vouchedDay = strictNumber(o, "vouchedDay", -1e9);
     e.vouchedFor = o.string("vouchedFor").substr(0, 128);
     e.wardenStanding = std::clamp(strictNumber(o, "wardenStanding", 0.0), -100.0, 100.0);
+    e.postTown = o.string("postTown").substr(0, 128);
+    e.groomedUntil = strictNumber(o, "groomedUntil", -1);
+    e.groomScentUntil = strictNumber(o, "groomScentUntil", -1);
+    e.groomHalf = o.boolean("groomHalf");
+    e.groomedBy = o.string("groomedBy").substr(0, 128);
+    e.groomedOtherDay = strictNumber(o, "groomedOtherDay", -1e9);
+    e.groomedSelfDay = strictNumber(o, "groomedSelfDay", -1e9);
+    e.fedUntil = strictNumber(o, "fedUntil", -1);
+    e.ateAt = strictNumber(o, "ateAt", -1);
+    for (const auto& s : o.array("scents"))
+        if (s.isObject() && e.scents.size() < 60 && !s.string("item").empty() && s.number("count") > 0)
+            e.scents.push_back({s.string("item").substr(0, 128), s.string("maker").substr(0, 128), s.string("giver").substr(0, 128),
+                                std::clamp(int(s.number("count")), 1, 9999), s.number("madeDay", -1), s.number("givenDay", -1)});
     e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
     e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);

@@ -25,6 +25,7 @@ struct Member
     std::string id;
     int rank = RankInitiate;
     double joined = 0, active = 0;                // Unix seconds: when they joined, and last took part in a scene.
+    std::string sponsor;                          // Who invited them in (doc 55, 8): shown on the roster; changes nothing else.
 };
 
 struct RenownEntry
@@ -146,6 +147,7 @@ class Chapters
     std::map<std::string, std::string> chapterOf_;
     std::map<std::string, Proposal> proposals_;                           // By proposer.
     std::map<std::string, std::pair<std::string, double>> invites_;       // To → (chapter, expires).
+    std::map<std::string, std::string> invitedBy_;                        // To → who invited them (their sponsor, doc 55).
     std::uint64_t next_ = 1;
     static constexpr std::size_t RenownKept = 300, LogKept = 300;
     Outcome needRank(const std::string& by, int atLeast, const Chapter** c) const;

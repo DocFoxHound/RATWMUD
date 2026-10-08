@@ -1,6 +1,7 @@
 // The game screen's state and rules: SRatwGame (UI/SRatwGame.cpp) without its drawing. The client is a projection of
 // observer-filtered server data; no simulation lives here. paint.ts draws it; view.ts connects it to the page.
 import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, isObject, num, obj, objects, str, wholeCount, type Json} from './json.ts';
+import type {LetterDraft} from '../ui/hud/letters.ts';
 import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
@@ -88,6 +89,7 @@ export interface EntityView {
     nc: boolean;                // New to these parts: a newcomer's account (doc 52).
     mentor: boolean;            // Mentors newcomers (doc 52)...
     mentorFree: boolean;        // ...and, for a newcomer's eyes, is free to take one now: marked on the map.
+    groomed?: boolean;          // Freshly groomed by another (doc 55, 7): anyone who looks sees it.
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
 }
 
@@ -194,6 +196,11 @@ export class GameState {
     channel = 'ic';
     volume = 'speak';
     modal = '';
+    /** The letter case as the server last sent it (doc 55), and the writing sheet's draft. */
+    lettersCase: Json | null = null;
+    letterDraft: LetterDraft = {to: '', text: '', sign: '', replyTo: ''};
+    letterDraftVersion = 0;
+    giveTarget = '';                                // (The wolf the Give sheet gives to: doc 55.)                         // (Bumped when the page, not the player's typing, changes the draft.)
     /** The Dev Console (a player marked Dungeon Master; ui/hud/devConsole.ts): open or not, the commands the server
      *  offers ([name, help], as it last said), and each command run with the server's answer, newest last. */
     devConsole = false;
@@ -526,6 +533,7 @@ export class GameState {
             view.nc = bool(e, 'nc');
             view.mentor = bool(e, 'mentor');
             view.mentorFree = bool(e, 'mentorFree');
+            view.groomed = bool(e, 'groomed');
             view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
@@ -1067,6 +1075,15 @@ export class GameState {
             this.facingPreview = false;
             return;
         }
+        if (type === 'letters') {
+            this.lettersCase = e;                   // (The case: doc 55.)
+            return;
+        }
+        if (type === 'letterArrived') {
+            this.showToast('A letter has come for you.');
+            if (this.modal === 'letters') this.send({type: 'letters'});
+            return;
+        }
         const eventId = str(e, 'id');
         if (eventId && this.seenPosts.has(eventId)) return;
         if (eventId) this.seenPosts.add(eventId);
@@ -1395,6 +1412,19 @@ export class GameState {
     }
 
     /** Known wolves (doc 50): "list", "get", "tag" (`tag`, `custom`), "note" (`text`), "forget", "unrecap" (`recap`). */
+    /** Letters (doc 55): write, read, keep, burn, sendOn, reply; the case comes back as a `letters` event. */
+    sendLetter(verb: string, extra: Json = {}) {
+        this.send({type: 'letter', verb, ...extra});
+    }
+
+    openLetters() {
+        if (this.chat) this.setChat(false);
+        this.heldKeys.clear();
+        this.sendMove();
+        this.modal = 'letters';
+        this.send({type: 'letters'});
+    }
+
     sendKnown(verb: string, extra: Json = {}) {
         this.send({type: 'known', verb, ...extra});
     }
@@ -2009,6 +2039,7 @@ export class GameState {
         const a = h.action;
         if (a === 'hunt' || a === 'forage' || a === 'leaveHunt') this.send({type: a});   // Out in the wild (doc 41).
         if (a === 'post') this.send({type: 'post'});   // A training ground's practice post (doc 53).
+        if (a === 'groomSelf') this.send({type: 'groom', target: 'self'});   // Grooming oneself (doc 55, 7).
         else if (a === 'leave_character') this.modal = 'leave_character';
         else if (a === 'leave_confirm') this.leaveCharacter();
         else if (a === 'leave_cancel') this.modal = 'character';
@@ -2193,6 +2224,25 @@ export class GameState {
             if (h.target === 'vouch') {
                 this.contextActions = [...this.entities.values()].filter(e => e.kind !== 'npc' && !e.self).slice(0, 8).map(e => `vouch:${e.id}`);
                 if (!this.contextActions.length) this.showToast('There is no one here to vouch for.');
+                return;
+            }
+            // Grooming (doc 55, 7): asked of this wolf.
+            if (h.target === 'groom') {
+                this.send({type: 'groom', target: this.contextTarget});
+                this.contextTarget = '';
+                return;
+            }
+            // Giving and lending (doc 55): their sheets, for this wolf.
+            if (h.target === 'lend') {
+                this.giveTarget = this.contextTarget;
+                this.contextTarget = '';
+                this.modal = 'lend';
+                return;
+            }
+            if (h.target === 'give') {
+                this.giveTarget = this.contextTarget;
+                this.contextTarget = '';
+                this.modal = 'give';
                 return;
             }
             // The Wardens (doc 53, 4): of which Quickened partner whose magic one saw.

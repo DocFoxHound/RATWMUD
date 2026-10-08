@@ -30,6 +30,7 @@
 #include "RatwStars.h"
 #include "RatwBooks.h"
 #include "RatwNewcomers.h"
+#include "RatwDocuments.h"
 #include "RatwSocialCore.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
@@ -135,6 +136,8 @@ struct Options
     // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the written
     // scenes (voiceData/scenes, doc 30) and the library voice them all.
     int ambientModelCallsPerHour = 0;
+    // Residents' letters (doc 55, 5) polished by the light model: at most this many an hour; 0 (the default): templates.
+    int letterModelCallsPerHour = 0;
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
@@ -676,6 +679,148 @@ class Game
     std::string vouchBriefing(const std::string& npc, const std::string& player);
     void vouchesSave(json::Value& root) const;
     void vouchesLoad(const json::Value& saved);
+    // Letters (doc 55, RatwGameLetters.cpp): the document store; writing at an inn or a scriptorium (or a Chapter's own
+    // place) to a wolf known by name, the courier's fee to the town's treasury and its hours; delivered to the reader's
+    // post town, handed over there or waiting at its inns; read with the writer's scent; kept until burnt.
+    documents::Store documents_;
+    std::set<std::string> innCells_, scriptoriumCells_;
+    double letterPlacesAt_ = -1;
+    std::map<std::string, double> lastFullRest_;    // (A full rest sets one's post town.)
+    double lettersAccumulator_ = 0, staleCheckedHour_ = -1;
+    bool letterCommand(Connection* c, const json::Value& j, Result& result);
+    void sendLetters(Connection* c);
+    json::Value lettersSelf(const std::string& id) const;
+    void tendLetters(double dt);
+    void deliverLetter(documents::Document& d, bool atInn);
+    void refreshLetterPlaces();
+    bool writingPlace(const std::string& id) const;
+    bool atInn(const std::string& id) const;
+    std::string townFor(const std::string& cellId) const;
+    std::string townWords(const std::string& town) const;
+    std::string postTownOf(const std::string& id) const;
+    int courierCells(const std::string& fromTown, const std::string& toTown) const;
+    std::string scentLine(const std::string& reader, const documents::Document& d) const;
+    std::string knownByName(const std::string& writer, const std::string& typed, std::string& problem) const;
+    documents::Document* sendLetter(Connection* c, const std::string& toId, std::string text, const std::string& sign, Result& result,
+                                    const std::string& replyTo = {}, bool viaCourier = false, const json::Value& enclose = {});
+    bool takeEnclosure(documents::Document& d, const std::string& reader, std::string& said);
+    void returnEnclosure(documents::Document& d, const std::string& why);
+    void orphanedEnclosures();
+    // Giving (doc 55, 3; RatwGameGive.cpp): face to face, within 2 tiles, out of a fight; a player accepts within 30 s,
+    // a resident takes it unless it dislikes the giver. Conserved (Society::shift, kind "a gift"); a gift warms the
+    // receiver (the `gift` event) once a game day a pair. Players' goods carry who made and gave them (Entity::scents).
+    struct GiveOffer
+    {
+        std::string from, item;
+        int quantity = 0;
+        std::int64_t coins = 0;
+        double until = 0;
+    };
+    std::map<std::string, GiveOffer> giveOffers_;   // By the one offered.
+    std::map<std::string, double> giftBondDay_;     // "giver|receiver" -> the game day a gift last warmed.
+    bool giveCommand(Connection* c, const json::Value& j, Result& result);
+    bool giveAnswer(Connection* c, bool accept, Result& result);
+    void tendGives();
+    int spareOf(const std::string& who, const std::string& item) const;   // Held and not worn (nor in the jaws).
+    std::string giveRefusal(const std::string& giver, const std::string& target, const std::string& item, int quantity, std::int64_t coins) const;
+    void gifted(const std::string& giver, const std::string& receiver, const std::string& item, int quantity, std::int64_t coins);
+    std::string goodsWords(const std::string& item, int quantity, std::int64_t coins) const;
+    // Scent records: moved with goods between players (a giver's own added unless masked), dropped when goods go to a
+    // resident or a till; read newest first, within what is held.
+    void moveScents(const std::string& from, const std::string& to, const std::string& item, int quantity, bool giverScent);
+    void addScent(const std::string& who, const std::string& item, int quantity, const std::string& maker, const std::string& giver);
+    std::string scentOfItem(const std::string& viewer, const std::string& owner, const std::string& item) const;
+    // The maker's scent (doc 55, 4): a good bought from a shop whose business makes it carries its keeper's scent.
+    void makersScent(const std::string& buyer, const std::string& seller, const std::string& item, int quantity);
+    // Grooming (doc 55, 7; RatwGameFavours.cpp): asked of a wolf within 1.5 tiles, both still and out of a fight; a
+    // player accepts within 30 s, a resident only from a player it likes; fifteen seconds, staying close; once a game
+    // day for the groomer (and once for oneself); its line posted as the groomer's action. World::applyGrooming does
+    // the rest.
+    struct GroomOffer
+    {
+        std::string from, words;
+        double until = 0;
+    };
+    struct Grooming
+    {
+        std::string groomer, groomed, words;
+        double started = 0;
+    };
+    std::map<std::string, GroomOffer> groomOffers_;   // By the one asked.
+    std::vector<Grooming> groomings_;
+    bool groomCommand(Connection* c, const json::Value& j, Result& result);
+    bool groomAnswer(Connection* c, bool accept, Result& result);
+    void tendGrooming();
+    std::string groomRefusal(const std::string& groomer, const std::string& target) const;
+    void startGrooming(const std::string& groomer, const std::string& groomed, const std::string& words);
+    // Lending gear (doc 55, 8; RatwGameFavours.cpp): an item for 1 to 7 game days to a player who accepts; worn and used,
+    // never sold, given or put in a letter; returned within 2 tiles, or carried back by courier at the due day (1p from
+    // the borrower); gone, it becomes a debt (Bonds::addOwed) and the lender trusts the borrower less.
+    struct Loan
+    {
+        std::string id, lender, borrower, item;
+        int quantity = 0;
+        double due = 0;                             // Calendar day.
+    };
+    struct LendOffer
+    {
+        std::string from, item;
+        int quantity = 0, days = 1;
+        double until = 0;
+    };
+    std::vector<Loan> loans_;
+    std::map<std::string, LendOffer> lendOffers_;  // By the one offered.
+    std::uint64_t nextLoan_ = 1;
+    double loansHour_ = -1;
+    bool lendCommand(Connection* c, const json::Value& j, Result& result);
+    bool lendAnswer(Connection* c, bool accept, Result& result);
+    bool returnLoan(Connection* c, const json::Value& j, Result& result);
+    void tendLoans();
+    int lentTo(const std::string& borrower, const std::string& item) const;
+    void loansSave(json::Value& root) const;
+    void loansLoad(const json::Value& saved);
+    // Residents' letters (doc 55, 5; RatwResidentLetters.cpp): thanks the day after a deed for a fond resident (one time
+    // in three with a few pennies from its own purse), courier work offered first to a player it trusts; at most 3 a
+    // game week to a player and one from any resident; templates (Data/Voice/letters.json), polished only when
+    // Options::letterModelCallsPerHour allows; the resident's briefing remembers them.
+    struct ThanksDue
+    {
+        std::string resident, player, deed;
+        double day = 0;
+    };
+    struct ResidentLetterSent
+    {
+        std::string resident, player;
+        double day = 0;
+    };
+    std::vector<ThanksDue> thanksDue_;
+    // Who stood witness at a resident's occasion (doc 55, 6): host -> (player, kind, day), for its briefing.
+    struct Witnessed
+    {
+        std::string player, kind;
+        double day = 0;
+    };
+    std::map<std::string, std::vector<Witnessed>> witnessedBy_;
+    void inviteToOccasions();
+    std::vector<ResidentLetterSent> residentLettersSent_;
+    double residentLettersHour_ = -1, letterCallsHour_ = -1;
+    int letterCalls_ = 0;
+    void watchEvent(const WorldEvent& e);
+    void tendResidentLetters();
+    bool residentLetterRoom(const std::string& resident, const std::string& player) const;
+    documents::Document* residentLetter(const std::string& resident, const std::string& player, const std::string& kind, const std::string& text,
+                                        const std::string& facts, std::int64_t coins, const std::string& contract);
+    std::string residentLetterText(const std::string& kind, const std::string& resident, const std::string& player,
+                                   const std::map<std::string, std::string>& blanks) const;
+    std::string residentLetterBriefing(const std::string& npc, const std::string& player) const;
+    // A letter carried by a friend (doc 55, 8): a courier contract given to a player who knows the recipient, paid the
+    // fee in place of the town; and pacts: terms one wolf writes naming another, sealed by both and up to 3 witnesses,
+    // a copy each in their letter cases. Nothing enforces a pact.
+    std::set<std::string> carried_;                 // Letters in a friend's keeping, by id.
+    std::uint64_t nextPact_ = 1;
+    bool pactCommand(Connection* c, const json::Value& j, Result& result);
+    void lettersSave(json::Value& root) const;
+    void lettersLoad(const json::Value& saved);
     // Story books (doc 51, Phase 7; RatwGameBooks.cpp): every book by its id, and each character's model calls for
     // books today.
     std::map<std::string, books::Book> books_;

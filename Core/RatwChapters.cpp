@@ -219,6 +219,7 @@ Outcome Chapters::invite(const std::string& by, const std::string& to, double no
     if (const auto e = c->expelled.find(to); e != c->expelled.end() && now - e->second < RejoinSeconds)
         return {false, "They were sent away too lately to come back yet."};
     invites_[to] = {c->id, now + InviteSeconds};
+    invitedBy_[to] = by;
     return {true, c->id};
 }
 
@@ -238,7 +239,8 @@ Outcome Chapters::accept(const std::string& to, double now)
     if (of(to))
         return {false, "You are already in a Chapter."};
     auto* c = byId(id);
-    c->members[to] = {to, RankInitiate, now, now};
+    c->members[to] = {to, RankInitiate, now, now, invitedBy_.count(to) ? invitedBy_[to] : std::string()};   // (The sponsor: doc 55, 8.)
+    invitedBy_.erase(to);
     chapterOf_[to] = id;
     c->log.push_back({"joined", to, "", "", 0, now});
     return {true, id};
@@ -480,6 +482,8 @@ Value Chapters::save() const
             k.add("rank", mm.rank);
             k.add("joined", mm.joined);
             k.add("active", mm.active);
+            if (!mm.sponsor.empty())
+                k.add("sponsor", mm.sponsor);
             members.push(k);
         }
         j.add("members", members);
@@ -575,7 +579,8 @@ void Chapters::load(const Value& saved)
             const auto id = k.string("id");
             if (id.empty() || chapterOf_.count(id))
                 continue;
-            c.members[id] = {id, std::clamp(int(k.number("rank", RankInitiate)), RankHead, RankInitiate), k.number("joined"), k.number("active")};
+            c.members[id] = {id, std::clamp(int(k.number("rank", RankInitiate)), RankHead, RankInitiate), k.number("joined"), k.number("active"),
+                             k.string("sponsor")};
         }
         std::size_t r = 0;
         for (const auto& name : j.array("rankNames"))

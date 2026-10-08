@@ -51,6 +51,7 @@ void foundingAndRanks()
     expect(!c.propose("di", {"ed", "fa"}, "ashen lodge", "#5b8bd9", "", "s", 30).ok, "names are unique");
     // Invitations and ranks.
     expect(c.invite("bo", "di", 100).ok && c.accept("di", 101).ok && c.member("di")->rank == RankInitiate, "an Officer invites; an Initiate joins");
+    expect(c.member("di")->sponsor == "bo", "who invited her is her sponsor (doc 55, 8)");
     expect(!c.invite("di", "ed", 102).ok, "an Initiate can't invite");
     expect(c.remove("bo", "di", 103).ok && !c.of("di"), "an Officer sends an Initiate away");
     expect(!c.invite("bo", "di", 104).ok, "who was sent away can't come back yet");
@@ -100,8 +101,8 @@ void renownAndLevels()
     Chapters d;
     d.load(parsed(json::dump(c.save())));
     expect(d.byId(id) && d.byId(id)->level == 2 && d.byId(id)->renown == c.byId(id)->renown && d.member("bo")->rank == RankHead &&
-               d.byId(id)->rankNames[3] == "Pup",
-           "saved and read");
+               d.byId(id)->rankNames[3] == "Pup" && (!d.member("di") || d.member("di")->sponsor == c.member("di")->sponsor),
+           "saved and read (the sponsor too)");
 }
 
 // ------------------------------------------------------------------ Through the game

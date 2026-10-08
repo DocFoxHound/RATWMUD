@@ -699,6 +699,7 @@ bool World::huntKill(Battle& b, BattleFighter& f, const std::string& by)
             for (const auto& [who, part] : byWolf)
                 if (part > 0 && entity(who) && society_.create(who, kind, part, "hunted"))
                 {
+                    addScent(who, kind, part, killer, {});  // Hunted goods carry the hunter's scent (doc 55, 4).
                     takenBy[who].push_back(std::to_string(part) + " " + lower(Society::itemName(kind)));
                     auto& mine = huntShares_[who];
                     if (mine.battle != b.id)

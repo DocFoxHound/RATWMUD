@@ -20,7 +20,7 @@ export function describeWolf(e: EntityView): Look {
     // A player's status and Currently line (doc 50): what they have chosen to show.
     const status = ({ooc: 'out of character', lfs: 'looking for a scene', quill: 'storyteller'} as Record<string, string>)[e.rp ?? ''] ?? '';
     return {key: `wolf:${e.id}`, what, why: [kind, e.handle ? `friend · ${e.handle}` : '', e.rel === 'party' ? 'your party' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '', e.lifeStage !== 'adult' ? e.lifeStage : '',
-        status, e.nc ? 'new to these parts' : '', e.mentor ? (e.mentorFree ? 'a mentor, free to show you around' : 'a mentor') : '', e.walkup ? 'walk-up friendly' : '', e.currently ? `“${e.currently}”` : doing]
+        status, e.nc ? 'new to these parts' : '', e.mentor ? (e.mentorFree ? 'a mentor, free to show you around' : 'a mentor') : '', e.walkup ? 'walk-up friendly' : '', e.groomed ? 'freshly groomed' : '', e.currently ? `“${e.currently}”` : doing]
         .filter(Boolean).join(' · ')};
 }
 

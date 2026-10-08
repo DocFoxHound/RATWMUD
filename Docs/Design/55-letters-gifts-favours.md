@@ -1,6 +1,7 @@
 # 55. Letters, gifts and favours
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (§3.8, and §3.9 except vouching). Nothing built. Read doc 48
+Drafted 2026-10-06 as an actionable plan for doc 48 (§3.8, and §3.9 except vouching). Open questions answered
+2026-10-08 (see "Open questions"); building began the same day. Read doc 48
 (§3.8, §3.9, Part 11 and the Decisions) and docs 35 (the maker's mark, masking oil), 38 (rest and lasting injuries),
 40 (noticing and scent), 41 (the nose), 43 (Wash Out), 26 (residents, contracts, the Mind), 28 (AI cost), 15 (money)
 and 32 (names) first.
@@ -263,7 +264,8 @@ light model may only polish them.
   (affinity 40+, trust 30+) *(placeholders)*; residents don't groom players in this version.
 - **The grooming:** 15 s *(placeholder)*, both staying within 1.5 tiles. Moving apart or a fight ends it with nothing.
 - **Once a game day** for the groomer (agreed placeholder). Being groomed again only renews it.
-- **Well-groomed lasts the rest of the game day** (agreed): until the next midnight.
+- **Well-groomed lasts 24 game hours, or until the wolf's next full rest**, whichever comes first (the user,
+  2026-10-08, replacing "until midnight").
 - **Self-grooming:** GROOM YOURSELF, once a game day; half of every effect for 2 game hours (agreed placeholder).
 
 | Effect | By another | Self | Where |
@@ -460,6 +462,293 @@ The server decides who writes, what happens and what is given; the model only wo
 - **Done when:** each favour works through the game, and money stays conserved.
 - **Cost:** commands and a due-date queue for loans.
 
+## Built
+
+### Phase 1 (2026-10-08): the document store and letters between players
+
+- **The store** (`Core/RatwDocuments.{h,cpp}`, new):
+  - A `Document` (id, kind, author, scent, to, text, sign, fromTown, postTown, state, written, deliverAt, readAt,
+    kept, viaCourier, answered, replyTo) and a `Store` indexed by reader and author, with the courier's queue ordered
+    by arrival. A tick looks only at what is due.
+  - Rules in `Data/Social/letters.json` (800 letters, 10 a day, 100 unread, the fees, the hours, 14 days' scent,
+    familiarity 20 for a scent known by sight).
+  - Saved in the people root's `documents` list. Migration `0044_documents.sql` gives it its own table,
+    `game.documents` (kind, author, recipient, state as generated columns); it is written, not applied. Until it is,
+    letters ride in the checkpoint row like the rest of the people root.
+- **Letters** (`Core/RatwGameLetters.cpp`, new; the `letter` and `letters` commands):
+  - **Where a letter can be written:** a cell where an inn's or a scriptorium's post works (by `items::businessFor` of
+    the post's title, refreshed every five minutes), or a Chapter's own rented place for its members.
+  - **The recipient:** a wolf the writer knows by the name typed, any case (`knownByName`, through `known_`'s names,
+    or everyone's when names aren't hidden); two wolves known by one name are refused. Unknown: "You know no wolf
+    called Zed." A blocked writer, a missing wolf and oneself all get "The courier can't find them."
+  - **Signature:** one of the writer's own names, or none.
+  - **The fee:** 1p in town, 2p plus 1p each 10 road cells to another town, by `Society::shift` to the writing town's
+    treasury (kind "a letter's postage").
+  - **The courier's hours:** 1 in town; `1 + cells / 3` between towns, at most 12 (`Game::courierCells` from
+    `World::routeBetween` between the towns' markets).
+  - **Limits:** 10 a game day; "Their post is full" past 100 unread.
+  - **The receipt:** "The courier takes your letter to Bo (1p). It should reach Upper Accord in about 1 hour. You signed
+    as Ash."
+- **Delivery:**
+  - A letter goes to the reader's **post town** (`Entity::postTown`, saved): set when it leaves the world, and at a full
+    rest (watched through `fullRestDay`). Without one, the town it is in, else the capital.
+  - On arrival, if the reader is online in that town, a messenger finds it ("A messenger finds you with a letter.", a
+    `letterArrived` event). Otherwise it waits at that town's inns, and the reader, if online, is told where.
+  - Walking into an inn of that town collects what waits there.
+  - **SEND IT ON** works by town ("from": the town it waits in): a penny a letter and the courier's time again, to the
+    town the reader is in. The plan had it per letter; by town fits the case, which lists waiting letters by town.
+  - A letter whose reader is gone is let go.
+- **Reading:**
+  - The case (a `letters` event): delivered letters, unread first; each sealed until opened, with its signature, its
+    scent line, when and where it came from, KEEP and BURN. Waiting letters are counted by town.
+  - Breaking the seal of a signed letter introduces the writer by that name (`learnName`, how `"letter"`): "You break
+    the seal. It is signed Ash."
+  - **Scent lines:** by name ("It smells of Ash."); by sight, through a bond's familiarity of 20 or a known-wolves entry
+    ("It smells of the grey wolf…"); "A wolf's scent you don't know."; masked when written ("It carries no scent at
+    all. Someone took care."); past 14 days ("Its scent has faded."); a nose below 0.2 reads nothing.
+  - **REPLY** goes to a writer known by name. Otherwise it goes once by the same courier (`viaCourier`), and the replier
+    never learns who wrote: "The courier will take your answer back the way the letter came."
+  - `self.letters` gives {unread, waiting, waitingAt}.
+- **The page** (`Client/src/ui/hud/letters.ts`, new):
+  - The letter case opens from the character sheet's LETTERS button, which shows the unread count.
+  - It has the writing sheet (To, the text with its count against 800, a signature of one's own names or Unsigned,
+    SEND), letters waiting by town with SEND IT ON, and each letter with BREAK THE SEAL, REPLY, KEEP and BURN.
+  - "A letter has come for you." shows as a toast.
+  - Drafts are kept in state (`letterDraft`) and survive rebuilds while typing.
+- **Tests:**
+  - `Tests/letters_tests.cpp` (new, 38 checks): the courier's hours and fees; the store's order, queue, unread and save.
+    In the game, on a three-town strip with an inn in each town:
+    - an unknown name refused; not in the street; the fee to the treasury;
+    - delivered in town after an hour, sealed, with an unknown scent, then opened and introduced ("It smells of Ash.");
+    - masked and unsigned with no scent, answered once by the same courier;
+    - ten a day; to Ridgemere for 2p and about 4 hours, waiting there, sent on;
+    - collected at an inn; faded after a fortnight; a letter in transit across a restart.
+  - `Client/src/game/letters.test.ts`: opening asks for the case; the case kept; an arrival refreshes it; the command;
+    letters counted, not bytes.
+  - `tools/client/letters.mjs` (new; the strip with an inn by the spawn; `--speed 30`): Bo introduces himself; Ash writes
+    from the case, signed; the courier's receipt; a messenger finds Bo; sealed, signed Ash, an unknown scent; opened, it
+    smells of Ash. Screenshots in `artifacts/screenshots/letters/`.
+- **Not done:** the DM app's view of letters (Phase 1 kept to the game); `pg_tests`' round trip, which waits for
+  migration 0044 to be applied.
+
+### Phase 2 (2026-10-08): giving, enclosures and the giver's scent
+
+- **Give** (`Core/RatwGameGive.cpp`, new; `give` and `giveAnswer`; "Give" in any wolf's menu within 2 tiles, opening
+  a Give sheet):
+  - What can be given: an item held and not worn or in the jaws (`Game::spareOf`), a quantity, and/or coins, within 2
+    tiles, both out of a fight.
+  - A **player** is offered it (`self.giveOffer`, an Accept / Decline row under the map, 30 s). A **resident** takes it
+    unless its liking for the giver is −30 or worse. A blocked giver is refused like a wolf who won't take it.
+  - The move is `Society::shift` with kind "a gift", added to the unearned lists in `Society::record` and the
+    orchestrator's `unearned()` (the economy session's files: one line each), so it is never a resident's profit.
+  - The `gift` event warms the receiver by `bondsFromEvent`'s rule, once a game day a pair (`giftBondDay_`). Later
+    gifts that day record "gift again", which warms nothing.
+- **The 64 kinds:** `Society::shift` now refuses goods of a new kind past `MaxGoodsKinds`, so no give, enclosure or
+  any other move can make a save that won't load (the bug the epic logged). A give says "Bo can't carry another kind
+  of thing."
+- **Enclosures** (`write` with `enclose: {item, quantity, coins}`):
+  - One kind of thing, a pound in all at most, and none weightless (livestock weighs 0), plus up to 50p. Two loaves are
+    refused.
+  - Held in an escrow account `letter:<id>@<writer>` (the `letter:` prefix added to `facilityAccount`), journaled with
+    the economy (`record(Economy | Character)`).
+  - **TAKE** moves it to the reader. With no room for its kind, the pennies come out and the rest stays in the letter
+    ("You take 5p from the letter; you have no room for the rest, so it stays in the letter.").
+  - Unread for 56 game days (checked once a game hour), undelivered, or burnt unopened, it goes back to its writer, or
+    to the capital's treasury if the writer is gone.
+  - On load, an escrow with no letter (a crash between the journal and the checkpoint) goes back to the writer named in
+    its account id.
+- **Scent records** (`Entity::scents`, `ScentRecord{item, maker, giver, count, madeDay, givenDay}`, at most 60, saved):
+  - They move with the goods between players, oldest first, the giver's own scent on them unless masked, and are
+    dropped when goods go to a resident or a till.
+  - Read newest first within what is held, so goods sold or eaten simply stop counting: a giver for 7 game days, a
+    maker for 28.
+  - Shown on belongings ("It smells of Ash") and told on taking ("You take 1 trencher bread from Ash. It smells of
+    Ash.").
+- **Tests:**
+  - `letters_tests` `giving` (now 59 checks): offered, declined, accepted, it smells of her, money conserved; warmed
+    once a day; too far off; a resident takes it; refused at 64 kinds; an enclosure escrowed, too heavy refused, taken
+    in part when there's no room, then in full with her scent; returned at 56 days; conserved throughout.
+  - `tools/client/letters.mjs` gains the gift: Give from Bo's menu, the Give sheet, his Accept row, his bread "smells of
+    Ash" in his belongings.
+- **Not done:** a resident's letters' gifts and the maker's scent are Phases 5 and 4. Doc 54's stalls will move scent
+  records when they exist.
+
+### Phase 3 (2026-10-08): grooming
+
+- **Asking** (`Core/RatwGameFavours.cpp`, new; `groom` and `groomAnswer`; "Groom" in the menu of a wolf within 1.5
+  tiles; "Groom yourself" in the actions row):
+  - Both must be out of a fight and still; not blocked either way; one grooming at a time.
+  - A player accepts within 30 s (`self.groomOffer`, an Accept / Decline row). A resident accepts only from a player it
+    likes (liking 40, trust 30). Residents never groom players (the user).
+  - Fifteen seconds, both within 1.5 tiles. Moving apart or a fight breaks it off with nothing.
+  - Once a game day for the groomer, and once for oneself (`groomedOtherDay`, `groomedSelfDay`).
+  - Done, the groomer's line is posted as its action (`/action`, counted at half weight): its own words (200 letters),
+    or "grooms Bo's ruff, slow and careful."
+- **Its effects** (`Core/RatwFavours.cpp`, new; `World::applyGrooming`, `groomedFactor`, `scentScale`):
+  - **Well-groomed** lasts 24 game hours, or until the wolf's next full rest (`fullRest` ends it), as the user answered.
+    Groomed again only renews. Self-grooming gives half of every effect, for 2 game hours, and never replaces a grooming
+    by another that is still on.
+  - **First impressions:** in `bondsFromEvent` (trade and talk) and `Game::heed` (the Mind's nudges, still within their
+    caps), a resident who hardly knows the wolf (familiarity under 25) warms ×1.25 (×1.125 self-groomed).
+  - **Healing:** injuries heal ×1.1 at rest (`restPlayers`), and away for the part of the time it lasted
+    (`returnFromAway`).
+  - **Fewer lasting injuries:** every lasting roll −10 points (−5 self-groomed), after weariness, floored at 0
+    (`giveLasting`).
+  - **Licked clean:** a severe acute injury groomed by another carries `Injury::cleaned` (saved). Its setting roll is
+    10 lower even after Well-groomed ends, but not added to the general −10.
+  - **Less scent** for 2 game hours: the wolf's scent scale (0.6, 0.8 self-groomed, 0 masked) multiplies the nose's
+    reach in `noticeSenses` and the clarity in `scentClarity` and `scentCues`. `scentCues` now also leaves out a masked
+    wolf, a gap the plan noted.
+  - **The bond for both:** +3 liking, +2 trust, +2 familiarity, once a pair a game day.
+  - A `groomed` event, with IDs only.
+- **Shown:**
+  - `self.groomed` {by, half, hours, scent}, and the Status window's CONDITION row ("Well-groomed, by Ash · 23.9 h"),
+    with what it does.
+  - Others see the entity's `groomed` flag as "freshly groomed" in Look.
+  - The fields are saved on the character (`groomedUntil`, `groomScentUntil`, `groomHalf`, `groomedBy`, and the two
+    days).
+- **Tests:**
+  - `letters_tests` `grooming` (now 74 checks): asked and declined; walking off breaks it off; fifteen seconds and
+    Well-groomed for a day, the scent at 0.6, the bond both ways, the line posted and seen; the Status block; once a day;
+    self-grooming at half for two hours and once a day; self-grooming doesn't undo another's; masking wins; first
+    impressions at exactly a quarter faster; worn off a day later.
+  - `tools/client/letters.mjs` gains it: Groom from Bo's menu, his Accept row, Well-groomed by Ash, freshly groomed to
+    her, "grooms Bo's ruff, slow and careful." in his story, and his Status CONDITION row.
+- **Not tested on their own:** the lasting-roll and licked-clean modifiers, and the healing factor. They are one line
+  each beside rules already tested; `giveLasting` is private and caps one lasting injury a fight, so a statistical test
+  needs a hook. Left for the injury suite.
+
+### Phase 4 (2026-10-08): the maker's scent on crafted goods
+
+- **Bought from its maker** (`Game::makersScent`, after a player's purchase in the `trade` command): when the keeper's
+  business makes the good (`items::craftsFor` its business, by the good's base id), the buyer gets a record with the
+  keeper as maker. A reseller adds none. `recipes.json` isn't read: residents make from `crafts.json` only, and player
+  crafting doesn't exist yet.
+- **Hunted goods** carry the hunter: one line in `huntKill`, through the new `World::addScent`, which Game's
+  `addScent` now uses too.
+- **Sold to a shop**, the records go with the goods, oldest first, and are dropped there (`moveScents` to a resident).
+  So a stale record can't scent a later purchase.
+- **Shown** on belongings for 28 game days ("It smells of the keeper at the inn", by name once known), meals and herbs
+  included (their special entries in the inventory now read scents too).
+- **Masterworks** keep their mark in the id; nothing changed for them.
+- **Tests:**
+  - `letters_tests` `makersScent` (now 79 checks): a meal bought at the inn that cooks it smells of its keeper; bread
+    from the stall smells of nobody; sold back, the record goes, and a meal got elsewhere smells of nobody.
+  - `hunt_tests`: a clean kill's take carries the hunter's scent.
+
+### Phase 5 (2026-10-08): letters from residents
+
+- **Candidates from events** (`World::setEventWatcher`, new: told of each event as it is recorded; `Game::watchEvent`):
+  a contract done for a resident, tending it when Downed (`tended`), or a gift worth 5p or more (coins plus the
+  catalog price). One waiting thanks a pair, at most 500 in all. Nothing scans.
+- **The hourly pass** (`Game::tendResidentLetters`, once a game hour):
+  - **Thanks** go out the day after, if the resident's liking is 40 and trust 20.
+  - One time in three they carry a gift from the resident's **own purse**: at most 6p and a tenth of what it holds,
+    in escrow like a player's enclosure. Never a till's stock.
+  - **Requests:** a resident's courier contract posted in the last day is offered first to the player its poster
+    trusts most (30 or more), by letter: `Contract::offeredTo` and `offeredUntil` (2 game days), saved. Only that player
+    may take it (`World::takeContract` refuses others), from anywhere, with TAKE IT ON (the letter verb `takeWork`,
+    through `World::takeOfferedContract`). With nobody to offer it to, it is the board's.
+  - **Caps:** 3 residents' letters a game week to a player, one from any resident.
+- **The words** (`Data/Voice/letters.json`, `ratw-letters`): thanks and requests, each by tone, plus gift lines.
+  - The tone comes from how the resident feels: warm at liking 70, brief when it trusts more than it likes, else
+    plain. The plan's six personality tones are left for when the templates grow.
+  - Blanks: `{to} {deed} {gift} {from} {place} {reward} {days}`. The deed in words comes from the event ("tending me
+    when I was down", "carrying that letter"…).
+- **The signature:** the resident's name if it would give it (`willName`) and knows the player well (familiarity 50).
+  The name is then learnt on reading (how `"letter"`). Otherwise the case shows it by how the player knows it ("From The
+  wolf who keeps the inn"). Residents' letters can't be answered by post (the user: not now).
+- **Polish:** with `Options::letterModelCallsPerHour` above 0 (default 0), the filled template goes to the Mind's
+  existing `polish`, which keeps every fact or returns nothing. The polished words replace the text if it is still
+  unread. No new Mind endpoint was needed, so `/letter` and `letter_library.py` weren't built.
+- **The briefing:** `residentLetterBriefing` adds up to two lines to `dialogueContext`'s activity, from the store: "You
+  wrote to this wolf early spring, year 1 to thank them for tending me when I was down, and sent 4 pennies with it."
+- **Tests:** `letters_tests` `residentLetters` (now 89 checks):
+  - not the same day; the next day, thanks from the fond innkeeper only, by its role, for tending it, with no reply by
+    post, money conserved;
+  - three a week at most from five deeds;
+  - a courier contract offered by letter to the player trusted most, naming the place and the pennies; Bo can't take
+    it from the board while it is reserved; Ash takes it on from the letter.
+- **Not tested:** the briefing line, which reaches only the Mind's prompt (no test hook), and polishing with the model
+  (off by default; `polish` has its own tests).
+
+### Phase 6 (2026-10-08): occasions, invitations and shared meals
+
+- **Occasions** (`Core/RatwOccasions.cpp`, new; `World::planOccasion`, `tendOccasions`; `Occasion` with hosts,
+  invited, coming and witnesses):
+  - **A wedding** comes from a `marriage` between two residents: the next Restday, 11:00 to 12:00. **A funeral**
+    comes from a family `mourning`: the next morning, 10:00 to 11:00, one funeral per death with every mourning family
+    member a host.
+  - The place is the community's church (its pulpit in the economy's day plans), else the first host's home.
+  - **Hosts go there by errand**: a few lines at the top of `World::errand` (the roads session's file), which overrides
+    the day's plan, as couriers' errands do. `RatwResidents.cpp` isn't touched.
+  - **Invitations** (`Game::inviteToOccasions`, in the hourly letters pass): a day ahead, the hosts invite up to 3
+    players they like (liking 50), by a resident's letter (`wedding` and `funeral` templates: `{when} {place} {couple}
+    {deceased}`).
+  - The letter has **COMING / CAN'T COME** (the `answer` verb; `Occasion::coming`).
+  - **Witnesses:** an invited player within 10 tiles of the place during the hour stands witness. The hosts warm to it
+    (+5 asked; the bond rule's own dampening applies), a `witnessed` event is recorded, and each host's briefing
+    remembers it ("This wolf stood witness at your wedding.").
+  - Occasions aren't saved: one planned before a restart is let go.
+- **Not built:** namings (the world records no birth event yet) and the festival meal at a resident's table (it needs a
+  way to find which players a household likes without a scan; doc 56's per-wolf memory will give one).
+- **Meals** (`World::fed`, from `World::eat`):
+  - Eating gives **Fed** for 2 game hours: stamina comes back ×1.1 out of a fight, and rest heals ×1.05.
+  - A wolf within 2 tiles who ate in the last 10 game minutes (a resident eating right now counts) makes it a **shared
+    meal**: Fed lasts 4 hours for both, and each pair gains +1 liking and +1 familiarity, once a game day (a `shared
+    meal` event).
+  - `fedUntil` and `ateAt` are saved; `self.fedHours` feeds the Status window's "Fed · 1.9 h" row.
+- **Tests:** `letters_tests` `occasionsAndMeals` (now 100 checks):
+  - a marriage's wedding falls on a Restday at 11:00; a day ahead, Ash is invited by letter and Bo isn't; she answers
+    she'll come;
+  - at the hour, Ash stands witness and Bo, there but uninvited, doesn't; the host warms to her;
+  - a family death's funeral the next morning at 10:00;
+  - Fed alone for 2 hours; a shared meal 4 hours for both, and closer.
+- **Not tested:** the hosts walking to the church. Their errand is a few lines, but the strip's residents have no
+  church to walk to in a test.
+
+### Phase 7 (2026-10-08): lending, letters carried by friends, pacts and sponsors
+
+- **Lending** (`lend`, `lendAnswer`, `return`; "Lend" in a player's menu within 2 tiles, opening the Give sheet in its
+  Lend mode with days):
+  - An item for 1 to 7 game days to a player who accepts (`self.lendOffer`, an Accept / Decline row, 30 s). The goods
+    move by `Society::shift` (kind "lent"), with a saved `Loan` in the people root's `loans` list.
+  - The borrower may wear and use them, but `spareOf` takes lent goods off what it may give or put in a letter, and the
+    `trade` command refuses to sell them ("That is lent to you; it isn't yours to sell.").
+  - **RETURN** within 2 tiles of the lender; or at the due day, once a game hour, a courier carries them back and the
+    borrower pays 1p to the capital's treasury.
+  - **Gone** (used up, sold before the rule, lost): the borrower owes the catalog price (`Bonds::addOwed`, its first
+    use in the game), and the lender's trust falls by 10 (the bond rule dampens it a little).
+  - Belongings list what is borrowed (with RETURN) and what is lent out (`self.loans`). Wear isn't carried across, as
+    planned. Chapter stores don't check loans yet.
+- **A letter carried by a friend** (`write` with `by`: a player the writer knows by name, who knows the recipient by
+  name):
+  - The town's postage is given back and the fee goes into a courier contract (`World::postContract`, escrowed from the
+    writer) already taken by the friend. The letter waits in the friend's keeping (state `carried`, out of the
+    courier's queue and out of the recipient's case).
+  - Standing within 3 tiles of the recipient completes the contract by the existing rule (`tendRoads` already accepted
+    a player recipient). The friend is paid and the recipient told "Bo hands you a letter."
+  - If the contract lapses, the town's courier takes it. The friend is told; they don't choose to accept, a small gap.
+- **Pacts** (`pact` with `write`, `seal`, `witness`; a SET DOWN A PACT form in the letter case):
+  - Terms of 1 to 400 letters naming another wolf known by name; the writer seals at once. A copy goes to each party
+    (document kind `pact`, a shared `pact` id, with `party`, `seals` and `witnesses`, all saved). The other party seals
+    from its case.
+  - When both have sealed, a `pact sealed` event (IDs only) is recorded for the chronicle.
+  - A party may ask up to 3 witnesses known by name: each gets a copy and may seal it as a witness. Every copy shows
+    every seal. Nothing enforces a pact.
+- **Sponsors** (`chapter::Member::sponsor`, saved): who invited a member is recorded at accepting
+  (`Chapters::invitedBy_`), shown on the roster ("brought in by Ash"), and told when the initiate rises in rank or is
+  sent away. Standing and renown don't change.
+- **Tests:**
+  - `letters_tests` `favours` (now 118 checks): a loan offered, borrowed, not to be given, listed, handed back; at the
+    day carried back for 1p; used up, a debt and less trust; money conserved; a letter carried by Bo reaching Cy only
+    when handed over, Bo paid; a pact set down, sealed by both (`pact sealed`), witnessed by Cy, three seals on every
+    copy.
+  - `chapter_tests`: the inviter is the sponsor, and it is saved.
+- **Not done:** loans in Chapter stores; asking the friend's consent before carrying a letter; the DM app's views of
+  letters, loans and escrow, and its `letter.return` and `loan.end` actions (the plan's DM section). All are noted for
+  the next pass.
+
 ## Depends on and feeds
 
 - **Depends on:** doc 50 for `blocked()` and the known-wolves entry used by scent (Phases 1 to 3 work without it:
@@ -509,8 +798,8 @@ New placeholder choices in this plan:
 
 ## Open questions
 
-1. **Late grooming:** Well-groomed ends at midnight, as agreed. Should it last at least 2 game hours, so grooming in the
-   evening isn't wasted?
-2. **Residents grooming players:** should a close resident (a sworn one, a companion, family by tie) groom a player?
-3. **Letters to residents:** should players be able to write to residents, with the Mind reading them (a paid call
-   each), or is speaking to them enough?
+All answered by the user, 2026-10-08:
+1. **Late grooming:** Well-groomed lasts 24 game hours or until the next full rest, whichever is first; not until
+   midnight.
+2. **Residents grooming players:** no. Players groom; residents may be groomed by players only.
+3. **Letters to residents:** not now. Speaking to them is enough; residents write to players.

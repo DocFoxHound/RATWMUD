@@ -28,7 +28,7 @@ export class FightPanel {
         const share = obj(self, 'huntShare');
         const work = obj(self, 'work');
         const key = JSON.stringify([s.challenge && [s.challenge.name, Math.ceil(s.challenge.left)], downedLeft > 0 && [Math.ceil(downedLeft),
-            bool(self, 'canStruggle'), bool(self, 'struggling')], s.fights, share, work]);
+            bool(self, 'canStruggle'), bool(self, 'struggling')], s.fights, share, work, obj(self, 'giveOffer'), obj(self, 'groomOffer'), obj(self, 'lendOffer')]);
         if (key === this.key) return;
         this.key = key;
         this.root.replaceChildren();
@@ -40,6 +40,33 @@ export class FightPanel {
             el('span', 'fight-alert', r, `${s.challenge.name} challenges you to a fight ${termsWords(s.challenge.terms)} · ${Math.ceil(s.challenge.left)} s`);
             button('Accept', 'act fight-go', r, () => s.sendAction('accept'));
             button('Decline', 'act', r, () => s.sendAction('decline'));
+        }
+        // A grooming asked (doc 55, 7): accept or decline it.
+        const ask = obj(self, 'groomOffer');
+        if (ask) {
+            any = true;
+            const r = row();
+            el('span', 'fight-alert', r, `${str(ask, 'name')} would groom you · ${Math.ceil(num(ask, 'left'))} s`);
+            button('Accept', 'act fight-go', r, () => s.send({type: 'groomAnswer', accept: true}));
+            button('Decline', 'act', r, () => s.send({type: 'groomAnswer', accept: false}));
+        }
+        // A loan offered (doc 55, 8): accept or decline it.
+        const loan = obj(self, 'lendOffer');
+        if (loan) {
+            any = true;
+            const r = row();
+            el('span', 'fight-alert', r, `${str(loan, 'name')} would lend you ${str(loan, 'what')} for ${num(loan, 'days')} days · ${Math.ceil(num(loan, 'left'))} s`);
+            button('Accept', 'act fight-go', r, () => s.send({type: 'lendAnswer', accept: true}));
+            button('Decline', 'act', r, () => s.send({type: 'lendAnswer', accept: false}));
+        }
+        // A gift offered (doc 55): accept or decline it.
+        const offer = obj(self, 'giveOffer');
+        if (offer) {
+            any = true;
+            const r = row();
+            el('span', 'fight-alert', r, `${str(offer, 'name')} offers you ${str(offer, 'what')} · ${Math.ceil(num(offer, 'left'))} s`);
+            button('Accept', 'act fight-go', r, () => s.send({type: 'giveAnswer', accept: true}));
+            button('Decline', 'act', r, () => s.send({type: 'giveAnswer', accept: false}));
         }
         // Working together (doc 53): "Foraging with Bo · ×1.8", who does what, and Leave.
         if (work) {

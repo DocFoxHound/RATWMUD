@@ -143,6 +143,13 @@ void aCleanKillAndAFireKill()
     // One blow harder than its health: a clean kill, all of it worth taking.
     w.hurtFighter(b, *b.fighter(first), s->health * 1.2, battle::DownedBite, "player-ada", true);
     expect(b.fighter(first)->status == "dead", "one blow brings it down");
+    {
+        // What a hunt takes carries the hunter's scent (doc 55, 4).
+        bool scented = false;
+        for (const auto& r : w.entity("player-ada")->scents)
+            scented = scented || r.maker == "player-ada";
+        expect(scented, "the take carries the hunter's scent");
+    }
     for (const auto& [item, n] : s->yield)
     {
         expect(held(w, "player-ada", item) == before[item] + n, "a clean kill: all its " + item);

@@ -496,6 +496,9 @@ void World::giveLasting(Battle& b, Entity& e, const std::string& cause, const st
     if (marks.marked.count(e.id))
         return;                                     // One lasting injury a fight, whatever the rolls.
     chance += injury::weariness(calendarDays_ - std::max(0.0, e.fullRestDay));
+    // Well-groomed (doc 55, 7): every lasting roll 10 points lower (5 self-groomed); a severe injury licked clean sets
+    // 10 lower even after, but the two don't add. Floored at 0.
+    chance = std::max(0.0, chance - std::max(.10 * groomedFactor(e), from && from->cleaned ? .10 : 0.));
     if (roll(b.id + "|" + e.id + "|lasting|" + std::to_string(b.seq) + cause) >= chance)
         return;
     auto i = injury::lastingFrom(cause, e.injuries, roll(b.id + "|" + e.id + "|which|" + std::to_string(b.seq)), from);

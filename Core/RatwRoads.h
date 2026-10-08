@@ -69,6 +69,9 @@ struct Contract
     // Taken by a resident (doc 42, Phase 4): the shop it fetches the goods from, and how many it carries now.
     std::string source;
     int carried = 0;
+    // Offered by letter to one player first (doc 55, 5): only they may take it, from anywhere, until then.
+    std::string offeredTo;
+    double offeredUntil = 0;
 };
 
 // Something one character has heard about another (or a place): a claim, how sure they are, and who told them.

@@ -401,6 +401,7 @@ bool Game::start(std::string& problem)
     // Hunting together (doc 53): no one blocked by a hunter may join or ask (doc 50's block).
     world_.setBlocked([this](const std::string& a, const std::string& b) { return blocked(a, b); });
     world_.setPartnered([this](const std::string& a, const std::string& b) { return parties_.together(a, b); });
+    world_.setEventWatcher([this](const WorldEvent& e) { watchEvent(e); });   // (Deeds a resident may thank for: doc 55, 5.)
     if (!health_ && !options_.savePath.empty() && !options_.scratch)
         health_ = health::Recorder::file(options_.savePath + ".health.jsonl");
     if (options_.workerThreads > 0)
@@ -1800,6 +1801,8 @@ void Game::leaveCharacter(Connection* c)
     {
         e->typing = false;
         world_.stop(e->id);
+        if (const auto here = townFor(e->cellId); !here.empty())
+            e->postTown = here;                     // (Its letters wait where it left: doc 55.)
         characters_[e->id] = *e;
         characters_[e->id].awaySince = world_.calendarDays();   // Away time counts as rest (doc 38).
         characters_[e->id].awayInBed = world_.inBed(*e);
@@ -2243,6 +2246,7 @@ void Game::tick(double dt)
     tendPeople(real);                               // Played time (doc 50).
     tendNewcomers(real);                            // Start towns' counts; newcomers no longer new (doc 52).
     tendTies(real);                                 // Ties offered to mentors, made, lapsing (doc 52, 4).
+    tendLetters(dt);                                // The courier's arrivals; letters collected at inns (doc 55).
     chapterTick(dt);
     factionTick(dt);
     estateTick(dt);
@@ -2670,6 +2674,63 @@ void Game::sendSnapshot(Connection* c)
         }
         if (world_.keepingWatch(id))
             self.set("keepingWatch", true);         // (Keep watch, doc 53, 4.)
+        // Well-groomed (doc 55, 7): by whom, whether at half, how long it lasts; and a grooming asked of this wolf.
+        if (const double f = world_.groomedFactor(*me); f > 0)
+        {
+            auto o = Value::object();
+            o.add("by", me->groomedBy == id ? std::string("yourself") : names::capitalised(labelFor(id, me->groomedBy)));
+            o.add("half", me->groomHalf);
+            o.add("hours", std::round((me->groomedUntil - world_.calendarDays()) * 24 * 10) / 10);
+            o.add("scent", me->groomScentUntil > world_.calendarDays());
+            self.set("groomed", o);
+        }
+        // Loans (doc 55, 8): a loan offered to this wolf, and what it has borrowed and lent.
+        if (const auto lend = lendOffers_.find(id); lend != lendOffers_.end() && lend->second.until > world_.time())
+        {
+            auto o = Value::object();
+            o.add("from", lend->second.from);
+            o.add("name", names::capitalised(labelFor(id, lend->second.from)));
+            o.add("what", goodsWords(lend->second.item, lend->second.quantity, 0));
+            o.add("days", lend->second.days);
+            o.add("left", std::ceil(lend->second.until - world_.time()));
+            self.set("lendOffer", o);
+        }
+        {
+            auto loans = Value::array();
+            for (const auto& l : loans_)
+                if (l.borrower == id || l.lender == id)
+                {
+                    auto o = Value::object();
+                    o.add("id", l.id);
+                    o.add("borrowed", l.borrower == id);
+                    o.add("who", names::capitalised(labelFor(id, l.borrower == id ? l.lender : l.borrower)));
+                    o.add("what", goodsWords(l.item, l.quantity, 0));
+                    o.add("days", std::round((l.due - world_.calendarDays()) * 10) / 10);
+                    loans.push(o);
+                }
+            if (!loans.items().empty())
+                self.set("loans", loans);
+        }
+        if (me->fedUntil > world_.calendarDays())
+            self.set("fedHours", std::round((me->fedUntil - world_.calendarDays()) * 24 * 10) / 10);   // (Fed: doc 55, 6.)
+        if (const auto ask = groomOffers_.find(id); ask != groomOffers_.end() && ask->second.until > world_.time())
+        {
+            auto o = Value::object();
+            o.add("from", ask->second.from);
+            o.add("name", names::capitalised(labelFor(id, ask->second.from)));
+            o.add("left", std::ceil(ask->second.until - world_.time()));
+            self.set("groomOffer", o);
+        }
+        // A gift offered to this wolf (doc 55, 3): by whom, what, how long it has to answer.
+        if (const auto offer = giveOffers_.find(id); offer != giveOffers_.end() && offer->second.until > world_.time())
+        {
+            auto o = Value::object();
+            o.add("from", offer->second.from);
+            o.add("name", names::capitalised(labelFor(id, offer->second.from)));
+            o.add("what", goodsWords(offer->second.item, offer->second.quantity, offer->second.coins));
+            o.add("left", std::ceil(offer->second.until - world_.time()));
+            self.set("giveOffer", o);
+        }
         // The work one is in with others (doc 53, 2.2): what, who in which role, each one's rate, beats so far.
         if (const auto* joint = world_.jointOf(id))
         {
@@ -2794,6 +2855,8 @@ void Game::sendSnapshot(Connection* c)
         }
     }
     self.set("names", namesView(id));                 // Their name and aliases (doc 32).
+    if (const auto letters = lettersSelf(id); !letters.isNull())
+        self.set("letters", letters);              // Unread letters, and those waiting at inns (doc 55).
     // The party (doc 32): its members and where they are, an invitation waiting, a party mate's fight calling.
     if (auto party = partyView(id); !party.isNull())
         self.set("party", std::move(party));
@@ -2996,6 +3059,8 @@ void Game::sendSnapshot(Connection* c)
         if (!e.npc)
             if (const auto portrait = visiblePortrait(e.id, id); !portrait.empty())
                 j.set("artwork", portrait);         // Approved portraits only (doc 29, phase 9).
+        if (e.groomedUntil > world_.calendarDays() && !e.groomHalf)
+            j.set("groomed", true);                 // "Freshly groomed", to anyone who looks (doc 55, 7).
         if (auto gear = gearView(e); !gear.items().empty())
             j.set("gear", std::move(gear));         // Armour and weapons, plain to see (doc 35): the card's little doll.
         auto actions = Value::array();
@@ -3151,6 +3216,16 @@ void Game::sendSnapshot(Connection* c)
                 actions.push("tell the wardens");
                 actions.push("vouch to the wardens");
             }
+        // Grooming (doc 55, 7): a wolf within 1.5 tiles, both out of a fight.
+        if (e.id != view.self.id && !e.dead && apart <= 1.5 && !world_.inBattle(view.self.id) && !world_.inBattle(e.id) && !e.transient)
+            actions.push("groom");
+        // Giving (doc 55, 3): to any wolf within 2 tiles, both out of a fight; lending, to a player.
+        if (e.id != view.self.id && !e.dead && apart <= 2 && !world_.inBattle(view.self.id) && !world_.inBattle(e.id) && !e.transient)
+        {
+            actions.push("give");
+            if (!e.npc)
+                actions.push("lend");
+        }
         // Training grounds (doc 53, 5): Ask to spar of a resident trainer there.
         if (e.npc && apart <= battle::StartReach && !world_.inBattle(view.self.id) && world_.trainer(e.id) && !world_.inBattle(e.id))
             actions.push("ask to spar");
@@ -3262,6 +3337,8 @@ void Game::sendSnapshot(Connection* c)
         i.add("description", description);
         i.add("equipped", equipped);
         i.add("quantity", quantity);
+        if (const auto smell = scentOfItem(id, id, itemId); !smell.empty())
+            i.add("scent", smell);                  // (Meals and herbs too: doc 55.)
         inventory.push(i);
     };
     item("starter_satchel", "Shoulder satchel", "bag", "A small travel bag made for a wolf's shoulders.", true, 1);
@@ -3328,6 +3405,8 @@ void Game::sendSnapshot(Connection* c)
                 if (good->tier > 0)
                     i.add("tier", items::tierName(good->tier));
                 i.add("quantity", quantity);
+                if (const auto smell = scentOfItem(id, id, itemId); !smell.empty())
+                    i.add("scent", smell);              // "it smells of Kestrel" (doc 55, 3 and 4).
                 inventory.push(std::move(i));
             }
     }
@@ -3697,6 +3776,7 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     {
         context.activity += matchmake(npcId, playerId, heardText);   // (A resident as matchmaker: doc 52, 5.)
         context.activity += vouchBriefing(npcId, playerId);          // (Vouched for, or a vouch gone bad: doc 52, 7.)
+        context.activity += residentLetterBriefing(npcId, playerId); // (Letters it wrote them: doc 55, 5.)
     }
     if (!alsoHeard.empty())
         context.scene += " Others were spoken to at the same time, and just answered: " + mind::left(alsoHeard, 600);
@@ -3944,7 +4024,15 @@ void Game::heed(const std::string& npcId, const std::string& subjectId, bool ide
     };
     const int affinity = spend(budget.affinity, reply.affinity), trust = spend(budget.trust, reply.trust);
     if (affinity || trust)
-        world_.bonds().change(npcId, subjectId, {double(affinity), double(trust), 0, 0, 0}, world_.calendarDays());
+    {
+        // First impressions (doc 55, 7): a Well-groomed wolf the resident hardly knows: warmer nudges a quarter more.
+        double lift = 1;
+        if (const auto* wolf = world_.entity(subjectId); wolf && !wolf->npc)
+            if (const auto* bond = world_.bonds().find(npcId, subjectId); !bond || bond->familiarity < 25)
+                lift = 1 + .25 * world_.groomedFactor(*wolf);
+        world_.bonds().change(npcId, subjectId, {affinity > 0 ? affinity * lift : double(affinity), trust > 0 ? trust * lift : double(trust), 0, 0, 0},
+                              world_.calendarDays());
+    }
     if (!reply.remember.empty())
         memories_.record(npcId, subjectId, {sequence_++, now(), "(your note)", reply.remember});
     if (!reply.promise.empty())
@@ -4152,7 +4240,10 @@ void Game::command(Connection* c, const std::string& raw)
         const auto* seller = world_.entity(id);
         const bool wearing = buy && buy->isBool() && !buy->asBool() && purse && seller && qty >= 1 &&
                              Society::stock(*purse, j.string("item")) - World::wornCount(*seller, j.string("item")) < qty;
+        const bool lent = buy && buy->isBool() && !buy->asBool() && purse && qty >= 1 &&
+                          Society::stock(*purse, j.string("item")) - lentTo(id, j.string("item")) < qty;   // (Lent to them: doc 55, 8.)
         result = wearing ? Result{false, "You are wearing or holding it: take it off first.", {}}
+               : lent    ? Result{false, "That is lent to you; it isn't yours to sell.", {}}
                : qty >= 1 && qty <= 99 && qty == std::floor(qty) && buy && buy->isBool()
                      ? (!factionTrade(id, j.string("target"), buy->asBool(), refusal)
                             ? refusal
@@ -4161,6 +4252,10 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok && buy && buy->asBool())
             if (const auto* after = world_.society().account(id))
                 afterFactionTrade(id, j.string("target"), before - after->cash);
+        if (result.ok && buy && buy->asBool())
+            makersScent(id, j.string("target"), j.string("item"), int(qty));   // (Bought from its maker: doc 55, 4.)
+        else if (result.ok && buy && !buy->asBool())
+            moveScents(id, j.string("target"), j.string("item"), int(qty), false);   // (Sold: their records go, oldest first.)
         report = true;
         if (result.ok)
         {
@@ -4309,6 +4404,50 @@ void Game::command(Connection* c, const std::string& raw)
         // The gathering howl (doc 51, Phase 6): a howl, or joining one near.
         result = howl(id);
         report = true;
+    }
+    else if (type == "pact")
+    {
+        pactCommand(c, j, result);                  // Pacts (doc 55, 8).
+        report = true;
+    }
+    else if (type == "lend" || type == "lendAnswer" || type == "return")
+    {
+        // Lending (doc 55, 8): {"target", "item", "quantity", "days"}; the one offered answers {"accept"}; the borrower
+        // returns {"loan"}.
+        if (type == "lend")
+            lendCommand(c, j, result);
+        else if (type == "lendAnswer")
+            lendAnswer(c, j.boolean("accept"), result);
+        else
+            returnLoan(c, j, result);
+        report = true;
+    }
+    else if (type == "groom" || type == "groomAnswer")
+    {
+        // Grooming (doc 55, 7): {"target": id or "self", "words"}; the one asked answers {"accept": bool}.
+        if (type == "groom")
+            groomCommand(c, j, result);
+        else
+            groomAnswer(c, j.boolean("accept"), result);
+        report = true;
+    }
+    else if (type == "give" || type == "giveAnswer")
+    {
+        // Giving (doc 55, 3): {"target", "item", "quantity", "coins"}; the one offered answers {"accept": bool}.
+        if (type == "give")
+            giveCommand(c, j, result);
+        else
+            giveAnswer(c, j.boolean("accept"), result);
+        report = true;
+    }
+    else if (type == "letter" || type == "letters")
+    {
+        // Letters (doc 55): write, read, keep, burn, send on, reply; "letters" asks for the case.
+        auto k = j;
+        if (type == "letters")
+            k.set("verb", "list");
+        letterCommand(c, k, result);
+        report = !result.message.empty();
     }
     else if (type == "known")
     {

@@ -315,6 +315,8 @@ json::Value Game::peopleSave() const
     booksSave(root);                                // Story books (doc 51, Phase 7).
     tiesSave(root);                                 // Ties (doc 52, 4).
     vouchesSave(root);                              // Vouches and first evenings (doc 52, 6 and 7).
+    lettersSave(root);                              // The document store: letters (doc 55).
+    loansSave(root);                                // Loans (doc 55, 8).
     return root;
 }
 
@@ -343,5 +345,7 @@ void Game::peopleLoad(const json::Value& saved)
     booksLoad(saved);
     tiesLoad(saved);
     vouchesLoad(saved);
+    lettersLoad(saved);
+    loansLoad(saved);
 }
 } // namespace ratw::game

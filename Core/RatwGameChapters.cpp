@@ -162,7 +162,12 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
     {
         const auto* mine = chapters_.of(id);
         const std::string chapterId = mine ? mine->id : std::string();
+        const auto* member = chapters_.member(target);
+        const std::string sponsor = member ? member->sponsor : std::string();
         const auto o = chapters_.remove(id, target, t);
+        if (o.ok && !sponsor.empty() && sponsor != id)
+            if (auto* cl = clientOf(sponsor))
+                system(cl, names::capitalised(nameOf(target)) + ", whom you brought into the Chapter, has been sent from it.");   // (Doc 55, 8.)
         if (o.ok)
         {
             factions_.expelled(chapterId, target, world_.calendarDays());   // Their burden leaves with them, once heard of.
@@ -173,7 +178,17 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
         done(o, "Sent away.");
     }
     else if (verb == "rank")
-        done(chapters_.setRank(id, target, int(j.number("rank", chapter::RankInitiate)), t), "Rank set.");
+    {
+        const auto* member = chapters_.member(target);
+        const std::string sponsor = member ? member->sponsor : std::string();
+        const int was = member ? member->rank : chapter::RankInitiate;
+        const auto o = chapters_.setRank(id, target, int(j.number("rank", chapter::RankInitiate)), t);
+        if (o.ok && !sponsor.empty() && sponsor != id)
+            if (const auto* now = chapters_.member(target); now && now->rank < was)
+                if (auto* cl = clientOf(sponsor))
+                    system(cl, names::capitalised(nameOf(target)) + ", whom you brought into the Chapter, has risen in it.");   // (Doc 55, 8.)
+        done(o, "Rank set.");
+    }
     else if (verb == "rankname")
         done(chapters_.renameRank(id, int(j.number("rank", -1)), mind::trim(j.string("name"))), "Rank renamed.");
     else if (verb == "meet")
@@ -381,6 +396,8 @@ void Game::refreshChapterViews(double dt)
                 o.add("id", m);
                 o.add("name", names::capitalised(labelFor(id, m)));
                 o.add("rank", mm.rank);
+                if (!mm.sponsor.empty())
+                    o.add("sponsor", names::capitalised(labelFor(id, mm.sponsor)));   // (Who brought them in: doc 55, 8.)
                 o.add("online", clientOf(m) != nullptr);
                 o.add("active", t - mm.active < chapter::ActiveSeconds);
                 members.push(o);

@@ -195,6 +195,9 @@ export class Hud {
         this.leaveHuntButton = button('Give up hunt', 'act', actions, () => act('leaveHunt'));
         // A training ground (doc 53): practice with no partner.
         this.postButton = button('Practise at the post', 'act', actions, () => act('post'));
+        // Grooming oneself (doc 55, 7): once a game day, half of every effect for two hours.
+        button('Groom yourself', 'act', actions, () => act('groomSelf')).title =
+            'Once a game day: for two hours a little less scent, and half of what a grooming by another does';
 
         const side = el('aside', 'side', this.root);
         // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.

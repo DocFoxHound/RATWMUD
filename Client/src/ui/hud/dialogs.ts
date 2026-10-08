@@ -9,6 +9,7 @@ import type {GameState} from '../../game/state.ts';
 import {button, el, setClass, show} from './dom.ts';
 import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
+import {renderLetters} from './letters.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
  * level's start to the next (an older server sends neither: then a hundred a level, as it was). */
@@ -103,9 +104,10 @@ export class Dialogs {
                 s.circles, s.circleInvites] : '',
             m === 'stories' ? [s.shelf] : '', m === 'book' ? [s.bookOpen, s.circles] : '',
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
-            m === 'missions' ? s.missionBoard : '',
+            m === 'missions' ? s.missionBoard : '', m === 'letters' ? [s.lettersCase, s.letterDraftVersion, obj(self, 'names'), arr(s.snapshot, 'inventory')] : '',
+            m === 'give' || m === 'lend' ? [s.giveTarget, arr(s.snapshot, 'inventory'), countText(self, 'cash')] : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
-            m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'),
+            m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'), arr(self, 'loans'),
                 obj(s.snapshot, 'resource')] : '',
             m === 'status' ? [self, s.battle && !s.battle.observer ? [s.battle.fighters.find(f => f.id === s.selfId), s.battle.acted, s.battle.turn] : null] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
@@ -120,6 +122,9 @@ export class Dialogs {
         if (m === 'character') this.character(self);
         else if (m === 'chapter_window') this.chapter(self);
         else if (m === 'missions') this.missions();
+        else if (m === 'letters') renderLetters(this.panel, s);
+        else if (m === 'give') this.giveSheet();
+        else if (m === 'lend') this.giveSheet(true);
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'status') this.status(self);
         else if (m === 'their_equipment') this.theirEquipment();
@@ -197,6 +202,9 @@ export class Dialogs {
         el('p', '', this.panel, str(self, 'description', 'Your appearance belongs here.'));
         const actions = el('div', 'sheet-actions', this.panel);
         button('FRIENDS', 'secondary', actions, () => this.act('people')).title = 'Your friends, requests and private messages (doc 50)';
+        const post = obj(self, 'letters');
+        button(num(post, 'unread') ? `LETTERS (${num(post, 'unread')})` : 'LETTERS', 'secondary', actions, () => this.s.openLetters()).title =
+            num(post, 'waiting') ? `${num(post, 'waiting')} waiting at the inns of ${str(post, 'waitingAt')}` : 'Your letter case (doc 55)';
         button('YOUR PROFILE', 'secondary', actions, () => this.act('profile')).title =
             'What others see of your wolf (a description, what you are doing, glances), your status, and your OOC notes, lines and veils.';
         button('CHARACTER SELECTION', 'primary', actions, () => this.act('leave_character'));
@@ -336,7 +344,8 @@ export class Dialogs {
         el('div', 'label gold', left, 'MEMBERS');
         for (const m of arr(ch, 'members').filter(isObject)) {
             const row = el('div', 'story-row', left);
-            el('span', bool(m, 'online') ? '' : 'muted', row, `${str(m, 'name')} · ${ranks[num(m, 'rank')] ?? ''}${bool(m, 'active') ? '' : ' · away'}`);
+            el('span', bool(m, 'online') ? '' : 'muted', row, `${str(m, 'name')} · ${ranks[num(m, 'rank')] ?? ''}${bool(m, 'active') ? '' : ' · away'}` +
+                `${str(m, 'sponsor') ? ` · brought in by ${str(m, 'sponsor')}` : ''}`);
             const id = str(m, 'id');
             if (id === s.selfId) continue;
             if (rank === 0) {
@@ -437,6 +446,46 @@ export class Dialogs {
     }
 
     /** A faction's mission board (doc 32, 4.5). */
+    /** Giving (doc 55, 3): something carried (not worn) and/or coins, to the wolf chosen from its menu. */
+    private giveSheet(lend = false) {
+        const s = this.s;
+        const who = s.entities.get(s.giveTarget);
+        this.heading(lend ? 'LEND' : 'GIVE', who ? `To ${who.name}` : 'To whom?');
+        const row = el('div', 'sheet-actions', this.panel);
+        const item = el('select', 'profile-input', row) as HTMLSelectElement;
+        item.dataset.field = 'give-item';
+        if (!lend) el('option', '', item, 'Nothing, only coin').setAttribute('value', '');
+        for (const i of arr(s.snapshot, 'inventory').filter(isObject).filter(i => str(i, 'id') !== 'token')) {
+            const o = el('option', '', item, `${str(i, 'name')} (${wholeCount(i, 'quantity', 1)})`) as HTMLOptionElement;
+            o.value = str(i, 'id');
+        }
+        const quantity = el('input', 'profile-input', row) as HTMLInputElement;
+        quantity.type = 'number';
+        quantity.min = '1';
+        quantity.value = '1';
+        quantity.title = 'How many';
+        const coins = el('input', 'profile-input', row) as HTMLInputElement;
+        coins.type = 'number';
+        coins.min = lend ? '1' : '0';
+        coins.max = lend ? '7' : '';
+        coins.value = lend ? '3' : '0';
+        coins.title = lend ? 'For how many game days (1 to 7)' : 'Silver pennies';
+        coins.dataset.field = lend ? 'lend-days' : 'give-coins';
+        button(lend ? 'LEND' : 'GIVE', 'primary', row, () => {
+            const n = Math.max(1, Math.trunc(Number(quantity.value) || 1));
+            if (lend) s.send({type: 'lend', target: s.giveTarget, item: item.value, quantity: n, days: Math.max(1, Math.min(7, Math.trunc(Number(coins.value) || 3)))});
+            else s.send({type: 'give', target: s.giveTarget, item: item.value, quantity: n, coins: Math.max(0, Math.trunc(Number(coins.value) || 0))});
+            this.act('close');
+        });
+        if (lend) {
+            el('p', 'muted small', this.panel, 'They may wear and use it, never sell or give it. They hand it back, or a courier brings it back on the day; ' +
+                'if it is gone, they owe you for it.');
+            return;
+        }
+        el('p', 'muted small', this.panel, 'A player may accept or decline; a resident takes it unless it dislikes you. What you wear stays on you. ' +
+            'A gift smells of you for a week, unless you are masked.');
+    }
+
     private missions() {
         const board = this.s.missionBoard;
         this.heading('MISSIONS', str(board, 'faction', 'A faction'));
@@ -766,6 +815,13 @@ export class Dialogs {
             if (health <= 25 && downedLeft <= 0) condition('Limping', 'Badly hurt: slow, and no sprinting.');
             else if (health < 75) condition(health <= 50 ? 'Badly hurt' : 'Wounded', 'Slower, and it shows. Rest and time heal it.');
         }
+        if (num(self, 'fedHours') > 0) condition(`Fed · ${num(self, 'fedHours').toFixed(1)} h`,
+            'Stamina comes back a tenth faster and rest heals a little faster. A meal shared with another lasts twice as long.');
+        const groomed = obj(self, 'groomed');
+        if (groomed) condition(`Well-groomed, by ${str(groomed, 'by')} · ${num(groomed, 'hours').toFixed(1)} h`,
+            bool(groomed, 'half') ? 'Self-groomed: half of a grooming\'s good, for two hours.'
+                : 'Until a day is out or your next full rest: wounds heal a tenth faster and set into lasting ones less often, residents who ' +
+                  'hardly know you warm to you sooner' + (bool(groomed, 'scent') ? ', and for now your scent carries less far.' : '.'));
         const downs = num(self, 'downsSinceRest');
         if (downs > 0) condition(`Down ${downs}× without a full rest`, 'Each time you go down you stay down longer, until you sleep six hours in a bed.');
         const rest = restLabel(self).replace(/^\s*·\s*/, '');
@@ -1144,10 +1200,19 @@ export class Dialogs {
             el('div', `item-icon ${itemIcon(item)}`, card);
             const text = el('div', '', card);
             el('div', 'item-name', text, str(item, 'name'));
+            if (str(item, 'scent')) el('div', 'muted small letter-scent', text, str(item, 'scent')[0].toUpperCase() + str(item, 'scent').slice(1));
             el('div', `label ${bool(item, 'equipped') ? 'sage' : 'muted'}`, text,
                 `${bool(item, 'equipped') ? 'EQUIPPED' : 'CARRIED'} · × ${wholeCount(item, 'quantity', 1)}` +
                 `${num(item, 'weight') > 0 ? ` · ${weightLabel(num(item, 'weight') * wholeCount(item, 'quantity', 1)).toUpperCase()}` : ''}`);
             el('p', 'muted small', text, str(item, 'description'));
+        }
+        // Loans (doc 55, 8): what is borrowed (RETURN, near its lender) and what is lent out.
+        for (const l of arr(self, 'loans').filter(isObject)) {
+            const row = el('div', 'story-row', this.panel);
+            el('span', bool(l, 'borrowed') ? '' : 'muted', row, bool(l, 'borrowed')
+                ? `Borrowed from ${str(l, 'who')}: ${str(l, 'what')} · back in ${num(l, 'days').toFixed(1)} days`
+                : `Lent to ${str(l, 'who')}: ${str(l, 'what')} · due in ${num(l, 'days').toFixed(1)} days`);
+            if (bool(l, 'borrowed')) button('RETURN', 'small', row, () => s.send({type: 'return', loan: str(l, 'id')})).title = 'Within 2 tiles of them';
         }
         const actions = el('div', 'sheet-actions', this.panel);
         if (s.inventoryQuantity('meal') > 0 && !fight) button('EAT ONE MEAL', 'primary', actions, () => this.act('eat'));

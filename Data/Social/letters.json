@@ -1,0 +1,11 @@
+{
+  "about": "Letters between players (Docs/Design/55-letters-gifts-favours.md, 2). textMost: letters of text at most; perDay: letters a wolf may send a game day; unreadMost: past this many unread, the courier refuses (their post is full); fees in pennies to the writing town's treasury (within a town; to another town, plus one more for each `perCells` road cells); courier hours (game hours: within a town; between towns 1 + cells / `cellsPerHour`, at most `mostHours`); scentDays: game days a letter keeps its writer's scent; sightFamiliarity: how well a reader must know a wolf to know its scent by sight. All numbers are placeholders.",
+  "textMost": 800,
+  "perDay": 10,
+  "unreadMost": 100,
+  "fee": {"town": 1, "between": 2, "perCells": 10},
+  "hours": {"town": 1, "cellsPerHour": 3, "mostHours": 12},
+  "scentDays": 14,
+  "sightFamiliarity": 20,
+  "sendOnFee": 1
+}

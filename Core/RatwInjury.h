@@ -19,6 +19,7 @@ struct Injury
     int severity = 1;                // Acute: 1 minor, 2 moderate, 3 severe, as it was got (it eases as it heals).
     double restLeft = 0, restFull = 0;   // Acute: rest hours still needed, of how many.
     double gotDay = 0;               // The calendar day it was got.
+    bool cleaned = false;            // Licked clean (doc 55, 7): a severe acute injury groomed; its setting roll is lower.
 };
 
 namespace injury

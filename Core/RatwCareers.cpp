@@ -55,7 +55,7 @@ bool thisWeek(const std::string& id, std::int64_t day)
 
 bool facilityAccount(const std::string& id)
 {
-    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's)
+    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures)
         if (id.rfind(prefix, 0) == 0)
             return id.size() <= 80 && id.size() > std::string(prefix).size();
     return false;
@@ -142,6 +142,9 @@ bool Society::shift(const std::string& from, const std::string& to, const std::s
     const auto a = state_.accounts.find(from), b = state_.accounts.find(to);
     if (a == state_.accounts.end() || b == state_.accounts.end() || from == to || coins < 0 || quantity < 0 ||
         a->second.cash < coins || (!item.empty() && stock(a->second, item) < quantity))
+        return false;
+    // Never more kinds of goods than a save may hold (restore refuses past MaxGoodsKinds: doc 55 found the gap).
+    if (!item.empty() && quantity > 0 && !b->second.stock.count(item) && b->second.stock.size() >= MaxGoodsKinds)
         return false;
     coins = std::min(coins, MoneyCap - b->second.cash);
     if (!item.empty())
