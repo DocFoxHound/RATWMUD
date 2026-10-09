@@ -433,6 +433,8 @@ Result World::deliverContract(const std::string& player, const std::string& cont
         }
         if (given <= 0)
             return {false, "You carry none of what is wanted.", contractId};
+        if (townShortOf(c.town, c.item))
+            noteTrade(c.town, c.item, player, given);   // (Doc 57, 5.)
         const auto escrow = "contract:" + c.id;
         const int left = c.quantity - c.delivered;
         const auto pay = given >= left ? c.reward : c.reward * given / left;

@@ -141,6 +141,11 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # Fame (Docs/Design/56-fame-and-memory.md): a deed awarded to a player character (target the doer; payload kind,
            # weight, cell, beneficiary, detail), or revoked (target the deed's id).
            'deed.award': 'dm', 'deed.revoke': 'dm', 'nickname.drop': 'dm', 'nickname.restore': 'dm',
+           # Town projects (Docs/Design/57-changing-the-world.md, 7): one posted (target the town; payload kind, cell, x, y,
+           # title), cancelled with its gifts returned, completed by hand, or taken down (target the project's id).
+           'project.post': 'dm', 'project.cancel': 'dm', 'project.complete': 'dm', 'project.remove': 'dm',
+           # Protected residents (doc 57, 6): marked live, or unmarked (target the resident).
+           'npc.protect': 'dm', 'npc.unprotect': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -471,6 +476,62 @@ class DungeonMaster:
         conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
         self.audit(conn, who['username'], kind, target_id, f'{target.upper()}: {detail}'[:2000])
         return action_id
+
+    def live_action(self, who, target, kind, target_id, payload=None, reason=''):
+        """A live action on something other than a character (town projects, deeds, nicknames, notices, places to let),
+        queued for the game server with its payload checked, and audited."""
+        if kind not in LIVE_KINDS:
+            raise DMError('No such action.')
+        self.allowed(who, kind)
+        target_id = str(target_id or '').strip()
+        if not target_id or len(target_id) > 80 or not PLAIN_ID.match(target_id):
+            raise DMError('Say what it is for.')
+        p = payload if isinstance(payload, dict) else {}
+        clean = {}
+        if kind == 'project.post':
+            kinds = [k['id'] for k in project_rules().get('kinds', [])]
+            if p.get('kind') not in kinds:
+                raise DMError('No such kind of project.')
+            clean = {'kind': p['kind'], 'title': str(p.get('title', ''))[:80]}
+            if p.get('cell'):
+                x, y = p.get('x'), p.get('y')
+                if not isinstance(x, int) or not isinstance(y, int) or isinstance(x, bool) or isinstance(y, bool) or \
+                        not 0 <= x < 4096 or not 0 <= y < 4096 or not PLAIN_ID.match(str(p['cell'])):
+                    raise DMError('Give the tile as whole numbers.')
+                clean.update({'cell': str(p['cell'])[:80], 'x': x, 'y': y})
+        elif kind == 'deed.award':
+            clean = {k: str(p.get(k, ''))[:160] for k in ('kind', 'weight', 'cell', 'beneficiary', 'detail') if p.get(k)}
+        with self.connect(target) as conn:
+            with conn.transaction():
+                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s)
+                                            RETURNING id''', (kind, target_id, who['username'], json.dumps(clean))).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
+                what = f" — {clean.get('kind', '')} {clean.get('title', '')}".rstrip() if clean else ''
+                self.audit(conn, who['username'], kind, target_id,
+                           f'{target.upper()}: {kind} {target_id}{what}' + (f' — {reason[:500]}' if reason else ''))
+        return {'id': action_id, 'status': 'queued'}
+
+    def projects(self, target):
+        """Town projects (doc 57): each one open or standing, where, how far along, and its top givers by the names they
+        chose."""
+        with self.connect(target) as conn:
+            rows = [r[0] for r in conn.execute(
+                "SELECT data FROM game.projects WHERE data->>'state' IN ('open', 'built', 'worn', 'ruin')").fetchall()]
+        out = []
+        for d in rows:
+            givers = {}
+            for g in d.get('gifts') or []:
+                givers[g.get('who')] = givers.get(g.get('who'), 0) + float(g.get('value') or 0)
+            top = sorted(givers.items(), key=lambda kv: -kv[1])[:3]
+            shown = d.get('shown') or {}
+            out.append({'id': d.get('id'), 'kind': d.get('kind'), 'title': d.get('title'), 'town': d.get('town'),
+                        'cell': d.get('cell'), 'x': d.get('x', 0), 'y': d.get('y', 0), 'state': d.get('state'),
+                        'hours': d.get('hours', 0), 'worked': d.get('worked', 0), 'condition': d.get('condition', 100),
+                        'needs': d.get('needs') or {}, 'namedFor': d.get('namedFor') or '',
+                        'givers': [{'id': who, 'shown': shown.get(who) or 'a friend of the town', 'value': round(v)}
+                                   for who, v in top]})
+        return {'target': target, 'projects': out,
+                'kinds': [{'id': k['id'], 'name': k['name']} for k in project_rules().get('kinds', [])]}
 
     def allowed(self, who, kind):
         if RANK[who['role']] < RANK[ACTIONS[kind]]:
@@ -1691,6 +1752,20 @@ class DungeonMaster:
         return {'id': int(action_id), 'status': row[0], 'result': row[1], 'doneAt': row[2].isoformat() if row[2] else None}
 
 
+# --------------------------------------------------------------------------- Town projects (doc 57)
+
+# Live actions on things other than characters, sent through /api/live/action.
+LIVE_KINDS = ('project.post', 'project.cancel', 'project.complete', 'project.remove', 'npc.protect', 'npc.unprotect',
+              'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release')
+
+
+def project_rules() -> dict:
+    try:
+        return json.loads((ROOT / 'Data/Town/projects.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+
+
 # --------------------------------------------------------------------------- Fame (doc 56)
 
 WEIGHTS = ['small', 'notable', 'great', 'legendary']
@@ -1829,6 +1904,12 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.rumours(self.target(query)))
             if method == 'GET' and path == '/api/live/fame':
                 return self.reply(200, dm.fame(self.target(query)))
+            if method == 'GET' and path == '/api/live/projects':
+                return self.reply(200, dm.projects(self.target(query)))
+            if method == 'POST' and path == '/api/live/action':
+                data = self.body()
+                return self.reply(200, dm.live_action(who, str(data.get('target', 'prod')), str(data.get('kind', '')),
+                                                      data.get('id', ''), data.get('payload'), str(data.get('reason', ''))))
             if method == 'POST' and path == '/api/live/visit':
                 data = self.body()
                 return self.reply(200, dm.visit(who, str(data.get('target', 'prod')), data.get('name', ''), str(data.get('cell', '')),

@@ -363,6 +363,33 @@ class DungeonMasterTests(Fixture):
         self.assertAlmostEqual(D.deed_reach({'carrier': 'here', 'since': 0}, 1, 0), .25)
         self.assertAlmostEqual(D.deed_reach({'carrier': 'caravan', 'since': 0}, 2, 3), .15 + .85 * .5)
 
+        # Doc 57: town projects on the LIVE map's Projects layer, and the DM's hand on them (queued, checked, audited).
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            project = {'id': 'proj-1', 'kind': 'cover', 'title': 'the Greyfen market cover', 'town': 'greyfen', 'cell': town,
+                       'x': 4, 'y': 5, 'state': 'open', 'hours': 20, 'worked': 8, 'needs': {'timber': 12},
+                       'shown': {'player-ada': 'Ada', 'player-bo': ''},
+                       'gifts': [{'who': 'player-ada', 'kind': 'coin', 'amount': 60, 'value': 60},
+                                 {'who': 'player-bo', 'kind': 'labour', 'amount': 4, 'value': 3}]}
+            game.execute('INSERT INTO game.projects (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'proj-1', 0, json.dumps(project)))
+        listed = self.dm.projects('prod')
+        self.assertEqual(listed['projects'][0]['givers'], [{'id': 'player-ada', 'shown': 'Ada', 'value': 60},
+                                                           {'id': 'player-bo', 'shown': 'a friend of the town', 'value': 3}])
+        self.assertIn('cover', [k['id'] for k in listed['kinds']])
+        self.dm.live_action(master, 'prod', 'project.post', 'greyfen', {'kind': 'watchpost', 'title': 'The north watch'})
+        self.dm.live_action(master, 'prod', 'project.cancel', 'proj-1')
+        self.dm.live_action(master, 'prod', 'npc.protect', 'npc_a')        # (Doc 57, 6: a resident players can't ruin.)
+        for bad in (('project.post', 'greyfen', {'kind': 'castle'}), ('project.post', 'greyfen', {'kind': 'cover', 'cell': town, 'x': 'a'}),
+                    ('character.kill', 'player-ada', {}), ('project.remove', '', {})):
+            with self.assertRaises(D.DMError, msg=repr(bad)):
+                self.dm.live_action(master, 'prod', *bad)
+        with self.assertRaises(D.DMError):
+            self.dm.live_action(viewer, 'prod', 'project.remove', 'proj-1')
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            queued = owner.execute('SELECT kind, target_id, payload FROM dm.actions ORDER BY id').fetchall()
+        self.assertEqual([q[:2] for q in queued[-3:]], [('project.post', 'greyfen'), ('project.cancel', 'proj-1'), ('npc.protect', 'npc_a')])
+        self.assertEqual(queued[-3][2], {'kind': 'watchpost', 'title': 'The north watch'})
+
     def test_the_servers_health(self):
         viewer = self.sign_in('dm-viewer')
         empty = self.dm.health('prod', 24)

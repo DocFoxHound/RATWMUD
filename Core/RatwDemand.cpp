@@ -1092,4 +1092,16 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
         }
     }
 }
+
+void Society::mendTown(const std::string& community, double points)
+{
+    if (community.empty() || !std::isfinite(points) || points <= 0)
+        return;
+    auto& condition = state_.memory.condition.try_emplace(community, 100.0).first->second;
+    const double was = condition;
+    condition = std::min(100.0, condition + points);
+    if ((was >= 50) != (condition >= 50))
+        townNews_.push_back({community, condition >= 50 ? "mended" : "disrepair"});
+    ++state_.memory.revision;
+}
 } // namespace ratw

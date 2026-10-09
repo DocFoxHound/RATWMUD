@@ -48,6 +48,8 @@ export interface Person {
     personality: string; backstory: string;
     /** May travel with a player's party, at any hour (Docs/Design/32, 2.3). */
     joinable?: boolean;
+    /** Can't be attacked by players, nor robbed of coin (Docs/Design/57, 6). */
+    protected?: boolean;
 }
 /** A job placed in the world; the shared roster fills it at export. */
 export interface Slot {

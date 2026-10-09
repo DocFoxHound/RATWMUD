@@ -29,6 +29,12 @@ const std::vector<Kind>& catalogue()
         {"wall", "Stone wall", '#', 40, 10, 5, true},
         {"tower", "Tower", 'I', 120, 30, 5, true},
         {"gatehouse", "Gatehouse", 'G', 150, 40, 5, true},
+        // A town's projects (doc 57, 4): never a Chapter's to plan (level 99); their materials and hours are the
+        // project's (Data/Town/projects.json), and the game wears them.
+        {"town_watchpost", "Watch post", 'T', 0, 20, 99, false},
+        {"market_cover", "Market cover", 'n', 0, 20, 99, false},
+        {"waystation", "Waystation", 'W', 0, 30, 99, false},
+        {"granary", "Granary", 'g', 0, 40, 99, false},
     };
     return kinds;
 }
@@ -240,8 +246,8 @@ std::vector<std::string> Camps::wear(double days, double now)
     std::vector<std::string> ruined;
     for (auto& [id, s] : sites_)
     {
-        if (s.state != "standing")
-            continue;
+        if (s.state != "standing" || townSite(s))
+            continue;                               // (A town's projects wear by their own rates: the game's.)
         const double rate = (now - s.visited > AbandonedSeconds ? 4.0 : 1.0) * days;
         bool anything = false;
         for (auto& [sid, st] : structures_)

@@ -387,6 +387,8 @@ bool Game::forkSnapshot()
     store_->queueEvents(world_.takeEvents());
     syncCharacters();
     const auto seq = journalSeq_;
+    if (shadow_.primed)
+        shadow_.accounts = world_.society().state().accounts;   // (The journal goes on from this checkpoint's accounts: see capture.)
     std::fflush(nullptr);                          // Nothing buffered is written twice by the child.
     const pid_t pid = ::fork();
     if (pid < 0)

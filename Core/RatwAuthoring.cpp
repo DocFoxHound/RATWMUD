@@ -532,6 +532,18 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Joinable must follow its resident, once: " + id);
             owner->joinable = true;
         }
+        else if (command == "protected")
+        {
+            // A resident players can't ruin (Docs/Design/57, 6): follows its resident, once.
+            std::string id;
+            if (!quoted(fields, id) || !end(fields))
+                return reject("Malformed protected record.");
+            const auto owner = std::find_if(roster.residents.begin(), roster.residents.end(),
+                                            [&](const ResidentSpec& r) { return r.id == id; });
+            if (owner == roster.residents.end() || owner->protectedNpc)
+                return reject("Protected must follow its resident, once: " + id);
+            owner->protectedNpc = true;
+        }
         else if (command == "let")
         {
             // A place to let (Docs/Design/32, 5.2): let "cell" "hall|warehouse" "landlord" rent level.

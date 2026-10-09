@@ -728,4 +728,30 @@ void Society::savers(std::int64_t day, const std::map<std::string, LifeBody>& bo
         }
     }
 }
+
+std::int64_t Society::repayRescue(const std::string& till, const std::string& payer, std::int64_t most)
+{
+    // A resident's trouble solved (doc 57, 3): the loan its town's rescue fund made a business, paid off from a player's
+    // purse into that fund, as the business would repay it from its spare (a move: nothing made or lost).
+    auto loan = state_.memory.loans.find(till);
+    const auto* purse = account(payer);
+    if (loan == state_.memory.loans.end() || !purse || till.rfind("till:", 0) != 0)
+        return 0;
+    const auto* p = position(till.substr(5));
+    if (!p)
+        return 0;
+    const auto town = p->role == "merchant" && shopTown_.count(till) ? shopTown_.at(till) : communityOfResident(p->founder);
+    const auto paid = std::min({loan->second.first, purse->cash, std::max<std::int64_t>(0, most)});
+    if (paid <= 0)
+        return 0;
+    const auto fund = fundOf(town, "rescue");
+    openAccount(fund);
+    if (!shift(payer, fund, "", 0, paid, "a rescue repaid by a friend"))
+        return 0;
+    loan->second.first -= paid;
+    if (loan->second.first <= 0)
+        state_.memory.loans.erase(loan);
+    ++state_.memory.revision;
+    return paid;
+}
 } // namespace ratw

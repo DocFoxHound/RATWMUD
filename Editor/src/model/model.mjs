@@ -306,6 +306,7 @@ function checkShape(value) {
             check(integer(p.age, 0, 200), `${label} age must be a whole number from 0 to 200.`);
             check(integer(p.voice, 0, 31), `${label} voice color must be 0-31.`);
             if (p.joinable !== undefined) check(typeof p.joinable === 'boolean', `${label} joinable must be true or false.`);
+            if (p.protected !== undefined) check(typeof p.protected === 'boolean', `${label} protected must be true or false.`);
             check(typeof p.paid === 'boolean', `${label} paid must be true or false.`);
             check(typeof p.route === 'string' && (p.route === '' || ID.test(p.route)), `${label} route must be a route ID or empty.`);
             for (const [k, max] of [['purse', 100000], ['herbs', 10000], ['meals', 10000]])
@@ -352,7 +353,8 @@ function canonical(value) {
             pattern: p.appearance.pattern, baseColor: p.appearance.baseColor, gradientColor: p.appearance.gradientColor,
             markingColor: p.appearance.markingColor},
         home: anchor(p.home), work: anchor(p.work), evening: anchor(p.evening),
-        personality: p.personality ?? '', backstory: p.backstory ?? '', ...(p.joinable ? {joinable: true} : {})});
+        personality: p.personality ?? '', backstory: p.backstory ?? '', ...(p.joinable ? {joinable: true} : {}),
+        ...(p.protected ? {protected: true} : {})});
     const slot = s => ({id: s.id, name: s.name, profession: s.profession, workLabel: s.workLabel, route: s.route, paid: s.paid,
         purse: s.purse, herbs: s.herbs, meals: s.meals, hours: {start: s.hours.start, end: s.hours.end},
         home: anchor(s.home), work: anchor(s.work), evening: anchor(s.evening)});

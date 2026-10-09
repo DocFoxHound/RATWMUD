@@ -2,6 +2,8 @@
 #include "RatwAmbient.h"
 #include "RatwWorld.h"
 
+#include "RatwItems.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -424,6 +426,22 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                 t.blanks["item"] = item == "meal" ? "a meal" : "herbs";
                 t.blanks["price"] = std::to_string(std::max(1, int(std::lround(p.factor * (item == "meal" ? 6 : 2))))) + " pennies";
                 t.facts.push_back(std::string(item == "meal" ? "Meals" : "Herbs") + " cost " + (p.dir > 0 ? "more" : "less") + " in town lately.");
+                consider(std::move(t));
+            }
+    // A price a wolf's trade lowered lately (doc 57, 5): said with its cause, the wolf named as the teller knows them
+    // (a name it was given, or how they look), never by a name it wasn't.
+    if (const auto causes = priceCauses_.find(townId); causes != priceCauses_.end() && knower_)
+        for (const auto& cause : causes->second)
+            if (calendarDays_ - cause.day <= 1.5)
+            {
+                const auto known = knower_(a, cause.who);
+                const auto* good = items::good(cause.item);
+                auto t = topic("price_cause", 2.6);
+                t.subject = cause.who;
+                t.tags["known"] = known.byName ? "yes" : "no";
+                t.blanks["who"] = known.words;
+                t.blanks["item"] = cause.item == "meal" ? "meals" : good ? lowered(good->name.substr(0, good->name.find(" ("))) : cause.item;
+                t.facts.push_back(name(a) + " says " + t.blanks["item"] + " got cheaper in town since " + known.words + " brought some in.");
                 consider(std::move(t));
             }
     // Caravans to and from this town, and the bandits on the roads.

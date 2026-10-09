@@ -327,6 +327,8 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
             <Toggle label="Paid by the treasury" hint="Earns small wages for time spent working" checked={person.paid} onChange={v => update({paid: v})} />
             <Toggle label="Travels with parties" hint="May be asked along or hired by a player's party at any hour (doc 32)" checked={!!person.joinable}
                 onChange={v => update({joinable: v || undefined})} />
+            <Toggle label="Protected" hint="Players can't attack them or rob them of coin; only a Dungeon Master can end them (doc 57)" checked={!!person.protected}
+                onChange={v => update({protected: v || undefined})} />
         </Section>
         <Section title="Places">
             <PickButton refTo={{kind: 'person', id: person.id, slot: 'home'}} label="Home · sleeps here" place={person.home} />

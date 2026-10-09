@@ -9,7 +9,7 @@ namespace ratw::scenes
 {
 const std::set<std::string> Topics{
     "smalltalk", "work", "family", "weather", "lore", "prices", "caravan", "bandits", "crime", "life", "festival",
-    "newcomer", "player", "gossip", "news", "quarrel", "friends", "day", "bark", "deed"};   // (deed: doc 56.)
+    "newcomer", "player", "gossip", "news", "quarrel", "friends", "day", "bark", "deed", "price_cause"};   // (deed: doc 56; price_cause: doc 57.)
 const std::set<std::string> Places{"street", "market", "tavern", "home", "work", "chapel", "barracks", "gate", "field",
                                    "shore", "wild", "hall"};
 const std::set<std::string> Bands{"strangers", "acquaintances", "friends", "rivals", "family", "spouses", "apprentice"};
@@ -25,7 +25,7 @@ const std::set<std::string> Jobs{"merchant", "smith", "baker", "brewer", "innkee
                                  "woodcutter", "official", "none"};
 const std::set<std::string> Roles{"merchant", "guard", "civilian"};
 const std::set<std::string> Blanks{"a", "b", "subject", "claim", "news", "item", "price", "other", "place", "town",
-                                   "weekday", "season", "festival", "victim", "a_job", "b_job", "deed", "nickname"};
+                                   "weekday", "season", "festival", "victim", "a_job", "b_job", "deed", "nickname", "who"};
 // The tags a topic may set, and the values each may take ("*": any word).
 const std::set<std::string> TopicTags{"item", "dir", "kind", "when", "known", "nickname"};
 namespace

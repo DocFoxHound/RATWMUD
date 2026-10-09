@@ -115,7 +115,8 @@ class CompileTests(unittest.TestCase):
                  'contract taken', 'contract completed', 'theft', 'attempted theft', 'assault', 'beaten down', 'warrant',
                  'reported', 'stopped by the watch', 'fine paid', 'arrest', 'released', 'bandits demand', 'fight', 'robbed',
                  'paid off bandits', 'bandit falls', 'bandits flee', 'camp cleared', 'deed', 'deed revoked', 'nickname', 'nickname dropped', 'operator', 'quarrel',
-                 'something new']
+                 'trouble heard', 'trouble solved', 'project gift', 'project built', 'project posted', 'project cancelled',
+                 'price lowered', 'fed the town', 'something new']
         for kind in kinds:
             for who in (('fennel', 'wren'), ('wren', 'fennel')):
                 c = C.compile_chronicle('fennel', [ev(1, 1, kind, *who, detail='Baker', coins=2)], NAMES)
@@ -124,6 +125,8 @@ class CompileTests(unittest.TestCase):
         deed = C.compile_chronicle('fennel', [ev(1, 1, 'deed', 'fennel', 'wren', detail='drove the bandits off the road at the ford (deed-3)')],
                                    NAMES, second_person=True)
         self.assertEqual('You drove the bandits off the road at the ford.', deed['entries'][0]['text'])   # (Doc 56.)
+        heard = C.compile_chronicle('fennel', [ev(1, 1, 'trouble heard', 'fennel', 'wren', detail='debt')], NAMES)
+        self.assertIn('of a trouble (a shop in debt)', heard['entries'][0]['text'])   # (Doc 57.)
         you = C.compile_chronicle('fennel', [ev(1, 1, 'revival', 'fennel')], NAMES, second_person=True)
         self.assertEqual('You were brought back to life.', you['entries'][0]['text'])
 

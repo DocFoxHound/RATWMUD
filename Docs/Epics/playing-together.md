@@ -32,7 +32,7 @@ need each other.
 | 5 | [55](../Design/55-letters-gifts-favours.md) | Letters, gifts and favours | 3.8 (letters, residents' thanks, scent on crafted items), 3.9 (grooming, shared meals, lending) | 50 | Built (7 of 7; pushed a9fe13d); migration 0044 applied |
 | 6 | [54](../Design/54-gathering-places.md) | Gathering places | Part 5 (taverns, markets, notice boards, festivals, venues and renting), Part 10 (tavern games, library) | 50, 51 | Built (7 of 7; pushed c313ad3); migration 0045 applied |
 | 7 | [56](../Design/56-fame-and-memory.md) | Fame and memory | 3.7 (deeds, nicknames), 8.4–8.6 (chronicle, unfinished business, welcome back), festival criers | 50; 54 for criers | Built (6 of 6; pushed); migration 0046 applied |
-| 8 | [57](../Design/57-changing-the-world.md) | Changing the world | Part 1 (residents' troubles, town projects, the economy's visibility) | 56, 53 | Drafted (6 phases) |
+| 8 | [57](../Design/57-changing-the-world.md) | Changing the world | Part 1 (residents' troubles, town projects, the economy's visibility) | 56, 53 | Built (6 of 6; pushed); migrations 0047 and 0048 applied |
 | 9 | [58](../Design/58-player-storytellers.md) | Player storytellers and personal stories | Part 9, 8.2, 8.3, 6.8 | 51; doc 34's story planner | Drafted (6 phases) |
 | Alongside | [49](../Design/49-characters-and-earned-gifts.md) | Characters without levels, and earned Gifts | 2.1, 2.2 | Its own phases 1–3 before earned Gifts (phase 5) | Built (5 of 5 phases), not committed; migration 0034 not yet applied |
 
@@ -91,9 +91,10 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
   rest; residents never groom players; players don't write to residents for now.
 - **56 Fame and memory:** answered 2026-10-08: criers call only deeds that travel under a name; a notable deed warms a
   resident +5 liking, once; nicknames stay short (no "the wolf who …" form); the tourney is yield spars.
-- **57 Changing the world:** should the economy's own works appear as open projects? Should residents get ailments
-  and tools that matter (so those troubles can exist)? A "deck" structure so bridges can be built? Which later lever
-  first (introducing two residents recommended)?
+- **57 Changing the world:** answered 2026-10-08: the Town Works' materials go into its town's open project, credited to
+  the Town Works; resident ailments later as their own small plan, then tools; a deck structure as its own plan after
+  this one; the economy session's small hunks built here (appoint, apprenticeTo, postOddJob, mendTown, the granary
+  allowance, players' flows, repayRescue). Introducing two residents stays the first later lever.
 - **58 Storytellers:** keep storyteller narration 30 days as DM evidence? May storytellers recruit strangers through
   board calls? Does a finished storyline pay a little XP, or recognition only? (Storyteller status: as plan 50.)
 - **Across the epic:** a star rate on the card (plan 51).
@@ -249,3 +250,11 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
   - 2026-10-08: plan 56 built (all six phases: the deed ledger, travelling deeds, nicknames, festival criers, the
     chronicle, unfinished business and welcome back) and pushed with the tourney's yield spars; nicknames kept short
     (the user); migration 0046 applied to DEV and PROD.
+  - 2026-10-08: plan 57's questions answered; all six phases built: residents' troubles seen (Mind field, the router's
+    "what's wrong?", unfinished business) and solved (pay off a loan, help a household, make peace, speak for,
+    sponsor an apprenticeship); town projects (coin, goods, work together, contracts and hired hands, plaques and
+    naming, refunds); what they do (watch posts, covers, waystations, granaries, mendings), wear and the proposer; trade
+    that lowers a price and the town saying why, fed the town, guarded caravans' news, players' flows in the
+    orchestrator's books; protected residents and the DM's hand. A journal bug found and fixed (an escrow opened and
+    closed between records). Migrations 0047 and 0048 written, not applied. Not committed.
+  - 2026-10-08: plan 57 pushed; migrations 0047 and 0048 applied to DEV and PROD. Next: plan 58 (storytellers).

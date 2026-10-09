@@ -871,6 +871,61 @@ class World
     Bonds& bonds() { return bonds_; }
     // A player asks the NPC to take them on as an apprentice in the NPC's trade (see Society::apprentice).
     Result apprentice(const std::string& player, const std::string& master);
+    // A player's help with a resident's trouble (doc 57, 3): a vacant post given to a resident now, a youth apprenticed now
+    // to a position's holder (Society::appoint, apprenticeTo), each logged as the careers' own notes are. ok, or why not.
+    Result appointResident(const std::string& positionId, const std::string& resident);
+    // Town projects standing (doc 57, Phase 4; the game hands them over when they change): what each does where, at its
+    // strength (1; 0.5 worn under half; none at 0). A watch post counts +2 guards a strength against a raid in its cell
+    // and the next, and no bandit camp gathers within two cells of it; a market cover keeps its town's stalls out in foul
+    // weather (worn, every other day); within a cell of a waystation caravans press on through a storm.
+    struct StandingWorks
+    {
+        std::map<std::string, double> watchposts;   // Cell -> strength.
+        std::map<std::string, double> covers;       // Community -> strength.
+        std::map<std::string, double> waystations;  // Cell -> strength.
+        bool operator==(const StandingWorks& o) const { return watchposts == o.watchposts && covers == o.covers && waystations == o.waystations; }
+    };
+    void setStandingWorks(StandingWorks works) { works_ = std::move(works); }
+    const StandingWorks& standingWorks() const { return works_; }
+    // What a town's projects are proposed from (doc 57, Phase 4): the market days this season its stalls stayed in for foul
+    // weather, and the days caravans bound for it waited out storms, by the cell they waited in.
+    int foulMarketDays(const std::string& community) const;
+    // A camp's odds of robbing a caravan with so many guards in a cell (a watch post's two guards counted), and whether a
+    // camp may gather in a cell (none within two cells of a watch post).
+    double raidOdds(double strength, double hunger, int guards, const std::string& cellId) const;
+    // Trade that moves prices (doc 57, 5): goods a player sells or hands in where the town is short of them (its store
+    // under two days' meals or herbs; its shops under a shop's keeping of anything else) are noted, at most 32 a town;
+    // when that good's going price there falls a tenth or more within a week, the note becomes the cause the town talks
+    // of. A wolf who brings a day's food for a tenth of a town in "empty shelves" has fed the town ("fed the town").
+    struct TradeNote
+    {
+        std::string item, who;
+        int quantity = 0;
+        double day = 0, price = 0;                  // When, and the going price then.
+    };
+    struct PriceCause
+    {
+        std::string item, who;
+        double day = 0;
+    };
+    void noteTrade(const std::string& town, const std::string& item, const std::string& who, int quantity);
+    bool townShortOf(const std::string& town, const std::string& item) const;
+    double goingPrice(const std::string& town, const std::string& item) const;
+    const std::map<std::string, std::vector<PriceCause>>& priceCauses() const { return priceCauses_; }
+    // How a knower names a wolf (doc 57: "as the town knows them"), and whether by a name: the game's.
+    struct Known
+    {
+        std::string words;
+        bool byName = false;
+    };
+    void setKnower(std::function<Known(const std::string& knower, const std::string& subject)> knower) { knower_ = std::move(knower); }
+    // Protected residents (doc 57, 6; the game decides who): players can't attack them, and a theft from them takes a meal
+    // or herbs but never coin.
+    void setProtected(std::function<bool(const std::string& id)> isProtected) { protected_ = std::move(isProtected); }
+    bool isProtected(const std::string& id) const { return protected_ && protected_(id); }
+    bool campMayGather(const std::string& cellId) const { return watchedNear(cellId, 2) < 1; }
+    std::map<std::string, int> stormWaits(const std::string& community) const;
+    Result apprenticeResident(const std::string& positionId, const std::string& youth);
     // A promise made in conversation, due in `days`. Keeping it builds the other's trust; breaking it costs more.
     void promise(const std::string& by, const std::string& to, const std::string& what, double days = 3);
     const std::vector<Promise>& promises() const { return promises_; }
@@ -897,6 +952,9 @@ class World
     Result deliverContract(const std::string& player, const std::string& contractId);
     std::vector<const Contract*> deliverable(const std::string& player) const;   // Taken by them, for here, and carried.
     // Posts work, the reward set aside from the poster's purse at once (no reward if they can't pay).
+    // A poster's contract still open or taken, withdrawn (doc 57: a cancelled project's): the reward left in escrow goes
+    // back to the poster. False if there is none.
+    bool withdrawContract(const std::string& id);
     Contract& postContract(const std::string& kind, const std::string& poster, const std::string& town,
                            const std::string& target, std::int64_t reward, double days, const std::string& detail);
     // What someone has heard: a claim about a subject, from a source, this sure (0..1). Rumours spread along bonds
@@ -1314,6 +1372,17 @@ class World
     CellSource source_;
     // A streamed world's cell graph through seams (explicit doors are always in doors_).
     std::map<std::string, std::set<std::string>> exits_;
+    StandingWorks works_;                           // Town projects standing (doc 57).
+    std::map<std::string, std::vector<TradeNote>> tradeNotes_;    // Town -> its latest notes (doc 57, 5).
+    std::map<std::string, std::vector<PriceCause>> priceCauses_;  // Town -> prices lately lowered, and by whom.
+    std::map<std::string, double> fedToday_;        // "town|wolf|day" -> nourishment brought in that day.
+    std::map<std::string, std::map<std::string, double>> storeFactor_;   // Town -> meal and herbs -> its price factor now.
+    std::function<Known(const std::string&, const std::string&)> knower_;
+    std::function<bool(const std::string&)> protected_;
+    void tendTradeNotes();
+    std::map<std::string, std::set<std::int64_t>> foulMarkets_;   // Community -> market days kept in by the weather.
+    std::map<std::string, std::map<std::string, std::set<std::int64_t>>> stormWaits_;   // Town -> cell -> days.
+    double watchedNear(const std::string& cellId, int within) const;   // The strongest watch post this many cells off.
     // Roads between places (the user, 2026-10-05: travel between towns keeps to the roads, unless they are blocked).
     // The seams that cross on a road (a dirt road, a street, flagstones) on both sides, and each cell's neighbours a
     // road leads to. Worked out once at load from every cell's tiles (indexRoads), so a route never depends on which

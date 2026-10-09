@@ -12,10 +12,10 @@ import {useWorld} from './world';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
-import {dmApi, type Action, type Chapters, type Factions, type FameDeed, type Live, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
+import {dmApi, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
-type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'fame' | 'weather';
+type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'fame' | 'projects' | 'weather';
 const LAYERS: {id: LayerId; label: string; icon: string; color: string}[] = [
     {id: 'players', label: 'Players', icon: '☺', color: '#7fc8f8'},
     {id: 'npcs', label: 'NPCs', icon: '☻', color: '#a8c7ad'},
@@ -27,6 +27,7 @@ const LAYERS: {id: LayerId; label: string; icon: string; color: string}[] = [
     {id: 'events', label: 'Events', icon: '!', color: '#d98b5f'},
     {id: 'rumours', label: 'Rumours', icon: '“', color: '#b9a3e0'},
     {id: 'fame', label: 'Fame', icon: '★', color: '#e8c35a'},
+    {id: 'projects', label: 'Projects', icon: '⌂', color: '#8f8b80'},
     {id: 'weather', label: 'Weather', icon: '☁', color: '#9db9d6'},
 ];
 // Layers whose systems aren't built yet (doc 34 phases 3 and 5): shown, so the DM knows they are coming.
@@ -52,6 +53,10 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const [rumour, setRumour] = useState(-1);         // Which rumour the Rumours layer follows (an index), -1 none.
     const [deeds, setDeeds] = useState<FameDeed[] | null>(null);
     const [deed, setDeed] = useState(-1);             // Which deed the Fame layer follows (an index), -1 none.
+    const [projects, setProjects] = useState<TownProject[] | null>(null);
+    const [projectKinds, setProjectKinds] = useState<{id: string; name: string}[]>([]);
+    const [projectPick, setProjectPick] = useState('');   // The project the Projects layer has open, by id.
+    const [postKind, setPostKind] = useState(''), [postTown, setPostTown] = useState('');
     const [npcRole, setNpcRole] = useState('');
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState<string | null>(null);
@@ -99,6 +104,22 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         return () => clearInterval(t);
     }, [on, target]);
 
+    const readProjects = useCallback(() => dmApi.projects(target).then(r => { setProjects(r.projects); setProjectKinds(r.kinds); })
+        .catch(e => setProblem((e as Error).message)), [target]);
+    useEffect(() => {                                 // Town projects change as the world saves (doc 57).
+        if (!on.has('projects')) return;
+        void readProjects();
+        const t = setInterval(readProjects, 30000);
+        return () => clearInterval(t);
+    }, [on, readProjects]);
+    const projectAct = (kind: string, id: string, payload?: Record<string, unknown>) => {
+        const words: Record<string, string> = {'project.remove': 'Take down', 'project.cancel': 'Cancel (gifts returned)', 'project.complete': 'Complete'};
+        if (words[kind] && !window.confirm(`${words[kind]} ${(projects ?? []).find(p => p.id === id)?.title ?? id} on ${target.toUpperCase()}?`)) return;
+        setBusy(true);
+        dmApi.liveAction(target, kind, id, payload).then(() => { setNote(`${kind} sent: the game applies it within seconds.`); void readProjects(); })
+            .catch(e => setProblem((e as Error).message)).finally(() => setBusy(false));
+    };
+
     const toggle = (id: LayerId) => setOn(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
     const surface = useMemo(() => (world ? surfaceFor(world, view as never) : null), [world, view]);
     const rooms = useMemo(() => new Map((world?.rooms ?? []).map(r => [r.id, r])), [world]);
@@ -143,6 +164,9 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             const ch = chapters.chapters.find(c => c.id === site.chapter);
             push(`c:${site.id}`, at(site.cell, site.x + .5, site.y + .5), ch?.colour || '#cfa3d9', '♞', `${site.name} · ${ch?.name ?? site.chapter} (${site.state})`);
         }
+        if (on.has('projects')) for (const p of projects ?? [])
+            push(`j:${p.id}`, at(p.cell, p.x + .5, p.y + .5), p.state === 'open' ? '#b9b39f' : '#8f8b80', '⌂',
+                `${p.title} · ${p.state === 'open' ? `${Math.round(p.worked / Math.max(1, p.hours) * 100)}% worked` : `${p.state}, ${Math.round(p.condition)}%`}`);
         if (on.has('shops')) for (const s of live?.frame?.shops ?? [])
             push(`s:${s[0]}`, at(s[3], s[4], s[5]), '#e6c481', '⚖', `${s[2] || 'Shop'} · ${s[1]}${s[6] ? ' (at a stall)' : ''}`);
         if (on.has('events')) for (const e of live?.events ?? [])
@@ -173,7 +197,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             }
         }
         return out;
-    }, [on, world, view, at, centre, placeName, chapters, live, shownPeople, followed, famed, people, canAct]);
+    }, [on, world, view, at, centre, placeName, chapters, live, shownPeople, followed, famed, people, canAct, projects]);
 
     const overlay = useMemo((): Overlay => {
         const out: Overlay = {tiles: [], rects: [], paths: [], circles: []};
@@ -294,7 +318,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const layerCount: Partial<Record<LayerId, string>> = {
         players: `${counts.online} on · ${counts.offline} off`, npcs: String(counts.npcs + counts.road),
         shops: live?.frame ? String(live.frame.shops.length) : undefined, events: live ? String(live.events.length) : undefined,
-        rumours: rumours ? String(rumours.length) : undefined, fame: deeds ? String(deeds.length) : undefined, weather: live?.frame?.weather ? String(live.frame.weather.length) : undefined,
+        rumours: rumours ? String(rumours.length) : undefined, fame: deeds ? String(deeds.length) : undefined, projects: projects ? String(projects.length) : undefined, weather: live?.frame?.weather ? String(live.frame.weather.length) : undefined,
     };
     const found = q ? people.filter(matches).slice(0, 40) : [];
     const stale = !live?.frame || live.age === null || live.age > 10;
@@ -346,6 +370,28 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                     </select></label>
                     {famed && <span>{famed.witnesses.length} saw it · {famed.towns.map(t => `${t.town.replace(/_/g, ' ')} ${Math.round(t.reach * 100)}%` +
                         (t.carrier.startsWith('caravan') ? ' (by caravan)' : '')).join(' · ') || 'not in any town\'s talk'}</span>}
+                </div>}
+                {on.has('projects') && <div className="live-filters">
+                    <label>Open <select value={projectPick} onChange={e => setProjectPick(e.target.value)}>
+                        <option value="">{projects ? (projects.length ? 'a project…' : 'no projects yet') : 'Loading…'}</option>
+                        {(projects ?? []).map(p => <option key={p.id} value={p.id}>{p.title} ({p.state})</option>)}
+                    </select></label>
+                    {(() => {
+                        const p = (projects ?? []).find(x => x.id === projectPick);
+                        if (!p) return null;
+                        return <span>
+                            {Math.round(p.worked)} of {Math.round(p.hours)} work-hours · needs {Object.entries(p.needs).map(([k, n]) => `${n} ${k.replace(/_/g, ' ')}`).join(', ') || 'nothing'} ·
+                            {' '}{p.givers.map(g => `${g.shown} (${g.value}p)`).join(', ') || 'no givers yet'}
+                            {canAct && p.state === 'open' && <button disabled={busy} onClick={() => projectAct('project.complete', p.id)}>Complete</button>}
+                            {canAct && p.state === 'open' && <button disabled={busy} onClick={() => projectAct('project.cancel', p.id)}>Cancel (gifts returned)</button>}
+                            {canAct && <button disabled={busy} onClick={() => projectAct('project.remove', p.id)}>Remove</button>}
+                        </span>;
+                    })()}
+                    {canAct && <label>Post <select value={postKind} onChange={e => setPostKind(e.target.value)}>
+                        <option value="">a kind…</option>
+                        {projectKinds.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
+                    </select> in <input value={postTown} placeholder="town id" onChange={e => setPostTown(e.target.value)} size={12} />
+                        <button disabled={busy || !postKind || !postTown.trim()} onClick={() => projectAct('project.post', postTown.trim(), {kind: postKind})}>Post</button></label>}
                 </div>}
                 {(on.has('players') || on.has('npcs')) && <div className="live-filters">
                     <label><input type="checkbox" checked={showDead} onChange={e => setShowDead(e.target.checked)} /> The dead</label>
@@ -400,7 +446,8 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             : person ? <PersonPanel p={person} place={placeName(person[3])} canAct={canAct} busy={busy} target={target}
                 actions={(live?.actions ?? []).filter(a => a.target === person[0])}
                 onMove={() => setPick({kind: 'move', who: person})} onLife={kill => life(person, kill)}
-                onReviveAt={() => setPick({kind: 'revive', who: person})} onSendAway={() => sendAway(person)} />
+                onReviveAt={() => setPick({kind: 'revive', who: person})} onSendAway={() => sendAway(person)}
+                onProtect={on => projectAct(on ? 'npc.protect' : 'npc.unprotect', person[0])} />
             : shop ? <div className="dm-panel"><header><div><small>SHOP</small><h2>{shop[2] || 'Shop'}</h2></div>{shop[6] && <span className="dm-status">at a stall</span>}</header>
                 <Hint>Kept by {shop[1]}, in {placeName(shop[3])} at {Math.floor(shop[4])}, {Math.floor(shop[5])}.</Hint>
                 <button onClick={() => { setOn(s => new Set(s).add('npcs')); setSelected(`n:${shop[0]}`); }}>Show {shop[1]}</button></div>
@@ -426,8 +473,9 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     </div>;
 }
 
-function PersonPanel({p, place, canAct, busy, target, actions, onMove, onLife, onReviveAt, onSendAway}: {p: LivePerson; place: string; canAct: boolean;
-    busy: boolean; target: Target; actions: Action[]; onMove: () => void; onLife: (kill: boolean) => void; onReviveAt: () => void; onSendAway: () => void}) {
+function PersonPanel({p, place, canAct, busy, target, actions, onMove, onLife, onReviveAt, onSendAway, onProtect}: {p: LivePerson; place: string; canAct: boolean;
+    busy: boolean; target: Target; actions: Action[]; onMove: () => void; onLife: (kill: boolean) => void; onReviveAt: () => void; onSendAway: () => void;
+    onProtect: (on: boolean) => void}) {
     const player = p[2] === 'p' || p[2] === 'o', dead = !!(p[6] & 1);
     const kind = p[2] === 'p' ? 'PLAYER · IN THE WORLD' : p[2] === 'o' ? 'PLAYER · AWAY' : p[2] === 'r' ? 'FOLK OF THE ROAD' : p[2] === 't' ? 'TEMPORARY VISITOR' : 'NPC';
     const states = [dead && 'dead', p[6] & 2 && 'downed', p[6] & 8 && 'in a fight', p[6] & 4 && 'off stage'].filter(Boolean) as string[];
@@ -444,13 +492,17 @@ function PersonPanel({p, place, canAct, busy, target, actions, onMove, onLife, o
                 : dead ? <><button disabled={busy} onClick={() => onLife(false)} title="Where they lie">{player ? 'Resurrect' : 'Revive'}</button>
                     <button disabled={busy} onClick={onReviveAt} title="Bring them back on a tile you choose">Bring back at…</button></>
                 : <button className="danger" disabled={busy || p[2] === 'r'} onClick={() => onLife(true)}>✝ Kill</button>}
+            {!player && p[2] !== 'r' && p[2] !== 't' && <>
+                <button disabled={busy} onClick={() => onProtect(true)} title="Players can't attack them or rob them of coin (doc 57)">Protect</button>
+                <button disabled={busy} onClick={() => onProtect(false)} title="Even one Atlas or a house's rank protects">Unprotect</button></>}
         </div>}
         <ActionList actions={actions} target={target} />
     </div>;
 }
 
 const LABELS: Record<string, string> = {'npc.move': 'Move', 'character.move': 'Move', 'npc.sync': 'NPC saved', 'visitor.add': 'Visitor',
-    'visitor.leave': 'Sent away', 'npc.revive': 'Revive', 'character.resurrect': 'Resurrect'};
+    'visitor.leave': 'Sent away', 'npc.revive': 'Revive', 'character.resurrect': 'Resurrect', 'npc.protect': 'Protected', 'npc.unprotect': 'Unprotected',
+    'project.post': 'Project posted', 'project.cancel': 'Project cancelled', 'project.complete': 'Project completed', 'project.remove': 'Project removed'};
 function ActionList({actions, target}: {actions: Action[]; target?: Target}) {
     if (!actions.length) return null;
     return <ol className="dm-actions">{actions.slice(0, 6).map(a => <li key={a.id} className={a.status}>

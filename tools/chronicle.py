@@ -33,6 +33,9 @@ TRANSFERS = {'caravan delivered', 'caravan loaded', 'caravan turned back', 'cara
              'reward set aside', 'stores stocked', 'town tithe', 'town purse', 'church foundation', 'gather', 'settlement welcome grant', 'initial funding'}
 # Ledger entries a crime or a road event already tells.
 TOLD_ELSEWHERE = {'stolen', 'fine', 'restitution', 'robbed by bandits', 'paid to bandits'}
+# Residents' troubles (doc 57), as the log names them.
+TROUBLES = {'debt': 'a shop in debt', 'short': 'a household short of coin', 'child': 'a child with no trade',
+            'work': 'no steady work', 'feud': 'a feud'}
 MAX_ROWS = 4000          # The latest events told one by one (the round is counted in the database, in full).
 MAX_SEASONS = 40
 
@@ -176,6 +179,15 @@ def describe(row: dict, v: Voice) -> tuple[int, str] | None:
         'deed revoked': (NOTABLE, f'the Dungeon Master struck a deed ({d}) from the record'),
         'nickname': (NOTABLE, f'{T} first called {A} "{d.rsplit(" (", 1)[0]}"'),
         'nickname dropped': (NOTABLE, f'{A} asked folk not to call them "{d.rsplit(" (", 1)[0]}"'),
+        # Changing the world (doc 57): troubles heard and solved, town projects, and trade that lowered a price.
+        'trouble heard': (NOTABLE, f'{T} told {A} of a trouble' + (f' ({TROUBLES.get(d, d)})' if d else '')),
+        'trouble solved': (NOTABLE, f'{A} helped {T} with a trouble' + (f' ({TROUBLES.get(item, item)})' if item else '')),
+        'project gift': (NOTABLE, f'{A} gave to {d or "a town project"}' + (f': {pennies(coins)}' if coins else '')),
+        'project built': (NOTABLE, f'{d or "a town project"} was finished'),
+        'project posted': (NOTABLE, f'{d or "a town project"} was begun'),
+        'project cancelled': (NOTABLE, f'a town project was given up' + (f' ({d})' if d else '')),
+        'price lowered': (NOTABLE, f'{A} brought {item.replace("_", " ") or "goods"} in, and the price fell'),
+        'fed the town': (NOTABLE, f'{A} {d or "brought food into a town with bare shelves"}'),
         'operator': (NOTABLE, f'the Dungeon Master acted on {T}' + (f' ({d})' if d else '')),
         'quarrel': (NOTABLE, f'{A} quarrelled with {T}'),
     }

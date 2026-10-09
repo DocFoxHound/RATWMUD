@@ -50,6 +50,15 @@
     {"say": "I'm sorry about what happened.", "intent": ""},
     {"say": "Can you keep a secret?", "intent": ""},
     {"say": "", "intent": ""},
-    {"say": "?!", "intent": ""}
+    {"say": "?!", "intent": ""},
+    {"say": "Is something troubling you?", "intent": "trouble"},
+    {"say": "What's wrong?", "intent": "trouble"},
+    {"say": "You look worried today.", "intent": "trouble"},
+    {"say": "Can I help?", "intent": "trouble"},
+    {"say": "What troubles you, Wren?", "intent": "trouble"},
+    {"say": "Am I in trouble with the watch?", "intent": "wanted"},
+    {"say": "What's wrong with the mill since the flood took the wheel?", "intent": ""},
+    {"say": "I heard your brother fell out with the cooper again.", "intent": ""},
+    {"say": "Tell me about the troubles in the north.", "intent": ""}
   ]
 }

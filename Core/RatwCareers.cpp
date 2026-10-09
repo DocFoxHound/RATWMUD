@@ -55,7 +55,7 @@ bool thisWeek(const std::string& id, std::int64_t day)
 
 bool facilityAccount(const std::string& id)
 {
-    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots)
+    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects)
         if (id.rfind(prefix, 0) == 0)
             return id.size() <= 80 && id.size() > std::string(prefix).size();
     return false;
@@ -702,5 +702,67 @@ CareerNote Society::apprentice(const std::string& player, const std::string& pos
     ps.apprentice = player;
     forgetCareers();
     return {"apprenticeship", player, ps.holder, p->title};
+}
+
+CareerNote Society::appoint(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day)
+{
+    // Speaking for a resident (doc 57, 3): the post is theirs at once, as if succession had chosen them.
+    const auto* p = position(positionId);
+    auto found = state_.careers.positions.find(positionId);
+    if (!p || found == state_.careers.positions.end() || !state_.residents.count(resident) || (world.alive && !world.alive(resident)))
+        return {"refused", resident, {}, "There is no such post."};
+    if (!found->second.holder.empty())
+        return {"refused", resident, found->second.holder, "That post is taken."};
+    if (p->role == "guard")
+        return {"refused", resident, {}, "The watch chooses its own."};
+    auto& c = state_.careers;
+    for (auto& [otherId, other] : c.positions)
+    {
+        if (other.holder == resident)
+        {
+            other.holder.clear();
+            other.lastHolder = resident;
+            other.vacantSince = day;
+        }
+        if (other.apprentice == resident)
+            other.apprentice.clear();
+    }
+    auto& ps = found->second;
+    ps.holder = resident;
+    ps.vacantSince = -1;
+    auto& known = c.skill[skillKey(resident, p->id)];
+    known = std::max({known, 10.0, .5 * familySkill(resident, skillFamily(p->title))});
+    forgetCareers();
+    return {"succession", resident, ps.lastHolder, p->title + ": spoken for"};
+}
+
+CareerNote Society::apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double)
+{
+    // Sponsoring an apprenticeship (doc 57, 3): begun now rather than at the weekly chance, under its rules.
+    const auto* p = position(positionId);
+    auto found = state_.careers.positions.find(positionId);
+    if (!p || found == state_.careers.positions.end() || !state_.residents.count(youth))
+        return {"refused", youth, {}, "There is no such trade to learn."};
+    auto& ps = found->second;
+    const auto alive = [&](const std::string& id) { return !id.empty() && (!world.alive || world.alive(id)); };
+    const auto age = [&](const std::string& id) { return world.age ? world.age(id) : (spec(id) ? spec(id)->age : 30); };
+    if (!alive(ps.holder) || !alive(youth))
+        return {"refused", youth, ps.holder, "Nobody holds that trade to teach it."};
+    if (p->role == "guard")
+        return {"refused", youth, ps.holder, "The watch takes no apprentices."};
+    if (!ps.apprentice.empty())
+        return {"refused", youth, ps.holder, "They already have an apprentice."};
+    if (age(ps.holder) < 35 && skill(ps.holder, p->id) < 70)
+        return {"refused", youth, ps.holder, "They are too young at the trade to teach it."};
+    const int years = age(youth);
+    if (years < 12 || years > 25)
+        return {"refused", youth, ps.holder, "Apprentices are twelve to twenty-five."};
+    if (apprenticedTo(youth))
+        return {"refused", youth, ps.holder, "They are apprenticed already."};
+    if (const auto* own = jobOf(youth); own && own->work.cell != p->work.cell)
+        return {"refused", youth, ps.holder, "They are busy with work elsewhere."};
+    ps.apprentice = youth;
+    forgetCareers();
+    return {"apprenticeship", youth, ps.holder, p->title};
 }
 } // namespace ratw

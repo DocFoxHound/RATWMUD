@@ -409,7 +409,10 @@ Brief plan(const Snapshot& s, Memory& memory)
         const auto tk = takings[id];
         t.takingsRatio = tk.second > 0 ? double(tk.first) / double(tk.second) : 1;
         if (const auto ts = townSnaps.find(id); ts != townSnaps.end())
+        {
             t.netInflow = ts->second->inflow - ts->second->outflow;
+            t.playerIn = ts->second->playerIn, t.playerOut = ts->second->playerOut, t.playerGoods = ts->second->playerGoods;
+        }
         // (Draining is judged on a week's average: a reckoning's day, or a caravan's, is no trend.)
         const auto knownNet = memory.net.find(id);
         const double net = knownNet == memory.net.end() ? double(t.netInflow) : knownNet->second + (double(t.netInflow) - knownNet->second) / 7;
@@ -875,7 +878,7 @@ Brief plan(const Snapshot& s, Memory& memory)
             // winter and spring (what the winter took, made up as the land gives it), of what keeps (about twice plain
             // food's price).
             const bool storing = s.season == 1 || s.season == 2;
-            const double target = (storing ? 1.0 : .5) * d.granaryDays * t.people * d.nourishADay;
+            const double target = (storing ? 1.0 : .5) * (d.granaryDays + ts.granaryExtra) * t.people * d.nourishADay;
             const double store = std::max(0.0, target - double(ts.granary)) / d.nourishADay * t.foodCost * 2;
             if (s.decide && store >= 1 && target > 0 && double(ts.granary) < target * .75)
                 brief.actions.push_back({id, "food security", "its granary holds " + tenths(double(ts.granary) / d.nourishADay / std::max(1, t.people)) +
@@ -1267,6 +1270,12 @@ Value briefJson(const Brief& b, bool full)
         x.add("shopFoodDays", round3(t.shopFoodDays));
         x.add("takingsRatio", round3(t.takingsRatio));
         x.add("netInflow", double(t.netInflow));
+        if (t.playerIn || t.playerOut || t.playerGoods)
+        {
+            x.add("playerIn", double(t.playerIn));
+            x.add("playerOut", double(t.playerOut));
+            x.add("playerGoods", double(t.playerGoods));
+        }
         x.add("wageFloor", double(t.wageFloor));
         x.add("share", double(t.share));
         if (const auto w = b.wages.find(t.id); w != b.wages.end())
@@ -1400,6 +1409,9 @@ Brief readBrief(const Value& o)
         t.shopFoodDays = x.number("shopFoodDays");
         t.takingsRatio = x.number("takingsRatio");
         t.netInflow = std::int64_t(x.number("netInflow"));
+        t.playerIn = std::int64_t(x.number("playerIn"));
+        t.playerOut = std::int64_t(x.number("playerOut"));
+        t.playerGoods = std::int64_t(x.number("playerGoods"));
         t.wageFloor = std::int64_t(x.number("wageFloor"));
         t.share = std::int64_t(x.number("share"));
         for (const auto& [kind, pay] : x.object("wages").fields())

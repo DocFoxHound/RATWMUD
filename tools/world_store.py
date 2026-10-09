@@ -72,7 +72,8 @@ TABLES = {
     'live.npcs': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'role', 'description', 'greeting', 'personality',
                                       'backstory', 'work_label', 'age', 'voice', 'appearance', 'route_id', 'paid', 'purse',
                                       'herbs', 'meals', 'hours_start', 'hours_end', 'home_area', 'home_x', 'home_y',
-                                      'work_area', 'work_x', 'work_y', 'evening_area', 'evening_x', 'evening_y', 'joinable')),
+                                      'work_area', 'work_x', 'work_y', 'evening_area', 'evening_x', 'evening_y', 'joinable',
+                                      'protected')),
     'live.profession_slots': (('world_id', 'id'), ('world_id', 'id', 'position', 'name', 'profession', 'work_label', 'route_id',
                                                    'paid', 'purse', 'herbs', 'meals', 'hours_start', 'hours_end',
                                                    'home_area', 'home_x', 'home_y', 'work_area', 'work_x', 'work_y',
@@ -177,7 +178,7 @@ def npc_row(w, n, position):
     return (w, n['id'], position, n['name'], n['role'], n['description'], n['greeting'], n.get('personality', ''),
             n.get('backstory', ''), n['workLabel'], n['age'], n['voice'], dict(n['appearance']), n['route'] or None,
             n['paid'], n['purse'], n['herbs'], n['meals'], n['hours']['start'], n['hours']['end'],
-            *place(n['home']), *place(n['work']), *place(n['evening']), bool(n.get('joinable', False)))
+            *place(n['home']), *place(n['work']), *place(n['evening']), bool(n.get('joinable', False)), bool(n.get('protected', False)))
 
 
 def slot_row(w, s, position):
@@ -233,7 +234,7 @@ def person_entity(r):
     return {'id': r['id'], 'name': r['name'], 'role': r['role'], 'description': r['description'], 'greeting': r['greeting'],
             'age': r['age'], 'appearance': r['appearance'], 'voice': r['voice'], **_resident(r),
             'personality': r['personality'], 'backstory': r['backstory'],
-            **({'joinable': True} if r.get('joinable') else {})}
+            **({'joinable': True} if r.get('joinable') else {}), **({'protected': True} if r.get('protected') else {})}
 
 
 def slot_entity(r):

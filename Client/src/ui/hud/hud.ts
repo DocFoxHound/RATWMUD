@@ -21,6 +21,7 @@ import {PartyPanel} from './party.ts';
 import {PlacePanel} from './place.ts';
 import {LodgingPanel} from './lodging.ts';
 import {StallPanel} from './stall.ts';
+import {ProjectPanel} from './project.ts';
 import {TablePanel} from './table.ts';
 import {FestivalPanel} from './festival.ts';
 import {CampPanel} from './camp.ts';
@@ -121,6 +122,7 @@ export class Hud {
     private place: PlacePanel;
     private lodging!: LodgingPanel;
     private stall!: StallPanel;
+    private project!: ProjectPanel;
     private table!: TablePanel;
     private festival!: FestivalPanel;
     private camp: CampPanel;
@@ -240,6 +242,7 @@ export class Hud {
         this.place = new PlacePanel(side, state);
         this.lodging = new LodgingPanel(side, state);
         this.stall = new StallPanel(side, state);
+        this.project = new ProjectPanel(side, state);
         this.table = new TablePanel(side, state);
         this.festival = new FestivalPanel(side, state);
         this.camp = new CampPanel(side, state);
@@ -334,6 +337,7 @@ export class Hud {
         this.place.update();
         this.lodging.update();
         this.stall.update();
+        this.project.update();
         this.table.update();
         this.festival.update();
         this.camp.update();
@@ -579,6 +583,7 @@ export class Hud {
             button(`${i + 1}  ${s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)'
                 : action.startsWith('vouch:') ? `Vouch for ${s.entities.get(action.slice(6))?.name ?? 'them'}`
                 : action.startsWith('wardens-') ? wardensWords(s, action)
+                : action.startsWith('trouble:') ? action.slice(action.indexOf('|') + 1)   // (A resident's trouble, as the server words it: doc 57.)
                 : action === 'vouch' ? 'Vouch for…' : MenuWords[action] ?? upperFirst(action)}`,
                 `menu-item${s.armed === `${action}|${s.contextTarget}` ? ' armed' : ''}`, this.menu,
                 () => s.activate({rect: noRect, action: 'context', target: action})));

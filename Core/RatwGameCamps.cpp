@@ -17,12 +17,14 @@ std::string treasuryOf(const std::string& chapterId) { return "chapter:" + chapt
 // the tiles about them from the weather.
 bool blocks(const std::string& kind)
 {
-    return kind != "firepit" && kind != "cookfire" && kind != "hitching" && kind != "gate" && kind != "gatehouse";
+    // (A town's market cover and waystation are roofs to stand under: doc 57.)
+    return kind != "firepit" && kind != "cookfire" && kind != "hitching" && kind != "gate" && kind != "gatehouse" &&
+           kind != "market_cover" && kind != "waystation";
 }
 bool shelters(const std::string& kind)
 {
     return kind == "tent" || kind == "leanto" || kind == "hall" || kind == "stable" || kind == "workshop" || kind == "keep" ||
-           kind == "tower" || kind == "gatehouse";
+           kind == "tower" || kind == "gatehouse" || kind == "market_cover" || kind == "waystation";
 }
 } // namespace
 
@@ -52,7 +54,7 @@ void Game::refreshGround()
     }
 }
 
-std::string Game::whyNotGround(const std::string& cellId, int x, int y) const
+std::string Game::whyNotGround(const std::string& cellId, int x, int y, bool town) const
 {
     // Not on a road or bridge, in water, inside a wall, through a door, or in a town (5.3).
     const auto* cell = world_.cell(cellId);
@@ -69,8 +71,8 @@ std::string Game::whyNotGround(const std::string& cellId, int x, int y) const
     for (const auto& [dx, dy] : {std::pair{1, 0}, std::pair{-1, 0}, std::pair{0, 1}, std::pair{0, -1}})
         if (const auto* next = cell->tile(x + dx, y + dy); next && std::fabs(next->height - tile->height) >= 1.0)
             return "The ground is too steep here.";
-    if (townCells_.count(cellId))
-        return "Not in a town. Rent there instead.";
+    if (townCells_.count(cellId) && !town)
+        return "Not in a town. Rent there instead.";   // (A Chapter's rule only: a town's own projects stand there, doc 57.)
     for (const auto& d : world_.doorsIn(cellId))
         if (int(std::floor(d->position.x)) == x && int(std::floor(d->position.y)) == y)
             return "Not in a doorway.";
@@ -406,6 +408,8 @@ Value Game::structuresView(const std::string& viewer, const std::string& cellId)
         o.add("blocks", st->built && st->condition > 0 && site->state != "ruin" && blocks(st->kind));
         if (owner)
             o.add("colour", owner->colour);
+        else if (camp::townSite(*site))
+            o.add("colour", std::string("#8f8b80")), o.add("town", true);   // (A town's project: stone grey, doc 57.)
         o.add("mine", mine && site->chapter == mine->id);
         list.push(o);
     }

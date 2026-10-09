@@ -115,6 +115,7 @@ class Factions
     void setMember(const std::string& npc, const std::string& faction, const std::string& rank, bool explicitly);
     void clearDerived();
     const std::pair<std::string, std::string>* memberOf(const std::string& npc) const;   // (faction, rank)
+    bool explicitMember(const std::string& npc) const { return explicit_.count(npc) > 0; }   // (Set by the DM: a real rank.)
     void setRelation(const std::string& a, const std::string& b, const Relation& r);
     Relation relation(const std::string& a, const std::string& b) const;
 

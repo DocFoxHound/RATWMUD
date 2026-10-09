@@ -85,6 +85,7 @@ void Game::gifted(const std::string& giver, const std::string& receiver, const s
 {
     // The move, the scent, and the warmth (once a game day a pair).
     auto& society = world_.society();
+    const auto shortBefore = shortHousehold(receiver);   // (A short household helped to its refill: doc 57, 3.)
     if (coins > 0)
         society.shift(giver, receiver, "", 0, coins, "a gift");
     if (!item.empty() && quantity > 0)
@@ -100,6 +101,7 @@ void Game::gifted(const std::string& giver, const std::string& receiver, const s
         giftBondDay_[key] = today;
     world_.recordEvent({warms ? "gift" : "gift again", giver, receiver, g ? g->cellId : std::string(), 0, 0, item, quantity, coins, {}});
     record(Economy | Character, giver);
+    troubleGiven(giver, shortBefore);
 }
 
 bool Game::giveCommand(Connection* c, const json::Value& j, Result& result)

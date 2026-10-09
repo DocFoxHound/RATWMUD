@@ -35,6 +35,8 @@
 #include "RatwTavernGames.h"
 #include "RatwFame.h"
 #include "RatwChronicle.h"
+#include "RatwTroubles.h"
+#include "RatwProjects.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
 #include "RatwWorld.h"
@@ -897,6 +899,32 @@ class Game
     std::string nicknameFor(const std::string& npc, const std::string& wolf, bool* coined = nullptr);
     bool dropNickname(const std::string& wolf, const std::string& id);
     std::string awayBriefingFor(const std::string& npc, const std::string& wolf) { return awayBriefing(npc, wolf, false); }
+    // A resident's trouble today (doc 57, 3: worked out now if not today), what its Mind would be told of it for `wolf`
+    // ("" short of the trust rule), and the troubles a wolf has heard of (resident -> kind).
+    troubles::Trouble troubleNow(const std::string& resident) { return troubleOf(resident); }
+    std::string troubleBriefingFor(const std::string& npc, const std::string& wolf) { return troubleBriefing(npc, wolf); }
+    std::map<std::string, std::string> troublesHeardBy(const std::string& wolf) const
+    {
+        std::map<std::string, std::string> out;
+        if (const auto heard = troublesHeard_.find(wolf); heard != troublesHeard_.end())
+            for (const auto& [npc, h] : heard->second)
+                out[npc] = h.kind;
+        return out;
+    }
+    void forgetTroubles() { troubles_.clear(); }    // (Tests: worked out afresh.)
+    // Town projects (doc 57, 4; RatwGameProjects.cpp): posted by a town's needs or a Dungeon Master; the DM's hand
+    // (cancel with refunds, complete by hand, remove the structure). Each says why not, or ok with the project's id.
+    Result postProject(const std::string& kind, const std::string& town, const std::string& cell, int x, int y,
+                       const std::string& title, const std::string& by);
+    Result cancelProject(const std::string& id, const std::string& why);
+    Result completeProject(const std::string& id);
+    Result removeProject(const std::string& id);
+    const projects::Ledger& projects() const { return projects_; }
+    void hearTroubleFor(const std::string& wolf, const std::string& npc)   // (Tests: as if the resident had told them.)
+    {
+        if (const auto& t = troubleOf(npc))
+            heardTrouble(wolf, npc, t.kind);
+    }
 
   private:
     // Doc 56, Phase 2: deeds travel and are recognised.
@@ -1031,6 +1059,86 @@ class Game
     void cryLegends();
     void tendCriers();
     std::string crierOf(const std::string& community);
+    // Residents' troubles (doc 57, 3; RatwGameTroubles.cpp): worked out when a player talks to a resident and kept a game
+    // day (nothing scans the population); spoken of only to a wolf the resident trusts (troubles.json's `speak`). A wolf
+    // who has heard one keeps it in its unfinished business until it is solved or gone.
+    struct TroubleSeen
+    {
+        troubles::Trouble trouble;
+        double day = -1;                            // The calendar day it was worked out.
+    };
+    std::map<std::string, TroubleSeen> troubles_;   // By resident.
+    std::map<std::string, double> idleSince_;       // Resident -> the day it was first found without a post.
+    struct TroubleHeard
+    {
+        std::string kind;
+        double day = 0;
+    };
+    std::map<std::string, std::map<std::string, TroubleHeard>> troublesHeard_;   // Wolf -> resident -> what it heard.
+    std::map<std::string, std::string> troubleBriefed_;   // "npc|wolf" -> the kind its Mind was told of for the coming reply.
+    troubles::Reads troubleReads();
+    const troubles::Trouble& troubleOf(const std::string& resident);
+    bool troubleSpoken(const std::string& npc, const std::string& wolf) const;
+    std::map<std::string, std::string> troubleBlanks(const std::string& viewer, const troubles::Trouble& t) const;
+    std::string troubleBriefing(const std::string& npc, const std::string& wolf);
+    std::string troubleSaid(const std::string& npc, const std::string& wolf, std::size_t seed);
+    void heardTrouble(const std::string& wolf, const std::string& npc, const std::string& kind);
+    void troublesSave(json::Value& root) const;
+    void troublesLoad(const json::Value& saved);
+    // Protected residents (doc 57, 6): marked in Atlas, heads of great houses, faction members with a rank, and any the
+    // Dungeon Master marks; the Dungeon Master may unmark any (npc.unprotect). Kept by the game, not the society.
+    std::set<std::string> protectedMarks_, unprotectedMarks_;
+    bool isProtected(const std::string& id) const;
+    // Solving them (doc 57, Phase 2): the menu's entries for a resident or the employer or master who can help, the
+    // action, and its success; a gift that brings a short household to its refill is a solving too.
+    std::map<std::string, double> troubleSolvedBy_; // "resident|wolf" -> the day the wolf last solved one of its troubles.
+    std::map<std::string, double> troubleRests_;    // "resident|kind" -> the day one was solved (it rests a while).
+    void troubleActions(const Entity& self, const Entity& e, double apart, json::Value& actions);
+    Result troubleAction(const std::string& wolf, const std::string& target, const std::string& action);
+    void troubleSolved(const std::string& wolf, const troubles::Trouble& t, const std::string& deedKind, int weight,
+                       std::int64_t coins, const std::string& words);
+    troubles::Trouble shortHousehold(const std::string& member);
+    void troubleGiven(const std::string& giver, const troubles::Trouble& before);
+    std::string vacancyFor(const std::string& employer, const std::string& resident) const;
+    const Position* mastersTrade(const std::string& master) const;
+    // Town projects (doc 57, Phase 3; RatwGameProjects.cpp): the ledger, who is working at which (and in what role), the
+    // hands posted today, and the daily pass that turns a project's coin into contracts for its materials and hired hands.
+    projects::Ledger projects_;
+    struct ProjectWorker
+    {
+        std::string project, role;
+    };
+    std::map<std::string, ProjectWorker> projectWork_;   // By wolf.
+    std::map<std::string, std::pair<std::int64_t, int>> projectHands_;   // Project -> (day, hands posted that day).
+    double projectAccumulator_ = 0, projectDay_ = -1;
+    bool projectCommand(Connection* c, const json::Value& j, Result& result);
+    void projectTick(double dt);
+    void projectSpend(projects::Project& p);
+    bool projectReady(const projects::Project& p) const;
+    void finishProject(projects::Project& p);
+    void refundProject(projects::Project& p);
+    bool placeProject(projects::Project& p);
+    void projectsFromEvent(const WorldEvent& e);
+    double projectHourValue(const std::string& town) const;
+    int projectHas(const projects::Project& p, const std::string& item) const;
+    json::Value projectView(const std::string& viewer, const projects::Project& p, bool here);
+    // Phase 4: what standing projects do (handed to the world when it changes), their wear and mending, and the
+    // proposer that posts a town's projects from its real needs, one town a day at dawn.
+    std::string worksKey_;
+    std::size_t projectTowns_ = 0;                  // How many projects the economy was last told the towns of.
+    std::size_t proposeNext_ = 0;
+    double proposedDay_ = -1;
+    std::map<std::string, std::vector<std::pair<std::string, double>>> recentRaids_;   // Town -> (cell, day) robbed lately.
+    std::map<std::string, std::vector<std::string>> distressRun_;   // Town -> its distress at the latest decisions.
+    double distressDay_ = -1;
+    void refreshWorks();
+    void wearProjects(double days);
+    void proposeProjects();
+    static double projectStrength(const projects::Project& p);
+    json::Value projectsView(const std::string& viewer, const std::string& town);
+    const projects::Project* projectAt(const std::string& viewer) const;
+    void projectsSave(json::Value& root) const;
+    void projectsLoad(const json::Value& saved);
     // Tavern games (doc 54, 5; RatwGameTables.cpp; the rules in RatwTavernGames.cpp): at a table (`T`) in a common room
     // or an opened venue, within 1.5 tiles. One starts a game, others join or a resident is asked from the room (awake,
     // not at work, 14 or more, 16 for stakes); the game begins with 2 or more. Liar's Bones may be played for 0 to 5p
@@ -1185,7 +1293,7 @@ class Game
     std::map<std::string, std::string> building_;                    // Player → the structure they work on.
     std::set<std::string> townCells_;
     double campAccumulator_ = 0, lastWearDay_ = -1;
-    std::string whyNotGround(const std::string& cellId, int x, int y) const;
+    std::string whyNotGround(const std::string& cellId, int x, int y, bool town = false) const;   // (town: a town's project, doc 57)
     bool campCommand(Connection* c, const json::Value& j, Result& result);
     void campTick(double dt);
     json::Value structuresView(const std::string& viewer, const std::string& cellId) const;

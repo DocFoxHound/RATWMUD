@@ -319,9 +319,10 @@ Result World::steal(const std::string& thief, const std::string& victimId)
         for (const auto& [held, n] : purse->stock)
             if (n > 0 && !items::makerOf(held).empty() && World::wornCount(*v, held) < n)
                 prize = held;
-        if (!prize.empty() && roll(thief + "|prize", at) % 4 == 0)
+        const bool shielded = !t->npc && isProtected(victimId);   // (Never coin from a protected resident: doc 57, 6.)
+        if (!prize.empty() && !shielded && roll(thief + "|prize", at) % 4 == 0)
             item = prize, quantity = 1;
-        else if (purse->cash > 0)
+        else if (purse->cash > 0 && !shielded)
             coins = std::min<std::int64_t>(purse->cash, 1 + std::int64_t(roll(thief, at) % 5));
         else if (Society::stock(*purse, "meal") > 0)
             item = "meal", quantity = 1;

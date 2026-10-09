@@ -4,6 +4,7 @@
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
 import {button, el} from './dom.ts';
+import {renderProject} from './project.ts';
 
 const KindWords: Record<string, string> = {seeking: 'SEEKING', offering: 'OFFERING', event: 'EVENT', lost: 'LOST AND FOUND', other: 'NOTICE'};
 
@@ -30,6 +31,16 @@ export function renderBoard(panel: HTMLElement, s: GameState) {
         const row = el('div', 'story-row', panel);
         el('span', '', row, `${str(w, 'text')}${num(w, 'reward') ? ` · ${num(w, 'reward')}p` : ''}`);
         if (bool(w, 'canTake')) button('TAKE IT ON', 'small', row, () => send('take', {id: str(w, 'id')}));
+    }
+    // The town's projects (doc 57, 4): what each needs, and a gift from here.
+    const projects = arr(obj(s.snapshot, 'self'), 'townProjects').filter(isObject);
+    if (projects.length) {
+        el('div', 'label muted', panel, 'TOWN PROJECTS');
+        for (const p of projects) {
+            const box = el('div', 'letter', panel);
+            el('div', 'label', box, str(p, 'title'));
+            renderProject(box, s, p, false);
+        }
     }
     el('div', 'label muted', panel, 'NOTICES');
     const notices = arr(b, 'notices').filter(isObject);

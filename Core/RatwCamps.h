@@ -42,12 +42,14 @@ struct Structure
 
 struct Site
 {
-    std::string id, chapter, cell, name;
+    std::string id, chapter, cell, name;            // chapter: "town:<community>" for a town's projects (doc 57).
     int x = 0, y = 0;                             // Its centre.
     double founded = 0;                           // Calendar day.
     double visited = 0;                           // Unix seconds a member was last there.
     std::string state = "standing";               // standing, ruin.
 };
+
+inline bool townSite(const Site& s) { return s.chapter.rfind("town:", 0) == 0; }
 
 // A resident working at a site for the Chapter (5.4): a cook, a watch. Paid each game day from its treasury.
 struct Staff

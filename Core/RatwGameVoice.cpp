@@ -257,6 +257,12 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
                   : plan.kind == "rest"   ? ", the day of rest."
                                           : ".";
     }
+    else if (intent.id == "trouble")
+    {
+        if (!identified || !npc->npc)
+            return {};
+        answer = troubleSaid(npcId, playerId, seed);   // (Doc 57, 3: to a wolf it trusts; else a polite nothing.)
+    }
     else if (intent.id != "greet" && intent.id != "thanks" && intent.id != "bye")
         return {};
     if (intent.id != "greet" && intent.id != "thanks" && intent.id != "bye")

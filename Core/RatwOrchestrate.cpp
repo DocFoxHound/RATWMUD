@@ -97,6 +97,7 @@ void Society::forgetOrchestra()
     accountTown_.clear();
     holderSpent_.clear();
     townFlow_.clear();
+    playerFlow_.clear();
     earned_.clear();
 }
 
@@ -157,9 +158,34 @@ bool Society::unsteer(const std::string& id)
     return steers.size() != before;
 }
 
-void Society::noteForOrchestra(const std::string& kind, const std::string& from, const std::string& to, std::int64_t coins)
+void Society::noteForOrchestra(const std::string& kind, const std::string& from, const std::string& to, std::int64_t coins,
+                               const std::string& item, int quantity)
 {
-    if (coins <= 0 || accountTown_.empty())
+    if (accountTown_.empty())
+        return;
+    // Players' help (doc 57, 5): coins between a player and a town's account (a shop's till, its treasury, its works, its
+    // projects); and goods a player sold to a shop ("local trade", whose entry runs buyer to seller) or handed in there.
+    const bool fromPlayer = playerAccountId(from), toPlayer = playerAccountId(to);
+    if (fromPlayer != toPlayer)
+    {
+        const auto& other = fromPlayer ? to : from;
+        std::string town;
+        if (const auto t = accountTown_.find(other); t != accountTown_.end())
+            town = t->second;
+        else if (const auto p = projectTowns_.find(other); p != projectTowns_.end())
+            town = p->second;
+        if (!town.empty())
+        {
+            auto& flow = playerFlow_[town];
+            if (coins > 0)
+                (fromPlayer ? flow.in : flow.out) += coins;
+            const bool sold = kind == "local trade" && toPlayer;
+            const bool handed = fromPlayer && (kind == "contract delivery" || kind == "handed in to a town project");
+            if (!item.empty() && quantity > 0 && (sold || handed))
+                flow.goods += std::int64_t(std::llround(quantity * townPrice(town, item)));
+        }
+    }
+    if (coins <= 0)
         return;
     // Reach (Phase 7): what a channel's fund pays, and to whom; what a till pays out, and how much to the poorer half.
     if (from.rfind("fund:", 0) == 0 && to.rfind("fund:", 0) != 0 && from != LandFund)
@@ -489,6 +515,9 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
     for (const auto& [town, flow] : townFlow_)
         if (towns.count(town))
             towns[town].inflow = flow.first, towns[town].outflow = flow.second;
+    for (const auto& [town, flow] : playerFlow_)    // (Players' help: doc 57, 5.)
+        if (const auto t = towns.find(town); t != towns.end())
+            t->second.playerIn = flow.in, t->second.playerOut = flow.out, t->second.playerGoods = flow.goods;
     for (const auto& job : oddJobs_)
         if (const auto t = towns.find(job.community); t != towns.end())
         {
@@ -517,6 +546,9 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         if (const auto* granary = account("town:" + town + ":granary"))
             for (const auto& [item, n] : granary->stock)
                 t.granary += std::int64_t(n) * nourishment(item);
+    for (const auto& [town, days] : granaryExtra_)   // (A granary project standing: doc 57.)
+        if (const auto t = towns.find(town); t != towns.end())
+            t->second.granaryExtra = days;
     // A decision's day: each channel's week (Phase 7), what it paid and what reached the poorer half, directly or through
     // the tills it paid (in the share of each till's outgoings that went to them). Then the week's count starts afresh.
     if (s.decide)
@@ -551,6 +583,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
     // earnings (kept for the week).
     holderSpent_ = std::move(spentNext);
     townFlow_.clear();
+    playerFlow_.clear();
     accountTown_ = std::move(nextTown);
     for (const auto& h : s.holders)
         if (!h.town.empty())

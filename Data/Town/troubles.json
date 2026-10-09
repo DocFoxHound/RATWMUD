@@ -1,0 +1,50 @@
+{
+  "format": "ratw-troubles",
+  "about": "Residents' troubles (Docs/Design/57-changing-the-world.md, 3): what may weigh on a resident, read only from the simulation's real state, never invented. A resident carries one at a time: the first kind in `order` that holds. Each kind can be switched off (`on`). `briefing` is what the NPC Mind is told (in the second person, to the resident); `said` are the game's own answers to 'is something troubling you?' (one chosen by hash); `unfinished` is the line in the hearer's unfinished business ({who}: the resident as the hearer knows them). Blanks: {coins}, {days}, {need}, {other} (a resident as the troubled one knows them), {shop}, {age}, {them} and {their} (the child's pronouns, by sex). `limits`: a solved kind rests that many days for that resident; one of a resident's troubles solved by the same wolf a season; making peace needs trust 30 from both and the three within 4 tiles; speaking for a resident needs the employer's trust 30; sponsoring an apprenticeship, the master's trust 20; a debt of 100p or more paid off is a notable deed. Every number is a placeholder.",
+  "order": ["debt", "short", "child", "work", "feud"],
+  "speak": {"trust": 10, "familiarity": 20},
+  "limits": {"restDays": 14, "perWolfDays": 92, "peaceTrust": 30, "peaceTiles": 4, "employerTrust": 30, "masterTrust": 20, "notableDebt": 100},
+  "refusal": ["Oh, nothing worth your time.", "Nothing, nothing. Don't trouble yourself.", "I'm well enough, thank you."],
+  "kinds": {
+    "debt": {
+      "on": true,
+      "briefing": "Your trouble (true): your business borrowed {coins} pennies from the town's rescue fund to stay open, and takings are thin; if it isn't paid back within the month it is written off and the shop may close. Speak of it if the talk turns that way or they ask how you are. Never ask outright for money.",
+      "said": ["Takings are thin. The shop borrowed {coins} pennies from the town to keep its doors open, and I don't see how it gets paid back.", "If you must know, the shop owes the town {coins} pennies. Another bad month and that's the end of it."],
+      "unfinished": "{who}'s shop owes the town {coins} pennies"
+    },
+    "short": {
+      "on": true,
+      "underDays": 7,
+      "refillDays": 14,
+      "briefing": "Your trouble (true): your household has money and food for only about {days} days. Speak of it if the talk turns that way or they ask how you are. Never ask outright for money.",
+      "said": ["Money's tight. There's barely {days} days' food in the house, and that's if nobody falls ill.", "We're getting by. Just. The larder and the purse together might see us through {days} days."],
+      "unfinished": "{who}'s household is short of coin"
+    },
+    "child": {
+      "on": true,
+      "youngest": 12,
+      "oldest": 25,
+      "fee": 20,
+      "briefing": "Your trouble (true): {other}, your child of {age}, has no trade and no master will take {them} on yet. Speak of it if the talk turns that way or they ask how you are. Never ask outright for help.",
+      "said": ["It's {other}. {age} years old and no trade to {their} name. Nobody's taken {them} on.", "My {other} wants a trade, but no master in town has room for an apprentice."],
+      "unfinished": "{who}'s child has no trade"
+    },
+    "work": {
+      "on": true,
+      "youngest": 16,
+      "oldest": 64,
+      "notableDays": 7,
+      "briefing": "Your trouble (true): you have no steady work; you get by on day labour and whatever turns up. Speak of it if the talk turns that way or they ask how you are. Never ask outright for help.",
+      "said": ["No steady work. I labour for the Town Works when they'll have me, and that's all.", "I've no post. Day labour, odd jobs; it's no way to live."],
+      "unfinished": "{who} has no steady work"
+    },
+    "feud": {
+      "on": true,
+      "both": -25,
+      "one": -40,
+      "briefing": "Your trouble (true): you and {other} can't stand each other, and it sours every day. Speak of it if the talk turns that way or they ask how you are.",
+      "said": ["{other}. Don't get me started on {other}.", "There's bad blood between me and {other}, and it isn't getting better."],
+      "unfinished": "{who} is feuding with a neighbour"
+    }
+  }
+}

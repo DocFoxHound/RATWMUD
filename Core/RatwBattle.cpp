@@ -302,6 +302,8 @@ Result World::attack(const std::string& attacker, const std::string& target, con
         return {false, why, target};                // (Carrying too much, doc 35.)
     if (a && t && !a->npc && !t->npc)
         return challenge(attacker, target, terms);  // Between players: only with the other's yes.
+    if (a && t && !a->npc && t->npc && isProtected(target))
+        return {false, "Their guards close in; you think better of it.", target};   // (A protected resident: doc 57, 6.)
     return startBattle(attacker, target, false);
 }
 

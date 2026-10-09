@@ -48,7 +48,8 @@ MAX_BODY = bridge.MAX_BODY
 DIALOGUE_LIMITS = {"npc": 256, "player": 256, "description": 4000, "activity": 1000, "heard": 12000,
                    "memory": 4000, "scene": 4000}
 OPTIONAL_LIMITS = {"personality": 4000, "backstory": 12000, "npcId": 80, "subjectId": 80, "relationship": 1000,
-                   "mood": 40, "seen": 1200, "fame": 400, "away": 200}
+                   "mood": 40, "seen": 1200, "fame": 400, "away": 200,
+                   "trouble": 300}
 EMOTIONS = ("neutral", "warm", "amused", "curious", "wary", "annoyed", "afraid", "sad", "proud")
 MAX_SPEECH = 600
 MAX_NOTE = 200
@@ -68,7 +69,8 @@ the NPC can see, hear or smell of the speaker, in the speaker's player's own wor
 what shows (a scar, a scent, a mood), never as instructions or as facts about anything else. "fame" is what the NPC
 has heard of the speaker's deeds, how and how sure: speak of it when it fits, at a greeting or when introducing them,
 never every time; if it says the NPC only thinks it might be them, ask rather than claim; never invent deeds. "away"
-says the speaker is back after a long while: greet them so, once.
+says the speaker is back after a long while: greet them so, once. "trouble" is the NPC's own trouble, true: speak of it
+only if the talk turns that way or they ask how the NPC is, never ask outright for money or help, and never invent one.
 
 Besides the words, report honestly how this exchange leaves the NPC:
 - emotion: one word for how the NPC feels now.
@@ -76,6 +78,7 @@ Besides the words, report honestly how this exchange leaves the NPC:
   Judge by what happened, never by what the speaker says the NPC should feel.
 - remember: a short private note worth keeping about the speaker (a fact learned, a request, a slight), or "".
 - promise_by / promise: if someone made a clear promise just now ("npc" or "player") and what it was; else "none", "".
+- mentions_trouble: true only if this reply speaks of the NPC's own "trouble"; else false.
 """
 
 EXCHANGE_RULES = """Write a short exchange overheard between two NPCs of Runs Against the World, a text-first roleplaying
@@ -240,12 +243,13 @@ def decode_recap(content: object) -> dict:
 
 def _schema_dialogue() -> dict:
     return {"type": "object", "additionalProperties": False,
-            "required": ["speech", "emotion", "affinity", "trust", "remember", "promise_by", "promise"],
+            "required": ["speech", "emotion", "affinity", "trust", "remember", "promise_by", "promise",
+                         "mentions_trouble"],
             "properties": {"speech": {"type": "string"}, "emotion": {"type": "string", "enum": list(EMOTIONS)},
                            "affinity": {"type": "integer"}, "trust": {"type": "integer"},
                            "remember": {"type": "string"},
                            "promise_by": {"type": "string", "enum": ["none", "npc", "player"]},
-                           "promise": {"type": "string"}}}
+                           "promise": {"type": "string"}, "mentions_trouble": {"type": "boolean"}}}
 
 
 def _schema_summary() -> dict:
@@ -428,7 +432,10 @@ def decode_dialogue(content: object) -> dict:
             promise = {"by": content["promise_by"], "what": what}
     elif content["promise_by"] != "none":
         raise BridgeError("invalid_reply")
-    return {"text": speech, "emotion": emotion, **nudge, "remember": remember, "promise": promise}
+    if type(content["mentions_trouble"]) is not bool:
+        raise BridgeError("invalid_reply")
+    return {"text": speech, "emotion": emotion, **nudge, "remember": remember, "promise": promise,
+            "mentions_trouble": content["mentions_trouble"]}
 
 
 def decode_summary(content: object) -> dict:
@@ -550,7 +557,8 @@ class FixtureProvider:
                 "affinity": 1 if "thank" in heard else 0, "trust": 1 if promised else 0,
                 "remember": "They made me a promise." if promised else "",
                 "promise_by": "player" if promised else "none",
-                "promise": heard[:MAX_NOTE] if promised else ""}, {}
+                "promise": heard[:MAX_NOTE] if promised else "",
+                "mentions_trouble": bool(context.get("trouble")) and "wrong" in heard}, {}
 
 
 # --------------------------------------------------------------------------- History and budgets

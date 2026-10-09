@@ -109,6 +109,11 @@ struct TownSnap
     int unpaid = 0, supported = 0;                   // Its workers owed wages; and paid today by wage support (Phase 6).
     std::int64_t rescueNeed = 0;                     // What its failing businesses lack of their floats (under half of it).
     std::int64_t granary = 0;                        // Food (nourishment) in its granary (Phase 7).
+    double granaryExtra = 0;                         // Days more a head it keeps there: a granary project standing (doc 57).
+    // Players' help (doc 57, 5), since the last snapshot: coins players spent there (purchases, gifts to its projects), coins
+    // it paid players (its shops buying from them), and goods players sold or handed in there, at its price. Shown, and not
+    // fed to any sensor: the economy session decides whether they should be.
+    std::int64_t playerIn = 0, playerOut = 0, playerGoods = 0;
     std::map<std::string, std::int64_t> funds;       // Channel -> what its fund holds.
 };
 
@@ -252,6 +257,7 @@ struct TownReading
     double hungry = 0, starving = 0, short_ = 0, poor = 0;   // Shares of its people (short: of its households).
     double shopFoodDays = 0, takingsRatio = 0;
     std::int64_t netInflow = 0, wageFloor = 0, share = 0;
+    std::int64_t playerIn = 0, playerOut = 0, playerGoods = 0;   // Players' help (doc 57): TownSnap's, as measured.
 };
 struct HolderBand
 {

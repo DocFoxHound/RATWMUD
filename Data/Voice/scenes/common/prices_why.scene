@@ -1,0 +1,36 @@
+# Why a price fell (doc 57, 5; topic price_cause): a wolf brought goods into a town short of them, and they got cheaper.
+# {item} is the good, plural or mass ("meals", "timber", "cord"). {who} is how the teller names the wolf: a name they were
+# given (known=yes), or how the wolf looked (known=no: "a grey wolf with a torn ear"), so it sits mid-sentence. Speak of
+# the wolf as "they". Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- By name
+
+scene pw_named
+when topic=price_cause known=yes
+a : The price of {item} is down this week, did you see? | Have you priced {item} lately? Down again. | {item}, cheaper at last.
+b : Why's that? | I hadn't noticed. | About time.
+a : {who} brought a load in, that's why. | Thank {who} for it: they brought a cartload up. | {who} came in with plenty, and the shops were short.
+b : Good of them. | Then I'll buy while it lasts. | {who}, was it? Well, well.
+
+scene pw_named_merchant
+when topic=price_cause known=yes place=market
+a : The shops were near out of {item} till {who} turned up. | {who} sold us a stack of {item} last week. | We had {item} from {who}.
+b[merchant] : And now nobody can charge what they did.
+b : That explains the prices. | Lucky for us. | Good timing.
+a : It does. | It was. | Wasn't it.
+
+# ---------------------------------------------------------------- By look
+
+scene pw_look
+when topic=price_cause known=no
+a : The price of {item} fell when {who} came through with a load. | Someone, {who}, brought {item} up, and the price fell. | Have you seen? {item} down, thanks to {who}.
+b : Who was that, then? | Never seen them. | A stranger did that?
+a : Don't know their name. | Passing through, I think. | A stranger, yes.
+b : Whoever they are, I'm grateful. | Let's hope they come back. | Good for them.
+
+scene pw_look_market
+when topic=price_cause known=no place=market
+a : A stranger sold the shops {item} when they had none: {who}. | {who} came in with {item} and the prices dropped. | {item}? Cheap since {who} came by.
+b[merchant] : I bought what I could. Couldn't say no at that price.
+b : Lucky for the rest of us. | I'll take some, then. | Strangers aren't all trouble.
+a : Very. | Go on, then. | Not all.

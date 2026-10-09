@@ -199,9 +199,11 @@ void Game::fameFromEvent(const WorldEvent& e)
     {
         // The carters bring the talk of the town they came from: great deeds always; notable ones only with a caravan a
         // player guarded (doc 48 §1.5).
-        const auto from = e.detail.substr(5), to = e.target;
+        // (The world says ", guarded" when a player rode with it to the end: doc 57, 5.)
+        const auto marked = e.detail.find(", guarded");
+        const auto from = e.detail.substr(5, marked == std::string::npos ? std::string::npos : marked - 5), to = e.target;
         const auto guarded = escortedTo_.find(to);
-        const bool escorted = guarded != escortedTo_.end() && world_.time() - guarded->second < 5;
+        const bool escorted = marked != std::string::npos || (guarded != escortedTo_.end() && world_.time() - guarded->second < 5);
         const double today = world_.calendarDays();
         for (const auto& [id, cd] : fame_.all())
         {
@@ -235,6 +237,8 @@ void Game::fameFromEvent(const WorldEvent& e)
     }
     else if (e.kind == "festival won" && player)
         recordDeed("festival_won", {e.actor}, "town:" + world_.lawTown(e.cell), e.cell, "festival", contestWords(e.item) + " at " + e.detail);
+    else if (e.kind == "fed the town" && player)   // (Food into a town with bare shelves: doc 57, 5.)
+        recordDeed("fed_town", {e.actor}, "town:" + e.target, actor->cellId, "trade", e.item);
 }
 
 void Game::tendFame()
@@ -692,6 +696,25 @@ json::Value Game::unfinishedView(const std::string& id)
             threads.push_back({"\"" + b.title + "\" waits for your word on finishing it.", 1e7});
     if (const int unread = documents_.unread(id); unread > 0)
         threads.push_back({std::to_string(unread) + (unread == 1 ? " letter" : " letters") + " unread in your case.", 1e6});
+    // Troubles it has heard of (doc 57, 3), while they last: one solved or gone drops out.
+    if (auto heard = troublesHeard_.find(id); heard != troublesHeard_.end())
+    {
+        for (auto it = heard->second.begin(); it != heard->second.end();)
+        {
+            const auto& t = troubleOf(it->first);
+            const auto* kind = troubles::rules().kind(it->second.kind);
+            if (!t || t.kind != it->second.kind || !kind)
+            {
+                it = heard->second.erase(it);
+                continue;
+            }
+            if (!kind->unfinished.empty())
+                threads.push_back({names::capitalised(troubles::fill(kind->unfinished, troubleBlanks(id, t))) + ".", 2e6});
+            ++it;
+        }
+        if (heard->second.empty())
+            troublesHeard_.erase(heard);
+    }
     std::stable_sort(threads.begin(), threads.end(), [](const Thread& a, const Thread& b) { return a.due < b.due; });
     auto list = Value::array();
     for (std::size_t i = 0; i < threads.size() && i < 8; ++i)

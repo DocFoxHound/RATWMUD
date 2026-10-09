@@ -10,6 +10,7 @@
     "honest": {"epithets": ["True-Tongue", "the Steadfast", "Word-Keeper"], "possessive": ["{name} the True", "Honest {name}"]},
     "watch": {"epithets": ["Sharp-Eye", "the Watcher", "Thief-Catcher"], "possessive": ["{name} the Keen", "{name} of the Watch"]},
     "festival": {"epithets": ["the Champion", "Fleet-Foot", "the Victor"], "possessive": ["{name} the Swift", "Lucky {name}"]},
+    "neighbour": {"epithets": ["the Good Neighbour", "Open-Paw", "the Peacemaker", "Friend-of-the-Town"], "possessive": ["{name} the Kind", "Good {name}"]},
     "hero": {"epithets": ["the Brave", "the Bold", "Stormbreaker"], "possessive": ["{name} the Brave", "{name}'s Luck"]}
   }
 }

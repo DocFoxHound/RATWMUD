@@ -15,7 +15,9 @@
     "tie ended": {"actor": "Your tie with {other} ended.", "target": "Your tie with {other} ended."},
     "camp cleared": {"actor": "You broke a bandit camp."},
     "letter delivered": {"target": "A letter reached you."},
-    "lease": {"actor": "You took lodgings in {place}."}
+    "lease": {"actor": "You took lodgings in {place}."},
+    "trouble heard": {"actor": "{Other} told you of a trouble."},
+    "trouble solved": {"actor": "You helped {other} with a trouble.", "target": "{Other} helped you with a trouble."}
   },
   "first": ["character created", "arrival", "introduced"],
   "folded": {
@@ -25,6 +27,7 @@
     "table game": "played {n} table {games}",
     "archive work": "worked {n} {times} at the archive",
     "stall sale": "sold {n} {things} from a stall",
+    "project gift": "gave to a town's project {n} {times}",
     "arrival": "came to {n} new {places}"
   }
 }

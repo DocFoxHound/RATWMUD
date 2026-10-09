@@ -19,7 +19,7 @@ CONTEXT = {"npc": "Wren", "player": "Ash", "heard": "Thank you for the bread.", 
 
 def reply(**changes):
     value = {"speech": "Mind the crust.", "emotion": "warm", "affinity": 1, "trust": 0, "remember": "",
-             "promise_by": "none", "promise": ""}
+             "promise_by": "none", "promise": "", "mentions_trouble": False}
     value.update(changes)
     return value
 
@@ -39,7 +39,7 @@ class DecodingTests(unittest.TestCase):
     def test_a_good_reply(self):
         got = mind.decode_dialogue(reply(promise_by="npc", promise="I will save you a loaf."))
         self.assertEqual({"text": "Mind the crust.", "emotion": "warm", "affinity": 1, "trust": 0, "remember": "",
-                          "promise": {"by": "npc", "what": "I will save you a loaf."}}, got)
+                          "promise": {"by": "npc", "what": "I will save you a loaf."}, "mentions_trouble": False}, got)
 
     def test_feelings_are_clamped(self):
         got = mind.decode_dialogue(reply(affinity=40, trust=-9))
@@ -52,7 +52,7 @@ class DecodingTests(unittest.TestCase):
 
     def test_bad_replies_are_refused(self):
         for bad in (reply(speech=""), reply(affinity="3"), reply(affinity=1.5), reply(promise_by="someone"),
-                    {**reply(), "extra": 1}, {"speech": "only"}, "not an object", reply(speech="bell\x07")):
+                    reply(mentions_trouble="yes"), {**reply(), "extra": 1}, {"speech": "only"}, "not an object", reply(speech="bell\x07")):
             with self.assertRaises(BridgeError, msg=repr(bad)):
                 mind.decode_dialogue(bad)
 
@@ -66,7 +66,7 @@ class DecodingTests(unittest.TestCase):
 
     def test_context_is_checked(self):
         for bad in ({**CONTEXT, "heard": ""}, {**CONTEXT, "npc": " "}, {**CONTEXT, "relationship": "x" * 2000},
-                    {**CONTEXT, "fame": "x" * 401}, {**CONTEXT, "mood": 3}, []):
+                    {**CONTEXT, "fame": "x" * 401}, {**CONTEXT, "trouble": "x" * 301}, {**CONTEXT, "mood": 3}, []):
             with self.assertRaises(BridgeError):
                 mind.clean_dialogue_context(bad)
 
@@ -84,6 +84,9 @@ class MindTests(unittest.TestCase):
         famed = provider.calls and mind.Mind(provider, audit=lambda e: None).dialogue(
             {**CONTEXT, "fame": "You have heard (the town's talk; fairly sure) that this wolf broke the camp."})
         self.assertIn("broke the camp", provider.calls[-1]["user"]["fame"])   # (Doc 56: what the NPC has heard of their deeds.)
+        mind.Mind(provider, audit=lambda e: None).dialogue({**CONTEXT, "trouble": "Your trouble (true): the shop owes 40p."})
+        self.assertIn("owes 40p", provider.calls[-1]["user"]["trouble"])   # (Doc 57: its own trouble, to a wolf it trusts.)
+        self.assertTrue(mind.decode_dialogue(reply(mentions_trouble=True))["mentions_trouble"])
         for kept_out in ("backstory", "personality", "description", "npcId", "subjectId"):
             self.assertNotIn(kept_out, call["user"])
         self.assertEqual("Mind the crust.", got["text"])
@@ -412,7 +415,7 @@ class HttpTests(unittest.TestCase):
     def test_dialogue_and_summaries(self):
         status, data = self.post("/dialogue", CONTEXT)
         self.assertEqual(200, status)
-        self.assertEqual({"text", "emotion", "affinity", "trust", "remember", "promise"}, set(data))
+        self.assertEqual({"text", "emotion", "affinity", "trust", "remember", "promise", "mentions_trouble"}, set(data))
         status, data = self.post("/summarize", {"npc": "Wren", "turns": [{"who": "Ash", "text": "Hello."}]})
         self.assertEqual((200, True), (status, "summary" in data))
         status, data = self.post("/recap", {"place": "The Wharf", "you": "Ada", "lines": [{"who": "Wren", "text": "Hello."}]})

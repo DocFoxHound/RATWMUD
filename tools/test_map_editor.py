@@ -418,6 +418,18 @@ class ContentTests(unittest.TestCase):
         self.assertTrue(any(line.startswith('route "town_watch" 9 ') for line in manifest))
         self.assertIn('economy 1000 100 50 10 12', manifest)
 
+    def test_protected_residents_export_after_their_resident(self):
+        # Doc 57, 6: a resident players can't ruin, authored in Atlas, follows its resident in the world file.
+        p = self.greyfen()
+        p['people'][0]['protected'] = True
+        manifest = editor.export_files(p)['world.ratw'].splitlines()
+        rid = p['people'][0]['id']
+        self.assertIn(f'protected "{rid}"', manifest)
+        self.assertLess(next(i for i, l in enumerate(manifest) if l.startswith(f'resident "{rid}"')), manifest.index(f'protected "{rid}"'))
+        p['people'][0]['protected'] = 'yes'
+        with self.assertRaises(editor.ValidationError):
+            editor.check_project(p)
+
     def test_bundled_worlds_are_fresh(self):
         import subprocess, sys
         result = subprocess.run([sys.executable, str(editor.ROOT / 'tools/bundle_worlds.py'), '--check'],

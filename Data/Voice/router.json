@@ -1,5 +1,5 @@
 {
-  "about": "What the game answers itself, before a model is asked (Docs/Design/28-ai-cost.md). Patterns match the whole of a short, normalised utterance (lower case, contractions spelt out, punctuation gone, the NPC's name and 'please' left out). The first intent that matches wins; nothing matches, and a model answers. Lines are chosen by intent, how well the NPC knows the speaker (stranger, known, or any) and the NPC's tone (from their personality), falling back to 'any' and 'plain'; a line is used only if the facts fill every blank in it. The greeting's 'famous' and 'famous_look' bands (doc 56) are used at most once a game day a pair, when the NPC can tie a notable deed to the speaker: by a name it knows them by, or, unsure, by a distinctive look. The greeting's 'returning' band (doc 56, 10) is for a wolf back after three real days or more, from a resident who hasn't seen them since: {since} is the season it last did.",
+  "about": "What the game answers itself, before a model is asked (Docs/Design/28-ai-cost.md). Patterns match the whole of a short, normalised utterance (lower case, contractions spelt out, punctuation gone, the NPC's name and 'please' left out). The first intent that matches wins; nothing matches, and a model answers. Lines are chosen by intent, how well the NPC knows the speaker (stranger, known, or any) and the NPC's tone (from their personality), falling back to 'any' and 'plain'; a line is used only if the facts fill every blank in it. The greeting's 'famous' and 'famous_look' bands (doc 56) are used at most once a game day a pair, when the NPC can tie a notable deed to the speaker: by a name it knows them by, or, unsure, by a distinctive look. The greeting's 'returning' band (doc 56, 10) is for a wolf back after three real days or more, from a resident who hasn't seen them since: {since} is the season it last did. The 'trouble' intent (doc 57, 3) is answered with a resident's own trouble, read from the simulation, only to a wolf it trusts; anyone else gets a polite nothing; its lines take no opener.",
   "maxWords": 9,
   "intents": [
     {
@@ -72,6 +72,19 @@
         "what are the charges",
         "do i owe (anything|the watch anything|the watch)",
         "is there a warrant (for me|out for me)"
+      ]
+    },
+    {
+      "id": "trouble",
+      "patterns": [
+        "what is (wrong|the matter|troubling you|bothering you|on your mind)( with you)?( today)?",
+        "(is )?(something|anything) (wrong|troubling you|bothering you|the matter|on your mind)( today)?",
+        "what (troubles|ails|bothers|worries) you",
+        "(you look|you seem) (troubled|worried|upset|down|unhappy|sad)( today)?",
+        "are you (all right|alright|ok|okay)",
+        "(can|may) i help( you)?( with anything)?",
+        "how can i help( you)?",
+        "is there anything i can do( for you| to help)?"
       ]
     },
     {
@@ -439,6 +452,13 @@
         "shy": [
           "Oh, um, like I said: {answer}",
           "I, I said: {answer}"
+        ]
+      }
+    },
+    "trouble": {
+      "any": {
+        "plain": [
+          "{answer}"
         ]
       }
     }

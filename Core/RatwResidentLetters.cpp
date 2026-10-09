@@ -104,6 +104,7 @@ std::string deedWords(const WorldEvent& e)
 void Game::watchEvent(const WorldEvent& e)
 {
     fameFromEvent(e);                               // (Good deeds: doc 56.)
+    projectsFromEvent(e);                           // (A town project's hired hands: doc 57, 4.)
     // Occasions (doc 55, 6): a marriage's wedding, a death's funeral, hosted by residents; and their witnesses.
     if (e.kind == "marriage" || e.kind == "mourning")
     {

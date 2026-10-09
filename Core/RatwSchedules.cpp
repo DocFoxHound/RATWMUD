@@ -226,6 +226,13 @@ DayPlan World::dayPlan(const std::string& community)
                                              [&](const Spot& s) { return letStalls_.count(stallKey(s)) > 0; }),
                               plan.stalls.end());
         plan.foul = skyOf(sq.at.cell) == 2;
+        // A market cover standing (doc 57, Phase 4): stalls set up under it in snow and storms (worn, every other day).
+        if (plan.foul)
+            if (const auto cover = works_.covers.find(community);
+                cover != works_.covers.end() && (cover->second >= 1 || (cover->second > 0 && today % 2 == 0)))
+                plan.foul = false;
+        if (plan.foul && plan.kind == "market")
+            foulMarkets_[community].insert(today);      // (Counted for the town's proposals.)
         if (plan.kind == "market" || plan.kind == "festival")
             plan.crowd = sq.crowd;
     }

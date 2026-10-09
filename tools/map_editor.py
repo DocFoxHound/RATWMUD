@@ -385,10 +385,11 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
     require(isinstance(people, list) and len(people) <= MAX_PEOPLE, f'people must be an array of at most {MAX_PEOPLE} residents.')
     person_ids = set()
     for person in people if isinstance(people, list) else []:
-        if not isinstance(person, dict) or set(person) - {'joinable'} != PERSON_KEYS:
-            errors.append('Each person requires exactly: ' + ', '.join(sorted(PERSON_KEYS)) + ' (and may have joinable).')
+        if not isinstance(person, dict) or set(person) - {'joinable', 'protected'} != PERSON_KEYS:
+            errors.append('Each person requires exactly: ' + ', '.join(sorted(PERSON_KEYS)) + ' (and may have joinable, protected).')
             continue
         require(type(person.get('joinable', False)) is bool, f'Person {person["id"]}: joinable must be true or false.')
+        require(type(person.get('protected', False)) is bool, f'Person {person["id"]}: protected must be true or false.')
         pid = person['id']
         label = f'Person {pid}'
         require(isinstance(pid, str) and ID.fullmatch(pid) and pid not in person_ids and pid != 'treasury'
@@ -732,6 +733,8 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             manifest.append(f'story {quote(r["id"])} {quote(fold(r.get("personality", "")))} {quote(fold(r.get("backstory", "")))}')
         if r.get('joinable'):
             manifest.append(f'joinable {quote(r["id"])}')     # May travel with a player's party (doc 32, 2.3).
+        if r.get('protected'):
+            manifest.append(f'protected {quote(r["id"])}')    # Can't be attacked or robbed of coin by players (doc 57, 6).
     files['world.ratw'] = '\n'.join(manifest) + '\n'
     if stream:
         for c in by_id.values():

@@ -124,14 +124,16 @@ function Plan({o, money, target, canAct, onChanged}: {o: Orchestrator; money: Mo
                     <div className="dm-table-wrap"><table className="dm-table"><thead><tr>
                         <th>Town</th><th>People</th><th>Distress</th><th title="A day's food for one, in this town">Food cost</th>
                         <th>Hungry</th><th>Starving</th><th title="Households with under a week's food, at home and in purse together">Short</th><th>Poor</th><th title="Without work">Idle</th>
-                        <th title="Days of food on its shops' shelves">Shop food</th><th>Wage floor</th><th title="Its share of the week's pot, at the last decision">Share</th></tr></thead>
+                        <th title="Days of food on its shops' shelves">Shop food</th><th>Wage floor</th><th title="Its share of the week's pot, at the last decision">Share</th>
+                        <th title="Players' help since the last measure (doc 57): coins they spent here, its shops paid them, and goods they brought, at its price">Players in · out · goods</th></tr></thead>
                         <tbody>{towns.map(t => <tr key={t.id}>
                             <td>{title(t.id)}</td><td className="num">{t.people}</td>
                             <td className="num">{pct(t.distress)} <span className="meta">{t.kind || 'well'}</span></td>
                             <td className="num">{p(t.foodCost)}</td><td className="num">{pct(t.hungry, 1)}</td><td className="num">{pct(t.starving, 1)}</td>
                             <td className="num">{pct(t.short)}</td><td className="num">{pct(t.poor)}</td><td className="num">{t.idle < 0 ? "—" : t.idle}</td>
                             <td className="num">{num(t.shopFoodDays)} d</td><td className="num">{p(t.wageFloor)}</td>
-                            <td className="num">{p(w?.towns.find(x => x.id === t.id)?.share)}</td></tr>)}
+                            <td className="num">{p(w?.towns.find(x => x.id === t.id)?.share)}</td>
+                            <td className="num">{p(t.playerIn ?? 0)} · {p(t.playerOut ?? 0)} · {p(t.playerGoods ?? 0)}</td></tr>)}
                         </tbody></table></div>
                 </div>
                 <div>

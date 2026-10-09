@@ -2749,6 +2749,24 @@ Result World::apprentice(const std::string& player, const std::string& master)
     return {true, m->name + " takes you on as an apprentice: " + job->title + ".", master};
 }
 
+Result World::appointResident(const std::string& positionId, const std::string& resident)
+{
+    const auto note = society_.appoint(positionId, resident, careerWorld(), calendarDays_);
+    if (note.kind == "refused")
+        return {false, note.detail, resident};
+    careerNotes({note});
+    return {true, note.detail, resident};
+}
+
+Result World::apprenticeResident(const std::string& positionId, const std::string& youth)
+{
+    const auto note = society_.apprenticeTo(positionId, youth, careerWorld(), calendarDays_);
+    if (note.kind == "refused")
+        return {false, note.detail, youth};
+    careerNotes({note});
+    return {true, note.detail, youth};
+}
+
 std::vector<WorldEvent> World::takeEvents()
 {
     absorbJournal();
@@ -4246,7 +4264,11 @@ Result World::trade(const std::string& player, const std::string& trader, const 
         distance(p->position, m->position) > 2. || visionClarity(player, trader) <= 0)
         return {false, "No accessible trader is within reach.", {}};
     if (m->posture == "lying" || (life && life->task == "sleep")) return {false, "The trader is sleeping.", trader};
+    const auto* here = townOf(m->cellId);
+    const bool short_ = !buy && here && townShortOf(here->id, item);   // (Doc 57, 5: trade that moves prices.)
     auto result = society_.trade(player, trader, item, quantity, buy);
+    if (result.ok && short_)
+        noteTrade(here->id, item, player, quantity);
     absorbJournal();
     return {result.ok, result.message, trader};
 }

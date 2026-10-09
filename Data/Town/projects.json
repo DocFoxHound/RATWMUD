@@ -1,0 +1,19 @@
+{
+  "format": "ratw-projects",
+  "about": "Town projects (Docs/Design/57-changing-the-world.md, 4): public works a town needs, built from materials, labour and coin, standing as structures on the Chapters' layer (never terrain) and changing the simulation while they stand. Each kind: its name, the structure it becomes (\"\" for a mending, which stands as nothing), its title ({town}: the town's name), the materials it needs (catalog ids), the work-hours, how fast it wears a game day, the two roles workers take, and whether only a city has one. `perTown`/`perCity`: open projects at once; `lapseDays`: an unfinished project is cancelled and its gifts returned after so long; `hourShare`: a work-hour is worth this share of the town's labourer's day on the plaque; `name`: a project is named for its chief giver at this share of a whole worth this much; `upkeepUnder`: its leftover coin mends it below this condition; `deeds`: the chief giver's is notable (great at `greatWorth` or more), others who gave `otherShare` or more, small; `hands`: each resident hand's spell counts so many work-hours, so many hands a day at most. Every number is a placeholder.",
+  "perTown": 1,
+  "perCity": 2,
+  "lapseDays": 60,
+  "hourShare": 0.125,
+  "name": {"share": 0.4, "worth": 300},
+  "upkeepUnder": 60,
+  "deeds": {"greatWorth": 1000, "otherShare": 0.1},
+  "hands": {"hours": 2, "most": 3},
+  "kinds": [
+    {"id": "mend", "name": "Mend the town", "structure": "", "title": "the mending of {town}", "materials": {"stone": 6, "timber": 6, "limestone": 4, "cord": 2}, "hours": 20, "wear": 0, "roles": ["hauler", "mason"]},
+    {"id": "watchpost", "name": "Watch post", "structure": "town_watchpost", "title": "the {town} watch post", "materials": {"timber": 10, "stone": 4}, "hours": 20, "wear": 1, "roles": ["holder", "striker"]},
+    {"id": "cover", "name": "Market cover", "structure": "market_cover", "title": "the {town} market cover", "materials": {"timber": 12, "cord": 6, "linen_cloth": 4}, "hours": 20, "wear": 2, "roles": ["raiser", "lasher"], "city": true},
+    {"id": "waystation", "name": "Waystation", "structure": "waystation", "title": "the {town} waystation", "materials": {"timber": 8, "stone": 4}, "hours": 30, "wear": 1, "roles": ["holder", "striker"]},
+    {"id": "granary", "name": "Granary", "structure": "granary", "title": "the {town} granary", "materials": {"timber": 20, "stone": 10}, "hours": 40, "wear": 0.5, "roles": ["holder", "striker"]}
+  ]
+}

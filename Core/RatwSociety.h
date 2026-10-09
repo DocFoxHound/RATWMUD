@@ -280,6 +280,8 @@ struct ResidentSpec
     std::vector<Spot> wander;
     // May travel with a player's party (Atlas; Docs/Design/32, 2.3), at any hour.
     bool joinable = false;
+    // Can't be attacked by players, nor robbed of coin (Atlas; Docs/Design/57-changing-the-world.md, 6).
+    bool protectedNpc = false;
 };
 struct PatrolRoute
 {
@@ -406,6 +408,14 @@ class Society
     double familySkill(const std::string& resident, const std::string& family) const;
     // A player asks to learn a position's trade from its holder.
     CareerNote apprentice(const std::string& player, const std::string& positionId, const CareerWorld& world, double day);
+    // A player's help with a resident's trouble (Docs/Design/57-changing-the-world.md, 3): a vacant post given to a resident
+    // now, as succession would give it (leaving any other post it held); a youth apprenticed now to a position's holder,
+    // under the weekly chance's own rules (12 to 25, no master yet, no work elsewhere; a master of 35 or skilled 70, not
+    // the watch); a business's rescue loan paid off from `payer`'s purse into its town's rescue fund. "refused" notes, or
+    // what changed (the paid-off coins).
+    CareerNote appoint(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day);
+    CareerNote apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double day);
+    std::int64_t repayRescue(const std::string& till, const std::string& payer, std::int64_t most);
     void addPlayer(const std::string& id);
     const EconomyAccount* account(const std::string& id) const;
     const ResidentLife* resident(const std::string& id) const;
@@ -755,6 +765,11 @@ class Society
     const std::string& friendGroup(const std::string& child) const;
     static constexpr std::int64_t OddJobPay = 4;
     const std::vector<OddJob>& oddJobs() const { return oddJobs_; }
+    // An odd job posted from outside the society (Docs/Design/57-changing-the-world.md: a town project's hands, kind
+    // "project"): `slots` wolves for the day, `pay` for all of them, paid by `payer` as each finishes a spell's work at
+    // `at`. Taken like any odd job (the jobless first). Its id, or "" if `payer` can't cover it.
+    std::string postOddJob(const std::string& payer, const std::string& community, const std::string& kind, int slots,
+                           std::int64_t pay, const Spot& at, const std::string& what);
 
     static constexpr std::int64_t MostStipend = 3;  // A child's stipend a day, before a rich household's more (see below).
     // A household is comfortable with ComfortDays of food in its purse for everyone at home, poor under PoorDays'; it keeps
@@ -949,6 +964,13 @@ class Society
         std::string community, what;                // what: "disrepair" or "mended".
     };
     std::vector<TownNews> takeTownNews() { std::vector<TownNews> out; out.swap(townNews_); return out; }
+    // A town mended by other hands than the Town Works' (Docs/Design/57-changing-the-world.md: a town project's work):
+    // `points` more repair, its news when it crosses half, as the Town Works' own mending makes.
+    void mendTown(const std::string& community, double points);
+    // A granary project standing (doc 57): days more food a head that town's granary keeps (the orchestrator's target).
+    void setGranaryExtra(std::map<std::string, double> days) { granaryExtra_ = std::move(days); }
+    // Town projects' accounts and their towns (doc 57), for counting players' gifts to them as help to that town.
+    void setProjectTowns(std::map<std::string, std::string> towns) { projectTowns_ = std::move(towns); }
     double condition(const std::string& community) const
     {
         const auto found = state_.memory.condition.find(community);
@@ -1109,12 +1131,21 @@ class Society
     };
     std::unordered_map<std::string, Earned> earned_;             // Resident -> what it earned on each of the last 7 days.
     std::vector<orchestra::Brief> briefs_;
+    std::map<std::string, double> granaryExtra_;    // Town -> days more in its granary (doc 57's granary projects).
     bool orchestrating() const;
     void forgetOrchestra();                          // A new or restored society: no snapshot taken, nothing counted.
     bool wantsSnapshot(double absoluteDay) const;
     void orchestrate(double absoluteDay, const std::map<std::string, LifeBody>& bodies);
     orchestra::Snapshot orchestraSnapshot(std::int64_t forDay, const std::map<std::string, LifeBody>& bodies);
-    void noteForOrchestra(const std::string& kind, const std::string& from, const std::string& to, std::int64_t coins);
+    void noteForOrchestra(const std::string& kind, const std::string& from, const std::string& to, std::int64_t coins,
+                          const std::string& item = {}, int quantity = 0);
+    // Players' help, by town, since the last snapshot (doc 57, 5): coins in, coins out, goods at the town's price.
+    struct PlayerFlow
+    {
+        std::int64_t in = 0, out = 0, goods = 0;
+    };
+    std::map<std::string, PlayerFlow> playerFlow_;
+    std::map<std::string, std::string> projectTowns_;   // A town project's account -> its town (the game's).
     void record(const std::string& kind, const std::string& from, const std::string& to,
                 const std::string& item, int quantity, std::int64_t coins);
     bool transfer(const std::string& seller, const std::string& buyer, const std::string& item,

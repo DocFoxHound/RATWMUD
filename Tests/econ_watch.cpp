@@ -214,7 +214,7 @@ int main(int argc, char** argv)
         foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
         lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
         foodMovesOut(out / "food_moves.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv");
-    orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,wage_floor,share\n";
+    orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,wage_floor,share,player_in,player_out,player_goods\n";
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
     wagesOut << "day,resident,title,coins\n";
     materialsOut << "day,item,maker_hours_short,supplier_hours_short,held,brought_in,crafted,used,bought,carted_in\n";
@@ -878,7 +878,7 @@ int main(int argc, char** argv)
                     orchestraTownsOut << b.day << ',' << csv(t.id) << ',' << t.people << ',' << t.distress << ',' << t.raw << ',' << csv(t.kind)
                                       << ',' << t.foodCost << ',' << t.hungry << ',' << t.starving << ',' << t.short_ << ',' << t.poor << ','
                                       << t.idle << ',' << t.shopFoodDays << ',' << t.takingsRatio << ',' << t.netInflow << ',' << t.wageFloor
-                                      << ',' << t.share << '\n';
+                                      << ',' << t.share << ',' << t.playerIn << ',' << t.playerOut << ',' << t.playerGoods << '\n';
                 std::cout << "  orchestrator for day " << b.day << ": land distress " << std::fixed << std::setprecision(3) << b.landDistress
                           << std::defaultfloat << ", pot " << b.pot << "p, margin " << b.margin << ", residents hold " << std::fixed << std::setprecision(3) << b.residentShare << std::defaultfloat << ", own pressure " << b.autoPressure << ", bands";
                 for (const auto& [band, n] : b.bands)

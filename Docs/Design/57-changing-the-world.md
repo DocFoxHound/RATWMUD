@@ -1,6 +1,7 @@
 # 57. Changing the world: residents' troubles, town projects, and an economy players can see
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (Part 1: §§1.1–1.6). Nothing built. Read doc 48 (Principles,
+Drafted 2026-10-06 as an actionable plan for doc 48 (Part 1: §§1.1–1.6). Open questions answered 2026-10-08 (see
+"Open questions"); all six phases built the same day (see "Built"); committed, with migrations 0047 and 0048 applied (2026-10-08). Read doc 48 (Principles,
 Part 1 and the Decisions) and docs 56 (deeds), 53 (cooperative work), 46 (the economy orchestrator), 26 (Phases 4, 5
 and 7), 32 (Part 5), 35 (Part 7), 42 and 15 first.
 
@@ -552,6 +553,129 @@ map, with an audit line that says what it was.
 
 **Cost:** a set lookup at an attack or theft.
 
+## Built
+
+All six phases built 2026-10-08. Migrations 0047 (`game.projects`) and 0048 (`live.npcs.protected`, and the people
+manifest's `protected` record) applied to DEV and PROD.
+
+### Phase 1: troubles, seen
+
+- **The rules** (`Core/RatwTroubles.{h,cpp}`, new; `Data/Town/troubles.json`, new): `troubleOf` reads only the society
+  and the bonds. The five kinds, in this order (the first that holds is the resident's):
+  - **debt**: a keeper whose till holds a rescue loan;
+  - **short**: the head of a household (its eldest grown wolf; not a barracks or bunkhouse) whose purses, savings, carried
+    food and larder hold under 7 days of plain food at the town's price;
+  - **child**: a parent of a youth 12–25 with no post or master;
+  - **work**: a grown wolf 16–64 with no post or master, not the one keeping house;
+  - **feud**: affinity −25 or worse both ways, or −40 one way, with another resident of its town.
+- **Kept a game day** (`Game::troubles_`), worked out when a player talks to the resident. No scan.
+- **Spoken of** past the trust rule (trust 10, familiarity 20):
+  - the Mind's new `trouble` field (300 letters), "Your trouble (true): …";
+  - the reply's `mentions_trouble` flag marks it heard;
+  - the router's `trouble` intent ("is something troubling you?", "what's wrong?", "can I help?") answers from the
+    kind's written lines, or a polite nothing ("Oh, nothing worth your time.").
+- **Heard** troubles are kept (saved in the people root, `troublesHeard`) and show in doc 56's unfinished business
+  ("The wolf keeping the inn's shop owes the town 40 pennies") until solved or gone; each is a `trouble heard` event.
+- Pronouns in the lines follow the child's sex.
+
+### Phase 2: troubles, solved
+
+- **The menu** offers, only for a trouble the wolf has heard of, beside whoever can help (`Game::troubleActions`):
+  - *Pay off their loan (Np)*: the coin goes straight to the town's rescue fund (`Society::repayRescue` ⚑), so the
+    trouble is solved at once rather than at the next daily pass, as the plan had it;
+  - *Help the household (Np)*: coin to the head, enough for a fortnight; a gift (doc 55) that brings the household to a
+    fortnight solves it too;
+  - *Make peace with …*: both trust the wolf 30+, the three within 4 tiles; affinity +25 and trust +10 both ways;
+  - *Speak for …*, on an employer who trusts the wolf 30+ and has a vacant post where it works (`Society::appoint` ⚑);
+  - *Sponsor …'s apprenticeship (20p)*, on a master who would take one and trusts the wolf 20+
+    (`Society::apprenticeTo` ⚑, the weekly chance's rules); the fee to the master.
+- **Each success**: the resident +8 liking, +8 trust, +5 respect (the household +3 and +3); a `trouble solved` event; a
+  note in the resident's memory; a deed (doc 56): `paid_debt` (notable at 100p), `fed_household`, `made_peace` (notable
+  between household heads, great between great houses' heads), `found_work` (notable idle a week), `sponsored_apprentice`
+  (notable). A new nickname family, `neighbour`.
+- **Limits**: one of a resident's troubles solved by the same wolf a season; a solved kind rests 14 days for that
+  resident (both saved).
+- **Not built**: peace carried as a gift from one to the other.
+
+### Phase 3: town projects
+
+- **The ledger** (`Core/RatwProjects.{h,cpp}`, new; `Data/Town/projects.json`, new): the five kinds (mend the town,
+  watch post, market cover, waystation, granary), gifts merged by giver, worth, the plaque (three by value, each by the
+  name it chose or "a friend of the town"), naming at 40% of 300p+ (never for one who gave as a friend of the town),
+  refunds pro rata to the penny. Saved as `game.projects` (migration 0047; one table, the gifts in each row, rather
+  than the plan's two).
+- **In the game** (`Core/RatwGameProjects.cpp`, new):
+  - posted by the DM (`project.post`) or the town (Phase 4), one open a town (two in the capital), one of a kind;
+  - placed by the town's square on open ground (never a stall, the crowd's spots, anyone's work or serve post, a road
+    or a doorway), as a town's site on the Chapters' layer (`town:<community>`); camps' "not in a town" stays for
+    Chapters only; four structure kinds join the catalogue at level 99, so no Chapter can plan them;
+  - *GIVE* (in its town), *HAND IN* (at the site, any quality), *WORK ON IT* (within 2.2 tiles, at doc 53's rate, each
+    worker taking the role least taken); the first gift chooses the name shown;
+  - its coin posts procure contracts for missing materials and hires residents as `project` odd jobs
+    (`Society::postOddJob` ⚑), each spell 2 work-hours, at most 3 hands a day;
+  - finished: materials used up, the structure built (stone grey, `town: true`), named perhaps, deeds
+    (`built_project`: the chief giver's notable, great at 1,000p; others of a tenth, small), the town told; coin left is
+    its upkeep;
+  - cancelled (the DM, or unfinished after 60 days): contracts withdrawn (`World::withdrawContract`), goods back to
+    their givers pro rata (what its coin bought, to the Town Works), coin to the coin givers (none: the treasury).
+- **The page**: the site panel (`Client/src/ui/hud/project.ts`, new) and a TOWN PROJECTS section on the board.
+- **The DM**: `project.post`, `cancel`, `complete`, `remove` through a new `/api/live/action`; the LIVE map's Projects
+  layer (`/api/live/projects`) with Complete, Cancel and Remove.
+- **Found on the way**: the journal didn't erase an account opened and closed between two records (a contract's
+  escrow), so a restart could refuse the save. The journal's accounts now start from each checkpoint's.
+
+### Phase 4: projects that change the world
+
+- **Effects**, handed to the world when they change (`World::StandingWorks`):
+  - a watch post: +2 guards (at its strength) against a raid in its cell and the next (`World::raidOdds`), and no camp
+    gathers within two cells (`campMayGather`);
+  - a market cover: its town's stalls go out in foul weather (worn, every other day);
+  - a waystation: shelter on the layer; within a cell of it caravans press on through a storm instead of waiting (the
+    plan's "a tenth faster" became this: caravans' pace has no simple handle);
+  - a granary: 3 days more a head in its town's granary target (`TownSnap::granaryExtra` ⚑);
+  - a mending: its materials go to the Town Works' stock and its hours mend the town at once (`Society::mendTown` ⚑),
+    with the "mended" news over half.
+- **Wear** by the kind's rate a game day; worn under 50, half its effect; a ruin at 0. Mended by work, or by hands its
+  upkeep coin hires under 60. A worn one is mended, not proposed again.
+- **The proposer**: one town a day at dawn, in turn: a mending under 50; a watch post where its caravans were robbed
+  in 14 days; a cover after two foul market days this season; a waystation where caravans for it waited out storms on
+  three days; a granary after "empty shelves" at two decisions running or an empty granary at autumn's turn.
+
+### Phase 5: the economy made visible
+
+- **Trade notes**: a player's sale or contract delivery of goods a town is short of (meals and herbs: its store under
+  two days; anything else: its shops under one shop's keeping) is noted, 32 a town. When that good's going price falls
+  a tenth within a week, it becomes a `price lowered` event and the town's talk (`price_cause`, new scenes in
+  `Data/Voice/scenes/common/prices_why.scene`), the wolf named as the teller knows them, by look otherwise.
+- **Fed the town**: food bringing a day's food for a tenth of a town in "empty shelves" is a notable deed (`fed_town`).
+- **Guarded caravans**: 16 rumours at ×0.75 when a player rode with it to the end (8 at ×0.6 otherwise), and doc 56's
+  notable deeds across.
+- **Players' flows** (⚑): coins players spend in a town, coins it pays them, and goods they sell or hand in there, in
+  `TownSnap` and `TownReading` (`playerIn`, `playerOut`, `playerGoods`), the brief's JSON, `orchestrator_towns.csv`
+  and the DM's Orchestrator panel. Fed to no sensor. A project's purse is never a holder (tested).
+
+### Phase 6: bounds and the Dungeon Master's hand
+
+- **Protected residents**: Atlas's *Protected* toggle (`live.npcs.protected`, migration 0048, exported as
+  `protected "id"`), heads of great houses, faction members with a rank set by the DM, and the DM's live marks
+  (`npc.protect`, `npc.unprotect`, which can also unmark the others; saved). Players can't attack them ("Their guards
+  close in; you think better of it."), and a theft from them takes a meal or herbs, never coin.
+- **The DM**: Protect and Unprotect on the LIVE map's NPC panel; the projects' actions as Phase 3.
+
+### Tests
+
+- `Tests/troubles_tests.cpp` (75 checks) and `Tests/project_tests.cpp` (127 checks), new; `voice_tests` (the corpus);
+  `tools/test_npc_mind.py`, `test_chronicle.py`, `test_dungeon_master.py`, `test_map_editor.py`; `Client` (projects).
+- `tools/client/projects.mjs` (new), in a real browser: posted, the site panel, a gift under her name, two at work in two
+  roles, finished, standing in stone grey with her on the plaque.
+
+### Not done, or done differently
+
+- A trouble solved by a gift carried between feuding residents; a resident filling a project's contract isn't tested
+  (it is the existing machinery); the escorted caravan's extra rumours aren't tested.
+- The waystation's speed (above); the debt paid to the fund at once (above); one projects table (above).
+- Players' hours on a mending count when it is finished, not hour by hour.
+
 ## Changes in the economy session's files
 
 Every hunk this plan would make in code another session owns (doc 46's orchestrator and the society's economy code).
@@ -653,3 +777,11 @@ project); the DM (the Projects layer and the protected flag).
 4. **The later levers** (testify or post bail, escort a resident to a new town, introduce two residents who may marry):
    which first? *Recommendation:* introducing two residents. It fits matchmaking (doc 52) and needs only the marriage
    rules to count a player's introduction.
+
+**Answered (user, 2026-10-08):**
+1. Yes: the Town Works' materials go into its town's open project, credited to the Town Works, never the orchestrator.
+2. Ailments later, as their own small plan, then tools; this plan builds the five troubles that are real now.
+3. A deck structure, as its own small plan after this one.
+4. Not asked; the recommendation stands for later (introducing two residents first).
+5. The economy session's hunks (appoint, apprenticeTo, postOddJob, mendTown, the player flows, the granary allowance):
+   built here, small and additive, touching nothing else in those files.

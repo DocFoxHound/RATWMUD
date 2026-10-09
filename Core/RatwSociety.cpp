@@ -339,7 +339,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
     noteIncoming(to, kind, coins);
-    noteForOrchestra(kind, from, to, coins);           // What the economy orchestrator counts (RatwOrchestrate.cpp).
+    noteForOrchestra(kind, from, to, coins, item, quantity);   // What the economy orchestrator counts (RatwOrchestrate.cpp).
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
     if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
                       kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||

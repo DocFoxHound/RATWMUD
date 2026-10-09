@@ -24,6 +24,7 @@ struct Context
     std::string seen;                          // What it can see of the speaker, in their player's words (doc 50).
     std::string fame;                          // What it knows of the speaker's deeds, and how sure (doc 56): ≤ 400.
     std::string away;                          // The speaker is back after a long while, and when it last saw them: ≤ 200.
+    std::string trouble;                       // Its own trouble, true, to speak of if the talk turns that way (doc 57): ≤ 300.
 };
 
 // Every field checked: the emotion one of a few words, the nudges -3..3, the notes short.
@@ -34,6 +35,7 @@ struct Reply
     std::string emotion;
     int affinity = 0, trust = 0;
     std::string remember, promiseBy, promise;
+    bool mentionsTrouble = false;              // It spoke of its trouble (doc 57, 3).
 };
 
 // Two NPCs overheard (the ambient director, Phase 10): who they are, how each sees the other, and the topic's facts.

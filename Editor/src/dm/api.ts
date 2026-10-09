@@ -150,6 +150,11 @@ export interface FameDeed {
     id: string; kind: string; weight: string; phrase: string; doers: string[]; beneficiary: string; town: string; cell: string; day: number;
     names: Record<string, string[]>; witnesses: {id: string; as: Record<string, string>}[]; towns: {town: string; carrier: string; reach: number}[];
 }
+/** A town project (doc 57): where, how far along, and its top givers by the names they chose. */
+export interface TownProject {
+    id: string; kind: string; title: string; town: string; cell: string; x: number; y: number; state: string; hours: number; worked: number;
+    condition: number; needs: Record<string, number>; namedFor: string; givers: {id: string; shown: string; value: number}[];
+}
 export type LiveShop = [string, string, string, string, number, number, boolean];
 export interface LiveEvent { id: number; kind: string; actor: string; target: string; cell: string; day: number; detail: string; at: string }
 export interface Live {
@@ -204,6 +209,8 @@ export type DistressKind = '' | 'empty shelves' | 'empty purses' | 'no work' | '
 export interface OrchestratorTown {
     id: string; people: number; distress: number; week?: number; kind: DistressKind; foodCost: number; hungry: number; starving: number; short: number;
     poor: number; idle: number; shopFoodDays: number; takingsRatio: number; netInflow: number; wageFloor: number; share: number;
+    /** Players' help since the last measure (doc 57): coins they spent there, coins its shops paid them, goods they brought (at its price). */
+    playerIn?: number; playerOut?: number; playerGoods?: number;
     /** A day's pay by kind of work (Phase 4): help, guard, labour, clergy, keeper, hand, odd job. */
     wages?: Partial<Record<WageKind, number>>;
 }
@@ -267,6 +274,10 @@ export const dmApi = {
     leave: (target: Target, id: string) => call<{id: number}>('api/live/leave', {target, id}),
     rumours: (target: Target) => call<{target: Target; rumours: Rumour[]}>(`api/live/rumours?target=${target}`),
     fame: (target: Target) => call<{target: Target; day: number; deeds: FameDeed[]}>(`api/live/fame?target=${target}`),
+    projects: (target: Target) => call<{target: Target; projects: TownProject[]; kinds: {id: string; name: string}[]}>(`api/live/projects?target=${target}`),
+    /** A live action on something other than a character (doc 57: town projects; deeds, nicknames, notices, places to let). */
+    liveAction: (target: Target, kind: string, id: string, payload?: Record<string, unknown>, reason = '') =>
+        call<{id: number}>('api/live/action', {target, kind, id, reason, ...(payload ? {payload} : {})}),
     saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
     deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),
     npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>('api/npcs/life', {target, id, dead}),

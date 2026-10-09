@@ -129,6 +129,27 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
     return std::int64_t(posted) * handPay;
 }
 
+std::string Society::postOddJob(const std::string& payer, const std::string& community, const std::string& kind, int slots,
+                                std::int64_t pay, const Spot& at, const std::string& what)
+{
+    const auto* purse = account(payer);
+    if (!purse || slots < 1 || pay < slots || purse->cash < pay || community.empty() || kind.empty())
+        return {};
+    OddJob j;
+    j.id = "odd" + std::to_string(++nextOddJob_);
+    j.payer = payer;
+    j.community = community;
+    j.kind = kind;
+    j.what = what.substr(0, 80);
+    j.from = j.to = at;
+    j.slots = std::min(slots, 5);
+    j.pay = pay;
+    j.forChildren = false;
+    oddJobs_.push_back(std::move(j));
+    ++oddVersion_;
+    return oddJobs_.back().id;
+}
+
 std::int64_t Society::businessSpends(const std::string& payer, const std::string& keeper, const Position& job, std::int64_t budget)
 {
     // Spare money put to work (the user, 2026-10-05: something to sink it into, not just charity): hands hired for the
@@ -402,7 +423,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         // A spell's work (a business's hire: a day's, HireSpells).
         const int spells = j.until >= 0 ? HireSpells : 1;
         if ((j.kind == "a hand" || j.kind == "a hand at the shop" || j.kind == "building work" || j.kind == "gathering" ||
-             j.kind == "hunting" || j.kind == "about the home") && (j.progress[id] += seconds) < 600 * spells)
+             j.kind == "hunting" || j.kind == "about the home" || j.kind == "project") && (j.progress[id] += seconds) < 600 * spells)
             return;
         if (j.kind == "a hand at the shop")
             craftNext_.erase(j.producer);           // (Its next batch is begun at once.)
@@ -416,7 +437,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
                 for (const auto& [item, n] : day_.harvest(id, found->second[j.ground], season_))
                     create(id, item, n, j.kind == "hunting" ? "hunted" : "foraged");
         stage = 1;
-        if (j.kind != "a hand" && j.kind != "a hand at the shop" && j.kind != "building work")
+        if (j.kind != "a hand" && j.kind != "a hand at the shop" && j.kind != "building work" && j.kind != "project")
             return;
     }
     if (stage == 2)

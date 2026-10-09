@@ -52,6 +52,54 @@
       "weight": "great",
       "family": "hero",
       "phrase": "{detail}"
+    },
+    {
+      "id": "paid_debt",
+      "weight": "small",
+      "family": "neighbour",
+      "phrase": "paid off {beneficiary}'s debt to the town",
+      "perSeason": 1
+    },
+    {
+      "id": "fed_household",
+      "weight": "small",
+      "family": "neighbour",
+      "phrase": "kept {beneficiary}'s household fed",
+      "perSeason": 1
+    },
+    {
+      "id": "made_peace",
+      "weight": "small",
+      "family": "neighbour",
+      "phrase": "made peace between {beneficiary} and a neighbour",
+      "perSeason": 1
+    },
+    {
+      "id": "found_work",
+      "weight": "small",
+      "family": "neighbour",
+      "phrase": "found {beneficiary} steady work",
+      "perSeason": 1
+    },
+    {
+      "id": "sponsored_apprentice",
+      "weight": "notable",
+      "family": "neighbour",
+      "phrase": "paid for {beneficiary}'s child to learn a trade",
+      "perSeason": 1
+    },
+    {
+      "id": "built_project",
+      "weight": "notable",
+      "family": "neighbour",
+      "phrase": "helped raise {detail}"
+    },
+    {
+      "id": "fed_town",
+      "weight": "notable",
+      "family": "neighbour",
+      "phrase": "brought food to {beneficiary} when its shelves were bare",
+      "perSeason": 1
     }
   ],
   "liveDays": {

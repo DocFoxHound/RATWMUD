@@ -405,6 +405,11 @@ bool Game::start(std::string& problem)
     world_.setNamer([this](const std::string& knower, const std::string& subject) {   // (Talk speaks only names given: doc 56.)
         return knowsName(knower, subject) ? labelFor(knower, subject) : std::string();
     });
+    world_.setProtected([this](const std::string& id) { return isProtected(id); });   // (Doc 57, 6.)
+    world_.setKnower([this](const std::string& knower, const std::string& subject) {   // (As the town knows them: doc 57, 5.)
+        const bool named = knowsName(knower, subject);
+        return World::Known{named ? labelFor(knower, subject) : strangerLabel(subject), named};
+    });
     world_.setDeedWords([this](const std::string& teller, const std::string& claim, const std::string& subject) {
         return fameWords(teller, claim, subject);
     });   // (Deeds a resident may thank for: doc 55, 5.)
@@ -826,6 +831,33 @@ void Game::applyDmActions(double dt)
                 outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
             }
             saveSoon();
+        }
+        else if (kind == "npc.protect" || kind == "npc.unprotect")
+        {
+            // Protected residents (doc 57, 6): marked, or unmarked (even one Atlas or the game's rule protects).
+            if (!world_.society().resident(target))
+                outcome = {false, "No such resident.", target};
+            else
+            {
+                (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
+                (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
+                outcome = {true, kind == "npc.protect" ? "Protected." : "No longer protected.", target};
+                saveSoon();
+            }
+        }
+        else if (kind == "project.post" || kind == "project.cancel" || kind == "project.complete" || kind == "project.remove")
+        {
+            // Town projects (doc 57, 7): one posted (target the town; payload {kind, cell, x, y, title}), or one cancelled
+            // with its gifts returned, completed by hand, or taken down (target its id).
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            outcome = kind == "project.post" ? postProject(payload.string("kind"), target, payload.string("cell"), int(payload.number("x", -1)),
+                                                           int(payload.number("y", -1)), payload.string("title"), "dm")
+                      : kind == "project.cancel"   ? cancelProject(target, "cancelled by the Dungeon Master")
+                      : kind == "project.complete" ? completeProject(target)
+                                                   : removeProject(target);
         }
         else if (kind == "nickname.drop" || kind == "nickname.restore")
         {
@@ -2362,6 +2394,7 @@ void Game::tick(double dt)
     factionTick(dt);
     estateTick(dt);
     campTick(dt);
+    projectTick(dt);                                // (Town projects: doc 57, 4.)
     holdTick(dt);
     refreshChapterViews(real);
     refreshLabels(real);
@@ -2840,6 +2873,14 @@ void Game::sendSnapshot(Connection* c)
         }
         if (const auto open = unfinishedView(id); !open.items().empty())
             self.set("unfinished", open);           // (Open threads, never a nag: doc 56, 9.)
+        if (!projects_.all().empty())
+        {
+            if (const auto* here = projectAt(id))
+                self.set("project", projectView(id, *here, true));   // (A town project's site: doc 57, 4.)
+            if (const auto town = world_.communityOf(me->cellId); !town.empty())
+                if (auto list = projectsView(id, town); !list.items().empty())
+                    self.set("townProjects", list);  // (The town's projects, for its board.)
+        }
         if (const auto nicknames = nicknamesView(id); !nicknames.items().empty())
             self.set("nicknames", nicknames);       // (What residents call them, and who first did: doc 56, 4.)
         if (const auto festival = festivalSelf(id); !festival.isNull())
@@ -3377,6 +3418,8 @@ void Game::sendSnapshot(Connection* c)
             if (!e.npc)
                 actions.push("lend");
         }
+        // Residents' troubles (doc 57, 3): what this wolf may do about one it has heard of, beside whoever can help.
+        troubleActions(view.self, e, apart, actions);
         // Training grounds (doc 53, 5): Ask to spar of a resident trainer there.
         if (e.npc && apart <= battle::StartReach && !world_.inBattle(view.self.id) && world_.trainer(e.id) && !world_.inBattle(e.id))
             actions.push("ask to spar");
@@ -4029,6 +4072,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.relationship = world_.bonds().describe(npcId, playerId, called);
         context.fame = fameBriefing(npcId, playerId);   // (What it has heard of their deeds: doc 56, 5.)
         context.away = awayBriefing(npcId, playerId, false);   // (Back after a long while: doc 56, 10; used up below.)
+        context.trouble = troubleBriefing(npcId, playerId);    // (Its own trouble, to a wolf it trusts: doc 57, 3.)
     }
     context.seen = profileContext(npcId, playerId);   // What it can see of them, in their player's words (doc 50).
     context.activity += tieBriefing(npcId, playerId);   // (A tie with this wolf: doc 52, 4.)
@@ -4196,6 +4240,13 @@ void Game::heed(const std::string& npcId, const std::string& subjectId, bool ide
     }
     if (!reply.remember.empty())
         memories_.record(npcId, subjectId, {sequence_++, now(), "(your note)", reply.remember});
+    // It spoke of the trouble it was told of (doc 57, 3): the wolf has heard it.
+    if (const auto briefed = troubleBriefed_.find(npcId + "|" + subjectId); briefed != troubleBriefed_.end())
+    {
+        if (reply.mentionsTrouble)
+            heardTrouble(subjectId, npcId, briefed->second);
+        troubleBriefed_.erase(briefed);
+    }
     if (!reply.promise.empty())
     {
         const bool byNpc = reply.promiseBy == "npc";
@@ -4636,6 +4687,22 @@ void Game::command(Connection* c, const std::string& raw)
             groomAnswer(c, j.boolean("accept"), result);
         report = true;
     }
+    else if (type == "project")
+    {
+        // Town projects (doc 57, 4): {"verb": "give"|"handin"|"work", "project", "coins"|"item"+"quantity", "shown"}.
+        // Development only: {"verb": "post", "kind"} posts one in the town one stands in; "complete" finishes one by hand.
+        if (options_.devTools && j.string("verb") == "post")
+        {
+            result = postProject(j.string("kind", "cover"), world_.communityOf(player->cellId), "", -1, -1, "", "dev");
+            if (const auto* p = result.ok ? projects_.find(result.targetId) : nullptr)
+                result.message = names::capitalised(p->title) + " is posted (" + p->id + ").";
+        }
+        else if (options_.devTools && j.string("verb") == "complete")
+            result = completeProject(j.string("project"));
+        else
+            projectCommand(c, j, result);
+        report = true;
+    }
     else if (type == "give" || type == "giveAnswer")
     {
         // Giving (doc 55, 3): {"target", "item", "quantity", "coins"}; the one offered answers {"accept": bool}.
@@ -4994,6 +5061,11 @@ void Game::command(Connection* c, const std::string& raw)
         {
             result = askAlong(id, target, action != "ask to join");
             report = true;
+        }
+        else if (action.rfind("trouble:", 0) == 0)
+        {
+            result = troubleAction(id, target, action);   // (A resident's trouble: doc 57, 3.)
+            report = !result.message.empty();
         }
         else if (action == "ask for the church's care")
         {
@@ -5402,6 +5474,11 @@ void Game::saveSoon()
 DbStore::Build Game::capture()
 {
     // Copied here, on the game thread; the document is made from the copy on the store's worker.
+    // The journal's accounts now start from what this checkpoint holds: an account opened since the last record (a
+    // contract's escrow, say) and closed before the next is erased by that record, not left in the checkpoint beside the
+    // coins it paid out (which made a restart refuse the save: doc 57's tests found it).
+    if (shadow_.primed)
+        shadow_.accounts = world_.society().state().accounts;
     for (const auto& [id, e] : world_.entities())
         if (!e.npc)
             characters_[id] = e;
