@@ -1282,6 +1282,13 @@ export class GamePainter {
             c.restore();
             p.text(x - 22, y + 24, 'your tie', 9, withAlpha(Sage, 0.8));
         }
+        // The tracked storyline's next place here (doc 58, 1): a gold diamond on its tile.
+        const tracked = obj(obj(s.snapshot, 'self'), 'tracked');
+        if (tracked && str(tracked, 'cell') === s.cellId && !s.battle) {
+            const x = ox + num(tracked, 'x') * tile, y = oy + num(tracked, 'y') * tile;
+            p.text(x - 5, y - 8, '◆', 14, withAlpha(Amber, 0.9), true);
+            p.text(x - 30, y + 12, str(tracked, 'label').slice(0, 30), 9, withAlpha(Amber, 0.8));
+        }
         if (s.battle) this.drawArena(s.battle, ox, oy, tile);
         else this.drawFights(ox, oy, tile);
         this.drawEnvironment(true);

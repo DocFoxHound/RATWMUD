@@ -17,7 +17,11 @@
     "letter delivered": {"target": "A letter reached you."},
     "lease": {"actor": "You took lodgings in {place}."},
     "trouble heard": {"actor": "{Other} told you of a trouble."},
-    "trouble solved": {"actor": "You helped {other} with a trouble.", "target": "{Other} helped you with a trouble."}
+    "trouble solved": {"actor": "You helped {other} with a trouble.", "target": "{Other} helped you with a trouble."},
+    "storyline done": {"actor": "You saw \"{detail}\" through."},
+    "tale begun": {"actor": "You began telling \"{detail}\"."},
+    "tale joined": {"actor": "You joined the tale \"{detail}\"."},
+    "tale star": {"actor": "You starred {other} as a storyteller.", "target": "{Other} starred you as a storyteller."}
   },
   "first": ["character created", "arrival", "introduced"],
   "folded": {
@@ -28,6 +32,7 @@
     "archive work": "worked {n} {times} at the archive",
     "stall sale": "sold {n} {things} from a stall",
     "project gift": "gave to a town's project {n} {times}",
+    "storyline step": "saw {n} {steps} of stories through",
     "arrival": "came to {n} new {places}"
   }
 }

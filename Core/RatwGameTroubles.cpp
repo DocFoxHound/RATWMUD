@@ -135,6 +135,12 @@ void Game::heardTrouble(const std::string& wolf, const std::string& npc, const s
     at->second = {kind, world_.calendarDays()};
     unfinished_.erase(wolf);
     logEvent("trouble heard", wolf, npc, kind);
+    if (const auto* e = world_.entity(wolf); e && !e->npc)   // (Its storyline: doc 58, 3.)
+    {
+        auto cast = Value::object();
+        cast.add("resident", npc);
+        giveStoryline(wolf, "trouble-" + kind, cast, "trouble", npc + "|" + kind);
+    }
     saveSoon();
 }
 
@@ -417,6 +423,25 @@ void Game::troubleSolved(const std::string& wolf, const troubles::Trouble& t, co
     recordDeed(deedKind, {wolf}, t.resident, w ? w->cellId : std::string(), "trouble", t.kind, weight);
     troubleSolvedBy_[t.resident + "|" + wolf] = today;
     troubleRests_[t.resident + "|" + t.kind] = today;
+    // The trouble's storylines (doc 58, 3): the solver's done; anyone else's ends, someone else having seen to it.
+    for (const auto& [sid, s] : storylines_.all())
+        if (s.source == "trouble" && s.sourceRef == t.resident + "|" + t.kind && s.live())
+        {
+            if (s.takesPart(wolf))
+            {
+                const auto story = sid;
+                for (std::size_t step = storylines_.find(story)->current(); auto* run = storylines_.find(story);)
+                {
+                    if (!run->live() || step >= run->steps.size())
+                        break;
+                    for (std::size_t o = 0; o < run->steps[step].objectives.size(); ++o)
+                        storylineProgress(storylines_.tick(story, step, o, wolf, now(), false));
+                    step = storylines_.find(story)->current();
+                }
+            }
+            else
+                storylines_.end(sid, "ended", now());
+        }
     troubles_.erase(t.resident);
     if (auto heard = troublesHeard_.find(wolf); heard != troublesHeard_.end())
         heard->second.erase(t.resident);

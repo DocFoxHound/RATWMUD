@@ -832,6 +832,76 @@ void Game::applyDmActions(double dt)
             }
             saveSoon();
         }
+        else if (kind == "storyteller.decide" || kind == "storyteller.revoke" || kind == "tale.pause" || kind == "tale.resume" ||
+                 kind == "tale.stop" || kind == "milestone.credit" || kind == "visitors.sync")
+        {
+            // Storytellers (doc 58, 11): an application decided (target the account; payload {approve, reason}) or the
+            // standing revoked; a tale paused, resumed or stopped (target its id); a milestone credited (payload as
+            // creditMilestone); the visitors' list read again.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const auto by = row[3] ? *row[3] : std::string("dm");
+            if (kind == "storyteller.decide" || kind == "storyteller.revoke")
+            {
+                const auto s = storytellers_.find(target);
+                if (kind == "storyteller.decide" && (s == storytellers_.end() || s->second.state != "applied"))
+                    outcome = {false, "No application from that account.", target};
+                else if (kind == "storyteller.revoke" && (s == storytellers_.end() || s->second.state != "approved"))
+                    outcome = {false, "That account isn't a storyteller.", target};
+                else
+                {
+                    if (kind == "storyteller.decide")
+                        decideStoryteller(target, payload.boolean("approve"), by, payload.string("reason"));
+                    else
+                        revokeStoryteller(target, by, payload.string("reason"));
+                    outcome = {true, kind == "storyteller.revoke" ? "Revoked." : payload.boolean("approve") ? "Approved." : "Refused.", target};
+                }
+            }
+            else if (kind == "milestone.credit")
+                outcome = creditMilestone(payload);
+            else if (kind == "visitors.sync")
+            {
+                loadStoryVisitors();
+                outcome = {true, std::to_string(storyVisitorDefs_.size()) + " story visitors.", target};
+            }
+            else if (auto* tale = storylines_.find(target); !tale || tale->kind != "tale")
+                outcome = {false, "No such tale.", target};
+            else
+            {
+                if (kind == "tale.stop")
+                    endTale(*tale, "abandoned");
+                else
+                    tale->state = kind == "tale.pause" ? "paused" : "running";
+                storylines_.touch();
+                for (const auto& [who, p] : tale->participants)
+                    if (auto* c = clientOf(who); c && p.active())
+                        storylineToast(c, "\"" + tale->title + "\" is " + (kind == "tale.pause" ? "paused" : kind == "tale.stop" ? "stopped" : "running again") +
+                                              " by the Dungeon Masters.");
+                outcome = {true, "Done.", target};
+            }
+            saveSoon();
+        }
+        else if (kind == "storyline.give" || kind == "storyline.tick")
+        {
+            // Storylines (doc 58): one given to a character (payload {template, cast}), or an objective ticked by hand
+            // (target the storyline; payload {step, objective}).
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            if (kind == "storyline.give")
+                outcome = giveStoryline(target, payload.string("template"), payload.object("cast"), "dm", "");
+            else
+            {
+                const auto ticked = storylines_.tick(target, std::size_t(payload.number("step")), std::size_t(payload.number("objective")), "dm",
+                                                     now(), true);
+                storylineProgress(ticked);
+                outcome = ticked.empty() ? Result{false, "Nothing to tick there.", target} : Result{true, "Ticked.", target};
+            }
+            saveSoon();
+        }
         else if (kind == "npc.protect" || kind == "npc.unprotect")
         {
             // Protected residents (doc 57, 6): marked, or unmarked (even one Atlas or the game's rule protects).
@@ -2395,6 +2465,8 @@ void Game::tick(double dt)
     estateTick(dt);
     campTick(dt);
     projectTick(dt);                                // (Town projects: doc 57, 4.)
+    storylineTick(dt);                              // (Storylines' places, chains, idle tales: doc 58.)
+    tendStorytellers(dt);                           // (Visitors, the kept log, credits: doc 58.)
     holdTick(dt);
     refreshChapterViews(real);
     refreshLabels(real);
@@ -2873,6 +2945,12 @@ void Game::sendSnapshot(Connection* c)
         }
         if (const auto open = unfinishedView(id); !open.items().empty())
             self.set("unfinished", open);           // (Open threads, never a nag: doc 56, 9.)
+        if (const auto journal = journalView(id); !journal.items().empty())
+            self.set("journal", journal);           // (Storylines and tales: doc 58, 2.)
+        if (const auto tracked = trackedView(id); !tracked.isNull())
+            self.set("tracked", tracked);
+        if (auto teller = storytellerSelf(id); teller.has("state") || teller.boolean("canApply") || teller.has("calls"))
+            self.set("storyteller", teller);       // (Standing, tales, calls to answer: doc 58; nothing when there's nothing.)
         if (!projects_.all().empty())
         {
             if (const auto* here = projectAt(id))
@@ -3950,8 +4028,8 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
 {
     auto* npc = world_.entity(npcId);
     auto* player = world_.entity(playerId);
-    if (!npc || !player || !npc->npc)
-        return false;
+    if (!npc || !player || !npc->npc || world_.visitorLeaves(npcId) >= 0)
+        return false;                               // (Visitors aren't voiced by the Mind: docs 34, 58.)
     world_.faceTalker(npcId, playerId);             // It turns to the one talking to it (doc 53, 4).
     if (pendingNpc_.count(npcId))
     {
@@ -3967,6 +4045,7 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
         return false;
     const bool identified = sense.identifiable;
     const std::string subjectId = identified ? playerId : "unidentified-voice-" + std::to_string(sequence_);
+    storylineEvent({"talk", playerId, npc->cellId, npcId, {}, 0, 0, {}});   // (Even unrecognised: doc 58, 1.)
     auto context = dialogueContext(npcId, playerId, heardText, identified);
     if (identified)
     {
@@ -4073,6 +4152,7 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.fame = fameBriefing(npcId, playerId);   // (What it has heard of their deeds: doc 56, 5.)
         context.away = awayBriefing(npcId, playerId, false);   // (Back after a long while: doc 56, 10; used up below.)
         context.trouble = troubleBriefing(npcId, playerId);    // (Its own trouble, to a wolf it trusts: doc 57, 3.)
+        context.activity += storylineBrief(npcId, playerId);   // (A storyline's step about this resident: doc 58, 9.)
     }
     context.seen = profileContext(npcId, playerId);   // What it can see of them, in their player's words (doc 50).
     context.activity += tieBriefing(npcId, playerId);   // (A tie with this wolf: doc 52, 4.)
@@ -4493,7 +4573,11 @@ void Game::command(Connection* c, const std::string& raw)
         result = world_.useWorkGift(id, j.string("ability"), j.string("target"));
         report = true;
         if (result.ok)
+        {
             record(Economy | Character, id);
+            if (const auto* a = gifts::ability(j.string("ability")))   // (A Gift used outside a fight: doc 58's storylines.)
+                world_.recordEvent({"gift used", id, {}, player->cellId, 0, 0, a->family, 0, 0, a->id});
+        }
     }
     else if (type == "repair")
     {
@@ -4685,6 +4769,30 @@ void Game::command(Connection* c, const std::string& raw)
             groomCommand(c, j, result);
         else
             groomAnswer(c, j.boolean("accept"), result);
+        report = true;
+    }
+    else if (type == "storyteller")
+    {
+        // Storytellers and tales (doc 58): apply, save, start, invite, admit, tick, narrate, npc, roll, visitor, dismiss,
+        // prize, call, end; participants accept, decline, ask, roll; star (a credits screen). Development only: "approve"
+        // makes one's own account a storyteller.
+        if (options_.devTools && j.string("verb") == "approve")
+        {
+            decideStoryteller(accountKey(c), true, "dev", {});
+            result = {true, "You are a storyteller (development).", {}};
+        }
+        else
+            storytellerCommand(c, j, result);
+        report = true;
+    }
+    else if (type == "storyline")
+    {
+        // Storylines (doc 58): {"verb": "track"|"take"|"abandon"|"leave", "storyline", "step", "objective"}. Development only:
+        // "give" {template, cast} begins one for oneself, as the DM's storyline.give would.
+        if (options_.devTools && j.string("verb") == "give")
+            result = giveStoryline(id, j.string("template"), j.object("cast"), "dm", "");
+        else
+            storylineCommand(c, j, result);
         report = true;
     }
     else if (type == "project")

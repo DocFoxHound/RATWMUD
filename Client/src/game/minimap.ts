@@ -266,6 +266,26 @@ export class MapRenderer {
             c.stroke();
             this.sceneMarks.push({x, y, text: `where your tie was${str(tieMark, 'place') ? `, at ${str(tieMark, 'place')}` : ''}`});
         }
+        // The tracked storyline's next place (doc 58, 1): a small diamond (at the map's edge when it lies beyond), and its
+        // words along the bottom.
+        const tracked = obj(obj(s.snapshot, 'self'), 'tracked');
+        const trackedPlace = tracked ? places.find(p => p.id === str(tracked, 'cell')) : undefined;
+        if (tracked && trackedPlace) {
+            const raw = [toX(trackedPlace.x + num(tracked, 'x')), toY(trackedPlace.y + num(tracked, 'y'))];
+            const x = Math.max(box.x + 6, Math.min(box.x + box.w - 6, raw[0])), y = Math.max(box.y + 6, Math.min(box.y + box.h - 18, raw[1]));
+            c.fillStyle = 'rgba(217,182,123,0.95)';
+            c.beginPath();
+            c.moveTo(x, y - 5);
+            c.lineTo(x + 4, y);
+            c.lineTo(x, y + 5);
+            c.lineTo(x - 4, y);
+            c.closePath();
+            c.fill();
+            const words = `◆ ${str(tracked, 'title')} · ${str(tracked, 'label')}`;
+            c.font = '10px sans-serif';
+            c.fillText(words.length > 46 ? words.slice(0, 45) + '…' : words, box.x + 4, box.y + box.h - 4);
+            this.sceneMarks.push({x, y, text: words});
+        }
         // Howls heard (doc 51, Phase 6), for their minute: a faint arrow at the map's edge, the way the sound came.
         if (s.howlMarks)
             for (const [, h] of s.howls) {

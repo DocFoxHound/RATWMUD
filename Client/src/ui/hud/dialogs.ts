@@ -12,6 +12,7 @@ import {artCache} from '../artwork.ts';
 import {renderLetters} from './letters.ts';
 import {renderBoard} from './board.ts';
 import {renderArchive, renderChronicle, renderJournal, renderWelcome} from './archive.ts';
+import {renderCredits, renderStoryteller, storytellerNote} from './storyteller.ts';
 import {nicknameLine, unfinishedLine} from '../../game/fame.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
@@ -109,8 +110,9 @@ export class Dialogs {
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
             m === 'missions' ? s.missionBoard : '', m === 'letters' ? [s.lettersCase, s.letterDraftVersion, obj(self, 'names'), arr(s.snapshot, 'inventory')] : '',
             m === 'give' || m === 'lend' ? [s.giveTarget, arr(s.snapshot, 'inventory'), countText(self, 'cash')] : '',
-            m === 'board' ? s.boardView : '', m === 'archive' ? s.archiveTask : '', m === 'journal' ? s.journalView : '',
-            m === 'chronicle' ? s.chronicleView : '', m === 'welcome' ? s.welcomeView : '',
+            m === 'board' ? s.boardView : '', m === 'archive' ? s.archiveTask : '', m === 'journal' ? [s.journalView, arr(self, 'journal')] : '',
+            m === 'chronicle' ? s.chronicleView : '', m === 'welcome' ? s.welcomeView : '', m === 'credits' ? s.creditsView : '',
+            m === 'storyteller' ? [obj(self, 'storyteller'), s.storytellerVersion, [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => e.id)] : '',
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'), arr(self, 'loans'),
                 obj(s.snapshot, 'resource')] : '',
@@ -133,6 +135,8 @@ export class Dialogs {
         else if (m === 'archive') renderArchive(this.panel, s);
         else if (m === 'journal') renderJournal(this.panel, s);
         else if (m === 'chronicle') renderChronicle(this.panel, s);
+        else if (m === 'credits') renderCredits(this.panel, s);
+        else if (m === 'storyteller') renderStoryteller(this.panel, s, () => { ++s.storytellerVersion; });
         else if (m === 'welcome') renderWelcome(this.panel, s);
         else if (m === 'lend') this.giveSheet(true);
         else if (m === 'inventory') this.inventory(self);
@@ -171,6 +175,17 @@ export class Dialogs {
     private character(self: Json | null) {
         this.heading('CHARACTER / APPEARANCE', str(self, 'name', 'Your character'));
         el('div', 'label muted', this.panel, `AGE ${wholeCount(self, 'age', 18, 10000)}  ·  A STORY STILL UNFOLDING`);
+        // Storytellers (doc 58, 4): one's standing, or applying.
+        const teller = obj(self, 'storyteller');
+        if (storytellerNote(teller)) el('div', 'sage small', this.panel, storytellerNote(teller));
+        if (bool(teller, 'canApply')) {
+            const apply = el('details', 'letter-sheet', this.panel);
+            el('summary', 'label muted', apply, 'APPLY TO TELL STORIES');
+            const what = el('textarea', 'profile-input', apply) as HTMLTextAreaElement;
+            what.placeholder = 'What you would like to run, for the Dungeon Masters (500 letters)';
+            what.dataset.field = 'storyteller-note';
+            button('APPLY', 'primary', apply, () => this.s.send({type: 'storyteller', verb: 'apply', note: what.value.trim()}));
+        }
         const dex = envNumber(self, 'dexterity', 0, 100, 50);
         el('div', 'label sage', this.panel, `STRENGTH ${envNumber(self, 'strength', 0, 100, 50).toFixed(0)}   DEXTERITY ${dex.toFixed(0)} ` +
             `(${envNumber(self, 'effectiveDexterity', 0, 100, dex).toFixed(1)} effective)   WISDOM ${envNumber(self, 'wisdom', 0, 100, 50).toFixed(0)}`);

@@ -100,6 +100,13 @@
       "family": "neighbour",
       "phrase": "brought food to {beneficiary} when its shelves were bare",
       "perSeason": 1
+    },
+    {
+      "id": "finished_story",
+      "weight": "small",
+      "family": "honest",
+      "phrase": "saw \"{detail}\" through",
+      "perSeason": 3
     }
   ],
   "liveDays": {

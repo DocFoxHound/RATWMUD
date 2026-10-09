@@ -1,5 +1,6 @@
 // The game screen's state and rules: SRatwGame (UI/SRatwGame.cpp) without its drawing. The client is a projection of
 // observer-filtered server data; no simulation lives here. paint.ts draws it; view.ts connects it to the page.
+import {storyCommand} from '../ui/hud/storyteller.ts';
 import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, isObject, num, obj, objects, str, wholeCount, type Json} from './json.ts';
 import type {LetterDraft} from '../ui/hud/letters.ts';
 import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
@@ -204,6 +205,8 @@ export class GameState {
     archiveTask: Json | null = null;                // (Records to sort: doc 54, 7.)
     journalView: Json | null = null;                // (The journal: lore, bestiary, herbarium, places.)
     chronicleView: Json | null = null;              // (The chronicle: doc 56.)
+    creditsView: Json | null = null;                // (A credits screen: doc 58.)
+    storytellerVersion = 0;                         // (The tale editor's rows, drawn again: doc 58.)
     welcomeView: Json | null = null;                // (While you were away: doc 56, 10; kept until the next logout.)
     boardView: Json | null = null;                  // (A notice board as last read: doc 54.)                         // (Bumped when the page, not the player's typing, changes the draft.)
     /** The Dev Console (a player marked Dungeon Master; ui/hud/devConsole.ts): open or not, the commands the server
@@ -1090,6 +1093,11 @@ export class GameState {
             this.modal = 'welcome';
             return;
         }
+        if (type === 'credits') {
+            this.creditsView = e;                   // (A tale's end, or a milestone: doc 58, 7.)
+            this.modal = 'credits';
+            return;
+        }
         if (type === 'chronicle') {
             this.chronicleView = e;                 // (Doc 56, 8.)
             this.modal = 'chronicle';
@@ -1098,6 +1106,10 @@ export class GameState {
         if (type === 'journal') {
             this.journalView = e;
             this.modal = 'journal';
+            return;
+        }
+        if (type === 'storyline') {
+            if (str(e, 'toast')) this.showToast(str(e, 'toast'));   // (A step done, a story begun: doc 58.)
             return;
         }
         if (type === 'lore') {
@@ -1606,6 +1618,14 @@ export class GameState {
             this.runDevCommand(text);
             this.setChat(false);
             this.toggleDevConsole(true);          // Where the answer is.
+            return;
+        }
+        const story = storyCommand(text);
+        if (story) {
+            // A storyteller's (or a participant's dice): to the tale, never said aloud (doc 58, 5).
+            this.composer.text = '';
+            this.send(story);
+            this.setChat(false);
             return;
         }
         if (text === '/howl') {
@@ -2132,7 +2152,7 @@ export class GameState {
             else if (verb === 'goal') this.send({type: 'party', verb, goal: h.target.slice('goal:'.length).trim()});
             else if (['accept', 'decline', 'leave', 'disband', 'stayout', 'remove', 'lead'].includes(verb))
                 this.send({type: 'party', verb, ...(rest ? {target: rest} : {})});
-        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window' || a === 'status' || a === 'profile' || a === 'people' ||
+        } else if (a === 'character' || a === 'inventory' || a === 'settings' || a === 'chapter_window' || a === 'status' || a === 'profile' || a === 'people' || a === 'storyteller' ||
             ((a === 'their_equipment' || a === 'back_to_inspect') && this.inspectedCharacter)) {
             if (this.chat) this.setChat(false);
             this.heldKeys.clear();

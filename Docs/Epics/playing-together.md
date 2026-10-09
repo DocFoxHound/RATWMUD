@@ -33,7 +33,7 @@ need each other.
 | 6 | [54](../Design/54-gathering-places.md) | Gathering places | Part 5 (taverns, markets, notice boards, festivals, venues and renting), Part 10 (tavern games, library) | 50, 51 | Built (7 of 7; pushed c313ad3); migration 0045 applied |
 | 7 | [56](../Design/56-fame-and-memory.md) | Fame and memory | 3.7 (deeds, nicknames), 8.4–8.6 (chronicle, unfinished business, welcome back), festival criers | 50; 54 for criers | Built (6 of 6; pushed); migration 0046 applied |
 | 8 | [57](../Design/57-changing-the-world.md) | Changing the world | Part 1 (residents' troubles, town projects, the economy's visibility) | 56, 53 | Built (6 of 6; pushed); migrations 0047 and 0048 applied |
-| 9 | [58](../Design/58-player-storytellers.md) | Player storytellers and personal stories | Part 9, 8.2, 8.3, 6.8 | 51; doc 34's story planner | Drafted (6 phases) |
+| 9 | [58](../Design/58-player-storytellers.md) | Player storytellers and personal stories | Part 9, 8.2, 8.3, 6.8 | 51; doc 34's story planner | Built (6 of 6; pushed); migration 0049 applied |
 | Alongside | [49](../Design/49-characters-and-earned-gifts.md) | Characters without levels, and earned Gifts | 2.1, 2.2 | Its own phases 1–3 before earned Gifts (phase 5) | Built (5 of 5 phases), not committed; migration 0034 not yet applied |
 
 **Why this order:** the player card (50) is what everything else hangs on: status, friends, block and known wolves.
@@ -95,8 +95,9 @@ Each plan's Open questions section has the detail and a recommendation. Settle a
   the Town Works; resident ailments later as their own small plan, then tools; a deck structure as its own plan after
   this one; the economy session's small hunks built here (appoint, apprenticeTo, postOddJob, mendTown, the granary
   allowance, players' flows, repayRescue). Introducing two residents stays the first later lever.
-- **58 Storytellers:** keep storyteller narration 30 days as DM evidence? May storytellers recruit strangers through
-  board calls? Does a finished storyline pay a little XP, or recognition only? (Storyteller status: as plan 50.)
+- **58 Storytellers:** answered 2026-10-08: narration and story characters' lines kept 30 days as DM evidence; board
+  calls reach strangers, who ask and are admitted for that tale only; a finished personal storyline is recognition only
+  (a chronicle line, a small deed). The Storyteller status is approved storytellers' only (plan 50).
 - **Across the epic:** a star rate on the card (plan 51).
 
 ## Things the plans found
@@ -258,3 +259,10 @@ While drafting, the plans checked doc 48 against the code. What changes doc 48 o
     orchestrator's books; protected residents and the DM's hand. A journal bug found and fixed (an escrow opened and
     closed between records). Migrations 0047 and 0048 written, not applied. Not committed.
   - 2026-10-08: plan 57 pushed; migrations 0047 and 0048 applied to DEV and PROD. Next: plan 58 (storytellers).
+  - 2026-10-08: plan 58's questions answered; all six phases built: storylines and the journal (steps with markers,
+    two angles, the trigger index); their sources (ties, troubles, contract chains, the DM); becoming a storyteller
+    (apply, decide, revoke, the kept log, the DM's Storytellers panel); tales (writing, inviting, narration, story
+    characters, open dice, ticks, the end card and the storyteller's star); visitors, prizes and board calls; credits
+    screens for world stories' milestones from the ledger. Migration 0049 written, not applied. Not committed. Every
+    plan of the epic is now built.
+  - 2026-10-08: plan 58 pushed; migration 0049 applied to DEV and PROD. The epic's ten plans are all built and pushed.

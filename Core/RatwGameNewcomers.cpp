@@ -566,6 +566,7 @@ void Game::makeTie(newcomers::Tie& t, const std::string& other, const std::strin
     }
     reindexTies();
     tellTie(t);
+    tieStoryline(t);                                // (Its storyline, in both journals for a mentor's tie: doc 58, 3.)
     saveSoon();
 }
 
@@ -602,6 +603,7 @@ void Game::closeTie(newcomers::Tie& t, const std::string& state, bool rest)
     const auto& r = newcomers::tieRules();
     const bool shared = t.state == "active" && tieScenes(t) > 0;
     const auto was = t.state;
+    endStorylinesOf("tie", t.id, "ended");          // (Its storyline ends with it: doc 58, 3.)
     t.state = state;
     t.ended = now();
     t.offeredTo.clear();

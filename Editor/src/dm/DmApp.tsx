@@ -15,6 +15,7 @@ import {HealthTab} from './HealthTab';
 import {MoneyTab} from './MoneyTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
+import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
 import {dmApi, signedIn, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
 
@@ -189,6 +190,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
                 : <p className="hint">Select a character in the table or on the map.</p>}
             <TiesPanel ties={data?.ties ?? []} onSelect={setSelected} />
             <ReportsPanel me={me} target={target} />
+            <StorytellersPanel me={me} target={target} />
             <ArtworkPanel me={me} target={target} />
         </aside>
     </div>;

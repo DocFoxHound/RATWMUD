@@ -39,7 +39,8 @@ std::string contestWords(const std::string& kind)
 }
 const std::map<std::string, std::pair<std::string, std::string>> Plurals{
     {"wolves", {"wolf", "wolves"}}, {"beasts", {"beast", "beasts"}}, {"times", {"time", "times"}},
-    {"games", {"game", "games"}},   {"things", {"thing", "things"}}, {"places", {"place", "places"}}};
+    {"games", {"game", "games"}},   {"things", {"thing", "things"}}, {"places", {"place", "places"}},
+    {"steps", {"step", "steps"}}};
 } // namespace
 
 std::string dateWords(double day)

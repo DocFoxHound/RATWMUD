@@ -705,6 +705,7 @@ json::Value Game::unfinishedView(const std::string& id)
             const auto* kind = troubles::rules().kind(it->second.kind);
             if (!t || t.kind != it->second.kind || !kind)
             {
+                endStorylinesOf("trouble", it->first + "|" + it->second.kind, "ended", id);   // (It passed: doc 58, 3.)
                 it = heard->second.erase(it);
                 continue;
             }

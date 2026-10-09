@@ -1,6 +1,7 @@
 # 58. Player storytellers and personal stories
 
-Drafted 2026-10-06 as an actionable plan for doc 48 (Part 9, §8.2, §8.3 and §6.8). Nothing built. Read doc 48 (Part 9,
+Drafted 2026-10-06 as an actionable plan for doc 48 (Part 9, §8.2, §8.3 and §6.8). Open questions answered 2026-10-08
+(see "Open questions"); all six phases built the same day (see "Built"); committed, with migration 0049 applied (2026-10-08). Read doc 48 (Part 9,
 §6.8, Part 8, Decisions) and docs 17 (the legacy Storykeeper and the DM's separation), 21 and 34 (the DM app and its
 refresh: the story planner and quests, Parts 3–7), 26 (contracts, Phase 5, and promises), 08 (scenes), 32 (Chapters,
 their treasury and the boards in rented places), 28 (AI cost) and 51 (stars and scene openness) first.
@@ -473,6 +474,109 @@ Each phase passes `world_check --players 20` within noise. None needs a 1,000-pl
 - **Cost:** the lines are built by the DM host from Postgres, off the game thread; the server only checks and delivers,
   once per milestone.
 
+## Built
+
+All six phases built 2026-10-08. Migration 0049 (`game.storylines`, `game.storytellers`, `game.storyteller_log`,
+`game.credits` as checkpoint sections; `live.story_visitors`) applied to DEV and PROD.
+
+### Phase 1: the journal and storylines
+
+- **The model** (`Core/RatwStorylines.{h,cpp}`, new): storylines of kind personal, tale or world; steps of 1-3
+  objectives (`told`, `place`, `talk`, `scene`, `contract`, `hunt`, `fight`, `gift`, `deliver`); markers (a place, a
+  tile, a label: never a live position); `distinct` steps where no wolf does two parts; TAKE; a trigger index (objective
+  kind -> storylines whose current step waits on one), so nothing scans in the tick; the first step of a personal
+  storyline ticked at once; the limits (3 personal, 3 tales a wolf, 2 running tales a storyteller, 12 wolves, a cast of
+  6); save and load. Rules in `Data/Storylines/rules.json`, templates in `templates.json` (new).
+- **In the game** (`Core/RatwGameStorylines.cpp`, new):
+  - a talk with a resident (recognised or not), a scene settled (with the storyline's wolves in it), a contract done,
+    a kill, a fight won, a Gift used outside a fight (a new `gift used` event), an item given; a place checked every 2 s
+    only for those with a place to be;
+  - each step done: a toast, a `step` moment on the end card of the scene its wolves are in, a chronicle line;
+  - the journal's stories (`self.journal`, rebuilt only when the book changes) at the top of the existing JOURNAL page
+    (doc 54's), which now also has a top-bar button; the tracked storyline's marker on the local map and the minimap
+    (a gold diamond, its words along the minimap's bottom);
+  - wolves named as the reader knows them (`[[id]]` in templates).
+- **The DM**: `storyline.give` and `storyline.tick` through `/api/live/action`, and the *Give a storyline* form.
+- **Not built as planned**: no separate `game.storyline_log` table; storylines' steps, parts and endings are
+  `game.events` rows (`storyline begun`, `storyline objective`, `storyline step`, `storyline done`...), which the
+  credits and the chronicle read.
+
+### Phase 2: where personal storylines come from
+
+- **Ties** (doc 52): when a tie is made, `tie-<starter>` (with a resident: find them, see the town, talk it over) or
+  `tie-<starter>-mentor` in both journals (a scene together; two ways round the town, one asking the innkeeper while the
+  other looks over the market; another scene). A tie that ends ends it.
+- **Troubles** (doc 57): `trouble-<kind>` when a wolf hears one; solved by that wolf it is done, by someone else (or
+  passed) it ends.
+- **Contract chains**: a contract done for a resident who likes the wolf (20+) brings a courier job posted from the
+  resident's own purse (it keeps 20p for its food), offered to that wolf first, in a `chain` storyline whose step waits
+  on that very job; then a talk with the resident, whose Mind is told the step's line.
+- **Briefs**: a step's line for the resident named in its `talk` objective, while the step is current, never from a
+  storyteller.
+- **Recognition only** (the user): a finished personal storyline gives a chronicle line and a small deed
+  (`finished_story`), no award.
+
+### Phase 3: becoming a storyteller
+
+- **Applying** from the character sheet (APPLY TO TELL STORIES, a note of 500 letters): social level 5 (doc 49's,
+  summed over the account), no upheld report in 30 days, one application at a time.
+- **Deciding** (DM actions `storyteller.decide` with a reason, `storyteller.revoke`): the standing is the account's; the
+  player is told in game; revoking pauses its running tales and tells their wolves. The Storyteller status is now open
+  to approved storytellers (doc 50's check).
+- **The kept log** (`storyteller_log`, a checkpoint section): every apply, draft, start, invite, admit, tick, narration,
+  story character's line, roll, visitor, prize, call and end; the text cleared after 30 days, the record after 180.
+- **The DM app**: a Storytellers panel in the Players tab (applications, storytellers, tales with who did what and
+  their words, visitors, *Give a storyline*, *Credit a milestone*).
+
+### Phase 4: tales
+
+- **Writing** on the STORYTELLER page (approved storytellers only): a title, a premise, 1-10 steps (each a title, a text
+  and an objective), a cast of up to 6 whose names may be no real wolf's (residents, players, aliases).
+- **Running**: BEGIN; INVITE (the storyteller's party, Chapter, circles and friends; never one blocked); JOIN or NOT NOW
+  in the invited wolf's journal; TICK (a `told` part, or any by hand, which the log says); narration and a story
+  character's line (`/narrate`, `/npc name: line`, or the page), at most 1,000 letters, one every 3 world seconds,
+  shown as "✦ STORY · its title · the storyteller as you know them" to its wolves in the storyteller's place and to
+  wolves in speaking range while its scene isn't Private; counted as the storyteller's roleplay in the scene; open dice
+  (`/roll 2d6+1 for the crossing`: 1-10 dice of 2, 4, 6, 8, 10, 12, 20 or 100 sides, ±20), by participants too.
+- **The end** (done, failed, abandoned): an end card for each of its wolves with who did what, and one star for the
+  storyteller (doc 51's `tale` kind, tagged Storyteller), once.
+
+### Phase 5: visitors, prizes and calls
+
+- **Visitors** from the DM's approved list (`live.story_visitors`, saved from the panel, read at start and on
+  `visitors.sync`): at most 2 at once, 10-60 minutes, within 6 tiles, outdoors or in an inn's common room; marked "(part
+  of a story)"; a fight with any visitor is refused ("They're part of a story"), and the Mind never answers one.
+- **Prizes**: coins from the storyteller's purse, or the Chapter's treasury for its Chapter's tale by an Officer or the
+  Head, or an item it carries; to the tale's wolves only; journalled, a `story prize` event.
+- **Calls**: POST A CALL puts the tale on its town's board; strangers see it in their journal (CALLS IN THIS TOWN) and
+  ASK TO JOIN; the storyteller ADMITs them, for that tale only.
+- **The DM**: `tale.pause`, `tale.resume`, `tale.stop`, its wolves told.
+
+### Phase 6: credits screens and two angles
+
+- **A milestone** (`milestone.credit`): the DM host builds the wolves and their lines from the ledger (a storyline's
+  wolves and the parts they did; or everyone who acted at a place in a window, their fights, wolves tended, kills,
+  jobs), the game checks each wolf, renders the lines per viewer, and keeps the screen 3 days (shown after a fight).
+  Up to 3 stars each (doc 51's `milestone` kind, under its counting rules); a great or legendary deed for the main
+  contributors (the first three, or those the DM names).
+- **Two angles**: `distinct` steps, `suits` hints and TAKE in the journal; the mentor tie templates use them.
+
+### Tests
+
+- `Tests/storyline_tests.cpp` (45 checks) and `Tests/storyteller_tests.cpp` (54 checks), new; the Client's
+  `storyteller.test.ts`; `tools/test_dungeon_master.py`, `test_chronicle.py`.
+- `tools/client/storyteller.mjs` (new), in a real browser: a storyline in the journal with its marker; a storyteller
+  approved (the dev console), a tale written and begun, a call answered and admitted, narration and dice from the
+  composer marked as the story's, the end card and the storyteller's star.
+
+### Not done, or done differently
+
+- The storyline log is `game.events` rows (above).
+- Ties' storylines aren't tested through doc 52's whole flow; the trouble and chain ones are.
+- A storyteller's markers are a place picked by id on the page, not on the World Map; the editor gives each step one
+  objective.
+- Visitors' placement allows inns' common rooms only among interiors (no list of seats of power is needed).
+
 ## Depends on and feeds
 
 - **Depends on doc 51** (`StarBook` for tale and milestone stars; openness for narration; the `step` moment), first in
@@ -531,7 +635,8 @@ Each phase passes `world_check --players 20` within noise. None needs a 1,000-pl
 18. Narration counts as the storyteller's roleplay in the scene.
 19. Calls on boards let strangers ask to join; admitted, they join that tale only.
 20. Narration and story characters' lines kept 30 days for the DM, then cleared.
-21. A finished server-made storyline pays a `storyline` award of 10, once; tales pay nothing of their own.
+21. A finished server-made storyline is recognised (a chronicle line, a small deed), never paid (the user, 2026-10-08);
+    tales pay nothing of their own.
 22. Credit lines built by the DM host from Postgres, delivered by the server.
 23. Recommend to doc 50: reserve the Storyteller status for approved storytellers.
 
@@ -542,3 +647,10 @@ Each phase passes `world_check --players 20` within noise. None needs a 1,000-pl
    should tales stay within Chapter, party, circle and friends?
 3. **A finished personal storyline:** a small award, as planned, or recognition only?
 4. **The Storyteller status:** approved storytellers only, or anyone, as in doc 48 §3.5?
+
+**Answered (user, 2026-10-08):**
+1. Keep narration and story characters' lines 30 days as the DM's evidence, then clear the text (metadata kept).
+2. Yes: board calls reach strangers, who ask; the storyteller admits them, for that tale only.
+3. Recognition only: a finished personal storyline gives a chronicle line and a small deed, no award (decision 21
+   changes accordingly).
+4. Settled by plan 50: the Storyteller status is for approved storytellers only.

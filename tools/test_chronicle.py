@@ -116,7 +116,9 @@ class CompileTests(unittest.TestCase):
                  'reported', 'stopped by the watch', 'fine paid', 'arrest', 'released', 'bandits demand', 'fight', 'robbed',
                  'paid off bandits', 'bandit falls', 'bandits flee', 'camp cleared', 'deed', 'deed revoked', 'nickname', 'nickname dropped', 'operator', 'quarrel',
                  'trouble heard', 'trouble solved', 'project gift', 'project built', 'project posted', 'project cancelled',
-                 'price lowered', 'fed the town', 'something new']
+                 'price lowered', 'fed the town', 'storyline begun', 'storyline step', 'storyline done', 'storyline abandoned',
+                 'tale begun', 'tale joined', 'tale left', 'tale ended', 'tale star', 'milestone star', 'story prize', 'milestone',
+                 'something new']
         for kind in kinds:
             for who in (('fennel', 'wren'), ('wren', 'fennel')):
                 c = C.compile_chronicle('fennel', [ev(1, 1, kind, *who, detail='Baker', coins=2)], NAMES)

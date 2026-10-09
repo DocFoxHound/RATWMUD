@@ -156,6 +156,23 @@ void Game::afterSocial()
             at = comma + 1;
         }
         onSettled(e);                             // (Chapters take their share: doc 32, Part 3.)
+        if (storylines_.waiting("scene"))         // (A scene a storyline asks for: doc 58, 1.)
+        {
+            storylines::Event scene{"scene", e.actor, {}, {}, {}, 0, 0, {e.actor}};
+            if (const auto s = social_.sessions.find(e.session); s != social_.sessions.end())
+                scene.cell = s->second.cell;
+            for (std::size_t from = 0; from <= e.partner.size();)
+            {
+                const auto comma = e.partner.find(',', from);
+                const auto partner = e.partner.substr(from, comma == std::string::npos ? std::string::npos : comma - from);
+                if (!partner.empty())
+                    scene.together.push_back(partner);
+                if (comma == std::string::npos)
+                    break;
+                from = comma + 1;
+            }
+            storylineEvent(scene);
+        }
     }
     for (const auto& account : touched)
         checkUnlocks(account);

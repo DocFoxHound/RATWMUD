@@ -668,6 +668,10 @@ class World
     Result addVisitor(const std::string& id, const std::string& name, const std::string& description, const Appearance& look,
                       const std::string& cellId, double x, double y, double minutes);
     Result sendVisitorAway(const std::string& id);
+    // A visitor a storyteller brought on stage (doc 58, 5): fights, theft, trade and recruiting refuse it; the Mind never
+    // answers it; Look marks it. (A DM's visitors share the refusals.)
+    void markStoryVisitor(const std::string& id) { storyVisitors_.insert(id); }
+    bool isStoryVisitor(const std::string& id) const { return storyVisitors_.count(id) > 0; }
     // When a temporary visitor leaves (world seconds), or a negative number for anyone else.
     double visitorLeaves(const std::string& id) const { const auto v = visitors_.find(id); return v == visitors_.end() ? -1 : v->second; }
     double worldTime() const { return time_; }
@@ -1593,6 +1597,7 @@ class World
     };
     std::map<std::string, RoadFolk> folk_;
     std::map<std::string, double> visitors_;   // Temporary folk (addVisitor): when each leaves, in world seconds.
+    std::set<std::string> storyVisitors_;      // Those a storyteller brought (doc 58).
     // Bandits who have stopped a player: asking (a demand) until they pay, get clear, or it comes to blows.
     struct Encounter
     {

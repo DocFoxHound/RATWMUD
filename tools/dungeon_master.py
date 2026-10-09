@@ -146,6 +146,14 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'project.post': 'dm', 'project.cancel': 'dm', 'project.complete': 'dm', 'project.remove': 'dm',
            # Protected residents (doc 57, 6): marked live, or unmarked (target the resident).
            'npc.protect': 'dm', 'npc.unprotect': 'dm',
+           # Storylines (Docs/Design/58-player-storytellers.md): one given to a character (payload template, cast), an
+           # objective ticked by hand (target the storyline; payload step, objective).
+           'storyline.give': 'dm', 'storyline.tick': 'dm',
+           # Storytellers (doc 58, 11): an application decided or the standing revoked (target the account); a tale paused,
+           # resumed or stopped (target its id); a milestone credited (payload built from the ledger here); the visitors'
+           # list read again.
+           'storyteller.decide': 'dm', 'storyteller.revoke': 'dm', 'tale.pause': 'dm', 'tale.resume': 'dm', 'tale.stop': 'dm',
+           'milestone.credit': 'dm', 'visitors.sync': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -501,6 +509,29 @@ class DungeonMaster:
                 clean.update({'cell': str(p['cell'])[:80], 'x': x, 'y': y})
         elif kind == 'deed.award':
             clean = {k: str(p.get(k, ''))[:160] for k in ('kind', 'weight', 'cell', 'beneficiary', 'detail') if p.get(k)}
+        elif kind == 'storyline.give':
+            ids = [t['id'] for t in storyline_templates()]
+            cast = p.get('cast') if isinstance(p.get('cast'), dict) else {}
+            if p.get('template') not in ids:
+                raise DMError('No such story.')
+            if len(cast) > 8 or not all(isinstance(k, str) and ID.match(k) and isinstance(v, str) and PLAIN_ID.match(v) and len(v) <= 80
+                                        for k, v in cast.items()):
+                raise DMError('The cast is roles and ids.')
+            clean = {'template': p['template'], 'cast': cast}
+        elif kind in ('storyteller.decide', 'storyteller.revoke'):
+            reason = str(p.get('reason', '')).strip()
+            if len(reason) > 400 or any(ord(c) < 32 for c in reason):
+                raise DMError('A reason is at most 400 plain characters.')
+            clean = {'reason': reason}
+            if kind == 'storyteller.decide':
+                if not isinstance(p.get('approve'), bool):
+                    raise DMError('Approve or refuse.')
+                clean['approve'] = p['approve']
+        elif kind == 'storyline.tick':
+            step, objective = p.get('step'), p.get('objective')
+            if not all(isinstance(v, int) and not isinstance(v, bool) and 0 <= v < 16 for v in (step, objective)):
+                raise DMError('Give the step and objective as numbers.')
+            clean = {'step': step, 'objective': objective}
         with self.connect(target) as conn:
             with conn.transaction():
                 action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s)
@@ -510,6 +541,122 @@ class DungeonMaster:
                 self.audit(conn, who['username'], kind, target_id,
                            f'{target.upper()}: {kind} {target_id}{what}' + (f' — {reason[:500]}' if reason else ''))
         return {'id': action_id, 'status': 'queued'}
+
+    def storytellers(self, target):
+        """Storytellers (doc 58, 11): applications with their notes, the approved and the rest; each storyteller's tales with
+        their steps and participants; the kept log (narration and story characters' lines within 30 days); the visitors'
+        list; the templates a DM may give."""
+        with self.connect(target) as conn:
+            if not conn.execute("SELECT to_regclass('game.storytellers') IS NOT NULL").fetchone()[0]:
+                return {'target': target, 'ready': False, 'standing': [], 'tales': [], 'log': [], 'visitors': [], 'templates': []}
+            world = C.world_of(conn)
+            names = dict(conn.execute('SELECT key, name FROM game.characters WHERE world_id = %s', (world,)).fetchall())
+            standing = [dict(r[0], name=names.get(r[0].get('character', ''), r[0].get('character', '')))
+                        for r in conn.execute('SELECT data FROM game.storytellers WHERE world_id = %s', (world,)).fetchall()]
+            tales = []
+            for (d,) in conn.execute("SELECT data FROM game.storylines WHERE world_id = %s AND kind = 'tale' ORDER BY updated_at DESC LIMIT 100",
+                                     (world,)).fetchall():
+                tales.append({'id': d.get('id'), 'title': d.get('title'), 'premise': d.get('premise', ''), 'state': d.get('state'),
+                              'author': d.get('author'), 'authorName': names.get(d.get('author', ''), d.get('author', '')),
+                              'account': d.get('authorAccount'),
+                              'participants': [{'id': k, 'name': names.get(k, k), 'left': v.get('left', -1) >= 0}
+                                               for k, v in (d.get('participants') or {}).items()],
+                              'steps': [{'title': s.get('title'), 'objectives': [{'line': o.get('line'), 'kind': o.get('kind'),
+                                                                                    'by': names.get(o.get('doneBy', ''), o.get('doneBy', '')),
+                                                                                    'byHand': o.get('byHand', False)}
+                                                                                   for o in s.get('objectives') or []]}
+                                        for s in d.get('steps') or []]})
+            log = [r[0] for r in conn.execute('SELECT data FROM game.storyteller_log WHERE world_id = %s ORDER BY updated_at DESC LIMIT 300',
+                                              (world,)).fetchall()]
+            for e in log:
+                e['name'] = names.get(e.get('character', ''), e.get('character', ''))
+            visitors = [{'id': r[0], 'name': r[1], 'description': r[2], 'enabled': r[3], 'approvedBy': r[4] or ''}
+                        for r in conn.execute('SELECT id, name, description, enabled, approved_by FROM live.story_visitors WHERE world_id = %s ORDER BY id',
+                                              (world,)).fetchall()]
+        log.sort(key=lambda e: -(e.get('at') or 0))
+        return {'target': target, 'ready': True, 'standing': standing, 'tales': tales, 'log': log, 'visitors': visitors,
+                'templates': [{'id': t['id'], 'title': t.get('title', t['id']), 'source': t.get('source', 'dm')} for t in storyline_templates()]}
+
+    def save_story_visitor(self, who, target, visitor):
+        """A visitor on the approved list (doc 58, 6), saved and approved by this DM; the game reads the list again."""
+        self.allowed(who, 'visitors.sync')
+        if not isinstance(visitor, dict):
+            raise DMError('Describe the visitor.')
+        vid, name = str(visitor.get('id', '')).strip(), str(visitor.get('name', '')).strip()
+        description, enabled = str(visitor.get('description', '')).strip(), visitor.get('enabled', True)
+        if not ID.match(vid) or not 1 <= len(name) <= 60 or len(description) > 400 or not isinstance(enabled, bool) or \
+                any(ord(c) < 32 for c in name + description):
+            raise DMError('A visitor needs an id (lower case), a name (60 letters) and a description (400).')
+        like = str(visitor.get('like', '')).strip()
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                look = {}
+                if like:
+                    row = conn.execute('SELECT appearance FROM live.npcs WHERE world_id = %s AND id = %s', (world, like)).fetchone()
+                    if not row:
+                        raise DMError('No such resident to look like.')
+                    look = row[0] or {}
+                conn.execute('''INSERT INTO live.story_visitors (world_id, id, name, description, appearance, enabled, approved_by, approved_at)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, now())
+                                ON CONFLICT (world_id, id) DO UPDATE SET name = excluded.name, description = excluded.description,
+                                    appearance = CASE WHEN %s THEN excluded.appearance ELSE live.story_visitors.appearance END,
+                                    enabled = excluded.enabled, approved_by = excluded.approved_by, approved_at = now(), updated_at = now()''',
+                             (world, vid, name, description, json.dumps(look), enabled, who['username'], bool(like)))
+                action_id = self.queue(conn, who, target, 'visitors.sync', 'story-visitors', f'visitors.sync after saving {vid}')
+        return {'id': action_id, 'status': 'queued'}
+
+    def credit_milestone(self, who, target, story, milestone, weight='great', rule=None, people=None, main=None):
+        """A world story's milestone credited (doc 58, 7): who took part, by a rule (a storyline's participants; everyone
+        who acted at a place in a window), and each one's lines built from the ledger only (game.events: steps and parts
+        done, fights, wolves tended, kills, contracts). The game checks every wolf, renders the lines per viewer, and keeps
+        the screen 3 days to star."""
+        self.allowed(who, 'milestone.credit')
+        story, milestone = str(story or '').strip()[:80], str(milestone or '').strip()[:80]
+        if not milestone or weight not in ('great', 'legendary'):
+            raise DMError('Name the milestone, great or legendary.')
+        rule = rule if isinstance(rule, dict) else {}
+        lines = {}
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            chars = dict(conn.execute('SELECT key, name FROM game.characters WHERE world_id = %s', (world,)).fetchall())
+            ids = [p for p in (people or []) if isinstance(p, str) and p in chars]
+            if rule.get('kind') == 'storyline':
+                row = conn.execute('SELECT data FROM game.storylines WHERE world_id = %s AND key = %s', (world, str(rule.get('storyline', '')))).fetchone()
+                if not row:
+                    raise DMError('No such storyline.')
+                ids += [k for k in (row[0].get('participants') or {}) if k in chars]
+                for actor, detail in conn.execute('''SELECT actor, detail FROM game.events WHERE world_id = %s AND target = %s
+                                                     AND kind = 'storyline objective' ORDER BY id''', (world, row[0].get('id'))).fetchall():
+                    lines.setdefault(actor, []).append((detail or 'did their part').split(' (by hand)')[0])
+            elif rule.get('kind') == 'place':
+                cell, since, until = str(rule.get('cell', '')), rule.get('from'), rule.get('to')
+                if not cell or not isinstance(since, (int, float)) or not isinstance(until, (int, float)) or until < since:
+                    raise DMError('A place, and a window in game days.')
+                counts = {}
+                for kind, actor, target_id in conn.execute('''SELECT kind, actor, target FROM game.events WHERE world_id = %s AND cell = %s
+                                                                AND game_day BETWEEN %s AND %s''', (world, cell, since, until)).fetchall():
+                    if actor in chars:
+                        counts.setdefault(actor, {}).setdefault(kind, 0)
+                        counts[actor][kind] += 1
+                words = {'tended': 'tended {n} wolves', 'bandit falls': 'struck down {n} bandits', 'beaten down': 'beat down {n} foes',
+                         'hunted': 'brought down {n} beasts', 'contract done': 'finished {n} jobs', 'conversation': 'talked with folk {n} times',
+                         'assault': 'fought {n} times', 'storyline objective': 'did {n} parts of the story'}
+                for actor, kinds in counts.items():
+                    ids.append(actor)
+                    lines[actor] = [words[k].format(n=n).replace(' 1 wolves', ' a wolf').replace(' 1 ', ' one ') for k, n in kinds.items() if k in words][:6]
+            ids = list(dict.fromkeys(ids))[:40]
+            if not ids:
+                raise DMError('Nobody to credit.')
+            payload = {'story': story, 'milestone': milestone, 'weight': weight,
+                       'people': [{'id': i, 'lines': [l[:160] for l in lines.get(i, [])] or ['was there']} for i in ids],
+                       'main': [m for m in (main or []) if m in ids][:3]}
+            with conn.transaction():
+                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES ('milestone.credit', %s, %s, %s)
+                                            RETURNING id''', (milestone[:80] or 'milestone', who['username'], json.dumps(payload))).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
+                self.audit(conn, who['username'], 'milestone.credit', milestone, f'{target.upper()}: credited {story} · {milestone} to {len(ids)} wolves')
+        return {'id': action_id, 'status': 'queued', 'people': payload['people']}
 
     def projects(self, target):
         """Town projects (doc 57): each one open or standing, where, how far along, and its top givers by the names they
@@ -1756,7 +1903,16 @@ class DungeonMaster:
 
 # Live actions on things other than characters, sent through /api/live/action.
 LIVE_KINDS = ('project.post', 'project.cancel', 'project.complete', 'project.remove', 'npc.protect', 'npc.unprotect',
+              'storyline.give', 'storyline.tick', 'storyteller.decide', 'storyteller.revoke', 'tale.pause', 'tale.resume',
+              'tale.stop', 'visitors.sync',
               'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release')
+
+
+def storyline_templates() -> list:
+    try:
+        return json.loads((ROOT / 'Data/Storylines/templates.json').read_text(encoding='utf-8')).get('templates', [])
+    except (OSError, ValueError):
+        return []
 
 
 def project_rules() -> dict:
@@ -1904,6 +2060,15 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.rumours(self.target(query)))
             if method == 'GET' and path == '/api/live/fame':
                 return self.reply(200, dm.fame(self.target(query)))
+            if method == 'GET' and path == '/api/storytellers':
+                return self.reply(200, dm.storytellers(self.target(query)))
+            if method == 'POST' and path == '/api/storytellers/visitor':
+                data = self.body()
+                return self.reply(200, dm.save_story_visitor(who, str(data.get('target', 'prod')), data.get('visitor')))
+            if method == 'POST' and path == '/api/milestone':
+                data = self.body()
+                return self.reply(200, dm.credit_milestone(who, str(data.get('target', 'prod')), data.get('story'), data.get('milestone'),
+                                                           data.get('weight', 'great'), data.get('rule'), data.get('people'), data.get('main')))
             if method == 'GET' and path == '/api/live/projects':
                 return self.reply(200, dm.projects(self.target(query)))
             if method == 'POST' and path == '/api/live/action':

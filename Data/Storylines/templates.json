@@ -1,0 +1,1289 @@
+{
+  "format": "ratw-storyline-templates",
+  "about": "Personal storylines the server makes (Docs/Design/58-player-storytellers.md, 3): from ties (doc 52: tie-<starter> with a resident, tie-<starter>-mentor with a mentor), residents' troubles (doc 57: trouble-<kind>), contract chains (chain) and the Dungeon Master (the-debt, a-gathering). Roles in braces are filled from the cast: {tie}, {keeper}, {resident}, {poster} (ids), {square}, {place} (cells). [[id]] shows as the reader knows that wolf. A step's marker names a role (a resident's work place, a place's middle); its brief is one line for that resident's Mind while the step is current. 3 to 7 steps; the first is ticked at once.",
+  "templates": [
+    {
+      "id": "tie-cart",
+      "title": "A tie: the same cart",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: You came into town on the same cart; they remember you.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Talk about the road you shared",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (you came into town on the same cart; they remember you), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Talk about the road you shared",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-cart-mentor",
+      "title": "A tie: the same cart",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Talk about the road you shared",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-river",
+      "title": "A tie: the river crossing",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: You crossed the river together; they owe you a kindness.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Ask how they fared after the crossing",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (you crossed the river together; they owe you a kindness), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Ask how they fared after the crossing",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-river-mentor",
+      "title": "A tie: the river crossing",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Ask how they fared after the crossing",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-letter",
+      "title": "A tie: a letter",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: You carry a letter for them from someone dear.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Hand over the letter you carry for them",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (you carry a letter for them from someone dear), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Hand over the letter you carry for them",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-letter-mentor",
+      "title": "A tie: a letter",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Hand over the letter you carry for them",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-debt",
+      "title": "A tie: a small debt",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: They lent you a few pennies on your way here.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Settle the matter of the debt",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (they lent you a few pennies on your way here), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Settle the matter of the debt",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-debt-mentor",
+      "title": "A tie: a small debt",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Settle the matter of the debt",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-cousins",
+      "title": "A tie: family",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: You are distant cousins.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Talk about family",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (you are distant cousins), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Talk about family",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-cousins-mentor",
+      "title": "A tie: family",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Talk about family",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-apprentice",
+      "title": "A tie: a trade",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: They might teach you their trade.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Ask about learning their trade",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (they might teach you their trade), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Ask about learning their trade",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-apprentice-mentor",
+      "title": "A tie: a trade",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Ask about learning their trade",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-road",
+      "title": "A tie: the road",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: You met on the road here.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Swap news of the road",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (you met on the road here), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Swap news of the road",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-road-mentor",
+      "title": "A tie: the road",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Swap news of the road",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-show_around",
+      "title": "A tie: the town",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and someone here is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "They work in town; ask after them, or look where they work.",
+          "marker": "tie",
+          "brief": "This wolf is the newcomer you're tied to: They offered to show you about the town.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Speak with [[{tie}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "See the town",
+          "text": "Walk to the market square and take in the place.",
+          "marker": "square",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Visit the market"
+            }
+          ]
+        },
+        {
+          "title": "Let them show you about the town",
+          "text": "Go back to [[{tie}]] and talk it over.",
+          "marker": "tie",
+          "brief": "This wolf, tied to you (they offered to show you about the town), has come back to talk it over.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{tie}",
+              "line": "Let them show you about the town",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie-show_around-mentor",
+      "title": "A tie: the town",
+      "source": "tie",
+      "steps": [
+        {
+          "title": "You arrive",
+          "text": "You have come to a new town, and another wolf is tied to you.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Arrived"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{tie}]]",
+          "text": "Share a scene with the wolf you're tied to.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "A scene together",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Two ways round the town",
+          "text": "One of you asks [[{keeper}]] about the town; the other looks over the market. Neither can do both.",
+          "marker": "square",
+          "distinct": true,
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{keeper}",
+              "line": "Ask [[{keeper}]] about the town",
+              "suits": "talker"
+            },
+            {
+              "kind": "place",
+              "target": "{square}",
+              "line": "Look over the market",
+              "suits": "nose"
+            }
+          ]
+        },
+        {
+          "title": "Let them show you about the town",
+          "text": "Share another scene and talk it over.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 2,
+              "line": "Another scene together",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trouble-debt",
+      "title": "[[{resident}]]'s shop in debt",
+      "source": "trouble",
+      "steps": [
+        {
+          "title": "You heard of it",
+          "text": "The shop owes the town; it may close.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Heard of the trouble"
+            }
+          ]
+        },
+        {
+          "title": "Think what would help",
+          "text": "Look at what [[{resident}]] needs, and who could help; the menu beside them, or beside whoever could help, shows what you can do.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "See it through"
+            }
+          ]
+        },
+        {
+          "title": "It is mended",
+          "text": "Their life is changed for it.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Their trouble solved"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trouble-short",
+      "title": "[[{resident}]]'s household",
+      "source": "trouble",
+      "steps": [
+        {
+          "title": "You heard of it",
+          "text": "The household is short of food money.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Heard of the trouble"
+            }
+          ]
+        },
+        {
+          "title": "Think what would help",
+          "text": "Look at what [[{resident}]] needs, and who could help; the menu beside them, or beside whoever could help, shows what you can do.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "See it through"
+            }
+          ]
+        },
+        {
+          "title": "It is mended",
+          "text": "Their life is changed for it.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Their trouble solved"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trouble-child",
+      "title": "[[{resident}]]'s child",
+      "source": "trouble",
+      "steps": [
+        {
+          "title": "You heard of it",
+          "text": "Their child has no trade.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Heard of the trouble"
+            }
+          ]
+        },
+        {
+          "title": "Think what would help",
+          "text": "Look at what [[{resident}]] needs, and who could help; the menu beside them, or beside whoever could help, shows what you can do.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "See it through"
+            }
+          ]
+        },
+        {
+          "title": "It is mended",
+          "text": "Their life is changed for it.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Their trouble solved"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trouble-work",
+      "title": "[[{resident}]] out of work",
+      "source": "trouble",
+      "steps": [
+        {
+          "title": "You heard of it",
+          "text": "They have no steady work.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Heard of the trouble"
+            }
+          ]
+        },
+        {
+          "title": "Think what would help",
+          "text": "Look at what [[{resident}]] needs, and who could help; the menu beside them, or beside whoever could help, shows what you can do.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "See it through"
+            }
+          ]
+        },
+        {
+          "title": "It is mended",
+          "text": "Their life is changed for it.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Their trouble solved"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trouble-feud",
+      "title": "[[{resident}]]'s feud",
+      "source": "trouble",
+      "steps": [
+        {
+          "title": "You heard of it",
+          "text": "They and a neighbour can't stand each other.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Heard of the trouble"
+            }
+          ]
+        },
+        {
+          "title": "Think what would help",
+          "text": "Look at what [[{resident}]] needs, and who could help; the menu beside them, or beside whoever could help, shows what you can do.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "See it through"
+            }
+          ]
+        },
+        {
+          "title": "It is mended",
+          "text": "Their life is changed for it.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Their trouble solved"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chain",
+      "title": "More work for [[{poster}]]",
+      "source": "contract",
+      "steps": [
+        {
+          "title": "A job well done",
+          "text": "[[{poster}]] was pleased with your work.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "The first job"
+            }
+          ]
+        },
+        {
+          "title": "The next job",
+          "text": "[[{poster}]] has posted more work for you: take it on and see it done.",
+          "marker": "poster",
+          "objectives": [
+            {
+              "kind": "contract",
+              "to": "{poster}",
+              "line": "Finish [[{poster}]]'s next job"
+            }
+          ]
+        },
+        {
+          "title": "Back to [[{poster}]]",
+          "text": "Tell them it's done.",
+          "marker": "poster",
+          "brief": "This wolf has done two jobs for you now, well; you trust them.",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{poster}",
+              "line": "Speak with [[{poster}]]",
+              "suits": "talker"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "the-debt",
+      "title": "The debt",
+      "source": "dm",
+      "steps": [
+        {
+          "title": "Word reaches you",
+          "text": "Someone in town needs help with a debt.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Word reached you"
+            }
+          ]
+        },
+        {
+          "title": "Find [[{resident}]]",
+          "text": "Ask them what is owed, and to whom.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{resident}",
+              "line": "Speak with [[{resident}]]",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Go to the place",
+          "text": "See the place for yourself.",
+          "marker": "place",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{place}",
+              "line": "Go there"
+            }
+          ]
+        },
+        {
+          "title": "Back to [[{resident}]]",
+          "text": "Tell them what you found.",
+          "marker": "resident",
+          "objectives": [
+            {
+              "kind": "talk",
+              "target": "{resident}",
+              "line": "Speak with [[{resident}]] again",
+              "suits": "talker"
+            }
+          ]
+        },
+        {
+          "title": "Settled",
+          "text": "The Dungeon Master judges how it ends.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Settled"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a-gathering",
+      "title": "A gathering",
+      "source": "dm",
+      "steps": [
+        {
+          "title": "An invitation",
+          "text": "You are asked to a gathering.",
+          "objectives": [
+            {
+              "kind": "told",
+              "line": "Invited"
+            }
+          ]
+        },
+        {
+          "title": "Go to the place",
+          "text": "Be there.",
+          "marker": "place",
+          "objectives": [
+            {
+              "kind": "place",
+              "target": "{place}",
+              "line": "Go there"
+            }
+          ]
+        },
+        {
+          "title": "Meet the others",
+          "text": "Share a scene there with others in this story.",
+          "objectives": [
+            {
+              "kind": "scene",
+              "count": 1,
+              "cell": "{place}",
+              "line": "A scene there"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

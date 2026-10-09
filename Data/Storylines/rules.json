@@ -1,0 +1,35 @@
+{
+  "format": "ratw-storyline-rules",
+  "about": "Storylines and storytellers (Docs/Design/58-player-storytellers.md): every placeholder in one place. Limits: personal storylines a wolf follows at once, tales a wolf takes part in, running tales a storyteller, participants a tale, a tale's cast; steps a personal storyline and a tale may have; a tale idle this many real days pauses; how often (s) players with a place objective are checked; narration's rate and length; a cast name's length; visitors (at once, minutes, reach); dice (most dice, most bonus); the social level to apply and the days without an upheld report; how long storytellers' text is kept (days); how long a credits screen stays open to stars (days) and the stars each may give there.",
+  "personalAtOnce": 3,
+  "talesAtOnce": 3,
+  "runningTales": 2,
+  "participants": 12,
+  "cast": 6,
+  "personalSteps": [
+    3,
+    7
+  ],
+  "taleSteps": [
+    1,
+    10
+  ],
+  "idleDays": 30,
+  "placeEvery": 2,
+  "narrateEvery": 3,
+  "narrateLetters": 1000,
+  "castName": 40,
+  "visitorsAtOnce": 2,
+  "visitorMinutes": [
+    10,
+    60
+  ],
+  "visitorReach": 6,
+  "diceMost": 10,
+  "diceBonus": 20,
+  "applyLevel": 5,
+  "reportDays": 30,
+  "keepTextDays": 30,
+  "creditsDays": 3,
+  "creditsStars": 3
+}

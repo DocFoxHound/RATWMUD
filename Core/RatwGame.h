@@ -37,6 +37,7 @@
 #include "RatwChronicle.h"
 #include "RatwTroubles.h"
 #include "RatwProjects.h"
+#include "RatwStorylines.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
 #include "RatwWorld.h"
@@ -920,6 +921,24 @@ class Game
     Result completeProject(const std::string& id);
     Result removeProject(const std::string& id);
     const projects::Ledger& projects() const { return projects_; }
+    // Storylines (doc 58): one begun from a template for a character (and others in it: a mentor's tie), by a source; the
+    // book, for tests and the DM.
+    Result giveStoryline(const std::string& character, const std::string& templateId, const json::Value& cast, const std::string& source,
+                         const std::string& sourceRef, const std::vector<std::string>& also = {});
+    storylines::Book& storylineBook() { return storylines_; }
+    bool approvedStoryteller(const std::string& account) const;
+    // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
+    static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);
+    void decideStorytellerFor(const std::string& account, bool approve) { decideStoryteller(account, approve, "test", {}); }   // (Tests.)
+    std::string accountOf(const std::string& characterId) const { return accountKey(characterId); }
+    void revokeStorytellerFor(const std::string& account) { revokeStoryteller(account, "test", {}); }
+    // A world story's milestone credited (doc 58, 7; the DM's milestone.credit): payload {story, milestone, weight,
+    // people: [{id, lines}], main}.
+    Result creditMilestone(const json::Value& payload);
+    // The Dungeon Master's list of story visitors (live.story_visitors; tests set it).
+    void setStoryVisitors(const json::Value& list);
+    // A storyline step's line for a resident's Mind while it is current (doc 58, 9): "" if none.
+    std::string storylineBrief(const std::string& npc, const std::string& wolf) const;
     void hearTroubleFor(const std::string& wolf, const std::string& npc)   // (Tests: as if the resident had told them.)
     {
         if (const auto& t = troubleOf(npc))
@@ -1139,6 +1158,94 @@ class Game
     const projects::Project* projectAt(const std::string& viewer) const;
     void projectsSave(json::Value& root) const;
     void projectsLoad(const json::Value& saved);
+    // Storylines and the journal (doc 58, 1-3; RatwGameStorylines.cpp): the book, the place probe, the journal views by
+    // the book's version, and the contracts already seen done (for a chain's next job).
+    storylines::Book storylines_;
+    double storylineProbe_ = 0;
+    std::map<std::string, std::pair<std::uint64_t, json::Value>> journalViews_;
+    std::set<std::string> chainsSeen_;
+    storylines::Marker markerFor(const std::string& role, const std::string& id);
+    std::string storyWords(const std::string& viewer, std::string text) const;
+    void storylineToast(Connection* c, const std::string& text);
+    void storylineEvent(const storylines::Event& e);
+    void storylineProgress(const std::vector<storylines::Progress>& progress);
+    void finishStoryline(const storylines::Storyline& s);
+    void storylineTick(double dt);
+    json::Value journalView(const std::string& viewer);
+    json::Value trackedView(const std::string& viewer) const;
+    bool storylineCommand(Connection* c, const json::Value& j, Result& result);
+    void storylinesFromEvent(const WorldEvent& e);
+    // Where personal storylines come from (doc 58, 3): a tie made, a trouble heard, work well done for a resident.
+    void tieStoryline(const newcomers::Tie& t);
+    // Storytellers (doc 58, 4-7; RatwGameStoryteller.cpp): standing by account; the kept log (text 30 days); visitors
+    // from the DM's list and those on stage; credits screens open to stars.
+    struct StorytellerStanding
+    {
+        std::string state, note, character, decidedBy, reason;   // state: applied, approved, refused, revoked.
+        double appliedAt = 0, decidedAt = -1;
+    };
+    std::map<std::string, StorytellerStanding> storytellers_;
+    struct StoryLogEntry
+    {
+        std::string id, account, character, storyline, kind, target, text, detail;
+        double at = 0;
+    };
+    std::vector<StoryLogEntry> storyLog_;
+    std::uint64_t storyLogNext_ = 1;
+    std::map<std::string, double> narratedAt_;
+    struct StoryVisitorDef
+    {
+        std::string id, name, description;
+        Appearance appearance;
+        bool enabled = true;
+    };
+    std::vector<StoryVisitorDef> storyVisitorDefs_;
+    struct StoryVisitorOn
+    {
+        std::string visitor, tale, teller;
+        double until = 0;
+    };
+    std::map<std::string, StoryVisitorOn> storyVisitorsOn_;
+    struct Credits
+    {
+        std::string id, kind, title, story, storyline, teller;
+        std::vector<std::string> people;
+        std::map<std::string, std::vector<std::string>> lines;
+        std::map<std::string, std::set<std::string>> starred;   // Giver -> whom it starred.
+        std::set<std::string> delivered;                         // Shown to (not saved: shown again after a restart).
+        double made = 0, until = 0;
+    };
+    std::map<std::string, Credits> credits_;
+    double storytellerAccumulator_ = 0;
+    bool storyVisitorsLoaded_ = false;
+    void loadStoryVisitors();
+    std::string whyNotApply(const std::string& character) const;
+    void storyLogAdd(const std::string& character, const std::string& storyline, const std::string& kind, const std::string& target,
+                     const std::string& text, const std::string& detail);
+    void decideStoryteller(const std::string& account, bool approve, const std::string& by, const std::string& reason);
+    void revokeStoryteller(const std::string& account, const std::string& by, const std::string& reason);
+    bool castNameTaken(const std::string& name) const;
+    bool inTaleScope(const std::string& teller, const std::string& who, const storylines::Storyline& tale) const;
+    storylines::Storyline* taleFor(const std::string& character, const std::string& id, bool mine);
+    void deliverStory(const storylines::Storyline& tale, const std::string& teller, const std::string& kind, const std::string& name,
+                      const std::string& text);
+    Result saveTale(const std::string& teller, const json::Value& j);
+    bool storytellerCommand(Connection* c, const json::Value& j, Result& result);
+    void endTale(storylines::Storyline& tale, const std::string& how);
+    Result storyVisitor(const std::string& teller, storylines::Storyline& tale, const json::Value& j);
+    Result storyPrize(const std::string& teller, storylines::Storyline& tale, const json::Value& j);
+    Result storyCall(const std::string& teller, storylines::Storyline& tale, const json::Value& j);
+    void tendStorytellers(double dt);
+    void sendCredits(const std::string& viewer, const Credits& cr);
+    Result starCredit(const std::string& giver, const std::string& creditsId, const std::string& to);
+    json::Value storytellerSelf(const std::string& viewer);
+    void storytellersSave(json::Value& root) const;
+    void storytellersLoad(const json::Value& saved);
+    void endStorylinesOf(const std::string& source, const std::string& ref, const std::string& state, const std::string& who = {});
+    void offerChain(const Contract& done);
+    bool chainsSeeded_ = false;
+    void storylinesSave(json::Value& root) const;
+    void storylinesLoad(const json::Value& saved);
     // Tavern games (doc 54, 5; RatwGameTables.cpp; the rules in RatwTavernGames.cpp): at a table (`T`) in a common room
     // or an opened venue, within 1.5 tiles. One starts a game, others join or a resident is asked from the room (awake,
     // not at work, 14 or more, 16 for stakes); the game begins with 2 or more. Liar's Bones may be played for 0 to 5p

@@ -122,6 +122,7 @@ export class Hud {
     private place: PlacePanel;
     private lodging!: LodgingPanel;
     private stall!: StallPanel;
+    private tellerButton!: HTMLElement;
     private project!: ProjectPanel;
     private table!: TablePanel;
     private festival!: FestivalPanel;
@@ -158,10 +159,13 @@ export class Hud {
         button('CHARACTER', 'top', menu, () => act('character'));
         button('CHAPTER', 'top', menu, () => act('chapter_window'));
         button('INVENTORY', 'top', menu, () => act('inventory'));
+        button('JOURNAL', 'top', menu, () => state.send({type: 'journal'})).title = 'Your stories under way, and what you have found out (docs 54, 58)';
         // Friends (doc 50): the count of requests waiting, when there are any.
         this.friendsButton = button('FRIENDS', 'top', menu, () => act('people'));
         button('SETTINGS', 'top', menu, () => act('settings'));
         // Only for a player marked Dungeon Master (the Dungeon Master app): the Dev Console, also the ` key.
+        this.tellerButton = button('STORYTELLER', 'top', menu, () => act('storyteller'));   // (Approved storytellers: doc 58.)
+        show(this.tellerButton, false);
         this.devButton = button('DEV CONSOLE', 'top dev', menu, () => act('dev_console'));
         this.devButton.title = 'The Dev Console (`): commands for Dungeon Masters';
         show(this.devButton, false);
@@ -364,6 +368,7 @@ export class Hud {
             this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
         }
         show(this.devButton, s.isDungeonMaster());
+        show(this.tellerButton, str(obj(obj(s.snapshot, 'self'), 'storyteller'), 'state') === 'approved');
         const waiting = s.friendRequestsIn.length + s.circleInvites.length;   // (Friend requests and circle invitations.)
         const howlIn = num(obj(obj(s.snapshot, 'self'), 'social'), 'howlIn');
         this.howlButton.disabled = howlIn > 0;

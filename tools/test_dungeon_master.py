@@ -379,6 +379,11 @@ class DungeonMasterTests(Fixture):
         self.dm.live_action(master, 'prod', 'project.post', 'greyfen', {'kind': 'watchpost', 'title': 'The north watch'})
         self.dm.live_action(master, 'prod', 'project.cancel', 'proj-1')
         self.dm.live_action(master, 'prod', 'npc.protect', 'npc_a')        # (Doc 57, 6: a resident players can't ruin.)
+        self.dm.live_action(master, 'prod', 'storyline.give', 'player-ada', {'template': 'the-debt', 'cast': {'resident': 'npc_a'}})
+        for bad in (('storyline.give', 'player-ada', {'template': 'nope'}), ('storyline.tick', 'story-1', {'step': 'x', 'objective': 0}),
+                    ('storyline.give', 'player-ada', {'template': 'the-debt', 'cast': {'resident': 'a b'}})):
+            with self.assertRaises(D.DMError, msg=repr(bad)):
+                self.dm.live_action(master, 'prod', *bad)
         for bad in (('project.post', 'greyfen', {'kind': 'castle'}), ('project.post', 'greyfen', {'kind': 'cover', 'cell': town, 'x': 'a'}),
                     ('character.kill', 'player-ada', {}), ('project.remove', '', {})):
             with self.assertRaises(D.DMError, msg=repr(bad)):
@@ -387,8 +392,43 @@ class DungeonMasterTests(Fixture):
             self.dm.live_action(viewer, 'prod', 'project.remove', 'proj-1')
         with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
             queued = owner.execute('SELECT kind, target_id, payload FROM dm.actions ORDER BY id').fetchall()
-        self.assertEqual([q[:2] for q in queued[-3:]], [('project.post', 'greyfen'), ('project.cancel', 'proj-1'), ('npc.protect', 'npc_a')])
-        self.assertEqual(queued[-3][2], {'kind': 'watchpost', 'title': 'The north watch'})
+        self.assertEqual([q[:2] for q in queued[-4:]], [('project.post', 'greyfen'), ('project.cancel', 'proj-1'), ('npc.protect', 'npc_a'),
+                                                        ('storyline.give', 'player-ada')])
+        self.assertEqual(queued[-4][2], {'kind': 'watchpost', 'title': 'The north watch'})
+
+        # Doc 58: storytellers, their tales and kept words; a decision; a visitor saved; a milestone credited from the ledger.
+        with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+            game.execute('INSERT INTO game.storytellers (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'acct-ada', 0, json.dumps({'account': 'acct-ada', 'state': 'applied', 'note': 'Bells.', 'character': 'player-ada'})))
+            tale = {'id': 'tale-1', 'kind': 'tale', 'title': 'The Drowned Bell', 'state': 'running', 'author': 'player-ada',
+                    'authorAccount': 'acct-ada', 'participants': {'player-ada': {'joined': 1, 'left': -1}},
+                    'steps': [{'title': 'The pier', 'objectives': [{'kind': 'told', 'line': 'At the pier', 'doneBy': 'player-ada', 'byHand': True}]}]}
+            game.execute('INSERT INTO game.storylines (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'tale-1', 0, json.dumps(tale)))
+            game.execute('INSERT INTO game.storyteller_log (world_id, key, position, data) VALUES (%s, %s, %s, %s)',
+                         ('greyfen', 'slog-1', 0, json.dumps({'id': 'slog-1', 'account': 'acct-ada', 'character': 'player-ada',
+                                                               'storyline': 'tale-1', 'kind': 'narrate', 'text': 'Fog on the water.', 'at': 5})))
+            game.execute('INSERT INTO game.events (world_id, game_time, game_day, kind, actor, target, cell, detail) VALUES '
+                         "('greyfen', 0, 13, 'storyline objective', 'player-ada', 'tale-1', %s, 'At the pier')", (town,))
+        tellers = self.dm.storytellers('prod')
+        self.assertTrue(tellers['ready'])
+        self.assertEqual(tellers['standing'][0]['note'], 'Bells.')
+        self.assertEqual(tellers['tales'][0]['steps'][0]['objectives'][0]['byHand'], True)
+        self.assertEqual(tellers['log'][0]['text'], 'Fog on the water.')
+        self.assertIn('the-debt', [t['id'] for t in tellers['templates']])
+        self.dm.live_action(master, 'prod', 'storyteller.decide', 'acct-ada', {'approve': True, 'reason': 'Welcome.'})
+        with self.assertRaises(D.DMError):
+            self.dm.live_action(master, 'prod', 'storyteller.decide', 'acct-ada', {'approve': 'yes'})
+        with self.assertRaises(D.DMError):
+            self.dm.live_action(viewer, 'prod', 'storyteller.revoke', 'acct-ada', {})
+        self.dm.save_story_visitor(master, 'prod', {'id': 'messenger', 'name': 'A cloaked messenger', 'description': 'Grey cloak.', 'enabled': True})
+        self.assertEqual(self.dm.storytellers('prod')['visitors'][0]['approvedBy'], 'dm-master')
+        with self.assertRaises(D.DMError):
+            self.dm.save_story_visitor(master, 'prod', {'id': 'Bad Id', 'name': 'x'})
+        credited = self.dm.credit_milestone(master, 'prod', 'The siege', 'The gate holds', 'great', {'kind': 'storyline', 'storyline': 'tale-1'})
+        self.assertEqual(credited['people'], [{'id': 'player-ada', 'lines': ['At the pier']}], 'lines from the ledger only')
+        with self.assertRaises(D.DMError):
+            self.dm.credit_milestone(master, 'prod', 'The siege', '', 'great', {'kind': 'storyline', 'storyline': 'tale-1'})
 
     def test_the_servers_health(self):
         viewer = self.sign_in('dm-viewer')

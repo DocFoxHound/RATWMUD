@@ -32,6 +32,17 @@ export interface PlayerReport {
     status: 'open' | 'upheld' | 'dismissed'; decidedBy: string; decidedAt: string | null; outcome: string; silenceHours: number;
     earlier: {id: string; status: string; category: string; outcome: string}[]; blockedBy: number;
 }
+/** Storytellers (doc 58): each account's standing, tales with their steps, the kept log, the visitors' list, templates. */
+export interface StorytellerStanding { account: string; state: string; note: string; character: string; name: string; decidedBy: string; reason: string; appliedAt: number }
+export interface TaleRow {
+    id: string; title: string; premise: string; state: string; author: string; authorName: string; account: string;
+    participants: {id: string; name: string; left: boolean}[]; steps: {title: string; objectives: {line: string; kind: string; by: string; byHand: boolean}[]}[];
+}
+export interface StoryLogRow { id: string; account: string; character: string; name: string; storyline: string; kind: string; target: string; text: string; detail: string; at: number }
+export interface Storytellers {
+    target: Target; ready: boolean; standing: StorytellerStanding[]; tales: TaleRow[]; log: StoryLogRow[];
+    visitors: {id: string; name: string; description: string; enabled: boolean; approvedBy: string}[]; templates: {id: string; title: string; source: string}[];
+}
 export interface Reports { target: Target; ready: boolean; reports: PlayerReport[]; actions: (Action & {payload?: unknown})[] }
 export interface AccountStanding {
     name: string; socialLevel: number | null; hold: boolean; characters: string[];
@@ -315,6 +326,11 @@ export const dmApi = {
         call<{scenario: string; queued: {id: number; steer: string}[]}>('api/economy/scenario', {target, ...start}),
     artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
     reports: (target: Target) => call<Reports>(`api/reports?target=${target}`),
+    storytellers: (target: Target) => call<Storytellers>(`api/storytellers?target=${target}`),
+    saveStoryVisitor: (target: Target, visitor: {id: string; name: string; description: string; like: string; enabled: boolean}) =>
+        call<{id: number}>('api/storytellers/visitor', {target, visitor}),
+    creditMilestone: (target: Target, story: string, milestone: string, weight: string, rule: Record<string, unknown>, main: string[] = []) =>
+        call<{id: number; people: {id: string; lines: string[]}[]}>('api/milestone', {target, story, milestone, weight, rule, main}),
     /** Upholds (with a note, a warning or a silence) or dismisses a player's report (doc 50). */
     decideReport: (target: Target, id: string, decision: 'uphold' | 'dismiss', outcome: string, hours: number, reason: string) =>
         call<{id: number}>('api/reports/decide', {target, id, decision, outcome, hours, reason}),

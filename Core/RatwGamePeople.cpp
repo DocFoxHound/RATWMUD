@@ -109,9 +109,9 @@ bool Game::profileCommand(Connection* c, const json::Value& j, Result& result)
     }
     else if (verb == "status")
     {
-        // (Storyteller: only those a Dungeon Master has approved, doc 58; until doc 58, no one.)
+        // (Storyteller: only those a Dungeon Master has approved, doc 58.)
         const auto status = j.string("value");
-        if (people::validStatus(status, false, why))
+        if (people::validStatus(status, approvedStoryteller(accountKey(c)), why))
         {
             profile.status = status;
             result = {true, "Status: " + status + ".", {}};
@@ -322,6 +322,8 @@ json::Value Game::peopleSave() const
     fameSave(root);                                 // Deeds (doc 56).
     troublesSave(root);                             // Troubles heard (doc 57).
     projectsSave(root);                             // Town projects (doc 57).
+    storylinesSave(root);                           // Storylines and tales (doc 58).
+    storytellersSave(root);                         // Storytellers, their kept log, credits (doc 58).
     return root;
 }
 
@@ -357,5 +359,7 @@ void Game::peopleLoad(const json::Value& saved)
     fameLoad(saved);
     troublesLoad(saved);
     projectsLoad(saved);
+    storylinesLoad(saved);
+    storytellersLoad(saved);
 }
 } // namespace ratw::game
