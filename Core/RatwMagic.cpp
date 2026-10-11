@@ -75,7 +75,7 @@ constexpr Rule Rules[] = {
     {"wall_of_fire", "shape", 10, 10, 2.5, 8, 3, 10},
     // Earth, Gifted.
     {"loosen_ground", "tile", 5, 0, 0, 6, 0, 0},
-    {"firm_footing", "ally", 1, 0, 0, 6, 0, 0},
+    {"firm_footing", "ally", 2, 0, 0, 6, 0, 0},       // (Two tiles: a side of three, the user's yardstick.)
     {"feel_footfalls", "self", 0, 6, 0, 4, 0, 0},
     // Earth, Quickened.
     {"upheaval", "tile", 6, 0, 2, 12, 0, 10},
@@ -171,9 +171,9 @@ constexpr Fx Effects[] = {
     {"dehydrated", "Dehydrated", "After moving much water: no stamina back a turn."},
     {"hoarse", "Hoarse", "After a hum: can't whisper along a thread."},
     {"breathless", "Breathless", "Its breath stolen: loses stamina, and can't use a Gift that needs breath."},
-    {"splashed", "Splashed", "Water in its eyes: its next blow is 20% less likely."},
-    {"forewarned", "Forewarned", "Knows what's coming: the next blow at it is 25% less likely."},
-    {"dusted", "Grit in its eyes", "Sees half as far, and 10% worse at hitting, for the fight."},
+    {"splashed", "Splashed", "Water in its eyes: its next blow is less likely (18% from Splash Eyes, 13% from a jet)."},
+    {"forewarned", "Forewarned", "Knows what's coming: the next blow at it is 30% less likely."},
+    {"dusted", "Grit in its eyes", "Sees half as far, and 10% worse at hitting, for 3 turns."},
     {"soaked", "Soaked", "Drenched: can't catch fire, but can be frozen anywhere."},
     {"frozen", "Frozen", "Frozen in place: no move on its next turn."},
     {"pinned", "Held fast", "Frozen fast this turn: it can't move or blink."},
@@ -253,7 +253,11 @@ TranceDepth tranceDepth(const std::string& family)
 // Slip and Interpose share one rest, in the wolf's own turns (doc 45).
 constexpr int BlinkRest = 8;
 // Flare's knock to a foe's bar (doc 45).
-constexpr double FlareKnock = 20;
+constexpr double FlareKnock = 18;
+// The Gifted group help, tuned to three a side (the user, 2026-10-10: a Gifted wolf's side of three wins about 60%):
+// Steady Beat's quicker bars; Firm Footing's dodge (on guard, more); Splash Eyes' miss; Air Blast's grit, in turns.
+constexpr double SteadyBeat = .18, FirmDodge = .08, FirmGuardDodge = .16, SplashEyesMiss = .18;
+constexpr int AirBlastTurns = 4;
 // Effects that last only until the wolf's next turn has begun: kept for 2 of its turn starts.
 constexpr int NextTurn = 2;
 // Rounds of the fight (each turn taken by anyone) for "N turns" on the ground, as smoke counts them.
@@ -500,7 +504,7 @@ double World::meterRate(const Battle& b, const BattleFighter& f, double haste) c
     for (const auto& o : b.fighters)
         if (o.side == f.side && o.id != f.id && standing(o) && o.magic.channel == "steady_beat" && apart(o.x, o.y, f.x, f.y) <= 3)
         {
-            rate *= 1.3;                            // Steady Beat (doc 43): the rest of the side's bars fill faster (doc 45).
+            rate *= 1 + SteadyBeat;                 // Steady Beat (doc 43): the rest of the side's bars fill faster (doc 45).
             break;
         }
     return rate;
@@ -572,9 +576,10 @@ double World::magicStrikeChance(const BattleFighter& f, const BattleFighter& t, 
     const auto& d = t.magic;
     if (a.has("seen_opening"))
         return 1;                                   // Seen Opening: it can't miss.
-    c -= (a.has("splashed") ? .13 : 0) + (a.has("dusted") ? .1 : 0) + (a.has("dread") ? .15 : 0) + (a.has("dizzy") ? .15 : 0) + (a.has("blinked") ? .1 : 0) +
+    const bool eyes = a.by.count("splashed") && a.by.at("splashed") == "eyes";   // (Gifted Splash Eyes, not a jet's.)
+    c -= (a.has("splashed") ? (eyes ? SplashEyesMiss : .13) : 0) + (a.has("dusted") ? .1 : 0) + (a.has("dread") ? .15 : 0) + (a.has("dizzy") ? .15 : 0) + (a.has("blinked") ? .1 : 0) +
          (a.has("nausea") ? .1 : 0) + (a.has("double_vision") ? .1 : 0) + (a.has("disoriented") ? .15 : 0);
-    c += (d.has("dizzy") ? .15 : 0) - (d.has("forewarned") ? .3 : 0) - (d.has("firm") ? (t.guarding ? .16 : .08) : 0);
+    c += (d.has("dizzy") ? .15 : 0) - (d.has("forewarned") ? .3 : 0) - (d.has("firm") ? (t.guarding ? FirmGuardDodge : FirmDodge) : 0);
     if (d.has("doomed"))
         return std::max(.95, std::clamp(c + .15, .2, .95));   // Doom Mark: it can't dodge.
     return std::clamp(c, .2, .95);
@@ -1498,6 +1503,7 @@ Result World::useGiftNow(const std::string& id, const std::string& ability, cons
     else if (ability == "splash_eyes")
     {
         t->magic.fx["splashed"] = NextTurn;
+        t->magic.by["splashed"] = "eyes";
         line("gift", t->id, "Water in " + name(t) + "'s eyes.", {tileOf(t)});
     }
     else if (ability == "wash_out")
@@ -1541,6 +1547,7 @@ Result World::useGiftNow(const std::string& id, const std::string& ability, cons
             {
                 first->burning = 0;
                 first->magic.fx["splashed"] = NextTurn;   // (Water in the eyes, doc 45: its next blow less likely.)
+                first->magic.by.erase("splashed");
                 if (!first->magic.has("warmed"))
                     first->magic.fx["soaked"] = 4;
             }
@@ -1586,7 +1593,7 @@ Result World::useGiftNow(const std::string& id, const std::string& ability, cons
     }
     else if (ability == "air_blast")
     {
-        t->magic.fx["dusted"] = 3;
+        t->magic.fx["dusted"] = AirBlastTurns;
         line("gift", t->id, e->name + " blasts grit into " + name(t) + "'s eyes.", {tileOf(t)});
     }
     else if (ability == "whirlwind")

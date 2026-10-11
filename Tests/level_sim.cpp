@@ -7,7 +7,7 @@
 //
 // Suites: arms (the user's rule, 2026-10-10: an iron sword, or the leather kit, makes a new wolf a grown one's match), levels (the default: ungifted, doc 44; a level stands for the fighting skill it once gave), bands (doc 49:
 // wolves at fighting skill bands, new, seasoned and veteran, from Data/Progression/skills.json), core (doc 45's yardsticks, bare and armed), gifted2 and quick2 (each
-// family alone and in a pair), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
+// family alone and in a pair), gifted3 (three new wolves a side, bare, one Gifted: the user's 60%; SIM_ONLY=earth,seer), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
 // (what a head start in health or the first blow is worth), trance (a Quickened wolf ten levels over one to five plain
 // ones: doc 45's Trance targets), parties, ladder and crowd (one Quickened against one, two or three), gifts (the first
 // broad sweep), naive, and the parts of gifts on their own (quickened, gifted, teams, gear, gaps, adjacent); tiers
@@ -548,7 +548,7 @@ bool giftedHelp(Turn& t, bool action = false)
     if (g == "earth" && !action)
     {
         for (const auto* a : t.allies)
-            if (apart(*t.me, *a) <= 1 && t.near(*a, 1, true) >= 1 && !a->magic.has("firm") && t.ok("firm_footing") &&
+            if (apart(*t.me, *a) <= 2 && t.near(*a, 1, true) >= 1 && !a->magic.has("firm") && t.ok("firm_footing") &&
                 t.use("firm_footing", a == t.me ? t.id : a->id))
                 return true;
     }
@@ -1894,6 +1894,29 @@ int main(int argc, char** argv)
             vs({armed(gifted(f, 10))}, {armed(Wolf{10})}, n, gap);
             vs({Wolf{10}, gifted(f, 10)}, {Wolf{10}, Wolf{10}}, n, gap);
             vs({armed(Wolf{10}), armed(gifted(f, 10))}, {armed(Wolf{10}), armed(Wolf{10})}, n, gap);
+        }
+        return 0;
+    }
+    if (suite == "gifted3")
+    {
+        // The user's group-buff yardstick (2026-10-10): three new wolves a side, bare and unarmoured, one side with a
+        // Gifted wolf among them; it should win about 60%. Each row over gaps of 2, 4, 6 and 8 tiles.
+        const auto* fs = practice::skill("fighting");
+        const double start = fs ? fs->start : 50;
+        Wolf P;
+        P.skill = start;
+        std::printf("Three a side, new wolves (skill %.0f), bare; %d fights a gap (2, 4, 6, 8)%s. Target: about 60%%.\n", start, n,
+                    tactics ? ", tactics" : "");
+        const std::string only = std::getenv("SIM_ONLY") ? "," + std::string(std::getenv("SIM_ONLY")) + "," : "";   // (Some families.)
+        if (only.empty())
+            spread({P, P, P}, {P, P, P}, n, "plain three");
+        for (const auto& f : Families)
+        {
+            if (!only.empty() && only.find("," + f + ",") == std::string::npos)
+                continue;
+            Wolf g = gifted(f);
+            g.skill = start;
+            spread({P, P, g}, {P, P, P}, n, "G-" + f + " + two plain");
         }
         return 0;
     }

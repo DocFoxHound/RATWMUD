@@ -104,7 +104,7 @@ Mana costs below are against today's pool: about 44 at WIS 30. Range is in tiles
 | Forge Heat | work | 6 | Keeps a forge, kiln or oven at working heat without fuel. Quality bonus to smithing, firing and cooking. |
 | Kindle | work | 2 | Lights a fire on damp wood or in the rain. |
 | Cauterize | instant, touch | 10 | Sears an ally's (or one's own) wound shut: the Bleeding stops, and it can't bleed again for 3 turns (doc 45). |
-| Flare | instant, 2 tiles | 8 | A flash in a foe's face knocks their bar back 20% (doc 45; no health cost). Two tiles, a blade's reach (doc 47: it had been adjacent). |
+| Flare | instant, 2 tiles | 8 | A flash in a foe's face knocks their bar back 18% (doc 45: 20; no health cost). Two tiles, a blade's reach (doc 47: it had been adjacent). |
 | Smother to Smoke | instant | 8 | Turns a fire or brush into smoke that blocks sight across 3 tiles for 2 turns. |
 | Warm Through | instant, touch | 6 | Removes an ally's cold and soaked penalties for the rest of the fight. |
 | Heat Sense | channelled | 4/turn | Senses body heat within 6 tiles and shows warm wolves, hidden or not. |
@@ -132,7 +132,7 @@ floor. *Cost:* stamina and aching paws. *Limit:* one tile, shallow.
 | Clay Hand | work | 6 | Quality bonus to pottery and masonry. |
 | Stone Sense | work | 6 | Finds ore seams, flawed stone and weak walls. |
 | Loosen Ground | instant, range 5 | 8 | One tile turns soft: crossing it costs double stamina, with a chance to stumble and lose the rest of the move. |
-| Firm Footing | instant, touch | 6 | Packs another's tile: while they stay on it they can't be shoved, are 8% harder to hit, 16% on guard (doc 47: it was 10 and 20; a sword-fighter strikes from two tiles and keeps its tile longer). |
+| Firm Footing | instant, 2 tiles | 6 | Packs another's tile: while they stay on it they can't be shoved, are 8% harder to hit, 16% on guard (doc 47: it was 10 and 20; a sword-fighter strikes from two tiles and keeps its tile longer). Two tiles since doc 45's three-a-side pass (it was touch). |
 | Feel Footfalls | channelled | 5/turn | Shows every wolf moving within 6 tiles, sneakers included. A wolf standing still isn't felt. |
 
 **Quickened.** *Tell:* bracing paws, now through wraps, but still not on wood. *Cost:* heavy stamina and cracked pads
@@ -159,7 +159,7 @@ a quarter slower (doc 45). *Limit:* about a bucket at a time.
 | Dowse | work | 6 | Finds water under the ground. |
 | Douse | instant, range 3 | 5 | Puts out an ally's Burning, or a burning tile. |
 | Slick | instant, range 5 | 8 | Wets a tile. On paving or stone it becomes slippery, with a chance to slip and lose the rest of the move. |
-| Splash Eyes | instant, range 3 | 10 | A foe's next attack gets −13% to hit (doc 45). |
+| Splash Eyes | instant, range 3 | 10 | A foe's next attack gets −18% to hit (doc 45's three-a-side pass; was −13%, still a Quickened jet's). |
 | Wash Out | instant, touch | 6 | Washes an ally's scent off (masking, doc 41) and clears dust or smoke from their eyes. |
 | Mend | work, touch | 10 | Tends an ally's acute injury so it heals 1.5× faster. Once a day per injury. |
 
@@ -189,7 +189,7 @@ light things move.
 | Turn the Wind | channelled | 4/turn | Turns the local wind: the party's scent stays away from enemy noses, or the enemy's scent reaches the party's. |
 | Clear the Air | instant | 6 | Blows smoke or dust off a 3-tile area. |
 | Back Breeze | instant, touch | 6 | An ally's next move costs less stamina. |
-| Air Blast | instant, range 3 | 18 | Grit in a foe's eyes: half the sight and −10% to hit for 2 turns (doc 45; was the whole fight). |
+| Air Blast | instant, range 3 | 18 | Grit in a foe's eyes: half the sight and −10% to hit for 3 turns (doc 45's three-a-side pass; was 2, and before that the whole fight). |
 
 **Quickened.** *Tell:* a quick breath in and out. *Cost:* lightheadedness (stamina). *Overreach:* dizziness, or
 fainting and losing a turn.
@@ -216,7 +216,7 @@ for a while) and ringing ears. *Limit:* a voice's worth of sound.
 | Carry | work | 4 | A herder's or crier's voice is heard far away. |
 | Hush | channelled | 5/turn | Allies within 2 tiles make no noise (doc 40 hearing). |
 | Throw Voice | instant, range 8 | 6 | A noise from a chosen tile draws an NPC's attention and turns their facing. |
-| Steady Beat | channelled | 6/turn | While the caster stays still, the rest of the side within 3 tiles fill their bars 30% faster. Blows don't break it (doc 45). |
+| Steady Beat | channelled | 6/turn | While the caster stays still, the rest of the side within 3 tiles fill their bars 18% faster (doc 45's three-a-side pass; was 30%). Blows don't break it (doc 45). |
 | Whisper Thread | instant | 3 | Speaks to one ally without anyone else hearing. |
 
 **Quickened.** *Tell:* a barely audible hum. *Cost:* voice loss. *Overreach:* the wolf's own ears rupture, costing
@@ -272,7 +272,7 @@ afterwards (slower) and gets pressure headaches. *Limit:* one wolf or object, a 
 | Lighten | channelled, range 4 | 4/turn | An ally's armour and load count as lighter: further moves for less stamina. |
 | Burden | channelled, range 4 | 5/turn | A foe's weapon and armour count as heavier: each attack and move costs more stamina. |
 | Anchor | channelled, range 4 | 4/turn | An ally can't be shoved or knocked down. Unlike Earth's Firm Footing, it moves with the wolf. |
-| Lift Up | instant, range 5 | 22 | Lifts a Downed ally to their feet from a distance with 5 health, dazed for a turn. Once for each ally a fight (doc 45). |
+| Lift Up | instant, range 5 | 22 | Lifts a Downed ally to their feet from a distance with 11 health (doc 45's three-a-side pass; was 5), dazed for a turn. Once for each ally a fight (doc 45). |
 
 **Quickened.** *Tell:* a faint tap of the feet. *Cost:* the wolf feels heavy (slower) and gets pressure headaches.
 *Overreach:* a blackout, so the wolf loses its next turn.

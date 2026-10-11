@@ -398,3 +398,67 @@ At N = 10, 2v1 runs 48–100% (mean 80%) and 4v1 24–38% (mean 30%). A Blinker 
 Ward at its most; more depth only quickens the bar): the Blinker tops out about 20% at 5v1, since the simulator keeps
 its Blink Strikes for one on one (blinking into a crowd got it surrounded). The gear changes (doc 47) touched five
 Gifts; see doc 47 for those and the Gift yardsticks re-checked, armed now meaning the Professional kit.
+
+## Fourth pass: three a side (2026-10-10)
+
+### The user's ask
+
+> "Take a look at the Gifted wolf abilities (they're mostly buffs for groups) and balance them. We could probably just
+> use unarmed and unarmored wolves to do the testing. I want Gifted wolves abilities to provide a moderate buff in
+> fights, but not significant. I think something close to a 60% win ratio in fights with 3v3, where there is a single
+> team with a Gifted wolf."
+
+On doc 49's fight rules (b64f861: fighting skill and attributes by Data/Progression/fighting.json).
+
+### The yardstick
+
+`level_sim N gifted3`: three new wolves a side (fighting skill 50, every attribute 50, so WIS 50 and 60 mana), bare and
+unarmoured; side A has a Gifted wolf for its third. Each row over starting gaps of 2, 4, 6 and 8 tiles (doc 49's
+`spread`), 500 fights a gap (2,000 a row, about ±1.1). Run both ways: smart play, and `SIM_TACTICS=1` (players' pace,
+focus and stepping back). `SIM_ONLY=earth,gravity` runs some families. Plain three against plain three: 49%.
+
+### What changed
+
+| Family | Ability | Was | Now | Why |
+| --- | --- | --- | --- | --- |
+| Fire | Flare | bar back 20% | 18% | 59 / 64% (smart / tactics): a touch over |
+| Earth | Firm Footing | touch | 2 tiles (still 8% / 16% on guard) | in a three its friend is seldom beside it: 56 / 54%. A bigger dodge instead put an armed pair at 75% |
+| Water | Splash Eyes | −13% to the next blow | −18% (a Quickened jet's water stays −13%) | 56 / 58% |
+| Wind | Air Blast | grit for 2 turns | 3 turns | 57 / 57% |
+| Sound | Steady Beat | bars 30% faster | 18% | 70 / 67%: it speeds two friends in a three, one in a pair |
+| Gravity | Lift Up | stands with 5 health | 11 | 55 / 58%: lifted at 5, one bite downed it again. A bite is 12, so the step is steep: 10 gave 57%, 12 gave 62% |
+| Blinker, Seer | — | | | 63 / 56%, 61 / 60% already |
+
+The splash's size rides on the mark (`magic.by["splashed"] = "eyes"` from Splash Eyes; a jet clears it). The constants
+are together at the top of `Core/RatwMagic.cpp` (`SteadyBeat`, `FirmDodge`, `FirmGuardDodge`, `SplashEyesMiss`,
+`AirBlastTurns`, `FlareKnock`) and `battle::LiftedHealth`. Effect descriptions brought up to date on the way (Forewarn said
+25%, it is 30%; grit said "the fight").
+
+### Where it stands
+
+| Three a side, bare (plain 49%) | Fire | Earth | Water | Wind | Sound | Blinker | Gravity | Seer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Smart play | 59% | 62% | 60% | 59% | 64% | 63% | 57% | 61% |
+| Tactics | 62% | 62% | 61% | 60% | 59% | 56% | 61% | 60% |
+| Before this pass, smart / tactics | 59 / 65% | 56 / 54% | 56 / 58% | 57 / 57% | 70 / 67% | 63 / 56% | 55 / 58% | 61 / 60% |
+
+Doc 45's older yardsticks (`gifted2`: L10, 5 tiles, 1,000 fights; armed is iron + leather):
+
+| | Fire | Earth | Water | Wind | Sound | Blinker | Gravity | Seer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Partner in a pair, bare / armed (plain 51 / 49%) | 56 / 61% | 58 / 65% | 61 / 61% | 62 / 62% | **53 / 54%** | 56 / 56% | 63 / 64% | 61 / 64% |
+| Alone, bare / armed | 56 / 58% | 48 / 53% | **67 / 69%** | **65 / 68%** | 50 / 50% | 65 / 51% | 48 / 51% | 48 / 51% |
+| Pair, before this pass | 58 / 62% | 58 / 65% | 57 / 58% | 59 / 59% | 57 / 60% | 56 / 56% | 60 / 61% | 61 / 64% |
+| Alone, before this pass | 55 / 50% | 48 / 53% | 63 / 65% | 62 / 63% | 50 / 50% | 65 / 51% | 48 / 51% | 48 / 51% |
+
+### Open
+
+- A Gifted Sound wolf in a pair is 53–54% (under doc 45's 55–65%): the beat is a group Gift, worth more the more friends
+  it reaches. Three a side was the user's yardstick, so it was tuned there.
+- Gifted Water and Wind alone win 65–69% (doc 45's "alone" target is 50–55%; they were 62–65% before this pass): a foe's
+  missed blows help a lone wolf as much as a side.
+- A Gifted Blinker plays 63% smart and 56% with tactics: the spread is in how close the side stands (Interpose needs a
+  friend beside it).
+- Gravity's Anchor, Burden and Lighten do nothing bare (no shoves in the simulator, no weight to add), so a bare Gravity
+  wolf's whole help is Lift Up.
+- Tests: `magic_tests` (Splash Eyes 18%, Flare 18); all 67 suites pass.

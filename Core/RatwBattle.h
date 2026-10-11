@@ -334,7 +334,7 @@ constexpr double DownedMinimum = .6, OverkillSeconds = 10;
 // A player is never killed (doc 38): they lie down for a while, longer for each downing since their last full rest, and
 // get up at GetUpHealth. The bases are for the cause, as above; the stretch is by downings, counting this one.
 constexpr double GetUpBite = 150, GetUpBlunt = 180, GetUpFire = 120, GetUpHealth = 10;
-constexpr double LiftedHealth = 5;                      // Lifted to its feet by a Gifted Gravity wolf (doc 45): barely.
+constexpr double LiftedHealth = 11;                     // Lifted to its feet by a Gifted Gravity wolf (doc 45): barely.
 constexpr double GetUpOverkillSeconds = 2, GetUpLongest = 30 * 60;
 inline double getUpStretch(int downs) { return downs <= 1 ? 1 : downs == 2 ? 2 : downs == 3 ? 4 : downs == 4 ? 6 : 8; }
 // Rest (doc 38), in game hours: lying or sitting still, unbroken, is a partial rest; six hours of it lying in a bed is a

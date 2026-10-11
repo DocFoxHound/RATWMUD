@@ -150,8 +150,8 @@ void optionsAndTells()
     expect(b2.fighter("player-ad")->magic.has("thirsty"), "and Ad is thirsty (the Cost)");
     const double before = w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad"));
     b2.fighter("player-bo")->magic.fx.erase("splashed");
-    expect(std::abs(w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad")) - before - .13) < 1e-9 || before <= .2 + 1e-9,
-           "Splashed, Bo's next blow is 13% less likely (doc 45)");
+    expect(std::abs(w2.strikeChance(*b2.fighter("player-bo"), *b2.fighter("player-ad")) - before - .18) < 1e-9 || before <= .2 + 1e-9,
+           "Splashed, Bo's next blow is 18% less likely (a jet's, 13%: the user's three-a-side pass)");
 }
 
 void fireGifted()
@@ -164,14 +164,14 @@ void fireGifted()
     expect(w.entity("player-ad")->hurt > 0, "and the held breath costs a little health");
     turn(w, b, "player-ad");
     b.fighter("player-bo")->meter = 50;
-    expect(w.useGift("player-ad", "flare", "player-bo").ok && b.fighter("player-bo")->meter == 30, "Flare knocks Bo's bar back 20 (doc 45)");
+    expect(w.useGift("player-ad", "flare", "player-bo").ok && b.fighter("player-bo")->meter == 32, "Flare knocks Bo's bar back 18 (the three-a-side pass)");
     {
         World w4;
         auto& b4 = duel(w4, "fire", false);
         turn(w4, b4, "player-ad");
         place(w4, b4, "player-bo", "player-ad", 2);
         b4.fighter("player-bo")->meter = 50;
-        expect(w4.useGift("player-ad", "flare", "player-bo").ok && b4.fighter("player-bo")->meter == 30, "Flare reaches two tiles, a blade's reach (doc 47)");
+        expect(w4.useGift("player-ad", "flare", "player-bo").ok && b4.fighter("player-bo")->meter == 32, "Flare reaches two tiles, a blade's reach (doc 47)");
     }
     turn(w, b, "player-ad");
     expect(!w.useGift("player-ad", "flamethrower", "1,1").ok, "No Flamethrower for the Gifted");

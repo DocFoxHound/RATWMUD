@@ -15,7 +15,7 @@
           {"id": "forge_heat", "name": "Forge Heat", "kind": "work", "mana": 6, "summary": "Keeps a forge, kiln or oven at working heat without fuel: better smithing, firing and cooking."},
           {"id": "kindle", "name": "Kindle", "kind": "work", "mana": 2, "summary": "Lights a fire on damp wood or in the rain."},
           {"id": "cauterize", "name": "Cauterize", "kind": "instant", "mana": 10, "summary": "Sears an ally's wound shut, by touch: no bleeding for 3 turns."},
-          {"id": "flare", "name": "Flare", "kind": "instant", "mana": 8, "summary": "A flash in an adjacent foe's face knocks their bar back."},
+          {"id": "flare", "name": "Flare", "kind": "instant", "mana": 8, "summary": "A flash in a foe's face, within 2 tiles, knocks their bar back."},
           {"id": "smother_to_smoke", "name": "Smother to Smoke", "kind": "instant", "mana": 8, "summary": "Turns a fire or brush into smoke that blocks sight for 2 turns."},
           {"id": "warm_through", "name": "Warm Through", "kind": "instant", "mana": 6, "summary": "Takes away an ally's cold and soaked penalties for the fight."},
           {"id": "heat_sense", "name": "Heat Sense", "kind": "channelled", "mana": 0, "perTurn": 4, "summary": "Senses body heat within 6 tiles: shows warm wolves, hidden or not."}
@@ -42,7 +42,7 @@
           {"id": "clay_hand", "name": "Clay Hand", "kind": "work", "mana": 6, "summary": "Better pottery and masonry."},
           {"id": "stone_sense", "name": "Stone Sense", "kind": "work", "mana": 6, "summary": "Finds ore seams, flawed stone and weak walls."},
           {"id": "loosen_ground", "name": "Loosen Ground", "kind": "instant", "mana": 8, "summary": "A tile turns soft: double stamina to cross, and a chance to stumble."},
-          {"id": "firm_footing", "name": "Firm Footing", "kind": "instant", "mana": 6, "summary": "Packs an ally's tile: while they stay on it they can't be shoved, are harder to hit, and guard better."},
+          {"id": "firm_footing", "name": "Firm Footing", "kind": "instant", "mana": 6, "summary": "Packs the tile of an ally within 2 tiles: while they stay on it they can't be shoved, are harder to hit, and guard better."},
           {"id": "feel_footfalls", "name": "Feel Footfalls", "kind": "channelled", "mana": 0, "perTurn": 5, "summary": "Shows every wolf moving within 6 tiles, sneakers included."}
         ]
       },
@@ -96,7 +96,7 @@
           {"id": "turn_the_wind", "name": "Turn the Wind", "kind": "channelled", "mana": 0, "perTurn": 4, "summary": "Keeps your side's scent from enemy noses, or carries theirs to yours."},
           {"id": "clear_the_air", "name": "Clear the Air", "kind": "instant", "mana": 6, "summary": "Blows smoke or dust off a 3-tile area."},
           {"id": "back_breeze", "name": "Back Breeze", "kind": "instant", "mana": 6, "summary": "An ally's next move costs less stamina."},
-          {"id": "air_blast", "name": "Air Blast", "kind": "instant", "mana": 18, "summary": "Grit in a foe's eyes: they see less far, and hit less often, for 2 turns."}
+          {"id": "air_blast", "name": "Air Blast", "kind": "instant", "mana": 18, "summary": "Grit in a foe's eyes: they see less far, and hit less often, for 3 turns."}
         ]
       },
       "quickened": {
