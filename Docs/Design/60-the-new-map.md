@@ -38,7 +38,7 @@ python3 -m worldgen.realm --import-dev              # replace DEV's world with i
    2560"; read as cells of 256 tiles, the size every cell has.)
 3. **Six towns**, generic for now.
 4. **The old world is kept as backup files only** (not a runnable third database).
-5. *(new, to confirm)* The third House outside the walls is **House Mossgrave** (wool: the sheep runs and warrens of
+5. The third House outside the walls is **House Mossgrave** (confirmed by the user) (wool: the sheep runs and warrens of
    the Folds, and the looms in the city's works).
 6. *(new, to confirm)* The new world keeps DEV's world ID (`upper_accord`, an internal key the database, saves and
    game tables hang on) and is named "Ridgemere".
@@ -49,7 +49,8 @@ Saved 2026-10-11 before anything changed, in `artifacts/backups/old_world_202610
 - `ratw_dev_full_20261011-090552.pgdump`: the whole DEV database (world, live NPC data, game state), revision 17.
   Restore into a scratch database with `pg_restore` to run it again.
 - `upper_accord_dev_r17_old_world.atlas.json`: the world as Atlas holds it (105 cells, 864 interiors, 1,350 residents).
-- PROD still holds the old world (release 1) until a push replaces it.
+- PROD held the old world as release 1. Its full dump is `ratw_prod_full_20261011-120059.pgdump` beside DEV's; its old
+  residents, factions, claims, patrols and save were cleared before the new world went live as release 2.
 - The generators that made it are in git (last at `25e404b`).
 
 ## The map
@@ -140,7 +141,7 @@ Saved 2026-10-11 before anything changed, in `artifacts/backups/old_world_202610
   | Greatly | ships, the wharf, the bank (the richest) | Greatly House, inside the walls at the top of the Heights |
   | Fell | timber: the Rainwood's logging camps, the sawmill | Fellhall, north-east of the city |
   | Grayrock | stone and iron: the quarry and the mine in the Rainward Hills, the ironworks | Grayrock Hall, east |
-  | Mossgrave *(new)* | wool: the sheep runs and warrens of the Folds, the wool shed | Mossgrave Court, south-east |
+  | Mossgrave | wool: the sheep runs and warrens of the Folds, the wool shed | Mossgrave Court, south-east |
 
   **The estates' grounds** are laid out on the axis from the gate to the house: a drive between trees; the kitchen
   garden and orchard by the gate on one side; a parterre of clipped hedges round flowerbeds, statues at its corners,
@@ -206,7 +207,8 @@ keeper, and its hands in the bunkhouse. They belong to the settlement the site s
 - **`Data/Items/regions.json`**: worked out again from the new world (`tools/supply_balance.py --regions`).
 - **Untouched and dormant:** the fortress wage rule (`RatwWages.cpp`, no fortresses now) and the Warden Order's tell
   and vouch (`RatwGame.cpp`, which want a `warden_order` resident; there is none). Quickened magic still draws
-  "Warden attention" (open question 2).
+  "Warden attention": the Wardens are an order off this map for now (the user's decision). Upper Accord may
+  come back later; its generators are in git before the new map (25e404b) and its world in the backups.
 - **Retired generators:** `western.py`, `upper_accord.py`, `city.py`, `campuses.py`, `rebuild.py`, `blend.py` and the
   old passes' settings, and their tests (`test_western.py`, `test_cities.py`): they made the old world, which is in
   git and the backups.
@@ -256,11 +258,6 @@ Watch House and watch posts.
 
 ## Open questions
 
-1. **House Mossgrave's name**, and its trade (wool), are mine: rename freely.
-2. **Who watches Quickened magic now?** The gift rules say the Wardens take an interest in Quickened magic others see,
-   and the game still counts "Warden attention", but there are no Wardens in the world. Keep the Wardens as an order
-   with no place on this map, hand it to the Ridgemere Watch or the Council, or drop it?
-3. **The towns' character**: they are generic for now; each could get its own trade, people and look later.
-4. **Ridgemere's three markets**: the game has one market (and one market day) per town; the stallholders of all three
+1. **The towns' character**: they are generic for now; each could get its own trade, people and look later.
+2. **Ridgemere's three markets**: the game has one market (and one market day) per town; the stallholders of all three
    squares sell every day, but only one square (the busiest) gets Marketday's crowd. Should every square have its day?
-5. **PROD** still holds the old world: push the new one when it's ready?
