@@ -858,6 +858,68 @@ void trance()
     expect(injury::visible(e->injuries).find("trance") == std::string::npos, "It doesn't show on the wolf");
 }
 
+// A Trance in a party (the user's three-a-side target, 2026-10-11): a side of several by the odds as they are (no 2:1
+// floor), deeper among friends by the family's measure; a lone wolf at 2:1 at least. A grown wolf's runs deeper. A
+// Trance that never rose past even odds leaves no fatigue.
+void tranceInAParty()
+{
+    World w;
+    auto& b = duel(w, "fire", true);
+    const auto join = [&](const char* id, int side) {
+        auto& o = w.addPlayer(id, id);
+        o.cellId = w.entity("player-ad")->cellId;
+        BattleFighter f;
+        f.id = id;
+        f.side = side;
+        const auto& near = *b.fighter(side == b.fighter("player-ad")->side ? "player-ad" : "player-bo");
+        const auto spot = openNear(w, b, near.x, near.y, 2);
+        f.x = spot.first;
+        f.y = spot.second;
+        b.fighters.push_back(f);
+    };
+    const int mine = b.fighter("player-ad")->side, theirs = b.fighter("player-bo")->side;
+    join("player-ed", mine);
+    join("player-cy", theirs);
+    turn(w, b, "player-ad");
+    expect(w.enterTrance("player-ad").ok && std::abs(b.fighter("player-ad")->magic.trance - 1) < 1e-9, "Two against two: a party's Trance at even odds");
+    expect(w.tranceGain(*b.fighter("player-ad"), 1) == 0, "gives nothing");
+    join("player-di", theirs);
+    b.fighter("player-ad")->magic.trance = w.tranceLevel(b, *b.fighter("player-ad"));
+    expect(std::abs(b.fighter("player-ad")->magic.trance - 1.5) < 1e-9, "Two against three: 1.5, not the 2:1 floor");
+    const double party = w.tranceGain(*b.fighter("player-ad"), 1);
+    b.fighter("player-ed")->status = "fled";
+    b.fighter("player-ad")->magic.trance = w.tranceLevel(b, *b.fighter("player-ad"));
+    expect(std::abs(b.fighter("player-ad")->magic.trance - 3) < 1e-9, "Alone against three: 3");
+    b.fighter("player-cy")->status = b.fighter("player-di")->status = "fled";
+    b.fighter("player-ad")->magic.trance = w.tranceLevel(b, *b.fighter("player-ad"));
+    const double alone = w.tranceGain(*b.fighter("player-ad"), 1);
+    expect(std::abs(b.fighter("player-ad")->magic.trance - 2) < 1e-9 && alone > 0, "Alone, one on one: the 2:1 floor");
+    expect(party > alone * .5 + 1e-9, "Among friends, deeper than its odds alone would give (Fire's measure)");
+    w.entity("player-ad")->fightingSkill = 100;
+    expect(w.tranceGain(*b.fighter("player-ad"), 1) > alone + 1e-9, "A grown Quickened wolf goes deeper");
+    {
+        World w2;
+        auto& b2 = duel(w2, "fire", true);
+        turn(w2, b2, "player-ad");
+        auto& o = w2.addPlayer("player-ed", "player-ed");
+        o.cellId = w2.entity("player-ad")->cellId;
+        BattleFighter f;
+        f.id = "player-ed";
+        f.side = b2.fighter("player-ad")->side;
+        const auto spot = openNear(w2, b2, b2.fighter("player-ad")->x, b2.fighter("player-ad")->y, 2);
+        f.x = spot.first;
+        f.y = spot.second;
+        b2.fighters.push_back(f);
+        expect(w2.enterTrance("player-ad").ok && b2.fighter("player-ad")->magic.trance <= 1, "Two against one: nothing to rise to");
+        b2.fighter("player-bo")->status = "fled";
+        for (int i = 0; i < 400 && w2.inBattle("player-ad"); ++i)
+            w2.tick(.05);
+        const auto& hurts = w2.entity("player-ad")->injuries;
+        expect(!w2.inBattle("player-ad") && std::none_of(hurts.begin(), hurts.end(), [](const Injury& i) { return i.type == "trance_fatigue"; }),
+               "and no fatigue after a Trance that gave nothing");
+    }
+}
+
 int main()
 {
     try
@@ -879,6 +941,7 @@ int main()
         keepingTheSecret();
         balance();
         trance();
+        tranceInAParty();
     }
     catch (const std::exception& error)
     {

@@ -1034,6 +1034,9 @@ class World
     // A Gift knocking a fighter's bar back: once between its own turns (doc 45). False if it was already shaken.
     bool knockBar(BattleFighter& t, double amount, bool weight = false);
     double tranceGain(const BattleFighter& f, double perLevel) const;   // A Trance's part, by its level and the family.
+    // The simulator's: a family's Trance depths (at 2:1 .. 5:1; below 0 for the default between), how much deeper a grown
+    // Quickened wolf's runs, and how deep among friends.
+    static void setTranceDepth(const std::string& family, double at2, double at3, double at4, double at5, double grown, double party);
     // A work ability used out of a fight (Mend, Shortcut, Lighten Load...).
     Result useWorkGift(const std::string& id, const std::string& ability, const std::string& target);
     // The effects on a fighter now, for its card: a short name, what it does, and turns left (-1: the fight).

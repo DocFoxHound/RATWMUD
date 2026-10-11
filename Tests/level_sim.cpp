@@ -7,7 +7,8 @@
 //
 // Suites: arms (the user's rule, 2026-10-10: an iron sword, or the leather kit, makes a new wolf a grown one's match), levels (the default: ungifted, doc 44; a level stands for the fighting skill it once gave), bands (doc 49:
 // wolves at fighting skill bands, new, seasoned and veteran, from Data/Progression/skills.json), core (doc 45's yardsticks, bare and armed), gifted2 and quick2 (each
-// family alone and in a pair), gifted3 (three new wolves a side, bare, one Gifted: the user's 60%; SIM_ONLY=earth,seer), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
+// family alone and in a pair), gifted3 (three new wolves a side, bare, one Gifted: the user's 60%; SIM_ONLY=earth,seer), quick3 (the user's Quickened
+// targets: one on one, one of three, alone against a crowd, new and grown; SIM_ROWS, SIM_DEPTH tries Trance depths), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
 // (what a head start in health or the first blow is worth), trance (a Quickened wolf ten levels over one to five plain
 // ones: doc 45's Trance targets), parties, ladder and crowd (one Quickened against one, two or three), gifts (the first
 // broad sweep), naive, and the parts of gifts on their own (quickened, gifted, teams, gear, gaps, adjacent); tiers
@@ -1615,6 +1616,29 @@ int main(int argc, char** argv)
         }
         practice::setFighting(f);
     }
+    if (const char* given = std::getenv("SIM_DEPTH"))
+    {
+        // SIM_DEPTH="fire=2:3.9:-1:3.9:.1:1;earth=..": a family's Trance depths at 2:1, 3:1, 4:1 and 5:1 for this run (-1:
+        // between), how much deeper a grown wolf's runs, and how deep among friends.
+        std::string list = given;
+        for (std::size_t from = 0; from < list.size();)
+        {
+            const auto semi = std::min(list.find(';', from), list.size());
+            const auto item = list.substr(from, semi - from);
+            const auto eq = item.find('=');
+            double d[6] = {-1, -1, -1, -1, 0, 1};
+            std::size_t at = eq + 1;
+            for (int i = 0; i < 6 && eq != std::string::npos && at <= item.size(); ++i)
+            {
+                const auto colon = std::min(item.find(':', at), item.size());
+                d[i] = std::atof(item.substr(at, colon - at).c_str());
+                at = colon + 1;
+            }
+            if (eq != std::string::npos)
+                World::setTranceDepth(item.substr(0, eq), d[0], d[1], d[2], d[3], d[4], d[5]);
+            from = semi + 1;
+        }
+    }
     if (suite == "duel" || suite == "row")
     {
         // level_sim N duel fireq plain [level] [gap]; "a,b" for a side of several.
@@ -1917,6 +1941,54 @@ int main(int argc, char** argv)
             Wolf g = gifted(f);
             g.skill = start;
             spread({P, P, g}, {P, P, P}, n, "G-" + f + " + two plain");
+        }
+        return 0;
+    }
+    if (suite == "quick3")
+    {
+        // The user's Quickened yardsticks (2026-10-11), new wolves (skill 50) unless grown, bare unless armed, a Quickened
+        // wolf going into a Trance when outnumbered (SIM_TRANCE). Each measured as its target was set: one on one as doc
+        // 45's core (smart play, 5 tiles); three a side as the Gifted yardstick (gaps 2, 4, 6, 8; SIM_TACTICS either
+        // way); alone against a crowd as the Trance was tuned (tactics, 11 tiles).
+        const auto* fs = practice::skill("fighting");
+        const double start = fs ? fs->start : 50, grown = fs ? practice::capFor(*fs, true) : 100;
+        const bool asked = tactics;
+        Wolf P;
+        P.skill = start;
+        std::printf("Quickened, new wolves (skill %.0f; grown %.0f); %d fights a row; Trance %s.\n"
+                    "Targets: 1v1 70-80%% bare and armed; one of three 80-85%%; alone against 2 / 3 about 50 / 25%%; grown "
+                    "against 3 / 5 about 50 / 25%%.\n",
+                    start, grown, n, std::getenv("SIM_TRANCE") ? std::getenv("SIM_TRANCE") : "outnumbered");
+        const std::string only = std::getenv("SIM_ONLY") ? "," + std::string(std::getenv("SIM_ONLY")) + "," : "";   // (Some families.)
+        const std::string rows = std::getenv("SIM_ROWS") ? "," + std::string(std::getenv("SIM_ROWS")) + "," : "";   // (Some rows.)
+        const auto want = [&](const char* r) { return rows.empty() || rows.find("," + std::string(r) + ",") != std::string::npos; };
+        for (const auto& f : Families)
+        {
+            if (!only.empty() && only.find("," + f + ",") == std::string::npos)
+                continue;
+            Wolf q = quick(f);
+            q.skill = start;
+            Wolf g = q;
+            g.skill = grown;
+            const auto crowd = [&](int k) { return std::vector<Wolf>(std::size_t(k), P); };
+            tactics = false;
+            if (want("1v1"))
+                row("Q-" + f + " 1v1 bare (smart, 5 tiles)", winRate({q}, {P}, n, 0, 5));
+            if (want("armed"))
+                row("Q-" + f + " 1v1 armed (smart, 5 tiles)", winRate({armed(q)}, {armed(P)}, n, 0, 5));
+            tactics = asked;
+            if (want("3v3"))
+                spread({P, P, q}, crowd(3), n / 4, "Q-" + f + " + two plain vs three" + (asked ? " (tactics)" : " (smart)"));
+            tactics = true;
+            if (want("1v2"))
+                row("Q-" + f + " vs two (tactics, 11 tiles)", winRate({q}, crowd(2), n, 0, 11));
+            if (want("1v3"))
+                row("Q-" + f + " vs three", winRate({q}, crowd(3), n, 0, 11));
+            if (want("g1v3"))
+                row("Q-" + f + " grown vs three", winRate({g}, crowd(3), n, 0, 11));
+            if (want("g1v5"))
+                row("Q-" + f + " grown vs five", winRate({g}, crowd(5), n, 0, 11));
+            tactics = asked;
         }
         return 0;
     }

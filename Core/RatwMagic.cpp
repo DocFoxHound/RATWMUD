@@ -6,6 +6,7 @@
 #include "RatwGifts.h"
 #include "RatwInjury.h"
 #include "RatwItems.h"
+#include "RatwPractice.h"
 #include "RatwSociety.h"
 #include "RatwWorld.h"
 
@@ -228,27 +229,38 @@ constexpr double TranceHaste = .5, TranceWard = .2, TranceWardMost = .85;
 // An overreach costs this much health more than the last, in a fight (doc 45).
 constexpr double OverreachHurt = 3;
 
-// How deep a Trance runs (doc 45), by family (the user: "not the same for every kind"): its degree at 3:1 and at 5:1, half
-// the 3:1 at 2:1, and in between along the way. A degree of 1 gives the bar TranceHaste faster, blows and Gifts
-// TranceMight harder, and blows at it TranceWard less (half at most).
+// How deep a Trance runs (doc 45), by family (the user: "not the same for every kind"): its degree at 2:1, 3:1, 4:1 and
+// 5:1, in between along the way (from nothing at even odds, for a side of several). A degree of 1 gives the bar
+// TranceHaste faster and blows at it TranceWard less (the Ward's most at most); a grown wolf's runs deeper, and a side's
+// by the family's measure among friends.
 struct TranceDepth
 {
     double at3, at5, at2 = -1, at4 = -1;            // (at2 below 0: half the 3:1; at4 below 0: halfway from 3:1 to 5:1.)
     double wardMost = TranceWardMost;               // The most its Ward takes off a blow.
+    double grown = 0;                               // How much deeper a grown Quickened wolf's runs (at the top of its fighting skill).
+    double party = 1;                               // How deep, among friends (a side of several), for its odds.
 };
+std::map<std::string, TranceDepth>& tranceDepths()
+{
+    // (Tuned in Tests/level_sim.cpp, suite quick3, the Trance falling with the odds as foes fall. A Blinker's Ward is
+    // nearly whole: alone, it has nothing for a crowd but its blinks.)
+    // (Re-tuned 2026-10-11 for the user's targets on new wolves, doc 45's fifth pass: alone against two equals about half,
+    // against three a quarter; grown, against three half, five a quarter; one of three against three, 80-85%. Columns:
+    // 3:1, 5:1, 2:1, 4:1 (-1: between), the Ward's most, how much deeper grown, how deep among friends.)
+    static std::map<std::string, TranceDepth> by = {
+        {"fire", {3.76, 3.81, 1.99, -1, .85, .064, 3}},       {"earth", {4.64, 6.56, 1.43, -1, .85, .064, 2.55}},
+        {"water", {3.23, 3.56, 1.99, -1, .85, .053, 3}},      {"wind", {2.58, 3.81, 1.01, -1, .85, .123, 2.4}},
+        {"sound", {1.83, 2.06, 1.06, -1, .85, .217, .26}},    {"blinker", {4.36, 15.94, 1.90, -1, .97, .018, 3}},
+        {"gravity", {3.23, 5.56, 1.71, 3.95, .85, .076, 1.2}}, {"seer", {2.67, 5.94, .91, -1, .85, .158, 0}}};
+    return by;
+}
 TranceDepth tranceDepth(const std::string& family)
 {
-    // (Tuned in Tests/level_sim.cpp, suite "trance": a Quickened wolf ten levels over plain ones wins about half its
-    // fights three to one and a quarter five to one, the Trance falling with the odds as foes fall; re-tuned for doc 47,
-    // once the simulator stood both sides on fair ground. A Blinker's is as deep at two to one as at three, and at four
-    // as at five, and its Ward nearly whole: alone, it has nothing for a crowd but its blinks.)
-    static const std::map<std::string, TranceDepth> by = {
-        {"fire", {3.88, 3.90}},  {"earth", {3.35, 7.67}}, {"water", {3.47, 3.61}},                 {"wind", {2.50, 4.23}},
-        {"sound", {2.15, 2.47}}, {"seer", {2.40, 9.63}},  {"blinker", {2.73, 12, 2.73, 12, .97}}, {"gravity", {3.39, 7.25, -1, 3.95}}};
+    const auto& by = tranceDepths();
     const auto k = by.find(family);
-    TranceDepth d = k == by.end() ? TranceDepth{1, 1} : k->second;
-    return d;
+    return k == by.end() ? TranceDepth{1, 1} : k->second;
 }
+
 
 // Slip and Interpose share one rest, in the wolf's own turns (doc 45).
 constexpr int BlinkRest = 8;
@@ -2133,6 +2145,8 @@ void World::magicFightEnd(Battle& b)
         if (!e || !e->quickened || f.magic.trance <= 0 || e->dead)
             continue;
         const double top = std::max(f.magic.trance, f.magic.tranceTop);
+        if (top <= 1)
+            continue;                               // (A side's Trance that never rose past even odds gave nothing.)
         const int severity = std::min(3, (top >= 4.5 ? 3 : top >= 3 ? 2 : 1) + f.magic.overreaches / 2);
         auto i = injury::given("trance_fatigue", severity, "", "a Trance");
         i.id = injuryId() + e->id;
@@ -2151,12 +2165,25 @@ double World::tranceGain(const BattleFighter& f, double perDegree) const
         return 0;
     const auto d = tranceDepth(e->gift);
     const double t = f.magic.trance;
+    double grown = 0;
+    if (const auto* s = practice::skill("fighting"))
+        if (const double top = practice::capFor(*s, true); top > s->start)
+            grown = std::clamp((temperamentOf(*e).skill - s->start) / (top - s->start), 0.0, 1.0);
     const double at2 = d.at2 >= 0 ? d.at2 : d.at3 / 2, at4 = d.at4 >= 0 ? d.at4 : (d.at3 + d.at5) / 2;
     const double degree = t <= 2   ? at2 * (t - 1)
                           : t <= 3 ? at2 + (d.at3 - at2) * (t - 2)
                           : t <= 4 ? d.at3 + (at4 - d.at3) * (t - 3)
                                    : at4 + (d.at5 - at4) * (t - 4);
-    return perDegree * degree;
+    // (A grown wolf deeper, and a side of several by its own measure: the user's targets, 2026-10-11.)
+    const auto* b = battleOf(f.id);
+    const bool friends = b && b->standing(f.side) > 1;
+    return perDegree * degree * (1 + d.grown * grown) * (friends ? d.party : 1);
+}
+
+void World::setTranceDepth(const std::string& family, double at2, double at3, double at4, double at5, double grown, double party)
+{
+    auto& d = tranceDepths()[family];
+    d.at2 = at2, d.at3 = at3, d.at4 = at4, d.at5 = at5, d.grown = grown, d.party = party;
 }
 
 bool World::knockBar(BattleFighter& t, double amount, bool weight)
@@ -2180,9 +2207,11 @@ bool World::knockBar(BattleFighter& t, double amount, bool weight)
 
 double World::tranceLevel(const Battle& b, const BattleFighter& f) const
 {
-    // Foes standing for each of the side standing (observers and the fallen don't count), 2 to 5.
+    // Foes standing for each of the side standing (observers and the fallen don't count), up to 5: a wolf alone at 2:1 at
+    // least, even one on one; a side of several by the odds as they are (the user's three-a-side target, 2026-10-11: at 2
+    // against 3 it had been the 2:1 floor), 1 (nothing) at even odds.
     const double mine = std::max(1, b.standing(f.side)), theirs = b.standing(1 - f.side);
-    return std::clamp(theirs / mine, TranceFloor, TranceCap);
+    return std::clamp(theirs / mine, mine > 1 ? 1.0 : TranceFloor, TranceCap);
 }
 
 double World::manaPool(const Entity& e) const

@@ -462,3 +462,89 @@ Doc 45's older yardsticks (`gifted2`: L10, 5 tiles, 1,000 fights; armed is iron 
 - Gravity's Anchor, Burden and Lighten do nothing bare (no shoves in the simulator, no weight to add), so a bare Gravity
   wolf's whole help is Lift Up.
 - Tests: `magic_tests` (Splash Eyes 18%, Flare 18); all 67 suites pass.
+
+## Fifth pass: the Quickened on new wolves (2026-10-11)
+
+### The user's asks
+
+> "Let's focus on Quickened wolves, which are combat oriented. Since they're magic, they should be winning
+> substantially more."
+
+The targets, the user's answers on 2026-10-11, on doc 49's rules (new wolves at fighting skill 50, every attribute 50):
+- One on one against an equal plain wolf: **70–80%**, bare and armed (kept from the first pass).
+- A Quickened wolf and two plain against three plain: **80–85%** (a Gifted wolf's side: about 60%, the fourth pass).
+- Alone against equal new wolves: **about 50% against two, 25% against three**.
+- Grown (fighting skill 100, the Quickened cap) against new wolves: **about 50% against three, 25% against five**
+  (the third pass's "ten levels over", now that levels are gone).
+
+### Where it stood
+
+One on one was in range (69–75% bare, 67–78% armed). The Trance had been tuned for a wolf ten levels over its foes, so
+an equal one in a Trance was far too strong: alone against two, 81–100% (smart play) or 22–100% (tactics); one of three,
+82–96%. In a three, the side fell to two against three, the Trance took the 2:1 floor, and the fight was over. Without a
+Trance a Quickened wolf in a three was worth what a Gifted one is (Fire 59%). And a grown wolf gained only about ten
+points over a new one at 1v3, where the targets want twenty-five.
+
+### The yardstick
+
+`level_sim N quick3`, each row measured as its target was set: one on one as the first pass (smart play, 5 tiles);
+three a side as the Gifted yardstick (gaps 2, 4, 6 and 8; run with and without `SIM_TACTICS`, averaged); alone against a
+crowd as the third pass tuned the Trance (tactics, 11 tiles). Smart play against a crowd isn't a fair test: its
+crowds stall (a Gravity wolf won 100% against five). `SIM_ONLY` picks families, `SIM_ROWS` rows (`1v1`, `armed`, `3v3`,
+`1v2`, `1v3`, `g1v3`, `g1v5`), and `SIM_DEPTH="fire=at2:at3:at4:at5:grown:party;..."` tries Trance depths without a
+rebuild (`World::setTranceDepth`). The depths were found by bisection, family by family (a script, not kept), then
+checked at 1,000 fights a row.
+
+### What changed (`Core/RatwMagic.cpp`)
+
+- **A side's Trance goes by the odds as they are.** A wolf alone keeps the 2:1 floor (doc 45's "even one on one"); a
+  side of several is at its true odds, so at two against three it is 1.5, and at even odds or better nothing.
+- **A grown Quickened wolf goes deeper:** its depth × (1 + `grown` × how far its fighting skill has come from 50 toward
+  its cap, 100).
+- **Among friends, by the family's measure** (`party`): a side's Trance this many times as deep. Seer's and Sound's
+  kits already carry a three, so theirs is next to nothing; the rest 1.2 to 3. (Trance mana is by the odds alone and
+  does much of a side's work: that is why the measure moves a three less than expected.)
+- **No fatigue after a Trance that never rose past even odds** (a side's that gave nothing).
+- **The depths, re-tuned:**
+
+| | 2:1 | 3:1 | 4:1 | 5:1 | Grown | Among friends |
+| --- | --- | --- | --- | --- | --- | --- |
+| Fire | 1.99 | 3.76 | between | 3.81 | +6.4% | ×3 |
+| Earth | 1.43 | 4.64 | between | 6.56 | +6.4% | ×2.55 |
+| Water | 1.99 | 3.23 | between | 3.56 | +5.3% | ×3 |
+| Wind | 1.01 | 2.58 | between | 3.81 | +12.3% | ×2.4 |
+| Sound | 1.06 | 1.83 | between | 2.06 | +21.7% | ×0.26 |
+| Blinker | 1.90 | 4.36 | between | 15.94 | +1.8% | ×3 |
+| Gravity | 1.71 | 3.23 | 3.95 | 5.56 | +7.6% | ×1.2 |
+| Seer | 0.91 | 2.67 | between | 5.94 | +15.8% | ×0 |
+
+The win rate is steep in depth: 15% deeper took a grown wolf at 1v3 from about 38% to 58–90%. The ward is near its cap
+there.
+
+### Where it stands (1,000 fights a row)
+
+| | Fire | Earth | Water | Wind | Sound | Blinker | Gravity | Seer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1v1 bare (70–80%) | 75% | 73% | 71% | 69% | 73% | 69% | 72% | 68% |
+| 1v1 armed (70–80%) | 73% | 68% | 69% | 77% | 75% | 68% | 67% | 77% |
+| One of three, smart / tactics (80–85%) | 72 / 82% | 82 / 83% | 84 / 81% | 79 / 86% | 83 / 84% | 81 / 80% | 86 / 81% | 81 / 86% |
+| Alone vs two (50%) | 49% | 52% | 46% | 48% | 51% | 51% | 54% | 48% |
+| Alone vs three (25%) | 28% | 26% | 23% | 25% | 27% | 23% | 22% | 22% |
+| Grown vs three (50%) | 51% | 51% | 46% | 50% | 54% | 54% | 48% | 51% |
+| Grown vs five (25%) | 27% | 28% | 24% | 25% | 25% | **14%** | 25% | 22% |
+
+One on one and Quickened against Quickened don't use the Trance in these yardsticks, so the first two rows and the
+second pass's counter table are as they were.
+
+### Open
+
+- **A grown Blinker against five tops out about 15–17%**, however deep: alone it has only its blinks for a crowd (the
+  third pass found the same, about 20%).
+- **Fire in a three is 77% averaged** (72% smart): its smart play spares friends from its cone. No depth among friends
+  moved it past 78%.
+- **One on one, a few families sit 1–3 points under 70%** (Blinker 68–69% both ways, Gravity and Earth armed, Wind and
+  Seer bare); their averages over bare and armed are 69–75%. Their kits weren't touched, since every crowd number
+  rests on them.
+- **One on one in a Trance** still wins nearly every fight (the 2:1 floor, the user's call on 2026-10-06).
+- Tests: `magic_tests` 261 checks (new: a side's Trance by the odds, the floor alone, deeper grown, deeper among Fire's
+  friends, no fatigue from a Trance that gave nothing); all 67 suites pass.
