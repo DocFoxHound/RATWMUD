@@ -52,6 +52,14 @@ class ProgressionCatalog(unittest.TestCase):
     def test_creation_is_whole(self):
         self.assertEqual(P.creation_problems(), [])
 
+    def test_fighting_is_whole(self):
+        self.assertEqual(P.fighting_problems(), [])
+
+    def test_a_missing_slope_is_found(self):
+        doc = json.loads(P.FIGHTING.read_text(encoding='utf-8'))
+        del doc['wolves']['hitPerSkill']
+        self.assertIn('wolves: hitPerSkill must be a number, 0 or more', P.fighting_problems(doc))
+
     def test_a_preset_over_budget_is_found(self):
         doc = json.loads(P.CREATION.read_text(encoding='utf-8'))
         doc['presets'][0]['strong'] = ['strength', 'dexterity', 'wisdom']

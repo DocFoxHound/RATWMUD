@@ -82,6 +82,11 @@ Iron at 16 against bronze at 20 shows the cliff: a blow of 18 bled, every time, 
 
 ## The numbers
 
+> **Changed 2026-10-10** (doc 49, "Balance pass", Pass 2). The user's rule is now that an iron sword, or the leather
+> kit, makes a new wolf a fully grown wolf's match. Blades are 13.5, 14.5 and 15.5. The kits take 2/2/1/2 (cloth),
+> 3/3/2/2 (leather) and 5/4/3/3 (steel) on body, throat, head and legs, with no extra against a cut. The tables below
+> are the 2026-10-06 tuning; doc 49 has today's.
+
 | Blade | Tier | Damage | Stamina | Turn weight | Pierce | Durability |
 | --- | --- | --- | --- | --- | --- | --- |
 | Bronze bit-sword | Basic | 14 | 10 | 4 | 0 | 200 |

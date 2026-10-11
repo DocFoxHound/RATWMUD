@@ -162,6 +162,29 @@ struct Build
 double staminaRecovery(double endurance);
 double staminaDrain(double endurance);
 double staminaPerTurnExtra(double endurance);
+// What skill and the attributes do in a fight (Data/Progression/fighting.json, the balance pass of doc 49): each slope
+// is "so much per point from 50", so a plain new wolf fights the same whatever the slopes. Wolves (players and
+// residents) have their own slopes; animals keep the ones their stats were made for (Data/Wild: STR 3 to 85). Defaults
+// are the rules before the file (doc 33's), used if it can't be read.
+struct Fighting
+{
+    struct Scale
+    {
+        double hitPerSkill = .003, hitPerDex = .005;   // A blow's odds per point over the foe's.
+        double blowPerStr = .008;                   // A bite's or a blade's weight: × (1 + this × (STR − 50)).
+        double meterPerDex = .1;                    // Initiative a tick.
+        double movePerDex = .04;                    // Tiles a turn at a trot.
+    };
+    Scale wolves, animals;
+    double hitBase = .75, hitLeast = .2, hitMost = .95;
+    double meterBase = 11, meterPerArmour = .1;     // Initiative a tick at DEX 50; armour's weight is in DEX points.
+    double moveBase = 5;                            // Tiles a turn at a trot, unhurt, at DEX 50.
+    double breathBase = 9, breathPerStr = .1;       // Stamina back each turn, before the stamina attribute's own.
+    double shovePerStr = .01;                       // A shove's odds per point of STR over the foe's.
+    const Scale& scale(bool animal) const { return animal ? animals : wolves; }
+};
+const Fighting& fighting();
+void setFighting(const Fighting& f);                // (Simulators only: before any fight is played.)
 long long xpFor(int level);                         // Social XP to reach a level (1: 0).
 int levelFor(long long xp);
 std::string titleFor(int level);

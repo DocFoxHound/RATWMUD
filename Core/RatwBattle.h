@@ -365,14 +365,15 @@ inline double manaMax(double wisdom, bool gifted) { return gifted ? 20 + wisdom 
 constexpr double LingerSeconds = 60, NoiseReach = 30;
 
 // The meter a fighter gains each tick, and how far they may move in a turn (injury shortens it).
-inline double meterGain(double dexterity) { return 6 + dexterity / 10; }
+// (Each by Data/Progression/fighting.json: doc 49's balance pass. `armour` is armourDex, 0 or less.)
+double meterGain(double dexterity, double armour = 0, bool animal = false);
 inline double injuryFactor(double hurt) { return 1 - .6 * (hurt / 100); }
 // Pace (the wheel, 0 walk .. 10 sprint, as in the world) scales how far a turn's move goes: half at a walk, as far as
 // DEX allows at a trot (5), half again at a sprint. Faster than a trot (4 and up) costs stamina for every tile; an
 // exhausted wolf walks.
 inline double paceFactor(int pace) { return .5 + .1 * pace; }
 inline double tileStamina(int pace) { return pace > 3 ? (pace - 3) * .6 : 0; }
-int moveRange(double dexterity, double hurt, int pace = 5);
+int moveRange(double dexterity, double hurt, int pace = 5, bool animal = false);
 // Stamina back at the start of each of one's own turns: by strength, less hurt.
 double staminaPerTurn(double hurt, double strength = 40, double endurance = 50);
 // Eighths of a turn from east for a step (dx, dy); and how far apart two facings are (0..4).

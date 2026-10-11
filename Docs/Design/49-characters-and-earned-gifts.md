@@ -972,3 +972,189 @@ What it shows, for the balance pass:
 
 **Plan 49 is built.** Every number is a placeholder in `Data/Progression/` for the user's balance pass, with
 `practice_sim`, `level_sim`'s `bands` and `grades` suites, and the catalog checker to help with it.
+
+## Balance pass
+
+### Pass 1: plain wolves, bare (2026-10-10, not committed)
+
+The user: "The advantage to progressing skills should be noticeable but not significant." The first pass covers
+regular wolves (no Gift) fighting bare.
+
+**What growing did before this pass** (`level_sim 400 growth`, the old slopes; wins for the grown wolf against a new
+one, averaged over starting gaps of 2, 4, 6 and 8 tiles):
+
+| Grown | Before | After |
+|---|---|---|
+| Fighting skill 68 (seasoned) / 82 (veteran) / 86 (cap) | 77% / 87% / 91% | 53% / 59.5% / 61% |
+| STR 60 / 70 (plain cap) / 85 (strong cap) | 64% / 78% / 88% | 52% / 56% / 62% |
+| DEX 60 / 70 / 85 | 79% / 97% / 100% | 57% / 58% / 71% |
+| STA, any | 50% | 50% |
+| Half grown (skill 68, STR/DEX/STA 60) | 95% | 67% |
+| All grown (skill 86, STR/DEX/STA 70) | 100% | 79% |
+| Two new wolves against one all grown | 76% | 100% |
+
+(A new-against-new mirror is 48%: side B's small edge.)
+
+**What changed:**
+- **`Data/Progression/fighting.json`** (new) holds what skill and the attributes do in a fight. Each slope is "so much
+  per point from 50", so a plain new wolf fights exactly as before. The constants moved there from code:
+  - `World::strikeChance`'s skill and DEX slopes;
+  - the STR factor on bites and blades;
+  - `battle::meterGain` (initiative) and `battle::moveRange` (tiles a turn) by DEX;
+  - `battle::staminaPerTurn` by STR;
+  - a shove's odds by STR.
+
+  Armour's weight on the meter stays at its old rate (`initiative.perArmour`), so doc 47's gear is unchanged.
+- **Wolves and animals have their own slopes.** Players and residents use `wolves`. Game and wild beasts use
+  `animals`, which keeps the old values: their stats in `Data/Wild/animals.json` (STR 3 to 85) were made for them. A
+  blow to or from an animal uses the animals' slopes.
+- **The wolves' slopes:**
+
+  | Slope | Before | Now |
+  |---|---|---|
+  | Hit chance per point of skill | 0.003 | 0.0008 |
+  | Hit chance per point of DEX | 0.005 | 0.001 |
+  | Blow weight per point of STR | 0.008 | 0.0025 |
+  | Initiative per point of DEX | 0.1 | 0.025 |
+  | Move per point of DEX | 0.04 | 0.04 |
+
+  Move is unchanged: DEX 75 still gives a sixth tile at a trot.
+- **`level_sim`:**
+  - attributes can be set outright (`plain:str60:dex55@s70`);
+  - a new `growth` suite, each row over four starting gaps;
+  - `SIM_FIGHT="hitPerSkill=.001,..."` tries other wolf slopes without a rebuild.
+- **Checks:** `tools/progression_catalog.py` checks `fighting.json`. `battle_tests` checks that the meter reads the
+  wolves' slope and that an animal's is unchanged.
+
+**Side effects** (300 fights a row):
+- **Gear tiers:** unchanged. Those fights are between equal wolves.
+- **Gifted, alone and in a pair:** unchanged.
+- **Quickened at L10 against plain L10:** 2 to 6 points lower, because a Quickened wolf's higher skill counts for
+  less. All are still inside doc 45's 70-80%: fire 73, earth 78, water 75, wind 73, sound 73, blinker 76, gravity 74,
+  seer 70.
+- **Quickened at veteran against plain veteran:** fire 79% → 65%, earth 90% → 83%.
+- **Gear now outweighs growth by more:**
+  - a new wolf with an iron sword and leather beats a bare veteran 85% of the time (it was 61%);
+  - armed on both sides, the new wolf wins 34% (it was 12%).
+- **Creation grades shrink too:**
+  - strong STR 62% → 52%; strong DEX 80% → 59%;
+  - weak STR 35% → 42%; weak DEX 17% → 42%.
+- **Residents** fight on the wolves' slopes. A guard's skill of 70 against a new player's 50 was +6% to hit, and is now
+  +1.6%.
+
+**Found, for the next passes:**
+- **Initiative is a step in the simulator.** When two bars fill on the same tick, the faster wolf always acts first.
+  Simulated wolves act at once, so any edge in DEX gives about +6 points, flat: DEX 55 wins 56% and DEX 70 wins 58%.
+  Players take seconds over a turn, so in play this is smaller.
+- **Stamina does nothing in a bare fight.** A turn gives back 9 or more and a bite costs 8, so the bar never runs
+  short, and the stamina attribute and the STR breath slope never show. Making stamina count is a design change, for
+  the user.
+- **DEX grows faster by sneaking than by fighting.** `practice_sim`'s prowler reaches DEX 60 in about a month, while a
+  fight teaches DEX only through `fight.dodge` (0.02, a few dodges a fight). With the new slopes this matters less.
+- **Fighting skill reaches veteran in about 17 evenings** (`practice_sim`, fighter profile).
+
+**Next:** the same sweep armed, then Gifted and Quickened wolves at bands, then residents and animals.
+
+### Pass 2: weapons and armour against growth (2026-10-10, not committed)
+
+The user: "A new wolf with a sword should stand a 50/50 chance against a fully grown wolf. Everything else should be
+similar to that." Asked which sword and what that means for armour, the user chose:
+- the **iron sword** (Professional) is the 50/50 sword;
+- **armour alone** should be about 50/50 too.
+
+So a Professional blade, or a Professional kit, is worth what a wolf's growing is worth. Basic gear sits below that
+and Exceptional gear above, and a blade alone against a kit alone of its tier is near even.
+
+**Before this pass,** a new wolf against a fully grown bare wolf (skill 86, STR/DEX/STA 70) won:
+- with a blade: bronze 42%, iron 55%, steel 67%;
+- with a kit: cloth 25%, leather 34%, steel 36%.
+
+Armour took 1 to 3 off a 12-point bite, so it barely counted.
+
+**What changed** (`Data/Items/items.json`):
+
+| | Before | Now |
+|---|---|---|
+| Blades: bronze / iron / steel | 14 / 15 / 16 | 13.5 / 14.5 / 15.5 |
+| Cloth: body / throat / head / legs | 1 / 1 / 1 / 1, +1 vs a cut | 2 / 2 / 1 / 2 |
+| Leather | 2 / 2 / 1 / 1, +1 vs a cut | 3 / 3 / 2 / 2 |
+| Steel kit (mail, gorget, kettle helm, greaves) | 3 / 3 / 2 / 2, +1 vs a cut | 5 / 4 / 3 / 3 |
+| Boiled barding; spiked collar; leather neck wrap | 3; 2; 1, +1 vs a cut | 4; 3; 2 |
+| Brigandine | 3, +1 vs a thrust | 4, +2 vs a thrust |
+| Mail neck guard; chamfron | 2, +2 vs a cut | 3, +1 vs a cut |
+
+The kits lost their blanket +1 against a cut. Kept, it made each kit crush the blade of its own tier: iron against
+leather won 37%. The specialty pieces keep their edge, a point lower. DEX weights and qualities are unchanged.
+
+**Where it stands** (`SIM_TACTICS=1 level_sim 300 arms`; each row over gaps 2, 4, 6 and 8):
+
+| A new wolf with | Against a grown bare wolf | Against a new bare wolf |
+|---|---|---|
+| Nothing | 16% | 45% (mirror) |
+| A bronze / iron / steel sword | 36% / 50.5% / 62% | 64% / 75% / 86% |
+| The rapier | 54% | 81% |
+| The cloth / leather / steel kit | 34.5% / 47% / 62% | 71% / 82.5% / 89% |
+| Bronze and cloth / iron and leather / steel and steel | 57% / 78% / 92% | |
+| Iron and leather, against a grown wolf the same | 16% | |
+
+| Gear against gear (new wolves) | Wins |
+|---|---|
+| Bronze vs cloth; iron vs leather; steel vs the steel kit (blade alone vs kit alone) | 40%; 45%; 52% |
+| Bronze vs the steel kit (the best kit holds a Basic blade off) | 24% |
+| Bronze and steel kit vs steel kit (a blade beats biting into armour) | 73% |
+| Iron vs bronze; steel vs iron | 66.5%; 66% |
+| Leather vs cloth; steel kit vs leather | 58%; 63% |
+| Iron and leather vs bronze and cloth; steel and steel vs iron and leather | 73%; 71% |
+
+**Fight lengths** (mirrors, rounds each):
+
+| Mirror | Rounds |
+|---|---|
+| Bare | 12.0 |
+| Leather, no blades | 15.1 |
+| Iron, no armour | 9.1 |
+| Bronze + cloth / iron + leather / steel + steel | 11.7 / 11.5 / 11.9 |
+
+Matched gear still fights about as long as bare (doc 47's rule).
+
+**The rapier** (400 fights at a 6-tile start) is still the blade for armour:
+
+| Matchup | Rapier | Steel sword, the same |
+|---|---|---|
+| Against a wolf in leather | 65% | 59.5% |
+| Against a wolf in the steel kit | 61% | 57% |
+| Against an iron sword | 57% | |
+| Against a steel sword | 37.5% | |
+
+**Doc 47's tables, re-run** (`SIM_TACTICS=1 SIM_GAP=11 level_sim 300 tiers`; doc 47's protocol):
+
+| 1v1 / 3v3 / 5v5 | Cloth vs bare | Leather vs bare | Steel kit vs bare | Bronze vs bare | Iron vs bare | Steel vs bare |
+|---|---|---|---|---|---|---|
+| Wins | 73 / 89 / 90% | 83 / 96 / 98% | 91 / 99 / 99% | 65 / 76 / 86% | 76 / 87 / 93% | 86 / 98 / 98% |
+
+- Blade alone against kit alone at L10 is 51% for iron against leather and 54% for steel against the steel kit.
+- Armour now helps about as much as a blade, against doc 47's "armour helps less than a blade" target, at the user's
+  word.
+- Mirrors are 45-55% at every size.
+- Big armoured team fights stall a little more often: up to 7 of 300 undecided in a 3v3 of steel kits against
+  leather.
+
+**Gifts with gear** (`level_sim 300 core`, iron and leather on both sides): within ±3 of before.
+- Quickened: 67-78%. Blinker (66.7%) and gravity (67%) sit just under doc 45's 70-80%, as they did before (68%).
+- Gifted alone and in a pair: as before.
+
+**Guards** wear the leather kit with an iron sword (doc 47, the watch's kit). Their leather now counts for more, so a
+guard is harder still for a bare newcomer.
+
+**Tests:**
+- `battle_tests`: the kit ladder now checks that the kits take a cut and a bite alike, and that mail and a chamfron
+  still turn an edge best; the gorget and brigandine numbers are updated.
+- `ctest`: 67 of 67.
+- The client's tests: 129.
+- `tools/item_catalog.py` reports four problems (smoked mutton, smoked rabbit, farm gear, the brass bracelet). The same
+  four are reported at HEAD.
+
+**Tools:**
+- `level_sim`'s `arms` suite measures this table.
+- `RATW_DATA_DIR` pointed at a scratch copy of `Data/` (with `Items` copied and the rest linked) tries catalog changes
+  without touching the real files.

@@ -134,15 +134,23 @@ double expectedThrough(const Entity& target, int quarter, double damage, const s
     return weights > 0 ? sum / weights : damage;
 }
 
-int moveRange(double dexterity, double hurt, int pace)
+double meterGain(double dexterity, double armour, bool animal)
 {
-    return std::max(1, int(std::floor((3 + dexterity / 25) * injuryFactor(hurt) * paceFactor(pace))));
+    const auto& f = practice::fighting();
+    return std::max(1.0, f.meterBase + f.scale(animal).meterPerDex * (dexterity - 50) + f.meterPerArmour * armour);
+}
+
+int moveRange(double dexterity, double hurt, int pace, bool animal)
+{
+    const auto& f = practice::fighting();
+    return std::max(1, int(std::floor((f.moveBase + f.scale(animal).movePerDex * (dexterity - 50)) * injuryFactor(hurt) * paceFactor(pace))));
 }
 
 double staminaPerTurn(double hurt, double strength, double endurance)
 {
     // Stamina the attribute (doc 49) adds or takes a little; at 50, nothing.
-    return std::max(0.0, (4 + strength / 10 + practice::staminaPerTurnExtra(endurance)) * (hurt < 25 ? 1 : hurt < 50 ? .75 : .5));
+    const auto& f = practice::fighting();
+    return std::max(0.0, (f.breathBase + f.breathPerStr * (strength - 50) + practice::staminaPerTurnExtra(endurance)) * (hurt < 25 ? 1 : hurt < 50 ? .75 : .5));
 }
 
 int octant(double dx, double dy)
@@ -1388,8 +1396,9 @@ std::vector<std::pair<int, int>> World::reachWith(const Battle& b, const BattleF
     // As far as their pace takes them, and their stamina pays for (doc 33); walking is free.
     const int pace = fightPace(e);
     // (A hurt leg, doc 38; a Gift's weight, wind or water, doc 43.)
-    int range = magicRange(b, f, battle::moveRange(effectiveDexterity(e), e.hurt, pace) - injury::effects(e.injuries).arenaMove);
-    const int walking = std::min(range, battle::moveRange(effectiveDexterity(e), e.hurt, 0));
+    const bool animal = !animalOf(f.id).empty();
+    int range = magicRange(b, f, battle::moveRange(effectiveDexterity(e), e.hurt, pace, animal) - injury::effects(e.injuries).arenaMove);
+    const int walking = std::min(range, battle::moveRange(effectiveDexterity(e), e.hurt, 0, animal));
     const double perTile = magicTileStamina(b, f, battle::tileStamina(pace));
     while (range > walking && range * perTile > stamina)
         --range;
@@ -2429,9 +2438,12 @@ double World::strikeChance(const BattleFighter& f, const BattleFighter& t) const
     // No side or back to strike (doc 43's "no critical"): every blow as from the front.
     const bool front = unflankable(t);
     const double angle = unaware ? (front ? 0 : .2 + battle::AmbushHit) : t.guarding ? -battle::GuardDodge : front ? 0 : gap >= 3 ? .2 : gap == 2 ? .1 : 0;
-    return magicStrikeChance(f, t, std::clamp(.75 + (effectiveDexterity(*e) - effectiveDexterity(*d)) * .005 +
-                                                  (temperamentOf(*e).skill - temperamentOf(*d).skill) * .003 + angle - aim,
-                                              .2, .95));
+    // (Doc 49's balance pass: Data/Progression/fighting.json. A blow to or from an animal on the animals' slopes.)
+    const auto& rules = practice::fighting();
+    const auto& scale = rules.scale(!animalOf(f.id).empty() || !animalOf(t.id).empty());
+    return magicStrikeChance(f, t, std::clamp(rules.hitBase + (effectiveDexterity(*e) - effectiveDexterity(*d)) * scale.hitPerDex +
+                                                  (temperamentOf(*e).skill - temperamentOf(*d).skill) * scale.hitPerSkill + angle - aim,
+                                              rules.hitLeast, rules.hitMost));
 }
 
 Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
@@ -2482,7 +2494,7 @@ Result World::bite(Battle& b, BattleFighter& f, const std::string& target)
         return {true, "You snap at " + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
-    double damage = battle::BiteDamage * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|" + f.id, key));
+    double damage = battle::BiteDamage * (1 + practice::fighting().scale(!animalOf(f.id).empty()).blowPerStr * (e->strength - 50)) * (.85 + .3 * chance(target + "|" + f.id, key));
     damage = std::max(1.0, damage - injury::effects(e->injuries).biteLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
@@ -3827,7 +3839,7 @@ Result World::swordStrike(Battle& b, BattleFighter& f, const std::string& target
         return {true, std::string(thrust ? "You lunge at " : "You swing at ") + d->name + " and miss.", target};
     }
     const bool graze = r >= hit - .1;
-    double damage = kind.damage * edge * (.6 + e->strength / 125) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
+    double damage = kind.damage * edge * (1 + practice::fighting().wolves.blowPerStr * (e->strength - 50)) * (.85 + .3 * chance(target + "|sword|" + f.id, key));
     damage = std::max(1.0, damage - injury::effects(e->injuries).swordLess);   // (A hurt neck or shoulder, doc 38.)
     if (graze)
         damage /= 2;
@@ -3883,7 +3895,7 @@ Result World::shove(Battle& b, BattleFighter& f, const std::string& target)
         fightLine(b, f.id, target, "shove", e->name + " shoves at " + d->name + ", but " + d->name + " won't budge.");
         return {true, d->name + " won't budge.", target};
     }
-    const double odds = std::clamp(battle::ShoveOdds + (e->strength - d->strength) / 100 - (t->guarding ? battle::GuardDodge : 0), .2, .9);
+    const double odds = std::clamp(battle::ShoveOdds + (e->strength - d->strength) * practice::fighting().shovePerStr - (t->guarding ? battle::GuardDodge : 0), .2, .9);
     if (chance(f.id + "|shove|" + target, std::int64_t(b.seq) * 7919 + b.turns) >= odds)
     {
         fightLine(b, f.id, target, "shove", e->name + " shoves at " + d->name + ", but " + d->name + " holds their ground.");

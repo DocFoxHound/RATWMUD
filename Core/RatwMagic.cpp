@@ -493,7 +493,7 @@ double World::meterRate(const Battle& b, const BattleFighter& f, double haste) c
     const auto* e = entity(f.id);
     if (!e)
         return 0;
-    double rate = battle::meterGain(effectiveDexterity(*e) + battle::armourDex(*e)) * battle::MeterPerSecond * haste * injury::effects(e->injuries).initiative;
+    double rate = battle::meterGain(effectiveDexterity(*e), battle::armourDex(*e), !animalOf(f.id).empty()) * battle::MeterPerSecond * haste * injury::effects(e->injuries).initiative;
     if (f.magic.has("stone_armor"))
         rate *= .95;                                // (Doc 45: a sixth slower cost more than the stone gave.)
     rate *= 1 + tranceGain(f, TranceHaste);         // (A Trance: doc 45.)

@@ -1,0 +1,10 @@
+{
+  "about": "What fighting skill and the attributes do in a fight (Docs/Design/49-characters-and-earned-gifts.md, the balance pass). Each slope is so much per point from 50, so a plain new wolf fights the same whatever they are. Simulated with Tests/level_sim.cpp (suite growth; SIM_FIGHT tries other wolf slopes). Checked by tools/progression_catalog.py.",
+  "hit": {"about": "A blow's odds: base + (DEX − foe's DEX) × hitPerDex + (skill − foe's skill) × hitPerSkill, plus the angle, held between least and most. A blow to or from an animal is on the animals' slopes.", "base": 0.75, "least": 0.2, "most": 0.95},
+  "initiative": {"about": "The turn meter a tick: base + initiativePerDex × (DEX − 50) + perArmour × armour's weight (in DEX points, 0 or less: doc 35).", "base": 11, "perArmour": 0.1},
+  "move": {"about": "Tiles a turn at a trot, unhurt: base + movePerDex × (DEX − 50).", "base": 5},
+  "breath": {"about": "Stamina back each turn: base + perStr × (STR − 50), plus the stamina attribute's own (creation.json, stamina.turnPer).", "base": 9, "perStr": 0.1},
+  "shove": {"about": "A shove's odds per point of STR over the foe's.", "perStr": 0.01},
+  "wolves": {"about": "Players and residents: growing by practice should show, not decide (the user, 2026-10-10). Bare and plain against a new wolf: a veteran's skill wins about 60%, a grown STR or DEX (70) 56-58%, all of it grown about 79%.", "hitPerSkill": 0.0008, "hitPerDex": 0.001, "blowPerStr": 0.0025, "initiativePerDex": 0.025, "movePerDex": 0.04},
+  "animals": {"about": "Game and wild beasts keep the slopes their stats were made for (Data/Wild/animals.json: STR 3 to 85; docs 41 and 53).", "hitPerSkill": 0.003, "hitPerDex": 0.005, "blowPerStr": 0.008, "initiativePerDex": 0.1, "movePerDex": 0.04}
+}

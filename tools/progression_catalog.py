@@ -3,6 +3,7 @@
 
     python3 tools/progression_catalog.py        # prints each problem; exits 1 if there is any
 
+fighting.json: what skill and the attributes do in a fight, on the wolves' and the animals' slopes.
 skills.json: every attribute and skill has an id (unique), a name, a cap above its start, a soft daily limit, a growth
 line with {value}, and a field the server knows (or none, for the trade skills); every source grows known skills by a
 positive amount; the rules' numbers are in range. Every number is a placeholder for the user's balance pass: this checks
@@ -18,6 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SKILLS = ROOT / 'Data/Progression/skills.json'
 STANDING = ROOT / 'Data/Progression/standing.json'
 CREATION = ROOT / 'Data/Progression/creation.json'
+FIGHTING = ROOT / 'Data/Progression/fighting.json'
 # The Entity fields World::practiceSlot knows (Core/RatwProgress.cpp).
 FIELDS = {'strength', 'dexterity', 'wisdom', 'endurance', 'hearing', 'vision', 'smell', 'fightingSkill', 'sneakSkill',
           'hearingSkill', 'scentSkill'}
@@ -190,8 +192,35 @@ def creation_problems(doc: dict | None = None, skills: dict | None = None) -> li
     return found
 
 
+# fighting.json's slopes, each on both scales (Core/RatwPractice.cpp, buildFighting).
+SLOPES = ('hitPerSkill', 'hitPerDex', 'blowPerStr', 'initiativePerDex', 'movePerDex')
+
+
+def fighting_problems(doc: dict | None = None) -> list[str]:
+    """fighting.json: a blow's odds (0 < least < base < most < 1), the meter's and a move's base, and each slope on the
+    wolves' and the animals' scales a number, 0 or more, small enough that STR 0 still bites (blowPerStr × 50 < 1)."""
+    doc = doc if doc is not None else json.loads(FIGHTING.read_text(encoding='utf-8'))
+    found: list[str] = []
+    if not doc.get('about'):
+        found.append('fighting.json: no "about" line')
+    hit = doc.get('hit', {})
+    if not all(number(hit.get(k)) for k in ('base', 'least', 'most')) or not 0 < hit['least'] < hit['base'] < hit['most'] < 1:
+        found.append('hit: 0 < least < base < most < 1')
+    for key, field in (('initiative', 'base'), ('move', 'base'), ('breath', 'base')):
+        if not number(doc.get(key, {}).get(field)) or doc[key][field] <= 0:
+            found.append(f'{key}: {field} must be a number above 0')
+    for scale in ('wolves', 'animals'):
+        s = doc.get(scale, {})
+        for slope in SLOPES:
+            if not number(s.get(slope)) or s[slope] < 0:
+                found.append(f'{scale}: {slope} must be a number, 0 or more')
+        if number(s.get('blowPerStr')) and s['blowPerStr'] * 50 >= 1:
+            found.append(f'{scale}: blowPerStr × 50 must stay under 1 (a weak bite still bites)')
+    return found
+
+
 if __name__ == '__main__':
-    found = problems() + standing_problems() + creation_problems()
+    found = problems() + standing_problems() + creation_problems() + fighting_problems()
     for p in found:
         print(p)
     print('Progression catalog: ' + ('OK' if not found else f'{len(found)} problem(s)'))

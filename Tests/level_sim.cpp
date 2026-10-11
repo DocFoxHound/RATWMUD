@@ -5,7 +5,7 @@
 //
 //   build-gifts/level_sim [fights] [suite]
 //
-// Suites: levels (the default: ungifted, doc 44; a level stands for the fighting skill it once gave), bands (doc 49:
+// Suites: arms (the user's rule, 2026-10-10: an iron sword, or the leather kit, makes a new wolf a grown one's match), levels (the default: ungifted, doc 44; a level stands for the fighting skill it once gave), bands (doc 49:
 // wolves at fighting skill bands, new, seasoned and veteran, from Data/Progression/skills.json), core (doc 45's yardsticks, bare and armed), gifted2 and quick2 (each
 // family alone and in a pair), qvq (every Quickened matchup), wide (higher levels, mixed teams, three a side), worth
 // (what a head start in health or the first blow is worth), trance (a Quickened wolf ten levels over one to five plain
@@ -22,7 +22,8 @@
 // abilities unused; SIM_LEVEL one level for the trance suite; SIM_DETAILS lists each ability used; SIM_TRACE prints one
 // fight's log. A wolf may carry its own level ("fireq@20", the skill that level gave), band ("fireq@seasoned") or
 // fighting skill ("fireq@s70"), and strengths and weaknesses after its kind ("plain^str_wis@seasoned": strong STR, weak
-// WIS; suite grades). Since doc 49 a player's fighting skill is their own, grown by fighting; no wolf grows
+// WIS; suite grades), and attributes set outright last ("plain:str60:dex55@s70"; suite growth, with SIM_FIGHT
+// overriding Data/Progression/fighting.json's slopes: "hitPerSkill=.001,meterPerDex=.05"). Since doc 49 a player's fighting skill is their own, grown by fighting; no wolf grows
 // in these fights.
 #include "RatwBattle.h"
 #include "RatwGifts.h"
@@ -58,6 +59,7 @@ struct Wolf
     double skill = -1;                      // Its fighting skill, set (doc 49: "@seasoned", "@s70"); -1: by `level`.
     std::string band;                       // The band it was set by, for its label.
     std::map<std::string, std::string> grades;   // Strengths and weaknesses (doc 49: "plain^str_wis": strong STR, weak WIS).
+    std::map<std::string, double> stats;    // Attributes set outright, after any grades ("plain:str60:dex55": grown by practice).
 };
 
 Wolf gifted(const std::string& family, int level = 1) { return {level, "", "", family, false}; }
@@ -1043,6 +1045,8 @@ Outcome fight(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int trial,
             build.grades = wolf.grades;
             World::applyBuild(e, build);            // Each grade's starting attribute (doc 49).
         }
+        for (const auto& [a, v] : wolf.stats)
+            (a == "str" ? e.strength : a == "dex" ? e.dexterity : a == "wis" ? e.wisdom : e.endurance) = v;
         e.fightingSkill = wolf.skill >= 0 ? wolf.skill : levels::fightingSkill(wolf.level, wolf.quickened);   // (Doc 49: a player's own.)
         if (!wolf.blade.empty())
         {
@@ -1240,6 +1244,8 @@ std::string label(const Wolf& w)
         s += "+" + w.kit;
     for (const auto& [a, g] : w.grades)
         s += (g == "strong" ? "^" : "_") + a.substr(0, 3);
+    for (const auto& [a, v] : w.stats)
+        s += ":" + a + std::to_string(int(v));
     if (!w.band.empty())
         return s + " @" + w.band;
     return s + (w.skill >= 0 ? " @" + std::to_string(int(w.skill)) : " L" + std::to_string(w.level));
@@ -1291,6 +1297,20 @@ Wolf parseWolf(const std::string& given, int level)
             level = std::atoi(tail.c_str() + (!tail.empty() && tail[0] == 'L' ? 1 : 0));
         s = s.substr(0, at);
     }
+    // "plain:str60:dex55": attributes set outright (str, dex, wis, sta), last before any "@".
+    std::map<std::string, double> stats;
+    if (const auto colon = s.find(':'); colon != std::string::npos)
+    {
+        for (std::size_t at = colon; at < s.size();)
+        {
+            const auto next = std::min(s.find(':', at + 1), s.size());
+            const auto word = s.substr(at + 1, next - at - 1);
+            if (word.size() > 3)
+                stats[word.substr(0, 3)] = std::atof(word.c_str() + 3);
+            at = next;
+        }
+        s = s.substr(0, colon);
+    }
     // "plain^str_wis": grades after the kind, ^ strong and _ weak, by the attribute's first three letters (doc 49).
     std::map<std::string, std::string> grades;
     if (const auto mark = s.find_first_of("^_"); mark != std::string::npos)
@@ -1308,6 +1328,7 @@ Wolf parseWolf(const std::string& given, int level)
     }
     const auto finish = [&](Wolf w) {
         w.grades = grades;
+        w.stats = stats;
         if (!band.empty())
             return withBand(w, band);
         w.skill = skill;
@@ -1388,6 +1409,121 @@ void gradesSuite(int n)
     vs({graded("strong", "strength", "seasoned")}, {withBand(Wolf{}, "seasoned"), withBand(partner, "seasoned")}, n);
 }
 
+// Doc 49's balance pass: plain wolves, bare, one thing grown at a time (fighting skill, then each attribute), then all
+// together, against a new wolf (skill 50, every attribute 50); the slopes are Data/Progression/fighting.json's.
+Wolf grown(double skill, std::map<std::string, double> stats = {})
+{
+    Wolf w;
+    w.skill = skill;
+    w.stats = std::move(stats);
+    return w;
+}
+
+// One row over several starting gaps (2, 4, 6 and 8 tiles), n fights at each: a wolf whose move just reaches the other
+// at one gap strikes first there, and a single gap would make that a step it isn't.
+void spread(const std::vector<Wolf>& a, const std::vector<Wolf>& b, int n, const std::string& what = {})
+{
+    Rate sum;
+    const std::vector<int> gaps = {2, 4, 6, 8};
+    for (int g : gaps)
+    {
+        const auto r = winRate(a, b, n, 0, g);
+        sum.win += r.win, sum.rounds += r.rounds, sum.health += r.health, sum.hurtB += r.hurtB, sum.undecided += r.undecided;
+    }
+    const double k = double(gaps.size());
+    sum.win /= k, sum.rounds /= k, sum.health /= k, sum.hurtB /= k;
+    row(what.empty() ? label(a) + " vs " + label(b) : what, sum);
+}
+
+void growthSuite(int n)
+{
+    const auto& f = practice::fighting();
+    const auto* fs = practice::skill("fighting");
+    const double cap = fs ? fs->cap : 86, start = fs ? fs->start : 50, special = fs ? fs->specialtyStart : 60;
+    const double seasoned = bandSkill("seasoned", false), veteran = bandSkill("veteran", false);
+    std::printf("Plain wolves, bare, grown one way at a time; %d fights a gap. Wins for the first named.\n", n);
+    std::printf("Slopes: hit %.4f a point of skill, %.4f of DEX; blow %.4f of STR; initiative %.3f of DEX; move %.3f of DEX; breath %.3f of STR.\n",
+                f.wolves.hitPerSkill, f.wolves.hitPerDex, f.wolves.blowPerStr, f.wolves.meterPerDex, f.wolves.movePerDex, f.breathPerStr);
+    const auto vs = [n](const std::vector<Wolf>& a, const std::vector<Wolf>& b) { spread(a, b, n); };
+    std::printf("Each row over gaps of 2, 4, 6 and 8 tiles.\n");
+    const Wolf N = grown(start);
+    std::printf("\nFighting skill (attributes all 50)\n");
+    vs({N}, {N});
+    for (double v : {special, seasoned, veteran, cap})
+        vs({grown(v)}, {N});
+    vs({grown(veteran)}, {grown(seasoned)});
+    for (const char* a : {"str", "dex", "sta"})
+    {
+        std::printf("\n%s (skill %.0f)\n", a, start);
+        for (double v : {55.0, 60.0, 70.0, 85.0, 40.0})
+            vs({grown(start, {{a, v}})}, {N});
+    }
+    std::printf("\nTogether\n");
+    const Wolf half = grown(seasoned, {{"str", 60}, {"dex", 60}, {"sta", 60}});
+    const Wolf full = grown(cap, {{"str", 70}, {"dex", 70}, {"sta", 70}});
+    const Wolf brawler = grown(special, {{"str", 60}, {"dex", 60}, {"sta", 60}});
+    const Wolf brawlerFull = grown(cap, {{"str", 85}, {"dex", 85}, {"sta", 85}});
+    vs({half}, {N});
+    vs({full}, {N});
+    vs({full}, {half});
+    vs({brawler}, {N});
+    vs({brawlerFull}, {N});
+    vs({brawlerFull}, {full});
+    std::printf("\nNumbers and gear against the grown\n");
+    vs({N, N}, {full});
+    vs({N, N}, {brawlerFull});
+    vs({armed(N)}, {full});
+    vs({armed(N)}, {armed(full)});
+}
+
+// The user's gear rule (2026-10-10): a new wolf with an iron sword stands 50/50 against a fully grown bare wolf, and so
+// does one in the leather kit; bronze and cloth below, steel above. Then the gear against itself, as doc 47's tables.
+void gearSuite(int n)
+{
+    const auto* fs = practice::skill("fighting");
+    const Wolf N = grown(fs ? fs->start : 50);
+    const Wolf G = grown(fs ? fs->cap : 86, {{"str", 70}, {"dex", 70}, {"sta", 70}});
+    const auto with = [](Wolf w, const char* blade, const char* kit) { return geared(w, blade, kit); };
+    std::printf("Gear against growth and itself; %d fights a gap (2, 4, 6, 8)%s. Wins for the first named. Grown: skill %.0f, STR/DEX/STA 70.\n",
+                n, tactics ? ", tactics" : "", G.skill);
+    std::printf("\nA new wolf geared against a grown bare one (target: iron 50%%, leather 50%%)\n");
+    spread({N}, {G}, n, "bare");
+    for (const auto& [b, name] : std::vector<std::pair<const char*, const char*>>{{"sword", "bronze"}, {"iron_sword", "iron"}, {"steel_sword", "steel"}, {"rapier", "rapier"}})
+        spread({with(N, b, "")}, {G}, n, std::string(name) + " sword");
+    for (const char* k : {"cloth", "leather", "plate"})
+        spread({with(N, "", k)}, {G}, n, std::string(k) + " kit");
+    spread({with(N, "sword", "cloth")}, {G}, n, "bronze + cloth");
+    spread({with(N, "iron_sword", "leather")}, {G}, n, "iron + leather");
+    spread({with(N, "steel_sword", "plate")}, {G}, n, "steel + plate");
+    spread({with(N, "iron_sword", "leather")}, {with(G, "iron_sword", "leather")}, n, "iron + leather vs grown the same");
+    std::printf("\nEqual wolves (new): each against bare\n");
+    spread({N}, {N}, n, "bare vs bare");
+    for (const auto& [b, name] : std::vector<std::pair<const char*, const char*>>{{"sword", "bronze"}, {"iron_sword", "iron"}, {"steel_sword", "steel"}, {"rapier", "rapier"}})
+        spread({with(N, b, "")}, {N}, n, std::string(name) + " vs bare");
+    for (const char* k : {"cloth", "leather", "plate"})
+        spread({with(N, "", k)}, {N}, n, std::string(k) + " vs bare");
+    std::printf("\nBlade against kit, a tier each (both near growth's worth, so near 50%%)\n");
+    spread({with(N, "sword", "")}, {with(N, "", "cloth")}, n, "bronze vs cloth");
+    spread({with(N, "iron_sword", "")}, {with(N, "", "leather")}, n, "iron vs leather");
+    spread({with(N, "steel_sword", "")}, {with(N, "", "plate")}, n, "steel vs plate");
+    spread({with(N, "sword", "")}, {with(N, "", "plate")}, n, "bronze vs plate (the best kit holds a Basic blade off)");
+    spread({with(N, "sword", "plate")}, {with(N, "", "plate")}, n, "bronze + plate vs plate (a blade beats biting into armour)");
+    std::printf("\nThe ladders\n");
+    spread({with(N, "iron_sword", "")}, {with(N, "sword", "")}, n, "iron vs bronze");
+    spread({with(N, "steel_sword", "")}, {with(N, "iron_sword", "")}, n, "steel vs iron");
+    spread({with(N, "", "leather")}, {with(N, "", "cloth")}, n, "leather vs cloth");
+    spread({with(N, "", "plate")}, {with(N, "", "leather")}, n, "plate vs leather");
+    spread({with(N, "iron_sword", "leather")}, {with(N, "sword", "cloth")}, n, "iron + leather vs bronze + cloth");
+    spread({with(N, "steel_sword", "plate")}, {with(N, "iron_sword", "leather")}, n, "steel + plate vs iron + leather");
+    std::printf("\nFight lengths (mirrors; rounds each)\n");
+    spread({N}, {N}, n, "bare");
+    spread({with(N, "", "leather")}, {with(N, "", "leather")}, n, "leather, no blades");
+    spread({with(N, "iron_sword", "")}, {with(N, "iron_sword", "")}, n, "iron, no armour");
+    spread({with(N, "sword", "cloth")}, {with(N, "sword", "cloth")}, n, "bronze + cloth");
+    spread({with(N, "iron_sword", "leather")}, {with(N, "iron_sword", "leather")}, n, "iron + leather");
+    spread({with(N, "steel_sword", "plate")}, {with(N, "steel_sword", "plate")}, n, "steel + plate");
+}
+
 void bands(int n)
 {
     // Doc 49: fighting skill grows by fighting, so wolves differ by how much they have fought, not by level. The bands
@@ -1457,6 +1593,28 @@ int main(int argc, char** argv)
     tactics = std::getenv("SIM_TACTICS") != nullptr;
     const int gap = std::getenv("SIM_GAP") ? std::atoi(std::getenv("SIM_GAP")) : 5;   // (5: neither side gains by waiting.)
     const auto has = [&](const char* s) { return suite == s || suite == "all"; };
+    if (const char* given = std::getenv("SIM_FIGHT"))
+    {
+        // SIM_FIGHT="hitPerSkill=.001,hitPerDex=.002": fighting.json's slopes for this run (doc 49's balance pass).
+        auto f = practice::fighting();
+        const std::map<std::string, double*> slopes = {
+            {"hitBase", &f.hitBase}, {"hitPerDex", &f.wolves.hitPerDex}, {"hitPerSkill", &f.wolves.hitPerSkill},
+            {"blowPerStr", &f.wolves.blowPerStr}, {"meterPerDex", &f.wolves.meterPerDex}, {"movePerDex", &f.wolves.movePerDex},
+            {"meterPerArmour", &f.meterPerArmour}, {"breathPerStr", &f.breathPerStr}, {"shovePerStr", &f.shovePerStr}};
+        std::string list = given;
+        for (std::size_t from = 0; from < list.size();)
+        {
+            const auto comma = std::min(list.find(',', from), list.size());
+            const auto pair = list.substr(from, comma - from);
+            const auto eq = pair.find('=');
+            if (const auto slope = slopes.find(pair.substr(0, eq)); eq != std::string::npos && slope != slopes.end())
+                *slope->second = std::atof(pair.c_str() + eq + 1);
+            else
+                std::fprintf(stderr, "SIM_FIGHT: no slope %s\n", pair.c_str());
+            from = comma + 1;
+        }
+        practice::setFighting(f);
+    }
     if (suite == "duel" || suite == "row")
     {
         // level_sim N duel fireq plain [level] [gap]; "a,b" for a side of several.
@@ -1494,6 +1652,10 @@ int main(int argc, char** argv)
         bands(n);
     if (has("grades"))
         gradesSuite(n);
+    if (has("growth"))
+        growthSuite(n);
+    if (has("arms"))
+        gearSuite(n);
     if (suite == "worth")
     {
         std::printf("What a head start in health is worth, L10, %d tiles apart\n", gap);

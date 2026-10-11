@@ -609,13 +609,16 @@ void gearTiers()
     const auto* rapier = items::blade("rapier");
     expect(rapier && rapier->tier == 3 && rapier->weapon.type == "thrust" && rapier->weapon.hit > 0, "The needle rapier: an Exceptional thrust");
     expect(!items::good("mace") && !items::good("bit_axe"), "No mace or bit-axe any more");
-    // The kits: every piece of armour has a tier; a better kit protects more, and more again against a cut.
+    // The kits: every piece of armour has a tier; a better kit protects more. Since the user's gear rule (doc 49's balance
+    // pass, 2026-10-10) the kits take as much off a bite as a cut; a mail neck guard and a chamfron still take more off a cut.
     const auto* vest = items::wearable("quilted_vest");
     const auto* barding = items::wearable("leather_barding");
     const auto* mail = items::wearable("mail_coat");
     expect(vest && barding && mail && vest->tier == 1 && barding->tier == 2 && mail->tier == 3, "Cloth, leather and steel: a tier each");
-    expect(vest->protect < barding->protect && barding->protect < mail->protect && vest->vsCut > 0 && mail->vsCut > 0,
-           "each protects more, and more against a cut");
+    expect(vest->protect < barding->protect && barding->protect < mail->protect && vest->vsCut == 0 && mail->vsCut == 0,
+           "each protects more, the same against a bite as a cut");
+    expect(items::wearable("chamfron") && items::wearable("chamfron")->vsCut > 0 && items::wearable("mail_aventail")->vsCut > 0,
+           "mail and a chamfron still turn an edge best");
     for (const auto& piece : items::wearables())
         if (piece.protect > 0)
             expect(piece.tier >= 1 && piece.tier <= 3, piece.id + " has a tier");
@@ -1350,15 +1353,15 @@ void armourInFights()
     auto& b = duel(w);
     auto* bo = w.entity("player-bo");
     expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 12, "No armour: the whole blow");
-    bo->worn["neck"] = "steel_gorget";                          // Protect 3 on the throat, 4 against a cut (doc 47).
-    expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 9, "a throat guard: a bite on the throat does 9");
+    bo->worn["neck"] = "steel_gorget";                          // Protect 4 on the throat (doc 47; doc 49's balance pass).
+    expect(battle::throughArmour(*bo, "throat", 12, "thrust") == 8, "a throat guard: a bite on the throat does 8");
     expect(battle::throughArmour(*bo, "body", 12, "thrust") == 12 && battle::throughArmour(*bo, "head", 12, "thrust") == 12,
            "but on the shoulder or the face, all 12");
-    expect(std::abs(battle::expectedThrough(*bo, 0, 12, "thrust") - 11.1) < 1e-9, "head on, a bite does 11.1 on average (the throat 30% of the time)");
+    expect(std::abs(battle::expectedThrough(*bo, 0, 12, "thrust") - 10.8) < 1e-9, "head on, a bite does 10.8 on average (the throat 30% of the time)");
     expect(battle::expectedThrough(*bo, 2, 12, "thrust") > battle::expectedThrough(*bo, 0, 12, "thrust"), "from behind, the throat is rarely reached");
-    bo->worn["body"] = "brigandine_coat";                      // Protect 3, +1 against thrusts, DEX −5.
-    expect(battle::armourAt(*bo, "body", "thrust") == 4 && battle::armourAt(*bo, "body", "cut") == 3, "a brigandine: 4 against a bite, 3 a cut");
-    expect(battle::throughArmour(*bo, "body", 20, "cut") == 17 && battle::throughArmour(*bo, "body", 12, "thrust", 2) == 10, "a cut does 17; pierce goes through");
+    bo->worn["body"] = "brigandine_coat";                      // Protect 4, +2 against thrusts, DEX −5.
+    expect(battle::armourAt(*bo, "body", "thrust") == 6 && battle::armourAt(*bo, "body", "cut") == 4, "a brigandine: 6 against a bite, 4 a cut");
+    expect(battle::throughArmour(*bo, "body", 20, "cut") == 16 && battle::throughArmour(*bo, "body", 12, "thrust", 2) == 8, "a cut does 16; pierce goes through");
     expect(battle::throughArmour(*bo, "body", 4, "thrust") == 1, "a quarter always gets through");
     expect(battle::armourPieceAt(*bo, "body") == "Brigandine coat" && battle::armourPieceAt(*bo, "legs").empty(), "the piece on each zone");
     for (int q = 0; q < 3; ++q)
@@ -1391,7 +1394,7 @@ void armourInFights()
     expect(battle::armourDex(*bo) == -8, "the armour weighs on the bar: DEX −8 (with the gorget's −1)");
     const double gain = fb->meter;
     w.tick(1);
-    const double armoured = battle::meterGain(effectiveDexterity(*bo) - 8) * battle::MeterPerSecond;
+    const double armoured = battle::meterGain(effectiveDexterity(*bo), -8) * battle::MeterPerSecond;
     expect(std::abs(fb->meter - gain - armoured) < .5, "his bar fills as DEX 8 lower");
 }
 
@@ -1825,7 +1828,14 @@ void rules()
 {
     expect(battle::moveRange(50, 0) == 5, "DEX 50, unhurt: five tiles");
     expect(battle::moveRange(50, 99) == 2 && battle::moveRange(0, 100) == 1, "Hurt moves less, never none");
-    expect(battle::meterGain(50) == 11 && battle::meterGain(100) == 16, "The meter fills by dexterity");
+    expect(battle::meterGain(50) == 11 && battle::meterGain(100) > battle::meterGain(50) &&
+               std::abs(battle::meterGain(100) - (11 + 50 * practice::fighting().wolves.meterPerDex)) < 1e-9 &&
+               battle::meterGain(100, 0, true) == 16,
+           "The meter fills by dexterity (a wolf's by fighting.json's slope; an animal's as before)");
+    // Doc 49's balance pass: a plain new wolf fights as before; growing shows on the wolves' slopes, and animals keep theirs.
+    const auto& fs = practice::fighting();
+    expect(fs.wolves.hitPerSkill > 0 && fs.wolves.hitPerSkill < fs.animals.hitPerSkill && fs.animals.blowPerStr == .008,
+           "Wolves' skill counts for less than it did; animals' strength as it was");
     expect(battle::octant(1, 0) == 0 && battle::octant(0, 1) == 2 && battle::octant(-1, 0) == 4, "Facings");
     expect(battle::octantGap(0, 4) == 4 && battle::octantGap(7, 1) == 2, "Facing gaps wrap");
     const auto guard = battle::temperament("guard", false, 30, true);

@@ -346,6 +346,55 @@ Standing buildStanding()
 }
 } // namespace
 
+namespace
+{
+Fighting buildFighting()
+{
+    Fighting f;
+    auto path = skillsFile().parent_path() / "fighting.json";
+    std::ifstream in(path, std::ios::binary);
+    std::stringstream text;
+    text << in.rdbuf();
+    json::Value doc;
+    std::string error;
+    if (!in || !json::parse(text.str(), doc, error))
+        return f;
+    const auto& hit = doc.object("hit");
+    f.hitBase = hit.number("base", f.hitBase);
+    f.hitLeast = hit.number("least", f.hitLeast);
+    f.hitMost = hit.number("most", f.hitMost);
+    const auto& meter = doc.object("initiative");
+    f.meterBase = meter.number("base", f.meterBase);
+    f.meterPerArmour = meter.number("perArmour", f.meterPerArmour);
+    f.moveBase = doc.object("move").number("base", f.moveBase);
+    for (const auto& [scale, key] : {std::pair<Fighting::Scale*, const char*>{&f.wolves, "wolves"}, {&f.animals, "animals"}})
+    {
+        const auto& s = doc.object(key);
+        scale->hitPerSkill = s.number("hitPerSkill", scale->hitPerSkill);
+        scale->hitPerDex = s.number("hitPerDex", scale->hitPerDex);
+        scale->blowPerStr = s.number("blowPerStr", scale->blowPerStr);
+        scale->meterPerDex = s.number("initiativePerDex", scale->meterPerDex);
+        scale->movePerDex = s.number("movePerDex", scale->movePerDex);
+    }
+    const auto& breath = doc.object("breath");
+    f.breathBase = breath.number("base", f.breathBase);
+    f.breathPerStr = breath.number("perStr", f.breathPerStr);
+    f.shovePerStr = doc.object("shove").number("perStr", f.shovePerStr);
+    return f;
+}
+
+Fighting& fightingStore()
+{
+    static std::once_flag once;
+    static Fighting f;
+    std::call_once(once, [] { f = buildFighting(); });
+    return f;
+}
+} // namespace
+
+const Fighting& fighting() { return fightingStore(); }
+void setFighting(const Fighting& f) { fightingStore() = f; }
+
 const Standing& standing()
 {
     static std::once_flag once;
