@@ -330,29 +330,29 @@ b : I don't like it. | Your ears are wiggling. | Hares are fast.
 a : Nobody does. Pull. | That's me concentrating. | That's the trouble. Again.
 
 scene kn_pup_regional_snow
-when topic=family band=family a.stage=adult b.stage=young region=upper_accord|northern_fortress
+when topic=family band=family a.stage=adult b.stage=young region=mountains
 a : Mind the drifts by the steps. Last year a pup went in to the ears. | Wrap your tail round your nose when you sleep. | Don't lick the iron rail.
 b : I want to go in to the ears! | Why? | What happens if I do?
 a : You'd be lost till spring. | So it doesn't freeze off. | Your tongue stays and you come home without it.
 b : I'd dig out! | That's not true. | ...I'll lick the wood one.
 
 scene kn_pup_regional_harbour
-when topic=family band=family a.stage=adult b.stage=young region=ridgemere|saltreach|lakeside
-a : Not so near the edge of the quay! | Don't follow the gulls, they're thieves. | Stay off the boats. Every one of them.
+when topic=family band=family a.stage=adult b.stage=young region=ridgemere|coldwater
+a : Not so near the edge of the pier! | Don't follow the gulls, they're thieves. | Stay off the boats. Every one of them.
 b : I wanted to see the fish. | They took my bread. | Even the little ones?
 a : The fish will see you first, when you fall in. | Then you know it already. | The little ones most of all.
 b : I can swim a bit. | I'll take theirs back. | They're the most fun.
-a : A bit's not enough for the harbour. | You'll lose. They're gulls. | That's why. Come away.
+a : A bit's not enough for that water. | You'll lose. They're gulls. | That's why. Come away.
 
 scene kn_pup_regional_river_city
-when topic=family band=family a.stage=adult b.stage=young region=ser_ferro
-a : Look up there, the Cathedral bells. | Mind the fine folk's carriages. | Don't drink from the river below the tanneries.
-b : Do they ring for the Saint? | Why are they so fast? | It looks clean.
-a : For the Saint and for the hour. | Because they don't have to stop for anyone. | It's not. Trust my nose.
-b : The Saint must be very loud. | That's rude. | Your nose is always right.
+when topic=family band=family a.stage=adult b.stage=young region=ridgemere
+a : Listen, the Chapel of the Tide bells. | Mind the fine folk's carriages. | Don't drink from the Rainrun below the tannery.
+b : Do they ring for the Bright One? | Why are they so fast? | It looks clean.
+a : For the Bright One and for the hour. | Because they don't have to stop for anyone. | It's not. Trust my nose.
+b : The Bright One must be very loud. | That's rude. | Your nose is always right.
 
 scene kn_pup_regional_fens
-when topic=family band=family a.stage=adult b.stage=young region=fenhollow|lakeside
+when topic=family band=family a.stage=adult b.stage=young region=fens
 a : Keep to the boards. The peat swallows pups. | Don't follow the lights over the marsh at night. | That's not a log. Leave it be.
 b : I'm light. It won't swallow me. | They're pretty. | What is it, then?
 a : It's swallowed heavier. Boards. | Pretty things drown pups. | Something with teeth. Come.
@@ -360,7 +360,7 @@ b : Fine. Boards. | Fine. | It looks like a log.
 a : Good. | Good. | So does every one of them. Come.
 
 scene kn_pup_regional_forge
-when topic=family band=family a.stage=adult b.stage=young region=cinderbrook|ser_ferro
+when topic=family band=family a.stage=adult b.stage=young region=frosthollow|ridgemere
 a : Stay back from the forge door. Sparks. | Don't touch the cooling bars. | Your fur's grey with ash again.
 b : The sparks are pretty. | They look cool. | Grey's a good colour.
 a : They're pretty till one lands in your ear. | They're not. That's how they fool you. | Not when it's supposed to be red.

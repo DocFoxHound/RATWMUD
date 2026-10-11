@@ -205,7 +205,7 @@ void tales()
         expect(starred, "a tale star, tagged Storyteller");
         // A milestone: credits, stars (up to 3), deeds for the main contributors.
         auto payload = json::Value::object();
-        payload.add("story", "The siege of Ser Ferro");
+        payload.add("story", "The siege of Larkfield");
         payload.add("milestone", "The gate holds");
         payload.add("weight", "great");
         auto people = json::Value::array();

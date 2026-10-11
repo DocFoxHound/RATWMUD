@@ -41,19 +41,19 @@ b : The council takes its cut. | Then one of us stands on each end. | Again?
 a : The council takes everyone's cut. | And meets in the middle for a smoke. | He's always in a temper. Today's worse.
 
 scene tr_guard_ser_ferro
-when topic=work a.role=guard region=ser_ferro
-a : Another warehouse fire. Third this month. | The Couriers run their papers right past the Watch. | Captain says don't touch the merchant houses' carts.
+when topic=work a.role=guard region=ridgemere place=shore|street|gate
+a : Another warehouse fire on the wharf. Third this month. | Smugglers run their crates right past the Watch. | Captain says don't touch the great Houses' carts.
 b : Insurance, I'd bet. | Proof's another matter. | Why not?
 a : Insurance and rivals. | Proof costs more than we're paid. | Because someone pays the captain more than us.
 
 scene tr_guard_ridgemere_sump
 when topic=work a.role=guard region=ridgemere
-a : Nobody wants the Sump patrol. | Pulled a body out of the canal this morning. | The Houses' guards think they own the streets.
+a : Nobody wants the Sump patrol. | Pulled a body out of the Rainrun this morning. | The Houses' guards think they own the streets.
 b : Draw lots. | Fell in? | They do own half of them.
-a : I always lose the lots. | Nobody falls in the canal by accident. | And the other half's theirs on Restday.
+a : I always lose the lots. | Nobody falls in the Rainrun by accident. | And the other half's theirs on Restday.
 
 scene tr_guard_fortress
-when topic=work a.job=guard|soldier region=fortresses
+when topic=work a.job=guard|soldier region=frosthollow
 a : Nothing on the horizon for a week. Nothing! | Stood the wall all night. Saw one owl. | The supply wagon's late again.
 b : Good. Keep it that way. | Was it a dangerous owl? | We'll eat the horse.
 a : Nothing makes me jumpy. | It looked at me. | Not my horse.
@@ -118,16 +118,16 @@ b : Did you take it? | Proof? | Whose deed?
 a : I took his name. | Not yet. | The one everyone's suing over.
 
 scene tr_off_upper_accord
-when topic=work a.job=official|scholar region=upper_accord
-a : The Concord clerks want every petition copied three times. | Wardens brought another one in last night. Gifted, they say. | The archive's flooded in the lower stacks.
-b : Three times? | Quickened? | Not the old manuscripts!
-a : Three. One to file, one to lose, one to argue over. | Nobody says that word out loud here. | Some of them. They'll blame the clerks.
+when topic=work a.job=official|scholar region=ridgemere
+a : The City Office wants every petition copied three times. | Someone asked for a deed from before the wall was built. | The Hall of Records is flooded in the lower stacks.
+b : Three times? | Is there one? | Not the old ledgers!
+a : Three. One to file, one to lose, one to argue over. | Somewhere. Under the damp. | Some of them. They'll blame the clerks.
 
 scene tr_off_ser_ferro_court
-when topic=work a.job=official|noble region=ser_ferro
-a : The Royal Hand's office wants every grain ledger by Restday. | A Concord Representative's visiting court. Everyone's polishing. | Another records clerk resigned. That's four.
+when topic=work a.job=official|noble region=ridgemere
+a : The Council of Houses wants every grain ledger by Restday. | Lord Greatly's dining at the Rain Hall. Everyone's polishing. | Another records clerk resigned. That's four.
 b : Why the grain? | Polishing what? | Four?
-a : Someone's selling the Crown's stores. | Everything, including their stories. | Four. Nobody says why.
+a : Someone's selling the city's stores. | Everything, including their stories. | Four. Nobody says why.
 
 scene tr_off_toll
 when topic=work a.job=official|guard place=gate|work region=towns
@@ -146,8 +146,8 @@ a : I had them checked. The checker's the steward's cousin. | I can't afford not
 
 scene tr_noble_houses
 when topic=work|smalltalk a.job=noble b.job=noble
-a : House Brinewater's been courting the Fells. | Your cousin snubbed me at the feast. | The council seat goes to whoever pays most.
-b : Let them. Fell timber, Brinewater hulls. It suits. | She snubs everyone. | That's how it's always gone.
+a : House Greatly's been courting the Fells. | Your cousin snubbed me at the feast. | The council seat goes to whoever pays most.
+b : Let them. Fell timber, Greatly hulls. It suits. | She snubs everyone. | That's how it's always gone.
 a : It suits them. It doesn't suit us. | Not with her teeth showing. | Then we'll pay most.
 
 scene tr_noble_hunting
@@ -189,12 +189,6 @@ a : Third burial this week. | Buried a fisher with no body. Just his name. | The
 b : A bad week. | That's hard. | Do it anyway.
 a : A bad season, it's turning into. | The sea keeps the rest. | I always do. Don't tell the bishop.
 
-scene tr_priest_concord
-when topic=work a.job=priest region=accord
-a : Concord inspectors examined the chapel books. | Pilgrims slept on the cathedral floor again. | The Wardens asked to see our birth records.
-b : Find anything? | Every year more. | Why?
-a : A few spelling mistakes. They noted them. | Faith is crowded. | They didn't say. They never do.
-
 scene tr_priest_tide_chapel
 when topic=work a.job=priest region=rain_coast|lake
 a : Cut another name into the chapel wall today. | Blessed the boats at dawn. Half the fleet didn't come. | The fishers want a prayer against the fog.
@@ -223,15 +217,15 @@ a : By the faithful, obviously. | Or both are. | I said once. Not now.
 
 scene tr_scholar_pupil
 when topic=work a.job=scholar b.stage=young|adolescent
-a : Recite the seven virtues. | Hold the quill in your teeth, not your lip. | What year was the Concord founded?
+a : Recite the seven virtues. | Hold the quill in your teeth, not your lip. | What year was the city wall built?
 b : Order, duty, um... | It hurts. | Before I was born?
 a : Order, duty, community, and four more you'll learn by supper. | It hurts less with practice. | Considerably before. Read the page.
 
 scene tr_scholar_ser_ferro
-when topic=work a.job=scholar region=ser_ferro
-a : The royal library won't lend to commoners now. | The court historian rewrote last year already. | Bought a book of maps at the wharf. Half the rivers are wrong.
+when topic=work a.job=scholar region=ridgemere
+a : The Hall of Records won't lend to commoners now. | The Houses' historian rewrote last year already. | Bought a book of maps at the wharf. Half the rivers are wrong.
 b : Since when? | Already? | Only half?
-a : Since a commoner lent a book to the wrong wolf. | Kings like their history fresh. | Half's better than most.
+a : Since a commoner lent a book to the wrong wolf. | The Houses like their history fresh. | Half's better than most.
 
 # ---------------------------------------------------------------- Healers
 
@@ -261,13 +255,13 @@ b : It's nothing. | It's just the dust. | I'll try.
 a : Nothing's swollen up like a plum. | Dust doesn't make you spit blood. | Trying is how it gets infected.
 
 scene tr_heal_bonesetter
-when topic=work a.job=healer region=marches
+when topic=work a.job=healer region=frosthollow
 a : Two from the pits today. Crushed paws, both of them. | The long bench is full. I'm out of splints. | Set a shoulder with my weight on his chest. He swore at me in three tongues.
 b : The pits eat wolves. | Use fence rails. | Did it work?
 a : And spit out the bones for me. | I have been. | It worked. He's still swearing.
 
 scene tr_heal_fens
 when topic=work a.job=healer region=fens
-a : Fenhollow moss stops bleeding better than any salve. | Collected bog myrtle all morning. Legs black to the shoulder. | The marsh fever's back with the warm weather.
+a : Fen moss stops bleeding better than any salve. | Collected bog myrtle all morning. Legs black to the shoulder. | The marsh fever's back with the warm weather.
 b : Can you sell it in the city? | Smells nice, at least. | Already?
 a : They pay a penny for what's worth a mark. | Nice for a day. Then it's just bog. | Every summer. Like a cousin.

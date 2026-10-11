@@ -226,11 +226,11 @@ a : Then it'll smell of smoke. | You'd be a handsome fish. | It dried once. That
 b : Smoke's better than damp. | I'd be a handsome anything. | Two days of it. I remember.
 
 scene kn_mates_regional_concord
-when topic=family band=spouses region=upper_accord
-a : The Concord's raising the tithe again. | Our son wants to join the Wardens. | The pass is closed. No salt till spring.
-b : They always do in a hard winter. | He's always wanted it. | Then we'll eat bland.
+when topic=family band=spouses region=mountains
+a : Firewood's gone up again. | Our son wants to go down the mine. | The pass is closed. No salt till spring.
+b : It always does in a hard winter. | He's always wanted it. | Then we'll eat bland.
 a : Every winter's hard up here. | He's always wanted to bite the moon, too. | We've eaten bland before.
-b : So every year they raise it. | He'll grow out of the moon. | And complained the whole time.
+b : So every year it goes up. | He'll grow out of the moon. | And complained the whole time.
 
 # ---------------------------------------------------------------- Courting
 

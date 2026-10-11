@@ -49,7 +49,7 @@ void rules()
     expect(cover && cover->structure == "market_cover" && cover->roles.size() == 2, "the market cover's kind, with two roles");
     expect(r.kind("mend") && r.kind("mend")->structure.empty(), "a mending stands as nothing");
     projects::Ledger ledger;
-    auto& p = ledger.post(*cover, "upper_accord", "c_1_0", 4, 4, "the cover", 10, "dm");
+    auto& p = ledger.post(*cover, "ridgemere", "c_1_0", 4, 4, "the cover", 10, "dm");
     expect(p.id == "proj-1" && p.needs.at("timber") == 12 && p.hours == 20, "posted with its needs");
     p.shown = {{"a", "Kestrel"}, {"b", ""}, {"c", "Wren"}, {"d", "Hale"}};
     projects::Ledger::give(p, "a", "coin", "", 100, 100, 11);
@@ -96,15 +96,15 @@ void built()
         s.shift("treasury", ash, "", 0, 500, "test purse");
         expect(s.conserved(), "conserved at the start");
 
-        // A Dungeon Master posts a market cover in Upper Accord.
-        auto posted = t.g.postProject("cover", "upper_accord", "", -1, -1, "", "dm");
+        // A Dungeon Master posts a market cover in Ridgemere.
+        auto posted = t.g.postProject("cover", "ridgemere", "", -1, -1, "", "dm");
         expect(posted.ok, "posted: " + posted.message);
         id = posted.targetId;
         const auto* p = t.g.projects().find(id);
         expect(p && p->state == "open" && !p->structure.empty() && !p->site.empty(), "it stands on the layer as a plan");
-        expect(w.communityOf(p->cell) == "upper_accord", "by the town's square");
-        expect(!t.g.postProject("cover", "upper_accord", "", -1, -1, "", "dm").ok, "one of a kind under way at a time");
-        expect(!t.g.postProject("castle", "upper_accord", "", -1, -1, "", "dm").ok, "no such kind");
+        expect(w.communityOf(p->cell) == "ridgemere", "by the town's square");
+        expect(!t.g.postProject("cover", "ridgemere", "", -1, -1, "", "dm").ok, "one of a kind under way at a time");
+        expect(!t.g.postProject("castle", "ridgemere", "", -1, -1, "", "dm").ok, "no such kind");
 
         // Coin given: contracts for its materials and the day's hands.
         t.place(t.ash, 1, p->x + .5, p->y + 1.5);
@@ -197,8 +197,8 @@ void built()
         expect(deed, "the chief giver's deed is notable");
         expect(s.conserved(), "conserved at the finish");
         // Another, cancelled: its gifts go back.
-        posted = t.g.postProject("mend", "ser_ferro", "", -1, -1, "", "dm");
-        expect(posted.ok, "a mending at Ser Ferro: " + posted.message);
+        posted = t.g.postProject("mend", "larkfield", "", -1, -1, "", "dm");
+        expect(posted.ok, "a mending at Larkfield: " + posted.message);
         t.place(t.bo, 5, 8.5);
         s.shift("treasury", bo, "", 0, 100, "test purse");
         const auto boCash = s.account(bo)->cash;
@@ -284,38 +284,38 @@ void effects()
         auto& w = t.g.world();
         auto& s = w.society();
         // A market cover finished by hand: Marketday in a storm, its stalls go out.
-        auto made = t.g.postProject("cover", "upper_accord", "", -1, -1, "", "dm");
+        auto made = t.g.postProject("cover", "ridgemere", "", -1, -1, "", "dm");
         expect(made.ok, "a cover posted: " + made.message);
         expect(t.g.completeProject(made.targetId).ok, "and completed by the DM's hand");
-        expect(w.standingWorks().covers.count("upper_accord"), "the world knows the cover stands");
-        for (int i = 0; i < 7 && w.dayPlan("upper_accord").kind != "market"; ++i)
+        expect(w.standingWorks().covers.count("ridgemere"), "the world knows the cover stands");
+        for (int i = 0; i < 7 && w.dayPlan("ridgemere").kind != "market"; ++i)
             w.advanceCalendar(1);
         w.setTimeOfDay(9);
         for (const auto& [id, c] : w.cells())
             if (c.outdoors)
                 w.setWeather(id, Weather::Storm);
         t.run(1);
-        expect(w.dayPlan("upper_accord").kind == "market", "Marketday at Upper Accord");
-        expect(!w.dayPlan("upper_accord").foul, "covered, the stalls go out in a storm");
-        expect(w.dayPlan("ser_ferro").foul, "Ser Ferro, uncovered, keeps them in");
+        expect(w.dayPlan("ridgemere").kind == "market", "Marketday at Ridgemere");
+        expect(!w.dayPlan("ridgemere").foul, "covered, the stalls go out in a storm");
+        expect(w.dayPlan("larkfield").foul, "Larkfield, uncovered, keeps them in");
         // A waystation in the wilds shelters those about it.
-        made = t.g.postProject("waystation", "upper_accord", cellId(3), 8, 8, "", "dm");
+        made = t.g.postProject("waystation", "ridgemere", cellId(3), 8, 8, "", "dm");
         expect(made.ok, "a waystation posted in the wilds: " + made.message);
         expect(t.g.completeProject(made.targetId).ok, "and completed");
         const auto* way = t.g.projects().find(made.targetId);
         t.run(1);
         expect(w.shelters.count(way->cell) && w.shelters.at(way->cell).count({way->x, way->y + 1}), "it shelters the tiles about it");
         expect(w.standingWorks().waystations.count(way->cell), "caravans press on by it in a storm");
-        // A mending lifts Ser Ferro's repair and says so.
+        // A mending lifts Larkfield's repair and says so.
         auto st = s.state();
-        st.memory.condition["ser_ferro"] = 40;
-        expect(s.restore(st), "Ser Ferro in disrepair");
-        made = t.g.postProject("mend", "ser_ferro", "", -1, -1, "", "dm");
+        st.memory.condition["larkfield"] = 40;
+        expect(s.restore(st), "Larkfield in disrepair");
+        made = t.g.postProject("mend", "larkfield", "", -1, -1, "", "dm");
         expect(made.ok, "a mending posted: " + made.message);
         s.create("project:" + made.targetId, "stone", 6, "test: delivered");
         expect(t.g.completeProject(made.targetId).ok, "completed");
-        expect(s.condition("ser_ferro") >= 59, "the town's repair lifted over half: " + std::to_string(s.condition("ser_ferro")));
-        expect(s.account("town:ser_ferro:works") && Society::stockAll(*s.account("town:ser_ferro:works"), "stone") >= 6,
+        expect(s.condition("larkfield") >= 59, "the town's repair lifted over half: " + std::to_string(s.condition("larkfield")));
+        expect(s.account("town:larkfield:works") && Society::stockAll(*s.account("town:larkfield:works"), "stone") >= 6,
                "its stone gone to the Town Works' stock");
         bool news = false;
         for (const auto& e : w.recentEvents())
@@ -323,10 +323,10 @@ void effects()
         t.run(2);
         for (const auto& e : w.recentEvents())
             news |= e.kind == "town mended";
-        expect(news || s.condition("ser_ferro") >= 50, "and its news");
+        expect(news || s.condition("larkfield") >= 50, "and its news");
         // A watch post worn: half, then nothing; mended, back.
-        made = t.g.postProject("watchpost", "ridgemere", "", -1, -1, "", "dm");
-        expect(made.ok && t.g.completeProject(made.targetId).ok, "a watch post at Ridgemere");
+        made = t.g.postProject("watchpost", "oakhaven", "", -1, -1, "", "dm");
+        expect(made.ok && t.g.completeProject(made.targetId).ok, "a watch post at Oakhaven");
         const auto postId = made.targetId;
         const auto cell = t.g.projects().find(postId)->cell;
         expect(w.standingWorks().watchposts.count(cell) && w.standingWorks().watchposts.at(cell) == 1, "full strength");
@@ -337,7 +337,7 @@ void effects()
         t.run(1);
         expect(t.g.projects().find(postId)->state == "ruin" && !w.standingWorks().watchposts.count(cell), "a ruin does nothing");
         // (A ruin is rebuilt as a new project; one worn is mended.)
-        made = t.g.postProject("watchpost", "ridgemere", "", -1, -1, "", "dm");
+        made = t.g.postProject("watchpost", "oakhaven", "", -1, -1, "", "dm");
         expect(made.ok && t.g.completeProject(made.targetId).ok, "rebuilt");
         w.advanceCalendar(60);
         t.run(1);
@@ -366,10 +366,10 @@ void effects()
         auto& w = t.g.world();
         auto& s = w.society();
         auto st = s.state();
-        st.memory.condition["upper_accord"] = 30;
-        st.memory.condition["ser_ferro"] = 30;
+        st.memory.condition["ridgemere"] = 30;
+        st.memory.condition["larkfield"] = 30;
         expect(s.restore(st), "two towns in disrepair");
-        w.recordEvent({"raid", "camp_c_6_0", "ridgemere", cellId(6), 0, 0, {}, 3, 0, "the caravan to ridgemere was robbed"});
+        w.recordEvent({"raid", "camp_c_6_0", "oakhaven", cellId(6), 0, 0, {}, 3, 0, "the caravan to oakhaven was robbed"});
         int posted = 0;
         for (int day = 0; day < 6; ++day)
         {
@@ -386,10 +386,10 @@ void effects()
         for (const auto& [id, p] : t.g.projects().all())
         {
             mends += p.kind == "mend";
-            posts += p.kind == "watchpost" && p.town == "ridgemere" && p.cell == cellId(6);
+            posts += p.kind == "watchpost" && p.town == "oakhaven" && p.cell == cellId(6);
         }
         expect(mends == 2, "a mending for each town in disrepair, one each, never two: " + std::to_string(mends));
-        expect(posts == 1, "a watch post where Ridgemere's caravan was robbed: " + std::to_string(posts));
+        expect(posts == 1, "a watch post where Oakhaven's caravan was robbed: " + std::to_string(posts));
         expect(posted == 3, "and no more: " + std::to_string(posted));
     }
     fs::remove_all(root);
@@ -421,15 +421,15 @@ void visible()
         };
         std::string store;
         for (const auto& town : w.towns())
-            if (town.id == "upper_accord")
+            if (town.id == "ridgemere")
                 store = town.store;
-        expect(!store.empty(), "Upper Accord keeps a store");
+        expect(!store.empty(), "Ridgemere keeps a store");
         if (const auto* held = s.account(store))
             s.consume(store, "meal", Society::stock(*held, "meal"), "test: eaten");
         w.setTimeOfDay(10);
         t.run(3700);                                // (The store's price, hourly.)
-        expect(w.townShortOf("upper_accord", "meal"), "the town is short of meals");
-        const double before = w.goingPrice("upper_accord", "meal");
+        expect(w.townShortOf("ridgemere", "meal"), "the town is short of meals");
+        const double before = w.goingPrice("ridgemere", "meal");
         s.create(ash, "meal", 6, "test: cooked");
         put("um", 1, 10.5);
         t.run(.5);
@@ -438,11 +438,11 @@ void visible()
         // The store filled again (as a caravan does): the price falls, and the town says why.
         s.create(store, "meal", 40, "test: a caravan's load");
         t.run(3700);
-        expect(w.goingPrice("upper_accord", "meal") <= before * .9, "the price fell a tenth or more");
+        expect(w.goingPrice("ridgemere", "meal") <= before * .9, "the price fell a tenth or more");
         bool lowered = false;
         for (const auto& e : w.recentEvents())
             lowered |= e.kind == "price lowered" && e.actor == ash;
-        const auto causes = w.priceCauses().find("upper_accord");
+        const auto causes = w.priceCauses().find("ridgemere");
         expect(causes != w.priceCauses().end() && !causes->second.empty() && causes->second.back().who == ash, "the cause is hers");
         bool told = false, leak = false;
         w.setTimeOfDay(12);                         // (Awake, at midday.)
@@ -478,19 +478,19 @@ void visible()
         // Food into a town of bare shelves.
         auto st = s.state();
         orchestra::TownReading bare;
-        bare.id = "upper_accord";
+        bare.id = "ridgemere";
         bare.people = 5;
         bare.kind = "empty shelves";
         st.orchestrator.last.towns = {bare};
-        expect(s.restore(st), "Upper Accord's shelves are bare");
-        w.noteTrade("upper_accord", "meal", ash, 2);
+        expect(s.restore(st), "Ridgemere's shelves are bare");
+        w.noteTrade("ridgemere", "meal", ash, 2);
         bool fed = false;
         for (const auto* d : t.g.deeds().byDoer(ash))
             fed |= d->kind == "fed_town";
         expect(fed, "she fed the town: a deed");
 
         // The orchestrator counts what players bring; a project's purse is never a holder.
-        expect(t.g.postProject("mend", "upper_accord", "", -1, -1, "", "dm").ok, "a mending to give to");
+        expect(t.g.postProject("mend", "ridgemere", "", -1, -1, "", "dm").ok, "a mending to give to");
         std::string mend;
         for (const auto& [id, p] : t.g.projects().all())
             mend = id;
@@ -513,7 +513,7 @@ void visible()
         snapshot();
         bool counted = false;
         for (const auto& town : s.orchestrator().last.towns)
-            if (town.id == "upper_accord")
+            if (town.id == "ridgemere")
                 counted = town.playerIn >= 25 && town.playerOut > 0 && town.playerGoods > 0;
         std::string seen = "brief day " + std::to_string(s.orchestrator().last.day) + " now " + std::to_string(w.calendarDays()) + ": ";
         for (const auto& town : s.orchestrator().last.towns)

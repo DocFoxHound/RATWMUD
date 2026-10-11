@@ -1,4 +1,4 @@
-// A strip of three towns for game tests (Upper Accord, Ser Ferro, Ridgemere, each with an inn by its market), a test
+// A strip of three towns for game tests (Ridgemere, Larkfield, Oakhaven, each with an inn by its market), a test
 // client, and a game around them (`Town`): shared by letters_tests and gathering_tests. Included inside a test file's
 // anonymous namespace, after its `expect`.
 json::Value parsed(const std::string& text)
@@ -46,7 +46,7 @@ std::string cmd(std::initializer_list<std::pair<const char*, json::Value>> field
 }
 bool contains(const std::string& text, const std::string& part) { return text.find(part) != std::string::npos; }
 
-// Nine cells in a row: Upper Accord (the capital) in the first two, wild country, Ser Ferro, Ridgemere at the far end.
+// Nine cells in a row: Ridgemere (the capital) in the first two, wild country, Larkfield, Oakhaven at the far end.
 // Each town's first cell is where its people live, its second its market, with an inn there.
 constexpr int Side = 16;
 std::string cellId(int i) { return "c_" + std::to_string(i) + "_0"; }
@@ -101,7 +101,7 @@ std::string writeStrip(const fs::path& root, bool upstairs = false, bool stalls 
     }
     for (const auto& [id, text] : seams)
         std::ofstream(root / "seams" / id) << text;
-    const auto region = [](char c) { return c == 'U' ? "upper_accord" : c == 'S' ? "ser_ferro" : c == 'R' ? "ridgemere" : "wilds"; };
+    const auto region = [](char c) { return c == 'U' ? "ridgemere" : c == 'S' ? "larkfield" : c == 'R' ? "oakhaven" : "wilds"; };
     for (int i = 0; i < cells; ++i)
     {
         m << "exits \"" << cellId(i) << "\" " << ((i > 0) + (i + 1 < cells));
@@ -122,15 +122,15 @@ std::string writeStrip(const fs::path& root, bool upstairs = false, bool stalls 
         for (int n = 1; n <= 3; ++n)
             m << resident(tag + std::to_string(n), "Neighbour " + tag + std::to_string(n), "civilian", "working", home, 3.5 + n, home, 3.5 + n);
     }
-    if (archive)                                    // (A records clerk at Upper Accord's market: doc 54, 7.)
+    if (archive)                                    // (A records clerk at Ridgemere's market: doc 54, 7.)
         m << resident("ua", "Clerk u", "civilian", "copying the city rolls", 0, 6.5, 1, 4.5);
     if (upstairs)
     {
-        // Upper Accord's inn's upstairs (doc 54's beds): a room with four beds, reached by placing wolves there.
+        // Ridgemere's inn's upstairs (doc 54's beds): a room with four beds, reached by placing wolves there.
         std::ofstream cell(root / "cells" / "c_up.cell");
         cell << "id: c_up\nname: Stretch 1, upstairs\ndescription: Small rooms and beds.\nworld: 0 100 0\noutdoors: false\nweather: clear\nsize: 10 6\ngrid:\n"
              << "..........\n.b..b.....\n..........\n.b..b.....\n..........\n..........\n";
-        m << "area \"c_up\"\nterritory \"c_up\" \"upper_accord\" \"-\" 0\n";
+        m << "area \"c_up\"\nterritory \"c_up\" \"ridgemere\" \"-\" 0\n";
         std::ofstream(root / "seams" / "c_up") << "";
     }
     std::ofstream(root / "world.ratw") << m.str();

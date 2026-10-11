@@ -52,11 +52,12 @@ Climate climateOf(const Cell& c)
     const auto has = [&](std::initializer_list<const char*> words) {
         return std::any_of(words.begin(), words.end(), [&](const char* w) { return r.find(w) != std::string::npos; });
     };
-    if (has({"fen", "mire", "marsh", "bog", "drowned", "swamp", "mere"}))
+    if (has({"fen", "mire", "marsh", "bog", "drowned", "swamp", "delta"}))
         return Climate::Marsh;
-    if (has({"coast", "isle", "ridgemere", "saltreach", "rain", "harbour", "sound", "grey horn"}))
+    if (has({"coast", "isle", "ridgemere", "rain", "harbour", "sound"}))
         return Climate::Wet;
-    if (has({"moor", "north", "bleak", "frost", "peak", "summit", "upper_accord", "ridge", "glacier", "snow", "warden"}))
+    if (has({"moor", "north", "bleak", "frost", "peak", "summit", "ridge", "glacier", "snow", "whitefang", "greyteeth",
+             "glasswater", "coldwater"}))
         return Climate::Cold;
     if (has({"steppe", "amber", "barren", "ghost", "dune", "desert", "dust", "waste"}))
         return Climate::Arid;

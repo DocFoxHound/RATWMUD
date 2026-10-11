@@ -1,5 +1,5 @@
 // Tavern games in the real page (Docs/Design/54-gathering-places.md, Phase 5), on the three-town strip with a table in
-// Upper Accord's inn's common room: in the evening Ash sits at the table, sets out Knucklebones, asks the room (a resident
+// Ridgemere's inn's common room: in the evening Ash sits at the table, sets out Knucklebones, asks the room (a resident
 // who lives there takes a seat), begins, and plays it out from the panel against the resident. Screenshots go to
 // artifacts/screenshots/tables/.
 //
@@ -19,8 +19,8 @@ const binary = process.env.RATW_SERVER ?? `${root}/build-core/ratw_server`;
 const web = process.env.RATW_WEB ?? `${root}/Client/dist`;
 const tmp = mkdtempSync(join(tmpdir(), 'ratw-tables-'));
 
-// The strip (as tools/client/newcomer.mjs writes it, with an inn by the spawn): Upper Accord (with the spawn) in the first two cells, wild
-// country, Ser Ferro in cells 4-5, Ridgemere in 7-8; each town's first cell its homes, its second its market.
+// The strip (as tools/client/newcomer.mjs writes it, with an inn by the spawn): Ridgemere (with the spawn) in the first two cells, wild
+// country, Larkfield in cells 4-5, Oakhaven in 7-8; each town's first cell its homes, its second its market.
 function writeStrip(dir) {
     const layout = 'UU..SS.RR', side = 16, cells = layout.length;
     const id = i => `c_${i}_0`;
@@ -41,7 +41,7 @@ function writeStrip(dir) {
             }
     }
     for (const [cell, text] of Object.entries(seams)) writeFileSync(join(dir, 'seams', cell), text);
-    const region = c => ({U: 'upper_accord', S: 'ser_ferro', R: 'ridgemere'})[c] ?? 'wilds';
+    const region = c => ({U: 'ridgemere', S: 'larkfield', R: 'oakhaven'})[c] ?? 'wilds';
     for (let i = 0; i < cells; ++i) {
         const exits = [i > 0 ? id(i - 1) : null, i + 1 < cells ? id(i + 1) : null].filter(Boolean);
         m += `exits "${id(i)}" ${exits.length}${exits.map(e => ` "${e}"`).join('')}\n`;
@@ -56,7 +56,7 @@ function writeStrip(dir) {
         m += resident(`${tag}m`, `Merchant ${tag}`, 'merchant', 'keeping the stall', home, 2.5, home + 1, 8.5);
         for (let n = 1; n <= 5; ++n) m += resident(`${tag}${n}`, `Neighbour ${tag}${n}`, 'civilian', 'working', home, 3.5 + n, home, 3.5 + n);
     }
-    // Upper Accord's inn, by the spawn: where letters are written.
+    // Ridgemere's inn, by the spawn: where letters are written.
     m += resident('ui', 'Wren Tallow', 'merchant', 'keeping the inn', 0, 12.5, 1, 12.5);   // (The inn: its common room in c_1_0.)
     // A regular who lives by the inn: free in the evening.
     m += `resident "u6" "Pell Barrow" "civilian" "working" "Someone." "Hello." 30 "timber" "male" "average" "saddle" 3 1 5 1 1 8 17 "-" 40 0 1 ` +

@@ -152,7 +152,7 @@ a : Probably. | Hm. | We'll see.
 
 scene pl2_stranger_child
 when topic=player known=no a.stage=young
-a : Is {subject} a Warden? | I want to talk to {subject}! | Does {subject} have a sword?
+a : Is {subject} Gifted? | I want to talk to {subject}! | Does {subject} have a sword?
 b : Leave them be. | Don't bother them. | I doubt it.
 a : But I want to! | Fine. | Maybe a little sword.
 

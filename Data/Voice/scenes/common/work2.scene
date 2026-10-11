@@ -48,7 +48,7 @@ a : Is it bad? | I'll try. | Thank you.
 
 scene wk2_priest_confession
 when topic=work b.job=priest
-a : I need to talk to someone. | Will you light a candle for my mother? | Does the Saint forgive everything?
+a : I need to talk to someone. | Will you light a candle for my mother? | Does the Bright One forgive everything?
 b : The chapel's always open. | Of course. | Almost everything. Ask, and find out.
 a : Tonight, then. | Thank you. | I will.
 

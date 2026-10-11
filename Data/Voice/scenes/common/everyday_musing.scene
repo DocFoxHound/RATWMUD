@@ -137,10 +137,10 @@ a : And I'll hear it a hundred more. | Then tell those. | Made a guard cry last 
 
 scene ev_game_pups_play
 when topic=smalltalk
-a : The pups have been wrestling in the mud all morning. | Our little one wants to play wardens and wolves. | Look at them racing round the well.
+a : The pups have been wrestling in the mud all morning. | Our little one wants to play watch and thieves. | Look at them racing round the well.
 b[old] : Let them. We'll all be stiff soon enough.
-b : As long as they wash. | Who gets to be the warden? | Racing and squealing.
-a : They won't. | Everyone wants to be the warden. | Makes my heart glad.
+b : As long as they wash. | Who gets to be the thief? | Racing and squealing.
+a : They won't. | Everyone wants to be the thief. | Makes my heart glad.
 
 scene ev_game_tug
 when topic=smalltalk a.stage=young|adolescent b.stage=young|adolescent
@@ -189,7 +189,7 @@ b : And you just watched it? | Long time ago. | That never goes.
 a : I'm a civilised wolf now. | Feels it. | Never does.
 
 scene ev_beast_crows_on_fields
-when topic=smalltalk region=countryside|steppe place=field|street
+when topic=smalltalk region=countryside place=field|street
 a : The crows are thick on the stubble. | Rooks stole half the seed corn. | There's a hawk over the far meadow.
 b[farmer] : Need a pup with a sling, that's what.
 b : They'll have it clean by noon. | Clever birds. | Watching for mice.

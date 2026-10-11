@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------- Woodcutters
 
 scene tr_wood_charcoal
-when topic=work a.job=woodcutter|laborer region=marches|ridgemere
+when topic=work a.job=woodcutter|laborer region=frosthollow|ridgemere
 a : Banked the charcoal clamp last night. Sat up with it till dawn. | The clamp caught and burned to ash. A week's work. | Smiths want charcoal faster than trees grow.
 b : Smoke in your eyes? | All of it? | Plant more trees.
 a : Smoke in my eyes, my fur, my dreams. | All but the smell. | Plant them and wait forty years?
@@ -31,12 +31,6 @@ when topic=work a.job=woodcutter|crafter b.job=woodcutter|crafter|laborer
 a : You take top saw today. I'm sick of sawdust in my eyes. | Pull on the down stroke, not the up. | Third log and the saw's stuck again.
 b : I took it yesterday. | I am pulling on the down. | Wet wood.
 a : And I took it three days before. | Then pull harder. | Wet wood, wet wolves, wet everything.
-
-scene tr_wood_fortress
-when topic=work a.job=woodcutter|laborer region=fortresses
-a : The garrison burns more wood in a week than a town does in a month. | They want the trees cut back a bowshot from the walls. | Cut timber for the new palisade.
-b : Big ovens. | Why? | Strong?
-a : Big ovens and cold soldiers. | So nothing creeps up. Including me. | Strong enough for the paperwork.
 
 # ---------------------------------------------------------------- Scholars
 
@@ -69,12 +63,6 @@ when topic=work|smalltalk a.job=scholar time=night|dusk
 a : The comet's back. The old books say every sixty years. | I've been counting stars for the calendar. Lost count. | Clouds again. A whole night wasted.
 b : Bad omen? | Start again. | Sleep, then.
 a : The priests think so. The books think not. | I'll start where I left off. Somewhere near the moon. | Sleeping's for wolves who don't owe a calendar.
-
-scene tr_schol_wardens
-when topic=work a.job=scholar region=upper_accord
-a : The Wardens' archive has a wing no one's allowed in. | I found a record of a Quickened wolf from two hundred years ago. | They're testing a new pup at the training ground.
-b : Have you tried? | What did it say? | Testing for what?
-a : Once. Never again. | Ash and fire, mostly. | That's not mine to know. Or yours.
 
 # ---------------------------------------------------------------- Miners
 
@@ -129,8 +117,8 @@ b : Pay them. | Rules are rules. | Always have.
 a : Pay them for what? | Rules made by guild masters. | Always will, unless.
 
 scene tr_craft_saltreach_barrel
-when topic=work a.job=crafter region=saltreach
-a : The Barrel Yard's behind. Salt house wants forty barrels. | Bent a stave and it sprang back and hit me on the nose. | Brine eats through the hoops in a season.
+when topic=work a.job=crafter region=ridgemere
+a : The cooperage is behind. Salt house wants forty barrels. | Bent a stave and it sprang back and hit me on the nose. | Brine eats through the hoops in a season.
 b : Forty? | Your poor nose. | Use thicker iron.
 a : Forty, and they all must hold brine. | My poor nose is fine. My pride isn't. | Thicker iron, dearer barrels.
 
@@ -259,10 +247,10 @@ b : Where will you go? | A shop! | Get it in writing.
 a : Anywhere I don't have to bow. | A small one. Mine, though. | Writing's for the ones who can read.
 
 scene tr_serv_fortress_cook
-when topic=work a.job=servant|cook region=fortresses
-a : Porridge for a hundred and thirty. Every morning. | The commander wants meat on Restday. There's no meat. | The garrison eats like wolves. Well. They are.
+when topic=work a.job=servant|cook region=ridgemere
+a : Porridge for a hundred and thirty at the Soup Kitchen. Every morning. | The Soup Kitchen wants meat on Restday. There's no meat. | Sump folk eat like wolves. Well. They are.
 b : Every morning? | Give them a rabbit. | Like starving wolves.
-a : And noon, and evening. | One rabbit. A hundred and thirty mouths. | Starving, bored wolves.
+a : And noon, and evening. | One rabbit. A hundred and thirty mouths. | Starving, soaked wolves.
 
 # ---------------------------------------------------------------- Healers, priests, fishers and others
 

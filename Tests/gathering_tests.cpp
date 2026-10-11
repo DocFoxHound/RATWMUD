@@ -40,7 +40,7 @@ void taverns()
     const auto world = writeStrip(root);
     Town t(world, {}, 1);                           // (A performer may be quiet one whole second, here.)
     Client di;
-    t.enter(t.ash, 1, "ash", "Ash", 1, 11.5);       // Upper Accord's common room (its inn's cell).
+    t.enter(t.ash, 1, "ash", "Ash", 1, 11.5);       // Ridgemere's common room (its inn's cell).
     t.enter(t.bo, 2, "bo", "Bo", 1, 12.5);
     t.enter(t.cy, 3, "cy", "Cy", 1, 13.5);
     t.enter(di, 4, "di", "Di", 0, 8.5);            // Out in the street.
@@ -128,15 +128,15 @@ void boards()
     const auto root = fs::temp_directory_path() / ("ratw-boards-" + std::to_string(::getpid()));
     const auto world = writeStrip(root);
     Town t(world, {});
-    t.enter(t.ash, 1, "ash", "Ash", 5, 8.5);        // Ser Ferro's market.
+    t.enter(t.ash, 1, "ash", "Ash", 5, 8.5);        // Larkfield's market.
     t.enter(t.bo, 2, "bo", "Bo", 5, 9.5);
     t.run(1);
     auto& w = t.g.world();
     auto& society = w.society();
-    const auto* spot = w.boardSpot("ser_ferro");
-    expect(spot && spot->cell == cellId(5), "Ser Ferro has a board on its square");
+    const auto* spot = w.boardSpot("larkfield");
+    expect(spot && spot->cell == cellId(5), "Larkfield has a board on its square");
     const auto where = *spot;
-    expect(w.boardSpot("ser_ferro")->x == where.x && w.boardSpot("ser_ferro")->y == where.y, "the same place every time");
+    expect(w.boardSpot("larkfield")->x == where.x && w.boardSpot("larkfield")->y == where.y, "the same place every time");
     const auto atBoard = [&](Client& c) { t.place(c, 5, where.x + .5, where.y); };
     const auto board = [&](Client& c, std::initializer_list<std::pair<const char*, json::Value>> more) {
         auto o = json::Value::object();
@@ -154,7 +154,7 @@ void boards()
     t.run(.5);
     expect(t.selfOf(t.ash).boolean("nearBoard"), "beside it: Read the board");
     // The work side: the town's contracts, taken from the board.
-    const auto& posted = w.postContract("supply", "treasury", "ser_ferro", "ser_ferro", 9, 7, "sacks of grain for the granary");
+    const auto& posted = w.postContract("supply", "treasury", "larkfield", "larkfield", 9, 7, "sacks of grain for the granary");
     const auto contract = posted.id;
     board(t.ash, {{"verb", "read"}});
     const auto* view = t.ash.last("board");
@@ -167,11 +167,11 @@ void boards()
     for (const auto& k : w.roads().contracts)
         taken = taken || (k.id == contract && k.taker == t.ash.entityId);
     expect(taken, "taken on from the board");
-    // A notice: a penny to Ser Ferro's own stores, not the capital.
-    const auto town = society.account(society.treasuryOf("ser_ferro"))->cash, capital = society.account("treasury")->cash;
+    // A notice: a penny to Larkfield's own stores, not the capital.
+    const auto town = society.account(society.treasuryOf("larkfield"))->cash, capital = society.account("treasury")->cash;
     auto said = board(t.ash, {{"verb", "post"}, {"kind", "seeking"}, {"whatType", "item"}, {"whatValue", "honey"}, {"text", "Seeking good honey."}});
     expect(contains(said, "You pin your notice"), "Ash pins a notice: " + said);
-    expect(society.account(society.treasuryOf("ser_ferro"))->cash == town + 1 && society.account("treasury")->cash == capital, "a penny to the town");
+    expect(society.account(society.treasuryOf("larkfield"))->cash == town + 1 && society.account("treasury")->cash == capital, "a penny to the town");
     board(t.bo, {{"verb", "read"}});
     auto notices = t.bo.last("board")->array("notices");
     expect(notices.size() == 1 && notices[0].string("scent") == "A wolf's scent you don't know." && contains(notices[0].string("what"), "honey"),
@@ -314,7 +314,7 @@ void stalls()
     auto& society = w.society();
     const auto community = w.lawTown(cellId(1));
     const auto spots = w.stallSpots(community);
-    expect(spots.size() >= 6, "Upper Accord's square has its built stalls' spots: " + std::to_string(spots.size()));
+    expect(spots.size() >= 6, "Ridgemere's square has its built stalls' spots: " + std::to_string(spots.size()));
     const auto spot = spots.front();
     t.enter(t.ash, 1, "ash", "Ash", 1, spot.x);
     t.enter(t.bo, 2, "bo", "Bo", 1, 12.5);
@@ -777,7 +777,7 @@ void archive()
     said = arc({{"verb", "sort"}, {"order", toValue(order)}});
     expect(contains(said, "The records are in order") && contains(said, "pays you 2p") && society.account(t.ash.entityId)->cash == purse + 2 &&
                society.account(treasury)->cash == town - 2, "sorted, and paid 2p by the town: " + said);
-    expect(contains(said, "Among the records") && w.entity(t.ash.entityId)->lore.size() == 1 && w.entity(t.ash.entityId)->lore[0] == "ua-oath-1",
+    expect(contains(said, "Among the records") && w.entity(t.ash.entityId)->lore.size() == 1 && w.entity(t.ash.entityId)->lore[0] == "rm-sound-1",
            "the town's first fragment: " + said);
     for (int i = 0; i < 3; ++i)
     {

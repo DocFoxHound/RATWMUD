@@ -38,10 +38,8 @@ const std::map<std::string, std::set<std::string>> TagValues{
     {"when", {"today", "soon"}},
     {"known", {"yes", "no"}},
     {"nickname", {"yes", "no"}}};
-const std::set<std::string> Regions{"upper_accord", "ridgemere", "ser_ferro", "accord_crossing", "saltreach",
-                                    "cinderbrook", "westmarch", "lakeside", "fenhollow", "amberford",
-                                    "hollowmere_village", "ghost_town", "northern_fortress", "isle_fortress",
-                                    "dark_fortress", "wild"};
+const std::set<std::string> Regions{"ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge", "larkfield",
+                                    "southmeadow", "wild"};
 const std::set<std::string> Always{"weather", "bark"};
 
 std::string trim(const std::string& s)
@@ -622,7 +620,8 @@ std::string jobCategory(const std::string& title, const std::string& label, cons
         return "woodcutter";
     if (has({"carter", "carries", "porter", "caravan", "wagon", "loads"}))
         return "carter";
-    if (has({"lord", "lady", "house grayrock", "noble", "prince", "heir", "palazzo"}))
+    if (has({"lord", "lady", "house greatly", "house fell", "house grayrock", "house mossgrave", "noble", "prince",
+             "heir"}))
         return "noble";
     if (has({"servant", "maid", "valet", "footman", "steward"}))
         return "servant";

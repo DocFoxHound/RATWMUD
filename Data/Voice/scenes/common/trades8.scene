@@ -11,7 +11,7 @@ a : That's what you said last Restday. | I'm not surprised. I'm astonished. | Do
 
 scene tr_merch_new_goods
 when topic=work a.role=merchant
-a : Got a crate of southern spices in. Smell that. | Bought a load of copper pots off a carter. Questions not asked. | New cloth from Ser Ferro. Red as a royal roof.
+a : Got a crate of southern spices in. Smell that. | Bought a load of copper pots off a carter. Questions not asked. | New cloth from the city. Red as a lord's cloak.
 b : Smells expensive. | Stolen? | How much?
 a : Smells expensive because it is. | Pots don't talk. | More than you'll pay. Less than it's worth.
 
@@ -29,12 +29,12 @@ a : At my age? He was gone. | I can't watch front and back. | Only me. And the c
 
 scene tr_merch_upper_streets
 when topic=work a.role=merchant region=cities
-a : The upper streets buy silk. The lower streets buy bread. I sell both. | A lady sent her servant to haggle. The servant's better at it than me. | The rich never carry coin. Everything on account.
+a : The Heights buy silk. The Sump buys bread. I sell both. | A lady sent her servant to haggle. The servant's better at it than me. | The rich never carry coin. Everything on account.
 b : Clever. | Ha. | And pay when?
 a : Clever and tired. | I'll hire him away. | When they remember. They never remember.
 
 scene tr_merch_sea_trade
-when topic=work a.role=merchant region=rain_coast|lake|ser_ferro
+when topic=work a.role=merchant region=rain_coast|lake
 a : My ship's three days overdue. | Bought a share in a cargo. If it sinks, so do I. | Ships are in. Prices are down.
 b : Weather. | Brave. | Buy, then.
 a : Weather or worse. | Brave or stupid. Same thing at sea. | Buy cheap, pray for dear.
@@ -192,12 +192,6 @@ when topic=work a.job=cook|innkeeper|baker region=towns
 a : The carters want meat. The meat's in the city. | Cooking for a town is cooking for a family. A loud one. | Everyone in town knows what I put in the stew.
 b : Give them mutton. | Loud and hungry. | Everything, I hope.
 a : Mutton again. They'll mutiny. | Loud, hungry and never late. | Everything left over.
-
-scene tr_food_fortress_brewer
-when topic=work a.job=brewer|cook region=fortresses
-a : The garrison ration is a pint a day. They want two. | Brewed in a fortress cellar. Tastes of stone. | Commander tasted my ale and smiled. First time all year.
-b : Give them two. | Stone's flavour. | Miracle.
-a : And watch them fall off the walls? | Stone and duty. | A small smile. I'll take it.
 
 # ---------------------------------------------------------------- Woodcutters and miners, more
 

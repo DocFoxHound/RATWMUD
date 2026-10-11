@@ -66,8 +66,6 @@ std::string strangerWords(const Appearance& a)
 
 std::string townWords(const std::string& id)
 {
-    if (id == "hollowmere_village")
-        return "Hollowmere";
     std::string out;
     bool up = true;
     for (char c : id)
@@ -370,9 +368,6 @@ void World::sceneMoment(const std::string& who, std::map<std::string, std::strin
         return;
     const auto* c = cell(e->cellId);
     auto townId = townIdOf(e->cellId);
-    static const std::set<std::string> accord{"concord_hall", "training_grounds", "warden_order"};
-    if (accord.count(townId))
-        townId = "upper_accord";
     const auto plan = dayPlan(communityOf(e->cellId));
     const auto cal = calendar::calendarAt(calendarDays_);
     static const char* seasons[] = {"spring", "summer", "autumn", "winter"};

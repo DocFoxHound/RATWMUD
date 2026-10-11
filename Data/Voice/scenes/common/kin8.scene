@@ -189,7 +189,7 @@ a : Very good, my lord. | It won't happen again, my lord. | He can hear you, my 
 scene kn_house_servants_gossip
 when topic=smalltalk a.job=servant b.job=servant
 a : The master was shouting again last night. | Her ladyship's pregnant, I'd bet a week's pay. | The young lord's been sneaking out.
-b : I heard. The whole house heard. | You'd lose. She's just fat on honey. | To the tavern by the quay.
+b : I heard. The whole house heard. | You'd lose. She's just fat on honey. | To the tavern on the wharf.
 a : What do you think it was about? | Fat on honey doesn't make you sick in the mornings. | You knew?
 b : Money. It's always money. | Bright One, you might be right. | I hold the back door for him.
 a : Or the brother. | I'm always right. | You'll hang for that.

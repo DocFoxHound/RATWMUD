@@ -117,13 +117,13 @@ scene tr_cook_noble_kitchen
 when topic=work a.job=cook|servant region=cities
 a : The house wants five courses tonight and fish from the morning. | Her ladyship sent the sauce back. Twice. | Guests at the high table. Nobody breathe.
 b : Five? With what fish? | What was wrong with it? | I'll breathe in the yard.
-a : With whatever the quay hasn't sold. | She didn't say. That's the worst part. | Breathe quietly.
+a : With whatever the wharf hasn't sold. | She didn't say. That's the worst part. | Breathe quietly.
 
 scene tr_cook_spices
 when topic=work|prices a.job=cook
 a : No pepper in the whole market. | Saffron's a mark an ounce, if you can find it. | I've run out of salt. Salt!
 b[merchant] : I've a little put by. For a friend. At a friend's price.
-b : Use more onion. | Then use marigold, nobody'll know. | Saltreach sends it by the cartload.
+b : Use more onion. | Then use marigold, nobody'll know. | The coast sends it by the cartload.
 a : Onion with everything. Like peasants. | I'll know. | Not this week they don't.
 
 scene tr_cook_feast
@@ -173,7 +173,7 @@ b : Two? It's barely noon. | I'll go to the merchant. | The cat.
 a : Two. It's a Marketday crowd. | The good merchant. Not the cheap one. | The cat can pay for it.
 
 scene tr_inn_waystation
-when topic=work a.job=innkeeper region=accord_crossing|westmarch|amberford
+when topic=work a.job=innkeeper region=downs
 a : Three caravans in one evening. I need another cook. | Drovers come in smelling of sheep and leave smelling of my ale. | The road brings everyone through my door, eventually.
 b : Hire my cousin. | Better than the other way round. | Everyone and their mud.
 a : Can your cousin cook? | Much better. | Mud I can sweep. Debts I can't.
@@ -227,8 +227,8 @@ a : She'll find out. She always does. | It was the cat. We agree. | Half each.
 
 scene tr_serv_ridgemere_house
 when topic=work a.job=servant region=ridgemere
-a : The Grayrock house wants its colours on every cushion by the feast. | House Vesk's steward docks us for the fish smell. | The Brinewater ladies want the windows washed in this rain.
-b : Every cushion? | We work for Vesk. Everything smells of fish. | In this rain?
+a : The Grayrock house wants its colours on every cushion by the feast. | House Greatly's steward docks us for the tar smell. | The Mossgrave ladies want the windows washed in this rain.
+b : Every cushion? | We work for Greatly. Everything smells of tar. | In this rain?
 a : Every one. And the dogs' cushions. | That's what I told him. | They want to watch the rain through clean glass.
 
 # ---------------------------------------------------------------- Food trades together
@@ -257,14 +257,8 @@ a : The poor are at my door every morning now. | Stores are low. We'll be eating
 b : Winter always brings them. | Oats are honest food. | Burn the furniture.
 a : More every year. | Honest and dull. | I'd start with yours.
 
-scene tr_food_upper_accord
-when topic=work a.job=cook|innkeeper|baker region=accord
-a : The pilgrims want plain food. Fasting food. | Concord clerks eat like sparrows and complain like crows. | The Wardens take their meals early and silent.
-b : Plain's cheap. | And tip like sparrows. | They're trained to it.
-a : Plain is harder than it looks. | Smaller than sparrows. | I'd rather a carter. Loud, but they eat.
-
 scene tr_food_ser_ferro
-when topic=work a.job=cook|baker|innkeeper region=ser_ferro
-a : River eel's come in. Half the city wants it in pastry. | The white bread for the cathedral's due by the bell. | A court steward ordered sixty pies and paid with a promise.
-b : Eel pies, then. | The cathedral can wait a minute. | Ser Ferro coin. Shiny promises.
-a : Eel pies till my paws smell of river. | The cathedral never waits. | The shinier the promise, the longer the wait.
+when topic=work a.job=cook|baker|innkeeper region=ridgemere
+a : Eels are in off the Sound. Half the city wants them in pastry. | The white bread for the Chapel of the Tide's due by the bell. | A Greatly steward ordered sixty pies and paid with a promise.
+b : Eel pies, then. | The chapel can wait a minute. | Heights coin. Shiny promises.
+a : Eel pies till my paws smell of eel. | The chapel never waits. | The shinier the promise, the longer the wait.

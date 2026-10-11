@@ -1,4 +1,5 @@
-# The world around: weather, seasons, the stars, old stories everyone knows.
+# The world around: weather, seasons, the stars, old stories everyone knows; and the land itself (doc 60): Ridgemere,
+# the only city, on its hills above the Sound; the six towns; the Long River; the snowy north-east and the warm south.
 
 scene wt2_rain_work
 when topic=weather weather=rain|storm
@@ -133,3 +134,41 @@ a : Found a white stone today. Good luck. | Saw a heron. That's luck, isn't it? 
 b[old] : Luck's what you make. And a white stone helps.
 b : Lucky you. | Herons are luck. | Find another.
 a : Hope so. | Good. | I'll try.
+
+# ---------------------------------------------------------------- The land (doc 60)
+
+scene wt3_the_city_from_afar
+when topic=lore|smalltalk region=towns
+a : My cousin went to Ridgemere. Says it rained every day. | Have you ever seen Ridgemere? The only real city there is. | They say Ridgemere's built on hills, one street on top of the next.
+b[merchant] : Ridgemere pays well for what we send. I'd go myself if the road were shorter.
+b : Every day? | Never. Too far. | Sounds like a lot of stairs.
+a : Every single one. | One day, maybe. | And all of them wet.
+
+scene wt3_the_towns_from_the_city
+when topic=lore|smalltalk region=ridgemere
+a : Six towns out there, and not one bigger than the Sump. | My mother was from Southmeadow. Said the sun shone there. | They say up in Frosthollow the snow never leaves.
+b[carter] : I've driven to every one. The Southway's mud, and the High Road's worse.
+b : And twice as dry. | The sun! Imagine. | Not even in summer?
+a : Dry sounds nice. | I try to. | Not even then.
+
+scene wt3_long_river
+when topic=lore|smalltalk region=lake|countryside
+a : The Long River starts in Glasswater, they say, and ends in the Drowned Delta. | My father took a raft down the Long River once. Halfway, anyway. | Half the south drinks from the Long River.
+b[old] : That river was here before any of us. It'll be here after.
+b : That's a long way. | Only halfway? | The thirsty half.
+a : It's in the name. | The fens stopped him. | Which is all of it, in summer.
+
+scene wt3_north_and_south
+when topic=lore|smalltalk
+weight 0.7
+a : North-east it's all mountains and snow, they say. | Down in the south-west the woods are warm even in winter. | The Sunfields grow half the bread we eat.
+b[old] : Snow one end, swamp the other, and rain on Ridgemere. That's the whole world.
+b : I'll take your word for it. | Warm in winter? | And the rest?
+a : Wise. | So they say. | Rabbit, mostly.
+
+scene wt3_whitefangs
+when topic=lore|weather region=mountains
+a : The Whitefangs are clear today. You can count the peaks. | Snow's come down off the Whitefangs early. | The pass up to Frosthollow is closed again.
+b[miner] : Mountains give the ore and take the miners. Fair trade, some say.
+b : I make it eleven. | It always does. | Wait it out.
+a : There's more behind. | Early and hard. | Nothing else to do.

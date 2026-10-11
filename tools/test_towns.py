@@ -1,13 +1,13 @@
-"""The town builder (worldgen/towns.py) on a placeholder like the western generator leaves: built, peopled, every
+"""The town builder (worldgen/towns.py) on a placeholder like the realm generator leaves: built, peopled, every
 door walkable from the gate; refused where the ground has been edited; and nothing outside the place touched."""
 import copy
 import unittest
 
 from worldgen import towns as T
-from worldgen.western import OX, OY, SETTLEMENTS
+from worldgen.realm import OX, OY, SETTLEMENTS
 
 
-def placeholder(sid='westmarch'):
+def placeholder(sid='larkfield'):
     """A project with one outdoor cell holding the settlement's walled box of empty ground, gates N and E."""
     _, name, kind, (x, y, w, h), _, _ = next(s for s in SETTLEMENTS if s[0] == sid)
     wx, wy = x + OX, y + OY
@@ -33,12 +33,12 @@ class TownsTest(unittest.TestCase):
     def test_a_placeholder_is_built_and_peopled(self):
         project, (x0, y0, w, h) = placeholder()
         before = copy.deepcopy(project)
-        out, results = T.build_all(project, only={'westmarch'}, report=lambda _: None)
-        r = results['westmarch']
-        self.assertGreaterEqual(len(r['manifest']), 15, 'the inn, shops, chapel, watch house and houses all fit')
+        out, results = T.build_all(project, only={'larkfield'}, report=lambda _: None)
+        r = results['larkfield']
+        self.assertGreaterEqual(len(r['manifest']), 15, 'the inn, shops, watch post and houses all fit')
         self.assertGreaterEqual(len(r['people']), 30)
-        self.assertTrue(all(p['id'].startswith('tn_wm_') for p in r['people']), 'every resident carries the prefix')
-        self.assertTrue(all(room['id'].startswith('tn_wm_') for room in r['rooms']))
+        self.assertTrue(all(p['id'].startswith('tn_lf_') for p in r['people']), 'every resident carries the prefix')
+        self.assertTrue(all(room['id'].startswith('tn_lf_') for room in r['rooms']))
         roles = {p['role'] for p in r['people']}
         self.assertTrue({'merchant', 'guard', 'civilian'} <= roles, 'keepers, a watch and townsfolk')
         self.assertTrue(r['routes'] and all(p['route'] == r['routes'][0]['id'] for p in r['people'] if p['role'] == 'guard'
@@ -50,7 +50,7 @@ class TownsTest(unittest.TestCase):
             room = rooms.get(p['home']['cell'])
             self.assertIsNotNone(room, f'{p["id"]} lives indoors')
             self.assertIn(room['terrain'][p['home']['y']][p['home']['x']], 'bz', 'in a bed')
-        self.assertTrue(all(room['territory']['region'] == 'westmarch' for room in r['rooms']), 'the town is its own region')
+        self.assertTrue(all(room['territory']['region'] == 'larkfield' for room in r['rooms']), 'the town is its own region')
         # Docs/Design/39: the basics (a general store, a baker or provisioner, a smith, an inn or tavern); every shop's
         # keeper lives in the flat above it, labelled by trade; no market stalls (a town has no market square).
         shops = [m for m in r['manifest'] if m['kind'] == 'shop']
@@ -68,7 +68,7 @@ class TownsTest(unittest.TestCase):
         cell = out['cells'][0]
         self.assertEqual(cell['terrain'][0], before['cells'][0]['terrain'][0])
         self.assertTrue(any('+' in row for row in cell['terrain']), 'doors on the street')
-        again, results = T.build_all(out, only={'westmarch'}, report=lambda _: None)
+        again, results = T.build_all(out, only={'larkfield'}, report=lambda _: None)
         self.assertEqual(results, {}, 'a place already built is skipped')
 
     def test_edited_ground_is_refused(self):
@@ -77,7 +77,7 @@ class TownsTest(unittest.TestCase):
         rows[y0 + 10][x0 + 10] = 'T'                # Someone put a table in the square.
         project['cells'][0]['terrain'] = [''.join(r) for r in rows]
         notes = []
-        out, results = T.build_all(project, only={'westmarch'}, report=notes.append)
+        out, results = T.build_all(project, only={'larkfield'}, report=notes.append)
         self.assertEqual(results, {})
         self.assertTrue(any('REFUSED' in n and 'edited' in n for n in notes), notes)
         self.assertEqual(out['cells'][0]['terrain'], project['cells'][0]['terrain'])

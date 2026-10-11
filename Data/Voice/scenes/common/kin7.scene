@@ -79,7 +79,7 @@ scene kn_ap_leave
 when topic=work|smalltalk band=apprentice a.job=apprentice
 a : I'm thinking of leaving to train somewhere else. | I want to see how they do it in the city. | My father wants me home.
 b : Somewhere else? Where? | The city does it badly. Fast and badly. | Your father's not your master. I am.
-a : Ser Ferro, maybe. | I'd still like to see. | He's my father.
+a : Down south, maybe. | I'd still like to see. | He's my father.
 b : They'll teach you to cut corners. | Then go. And come back. | Then go to him. Then come back.
 a : You'd let me? | I will. | I'll ask him.
 
@@ -220,7 +220,7 @@ b : Now. | Then begin. | Nobody noticed for a week.
 
 scene kn_ap_gossip_master
 when topic=smalltalk band=apprentice a.job=apprentice
-a : The other apprentices say you were wild when you were young. | Did you really fight a bear? | Is it true you trained in Ser Ferro?
+a : The other apprentices say you were wild when you were young. | Did you really fight a bear? | Is it true you trained somewhere else first?
 b : The other apprentices say a lot. | It was a dog. A big one. | For a season. I hated it.
 a : So it's true? | A dog? | Why?
 b : Some of it. Get back to work. | A very big dog. | They worked us like oxen and fed us like sparrows.

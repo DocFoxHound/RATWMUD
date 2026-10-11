@@ -21,19 +21,19 @@ Situation moment(const std::string& topic)
 {
     Situation s;
     s.topic = topic;
-    s.tags = {{"region", "ridgemere"}, {"place", "market"}, {"band", "friends"}, {"time", "day"}, {"season", "autumn"},
+    s.tags = {{"region", "oakhaven"}, {"place", "market"}, {"band", "friends"}, {"time", "day"}, {"season", "autumn"},
               {"day", "market"}, {"weather", "rain"}, {"item", "herbs"}, {"dir", "up"}};
     s.a = {"Maren", "female", "adult", "baker", "merchant"};
     s.b = {"Ivo", "male", "old", "fisher", "civilian"};
-    s.blanks = {{"price", "3 pennies"}, {"town", "Ridgemere"}};
+    s.blanks = {{"price", "3 pennies"}, {"town", "Oakhaven"}};
     return s;
 }
 
 const char* Sample = R"(
-group rain_coast = ridgemere saltreach
+group woods = oakhaven mirebridge
 
 scene herbs_dear
-when topic=prices item=herbs dir=up region=rain_coast place=market|street
+when topic=prices item=herbs dir=up region=woods place=market|street
 weight 2
 a : Herbs at {price} now, {b}.
 b[merchant] : I pay more, you pay more.
@@ -103,11 +103,11 @@ void whoSaysWhat()
     expect(lib.render(herbs, s, 1).lines[1].second.find("I pay more") != std::string::npos, "the first tag that holds wins");
     s.tags["band"] = "strangers";
     expect(lib.render(herbs, s, 1).lines.size() == 2, "optional turns that don't hold are left out");
-    s.tags["region"] = "saltreach";
+    s.tags["region"] = "mirebridge";
     expect(!lib.render(herbs, s, 1).id.empty(), "a group stands for its regions");
-    s.tags["region"] = "ser_ferro";
+    s.tags["region"] = "larkfield";
     expect(lib.render(herbs, s, 1).id.empty(), "elsewhere, the scene doesn't fit");
-    s.tags["region"] = "ridgemere";
+    s.tags["region"] = "oakhaven";
     s.blanks.erase("price");
     expect(lib.render(herbs, s, 1).id.empty(), "a blank that can't be filled: not used");
 }
@@ -193,12 +193,12 @@ b : Hm.
 
 void jobs()
 {
-    expect(jobCategory("Master Smith of Westmarch", "", "civilian", 40) == "smith", "smith");
-    expect(jobCategory("A lean grey timber wolf, the innkeeper of Westmarch.", "keeps The Last Lantern", "merchant", 40) == "innkeeper", "innkeeper");
+    expect(jobCategory("Master Smith of Oakhaven", "", "civilian", 40) == "smith", "smith");
+    expect(jobCategory("A lean grey timber wolf, the innkeeper of Oakhaven.", "keeps The Last Lantern", "merchant", 40) == "innkeeper", "innkeeper");
     expect(jobCategory("", "fishes the grey coast", "civilian", 30) == "fisher", "fisher");
     expect(jobCategory("", "stands watch", "guard", 30) == "guard", "guard");
     expect(jobCategory("", "plays about the town", "civilian", 9) == "child", "children are children");
-    expect(jobCategory("", "keeps Westmarch Mercantile", "merchant", 40) == "merchant", "shopkeeper");
+    expect(jobCategory("", "keeps Oakhaven Mercantile", "merchant", 40) == "merchant", "shopkeeper");
 }
 
 void theRealLibrary()

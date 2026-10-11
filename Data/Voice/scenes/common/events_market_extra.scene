@@ -74,15 +74,9 @@ a : The carters paid me a penny to water the mules. | I helped unload. They gave
 b : A penny! Rich. | Was it good? | You will one day.
 a : Very rich. | Sweet as honey. | One day.
 
-scene em_x_ghost_town_road
-when topic=caravan kind=arrived|left region=ghost_town
-a : Wagons on the far road. They never come this way any more. | A caravan used to stop here, they say. Before. | Somebody waved from a wagon. I waved back.
-b : Nothing to stop for. | Before everyone left. | Brave of you.
-a : Nothing but us. | Before. | Felt nice.
-
 scene em_x_fortress_prices
-when topic=prices dir=up region=fortresses
-a : The quartermaster says rations cost more this season. | Commander's cut the cheese ration. Again. | They say food's dear in the towns. Out here it's just scarce.
+when topic=prices dir=up place=barracks
+a : The quartermaster says rations cost more this season. | Captain's cut the cheese ration. Again. | Food's dear in the market. In here it's just scarce.
 b : They always cost more. | Again? | Same thing, from where I stand.
 a : Always. | Again. | Same thing.
 b?[cook] : Scarce is my whole life. I make soup from boots.

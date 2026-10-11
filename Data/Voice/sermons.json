@@ -1,7 +1,7 @@
 {
   "format": "ratw-sermons",
   "version": 1,
-  "about": "What preachers preach at the Restday service (Docs/Design/42-money-in-circulation.md, Phase 6): a line a minute from the pulpit, heard by everyone in the church. `places`: the communities a sermon belongs to (its own faith's: the Iron Saint in Ser Ferro, the Tide in Ridgemere, the First Oath in Upper Accord); none, any. A preacher doesn't repeat a sermon within four weeks. `{town}` is the town's name.",
+  "about": "What preachers preach at the Restday service (Docs/Design/42-money-in-circulation.md, Phase 6): a line a minute from the pulpit, heard by everyone in the church. `places`: the communities a sermon belongs to (its own faith's: the Tide in Ridgemere); none, any. A preacher doesn't repeat a sermon within four weeks. `{town}` is the town's name.",
   "sermons": [
     {
       "id": "the_poor_box",
@@ -132,54 +132,22 @@
       ]
     },
     {
-      "id": "the_iron_saint",
-      "title": "The Saint at the Forge",
-      "theme": "the Iron Saint",
-      "places": ["ser_ferro"],
-      "lines": [
-        "Welcome, children of the Saint. Look up at her: iron in her paws, and no crown on her head.",
-        "You know the story. When the river rose and the old city drowned, she did not pray. She went to the forge.",
-        "She made nails for the new roofs. Hoops for the barrels that floated the grain across. Hinges for the doors of the poor first, and her own last.",
-        "That is why we call her the Iron Saint and not the Golden one. Gold sits. Iron works.",
-        "So I ask you: what is your iron? What do you make with your paws that others stand on, sleep under, eat from?",
-        "The vintner's cask. The brickmaker's tile on the red roofs of Ser Ferro. The farmer's furrow in the gold fields.",
-        "None of it is small. A city is only a great many small things that someone bothered to make well.",
-        "Go out and make something well this week, in her name.",
-        "The Saint's blessing on your work, and on your rest."
-      ]
-    },
-    {
       "id": "the_tide",
       "title": "What the Tide Takes",
       "theme": "the Tide",
-      "places": ["ridgemere"],
+      "places": [
+        "ridgemere"
+      ],
       "lines": [
         "Sit, and listen to the rain. It has been listening to us all week.",
         "The tide comes in twice a day, and twice a day it goes out, and it does not care how important you are.",
-        "It took the old quay. It took boats, and the wolves in them. And every morning it gives back the fish we live on.",
+        "It took the old wharf. It took boats, and the wolves in them. And every morning it gives back the fish we live on.",
         "That is the Tide's bargain: everything given is lent. The catch, the coin, the strength in your back. Lent.",
-        "The Houses own the land outside the walls, and the ships, and the ironworks. The Tide does not care. It is waiting for them too.",
+        "The Houses own the estates outside the walls, and the ships, and the ironworks. The Tide does not care. It is waiting for them too.",
         "So hold things loosely. Pay your hands fairly. Mend your nets before they need it.",
         "And when the sea gives you a good week, give something back before it asks.",
-        "The bell will ring for the boats at dawn. Be on them, or be on the quay to meet them.",
+        "The bell will ring for the boats at dawn. Be on them, or be on the wharf to meet them.",
         "Go with the Tide. It is going anyway."
-      ]
-    },
-    {
-      "id": "the_first_oath",
-      "title": "The First Oath",
-      "theme": "the First Oath",
-      "places": ["upper_accord"],
-      "lines": [
-        "Welcome to the Chapel of the First Oath. Every one of you is sitting under the words, whether you look up at them or not.",
-        "Before the Accord there were packs, and between the packs there was blood. Every border was a grave.",
-        "And then someone, whose name we have lost, stood between two packs and said: I will keep the peace between you, and ask nothing for it.",
-        "That was the First Oath. Not a law. A promise, made by one wolf, to strangers.",
-        "The Wardens keep it now with spears. The Concord keeps it with words. But it began with one wolf's word.",
-        "So keep yours. To your neighbour, to your trade, to the stranger in the market who trusted your price.",
-        "A promise kept is a brick in the wall around this crater. A promise broken is a brick taken out.",
-        "Go out into Upper Accord and keep your word this week. That is all the Oath has ever asked.",
-        "Peace be kept."
       ]
     }
   ]

@@ -1,9 +1,9 @@
 {
   "about": "Newcomers (Docs/Design/52-newcomers.md). The three start towns in order (the first wins a tie), each with a line for the creator and, optionally, an arrival cell and tile; how long an account stays a newcomer; how often active wolves are counted in each town and over how many counts the mean is taken; who may mentor (social level, and no upheld report within so many days); a newcomer's first evenings at an inn (the hours, how many evenings it is tried, how many wolves are pointed out, how well known a regular is); vouching (the bond a voucher needs with the resident, how little it may distrust the one vouched for, the share of trust and liking carried and the most, familiarity given, vouches a voucher may hold, how many game days one lasts, the household's share, and the hit if it goes bad).",
   "starts": [
-    {"id": "upper_accord", "name": "Upper Accord", "line": "The walled capital in its crater between three peaks: the Concord Hall, the Warden Order and the road west."},
-    {"id": "ser_ferro", "name": "Ser Ferro", "line": "A bright city of white walls and red roofs, climbing in tiers from the great river and its wharf."},
-    {"id": "ridgemere", "name": "Ridgemere", "line": "A rain-soaked harbour city of houses and workshops, where the Council of Houses sits in the Rain Hall."}
+    {"id": "ridgemere", "name": "Ridgemere", "line": "A rain city on its terraced hills above the Sound: the wharf and the works below, the Sump and the Commons, the Heights at the top, and it always rains."},
+    {"id": "larkfield", "name": "Larkfield", "line": "A walled market town among the rolling hills and open fields of the Larkdowns, where the south comes to trade."},
+    {"id": "oakhaven", "name": "Oakhaven", "line": "A walled town deep in the Warmwood, the warm broadleaf forest of the south-west, under oaks older than its wall."}
   ],
   "newcomer": {"hours": 15, "socialLevel": 3},
   "sampling": {"every": 60, "window": 30, "activeWithin": 300},

@@ -66,40 +66,25 @@ b : Lost, maybe. | Let them be. | Strange, yes.
 a : Or not lost at all. | Let's go inside. | Bar the door tonight.
 
 scene ev_pl_ser_ferro_judge
-when topic=player known=no region=ser_ferro
-a : I'd say {subject} isn't a Ser Ferro wolf. | Do you think {subject} has papers? | Somebody should tell {subject} to bathe before the cathedral.
-b[official] : Every visitor is registered at the gate. In principle.
-b : Countryside, by the walk. | The watch will ask. | Hush, they'll hear.
+when topic=player known=no region=ridgemere
+a : I'd say {subject} isn't a Ridgemere wolf. | Do you think {subject} has a permit from the City Office? | Somebody should tell {subject} to bathe before the Heights.
+b[official] : Every visitor is noted at the gate. In principle.
+b : Countryside, by the walk. | The Watch will ask. | Hush, they'll hear.
 a : Country wolves. Always staring at the walls. | They always do. | Let them.
 
 scene ev_pl_ridgemere_judge
 when topic=player known=no region=rain_coast
-a : Look at {subject}. Not dressed for our rain. | Look, {subject} has stopped to stare at the bay. | Whoever {subject} is, they're not from Ridgemere. Too dry.
+a : Look at {subject}. Not dressed for our rain. | Look, {subject} has stopped to stare at the Sound. | Whoever {subject} is, they're not from Ridgemere. Too dry.
 b[fisher] : Two days here and they'll have webbed paws.
-b : They'll learn. | First sight of the bay, maybe. | Not for long.
+b : They'll learn. | First sight of the Sound, maybe. | Not for long.
 a : Soon enough. | It takes you, the first time. | Give it a day.
 
-scene ev_pl_accord_warden
-when topic=player known=no region=accord
-a : Do you think {subject} came to see the wardens? | See the look on {subject}? Like the ones they bring in. | Stay back from {subject}. You never know, here.
-b[priest] : Every wolf who walks these streets is under the Bright One's eye.
-b[guard] : The wardens know who's here. That's enough for me.
-b : Maybe. | What look? | Don't be daft.
-a : Gifted, maybe. | Watched. | You never know.
-
 scene ev_pl_fortress
-when topic=player known=no region=fortresses
-a : A civilian at the fortress, {subject}. Odd. | Who let {subject} in? | I hope {subject} has business here.
-b[soldier] : Pass from the commander, I heard. Keep your mouth shut.
-b : Messenger, maybe. | The gate watch, obviously. | They will, or they won't stay.
+when topic=player known=no place=barracks
+a : A civilian in the barracks, {subject}. Odd. | Who let {subject} in? | I hope {subject} has business here.
+b[guard] : Business with the captain, I heard. Keep your mouth shut.
+b : Messenger, maybe. | The door watch, obviously. | They will, or they won't stay.
 a : Messengers carry pouches. | Then they'd better be right. | Ha. True.
-
-scene ev_pl_ghost
-when topic=player known=no region=ghost_town
-a : Someone's come, {subject}. Why here? | Look, {subject} is poking about the ruins. | Do you think {subject} is from the Crown?
-b[old] : Nobody comes to a dead town for no reason.
-b : Lost, I'd say. | Treasure hunting. Fools. | Hide, just in case.
-a : Nobody gets this lost. | Nothing left to find. | Keep low.
 
 # ---------------------------------------------------------------- Strangers: admiring or rude
 
@@ -340,7 +325,7 @@ a : Two loaves and a bit of cheese. | You're baring teeth. | And I enjoy it.
 
 scene ev_pk_child_follows
 when topic=player known=yes a.stage=young
-a : Can I go play with {subject}? | {subject} gave me a sweet once! | Is {subject} a warden?
+a : Can I go play with {subject}? | {subject} gave me a sweet once! | Is {subject} in the watch?
 b[old] : Don't pester our guests, pup.
 b : Ask nicely. | Did they? | I don't think so.
 a : Please? | A sticky one! | They should be.

@@ -45,7 +45,7 @@ void theRules()
            "a profile is set: " + why);
     expect(p.revision == 1 && p.glances.size() == 2 && p.sliders.at("Cautious/Impulsive") == 4 && p.consent.at("death") == "no", "all of it, revision 1");
     expect(people::applyFields(p, parsed(R"({"currently": "mending nets"})"), why) && p.revision == 1, "no change, no new revision");
-    expect(!people::applyFields(p, parsed(R"({"birthplace": "Ridgemere"})"), why), "no birthplace (the user, 2026-10-07)");
+    expect(!people::applyFields(p, parsed(R"({"birthplace": "Oakhaven"})"), why), "no birthplace (the user, 2026-10-07)");
     expect(!people::applyFields(p, parsed(R"({"pronouns": "they/them"})"), why), "no pronouns: they follow the character's sex (the user)");
     expect(!people::applyFields(p, parsed(R"({"glances": [{"icon": "dragon", "title": "x"}]})"), why), "a glance needs a known icon");
     expect(!people::applyFields(p, parsed(R"({"glances": [{"icon": "scar", "title": "x", "sense": "taste"}]})"), why), "and a known sense");

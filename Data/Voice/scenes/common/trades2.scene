@@ -48,13 +48,13 @@ b : Work at night. | Two buckets? | Sit in the river.
 a : Then the neighbours complain of the ringing. | Two. I counted. | The river's full of tanners' muck.
 
 scene tr_smith_cinderbrook
-when topic=work a.job=smith|miner region=marches
-a : Ser Ferro wants picks by the cartload and pays by the spoonful. | The Crown's buyer weighed my iron short again. | Ore's redder from the north seam. Better iron.
+when topic=work a.job=smith|miner region=frosthollow
+a : Ridgemere wants picks by the cartload and pays by the spoonful. | The Grayrock buyer weighed my iron short again. | Ore's richer from the north seam. Better iron.
 b : The city always does. | Scales are crooked. | North seam's cursed, they say.
 a : And we always sell. | Everyone knows. Nobody says. | Cursed or not, it rings true.
 
 scene tr_smith_westmarch_farrier
-when topic=work a.job=smith region=downs|steppe
+when topic=work a.job=smith region=downs
 a : Every drover on the downs wants their beasts shod before the drive. | Ploughshares, all spring. Ploughshares and hinges. | Somebody brought a cart axle in two pieces.
 b : Busy, then. | Good honest work. | Mendable?
 a : Busy as a flea. | Honest. Not exciting. | Everything's mendable for a price.
@@ -166,9 +166,9 @@ a : Three cuts, one plank, no shelf. | Look. The lines. Follow them. | A little 
 
 scene tr_craft_glass
 when topic=work a.job=crafter region=ridgemere
-a : Ashcombe glass came out green again. Too much iron. | Blew a bowl that held for one day. | The upper streets want coloured panes for every window.
+a : The glassworks batch came out green again. Too much iron. | Blew a bowl that held for one day. | The Heights want coloured panes for every window.
 b : Green's pretty. | One day's something. | Coloured glass. In Ridgemere?
-a : Not on an Ashcombe bill. | Not for a mark it isn't. | To look at the rain in colour.
+a : Not on a Heights bill. | Not for a mark it isn't. | To look at the rain in colour.
 
 scene tr_craft_cooper
 when topic=work a.job=crafter region=rain_coast|lake
@@ -216,8 +216,8 @@ b : Good pay? | Brave. | Like a baker.
 a : Council pay. So no. | Brave or daft. | A baker gets bread at least.
 
 scene tr_lab_docks
-when topic=work a.job=laborer|sailor place=shore|work region=rain_coast|ser_ferro|lake
-a : Unloaded a whole hull of salt before noon. | The crane rope snapped. Barrel went in the water. | They want us on the quay at the tide, not at the bell.
+when topic=work a.job=laborer|sailor place=shore|work region=rain_coast
+a : Unloaded a whole hull of salt before noon. | The crane rope snapped. Barrel went in the water. | They want us on the wharf at the tide, not at the bell.
 b : No wonder you're tired. | Who pays for it? | The tide doesn't keep hours.
 a : Tired and salted. | Not the shipowner. | Nor do we, any more.
 
@@ -244,7 +244,7 @@ a : And he'll hire someone who won't. | I did. Rain doesn't care. | Someone's fo
 
 scene tr_cart_bandits
 when topic=work a.job=carter
-a : I don't take the forest road after dark. Not any more. | Two carters were robbed last month on the Accord road. | Always ride with a crossbow on the seat now.
+a : I don't take the forest road after dark. Not any more. | Two carters were robbed last month on the Southway. | Always ride with a crossbow on the seat now.
 b[guard] : We patrol it. Most days.
 b : Wise. | Where? | Can you hit anything with it?
 a : Wise and alive. | By the old milestone. | Barely. But they don't know that.
@@ -256,13 +256,13 @@ b : Rest her a week. | They all bite at first. | Even the cloth?
 a : A week's no money. | Not like this one. | The cloth was the best part, apparently.
 
 scene tr_cart_crossing
-when topic=work a.job=carter region=accord|steppe
-a : Toll's gone up at the ford. | Waited half a day for the toll keeper to wake. | The caravan shed's full. Had to stack outside.
+when topic=work a.job=carter region=larkfield
+a : Toll's gone up at the gate. | Waited half a day for the toll keeper to wake. | The caravan shed's full. Had to stack outside.
 b : Again? | Lazy beggar. | It'll rain on it.
 a : Again. Every season. | Asleep in his booth. | It always does.
 
 scene tr_cart_upper_accord_road
-when topic=work a.job=carter|merchant region=upper_accord|accord_crossing
-a : Concord seals on every crate now. Takes an hour at the gate. | The road up to the Accord's all switchbacks. Kills the horses. | Hauled a load of manuscripts. Heavier than stone.
+when topic=work a.job=carter|merchant region=ridgemere
+a : City Office seals on every crate now. Takes an hour at the gate. | The road up to the Heights is all switchbacks. Kills the horses. | Hauled a load of ledgers to the Hall of Records. Heavier than stone.
 b : Rules are rules. | Go slower. | Words weigh, they say.
 a : Rules are slow. | Slower than slow? | They weigh in a cart, I'll tell you that.

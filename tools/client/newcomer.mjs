@@ -1,6 +1,6 @@
 // Newcomers in the real page (Docs/Design/52-newcomers.md, Phases 1 and 3): on a strip of three towns named as the
-// start towns are (written here as a world export), a new account's creator shows the Arrival tab with Upper Accord
-// preselected and why; the first wolf arrives at Upper Accord's spawn. A second new account chooses Ser Ferro and
+// start towns are (written here as a world export), a new account's creator shows the Arrival tab with Ridgemere
+// preselected and why; the first wolf arrives at Ridgemere's spawn. A second new account chooses Larkfield and
 // arrives at its market. A third arrives beside the first, who sees the newcomer's mark in In Sight and on the card.
 // Then ties: Bo, a mentor, is offered Ash's tie under his map and accepts; Ash, entering, is told where to find him,
 // with the spot marked on the map. Then matchmaking, with the Mind off: Ash, the tie ended, asks the innkeeper
@@ -24,8 +24,8 @@ const binary = process.env.RATW_SERVER ?? `${root}/build-core/ratw_server`;
 const web = process.env.RATW_WEB ?? `${root}/Client/dist`;
 const tmp = mkdtempSync(join(tmpdir(), 'ratw-newcomer-'));
 
-// The strip (as Tests/newcomer_tests.cpp writes it): Upper Accord (with the spawn) in the first two cells, wild
-// country, Ser Ferro in cells 4-5, Ridgemere in 7-8; each town's first cell its homes, its second its market.
+// The strip (as Tests/newcomer_tests.cpp writes it): Ridgemere (with the spawn) in the first two cells, wild
+// country, Larkfield in cells 4-5, Oakhaven in 7-8; each town's first cell its homes, its second its market.
 function writeStrip(dir) {
     const layout = 'UU..SS.RR', side = 16, cells = layout.length;
     const id = i => `c_${i}_0`;
@@ -45,7 +45,7 @@ function writeStrip(dir) {
             }
     }
     for (const [cell, text] of Object.entries(seams)) writeFileSync(join(dir, 'seams', cell), text);
-    const region = c => ({U: 'upper_accord', S: 'ser_ferro', R: 'ridgemere'})[c] ?? 'wilds';
+    const region = c => ({U: 'ridgemere', S: 'larkfield', R: 'oakhaven'})[c] ?? 'wilds';
     for (let i = 0; i < cells; ++i) {
         const exits = [i > 0 ? id(i - 1) : null, i + 1 < cells ? id(i + 1) : null].filter(Boolean);
         m += `exits "${id(i)}" ${exits.length}${exits.map(e => ` "${e}"`).join('')}\n`;
@@ -60,7 +60,7 @@ function writeStrip(dir) {
         m += resident(`${tag}m`, `Merchant ${tag}`, 'merchant', 'keeping the stall', home, 2.5, home + 1, 8.5);
         for (let n = 1; n <= 5; ++n) m += resident(`${tag}${n}`, `Neighbour ${tag}${n}`, 'civilian', 'working', home, 3.5 + n, home, 3.5 + n);
     }
-    // Upper Accord's innkeeper, working by the spawn (Phase 4: a matchmaker).
+    // Ridgemere's innkeeper, working by the spawn (Phase 4: a matchmaker).
     m += resident('ui', 'Wren Tallow', 'civilian', 'serves at the inn', 0, 12.5, 0, 12.5);
     writeFileSync(join(dir, 'world.ratw'), m);
 }
@@ -127,23 +127,23 @@ try {
 
     const nina = await open();
     const first = await arrive(nina, 'nina', 'Nina', '', '1-arrival-first-wolf.png');
-    check(first.tab.chosen === 'upper_accord' && first.tab.cards.length === 3 && /busiest/.test(first.tab.cards[0]),
-        `the Arrival tab: three towns, Upper Accord preselected as the busiest (${first.tab.cards.join(' | ')})`);
-    check(/Your first wolf arrives in Upper Accord/.test(first.tab.text) && /choose another/.test(first.tab.text), 'a first wolf is told why, and that it may choose');
-    check(/Arrives in: Upper Accord/.test(first.review), 'the review says where it arrives');
+    check(first.tab.chosen === 'ridgemere' && first.tab.cards.length === 3 && /busiest/.test(first.tab.cards[0]),
+        `the Arrival tab: three towns, Ridgemere preselected as the busiest (${first.tab.cards.join(' | ')})`);
+    check(/Your first wolf arrives in Ridgemere/.test(first.tab.text) && /choose another/.test(first.tab.text), 'a first wolf is told why, and that it may choose');
+    check(/Arrives in: Ridgemere/.test(first.review), 'the review says where it arrives');
     check(!!first.tie.current && first.tie.current !== 'No tie' && !first.tie.none && /Tie: /.test(first.review),
         `a first wolf has a tie suggested, and no "No tie" (${first.tie.current})`);
-    check(first.cell === 'c_0_0', `Nina arrives at Upper Accord's spawn (${first.cell})`);
+    check(first.cell === 'c_0_0', `Nina arrives at Ridgemere's spawn (${first.cell})`);
 
     const omar = await open();
-    const second = await arrive(omar, 'omar', 'Omar', 'ser_ferro', '2-arrival-chose-ser-ferro.png');
-    check(second.tab.chosen === 'ser_ferro' && /Arrives in: Ser Ferro/.test(second.review), 'a first wolf chooses Ser Ferro instead');
-    check(second.cell === 'c_5_0', `Omar arrives at Ser Ferro's market (${second.cell})`);
+    const second = await arrive(omar, 'omar', 'Omar', 'larkfield', '2-arrival-chose-ser-ferro.png');
+    check(second.tab.chosen === 'larkfield' && /Arrives in: Larkfield/.test(second.review), 'a first wolf chooses Larkfield instead');
+    check(second.cell === 'c_5_0', `Omar arrives at Larkfield's market (${second.cell})`);
     await omar.screenshot(`${OUT}/3-in-ser-ferro.png`);
 
     const pia = await open();
     const third = await arrive(pia, 'pia', 'Pia', '', '');
-    check(third.cell === 'c_0_0', 'Pia arrives in Upper Accord too');
+    check(third.cell === 'c_0_0', 'Pia arrives in Ridgemere too');
     await nina.waitFor(`${S}.entities.get('${third.id}')?.nc`, 10);
     const row = await nina.waitFor(`[...document.querySelectorAll('*')].map(n => n.childElementCount === 0 ? n.textContent : '').find(t => /✧/.test(t ?? ''))`, 10);
     check(/✧/.test(row), `Nina sees the newcomer's mark in In Sight: ${row}`);
@@ -160,13 +160,13 @@ try {
     await sleep(300);
     await bo.evaluate(`${S}.send({type: 'mentor', verb: 'optin'})`);
     await bo.waitFor(`${S}.posts.some(p => /You mentor newcomers now/.test(p.text))`, 10);
-    check(boArrival.cell === 'c_0_0', 'Bo stands in Upper Accord');
+    check(boArrival.cell === 'c_0_0', 'Bo stands in Ridgemere');
     const ash = await open();
     const ashArrival = arrive(ash, 'ash', 'Ash', '', '', 'river', '5-the-tie-tab.png');
     await bo.waitFor(`${S}.tieOffer`, 30);
     await bo.waitFor(`document.querySelector('.tie-panel') && getComputedStyle(document.querySelector('.tie-panel')).display !== 'none'`, 10);
     const offer = await bo.evaluate(`document.querySelector('.tie-panel').textContent`);
-    check(/A tie for you: .+, new in Upper Accord\. You pulled a wolf out of the river/.test(offer), `Bo's offer under the map: ${offer}`);
+    check(/A tie for you: .+, new in Ridgemere\. You pulled a wolf out of the river/.test(offer), `Bo's offer under the map: ${offer}`);
     await bo.screenshot(`${OUT}/6-a-mentor-offered-a-tie.png`);
     await bo.evaluate(`[...document.querySelectorAll('.tie-panel button')].find(b => b.textContent === 'Accept').click()`);
     const ashIn = await ashArrival;
@@ -199,7 +199,7 @@ try {
     await ash.evaluate(`${S}.send({type: 'acquaint', npc: 'ui', familiarity: 20})`);
     const cara = await open();
     const caraIn = await arrive(cara, 'cara', 'Cara', '', '');
-    check(caraIn.cell === 'c_0_0', 'Cara arrives in Upper Accord, where the innkeeper works');
+    check(caraIn.cell === 'c_0_0', 'Cara arrives in Ridgemere, where the innkeeper works');
     await cara.evaluate(`${S}.send({type: 'time', value: 'dusk'})`);
     const welcome = await cara.waitFor(`${S}.posts.map(p => p.text).find(t => /Welcome, friend/.test(t))`, 20);
     check(!!welcome, `the innkeeper welcomes Cara aloud: ${welcome}`);

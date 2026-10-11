@@ -16,9 +16,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / 'Data' / 'Voice' / 'scenes'
-REGIONS = ['upper_accord', 'ridgemere', 'ser_ferro', 'accord_crossing', 'saltreach', 'cinderbrook', 'westmarch',
-           'lakeside', 'fenhollow', 'amberford', 'hollowmere_village', 'ghost_town', 'northern_fortress', 'isle_fortress',
-           'dark_fortress']
+REGIONS = ['ridgemere', 'frosthollow', 'coldwater', 'oakhaven', 'mirebridge', 'larkfield', 'southmeadow']
 EVENT_TOPICS = ['prices', 'caravan', 'bandits', 'crime', 'life', 'festival', 'newcomer']
 EVERYDAY = ['smalltalk', 'work', 'family', 'weather', 'lore', 'player', 'gossip', 'news', 'quarrel', 'friends', 'day', 'bark']
 

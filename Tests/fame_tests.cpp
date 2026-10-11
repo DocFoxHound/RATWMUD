@@ -192,7 +192,7 @@ void travels()
             e->appearance->markings.push_back({"blaze", "#f2f2f2", .95});
         t.run(1.5);                                 // (Labels are worked out once a second.)
     };
-    // Everyone of Upper Accord away at home (c_0), so nobody witnesses but whom we place.
+    // Everyone of Ridgemere away at home (c_0), so nobody witnesses but whom we place.
     for (const char* who : {"u1", "u2", "u3", "um", "ui"})
         put(who, 0, 3.5 + 2 * (who[1] - '0' > 0 ? who[1] - '0' : 4), 4.5);
     meet("um", "Ash");                              // The keeper knows her as Ash: deeds it sees travel under the name.
@@ -255,21 +255,21 @@ void travels()
                 return word.carrier;
         return std::string();
     };
-    // (The keeper's own belief of deed A may reach Ser Ferro's merchants with the carters, as any rumour does; the town's
+    // (The keeper's own belief of deed A may reach Larkfield's merchants with the carters, as any rumour does; the town's
     // word is what crosses only by caravan.)
     expect(inTown(g, ferro).empty() && !contains(t.g.fameBriefing("sm", ash, false), "held the bridge"),
-           "Ser Ferro hasn't heard: no caravan yet: " + t.g.fameBriefing("sm", ash, false));
+           "Larkfield hasn't heard: no caravan yet: " + t.g.fameBriefing("sm", ash, false));
     w.recordEvent({"caravan arrives", "car-1", ferro, cellId(4), 0, 0, {}, 0, 0, "from " + upper});
-    expect(inTown(g, ferro) == "caravan", "a caravan from Upper Accord carries the great deed");
+    expect(inTown(g, ferro) == "caravan", "a caravan from Ridgemere carries the great deed");
     w.advanceCalendar(6.1);
     t.run(1.5);
-    expect(contains(t.g.fameBriefing("sm", ash, false), "held the bridge"), "a caravan carried it, and Ser Ferro has heard");
+    expect(contains(t.g.fameBriefing("sm", ash, false), "held the bridge"), "a caravan carried it, and Larkfield has heard");
     const auto* notable = t.g.deeds().find(a);
     bool inFerro = false;
     for (const auto& word : notable->towns)
         inFerro |= word.town == ferro;
     expect(!inFerro, "the notable deed didn't cross with an unguarded caravan");
-    w.recordEvent({"contract done", ash, "sm", cellId(4), 0, 0, {}, 0, 5, "escort: to Ser Ferro"});
+    w.recordEvent({"contract done", ash, "sm", cellId(4), 0, 0, {}, 0, 5, "escort: to Larkfield"});
     w.recordEvent({"caravan arrives", "car-2", ferro, cellId(4), 0, 0, {}, 0, 0, "from " + upper});
     for (const auto& word : t.g.deeds().find(a)->towns)
         inFerro |= word.town == ferro;
@@ -481,12 +481,12 @@ void criers()
     // Cy's deed: nobody knew a name.
     t.run(.5);
     const auto c = t.g.recordDeed("report_thief", {cy}, {}, cellId(1), "test");
-    // Bo's in Ser Ferro, seen by its keeper who knows him.
+    // Bo's in Larkfield, seen by its keeper who knows him.
     put("sm", 4, 11.5);
     t.run(.5);
     say(t, t.bo, "Good day. I'm Bo.", "sm");
     const auto b = t.g.recordDeed("broke_camp", {bo}, "town:" + ferro, cellId(4), "test");
-    t.place(t.bo, 1, 14.5);                         // (Nobody at Ser Ferro's square to hear its crier.)
+    t.place(t.bo, 1, 14.5);                         // (Nobody at Larkfield's square to hear its crier.)
     // A festival in both towns, today.
     expect(w.callFestival(upper, "Test Fair", 0).ok && w.callFestival(ferro, "Ferro Fair", 0).ok, "festivals called");
     const double hour = (w.calendarDays() - std::floor(w.calendarDays())) * 24;
@@ -517,7 +517,7 @@ void criers()
     for (const auto& word : deedB->towns)
         if (word.town == ferro)
             ferroReach = fame::reach(word, deedB->weight, w.calendarDays());
-    expect(std::abs(ferroReach - 1) < 1e-9, "Ser Ferro's crier called Bo's deed with nobody there to hear, and the town has heard all the same");
+    expect(std::abs(ferroReach - 1) < 1e-9, "Larkfield's crier called Bo's deed with nobody there to hear, and the town has heard all the same");
     (void)c;
     // A legendary deed: called in every town at noon the next day.
     t.g.recordDeed("award", {cy}, "town:" + upper, cellId(1), "dm", "drove the Sea-Beast back into the deep", fame::Legendary);

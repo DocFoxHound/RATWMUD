@@ -1,5 +1,5 @@
 // Newcomers (Docs/Design/52-newcomers.md, Phase 1): where a new character arrives, and the newcomer flag. The rolling
-// means (equal counts go to Upper Accord; a steady crowd in Ser Ferro wins; one busy minute doesn't); the thresholds;
+// means (equal counts go to Ridgemere; a steady crowd in Larkfield wins; one busy minute doesn't); the thresholds;
 // through the game, on a strip of three towns named as the start towns are: the busiest preselected, a first
 // character free to choose another (the user, 2026-10-07), a forged start refused, each placed where it chose (the
 // spawn for the capital, beside the market merchant elsewhere) without moving the spawn or the capital; a world of one
@@ -115,8 +115,8 @@ std::string resident(const std::string& who, const std::string& name, const std:
     return r.str();
 }
 
-// Nine cells in a row: Upper Accord (the capital, with the spawn) in the first two, wild country, Ser Ferro in the
-// middle, Ridgemere at the far end. Each town's first cell is where its people live, its second its market. Written as
+// Nine cells in a row: Ridgemere (the capital, with the spawn) in the first two, wild country, Larkfield in the
+// middle, Oakhaven at the far end. Each town's first cell is where its people live, its second its market. Written as
 // a world export (world.ratw, cells/ID.cell, seams/ID) for Options::worldExport.
 std::string writeStrip(const fs::path& root)
 {
@@ -153,7 +153,7 @@ std::string writeStrip(const fs::path& root)
     }
     for (const auto& [id, text] : seams)
         std::ofstream(root / "seams" / id) << text;
-    const auto region = [](char c) { return c == 'U' ? "upper_accord" : c == 'S' ? "ser_ferro" : c == 'R' ? "ridgemere" : "wilds"; };
+    const auto region = [](char c) { return c == 'U' ? "ridgemere" : c == 'S' ? "larkfield" : c == 'R' ? "oakhaven" : "wilds"; };
     for (int i = 0; i < cells; ++i)
     {
         m << "exits \"" << cellId(i) << "\" " << ((i > 0) + (i + 1 < cells));
@@ -174,10 +174,10 @@ std::string writeStrip(const fs::path& root)
             m << resident(tag + std::to_string(n), "Neighbour " + tag + std::to_string(n), "civilian", "working", home, 3.5 + n, home,
                           3.5 + n);
     }
-    // For ties (Phase 3): a fisher in Upper Accord (the river starter), an innkeeper in Ser Ferro (showing one around).
+    // For ties (Phase 3): a fisher in Ridgemere (the river starter), an innkeeper in Larkfield (showing one around).
     m << resident("uf", "Fen Marsh", "civilian", "mends the nets", 0, 11.5, 1, 11.5);
     m << resident("si", "Ivy Hearth", "civilian", "serves at the inn", 4, 11.5, 5, 11.5);
-    // For matchmaking (Phase 4): Upper Accord's innkeeper.
+    // For matchmaking (Phase 4): Ridgemere's innkeeper.
     m << resident("ui", "Wren Tallow", "civilian", "serves at the inn", 0, 12.5, 1, 12.5);
     std::ofstream(root / "world.ratw") << m.str();
     return root.string();
@@ -327,8 +327,8 @@ void tick(game::Game& g, std::initializer_list<Client*> clients, double seconds,
 void rules()
 {
     const auto& r = newcomers::rules();
-    expect(r.starts.size() == 3 && r.starts[0].id == "upper_accord" && r.starts[1].id == "ser_ferro" && r.starts[2].id == "ridgemere",
-           "the three start towns, Upper Accord first");
+    expect(r.starts.size() == 3 && r.starts[0].id == "ridgemere" && r.starts[1].id == "larkfield" && r.starts[2].id == "oakhaven",
+           "the three start towns, Ridgemere first");
     expect(r.hours == 15 && r.socialLevel == 3, "new until 15 hours or social level 3");
     expect(r.sampleEvery == 60 && r.window == 30, "counted once a minute, the mean of 30");
     expect(!newcomers::graduates(14.9 * 3600, 2) && newcomers::graduates(15 * 3600, 0) && newcomers::graduates(0, 3),
@@ -339,25 +339,25 @@ void rules()
 
 void means()
 {
-    const std::vector<std::string> towns{"upper_accord", "ser_ferro", "ridgemere"};
+    const std::vector<std::string> towns{"ridgemere", "larkfield", "oakhaven"};
     newcomers::Counts equal;
     for (int i = 0; i < 30; ++i)
-        equal.add({{"upper_accord", 3}, {"ser_ferro", 3}, {"ridgemere", 3}}, towns, 30);
-    expect(newcomers::busiest(towns, equal) == "upper_accord", "equal counts go to Upper Accord");
+        equal.add({{"ridgemere", 3}, {"larkfield", 3}, {"oakhaven", 3}}, towns, 30);
+    expect(newcomers::busiest(towns, equal) == "ridgemere", "equal counts go to Ridgemere");
     newcomers::Counts none;
-    expect(newcomers::busiest(towns, none) == "upper_accord", "no counts yet: Upper Accord");
+    expect(newcomers::busiest(towns, none) == "ridgemere", "no counts yet: Ridgemere");
     newcomers::Counts crowd;
     for (int i = 0; i < 30; ++i)
-        crowd.add({{"upper_accord", 2}, {"ser_ferro", 4}}, towns, 30);
-    expect(newcomers::busiest(towns, crowd) == "ser_ferro" && std::abs(crowd.mean("ser_ferro") - 4) < 1e-9, "a steady crowd in Ser Ferro wins");
+        crowd.add({{"ridgemere", 2}, {"larkfield", 4}}, towns, 30);
+    expect(newcomers::busiest(towns, crowd) == "larkfield" && std::abs(crowd.mean("larkfield") - 4) < 1e-9, "a steady crowd in Larkfield wins");
     newcomers::Counts spike;
     for (int i = 0; i < 29; ++i)
-        spike.add({{"upper_accord", 3}}, towns, 30);
-    spike.add({{"ser_ferro", 50}}, towns, 30);
-    expect(newcomers::busiest(towns, spike) == "upper_accord", "one busy minute in Ser Ferro doesn't");
+        spike.add({{"ridgemere", 3}}, towns, 30);
+    spike.add({{"larkfield", 50}}, towns, 30);
+    expect(newcomers::busiest(towns, spike) == "ridgemere", "one busy minute in Larkfield doesn't");
     for (int i = 0; i < 40; ++i)
         spike.add({}, towns, 30);
-    expect(spike.mean("upper_accord") == 0 && spike.mean("ser_ferro") == 0, "only the last 30 counts");
+    expect(spike.mean("ridgemere") == 0 && spike.mean("larkfield") == 0, "only the last 30 counts");
 }
 
 // --------------------------------------------------------------------------- Through the game
@@ -372,7 +372,7 @@ void oneTown()
     c.id = 1;
     const auto lobby = signIn(g, c, "una");
     expect(lobby.array("starts").empty() && lobby.boolean("firstCharacter"), "no start towns to choose in a world of one town");
-    expect(create(g, c, "Una", "ser_ferro", "u1").empty() && c.last("lobby")->string("message").find("one place") != std::string::npos,
+    expect(create(g, c, "Una", "larkfield", "u1").empty() && c.last("lobby")->string("message").find("one place") != std::string::npos,
            "a start town this world hasn't is refused: " + c.last("lobby")->string("message"));
     const auto id = create(g, c, "Una", "", "u2");
     expect(!id.empty(), "created without one");
@@ -405,31 +405,31 @@ void threeTowns()
         expect(g.world().towns().size() == 3, "three towns: " + std::to_string(g.world().towns().size()));
         capital = g.world().society().capital();
         const auto starts = g.startTowns();
-        expect(starts == std::vector<std::string>{"upper_accord", "ser_ferro", "ridgemere"}, "the start towns, in the data file's order");
+        expect(starts == std::vector<std::string>{"ridgemere", "larkfield", "oakhaven"}, "the start towns, in the data file's order");
 
-        // A new account: Upper Accord preselected (no one about yet), and a first character free to choose.
+        // A new account: Ridgemere preselected (no one about yet), and a first character free to choose.
         Client nina, omar, pia;
         nina.id = 1, omar.id = 2, pia.id = 3;
         const auto lobby = signIn(g, nina, "nina");
         const auto& listed = lobby.array("starts");
-        expect(listed.size() == 3 && listed[0].string("id") == "upper_accord" && listed[0].boolean("suggested") &&
-                   !listed[1].boolean("suggested") && !listed[0].string("line").empty() && listed[1].string("name") == "Ser Ferro",
-               "the creator's towns, Upper Accord preselected: " + json::dump(lobby));
+        expect(listed.size() == 3 && listed[0].string("id") == "ridgemere" && listed[0].boolean("suggested") &&
+                   !listed[1].boolean("suggested") && !listed[0].string("line").empty() && listed[1].string("name") == "Larkfield",
+               "the creator's towns, Ridgemere preselected: " + json::dump(lobby));
         expect(lobby.boolean("firstCharacter"), "her first character");
         expect(create(g, nina, "Nina", "atlantis", "n0").empty() &&
                    contains(nina.last("lobby")->string("message"), "start towns"),
                "a forged start town is refused");
         const auto ninaId = create(g, nina, "Nina", "", "n1");
         expect(!ninaId.empty(), "Nina is made, no town named");
-        expect(enter(g, nina, ninaId) == cellId(0), "the busiest (Upper Accord): at the spawn");
+        expect(enter(g, nina, ninaId) == cellId(0), "the busiest (Ridgemere): at the spawn");
         const auto* at = g.world().entity(ninaId);
         expect(std::abs(at->position.x - 8.5) < 1e-6 && std::abs(at->position.y - 8.5) < 1e-6, "on the spawn's tile");
 
-        // Another new account's first character chooses Ridgemere: beside its market's merchant.
+        // Another new account's first character chooses Oakhaven: beside its market's merchant.
         signIn(g, omar, "omar");
-        const auto omarId = create(g, omar, "Omar", "ridgemere", "o1");
+        const auto omarId = create(g, omar, "Omar", "oakhaven", "o1");
         expect(!omarId.empty(), "a first character may choose (the user)");
-        expect(enter(g, omar, omarId) == cellId(8), "Ridgemere's market cell");
+        expect(enter(g, omar, omarId) == cellId(8), "Oakhaven's market cell");
         const auto* o = g.world().entity(omarId);
         expect(std::hypot(o->position.x - 8.5, o->position.y - 8.5) <= 2.9, "beside the merchant's stall");
 
@@ -446,7 +446,7 @@ void threeTowns()
         const auto briefing = g.dialogueContext("rm", omarId, "Hello there.", true);
         expect(briefing.activity.find("new to these parts") != std::string::npos, "the resident is told: " + briefing.activity);
 
-        // A steady crowd in Ser Ferro: Pia's first character is offered Ser Ferro.
+        // A steady crowd in Larkfield: Pia's first character is offered Larkfield.
         for (auto [c, id] : {std::pair{&nina, ninaId}, {&omar, omarId}})
         {
             auto* e = g.world().entity(id);
@@ -462,15 +462,15 @@ void threeTowns()
             }
             tick(g, {&nina, &omar}, 61, 1);
         }
-        expect(g.startTownMean("ser_ferro") > 1 && g.suggestedStart() == "ser_ferro",
-               "Ser Ferro busiest now: " + std::to_string(g.startTownMean("ser_ferro")));
+        expect(g.startTownMean("larkfield") > 1 && g.suggestedStart() == "larkfield",
+               "Larkfield busiest now: " + std::to_string(g.startTownMean("larkfield")));
         const auto piaLobby = signIn(g, pia, "pia");
         bool offered = false;
         for (const auto& s : piaLobby.array("starts"))
-            offered = offered || (s.string("id") == "ser_ferro" && s.boolean("suggested") && s.number("wolves") >= 1);
-        expect(offered, "Pia's creator preselects Ser Ferro, with wolves about: " + json::dump(piaLobby));
+            offered = offered || (s.string("id") == "larkfield" && s.boolean("suggested") && s.number("wolves") >= 1);
+        expect(offered, "Pia's creator preselects Larkfield, with wolves about: " + json::dump(piaLobby));
         const auto piaId = create(g, pia, "Pia", "", "p1");
-        expect(enter(g, pia, piaId) == cellId(5), "Pia arrives in Ser Ferro's market cell");
+        expect(enter(g, pia, piaId) == cellId(5), "Pia arrives in Larkfield's market cell");
 
         // The spawn and the capital stay put.
         expect(g.world().society().capital() == capital, "the capital doesn't move");
@@ -634,7 +634,7 @@ void tieRules()
     expect(back.id == "tie-1" && back.asked == t.asked && back.made == 1000, "a tie saved and read back");
 }
 
-// On the strip: four mentors (two in Upper Accord, one in Ridgemere, one Out of character), and newcomers' ties.
+// On the strip: four mentors (two in Ridgemere, one in Oakhaven, one Out of character), and newcomers' ties.
 void ties()
 {
     const auto root = fs::temp_directory_path() / ("ratw-ties-" + std::to_string(::getpid()));
@@ -717,7 +717,7 @@ void ties()
 
         // Nell takes "river": one of the two in town is asked; a pass, then a time-out, then the fisher.
         signIn(g, nell, "nell");
-        nellId = create(g, nell, "Nell", "upper_accord", "n1", "river");
+        nellId = create(g, nell, "Nell", "ridgemere", "n1", "river");
         expect(!nellId.empty() && tieOf(nellId).state == "seeking", "Nell's wolf is made, its tie seeking");
         tickAll(2);
         auto t = tieOf(nellId);
@@ -726,7 +726,7 @@ void ties()
         auto* second = first == &mara ? &milo : &mara;
         const auto* offer = first->last("tieOffer");
         expect(offer && !offer->string("look").empty() && contains(offer->string("starter"), "pulled a wolf out of the river") &&
-                   offer->string("town") == "Upper Accord" && offer->number("seconds") == 2,
+                   offer->string("town") == "Ridgemere" && offer->number("seconds") == 2,
                "the offer: the newcomer's look, the starter from the mentor's side, the town, how long it stands");
         g.command(first, cmd({{"type", "mentor"}, {"verb", "pass"}, {"tie", t.id}}));
         g.settle();
@@ -751,7 +751,7 @@ void ties()
 
         // Oona takes "letter": whoever is asked accepts. Both get known-wolf entries with the starter.
         signIn(g, oona, "oona");
-        const auto oonaId = create(g, oona, "Oona", "upper_accord", "o1", "letter");
+        const auto oonaId = create(g, oona, "Oona", "ridgemere", "o1", "letter");
         tickAll(2);
         t = tieOf(oonaId);
         expect(t.state == "offered" && byId.count(t.offeredTo), "Oona's tie offered");
@@ -769,7 +769,7 @@ void ties()
         // Pia takes "cart": the mentor holding a tie isn't asked; the other passes; a resident who fits.
         const auto heldOffers = offers(*holder);
         signIn(g, pia, "pia");
-        const auto piaId = create(g, pia, "Pia", "upper_accord", "p1", "cart");
+        const auto piaId = create(g, pia, "Pia", "ridgemere", "p1", "cart");
         tickAll(2);
         t = tieOf(piaId);
         expect(t.state == "offered" && t.offeredTo == ids[free] && offers(*holder) == heldOffers, "one holding a tie is never asked");
@@ -787,7 +787,7 @@ void ties()
         expect(said(*holder, "is ended"), "her mentor is told it's ended");
         expect(g.ties().at(t.id).state == "active", "(Pia's stands)");
         signIn(g, quin, "quin");
-        quinId = create(g, quin, "Quin", "upper_accord", "q1", "road");
+        quinId = create(g, quin, "Quin", "ridgemere", "q1", "road");
         tickAll(2);
         t = tieOf(quinId);
         expect(t.state == "offered" && t.offeredTo == ids[free], "the mentor longest without a tie is asked first");
@@ -798,7 +798,7 @@ void ties()
         expect(g.ties().at(t.id).state == "lapsed", "Quin's tie has run its course");
         expect(said(*free, "has run its course"), "the mentor is told");
         signIn(g, uma, "uma");
-        const auto umaId = create(g, uma, "Uma", "upper_accord", "u1", "letter");
+        const auto umaId = create(g, uma, "Uma", "ridgemere", "u1", "letter");
         tickAll(2);
         t = tieOf(umaId);
         expect(t.state == "offered" && t.offeredTo == ids[holder], "a resting mentor isn't asked; the other is");
@@ -806,19 +806,19 @@ void ties()
         g.command(holder, cmd({{"type", "mentor"}, {"verb", "pass"}, {"tie", t.id}}));
         g.settle();
 
-        // Elsewhere: Ser Ferro has no mentor near and no fisher (the innkeeper shows Sam around); Ridgemere's mentor
+        // Elsewhere: Larkfield has no mentor near and no fisher (the innkeeper shows Sam around); Oakhaven's mentor
         // passes, and its masters take an apprentice; a debt to someone who keeps a trade.
         signIn(g, sam, "sam");
-        const auto samId = create(g, sam, "Sam", "ser_ferro", "s1", "river");
+        const auto samId = create(g, sam, "Sam", "larkfield", "s1", "river");
         signIn(g, ria, "ria");
-        const auto riaId = create(g, ria, "Ria", "ridgemere", "r1", "apprentice");
+        const auto riaId = create(g, ria, "Ria", "oakhaven", "r1", "apprentice");
         signIn(g, tess, "tess");
-        tessId = create(g, tess, "Tess", "ser_ferro", "t1", "debt");
+        tessId = create(g, tess, "Tess", "larkfield", "t1", "debt");
         tickAll(2);
         t = tieOf(samId);
         expect(t.state == "active" && t.other == "si" && t.starter == "show_around", "none fits: the innkeeper shows them around (" + t.other + ")");
         t = tieOf(riaId);
-        expect(t.state == "offered" && t.offeredTo == ids[&far], "Ridgemere's own mentor is asked for a Ridgemere newcomer");
+        expect(t.state == "offered" && t.offeredTo == ids[&far], "Oakhaven's own mentor is asked for a Oakhaven newcomer");
         g.command(&far, cmd({{"type", "mentor"}, {"verb", "pass"}, {"tie", t.id}}));
         g.settle();
         tickAll(2);
@@ -826,7 +826,7 @@ void ties()
         bool master = false;
         for (const auto& [pid, st] : g.world().society().state().careers.positions)
             master = master || (st.holder == t.other && st.apprentice.empty());
-        expect(t.state == "active" && t.other.rfind("r", 0) == 0 && master, "a Ridgemere master with a free apprentice place: " + t.other);
+        expect(t.state == "active" && t.other.rfind("r", 0) == 0 && master, "a Oakhaven master with a free apprentice place: " + t.other);
         t = tieOf(tessId);
         expect(t.state == "active" && (t.other == "sm" || t.other == "si") && g.world().bonds().find(t.other, tessId) &&
                    g.world().bonds().find(t.other, tessId)->owed == 4,
@@ -878,7 +878,7 @@ void matchRules()
     expect(newcomers::fill("Try {who}, {where}.", {{"who", "a dun wolf"}, {"where", "by the fire"}}) == "Try a dun wolf, by the fire.", "the blanks");
 }
 
-// On the strip, at Upper Accord's inn: Nell (a newcomer) and the wolves the innkeeper might point her at.
+// On the strip, at Ridgemere's inn: Nell (a newcomer) and the wolves the innkeeper might point her at.
 void matchmaking()
 {
     const auto root = fs::temp_directory_path() / ("ratw-match-" + std::to_string(::getpid()));
@@ -1043,7 +1043,7 @@ void vouchRules()
     expect(back.id == "vouch-1" && back.household.size() == 1 && back.household[0].trust == 6 && back.given.trust == 12, "saved and read back");
 }
 
-// The strip again: an evening at Upper Accord's inn, and vouching there.
+// The strip again: an evening at Ridgemere's inn, and vouching there.
 struct Inn
 {
     fs::path root;
@@ -1055,6 +1055,8 @@ struct Inn
     {
         std::string problem;
         expect(g.start(problem), "starts: " + problem);
+        for (int i = 0; i < 9; ++i)                  // A clear evening: rain or fog would hide the far end of the room.
+            g.world().setWeather(cellId(i), Weather::Clear);
         g.tick(1);
     }
     ~Inn() { fs::remove_all(root); }
@@ -1109,7 +1111,7 @@ void evenings()
     const auto valId = inn.add(val, "Val", 1, 10.5);
     const auto ottoId = inn.add(otto, "Otto", 1, 11.5);
     const auto beaId = inn.add(bea, "Bea", 1, 13.5);
-    const auto pipId = inn.add(pip, "Pip", 4, 8.5);  // (Another newcomer, alone in Ser Ferro's home cell for now.)
+    const auto pipId = inn.add(pip, "Pip", 4, 8.5);  // (Another newcomer, alone in Larkfield's home cell for now.)
     for (auto* c : {&vic, &val, &otto, &bea})
         g.ledger().points[inn.ids[c]] = int(practice::xpFor(3));   // (Not new themselves.)
     inn.knows("ui", vicId, 20);
@@ -1155,7 +1157,7 @@ void evenings()
     inn.run(1);
     expect(std::count_if(nell.events.begin(), nell.events.end(), [](const json::Value& e) { return contains(e.string("text"), "Welcome, friend"); }) == 1,
            "welcomed once");
-    // Pip, alone at Ser Ferro's inn three evenings running: on the fourth, with company, nothing (three at most).
+    // Pip, alone at Larkfield's inn three evenings running: on the fourth, with company, nothing (three at most).
     for (int evening = 1; evening <= 4; ++evening)
     {
         inn.at(today + evening, 19);
@@ -1214,7 +1216,7 @@ void vouching()
            "its household, half as much (" + household + ": " + std::to_string(trustIn(household, nellId)) + ")");
     vouch(mo, "ui", nellId);
     expect(g.vouches().size() == 1, "one vouch a pair");
-    // A crime elsewhere by one vouched for: nothing. (Mo vouches for Vic too, who steals in Ser Ferro.)
+    // A crime elsewhere by one vouched for: nothing. (Mo vouches for Vic too, who steals in Larkfield.)
     vouch(mo, "ui", vicId);
     expect(g.vouches().size() == 2, "Mo vouches for Vic as well");
     auto& crime = g.world().crime();

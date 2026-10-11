@@ -246,35 +246,35 @@ b : I know. Be clever too. | Nobody does. Just get far. | You are. Kind as well.
 
 scene kn_family_regional_estate
 when topic=family band=family a.job=noble b.job=noble region=ridgemere
-a : Your match has been arranged. House Brinewater. | You've been seen at the tavern by the quay. Again. | The estate accounts are a disgrace this season.
+a : Your match has been arranged. House Mossgrave. | You've been seen at the tavern on the wharf. Again. | The estate accounts are a disgrace this season.
 b : Arranged without asking me. | The tavern's warmer than this hall. | Then let the steward answer for them.
 a : You're asked now. | A noble isn't seen in taverns. | The steward answers to you. And you answer to me.
 b : And if I say no? | Then I'll go unseen. | Then I answer: rain ruined the harvest.
 a : Then you'll say it to your grandfather. | That's not what I meant. | Rain ruins every harvest. We plan for it.
 
 scene kn_family_harbour
-when topic=family band=family region=ridgemere|saltreach|lakeside|isle_fortress
-a : Your father's boat's late in. | The sea took your uncle's nets last night. | Smoke the last of the fish before it turns.
+when topic=family band=family region=ridgemere|coldwater
+a : Your father's boat's late in. | The water took your uncle's nets last night. | Smoke the last of the fish before it turns.
 b : He'll be in by dark. The wind's against him. | All of them? | I'll do it before supper.
-a : I'll watch the harbour till he is. | Every last one. | Before noon. It's turning already.
+a : I'll watch the water till he is. | Every last one. | Before noon. It's turning already.
 b : I'll come with you. | Then he'll need ours. | Before noon, then.
 
 scene kn_family_mountain
-when topic=family band=family region=upper_accord|northern_fortress
-a : Your brother's joined the Wardens. | We'll need more firewood if this cold lasts. | The road down's closed again. No word from your aunt.
-b : The Wardens? He can't even catch a hen. | I'll go up the slope with the cart. | She's stubborn. She'll be fine.
-a : They'll teach him. Or break him. | Take your brother. Before the Wardens get him. | She's stubborn, and it's cold.
+when topic=family band=family region=mountains
+a : Your brother's going down the mine. | We'll need more firewood if this cold lasts. | The road down's closed again. No word from your aunt.
+b : The mine? He can't even dig for a bone. | I'll go up the slope with the cart. | She's stubborn. She'll be fine.
+a : They'll teach him. Or break him. | Take your brother. Before the mine gets him. | She's stubborn, and it's cold.
 b : Bright One help them both. | I'll take him, if he's sober. | Stubborn keeps you warm.
 
 scene kn_family_river_city
-when topic=family band=family region=ser_ferro
-a : Your sister's hoping for a post at the palace. | The rents in the middle town have gone up again. | Will you light a candle for your grandmother at the Cathedral?
-b : The palace? We're wharf wolves. | Then we'll move down a tier. | I'll light two.
-a : She doesn't think so. | Not down to the wharf. Not again. | One's enough. She was frugal.
-b : Then the palace better watch out. | Then we'd better earn more. | Two. She'd want me to look generous.
+when topic=family band=family region=ridgemere
+a : Your sister's hoping for a place in service up on the Heights. | The rents in the Commons have gone up again. | Will you light a candle for your grandmother at the Chapel of the Tide?
+b : The Heights? We're wharf wolves. | Then we'll move down a tier. | I'll light two.
+a : She doesn't think so. | Not down to the Sump. Not again. | One's enough. She was frugal.
+b : Then the Heights had better watch out. | Then we'd better earn more. | Two. She'd want me to look generous.
 
 scene kn_family_farm
-when topic=family band=family region=amberford|westmarch|hollowmere_village|fenhollow
+when topic=family band=family region=countryside
 a : The north field needs ploughing before the rain. | Your mother wants you home for the harvest. | The old ox is lame.
 b : Then we'd better start before dawn. | I'll be there. I always am. | We can borrow the neighbour's.
 a : We'd better start now. | You weren't, last year. | He'll want paying.

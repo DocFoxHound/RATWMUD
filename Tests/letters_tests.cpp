@@ -79,7 +79,7 @@ void lettersInTheGame()
     const auto world = writeStrip(root);
     {
         Town t(world, save);
-        t.enter(t.ash, 1, "ash", "Ash", 1, 11.5);  // At Upper Accord's inn.
+        t.enter(t.ash, 1, "ash", "Ash", 1, 11.5);  // At Ridgemere's inn.
         t.enter(t.bo, 2, "bo", "Bo", 1, 12.5);
         t.run(1);
         // Ash learns Bo's name from his own mouth; Bo doesn't learn hers.
@@ -146,28 +146,28 @@ void lettersInTheGame()
         for (int i = 0; i < 12; ++i)
             sent += t.letter(t.ash, "write", {{"to", "Bo"}, {"text", "Again " + std::to_string(i) + "."}}).ok;
         expect(sent == 9, "ten letters a game day (one sent already): " + std::to_string(sent));
-        // Between towns: Bo left the world in Ridgemere; it waits there; he has it sent on.
+        // Between towns: Bo left the world in Oakhaven; it waits there; he has it sent on.
         t.place(t.bo, 7, 8.5);
         t.g.disconnect(&t.bo);
         t.g.world().advanceCalendar(1);
         t.run(1);
         r = t.letter(t.ash, "write", {{"to", "Bo"}, {"text", "Come home."}, {"sign", "Ash"}});
-        expect(r.ok && contains(r.message, "(2p)") && contains(r.message, "reach Ridgemere") && contains(r.message, "about 4 hours"),
-               "to Ridgemere: two pennies, about four hours: " + r.message);
+        expect(r.ok && contains(r.message, "(2p)") && contains(r.message, "reach Oakhaven") && contains(r.message, "about 4 hours"),
+               "to Oakhaven: two pennies, about four hours: " + r.message);
         t.hours(4);
         t.bo = Client{};
-        t.enter(t.bo, 4, "bo", "Bo", 0, 8.5);      // Back, in Upper Accord.
+        t.enter(t.bo, 4, "bo", "Bo", 0, 8.5);      // Back, in Ridgemere.
         t.run(1);
         const auto self = t.selfOf(t.bo).object("letters");
         expect(self.number("waiting") >= 1, "letters wait for him");
-        int atRidgemere = 0;
+        int atOakhaven = 0;
         for (const auto& d : t.caseOf(t.bo).array("waiting"))
-            if (d.string("town") == "Ridgemere")
-                atRidgemere = int(d.number("count"));
-        expect(atRidgemere == 1, "the case says one waits at Ridgemere's inns");
-        r = t.letter(t.bo, "sendOn", {{"from", "ridgemere"}});
-        expect(r.ok && contains(r.message, "from Ridgemere to Upper Accord (1p)"), "sent on to where he is: " + r.message);
-        // Those waiting at Upper Accord's inns (the nine he was out for): he walks into its inn and has them.
+            if (d.string("town") == "Oakhaven")
+                atOakhaven = int(d.number("count"));
+        expect(atOakhaven == 1, "the case says one waits at Oakhaven's inns");
+        r = t.letter(t.bo, "sendOn", {{"from", "oakhaven"}});
+        expect(r.ok && contains(r.message, "from Oakhaven to Ridgemere (1p)"), "sent on to where he is: " + r.message);
+        // Those waiting at Ridgemere's inns (the nine he was out for): he walks into its inn and has them.
         t.bo.events.clear();
         t.place(t.bo, 1, 12.5);
         t.run(2);
@@ -188,7 +188,7 @@ void lettersInTheGame()
         t.g.save();
     }
     {
-        // (His post town is still Ridgemere, where he last left the world: it goes there, about four hours.)
+        // (His post town is still Oakhaven, where he last left the world: it goes there, about four hours.)
         Town t(world, save);
         t.enter(t.bo, 2, "bo", "Bo", 7, 8.5);
         t.run(1);
@@ -521,7 +521,7 @@ void residentLetters()
     fond("ui", t.ash.entityId, 0, 20);
     t.g.world().advanceCalendar(8);                 // (A new week.)
     t.run(1);
-    const auto& posted = w.postContract("courier", "ui", "upper_accord", "rm", 6, 7, "a letter for Ridgemere");
+    const auto& posted = w.postContract("courier", "ui", "ridgemere", "rm", 6, 7, "a letter for Oakhaven");
     const auto contract = posted.id;
     t.hours(1.5);                                   // (Offered at the next hourly pass; the courier's hour after that.)
     t.hours(1.5);
@@ -539,7 +539,7 @@ void residentLetters()
     for (const auto& l : t.caseOf(t.ash).array("letters"))
         if (l.string("id") == offer)
             text = l.string("text");
-    expect(contains(text, "Ridgemere") && contains(text, "6 pennies"), "the letter names the place and the pennies: " + text);
+    expect(contains(text, "Oakhaven") && contains(text, "6 pennies"), "the letter names the place and the pennies: " + text);
     t.place(t.bo, 1, 12.5);
     expect(!w.takeContract(t.bo.entityId, contract).ok, "reserved: Bo can't take it from the board");
     r = t.letter(t.ash, "takeWork", {{"id", offer}});

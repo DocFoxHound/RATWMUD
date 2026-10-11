@@ -179,9 +179,9 @@ a : You're scared. | Scared. | Shadows. Come on.
 
 scene kn_fr_young_dream
 when topic=friends a.stage=young|adolescent b.stage=young|adolescent
-a : When I'm grown, I'm going to sea. | I'm going to be a Warden. | I'm going to be rich and live in a house with five fires.
+a : When I'm grown, I'm going to sea. | I'm going to be a guard. | I'm going to be rich and live in a house with five fires.
 b : You get sick on the river ferry. | You can't even climb the wall. | Five? What for?
-a : That's the river. The sea's different. | Wardens have ladders. | One for each paw and one for my tail.
+a : That's the river. The sea's different. | Guards have ladders. | One for each paw and one for my tail.
 b : The sea's bigger. And wetter. | I'll hold it for you. | That's the stupidest thing I've ever heard.
 a : Then I'll be sick bigger. | You'd better. | You'll want to visit.
 b : I'll wave from the dock. | Promise. | Every winter.
@@ -261,27 +261,27 @@ a : Then let's dance with it. | Fine. Home. | That explains the singing.
 
 scene kn_fr_regional_ridgemere
 when topic=friends region=ridgemere
-a : The Sump's flooded again. | Did you hear Vesk's smokehouse burned? | They say Grayrock's cutting wages at the quarry.
+a : The Sump's flooded again. | Did you hear a smokehouse on the wharf burned? | They say Grayrock's cutting wages at the quarry.
 b : Then the rats are swimming. | They'll smell it for a month. | Lord Grayrock needs another carriage, I suppose.
-a : Rats swim better than us. | The whole town will. | A gold one.
+a : Rats swim better than us. | The whole city will. | A gold one.
 b : They've had the practice. | Bright One spare us. | With House colours on the wheels.
 
 scene kn_fr_regional_ser_ferro
-when topic=friends region=ser_ferro
-a : Did you see the knights ride out this morning? | My cousin's got a post in the records office. | The King's birthday's coming. There'll be wine in the fountains.
-b : Shining like fish. | Writing all day? Poor wolf. | Last year it was water in the fountains.
-a : Off to scare bandits, they say. | He likes it. Says it's quiet. | This year they promised.
-b : Bandits are easy scared. Harvests aren't. | Quiet's a strange thing to want in Ser Ferro. | They promise every year.
+when topic=friends region=ridgemere
+a : Did you see the Watch march out this morning? | My cousin's got a post in the Hall of Records. | The Council's feasting this week. They say there'll be wine in the fountain.
+b : Shining like fish. | Writing all day? Poor wolf. | Last time it was rainwater in the fountain.
+a : Off to scare bandits, they say. | He likes it. Says it's quiet. | This time they promised.
+b : Bandits are easy scared. Harvests aren't. | Quiet's a strange thing to want in this city. | They promise every time.
 
 scene kn_fr_regional_accord
-when topic=friends region=upper_accord|accord_crossing
-a : Did you see the Wardens training in the snow? | The Concord's sent another envoy south. | The road down's a sheet of ice.
-b : Rather them than me. | There's always another envoy. | It's been ice since autumn.
-a : Running in harness, uphill. | They go, they come back fat. | My cart went sideways.
-b : That's how they stay so grim. | The roads to the south are kind to envoys. | Better sideways than down.
+when topic=friends region=frosthollow
+a : Did you see the miners walking up in the snow? | The carters say the High Road's closed again. | The road down's a sheet of ice.
+b : Rather them than me. | It's always closed. | It's been ice since autumn.
+a : Uphill, in the dark, with picks. | Then the city waits for its iron. | My cart went sideways.
+b : That's how they stay so grim. | The city can wait. | Better sideways than down.
 
 scene kn_fr_regional_frontier
-when topic=friends region=westmarch|amberford|hollowmere_village|cinderbrook|saltreach|lakeside|fenhollow
+when topic=friends region=towns
 a : Things are quiet here. I like it. | The caravan's late. I miss the news. | When did you last go to the city?
 b : Quiet suits a small town. | News is mostly bad anyway. | Never. Never needed to.
 a : Some say it's dull. | Still. I like hearing it. | Never?

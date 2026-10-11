@@ -192,7 +192,7 @@ void sources()
         expect(deed, "recognised with a small deed (no pay)");
         // A chain: a courier job for u1, done; u1 likes her.
         w.bonds().change("u1", ash, {30, 10, 20, 0, 0}, w.calendarDays());
-        auto& first = w.postContract("courier", "u1", "upper_accord", "u2", 3, 7, "a letter for Neighbour u2");
+        auto& first = w.postContract("courier", "u1", "ridgemere", "u2", 3, 7, "a letter for Neighbour u2");
         const auto firstId = first.id;
         for (auto& k : w.roads().contracts)
             if (k.id == firstId)

@@ -32,7 +32,7 @@ b : Paid dear. | Nothing's always worth killing over, isn't it. | It doesn't.
 a : Too dear. | Apparently. | Not ever.
 
 scene et_cr_north_arrest
-when topic=crime kind=arrest region=north
+when topic=crime kind=arrest region=mountains
 a : They marched {subject} through the snow to the cells. | {subject}'s arrested. They'll have a cold night. | Cells up here have frost on the inside. {subject}'ll learn.
 b[guard] : Cold cells make for quick confessions.
 b : Snow and chains. Grim. | Good. | Hard lesson.
@@ -126,7 +126,7 @@ b : I was stuck behind it for an hour. | Grand and dear. | Still picking them ou
 a : Worth it, though. | Very dear. | Lovely.
 
 scene et_lf_north_death
-when topic=life kind=death region=north season=winter|autumn
+when topic=life kind=death region=mountains season=winter|autumn
 a : They'll keep {subject} cold till the ground softens. | Winter's long up here. {subject} didn't see the end of it. | {subject}'s gone. The cold took them, in the end.
 b[old] : Cold's merciful, in its way. You just go to sleep.
 b : The ground's like iron. | Too long. | It takes the old ones.
@@ -211,7 +211,7 @@ a : It was. | Nor me. | Lovely.
 scene et_nc_city_crowd
 when topic=newcomer region=cities
 a : Another newcomer. {subject}. The city swallows them by the dozen. | {subject}'s new. You can tell by how they flinch at carts. | Saw {subject} lost in the market. City's too big for them.
-b[official] : Have them register at the hall. Everyone registers.
+b[official] : Have them register at the City Office. Everyone registers.
 b : And spits most of them out. | We all flinched once. | It's too big for me.
 a : Usually. | I still do. | Me too.
 

@@ -191,7 +191,7 @@ a : Everything, badly. | Walk barefoot, then. | Or a fool. We'll see.
 
 scene tr_any_town_needs
 when topic=work|smalltalk region=towns
-a : What {town} needs is another smith. | We've three bakers and no healer. | Somebody should open a proper inn here.
+a : What {town} needs is another smith. | We've three bakers and no healer. | Somebody should open a second tavern here.
 b : Write to the council. | Get sick in the city. | You do it.
 a : The council's two old wolves and a goat. | That's a long walk sick. | I'd drink the profits.
 

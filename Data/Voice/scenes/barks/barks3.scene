@@ -1,5 +1,6 @@
-# Barks (doc 30): one resident, one line, overheard in passing. Trades at their work by the hour, market and festival
-# days, the watch, children and elders, the weather, and each region's own cries. Barks may repeat.
+# Barks (doc 30; the world of doc 60): one resident, one line, overheard in passing. Trades at their work by the hour,
+# market and festival days, the watch, children and elders, the weather, and the cries of Ridgemere and each town.
+# Barks may repeat.
 
 # ---------------------------------------------------------------- Merchants crying wares, by trade
 
@@ -155,7 +156,7 @@ a : Who's been in my kit? | Lights out in an hour! | Boots by the bed. Polished!
 
 scene bk3_child_morning
 when topic=bark a.stage=young time=dawn|day
-a : I'm a warden! You're all under arrest! | Look, I found a snail! | Mama, can I have a penny? Please? | I can count to a hundred! One, two, ninety, a hundred!
+a : I'm a guard! You're all under arrest! | Look, I found a snail! | Mama, can I have a penny? Please? | I can count to a hundred! One, two, ninety, a hundred!
 
 scene bk3_child_evening
 when topic=bark a.stage=young time=dusk
@@ -297,35 +298,35 @@ a : Shoo, cat! | Who's howling at this hour? | Lock up, lock up. | Quiet, some o
 
 scene bk3_ridgemere_quay
 when topic=bark region=rain_coast
-a : Smoked herring! Vesk's best! | Rope! Brinewater rope! | Mind the gutters, they're overflowing! | Rain again. Of course.
+a : Smoked herring! Wharf-smoked! | Rope! Ropewalk rope! | Mind the gutters, they're overflowing! | Rain again. Of course.
 
 scene bk3_ridgemere_sump
 when topic=bark region=ridgemere time=dusk|night
 a : Keep your purse close, friend. Sump's awake. | Lamp oil, cheap, no questions! | Who's got a dry corner for the night?
 
 scene bk3_serferro_river
-when topic=bark region=ser_ferro
-a : Wine from the south bank! | Silk, real silk! | River fish, still flapping! | Clean your boots before the cathedral steps!
+when topic=bark region=ridgemere
+a : Wine from the south! | Silk, real silk! | Fish from the Sound, still flapping! | Clean your boots before the chapel steps!
 
 scene bk3_serferro_official
-when topic=bark region=ser_ferro a.job=official
-a : Permit, please. And the stamped copy. | That stall is two inches over the line. | Complaints in writing, to the third office.
+when topic=bark region=ridgemere a.job=official
+a : Permit, please. And the stamped copy. | That stall is two inches over the line. | Complaints in writing, to the City Office.
 
 scene bk3_accord_scholar
-when topic=bark region=accord
-a : Manuscripts! Copies made fair and clean! | Make way for the warden! | Pilgrim badges! Blessed in the old chapel! | Quiet near the archive, please.
+when topic=bark region=ridgemere
+a : Manuscripts! Copies made fair and clean! | Letters written, a penny a page! | Copies of deeds, sealed proper! | Quiet near the Hall of Records, please.
 
 scene bk3_cinderbrook_forge
-when topic=bark region=marches
-a : Ore cart coming down! | Pig iron, by the bar! | Fire's hot, hammers ready! | Somebody fetch water for the quench!
+when topic=bark region=frosthollow
+a : Ore cart coming down! | Lamp oil for the shift! | Fire's hot, hammers ready! | Somebody fetch water for the quench!
 
 scene bk3_saltreach_pans
-when topic=bark region=saltreach
+when topic=bark region=ridgemere
 a : Salt! Clean white salt! | Rake it before the rain! | Tide's on the pans, look sharp!
 
 scene bk3_amberford_herds
-when topic=bark region=steppe
-a : Horses for sale! Sound in wind and limb! | Ford toll, two pennies! | Wool! Steppe wool, the warmest there is!
+when topic=bark region=farmland
+a : Horses for sale! Sound in wind and limb! | Gate toll, two pennies! | Wool! Downs wool, the warmest there is!
 
 scene bk3_fens_peat
 when topic=bark region=fens
@@ -337,16 +338,38 @@ a : Boats for hire! | Lake trout, fat and fresh! | Boatwright's yard, repairs do
 
 scene bk3_downs_market
 when topic=bark region=downs
-a : Fleeces! Fresh-shorn fleeces! | Cheese from the hill farms! | Westmarch wool, finest on the downs!
+a : Fleeces! Fresh-shorn fleeces! | Cheese from the hill farms! | Larkdowns wool, finest on the downs!
 
 scene bk3_crossing_carts
-when topic=bark region=accord_crossing
-a : Wagons for the west road! | Room at the Crossed Roads! | Mules to hire, sturdy beasts!
+when topic=bark region=larkfield
+a : Wagons for the city road! | Room at the Singing Lark! | Mules to hire, sturdy beasts!
 
 scene bk3_fortress_watch
-when topic=bark region=fortresses
-a : Watch change! | Wall's clear! | Who's on the north tower? Wake up! | Supply cart sighted!
+when topic=bark region=ridgemere a.role=guard
+a : Watch change! | Wall's clear! | Who's on the North Gate? Wake up! | Supply cart sighted!
 
-scene bk3_ghost_town
-when topic=bark region=ghost_town
-a : Who's there? Show yourself! | Nothing here worth stealing. | Go away. | This was my house once.
+# ---------------------------------------------------------------- The towns (Docs/Design/60)
+
+scene bk3_new_oakhaven_woods
+when topic=bark region=oakhaven
+a : Mind the roots! | Firewood, dry and split! | Mushrooms, fresh from the Warmwood! | Acorns everywhere. Everywhere.
+
+scene bk3_new_southmeadow_orchards
+when topic=bark region=southmeadow
+a : Apples! Fresh from the orchards! | Flour, new-milled! | Cider, last year's best! | Grain cart! Mind your tails!
+
+scene bk3_new_coldwater_shore
+when topic=bark region=coldwater
+a : Ice on the shore again. | Smoked lake fish! | Wind off the mountains! Shut the door! | Glasswater's cold enough to stop your heart.
+
+scene bk3_new_mirebridge_bridge
+when topic=bark region=mirebridge
+a : Eels, live eels! | Mind the bridge, it's slick! | Long River's up again. | Warm and wet. Every day.
+
+scene bk3_new_larkfield_market
+when topic=bark region=larkfield
+a : Market day's coming, spread the word! | Larks up early today. | Wool and cheese from the downs!
+
+scene bk3_new_ridgemere_market
+when topic=bark region=ridgemere place=market
+a : Fresh fish off the wharf! | Hot soup, a penny a bowl! | Mind your purse, friend! | Rain on the stalls again!

@@ -2,7 +2,7 @@
 // wolf. The deeds and nicknames are the server's.
 import {bool, str, type Maybe} from './json.ts';
 
-/** "the Lantern · first said by the stall keeper, in Upper Accord", or "(you asked folk not to use it)" once dropped. */
+/** "the Lantern · first said by the stall keeper, in Ridgemere", or "(you asked folk not to use it)" once dropped. */
 export function nicknameLine(n: Maybe): string {
     const where = str(n, 'town') ? `, in ${str(n, 'town')}` : '';
     const by = str(n, 'coinedBy') ? ` · first said by ${str(n, 'coinedBy').charAt(0).toLowerCase()}${str(n, 'coinedBy').slice(1)}${where}` : where;

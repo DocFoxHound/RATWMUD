@@ -1,18 +1,18 @@
-"""The western world around Upper Accord, from the author's drawing (western_world_map.png).
+"""Ridgemere's country: the world of Docs/Design/60-the-new-map.md.
 
-The drawing is 2048 pixels square; at the scale where Upper Accord's region matches its place on it, one pixel is
-1.25 tiles, so the world is a 2560 x 2560 canvas of 256-tile cells. Upper Accord's existing 768 x 768 region sits in
-its east edge and is left as it is (apart from the springs on Southern Peak that feed the Eastern Vale's river); the
-terrain around it is blended to meet its edges so the two join.
+Eight cells by eight (2048 x 2048 tiles), laid out from the plan rather than a drawing. Ridgemere, the one city, stands
+on its hills above the Sound in the north-west, with the rain-soaked cedar coast around it and the great Houses'
+estates outside its walls. The north-east is mountains and snow; the south-west warm broadleaf forest falling to the
+fens and the delta of the Long River; the south-east rolling downs and open fields, with the grain country and the
+orchards further south. Six towns lie out in the country, each within one cell. Biomes fade into one another over a
+hundred-odd tiles, each breaks into sub-biome patches, and points of interest are scattered so no cell is empty
+ground. Roads find their own way between their waypoints, going round lakes and the sea and bridging rivers.
 
-Biomes follow the drawing's colours: cold and wintery in the north, rain-soaked cedar coast around Ridgemere,
-temperate through the middle, grassland and plain in the south with golden grain country around Ser Ferro, swamp and
-deep swamp in the south-east. Biomes fade into one another over a hundred-odd tiles; each breaks into sub-biome
-patches, and points of interest are scattered so no cell is empty ground. Cities, towns and fortresses are
-placeholder walls with open ground inside, each within one cell. Roads are routed around lakes and the sea and bridge
-rivers where they must.
+  cd tools && python3 -m worldgen.realm [--preview DIR] [--out DIR] [--import-dev]
 
-  cd tools && python3 -m worldgen.western [--preview DIR] [--out DIR] [--import-dev]
+World tile = canvas tile (the world starts at 0, 0). Ridgemere and its estates are designed by worldgen.cities, its
+people by worldgen.citizens, the towns built out and peopled by worldgen.towns, and the country's farms, orchards and
+works, with their people, by worldgen.country (see assemble()).
 """
 from __future__ import annotations
 
@@ -29,132 +29,105 @@ from PIL import Image
 from . import field, preview
 from .canvas import Canvas, half
 
-DRAWING = Path('/home/martinb/Pictures/western_world_map.png')
-SIZE = 2560
+SIZE = 2048
 CELL = 256
-OX, OY = -1792, -512                    # World tile of canvas (0, 0): Upper Accord keeps its coordinates.
-UA = (1792, 512, 768, 768)              # Upper Accord's region on the canvas (x, y, width, height).
-SEED = 20260927
-PX = 1.28                               # Canvas tiles per pixel of the 2000-pixel view the plan was drawn on.
+OX, OY = 0, 0                           # World tile of canvas (0, 0).
+SEED = 20261011
 
-BIOMES = {  # id: drawing colour (None: not drawn, laid out from the plan)
-    'water': (0, 176, 240), 'north': (162, 221, 114), 'temperate': (118, 187, 62), 'plains': (168, 219, 38),
-    'swamp': (112, 145, 53), 'deep': (83, 99, 41), 'highland': (102, 127, 82), 'wet': None, 'golden': None,
-}
-BIOME_IDS = list(BIOMES)
-DRAWN = [b for b, colour in BIOMES.items() if colour]
-BLEND = 260                             # Biomes fade into each other over roughly twice this many tiles.
-
-
-def p(x, y):
-    """A point on the plan (2000-pixel view of the drawing) as canvas tiles."""
-    return x * PX, y * PX
-
-
-def pts(*coords):
-    return [p(x, y) for x, y in coords]
+BIOME_IDS = ['water', 'wet', 'north', 'temperate', 'warm', 'swamp', 'deep', 'downs', 'fields']
+BLEND = 200                             # Biomes fade into each other over roughly twice this many tiles.
 
 
 def bid(name):
     return BIOME_IDS.index(name)
 
 
-# --- The plan, traced from the drawing ---------------------------------------------------------------------------
-RANGES = {  # name: [(plan x, plan y, height, spread in tiles)]; each range's peaks are joined by ridges
-    'Whitecrown': [(565, 45, 15, 70), (675, 40, 16, 75), (800, 40, 16, 80), (930, 30, 15, 70), (750, 80, 14, 60),
-                   (870, 70, 14, 60), (820, 120, 13, 55), (640, 160, 13, 55), (560, 200, 12, 55), (505, 170, 13, 55)],
-    'Ridgemere spine': [(450, 280, 13, 55), (500, 330, 13, 55), (430, 330, 12, 50), (480, 380, 12, 50),
-                        (385, 400, 11, 50), (440, 440, 11, 50)],
-    'Westwall': [(320, 460, 12, 50), (260, 490, 12, 50), (250, 550, 12, 50), (300, 600, 13, 55), (245, 630, 12, 50),
-                 (290, 670, 12, 50), (235, 690, 11, 50), (290, 735, 12, 50), (240, 790, 11, 50), (300, 820, 11, 45),
-                 (370, 780, 10, 45), (375, 850, 11, 45), (440, 900, 10, 45), (530, 920, 11, 45), (490, 960, 10, 45),
-                 (545, 1015, 10, 45)],
-    'Eastwall': [(540, 440, 11, 50), (600, 490, 12, 50), (630, 550, 12, 50), (680, 600, 12, 50), (740, 640, 11, 45),
-                 (690, 680, 12, 50), (730, 720, 11, 45), (670, 760, 12, 50), (730, 800, 11, 45), (790, 830, 10, 45),
-                 (670, 840, 11, 45)],
-    'South-western knot': [(50, 930, 11, 50), (135, 875, 12, 50), (120, 960, 10, 45), (190, 930, 10, 45)],
-    'Isle': [(140, 195, 12, 60)],
-}
-HILLS = [  # (plan x, plan y, height, spread): neighbouring hills are joined into ridges of downs
-    (1060, 50, 5, 45), (990, 110, 5, 45), (880, 175, 4, 45), (740, 200, 4, 45), (650, 230, 4, 40), (390, 525, 4, 35),
-    (770, 885, 4, 40), (730, 920, 4, 40), (860, 935, 4, 40), (790, 975, 4, 40), (600, 1080, 4, 40), (660, 1105, 4, 40),
-    (630, 1145, 4, 40), (225, 990, 4, 40), (130, 1025, 4, 40), (40, 1015, 4, 40), (250, 1035, 4, 40), (370, 1100, 5, 45),
-    (290, 1145, 5, 45), (210, 1190, 4, 40), (530, 1225, 4, 40), (530, 1300, 4, 40), (485, 1355, 4, 40), (440, 1420, 4, 40),
-    (350, 1480, 4, 40), (300, 1545, 4, 40), (265, 1610, 4, 40), (215, 1675, 4, 40),
-]
-WET = ((380, 260), 680, 720)            # The rain coast around Ridgemere: centre on the plan, reach in tiles.
-GOLDEN = ((200, 1850), 820, 700)        # Ser Ferro's grain country: centre on the plan, reach in tiles.
+# --- The plan ----------------------------------------------------------------------------------------------------
+# The coast, north to south: (y, x of the shore). West of it is the sea. Ridgemere Sound is the bay below the north
+# headland: the city's waterfront is its east shore.
+COAST = [(0, 150), (90, 168), (150, 190), (190, 228), (225, 262), (270, 282), (330, 288), (420, 284), (500, 290),
+         (560, 282), (610, 255), (650, 205), (700, 160), (780, 136), (900, 118), (1040, 100), (1200, 108),
+         (1380, 128), (1520, 160), (1640, 186), (1760, 170), (1880, 140), (2047, 118)]
+SOUND = (300, 400)                       # The middle of the Sound, for naming its cells.
 
-# Settlements, each inside one cell: id, name, kind, (x, y, w, h) on the canvas, {gate side: the point the gate faces},
-# and whether its wall follows the shore (keeping to the land inside the box) instead of the box. Saltreach, Westmarch
-# and Ser Ferro were widened 2026-10-04 (Lakeside, hemmed in by its lake, builds a pier instead) so all their buildings fit (Docs/Design/39).
+RANGES = {  # name: [(x, y, height, spread in tiles)]; each range's peaks are joined by ridges
+    'The Whitefangs': [(1260, 110, 12, 60), (1410, 80, 14, 70), (1570, 120, 15, 70), (1730, 80, 16, 80),
+                       (1900, 140, 16, 85), (1990, 320, 15, 75), (1850, 330, 14, 65), (1980, 520, 13, 60),
+                       (1860, 640, 12, 55), (1990, 760, 11, 55), (1740, 620, 12, 55), (1440, 250, 12, 55),
+                       (1310, 300, 10, 50)],
+    'The Greyteeth': [(1660, 760, 10, 50), (1520, 820, 9, 45), (1880, 900, 9, 45), (1400, 700, 9, 45)],
+    'The Rainward Hills': [(760, 150, 8, 50), (900, 230, 9, 55), (1040, 170, 10, 55), (1120, 330, 9, 50),
+                           (980, 400, 7, 45)],
+}
+HILLS = [  # (x, y, height, spread): neighbouring hills are joined into downs
+    (640, 470, 4, 40), (700, 560, 4, 40), (560, 760, 4, 40), (760, 820, 4, 40), (880, 700, 5, 45),
+    (180, 1100, 4, 40), (300, 1230, 4, 40), (760, 1080, 4, 40), (860, 1260, 4, 40),
+]
+# Rivers, source to mouth: (x, y) points and the width at each end. The Long River rises in Glasswater, the lake
+# below the mountains, and winds south-west to its delta in the fens; the Rainrun comes down from the Rainward Hills
+# into the Sound just south of Ridgemere; the Lark runs out of the downs into the Long River.
+RIVERS = [
+    ('The Long River', [(1160, 650), (1110, 760), (1060, 880), (990, 1000), (930, 1130), (850, 1260), (770, 1380),
+                        (680, 1490), (580, 1600), (470, 1700), (360, 1790), (240, 1860), (140, 1900), (40, 1930)],
+     6, 22),
+    ('The Rainrun', [(1000, 300), (900, 360), (800, 430), (700, 500), (600, 560), (500, 590), (400, 600),
+                     (320, 590), (250, 572)], 4, 10),
+    ('The Lark', [(1780, 1120), (1650, 1180), (1520, 1260), (1400, 1320), (1250, 1360), (1100, 1380), (960, 1370),
+                  (830, 1345)], 4, 10),
+]
+LAKE = ((1235, 600), 78, 48)             # Glasswater: centre, reach x, reach y.
+
+# Settlements (the towns), each inside one cell: id, name, kind, (x, y, w, h) on the canvas, {gate side: the point
+# the gate faces}, and whether its wall follows the shore. Ridgemere is designed by worldgen.cities, which opens its
+# gates ('ridgemere', 'N'/'E'/'S') for the roads below.
 SETTLEMENTS = [
-    ('ridgemere', 'Ridgemere', 'city', (262, 6, 244, 244), {'S': (480, 262), 'E': (512, 134)}, True),
-    ('ser_ferro', 'Ser Ferro', 'city', (12, 2316, 240, 240), {'N': (128, 2304), 'E': (256, 2430)}, True),
-    ('northern_fortress', 'The Northern Fortress', 'fortress', (1580, 156, 84, 84), {'S': None, 'E': None}, False),
-    ('ghost_town', 'The Ghost Town', 'ghost', (2320, 100, 70, 56), {'S': None, 'W': None}, False),
-    ('saltreach', 'Saltreach', 'town', (150, 555, 84, 66), {'E': None}, True),
-    ('hollowmere_village', 'Hollowmere', 'village', (628, 1066, 60, 48), {'N': None, 'S': None}, False),
-    ('lakeside', 'Lakeside', 'town', (1286, 1284, 120, 96), {'N': (1330, 1270), 'E': (1460, 1330)}, True),
-    ('isle_fortress', 'The Isle Fortress', 'fortress', (1552, 1308, 84, 84), {'W': None}, False),
-    ('westmarch', 'Westmarch', 'town', (520, 1562, 84, 66), {'N': None, 'E': None}, False),
-    ('accord_crossing', 'Accord Crossing', 'town', (1680, 954, 70, 56), {'N': None, 'S': None}, False),
-    ('fenhollow', 'Fenhollow', 'town', (2330, 1984, 70, 56), {'E': None, 'W': None}, False),
-    ('amberford', 'Amberford', 'town', (1630, 1960, 70, 56), {'N': None, 'W': None}, False),
-    ('cinderbrook', 'Cinderbrook', 'town', (40, 2200, 70, 56), {'E': None}, False),
-    ('dark_fortress', 'The Dark Fortress', 'fortress', (1590, 2420, 90, 90), {'E': None}, False),
+    ('frosthollow', 'Frosthollow', 'town', (1572, 404, 70, 56), {'W': None, 'S': None}, False),
+    ('coldwater', 'Coldwater', 'town', (1052, 560, 70, 56), {'W': None, 'N': None, 'S': None}, False),
+    ('oakhaven', 'Oakhaven', 'town', (560, 1120, 70, 56), {'N': None, 'E': None, 'S': None}, False),
+    ('mirebridge', 'Mirebridge', 'town', (300, 1600, 70, 56), {'N': None, 'E': None}, False),
+    ('larkfield', 'Larkfield', 'town', (1330, 1170, 70, 56), {'W': None, 'E': None, 'S': None}, False),
+    ('southmeadow', 'Southmeadow', 'town', (1630, 1720, 70, 56), {'N': None, 'W': None}, False),
 ]
-UA_ENTRY = (1791, 942)                   # Where Upper Accord's main road leaves its region, on the canvas.
-# Roads: name, waypoints ('<settlement>.<side>' is that gate), and whether it goes straight (a causeway). Between
-# waypoints the road finds its own way, keeping off lakes and the sea and bridging rivers where it must.
+CITY = 'ridgemere'
+# Roads: name, waypoints ('<settlement>.<side>' is that gate), and whether it goes straight. Between waypoints the road
+# finds its own way, keeping off the lake and the sea and bridging rivers where it must.
 ROADS = [
-    ('Ridgemere Southway', ['ridgemere.S', *pts((380, 300), (300, 380), (160, 490), (150, 700), (160, 820), (220, 900),
-                                              (330, 960), (420, 1050), (460, 1150), (430, 1280), (330, 1410), (200, 1540),
-                                              (130, 1680), (180, 1800)), 'ser_ferro.N'], False),
-    ('The Accord Road', ['ridgemere.E', *pts((600, 370), (640, 470), (690, 545), (780, 545), (880, 650), (950, 680),
-                                            (1010, 675), (1110, 635), (1300, 690), (1360, 715)), UA_ENTRY], False),
-    ('The Fortress Road', ['northern_fortress.S', *pts((1390, 300), (1395, 400), (1380, 560), (1360, 715))], False),
-    ('The Crossing Spur', ['accord_crossing.N', p(1360, 715)], False),
-    ('The Southern Road', ['accord_crossing.S', (1770, 1180), (1925, 1470), *pts((1580, 1330), (1450, 1420), (1250, 1560), (1100, 1640), (900, 1700),
-                                                    (600, 1770), (360, 1860)), 'ser_ferro.E'], False),
-    ('The Valley Road', [*pts((420, 1050), (560, 1180), (700, 1320), (900, 1420), (1100, 1520)), 'amberford.W'], False),
-    ('The Amberford Spur', ['amberford.N', p(1250, 1560)], False),
-    ('The Fen Road', [p(1580, 1330), *pts((1650, 1400), (1780, 1440)), 'fenhollow.W'], False),
-    ('The Fen Road South', ['fenhollow.E', *pts((1815, 1700), (1810, 1800), (1760, 1990))], False),
-    ('The Dark Road', [p(1810, 1800), *pts((1600, 1830), (1400, 1860)), 'dark_fortress.E'], False),
-    ('The Lake Causeway', ['lakeside.E', 'isle_fortress.W'], True),
-    ('The Lake Road', ['lakeside.N', p(1110, 635)], False),
-    ('The Valley Path', ['hollowmere_village.N', (650, 900), (600, 760), p(500, 520), p(470, 260)], False),
-    ('The Valley Path South', ['hollowmere_village.S', p(420, 1050)], False),
-    ('The Saltreach Spur', ['saltreach.E', p(160, 490)], False),
-    ('The Westmarch Spur', ['westmarch.N', p(460, 1150)], False),
-    ('The Cinderbrook Road', ['cinderbrook.E', 'ser_ferro.N'], False),
+    ('The Southway', ['ridgemere.S', (470, 700), (540, 880), (590, 1030), 'oakhaven.N'], False),
+    ('The Fen Road', ['oakhaven.S', (560, 1330), (450, 1480), 'mirebridge.N'], False),
+    ('The High Road', ['ridgemere.E', (760, 380), (900, 470), 'coldwater.W'], False),
+    ('The Pass Road', ['coldwater.N', (1150, 470), (1330, 440), (1480, 430), 'frosthollow.W'], False),
+    ('The Downs Road', ['coldwater.S', (1100, 800), (1200, 980), 'larkfield.W'], False),
+    ('The Riverway', ['oakhaven.E', (820, 1170), (1050, 1180), 'larkfield.W'], False),
+    ('The South Road', ['larkfield.S', (1430, 1400), (1560, 1580), 'southmeadow.N'], False),
+    ('The Meadow Road', ['mirebridge.E', (640, 1740), (950, 1800), (1250, 1790), (1500, 1760), 'southmeadow.W'], False),
+    ('The Eastmarch Road', ['larkfield.E', (1650, 1180), (1850, 1250)], False),
+    ('The Mine Track', ['frosthollow.S', (1640, 560), (1660, 700)], False),
 ]
-REGIONS = [  # (name, plan x, plan y, blurb): cells are named for the nearest
-    ('Ridgemere Heights', 380, 150, 'Rain-soaked cedar forest, moss and grey stone around Ridgemere, where the rain '
-                                    'seldom stops.'),
-    ('The Whitecrown', 780, 70, 'The high northern range: snowfields, ice-bound cliffs and bitter passes.'),
-    ('The Frostmarch', 1100, 250, 'Open cold country of tundra and taiga, frozen ponds and bitter wind.'),
-    ('Bleakwatch Moor', 1350, 150, 'Snow-heath and rock around the Northern Fortress, long-watched and empty.'),
-    ('The Ghostwind Barrens', 1800, 180, 'White, silent barrens where an abandoned town still stands.'),
-    ('The Isle of Grey Horns', 140, 230, 'A lone mountain isle off the rain coast, wrapped in mist, moss and cedar.'),
-    ('The Saltreach Coast', 110, 560, 'A wet western shore of mossy bluffs, coves and grey water.'),
-    ('The Westwall', 260, 650, 'The western wall of the valley: forested flanks and bare peaks.'),
-    ('The Eastwall', 700, 700, 'A long ridge closing the valley from the east.'),
-    ('Hollowmere Valley', 480, 700, 'A green, sheltered valley between two ridges, with a quiet village.'),
-    ('The Greenholt', 1000, 500, 'Rolling temperate country of woods, meadows and old farms.'),
-    ('The Accord Marches', 1250, 800, 'Farms and woodland along the roads below Upper Accord.'),
-    ('The Mirrormere Shore', 950, 1100, 'The wooded and reedy shores of the great lake.'),
-    ('Mirrormere', 1180, 1250, 'The great lake, grey-blue and deep, with an island fortress at its heart.'),
-    ('The Southwold Downs', 300, 1200, 'Long rolling downs and hill country west of the plains.'),
-    ('The Sunreach', 800, 1500, 'Wide southern plains of tall grass, wildflowers and scattered stone.'),
-    ('The Amber Steppe', 1350, 1600, 'Dry golden steppe, mesas and scrub along the southern road.'),
-    ('The Ser Ferro Marches', 250, 1750, 'Golden grain fields, hedgerows and rolling sunlit hills around Ser Ferro.'),
-    ('The Riverlands', 700, 1900, 'Flood meadows and reed banks along the great river.'),
-    ('The Eastern Vale', 1750, 1150, 'Green country falling from Upper Accord toward the rivers; a tarn below '
-                                     'Southern Peak feeds the vale\'s river.'),
-    ('The Mirelands', 1800, 1450, 'Reed marsh and bog where the rivers slow and spread.'),
-    ('The Drowned Deep', 1550, 1850, 'The deep swamp: black water, drowned forest and the Dark Fortress.'),
+REGIONS = [  # (name, x, y, blurb): cells are named for the nearest
+    ('Ridgemere Sound', 140, 420, 'The grey Sound below Ridgemere: ships at anchor, gulls, and rain on the water.'),
+    ('Ridgemere', 430, 330, 'The rain city on its hills above the Sound: walls, wharves, smoke and slate roofs.'),
+    ('The Rainwood', 720, 120, 'Cedar rainforest, fern and moss on the hills behind Ridgemere, where the rain '
+                               'seldom stops.'),
+    ('The Houses\' Lands', 700, 400, 'Wet green country east of the city, where the great Houses keep their estates.'),
+    ('The Rainward Hills', 1000, 250, 'Steep cedar-dark hills where the Rainrun rises.'),
+    ('The Folds', 450, 760, 'Sheep country south of Ridgemere: stone walls, wet pasture and rabbit warrens.'),
+    ('The Whitefangs', 1700, 160, 'The high range of the north-east: snowfields, ice-bound cliffs and bitter passes.'),
+    ('The Frost Valley', 1600, 430, 'A high snowy valley among the peaks, where Frosthollow keeps its fires lit.'),
+    ('Glasswater', 1240, 610, 'A cold lake under the mountains, clear as glass; the Long River rises here.'),
+    ('The Greyteeth', 1700, 800, 'Lower, broken mountains of scree and pine south of the Whitefangs.'),
+    ('The Eastern Snows', 1950, 560, 'Snowfields and frozen tarns along the eastern edge of the world.'),
+    ('The Greenholt', 900, 760, 'Mixed woods and meadows in the middle country, between the rain and the snow.'),
+    ('The Warmwood', 400, 1150, 'Warm broadleaf forest: oak, beech and hazel, ferns and glades, thick with birdsong.'),
+    ('The Rivermeet', 820, 1330, 'Where the Lark joins the Long River among water meadows and woods.'),
+    ('The Sallow Fens', 520, 1620, 'Reed marsh, bog and alder carr along the lower Long River.'),
+    ('The Drowned Delta', 200, 1850, 'The delta of the Long River: black water, drowned trees and channels that '
+                                     'shift with every flood.'),
+    ('The Larkdowns', 1400, 1050, 'Rolling downs and open fields, larks overhead and the wind in the grass.'),
+    ('The High Downs', 1800, 1050, 'Long bare downs rolling to the eastern edge of the world.'),
+    ('The Sunfields', 1100, 1650, 'The grain country: a patchwork of golden fields, hedgerows and farms.'),
+    ('The Orchard Vale', 1450, 1500, 'Orchards and hay meadows along the south road, sweet with blossom in spring.'),
+    ('The Southern Meads', 1800, 1850, 'Meadows, fields and farmsteads at the southern edge of the world.'),
+    ('The Fenshore', 650, 1900, 'Wet fields and marsh along the southern shore.'),
 ]
 SUBBIOMES = {  # name, (ground codes and weights), tree codes, tree density, extra (code, density)...
     'north': [('Snowfields', {'*': 8, '-': 2}, '1', .02, [('o', .004)]),
@@ -171,26 +144,30 @@ SUBBIOMES = {  # name, (ground codes and weights), tree codes, tree density, ext
     'temperate': [('Mixed forest', {',': 6, '"': 1}, 'YP', .28, [('B', .02), ('7', .006)]),
                   ('Meadow', {',': 5, '"': 3, '3': 1}, 'Y', .01, [('B', .004)]),
                   ('Heath', {'5': 5, ',': 3}, 'P', .02, [('o', .008), ('B', .02)]),
-                  ('Farmland', {',': 6, '"': 1}, 'Y', .005, []),
                   ('Pine woods', {',': 5, '.': 1}, 'P', .36, [('7', .006)]),
                   ('Old wood', {',': 5, '"': 2}, 'Y', .45, [('B', .03), ('7', .01)])],
-    'plains': [('Prairie', {'"': 6, ';': 3}, 'Y', .002, []),
-               ('Short grass', {';': 6, ',': 3}, None, 0, [('o', .001)]),
-               ('Wildflower steppe', {';': 5, '3': 3, ',': 1}, None, 0, []),
-               ('Scrubland', {';': 6, '.': 1}, 'B', .10, [('o', .004)]),
-               ('Savanna', {';': 6, '"': 2}, 'Y', .012, [('B', .01)]),
-               ('Dry flats', {';': 4, '.': 3, 'X': 1}, None, 0, [('o', .003)])],
-    'golden': [('Grain country', None, None, 0, []),                  # The field patchwork (golden_fields).
-               ('Golden meadow', {';': 6, '3': 2, '"': 1}, 'Y', .006, [('B', .004)]),
-               ('Grain country', None, None, 0, []),
-               ('Orchard hills', {',': 4, ';': 3, '3': 1}, 'Y', .07, [('B', .01)])],
+    'warm': [('Oak wood', {',': 5, '"': 2, '&': 1}, 'Y', .34, [('B', .02), ('7', .006)]),
+             ('Beech hanger', {',': 4, '!': 2, '&': 2}, 'Y', .46, [('7', .01)]),
+             ('Glade', {',': 5, '3': 2, '"': 2}, 'Y', .03, [('B', .01)]),
+             ('Fern brake', {'&': 5, ',': 3, '!': 1}, 'Y', .14, [('7', .004)]),
+             ('Bramble scrub', {',': 4, '"': 3}, 'B', .16, [('Y', .02)]),
+             ('Hazel coppice', {',': 5, '&': 1, '3': 1}, 'B', .3, [('Y', .05)])],
     'swamp': [('Reed marsh', {',': 3, 'E': 4, 'w': 2}, None, 0, []),
               ('Bog', {'w': 3, 'D': 3, ',': 2}, '2', .05, []),
-              ('Mire woods', {',': 3, 'D': 2, 'w': 1}, 'Y', .18, [('2', .06)]),
+              ('Alder carr', {',': 3, 'D': 2, 'w': 1}, 'Y', .2, [('2', .05)]),
               ('Mud flats', {'D': 5, 'w': 2, 'E': 1}, None, 0, [])],
     'deep': [('Drowned forest', {'w': 4, 'D': 3}, '2', .22, [('E', .05)]),
              ('Black mire', {'w': 6, 'E': 2, 'D': 1}, '2', .05, []),
              ('Sunken woods', {'w': 3, 'D': 3, ',': 1}, 'Y', .22, [('2', .05)])],
+    'downs': [('Rolling grass', {',': 6, '"': 3, '3': 1}, 'Y', .003, []),
+              ('Chalk down', {',': 5, ';': 3, '3': 1}, None, 0, [('o', .002)]),
+              ('Copse country', {',': 5, '"': 2}, 'Y', .06, [('B', .02)]),
+              ('Hay meadow', {'"': 6, ',': 2, '3': 2}, None, 0, []),
+              ('Gorse down', {',': 4, '5': 3}, 'B', .1, [])],
+    'fields': [('Grain country', None, None, 0, []),                  # The field patchwork (fields()).
+               ('Hay meadow', {'"': 5, ',': 3, '3': 2}, 'Y', .006, [('B', .004)]),
+               ('Grain country', None, None, 0, []),
+               ('Orchard hills', {',': 5, '"': 2, '3': 1}, 'Y', .09, [('B', .01)])],
 }
 FEATURES = {
     'north': ['frozen_lake', 'ruins', 'stone_circle', 'camp', 'outcrop', 'wolf_den', 'hot_spring', 'ice_ridge',
@@ -199,39 +176,16 @@ FEATURES = {
             'stone_circle', 'watchtower'],
     'temperate': ['ruins', 'stone_circle', 'camp', 'pond', 'grove', 'outcrop', 'farmstead', 'great_tree', 'shrine',
                   'ravine', 'watchtower', 'wolf_den', 'orchard'],
-    'plains': ['mesa', 'great_tree', 'stone_circle', 'camp', 'pond', 'farmstead', 'ruins', 'wagon', 'watchtower',
-               'flower_field', 'cairn', 'outcrop', 'dry_creek'],
-    'golden': ['farmstead', 'farmstead', 'orchard', 'great_tree', 'wagon', 'pond', 'shrine', 'flower_field',
-               'watchtower', 'stone_circle', 'camp'],
+    'warm': ['grove', 'great_tree', 'pond', 'camp', 'ruins', 'shrine', 'wolf_den', 'stone_circle', 'flower_field',
+             'great_tree', 'outcrop'],
+    'downs': ['stone_circle', 'great_tree', 'camp', 'pond', 'farmstead', 'ruins', 'wagon', 'watchtower',
+              'flower_field', 'cairn', 'outcrop', 'orchard'],
+    'fields': ['farmstead', 'farmstead', 'orchard', 'orchard', 'great_tree', 'wagon', 'pond', 'shrine',
+               'flower_field', 'watchtower'],
     'swamp': ['sunken_ruins', 'boardwalk', 'hummock', 'dead_circle', 'camp', 'pond', 'grove'],
     'deep': ['sunken_ruins', 'boardwalk', 'hummock', 'dead_circle', 'drowned_shrine'],
 }
-# The Eastern Vale's river rises in a tarn below Southern Peak (one of Upper Accord's cells), fed by streams from
-# springs on the peak's southern flank. Points are canvas tiles; the springs are in Upper Accord's region.
-TARN = (2246, 1382, 46, 30)             # centre x, y, reach x, y
-SPRINGS = [(2102, 1217), (2162, 1210), (2222, 1217)]
-STREAM_MOUTHS = [(2217, 1279), (2242, 1279), (2267, 1279)]   # Where each stream leaves Upper Accord's region.
-RIVER_FROM = 1400                       # The drawn river is redrawn from the tarn down to here...
-RIVER_TO = 1700                         # ...where it keeps the drawing's course and width.
-
-
-# --- The drawing -------------------------------------------------------------------------------------------------
-def read_drawing():
-    """Biome of every canvas tile, from the drawing's colours."""
-    image = Image.open(DRAWING).convert('RGB').resize((SIZE, SIZE), Image.NEAREST)
-    rgb = np.asarray(image).astype(np.int32)
-    palette = np.array([BIOMES[b] for b in DRAWN], dtype=np.int32)
-    d = ((rgb[:, :, None, :] - palette[None, None, :, :]) ** 2).sum(-1)
-    label = np.array([bid(b) for b in DRAWN], dtype=np.int8)[d.argmin(-1)]
-    unsure = d.min(-1) > 45 ** 2                       # Ink, labels and markers: take the colour around them.
-    for _ in range(5):                                  # ...and the anti-aliased fringe of the ink, which reads as
-        unsure = grow(unsure)                           # dark swamp or grey highland.
-    ys, xs = np.mgrid[0:SIZE, 0:SIZE]
-    swampish = np.isin(label, [bid('swamp'), bid('deep')])
-    unsure |= swampish & ((ys < 1600) | (xs < 1300))     # The drawn swamps are all in the south-east.
-    unsure |= (label == bid('highland')) & ((ys > 800) | (xs > 900))   # ...and the grey around Ridgemere.
-    label[unsure] = -1
-    return fill_unknown(label, 80, bid('temperate'))
+WEATHER = {'north': 'snow', 'wet': 'rain', 'deep': 'fog', 'swamp': 'overcast'}
 
 
 def grow(mask):
@@ -241,37 +195,6 @@ def grow(mask):
     grown[:, 1:] |= mask[:, :-1]
     grown[:, :-1] |= mask[:, 1:]
     return grown
-
-
-def fill_unknown(label, rounds, default):
-    """Unknown (-1) tiles take the label of their nearest known neighbour."""
-    for _ in range(rounds):
-        if not (label < 0).any():
-            break
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            shifted = shift(label, dy, dx)
-            fill = (label < 0) & (shifted >= 0)
-            label[fill] = shifted[fill]
-    label[label < 0] = default
-    return label
-
-
-def shift(a, dy, dx):
-    """The array moved by (dy, dx) without wrapping: uncovered edges read as unknown (-1)."""
-    out = np.full_like(a, -1)
-    h, w = a.shape
-    out[max(0, dy):h + min(0, dy), max(0, dx):w + min(0, dx)] = a[max(0, -dy):h - max(0, dy), max(0, -dx):w - max(0, dx)]
-    return out
-
-
-def warp(label, amount, seed):
-    """Organic borders: every tile takes the label from a little way off, pushed about by smooth noise."""
-    ys, xs = np.mgrid[0:SIZE, 0:SIZE]
-    wx = (field.fbm(SIZE, SIZE, 160, seed, 3) - .5) * 2 * amount
-    wy = (field.fbm(SIZE, SIZE, 160, seed + 1, 3) - .5) * 2 * amount
-    sx = np.clip((xs + wx).astype(int), 0, SIZE - 1)
-    sy = np.clip((ys + wy).astype(int), 0, SIZE - 1)
-    return label[sy, sx]
 
 
 def box_blur(a, r):
@@ -318,14 +241,6 @@ def tree_edges(points, longest=None):
     return edges
 
 
-def ellipse_weight(centre, rx, ry, softness=.35):
-    """1 well inside an ellipse on the plan, fading to 0 at its edge (shaped by noise)."""
-    cx, cy = p(*centre)
-    ys, xs = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
-    d = np.sqrt(((xs - cx) / rx) ** 2 + ((ys - cy) / ry) ** 2)
-    return 1 - field.smoothstep(1 - softness, 1, d)
-
-
 def blob(r, ry, rng):
     """An irregular round shape: the radius (along x; ry along y) at each angle, wobbled so it never reads as a circle."""
     a1, a2, a3 = (rng.uniform(0, 2 * math.pi) for _ in range(3))
@@ -338,64 +253,107 @@ def blob(r, ry, rng):
     return inside
 
 
+def soft(value, a, b):
+    """0 below a, 1 above b, smooth between (a > b runs the other way)."""
+    return field.smoothstep(a, b, value) if a < b else 1 - field.smoothstep(b, a, value)
+
+
 # --- Building the world ------------------------------------------------------------------------------------------
-class Western:
-    def __init__(self, ua_edges):
+class Realm:
+    def __init__(self):
         self.rng = random.Random(SEED)
         self.c = Canvas(SIZE, SIZE, ',')
-        self.ua_edges = ua_edges           # Heights and codes of Upper Accord's region, by position in it.
-        self.ua_mask = np.zeros((SIZE, SIZE), dtype=bool)
-        x, y, w, h = UA
-        self.ua_mask[y:y + h, x:x + w] = True
         self.features = []                  # (canvas x, y, kind)
         self.gates = {}                     # (settlement, side) -> the canvas point just outside that gate
         self.places = {}                    # settlement -> its ground (a mask), which roads route around
-        self.ua_streams = []                # Upper Accord tiles (region-local x, y) the streams run through
-        self.causeway = np.zeros((SIZE, SIZE), dtype=bool)
         self.road_lines = {}                # road name -> the canvas points it follows
         self.levels = {}                    # settlement -> the height of its ground
         self.gate_levels = {}               # (settlement, side) -> the height of that gate, where it differs
-        self.reserved_ids = set()           # Room IDs the world already uses (the cities' interiors avoid them)
+        self.reserved_ids = set()           # Room IDs the world already uses (the city's interiors avoid them)
         self.city_site, self.cities, self.city_roads = None, [], []
+        self.causeway = np.zeros((SIZE, SIZE), dtype=bool)
+        self.ua_mask = np.zeros((SIZE, SIZE), dtype=bool)    # (The kit's name for ground nothing may touch: none here.)
 
     # The land ----------------------------------------------------------------------------------------------------
+    def lay_water(self):
+        ys, xs = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
+        shore = np.interp(np.arange(SIZE), [y for y, _ in COAST], [x for _, x in COAST]).astype(np.float32)
+        # The shore wanders: coves and points at a few scales, not a ruled line.
+        wobble = (field.fbm(SIZE, SIZE, 90, SEED + 1, 3) - .5) * 70 + (field.fbm(SIZE, SIZE, 18, SEED + 2, 2) - .5) * 16
+        self.ocean = xs < shore[ys.astype(int)] + wobble * (1 - .85 * self.city_shore_mask(xs, ys))
+        # Fill any lone sea specks inland and lone land specks at sea: the sea is the piece joined to the west edge.
+        self.ocean = components(self.ocean, [(2, y) for y in range(10, SIZE, 200)]) >= 0
+        water = self.ocean.copy()
+        # Glasswater.
+        (lx, ly), rx, ry = LAKE
+        shape = blob(rx, ry, random.Random(SEED + 3))
+        self.lake = np.zeros((SIZE, SIZE), dtype=bool)
+        wob = field.fbm(SIZE, SIZE, 16, SEED + 4, 2)
+        for y in range(ly - ry * 2, ly + ry * 2):
+            for x in range(lx - rx * 2, lx + rx * 2):
+                if shape(x - lx, y - ly) <= 1 + (wob[y, x] - .5) * .35:
+                    self.lake[y, x] = True
+        water |= self.lake
+        # The rivers: each a wandering line, widening downstream.
+        self.river = np.zeros((SIZE, SIZE), dtype=bool)
+        for i, (name, points, w0, w1) in enumerate(RIVERS):
+            self.river |= self.river_mask(points, w0, w1, SEED + 10 + i)
+        water |= self.river
+        self.water = water
+
+    @staticmethod
+    def city_shore_mask(xs, ys):
+        """Along Ridgemere's waterfront the shore keeps nearly straight, so the wharf can run along it."""
+        return np.exp(-(((ys - 380) / 150) ** 2)) * (xs < 400)
+
+    def river_mask(self, points, w0, w1, seed):
+        rng = random.Random(seed)
+        # Densify the line with meanders: a sideways wobble of a few tiles, slow along the river.
+        pts = []
+        for (x1, y1), (x2, y2) in zip(points, points[1:]):
+            n = max(2, int(math.dist((x1, y1), (x2, y2)) / 6))
+            for k in range(n):
+                t = k / n
+                pts.append((x1 + (x2 - x1) * t, y1 + (y2 - y1) * t))
+        pts.append(points[-1])
+        total = len(pts)
+        phase, amp = rng.uniform(0, 6), rng.uniform(6, 12)
+        mask = np.zeros((SIZE, SIZE), dtype=bool)
+        for k in range(1, total):
+            (x1, y1), (x2, y2) = pts[k - 1], pts[k]
+            dx, dy = x2 - x1, y2 - y1
+            n = math.hypot(dx, dy) or 1
+            off = amp * math.sin(k / 9 + phase) + amp * .4 * math.sin(k / 3.7 + 2 * phase)
+            ox, oy = -dy / n * off, dx / n * off
+            t = k / total
+            width = w0 + (w1 - w0) * t
+            mask |= self.c.line_mask([(x1 + ox, y1 + oy), (x2 + ox, y2 + oy)], width)
+        return mask
+
     def lay_biomes(self):
-        drawn = read_drawing()
-        self.water = warp(drawn == bid('water'), 6, SEED + 7)
-        self.eastern_vale_river(drawn == bid('water'))
-        land = drawn.copy()
-        land[land == bid('water')] = -1
-        land = fill_unknown(land, 60, bid('temperate'))    # Under water, the biome of the nearest shore.
-        label = warp(land, 55, SEED + 3)
-        ys, xs = np.mgrid[0:SIZE, 0:SIZE]
-        # The far north is always cold.
-        label[(ys < 420 + (field.fbm(SIZE, SIZE, 200, SEED + 9, 2) - .5) * 160)] = bid('north')
-        # The rain coast: Ridgemere's grey highland and everything near it (fading, via the blend, into snow to the
-        # east and temperate land to the south).
-        wet = (ellipse_weight(*WET, softness=.4) * (.85 + .3 * field.fbm(SIZE, SIZE, 120, SEED + 60, 2))) > .5
-        label[wet | (label == bid('highland'))] = bid('wet')
-        # Ser Ferro's golden grain country: the plains (and the southern edge of the downs) around the city.
-        golden = (ellipse_weight(*GOLDEN, softness=.4) * (.85 + .3 * field.fbm(SIZE, SIZE, 120, SEED + 61, 2))) > .5
-        label[golden & np.isin(label, [bid('plains'), bid('temperate')]) & (ys > 1900)] = bid('golden')
-        label[golden & (label == bid('plains'))] = bid('golden')
-        water = self.water
-        self.ocean = components(water, [(20, 20), (10, 700), (60, 300)]) >= 0
-        self.lake = components(water, [p(1100, 1260), p(1000, 1150)]) >= 0
-        # The lake's north-east lobe ran into Upper Accord's region, leaving no shore for the road the drawing
-        # takes down the lake's east side: it keeps a 36-tile shore from the region instead.
-        x0, y0, w, hgt = UA
-        cx, cy = np.clip(xs, x0, x0 + w - 1), np.clip(ys, y0, y0 + hgt - 1)
-        near_ua = np.maximum(np.abs(xs - cx), np.abs(ys - cy)) <= 36
-        water[self.lake & near_ua] = False
-        self.lake &= ~near_ua
-        self.river = water & ~self.ocean & ~self.lake
-        # The drawing paints both swamps one olive; the deep swamp is the one south of the great river.
-        great = components(water, [p(1100, 1790)]) >= 0
-        rows = np.where(great, np.arange(SIZE)[:, None], -1).max(axis=0)          # The river's south bank, by column.
-        south = (ys > rows[None, :]) & (rows[None, :] >= 0)
-        label[(label == bid('swamp')) & south] = bid('deep')
+        ys, xs = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
+        # Bent coordinates, so no border is a straight line.
+        wx = xs + (field.fbm(SIZE, SIZE, 180, SEED + 20, 3) - .5) * 260
+        wy = ys + (field.fbm(SIZE, SIZE, 180, SEED + 21, 3) - .5) * 260
+        label = np.full((SIZE, SIZE), bid('temperate'), dtype=np.int8)
+        # The south: warm forest west, downs east; fields along the south; fens and the delta in the south-west.
+        south = wy > 980
+        label[south & (wx < 1000)] = bid('warm')
+        label[south & (wx >= 1000)] = bid('downs')
+        label[(wy > 1450) & (wx > 760) & (wx < 1900)] = bid('fields')
+        label[(wy > 1360) & (wx > 1250) & (wx < 1700)] = bid('fields')        # The Orchard Vale.
+        fen = (wy > 1460) & (wx < 820 - (wy - 1460) * .1)
+        label[fen] = bid('swamp')
+        label[(wy > 1720) & (wx < 460)] = bid('deep')
+        # The north-east: snow, and the mountains always cold.
+        label[(wx > 1150) & (wy < 760 + (wx - 1150) * .12)] = bid('north')
+        # The rain coast round Ridgemere, its hills and the Houses' lands.
+        wet = ((wx - 420) / 720) ** 2 + ((wy - 360) / 560) ** 2 < 1
+        label[wet & (label != bid('north'))] = bid('wet')
+        label[self.ocean] = bid('wet')                   # (Under water: the biome of the nearest shore.)
         self.label = label
         self.biome = self.blend(label)
+        # The middle country keeps its own: the Greenholt between the rain, the snow and the south.
         self.sub = self.patches()
 
     def blend(self, label):
@@ -406,6 +364,7 @@ class Western:
         specks = np.random.default_rng(SEED + 71).random((SIZE, SIZE), dtype=np.float32)
         best = np.full((SIZE, SIZE), -9, dtype=np.float32)
         out = label.copy()
+        self.north_weight = np.zeros((SIZE, SIZE), dtype=np.float32)
         for n, k in enumerate(present):
             weight = box_blur(box_blur(box_blur((label == k).astype(np.float32), BLEND // 2), BLEND // 2), BLEND // 2)
             noise = (np.roll(clumps, (n * 311, n * 197), (0, 1)) - .5) * 1.3 + (np.roll(specks, n * 523, 1) - .5) * .45
@@ -444,124 +403,46 @@ class Western:
                 chosen[better] = variant[cy, cx][better]
         return chosen
 
-    def eastern_vale_river(self, drawn_water):
-        """The river below Upper Accord: the drawing has it spring full-width from the region's edge. Instead a tarn
-        below Southern Peak, fed by three streams from its springs, lets a narrow river out that widens downstream to
-        the drawing's river."""
-        water = self.water
-        x_lo, x_hi = 2150, 2345
-        centre = {}
-        for y in range(UA[1] + UA[3], RIVER_TO + 40):
-            xs = np.nonzero(drawn_water[y, x_lo:x_hi])[0]
-            if len(xs):
-                centre[y] = x_lo + float(xs.mean())
-        ys = np.array(sorted(centre))
-        cs = np.convolve(np.pad([centre[y] for y in ys], 30, mode='edge'), np.ones(61) / 61, mode='valid')
-        water[UA[1] + UA[3]:RIVER_TO, x_lo:x_hi] = False
-        tx, ty, rx, ry = TARN
-        wobble = field.fbm(SIZE, SIZE, 9, SEED + 80, 2)
-        for y, cx in zip(ys, cs):
-            if y < ty or y >= RIVER_TO + 40:
-                continue
-            t = min(1, max(0, (y - ty) / (RIVER_TO - ty)))
-            if y < RIVER_FROM:                                    # From the tarn's outlet, bend onto the course.
-                cx = tx + (cx - tx) * (y - ty) / (RIVER_FROM - ty)
-            width = 7 + 17 * t * t
-            x0, x1 = int(cx - width / 2), int(cx + width / 2) + 1
-            water[y, x0:x1] = True
-        self.water_tarn = np.zeros((SIZE, SIZE), dtype=bool)
-        shape = blob(rx, ry, random.Random(SEED + 81))
-        for y in range(ty - ry - 8, ty + ry + 9):
-            for x in range(tx - rx - 8, tx + rx + 9):
-                if shape(x - tx, y - ty) <= 1 + (wobble[y, x] - .5) * .2:
-                    self.water_tarn[y, x] = True
-        water |= self.water_tarn
-        # The streams in the vale: from where each leaves Upper Accord's region, winding down into the tarn.
-        rng = random.Random(SEED + 82)
-        self.streams = np.zeros((SIZE, SIZE), dtype=bool)
-        for (mx, my) in STREAM_MOUTHS:
-            end = (tx + (mx - STREAM_MOUTHS[1][0]) * .6, ty - ry * .6)
-            length = int(math.dist((mx, my), end))
-            phase, amp = rng.uniform(0, 6), rng.uniform(2, 4)
-            for i in range(length + 1):
-                t = i / max(1, length)
-                x = mx + (end[0] - mx) * t + amp * math.sin(t * 9 + phase) * (1 - t)
-                y = my + (end[1] - my) * t
-                self.streams[int(y), int(x):int(x) + 2] = True
-        water |= self.streams
-        self.ua_streams = self.trace_ua_streams()
-
-    def trace_ua_streams(self):
-        """The streams on Southern Peak: from each spring downhill (drawn toward its mouth at the region's edge),
-        one tile wide. Returned as Upper Accord region-local tiles; the peak's cell is patched on import."""
-        h = self.ua_edges['heights']
-        x0, y0 = UA[0], UA[1]
-        wobble = np.random.default_rng(SEED + 83)
-        tiles = []
-        for (sx, sy), (mx, my) in zip(SPRINGS, STREAM_MOUTHS):
-            x, y = sx - x0, sy - y0
-            goal = (mx - x0, my - y0)
-            seen = {(x, y)}
-            path = [(x, y)]
-            for _ in range(800):
-                if y >= goal[1]:
-                    break
-                options = []
-                for dx, dy in ((-1, 1), (0, 1), (1, 1), (-1, 0), (1, 0)):
-                    nx, ny = x + dx, y + dy
-                    if (nx, ny) in seen or not (0 <= nx < UA[2] and 0 <= ny < UA[3]):
-                        continue
-                    score = h[ny, nx] + .09 * math.dist((nx, ny), goal) + wobble.random() * .4
-                    options.append((score, nx, ny))
-                if not options:
-                    break
-                _, nx, ny = min(options)
-                if nx != x and ny != y:                   # A diagonal step: fill the corner so the stream is joined.
-                    path.append((nx, y))
-                x, y = nx, ny
-                seen.add((x, y))
-                path.append((x, y))
-            tiles += path
-        return sorted(set(tiles))
-
     def lay_heights(self):
-        xs, ys = field.grid(SIZE, SIZE)
         h = np.zeros((SIZE, SIZE), dtype=np.float32)
         b = self.biome
         rolling = field.fbm(SIZE, SIZE, 70, SEED + 20, 4)
         knolls = np.maximum(0, rolling - .56) * 9               # Low hills in patches; most lowland stays level.
-        for name, scale in (('north', 1.3), ('wet', 1.2), ('temperate', 1.0), ('plains', .55), ('swamp', .25),
-                            ('deep', .15)):
+        for name, scale in (('north', 1.3), ('wet', 1.2), ('temperate', 1.0), ('warm', .7), ('swamp', .2),
+                            ('deep', .1), ('fields', .4)):
             mask = b == bid(name)
             h[mask] += knolls[mask] * scale
-        # Ser Ferro's country rolls everywhere, gently: long sunlit swells rather than scattered knolls.
-        golden = box_blur(box_blur((b == bid('golden')).astype(np.float32), 40), 40)
-        swell = np.maximum(0, field.fbm(SIZE, SIZE, 120, SEED + 24, 3) - .3) * 7
-        h += golden * swell
+        # The downs roll everywhere: long swells rather than scattered knolls, gentler in the grain country.
+        downs = box_blur(box_blur((b == bid('downs')).astype(np.float32), 40), 40)
+        fields = box_blur(box_blur((b == bid('fields')).astype(np.float32), 40), 40)
+        swell = np.maximum(0, field.fbm(SIZE, SIZE, 110, SEED + 24, 3) - .28) * 9
+        h += downs * swell + fields * swell * .45
         # Domain warp: ranges and hills are laid on bent coordinates, so nothing comes out round.
         wx = (field.fbm(SIZE, SIZE, 150, SEED + 25, 3) - .5) * 110 + (field.fbm(SIZE, SIZE, 40, SEED + 26, 2) - .5) * 26
         wy = (field.fbm(SIZE, SIZE, 150, SEED + 27, 3) - .5) * 110 + (field.fbm(SIZE, SIZE, 40, SEED + 28, 2) - .5) * 26
         for peaks in RANGES.values():
-            points = [(*p(x, y), height, spread) for x, y, height, spread in peaks]
-            for i, j in tree_edges(points):
-                self.ridge(h, points[i], points[j], wx, wy, 1.0)
-            for x, y, height, spread in points:
+            for i, j in tree_edges(peaks):
+                self.ridge(h, peaks[i], peaks[j], wx, wy, 1.0)
+            for x, y, height, spread in peaks:
                 self.ridge(h, (x, y, height, spread), (x + 1, y, height, spread), wx, wy, 1.0)
-        hills = [(*p(x, y), height, spread) for x, y, height, spread in HILLS]
-        for i, j in tree_edges(hills, longest=130):
-            self.ridge(h, hills[i], hills[j], wx, wy, .9)
-        for hill in hills:
+        for i, j in tree_edges(HILLS, longest=150):
+            self.ridge(h, HILLS[i], HILLS[j], wx, wy, .9)
+        for hill in HILLS:
             self.ridge(h, hill, (hill[0] + 1, hill[1], hill[2], hill[3]), wx, wy, .9)
         # Spurs and gullies on the ranges (ridged noise), and fine roughness on the heights.
         mountain = field.smoothstep(3, 9, h)
         ridged = 1 - np.abs(2 * field.fbm(SIZE, SIZE, 55, SEED + 29, 4) - 1)
         h += (ridged - .55) * 5 * mountain
         h += (field.fbm(SIZE, SIZE, 14, SEED + 22, 2) - .5) * 1.6 * mountain
+        # The valleys the towns and roads need in the mountains: Frosthollow's, and the pass up to it.
+        for (x, y, w, hh), depth in (((1500, 380, 220, 140), .25), ((1100, 400, 420, 160), .45)):
+            ys, xs = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
+            d = np.hypot((xs - x - w / 2) / (w / 2), (ys - y - hh / 2) / (hh / 2))
+            k = 1 - field.smoothstep(.6, 1.15, d)
+            h = h * (1 - k * (1 - depth)) + k * depth * np.minimum(h, 9)
         # The shore: land slopes to the water's edge; water itself is level.
-        near_water = field.distance_to_mask(self.water & ~self.streams, 12)
-        h = np.where(self.water & ~self.streams, 0, h * field.smoothstep(0, 12, near_water))
-        # Upper Accord: the ground within 48 tiles of its region rises or falls to meet its edge exactly.
-        self.blend_to_ua(h)
+        near_water = field.distance_to_mask(self.water, 12)
+        h = np.where(self.water, 0, h * field.smoothstep(0, 12, near_water))
         self.c.heights[:] = half(np.clip(h, -16, 16))
 
     def ridge(self, h, a, b, wx, wy, strength):
@@ -583,22 +464,6 @@ class Western:
         view = h[y0:y1, x0:x1]
         np.maximum(view, np.maximum(core, foot), out=view)
 
-    def blend_to_ua(self, h):
-        x0, y0, w, hgt = UA
-        edge = self.ua_edges['heights']
-        ys, xs = np.mgrid[0:SIZE, 0:SIZE]
-        cx, cy = np.clip(xs, x0, x0 + w - 1), np.clip(ys, y0, y0 + hgt - 1)
-        d = np.maximum(np.abs(xs - cx), np.abs(ys - cy))
-        near = (d > 0) & (d <= 48)
-        target = edge[cy[near] - y0, cx[near] - x0]
-        weight = 1 - field.smoothstep(0, 48, d[near].astype(np.float32))
-        h[near] = h[near] * (1 - weight) + target * weight
-        # The edge's own profile, carried straight out, leaves stripes; smooth them away from the edge itself.
-        smooth = box_blur(box_blur(h, 5), 5)
-        band = (d > 0) & (d <= 60)
-        s = field.smoothstep(2, 16, d[band].astype(np.float32))
-        h[band] = h[band] * (1 - s) + smooth[band] * s
-
     def lay_ground(self):
         c = self.c
         rng = np.random.default_rng(SEED + 30)
@@ -614,7 +479,7 @@ class Western:
                 if not mask.any():
                     continue
                 if ground is None:
-                    self.golden_fields(codes, mask)
+                    self.field_patchwork(codes, mask)
                     continue
                 # Ground: weighted by clumped noise, so each kind forms patches rather than salt and pepper.
                 keys, weights = list(ground), np.array(list(ground.values()), dtype=np.float32)
@@ -635,11 +500,12 @@ class Western:
         # Mountain flanks: forest climbing the lower slopes, thinning with height.
         flank = field.fbm(SIZE, SIZE, 40, SEED + 32, 3)
         slope_wood = (h >= 2.5) & (h < 8) & (flank > .48) & (grain < .34 - h * .03)
-        codes[slope_wood & (self.biome == bid('temperate'))] = ord('P')
+        codes[slope_wood & np.isin(self.biome, [bid('temperate'), bid('downs')])] = ord('P')
+        codes[slope_wood & (self.biome == bid('warm'))] = ord('Y')
         codes[slope_wood & (self.biome == bid('north'))] = ord('1')
-        codes[slope_wood & (self.biome == bid('wet'))] = np.where(pick[slope_wood & (self.biome == bid('wet'))] < .6,
-                                                                  ord('$'), ord('P'))
-        # Bare rock, scree and snow on the heights (lower in the cold north).
+        wet_wood = slope_wood & (self.biome == bid('wet'))
+        codes[wet_wood] = np.where(pick[wet_wood] < .6, ord('$'), ord('P'))
+        # Bare rock, scree and snow on the heights (lower in the cold north-east).
         cold = self.biome == bid('north')
         codes[(h >= 6) & (detail > .5)] = ord('r')
         codes[(h >= 8) & (detail > .35)] = ord('r')
@@ -648,22 +514,21 @@ class Western:
         codes[(h >= 13)] = ord('*')
         wet = self.biome == bid('wet')
         codes[wet & (h >= 6) & (h < 11) & (detail < .45)] = ord('!')    # Moss on the rain coast's rocks.
-        # Water: deep in the middle, wadeable at the edges; streams are shallow all through.
+        # Water: deep in the middle, wadeable at the edges.
         shore = field.distance_to_mask(~self.water, 8)
         codes[self.water] = ord('W')
         codes[self.water & (shore <= 3)] = ord('~')
         swampy = (self.biome == bid('swamp')) | (self.biome == bid('deep'))
         codes[self.water & (shore <= 5) & swampy] = ord('w')
-        # Snow thins toward the edge of the cold north: tundra, then grass, show through as it gives out.
+        # Snow thins toward the edge of the cold north-east: tundra, then grass, show through as it gives out.
         thin = (self.biome == bid('north')) & (codes == ord('*')) & (h < 11)
         cover = np.clip(self.north_weight * 1.4 - .15, 0, 1)
-        codes[thin & (grain > cover)] = np.where(pick[thin & (grain > cover)] < cover[thin & (grain > cover)] + .3,
-                                                 ord('-'), ord(','))
-        frozen = self.water & cold & ~self.ocean
+        sparse = thin & (grain > cover)
+        codes[sparse] = np.where(pick[sparse] < cover[sparse] + .3, ord('-'), ord(','))
+        frozen = self.water & cold & ~self.ocean & (h >= 0)
         codes[frozen & (shore <= 6)] = ord('J')
-        codes[self.streams] = ord('~')
-        # Beaches and banks: sand, the rain coast's shingle and swamp reeds.
-        land_edge = field.distance_to_mask(self.water & ~self.streams, 6)
+        # Beaches and banks: sand, the rain coast's shingle and the fens' reeds.
+        land_edge = field.distance_to_mask(self.water, 6)
         bank = ~self.water & (land_edge <= 3) & (detail > .35)
         codes[bank & ~cold & ~swampy & ~wet] = ord('0')
         codes[bank & wet] = np.where(pick[bank & wet] < .3, ord('o'), ord('r'))
@@ -671,7 +536,7 @@ class Western:
         free = ~c.locked
         c.codes[free] = codes[free]
 
-    def golden_fields(self, codes, mask):
+    def field_patchwork(self, codes, mask):
         """A patchwork of grain fields, stubble, pasture and flowers, parcelled by hedgerows with the odd tree."""
         ys, xs = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
         a = .35
@@ -697,7 +562,7 @@ class Western:
         near = field.distance_to_mask(region[y0:y1, x0:x1], margin + 1)
         weight = 1 - field.smoothstep(0, margin, near)
         sub = c.heights[y0:y1, x0:x1]
-        keep = (self.ua_mask | c.locked)[y0:y1, x0:x1]
+        keep = c.locked[y0:y1, x0:x1]
         sub[:] = np.where(keep, sub, half(sub * (1 - weight) + level * weight))
         return level
 
@@ -718,8 +583,7 @@ class Western:
             i = int(np.argmin((dx - (x + w / 2)) ** 2 + (dy - (y + h / 2)) ** 2))
             region = components(dry, [(dx[i], dy[i])]) >= 0
             # Smooth the outline so the wall runs along the shore rather than stepping with every cove.
-            soft = box_blur(region.astype(np.float32), 5) > .5
-            region = soft & dry
+            region = (box_blur(region.astype(np.float32), 5) > .5) & dry
         else:
             self.water[region] = False
         level = self.flatten_mask(region, 10)
@@ -743,12 +607,11 @@ class Western:
             tx, ty = target or default[side]
             i = int(np.argmin((rx - tx) ** 2 + (ry - ty) ** 2))
             gx, gy = int(rx[i]), int(ry[i])
-            # The way out: straight out of the side it faces.
             vx, vy = {'N': (0, -1), 'S': (0, 1), 'W': (-1, 0), 'E': (1, 0)}[side]
             # The opening: every wall tile across the gate's width, through the wall's whole depth.
             reach = gw + thick + 2
             yy, xx = np.mgrid[max(0, gy - reach):gy + reach + 1, max(0, gx - reach):gx + reach + 1]
-            depth = (gx - xx) * vx + (gy - yy) * vy            # How far in from the gate's outer face.
+            depth = (gx - xx) * vx + (gy - yy) * vy
             lateral = np.abs((xx - gx) * vy - (yy - gy) * vx)
             near = ring[yy, xx] & (lateral <= gw // 2) & (depth >= -1) & (depth <= thick + 1)
             c.paint(self._mask(yy[near], xx[near]), 'G', level)
@@ -758,11 +621,6 @@ class Western:
                 if not region[int(oy), int(ox)]:
                     break
             self.gates[(sid, side)] = (float(ox + vx * 4), float(oy + vy * 4))
-        if kind == 'ghost':
-            rng = random.Random(sid)
-            for _ in range(60):                   # Broken walls, rubble and the dead trees of an abandoned place.
-                bx, by = rng.randrange(x, x + w), rng.randrange(y, y + h)
-                c.stamp(bx, by, ['X' if ring[by, bx] else rng.choice('X2.,')], level)
         self.features.append((x + w // 2, y + h // 2, kind))
 
     @staticmethod
@@ -775,21 +633,23 @@ class Western:
     STEP = 4                                # Roads are routed on a grid of 4-tile squares.
 
     def route_costs(self):
-        """What it costs a road to cross each 4-tile square: water dearly (so lakes and the sea are gone round and
-        rivers bridged only where needed), the lake shore a little (so roads keep a few tiles back from it), steep
-        and high ground by its slope, and settlements and Upper Accord not at all."""
+        """What it costs a road to cross each 4-tile square: water dearly (so the lake and the sea are gone round and
+        rivers bridged only where needed), the shore a little (so roads keep a few tiles back from it), steep and high
+        ground by its slope, and settlements not at all."""
         s, n = self.STEP, SIZE // self.STEP
         coarse = lambda a: a.reshape(n, s, n, s).mean(axis=(1, 3))
-        wet = coarse((self.water & (self.lake | self.ocean | self.water_tarn)).astype(np.float32))
-        river = coarse((self.water & ~(self.lake | self.ocean | self.water_tarn) & ~self.streams).astype(np.float32))
+        wet = coarse((self.water & (self.lake | self.ocean)).astype(np.float32))
+        river = coarse((self.water & ~(self.lake | self.ocean)).astype(np.float32))
         h = coarse(self.c.heights)
         gy, gx = np.gradient(h)
         slope = np.hypot(gx, gy) / s
         shore = grow(grow(wet > 0)) & ~(wet > 0)
         cost = 1 + 90 * wet + 20 * river + 3 * shore + 60 * slope ** 2 + .25 * np.maximum(0, h - 5)
-        blocked = coarse(self.ua_mask.astype(np.float32)) > 0
+        blocked = np.zeros((n, n), dtype=bool)
         for region in self.places.values():
             blocked |= coarse(region.astype(np.float32)) > 0
+        if self.no_road is not None:                # The city's buildings outside its walls: the suburbs' houses.
+            blocked |= coarse(self.no_road.astype(np.float32)) > 0
         cost[blocked] = np.inf
         return cost
 
@@ -798,6 +658,7 @@ class Western:
         s, n = self.STEP, cost.shape[0]
         start = (min(n - 1, int(a[1]) // s), min(n - 1, int(a[0]) // s))
         goal = (min(n - 1, int(b[1]) // s), min(n - 1, int(b[0]) // s))
+
         def estimate(node):
             dy, dx = abs(node[0] - goal[0]), abs(node[1] - goal[1])
             return max(dx, dy) + .41 * min(dx, dy)
@@ -840,7 +701,9 @@ class Western:
     def dry_point(self, point):
         """The nearest tile to `point` that is dry land outside every settlement (a road's waypoint)."""
         x, y = int(point[0]), int(point[1])
-        taken = self.water | self.ua_mask
+        taken = self.water.copy()
+        for region in self.places.values():
+            taken |= region
         for r in range(0, 200, 2):
             x0, y0 = max(0, x - r), max(0, y - r)
             ys, xs = np.nonzero(~taken[y0:y + r + 1, x0:x + r + 1])
@@ -857,7 +720,8 @@ class Western:
             ends = [self.gate_levels.get(tuple(s.split('.')), self.levels[s.split('.')[0]]) if isinstance(s, str)
                     else None for s in (stops[0], stops[-1])]
             if not straight:
-                points = [points[0]] + [self.dry_point(q) for q in points[1:-1]] + [points[-1]]
+                points = [points[0]] + [self.dry_point(q) for q in points[1:-1]] + \
+                         [points[-1] if isinstance(stops[-1], str) else self.dry_point(points[-1])]
             if straight:
                 self.road(name, points, causeway=True, ends=ends)
                 continue
@@ -918,10 +782,10 @@ class Western:
         near = best < reach * reach
         dist = np.sqrt(best[near])
         blend = 1 - field.smoothstep(width / 2, reach, dist)
-        free = ~c.locked[near] & ~self.ua_mask[near]
+        free = ~c.locked[near]
         old = c.heights[near]
         c.heights[near] = np.where(free, half(old * (1 - blend) + hts[near] * blend), old)
-        paint = mask & ~self.ua_mask & ~c.locked
+        paint = mask & ~c.locked
         bridge = paint & self.water
         c.codes[paint & ~self.water] = ord('d')
         c.codes[bridge] = ord('8')
@@ -932,7 +796,7 @@ class Western:
     # Points of interest -----------------------------------------------------------------------------------------
     def scatter_features(self):
         rng = self.rng
-        spacing = 78
+        spacing = 72
         taken = [(x, y) for x, y, _ in self.features]
         attempts = 0
         placed = 0
@@ -962,9 +826,10 @@ class Western:
         return placed
 
     def buildable(self, x, y):
-        return (not self.ua_mask[y, x] and not self.water[y, x] and not self.c.locked[y, x]
-                and not self.ua_mask[min(SIZE - 1, y + 20), min(SIZE - 1, x + 20)]
-                and not self.ua_mask[max(0, y - 20), max(0, x - 20)])
+        if self.water[y, x] or self.c.locked[y, x]:
+            return False
+        # Not within reach of a settlement or the city's grounds (their own fields and farms go there).
+        return not any(region[max(0, y - 30):y + 31, max(0, x - 30):x + 31].any() for region in self.places.values())
 
     def feature(self, x, y):
         biome = BIOME_IDS[self.biome[y, x]]
@@ -978,7 +843,7 @@ class Western:
     # The stamps: each lays a small place into the ground around (x, y).
     def put(self, x, y, ch, height=None):
         c = self.c
-        if 0 <= x < SIZE and 0 <= y < SIZE and not c.locked[y, x] and not self.ua_mask[y, x] and not self.water[y, x]:
+        if 0 <= x < SIZE and 0 <= y < SIZE and not c.locked[y, x] and not self.water[y, x]:
             c.codes[y, x] = ord(ch)
             if height is not None:
                 c.heights[y, x] = height
@@ -1076,15 +941,14 @@ class Western:
                 self.put(px + 1, py, '%')
 
     def f_grove(self, x, y, biome):
-        tree = {'north': '1', 'swamp': 'Y', 'deep': '2', 'plains': 'Y', 'wet': '$', 'golden': 'Y'}.get(
-            biome, self.rng.choice('YP'))
+        tree = {'north': '1', 'swamp': 'Y', 'deep': '2', 'wet': '$'}.get(biome, self.rng.choice('YP'))
         r = self.rng.randrange(7, 13)
         inside = blob(r, r * self.rng.uniform(.6, 1), self.rng)
         for dy in range(-r - 4, r + 5):
             for dx in range(-r - 4, r + 5):
                 if inside(dx, dy) <= 1 and self.rng.random() < .55:
                     self.put(x + dx, y + dy, tree)
-        self.disc(x, y, 2, '3' if biome in ('temperate', 'plains', 'golden') else ',')
+        self.disc(x, y, 2, '3' if biome in ('temperate', 'warm', 'downs', 'fields') else ',')
 
     def f_great_tree(self, x, y, biome):
         self.disc(x, y, 6, '3' if biome != 'wet' else '&')
@@ -1135,19 +999,6 @@ class Western:
         for i in range(3):                    # A way up.
             self.put(x + edge - i, y, ':', top - 1 + i * .5)
 
-    def f_mesa(self, x, y, biome):
-        r = self.rng.randrange(14, 24)
-        top = self.c.heights[y, x] + self.rng.choice([3, 3.5, 4])
-        inside = blob(r, r / 1.2, self.rng)
-        for dy in range(-r - 6, r + 7):
-            for dx in range(-r - 7, r + 8):
-                d = inside(dx, dy)
-                if d <= 1:
-                    self.put(x + dx, y + dy, '%' if d > .82 else (';' if self.rng.random() < .8 else 'X'), top)
-        edge = next((i for i in range(r * 2, 0, -1) if inside(-i, 0) <= 1), r)
-        for i in range(4):
-            self.put(x - edge + i, y, ':', top - 1.5 + i * .5)
-
     def f_ravine(self, x, y, biome):
         a = self.rng.uniform(0, math.pi)
         length = self.rng.randrange(30, 60)
@@ -1167,14 +1018,6 @@ class Western:
         for t in (-length, length):                      # Walkable ends.
             wobble = bend * math.sin(t / 13 + phase)
             self.put(int(x + t * math.cos(a) - wobble * math.sin(a)), int(y + t * math.sin(a) + wobble * math.cos(a)), ':')
-
-    def f_dry_creek(self, x, y, biome):
-        a = self.rng.uniform(0, math.pi)
-        for t in range(-45, 46):
-            cx = x + t * math.cos(a) + 4 * math.sin(t / 7)
-            cy = y + t * math.sin(a) + 4 * math.cos(t / 9)
-            for s in (-1, 0, 1):
-                self.put(int(cx - s * math.sin(a)), int(cy + s * math.cos(a)), 'X' if s == 0 else '.')
 
     def f_wolf_den(self, x, y, biome):
         top = self.c.heights[y, x] + 2
@@ -1224,7 +1067,7 @@ class Western:
             cy = int(y + t * math.sin(a))
             for s in (0, 1):
                 px, py = cx + s, cy
-                if 0 <= px < SIZE and 0 <= py < SIZE and not self.c.locked[py, px] and not self.ua_mask[py, px]:
+                if 0 <= px < SIZE and 0 <= py < SIZE and not self.c.locked[py, px]:
                     self.c.codes[py, px] = ord('8')
                     self.c.heights[py, px] = 0
             if t % 3 == 0:
@@ -1239,25 +1082,31 @@ class Western:
         self.put(x + r, y, ':', .5)
 
     # Output -----------------------------------------------------------------------------------------------------
-    def build(self):
+    def build(self, city=True):
+        self.lay_water()
         self.lay_biomes()
         self.lay_heights()
-        from . import cities
         for s in SETTLEMENTS:
-            if s[0] not in cities.DESIGNED:
-                self.settlement(*s)
-        self.city_site, self.cities, self.city_roads = cities.build(self)
+            self.settlement(*s)
+        if city:
+            from . import cities
+            self.city_site, self.cities, self.city_roads = cities.build(self)
+        else:
+            self.stand_in_city()
         self.lay_roads()
         self.lay_ground()
         placed = self.scatter_features()
         self.mark_cliffs()
-        cities.build_quarters(self)        # Doc 35: last, so nothing before it moves.
-        self.mark_cliffs()
-        # Nothing of the new world may touch Upper Accord's region.
-        x, y, w, h = UA
-        self.c.codes[y:y + h, x:x + w] = ord(',')
-        self.c.heights[y:y + h, x:x + w] = 0
+        if city:
+            from . import cities
+            cities.build_quarters(self)
+            self.mark_cliffs()
         return placed
+
+    def stand_in_city(self):
+        """For a look at the land alone: Ridgemere as a plain walled box with its three gates."""
+        self.settlement(CITY, 'Ridgemere', 'city', (300, 220, 300, 260),
+                        {'N': (450, 200), 'E': (620, 350), 'S': (450, 500)}, True)
 
     def mark_cliffs(self):
         """Wherever a drop cannot be walked, the higher tile is a cliff face (unless something was built there)."""
@@ -1269,28 +1118,28 @@ class Western:
         higher[:-1, :] |= h[:-1, :] - h[1:, :] > 1
         higher[1:, :] |= h[1:, :] - h[:-1, :] > 1
         ramp = np.isin(c.codes, [ord(':'), ord('^'), ord('G')])
-        c.codes[higher & ~c.locked & ~self.water & ~ramp & ~self.ua_mask] = ord('%')
+        c.codes[higher & ~c.locked & ~self.water & ~ramp] = ord('%')
 
     def cells(self):
-        """Atlas cells for every 256-tile square outside Upper Accord that holds land."""
+        """Atlas cells for every 256-tile square that holds land."""
         c = self.c
-        centres = [(name, *p(x, y), blurb) for name, x, y, blurb in REGIONS]
         out = []
         for cy in range(SIZE // CELL):
             for cx in range(SIZE // CELL):
                 x0, y0 = cx * CELL, cy * CELL
-                if self.ua_mask[y0 + 128, x0 + 128]:
-                    continue
                 codes = c.codes[y0:y0 + CELL, x0:x0 + CELL]
                 if (codes == ord('W')).mean() > .97:
                     continue                      # Open sea: the world simply ends.
-                region = min(centres, key=lambda r: (r[1] - x0 - 128) ** 2 + (r[2] - y0 - 128) ** 2)
+                region = min(REGIONS, key=lambda r: (r[1] - x0 - 128) ** 2 + (r[2] - y0 - 128) ** 2)
+                if self.city_cells and (cx, cy) in self.city_cells:
+                    region = next(r for r in REGIONS if r[0] == 'Ridgemere')
                 rows, heights = c.cell(x0, y0, CELL, CELL)
-                biome_here = np.bincount(self.biome[y0:y0 + CELL, x0:x0 + CELL].ravel(), minlength=len(BIOME_IDS))
+                land = ~self.water[y0:y0 + CELL, x0:x0 + CELL]
+                biome_here = np.bincount(self.biome[y0:y0 + CELL, x0:x0 + CELL][land].ravel(), minlength=len(BIOME_IDS))
                 main = BIOME_IDS[int(biome_here.argmax())]
-                weather = {'north': 'snow', 'wet': 'rain', 'deep': 'fog', 'swamp': 'overcast'}.get(main, 'clear')
                 out.append({'region': region[0], 'blurb': region[3], 'cx': cx, 'cy': cy, 'biome': main,
-                            'x': x0 + OX, 'y': y0 + OY, 'terrain': rows, 'heights': heights, 'weather': weather})
+                            'x': x0 + OX, 'y': y0 + OY, 'terrain': rows, 'heights': heights,
+                            'weather': WEATHER.get(main, 'clear')})
         # Names: the region's name, and a quarter of it where a region spans several cells.
         by_region = {}
         for cell in out:
@@ -1309,100 +1158,58 @@ class Western:
                     quarter += f' {"I" * used[quarter]}'
                 name = region if len(group) == 1 else f'{region}, {quarter}'
                 slug = ''.join(ch if ch.isalnum() else '_' for ch in region.lower().replace('the ', '')).strip('_')
+                slug = slug.replace('__', '_')
                 cells.append({'id': f'w_{slug}_{g["cx"]}_{g["cy"]}', 'name': name, 'description': g['blurb'],
                               'x': g['x'], 'y': g['y'], 'width': CELL, 'height': CELL, 'z': 0, 'outdoors': True,
                               'weather': g['weather'], 'territory': {'region': slug, 'claims': [], 'chapter': ''},
                               'terrain': g['terrain'], 'heights': g['heights']})
         return cells
 
-
-def ua_edges_from(project):
-    """Upper Accord's region as a height and code grid (from DEV, so its own edges are matched exactly)."""
-    heights = np.zeros((UA[3], UA[2]), dtype=np.float32)
-    codes = np.full((UA[3], UA[2]), ord(','), dtype=np.uint8)
-    from .canvas import DEFAULT_HEIGHT
-    for c in project['cells']:
-        x0, y0 = c['x'], c['y']
-        if not (0 <= x0 < UA[2] and 0 <= y0 < UA[3]):
-            continue
-        for y, row in enumerate(c['terrain']):
-            codes[y0 + y, x0:x0 + len(row)] = np.frombuffer(row.encode('ascii'), dtype=np.uint8)
-            heights[y0 + y, x0:x0 + len(row)] = DEFAULT_HEIGHT[codes[y0 + y, x0:x0 + len(row)]]
-        for key, value in c['heights'].items():
-            x, y = map(int, key.split(','))
-            heights[y0 + y, x0 + x] = value
-    return {'heights': heights, 'codes': codes}
+    city_cells = ()
+    no_road = None
 
 
-# Upper Accord tiles a stream may run over: open ground and plants (not cliffs, walls, buildings or ramps).
-STREAM_OVER = set(',."\'rs*-!&$PY1B3o5;D')
+def render(world, cells, folder: Path):
+    """world.png (the whole world, a pixel per two tiles) and world_full.png (a pixel a tile), labelled."""
+    folder.mkdir(parents=True, exist_ok=True)
+    c = world.c
+    np.savez_compressed(folder / 'canvas.npz', codes=c.codes, heights=c.heights, biome=world.biome)
+    overview = [{'x': cell['x'] - OX, 'y': cell['y'] - OY, 'width': CELL, 'height': CELL, 'name': cell['name'][:30]}
+                for cell in cells]
+    labels = [((x - 20, y - 14), n) for n, x, y in
+              [(name, box[0], box[1]) for _, name, _, box, _, _ in SETTLEMENTS]]
+    preview.overview(c.codes, c.heights, overview, folder / 'world_full.png', scale=1, relief=2.2, labels=labels)
+    image = Image.open(folder / 'world_full.png')
+    image.resize((1024, 1024), Image.LANCZOS).save(folder / 'world.png')
+    # Ridgemere and its estates, closer.
+    x0, y0, x1, y1 = 270, 40, 900, 760
+    preview.overview(c.codes[y0:y1, x0:x1], c.heights[y0:y1, x0:x1], [], folder / 'ridgemere_region.png', scale=2,
+                     relief=1.6)
+    preview.glyphs(c.codes, c.heights, folder / 'ridgemere_city.png', 286, 186, 360, 410, px=6)
 
 
-def with_streams(project, tiles):
-    """The project with the streams painted into the Upper Accord cells they cross (its heights kept as they were).
-    Returns the new project and the ids of the cells changed."""
-    import terrain_catalog
-    changed, cells = set(), []
-    stream_default = terrain_catalog.DEFAULT_HEIGHTS.get('~', 0)
-    by_cell = {}
-    for x, y in tiles:
-        for c in project['cells']:
-            if c['x'] <= x < c['x'] + c['width'] and c['y'] <= y < c['y'] + c['height']:
-                by_cell.setdefault(c['id'], []).append((x - c['x'], y - c['y']))
-                break
-    for c in project['cells']:
-        if c['id'] not in by_cell:
-            cells.append(c)
-            continue
-        rows = [list(r) for r in c['terrain']]
-        heights = dict(c['heights'])
-        for x, y in by_cell[c['id']]:
-            old = rows[y][x]
-            if old not in STREAM_OVER:
-                continue
-            level = heights.get(f'{x},{y}', terrain_catalog.DEFAULT_HEIGHTS.get(old, 0))
-            rows[y][x] = '~'
-            if level == stream_default:
-                heights.pop(f'{x},{y}', None)
-            else:
-                heights[f'{x},{y}'] = level
-        cells.append({**c, 'terrain': [''.join(r) for r in rows], 'heights': heights})
-        changed.add(c['id'])
-    return {**project, 'cells': cells}, changed
-
-
-# Interiors, doors, people and routes of the two designed cities, and (doc 30) of the towns built into the w_ cells
-# and the cities' newcomers: replaced together, the towns rebuilt by worldgen.towns at the end of assemble().
-GENERATED = ('rm_', 'sf_', 'tn_', 'rmx_', 'sfx_')
+GENERATED = ('rm_', 'tn_', 'rmx_', 'cty_')
+ECONOMY = {'treasury': 20000, 'storeHerbs': 1500, 'storeMeals': 900, 'dailyHerbs': 150, 'dailyMeals': 200}
 
 
 def claims_for(record):
-    """Who holds a building of the two cities (faction IDs)."""
-    name, district, city = record['name'], record['district'], record.get('city')
-    if city == 'ridgemere':
-        if district.startswith('estate_'):
-            return ['house_' + district.split('_')[1]]
-        for key, house in (('Brinewater', 'brinewater'), ('Vesk', 'vesk'), ('Fish Hall', 'vesk'),
-                           ('Grayrock', 'grayrock'), ('Fell', 'fell'), ('Ashcombe', 'ashcombe')):
-            if key in name:
-                return ['house_' + house]
-        if name in ('The Watch House', 'The Gaol'):
-            return ['council_of_houses', 'ridgemere_watch']
-        return ['council_of_houses']
-    if name in ('The Cathedral of the Iron Saint', 'The Chapter House', 'The Clergy House', 'The House of Saint Chiara'):
-        return ['church_iron_saint']
-    if name == "The Merchants' Guildhall" or district == 'heights' and record['kind'] == 'shop':
-        return ['merchants_guild']
-    if name == 'The City Guard Barracks':
-        return ['ser_ferro_guard']
-    return ['crown_of_ser_ferro']
+    """Who holds a building of Ridgemere (faction IDs)."""
+    name, district = record['name'], record['district']
+    if district.startswith('estate_'):
+        return ['house_' + district.split('_')[1]]
+    for house in ('Greatly', 'Grayrock', 'Fell', 'Mossgrave'):
+        if house in name:
+            return ['house_' + house.lower()]
+    if name in ('The Watch House', 'The Gaol', 'The Heights Watch Post', 'The City Arsenal'):
+        return ['council_of_houses', 'ridgemere_watch']
+    return ['council_of_houses']
 
 
-def assemble(project, world, cells):
-    """The DEV project with the generated world: every w_ cell replaced, the streams painted into Upper Accord, the
-    two cities' interiors, doors, people, routes and factions replaced, and everything else kept as it is."""
-    from . import citizens
-    streamed, _ = with_streams(project, world.ua_streams)
+def assemble(base, world, cells, report=print):
+    """The new world as a project: the realm's cells, Ridgemere's interiors, doors, people, routes and factions, the
+    towns built out and peopled, and the country's sites. `base` (DEV's project) gives only its ID, chapters and
+    profession slots: nothing of the old world's places or people is kept."""
+    from . import citizens, country, towns
     site = world.city_site
     by_grid = {f'@{(c["x"] - OX) // CELL}_{(c["y"] - OY) // CELL}': c['id'] for c in cells}
     links = []
@@ -1413,43 +1220,87 @@ def assemble(project, world, cells):
                 link[end]['cell'] = by_grid[link[end]['cell']]
         links.append(link)
     rooms = [{**r, 'worldX': r['worldX'] + OX, 'worldY': r['worldY'] + OY} for r in site.rooms]
-    ours = lambda i: i.startswith(GENERATED)
-    merged = dict(streamed)
-    merged['cells'] = [c for c in streamed['cells'] if not c['id'].startswith('w_')] + cells
-    merged['rooms'] = [r for r in streamed['rooms'] if not ours(r['id'])] + rooms
-    merged['links'] = [link for link in streamed['links']
-                       if not (ours(link['id']) or ours(link['a']['cell']) or ours(link['b']['cell']))] + links
-    merged['people'] = [p for p in streamed.get('people', []) if not ours(p['id'])]
-    merged['routes'] = [r for r in streamed.get('routes', []) if not ours(r['id'])]
-    people, routes = citizens.populate(merged, site.manifest, world)
-    merged['people'] = merged['people'] + people
-    merged['routes'] = merged['routes'] + routes
-    known = {f['id'] for f in merged.get('factions', [])}
-    merged['factions'] = merged.get('factions', []) + [f for f in citizens.FACTIONS if f['id'] not in known]
-    # Claims: each city's buildings by who holds them; its cells by the city and the Houses whose estates lie there.
-    room_claims = {}
-    for record in site.manifest:
-        for room in record['rooms']:
-            room_claims[room['id']] = claims_for(record)
-    for r in merged['rooms']:
+    city = world.cities[0]
+    office = city.spots['office']
+    spawn_cell = by_grid[f'@{int(office[0]) // CELL}_{int(office[1]) // CELL}']
+    sx, sy = int(office[0]) % CELL, int(office[1]) % CELL + 12
+    project = {'format': 'ratw-atlas', 'version': 3, 'id': base.get('id', 'ridgemere'), 'name': 'Ridgemere',
+               'cells': cells, 'rooms': rooms, 'links': links,
+               'spawn': {'cell': spawn_cell, 'x': sx, 'y': sy}, 'factions': list(citizens.FACTIONS),
+               'chapters': base.get('chapters', []), 'people': [], 'routes': [], 'economy': dict(ECONOMY),
+               'slots': base.get('slots', [])}
+    people, routes = citizens.populate(project, site.manifest, world)
+    project['people'], project['routes'] = people, routes
+    report(f'ridgemere: {len(site.manifest)} buildings, {len(rooms)} interiors, {len(people)} people')
+    # Claims: the city's buildings by who holds them; its cells by the city, and the estates' by their Houses.
+    room_claims = {room['id']: claims_for(record) for record in site.manifest for room in record['rooms']}
+    for r in project['rooms']:
         if r['id'] in room_claims:
             r['territory'] = {**r['territory'], 'claims': room_claims[r['id']]}
     cell_claims = {}
     for sid, region in world.places.items():
-        if sid in ('ridgemere', 'ser_ferro') or sid.startswith(('estate_', 'quarter_')):
+        if sid == CITY or sid.startswith('estate_'):
             ys, xs = np.nonzero(region)
             key = f'@{int(xs.mean()) // CELL}_{int(ys.mean()) // CELL}'
-            city = sid[8:] if sid.startswith('quarter_') else sid
-            add = {'ridgemere': ['council_of_houses', 'ridgemere_watch'],
-                   'ser_ferro': ['crown_of_ser_ferro', 'ser_ferro_guard']}.get(city, ['house_' + sid[7:]])
+            add = ['council_of_houses', 'ridgemere_watch'] if sid == CITY else ['house_' + sid[7:]]
             cell_claims.setdefault(by_grid[key], set()).update(add)
-    for c in merged['cells']:
+    for c in project['cells']:
         if c['id'] in cell_claims:
             c['territory'] = {**c['territory'], 'claims': sorted(cell_claims[c['id']])}
-    # The towns, village and fortresses built out again on the new ground, and the cities' newcomers moved back in.
-    from . import towns
-    merged, _ = towns.build_all(merged, report=lambda line: print(f'  towns: {line}'))
-    return merged
+    # The towns built out and peopled, Ridgemere filled out, and the country's farms and works.
+    project, _ = towns.build_all(project, report=lambda line: report(f'  towns: {line}'))
+    project, _ = country.build(project, report=lambda line: report(f'  country: {line}'))
+    # The herb patch: by the Southway, outside the city.
+    gx, gy = world.gates[(CITY, 'S')]
+    from .residents import People
+    P = People(project, [], random.Random(SEED))
+    project['herbPatch'] = P.world(int(gx) + OX + 30, int(gy) + OY + 40, share=False)
+    return project
+
+
+def retire_ids(project, old_ids, keep_ids):
+    """Gives every regenerated resident whose ID someone in the old world had a new one (a trailing underscore, as the
+    generators make a taken ID unique). Returns {old: new}."""
+    taken = set(old_ids) | {p['id'] for p in project['people']}
+    renamed = {}
+    for p in project['people']:
+        if p['id'] in old_ids and p['id'] not in keep_ids:
+            new = p['id']
+            while new in taken:
+                new += '_'
+            taken.add(new)
+            renamed[p['id']] = new
+            p['id'] = new
+    return renamed
+
+
+def clear_old_state(conn, world_id, gone):
+    """The saved game state of residents no longer in the world (`gone`: their IDs): their bodies, bonds, rumours they
+    held or that were about them, NPC memories and their DM-set state. Players' and everyone else's stay. The game drops
+    their lives and purses itself when it next loads its save. Returns rows deleted, by table."""
+    gone = sorted(gone)
+    out = {}
+    for table, where in (('live.npc_state', 'npc_id = ANY(%s)'),
+                         ('game.npcs', 'key = ANY(%s)'),
+                         ('game.bonds', "(data->>'holder' = ANY(%s) OR data->>'other' = ANY(%s))"),
+                         ('game.beliefs', "(data->>'holder' = ANY(%s) OR data->>'subject' = ANY(%s))"),
+                         ('game.npc_memories', "data->>'npc' = ANY(%s)")):
+        args = (world_id, gone) + ((gone,) if where.count('%s') == 2 else ())
+        out[table] = conn.execute(f'DELETE FROM {table} WHERE world_id = %s AND {where}', args).rowcount
+    return out
+
+
+def saved_residents(world_id):
+    """The residents DEV's game save knows ({ID: home cell}), and those it still has a body for. Whatever world they lived
+    in, a newcomer mustn't wake up in one's saved life."""
+    import world_db
+    with world_db.connect('dev', 'owner') as conn:
+        row = conn.execute('SELECT payload FROM game.checkpoints WHERE world_id = %s', (world_id,)).fetchone()
+        bodies = {r[0] for r in conn.execute('SELECT key FROM game.npcs WHERE world_id = %s', (world_id,)).fetchall()}
+    if not row:
+        return {}, bodies
+    payload = row[0] if isinstance(row[0], dict) else json.loads(row[0])
+    return {rid: life.get('homeCell', '') for rid, life in payload.get('society', {}).get('residents', {}).items()}, bodies
 
 
 def dev_project():
@@ -1460,71 +1311,92 @@ def dev_project():
         return world_store.load_world(conn, wid)
 
 
+def render_project(project, folder: Path):
+    """The finished world as the cells hold it (the towns and the country's sites built in): world_built.png, a pixel
+    a tile, and towns/<town>.png close up."""
+    from .canvas import DEFAULT_HEIGHT
+    codes = np.full((SIZE, SIZE), ord('W'), dtype=np.uint8)
+    heights = np.zeros((SIZE, SIZE), dtype=np.float32)
+    for c in project['cells']:
+        x0, y0 = c['x'] - OX, c['y'] - OY
+        for y, row in enumerate(c['terrain']):
+            codes[y0 + y, x0:x0 + len(row)] = np.frombuffer(row.encode('ascii'), dtype=np.uint8)
+        heights[y0:y0 + c['height'], x0:x0 + c['width']] = DEFAULT_HEIGHT[codes[y0:y0 + c['height'], x0:x0 + c['width']]]
+        for key, value in c['heights'].items():
+            x, y = map(int, key.split(','))
+            heights[y0 + y, x0 + x] = value
+    overview = [{'x': c['x'] - OX, 'y': c['y'] - OY, 'width': CELL, 'height': CELL, 'name': c['name'][:30]}
+                for c in project['cells']]
+    preview.overview(codes, heights, overview, folder / 'world_built.png', scale=1, relief=2.2)
+    (folder / 'towns').mkdir(parents=True, exist_ok=True)
+    for sid, name, _, (x, y, w, h), _, _ in SETTLEMENTS:
+        x0, y0 = max(0, x - 150), max(0, y - 150)
+        preview.overview(codes[y0:y + h + 150, x0:x + w + 150], heights[y0:y + h + 150, x0:x + w + 150], [],
+                         folder / 'towns' / f'{sid}.png', scale=3, relief=1.4)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--preview', type=Path)
-    parser.add_argument('--out', type=Path)
-    parser.add_argument('--import-dev', action='store_true')
+    parser.add_argument('--preview', type=Path, help='Write preview images here')
+    parser.add_argument('--land', action='store_true', help='The land alone (Ridgemere as a plain walled box)')
+    parser.add_argument('--out', type=Path, help='Write the whole project here as JSON')
+    parser.add_argument('--import-dev', action='store_true', help='Replace DEV\'s world with this one (backed up first)')
     args = parser.parse_args(argv)
-    project, revision = dev_project()
-    world = Western(ua_edges_from(project))
-    world.reserved_ids = {a['id'] for a in project['cells'] + project['rooms'] if not a['id'].startswith(GENERATED)}
-    placed = world.build()
+    world = Realm()
+    placed = world.build(city=not args.land)
     cells = world.cells()
-    streamed, touched = with_streams(project, world.ua_streams)
-    merged = assemble(project, world, cells)
+    print(f'{len(cells)} cells, {placed} scattered points of interest, {len(SETTLEMENTS)} towns')
+    if args.preview:
+        render(world, cells, args.preview)
+    if args.land:
+        return 0
+    base, revision = dev_project() if args.import_dev else ({'id': 'upper_accord'}, None)
+    project = assemble(base, world, cells)
     roles = {}
-    for person in merged['people']:
-        if person['id'].startswith(GENERATED):
-            roles[person['id'][:3] + person['role']] = roles.get(person['id'][:3] + person['role'], 0) + 1
-    print(f'{len(cells)} cells, {placed} scattered points of interest, {len(SETTLEMENTS)} settlements; '
-          f'streams painted into {sorted(touched)}')
-    print(f'cities: {len(world.city_site.manifest)} buildings, {len(world.city_site.rooms)} interiors; '
-          f'residents {sorted(roles.items())}; world total {len(merged["people"])} residents, '
-          f'{len(merged["routes"])} routes, {len(merged["links"])} links')
-    print(f'height overrides: {sum(len(c["heights"]) for c in cells)}')
+    for person in project['people']:
+        roles[person['role']] = roles.get(person['role'], 0) + 1
+    print(f'{len(project["people"])} residents {roles}; {len(project["rooms"])} interiors; {len(project["links"])} '
+          f'links; {len(project["routes"])} routes; height overrides {sum(len(c["heights"]) for c in cells)}')
     import map_editor
     try:
-        map_editor.check_project(merged, for_game=False)
+        map_editor.check_project(project, for_game=False)
         print('Atlas validation: OK')
     except map_editor.ValidationError as error:
         print('Atlas validation failed:', *error.errors[:30], sep='\n  ')
         return 1
     if args.preview:
-        args.preview.mkdir(parents=True, exist_ok=True)
-        c = world.c
-        codes, heights = c.codes.copy(), c.heights.copy()
-        x, y, w, h = UA
-        ua = ua_edges_from(streamed)
-        codes[y:y + h, x:x + w] = ua['codes']
-        heights[y:y + h, x:x + w] = ua['heights']
-        np.savez_compressed(args.preview / 'canvas.npz', codes=codes, heights=heights, biome=world.biome)
-        overview = [{'x': cell['x'] - OX, 'y': cell['y'] - OY, 'width': CELL, 'height': CELL, 'name': cell['name'][:28]}
-                    for cell in cells]
-        preview.overview(codes, heights, overview, args.preview / 'world_full.png', scale=1, relief=2.2)
-        image = Image.open(args.preview / 'world_full.png')
-        image.resize((1280, 1280), Image.LANCZOS).save(args.preview / 'world.png')
+        render_project(project, args.preview)
     if args.out:
         args.out.mkdir(parents=True, exist_ok=True)
-        (args.out / 'western_cells.json').write_text(json.dumps(cells), encoding='utf-8')
-        (args.out / 'ua_streams.json').write_text(json.dumps(world.ua_streams), encoding='utf-8')
+        (args.out / 'project.json').write_text(json.dumps(project), encoding='utf-8')
         (args.out / 'roads.json').write_text(json.dumps(world.road_lines), encoding='utf-8')
         (args.out / 'buildings.json').write_text(json.dumps(world.city_site.manifest, indent=1), encoding='utf-8')
-        (args.out / 'project.json').write_text(json.dumps(merged), encoding='utf-8')
     if args.import_dev:
         import time
         import world_db
         import world_store
-        # The world as it was, kept before anything is written (as the other generators keep it).
+        saved, bodies = saved_residents(base['id'])
+        old_ids = {p['id'] for p in base.get('people', [])} | set(saved)
+        # Someone this world already had stays: the same ID and name (a world made by this generator, made again), and,
+        # if the game's save knows the ID, it still has their body, in the same home (else it is someone else's saved
+        # life, or one already let go).
+        same = {(p['id'], p['name']) for p in base.get('people', [])}
+        kept = {p['id'] for p in project['people'] if (p['id'], p['name']) in same
+                and (p['id'] not in saved or (p['id'] in bodies and saved[p['id']] == p['home']['cell']))}
+        renamed = retire_ids(project, old_ids, kept)
+        print(f'{len(kept)} residents kept; {len(renamed)} newcomers given IDs no one in the world before had')
         folder = Path(__file__).resolve().parents[2] / 'artifacts/backups'
         folder.mkdir(parents=True, exist_ok=True)
-        backup = folder / f'{project["id"]}_dev_r{revision}_before_western_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
-        backup.write_text(json.dumps(project, ensure_ascii=False), encoding='utf-8')
+        backup = folder / f'{base["id"]}_dev_r{revision}_before_realm_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
+        backup.write_text(json.dumps(base, ensure_ascii=False), encoding='utf-8')
         print(f'DEV revision {revision} backed up to {backup}.')
-        # Every generated cell, interior, door, resident and route is replaced; anything else authored is kept.
         with world_db.connect('dev', 'editor') as conn:
-            new = world_store.save_world(conn, merged, revision)
+            new = world_store.save_world(conn, project, revision)
         print(f'Saved to DEV, revision {new}.')
+        with world_db.connect('dev', 'owner') as conn:
+            with conn.transaction():
+                cleared = clear_old_state(conn, project['id'], old_ids - kept)
+        print(f'The old residents\' saved state cleared: {cleared}.')
     return 0
 
 

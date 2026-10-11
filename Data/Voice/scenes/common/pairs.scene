@@ -141,7 +141,7 @@ a : Bless you. | It's all right. | Go on.
 scene pr_sailor_innkeeper
 when topic=smalltalk a.job=sailor b.job=innkeeper
 a : Rum, and keep it coming. | Six weeks at sea, and this is the first bed I've seen. | Any work going on the quay?
-b : Coin first. | Room's upstairs. | Ask at the Brinewater office.
+b : Coin first. | Room's upstairs. | Ask down at the harbour.
 a : Here. | Bless you. | Thanks.
 
 scene pr_woodcutter_crafter

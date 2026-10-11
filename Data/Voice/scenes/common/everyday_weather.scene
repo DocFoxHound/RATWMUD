@@ -90,7 +90,7 @@ a : Keeps me awake. | I'm not either. | I would if I had one.
 
 scene ev_wx_rain_region
 when topic=weather weather=rain region=rain_coast
-a : Ridgemere rain. Same as yesterday. Same as tomorrow. | The bay's lost in the rain. | Rain's coming sideways off the sea.
+a : Ridgemere rain. Same as yesterday. Same as tomorrow. | The Sound's lost in the rain. | Rain's coming sideways off the sea.
 b[fisher] : Rain's nothing. It's the wind with it you watch.
 b : Same as always. | Can't see the boats. | Hold your hood.
 a : I'd faint if it stopped. | They're out there somewhere. | Gone already.
@@ -127,9 +127,9 @@ a : Wool and water. | I didn't like it. | Far and lonely.
 
 scene ev_wx_fog_coast
 when topic=weather weather=fog region=rain_coast|lake
-a : Fog horn's been going since dawn. | Sea fog. Everything tastes of salt. | Boats stayed in today.
-b[sailor] : Only a fool sails in sea fog. I've known fools. Buried a few.
-b : Long day for the ringer. | Salt and wet. | Wise of them.
+a : Fog horn's been going since dawn. | Fog off the water. Everything's dripping. | Boats stayed in today.
+b[sailor] : Only a fool sails in fog. I've known fools. Buried a few.
+b : Long day for the ringer. | Grey and wet. | Wise of them.
 a : He'll be deaf by night. | Same as always. | For once.
 
 scene ev_wx_fog_scent
@@ -212,7 +212,7 @@ a : Bang, there it goes again. | I mean to. | Pray it wasn't mine.
 scene ev_wx_storm_sea
 when topic=weather weather=storm region=rain_coast|lake
 a : Waves over the harbour wall. | Boats will be lost tonight. | Spray's reaching the street.
-b[sailor] : Pray for anyone outside the bay tonight. I am.
+b[sailor] : Pray for anyone out on the water tonight. I am.
 b[fisher] : Every boat's in but one.
 b : Look at it. | Bright One keep them. | Stand back from the edge.
 a : Never seen it this bad. | Keep them all. | I'm standing back.
@@ -224,7 +224,7 @@ b : Mine too. | Who could? | Join them.
 a : Old timbers. | Nobody. | There's no room.
 
 scene ev_wx_storm_field
-when topic=weather weather=storm region=countryside|steppe
+when topic=weather weather=storm region=countryside
 a : Hail flattened the barley. | Wind's lying the wheat down flat. | Herd's spooked by the thunder.
 b[farmer] : A year's work, gone in an afternoon.
 b[herder] : Get them in the lee of the hill.
@@ -298,15 +298,15 @@ b : Get indoors. | Every evening. | In my ears.
 a : Soon. | Every one. | Pull your hood up.
 
 scene ev_wx_region_upper
-when topic=weather region=accord weather=clear|overcast|fog|snow|rain
+when topic=weather region=mountains weather=clear|overcast|fog|snow|rain
 a : Mountain wind's coming down again. | The peaks are hidden today. | Cold up here even in summer.
-b[scholar] : The archives must be kept dry. We burn braziers all day.
+b[miner] : Colder still at the shaft head. We keep a brazier going all day.
 b : Bundle up. | Behind the clouds. | Always.
 a : I am bundled. | They'll be back. | Always.
 
 scene ev_wx_region_south
 when topic=weather region=south weather=clear|overcast
-a : Warm wind off the river. | Dry year down south. | The river smells of summer already.
+a : Warm wind from the south. | Dry year down south. | The air smells of summer already.
 b[farmer] : Too dry and the barley burns.
 b : Pleasant. | It is. | Already.
 a : Pleasant now. | Hope for rain. | Already.

@@ -4665,6 +4665,16 @@ Result World::restore(const PersistedWorld& saved)
             it = gone(it->first) ? places.erase(it) : std::next(it);
     for (auto it = state.doorStates.begin(); it != state.doorStates.end();)
         it = !doors_.count(it->first) && it->first.rfind("seam_", 0) != 0 ? state.doorStates.erase(it) : std::next(it);
+    // A player who stood in a place the world no longer has (the whole world may have been replaced: Docs/Design/60)
+    // wakes at the spawn. (One placed wrongly in a place that is there is refused below, as ever.)
+    for (auto& e : state.players)
+        if (gone(e.cellId))
+        {
+            e.cellId = spawnCell_;
+            e.position = spawnPosition_;
+        }
+    if (streamed())
+        ensureLoaded(spawnCell_);
     // Beyond this bound double precision can no longer support useful frame
     // time and conversion of schedule epochs can overflow an integer.
     if (!std::isfinite(state.time) || state.time < 0 || state.time > 1e12)

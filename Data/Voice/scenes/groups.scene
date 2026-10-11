@@ -1,16 +1,21 @@
-# Region groups for the scenes (Docs/Design/30-towns-and-talk.md): a scene may name a group instead of its towns.
-# Read before every other file.
+# Region groups for the scenes (Docs/Design/30-towns-and-talk.md; the world of Docs/Design/60): a scene may name a
+# group instead of its towns. Read before every other file.
+#
+# Ridgemere is the only city: the rain city on its hills above Ridgemere Sound, in the north-west. The six towns:
+# Frosthollow (mining, a high snowy valley in the Whitefangs), Coldwater (on Glasswater, under the mountains, where the
+# Long River rises), Oakhaven (the Warmwood), Mirebridge (the Sallow Fens, by the Long River), Larkfield (market town
+# of the Larkdowns), Southmeadow (grain fields and orchards in the far south).
 
-group accord = upper_accord accord_crossing
-group rain_coast = ridgemere saltreach
-group marches = ser_ferro cinderbrook
-group downs = westmarch hollowmere_village
-group lake = lakeside isle_fortress
-group fens = fenhollow
-group steppe = amberford
-group fortresses = northern_fortress isle_fortress dark_fortress
-group cities = upper_accord ridgemere ser_ferro
-group towns = accord_crossing saltreach cinderbrook westmarch lakeside fenhollow amberford hollowmere_village
-group north = ridgemere saltreach northern_fortress upper_accord
-group south = ser_ferro cinderbrook amberford fenhollow dark_fortress
-group countryside = westmarch hollowmere_village amberford fenhollow
+group cities = ridgemere
+group rain_coast = ridgemere
+group towns = frosthollow coldwater oakhaven mirebridge larkfield southmeadow
+group north = ridgemere frosthollow coldwater
+group south = oakhaven mirebridge larkfield southmeadow
+group mountains = frosthollow coldwater
+group lake = coldwater
+group fens = mirebridge
+group woods = oakhaven
+group downs = larkfield southmeadow
+group farmland = larkfield southmeadow
+group warm = oakhaven mirebridge
+group countryside = oakhaven mirebridge larkfield southmeadow

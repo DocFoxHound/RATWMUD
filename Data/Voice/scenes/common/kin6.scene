@@ -233,22 +233,22 @@ b : The river? | We can try. | In that order?
 a : The river. | We'll hide in plain sight. | Any order.
 
 scene kn_day_regional
-when topic=day region=ridgemere|saltreach
+when topic=day region=ridgemere
 a : Fishing boats are out early. | Market's half fish today. | The fog's lifting off the water.
 b : Before the weather turns. | It's always half fish. | First time in a week.
 a : Then it'll be fish for supper. | The other half is more fish. | Don't trust it.
 b : Again. | Smoked fish. | Never.
 
 scene kn_day_regional_mountain
-when topic=day region=upper_accord|northern_fortress
-a : Pass is open today. | Clear enough to see the lowlands. | The bells rang early at the Hall.
-b : For a day, maybe. | Like a map. | Concord business.
-a : Then the carters will run. | A map of better weather. | It's always Concord business.
+when topic=day region=mountains
+a : Pass is open today. | Clear enough to see the lowlands. | The bells rang early at the chapel.
+b : For a day, maybe. | Like a map. | Somebody's wedding.
+a : Then the carters will run. | A map of better weather. | It's always somebody's wedding.
 b : Run and get stuck. | Better and further. | Always.
 
 scene kn_day_regional_south
-when topic=day region=ser_ferro|amberford|cinderbrook
-a : Hot already, and barely morning. | The river's low. | Smell the vineyards on the wind.
-b : It'll be worse by noon. | It'll rise when the rains come. | Wine next year, then.
-a : A long nap at noon, then. | If they come. | If the grapes are kind.
+when topic=day region=southmeadow
+a : Hot already, and barely morning. | The river's low. | Smell the orchards on the wind.
+b : It'll be worse by noon. | It'll rise when the rains come. | Cider next year, then.
+a : A long nap at noon, then. | If they come. | If the apples are kind.
 b : The only sensible thing. | They always come. Late. | They're never kind.

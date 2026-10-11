@@ -34,7 +34,7 @@ void lines()
         {1.0, "introduced", "ash", "wren", "c1", {}, "Ash"},
         {1.1, "introduced", "ash", "wren", "c1", {}, "Ash"},
         {1.2, "introduced", "bo", "ash", "c1", {}, "Bo"},
-        {2.0, "deed", "ash", "town:upper_accord", "c1", "broke_camp", "drove the bandits off the road at the ford (deed-1)"},
+        {2.0, "deed", "ash", "town:ridgemere", "c1", "broke_camp", "drove the bandits off the road at the ford (deed-1)"},
         {2.5, "nickname", "ash", "wren", "c1", {}, "the Lantern (nick-1)"},
         {3.0, "story told", "ash", {}, {}, {}, "The Long Night"},
         {4.0, "conversation", "ash", "wren"},

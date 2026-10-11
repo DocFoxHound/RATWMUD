@@ -11,7 +11,7 @@
     "nickname dropped": {"actor": "You asked folk not to call you {detail}."},
     "festival won": {"actor": "You won {contest} at {detail}."},
     "pact sealed": {"actor": "You sealed a pact.", "target": "{Other} sealed a pact with you."},
-    "vouch": {"actor": "You vouched for {other} to the Wardens.", "target": "{Other} vouched for you to the Wardens."},
+    "vouch": {"actor": "You vouched for {other} to one of the townsfolk.", "target": "{Other} vouched for you to one of the townsfolk."},
     "tie ended": {"actor": "Your tie with {other} ended.", "target": "Your tie with {other} ended."},
     "camp cleared": {"actor": "You broke a bandit camp."},
     "letter delivered": {"target": "A letter reached you."},

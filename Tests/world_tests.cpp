@@ -142,6 +142,27 @@ void restoreOverARebuiltWorld()
                !again.doorStates.count("a_demolished_shop_door"), "and what it said of them is let go");
     saved.weather["tavern"] = static_cast<Weather>(99);
     expect(!w.restore(saved).ok, "A bad entry for a place that is there is still refused");
+    // A whole world replaced (Docs/Design/60): a player who stood in a place it no longer has wakes at the spawn; one
+    // who stands where they were stays; one stood in a wall of a place that is there is still refused.
+    World v;
+    const Vec2 spawn = v.addPlayer("ada", "Ada").position;
+    v.addPlayer("bo", "Bo");
+    v.addPlayer("cy", "Cy");
+    auto old = v.save();
+    for (auto& e : old.players)
+        if (e.id == "ada")
+            e.cellId = "a_demolished_shop";
+        else if (e.id == "cy")
+            e.position = {spawn.x + 1, spawn.y};
+    const auto back = v.restore(old);
+    expect(back.ok, "A save whose players stood in places now gone restores: " + back.message);
+    expect(v.entity("ada") && v.entity("ada")->cellId == "tavern" && v.entity("ada")->position.x == spawn.x,
+           "a player from a place gone wakes at the spawn");
+    expect(v.entity("cy") && v.entity("cy")->position.x == spawn.x + 1, "one where they were stays there");
+    for (auto& e : old.players)
+        if (e.id == "bo")
+            e.position = {.5, .5};                     // (In the wall's corner.)
+    expect(!v.restore(old).ok, "one in a wall of a place that is there is still refused");
 }
 void continuousMovement()
 {

@@ -1,5 +1,5 @@
 // Notice boards in the real page (Docs/Design/54-gathering-places.md, Phase 2), on the three-town strip: Ash walks to
-// Upper Accord's board by its square (drawn on the map), reads it and pins a notice seeking honey (a penny); Bo comes
+// Ridgemere's board by its square (drawn on the map), reads it and pins a notice seeking honey (a penny); Bo comes
 // and reads it, with the scent line. Screenshots go to artifacts/screenshots/board/.
 //
 //   node tools/client/board.mjs [OUT]        (RATW_SERVER: the server binary; RATW_WEB: the built page, Client/dist)
@@ -18,8 +18,8 @@ const binary = process.env.RATW_SERVER ?? `${root}/build-core/ratw_server`;
 const web = process.env.RATW_WEB ?? `${root}/Client/dist`;
 const tmp = mkdtempSync(join(tmpdir(), 'ratw-board-'));
 
-// The strip (as tools/client/newcomer.mjs writes it, with an inn by the spawn): Upper Accord (with the spawn) in the first two cells, wild
-// country, Ser Ferro in cells 4-5, Ridgemere in 7-8; each town's first cell its homes, its second its market.
+// The strip (as tools/client/newcomer.mjs writes it, with an inn by the spawn): Ridgemere (with the spawn) in the first two cells, wild
+// country, Larkfield in cells 4-5, Oakhaven in 7-8; each town's first cell its homes, its second its market.
 function writeStrip(dir) {
     const layout = 'UU..SS.RR', side = 16, cells = layout.length;
     const id = i => `c_${i}_0`;
@@ -39,7 +39,7 @@ function writeStrip(dir) {
             }
     }
     for (const [cell, text] of Object.entries(seams)) writeFileSync(join(dir, 'seams', cell), text);
-    const region = c => ({U: 'upper_accord', S: 'ser_ferro', R: 'ridgemere'})[c] ?? 'wilds';
+    const region = c => ({U: 'ridgemere', S: 'larkfield', R: 'oakhaven'})[c] ?? 'wilds';
     for (let i = 0; i < cells; ++i) {
         const exits = [i > 0 ? id(i - 1) : null, i + 1 < cells ? id(i + 1) : null].filter(Boolean);
         m += `exits "${id(i)}" ${exits.length}${exits.map(e => ` "${e}"`).join('')}\n`;
@@ -54,7 +54,7 @@ function writeStrip(dir) {
         m += resident(`${tag}m`, `Merchant ${tag}`, 'merchant', 'keeping the stall', home, 2.5, home + 1, 8.5);
         for (let n = 1; n <= 5; ++n) m += resident(`${tag}${n}`, `Neighbour ${tag}${n}`, 'civilian', 'working', home, 3.5 + n, home, 3.5 + n);
     }
-    // Upper Accord's inn, by the spawn: where letters are written.
+    // Ridgemere's inn, by the spawn: where letters are written.
     m += resident('ui', 'Wren Tallow', 'merchant', 'keeping the inn', 0, 12.5, 0, 12.5);
     writeFileSync(join(dir, 'world.ratw'), m);
 }
@@ -87,7 +87,7 @@ try {
     };
     const ash = await open('ash'), bo = await open('bo');
     await ash.evaluate(`${S}.send({type: 'time', value: 'day'})`);
-    // Where the board is: Upper Accord's market cell (c_1_0).
+    // Where the board is: Ridgemere's market cell (c_1_0).
     const goTo = async page => {
         for (let i = 0; i < 30; ++i) {
             const b = JSON.parse(await page.evaluate(`JSON.stringify((${S}.snapshot?.boards ?? [])[0] ?? null)`));

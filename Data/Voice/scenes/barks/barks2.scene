@@ -42,7 +42,7 @@ a : Spare a penny? | Bless you, bless you. | Anything at all, friend?
 
 scene bk2_noble
 when topic=bark a.job=noble
-a : Out of my way. | Where is my steward? | Insufferable heat.
+a : Out of my way. | Where is my steward? | Insufferable rain.
 
 scene bk2_servant
 when topic=bark a.job=servant
@@ -74,7 +74,7 @@ a : Halt there! | Next cart! | Toll's a penny a wheel!
 
 scene bk2_chapel
 when topic=bark place=chapel
-a : Quiet, please. | The Saint watches. | Light a candle, friend.
+a : Quiet, please. | The Bright One watches. | Light a candle, friend.
 
 scene bk2_home
 when topic=bark place=home
@@ -101,12 +101,8 @@ when topic=bark region=rain_coast
 a : Rain, rain, always rain. | Smell of tar and fish. | Ship's in!
 
 scene bk2_marches
-when topic=bark region=marches
-a : By the Saint, it's hot! | Grapes! Fresh grapes! | Mind the steps!
-
-scene bk2_accord
-when topic=bark region=accord
-a : Cold up here! | The Concord sits tonight. | Make way for the Warden!
+when topic=bark region=frosthollow
+a : By the Bright One, it's cold! | Shift's changing! | Mind the steps, they're ice!
 
 scene bk2_downs
 when topic=bark region=downs
@@ -114,18 +110,18 @@ a : Sheep everywhere. | Wind off the downs! | Market day soon.
 
 scene bk2_lake
 when topic=bark region=lake
-a : Fish on the jetty! | Mist on the mere again. | Boat's coming in!
+a : Fish on the jetty! | Mist on the lake again. | Boat's coming in!
 
 scene bk2_fens
 when topic=bark region=fens
 a : Mind the bog! | Peat for the fire! | Don't follow the lights!
 
 scene bk2_steppe
-when topic=bark region=steppe
+when topic=bark region=farmland
 a : No rain again. | Grain! Grain for sale! | Dust everywhere.
 
 scene bk2_fortress
-when topic=bark region=fortresses
+when topic=bark place=gate a.role=guard
 a : Wall's quiet. | Change the watch! | Cold stone, cold food.
 
 scene bk2_fog

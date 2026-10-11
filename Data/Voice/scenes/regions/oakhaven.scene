@@ -1,0 +1,226 @@
+# Oakhaven: a walled town in the Warmwood, the warm broadleaf forest of the south-west, at the end of the Southway.
+# The Acorn Inn, the general store, the bakery, the smithy, the sawmill and the joiners, the woodcutters and foragers,
+# the hives, the pigs under the oaks, the fields and orchard outside the gate, the old Valemere family, and the carter.
+
+scene rg_hm_everyone_knows
+when topic=smalltalk|lore region=oakhaven
+a : Everybody in Oakhaven knew about it before I did. | You can't sneeze in Oakhaven without the whole street saying bless you. | No secrets inside a wall this size.
+b[old] : I know everyone's business and keep half of it. The kind half.
+b[adolescent] : That's exactly why I want to leave.
+b : That's Oakhaven. | Too true. | None at all.
+a : That it is. | Far too true. | Not one.
+
+scene rg_hm_next_valley
+when topic=lore|smalltalk region=oakhaven
+a : Folk from Mirebridge talk funny. | My grandmother called Ridgemere "foreign parts". | Somebody from Larkfield married into the Oakfield family. Scandal.
+b[old] : Anywhere past the Warmwood might as well be the moon.
+b : They say the same about us. | She wasn't wrong. | Big scandal.
+a : Probably. | Not at all. | The biggest.
+
+scene rg_hm_carter_day
+when topic=smalltalk region=oakhaven
+a : Carter's due on Marketday. I've a list as long as my tail. | The carter didn't come down the Southway. No salt till next week. | The carter brought a letter for the Brook family. First in years.
+b[merchant] : Whatever the carter brings, I sell. Whatever he forgets, you do without.
+b : Me too. | Again? | Who from?
+a : Longer. | Again. | Nobody knows yet.
+
+scene rg_hm_hollow_cup
+when topic=smalltalk region=oakhaven place=tavern
+a : Half the town crammed into the Acorn Inn last night. | Cider, a fiddle, and the best night in the Warmwood. | The Acorn's barrel ran dry before the songs did.
+b[innkeeper] : Two barrels should have been plenty. Nobody sips.
+b : Cosy. | The very best. | Always does.
+a : Very cosy. | The best. | Always.
+
+scene rg_hm_never_further
+when topic=smalltalk region=oakhaven a.stage=adult|old
+a : Never been further than Larkfield. Never needed to. | Went to Larkfield once. Too many people. | Larkfield is a big enough city for me.
+b[adolescent] : Larkfield isn't a city! It's a town, like ours!
+b : Me neither. | Far too many. | Big enough.
+a : Never. | Far too many. | Big enough.
+
+scene rg_hm_last_of_family
+when topic=lore region=oakhaven
+a : The Valemeres owned half the Warmwood once. Now there's only old Hedge. | Old Hedge is the last of the family that founded Oakhaven. | They say every field outside the gate was a Valemere field once.
+b[old] : I remember when the Valemeres had a hall on the hill. Just stones now.
+b : Times change. | Poor old Hedge. | Long ago.
+a : They do. | Poor old soul. | Very long ago.
+
+scene rg_hm_valley_fields
+when topic=work region=oakhaven a.job=farmer|laborer|herder
+a : Brought in the hay from the low meadow. | The fields by the gate flooded in the spring rains. | Three of us for every field outside the wall.
+b[farmer] : Forest fields, small harvests, small worries.
+b : Good hay? | Every spring. | Enough, just.
+a : Sweet hay. | Every spring. | Just.
+
+scene rg_hm_woodcutter
+when topic=work|lore region=oakhaven
+a : The woodcutters felled the old oak by the brook. | Cord wood stacked for winter. Enough, I hope. | Heard the axes in the Warmwood all day.
+b[woodcutter] : Cut one, plant two. My father's rule.
+b[old] : That oak was old when I was a pup.
+b : Shame. | Hope so. | Busy axes.
+a : A shame. | So do I. | Very busy.
+
+scene rg_hm_shop_front
+when topic=smalltalk region=oakhaven
+a : The general store's shelves are bare this week. | Bought the last candle in the store. | The storekeeper's never at the counter.
+b[merchant] : Knock louder. I'm in the back with the carter's load.
+b : Carter's late. | Lucky you. | Knock, then.
+a : Very late. | Very lucky. | I did.
+
+scene rg_hm_mere
+when topic=lore region=oakhaven
+a : The children are swimming in the brook pool. | They say a bell's sunk in the brook pool. From a chapel that was never built. | Fished the brook all morning. Two perch.
+b[old] : That pool's deeper than it looks. Mind the pups.
+b[child] : I can swim backwards!
+b : Mind the edges. | Odd story. | Supper, anyway.
+a : I will. | Very odd. | Small supper.
+
+scene rg_hm_newcomer_rare
+when topic=smalltalk region=oakhaven
+a : A stranger came down the Southway yesterday. Didn't even stop. | Three new faces moved in this month. | A traveller asked the way to Larkfield. Took half the street to answer.
+b[old] : Strangers mean news, or trouble. Usually both.
+b : Shame. | Three? | Everyone had an opinion.
+a : Rude. | Three. | Every one.
+
+scene rg_hm_hedgerows
+when topic=smalltalk region=oakhaven season=autumn|summer
+a : Blackberries thick in the hedgerows. | The hedges need laying before winter. | The children ate all the hedge plums.
+b[child] : They were ripe! You'd have eaten them too!
+b : Pick them. | Every year. | Little thieves.
+a : I will. | Every year. | Little thieves.
+
+scene rg_hm_quiet
+when topic=smalltalk region=oakhaven
+a : Nothing ever happens in Oakhaven. | A pig got loose in the street. That's the week's news. | Quiet as a chapel on Restday.
+b[old] : Nothing happening is the best kind of happening.
+b[adolescent] : That's the problem.
+b : Good. | Big news. | Always.
+a : Good. | The biggest. | Always.
+
+scene rg_hm_valley_mist
+when topic=weather|lore region=oakhaven weather=fog|overcast
+a : Mist lying under the oaks like milk in a bowl. | Can't see the next house in this. | The Warmwood holds the mist till noon.
+b[old] : Fog in the oaks, a hot afternoon. So my grandmother said.
+b : Pretty. | Stay in. | Always does.
+a : Very pretty. | I will. | Always.
+
+scene rg_hm_wedding
+when topic=lore region=oakhaven band=friends|family|acquaintances
+a : The last wedding on our street was three summers ago. Whole town danced. | When there's a wedding, every family on the street brings one dish. | They'll marry Brook and Oakfield next spring. Two families joined.
+b[old] : In a town this size, every wedding's half a family wedding.
+b : Lovely day. | Good custom. | Good match.
+a : Very lovely. | Very good. | Very good.
+
+scene rg_hm_westmarch_market
+when topic=smalltalk region=oakhaven
+a : Walking to Larkfield market tomorrow. Days there and back. | Took the cart down the river road to sell the honey in Larkfield. | They pay better in Larkfield than the carter does.
+b[farmer] : The walk's long but the coin's honest.
+b : Long walk. | Good price? | Always.
+a : Very long. | Fair. | Always.
+
+scene rg_hm_ridge_path
+when topic=lore region=oakhaven
+a : The Southway's the only road out of the Warmwood a cart can take in the wet. | Someone carved a wolf's head on the old boundary oak. Long ago. | They say the boundary oak marks the edge of the old Valemere lands.
+b[woodcutter] : Forest paths are slick as soap in the rain. Take a staff.
+b : Muddy one. | Old carving. | So they say.
+a : Very muddy. | Very old. | So they say.
+
+scene rg_hm_goats
+when topic=smalltalk|work region=oakhaven
+a : The goats got into the store again. | Goat ate my washing off the line. | Milked the goats before dawn.
+b[herder] : Goats are cleverer than wolves. Don't tell them.
+b : Again? | Every week. | Good milk?
+a : Again. | Every week. | Sweet.
+
+scene rg_hm_story_night
+when topic=lore|smalltalk region=oakhaven time=dusk|night
+a : Old Hedge is telling the story of the Valemere hall again. | Story night at the Acorn Inn. Everyone tells one. | The children want the ghost story. Always the ghost story.
+b[old] : A town lives on its stories. Somebody has to tell them.
+b : Again? | Fun night. | Every time.
+a : Again. | Very fun. | Every time.
+
+scene rg_hm_winter_shut
+when topic=lore|weather region=oakhaven season=winter
+a : The Southway's mud to the knee. No carter till it dries. | The fords are up. The town's cut off for a week. | We share stores in the lean weeks. Nobody goes hungry.
+b[old] : Fill the cellar in autumn, share in winter. That's the Warmwood.
+b : Every winter. | Every year. | Good custom.
+a : Every winter. | Every year. | The best.
+
+scene rg_hm_children
+when topic=smalltalk region=oakhaven a.stage=young|adolescent
+a : There's only four of us pups on our whole street. | I want to go to Ridgemere and see real shops. | We built a dam in the brook! It's huge!
+b[old] : When I was young there were twenty pups on this street. Twenty!
+b : Quiet street. | Someday. | Mind it doesn't flood.
+a : Very quiet. | Someday. | It won't!
+
+scene rg_hm_spring
+when topic=smalltalk region=oakhaven season=spring
+a : First piglets of the year. | The brook's loud with the spring rain. | Bluebells under the oaks. Spring's here.
+b[farmer] : Spring comes early in the Warmwood. Always a week ahead.
+b : Lovely. | Every spring. | Finally.
+a : Very lovely. | Every spring. | Finally.
+
+scene rg_hm_hall_stones
+when topic=lore region=oakhaven
+a : Children dug up a carved stone from the old hall. | The old hall stones are in half the houses in town now. | They say there's a cellar under the hall stones nobody's found.
+b[old] : The Valemeres buried their silver when the bad years came. So they said.
+b : What did it show? | Waste not. | So they say.
+a : A wolf's head. | Very thrifty. | So they say.
+
+scene rg_hm_bees
+when topic=work|smalltalk region=oakhaven season=spring|summer
+a : The bees swarmed in the orchard. Took all morning to hive them. | Honey from the Oakhaven hives is the best in the south. | Got stung four times taking the comb.
+b[old] : Tell the bees the town news, or they'll leave. Old custom.
+b : Did you get them all? | Larkfield pays well for it. | Four! Poor paws.
+a : Most. | Very well. | Four.
+
+scene rg_hm_mill_stream
+when topic=lore|work region=oakhaven
+a : The old grain mill's wheel has rotted through. | Nobody's ground grain in Oakhaven for years. We take it to Larkfield. | The millstream still runs fast, even with no wheel.
+b[woodcutter] : I could cut a new wheel. Nobody'll pay for it.
+b : Shame. | A long way with a sack. | Waste of good water.
+a : A shame. | Very long. | A waste.
+
+scene rg_hm_feast_share
+when topic=lore|smalltalk region=oakhaven band=friends|family|acquaintances
+a : Midwinter, our whole street eats at one table. | Everybody brings what they have. Nobody counts. | Old Hedge carves at midwinter. Always has.
+b[old] : One table, one fire, one street. That's Oakhaven.
+b : Best night of the year. | Good custom. | Steady paws, still.
+a : The best. | The very best. | Very steady.
+
+scene rg_hm_mushrooms
+when topic=smalltalk|work region=oakhaven season=autumn
+a : Mushrooms thick in the Warmwood. | Only old Hedge knows which mushrooms are safe. | Found a ring of mushrooms in a glade.
+b[old] : A ring of mushrooms is where the old folk danced. Don't step in.
+b : Pick them. | Ask Hedge. | Pretty.
+a : I will. | I will. | Very.
+
+scene oh_pannage
+when topic=work|smalltalk region=oakhaven season=autumn
+a : Pigs out under the oaks for the acorns. | Lost two pigs in the Warmwood. Fat on acorns somewhere. | Acorn year. The oaks are dropping them like hail.
+b[herder] : An acorn autumn makes the best bacon of the year.
+b : Good fattening. | They'll come home. | Mind your head.
+a : The best. | Hungry, maybe. | I will.
+
+scene oh_sawmill
+when topic=work region=oakhaven a.job=crafter|woodcutter|laborer|apprentice
+a : The sawmill's been screaming since dawn. | Oak planks stacked to the roof at the joiners'. | Sawdust in my fur, my ears, my supper.
+b[crafter] : Oak wants a year to dry for every inch. Nobody waits that long any more.
+b[woodcutter] : We fell them, they saw them. Fair split of the noise.
+b : Busy, then. | Good stock. | That's the trade.
+a : Very busy. | The best. | It is.
+
+scene oh_heat
+when topic=smalltalk|weather region=oakhaven season=summer weather=clear|overcast
+a : Too hot to work past noon. Everyone's in the shade. | The oaks keep the town cool. Mostly. | Thunder in the air all afternoon.
+b[old] : Warmwood summers. Sleep at noon, work at dusk.
+b : Wise. | Mostly. | It'll break tonight.
+a : Very wise. | Mostly. | I hope.
+
+scene oh_wall_ivy
+when topic=smalltalk|work region=oakhaven
+a : Ivy's pulling stones out of the town wall again. | They shut the gate at dusk now. Boars in the gardens. | Patched the wall by the gate all morning.
+b[guard] : A wall's only as good as whoever's on the gate.
+b[crafter] : The forest wants that wall back. We don't let it.
+b : Cut it back. | Good. | Hard work.
+a : I will. | Very good. | Very hard.

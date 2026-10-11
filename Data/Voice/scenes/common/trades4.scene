@@ -49,9 +49,9 @@ b : For a sack of it. | The road was double. | Your hedge is in my road.
 a : Half a sack. | The road's the same road. | My hedge was there before your road.
 
 scene tr_farm_steppe
-when topic=work a.job=farmer|herder region=steppe|countryside
-a : Amberford wheat's the best in the south. Everybody says so. | Dug a new ditch to the ford. Water's sweet. | The dry wind's come early this year.
-b : Everybody from Amberford says so. | Good work. | Bad sign.
+when topic=work a.job=farmer|herder region=farmland
+a : Southmeadow wheat's the best in the south. Everybody says so. | Dug a new ditch to the stream. Water's sweet. | The dry wind's come early this year.
+b : Everybody from Southmeadow says so. | Good work. | Bad sign.
 a : Everybody with taste. | Sweet till the tanners move upstream. | Bad for the wheat, good for the dust.
 
 scene tr_farm_fen
@@ -93,8 +93,8 @@ b : Forty! | You do smell like a ewe. | Over the fence?
 a : Forty and a goat by mistake. | Thank you, I'm aware. | Over and into the trough.
 
 scene tr_herd_downs
-when topic=work a.job=herder region=downs|steppe
-a : The downs are green as I've ever seen them. | Drovers coming through for the Westmarch market. | Found a ewe stuck in a sinkhole. Took three of us to pull her out.
+when topic=work a.job=herder region=downs
+a : The downs are green as I've ever seen them. | Drovers coming through for the Larkfield market. | Found a ewe stuck in a sinkhole. Took three of us to pull her out.
 b : Fat sheep this year. | Prices'll drop. | Stubborn ewe.
 a : Fat sheep, thin prices. | Drop for us. Not for the butcher. | Stubborn's the only kind there is.
 
@@ -134,9 +134,9 @@ a : Wise and poor. | And starve? | I'll bring you the smallest.
 
 scene tr_fish_saltreach
 when topic=work a.job=fisher|laborer region=rain_coast
-a : The Vesk factor wants our catch at his price or not at all. | Salt pans flooded again with the spring tide. | Smokehouse runs day and night this time of year.
-b : He owns the smokehouse. | Rake them out. | Smell carries all the way up the coast.
-a : And the boats. And us, near enough. | With what? It's all brine. | Smell of wages.
+a : The Fish Hall wants our catch at its price or not at all. | Salt pans flooded again with the spring tide. | Smokehouses run day and night this time of year.
+b : Sell in the Sump Market, then. | Rake them out. | Smell carries all the way up to the Heights.
+a : For half that again? The Sump can't pay. | With what? It's all brine. | Smell of wages.
 
 scene tr_fish_lake
 when topic=work a.job=fisher|crafter region=lake
@@ -160,15 +160,15 @@ a : Cheap as a smile. | It comes back. It always comes back. | Bless you. Take t
 
 scene tr_sail_voyage
 when topic=work a.job=sailor
-a : Twelve days from Ser Ferro and two of them becalmed. | The captain flogged the cook. The cook deserved it. | We're shipping salt to the Isle next week.
+a : Twelve days down the coast and two of them becalmed. | The captain flogged the cook. The cook deserved it. | We're shipping salt down the coast next week.
 b : Long trip. | What did he do? | Rough water out there.
 a : Long and dull and wet. | Put sand in the porridge. | Rough water, good pay.
 
 scene tr_sail_shore_leave
 when topic=work|smalltalk a.job=sailor place=tavern|street
 a : Three days' leave and I've spent it all in one. | Any tavern here not watered? | Haven't stood on dry land in a month. It keeps moving.
-b : Fast work. | Try the one by the quay. | It's you that's moving.
-a : Sailors don't spend slow. | The quay one waters the worst. | Same thing, at sea.
+b : Fast work. | Try the one by the wharf. | It's you that's moving.
+a : Sailors don't spend slow. | The wharf one waters the worst. | Same thing, at sea.
 
 scene tr_sail_rigging
 when topic=work a.job=sailor
@@ -184,7 +184,7 @@ a : The owner's not the one drowning. | With two wolves? | I've asked no more fo
 
 scene tr_sail_ridgemere
 when topic=work a.job=sailor|laborer region=ridgemere
-a : Brinewater's launched a new hull. Three masts. | The southern crews cheat at dice and sing all night. | Fog in the bay. Ships blowing horns like lost cows.
+a : The Greatly Yard's launched a new hull. Three masts. | The southern crews cheat at dice and sing all night. | Fog on the Sound. Ships blowing horns like lost cows.
 b : Who's crewing it? | Win back what they took. | Wait for it to lift.
 a : Anyone who'll sign. Me, maybe. | I'm trying. They cheat better. | Lifts by noon, rolls back by dusk.
 
@@ -221,20 +221,20 @@ b : Pass? | Who? | And the other?
 a : Barely. | Everyone, I'd wager. | For the weighmaster to check.
 
 scene tr_merch_ser_ferro
-when topic=work a.role=merchant region=ser_ferro
-a : The merchant houses buy everything at the wharf before it lands. | River tax went up a penny a barrel. | A Syndicate man offered to protect my shop.
+when topic=work a.role=merchant region=ridgemere
+a : The merchant houses buy everything at the wharf before it lands. | Wharf toll went up a penny a barrel. | A Sump tough offered to protect my shop.
 b : Get there earlier. | Barely noticeable. | From whom?
-a : Earlier than the houses? They own the dawn. | Barely noticeable a thousand times over. | From the Syndicate, presumably.
+a : Earlier than the houses? They own the dawn. | Barely noticeable a thousand times over. | From himself, presumably.
 
 scene tr_merch_caravan_town
-when topic=work a.role=merchant region=accord_crossing|westmarch|towns
+when topic=work a.role=merchant region=towns
 a : Everything here costs a third more than in the city. | The caravan brought one bolt of cloth. One. | Half the stock in this shop came up the road on a promise.
 b : Then go to the city. | One? | Promises are cheap.
 a : Three days each way? | One. And four buyers. | And the road charges extra for them.
 
 scene tr_merch_ridgemere_sump
 when topic=work a.role=merchant region=ridgemere
-a : Somebody stole the shutters off my shop. The shutters! | Sump folk can't pay a full penny, so I cut bread in eighths. | House Vesk's factor wants first refusal on all my salt.
+a : Somebody stole the shutters off my shop. The shutters! | Sump folk can't pay a full penny, so I cut bread in eighths. | House Greatly's factor wants first refusal on all my salt.
 b : The Sump strips everything. | Eighths? | And you said?
 a : Next it'll be the walls. | Eighths, and they still owe me. | Yes, my lord. What else?
 
@@ -270,12 +270,6 @@ when topic=work a.job=beggar
 a : The watch kicked my bowl over this morning. | Someone's been telling the guards I'm a thief. | I see everything from this corner. Everything.
 b : Brutes. | Are you? | Like what?
 a : Brutes with boots. | Only sometimes. Not lately. | Like who goes where at night. That's worth more than pennies.
-
-scene tr_beg_ghost_town
-when topic=work|smalltalk a.job=beggar|laborer|none region=ghost_town
-a : Patched the roof with a door. Leaks less. | Found a pot that still holds water in the old inn. | Nobody comes here. That's the point.
-b : Good door? | Lucky. | Not even the watch.
-a : Better than the last roof. | Lucky's a strong word. | Especially not the watch.
 
 # ---------------------------------------------------------------- Apprentices
 
@@ -320,15 +314,15 @@ a : Two buckets each! | Mean as goats. | ...I'll be right back.
 
 scene tr_child_play_guard
 when topic=smalltalk a.stage=young b.stage=young
-a : I'm the captain of the watch. You're the thief. | Let's play caravans. I'm the bandit. | I'm a Warden. You're Quickened. Run!
+a : I'm the captain of the watch. You're the thief. | Let's play caravans. I'm the bandit. | I'm a hunter. You're Quickened. Run!
 b : I was the thief last time! | I want to be the bandit. | I'm not! Fire! Fire!
 a : Thieves get to run. Watch just shouts. | Two bandits, then. And no caravan. | That's not fair, you don't have fire!
 
 scene tr_child_job_dream
 when topic=smalltalk a.stage=young|adolescent
-a : When I'm grown I'll be a sailor. | I'm going to be a smith like my da. | I want to be a Warden and carry a big spear.
+a : When I'm grown I'll be a sailor. | I'm going to be a smith like my da. | I want to join the Watch and carry a big spear.
 b[old] : Be a baker. Bakers always eat.
-b : You get seasick on the pond. | You'll burn your whiskers. | Wardens don't carry spears.
+b : You get seasick on the pond. | You'll burn your whiskers. | The Watch carry clubs.
 a : The pond's different. | Da has no whiskers left. He's fine. | Then I'll carry two.
 
 scene tr_child_market_errand

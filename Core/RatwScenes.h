@@ -6,7 +6,7 @@
 //
 // A scene file holds scenes like this one:
 //
-//   group rain_coast = ridgemere saltreach
+//   group south = larkfield southmeadow
 //
 //   scene rm_market_herbs_dear
 //   when topic=prices item=herbs dir=up region=rain_coast place=market|street
